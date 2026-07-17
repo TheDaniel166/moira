@@ -18,7 +18,7 @@ transport contract documented for that family.
 
 - Total non-documentation routes: 402
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 398
+- Versioned `/v1` routes: 402
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -378,6 +378,7 @@ Admitted products:
 | POST | `/v1/aspects/motion-witness` | `aspect_motion_witness_route` |
 | POST | `/v1/aspects/moon-connection-flow` | `moon_connection_flow_route` |
 | POST | `/v1/aspects/from-longitudes` | `aspects_from_longitudes_route` |
+| POST | `/v1/aspects/from-declinations` | `declination_aspects_from_declinations_route` |
 | POST | `/v1/synastry/aspects` | `synastry_aspects_route` |
 | POST | `/v1/synastry/contacts` | `synastry_contacts_route` |
 | POST | `/v1/synastry/contact-relations` | `synastry_contact_relations_route` |
@@ -422,6 +423,25 @@ stationary state, house frame, score, or interpretation is fabricated. The
 response computation truth records normalized inputs, effective tier and orb
 factor, node exclusions, counts, engine/facade entry points, and
 `motion_semantics: not_computed_without_speeds`.
+
+### Declination-Aspect REST Admission Boundary
+
+`POST /v1/aspects/from-declinations` is the kernel-free analysis route for
+caller-supplied equatorial declinations. It accepts between 2 and 64 named
+finite values in `[-90°, +90°]` and a bounded non-negative orb. The route
+also requires caller-declared `reference_frame` and `timescale` strings. It
+delegates through `Moira.declination_aspects_from_declinations(...)` to the
+engine analysis surface and returns classified Parallel and Contra-Parallel
+vessels with reconstructable orb admission truth.
+
+Parallel requires the same nonzero hemisphere; Contra-Parallel requires
+opposite nonzero hemispheres. Two points exactly on the equator form one exact
+Parallel, while one equatorial and one non-equatorial point are unclassified.
+Computation truth exposes that ambiguity policy, normalized point order, the
+effective orb, counts, and the engine/facade entry points.
+The response records the declared frame, timescale, and
+`provenance: caller_supplied_declinations`; it does not infer an astronomical
+reduction product from the numbers alone.
 
 ### Signed Aspect-Motion Witness
 

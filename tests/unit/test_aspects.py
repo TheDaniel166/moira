@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import FrozenInstanceError
+import math
+
 import pytest
 
 import moira.facade as _facade_module
@@ -14,6 +17,7 @@ from moira.aspects import (
     AspectGraph,
     AspectGraphNode,
     AspectHarmonicProfile,
+    DeclinationAspectAnalysis,
     LongitudeAspectAnalysis,
     AspectPattern,
     AspectPatternKind,
@@ -22,6 +26,7 @@ from moira.aspects import (
     AspectTier,
     DEFAULT_POLICY,
     DeclinationAspect,
+    OutOfBoundsBody,
     MotionState,
     aspect_harmonic_profile,
     aspect_motion_state,
@@ -30,8 +35,10 @@ from moira.aspects import (
     aspects_from_longitudes,
     aspects_to_point,
     build_aspect_graph,
+    declination_aspects_from_declinations,
     find_aspects,
     find_declination_aspects,
+    find_out_of_bounds,
     find_patterns,
     find_whole_sign_aspects,
 )
@@ -172,18 +179,17 @@ def test_find_aspects_tier_overrides_include_minor_flag() -> None:
     assert common_minor[0].aspect == "Quincunx"
 
 
-def test_find_aspects_invalid_tier_falls_back_to_major_only() -> None:
-    results = find_aspects(
-        {
-            "Sun": 0.0,
-            "Moon": 60.0,
-            "Mars": 150.0,
-        },
-        tier=999,
-        include_minor=True,
-    )
-
-    assert [aspect.aspect for aspect in results] == ["Sextile", "Square"]
+def test_find_aspects_rejects_invalid_tier() -> None:
+    with pytest.raises(ValueError, match="tier"):
+        find_aspects(
+            {
+                "Sun": 0.0,
+                "Moon": 60.0,
+                "Mars": 150.0,
+            },
+            tier=999,
+            include_minor=True,
+        )
 
 
 def test_find_aspects_custom_orbs_override_orb_factor() -> None:
@@ -244,17 +250,15 @@ def test_aspects_between_extended_minor_is_available_at_default_tier() -> None:
     assert results[0].orb == 0.0
 
 
-def test_aspects_between_invalid_tier_falls_back_to_all_aspects() -> None:
-    results = aspects_between(
-        "Sun",
-        0.0,
-        "Moon",
-        36.0,
-        tier=999,
-    )
-
-    assert len(results) == 1
-    assert results[0].aspect == "Decile"
+def test_aspects_between_rejects_invalid_tier() -> None:
+    with pytest.raises(ValueError, match="tier"):
+        aspects_between(
+            "Sun",
+            0.0,
+            "Moon",
+            36.0,
+            tier=999,
+        )
 
 
 def test_aspects_between_applying_and_separating_respect_wraparound() -> None:
@@ -352,7 +356,7 @@ def test_aspects_to_point_respects_point_name_and_sorting() -> None:
     assert [aspect.orb for aspect in results] == [0.0, 1.0]
 
 
-def test_aspects_to_point_custom_orbs_and_invalid_tier_paths() -> None:
+def test_aspects_to_point_custom_orbs() -> None:
     results = aspects_to_point(
         60.0,
         {
@@ -361,7 +365,7 @@ def test_aspects_to_point_custom_orbs_and_invalid_tier_paths() -> None:
         },
         point_name="Vertex",
         orbs={60.0: 6.0},
-        tier=999,
+        tier=0,
         orb_factor=0.1,
     )
 
@@ -370,6 +374,11 @@ def test_aspects_to_point_custom_orbs_and_invalid_tier_paths() -> None:
     assert [aspect.body2 for aspect in results] == ["Vertex", "Vertex"]
     assert [aspect.aspect for aspect in results] == ["Sextile", "Sextile"]
     assert [aspect.orb for aspect in results] == [0.0, 6.0]
+
+
+def test_aspects_to_point_rejects_invalid_tier() -> None:
+    with pytest.raises(ValueError, match="tier"):
+        aspects_to_point(60.0, {"Sun": 126.0}, tier=999)
 
 
 def test_aspects_to_point_no_match_returns_empty_list() -> None:
@@ -417,6 +426,77 @@ def test_find_declination_aspects_detects_contraparallel() -> None:
     assert round(results[0].orb, 6) == 0.2
 
 
+def test_declination_aspects_near_equator_respect_hemisphere() -> None:
+    opposite = find_declination_aspects({"A": 0.2, "B": -0.2}, orb=1.0)
+    same = find_declination_aspects({"A": 0.2, "B": 0.3}, orb=1.0)
+
+    assert [(item.aspect, item.orb) for item in opposite] == [
+        ("Contra-Parallel", 0.0)
+    ]
+    assert [item.aspect for item in same] == ["Parallel"]
+
+
+def test_declination_aspects_equator_policy_is_unambiguous() -> None:
+    both_equatorial = find_declination_aspects({"A": 0.0, "B": -0.0})
+    one_equatorial = find_declination_aspects({"A": 0.0, "B": 0.2})
+
+    assert [item.aspect for item in both_equatorial] == ["Parallel"]
+    assert one_equatorial == []
+
+
+def test_declination_analysis_is_sorted_and_facade_admitted() -> None:
+    direct = declination_aspects_from_declinations(
+        {"Sun": 10.0, "Mars": -10.2, "Moon": 10.4},
+        reference_frame="geocentric_equatorial_of_date",
+        timescale="TT",
+        orb=0.5,
+    )
+    engine = _facade_module.Moira(kernel_path="missing-test-kernel.bsp")
+    facade = engine.declination_aspects_from_declinations(
+        {"Sun": 10.0, "Mars": -10.2, "Moon": 10.4},
+        reference_frame="geocentric_equatorial_of_date",
+        timescale="TT",
+        orb=0.5,
+    )
+
+    assert isinstance(direct, DeclinationAspectAnalysis)
+    assert direct.declinations == {"Mars": -10.2, "Moon": 10.4, "Sun": 10.0}
+    assert direct == facade
+    assert direct.point_count == 3
+    assert direct.aspect_count == 3
+    assert direct.reference_frame == "geocentric_equatorial_of_date"
+    assert direct.timescale == "TT"
+    assert direct.provenance == "caller_supplied_declinations"
+
+
+@pytest.mark.parametrize(
+    "declinations",
+    [
+        {"A": math.nan, "B": 0.0},
+        {"A": math.inf, "B": 0.0},
+        {"A": 91.0, "B": 0.0},
+    ],
+)
+def test_declination_aspects_reject_invalid_geometry(declinations) -> None:
+    with pytest.raises(ValueError, match="declination"):
+        find_declination_aspects(declinations)
+
+
+def test_declination_analysis_requires_frame_and_timescale_provenance() -> None:
+    with pytest.raises(ValueError, match="reference_frame"):
+        declination_aspects_from_declinations(
+            {"A": 1.0, "B": 1.2},
+            reference_frame="",
+            timescale="TT",
+        )
+    with pytest.raises(ValueError, match="timescale"):
+        declination_aspects_from_declinations(
+            {"A": 1.0, "B": 1.2},
+            reference_frame="geocentric_equatorial_of_date",
+            timescale=" ",
+        )
+
+
 def test_declination_aspect_repr_and_no_match_path() -> None:
     aspect = DeclinationAspect(
         body1="Sun",
@@ -434,6 +514,19 @@ def test_declination_aspect_repr_and_no_match_path() -> None:
     assert "Moon" in rendered
 
     assert find_declination_aspects({"Sun": 10.0, "Moon": 25.0}, orb=1.0) == []
+
+
+def test_public_aspect_result_vessels_are_frozen() -> None:
+    longitude = find_aspects({"Sun": 0.0, "Moon": 120.0})[0]
+    declination = find_declination_aspects({"Sun": 10.0, "Moon": 10.2})[0]
+    out_of_bounds = OutOfBoundsBody("Moon", 24.0, 23.4, 0.6)
+
+    with pytest.raises(FrozenInstanceError):
+        longitude.orb = 99.0  # type: ignore[misc]
+    with pytest.raises(FrozenInstanceError):
+        declination.orb = 99.0  # type: ignore[misc]
+    with pytest.raises(FrozenInstanceError):
+        out_of_bounds.excess = 99.0  # type: ignore[misc]
 
 
 # ---------------------------------------------------------------------------
@@ -1163,7 +1256,7 @@ def test_motion_state_separating_when_applying_false_and_not_stationary() -> Non
 def test_motion_state_stationary_when_stationary_flag_is_true() -> None:
     """STATIONARY when stationary=True regardless of applying value."""
     results = aspects_between(
-        "Sun", 0.0, "Moon", 60.0, tier=0,
+        "Sun", 0.0, "Moon", 59.0, tier=0,
         speed_a=0.004, speed_b=1.0,
     )
     assert results and results[0].stationary is True
@@ -1173,7 +1266,7 @@ def test_motion_state_stationary_when_stationary_flag_is_true() -> None:
 def test_motion_state_stationary_overrides_applying_none() -> None:
     """STATIONARY takes precedence; applying is None when stationary is True."""
     results = aspects_between(
-        "Sun", 0.0, "Moon", 60.0, tier=0,
+        "Sun", 0.0, "Moon", 59.0, tier=0,
         speed_a=0.004, speed_b=1.0,
     )
     assert results
@@ -1185,7 +1278,7 @@ def test_motion_state_stationary_overrides_applying_none() -> None:
 
 def test_motion_state_indeterminate_when_no_speeds_supplied() -> None:
     """INDETERMINATE when speeds were not passed to the detection function."""
-    results = aspects_between("Sun", 0.0, "Moon", 60.0, tier=0)
+    results = aspects_between("Sun", 0.0, "Moon", 59.0, tier=0)
     assert results
     a = results[0]
     assert a.applying is None
@@ -1196,7 +1289,7 @@ def test_motion_state_indeterminate_when_no_speeds_supplied() -> None:
 def test_motion_state_indeterminate_when_partial_speeds() -> None:
     """INDETERMINATE when only one body's speed is supplied."""
     results = aspects_between(
-        "Sun", 0.0, "Moon", 60.0, tier=0,
+        "Sun", 0.0, "Moon", 59.0, tier=0,
         speed_a=1.0,
     )
     assert results
@@ -1248,15 +1341,17 @@ def test_motion_state_exhaustive_coverage() -> None:
         "Sun", 359.0, "Moon", 1.0, tier=0, speed_a=1.0, speed_b=2.0,
     )
     stationary_r = aspects_between(
-        "Sun", 0.0, "Moon", 60.0, tier=0, speed_a=0.004, speed_b=1.0,
+        "Sun", 0.0, "Moon", 59.0, tier=0, speed_a=0.004, speed_b=1.0,
     )
-    indeterminate_r = aspects_between("Sun", 0.0, "Moon", 60.0, tier=0)
+    indeterminate_r = aspects_between("Sun", 0.0, "Moon", 59.0, tier=0)
+    exact_r = aspects_between("Sun", 0.0, "Moon", 60.0, tier=0)
     declination_r   = find_declination_aspects({"Sun": 10.0, "Moon": 10.3}, orb=1.0)
 
     assert aspect_motion_state(applying_r[0])     is MotionState.APPLYING
     assert aspect_motion_state(separating_r[0])   is MotionState.SEPARATING
     assert aspect_motion_state(stationary_r[0])   is MotionState.STATIONARY
     assert aspect_motion_state(indeterminate_r[0]) is MotionState.INDETERMINATE
+    assert aspect_motion_state(exact_r[0])        is MotionState.EXACT
     assert aspect_motion_state(declination_r[0])  is MotionState.NONE
 
 
@@ -2729,6 +2824,14 @@ def test_aspect_harmonic_profile_biquintile_maps_to_quintile_family() -> None:
     assert p.chart.counts.get(AspectFamily.QUINTILE) == 1
 
 
+def test_aspect_harmonic_profile_keeps_custom_family_unknown() -> None:
+    custom = _make_aspect("Sun", "Moon", "Custom", 33.0)
+    profile = aspect_harmonic_profile([custom])
+
+    assert profile.chart.counts == {AspectFamily.UNKNOWN: 1}
+    assert AspectFamily.DECLINATION not in profile.chart.counts
+
+
 def test_aspect_harmonic_profile_counts_sum_equals_total() -> None:
     aspects = [_trine("Sun", "Moon"), _sq("Sun", "Mars"), _opp("Moon", "Venus")]
     p = aspect_harmonic_profile(aspects)
@@ -3011,6 +3114,22 @@ def test_aspect_strength_raises_on_negative_allowed_orb() -> None:
         aspect_strength(bad)
 
 
+@pytest.mark.parametrize(
+    ("orb", "allowed_orb"),
+    [(math.nan, 1.0), (-1.0, 1.0), (0.0, math.inf)],
+)
+def test_aspect_strength_rejects_nonfinite_or_negative_geometry(
+    orb,
+    allowed_orb,
+) -> None:
+    bad = AspectData(
+        body1="Sun", body2="Moon", aspect="Conjunction", symbol="☌",
+        angle=0.0, separation=0.0, orb=orb, allowed_orb=allowed_orb,
+    )
+    with pytest.raises(ValueError):
+        aspect_strength(bad)
+
+
 def test_aspect_strength_raises_on_orb_exceeding_allowed_orb() -> None:
     """orb > allowed_orb must raise ValueError (admission invariant violated)."""
     bad = AspectData(
@@ -3065,6 +3184,54 @@ def test_aspect_policy_raises_on_negative_declination_orb() -> None:
     """declination_orb < 0 must raise ValueError."""
     with pytest.raises(ValueError, match="declination_orb"):
         AspectPolicy(declination_orb=-1.0)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"orb_factor": math.nan},
+        {"declination_orb": math.inf},
+        {"orbs": {60.0: math.nan}},
+        {"orbs": {math.inf: 1.0}},
+        {"moiety_orbs": {"Sun": math.nan}},
+        {"tier": 999},
+        {"tier": True},
+        {"include_minor": 1},
+    ],
+)
+def test_aspect_policy_rejects_invalid_or_ambiguous_inputs(kwargs) -> None:
+    with pytest.raises(ValueError):
+        AspectPolicy(**kwargs)
+
+
+def test_aspect_policy_copies_orb_tables_read_only() -> None:
+    source = {60.0: 6.0}
+    policy = AspectPolicy(orbs=source)
+    source[60.0] = 99.0
+
+    assert policy.orbs == {60.0: 6.0}
+    with pytest.raises(TypeError):
+        policy.orbs[60.0] = 7.0  # type: ignore[index]
+
+
+def test_direct_longitude_entrypoints_reject_nonfinite_geometry() -> None:
+    with pytest.raises(ValueError, match="longitude"):
+        find_aspects({"Sun": 0.0, "Moon": math.nan})
+    with pytest.raises(ValueError, match="lon_b"):
+        aspects_between("Sun", 0.0, "Moon", math.inf)
+    with pytest.raises(ValueError, match="point_longitude"):
+        aspects_to_point(math.nan, {"Sun": 0.0})
+    with pytest.raises(ValueError, match="longitude"):
+        find_whole_sign_aspects({"Sun": 0.0, "Moon": math.nan})
+
+
+def test_out_of_bounds_rejects_nonphysical_geometry() -> None:
+    with pytest.raises(ValueError, match="declination"):
+        find_out_of_bounds({"Moon": math.inf}, 23.4)
+    with pytest.raises(ValueError, match="obliquity"):
+        find_out_of_bounds({"Moon": 24.0}, math.nan)
+    with pytest.raises(ValueError, match="obliquity"):
+        find_out_of_bounds({"Moon": 24.0}, -23.4)
 
 
 def test_aspect_policy_zero_declination_orb_is_valid() -> None:
@@ -3165,7 +3332,7 @@ def test_motion_state_and_is_applying_are_consistent() -> None:
     """When MotionState is APPLYING, is_applying must be True and is_separating False."""
     applying = AspectData(
         body1="Sun", body2="Moon", aspect="Trine", symbol="△",
-        angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+        angle=120.0, separation=119.0, orb=1.0, allowed_orb=8.0,
         applying=True, stationary=False,
     )
     assert aspect_motion_state(applying) is MotionState.APPLYING
@@ -3177,7 +3344,7 @@ def test_motion_state_and_is_separating_are_consistent() -> None:
     """When MotionState is SEPARATING, is_separating must be True and is_applying False."""
     separating = AspectData(
         body1="Sun", body2="Moon", aspect="Trine", symbol="△",
-        angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+        angle=120.0, separation=119.0, orb=1.0, allowed_orb=8.0,
         applying=False, stationary=False,
     )
     assert aspect_motion_state(separating) is MotionState.SEPARATING
@@ -3190,7 +3357,7 @@ def test_motion_state_stationary_overrides_applying_flag() -> None:
     for applying_val in (True, False, None):
         a = AspectData(
             body1="Sun", body2="Moon", aspect="Trine", symbol="△",
-            angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+            angle=120.0, separation=119.0, orb=1.0, allowed_orb=8.0,
             applying=applying_val, stationary=True,
         )
         assert aspect_motion_state(a) is MotionState.STATIONARY
@@ -3200,12 +3367,23 @@ def test_motion_state_indeterminate_when_applying_is_none() -> None:
     """None applying with stationary=False → INDETERMINATE."""
     a = AspectData(
         body1="Sun", body2="Moon", aspect="Trine", symbol="△",
-        angle=120.0, separation=120.0, orb=0.0, allowed_orb=8.0,
+        angle=120.0, separation=119.0, orb=1.0, allowed_orb=8.0,
         applying=None, stationary=False,
     )
     assert aspect_motion_state(a) is MotionState.INDETERMINATE
     assert a.is_applying is False
     assert a.is_separating is False
+
+
+def test_motion_state_exact_precedes_applying_and_stationary() -> None:
+    exact = aspects_between(
+        "Sun", 0.0, "Moon", 60.0, tier=0,
+        speed_a=0.004, speed_b=1.0,
+    )[0]
+
+    assert exact.applying is None
+    assert exact.stationary is True
+    assert aspect_motion_state(exact) is MotionState.EXACT
 
 
 def test_motion_state_none_for_declination_aspect() -> None:
@@ -3314,7 +3492,7 @@ def test_detected_aspect_is_partile_when_bodies_share_degree_of_sign() -> None:
     assert aspect.sign_degree2 == 14
 
 
-def test_detected_exact_non_sign_based_aspect_is_not_partile() -> None:
+def test_detected_minor_aspect_is_neither_partile_nor_platic() -> None:
     """An exact harmonic aspect is not partile unless the sign degrees also match."""
     results = aspects_between("Sun", 0.0, "Moon", 72.0, tier=1)
 
@@ -3323,7 +3501,7 @@ def test_detected_exact_non_sign_based_aspect_is_not_partile() -> None:
     assert aspect.aspect == "Quintile"
     assert aspect.orb == pytest.approx(0.0)
     assert aspect.is_partile is False
-    assert aspect.is_platic is True
+    assert aspect.is_platic is False
     assert aspect.sign_degree1 == 0
     assert aspect.sign_degree2 == 12
 
@@ -3338,6 +3516,22 @@ def test_whole_sign_aspect_carries_partile_truth_from_sign_degrees() -> None:
     assert aspect.is_partile is True
     assert aspect.sign_degree1 == 14
     assert aspect.sign_degree2 == 14
+
+
+def test_whole_sign_aspect_has_domain_aware_strength_and_inspectability() -> None:
+    aspect = find_whole_sign_aspects({"Sun": 1.0, "Moon": 125.0})[0]
+    strength = aspect_strength(aspect)
+
+    assert aspect.classification is not None
+    assert aspect.classification.domain is AspectDomain.WHOLE_SIGN
+    assert aspect.is_zodiacal is False
+    assert aspect.orb == 0.0
+    assert aspect.allowed_orb == 0.0
+    assert strength.orb == 0.0
+    assert strength.allowed_orb == 0.0
+    assert strength.surplus == 0.0
+    assert strength.exactness == 1.0
+    assert aspect_motion_state(aspect) is MotionState.NONE
 
 
 def test_manual_aspect_without_sign_degree_context_is_not_partile() -> None:
@@ -3362,7 +3556,7 @@ def test_facade_find_aspects_preserves_partile_and_platic_properties() -> None:
 
     assert len(platic) == 1
     assert platic[0].is_partile is False
-    assert platic[0].is_platic is True
+    assert platic[0].is_platic is False
 
 
 def test_orb_surplus_equals_strength_surplus_for_detected_aspects() -> None:
@@ -3489,6 +3683,7 @@ _EXPECTED_PUBLIC = {
     "AspectGraph",
     "AspectGraphNode",
     "AspectHarmonicProfile",
+    "DeclinationAspectAnalysis",
     "LongitudeAspectAnalysis",
     "AspectPattern",
     "AspectPolicy",
@@ -3502,6 +3697,7 @@ _EXPECTED_PUBLIC = {
     "aspects_from_longitudes",
     "aspects_to_point",
     "build_aspect_graph",
+    "declination_aspects_from_declinations",
     "find_aspects",
     "find_declination_aspects",
     "find_patterns",
@@ -3563,13 +3759,20 @@ def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
     assert _moira_package.AspectMotionWitness is _aspects_module.AspectMotionWitness
     assert _moira_package.aspect_motion_witness is _aspects_module.aspect_motion_witness
     assert _moira_package.AspectPolicy is _aspects_module.AspectPolicy
+    assert _moira_package.DeclinationAspect is _aspects_module.DeclinationAspect
+    assert _moira_package.DeclinationAspectAnalysis is _aspects_module.DeclinationAspectAnalysis
     assert _moira_package.LongitudeAspectAnalysis is _aspects_module.LongitudeAspectAnalysis
     assert _moira_package.aspects_from_longitudes is _aspects_module.aspects_from_longitudes
+    assert (
+        _moira_package.declination_aspects_from_declinations
+        is _aspects_module.declination_aspects_from_declinations
+    )
     assert _moira_package.find_aspects is _aspects_module.find_aspects
+    assert _moira_package.find_declination_aspects is _aspects_module.find_declination_aspects
 
 
 def test_aspects_dunder_all_length() -> None:
-    assert len(_aspects_module.__all__) == 40
+    assert len(_aspects_module.__all__) == 42
 
 
 def test_aspects_dunder_all_no_duplicates() -> None:

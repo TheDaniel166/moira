@@ -27,8 +27,9 @@ This module has thirteen distinct concerns, kept intentionally separate:
    Each admitted aspect records not only *what* was found but *why* it
    qualified: actual angular separation, target angle, orb deviation,
    and applied orb ceiling.  A caller can fully reconstruct the admission
-   test from the vessel alone:
-   ``abs(separation - angle) == orb`` and ``orb <= allowed_orb``.
+   test from the vessel alone.  Degree-based aspects preserve
+   ``abs(separation - angle) == orb`` and ``orb <= allowed_orb``;
+   categorical whole-sign aspects explicitly carry a zero-width orb context.
 
 3. **Classification** — ``AspectClassification``, ``AspectDomain``,
    ``AspectTier``, ``AspectFamily``.
@@ -69,14 +70,14 @@ This module has thirteen distinct concerns, kept intentionally separate:
    A pure arithmetic derivation of how close to exact an admitted aspect
    is, expressed as four named components: raw ``orb``, ``allowed_orb``,
    ``surplus`` (headroom), and ``exactness`` (1.0 = exact, 0.0 = at
-   boundary).  No interpretation, no configuration, no new inputs beyond
-   what is already on the vessel.
+   boundary).  Categorical whole-sign aspects report exactness 1.0 without
+   inventing an orb window.  No interpretation or new input is introduced.
 
 8. **Temporal state** — ``MotionState``, ``aspect_motion_state``.
    Formalises the motion-aware truth already implicit in the vessel's
    ``applying`` and ``stationary`` fields into a single, explicit,
    named enum value.  Covers every possible field combination without
-   ambiguity: APPLYING, SEPARATING, STATIONARY, INDETERMINATE (speeds
+   ambiguity: APPLYING, EXACT, SEPARATING, STATIONARY, INDETERMINATE (speeds
    absent), NONE (``DeclinationAspect`` — no motion data at all).
 
 9. **First-class signed motion** — ``AspectMotionWitness``,
@@ -158,7 +159,7 @@ Public surface
 ``TRADITIONAL_MOIETY_ORBS`` — Lilly 1647 orb table for moiety mode.
 ``AspectStrength``           — frozen dataclass: orb, allowed_orb, surplus, exactness.
 ``aspect_strength``          — derive AspectStrength from any admitted vessel.
-``MotionState``              — enum: APPLYING, SEPARATING, STATIONARY, INDETERMINATE, NONE.
+``MotionState``              — enum: APPLYING, EXACT, SEPARATING, STATIONARY, INDETERMINATE, NONE.
 ``aspect_motion_state``      — derive MotionState from any admitted vessel.
 ``AspectMotionBranch``       — selected positive, negative, conjunction, or ambiguous branch.
 ``AspectMotionOrbPolicy``    — explicit orb policy used by the signed witness.
@@ -176,13 +177,15 @@ Public surface
 ``AspectFamilyProfile``      — frozen dataclass: counts, total, proportions, dominant.
 ``AspectHarmonicProfile``    — frozen dataclass: chart-level profile + per-body profiles.
 ``aspect_harmonic_profile``  — derive harmonic/family profile from a list of admitted AspectData.
-``AspectData``               — vessel for a detected ecliptic aspect.
+``AspectData``               — vessel for a longitude or whole-sign aspect.
 ``DeclinationAspect``        — vessel for a parallel or contra-parallel aspect.
+``DeclinationAspectAnalysis`` — immutable caller-supplied declination analysis.
 ``OutOfBoundsBody``          — vessel for a body whose declination exceeds solar max.
 ``find_aspects``             — find all aspects in a position dict.
 ``aspects_between``          — find aspects between two specific bodies.
 ``aspects_to_point``         — find aspects from a body set to a single point.
 ``find_declination_aspects`` — find parallels and contra-parallels.
+``declination_aspects_from_declinations`` — deterministic first-class declination analysis.
 ``find_out_of_bounds``       — detect bodies beyond maximum solar declination.
 ``find_whole_sign_aspects``  — find non-orb aspects by sign boundaries.
 ``overcoming``               — determine Hellenistic overcoming (dominance) between bodies.
@@ -209,6 +212,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from itertools import combinations, permutations
 import math
+from types import MappingProxyType
 from typing import Collection, Callable, Mapping
 
 from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS, TRADITIONAL_MOIETY_ORBS, Body
@@ -233,6 +237,7 @@ __all__ = [
     # Dataclasses
     "AspectClassification",
     "AspectData",
+    "DeclinationAspectAnalysis",
     "AspectFamilyProfile",
     "AspectGraph",
     "AspectGraphNode",
@@ -249,6 +254,7 @@ __all__ = [
     "aspect_motion_state",
     "aspect_strength",
     "aspects_between",
+    "declination_aspects_from_declinations",
     "aspects_to_point",
     "build_aspect_graph",
     "find_aspects",
@@ -336,6 +342,7 @@ class AspectFamily(str, Enum):
         QUINDECILE    — 24° (15th harmonic)
         VIGINTILE     — 18° (20th harmonic)
         DECLINATION   — parallel / contra-parallel (out-of-plane dimension)
+        UNKNOWN       — explicit family for unclassified custom aspect names
     """
     CONJUNCTION    = "conjunction"
     OPPOSITION     = "opposition"
@@ -354,6 +361,7 @@ class AspectFamily(str, Enum):
     QUINDECILE     = "quindecile"
     VIGINTILE      = "vigintile"
     DECLINATION    = "declination"
+    UNKNOWN        = "unknown"
 
 
 @dataclass(frozen=True, slots=True)
@@ -448,6 +456,46 @@ _CONTRA_PARALLEL_CLASSIFICATION = AspectClassification(
 )
 
 
+def _finite_number(name: str, value: object) -> float:
+    """Return *value* as a finite float or raise a field-specific error."""
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a finite number")
+    try:
+        parsed = float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} must be a finite number") from exc
+    if not math.isfinite(parsed):
+        raise ValueError(f"{name} must be a finite number")
+    return parsed
+
+
+def _normalized_named_values(
+    values: Mapping[str, float],
+    *,
+    quantity: str,
+    minimum: float | None = None,
+    maximum: float | None = None,
+) -> dict[str, float]:
+    """Validate a named numerical mapping while preserving caller order."""
+    if not isinstance(values, Mapping):
+        raise ValueError(f"{quantity}s must be a mapping of point names to degrees")
+    normalized: dict[str, float] = {}
+    for name, value in values.items():
+        if not isinstance(name, str) or not name or name != name.strip():
+            raise ValueError(f"{quantity} point names must be non-empty trimmed strings")
+        parsed = _finite_number(f"{quantity} for {name!r}", value)
+        if minimum is not None and parsed < minimum:
+            raise ValueError(
+                f"{quantity} for {name!r} must be >= {minimum}, got {parsed!r}"
+            )
+        if maximum is not None and parsed > maximum:
+            raise ValueError(
+                f"{quantity} for {name!r} must be <= {maximum}, got {parsed!r}"
+            )
+        normalized[name] = parsed
+    return normalized
+
+
 # ---------------------------------------------------------------------------
 # Policy surface
 # ---------------------------------------------------------------------------
@@ -507,40 +555,106 @@ class AspectPolicy:
     Raises
     ------
     ValueError
+        If ``tier`` is not 0, 1, 2, or ``None``.
+        If ``include_minor`` is not a boolean.
+        If any numeric policy input is non-finite.
         If ``orb_factor <= 0``.
         If ``declination_orb < 0``.
         If ``orb_mode`` is not ``"fixed"`` or ``"moiety"``.
-        If any value in ``moiety_orbs`` is ``<= 0``.
+        If any custom orb or moiety value is not positive.
     """
     tier:            int | None                = None
     include_minor:   bool                      = True
-    orbs:            dict[float, float] | None = None
+    orbs:            Mapping[float, float] | None = None
     orb_factor:      float                     = 1.0
     declination_orb: float                     = 1.0
     orb_mode:        str                       = "fixed"
-    moiety_orbs:     dict[str, float] | None   = None
+    moiety_orbs:     Mapping[str, float] | None = None
 
     def __post_init__(self) -> None:
-        if self.orb_factor <= 0:
+        if self.tier is not None and (
+            isinstance(self.tier, bool)
+            or not isinstance(self.tier, int)
+            or self.tier not in ASPECT_TIERS
+        ):
             raise ValueError(
-                f"AspectPolicy: orb_factor must be > 0, got {self.orb_factor!r}. "
+                f"AspectPolicy: tier must be 0, 1, 2, or None, got {self.tier!r}."
+            )
+        if not isinstance(self.include_minor, bool):
+            raise ValueError(
+                "AspectPolicy: include_minor must be a boolean, "
+                f"got {self.include_minor!r}."
+            )
+
+        orb_factor = _finite_number("AspectPolicy.orb_factor", self.orb_factor)
+        if orb_factor <= 0:
+            raise ValueError(
+                f"AspectPolicy: orb_factor must be > 0, got {orb_factor!r}. "
                 "A zero or negative multiplier produces meaningless orb windows."
             )
-        if self.declination_orb < 0:
+        object.__setattr__(self, "orb_factor", orb_factor)
+
+        declination_orb = _finite_number(
+            "AspectPolicy.declination_orb", self.declination_orb
+        )
+        if declination_orb < 0:
             raise ValueError(
-                f"AspectPolicy: declination_orb must be >= 0, got {self.declination_orb!r}."
+                "AspectPolicy: declination_orb must be >= 0, "
+                f"got {declination_orb!r}."
             )
+        object.__setattr__(self, "declination_orb", declination_orb)
+
         if self.orb_mode not in ("fixed", "moiety"):
             raise ValueError(
                 f"AspectPolicy: orb_mode must be 'fixed' or 'moiety', got {self.orb_mode!r}."
             )
-        if self.moiety_orbs is not None:
-            bad = {k: v for k, v in self.moiety_orbs.items() if v <= 0}
-            if bad:
-                raise ValueError(
-                    f"AspectPolicy: moiety_orbs values must be > 0; "
-                    f"got non-positive full-orb values for: {bad}."
+
+        if self.orbs is not None:
+            if not isinstance(self.orbs, Mapping):
+                raise ValueError("AspectPolicy: orbs must be a mapping")
+            normalized_orbs: dict[float, float] = {}
+            for raw_angle, raw_orb in self.orbs.items():
+                angle = _finite_number("AspectPolicy.orbs angle", raw_angle)
+                allowed = _finite_number(
+                    f"AspectPolicy.orbs[{angle!r}]", raw_orb
                 )
+                if not 0.0 <= angle <= 180.0:
+                    raise ValueError(
+                        "AspectPolicy: orb-table angles must be in [0, 180], "
+                        f"got {angle!r}."
+                    )
+                if allowed <= 0.0:
+                    raise ValueError(
+                        "AspectPolicy: orbs values must be > 0; "
+                        f"got {allowed!r} for angle {angle!r}."
+                    )
+                normalized_orbs[angle] = allowed
+            object.__setattr__(
+                self, "orbs", MappingProxyType(normalized_orbs)
+            )
+
+        if self.moiety_orbs is not None:
+            if not isinstance(self.moiety_orbs, Mapping):
+                raise ValueError("AspectPolicy: moiety_orbs must be a mapping")
+            normalized_moieties: dict[str, float] = {}
+            for body, raw_orb in self.moiety_orbs.items():
+                if not isinstance(body, str) or not body or body != body.strip():
+                    raise ValueError(
+                        "AspectPolicy: moiety_orbs keys must be non-empty "
+                        "trimmed body names"
+                    )
+                full_orb = _finite_number(
+                    f"AspectPolicy.moiety_orbs[{body!r}]", raw_orb
+                )
+                if full_orb <= 0.0:
+                    raise ValueError(
+                        "AspectPolicy: moiety_orbs values must be > 0; "
+                        f"got {full_orb!r} for {body!r}."
+                    )
+                normalized_moieties[body] = full_orb
+            object.__setattr__(
+                self, "moiety_orbs", MappingProxyType(normalized_moieties)
+            )
 
 
 DEFAULT_POLICY: AspectPolicy = AspectPolicy()
@@ -557,8 +671,10 @@ class AspectStrength:
     Pure geometric strength of an admitted aspect, derived entirely from
     the admission context already stored on the result vessel.
 
-    No interpretation, no dignity weighting, no configuration.  Every field
-    is a direct arithmetic consequence of ``orb`` and ``allowed_orb``.
+    No interpretation, no dignity weighting, no configuration.  For an
+    orb-admitted aspect every field is a direct arithmetic consequence of
+    ``orb`` and ``allowed_orb``.  A whole-sign aspect is categorical and
+    therefore carries ``orb=allowed_orb=surplus=0`` and ``exactness=1``.
 
     Fields
     ------
@@ -575,8 +691,8 @@ class AspectStrength:
                   Strictly monotonic: smaller orb → higher exactness for any
                   fixed ``allowed_orb``.
 
-    Invariants
-    ----------
+    Orb-admitted invariants
+    -----------------------
     - ``0.0 <= orb <= allowed_orb``        (admission gate)
     - ``surplus == allowed_orb - orb``     (arithmetic identity)
     - ``0.0 <= exactness <= 1.0``          (normalised range)
@@ -617,14 +733,43 @@ def aspect_strength(aspect: AspectData | DeclinationAspect) -> AspectStrength:
         surplus   = allowed_orb - orb
         exactness = 1.0 - orb / allowed_orb
 
+    Whole-sign aspects use the categorical identity
+    ``orb = allowed_orb = surplus = 0`` and ``exactness = 1`` instead.
+
     Raises
     ------
     ValueError
+        If ``orb`` or ``allowed_orb`` is non-finite, or ``orb < 0``.
         If ``allowed_orb <= 0`` (division by zero / meaningless window).
         If ``orb > allowed_orb`` (vessel violates the admission invariant).
     """
     orb         = aspect.orb
     allowed_orb = aspect.allowed_orb
+    if (
+        isinstance(aspect, AspectData)
+        and aspect.classification is not None
+        and aspect.classification.domain is AspectDomain.WHOLE_SIGN
+    ):
+        if orb != 0.0 or allowed_orb != 0.0:
+            raise ValueError(
+                "aspect_strength: whole-sign vessels must carry orb=0 and "
+                "allowed_orb=0 because their strength is categorical"
+            )
+        return AspectStrength(
+            orb=0.0,
+            allowed_orb=0.0,
+            surplus=0.0,
+            exactness=1.0,
+        )
+    if not math.isfinite(orb) or orb < 0.0:
+        raise ValueError(
+            f"aspect_strength: orb must be finite and >= 0, got {orb!r}."
+        )
+    if not math.isfinite(allowed_orb):
+        raise ValueError(
+            "aspect_strength: allowed_orb must be finite, "
+            f"got {allowed_orb!r}."
+        )
     if allowed_orb <= 0:
         raise ValueError(
             f"aspect_strength: allowed_orb must be > 0, got {allowed_orb!r}. "
@@ -657,6 +802,8 @@ class MotionState(str, Enum):
 
     APPLYING      — both bodies are in motion and the aspect is closing
                     (``applying is True``, ``stationary is False``).
+    EXACT         — the aspect is exact within 1e-9 degrees.  Exactness takes
+                    precedence over stationary and applying/separating state.
     SEPARATING    — both bodies are in motion and the aspect is widening
                     (``applying is False``, ``stationary is False``).
     STATIONARY    — at least one body's daily motion is below the stationary
@@ -665,11 +812,11 @@ class MotionState(str, Enum):
     INDETERMINATE — the vessel was produced without speed data, so the
                     direction of motion cannot be resolved
                     (``applying is None``, ``stationary is False``).
-    NONE          — the vessel type carries no motion information at all
-                    (``DeclinationAspect``; declination detection never
-                    receives speed inputs).
+    NONE          — the vessel type carries no longitude-motion information
+                    (``DeclinationAspect`` or categorical whole-sign data).
     """
     APPLYING      = "applying"
+    EXACT         = "exact"
     SEPARATING    = "separating"
     STATIONARY    = "stationary"
     INDETERMINATE = "indeterminate"
@@ -713,21 +860,23 @@ def aspect_motion_state(aspect: AspectData | DeclinationAspect) -> MotionState:
     """
     Derive the explicit temporal-motion state of an admitted aspect vessel.
 
-    Reads only the ``applying`` and ``stationary`` fields already stored on
-    the vessel.  No new information is required.  The mapping is
+    Reads only the ``orb``, ``applying``, and ``stationary`` fields already
+    stored on the vessel.  No new information is required.  The mapping is
     deterministic and covers every possible field combination:
 
     Decision table
     --------------
     ==================  ===========  =========  ==================
-    vessel type         stationary   applying   → MotionState
-    ==================  ===========  =========  ==================
-    DeclinationAspect   —            —          NONE
-    AspectData          True         any        STATIONARY
-    AspectData          False        True        APPLYING
-    AspectData          False        False       SEPARATING
-    AspectData          False        None        INDETERMINATE
-    ==================  ===========  =========  ==================
+    vessel type         orb          stationary   applying   → MotionState
+    ==================  ===========  ===========  =========  ==================
+    DeclinationAspect   any          —            —          NONE
+    WHOLE_SIGN data     any          —            —          NONE
+    ZODIACAL data       <= 1e-9      any          any        EXACT
+    ZODIACAL data       > 1e-9       True         any        STATIONARY
+    ZODIACAL data       > 1e-9       False        True       APPLYING
+    ZODIACAL data       > 1e-9       False        False      SEPARATING
+    ZODIACAL data       > 1e-9       False        None       INDETERMINATE
+    ==================  ===========  ===========  =========  ==================
 
     Parameters
     ----------
@@ -739,6 +888,13 @@ def aspect_motion_state(aspect: AspectData | DeclinationAspect) -> MotionState:
     """
     if isinstance(aspect, DeclinationAspect):
         return MotionState.NONE
+    if (
+        aspect.classification is not None
+        and aspect.classification.domain is AspectDomain.WHOLE_SIGN
+    ):
+        return MotionState.NONE
+    if aspect.orb <= 1e-9:
+        return MotionState.EXACT
     if aspect.stationary:
         return MotionState.STATIONARY
     if aspect.applying is True:
@@ -1660,15 +1816,18 @@ def _build_family_profile(aspects: list[AspectData]) -> AspectFamilyProfile:
        (the normal case for vessels produced by detection functions).
     2. ``_FAMILY_BY_NAME[a.aspect]`` when ``classification`` is ``None``
        and the aspect name is a known zodiacal name.
-    3. ``AspectFamily.DECLINATION`` as the fallback for any unrecognised
-       name (covers "Parallel", "Contra-Parallel", or custom names).
+    3. ``AspectFamily.DECLINATION`` for the two canonical declination names.
+    4. ``AspectFamily.UNKNOWN`` for an unclassified custom name.  Unknown
+       zodiacal data is never silently relabelled as declination data.
     """
     raw: dict[AspectFamily, int] = {}
     for a in aspects:
         if a.classification is not None:
             fam = a.classification.family
+        elif a.aspect in {"Parallel", "Contra-Parallel"}:
+            fam = AspectFamily.DECLINATION
         else:
-            fam = _FAMILY_BY_NAME.get(a.aspect, AspectFamily.DECLINATION)
+            fam = _FAMILY_BY_NAME.get(a.aspect, AspectFamily.UNKNOWN)
         raw[fam] = raw.get(fam, 0) + 1
 
     total = len(aspects)
@@ -1753,20 +1912,20 @@ def aspect_harmonic_profile(aspects: list[AspectData]) -> AspectHarmonicProfile:
 # Result vessels
 # ---------------------------------------------------------------------------
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class AspectData:
-    """Vessel: Result vessel for a detected ecliptic aspect."""
+    """Vessel: Result vessel for a detected longitude or whole-sign aspect."""
     """
     RITE: The Aspect Vessel — a detected angular relationship between two bodies.
 
     THEOREM: Holds the two body names, aspect name and symbol, target angle,
     actual angular separation, orb deviation, applied orb ceiling,
     applying/separating flag, stationary flag, and explicit classification
-    for a single detected ecliptic aspect.
+    for a single detected degree-based or whole-sign aspect.
 
     RITE OF PURPOSE:
         Serves the Aspect Engine as the canonical result vessel for all
-        ecliptic aspect detections.  The vessel preserves full admission
+        longitude and whole-sign detections.  The vessel preserves full admission
         context (Phase 1) and carries an explicit classification (Phase 2)
         so that a caller can determine not only *why* the aspect qualified
         but *what kind* of aspect it is, without reconstructing that
@@ -1775,8 +1934,8 @@ class AspectData:
     LAW OF OPERATION:
         Responsibilities:
             - Store both body names, aspect name, Unicode symbol, target
-              angle, actual angular separation, orb deviation (always
-              positive), allowed orb ceiling, applying/separating flag,
+              angle, actual angular separation, non-negative orb deviation,
+              allowed orb ceiling, applying/separating flag,
               stationary flag, and ``AspectClassification``.
             - Expose read-only convenience properties that are pure
               single-expression derivations of already-stored fields.
@@ -1789,25 +1948,26 @@ class AspectData:
             - Populated by ``find_aspects()``, ``aspects_between()``, or
               ``aspects_to_point()``.
         Structural invariants:
-            - ``orb`` is always non-negative and equals
-              ``abs(separation - angle)`` to floating-point precision.
-            - ``orb <= allowed_orb`` is always true for any stored vessel.
+            - For ZODIACAL results, ``orb`` equals
+              ``abs(separation - angle)`` and ``orb <= allowed_orb``.
+            - For WHOLE_SIGN results, ``orb == allowed_orb == 0`` because
+              the relationship is categorical rather than orb-admitted.
             - ``orb_surplus == allowed_orb - orb >= 0``.
             - ``separation`` is the raw angular distance (0–180°) between
               the two bodies as computed by ``angular_distance``.
             - ``allowed_orb`` is the orb ceiling actually applied (post
               orb_factor, post custom-orbs override).
-            - ``classification.domain`` is always ``AspectDomain.ZODIACAL``
-              for this vessel.
-            - ``applying`` is ``None`` when either body is stationary or
-              speeds are unavailable.
+            - ``classification.domain`` is ``AspectDomain.ZODIACAL`` or
+              ``AspectDomain.WHOLE_SIGN`` for detector-produced vessels.
+            - ``applying`` is ``None`` when the aspect is exact, either body
+              is stationary, speeds are unavailable, or the result is categorical.
             - ``stationary`` is ``True`` when either body's speed is below
               0.01 deg/day.
             - ``is_applying`` and ``is_separating`` are mutually exclusive
               and both are ``False`` when ``applying`` is ``None``.
         Succession stance: terminal — not designed for subclassing.
 
-    Admission identity (verifiable from vessel fields)::
+    Degree-based admission identity (verifiable from vessel fields)::
 
         orb        == abs(separation - angle)          # geometric deviation
         orb        <= allowed_orb                      # admission gate
@@ -1899,8 +2059,11 @@ class AspectData:
 
     @property
     def is_zodiacal(self) -> bool:
-        """True when this aspect is measured along the ecliptic (always True for AspectData)."""
-        return True
+        """True when this aspect is measured by degree along the ecliptic."""
+        return (
+            self.classification is None
+            or self.classification.domain is AspectDomain.ZODIACAL
+        )
 
     @property
     def is_applying(self) -> bool:
@@ -1936,9 +2099,9 @@ class AspectData:
     @property
     def is_platic(self) -> bool:
         """
-        True when this aspect is admitted within orb but not partile.
+        True when a Ptolemaic major aspect is admitted but not partile.
         """
-        return not self.is_partile
+        return self.is_major and not self.is_partile
 
     def __repr__(self) -> str:
         app = " applying" if self.applying else " separating" if self.applying is False else ""
@@ -1946,7 +2109,7 @@ class AspectData:
         return f"{self.body1} {self.symbol} {self.body2}  (orb {self.orb:+.2f}°){app}{sta}"
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class DeclinationAspect:
     """Vessel: Result vessel for a detected declination aspect."""
     """
@@ -1982,6 +2145,10 @@ class DeclinationAspect:
             - ``orb`` is always non-negative.
             - For a Parallel: ``orb == abs(dec1 - dec2)``.
             - For a Contra-Parallel: ``orb == abs(dec1 + dec2)``.
+            - Parallels require the same nonzero hemisphere, except that two
+              exact equatorial points form one exact Parallel.
+            - Contra-Parallels require opposite nonzero hemispheres.
+            - One equatorial and one non-equatorial point form neither type.
             - ``orb <= allowed_orb`` is always true for any stored vessel.
             - ``orb_surplus == allowed_orb - orb >= 0``.
             - ``dec1`` and ``dec2`` are always in [-90, +90].
@@ -2068,7 +2235,32 @@ class DeclinationAspect:
         return f"{self.body1} ∥ {self.body2}  (orb {self.orb:+.2f}°) [{self.aspect}]"
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
+class DeclinationAspectAnalysis:
+    """Immutable analysis of caller-supplied equatorial declinations."""
+
+    positions: tuple[tuple[str, float], ...]
+    aspects: tuple[DeclinationAspect, ...]
+    orb: float
+    reference_frame: str
+    timescale: str
+    provenance: str = "caller_supplied_declinations"
+
+    @property
+    def declinations(self) -> dict[str, float]:
+        """Return normalized declinations in deterministic point-name order."""
+        return dict(self.positions)
+
+    @property
+    def point_count(self) -> int:
+        return len(self.positions)
+
+    @property
+    def aspect_count(self) -> int:
+        return len(self.aspects)
+
+
+@dataclass(frozen=True, slots=True)
 class OutOfBoundsBody:
     """
     RITE: The Out-of-Bounds Vessel — a body whose declination exceeds the solar maximum.
@@ -2265,7 +2457,15 @@ def _resolve_aspects(
 ) -> list[AspectDefinition]:
     """Return the aspect list for the given tier / include_minor flag."""
     if tier is not None:
-        return ASPECT_TIERS.get(tier, Aspect.MAJOR)
+        if (
+            isinstance(tier, bool)
+            or not isinstance(tier, int)
+            or tier not in ASPECT_TIERS
+        ):
+            raise ValueError(f"aspect tier must be 0, 1, or 2, got {tier!r}")
+        return ASPECT_TIERS[tier]
+    if not isinstance(include_minor, bool):
+        raise ValueError("include_minor must be a boolean")
     return Aspect.MAJOR + Aspect.COMMON_MINOR if include_minor else Aspect.MAJOR
 
 
@@ -2279,7 +2479,7 @@ _MOIETY_DEFAULT_FULL_ORB = 5.0  # used for bodies absent from the moiety table
 def _moiety_allowed_orb(
     b1: str,
     b2: str,
-    table: dict[str, float],
+    table: Mapping[str, float],
 ) -> float:
     """
     Combined allowed orb for a pair of bodies under the moiety doctrine.
@@ -2345,9 +2545,10 @@ def _applying(
     """
     True = applying, False = separating, None = unknown or stationary.
 
-    Returns None when either body's daily speed is below its specific stationary
-    threshold, because the applying/separating distinction is not meaningful
-    for a body that is effectively motionless.
+    Returns None when the aspect is exact within 1e-9 degrees or either body's
+    daily speed is below its specific stationary threshold.  Exactness takes
+    precedence because the absolute orb has a cusp at perfection; applying
+    versus separating requires a side-of-event statement there.
 
     The signed shortest-arc difference ``diff = (lon2 - lon1 + 180) % 360 - 180``
     gives the rate of change of the angular separation:
@@ -2365,6 +2566,8 @@ def _applying(
         return None
     diff = (lon2 - lon1 + 180.0) % 360.0 - 180.0
     sep = abs(diff)
+    if abs(sep - angle) <= 1e-9:
+        return None
     dsep_dt = (speeds[b2] - speeds[b1]) if diff >= 0 else (speeds[b1] - speeds[b2])
     return dsep_dt < 0 if sep >= angle else dsep_dt > 0
 
@@ -2647,14 +2850,25 @@ def find_aspects(
     -------
     List of AspectData sorted by orb (tightest first).
     """
-    if policy is not None:
-        tier          = policy.tier
-        include_minor = policy.include_minor
-        orbs          = policy.orbs
-        orb_factor    = policy.orb_factor
-    _use_moiety   = policy is not None and policy.orb_mode == "moiety"
-    _moiety_table = (policy.moiety_orbs if policy is not None and policy.moiety_orbs is not None
-                     else TRADITIONAL_MOIETY_ORBS)
+    resolved_policy = policy or AspectPolicy(
+        tier=tier,
+        include_minor=include_minor,
+        orbs=orbs,
+        orb_factor=orb_factor,
+    )
+    tier = resolved_policy.tier
+    include_minor = resolved_policy.include_minor
+    orbs = resolved_policy.orbs
+    orb_factor = resolved_policy.orb_factor
+    _use_moiety = resolved_policy.orb_mode == "moiety"
+    _moiety_table = (
+        resolved_policy.moiety_orbs
+        if resolved_policy.moiety_orbs is not None
+        else TRADITIONAL_MOIETY_ORBS
+    )
+    positions = _normalized_named_values(positions, quantity="longitude")
+    if speeds is not None:
+        speeds = _normalized_named_values(speeds, quantity="speed")
     aspect_list = Aspect.MAJOR if _use_moiety else _resolve_aspects(tier, include_minor)
     bodies = list(positions.keys())
     results: list[AspectData] = []
@@ -2831,20 +3045,34 @@ def aspects_between(
     -------
     List of AspectData sorted by orb.
     """
-    _use_moiety   = policy is not None and policy.orb_mode == "moiety"
-    _moiety_table = (policy.moiety_orbs if policy is not None and policy.moiety_orbs is not None
-                     else TRADITIONAL_MOIETY_ORBS)
-    if policy is not None:
-        orbs       = policy.orbs
-        orb_factor = policy.orb_factor
-        if _use_moiety:
-            aspect_list = Aspect.MAJOR
-        elif policy.tier is not None:
-            aspect_list = ASPECT_TIERS.get(policy.tier, Aspect.ALL)
-        else:
-            aspect_list = _resolve_aspects(None, policy.include_minor)
+    resolved_policy = policy or AspectPolicy(
+        tier=tier,
+        orbs=orbs,
+        orb_factor=orb_factor,
+    )
+    _use_moiety = resolved_policy.orb_mode == "moiety"
+    _moiety_table = (
+        resolved_policy.moiety_orbs
+        if resolved_policy.moiety_orbs is not None
+        else TRADITIONAL_MOIETY_ORBS
+    )
+    orbs = resolved_policy.orbs
+    orb_factor = resolved_policy.orb_factor
+    if _use_moiety:
+        aspect_list = Aspect.MAJOR
+    elif resolved_policy.tier is not None:
+        aspect_list = _resolve_aspects(resolved_policy.tier, True)
     else:
-        aspect_list = ASPECT_TIERS.get(tier, Aspect.ALL)
+        aspect_list = _resolve_aspects(None, resolved_policy.include_minor)
+    for field_name, value in (("body_a", body_a), ("body_b", body_b)):
+        if not isinstance(value, str) or not value or value != value.strip():
+            raise ValueError(f"{field_name} must be a non-empty trimmed string")
+    lon_a = _finite_number("lon_a", lon_a)
+    lon_b = _finite_number("lon_b", lon_b)
+    if speed_a is not None:
+        speed_a = _finite_number("speed_a", speed_a)
+    if speed_b is not None:
+        speed_b = _finite_number("speed_b", speed_b)
     sep = angular_distance(lon_a, lon_b)
     pair_allowed = _moiety_allowed_orb(body_a, body_b, _moiety_table) if _use_moiety else None
     results: list[AspectData] = []
@@ -2950,14 +3178,30 @@ def aspects_to_point(
     -------
     List of AspectData sorted by orb.
     """
-    _use_moiety   = policy is not None and policy.orb_mode == "moiety"
-    _moiety_table = (policy.moiety_orbs if policy is not None and policy.moiety_orbs is not None
-                     else TRADITIONAL_MOIETY_ORBS)
-    if policy is not None:
-        tier          = policy.tier
-        include_minor = policy.include_minor
-        orbs          = policy.orbs
-        orb_factor    = policy.orb_factor
+    resolved_policy = policy or AspectPolicy(
+        tier=tier,
+        include_minor=include_minor,
+        orbs=orbs,
+        orb_factor=orb_factor,
+    )
+    _use_moiety = resolved_policy.orb_mode == "moiety"
+    _moiety_table = (
+        resolved_policy.moiety_orbs
+        if resolved_policy.moiety_orbs is not None
+        else TRADITIONAL_MOIETY_ORBS
+    )
+    tier = resolved_policy.tier
+    include_minor = resolved_policy.include_minor
+    orbs = resolved_policy.orbs
+    orb_factor = resolved_policy.orb_factor
+    point_longitude = _finite_number("point_longitude", point_longitude)
+    if (
+        not isinstance(point_name, str)
+        or not point_name
+        or point_name != point_name.strip()
+    ):
+        raise ValueError("point_name must be a non-empty trimmed string")
+    positions = _normalized_named_values(positions, quantity="longitude")
     aspect_list = Aspect.MAJOR if _use_moiety else _resolve_aspects(tier, include_minor)
     results: list[AspectData] = []
 
@@ -3011,6 +3255,13 @@ def find_declination_aspects(
                      their absolute declinations within *orb* degrees of each
                      other)
 
+    Hemisphere policy
+    -----------------
+    The formula is admitted only after hemisphere qualification.  Two exact
+    equatorial points form one Parallel.  A single equatorial point has no
+    hemisphere and therefore forms neither relation with a non-equatorial
+    point.  This prevents the two formulas from both matching near 0°.
+
     Relational truth preserved
     --------------------------
     Each result stores ``allowed_orb`` (the ``orb`` argument as resolved at
@@ -3047,8 +3298,14 @@ def find_declination_aspects(
     -------
     List of DeclinationAspect sorted by orb (tightest first).
     """
-    if policy is not None:
-        orb = policy.declination_orb
+    resolved_policy = policy or AspectPolicy(declination_orb=orb)
+    orb = resolved_policy.declination_orb
+    declinations = _normalized_named_values(
+        declinations,
+        quantity="declination",
+        minimum=-90.0,
+        maximum=90.0,
+    )
     bodies = list(declinations.keys())
     results: list[DeclinationAspect] = []
 
@@ -3057,8 +3314,12 @@ def find_declination_aspects(
             b1, b2 = bodies[i], bodies[j]
             d1, d2 = declinations[b1], declinations[b2]
 
+            both_equatorial = d1 == 0.0 and d2 == 0.0
+            same_hemisphere = d1 * d2 > 0.0 or both_equatorial
+            opposite_hemispheres = d1 * d2 < 0.0
+
             parallel_diff = abs(d1 - d2)
-            if parallel_diff <= orb:
+            if same_hemisphere and parallel_diff <= orb:
                 results.append(DeclinationAspect(
                     body1=b1, body2=b2,
                     aspect="Parallel",
@@ -3069,7 +3330,7 @@ def find_declination_aspects(
                 ))
 
             contra_diff = abs(d1 + d2)
-            if contra_diff <= orb:
+            if opposite_hemispheres and contra_diff <= orb:
                 results.append(DeclinationAspect(
                     body1=b1, body2=b2,
                     aspect="Contra-Parallel",
@@ -3081,6 +3342,52 @@ def find_declination_aspects(
 
     results.sort(key=lambda a: a.orb)
     return results
+
+
+def declination_aspects_from_declinations(
+    declinations: Mapping[str, float],
+    *,
+    reference_frame: str,
+    timescale: str,
+    orb: float = 1.0,
+    policy: AspectPolicy | None = None,
+) -> DeclinationAspectAnalysis:
+    """Analyze caller-supplied equatorial declinations deterministically.
+
+    A parallel requires the same nonzero hemisphere; a contra-parallel
+    requires opposite nonzero hemispheres.  Two points exactly on the
+    equator form one exact parallel.  A lone equatorial point has no
+    hemisphere and therefore forms neither relation with a non-equatorial
+    point.
+
+    ``reference_frame`` and ``timescale`` are required caller-owned
+    provenance.  The analysis records them but does not reinterpret or infer
+    the supplied coordinate product.
+    """
+    resolved_policy = policy or AspectPolicy(declination_orb=orb)
+    for field_name, value in (
+        ("reference_frame", reference_frame),
+        ("timescale", timescale),
+    ):
+        if not isinstance(value, str) or not value or value != value.strip():
+            raise ValueError(f"{field_name} must be a non-empty trimmed string")
+    normalized = _normalized_named_values(
+        declinations,
+        quantity="declination",
+        minimum=-90.0,
+        maximum=90.0,
+    )
+    if len(normalized) < 2:
+        raise ValueError("at least two declination points are required")
+    ordered = dict(sorted(normalized.items()))
+    aspects = find_declination_aspects(ordered, policy=resolved_policy)
+    return DeclinationAspectAnalysis(
+        positions=tuple(ordered.items()),
+        aspects=tuple(aspects),
+        orb=resolved_policy.declination_orb,
+        reference_frame=reference_frame,
+        timescale=timescale,
+    )
 
 
 def find_out_of_bounds(
@@ -3117,6 +3424,15 @@ def find_out_of_bounds(
     -------
     List of OutOfBoundsBody sorted by excess descending (most OOB first).
     """
+    declinations = _normalized_named_values(
+        declinations,
+        quantity="declination",
+        minimum=-90.0,
+        maximum=90.0,
+    )
+    obliquity = _finite_number("obliquity", obliquity)
+    if not 0.0 < obliquity <= 90.0:
+        raise ValueError("obliquity must be in (0, 90]")
     results: list[OutOfBoundsBody] = []
     for body, dec in declinations.items():
         excess = abs(dec) - obliquity
@@ -3191,6 +3507,7 @@ def find_whole_sign_aspects(
     -------
     List of AspectData with ``classification.domain == WHOLE_SIGN``.
     """
+    positions = _normalized_named_values(positions, quantity="longitude")
     bodies = list(positions.keys())
     results: list[AspectData] = []
 

@@ -204,6 +204,23 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             include_nodes=include_nodes,
         )
 
+    def declination_aspects_from_declinations(
+        self,
+        declinations,
+        *,
+        reference_frame: str,
+        timescale: str,
+        orb: float = 1.0,
+    ):
+        """Analyze caller-supplied equatorial declinations for parallels."""
+
+        return _facade_module().declination_aspects_from_declinations(
+            declinations,
+            reference_frame=reference_frame,
+            timescale=timescale,
+            orb=orb,
+        )
+
     def aspect_motion_witness(
         self,
         body1: str,

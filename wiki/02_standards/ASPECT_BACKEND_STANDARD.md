@@ -49,8 +49,13 @@ A **declination aspect** in Moira is:
 
 | Type | Admission test | Orb formula |
 |---|---|---|
-| Parallel | `abs(dec1 - dec2) <= allowed_orb` | `orb = abs(dec1 - dec2)` |
-| Contra-Parallel | `abs(dec1 + dec2) <= allowed_orb` | `orb = abs(dec1 + dec2)` |
+| Parallel | Same nonzero hemisphere and `abs(dec1 - dec2) <= allowed_orb` | `orb = abs(dec1 - dec2)` |
+| Contra-Parallel | Opposite nonzero hemispheres and `abs(dec1 + dec2) <= allowed_orb` | `orb = abs(dec1 + dec2)` |
+
+Two points exactly on the equator form one exact Parallel. A single equatorial
+point has no hemisphere and forms neither relation with a non-equatorial point.
+Hemisphere qualification precedes the orb formula so both relations cannot be
+emitted for one pair near 0°.
 
 Declination aspects carry no motion data (`applying`, `stationary` are absent
 from `DeclinationAspect`).
@@ -228,8 +233,12 @@ family, body dignity, or orbital speed.
 
 | Condition | Raises |
 |---|---|
+| `orb` or `allowed_orb` is non-finite, or `orb < 0` | `ValueError` |
 | `allowed_orb <= 0` | `ValueError` |
 | `orb > allowed_orb` | `ValueError` |
+
+Whole-sign aspects are categorical rather than orb-admitted. Their strength
+identity is `orb = allowed_orb = surplus = 0` and `exactness = 1`.
 
 ---
 
@@ -238,17 +247,18 @@ family, body dignity, or orbital speed.
 `MotionState` formalises the motion-aware truth already stored in `applying`
 and `stationary`. It maps the complete decision space without ambiguity:
 
-| Vessel type | `stationary` | `applying` | `→ MotionState` |
-|---|---|---|---|
-| `DeclinationAspect` | — | — | `NONE` |
-| `AspectData` | `True` | any | `STATIONARY` |
-| `AspectData` | `False` | `True` | `APPLYING` |
-| `AspectData` | `False` | `False` | `SEPARATING` |
-| `AspectData` | `False` | `None` | `INDETERMINATE` |
+| Vessel/domain | `orb` | `stationary` | `applying` | `→ MotionState` |
+|---|---|---|---|---|
+| `DeclinationAspect` | any | — | — | `NONE` |
+| Whole-sign `AspectData` | any | — | — | `NONE` |
+| Zodiacal `AspectData` | `<= 1e-9` | any | any | `EXACT` |
+| Zodiacal `AspectData` | `> 1e-9` | `True` | any | `STATIONARY` |
+| Zodiacal `AspectData` | `> 1e-9` | `False` | `True` | `APPLYING` |
+| Zodiacal `AspectData` | `> 1e-9` | `False` | `False` | `SEPARATING` |
+| Zodiacal `AspectData` | `> 1e-9` | `False` | `None` | `INDETERMINATE` |
 
-`STATIONARY` takes precedence over `applying` regardless of its value.
-`DeclinationAspect` always yields `NONE` because declination detection
-receives no speed inputs.
+Categorical/no-motion domains yield `NONE`. For zodiacal aspects, `EXACT`
+takes precedence over stationary and applying/separating classification.
 
 #### Temporal consistency rules
 
@@ -420,19 +430,20 @@ Each invariant is identified by a short code for traceable reference.
 
 | Code | Invariant |
 |---|---|
-| T-1 | `orb == abs(separation - angle)` to floating-point precision |
-| T-2 | `orb <= allowed_orb` for every admitted `AspectData` |
+| T-1 | Zodiacal `orb == abs(separation - angle)` to floating-point precision |
+| T-2 | Zodiacal `orb <= allowed_orb`; whole-sign `orb == allowed_orb == 0` |
 | T-3 | `orb_surplus == allowed_orb - orb >= 0` |
 | T-4 | `separation` is in `[0, 180]` degrees |
 | T-5 | For a Parallel: `orb == abs(dec1 - dec2)` |
 | T-6 | For a Contra-Parallel: `orb == abs(dec1 + dec2)` |
 | T-7 | `dec1` and `dec2` are in `[-90, +90]` |
+| T-8 | Parallel and Contra-Parallel hemisphere predicates are mutually exclusive |
 
 #### INV-CLASS — Classification
 
 | Code | Invariant |
 |---|---|
-| C-1 | `classification.domain == ZODIACAL` for every `AspectData` produced by detection |
+| C-1 | `classification.domain` is `ZODIACAL` or `WHOLE_SIGN` for detector-produced `AspectData` |
 | C-2 | `classification.domain == DECLINATION` for every `DeclinationAspect` |
 | C-3 | `classification.family == _FAMILY_BY_NAME[aspect]` for every zodiacal aspect |
 | C-4 | `classification.family == AspectFamily.DECLINATION` for every `DeclinationAspect` |
@@ -443,12 +454,13 @@ Each invariant is identified by a short code for traceable reference.
 
 | Code | Invariant |
 |---|---|
-| S-1 | `0.0 <= orb <= allowed_orb` for any vessel passed to `aspect_strength` |
+| S-1 | `0.0 <= orb <= allowed_orb` for any orb-admitted vessel passed to `aspect_strength` |
 | S-2 | `surplus == allowed_orb - orb` |
 | S-3 | `0.0 <= exactness <= 1.0` |
 | S-4 | `exactness == 1.0 - orb / allowed_orb` |
 | S-5 | `aspect_strength` raises `ValueError` when `allowed_orb <= 0` |
 | S-6 | `aspect_strength` raises `ValueError` when `orb > allowed_orb` |
+| S-7 | Whole-sign strength is `(orb=0, allowed_orb=0, surplus=0, exactness=1)` |
 
 #### INV-MOT — Temporal state
 
@@ -456,10 +468,11 @@ Each invariant is identified by a short code for traceable reference.
 |---|---|
 | M-1 | `APPLYING` ↔ `is_applying is True` and `is_separating is False` |
 | M-2 | `SEPARATING` ↔ `is_separating is True` and `is_applying is False` |
-| M-3 | `STATIONARY` when `stationary is True`, regardless of `applying` value |
-| M-4 | `INDETERMINATE` when `applying is None` and `stationary is False` |
-| M-5 | `DeclinationAspect` always yields `MotionState.NONE` |
+| M-3 | Zodiacal exactness yields `EXACT` before stationary/applying classification |
+| M-4 | Non-exact zodiacal data yields `STATIONARY` when `stationary is True` |
+| M-5 | `DeclinationAspect` and whole-sign data yield `MotionState.NONE` |
 | M-6 | `is_applying` and `is_separating` are never simultaneously `True` |
+| M-7 | Non-exact zodiacal data yields `INDETERMINATE` when motion is unavailable |
 
 #### INV-PAT — Pattern layer
 
@@ -511,6 +524,8 @@ Each invariant is identified by a short code for traceable reference.
 | PO-1 | `AspectPolicy` raises `ValueError` when `orb_factor <= 0` |
 | PO-2 | `AspectPolicy` raises `ValueError` when `declination_orb < 0` |
 | PO-3 | `DEFAULT_POLICY` is a valid, constructable `AspectPolicy` |
+| PO-4 | Invalid tiers, non-boolean flags, and non-finite policy values raise `ValueError` |
+| PO-5 | Caller-supplied orb mappings are defensively copied and exposed read-only |
 
 ---
 
@@ -545,11 +560,15 @@ exception type, and the diagnostic guarantee:
 |---|---|---|---|
 | `aspect_strength` | `allowed_orb <= 0` | `ValueError` | Message includes `"allowed_orb"` and the offending value |
 | `aspect_strength` | `orb > allowed_orb` | `ValueError` | Message includes `"orb"` and both values |
+| `aspect_strength` | Non-finite or negative geometry | `ValueError` | Message identifies `orb` or `allowed_orb` |
 | `AspectPolicy` | `orb_factor <= 0` | `ValueError` | Message includes `"orb_factor"` |
 | `AspectPolicy` | `declination_orb < 0` | `ValueError` | Message includes `"declination_orb"` |
+| `AspectPolicy` | Invalid tier, flag, mapping, or non-finite value | `ValueError` | Message identifies the policy field |
+| Detection entry points | Non-finite longitude/declination/speed or out-of-range declination | `ValueError` | Message identifies the geometry field |
 
-All other functions in the backend are pure computations over valid inputs.
-They do not raise on empty lists; they return empty results.
+All functions remain pure computations over valid inputs. Collection-oriented
+detectors return empty results for empty valid mappings; first-class analysis
+surfaces require at least two included points.
 
 #### Behaviour on empty input
 
@@ -586,7 +605,7 @@ hold on any output produced by the detection layer.
 | Rule | Expression |
 |---|---|
 | Classification–family | `a.classification.family == _FAMILY_BY_NAME[a.aspect]` for all zodiacal `AspectData` |
-| Classification–domain | `a.classification.domain == ZODIACAL` for all `AspectData` |
+| Classification–domain | Detector-produced `AspectData` is explicitly `ZODIACAL` or `WHOLE_SIGN` |
 | Strength–surplus | `a.orb_surplus == aspect_strength(a).surplus` |
 | Graph–harmonic | `sum(node.family_counts.values()) == hp.by_body[node.name].total` for every node |
 | Harmonic–total | `hp.chart.total == len(aspects)` |
@@ -604,10 +623,10 @@ Complete public surface of `moira.aspects` as of Phase 12:
 
 | Name | Values |
 |---|---|
-| `AspectDomain` | `ZODIACAL`, `DECLINATION` |
+| `AspectDomain` | `ZODIACAL`, `DECLINATION`, `WHOLE_SIGN` |
 | `AspectTier` | `MAJOR`, `COMMON_MINOR`, `EXTENDED_MINOR` |
-| `AspectFamily` | 17 members (see Section 5, Family grouping) |
-| `MotionState` | `APPLYING`, `SEPARATING`, `STATIONARY`, `INDETERMINATE`, `NONE` |
+| `AspectFamily` | 18 members, including explicit `DECLINATION` and `UNKNOWN` families |
+| `MotionState` | `APPLYING`, `EXACT`, `SEPARATING`, `STATIONARY`, `INDETERMINATE`, `NONE` |
 | `AspectPatternKind` | `STELLIUM`, `T_SQUARE`, `GRAND_TRINE`, `GRAND_CROSS`, `YOD` |
 
 #### Frozen dataclasses
@@ -622,15 +641,17 @@ Complete public surface of `moira.aspects` as of Phase 12:
 | `AspectGraph` | `nodes`, `edges`, `components`; properties `hubs`, `isolated` |
 | `AspectFamilyProfile` | `counts`, `total`, `proportions`, `dominant` |
 | `AspectHarmonicProfile` | `chart`, `by_body` |
+| `DeclinationAspectAnalysis` | `positions`, `aspects`, `orb`, `reference_frame`, `timescale`, `provenance`; derived counts and normalized mapping |
 
-#### Mutable dataclasses (intentionally not frozen)
+#### Immutable result vessels
 
 | Name | Rationale |
 |---|---|
-| `AspectData` | Detection functions populate fields after construction |
-| `DeclinationAspect` | Detection functions populate fields after construction |
+| `AspectData` | Frozen after complete construction by a detector |
+| `DeclinationAspect` | Frozen after complete construction by a detector |
+| `OutOfBoundsBody` | Frozen after complete construction by its detector |
 
-Both vessels are **terminal** (not designed for subclassing) and document their
+The vessels are **terminal** (not designed for subclassing) and document their
 structural invariants explicitly in their class docstrings.
 
 #### Module-level constants
@@ -648,6 +669,7 @@ structural invariants explicitly in their class docstrings.
 | `aspects_between` | `(body1, lon1, speed1, body2, lon2, speed2, ...)` | `list[AspectData]` |
 | `aspects_to_point` | `(positions, point_name, point_lon, ...)` | `list[AspectData]` |
 | `find_declination_aspects` | `(declinations, *, orb, policy)` | `list[DeclinationAspect]` |
+| `declination_aspects_from_declinations` | `(declinations, *, reference_frame, timescale, orb, policy)` | `DeclinationAspectAnalysis` |
 
 #### Derived-layer functions
 
@@ -663,31 +685,10 @@ structural invariants explicitly in their class docstrings.
 
 ### 8. Validation Baseline
 
-As of Phase 12:
-
-```
-272 tests passing
-0 failures
-0 errors
-Runtime: ~0.7 seconds
-```
-
-Test categories by phase:
-
-| Phase | Subject | Approximate test count |
-|---|---|---|
-| 1–4 | Detection, truth preservation, classification, inspectability | ~45 |
-| 5–6 | Policy, strength | ~20 |
-| 7–8 | Temporal state, strength invariants | ~20 |
-| 9 | Canonical aspects | ~22 |
-| 10 | Pattern detection | ~24 |
-| 11 | Pattern hardening, permutation invariance | ~28 |
-| 12–13 | Graph layer | ~36 |
-| 14 | Harmonic layer | ~36 |
-| 15 | Subsystem hardening, cross-layer consistency | ~31 |
-| **Total** | | **272** |
-
-All tests validate against the authoritative `.venv` runtime. No test may be
-modified to accommodate an implementation change; implementation must satisfy
-the tests as written.
+Validation uses the authoritative project `.venv` and the focused aspect,
+moiety, signed-motion, synastry, pattern, public-surface, external-reference,
+and relationship REST slices. Test counts are not frozen doctrine; the
+completion receipt for a change records the exact commands, outcomes, skips,
+fixtures, and scope exercised. Tests may change only when an explicitly
+admitted contract changes, with regression coverage for the replacement law.
 

@@ -162,7 +162,7 @@ Adds the full classical and traditional toolkit:
 | Added domain | Key symbols |
 |---|---|
 | Houses (full) | `HouseSystemFamily`, `HouseSystemCuspBasis`, `classify_house_system`, `HousePlacement`, `HouseBoundaryProfile`, `HouseAngularity`, `compare_systems`, `compare_placements`, `distribute_points`, `Quadrant`, `quadrant_emphasis`, `DiurnalQuadrant`, `diurnal_emphasis` |
-| Aspects (full) | `AspectDefinition`, `ASPECT_TIERS`, `CANONICAL_ASPECTS`, `AspectDomain`, `AspectFamily`, `AspectTier`, `MotionState`, `AspectClassification`, `aspect_strength`, `aspect_motion_state`, `find_declination_aspects`, `find_patterns`, `DeclinationAspect` |
+| Aspects (full) | `AspectDefinition`, `ASPECT_TIERS`, `CANONICAL_ASPECTS`, `AspectDomain`, `AspectFamily`, `AspectTier`, `MotionState`, `AspectClassification`, `aspect_strength`, `aspect_motion_state`, `find_declination_aspects`, `declination_aspects_from_declinations`, `find_patterns`, `DeclinationAspect`, `DeclinationAspectAnalysis` |
 | Dignities | `calculate_dignities`, `calculate_receptions`, `EssentialDignityKind`, `AccidentalConditionKind`, `PlanetaryDignity`, `sect_light`, `is_day_chart`, `almuten_figuris`, `mutual_receptions` |
 | Arabic Parts | `calculate_lots`, `ArabicPart`, `ArabicPartsService`, `list_parts` |
 | Midpoints | `calculate_midpoints`, `Midpoint`, `MidpointsService`, `midpoint_tree`, `planetary_pictures` |
@@ -1138,10 +1138,11 @@ from moira.facade import (
 from moira.facade import (
     find_aspects, aspects_between, aspects_to_point,
     aspects_from_longitudes,
-    find_declination_aspects, find_patterns, build_aspect_graph,
+    find_declination_aspects, declination_aspects_from_declinations,
+    find_patterns, build_aspect_graph,
     aspect_strength, aspect_motion_state, aspect_harmonic_profile,
     AspectData, AspectPolicy, AspectStrength, DeclinationAspect,
-    LongitudeAspectAnalysis,
+    DeclinationAspectAnalysis, LongitudeAspectAnalysis,
     AspectFamily, AspectDomain, AspectTier, MotionState,
     AspectGraph, AspectGraphNode, AspectFamilyProfile, AspectHarmonicProfile,
     CANONICAL_ASPECTS, DEFAULT_POLICY,
@@ -1177,8 +1178,8 @@ from moira.facade import (
 | `is_applying` | `bool` | True only when `applying is True` |
 | `is_separating` | `bool` | True only when `applying is False` |
 | `orb_surplus` | `float` | Remaining orb headroom: `allowed_orb - orb` |
-| `is_partile` | `bool` | True when both bodies occupy the same degree number within their signs |
-| `is_platic` | `bool` | True when the admitted aspect is not partile |
+| `is_partile` | `bool` | True when a major Ptolemaic aspect has both bodies in the same degree number of their signs |
+| `is_platic` | `bool` | True when a major Ptolemaic aspect is admitted but not partile |
 
 #### Core aspect functions
 
@@ -1189,9 +1190,10 @@ from moira.facade import (
 | `aspects_between(lons_a, lons_b, orbs=None, include_minor=True)` | `list[AspectData]` | Cross-set aspects (synastry / transits) |
 | `aspects_to_point(longitudes, point, orbs=None)` | `list[AspectData]` | Aspects to a single longitude |
 | `find_declination_aspects(bodies_dec, orb=1.0)` | `list[DeclinationAspect]` | Parallel and contra-parallel aspects |
+| `declination_aspects_from_declinations(bodies_dec, *, reference_frame, timescale, orb=1.0)` | `DeclinationAspectAnalysis` | Validated deterministic caller-supplied declination analysis with explicit coordinate provenance |
 | `build_aspect_graph(aspects)` | `AspectGraph` | Graph structure of the aspect network |
-| `aspect_strength(aspect)` | `AspectStrength` | Strength score based on orb and tier |
-| `aspect_motion_state(aspect, speeds)` | `MotionState` | APPLYING / SEPARATING / EXACT |
+| `aspect_strength(aspect)` | `AspectStrength` | Geometric orb exactness, or categorical whole-sign exactness |
+| `aspect_motion_state(aspect)` | `MotionState` | APPLYING / EXACT / SEPARATING / STATIONARY / INDETERMINATE / NONE |
 | `aspect_harmonic_profile(longitudes, harmonic)` | `AspectHarmonicProfile` | Aspects visible at a given harmonic |
 
 `aspects_from_longitudes` and `LongitudeAspectAnalysis` are exported from both
@@ -1200,6 +1202,14 @@ is the equivalent facade method. The analysis records normalized longitudes,
 the effective tier/orb multiplier, excluded engine node names, and
 `motion_semantics="not_computed_without_speeds"`. Its 355°/5° wrap separation
 is 10°, and aspect admission remains inclusive at the applied orb boundary.
+
+`declination_aspects_from_declinations` and `DeclinationAspectAnalysis` are
+likewise exported from the package root and `moira.facade`, with
+`Moira.declination_aspects_from_declinations` as the facade method. The
+analysis records normalized declinations, the effective orb, and the
+hemisphere-qualified Parallel/Contra-Parallel results. The caller must declare
+the shared equatorial `reference_frame` and `timescale`; Moira records rather
+than infers that provenance.
 
 ### Aspect Patterns
 

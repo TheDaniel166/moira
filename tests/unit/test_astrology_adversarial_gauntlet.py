@@ -379,7 +379,11 @@ def test_public_chart_vessel_preserves_lower_layer_truth_without_recomputation()
         if chart.is_day
         else (lower_houses[1] + lower_positions["Sun"] - lower_positions["Moon"]) % 360.0
     )
-    assert all(aspect_motion_state(aspect).name in {"APPLYING", "SEPARATING", "INDETERMINATE", "STATIONARY"} for aspect in chart_aspects)
+    assert all(
+        aspect_motion_state(aspect).name
+        in {"APPLYING", "EXACT", "SEPARATING", "INDETERMINATE", "STATIONARY"}
+        for aspect in chart_aspects
+    )
     assert {d.planet for d in chart_dignities} == set(lower_positions)
 
     network = calculate_lot_condition_network_profile(lower_positions, lower_houses, chart.is_day)

@@ -277,6 +277,7 @@ from .progressions import (
 from .relationship import (
     compute_aspect_motion_witness,
     compute_aspects_from_longitudes,
+    compute_declination_aspects_from_declinations,
     compute_chart_shape,
     compute_composite_chart,
     compute_composite_chart_analysis,
@@ -515,6 +516,7 @@ __all__ = [
     "compute_aspect_motion_witness",
     "compute_moon_connection_flow",
     "compute_aspects_from_longitudes",
+    "compute_declination_aspects_from_declinations",
     "compute_chart_shape",
     "compute_composite_chart",
     "compute_composite_chart_analysis",

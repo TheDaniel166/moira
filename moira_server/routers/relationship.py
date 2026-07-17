@@ -12,6 +12,8 @@ from ..models.relationship import (
     AspectMotionWitnessRequest,
     AspectsFromLongitudesRequest,
     AspectsFromLongitudesResponse,
+    DeclinationAspectsFromDeclinationsRequest,
+    DeclinationAspectsFromDeclinationsResponse,
     CompositeChartRequest,
     CompositeChartResponse,
     DavisonChartRequest,
@@ -49,6 +51,7 @@ from ..serializers.relationship import (
     serialize_aspect,
     serialize_aspect_motion_witness,
     serialize_aspects_from_longitudes,
+    serialize_declination_aspects_from_declinations,
     serialize_aspect_pattern,
     serialize_chart_shape,
     serialize_composite_chart,
@@ -70,6 +73,7 @@ from ..serializers.relationship import (
 from ..services.relationship import (
     compute_aspect_motion_witness,
     compute_aspects_from_longitudes,
+    compute_declination_aspects_from_declinations,
     compute_chart_shape,
     compute_composite_chart_analysis,
     compute_davison_chart_analysis,
@@ -139,6 +143,21 @@ def aspects_from_longitudes_route(
 
     return serialize_aspects_from_longitudes(
         compute_aspects_from_longitudes(engine, request)
+    )
+
+
+@router.post(
+    "/aspects/from-declinations",
+    response_model=DeclinationAspectsFromDeclinationsResponse,
+)
+def declination_aspects_from_declinations_route(
+    request: DeclinationAspectsFromDeclinationsRequest,
+    engine: Moira = Depends(get_engine),
+) -> DeclinationAspectsFromDeclinationsResponse:
+    """Analyze caller-supplied equatorial declinations for parallels."""
+
+    return serialize_declination_aspects_from_declinations(
+        compute_declination_aspects_from_declinations(engine, request)
     )
 
 

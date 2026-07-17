@@ -76,6 +76,8 @@ from .planets import (
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
 from .aspects import (
     AspectData,
+    DeclinationAspect,
+    DeclinationAspectAnalysis,
     AspectDirection,
     AspectMotionBranch,
     AspectMotionOrbPolicy,
@@ -86,7 +88,9 @@ from .aspects import (
     LongitudeAspectAnalysis,
     aspect_motion_witness,
     aspects_from_longitudes,
+    declination_aspects_from_declinations,
     find_aspects,
+    find_declination_aspects,
 )
 from .harmograms import (
     HarmogramChartDomain,
@@ -820,6 +824,8 @@ __all__ = [
     "body_galactic_house_position",
     "describe_galactic_boundary",
     "AspectData",
+    "DeclinationAspect",
+    "DeclinationAspectAnalysis",
     "AspectDirection",
     "AspectMotionBranch",
     "AspectMotionOrbPolicy",
@@ -830,7 +836,9 @@ __all__ = [
     "LongitudeAspectAnalysis",
     "aspect_motion_witness",
     "aspects_from_longitudes",
+    "declination_aspects_from_declinations",
     "find_aspects",
+    "find_declination_aspects",
     "HarmonicDomain",
     "PointSetHarmonicVectorPolicy",
     "HarmogramIntensityFamily",

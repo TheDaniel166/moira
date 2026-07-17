@@ -6,6 +6,8 @@ from moira.aspects import (
     AspectClassification,
     AspectData,
     AspectMotionWitness,
+    DeclinationAspect,
+    DeclinationAspectAnalysis,
     LongitudeAspectAnalysis,
 )
 from moira.aspect_events import MoonAspectEvent, MoonConnectionFlow
@@ -55,6 +57,9 @@ from ..models.relationship import (
     AspectMotionComputationTruthResponse,
     AspectMotionWitnessResponse,
     AspectsFromLongitudesResponse,
+    DeclinationAspectComputationTruthResponse,
+    DeclinationAspectResponse,
+    DeclinationAspectsFromDeclinationsResponse,
     AspectPatternResponse,
     ChartShapeResponse,
     CompositeChartResponse,
@@ -146,6 +151,40 @@ def serialize_aspects_from_longitudes(
             orb_factor=analysis.orb_factor,
             include_nodes=analysis.include_nodes,
             excluded_node_names=list(analysis.excluded_node_names),
+            point_count=analysis.point_count,
+            aspect_count=analysis.aspect_count,
+        ),
+    )
+
+
+def serialize_declination_aspect(
+    aspect: DeclinationAspect,
+) -> DeclinationAspectResponse:
+    if aspect.classification is None:
+        raise ValueError("declination aspect is missing its classification")
+    return DeclinationAspectResponse(
+        body1=aspect.body1,
+        body2=aspect.body2,
+        aspect=aspect.aspect,
+        dec1=aspect.dec1,
+        dec2=aspect.dec2,
+        orb=aspect.orb,
+        allowed_orb=aspect.allowed_orb,
+        classification=serialize_aspect_classification(aspect.classification),
+    )
+
+
+def serialize_declination_aspects_from_declinations(
+    analysis: DeclinationAspectAnalysis,
+) -> DeclinationAspectsFromDeclinationsResponse:
+    return DeclinationAspectsFromDeclinationsResponse(
+        events=[serialize_declination_aspect(aspect) for aspect in analysis.aspects],
+        computation_truth=DeclinationAspectComputationTruthResponse(
+            normalized_declinations=analysis.declinations,
+            orb=analysis.orb,
+            reference_frame=analysis.reference_frame,
+            timescale=analysis.timescale,
+            provenance=analysis.provenance,
             point_count=analysis.point_count,
             aspect_count=analysis.aspect_count,
         ),
@@ -778,6 +817,8 @@ __all__ = [
     "serialize_aspect",
     "serialize_aspect_motion_witness",
     "serialize_aspects_from_longitudes",
+    "serialize_declination_aspect",
+    "serialize_declination_aspects_from_declinations",
     "serialize_aspect_pattern",
     "serialize_chart_shape",
     "serialize_composite_chart",

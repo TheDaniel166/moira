@@ -44,6 +44,7 @@ from ..models.chart import ChartRequest, HousesRequest
 from ..models.relationship import (
     AspectMotionWitnessRequest,
     AspectsFromLongitudesRequest,
+    DeclinationAspectsFromDeclinationsRequest,
     CompositeChartRequest,
     DavisonChartRequest,
     MidpointClusterRequest,
@@ -112,6 +113,18 @@ def compute_aspects_from_longitudes(
         tier=request.tier,
         orb_factor=request.orb_factor,
         include_nodes=request.include_nodes,
+    )
+
+
+def compute_declination_aspects_from_declinations(
+    engine: Moira,
+    request: DeclinationAspectsFromDeclinationsRequest,
+):
+    return engine.declination_aspects_from_declinations(
+        request.declinations,
+        reference_frame=request.reference_frame,
+        timescale=request.timescale,
+        orb=request.orb,
     )
 
 
@@ -419,6 +432,7 @@ def compute_midpoint_clusters(engine: Moira, request: MidpointClusterRequest):
 __all__ = [
     "compute_aspect_motion_witness",
     "compute_aspects_from_longitudes",
+    "compute_declination_aspects_from_declinations",
     "compute_chart_shape",
     "compute_composite_chart",
     "compute_composite_chart_analysis",

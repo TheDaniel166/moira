@@ -7,6 +7,145 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Opt-In Server Prewarm**: Added `MOIRA_SERVER_PREWARM=1` for one bounded,
+  per-worker J2000 all-planet warmup before computational traffic is admitted.
+  The warmup excludes lunar nodes, supplemental small-body kernels, and the
+  HTTP chart-result cache; it is disabled by default because every worker pays
+  its own native memory cost.
+- **Runtime-Dispatched AVX2 Interpolation**: Added a separately compiled AVX2
+  implementation for three-component Type 2 Chebyshev position and derivative
+  evaluation. Capable x86 hosts select it at runtime, while unsupported CPUs
+  and builds retain the portable scalar implementation rather than acquiring a
+  wheel-wide AVX2 requirement.
+
+### Fixed
+- **Synastry And Davison Invariants**: Corrected relationship-network identity
+  so pair and body nodes preserve caller-supplied chart labels instead of
+  collapsing into hard-coded `A`/`B` or unqualified body names. Corrected
+  Davison MC refinement so the circular `+180`/`-180` discontinuity cannot be
+  mistaken for a root, made non-convergence explicit, and rejected antipodal
+  or near-antipodal spherical locations where no unique geographic midpoint
+  exists.
+- **Synastry Truth Consistency**: Added validation tying result kind,
+  condition state, relation kind, relation basis, method, correction mode, and
+  policy flags together. Custom aspect-orb provenance now records a normalized,
+  deterministic orb table rather than only a boolean marker.
+- **Phenomena Search Geometry**: Greatest elongation now maximizes true
+  great-circle planet-Sun separation, including ecliptic latitude, while east
+  and west remain explicit branch policy. Perihelion and aphelion searches use
+  bounded physical turning-point refinement, and invalid bodies, directions,
+  non-finite epochs, and invalid search windows fail explicitly.
+- **Phenomena Range And Threshold Safety**: Conjunction searches no longer
+  return polished events outside the requested interval. Proximity searches
+  refine the signed `-threshold` and `+threshold` crossings independently,
+  reject the opposition wrap as a false bracket, retain slow-body crossings,
+  de-duplicate boundary events, and share the exact cazimi, combust, and
+  under-sunbeams thresholds with point-in-time solar-condition truth. Bounded
+  resonance approximation now uses the closest lawful fraction and rejects
+  identical-period bodies.
+- **Planetary-Hour Solar Boundaries**: Replaced the declination-only refinement
+  with the governing topocentric geometric solar-altitude crossing at
+  `-0.833` degrees. Refinement now reaches 0.1-second time tolerance, rejects a
+  crossing that escapes its local day, and fails explicitly when polar
+  geometry supplies no sunrise or sunset instead of inventing a schedule.
+- **Planetary-Hour Calendar And Window Policy**: The planetary weekday now
+  follows local mean solar time at sunrise, including longitude and BCE-safe
+  floor behavior. Engine inputs and sunrise/sunset/next-sunrise ordering are
+  validated, temporal-hour boundaries are assembled contiguously from their
+  shared endpoints, facade consumers use the canonical `hour_at(...)` lookup,
+  and REST ISO timestamps serialize through Moira's BCE-safe calendar vessel.
+- **House Geometry And Policy Enforcement**: House calculations now reject
+  non-real, non-finite, and out-of-range location inputs; the REST house schema
+  rejects latitude outside `[-90, 90]` and longitude outside `[-180, 180]`.
+  Azimuthal geometry must produce exactly one ordered ecliptic cusp cycle, and
+  Carter/high-latitude, polar-degeneracy, unordered-cycle, unknown-system, and
+  configured fallback paths now preserve explicit policy and failure reasons.
+  REST house calculations now pass UT1, rather than raw UTC JD, into the engine.
+- **Planetary Frame Coherence**: Geocentric, heliocentric, planetocentric,
+  Solar System barycentric, received-light, and admitted asteroid products now
+  share the true-of-date ecliptic transformation. Geometric mode omits physical
+  light-path corrections without silently changing output-frame meaning, and
+  topocentric observer position and velocity are formed in the same declared
+  frame as the corrected body vector.
+- **Planetary Observer And Time Contracts**: `planet_at(...)`,
+  `all_planets_at(...)`, and reduction surfaces now require the topocentric
+  observer arguments as an all-or-none vessel and reject invalid centers or
+  ambiguous coordinates. Astronomy facade and frame-position REST calls now
+  convert aware UTC datetimes to UT1 before evaluation and report consistent
+  UT1/TT metadata.
+- **Published Planetary Speed Semantics**: `PlanetData.speed` is now the TT-day
+  derivative of the same corrected geocentric ecliptic longitude that is
+  returned to the caller, rather than a projection of an earlier raw state
+  vector. Central differences govern normal coverage; second-order one-sided
+  differences preserve lawful evaluation at kernel boundaries. Retrograde
+  truth is derived from that published rate in both Python and admitted native
+  bulk paths.
+- **Native Payload Hardening**: Chebyshev, Type 13, smoothing-spline, and
+  planetary evaluator entry points now reject empty, mismatched, non-finite,
+  unordered, or otherwise unsafe payload shapes before native evaluation.
+  Nutation evaluation releases the GIL around the full native series while
+  retaining Python-owned readiness of the immutable coefficient tables.
+
+### Changed
+- **Immutable Relationship Results**: Synastry truth, classification,
+  relation, condition, network, overlay, composite, and Davison result vessels
+  are frozen after validation. Composite planet/node maps, overlay placements,
+  and custom-orb policy maps are defensive immutable copies; composite cusps
+  are exposed as an immutable tuple.
+- **Native Planetary Evaluation Lifetime**: The admitted default bulk
+  planetary calculation resolves its required SPK segment evaluators once per
+  public calculation and reuses them through Earth-state construction and
+  light-time iteration, avoiding repeated mutex/LRU lookup while leaving cache
+  ownership bounded by the kernel handle.
+- **Operational Readiness Semantics**: `/health` remains an HTTP 200 liveness
+  signal after a prewarm failure. `/ready` preserves its existing response body
+  but now returns HTTP 503 whenever the planetary kernel or enabled prewarm is
+  not ready, and HTTP 200 only when the worker can receive computational
+  traffic.
+- **Runtime Documentation**: Updated the native planetary-path and server
+  boundary documentation to match the live Python-governed/native-strengthened
+  architecture, and removed the stale README claim that SciPy is a required
+  base runtime dependency.
+
+### Performance
+- Runtime dispatch selects the optimized AVX2 three-component Chebyshev kernel
+  on capable hosts while scalar parity remains the correctness gate. Reusing
+  resolved segment evaluators removes repeated native cache synchronization
+  inside one bulk planetary calculation.
+- In one fresh-process Windows/DE441 in-process `TestClient` smoke, opt-in
+  prewarm moved the first full-chart cost into worker startup: startup changed
+  from `0.286 s` to `2.626 s`, the first chart from `2.450 s` to `0.0083 s`,
+  and an identical HTTP-cached chart remained about `0.0024-0.0028 s`. The
+  observed private working set after prewarm was approximately `1.65 GiB` per
+  worker. These figures are scoped performance evidence, not astronomical
+  validation, and exclude TCP, TLS, reverse-proxy, and public-network latency.
+
+### Compatibility
+- Existing facade method names, `/v1` computation-route paths, chart request
+  models, and chart response payloads are retained. The server-prewarm change
+  is operational and opt-in.
+- Code that mutates the relationship result vessels or their nested maps must
+  switch to constructing a new value. Invalid phenomena, planetary observer,
+  planetary-hour, and house inputs that were previously tolerated may now
+  raise explicit engine errors or return REST validation responses.
+- Readiness clients must treat HTTP 503 with the existing `ReadyResponse` body
+  as "not ready". This corrects the previous HTTP 200/`ready=false` mismatch.
+
+### Validation
+- Added focused regression coverage for synastry immutability and network
+  identity, corrected-Davison wrap rejection and MC residual, antipodal
+  midpoint ambiguity, spherical greatest elongation, conjunction range bounds,
+  proximity threshold/wrap behavior, shared solar thresholds, planetary-hour
+  solar-altitude and BCE behavior, house policy/ordering/input validation,
+  planetary frame/rate/topocentric contracts, and server prewarm success and
+  failure states.
+- Added adversarial native constructor and payload tests plus AVX2/scalar
+  Chebyshev parity at `1e-14` absolute tolerance. Existing DE441 engine/REST
+  parity, house external-comparator, OpenAPI, cache, route-discovery, import,
+  documentation-consistency, and native-boundary slices remain part of the
+  focused verification posture.
+
 ## [4.3.0] - 2026-07-15
 
 ### Added

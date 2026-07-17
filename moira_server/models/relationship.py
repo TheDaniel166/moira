@@ -138,6 +138,104 @@ class AspectsFromLongitudesResponse(_StrictModel):
     computation_truth: LongitudeAspectComputationTruthResponse
 
 
+class DeclinationAspectResponse(_StrictModel):
+    body1: str
+    body2: str
+    aspect: Literal["Parallel", "Contra-Parallel"]
+    dec1: float
+    dec2: float
+    orb: float
+    allowed_orb: float
+    classification: AspectClassificationResponse
+
+
+class DeclinationAspectsFromDeclinationsRequest(_StrictModel):
+    declinations: dict[str, float] = Field(min_length=2, max_length=64)
+    reference_frame: str = Field(min_length=1, max_length=128)
+    timescale: str = Field(min_length=1, max_length=32)
+    orb: float = Field(default=1.0, ge=0.0, le=10.0)
+
+    @field_validator("declinations", mode="before")
+    @classmethod
+    def _valid_declinations(cls, value: Any) -> dict[str, float]:
+        if not isinstance(value, dict):
+            raise ValueError(
+                "declinations must be an object mapping point names to degrees"
+            )
+        normalized: dict[str, float] = {}
+        for name, declination in value.items():
+            if not isinstance(name, str) or not name or name != name.strip():
+                raise ValueError(
+                    "declination point names must be non-empty trimmed strings"
+                )
+            if isinstance(declination, bool):
+                raise ValueError(f"declination for {name!r} must be finite")
+            try:
+                parsed = float(declination)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(
+                    f"declination for {name!r} must be finite"
+                ) from exc
+            if not math.isfinite(parsed):
+                raise ValueError(f"declination for {name!r} must be finite")
+            if not -90.0 <= parsed <= 90.0:
+                raise ValueError(
+                    f"declination for {name!r} must lie in [-90, 90]"
+                )
+            normalized[name] = parsed
+        return normalized
+
+    @field_validator("orb", mode="before")
+    @classmethod
+    def _strict_orb(cls, value: Any) -> Any:
+        if isinstance(value, bool):
+            raise ValueError("orb must be a finite number")
+        return value
+
+    @field_validator("reference_frame", "timescale")
+    @classmethod
+    def _trimmed_provenance(cls, value: str) -> str:
+        if value != value.strip():
+            raise ValueError("frame and timescale provenance must be trimmed")
+        return value
+
+
+class DeclinationAspectComputationTruthResponse(_StrictModel):
+    source_module: Literal["moira.aspects"] = "moira.aspects"
+    engine_entrypoint: Literal["declination_aspects_from_declinations"] = (
+        "declination_aspects_from_declinations"
+    )
+    facade_entrypoint: Literal[
+        "Moira.declination_aspects_from_declinations"
+    ] = "Moira.declination_aspects_from_declinations"
+    coordinate_semantics: Literal["caller_supplied_equatorial_declinations"] = (
+        "caller_supplied_equatorial_declinations"
+    )
+    hemisphere_policy: Literal[
+        "parallel_same_nonzero_hemisphere_contra_opposite_nonzero_hemispheres"
+    ] = "parallel_same_nonzero_hemisphere_contra_opposite_nonzero_hemispheres"
+    equator_policy: Literal[
+        "two_equatorial_points_parallel_one_equatorial_point_unclassified"
+    ] = "two_equatorial_points_parallel_one_equatorial_point_unclassified"
+    ordering: Literal["orb_ascending_stable_over_point_name_order"] = (
+        "orb_ascending_stable_over_point_name_order"
+    )
+    normalized_declinations: dict[str, float]
+    orb: float
+    reference_frame: str
+    timescale: str
+    provenance: Literal["caller_supplied_declinations"] = (
+        "caller_supplied_declinations"
+    )
+    point_count: int
+    aspect_count: int
+
+
+class DeclinationAspectsFromDeclinationsResponse(_StrictModel):
+    events: list[DeclinationAspectResponse]
+    computation_truth: DeclinationAspectComputationTruthResponse
+
+
 AspectMotionNameValue = Literal[
     "Conjunction",
     "Semisextile",
@@ -883,6 +981,10 @@ __all__ = [
     "AspectMotionWitnessResponse",
     "AspectsFromLongitudesRequest",
     "AspectsFromLongitudesResponse",
+    "DeclinationAspectComputationTruthResponse",
+    "DeclinationAspectResponse",
+    "DeclinationAspectsFromDeclinationsRequest",
+    "DeclinationAspectsFromDeclinationsResponse",
     "AspectPatternResponse",
     "ChartShapeResponse",
     "CompositeChartRequest",

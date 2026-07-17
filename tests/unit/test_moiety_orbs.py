@@ -79,7 +79,9 @@ class TestAspectPolicyMoietyFields:
     def test_custom_moiety_orbs_stored(self) -> None:
         custom = {Body.SUN: 12.0, Body.MOON: 10.0}
         p = AspectPolicy(orb_mode="moiety", moiety_orbs=custom)
-        assert p.moiety_orbs is custom
+        assert p.moiety_orbs == custom
+        custom[Body.SUN] = 99.0
+        assert p.moiety_orbs[Body.SUN] == 12.0
 
     def test_fixed_mode_unchanged_by_moiety_fields(self) -> None:
         # Adding moiety_orbs with orb_mode="fixed" should not affect behaviour.
