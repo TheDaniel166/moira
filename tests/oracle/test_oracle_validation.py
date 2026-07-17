@@ -188,37 +188,34 @@ class TestOracleNodes:
 
 class TestOracleEclipse:
     """
-    Eclipse tranche validation.
-    
-    Authority: NASA JPL Horizon events; USNO solar eclipse predictions.
-    Strategy: validate next_solar_eclipse_at_location against known eclipse records.
+    Eclipse local-visibility regression and invariant checks.
+
+    The dated case below exercises overlap, horizon visibility, and search
+    identity. It does not consume an external source fixture and therefore is
+    not authority-validation evidence; the NASA comparisons live in the
+    dedicated eclipse integration tests.
     """
     
     def test_next_solar_eclipse_at_location_finds_known_eclipse(self, eclipse_calculator):
         """
-        Validate that the function finds a known, well-documented eclipse.
-        
-        Test case: Total Solar Eclipse 1999-08-11 (corneal eclipse; widely observed).
+        Require a locally visible overlap during the 1999-08-11 eclipse.
+
+        This is an internal regression/invariant check, not an external timing
+        or path-authority comparison.
         """
         # Search from 1999-01-01
         jd_start = 2451180.5  # 1999-01-01
         lat = 45.0  # Somewhere in the path (e.g., Turkey)
         lon = 30.0
         
-        # Search for any eclipse (may not be visible from this exact location)
-        # This test just validates the function runs without error
-        try:
-            result = eclipse_calculator.next_solar_eclipse_at_location(
-                jd_start, lat, lon, kind="any", max_lunations=120
-            )
-            
-            # Should find something within 5 years
-            assert result.event.jd_ut > jd_start
-            assert result.event.jd_ut < jd_start + 365 * 5
-            
-        except RuntimeError as e:
-            # Eclipse might not be visible from this location; that's OK
-            pytest.skip(f"No eclipse visible from ({lat}, {lon}): {e}")
+        result = eclipse_calculator.next_solar_eclipse_at_location(
+            jd_start, lat, lon, kind="any", max_lunations=120
+        )
+
+        assert result.event.jd_ut == pytest.approx(2451401.96, abs=0.02)
+        assert result.topocentric_overlap
+        assert result.sun.visible
+        assert result.topocentric_separation_deg < 0.6
 
 
 class TestOraclePlanets:

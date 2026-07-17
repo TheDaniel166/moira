@@ -12,7 +12,6 @@ from moira.eclipse_canon import (
     compare_lunar_canon_methods,
     lunar_canon_geometry,
 )
-from moira.julian import decimal_year_from_jd, ut_to_tt_nasa_canon
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "eclipse_nasa_reference.json"
@@ -22,8 +21,11 @@ def _load_fixture() -> dict:
     return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
 
 
+def _modern_rows() -> tuple[dict, ...]:
+    return tuple(_load_fixture()["lunar_modern_validation"])
+
+
 def _modern_cases() -> tuple[LunarCanonValidationCase, ...]:
-    fixture = _load_fixture()
     return tuple(
         LunarCanonValidationCase(
             label=str(row["label"]),
@@ -31,12 +33,37 @@ def _modern_cases() -> tuple[LunarCanonValidationCase, ...]:
             nasa_gamma_earth_radii=float(row["gamma"]),
             eclipse_type=str(row["type"]),
         )
-        for row in fixture["lunar_modern_validation"]
+        for row in _modern_rows()
     )
+
+
+def test_lunar_nasa_fixture_preserves_catalog_provenance_and_signed_gamma() -> None:
+    fixture = _load_fixture()
+    source = fixture["source"]
+    rows = _modern_rows()
+
+    assert source["lunar_catalog_url"].startswith("https://eclipse.gsfc.nasa.gov/")
+    assert source["lunar_catalog_key_url"].startswith("https://eclipse.gsfc.nasa.gov/")
+    assert "north positive, south negative" in source["lunar_modern_validation_note"]
+    assert any(float(row["gamma"]) < 0.0 for row in rows)
+    assert any(float(row["gamma"]) > 0.0 for row in rows)
+
+    for row in rows:
+        assert row["source_url"].startswith("https://eclipse.gsfc.nasa.gov/LEsaros/")
+        derived_ut = float(row["td_jd"]) - float(row["delta_t_s"]) / 86400.0
+        assert float(row["ut_jd"]) == pytest.approx(derived_ut, abs=1e-12)
+
+    may_2023 = next(row for row in rows if row["label"] == "2023-05-05 penumbral")
+    assert float(may_2023["gamma"]) == -1.0349
 
 
 @pytest.mark.slow
 def test_lunar_canon_method_comparison_prefers_geometric_moon_on_modern_sample(eclipse_calculator) -> None:
+    """Rank compatibility policies on reconstructed catalog UT/TT.
+
+    This is compatibility-regression evidence. The separate signed-gamma test
+    below performs the external comparison at each fixture's published TD.
+    """
     calc = eclipse_calculator
     comparisons = {
         comparison.method: comparison
@@ -48,32 +75,31 @@ def test_lunar_canon_method_comparison_prefers_geometric_moon_on_modern_sample(e
 
     assert geometric.method == DEFAULT_LUNAR_CANON_METHOD
     assert geometric.max_timing_residual_seconds <= 60.0
-    assert geometric.max_gamma_residual_earth_radii <= 0.013
+    assert geometric.max_gamma_residual_earth_radii <= 0.0015
     assert geometric.mean_timing_residual_seconds < retarded.mean_timing_residual_seconds
     assert geometric.max_timing_residual_seconds < retarded.max_timing_residual_seconds
 
 
 @pytest.mark.slow
-def test_lunar_canon_geometry_tracks_published_gamma_at_nasa_instants(eclipse_calculator) -> None:
+def test_lunar_canon_geometry_tracks_published_signed_gamma_at_nasa_instants(eclipse_calculator) -> None:
     calc = eclipse_calculator
 
-    for case in _modern_cases():
+    for row in _modern_rows():
         geom = lunar_canon_geometry(
             calc,
-            ut_to_tt_nasa_canon(
-                case.nasa_ut,
-                decimal_year_from_jd(case.nasa_ut),
-            ),
+            float(row["td_jd"]),
             method=DEFAULT_LUNAR_CANON_METHOD,
         )
-        assert abs(geom.gamma_earth_radii - case.nasa_gamma_earth_radii) <= 0.013, case.label
+        assert abs(geom.gamma_earth_radii - float(row["gamma"])) <= 0.0015, str(
+            row["label"]
+        )
 
 
 @pytest.mark.slow
 def test_nasa_compat_public_wrapper_stays_within_documented_modern_residual_envelope(eclipse_calculator) -> None:
     calc = eclipse_calculator
 
-    for case in _modern_cases():
+    for case in (case for case in _modern_cases() if case.eclipse_type == "T"):
         compat = next_nasa_lunar_eclipse(case.nasa_ut - 5.0, kind="total", calculator=calc)
         err_seconds = abs(compat.jd_ut - case.nasa_ut) * 86400.0
         gamma_err = abs(compat.gamma_earth_radii - case.nasa_gamma_earth_radii)
@@ -83,7 +109,7 @@ def test_nasa_compat_public_wrapper_stays_within_documented_modern_residual_enve
         assert compat.moira_event.data.is_lunar_eclipse
         assert compat.moira_event.data.eclipse_type.is_total
         assert err_seconds <= 60.0, case.label
-        assert gamma_err <= 0.013, case.label
+        assert gamma_err <= 0.0015, case.label
 
 
 @pytest.mark.slow

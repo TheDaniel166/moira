@@ -49,9 +49,13 @@ def angular_separation(lon1: float, lat1: float, lon2: float, lat2: float) -> fl
     """
     Spherical angular separation between two ecliptic points (degrees).
 
-    Applies the spherical law of cosines to ecliptic longitude/latitude pairs,
-    clamping the cosine argument to [-1, 1] to guard against floating-point
-    rounding outside the valid domain of acos.
+    Converts both directions to unit vectors after rotating the first
+    longitude to zero, then evaluates the half-chord identity
+
+        theta = 2 atan2(||u - v||, ||u + v||).
+
+    Unlike ``acos(u . v)``, this retains the first-order signal both when the
+    directions nearly coincide and when they are nearly antipodal.
 
     Parameters:
         lon1: Ecliptic longitude of the first point in degrees.
@@ -62,16 +66,27 @@ def angular_separation(lon1: float, lat1: float, lon2: float, lat2: float) -> fl
     Returns:
         Angular separation in degrees, in the range [0, 180].
     """
-    dl = abs(lon1 - lon2)
-    if dl > 180.0:
-        dl = 360.0 - dl
-    c = (
-        math.sin(math.radians(lat1)) * math.sin(math.radians(lat2))
-        + math.cos(math.radians(lat1))
-        * math.cos(math.radians(lat2))
-        * math.cos(math.radians(dl))
-    )
-    return math.degrees(math.acos(max(-1.0, min(1.0, c))))
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_lambda = math.radians(math.remainder(lon2 - lon1, 360.0))
+
+    cos_phi1 = math.cos(phi1)
+    sin_phi1 = math.sin(phi1)
+    cos_phi2 = math.cos(phi2)
+    sin_phi2 = math.sin(phi2)
+    cos_delta = math.cos(delta_lambda)
+    sin_delta = math.sin(delta_lambda)
+
+    # Rotational symmetry lets u lie in the x-z plane.  Norms of the vector
+    # difference and sum stay well conditioned at opposite ends of the sphere.
+    x1 = cos_phi1
+    z1 = sin_phi1
+    x2 = cos_phi2 * cos_delta
+    y2 = cos_phi2 * sin_delta
+    z2 = sin_phi2
+    chord = math.hypot(x2 - x1, y2, z2 - z1)
+    anti_chord = math.hypot(x2 + x1, y2, z2 + z1)
+    return math.degrees(2.0 * math.atan2(chord, anti_chord))
 
 
 def lunar_parallax(moon_dist_km: float) -> float:

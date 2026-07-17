@@ -19,6 +19,7 @@ External dependency assumptions:
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 from .eclipse_search import refine_minimum
@@ -115,15 +116,43 @@ def _bisect_root(func, a: float, b: float, iterations: int = 60) -> float:
 
 
 def _find_roots(func, start: float, end: float, step_days: float) -> list[float]:
-    """Scan [start, end] in steps of step_days and collect all sign-change roots of func."""
+    """Scan a finite ordered window and collect its distinct bracketed roots."""
+    if not all(math.isfinite(value) for value in (start, end, step_days)):
+        raise ValueError("root scan bounds and step_days must be finite")
+    if end <= start:
+        raise ValueError("root scan end must be greater than start")
+    if step_days <= 0.0:
+        raise ValueError("step_days must be greater than zero")
+
     roots: list[float] = []
+
+    def evaluate(jd: float) -> float:
+        value = func(jd)
+        if not math.isfinite(value):
+            raise ValueError("root scan function returned a non-finite value")
+        return value
+
     x = start
-    fx = func(x)
+    fx = evaluate(x)
+    if fx == 0.0:
+        roots.append(start)
+
     while x < end:
-        nx = x + step_days
-        fn = func(nx)
-        if fx == 0.0 or fn == 0.0 or fx * fn < 0.0:
-            roots.append(_bisect_root(func, x, nx))
+        nx = min(x + step_days, end)
+        if nx <= x:
+            raise ValueError("step_days is too small to advance within the root scan window")
+        fn = evaluate(nx)
+
+        root: float | None = None
+        if fn == 0.0:
+            root = nx
+        elif fx != 0.0 and fx * fn < 0.0:
+            root = _bisect_root(evaluate, x, nx)
+
+        if root is not None:
+            bounded_root = min(end, max(start, root))
+            if not roots or bounded_root != roots[-1]:
+                roots.append(bounded_root)
         x, fx = nx, fn
     return roots
 
@@ -143,8 +172,30 @@ def find_lunar_contacts(
     - U1/U4: partial umbral contacts
     - U2/U3: totality contacts
     """
+    if not math.isfinite(center_jd):
+        raise ValueError("center_jd must be finite")
+    if not math.isfinite(window_days) or window_days <= 0.0:
+        raise ValueError("window_days must be finite and greater than zero")
+    if not math.isfinite(coarse_step_seconds) or coarse_step_seconds <= 0.0:
+        raise ValueError("coarse_step_seconds must be finite and greater than zero")
+
+    initial_start = center_jd - window_days
+    initial_end = center_jd + window_days
+    if (
+        not math.isfinite(initial_start)
+        or not math.isfinite(initial_end)
+        or initial_end <= initial_start
+    ):
+        raise ValueError("contact search window must have finite ordered bounds")
+
     center_data = calculator.calculate_jd(center_jd)
-    use_retarded_moon = center_data.is_lunar_eclipse
+    # Astronomical event identity includes penumbral eclipses, but the native
+    # contact vector policy remains family-specific: retarded Moon for umbral
+    # partial/total events and geometric Moon for penumbral-only events.
+    use_retarded_moon = (
+        center_data.eclipse_type.is_partial
+        or center_data.eclipse_type.is_total
+    )
 
     greatest = refine_minimum(
         lambda jd: calculator._lunar_shadow_axis_distance_km(
@@ -156,6 +207,8 @@ def find_lunar_contacts(
         tol_days=1e-7,
         max_iter=100,
     )
+    if not math.isfinite(greatest):
+        raise ValueError("refined greatest eclipse must be finite")
 
     def p_contact(jd: float) -> float:
         axis, moon_r, _umb_r, pen_r, _moon_dist = calculator._lunar_event_geometry_ut(
@@ -179,8 +232,12 @@ def find_lunar_contacts(
         return axis - (umb_r - moon_r)
 
     step_days = coarse_step_seconds / 86400.0
+    if step_days <= 0.0:
+        raise ValueError("coarse_step_seconds is too small to form a positive day step")
     start = greatest - window_days
     end = greatest + window_days
+    if not math.isfinite(start) or not math.isfinite(end) or end <= start:
+        raise ValueError("refined contact search window must have finite ordered bounds")
 
     p_roots = _find_roots(p_contact, start, end, step_days)
     u_roots = _find_roots(u_contact, start, end, step_days)

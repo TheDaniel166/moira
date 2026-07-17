@@ -165,17 +165,17 @@ def refine_solar_greatest_eclipse(
     """
     Refine a new-moon seed to the current-model solar greatest eclipse.
 
-    Conducts ternary-search minimization over the calculator's native solar
-    conjunction distance objective (or angular separation fallback) to locate
-    the Julian Day of greatest eclipse within the given window.
+    Conducts bounded minimization over the calculator's physical lunar-shadow
+    axis distance from Earth's center.  Older calculator-like test doubles may
+    fall back to the conjunction-distance or angular-separation objective.
 
     Parameters
     ----------
     calculator:
         An EclipseCalculator instance. If it exposes
-        ``_native_solar_conjunction_distance_deg``, that callable is used as
-        the objective; otherwise falls back to minimizing
-        ``angular_separation_3d``.
+        ``_native_solar_shadow_axis_distance_km``, that physical objective is
+        used. Compatibility fallbacks retain the former conjunction-distance
+        and angular-separation hooks for calculator-like callers.
     center_jd:
         Julian Day near the new-moon seed from which to begin the search.
     window_days:
@@ -190,12 +190,22 @@ def refine_solar_greatest_eclipse(
         Julian Day of the solar greatest eclipse refined to within *tol_days*.
     """
 
+    if hasattr(calculator, "_native_solar_shadow_axis_distance_km"):
+        return refine_minimum(
+            calculator._native_solar_shadow_axis_distance_km,
+            center_jd,
+            window_days=window_days,
+            tol_days=tol_days,
+            max_iter=80,
+        )
+
     if hasattr(calculator, "_native_solar_conjunction_distance_deg"):
         return refine_minimum(
             calculator._native_solar_conjunction_distance_deg,
             center_jd,
             window_days=window_days,
             tol_days=tol_days,
+            max_iter=80,
         )
 
     return refine_minimum(
@@ -203,4 +213,5 @@ def refine_solar_greatest_eclipse(
         center_jd,
         window_days=window_days,
         tol_days=tol_days,
+        max_iter=80,
     )

@@ -1,7 +1,18 @@
 {
   "source": {
     "solar_catalog_url": "https://eclipse.gsfc.nasa.gov/5MCSE/5MKSEcatalog.txt",
-    "lunar_catalog_url": "https://eclipse.gsfc.nasa.gov/5MCLE/5MKLEcatalog.txt"
+    "solar_path_product_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=19990811",
+    "lunar_catalog_url": "https://eclipse.gsfc.nasa.gov/5MCLE/5MKLEcatalog.txt",
+    "lunar_catalog_key_url": "https://eclipse.gsfc.nasa.gov/LEcat5/LEcatkey.html",
+    "lunar_gamma_definition_url": "https://eclipse.gsfc.nasa.gov/LEcat5/figure.html",
+    "lunar_century_catalog_urls": [
+      "https://eclipse.gsfc.nasa.gov/LEcat5/LE1901-2000.html",
+      "https://eclipse.gsfc.nasa.gov/LEcat5/LE2001-2100.html"
+    ],
+    "maxima_date_note": "Every date field in solar_maxima and lunar_maxima is the catalog dynamical-time (TD/TDT) timestamp. Each ut_jd is the corresponding UT1 value obtained with that row's delta_t_s.",
+    "solar_se_search_note": "Rows carrying se_search_ut_date, se_search_ut_jd, and se_search_delta_t_s preserve the separately published UT and decimal Delta-T values from the linked NASA Solar Eclipse Search page; these fields are distinct from the rounded Five Millennium Catalog fields.",
+    "lunar_modern_validation_note": "NASA/TP-2009-214173 publishes greatest eclipse in TD and signed gamma (north positive, south negative). Each ut_jd below is derived as td_jd - delta_t_s / 86400 from that catalog row.",
+    "retrieved_on": "2026-07-17"
   },
   "solar_maxima": [
     {
@@ -93,28 +104,68 @@
       "type": "H",
       "ut_jd": 2453469.358171296,
       "date": "2005-04-08T20:36:51",
-      "delta_t_s": 65
+      "delta_t_s": 65,
+      "se_search_ut_date": "2005-04-08T20:35:46",
+      "se_search_ut_jd": 2453469.3581712963,
+      "se_search_delta_t_s": 64.7,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20050408"
     },
     {
       "year": 1999,
       "type": "T",
       "ut_jd": 2451401.960474537,
       "date": "1999-08-11T11:04:09",
-      "delta_t_s": 64
+      "delta_t_s": 64,
+      "se_search_ut_date": "1999-08-11T11:03:05",
+      "se_search_ut_jd": 2451401.960474537,
+      "se_search_delta_t_s": 63.7,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=19990811"
     },
     {
       "year": 1999,
       "type": "A",
       "ut_jd": 2451225.773321759,
       "date": "1999-02-16T06:34:38",
-      "delta_t_s": 63
+      "delta_t_s": 63,
+      "se_search_ut_date": "1999-02-16T06:33:34",
+      "se_search_ut_jd": 2451225.7733101854,
+      "se_search_delta_t_s": 63.5,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=19990216"
     },
     {
       "year": 2000,
       "type": "P",
       "ut_jd": 2451580.034293981,
       "date": "2000-02-05T12:50:27",
-      "delta_t_s": 64
+      "delta_t_s": 64,
+      "se_search_ut_date": "2000-02-05T12:49:23",
+      "se_search_ut_jd": 2451580.0342939813,
+      "se_search_delta_t_s": 63.9,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20000205"
+    },
+    {
+      "year": 2031,
+      "type": "H",
+      "ut_jd": 2463185.3793055555,
+      "date": "2031-11-14T21:07:31",
+      "delta_t_s": 78.8,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20311114"
+    },
+    {
+      "year": 2032,
+      "type": "A",
+      "ut_jd": 2463362.0592939816,
+      "date": "2032-05-09T13:26:42",
+      "delta_t_s": 79.1,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20320509"
+    },
+    {
+      "year": 2049,
+      "type": "H",
+      "ut_jd": 2469770.730729167,
+      "date": "2049-11-25T05:33:48",
+      "delta_t_s": 92.8,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20491125"
     },
     {
       "year": 2809,
@@ -257,37 +308,142 @@
       "label": "2000-01-21 total",
       "type": "T",
       "ut_jd": 2451564.696875,
-      "gamma": 0.2951
+      "td_jd": 2451564.697615741,
+      "delta_t_s": 64,
+      "gamma": -0.2957,
+      "saros": 124,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros124.html"
     },
     {
       "label": "2003-05-16 total",
       "type": "T",
-      "ut_jd": 2452775.653183,
-      "gamma": 0.3992
+      "ut_jd": 2452775.652881944,
+      "td_jd": 2452775.653622685,
+      "delta_t_s": 64,
+      "gamma": 0.4123,
+      "saros": 121,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros121.html"
     },
     {
       "label": "2003-11-09 total",
       "type": "T",
-      "ut_jd": 2452952.554398,
-      "gamma": 0.4186
+      "ut_jd": 2452952.554560185,
+      "td_jd": 2452952.555300926,
+      "delta_t_s": 64,
+      "gamma": -0.4319,
+      "saros": 126,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros126.html"
     },
     {
       "label": "2004-05-04 total",
       "type": "T",
-      "ut_jd": 2453130.354410,
-      "gamma": 0.3215
+      "ut_jd": 2453130.3543055556,
+      "td_jd": 2453130.3550578705,
+      "delta_t_s": 65,
+      "gamma": -0.3132,
+      "saros": 131,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros131.html"
     },
     {
       "label": "2011-06-15 total",
       "type": "T",
-      "ut_jd": 2455728.3420949075,
-      "gamma": 0.0897
+      "ut_jd": 2455728.3420833335,
+      "td_jd": 2455728.3428587965,
+      "delta_t_s": 67,
+      "gamma": 0.0897,
+      "saros": 130,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros130.html"
     },
     {
       "label": "2022-05-16 total",
       "type": "T",
-      "ut_jd": 2459715.6746296296,
-      "gamma": 0.2557
+      "ut_jd": 2459715.6746412036,
+      "td_jd": 2459715.675486111,
+      "delta_t_s": 73,
+      "gamma": -0.2532,
+      "saros": 131,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros131.html"
+    },
+    {
+      "label": "2023-05-05 penumbral",
+      "type": "N",
+      "ut_jd": 2460070.2242129627,
+      "td_jd": 2460070.22505787,
+      "delta_t_s": 73,
+      "gamma": -1.0349,
+      "saros": 141,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros141.html"
+    },
+    {
+      "label": "2023-10-28 partial",
+      "type": "P",
+      "ut_jd": 2460246.3431018516,
+      "td_jd": 2460246.343958333,
+      "delta_t_s": 74,
+      "gamma": 0.9471,
+      "saros": 146,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros146.html"
+    },
+    {
+      "label": "2024-03-25 penumbral",
+      "type": "N",
+      "ut_jd": 2460394.800520833,
+      "td_jd": 2460394.8013773146,
+      "delta_t_s": 74,
+      "gamma": 1.0609,
+      "saros": 113,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros113.html"
+    },
+    {
+      "label": "2024-09-18 partial",
+      "type": "P",
+      "ut_jd": 2460571.6140162037,
+      "td_jd": 2460571.614872685,
+      "delta_t_s": 74,
+      "gamma": -0.9792,
+      "saros": 118,
+      "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros118.html"
+    }
+  ],
+  "solar_path_products": [
+    {
+      "label": "1999-08-11 total",
+      "kind": "total",
+      "seed_jd": 2451360.5,
+      "greatest_ut_jd": 2451401.960474537,
+      "latitude_deg": 45.1,
+      "longitude_deg": 24.3,
+      "path_width_km": 112.3,
+      "central_duration_s": 143.0,
+      "magnitude": 1.0286,
+      "timing_tolerance_s": 1.0,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=19990811"
+    },
+    {
+      "label": "2031-11-14 hybrid",
+      "kind": "hybrid",
+      "seed_jd": 2463140.5,
+      "greatest_ut_jd": 2463185.3793055555,
+      "latitude_deg": -0.6,
+      "longitude_deg": -137.6,
+      "path_width_km": 38.3,
+      "central_duration_s": 68.0,
+      "magnitude": 1.0106,
+      "timing_tolerance_s": 15.0,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20311114"
+    },
+    {
+      "label": "2032-05-09 annular",
+      "kind": "annular",
+      "seed_jd": 2463320.5,
+      "greatest_ut_jd": 2463362.0592939816,
+      "latitude_deg": -51.3,
+      "longitude_deg": -7.1,
+      "path_width_km": 43.7,
+      "central_duration_s": 22.0,
+      "magnitude": 0.9957,
+      "timing_tolerance_s": 15.0,
+      "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20320509"
     }
   ],
   "search_cases": {

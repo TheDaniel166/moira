@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from moira._ephemeris_time import _ut1_to_ephemeris_tt
-from moira.julian import decimal_year_from_jd, ut_to_tt_nasa_canon
+from moira.julian import decimal_year_from_jd, julian_day, ut_to_tt_nasa_canon
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "eclipse_nasa_reference.json"
 
@@ -17,6 +17,64 @@ FUTURE_TT_SEARCH_TOLERANCE_SECONDS = 60.0
 
 def _load_fixture() -> dict:
     return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+
+
+def _jd_from_iso_seconds(value: str) -> float:
+    date_part, time_part = value.split("T", 1)
+    year, month, day = (int(part) for part in date_part.split("-"))
+    hour, minute, second = (int(part) for part in time_part.split(":"))
+    return julian_day(year, month, day, hour + minute / 60.0 + second / 3600.0)
+
+
+def test_nasa_solar_fixture_keeps_catalog_td_and_se_search_ut_explicit() -> None:
+    fixture = _load_fixture()
+    assert "TD/TDT" in fixture["source"]["maxima_date_note"]
+    assert "se_search_ut_date" in fixture["source"]["solar_se_search_note"]
+
+    sourced_rows = [row for row in fixture["solar_maxima"] if "source_url" in row]
+    assert len(sourced_rows) >= 7
+    for row in sourced_rows:
+        source_url = str(row["source_url"])
+        assert source_url.startswith(
+            "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl="
+        )
+        assert "+" not in source_url
+        assert source_url.rsplit("=", 1)[1].isdigit()
+
+        catalog_td_jd = _jd_from_iso_seconds(str(row["date"]))
+        catalog_delta_t_s = (
+            catalog_td_jd - float(row["ut_jd"])
+        ) * 86400.0
+        assert catalog_delta_t_s == pytest.approx(
+            float(row["delta_t_s"]),
+            abs=0.51,
+        )
+
+    path_rows = fixture["solar_path_products"]
+    assert len(path_rows) == 3
+    for row in path_rows:
+        source_url = str(row["source_url"])
+        assert source_url.startswith(
+            "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl="
+        )
+        assert "+" not in source_url
+        assert source_url.rsplit("=", 1)[1].isdigit()
+
+    se_search_rows = [row for row in sourced_rows if "se_search_ut_jd" in row]
+    assert {str(row["type"]) for row in se_search_rows} == {"H", "T", "A", "P"}
+    for row in se_search_rows:
+        assert float(row["se_search_ut_jd"]) == pytest.approx(
+            _jd_from_iso_seconds(str(row["se_search_ut_date"])),
+            abs=1.0e-12,
+        )
+        se_search_delta_t_s = (
+            _jd_from_iso_seconds(str(row["date"]))
+            - float(row["se_search_ut_jd"])
+        ) * 86400.0
+        assert se_search_delta_t_s == pytest.approx(
+            float(row["se_search_delta_t_s"]),
+            abs=0.51,
+        )
 
 
 def test_nasa_solar_eclipse_maxima_classify_correctly_across_eras(eclipse_calculator) -> None:
@@ -50,6 +108,53 @@ def test_nasa_solar_eclipse_maxima_classify_correctly_across_eras(eclipse_calcul
     assert not failures, "NASA solar maxima mismatches:\n" + "\n".join(failures[:20])
 
 
+@pytest.mark.slow
+def test_modern_solar_search_matches_nasa_se_search_ut_within_one_second(
+    eclipse_calculator,
+) -> None:
+    """Compare four event classes to NASA's separately published UT labels."""
+
+    kind_map = {"H": "hybrid", "T": "total", "A": "annular", "P": "partial"}
+    rows = [
+        row
+        for row in _load_fixture()["solar_maxima"]
+        if 1999 <= int(row["year"]) <= 2005
+    ]
+    assert {str(row["type"]) for row in rows} == {"H", "T", "A", "P"}
+
+    for row in rows:
+        expected = float(row["se_search_ut_jd"])
+        event = eclipse_calculator.next_solar_eclipse(
+            expected - 40.0,
+            kind=kind_map[str(row["type"])],
+        )
+        residual_seconds = abs(event.jd_ut - expected) * 86400.0
+        assert residual_seconds <= 1.0, (
+            f"{row['se_search_ut_date']} {row['type']} residual {residual_seconds:.6f}s"
+        )
+
+
+@pytest.mark.slow
+def test_next_hybrid_search_crosses_the_former_private_lunation_horizon(
+    eclipse_calculator,
+) -> None:
+    row = next(
+        row
+        for row in _load_fixture()["solar_maxima"]
+        if int(row["year"]) == 2049 and str(row["type"]) == "H"
+    )
+
+    event = eclipse_calculator.next_solar_eclipse(
+        julian_day(2032, 1, 1),
+        kind="hybrid",
+    )
+
+    assert event.data.eclipse_type.is_hybrid
+    # DE441 versus NASA's VSOP87/ELP2000-82 product: classification and search
+    # identity are primary here; 30 s is the named cross-model timing envelope.
+    assert abs(event.jd_ut - float(row["ut_jd"])) * 86400.0 <= 30.0
+
+
 def test_nasa_lunar_eclipse_maxima_classify_correctly_across_eras(eclipse_calculator) -> None:
     """
     Validate lunar-eclipse classification at NASA catalog maxima over a wide era span.
@@ -65,7 +170,11 @@ def test_nasa_lunar_eclipse_maxima_classify_correctly_across_eras(eclipse_calcul
         elif eclipse_type == "P":
             ok = data.is_lunar_eclipse and data.eclipse_type.is_partial
         elif eclipse_type == "N":
-            ok = (not data.is_lunar_eclipse) and data.eclipse_type.magnitude_penumbra > 0.0
+            ok = (
+                data.is_lunar_eclipse
+                and str(data.eclipse_type) == "Penumbral"
+                and data.eclipse_type.magnitude_penumbra > 0.0
+            )
         else:
             ok = False
 
@@ -89,11 +198,11 @@ def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases(ec
     scale without pretending that the two products share an Earth-rotation
     model.
 
-    The ancient 360-second limit is a cross-authority regression envelope around
-    the currently measured 299.327-second solar and 339.152-second lunar TT
-    residuals.  It is not an accuracy or historical-uncertainty claim.  The
-    post-2150 60-second TT search/geometry limit remains independently enforced;
-    it does not validate Moira's future UT1 scenario.
+    The ancient 360-second limit is a cross-authority regression envelope, not
+    an accuracy or historical-uncertainty claim.  The post-2150 60-second TT
+    search/geometry limit remains independently enforced; it does not validate
+    Moira's future UT1 scenario.  Exact residuals are computed by this test and
+    deliberately are not frozen in prose.
     """
     fixture = _load_fixture()
     failures: list[str] = []

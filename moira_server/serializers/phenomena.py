@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from moira import datetime_from_jd
+from moira.julian import _ut1_to_utc
 from moira.eclipse import (
     EclipseData,
     EclipseEvent,
@@ -200,7 +201,7 @@ def serialize_eclipse_event(event: EclipseEvent) -> EclipseEventResponse:
 def serialize_local_contact(contact: LocalContactCircumstances) -> LocalContactCircumstancesResponse:
     return LocalContactCircumstancesResponse(
         jd_ut=contact.jd_ut,
-        datetime_utc=datetime_from_jd(contact.jd_ut).isoformat(),
+        datetime_utc=datetime_from_jd(_ut1_to_utc(contact.jd_ut)).isoformat(),
         azimuth=contact.azimuth,
         altitude=contact.altitude,
         visible=contact.visible,

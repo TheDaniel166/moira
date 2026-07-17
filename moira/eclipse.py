@@ -41,8 +41,7 @@ from __future__ import annotations
 
 
 import math
-import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 
 from .constants import Body, J2000
@@ -66,9 +65,11 @@ from .eclipse_search import (
     refine_solar_greatest_eclipse as _refine_solar_maximum,
 )
 from .julian import (
+    _ut1_to_utc,
     datetime_from_jd,
     decimal_year_from_jd,
     jd_from_datetime,
+    utc_to_ut1,
     ut_to_tt_nasa_canon,
 )
 from ._ephemeris_time import _ut1_to_ephemeris_tt
@@ -260,8 +261,8 @@ class EclipseType:
 
     LAW OF OPERATION:
         Responsibilities:
-            - Carry the four mutually-exclusive eclipse-kind flags (partial,
-              annular, total, hybrid)
+            - Carry the four mutually-exclusive umbral/central eclipse-kind
+              flags (partial, annular, total, hybrid)
             - Carry the umbral and penumbral magnitude scalars
             - Serve a human-readable string representation via __str__
         Non-responsibilities:
@@ -270,8 +271,9 @@ class EclipseType:
         Dependencies:
             - Populated by _classify() in moira.eclipse
         Structural invariants:
-            - Exactly one of is_partial, is_annular, is_total, is_hybrid is
-              True for a real eclipse; all False for no-eclipse
+            - At most one of is_partial, is_annular, is_total, is_hybrid is
+              True. A penumbral-only lunar eclipse has all four False and a
+              positive magnitude_penumbra; no-eclipse has both magnitudes zero.
             - magnitude_umbral >= 0.0; magnitude_penumbra >= 0.0
 
     Canon: None (No applicable canon)
@@ -307,6 +309,7 @@ class EclipseType:
         if self.is_annular: return "Annular"
         if self.is_hybrid:  return "Hybrid"
         if self.is_partial: return "Partial"
+        if self.magnitude_penumbra > 0.0: return "Penumbral"
         return "None"
 
 
@@ -397,7 +400,7 @@ class EclipseData:
 
     # Geometry
     angular_separation_3d:       float   # geocentric degrees (Sun–Moon)
-    solar_topocentric_separation:float
+    solar_topocentric_separation:float   # Earth-surface estimate; exact when data is localized
     sun_node_distance:           float   # degrees to nearest node
 
     # Eclipse status
@@ -450,7 +453,7 @@ class EclipseEvent:
 
     LAW OF OPERATION:
         Responsibilities:
-            - Carry the UT Julian Day of greatest eclipse (jd_ut)
+            - Carry the UT1 Julian Day of greatest eclipse (jd_ut)
             - Carry the full EclipseData geometry at that instant
             - Expose a UTC datetime convenience property (datetime_utc)
         Non-responsibilities:
@@ -487,7 +490,7 @@ class EclipseEvent:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(self.jd_ut)
+        return datetime_from_jd(_ut1_to_utc(self.jd_ut))
 
 
 LunarEclipseAnalysisMode = str
@@ -893,8 +896,12 @@ class EclipseCalculator:
               (_lunar_search_cache, _solar_search_cache).
         """
         self._reader = reader or get_reader()
-        self._lunar_search_cache: dict[tuple[float, bool, int], dict[str, EclipseEvent]] = {}
-        self._solar_search_cache: dict[tuple[float, bool, int], dict[str, EclipseEvent]] = {}
+        self._lunar_search_cache: dict[
+            tuple[float, bool, int, bool, str], EclipseEvent
+        ] = {}
+        self._solar_search_cache: dict[
+            tuple[float, bool, int | None, str], EclipseEvent
+        ] = {}
 
     def _jd_tt_from_ut(
         self,
@@ -932,7 +939,7 @@ class EclipseCalculator:
         and partial eclipses; use :meth:`calculate_lunar_event_jd` when you
         need that explicit native event geometry.
         """
-        return self.calculate_jd(jd_from_datetime(dt))
+        return self.calculate_jd(utc_to_ut1(jd_from_datetime(dt)))
 
     def _calculate_jd_internal(
         self,
@@ -978,6 +985,11 @@ class EclipseCalculator:
         native_lunar_moon_radius_km = None
         native_lunar_umbra_radius_km = None
         native_lunar_penumbra_radius_km = None
+        native_solar_axis_km = None
+        native_solar_center_sun_radius = None
+        native_solar_center_moon_radius = None
+        native_solar_surface_sun_radius = None
+        native_solar_surface_moon_radius = None
         if abs(angular_sep - 180.0) < 1.5:
             (
                 native_lunar_axis_km,
@@ -989,6 +1001,14 @@ class EclipseCalculator:
                 jd_tt,
                 retarded_moon=retarded_moon,
             )
+        elif angular_sep < 1.5:
+            (
+                native_solar_axis_km,
+                native_solar_center_sun_radius,
+                native_solar_center_moon_radius,
+                native_solar_surface_sun_radius,
+                native_solar_surface_moon_radius,
+            ) = self._native_solar_shadow_geometry_tt(jd_tt)
         eclipse_type, is_solar, is_lunar, magnitude = _classify(
             angular_sep,
             moon_lat,
@@ -1002,9 +1022,26 @@ class EclipseCalculator:
             native_lunar_moon_radius_km=native_lunar_moon_radius_km,
             native_lunar_umbra_radius_km=native_lunar_umbra_radius_km,
             native_lunar_penumbra_radius_km=native_lunar_penumbra_radius_km,
+            native_solar_axis_km=native_solar_axis_km,
+            native_solar_center_sun_radius=native_solar_center_sun_radius,
+            native_solar_center_moon_radius=native_solar_center_moon_radius,
+            native_solar_surface_sun_radius=native_solar_surface_sun_radius,
+            native_solar_surface_moon_radius=native_solar_surface_moon_radius,
         )
         saros_idx = _saros_index_jd(jd)
         metonic_year, m_reset = _metonic_position_jd(jd, sun_lon, moon_lon)
+
+        # ``EclipseData`` predates observer-specific result vessels and retains
+        # this frozen field name for compatibility.  For a solar snapshot the
+        # value is the deterministic minimum separation estimate at Earth's
+        # near-side surface; observer products replace it with their solved
+        # topocentric separation.  Outside a solar conjunction it remains the
+        # geocentric separation and carries no topocentric claim.
+        solar_surface_separation = (
+            max(0.0, angular_sep - moon_parallax)
+            if angular_sep < 1.5
+            else angular_sep
+        )
 
         return EclipseData(
             sun_longitude=sun_lon,
@@ -1022,7 +1059,7 @@ class EclipseCalculator:
             node_stone=node_stone,
             south_node_stone=south_node_stone,
             angular_separation_3d=angular_sep,
-            solar_topocentric_separation=angular_sep,
+            solar_topocentric_separation=solar_surface_separation,
             sun_node_distance=sun_node_dist,
             is_eclipse_season=is_season,
             is_solar_eclipse=is_solar,
@@ -1137,6 +1174,95 @@ class EclipseCalculator:
         sun_lon, sun_lat, _sun_dist = icrf_to_true_ecliptic(jd_tt, sun_xyz)
         moon_lon, moon_lat, _moon_dist = icrf_to_true_ecliptic(jd_tt, moon_xyz)
         return _angular_separation(sun_lon, sun_lat, moon_lon, moon_lat)
+
+    def _native_solar_shadow_geometry_tt(
+        self,
+        jd_tt: float,
+    ) -> tuple[float, float, float, float | None, float | None]:
+        """Return Earth-reception solar shadow-axis geometry at one TT epoch.
+
+        Sun and Moon are both evaluated on the same Earth-reception light
+        cone: each target state is taken at the emission epoch whose photons
+        arrive at the geocentre at ``jd_tt``.  Stellar aberration is excluded;
+        this is a shadow-axis construction, not a rendered sky direction.
+
+        The tuple contains the axis distance from Earth's centre, geocentric
+        apparent Sun/Moon radii, and (when the axis intersects a spherical
+        Earth) the Sun/Moon radii seen from the first surface intersection of
+        the ray travelling away from the Sun.
+        """
+
+        earth_ssb = _earth_barycentric(jd_tt, self._reader)
+        sun_xyz, _ = apply_light_time(
+            Body.SUN,
+            jd_tt,
+            self._reader,
+            earth_ssb,
+            _barycentric,
+        )
+        moon_xyz, _ = apply_light_time(
+            Body.MOON,
+            jd_tt,
+            self._reader,
+            earth_ssb,
+            _barycentric,
+        )
+        sun_to_moon = tuple(moon_xyz[i] - sun_xyz[i] for i in range(3))
+        axis_norm = math.sqrt(sum(value * value for value in sun_to_moon))
+        if axis_norm == 0.0:
+            raise ValueError("Sun and Moon centers cannot define a zero-length shadow axis")
+        axis_unit = tuple(value / axis_norm for value in sun_to_moon)
+        axis_projection = sum(moon_xyz[i] * axis_unit[i] for i in range(3))
+        sun_distance = math.sqrt(sum(value * value for value in sun_xyz))
+        moon_distance = math.sqrt(sum(value * value for value in moon_xyz))
+        center_sun_radius = _apparent_radius(SUN_RADIUS_KM, sun_distance)
+        center_moon_radius = _apparent_radius(MOON_RADIUS_KM, moon_distance)
+
+        # The closest point on the ray has parameter ``-axis_projection``.
+        # It must lie in the away-from-Sun direction from the Moon.
+        if axis_projection >= 0.0:
+            return (
+                float("inf"),
+                center_sun_radius,
+                center_moon_radius,
+                None,
+                None,
+            )
+        perpendicular = tuple(
+            moon_xyz[i] - axis_projection * axis_unit[i]
+            for i in range(3)
+        )
+        axis_distance = math.sqrt(sum(value * value for value in perpendicular))
+        if axis_distance > EARTH_RADIUS_KM:
+            return (
+                axis_distance,
+                center_sun_radius,
+                center_moon_radius,
+                None,
+                None,
+            )
+
+        closest_parameter = -axis_projection
+        half_chord = math.sqrt(
+            max(0.0, EARTH_RADIUS_KM * EARTH_RADIUS_KM - axis_distance * axis_distance)
+        )
+        surface_moon_distance = closest_parameter - half_chord
+        if surface_moon_distance <= MOON_RADIUS_KM:
+            raise ArithmeticError("solar shadow ray has no physical near-side Earth intersection")
+        surface_sun_distance = axis_norm + surface_moon_distance
+        return (
+            axis_distance,
+            center_sun_radius,
+            center_moon_radius,
+            _apparent_radius(SUN_RADIUS_KM, surface_sun_distance),
+            _apparent_radius(MOON_RADIUS_KM, surface_moon_distance),
+        )
+
+    def _native_solar_shadow_axis_distance_km(self, jd_ut: float) -> float:
+        """Return the Earth-centre distance to the reception-time shadow axis."""
+
+        jd_tt = _ut1_to_ephemeris_tt(jd_ut, self._reader)
+        return self._native_solar_shadow_geometry_tt(jd_tt)[0]
 
     def _native_lunar_event_geometry_tt(
         self,
@@ -1351,6 +1477,7 @@ class EclipseCalculator:
         This packages the Moon's apparent local sky position at greatest
         eclipse and at each available contact.
         """
+        _validate_observer_inputs(latitude, longitude, elevation_m)
         analysis = self.analyze_lunar_eclipse(
             jd_start,
             kind=kind,
@@ -1422,8 +1549,12 @@ class EclipseCalculator:
         This is intentionally anchored to the searched global maximum event.
         It exposes the local apparent Sun/Moon placement and overlap state at
         that instant, which is the minimal first-class observer surface needed
-        for a specialist eclipse subsystem.
+        for a specialist eclipse subsystem. The nested ``event`` retains its
+        global data coherently; observer-specific separation and overlap live
+        on this circumstances vessel. Use
+        :meth:`next_solar_eclipse_at_location` for a locally classified event.
         """
+        _validate_observer_inputs(latitude, longitude, elevation_m)
         event = self._search_solar_eclipse(jd_start, kind=kind, backward=backward)
         sun = sky_position_at(
             Body.SUN,
@@ -1447,9 +1578,9 @@ class EclipseCalculator:
             moon.right_ascension,
             moon.declination,
         )
-        overlap = separation < (
-            event.data.sun_apparent_radius + event.data.moon_apparent_radius
-        )
+        sun_radius = _apparent_radius(SUN_RADIUS_KM, sun.distance)
+        moon_radius = _apparent_radius(MOON_RADIUS_KM, moon.distance)
+        overlap = separation < (sun_radius + moon_radius)
 
         return SolarEclipseLocalCircumstances(
             event=event,
@@ -1488,10 +1619,10 @@ class EclipseCalculator:
             2. Check eclipse-season eligibility: Sun–node distance < 18°
                threshold derived from the Earth's shadow-cone geometry
                (Seidelmann, *Explanatory Supplement*, §9.4).
-            3. Locate the geocentric maximum with ternary search over the
-               angular separation objective
+            3. Locate the global maximum with bounded minimization of the
+               physical lunar-shadow-axis distance from Earth's centre
                (``eclipse_search.refine_solar_greatest_eclipse``).
-            4. Scan a ±4-hour window around the geocentric maximum in
+            4. Scan a ±4-hour window around the global shadow-axis maximum in
                12-minute steps, computing the full topocentric Sun–Moon
                separation via ``sky_position_at`` (8-step IAU/SOFA
                apparent-position pipeline backed by DE441).
@@ -1500,15 +1631,17 @@ class EclipseCalculator:
 
         Unlike ``solar_local_circumstances``, which always anchors to the next
         *global* eclipse maximum (which may be invisible from the observer's
-        location), this method iterates eclipse candidates and skips any where
-        the Sun is below the observer's horizon throughout the eclipse window.
+        location), this method iterates eclipse candidates and accepts one only
+        when the refined local instant has both positive disk overlap and a
+        positive solar altitude.
 
         For each candidate global eclipse the method scans a ±4-hour window
-        around the geocentric maximum in 12-minute steps, retaining only
-        time-steps where the Sun is above the horizon.  If at least one such
+        around the global maximum in 12-minute steps, retaining only
+        time-steps where the Sun is above the horizon. If at least one such
         step is found, the step with the smallest topocentric Sun–Moon
-        separation is refined to the local sub-second maximum using ternary
-        search.  That refined instant becomes the event time returned.
+        separation is refined to the local sub-second maximum. A daylight
+        minimum without actual disk overlap is rejected and the lunation scan
+        continues. That refined instant becomes the event time returned.
 
         Parameters
         ----------
@@ -1521,8 +1654,11 @@ class EclipseCalculator:
         elevation_m : float
             Observer elevation above the geoid in metres.
         kind : str
-            Eclipse type filter: ``'any'``, ``'total'``, ``'annular'``,
-            ``'partial'``, ``'central'``, or ``'hybrid'``.
+            Observer-local eclipse type filter: ``'any'``, ``'total'``,
+            ``'annular'``, ``'partial'``, or ``'central'``. ``'hybrid'`` is
+            necessarily a global path identity; it selects a globally hybrid
+            event and returns the actual total, annular, or partial type seen
+            at this observer.
         max_lunations : int
             Maximum number of new-moon lunations to scan before giving up.
             Default 360 (~30 years).
@@ -1538,11 +1674,14 @@ class EclipseCalculator:
             If no visible eclipse of the requested kind is found within
             *max_lunations* lunations.
         """
+        _validate_observer_inputs(latitude, longitude, elevation_m)
+        if max_lunations <= 0:
+            raise ValueError("max_lunations must be > 0")
         kind_key = kind.strip().lower().replace("-", "_").replace(" ", "_")
         if kind_key not in {"any", "total", "annular", "partial", "central", "hybrid"}:
             raise ValueError(f"Unsupported solar eclipse kind: {kind!r}")
 
-        # Scan window: ±4 hours around geocentric maximum in 12-minute steps
+        # Scan window: ±4 hours around global shadow-axis maximum in 12-minute steps
         _SCAN_STEP_DAYS = 12.0 / 1440.0   # 12 minutes
         _SCAN_HALF_WINDOW = 4.0 / 24.0    # ±4 hours
 
@@ -1551,11 +1690,15 @@ class EclipseCalculator:
         for _ in range(max_lunations):
             phase_data = self.calculate_jd(phase_jd)
             if phase_data.is_eclipse_season:
-                best_jd = _refine_solar_maximum(self, phase_jd)
+                best_jd = _refine_solar_maximum(
+                    self,
+                    phase_jd,
+                    tol_days=1.0e-9,
+                )
                 best_data = self.calculate_jd(best_jd)
 
-                if _matches_solar_kind(best_data, kind_key):
-                    # Scan a ±4-hour window around the geocentric maximum
+                if _matches_solar_local_candidate_kind(best_data, kind_key):
+                    # Scan a ±4-hour window around the global shadow-axis maximum
                     t = best_jd - _SCAN_HALF_WINDOW
                     t_end = best_jd + _SCAN_HALF_WINDOW
                     best_local_jd: float | None = None
@@ -1563,7 +1706,7 @@ class EclipseCalculator:
 
                     while t <= t_end:
                         sep, _, _ = _topocentric_solar_geometry(
-                            self, t, latitude, longitude
+                            self, t, latitude, longitude, elevation_m
                         )
                         if sep < best_local_sep:
                             best_local_sep = sep
@@ -1572,12 +1715,9 @@ class EclipseCalculator:
 
                     if best_local_jd is not None and best_local_sep < float("inf"):
                         # Sun was above horizon at some point — refine the local minimum
-                        refine_lo = best_local_jd - _SCAN_STEP_DAYS
-                        refine_hi = best_local_jd + _SCAN_STEP_DAYS
-
                         def _local_sep(jd_t: float) -> float:
                             s, _, _ = _topocentric_solar_geometry(
-                                self, jd_t, latitude, longitude
+                                self, jd_t, latitude, longitude, elevation_m
                             )
                             return s
 
@@ -1608,30 +1748,41 @@ class EclipseCalculator:
                             moon.right_ascension,
                             moon.declination,
                         )
-                        refined_data = self.calculate_jd(refined_jd)
-                        refined_event = EclipseEvent(jd_ut=refined_jd, data=refined_data)
-                        overlap = separation < (
-                            refined_data.sun_apparent_radius
-                            + refined_data.moon_apparent_radius
+                        sun_radius = _apparent_radius(SUN_RADIUS_KM, sun.distance)
+                        moon_radius = _apparent_radius(MOON_RADIUS_KM, moon.distance)
+                        overlap = separation < (sun_radius + moon_radius)
+                        refined_data = _local_solar_eclipse_data(
+                            self.calculate_jd(refined_jd),
+                            sun_distance_km=sun.distance,
+                            moon_distance_km=moon.distance,
+                            separation_deg=separation,
                         )
-                        return SolarEclipseLocalCircumstances(
-                            event=refined_event,
-                            latitude=latitude,
-                            longitude=longitude,
-                            elevation_m=elevation_m,
-                            sun=SolarBodyCircumstances(
-                                azimuth=sun.azimuth,
-                                altitude=sun.altitude,
-                                visible=sun.altitude > 0.0,
-                            ),
-                            moon=SolarBodyCircumstances(
-                                azimuth=moon.azimuth,
-                                altitude=moon.altitude,
-                                visible=moon.altitude > 0.0,
-                            ),
-                            topocentric_separation_deg=separation,
-                            topocentric_overlap=overlap,
+                        local_kind_match = (
+                            best_data.eclipse_type.is_hybrid
+                            and refined_data.is_solar_eclipse
+                            if kind_key == "hybrid"
+                            else _matches_solar_kind(refined_data, kind_key)
                         )
+                        if overlap and sun.altitude > 0.0 and local_kind_match:
+                            refined_event = EclipseEvent(jd_ut=refined_jd, data=refined_data)
+                            return SolarEclipseLocalCircumstances(
+                                event=refined_event,
+                                latitude=latitude,
+                                longitude=longitude,
+                                elevation_m=elevation_m,
+                                sun=SolarBodyCircumstances(
+                                    azimuth=sun.azimuth,
+                                    altitude=sun.altitude,
+                                    visible=True,
+                                ),
+                                moon=SolarBodyCircumstances(
+                                    azimuth=moon.azimuth,
+                                    altitude=moon.altitude,
+                                    visible=moon.altitude > 0.0,
+                                ),
+                                topocentric_separation_deg=separation,
+                                topocentric_overlap=True,
+                            )
 
             phase_jd = next_moon_phase("New Moon", phase_jd + 1.0, reader=self._reader).jd_ut
 
@@ -1663,7 +1814,18 @@ class EclipseCalculator:
 
         event = self._search_solar_eclipse(jd_start, kind=kind, backward=backward)
         max_lat, max_lon, _ = _solve_solar_greatest_location(self, event.jd_ut)
-        is_central = not event.data.eclipse_type.is_partial
+        is_central = (
+            self._native_solar_shadow_axis_distance_km(event.jd_ut)
+            <= EARTH_RADIUS_KM
+        )
+        path_data = _solar_eclipse_data_at_location(
+            self,
+            event.data,
+            event.jd_ut,
+            max_lat,
+            max_lon,
+            central=is_central,
+        )
 
         if not is_central:
             return SolarEclipsePath(
@@ -1673,7 +1835,7 @@ class EclipseCalculator:
                 duration_at_max_s=0.0,
                 max_eclipse_lat=max_lat,
                 max_eclipse_lon=max_lon,
-                eclipse_data=event.data,
+                eclipse_data=path_data,
             )
 
         jd_start_path, jd_end_path = _solve_solar_central_interval(self, event.jd_ut)
@@ -1688,10 +1850,15 @@ class EclipseCalculator:
             central_line_lats=tuple(lats),
             central_line_lons=tuple(lons),
             umbral_width_km=_solve_solar_umbral_width_km(self, event.jd_ut, max_lat, max_lon),
-            duration_at_max_s=max(0.0, (jd_end_path - jd_start_path) * 86400.0),
+            duration_at_max_s=_solve_local_solar_central_duration_s(
+                self,
+                event.jd_ut,
+                max_lat,
+                max_lon,
+            ),
             max_eclipse_lat=max_lat,
             max_eclipse_lon=max_lon,
-            eclipse_data=event.data,
+            eclipse_data=path_data,
         )
 
     def next_solar_eclipse(
@@ -1726,59 +1893,78 @@ class EclipseCalculator:
         kind_key = kind.strip().lower().replace("-", "_").replace(" ", "_")
         if kind_key not in {"any", "total", "partial", "penumbral"}:
             raise ValueError(f"Unsupported lunar eclipse kind: {kind!r}")
+        if max_lunations <= 0:
+            raise ValueError("max_lunations must be > 0")
 
-        cache_key = (jd_start, backward, max_lunations, use_canon)
-        results = self._lunar_search_cache.get(cache_key)
-        if results is None:
-            results = {}
-            if backward:
-                phase_jd = last_full_moon(jd_start, reader=self._reader)
-            else:
-                phase_jd = next_moon_phase("Full Moon", jd_start, reader=self._reader).jd_ut
+        cache_key = (jd_start, backward, max_lunations, use_canon, kind_key)
+        cached = self._lunar_search_cache.get(cache_key)
+        if cached is not None:
+            return cached
 
-            for _ in range(max_lunations):
-                phase_data = self.calculate_jd(phase_jd)
-                if phase_data.is_eclipse_season:
-                    if use_canon:
-                        best_jd = find_lunar_contacts_canon(self, phase_jd).greatest_ut
-                        best_data = self.calculate_jd(best_jd)
+        if backward:
+            phase_jd = last_full_moon(jd_start, reader=self._reader)
+        else:
+            phase_jd = next_moon_phase("Full Moon", jd_start, reader=self._reader).jd_ut
+
+        for _ in range(max_lunations):
+            phase_data = self.calculate_jd(phase_jd)
+            if phase_data.is_eclipse_season:
+                if use_canon:
+                    best_jd = find_lunar_contacts_canon(self, phase_jd).greatest_ut
+                    best_data = self._calculate_jd_internal(
+                        best_jd,
+                        retarded_moon=False,
+                        delta_t_mode="nasa_canon",
+                    )
+                    if _matches_lunar_kind(best_data, kind_key):
                         event = EclipseEvent(jd_ut=best_jd, data=best_data)
-                        if "any" not in results and _matches_lunar_kind(best_data, "any"):
-                            results["any"] = event
-                        if "total" not in results and _matches_lunar_kind(best_data, "total"):
-                            results["total"] = event
-                        if "partial" not in results and _matches_lunar_kind(best_data, "partial"):
-                            results["partial"] = event
-                        if "penumbral" not in results and _matches_lunar_kind(best_data, "penumbral"):
-                            results["penumbral"] = event
-                    else:
-                        best_jd_umbral = self._refine_lunar_maximum_for_kind(phase_jd, "total")
-                        best_data_umbral = self._calculate_jd_internal(best_jd_umbral, retarded_moon=True)
-                        event_umbral = EclipseEvent(jd_ut=best_jd_umbral, data=best_data_umbral)
-                        best_jd_pen = self._refine_lunar_maximum_for_kind(phase_jd, "penumbral")
-                        best_data_pen = self._calculate_jd_internal(best_jd_pen, retarded_moon=False)
-                        event_pen = EclipseEvent(jd_ut=best_jd_pen, data=best_data_pen)
-
-                        if "any" not in results:
-                            results["any"] = event_umbral if best_data_umbral.is_lunar_eclipse else event_pen
-                        if "total" not in results and _matches_lunar_kind(best_data_umbral, "total"):
-                            results["total"] = event_umbral
-                        if "partial" not in results and _matches_lunar_kind(best_data_umbral, "partial"):
-                            results["partial"] = event_umbral
-                        if "penumbral" not in results and _matches_lunar_kind(best_data_pen, "penumbral"):
-                            results["penumbral"] = event_pen
-                    if len(results) == 4:
-                        break
-
-                if backward:
-                    phase_jd = last_full_moon(phase_jd - 1.0, reader=self._reader)
+                        self._lunar_search_cache[cache_key] = event
+                        return event
                 else:
-                    phase_jd = next_moon_phase("Full Moon", phase_jd + 1.0, reader=self._reader).jd_ut
+                    # Umbral and penumbral events intentionally retain their
+                    # separately declared native vector policies.  Compute only
+                    # the family needed by the requested result.
+                    if kind_key in {"any", "total", "partial"}:
+                        best_jd = self._refine_lunar_maximum_for_kind(phase_jd, "total")
+                        best_data = self._calculate_jd_internal(
+                            best_jd,
+                            retarded_moon=True,
+                        )
+                        umbral_match = (
+                            _matches_lunar_kind(best_data, kind_key)
+                            if kind_key != "any"
+                            else (
+                                best_data.is_lunar_eclipse
+                                and (
+                                    best_data.eclipse_type.is_total
+                                    or best_data.eclipse_type.is_partial
+                                )
+                            )
+                        )
+                        if umbral_match:
+                            event = EclipseEvent(jd_ut=best_jd, data=best_data)
+                            self._lunar_search_cache[cache_key] = event
+                            return event
 
-            self._lunar_search_cache[cache_key] = results
+                    if kind_key in {"any", "penumbral"}:
+                        best_jd = self._refine_lunar_maximum_for_kind(phase_jd, "penumbral")
+                        best_data = self._calculate_jd_internal(
+                            best_jd,
+                            retarded_moon=False,
+                        )
+                        if _matches_lunar_kind(best_data, "penumbral"):
+                            event = EclipseEvent(jd_ut=best_jd, data=best_data)
+                            self._lunar_search_cache[cache_key] = event
+                            return event
 
-        if kind_key in results:
-            return results[kind_key]
+            if backward:
+                phase_jd = last_full_moon(phase_jd - 1.0, reader=self._reader)
+            else:
+                phase_jd = next_moon_phase(
+                    "Full Moon",
+                    phase_jd + 1.0,
+                    reader=self._reader,
+                ).jd_ut
 
         direction = "previous" if backward else "next"
         raise RuntimeError(f"No {direction} lunar eclipse of kind {kind!r} found")
@@ -1789,58 +1975,67 @@ class EclipseCalculator:
         *,
         kind: str,
         backward: bool,
-        max_lunations: int = 180,
+        max_lunations: int | None = None,
     ) -> EclipseEvent:
         """
         Search successive new moons until a solar eclipse of the requested kind
-        is found, then refine to the eclipse maximum near that new moon.
+        is found, then refine to the eclipse maximum near that new moon. Public
+        callers leave ``max_lunations`` unset, so a rare requested class is
+        searched until the active kernel reports its coverage boundary rather
+        than being truncated by an undocumented calendar interval.
         """
         kind_key = kind.strip().lower().replace("-", "_").replace(" ", "_")
         if kind_key not in {"any", "total", "annular", "partial", "central", "hybrid"}:
             raise ValueError(f"Unsupported solar eclipse kind: {kind!r}")
+        if max_lunations is not None and max_lunations <= 0:
+            raise ValueError("max_lunations must be > 0")
 
-        cache_key = (jd_start, backward, max_lunations)
-        results = self._solar_search_cache.get(cache_key)
-        if results is None:
-            results = {}
-            if backward:
-                phase_jd = last_new_moon(jd_start, reader=self._reader)
-            else:
-                phase_jd = next_moon_phase("New Moon", jd_start, reader=self._reader).jd_ut
+        cache_key = (jd_start, backward, max_lunations, kind_key)
+        cached = self._solar_search_cache.get(cache_key)
+        if cached is not None:
+            return cached
 
-            for _ in range(max_lunations):
-                phase_data = self.calculate_jd(phase_jd)
-                if phase_data.is_eclipse_season:
-                    best_jd = _refine_solar_maximum(self, phase_jd)
-                    best_data = self.calculate_jd(best_jd)
+        if backward:
+            phase_jd = last_new_moon(jd_start, reader=self._reader)
+        else:
+            phase_jd = next_moon_phase("New Moon", jd_start, reader=self._reader).jd_ut
+
+        lunations_searched = 0
+        while max_lunations is None or lunations_searched < max_lunations:
+            lunations_searched += 1
+            phase_data = self.calculate_jd(phase_jd)
+            if phase_data.is_eclipse_season:
+                best_jd = _refine_solar_maximum(
+                    self,
+                    phase_jd,
+                    tol_days=1.0e-9,
+                )
+                best_data = self.calculate_jd(best_jd)
+                kind_matches = _matches_solar_kind(best_data, kind_key)
+                if kind_key == "central" and kind_matches:
+                    kind_matches = (
+                        self._native_solar_shadow_axis_distance_km(best_jd)
+                        <= EARTH_RADIUS_KM
+                    )
+                if kind_matches:
                     event = EclipseEvent(jd_ut=best_jd, data=best_data)
-                    if "any" not in results and _matches_solar_kind(best_data, "any"):
-                        results["any"] = event
-                    if "partial" not in results and _matches_solar_kind(best_data, "partial"):
-                        results["partial"] = event
-                    if "annular" not in results and _matches_solar_kind(best_data, "annular"):
-                        results["annular"] = event
-                    if "hybrid" not in results and _matches_solar_kind(best_data, "hybrid"):
-                        results["hybrid"] = event
-                    if "total" not in results and _matches_solar_kind(best_data, "total"):
-                        results["total"] = event
-                    if "central" not in results and _matches_solar_kind(best_data, "central"):
-                        results["central"] = event
-                    if len(results) == 6:
-                        break
+                    self._solar_search_cache[cache_key] = event
+                    return event
 
-                if backward:
-                    phase_jd = last_new_moon(phase_jd - 1.0, reader=self._reader)
-                else:
-                    phase_jd = next_moon_phase("New Moon", phase_jd + 1.0, reader=self._reader).jd_ut
-
-            self._solar_search_cache[cache_key] = results
-
-        if kind_key in results:
-            return results[kind_key]
+            if backward:
+                phase_jd = last_new_moon(phase_jd - 1.0, reader=self._reader)
+            else:
+                phase_jd = next_moon_phase(
+                    "New Moon",
+                    phase_jd + 1.0,
+                    reader=self._reader,
+                ).jd_ut
 
         direction = "previous" if backward else "next"
-        raise RuntimeError(f"No {direction} solar eclipse of kind {kind!r} found")
+        raise RuntimeError(
+            f"No {direction} solar eclipse of kind {kind!r} found within "
+            f"{max_lunations} lunations"
+        )
 
     def solar_eclipses_in_range(
         self,
@@ -2014,6 +2209,11 @@ def _classify(
     native_lunar_moon_radius_km: float | None = None,
     native_lunar_umbra_radius_km: float | None = None,
     native_lunar_penumbra_radius_km: float | None = None,
+    native_solar_axis_km: float | None = None,
+    native_solar_center_sun_radius: float | None = None,
+    native_solar_center_moon_radius: float | None = None,
+    native_solar_surface_sun_radius: float | None = None,
+    native_solar_surface_moon_radius: float | None = None,
 ) -> tuple[EclipseType, bool, bool, float]:
     """
     Classify eclipse type from geometric parameters.
@@ -2034,27 +2234,73 @@ def _classify(
 
     # --- Solar eclipse ---
     if is_new_moon:
-        c2c      = angular_sep
-        c2c_best = max(0.0, c2c - moon_parallax)   # best-case across Earth
+        c2c_best = max(0.0, angular_sep - moon_parallax)
+        moon_radius_surface = _topocentric_near_moon_radius(moon_parallax)
 
-        if c2c_best > sun_radius + moon_radius:
+        if (
+            native_solar_axis_km is not None
+            and native_solar_axis_km <= EARTH_RADIUS_KM
+            and native_solar_center_sun_radius is not None
+            and native_solar_center_moon_radius is not None
+            and native_solar_surface_sun_radius is not None
+            and native_solar_surface_moon_radius is not None
+        ):
+            # The shadow axis actually intersects Earth. Classify at its first
+            # surface intersection, not at the fictitious nearest possible
+            # observer. If the surface is total while the geocentre remains
+            # annular, the cone apex lies within Earth and the global event is
+            # hybrid (annular and total on different path sections).
+            magnitude = (
+                native_solar_surface_moon_radius
+                / native_solar_surface_sun_radius
+            )
+            if native_solar_surface_moon_radius < native_solar_surface_sun_radius:
+                eclipse_type = EclipseType(
+                    False,
+                    True,
+                    False,
+                    False,
+                    magnitude,
+                    magnitude,
+                )
+            elif native_solar_center_moon_radius <= native_solar_center_sun_radius:
+                eclipse_type = EclipseType(
+                    False,
+                    False,
+                    False,
+                    True,
+                    magnitude,
+                    magnitude,
+                )
+            else:
+                eclipse_type = EclipseType(
+                    False,
+                    False,
+                    True,
+                    False,
+                    magnitude,
+                    magnitude,
+                )
+            return eclipse_type, True, False, magnitude
+
+        if c2c_best > sun_radius + moon_radius_surface:
             return _none
 
-        if c2c_best < abs(sun_radius - moon_radius):
-            if moon_radius > sun_radius:
-                mag = 1.0 + (moon_radius - sun_radius - c2c_best) / (2 * sun_radius)
-                et  = EclipseType(False, False, True, False, mag, mag)
+        if c2c_best < abs(sun_radius - moon_radius_surface):
+            # For central eclipses the published magnitude product is the
+            # local Moon/Sun diameter ratio; the radius ratio is identical.
+            mag = moon_radius_surface / sun_radius
+            if moon_radius_surface > sun_radius:
+                if moon_radius <= sun_radius:
+                    et = EclipseType(False, False, False, True, mag, mag)
+                else:
+                    et = EclipseType(False, False, True, False, mag, mag)
             else:
-                moon_radius_near = _topocentric_near_moon_radius(moon_parallax)
-                if moon_radius_near > sun_radius:
-                    et = EclipseType(False, False, False, True, 1.0, 1.0)
-                    return et, True, False, 1.0
-                mag = 1.0 - (sun_radius - moon_radius + c2c_best) / (2 * sun_radius)
-                et  = EclipseType(False, True, False, False, mag, mag)
+                et = EclipseType(False, True, False, False, mag, mag)
             return et, True, False, mag
 
-        mag = (sun_radius + moon_radius - c2c_best) / (2 * sun_radius)
-        et  = EclipseType(True, False, False, False, mag, mag)
+        mag = (sun_radius + moon_radius_surface - c2c_best) / (2 * sun_radius)
+        et = EclipseType(True, False, False, False, mag, mag)
         return et, True, False, mag
 
     # --- Lunar eclipse ---
@@ -2089,7 +2335,7 @@ def _classify(
                     pen_limit_km - native_lunar_axis_km
                 ) / (2.0 * native_lunar_moon_radius_km)
                 et = EclipseType(False, False, False, False, 0.0, pen_mag)
-                return et, False, False, 0.0
+                return et, False, True, pen_mag
 
         shadow_sep = shadow_axis_offset_deg(angular_sep)
 
@@ -2103,12 +2349,13 @@ def _classify(
                 et = EclipseType(True, False, False, False, umbral_mag, pen_mag)
             return et, False, True, umbral_mag
 
-        # Penumbral only — not a "real" eclipse for most purposes
+        # Penumbral-only lunar eclipse: a first-class eclipse whose main-shadow
+        # kind flags remain false by construction.
         pen_limit = penumbra_radius + moon_radius
         if shadow_sep < pen_limit:
             pen_mag = lunar_penumbral_magnitude(penumbra_radius, moon_radius, shadow_sep)
             et = EclipseType(False, False, False, False, 0.0, pen_mag)
-            return et, False, False, 0.0
+            return et, False, True, pen_mag
 
     return _none
 
@@ -2116,13 +2363,18 @@ def _classify(
 def _matches_lunar_kind(data: EclipseData, kind: str) -> bool:
     """Return True if *data* matches the requested lunar eclipse kind."""
     if kind == "any":
-        return data.is_lunar_eclipse or data.eclipse_type.magnitude_penumbra > 0.0
+        return data.is_lunar_eclipse
     if kind == "total":
         return data.is_lunar_eclipse and data.eclipse_type.is_total
     if kind == "partial":
         return data.is_lunar_eclipse and data.eclipse_type.is_partial
     if kind == "penumbral":
-        return (not data.is_lunar_eclipse) and data.eclipse_type.magnitude_penumbra > 0.0
+        return (
+            data.is_lunar_eclipse
+            and not data.eclipse_type.is_partial
+            and not data.eclipse_type.is_total
+            and data.eclipse_type.magnitude_penumbra > 0.0
+        )
     return False
 
 
@@ -2143,22 +2395,60 @@ def _matches_solar_kind(data: EclipseData, kind: str) -> bool:
     return False
 
 
+def _matches_solar_local_candidate_kind(data: EclipseData, kind: str) -> bool:
+    """Admit global events that can realize the requested local eclipse kind."""
+
+    if not data.is_solar_eclipse:
+        return False
+    if kind in {"any", "partial"}:
+        # Every global eclipse can be partial somewhere inside its visibility
+        # footprint, so local filtering must wait for the observer solve.
+        return True
+    if kind == "total":
+        return data.eclipse_type.is_total or data.eclipse_type.is_hybrid
+    if kind == "annular":
+        return data.eclipse_type.is_annular or data.eclipse_type.is_hybrid
+    if kind == "central":
+        return not data.eclipse_type.is_partial
+    if kind == "hybrid":
+        # Hybrid is a path-level identity. A single site is total, annular, or
+        # partial; the refined local data retains that local classification.
+        return data.eclipse_type.is_hybrid
+    return False
+
+
 _GEO_SEARCH_STEPS_DEG = (10.0, 5.0, 2.0, 1.0, 0.5, 0.25, 0.1, 0.05)
 _GEO_COARSE_LAT_STEP_DEG = 20.0
 _GEO_COARSE_LON_STEP_DEG = 20.0
 _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG = 1.0e-4
 _GEO_SEARCH_MAX_OBJECTIVE_EVALS = 4096
 _GEO_SEARCH_MAX_PASSES_PER_STEP = 512
-_GEO_SEARCH_TIMEOUT_S = 2.0
 _SOLAR_CENTRAL_INTERVAL_STEP_DAYS = 1.0 / 48.0
 _SOLAR_CENTRAL_INTERVAL_SCAN_STEPS = 48
 _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS = 192
-_SOLAR_CENTRAL_INTERVAL_TIMEOUT_S = 4.0
+_SOLAR_LOCAL_CONTACT_STEP_DAYS = 30.0 / 86400.0
+_SOLAR_LOCAL_CONTACT_SCAN_STEPS = 120
 
 
 class _SearchLimitReached(RuntimeError):
     """Vessel: Internal exception thrown when an eclipse search exceeds safety limits."""
     pass
+
+
+def _validate_observer_inputs(
+    latitude: float,
+    longitude: float,
+    elevation_m: float,
+) -> None:
+    """Validate one observer without relying on the optional transport layer."""
+
+    if not math.isfinite(latitude) or not -90.0 <= latitude <= 90.0:
+        raise ValueError("latitude must be finite and between -90 and 90 degrees")
+    if not math.isfinite(longitude) or not -180.0 <= longitude <= 180.0:
+        raise ValueError("longitude must be finite and between -180 and 180 degrees")
+    if not math.isfinite(elevation_m):
+        raise ValueError("elevation_m must be finite")
+
 
 def _bisection_root(func, left: float, right: float, *, iterations: int = 48) -> float:
     f_left = func(left)
@@ -2190,7 +2480,51 @@ def _topocentric_solar_geometry(
     jd_ut: float,
     latitude: float,
     longitude: float,
+    elevation_m: float = 0.0,
 ) -> tuple[float, float, float]:
+    sun = sky_position_at(
+        Body.SUN,
+        jd_ut,
+        latitude,
+        longitude,
+        elevation_m,
+        reader=calc._reader,
+    )
+    if sun.altitude <= 0.0:
+        return float("inf"), float("-inf"), float("-inf")
+
+    moon = sky_position_at(
+        Body.MOON,
+        jd_ut,
+        latitude,
+        longitude,
+        elevation_m,
+        reader=calc._reader,
+    )
+    separation = _angular_separation(
+        sun.right_ascension,
+        sun.declination,
+        moon.right_ascension,
+        moon.declination,
+    )
+    sun_radius = _apparent_radius(SUN_RADIUS_KM, sun.distance)
+    moon_radius = _apparent_radius(MOON_RADIUS_KM, moon.distance)
+    overlap_margin = (sun_radius + moon_radius) - separation
+    central_margin = abs(moon_radius - sun_radius) - separation
+    return separation, overlap_margin, central_margin
+
+
+def _solar_eclipse_data_at_location(
+    calc: EclipseCalculator,
+    data: EclipseData,
+    jd_ut: float,
+    latitude: float,
+    longitude: float,
+    *,
+    central: bool,
+) -> EclipseData:
+    """Bind observer-derived solar fields to an existing global event record."""
+
     sun = sky_position_at(
         Body.SUN,
         jd_ut,
@@ -2199,9 +2533,6 @@ def _topocentric_solar_geometry(
         0.0,
         reader=calc._reader,
     )
-    if sun.altitude <= 0.0:
-        return float("inf"), float("-inf"), float("-inf")
-
     moon = sky_position_at(
         Body.MOON,
         jd_ut,
@@ -2218,9 +2549,71 @@ def _topocentric_solar_geometry(
     )
     sun_radius = _apparent_radius(SUN_RADIUS_KM, sun.distance)
     moon_radius = _apparent_radius(MOON_RADIUS_KM, moon.distance)
-    overlap_margin = (sun_radius + moon_radius) - separation
-    central_margin = abs(moon_radius - sun_radius) - separation
-    return separation, overlap_margin, central_margin
+    if central:
+        magnitude = moon_radius / sun_radius
+    else:
+        magnitude = max(
+            0.0,
+            (sun_radius + moon_radius - separation) / (2.0 * sun_radius),
+        )
+    eclipse_type = replace(
+        data.eclipse_type,
+        magnitude_umbral=magnitude,
+        magnitude_penumbra=magnitude,
+    )
+    return replace(
+        data,
+        sun_apparent_radius=sun_radius,
+        moon_apparent_radius=moon_radius,
+        moon_distance_km=moon.distance,
+        solar_topocentric_separation=separation,
+        eclipse_type=eclipse_type,
+        eclipse_magnitude=magnitude,
+    )
+
+
+def _local_solar_eclipse_data(
+    data: EclipseData,
+    *,
+    sun_distance_km: float,
+    moon_distance_km: float,
+    separation_deg: float,
+) -> EclipseData:
+    """Bind one observer-local solar maximum to the stable EclipseData shape."""
+
+    sun_radius = _apparent_radius(SUN_RADIUS_KM, sun_distance_km)
+    moon_radius = _apparent_radius(MOON_RADIUS_KM, moon_distance_km)
+    if separation_deg >= sun_radius + moon_radius:
+        eclipse_type = EclipseType(False, False, False, False, 0.0, 0.0)
+        magnitude = 0.0
+        is_solar_eclipse = False
+    elif separation_deg < abs(moon_radius - sun_radius):
+        magnitude = moon_radius / sun_radius
+        eclipse_type = (
+            EclipseType(False, False, True, False, magnitude, magnitude)
+            if moon_radius > sun_radius
+            else EclipseType(False, True, False, False, magnitude, magnitude)
+        )
+        is_solar_eclipse = True
+    else:
+        magnitude = max(
+            0.0,
+            (sun_radius + moon_radius - separation_deg) / (2.0 * sun_radius),
+        )
+        eclipse_type = EclipseType(True, False, False, False, magnitude, magnitude)
+        is_solar_eclipse = True
+
+    return replace(
+        data,
+        sun_apparent_radius=sun_radius,
+        moon_apparent_radius=moon_radius,
+        moon_distance_km=moon_distance_km,
+        solar_topocentric_separation=separation_deg,
+        is_solar_eclipse=is_solar_eclipse,
+        is_lunar_eclipse=False,
+        eclipse_type=eclipse_type,
+        eclipse_magnitude=magnitude,
+    )
 
 
 def _solve_solar_greatest_location(
@@ -2228,24 +2621,23 @@ def _solve_solar_greatest_location(
     jd_ut: float,
 ) -> tuple[float, float, float]:
     cache: dict[tuple[float, float], float] = {}
-    deadline = time.perf_counter() + _GEO_SEARCH_TIMEOUT_S
     objective_evals = 0
 
     def objective(latitude: float, longitude: float) -> float:
         nonlocal objective_evals
         key = (round(latitude, 6), round(_wrap_longitude_deg(longitude), 6))
         if key not in cache:
+            if objective_evals >= _GEO_SEARCH_MAX_OBJECTIVE_EVALS:
+                raise _SearchLimitReached(
+                    "solar greatest-location evaluation limit exhausted"
+                )
             objective_evals += 1
             separation, _, _ = _topocentric_solar_geometry(calc, jd_ut, latitude, longitude)
             cache[key] = separation
         return cache[key]
 
     def limit_reached() -> bool:
-        return (
-            objective_evals >= _GEO_SEARCH_MAX_OBJECTIVE_EVALS
-            or time.perf_counter() >= deadline
-            or best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG
-        )
+        return best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG
 
     best_lat = 0.0
     best_lon = 0.0
@@ -2313,16 +2705,14 @@ def _best_solar_central_margin(
 
 def _solve_solar_central_interval(calc: EclipseCalculator, jd_ut: float) -> tuple[float, float]:
     def build_margin_solver():
-        deadline = time.perf_counter() + _SOLAR_CENTRAL_INTERVAL_TIMEOUT_S
         margin_evals = 0
 
         def central_margin_at_time(t: float) -> float:
             nonlocal margin_evals
-            if (
-                margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS
-                or time.perf_counter() >= deadline
-            ):
-                raise _SearchLimitReached()
+            if margin_evals >= _SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS:
+                raise _SearchLimitReached(
+                    "solar central-interval evaluation limit exhausted"
+                )
             margin_evals += 1
             _, _, margin = _best_solar_central_margin(calc, t)
             return margin
@@ -2330,10 +2720,7 @@ def _solve_solar_central_interval(calc: EclipseCalculator, jd_ut: float) -> tupl
         return central_margin_at_time
 
     center_margin_at_time = build_margin_solver()
-    try:
-        center_margin = center_margin_at_time(jd_ut)
-    except _SearchLimitReached:
-        return jd_ut, jd_ut
+    center_margin = center_margin_at_time(jd_ut)
     if center_margin <= 0.0:
         return jd_ut, jd_ut
 
@@ -2344,24 +2731,59 @@ def _solve_solar_central_interval(calc: EclipseCalculator, jd_ut: float) -> tupl
         current = jd_ut
         for _ in range(_SOLAR_CENTRAL_INTERVAL_SCAN_STEPS):
             next_time = current + (direction * step)
-            try:
-                next_margin = central_margin_at_time(next_time)
-            except _SearchLimitReached:
-                return jd_ut if current == jd_ut else current
+            next_margin = central_margin_at_time(next_time)
             if next_margin <= 0.0:
-                try:
-                    if direction < 0.0:
-                        return _bisection_root(central_margin_at_time, next_time, current)
-                    return _bisection_root(central_margin_at_time, current, next_time)
-                except _SearchLimitReached:
-                    return current
+                if direction < 0.0:
+                    return _bisection_root(central_margin_at_time, next_time, current)
+                return _bisection_root(central_margin_at_time, current, next_time)
             current = next_time
-        return jd_ut
+        raise _SearchLimitReached(
+            "solar central path boundary was not bracketed within 24 hours"
+        )
 
     left = solve_boundary(-1.0)
     right = solve_boundary(1.0)
 
     return left, right
+
+
+def _solve_local_solar_central_duration_s(
+    calc: EclipseCalculator,
+    jd_ut: float,
+    latitude: float,
+    longitude: float,
+) -> float:
+    """Solve local U2/U3 (or A2/A3) duration at one central-line site."""
+
+    def margin(t: float) -> float:
+        _, _, central_margin = _topocentric_solar_geometry(
+            calc,
+            t,
+            latitude,
+            longitude,
+        )
+        return central_margin
+
+    center_margin = margin(jd_ut)
+    if not math.isfinite(center_margin) or center_margin <= 0.0:
+        return 0.0
+
+    def solve_boundary(direction: float) -> float:
+        current = jd_ut
+        for _ in range(_SOLAR_LOCAL_CONTACT_SCAN_STEPS):
+            next_time = current + direction * _SOLAR_LOCAL_CONTACT_STEP_DAYS
+            if margin(next_time) <= 0.0:
+                if direction < 0.0:
+                    return _bisection_root(margin, next_time, current)
+                return _bisection_root(margin, current, next_time)
+            current = next_time
+        raise _SearchLimitReached(
+            "local solar central contacts were not bracketed within one hour"
+        )
+
+    start = solve_boundary(-1.0)
+    end = solve_boundary(1.0)
+    return max(0.0, (end - start) * 86400.0)
 
 
 def _solve_solar_umbral_width_km(

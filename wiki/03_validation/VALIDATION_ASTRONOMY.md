@@ -418,13 +418,17 @@ Earth-rotation errors have measured Gaussian tails.
 
 ## 7. Eclipse Validation
 
-**Oracle:** Swiss `setest/t.exp` + NASA Five Millennium solar and lunar catalogs  
+**Primary authority:** NASA Five Millennium solar and lunar catalogs and named
+NASA/GSFC Besselian path products
+
+**Secondary cross-engine corroboration:** cached Swiss `setest/t.exp` rows
 **Test files:**
 - `tests/integration/test_eclipse_external_reference.py`
 - `tests/integration/test_eclipse_nasa_reference.py`
+- `tests/integration/test_eclipse_path_nasa_reference.py`
 
-**Recorded representative TT comparison (2026-07-17, DE441, current
-Delta-T policy):**
+**Executable representative TT comparison policy (DE441, current Delta-T
+policy):**
 
 For every search row, the NASA reference TT is the catalog UT1 plus that
 catalog row's published Delta-T value. The Moira result TT is the searched
@@ -432,39 +436,35 @@ event UT1 transformed with Moira's default Delta-T policy. This preserves each
 product's declared Earth-rotation basis while comparing the event search on a
 common dynamical scale.
 
-| Case | Raw UT1 residual (diagnostic only) | Moira / NASA Delta T | TT residual |
-|---|---:|---:|---:|
-| Ancient lunar total (~1801 BCE) | 49.362 s | 42135.514 s / 41747 s | 339.152 s |
-| Ancient solar hybrid (~1797 BCE) | 82.940 s | 42043.267 s / 41661 s | 299.327 s |
-| Future lunar penumbral (~2801) | 1338.078 s | 1745.111 s / 3053 s | 30.190 s |
-| Future solar total (~2799) | 1292.918 s | 1737.246 s / 3042 s | 11.837 s |
+| Case class | Representative products | Executable TT envelope |
+|---|---|---:|
+| Ancient | lunar total (~1801 BCE) and solar hybrid (~1797 BCE) | 360 s |
+| Post-2150 | lunar penumbral (~2801) and solar total (~2799) | 60 s |
 
-The raw UT1 column is diagnostic evidence only. It is not an accepted timing
-tolerance because a raw comparison conflates the event-search result with the
-products' different Delta-T policies.
+Raw UT1 residuals may be emitted as diagnostic evidence by the executable
+test, but they are not accepted timing tolerances because a raw comparison
+conflates the event-search result with the products' different Delta-T
+policies. Exact residuals are computed at runtime and are deliberately not
+frozen in this document.
 
 `tests/integration/test_eclipse_nasa_reference.py` therefore enforces two
 explicit TT gates:
 
-- **Ancient: 360 s in TT.** The measured ancient residuals are `299.327 s`
-  (solar) and `339.152 s` (lunar), leaving `20.848 s` above the current worst
-  case. This is a cross-authority regression envelope for the combined search
-  and model-basis difference. It is not a six-minute accuracy claim, a bound on
-  historical Earth-rotation uncertainty, or proof that the NASA and Moira
-  greatest-eclipse objectives are identical.
-- **Post-2150: 60 s in TT.** The measured residuals are `11.837 s` (solar) and
-  `30.190 s` (lunar). This gate checks the searched event on the common TT
-  scale; it does not validate Moira's post-2150 UT1 scenario as a forecast of
-  Earth rotation.
+- **Ancient: 360 s in TT.** This is a cross-authority regression envelope for
+  the combined search and model-basis difference. It is not a six-minute
+  accuracy claim, a bound on historical Earth-rotation uncertainty, or proof
+  that the NASA and Moira greatest-eclipse objectives are identical.
+- **Post-2150: 60 s in TT.** This gate checks the searched event on the common
+  TT scale; it does not validate Moira's post-2150 UT1 scenario as a forecast
+  of Earth rotation.
 
 The focused ancient lunar compatibility test applies the same rule to both
 admitted paths. The native result is converted with Moira's default Delta-T
-policy and has a `339.152 s` TT residual. The `nasa_compat` result is converted
-with an explicit catalog month-midpoint coordinate through
-`ut_to_tt_nasa_canon()` and has a `303.716 s` TT residual. Both are held
-inside the same `360 s` cross-authority regression envelope. The test no longer
-ranks the paths by raw UT1 residual because that ranking would compare unlike
-time policies.
+policy, while the `nasa_compat` result is converted with an explicit catalog
+month-midpoint coordinate through `ut_to_tt_nasa_canon()`. Both are held inside
+the same `360 s` cross-authority regression envelope. The test computes their
+exact residuals at runtime and does not rank the paths by raw UT1 residual
+because that ranking would compare unlike time policies.
 
 The separate catalog-maximum tests continue to enforce solar and lunar eclipse
 classification across the ancient, modern, and future fixture rows. Search
@@ -780,7 +780,7 @@ as the first matching event in the next 24 hours from `jd_start`.
 | Ancient eclipse timing vs catalogs | Explained model-basis difference; regression-covered | NASA Five Millennium | Medium |
 | Stellar aberration | Direct ERFA-backed test added and passing in the validation env | ERFA `ab` function | Closed |
 | Rise/set ~300 s systematic error | **Fixed 2026-04-05.** Commit `4173706` added refraction to `sky_position_at` but `rise_set._altitude` kept the geometric threshold. Fixed by passing `refraction=False`. All 5 Horizons/USNO cases now pass at ≤ 2 s. | JPL Horizons fixture | Closed |
-| Ancient eclipse TT comparison gate | **Repaired 2026-07-17.** NASA catalog TT and Moira TT now retain their own declared Delta-T bases. The current ancient residuals are 299.327 s solar and 339.152 s lunar, enforced by a 360 s cross-authority regression envelope. This closes the scale-conflation defect in the test; it is not an ancient timing-accuracy claim. | NASA Five Millennium | Closed (test semantics only) |
+| Ancient eclipse TT comparison gate | **Repaired 2026-07-17.** NASA catalog TT and Moira TT retain their own declared Delta-T bases. Executable tests enforce a 360 s cross-authority regression envelope without freezing exact residual snapshots in prose. This closes the scale-conflation defect in the test; it is not an ancient timing-accuracy claim. | NASA Five Millennium | Closed (test semantics only) |
 | GAST ancient-epoch model-basis difference | **Documented 2026-04-05.** Full GAST (erfa.gst06a oracle) diverges up to ~1.1″ before ~J1000. Cause: equation-of-equinoxes (Moira) vs equation-of-origins (ERFA). Modern epochs (J1500–J2100) all pass < 0.001″. Ancient divergence is beneath the Delta T noise floor for Moira's use cases. No code change required. See §3.7.1. | ERFA `gst06a` | Closed |
 | Chiron and Pholus vector accuracy | **Pre-existing open.** 6 cases in `test_horizons_vectors.py` failing at ~7–8 arcsec vs 1.0 arcsec tolerance. Centaur orbits are chaotic; accuracy degrades outside JPL fit windows. Root cause not yet diagnosed — may require looser tolerance or SPK routing investigation for small bodies. | JPL Horizons `VECTORS` | Medium |
 | Sothic 139 AD calendar accuracy | **Fixed 2026-04-05.** Two changes applied. (1) `moira/stars.py` heliacal horizon threshold corrected from geometric 0° to −0.5667° (apparent horizon: standard refraction lifts the horizon by ~34′). With 0.0, Memphis crossed the Egyptian New Year boundary into Thoth 1, breaking the modular drift ordering. With −0.5667°, Memphis stays in Epagomenal, all three sites sit on the same side of the New Year, and the drift ordering is coherent. (2) Test assertions replaced exact-day claims with uncertainty-window checks: `arcus_visionis=10°` (Schoch's traditional value) is retained; the Censorinus datum is verified to within 2 days of 1 Thoth (drift ≤ 2.0), consistent with the ~1-day historical uncertainty in site identification and atmospheric conditions. Asserting `day == 1` exactly would be chasing uncertainty noise. All 3 previously failing tests now pass. | Censorinus / published sites | Closed |

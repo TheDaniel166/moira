@@ -135,8 +135,9 @@ class NasaLunarEclipseEvent:
 
     RITE OF PURPOSE:
         NASA eclipse publications report each lunar eclipse through a fixed set
-        of parameters: UT and TT epochs, gamma (shadow axis distance in Earth
-        radii), umbral and penumbral magnitudes, and the seven contact times.
+        of parameters: UT and TT epochs, signed gamma (shadow-axis displacement
+        in Earth radii, north positive and south negative), umbral and
+        penumbral magnitudes, and the seven contact times.
         This dataclass packages all of those fields alongside the native Moira
         EclipseEvent so callers retain full traceability back to the source
         computation. Without it, the compatibility layer would have no stable

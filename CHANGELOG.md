@@ -27,6 +27,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   wheel-wide AVX2 requirement.
 
 ### Fixed
+- **Eclipse Geometry, Visibility, And Clock Integrity**: Defined native solar
+  greatest eclipse by the DE441 Earth-reception lunar-shadow axis rather than
+  angular conjunction, brought four modern event classes within one published
+  second of NASA Solar Eclipse Search UT labels, and made
+  spherical separation stable at coincident and antipodal limits. Hardened
+  native and NASA-compatibility contact scans against invalid bounds,
+  non-advancing steps, duplicate roots, and non-finite objectives; exhausted
+  deterministic path solvers now fail explicitly instead of returning partial
+  scientific results. Penumbral lunar eclipses are now first-class eclipse
+  events, NASA-compatible lunar gamma is north-positive/south-negative, and
+  NASA-compatible event data uses its declared catalog time basis coherently.
+  Observer-local solar searches now require actual topocentric disk overlap
+  with the Sun above the horizon; their event type, magnitude, radii, time, and
+  kind filter all describe that same local maximum. Global central
+  classification now uses the actual shadow-ray surface intersection, so
+  annular events are no longer promoted to hybrid by a fictitious near-side
+  observer, and rare-kind searches continue to the kernel coverage boundary
+  instead of stopping after an undocumented 180 lunations. Solar path
+  magnitude, width, greatest
+  location, and local central-contact duration are bound to the solved site and
+  validated against named NASA/GSFC total, hybrid, and annular products from
+  1999, 2031, and 2032. Eclipse datetime
+  inputs now cross UTC to UT1 once, while event and contact serialization
+  convert UT1 back to UTC. Existing facade method signatures, the
+  `EclipseEvent` field shape, FastAPI endpoint paths, and request/response
+  schemas remain unchanged.
 - **Delta-T Source, Domain, And Time-Scale Truth**: Restored source-priority
   total Delta T through the 2026 handoff while preserving the raw HPIERS
   DE430/LE430 source basis; generic clock policy no longer guesses a downstream

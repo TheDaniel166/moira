@@ -62,7 +62,9 @@ def test_solar_greatest_location_exits_early_on_exact_conjunction(monkeypatch: p
     assert call_count < 10
 
 
-def test_solar_greatest_location_honors_objective_eval_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_solar_greatest_location_raises_when_objective_eval_limit_is_exhausted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     scores = {
         (-80.0, -180.0): 5.0,
         (-80.0, -160.0): 4.0,
@@ -80,15 +82,13 @@ def test_solar_greatest_location_honors_objective_eval_limit(monkeypatch: pytest
     monkeypatch.setattr(eclipse, "_topocentric_solar_geometry", fake_geometry)
     monkeypatch.setattr(eclipse, "_GEO_SEARCH_MAX_OBJECTIVE_EVALS", 5)
 
-    latitude, longitude, separation = eclipse._solve_solar_greatest_location(object(), 2451401.96)
+    with pytest.raises(eclipse._SearchLimitReached, match="evaluation limit"):
+        eclipse._solve_solar_greatest_location(object(), 2451401.96)
 
-    assert latitude == -80.0
-    assert longitude == -100.0
-    assert separation == 1.0
     assert call_count == 5
 
 
-def test_solar_central_interval_returns_zero_width_when_deadline_is_exhausted(
+def test_solar_central_interval_raises_when_evaluation_limit_is_exhausted(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     call_count = 0
@@ -98,16 +98,12 @@ def test_solar_central_interval_returns_zero_width_when_deadline_is_exhausted(
         call_count += 1
         return 0.0, 0.0, 0.5
     
-    # We must patch at the module where it's imported/defined
-    import time
     monkeypatch.setattr(eclipse, "_best_solar_central_margin", fake_best_margin)
-    monkeypatch.setattr(eclipse, "_SOLAR_CENTRAL_INTERVAL_TIMEOUT_S", 0.0)
-    monkeypatch.setattr(time, "perf_counter", lambda: 100.0)
+    monkeypatch.setattr(eclipse, "_SOLAR_CENTRAL_INTERVAL_MAX_MARGIN_EVALS", 0)
 
-    left, right = eclipse._solve_solar_central_interval(object(), 2451401.96)
+    with pytest.raises(eclipse._SearchLimitReached, match="evaluation limit"):
+        eclipse._solve_solar_central_interval(object(), 2451401.96)
 
-    assert left == 2451401.96
-    assert right == 2451401.96
     assert call_count == 0
 
 
@@ -136,6 +132,30 @@ def test_refine_greatest_eclipse_helpers_return_local_event_maxima(eclipse_calcu
     solar_data = eclipse_calculator.calculate_jd(solar_best)
     assert solar_data.is_solar_eclipse
     assert solar_data.eclipse_type.is_total
+
+
+def test_solar_shadow_axis_refinement_is_subsecond_stable(eclipse_calculator) -> None:
+    seed = 2451401.96
+    native_search = refine_solar_greatest_eclipse(
+        eclipse_calculator,
+        seed,
+        tol_days=1.0e-9,
+    )
+    tighter = refine_solar_greatest_eclipse(
+        eclipse_calculator,
+        seed,
+        tol_days=1.0e-11,
+    )
+
+    assert abs(native_search - tighter) * 86400.0 < 0.1
+    center_distance = eclipse_calculator._native_solar_shadow_axis_distance_km(native_search)
+    half_second = 0.5 / 86400.0
+    assert center_distance <= eclipse_calculator._native_solar_shadow_axis_distance_km(
+        native_search - half_second
+    )
+    assert center_distance <= eclipse_calculator._native_solar_shadow_axis_distance_km(
+        native_search + half_second
+    )
 
 
 def test_total_lunar_eclipse_reports_larger_penumbral_than_umbral_magnitude(eclipse_calculator) -> None:
@@ -176,7 +196,7 @@ def test_lunar_contact_solver_returns_ordered_contacts_for_total_eclipse(eclipse
 @pytest.mark.slow
 def test_lunar_canon_geometry_and_search_path_are_available(eclipse_calculator) -> None:
     geom = lunar_canon_geometry(eclipse_calculator, 2451564.705)
-    assert geom.gamma_earth_radii >= 0.0
+    assert geom.gamma_earth_radii < 0.0
     assert geom.penumbra_radius_earth_radii > geom.umbra_radius_earth_radii > 0.0
     contacts = find_lunar_contacts_canon(eclipse_calculator, 2451564.705)
     assert contacts.p1_ut is not None
@@ -203,12 +223,96 @@ def test_unified_lunar_analysis_api_exposes_native_and_canon_modes(eclipse_calcu
     assert "geometric Moon" in canon.source_model
 
 
+def test_canon_event_data_uses_the_declared_nasa_time_basis(eclipse_calculator) -> None:
+    event = eclipse_calculator.next_lunar_eclipse_canon(2451560.0, kind="total")
+    expected = eclipse_calculator._calculate_jd_internal(
+        event.jd_ut,
+        retarded_moon=False,
+        delta_t_mode="nasa_canon",
+    )
+
+    assert event.data == expected
+
+
 def test_unified_native_penumbral_analysis_keeps_contact_model_aligned(eclipse_calculator) -> None:
     native = eclipse_calculator.analyze_lunar_eclipse(2744232.0, kind="penumbral", mode="native")
     assert native.mode == "native"
-    assert not native.event.data.is_lunar_eclipse
+    assert native.event.data.is_lunar_eclipse
+    assert native.event.data.is_eclipse()
+    assert str(native.event.data.eclipse_type) == "Penumbral"
     assert native.event.data.eclipse_type.magnitude_penumbra > 0.0
     assert abs(native.contacts.greatest - native.event.jd_ut) < 1e-6
+
+
+@pytest.mark.slow
+def test_native_any_search_skips_eclipse_season_full_moon_without_overlap(
+    eclipse_calculator,
+) -> None:
+    event = eclipse_calculator.next_lunar_eclipse(2453307.628820612, kind="any")
+
+    assert event.jd_ut != pytest.approx(2453455.387181155, abs=1.0e-6)
+    assert event.data.is_lunar_eclipse
+    assert event.data.is_eclipse()
+    assert event.data.eclipse_type.magnitude_penumbra > 0.0
+
+
+@pytest.mark.slow
+def test_local_visible_solar_search_requires_actual_disk_overlap(
+    eclipse_calculator,
+) -> None:
+    local = eclipse_calculator.next_solar_eclipse_at_location(
+        2457754.5,
+        51.4779,
+        0.0,
+        max_lunations=12,
+    )
+
+    # The 2017-02-26 global event is daylight at Greenwich but has no local
+    # overlap.  The search must continue to the locally visible 2017-08 event.
+    assert local.event.jd_ut > 2457900.0
+    assert local.topocentric_overlap
+    assert local.sun.visible
+    assert local.topocentric_separation_deg < 1.0
+    assert local.event.data.is_solar_eclipse
+    assert local.event.data.solar_topocentric_separation == pytest.approx(
+        local.topocentric_separation_deg,
+        abs=1.0e-12,
+    )
+
+
+@pytest.mark.slow
+def test_local_visible_solar_result_and_kind_use_local_classification(
+    eclipse_calculator,
+) -> None:
+    local = eclipse_calculator.next_solar_eclipse_at_location(
+        2457754.5,
+        40.7128,
+        -74.0060,
+        kind="partial",
+        max_lunations=12,
+    )
+
+    assert local.event.jd_ut > 2457900.0
+    assert local.event.data.eclipse_type.is_partial
+    assert not local.event.data.eclipse_type.is_total
+    assert local.event.data.eclipse_magnitude == pytest.approx(
+        (
+            local.event.data.sun_apparent_radius
+            + local.event.data.moon_apparent_radius
+            - local.topocentric_separation_deg
+        )
+        / (2.0 * local.event.data.sun_apparent_radius),
+        abs=1.0e-12,
+    )
+
+    with pytest.raises(RuntimeError, match="No solar eclipse of kind 'total'"):
+        eclipse_calculator.next_solar_eclipse_at_location(
+            2457754.5,
+            40.7128,
+            -74.0060,
+            kind="total",
+            max_lunations=12,
+        )
 
 
 def test_local_lunar_circumstances_api_returns_contact_bundle(eclipse_calculator) -> None:
@@ -235,6 +339,10 @@ def test_local_lunar_circumstances_api_returns_contact_bundle(eclipse_calculator
 
 
 def test_solar_local_circumstances_api_returns_observer_bundle(eclipse_calculator) -> None:
+    global_event = eclipse_calculator.next_solar_eclipse(
+        2451400.0,
+        kind="total",
+    )
     local = eclipse_calculator.solar_local_circumstances(
         2451400.0,
         50.0,
@@ -242,6 +350,7 @@ def test_solar_local_circumstances_api_returns_observer_bundle(eclipse_calculato
         kind="total",
     )
 
+    assert local.event == global_event
     assert local.event.data.is_solar_eclipse
     assert local.event.data.eclipse_type.is_total
     assert -90.0 <= local.sun.altitude <= 90.0

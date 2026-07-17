@@ -5,22 +5,27 @@ import math
 import pytest
 
 from moira.eclipse_canon import (
+    _find_roots,
     _tt_to_ut_nasa_catalog,
     _ut_to_tt_nasa_catalog,
+    find_lunar_contacts_canon,
 )
 from moira.julian import julian_day
 from moira.compat.nasa.eclipse import (
     next_nasa_lunar_eclipse,
     translate_lunar_eclipse_event,
 )
+
+
 @pytest.mark.slow
 def test_nasa_lunar_adapter_returns_canon_fields(eclipse_calculator) -> None:
     calc = eclipse_calculator
     event = calc.next_lunar_eclipse(2451560.0, kind="total")
     compat = translate_lunar_eclipse_event(calc, event)
     assert compat.jd_tt > compat.jd_ut
-    assert compat.gamma_earth_radii >= 0.0
+    assert compat.gamma_earth_radii == pytest.approx(-0.2957, abs=0.0015)
     assert compat.umbral_magnitude > 1.0
+    assert compat.umbral_magnitude < 2.0
     assert compat.penumbral_magnitude > compat.umbral_magnitude
     assert compat.contacts.u2_ut is not None
     assert compat.contacts.u3_ut is not None
@@ -54,3 +59,85 @@ def test_nasa_catalog_inverse_rejects_month_gap() -> None:
 
     with pytest.raises(ValueError, match="no self-consistent UT branch"):
         _tt_to_ut_nasa_catalog((left_tt + right_tt) / 2.0)
+
+
+def test_canon_root_scan_deduplicates_exact_grid_root() -> None:
+    assert _find_roots(lambda value: value - 1.0, 0.0, 2.0, 1.0) == [1.0]
+
+
+def test_canon_root_scan_clamps_final_step_to_window_end() -> None:
+    assert _find_roots(lambda value: value - 1.1, 0.0, 1.0, 0.6) == []
+    assert _find_roots(lambda value: value - 1.0, 0.0, 1.0, 0.6) == [1.0]
+
+
+@pytest.mark.parametrize(
+    ("start", "end", "step_days", "message"),
+    [
+        (math.nan, 1.0, 0.1, "bounds must be finite"),
+        (0.0, math.inf, 0.1, "bounds must be finite"),
+        (1.0, 1.0, 0.1, "end must be greater"),
+        (1.0, 0.0, 0.1, "end must be greater"),
+        (0.0, 1.0, 0.0, "finite and positive"),
+        (0.0, 1.0, -0.1, "finite and positive"),
+        (0.0, 1.0, math.nan, "finite and positive"),
+        (0.0, 1.0, math.inf, "finite and positive"),
+        (2451545.0, 2451546.0, 1e-20, "too small to advance"),
+    ],
+)
+def test_canon_root_scan_rejects_invalid_window_or_step(
+    start: float,
+    end: float,
+    step_days: float,
+    message: str,
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        _find_roots(lambda value: value, start, end, step_days)
+
+
+def test_canon_root_scan_rejects_nonfinite_function_value() -> None:
+    with pytest.raises(ValueError, match="function returned a non-finite"):
+        _find_roots(lambda _value: math.nan, 0.0, 1.0, 0.1)
+
+
+@pytest.mark.parametrize("window_days", [0.0, -0.1, math.nan, math.inf])
+def test_canon_contact_solver_rejects_invalid_window(window_days: float) -> None:
+    with pytest.raises(ValueError, match="window_days must be finite and positive"):
+        find_lunar_contacts_canon(None, 2451545.0, window_days=window_days)
+
+
+@pytest.mark.parametrize("coarse_step_seconds", [0.0, -1.0, math.nan, math.inf])
+def test_canon_contact_solver_rejects_invalid_step(coarse_step_seconds: float) -> None:
+    with pytest.raises(ValueError, match="coarse_step_seconds must be finite and positive"):
+        find_lunar_contacts_canon(
+            None,
+            2451545.0,
+            coarse_step_seconds=coarse_step_seconds,
+        )
+
+
+@pytest.mark.parametrize(
+    ("center_jd_ut", "window_days"),
+    [
+        (2451545.0, 1.0e-20),
+        (1.0e308, 1.0e308),
+    ],
+)
+def test_canon_contact_solver_rejects_collapsed_or_nonfinite_derived_window(
+    center_jd_ut: float,
+    window_days: float,
+) -> None:
+    with pytest.raises(ValueError, match="finite ordered bounds"):
+        find_lunar_contacts_canon(
+            None,
+            center_jd_ut,
+            window_days=window_days,
+        )
+
+
+def test_canon_contact_solver_rejects_day_step_underflow_before_computation() -> None:
+    with pytest.raises(ValueError, match="too small to form a positive day step"):
+        find_lunar_contacts_canon(
+            None,
+            2451545.0,
+            coarse_step_seconds=math.nextafter(0.0, 1.0),
+        )

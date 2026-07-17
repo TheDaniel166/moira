@@ -3,10 +3,6 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from moira.eclipse import EclipseCalculator
-from moira.julian import datetime_from_jd
-
-
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "swe_t.exp"
 
 
@@ -57,7 +53,7 @@ def test_solar_eclipse_maxima_match_offline_swiss_reference(eclipse_calculator) 
     for row in _parse_when_maxima("swe_sol_eclipse_when_glob"):
         jd_ut = float(row["jd_ut"])
         ifltype = int(row["ifltype"])
-        data = eclipse_calculator.calculate(datetime_from_jd(jd_ut))
+        data = eclipse_calculator.calculate_jd(jd_ut)
 
         if not data.is_solar_eclipse:
             failures.append(f"solar jd={jd_ut:.9f} expected solar eclipse, got {data}")
@@ -97,7 +93,7 @@ def test_lunar_eclipse_maxima_match_offline_swiss_reference(eclipse_calculator) 
     for row in _parse_when_maxima("swe_lun_eclipse_when"):
         jd_ut = float(row["jd_ut"])
         ifltype = int(row["ifltype"])
-        data = eclipse_calculator.calculate(datetime_from_jd(jd_ut))
+        data = eclipse_calculator.calculate_jd(jd_ut)
 
         if ifltype == 4:
             if not (data.is_lunar_eclipse and data.eclipse_type.is_total):
@@ -110,7 +106,11 @@ def test_lunar_eclipse_maxima_match_offline_swiss_reference(eclipse_calculator) 
                     f"lunar jd={jd_ut:.9f} expected partial, got {data.eclipse_type}"
                 )
         elif ifltype == 64:
-            if data.is_lunar_eclipse or data.eclipse_type.magnitude_penumbra <= 0.0:
+            if (
+                not data.is_lunar_eclipse
+                or str(data.eclipse_type) != "Penumbral"
+                or data.eclipse_type.magnitude_penumbra <= 0.0
+            ):
                 failures.append(
                     f"lunar jd={jd_ut:.9f} expected penumbral-only, got {data.eclipse_type}"
                 )
@@ -191,6 +191,9 @@ def test_solar_eclipse_search_matches_offline_swiss_when_reference(eclipse_calcu
     """
     failures: list[str] = []
     kind_map = {32: "hybrid", 4: "total", 16: "partial"}
+    # Secondary-engine corroboration envelope for Moira's DE441/TT
+    # Earth-reception shadow-axis objective. This is not an accuracy or
+    # uncertainty claim; primary NASA rows carry the tighter authority check.
     max_error_seconds = 10.0
 
     text = FIXTURE_PATH.read_text(encoding="utf-8", errors="replace")

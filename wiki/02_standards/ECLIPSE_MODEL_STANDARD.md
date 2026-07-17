@@ -19,8 +19,8 @@ implicitly redefined by external catalogs.
 ### 2. Time Policy
 
 - Eclipse geometry is solved in `TT`.
-- `UT` is a reporting layer, not an optimization layer.
-- Event definitions must not be stated in `UT` space except as final user-facing
+- `UT1` is a reporting layer, not an optimization layer.
+- Event definitions must not be stated in `UT1` space except as final user-facing
   output.
 
 ### 3. Lunar Greatest Eclipse Definition
@@ -34,6 +34,19 @@ This scalar is the primary event objective for native lunar event centering.
 Catalog-specific proxies may exist in compatibility layers, but they do not
 replace the native definition.
 
+### 3.1 Solar Greatest Eclipse Definition
+
+For the native solar model, greatest eclipse is defined as:
+
+- the minimum perpendicular distance from Earth's center to the physical line
+  through the Moon directed away from the Sun
+
+The line is derived from DE441 Sun and Moon states on one Earth-reception light
+cone at a TT arrival instant. Each target is evaluated at the emission epoch
+whose photons arrive at the geocentre at that instant, following the NAIF
+one-way reception-light-time object. Stellar aberration, observer parallax,
+altitude, and local disk overlap do not define the global event instant.
+
 ### 4. Native Geometry Policy
 
 The native eclipse model must use one explicit and internally consistent vector
@@ -43,6 +56,13 @@ policy. For the current Moira standard:
 - event-solving timescale: `TT`
 - shadow-axis definition: physical Earth-Sun geometry used by the native model
 - lunar umbral centering: the current native retarded-Moon policy
+- solar centering: Earth-reception light-time Sun/Moon shadow-axis policy
+
+For a central event, global annular/total classification is evaluated at the
+first intersection of that shadow ray with Earth rather than at a fictitious
+nearest-side observer. A total surface intersection with an annular geocentric
+radius relation identifies a hybrid cone crossing; an annular surface
+intersection remains annular.
 
 This choice is not justified by NASA-catalog agreement. It is justified by
 internal coherence with Moira's own physical event model.
@@ -78,6 +98,21 @@ Observational layer:
 Observer-facing apparent effects must not be mixed into the native physical
 event definition unless the standard itself is intentionally revised.
 
+Observer-local solar visibility requires both a positive solar altitude and
+positive topocentric disk-overlap margin. Daylight during a global eclipse is
+not, by itself, a locally visible eclipse.
+
+The location-search `kind` selector is local for `partial`, `annular`, `total`,
+and `central`; the returned event data is rebuilt from that same local instant,
+separation, and apparent radii. `hybrid` is necessarily the one global-path
+selector: it chooses a globally hybrid event, while the returned site data says
+whether that observer sees a partial, annular, or total phase.
+
+For a central solar path, `duration_at_max_s` means the local interval between
+second and third central contacts at the solved greatest-eclipse site. It does
+not mean the elapsed time during which a central shadow exists somewhere on
+Earth.
+
 ### 6. Compatibility Modes
 
 Compatibility modes are allowed, but they follow strict rules:
@@ -112,8 +147,10 @@ Compatibility validation priorities:
 
 ### 8. Required Result Labeling
 
-Any public-facing eclipse result that exposes a greatest-eclipse instant should
-identify which model produced it.
+Any model-selecting eclipse analysis or compatibility vessel that exposes a
+greatest-eclipse instant should identify which model produced it. The generic
+shape-stable event vessel inherits that identity from its explicitly named
+entry point.
 
 Minimum required distinction:
 
@@ -122,6 +159,12 @@ Minimum required distinction:
 
 Where practical, code and docs should also expose the concrete compatibility
 method identifier used by the non-native path.
+
+The exported `EclipseEvent` vessel remains unchanged. Model identity is carried
+by the existing `LunarEclipseAnalysis.mode`, `.source_model`, and
+`.canon_method` fields, and by the separately named NASA-compatibility vessels
+and entry points. Existing REST routes expose native results only unless their
+request/response contract already names a compatibility mode.
 
 ### 9. Non-Goals
 
