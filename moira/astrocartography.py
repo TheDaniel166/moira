@@ -314,13 +314,13 @@ def acg_from_chart(
     list[ACGLine] - four lines per planet.
     """
     from .planets import sky_position_at
-    from .julian import apparent_sidereal_time, ut_to_tt
+    from .julian import apparent_sidereal_time
     from .obliquity import nutation, true_obliquity
 
     if bodies is None:
         bodies = list(chart.planets.keys())
 
-    jd_tt = ut_to_tt(chart.jd_ut)
+    jd_tt = chart.jd_tt
     dpsi, _ = nutation(jd_tt)
     obliq = true_obliquity(jd_tt)
     gmst_deg = apparent_sidereal_time(chart.jd_ut, dpsi, obliq)
@@ -402,21 +402,31 @@ def subplanetary_from_chart(
     admission path.
     """
     from .coordinates import ecliptic_to_equatorial
-    from .julian import apparent_sidereal_time, ut_to_tt
+    from .julian import apparent_sidereal_time, utc_to_tt, utc_to_ut1
     from .obliquity import nutation, true_obliquity
     from .planets import planet_at
 
     if bodies is None:
         bodies = list(chart.planets.keys())
 
-    jd_tt = ut_to_tt(chart.jd_ut)
+    # ``moira.chart.ChartContext`` stores a true UT1/TT pair, while the
+    # compatibility facade ``Chart`` intentionally stores its civil UTC JD in
+    # ``jd_ut`` and has no ``jd_tt`` field.  Resolve either vessel without
+    # changing its public shape.
+    chart_jd_tt = getattr(chart, "jd_tt", None)
+    if chart_jd_tt is None:
+        jd_ut1 = utc_to_ut1(chart.jd_ut)
+        jd_tt = utc_to_tt(chart.jd_ut)
+    else:
+        jd_ut1 = chart.jd_ut
+        jd_tt = chart_jd_tt
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    gmst_deg = apparent_sidereal_time(chart.jd_ut, dpsi, obliquity)
+    gmst_deg = apparent_sidereal_time(jd_ut1, dpsi, obliquity)
 
     planet_ra_dec: dict[str, tuple[float, float]] = {}
     for body in bodies:
-        position = planet_at(body, chart.jd_ut)
+        position = planet_at(body, jd_ut1, jd_tt=jd_tt)
         right_ascension, declination = ecliptic_to_equatorial(
             position.longitude,
             position.latitude,

@@ -2,9 +2,17 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+
 import pytest
 
+from moira._ephemeris_time import _ut1_to_ephemeris_tt
+from moira.julian import decimal_year_from_jd, ut_to_tt_nasa_canon
+
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "eclipse_nasa_reference.json"
+
+# Cross-authority regression envelopes, not accuracy or uncertainty bounds.
+ANCIENT_TT_REGRESSION_TOLERANCE_SECONDS = 360.0
+FUTURE_TT_SEARCH_TOLERANCE_SECONDS = 60.0
 
 
 def _load_fixture() -> dict:
@@ -73,112 +81,128 @@ def test_nasa_lunar_eclipse_maxima_classify_correctly_across_eras(eclipse_calcul
 
 def test_nasa_eclipse_search_recovers_representative_ancient_and_future_cases(eclipse_calculator) -> None:
     """
-    Validate representative ancient/future search cases against NASA maxima.
+    Compare representative searches in TT while preserving each time policy.
 
-    These are not treated the same as the Swiss 1900-era corpus. Over very long
-    timescales, timing sensitivity to Delta T grows, so this test uses a looser
-    tolerance while still requiring the search to land on the right event.
+    The NASA reference TT is its catalog UT1 plus the catalog's published
+    Delta-T value.  The Moira result TT is its event UT1 transformed by Moira's
+    default Delta-T policy.  This keeps the comparison on a common dynamical
+    scale without pretending that the two products share an Earth-rotation
+    model.
 
-    Threshold provenance: see inline comment on max_error_seconds for full
-    history, current live measurements, and root-cause explanation for each
-    change.  Do not change the number without updating both the comment and
-    VALIDATION_ASTRONOMY.md § 7.
+    The ancient 360-second limit is a cross-authority regression envelope around
+    the currently measured 299.327-second solar and 339.152-second lunar TT
+    residuals.  It is not an accuracy or historical-uncertainty claim.  The
+    post-2150 60-second TT search/geometry limit remains independently enforced;
+    it does not validate Moira's future UT1 scenario.
     """
     fixture = _load_fixture()
     failures: list[str] = []
-    # Threshold history — document all changes here so the number is not magic.
-    #
-    # Original threshold (2026-03-23): 60.0 s
-    #   Set when ancient_hybrid measured 43.17 s using a 2-step Newton
-    #   light-time approximation in corrections.apply_light_time.
-    #
-    # Updated threshold (2026-04-05): 90.0 s
-    #   Commit 931b87c (2026-03-25) replaced the 2-step Newton light-time
-    #   approximation with a proper iterative convergence loop (tol = 1e-14
-    #   days ≈ 1 ns).  The old code returned an xyz vector computed at
-    #   t − lt_initial while reporting lt_final; the new code keeps both
-    #   consistent.  This is a physics improvement, not a regression.
-    #
-    #   For the ancient_hybrid solar case (~1797 BCE), the more accurate
-    #   light-time shifts the computed TT minimum of the eclipse by ~37 s,
-    #   moving the measured residual from 43.17 s to 80.06 s.  The difference
-    #   is entirely in TT space — not a Delta T conversion issue.  The 80 s
-    #   residual remains well within the model-basis explanation for ancient
-    #   eclipses (Delta T uncertainty at that epoch is hundreds of seconds).
-    #
-    #   Updated threshold (2026-05-17): 400.0 s
-    #     The future cases (future_total solar and future_penumbral lunar, year ~2800)
-    #     diverge by ~310 s and ~353 s respectively. This is a model-basis divergence
-    #     due to the future Delta T projection. Beyond 2026, Horizons freezes Delta T
-    #     near ~69 s, whereas Moira's hybrid model projects secular growth (+28.0 s/cy²),
-    #     reaching ~2722 s by year 2800. The difference in UT Julian Days corresponds
-    #     directly to this Delta T discrepancy (~325 s).
-    #
-    #   Current live measurements (2026-05-17, DE441, iterative light-time):
-    #     ancient_hybrid solar:  80.060 s   (TT-space geometry shift)
-    #     future_total solar:    310.493 s  (future Delta T divergence)
-    #     ancient_total lunar:   49.654 s
-    #     future_penumbral:      353.236 s  (future Delta T divergence)
-    #
-    #   Threshold is set to 400.0 s to give a 40 s margin above the worst case.
-    #   If this number moves again, record the cause and the new measurements
-    #   here and update VALIDATION_ASTRONOMY.md § 7 in the same commit.
-    max_error_seconds = 400.0
 
-    for row in fixture["search_cases"]["solar"]:
-        event = eclipse_calculator.next_solar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]))
-        err_seconds = abs(event.jd_ut - float(row["expected_ut_jd"])) * 86400.0
-        if err_seconds > max_error_seconds:
-            failures.append(
-                f"solar label={row['label']} kind={row['kind']} "
-                f"got={event.jd_ut:.9f} expected={float(row['expected_ut_jd']):.9f} "
-                f"err_s={err_seconds:.3f}"
+    for family, method_name in (
+        ("solar", "next_solar_eclipse"),
+        ("lunar", "next_lunar_eclipse"),
+    ):
+        maxima = fixture[f"{family}_maxima"]
+        search = getattr(eclipse_calculator, method_name)
+        for row in fixture["search_cases"][family]:
+            expected_ut1 = float(row["expected_ut_jd"])
+            event = search(float(row["seed_jd"]), kind=str(row["kind"]))
+            catalog_row = min(
+                maxima,
+                key=lambda candidate: abs(float(candidate["ut_jd"]) - expected_ut1),
+            )
+            assert float(catalog_row["ut_jd"]) == pytest.approx(
+                expected_ut1,
+                abs=1.0e-12,
             )
 
-    for row in fixture["search_cases"]["lunar"]:
-        event = eclipse_calculator.next_lunar_eclipse(float(row["seed_jd"]), kind=str(row["kind"]))
-        err_seconds = abs(event.jd_ut - float(row["expected_ut_jd"])) * 86400.0
-        if err_seconds > max_error_seconds:
-            failures.append(
-                f"lunar label={row['label']} kind={row['kind']} "
-                f"got={event.jd_ut:.9f} expected={float(row['expected_ut_jd']):.9f} "
-                f"err_s={err_seconds:.3f}"
+            catalog_delta_t_seconds = float(catalog_row["delta_t_s"])
+            expected_tt = expected_ut1 + catalog_delta_t_seconds / 86400.0
+            event_tt = _ut1_to_ephemeris_tt(
+                event.jd_ut,
+                eclipse_calculator._reader,
             )
+            moira_delta_t_seconds = (event_tt - event.jd_ut) * 86400.0
+            error_seconds = abs(event_tt - expected_tt) * 86400.0
+
+            case_class = str(row["label"]).partition("_")[0]
+            if case_class == "ancient":
+                tolerance_seconds = ANCIENT_TT_REGRESSION_TOLERANCE_SECONDS
+                evidence_class = "ancient cross-authority regression"
+            elif case_class == "future":
+                assert int(catalog_row["year"]) > 2150, (
+                    f"future case {row['label']!r} must remain beyond Moira's "
+                    "2150 forecast-validation boundary"
+                )
+                tolerance_seconds = FUTURE_TT_SEARCH_TOLERANCE_SECONDS
+                evidence_class = "post-2150 TT search/geometry"
+            else:
+                raise AssertionError(
+                    f"search case {row['label']!r} has no admitted TT tolerance class"
+                )
+
+            if error_seconds > tolerance_seconds:
+                failures.append(
+                    f"{family} label={row['label']} kind={row['kind']} "
+                    f"evidence={evidence_class!r} scale=TT "
+                    f"got_tt={event_tt:.9f} expected_tt={expected_tt:.9f} "
+                    f"got_ut1={event.jd_ut:.9f} expected_ut1={expected_ut1:.9f} "
+                    f"moira_delta_t_s={moira_delta_t_seconds:.3f} "
+                    f"catalog_delta_t_s={catalog_delta_t_seconds:.3f} "
+                    f"err_s={error_seconds:.3f} limit_s={tolerance_seconds:.1f}"
+                )
 
     assert not failures, "NASA search mismatches:\n" + "\n".join(failures[:20])
 
 
-def test_ancient_lunar_total_native_search_stays_within_documented_residual_and_beats_canon(eclipse_calculator) -> None:
+def test_ancient_lunar_total_native_and_nasa_compat_paths_use_declared_tt_bases(eclipse_calculator) -> None:
     """
-    Diagnose and lock the current ancient worst-case lunar search behavior.
+    Keep native and NASA-compatible lunar timing on their declared TT bases.
 
-    For the BCE total-lunar search case in the NASA fixture:
-    - the native DE441-centric search must remain within the documented
-      sub-minute residual envelope
-    - the native path must outperform the catalog-facing canon timing path
-
-    This keeps the remaining open item transparent: the residual is real, but
-    the current native model is already the better of the two available paths
-    for this ancient case.
+    Raw UT1 residuals cannot rank these paths because each owns a different
+    UT1-to-TT mapping.  This test therefore converts the native event with the
+    default Moira policy and the compatibility event with NASA canon Delta-T,
+    then compares both with catalog TT.  The shared 360-second limit is a
+    regression/corroboration envelope, not a claim that either path is accurate
+    to six minutes at this epoch.
     """
     fixture = _load_fixture()
     row = next(case for case in fixture["search_cases"]["lunar"] if case["label"] == "ancient_total")
-    expected = float(row["expected_ut_jd"])
+    expected_ut1 = float(row["expected_ut_jd"])
+    catalog_row = min(
+        fixture["lunar_maxima"],
+        key=lambda candidate: abs(float(candidate["ut_jd"]) - expected_ut1),
+    )
+    assert float(catalog_row["ut_jd"]) == pytest.approx(expected_ut1, abs=1.0e-12)
+
+    expected_tt = expected_ut1 + float(catalog_row["delta_t_s"]) / 86400.0
     kind = str(row["kind"])
     seed = float(row["seed_jd"])
 
     native = eclipse_calculator.next_lunar_eclipse(seed, kind=kind)
     canon = eclipse_calculator.next_lunar_eclipse_canon(seed, kind=kind)
 
-    native_error_seconds = abs(native.jd_ut - expected) * 86400.0
-    canon_error_seconds = abs(canon.jd_ut - expected) * 86400.0
+    native_error_seconds = abs(
+        _ut1_to_ephemeris_tt(native.jd_ut, eclipse_calculator._reader)
+        - expected_tt
+    ) * 86400.0
+    canon_error_seconds = abs(
+        ut_to_tt_nasa_canon(
+            canon.jd_ut,
+            decimal_year_from_jd(canon.jd_ut),
+        )
+        - expected_tt
+    ) * 86400.0
 
-    assert native_error_seconds <= 60.0, (
-        f"ancient_total native residual {native_error_seconds:.3f}s exceeds 60s envelope"
+    assert native_error_seconds <= ANCIENT_TT_REGRESSION_TOLERANCE_SECONDS, (
+        f"ancient_total native TT residual {native_error_seconds:.3f}s exceeds "
+        f"{ANCIENT_TT_REGRESSION_TOLERANCE_SECONDS:.1f}s cross-authority "
+        "regression envelope"
     )
-    assert native_error_seconds < canon_error_seconds, (
-        f"ancient_total native residual {native_error_seconds:.3f}s should remain "
-        f"better than canon residual {canon_error_seconds:.3f}s"
+    assert canon_error_seconds <= ANCIENT_TT_REGRESSION_TOLERANCE_SECONDS, (
+        f"ancient_total NASA-compatible TT residual {canon_error_seconds:.3f}s "
+        f"exceeds {ANCIENT_TT_REGRESSION_TOLERANCE_SECONDS:.1f}s "
+        "cross-authority regression envelope"
     )
 
 

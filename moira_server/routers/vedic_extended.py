@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from moira import Moira
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 
 from ..dependencies import get_engine
 from ..models.vedic_extended import (
@@ -72,9 +72,14 @@ def kalavelas_route(
 
     # rise_set.find_phenomena resolves the reader from the active context,
     # so the engine's reader is installed for the duration of the call.
+    # The engine currently accepts one JD for both astronomical reduction and
+    # its civil weekday/day-arc selection.  UT1 is required for the former;
+    # the returned civil fields remain engine-owned and are not rewritten here.
+    # A strict UTC-civil/UT1-astronomy split requires an engine policy surface.
+    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
     with use_reader_override(engine._reader_obj):
         result = kalavela_upagrahas(
-            jd_from_datetime(request.dt),
+            jd_ut,
             request.latitude,
             request.longitude,
             ayanamsa_system=request.ayanamsa_system,

@@ -386,15 +386,17 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     def moon_void_of_course(self, dt: datetime, modern: bool = False):
         """Return the Moon void-of-course window for dt."""
         facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         return facade.void_of_course_window(
-            facade.jd_from_datetime(dt), reader=self._reader, modern=modern
+            jd_ut1, reader=self._reader, modern=modern
         )
 
     def is_moon_void_of_course(self, dt: datetime, modern: bool = False) -> bool:
         """Return True if the Moon is void of course at dt."""
         facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         return facade.is_void_of_course(
-            facade.jd_from_datetime(dt), reader=self._reader, modern=modern
+            jd_ut1, reader=self._reader, modern=modern
         )
 
     def electional_windows(
@@ -408,9 +410,11 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     ):
         """Find time windows where the caller-supplied predicate is satisfied."""
         facade = _facade_module()
+        jd_start_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt_start))
+        jd_end_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt_end))
         return facade.find_electional_windows(
-            jd_start=facade.jd_from_datetime(dt_start),
-            jd_end=facade.jd_from_datetime(dt_end),
+            jd_start=jd_start_ut1,
+            jd_end=jd_end_ut1,
             latitude=latitude,
             longitude=longitude,
             predicate=predicate,

@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+from types import SimpleNamespace
+
 import pytest
 
 import moira.galactic as gal
+import moira_server.services.galactic as galactic_service
+from moira_server.models.galactic import GalacticChartPositionsRequest
 
 
 JD_J2000 = 2451545.0
@@ -98,3 +103,39 @@ class TestGalacticInputValidation:
     def test_galactic_position_of_rejects_empty_body_name(self) -> None:
         with pytest.raises(ValueError, match="body"):
             gal.galactic_position_of("", 0.0, 0.0, OBLIQUITY_J2000, JD_J2000)
+
+
+def test_galactic_chart_service_derives_tt_from_utc_coded_facade_chart(monkeypatch) -> None:
+    requested_dt = datetime(2026, 7, 17, tzinfo=timezone.utc)
+    jd_utc = 100.0
+    jd_tt = 200.0
+    chart = SimpleNamespace(
+        jd_ut=jd_utc,
+        datetime_utc=requested_dt,
+        planets={"Sun": SimpleNamespace(longitude=10.0, latitude=2.0)},
+    )
+    calls: dict[str, object] = {"utc_to_tt": []}
+
+    monkeypatch.setattr(galactic_service, "_build_chart", lambda _engine, _request: chart)
+
+    def fake_utc_to_tt(jd: float) -> float:
+        calls["utc_to_tt"].append(jd)
+        return jd_tt
+
+    def fake_all_galactic_positions(body_data, obliquity, received_jd_tt):
+        calls["galactic"] = (body_data, obliquity, received_jd_tt)
+        return [SimpleNamespace(body="Sun")]
+
+    monkeypatch.setattr(galactic_service, "utc_to_tt", fake_utc_to_tt)
+    monkeypatch.setattr(galactic_service, "true_obliquity", lambda received_jd_tt: 23.5)
+    monkeypatch.setattr(galactic_service, "all_galactic_positions", fake_all_galactic_positions)
+
+    result = galactic_service.compute_galactic_chart_positions(
+        SimpleNamespace(),
+        GalacticChartPositionsRequest(dt=requested_dt, bodies=["Sun"]),
+    )
+
+    assert calls["utc_to_tt"] == [jd_utc]
+    assert calls["galactic"] == ({"Sun": (10.0, 2.0)}, 23.5, jd_tt)
+    assert result.provenance.jd_ut == jd_utc
+    assert result.provenance.jd_tt == jd_tt

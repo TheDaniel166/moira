@@ -427,10 +427,10 @@ def orbital_elements_at(
             "Body.MOON in the osculating sense; use geocentric elements instead"
         )
 
-    from .julian import ut_to_tt as _ut_to_tt
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
     from .planets import _barycentric_state, _earth_barycentric_state
 
-    jd_tt = _ut_to_tt(jd_ut)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     # Body barycentric state (km, km/day, ICRF)
     if body == Body.EARTH:

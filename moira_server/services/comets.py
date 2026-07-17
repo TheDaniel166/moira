@@ -6,7 +6,7 @@ from typing import Any
 
 from moira import Moira
 from moira.comets import COMET_NAIF, CometData, comet_at
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 
 from ..models.comets import (
     CometListItem,
@@ -90,7 +90,7 @@ def compute_comet_position(
 ) -> CometPositionResponse:
     reader = _get_small_body_reader(engine)
     resolved_body = _resolve_comet_body(request.body)
-    jd_ut = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
     data: CometData = comet_at(resolved_body, jd_ut, reader=reader)
     covered = _covered_bodies(reader)
     loaded_kernel_available = data.naif_id in covered
@@ -118,7 +118,7 @@ def compute_comets_bulk(
     results = {}
     missing: list[str] = []
 
-    jd_ut = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
     for body in request.bodies:
         try:
             resolved_body = _resolve_comet_body(body)

@@ -14,6 +14,7 @@ from typing import Any
 
 _shadbala = importlib.import_module("moira.shadbala")
 _varga = importlib.import_module("moira.varga")
+_panchanga = importlib.import_module("moira.panchanga")
 
 
 def _facade_module() -> Any:
@@ -109,8 +110,14 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
         bodies: tuple[str, ...] | list[str],
         *,
         ayanamsa_system: str,
+        _jd_ut1: float | None = None,
     ) -> dict[str, float]:
         facade = _facade_module()
+        jd_ut1 = (
+            facade.utc_to_ut1(chart.jd_ut)
+            if _jd_ut1 is None
+            else _jd_ut1
+        )
         longitudes = chart.longitudes(include_nodes=True)
         result: dict[str, float] = {}
         for body in bodies:
@@ -118,7 +125,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
                 raise KeyError(f"{body} not found in chart")
             result[body] = facade.tropical_to_sidereal(
                 longitudes[body],
-                chart.jd_ut,
+                jd_ut1,
                 system=ayanamsa_system,
             )
         return result
@@ -175,7 +182,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
         moon = chart.planets.get("Moon")
         if sun is None or moon is None:
             raise ValueError("Sun and Moon must be present in chart for Panchanga")
-        return facade.panchanga_at(
+        return _panchanga._panchanga_from_utc(
             sun.longitude,
             moon.longitude,
             chart.jd_ut,
@@ -227,11 +234,13 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
         """Compute Shadbala using an existing chart, houses, and Panchanga truth."""
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
+        jd_ut1 = facade.utc_to_ut1(chart.jd_ut)
         seven = ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn")
         sidereal_longitudes = self._sidereal_longitudes_from_chart(
             chart,
             seven,
             ayanamsa_system=system,
+            _jd_ut1=jd_ut1,
         )
         planet_speeds = {
             planet: chart.planets[planet].speed
@@ -252,7 +261,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
             sidereal_longitudes,
             planet_speeds,
             houses,
-            chart.jd_ut,
+            jd_ut1,
             panchanga_result.tithi.number,
             panchanga_result.vara_lord,
             day_chart,
@@ -386,14 +395,16 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
         """Compute Ashtakavarga from an existing chart and Lagna-bearing houses."""
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
+        jd_ut1 = facade.utc_to_ut1(chart.jd_ut)
         longitudes = self._sidereal_longitudes_from_chart(
             chart,
             ("Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"),
             ayanamsa_system=system,
+            _jd_ut1=jd_ut1,
         )
         longitudes["Lagna"] = facade.tropical_to_sidereal(
             houses.asc,
-            chart.jd_ut,
+            jd_ut1,
             system=system,
         )
         return facade.ashtakavarga(

@@ -12,7 +12,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.sidereal import Ayanamsa
 from moira.varshaphal import (
     active_mudda_dasha,
@@ -66,7 +66,7 @@ _DOCTRINE_PAYLOAD_WITH_FOCUS = {
 
 
 def _direct_chart():
-    birth_jd = jd_from_datetime(_NATAL_DT)
+    birth_jd = utc_to_ut1(jd_from_datetime(_NATAL_DT))
     return build_varshaphal_chart(
         birth_jd=birth_jd,
         natal_latitude=_NATAL_LAT,
@@ -136,7 +136,7 @@ def test_varshaphal_chart_route_matches_engine(client_with_engine: TestClient) -
 @pytest.mark.requires_ephemeris
 def test_varshaphal_mudda_active_route_matches_engine(client_with_engine: TestClient) -> None:
     direct_chart = _direct_chart()
-    query_jd = jd_from_datetime(_QUERY_DT)
+    query_jd = utc_to_ut1(jd_from_datetime(_QUERY_DT))
     direct_activation = active_mudda_dasha(direct_chart.mudda_dasha, query_jd)
 
     resp = client_with_engine.post("/v1/varshaphal/mudda/active", json=_TIMING_PAYLOAD)
@@ -154,7 +154,7 @@ def test_varshaphal_mudda_active_route_matches_engine(client_with_engine: TestCl
 @pytest.mark.requires_ephemeris
 def test_varshaphal_tasira_active_route_matches_engine(client_with_engine: TestClient) -> None:
     direct_chart = _direct_chart()
-    query_jd = jd_from_datetime(_QUERY_DT)
+    query_jd = utc_to_ut1(jd_from_datetime(_QUERY_DT))
 
     if not direct_chart.tasira_dasha.periods:
         pytest.skip("No tasira periods for this chart/date combination")
@@ -176,7 +176,7 @@ def test_varshaphal_tasira_active_route_matches_engine(client_with_engine: TestC
 @pytest.mark.requires_ephemeris
 def test_varshaphal_mudda_judgement_route_matches_engine(client_with_engine: TestClient) -> None:
     direct_chart = _direct_chart()
-    query_jd = jd_from_datetime(_QUERY_DT)
+    query_jd = utc_to_ut1(jd_from_datetime(_QUERY_DT))
     direct_judgement = mudda_period_judgement(direct_chart, query_jd)
 
     resp = client_with_engine.post("/v1/varshaphal/mudda/judgement", json=_TIMING_PAYLOAD)
@@ -292,7 +292,7 @@ def test_varshaphal_judgement_profile_with_focus_dt_matches_engine(client_with_e
     """Hardening: exercise the new focus_dt path on judgement/profile."""
     direct = _direct_chart()
     focus_dt = datetime(2025, 12, 15, tzinfo=timezone.utc)
-    focus_jd = jd_from_datetime(focus_dt)
+    focus_jd = utc_to_ut1(jd_from_datetime(focus_dt))
     direct_profile = varshaphal_judgement_profile(direct, focus_jd=focus_jd)
 
     resp = client_with_engine.post("/v1/varshaphal/judgement/profile", json=_DOCTRINE_PAYLOAD_WITH_FOCUS)
@@ -309,7 +309,7 @@ def test_varshaphal_year_judgement_with_focus_dt_matches_engine(client_with_engi
     """Hardening: exercise the new focus_dt path on judgement/year."""
     direct = _direct_chart()
     focus_dt = datetime(2025, 12, 15, tzinfo=timezone.utc)
-    focus_jd = jd_from_datetime(focus_dt)
+    focus_jd = utc_to_ut1(jd_from_datetime(focus_dt))
     direct_year = varshaphal_year_judgement(direct, focus_jd=focus_jd)
 
     resp = client_with_engine.post("/v1/varshaphal/judgement/year", json=_DOCTRINE_PAYLOAD_WITH_FOCUS)

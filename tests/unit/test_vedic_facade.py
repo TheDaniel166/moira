@@ -49,10 +49,11 @@ def _houses():
 
 def _sidereal_chart_longitudes(chart: _Chart, bodies: tuple[str, ...]) -> dict[str, float]:
     longitudes = chart.longitudes(include_nodes=True)
+    jd_ut1 = facade.utc_to_ut1(chart.jd_ut)
     return {
         body: facade.tropical_to_sidereal(
             longitudes[body],
-            chart.jd_ut,
+            jd_ut1,
             system=facade.Ayanamsa.LAHIRI,
         )
         for body in bodies
@@ -96,10 +97,11 @@ def test_vedic_facade_panchanga_delegates_to_engine() -> None:
     chart = _Chart()
 
     via_facade = engine.panchanga(chart)
+    jd_ut1 = facade.utc_to_ut1(chart.jd_ut)
     direct = facade.panchanga_at(
         chart.planets["Sun"].longitude,
         chart.planets["Moon"].longitude,
-        chart.jd_ut,
+        jd_ut1,
         ayanamsa_system=facade.Ayanamsa.LAHIRI,
     )
 
@@ -136,7 +138,7 @@ def test_vedic_facade_ashtakavarga_chart_wrapper_delegates_to_engine() -> None:
     sidereal = _sidereal_chart_longitudes(chart, bodies)
     sidereal["Lagna"] = facade.tropical_to_sidereal(
         houses.asc,
-        chart.jd_ut,
+        facade.utc_to_ut1(chart.jd_ut),
         system=facade.Ayanamsa.LAHIRI,
     )
 
@@ -162,7 +164,7 @@ def test_vedic_facade_varga_chart_wrapper_delegates_to_engine() -> None:
     chart = _Chart()
     sidereal_moon = facade.tropical_to_sidereal(
         chart.planets["Moon"].longitude,
-        chart.jd_ut,
+        facade.utc_to_ut1(chart.jd_ut),
         system=facade.Ayanamsa.LAHIRI,
     )
 
@@ -187,10 +189,11 @@ def test_vedic_facade_shadbala_chart_wrapper_delegates_to_engine() -> None:
     sidereal = _sidereal_chart_longitudes(chart, bodies)
     speeds = {planet: chart.planets[planet].speed for planet in bodies}
     latitudes = {planet: chart.planets[planet].latitude for planet in bodies}
+    jd_ut1 = facade.utc_to_ut1(chart.jd_ut)
     panchanga = facade.panchanga_at(
         chart.planets["Sun"].longitude,
         chart.planets["Moon"].longitude,
-        chart.jd_ut,
+        jd_ut1,
         ayanamsa_system=facade.Ayanamsa.LAHIRI,
     )
     is_day = facade.is_day_chart(chart.planets["Sun"].longitude, houses.asc)
@@ -200,7 +203,7 @@ def test_vedic_facade_shadbala_chart_wrapper_delegates_to_engine() -> None:
         sidereal,
         speeds,
         houses,
-        chart.jd_ut,
+        jd_ut1,
         panchanga.tithi.number,
         panchanga.vara_lord,
         is_day,

@@ -77,7 +77,7 @@ from .coordinates import (
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation
 from .precession import general_precession_in_longitude
-from .julian import ut_to_tt
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import _earth_barycentric, _barycentric as _planet_barycentric
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
@@ -206,7 +206,7 @@ def _comet_geocentric_ecliptic(
     gravitational deflection → frame bias → precession+nutation →
     true-of-date ecliptic projection.
     """
-    jd_tt = ut_to_tt(jd_ut)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     # Earth and Sun barycentric ICRF positions (km)
     earth_bary = _earth_barycentric(jd_tt, reader)
@@ -255,7 +255,7 @@ def _comet_geocentric_ecliptic(
 
     # Longitude speed via symmetric finite difference
     def _lon_at(jd_off: float) -> float:
-        jd2 = ut_to_tt(jd_ut + jd_off)
+        jd2 = _ut1_to_ephemeris_tt(jd_ut + jd_off, reader)
         eb  = _earth_barycentric(jd2, reader)
         sb  = _sun_barycentric(jd2, reader)
         ch  = kernel.position(10, naif_id, jd2)

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from moira import Moira
 from moira.geodetic import GeodeticChart, geodetic_chart, geodetic_equivalents
-from moira.julian import ut_to_tt
+from moira.julian import utc_to_tt, utc_to_ut1
 from moira.obliquity import true_obliquity
 from moira.sidereal import ayanamsa
 
@@ -120,12 +120,13 @@ def compute_geodetic_chart_backed_chart(
     request: GeodeticChartBackedChartRequest,
 ) -> GeodeticChartResult:
     chart_context = _build_chart(engine, request, bodies=["Sun"])
-    jd_tt = _jd_tt(chart_context)
+    jd_ut = utc_to_ut1(chart_context.jd_ut)
+    jd_tt = utc_to_tt(chart_context.jd_ut)
     obliquity = true_obliquity(jd_tt)
     ayanamsa_deg = _chart_ayanamsa(
         zodiac=request.zodiac,
         ayanamsa_system=request.ayanamsa_system,
-        jd_ut=chart_context.jd_ut,
+        jd_ut=jd_ut,
     )
     chart = geodetic_chart(
         request.geo_longitude,
@@ -139,6 +140,8 @@ def compute_geodetic_chart_backed_chart(
         provenance=_chart_provenance(
             request=request,
             chart_context=chart_context,
+            jd_ut=jd_ut,
+            jd_tt=jd_tt,
             obliquity=obliquity,
             ayanamsa_deg=ayanamsa_deg,
             requested_bodies=None,
@@ -182,11 +185,13 @@ def compute_geodetic_chart_backed_equivalents(
     request: GeodeticChartBackedEquivalentsRequest,
 ) -> GeodeticEquivalentsResult:
     chart_context = _build_chart(engine, request, bodies=request.bodies)
+    jd_ut = utc_to_ut1(chart_context.jd_ut)
+    jd_tt = utc_to_tt(chart_context.jd_ut)
     bodies = _selected_bodies(request.bodies, chart_context.planets)
     ayanamsa_deg = _chart_ayanamsa(
         zodiac=request.zodiac,
         ayanamsa_system=request.ayanamsa_system,
-        jd_ut=chart_context.jd_ut,
+        jd_ut=jd_ut,
     )
     longitudes = {
         body: chart_context.planets[body].longitude
@@ -206,6 +211,8 @@ def compute_geodetic_chart_backed_equivalents(
         provenance=_chart_provenance(
             request=request,
             chart_context=chart_context,
+            jd_ut=jd_ut,
+            jd_tt=jd_tt,
             obliquity=None,
             ayanamsa_deg=ayanamsa_deg,
             requested_bodies=tuple(request.bodies) if request.bodies is not None else None,
@@ -266,6 +273,8 @@ def _chart_provenance(
     *,
     request,
     chart_context,
+    jd_ut: float,
+    jd_tt: float,
     obliquity: float | None,
     ayanamsa_deg: float,
     requested_bodies: tuple[str, ...] | None,
@@ -276,8 +285,8 @@ def _chart_provenance(
     return GeodeticProvenance(
         requested_datetime=request.dt.isoformat(),
         normalized_datetime_utc=chart_context.datetime_utc.isoformat(),
-        jd_ut=chart_context.jd_ut,
-        jd_tt=_jd_tt(chart_context),
+        jd_ut=jd_ut,
+        jd_tt=jd_tt,
         obliquity_deg=obliquity,
         zodiac=request.zodiac,
         ayanamsa_system=request.ayanamsa_system if request.zodiac == "sidereal" else None,
@@ -287,11 +296,6 @@ def _chart_provenance(
         coordinate_source=coordinate_source,
         stage_sequence=stage_sequence,
     )
-
-
-def _jd_tt(chart_context) -> float:
-    return getattr(chart_context, "jd_tt", ut_to_tt(chart_context.jd_ut))
-
 
 __all__ = [
     "GeodeticChartResult",

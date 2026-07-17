@@ -408,7 +408,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             raise ValueError("Moon not found in natal chart - include it when calling chart()")
         return facade.vimshottari(
             moon.longitude,
-            facade.jd_from_datetime(natal_dt),
+            facade.utc_to_ut1(facade.jd_from_datetime(natal_dt)),
             levels=levels,
             ayanamsa_system=system,
         )
@@ -435,6 +435,14 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         facade = _facade_module()
         lons = chart.longitudes(include_nodes=False)
         day = facade.is_day_chart(lons.get("Sun", 0.0), houses.asc)
+        jd_utc = chart.jd_ut
+        jd_ut1: float | None = None
+
+        def chart_ut1() -> float:
+            nonlocal jd_ut1
+            if jd_ut1 is None:
+                jd_ut1 = facade.utc_to_ut1(jd_utc)
+            return jd_ut1
 
         # 1. Resolve prenatal syzygy degree if not provided
         if prenatal_syzygy_lon is None:
@@ -442,7 +450,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
                 from .transits import prenatal_syzygy
                 from .planets import planet_at
                 reader = getattr(chart, "_reader", None)
-                jd_syzygy, phase = prenatal_syzygy(chart.jd_ut, reader=reader)
+                jd_syzygy, phase = prenatal_syzygy(chart_ut1(), reader=reader)
                 if phase == "New Moon":
                     prenatal_syzygy_lon = planet_at("Sun", jd_syzygy, reader=reader).longitude
                 else:
@@ -458,9 +466,9 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             reader = getattr(chart, "_reader", None)
             if lat is not None and lon is not None:
                 try:
-                    from .planetary_hours import planetary_hours
-                    ph_day = planetary_hours(chart.jd_ut, lat, lon, reader=reader)
-                    found_hour = ph_day.hour_at(chart.jd_ut)
+                    from .planetary_hours import _planetary_hours_from_utc
+                    ph_day = _planetary_hours_from_utc(jd_utc, lat, lon, reader=reader)
+                    found_hour = ph_day.hour_at(chart_ut1())
                     if found_hour is not None:
                         hour_ruler = found_hour.ruler
                     if ph_day.hours:

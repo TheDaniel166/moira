@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from moira import Moira
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.progressions import (
     ProgressedChart,
     ProgressionComputationClassification,
@@ -210,12 +210,12 @@ _TIME_KEY_DISPATCH = {
 
 def _natal_jd_from_request(natal_dt, bodies=None):
     require_aware_datetime(natal_dt)
-    return jd_from_datetime(natal_dt)
+    return utc_to_ut1(jd_from_datetime(natal_dt))
 
 
 def _natal_jd(request) -> float:
     require_aware_datetime(request.natal.dt)
-    return jd_from_datetime(request.natal.dt)
+    return utc_to_ut1(jd_from_datetime(request.natal.dt))
 
 
 # ---------------------------------------------------------------------------
@@ -400,7 +400,7 @@ def compute_daily_house_frame(
 ) -> ProgressedHouseFrame:
     require_aware_datetime(request.natal.dt)
     require_aware_datetime(request.target_dt)
-    natal_jd = jd_from_datetime(request.natal.dt)
+    natal_jd = utc_to_ut1(jd_from_datetime(request.natal.dt))
     return daily_house_frame(
         natal_jd_ut=natal_jd,
         target_date=request.target_dt,
@@ -434,8 +434,8 @@ def compute_house_frame_arc_chart(
     request: HouseFrameArcRequest,
 ) -> ProgressedChart:
     require_aware_datetime(request.target_dt)
-    natal_jd = jd_from_datetime(request.natal.dt)
     require_aware_datetime(request.natal.dt)
+    natal_jd = utc_to_ut1(jd_from_datetime(request.natal.dt))
 
     if request.method not in HOUSE_FRAME_ARC_METHODS:
         supported = ", ".join(sorted(HOUSE_FRAME_ARC_METHODS))

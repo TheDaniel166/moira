@@ -13,7 +13,11 @@ Coverage
    Mandi alias vs Kalidasa-table modes.
 3. Policy validation.
 """
+import math
+
 import pytest
+
+import moira.upagrahas as upagrahas_module
 
 from moira.upagrahas import (
     UpagrahaPolicy,
@@ -70,6 +74,28 @@ _JD_SATURDAY_NIGHT = 2451545.35   # same Vedic Saturday, night
 
 @pytest.mark.requires_ephemeris
 class TestKalavelaUpagrahas:
+
+    def test_weekday_is_owned_by_local_mean_solar_sunrise(self, monkeypatch):
+        monkeypatch.setattr(
+            upagrahas_module,
+            "_solar_frame",
+            lambda *_args, **_kwargs: (104.2, 104.7, 105.2),
+        )
+        monkeypatch.setattr(
+            upagrahas_module,
+            "_ascendant_at",
+            lambda jd, *_args, **_kwargs: (jd % 360.0, jd % 360.0),
+        )
+
+        result = kalavela_upagrahas(
+            104.3,
+            35.6762,
+            139.6503,
+            reader=object(),
+        )
+
+        assert math.floor(104.2 + 1.5) % 7 == 0  # Greenwich date: Sunday
+        assert result.weekday_index == 1         # Local mean-solar date: Monday
 
     @pytest.fixture(scope='class')
     def day_result(self, moira_engine):

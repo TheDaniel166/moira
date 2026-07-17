@@ -56,13 +56,13 @@ import math
 from dataclasses import dataclass
 
 from .constants import J2000, JULIAN_CENTURY, DEG2RAD, RAD2DEG, Body
-from .julian import ut_to_tt, decimal_year
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .obliquity import mean_obliquity, nutation
 from .coordinates import (
     vec_sub, mat_vec_mul,
     precession_matrix_equatorial, nutation_matrix_equatorial,
 )
-from .planets import _barycentric_state, approx_year as _approx_year
+from .planets import _barycentric_state
 from .spk_reader import get_reader, SpkReader
 
 __all__ = [
@@ -344,8 +344,7 @@ def geometric_node(
     if reader is None:
         reader = get_reader()
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     # True obliquity for tropical frame conversion
     _, deps_deg = nutation(jd_tt)

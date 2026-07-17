@@ -52,7 +52,16 @@ from datetime import datetime, timezone
 from .constants import Body, HouseSystem, HOUSE_SYSTEM_NAMES, TROPICAL_YEAR, sign_of
 from .coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
 from .houses import HouseCusps, HousePolicy, calculate_houses
-from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, jd_from_datetime, delta_t, ut_to_tt
+from .julian import (
+    CalendarDateTime,
+    _ut1_to_utc,
+    calendar_datetime_from_jd,
+    datetime_from_jd,
+    jd_from_datetime,
+    delta_t,
+    utc_to_ut1,
+)
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import planet_at, all_planets_at, _resolve_small_body_name
 from .obliquity import true_obliquity
 from .spk_reader import get_reader, SpkReader
@@ -771,11 +780,11 @@ class ProgressedDeclinationChart:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(self.progressed_jd_ut)
+        return datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.progressed_jd_ut)
+        return calendar_datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
 
     @property
     def doctrine_family(self) -> str:
@@ -889,11 +898,11 @@ class ProgressedChart:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(self.progressed_jd_ut)
+        return datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.progressed_jd_ut)
+        return calendar_datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
 
     @property
     def doctrine_family(self) -> str | None:
@@ -1015,11 +1024,11 @@ class ProgressedHouseFrame:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(self.progressed_jd_ut)
+        return datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.progressed_jd_ut)
+        return calendar_datetime_from_jd(_ut1_to_utc(self.progressed_jd_ut))
 
     @property
     def doctrine_family(self) -> str:
@@ -1190,6 +1199,12 @@ def _validate_house_frame_inputs(latitude: float, longitude: float, system: str 
         raise ValueError("system must be a supported house system code")
 
 
+def _ut1_from_datetime(value: datetime) -> float:
+    """Resolve one UTC-aware civil datetime to the UT1 progression clock."""
+
+    return utc_to_ut1(jd_from_datetime(value))
+
+
 def _age_years(
     natal_jd_ut: float,
     target_date: datetime,
@@ -1199,7 +1214,7 @@ def _age_years(
 
     _validate_natal_jd_ut(natal_jd_ut)
     _validate_target_date(target_date)
-    return (jd_from_datetime(target_date) - natal_jd_ut) / tropical_year_days
+    return (_ut1_from_datetime(target_date) - natal_jd_ut) / tropical_year_days
 
 
 def _completed_life_years(age_years: float) -> int:
@@ -1311,7 +1326,7 @@ def _uniform_longitude_direction(
             coordinate_system="ecliptic_longitude",
             converse=chart_type.startswith("Converse "),
         ),
-        target_jd_ut=jd_from_datetime(target_date),
+        target_jd_ut=_ut1_from_datetime(target_date),
         age_years=age_years,
         progressed_jd_ut=progressed_jd_ut,
         directed_arc_deg=arc_deg,
@@ -1369,7 +1384,7 @@ def _uniform_ra_direction(
         raise ValueError("age_years must be finite")
     if not math.isfinite(progressed_jd_ut):
         raise ValueError("progressed_jd_ut must be finite")
-    eps = true_obliquity(ut_to_tt(natal_jd_ut))
+    eps = true_obliquity(_ut1_to_ephemeris_tt(natal_jd_ut, reader))
     resolved_bodies = _default_bodies(bodies)
     natal_raw = all_planets_at(natal_jd_ut, bodies=resolved_bodies, reader=reader)
     positions: dict[str, ProgressedPosition] = {}
@@ -1393,7 +1408,7 @@ def _uniform_ra_direction(
             coordinate_system="right_ascension",
             converse=chart_type.startswith("Converse "),
         ),
-        target_jd_ut=jd_from_datetime(target_date),
+        target_jd_ut=_ut1_from_datetime(target_date),
         age_years=age_years,
         progressed_jd_ut=progressed_jd_ut,
         directed_arc_deg=arc_deg,
@@ -1457,7 +1472,7 @@ def _time_key_chart(
             coordinate_system="ecliptic_longitude",
             converse=converse,
         ),
-        target_jd_ut=jd_from_datetime(target_date),
+        target_jd_ut=_ut1_from_datetime(target_date),
         age_years=age_years,
         progressed_jd_ut=progressed_jd_ut,
         stepped_years=stepped_years,
@@ -1575,7 +1590,7 @@ def daily_house_frame(
             application_mode="differential",
             coordinate_system="local_house_frame",
         ),
-        target_jd_ut=jd_from_datetime(target_date),
+        target_jd_ut=_ut1_from_datetime(target_date),
         age_years=age_years,
         progressed_jd_ut=progressed_jd_ut,
         latitude=latitude,
@@ -2183,8 +2198,8 @@ def solar_arc_right_ascension(
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
-    eps_natal = true_obliquity(ut_to_tt(natal_jd_ut))
-    eps_prog = true_obliquity(ut_to_tt(prog_jd))
+    eps_natal = true_obliquity(_ut1_to_ephemeris_tt(natal_jd_ut, reader))
+    eps_prog = true_obliquity(_ut1_to_ephemeris_tt(prog_jd, reader))
     natal_sun = planet_at(Body.SUN, natal_jd_ut, reader=reader)
     prog_sun = planet_at(Body.SUN, prog_jd, reader=reader)
     natal_ra, _ = ecliptic_to_equatorial(natal_sun.longitude, natal_sun.latitude, eps_natal)
@@ -2232,8 +2247,8 @@ def converse_solar_arc_right_ascension(
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
-    eps_natal = true_obliquity(ut_to_tt(natal_jd_ut))
-    eps_prog = true_obliquity(ut_to_tt(prog_jd))
+    eps_natal = true_obliquity(_ut1_to_ephemeris_tt(natal_jd_ut, reader))
+    eps_prog = true_obliquity(_ut1_to_ephemeris_tt(prog_jd, reader))
     natal_sun = planet_at(Body.SUN, natal_jd_ut, reader=reader)
     prog_sun = planet_at(Body.SUN, prog_jd, reader=reader)
     natal_ra, _ = ecliptic_to_equatorial(natal_sun.longitude, natal_sun.latitude, eps_natal)
@@ -3423,7 +3438,7 @@ def secondary_progression_declination(
     prog_jd = natal_jd_ut + age_years
     resolved_bodies = _default_bodies(bodies)
 
-    prog_tt = ut_to_tt(prog_jd)
+    prog_tt = _ut1_to_ephemeris_tt(prog_jd, reader)
     eps = true_obliquity(prog_tt)
     raw = all_planets_at(prog_jd, bodies=resolved_bodies, reader=reader)
     positions = {}
@@ -3441,7 +3456,7 @@ def secondary_progression_declination(
             application_mode="differential",
             coordinate_system="declination",
         ),
-        target_jd_ut=jd_from_datetime(target_date),
+        target_jd_ut=_ut1_from_datetime(target_date),
         age_years=age_years,
         progressed_jd_ut=prog_jd,
     )
@@ -3501,7 +3516,7 @@ def converse_secondary_progression_declination(
     prog_jd = natal_jd_ut - age_years
     resolved_bodies = _default_bodies(bodies)
 
-    prog_tt = ut_to_tt(prog_jd)
+    prog_tt = _ut1_to_ephemeris_tt(prog_jd, reader)
     eps = true_obliquity(prog_tt)
     raw = all_planets_at(prog_jd, bodies=resolved_bodies, reader=reader)
     positions = {}
@@ -3520,7 +3535,7 @@ def converse_secondary_progression_declination(
             coordinate_system="declination",
             converse=True,
         ),
-        target_jd_ut=jd_from_datetime(target_date),
+        target_jd_ut=_ut1_from_datetime(target_date),
         age_years=age_years,
         progressed_jd_ut=prog_jd,
     )

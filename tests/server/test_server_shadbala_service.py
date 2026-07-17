@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import pytest
 
 from moira.dignities import is_day_chart
+from moira.julian import utc_to_ut1
 from moira.panchanga import panchanga_at
 from moira.shadbala import (
     graha_yuddha_pairs,
@@ -44,6 +45,7 @@ def _direct_shadbala(moira_engine, request: ShadbalaChartRequest):
         observer_lon=request.observer_lon,
         observer_elev_m=request.observer_elev_m,
     )
+    jd_ut = utc_to_ut1(chart.jd_ut)
     houses = moira_engine.houses(
         request.dt,
         latitude=request.observer_lat,
@@ -59,7 +61,7 @@ def _direct_shadbala(moira_engine, request: ShadbalaChartRequest):
     sidereal_longitudes = {
         planet: tropical_to_sidereal(
             tropical_longitudes[planet],
-            chart.jd_ut,
+            jd_ut,
             system=ayanamsa_system,
         )
         for planet in _PLANETS
@@ -69,14 +71,14 @@ def _direct_shadbala(moira_engine, request: ShadbalaChartRequest):
     panchanga_support = panchanga_at(
         tropical_longitudes["Sun"],
         tropical_longitudes["Moon"],
-        chart.jd_ut,
+        jd_ut,
         ayanamsa_system=ayanamsa_system,
     )
     return shadbala(
         sidereal_longitudes=sidereal_longitudes,
         planet_speeds=planet_speeds,
         houses=houses,
-        jd=chart.jd_ut,
+        jd=jd_ut,
         tithi_number=panchanga_support.tithi.number,
         vara_lord=panchanga_support.vara_lord,
         is_day=is_day_chart(tropical_longitudes["Sun"], houses.asc),

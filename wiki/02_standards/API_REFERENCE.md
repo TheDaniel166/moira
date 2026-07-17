@@ -100,12 +100,12 @@ for a in aspects:
 ### Transits to natal point
 
 ```python
-from moira.facade import jd_from_datetime
+from moira.facade import jd_from_datetime, utc_to_ut1
 from datetime import datetime, timezone
 
 natal_sun = chart.planets["Sun"].longitude          # e.g. 14.7°
-jd_start  = jd_from_datetime(datetime(2024, 1, 1, tzinfo=timezone.utc))
-jd_end    = jd_from_datetime(datetime(2025, 1, 1, tzinfo=timezone.utc))
+jd_start  = utc_to_ut1(jd_from_datetime(datetime(2024, 1, 1, tzinfo=timezone.utc)))
+jd_end    = utc_to_ut1(jd_from_datetime(datetime(2025, 1, 1, tzinfo=timezone.utc)))
 
 for event in m.transits(Body.JUPITER, natal_sun, jd_start, jd_end):
     print(event.jd_ut, event.relation.relation_kind)
@@ -339,11 +339,11 @@ one Julian Day.
 
 | Field | Type | Description |
 |---|---|---|
-| `jd_ut` | `float` | Julian Day (UT) of the snapshot |
+| `jd_ut` | `float` | Legacy field name: UTC-coded Julian Day of the civil snapshot; internal reductions resolve UT1 explicitly, preserving the historical proxy before the monotonic final-day handoff into the admitted atomic UTC era |
 | `planets` | `dict[str, PlanetData]` | Geocentric ecliptic positions |
 | `nodes` | `dict[str, NodeData]` | Lunar nodes and Lilith |
 | `obliquity` | `float` | True obliquity of the ecliptic (°) |
-| `delta_t` | `float` | ΔT in seconds |
+| `delta_t` | `float` | ΔT = TT − UT1 in seconds at the resolved astronomical instant |
 
 **Properties:**
 
@@ -971,10 +971,10 @@ The SSB is the true inertial center-of-mass of the solar system. The Sun wanders
 
 ```python
 from moira.ssb import ssb_position_at, all_ssb_positions_at
-from moira.facade import jd_from_datetime
+from moira.facade import jd_from_datetime, utc_to_ut1
 from datetime import datetime, timezone
 
-jd = jd_from_datetime(datetime(2000, 1, 1, 12, tzinfo=timezone.utc))
+jd = utc_to_ut1(jd_from_datetime(datetime(2000, 1, 1, 12, tzinfo=timezone.utc)))
 
 sun_ssb = ssb_position_at("Sun", jd)
 print(f"Sun from SSB: {sun_ssb.longitude:.4f}°  dist {sun_ssb.distance_au:.6f} AU")
@@ -3835,7 +3835,7 @@ from moira.constellations.stars_scorpius import (
 ### Usage
 
 ```python
-from moira.facade import jd_from_datetime
+from moira.facade import jd_from_datetime, utc_to_tt
 from moira.constellations.stars_taurus import (
     ALDEBARAN, ALCYONE, PLEIADES_CLUSTER,
     taurus_star_at, aldebaran_at, alcyone_at,
@@ -3843,7 +3843,7 @@ from moira.constellations.stars_taurus import (
 )
 from datetime import datetime, timezone
 
-jd = jd_from_datetime(datetime(2026, 4, 7, tzinfo=timezone.utc))
+jd = utc_to_tt(jd_from_datetime(datetime(2026, 4, 7, tzinfo=timezone.utc)))
 
 # By name via dispatcher:
 ald = taurus_star_at(ALDEBARAN, jd)
@@ -3873,8 +3873,8 @@ from moira.facade import (
 
 | Function | Signature | Description |
 |---|---|---|
-| `jd_from_datetime` | `(dt: datetime) → float` | timezone-aware datetime → JD UT; naïve datetimes raise `ValueError` |
-| `datetime_from_jd` | `(jd: float) → datetime` | JD UT → UTC datetime |
+| `jd_from_datetime` | `(dt: datetime) → float` | timezone-aware datetime → UTC-coded civil JD; naïve datetimes raise `ValueError` |
+| `datetime_from_jd` | `(jd: float) → datetime` | UTC-coded civil JD → UTC datetime |
 | `julian_day` | `(year, month, day, hour=0.0) → float` | Calendar date → JD |
 | `calendar_from_jd` | `(jd: float) → CalendarDateTime` | JD → BCE-safe calendar breakdown |
 | `calendar_datetime_from_jd` | `(jd: float) → CalendarDateTime` | Alias for `calendar_from_jd` |
@@ -3918,9 +3918,9 @@ from moira.facade import mean_obliquity, true_obliquity, nutation
 
 # All take jd_tt (Terrestrial Time)
 from moira.facade import jd_from_datetime
-from moira.julian import ut_to_tt
-jd_ut = jd_from_datetime(dt)
-jd_tt = ut_to_tt(jd_ut)
+from moira.julian import utc_to_tt
+jd_utc = jd_from_datetime(dt)
+jd_tt = utc_to_tt(jd_utc)
 
 obl_mean = mean_obliquity(jd_tt)         # degrees
 obl_true = true_obliquity(jd_tt)         # degrees (mean + nutation correction)
@@ -4024,11 +4024,12 @@ Each submodule is a self-contained import surface. Submodules do not import from
 from moira.sky.time import (
     CalendarDateTime, julian_day, calendar_from_jd, calendar_datetime_from_jd,
     jd_from_datetime, decimal_year, decimal_year_from_jd, centuries_from_j2000,
-    ut_to_tt, tt_to_ut, tt_to_tdb,
+    utc_to_tt, utc_to_ut1, ut_to_tt, tt_to_ut, tt_to_tdb,
     earth_rotation_angle, greenwich_mean_sidereal_time,
     apparent_sidereal_time, apparent_sidereal_time_at, local_sidereal_time,
     DeltaTPolicy, delta_t, delta_t_from_jd,
-    DeltaTBreakdown, delta_t_breakdown,
+    DeltaTBreakdown, DeltaTDistribution,
+    delta_t_breakdown, delta_t_distribution,
     secular_trend, core_delta_t, cryo_delta_t, fluid_lowfreq,
 )
 ```
@@ -4040,18 +4041,28 @@ from moira.sky.time import (
 | `julian_day` | `(year, month, day, hour=0.0) → float` | Calendar date → JD |
 | `calendar_from_jd` | `(jd: float) → CalendarDateTime` | JD → BCE-safe calendar breakdown |
 | `calendar_datetime_from_jd` | `(jd: float) → CalendarDateTime` | Alias for `calendar_from_jd` |
-| `jd_from_datetime` | `(dt: datetime) → float` | Timezone-aware datetime → JD UT; naïve datetimes raise `ValueError` |
-| `decimal_year` | `(year, month, day) → float` | Calendar date → decimal year |
-| `decimal_year_from_jd` | `(jd: float) → float` | JD → decimal year |
+| `jd_from_datetime` | `(dt: datetime) → float` | timezone-aware datetime → UTC-coded civil JD; naïve datetimes raise `ValueError` |
+| `decimal_year` | `(year, month=1) → float` | NASA-compatible month-midpoint decimal year |
+| `decimal_year_from_jd` | `(jd: float) → float` | JD → NASA-compatible month-midpoint decimal year |
 | `centuries_from_j2000` | `(jd_tt: float) → float` | Julian centuries from J2000.0 |
 
 **Time scale conversions**
 
 | Function | Signature | Description |
 |---|---|---|
-| `ut_to_tt` | `(jd_ut: float) → float` | UT → Terrestrial Time (adds ΔT) |
-| `tt_to_ut` | `(jd_tt: float) → float` | TT → UT |
+| `utc_to_tt` | `(jd_utc: float) → float` | UTC → TT through TAI and the leap-second table |
+| `utc_to_ut1` | `(jd_utc: float) → float` | UTC → UT1 through admitted DUT1 data, with explicit historical/fallback policy |
+| `ut_to_tt` | `(jd_ut: float) → float` | UT1 → Terrestrial Time (adds ΔT) |
+| `tt_to_ut` | `(jd_tt: float) → float` | TT → UT1 |
 | `tt_to_tdb` | `(jd_tt: float) → float` | TT → Barycentric Dynamical Time |
+
+Hybrid and physical JD transforms use an exact private fraction between
+successive January 1 boundaries; they do not use the public NASA
+month-midpoint coordinate. Before the final civil day of 1971, civil JDs retain
+Moira's historical UT1-proxy interpretation. That final day uses a monotonic
+smoothstep into the `1972-01-01` atomic rule, with the private inverse solving
+the same handoff. Private UT1-to-UTC formatting inverts the within-day UT1-TAI
+relation so a positive leap second is not smeared across the preceding day.
 
 **Earth rotation and sidereal time**
 
@@ -4067,34 +4078,77 @@ from moira.sky.time import (
 
 | Function | Signature | Description |
 |---|---|---|
-| `delta_t` | `(year: float) → float` | ΔT in seconds for a decimal year |
-| `delta_t_from_jd` | `(jd: float) → float` | ΔT in seconds from JD |
+| `delta_t` | `(year: float) → float` | Source-priority ΔT in seconds for a decimal year, preserving each admitted source's published basis |
+| `delta_t_from_jd` | `(jd_ut: float) → float` | ΔT in seconds from a UT1 JD; admitted EOP rows govern in coverage, outer reconciliation tapers locally over one Julian year, and internal gaps reconcile only their boundaries |
 
-**ΔT — physics-based decomposition**
+**ΔT — source-priority accounting and scenario policy**
 
 ```python
 bd = delta_t_breakdown(year)
-# DeltaTBreakdown(total, secular, core, cryo, fluid, uncertainty)
+dist = delta_t_distribution(year)
 ```
 
 | Function | Signature | Description |
 |---|---|---|
-| `delta_t_breakdown` | `(year: float) → DeltaTBreakdown` | Full decomposition with uncertainty band |
-| `secular_trend` | `(year: float) → float` | Tidal + non-tidal secular term |
-| `core_delta_t` | `(year: float) → float` | Core/mantle coupling contribution |
-| `cryo_delta_t` | `(year: float) → float` | Cryospheric contribution (ice mass loss) |
-| `fluid_lowfreq` | `(year: float) → float` | Fluid outer-core low-frequency term |
+| `delta_t_breakdown` | `(year: float) → DeltaTBreakdown` | Source/scenario total in the stable additive accounting vessel |
+| `delta_t_distribution` | `(year: float) → DeltaTDistribution` | Mean plus source-error or uncalibrated policy scale in a normal-shaped convenience vessel |
+| `secular_trend` | `(year: float) → float` | Compatibility helper for the declared future curvature scenario |
+| `core_delta_t` | `(year: float) → float` | Compatibility surface; zero while the C04 proxy is quarantined |
+| `cryo_delta_t` | `(year: float) → float` | Compatibility surface; zero while the GRACE derivative is quarantined |
+| `fluid_lowfreq` | `(year: float) → float` | Compatibility surface; zero while AAM/OAM proxies are quarantined |
+
+Generic `delta_t()` preserves the raw HPIERS DE430/LE430 source basis; it does
+not ambiently retarget the clock product to DE441. From `-2100` to the first
+HPIERS row at `-2000`, it exposes an explicit 100-year C0 source-floor bridge.
+The physical-policy surface is admitted from decimal year `-2000.0`; earlier
+physical requests raise `ValueError`. Through the final aggregate
+representative epoch (currently `2026.123287671233`) the total follows admitted
+source tables. That final value is a Jan–Apr partial mean, and the slope formed
+from the `2025` and `2026` aggregate representative epochs is provisional
+scenario policy rather than an observed instantaneous derivative. After that
+source-owned boundary the mean is the explicit boundary-anchored scenario
+documented in `DELTA_T_HYBRID_MODEL.md`. Values beyond 2150 remain computable
+scenario extrapolations, not authority-validated forecasts.
+
+Packaged EOP rows are runtime-admitted, but the transform did not retain their
+source observed/predicted flags, so they must not all be called measured or
+definitive observations. Generic Delta-T years are computationally guarded to
+`[-100000, +100000]`; JD-aware time transforms are guarded to
+`[-40000000, +40000000]`. These are representability limits, not scientific
+coverage claims.
 
 #### `DeltaTBreakdown` fields
 
 | Field | Type | Description |
 |---|---|---|
+| `year` | `float` | Decimal year requested |
 | `total` | `float` | Total ΔT in seconds |
-| `secular` | `float` | Secular trend component |
-| `core` | `float` | Core coupling component |
-| `cryo` | `float` | Cryospheric component |
-| `fluid` | `float` | Fluid outer-core component |
-| `uncertainty` | `float` | Estimated 1σ uncertainty in seconds |
+| `secular` | `float` | Declared curvature baseline; not a measured causal decomposition in source-backed eras |
+| `core` | `float` | Reserved compatibility component; currently zero |
+| `cryo` | `float` | Reserved compatibility component; currently zero |
+| `fluid` | `float` | Reserved compatibility component; currently zero |
+| `bridge` | `float` | Explicit arithmetic reconciliation from the curvature baseline to the admitted total or boundary-conditioned scenario |
+| `residual` | `float` | Reserved compatibility component; currently zero |
+| `era` | `str` | Compatibility category: `pre-1840`, `historical`, `measured`, or `future`; not source-row provenance |
+
+The additive invariant is
+`secular + core + cryo + fluid + bridge + residual == total`.
+
+#### `DeltaTDistribution` fields and methods
+
+| Member | Type | Description |
+|---|---|---|
+| `year` | `float` | Decimal year requested |
+| `mean` | `float` | Same mean returned by the physical-policy total |
+| `sigma` | `float` | HPIERS source-error scale where aligned with that source; otherwise a modern floor or uncalibrated future policy scale in seconds |
+| `variance` | `float` | `sigma²` |
+| `pdf(delta_t_seconds)` | `float` | Normal-approximation density |
+| `interval(sigma=1.0)` | `tuple[float, float]` | Symmetric policy interval around the mean |
+
+The normal vessel is a computational approximation. It does not assert that
+ancient or future Earth-rotation errors are empirically Gaussian. Future
+values do not have calibrated coverage and do not propagate unquantified
+uncertainty in the handoff value or final-row slope.
 
 ---
 

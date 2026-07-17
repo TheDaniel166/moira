@@ -12,7 +12,7 @@ from moira.eclipse_canon import (
     compare_lunar_canon_methods,
     lunar_canon_geometry,
 )
-from moira.julian import ut_to_tt_nasa_canon
+from moira.julian import decimal_year_from_jd, ut_to_tt_nasa_canon
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "eclipse_nasa_reference.json"
@@ -60,7 +60,10 @@ def test_lunar_canon_geometry_tracks_published_gamma_at_nasa_instants(eclipse_ca
     for case in _modern_cases():
         geom = lunar_canon_geometry(
             calc,
-            ut_to_tt_nasa_canon(case.nasa_ut),
+            ut_to_tt_nasa_canon(
+                case.nasa_ut,
+                decimal_year_from_jd(case.nasa_ut),
+            ),
             method=DEFAULT_LUNAR_CANON_METHOD,
         )
         assert abs(geom.gamma_earth_radii - case.nasa_gamma_earth_radii) <= 0.013, case.label

@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
 import moira.local_space as ls
+import moira_server.services.local_space as local_space_service
+from moira_server.models.local_space import LocalSpaceChartPositionsRequest
 
 
 @dataclass
@@ -17,6 +21,10 @@ class _FakeSky:
 class _FakeChart:
     jd_ut: float
     planets: dict[str, object]
+
+    @property
+    def jd_tt(self) -> float:
+        return self.jd_ut + 0.1
 
 
 def _by_body(rows: list[ls.LocalSpacePosition]) -> dict[str, ls.LocalSpacePosition]:
@@ -128,7 +136,6 @@ def test_local_space_from_chart_uses_local_sidereal_and_chart_radec(monkeypatch:
     chart = _FakeChart(jd_ut=2460389.75, planets={"Sun": object(), "Moon": object()})
     calls: dict[str, object] = {}
 
-    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 0.1)
     monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.2, 0.0))
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4)
     monkeypatch.setattr("moira.julian.local_sidereal_time", lambda jd_ut, lon, dpsi, obliq: 211.0)
@@ -159,3 +166,87 @@ def test_local_space_from_chart_uses_local_sidereal_and_chart_radec(monkeypatch:
     assert calls["planet_ra_dec"] == {"Sun": (10.0, 1.0), "Moon": (20.0, -2.0)}
     assert calls["latitude"] == pytest.approx(40.7128)
     assert calls["lst_deg"] == pytest.approx(211.0)
+
+
+def test_local_space_chart_service_resolves_utc_tt_and_ut1_for_dependencies(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requested_dt = datetime(2024, 3, 20, 12, tzinfo=timezone.utc)
+    chart = SimpleNamespace(
+        jd_ut=100.0,
+        datetime_utc=requested_dt,
+        planets={"Sun": object()},
+    )
+    calls: dict[str, object] = {"tt": [], "ut1": [], "sky": []}
+
+    monkeypatch.setattr(local_space_service, "_build_chart", lambda engine, request: chart)
+
+    def fake_utc_to_tt(jd_utc: float) -> float:
+        calls["tt"].append(jd_utc)
+        return 200.0
+
+    def fake_utc_to_ut1(jd_utc: float) -> float:
+        calls["ut1"].append(jd_utc)
+        return 99.0
+
+    monkeypatch.setattr(local_space_service, "utc_to_tt", fake_utc_to_tt)
+    monkeypatch.setattr(local_space_service, "utc_to_ut1", fake_utc_to_ut1)
+    monkeypatch.setattr(local_space_service, "nutation", lambda jd_tt: (0.2, 0.0))
+    monkeypatch.setattr(local_space_service, "true_obliquity", lambda jd_tt: 23.5)
+
+    def fake_local_sidereal_time(
+        jd_ut1: float,
+        longitude: float,
+        delta_psi: float,
+        obliquity: float,
+    ) -> float:
+        calls["sidereal"] = (jd_ut1, longitude, delta_psi, obliquity)
+        return 123.0
+
+    def fake_sky_position_at(body: str, jd_ut1: float, **kwargs: object) -> SimpleNamespace:
+        calls["sky"].append((body, jd_ut1, kwargs))
+        return SimpleNamespace(right_ascension=10.0, declination=2.0)
+
+    def fake_local_space_positions(
+        planet_ra_dec: dict[str, tuple[float, float]],
+        *,
+        latitude: float,
+        lst_deg: float,
+    ) -> list[SimpleNamespace]:
+        calls["positions"] = (planet_ra_dec, latitude, lst_deg)
+        return [SimpleNamespace(body="Sun")]
+
+    monkeypatch.setattr(local_space_service, "local_sidereal_time", fake_local_sidereal_time)
+    monkeypatch.setattr(local_space_service, "sky_position_at", fake_sky_position_at)
+    monkeypatch.setattr(local_space_service, "local_space_positions", fake_local_space_positions)
+
+    request = LocalSpaceChartPositionsRequest(
+        dt=requested_dt,
+        bodies=["Sun"],
+        observer_lat=40.0,
+        observer_lon=-74.0,
+        observer_elev_m=10.0,
+    )
+    result = local_space_service.compute_local_space_chart_positions(
+        SimpleNamespace(_reader="reader"),
+        request,
+    )
+
+    assert calls["tt"] == [100.0]
+    assert calls["ut1"] == [100.0]
+    assert calls["sidereal"] == (99.0, -74.0, 0.2, 23.5)
+    assert calls["sky"] == [
+        (
+            "Sun",
+            99.0,
+            {
+                "observer_lat": 40.0,
+                "observer_lon": -74.0,
+                "observer_elev_m": 10.0,
+                "reader": "reader",
+            },
+        )
+    ]
+    assert calls["positions"] == ({"Sun": (10.0, 2.0)}, 40.0, 123.0)
+    assert result.provenance.jd_ut == 99.0
+    assert result.provenance.jd_tt == 200.0

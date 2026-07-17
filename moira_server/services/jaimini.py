@@ -15,6 +15,7 @@ from moira.jaimini import (
     karaka_pair,
     validate_jaimini_output,
 )
+from moira.julian import utc_to_ut1
 from moira.sidereal import tropical_to_sidereal
 
 from ..models.jaimini import (
@@ -123,11 +124,12 @@ def compute_jaimini_chart(
         bodies=list(_SEVEN_PLANETS),
         include_nodes=include_nodes,
     )
+    jd_ut = utc_to_ut1(chart.jd_ut)
     tropical_longitudes = chart.longitudes(include_nodes=False)
     sidereal_longitudes = {
         planet: tropical_to_sidereal(
             tropical_longitudes[planet],
-            chart.jd_ut,
+            jd_ut,
             system=ayanamsa_system,
         )
         for planet in _SEVEN_PLANETS
@@ -137,7 +139,7 @@ def compute_jaimini_chart(
         rahu_tropical_longitude = true_node.longitude
         sidereal_longitudes["Rahu"] = tropical_to_sidereal(
             rahu_tropical_longitude,
-            chart.jd_ut,
+            jd_ut,
             system=ayanamsa_system,
         )
 

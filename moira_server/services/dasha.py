@@ -15,7 +15,7 @@ from moira.dasha import (
     dasha_sequence_profile,
     vimshottari,
 )
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 
 from ..models.dasha import (
     DashaNatalRequest,
@@ -28,7 +28,7 @@ from ._shared import require_aware_datetime
 def _moon_lon_and_natal_jd(engine: Moira, natal: DashaNatalRequest) -> tuple[float, float]:
     """Derive Moon's tropical longitude and natal JD from the natal request."""
     require_aware_datetime(natal.dt)
-    natal_jd = jd_from_datetime(natal.dt)
+    natal_jd = utc_to_ut1(jd_from_datetime(natal.dt))
     chart = engine.chart(natal.dt)
     moon_lon = chart.longitudes(include_nodes=False)["Moon"]
     return moon_lon, natal_jd
@@ -67,7 +67,7 @@ def compute_dasha_active_line(
 ) -> DashaActiveLine:
     require_aware_datetime(request.current_dt)
     moon_lon, natal_jd = _moon_lon_and_natal_jd(engine, request.natal)
-    current_jd = jd_from_datetime(request.current_dt)
+    current_jd = utc_to_ut1(jd_from_datetime(request.current_dt))
     active = current_dasha(
         moon_lon,
         natal_jd,

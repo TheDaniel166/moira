@@ -58,7 +58,7 @@ from dataclasses import dataclass, field
 
 from .constants import Body, NAIF_ROUTES, KM_PER_AU, sign_of
 from .coordinates import icrf_to_ecliptic, vec_sub
-from .julian import ut_to_tt, decimal_year
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 
 __all__ = [
     "PlanetocentricData",
@@ -292,15 +292,13 @@ def planetocentric_at(
 
     from .planets import (
         get_reader,
-        approx_year as _approx_year,
         _true_of_date_ecliptic_state,
     )
 
     if reader is None:
         reader = get_reader()
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     # -----------------------------------------------------------------------
     # Barycentric states for observer and target
@@ -362,7 +360,7 @@ def all_planetocentric_at(
     if bodies is None:
         bodies = sorted(VALID_OBSERVER_BODIES - {observer})
 
-    from .planets import get_reader, approx_year as _approx_year
+    from .planets import get_reader
     if reader is None:
         reader = get_reader()
 

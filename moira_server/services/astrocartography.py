@@ -12,7 +12,7 @@ from moira.astrocartography import (
     subplanetary_points,
 )
 from moira.coordinates import ecliptic_to_equatorial
-from moira.julian import apparent_sidereal_time, ut_to_tt
+from moira.julian import apparent_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import planet_at, sky_position_at
 from moira.planets import _resolve_small_body_name
@@ -225,12 +225,12 @@ def compute_astrocartography_chart_lines(
     chart = _build_chart(engine, request)
     bodies = _selected_bodies(request.bodies, chart.planets)
     observer = _resolve_line_observer(request, chart)
-    dpsi, obliquity, gmst_deg, jd_tt = _sidereal_context(chart.jd_ut)
+    dpsi, obliquity, gmst_deg, jd_ut, jd_tt = _sidereal_context(chart.jd_ut)
     reader = getattr(engine, "_reader", None)
     planet_ra_dec = {
         body: _sky_ra_dec(
             body=body,
-            jd_ut=chart.jd_ut,
+            jd_ut=jd_ut,
             observer=observer,
             reader=reader,
             refraction=request.refraction,
@@ -241,7 +241,7 @@ def compute_astrocartography_chart_lines(
         planet_ra_dec,
         gmst_deg,
         lat_step=request.lat_step,
-        jd_ut=chart.jd_ut,
+        jd_ut=jd_ut,
         refraction=request.refraction,
     )
     return AstrocartographyLinesResult(
@@ -255,6 +255,7 @@ def compute_astrocartography_chart_lines(
             lat_step=request.lat_step,
             refraction=request.refraction,
             gmst_deg=gmst_deg,
+            jd_ut=jd_ut,
             jd_tt=jd_tt,
             dpsi=dpsi,
             obliquity=obliquity,
@@ -269,11 +270,11 @@ def compute_astrocartography_chart_subplanetary(
 ) -> AstrocartographySubplanetaryResult:
     chart = _build_chart(engine, request)
     bodies = _selected_bodies(request.bodies, chart.planets)
-    dpsi, obliquity, gmst_deg, jd_tt = _sidereal_context(chart.jd_ut)
+    dpsi, obliquity, gmst_deg, jd_ut, jd_tt = _sidereal_context(chart.jd_ut)
     reader = getattr(engine, "_reader", None)
     planet_ra_dec = {}
     for body in bodies:
-        position = planet_at(body, chart.jd_ut, reader=reader)
+        position = planet_at(body, jd_ut, reader=reader)
         planet_ra_dec[body] = ecliptic_to_equatorial(
             position.longitude,
             position.latitude,
@@ -296,6 +297,7 @@ def compute_astrocartography_chart_subplanetary(
             lat_step=None,
             refraction=None,
             gmst_deg=gmst_deg,
+            jd_ut=jd_ut,
             jd_tt=jd_tt,
             dpsi=dpsi,
             obliquity=obliquity,
@@ -310,11 +312,12 @@ def compute_astrocartography_subject_chart_lines(
 ) -> AstrocartographyLinesResult:
     chart = _build_subject_chart(engine, request)
     observer = _resolve_line_observer(request, chart)
-    dpsi, obliquity, gmst_deg, jd_tt = _sidereal_context(chart.jd_ut)
+    dpsi, obliquity, gmst_deg, jd_ut, jd_tt = _sidereal_context(chart.jd_ut)
     resolved = _resolve_subjects(
         engine=engine,
         request=request,
         chart=chart,
+        jd_ut=jd_ut,
         observer=observer,
         obliquity=obliquity,
         jd_tt=jd_tt,
@@ -326,7 +329,7 @@ def compute_astrocartography_subject_chart_lines(
         subject_ra_dec,
         gmst_deg,
         lat_step=request.lat_step,
-        jd_ut=chart.jd_ut,
+        jd_ut=jd_ut,
         refraction=request.refraction,
     )
     return AstrocartographyLinesResult(
@@ -339,6 +342,7 @@ def compute_astrocartography_subject_chart_lines(
             lat_step=request.lat_step,
             refraction=request.refraction,
             gmst_deg=gmst_deg,
+            jd_ut=jd_ut,
             jd_tt=jd_tt,
             dpsi=dpsi,
             obliquity=obliquity,
@@ -352,11 +356,12 @@ def compute_astrocartography_subject_chart_subplanetary(
     request: AstrocartographySubjectChartSubplanetaryRequest,
 ) -> AstrocartographySubplanetaryResult:
     chart = _build_subject_chart(engine, request)
-    dpsi, obliquity, gmst_deg, jd_tt = _sidereal_context(chart.jd_ut)
+    dpsi, obliquity, gmst_deg, jd_ut, jd_tt = _sidereal_context(chart.jd_ut)
     resolved = _resolve_subjects(
         engine=engine,
         request=request,
         chart=chart,
+        jd_ut=jd_ut,
         observer=AstrocartographyObserverContext(
             latitude=None,
             longitude=None,
@@ -384,6 +389,7 @@ def compute_astrocartography_subject_chart_subplanetary(
             lat_step=None,
             refraction=None,
             gmst_deg=gmst_deg,
+            jd_ut=jd_ut,
             jd_tt=jd_tt,
             dpsi=dpsi,
             obliquity=obliquity,
@@ -477,12 +483,13 @@ def _resolve_line_observer(
     )
 
 
-def _sidereal_context(jd_ut: float) -> tuple[float, float, float, float]:
-    jd_tt = ut_to_tt(jd_ut)
+def _sidereal_context(jd_utc: float) -> tuple[float, float, float, float, float]:
+    jd_ut = utc_to_ut1(jd_utc)
+    jd_tt = utc_to_tt(jd_utc)
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
     gmst_deg = apparent_sidereal_time(jd_ut, dpsi, obliquity)
-    return dpsi, obliquity, gmst_deg, jd_tt
+    return dpsi, obliquity, gmst_deg, jd_ut, jd_tt
 
 
 def _sky_ra_dec(
@@ -510,6 +517,7 @@ def _resolve_subjects(
     engine: Moira,
     request,
     chart,
+    jd_ut: float,
     observer: AstrocartographyObserverContext,
     obliquity: float,
     jd_tt: float,
@@ -522,6 +530,7 @@ def _resolve_subjects(
         _resolve_subject(
             subject,
             chart=chart,
+            jd_ut=jd_ut,
             observer=observer,
             reader=reader,
             obliquity=obliquity,
@@ -542,6 +551,7 @@ def _resolve_subject(
     subject: AstrocartographySubjectRequest,
     *,
     chart,
+    jd_ut: float,
     observer: AstrocartographyObserverContext,
     reader,
     obliquity: float,
@@ -554,6 +564,7 @@ def _resolve_subject(
         return _resolve_physical_subject(
             subject,
             chart=chart,
+            jd_ut=jd_ut,
             observer=observer,
             reader=reader,
             obliquity=obliquity,
@@ -575,6 +586,7 @@ def _resolve_physical_subject(
     subject: AstrocartographySubjectRequest,
     *,
     chart,
+    jd_ut: float,
     observer: AstrocartographyObserverContext,
     reader,
     obliquity: float,
@@ -587,14 +599,14 @@ def _resolve_physical_subject(
     if line_mode and family in {"planet", "asteroid"}:
         right_ascension, declination = _sky_ra_dec(
             body=name,
-            jd_ut=chart.jd_ut,
+            jd_ut=jd_ut,
             observer=observer,
             reader=reader,
             refraction=refraction,
         )
         position_source = f"moira.planets.sky_position_at:{family}"
     else:
-        position = planet_at(name, chart.jd_ut, reader=reader)
+        position = planet_at(name, jd_ut, reader=reader)
         right_ascension, declination = ecliptic_to_equatorial(
             position.longitude,
             position.latitude,
@@ -777,6 +789,7 @@ def _chart_provenance(
     lat_step: float | None,
     refraction: bool | None,
     gmst_deg: float,
+    jd_ut: float,
     jd_tt: float,
     dpsi: float,
     obliquity: float,
@@ -785,7 +798,7 @@ def _chart_provenance(
     return AstrocartographyProvenance(
         requested_datetime=request.dt.isoformat(),
         normalized_datetime_utc=chart.datetime_utc.isoformat(),
-        jd_ut=chart.jd_ut,
+        jd_ut=jd_ut,
         jd_tt=jd_tt,
         gmst_deg=gmst_deg,
         obliquity_deg=obliquity,
@@ -810,6 +823,7 @@ def _subject_chart_provenance(
     lat_step: float | None,
     refraction: bool | None,
     gmst_deg: float,
+    jd_ut: float,
     jd_tt: float,
     dpsi: float,
     obliquity: float,
@@ -819,7 +833,7 @@ def _subject_chart_provenance(
     return AstrocartographyProvenance(
         requested_datetime=request.dt.isoformat(),
         normalized_datetime_utc=chart.datetime_utc.isoformat(),
-        jd_ut=chart.jd_ut,
+        jd_ut=jd_ut,
         jd_tt=jd_tt,
         gmst_deg=gmst_deg,
         obliquity_deg=obliquity,

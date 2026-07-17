@@ -36,8 +36,8 @@ from .julian import (
     format_jd_utc,
     jd_from_datetime,
     julian_day,
-    ut_to_tt,
 )
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
 from .chart import ChartContext, create_chart
@@ -1318,7 +1318,7 @@ def _resolve_longitude_truth(
             resolved_kind="fixed_star",
             resolved_name=name,
             jd_ut=jd,
-            longitude=star_at(name, ut_to_tt(jd)).longitude,
+            longitude=star_at(name, _ut1_to_ephemeris_tt(jd, reader)).longitude,
         )
     except Exception as exc:
         raise ValueError(f"Transit target specification could not be resolved: {name}") from exc

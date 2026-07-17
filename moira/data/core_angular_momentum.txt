@@ -1,19 +1,18 @@
-# Core angular momentum proxy — annual-mean LOD anomaly
+# QUARANTINED RESEARCH PROXY — NOT RUNTIME-ADMITTED
+#
+# Historical filename retained for compatibility.  This is an annual-mean
+# TOTAL LOD series from IERS EOP C04, not a core angular-momentum inversion.
+# Atmospheric, oceanic, mantle, cryospheric, and core effects are not
+# separated by this artifact.  It must not be interpreted or published as a
+# causal core contribution to Delta T.  The public core component is retained
+# as a compatibility field but is zero in the admitted model.
+#
 # Source: IERS EOP C04 (1962–present), annual means
 # URL: https://datacenter.iers.org/products/eop/long-term/c04_operational/csv/eopc04.1962-now.csv
 #
-# Physical interpretation:
-#   Annual-mean LOD anomaly in milliseconds.  On decadal timescales
-#   this is dominated by core-mantle angular momentum exchange.
-#   AAM/OAM contamination (~0.3-0.5 ms) is absorbed by the residual
-#   spline in delta_t_physical.py (see DELTA_T_HYBRID_MODEL.md).
-#
-# For 1840-1962: Gillet et al. model reconstruction (not yet available).
-# When obtained, prepend those rows to this file.
-#
 # Columns: decimal_year  delta_lod_ms
 #   decimal_year = calendar year + 0.5 (mid-year)
-#   delta_lod_ms = annual mean LOD in milliseconds
+#   delta_lod_ms = annual mean total LOD anomaly in milliseconds
 #
 1962.5  1.3057
 1963.5  1.5268

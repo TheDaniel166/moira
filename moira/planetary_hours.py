@@ -28,7 +28,14 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .constants import Body
-from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc
+from .julian import (
+    CalendarDateTime,
+    _ut1_to_utc,
+    calendar_datetime_from_jd,
+    datetime_from_jd,
+    format_jd_utc,
+    utc_to_ut1,
+)
 from .spk_reader import get_reader, SpkReader
 from ._solar import _sunrise_sunset, _refine_sunrise
 
@@ -162,24 +169,24 @@ class PlanetaryHour:
 
     @property
     def start_utc(self) -> datetime:
-        return datetime_from_jd(self.jd_start)
+        return datetime_from_jd(_ut1_to_utc(self.jd_start))
 
     @property
     def start_calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.jd_start)
+        return calendar_datetime_from_jd(_ut1_to_utc(self.jd_start))
 
     @property
     def end_utc(self) -> datetime:
-        return datetime_from_jd(self.jd_end)
+        return datetime_from_jd(_ut1_to_utc(self.jd_end))
 
     @property
     def end_calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.jd_end)
+        return calendar_datetime_from_jd(_ut1_to_utc(self.jd_end))
 
     def __repr__(self) -> str:
         label = "Day" if self.is_daytime else "Night"
         return (f"Hour {self.hour_number:2d} ({label}) — {self.ruler:<8}  "
-                f"{format_jd_utc(self.jd_start)}–{self.end_calendar_utc.time_string()} UTC")
+                f"{format_jd_utc(_ut1_to_utc(self.jd_start))}–{self.end_calendar_utc.time_string()} UTC")
 
 
 @dataclass(frozen=True, slots=True)
@@ -252,19 +259,19 @@ class PlanetaryHoursDay:
 
     @property
     def sunrise_utc(self) -> datetime:
-        return datetime_from_jd(self.sunrise_jd)
+        return datetime_from_jd(_ut1_to_utc(self.sunrise_jd))
 
     @property
     def sunrise_calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.sunrise_jd)
+        return calendar_datetime_from_jd(_ut1_to_utc(self.sunrise_jd))
 
     @property
     def sunset_utc(self) -> datetime:
-        return datetime_from_jd(self.sunset_jd)
+        return datetime_from_jd(_ut1_to_utc(self.sunset_jd))
 
     @property
     def sunset_calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.sunset_jd)
+        return calendar_datetime_from_jd(_ut1_to_utc(self.sunset_jd))
 
     def hour_at(self, jd: float) -> PlanetaryHour | None:
         """Return the planetary hour that contains the given JD."""
@@ -283,11 +290,15 @@ class PlanetaryHoursDay:
 # Public: calculate planetary hours for a day
 # ---------------------------------------------------------------------------
 
-def planetary_hours(
+def _planetary_hours_resolved(
     jd: float,
     latitude: float,
     longitude: float,
-    reader: SpkReader | None = None,
+    reader: SpkReader,
+    *,
+    previous_noon_ut1: float,
+    current_noon_ut1: float,
+    next_noon_ut1: float,
 ) -> PlanetaryHoursDay:
     """
     Calculate all 24 planetary hours for the sunrise-based local day that
@@ -306,13 +317,9 @@ def planetary_hours(
     PlanetaryHoursDay with the sunrise, sunset, and 24 planetary hours for the
     sunrise-to-sunrise local window containing *jd*.
     """
-    _validate_inputs(jd, latitude, longitude)
-    if reader is None:
-        reader = get_reader()
-
     # Anchor to the UT day containing jd, then choose the sunrise-based local
     # day window that actually contains the instant.
-    jd_noon = math.floor(jd - 0.5) + 1.0
+    jd_noon = current_noon_ut1
 
     jd_sr_approx, jd_ss_approx = _sunrise_sunset(jd_noon, latitude, longitude, reader)
     jd_sunrise_today = _refine_solar_event_near(
@@ -331,9 +338,8 @@ def planetary_hours(
     )
 
     if jd < jd_sunrise_today:
-        jd_prev_noon = jd_noon - 1.0
         jd_prev_sr_approx, jd_prev_ss_approx = _sunrise_sunset(
-            jd_prev_noon,
+            previous_noon_ut1,
             latitude,
             longitude,
             reader,
@@ -356,8 +362,9 @@ def planetary_hours(
     else:
         jd_sunrise = jd_sunrise_today
         jd_sunset = jd_sunset_today
-        jd_next_noon = jd_noon + 1.0
-        jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, latitude, longitude, reader)
+        jd_nr_approx, _ = _sunrise_sunset(
+            next_noon_ut1, latitude, longitude, reader
+        )
         jd_next_sunrise = _refine_solar_event_near(
             jd_nr_approx,
             latitude,
@@ -427,4 +434,67 @@ def planetary_hours(
         sunrise_jd=jd_sunrise,
         sunset_jd=jd_sunset,
         hours=tuple(hours),
+    )
+
+
+def _planetary_hours_from_utc(
+    jd_utc: float,
+    latitude: float,
+    longitude: float,
+    reader: SpkReader | None = None,
+) -> PlanetaryHoursDay:
+    """Resolve a facade UTC instant without losing its civil-day anchor."""
+    _validate_inputs(jd_utc, latitude, longitude)
+    if reader is None:
+        reader = get_reader()
+
+    current_noon_utc = math.floor(jd_utc - 0.5) + 1.0
+    jd_ut1 = utc_to_ut1(jd_utc)
+    return _planetary_hours_resolved(
+        jd_ut1,
+        latitude,
+        longitude,
+        reader,
+        previous_noon_ut1=utc_to_ut1(current_noon_utc - 1.0),
+        current_noon_ut1=utc_to_ut1(current_noon_utc),
+        next_noon_ut1=utc_to_ut1(current_noon_utc + 1.0),
+    )
+
+
+def planetary_hours(
+    jd: float,
+    latitude: float,
+    longitude: float,
+    reader: SpkReader | None = None,
+) -> PlanetaryHoursDay:
+    """
+    Calculate all 24 planetary hours for the sunrise-based local day that
+    contains *jd*.
+
+    ``jd`` is a UT1 Julian Day. Datetime-facing facade callers use the private
+    UTC adapter above so their civil UTC day is selected before the instant and
+    the three required solar-noon anchors are converted to UT1.
+
+    Parameters
+    ----------
+    jd : float
+        Julian Day in Universal Time (UT1).
+    latitude, longitude : float
+        Geographic coordinates in degrees, north/east positive.
+    reader : SpkReader or None
+        Explicit kernel reader, or the active reader when omitted.
+    """
+    _validate_inputs(jd, latitude, longitude)
+    if reader is None:
+        reader = get_reader()
+
+    current_noon_ut1 = math.floor(jd - 0.5) + 1.0
+    return _planetary_hours_resolved(
+        jd,
+        latitude,
+        longitude,
+        reader,
+        previous_noon_ut1=current_noon_ut1 - 1.0,
+        current_noon_ut1=current_noon_ut1,
+        next_noon_ut1=current_noon_ut1 + 1.0,
     )

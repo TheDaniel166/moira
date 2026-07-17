@@ -55,6 +55,7 @@ Adh. II.6 + commentary; Uttara Kalamrita I.7-8; Phaladeepika Ch. 25.2-5;
 Prasna Marga Ch. 5.14-16 (Raman); PVR Narasimha Rao (JHora conventions).
 """
 
+import math
 from dataclasses import dataclass
 
 __all__ = [
@@ -326,7 +327,10 @@ def kalavela_upagrahas(
         jd_ut, latitude, longitude, reader,
     )
     is_day = jd_ut < sunset
-    weekday_index = int(sunrise + 1.5) % 7   # 0 = Sunday, at governing sunrise
+    # The doctrine is the weekday at the governing *local* sunrise.  No civil
+    # timezone is available at this engine boundary, so use the same explicit
+    # local-mean-solar convention as planetary_hours: longitude / 360 day.
+    weekday_index = math.floor(sunrise + longitude / 360.0 + 1.5) % 7
 
     if is_day:
         arc_start, arc_end = sunrise, sunset

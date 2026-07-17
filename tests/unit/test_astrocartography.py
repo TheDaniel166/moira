@@ -197,6 +197,10 @@ class _FakeChart:
     longitude: float
     planets: dict[str, object]
 
+    @property
+    def jd_tt(self) -> float:
+        return self.jd_ut + 0.1
+
 
 def test_acg_from_chart_uses_apparent_sidereal_and_chart_planet_radec(monkeypatch: pytest.MonkeyPatch) -> None:
     chart = _FakeChart(
@@ -207,7 +211,6 @@ def test_acg_from_chart_uses_apparent_sidereal_and_chart_planet_radec(monkeypatc
     )
     calls: dict[str, object] = {}
 
-    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 0.1)
     monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.2, 0.0))
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4)
     monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 111.0)
@@ -254,13 +257,14 @@ def test_subplanetary_from_chart_uses_geocentric_ecliptic_surface(monkeypatch: p
         longitude: float
         latitude: float
 
-    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd + 0.1)
+    monkeypatch.setattr("moira.julian.utc_to_ut1", lambda jd: jd + 0.01)
+    monkeypatch.setattr("moira.julian.utc_to_tt", lambda jd: jd + 0.1)
     monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.2, 0.0))
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4)
     monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 111.0)
 
-    def fake_planet_at(body: str, jd_ut: float):
-        calls.setdefault("planet_at", []).append((body, jd_ut))
+    def fake_planet_at(body: str, jd_ut: float, *, jd_tt: float):
+        calls.setdefault("planet_at", []).append((body, jd_ut, jd_tt))
         if body == "Sun":
             return _FakePlanetData(longitude=0.0, latitude=0.0)
         return _FakePlanetData(longitude=90.0, latitude=45.0 - 23.4)
@@ -280,8 +284,8 @@ def test_subplanetary_from_chart_uses_geocentric_ecliptic_surface(monkeypatch: p
 
     assert result == ["sentinel"]
     assert calls["planet_at"] == [
-        ("Sun", chart.jd_ut),
-        ("Moon", chart.jd_ut),
+        ("Sun", chart.jd_ut, chart.jd_tt),
+        ("Moon", chart.jd_ut, chart.jd_tt),
     ]
     assert calls["planet_ra_dec"]["Sun"] == pytest.approx((0.0, 0.0))
     assert calls["planet_ra_dec"]["Moon"][0] == pytest.approx(90.0)
@@ -297,27 +301,28 @@ def test_subplanetary_from_chart_admits_small_body_through_planet_surface(
         longitude=0.0,
         planets={"Ceres": object()},
     )
-    calls: list[tuple[str, float]] = []
+    calls: list[tuple[str, float, float]] = []
 
     @dataclass
     class _FakePlanetData:
         longitude: float
         latitude: float
 
-    monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
+    monkeypatch.setattr("moira.julian.utc_to_ut1", lambda jd: jd + 0.01)
+    monkeypatch.setattr("moira.julian.utc_to_tt", lambda jd: jd + 0.1)
     monkeypatch.setattr("moira.obliquity.nutation", lambda jd_tt: (0.0, 0.0))
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4392911)
     monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 0.0)
 
-    def fake_planet_at(body: str, jd_ut: float):
-        calls.append((body, jd_ut))
+    def fake_planet_at(body: str, jd_ut: float, *, jd_tt: float):
+        calls.append((body, jd_ut, jd_tt))
         return _FakePlanetData(longitude=15.0, latitude=2.0)
 
     monkeypatch.setattr("moira.planets.planet_at", fake_planet_at)
 
     points = acg.subplanetary_from_chart(chart, bodies=["Ceres"])
 
-    assert calls == [("Ceres", chart.jd_ut)]
+    assert calls == [("Ceres", chart.jd_ut, chart.jd_tt)]
     point_map = _points_by_type(points)
     assert ("Ceres", "Zenith") in point_map
     assert ("Ceres", "Nadir") in point_map

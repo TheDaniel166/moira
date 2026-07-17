@@ -309,13 +309,12 @@ def local_space_from_chart(
     from .planets import sky_position_at
     from .julian import local_sidereal_time
     from .obliquity import nutation, true_obliquity
-    from .julian import ut_to_tt
 
     if bodies is None:
         bodies = list(chart.planets.keys())
 
     # Compute Local Apparent Sidereal Time for the observer's longitude.
-    jd_tt    = ut_to_tt(chart.jd_ut)
+    jd_tt    = chart.jd_tt
     dpsi, _  = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
     lst_deg  = local_sidereal_time(chart.jd_ut, observer_lon, dpsi, obliquity)

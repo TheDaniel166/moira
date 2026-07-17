@@ -27,6 +27,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   wheel-wide AVX2 requirement.
 
 ### Fixed
+- **Delta-T Source, Domain, And Time-Scale Truth**: Restored source-priority
+  total Delta T through the 2026 handoff while preserving the raw HPIERS
+  DE430/LE430 source basis; generic clock policy no longer guesses a downstream
+  ephemeris and ambiently retargets that total to DE441. Reader-backed SPK
+  computations now perform that separate composition only after deriving a
+  coherent DE/LE identity from kernel summary content: DE430/LE430 remains on
+  its declared basis, DE441/LE441 receives the source-owned historical tidal
+  correction, and unmapped or conflicting historical bases fail closed.
+  Modern direct-EOP values and explicit fixed, NASA-canon, and physical
+  policies remain unchanged. Kernel filenames are not used as identity.
+  Added an explicit
+  100-year C0 bridge from the earlier polynomial at `-2100` to the first
+  HPIERS row at `-2000`, while retaining `-2000` as the physical-policy floor.
+  Hybrid/physical JD conversion now uses an exact private fraction-of-year
+  coordinate. NASA-canon catalog paths retain their explicit month-midpoint
+  rule, while general no-hint NASA transforms use the continuous coordinate
+  and fail closed at non-invertible raw-polynomial boundary intervals.
+  Planetary, node, eclipse, phase, sidereal, barycentric, and planetocentric
+  callers now leave that year-coordinate choice to the named clock policy,
+  removing ancient month-boundary reversals from their UT1-to-TT paths.
+  EOP edge corrections taper to zero locally over one Julian year instead of
+  biasing remote epochs, and admitted rows are no longer all described as
+  measured. Computational guards are explicit at ±100,000 years and
+  ±40,000,000 JD. These changes preserve facade method names and `/v1`
+  response schemas.
+- **Delta-T Epoch Integrity**: Restored the HPIERS-declared half-year cadence
+  for 1950–2016 instead of collapsing its rounded HTML DATE labels. Modern
+  USNO full-year and Jan–Apr aggregate means now sit at the mean epochs of
+  their contributing first-of-month samples, rather than masquerading as
+  January 1 point values. Unknown conflicting duplicate epochs fail closed;
+  the two published conflicts retain explicit compatibility policy. The
+  bridge/aggregate uncertainty scale is now `0.06 s`, covering the verified
+  `0.052808 s` maximum daily residual against the bundled EOP snapshot.
+- **Provisional Delta-T Boundary Semantics**: Recorded that the final `2026`
+  aggregate product is a Jan–Apr partial mean. The slope derived from its
+  representative epoch and the preceding aggregate epoch is provisional
+  scenario policy, not an observed instantaneous derivative. The post-handoff
+  mean preserves that admitted boundary value and slope before applying the declared
+  `28 s/cy²` scenario curvature. `DeltaTBreakdown.era` remains a compatibility
+  category rather than source-row provenance.
+- **Delta-T Attribution And Provenance Honesty**: Quarantined the historical
+  C04, GRACE, AAM, and OAM proxy artifacts from the admitted causal
+  decomposition. Public `core`, `cryo`, `fluid`, and `residual` fields remain
+  compatible and inspectable but are zero. Added source-owned HPIERS
+  uncertainty handling, an explicitly uncalibrated future policy scale, a machine-readable
+  data manifest, and corrected public doctrine and API documentation. Values
+  beyond 2150 are explicitly scenario extrapolations, not validated forecasts.
+- **Historical Civil-Time Coherence**: Before the admitted atomic UTC era
+  begins on 1972-01-01, timezone-normalized civil Julian Days retain Moira's
+  established UT1-proxy interpretation and TT is derived from that same
+  coordinate. The non-authoritative pre-1972 `TAI-UTC = 10 s` compatibility
+  placeholder can no longer displace ancient chart instants by minutes or
+  hours. A monotonic smoothstep over the final civil day joins that proxy to
+  the atomic rule, and the private inverse solves the same handoff by
+  bisection. Private UT1-to-UTC result formatting now inverts the within-day
+  UT1-TAI relation without smearing a positive leap second across the prior
+  civil day. The low-level atomic helpers now implement the IAU SOFA
+  1960-1971 UTC offset-and-drift segments and reject earlier UTC-to-TAI
+  conversion rather than inventing atomic history.
+  BCE-safe calendar decomposition now also carries a rounded `24:00:00`
+  result into the next proleptic-Gregorian civil date instead of returning an
+  invalid hour field.
 - **Synastry And Davison Invariants**: Corrected relationship-network identity
   so pair and body nodes preserve caller-supplied chart labels instead of
   collapsing into hard-coded `A`/`B` or unqualified body names. Corrected

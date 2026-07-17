@@ -11,14 +11,11 @@ apparent RA/Dec (ICRF, geocentric, no atmospheric refraction).
 Pass threshold: 1.0 arcsecond.
 
 Scope note — why future dates (2050+) are excluded:
-  JPL Horizons' EOP file covers measured ΔT only through mid-2026. For dates
-  beyond that window Horizons freezes ΔT at its last measured value (~69s).
-  Moira uses a polynomial extrapolation (Morrison & Stephenson) that grows to
-  ~203s by 2100. Neither model is "wrong" — future ΔT is genuinely unknowable.
-  Comparing fast-moving bodies (Sun, Moon, inner planets) at those dates using
-  different ΔT models produces artificial disagreements of 3–120 arcsec that
-  say nothing about the accuracy of the ephemeris engine itself.  The valid
-  comparison domain is where ΔT is measured: 1900–2026.
+  This archived comparison did not record Horizons' effective future
+  time-scale/EOP policy alongside each result.  Future comparisons are
+  therefore excluded rather than attributing residuals to an assumed frozen
+  ΔT value.  A future validation must record both systems' time policy and
+  compare like-for-like TT or UT1 products explicitly.
 
 Usage:
     py -3.14 -X utf8 scripts/compare_horizons.py [--offline]
@@ -34,8 +31,11 @@ import os
 import urllib.request
 import urllib.parse
 
-# Ensure the project root is on the path when run as a script
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+# Ensure the project root is on the path when run from its archived location.
+sys.path.insert(
+    0,
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")),
+)
 
 # ---------------------------------------------------------------------------
 # Moira imports
@@ -43,6 +43,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import moira
 from moira.planets import planet_at
 from moira.coordinates import ecliptic_to_equatorial
+from moira.julian import utc_to_tt, utc_to_ut1
 from moira.obliquity import true_obliquity
 
 # ---------------------------------------------------------------------------
@@ -68,13 +69,14 @@ BODIES: list[tuple[str, str]] = [
 ]
 
 # ---------------------------------------------------------------------------
-# Test epochs: (label, UTC ISO, decimal year for delta_t)
+# Test epochs: civil UTC labels and their UTC-coded Julian Days
 # ---------------------------------------------------------------------------
 # (label, start_utc, stop_utc, jd_utc)
-# All epochs are expressed as UTC strings sent to Horizons AND as JD_UTC passed
-# directly to Moira's planet_at().  Both systems operate at the same JD on the
-# same timescale, eliminating ΔT as a variable.  Epochs are restricted to dates
-# within the IERS EOP measurement window (≤ mid-2026) where ΔT is known.
+# Horizons receives the civil label.  Moira resolves that same label explicitly
+# to UT1 for Earth rotation and TT for ephemeris/frame work.  This does not make
+# the archive an independent time-scale validation: pre-1972 labels follow
+# Moira's documented historical UT1-proxy policy, and packaged modern EOP rows
+# are admitted rows whose observed/predicted source status was not retained.
 EPOCHS: list[tuple[str, str, str, float]] = [
     ("1900-01-01",  "1900-Jan-01 12:00", "1900-Jan-01 13:00", 2415021.0),
     ("1950-06-15",  "1950-Jun-15 12:00", "1950-Jun-15 13:00", 2433448.0),
@@ -93,9 +95,8 @@ def _fetch_horizons(body_id: str, start_utc: str, stop_utc: str) -> tuple[float,
     """
     Fetch apparent geocentric RA/Dec and distance from JPL Horizons.
 
-    Epochs are provided as UTC strings.  Moira is called with the same JD value
-    that the UTC string represents, so both systems operate at the same instant
-    within the IERS EOP measurement window (ΔT is measured, not predicted).
+    Epochs are provided to Horizons as civil UTC strings.  The corresponding
+    UTC-coded JD is reduced explicitly to UT1 and TT before Moira is called.
 
     With ANG_FORMAT=DEG the data line has columns:
         [0] YYYY-Mon-DD  [1] HH:MM  [2] RA_deg  [3] Dec_deg  [4] delta_AU  [5] deldot
@@ -147,11 +148,16 @@ def _fetch_horizons(body_id: str, start_utc: str, stop_utc: str) -> tuple[float,
 # Moira apparent position → RA/Dec
 # ---------------------------------------------------------------------------
 
-def _moira_radec(body_name: str, jd_tt: float) -> tuple[float, float, float]:
+def _moira_radec(body_name: str, jd_utc: float) -> tuple[float, float, float]:
     """
-    Return (ra_deg, dec_deg, distance_au) from Moira for the given body and JD TT.
+    Return Moira RA, declination, and distance for one civil UTC-coded JD.
+
+    ``planet_at`` receives UT1 as its public epoch and the already-resolved TT
+    coordinate explicitly, while true obliquity is evaluated at TT.
     """
-    p   = planet_at(body_name, jd_tt)
+    jd_ut1 = utc_to_ut1(jd_utc)
+    jd_tt = utc_to_tt(jd_utc)
+    p   = planet_at(body_name, jd_ut1, jd_tt=jd_tt)
     eps = true_obliquity(jd_tt)
     ra, dec = ecliptic_to_equatorial(p.longitude, p.latitude, eps)
     dist_au = p.distance / AU_KM
@@ -191,14 +197,13 @@ def main() -> None:
     skipped: int = 0
 
     for label, start_utc, stop_utc, jd_utc in EPOCHS:
-        jd_for_moira = jd_utc
         print(f"=== Epoch {label} ===")
         print(f"{'Body':10s}  {'Moira RA':>12s}  {'Moira Dec':>12s}  "
               f"{'Horiz RA':>12s}  {'Horiz Dec':>12s}  {'Sep (arcsec)':>13s}  Result")
         print("-" * 95)
 
         for body_name, body_id in BODIES:
-            m_ra, m_dec, m_dist = _moira_radec(body_name, jd_for_moira)
+            m_ra, m_dec, m_dist = _moira_radec(body_name, jd_utc)
 
             if offline:
                 print(f"  {body_name:10s}  {m_ra:12.6f}  {m_dec:12.6f}  "

@@ -1981,11 +1981,18 @@ def _target_signed_elongation(body: str, jd_ut: float) -> float:
     if body in _HELIACAL_PLANETS or body == Body.MOON:
         return _signed_elongation(body, jd_ut)
     from .constants import Body as _Body
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
     from .julian import ut_to_tt
     from .planets import planet_at
+    from .spk_reader import get_active_reader
     from .stars import star_at
 
-    jd_tt = ut_to_tt(jd_ut)
+    reader = get_active_reader()
+    jd_tt = (
+        ut_to_tt(jd_ut)
+        if reader is None
+        else _ut1_to_ephemeris_tt(jd_ut, reader)
+    )
     star = star_at(body, jd_tt)
     sun = planet_at(_Body.SUN, jd_ut, jd_tt=jd_tt)
     return ((star.longitude - sun.longitude + 180.0) % 360.0) - 180.0

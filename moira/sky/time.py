@@ -2,7 +2,7 @@
 moira.sky.time — Time Systems and ΔT
 ======================================
 Strict astronomy API for time representation, conversion between time
-scales, Earth rotation quantities, and physics-based ΔT decomposition.
+scales, Earth rotation quantities, and source-bounded ΔT policy.
 
 Time scales
 -----------
@@ -25,20 +25,20 @@ decimal_year            decimal year from calendar
 decimal_year_from_jd    decimal year from JD
 centuries_from_j2000    Julian centuries from J2000.0
 
-ΔT — standard layered lookup
------------------------------
-delta_t          Morrison-Stephenson polynomial with IERS observational data
-delta_t_from_jd  same, keyed by JD
+ΔT — source-priority lookup
+---------------------------
+delta_t          canonical historical/annual lookup plus future scenario
+delta_t_from_jd  EOP-derived when a UT1 JD is covered; year-model fallback
 DeltaTPolicy     controls which ΔT model is used downstream
 
-Physics-based ΔT decomposition  (delta_t_physical)
-----------------------------------------------------
-secular_trend    tidal + non-tidal secular term
-core_delta_t     core/mantle coupling contribution
-cryo_delta_t     cryospheric contribution (ice mass loss)
-fluid_lowfreq    fluid outer core low-frequency variations
-DeltaTBreakdown  full decomposition vessel with uncertainty estimate
-DeltaTDistribution  normal approximation PDF parameters for Delta T
+Source-bounded ΔT attribution  (delta_t_physical)
+---------------------------------------------------
+secular_trend    declared tidal + GIA curvature baseline
+core_delta_t     reserved zero-valued compatibility field
+cryo_delta_t     reserved zero-valued compatibility field
+fluid_lowfreq    reserved zero-valued compatibility field
+DeltaTBreakdown  additive source/forecast reconciliation vessel
+DeltaTDistribution  conditional convenience distribution and uncertainty scale
 delta_t_breakdown  compute DeltaTBreakdown for a given year
 delta_t_distribution  compute DeltaTDistribution for a given year
 """
@@ -105,7 +105,7 @@ __all__ = [
     "DeltaTPolicy",
     "delta_t",
     "delta_t_from_jd",
-    # ΔT — physics-based decomposition
+    # ΔT — source-bounded accounting and scenario policy
     "DeltaTBreakdown",
     "DeltaTDistribution",
     "delta_t_breakdown",

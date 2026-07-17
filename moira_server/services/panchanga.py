@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from moira import Moira
-from moira.julian import jd_from_datetime
 from moira.panchanga import (
     PanchangaPolicy,
     PanchangaProfile,
     PanchangaResult,
     panchanga_at,
     panchanga_profile,
+    _panchanga_from_utc,
 )
 
 from ..models.panchanga import PanchangaChartRequest, PanchangaDirectRequest
@@ -50,14 +50,13 @@ def compute_panchanga_chart(
         observer_elev_m=request.observer_elev_m,
     )
     longitudes = chart.longitudes(include_nodes=False)
-    return panchanga_at(
+    return _panchanga_from_utc(
         longitudes["Sun"],
         longitudes["Moon"],
-        jd_from_datetime(request.dt),
+        chart.jd_ut,
         ayanamsa_system=request.ayanamsa_system,
         policy=_policy_from_request(request),
     )
-
 
 def compute_panchanga_chart_profile(
     engine: Moira,

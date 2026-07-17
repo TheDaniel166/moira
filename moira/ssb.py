@@ -62,7 +62,7 @@ from .coordinates import (
     icrf_to_ecliptic,
     vec_norm,
 )
-from .julian import ut_to_tt, decimal_year
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 
 __all__ = [
     "SSBPosition",
@@ -207,7 +207,6 @@ def ssb_position_at(
 
     from .planets import (
         get_reader,
-        approx_year as _approx_year,
         _longitude_rate,
         _true_of_date_ecliptic_state,
     )
@@ -215,8 +214,7 @@ def ssb_position_at(
     if reader is None:
         reader = get_reader()
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     # -----------------------------------------------------------------------
     # Barycentric position and velocity (ICRF, km / km·day⁻¹)

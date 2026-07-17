@@ -7,6 +7,7 @@ astronomical truth to the owning engine modules.
 
 from __future__ import annotations
 
+import math
 import sys
 from datetime import datetime
 from typing import Any
@@ -107,8 +108,14 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
     def twilight(self, dt: datetime, latitude: float, longitude: float):
         """Calculate civil, nautical, and astronomical twilight times."""
         facade = _facade_module()
+        jd_utc = facade.jd_from_datetime(dt)
+        # Twilight is a civil-date product whose reductions are UT1-based.
+        # Select 00:00 on the requested UTC date before crossing the clock
+        # boundary so DUT1 cannot move a near-midnight request to another day.
+        jd_day_utc = math.floor(jd_utc - 0.5) + 0.5
+        jd_day_ut1 = facade.utc_to_ut1(jd_day_utc)
         return facade.twilight_times(
-            facade.jd_from_datetime(dt), latitude, longitude
+            jd_day_ut1, latitude, longitude
         )
 
     def phase(self, body: str, dt: datetime) -> dict[str, float]:
@@ -120,13 +127,13 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
             phase_angle as _pa,
         )
 
-        jd = facade.jd_from_datetime(dt)
-        pa = _pa(body, jd)
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        pa = _pa(body, jd_ut1)
         return {
             "phase_angle": pa,
             "illumination": _ill(pa),
-            "angular_diameter_arcsec": facade.angular_diameter(body, jd),
-            "apparent_magnitude": _mag(body, jd),
+            "angular_diameter_arcsec": facade.angular_diameter(body, jd_ut1),
+            "apparent_magnitude": _mag(body, jd_ut1),
         }
 
     def synodic_phase(self, body1: str, body2: str, dt: datetime) -> dict[str, float | str]:
@@ -135,8 +142,8 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
         facade = _facade_module()
         from .phase import synodic_phase_angle as _spa, synodic_phase_state as _sps
 
-        jd = facade.jd_from_datetime(dt)
-        ang = _spa(body1, body2, jd)
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        ang = _spa(body1, body2, jd_ut1)
         return {
             "phase_angle": ang,
             "phase_fraction": ang / 360.0,
@@ -163,7 +170,8 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
         facade = _facade_module()
         from .stars import heliacal_rising as _hr
 
-        return _hr(star_name, facade.jd_from_datetime(dt), latitude, longitude)
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return _hr(star_name, jd_ut1, latitude, longitude)
 
     def heliacal_setting(
         self,
@@ -176,7 +184,8 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
         facade = _facade_module()
         from .stars import heliacal_setting as _hs
 
-        return _hs(star_name, facade.jd_from_datetime(dt), latitude, longitude)
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return _hs(star_name, jd_ut1, latitude, longitude)
 
     def heliacal_rising_event(
         self,
@@ -189,7 +198,8 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
         facade = _facade_module()
         from .stars import heliacal_rising_event as _hre
 
-        return _hre(star_name, facade.jd_from_datetime(dt), latitude, longitude)
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return _hre(star_name, jd_ut1, latitude, longitude)
 
     def heliacal_setting_event(
         self,
@@ -202,14 +212,16 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
         facade = _facade_module()
         from .stars import heliacal_setting_event as _hse
 
-        return _hse(star_name, facade.jd_from_datetime(dt), latitude, longitude)
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return _hse(star_name, jd_ut1, latitude, longitude)
 
     def nakshatras(self, chart, ayanamsa_system: str | None = None):
         """Compute nakshatra positions for all planets in a chart."""
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
+        jd_ut1 = facade.utc_to_ut1(chart.jd_ut)
         return facade.all_nakshatras_at(
-            chart.longitudes(include_nodes=False), chart.jd_ut, system
+            chart.longitudes(include_nodes=False), jd_ut1, system
         )
 
     def antiscia(self, chart, orb: float = 1.0):

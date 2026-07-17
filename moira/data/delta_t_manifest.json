@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-07-17",
+  "hash_algorithm": "sha256",
+  "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
+  "runtime_policy_notes": [
+    "The generic delta_t surface preserves admitted totals on each source product's published basis; it does not ambiently retarget HPIERS DE430/LE430 totals to DE441.",
+    "The generic delta_t surface uses an explicit 100-year C0 reconciliation from the earlier polynomial at -2100 to the first HPIERS row at -2000; the source-bounded physical surface still begins at -2000.",
+    "The HPIERS HTML DATE display rounds 1950-2016 half-year samples to integers; the packaged artifact restores the authority-declared 0.5-year ordinal cadence before interpolation.",
+    "USNO annual and Jan-Apr 2026 aggregate means are materialized at the mean epoch of their first-of-month source samples, not at integer product labels; the bridge/aggregate uncertainty scale is 0.06 seconds and is not a calibrated probability statement.",
+    "The final Delta-T aggregate is a Jan-Apr 2026 partial mean; the slope from the final two representative sample epochs is provisional aggregate policy, not an observed instantaneous derivative.",
+    "Hybrid and physical JD transforms use an exact private fraction-of-calendar-year coordinate; the public NASA-compatible decimal-year helper retains its month-midpoint convention.",
+    "Computational representability guards are +/-100000 decimal years and +/-40000000 Julian days; these are not scientific-validity or source-coverage claims."
+  ],
+  "datasets": [
+    {
+      "path": "iers_eop.txt",
+      "product": "daily DUT1 (UT1-UTC)",
+      "source": {
+        "authority": "International Earth Rotation and Reference Systems Service",
+        "url": "https://datacenter.iers.org/products/eop/rapid/standard/csv/finals2000A.all.csv"
+      },
+      "retrieved_at_utc": "2026-05-06T19:41:10.445533+00:00",
+      "transformation": "moira.tools.iers_sync.update_eop_dut1; selected MJD and UT1-UTC columns",
+      "units": {
+        "epoch": "modified_julian_day",
+        "value": "seconds"
+      },
+      "coverage": {
+        "first_epoch": 41684,
+        "last_epoch": 61533
+      },
+      "row_count": 19850,
+      "sha256": "bc09b2e4b4162cfd147c7d66f6c7117af3946ef447f402496bb89195f030cdf4",
+      "runtime_status": "admitted_for_utc_to_ut1",
+      "caveats": [
+        "The packaged transform does not retain the source observed-versus-predicted status flag.",
+        "Rows are admitted for runtime use under the packaged snapshot policy, but must not all be described as measured or definitive observations.",
+        "At each outer coverage edge, the difference from the year model tapers to zero over one Julian year; internal gaps reconcile only their admitted boundary values.",
+        "Private UT1-to-UTC display conversion inverts the within-day UT1-TAI relation so a positive UTC leap is not smeared across the preceding civil day."
+      ]
+    },
+    {
+      "path": "delta_t_hpiers_2016.txt",
+      "product": "historical Delta T total and quoted error",
+      "source": {
+        "authority": "Stephenson, Morrison, and Hohenkerk (2016)",
+        "url": "https://doi.org/10.1098/rspa.2016.0404",
+        "table_url": "https://hpiers.obspm.fr/eop-pc/earthor/ut1lod/lod-eclipses.html"
+      },
+      "retrieved_at_utc": null,
+      "transformation": "Packaged HPIERS/HMNAO table transcription; the authority-declared 1950-2016 half-year ordinal cadence is materialized as exact 0.5-year epochs, with exact repeated rows at 1972.0 and 1994.0 preserved",
+      "units": {
+        "epoch": "decimal_year; exact half-year cadence from 1950 through 2016",
+        "value": "seconds",
+        "error": "seconds"
+      },
+      "coverage": {
+        "first_epoch": -2000,
+        "last_epoch": 2016
+      },
+      "row_count": 348,
+      "sha256": "103943ffef1b402435dbacdf0177a964c2479547fdb2871d51e16db2c5f150de",
+      "runtime_status": "admitted_with_explicit_epoch_policy",
+      "caveats": [
+        "The authority states that 1950-2016 values are half-yearly; the HTML DATE display rounds those labels to integers, so the packaged artifact restores the declared cadence rather than collapsing distinct epochs.",
+        "Exact duplicate rows are inert. At the conflicting published epochs -1600 and 1850, Moira explicitly retains the later row; -1600 is compatibility policy, while 1850 is a precision/regime join.",
+        "The HPIERS source states that its tabulated means are tied to JPL DE430/LE430 and lunar tidal acceleration -25.85 arcsec/cy^2; generic delta_t preserves that source basis and performs no ambient DE441 retargeting.",
+        "Generic delta_t joins the earlier polynomial to the first packaged HPIERS row with an explicit 100-year C0 bridge from -2100 to -2000.",
+        "The physical-policy domain begins at the first packaged epoch and does not clamp earlier requests."
+      ]
+    },
+    {
+      "path": "core_angular_momentum.txt",
+      "product": "annual-mean total LOD anomaly",
+      "source": {
+        "authority": "IERS EOP C04",
+        "url": "https://datacenter.iers.org/products/eop/long-term/c04_operational/csv/eopc04.1962-now.csv"
+      },
+      "retrieved_at_utc": null,
+      "transformation": "Historical annual arithmetic means; the corrected archived reproduction generator groups by the source Year column and converts source LOD seconds to output milliseconds before averaging",
+      "units": {
+        "epoch": "decimal_year_midyear",
+        "value": "milliseconds_of_total_lod_anomaly"
+      },
+      "coverage": {
+        "first_epoch": 1962.5,
+        "last_epoch": 2026.5
+      },
+      "row_count": 65,
+      "sha256": "6caaa27547cc246a43220266fefee4dabe4ee7f9f32a859027e01efbcb0224c2",
+      "runtime_status": "quarantined_research_only",
+      "caveats": [
+        "This total LOD series is not a core-angular-momentum inversion.",
+        "The final annual label may represent a partial-year mean; retrieval status was not preserved."
+      ]
+    },
+    {
+      "path": "grace_lod_contribution.txt",
+      "product": "historical candidate C20-derived cumulative Delta T contribution",
+      "source": {
+        "authority": "NASA GSFC SLR / GRACE-FO TN-14 replacement C20",
+        "url": "https://podaac.jpl.nasa.gov/gravity/gracefo-documentation"
+      },
+      "retrieved_at_utc": null,
+      "transformation": "Historical pre-correction output of scripts/archive/one_shot_debug_and_diagnostics/fetch_grace_j2.py; the current archived script corrects the dimensional divisor but remains explicitly quarantined",
+      "units": {
+        "epoch": "decimal_year",
+        "value": "historical_derived_seconds",
+        "gap_flag": "0_or_1"
+      },
+      "coverage": {
+        "first_epoch": 2002.2548,
+        "last_epoch": 2023.2466
+      },
+      "row_count": 234,
+      "sha256": "728892d85656d6a2e58bd77d7bf8c1767714063143ae0ffad668d784a745e986",
+      "runtime_status": "quarantined_audit_reproduction_only",
+      "caveats": [
+        "The historical generator divided integrated milliseconds by 86400 instead of 1000, an exact factor-of-86.4 defect.",
+        "The C20-to-inertia-to-LOD derivation and cryosphere-only attribution are not source-owned.",
+        "The stored values must not be numerically repaired or consumed without a complete re-derivation."
+      ]
+    },
+    {
+      "path": "aam_glaam_annual.txt",
+      "product": "annual-mean global atmospheric angular momentum proxy",
+      "source": {
+        "authority": "NOAA Physical Sciences Laboratory",
+        "url": "https://psl.noaa.gov/data/timeseries/month/GLAAM/"
+      },
+      "retrieved_at_utc": null,
+      "transformation": "Simple annual mean of monthly source values",
+      "units": {
+        "epoch": "decimal_year_midyear",
+        "value": "AAM_as_published_by_source"
+      },
+      "coverage": {
+        "first_epoch": 1958.5,
+        "last_epoch": 2014.5
+      },
+      "row_count": 57,
+      "sha256": "0f604b4799780e2d39bbf745fbf5ea693697031b072b215d94b6595d0063c797",
+      "runtime_status": "quarantined_diagnostic_only",
+      "caveats": [
+        "This quantity is not in the same units as the packaged OAM LOD proxy.",
+        "A fitted coefficient does not establish an independent causal Delta-T contribution."
+      ]
+    },
+    {
+      "path": "oam_ecco_annual.txt",
+      "product": "annual-mean oceanic mass-plus-motion LOD proxy",
+      "source": {
+        "authority": "IERS Datacenter ECCO 50-year series",
+        "url": "https://datacenter.iers.org/data/191/ECCO_50yr.chi"
+      },
+      "retrieved_at_utc": null,
+      "transformation": "Simple annual mean of 10-day total LOD values",
+      "units": {
+        "epoch": "decimal_year_midyear",
+        "value": "milliseconds_of_lod"
+      },
+      "coverage": {
+        "first_epoch": 1949.5,
+        "last_epoch": 2003.5
+      },
+      "row_count": 55,
+      "sha256": "5e00c0a91abddde6c48bb0cef1f0a6ac7678ede356ba8540142782ae1e0d525a",
+      "runtime_status": "quarantined_diagnostic_only",
+      "caveats": [
+        "A fitted coefficient does not establish an independent causal Delta-T contribution."
+      ]
+    }
+  ]
+}

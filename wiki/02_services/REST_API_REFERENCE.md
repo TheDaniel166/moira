@@ -978,6 +978,13 @@ direction.
 | POST | `/v1/primary-directions/network` | `primary_directions_network_route` |
 | POST | `/v1/primary-directions/network/reduction` | `primary_directions_network_reduction_route` |
 
+For every `/v1/varshaphal/*` request, the timezone offset supplied on
+`natal_dt` owns the doctrinal civil birth date and therefore the birth year
+used by Muntha and Mudda progression. The offset is not transport-only
+metadata: two representations of the same instant may lawfully name different
+local civil birth dates. The natal, query, and focus instants are independently
+reduced from UTC to UT1 before astronomical computation.
+
 ## Catalog, Star, Small-Body, And Website Routes
 
 | Method | Path | Handler |

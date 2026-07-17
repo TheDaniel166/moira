@@ -12,6 +12,7 @@ from dataclasses import dataclass
 
 from moira import Moira
 from moira.constants import HouseSystem
+from moira.julian import utc_to_tt, utc_to_ut1
 from moira.primary_directions import (
     PrimaryDirectionMethod,
     PrimaryDirectionSpace,
@@ -98,6 +99,19 @@ class PrimaryDirectionsArcsReductionContext:
     stage_sequence: list[str]
 
 
+class _PrimaryDirectionsChartClock:
+    """Private chart proxy with the engine-facing UT1 and TT clocks resolved."""
+
+    def __init__(self, base) -> None:
+        self._base = base
+        self.jd_ut = utc_to_ut1(base.jd_ut)
+        self.jd_tt = utc_to_tt(base.jd_ut)
+        self.delta_t = (self.jd_tt - self.jd_ut) * 86400.0
+
+    def __getattr__(self, name):
+        return getattr(self._base, name)
+
+
 def _build_arcs_reduction_context(
     chart,
     houses,
@@ -116,7 +130,7 @@ def _build_arcs_reduction_context(
         requested_datetime=request.dt.isoformat(),
         normalized_datetime_utc=chart.datetime_utc.isoformat(),
         jd_ut=chart.jd_ut,
-        jd_tt=chart.jd_ut + (chart.delta_t / 86400.0),
+        jd_tt=chart.jd_tt,
         delta_t_seconds=chart.delta_t,
         observer=observer,
         requested_bodies=(list(request.bodies) if request.bodies is not None else None),
@@ -160,7 +174,7 @@ def _build_chart_and_houses(engine: Moira, request: PrimaryDirectionsBaseRequest
         system=request.house_system or HouseSystem.PLACIDUS,
     )
 
-    return chart, houses
+    return _PrimaryDirectionsChartClock(chart), houses
 
 
 def _chosen_key_and_source(request: PrimaryDirectionsSearchRequest) -> tuple[str, str]:
@@ -221,20 +235,8 @@ def compute_speculum_service(
     chart, houses = _build_chart_and_houses(engine, request)
     geo_lat = request.observer_lat
 
-    # Compute jd_tt for any downstream fixed-star / derived logic inside speculum
-    jd_tt = chart.jd_ut + (chart.delta_t / 86400.0)
-
-    class _ChartTT:
-        def __init__(self, base, jd_tt):
-            self._base = base
-            self.jd_tt = jd_tt
-        def __getattr__(self, name):
-            return getattr(self._base, name)
-
-    chart_for_pd = _ChartTT(chart, jd_tt)
-
     return compute_speculum(
-        chart_for_pd,
+        chart,
         houses,
         geo_lat,
         obliquity=request.obliquity,
@@ -349,23 +351,10 @@ def _compute_arcs_from_chart_and_houses(chart, houses, request: PrimaryDirection
     if request.policy and request.policy.include_converse is not None:
         include_converse = request.policy.include_converse
 
-    # Primary directions code (especially fixed star handling) expects chart.jd_tt.
-    # Standard Chart only has jd_ut + delta_t. Provide a thin wrapper.
-    jd_tt = chart.jd_ut + (chart.delta_t / 86400.0)
-
-    class _ChartTT:
-        def __init__(self, base, jd_tt):
-            self._base = base
-            self.jd_tt = jd_tt
-        def __getattr__(self, name):
-            return getattr(self._base, name)
-
-    chart_for_pd = _ChartTT(chart, jd_tt)
-
     # Only pass policy when we actually resolved one from client input.
     # Passing None lets the engine use its absolute internal defaults (matching raw test calls).
     call_kwargs = {
-        "chart": chart_for_pd,
+        "chart": chart,
         "houses": houses,
         "geo_lat": geo_lat,
         "max_arc": request.max_arc,

@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
 
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.progressions import (
     ascendant_arc,
     converse_ascendant_arc,
@@ -54,7 +54,7 @@ _HF_PAYLOAD = {"natal": _NATAL_PAYLOAD, "target_dt": _TARGET_ISO}
 
 @pytest.mark.requires_ephemeris
 def test_house_frame_route_matches_engine(client_with_engine: TestClient) -> None:
-    natal_jd = jd_from_datetime(_NATAL_DT)
+    natal_jd = utc_to_ut1(jd_from_datetime(_NATAL_DT))
     direct = daily_house_frame(natal_jd, _TARGET_DT, _LAT, _LON)
 
     resp = client_with_engine.post("/v1/progressions/house-frame", json=_HF_PAYLOAD)
@@ -100,7 +100,7 @@ def test_house_frame_reduction_route_exposes_house_frame_truth(
 
 @pytest.mark.requires_ephemeris
 def test_daily_houses_cusps_route_matches_engine(client_with_engine: TestClient) -> None:
-    natal_jd = jd_from_datetime(_NATAL_DT)
+    natal_jd = utc_to_ut1(jd_from_datetime(_NATAL_DT))
     direct_frame = daily_house_frame(natal_jd, _TARGET_DT, _LAT, _LON)
     direct_houses = direct_frame.houses
 
@@ -120,7 +120,7 @@ def test_daily_houses_cusps_route_matches_engine(client_with_engine: TestClient)
 
 @pytest.mark.requires_ephemeris
 def test_ascendant_arc_route_matches_engine(client_with_engine: TestClient) -> None:
-    natal_jd = jd_from_datetime(_NATAL_DT)
+    natal_jd = utc_to_ut1(jd_from_datetime(_NATAL_DT))
     direct = ascendant_arc(natal_jd, _TARGET_DT, _LAT, _LON)
 
     resp = client_with_engine.post(
@@ -138,7 +138,7 @@ def test_ascendant_arc_route_matches_engine(client_with_engine: TestClient) -> N
 
 @pytest.mark.requires_ephemeris
 def test_converse_ascendant_arc_route_matches_engine(client_with_engine: TestClient) -> None:
-    natal_jd = jd_from_datetime(_NATAL_DT)
+    natal_jd = utc_to_ut1(jd_from_datetime(_NATAL_DT))
     direct = converse_ascendant_arc(natal_jd, _TARGET_DT, _LAT, _LON)
 
     resp = client_with_engine.post(
@@ -155,7 +155,7 @@ def test_converse_ascendant_arc_route_matches_engine(client_with_engine: TestCli
 
 @pytest.mark.requires_ephemeris
 def test_vertex_arc_route_matches_engine(client_with_engine: TestClient) -> None:
-    natal_jd = jd_from_datetime(_NATAL_DT)
+    natal_jd = utc_to_ut1(jd_from_datetime(_NATAL_DT))
     direct = vertex_arc(natal_jd, _TARGET_DT, _LAT, _LON)
 
     resp = client_with_engine.post(

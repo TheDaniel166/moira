@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from moira import Moira
-from moira.julian import jd_from_datetime, ut_to_tt
+from moira.julian import jd_from_datetime, utc_to_tt
 from moira.multiple_stars import (
     components_at,
     is_resolvable,
@@ -67,7 +67,7 @@ from ._shared import require_aware_datetime
 
 def _to_jd_tt(dt: datetime) -> float:
     require_aware_datetime(dt)
-    return ut_to_tt(jd_from_datetime(dt))
+    return utc_to_tt(jd_from_datetime(dt))
 
 
 def compute_star_position(engine: Moira, request: StarPositionRequest) -> StarPositionResponse:

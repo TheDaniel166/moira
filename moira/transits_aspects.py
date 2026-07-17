@@ -25,7 +25,7 @@ from .transits import (
     _validate_policy,
 )
 from .planets import Body, _npe_body_route_segment_specs
-from .julian import ut_to_tt
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 try:
     from . import moira_native as mn
 except ImportError:
@@ -103,27 +103,24 @@ def _find_candidate_windows_native(
     """Use native batch processing to find windows where an aspect might occur."""
     from .planets import _NPE_BODY_ROUTE_PAIRS
     
-    # 1. Identify SpkReader for DE441
-    de441 = None
-    if hasattr(reader, "_readers"): # KernelPool
-        for r in reader._readers:
-            if "de441" in str(r.path).lower():
-                de441 = r
-                break
-    elif "de441" in str(reader.path).lower():
-        de441 = reader
-    
-    if de441 is None:
+    # 1. Resolve the content-identified planetary reader without trusting a
+    # filename. Supplemental small-body shards do not own this evaluator path.
+    if isinstance(reader, SpkReader):
+        planetary_reader = reader
+    else:
+        resolver = getattr(reader, "_primary_planetary_reader", None)
+        planetary_reader = resolver() if callable(resolver) else None
+    if not isinstance(planetary_reader, SpkReader):
         return []
 
     # 2. Get segment specs
-    jd_tt_start = ut_to_tt(jd_start)
-    specs = _npe_body_route_segment_specs(de441, jd_tt_start)
+    jd_tt_start = _ut1_to_ephemeris_tt(jd_start, reader)
+    specs = _npe_body_route_segment_specs(planetary_reader, jd_tt_start)
     if not specs:
         return []
     
     # 3. Build Evaluators
-    path = str(de441.path)
+    path = str(planetary_reader.path)
     e_target1 = _get_native_evaluator(body, specs, path)
     
     # Target may be a body or a fixed longitude
@@ -141,7 +138,7 @@ def _find_candidate_windows_native(
     jds = []
     curr = jd_start
     while curr <= jd_end:
-        jds.append(ut_to_tt(curr))
+        jds.append(_ut1_to_ephemeris_tt(curr, reader))
         curr += step_days
     if not jds: return []
     

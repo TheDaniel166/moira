@@ -21,6 +21,12 @@ def _facade_module() -> Any:
     return sys.modules[f"{__package__}.facade"]
 
 
+def _ut1_from_datetime(facade: Any, value: datetime) -> float:
+    """Resolve one UTC-aware public datetime to the engine's UT1 scalar."""
+
+    return facade.utc_to_ut1(facade.jd_from_datetime(value))
+
+
 class PredictiveFacadeMixin:
     """RITE: The Time-Mapper — the layer that routes the public Moira surface
     to predictive techniques: secondary progressions, transit search, solar
@@ -77,7 +83,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Secondary Progressed chart."""
         facade = _facade_module()
         return facade.secondary_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -92,7 +98,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Solar Arc directed chart."""
         facade = _facade_module()
         return facade.solar_arc(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -107,7 +113,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Solar Arc directed chart measured in right ascension."""
         facade = _facade_module()
         return facade.solar_arc_right_ascension(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -122,7 +128,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Naibod directions in ecliptic longitude."""
         facade = _facade_module()
         return facade.naibod_longitude(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -137,7 +143,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Naibod directions in right ascension."""
         facade = _facade_module()
         return facade.naibod_right_ascension(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -152,7 +158,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Tertiary Progressed chart."""
         facade = _facade_module()
         return facade.tertiary_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -167,7 +173,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Tertiary II / Klaus Wessel progression."""
         facade = _facade_module()
         return facade.tertiary_ii_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -182,7 +188,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Secondary Progressed chart."""
         facade = _facade_module()
         return facade.converse_secondary_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -197,7 +203,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Solar Arc directed chart."""
         facade = _facade_module()
         return facade.converse_solar_arc(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -212,7 +218,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Solar Arc directed chart measured in right ascension."""
         facade = _facade_module()
         return facade.converse_solar_arc_right_ascension(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -227,7 +233,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Tertiary Progressed chart."""
         facade = _facade_module()
         return facade.converse_tertiary_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -242,7 +248,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Tertiary II / Klaus Wessel progression."""
         facade = _facade_module()
         return facade.converse_tertiary_ii_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -257,7 +263,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Minor Progressed chart."""
         facade = _facade_module()
         return facade.minor_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -272,7 +278,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Naibod directions in ecliptic longitude."""
         facade = _facade_module()
         return facade.converse_naibod_longitude(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -287,7 +293,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Naibod directions in right ascension."""
         facade = _facade_module()
         return facade.converse_naibod_right_ascension(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -302,7 +308,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Minor Progressed chart."""
         facade = _facade_module()
         return facade.converse_minor_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -317,7 +323,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Duodenary progression."""
         facade = _facade_module()
         return facade.duodenary_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -332,7 +338,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Duodenary progression."""
         facade = _facade_module()
         return facade.converse_duodenary_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -347,7 +353,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Quotidian solar progression."""
         facade = _facade_module()
         return facade.quotidian_solar_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -362,7 +368,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Quotidian solar progression."""
         facade = _facade_module()
         return facade.converse_quotidian_solar_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -377,7 +383,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Quotidian lunar progression."""
         facade = _facade_module()
         return facade.quotidian_lunar_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -392,7 +398,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Quotidian lunar progression."""
         facade = _facade_module()
         return facade.converse_quotidian_lunar_progression(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             bodies=bodies,
             reader=self._reader,
@@ -408,7 +414,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Planetary Arc directed chart."""
         facade = _facade_module()
         return facade.planetary_arc(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             arc_body=arc_body,
             bodies=bodies,
@@ -425,7 +431,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Converse Planetary Arc directed chart."""
         facade = _facade_module()
         return facade.converse_planetary_arc(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             arc_body=arc_body,
             bodies=bodies,
@@ -443,7 +449,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Ascendant Arc directed chart."""
         facade = _facade_module()
         return facade.ascendant_arc(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             latitude,
             longitude,
@@ -462,7 +468,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Daily Houses progressed house frame."""
         facade = _facade_module()
         return facade.daily_houses(
-            facade.jd_from_datetime(natal_dt),
+            _ut1_from_datetime(facade, natal_dt),
             target_dt,
             latitude,
             longitude,
@@ -705,7 +711,9 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
     ):
         """Calculate planetary hours for a date and location."""
         facade = _facade_module()
-        return facade.planetary_hours(
+        from .planetary_hours import _planetary_hours_from_utc
+
+        return _planetary_hours_from_utc(
             facade.jd_from_datetime(dt),
             latitude,
             longitude,

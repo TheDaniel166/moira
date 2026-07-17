@@ -35,6 +35,61 @@ catalog metadata. Offline apparent-position fixtures use JPL Horizons
 `OBSERVER`, center `500@399`, quantity 31, and are external authority evidence,
 not self-generated Moira parity.
 
+### Earth rotation and Delta T
+
+Moira keeps the computational products below distinct. A source that measures
+total Earth rotation does not thereby identify a causal core, atmospheric,
+oceanic, or cryospheric contribution. Machine-readable coverage, hashes,
+units, transformation lineage, and runtime-admission status are recorded in
+`moira/data/delta_t_manifest.json`.
+
+| Packaged artifact | Source and product | Runtime status |
+|---|---|---|
+| `iers_eop.txt` | IERS `finals2000A` snapshot; daily DUT1 (`UT1-UTC`) | Admitted for UTC-to-UT1 and UT1-to-TT conversion. The packaged transformation does not retain the source observed/predicted flag, so admitted rows are not all described as measured or definitive observations. At each outer edge, the EOP-to-year-model correction is C0 at the boundary and tapers to zero over one Julian year rather than becoming a remote constant offset. Internal gaps interpolate only their two admitted boundary corrections and are not relabelled as measured data. |
+| `delta_t_hpiers_2016.txt` | Stephenson, Morrison, and Hohenkerk (2016) / HPIERS tabulation; Delta T and quoted error columns, stated by HPIERS for DE430/LE430 at lunar tidal acceleration `-25.85 arcsec/cy²` | HPIERS declares the 1950–2016 block half-yearly even though its HTML DATE display rounds epochs to integers. The packaged artifact materializes that source-owned `0.5`-year cadence and preserves exact duplicate rows. Conflicting published rows at `-1600` and `1850` retain an explicit later-row compatibility choice; only `1850` is a precision/regime join. Generic `delta_t()` preserves the DE430/LE430 source basis and does not ambiently retarget to DE441. HPIERS owns the runtime mean through its final distinct knot before the modern aggregate bridge. An explicit 100-year C0 bridge joins the earlier polynomial at `-2100` to the first HPIERS row at `-2000`; the physical surface still begins at `-2000`. |
+| `core_angular_momentum.txt` | Annual means of total IERS EOP C04 LOD | Quarantined research proxy. Despite the historical filename, this is not a core-angular-momentum inversion and is not admitted as a causal component. |
+| `grace_lod_contribution.txt` | Historical derivative of GRACE/GRACE-FO TN-14 C20 | Quarantined. The historical integration has a factor-of-86.4 unit defect and the C20-to-inertia/cryosphere attribution lacks a source-owned derivation. The values are retained only for audit reproduction. |
+| `aam_glaam_annual.txt` | NOAA PSL global atmospheric angular momentum annual means | Diagnostic research proxy only; not admitted to the public Delta-T mean. |
+| `oam_ecco_annual.txt` | IERS ECCO annual-mean oceanic LOD proxy | Diagnostic research proxy only; not admitted to the public Delta-T mean. |
+
+The admitted Delta-T mean is source-priority total truth through the final
+aggregate product (currently the Jan–Apr 2026 partial mean). Full-year means
+are placed at the mean epoch of their twelve first-of-month USNO samples; the
+partial mean is placed at the mean epoch of its four samples. Product labels
+are not treated as January 1 point epochs. The final two representative epochs
+own the scenario handoff coordinate, total, and provisional slope; that
+quotient is policy, not an observed instantaneous derivative. Beyond the handoff, Moira
+exposes an explicit bounded scenario. Values beyond 2150 are scenario
+extrapolations, not authority-validated forecasts. Its future `sigma` field is
+an uncalibrated policy scale, not a stated-coverage uncertainty. The modern
+bridge/aggregate scale is `0.06 s`, covering the verified `0.052808 s` maximum
+daily residual against the bundled EOP snapshot; the legacy future
+scenario coefficients lack a complete traceable calibration record, and
+uncertainty in the handoff value and slope is not propagated. The compatibility fields
+named `core`, `cryo`, `fluid`, and `residual` remain public, but are zero while
+their candidate datasets are quarantined.
+
+JD-aware hybrid and physical transforms use a private exact fraction between
+successive proleptic-Gregorian January 1 boundaries. The public
+NASA-compatible decimal-year helper deliberately retains its month-midpoint
+convention. NASA catalog compatibility passes that coordinate explicitly;
+general no-hint NASA time transforms use a continuous year and expose raw
+polynomial boundary seams through a fail-closed inverse. EOP-backed private
+UT1-to-UTC formatting inverts the within-day
+UT1-TAI relation, so a positive UTC leap is not distributed across the prior
+civil day. Before the atomic era, Moira retains the historical UT1-proxy
+policy; over the final civil day before `1972-01-01`, a monotonic smoothstep
+joins that proxy to the atomic rule, and the private inverse solves the same
+handoff by bisection.
+
+`DeltaTBreakdown.era` retains the compatibility labels `pre-1840`,
+`historical`, `measured`, and `future`; those categories are not source-row
+provenance, and the legacy word `measured` does not override the status of an
+admitted source row. Computational guards admit finite Delta-T years only in
+`[-100000, +100000]` and time-transform JDs only in
+`[-40000000, +40000000]`. These binary64 representability bounds are not
+scientific-validity or source-coverage claims.
+
 ## Provenance history
 
 Earlier in Moira's release history, during a licensing discussion with the Swiss Ephemeris authors, the house module carried — as a conservative precaution — an attribution notice referencing `swehouse.c`, and written permission was obtained from the authors. Moira's house implementation is independently derived from the mathematical definitions; the precautionary attribution was therefore determined to be unnecessary and was removed.

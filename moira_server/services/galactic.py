@@ -14,7 +14,7 @@ from moira.galactic import (
     galactic_to_ecliptic,
     galactic_to_equatorial,
 )
-from moira.julian import ut_to_tt
+from moira.julian import utc_to_tt, utc_to_ut1
 from moira.obliquity import true_obliquity
 
 from ..models.chart import ChartRequest
@@ -230,7 +230,8 @@ def compute_galactic_chart_positions(
 ) -> GalacticPositionsResult:
     chart = _build_chart(engine, request)
     bodies = _selected_bodies(request.bodies, chart.planets)
-    jd_tt = ut_to_tt(chart.jd_ut)
+    jd_ut = utc_to_ut1(chart.jd_ut)
+    jd_tt = utc_to_tt(chart.jd_ut)
     obliquity = true_obliquity(jd_tt)
     body_data = {
         body: (chart.planets[body].longitude, chart.planets[body].latitude)
@@ -243,7 +244,7 @@ def compute_galactic_chart_positions(
         provenance=GalacticProvenance(
             requested_datetime=request.dt.isoformat(),
             normalized_datetime_utc=chart.datetime_utc.isoformat(),
-            jd_ut=chart.jd_ut,
+            jd_ut=jd_ut,
             jd_tt=jd_tt,
             obliquity_deg=obliquity,
             requested_bodies=tuple(request.bodies) if request.bodies is not None else None,

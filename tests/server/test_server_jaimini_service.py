@@ -14,6 +14,7 @@ from moira.jaimini import (
     karaka_condition_profile,
     karaka_pair,
 )
+from moira.julian import utc_to_ut1
 from moira.sidereal import tropical_to_sidereal
 from moira_server.models.jaimini import (
     JaiminiChartRequest,
@@ -60,15 +61,16 @@ def _chart_sidereal_lons(moira_engine, scheme: int = 7) -> dict[str, float]:
         bodies=list(_PLANETS),
         include_nodes=(scheme == 8),
     )
+    jd_ut = utc_to_ut1(chart.jd_ut)
     lons = chart.longitudes(include_nodes=False)
     sidereal = {
-        planet: tropical_to_sidereal(lons[planet], chart.jd_ut, system="Lahiri")
+        planet: tropical_to_sidereal(lons[planet], jd_ut, system="Lahiri")
         for planet in _PLANETS
     }
     if scheme == 8:
         sidereal["Rahu"] = tropical_to_sidereal(
             chart.nodes[Body.TRUE_NODE].longitude,
-            chart.jd_ut,
+            jd_ut,
             system="Lahiri",
         )
     return sidereal

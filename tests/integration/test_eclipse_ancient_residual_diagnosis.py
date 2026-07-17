@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from moira._ephemeris_time import _ut1_to_ephemeris_tt
 from moira.eclipse_canon import refine_lunar_greatest_eclipse_canon_tt
 from moira.eclipse_search import refine_minimum
-from moira.julian import tt_to_ut_nasa_canon
+from moira.julian import tt_to_ut_nasa_canon, ut_to_tt_nasa_canon
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "eclipse_nasa_reference.json"
@@ -31,6 +32,12 @@ def test_ancient_lunar_total_residual_breakdown_is_explicit(eclipse_calculator) 
     row = _load_ancient_total_case()
     seed = float(row["seed_jd"]) + 40.0
     expected = float(row["expected_ut_jd"])
+    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    catalog_row = min(
+        fixture["lunar_maxima"],
+        key=lambda candidate: abs(float(candidate["ut_jd"]) - expected),
+    )
+    expected_tt = expected + float(catalog_row["delta_t_s"]) / _JD_SECONDS
     calc = eclipse_calculator
 
     native_retarded = refine_minimum(
@@ -94,6 +101,8 @@ def test_ancient_lunar_total_residual_breakdown_is_explicit(eclipse_calculator) 
     )
     canon_geometric = tt_to_ut_nasa_canon(canon_geometric_tt)
     canon_retarded = tt_to_ut_nasa_canon(canon_retarded_tt)
+    native_retarded_tt = _ut1_to_ephemeris_tt(native_retarded, calc._reader)
+    nasa_retarded_tt = ut_to_tt_nasa_canon(nasa_retarded)
 
     native_retarded_err = abs(_error_seconds(native_retarded, expected))
     native_geometric_err = abs(_error_seconds(native_geometric, expected))
@@ -105,7 +114,8 @@ def test_ancient_lunar_total_residual_breakdown_is_explicit(eclipse_calculator) 
     canon_alignment_geometric = abs(_error_seconds(nasa_geometric, canon_geometric))
     canon_alignment_retarded = abs(_error_seconds(nasa_retarded, canon_retarded))
 
-    assert native_retarded_err <= 60.0
+    native_tt_residual = abs(_error_seconds(native_retarded_tt, expected_tt))
+    assert native_tt_residual <= 360.0
     assert native_retarded_err < native_geometric_err
     assert native_retarded_err < nasa_geometric_err
     assert native_retarded_err < nasa_retarded_err
@@ -114,6 +124,11 @@ def test_ancient_lunar_total_residual_breakdown_is_explicit(eclipse_calculator) 
     # than the time-scale branch change for this ancient case.
     assert native_moon_model_shift >= 20.0
     assert delta_t_branch_shift >= 300.0
+
+    # Both UT1 branches must identify the same physical TT minimum.  Comparing
+    # either raw UT1 value with the NASA catalog would mix clock products and
+    # can create a misleadingly small residual by cancellation.
+    assert abs(_error_seconds(native_retarded_tt, nasa_retarded_tt)) <= 1.0
 
     # When the Delta T branch and Moon treatment are aligned, the native
     # shadow-axis objective and the canon gamma objective collapse to the same

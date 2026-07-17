@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.panchanga import panchanga_at, panchanga_profile
 from moira_server.models.panchanga import PanchangaChartRequest, PanchangaDirectRequest
 from moira_server.serializers.panchanga import (
@@ -93,7 +93,7 @@ def test_panchanga_chart_service_matches_chart_backed_engine(moira_engine) -> No
     request = PanchangaChartRequest(dt=_DT)
     chart = moira_engine.chart(_DT, bodies=["Sun", "Moon"], include_nodes=False)
     longitudes = chart.longitudes(include_nodes=False)
-    direct = panchanga_at(longitudes["Sun"], longitudes["Moon"], _JD)
+    direct = panchanga_at(longitudes["Sun"], longitudes["Moon"], utc_to_ut1(_JD))
 
     serviced = compute_panchanga_chart(moira_engine, request)
 
@@ -105,7 +105,9 @@ def test_panchanga_chart_profile_service_matches_chart_backed_engine(moira_engin
     request = PanchangaChartRequest(dt=_DT)
     chart = moira_engine.chart(_DT, bodies=["Sun", "Moon"], include_nodes=False)
     longitudes = chart.longitudes(include_nodes=False)
-    direct = panchanga_profile(panchanga_at(longitudes["Sun"], longitudes["Moon"], _JD))
+    direct = panchanga_profile(
+        panchanga_at(longitudes["Sun"], longitudes["Moon"], utc_to_ut1(_JD))
+    )
 
     serviced = compute_panchanga_chart_profile(moira_engine, request)
 

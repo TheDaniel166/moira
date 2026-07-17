@@ -11,7 +11,7 @@ from moira import Body
 from moira.constants import HouseSystem, sign_of
 from moira.coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
 from moira.houses import HousePolicy, calculate_houses
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.planets import all_planets_at, planet_at
 from moira.progressions import (
     ProgressedChart,
@@ -90,6 +90,10 @@ ONE_DEGREE_RATE = 1.0
 DUODENARY_DIVISOR = 12.0
 
 
+def _ut1_from_datetime(value: datetime) -> float:
+    return utc_to_ut1(jd_from_datetime(value))
+
+
 def _assert_position_matches_raw(progressed, raw) -> None:
     for name, pos in progressed.positions.items():
         source = raw[name]
@@ -107,7 +111,7 @@ def test_secondary_progression_maps_age_years_to_age_days_and_casts_that_chart()
     natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     expected_prog_jd = natal_jd + age_years
 
@@ -156,7 +160,7 @@ def test_solar_arc_uses_progressed_sun_minus_natal_sun_and_applies_it_to_natal_c
     natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     progressed_sun_jd = natal_jd + age_years
 
@@ -203,7 +207,7 @@ def test_naibod_longitude_applies_fixed_rate_uniformly_to_natal_positions() -> N
     natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    age_years = (_ut1_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
     expected_arc = (age_years * NAIBOD_RATE) % 360.0
     natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
 
@@ -243,7 +247,7 @@ def test_one_degree_longitude_applies_one_degree_per_year_uniformly_to_natal_pos
     natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    age_years = (_ut1_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
     expected_arc = (age_years * ONE_DEGREE_RATE) % 360.0
     natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
 
@@ -285,7 +289,7 @@ def test_one_degree_right_ascension_applies_one_degree_per_year_on_equator() -> 
     natal_dt = datetime(1992, 7, 15, 18, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 6, 1, 0, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    age_years = (_ut1_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
     eps_natal = true_obliquity(ut_to_tt(natal_jd))
     expected_arc = (age_years * ONE_DEGREE_RATE) % 360.0
     natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
@@ -322,7 +326,7 @@ def test_ra_direction_family_uses_equatorial_arcs_and_projects_back_to_ecliptic(
     natal_dt = datetime(1992, 7, 15, 18, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 6, 1, 0, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    age_years = (_ut1_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
     eps_natal = true_obliquity(ut_to_tt(natal_jd))
 
     natal_sun = planet_at(Body.SUN, natal_jd)
@@ -372,7 +376,7 @@ def test_tertiary_and_minor_progressions_share_same_current_mapping_rule() -> No
     natal_dt = datetime(1995, 5, 10, 12, 0, tzinfo=timezone.utc)
     target_dt = datetime(2025, 3, 20, 12, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     expected_prog_jd = natal_jd + age_years * (SYNODIC_MONTH / TROPICAL_YEAR)
 
@@ -393,7 +397,7 @@ def test_converse_tertiary_and_minor_progressions_share_same_current_reverse_map
     natal_dt = datetime(1995, 5, 10, 12, 0, tzinfo=timezone.utc)
     target_dt = datetime(2025, 3, 20, 12, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     expected_prog_jd = natal_jd - age_years * (SYNODIC_MONTH / TROPICAL_YEAR)
 
@@ -414,7 +418,7 @@ def test_converse_secondary_progression_moves_backward_by_age_years() -> None:
     natal_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     target_dt = datetime(2010, 1, 1, 12, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     expected_prog_jd = natal_jd - age_years
 
@@ -462,7 +466,7 @@ def test_converse_solar_arc_subtracts_forward_arc_from_natal_positions() -> None
     natal_dt = datetime(1992, 7, 15, 18, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 6, 1, 0, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     progressed_sun_jd = natal_jd + age_years
 
@@ -489,7 +493,7 @@ def test_ascendant_arc_and_daily_houses_use_progressed_angle_frame() -> None:
     natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     progressed_jd = natal_jd + age_years
     lat = 51.5
@@ -549,7 +553,7 @@ def test_converse_ascendant_arc_subtracts_forward_arc_from_natal_positions() -> 
     natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     progressed_jd = natal_jd + age_years
     lat = 51.5
@@ -594,7 +598,10 @@ def test_progressed_chart_datetime_utc_tracks_progressed_jd_not_natal_jd() -> No
 
     expected = target_dt  # placeholder to force a mismatch if property uses natal JD
     assert progressed.datetime_utc != expected
-    assert jd_from_datetime(progressed.datetime_utc) == pytest.approx(progressed.progressed_jd_ut, abs=1e-9)
+    assert _ut1_from_datetime(progressed.datetime_utc) == pytest.approx(
+        progressed.progressed_jd_ut,
+        abs=1e-9,
+    )
 
 
 def test_progressed_vessel_invariants_reject_truth_and_classification_drift() -> None:
@@ -708,7 +715,7 @@ def test_explicit_policy_can_change_rate_and_house_frame_doctrine() -> None:
     natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    age_years = (_ut1_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
     custom_policy = ProgressionComputationPolicy(
         directions=ProgressionDirectionPolicy(naibod_rate_deg_per_year=1.0),
         house_frame=ProgressionHouseFramePolicy(default_house_system=HouseSystem.WHOLE_SIGN),
@@ -1165,7 +1172,7 @@ def test_mean_solar_arc_longitude_applies_naibod_rate_uniformly() -> None:
     natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    age_years = (_ut1_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
     expected_arc = (age_years * NAIBOD_RATE) % 360.0
     natal_raw = all_planets_at(natal_jd, bodies=list(Body.ALL_PLANETS))
 
@@ -1202,7 +1209,7 @@ def test_mean_solar_arc_right_ascension_applies_naibod_rate_on_equator() -> None
     natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    age_years = (jd_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
+    age_years = (_ut1_from_datetime(target_dt) - natal_jd) / TROPICAL_YEAR
     expected_arc = (age_years * NAIBOD_RATE) % 360.0
 
     directed = mean_solar_arc_right_ascension(natal_jd, target_dt)
@@ -1235,7 +1242,7 @@ def test_vertex_arc_applies_vertex_motion_as_directing_arc() -> None:
     natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     prog_jd = natal_jd + age_years
     lat = 51.5
@@ -1281,7 +1288,7 @@ def test_secondary_progression_declination_returns_equatorial_declination() -> N
     natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     prog_jd = natal_jd + age_years
 
@@ -1329,7 +1336,7 @@ def test_duodenary_progression_advances_one_twelfth_day_per_year() -> None:
     natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     expected_prog_jd = natal_jd + age_years / DUODENARY_DIVISOR
 
@@ -1370,7 +1377,7 @@ def test_quotidian_solar_progression_maps_fractional_year_to_days_after_secondar
     natal_dt = datetime(1985, 8, 15, 12, 0, tzinfo=timezone.utc)
     target_dt = datetime(2025, 3, 20, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     completed_years = math.floor(age_years)
     secondary_prog_jd = natal_jd + completed_years
@@ -1411,7 +1418,7 @@ def test_quotidian_lunar_progression_uses_synodic_month_rate() -> None:
     natal_dt = datetime(1985, 8, 15, 12, 0, tzinfo=timezone.utc)
     target_dt = datetime(2025, 3, 20, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     completed_years = math.floor(age_years)
     secondary_prog_jd = natal_jd + completed_years
@@ -1450,7 +1457,7 @@ def test_planetary_arc_applies_chosen_body_arc_to_all_natal_positions() -> None:
     natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     prog_jd = natal_jd + age_years
 
@@ -1482,7 +1489,7 @@ def test_converse_planetary_arc_reverses_arc() -> None:
     natal_dt = datetime(1987, 9, 23, 4, 0, tzinfo=timezone.utc)
     target_dt = datetime(2024, 4, 8, 18, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     prog_jd = natal_jd + age_years
 
@@ -1587,7 +1594,7 @@ def test_quotidian_solar_progression_uses_floor_for_negative_age() -> None:
     natal_dt = datetime(2000, 1, 2, 0, 0, tzinfo=timezone.utc)
     target_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
 
     assert age_years < 0.0
@@ -1608,7 +1615,7 @@ def test_tertiary_ii_progression_uses_floor_for_negative_age() -> None:
     natal_dt = datetime(2000, 1, 2, 0, 0, tzinfo=timezone.utc)
     target_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
-    target_jd = jd_from_datetime(target_dt)
+    target_jd = _ut1_from_datetime(target_dt)
     age_years = (target_jd - natal_jd) / TROPICAL_YEAR
     completed_years = math.floor(age_years)
     expected_prog_jd = natal_jd + completed_years * SYNODIC_MONTH

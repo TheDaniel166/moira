@@ -297,16 +297,14 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
     to the caller rather than being silently swallowed.
     """
     from .stars import star_at
-    from .julian import ut_to_tt, decimal_year
-    from .planets import approx_year as _approx_year
+    from .julian import ut_to_tt
 
     star_name, target_sid = _STAR_ANCHORED[system]
 
     try:
         # star_at expects JD in TT; difference from UT is ~1 min, negligible
         # for proper motion but we compute it correctly anyway
-        year, month, *_ = _approx_year(jd)
-        jd_tt = ut_to_tt(jd, decimal_year(year, month))
+        jd_tt = ut_to_tt(jd)
         star = star_at(star_name, jd_tt)
         return (star.longitude - target_sid) % 360.0
     except (LookupError, FileNotFoundError):

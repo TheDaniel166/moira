@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable
 
 from .constants import Body
-from .julian import delta_t_from_jd, jd_from_datetime, utc_to_tt, utc_to_ut1
+from .julian import jd_from_datetime, utc_to_tt, utc_to_ut1
 from .nodes import mean_lilith, mean_node, true_lilith, true_node
 from .obliquity import nutation, true_obliquity
 from .planets import PlanetData, all_planets_at, planet_at
@@ -659,7 +659,7 @@ def _resolve_natal_jd(request: ProgressionBatchRequest) -> float:
     if request.natal_jd_ut is not None:
         return request.natal_jd_ut
     if request.natal_dt is not None:
-        return jd_from_datetime(request.natal_dt)
+        return utc_to_ut1(jd_from_datetime(request.natal_dt))
     raise ValueError("batch_progressions: each request requires natal_jd_ut or natal_dt")
 
 
@@ -702,17 +702,17 @@ def _chart_at_datetime(
 
     nodes: dict[str, Any] = {}
     if include_nodes:
-        nodes[Body.TRUE_NODE] = true_node(jd, reader=reader)
-        nodes[Body.MEAN_NODE] = mean_node(jd)
-        nodes[Body.LILITH] = mean_lilith(jd)
-        nodes[Body.TRUE_LILITH] = true_lilith(jd, reader=reader)
+        nodes[Body.TRUE_NODE] = true_node(jd_ut1, reader=reader)
+        nodes[Body.MEAN_NODE] = mean_node(jd_ut1)
+        nodes[Body.LILITH] = mean_lilith(jd_ut1)
+        nodes[Body.TRUE_LILITH] = true_lilith(jd_ut1, reader=reader)
 
     return Chart(
         jd_ut=jd,
         planets=planets,
         nodes=nodes,
         obliquity=true_obliquity(jd_tt),
-        delta_t=delta_t_from_jd(jd),
+        delta_t=(jd_tt - jd_ut1) * 86400.0,
     )
 
 

@@ -45,7 +45,8 @@ from fractions import Fraction
 
 from .constants import Body, KM_PER_AU, SIDEREAL_YEAR
 from .dignities_types import SolarConditionTruth
-from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc, ut_to_tt
+from .julian import CalendarDateTime, _ut1_to_utc, calendar_datetime_from_jd, datetime_from_jd, format_jd_utc
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import planet_at, planet_relative_to
 from .spk_reader import get_reader, SpkReader
 
@@ -143,16 +144,16 @@ class PhenomenonEvent:
 
     @property
     def datetime_utc(self) -> datetime:
-        return datetime_from_jd(self.jd_ut)
+        return datetime_from_jd(_ut1_to_utc(self.jd_ut))
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
-        return calendar_datetime_from_jd(self.jd_ut)
+        return calendar_datetime_from_jd(_ut1_to_utc(self.jd_ut))
 
     def __repr__(self) -> str:
         return (f"{self.body} {self.phenomenon}: "
                 f"{self.value:.4f}  "
-                f"{format_jd_utc(self.jd_ut)}")
+                f"{format_jd_utc(_ut1_to_utc(self.jd_ut))}")
 
 
 @dataclass(slots=True)
@@ -246,7 +247,7 @@ def _helio_distance(body: str, jd: float, reader: SpkReader) -> float:
     from .planets import _barycentric, _earth_barycentric
     from .constants import Body as _Body
 
-    jd_tt = ut_to_tt(jd)
+    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
 
     if body == _Body.EARTH:
         p_bary = _earth_barycentric(jd_tt, reader)
@@ -262,7 +263,7 @@ def _helio_state(body: str, jd: float, reader: SpkReader) -> tuple[tuple[float, 
     from .planets import _barycentric_state, _earth_barycentric_state
     from .constants import Body as _Body
 
-    jd_tt = ut_to_tt(jd)
+    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
 
     if body == _Body.EARTH:
         p_bary, v_bary = _earth_barycentric_state(jd_tt, reader)

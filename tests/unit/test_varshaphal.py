@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -7,6 +8,7 @@ import pytest
 import moira.varshaphal as varshaphal_module
 from moira.constants import HouseSystem
 from moira.houses import calculate_houses
+from moira.julian import calendar_datetime_from_jd, jd_from_datetime, utc_to_ut1
 from moira.varshaphal import (
     active_mudda_dasha,
     active_tasira_period,
@@ -38,6 +40,46 @@ def test_muntha_advances_one_sign_per_completed_year() -> None:
 def test_muntha_rejects_negative_years() -> None:
     with pytest.raises(ValueError, match="years_elapsed"):
         muntha(120.0, -1)
+
+
+def test_public_varshaphal_wrappers_recover_utc_year_at_negative_dut1_new_year(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    birth_utc = datetime(2005, 1, 1, tzinfo=timezone.utc)
+    birth_jd_ut1 = utc_to_ut1(jd_from_datetime(birth_utc))
+    assert calendar_datetime_from_jd(birth_jd_ut1).year == 2004
+
+    mudda_sentinel = object()
+    chart_sentinel = object()
+    captured: list[tuple[str, int]] = []
+
+    def fake_mudda(birth_jd, birth_civil_year, year, **_kwargs):
+        assert birth_jd == birth_jd_ut1
+        captured.append(("mudda", birth_civil_year))
+        return mudda_sentinel
+
+    def fake_chart(birth_jd, birth_civil_year, *_args, **_kwargs):
+        assert birth_jd == birth_jd_ut1
+        captured.append(("chart", birth_civil_year))
+        return chart_sentinel
+
+    monkeypatch.setattr(varshaphal_module, "_mudda_dasha_for_birth_year", fake_mudda)
+    monkeypatch.setattr(
+        varshaphal_module,
+        "_build_varshaphal_chart_for_birth_year",
+        fake_chart,
+    )
+
+    assert mudda_dasha(birth_jd_ut1, 2025) is mudda_sentinel
+    assert build_varshaphal_chart(
+        birth_jd_ut1,
+        40.0,
+        -74.0,
+        2025,
+        40.0,
+        -74.0,
+    ) is chart_sentinel
+    assert captured == [("mudda", 2005), ("chart", 2005)]
 
 
 def test_mudda_dasha_uses_gauri_year_ruler_rule_and_birth_fraction(

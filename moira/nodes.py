@@ -37,10 +37,11 @@ __all__ = [
 from dataclasses import dataclass, field
 
 from .constants import DEG2RAD, RAD2DEG, sign_of
-from .julian import centuries_from_j2000, ut_to_tt, decimal_year
+from .julian import centuries_from_j2000, ut_to_tt
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .coordinates import Vec3, vec_sub, icrf_to_ecliptic, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
 from .obliquity import mean_obliquity, nutation
-from .planets import _earth_barycentric, approx_year as _approx_year
+from .planets import _earth_barycentric
 from .spk_reader import get_active_reader, KernelReader, SpkReader, MissingKernelError
 
 
@@ -144,8 +145,7 @@ def mean_node(jd_ut: float) -> NodeData:
     Side effects:
         None.
     """
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt    = ut_to_tt(jd_ut, decimal_year(year, month))
+    jd_tt    = ut_to_tt(jd_ut)
     T = centuries_from_j2000(jd_tt)
 
     lon = (125.04452
@@ -216,9 +216,8 @@ def true_node(
                 "Pass a reader explicitly or use the Moira facade."
             )
 
-    year, month, *_ = _approx_year(jd_ut)
     if jd_tt is None:
-        jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+        jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
     dpsi_deg, deps_deg = nutation(jd_tt)
     obliquity = mean_obliquity(jd_tt) + deps_deg
     eps = obliquity * DEG2RAD
@@ -293,8 +292,7 @@ def mean_lilith(jd_ut: float) -> NodeData:
     Side effects:
         None.
     """
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt    = ut_to_tt(jd_ut, decimal_year(year, month))
+    jd_tt    = ut_to_tt(jd_ut)
     T = centuries_from_j2000(jd_tt)
 
     # Mean longitude of Moon's perigee (Meeus 22.3)
@@ -363,8 +361,7 @@ def true_lilith(
                 "Pass a reader explicitly or use the Moira facade."
             )
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt    = ut_to_tt(jd_ut, decimal_year(year, month))
+    jd_tt    = _ut1_to_ephemeris_tt(jd_ut, reader)
     
     # Nutation and Obliquity for tropical conversion
     dpsi_deg, deps_deg = nutation(jd_tt)
@@ -467,8 +464,7 @@ def next_moon_node_crossing(
 
     def _moon_latitude_deg(jd_ut: float) -> float:
         """Moon geocentric true ecliptic latitude (degrees)."""
-        yr, mo, *_ = _approx_year(jd_ut)
-        jd_tt = ut_to_tt(jd_ut, decimal_year(yr, mo))
+        jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
         moon_bary = reader.position(3, 301, jd_tt)
         earth_bary = reader.position(3, 399, jd_tt)

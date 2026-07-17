@@ -135,6 +135,11 @@ def test_lunar_star_occultation_topocentric_branch_uses_tt_for_star_and_obliquit
         "sky_position_at",
         lambda *args, **kwargs: SimpleNamespace(right_ascension=0.0, declination=0.0),
     )
+    monkeypatch.setattr(
+        occultations,
+        "_ut1_to_ephemeris_tt",
+        lambda jd, _reader: jd + 0.25,
+    )
 
     def _fake_star_at(name: str, jd_tt: float, **_: object) -> object:
         sampled_jd_tt.append(jd_tt)
@@ -169,9 +174,9 @@ def test_lunar_star_occultation_topocentric_branch_uses_tt_for_star_and_obliquit
     )
 
     expected_jd_tt = [
-        occultations.ut_to_tt(jd_start - step_days),
-        occultations.ut_to_tt(jd_start),
-        occultations.ut_to_tt(jd_start + step_days),
+        jd_start - step_days + 0.25,
+        jd_start + 0.25,
+        jd_start + step_days + 0.25,
     ]
     assert sampled_jd_tt == pytest.approx(expected_jd_tt, abs=1e-12)
     assert obliquity_jd_tt == pytest.approx(expected_jd_tt, abs=1e-12)

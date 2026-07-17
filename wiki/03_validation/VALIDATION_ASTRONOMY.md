@@ -255,15 +255,15 @@ Recorded envelope:
 - Worst angular vector error: **0.762685"** (Uranus, 1800-06-24)
 - Worst absolute vector difference: **10201.934 km** (Uranus, 1800-06-24)
 
-The wider epoch span (1800-2150) introduces two additional sources of
-residual beyond the measured-era suite. First, Delta T uncertainty grows for
-pre-1900 dates where the historical rotation model diverges from any single
-polynomial approximation. Second, epochs beyond the current IERS measured
-window (post ~2026) are subject to the future Delta T divergence described in
-section 6: Horizons freezes near ~69 s while Moira's hybrid model projects ~84 s by 2100,
-which alone can produce artificial disagreements of 3–20" on fast-moving bodies
-at 2100 depending on body and epoch. The 0.762685" worst case is consistent
-with these mechanisms and is not evidence of a geometry error.
+The wider epoch span (1800-2150) introduces Delta-T model-basis sensitivity in
+addition to geometric and reduction residuals. Before 1900, historical
+rotation uncertainty is significant; after 2026, Moira uses the explicit
+scenario in section 6 (`83.294360 s` at 2100 under the current boundary
+aggregate). A Horizons comparison is
+interpretable only when the fixture records the comparator's actual time-scale
+and Delta-T settings; this document no longer assumes that Horizons simply
+freezes Delta T. The recorded 0.762685" envelope is regression evidence for
+the named fixture, not a term-by-term attribution of its residual.
 
 ### 4.3 Topocentric Sky Positions
 
@@ -343,105 +343,77 @@ where naive segment selection would return wrong results.
 
 ## 6. Delta T Model
 
-Moira uses three distinct Delta T paths selected via `DeltaTPolicy`:
+Moira exposes four explicit Delta-T policies:
 
 | Policy model | Function | Use |
 |---|---|---|
-| `'hybrid'` (default) | `delta_t_hybrid()` in `delta_t_physical.py` | General ephemeris work; physics-based |
+| `'hybrid'` (default) | `delta_t()` in `julian.py` | Source-priority table cascade and admitted future scenario |
+| `'physical'` | `delta_t_hybrid()` in `delta_t_physical.py` | Bounded source-priority/scenario surface with uncertainty and accounting vessels |
 | `'nasa_canon'` | `delta_t_nasa_canon()` in `julian.py` | Eclipse-publication compatibility |
 | `'fixed'` | caller-supplied constant | Controlled sensitivity testing |
 
 The `DeltaTPolicy` object is accepted by `ut_to_tt()`, `tt_to_ut()`, and `planet_at()`,
 making the Delta T model an explicit, inspectable parameter rather than a hidden default.
 
-**Test files:**
-- `tests/unit/test_julian_delta_t.py` — **10 passed** (IERS table, NASA canon, decimal-year ancillaries)
-- `tests/unit/test_delta_t_policy.py` — **15 passed** (DeltaTPolicy construction, ut_to_tt/tt_to_ut integration)
-- `tests/unit/test_delta_t_physical.py` — **46 passed, 3 skipped** (physical model unit tests; skipped = no-data fallbacks not applicable because data files are present)
-- `tests/integration/test_delta_t_hybrid.py` — **36 passed** (IERS comparison, era boundaries, uncertainty model, data-file presence)
-
-Total: **107 passed, 3 skipped** across the Delta T test corpus.
-
----
-
-### 6.1 Hybrid Model Architecture
-
-`delta_t_hybrid` is a physics-based model that routes by era:
+### 6.1 Mean and domain architecture
 
 | Era | Source |
 |---|---|
-| Pre-1840 | Stephenson-Morrison-Hohenkerk (2016) table lookup (`_smh2016_lookup`) |
-| 1840–1962.4 | Secular trend + historical bridge term + optional historical core angular momentum |
-| 1962.4–2026 | Secular trend + fluid low-frequency term + modern bridge + core (IERS EOP) + cryosphere (GRACE J2) + residual spline |
-| Post-2026 (future) | Secular trend only |
+| Before `-2000` under the physical policy | Explicit `ValueError`; no first-row clamp |
+| `-2000` until modern aggregates take priority | Published HPIERS total through `julian.delta_t()` |
+| Overlapping modern aggregates through representative epoch `2026.123287671233` | Higher-priority `julian.delta_t()` monthly-source aggregate totals |
+| After representative epoch `2026.123287671233` | Boundary value + boundary slope + `28 s/cy²` declared curvature scenario |
+| After `2150` | Computable scenario extrapolation, not an authority-validated forecast |
 
-**Secular trend model:**
-- Tidal deceleration: +31.0 s/cy²
-- Glacial isostatic adjustment (GIA): −3.0 s/cy²
-- Net: **+28.0 s/cy²**
-- Reference anchor: **REFERENCE_YEAR = 2026.0**, **REFERENCE_LOD = 69.114742 s**
+The public `core`, `cryo`, `fluid`, and `residual` fields are compatibility
+fields and are zero. Their historical C04, GRACE, AAM, and OAM artifacts are
+quarantined because they do not establish independent causal contributions.
 
-The historical bridge and modern bridge terms enforce continuity at era boundaries with zero
-first-derivative constraints at the reference anchor.
+### 6.2 Evidence actually exercised
 
-**Optional data files** (both present on this machine, activated in the test run):
-- `grace_lod_contribution.txt` — GRACE/GRACE-FO J2 cryosphere series
-- `core_angular_momentum.txt` — IERS EOP core angular momentum series
+The Delta-T corpus separates:
 
-When these files are absent the model degrades gracefully to SMH2016 + secular trend only,
-which the no-data unit tests enforce.
+- published-table selection and interpolation;
+- HPIERS quoted-error propagation;
+- finite-input and physical-domain rejection;
+- continuity of value and slope at the 2026 handoff;
+- TT/UT1/Delta-T identity through engine, facade, and REST paths;
+- proof that quarantined artifacts cannot alter the admitted mean;
+- exact evaluation of the declared future scenario formula.
 
----
+Tests against Moira's own `julian.delta_t()` are regression or routing parity,
+not an independent IERS oracle. Python/native agreement is also not external
+validation. No deterministic test validates the actual future rotation of
+Earth.
 
-### 6.2 Modern Era Validation vs IERS Table
+Relevant suites are:
 
-**Oracle:** IERS 5-year mean Delta T table, 13 epochs 1962.5–2020.5
-**Threshold (enforced):** max error < 2.0 s, RMS < 1.5 s
+- `tests/unit/test_julian_delta_t.py`
+- `tests/unit/test_delta_t_policy.py`
+- `tests/unit/test_delta_t_physical.py`
+- `tests/unit/test_chart_metadata_truth.py`
+- `tests/integration/test_delta_t_hybrid.py`
+- `tests/integration/test_delta_t_model_comparison.py`
+- `tests/server/test_server_chart_routes.py`
 
-Live residuals (hybrid model vs IERS 5-yr table):
-- **Max error: 1.2467 s** (at 1962.5 — era boundary, fluid term onset)
-- **RMS error: 0.6573 s**
+### 6.3 Uncertainty posture
 
-Residual spline fit quality (internal model self-consistency):
-- In-sample RMS: **0.2666 s**
-- Cross-validation RMS: **0.4265 s** (threshold enforced: < 0.5 s)
+`delta_t_hybrid_uncertainty(year)` uses published HPIERS error values while
+HPIERS owns the admitted mean, then a `0.06 s` modern policy floor through the
+final aggregate representative epoch (currently `2026.123287671233`). For future years it adds, arithmetically
+rather than in quadrature, the floor, declared
+tidal-coefficient scale, GIA scale, and an integrated O-U LOD term with
+`theta = 0.1/year` and diffusion scale
+`0.2379 ms/day/sqrt(year)`. The small-horizon O-U expression uses its series
+limit to avoid cancellation. This is an explicitly uncalibrated policy scale:
+it has no asserted coverage probability, omits unquantified handoff-value and
+slope uncertainty, and does not combine the quarantined proxies as independent
+Gaussian causes. Forecast-policy validation is bounded through 2150; later
+values are mathematical continuation only.
 
----
-
-### 6.3 Future Projection
-
-The hybrid model uses secular trend only beyond 2026. This is an extrapolation, not
-a guarantee. The model also carries a propagated uncertainty estimate:
-
-| Year | Projected ΔT | 1σ uncertainty |
-|---|---:|---:|
-| 2026 | 69.10 s | ±0.30 s |
-| 2050 | 70.70 s | ±0.43 s |
-| 2075 | 75.77 s | ±0.46 s |
-| 2100 | 84.34 s | ±0.53 s |
-| 2150 | 111.98 s | ±0.92 s |
-
-**Divergence from Horizons beyond the IERS window:**
-Horizons freezes Delta T near ~69 s after the measured window; Moira's hybrid model
-projects secular growth reaching ~84 s by 2100. This ~15 s divergence propagates to
-artificial positional disagreements of approximately 3–20 arcseconds on fast-moving
-bodies at 2100 — a model-basis difference, not an engine error. (The previous figure of
-~203 s by 2100 was from an earlier, superseded approximation model.)
-
----
-
-### 6.4 Uncertainty Model
-
-`delta_t_hybrid_uncertainty(year)` returns a 1σ propagated uncertainty in seconds,
-combining:
-- Reference anchor uncertainty
-- Secular trend coefficient uncertainty (quadrature)
-- Future extrapolation growth
-
-Enforced properties (tests passing):
-- σ < 1.0 s at reference year (2026)
-- σ < 5.0 s at 2100
-- Monotonically non-decreasing from 2026 through 2100
+`DeltaTDistribution` is a normal-approximation computational vessel. Its
+intervals are policy envelopes, not a claim that ancient or future
+Earth-rotation errors have measured Gaussian tails.
 
 
 ## 7. Eclipse Validation
@@ -451,71 +423,52 @@ Enforced properties (tests passing):
 - `tests/integration/test_eclipse_external_reference.py`
 - `tests/integration/test_eclipse_nasa_reference.py`
 
-**Current representative accuracy:**
+**Recorded representative TT comparison (2026-07-17, DE441, current
+Delta-T policy):**
 
-| Case | Residual | Note |
-|---|---:|---|
-| Ancient lunar total (~1801 BCE) | 49.65 s | Stable across light-time refactor |
-| Ancient solar hybrid (~1797 BCE) | 80.06 s | Shifted from 43.17 s; see below |
-| Future lunar penumbral | 353.24 s | Diverges due to hybrid Delta T secular trend extending past 2026 |
-| Future solar total | 310.49 s | Diverges due to hybrid Delta T secular trend extending past 2026 |
+For every search row, the NASA reference TT is the catalog UT1 plus that
+catalog row's published Delta-T value. The Moira result TT is the searched
+event UT1 transformed with Moira's default Delta-T policy. This preserves each
+product's declared Earth-rotation basis while comparing the event search on a
+common dynamical scale.
 
-**Residual history and root cause (ancient solar hybrid):**
+| Case | Raw UT1 residual (diagnostic only) | Moira / NASA Delta T | TT residual |
+|---|---:|---:|---:|
+| Ancient lunar total (~1801 BCE) | 49.362 s | 42135.514 s / 41747 s | 339.152 s |
+| Ancient solar hybrid (~1797 BCE) | 82.940 s | 42043.267 s / 41661 s | 299.327 s |
+| Future lunar penumbral (~2801) | 1338.078 s | 1745.111 s / 3053 s | 30.190 s |
+| Future solar total (~2799) | 1292.918 s | 1737.246 s / 3042 s | 11.837 s |
 
-The ancient hybrid solar residual changed from **43.17 s** (measured 2026-03-24)
-to **80.06 s** (measured 2026-04-05). This shift is entirely in TT space — it
-is **not** a Delta T conversion issue.
+The raw UT1 column is diagnostic evidence only. It is not an accepted timing
+tolerance because a raw comparison conflates the event-search result with the
+products' different Delta-T policies.
 
-Root cause: commit `931b87c` (2026-03-25) replaced a 2-step Newton
-light-time approximation in `corrections.apply_light_time` with a proper
-iterative convergence loop (tolerance = 1 × 10⁻¹⁴ days ≈ 1 ns). The old
-code returned a geocentric direction vector computed at `t − lt_initial`
-while reporting a separately-refined `lt_final`, creating a subtle
-inconsistency. The new code keeps direction and light-time mutually
-consistent at convergence. This is a physics improvement.
+`tests/integration/test_eclipse_nasa_reference.py` therefore enforces two
+explicit TT gates:
 
-For the ~1797 BCE hybrid eclipse, the corrected light-time shifts the
-computed TT eclipse minimum by ~37 s. The resulting 80 s residual against
-the NASA catalog remains squarely within the model-basis explanation: Delta T
-uncertainty at that epoch is hundreds of seconds, and the NASA and Moira
-native eclipse models are not answering the exact same geometric question
-(see §7 model-basis difference note and Appendix §11).
+- **Ancient: 360 s in TT.** The measured ancient residuals are `299.327 s`
+  (solar) and `339.152 s` (lunar), leaving `20.848 s` above the current worst
+  case. This is a cross-authority regression envelope for the combined search
+  and model-basis difference. It is not a six-minute accuracy claim, a bound on
+  historical Earth-rotation uncertainty, or proof that the NASA and Moira
+  greatest-eclipse objectives are identical.
+- **Post-2150: 60 s in TT.** The measured residuals are `11.837 s` (solar) and
+  `30.190 s` (lunar). This gate checks the searched event on the common TT
+  scale; it does not validate Moira's post-2150 UT1 scenario as a forecast of
+  Earth rotation.
 
-For the future eclipse cases (year ~2800), the residuals of **310.49 s** (solar) and
-**353.24 s** (lunar) represent a model-basis divergence in Delta T projection. Beyond the
-measured window (post-2026), Horizons freezes Delta T near ~69 s, whereas Moira's
-hybrid physical model projects secular growth (+28.0 s/cy²) reaching ~2722 s by 2800.
-The difference in UT Julian Days corresponds exactly to this Delta T discrepancy (~325 s).
+The focused ancient lunar compatibility test applies the same rule to both
+admitted paths. The native result is converted with Moira's default Delta-T
+policy and has a `339.152 s` TT residual. The `nasa_compat` result is converted
+with an explicit catalog month-midpoint coordinate through
+`ut_to_tt_nasa_canon()` and has a `303.716 s` TT residual. Both are held
+inside the same `360 s` cross-authority regression envelope. The test no longer
+ranks the paths by raw UT1 residual because that ranking would compare unlike
+time policies.
 
-The test threshold in
-`tests/integration/test_eclipse_nasa_reference.py` was updated to
-**400.0 s** (2026-05-17) with full provenance recorded inline.
-
-Ancient timing residuals are primarily a centering/gamma-minimum timing issue,
-not a shape failure. Eclipse geometry (gamma, magnitudes, contact durations)
-matches NASA published values closely.
-
-**Model-basis difference:** Ancient timing differences relative to published
-catalogs remain visible for some eclipse search cases. For the representative
-`-1801` lunar total case, the current native search remains
-inside a 60-second envelope and materially outperforms the `nasa_compat`
-catalog-facing path, so this is treated as a model-basis difference rather
-than a generic search failure or geometry defect.[1]
-
-Focused diagnosis of that case now shows:
-- native shadow-axis minimum with native Delta T and retarded Moon:
-  about `49.5 s` from the NASA reference
-- switching only the Moon treatment from retarded to geometric inside the
-  native branch shifts the result by about `35 s`
-- switching the same native shadow-axis objective from native Delta T to the
-  NASA-canon Delta T branch shifts the result by about `387 s`
-- once Delta T branch and Moon treatment are aligned, the native shadow-axis
-  objective and the canon gamma-minimum objective agree to within about
-  `0.01 s`
-
-So the residual is not a pure "search bug". It is mainly a model-basis issue
-for ancient greatest-eclipse timing, with Delta T branch choice as the largest
-single contributor and Moon treatment as the secondary contributor.
+The separate catalog-maximum tests continue to enforce solar and lunar eclipse
+classification across the ancient, modern, and future fixture rows. Search
+timing evidence and classification evidence remain distinct.
 
 ---
 
@@ -827,7 +780,7 @@ as the first matching event in the next 24 hours from `jd_start`.
 | Ancient eclipse timing vs catalogs | Explained model-basis difference; regression-covered | NASA Five Millennium | Medium |
 | Stellar aberration | Direct ERFA-backed test added and passing in the validation env | ERFA `ab` function | Closed |
 | Rise/set ~300 s systematic error | **Fixed 2026-04-05.** Commit `4173706` added refraction to `sky_position_at` but `rise_set._altitude` kept the geometric threshold. Fixed by passing `refraction=False`. All 5 Horizons/USNO cases now pass at ≤ 2 s. | JPL Horizons fixture | Closed |
-| Ancient hybrid solar eclipse threshold | **Updated 2026-04-05.** Iterative light-time (commit `931b87c`) is more correct physics but shifted the TT eclipse minimum by ~37 s. Residual is 80 s (was 43 s). Documented in-test; threshold updated 60 → 90 s. | NASA Five Millennium | Closed |
+| Ancient eclipse TT comparison gate | **Repaired 2026-07-17.** NASA catalog TT and Moira TT now retain their own declared Delta-T bases. The current ancient residuals are 299.327 s solar and 339.152 s lunar, enforced by a 360 s cross-authority regression envelope. This closes the scale-conflation defect in the test; it is not an ancient timing-accuracy claim. | NASA Five Millennium | Closed (test semantics only) |
 | GAST ancient-epoch model-basis difference | **Documented 2026-04-05.** Full GAST (erfa.gst06a oracle) diverges up to ~1.1″ before ~J1000. Cause: equation-of-equinoxes (Moira) vs equation-of-origins (ERFA). Modern epochs (J1500–J2100) all pass < 0.001″. Ancient divergence is beneath the Delta T noise floor for Moira's use cases. No code change required. See §3.7.1. | ERFA `gst06a` | Closed |
 | Chiron and Pholus vector accuracy | **Pre-existing open.** 6 cases in `test_horizons_vectors.py` failing at ~7–8 arcsec vs 1.0 arcsec tolerance. Centaur orbits are chaotic; accuracy degrades outside JPL fit windows. Root cause not yet diagnosed — may require looser tolerance or SPK routing investigation for small bodies. | JPL Horizons `VECTORS` | Medium |
 | Sothic 139 AD calendar accuracy | **Fixed 2026-04-05.** Two changes applied. (1) `moira/stars.py` heliacal horizon threshold corrected from geometric 0° to −0.5667° (apparent horizon: standard refraction lifts the horizon by ~34′). With 0.0, Memphis crossed the Egyptian New Year boundary into Thoth 1, breaking the modular drift ordering. With −0.5667°, Memphis stays in Epagomenal, all three sites sit on the same side of the New Year, and the drift ordering is coherent. (2) Test assertions replaced exact-day claims with uncertainty-window checks: `arcus_visionis=10°` (Schoch's traditional value) is retained; the Censorinus datum is verified to within 2 days of 1 Thoth (drift ≤ 2.0), consistent with the ~1-day historical uncertainty in site identification and atmospheric conditions. Asserting `day == 1` exactly would be chasing uncertainty noise. All 3 previously failing tests now pass. | Censorinus / published sites | Closed |
@@ -837,7 +790,7 @@ as the first matching event in the next 24 hours from `jd_start`.
 
 ## 11. Appendix - Model-Basis Difference
 
-[1] In this document, **model-basis difference** means that Moira and the
+In this document, **model-basis difference** means that Moira and the
 comparison catalog are not necessarily answering the exact same mathematical
 question, even when both are internally consistent. In the eclipse context,
 the main contributors are:
@@ -846,9 +799,10 @@ the main contributors are:
 - retarded-vs-geometric Moon treatment
 - the exact definition of "greatest eclipse" being optimized
 
-When those assumptions are aligned, the native shadow-axis minimum and the
-canon gamma-minimum objective collapse to essentially the same instant. The
-remaining catalog offset therefore reflects differing model assumptions, not
-an unlocated defect in the search machinery.
+The current NASA-reference tests do not claim to isolate those contributors or
+to prove that the native and catalog objectives become identical when selected
+assumptions are aligned. They compare each product in TT using its declared
+Delta-T basis and classify the remaining ancient difference only as a bounded
+cross-authority regression residual.
 
 

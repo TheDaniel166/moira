@@ -39,7 +39,13 @@ from .eclipse_geometry import (
 )
 from .eclipse_search import refine_minimum
 from .planets import _barycentric, _earth_barycentric, _geocentric
-from .julian import tt_to_ut_nasa_canon, ut_to_tt_nasa_canon
+from .julian import (
+    calendar_from_jd,
+    decimal_year_from_jd,
+    delta_t_nasa_canon,
+    tt_to_ut_nasa_canon,
+    ut_to_tt_nasa_canon,
+)
 from typing import Literal
 
 LunarCanonMethodId = Literal[
@@ -358,6 +364,59 @@ class LunarCanonMethodComparison:
     max_gamma_residual_earth_radii: float
 
 
+def _ut_to_tt_nasa_catalog(jd_ut: float) -> float:
+    """Apply NASA's published month-midpoint year to a catalog UT epoch."""
+
+    return ut_to_tt_nasa_canon(jd_ut, decimal_year_from_jd(jd_ut))
+
+
+def _tt_to_ut_nasa_catalog(jd_tt: float) -> float:
+    """Invert NASA's stepwise month convention only when the branch is unique."""
+
+    approximate_year, approximate_month, *_ = calendar_from_jd(jd_tt)
+    approximate_delta_days = abs(
+        delta_t_nasa_canon(decimal_year_from_jd(jd_tt))
+    ) / 86400.0
+    search_months = max(
+        2,
+        math.ceil(approximate_delta_days * 12.0 / 365.0) + 2,
+    )
+    base_month = approximate_year * 12 + approximate_month - 1
+    candidates: list[float] = []
+
+    for offset in range(-search_months, search_months + 1):
+        year, zero_based_month = divmod(base_month + offset, 12)
+        month = zero_based_month + 1
+        year_coordinate = year + (month - 0.5) / 12.0
+        candidate = tt_to_ut_nasa_canon(
+            jd_tt,
+            year_coordinate,
+        )
+        if decimal_year_from_jd(candidate) != year_coordinate:
+            continue
+        recovered_tt = _ut_to_tt_nasa_catalog(candidate)
+        tolerance = 2.0 * math.ulp(max(abs(jd_tt), abs(recovered_tt)))
+        if abs(recovered_tt - jd_tt) > tolerance:
+            continue
+        if not any(
+            abs(candidate - admitted) <= math.ulp(candidate)
+            for admitted in candidates
+        ):
+            candidates.append(candidate)
+
+    if len(candidates) == 1:
+        return candidates[0]
+    if not candidates:
+        raise ValueError(
+            "NASA catalog TT has no self-consistent UT branch at a "
+            "month-midpoint Delta-T gap"
+        )
+    raise ValueError(
+        "NASA catalog TT has multiple self-consistent UT branches at a "
+        "month-midpoint Delta-T overlap"
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class LunarCanonContacts:
     """
@@ -393,7 +452,8 @@ class LunarCanonContacts:
             - Converting Julian Days to calendar dates or display strings
         Dependencies:
             - Populated exclusively by find_lunar_contacts_canon()
-            - UT properties delegate to tt_to_ut_nasa_canon()
+            - UT properties use the private NASA catalog inverse adapter,
+              which rejects non-unique month-midpoint branches
         Structural invariants:
             - greatest_tt is always a finite float
             - p1_tt, u1_tt, u2_tt, u3_tt, u4_tt, p4_tt are float | None
@@ -440,31 +500,31 @@ class LunarCanonContacts:
 
     @property
     def p1_ut(self) -> float | None:
-        return None if self.p1_tt is None else tt_to_ut_nasa_canon(self.p1_tt)
+        return None if self.p1_tt is None else _tt_to_ut_nasa_catalog(self.p1_tt)
 
     @property
     def u1_ut(self) -> float | None:
-        return None if self.u1_tt is None else tt_to_ut_nasa_canon(self.u1_tt)
+        return None if self.u1_tt is None else _tt_to_ut_nasa_catalog(self.u1_tt)
 
     @property
     def u2_ut(self) -> float | None:
-        return None if self.u2_tt is None else tt_to_ut_nasa_canon(self.u2_tt)
+        return None if self.u2_tt is None else _tt_to_ut_nasa_catalog(self.u2_tt)
 
     @property
     def greatest_ut(self) -> float:
-        return tt_to_ut_nasa_canon(self.greatest_tt)
+        return _tt_to_ut_nasa_catalog(self.greatest_tt)
 
     @property
     def u3_ut(self) -> float | None:
-        return None if self.u3_tt is None else tt_to_ut_nasa_canon(self.u3_tt)
+        return None if self.u3_tt is None else _tt_to_ut_nasa_catalog(self.u3_tt)
 
     @property
     def u4_ut(self) -> float | None:
-        return None if self.u4_tt is None else tt_to_ut_nasa_canon(self.u4_tt)
+        return None if self.u4_tt is None else _tt_to_ut_nasa_catalog(self.u4_tt)
 
     @property
     def p4_ut(self) -> float | None:
-        return None if self.p4_tt is None else tt_to_ut_nasa_canon(self.p4_tt)
+        return None if self.p4_tt is None else _tt_to_ut_nasa_catalog(self.p4_tt)
 
 
 def lunar_canon_source_model(method: LunarCanonMethodId = DEFAULT_LUNAR_CANON_METHOD) -> str:
@@ -613,7 +673,7 @@ def refine_lunar_greatest_eclipse_canon_tt(
     float
         Julian Day in TT of the refined greatest eclipse (minimum gamma).
     """
-    center_tt = ut_to_tt_nasa_canon(center_jd_ut)
+    center_tt = _ut_to_tt_nasa_catalog(center_jd_ut)
     return refine_minimum(
         lambda jd_tt: lunar_canon_geometry(
             calculator,
@@ -721,10 +781,10 @@ def compare_lunar_canon_methods(
                 case.nasa_ut,
                 method=method,
             )
-            moira_ut = tt_to_ut_nasa_canon(moira_tt)
+            moira_ut = _tt_to_ut_nasa_catalog(moira_tt)
             nasa_geom = lunar_canon_geometry(
                 calculator,
-                ut_to_tt_nasa_canon(case.nasa_ut),
+                _ut_to_tt_nasa_catalog(case.nasa_ut),
                 method=method,
             )
             residuals.append(

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from moira import Moira
-from moira.julian import local_sidereal_time, ut_to_tt
+from moira.julian import local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.local_space import LocalSpacePosition, local_space_positions
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import sky_position_at
@@ -105,15 +105,16 @@ def compute_local_space_chart_positions(
 ) -> LocalSpacePositionsResult:
     chart = _build_chart(engine, request)
     bodies = _selected_bodies(request.bodies, chart.planets)
-    jd_tt = ut_to_tt(chart.jd_ut)
+    jd_tt = utc_to_tt(chart.jd_ut)
+    jd_ut1 = utc_to_ut1(chart.jd_ut)
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    lst_deg = local_sidereal_time(chart.jd_ut, request.observer_lon, dpsi, obliquity)
+    lst_deg = local_sidereal_time(jd_ut1, request.observer_lon, dpsi, obliquity)
     reader = getattr(engine, "_reader", None)
     planet_ra_dec = {
         body: _sky_ra_dec(
             body=body,
-            jd_ut=chart.jd_ut,
+            jd_ut=jd_ut1,
             observer_lat=request.observer_lat,
             observer_lon=request.observer_lon,
             observer_elev_m=request.observer_elev_m,
@@ -132,7 +133,7 @@ def compute_local_space_chart_positions(
         provenance=LocalSpaceProvenance(
             requested_datetime=request.dt.isoformat(),
             normalized_datetime_utc=chart.datetime_utc.isoformat(),
-            jd_ut=chart.jd_ut,
+            jd_ut=jd_ut1,
             jd_tt=jd_tt,
             lst_deg=lst_deg,
             observer=LocalSpaceObserverContext(

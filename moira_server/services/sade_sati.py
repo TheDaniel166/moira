@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from moira import Moira
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.sade_sati import sade_sati_status, sade_sati_windows
 
 from ..models.sade_sati import (
@@ -35,8 +35,8 @@ def compute_sade_sati_windows(
     engine: Moira,
     request: SadeSatiWindowsRequest,
 ) -> SadeSatiWindowsResponse:
-    start_jd = jd_from_datetime(request.start_dt)
-    end_jd = jd_from_datetime(request.end_dt)
+    start_jd = utc_to_ut1(jd_from_datetime(request.start_dt))
+    end_jd = utc_to_ut1(jd_from_datetime(request.end_dt))
     # The engine's reader context wraps public method calls; here we pass the
     # reader explicitly since sade_sati_windows is module-level.
     result = sade_sati_windows(

@@ -827,11 +827,11 @@ def _moon_mandoccha_lon(jd: float, ayanamsa_system: str) -> float:
     """
     from .orbits import _keplerian_from_state, _rot_eq_to_ecl
     from .spk_reader import get_reader
-    from .julian import ut_to_tt
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
     from .obliquity import true_obliquity as _true_obliquity
     _GM_EARTH_KM3_DAY2 = 3.986004418e5 * 86400.0 ** 2
     reader = get_reader()
-    jd_tt = ut_to_tt(jd)
+    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
     moon_pos, moon_vel   = reader.position_and_velocity(3, 301, jd_tt)
     earth_pos, earth_vel = reader.position_and_velocity(3, 399, jd_tt)
     geo_pos = (

@@ -1,1265 +1,369 @@
-# Moira — Delta T Model
+# Moira — Delta T Source-Priority and Scenario Policy
 
-**Version:** 2.0  
-**Date:** 2026-04-25  
-**Status:** Complete — all phases implemented and verified  
-**Surfaces:** `moira/julian.py:delta_t()` · `moira/delta_t_physical.py:delta_t_hybrid()`
+**Version:** 3.2
+
+**Date:** 2026-07-17
+
+**Status:** Implemented bounded policy; validation scope stated below
+
+**Surfaces:** `moira.julian.delta_t` · `moira.delta_t_physical.delta_t_hybrid`
 
 ---
 
-## 1. Doctrine
+## 1. Governing product
 
-Moira's ΔT engine applies a single governing principle across all epochs:
+Delta T is the total time-scale difference
 
-> **Highest-authority source per epoch. Where observations exist, observations
-> govern. Where they end, owned physics governs.**
+```text
+Delta T = TT - UT1
+```
 
-This is not a fallback cascade. It is an epistemic priority queue. The layers
-do not compete — they are ordered by the nature of available knowledge at each
-epoch, and the ordering is never arbitrary.
+in seconds. The public product is a total. A total Earth-rotation observation
+does not identify how much arose from the core, atmosphere, oceans,
+cryosphere, mantle, tides, or any other cause.
 
-| Epoch | Source | Authority class |
+Moira therefore applies two rules:
+
+1. **Source totals govern where an admitted source exists.**
+2. **Forecast policy remains visibly separate from source-backed history.**
+
+The model is deterministic and file-backed. It performs no network access and
+does not silently replace a missing admitted source with a weaker causal
+proxy.
+
+## 2. Domain and source priority
+
+The explicit physical-policy surface is admitted from decimal year `-2000.0`.
+Requests below that HPIERS table domain raise `ValueError`; they are not
+silently clamped to the first table row. The generic `moira.julian.delta_t()`
+surface is broader and keeps its earlier-era extrapolation visible.
+
+| Era | Mean policy | Evidence class |
 |---|---|---|
-| 2026+ | `delta_t_hybrid()` — Moira physical model | Owned |
-| 2015–2026 | IERS Bulletin B/A annual means | Direct observation |
-| 1955–2015 | USNO 5-year observed table | Direct observation |
-| ~720–1955 | SMH 2016 (Stephenson-Morrison-Hohenkerk) | Primary authority |
-| 1600–1900 | Espenak & Meeus historical anchor | Secondary anchor |
-| 1900–1955 | 5-year pre-modern anchor table | Secondary anchor |
-| All other | Morrison & Stephenson (2004) + DE441 tidal | Primary polynomials |
+| Earlier than `-2100` on generic `delta_t()` only | Morrison-Stephenson/NASA-lineage polynomial and historical anchors on their declared source basis | Explicit extrapolation outside the physical surface |
+| `-2100` to `-2000` on generic `delta_t()` only | One explicit linear 100-year C0 bridge from the earlier polynomial value to the first HPIERS row | Declared source-floor reconciliation; not an observation |
+| `-2000` through the final distinct HPIERS knot before the aggregate table | Stephenson-Morrison-Hohenkerk/HPIERS mean through `moira.julian.delta_t()` | Published historical reconstruction on its raw DE430/LE430 source basis |
+| Final HPIERS knot to first aggregate representative epoch (currently `2015.0` to about `2015.456`) | One explicit linear C0 source bridge | Declared source-reconciliation policy |
+| Modern aggregate entries through their final representative epoch (currently about `2026.123`) | Higher-priority `moira.julian.delta_t()` aggregate totals | Full-year and Jan–Apr means are materialized at the mean epoch of their first-of-month USNO samples, not at integer product labels |
+| After the final aggregate epoch through `2150` | Boundary-anchored scenario defined in section 3 | Explicit extrapolation policy |
+| After `2150` | Same mathematical scenario continued | Scenario extrapolation only; not an authority-validated forecast |
 
-The future era is the only epoch where no external observation or authority
-exists. Moira owns it outright: the model is calibrated against IERS LOD
-observations, anchored at the observed IERS total at the reference epoch
-(2026.0), and continuous across the observational boundary. The prior
-convention quadratic (`69.3 + 0.04·t + 0.001·t²`) was an arbitrary smooth
-curve that diverged from observed reality by ~130 s at 2100. It has been
-replaced entirely.
+HPIERS states that its 1950–2016 values are half-yearly, while the authority's
+HTML DATE display rounds those epochs to integers. The packaged artifact
+restores the declared `0.5`-year ordinal cadence before interpolation and
+loader parity is tested against it. HPIERS states that those values belong with DE430/LE430 and its
+lunar tidal acceleration of `-25.85 arcsec/cy²`. Generic Delta T is a clock
+product and cannot infer which ephemeris a downstream caller will use.
+Consequently, `delta_t()` preserves the HPIERS source basis and performs no
+ambient retargeting to DE441.
 
-### Historical context
+Moira retains the published source-to-target arithmetic as an explicit private
+helper:
 
-The physical model replaced a simple quadratic future extrapolation that had
-been the default since the Espenak/Meeus era. By 2050 the old formula diverged
-from JPL Horizons by 30–50 seconds; by 2100 by ~130 seconds — creating
-artificial apparent-position errors of 3–120 arcseconds for fast bodies. The
-goal was not to replace IERS observations (which remain the highest authority
-for the observed era) but to replace the convention guess for the unobserved
-future with a physically-grounded and calibrated model.
-
----
-
-## 2. Physical Model Architecture
-
-Delta T is driven by changes in Earth's rotation rate (LOD — Length of Day).
-The dominant contributors are:
-
-```
-ΔT(t) = ΔT_tidal(t) + ΔT_GIA(t) + ΔT_core(t) + ΔT_cryo(t) + ΔT_residual(t)
+```text
+c = -0.91072 * (n_DE441 - n_source) * ((year - 1955) / 100)^2
+Delta T_target = Delta T_source + c
 ```
 
-| Component | Physical driver | Data source | Era coverage |
-|---|---|---|---|
-| ΔT_tidal | Lunar/solar tidal braking | Celestial mechanics | All epochs |
-| ΔT_GIA | Glacial isostatic adjustment | ICE-6G / Caron 2018 | Post-LGM |
-| ΔT_core | Core-mantle angular momentum | Gillet et al. core flow | 1840–present |
-| ΔT_cryo | Cryosphere/hydrosphere mass | GRACE/GRACE-FO mascons | 2002–present |
-| ΔT_residual | Everything else | Fit to IERS measured table | 1955–present |
+That helper is not called by generic `delta_t()`. A target-aware computation
+may use it only after establishing both the source product and target ephemeris
+identity. Moira's reader-backed SPK paths now establish that identity from the
+opened kernel's coherent DAF summary labels, never from its filename. The
+admitted mappings are DE430/LE430 at `-25.85 arcsec/cy^2` and DE441/LE441 at
+`-25.936 arcsec/cy^2`. Historical declared-basis composition fails closed for
+an unmapped or conflicting kernel identity; direct EOP and aggregate-era clock
+products remain numerically unchanged. NASA-canon comparison remains separately owned by
+`delta_t_nasa_canon()`, including NASA's published month-midpoint decimal-year
+convention and its own limited lunar-correction regime.
 
-For **future extrapolation** (post-2026), only ΔT_tidal and ΔT_GIA provide a
-deterministic secular baseline. ΔT_core and ΔT_cryo remain visible physical
-terms. The remaining unknowable part is modeled as stochastic LOD variability:
-Brownian rotation-rate noise integrated forward into a Delta T probability
-distribution.
+`DeltaTPolicy(model="hybrid")` remains the default layered time policy.
+`DeltaTPolicy(model="physical")` exposes this bounded source-priority/scenario
+surface explicitly. The word *physical* in the compatibility name does not
+claim that historical totals have been causally decomposed.
 
----
+## 3. Future mean scenario
 
-## 3. Implementation Phases
+Let the final two aggregate representative epochs define a boundary vessel
 
-### Phase 1 — Tidal + GIA secular trend (Foundation)
-
-**Goal:** Replace the long-range parabolic fallback with a physically-grounded
-secular trend. This is the baseline that all other components are added to.
-
-**Tidal braking:**
-
-The lunar tidal torque produces a secular increase in LOD of approximately
-+2.3 ms/century, equivalent to a parabolic Delta T trend:
-
-```
-ΔT_tidal(y) = c_tidal · ((y - 1820) / 100)²
+```text
+Y0 = final aggregate representative epoch # currently about 2026.123
+D0 = final aggregate Delta T
+m0 = slope of the final two epochs         # provisional seconds per year
+h  = year - Y0                           # years after the handoff
 ```
 
-where `c_tidal` is determined by the lunar secular acceleration `ṅ`.
-The current best value is `ṅ = -25.858 ± 0.003 arcsec/cy²` (Chapront,
-Chapront-Touze & Francou 2002), which gives `c_tidal ≈ 31.0 s/cy²`.
+The post-handoff mean is
 
-This is already embedded in the Espenak/Meeus `-20 + 32·u²` formula.
-The improvement here is to use the Chapront value rather than the older
-Morrison & Stephenson estimate.
-
-**GIA contribution:**
-
-Published GIA models give the rotation rate contribution directly as a LOD
-change. From Caron et al. (2018, Geophysical Research Letters):
-
-```
-dLOD_GIA ≈ -0.6 ms/century  (acceleration, counteracts tidal braking)
+```text
+Delta T scenario(year) = D0 + m0*h + 28*(h/100)^2
 ```
 
-This translates to:
+The construction preserves both the admitted value and the provisional
+aggregate-epoch slope at the handoff. The current final product is a Jan–Apr
+2026 partial mean, so `m0` is explicit scenario policy rather than an observed instantaneous
+derivative. The `28 s/cy²` curvature is the declared sum of a
+`+31 s/cy²` tidal term and a `-3 s/cy²` GIA term. It is forecast doctrine, not
+an observation and not a fitted decomposition of the historical source total.
 
-```
-ΔT_GIA(y) = c_GIA · ((y - 2000) / 100)²
-```
+The scenario is useful for deterministic future computation, but Earth
+rotation remains unpredictable. No value after the current final aggregate epoch is
+described as observed merely because it is produced by the scenario.
+No value after 2150 is described as a validated forecast.
 
-where `c_GIA ≈ -3.0 s/cy²` (negative, opposing the tidal term).
+## 4. Compatibility breakdown
 
-**Reference epoch unification:**
+`DeltaTBreakdown` remains a stable public vessel:
 
-The standard tidal formula uses 1820 as its reference epoch (the Morrison &
-Stephenson convention). The Caron GIA contribution is naturally expressed
-relative to 2000 (the center of the modern ice-loss record). Before combining
-them, both must be re-expressed relative to the same epoch — `REFERENCE_YEAR`
-— so that they can be summed into a single parabolic coefficient.
-
-The general form of each component is:
-
-```
-ΔT_tidal(y) = c_tidal · ((y − 1820) / 100)²
-ΔT_GIA(y)   = c_GIA   · ((y − 2000) / 100)²
+```text
+year, total, secular, core, cryo, fluid, bridge, residual, era
 ```
 
-Expanding both around `REFERENCE_YEAR` (= 2026) and collecting terms:
+Its fields obey
 
-```
-ΔT_tidal(y) = c_tidal · ((y − 2026 + 206) / 100)²
-            = c_tidal · (t + 2.06)²          where t = (y − 2026) / 100
-            = c_tidal · (t² + 4.12·t + 4.2436)
-
-ΔT_GIA(y)   = c_GIA · ((y − 2026 + 26) / 100)²
-            = c_GIA · (t + 0.26)²
-            = c_GIA · (t² + 0.52·t + 0.0676)
+```text
+secular + core + cryo + fluid + bridge + residual == total
 ```
 
-The constant offsets are absorbed into `REFERENCE_LOD` via the continuity
-constraint. The linear terms are different: they are a present-day LOD slope,
-not a value offset, and a scalar anchor cannot absorb them algebraically.
-Moira's physical secular branch therefore uses the published tidal and GIA
-coefficients as curvature terms only. The current slope at `REFERENCE_YEAR`
-is treated as a measured boundary condition rather than as the slope implied
-by extending the 1820/2000 parabolas unchanged into the present.
+The historical field names do not override source truth:
 
-```
-secular_trend(y) = REFERENCE_LOD + (c_tidal + c_GIA) · t²
-                 = REFERENCE_LOD + (31.0 − 3.0) · t²
-                 = REFERENCE_LOD + 28.0 · t²
-```
+- `total` is the admitted source total or future scenario mean.
+- `secular` is the declared curvature baseline. It must not be read as a
+  measured causal tidal/GIA component during the source-backed eras.
+- `core`, `cryo`, `fluid`, and `residual` are preserved for compatibility and
+  are zero while their candidate datasets are quarantined.
+- `bridge` is the explicit reconciliation between the declared curvature
+  baseline and the admitted total. In the future it carries the boundary value
+  and slope terms. It is arithmetic accounting, not a fitted physical cause.
+- `era` retains the compatibility categories `pre-1840`, `historical`,
+  `measured`, and `future`. These labels are not source-row provenance; in
+  particular, the legacy word `measured` does not certify every admitted row
+  as a definitive observation.
 
-This is why the combined coefficient in `secular_trend()` is simply the sum
-of `TIDAL_COEFF` and `GIA_COEFF`: the function is a curvature model anchored
-at the measured-era handoff. It is not the full shifted 1820/2000 parabola
-with its linear term preserved.
+The helper functions `core_delta_t()`, `cryo_delta_t()`, and
+`fluid_lowfreq()` likewise remain callable but return zero. This is deliberate
+quarantine, not missing-data fallback.
 
-**Implementation:**
+## 5. Why the proxy components are quarantined
 
-```python
-# moira/delta_t_physical.py
+### IERS C04 annual LOD
 
-TIDAL_COEFF    =  31.0   # s/cy²  — Chapront 2002 lunar secular acceleration
-GIA_COEFF      =  -3.0   # s/cy²  — Caron 2018 GIA rotation contribution
-                          #          Curvature terms anchored at REFERENCE_YEAR;
-                          #          constant offsets absorbed into REFERENCE_LOD.
-REFERENCE_LOD  =  69.3   # s      — see continuity constraint note below
-REFERENCE_YEAR = 2026.0  # yr     — last confirmed IERS Bulletin B year
+`moira/data/core_angular_momentum.txt` contains annual means of **total** IERS
+EOP C04 LOD. It is not a published core-angular-momentum inversion and cannot
+lawfully be labelled as a core-only contribution. It remains packaged for
+research reproducibility but is not consumed by the admitted mean.
 
-def secular_trend(year: float) -> float:
-    """
-    Physics-based secular Delta T trend from tidal braking + GIA.
-    Anchored to REFERENCE_LOD at REFERENCE_YEAR by continuity constraint.
-    The coefficients carry curvature only. The present-day slope is an
-    explicit boundary-condition policy and is not inherited from the
-    historical 1820/2000 parabola slopes.
-    """
-    t = (year - REFERENCE_YEAR) / 100.0
-    return REFERENCE_LOD + (TIDAL_COEFF + GIA_COEFF) * t**2
-```
+### GRACE/GRACE-FO derivative
 
-**The 2026 anchor is a continuity constraint, not a free parameter.**
+`moira/data/grace_lod_contribution.txt` is a historical derived artifact. Its
+generator divided integrated milliseconds by `86400` instead of `1000`, an
+exact factor-of-86.4 unit defect. Correcting that divisor would still not prove
+the candidate C20-to-inertia-to-LOD derivation or a cryosphere-only
+attribution. The artifact is therefore retained unchanged except for its
+quarantine header and is not consumed at runtime.
 
-This point deserves explicit statement because the constant `69.3` looks like
-a tuned value. It is not. It is the last confirmed IERS Bulletin A measured
-Delta T at the boundary between the table-driven regime and the future
-extrapolation regime. Its role is purely to enforce C0 continuity — that is,
-to guarantee the physical model produces the same value as the measured table
-at the handoff point.
+### AAM and OAM proxies
 
-Concretely: the secular trend formula has two genuine free parameters,
-`TIDAL_COEFF` and `GIA_COEFF`, both of which are set from published physical
-literature and must not be adjusted to improve the fit. `REFERENCE_LOD` is
-derived, not fitted:
+The packaged AAM and OAM series use different source quantities and units.
+Regression coefficients cannot turn them into independently identified causal
+Delta-T components. They remain diagnostic research data only.
 
-```
-REFERENCE_LOD ≡ IERS_measured(REFERENCE_YEAR)
-              − core_delta_t(REFERENCE_YEAR)
-              − cryo_delta_t(REFERENCE_YEAR)
-              − residual_spline(REFERENCE_YEAR)
-```
+Admission of any future component requires all of the following together:
 
-It is the value the secular trend must take at `REFERENCE_YEAR` such that
-the full assembled model `secular + core + cryo + residual` exactly equals
-the IERS measured value at that point. Any other value would introduce a
-step discontinuity in Delta T at the measured/extrapolated boundary, which
-would propagate directly as a discontinuous jump in apparent planetary
-positions at that epoch.
+- a named governing physical object and primary source;
+- compatible units and an explicit derivation into Delta-T seconds;
+- a declared integration constant and boundary policy;
+- provenance, coverage, uncertainty, and transformation metadata;
+- tests against source-owned fixtures and independently derived invariants.
 
-`REFERENCE_YEAR` is itself not fixed at 2026.0 permanently. It is defined
-as the last year for which a confirmed IERS Bulletin A or B value is
-available at build time. As new Bulletin A predictions are confirmed by
-Bulletin B, `REFERENCE_YEAR` advances and `REFERENCE_LOD` is recomputed
-from the updated measurement. The advance procedure is:
+## 6. Uncertainty
 
-```python
-# scripts/update_reference_anchor.py
-# Run when new IERS Bulletin B values become available.
-# Recomputes REFERENCE_LOD and writes updated constants to delta_t_physical.py.
+`delta_t_hybrid_uncertainty(year)` returns a scale in seconds:
+
+- while HPIERS owns the mean it uses the table's quoted error column;
+- from the explicit source bridge through the final aggregate epoch it uses a
+  `0.06 s` modern policy scale, covering the verified `0.052808 s` maximum
+  daily residual against the bundled EOP snapshot; the aggregate table carries
+  no row-level errors;
+- after the final aggregate epoch it uses the arithmetic policy sum below, not
+  quadrature.
+
+For `h = year - Y0 > 0`, `q = h / 100`, and `theta = 0.1 / year`:
+
+```text
+sigma(year) = 0.06 s
+            + abs(31 s/cy²) * (0.003 / 25.858) * q²
+            + 0.5 s/cy² * q²
+            + sigma_OU(h)
+
+z = theta*h
+u = 1 - exp(-z)
+B = 2*z - 2*u - u²
+
+sigma_OU(h) = (365.25 days/year / 1000 ms/s)
+              * (0.2379 ms/day/sqrt(year))
+              * sqrt(B / (2*theta³))
 ```
 
-This means the anchor stays current automatically as IERS measurements
-accumulate, without any manual tuning of the model.
+The implementation evaluates the small-`z` limit with a series expansion to
+avoid cancellation. The O-U term is conditional on the declared
+`theta = 0.1/year` and diffusion scale. Those future coefficients do not have
+a complete traceable calibration record in the module. The handoff value's
+source error and the uncertainty of the final-row slope are not propagated.
+Accordingly, the result is explicitly an **uncalibrated policy scale**: it has
+no asserted 68-percent or other coverage probability and is not a proof of
+independent causal errors. The stable field name `sigma` is compatibility
+vocabulary, not a calibration claim.
 
-**Validation:** Compare against SMH 2016 table for 1800–2026. The secular
-trend should match within the known decade-scale fluctuation envelope (~±5 s).
+These values are not assembled by treating the quarantined causal proxies as
+independent random variables. `DeltaTDistribution` exposes a normal
+approximation (`year`, `mean`, `sigma`) as a convenient computational vessel,
+but normal tails are not claimed as observed Earth-rotation statistics. Its
+`pdf()` and `interval()` methods are mathematical conveniences around the
+caller-visible scale, not validated probability products.
 
-**Deliverables:**
-- `moira/delta_t_physical.py` — module skeleton + `secular_trend()`
-- `tests/unit/test_delta_t_physical.py` — secular trend unit tests
-- `scripts/validate_secular_trend.py` — plot vs SMH 2016 table
+## 7. Time-scale coherence
 
-**Effort:** 1 week
+For a UTC instant with admitted EOP data, chart and transport metadata satisfy
 
----
-
-### Phase 2 — GRACE/GRACE-FO cryosphere component
-
-**Goal:** Derive the cryosphere/hydrosphere contribution to Delta T from
-satellite gravity data (2002–present) and project it forward.
-
-**Physics:**
-
-Changes in surface mass distribution alter Earth's moments of inertia,
-specifically the axial moment I_33. The rotation rate change is:
-
-```
-Δω/ω = -ΔI_33 / C
+```text
+delta_t_seconds = (jd_tt - jd_ut1) * 86400
 ```
 
-where C is Earth's polar moment of inertia (~8.04 × 10³⁷ kg·m²).
-
-ΔI_33 is related to the degree-2 zonal Stokes coefficient J2 by:
-
-```
-ΔI_33 = -√5 · M_E · R_E² · ΔJ2
-```
-
-GRACE/GRACE-FO mascon solutions give ΔJ2 directly as a monthly time series.
-
-The LOD change from this is:
-
-```
-ΔLOD_cryo(t) = -LOD_0 · Δω(t) / ω_0
-             = LOD_0 · ΔI_33(t) / C
-```
-
-Integrating LOD over time gives the Delta T contribution.
-
-**LOD-to-Delta-T integration and integration constant:**
-
-The GRACE series is a discrete monthly table of LOD anomalies
-`ΔLOD(t_i)` in milliseconds, not a continuous rate. The Delta T
-contribution is the cumulative integral:
-
-```
-ΔT_cryo(y) = Σ ΔLOD(t_i) · Δt_i / 86400      [seconds]
-```
-
-where `Δt_i` is the interval in days between successive monthly epochs
-and the division by 86400 converts milliseconds of LOD into seconds of
-Delta T accumulated per day.
-
-The integration constant — the value at which `cryo_delta_t` is set to
-zero — is defined as the mean ΔLOD over the first 12 months of the GRACE
-record (2002 April–2003 March). This choice is deliberate: it removes
-the arbitrary absolute offset of the GRACE J2 series (which is referenced
-to a pre-GRACE background model, not to zero ice anomaly) while preserving
-the trend and interannual variability. It means `cryo_delta_t(2002.5) ≡ 0`
-by construction, and all values are LOD anomalies relative to that baseline.
-
-The full series is pre-integrated once by `fetch_grace_j2.py` and stored
-as a cumulative sum in `grace_lod_contribution.txt`. At runtime,
-`cryo_delta_t(year)` performs linear interpolation on this pre-integrated
-table — it does not re-integrate at call time.
-
-**Data source:**
-
-JPL GRACE Tellus RL06 mascon solution — public, no registration required:
-```
-https://podaac.jpl.nasa.gov/dataset/TELLUS_GRAC-GRFO_MASCON_CRI_GRID_RL06.1_V3
-```
-
-Monthly grids 2002-04 to present, 0.5° resolution.
-
-The degree-2 zonal term ΔJ2 can also be read directly from the published
-GRACE technical notes (TN-13, TN-14) without processing the full mascon grid.
-This is the preferred approach for implementation simplicity.
-
-**Implementation:**
-
-```python
-# scripts/fetch_grace_j2.py
-# Downloads GRACE/GRACE-FO TN-14 J2 time series and converts to LOD contribution
-
-# moira/delta_t_physical.py
-
-def _load_grace_lod_series() -> tuple[tuple[float, float], ...]:
-    """
-    Load pre-processed GRACE/GRACE-FO LOD contribution series.
-    File: moira/data/grace_lod_contribution.txt
-    Format: decimal_year  lod_contribution_seconds
-    Generated by: scripts/fetch_grace_j2.py
-    """
-    ...
-
-def cryo_delta_t(year: float) -> float:
-    """
-    Cryosphere/hydrosphere contribution to Delta T from GRACE J2 series.
-    Returns 0.0 outside the GRACE coverage window (pre-2002).
-    For post-coverage extrapolation, uses the linear trend of the last
-    5 years of available data.
-    """
-    ...
-```
-
-**Key numbers (approximate, from published literature):**
-
-The GRACE record shows ΔJ2 trending at approximately −3.0 × 10⁻¹¹/year
-driven primarily by Greenland and Antarctic ice loss. This translates to:
-
-```
-dLOD_cryo ≈ +0.012 ms/year  (growing)
-```
-
-Over a 70-year future window (2026–2100), this accumulates to:
-
-```
-ΔT_cryo(2100) ≈ +0.5 s  above the 2026 baseline
-```
-
-This is small but measurable and currently unmodeled in any ephemeris system.
-
-**GRACE/GRACE-FO data gap (2017-10 to 2018-06):**
-
-GRACE ceased science operations in October 2017; GRACE-FO began returning
-data in June 2018. This leaves an ~11-month gap in the J2 series that falls
-squarely within the residual spline's fit window (1962–2023). It must be
-handled explicitly — silently interpolating across it would introduce a
-false LOD trend of ~0.1 ms/year in the residual.
-
-The gap is bridged by linear interpolation between the last confirmed
-GRACE monthly value (2017-09) and the first confirmed GRACE-FO monthly
-value (2018-07), using the slope of the 12 months immediately preceding
-the gap. A flag column in `grace_lod_contribution.txt` marks all
-gap-interpolated months so they can be excluded from regression
-diagnostics. The bridged values are used in the pre-integrated series
-but are not treated as measured data in the CV diagnostic — the
-leave-one-out score is computed only over non-flagged months.
-
-**Deliverables:**
-- `scripts/fetch_grace_j2.py` — downloads and processes GRACE TN-14
-- `moira/data/grace_lod_contribution.txt` — pre-processed LOD series
-- `delta_t_physical.cryo_delta_t()` — interpolation + trend extrapolation
-- Unit tests verifying the J2-to-LOD conversion formula
-
-**Effort:** 2 weeks
-
----
-
-### Phase 3 — Core-mantle angular momentum component
-
-**Goal:** Add the decade-scale LOD fluctuations driven by core-mantle angular
-momentum exchange, using published core flow models.
-
-**Physics:**
-
-The solid Earth (mantle + crust) and the fluid outer core exchange angular
-momentum, producing LOD variations of ±2–4 ms on decadal timescales. These
-are the dominant source of the irregular "wiggles" in the measured Delta T
-curve that a pure secular + cryosphere model cannot reproduce.
-
-The connection is through the geomagnetic torque:
-
-```
-dL_core/dt + Γ_cmb = 0   (angular momentum conservation)
-```
-
-where Γ_cmb is the torque at the core-mantle boundary.
-
-Core surface flow is inferred from the geomagnetic secular variation (rate
-of change of the magnetic field) via the frozen-flux approximation.
-
-**Data source:**
-
-Gillet et al. (2019, JGR) — published core angular momentum time series
-1840–2019, reconstructed from geomagnetic field models. Available as
-supplementary data from the paper.
-
-For the modern era (2014–present), the Swarm satellite mission provides the
-geomagnetic secular variation at unprecedented resolution.
-
-This phase does **not** require implementing core flow inversion. It consumes
-the published Gillet et al. angular momentum series directly as a table.
-
-**Implementation:**
-
-```python
-# moira/data/core_angular_momentum.txt
-# From Gillet et al. (2019) Table S1
-# Format: decimal_year  delta_lod_ms
-
-def _load_core_lod_series() -> tuple[tuple[float, float], ...]:
-    ...
-
-def core_delta_t(year: float) -> float:
-    """
-    Core-mantle angular momentum contribution to Delta T.
-    Coverage: 1840–2019 from Gillet et al. (2019).
-    Outside coverage: returns 0.0 (absorbed into residual).
-    No future extrapolation — core fluctuations are not predictable.
-    """
-    ...
-```
-
-Current implementation note: the source IERS EOP C04 annual LOD proxy is
-linearly detrended before integration. The secular tidal/GIA drift belongs to
-`secular_trend()`; `core_delta_t()` carries the residual core-mantle
-fluctuation component.
-
-**Note on future extrapolation:**
-
-Core-mantle fluctuations are genuinely unpredictable beyond a few years.
-For future Delta T (post-2026), this component is frozen at the terminal
-measured core value rather than extrapolating the trend. The recent-window
-standard deviation is used for uncertainty.
-
-The choice of 10 years is grounded in the decorrelation timescale of core
-surface flow. Geomagnetic secular variation studies (Gillet et al. 2010,
-2019; Christensen & Tilgner 2004) consistently show that core flow features
-have an autocorrelation timescale of roughly 5–15 years — meaning that
-the angular momentum state of the core at any given year carries essentially
-no predictive information about the core state more than ~10–15 years later.
-This is a consequence of the advective turnover time of the outer core
-(roughly 500 years divided by the magnetic Reynolds number, giving ~10 years
-for the dominant flow structures). Beyond that window, the core angular
-momentum performs a random walk constrained by the geometry of the
-core-mantle boundary, not a trend that can be extrapolated. Moira therefore
-linearly detrends the source LOD proxy before integration and freezes the
-future-era core term at the terminal measured value. This preserves C0
-continuity at the measured-to-future boundary while keeping secular drift in
-`secular_trend()` rather than duplicating it inside `core_delta_t()`.
-
-**Deliverables:**
-- `moira/data/core_angular_momentum.txt` — Gillet et al. 2019 table
-- `delta_t_physical.core_delta_t()` — table interpolation
-- Unit tests verifying the LOD-to-Delta-T integration
-- Comparison plot vs measured IERS LOD series 1962–present
-
-**Effort:** 2 weeks
-
----
-
-### Phase 4 — Residual fitting and model assembly
-
-**Goal:** Combine all components, fit the residual against the IERS measured
-table, and produce the final `delta_t_hybrid()` function.
-
-**Model structure:**
-
-```python
-def delta_t_hybrid(year: float) -> float:
-    """
-    Physics-based hybrid Delta T model.
-
-    For 1840–2026:  secular + core + cryo components, residual-corrected
-                    against IERS measured table.
-    For 2026+:      owned secular baseline (_future_secular_baseline) from tidal
-                    dissipation and GIA integrated from their own reference epochs,
-                    plus frozen core terminal value and GRACE trend. No conventional
-                    forecast bridge. Uncertainty is carried by DeltaTDistribution.
-    For pre-1840:   delegates to SMH 2016 table (unchanged — the physical
-                    components do not extend this far back reliably).
-    """
-    if year < 1840.0:
-        return _smh2016_lookup(year)
-
-    base = secular_trend(year)
-    core = core_delta_t(year)       # 0.0 outside Gillet coverage
-    cryo = cryo_delta_t(year)       # 0.0 outside GRACE coverage
-
-    if year <= 2026.0:
-        residual = _fit_residual(year)   # spline fit to IERS measured − model
-        return base + core + cryo + residual
-
-    # Future: deterministic tidal/GIA baseline + visible physical terms.
-    core_terminal = _core_terminal_value()
-    return _future_secular_baseline(year) + core_terminal + cryo
-```
-
-**Era coverage and the 1840–1962 regime:**
-
-The model has three distinct operating regimes that differ in which
-components are active:
-
-| Era | secular | core | cryo | residual | Notes |
-|---|---|---|---|---|---|
-| pre-1840 | — | — | — | — | Full SMH 2016 delegation |
-| 1840–1962 | ✓ | ✓ | — | — | No GRACE; no IERS residual calibration |
-| 1962–2002 | ✓ | ✓ | — | ✓ | IERS calibrated; no GRACE |
-| 2002–2026 | ✓ | ✓ | ✓ | ✓ | All components active |
-| 2026+ | ✓ | mean | trend | — | Future extrapolation |
-
-The 1840–1962 regime is the least well-characterised. `cryo_delta_t`
-returns 0.0 here (no GRACE coverage, and pre-2002 ice-loss rates were
-small enough that the omission introduces < 0.05 s error). The residual
-spline also returns 0.0 here — the fit window begins at 1962 and the
-`ext=1` flag on `UnivariateSpline` enforces zero outside the knot range.
-
-This means the 1840–1962 model is `secular + core` only, with no
-empirical correction. The validation check for this era is therefore
-a comparison against the SMH 2016 table, not the IERS measured table.
-The target is agreement within ±2 s across 1840–1962, which is consistent
-with the known residual amplitude of the Gillet core series relative to
-the SMH 2016 reconstruction. If the comparison reveals a systematic
-offset larger than 2 s, the likely cause is a bias in the integration
-constant of the Gillet series, which should be corrected in
-`fetch_grace_j2.py` rather than by introducing a new free parameter.
-
-**Residual fitting procedure:**
-
-The residual is the difference between the IERS measured Delta T and the sum
-of the three physical components. It captures everything the physical model
-does not explicitly model: atmospheric and oceanic angular momentum (AAM/OAM),
-small unmodeled GIA terms, instrument noise in the IERS table, and any
-systematic bias in the Gillet core series. Because it is absorbing genuine
-geophysical signal as well as noise, it must be treated carefully — an
-interpolating spline would overfit the noise; a polynomial would underfit
-the real AAM signal.
-
-**Step 1 — Compute the raw residual series:**
-
-```python
-residual(y) = IERS_measured(y) − secular_trend(y) − core_delta_t(y) − cryo_delta_t(y)
-```
-
-Evaluated at every annual IERS Bulletin B annual-mean epoch from 1962.5 to
-the last confirmed measurement year (currently ~2024). IERS Bulletin A
-predictions (2025–2026) are excluded from the fit to avoid introducing
-forecasted values into the calibration.
-
-**Definition of "confirmed":** A year is considered confirmed when its
-final annual Delta T value has appeared in IERS Bulletin B, which publishes
-definitive UT1−UTC values with a latency of approximately 35 days. In
-practice this means the fit window lags the current date by roughly
-one month. The cut point is determined programmatically by
-`update_reference_anchor.py`, which reads the Bulletin B table and
-identifies the last year for which a full 12-month average is available.
-Bulletin A weekly predictions — which carry formal uncertainties of
-±0.0025 s for the current week growing to ±0.030 s at 90 days — are
-never used as calibration data, only as the source for `REFERENCE_LOD`
-at `REFERENCE_YEAR` when that year has not yet been confirmed by Bulletin B.
-
-**Step 2 — Annual residual fit with boundary taper:**
-
-The raw annual residual contains genuine interannual AAM/OAM signal at the
-0.1–0.3 s level riding on top of longer-period geophysical signal. Moira fits
-the annual residuals directly and controls roughness through the smoothing
-factor and knot cap rather than by applying a pre-smoothing moving average.
-
-**Step 3 — Smoothing spline with fixed knot placement:**
-
-A **smoothing spline** (not an interpolating spline) is used.
-`scipy.interpolate.UnivariateSpline` with explicit smoothing factor `s`:
-
-```python
-from scipy.interpolate import UnivariateSpline
-
-spline = UnivariateSpline(
-    years_fit,             # annual-mean points 1962.5–2024.5
-    residual_fit,          # annual residual after boundary taper
-    k=3,                   # cubic
-    s=s_factor,            # tuned smoothing factor with bounded knot count
-    ext=1,                 # return 0.0 outside the knot range (no extrapolation)
-)
-```
-
-The smoothing factor is initialized below `N` so annual residual structure
-remains visible without exact interpolation. If the automatic knot count
-exceeds ~20 over the measured window, `s` is increased until it falls back
-to that range.
-
-Knot placement is **not fixed manually** — it is solver-determined from the
-smoothing constraint. Manual knot placement would require knowledge of where
-the geophysical signal changes character, which is not available a priori.
-The smoothing parameter approach is more honest: it sets a resolution floor
-and lets the data determine where variation occurs.
-
-**Step 4 — Zero-derivative boundary condition at 2026:**
-
-The spline must not extrapolate beyond 2026. The `ext=1` parameter in
-`UnivariateSpline` enforces this by returning 0.0 outside the data range,
-which is equivalent to assuming the residual contribution is zero in the
-future. This is the correct assumption: the future model already absorbs the
-mean recent residual implicitly through the continuity constraint
-`REFERENCE_LOD ≡ IERS_measured(REFERENCE_YEAR) − core − cryo − residual`
-at `REFERENCE_YEAR` (see Phase 1 for the full derivation).
-
-To avoid a discontinuity in the first derivative at 2026, the annual
-residual series is tapered to zero over the final 3 years (2021–2023) using
-a cosine window:
-
-```python
-taper = 0.5 * (1 + cos(π × (y − 2021) / 3))   for y in [2021, 2024)
-residual_fit_tapered(y) = residual_fit(y) × taper
-```
-
-This enforces a smooth handoff to zero rather than an abrupt drop, which
-is important because any kink at 2026 would propagate as a discontinuity
-in apparent planetary positions at that epoch boundary.
-
-**Step 5 — Overfitting diagnostic:**
-
-After fitting, compute an interior leave-one-out cross-validation score on
-the non-boundary annual-mean epochs:
-
-```python
-cv_rms = sqrt(mean((residual_fit(y_i) − spline_without_i(y_i))²
-                   for interior annual-mean points y_i))
-```
-
-If `cv_rms > 0.5 s`, the smoothing factor is too small (overfitting).
-If the in-sample RMS exceeds 0.5 s, the smoothing factor is too large
-(underfitting — the spline is not tracking real geophysical signal).
-The operational target is `cv_rms < 0.5 s`.
-
-This diagnostic is run automatically in `scripts/validate_delta_t_hybrid.py`
-and its result is reported in the validation output alongside the in-sample
-RMS so the fit quality is always visible.
-
-**Validation targets:**
-
-- RMS residual against IERS measured table < 0.5 s (1962–2026)
-- Max residual < 2.0 s anywhere in 1962–2026
-- Future projection (2026–2100) compared against the conventional
-  Morrison/Stephenson/Espenak long-term forecast
-
-**Deliverables:**
-- `delta_t_physical.delta_t_hybrid()` — assembled model *(implemented)*
-- `delta_t_physical.delta_t_hybrid_uncertainty(year)` — returns ±1σ estimate per section 8 *(implemented)*
-- `delta_t_physical.DeltaTBreakdown` / `delta_t_breakdown(year)` — per-component breakdown dataclass *(implemented)*
-- `delta_t_physical.DeltaTDistribution` / `delta_t_distribution(year)` — normal approximation PDF (mean, sigma, pdf(), interval()) *(implemented)*
-- `delta_t_physical._future_secular_baseline(year)` — owned future deterministic trend from tidal/GIA at their own reference epochs *(implemented)*
-- `delta_t_physical._future_stochastic_delta_t_sigma(year)` — integrated Brownian LOD noise: `sigma = (JULIAN_YEAR/1000) * sigma_LOD * sqrt(T³/3)` *(implemented)*
-- `delta_t_physical._fitted_residual_spline()` — smoothing spline fit per section 4 procedure,
-  returning the spline plus named diagnostics (`cv_rms`, `in_sample_rms`, `knot_count`) *(implemented)*
-- `scripts/validate_delta_t_hybrid.py` — full comparison against IERS and
-  the conventional long-term forecast; reports CV score, knot count, and the
-  stochastic future envelope
-- Updated `julian.py` — add hybrid model as opt-in path alongside current
-  `delta_t()` function (not replacing it — parallel implementation first)
-
-**Effort:** 2 weeks
-
----
-
-### Phase 5 — Integration and validation
-
-**Goal:** Wire the hybrid model into the engine, validate against the Horizons
-apparent-position suite, and update the documentation.
-
-**Integration strategy:**
-
-The hybrid model is added as a parallel path, not a replacement:
-
-```python
-# julian.py
-
-def ut_to_tt(
-    jd_ut: float,
-    year: float | None = None,
-    model: str = "smh2016",   # "smh2016" | "hybrid"
-) -> float:
-    ...
-```
-
-Default remains `"smh2016"` so no existing test breaks. The hybrid model
-can be selected explicitly for research use or future-facing calculations.
-
-**Validation against Horizons:**
-
-Run the existing `test_horizons_planet_apparent.py` suite with both models.
-For 1900–2026 the results should be within measurement noise of each other.
-Document any differences.
-
-For future epochs (2050, 2100), generate predicted positions under both
-models and document the divergence envelope — this becomes the new section 6
-of `VALIDATION_ASTRONOMY.md`.
-
-**Deliverables:**
-- `julian.py` updated with `model` parameter on `ut_to_tt`
-- `tests/integration/test_delta_t_hybrid.py` — comparison against IERS table
-- Updated `VALIDATION_ASTRONOMY.md` section 6 with three-model comparison
-- Updated `BEYOND_SWISS_EPHEMERIS.md` — physics-based Delta T as a
-  differentiating capability
-- `scripts/update_reference_anchor.py` — defined procedure below
-
-**`update_reference_anchor.py` — trigger, threshold, and validation:**
-
-This script is the maintenance entry point for keeping `REFERENCE_LOD` and
-`REFERENCE_YEAR` current as IERS measurements accumulate. Its behavior must
-be precisely defined to avoid silent model drift.
-
-*Trigger:* Manual execution only. It is not run automatically in CI because
-updating a physical constant requires human review. The expected cadence is
-once per year, after the January IERS Bulletin B confirms the previous
-year's annual mean Delta T.
-
-*Procedure:*
-1. Download the latest IERS Bulletin B finals2000A.all from
-   `https://datacenter.iers.org/data/csv/finals2000A.all.csv`
-2. Identify the last calendar year Y for which all 12 monthly UT1−UTC
-   values are confirmed (Bulletin B flag, not Bulletin A)
-3. Compute the annual mean: `ΔT_confirmed = 32.184 + mean(TAI−UT1, year Y)`
-4. Recompute `REFERENCE_LOD` from the continuity constraint equation
-   using the current `core_delta_t(Y)`, `cryo_delta_t(Y)`, and
-   `residual_spline(Y)` values
-5. Write the updated constants to `delta_t_physical.py`
-6. Run the full unit and integration test suite before committing
-
-*Drift threshold:* If the new `REFERENCE_LOD` differs from the current
-value by more than **0.5 s**, the script aborts with an explicit warning
-rather than silently updating. A shift larger than 0.5 s in a single year
-indicates either an error in the Bulletin B parse, an anomalous IERS
-measurement, or a systematic offset in one of the physical components that
-needs investigation. This is not a failure that should be automatically
-absorbed — it requires a human decision about whether to update the
-component models or accept the shift.
-
-*Test:* `tests/unit/test_delta_t_physical.py` includes a test that
-reconstructs `REFERENCE_LOD` from the continuity constraint equation and
-asserts it matches the stored constant to within 0.01 s. This test will
-fail if the constants are updated inconsistently — for example if
-`REFERENCE_YEAR` is advanced without recomputing `REFERENCE_LOD`.
-
-**Effort:** 1 week
-
----
-
-## 4. Data Dependencies
-
-| Data | Source | License | Size | Fetch method |
-|---|---|---|---|---|
-| GRACE/GRACE-FO TN-14 J2 series | NASA PO.DAAC | Public domain | ~50 KB | HTTP download |
-| Gillet et al. 2019 core AM table | JGR supplementary | CC-BY | ~10 KB | Manual download + commit |
-| ICE-6G GIA rotation rate | Peltier et al. 2015 | Published table | ~1 KB | Hardcoded constant |
-| IERS measured Delta T 1962–present | IERS Bulletin B | Public domain | ~5 KB | Already in repo |
-| SMH 2016 HPIERS table | HMNAO | Public domain | ~30 KB | Already in repo |
-
-All data is either already in the repo or freely downloadable without
-registration. No commercial data sources are required.
-
----
-
-## 5. File Manifest
-
-```
-moira/
-  delta_t_physical.py          — new module (Phases 1–4)
-  delta_t_uncertainty.py       — uncertainty components per section 8
-  julian.py                    — add model= parameter to ut_to_tt (Phase 5)
-  data/
-    grace_lod_contribution.txt — generated by fetch_grace_j2.py (Phase 2)
-    core_angular_momentum.txt  — Gillet et al. 2019 table (Phase 3)
-
-scripts/
-  fetch_grace_j2.py            — download + process GRACE TN-14 (Phase 2)
-  validate_secular_trend.py    — Phase 1 validation plot
-  validate_delta_t_hybrid.py   — Phase 4 full comparison
-  update_reference_anchor.py   — recompute REFERENCE_LOD when new IERS Bulletin B arrives
-
-tests/
-  unit/
-    test_delta_t_physical.py   — unit tests for all components
-  integration/
-    test_delta_t_hybrid.py     — comparison against IERS measured table
-
-moira/docs/
-  DELTA_T_HYBRID_MODEL.md      — this document
-  VALIDATION_ASTRONOMY.md      — section 6 updated (Phase 5)
-  BEYOND_SWISS_EPHEMERIS.md    — physics-based Delta T entry added (Phase 5)
-```
-
----
-
-## 6. Timeline
-
-| Phase | Content | Effort | Dependency |
-|---|---|---|---|
-| 1 | Secular trend (tidal + GIA) | 1 week | None |
-| 2 | GRACE cryosphere component | 2 weeks | Phase 1 |
-| 3 | Core angular momentum component | 2 weeks | Phase 1 |
-| 4 | Residual fitting + model assembly | 2 weeks | Phases 2 + 3 |
-| 5 | Integration + validation | 1 week | Phase 4 |
-
-**Total: ~8 weeks**
-
-Phases 2 and 3 can run in parallel once Phase 1 is complete.
-
----
-
-## 7. Success Criteria
-
-| Criterion | Target |
-|---|---|
-| RMS residual vs IERS 1962–2026 | < 0.5 s |
-| Max residual vs IERS 1962–2026 | < 2.0 s |
-| Future divergence from Horizons-frozen by 2100 | Documented, not minimized |
-| No regression in existing Horizons apparent-position suite | All 120 cases pass |
-| No regression in ERFA suite | All 84 cases pass |
-| Hybrid model documented with explicit source citations | Yes |
-| Uncertainty estimate available at each epoch | Yes — per section 8 |
-| Uncertainty dominated by core-mantle term documented explicitly | Yes |
-
----
-
-## 8. Uncertainty Model
-
-`delta_t_hybrid_uncertainty(year)` returns a ±1σ estimate in seconds. This
-section defines how that estimate is constructed for each component and how
-the components are combined into a total.
-
----
-
-### 8.1 Tidal uncertainty
-
-**Source:** Uncertainty in the lunar secular acceleration `ṅ`.
-
-The Chapront et al. (2002) value is `ṅ = −25.858 ± 0.003 arcsec/cy²`.
-The tidal Delta T coefficient is proportional to `ṅ`, so the fractional
-uncertainty propagates directly:
-
-```
-σ_tidal(y) = |secular_trend(y) − secular_trend_at_reference| × (0.003 / 25.858)
-           ≈ TIDAL_COEFF × t² × 0.000116
-```
-
-where `t = (year − 2026) / 100`.
-
-**Magnitude:** By 2100 (t = 0.74), σ_tidal ≈ 0.002 s. Negligible.
-
----
-
-### 8.2 GIA model uncertainty
-
-**Source:** Spread across published GIA models (ICE-6G, ANU, Caron 2018).
-
-The GIA rotation contribution ranges from approximately −0.5 to −0.7
-ms/century across models, reflecting uncertainty in ice sheet history and
-mantle viscosity. This translates to an uncertainty in GIA_COEFF of roughly
-±0.5 s/cy².
-
-```
-σ_GIA(y) = 0.5 × t²
-```
-
-**Magnitude:** By 2100 (t = 0.74), σ_GIA ≈ 0.27 s. Small but not negligible
-at century timescales.
-
-The implementation uses the Caron (2018) central value and treats the
-inter-model spread as the ±1σ bound. This is conservative — the spread
-includes older models that predate the best current ice sheet reconstructions.
-
----
-
-### 8.3 GRACE J2 measurement and trend uncertainty
-
-**Source:** Two distinct contributions:
-
-**Measurement uncertainty (2002–present):**
-The GRACE/GRACE-FO TN-14 J2 series carries formal measurement uncertainties
-of approximately ±0.5 × 10⁻¹¹ per monthly epoch. Converting to LOD:
-
-```
-σ_cryo_measured ≈ 0.003 s   (during GRACE coverage window)
-```
-
-Negligible for apparent-position work.
-
-**Trend extrapolation uncertainty (post-GRACE):**
-The cryosphere LOD trend is estimated from a linear fit to the last 5 years
-of available GRACE-FO data. The uncertainty on this trend is taken as the
-±1σ of the linear regression:
-
-```
-σ_trend ≈ ±0.002 ms/year  (from regression residuals)
-```
-
-Accumulated over a forward projection of `Δt` years:
-
-```
-σ_cryo_projected(year) = σ_trend × (year − grace_end)  [seconds]
-```
-
-**Magnitude:** By 2100 with grace_end ≈ 2026, σ_cryo_projected ≈ 0.15 s.
-Modest but explicitly propagated rather than ignored.
-
----
-
-### 8.4 Core-mantle unpredictability
-
-**Source:** Genuine physical unpredictability of core flow fluctuations
-beyond a few years.
-
-This remains a physical uncertainty source for future Delta T. Core-mantle
-angular momentum exchange produces LOD variations of ±2–4 ms on decadal
-timescales. These fluctuations are not forecastable beyond the current
-geomagnetic secular variation window (~5 years ahead).
-
-For the future extrapolation the core component is frozen at the terminal
-measured value (see Phase 3). The ±1σ uncertainty is taken as the standard
-deviation of the recent decorrelation window:
-
-```python
-core_values_last_10y = [core_delta_t(y) for y in recent_years]
-σ_core_future = std(core_values_last_10y)   # typically 1–2 s
-```
-
-This is not a measurement uncertainty — it is an honest statement that
-decade-scale Earth rotation fluctuations of this magnitude will occur but
-their sign and timing cannot be predicted.
-
-**Magnitude:** σ_core_future ≈ 1–2 s. This is no longer the dominant
-long-range term once integrated stochastic LOD variance is admitted.
-
-For the historical era (within the Gillet coverage window), the core
-component is directly observed rather than extrapolated. Its uncertainty
-is the formal uncertainty of the Gillet et al. angular momentum inversion,
-approximately ±0.3 s.
-
----
-
-### 8.5 Integrated stochastic LOD process (Ornstein-Uhlenbeck)
-
-**Source:** LOD variability that is unpredictable but physically bounded by
-mean-reversion.
-
-The LOD anomaly is modeled as an Ornstein-Uhlenbeck (O-U) process rather than
-a Brownian random walk. The O-U process captures two key physical features:
-
-1. **Short-term positive autocorrelation:** Core fluid dynamics have memory on
-   ~10-year timescales, so consecutive LOD values are correlated.
-2. **Long-term mean reversion:** Earth’s rotation cannot drift arbitrarily far
-   from equilibrium. The O-U drag term prevents the uncertainty cone from
-   expanding without bound.
-
-The SDE for the LOD anomaly $x(t)$:
-
-$$dx_t = -\theta\, x_t\, dt + \sigma\, dW_t$$
-
-where:
-- $\theta$ = `_LOD_OU_REVERSION_RATE` = 0.1/year ($\tau = 10$ yr — core-mantle
-  decorrelation timescale, Gillet et al. 2010, 2022; Christensen & Tilgner 2004)
-- $\sigma$ = `_LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR` = 0.2379 ms/day/√year
-  (calibrated from IERS EOP C04 annual-mean LOD series 1962–2026;
-  see **Calibration** below)
-- $\mu = 0$ (zero long-term mean anomaly, $x_0 = 0$ at `REFERENCE_YEAR`)
-
-**Exact variance of $\Delta T$ under O-U LOD:**
-
-Delta T is the time integral of LOD anomaly, $\Delta T(T) = (J/1000)\int_0^T x(t)\,dt$.
-For $x_0=0$ the variance is:
-
-$$\text{Var}[\Delta T(T)] = \left(\frac{J}{1000}\right)^{\!2}\frac{\sigma^2}{2\theta^3}
-\Bigl[2\theta T - 2(1-e^{-\theta T}) - (1-e^{-\theta T})^2\Bigr]$$
-
-where $J$ = `JULIAN_YEAR` (365.25 days/yr) and $T$ is the forecast horizon in
-years. The square bracket is always non-negative.
-
-**Limiting behavior:**
-
-| Regime | Bracket limit | Growth |
-|---|---|---|
-| $\theta T \ll 1$ (short horizon) | $\frac{2}{3}(\theta T)^3$ | $\sigma_{\Delta T} \propto T^{3/2}$ — recovers Brownian exactly |
-| $\theta T \gg 1$ (long horizon) | $2\theta T - 3$ | $\sigma_{\Delta T} \propto T^{1/2}$ — bounded diffusion |
-
-**Comparison: Brownian vs O-U ($\theta = 0.1$/yr):**
-
-| Epoch | Brownian $\sigma_{\text{LOD}}$ | O-U $\sigma_{\text{LOD}}$ |
-|---|---:|---:|
-| 2050 | ~5.7 s | ~2.9 s |
-| 2075 | ~16.6 s | ~5.1 s |
-| 2100 | ~30.9 s | ~6.7 s |
-
-The O-U model produces a substantially narrower uncertainty cone.
-The conventional 2100 forecast (202.7 s) is now ~3.7σ from the Moira mean
-(177.9 s) rather than ~0.8σ under the Brownian model. The O-U result is the
-more honest statement: Earth rotation cannot drift indefinitely, so the tidal+GIA
-secular baseline is a precise long-range prediction, not an uncertain guess.
-
-**Calibration of $\sigma$ from IERS EOP C04 data:**
-
-The diffusion coefficient is calibrated using the **first-difference method**
-against the IERS EOP C04 annual-mean LOD series (1962.5–2026.5, N=65;
-`moira/data/core_angular_momentum.txt`). First differences of consecutive
-annual-mean LOD values are trend-invariant — they eliminate any linear or
-quadratic secular drift without needing to specify which trend to remove.
-
-For an O-U process sampled at $\Delta t = 1$ yr:
-
-$$\text{RMS}(\Delta x) = \sigma \sqrt{\frac{1 - e^{-\theta}}{\theta}} \qquad\Rightarrow\qquad \sigma = \frac{\text{RMS}(\Delta x)}{\sqrt{(1-e^{-\theta})/\theta}}$$
-
-From the IERS data: $\text{RMS}(\Delta x) = 0.2321$ ms/day, correction
-$= \sqrt{(1-e^{-0.1})/0.1} = 0.9756$, giving $\sigma = 0.2379$ ms/day/√year.
-
-Three independent estimates converge:
-| Method | $\sigma$ (ms/day/√yr) |
-|---|---:|
-| First-difference (trend-invariant) | 0.2379 |
-| OLS-detrend stationary variance | 0.2341 |
-| Previous empirical estimate | 0.2300 |
-
-All three agree to within 3.4%, confirming the calibration. The stationary LOD
-std implied is $\sigma/\sqrt{2\theta} = 0.2379/\sqrt{0.2} = 0.532$ ms/day,
-consistent with the directly measured OLS-detrend std of 0.524 ms/day.
-
-**Choice of $\theta$:** The data-derived lag-1 autocorrelation gives
-$\tau \approx 6.2$ yr, but this likely reflects quasi-periodic core torsional
-waves (Gillet et al. 2013) rather than diffusive decorrelation. The literature
-value $\tau = 10$ yr ($\theta = 0.1$/yr) from geomagnetic secular-variation
-studies (Gillet et al. 2010, 2022; Christensen & Tilgner 2004) is used, as it
-better matches the observed stationary variance and represents the physically
-appropriate diffusive scale for long-range forecasting.
-
-**Authority:** Exact analytic result for the integral of a zero-mean O-U
-process starting from zero. See Gardiner (2004) *Handbook of Stochastic
-Methods* §4.4; Ricciardi & Sacerdote (1979).
-
-**Implementation:** `_future_stochastic_delta_t_sigma(year)` using
-`_LOD_OU_REVERSION_RATE` (θ) and `_LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR` (σ)
-in `moira/delta_t_physical.py`.
-
----
-
-### 8.6 Residual spline uncertainty
-
-**Source:** Uncertainty in the smoothing spline fit to
-`IERS_measured − (secular + core + cryo)` over 1962–2023.
-
-Three distinct contributions:
-
-**Within the coverage window (1962–2023):**
-The spline tracks annual residuals directly with a target in-sample RMS
-< 0.2 s. The dominant uncertainty here is the finite knot budget and
-leave-one-out cross-validation residual, not a pre-smoothing lag.
-
-**At the taper boundary (2021–2024):**
-The cosine taper forces the residual to zero over the final 3 years of the
-fit window. If the true residual is non-zero at 2024, this introduces a
-deliberate bias of up to ~residual(2024) × 0.5 s at that epoch. This is
-the correct trade-off: a smooth handoff to zero is preferable to a spline
-that has a large derivative at the boundary and would extrapolate badly.
-
-**Beyond 2026:**
-The spline returns exactly 0.0 (ext=1). The uncertainty is the RMS of the
-residual series over the fit window, taken as a flat ±1σ estimate for all
-future epochs:
-
-```
-σ_residual(year > 2026) = rms(residual_fit, 1962–2023)
-```
-
-Expected to be < 0.4 s based on the cross-validation target band.
-
-**Overfitting guard:**
-If the leave-one-out cross-validation score exceeds 0.4 s, the smoothing
-factor is increased and the fit is rerun. This is enforced automatically
-in `validate_delta_t_hybrid.py` and the final CV score is stored alongside
-the spline coefficients so the fit quality is reproducible.
-
----
-
-### 8.7 Total uncertainty assembly
-
-The six components are treated as independent (the physical drivers are
-genuinely uncorrelated on the relevant timescales) and combined in
-quadrature:
-
-```python
-def delta_t_hybrid_uncertainty(year: float) -> float:
-    """
-    ±1σ uncertainty on delta_t_hybrid(year), in seconds.
-
-    Components are combined in quadrature (independent sources).
-    Dominant long-range term is the integrated stochastic LOD process.
-    """
-    σ_tidal    = _tidal_uncertainty(year)
-    σ_GIA      = _gia_uncertainty(year)
-    σ_cryo     = _cryo_uncertainty(year)
-    σ_core     = _core_uncertainty(year)
-    σ_residual = _residual_uncertainty(year)
-    σ_lod      = _future_stochastic_delta_t_sigma(year)
-
-    return math.sqrt(
-        σ_tidal**2 + σ_GIA**2 + σ_cryo**2 + σ_core**2
-        + σ_residual**2 + σ_lod**2
-    )
-```
-
-**Representative totals:**
-
-| Epoch | σ_tidal | σ_GIA | σ_cryo | σ_core | σ_residual | σ_LOD stochastic | σ_total |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| 2026 (anchor) | 0.00 s | 0.00 s | 0.003 s | 0.30 s | 0.01 s | 0.0 s | ~0.3 s |
-| 2050 | 0.001 s | 0.08 s | 0.06 s | 1.5 s | 0.4 s | ~2.9 s | ~3.2 s |
-| 2075 | 0.001 s | 0.17 s | 0.10 s | 1.5 s | 0.4 s | ~5.1 s | ~5.4 s |
-| 2100 | 0.002 s | 0.27 s | 0.15 s | 1.5 s | 0.4 s | ~6.7 s | ~6.8 s |
-
-At short horizons (a few decades) $\sigma_{\text{core}}$ dominates.
-At century timescales $\sigma_{\text{LOD}}$ grows to dominate, but its
-growth is sub-cubic: the O-U mean-reversion limits it to ~$T^{1/2}$ at
-long horizons rather than the $T^{3/2}$ of a Brownian walk.
-
-**In arcseconds (for reference):**
-A 6.8 s $\Delta T$ uncertainty at 2100 translates to approximately:
-- Moon: ~3.7″
-- Sun: ~0.28″
-- Mercury (near max elongation): ~0.6″
-- Outer planets: smaller, but not zero
-
-This is the honest long-range policy envelope for any Earth-rotation-based
-timescale model without a primary long-term UT1 oracle.
-
----
-
-## 9. What This Does Not Solve
-
-- **Ancient Delta T uncertainty (pre-700 BCE):** The irreducible uncertainty
-  from chaotic Earth rotation fluctuations is ~±30 minutes at 500 BCE. No
-  physical model can reduce this — it requires eclipse records that do not
-  exist. The SMH 2016 table remains the best available answer for ancient dates.
-
-- **The 1840 lower boundary:** The hybrid model delegates to SMH 2016 for
-  all dates before 1840.0. This boundary is set by the start of the Gillet
-  et al. (2019) core angular momentum series, which is the earliest date
-  for which a geomagnetic-field-based core flow reconstruction is available
-  with sufficient resolution to contribute meaningfully. Using 1840 rather
-  than 1955 (IERS measurements) or 1962 (residual spline start) is a
-  deliberate choice: it maximises the era over which the physical model
-  replaces the empirical SMH 2016 polynomial, even though in the 1840–1962
-  window only `secular + core` are active. Using 1962 as the boundary would
-  mean the hybrid model offers no improvement over SMH 2016 for the
-  entire 19th century, which is the era where the two approaches differ most.
-
-- **The Horizons comparison discrepancy:** The 0.576" worst-case error in
-  the current Horizons validation suite is primarily a Delta T convention
-  difference between Moira and Horizons, not a model deficiency. The hybrid
-  model will not eliminate this — Horizons uses its own internal Delta T
-  that will never exactly match any external model.
-
-- **Sub-arcsecond future accuracy:** Even the best physical model cannot
-  predict future Earth rotation fluctuations at the sub-arcsecond level.
-  The improvement is in the secular trend and the justified uncertainty
-  quantification, not in achieving Horizons-level agreement for 2100.
-
----
-
-## 10. References
-
-All physical constants and model choices in this document are traceable to
-the following publications. DOIs are provided for unambiguous identification.
-
-**Tidal braking — lunar secular acceleration:**
-
-Chapront, J., Chapront-Touzé, M., & Francou, G. (2002). A new determination
-of lunar orbital parameters, precession constant and tidal acceleration from
-LLR measurements. *Astronomy & Astrophysics*, 387, 700–709.
-https://doi.org/10.1051/0004-6361:20020420
-
-**GIA rotation contribution:**
-
-Caron, L., Ivins, E. R., Larour, E., Adhikari, S., Nilsson, J., &
-Blewitt, G. (2018). GIA model statistics for GRACE hydrology, cryosphere,
-and ocean science. *Geophysical Research Letters*, 45(5), 2203–2212.
-https://doi.org/10.1002/2017GL076338
-
-Peltier, W. R., Argus, D. F., & Drummond, R. (2015). Space geodesy
-constrains ice age terminal deglaciation: The global ICE-6G_C (VM5a) model.
-*Journal of Geophysical Research: Solid Earth*, 120(1), 450–487.
-https://doi.org/10.1002/2014JB011176
-
-**Core angular momentum series:**
-
-Gillet, N., Jault, D., & Finlay, C. C. (2015). Planetary gyre, time-dependent
-eddies, torsional waves, and equatorial jets at the Earth's core surface.
-*Journal of Geophysical Research: Solid Earth*, 120(6), 3991–4013.
-https://doi.org/10.1002/2014JB011786
-
-Gillet, N., Gerick, F., Jault, D., Schwaiger, T., Aubert, J., & Istas, M.
-(2022). Satellite magnetic data reveal interannual waves in Earth's core.
-*Proceedings of the National Academy of Sciences*, 119(13), e2115258119.
-https://doi.org/10.1073/pnas.2115258119
-
-*(The 2019 JGR paper cited in the text refers to the series of papers from
-the Gillet group; the 2022 PNAS paper is the most recent version of the
-angular momentum reconstruction and should be checked for updated tables
-before committing `core_angular_momentum.txt`.)*
-
-**Core flow decorrelation timescale:**
-
-Christensen, U. R., & Tilgner, A. (2004). Power requirement of the geodynamo
-from ohmic losses in numerical and laboratory dynamos. *Nature*, 429, 169–171.
-https://doi.org/10.1038/nature02508
-
-Gillet, N., Jault, D., Canet, E., & Fournier, A. (2010). Fast torsional waves
-and strong magnetic field within the Earth's core. *Nature*, 465, 74–77.
-https://doi.org/10.1038/nature09010
-
-**GRACE/GRACE-FO J2 technical notes:**
-
-Loomis, B. D., Rachlin, K. E., & Luthcke, S. B. (2019). Improved Earth
-oblateness rate reveals increased ice sheet losses and mass-driven sea level
-rise. *Geophysical Research Letters*, 46(12), 6910–6917.
-https://doi.org/10.1029/2019GL082929
-
-Sun, Y., Riva, R., & Ditmar, P. (2016). Optimizing estimates of annual
-variations and trends in geocenter motion and J2 from a combination of GRACE
-data and geophysical models. *Journal of Geophysical Research: Solid Earth*,
-121(11), 8352–8370.
-https://doi.org/10.1002/2016JB013073
-
-GRACE-FO TN-14 technical note (degree-1 and C20/C30 replacements):
-https://podaac.jpl.nasa.gov/gravity/gracefo-documentation
-
-**SMH 2016 Delta T model:**
-
-Stephenson, F. R., Morrison, L. V., & Hohenkerk, C. Y. (2016). Measurement
-of the Earth's rotation: 720 BC to AD 2015. *Proceedings of the Royal Society
-A*, 472, 20160404.
-https://doi.org/10.1098/rspa.2016.0404
-
-**IERS conventions and Bulletin B:**
-
-Petit, G., & Luzum, B. (Eds.) (2010). *IERS Conventions (2010)*. IERS
-Technical Note No. 36. Verlag des Bundesamts für Kartographie und Geodäsie.
-https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html
-
-IERS Bulletin B (monthly, definitive UT1−UTC):
-https://www.iers.org/IERS/EN/Publications/Bulletins/bulletins.html
-
+The same TT/UT1 relation governs the planetary calculation for that chart.
+`jd_tt`, `jd_ut1`, chart `delta_t`, and REST reduction metadata must therefore
+describe one clock path rather than mixing an atomic UTC-to-TT conversion with
+a separate annual forecast.
+
+The bundled EOP record owns its admitted rows' UTC days. The packaged
+transformation did not retain the source observed/predicted flag, so those rows
+must not all be called measured or definitive observations. At each outer
+coverage boundary, the difference between the EOP value and the year model is
+fully applied for C0 continuity, then smoothly tapers to zero over one Julian
+year. It is never propagated as a constant correction into remote epochs.
+Across an internal EOP gap, only the two admitted boundary corrections are
+interpolated; the gap is not relabelled as observed. TT-to-UT1 conversion in an
+EOP segment is inverted directly in TT coordinates; outside coverage it solves
+the same continuous model surface iteratively.
+
+Hybrid and physical JD transforms evaluate that year model on a private exact
+proleptic-Gregorian coordinate: the elapsed fraction between consecutive
+January 1 boundaries. This avoids the monthly steps and possible
+non-injectivity that would result from using the public NASA-compatible
+month-midpoint helper. `decimal_year()` and `decimal_year_from_jd()` retain the
+NASA convention deliberately. No-hint NASA-canon TT/UT1 transforms use the
+same continuous coordinate as the other JD transforms, while catalog
+compatibility paths pass the published month-midpoint coordinate explicitly.
+The raw NASA polynomial has small piecewise boundary jumps; the no-hint inverse
+fails closed for their ambiguous or absent TT intervals rather than selecting
+a silent branch.
+
+The packaged leap-second authority begins on `1972-01-01`. The lower-level
+`tai_minus_utc()` and `utc_to_tai()` helpers separately implement the IAU SOFA
+`iauDat` offset-and-drift segments from `1960-01-01` through `1971-12-31`, then
+the IERS Bulletin C steps. They reject earlier atomic conversion instead of
+inventing a flat `TAI-UTC = 10 s` history.
+
+That atomic-helper authority does not silently redefine the engine's
+historical civil-input convention. Before the final civil day of 1971, a
+timezone-normalized civil JD retains the established UT1-proxy interpretation,
+and TT is obtained from that same UT1 coordinate with the admitted Delta-T
+model. Over that final civil day, a monotonic smoothstep joins the proxy rule
+to the first atomic result. This removes the overlap that a hard switch would
+create; the private inverse solves the same handoff by bisection. This is
+explicit clock policy, not a reconstruction of pre-1960 UTC.
+
+Private UT1-to-UTC display/serialization plumbing is also leap-safe inside EOP
+coverage. It inverts the within-day UT1-TAI affine relation and then applies
+the TAI-UTC offset effective at the civil instant. It does not map a full
+86401-second UT1 segment onto a 86400-second UTC-coded day and therefore does
+not smear a positive leap across the preceding day. This helper changes no
+facade signature or REST schema.
+
+No facade method name, chart request model, chart response field, or `/v1`
+route path is changed by this coherence rule.
+
+## 8. Data integrity and provenance
+
+`moira/data/delta_t_manifest.json` records, for each packaged Delta-T or
+Earth-rotation artifact:
+
+- source URL and computational product;
+- units and transformation lineage;
+- retrieval timestamp when known;
+- row count and coverage;
+- SHA-256 checksum;
+- admitted or quarantined runtime status;
+- known semantic caveats.
+
+Loaders reject non-finite, malformed, unordered, or otherwise invalid admitted
+data. The required HPIERS authority table fails closed when absent. For clock
+conversion, a wholly absent EOP file retains the documented year-model
+fallback; a present but malformed EOP file raises before any partial rows are
+cached. Quarantined artifacts are never activated merely because their files
+are present.
+
+Generic Delta-T computation accepts finite years only in
+`[-100000, +100000]`; the source-bounded physical surface additionally rejects
+years below `-2000`. JD-aware time transforms accept finite JDs only in
+`[-40000000, +40000000]`. These limits are computational representability
+guards chosen for binary64 behavior, not scientific-validity, source-coverage,
+or forecast-confidence claims.
+
+The human-readable source and licensing account is in `PROVENANCE.md`.
+
+## 9. Validation posture
+
+The relevant evidence classes remain separate:
+
+- source-table tests prove exact selection and interpolation of admitted rows;
+- time-scale invariants prove TT/UT1/Delta-T coherence;
+- boundary tests prove value and slope continuity at the source-owned final
+  aggregate representative epoch, including synthetic source extension and contraction;
+- EOP tests prove C0 first/last/gap handoffs, one-Julian-year outer tapers,
+  direct TT-to-UT1 inversion, and leap-day-safe private UTC formatting;
+- historical civil-clock tests prove the pre-1972 UT1-proxy policy and the
+  monotonic final-day atomic UTC handoff at 1972-01-01, including its inverse;
+- domain and non-finite tests prove explicit failure behavior;
+- component-zero tests prove quarantined artifacts cannot affect the mean;
+- future tests prove the declared scenario formula, not future astronomical
+  truth.
+
+Python/native agreement is not external Delta-T validation. Regression against
+Moira's own `delta_t()` is not an independent IERS oracle. Forecast values are
+not promoted to observations by passing deterministic tests.
+
+## 10. Maintenance rule
+
+When a new source total becomes admissible:
+
+1. preserve the source product, status, epoch, units, and uncertainty;
+2. update the packaged artifact and manifest together;
+3. extend the source-priority boundary only through admitted coverage;
+4. let the boundary vessel derive `Y0`, `D0`, and `m0` directly from the final
+   two rows; do not add a second literal handoff year;
+5. rerun source, seam, time-scale, facade, and REST tests;
+6. update numerical validation artifacts whose baseline Delta-T changed.
+
+Do not tune the scenario curvature to hide a source discrepancy. Diagnose
+inputs, time scales, source status, and boundary semantics first.
+
+## 11. Primary references
+
+- Stephenson, F. R., Morrison, L. V., and Hohenkerk, C. Y. (2016),
+  *Measurement of the Earth's rotation: 720 BC to AD 2015*.
+- IERS/HPIERS, *TT-UT and Earth rotation rate from 2000 BC to 2016 AD*,
+  including the DE430/LE430 `-25.85 arcsec/cy²` product basis.
+- NASA GSFC, *Secular Acceleration of the Moon*, for the sign and scale of an
+  explicitly requested source-to-lunar-ephemeris Delta-T correction and for
+  the separate NASA-canon policy.
+- JPL Horizons release history, version 4.80, for the DE441
+  `-25.936 arcsec/cy²` lunar tidal deceleration basis. This identifies a
+  possible explicit target; it is not ambiently applied to generic Delta T.
+- IAU SOFA `iauDat`, for the 1960-1971 UTC offset-and-drift segments used by
+  the bounded UTC-to-TAI helper before the IERS leap-second era.
+- IERS Earth Orientation Parameters C04 and `finals2000A` products.
+- NASA/JPL PO.DAAC GRACE-FO documentation for TN-14 C20/C30 replacement data.
+- Caron et al. (2018), DOI `10.1002/2017GL076644`, for GIA model context.
+
+These references govern their named products only. None independently proves
+the quarantined causal decomposition.

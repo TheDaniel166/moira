@@ -330,14 +330,14 @@ class ParanCrossing:
     @property
     def datetime_utc(self) -> datetime:
         """Return the crossing time as a timezone-aware UTC datetime."""
-        from .julian import datetime_from_jd
-        return datetime_from_jd(self.jd)
+        from .julian import _ut1_to_utc, datetime_from_jd
+        return datetime_from_jd(_ut1_to_utc(self.jd))
 
     @property
     def calendar_utc(self):
         """Return the crossing time as a BCE-safe UTC calendar object."""
-        from .julian import calendar_datetime_from_jd
-        return calendar_datetime_from_jd(self.jd)
+        from .julian import _ut1_to_utc, calendar_datetime_from_jd
+        return calendar_datetime_from_jd(_ut1_to_utc(self.jd))
 
     def __repr__(self) -> str:
         return (

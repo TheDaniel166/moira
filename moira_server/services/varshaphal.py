@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from moira import Moira
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.sidereal import Ayanamsa
 from moira.constants import HouseSystem
 from moira.varshaphal import (
@@ -18,7 +18,7 @@ from moira.varshaphal import (
     VarshaphalYearSummary,
     active_mudda_dasha,
     active_tasira_period,
-    build_varshaphal_chart,
+    _build_varshaphal_chart_for_birth_year,
     mudda_period_judgement,
     varshaphal_judgement_profile,
     varshaphal_topic_judgements,
@@ -37,11 +37,12 @@ from ._shared import require_aware_datetime
 
 def _build_chart(request: VarshaphalChartRequest) -> VarshaphalChart:
     require_aware_datetime(request.natal_dt)
-    birth_jd = jd_from_datetime(request.natal_dt)
+    birth_jd = utc_to_ut1(jd_from_datetime(request.natal_dt))
     ayanamsa = request.ayanamsa if request.ayanamsa is not None else Ayanamsa.LAHIRI
     house_system = request.house_system if request.house_system is not None else HouseSystem.PLACIDUS
-    return build_varshaphal_chart(
-        birth_jd=birth_jd,
+    return _build_varshaphal_chart_for_birth_year(
+        birth_jd,
+        request.natal_dt.year,
         natal_latitude=request.natal_latitude,
         natal_longitude=request.natal_longitude,
         year=request.year,
@@ -72,7 +73,7 @@ def _build_chart_from_timing(request: VarshaphalTimingRequest) -> tuple[Varshaph
         bodies=request.bodies,
     )
     chart = _build_chart(chart_req)
-    query_jd = jd_from_datetime(request.query_dt)
+    query_jd = utc_to_ut1(jd_from_datetime(request.query_dt))
     return chart, query_jd
 
 
@@ -112,7 +113,7 @@ def _resolve_focus_jd(request: VarshaphalDoctrineRequest | VarshaphalTimingReque
     if focus_dt is None:
         return None
     require_aware_datetime(focus_dt)
-    return jd_from_datetime(focus_dt)
+    return utc_to_ut1(jd_from_datetime(focus_dt))
 
 
 def compute_varshaphal_judgement_profile(

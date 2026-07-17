@@ -15,7 +15,7 @@ from .transits import _auto_step, _require_non_empty_body, _validate_transit_ran
 from .planets import planet_at
 from .asteroids import asteroid_at, ASTEROID_NAIF
 from .stars import star_at
-from .julian import ut_to_tt
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .constants import Body
 from .coordinates import equatorial_to_horizontal, true_ecliptic_latitude, icrf_to_equatorial
 from .planets import _npe_body_route_segment_specs
@@ -43,6 +43,7 @@ def _declination(spec: str | float, jd: float, reader: SpkReader) -> float:
         
     name = str(spec).strip()
     lon = lat = 0.0
+    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
     if name in Body.ALL_PLANETS:
         p = planet_at(name, jd, reader=reader)
         lon, lat = p.longitude, p.latitude
@@ -51,14 +52,14 @@ def _declination(spec: str | float, jd: float, reader: SpkReader) -> float:
         lon, lat = a.longitude, a.latitude
     else:
         try:
-            s = star_at(name, ut_to_tt(jd))
+            s = star_at(name, jd_tt)
             lon, lat = s.longitude, s.latitude
         except Exception as exc:
             raise ValueError(f"Equatorial target specification could not be resolved: {name}") from exc
 
     from .coordinates import ecliptic_to_equatorial
     from .obliquity import true_obliquity
-    eps = true_obliquity(ut_to_tt(jd))
+    eps = true_obliquity(jd_tt)
     ra, dec = ecliptic_to_equatorial(lon, lat, eps)
     return dec
 
@@ -110,20 +111,19 @@ def _find_candidate_declination_windows_native(
     reader: SpkReader,
 ) -> list[tuple[float, float]]:
     """Use native batch processing to find windows where a declination hit might occur."""
-    de441 = None
-    if hasattr(reader, "_readers"):
-        for r in reader._readers:
-            if "de441" in str(r.path).lower():
-                de441 = r; break
-    elif "de441" in str(reader.path).lower():
-        de441 = reader
-    if not de441: return None
+    if isinstance(reader, SpkReader):
+        planetary_reader = reader
+    else:
+        resolver = getattr(reader, "_primary_planetary_reader", None)
+        planetary_reader = resolver() if callable(resolver) else None
+    if not isinstance(planetary_reader, SpkReader):
+        return None
     
-    jd_tt_start = ut_to_tt(jd_start)
-    specs = _npe_body_route_segment_specs(de441, jd_tt_start)
+    jd_tt_start = _ut1_to_ephemeris_tt(jd_start, reader)
+    specs = _npe_body_route_segment_specs(planetary_reader, jd_tt_start)
     if not specs: return None
     
-    path = str(de441.path)
+    path = str(planetary_reader.path)
     e_body = _get_native_evaluator(body, specs, path)
     e_target = _get_native_evaluator(target, specs, path) if isinstance(target, str) and target in specs else None
     e_earth = _get_native_evaluator('Earth', specs, path)
@@ -132,7 +132,7 @@ def _find_candidate_declination_windows_native(
     jds = []
     curr = jd_start
     while curr <= jd_end:
-        jds.append(ut_to_tt(curr)); curr += step_days
+        jds.append(_ut1_to_ephemeris_tt(curr, reader)); curr += step_days
     if not jds: return []
     
     b_decs = mn.declination_batch(e_body, e_earth, jds)

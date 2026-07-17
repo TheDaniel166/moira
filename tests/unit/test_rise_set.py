@@ -136,7 +136,11 @@ def test_rise_set_planetary_ra_dec_passes_tt_explicitly_without_double_conversio
 
 def test_lst_reuses_one_nutation_evaluation(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[float] = []
-    monkeypatch.setattr(rise_set, "ut_to_tt", lambda jd: jd + 0.25)
+    monkeypatch.setattr(
+        rise_set,
+        "_jd_tt_for_active_reader",
+        lambda jd: jd + 0.25,
+    )
 
     def _nutation(jd_tt: float) -> tuple[float, float]:
         calls.append(jd_tt)

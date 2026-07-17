@@ -35,7 +35,7 @@ def test_moira_galactic_houses_matches_module_entry_point(moira_engine) -> None:
 
     via_method = moira_engine.galactic_houses(dt, 51.5, 0.0)
     via_function = facade.calculate_galactic_houses(
-        facade.jd_from_datetime(dt),
+        facade.utc_to_ut1(facade.jd_from_datetime(dt)),
         51.5,
         0.0,
     )

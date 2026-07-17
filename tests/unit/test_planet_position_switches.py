@@ -431,8 +431,7 @@ def test_all_planets_at_native_evaluator_matches_python_fallback():
 def test_planet_at_reuses_cached_apparent_context_for_same_reader_and_jd(monkeypatch: pytest.MonkeyPatch):
     build_calls: list[float] = []
     core_context_ids: list[int] = []
-    approx_calls: list[float] = []
-    tt_calls: list[tuple[float, float, object]] = []
+    tt_calls: list[tuple[float, object]] = []
 
     class _DummyContext:
         jd_tt = _JD_J2000 + 0.1
@@ -446,14 +445,9 @@ def test_planet_at_reuses_cached_apparent_context_for_same_reader_and_jd(monkeyp
 
     monkeypatch.setattr(
         planets_module,
-        "_approx_year",
-        lambda jd: (approx_calls.append(jd), (2000, 1, 1, 0))[1],
-    )
-    monkeypatch.setattr(
-        planets_module,
-        "ut_to_tt",
-        lambda jd, year, delta_t_policy=None: (
-            tt_calls.append((jd, year, delta_t_policy)),
+        "_ut1_to_ephemeris_tt",
+        lambda jd, reader, delta_t_policy=None: (
+            tt_calls.append((jd, delta_t_policy)),
             jd + 0.1,
         )[1],
     )
@@ -495,8 +489,7 @@ def test_planet_at_reuses_cached_apparent_context_for_same_reader_and_jd(monkeyp
     assert first.name == Body.SUN
     assert second.name == Body.MARS
     assert build_calls == [_JD_J2000 + 0.1]
-    assert approx_calls == [_JD_J2000]
-    assert tt_calls == [(_JD_J2000, planets_module.decimal_year(2000, 1), None)]
+    assert tt_calls == [(_JD_J2000, None)]
     assert len(core_context_ids) == 2
     assert core_context_ids[0] == core_context_ids[1]
 
@@ -515,8 +508,11 @@ def test_planet_at_uses_default_fast_route_only_for_exact_default_surface(monkey
         earth_ssb = (0.0, 0.0, 0.0)
         earth_vel = (0.0, 0.0, 0.0)
 
-    monkeypatch.setattr(planets_module, "_approx_year", lambda jd: (2000, 1, 1, 0))
-    monkeypatch.setattr(planets_module, "ut_to_tt", lambda jd, year, delta_t_policy=None: jd + 0.1)
+    monkeypatch.setattr(
+        planets_module,
+        "_ut1_to_ephemeris_tt",
+        lambda jd, reader, delta_t_policy=None: jd + 0.1,
+    )
     monkeypatch.setattr(planets_module, "_build_apparent_context", lambda *args, **kwargs: _DummyContext())
 
     def _fake_fast(body: str, **kwargs):

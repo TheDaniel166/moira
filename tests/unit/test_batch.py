@@ -113,6 +113,58 @@ def test_batch_charts_uses_request_objects(monkeypatch) -> None:
     ]
 
 
+def test_chart_at_datetime_resolves_utc_tt_and_ut1_once_for_all_consumers(monkeypatch) -> None:
+    jd_utc = 100.0
+    jd_tt = 100.25
+    jd_ut1 = 99.75
+    calls: dict[str, list[float]] = {
+        "utc_to_tt": [],
+        "utc_to_ut1": [],
+        "planets": [],
+        "true_node": [],
+        "mean_node": [],
+        "mean_lilith": [],
+        "true_lilith": [],
+    }
+
+    monkeypatch.setattr(batch_module, "jd_from_datetime", lambda _dt: jd_utc)
+
+    def fake_utc_to_tt(jd: float) -> float:
+        calls["utc_to_tt"].append(jd)
+        return jd_tt
+
+    def fake_utc_to_ut1(jd: float) -> float:
+        calls["utc_to_ut1"].append(jd)
+        return jd_ut1
+
+    monkeypatch.setattr(batch_module, "utc_to_tt", fake_utc_to_tt)
+    monkeypatch.setattr(batch_module, "utc_to_ut1", fake_utc_to_ut1)
+    monkeypatch.setattr(batch_module, "all_planets_at", lambda jd, **_kwargs: calls["planets"].append(jd) or {})
+    monkeypatch.setattr(batch_module, "true_node", lambda jd, **_kwargs: calls["true_node"].append(jd) or object())
+    monkeypatch.setattr(batch_module, "mean_node", lambda jd: calls["mean_node"].append(jd) or object())
+    monkeypatch.setattr(batch_module, "mean_lilith", lambda jd: calls["mean_lilith"].append(jd) or object())
+    monkeypatch.setattr(batch_module, "true_lilith", lambda jd, **_kwargs: calls["true_lilith"].append(jd) or object())
+    monkeypatch.setattr(batch_module, "true_obliquity", lambda jd: 23.0 + jd * 0.0)
+
+    chart = batch_module._chart_at_datetime(
+        datetime(2026, 7, 17, tzinfo=timezone.utc),
+        reader=object(),
+        bodies=None,
+        include_nodes=True,
+        observer_lat=None,
+        observer_lon=None,
+        observer_elev_m=0.0,
+    )
+
+    assert calls["utc_to_tt"] == [jd_utc]
+    assert calls["utc_to_ut1"] == [jd_utc]
+    assert calls["planets"] == [jd_ut1]
+    for name in ("true_node", "mean_node", "mean_lilith", "true_lilith"):
+        assert calls[name] == [jd_ut1]
+    assert chart.jd_ut == jd_utc
+    assert chart.delta_t == (jd_tt - jd_ut1) * 86400.0
+
+
 def test_batch_charts_rejects_unpaired_topocentric_inputs() -> None:
     results = batch_module.batch_charts(
         (
@@ -386,10 +438,18 @@ def test_batch_progressions_uses_request_objects(monkeypatch) -> None:
 
 
 def test_batch_progressions_resolves_natal_datetime(monkeypatch) -> None:
+    seen: list[float] = []
+
     def fake_progression(request, natal_jd_ut, reader):
         return natal_jd_ut
 
     monkeypatch.setitem(batch_module._PROGRESSION_FUNCTIONS, "secondary", fake_progression)
+    monkeypatch.setattr(batch_module, "jd_from_datetime", lambda _dt: 100.0)
+    monkeypatch.setattr(
+        batch_module,
+        "utc_to_ut1",
+        lambda jd: seen.append(jd) or jd + 0.25,
+    )
 
     result = batch_module.batch_progressions(
         (
@@ -402,7 +462,8 @@ def test_batch_progressions_resolves_natal_datetime(monkeypatch) -> None:
         reader=object(),
     )
 
-    assert result[0].result == batch_module.jd_from_datetime(datetime(2000, 1, 1, tzinfo=timezone.utc))
+    assert result[0].result == 100.25
+    assert seen == [100.0]
 
 
 def test_batch_progressions_rejects_unknown_technique() -> None:

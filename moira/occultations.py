@@ -55,8 +55,8 @@ from .julian import (
     datetime_from_jd,
     format_jd_utc,
     local_sidereal_time,
-    ut_to_tt,
 )
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .spk_reader import get_reader, SpkReader
 from .coordinates import (
     ecliptic_to_equatorial,
@@ -615,8 +615,10 @@ def _star_topocentric_equatorial(
     lat: float,
     lon: float,
     observer_elev_m: float = 0.0,
+    *,
+    reader: SpkReader,
 ) -> tuple[float, float, float]:
-    jd_tt = ut_to_tt(jd)
+    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
     obliquity = true_obliquity(jd_tt)
     dpsi, _ = nutation(jd_tt)
     true_ra_star, true_dec_star = ecliptic_to_equatorial(star_lon, star_lat, obliquity)
@@ -644,7 +646,6 @@ def _star_topocentric_equatorial(
         )
 
     xyz_icrf = mat_vec_mul(_transpose(prec), mat_vec_mul(_transpose(nut), true_equ))
-    reader = get_reader()
     _, earth_vel = _earth_barycentric_state(jd_tt, reader)
     deflectors = [(_geocentric(Body.SUN, jd_tt, reader), SCHWARZSCHILD_RADII["Sun"])]
     deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
@@ -668,12 +669,14 @@ def _refracted_topocentric_equatorial(
     jd_ut: float,
     lat_deg: float,
     lon_deg: float,
+    *,
+    reader: SpkReader,
 ) -> tuple[float, float, float]:
     """
     Convert a geometric/apparent topocentric equatorial place into the
     refraction-adjusted local apparent place used by graze-limit products.
     """
-    jd_tt = ut_to_tt(jd_ut)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
     obliquity = true_obliquity(jd_tt)
     dpsi, _ = nutation(jd_tt)
     lst = local_sidereal_time(jd_ut, lon_deg, dpsi, obliquity)
@@ -1076,11 +1079,12 @@ def _star_topocentric_target_geometry(
     jd: float,
     lat: float,
     lon: float,
-    reader: SpkReader,
+    reader: SpkReader | None,
     observer_elev_m: float = 0.0,
     limb_profile_provider: LunarLimbProfileProvider | None = None,
     refraction_adjusted: bool = False,
 ) -> tuple[float, float, float, float]:
+    reader = get_reader() if reader is None else reader
     moon = sky_position_at(Body.MOON, jd, lat, lon, observer_elev_m, reader=reader)
     ra_star, dec_star, _ = _star_topocentric_equatorial(
         star_lon,
@@ -1089,6 +1093,7 @@ def _star_topocentric_target_geometry(
         lat,
         lon,
         observer_elev_m,
+        reader=reader,
     )
     moon_ra = moon.right_ascension
     moon_dec = moon.declination
@@ -1099,6 +1104,7 @@ def _star_topocentric_target_geometry(
             jd,
             lat,
             lon,
+            reader=reader,
         )
         ra_star, dec_star, star_altitude = _refracted_topocentric_equatorial(
             ra_star,
@@ -1106,9 +1112,10 @@ def _star_topocentric_target_geometry(
             jd,
             lat,
             lon,
+            reader=reader,
         )
     else:
-        jd_tt = ut_to_tt(jd)
+        jd_tt = _ut1_to_ephemeris_tt(jd, reader)
         obliquity = true_obliquity(jd_tt)
         dpsi, _ = nutation(jd_tt)
         lst = local_sidereal_time(jd, lon, dpsi, obliquity)
@@ -1196,6 +1203,7 @@ def lunar_star_graze_circumstances(
         observer_lat,
         observer_lon,
         observer_elev_m,
+        reader=reader,
     )
     apparent_separation, margin, _, _ = _star_topocentric_target_geometry(
         star_lon,
@@ -1213,7 +1221,9 @@ def lunar_star_graze_circumstances(
         ra_star,
         dec_star,
     )
-    moon_axis_angle = _moon_axis_position_angle_deg(ut_to_tt(jd_ut))
+    moon_axis_angle = _moon_axis_position_angle_deg(
+        _ut1_to_ephemeris_tt(jd_ut, reader)
+    )
     axis_angle = _graze_axis_angle_deg(position_angle, moon_axis_angle)
     bright_limb_pa = _position_angle_equatorial(
         moon.right_ascension,
@@ -2072,7 +2082,7 @@ def lunar_star_occultation(
 
     def _moon_star_sep(jd: float) -> float:
         if observer_lat is not None and observer_lon is not None:
-            jd_tt = ut_to_tt(jd)
+            jd_tt = _ut1_to_ephemeris_tt(jd, reader)
             moon = sky_position_at(
                 Body.MOON,
                 jd,

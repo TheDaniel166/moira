@@ -79,7 +79,7 @@ from pathlib import Path
 from .constants import Body, sign_of
 from .coordinates import Vec3, vec_sub, icrf_to_ecliptic
 from .obliquity import true_obliquity, mean_obliquity
-from .julian import ut_to_tt
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import (
     _apparent_geocentric_ecliptic,
     _compose_rotation_matrix,
@@ -704,7 +704,7 @@ def _asteroid_at_with_flags(
                 "context was found. Pass a reader explicitly or use the Moira facade."
             )
 
-    jd_tt = ut_to_tt(jd_ut)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     # Resolve name → NAIF ID (mirrors asteroid_at resolution)
     if isinstance(name_or_naif, str):
@@ -827,7 +827,7 @@ def asteroid_at(
                 "Pass a reader explicitly or use the Moira facade."
             )
 
-    jd_tt = ut_to_tt(jd_ut)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     # Resolve name → NAIF ID
     if isinstance(name_or_naif, str):

@@ -173,7 +173,7 @@ def test_facade_almuten_figuris_uses_planetary_hours_vessel_contract(
     )
 
     monkeypatch.setattr(
-        "moira.planetary_hours.planetary_hours",
+        "moira.planetary_hours._planetary_hours_from_utc",
         lambda jd_ut, latitude, longitude, reader=None: day,
     )
 
@@ -264,4 +264,3 @@ def test_facade_almuten_figuris_strict_mode(moira_engine) -> None:
     # Calling with strict=True should bubble up the AttributeError or other resolution error
     with pytest.raises(Exception):
         moira_engine.almuten_figuris(chart, houses, strict=True)
-

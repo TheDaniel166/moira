@@ -17,7 +17,7 @@ from moira.galactic_houses import (
     calculate_galactic_houses,
     describe_galactic_boundary,
 )
-from moira.julian import jd_from_datetime, local_sidereal_time, ut_to_tt
+from moira.julian import jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
 
 from ..models.chart import ChartRequest
@@ -126,9 +126,12 @@ class GalacticHouseChartPlacementsResult:
 def compute_galactic_house_cusps(
     request: GalacticHousesChartRequest,
 ) -> GalacticHouseCuspsResult:
-    jd_ut = jd_from_datetime(request.dt)
-    jd_tt, obliquity, armc = _epoch_context(
+    jd_utc = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_utc)
+    jd_tt = utc_to_tt(jd_utc)
+    obliquity, armc = _epoch_context(
         jd_ut=jd_ut,
+        jd_tt=jd_tt,
         longitude=request.longitude,
     )
     cusps = calculate_galactic_houses(
@@ -187,12 +190,15 @@ def compute_galactic_house_chart_placements(
 ) -> GalacticHouseChartPlacementsResult:
     chart = _build_chart(engine, request)
     bodies = _selected_bodies(request.bodies, chart.planets)
-    jd_tt, obliquity, armc = _epoch_context(
-        jd_ut=chart.jd_ut,
+    jd_ut = utc_to_ut1(chart.jd_ut)
+    jd_tt = utc_to_tt(chart.jd_ut)
+    obliquity, armc = _epoch_context(
+        jd_ut=jd_ut,
+        jd_tt=jd_tt,
         longitude=request.longitude,
     )
     cusps = calculate_galactic_houses(
-        chart.jd_ut,
+        jd_ut,
         request.latitude,
         request.longitude,
     )
@@ -226,7 +232,7 @@ def compute_galactic_house_chart_placements(
         provenance=_chart_provenance(
             request=request,
             normalized_datetime_utc=chart.datetime_utc.isoformat(),
-            jd_ut=chart.jd_ut,
+            jd_ut=jd_ut,
             jd_tt=jd_tt,
             obliquity=obliquity,
             armc=armc,
@@ -279,13 +285,13 @@ def _request_to_cusps(request: GalacticHouseCuspsRequest) -> GalacticHouseCusps:
 def _epoch_context(
     *,
     jd_ut: float,
+    jd_tt: float,
     longitude: float,
-) -> tuple[float, float, float]:
-    jd_tt = ut_to_tt(jd_ut)
+) -> tuple[float, float]:
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
     armc = local_sidereal_time(jd_ut, longitude, dpsi, obliquity)
-    return jd_tt, obliquity, armc
+    return obliquity, armc
 
 
 def _chart_provenance(

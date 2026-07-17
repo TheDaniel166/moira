@@ -57,18 +57,23 @@ This doctrine extends to time itself. Positional astronomy is meaningless withou
 
 ### ΔT — The Conversion Kernel
 
-The central quantity is **ΔT = TT − UT1** (seconds). Moira implements a layered hybrid model in `delta_t()` that selects the highest-accuracy available source for each era:
+The central quantity is **ΔT = TT − UT1** (seconds). Moira implements a
+source-priority model in `delta_t()` and keeps source totals on their published
+tidal basis:
 
-| Era | Source | Accuracy |
-| :--- | :--- | :--- |
-| 2015–2026 | Annual IERS Bulletin B/A observed means | Sub-second |
-| 1955–2015 | 5-year observed table, blended into annual at 2015 | ~0.1 s |
-| Historical range | HPIERS table — Stephenson, Morrison & Hohenkerk (2016) | Few seconds |
-| 1600–1900 | Telescopic anchor table, Espenak & Meeus / Morrison & Stephenson | ~10 s |
-| 1900–1955 | Dense 5-year pre-modern table | ~1 s |
-| All other eras | Morrison & Stephenson (2004) piecewise polynomials | Model-dependent |
+| Era | Governing source or policy |
+| :--- | :--- |
+| 2015.456–2026.123 | USNO monthly-source aggregates placed at their representative sample epochs |
+| −2000–2015.0 | HPIERS/HMNAO table, including restored half-year cadence from 1950 onward |
+| −2100–−2000 | Explicit C0 reconciliation into the HPIERS source floor |
+| Earlier than −2100 | Morrison–Stephenson far-past polynomial on its published basis |
+| After 2026.123 | Boundary-conditioned scenario; validated as deterministic policy through 2150, not as future Earth-rotation truth |
 
-All table-driven ranges use linear interpolation between anchor points. Polynomial branches activate only when no table covers the requested year. The far-past/far-future parabolic fallback (`−20 + 32u²`, u = (y − 1820)/100) is the same form used by SOFA and the standard literature.
+Table-driven ranges use linear interpolation between source knots or aggregate
+representative epochs. The generic clock model does not infer a target
+ephemeris and therefore does not ambiently retarget the HPIERS DE430/LE430
+tidal basis to DE441. The post-observation branch is the explicit physical
+scenario rather than a silent far-future polynomial fallback.
 
 A separate `delta_t_nasa_canon()` implements the Espenak/Meeus Five Millennium Canon polynomial set with its lunar secular-acceleration correction (`−0.000012932 × (year − 1955)²`). This is used exclusively when comparing against NASA eclipse contact times; it is never the default.
 
@@ -163,4 +168,3 @@ If Swiss Ephemeris disagrees with Moira and the strata audit cannot resolve it, 
 An engine that hides its assumptions does not merely fail to communicate — it actively distorts the record it claims to preserve. Every silent default, every opaque correction, every undocumented model choice is a substitution of the engine's judgment for the observer's evidence.
 
 **We do not merely output code. We provide the Open Record of the Sky.**
-

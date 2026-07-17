@@ -53,7 +53,7 @@ from .constants import Body, DEG2RAD, RAD2DEG
 from .coordinates import ecliptic_to_equatorial
 from .midpoints import _midpoint
 from .aspects import AspectData, aspects_between
-from .julian import jd_from_datetime, datetime_from_jd, delta_t_from_jd, ut_to_tt, utc_to_tt, utc_to_ut1
+from .julian import jd_from_datetime, datetime_from_jd, utc_to_tt, utc_to_ut1
 from .planets import all_planets_at
 from .nodes import true_node, mean_node, mean_lilith
 from .obliquity import true_obliquity
@@ -3017,11 +3017,11 @@ def _build_relationship_chart(
     jd_tt = utc_to_tt(jd_ut)
     planets = all_planets_at(jd_ut1, reader=reader)
     nodes = {
-        Body.TRUE_NODE: true_node(jd_ut, reader=reader),
-        Body.MEAN_NODE: mean_node(jd_ut),
-        Body.LILITH: mean_lilith(jd_ut),
+        Body.TRUE_NODE: true_node(jd_ut1, reader=reader),
+        Body.MEAN_NODE: mean_node(jd_ut1),
+        Body.LILITH: mean_lilith(jd_ut1),
     }
-    dt_s = delta_t_from_jd(jd_ut)
+    dt_s = (jd_tt - jd_ut1) * 86400.0
     obl = true_obliquity(jd_tt)
 
     from . import Chart
@@ -3148,12 +3148,12 @@ def davison_chart(
     planets = all_planets_at(jd_ut1, reader=reader)
 
     nodes = {
-        Body.TRUE_NODE: true_node(jd_mid, reader=reader),
-        Body.MEAN_NODE: mean_node(jd_mid),
-        Body.LILITH:    mean_lilith(jd_mid),
+        Body.TRUE_NODE: true_node(jd_ut1, reader=reader),
+        Body.MEAN_NODE: mean_node(jd_ut1),
+        Body.LILITH:    mean_lilith(jd_ut1),
     }
 
-    dt_s = delta_t_from_jd(jd_mid)
+    dt_s = (jd_tt - jd_ut1) * 86400.0
     obl = true_obliquity(jd_tt)
 
     # Import Chart here to avoid circular dependency at module level

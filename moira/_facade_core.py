@@ -83,7 +83,8 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
 
         Parameters
         ----------
-        dt              : timezone-aware datetime (UTC used as UT1 proxy)
+        dt              : timezone-aware civil UTC datetime; before 1972 its
+                          JD label follows Moira's historical UT1-proxy policy
         bodies          : list of Body.* constants (defaults to ALL_PLANETS)
         include_nodes   : include True Node, Mean Node, Lilith
         observer_lat    : geographic latitude for topocentric Moon (degrees)
@@ -117,13 +118,16 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
 
         nodes: dict[str, Any] = {}
         if include_nodes:
-            nodes[facade.Body.TRUE_NODE] = facade.true_node(jd, reader=self._reader)
-            nodes[facade.Body.MEAN_NODE] = facade.mean_node(jd)
-            nodes[facade.Body.LILITH] = facade.mean_lilith(jd)
-            nodes[facade.Body.TRUE_LILITH] = facade.true_lilith(jd, reader=self._reader)
+            nodes[facade.Body.TRUE_NODE] = facade.true_node(jd_ut1, reader=self._reader)
+            nodes[facade.Body.MEAN_NODE] = facade.mean_node(jd_ut1)
+            nodes[facade.Body.LILITH] = facade.mean_lilith(jd_ut1)
+            nodes[facade.Body.TRUE_LILITH] = facade.true_lilith(jd_ut1, reader=self._reader)
 
         obl = facade.true_obliquity(jd_tt)
-        dt_s = facade.delta_t_from_jd(jd)
+        # ``Chart.jd_ut`` remains the UTC-coded civil input for compatibility,
+        # while Delta-T is the exact relation between the resolved TT and UT1
+        # coordinates used by this chart computation.
+        dt_s = (jd_tt - jd_ut1) * 86400.0
 
         return facade.Chart(
             jd_ut=jd,
@@ -308,7 +312,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         """Return sidereal longitudes for all bodies."""
         facade = _facade_module()
         system = facade.Ayanamsa.LAHIRI if ayanamsa_system is None else ayanamsa_system
-        jd = facade.jd_from_datetime(dt)
+        jd = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         chart = self.chart(dt, bodies=bodies)
         ayan = facade.ayanamsa(jd, system)
         return {

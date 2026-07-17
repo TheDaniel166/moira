@@ -65,17 +65,20 @@ def phase_angle(body_name: str, jd_ut: float) -> float:
     body_name : str
         The celestial body name (e.g., "Venus", Body.VENUS).
     jd_ut : float
-        Julian Day in UT.
+        Julian Day in Universal Time (UT1).
 
     Returns
     -------
     float
         Phase angle in degrees [0, 180].
     """
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
+
     reader = get_reader()
-    p_bary = _barycentric(body_name, jd_ut, reader)
-    s_bary = reader.position(0, 10, jd_ut)
-    e_bary = _earth_barycentric(jd_ut, reader)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
+    p_bary = _barycentric(body_name, jd_tt, reader)
+    s_bary = reader.position(0, 10, jd_tt)
+    e_bary = _earth_barycentric(jd_tt, reader)
 
     # Heliocentric planet vector (Sun → Planet)
     r_ps = (p_bary[0] - s_bary[0], p_bary[1] - s_bary[1], p_bary[2] - s_bary[2])
@@ -128,7 +131,7 @@ def elongation(body_name: str, jd_ut: float) -> float:
     body_name : str
         The celestial body name.
     jd_ut : float
-        Julian Day in UT.
+        Julian Day in Universal Time (UT1).
 
     Returns
     -------
@@ -210,7 +213,7 @@ def angular_diameter(body_name: str, jd_ut: float) -> float:
     body_name : str
         The celestial body name.
     jd_ut : float
-        Julian Day (UT).
+        Julian Day in Universal Time (UT1).
 
     Returns
     -------
@@ -567,12 +570,11 @@ def _mars_magnitude_context(
     h_vec: tuple[float, float, float],
     earth_vec: tuple[float, float, float],
     sun_vec: tuple[float, float, float],
-    jd_ut: float,
+    jd_tt: float,
 ) -> tuple[float, float]:
     from .coordinates import icrf_to_true_ecliptic
-    from .julian import decimal_year_from_jd, tt_to_tdb, ut_to_tt
+    from .julian import tt_to_tdb
 
-    jd_tt = ut_to_tt(jd_ut, decimal_year_from_jd(jd_ut))
     jd_tdb = tt_to_tdb(jd_tt)
     sub_earth_long = _mars_sub_longitude((-earth_vec[0], -earth_vec[1], -earth_vec[2]), jd_tdb)
     sub_sun_long = _mars_sub_longitude(sun_vec, jd_tdb)
@@ -808,7 +810,7 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
     body_name : str
         The celestial body (Body.* constant or string name).
     jd_ut : float
-        Julian Day in UT.
+        Julian Day in Universal Time (UT1).
 
     Returns
     -------
@@ -839,10 +841,13 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
             f"apparent_magnitude: no modern magnitude model for body {body_name!r}"
         )
 
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
+
     reader = get_reader()
-    p_bary = _barycentric(body_name, jd_ut, reader)
-    s_bary = reader.position(0, 10, jd_ut)
-    e_bary = _earth_barycentric(jd_ut, reader)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
+    p_bary = _barycentric(body_name, jd_tt, reader)
+    s_bary = reader.position(0, 10, jd_tt)
+    e_bary = _earth_barycentric(jd_tt, reader)
 
     # Heliocentric distance vector (Sun → Planet)
     hx = p_bary[0] - s_bary[0]
@@ -870,7 +875,7 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
 
     saturn_sub_lat_geoc = None
     if body_name == Body.SATURN:
-        saturn_sub_lat_geoc = _saturn_effective_sub_lat_geoc(p_bary, s_bary, e_bary, jd_ut)
+        saturn_sub_lat_geoc = _saturn_effective_sub_lat_geoc(p_bary, s_bary, e_bary, jd_tt)
         return _BODY_MAG[body_name](r, delta, beta, jd_ut, saturn_sub_lat_geoc)
 
     if body_name == Body.MARS:
@@ -878,7 +883,7 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
             (hx, hy, hz),
             (gx, gy, gz),
             (s_bary[0] - p_bary[0], s_bary[1] - p_bary[1], s_bary[2] - p_bary[2]),
-            jd_ut,
+            jd_tt,
         )
         return _mag_mars(r, delta, beta, jd_ut, None, mars_eff_cm, mars_ls)
 

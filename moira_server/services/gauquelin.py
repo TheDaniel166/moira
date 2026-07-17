@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from moira import Moira
 from moira.gauquelin import GauquelinPosition, all_gauquelin_sectors, gauquelin_sector
-from moira.julian import local_sidereal_time, ut_to_tt
+from moira.julian import local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import sky_position_at
 
@@ -176,17 +176,18 @@ def compute_gauquelin_chart_sectors(
 ) -> GauquelinSectorsResult:
     chart = _build_chart(engine, request)
     bodies = _selected_bodies(request.bodies, chart.planets)
-    jd_tt = ut_to_tt(chart.jd_ut)
+    jd_tt = utc_to_tt(chart.jd_ut)
+    jd_ut1 = utc_to_ut1(chart.jd_ut)
     dpsi, _ = nutation(jd_tt)
     obliquity = true_obliquity(jd_tt)
-    lst = local_sidereal_time(chart.jd_ut, request.longitude, dpsi, obliquity)
+    lst = local_sidereal_time(jd_ut1, request.longitude, dpsi, obliquity)
     reader = getattr(engine, "_reader", None)
 
     positions: list[GauquelinPositionResult] = []
     for body in bodies:
         sky = sky_position_at(
             body,
-            chart.jd_ut,
+            jd_ut1,
             observer_lat=request.latitude,
             observer_lon=request.longitude,
             observer_elev_m=0.0,
@@ -217,7 +218,7 @@ def compute_gauquelin_chart_sectors(
         provenance=GauquelinProvenance(
             requested_datetime=request.dt.isoformat(),
             normalized_datetime_utc=chart.datetime_utc.isoformat(),
-            jd_ut=chart.jd_ut,
+            jd_ut=jd_ut1,
             jd_tt=jd_tt,
             latitude=request.latitude,
             longitude=request.longitude,

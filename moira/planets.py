@@ -66,7 +66,8 @@ from .coordinates import (
     icrf_to_true_ecliptic, nutation_matrix_from_terms,
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
-from .julian import ut_to_tt, centuries_from_j2000, local_sidereal_time, decimal_year, DeltaTPolicy
+from .julian import centuries_from_j2000, local_sidereal_time, DeltaTPolicy
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .spk_reader import (
     get_active_reader, get_reader, KernelReader, SpkReader,
     MissingKernelError, OutOfRangeError,
@@ -2183,8 +2184,11 @@ def planet_reduction_breakdown_at(
         def barycentric_fn(body_id, jd_tt_value, active_reader):
             return _barycentric(body_id, jd_tt_value, active_reader, vector_cache)
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
+    jd_tt = _ut1_to_ephemeris_tt(
+        jd_ut,
+        reader,
+        delta_t_policy=delta_t_policy,
+    )
     mean_eps = mean_obliquity(jd_tt)
     dpsi_deg, deps_deg = _nutation(jd_tt)
     true_eps = mean_eps + deps_deg
@@ -2544,8 +2548,7 @@ def planet_at(
                 _lst_deg_override=lst_deg,
             )
             # Determine obliquity for the RA/Dec → ecliptic conversion.
-            year, month, *_ = _approx_year(jd_ut)
-            _jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+            _jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
             obl = true_obliquity(_jd_tt) if nutation else mean_obliquity(_jd_tt)
             lon_ecl, lat_ecl = equatorial_to_ecliptic(
                 sky.right_ascension, sky.declination, obl
@@ -2614,8 +2617,11 @@ def planet_at(
             jd_tt, context = cached_state
 
     if jd_tt is None:
-        year, month, *_ = _approx_year(jd_ut)
-        jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
+        jd_tt = _ut1_to_ephemeris_tt(
+            jd_ut,
+            reader,
+            delta_t_policy=delta_t_policy,
+        )
 
     built_context = False
     if context is None and apparent:
@@ -2781,8 +2787,11 @@ def _sky_position_at_impl(
                 "Pass a reader explicitly or use the Moira facade."
             )
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
+    jd_tt = _ut1_to_ephemeris_tt(
+        jd_ut,
+        reader,
+        delta_t_policy=delta_t_policy,
+    )
     context = _context or _build_apparent_context(
         jd_tt,
         reader,
@@ -3088,8 +3097,11 @@ def all_planets_at(
                 "Pass a reader explicitly or use the Moira facade."
             )
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month), delta_t_policy=delta_t_policy)
+    jd_tt = _ut1_to_ephemeris_tt(
+        jd_ut,
+        reader,
+        delta_t_policy=delta_t_policy,
+    )
 
     native_results = _native_all_planets_admitted(
         jd_ut,
@@ -3209,8 +3221,7 @@ def heliocentric_planet_at(
     if reader is None:
         reader = get_reader()
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     # Fetch heliocentric position AND velocity from kernel state vectors —
     # no finite difference needed.
@@ -3417,8 +3428,7 @@ def planet_relative_to(
     if reader is None:
         reader = get_reader()
 
-    year, month, *_ = _approx_year(jd_ut)
-    jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
     def _rel_vec(jd_tt_: float) -> Vec3:
         b_bary = _body_barycentric(body, jd_tt_, reader, _vector_cache)
@@ -3428,10 +3438,8 @@ def planet_relative_to(
     xyz = _rel_vec(jd_tt)
     lon, lat, dist = icrf_to_true_ecliptic(jd_tt, xyz)
 
-    year_p, month_p, *_ = _approx_year(jd_ut + 0.5)
-    year_m, month_m, *_ = _approx_year(jd_ut - 0.5)
-    jd_tt_p = ut_to_tt(jd_ut + 0.5, decimal_year(year_p, month_p))
-    jd_tt_m = ut_to_tt(jd_ut - 0.5, decimal_year(year_m, month_m))
+    jd_tt_p = _ut1_to_ephemeris_tt(jd_ut + 0.5, reader)
+    jd_tt_m = _ut1_to_ephemeris_tt(jd_ut - 0.5, reader)
     lon_p, _, _ = icrf_to_true_ecliptic(jd_tt_p, _rel_vec(jd_tt_p))
     lon_m, _, _ = icrf_to_true_ecliptic(jd_tt_m, _rel_vec(jd_tt_m))
     raw_speed = (lon_p - lon_m) % 360.0
@@ -3514,8 +3522,7 @@ def next_heliocentric_transit(
     target = target_lon % 360.0
 
     def _helio_lon(jd_ut: float) -> float:
-        yr, mo, *_ = _approx_year(jd_ut)
-        jd_tt = ut_to_tt(jd_ut, decimal_year(yr, mo))
+        jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
         body_bary = _barycentric(body, jd_tt, reader)
         sun_bary  = reader.position(0, 10, jd_tt)
         rel = vec_sub(body_bary, sun_bary)

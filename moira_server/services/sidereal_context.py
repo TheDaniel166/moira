@@ -8,7 +8,7 @@ from types import MappingProxyType
 from typing import Mapping
 
 from moira import Moira
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.sidereal import ayanamsa
 
 from ..models.chart import HousesRequest
@@ -104,7 +104,10 @@ def derive_sidereal_chart_context(
         }
     )
     chart = build_chart_context(engine, chart_request)
-    jd_ut = getattr(chart, "jd_ut", jd_from_datetime(request.dt))
+    jd_utc = getattr(chart, "jd_ut", None)
+    if jd_utc is None:
+        jd_utc = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_utc)
     ayanamsa_offset = ayanamsa(jd_ut, request.ayanamsa_system)
 
     tropical_longitudes = {

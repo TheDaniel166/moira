@@ -1,50 +1,32 @@
 """
-fetch_iers_eop.py — Download IERS EOP C04 (1962–present) and extract the
-LOD column as an annual mean series for use as the core angular momentum
-proxy in moira/data/core_angular_momentum.txt.
+fetch_iers_eop.py — quarantined IERS EOP C04 total-LOD research generator.
 
-Physical basis
---------------
-The IERS EOP C04 LOD series is the observed length-of-day anomaly in
-milliseconds.  After removing the known tidal contribution (which is already
-captured by secular_trend) and the atmospheric/oceanic angular momentum (AAM/
-OAM) signal (which is captured by the residual spline), the residual LOD
-signal is dominated by core-mantle angular momentum exchange on decadal
-timescales — exactly the core_delta_t component we need.
-
-For the 1962–present era we use the raw annual-mean LOD anomaly as a proxy
-for core angular momentum rather than a model-derived reconstruction.  This
-is a deliberate simplification: the raw series includes AAM/OAM contamination
-at the 0.3–0.5 ms level, but because the residual spline is fit to
-IERS_measured − (secular + core + cryo), that AAM/OAM signal will be absorbed
-by the residual spline rather than double-counted.  The core component
-therefore contributes the decadal-scale signal; the residual captures the
-interannual noise.  This is fully consistent with the era coverage table in
-DELTA_T_HYBRID_MODEL.md.
-
-For 1840–1962 this file produces no data (returns the series starting at
-1962.0).  The Gillet et al. model reconstruction for 1840–1962 can be appended
-manually when it becomes available; the loader in delta_t_physical.py will
-merge the two without code changes.
+The source LOD column is a total Earth-rotation product.  Annual averaging
+does not identify a core-angular-momentum contribution, and this script does
+not remove atmospheric, oceanic, mantle, or cryospheric terms.  Its historical
+output filename is retained for audit compatibility only; the generated data
+is not admitted by ``delta_t_physical``.
 
 Output format
 -------------
 moira/data/core_angular_momentum.txt
     decimal_year  delta_lod_ms
-    # annual means of EOP C04 LOD column (ms), 1962–present
+    # annual means of EOP C04 LOD (source seconds, output milliseconds)
 
 Usage
 -----
-    python scripts/fetch_iers_eop.py
+    python scripts/archive/one_shot_debug_and_diagnostics/fetch_iers_eop.py \
+        --quarantined-research-output
 
 No third-party dependencies required.
 """
 
+import math
 import sys
 import urllib.request
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parent.parent
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 _OUTPUT = _REPO_ROOT / "moira" / "data" / "core_angular_momentum.txt"
 
 _EOP_C04_URL = (
@@ -52,60 +34,61 @@ _EOP_C04_URL = (
     "c04_operational/csv/eopc04.1962-now.csv"
 )
 
-_MJD_J2000 = 51544.5
-_DAYS_PER_YEAR = 365.25
-
-
-def _mjd_to_decimal_year(mjd: float) -> float:
-    j2000_years = (mjd - _MJD_J2000) / _DAYS_PER_YEAR
-    return 2000.0 + j2000_years
-
-
 def _download(url: str) -> list[str]:
     req = urllib.request.Request(url, headers={"User-Agent": "Moira-fetch/1.0"})
     with urllib.request.urlopen(req, timeout=120) as resp:
         return resp.read().decode("utf-8", errors="replace").splitlines()
 
 
-def _parse_eop_c04(lines: list[str]) -> list[tuple[float, float]]:
+def _parse_eop_c04(lines: list[str]) -> list[tuple[int, float]]:
     """
     Parse EOP C04 CSV.
 
     Format (semicolon-delimited, confirmed from IERS):
         MJD ; Year ; Month ; Day ; [type] ; x_pole ; ... ; LOD ; sigma_LOD ; ...
 
-    LOD is in milliseconds.  Missing or flagged values appear as empty strings.
-    We keep only rows where LOD is a valid float.
+    The source ``LOD`` column is in seconds.  Output values are converted to
+    milliseconds.  Calendar grouping uses the source ``Year`` column rather
+    than deriving an approximate year from MJD.  Missing or flagged values
+    appear as empty strings; only finite numeric rows are retained.
     """
-    header = lines[0].split(";")
+    if not lines:
+        return []
+    header = [field.strip().lstrip("\ufeff") for field in lines[0].split(";")]
+    columns = {name.casefold(): index for index, name in enumerate(header)}
     try:
-        mjd_col = header.index("MJD")
-        lod_col = header.index("LOD")
-    except ValueError:
-        mjd_col = 0
-        lod_col = 16
+        year_col = columns["year"]
+        lod_col = columns["lod"]
+    except KeyError as exc:
+        raise ValueError("IERS EOP C04 CSV requires named Year and LOD columns") from exc
 
-    rows: list[tuple[float, float]] = []
+    rows: list[tuple[int, float]] = []
     for line in lines[1:]:
         line = line.strip()
         if not line:
             continue
         parts = line.split(";")
-        if len(parts) <= max(mjd_col, lod_col):
+        if len(parts) <= max(year_col, lod_col):
             continue
         try:
-            mjd = float(parts[mjd_col])
-            lod_s = float(parts[lod_col])
+            year_value = float(parts[year_col].strip())
+            lod_seconds = float(parts[lod_col].strip())
         except ValueError:
             continue
-        decimal_year = _mjd_to_decimal_year(mjd)
-        rows.append((decimal_year, lod_s * 1000.0))
+        if (
+            not math.isfinite(year_value)
+            or not year_value.is_integer()
+            or not math.isfinite(lod_seconds)
+        ):
+            continue
+        year = int(year_value)
+        rows.append((year, lod_seconds * 1000.0))
     rows.sort(key=lambda r: r[0])
     return rows
 
 
 def _annual_means(
-    rows: list[tuple[float, float]],
+    rows: list[tuple[int, float]],
 ) -> list[tuple[float, float]]:
     """
     Compute calendar-year annual means from a daily LOD series.
@@ -114,9 +97,8 @@ def _annual_means(
     is the mid-year value (year + 0.5).
     """
     by_year: dict[int, list[float]] = {}
-    for yr_decimal, lod in rows:
-        yr_int = int(yr_decimal)
-        by_year.setdefault(yr_int, []).append(lod)
+    for source_year, lod_ms in rows:
+        by_year.setdefault(source_year, []).append(lod_ms)
 
     result: list[tuple[float, float]] = []
     for yr_int in sorted(by_year):
@@ -129,6 +111,14 @@ def _annual_means(
 
 
 def main() -> int:
+    if "--quarantined-research-output" not in sys.argv[1:]:
+        print(
+            "Refusing to regenerate a quarantined total-LOD artifact without "
+            "--quarantined-research-output. Annual C04 LOD is not a core "
+            "angular-momentum inversion."
+        )
+        return 2
+
     print("Downloading IERS EOP C04 (1962–present)...")
     print(f"  URL: {_EOP_C04_URL}")
     try:
@@ -146,7 +136,7 @@ def main() -> int:
 
     print(
         f"  Parsed {len(daily)} daily LOD values "
-        f"({daily[0][0]:.2f}–{daily[-1][0]:.2f})"
+        f"({daily[0][0]}–{daily[-1][0]})"
     )
 
     annual = _annual_means(daily)
@@ -159,22 +149,20 @@ def main() -> int:
     _OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with _OUTPUT.open("w", encoding="utf-8") as fh:
         fh.write(
-            "# Core angular momentum proxy — annual-mean LOD anomaly\n"
+            "# QUARANTINED RESEARCH PROXY — NOT RUNTIME-ADMITTED\n"
+            "# Historical filename retained for compatibility\n"
+            "# Annual-mean TOTAL LOD; not a core-angular-momentum inversion\n"
             "# Source: IERS EOP C04 (1962–present), annual means\n"
             "# URL: https://datacenter.iers.org/products/eop/long-term/"
             "c04_operational/csv/eopc04.1962-now.csv\n"
             "#\n"
             "# Physical interpretation:\n"
-            "#   Annual-mean LOD anomaly in milliseconds.  On decadal timescales\n"
-            "#   this is dominated by core-mantle angular momentum exchange.\n"
-            "#   AAM/OAM contamination (~0.3-0.5 ms) is absorbed by the residual\n"
-            "#   spline in delta_t_physical.py (see DELTA_T_HYBRID_MODEL.md).\n"
-            "#\n"
-            "# For 1840-1962: Gillet et al. model reconstruction (not yet available).\n"
-            "# When obtained, prepend those rows to this file.\n"
+            "#   Source LOD is in seconds and is converted to milliseconds.\n"
+            "#   Total annual-mean LOD anomaly. Atmospheric,\n"
+            "#   oceanic, mantle, cryospheric, and core effects are not separated.\n"
             "#\n"
             "# Columns: decimal_year  delta_lod_ms\n"
-            "#   decimal_year = calendar year + 0.5 (mid-year)\n"
+            "#   decimal_year = source Year column + 0.5 (mid-year label)\n"
             "#   delta_lod_ms = annual mean LOD in milliseconds\n"
             "#\n"
         )

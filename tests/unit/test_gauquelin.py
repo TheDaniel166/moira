@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
+from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
+import moira_server.services.gauquelin as gauquelin_service
 from moira.gauquelin import (
     GauquelinHorizonStatus,
     all_gauquelin_sectors,
     gauquelin_sector,
 )
+from moira_server.models.gauquelin import GauquelinChartSectorsRequest
 
 
 def test_canonical_result_preserves_plus_zone_metadata() -> None:
@@ -157,3 +161,74 @@ def test_invalid_inputs_are_rejected(kwargs: dict[str, float], message: str) -> 
 
     with pytest.raises(ValueError, match=message):
         gauquelin_sector(**params)
+
+
+def test_gauquelin_chart_service_resolves_utc_tt_and_ut1_for_dependencies(monkeypatch) -> None:
+    requested_dt = datetime(2026, 7, 17, tzinfo=timezone.utc)
+    jd_utc = 100.0
+    jd_tt = 200.0
+    jd_ut1 = 99.0
+    chart = SimpleNamespace(
+        jd_ut=jd_utc,
+        datetime_utc=requested_dt,
+        planets={"Sun": object()},
+    )
+    calls: dict[str, object] = {"utc_to_tt": [], "utc_to_ut1": [], "sky": []}
+
+    monkeypatch.setattr(gauquelin_service, "_build_chart", lambda _engine, _request: chart)
+    monkeypatch.setattr(
+        gauquelin_service,
+        "utc_to_tt",
+        lambda jd: calls["utc_to_tt"].append(jd) or jd_tt,
+    )
+    monkeypatch.setattr(
+        gauquelin_service,
+        "utc_to_ut1",
+        lambda jd: calls["utc_to_ut1"].append(jd) or jd_ut1,
+    )
+    monkeypatch.setattr(gauquelin_service, "nutation", lambda received_jd_tt: (0.2, 0.0))
+    monkeypatch.setattr(gauquelin_service, "true_obliquity", lambda received_jd_tt: 23.5)
+
+    def fake_local_sidereal_time(received_jd_ut1, longitude, dpsi, obliquity):
+        calls["sidereal"] = (received_jd_ut1, longitude, dpsi, obliquity)
+        return 123.0
+
+    def fake_sky_position_at(body, received_jd_ut1, **kwargs):
+        calls["sky"].append((body, received_jd_ut1, kwargs))
+        return SimpleNamespace(right_ascension=10.0, declination=2.0)
+
+    monkeypatch.setattr(gauquelin_service, "local_sidereal_time", fake_local_sidereal_time)
+    monkeypatch.setattr(gauquelin_service, "sky_position_at", fake_sky_position_at)
+    monkeypatch.setattr(
+        gauquelin_service,
+        "gauquelin_sector",
+        lambda *_args, body, **_kwargs: SimpleNamespace(body=body),
+    )
+
+    result = gauquelin_service.compute_gauquelin_chart_sectors(
+        SimpleNamespace(_reader="reader"),
+        GauquelinChartSectorsRequest(
+            dt=requested_dt,
+            latitude=40.0,
+            longitude=-74.0,
+            bodies=["Sun"],
+        ),
+    )
+
+    assert calls["utc_to_tt"] == [jd_utc]
+    assert calls["utc_to_ut1"] == [jd_utc]
+    assert calls["sidereal"] == (jd_ut1, -74.0, 0.2, 23.5)
+    assert calls["sky"] == [
+        (
+            "Sun",
+            jd_ut1,
+            {
+                "observer_lat": 40.0,
+                "observer_lon": -74.0,
+                "observer_elev_m": 0.0,
+                "reader": "reader",
+            },
+        )
+    ]
+    assert result.provenance.jd_ut == jd_ut1
+    assert result.provenance.jd_tt == jd_tt

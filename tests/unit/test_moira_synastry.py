@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
+import moira.synastry as synastry_module
 from moira import Body, HouseSystem, Moira
-from moira.julian import delta_t_from_jd, ut_to_tt, utc_to_tt
+from moira.julian import utc_to_tt, utc_to_ut1
 from moira.obliquity import true_obliquity
 from moira.houses import HouseCusps, HousePolicy, assign_house
 from moira.aspects import aspects_between
@@ -408,11 +410,111 @@ def test_davison_chart_matches_midpoint_time_and_location_chart_cast(moira_engin
 
     assert davison.chart.obliquity == pytest.approx(expected_chart.obliquity, abs=1e-12)
     assert davison.chart.obliquity == pytest.approx(true_obliquity(utc_to_tt(davison.chart.jd_ut)), abs=1e-12)
-    assert davison.chart.delta_t == pytest.approx(delta_t_from_jd(davison.chart.jd_ut), abs=1e-12)
+    assert davison.chart.delta_t == pytest.approx(
+        (utc_to_tt(davison.chart.jd_ut) - utc_to_ut1(davison.chart.jd_ut)) * 86400.0,
+        abs=1e-12,
+    )
     assert davison.houses is not None
     assert list(davison.houses.cusps) == pytest.approx(list(expected_houses.cusps), abs=1e-12)
     assert davison.houses.asc == pytest.approx(expected_houses.asc, abs=1e-12)
     assert davison.houses.mc == pytest.approx(expected_houses.mc, abs=1e-12)
+
+
+@pytest.mark.parametrize("assembly_path", ("shared", "midpoint_location"))
+def test_davison_assembly_resolves_nodes_and_metadata_on_explicit_time_scales(
+    monkeypatch, assembly_path: str
+) -> None:
+    jd_utc = 150.0
+    jd_tt = 151.0
+    jd_ut1 = 149.0
+    dt_a = datetime(2000, 1, 1, tzinfo=timezone.utc)
+    dt_b = datetime(2000, 1, 3, tzinfo=timezone.utc)
+    calls: dict[str, list[float]] = {
+        "utc_to_tt": [],
+        "utc_to_ut1": [],
+        "planets": [],
+        "true_node": [],
+        "mean_node": [],
+        "mean_lilith": [],
+        "houses": [],
+    }
+
+    monkeypatch.setattr(synastry_module, "datetime_from_jd", lambda _jd: datetime(2000, 1, 2, tzinfo=timezone.utc))
+    monkeypatch.setattr(
+        synastry_module,
+        "jd_from_datetime",
+        lambda dt: {dt_a: 100.0, dt_b: 200.0}[dt],
+    )
+
+    def fake_utc_to_tt(jd: float) -> float:
+        calls["utc_to_tt"].append(jd)
+        assert jd == jd_utc
+        return jd_tt
+
+    def fake_utc_to_ut1(jd: float) -> float:
+        calls["utc_to_ut1"].append(jd)
+        assert jd == jd_utc
+        return jd_ut1
+
+    monkeypatch.setattr(synastry_module, "utc_to_tt", fake_utc_to_tt)
+    monkeypatch.setattr(synastry_module, "utc_to_ut1", fake_utc_to_ut1)
+    monkeypatch.setattr(
+        synastry_module,
+        "all_planets_at",
+        lambda jd, **_kwargs: calls["planets"].append(jd) or {},
+    )
+    monkeypatch.setattr(
+        synastry_module,
+        "true_node",
+        lambda jd, **_kwargs: calls["true_node"].append(jd) or object(),
+    )
+    monkeypatch.setattr(
+        synastry_module,
+        "mean_node",
+        lambda jd: calls["mean_node"].append(jd) or object(),
+    )
+    monkeypatch.setattr(
+        synastry_module,
+        "mean_lilith",
+        lambda jd: calls["mean_lilith"].append(jd) or object(),
+    )
+    monkeypatch.setattr(synastry_module, "true_obliquity", lambda jd: 23.0 + jd * 0.0)
+    monkeypatch.setattr(
+        synastry_module,
+        "calculate_houses",
+        lambda jd, *_args, **_kwargs: calls["houses"].append(jd)
+        or SimpleNamespace(system=HouseSystem.WHOLE_SIGN),
+    )
+
+    if assembly_path == "shared":
+        result = synastry_module._build_relationship_chart(
+            jd_utc,
+            10.0,
+            20.0,
+            HouseSystem.WHOLE_SIGN,
+            object(),
+        )
+    else:
+        result = synastry_module.davison_chart(
+            dt_a,
+            10.0,
+            20.0,
+            dt_b,
+            30.0,
+            40.0,
+            house_system=HouseSystem.WHOLE_SIGN,
+            reader=object(),
+        )
+
+    assert calls["utc_to_tt"] == [jd_utc]
+    assert calls["utc_to_ut1"] == [jd_utc]
+    assert calls["planets"] == [jd_ut1]
+    assert calls["true_node"] == [jd_ut1]
+    assert calls["mean_node"] == [jd_ut1]
+    assert calls["mean_lilith"] == [jd_ut1]
+    assert calls["houses"] == [jd_ut1]
+    assert result.chart.jd_ut == jd_utc
+    assert result.chart.delta_t == (jd_tt - jd_ut1) * 86400.0
 
 
 @pytest.mark.requires_ephemeris

@@ -33,12 +33,13 @@ def test_solar_declination_ra_uses_tt_obliquity() -> None:
     import moira._solar as solar_module
 
     dummy_sun = MagicMock(longitude=15.0, latitude=1.0)
+    reader = MagicMock()
     with patch.object(solar_module, "planet_at", return_value=dummy_sun), \
-         patch.object(solar_module, "ut_to_tt", return_value=2451545.0008) as mock_tt, \
+         patch.object(solar_module, "_ut1_to_ephemeris_tt", return_value=2451545.0008) as mock_tt, \
          patch.object(solar_module, "true_obliquity", return_value=23.4) as mock_obl:
-        solar_module._solar_declination_ra(2451545.0, MagicMock())
+        solar_module._solar_declination_ra(2451545.0, reader)
 
-    mock_tt.assert_called_once_with(2451545.0)
+    mock_tt.assert_called_once_with(2451545.0, reader)
     mock_obl.assert_called_once_with(2451545.0008)
 
 

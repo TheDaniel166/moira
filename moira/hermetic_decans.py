@@ -70,6 +70,7 @@ from dataclasses import dataclass
 
 from .stars import star_at, StarPosition, list_stars
 from .julian import ut_to_tt
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .obliquity import true_obliquity
 from .spk_reader import get_reader, SpkReader
 from ._solar import _sunrise_sunset, _refine_sunrise
@@ -653,7 +654,9 @@ def decan_hours(
     # (Liber Hermetis: the first hour of the night is ruled by the decan
     # on the Midheaven at sunset, not the decan rising on the Ascendant.)
     ramc_sunset = _lst_to_ramc(jd_sunset, lon)
-    obl_sunset  = true_obliquity(ut_to_tt(jd_sunset))
+    obl_sunset = true_obliquity(
+        _ut1_to_ephemeris_tt(jd_sunset, reader)
+    )
     mc_lon = math.degrees(math.atan2(
         math.sin(math.radians(ramc_sunset)),
         math.cos(math.radians(ramc_sunset)) * math.cos(math.radians(obl_sunset)),

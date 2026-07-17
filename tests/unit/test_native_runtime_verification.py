@@ -14,10 +14,15 @@ from moira.spk_reader import SpkReader, use_reader_override
 import moira.stars as stars
 
 
-def _earth_sun_geo(reader: SpkReader, jd_tt: float):
-    e_bary = reader.evaluator(399, 3, jd_tt)
-    emb_bary = reader.evaluator(3, 0, jd_tt)
-    sun_ssb = reader.evaluator(10, 0, jd_tt)
+def _earth_sun_geo(
+    reader: SpkReader,
+    jd_tt: float,
+    *,
+    jd_end_tt: float | None = None,
+):
+    e_bary = reader.evaluator(399, 3, jd_tt, jd_end_tt=jd_end_tt)
+    emb_bary = reader.evaluator(3, 0, jd_tt, jd_end_tt=jd_end_tt)
+    sun_ssb = reader.evaluator(10, 0, jd_tt, jd_end_tt=jd_end_tt)
     assert e_bary is not None
     assert emb_bary is not None
     assert sun_ssb is not None
@@ -302,14 +307,20 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
 ) -> None:
     kernel_path = find_planetary_kernel()
     jd_start = julian_day(2024, 7, 1, 0.0)
-    jd_tt = ut_to_tt(jd_start)
-    delta_t = (jd_tt - jd_start) * 86400.0
+    interval_start_tt, interval_end_tt, delta_t, delta_t_rate = (
+        stars._native_heliacal_time_policy(jd_start, 45)
+    )
     latitude = 31.2
     longitude = 29.9
     record, _ = stars._resolve_star_record("Sirius", stars.DEFAULT_FIXED_STAR_POLICY.lookup)
+    policy = stars.FixedStarComputationPolicy(use_native_heliacal=True)
 
     with SpkReader(kernel_path) as reader:
-        earth_ssb, sun_geo = _earth_sun_geo(reader, jd_tt)
+        earth_ssb, sun_geo = _earth_sun_geo(
+            reader,
+            interval_start_tt,
+            jd_end_tt=interval_end_tt,
+        )
         star_ssb = moira_native.FixedStarEvaluator(
             record.ra_deg,
             record.dec_deg,
@@ -320,6 +331,21 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
         )
         star_geo = moira_native.RelativeEvaluator(star_ssb, earth_ssb)
         native_search = getattr(moira_native, native_name)
+        search_kwargs = {
+            "delta_t": delta_t,
+            "earth_eval": earth_ssb,
+            "delta_t_rate_seconds_per_day": delta_t_rate,
+            "nutation_cache": moira_native.NutationEpochCache(),
+        }
+        if event_kind == "heliacal_setting":
+            search_kwargs.update(
+                setting_elongation_threshold=(
+                    policy.heliacal.setting_elongation_threshold
+                ),
+                setting_visibility_factor=(
+                    policy.heliacal.setting_visibility_factor
+                ),
+            )
         native_result = native_search(
             star_geo,
             sun_geo,
@@ -328,8 +354,7 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
             longitude,
             float(record.arc_vis_deg),
             45,
-            delta_t,
-            earth_ssb,
+            **search_kwargs,
         )
 
         called = {"value": False}
@@ -349,7 +374,7 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
                 longitude,
                 names=["Sirius"],
                 search_days=45,
-                policy=stars.FixedStarComputationPolicy(use_native_heliacal=True),
+                policy=policy,
             )
 
     assert called["value"] is True

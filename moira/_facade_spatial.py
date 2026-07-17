@@ -7,6 +7,7 @@ the actual computations to their owning modules.
 
 from __future__ import annotations
 
+import math
 import sys
 from datetime import datetime
 from typing import Any
@@ -75,21 +76,23 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
     ):
         """Compute Astro*Carto*Graphy lines for a chart."""
         facade = _facade_module()
-        from .julian import apparent_sidereal_time as _gast, ut_to_tt as _utt
+        from .julian import apparent_sidereal_time as _gast
         from .obliquity import nutation as _nut, true_obliquity as _tob
 
         if bodies is None:
             bodies = list(chart.planets.keys())
 
-        jd_tt = _utt(chart.jd_ut)
+        jd_utc = chart.jd_ut
+        jd_ut1 = facade.utc_to_ut1(jd_utc)
+        jd_tt = facade.utc_to_tt(jd_utc)
         dpsi, _ = _nut(jd_tt)
-        gmst_deg = _gast(chart.jd_ut, dpsi, _tob(jd_tt))
+        gmst_deg = _gast(jd_ut1, dpsi, _tob(jd_tt))
 
         planet_ra_dec: dict[str, tuple[float, float]] = {}
         for body in bodies:
             sky = facade.sky_position_at(
                 body,
-                chart.jd_ut,
+                jd_ut1,
                 observer_lat=observer_lat,
                 observer_lon=observer_lon,
                 reader=self._reader,
@@ -172,21 +175,23 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
     ):
         """Compute a Local Space chart."""
         facade = _facade_module()
-        from .julian import local_sidereal_time as _lst, ut_to_tt as _utt
+        from .julian import local_sidereal_time as _lst
         from .obliquity import nutation as _nut, true_obliquity as _tob
 
         if bodies is None:
             bodies = list(chart.planets.keys())
 
-        jd_tt = _utt(chart.jd_ut)
+        jd_utc = chart.jd_ut
+        jd_ut1 = facade.utc_to_ut1(jd_utc)
+        jd_tt = facade.utc_to_tt(jd_utc)
         dpsi, _ = _nut(jd_tt)
-        lst_deg = _lst(chart.jd_ut, longitude, dpsi, _tob(jd_tt))
+        lst_deg = _lst(jd_ut1, longitude, dpsi, _tob(jd_tt))
 
         planet_ra_dec: dict[str, tuple[float, float]] = {}
         for body in bodies:
             sky = facade.sky_position_at(
                 body,
-                chart.jd_ut,
+                jd_ut1,
                 observer_lat=latitude,
                 observer_lon=longitude,
                 reader=self._reader,
@@ -207,9 +212,16 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
         facade = _facade_module()
         if bodies is None:
             bodies = list(facade.Body.ALL_PLANETS)
-        return facade.natal_parans(
+        jd_utc = facade.jd_from_datetime(natal_dt)
+        # Preserve the requested UTC birth date, then convert that date's
+        # midnight to the UT1 epoch required by the event solvers.  Flooring
+        # an already-converted UT1 value would select the wrong civil day for
+        # negative DUT1 in the first fraction of a second after midnight.
+        jd_day_utc = math.floor(jd_utc - 0.5) + 0.5
+        jd_day_ut1 = facade.utc_to_ut1(jd_day_utc)
+        return facade.find_parans(
             bodies,
-            facade.jd_from_datetime(natal_dt),
+            jd_day_ut1,
             latitude,
             longitude,
             orb_minutes=orb_minutes,
@@ -224,21 +236,23 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
     ):
         """Compute Gauquelin sectors for chart planets."""
         facade = _facade_module()
-        from .julian import local_sidereal_time as _lst, ut_to_tt as _utt
+        from .julian import local_sidereal_time as _lst
         from .obliquity import nutation as _nut, true_obliquity as _tob
 
         if bodies is None:
             bodies = list(chart.planets.keys())
 
-        jd_tt = _utt(chart.jd_ut)
+        jd_utc = chart.jd_ut
+        jd_ut1 = facade.utc_to_ut1(jd_utc)
+        jd_tt = facade.utc_to_tt(jd_utc)
         dpsi, _ = _nut(jd_tt)
-        lst_deg = _lst(chart.jd_ut, longitude, dpsi, _tob(jd_tt))
+        lst_deg = _lst(jd_ut1, longitude, dpsi, _tob(jd_tt))
 
         planet_ra_dec: dict[str, tuple[float, float]] = {}
         for body in bodies:
             sky = facade.sky_position_at(
                 body,
-                chart.jd_ut,
+                jd_ut1,
                 observer_lat=latitude,
                 observer_lon=longitude,
                 reader=self._reader,
@@ -268,16 +282,14 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
                     planet_data[name] = (p.longitude, p.latitude)
                 elif name in chart.nodes:
                     planet_data[name] = (chart.nodes[name].longitude, 0.0)
-        from .julian import ut_to_tt as _utt
-
-        return facade.all_galactic_positions(planet_data, obliquity, _utt(chart.jd_ut))
+        jd_tt = facade.utc_to_tt(chart.jd_ut)
+        return facade.all_galactic_positions(planet_data, obliquity, jd_tt)
 
     def galactic_angles(self, chart) -> dict[str, tuple[float, float]]:
         """Return ecliptic positions of principal galactic reference points."""
-        from .julian import ut_to_tt as _utt
-
-        return _facade_module().galactic_reference_points(
-            chart.obliquity, _utt(chart.jd_ut)
+        facade = _facade_module()
+        return facade.galactic_reference_points(
+            chart.obliquity, facade.utc_to_tt(chart.jd_ut)
         )
 
     def galactic_houses(
@@ -288,11 +300,13 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
     ):
         """Compute Galactic Porphyry house cusps."""
         facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
         return facade.calculate_galactic_houses(
-            facade.jd_from_datetime(dt), latitude, longitude
+            jd_ut1, latitude, longitude
         )
 
     def uranian(self, dt: datetime):
         """Compute positions for all Uranian hypothetical planets."""
         facade = _facade_module()
-        return facade.all_uranian_at(facade.jd_from_datetime(dt))
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return facade.all_uranian_at(jd_ut1)

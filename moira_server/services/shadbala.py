@@ -6,7 +6,8 @@ from dataclasses import dataclass
 
 from moira import Moira
 from moira.dignities import is_day_chart
-from moira.panchanga import panchanga_at
+from moira.julian import utc_to_ut1
+from moira.panchanga import _panchanga_from_utc
 from moira.shadbala import (
     BhavaBalaResult,
     GrahaYuddha,
@@ -75,12 +76,14 @@ def _derive_shadbala_support_truth(
         longitude=request.observer_lon,
         system=request.house_system,
     )
+    jd_utc = chart.jd_ut
+    jd_ut = utc_to_ut1(jd_utc)
 
     tropical_longitudes = chart.longitudes(include_nodes=False)
     sidereal_longitudes = {
         planet: tropical_to_sidereal(
             tropical_longitudes[planet],
-            chart.jd_ut,
+            jd_ut,
             system=ayanamsa_system,
         )
         for planet in _SEVEN_PLANETS
@@ -94,11 +97,12 @@ def _derive_shadbala_support_truth(
         for planet in _SEVEN_PLANETS
     }
 
-    panchanga_support = panchanga_at(
+    panchanga_support = _panchanga_from_utc(
         tropical_longitudes["Sun"],
         tropical_longitudes["Moon"],
-        chart.jd_ut,
+        jd_utc,
         ayanamsa_system=ayanamsa_system,
+        policy=None,
     )
     tithi_number = panchanga_support.tithi.number
     vara_lord = panchanga_support.vara_lord
@@ -109,7 +113,7 @@ def _derive_shadbala_support_truth(
         sidereal_longitudes=sidereal_longitudes,
         planet_speeds=planet_speeds,
         houses=houses,
-        jd=chart.jd_ut,
+        jd=jd_ut,
         tithi_number=tithi_number,
         vara_lord=vara_lord,
         is_day=day_chart,

@@ -24,8 +24,8 @@ def test_moira_chart_uses_tt_obliquity_and_jd_delta_t(monkeypatch) -> None:
     monkeypatch.setattr(facade, "mean_lilith", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(facade, "true_lilith", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(facade, "utc_to_tt", lambda jd: 2451545.0008)
+    monkeypatch.setattr(facade, "utc_to_ut1", lambda jd: 2451545.000004)
     monkeypatch.setattr(facade, "true_obliquity", lambda jd: 23.4567 if jd == 2451545.0008 else -1.0)
-    monkeypatch.setattr(facade, "delta_t_from_jd", lambda jd: 64.321 if jd == 2451545.0 else -1.0)
 
     engine = facade.Moira()
     chart = engine.chart(datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc))
@@ -33,7 +33,11 @@ def test_moira_chart_uses_tt_obliquity_and_jd_delta_t(monkeypatch) -> None:
     assert dict(chart.planets) == chart_result
     assert chart.nodes[facade.Body.TRUE_NODE] is node_result
     assert chart.obliquity == 23.4567
-    assert chart.delta_t == 64.321
+    assert chart.jd_ut == 2451545.0
+    assert chart.delta_t == pytest.approx(
+        (2451545.0008 - 2451545.000004) * 86400.0,
+        abs=1.0e-12,
+    )
 
 
 def test_moira_chart_passes_ut1_to_all_planets_at(monkeypatch) -> None:
@@ -47,11 +51,14 @@ def test_moira_chart_passes_ut1_to_all_planets_at(monkeypatch) -> None:
     monkeypatch.setattr(facade, "nutation", lambda jd_tt: (0.2, 0.0))
     monkeypatch.setattr(facade, "local_sidereal_time", lambda *args: 211.0)
     monkeypatch.setattr(facade, "true_obliquity", lambda jd: 23.4)
-    monkeypatch.setattr(facade, "delta_t_from_jd", lambda jd: 69.0)
-    monkeypatch.setattr(facade, "true_node", lambda *args, **kwargs: node_result)
-    monkeypatch.setattr(facade, "mean_node", lambda *args, **kwargs: node_result)
-    monkeypatch.setattr(facade, "mean_lilith", lambda *args, **kwargs: node_result)
-    monkeypatch.setattr(facade, "true_lilith", lambda *args, **kwargs: node_result)
+    def fake_node(*args, **kwargs):
+        seen.setdefault("node_jds", []).append(args[0])
+        return node_result
+
+    monkeypatch.setattr(facade, "true_node", fake_node)
+    monkeypatch.setattr(facade, "mean_node", fake_node)
+    monkeypatch.setattr(facade, "mean_lilith", fake_node)
+    monkeypatch.setattr(facade, "true_lilith", fake_node)
 
     def fake_all_planets_at(jd_arg, **kwargs):
         seen["jd_arg"] = jd_arg
@@ -65,6 +72,7 @@ def test_moira_chart_passes_ut1_to_all_planets_at(monkeypatch) -> None:
     engine.chart(dt, observer_lat=51.5, observer_lon=-0.1)
 
     assert seen["jd_arg"] == jd_from_datetime(dt) + 0.1234
+    assert seen["node_jds"] == [jd_from_datetime(dt) + 0.1234] * 4
 
 
 def test_moira_chart_uses_apparent_lst_for_topocentric_chart(monkeypatch) -> None:
@@ -77,7 +85,6 @@ def test_moira_chart_uses_apparent_lst_for_topocentric_chart(monkeypatch) -> Non
     monkeypatch.setattr(facade, "utc_to_ut1", lambda jd: jd + 0.1234)
     monkeypatch.setattr(facade, "nutation", lambda jd_tt: (0.2, 0.0))
     monkeypatch.setattr(facade, "true_obliquity", lambda jd: 23.4567)
-    monkeypatch.setattr(facade, "delta_t_from_jd", lambda jd: 69.0)
     monkeypatch.setattr(facade, "true_node", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(facade, "mean_node", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(facade, "mean_lilith", lambda *args, **kwargs: node_result)
@@ -148,7 +155,11 @@ def test_create_chart_accepts_explicit_reader_without_touching_singleton(monkeyp
     monkeypatch.setattr(chart_module, "mean_lilith", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(chart_module, "true_lilith", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(chart_module, "calculate_houses", lambda *args, **kwargs: house_result)
-    monkeypatch.setattr(chart_module, "ut_to_tt", lambda jd: jd + 0.0008)
+    monkeypatch.setattr(
+        chart_module,
+        "_ut1_to_ephemeris_tt",
+        lambda jd, reader: jd + 0.0008,
+    )
 
     ctx = chart_module.create_chart(2451545.0, 10.0, 20.0, reader=explicit_reader)
 
@@ -167,7 +178,11 @@ def test_create_chart_propagates_explicit_house_policy(monkeypatch) -> None:
     monkeypatch.setattr(chart_module, "mean_node", lambda *args, **kwargs: SimpleNamespace(longitude=1.0))
     monkeypatch.setattr(chart_module, "mean_lilith", lambda *args, **kwargs: SimpleNamespace(longitude=1.0))
     monkeypatch.setattr(chart_module, "true_lilith", lambda *args, **kwargs: SimpleNamespace(longitude=1.0))
-    monkeypatch.setattr(chart_module, "ut_to_tt", lambda jd: jd + 0.0008)
+    monkeypatch.setattr(
+        chart_module,
+        "_ut1_to_ephemeris_tt",
+        lambda jd, reader: jd + 0.0008,
+    )
 
     def fake_calculate_houses(*args, **kwargs):
         seen["policy"] = kwargs.get("policy")

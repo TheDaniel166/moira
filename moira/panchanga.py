@@ -91,7 +91,7 @@ Public surface
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 __all__ = [
     # Phase 2 — Classification
@@ -775,6 +775,37 @@ def panchanga_at(
         karana=karana,
         ayanamsa_system=ayanamsa_system,
     )
+
+
+def _panchanga_from_utc(
+    sun_tropical_lon: float,
+    moon_tropical_lon: float,
+    jd_utc: float,
+    ayanamsa_system: str = 'Lahiri',
+    policy: PanchangaPolicy | None = None,
+) -> PanchangaResult:
+    """Facade adapter: UT1 astronomy with the weekday anchored to civil UTC."""
+
+    from .julian import utc_to_ut1
+
+    result = panchanga_at(
+        sun_tropical_lon,
+        moon_tropical_lon,
+        utc_to_ut1(jd_utc),
+        ayanamsa_system=ayanamsa_system,
+        policy=policy,
+    )
+    vara_idx = _vedic_weekday(jd_utc)
+    if vara_idx == result.vara.index:
+        return result
+    vara = PanchangaElement(
+        name=VARA_NAMES[vara_idx],
+        index=vara_idx,
+        number=vara_idx + 1,
+        degrees_elapsed=0.0,
+        degrees_remaining=0.0,
+    )
+    return replace(result, vara=vara, vara_lord=VARA_LORDS[vara_idx])
 
 
 def sankranti_at(

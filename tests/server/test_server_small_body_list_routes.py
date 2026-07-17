@@ -7,7 +7,7 @@ import pytest
 
 from moira.asteroids import ASTEROID_NAIF, AsteroidData
 from moira.comets import COMET_NAIF, CometData
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -119,7 +119,9 @@ def test_asteroid_position_route_returns_position_with_provenance(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     dt = "2026-06-13T12:00:00+00:00"
-    expected_jd = jd_from_datetime(datetime(2026, 6, 13, 12, tzinfo=timezone.utc))
+    expected_jd = utc_to_ut1(
+        jd_from_datetime(datetime(2026, 6, 13, 12, tzinfo=timezone.utc))
+    )
     calls: list[tuple[str | int, float, object]] = []
 
     def fake_asteroid_at(body: str | int, jd_ut: float, *, reader: object | None = None) -> AsteroidData:
@@ -539,7 +541,9 @@ def test_asteroid_family_resonance_network_route_returns_ui_ready_edges(
     client_with_small_body_reader: TestClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    expected_jd = jd_from_datetime(datetime(2026, 6, 13, 12, tzinfo=timezone.utc))
+    expected_jd = utc_to_ut1(
+        jd_from_datetime(datetime(2026, 6, 13, 12, tzinfo=timezone.utc))
+    )
     calls: list[tuple[str | int, float, object]] = []
 
     def fake_asteroid_at(body: str | int, jd_ut: float, *, reader: object | None = None) -> AsteroidData:
@@ -695,7 +699,9 @@ def test_comet_position_route_returns_position_with_provenance(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     dt = "2026-06-13T12:00:00+00:00"
-    expected_jd = jd_from_datetime(datetime(2026, 6, 13, 12, tzinfo=timezone.utc))
+    expected_jd = utc_to_ut1(
+        jd_from_datetime(datetime(2026, 6, 13, 12, tzinfo=timezone.utc))
+    )
     calls: list[tuple[str, float, object]] = []
 
     def fake_comet_at(body: str, jd_ut: float, *, reader: object | None = None) -> CometData:

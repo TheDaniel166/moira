@@ -40,10 +40,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .julian import local_sidereal_time, ut_to_tt
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .obliquity import mean_obliquity, nutation, true_obliquity
 from .coordinates import ecliptic_to_equatorial
 from .planets import planet_at
 from .constants import Body
+from .spk_reader import get_active_reader
 
 __all__ = [
     "HorizonCrossingAvailability",
@@ -204,9 +206,18 @@ class RiseSetPolicy:
         return -(refraction_deg - disc_offset)
 
 
+def _jd_tt_for_active_reader(jd_ut: float) -> float:
+    """Use the active ephemeris clock when one governs the event search."""
+
+    reader = get_active_reader()
+    if reader is None:
+        return ut_to_tt(jd_ut)
+    return _ut1_to_ephemeris_tt(jd_ut, reader)
+
+
 def _lst(jd_ut: float, longitude: float) -> float:
     """Local apparent sidereal time in degrees."""
-    jd_tt = ut_to_tt(jd_ut)
+    jd_tt = _jd_tt_for_active_reader(jd_ut)
     dpsi, deps = nutation(jd_tt)
     eps = mean_obliquity(jd_tt) + deps
     return local_sidereal_time(jd_ut, longitude, dpsi, eps)
@@ -214,7 +225,7 @@ def _lst(jd_ut: float, longitude: float) -> float:
 
 def _body_ra_dec(jd_ut: float, body_name: str) -> tuple[float, float]:
     """Return apparent RA/Dec of a planet or named fixed star at the given UT JD."""
-    jd_tt = ut_to_tt(jd_ut)
+    jd_tt = _jd_tt_for_active_reader(jd_ut)
     eps = true_obliquity(jd_tt)
     resolved_planet = _resolve_planet_name(body_name)
     if resolved_planet is not None:

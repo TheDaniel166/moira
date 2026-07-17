@@ -1,7 +1,14 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
+from moira.eclipse_canon import (
+    _tt_to_ut_nasa_catalog,
+    _ut_to_tt_nasa_catalog,
+)
+from moira.julian import julian_day
 from moira.compat.nasa.eclipse import (
     next_nasa_lunar_eclipse,
     translate_lunar_eclipse_event,
@@ -27,3 +34,23 @@ def test_next_nasa_lunar_eclipse_wrapper_finds_total_event() -> None:
     assert compat.moira_event.data.is_lunar_eclipse
     assert compat.moira_event.data.eclipse_type.is_total
     assert compat.canon_method == "nasa_shadow_axis_geometric_moon"
+
+
+def test_nasa_catalog_inverse_rejects_month_overlap() -> None:
+    boundary = julian_day(-2000, 2, 1)
+    left_tt = _ut_to_tt_nasa_catalog(math.nextafter(boundary, -math.inf))
+    right_tt = _ut_to_tt_nasa_catalog(boundary)
+    assert right_tt < left_tt
+
+    with pytest.raises(ValueError, match="multiple self-consistent UT branches"):
+        _tt_to_ut_nasa_catalog((left_tt + right_tt) / 2.0)
+
+
+def test_nasa_catalog_inverse_rejects_month_gap() -> None:
+    boundary = julian_day(3000, 2, 1)
+    left_tt = _ut_to_tt_nasa_catalog(math.nextafter(boundary, -math.inf))
+    right_tt = _ut_to_tt_nasa_catalog(boundary)
+    assert right_tt > left_tt
+
+    with pytest.raises(ValueError, match="no self-consistent UT branch"):
+        _tt_to_ut_nasa_catalog((left_tt + right_tt) / 2.0)

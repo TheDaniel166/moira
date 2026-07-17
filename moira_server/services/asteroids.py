@@ -24,7 +24,7 @@ from moira.asteroid_families import (
 )
 from moira.centaurs import CENTAUR_NAMES
 from moira.classical_asteroids import CLASSICAL_NAMES
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_ut1
 from moira.main_belt import MAIN_BELT_NAMES
 from moira.tno import TNO_NAMES
 
@@ -168,7 +168,7 @@ def compute_asteroid_position(
 ) -> AsteroidPositionResponse:
     """High-performance asteroid position using native Type 13 path when available."""
     reader = _get_small_body_reader(engine)
-    jd_ut = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
     data: AsteroidData = asteroid_at(
         request.body,
         jd_ut,
@@ -202,7 +202,7 @@ def compute_asteroids_bulk(
     results = {}
     missing: list[str] = []
 
-    jd_ut = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
     for body in request.bodies:
         try:
             data = asteroid_at(body, jd_ut, reader=reader)
@@ -553,7 +553,7 @@ def compute_asteroid_family_resonance_network(
     """Compute a bounded chart-level asteroid family resonance network."""
     reader = _get_small_body_reader(engine)
     covered = _covered_bodies(reader)
-    jd_ut = jd_from_datetime(request.dt)
+    jd_ut = utc_to_ut1(jd_from_datetime(request.dt))
     identity_source, request_items = _resonance_request_items(request)
 
     nodes: list[AsteroidFamilyResonanceNodeResponse] = []

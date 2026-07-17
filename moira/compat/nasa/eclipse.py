@@ -48,7 +48,7 @@ from ...eclipse_canon import (
     lunar_canon_geometry,
     refine_lunar_greatest_eclipse_canon_tt,
 )
-from ...julian import ut_to_tt_nasa_canon
+from ...julian import decimal_year_from_jd, ut_to_tt_nasa_canon
 
 
 @dataclass(frozen=True, slots=True)
@@ -225,7 +225,10 @@ def translate_lunar_eclipse_event(
     """
     Translate a Moira lunar eclipse event into NASA-style canon parameters.
     """
-    jd_tt = ut_to_tt_nasa_canon(event.jd_ut)
+    jd_tt = ut_to_tt_nasa_canon(
+        event.jd_ut,
+        decimal_year_from_jd(event.jd_ut),
+    )
     geom: LunarCanonGeometry = lunar_canon_geometry(
         calculator,
         jd_tt,

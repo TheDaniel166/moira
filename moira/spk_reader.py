@@ -27,9 +27,12 @@ External dependency assumptions:
 
 from __future__ import annotations
 
+import math
+import re
 import threading
 from contextlib import contextmanager
 from contextvars import ContextVar
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
@@ -90,6 +93,41 @@ _HAS_NATIVE_SEGMENT_EVALUATOR = (
 _HAS_NATIVE_KERNEL_HANDLE = (
     _moira_native is not None
     and hasattr(_moira_native, "open_spk_kernel")
+)
+
+
+@dataclass(frozen=True, slots=True)
+class _EphemerisKernelIdentity:
+    """Immutable ephemeris identity derived from SPK summary-label content.
+
+    ``lunar_tidal_acceleration_arcsec_per_cy2`` is populated only for a
+    source-backed DE/LE pair admitted below.  A coherent but unmapped label is
+    still represented explicitly; later correction-sensitive composition owns
+    the decision to accept or reject an unknown tidal basis.
+    """
+
+    summary_label: str
+    planetary_ephemeris: str | None
+    lunar_ephemeris: str | None
+    lunar_tidal_acceleration_arcsec_per_cy2: float | None
+
+
+_DE_LE_SUMMARY_LABEL = re.compile(r"^DE-(\d{4})LE-(\d{4})$")
+
+# Product-specific authority mappings only.  HPIERS declares its Delta-T table
+# for DE430/LE430 at -25.85 arcsec/cy^2; JPL Horizons documents -25.936 for
+# DE441.  Do not infer adjacent DE/LE releases from numerical or naming
+# similarity.
+_ADMITTED_LUNAR_TIDAL_ACCELERATIONS: dict[tuple[str, str], float] = {
+    ("DE430", "LE430"): -25.85,
+    ("DE441", "LE441"): -25.936,
+}
+
+_PLANETARY_CLOCK_ROUTES: tuple[tuple[int, int], ...] = (
+    (0, 3),
+    (3, 399),
+    (3, 301),
+    (0, 10),
 )
 
 
@@ -555,10 +593,131 @@ class _NativeChebyshevSegment:
         return values, None
 
 
+def _summary_label_text(value: object) -> str:
+    """Return one native DAF summary label as strict ASCII text."""
+
+    if isinstance(value, bytes):
+        try:
+            return value.decode("ascii").strip(" \x00")
+        except UnicodeDecodeError as exc:
+            raise ValueError("SPK summary labels must be ASCII") from exc
+    if isinstance(value, str):
+        return value.strip(" \x00")
+    raise ValueError("SPK summary labels must be bytes or text")
+
+
+def _validated_planetary_summaries(catalog: dict) -> tuple[dict, ...]:
+    """Validate the native catalog facts required by the planetary reader.
+
+    Native runtime catalogs always include the DAF header fields.  Their
+    absence remains tolerated for older in-process catalog adapters, but an
+    explicit non-SPK marker is never admitted.  Descriptor validation is kept
+    here in Python so format facts remain separate from ephemeris policy.
+    """
+
+    if not isinstance(catalog, dict):
+        raise ValueError("planetary kernel catalog must be a mapping")
+
+    locidw = catalog.get("locidw")
+    if locidw is not None and locidw != "DAF/SPK":
+        raise ValueError("planetary kernel catalog must identify a DAF/SPK file")
+    nd = catalog.get("nd")
+    if nd is not None and nd != 2:
+        raise ValueError("planetary SPK catalog must declare ND=2")
+    ni = catalog.get("ni")
+    if ni is not None and ni != 6:
+        raise ValueError("planetary SPK catalog must declare NI=6")
+
+    summaries = catalog.get("summaries")
+    if not isinstance(summaries, (list, tuple)) or not summaries:
+        raise ValueError("planetary SPK catalog must contain at least one summary")
+
+    validated: list[dict] = []
+    for index, item in enumerate(summaries):
+        if not isinstance(item, dict):
+            raise ValueError(f"SPK summary {index} must be a mapping")
+        _summary_label_text(item.get("name"))
+        descriptor = item.get("descriptor")
+        if not isinstance(descriptor, (list, tuple)) or len(descriptor) != 8:
+            raise ValueError(f"SPK summary {index} must have an 8-field descriptor")
+
+        start_second, end_second = descriptor[0], descriptor[1]
+        if isinstance(start_second, bool) or isinstance(end_second, bool):
+            raise ValueError(f"SPK summary {index} coverage must be numeric")
+        try:
+            start_value = float(start_second)
+            end_value = float(end_second)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"SPK summary {index} coverage must be numeric") from exc
+        if (
+            not math.isfinite(start_value)
+            or not math.isfinite(end_value)
+            or start_value > end_value
+        ):
+            raise ValueError(f"SPK summary {index} coverage is invalid")
+
+        for field_name, field_index in (
+            ("target", 2),
+            ("center", 3),
+            ("frame", 4),
+            ("data type", 5),
+            ("start address", 6),
+            ("end address", 7),
+        ):
+            value = descriptor[field_index]
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise ValueError(
+                    f"SPK summary {index} {field_name} must be an integer"
+                )
+        if descriptor[5] not in (2, 3):
+            raise ValueError(
+                f"SPK summary {index} data type {descriptor[5]} is unsupported"
+            )
+        if descriptor[6] <= 0 or descriptor[7] < descriptor[6]:
+            raise ValueError(f"SPK summary {index} address range is invalid")
+        validated.append(item)
+
+    return tuple(validated)
+
+
+def _ephemeris_kernel_identity_from_catalog(
+    catalog: dict,
+) -> _EphemerisKernelIdentity:
+    """Derive one coherent DE/LE identity from native SPK summary labels."""
+
+    summaries = _validated_planetary_summaries(catalog)
+    labels = {_summary_label_text(item["name"]) for item in summaries}
+    if len(labels) != 1:
+        raise ValueError(
+            "planetary SPK summaries contain mixed ephemeris identity labels"
+        )
+
+    label = labels.pop()
+    match = _DE_LE_SUMMARY_LABEL.fullmatch(label)
+    if match is None:
+        return _EphemerisKernelIdentity(label, None, None, None)
+
+    planetary = f"DE{int(match.group(1))}"
+    lunar = f"LE{int(match.group(2))}"
+    tidal_acceleration = _ADMITTED_LUNAR_TIDAL_ACCELERATIONS.get(
+        (planetary, lunar)
+    )
+    return _EphemerisKernelIdentity(
+        summary_label=label,
+        planetary_ephemeris=planetary,
+        lunar_ephemeris=lunar,
+        lunar_tidal_acceleration_arcsec_per_cy2=tidal_acceleration,
+    )
+
+
 def _planetary_kernel_native_supported(catalog: dict) -> bool:
     if not (_HAS_NATIVE_DAF and _HAS_NATIVE_SEGMENTS):
         return False
-    return all(item["descriptor"][5] in (2, 3) for item in catalog["summaries"])
+    try:
+        _validated_planetary_summaries(catalog)
+    except (TypeError, ValueError):
+        return False
+    return True
 
 
 class MissingKernelError(RuntimeError):
@@ -741,7 +900,16 @@ class SpkReader:
                 "Ensure a compatible JPL SPK file is accessible."
             )
         self._path = path
-        self._kernel = _open_kernel(path)
+        kernel = _open_kernel(path)
+        try:
+            kernel_identity = _ephemeris_kernel_identity_from_catalog(kernel.catalog)
+        except Exception:
+            try:
+                kernel.close()
+            finally:
+                raise
+        self._kernel = kernel
+        self._kernel_identity = kernel_identity
         self._closed = False
         self._segments_by_pair: dict[tuple[int, int], tuple[object, ...]] = {}
         for segment in self._kernel.segments:
@@ -1080,6 +1248,72 @@ class KernelPool:
     def add(self, reader) -> None:
         """Append *reader* to the fallback chain (lowest priority)."""
         self._readers.append(reader)
+
+    def _primary_planetary_reader(self):
+        """Return the first content-identified planetary reader, if present.
+
+        Pool order is already the explicit priority doctrine.  A pathname is
+        never inspected: supplemental readers without a content-derived
+        ``_EphemerisKernelIdentity`` are ignored.
+        """
+
+        for reader in self._readers:
+            identity = getattr(reader, "_kernel_identity", None)
+            if (
+                isinstance(identity, _EphemerisKernelIdentity)
+                and identity.planetary_ephemeris is not None
+                and identity.lunar_ephemeris is not None
+            ):
+                return reader
+        return None
+
+    @property
+    def _kernel_identity(self) -> _EphemerisKernelIdentity | None:
+        """Return the primary planetary reader's private identity vessel."""
+
+        reader = self._primary_planetary_reader()
+        if reader is None:
+            return None
+        return reader._kernel_identity
+
+    def _ephemeris_kernel_identity_at(
+        self,
+        jd_tt: float,
+    ) -> _EphemerisKernelIdentity | None:
+        """Resolve one coherent planetary/lunar identity at ``jd_tt``.
+
+        Supplemental small-body readers do not own the Earth/Moon/Sun clock
+        basis.  A planetary reader is eligible only when it serves the
+        canonical SSB, EMB, Earth, Moon, and Sun routes at the requested
+        ephemeris epoch.  Overlapping readers with conflicting identities fail
+        instead of inheriting ordinary first-match pool dispatch silently.
+        """
+
+        identities: list[_EphemerisKernelIdentity] = []
+        for reader in self._readers:
+            identity = getattr(reader, "_kernel_identity", None)
+            if not isinstance(identity, _EphemerisKernelIdentity):
+                continue
+            try:
+                owns_clock_routes = all(
+                    reader.has_segment_at(center, target, jd_tt)
+                    for center, target in _PLANETARY_CLOCK_ROUTES
+                )
+            except (AttributeError, KeyError, OutOfRangeError):
+                owns_clock_routes = False
+            if owns_clock_routes:
+                identities.append(identity)
+
+        if not identities:
+            return None
+        first = identities[0]
+        if any(identity != first for identity in identities[1:]):
+            labels = sorted({identity.summary_label for identity in identities})
+            raise ValueError(
+                "KernelPool has conflicting planetary ephemeris identities "
+                f"at JD(TT) {jd_tt}: {labels!r}"
+            )
+        return first
 
     # ------------------------------------------------------------------
     # Core read interface (mirrors SpkReader)

@@ -96,24 +96,27 @@ Moira can compute their positions.
 
 ---
 
-### Earth Rotation — Physics Over Polynomial
+### Earth Rotation — Source Priority and Visible Scenarios
 
-Swiss Ephemeris uses polynomial approximations for ΔT (TT − UT1) and treats Earth's
-rotation as a smooth, predictable function.
+Earth rotation is not smooth. The **IERS** (International Earth Rotation and
+Reference Systems Service) publishes Earth-orientation observations and
+predictions, including `UT1-UTC`. Moira therefore gives source totals priority
+where admitted observations or historical reconstructions exist instead of
+claiming that a fitted causal decomposition is known.
 
-The **IERS** (International Earth Rotation and Reference Systems Service) publishes
-weekly Bulletin A updates — polar motion, UT1-UTC, celestial pole offsets — and monthly
-definitive Bulletin B values. Earth's rotation is not smooth. It responds to atmospheric
-loading, ocean tides, seismic events, and inner-core dynamics.
+Through 2026, the Delta-T surface follows the admitted historical and modern
+total tables. Beyond that handoff it uses a visible scenario anchored to the
+last admitted total and local slope, with a declared tidal-plus-GIA curvature.
+The historical `core`, `cryo`, `fluid`, and `residual` fields remain available
+for compatibility but are zero while their candidate proxy datasets are
+quarantined. The uncertainty surface uses quoted HPIERS errors where available
+and a conservative arithmetic future scale conditional on declared O-U LOD
+parameters; it is not calibrated coverage or evidence that future Earth
+rotation is normally distributed or causally decomposed.
 
-Moira uses a four-component physical model: secular trend from tidal braking and glacial
-isostatic adjustment, core-mantle angular momentum from the Gillet et al. series,
-cryosphere/hydrosphere contribution from GRACE/GRACE-FO LOD integrals, and an IERS
-residual spline fitted to Bulletin B annual values. All source data is bundled locally.
-Beyond the table epoch, the model extrapolates using only physical components, and
-reports a calibrated ±1σ uncertainty via `delta_t_hybrid_uncertainty(year)`.
-
-This is not a polynomial fit. It is a physical model of the Earth.
+The result is intentionally inspectable: source-backed history is separated
+from forecast policy, and values beyond 2150 are labelled scenario
+extrapolations rather than authority-validated predictions.
 
 ---
 
@@ -372,7 +375,7 @@ No mainstream astrological software works in this frame.
 | Orbital elements for any kernel body | Pre-tabulated data only | `orbital_elements_at()` in `orbits.py` |
 | Eris, Sedna, Makemake, Haumea, Gonggong | Undiscovered | Discovered 2002–2007; SPK kernels available |
 | Interstellar object charts | Unknown objects | 'Oumuamua (2017), Borisov (2019), 3I/ATLAS (2025) |
-| Physics-based hybrid ΔT with uncertainty | Polynomial approximation only | Four-component physical model; ±1σ uncertainty |
+| Source-priority Delta T with visible uncertainty policy | Polynomial approximation only | Source totals through 2026; bounded scenario and conditional uncertainty thereafter |
 | Primary directions with latitude doctrine | Latitude ignored or simplified | Explicit latitude and house-system policy |
 | Heliacal phenomena (full Schaefer model) | Computationally expensive; rarely complete | Full arcus visionis for any body, any location, any date |
 | Sub-second exact event timing | Interpolation from tables, ±1 day | Bisection on ephemeris function; <50 iterations |

@@ -29,6 +29,7 @@ from moira.astrodynes import (
 )
 from moira.coordinates import ecliptic_to_equatorial
 from moira.houses import HousePolicy
+from moira.julian import utc_to_ut1
 
 from ..models.astrodynes import AstrodynesChartRequest, AstrodynesGeometryRequest
 from ._shared import _resolve_house_system, require_aware_datetime
@@ -233,7 +234,7 @@ def compute_astrodynes_chart(
         dt=request.dt,
         observer_lat=request.observer_lat,
         observer_lon=request.observer_lon,
-        jd_ut=chart.jd_ut,
+        jd_ut=utc_to_ut1(chart.jd_ut),
         obliquity_deg=chart.obliquity,
         planet_longitudes={
             item.body: item.longitude_deg

@@ -29,7 +29,7 @@ from .chart import ChartContext, create_chart
 from .constants import Body, HouseSystem, SIGNS, sign_of
 from .coordinates import angular_distance
 from .houses import HouseCusps, HousePolicy, house_of, calculate_houses
-from .julian import calendar_datetime_from_jd
+from .julian import _ut1_to_utc, calendar_datetime_from_jd
 from .profections import DOMICILE_RULERS
 from .planets import all_planets_at
 from .rise_set import twilight_times
@@ -1850,6 +1850,18 @@ def muntha(natal_sidereal_asc: float, years_elapsed: int) -> float:
     return _normalize(natal_sidereal_asc + years_elapsed * 30.0)
 
 
+def _require_birth_civil_year(value: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError("birth_civil_year must be an integer")
+    return value
+
+
+def _birth_civil_year_from_ut1(birth_jd: float) -> int:
+    """Recover the UTC civil year without treating UT1 as civil time."""
+
+    return calendar_datetime_from_jd(_ut1_to_utc(birth_jd)).year
+
+
 def mudda_dasha(
     birth_jd: float,
     year: int,
@@ -1870,17 +1882,41 @@ def mudda_dasha(
         - Hayanaratna 7.9 for the easy antardasha multipliers summing to 60.
 
     The doctrinal year is preserved as 360 nominal days and also mapped onto
-    the actual interval between consecutive varshaphal returns.
+    the actual interval between consecutive varshaphal returns. ``birth_jd``
+    is UT1; its civil birth year is recovered through the UTC clock boundary.
     """
 
+    return _mudda_dasha_for_birth_year(
+        birth_jd,
+        _birth_civil_year_from_ut1(birth_jd),
+        year,
+        ayanamsa_system=ayanamsa_system,
+        school=school,
+        reader=reader,
+        return_policy=return_policy,
+    )
+
+
+def _mudda_dasha_for_birth_year(
+    birth_jd: float,
+    birth_civil_year: int,
+    year: int,
+    *,
+    ayanamsa_system: str | UserDefinedAyanamsa = Ayanamsa.LAHIRI,
+    school: str = "gauri",
+    reader: SpkReader | None = None,
+    return_policy: TransitComputationPolicy | None = None,
+) -> MuddaDasha:
+    """Implementation path with an explicit caller-owned UTC civil year."""
+
+    birth_civil_year = _require_birth_civil_year(birth_civil_year)
     if school.casefold() != "gauri":
         raise NotImplementedError(
             "Mudda Dasha currently implements only the Gauri school verified "
             "directly from Hayanaratna 7.9."
         )
 
-    birth_year = calendar_datetime_from_jd(birth_jd).year
-    years_elapsed = year - birth_year
+    years_elapsed = year - birth_civil_year
     if years_elapsed < 0:
         raise ValueError(f"Mudda year {year} precedes birth year for JD {birth_jd}")
 
@@ -3623,9 +3659,45 @@ def build_varshaphal_chart(
     The low-level annual chart remains available through
     ``moira.transits.varshaphal_chart()``. This higher layer adds Tajika
     annual-return doctrine objects including Muntha, Sahams, and the current
-    annual aspect/yoga layer.
+    annual aspect/yoga layer. ``birth_jd`` is UT1; its civil birth year is
+    recovered through the UTC clock boundary.
     """
-    years_elapsed = year - calendar_datetime_from_jd(birth_jd).year
+
+    return _build_varshaphal_chart_for_birth_year(
+        birth_jd,
+        _birth_civil_year_from_ut1(birth_jd),
+        natal_latitude,
+        natal_longitude,
+        year,
+        latitude,
+        longitude,
+        ayanamsa_system=ayanamsa_system,
+        house_system=house_system,
+        bodies=bodies,
+        reader=reader,
+        return_policy=return_policy,
+        house_policy=house_policy,
+    )
+
+
+def _build_varshaphal_chart_for_birth_year(
+    birth_jd: float,
+    birth_civil_year: int,
+    natal_latitude: float,
+    natal_longitude: float,
+    year: int,
+    latitude: float,
+    longitude: float,
+    ayanamsa_system: str | UserDefinedAyanamsa = Ayanamsa.LAHIRI,
+    house_system: str = HouseSystem.PLACIDUS,
+    bodies: list[str] | None = None,
+    reader: SpkReader | None = None,
+    return_policy: TransitComputationPolicy | None = None,
+    house_policy: HousePolicy | None = None,
+) -> VarshaphalChart:
+    """Implementation path with an explicit caller-owned UTC civil year."""
+    birth_civil_year = _require_birth_civil_year(birth_civil_year)
+    years_elapsed = year - birth_civil_year
     if years_elapsed < 0:
         raise ValueError(
             f"Varshaphal year {year} precedes birth year for JD {birth_jd}"
@@ -3726,8 +3798,9 @@ def build_varshaphal_chart(
         is_day=chart.is_day,
         annual_yogas=annual_yogas,
     )
-    annual_mudda_dasha = mudda_dasha(
+    annual_mudda_dasha = _mudda_dasha_for_birth_year(
         birth_jd,
+        birth_civil_year,
         year,
         ayanamsa_system=ayanamsa_system,
         reader=reader,

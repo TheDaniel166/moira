@@ -17,6 +17,9 @@ class VarshaphalChartRequest(_StrictModel):
     """Request for a structured Varshaphal annual-return chart.
 
     natal_latitude/natal_longitude: birth location (for natal house and Muntha).
+    natal_dt: the supplied timezone offset owns the doctrinal civil birth date
+    and birth year; it is not transport-only metadata. Astronomy still uses
+    the corresponding instant reduced to UT1.
     latitude/longitude: location for the return chart cast (may differ from natal).
     year: Gregorian year of the Varshaphal return to compute.
     ayanamsa: sidereal ayanamsa key; None defaults to Lahiri.
@@ -35,7 +38,11 @@ class VarshaphalChartRequest(_StrictModel):
 
 
 class VarshaphalTimingRequest(_StrictModel):
-    """Request for Varshaphal timing surfaces (mudda/tasira active period)."""
+    """Request for Varshaphal timing surfaces (mudda/tasira active period).
+
+    The supplied ``natal_dt`` offset owns its doctrinal civil birth year while
+    natal and query instants are reduced to UT1 for astronomy.
+    """
 
     natal_dt: datetime
     natal_latitude: float

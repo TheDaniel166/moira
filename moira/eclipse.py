@@ -65,9 +65,14 @@ from .eclipse_search import (
     refine_lunar_greatest_eclipse as _refine_lunar_maximum,
     refine_solar_greatest_eclipse as _refine_solar_maximum,
 )
-from .julian import datetime_from_jd, decimal_year, jd_from_datetime, ut_to_tt, ut_to_tt_nasa_canon
+from .julian import (
+    datetime_from_jd,
+    decimal_year_from_jd,
+    jd_from_datetime,
+    ut_to_tt_nasa_canon,
+)
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import (
-    approx_year as _approx_year,
     _barycentric,
     _earth_barycentric,
     _geocentric,
@@ -897,11 +902,10 @@ class EclipseCalculator:
         *,
         delta_t_mode: str = "native",
     ) -> float:
-        year, month, *_ = _approx_year(jd_ut)
-        year_hint = decimal_year(year, month)
         if delta_t_mode == "native":
-            return ut_to_tt(jd_ut, year_hint)
+            return _ut1_to_ephemeris_tt(jd_ut, self._reader)
         if delta_t_mode == "nasa_canon":
+            year_hint = decimal_year_from_jd(jd_ut)
             return ut_to_tt_nasa_canon(jd_ut, year_hint)
         raise ValueError(f"Unsupported delta_t_mode: {delta_t_mode!r}")
 
@@ -1123,8 +1127,7 @@ class EclipseCalculator:
         Native solar search uses the Earth-observed Moon when centering the
         global event.
         """
-        year, month, *_ = _approx_year(jd_ut)
-        jd_tt = ut_to_tt(jd_ut, decimal_year(year, month))
+        jd_tt = _ut1_to_ephemeris_tt(jd_ut, self._reader)
         sun_xyz = _geocentric(Body.SUN, jd_tt, self._reader)
         if retarded_moon:
             earth_ssb = _earth_barycentric(jd_tt, self._reader)
@@ -1314,7 +1317,10 @@ class EclipseCalculator:
             )
             geom = lunar_canon_geometry(
                 self,
-                ut_to_tt_nasa_canon(event.jd_ut),
+                ut_to_tt_nasa_canon(
+                    event.jd_ut,
+                    decimal_year_from_jd(event.jd_ut),
+                ),
                 method=DEFAULT_LUNAR_CANON_METHOD,
             )
             return LunarEclipseAnalysis(

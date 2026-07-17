@@ -26,7 +26,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 
 from .constants import Body, HouseSystem
-from .julian import ut_to_tt
+from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import all_planets_at, PlanetData
 from .houses import calculate_houses, HouseCusps, HousePolicy
 from .nodes import true_node, mean_node, mean_lilith, true_lilith, NodeData
@@ -220,7 +220,7 @@ def create_chart(
         from .spk_reader import get_reader
         reader = get_reader()
 
-    jd_tt = ut_to_tt(jd_ut)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
     if bodies is None:
         bodies = list(Body.ALL_PLANETS)
         

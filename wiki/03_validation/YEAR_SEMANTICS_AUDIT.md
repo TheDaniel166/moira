@@ -130,26 +130,19 @@ formulae. They are algorithm constants, not physical year approximations.
 
 These should not be rewritten as tropical or sidereal years.
 
-Class F: Genuine Remaining Audit Candidate
-------------------------------------------
-This is the main live site that still merits a model-level decision.
+Class F: Delta-T Annual-Epoch Integration — Resolved
+----------------------------------------------------
 
-- `moira/delta_t_physical.py`
-  - `dt_days = (y1 - y0) * 365.25`
+`moira/delta_t_physical.py` no longer treats every annual-series interval as
+an undifferentiated `365.25`-day span. Calendar mid-year epochs use their
+actual Julian-day spacing, including leap-year structure. A `JULIAN_YEAR`
+fallback remains only for an explicitly uniform decimal-year axis whose input
+does not carry calendar mid-year semantics.
 
-Assessment:
-- The code integrates an annual-resolution LOD anomaly series expressed in
-  decimal years.
-- `365.25` is serviceable, but this is not as doctrinally locked as the
-  Julian-year, light-year, Naibod, or JD algorithm cases.
-- A better choice might be:
-  - `TROPICAL_YEAR` if the decimal years are interpreted as mean civil/seasonal spacing
-  - a file-driven exact epoch delta if the source timestamps are actual annual epochs
-  - leave as `JULIAN_YEAR` if the series is intended as a uniform year axis
-
-Recommendation:
-- Do not change this site blindly.
-- Resolve it only after checking the source-data convention for the LOD files.
+The candidate C04, AAM/OAM, and GRACE component series are also quarantined
+from the admitted public Delta-T mean. Their epoch-spacing helpers remain
+testable research infrastructure; they do not establish causal component
+truth merely by integrating a proxy.
 
 Low-Priority Cosmetic Improvements
 ----------------------------------
@@ -170,8 +163,8 @@ Recommended Next Steps
 ----------------------
 1. Leave all Class A, C, D, and E sites untouched.
 2. Optionally normalize explicit Julian-year imports in Class A for consistency.
-3. Do a source-convention check on `moira/data/core_angular_momentum.txt` and
-   related ΔT files before changing `moira/delta_t_physical.py`.
+3. Preserve the explicit source-epoch policy and quarantine status when Delta-T
+   data artifacts are refreshed or re-derived.
 4. If desired, annotate key modules with “Julian year”, “tropical year”, or
    “sidereal year” comments at the constant declaration points to prevent future drift.
 

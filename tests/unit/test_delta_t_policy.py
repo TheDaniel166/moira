@@ -28,6 +28,12 @@ def test_policy_fixed_model_requires_value():
         DeltaTPolicy(model='fixed')
 
 
+@pytest.mark.parametrize("value", [float('nan'), float('inf'), float('-inf')])
+def test_policy_fixed_model_requires_finite_value(value):
+    with pytest.raises(ValueError, match="finite"):
+        DeltaTPolicy(model='fixed', fixed_delta_t=value)
+
+
 def test_policy_unknown_model_raises():
     with pytest.raises(ValueError, match="model"):
         DeltaTPolicy(model='unknown_model')
@@ -37,6 +43,12 @@ def test_policy_fixed_compute_returns_exact_value():
     policy = DeltaTPolicy(model='fixed', fixed_delta_t=69.0)
     assert policy.compute(2000.0) == 69.0
     assert policy.compute(1800.0) == 69.0  # year is ignored for fixed
+
+
+def test_policy_fixed_value_is_normalized_to_float():
+    policy = DeltaTPolicy(model='fixed', fixed_delta_t='69.0')  # type: ignore[arg-type]
+    assert policy.fixed_delta_t == 69.0
+    assert type(policy.fixed_delta_t) is float
 
 
 def test_policy_nasa_canon_compute_matches_function():
@@ -70,10 +82,10 @@ def test_policy_physical_matches_hybrid_at_future_epoch():
 
 
 def test_ut_to_tt_physical_policy_applies():
-    from moira.julian import decimal_year_from_jd
+    from moira.julian import _continuous_decimal_year_from_jd
     policy = DeltaTPolicy(model='physical')
     jd_tt = ut_to_tt(_JD_J2000, delta_t_policy=policy)
-    year = decimal_year_from_jd(_JD_J2000)
+    year = _continuous_decimal_year_from_jd(_JD_J2000)
     expected = _JD_J2000 + delta_t_hybrid(year) / 86400.0
     assert abs(jd_tt - expected) < 1e-12
 
@@ -113,6 +125,31 @@ def test_ut_to_tt_nasa_policy_differs_from_hybrid_at_historical_epoch():
 def test_ut_to_tt_hybrid_policy_matches_default():
     policy = DeltaTPolicy(model='hybrid')
     assert ut_to_tt(_JD_J2000, delta_t_policy=policy) == ut_to_tt(_JD_J2000)
+
+
+def test_ut_to_tt_explicit_hybrid_uses_eop_at_2026_epoch():
+    from datetime import datetime, timezone
+    from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
+
+    jd_utc = jd_from_datetime(datetime(2026, 7, 17, 12, tzinfo=timezone.utc))
+    jd_ut1 = utc_to_ut1(jd_utc)
+    expected_tt = utc_to_tt(jd_utc)
+    policy = DeltaTPolicy(model='hybrid')
+
+    assert ut_to_tt(jd_ut1, delta_t_policy=policy) == pytest.approx(expected_tt, abs=5.0e-10)
+    assert ut_to_tt(jd_ut1, delta_t_policy=policy) == ut_to_tt(jd_ut1)
+
+
+def test_explicit_physical_policy_bypasses_eop_at_2026_epoch():
+    from datetime import datetime, timezone
+    from moira.julian import decimal_year_from_jd, jd_from_datetime, utc_to_ut1
+
+    jd_ut1 = utc_to_ut1(jd_from_datetime(datetime(2026, 7, 17, 12, tzinfo=timezone.utc)))
+    policy = DeltaTPolicy(model='physical')
+    expected = jd_ut1 + policy.compute(decimal_year_from_jd(jd_ut1)) / 86400.0
+
+    assert ut_to_tt(jd_ut1, delta_t_policy=policy) == pytest.approx(expected, abs=1.0e-15)
+    assert abs(ut_to_tt(jd_ut1, delta_t_policy=policy) - ut_to_tt(jd_ut1)) > 1.0e-8
 
 
 # ---------------------------------------------------------------------------
