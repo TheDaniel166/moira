@@ -163,7 +163,8 @@ aspects (parallel, contra-parallel).
 
 **Gap notes:**  
 No gaps identified in this domain. Parallel and contra-parallel detection are fully
-implemented in both `aspects.py` (`find_declination_aspects`) for natal/synastry use
+implemented in both `declination_aspects.py` (`find_declination_aspects` plus the
+instantaneous applying/separating motion witness) for natal/synastry use
 and `transits_equatorial.py` (`find_declination_transits`) for predictive transit
 scanning, including a hybrid native-batch path for performance. Out-of-bounds flagging
 is implemented in `aspects.py` via `find_out_of_bounds` and the `OutOfBoundsBody`

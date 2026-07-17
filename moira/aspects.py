@@ -6,24 +6,22 @@ Archetype: Engine
 
 Purpose
 -------
-Governs detection of ecliptic aspects and declination aspects between
-planetary positions, producing structured result vessels with full
-qualification context and explicit aspect classification.
+Governs ecliptic-longitude and whole-sign aspects.  First-class parallel and
+contra-parallel doctrine is governed by ``moira.declination_aspects`` and
+re-exported here to preserve the historical public import surface.
 
 Architecture layers
 -------------------
 This module has thirteen distinct concerns, kept intentionally separate:
 
 1. **Core aspect detection** — ``find_aspects``, ``aspects_between``,
-   ``aspects_to_point``, ``find_declination_aspects``,
-   ``find_out_of_bounds``.
+   ``aspects_to_point``, and ``find_out_of_bounds``.
    Pure geometric computations: given positions, return every angular
    relationship that falls within a qualifying orb, and detect bodies
    whose declination exceeds the solar maximum.  Detection semantics
    are stable and must not be silently changed.
 
-2. **Relational truth preservation** — ``AspectData`` and
-   ``DeclinationAspect`` result vessels.
+2. **Relational truth preservation** — the ``AspectData`` result vessel.
    Each admitted aspect records not only *what* was found but *why* it
    qualified: actual angular separation, target angle, orb deviation,
    and applied orb ceiling.  A caller can fully reconstruct the admission
@@ -60,8 +58,8 @@ This module has thirteen distinct concerns, kept intentionally separate:
    and are not stored on the vessel.
 
 6. **Policy surface** — ``AspectPolicy``, ``DEFAULT_POLICY``.
-   A single frozen dataclass that bundles all doctrine inputs for ecliptic
-   and declination detection.  Pass one ``policy`` argument instead of
+   A frozen dataclass that bundles longitude-aspect doctrine inputs and keeps
+   ``declination_orb`` as a compatibility adapter. Pass one ``policy`` argument instead of
    four scattered keyword arguments.  When ``policy`` is supplied it takes
    precedence; existing individual parameters remain for backward
    compatibility.
@@ -133,12 +131,12 @@ Future layers (not current scope)
 
 Boundary declaration
 --------------------
-Owns: aspect detection logic, orb arithmetic, applying/separating
-      determination, stationary detection, the ``AspectData`` and
-      ``DeclinationAspect`` result vessels, the signed motion witness, and the
-      classification layer.
+Owns: longitude and whole-sign aspect detection, orb arithmetic,
+      applying/separating determination, stationary detection,
+      ``AspectData``, and the longitude signed-motion witness.
 Delegates: aspect definition tables and tier lists to ``moira.constants``,
-           angular distance arithmetic to ``moira.coordinates``.
+           angular distance arithmetic to ``moira.coordinates``, and
+           declination relationships to ``moira.declination_aspects``.
 
 Import-time side effects: None
 
@@ -215,8 +213,29 @@ import math
 from types import MappingProxyType
 from typing import Collection, Callable, Mapping
 
+from ._aspect_types import (
+    AspectClassification,
+    AspectDomain,
+    AspectFamily,
+    AspectTier,
+)
 from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS, TRADITIONAL_MOIETY_ORBS, Body
 from .coordinates import angular_distance
+from .declination_aspects import (
+    DeclinationAspect,
+    DeclinationAspectAnalysis,
+    DeclinationAspectKind,
+    DeclinationAspectMotionWitness,
+    DeclinationAspectPolicy,
+    DeclinationEquatorPolicy,
+    DeclinationHemispherePolicy,
+    DeclinationMotionState,
+    _CONTRA_PARALLEL_CLASSIFICATION,
+    _PARALLEL_CLASSIFICATION,
+    declination_aspect_motion_witness,
+    declination_aspects_from_declinations as _declination_analysis,
+    find_declination_aspects as _find_declination_aspects,
+)
 
 __all__ = [
     # Constants
@@ -234,6 +253,10 @@ __all__ = [
     "AspectTier",
     "AspectMotionState",
     "MotionState",
+    "DeclinationAspectKind",
+    "DeclinationEquatorPolicy",
+    "DeclinationHemispherePolicy",
+    "DeclinationMotionState",
     # Dataclasses
     "AspectClassification",
     "AspectData",
@@ -248,6 +271,8 @@ __all__ = [
     "AspectPolicy",
     "AspectStrength",
     "DeclinationAspect",
+    "DeclinationAspectMotionWitness",
+    "DeclinationAspectPolicy",
     # Entry points
     "aspect_harmonic_profile",
     "aspect_motion_witness",
@@ -255,6 +280,7 @@ __all__ = [
     "aspect_strength",
     "aspects_between",
     "declination_aspects_from_declinations",
+    "declination_aspect_motion_witness",
     "aspects_to_point",
     "build_aspect_graph",
     "find_aspects",
@@ -272,20 +298,6 @@ __all__ = [
 # Classification layer
 # ---------------------------------------------------------------------------
 
-class AspectDomain(str, Enum):
-    """Vessel: Registry of aspect measurement domains."""
-    """
-    Measurement dimension of an aspect.
-
-    ZODIACAL    — measured along the ecliptic (longitude separation).
-    DECLINATION — measured in celestial latitude (parallel/contra-parallel).
-    WHOLE_SIGN  — measured by sign-count (no orb).
-    """
-    ZODIACAL    = "zodiacal"
-    DECLINATION = "declination"
-    WHOLE_SIGN  = "whole_sign"
-
-
 class AspectDirection(str, Enum):
     """Vessel: Registry of zodiacal aspect directions."""
     """
@@ -300,93 +312,6 @@ class AspectDirection(str, Enum):
     """
     SINISTER = "sinister"
     DEXTER   = "dexter"
-
-
-class AspectTier(str, Enum):
-    """Vessel: Registry of canonical aspect tiers."""
-    """
-    Canonical tier within the aspect set, taken directly from
-    ``AspectDefinition.is_major`` and membership in ``Aspect.EXTENDED_MINOR``.
-
-    MAJOR          — the five Ptolemaic aspects (0°, 60°, 90°, 120°, 180°).
-    COMMON_MINOR   — widely-used minor aspects (30°, 45°, 72°, 135°, 144°, 150°).
-    EXTENDED_MINOR — harmonic-series aspects beyond the common minor set.
-    """
-    MAJOR          = "major"
-    COMMON_MINOR   = "common_minor"
-    EXTENDED_MINOR = "extended_minor"
-
-
-class AspectFamily(str, Enum):
-    """Vessel: Registry of aspect harmonic families."""
-    """
-    Harmonic family of an ecliptic aspect, derived from the integer divisor
-    of 360° that produces the aspect angle.
-
-    Each member groups the fundamental and its multiples::
-
-        CONJUNCTION   — 0° (1st harmonic; union)
-        OPPOSITION    — 180° (2nd harmonic; polarity)
-        SQUARE        — 90°, 270° (4th harmonic; tension)
-        TRINE         — 120°, 240° (3rd harmonic; flow)
-        SEXTILE       — 60°, 300° (6th harmonic; opportunity)
-        SEMISEXTILE   — 30° (12th harmonic)
-        SEMISQUARE    — 45° (8th harmonic)
-        SESQUIQUADRATE — 135° (8th harmonic, upper)
-        QUINCUNX      — 150° (12th harmonic, upper)
-        QUINTILE      — 72°, 144° (5th harmonic; creativity)
-        SEPTILE       — 360/7°, 720/7°, 1080/7° (7th harmonic; fate)
-        NOVILE        — 40°, 80°, 160° (9th harmonic; integration)
-        DECILE        — 36°, 108° (10th harmonic)
-        UNDECILE      — 360/11° (11th harmonic)
-        QUINDECILE    — 24° (15th harmonic)
-        VIGINTILE     — 18° (20th harmonic)
-        DECLINATION   — parallel / contra-parallel (out-of-plane dimension)
-        UNKNOWN       — explicit family for unclassified custom aspect names
-    """
-    CONJUNCTION    = "conjunction"
-    OPPOSITION     = "opposition"
-    SQUARE         = "square"
-    TRINE          = "trine"
-    SEXTILE        = "sextile"
-    SEMISEXTILE    = "semisextile"
-    SEMISQUARE     = "semisquare"
-    SESQUIQUADRATE = "sesquiquadrate"
-    QUINCUNX       = "quincunx"
-    QUINTILE       = "quintile"
-    SEPTILE        = "septile"
-    NOVILE         = "novile"
-    DECILE         = "decile"
-    UNDECILE       = "undecile"
-    QUINDECILE     = "quindecile"
-    VIGINTILE      = "vigintile"
-    DECLINATION    = "declination"
-    UNKNOWN        = "unknown"
-
-
-@dataclass(frozen=True, slots=True)
-class AspectClassification:
-    """Vessel: Immutable type description for an admitted aspect."""
-    """
-    Lean, explicit type description for an admitted aspect.
-
-    Populated once at detection time from the ``AspectDefinition`` record
-    used to admit the aspect.  Immutable and deterministic: the same
-    aspect name always produces the same classification.
-
-    Fields
-    ------
-    domain  : measurement dimension (zodiacal or declination).
-    tier    : canonical tier (major, common_minor, extended_minor).
-    family  : harmonic family grouping.
-
-    Classification is descriptive — it describes what was detected, not
-    how it should be interpreted.  Strength, dignity weighting, and
-    reception scoring belong to a later policy layer.
-    """
-    domain: AspectDomain
-    tier:   AspectTier
-    family: AspectFamily
 
 
 # ---------------------------------------------------------------------------
@@ -442,19 +367,6 @@ _ASPECT_CLASSIFICATION: dict[str, AspectClassification] = {
     )
     for adef in Aspect.ALL
 }
-
-_PARALLEL_CLASSIFICATION = AspectClassification(
-    domain=AspectDomain.DECLINATION,
-    tier=AspectTier.MAJOR,
-    family=AspectFamily.DECLINATION,
-)
-
-_CONTRA_PARALLEL_CLASSIFICATION = AspectClassification(
-    domain=AspectDomain.DECLINATION,
-    tier=AspectTier.MAJOR,
-    family=AspectFamily.DECLINATION,
-)
-
 
 def _finite_number(name: str, value: object) -> float:
     """Return *value* as a finite float or raise a field-specific error."""
@@ -2110,157 +2022,6 @@ class AspectData:
 
 
 @dataclass(frozen=True, slots=True)
-class DeclinationAspect:
-    """Vessel: Result vessel for a detected declination aspect."""
-    """
-    RITE: The Declination Vessel — a parallel or contra-parallel between two bodies.
-
-    THEOREM: Holds the two body names, aspect type, individual signed
-    declinations, orb deviation, allowed orb ceiling, and explicit
-    classification for a single detected parallel or contra-parallel.
-
-    RITE OF PURPOSE:
-        Serves the Aspect Engine as the canonical result vessel for declination
-        aspect detections.  The vessel preserves full admission context
-        (Phase 1) and carries an explicit classification (Phase 2) so that a
-        caller can interrogate the measurement dimension and family without
-        inspecting the ``aspect`` string.
-
-    LAW OF OPERATION:
-        Responsibilities:
-            - Store both body names, aspect type ("Parallel" or
-              "Contra-Parallel"), individual signed declinations, orb
-              deviation, allowed orb ceiling, and ``AspectClassification``.
-            - Expose read-only convenience properties that are pure
-              single-expression derivations of already-stored fields.
-        Non-responsibilities:
-            - Does not detect declination aspects (delegated to
-              ``find_declination_aspects``).
-            - Does not compute declinations from ecliptic coordinates.
-            - Does not assign strength or interpretation.
-        Dependencies:
-            - Populated exclusively by ``find_declination_aspects()``.
-        Structural invariants:
-            - ``aspect`` is always "Parallel" or "Contra-Parallel".
-            - ``orb`` is always non-negative.
-            - For a Parallel: ``orb == abs(dec1 - dec2)``.
-            - For a Contra-Parallel: ``orb == abs(dec1 + dec2)``.
-            - Parallels require the same nonzero hemisphere, except that two
-              exact equatorial points form one exact Parallel.
-            - Contra-Parallels require opposite nonzero hemispheres.
-            - One equatorial and one non-equatorial point form neither type.
-            - ``orb <= allowed_orb`` is always true for any stored vessel.
-            - ``orb_surplus == allowed_orb - orb >= 0``.
-            - ``dec1`` and ``dec2`` are always in [-90, +90].
-            - ``classification.domain`` is always ``AspectDomain.DECLINATION``
-              for this vessel.
-            - ``classification.family`` is always ``AspectFamily.DECLINATION``.
-            - ``is_parallel`` and ``is_contra_parallel`` are mutually exclusive.
-        Succession stance: terminal — not designed for subclassing.
-
-    Canon: Ptolemy, "Tetrabiblos" I; Lilly, "Christian Astrology" (1647).
-
-    [MACHINE_CONTRACT v1]
-    {
-        "scope": "class",
-        "id": "moira.aspects.DeclinationAspect",
-        "risk": "high",
-        "api": {
-            "public_methods": ["__repr__"],
-            "public_attributes": [
-                "body1", "body2", "aspect", "dec1", "dec2",
-                "orb", "allowed_orb", "classification"
-            ],
-            "public_properties": [
-                "is_parallel", "is_contra_parallel", "orb_surplus"
-            ]
-        },
-        "state": {
-            "mutable": false,
-            "fields": [
-                "body1", "body2", "aspect", "dec1", "dec2",
-                "orb", "allowed_orb", "classification"
-            ]
-        },
-        "effects": {
-            "io": [],
-            "signals_emitted": [],
-            "db_writes": []
-        },
-        "concurrency": {
-            "thread": "pure_computation",
-            "cross_thread_calls": "safe_read_only"
-        },
-        "failures": {
-            "raises": [],
-            "policy": "caller ensures valid declinations before construction"
-        },
-        "succession": {
-            "stance": "terminal",
-            "override_points": []
-        },
-        "agent": "kiro"
-    }
-    [/MACHINE_CONTRACT]
-    """
-    body1:          str
-    body2:          str
-    aspect:         str    # "Parallel" or "Contra-Parallel"
-    dec1:           float  # declination of body1 (degrees, signed, ±90)
-    dec2:           float  # declination of body2 (degrees, signed, ±90)
-    orb:            float  # |difference| in degrees (always non-negative)
-    allowed_orb:    float  # orb ceiling used for admission
-    classification: AspectClassification | None = None  # always DECLINATION domain
-
-    # ------------------------------------------------------------------
-    # Inspectability — read-only, derived-only convenience properties
-    # ------------------------------------------------------------------
-
-    @property
-    def is_parallel(self) -> bool:
-        """True when both bodies are on the same side of the equator (Parallel)."""
-        return self.aspect == "Parallel"
-
-    @property
-    def is_contra_parallel(self) -> bool:
-        """True when the bodies are on opposite sides of the equator (Contra-Parallel)."""
-        return self.aspect == "Contra-Parallel"
-
-    @property
-    def orb_surplus(self) -> float:
-        """Remaining headroom in the orb window: ``allowed_orb - orb``.  Always >= 0."""
-        return self.allowed_orb - self.orb
-
-    def __repr__(self) -> str:
-        return f"{self.body1} ∥ {self.body2}  (orb {self.orb:+.2f}°) [{self.aspect}]"
-
-
-@dataclass(frozen=True, slots=True)
-class DeclinationAspectAnalysis:
-    """Immutable analysis of caller-supplied equatorial declinations."""
-
-    positions: tuple[tuple[str, float], ...]
-    aspects: tuple[DeclinationAspect, ...]
-    orb: float
-    reference_frame: str
-    timescale: str
-    provenance: str = "caller_supplied_declinations"
-
-    @property
-    def declinations(self) -> dict[str, float]:
-        """Return normalized declinations in deterministic point-name order."""
-        return dict(self.positions)
-
-    @property
-    def point_count(self) -> int:
-        return len(self.positions)
-
-    @property
-    def aspect_count(self) -> int:
-        return len(self.aspects)
-
-
-@dataclass(frozen=True, slots=True)
 class OutOfBoundsBody:
     """
     RITE: The Out-of-Bounds Vessel — a body whose declination exceeds the solar maximum.
@@ -3240,108 +3001,22 @@ def aspects_to_point(
 # ---------------------------------------------------------------------------
 
 def find_declination_aspects(
-    declinations: dict[str, float],
+    declinations: Mapping[str, float],
     orb: float = 1.0,
     policy: AspectPolicy | None = None,
 ) -> list[DeclinationAspect]:
+    """Compatibility entrypoint for the first-class declination engine.
+
+    New declination-only callers may import the governing function from
+    moira.declination_aspects and use DeclinationAspectPolicy directly. The
+    historical AspectPolicy parameter remains supported here.
     """
-    Find parallel and contra-parallel aspects from a dict of declinations.
 
-    Core aspect detection
-    ---------------------
-    Parallel:        ``|dec_A − dec_B| <= orb``  (bodies on the same side of
-                     the celestial equator, within *orb* degrees of each other)
-    Contra-Parallel: ``|dec_A + dec_B| <= orb``  (bodies on opposite sides,
-                     their absolute declinations within *orb* degrees of each
-                     other)
-
-    Hemisphere policy
-    -----------------
-    The formula is admitted only after hemisphere qualification.  Two exact
-    equatorial points form one Parallel.  A single equatorial point has no
-    hemisphere and therefore forms neither relation with a non-equatorial
-    point.  This prevents the two formulas from both matching near 0°.
-
-    Relational truth preserved
-    --------------------------
-    Each result stores ``allowed_orb`` (the ``orb`` argument as resolved at
-    call time) so the admission test ``orb <= allowed_orb`` is verifiable
-    from the vessel alone.
-
-    Classification
-    --------------
-    Each result carries an ``AspectClassification`` with:
-    - ``domain  = AspectDomain.DECLINATION``
-    - ``tier    = AspectTier.MAJOR``
-    - ``family  = AspectFamily.DECLINATION``
-
-    Both Parallel and Contra-Parallel share this classification since they
-    differ only in sign direction, not in harmonic family.
-
-    Policy surface
-    --------------
-    Pass an ``AspectPolicy`` instance via ``policy`` to supply doctrine inputs
-    in one argument.  When ``policy`` is provided, ``policy.declination_orb``
-    takes precedence over the individual ``orb`` parameter.
-
-    Doctrine inputs (current policy knobs)
-    ---------------------------------------
-    orb : single global ceiling for both aspect types (default 1.0°)
-
-    Parameters
-    ----------
-    declinations : dict mapping body name → signed declination in degrees (±90)
-    orb          : maximum orb in degrees (default 1.0°)
-    policy       : when supplied, policy.declination_orb overrides orb
-
-    Returns
-    -------
-    List of DeclinationAspect sorted by orb (tightest first).
-    """
-    resolved_policy = policy or AspectPolicy(declination_orb=orb)
-    orb = resolved_policy.declination_orb
-    declinations = _normalized_named_values(
+    resolved_orb = policy.declination_orb if policy is not None else orb
+    return _find_declination_aspects(
         declinations,
-        quantity="declination",
-        minimum=-90.0,
-        maximum=90.0,
+        policy=DeclinationAspectPolicy(orb=resolved_orb),
     )
-    bodies = list(declinations.keys())
-    results: list[DeclinationAspect] = []
-
-    for i in range(len(bodies)):
-        for j in range(i + 1, len(bodies)):
-            b1, b2 = bodies[i], bodies[j]
-            d1, d2 = declinations[b1], declinations[b2]
-
-            both_equatorial = d1 == 0.0 and d2 == 0.0
-            same_hemisphere = d1 * d2 > 0.0 or both_equatorial
-            opposite_hemispheres = d1 * d2 < 0.0
-
-            parallel_diff = abs(d1 - d2)
-            if same_hemisphere and parallel_diff <= orb:
-                results.append(DeclinationAspect(
-                    body1=b1, body2=b2,
-                    aspect="Parallel",
-                    dec1=d1, dec2=d2,
-                    orb=parallel_diff,
-                    allowed_orb=orb,
-                    classification=_PARALLEL_CLASSIFICATION,
-                ))
-
-            contra_diff = abs(d1 + d2)
-            if opposite_hemispheres and contra_diff <= orb:
-                results.append(DeclinationAspect(
-                    body1=b1, body2=b2,
-                    aspect="Contra-Parallel",
-                    dec1=d1, dec2=d2,
-                    orb=contra_diff,
-                    allowed_orb=orb,
-                    classification=_CONTRA_PARALLEL_CLASSIFICATION,
-                ))
-
-    results.sort(key=lambda a: a.orb)
-    return results
 
 
 def declination_aspects_from_declinations(
@@ -3352,41 +3027,14 @@ def declination_aspects_from_declinations(
     orb: float = 1.0,
     policy: AspectPolicy | None = None,
 ) -> DeclinationAspectAnalysis:
-    """Analyze caller-supplied equatorial declinations deterministically.
+    """Compatibility entrypoint for first-class declination analysis."""
 
-    A parallel requires the same nonzero hemisphere; a contra-parallel
-    requires opposite nonzero hemispheres.  Two points exactly on the
-    equator form one exact parallel.  A lone equatorial point has no
-    hemisphere and therefore forms neither relation with a non-equatorial
-    point.
-
-    ``reference_frame`` and ``timescale`` are required caller-owned
-    provenance.  The analysis records them but does not reinterpret or infer
-    the supplied coordinate product.
-    """
-    resolved_policy = policy or AspectPolicy(declination_orb=orb)
-    for field_name, value in (
-        ("reference_frame", reference_frame),
-        ("timescale", timescale),
-    ):
-        if not isinstance(value, str) or not value or value != value.strip():
-            raise ValueError(f"{field_name} must be a non-empty trimmed string")
-    normalized = _normalized_named_values(
+    resolved_orb = policy.declination_orb if policy is not None else orb
+    return _declination_analysis(
         declinations,
-        quantity="declination",
-        minimum=-90.0,
-        maximum=90.0,
-    )
-    if len(normalized) < 2:
-        raise ValueError("at least two declination points are required")
-    ordered = dict(sorted(normalized.items()))
-    aspects = find_declination_aspects(ordered, policy=resolved_policy)
-    return DeclinationAspectAnalysis(
-        positions=tuple(ordered.items()),
-        aspects=tuple(aspects),
-        orb=resolved_policy.declination_orb,
         reference_frame=reference_frame,
         timescale=timescale,
+        policy=DeclinationAspectPolicy(orb=resolved_orb),
     )
 
 

@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **First-Class Declination Aspects**: Added the governing
+  `moira.declination_aspects` module with explicit Parallel/Contra-Parallel
+  kinds, admission policy, hemisphere/equator doctrine, immutable analysis
+  vessels, and an instantaneous signed-error motion witness. Added
+  `Moira.declination_aspect_motion_witness(...)` and
+  `POST /v1/aspects/declination-motion-witness` without changing the existing
+  declination-analysis route.
 - **Opt-In Server Prewarm**: Added `MOIRA_SERVER_PREWARM=1` for one bounded,
   per-worker J2000 all-planet warmup before computational traffic is admitted.
   The warmup excludes lunar nodes, supplemental small-body kernels, and the
@@ -122,6 +129,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   validation, and exclude TCP, TLS, reverse-proxy, and public-network latency.
 
 ### Compatibility
+- Historical `moira.aspects` declination imports, package-root exports,
+  `Moira.declination_aspects_from_declinations(...)`, and
+  `POST /v1/aspects/from-declinations` remain available. The legacy
+  `AspectPolicy.declination_orb` input is adapted to the first-class
+  `DeclinationAspectPolicy`.
 - Existing facade method names, `/v1` computation-route paths, chart request
   models, and chart response payloads are retained. The server-prewarm change
   is operational and opt-in.
@@ -133,6 +145,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as "not ready". This corrects the previous HTTP 200/`ready=false` mismatch.
 
 ### Validation
+- Added direct engine/facade/REST/OpenAPI coverage for Parallel and
+  Contra-Parallel applying, exact, separating, stationary, and indeterminate
+  motion, including signed-error formulas, equator/hemisphere rejection,
+  immutable policy, provenance, and legacy import identity.
 - Added focused regression coverage for synastry immutability and network
   identity, corrected-Davison wrap rejection and MC residual, antipodal
   midpoint ambiguity, spherical greatest elongation, conjunction range bounds,

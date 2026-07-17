@@ -287,11 +287,16 @@ ignored or offered as a minor add-on. This is a software convention that became 
 conceptual habit. Ptolemy recognized parallels of declination as equivalent in strength
 to conjunctions.
 
-With full 3D Cartesian position vectors from SPICE, declination costs nothing extra.
+Cartesian state vectors provide the astronomical substrate from which an
+equatorial direction can be derived. Declination aspects themselves remain
+angular relationships on the celestial sphere; they do not include radial
+distance and therefore are not full 3D spatial aspects.
 
 `SkyPosition` in `planets.py` carries right ascension and declination as first-class
-fields, populated by the full 8-step apparent-position pipeline. `find_declination_aspects()`
-detects parallels and contraparallels from any set of declinations. `find_out_of_bounds()`
+fields, populated by the full apparent-position pipeline.
+`moira.declination_aspects` owns `find_declination_aspects()` and the signed
+motion witness for parallels and contra-parallels from declared declinations
+and optional declination rates. `find_out_of_bounds()`
 detects bodies exceeding the Sun's maximum declination of ±23°26', returning signed
 declination, obliquity used, and excess beyond the boundary.
 

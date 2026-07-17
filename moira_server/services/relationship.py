@@ -45,6 +45,7 @@ from ..models.relationship import (
     AspectMotionWitnessRequest,
     AspectsFromLongitudesRequest,
     DeclinationAspectsFromDeclinationsRequest,
+    DeclinationAspectMotionWitnessRequest,
     CompositeChartRequest,
     DavisonChartRequest,
     MidpointClusterRequest,
@@ -125,6 +126,26 @@ def compute_declination_aspects_from_declinations(
         reference_frame=request.reference_frame,
         timescale=request.timescale,
         orb=request.orb,
+    )
+
+
+def compute_declination_aspect_motion_witness(
+    engine: Moira,
+    request: DeclinationAspectMotionWitnessRequest,
+):
+    return engine.declination_aspect_motion_witness(
+        request.body1,
+        request.declination1_deg,
+        request.body2,
+        request.declination2_deg,
+        request.aspect,
+        speed1_deg_per_day=request.speed1_deg_per_day,
+        speed2_deg_per_day=request.speed2_deg_per_day,
+        orb=request.orb,
+        exact_tolerance_deg=request.exact_tolerance_deg,
+        rate_tolerance_deg_per_day=request.rate_tolerance_deg_per_day,
+        reference_frame=request.reference_frame,
+        timescale=request.timescale,
     )
 
 
@@ -433,6 +454,7 @@ __all__ = [
     "compute_aspect_motion_witness",
     "compute_aspects_from_longitudes",
     "compute_declination_aspects_from_declinations",
+    "compute_declination_aspect_motion_witness",
     "compute_chart_shape",
     "compute_composite_chart",
     "compute_composite_chart_analysis",

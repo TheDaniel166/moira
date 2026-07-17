@@ -204,11 +204,9 @@ from .aspects import (
     AspectGraph,
     AspectGraphNode,
     AspectHarmonicProfile,
-    DeclinationAspectAnalysis,
     LongitudeAspectAnalysis,
     AspectPolicy,
     AspectStrength,
-    DeclinationAspect,
     aspect_harmonic_profile,
     aspect_motion_witness,
     aspect_motion_state,
@@ -221,6 +219,17 @@ from .aspects import (
     find_aspects,
     find_declination_aspects,
     find_patterns,
+)
+from .declination_aspects import (
+    DeclinationAspect,
+    DeclinationAspectAnalysis,
+    DeclinationAspectKind,
+    DeclinationAspectMotionWitness,
+    DeclinationAspectPolicy,
+    DeclinationEquatorPolicy,
+    DeclinationHemispherePolicy,
+    DeclinationMotionState,
+    declination_aspect_motion_witness,
 )
 from .sidereal import ayanamsa, tropical_to_sidereal, sidereal_to_tropical, Ayanamsa, UserDefinedAyanamsa, list_ayanamsa_systems
 from .heliacal import (
@@ -1494,8 +1503,9 @@ __all__ = [
     "AspectDomain", "AspectDirection", "AspectFamily", "AspectMotionBranch", "AspectMotionOrbPolicy", "AspectMotionState", "AspectMotionStationaryReason", "AspectMotionWitness", "AspectPatternKind", "AspectTier", "MotionState",
     "AspectClassification", "AspectFamilyProfile", "AspectGraph",
     "AspectGraphNode", "AspectHarmonicProfile", "DeclinationAspectAnalysis", "LongitudeAspectAnalysis", "AspectPolicy",
-    "AspectStrength", "DeclinationAspect",
-    "aspect_harmonic_profile", "aspect_motion_witness", "aspect_motion_state", "aspect_strength",
+    "AspectStrength", "DeclinationAspect", "DeclinationAspectKind", "DeclinationAspectMotionWitness", "DeclinationAspectPolicy",
+    "DeclinationEquatorPolicy", "DeclinationHemispherePolicy", "DeclinationMotionState",
+    "aspect_harmonic_profile", "aspect_motion_witness", "aspect_motion_state", "aspect_strength", "declination_aspect_motion_witness",
     "aspects_between", "aspects_from_longitudes", "aspects_to_point", "build_aspect_graph", "declination_aspects_from_declinations",
     "find_aspects", "find_declination_aspects", "find_patterns",
     # Lots

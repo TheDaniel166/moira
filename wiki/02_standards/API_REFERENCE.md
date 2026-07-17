@@ -162,7 +162,7 @@ Adds the full classical and traditional toolkit:
 | Added domain | Key symbols |
 |---|---|
 | Houses (full) | `HouseSystemFamily`, `HouseSystemCuspBasis`, `classify_house_system`, `HousePlacement`, `HouseBoundaryProfile`, `HouseAngularity`, `compare_systems`, `compare_placements`, `distribute_points`, `Quadrant`, `quadrant_emphasis`, `DiurnalQuadrant`, `diurnal_emphasis` |
-| Aspects (full) | `AspectDefinition`, `ASPECT_TIERS`, `CANONICAL_ASPECTS`, `AspectDomain`, `AspectFamily`, `AspectTier`, `MotionState`, `AspectClassification`, `aspect_strength`, `aspect_motion_state`, `find_declination_aspects`, `declination_aspects_from_declinations`, `find_patterns`, `DeclinationAspect`, `DeclinationAspectAnalysis` |
+| Aspects (full) | `AspectDefinition`, `ASPECT_TIERS`, `CANONICAL_ASPECTS`, `AspectDomain`, `AspectFamily`, `AspectTier`, `MotionState`, `AspectClassification`, `aspect_strength`, `aspect_motion_state`, `find_declination_aspects`, `declination_aspects_from_declinations`, `declination_aspect_motion_witness`, `find_patterns`, `DeclinationAspect`, `DeclinationAspectAnalysis`, `DeclinationAspectMotionWitness`, `DeclinationAspectPolicy` |
 | Dignities | `calculate_dignities`, `calculate_receptions`, `EssentialDignityKind`, `AccidentalConditionKind`, `PlanetaryDignity`, `sect_light`, `is_day_chart`, `almuten_figuris`, `mutual_receptions` |
 | Arabic Parts | `calculate_lots`, `ArabicPart`, `ArabicPartsService`, `list_parts` |
 | Midpoints | `calculate_midpoints`, `Midpoint`, `MidpointsService`, `midpoint_tree`, `planetary_pictures` |
@@ -1139,10 +1139,13 @@ from moira.facade import (
     find_aspects, aspects_between, aspects_to_point,
     aspects_from_longitudes,
     find_declination_aspects, declination_aspects_from_declinations,
+    declination_aspect_motion_witness,
     find_patterns, build_aspect_graph,
     aspect_strength, aspect_motion_state, aspect_harmonic_profile,
     AspectData, AspectPolicy, AspectStrength, DeclinationAspect,
     DeclinationAspectAnalysis, LongitudeAspectAnalysis,
+    DeclinationAspectKind, DeclinationAspectMotionWitness,
+    DeclinationAspectPolicy, DeclinationMotionState,
     AspectFamily, AspectDomain, AspectTier, MotionState,
     AspectGraph, AspectGraphNode, AspectFamilyProfile, AspectHarmonicProfile,
     CANONICAL_ASPECTS, DEFAULT_POLICY,
@@ -1191,6 +1194,7 @@ from moira.facade import (
 | `aspects_to_point(longitudes, point, orbs=None)` | `list[AspectData]` | Aspects to a single longitude |
 | `find_declination_aspects(bodies_dec, orb=1.0)` | `list[DeclinationAspect]` | Parallel and contra-parallel aspects |
 | `declination_aspects_from_declinations(bodies_dec, *, reference_frame, timescale, orb=1.0)` | `DeclinationAspectAnalysis` | Validated deterministic caller-supplied declination analysis with explicit coordinate provenance |
+| `declination_aspect_motion_witness(body1, dec1, body2, dec2, aspect, *, speed1_deg_per_day=None, speed2_deg_per_day=None, orb=1.0, exact_tolerance_deg=1e-9, rate_tolerance_deg_per_day=1e-12, reference_frame, timescale)` | `DeclinationAspectMotionWitness` | Instantaneous signed declination error/rate witness for applying, exact, separating, stationary, or indeterminate truth |
 | `build_aspect_graph(aspects)` | `AspectGraph` | Graph structure of the aspect network |
 | `aspect_strength(aspect)` | `AspectStrength` | Geometric orb exactness, or categorical whole-sign exactness |
 | `aspect_motion_state(aspect)` | `MotionState` | APPLYING / EXACT / SEPARATING / STATIONARY / INDETERMINATE / NONE |
@@ -1210,6 +1214,16 @@ analysis records normalized declinations, the effective orb, and the
 hemisphere-qualified Parallel/Contra-Parallel results. The caller must declare
 the shared equatorial `reference_frame` and `timescale`; Moira records rather
 than infers that provenance.
+
+`moira.declination_aspects` is the governing module for these relationships.
+`moira.aspects` retains compatibility re-exports and adapts the historical
+`AspectPolicy.declination_orb` field to the new `DeclinationAspectPolicy`.
+`declination_aspect_motion_witness` and
+`Moira.declination_aspect_motion_witness` require declination rates to resolve
+applying or separating state. A single declination snapshot without rates is
+`indeterminate` unless already exact. Parallel motion uses the signed error
+`dec1 - dec2`; Contra-Parallel motion uses `dec1 + dec2`. The witness is
+instantaneous and does not claim future perfection before a reversal.
 
 ### Aspect Patterns
 

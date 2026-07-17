@@ -77,7 +77,7 @@ astronomical or doctrinal inputs.
 | Lots | `calculate_lots(...)` already consumes positions and house cusps | named positions, 12 cusps, explicit sect, optional source dependencies | Never infer sect or prenatal dependencies from a synthetic moment |
 | House placement | assignment is geometric over longitude and cusps | longitudes, complete cusp frame, effective system provenance | Admit as a reusable derived-house-frame product |
 | Lunar mansions | tropical map functions already consume longitudes | longitudes; explicit tropical variant | Sidereal variants additionally require a reference JD and ayanamsa policy |
-| Declination | `declination_aspects_from_declinations(...)` returns a first-class normalized analysis | supplied declinations or a source-owned 3D/equatorial transform | Admitted separately at `POST /v1/aspects/from-declinations`; longitude-only input remains insufficient |
+| Declination | `moira.declination_aspects` owns normalized analysis plus an instantaneous signed-motion witness | supplied declinations; declination rates are additionally required for applying/separating truth | Admitted at `POST /v1/aspects/from-declinations` and `POST /v1/aspects/declination-motion-witness`; longitude-only input remains insufficient |
 | Fixed stars | star positions are epoch- and frame-dependent | reference epoch/time, star catalogue identity, correction/frame policy | A composite `jd_mean` is only reference metadata until doctrine admits its use |
 
 ## 5. Future Shared Vessel
@@ -89,7 +89,9 @@ optional strata remain explicit:
 - optional nodes with named node policy
 - optional 12-cusp house frame, ASC, MC, requested/effective system, and
   construction provenance
-- optional declinations or equatorial/3D coordinates with frame provenance
+- optional declinations or equatorial coordinates with frame provenance;
+  these describe a direction on the celestial sphere, not full distance-aware
+  Cartesian 3D geometry
 - optional speeds with a declared derivation source
 - optional reference JD whose role is named (`physical_moment`,
   `catalog_epoch_reference`, or another admitted meaning)

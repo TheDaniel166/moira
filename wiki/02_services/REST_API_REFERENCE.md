@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-07-15
+Date audited: 2026-07-17
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 402
+- Total non-documentation routes: 407
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 402
+- Versioned `/v1` routes: 403
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -379,6 +379,7 @@ Admitted products:
 | POST | `/v1/aspects/moon-connection-flow` | `moon_connection_flow_route` |
 | POST | `/v1/aspects/from-longitudes` | `aspects_from_longitudes_route` |
 | POST | `/v1/aspects/from-declinations` | `declination_aspects_from_declinations_route` |
+| POST | `/v1/aspects/declination-motion-witness` | `declination_aspect_motion_witness_route` |
 | POST | `/v1/synastry/aspects` | `synastry_aspects_route` |
 | POST | `/v1/synastry/contacts` | `synastry_contacts_route` |
 | POST | `/v1/synastry/contact-relations` | `synastry_contact_relations_route` |
@@ -431,8 +432,9 @@ caller-supplied equatorial declinations. It accepts between 2 and 64 named
 finite values in `[-90°, +90°]` and a bounded non-negative orb. The route
 also requires caller-declared `reference_frame` and `timescale` strings. It
 delegates through `Moira.declination_aspects_from_declinations(...)` to the
-engine analysis surface and returns classified Parallel and Contra-Parallel
-vessels with reconstructable orb admission truth.
+first-class `moira.declination_aspects` engine while preserving the historical
+`moira.aspects` compatibility entrypoint. It returns classified Parallel and
+Contra-Parallel vessels with reconstructable orb admission truth.
 
 Parallel requires the same nonzero hemisphere; Contra-Parallel requires
 opposite nonzero hemispheres. Two points exactly on the equator form one exact
@@ -442,6 +444,29 @@ effective orb, counts, and the engine/facade entry points.
 The response records the declared frame, timescale, and
 `provenance: caller_supplied_declinations`; it does not infer an astronomical
 reduction product from the numbers alone.
+
+### Declination-Aspect Motion Witness
+
+`POST /v1/aspects/declination-motion-witness` is the kernel-free,
+instantaneous motion surface for one caller-selected Parallel or
+Contra-Parallel. It requires two signed declinations in `[-90°, +90°]`,
+optional declination speeds in degrees/day, the relationship name, orb and
+motion tolerances, and caller-declared frame/timescale provenance.
+
+For a Parallel, signed error and relative rate are respectively
+`declination1 - declination2` and `speed1 - speed2`. For a Contra-Parallel,
+they are `declination1 + declination2` and `speed1 + speed2`. Away from exact,
+the sign-adjusted error rate is the orb rate: negative is `applying`, positive
+is `separating`, and a rate inside the declared tolerance is `stationary`.
+Exactness takes precedence; missing or partial speeds produce
+`indeterminate`. An individual zero declination speed does not by itself make
+the relationship stationary when the relative error is still changing.
+
+The route enforces the same hemisphere and equator doctrine as detection and
+returns the shared declination classification plus the signed error, relative
+speed, orb rate, admission truth, policies, provenance, and evaluation scope.
+It does not search for a later perfection or prove that a currently applying
+relationship will perfect before reversing.
 
 ### Signed Aspect-Motion Witness
 

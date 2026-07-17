@@ -76,8 +76,6 @@ from .planets import (
 from .sidereal import Ayanamsa, ayanamsa, list_ayanamsa_systems, sidereal_to_tropical, tropical_to_sidereal, nakshatra_of, all_nakshatras_at
 from .aspects import (
     AspectData,
-    DeclinationAspect,
-    DeclinationAspectAnalysis,
     AspectDirection,
     AspectMotionBranch,
     AspectMotionOrbPolicy,
@@ -91,6 +89,17 @@ from .aspects import (
     declination_aspects_from_declinations,
     find_aspects,
     find_declination_aspects,
+)
+from .declination_aspects import (
+    DeclinationAspect,
+    DeclinationAspectAnalysis,
+    DeclinationAspectKind,
+    DeclinationAspectMotionWitness,
+    DeclinationAspectPolicy,
+    DeclinationEquatorPolicy,
+    DeclinationHemispherePolicy,
+    DeclinationMotionState,
+    declination_aspect_motion_witness,
 )
 from .harmograms import (
     HarmogramChartDomain,
@@ -826,6 +835,12 @@ __all__ = [
     "AspectData",
     "DeclinationAspect",
     "DeclinationAspectAnalysis",
+    "DeclinationAspectKind",
+    "DeclinationAspectMotionWitness",
+    "DeclinationAspectPolicy",
+    "DeclinationEquatorPolicy",
+    "DeclinationHemispherePolicy",
+    "DeclinationMotionState",
     "AspectDirection",
     "AspectMotionBranch",
     "AspectMotionOrbPolicy",
@@ -835,6 +850,7 @@ __all__ = [
     "AspectPolicy",
     "LongitudeAspectAnalysis",
     "aspect_motion_witness",
+    "declination_aspect_motion_witness",
     "aspects_from_longitudes",
     "declination_aspects_from_declinations",
     "find_aspects",

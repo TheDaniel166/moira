@@ -6,8 +6,8 @@ The Moira aspect backend is a sovereign computational subsystem. Its definitions
 layer boundaries, invariants, failure doctrine, and determinism rules are stated
 here and are frozen until explicitly superseded by a revision to this document.
 
-This document reflects current implementation truth as of Phase 12 (272 passing tests).
-It does not describe aspirational future capabilities.
+This document reflects current implementation truth. Focused verification
+counts belong in completion receipts rather than frozen doctrine.
 
 ---
 
@@ -57,8 +57,24 @@ point has no hemisphere and forms neither relation with a non-equatorial point.
 Hemisphere qualification precedes the orb formula so both relations cannot be
 emitted for one pair near 0°.
 
-Declination aspects carry no motion data (`applying`, `stationary` are absent
-from `DeclinationAspect`).
+Detected `DeclinationAspect` vessels carry no motion data; consequently the
+legacy generic `aspect_motion_state(DeclinationAspect)` remains `NONE`. The
+separate `DeclinationAspectMotionWitness` is the first-class temporal product
+when declination rates are supplied.
+
+#### 1.2.1 Module ownership
+
+`moira.declination_aspects` governs parallels, contra-parallels, their
+hemisphere/equator doctrine, policy, result vessels, and signed motion witness.
+`moira.aspects` governs ecliptic-longitude and whole-sign relationships and
+retains compatibility re-exports for the historical declination imports.
+Shared domain/tier/family classification types live in the private
+`moira._aspect_types` taxonomy layer so both engines use identical enum and
+classification objects without circular imports.
+
+Declination is a second angular coordinate on the celestial sphere. It is not
+full Cartesian 3D geometry because radial distance is not part of these
+relationships.
 
 #### 1.3 Admitted aspect
 
@@ -179,7 +195,8 @@ Aspects in the same harmonic series share a family:
 
 ### 6. Policy Layer
 
-`AspectPolicy` encapsulates all detection-time doctrine inputs.
+`AspectPolicy` encapsulates longitude-aspect doctrine and retains
+`declination_orb` as a compatibility adapter for historical callers.
 
 | Field | Type | Default | Effect |
 |---|---|---|---|
@@ -195,6 +212,16 @@ available for backward compatibility.
 
 `DEFAULT_POLICY` reproduces the historical default behaviour of all four
 detection functions.
+
+`DeclinationAspectPolicy` is the governing declination policy:
+
+| Field | Default | Effect |
+|---|---|---|
+| `orb` | `1.0` | Admission ceiling for both relationships |
+| `exact_tolerance_deg` | `1e-9` | Exactness precedence threshold |
+| `rate_tolerance_deg_per_day` | `1e-12` | Relative signed-error rate treated as stalled |
+| `hemisphere_policy` | `STRICT_SIGNED` | Parallel uses the same nonzero hemisphere; Contra-Parallel uses opposite nonzero hemispheres |
+| `equator_policy` | `PAIRED_EQUATORIAL_PARALLEL` | Two equatorial points form one Parallel; one equatorial point is unclassified |
 
 #### Policy validation
 
@@ -266,6 +293,28 @@ takes precedence over stationary and applying/separating classification.
 - `SEPARATING` ↔ `is_separating is True` and `is_applying is False`
 - `is_applying` and `is_separating` are never simultaneously `True`
 - Both are `False` when `applying is None`
+
+#### First-class declination motion
+
+`DeclinationAspectMotionWitness` classifies a selected relationship from
+caller-supplied declinations and optional declination rates, all expressed in
+the same declared frame, timescale, origin, and correction regime.
+
+| Relationship | Signed error `E` | Relative rate `dE/dt` |
+|---|---|---|
+| Parallel | `dec1 - dec2` | `speed1 - speed2` |
+| Contra-Parallel | `dec1 + dec2` | `speed1 + speed2` |
+
+Away from exactness, `orb = abs(E)` and
+`orb_rate = sign(E) * dE/dt`. A negative orb rate is `APPLYING`; a positive
+orb rate is `SEPARATING`. Exactness takes precedence. A relative rate inside
+the policy tolerance is `STATIONARY`, while missing or partial rates are
+`INDETERMINATE`. An individual zero declination rate does not force
+`STATIONARY` when the relationship's relative error is still changing.
+
+The witness is instantaneous (`instantaneous_no_event_search`). It does not
+prove that a relationship will perfect before either body reverses in
+declination; that stronger claim requires an epoch-based exact-root search.
 
 ---
 
@@ -470,9 +519,15 @@ Each invariant is identified by a short code for traceable reference.
 | M-2 | `SEPARATING` ↔ `is_separating is True` and `is_applying is False` |
 | M-3 | Zodiacal exactness yields `EXACT` before stationary/applying classification |
 | M-4 | Non-exact zodiacal data yields `STATIONARY` when `stationary is True` |
-| M-5 | `DeclinationAspect` and whole-sign data yield `MotionState.NONE` |
+| M-5 | A detection-only `DeclinationAspect` and whole-sign data yield generic `MotionState.NONE` |
 | M-6 | `is_applying` and `is_separating` are never simultaneously `True` |
 | M-7 | Non-exact zodiacal data yields `INDETERMINATE` when motion is unavailable |
+| M-8 | Parallel signed error/rate are `dec1 - dec2` and `speed1 - speed2` |
+| M-9 | Contra-Parallel signed error/rate are `dec1 + dec2` and `speed1 + speed2` |
+| M-10 | Non-exact declination `orb_rate < 0` yields `APPLYING`; `orb_rate > 0` yields `SEPARATING` |
+| M-11 | Declination exactness precedes rate classification |
+| M-12 | Missing declination rates yield `INDETERMINATE` unless exact |
+| M-13 | Declination `STATIONARY` means the relative error rate is inside tolerance, not that either individual body has zero rate |
 
 #### INV-PAT — Pattern layer
 
@@ -627,6 +682,7 @@ Complete public surface of `moira.aspects` as of Phase 12:
 | `AspectTier` | `MAJOR`, `COMMON_MINOR`, `EXTENDED_MINOR` |
 | `AspectFamily` | 18 members, including explicit `DECLINATION` and `UNKNOWN` families |
 | `MotionState` | `APPLYING`, `EXACT`, `SEPARATING`, `STATIONARY`, `INDETERMINATE`, `NONE` |
+| `DeclinationMotionState` | `APPLYING`, `EXACT`, `SEPARATING`, `STATIONARY`, `INDETERMINATE` |
 | `AspectPatternKind` | `STELLIUM`, `T_SQUARE`, `GRAND_TRINE`, `GRAND_CROSS`, `YOD` |
 
 #### Frozen dataclasses
@@ -642,6 +698,8 @@ Complete public surface of `moira.aspects` as of Phase 12:
 | `AspectFamilyProfile` | `counts`, `total`, `proportions`, `dominant` |
 | `AspectHarmonicProfile` | `chart`, `by_body` |
 | `DeclinationAspectAnalysis` | `positions`, `aspects`, `orb`, `reference_frame`, `timescale`, `provenance`; derived counts and normalized mapping |
+| `DeclinationAspectPolicy` | `orb`, exact/rate tolerances, hemisphere policy, equator policy |
+| `DeclinationAspectMotionWitness` | selected relationship, declinations/rates, signed error, relative rate, orb/orb rate, state, policy and coordinate provenance |
 
 #### Immutable result vessels
 
@@ -670,6 +728,7 @@ structural invariants explicitly in their class docstrings.
 | `aspects_to_point` | `(positions, point_name, point_lon, ...)` | `list[AspectData]` |
 | `find_declination_aspects` | `(declinations, *, orb, policy)` | `list[DeclinationAspect]` |
 | `declination_aspects_from_declinations` | `(declinations, *, reference_frame, timescale, orb, policy)` | `DeclinationAspectAnalysis` |
+| `declination_aspect_motion_witness` | `(body1, dec1, body2, dec2, aspect, *, speeds, orb, tolerances, reference_frame, timescale, policy)` | `DeclinationAspectMotionWitness` |
 
 #### Derived-layer functions
 

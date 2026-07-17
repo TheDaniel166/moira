@@ -17,7 +17,7 @@ are exposed in the `moira` package namespace:
 |---|---------|--------|----------|
 | 1 | Vertex / Anti-Vertex | **Done** | `houses.py` — `calculate_houses()` now populates `HouseCusps.vertex` via `_asc_from_armc(armc+90, obliquity, -lat)` |
 | 2 | Antiscia & Contra-Antiscia | **Done** | `antiscia.py` — `antiscia()`, `find_antiscia()`, `AntisciaAspect` |
-| 3 | Parallel & Contra-Parallel aspects | **Done** | `aspects.py` — `find_declination_aspects()`, `DeclinationAspect` |
+| 3 | Parallel & Contra-Parallel aspects | **Done** | `declination_aspects.py` — detection, first-class policy/vessels, and signed applying/separating motion witness; compatibility exports remain in `aspects.py` |
 | 4 | Parans | **Done** | `parans.py` — `find_parans()`, `natal_parans()`, `Paran`, full paran-field analysis suite |
 | 5 | Generic planet return | **Done** | `transits.py` — `planet_return()` |
 | 7 | Annual Profections | **Done** | `profections.py` — `annual_profection()`, `monthly_profection()`, `profection_schedule()`, `ProfectionResult` |

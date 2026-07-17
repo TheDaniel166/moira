@@ -202,6 +202,9 @@ class DeclinationAspectsFromDeclinationsRequest(_StrictModel):
 
 class DeclinationAspectComputationTruthResponse(_StrictModel):
     source_module: Literal["moira.aspects"] = "moira.aspects"
+    governing_module: Literal["moira.declination_aspects"] = (
+        "moira.declination_aspects"
+    )
     engine_entrypoint: Literal["declination_aspects_from_declinations"] = (
         "declination_aspects_from_declinations"
     )
@@ -234,6 +237,123 @@ class DeclinationAspectComputationTruthResponse(_StrictModel):
 class DeclinationAspectsFromDeclinationsResponse(_StrictModel):
     events: list[DeclinationAspectResponse]
     computation_truth: DeclinationAspectComputationTruthResponse
+
+
+class DeclinationAspectMotionWitnessRequest(_StrictModel):
+    body1: str = Field(min_length=1, max_length=128)
+    declination1_deg: float = Field(ge=-90.0, le=90.0)
+    body2: str = Field(min_length=1, max_length=128)
+    declination2_deg: float = Field(ge=-90.0, le=90.0)
+    aspect: Literal["Parallel", "Contra-Parallel"]
+    speed1_deg_per_day: float | None = None
+    speed2_deg_per_day: float | None = None
+    orb: float = Field(default=1.0, ge=0.0, le=10.0)
+    exact_tolerance_deg: float = Field(default=1e-9, ge=0.0, le=1.0)
+    rate_tolerance_deg_per_day: float = Field(default=1e-12, ge=0.0, le=1.0)
+    reference_frame: str = Field(min_length=1, max_length=128)
+    timescale: str = Field(min_length=1, max_length=32)
+
+    @field_validator("body1", "body2", "reference_frame", "timescale")
+    @classmethod
+    def _trimmed_text(cls, value: str) -> str:
+        if value != value.strip():
+            raise ValueError("text provenance and body fields must be trimmed")
+        return value
+
+    @field_validator(
+        "declination1_deg",
+        "declination2_deg",
+        "speed1_deg_per_day",
+        "speed2_deg_per_day",
+        "orb",
+        "exact_tolerance_deg",
+        "rate_tolerance_deg_per_day",
+        mode="before",
+    )
+    @classmethod
+    def _finite_values(cls, value: Any) -> Any:
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            raise ValueError("declination motion values must be finite numbers")
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "declination motion values must be finite numbers"
+            ) from exc
+        if not math.isfinite(parsed):
+            raise ValueError("declination motion values must be finite numbers")
+        return parsed
+
+    @model_validator(mode="after")
+    def _distinct_points(self) -> "DeclinationAspectMotionWitnessRequest":
+        if self.body1 == self.body2:
+            raise ValueError("body1 and body2 must identify distinct points")
+        return self
+
+
+class DeclinationAspectMotionWitnessResponse(_StrictModel):
+    body1: str
+    body2: str
+    aspect: Literal["Parallel", "Contra-Parallel"]
+    declination1_deg: float
+    declination2_deg: float
+    speed1_deg_per_day: float | None
+    speed2_deg_per_day: float | None
+    signed_error_deg: float
+    relative_speed_deg_per_day: float | None
+    orb_deg: float
+    orb_rate_deg_per_day: float | None
+    allowed_orb_deg: float
+    within_orb: bool
+    state: Literal["applying", "exact", "separating", "stationary", "indeterminate"]
+    relative_motion_stalled: bool | None
+    exact_tolerance_deg: float
+    rate_tolerance_deg_per_day: float
+    hemisphere_policy: Literal[
+        "parallel_same_nonzero_hemisphere_contra_opposite_nonzero_hemispheres"
+    ]
+    equator_policy: Literal[
+        "two_equatorial_points_parallel_one_equatorial_point_unclassified"
+    ]
+    classification: AspectClassificationResponse
+    reference_frame: str
+    timescale: str
+    provenance: Literal["caller_supplied_declinations_and_optional_rates"]
+    evaluation_scope: Literal["instantaneous_no_event_search"]
+
+
+class DeclinationAspectMotionComputationTruthResponse(_StrictModel):
+    governing_module: Literal["moira.declination_aspects"] = (
+        "moira.declination_aspects"
+    )
+    engine_entrypoint: Literal["declination_aspect_motion_witness"] = (
+        "declination_aspect_motion_witness"
+    )
+    facade_entrypoint: Literal["Moira.declination_aspect_motion_witness"] = (
+        "Moira.declination_aspect_motion_witness"
+    )
+    parallel_error_formula: Literal["declination1_minus_declination2"] = (
+        "declination1_minus_declination2"
+    )
+    contra_parallel_error_formula: Literal[
+        "declination1_plus_declination2"
+    ] = "declination1_plus_declination2"
+    motion_classification: Literal["instantaneous_signed_error_rate"] = (
+        "instantaneous_signed_error_rate"
+    )
+    stationary_policy: Literal["relative_declination_rate_within_tolerance"] = (
+        "relative_declination_rate_within_tolerance"
+    )
+    provenance_semantics: Literal["caller_declared_frame_and_timescale"] = (
+        "caller_declared_frame_and_timescale"
+    )
+
+
+class DeclinationAspectMotionAnalysisResponse(_StrictModel):
+    witness: DeclinationAspectMotionWitnessResponse
+    computation_truth: DeclinationAspectMotionComputationTruthResponse
 
 
 AspectMotionNameValue = Literal[
@@ -982,6 +1102,10 @@ __all__ = [
     "AspectsFromLongitudesRequest",
     "AspectsFromLongitudesResponse",
     "DeclinationAspectComputationTruthResponse",
+    "DeclinationAspectMotionAnalysisResponse",
+    "DeclinationAspectMotionComputationTruthResponse",
+    "DeclinationAspectMotionWitnessRequest",
+    "DeclinationAspectMotionWitnessResponse",
     "DeclinationAspectResponse",
     "DeclinationAspectsFromDeclinationsRequest",
     "DeclinationAspectsFromDeclinationsResponse",

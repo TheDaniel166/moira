@@ -58,7 +58,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
     "scope": "class",
     "id": "moira._facade_core.CoreFacadeMixin",
     "risk": "high",
-    "api": {"frozen": ["chart", "houses", "sky_position", "aspects", "aspect_motion_witness", "aspects_from_longitudes", "jd_from_datetime", "sidereal_time"], "internal": []},
+    "api": {"frozen": ["chart", "houses", "sky_position", "aspects", "aspect_motion_witness", "declination_aspect_motion_witness", "aspects_from_longitudes", "jd_from_datetime", "sidereal_time"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -248,6 +248,39 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             speed1_deg_per_day=speed1_deg_per_day,
             speed2_deg_per_day=speed2_deg_per_day,
             orb_factor=orb_factor,
+            exact_tolerance_deg=exact_tolerance_deg,
+            rate_tolerance_deg_per_day=rate_tolerance_deg_per_day,
+            reference_frame=reference_frame,
+            timescale=timescale,
+        )
+
+    def declination_aspect_motion_witness(
+        self,
+        body1: str,
+        declination1_deg: float,
+        body2: str,
+        declination2_deg: float,
+        aspect: str,
+        *,
+        speed1_deg_per_day: float | None = None,
+        speed2_deg_per_day: float | None = None,
+        orb: float = 1.0,
+        exact_tolerance_deg: float = 1e-9,
+        rate_tolerance_deg_per_day: float = 1e-12,
+        reference_frame: str,
+        timescale: str,
+    ):
+        """Analyze instantaneous motion of a parallel or contra-parallel."""
+
+        return _facade_module().declination_aspect_motion_witness(
+            body1,
+            declination1_deg,
+            body2,
+            declination2_deg,
+            aspect,
+            speed1_deg_per_day=speed1_deg_per_day,
+            speed2_deg_per_day=speed2_deg_per_day,
+            orb=orb,
             exact_tolerance_deg=exact_tolerance_deg,
             rate_tolerance_deg_per_day=rate_tolerance_deg_per_day,
             reference_frame=reference_frame,

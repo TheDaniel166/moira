@@ -50,7 +50,7 @@
     - published worked-example fixture coverage for:
       - direct rapt parallel
       - converse rapt parallel
-- the existing declination engine in `moira/aspects.py` remains valid for
+- the first-class declination engine in `moira/declination_aspects.py` remains valid for
   ordinary aspect detection, but it is **not** being re-labeled as a global
   primary-direction target law
 

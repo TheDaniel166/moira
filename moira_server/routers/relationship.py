@@ -14,6 +14,8 @@ from ..models.relationship import (
     AspectsFromLongitudesResponse,
     DeclinationAspectsFromDeclinationsRequest,
     DeclinationAspectsFromDeclinationsResponse,
+    DeclinationAspectMotionAnalysisResponse,
+    DeclinationAspectMotionWitnessRequest,
     CompositeChartRequest,
     CompositeChartResponse,
     DavisonChartRequest,
@@ -52,6 +54,7 @@ from ..serializers.relationship import (
     serialize_aspect_motion_witness,
     serialize_aspects_from_longitudes,
     serialize_declination_aspects_from_declinations,
+    serialize_declination_aspect_motion_witness,
     serialize_aspect_pattern,
     serialize_chart_shape,
     serialize_composite_chart,
@@ -74,6 +77,7 @@ from ..services.relationship import (
     compute_aspect_motion_witness,
     compute_aspects_from_longitudes,
     compute_declination_aspects_from_declinations,
+    compute_declination_aspect_motion_witness,
     compute_chart_shape,
     compute_composite_chart_analysis,
     compute_davison_chart_analysis,
@@ -158,6 +162,21 @@ def declination_aspects_from_declinations_route(
 
     return serialize_declination_aspects_from_declinations(
         compute_declination_aspects_from_declinations(engine, request)
+    )
+
+
+@router.post(
+    "/aspects/declination-motion-witness",
+    response_model=DeclinationAspectMotionAnalysisResponse,
+)
+def declination_aspect_motion_witness_route(
+    request: DeclinationAspectMotionWitnessRequest,
+    engine: Moira = Depends(get_engine),
+) -> DeclinationAspectMotionAnalysisResponse:
+    """Expose signed instantaneous declination motion with provenance."""
+
+    return serialize_declination_aspect_motion_witness(
+        compute_declination_aspect_motion_witness(engine, request)
     )
 
 

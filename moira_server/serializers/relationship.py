@@ -6,9 +6,12 @@ from moira.aspects import (
     AspectClassification,
     AspectData,
     AspectMotionWitness,
+    LongitudeAspectAnalysis,
+)
+from moira.declination_aspects import (
     DeclinationAspect,
     DeclinationAspectAnalysis,
-    LongitudeAspectAnalysis,
+    DeclinationAspectMotionWitness,
 )
 from moira.aspect_events import MoonAspectEvent, MoonConnectionFlow
 from moira.chart_shape import ChartShape
@@ -58,6 +61,9 @@ from ..models.relationship import (
     AspectMotionWitnessResponse,
     AspectsFromLongitudesResponse,
     DeclinationAspectComputationTruthResponse,
+    DeclinationAspectMotionAnalysisResponse,
+    DeclinationAspectMotionComputationTruthResponse,
+    DeclinationAspectMotionWitnessResponse,
     DeclinationAspectResponse,
     DeclinationAspectsFromDeclinationsResponse,
     AspectPatternResponse,
@@ -188,6 +194,40 @@ def serialize_declination_aspects_from_declinations(
             point_count=analysis.point_count,
             aspect_count=analysis.aspect_count,
         ),
+    )
+
+
+def serialize_declination_aspect_motion_witness(
+    witness: DeclinationAspectMotionWitness,
+) -> DeclinationAspectMotionAnalysisResponse:
+    return DeclinationAspectMotionAnalysisResponse(
+        witness=DeclinationAspectMotionWitnessResponse(
+            body1=witness.body1,
+            body2=witness.body2,
+            aspect=witness.aspect.value,
+            declination1_deg=witness.declination1_deg,
+            declination2_deg=witness.declination2_deg,
+            speed1_deg_per_day=witness.speed1_deg_per_day,
+            speed2_deg_per_day=witness.speed2_deg_per_day,
+            signed_error_deg=witness.signed_error_deg,
+            relative_speed_deg_per_day=witness.relative_speed_deg_per_day,
+            orb_deg=witness.orb_deg,
+            orb_rate_deg_per_day=witness.orb_rate_deg_per_day,
+            allowed_orb_deg=witness.allowed_orb_deg,
+            within_orb=witness.within_orb,
+            state=witness.state.value,
+            relative_motion_stalled=witness.relative_motion_stalled,
+            exact_tolerance_deg=witness.exact_tolerance_deg,
+            rate_tolerance_deg_per_day=witness.rate_tolerance_deg_per_day,
+            hemisphere_policy=witness.hemisphere_policy.value,
+            equator_policy=witness.equator_policy.value,
+            classification=serialize_aspect_classification(witness.classification),
+            reference_frame=witness.reference_frame,
+            timescale=witness.timescale,
+            provenance=witness.provenance,
+            evaluation_scope=witness.evaluation_scope,
+        ),
+        computation_truth=DeclinationAspectMotionComputationTruthResponse(),
     )
 
 
@@ -819,6 +859,7 @@ __all__ = [
     "serialize_aspects_from_longitudes",
     "serialize_declination_aspect",
     "serialize_declination_aspects_from_declinations",
+    "serialize_declination_aspect_motion_witness",
     "serialize_aspect_pattern",
     "serialize_chart_shape",
     "serialize_composite_chart",

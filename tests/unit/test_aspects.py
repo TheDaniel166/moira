@@ -3684,11 +3684,17 @@ _EXPECTED_PUBLIC = {
     "AspectGraphNode",
     "AspectHarmonicProfile",
     "DeclinationAspectAnalysis",
+    "DeclinationAspectKind",
+    "DeclinationEquatorPolicy",
+    "DeclinationHemispherePolicy",
+    "DeclinationMotionState",
     "LongitudeAspectAnalysis",
     "AspectPattern",
     "AspectPolicy",
     "AspectStrength",
     "DeclinationAspect",
+    "DeclinationAspectMotionWitness",
+    "DeclinationAspectPolicy",
     "aspect_harmonic_profile",
     "aspect_motion_witness",
     "aspect_motion_state",
@@ -3698,6 +3704,7 @@ _EXPECTED_PUBLIC = {
     "aspects_to_point",
     "build_aspect_graph",
     "declination_aspects_from_declinations",
+    "declination_aspect_motion_witness",
     "find_aspects",
     "find_declination_aspects",
     "find_patterns",
@@ -3761,6 +3768,12 @@ def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
     assert _moira_package.AspectPolicy is _aspects_module.AspectPolicy
     assert _moira_package.DeclinationAspect is _aspects_module.DeclinationAspect
     assert _moira_package.DeclinationAspectAnalysis is _aspects_module.DeclinationAspectAnalysis
+    assert _moira_package.DeclinationAspectKind is _aspects_module.DeclinationAspectKind
+    assert (
+        _moira_package.DeclinationAspectMotionWitness
+        is _aspects_module.DeclinationAspectMotionWitness
+    )
+    assert _moira_package.DeclinationAspectPolicy is _aspects_module.DeclinationAspectPolicy
     assert _moira_package.LongitudeAspectAnalysis is _aspects_module.LongitudeAspectAnalysis
     assert _moira_package.aspects_from_longitudes is _aspects_module.aspects_from_longitudes
     assert (
@@ -3772,7 +3785,7 @@ def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
 
 
 def test_aspects_dunder_all_length() -> None:
-    assert len(_aspects_module.__all__) == 42
+    assert len(_aspects_module.__all__) == 49
 
 
 def test_aspects_dunder_all_no_duplicates() -> None:
