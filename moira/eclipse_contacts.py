@@ -1,7 +1,7 @@
 """
 Moira — eclipse_contacts.py
-The Contact Engine: governs lunar eclipse contact time solving for all seven
-phase boundaries of a single lunar eclipse event.
+The Contact Engine: governs six lunar eclipse phase-boundary contacts plus the
+separate greatest-eclipse instant for a single event.
 
 Boundary: owns bisection root-finding and contact-time assembly. Delegates
 shadow geometry to EclipseCalculator, and eclipse maximum refinement to
@@ -36,21 +36,23 @@ class LunarEclipseContacts:
     """
     RITE: The Lunar Eclipse Contacts Vessel
 
-    THEOREM: Governs the storage of the seven contact Julian Days for a single
-    lunar eclipse.
+    THEOREM: Governs the storage of six contact Julian Days plus greatest
+    eclipse for a single lunar eclipse.
 
     RITE OF PURPOSE:
-        LunarEclipseContacts is the authoritative data vessel for all seven
-        phase-boundary contact times of a lunar eclipse: penumbral ingress (P1),
-        partial umbral ingress (U1), totality ingress (U2), greatest eclipse,
-        totality egress (U3), partial umbral egress (U4), and penumbral egress
-        (P4). Without it, callers would receive unstructured tuples with no
-        field-level guarantees. It exists to give every higher-level consumer a
+        LunarEclipseContacts is the authoritative data vessel for the six
+        phase-boundary contacts of a lunar eclipse: penumbral ingress (P1),
+        partial umbral ingress (U1), totality ingress (U2), totality egress
+        (U3), partial umbral egress (U4), and penumbral egress (P4), together
+        with the separate greatest-eclipse instant. Without it, callers would
+        receive unstructured tuples with no field-level guarantees. It exists
+        to give every higher-level consumer a
         single, named, immutable record of the eclipse timeline.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Store the seven contact Julian Days as named, typed fields
+            - Store the six contact Julian Days and greatest eclipse as named,
+              typed fields
             - Permit None for contacts that do not occur (e.g. U2/U3 for a
               partial eclipse)
             - Serve as a read-only vessel passed between all higher-level

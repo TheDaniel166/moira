@@ -42,12 +42,13 @@ Public surface / exports:
 from __future__ import annotations
 
 import math
-import time
 from dataclasses import dataclass
 from datetime import datetime
 from collections.abc import Callable
+from enum import Enum
+from numbers import Real
 
-from .constants import Body
+from .constants import Body, EARTH_RADIUS_KM, SUN_RADIUS_KM
 from .planets import planet_at, sky_position_at, _earth_barycentric_state, _geocentric
 from .julian import (
     CalendarDateTime,
@@ -86,6 +87,12 @@ from .geoutils import (
 __all__ = [
     "CloseApproach",
     "LunarOccultation",
+    "OccultationPathBoundaryPoint",
+    "OccultationPathBoundarySide",
+    "OccultationPathBoundaryTrack",
+    "OccultationGeographicPole",
+    "OccultationPoleCrossing",
+    "OccultationPoleCrossingPhase",
     "GrazeCircumstances",
     "GrazeTableRow",
     "GrazeProductGeometry",
@@ -94,6 +101,8 @@ __all__ = [
     "lunar_occultation",
     "lunar_occultation_path_at",
     "lunar_occultation_path",
+    "lunar_occultation_path_topology_at",
+    "lunar_occultation_path_topology",
     "lunar_star_graze_latitude",
     "lunar_star_graze_line",
     "lunar_star_graze_product_at",
@@ -104,14 +113,22 @@ __all__ = [
     "lunar_star_graze_circumstances",
     "lunar_star_occultation_path_at",
     "lunar_star_occultation_path",
+    "lunar_star_occultation_path_topology_at",
+    "lunar_star_occultation_path_topology",
     "all_lunar_occultations",
-    # Phase 3 — path/where geometry vessel (Defer.Design + Defer.Validation)
     "OccultationPathGeometry",
+    "OccultationPathPoint",
+    "OccultationPathTopology",
+    "OccultationPathTopologyKind",
 ]
 
 # ---------------------------------------------------------------------------
 # Phase 3 — OccultationPathGeometry  (Defer.Design + Defer.Validation)
 # ---------------------------------------------------------------------------
+
+_OCCULTATION_TOPOLOGY_DEFAULT_SAMPLES = 65
+_OCCULTATION_TOPOLOGY_MIN_SAMPLES = 9
+_OCCULTATION_TOPOLOGY_MAX_SAMPLES = 721
 
 @dataclass(frozen=True, slots=True)
 class OccultationPathGeometry:
@@ -183,6 +200,366 @@ class OccultationPathGeometry:
     central_line_lons:       tuple
     path_width_km:           float
     duration_at_greatest_s:  float
+
+
+class OccultationPathBoundarySide(str, Enum):
+    """Intrinsic side of an occultation path relative to increasing UT1."""
+
+    LEFT = "left"
+    RIGHT = "right"
+
+
+class OccultationPathTopologyKind(str, Enum):
+    """Admitted topology of an occultation path on the Earth sphere."""
+
+    TWO_SIDED_BAND = "two_sided_band"
+
+
+class OccultationGeographicPole(str, Enum):
+    """Canonical geographic pole participating in a path boundary contact."""
+
+    NORTH = "north"
+    SOUTH = "south"
+
+
+class OccultationPoleCrossingPhase(str, Enum):
+    """Whether a pole enters or leaves the instantaneous occultation region."""
+
+    INGRESS = "ingress"
+    EGRESS = "egress"
+
+
+def _path_real(owner: str, name: str, value: object) -> float:
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise TypeError(f"{owner}.{name} must be a real number")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"{owner}.{name} must be finite")
+    return result
+
+
+@dataclass(frozen=True, slots=True)
+class OccultationPathPoint:
+    """One inspectable point on an occultation center or limit track."""
+
+    jd_ut: float
+    latitude_deg: float
+    longitude_deg: float
+    separation_deg: float
+    clearance_deg: float
+
+    def __post_init__(self) -> None:
+        owner = type(self).__name__
+        for name in (
+            "jd_ut",
+            "latitude_deg",
+            "longitude_deg",
+            "separation_deg",
+            "clearance_deg",
+        ):
+            object.__setattr__(
+                self,
+                name,
+                _path_real(owner, name, getattr(self, name)),
+            )
+        if not -90.0 <= self.latitude_deg <= 90.0:
+            raise ValueError(f"{owner}.latitude_deg must be within [-90, 90]")
+        longitude = (
+            0.0
+            if abs(self.latitude_deg) == 90.0
+            else _wrap_longitude_deg(self.longitude_deg)
+        )
+        object.__setattr__(self, "longitude_deg", longitude)
+        if self.separation_deg < 0.0:
+            raise ValueError(f"{owner}.separation_deg must be non-negative")
+
+@dataclass(frozen=True, slots=True)
+class OccultationPathBoundaryPoint:
+    """One oriented cross-track limit point and its center distance."""
+
+    side: OccultationPathBoundarySide
+    point: OccultationPathPoint
+    cross_track_distance_km: float
+
+    def __post_init__(self) -> None:
+        try:
+            side = OccultationPathBoundarySide(self.side)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("invalid occultation path boundary side") from exc
+        object.__setattr__(self, "side", side)
+        if not isinstance(self.point, OccultationPathPoint):
+            raise TypeError("OccultationPathBoundaryPoint.point must be an OccultationPathPoint")
+        distance = _path_real(
+            type(self).__name__,
+            "cross_track_distance_km",
+            self.cross_track_distance_km,
+        )
+        if distance < 0.0:
+            raise ValueError("cross_track_distance_km must be non-negative")
+        if abs(self.point.clearance_deg) > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG:
+            raise ValueError("boundary-point clearance residual exceeds tolerance")
+        object.__setattr__(self, "cross_track_distance_km", distance)
+
+
+@dataclass(frozen=True, slots=True)
+class OccultationPathBoundaryTrack:
+    """One time-continuous intrinsic limit of an occultation band."""
+
+    side: OccultationPathBoundarySide
+    points: tuple[OccultationPathBoundaryPoint, ...]
+
+    def __post_init__(self) -> None:
+        try:
+            side = OccultationPathBoundarySide(self.side)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("invalid occultation path boundary side") from exc
+        points = tuple(self.points)
+        if len(points) < _OCCULTATION_TOPOLOGY_MIN_SAMPLES:
+            raise ValueError(
+                "OccultationPathBoundaryTrack requires at least "
+                f"{_OCCULTATION_TOPOLOGY_MIN_SAMPLES} points"
+            )
+        if any(not isinstance(point, OccultationPathBoundaryPoint) for point in points):
+            raise TypeError(
+                "OccultationPathBoundaryTrack.points must contain boundary points"
+            )
+        if any(point.side is not side for point in points):
+            raise ValueError("boundary track point sides must match the track side")
+        if any(
+            left.point.jd_ut >= right.point.jd_ut
+            for left, right in zip(points, points[1:])
+        ):
+            raise ValueError("occultation boundary points must be strictly time ordered")
+        object.__setattr__(self, "side", side)
+        object.__setattr__(self, "points", points)
+
+
+@dataclass(frozen=True, slots=True)
+class OccultationPoleCrossing:
+    """One exact-pole zero-clearance contact solved continuously in UT1."""
+
+    pole: OccultationGeographicPole
+    phase: OccultationPoleCrossingPhase
+    point: OccultationPathPoint
+    boundary_side: OccultationPathBoundarySide | None
+
+    def __post_init__(self) -> None:
+        try:
+            pole = OccultationGeographicPole(self.pole)
+            phase = OccultationPoleCrossingPhase(self.phase)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("invalid occultation pole-crossing identity") from exc
+        if not isinstance(self.point, OccultationPathPoint):
+            raise TypeError("OccultationPoleCrossing.point must be OccultationPathPoint")
+        expected_latitude = 90.0 if pole is OccultationGeographicPole.NORTH else -90.0
+        if self.point.latitude_deg != expected_latitude or self.point.longitude_deg != 0.0:
+            raise ValueError("pole-crossing point must use the canonical exact pole")
+        if abs(self.point.clearance_deg) > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG:
+            raise ValueError("pole-crossing clearance residual exceeds tolerance")
+        side = self.boundary_side
+        if side is not None:
+            try:
+                side = OccultationPathBoundarySide(side)
+            except (TypeError, ValueError) as exc:
+                raise ValueError("invalid pole-crossing boundary side") from exc
+        object.__setattr__(self, "pole", pole)
+        object.__setattr__(self, "phase", phase)
+        object.__setattr__(self, "boundary_side", side)
+
+
+@dataclass(frozen=True, slots=True)
+class OccultationPathTopology:
+    """Detailed, pole-safe topology behind an occultation path summary."""
+
+    summary: OccultationPathGeometry
+    topology: OccultationPathTopologyKind
+    centers: tuple[OccultationPathPoint, ...]
+    boundaries: tuple[OccultationPathBoundaryTrack, ...]
+    greatest_left: OccultationPathBoundaryPoint
+    greatest_right: OccultationPathBoundaryPoint
+    pole_crossings: tuple[OccultationPoleCrossing, ...]
+    lunar_limb_model: str
+    target_model: str
+    observer_elevation_m: float
+    observer_geometry: str = "WGS84_GEODETIC"
+    width_metric: str = "SPHERICAL_GREAT_CIRCLE_R6378_137_KM"
+    time_scale: str = "UT1"
+    atmospheric_refraction: bool = False
+    saturn_rings_included: bool = False
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.summary, OccultationPathGeometry):
+            raise TypeError("OccultationPathTopology.summary must be OccultationPathGeometry")
+        try:
+            topology = OccultationPathTopologyKind(self.topology)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("invalid occultation path topology") from exc
+        if topology is not OccultationPathTopologyKind.TWO_SIDED_BAND:
+            raise ValueError("only the two-sided occultation band is admitted")
+        if self.summary.occulting_body != Body.MOON:
+            raise ValueError("occultation topology requires the Moon as occulting body")
+        if self.target_model == "JPL_EQUATORIAL_SOLID_BODY":
+            if self.summary.occulted_body not in _TOPOLOGY_JPL_EQUATORIAL_TARGET_RADII_KM:
+                raise ValueError(
+                    "JPL solid-body topology requires an admitted non-solar planet"
+                )
+        elif self.target_model == "POINT_SOURCE":
+            if self.summary.occulted_body.casefold() in (
+                _SOLAR_SYSTEM_BODY_LABELS_CASEFOLD
+            ):
+                raise ValueError(
+                    "point-source topology cannot identify a Solar System body"
+                )
+        else:
+            raise ValueError("invalid target_model")
+        centers = tuple(self.centers)
+        if not _OCCULTATION_TOPOLOGY_MIN_SAMPLES <= len(centers) <= _OCCULTATION_TOPOLOGY_MAX_SAMPLES:
+            raise ValueError("occultation topology center count is outside the admitted range")
+        if any(not isinstance(point, OccultationPathPoint) for point in centers):
+            raise TypeError("OccultationPathTopology.centers must contain path points")
+        if any(left.jd_ut >= right.jd_ut for left, right in zip(centers, centers[1:])):
+            raise ValueError("occultation topology centers must be strictly time ordered")
+        if any(
+            point.clearance_deg < -_OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG
+            for point in centers
+        ):
+            raise ValueError("occultation topology centers must remain inside the footprint")
+        if abs(centers[0].clearance_deg) > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG or (
+            abs(centers[-1].clearance_deg)
+            > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG
+        ):
+            raise ValueError("occultation topology endpoints must be zero-clearance contacts")
+        boundaries = tuple(self.boundaries)
+        if tuple(track.side for track in boundaries) != (
+            OccultationPathBoundarySide.LEFT,
+            OccultationPathBoundarySide.RIGHT,
+        ):
+            raise ValueError("occultation topology requires ordered left and right tracks")
+        if any(len(track.points) != len(centers) for track in boundaries):
+            raise ValueError("occultation centers and boundary tracks must share one epoch lattice")
+        for track in boundaries:
+            if any(
+                center.jd_ut != boundary.point.jd_ut
+                for center, boundary in zip(centers, track.points)
+            ):
+                raise ValueError("occultation center and boundary epochs must match")
+            for center, boundary in zip(centers, track.points):
+                measured_distance = _surface_distance_km(
+                    center.latitude_deg,
+                    center.longitude_deg,
+                    boundary.point.latitude_deg,
+                    boundary.point.longitude_deg,
+                )
+                if abs(measured_distance - boundary.cross_track_distance_km) > (
+                    _OCCULTATION_PUBLIC_DISTANCE_TOLERANCE_KM
+                ):
+                    raise ValueError(
+                        "boundary half-width must equal its spherical center distance"
+                    )
+        if self.summary.central_line_lats != tuple(
+            point.latitude_deg for point in centers
+        ) or self.summary.central_line_lons != tuple(
+            point.longitude_deg for point in centers
+        ):
+            raise ValueError("summary central line must be the exact center-track projection")
+        if self.greatest_left.side is not OccultationPathBoundarySide.LEFT:
+            raise ValueError("greatest_left must carry the left boundary side")
+        if self.greatest_right.side is not OccultationPathBoundarySide.RIGHT:
+            raise ValueError("greatest_right must carry the right boundary side")
+        if self.greatest_left.point.jd_ut != self.summary.jd_greatest_ut or (
+            self.greatest_right.point.jd_ut != self.summary.jd_greatest_ut
+        ):
+            raise ValueError("greatest boundary epochs must equal summary greatest UT1")
+        greatest_index = next(
+            (
+                index
+                for index, center in enumerate(centers)
+                if center.jd_ut == self.summary.jd_greatest_ut
+            ),
+            None,
+        )
+        if greatest_index is None or self.greatest_left != boundaries[0].points[
+            greatest_index
+        ] or self.greatest_right != boundaries[1].points[greatest_index]:
+            raise ValueError("greatest boundaries must be their track samples")
+        if self.summary.path_width_km != (
+            self.greatest_left.cross_track_distance_km
+            + self.greatest_right.cross_track_distance_km
+        ):
+            raise ValueError("summary width must equal the two greatest half-widths")
+        duration_at_greatest_s = _path_real(
+            type(self).__name__,
+            "summary.duration_at_greatest_s",
+            self.summary.duration_at_greatest_s,
+        )
+        if duration_at_greatest_s <= 0.0:
+            raise ValueError("occultation topology greatest-site duration must be positive")
+        # The public vessel intentionally exposes the duration, not its private
+        # fixed-site contact instants.  The strongest public invariant is
+        # therefore that a site's occultation cannot outlive the global moving
+        # footprint represented by the center-track endpoints.
+        global_duration_s = (centers[-1].jd_ut - centers[0].jd_ut) * 86400.0
+        duration_tolerance_s = max(
+            1.0e-6,
+            8.0
+            * math.ulp(max(abs(centers[0].jd_ut), abs(centers[-1].jd_ut)))
+            * 86400.0,
+        )
+        if duration_at_greatest_s > global_duration_s + duration_tolerance_s:
+            raise ValueError(
+                "greatest-site duration cannot exceed the global footprint lifetime"
+            )
+        pole_crossings = tuple(self.pole_crossings)
+        if any(not isinstance(crossing, OccultationPoleCrossing) for crossing in pole_crossings):
+            raise TypeError("pole_crossings must contain OccultationPoleCrossing values")
+        if any(
+            left.point.jd_ut >= right.point.jd_ut
+            for left, right in zip(pole_crossings, pole_crossings[1:])
+        ):
+            raise ValueError("pole crossings must be strictly time ordered")
+        if any(
+            crossing.point.jd_ut < centers[0].jd_ut
+            or crossing.point.jd_ut > centers[-1].jd_ut
+            for crossing in pole_crossings
+        ):
+            raise ValueError("pole crossings must lie within the topology epoch window")
+        for pole in OccultationGeographicPole:
+            pole_events = tuple(
+                crossing for crossing in pole_crossings if crossing.pole is pole
+            )
+            if pole_events and tuple(event.phase for event in pole_events) != (
+                OccultationPoleCrossingPhase.INGRESS,
+                OccultationPoleCrossingPhase.EGRESS,
+            ):
+                raise ValueError(
+                    "each admitted pole containment requires one ingress then one egress"
+                )
+        if self.observer_geometry != "WGS84_GEODETIC":
+            raise ValueError("observer_geometry must identify WGS84 geodetic observers")
+        if self.width_metric != "SPHERICAL_GREAT_CIRCLE_R6378_137_KM":
+            raise ValueError("width_metric must identify Moira's admitted spherical metric")
+        if self.time_scale != "UT1":
+            raise ValueError("occultation path topology time_scale must be UT1")
+        observer_elevation_m = _validate_topology_observer_elevation(
+            self.observer_elevation_m
+        )
+        if not isinstance(self.atmospheric_refraction, bool):
+            raise TypeError("atmospheric_refraction must be bool")
+        if self.atmospheric_refraction:
+            raise ValueError("occultation path topology is an airless product")
+        if not isinstance(self.saturn_rings_included, bool):
+            raise TypeError("saturn_rings_included must be bool")
+        if self.saturn_rings_included:
+            raise ValueError("Saturn's rings are excluded from solid-body occultation width")
+        if self.lunar_limb_model != "SPHERICAL_MEAN_LIMB":
+            raise ValueError(
+                "first-class occultation topology admits only the spherical mean limb"
+            )
+        object.__setattr__(self, "topology", topology)
+        object.__setattr__(self, "centers", centers)
+        object.__setattr__(self, "boundaries", boundaries)
+        object.__setattr__(self, "pole_crossings", pole_crossings)
+        object.__setattr__(self, "observer_elevation_m", observer_elevation_m)
 
 
 @dataclass(frozen=True, slots=True)
@@ -287,6 +664,33 @@ _PLANET_MEAN_RADIUS_DEG: dict[str, float] = {
     Body.URANUS:  0.00196,
     Body.NEPTUNE: 0.00113,
     Body.PLUTO:   0.000045,
+}
+_SOLAR_SYSTEM_BODY_LABELS_CASEFOLD = frozenset(
+    {Body.EARTH.casefold(), *(body.casefold() for body in _PLANET_MEAN_RADIUS_DEG)}
+)
+
+# JPL Solar System Dynamics planetary physical parameters, equatorial radii
+# in kilometres: https://ssd.jpl.nasa.gov/planets/phys_par.html .  These values
+# govern the admitted first-class lunar-occultation topology targets.  The Sun
+# belongs to eclipse geometry, not this topology surface.  The older mean
+# angular thresholds above remain legacy event-detection policy.  Saturn's
+# rings are not part of the solid-body radius.
+_TOPOLOGY_JPL_EQUATORIAL_TARGET_RADII_KM: dict[str, float] = {
+    Body.MERCURY: 2440.53,
+    Body.VENUS: 6051.8,
+    Body.MARS: 3396.19,
+    Body.JUPITER: 71492.0,
+    Body.SATURN: 60268.0,
+    Body.URANUS: 25559.0,
+    Body.NEPTUNE: 24764.0,
+    Body.PLUTO: 1188.3,
+}
+
+# Legacy path APIs historically accept the Sun.  Keep that compatibility
+# radius separate so it cannot accidentally re-admit the Sun to topology.
+_LEGACY_SOLID_BODY_TARGET_RADII_KM: dict[str, float] = {
+    Body.SUN: SUN_RADIUS_KM,
+    **_TOPOLOGY_JPL_EQUATORIAL_TARGET_RADII_KM,
 }
 
 LunarLimbProfileProvider = Callable[[float, float, float, float, float, float], float]
@@ -560,27 +964,132 @@ def _bisect_minimum(
     Find the minimum of f on [a, b] using golden-section search.
     Returns (x_min, f_min).
     """
+    a = float(a)
+    b = float(b)
+    tol = float(tol)
+    if not math.isfinite(a) or not math.isfinite(b):
+        raise ValueError("minimum-search bounds must be finite")
+    if b < a:
+        raise ValueError("minimum-search bounds must be ordered")
+    if not math.isfinite(tol) or tol <= 0.0:
+        raise ValueError("minimum-search tolerance must be finite and positive")
+    if a == b:
+        return a, f(a)
+
     gr = (math.sqrt(5.0) + 1.0) / 2.0
     c = b - (b - a) / gr
     d = a + (b - a) / gr
-    while abs(b - a) > tol:
-        if f(c) < f(d):
+    best_x = c
+    c_value = f(c)
+    best_value = c_value
+    d_value = f(d)
+    if d_value < best_value:
+        best_x = d
+        best_value = d_value
+
+    # At large Julian Days, a requested tolerance can be smaller than one
+    # binary64 ULP.  Stop when the interval no longer advances, and retain a
+    # deterministic cap as a final guard against malformed objectives.
+    for _ in range(256):
+        if b - a <= tol:
+            break
+        old_a = a
+        old_b = b
+        if c_value < d_value:
             b = d
+            d = c
+            d_value = c_value
+            c = b - (b - a) / gr
+            c_value = f(c)
         else:
             a = c
-        c = b - (b - a) / gr
-        d = a + (b - a) / gr
+            c = d
+            c_value = d_value
+            d = a + (b - a) / gr
+            d_value = f(d)
+        if c_value < best_value:
+            best_x = c
+            best_value = c_value
+        if d_value < best_value:
+            best_x = d
+            best_value = d_value
+        if (a == old_a and b == old_b) or c == d or c <= a or d >= b:
+            break
     x = (a + b) / 2.0
-    return x, f(x)
+    x_value = f(x)
+    if x_value < best_value:
+        return x, x_value
+    return best_x, best_value
 
 
-_GEO_SEARCH_STEPS_DEG = (10.0, 5.0, 2.0, 1.0, 0.5, 0.25, 0.1, 0.05)
+_GEO_SEARCH_STEPS_DEG = (
+    10.0,
+    5.0,
+    2.0,
+    1.0,
+    0.5,
+    0.25,
+    0.1,
+    0.05,
+    0.02,
+    0.01,
+    0.005,
+    0.002,
+    0.001,
+    0.0005,
+    0.0002,
+    0.0001,
+)
+_GEO_GREATEST_TANGENT_SEARCH_STEPS_DEG = (
+    *_GEO_SEARCH_STEPS_DEG,
+    0.00005,
+    0.00002,
+    0.00001,
+    0.000005,
+    0.000002,
+    0.000001,
+    0.0000005,
+    0.0000002,
+    0.0000001,
+)
 _GEO_COARSE_LAT_STEP_DEG = 20.0
 _GEO_COARSE_LON_STEP_DEG = 20.0
 _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG = 1.0e-4
 _GEO_SEARCH_MAX_OBJECTIVE_EVALS = 4096
 _GEO_SEARCH_MAX_PASSES_PER_STEP = 512
-_GEO_SEARCH_TIMEOUT_S = 2.0
+_GEO_SEARCH_TIE_TOLERANCE_DEG = 1.0e-12
+_OCCULTATION_TEMPORAL_SCAN_STEP_DAYS = 1.0 / 48.0
+_OCCULTATION_TEMPORAL_SCAN_LIMIT = 48
+_OCCULTATION_COMPONENT_MAXIMUM_STEP_DAYS = 1.0 / 48.0
+_OCCULTATION_COMPONENT_MAXIMUM_MAX_CELLS = 128
+_OCCULTATION_COMPONENT_PEAK_TIME_TOLERANCE_DAYS = 1.0e-8
+_OCCULTATION_TRACK_TANGENT_STEP_DAYS = 1.0 / 1440.0
+_OCCULTATION_POLE_PEAK_TIME_TOLERANCE_DAYS = 1.0e-8
+_OCCULTATION_POLE_CLEARANCE_MAX_STEP_DAYS = 1.0 / 48.0
+_OCCULTATION_POLE_SIDE_DEGENERACY_TOLERANCE = 1.0e-12
+_OCCULTATION_TOPOLOGY_MAX_STEP_DAYS = 0.25
+_OCCULTATION_TOPOLOGY_MAX_SPAN_DAYS = 400.0
+_OCCULTATION_TOPOLOGY_MAX_CANDIDATE_CELLS = 4096
+_WGS84_FLATTENING = 1.0 / 298.257223563
+_OCCULTATION_TOPOLOGY_MIN_OBSERVER_ELEV_M = (
+    -EARTH_RADIUS_KM * (1.0 - _WGS84_FLATTENING) * 1000.0
+)
+_OCCULTATION_CANDIDATE_DEDUP_MIN_TOLERANCE_DAYS = 4.0e-8
+_OCCULTATION_CANDIDATE_DEDUP_ULPS = 8.0
+_OCCULTATION_BOUNDARY_SCAN_STEP_KM = 25.0
+_OCCULTATION_BOUNDARY_DISTANCE_TOLERANCE_KM = 1.0e-6
+_OCCULTATION_CLEARANCE_TOLERANCE_DEG = 1.0e-10
+_OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG = 1.0e-7
+_OCCULTATION_BRANCH_SWAP_TOLERANCE_KM = 1.0e-6
+_OCCULTATION_PUBLIC_DISTANCE_TOLERANCE_KM = 1.0e-5
+
+
+class _OccultationPathSolveError(ArithmeticError):
+    """The requested occultation path could not be solved honestly."""
+
+
+class _OccultationPathNotPresentError(ValueError):
+    """No positive-clearance occultation exists at the supplied greatest epoch."""
 
 
 def _bisection_root(func, left: float, right: float, *, iterations: int = 48) -> float:
@@ -595,13 +1104,17 @@ def _bisection_root(func, left: float, right: float, *, iterations: int = 48) ->
     a = left
     b = right
     fa = f_left
+    fb = f_right
     for _ in range(iterations):
         mid = (a + b) / 2.0
+        if mid == a or mid == b:
+            return a if abs(fa) <= abs(fb) else b
         fm = func(mid)
         if fm == 0.0:
             return mid
         if fa * fm <= 0.0:
             b = mid
+            fb = fm
         else:
             a = mid
             fa = fm
@@ -1117,78 +1630,146 @@ def _solve_star_graze_latitude(
 
 def _solve_occultation_greatest_location(
     objective: Callable[[float, float], float],
+    *,
+    preferred_location: tuple[float, float] | None = None,
+    early_exit_score: float | None = _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG,
+    complete_surface: bool = True,
+    refinement_steps_deg: tuple[float, ...] = _GEO_SEARCH_STEPS_DEG,
 ) -> tuple[float, float, float]:
+    """Minimize a surface objective without treating a pole as a boundary.
+
+    Lower objective values govern.  A continuation preference only resolves
+    numerical ties; it can never displace a materially better surface point.
+    """
+
     cache: dict[tuple[float, float], float] = {}
-    deadline = time.perf_counter() + _GEO_SEARCH_TIMEOUT_S
     objective_evals = 0
 
     def score(latitude: float, longitude: float) -> float:
         nonlocal objective_evals
-        key = (round(latitude, 6), round(_wrap_longitude_deg(longitude), 6))
+        canonical_latitude, canonical_longitude = _offset_geographic_km(
+            latitude,
+            longitude,
+            0.0,
+            0.0,
+        )
+        key = (round(canonical_latitude, 8), round(canonical_longitude, 8))
         if key not in cache:
+            if objective_evals >= _GEO_SEARCH_MAX_OBJECTIVE_EVALS:
+                raise _OccultationPathSolveError(
+                    "occultation greatest-location evaluation limit exhausted"
+                )
             objective_evals += 1
-            cache[key] = objective(latitude, longitude)
+            value = float(objective(canonical_latitude, canonical_longitude))
+            if not math.isfinite(value):
+                raise _OccultationPathSolveError(
+                    "occultation greatest-location objective returned a non-finite value"
+                )
+            cache[key] = value
         return cache[key]
 
-    def limit_reached() -> bool:
-        return (
-            objective_evals >= _GEO_SEARCH_MAX_OBJECTIVE_EVALS
-            or time.perf_counter() >= deadline
-            or best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG
+    preferred = None
+    if preferred_location is not None:
+        preferred = _offset_geographic_km(
+            float(preferred_location[0]),
+            float(preferred_location[1]),
+            0.0,
+            0.0,
         )
 
     best_lat = 0.0
     best_lon = 0.0
     best_score = float("inf")
-    search_complete = False
+
+    def surface_distance_to_preference(latitude: float, longitude: float) -> float:
+        if preferred is None:
+            return 0.0
+        return _surface_distance_km(
+            latitude,
+            longitude,
+            preferred[0],
+            preferred[1],
+        )
+
+    def admit(latitude: float, longitude: float) -> bool:
+        nonlocal best_lat, best_lon, best_score
+        canonical_latitude, canonical_longitude = _offset_geographic_km(
+            latitude,
+            longitude,
+            0.0,
+            0.0,
+        )
+        value = score(canonical_latitude, canonical_longitude)
+        better = value < best_score - _GEO_SEARCH_TIE_TOLERANCE_DEG
+        tied = abs(value - best_score) <= _GEO_SEARCH_TIE_TOLERANCE_DEG
+        if tied:
+            candidate_key = (
+                surface_distance_to_preference(canonical_latitude, canonical_longitude),
+                canonical_latitude,
+                canonical_longitude,
+            )
+            best_key = (
+                surface_distance_to_preference(best_lat, best_lon),
+                best_lat,
+                best_lon,
+            )
+            better = candidate_key < best_key
+        if better:
+            best_lat = canonical_latitude
+            best_lon = canonical_longitude
+            best_score = value
+        return early_exit_score is not None and best_score <= early_exit_score
+
+    def refine_from_current() -> bool:
+        nonlocal best_lat, best_lon, best_score
+        for step in refinement_steps_deg:
+            step_km = step * _EARTH_KM_PER_DEG_LAT
+            improved = True
+            passes = 0
+            while improved and passes < _GEO_SEARCH_MAX_PASSES_PER_STEP:
+                passes += 1
+                improved = False
+                origin_lat = best_lat
+                origin_lon = best_lon
+                origin_score = best_score
+                for north_direction in (-1.0, 0.0, 1.0):
+                    for east_direction in (-1.0, 0.0, 1.0):
+                        if north_direction == 0.0 and east_direction == 0.0:
+                            continue
+                        cand_lat, cand_lon = _offset_geographic_km(
+                            origin_lat,
+                            origin_lon,
+                            north_direction * step_km,
+                            east_direction * step_km,
+                        )
+                        if admit(cand_lat, cand_lon):
+                            return True
+                improved = best_score < origin_score - _GEO_SEARCH_TIE_TOLERANCE_DEG
+        return False
+
+    if preferred is not None:
+        admit(*preferred)
+        if refine_from_current():
+            return best_lat, best_lon, best_score
+        if not complete_surface:
+            return best_lat, best_lon, best_score
+
+    # Longitude is undefined at an exact pole.  Each pole is one canonical
+    # surface point and is evaluated before the regular coordinate grid.
+    for latitude, longitude in ((-90.0, 0.0), (90.0, 0.0)):
+        if admit(latitude, longitude):
+            return best_lat, best_lon, best_score
 
     lat = -80.0
-    while lat <= 80.0 + 1e-9 and not search_complete:
+    while lat <= 80.0 + 1e-9:
         lon = -180.0
         while lon < 180.0 - 1e-9:
-            if limit_reached():
-                search_complete = True
-                break
-            value = score(lat, lon)
-            if value < best_score:
-                best_lat = lat
-                best_lon = lon
-                best_score = value
-                if best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
-                    search_complete = True
-                    break
+            if admit(lat, lon):
+                return best_lat, best_lon, best_score
             lon += _GEO_COARSE_LON_STEP_DEG
         lat += _GEO_COARSE_LAT_STEP_DEG
 
-    if search_complete:
-        return best_lat, best_lon, best_score
-
-    for step in _GEO_SEARCH_STEPS_DEG:
-        if limit_reached():
-            break
-        improved = True
-        passes = 0
-        while improved and passes < _GEO_SEARCH_MAX_PASSES_PER_STEP:
-            if limit_reached():
-                return best_lat, best_lon, best_score
-            passes += 1
-            improved = False
-            for dlat in (-step, 0.0, step):
-                for dlon in (-step, 0.0, step):
-                    if dlat == 0.0 and dlon == 0.0:
-                        continue
-                    if limit_reached():
-                        return best_lat, best_lon, best_score
-                    cand_lat = max(-89.5, min(89.5, best_lat + dlat))
-                    cand_lon = _wrap_longitude_deg(best_lon + dlon)
-                    value = score(cand_lat, cand_lon)
-                    if value < best_score:
-                        best_lat = cand_lat
-                        best_lon = cand_lon
-                        best_score = value
-                        improved = True
-                        if best_score <= _GEO_SEARCH_EARLY_EXIT_SEPARATION_DEG:
-                            return best_lat, best_lon, best_score
+    refine_from_current()
     return best_lat, best_lon, best_score
 
 
@@ -1203,6 +1784,12 @@ def _planet_topocentric_target_geometry(
 ) -> tuple[float, float, float, float]:
     moon = sky_position_at(Body.MOON, jd, lat, lon, observer_elev_m, reader=reader)
     target_pos = sky_position_at(target, jd, lat, lon, observer_elev_m, reader=reader)
+    try:
+        target_physical_radius_km = _LEGACY_SOLID_BODY_TARGET_RADII_KM[target]
+    except KeyError as exc:
+        raise ValueError(
+            f"No JPL equatorial solid-body radius is admitted for {target!r}"
+        ) from exc
     separation = _angular_separation_equatorial(
         moon.right_ascension,
         moon.declination,
@@ -1224,7 +1811,11 @@ def _planet_topocentric_target_geometry(
         position_angle,
         moon.distance,
     )
-    margin = moon_radius + _PLANET_MEAN_RADIUS_DEG.get(target, 0.0) - separation
+    target_radius = _apparent_radius(
+        target_physical_radius_km,
+        target_pos.distance,
+    )
+    margin = moon_radius + target_radius - separation
     return separation, margin, moon.azimuth, moon.altitude
 
 
@@ -1758,6 +2349,796 @@ def lunar_star_graze_product_track(
     )
 
 
+def _unit_sphere_xyz(latitude_deg: float, longitude_deg: float) -> tuple[float, float, float]:
+    latitude_deg, longitude_deg = _offset_geographic_km(
+        latitude_deg,
+        longitude_deg,
+        0.0,
+        0.0,
+    )
+    latitude = math.radians(latitude_deg)
+    longitude = math.radians(longitude_deg)
+    cos_latitude = math.cos(latitude)
+    return (
+        cos_latitude * math.cos(longitude),
+        cos_latitude * math.sin(longitude),
+        math.sin(latitude),
+    )
+
+
+def _surface_distance_km(
+    left_latitude_deg: float,
+    left_longitude_deg: float,
+    right_latitude_deg: float,
+    right_longitude_deg: float,
+) -> float:
+    left = _unit_sphere_xyz(left_latitude_deg, left_longitude_deg)
+    right = _unit_sphere_xyz(right_latitude_deg, right_longitude_deg)
+    dot = max(-1.0, min(1.0, sum(a * b for a, b in zip(left, right))))
+    cross = (
+        left[1] * right[2] - left[2] * right[1],
+        left[2] * right[0] - left[0] * right[2],
+        left[0] * right[1] - left[1] * right[0],
+    )
+    return EARTH_RADIUS_KM * math.atan2(math.sqrt(sum(value * value for value in cross)), dot)
+
+
+def _track_direction_ne(
+    before: OccultationPathPoint,
+    center: OccultationPathPoint,
+    after: OccultationPathPoint,
+) -> tuple[float, float]:
+    before_xyz = _unit_sphere_xyz(before.latitude_deg, before.longitude_deg)
+    center_xyz = _unit_sphere_xyz(center.latitude_deg, center.longitude_deg)
+    after_xyz = _unit_sphere_xyz(after.latitude_deg, after.longitude_deg)
+    displacement = tuple(a - b for a, b in zip(after_xyz, before_xyz))
+    radial = sum(a * b for a, b in zip(displacement, center_xyz))
+    tangent = tuple(a - radial * b for a, b in zip(displacement, center_xyz))
+    norm = math.sqrt(sum(value * value for value in tangent))
+    if norm <= 1.0e-15:
+        raise _OccultationPathSolveError(
+            "occultation center-track tangent is degenerate"
+        )
+    tangent = tuple(value / norm for value in tangent)
+
+    latitude = math.radians(center.latitude_deg)
+    longitude = math.radians(center.longitude_deg)
+    north_basis = (
+        -math.sin(latitude) * math.cos(longitude),
+        -math.sin(latitude) * math.sin(longitude),
+        math.cos(latitude),
+    )
+    east_basis = (-math.sin(longitude), math.cos(longitude), 0.0)
+    north = sum(a * b for a, b in zip(tangent, north_basis))
+    east = sum(a * b for a, b in zip(tangent, east_basis))
+    component_norm = math.hypot(north, east)
+    if component_norm <= 1.0e-15:
+        raise _OccultationPathSolveError(
+            "occultation center-track tangent is degenerate"
+        )
+    return north / component_norm, east / component_norm
+
+
+def _sample_times_with_greatest(
+    jd_start: float,
+    jd_end: float,
+    sample_count: int,
+    jd_greatest: float,
+) -> tuple[float, ...]:
+    if sample_count == 1:
+        return (jd_greatest,)
+    if sample_count == 2:
+        # Two endpoints cannot also carry an interior greatest epoch.  This is
+        # the established legacy summary shape; the detailed topology always
+        # has enough samples to materialize greatest explicitly.
+        return (jd_start, jd_end)
+    values = list(_sample_interval(jd_start, jd_end, sample_count))
+    replace_index = min(
+        range(1, len(values) - 1),
+        key=lambda index: abs(values[index] - jd_greatest),
+    )
+    values[replace_index] = jd_greatest
+    values.sort()
+    if any(left >= right for left, right in zip(values, values[1:])):
+        raise _OccultationPathSolveError(
+            "occultation output epochs could not admit greatest UT1 uniquely"
+        )
+    return tuple(values)
+
+
+def _solve_cross_track_boundary(
+    position_func,
+    center: OccultationPathPoint,
+    track_direction_ne: tuple[float, float],
+    side: OccultationPathBoundarySide,
+) -> OccultationPathBoundaryPoint:
+    if center.clearance_deg < -_OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG:
+        raise _OccultationPathSolveError(
+            "occultation center lies outside the admitted positive-clearance region"
+        )
+    if center.clearance_deg <= _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG:
+        return OccultationPathBoundaryPoint(side, center, 0.0)
+
+    track_north, track_east = track_direction_ne
+    # In the local (east, north) tangent plane, LEFT is the +90-degree
+    # rotation of the increasing-UT1 track: (E, N) -> (-N, E).
+    cross_north = track_east
+    cross_east = -track_north
+    sign = 1.0 if side is OccultationPathBoundarySide.LEFT else -1.0
+
+    def evaluate(distance_km: float) -> tuple[float, float, float, float, float, float]:
+        latitude, longitude = _offset_geographic_km(
+            center.latitude_deg,
+            center.longitude_deg,
+            sign * cross_north * distance_km,
+            sign * cross_east * distance_km,
+        )
+        separation, clearance, azimuth, altitude = position_func(
+            center.jd_ut,
+            latitude,
+            longitude,
+        )
+        if not math.isfinite(separation) or not math.isfinite(clearance):
+            raise _OccultationPathSolveError(
+                "occultation cross-track objective returned a non-finite value"
+            )
+        return latitude, longitude, separation, clearance, azimuth, altitude
+
+    maximum_distance = math.pi * EARTH_RADIUS_KM
+    low = 0.0
+    high = min(_OCCULTATION_BOUNDARY_SCAN_STEP_KM, maximum_distance)
+    high_geometry = evaluate(high)
+    while high_geometry[3] > 0.0 and high < maximum_distance:
+        low = high
+        high = min(high + _OCCULTATION_BOUNDARY_SCAN_STEP_KM, maximum_distance)
+        high_geometry = evaluate(high)
+    if high_geometry[3] > 0.0:
+        raise _OccultationPathSolveError(
+            "occultation cross-track boundary did not close before the antipode"
+        )
+
+    while high - low > _OCCULTATION_BOUNDARY_DISTANCE_TOLERANCE_KM:
+        midpoint = (low + high) / 2.0
+        geometry = evaluate(midpoint)
+        if geometry[3] > 0.0:
+            low = midpoint
+        else:
+            high = midpoint
+            high_geometry = geometry
+    distance = (low + high) / 2.0
+    latitude, longitude, separation, clearance, _azimuth, _altitude = evaluate(distance)
+    if abs(clearance) > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG:
+        raise _OccultationPathSolveError(
+            "occultation cross-track boundary residual exceeds tolerance"
+        )
+    return OccultationPathBoundaryPoint(
+        side=side,
+        point=OccultationPathPoint(
+            jd_ut=center.jd_ut,
+            latitude_deg=latitude,
+            longitude_deg=longitude,
+            separation_deg=separation,
+            clearance_deg=clearance,
+        ),
+        cross_track_distance_km=distance,
+    )
+
+
+def _solve_occultation_pole_crossings(
+    position_func,
+    center_at: Callable[[float], OccultationPathPoint],
+    jd_start: float,
+    jd_end: float,
+) -> tuple[OccultationPoleCrossing, ...]:
+    """Solve exact-pole containment and its two roots in continuous UT1.
+
+    Pole admission uses its own at-most-30-minute clearance lattice, independent
+    of the caller's output sampling.  Bounded extrema refine that lattice; one
+    connected positive-clearance interval is admitted, while a tangent or
+    multiple disjoint intervals are not represented as a crossing pair.
+    """
+
+    span_days = jd_end - jd_start
+    if not math.isfinite(span_days) or span_days <= 0.0:
+        raise _OccultationPathSolveError(
+            "occultation pole window must be finite and strictly ordered"
+        )
+    segment_count = max(
+        1,
+        math.ceil(span_days / _OCCULTATION_POLE_CLEARANCE_MAX_STEP_DAYS),
+    )
+    lattice_times = tuple(
+        jd_start + span_days * index / segment_count
+        for index in range(segment_count)
+    ) + (jd_end,)
+    crossings: list[OccultationPoleCrossing] = []
+
+    for pole in (OccultationGeographicPole.NORTH, OccultationGeographicPole.SOUTH):
+        latitude = 90.0 if pole is OccultationGeographicPole.NORTH else -90.0
+        clearance_by_epoch: dict[float, float] = {}
+
+        def clearance(jd_ut: float) -> float:
+            known = clearance_by_epoch.get(jd_ut)
+            if known is not None:
+                return known
+            value = float(position_func(jd_ut, latitude, 0.0)[1])
+            if not math.isfinite(value):
+                raise _OccultationPathSolveError(
+                    "occultation exact-pole clearance returned a non-finite value"
+                )
+            clearance_by_epoch[jd_ut] = value
+            return value
+
+        lattice_clearances = tuple(clearance(jd_ut) for jd_ut in lattice_times)
+        start_clearance = lattice_clearances[0]
+        end_clearance = lattice_clearances[-1]
+
+        maximum_brackets = {
+            (lattice_times[0], lattice_times[1]),
+            (lattice_times[-2], lattice_times[-1]),
+        }
+        maximum_brackets.update(
+            (lattice_times[index - 1], lattice_times[index + 1])
+            for index in range(1, len(lattice_times) - 1)
+            if lattice_clearances[index] >= lattice_clearances[index - 1]
+            and lattice_clearances[index] >= lattice_clearances[index + 1]
+        )
+        minimum_brackets = {
+            (lattice_times[index - 1], lattice_times[index + 1])
+            for index in range(1, len(lattice_times) - 1)
+            if lattice_clearances[index] <= lattice_clearances[index - 1]
+            and lattice_clearances[index] <= lattice_clearances[index + 1]
+        }
+
+        peak_candidates: list[tuple[float, float]] = list(
+            zip(lattice_times, lattice_clearances)
+        )
+        topology_witnesses: list[tuple[float, float]] = list(peak_candidates)
+        for bracket_left, bracket_right in sorted(maximum_brackets):
+            candidate_jd, negative_clearance = _bisect_minimum(
+                lambda jd_ut: -clearance(jd_ut),
+                bracket_left,
+                bracket_right,
+                tol=_OCCULTATION_POLE_PEAK_TIME_TOLERANCE_DAYS,
+            )
+            candidate = (candidate_jd, -negative_clearance)
+            peak_candidates.append(candidate)
+            topology_witnesses.append(candidate)
+        for bracket_left, bracket_right in sorted(minimum_brackets):
+            candidate_jd, candidate_clearance = _bisect_minimum(
+                clearance,
+                bracket_left,
+                bracket_right,
+                tol=_OCCULTATION_POLE_PEAK_TIME_TOLERANCE_DAYS,
+            )
+            topology_witnesses.append((candidate_jd, candidate_clearance))
+
+        peak_jd, peak_clearance = max(
+            peak_candidates,
+            key=lambda candidate: (candidate[1], -candidate[0]),
+        )
+        if peak_clearance <= _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG:
+            continue
+        if start_clearance > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG or (
+            end_clearance > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG
+        ):
+            raise _OccultationPathSolveError(
+                "occultation pole containment is not closed within the path window"
+            )
+
+        # Count connected positive regions using both the fixed lattice and
+        # refined maxima/minima.  Values inside the declared boundary residual
+        # band coalesce with the boundary and do not manufacture a new region.
+        ordered_witnesses = sorted(
+            {
+                jd_ut: (jd_ut, candidate_clearance)
+                for jd_ut, candidate_clearance in topology_witnesses
+            }.values()
+        )
+        positive_regions = 0
+        separated_from_positive = True
+        for _jd_ut, candidate_clearance in ordered_witnesses:
+            if candidate_clearance > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG:
+                if separated_from_positive:
+                    positive_regions += 1
+                    separated_from_positive = False
+            elif candidate_clearance < -_OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG:
+                separated_from_positive = True
+        if positive_regions != 1:
+            raise _OccultationPathSolveError(
+                "multiple disjoint pole-containment intervals are not admitted"
+            )
+
+        ingress = (
+            jd_start
+            if start_clearance >= -_OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG
+            else _bisection_root(clearance, jd_start, peak_jd)
+        )
+        egress = (
+            jd_end
+            if end_clearance >= -_OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG
+            else _bisection_root(clearance, peak_jd, jd_end)
+        )
+        roots = (
+            (ingress, OccultationPoleCrossingPhase.INGRESS),
+            (egress, OccultationPoleCrossingPhase.EGRESS),
+        )
+
+        for root, phase in roots:
+
+            separation, root_clearance, _azimuth, _altitude = position_func(
+                root,
+                latitude,
+                0.0,
+            )
+            center = center_at(root)
+            tangent_before = center_at(root - _OCCULTATION_TRACK_TANGENT_STEP_DAYS)
+            tangent_after = center_at(root + _OCCULTATION_TRACK_TANGENT_STEP_DAYS)
+            direction = _track_direction_ne(tangent_before, center, tangent_after)
+            boundary_side = _classify_occultation_pole_side(direction, pole)
+
+            crossings.append(
+                OccultationPoleCrossing(
+                    pole=pole,
+                    phase=phase,
+                    point=OccultationPathPoint(
+                        jd_ut=root,
+                        latitude_deg=latitude,
+                        longitude_deg=0.0,
+                        separation_deg=separation,
+                        clearance_deg=root_clearance,
+                    ),
+                    boundary_side=boundary_side,
+                )
+            )
+
+    return tuple(sorted(crossings, key=lambda crossing: crossing.point.jd_ut))
+
+
+def _classify_occultation_pole_side(
+    track_direction_ne: tuple[float, float],
+    pole: OccultationGeographicPole,
+) -> OccultationPathBoundarySide | None:
+    """Classify a pole against the intrinsic increasing-UT1 path normal."""
+
+    track_north, track_east = track_direction_ne
+    left_north = track_east
+    left_east = -track_north
+    pole_north = 1.0 if pole is OccultationGeographicPole.NORTH else -1.0
+    projection = pole_north * left_north + 0.0 * left_east
+    if projection > _OCCULTATION_POLE_SIDE_DEGENERACY_TOLERANCE:
+        return OccultationPathBoundarySide.LEFT
+    if projection < -_OCCULTATION_POLE_SIDE_DEGENERACY_TOLERANCE:
+        return OccultationPathBoundarySide.RIGHT
+    return None
+
+
+def _solve_occultation_clearance_center(
+    position_func,
+    jd_ut: float,
+    *,
+    preferred_location: tuple[float, float] | None = None,
+    complete_surface: bool,
+    refinement_steps_deg: tuple[float, ...] = _GEO_SEARCH_STEPS_DEG,
+) -> OccultationPathPoint:
+    latitude, longitude, _negative_clearance = _solve_occultation_greatest_location(
+        lambda candidate_latitude, candidate_longitude: -position_func(
+            jd_ut,
+            candidate_latitude,
+            candidate_longitude,
+        )[1],
+        preferred_location=preferred_location,
+        early_exit_score=None,
+        complete_surface=complete_surface,
+        refinement_steps_deg=refinement_steps_deg,
+    )
+    separation, clearance, _azimuth, _altitude = position_func(
+        jd_ut,
+        latitude,
+        longitude,
+    )
+    if not math.isfinite(separation) or not math.isfinite(clearance):
+        raise _OccultationPathSolveError(
+            "occultation center geometry returned a non-finite value"
+        )
+    return OccultationPathPoint(
+        jd_ut=jd_ut,
+        latitude_deg=latitude,
+        longitude_deg=longitude,
+        separation_deg=separation,
+        clearance_deg=clearance,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class _OccultationPathCalculation:
+    jd_start: float
+    jd_end: float
+    jd_greatest: float
+    duration_at_greatest_s: float
+    centers: tuple[OccultationPathPoint, ...]
+    boundaries: tuple[OccultationPathBoundaryTrack, OccultationPathBoundaryTrack]
+    greatest_left: OccultationPathBoundaryPoint
+    greatest_right: OccultationPathBoundaryPoint
+    pole_crossings: tuple[OccultationPoleCrossing, ...]
+
+
+def _make_occultation_center_resolver(
+    position_func,
+    *,
+    initial_refinement_steps_deg: tuple[float, ...] = _GEO_SEARCH_STEPS_DEG,
+) -> Callable[[float], OccultationPathPoint]:
+    centers_by_epoch: dict[float, OccultationPathPoint] = {}
+
+    def center_at(jd_ut: float) -> OccultationPathPoint:
+        known = centers_by_epoch.get(jd_ut)
+        if known is not None:
+            return known
+        preferred = None
+        if centers_by_epoch:
+            nearest = min(
+                centers_by_epoch.values(),
+                key=lambda point: abs(point.jd_ut - jd_ut),
+            )
+            preferred = (nearest.latitude_deg, nearest.longitude_deg)
+        point = _solve_occultation_clearance_center(
+            position_func,
+            jd_ut,
+            preferred_location=preferred,
+            complete_surface=preferred is None,
+            refinement_steps_deg=(
+                initial_refinement_steps_deg
+                if preferred is None
+                else _GEO_SEARCH_STEPS_DEG
+            ),
+        )
+        centers_by_epoch[jd_ut] = point
+        return point
+
+    return center_at
+
+
+def _solve_occultation_greatest_track_direction(
+    position_func,
+    greatest_center: OccultationPathPoint,
+) -> tuple[float, float]:
+    """Return a history-independent local tangent at greatest occultation.
+
+    Both one-minute witnesses refine the continuous center-track branch from
+    the same greatest-center anchor.  They therefore cannot inherit whichever
+    temporal-boundary sample happened to populate a shared cache most recently.
+    """
+
+    preferred_location = (
+        greatest_center.latitude_deg,
+        greatest_center.longitude_deg,
+    )
+    before = _solve_occultation_clearance_center(
+        position_func,
+        greatest_center.jd_ut - _OCCULTATION_TRACK_TANGENT_STEP_DAYS,
+        preferred_location=preferred_location,
+        complete_surface=False,
+        refinement_steps_deg=_GEO_GREATEST_TANGENT_SEARCH_STEPS_DEG,
+    )
+    after = _solve_occultation_clearance_center(
+        position_func,
+        greatest_center.jd_ut + _OCCULTATION_TRACK_TANGENT_STEP_DAYS,
+        preferred_location=preferred_location,
+        complete_surface=False,
+        refinement_steps_deg=_GEO_GREATEST_TANGENT_SEARCH_STEPS_DEG,
+    )
+    return _track_direction_ne(before, greatest_center, after)
+
+
+def _solve_occultation_temporal_interval(
+    center_at: Callable[[float], OccultationPathPoint],
+    jd_mid: float,
+) -> tuple[float, float]:
+    def margin_at_time(jd_ut: float) -> float:
+        return center_at(jd_ut).clearance_deg
+
+    left_inside = jd_mid
+    left = None
+    for _ in range(_OCCULTATION_TEMPORAL_SCAN_LIMIT):
+        candidate = left_inside - _OCCULTATION_TEMPORAL_SCAN_STEP_DAYS
+        if margin_at_time(candidate) <= 0.0:
+            left = _bisection_root(margin_at_time, candidate, left_inside)
+            break
+        left_inside = candidate
+    if left is None:
+        raise _OccultationPathSolveError(
+            "occultation temporal boundary was not bracketed before greatest"
+        )
+
+    right_inside = jd_mid
+    right = None
+    for _ in range(_OCCULTATION_TEMPORAL_SCAN_LIMIT):
+        candidate = right_inside + _OCCULTATION_TEMPORAL_SCAN_STEP_DAYS
+        if margin_at_time(candidate) <= 0.0:
+            right = _bisection_root(margin_at_time, right_inside, candidate)
+            break
+        right_inside = candidate
+    if right is None:
+        raise _OccultationPathSolveError(
+            "occultation temporal boundary was not bracketed after greatest"
+        )
+    return left, right
+
+
+def _solve_occultation_greatest_site_duration(
+    position_func,
+    greatest_center: OccultationPathPoint,
+    jd_start: float,
+    jd_end: float,
+) -> float:
+    """Solve fixed-site contacts at the greatest center, in seconds."""
+
+    def site_clearance(jd_ut: float) -> float:
+        value = float(
+            position_func(
+                jd_ut,
+                greatest_center.latitude_deg,
+                greatest_center.longitude_deg,
+            )[1]
+        )
+        if not math.isfinite(value):
+            raise _OccultationPathSolveError(
+                "occultation greatest-site clearance returned a non-finite value"
+            )
+        return value
+
+    greatest_clearance = site_clearance(greatest_center.jd_ut)
+    if greatest_clearance <= _OCCULTATION_CLEARANCE_TOLERANCE_DEG:
+        raise _OccultationPathSolveError(
+            "occultation greatest site is not inside the footprint"
+        )
+    start_clearance = site_clearance(jd_start)
+    end_clearance = site_clearance(jd_end)
+    if start_clearance > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG or (
+        end_clearance > _OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG
+    ):
+        raise _OccultationPathSolveError(
+            "occultation greatest-site contacts are not closed by the global path window"
+        )
+    ingress = (
+        jd_start
+        if start_clearance >= -_OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG
+        else _bisection_root(
+            site_clearance,
+            jd_start,
+            greatest_center.jd_ut,
+        )
+    )
+    egress = (
+        jd_end
+        if end_clearance >= -_OCCULTATION_BOUNDARY_RESIDUAL_TOLERANCE_DEG
+        else _bisection_root(
+            site_clearance,
+            greatest_center.jd_ut,
+            jd_end,
+        )
+    )
+    duration_s = (egress - ingress) * 86400.0
+    if not math.isfinite(duration_s) or duration_s <= 0.0:
+        raise _OccultationPathSolveError(
+            "occultation greatest-site duration is not positive and finite"
+        )
+    return duration_s
+
+
+def _calculate_occultation_path(
+    *,
+    jd_mid: float,
+    position_func,
+    detail_sample_count: int,
+    solve_pole_crossings: bool,
+) -> _OccultationPathCalculation:
+    if (
+        isinstance(detail_sample_count, bool)
+        or not isinstance(detail_sample_count, int)
+        or not _OCCULTATION_TOPOLOGY_MIN_SAMPLES
+        <= detail_sample_count
+        <= _OCCULTATION_TOPOLOGY_MAX_SAMPLES
+    ):
+        raise ValueError(
+            "detailed occultation sample_count must be an integer in "
+            f"[{_OCCULTATION_TOPOLOGY_MIN_SAMPLES}, {_OCCULTATION_TOPOLOGY_MAX_SAMPLES}]"
+        )
+    if not math.isfinite(jd_mid):
+        raise ValueError("jd_mid must be finite")
+
+    center_at = _make_occultation_center_resolver(
+        position_func,
+        initial_refinement_steps_deg=_GEO_GREATEST_TANGENT_SEARCH_STEPS_DEG,
+    )
+
+    greatest_center = center_at(jd_mid)
+    if greatest_center.clearance_deg <= _OCCULTATION_CLEARANCE_TOLERANCE_DEG:
+        raise _OccultationPathNotPresentError(
+            "no occultation is present at the supplied greatest epoch"
+        )
+
+    left, right = _solve_occultation_temporal_interval(center_at, jd_mid)
+    duration_at_greatest_s = _solve_occultation_greatest_site_duration(
+        position_func,
+        greatest_center,
+        left,
+        right,
+    )
+
+    detail_times = _sample_times_with_greatest(
+        left,
+        right,
+        detail_sample_count,
+        jd_mid,
+    )
+    # Greatest width must not depend on output sampling or center-cache history.
+    fixed_track_direction = _solve_occultation_greatest_track_direction(
+        position_func,
+        greatest_center,
+    )
+    detail_centers = tuple(center_at(epoch) for epoch in detail_times)
+
+    left_points: list[OccultationPathBoundaryPoint] = []
+    right_points: list[OccultationPathBoundaryPoint] = []
+    greatest_left = None
+    greatest_right = None
+    for index, center in enumerate(detail_centers):
+        if center.jd_ut == jd_mid:
+            track_direction = fixed_track_direction
+        elif index == 0:
+            before = center
+            after = detail_centers[index + 1]
+        elif index == len(detail_centers) - 1:
+            before = detail_centers[index - 1]
+            after = center
+        else:
+            before = detail_centers[index - 1]
+            after = detail_centers[index + 1]
+        if center.jd_ut != jd_mid:
+            track_direction = _track_direction_ne(before, center, after)
+        left_point = _solve_cross_track_boundary(
+            position_func,
+            center,
+            track_direction,
+            OccultationPathBoundarySide.LEFT,
+        )
+        right_point = _solve_cross_track_boundary(
+            position_func,
+            center,
+            track_direction,
+            OccultationPathBoundarySide.RIGHT,
+        )
+        left_points.append(left_point)
+        right_points.append(right_point)
+        if center.jd_ut == jd_mid:
+            greatest_left = left_point
+            greatest_right = right_point
+
+    if greatest_left is None or greatest_right is None:
+        raise _OccultationPathSolveError(
+            "occultation greatest slice was not materialized"
+        )
+
+    for previous_left, current_left, previous_right, current_right in zip(
+        left_points,
+        left_points[1:],
+        right_points,
+        right_points[1:],
+    ):
+        same_assignment = _surface_distance_km(
+            previous_left.point.latitude_deg,
+            previous_left.point.longitude_deg,
+            current_left.point.latitude_deg,
+            current_left.point.longitude_deg,
+        ) + _surface_distance_km(
+            previous_right.point.latitude_deg,
+            previous_right.point.longitude_deg,
+            current_right.point.latitude_deg,
+            current_right.point.longitude_deg,
+        )
+        swapped_assignment = _surface_distance_km(
+            previous_left.point.latitude_deg,
+            previous_left.point.longitude_deg,
+            current_right.point.latitude_deg,
+            current_right.point.longitude_deg,
+        ) + _surface_distance_km(
+            previous_right.point.latitude_deg,
+            previous_right.point.longitude_deg,
+            current_left.point.latitude_deg,
+            current_left.point.longitude_deg,
+        )
+        if swapped_assignment + _OCCULTATION_BRANCH_SWAP_TOLERANCE_KM < same_assignment:
+            raise _OccultationPathSolveError(
+                "occultation boundary continuation is topologically ambiguous"
+            )
+
+    pole_crossings = (
+        _solve_occultation_pole_crossings(
+            position_func,
+            center_at,
+            left,
+            right,
+        )
+        if solve_pole_crossings
+        else ()
+    )
+    return _OccultationPathCalculation(
+        jd_start=left,
+        jd_end=right,
+        jd_greatest=jd_mid,
+        duration_at_greatest_s=duration_at_greatest_s,
+        centers=detail_centers,
+        boundaries=(
+            OccultationPathBoundaryTrack(
+                OccultationPathBoundarySide.LEFT,
+                tuple(left_points),
+            ),
+            OccultationPathBoundaryTrack(
+                OccultationPathBoundarySide.RIGHT,
+                tuple(right_points),
+            ),
+        ),
+        greatest_left=greatest_left,
+        greatest_right=greatest_right,
+        pole_crossings=pole_crossings,
+    )
+
+
+def _occultation_summary_from_centers(
+    *,
+    occulted_body: str,
+    calculation: _OccultationPathCalculation,
+    centers: tuple[OccultationPathPoint, ...],
+) -> OccultationPathGeometry:
+    return OccultationPathGeometry(
+        occulting_body=Body.MOON,
+        occulted_body=occulted_body,
+        jd_greatest_ut=calculation.jd_greatest,
+        central_line_lats=tuple(point.latitude_deg for point in centers),
+        central_line_lons=tuple(point.longitude_deg for point in centers),
+        path_width_km=(
+            calculation.greatest_left.cross_track_distance_km
+            + calculation.greatest_right.cross_track_distance_km
+        ),
+        duration_at_greatest_s=calculation.duration_at_greatest_s,
+    )
+
+
+def _build_occultation_path_topology(
+    *,
+    occulted_body: str,
+    jd_mid: float,
+    position_func,
+    detail_sample_count: int,
+    target_model: str,
+    observer_elevation_m: float,
+) -> OccultationPathTopology:
+    calculation = _calculate_occultation_path(
+        jd_mid=jd_mid,
+        position_func=position_func,
+        detail_sample_count=detail_sample_count,
+        solve_pole_crossings=True,
+    )
+    summary = _occultation_summary_from_centers(
+        occulted_body=occulted_body,
+        calculation=calculation,
+        centers=calculation.centers,
+    )
+    return OccultationPathTopology(
+        summary=summary,
+        topology=OccultationPathTopologyKind.TWO_SIDED_BAND,
+        centers=calculation.centers,
+        boundaries=calculation.boundaries,
+        greatest_left=calculation.greatest_left,
+        greatest_right=calculation.greatest_right,
+        pole_crossings=calculation.pole_crossings,
+        lunar_limb_model="SPHERICAL_MEAN_LIMB",
+        target_model=target_model,
+        observer_elevation_m=observer_elevation_m,
+    )
+
+
 def _build_occultation_path_geometry(
     *,
     occulted_body: str,
@@ -1765,108 +3146,75 @@ def _build_occultation_path_geometry(
     position_func,
     sample_count: int,
 ) -> OccultationPathGeometry:
-    def objective(lat: float, lon: float) -> float:
-        separation, _, _, _ = position_func(jd_mid, lat, lon)
-        return separation
+    if (
+        isinstance(sample_count, bool)
+        or not isinstance(sample_count, int)
+        or sample_count < 1
+    ):
+        raise ValueError("legacy occultation sample_count must be an integer >= 1")
+    if not math.isfinite(jd_mid):
+        raise ValueError("jd_mid must be finite")
 
-    max_lat, max_lon, _ = _solve_occultation_greatest_location(objective)
-
-    def best_margin_at_time(jd: float) -> tuple[float, float, float]:
-        lat, lon, _ = _solve_occultation_greatest_location(
-            lambda plat, plon: position_func(jd, plat, plon)[0]
+    center_at = _make_occultation_center_resolver(
+        position_func,
+        initial_refinement_steps_deg=_GEO_GREATEST_TANGENT_SEARCH_STEPS_DEG,
+    )
+    greatest_center = center_at(jd_mid)
+    if greatest_center.clearance_deg <= _OCCULTATION_CLEARANCE_TOLERANCE_DEG:
+        # Historical path-at surfaces represent a polished non-event as one
+        # zero-width/zero-duration point.  First-class topology intentionally
+        # fails closed instead and never receives this compatibility vessel.
+        return OccultationPathGeometry(
+            occulting_body=Body.MOON,
+            occulted_body=occulted_body,
+            jd_greatest_ut=jd_mid,
+            central_line_lats=(greatest_center.latitude_deg,),
+            central_line_lons=(greatest_center.longitude_deg,),
+            path_width_km=0.0,
+            duration_at_greatest_s=0.0,
         )
-        _, margin, _, _ = position_func(jd, lat, lon)
-        return lat, lon, margin
 
-    def margin_at_time(jd: float) -> float:
-        _, _, margin = best_margin_at_time(jd)
-        return margin
-
-    center_margin = margin_at_time(jd_mid)
-    left = jd_mid
-    right = jd_mid
-    if center_margin > 0.0:
-        step = 1.0 / 48.0
-        for _ in range(48):
-            test = left - step
-            if margin_at_time(test) <= 0.0:
-                left = _bisection_root(margin_at_time, test, left)
-                break
-            left = test
-        for _ in range(48):
-            test = right + step
-            if margin_at_time(test) <= 0.0:
-                right = _bisection_root(margin_at_time, right, test)
-                break
-            right = test
-
-    sample_times = (jd_mid,) if sample_count == 1 else _sample_interval(left, right, sample_count)
-    lats: list[float] = []
-    lons: list[float] = []
-    for jd in sample_times:
-        lat, lon, _ = best_margin_at_time(jd)
-        lats.append(lat)
-        lons.append(lon)
-
-    def margin_at_point(lat: float, lon: float) -> float:
-        _, margin, _, _ = position_func(jd_mid, lat, lon)
-        return margin
-
-    dt = 1.0 / 1440.0
-    lat1, lon1, _ = best_margin_at_time(jd_mid - dt)
-    lat2, lon2, _ = best_margin_at_time(jd_mid + dt)
-    north = (lat2 - lat1) * _EARTH_KM_PER_DEG_LAT
-    east = ((lon2 - lon1 + 540.0) % 360.0 - 180.0) * _EARTH_KM_PER_DEG_LAT * math.cos(math.radians(max_lat))
-    if abs(north) < 1e-6 and abs(east) < 1e-6:
-        east = 1.0
-        north = 0.0
-    cross_north = -east
-    cross_east = north
-    norm = math.hypot(cross_north, cross_east)
-    cross_north /= norm
-    cross_east /= norm
-
-    def boundary(sign: float) -> float:
-        if center_margin <= 0.0:
-            return 0.0
-        lo = 0.0
-        hi = 2000.0
-        for _ in range(12):
-            test_lat, test_lon = _offset_geographic_km(
-                max_lat,
-                max_lon,
-                sign * cross_north * hi,
-                sign * cross_east * hi,
-            )
-            if margin_at_point(test_lat, test_lon) <= 0.0:
-                break
-            hi *= 1.5
-        else:
-            return hi
-
-        for _ in range(40):
-            mid = (lo + hi) / 2.0
-            test_lat, test_lon = _offset_geographic_km(
-                max_lat,
-                max_lon,
-                sign * cross_north * mid,
-                sign * cross_east * mid,
-            )
-            if margin_at_point(test_lat, test_lon) > 0.0:
-                lo = mid
-            else:
-                hi = mid
-        return (lo + hi) / 2.0
-
-    duration_s = max(0.0, (right - left) * 86400.0)
+    left, right = _solve_occultation_temporal_interval(center_at, jd_mid)
+    duration_at_greatest_s = _solve_occultation_greatest_site_duration(
+        position_func,
+        greatest_center,
+        left,
+        right,
+    )
+    track_direction = _solve_occultation_greatest_track_direction(
+        position_func,
+        greatest_center,
+    )
+    greatest_left = _solve_cross_track_boundary(
+        position_func,
+        greatest_center,
+        track_direction,
+        OccultationPathBoundarySide.LEFT,
+    )
+    greatest_right = _solve_cross_track_boundary(
+        position_func,
+        greatest_center,
+        track_direction,
+        OccultationPathBoundarySide.RIGHT,
+    )
+    center_times = _sample_times_with_greatest(
+        left,
+        right,
+        sample_count,
+        jd_mid,
+    )
+    centers = tuple(center_at(jd_ut) for jd_ut in center_times)
     return OccultationPathGeometry(
         occulting_body=Body.MOON,
         occulted_body=occulted_body,
         jd_greatest_ut=jd_mid,
-        central_line_lats=tuple(lats),
-        central_line_lons=tuple(lons),
-        path_width_km=boundary(-1.0) + boundary(1.0),
-        duration_at_greatest_s=duration_s,
+        central_line_lats=tuple(point.latitude_deg for point in centers),
+        central_line_lons=tuple(point.longitude_deg for point in centers),
+        path_width_km=(
+            greatest_left.cross_track_distance_km
+            + greatest_right.cross_track_distance_km
+        ),
+        duration_at_greatest_s=duration_at_greatest_s,
     )
 
 
@@ -1893,74 +3241,572 @@ def _build_star_occultation_path_geometry(
             limb_profile_provider,
         )
 
-    def objective(lat: float, lon: float) -> float:
-        separation, _, _, _ = position_func(jd_mid, lat, lon)
-        return separation
-
-    max_lat, max_lon, _ = _solve_occultation_greatest_location(objective)
-
-    def best_margin_at_time(jd: float) -> tuple[float, float, float]:
-        lat, lon, _ = _solve_occultation_greatest_location(
-            lambda plat, plon: position_func(jd, plat, plon)[0]
-        )
-        _, margin, _, _ = position_func(jd, lat, lon)
-        return lat, lon, margin
-
-    def margin_at_time(jd: float) -> float:
-        _, _, margin = best_margin_at_time(jd)
-        return margin
-
-    center_margin = margin_at_time(jd_mid)
-    left = jd_mid
-    right = jd_mid
-    if center_margin > 0.0:
-        step = 1.0 / 48.0
-        for _ in range(48):
-            test = left - step
-            if margin_at_time(test) <= 0.0:
-                left = _bisection_root(margin_at_time, test, left)
-                break
-            left = test
-        for _ in range(48):
-            test = right + step
-            if margin_at_time(test) <= 0.0:
-                right = _bisection_root(margin_at_time, right, test)
-                break
-            right = test
-
-    sample_times = (jd_mid,) if sample_count == 1 else _sample_interval(left, right, sample_count)
-    lats: list[float] = []
-    lons: list[float] = []
-    for jd in sample_times:
-        lat, lon, _ = best_margin_at_time(jd)
-        lats.append(lat)
-        lons.append(lon)
-
-    def boundary_margin(latitude: float) -> float:
-        return position_func(jd_mid, latitude, max_lon)[1]
-
-    north_boundary = _solve_directed_latitude_root(
-        boundary_margin,
-        max_lat,
-        1,
-    )
-    south_boundary = _solve_directed_latitude_root(
-        boundary_margin,
-        max_lat,
-        -1,
-    )
-    path_width_km = abs(north_boundary - south_boundary) * _EARTH_KM_PER_DEG_LAT
-
-    duration_s = max(0.0, (right - left) * 86400.0)
-    return OccultationPathGeometry(
-        occulting_body=Body.MOON,
+    return _build_occultation_path_geometry(
         occulted_body=star_name,
-        jd_greatest_ut=jd_mid,
-        central_line_lats=tuple(lats),
-        central_line_lons=tuple(lons),
-        path_width_km=path_width_km,
-        duration_at_greatest_s=duration_s,
+        jd_mid=jd_mid,
+        position_func=position_func,
+        sample_count=sample_count,
     )
+
+
+_OCCULTATION_MAX_ABS_JD = 40_000_000.0
+
+
+def _topology_real(name: str, value: object) -> float:
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise TypeError(f"{name} must be a real number")
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError(f"{name} must be finite")
+    return result
+
+
+def _validate_topology_jd(name: str, value: object) -> float:
+    result = _topology_real(name, value)
+    if abs(result) > _OCCULTATION_MAX_ABS_JD:
+        raise ValueError(
+            f"{name} lies outside Moira's representable JD domain "
+            f"[-{_OCCULTATION_MAX_ABS_JD:g}, {_OCCULTATION_MAX_ABS_JD:g}]"
+        )
+    return result
+
+
+def _validate_topology_sample_count(sample_count: object) -> int:
+    if (
+        isinstance(sample_count, bool)
+        or not isinstance(sample_count, int)
+        or not _OCCULTATION_TOPOLOGY_MIN_SAMPLES
+        <= sample_count
+        <= _OCCULTATION_TOPOLOGY_MAX_SAMPLES
+    ):
+        raise ValueError(
+            "detailed occultation sample_count must be an integer in "
+            f"[{_OCCULTATION_TOPOLOGY_MIN_SAMPLES}, {_OCCULTATION_TOPOLOGY_MAX_SAMPLES}]"
+        )
+    return sample_count
+
+
+def _validate_planetary_topology_target(target: object) -> str:
+    if (
+        not isinstance(target, str)
+        or target not in _TOPOLOGY_JPL_EQUATORIAL_TARGET_RADII_KM
+    ):
+        raise ValueError(
+            f"target must identify an admitted JPL solid-body planet: {target!r}"
+        )
+    return target
+
+
+def _validate_star_topology_identity(
+    star_lon: object,
+    star_lat: object,
+    star_name: object,
+) -> tuple[float, float, str]:
+    longitude = _topology_real("star_lon", star_lon)
+    latitude = _topology_real("star_lat", star_lat)
+    if not -90.0 <= latitude <= 90.0:
+        raise ValueError("star_lat must be within [-90, 90]")
+    if not isinstance(star_name, str) or not star_name.strip():
+        raise ValueError("star_name must be a non-blank string")
+    if star_name != star_name.strip():
+        raise ValueError("star_name must not contain surrounding whitespace")
+    if star_name.casefold() in _SOLAR_SYSTEM_BODY_LABELS_CASEFOLD:
+        raise ValueError("star_name must not identify a Solar System body")
+    return longitude, latitude, star_name
+
+
+def _validate_topology_observer_elevation(value: object) -> float:
+    elevation_m = _topology_real("observer_elev_m", value)
+    if elevation_m < _OCCULTATION_TOPOLOGY_MIN_OBSERVER_ELEV_M:
+        raise ValueError(
+            "observer_elev_m lies below the WGS84 semi-minor-axis "
+            "computational floor"
+        )
+    return elevation_m
+
+
+def _validate_topology_range(
+    jd_start: object,
+    jd_end: object,
+    step_days: object,
+) -> tuple[float, float, float, int]:
+    start = _validate_topology_jd("jd_start", jd_start)
+    end = _validate_topology_jd("jd_end", jd_end)
+    step = _topology_real("step_days", step_days)
+    if end <= start:
+        raise ValueError("jd_end must be greater than jd_start")
+    if not 0.0 < step <= _OCCULTATION_TOPOLOGY_MAX_STEP_DAYS:
+        raise ValueError(
+            "step_days must be within "
+            f"(0, {_OCCULTATION_TOPOLOGY_MAX_STEP_DAYS}]"
+        )
+    span_days = end - start
+    if span_days > _OCCULTATION_TOPOLOGY_MAX_SPAN_DAYS:
+        raise ValueError(
+            "occultation topology range cannot exceed "
+            f"{_OCCULTATION_TOPOLOGY_MAX_SPAN_DAYS:g} days"
+        )
+    segment_count = _topology_candidate_segment_count(start, end, step)
+    return start, end, step, segment_count
+
+
+def _topology_candidate_segment_count(
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+) -> int:
+    """Return the deterministic bounded candidate-cell count."""
+
+    span_days = jd_end - jd_start
+    # Compare by multiplication before division so a subnormal positive step
+    # fails by policy instead of overflowing span/step to infinity in ceil().
+    if step_days * _OCCULTATION_TOPOLOGY_MAX_CANDIDATE_CELLS < span_days:
+        raise ValueError(
+            "occultation topology candidate scan exceeds "
+            f"{_OCCULTATION_TOPOLOGY_MAX_CANDIDATE_CELLS} cells"
+        )
+    segment_count = math.ceil(span_days / step_days)
+    previous = jd_start
+    for index in range(1, segment_count):
+        candidate = jd_start + index * step_days
+        if not previous < candidate < jd_end:
+            raise ValueError(
+                "step_days does not produce a strictly advancing Julian-Day lattice"
+            )
+        previous = candidate
+    return segment_count
+
+
+def _occultation_candidate_time_tolerance(
+    jd_start: float,
+    jd_end: float,
+) -> float:
+    return max(
+        _OCCULTATION_CANDIDATE_DEDUP_MIN_TOLERANCE_DAYS,
+        _OCCULTATION_CANDIDATE_DEDUP_ULPS
+        * math.ulp(max(abs(jd_start), abs(jd_end))),
+    )
+
+
+def _deduplicate_occultation_candidates(
+    candidates: list[tuple[float, float]],
+    *,
+    tolerance_days: float,
+) -> tuple[tuple[float, float], ...]:
+    """Merge solver-equivalent epochs, retaining strongest then earliest."""
+
+    if not candidates:
+        return ()
+    ordered = sorted(candidates)
+    groups: list[list[tuple[float, float]]] = [[ordered[0]]]
+    for candidate in ordered[1:]:
+        if candidate[0] - groups[-1][-1][0] <= tolerance_days:
+            groups[-1].append(candidate)
+        else:
+            groups.append([candidate])
+    return tuple(
+        max(group, key=lambda candidate: (candidate[1], -candidate[0]))
+        for group in groups
+    )
+
+
+def _group_occultation_candidates_by_positive_support(
+    candidates: list[tuple[float, float, float, float]],
+    *,
+    tolerance_days: float,
+) -> tuple[tuple[tuple[float, float, float, float], ...], ...]:
+    """Group raw maxima by their connected positive-clearance time support."""
+
+    if not candidates:
+        return ()
+    ordered = sorted(candidates, key=lambda candidate: (candidate[2], candidate[3]))
+    groups: list[list[tuple[float, float, float, float]]] = [[ordered[0]]]
+    support_end = ordered[0][3]
+    for candidate in ordered[1:]:
+        # Supports are open positive-clearance intervals.  A zero-clearance
+        # tangency, or endpoint contact indistinguishable within solver time
+        # uncertainty, must not join two otherwise separate components.
+        if candidate[2] < support_end - tolerance_days:
+            groups[-1].append(candidate)
+            support_end = max(support_end, candidate[3])
+        else:
+            groups.append([candidate])
+            support_end = candidate[3]
+    return tuple(tuple(group) for group in groups)
+
+
+def _solve_occultation_component_greatest(
+    center_at: Callable[[float], OccultationPathPoint],
+    support_start: float,
+    support_end: float,
+    raw_witnesses: tuple[tuple[float, float], ...],
+) -> tuple[float, float]:
+    """Solve the strongest time-local maximum on one positive component.
+
+    Connected positive clearance does not imply a unimodal time profile.  A
+    private at-most-30-minute lattice discovers every resolved local maximum;
+    each is refined independently, while support endpoints and the already
+    refined raw bracket witnesses remain explicit candidates.
+    """
+
+    span_days = support_end - support_start
+    if not math.isfinite(span_days) or span_days <= 0.0:
+        raise _OccultationPathSolveError(
+            "occultation component support must be finite and ordered"
+        )
+    segment_count = max(
+        1,
+        math.ceil(span_days / _OCCULTATION_COMPONENT_MAXIMUM_STEP_DAYS),
+    )
+    if segment_count > _OCCULTATION_COMPONENT_MAXIMUM_MAX_CELLS:
+        raise _OccultationPathSolveError(
+            "occultation component maximum lattice budget exceeded"
+        )
+    lattice_times = tuple(
+        support_start + span_days * index / segment_count
+        for index in range(segment_count)
+    ) + (support_end,)
+    if any(left >= right for left, right in zip(lattice_times, lattice_times[1:])):
+        raise _OccultationPathSolveError(
+            "occultation component maximum lattice did not advance"
+        )
+    lattice_candidates = tuple(
+        (jd_ut, center_at(jd_ut).clearance_deg)
+        for jd_ut in lattice_times
+    )
+
+    brackets = {
+        (lattice_times[0], lattice_times[1]),
+        (lattice_times[-2], lattice_times[-1]),
+    }
+    brackets.update(
+        (lattice_times[index - 1], lattice_times[index + 1])
+        for index in range(1, len(lattice_times) - 1)
+        if lattice_candidates[index][1] >= lattice_candidates[index - 1][1]
+        and lattice_candidates[index][1] >= lattice_candidates[index + 1][1]
+    )
+    for jd_ut, _clearance in raw_witnesses:
+        if not support_start <= jd_ut <= support_end:
+            raise _OccultationPathSolveError(
+                "occultation component raw witness lies outside its support"
+            )
+        brackets.add(
+            (
+                max(support_start, jd_ut - _OCCULTATION_COMPONENT_MAXIMUM_STEP_DAYS),
+                min(support_end, jd_ut + _OCCULTATION_COMPONENT_MAXIMUM_STEP_DAYS),
+            )
+        )
+
+    refined_candidates: list[tuple[float, float]] = []
+    for bracket_left, bracket_right in sorted(brackets):
+        if bracket_left == bracket_right:
+            continue
+        peak_jd, negative_peak = _bisect_minimum(
+            lambda jd_ut: -center_at(jd_ut).clearance_deg,
+            bracket_left,
+            bracket_right,
+            tol=_OCCULTATION_COMPONENT_PEAK_TIME_TOLERANCE_DAYS,
+        )
+        refined_candidates.append((peak_jd, -negative_peak))
+
+    return max(
+        (
+            *raw_witnesses,
+            *lattice_candidates,
+            *refined_candidates,
+        ),
+        key=lambda candidate: (candidate[1], -candidate[0]),
+    )
+
+
+def _horizontal_parallax_deg(distance_km: float, observer_radius_km: float) -> float:
+    if not math.isfinite(distance_km) or distance_km <= 0.0:
+        raise _OccultationPathSolveError("invalid geocentric distance in candidate envelope")
+    if not math.isfinite(observer_radius_km) or observer_radius_km < 0.0:
+        raise _OccultationPathSolveError("invalid observer radius in candidate envelope")
+    if observer_radius_km >= distance_km:
+        # Once the observer sphere reaches beyond the body, an observer on the
+        # outward radial ray can see the topocentric direction reverse by
+        # 180 degrees.  asin(R / d) governs only the exterior-observer case
+        # R < d; clamping that ratio to one would cease to be an upper bound.
+        return 180.0
+    return math.degrees(math.asin(observer_radius_km / distance_km))
+
+
+def _planet_occultation_candidate_envelope(
+    target: str,
+    jd_ut: float,
+    observer_elevation_m: float,
+    reader: SpkReader,
+) -> float:
+    moon = planet_at(Body.MOON, jd_ut, reader=reader)
+    target_position = planet_at(target, jd_ut, reader=reader)
+    observer_radius_km = EARTH_RADIUS_KM + max(0.0, observer_elevation_m) / 1000.0
+    separation = _angular_separation(
+        moon.longitude,
+        moon.latitude,
+        target_position.longitude,
+        target_position.latitude,
+    )
+    return (
+        _horizontal_parallax_deg(moon.distance, observer_radius_km)
+        + _horizontal_parallax_deg(target_position.distance, observer_radius_km)
+        + _apparent_radius(MOON_RADIUS_KM, moon.distance)
+        + _apparent_radius(
+            _TOPOLOGY_JPL_EQUATORIAL_TARGET_RADII_KM[target],
+            target_position.distance,
+        )
+        - separation
+    )
+
+
+def _star_occultation_candidate_envelope(
+    star_lon: float,
+    star_lat: float,
+    jd_ut: float,
+    observer_elevation_m: float,
+    reader: SpkReader,
+) -> float:
+    moon = planet_at(Body.MOON, jd_ut, reader=reader)
+    observer_radius_km = EARTH_RADIUS_KM + max(0.0, observer_elevation_m) / 1000.0
+    separation = _angular_separation(
+        moon.longitude,
+        moon.latitude,
+        star_lon,
+        star_lat,
+    )
+    return (
+        _horizontal_parallax_deg(moon.distance, observer_radius_km)
+        + _apparent_radius(MOON_RADIUS_KM, moon.distance)
+        - separation
+    )
+
+
+def _find_global_occultation_epochs(
+    *,
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+    segment_count: int,
+    candidate_envelope: Callable[[float], float],
+    position_func,
+) -> tuple[float, ...]:
+    """Find global greatest-overlap epochs without geocentric exclusion.
+
+    The inexpensive envelope is a necessary parallax-plus-radii admission
+    bound.  Every admitted candidate is then verified by maximizing the exact
+    signed topocentric clearance over the Earth sphere and in UT1.
+    """
+
+    expected_segment_count = _topology_candidate_segment_count(
+        jd_start,
+        jd_end,
+        step_days,
+    )
+    if (
+        isinstance(segment_count, bool)
+        or not isinstance(segment_count, int)
+        or segment_count != expected_segment_count
+    ):
+        raise ValueError("segment_count must equal ceil((jd_end - jd_start) / step_days)")
+
+    # Range policy is fully checked before allocating this at-most-4097 point
+    # lattice or invoking the ephemeris-backed envelope.
+    sample_times = [jd_start]
+    for index in range(1, segment_count):
+        next_time = jd_start + index * step_days
+        if not sample_times[-1] < next_time < jd_end:
+            raise _OccultationPathSolveError(
+                "global occultation candidate scan did not advance"
+            )
+        sample_times.append(next_time)
+    sample_times.append(jd_end)
+    envelope_values = [float(candidate_envelope(jd_ut)) for jd_ut in sample_times]
+    if any(not math.isfinite(value) for value in envelope_values):
+        raise _OccultationPathSolveError(
+            "global occultation candidate envelope returned a non-finite value"
+        )
+
+    # The first and last cells are unconditional: a narrow positive maximum
+    # can be hidden between two negative samples at either range boundary.
+    brackets = {
+        (sample_times[0], sample_times[1]),
+        (sample_times[-2], sample_times[-1]),
+    }
+    brackets.update(
+        (sample_times[index - 1], sample_times[index + 1])
+        for index in range(1, len(sample_times) - 1)
+        if envelope_values[index] >= envelope_values[index - 1]
+        and envelope_values[index] >= envelope_values[index + 1]
+    )
+
+    solver_time_tolerance_days = _occultation_candidate_time_tolerance(
+        jd_start,
+        jd_end,
+    )
+    raw_candidates: list[tuple[float, float, float, float]] = []
+    for bracket_left, bracket_right in sorted(brackets):
+        envelope_peak_jd, negative_envelope = _bisect_minimum(
+            lambda jd_ut: -float(candidate_envelope(jd_ut)),
+            bracket_left,
+            bracket_right,
+            tol=1.0e-8,
+        )
+        envelope_candidates = (
+            (bracket_left, float(candidate_envelope(bracket_left))),
+            (envelope_peak_jd, -negative_envelope),
+            (bracket_right, float(candidate_envelope(bracket_right))),
+        )
+        envelope_peak_jd, envelope_peak = max(
+            envelope_candidates,
+            key=lambda candidate: (candidate[1], -candidate[0]),
+        )
+        if envelope_peak <= 0.0:
+            continue
+
+        centers_by_epoch: dict[float, OccultationPathPoint] = {}
+        seed = _solve_occultation_clearance_center(
+            position_func,
+            envelope_peak_jd,
+            complete_surface=True,
+        )
+        centers_by_epoch[envelope_peak_jd] = seed
+
+        def exact_center_at(jd_ut: float) -> OccultationPathPoint:
+            point = centers_by_epoch.get(jd_ut)
+            if point is None:
+                nearest = min(
+                    centers_by_epoch.values(),
+                    key=lambda candidate: abs(candidate.jd_ut - jd_ut),
+                )
+                point = _solve_occultation_clearance_center(
+                    position_func,
+                    jd_ut,
+                    preferred_location=(nearest.latitude_deg, nearest.longitude_deg),
+                    complete_surface=False,
+                )
+                centers_by_epoch[jd_ut] = point
+            return point
+
+        def maximum_clearance(jd_ut: float) -> float:
+            return exact_center_at(jd_ut).clearance_deg
+
+        left_index = sample_times.index(bracket_left)
+        right_index = sample_times.index(bracket_right)
+        exact_witnesses = [
+            (envelope_peak_jd, maximum_clearance(envelope_peak_jd)),
+        ]
+        for _ in range(math.ceil(math.log2(segment_count + 1)) + 2):
+            exact_bracket_left = sample_times[left_index]
+            exact_bracket_right = sample_times[right_index]
+            exact_peak_jd, negative_exact_peak = _bisect_minimum(
+                lambda jd_ut: -maximum_clearance(jd_ut),
+                exact_bracket_left,
+                exact_bracket_right,
+                tol=1.0e-8,
+            )
+            exact_witnesses.extend(
+                (
+                    (
+                        exact_bracket_left,
+                        maximum_clearance(exact_bracket_left),
+                    ),
+                    (exact_peak_jd, -negative_exact_peak),
+                    (
+                        exact_bracket_right,
+                        maximum_clearance(exact_bracket_right),
+                    ),
+                )
+            )
+            exact_peak_jd, exact_peak = max(
+                (
+                    candidate
+                    for candidate in exact_witnesses
+                    if exact_bracket_left <= candidate[0] <= exact_bracket_right
+                ),
+                key=lambda candidate: (candidate[1], -candidate[0]),
+            )
+            touches_left = (
+                exact_peak_jd - exact_bracket_left
+                <= solver_time_tolerance_days
+            )
+            touches_right = (
+                exact_bracket_right - exact_peak_jd
+                <= solver_time_tolerance_days
+            )
+            expand_left = touches_left and left_index > 0
+            expand_right = touches_right and right_index < segment_count
+            if not expand_left and not expand_right:
+                break
+            width = right_index - left_index
+            if expand_left:
+                left_index = max(0, left_index - width)
+            if expand_right:
+                right_index = min(segment_count, right_index + width)
+        else:
+            raise _OccultationPathSolveError(
+                "global occultation exact-maximum bracket did not stabilize"
+            )
+        if exact_peak <= _OCCULTATION_CLEARANCE_TOLERANCE_DEG:
+            continue
+        # An endpoint optimum is only a constrained range result, not a solved
+        # greatest event.  Unconditional edge-cell brackets exist to recover a
+        # hidden interior peak, never to relabel a monotonic range boundary.
+        if exact_peak_jd - jd_start <= solver_time_tolerance_days or (
+            jd_end - exact_peak_jd <= solver_time_tolerance_days
+        ):
+            continue
+        support_start, support_end = _solve_occultation_temporal_interval(
+            exact_center_at,
+            exact_peak_jd,
+        )
+        raw_candidates.append(
+            (exact_peak_jd, exact_peak, support_start, support_end)
+        )
+
+    # Event identity is the connected exact-positive temporal component, not
+    # proximity between optimizer outputs.  Flat maxima from overlapping scan
+    # brackets can legitimately differ by many solver time tolerances while
+    # still belonging to the same physical occultation.
+    results: list[float] = []
+    for group in _group_occultation_candidates_by_positive_support(
+        raw_candidates,
+        tolerance_days=solver_time_tolerance_days,
+    ):
+        support_start = min(candidate[2] for candidate in group)
+        support_end = max(candidate[3] for candidate in group)
+        solver_equivalent_peaks = _deduplicate_occultation_candidates(
+            [(candidate[0], candidate[1]) for candidate in group],
+            tolerance_days=solver_time_tolerance_days,
+        )
+        seed_jd, _seed_clearance = max(
+            solver_equivalent_peaks,
+            key=lambda candidate: (candidate[1], -candidate[0]),
+        )
+        component_center_at = _make_occultation_center_resolver(
+            position_func,
+            initial_refinement_steps_deg=_GEO_GREATEST_TANGENT_SEARCH_STEPS_DEG,
+        )
+        component_center_at(seed_jd)
+        component_peak_jd, component_peak = _solve_occultation_component_greatest(
+            component_center_at,
+            support_start,
+            support_end,
+            solver_equivalent_peaks,
+        )
+        if component_peak <= _OCCULTATION_CLEARANCE_TOLERANCE_DEG:
+            raise _OccultationPathSolveError(
+                "connected occultation candidate lost positive clearance"
+            )
+        # A component is emitted only when its unconstrained global greatest,
+        # not merely one smaller interior hump, lies strictly in the request.
+        if component_peak_jd - jd_start <= solver_time_tolerance_days or (
+            jd_end - component_peak_jd <= solver_time_tolerance_days
+        ):
+            continue
+        results.append(component_peak_jd)
+
+    return tuple(sorted(results))
 
 
 # ---------------------------------------------------------------------------
@@ -2198,6 +4044,102 @@ def lunar_occultation_path_at(
     )
 
 
+def lunar_occultation_path_topology(
+    target: str,
+    jd_start: float,
+    jd_end: float,
+    step_days: float = 0.25,
+    sample_count: int = _OCCULTATION_TOPOLOGY_DEFAULT_SAMPLES,
+    observer_elev_m: float = 0.0,
+    reader: SpkReader | None = None,
+) -> list[OccultationPathTopology]:
+    """Return detailed pole-safe path topology for planetary occultations."""
+
+    target = _validate_planetary_topology_target(target)
+    jd_start, jd_end, step_days, segment_count = _validate_topology_range(
+        jd_start,
+        jd_end,
+        step_days,
+    )
+    sample_count = _validate_topology_sample_count(sample_count)
+    observer_elev_m = _validate_topology_observer_elevation(observer_elev_m)
+    if reader is None:
+        reader = get_reader()
+
+    def position_func(jd: float, lat: float, lon: float) -> tuple[float, float, float, float]:
+        return _planet_topocentric_target_geometry(
+            target,
+            jd,
+            lat,
+            lon,
+            reader,
+            observer_elev_m,
+            None,
+        )
+
+    epochs = _find_global_occultation_epochs(
+        jd_start=jd_start,
+        jd_end=jd_end,
+        step_days=step_days,
+        segment_count=segment_count,
+        candidate_envelope=lambda jd_ut: _planet_occultation_candidate_envelope(
+            target,
+            jd_ut,
+            observer_elev_m,
+            reader,
+        ),
+        position_func=position_func,
+    )
+    return [
+        lunar_occultation_path_topology_at(
+            target,
+            jd_greatest,
+            sample_count=sample_count,
+            observer_elev_m=observer_elev_m,
+            reader=reader,
+        )
+        for jd_greatest in epochs
+    ]
+
+
+def lunar_occultation_path_topology_at(
+    target: str,
+    jd_mid: float,
+    *,
+    sample_count: int = _OCCULTATION_TOPOLOGY_DEFAULT_SAMPLES,
+    observer_elev_m: float = 0.0,
+    reader: SpkReader | None = None,
+) -> OccultationPathTopology:
+    """Return the detailed topology at a supplied planetary greatest epoch."""
+
+    target = _validate_planetary_topology_target(target)
+    jd_mid = _validate_topology_jd("jd_mid", jd_mid)
+    sample_count = _validate_topology_sample_count(sample_count)
+    observer_elev_m = _validate_topology_observer_elevation(observer_elev_m)
+    if reader is None:
+        reader = get_reader()
+
+    def position_func(jd: float, lat: float, lon: float) -> tuple[float, float, float, float]:
+        return _planet_topocentric_target_geometry(
+            target,
+            jd,
+            lat,
+            lon,
+            reader,
+            observer_elev_m,
+            None,
+        )
+
+    return _build_occultation_path_topology(
+        occulted_body=target,
+        jd_mid=jd_mid,
+        position_func=position_func,
+        detail_sample_count=sample_count,
+        target_model="JPL_EQUATORIAL_SOLID_BODY",
+        observer_elevation_m=observer_elev_m,
+    )
+
+
 def lunar_star_occultation(
     star_lon: float,
     star_lat: float,
@@ -2396,6 +4338,119 @@ def lunar_star_occultation_path_at(
         observer_elev_m=observer_elev_m,
         limb_profile_provider=limb_profile_provider,
         reader=reader,
+    )
+
+
+def lunar_star_occultation_path_topology(
+    star_lon: float,
+    star_lat: float,
+    star_name: str,
+    jd_start: float,
+    jd_end: float,
+    step_days: float = 0.25,
+    sample_count: int = _OCCULTATION_TOPOLOGY_DEFAULT_SAMPLES,
+    observer_elev_m: float = 0.0,
+    reader: SpkReader | None = None,
+) -> list[OccultationPathTopology]:
+    """Return detailed pole-safe path topology for stellar occultations."""
+
+    star_lon, star_lat, star_name = _validate_star_topology_identity(
+        star_lon,
+        star_lat,
+        star_name,
+    )
+    jd_start, jd_end, step_days, segment_count = _validate_topology_range(
+        jd_start,
+        jd_end,
+        step_days,
+    )
+    sample_count = _validate_topology_sample_count(sample_count)
+    observer_elev_m = _validate_topology_observer_elevation(observer_elev_m)
+    if reader is None:
+        reader = get_reader()
+
+    def position_func(jd: float, lat: float, lon: float) -> tuple[float, float, float, float]:
+        return _star_topocentric_target_geometry(
+            star_lon,
+            star_lat,
+            jd,
+            lat,
+            lon,
+            reader,
+            observer_elev_m,
+            None,
+        )
+
+    epochs = _find_global_occultation_epochs(
+        jd_start=jd_start,
+        jd_end=jd_end,
+        step_days=step_days,
+        segment_count=segment_count,
+        candidate_envelope=lambda jd_ut: _star_occultation_candidate_envelope(
+            star_lon,
+            star_lat,
+            jd_ut,
+            observer_elev_m,
+            reader,
+        ),
+        position_func=position_func,
+    )
+    return [
+        lunar_star_occultation_path_topology_at(
+            star_lon,
+            star_lat,
+            star_name,
+            jd_greatest,
+            sample_count=sample_count,
+            observer_elev_m=observer_elev_m,
+            reader=reader,
+        )
+        for jd_greatest in epochs
+    ]
+
+
+def lunar_star_occultation_path_topology_at(
+    star_lon: float,
+    star_lat: float,
+    star_name: str,
+    jd_mid: float,
+    *,
+    sample_count: int = _OCCULTATION_TOPOLOGY_DEFAULT_SAMPLES,
+    observer_elev_m: float = 0.0,
+    reader: SpkReader | None = None,
+) -> OccultationPathTopology:
+    """Return the detailed topology at a supplied stellar greatest epoch."""
+
+    star_lon, star_lat, star_name = _validate_star_topology_identity(
+        star_lon,
+        star_lat,
+        star_name,
+    )
+    jd_mid = _validate_topology_jd("jd_mid", jd_mid)
+    sample_count = _validate_topology_sample_count(sample_count)
+    observer_elev_m = _validate_topology_observer_elevation(observer_elev_m)
+    if reader is None:
+        reader = get_reader()
+
+    def position_func(jd: float, lat: float, lon: float) -> tuple[float, float, float, float]:
+        return _star_topocentric_target_geometry(
+            star_lon,
+            star_lat,
+            jd,
+            lat,
+            lon,
+            reader,
+            observer_elev_m,
+            None,
+        )
+
+    return _build_occultation_path_topology(
+        occulted_body=star_name,
+        jd_mid=jd_mid,
+        position_func=position_func,
+        detail_sample_count=sample_count,
+        target_model="POINT_SOURCE",
+        observer_elevation_m=observer_elev_m,
     )
 
 

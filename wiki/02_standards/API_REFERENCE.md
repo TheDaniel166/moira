@@ -723,6 +723,7 @@ generic search integration, or remedy-fulfillment assessment.
 | Method | Returns | Description |
 |---|---|---|
 | `eclipse(dt)` | `EclipseData` | Full eclipse geometry and classification for a datetime |
+| `solar_eclipse_footprint(jd_start, *, kind="any", backward=False, sample_count=181)` | `SolarEclipseVisibilityFootprint` | Complete zero-elevation WGS 84 mean-limb penumbral visibility boundary |
 
 ---
 
@@ -3338,6 +3339,21 @@ event = next_nasa_lunar_eclipse(jd_start, reader=reader)
 prev  = previous_nasa_lunar_eclipse(jd_start, reader=reader)
 ```
 
+The default compatibility method is
+`nasa_shadow_axis_apparent_sun_moon`. It evaluates the Sun and Moon from the
+same reception-epoch Earth state, applies reception light-time and then annual
+aberration to both directions, and omits gravitational deflection, topocentric
+parallax, and atmospheric refraction. `NasaLunarEclipseEvent.canon_method` and
+`.source_model` identify this policy. The legacy geometric and retarded method
+identifiers remain explicitly selectable on the lower-level canon functions;
+they are not ambient fallbacks.
+
+This method is validated as a DE441/LE441 compatibility computation against
+NASA/GSFC products that declare VSOP87/ELP2000-85. It does not claim exact
+ephemeris parity. Existing function signatures and result-vessel fields are
+unchanged, while the compatibility method label and numerical results
+intentionally reflect the repaired apparent reduction.
+
 ### Planetary Phenomena
 
 ```python
@@ -3363,7 +3379,9 @@ from moira.facade import (
 ```python
 from moira.facade import (
     close_approaches, lunar_occultation, lunar_star_occultation, all_lunar_occultations,
-    CloseApproach, LunarOccultation,
+    lunar_occultation_path_topology, lunar_occultation_path_topology_at,
+    lunar_star_occultation_path_topology, lunar_star_occultation_path_topology_at,
+    CloseApproach, LunarOccultation, OccultationPathTopology,
 )
 ```
 
@@ -3373,6 +3391,38 @@ from moira.facade import (
 | `lunar_occultation(body, jd_start, jd_end, reader=None)` | `list[LunarOccultation]` | Moon occultation events for a planet |
 | `lunar_star_occultation(star_lon, star_lat, star_name, jd_start, jd_end, step_days=0.25, observer_lat=None, observer_lon=None, observer_elev_m=0.0, reader=None)` | `list[LunarOccultation]` | Moon occultation of a fixed star at a supplied ecliptic position |
 | `all_lunar_occultations(jd_start, jd_end, planets=None, reader=None)` | `list[LunarOccultation]` | Lunar occultations for the default planet set or a supplied planet list |
+| `lunar_occultation_path_topology(target, jd_start, jd_end, step_days=0.25, sample_count=65, observer_elev_m=0.0, reader=None)` | `list[OccultationPathTopology]` | Detailed nominal mean-limb planetary bands with intrinsic left/right limits and exact-pole contacts |
+| `lunar_occultation_path_topology_at(target, jd_mid, *, sample_count=65, observer_elev_m=0.0, reader=None)` | `OccultationPathTopology` | Detailed nominal mean-limb planetary topology at one greatest epoch |
+| `lunar_star_occultation_path_topology(star_lon, star_lat, star_name, jd_start, jd_end, step_days=0.25, sample_count=65, observer_elev_m=0.0, reader=None)` | `list[OccultationPathTopology]` | Detailed nominal mean-limb fixed-star bands with polar-safe topology |
+| `lunar_star_occultation_path_topology_at(star_lon, star_lat, star_name, jd_mid, *, sample_count=65, observer_elev_m=0.0, reader=None)` | `OccultationPathTopology` | Detailed nominal mean-limb fixed-star topology at one greatest epoch |
+
+`OccultationPathTopology.observer_elevation_m` preserves the requested
+observer elevation used by every center and boundary solve. Its intrinsic
+`left` and `right` identities follow increasing UT1 along the center track and
+are not geographic north/south labels. This detailed two-sided product admits
+only `lunar_limb_model="SPHERICAL_MEAN_LIMB"`; profile-conditioned graze
+products remain separate.
+
+The two range searches admit at most 400 days, `0 < step_days <= 0.25`, and
+4096 coarse cells; `step_days` is a maximum cell width. Their fixed internal
+contact search is independent of the output `sample_count`. Planetary topology
+accepts Mercury through Pluto except Earth and excludes the Sun; use the solar
+eclipse surfaces for Sun/Moon occultation geometry. The summary duration is
+the local duration at the fixed greatest site, not global footprint lifetime.
+Range results require an unconstrained greatest instant inside the requested
+interval by more than `max(4e-8 d, 8 binary64 ULP)` at each boundary.
+Optimizer witnesses coalesce only through overlapping open
+positive-clearance support; tangent-only contact remains separate. Each
+connected component's strongest time-local maximum is resolved on a private
+at-most-30-minute lattice with a 128-cell fail-closed budget before the range
+gate is reapplied. Fixed-star
+labels are canonical nonblank labels without surrounding whitespace or Solar
+System body identities. Observer elevation must be at least
+`-6378.137 * (1 - 1/298.257223563) * 1000 m`, the negative WGS 84 semi-minor
+axis. That is a computational-envelope floor, not an observing-site claim.
+At positive heights large enough that the observer sphere reaches a body,
+candidate admission switches from `asin(R/d)` to the conservative `180
+degree` direction-reversal bound; no arbitrary upper-height policy is hidden.
 
 ### Sothic Cycle (Egyptian calendar)
 
@@ -4407,6 +4457,11 @@ from moira.sky.events import (
 from moira.sky.eclipse import (
     EclipseCalculator, EclipseType,
     EclipseData, EclipseEvent,
+    SolarBesselianElements,
+    SolarEclipseFootprintBoundaryKind, SolarEclipsePenumbralContactKind,
+    SolarEclipseFootprintTopology, SolarEclipseFootprintPoint,
+    SolarEclipsePenumbralContact, SolarEclipseFootprintContacts,
+    SolarEclipseLimitTrack, SolarEclipseVisibilityFootprint,
     SolarEclipsePath, SolarEclipseLocalCircumstances,
     SolarBodyCircumstances, LocalContactCircumstances,
     LunarEclipseAnalysis, LunarEclipseLocalCircumstances, LunarEclipseContacts,
@@ -4418,27 +4473,77 @@ from moira.sky.eclipse import (
 
 ```python
 calc = EclipseCalculator()
+jd_start = 2460676.5
+lat, lon = 40.7, -74.0
 
 # Solar eclipse search and local circumstances
-ev   = calc.next_solar_eclipse(lat, lon)
-circ = calc.solar_local_circumstances(ev, lat, lon, elev_m=0.0)
-path = calc.solar_eclipse_path(ev)
-full = calc.next_solar_eclipse_at_location(lat, lon)   # search + circumstances combined
+ev        = calc.next_solar_eclipse(jd_start, kind="any")
+circ      = calc.solar_local_circumstances(
+    jd_start, lat, lon, elevation_m=0.0, kind="any"
+)
+path      = calc.solar_eclipse_path(jd_start, kind="any", sample_count=9)
+footprint = calc.solar_eclipse_footprint(
+    jd_start, kind="any", sample_count=181
+)
+full      = calc.next_solar_eclipse_at_location(
+    jd_start, lat, lon, elevation_m=0.0, kind="any"
+)  # search + circumstances combined
 
 # Lunar eclipse search and analysis
-ev   = calc.next_lunar_eclipse()
-ana  = calc.analyze_lunar_eclipse(ev)
-lc   = calc.lunar_local_circumstances(ev, lat, lon, elev_m=0.0)
+lunar_event = calc.next_lunar_eclipse(jd_start, kind="any")
+ana = calc.analyze_lunar_eclipse(jd_start, kind="any", mode="native")
+nasa_ana = calc.analyze_lunar_eclipse(
+    jd_start, kind="any", mode="nasa_compat"
+)
+lc = calc.lunar_local_circumstances(
+    jd_start, lat, lon, elevation_m=0.0, kind="any", mode="native"
+)
 
 # Geometry snapshot at any epoch
-snap = calc.calculate_jd(jd_ut)   # → EclipseData
+snap = calc.calculate_jd(jd_start)   # → EclipseData
 ```
+
+**Solar footprint engine signatures**
+
+| Surface | Exact signature | Returns |
+|---|---|---|
+| `EclipseCalculator` | `solar_eclipse_footprint(jd_start, *, kind="any", backward=False, sample_count=181)` | `SolarEclipseVisibilityFootprint` |
+| `Moira` facade | `solar_eclipse_footprint(jd_start, *, kind="any", backward=False, sample_count=181)` | `SolarEclipseVisibilityFootprint` |
+
+`kind` accepts `"any"`, `"total"`, `"annular"`, `"partial"`, `"central"`,
+or `"hybrid"`. `sample_count` is an integer in `9..721`; it controls only
+presentation density. The governing solve, contacts, horizon incidences,
+temporal folds, and `(kind, component_id, segment_id)` graph do not change
+with that requested density.
+
+**Solar footprint vessel contract**
+
+| Vessel | Fields |
+|---|---|
+| `SolarEclipseFootprintPoint` | `jd_ut`, `latitude_deg`, `longitude_deg`; computed `datetime_utc` and BCE-safe `calendar_utc` |
+| `SolarEclipsePenumbralContact` | `kind`, `point` |
+| `SolarEclipseFootprintContacts` | required `p1`/`p4`, paired optional `p2`/`p3` |
+| `SolarEclipseLimitTrack` | `kind`, `component_id`, `segment_id`, immutable time-ordered `points` |
+| `SolarEclipseVisibilityFootprint` | `event`, `greatest`, `topology`, `contacts`, `tracks`, `ephemeris`, `surface_model`, `limb_model`, `time_scale`, `atmospheric_refraction` |
+
+Boundary kinds are `penumbral_north`, `penumbral_south`, `sunrise`, and
+`sunset`. Every penumbral kind admitted by the topology contains exactly one
+connected component, identified as `component_id=0`. A component that folds in
+UT1 is emitted as strictly time-ordered tracks with contiguous `segment_id`
+values `0..n-1`; adjacent folded segments share the solver-refined fold point.
+Each penumbral component has exactly two incidences on the sunrise/sunset
+graph. In `two_limit_two_loop`, the north and south incidence sets are
+disjoint, the event is globally central rather than partial, and every horizon
+track lies wholly within P1-P2 or P3-P4 rather than crossing P2-P3. Topology is
+`one_limit_connected` or `two_limit_two_loop`.
 
 **Convenience function**
 
 ```python
 from moira.sky.eclipse import next_solar_eclipse_at_location
-result = next_solar_eclipse_at_location(lat, lon, jd_ut)
+result = next_solar_eclipse_at_location(
+    jd_start, lat, lon, elevation_m=0.0, kind="any", max_lunations=360
+)
 ```
 
 **Key vessel fields**
@@ -4447,7 +4552,11 @@ result = next_solar_eclipse_at_location(lat, lon, jd_ut)
 
 `EclipseEvent`: `jd_ut`, `eclipse_type`, `datetime_utc` (computed property).
 
-`LunarEclipseContacts`: precise TT contact times P1 (1st penumbral), U1 (1st umbral), U2 (start of totality), U3 (end of totality), U4 (last umbral), P4 (last penumbral).
+`LunarEclipseContacts`: precise UT1 contact times P1 (1st penumbral), U1 (1st umbral), U2 (start of totality), U3 (end of totality), U4 (last umbral), P4 (last penumbral), plus the separate greatest-eclipse instant.
+
+For `mode="nasa_compat"`, `LunarEclipseAnalysis.canon_method` is
+`nasa_shadow_axis_apparent_sun_moon`; `source_model` names the same declared
+reduction. Native mode and its contact policy are unchanged.
 
 > **Note:** `next_solar_eclipse_at_location` is also available directly from `moira.facade` and `moira.eclipse`. It is not re-exported through `moira.predictive`.
 
@@ -4457,11 +4566,16 @@ result = next_solar_eclipse_at_location(lat, lon, jd_ut)
 
 ```python
 from moira.sky.occultation import (
-    CloseApproach, LunarOccultation, OccultationPathGeometry,
+    CloseApproach, LunarOccultation, OccultationPathGeometry, OccultationPathTopology,
+    OccultationPathPoint, OccultationPathBoundaryPoint, OccultationPathBoundaryTrack,
+    OccultationPathBoundarySide, OccultationPathTopologyKind,
+    OccultationGeographicPole, OccultationPoleCrossingPhase, OccultationPoleCrossing,
     GrazeCircumstances, GrazeTableRow, GrazeProductGeometry, GrazeProductTrack,
     close_approaches, lunar_occultation, lunar_occultation_path_at, lunar_occultation_path,
+    lunar_occultation_path_topology_at, lunar_occultation_path_topology,
     all_lunar_occultations,
     lunar_star_occultation, lunar_star_occultation_path_at, lunar_star_occultation_path,
+    lunar_star_occultation_path_topology_at, lunar_star_occultation_path_topology,
     lunar_star_graze_circumstances, lunar_star_graze_latitude,
     lunar_star_practical_graze_latitude, lunar_star_graze_line,
     lunar_star_graze_table, lunar_star_graze_product_at, lunar_star_graze_product_track,
@@ -4472,11 +4586,16 @@ from moira.sky.occultation import (
 |---|---|---|
 | `close_approaches(body1, body2, jd_start, jd_end)` | `→ list[CloseApproach]` | All minimum-separation events between two bodies |
 | `lunar_occultation(body, jd_start, jd_end)` | `→ list[LunarOccultation]` | Moon occultations of a named planet |
-| `all_lunar_occultations(jd_start, jd_end)` | `→ dict[str, list[LunarOccultation]]` | Occultations of all visible planets |
-| `lunar_occultation_path_at(event, jd_ut)` | `→ OccultationPathGeometry` | Path geometry at a given moment |
-| `lunar_occultation_path(event)` | `→ OccultationPathGeometry` | Full geographic path of a planetary occultation |
+| `all_lunar_occultations(jd_start, jd_end, planets=None, reader=None)` | `→ list[LunarOccultation]` | Occultations of the default visible-planet set or caller-supplied targets |
+| `lunar_occultation_path_at(target, jd_mid, *, sample_count=9, observer_elev_m=0.0, limb_profile_provider=None, reader=None)` | `→ OccultationPathGeometry` | Compatibility center/width/duration summary at a supplied greatest epoch |
+| `lunar_occultation_path(target, jd_start, jd_end, step_days=0.25, sample_count=9, observer_elev_m=0.0, limb_profile_provider=None, reader=None)` | `→ list[OccultationPathGeometry]` | Compatibility summaries for planetary events in a search interval |
+| `lunar_occultation_path_topology_at(target, jd_mid)` | `→ OccultationPathTopology` | Polar-safe planetary path band at one greatest epoch |
+| `lunar_occultation_path_topology(target, jd_start, jd_end)` | `→ list[OccultationPathTopology]` | Detailed planetary path bands in a search interval |
 | `lunar_star_occultation(star, jd_start, jd_end)` | `→ list[LunarOccultation]` | Moon occultations of a named fixed star |
-| `lunar_star_occultation_path(event)` | `→ OccultationPathGeometry` | Geographic path of a stellar occultation |
+| `lunar_star_occultation_path_at(star_lon, star_lat, star_name, jd_mid, *, sample_count=9, observer_elev_m=0.0, limb_profile_provider=None, reader=None)` | `→ OccultationPathGeometry` | Compatibility center/width/duration summary at a supplied greatest epoch |
+| `lunar_star_occultation_path(star_lon, star_lat, star_name, jd_start, jd_end, step_days=0.25, sample_count=9, observer_elev_m=0.0, limb_profile_provider=None, reader=None)` | `→ list[OccultationPathGeometry]` | Compatibility summaries for fixed-star events in a search interval |
+| `lunar_star_occultation_path_topology_at(star_lon, star_lat, star_name, jd_mid)` | `→ OccultationPathTopology` | Polar-safe fixed-star path band at one greatest epoch |
+| `lunar_star_occultation_path_topology(star_lon, star_lat, star_name, jd_start, jd_end)` | `→ list[OccultationPathTopology]` | Detailed fixed-star path bands in a search interval |
 | `lunar_star_graze_table(star, event)` | `→ list[GrazeTableRow]` | Latitude-keyed graze contact table |
 | `lunar_star_graze_product_track(star, event)` | `→ GrazeProductTrack` | Full graze track across a latitude band |
 

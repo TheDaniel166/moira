@@ -3,18 +3,32 @@
 from __future__ import annotations
 
 from moira import datetime_from_jd
-from moira.julian import _ut1_to_utc
+from moira.julian import _ut1_to_utc, calendar_datetime_from_jd
 from moira.eclipse import (
     EclipseData,
     EclipseEvent,
     LocalContactCircumstances,
     LunarEclipseLocalCircumstances,
+    SolarEclipseFootprintContacts,
+    SolarEclipseFootprintPoint,
+    SolarEclipseLimitTrack,
+    SolarEclipsePenumbralContact,
+    SolarEclipseVisibilityFootprint,
     SolarEclipsePath,
     SolarBodyCircumstances,
     SolarEclipseLocalCircumstances,
 )
 from moira.heliacal import GeneralVisibilityEvent, PlanetHeliacalEvent, VisibilityAssessment
-from moira.occultations import CloseApproach, LunarOccultation, OccultationPathGeometry
+from moira.occultations import (
+    CloseApproach,
+    LunarOccultation,
+    OccultationPathBoundaryPoint,
+    OccultationPathBoundaryTrack,
+    OccultationPathGeometry,
+    OccultationPathPoint,
+    OccultationPathTopology,
+    OccultationPoleCrossing,
+)
 from moira.parans import (
     NatalAngularContact,
     Paran,
@@ -54,7 +68,12 @@ from ..models.phenomena import (
     LunarEclipseLocalCircumstancesResponse,
     LunarOccultationResponse,
     NatalAngularContactResponse,
+    OccultationPathBoundaryPointResponse,
+    OccultationPathBoundaryTrackResponse,
     OccultationPathGeometryResponse,
+    OccultationPathPointResponse,
+    OccultationPathTopologyResponse,
+    OccultationPoleCrossingResponse,
     ParanCrossingResponse,
     ParanBodyCrossingInventoryResponse,
     ParanCircleInventoryEntryResponse,
@@ -80,6 +99,11 @@ from ..models.phenomena import (
     RetrogradePeriodResponse,
     RiseSetPhenomenaResponse,
     SolarBodyCircumstancesResponse,
+    SolarEclipseFootprintContactsResponse,
+    SolarEclipseFootprintPointResponse,
+    SolarEclipseLimitTrackResponse,
+    SolarEclipsePenumbralContactResponse,
+    SolarEclipseVisibilityFootprintResponse,
     SolarEclipsePathResponse,
     SolarEclipseLocalCircumstancesResponse,
     StationEventResponse,
@@ -267,6 +291,93 @@ def serialize_solar_eclipse_path(path: SolarEclipsePath) -> SolarEclipsePathResp
     )
 
 
+def _serialize_footprint_ut1_datetime(jd_ut: float) -> str:
+    jd_utc = _ut1_to_utc(jd_ut)
+    try:
+        return datetime_from_jd(jd_utc).isoformat()
+    except ValueError:
+        return calendar_datetime_from_jd(jd_utc).isoformat()
+
+
+def serialize_solar_eclipse_footprint_point(
+    point: SolarEclipseFootprintPoint,
+) -> SolarEclipseFootprintPointResponse:
+    return SolarEclipseFootprintPointResponse(
+        jd_ut=point.jd_ut,
+        datetime_utc=_serialize_footprint_ut1_datetime(point.jd_ut),
+        latitude_deg=point.latitude_deg,
+        longitude_deg=point.longitude_deg,
+    )
+
+
+def serialize_solar_eclipse_penumbral_contact(
+    contact: SolarEclipsePenumbralContact,
+) -> SolarEclipsePenumbralContactResponse:
+    return SolarEclipsePenumbralContactResponse(
+        kind=contact.kind.value,
+        point=serialize_solar_eclipse_footprint_point(contact.point),
+    )
+
+
+def serialize_solar_eclipse_footprint_contacts(
+    contacts: SolarEclipseFootprintContacts,
+) -> SolarEclipseFootprintContactsResponse:
+    return SolarEclipseFootprintContactsResponse(
+        p1=serialize_solar_eclipse_penumbral_contact(contacts.p1),
+        p2=(
+            serialize_solar_eclipse_penumbral_contact(contacts.p2)
+            if contacts.p2 is not None
+            else None
+        ),
+        p3=(
+            serialize_solar_eclipse_penumbral_contact(contacts.p3)
+            if contacts.p3 is not None
+            else None
+        ),
+        p4=serialize_solar_eclipse_penumbral_contact(contacts.p4),
+    )
+
+
+def serialize_solar_eclipse_limit_track(
+    track: SolarEclipseLimitTrack,
+) -> SolarEclipseLimitTrackResponse:
+    return SolarEclipseLimitTrackResponse(
+        kind=track.kind.value,
+        component_id=track.component_id,
+        segment_id=track.segment_id,
+        points=[
+            serialize_solar_eclipse_footprint_point(point)
+            for point in track.points
+        ],
+    )
+
+
+def serialize_solar_eclipse_footprint(
+    footprint: SolarEclipseVisibilityFootprint,
+) -> SolarEclipseVisibilityFootprintResponse:
+    return SolarEclipseVisibilityFootprintResponse(
+        event=EclipseEventResponse(
+            jd_ut=footprint.event.jd_ut,
+            datetime_utc=_serialize_footprint_ut1_datetime(
+                footprint.event.jd_ut
+            ),
+            data=serialize_eclipse_data(footprint.event.data),
+        ),
+        greatest=serialize_solar_eclipse_footprint_point(footprint.greatest),
+        topology=footprint.topology.value,
+        contacts=serialize_solar_eclipse_footprint_contacts(footprint.contacts),
+        tracks=[
+            serialize_solar_eclipse_limit_track(track)
+            for track in footprint.tracks
+        ],
+        ephemeris=footprint.ephemeris,
+        surface_model=footprint.surface_model,
+        limb_model=footprint.limb_model,
+        time_scale=footprint.time_scale,
+        atmospheric_refraction=footprint.atmospheric_refraction,
+    )
+
+
 def serialize_close_approach(event: CloseApproach) -> CloseApproachResponse:
     return CloseApproachResponse(
         body1=event.body1,
@@ -305,6 +416,107 @@ def serialize_occultation_path_geometry(
         central_line_lons=list(event.central_line_lons),
         path_width_km=event.path_width_km,
         duration_at_greatest_s=event.duration_at_greatest_s,
+    )
+
+
+def _serialize_occultation_path_geometry_ut1(
+    event: OccultationPathGeometry,
+) -> OccultationPathGeometryResponse:
+    """Serialize a topology summary without changing the legacy path route."""
+
+    return OccultationPathGeometryResponse(
+        occulting_body=event.occulting_body,
+        occulted_body=event.occulted_body,
+        jd_greatest_ut=event.jd_greatest_ut,
+        greatest_datetime_utc=_serialize_footprint_ut1_datetime(
+            event.jd_greatest_ut
+        ),
+        central_line_lats=list(event.central_line_lats),
+        central_line_lons=list(event.central_line_lons),
+        path_width_km=event.path_width_km,
+        duration_at_greatest_s=event.duration_at_greatest_s,
+    )
+
+
+def serialize_occultation_path_point(
+    point: OccultationPathPoint,
+) -> OccultationPathPointResponse:
+    return OccultationPathPointResponse(
+        jd_ut=point.jd_ut,
+        datetime_utc=_serialize_footprint_ut1_datetime(point.jd_ut),
+        latitude_deg=point.latitude_deg,
+        longitude_deg=point.longitude_deg,
+        separation_deg=point.separation_deg,
+        clearance_deg=point.clearance_deg,
+    )
+
+
+def serialize_occultation_path_boundary_point(
+    boundary: OccultationPathBoundaryPoint,
+) -> OccultationPathBoundaryPointResponse:
+    return OccultationPathBoundaryPointResponse(
+        side=boundary.side.value,
+        point=serialize_occultation_path_point(boundary.point),
+        cross_track_distance_km=boundary.cross_track_distance_km,
+    )
+
+
+def serialize_occultation_path_boundary_track(
+    track: OccultationPathBoundaryTrack,
+) -> OccultationPathBoundaryTrackResponse:
+    return OccultationPathBoundaryTrackResponse(
+        side=track.side.value,
+        points=[
+            serialize_occultation_path_boundary_point(point)
+            for point in track.points
+        ],
+    )
+
+
+def serialize_occultation_pole_crossing(
+    crossing: OccultationPoleCrossing,
+) -> OccultationPoleCrossingResponse:
+    return OccultationPoleCrossingResponse(
+        pole=crossing.pole.value,
+        phase=crossing.phase.value,
+        point=serialize_occultation_path_point(crossing.point),
+        boundary_side=(
+            crossing.boundary_side.value
+            if crossing.boundary_side is not None
+            else None
+        ),
+    )
+
+
+def serialize_occultation_path_topology(
+    topology: OccultationPathTopology,
+) -> OccultationPathTopologyResponse:
+    return OccultationPathTopologyResponse(
+        summary=_serialize_occultation_path_geometry_ut1(topology.summary),
+        topology=topology.topology.value,
+        centers=[serialize_occultation_path_point(point) for point in topology.centers],
+        boundaries=[
+            serialize_occultation_path_boundary_track(track)
+            for track in topology.boundaries
+        ],
+        greatest_left=serialize_occultation_path_boundary_point(
+            topology.greatest_left
+        ),
+        greatest_right=serialize_occultation_path_boundary_point(
+            topology.greatest_right
+        ),
+        pole_crossings=[
+            serialize_occultation_pole_crossing(crossing)
+            for crossing in topology.pole_crossings
+        ],
+        lunar_limb_model=topology.lunar_limb_model,
+        target_model=topology.target_model,
+        observer_elevation_m=topology.observer_elevation_m,
+        observer_geometry=topology.observer_geometry,
+        width_metric=topology.width_metric,
+        time_scale=topology.time_scale,
+        atmospheric_refraction=topology.atmospheric_refraction,
+        saturn_rings_included=topology.saturn_rings_included,
     )
 
 
@@ -628,7 +840,12 @@ __all__ = [
     "serialize_lunar_eclipse_local",
     "serialize_lunar_occultation",
     "serialize_natal_angular_contact",
+    "serialize_occultation_path_boundary_point",
+    "serialize_occultation_path_boundary_track",
     "serialize_occultation_path_geometry",
+    "serialize_occultation_path_point",
+    "serialize_occultation_path_topology",
+    "serialize_occultation_pole_crossing",
     "serialize_paran",
     "serialize_paran_body_crossing_inventory",
     "serialize_paran_circle_inventory_entry",
@@ -647,6 +864,11 @@ __all__ = [
     "serialize_retrograde_period",
     "serialize_rise_set_phenomena",
     "serialize_solar_body_circumstances",
+    "serialize_solar_eclipse_footprint",
+    "serialize_solar_eclipse_footprint_contacts",
+    "serialize_solar_eclipse_footprint_point",
+    "serialize_solar_eclipse_limit_track",
+    "serialize_solar_eclipse_penumbral_contact",
     "serialize_solar_eclipse_path",
     "serialize_solar_eclipse_local",
     "serialize_station_event",

@@ -2,7 +2,45 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from math import ceil, isfinite
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+
+_OCCULTATION_TOPOLOGY_MAX_STEP_DAYS = 0.25
+_OCCULTATION_TOPOLOGY_MAX_SPAN_DAYS = 400.0
+_OCCULTATION_TOPOLOGY_MAX_SCAN_CELLS = 4096
+_WGS84_EQUATORIAL_RADIUS_KM = 6378.137
+_WGS84_FLATTENING = 1.0 / 298.257223563
+_OCCULTATION_TOPOLOGY_MIN_OBSERVER_ELEV_M = (
+    -_WGS84_EQUATORIAL_RADIUS_KM * (1.0 - _WGS84_FLATTENING) * 1000.0
+)
+
+
+def _validate_occultation_topology_search_window(
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+) -> None:
+    span = jd_end - jd_start
+    if span <= 0.0:
+        raise ValueError("jd_end must be greater than jd_start")
+    if span > _OCCULTATION_TOPOLOGY_MAX_SPAN_DAYS:
+        raise ValueError("occultation topology search span must not exceed 400 days")
+    if step_days * _OCCULTATION_TOPOLOGY_MAX_SCAN_CELLS < span:
+        raise ValueError(
+            "occultation topology search must not exceed 4096 coarse cells"
+        )
+    segment_count = ceil(span / step_days)
+    previous = jd_start
+    for index in range(1, segment_count):
+        candidate = jd_start + index * step_days
+        if not previous < candidate < jd_end:
+            raise ValueError(
+                "step_days does not produce a strictly advancing Julian-Day lattice"
+            )
+        previous = candidate
 
 
 class _StrictModel(BaseModel):
@@ -263,6 +301,99 @@ class SolarEclipsePathResponse(_StrictModel):
     eclipse_data: EclipseDataResponse
 
 
+SolarEclipseSearchKind = Literal[
+    "any", "total", "annular", "partial", "central", "hybrid"
+]
+SolarEclipseFootprintBoundaryKindValue = Literal[
+    "penumbral_north", "penumbral_south", "sunrise", "sunset"
+]
+SolarEclipsePenumbralContactKindValue = Literal["p1", "p2", "p3", "p4"]
+SolarEclipseFootprintTopologyValue = Literal[
+    "one_limit_connected", "two_limit_two_loop"
+]
+
+_MIN_COMPUTATIONAL_JD = -40_000_000.0
+_MAX_COMPUTATIONAL_JD = 40_000_000.0
+
+
+class SolarEclipseFootprintRequest(_StrictModel):
+    jd_start: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    kind: SolarEclipseSearchKind = "any"
+    backward: bool = False
+    sample_count: int = Field(default=181, ge=9, le=721)
+
+    @field_validator("jd_start", mode="before")
+    @classmethod
+    def _valid_jd_start(cls, value: Any) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("jd_start must be an integer or float")
+        parsed = float(value)
+        if not isfinite(parsed):
+            raise ValueError("jd_start must be finite")
+        return parsed
+
+    @field_validator("backward", mode="before")
+    @classmethod
+    def _valid_backward(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("backward must be a boolean")
+        return value
+
+    @field_validator("sample_count", mode="before")
+    @classmethod
+    def _valid_sample_count(cls, value: Any) -> int:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError("sample_count must be an integer")
+        return value
+
+
+class SolarEclipseFootprintPointResponse(_StrictModel):
+    jd_ut: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    datetime_utc: str
+    latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+
+
+class SolarEclipsePenumbralContactResponse(_StrictModel):
+    kind: SolarEclipsePenumbralContactKindValue
+    point: SolarEclipseFootprintPointResponse
+
+
+class SolarEclipseFootprintContactsResponse(_StrictModel):
+    p1: SolarEclipsePenumbralContactResponse
+    p2: SolarEclipsePenumbralContactResponse | None = None
+    p3: SolarEclipsePenumbralContactResponse | None = None
+    p4: SolarEclipsePenumbralContactResponse
+
+
+class SolarEclipseLimitTrackResponse(_StrictModel):
+    kind: SolarEclipseFootprintBoundaryKindValue
+    component_id: int = Field(ge=0)
+    segment_id: int = Field(ge=0)
+    points: list[SolarEclipseFootprintPointResponse] = Field(min_length=2)
+
+
+class SolarEclipseVisibilityFootprintResponse(_StrictModel):
+    event: EclipseEventResponse
+    greatest: SolarEclipseFootprintPointResponse
+    topology: SolarEclipseFootprintTopologyValue
+    contacts: SolarEclipseFootprintContactsResponse
+    tracks: list[SolarEclipseLimitTrackResponse] = Field(min_length=3)
+    ephemeris: Literal["DE-0441LE-0441"]
+    surface_model: Literal["WGS84_ZERO_ELEVATION"]
+    limb_model: Literal["SPHERICAL_MEAN_LIMB"]
+    time_scale: Literal["UT1"]
+    atmospheric_refraction: Literal[False]
+
+
 class CloseApproachRequest(_StrictModel):
     body1: str
     body2: str
@@ -336,6 +467,171 @@ class LunarStarOccultationPathAtRequest(_StrictModel):
     observer_elev_m: float = 0.0
 
 
+def _parse_topology_number(value: Any, name: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be an integer or float")
+    parsed = float(value)
+    if not isfinite(parsed):
+        raise ValueError(f"{name} must be finite")
+    return parsed
+
+
+def _parse_topology_label(value: Any, name: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{name} must be a non-empty string")
+    return value.strip()
+
+
+class _OccultationPathTopologyBaseRequest(_StrictModel):
+    sample_count: int = Field(default=65, ge=9, le=721)
+    observer_elev_m: float = Field(
+        default=0.0,
+        ge=_OCCULTATION_TOPOLOGY_MIN_OBSERVER_ELEV_M,
+        allow_inf_nan=False,
+    )
+
+    @field_validator("sample_count", mode="before")
+    @classmethod
+    def _valid_sample_count(cls, value: Any) -> int:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError("sample_count must be an integer")
+        return value
+
+    @field_validator("observer_elev_m", mode="before")
+    @classmethod
+    def _valid_observer_elevation(cls, value: Any) -> float:
+        return _parse_topology_number(value, "observer_elev_m")
+
+
+class LunarOccultationPathTopologyRequest(_OccultationPathTopologyBaseRequest):
+    target: str
+    jd_start: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    jd_end: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    step_days: float = Field(
+        default=0.25,
+        gt=0.0,
+        le=_OCCULTATION_TOPOLOGY_MAX_STEP_DAYS,
+        allow_inf_nan=False,
+    )
+
+    @field_validator("target", mode="before")
+    @classmethod
+    def _valid_target(cls, value: Any) -> str:
+        return _parse_topology_label(value, "target")
+
+    @field_validator("jd_start", "jd_end", "step_days", mode="before")
+    @classmethod
+    def _valid_numbers(cls, value: Any, info: Any) -> float:
+        return _parse_topology_number(value, info.field_name)
+
+    @model_validator(mode="after")
+    def _valid_search_budget(self) -> "LunarOccultationPathTopologyRequest":
+        _validate_occultation_topology_search_window(
+            self.jd_start,
+            self.jd_end,
+            self.step_days,
+        )
+        return self
+
+
+class LunarOccultationPathTopologyAtRequest(_OccultationPathTopologyBaseRequest):
+    target: str
+    jd_mid: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+
+    @field_validator("target", mode="before")
+    @classmethod
+    def _valid_target(cls, value: Any) -> str:
+        return _parse_topology_label(value, "target")
+
+    @field_validator("jd_mid", mode="before")
+    @classmethod
+    def _valid_jd_mid(cls, value: Any) -> float:
+        return _parse_topology_number(value, "jd_mid")
+
+
+class _LunarStarOccultationPathTopologyBaseRequest(
+    _OccultationPathTopologyBaseRequest
+):
+    star_lon: float = Field(allow_inf_nan=False)
+    star_lat: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    star_name: str
+
+    @field_validator("star_lon", "star_lat", mode="before")
+    @classmethod
+    def _valid_star_coordinates(cls, value: Any, info: Any) -> float:
+        return _parse_topology_number(value, info.field_name)
+
+    @field_validator("star_name", mode="before")
+    @classmethod
+    def _valid_star_name(cls, value: Any) -> str:
+        parsed = _parse_topology_label(value, "star_name")
+        if parsed != value:
+            raise ValueError("star_name must not contain surrounding whitespace")
+        return parsed
+
+
+class LunarStarOccultationPathTopologyRequest(
+    _LunarStarOccultationPathTopologyBaseRequest
+):
+    jd_start: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    jd_end: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    step_days: float = Field(
+        default=0.25,
+        gt=0.0,
+        le=_OCCULTATION_TOPOLOGY_MAX_STEP_DAYS,
+        allow_inf_nan=False,
+    )
+
+    @field_validator("jd_start", "jd_end", "step_days", mode="before")
+    @classmethod
+    def _valid_numbers(cls, value: Any, info: Any) -> float:
+        return _parse_topology_number(value, info.field_name)
+
+    @model_validator(mode="after")
+    def _valid_search_budget(self) -> "LunarStarOccultationPathTopologyRequest":
+        _validate_occultation_topology_search_window(
+            self.jd_start,
+            self.jd_end,
+            self.step_days,
+        )
+        return self
+
+
+class LunarStarOccultationPathTopologyAtRequest(
+    _LunarStarOccultationPathTopologyBaseRequest
+):
+    jd_mid: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+
+    @field_validator("jd_mid", mode="before")
+    @classmethod
+    def _valid_jd_mid(cls, value: Any) -> float:
+        return _parse_topology_number(value, "jd_mid")
+
+
 class CloseApproachResponse(_StrictModel):
     body1: str
     body2: str
@@ -379,6 +675,79 @@ class OccultationPathGeometryResponse(_StrictModel):
 
 class OccultationPathSearchResponse(_StrictModel):
     events: list[OccultationPathGeometryResponse]
+
+
+OccultationPathBoundarySideValue = Literal["left", "right"]
+OccultationPathTopologyKindValue = Literal["two_sided_band"]
+OccultationGeographicPoleValue = Literal["north", "south"]
+OccultationPoleCrossingPhaseValue = Literal["ingress", "egress"]
+OccultationLunarLimbModelValue = Literal["SPHERICAL_MEAN_LIMB"]
+OccultationTargetModelValue = Literal["POINT_SOURCE", "JPL_EQUATORIAL_SOLID_BODY"]
+
+
+class OccultationPathPointResponse(_StrictModel):
+    jd_ut: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    datetime_utc: str
+    latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+    separation_deg: float = Field(ge=0.0, allow_inf_nan=False)
+    clearance_deg: float = Field(allow_inf_nan=False)
+
+
+class OccultationPathBoundaryPointResponse(_StrictModel):
+    side: OccultationPathBoundarySideValue
+    point: OccultationPathPointResponse
+    cross_track_distance_km: float = Field(ge=0.0, allow_inf_nan=False)
+
+
+class OccultationPathBoundaryTrackResponse(_StrictModel):
+    side: OccultationPathBoundarySideValue
+    points: list[OccultationPathBoundaryPointResponse] = Field(
+        min_length=9,
+        max_length=721,
+    )
+
+
+class OccultationPoleCrossingResponse(_StrictModel):
+    pole: OccultationGeographicPoleValue
+    phase: OccultationPoleCrossingPhaseValue
+    point: OccultationPathPointResponse
+    boundary_side: OccultationPathBoundarySideValue | None
+
+
+class OccultationPathTopologyResponse(_StrictModel):
+    summary: OccultationPathGeometryResponse
+    topology: OccultationPathTopologyKindValue
+    centers: list[OccultationPathPointResponse] = Field(
+        min_length=9,
+        max_length=721,
+    )
+    boundaries: list[OccultationPathBoundaryTrackResponse] = Field(
+        min_length=2,
+        max_length=2,
+    )
+    greatest_left: OccultationPathBoundaryPointResponse
+    greatest_right: OccultationPathBoundaryPointResponse
+    pole_crossings: list[OccultationPoleCrossingResponse]
+    lunar_limb_model: OccultationLunarLimbModelValue
+    target_model: OccultationTargetModelValue
+    observer_elevation_m: float = Field(
+        ge=_OCCULTATION_TOPOLOGY_MIN_OBSERVER_ELEV_M,
+        allow_inf_nan=False,
+    )
+    observer_geometry: Literal["WGS84_GEODETIC"]
+    width_metric: Literal["SPHERICAL_GREAT_CIRCLE_R6378_137_KM"]
+    time_scale: Literal["UT1"]
+    atmospheric_refraction: Literal[False]
+    saturn_rings_included: Literal[False]
+
+
+class OccultationPathTopologySearchResponse(_StrictModel):
+    events: list[OccultationPathTopologyResponse]
 
 
 class HeliacalPlanetEventRequest(_StrictModel):
@@ -740,18 +1109,34 @@ __all__ = [
     "LunarOccultationRequest",
     "LunarOccultationPathAtRequest",
     "LunarOccultationPathRequest",
+    "LunarOccultationPathTopologyAtRequest",
+    "LunarOccultationPathTopologyRequest",
     "LunarOccultationResponse",
     "LunarOccultationSearchResponse",
     "LunarStarOccultationRequest",
     "LunarStarOccultationPathAtRequest",
     "LunarStarOccultationPathRequest",
+    "LunarStarOccultationPathTopologyAtRequest",
+    "LunarStarOccultationPathTopologyRequest",
     "NextStationRequest",
     "NatalParanSearchRequest",
     "NatalAngularContactsRequest",
     "NatalAngularContactResponse",
     "NatalAngularContactsResponse",
     "OccultationPathGeometryResponse",
+    "OccultationGeographicPoleValue",
+    "OccultationLunarLimbModelValue",
+    "OccultationPathBoundaryPointResponse",
+    "OccultationPathBoundarySideValue",
+    "OccultationPathBoundaryTrackResponse",
+    "OccultationPathPointResponse",
     "OccultationPathSearchResponse",
+    "OccultationPathTopologyKindValue",
+    "OccultationPathTopologyResponse",
+    "OccultationPathTopologySearchResponse",
+    "OccultationPoleCrossingPhaseValue",
+    "OccultationPoleCrossingResponse",
+    "OccultationTargetModelValue",
     "ParanCrossingResponse",
     "ParanCircleInventoryEntryResponse",
     "ParanBodyCrossingInventoryResponse",
@@ -800,6 +1185,16 @@ __all__ = [
     "StationStateResponse",
     "SolarEclipsePathRequest",
     "SolarEclipsePathResponse",
+    "SolarEclipseSearchKind",
+    "SolarEclipseFootprintBoundaryKindValue",
+    "SolarEclipseFootprintRequest",
+    "SolarEclipseFootprintPointResponse",
+    "SolarEclipsePenumbralContactKindValue",
+    "SolarEclipsePenumbralContactResponse",
+    "SolarEclipseFootprintContactsResponse",
+    "SolarEclipseFootprintTopologyValue",
+    "SolarEclipseLimitTrackResponse",
+    "SolarEclipseVisibilityFootprintResponse",
     "TwilightRequest",
     "TwilightTimesResponse",
     "VisibilityAssessmentCompactResponse",

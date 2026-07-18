@@ -22,16 +22,22 @@ from ..models.phenomena import (
     LunarOccultationRequest,
     LunarOccultationPathAtRequest,
     LunarOccultationPathRequest,
+    LunarOccultationPathTopologyAtRequest,
+    LunarOccultationPathTopologyRequest,
     LunarOccultationSearchResponse,
     LunarStarOccultationRequest,
     LunarStarOccultationPathAtRequest,
     LunarStarOccultationPathRequest,
+    LunarStarOccultationPathTopologyAtRequest,
+    LunarStarOccultationPathTopologyRequest,
     NextStationRequest,
     NatalAngularContactsRequest,
     NatalAngularContactsResponse,
     NatalParanSearchRequest,
     OccultationPathGeometryResponse,
     OccultationPathSearchResponse,
+    OccultationPathTopologyResponse,
+    OccultationPathTopologySearchResponse,
     ParanContourExtractionResponse,
     ParanContourPathSetResponse,
     ParanFieldAnalysisResponse,
@@ -50,10 +56,12 @@ from ..models.phenomena import (
     RiseSetPhenomenaRequest,
     RiseSetPhenomenaResponse,
     RiseSetTransitRequest,
+    SolarEclipseFootprintRequest,
     SolarEclipseLocalCircumstancesResponse,
     SolarEclipseLocationRequest,
     SolarEclipsePathRequest,
     SolarEclipsePathResponse,
+    SolarEclipseVisibilityFootprintResponse,
     StationEventResponse,
     StationSearchRequest,
     StationSearchResponse,
@@ -76,6 +84,7 @@ from ..serializers.phenomena import (
     serialize_lunar_occultation,
     serialize_natal_angular_contact,
     serialize_occultation_path_geometry,
+    serialize_occultation_path_topology,
     serialize_paran,
     serialize_paran_body_crossing_inventory,
     serialize_paran_field_analysis,
@@ -87,6 +96,7 @@ from ..serializers.phenomena import (
     serialize_planet_heliacal_event,
     serialize_retrograde_period,
     serialize_rise_set_phenomena,
+    serialize_solar_eclipse_footprint,
     serialize_solar_eclipse_path,
     serialize_solar_eclipse_local,
     serialize_station_event,
@@ -101,9 +111,13 @@ from ..services.phenomena import (
     compute_lunar_occultations,
     compute_lunar_occultation_path_at,
     compute_lunar_occultation_paths,
+    compute_lunar_occultation_path_topologies,
+    compute_lunar_occultation_path_topology_at,
     compute_lunar_star_occultations,
     compute_lunar_star_occultation_path_at,
     compute_lunar_star_occultation_paths,
+    compute_lunar_star_occultation_path_topologies,
+    compute_lunar_star_occultation_path_topology_at,
     compute_natal_parans,
     compute_natal_parans_with_inventory,
     compute_natal_angular_contacts,
@@ -124,6 +138,7 @@ from ..services.phenomena import (
     compute_retrograde_periods,
     compute_rise_set_phenomena,
     compute_rise_set_transit,
+    compute_solar_eclipse_footprint,
     compute_station_state,
     compute_stations,
     compute_solar_eclipse_path,
@@ -287,6 +302,19 @@ def solar_eclipse_path_route(
     return serialize_solar_eclipse_path(compute_solar_eclipse_path(engine, request))
 
 
+@router.post(
+    "/eclipses/solar/footprint",
+    response_model=SolarEclipseVisibilityFootprintResponse,
+)
+def solar_eclipse_footprint_route(
+    request: SolarEclipseFootprintRequest,
+    engine: Moira = Depends(get_engine),
+) -> SolarEclipseVisibilityFootprintResponse:
+    return serialize_solar_eclipse_footprint(
+        compute_solar_eclipse_footprint(engine, request)
+    )
+
+
 @router.post("/occultations/close-approaches", response_model=CloseApproachSearchResponse)
 def close_approaches_route(
     request: CloseApproachRequest,
@@ -368,6 +396,67 @@ def lunar_star_occultation_path_at_route(
 ) -> OccultationPathGeometryResponse:
     return serialize_occultation_path_geometry(
         compute_lunar_star_occultation_path_at(engine, request)
+    )
+
+
+@router.post(
+    "/occultations/lunar-path-topology",
+    response_model=OccultationPathTopologySearchResponse,
+)
+def lunar_occultation_path_topology_route(
+    request: LunarOccultationPathTopologyRequest,
+    engine: Moira = Depends(get_engine),
+) -> OccultationPathTopologySearchResponse:
+    return OccultationPathTopologySearchResponse(
+        events=[
+            serialize_occultation_path_topology(event)
+            for event in compute_lunar_occultation_path_topologies(engine, request)
+        ]
+    )
+
+
+@router.post(
+    "/occultations/lunar-path-topology-at",
+    response_model=OccultationPathTopologyResponse,
+)
+def lunar_occultation_path_topology_at_route(
+    request: LunarOccultationPathTopologyAtRequest,
+    engine: Moira = Depends(get_engine),
+) -> OccultationPathTopologyResponse:
+    return serialize_occultation_path_topology(
+        compute_lunar_occultation_path_topology_at(engine, request)
+    )
+
+
+@router.post(
+    "/occultations/lunar-star-path-topology",
+    response_model=OccultationPathTopologySearchResponse,
+)
+def lunar_star_occultation_path_topology_route(
+    request: LunarStarOccultationPathTopologyRequest,
+    engine: Moira = Depends(get_engine),
+) -> OccultationPathTopologySearchResponse:
+    return OccultationPathTopologySearchResponse(
+        events=[
+            serialize_occultation_path_topology(event)
+            for event in compute_lunar_star_occultation_path_topologies(
+                engine,
+                request,
+            )
+        ]
+    )
+
+
+@router.post(
+    "/occultations/lunar-star-path-topology-at",
+    response_model=OccultationPathTopologyResponse,
+)
+def lunar_star_occultation_path_topology_at_route(
+    request: LunarStarOccultationPathTopologyAtRequest,
+    engine: Moira = Depends(get_engine),
+) -> OccultationPathTopologyResponse:
+    return serialize_occultation_path_topology(
+        compute_lunar_star_occultation_path_topology_at(engine, request)
     )
 
 

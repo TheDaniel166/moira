@@ -33,7 +33,7 @@ from ._eclipse_contact_solver import (
     _find_contact_pair,
 )
 from .constants import Body
-from .corrections import apply_light_time
+from .corrections import apply_aberration, apply_light_time
 from .eclipse_geometry import (
     EARTH_RADIUS_KM,
     MOON_RADIUS_KM,
@@ -42,7 +42,12 @@ from .eclipse_geometry import (
     umbra_radius,
 )
 from .eclipse_search import refine_minimum
-from .planets import _barycentric, _earth_barycentric, _geocentric
+from .planets import (
+    _barycentric,
+    _earth_barycentric,
+    _earth_barycentric_state,
+    _geocentric,
+)
 from .julian import (
     calendar_from_jd,
     decimal_year_from_jd,
@@ -53,18 +58,28 @@ from .julian import (
 from typing import Literal
 
 LunarCanonMethodId = Literal[
+    "nasa_shadow_axis_apparent_sun_moon",
     "nasa_shadow_axis_geometric_moon",
     "nasa_shadow_axis_retarded_moon",
 ]
 
-DEFAULT_LUNAR_CANON_METHOD: LunarCanonMethodId = "nasa_shadow_axis_geometric_moon"
+DEFAULT_LUNAR_CANON_METHOD: LunarCanonMethodId = (
+    "nasa_shadow_axis_apparent_sun_moon"
+)
 
 LUNAR_CANON_METHOD_IDS: tuple[LunarCanonMethodId, ...] = (
     "nasa_shadow_axis_geometric_moon",
     "nasa_shadow_axis_retarded_moon",
+    "nasa_shadow_axis_apparent_sun_moon",
 )
 
 _LUNAR_CANON_SOURCE_MODELS: dict[LunarCanonMethodId, str] = {
+    "nasa_shadow_axis_apparent_sun_moon": (
+        "NASA detailed-figure compatibility layer "
+        "(TT gamma minimum; reception light-time then annual-aberration "
+        "for geocentric apparent Sun/Moon directions; no gravitational "
+        "deflection, topocentric parallax, or atmospheric refraction)"
+    ),
     "nasa_shadow_axis_geometric_moon": (
         "NASA lunar canon compatibility layer "
         "(TT gamma minimum, geometric Moon, geometric Sun axis)"
@@ -429,15 +444,16 @@ class LunarCanonContacts:
     """
     RITE: The Lunar Canon Contacts Vessel
 
-    THEOREM: Governs the storage of the seven NASA-canon contact Julian Days in
-    TT with UT conversion properties.
+    THEOREM: Governs the storage of six NASA-canon contact Julian Days plus
+    greatest eclipse in TT with UT conversion properties.
 
     RITE OF PURPOSE:
-        LunarCanonContacts is the authoritative data vessel for all seven
-        phase-boundary contact times of a lunar eclipse solved in TT using the
+        LunarCanonContacts is the authoritative data vessel for the six
+        phase-boundary contacts of a lunar eclipse solved in TT using the
         NASA-canon parameterisation: penumbral ingress (P1), partial umbral
-        ingress (U1), totality ingress (U2), greatest eclipse, totality egress
-        (U3), partial umbral egress (U4), and penumbral egress (P4). It
+        ingress (U1), totality ingress (U2), totality egress (U3), partial
+        umbral egress (U4), and penumbral egress (P4), together with the
+        separate greatest-eclipse instant. It
         exposes each contact in both TT (stored fields) and UT (computed
         properties via the NASA-canon Delta T path). Without it, callers would
         receive unstructured tuples with no field-level guarantees. It exists
@@ -446,7 +462,8 @@ class LunarCanonContacts:
 
     LAW OF OPERATION:
         Responsibilities:
-            - Store the seven contact Julian Days in TT as named, typed fields
+            - Store the six contact Julian Days and greatest eclipse in TT as
+              named, typed fields
             - Expose UT equivalents via read-only properties using the
               NASA-canon Delta T conversion
             - Permit None for contacts that do not occur (e.g. U2/U3 for a
@@ -539,6 +556,62 @@ def lunar_canon_source_model(method: LunarCanonMethodId = DEFAULT_LUNAR_CANON_ME
     return _LUNAR_CANON_SOURCE_MODELS[method]
 
 
+def _lunar_canon_vectors_tt(
+    calculator,
+    jd_tt: float,
+    *,
+    method: LunarCanonMethodId,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    """Return the Sun/Moon direction pair owned by one canon policy.
+
+    The detailed NASA/GSFC figures numerically identify their printed
+    geocentric Sun and Moon coordinates with the ordinary apparent reduction:
+    each target is evaluated on the Earth-reception light cone and annual
+    aberration is then applied with Earth's reception-epoch barycentric
+    velocity.  Gravitational deflection, topocentric displacement, and
+    atmospheric refraction are outside this geocentric compatibility product.
+    The two historical experiment methods remain explicit so a caller can
+    still isolate geometric-versus-retarded Moon policy without silently
+    changing their meaning.
+    """
+    reader = calculator._reader
+    if method == "nasa_shadow_axis_apparent_sun_moon":
+        earth_ssb, earth_velocity = _earth_barycentric_state(jd_tt, reader)
+        sun_light_time, _ = apply_light_time(
+            Body.SUN,
+            jd_tt,
+            reader,
+            earth_ssb,
+            _barycentric,
+        )
+        moon_light_time, _ = apply_light_time(
+            Body.MOON,
+            jd_tt,
+            reader,
+            earth_ssb,
+            _barycentric,
+        )
+        return (
+            apply_aberration(sun_light_time, earth_velocity),
+            apply_aberration(moon_light_time, earth_velocity),
+        )
+
+    sun_xyz = _geocentric(Body.SUN, jd_tt, reader)
+    if method == "nasa_shadow_axis_geometric_moon":
+        return sun_xyz, _geocentric(Body.MOON, jd_tt, reader)
+    if method == "nasa_shadow_axis_retarded_moon":
+        earth_ssb = _earth_barycentric(jd_tt, reader)
+        moon_xyz, _ = apply_light_time(
+            Body.MOON,
+            jd_tt,
+            reader,
+            earth_ssb,
+            _barycentric,
+        )
+        return sun_xyz, moon_xyz
+    raise ValueError(f"Unsupported lunar canon method: {method!r}")
+
+
 def _lunar_canon_axis_geometry_tt(
     calculator,
     jd_tt: float,
@@ -554,15 +627,11 @@ def _lunar_canon_axis_geometry_tt(
     the NASA lunar-canon sign convention without changing the Euclidean axis
     distance used by eclipse magnitudes and contact geometry.
     """
-    reader = calculator._reader
-    earth_ssb = _earth_barycentric(jd_tt, reader)
-    sun_xyz = _geocentric(Body.SUN, jd_tt, reader)
-    if method == "nasa_shadow_axis_geometric_moon":
-        moon_xyz = _geocentric(Body.MOON, jd_tt, reader)
-    elif method == "nasa_shadow_axis_retarded_moon":
-        moon_xyz, _ = apply_light_time(Body.MOON, jd_tt, reader, earth_ssb, _barycentric)
-    else:
-        raise ValueError(f"Unsupported lunar canon method: {method!r}")
+    sun_xyz, moon_xyz = _lunar_canon_vectors_tt(
+        calculator,
+        jd_tt,
+        method=method,
+    )
 
     sun_xyz_ecl = sun_xyz
     moon_xyz_ecl = moon_xyz
@@ -622,7 +691,7 @@ def lunar_canon_geometry(
     jd_tt:
         Julian Day in Terrestrial Time at which to evaluate the geometry.
     method:
-        Canon method identifier controlling how the Moon position is computed.
+        Canon method identifier controlling the Sun/Moon reduction policy.
 
     Returns
     -------
@@ -744,7 +813,7 @@ def refine_lunar_greatest_eclipse_canon_tt(
     center_jd_ut:
         Approximate Julian Day in UT near the eclipse maximum.
     method:
-        Canon method identifier controlling how the Moon position is computed.
+        Canon method identifier controlling the Sun/Moon reduction policy.
     window_days:
         Half-width of the search window around center_jd_ut in days.
     tol_days:
@@ -780,7 +849,7 @@ def find_lunar_contacts_canon(
     coarse_step_seconds: float = 60.0,
 ) -> LunarCanonContacts:
     """
-    Solve the seven NASA-canon lunar eclipse contact times near a UT estimate.
+    Solve six NASA-canon lunar contacts plus greatest eclipse near a UT estimate.
 
     Contacts are solved in TT using the canon geometry for the given method:
     - P1/P4: penumbral ingress/egress
@@ -794,7 +863,7 @@ def find_lunar_contacts_canon(
     center_jd_ut:
         Approximate Julian Day in UT near the eclipse maximum.
     method:
-        Canon method identifier controlling how the Moon position is computed.
+        Canon method identifier controlling the Sun/Moon reduction policy.
     window_days:
         Half-width of the search window around greatest eclipse in days.
     coarse_step_seconds:
@@ -803,8 +872,8 @@ def find_lunar_contacts_canon(
     Returns
     -------
     LunarCanonContacts
-        The seven contact Julian Days in TT (with UT properties) for the
-        eclipse. Contacts that do not occur are None.
+        The six contact Julian Days plus greatest eclipse in TT (with UT
+        properties). Contacts that do not occur are None.
     """
     if not math.isfinite(center_jd_ut):
         raise ValueError("center_jd_ut must be finite")

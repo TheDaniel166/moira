@@ -18,22 +18,34 @@ Primary entry point
 EclipseCalculator
     The complete eclipse engine.  Instantiate once and call as needed.
 
-    calculate(dt)                 geometry snapshot at a datetime
-    calculate_jd(jd_ut)           geometry snapshot at a JD
-    solar_besselian_elements(jd_ut) instantaneous fundamental-plane elements
-    next_lunar_eclipse()          search forward from current epoch
-    previous_lunar_eclipse()      search backward
-    analyze_lunar_eclipse(event)  full LunarEclipseAnalysis bundle
-    lunar_local_circumstances(event, lat, lon, elev)
-    next_solar_eclipse(lat, lon)  search forward from current epoch
-    previous_solar_eclipse(lat, lon)
-    solar_local_circumstances(event, lat, lon, elev)
-    solar_eclipse_path(event)     geographic path of totality / annularity
-    next_solar_eclipse_at_location(lat, lon)  combined search + circumstances
+    calculate(dt)                 geometry snapshot at a UTC datetime
+    calculate_jd(jd)              geometry snapshot at a UT Julian Day
+    solar_besselian_elements(jd_ut1)
+                                  instantaneous fundamental-plane elements
+    next_lunar_eclipse(jd_start, kind="any")
+    previous_lunar_eclipse(jd_start, kind="any")
+    analyze_lunar_eclipse(jd_start, *, kind="any", backward=False,
+                           mode="native")
+    lunar_local_circumstances(jd_start, latitude, longitude, *,
+                              elevation_m=0.0, kind="any", backward=False,
+                              mode="native")
+    next_solar_eclipse(jd_start, kind="any")
+    previous_solar_eclipse(jd_start, kind="any")
+    solar_local_circumstances(jd_start, latitude, longitude, *,
+                              elevation_m=0.0, kind="any", backward=False)
+    solar_eclipse_path(jd_start, *, kind="any", backward=False,
+                       sample_count=9)
+    solar_eclipse_footprint(jd_start, *, kind="any", backward=False,
+                            sample_count=181)
+    next_solar_eclipse_at_location(jd_start, latitude, longitude, *,
+                                   elevation_m=0.0, kind="any",
+                                   max_lunations=360)
 
 Convenience function
 --------------------
-next_solar_eclipse_at_location(lat, lon, jd_ut)
+next_solar_eclipse_at_location(jd_start, latitude, longitude, *,
+                               elevation_m=0.0, kind="any",
+                               max_lunations=360, reader=None)
     Standalone search equivalent to the EclipseCalculator method.
 
 Solar eclipses
@@ -48,8 +60,14 @@ EclipseType
     Field on EclipseData.eclipse_type.
 
 SolarEclipsePath
-    Central line geometry: begin, greatest, end, limit of totality /
-    annularity, northern and southern limits.
+    Central shadow-axis geometry and width for totality / annularity.
+
+SolarEclipseVisibilityFootprint
+    Complete zero-elevation WGS-84 mean-limb visibility boundary: north/south
+    penumbral limits, sunrise/sunset closures, and P1-P4 contact
+    topology. Each admitted penumbral kind has component_id=0; contiguous
+    segment_id values preserve any time folds. This is distinct from the
+    central path and local circumstances.
 
 SolarEclipseLocalCircumstances
     Observer-specific: contact times, altitude, azimuth, magnitude,
@@ -60,7 +78,7 @@ SolarBodyCircumstances
     diameter, parallax.
 
 LocalContactCircumstances
-    A single contact event at an observer location: event time (JD_TT and
+    A single contact event at an observer location: event time (JD_UT1 and
     datetime UTC), altitude, azimuth, position angle.
 
 Lunar eclipses
@@ -73,13 +91,13 @@ LunarEclipseLocalCircumstances
     Observer-specific local lunar eclipse data.
 
 LunarEclipseContacts  (from eclipse_contacts)
-    Precise TT contact time set: P1 (1st penumbral), U1 (1st umbral),
-    U2 (start of totality), greatest eclipse, U3 (end of totality),
-    U4 (last umbral), P4 (last penumbral).
+    Precise UT1 contact time set: P1 (1st penumbral), U1 (1st umbral),
+    U2 (start of totality), U3 (end of totality), U4 (last umbral),
+    P4 (last penumbral), plus the separate greatest-eclipse instant.
 
-find_lunar_contacts(event, jd_guess)  (from eclipse_contacts)
-    Solve for the full contact time set from an eclipse event and an
-    approximate JD_UT seed.
+find_lunar_contacts(calculator, center_jd, *, window_days=0.2,
+                    coarse_step_seconds=60.0)  (from eclipse_contacts)
+    Solve for the full contact time set around a candidate JD_UT maximum.
 
 Eclipse geometry snapshot
 --------------------------
@@ -112,6 +130,14 @@ from moira.eclipse import (
     LunarEclipseLocalCircumstances,
     SolarBodyCircumstances,
     SolarBesselianElements,
+    SolarEclipseFootprintBoundaryKind,
+    SolarEclipsePenumbralContactKind,
+    SolarEclipseFootprintTopology,
+    SolarEclipseFootprintPoint,
+    SolarEclipsePenumbralContact,
+    SolarEclipseFootprintContacts,
+    SolarEclipseLimitTrack,
+    SolarEclipseVisibilityFootprint,
     SolarEclipseLocalCircumstances,
     SolarEclipsePath,
     next_solar_eclipse_at_location,
@@ -131,6 +157,14 @@ __all__ = [
     "EclipseEvent",
     # Solar eclipse
     "SolarBesselianElements",
+    "SolarEclipseFootprintBoundaryKind",
+    "SolarEclipsePenumbralContactKind",
+    "SolarEclipseFootprintTopology",
+    "SolarEclipseFootprintPoint",
+    "SolarEclipsePenumbralContact",
+    "SolarEclipseFootprintContacts",
+    "SolarEclipseLimitTrack",
+    "SolarEclipseVisibilityFootprint",
     "SolarEclipsePath",
     "SolarEclipseLocalCircumstances",
     "SolarBodyCircumstances",

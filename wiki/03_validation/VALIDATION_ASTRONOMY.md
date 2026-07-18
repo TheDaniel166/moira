@@ -1,7 +1,7 @@
 # Moira Validation Report - Astronomy
 
 **Version:** 1.3
-**Date:** 2026-04-05
+**Date:** 2026-07-18
 **Runtime target:** Python 3.14
 **Validation kernel:** JPL DE441 (engine is kernel-agnostic; see note below)
 **Validation philosophy:** external-reference first, regression-enforced second
@@ -49,8 +49,11 @@ several respects:
 | Heliocentric distance extrema | JPL Horizons `VECTORS` | `pytest` | Validated |
 | Eclipse classification and search | Swiss `t.exp` + NASA Five Millennium | `pytest` | Validated |
 | Solar eclipse greatest and polar central-path geography | NASA/GSFC 2015 WGS 84 path | `pytest` | Validated (named implemented slice) |
+| Solar partial-visibility footprint contacts, boundary anchors, and topology | NASA/GSFC 2003/2006 total-eclipse penumbral Table 2 products + geometric invariants | `pytest` | Validated (named implemented slice) |
+| Lunar eclipse individual contact instants | NASA/GSFC 2023/2024/2025/2027 detailed figures | `pytest` | Validated (named implemented slice) |
 | Local lunar occultations | Swiss `setest/t.exp` | `pytest` | Validated |
 | Occultation path geometry (`where`) | Swiss `t.exp` + live IOTA graze/limit text paths (El Nath, Spica N/S, epsilon Ari, Alcyone, Merope, Asellus Borealis, Regulus) | `pytest` | Validated (implemented slice) |
+| Polar-crossing lunar-occultation path topology | JPL Horizons North-Pole contacts + independent spherical invariants | `pytest` | Validated (named contact/invariant slice) |
 | Sothic heliacal rising | Censorinus 139 AD historical record + latitude trend | `pytest` | Validated |
 | Generalized heliacal / visibility surfaces | Published modern planetary apparition windows; Censorinus 139 AD Sirius slice (delegated stellar corpus); Yallop 1997 lunar class law | `pytest` | Validated (implemented slice) |
 | Rise / set / transit times | JPL Horizons offline fixture; USNO published tables (supplemental) | `pytest` | Validated |
@@ -82,6 +85,80 @@ Current modern/future occultation path envelope:
 - where a source file declares a nominal site altitude, that altitude is now
   used in the graze solve; the present ceiling is still set by profile-aware
   Spica north-limit geometry rather than by missing elevation
+
+The first-class polar-safe topology is a distinct nominal product inside the
+modern/future program. It admits only a spherical mean lunar limb and one
+connected two-sided band. Its `left` and `right` identities are intrinsic to
+increasing-UT1 centerline motion, not aliases for geographic north and south;
+they remain continuous when latitude ordering reverses across a pole. Finite
+planetary targets use JPL Solar System Dynamics equatorial solid-body radii,
+fixed stars remain point sources, and Saturn's rings are excluded. The Sun is
+excluded because the cited JPL planetary table does not govern its radius and
+solar occultation belongs to the eclipse product. The
+topocentric observer geometry is WGS 84 geodetic, while reported half-widths
+and total width are explicitly great-circle distances on the
+`6378.137 km` sphere.
+
+The range-search admission policy is `0 < step_days <= 0.25`, at most 400
+days, and no more than 4096 coarse cells. Boundary cells are candidates even
+when their endpoints are outside, preventing a positive event peak near a
+requested range boundary from being skipped. Pole contacts use a separate
+fixed internal lattice rather than the presentation sample count. The summary
+duration is solved at the fixed greatest site; the global footprint interval
+only governs the track's temporal extent. A constrained optimum at, or within
+`max(4e-8 d, 8 binary64 ULP)` of, a global request boundary is not emitted as
+an unconstrained greatest event.
+Raw maxima are grouped by overlapping open positive-clearance support, not by
+an enlarged epoch tolerance; tangent-only contact therefore remains separate.
+Because connected support does not imply a unimodal time profile, component
+greatest uses a private at-most-30-minute lattice, refinement of every resolved
+local maximum plus edge cells and raw witnesses, and a 128-cell fail-closed
+budget. A synthetic two-hump case proves that a stronger greatest outside the
+request suppresses a smaller interior hump, while an in-range case selects the
+stronger hump.
+The greatest tangent uses history-independent witnesses refined from the same
+center anchor. Synthetic coverage limits the width difference between two
+equivalent greatest witnesses `0.160973 s` apart to `0.02 km`.
+The parallax-envelope invariant separately covers observers outside and inside
+a body's geocentric radius: `asin(R/d)` for `R < d`, and a conservative
+`180 degree` bound when `R >= d`.
+
+The `0.25 d` ceiling gives about 109 coarse samples across JPL's descriptive
+[27.322-day mean lunar period](https://ssd.jpl.nasa.gov/sats/elem/sep.html).
+That mean-elements table explicitly is not an ephemeris source; Moira uses it
+only to make the bounded operational cadence legible, while DE441 governs the
+actual event geometry. The cadence is not claimed as a proof for arbitrary
+ephemerides or unbounded intervals.
+
+The bounded primary-authority case is the 2026-10-05 lunar occultation of Mars
+at the geographic North Pole:
+
+- Fixture: `tests/fixtures/jpl_horizons_polar_occultation_reference.json`
+- Test: `tests/integration/test_occultation_polar_topology_horizons_reference.py`
+- Authority: JPL Horizons `OBSERVER`, `coord@399`, geodetic
+  `SITE_COORD=0,90,0`, `APPARENT=AIRLESS`, quantities `2,13,49`
+- Evidence: outside/inside signs and one ingress plus one egress outer contact,
+  each bounded by source rows `0.5 s` apart
+- Cross-model gate: Moira DE441 contact time lies no more than `2 s` outside
+  each Horizons bracket
+
+Horizons reported DE441 for the Moon and Earth, `mar099` for Mars, and the
+predictive `eop.260717.p261013` Earth-orientation file when the fixture was
+retrieved on 2026-07-18. The fixture is frozen evidence, not a claim that those
+predicted EOP values are final, and its refresh policy requires a post-event
+replacement when measured data become available. The `0.5 s` bracket and
+`2 s` comparison gate are respectively source resolution and a cross-model
+regression envelope, not uncertainty estimates or exact-model parity.
+
+This Horizons slice validates pole containment and the two pole-contact
+instants only. The complete left/right tracks, zero-clearance boundary points,
+branch continuity, and scalar width are enforced by independent spherical
+invariants: center and boundary epochs share one ordered lattice, boundary
+clearance is numerically zero, each half-width reproduces its center-to-limit
+great-circle distance, and the two greatest half-widths reproduce the public
+total width. No external dense polar limit-track or width parity is claimed.
+The live IOTA ordinary-graze corpus remains separate because its
+profile-conditioned limits do not govern this nominal mean-limb topology.
 
 ---
 
@@ -429,12 +506,22 @@ NASA/GSFC Besselian and path products
 - `tests/integration/test_eclipse_path_nasa_reference.py`
 - `tests/integration/test_eclipse_besselian_nasa_reference.py`
 - `tests/integration/test_eclipse_polar_path_nasa_reference.py`
+- `tests/integration/test_eclipse_footprint_nasa_reference.py`
+- `tests/integration/test_eclipse_lunar_contacts_nasa_reference.py`
+- `tests/integration/test_lunar_nasa_compat_reference.py`
+- `tests/unit/test_eclipse_footprint.py`
 
 **Primary Besselian fixture:**
 `tests/fixtures/nasa_solar_besselian_reference.json`
 
 **Primary polar central-path fixture:**
 `tests/fixtures/nasa_solar_polar_path_reference.json`
+
+**Primary partial-visibility footprint fixture:**
+`tests/fixtures/nasa_solar_penumbral_footprint_reference.json`
+
+**Primary lunar contact-instant fixture:**
+`tests/fixtures/nasa_lunar_contact_instants_reference.json`
 
 **Executable representative TT comparison policy (DE441, current Delta-T
 policy):**
@@ -479,6 +566,42 @@ The separate catalog-maximum tests continue to enforce solar and lunar eclipse
 classification across the ancient, modern, and future fixture rows. Search
 timing evidence and classification evidence remain distinct.
 
+Individual lunar phase boundaries have a separately governed primary-authority
+slice. NASA/GSFC detailed figures for the 2023 penumbral, 2024 partial, 2025
+total, and limiting 2027 penumbral eclipses publish all 14 applicable P1, U1,
+U2, U3, U4, and P4 instants in UT. The dedicated fixture preserves every
+figure URL and SHA-256 digest, the event's adopted Delta T, and the printed
+`VSOP87/ELP2000-85` and `CdT (Danjon)` model lineage. Those figure contacts are
+not reconstructed from the separately published rounded phase durations.
+
+Each source contact is compared on TT after adding the figure's own Delta T.
+Native contact UT1 crosses through the content-identified DE441 ephemeris
+clock; NASA-compatibility contacts use their stored TT fields.
+
+The original individual-contact evidence exposed omitted apparent reduction as
+the dominant compatibility defect. The repaired default method is
+`nasa_shadow_axis_apparent_sun_moon`: both the Sun and Moon use reception
+light-time from the same reception-epoch Earth state, followed by annual
+aberration. Gravitational deflection, topocentric parallax, and atmospheric
+refraction are excluded. The former geometric and retarded method identifiers
+remain explicit comparison experiments. At the 2025 figure's published
+greatest-eclipse TT, executable intermediate assertions compare the resulting
+apparent geocentric Sun and Moon right ascensions and declinations with the
+coordinates printed by NASA/GSFC. This independently verifies the reduction
+before contact-root agreement is considered.
+
+Ordinary per-instant ceilings are `120 s` for native DE441 and `10 s` for the
+NASA-compatibility path. The `0.0014`-magnitude 2027 event has separate `240 s`
+native and `30 s` compatibility endpoint ceilings and remains
+robustness-only; its independent P4-P1 duration gate is retained.
+NASA-compatible greatest eclipse is bounded at `10 s`. The modern ten-row
+catalog comparison separately enforces `10 s` greatest timing and `2e-4`
+Earth-radii signed gamma. These are cross-model regression envelopes, not the
+source's one-second print precision, uncertainty estimates, UTC claims, or
+exact-model parity. The bounded remainder includes DE441/LE441 versus
+VSOP87/ELP2000-85, constants, and source-algorithm differences. Greatest
+eclipse is a separate timeline instant rather than a seventh contact.
+
 The instantaneous DE441-native Besselian surface has a separate per-field
 authority gate. Four named NASA/GSFC solar products—partial, total, hybrid, and
 annular—are sampled at five TT/TDT epochs each over their published six-hour
@@ -509,6 +632,40 @@ clearance at each available published north/south limit. It does not claim
 per-row width parity, full-atlas coverage, or one-limit/terminator-closure
 width support; those one-limit epochs fail explicitly in the ordinary
 closed-footprint solver.
+
+The separate partial-visibility product sweeps Moira's exact common-tangent,
+physical mean-limb penumbral cone from content-identified DE441/LE441
+Earth-reception states across zero-elevation WGS 84. It reports P1/P4 and
+optional P2/P3, named north/south penumbral-envelope and geometric
+sunrise/sunset boundary components, strictly time-ordered segment identity for
+folded connected limits, and explicit `one_limit_connected` or
+`two_limit_two_loop` topology in UT1. Its default `sample_count` is `181`,
+bounded to `9..721`, and controls interior density rather than the solved
+component/segment graph. Every penumbral kind admitted by the topology is the
+single component `component_id=0`; any UT1 folds are emitted under contiguous
+`segment_id` values with shared refined fold endpoints and exactly two
+sunrise/sunset incidences. Refraction, observer elevation, lunar-limb
+topography, magnitude contours, and local apparent circumstances are outside
+this product.
+
+The primary external slice is the NASA/GSFC Table 2 products for 2003-11-23
+(one limit) and 2006-03-29 (two limits). Published contacts and named
+north/south anchors are compared on a common TT scale under independently
+pinned `5 s` and `40 km` ceilings. NASA declares DE200/LE200 and its published
+`k1` convention; Moira retains DE441 and physical mean-limb radii. The ceilings
+are cross-model regression bounds, not uncertainty estimates. Both NASA rows
+are total solar eclipses whose penumbral footprints exercise the admitted
+topologies; they do not externally validate the footprint greatest point of a
+globally partial event. That partial-event greatest is invariant-backed. NASA
+does not publish dense numerical track coordinates for these products, so no
+dense-track or full-atlas parity is claimed. Unit and integration invariants
+separately enforce contact ordering, closure of each penumbral component
+through horizon incidences and shared folds, WGS 84 bounds, both topology
+classes, and partial-event greatest-point admission. DE441 regressions for the
+1991 folded limit graph and the 1992 sub-minute polar reversal additionally
+enforce shared fold endpoints, graph identity at requested output counts `9`,
+`99`, `181`, `257`, and `721`, continuous fixed-site maximum admission, and
+rejection of spatial splices.
 
 ---
 
@@ -821,6 +978,9 @@ as the first matching event in the next 24 hours from `jd_start`.
 | Stellar aberration | Direct ERFA-backed test added and passing in the validation env | ERFA `ab` function | Closed |
 | Rise/set ~300 s systematic error | **Fixed 2026-04-05.** Commit `4173706` added refraction to `sky_position_at` but `rise_set._altitude` kept the geometric threshold. Fixed by passing `refraction=False`. All 5 Horizons/USNO cases now pass at ≤ 2 s. | JPL Horizons fixture | Closed |
 | Ancient eclipse TT comparison gate | **Repaired 2026-07-17.** NASA catalog TT and Moira TT retain their own declared Delta-T bases. Executable tests enforce a 360 s cross-authority regression envelope without freezing exact residual snapshots in prose. This closes the scale-conflation defect in the test; it is not an ancient timing-accuracy claim. | NASA Five Millennium | Closed (test semantics only) |
+| Solar partial-visibility footprint | **Admitted 2026-07-18.** First-class DE441 mean-limb WGS 84 footprint with explicit one-limit/two-limit topology; NASA/GSFC 2003/2006 total-eclipse penumbral Table 2 contacts and sparse boundary anchors are bounded at `5 s` and `40 km`. A globally partial event's greatest point is invariant-backed, not externally anchored. Dense track parity remains unclaimed because NASA does not publish a numerical dense-track corpus for these products. | NASA/GSFC Table 2 + geometric invariants | Closed (named product slice) |
+| Lunar individual contact instants | **Repaired 2026-07-18.** All 14 applicable P1/U1/U2/U3/U4/P4 instants in four named modern NASA/GSFC figures are compared on common TT. The former compatibility default omitted the figure product's apparent reduction; `nasa_shadow_axis_apparent_sun_moon` now applies reception light-time and annual aberration to both bodies and is independently checked against the 2025 printed apparent RA/Dec. Ordinary ceilings are `120 s` native and `10 s` compatibility; the magnitude-0.0014 limiting event uses separate `240 s` native and `30 s` compatibility gates and retains an independent duration gate. | NASA/GSFC detailed lunar figures | Closed (named product slice) |
+| Polar-crossing lunar-occultation path topology | **Admitted 2026-07-18.** The 2026-10-05 Mars event supplies primary JPL Horizons airless North-Pole containment and two `0.5 s` outer-contact brackets; Moira's DE441 contacts use a separate `2 s` cross-model gate. Horizons EOP was predictive at retrieval and must be refreshed after the event. Full left/right tracks and width are independently invariant-backed, not externally published parity. | JPL Horizons pole contacts + spherical invariants | Closed (named contact/invariant slice) |
 | GAST ancient-epoch model-basis difference | **Documented 2026-04-05.** Full GAST (erfa.gst06a oracle) diverges up to ~1.1″ before ~J1000. Cause: equation-of-equinoxes (Moira) vs equation-of-origins (ERFA). Modern epochs (J1500–J2100) all pass < 0.001″. Ancient divergence is beneath the Delta T noise floor for Moira's use cases. No code change required. See §3.7.1. | ERFA `gst06a` | Closed |
 | Chiron and Pholus vector accuracy | **Pre-existing open.** 6 cases in `test_horizons_vectors.py` failing at ~7–8 arcsec vs 1.0 arcsec tolerance. Centaur orbits are chaotic; accuracy degrades outside JPL fit windows. Root cause not yet diagnosed — may require looser tolerance or SPK routing investigation for small bodies. | JPL Horizons `VECTORS` | Medium |
 | Sothic 139 AD calendar accuracy | **Fixed 2026-04-05.** Two changes applied. (1) `moira/stars.py` heliacal horizon threshold corrected from geometric 0° to −0.5667° (apparent horizon: standard refraction lifts the horizon by ~34′). With 0.0, Memphis crossed the Egyptian New Year boundary into Thoth 1, breaking the modular drift ordering. With −0.5667°, Memphis stays in Epagomenal, all three sites sit on the same side of the New Year, and the drift ordering is coherent. (2) Test assertions replaced exact-day claims with uncertainty-window checks: `arcus_visionis=10°` (Schoch's traditional value) is retained; the Censorinus datum is verified to within 2 days of 1 Thoth (drift ≤ 2.0), consistent with the ~1-day historical uncertainty in site identification and atmospheric conditions. Asserting `day == 1` exactly would be chasing uncertainty noise. All 3 previously failing tests now pass. | Censorinus / published sites | Closed |
@@ -833,16 +993,20 @@ as the first matching event in the next 24 hours from `jd_start`.
 In this document, **model-basis difference** means that Moira and the
 comparison catalog are not necessarily answering the exact same mathematical
 question, even when both are internally consistent. In the eclipse context,
-the main contributors are:
+contributors can include:
 
 - Delta T branch choice
 - retarded-vs-geometric Moon treatment
+- geometric, light-time, or fully apparent direction policy
 - the exact definition of "greatest eclipse" being optimized
 
-The current NASA-reference tests do not claim to isolate those contributors or
-to prove that the native and catalog objectives become identical when selected
-assumptions are aligned. They compare each product in TT using its declared
-Delta-T basis and classify the remaining ancient difference only as a bounded
-cross-authority regression residual.
+For the modern NASA lunar compatibility product, executable coordinate and
+contact diagnostics did isolate omitted apparent reduction as the dominant
+former defect; that defect is now repaired. DE441/LE441 versus
+VSOP87/ELP2000-85, constants, and source-algorithm differences form the bounded
+modern remainder. The broader NASA-reference tests do not claim the same
+term-by-term isolation for ancient products. They compare each product in TT
+using its declared Delta-T basis and classify the remaining ancient difference
+only as a bounded cross-authority regression residual.
 
 

@@ -1,0 +1,110 @@
+{
+  "source": {
+    "authority": "NASA/GSFC Eclipse Predictions by Fred Espenak",
+    "contact_key_url": "https://eclipse.gsfc.nasa.gov/LEplot/LEplotkey.html",
+    "shadow_doctrine_url": "https://eclipse.gsfc.nasa.gov/LEcat5/shadow.html",
+    "time_scale": "UT",
+    "comparison_time_scale": "TT",
+    "contact_display_precision_s": 1.0,
+    "greatest_display_precision_s": 0.1,
+    "nasa_compat_greatest_tolerance_s": 10.0,
+    "ephemerides": "VSOP87/ELP2000-85",
+    "shadow_rule": "CdT (Danjon)",
+    "comparison_note": "Each source contact TT instant is the figure's published UT plus that figure's adopted Delta T. A directly printed greatest-eclipse TD field is preferred where the fixture records one; otherwise greatest TT uses the same explicit UT-plus-Delta-T reconstruction. Native contact UT1 is converted through the content-identified ephemeris clock. NASA-compatibility uses reader-backed reception light-time plus annual-aberration apparent Sun/Moon directions and compares contacts in their stored TT coordinate. The admitted ceilings are cross-model regression envelopes, not source precision, physical uncertainty, or exact-model parity.",
+    "printed_geometry_tolerances": {
+      "right_ascension_arcsec": 1.5,
+      "declination_arcsec": 0.5,
+      "semidiameter_arcsec": 1.0,
+      "horizontal_parallax_arcsec": 0.2,
+      "gamma_earth_radii": 0.0002,
+      "axis_deg": 0.0002,
+      "shadow_radius_deg": 0.0005
+    },
+    "limiting_note": "The 2027-07-18 penumbral magnitude is 0.0014. Its individually bounded contacts are solver-robustness evidence only; the separately retained P4-P1 duration gate prevents two wide endpoint bounds from concealing an unbounded phase duration.",
+    "retrieved_on": "2026-07-18"
+  },
+  "events": [
+    {
+      "label": "2023-05-05 penumbral",
+      "kind": "penumbral",
+      "greatest_ut": "2023-05-05T17:22:51.7",
+      "delta_t_s": 73.0,
+      "figure_url": "https://eclipse.gsfc.nasa.gov/LEplot/LEplot2001/LE2023May05N.pdf",
+      "figure_sha256": "DDD19DE28066B088EBF570B46EFF82FD0A5E5115746EDE2DEBA8DB22D1B15CE8",
+      "contacts_ut": {
+        "p1": "2023-05-05T15:14:10",
+        "p4": "2023-05-05T19:31:41"
+      },
+      "native_tt_tolerance_s": 120.0,
+      "nasa_compat_tt_tolerance_s": 10.0,
+      "evidence_class": "ordinary_cross_model"
+    },
+    {
+      "label": "2024-09-18 partial",
+      "kind": "partial",
+      "greatest_ut": "2024-09-18T02:44:10.5",
+      "delta_t_s": 74.0,
+      "figure_url": "https://eclipse.gsfc.nasa.gov/LEplot/LEplot2001/LE2024Sep18P.pdf",
+      "figure_sha256": "78DB2A18CAB221CD2B64204E3502ABDA560115DF01DA189051AF86031100B032",
+      "contacts_ut": {
+        "p1": "2024-09-18T00:41:02",
+        "u1": "2024-09-18T02:12:48",
+        "u4": "2024-09-18T03:15:35",
+        "p4": "2024-09-18T04:47:18"
+      },
+      "native_tt_tolerance_s": 120.0,
+      "nasa_compat_tt_tolerance_s": 10.0,
+      "evidence_class": "ordinary_cross_model"
+    },
+    {
+      "label": "2025-03-14 total",
+      "kind": "total",
+      "greatest_ut": "2025-03-14T06:58:41.7",
+      "delta_t_s": 75.0,
+      "figure_url": "https://eclipse.gsfc.nasa.gov/LEplot/LEplot2001/LE2025Mar14T.pdf",
+      "figure_sha256": "4DF1EFA14457A1E925C2E63C0D8A7A428D30627532ABC11E5C15E3E219D2D166",
+      "printed_greatest_geometry": {
+        "greatest_td": "2025-03-14T06:59:56.2",
+        "sun_ra": "23:37:46.0",
+        "sun_dec": "-02:24:16.8",
+        "sun_semidiameter": "00:16:05.2",
+        "sun_horizontal_parallax": "00:00:08.8",
+        "moon_ra": "11:38:23.0",
+        "moon_dec": "+02:40:54.6",
+        "moon_semidiameter": "00:14:52.8",
+        "moon_horizontal_parallax": "00:54:36.8",
+        "penumbra_radius_deg": 1.1899,
+        "umbra_radius_deg": 0.6537,
+        "gamma_earth_radii": 0.3484,
+        "axis_deg": 0.3171
+      },
+      "contacts_ut": {
+        "p1": "2025-03-14T03:57:24",
+        "u1": "2025-03-14T05:09:33",
+        "u2": "2025-03-14T06:25:59",
+        "u3": "2025-03-14T07:31:23",
+        "u4": "2025-03-14T08:47:48",
+        "p4": "2025-03-14T10:00:01"
+      },
+      "native_tt_tolerance_s": 120.0,
+      "nasa_compat_tt_tolerance_s": 10.0,
+      "evidence_class": "ordinary_cross_model"
+    },
+    {
+      "label": "2027-07-18 limiting penumbral",
+      "kind": "penumbral",
+      "greatest_ut": "2027-07-18T16:02:52.6",
+      "delta_t_s": 76.0,
+      "catalog_penumbral_magnitude": 0.0014,
+      "figure_url": "https://eclipse.gsfc.nasa.gov/LEplot/LEplot2001/LE2027Jul18N.pdf",
+      "figure_sha256": "70939615446926B117AF6C2457ACFF446CDDCFE3AFFE99A550DAE08E464DE01A",
+      "contacts_ut": {
+        "p1": "2027-07-18T15:56:57",
+        "p4": "2027-07-18T16:08:45"
+      },
+      "native_tt_tolerance_s": 240.0,
+      "nasa_compat_tt_tolerance_s": 30.0,
+      "evidence_class": "limiting_robustness"
+    }
+  ]
+}

@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-        "api": {"frozen": ["eclipse", "primary_directions", "longevity", "phenomena", "occultations", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
+        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "primary_directions", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -75,6 +75,23 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         """Compute eclipse geometry and classification for a datetime."""
         facade = _facade_module()
         return facade.EclipseCalculator(reader=self._reader).calculate(dt)
+
+    def solar_eclipse_footprint(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+        sample_count: int = 181,
+    ):
+        """Return the complete mean-limb solar-eclipse visibility footprint."""
+        facade = _facade_module()
+        return facade.EclipseCalculator(reader=self._reader).solar_eclipse_footprint(
+            jd_start,
+            kind=kind,
+            backward=backward,
+            sample_count=sample_count,
+        )
 
     def eclipse_hits_in_range(
         self,
@@ -246,6 +263,92 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         """Find lunar occultations of planets in a date range."""
         return _facade_module().all_lunar_occultations(
             jd_start, jd_end, planets=targets, reader=self._reader
+        )
+
+    def lunar_occultation_path_topology(
+        self,
+        target: str,
+        jd_start: float,
+        jd_end: float,
+        step_days: float = 0.25,
+        sample_count: int = 65,
+        observer_elev_m: float = 0.0,
+    ):
+        """Return detailed, polar-safe path topology for planetary events."""
+
+        return _facade_module().lunar_occultation_path_topology(
+            target,
+            jd_start,
+            jd_end,
+            step_days=step_days,
+            sample_count=sample_count,
+            observer_elev_m=observer_elev_m,
+            reader=self._reader,
+        )
+
+    def lunar_occultation_path_topology_at(
+        self,
+        target: str,
+        jd_mid: float,
+        *,
+        sample_count: int = 65,
+        observer_elev_m: float = 0.0,
+    ):
+        """Return detailed planetary path topology at one greatest epoch."""
+
+        return _facade_module().lunar_occultation_path_topology_at(
+            target,
+            jd_mid,
+            sample_count=sample_count,
+            observer_elev_m=observer_elev_m,
+            reader=self._reader,
+        )
+
+    def lunar_star_occultation_path_topology(
+        self,
+        star_lon: float,
+        star_lat: float,
+        star_name: str,
+        jd_start: float,
+        jd_end: float,
+        step_days: float = 0.25,
+        sample_count: int = 65,
+        observer_elev_m: float = 0.0,
+    ):
+        """Return detailed, polar-safe path topology for stellar events."""
+
+        return _facade_module().lunar_star_occultation_path_topology(
+            star_lon,
+            star_lat,
+            star_name,
+            jd_start,
+            jd_end,
+            step_days=step_days,
+            sample_count=sample_count,
+            observer_elev_m=observer_elev_m,
+            reader=self._reader,
+        )
+
+    def lunar_star_occultation_path_topology_at(
+        self,
+        star_lon: float,
+        star_lat: float,
+        star_name: str,
+        jd_mid: float,
+        *,
+        sample_count: int = 65,
+        observer_elev_m: float = 0.0,
+    ):
+        """Return detailed stellar path topology at one greatest epoch."""
+
+        return _facade_module().lunar_star_occultation_path_topology_at(
+            star_lon,
+            star_lat,
+            star_name,
+            jd_mid,
+            sample_count=sample_count,
+            observer_elev_m=observer_elev_m,
+            reader=self._reader,
         )
 
     def close_approaches(

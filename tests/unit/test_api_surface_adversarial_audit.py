@@ -76,6 +76,15 @@ _EXPECTED_ROOT_PUBLIC_NAMES = {
     "DeclinationHemispherePolicy",
     "DeclinationMotionState",
     "LongitudeAspectAnalysis",
+    "OccultationGeographicPole",
+    "OccultationPathBoundaryPoint",
+    "OccultationPathBoundarySide",
+    "OccultationPathBoundaryTrack",
+    "OccultationPathPoint",
+    "OccultationPathTopology",
+    "OccultationPathTopologyKind",
+    "OccultationPoleCrossing",
+    "OccultationPoleCrossingPhase",
     "DEBILITATION_SIGN",
     "DECAN_NAMES",
     "DECAN_RULING_STARS",
@@ -231,6 +240,14 @@ _EXPECTED_ROOT_PUBLIC_NAMES = {
     "SolarConditionKind",
     "SolarConditionPolicy",
     "SolarConditionTruth",
+    "SolarEclipseFootprintBoundaryKind",
+    "SolarEclipseFootprintContacts",
+    "SolarEclipseFootprintPoint",
+    "SolarEclipseFootprintTopology",
+    "SolarEclipseLimitTrack",
+    "SolarEclipsePenumbralContact",
+    "SolarEclipsePenumbralContactKind",
+    "SolarEclipseVisibilityFootprint",
     "SthanaBala",
     "TITHI_NAMES",
     "TithiConditionProfile",
@@ -1023,6 +1040,10 @@ _EXPECTED_MOIRA_METHODS = {
     "next_ingress",
     "next_ingress_into",
     "occultations",
+    "lunar_occultation_path_topology",
+    "lunar_occultation_path_topology_at",
+    "lunar_star_occultation_path_topology",
+    "lunar_star_occultation_path_topology_at",
     "parans",
     "patterns",
     "phase",
@@ -1049,6 +1070,7 @@ _EXPECTED_MOIRA_METHODS = {
     "solar_arc_directions_ra",
     "solar_condition_at",
     "solar_condition_events",
+    "solar_eclipse_footprint",
     "solar_return",
     "solar_return_chart",
     "subplanetary_points",
@@ -1196,6 +1218,44 @@ def test_planet_reduction_root_and_facade_exports_share_identity(name: str) -> N
     assert name in moira.__all__
     assert name in facade.__all__
     assert getattr(moira, name) is getattr(facade, name)
+
+
+@pytest.mark.parametrize(
+    "name",
+    (
+        "OccultationGeographicPole",
+        "OccultationPathBoundaryPoint",
+        "OccultationPathBoundarySide",
+        "OccultationPathBoundaryTrack",
+        "OccultationPathPoint",
+        "OccultationPathTopology",
+        "OccultationPathTopologyKind",
+        "OccultationPoleCrossing",
+        "OccultationPoleCrossingPhase",
+    ),
+)
+def test_occultation_topology_type_exports_share_identity(name: str) -> None:
+    assert getattr(moira, name) is getattr(facade, name)
+    assert getattr(moira, name) is getattr(sky_occultation, name)
+
+
+@pytest.mark.parametrize(
+    "name",
+    (
+        "lunar_occultation_path_topology",
+        "lunar_occultation_path_topology_at",
+        "lunar_star_occultation_path_topology",
+        "lunar_star_occultation_path_topology_at",
+    ),
+)
+def test_occultation_topology_function_exports_and_facade_defaults(name: str) -> None:
+    assert getattr(facade, name) is getattr(sky_occultation, name)
+    assert "limb_profile_provider" not in inspect.signature(
+        getattr(facade, name)
+    ).parameters
+    parameters = inspect.signature(getattr(facade.Moira, name)).parameters
+    assert parameters["sample_count"].default == 65
+    assert "limb_profile_provider" not in parameters
 
 
 def test_root_star_import_matches_public_surface() -> None:

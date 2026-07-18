@@ -56,21 +56,23 @@ class NasaLunarEclipseContacts:
     """
     RITE: Gate of Contact Times
 
-    THEOREM: Frozen dataclass holding the seven NASA-parameterized contact
-             timestamps (UT) for a single lunar eclipse event.
+    THEOREM: Frozen dataclass holding six NASA-parameterized contact timestamps
+             plus greatest eclipse (UT) for a single lunar eclipse event.
 
     RITE OF PURPOSE:
         NASA eclipse tables express lunar eclipse timing through a canonical
-        set of seven contact moments: penumbral ingress (P1), umbral ingress
-        (U1), total ingress (U2), greatest eclipse, total egress (U3), umbral
-        egress (U4), and penumbral egress (P4). This dataclass carries exactly
+        set of six contact moments: penumbral ingress (P1), umbral ingress
+        (U1), total ingress (U2), total egress (U3), umbral egress (U4), and
+        penumbral egress (P4), together with the separate greatest-eclipse
+        instant. This dataclass carries exactly
         that parameterization so Moira outputs can be compared against NASA
         published tables without ambiguity. Without it, callers would have to
         manually map Moira's native contact model to NASA's naming convention.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Hold the seven NASA contact timestamps as UT Julian Day floats.
+            - Hold the six NASA contact timestamps and greatest eclipse as UT
+              Julian Day floats.
             - Represent partial and penumbral eclipses correctly via None for
               contacts that do not occur (e.g. U2/U3 absent for partial events).
         Non-responsibilities:
@@ -137,7 +139,8 @@ class NasaLunarEclipseEvent:
         NASA eclipse publications report each lunar eclipse through a fixed set
         of parameters: UT and TT epochs, signed gamma (shadow-axis displacement
         in Earth radii, north positive and south negative), umbral and
-        penumbral magnitudes, and the seven contact times.
+        penumbral magnitudes, the six phase-boundary contacts, and the separate
+        greatest-eclipse instant.
         This dataclass packages all of those fields alongside the native Moira
         EclipseEvent so callers retain full traceability back to the source
         computation. Without it, the compatibility layer would have no stable

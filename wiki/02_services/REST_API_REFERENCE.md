@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-07-17
+Date audited: 2026-07-18
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 407
+- Total non-documentation routes: 408
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 403
+- Versioned `/v1` routes: 404
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -146,7 +146,7 @@ Not yet broadly exposed as REST families:
 | draconic | 3 |
 | egyptian-bounds | 7 |
 | electional | 12 |
-| eclipses | 5 |
+| eclipses | 6 |
 | galactic | 6 |
 | galactic-houses | 3 |
 | gauquelin | 3 |
@@ -170,7 +170,7 @@ Not yet broadly exposed as REST families:
 | nakshatra | 2 |
 | nodes | 4 |
 | nine-parts | 1 |
-| occultations | 8 |
+| occultations | 12 |
 | orbits | 2 |
 | panchanga | 4 |
 | parans | 8 |
@@ -352,6 +352,7 @@ Admitted products:
 | POST | `/v1/eclipses/solar/local-visible` | `next_visible_solar_eclipse_route` |
 | POST | `/v1/eclipses/lunar/local` | `lunar_eclipse_local_route` |
 | POST | `/v1/eclipses/solar/path` | `solar_eclipse_path_route` |
+| POST | `/v1/eclipses/solar/footprint` | `solar_eclipse_footprint_route` |
 | POST | `/v1/occultations/close-approaches` | `close_approaches_route` |
 | POST | `/v1/occultations/lunar` | `lunar_occultations_route` |
 | POST | `/v1/occultations/lunar-star` | `lunar_star_occultations_route` |
@@ -360,6 +361,10 @@ Admitted products:
 | POST | `/v1/occultations/lunar-path-at` | `lunar_occultation_path_at_route` |
 | POST | `/v1/occultations/lunar-star-path` | `lunar_star_occultation_path_route` |
 | POST | `/v1/occultations/lunar-star-path-at` | `lunar_star_occultation_path_at_route` |
+| POST | `/v1/occultations/lunar-path-topology` | `lunar_occultation_path_topology_route` |
+| POST | `/v1/occultations/lunar-path-topology-at` | `lunar_occultation_path_topology_at_route` |
+| POST | `/v1/occultations/lunar-star-path-topology` | `lunar_star_occultation_path_topology_route` |
+| POST | `/v1/occultations/lunar-star-path-topology-at` | `lunar_star_occultation_path_topology_at_route` |
 | POST | `/v1/heliacal/planet` | `planet_heliacal_event_route` |
 | POST | `/v1/heliacal/visibility-event` | `general_visibility_event_route` |
 | POST | `/v1/parans/search` | `paran_search_route` |
@@ -370,6 +375,141 @@ Admitted products:
 | POST | `/v1/parans/field/contours` | `paran_field_contours_route` |
 | POST | `/v1/parans/field/paths` | `paran_field_paths_route` |
 | POST | `/v1/parans/field/structure` | `paran_field_structure_route` |
+
+### Polar-Safe Occultation Path Topology Contract
+
+The four `*-path-topology` routes are additive detailed surfaces. The existing
+`lunar-path`, `lunar-path-at`, `lunar-star-path`, and
+`lunar-star-path-at` request and response schemas remain unchanged.
+
+Detailed topology requests default to `sample_count=65` and admit integer
+counts from 9 through 721. Their response preserves the legacy
+`OccultationPathGeometry` shape under `summary`, then exposes one shared UT1
+epoch lattice through `centers` and the ordered `left` and `right` boundary
+tracks. Left and right are intrinsic sides relative to increasing UT1 along
+the center track; they are not aliases for geographic north and south. The two
+greatest cross-track distances sum to `summary.path_width_km`.
+`summary.duration_at_greatest_s` is the fixed-observer occultation duration at
+the reported greatest latitude and longitude; it is not the longer lifetime
+of the moving global footprint.
+All UT-labeled Julian-day fields remain UT1; companion UTC datetime strings
+are produced by the explicit UT1-to-UTC result conversion.
+
+Range requests treat `step_days` as a maximum coarse-cell width and admit
+`0 < step_days <= 0.25`, a span no greater than 400 days, and at most 4096
+coarse cells. These are explicit bounded search-policy limits. The engine
+constructs exact start/end cells before evaluating the parallax-aware
+candidate envelope, refines the first and last cells as well as interior
+maxima, and solves pole contacts on a fixed internal lattice independent of
+the requested presentation `sample_count`. Returned events have an
+unconstrained greatest instant inside `(jd_start, jd_end)` by more than the
+solver time tolerance `max(4e-8 d, 8 binary64 ULP)`; at modern Julian Days its
+minimum term is about `3.456 ms`. An optimum at, or numerically
+indistinguishable from, either global request boundary is only a constrained
+range result and is not emitted as a solved event greatest. Multiple optimizer
+witnesses are one
+event only when their open exact-positive temporal supports overlap beyond
+solver uncertainty; a zero-clearance touch alone does not join them. A
+connected component need not be unimodal: its greatest is selected from a
+private at-most-30-minute support lattice, independently refined lattice-local
+maxima, edge cells, and original candidate witnesses under a 128-cell
+fail-closed budget. The final greatest must satisfy that same solver-time
+boundary rule.
+
+Exact geographic-pole contacts are reported separately in `pole_crossings` as
+`north` or `south` and `ingress` or `egress`. Exact poles use canonical
+longitude zero; ordinary track points retain their spherical longitude across
+polar passage. A crossing's `boundary_side` may be null when no single
+left/right branch can be assigned honestly.
+
+The detailed product declares `observer_geometry="WGS84_GEODETIC"`,
+`width_metric="SPHERICAL_GREAT_CIRCLE_R6378_137_KM"`, `time_scale="UT1"`,
+`atmospheric_refraction=false`, and `saturn_rings_included=false`. Lunar-limb
+and target-radius doctrine remain visible through `lunar_limb_model` and
+`target_model`. `observer_elevation_m` records the exact requested
+`observer_elev_m` used to solve the boundary, so a nonzero-elevation width is
+not mislabeled as sea-level geometry. Requests require
+`observer_elev_m >= -6378.137 * (1 - 1/298.257223563) * 1000`, approximately
+`-6356752.314 m`. This negative WGS 84 semi-minor-axis floor is a computational
+condition for the parallax envelope, not an endorsement of such a location as
+an observational site. Positive heights have no arbitrary cap; once the
+observer radius reaches a body's geocentric distance, candidate admission uses
+a conservative `180 degree` parallax bound rather than the exterior-observer
+`asin(R/d)` formula. `lunar_limb_model` is fixed to
+`"SPHERICAL_MEAN_LIMB"`: arbitrary limb-profile providers can create
+multi-contact or disconnected micro-topology and are not admitted into this
+two-sided nominal band. Existing profile-conditioned graze APIs are separate
+and unchanged.
+
+Planetary topology targets exclude the Sun. Solar occultation geometry belongs
+to the first-class `/v1/eclipses/*` surfaces, and admitting it here would also
+mislabel Moira's separately sourced solar radius as a JPL planetary
+solid-body-radius product. The existing legacy occultation routes retain their
+prior target contract.
+Fixed-star topology labels must be nonblank, have no surrounding whitespace,
+and must not use a canonical Solar System body identity.
+
+### Lunar Eclipse Compatibility REST Contract
+
+`POST /v1/eclipses/lunar/local` retains its existing request and response
+schemas. Its request accepts `mode="native"` or `mode="nasa_compat"`; native
+remains the default. In NASA-compatible mode, the response now reports
+`canon_method="nasa_shadow_axis_apparent_sun_moon"`, and `source_model`
+describes the same repaired reduction.
+
+That compatibility method obtains one reception-epoch Earth state, applies
+reception light-time and then annual aberration to both the Sun and Moon, and
+does not apply gravitational deflection, topocentric parallax, or atmospheric
+refraction to the canon contact geometry. The older geometric and retarded
+canon policies remain explicit engine method identifiers; the REST request
+does not silently select them.
+
+This is an intentional numerical and provenance-label change within the
+existing contract. No route was added or renamed, and no request or response
+field changed. `POST /v1/eclipses/lunar/next` remains the existing native
+search surface.
+
+### Solar Partial-Visibility Footprint REST Contract
+
+`POST /v1/eclipses/solar/footprint` is the additive transport surface for
+`Moira.solar_eclipse_footprint(...)`. Its request accepts `jd_start`, optional
+`kind` and `backward` search policy, and `sample_count`, which defaults to
+`181` and is constrained to the inclusive range `9..721`. `kind` is a closed
+enum: `any`, `total`, `annular`, `partial`, `central`, or `hybrid`.
+
+The response preserves the searched event, greatest-footprint point, P1/P4 and
+optional P2/P3 contacts, topology, and named boundary-track components. Track
+kinds distinguish north/south penumbral envelopes from geometric sunrise and
+sunset boundaries. Component identifiers are local to each kind; segment
+identifiers are local to each connected component and identify its strictly
+time-ordered branches across any shared temporal fold. Each penumbral kind
+admitted by the topology has exactly one connected component and therefore
+uses `component_id=0`. Its segment identifiers are contiguous `0..n-1`; two
+segments meeting at a temporal fold share the refined endpoint. Boundary
+`kind`, contact `kind` (`p1` through `p4`), and `topology`
+(`one_limit_connected` or `two_limit_two_loop`) are closed response enums.
+The two-limit topology also requires disjoint north/south horizon-incidence
+sets rather than two labels on one degenerate boundary. It is valid only for a
+central global eclipse, and each sunrise/sunset track remains wholly within
+P1-P2 or P3-P4 rather than crossing the internal P2-P3 interval. Provenance fields
+declare content-identified DE441/LE441, zero-elevation WGS 84, the
+spherical physical mean-limb convention, UT1 point epochs, and the absence of
+atmospheric refraction.
+
+`sample_count` changes interior point density only. It does not change the
+returned `(kind, component_id, segment_id)` graph or its refined contacts,
+horizon incidences, and fold endpoints. The DE441 fold-regression slice checks
+this contract at `9`, `99`, `181`, `257`, and `721` requested samples.
+
+Every footprint `datetime_utc` field is a UTC string. Modern dates retain the
+ordinary Python-datetime ISO form; epochs outside Python's datetime range fall
+back to Moira's BCE-safe proleptic-Gregorian ISO form with astronomical year
+numbering, including year `0000` and signed negative years.
+
+This endpoint does not add observer elevation or terrain, lunar-limb
+topography, magnitude or obscuration contours, local apparent circumstances,
+or rendered map products. `POST /v1/eclipses/solar/path` and its
+`SolarEclipsePath` response remain unchanged.
 
 ## Relationship And Pattern Routes
 

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import math
+from types import SimpleNamespace
 
 import pytest
 
+import moira.eclipse_canon as eclipse_canon
+from moira.constants import Body
 from moira.eclipse_canon import (
     _find_roots,
     _tt_to_ut_nasa_catalog,
@@ -29,8 +32,8 @@ def test_nasa_lunar_adapter_returns_canon_fields(eclipse_calculator) -> None:
     assert compat.penumbral_magnitude > compat.umbral_magnitude
     assert compat.contacts.u2_ut is not None
     assert compat.contacts.u3_ut is not None
-    assert compat.canon_method == "nasa_shadow_axis_geometric_moon"
-    assert "geometric Moon" in compat.source_model
+    assert compat.canon_method == "nasa_shadow_axis_apparent_sun_moon"
+    assert "annual-aberration" in compat.source_model
 
 
 @pytest.mark.slow
@@ -38,7 +41,64 @@ def test_next_nasa_lunar_eclipse_wrapper_finds_total_event() -> None:
     compat = next_nasa_lunar_eclipse(2451560.0, kind="total")
     assert compat.moira_event.data.is_lunar_eclipse
     assert compat.moira_event.data.eclipse_type.is_total
-    assert compat.canon_method == "nasa_shadow_axis_geometric_moon"
+    assert compat.canon_method == "nasa_shadow_axis_apparent_sun_moon"
+
+
+def test_apparent_canon_vector_policy_applies_light_time_then_aberration_to_both_bodies(
+    monkeypatch,
+) -> None:
+    reader = object()
+    calculator = SimpleNamespace(_reader=reader)
+    earth_position = (10.0, 20.0, 30.0)
+    earth_velocity = (1.0, 2.0, 3.0)
+    sun_light_time = (100.0, 101.0, 102.0)
+    moon_light_time = (200.0, 201.0, 202.0)
+    sun_apparent = (110.0, 111.0, 112.0)
+    moon_apparent = (210.0, 211.0, 212.0)
+    calls: list[tuple[str, object]] = []
+
+    def earth_state(jd_tt, actual_reader):
+        assert jd_tt == 2451545.0
+        assert actual_reader is reader
+        calls.append(("earth_state", actual_reader))
+        return earth_position, earth_velocity
+
+    def light_time(body, jd_tt, actual_reader, earth_ssb, barycentric_fn):
+        assert jd_tt == 2451545.0
+        assert actual_reader is reader
+        assert earth_ssb is earth_position
+        assert barycentric_fn is eclipse_canon._barycentric
+        calls.append(("light_time", body))
+        vector = sun_light_time if body == Body.SUN else moon_light_time
+        return vector, 0.0
+
+    def aberration(vector, velocity):
+        assert velocity is earth_velocity
+        calls.append(("aberration", vector))
+        if vector is sun_light_time:
+            return sun_apparent
+        if vector is moon_light_time:
+            return moon_apparent
+        raise AssertionError("aberration received a vector not produced by light-time")
+
+    monkeypatch.setattr(eclipse_canon, "_earth_barycentric_state", earth_state)
+    monkeypatch.setattr(eclipse_canon, "apply_light_time", light_time)
+    monkeypatch.setattr(eclipse_canon, "apply_aberration", aberration)
+
+    sun, moon = eclipse_canon._lunar_canon_vectors_tt(
+        calculator,
+        2451545.0,
+        method="nasa_shadow_axis_apparent_sun_moon",
+    )
+
+    assert (sun, moon) == (sun_apparent, moon_apparent)
+    assert calls == [
+        ("earth_state", reader),
+        ("light_time", Body.SUN),
+        ("light_time", Body.MOON),
+        ("aberration", sun_light_time),
+        ("aberration", moon_light_time),
+    ]
 
 
 def test_nasa_catalog_inverse_rejects_month_overlap() -> None:

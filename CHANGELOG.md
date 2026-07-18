@@ -40,8 +40,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   positive antumbral); global hybrid classification still belongs to the
   separate Earth-surface geometry. The method fails closed unless its reader
   is content-identified as DE441/LE441.
+- **First-Class Solar Partial-Visibility Footprints**: Added immutable solar
+  footprint points, penumbral contacts, named limit-track components and
+  time-monotone segments, topology, and aggregate visibility-footprint
+  vessels, exposed through
+  `Moira.solar_eclipse_footprint(...)` and
+  `POST /v1/eclipses/solar/footprint`. The governing product sweeps the exact
+  common-tangent, physical mean-limb penumbral cone from content-identified
+  DE441/LE441 Earth-reception states across zero-elevation WGS 84. It reports
+  P1/P4 and optional P2/P3 contacts, north/south penumbral-envelope components,
+  geometric sunrise/sunset components, and explicit
+  `one_limit_connected` or `two_limit_two_loop` topology in UT1. The default
+  sampling count is `181`, bounded to `9..721`; it changes interior density,
+  not solved boundary-graph structure. Each admitted penumbral kind is the
+  single `component_id=0`; folds are emitted as contiguous, strictly
+  time-ordered `segment_id` values sharing refined endpoints, and two-limit
+  north/south components require disjoint horizon incidences. Two-limit
+  products are restricted to central global eclipses, and their geometric
+  horizon tracks remain wholly within P1-P2 or P3-P4 rather than crossing the
+  internal P2-P3 interval.
+- **First-Class Polar-Safe Occultation Path Topology**: Added immutable center
+  points, intrinsic left/right boundary tracks, greatest-limit points, exact
+  geographic-pole ingress/egress contacts, and a two-sided-band topology
+  vessel for planetary and fixed-star lunar occultations. Four additive
+  `Moira` methods and `/v1/occultations/*-path-topology*` routes preserve the
+  compatibility geometry under `summary` while exposing the complete shared
+  UT1 track lattice. The nominal product admits only a spherical mean lunar
+  limb; profile-conditioned graze products remain separate. Planetary target
+  disks use JPL equatorial solid-body radii, fixed stars remain point sources,
+  the Sun remains on the eclipse surfaces, and Saturn's rings are excluded.
+  Topocentric observers are WGS 84 geodetic,
+  while half-widths and total width explicitly use spherical great-circle
+  distance with radius `6378.137 km`. The observer-height domain has a
+  source-derived computational floor at the negative WGS 84 semi-minor axis;
+  this protects the parallax envelope and is not an observational-validity
+  claim. No arbitrary positive-height ceiling is imposed: if an observer
+  radius reaches a body's geocentric distance, the conservative parallax bound
+  becomes `180 degrees` rather than incorrectly clamping at `90 degrees`.
 
 ### Fixed
+- **Bounded Occultation Topology Search**: Treats the requested scan step as a
+  maximum cell width, admits at most `0.25 d`, 400 days, and 4096 cells, and
+  rejects excess work before candidate-envelope evaluation. Boundary cells
+  are refined unconditionally, while a constrained maximum at, or numerically
+  indistinguishable from, the global request boundary is not mislabeled as an
+  event greatest. Candidate maxima
+  are coalesced only when their exact-positive temporal supports genuinely
+  overlap; zero-clearance tangency alone does not merge events. Each connected
+  component is re-solved on a private at-most-30-minute lattice with a
+  128-cell fail-closed budget; every resolved local maximum, both edge cells,
+  and the original peak witnesses participate before the strongest/earliest
+  greatest is selected and checked against the requested interval.
+  Greatest-width tangents now refine from one shared center anchor without
+  cache-history dependence, and exact-pole contacts use a fixed internal
+  lattice independent of output sampling. The compatibility summary now
+  reports fixed-site duration at the greatest location rather than global
+  footprint lifetime. Detailed fixed-star labels reject surrounding whitespace
+  and Solar System body identities before computation.
 - **Eclipse Geometry, Visibility, And Clock Integrity**: Defined native solar
   greatest eclipse by the DE441 Earth-reception lunar-shadow axis rather than
   angular conjunction, brought four modern event classes within one published
@@ -84,6 +139,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   contact-duration products, including a separately bounded limiting
   penumbral case. The facade, public result vessels, FastAPI routes, and
   request/response schemas are unchanged.
+- **NASA Lunar-Compatibility Apparent Reduction**: Corrected the
+  NASA-facing lunar canon after executable intermediate-coordinate evidence
+  showed that the omitted apparent reduction, rather than the DE441 versus
+  VSOP87/ELP2000-85 ephemeris difference, dominated the former contact-time
+  residual. The new default method,
+  `nasa_shadow_axis_apparent_sun_moon`, evaluates both the Sun and Moon on one
+  Earth-reception state, applies reception light-time and then annual
+  aberration to each, and intentionally omits gravitational deflection,
+  topocentric parallax, and atmospheric refraction. The historical geometric
+  and retarded method identifiers remain explicit experiments. Named modern
+  NASA/GSFC catalog maxima are now bounded at `10 s` with gamma bounded at
+  `2e-4` Earth radii; ordinary detailed-figure contacts are bounded at `10 s`,
+  and the limiting 2027 penumbral contacts retain a separate `30 s`
+  robustness gate. Native lunar contacts retain their distinct `120 s` and
+  `240 s` gates. Existing facade signatures, FastAPI paths, and
+  request/response schemas are unchanged; NASA-compatible `canon_method`,
+  `source_model`, and numerical values intentionally report the repaired
+  model.
 - **Polar Central-Path Geometry And Width**: Replaced the observer-local proxy
   for central-path geography with the forward DE441 reception-time shadow-axis
   intersection on WGS 84, rotated through true-of-date, physical UT1 GAST, and
@@ -273,6 +346,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Polar central-path repair preserves the existing `SolarEclipsePath` vessel,
   facade method, and REST schema. A central geometry with no closed two-limit
   footprint now fails explicitly instead of publishing an incomplete width.
+- The solar visibility-footprint surface is additive. The existing
+  `SolarEclipsePath`, `EclipseCalculator.solar_eclipse_path(...)`, and
+  `POST /v1/eclipses/solar/path` contracts are unchanged. The new footprint is
+  a zero-elevation, geometric mean-limb product; it does not claim atmospheric
+  refraction, observer elevation, magnitude contours, or local apparent
+  circumstances. Its REST enum domains are explicit, and its UTC timestamp
+  strings retain BCE-safe astronomical year numbering outside Python's
+  `datetime` range.
+- The NASA lunar-compatibility repair changes no contact vessel, numerical
+  solver, facade method, FastAPI route, request/response schema, native C++
+  path, or kernel resource. It intentionally changes NASA-compatible
+  `canon_method`, `source_model`, and numerical results; native eclipse
+  semantics remain unchanged.
+- The four detailed occultation-topology surfaces are additive. The existing
+  four event-route and four path-summary-route paths, facade method signatures,
+  and response-vessel field shapes remain unchanged. Existing profile-aware
+  lunar-graze APIs continue
+  to own arbitrary limb providers; those providers are intentionally excluded
+  from the nominal two-sided topology because they can produce disconnected
+  micro-topology. Left/right means intrinsic side relative to increasing UT1,
+  not north/south latitude, and exact poles use canonical longitude zero.
 - Code that mutates the relationship result vessels or their nested maps must
   switch to constructing a new value. Invalid phenomena, planetary observer,
   planetary-hour, and house inputs that were previously tolerated may now
@@ -281,6 +375,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as "not ready". This corrects the previous HTTP 200/`ready=false` mismatch.
 
 ### Validation
+- Added individual primary-authority lunar-contact comparisons for every
+  applicable P1, U1, U2, U3, U4, and P4 instant in named NASA/GSFC 2023
+  penumbral, 2024 partial, 2025 total, and limiting 2027 penumbral figures.
+  The fixture preserves the official figure URL and SHA-256 digest, published
+  UT, adopted Delta T, and the figure-owned `VSOP87/ELP2000-85` plus `CdT
+  (Danjon)` lineage. Comparisons occur on common TT: native UT1 crosses the
+  content-identified DE441 clock and NASA-compatibility contacts use their
+  stored TT fields. The repaired compatibility default is also checked against
+  the 2025 figure's printed apparent geocentric Sun/Moon right ascension and
+  declination, independently proving the light-time-then-annual-aberration
+  reduction before contact solving. Ordinary per-instant cross-model ceilings
+  are `120 s` native and `10 s` compatibility; the `0.0014`-magnitude 2027 row
+  uses separate `240 s` native and `30 s` compatibility robustness ceilings
+  while retaining its independent P4-P1 duration gate. Greatest eclipse uses
+  a `10 s` compatibility gate. These are regression envelopes, not source
+  precision, uncertainty estimates, UTC claims, or exact-model parity.
 - Added a coherent NASA/GSFC 2015-03-20 polar central-path fixture pairing the
   official DE405 WGS 84 path table with its Besselian page. The executable
   DE441 comparison covers searched greatest time (`1 s`), greatest, five named
@@ -288,6 +398,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`3 km`), local central durations (`3 s`), magnitude (`0.005`), and physical
   cone clearance at available published limits (`3 km`). These are cross-model
   regression envelopes, not uncertainty estimates or full-atlas parity.
+- Added NASA/GSFC Table 2 anchor comparisons for the 2003 one-limit-connected
+  and 2006 two-limit/two-loop partial-visibility products. Contact and named
+  north/south boundary anchors are compared on a common TT scale under honest
+  `5 s` and `40 km` cross-model ceilings. Those bounds cover NASA's
+  DE200/LE200 plus published `k1` convention versus Moira's DE441 physical
+  mean-limb model; they are not uncertainty estimates. Both NASA rows are
+  total solar eclipses whose penumbral footprints exercise the admitted
+  topologies; an actually partial event's greatest point is invariant-backed,
+  not externally anchored by those rows. NASA does not publish a dense
+  numerical penumbral-track corpus for these products, so dense-track parity
+  is not claimed. Independent unit and integration checks enforce contact
+  ordering, immutable vessel contracts, closure of each penumbral component,
+  and both admitted topology classes. Added a 1991 DE441 folded-envelope
+  regression and a 1992 sub-minute polar-reversal regression proving stable
+  component/segment graph identity at requested sample counts `9`, `99`,
+  `181`, `257`, and `721`, shared fold incidence, continuous fixed-site maximum
+  admission, and the absence of spatial splices.
+- Added a bounded JPL Horizons authority fixture for the 2026-10-05 lunar
+  occultation of Mars at the geographic North Pole. Airless topocentric
+  apparent directions, equatorial angular diameters, and `UT1-UTC` establish
+  outside/inside containment and place ingress and egress in separate `0.5 s`
+  source brackets. Moira's DE441 contacts are admitted under a distinct `2 s`
+  cross-model regression gate. The fixture records that Horizons used
+  predictive EOP at retrieval and requires a post-event refresh; neither gate
+  is an uncertainty estimate. Independent spherical invariants, rather than
+  an unavailable external dense-track corpus, enforce boundary zero
+  clearance, epoch/branch ordering, center-to-limit half-widths, total width,
+  and polar continuity. Full external left/right track and width parity is not
+  claimed, and existing IOTA ordinary-graze evidence remains separate. Added
+  synthetic regressions for transitive connected-support coalescence,
+  non-coalescing tangent-only support, cache-independent greatest tangents,
+  multimodal component-global greatest selection and range suppression, and
+  no more than `0.02 km` width change across two equivalent greatest witnesses
+  `0.160973 s` apart.
 - Added primary-authority per-field cross-model validation for instantaneous
   solar Besselian elements using named NASA/GSFC partial, total, hybrid, and
   annular rows at five TT epochs per event. The admitted residual envelopes

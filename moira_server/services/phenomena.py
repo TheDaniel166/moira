@@ -60,11 +60,15 @@ from ..models.phenomena import (
     HeliacalPlanetEventRequest,
     LunarOccultationPathAtRequest,
     LunarOccultationPathRequest,
+    LunarOccultationPathTopologyAtRequest,
+    LunarOccultationPathTopologyRequest,
     LunarEclipseLocationRequest,
     LunarOccultationRequest,
     LunarStarOccultationRequest,
     LunarStarOccultationPathAtRequest,
     LunarStarOccultationPathRequest,
+    LunarStarOccultationPathTopologyAtRequest,
+    LunarStarOccultationPathTopologyRequest,
     NextStationRequest,
     NatalParanSearchRequest,
     NatalAngularContactsRequest,
@@ -78,6 +82,7 @@ from ..models.phenomena import (
     RetrogradePeriodSearchRequest,
     RiseSetPhenomenaRequest,
     RiseSetPolicyRequest,
+    SolarEclipseFootprintRequest,
     SolarEclipsePathRequest,
     RiseSetTransitRequest,
     SolarEclipseLocationRequest,
@@ -123,6 +128,19 @@ _VALID_STATION_BODIES = frozenset(Body.ALL_PLANETS) | frozenset(ASTEROID_NAIF.ke
 _VALID_CLOSE_APPROACH_BODIES = frozenset(Body.ALL_PLANETS)
 _VALID_LUNAR_OCCULTATION_TARGETS = frozenset(
     body for body in Body.ALL_PLANETS if body not in {Body.MOON, Body.EARTH}
+)
+_VALID_LUNAR_OCCULTATION_TOPOLOGY_TARGETS = frozenset(
+    body
+    for body in _VALID_LUNAR_OCCULTATION_TARGETS
+    if body != Body.SUN
+)
+_OCCULTATION_TOPOLOGY_MAX_STEP_DAYS = 0.25
+_OCCULTATION_TOPOLOGY_MAX_SPAN_DAYS = 400.0
+_OCCULTATION_TOPOLOGY_MAX_SCAN_CELLS = 4096
+_WGS84_EQUATORIAL_RADIUS_KM = 6378.137
+_WGS84_FLATTENING = 1.0 / 298.257223563
+_OCCULTATION_TOPOLOGY_MIN_OBSERVER_ELEV_M = (
+    -_WGS84_EQUATORIAL_RADIUS_KM * (1.0 - _WGS84_FLATTENING) * 1000.0
 )
 _VALID_HELIACAL_PLANET_BODIES = frozenset(
     body for body in Body.ALL_PLANETS if body not in {Body.SUN, Body.MOON, Body.EARTH}
@@ -204,6 +222,78 @@ def _require_supported_lunar_occultation_target(body: str) -> None:
     if body not in _VALID_LUNAR_OCCULTATION_TARGETS:
         supported = ", ".join(sorted(_VALID_LUNAR_OCCULTATION_TARGETS))
         raise ValueError(f"unsupported occultation target {body!r}; supported targets: {supported}")
+
+
+def _require_supported_lunar_occultation_topology_target(body: str) -> None:
+    if body not in _VALID_LUNAR_OCCULTATION_TOPOLOGY_TARGETS:
+        supported = ", ".join(sorted(_VALID_LUNAR_OCCULTATION_TOPOLOGY_TARGETS))
+        raise ValueError(
+            f"unsupported occultation topology target {body!r}; "
+            f"supported targets: {supported}; use the eclipse routes for the Sun"
+        )
+
+
+def _validate_occultation_topology_range(
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+) -> None:
+    _require_finite(jd_start, "jd_start")
+    _require_finite(jd_end, "jd_end")
+    _require_positive(step_days, "step_days")
+    if jd_end <= jd_start:
+        raise ValueError("jd_end must be greater than jd_start")
+    span = jd_end - jd_start
+    if step_days > _OCCULTATION_TOPOLOGY_MAX_STEP_DAYS:
+        raise ValueError("step_days must not exceed 0.25 days")
+    if span > _OCCULTATION_TOPOLOGY_MAX_SPAN_DAYS:
+        raise ValueError("occultation topology search span must not exceed 400 days")
+    if step_days * _OCCULTATION_TOPOLOGY_MAX_SCAN_CELLS < span:
+        raise ValueError(
+            "occultation topology search must not exceed 4096 coarse cells"
+        )
+    segment_count = math.ceil(span / step_days)
+    previous = jd_start
+    for index in range(1, segment_count):
+        candidate = jd_start + index * step_days
+        if not previous < candidate < jd_end:
+            raise ValueError(
+                "step_days does not produce a strictly advancing Julian-Day lattice"
+            )
+        previous = candidate
+
+
+def _validate_occultation_topology_sample_count(sample_count: int) -> None:
+    if isinstance(sample_count, bool) or not isinstance(sample_count, int):
+        raise ValueError("sample_count must be an integer")
+    if not 9 <= sample_count <= 721:
+        raise ValueError("sample_count must be between 9 and 721")
+
+
+def _validate_occultation_topology_elevation(observer_elev_m: float) -> None:
+    _require_finite(observer_elev_m, "observer_elev_m")
+    if observer_elev_m < _OCCULTATION_TOPOLOGY_MIN_OBSERVER_ELEV_M:
+        raise ValueError(
+            "observer_elev_m lies below the WGS84 semi-minor-axis "
+            "computational floor"
+        )
+
+
+def _validate_occultation_star(star_lon: float, star_lat: float, star_name: str) -> None:
+    _require_finite(star_lon, "star_lon")
+    _require_finite(star_lat, "star_lat")
+    if not -90.0 <= star_lat <= 90.0:
+        raise ValueError("star_lat must be between -90 and 90 degrees")
+    if not isinstance(star_name, str) or not star_name.strip():
+        raise ValueError("star_name must be a non-empty string")
+    if star_name != star_name.strip():
+        raise ValueError("star_name must not contain surrounding whitespace")
+    solar_system_labels = {
+        Body.EARTH.casefold(),
+        *(body.casefold() for body in Body.ALL_PLANETS),
+    }
+    if star_name.casefold() in solar_system_labels:
+        raise ValueError("star_name must not identify a Solar System body")
 
 
 def _require_supported_heliacal_planet(body: str) -> None:
@@ -451,6 +541,22 @@ def compute_solar_eclipse_path(engine: Moira, request: SolarEclipsePathRequest):
     )
 
 
+def compute_solar_eclipse_footprint(
+    engine: Moira,
+    request: SolarEclipseFootprintRequest,
+):
+    _require_finite(request.jd_start, "jd_start")
+    if not 9 <= request.sample_count <= 721:
+        raise ValueError("sample_count must be between 9 and 721")
+    kind = _require_allowed(request.kind, "solar eclipse kind", _VALID_SOLAR_ECLIPSE_KINDS)
+    return engine.solar_eclipse_footprint(
+        request.jd_start,
+        kind=kind,
+        backward=request.backward,
+        sample_count=request.sample_count,
+    )
+
+
 def compute_close_approaches(engine: Moira, request: CloseApproachRequest):
     _require_supported_close_approach_body(request.body1, "body1")
     _require_supported_close_approach_body(request.body2, "body2")
@@ -599,6 +705,94 @@ def compute_lunar_star_occultation_path_at(
         sample_count=request.sample_count,
         observer_elev_m=request.observer_elev_m,
         reader=getattr(engine, "_reader", None),
+    )
+
+
+def compute_lunar_occultation_path_topologies(
+    engine: Moira,
+    request: LunarOccultationPathTopologyRequest,
+):
+    _require_supported_lunar_occultation_topology_target(request.target)
+    _validate_occultation_topology_range(
+        request.jd_start,
+        request.jd_end,
+        request.step_days,
+    )
+    _validate_occultation_topology_sample_count(request.sample_count)
+    _validate_occultation_topology_elevation(request.observer_elev_m)
+    return engine.lunar_occultation_path_topology(
+        request.target,
+        request.jd_start,
+        request.jd_end,
+        step_days=request.step_days,
+        sample_count=request.sample_count,
+        observer_elev_m=request.observer_elev_m,
+    )
+
+
+def compute_lunar_occultation_path_topology_at(
+    engine: Moira,
+    request: LunarOccultationPathTopologyAtRequest,
+):
+    _require_supported_lunar_occultation_topology_target(request.target)
+    _require_finite(request.jd_mid, "jd_mid")
+    _validate_occultation_topology_sample_count(request.sample_count)
+    _validate_occultation_topology_elevation(request.observer_elev_m)
+    return engine.lunar_occultation_path_topology_at(
+        request.target,
+        request.jd_mid,
+        sample_count=request.sample_count,
+        observer_elev_m=request.observer_elev_m,
+    )
+
+
+def compute_lunar_star_occultation_path_topologies(
+    engine: Moira,
+    request: LunarStarOccultationPathTopologyRequest,
+):
+    _validate_occultation_star(
+        request.star_lon,
+        request.star_lat,
+        request.star_name,
+    )
+    _validate_occultation_topology_range(
+        request.jd_start,
+        request.jd_end,
+        request.step_days,
+    )
+    _validate_occultation_topology_sample_count(request.sample_count)
+    _validate_occultation_topology_elevation(request.observer_elev_m)
+    return engine.lunar_star_occultation_path_topology(
+        request.star_lon,
+        request.star_lat,
+        request.star_name,
+        request.jd_start,
+        request.jd_end,
+        step_days=request.step_days,
+        sample_count=request.sample_count,
+        observer_elev_m=request.observer_elev_m,
+    )
+
+
+def compute_lunar_star_occultation_path_topology_at(
+    engine: Moira,
+    request: LunarStarOccultationPathTopologyAtRequest,
+):
+    _validate_occultation_star(
+        request.star_lon,
+        request.star_lat,
+        request.star_name,
+    )
+    _require_finite(request.jd_mid, "jd_mid")
+    _validate_occultation_topology_sample_count(request.sample_count)
+    _validate_occultation_topology_elevation(request.observer_elev_m)
+    return engine.lunar_star_occultation_path_topology_at(
+        request.star_lon,
+        request.star_lat,
+        request.star_name,
+        request.jd_mid,
+        sample_count=request.sample_count,
+        observer_elev_m=request.observer_elev_m,
     )
 
 
@@ -822,9 +1016,13 @@ __all__ = [
     "compute_lunar_occultations",
     "compute_lunar_occultation_path_at",
     "compute_lunar_occultation_paths",
+    "compute_lunar_occultation_path_topologies",
+    "compute_lunar_occultation_path_topology_at",
     "compute_lunar_star_occultations",
     "compute_lunar_star_occultation_path_at",
     "compute_lunar_star_occultation_paths",
+    "compute_lunar_star_occultation_path_topologies",
+    "compute_lunar_star_occultation_path_topology_at",
     "compute_parans",
     "compute_parans_with_inventory",
     "compute_paran_field_analysis",
@@ -836,6 +1034,7 @@ __all__ = [
     "compute_planet_heliacal_event",
     "compute_retrograde_periods",
     "compute_rise_set_phenomena",
+    "compute_solar_eclipse_footprint",
     "compute_solar_eclipse_path",
     "compute_rise_set_transit",
     "compute_station_state",

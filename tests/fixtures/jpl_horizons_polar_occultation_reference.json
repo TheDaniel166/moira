@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "evidence_class": "authority_validation",
+  "product": "airless_topocentric_north_pole_occultation_boundary_contacts",
+  "retrieved_utc_date": "2026-07-18",
+  "primary_authority": {
+    "institution": "NASA Jet Propulsion Laboratory Solar System Dynamics Group",
+    "system": "Horizons",
+    "api_endpoint": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "api_documentation": "https://ssd-api.jpl.nasa.gov/doc/horizons.html",
+    "api_signature_source": "NASA/JPL Horizons API",
+    "api_signature_version": "1.2",
+    "query_generation_timestamps_pasadena": {
+      "moon": "2026-07-18T08:19:05",
+      "mars": "2026-07-18T08:19:06"
+    },
+    "credit": "NASA/JPL-Caltech, Solar System Dynamics Group"
+  },
+  "event_corroboration": {
+    "institution": "International Occultation Timing Association",
+    "publication": "Occultations by the Moon, 2026",
+    "url": "https://occultations.org/publications/rasc/2026/lunar26.pdf",
+    "statement_scope": "Identifies the Mars occultation of 2026 October 4/5 in the high Arctic; it does not supply the pole-contact coordinates or path width used here."
+  },
+  "query": {
+    "common_parameters": {
+      "format": "json",
+      "OBJ_DATA": "NO",
+      "MAKE_EPHEM": "YES",
+      "EPHEM_TYPE": "OBSERVER",
+      "CENTER": "coord@399",
+      "COORD_TYPE": "GEODETIC",
+      "SITE_COORD": "0,90,0",
+      "TLIST_TYPE": "JD",
+      "TIME_TYPE": "UT",
+      "QUANTITIES": "2,13,49",
+      "ANG_FORMAT": "DEG",
+      "APPARENT": "AIRLESS",
+      "TIME_DIGITS": "FRACSEC",
+      "CAL_FORMAT": "BOTH",
+      "CSV_FORMAT": "YES",
+      "REF_SYSTEM": "ICRF",
+      "EXTRA_PREC": "YES"
+    },
+    "commands": {
+      "moon": "301",
+      "mars": "499"
+    },
+    "bracket_tlist_jd_utc": [
+      2461318.724936343,
+      2461318.72494213,
+      2461318.747337963,
+      2461318.74734375
+    ],
+    "interpolated_contact_tlist_jd_utc": [
+      2461318.724938611,
+      2461318.747338326
+    ],
+    "reported_kernel_sources": {
+      "moon": "DE441",
+      "earth": "DE441",
+      "mars": "mar099"
+    },
+    "reported_eop_file": "eop.260717.p261013"
+  },
+  "observer": {
+    "surface_model": "WGS84_GEODETIC",
+    "horizons_center_frame": "ITRF93",
+    "latitude_deg": 90.0,
+    "longitude_deg": 0.0,
+    "elevation_m": 0.0,
+    "longitude_at_exact_pole": "canonical_only"
+  },
+  "semantics": {
+    "time_tags_after_1962": "UTC",
+    "engine_time_scale": "UT1",
+    "dut1_definition": "UT1-UTC",
+    "coordinates": "airless apparent right ascension and declination in the Earth equator and equinox of date",
+    "angular_diameter": "equatorial full-disk angular diameter",
+    "contact_clearance_formula_deg": "(moon_angular_diameter_arcsec + mars_angular_diameter_arcsec) / 7200 - great_circle_separation_deg",
+    "inside_sign": "positive",
+    "refraction": false,
+    "moon_radius_km": 1737.4,
+    "mars_equatorial_radius_km": 3396.19
+  },
+  "event": {
+    "occulting_body": "Moon",
+    "occulted_body": "Mars",
+    "date_utc": "2026-10-05",
+    "pole": "north",
+    "eop_status_at_retrieval": "PREDICTIVE",
+    "topology_claim": "The North Pole is outside before ingress, inside until egress, and outside afterward; therefore one occultation limit crosses the geographic pole at each contact."
+  },
+  "contacts": [
+    {
+      "phase": "ingress",
+      "bracket_width_s": 0.5,
+      "rows": [
+        {
+          "utc": "2026-10-05T05:23:54.500Z",
+          "jd_utc": 2461318.724936343,
+          "dut1_s": 0.03543,
+          "jd_ut1": 2461318.724936753,
+          "moon": {
+            "ra_deg": 126.656490897,
+            "dec_deg": 20.539018153,
+            "angular_diameter_arcsec": 1937.224
+          },
+          "mars": {
+            "ra_deg": 126.733145034,
+            "dec_deg": 20.278885274,
+            "angular_diameter_arcsec": 5.724208
+          },
+          "separation_deg": 0.269871131711818,
+          "radii_sum_deg": 0.269853917777778,
+          "clearance_deg": -0.00001721393404
+        },
+        {
+          "utc": "2026-10-05T05:23:55.000Z",
+          "jd_utc": 2461318.72494213,
+          "dut1_s": 0.03543,
+          "jd_ut1": 2461318.72494254,
+          "moon": {
+            "ra_deg": 126.656573489,
+            "dec_deg": 20.538992426,
+            "angular_diameter_arcsec": 1937.224
+          },
+          "mars": {
+            "ra_deg": 126.7331485,
+            "dec_deg": 20.278884582,
+            "angular_diameter_arcsec": 5.724208
+          },
+          "separation_deg": 0.269827267694407,
+          "radii_sum_deg": 0.269853917777778,
+          "clearance_deg": 0.000026650083371
+        }
+      ],
+      "interpolated_contact": {
+        "utc": "2026-10-05T05:23:54.696Z",
+        "jd_utc": 2461318.724938611,
+        "dut1_s": 0.03543,
+        "jd_ut1": 2461318.724939021,
+        "moon": {
+          "ra_deg": 126.656523273,
+          "dec_deg": 20.539008068,
+          "angular_diameter_arcsec": 1937.224
+        },
+        "mars": {
+          "ra_deg": 126.733146393,
+          "dec_deg": 20.278885002,
+          "angular_diameter_arcsec": 5.724208
+        },
+        "clearance_deg_from_reported_precision": -0.000000018176152
+      }
+    },
+    {
+      "phase": "egress",
+      "bracket_width_s": 0.5,
+      "rows": [
+        {
+          "utc": "2026-10-05T05:56:10.000Z",
+          "jd_utc": 2461318.747337963,
+          "dut1_s": 0.03542,
+          "jd_ut1": 2461318.747338373,
+          "moon": {
+            "ra_deg": 126.975961768,
+            "dec_deg": 20.43913315,
+            "angular_diameter_arcsec": 1936.975
+          },
+          "mars": {
+            "ra_deg": 126.746560856,
+            "dec_deg": 20.276206906,
+            "angular_diameter_arcsec": 5.72476
+          },
+          "separation_deg": 0.269816659661377,
+          "radii_sum_deg": 0.269819411111111,
+          "clearance_deg": 0.000002751449734
+        },
+        {
+          "utc": "2026-10-05T05:56:10.500Z",
+          "jd_utc": 2461318.74734375,
+          "dut1_s": 0.03542,
+          "jd_ut1": 2461318.74734416,
+          "moon": {
+            "ra_deg": 126.976044237,
+            "dec_deg": 20.43910727,
+            "angular_diameter_arcsec": 1936.975
+          },
+          "mars": {
+            "ra_deg": 126.746564321,
+            "dec_deg": 20.276206214,
+            "angular_diameter_arcsec": 5.72476
+          },
+          "separation_deg": 0.269860513706727,
+          "radii_sum_deg": 0.269819411111111,
+          "clearance_deg": -0.000041102595616
+        }
+      ],
+      "interpolated_contact": {
+        "utc": "2026-10-05T05:56:10.031Z",
+        "jd_utc": 2461318.747338326,
+        "dut1_s": 0.03542,
+        "jd_ut1": 2461318.747338736,
+        "moon": {
+          "ra_deg": 126.975966944,
+          "dec_deg": 20.439131526,
+          "angular_diameter_arcsec": 1936.975
+        },
+        "mars": {
+          "ra_deg": 126.746561073,
+          "dec_deg": 20.276206863,
+          "angular_diameter_arcsec": 5.72476
+        },
+        "clearance_deg_from_reported_precision": -0.000000000780033
+      }
+    }
+  ],
+  "validation_policy": {
+    "contact_bracket_tolerance_s": 0.5,
+    "moira_contact_time_tolerance_s": 2.0,
+    "engine_search_window_jd_ut1": [
+      2461318.6666670763,
+      2461318.8333337433
+    ],
+    "engine_search_step_days": 0.05,
+    "engine_topology_sample_count": 9,
+    "required_sign_sequence": [
+      "outside",
+      "inside",
+      "inside",
+      "outside"
+    ],
+    "scope": "This fixture validates polar containment and the two pole-boundary contact instants. It does not independently publish or validate Moira's complete left/right limit tracks or scalar great-circle width.",
+    "refresh_policy": "Refresh after 2026-10-05 when measured Earth-orientation data replace the frozen Horizons prediction."
+  }
+}

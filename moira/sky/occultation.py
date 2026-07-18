@@ -29,22 +29,35 @@ lunar_occultation(body, jd_start, jd_end)
 all_lunar_occultations(jd_start, jd_end)
     Search for Moon occultations of all visible planets simultaneously.
 
-lunar_occultation_path_at(event, jd_ut)
-    Compute OccultationPathGeometry for a planetary occultation at a moment.
+lunar_occultation_path_at(target, jd_mid)
+    Compute the compatibility OccultationPathGeometry summary for a planetary
+    occultation at a supplied greatest epoch.
 
-lunar_occultation_path(event)
-    Full geographic path of a planetary lunar occultation.
+lunar_occultation_path(target, jd_start, jd_end)
+    Search for planetary occultations and return their compatibility summaries.
+
+lunar_occultation_path_topology_at(target, jd_mid)
+    Compute the detailed, polar-safe band topology at one greatest epoch.
+
+lunar_occultation_path_topology(target, jd_start, jd_end)
+    Search for planetary occultations and return their detailed topologies.
 
 Lunar occultations — stars
 --------------------------
 lunar_star_occultation(star, jd_start, jd_end)
     Search for Moon occultations of a named fixed star in a date range.
 
-lunar_star_occultation_path_at(event, jd_ut)
-    OccultationPathGeometry for a stellar occultation at a moment.
+lunar_star_occultation_path_at(star_lon, star_lat, star_name, jd_mid)
+    Compatibility OccultationPathGeometry summary for a stellar occultation.
 
-lunar_star_occultation_path(event)
-    Full geographic path of a stellar lunar occultation.
+lunar_star_occultation_path(star_lon, star_lat, star_name, jd_start, jd_end)
+    Search for stellar occultations and return their compatibility summaries.
+
+lunar_star_occultation_path_topology_at(star_lon, star_lat, star_name, jd_mid)
+    Compute the detailed, polar-safe stellar band topology at one epoch.
+
+lunar_star_occultation_path_topology(star_lon, star_lat, star_name, jd_start, jd_end)
+    Search for stellar occultations and return their detailed topologies.
 
 Graze geometry
 --------------
@@ -68,8 +81,16 @@ GrazeProductTrack
     The graze track across a band of latitudes.
 
 OccultationPathGeometry
-    General path geometry vessel: northern and southern limit lines,
-    central line (if applicable), begin and end points.
+    Compatibility summary vessel containing sampled center locations plus the
+    greatest path width and greatest-site duration. It does not contain limit
+    tracks or begin/end contact vessels.
+
+OccultationPathTopology
+    Detailed nominal mean-limb path-band vessel containing the shared UT1 center lattice,
+    intrinsic left/right limit tracks, greatest half-width witnesses, and
+    explicit exact-pole ingress/egress contacts. Left/right follows increasing
+    UT1 along the track and must not be relabeled geographic north/south. The
+    requested observer elevation is retained as result provenance.
 
 Functions
 ---------
@@ -91,12 +112,23 @@ from moira.occultations import (
     GrazeProductTrack,
     GrazeTableRow,
     LunarOccultation,
+    OccultationGeographicPole,
+    OccultationPathBoundaryPoint,
+    OccultationPathBoundarySide,
+    OccultationPathBoundaryTrack,
     OccultationPathGeometry,
+    OccultationPathPoint,
+    OccultationPathTopology,
+    OccultationPathTopologyKind,
+    OccultationPoleCrossing,
+    OccultationPoleCrossingPhase,
     all_lunar_occultations,
     close_approaches,
     lunar_occultation,
     lunar_occultation_path,
     lunar_occultation_path_at,
+    lunar_occultation_path_topology,
+    lunar_occultation_path_topology_at,
     lunar_star_graze_circumstances,
     lunar_star_graze_latitude,
     lunar_star_graze_line,
@@ -106,6 +138,8 @@ from moira.occultations import (
     lunar_star_occultation,
     lunar_star_occultation_path,
     lunar_star_occultation_path_at,
+    lunar_star_occultation_path_topology,
+    lunar_star_occultation_path_topology_at,
     lunar_star_practical_graze_latitude,
 )
 
@@ -113,7 +147,16 @@ __all__ = [
     # Result vessels
     "CloseApproach",
     "LunarOccultation",
+    "OccultationGeographicPole",
+    "OccultationPathBoundaryPoint",
+    "OccultationPathBoundarySide",
+    "OccultationPathBoundaryTrack",
     "OccultationPathGeometry",
+    "OccultationPathPoint",
+    "OccultationPathTopology",
+    "OccultationPathTopologyKind",
+    "OccultationPoleCrossing",
+    "OccultationPoleCrossingPhase",
     # Graze vessels
     "GrazeCircumstances",
     "GrazeTableRow",
@@ -125,11 +168,15 @@ __all__ = [
     "lunar_occultation",
     "lunar_occultation_path_at",
     "lunar_occultation_path",
+    "lunar_occultation_path_topology_at",
+    "lunar_occultation_path_topology",
     "all_lunar_occultations",
     # Stellar occultations
     "lunar_star_occultation",
     "lunar_star_occultation_path_at",
     "lunar_star_occultation_path",
+    "lunar_star_occultation_path_topology_at",
+    "lunar_star_occultation_path_topology",
     # Graze functions
     "lunar_star_graze_circumstances",
     "lunar_star_graze_latitude",

@@ -11,7 +11,11 @@ from moira.geoutils import (
     offset_geographic_km,
     wrap_longitude_deg,
 )
-from moira.eclipse_canon import find_lunar_contacts_canon, lunar_canon_geometry
+from moira.eclipse_canon import (
+    _ut_to_tt_nasa_catalog,
+    find_lunar_contacts_canon,
+    lunar_canon_geometry,
+)
 from moira.eclipse_geometry import (
     angular_separation,
     lunar_penumbral_magnitude,
@@ -24,6 +28,42 @@ from moira.eclipse_search import (
     refine_solar_greatest_eclipse,
 )
 from moira.eclipse_contacts import find_lunar_contacts
+from moira.julian import julian_day
+
+
+def _earth_fixed_shadow(
+    *,
+    fundamental_plane_point_xyz_km: tuple[float, float, float],
+    axis_unit_away_from_sun: tuple[float, float, float],
+    axis_projection_km: float,
+    central_radius_km: float,
+    central_cone_slope: float,
+) -> eclipse._EarthFixedSolarShadow:
+    reference = (
+        (0.0, 0.0, 1.0)
+        if abs(axis_unit_away_from_sun[2]) < 0.9
+        else (1.0, 0.0, 0.0)
+    )
+    east = eclipse._shadow_unit(
+        eclipse._shadow_cross(axis_unit_away_from_sun, reference),
+        label="test shadow east",
+    )
+    north = eclipse._shadow_cross(axis_unit_away_from_sun, east)
+    return eclipse._EarthFixedSolarShadow(
+        fundamental_plane_point_xyz_km=fundamental_plane_point_xyz_km,
+        axis_unit_away_from_sun=axis_unit_away_from_sun,
+        axis_projection_km=axis_projection_km,
+        central_radius_km=central_radius_km,
+        central_cone_slope=central_cone_slope,
+        penumbral_radius_km=200.0,
+        penumbral_cone_slope=0.0,
+        fundamental_east_unit_itrf=east,
+        fundamental_north_unit_itrf=north,
+        sun_xyz_from_earth_itrf_km=tuple(
+            -150_000_000.0 * component
+            for component in axis_unit_away_from_sun
+        ),
+    )
 
 
 def test_shadow_axis_offset_tracks_opposition_distance() -> None:
@@ -169,7 +209,7 @@ def test_wgs84_axis_surface_point_canonicalizes_only_an_exact_pole(
     axis_unit: tuple[float, float, float],
     expected_latitude: float,
 ) -> None:
-    shadow = eclipse._EarthFixedSolarShadow(
+    shadow = _earth_fixed_shadow(
         fundamental_plane_point_xyz_km=(0.0, 0.0, 0.0),
         axis_unit_away_from_sun=axis_unit,
         axis_projection_km=-100_000.0,
@@ -216,7 +256,7 @@ def test_high_latitude_spherical_hit_can_miss_the_wgs84_ellipsoid() -> None:
 def test_axis_tangency_materialization_uses_the_coalesced_chord_root() -> None:
     half_chord_km = 1.0
     x_km = math.sqrt(eclipse.EARTH_RADIUS_KM**2 - half_chord_km**2)
-    shadow = eclipse._EarthFixedSolarShadow(
+    shadow = _earth_fixed_shadow(
         fundamental_plane_point_xyz_km=(x_km, 0.0, 0.0),
         axis_unit_away_from_sun=(0.0, 1.0, 0.0),
         axis_projection_km=-100_000.0,
@@ -235,7 +275,7 @@ def test_axis_tangency_materialization_uses_the_coalesced_chord_root() -> None:
 
 def test_central_shadow_width_is_full_footprint_support_span() -> None:
     half_width_km = 100.0
-    shadow = eclipse._EarthFixedSolarShadow(
+    shadow = _earth_fixed_shadow(
         fundamental_plane_point_xyz_km=(0.0, 0.0, 0.0),
         axis_unit_away_from_sun=(1.0, 0.0, 0.0),
         axis_projection_km=-100_000.0,
@@ -465,19 +505,48 @@ def test_unified_lunar_analysis_api_exposes_native_and_canon_modes(eclipse_calcu
     assert canon.event.data.eclipse_type.is_total
     assert canon.gamma_earth_radii is not None
     assert abs(canon.contacts.greatest_ut - canon.event.jd_ut) < 1e-6
-    assert canon.canon_method == "nasa_shadow_axis_geometric_moon"
-    assert "geometric Moon" in canon.source_model
+    assert canon.canon_method == "nasa_shadow_axis_apparent_sun_moon"
+    assert "annual-aberration" in canon.source_model
 
 
 def test_canon_event_data_uses_the_declared_nasa_time_basis(eclipse_calculator) -> None:
     event = eclipse_calculator.next_lunar_eclipse_canon(2451560.0, kind="total")
     expected = eclipse_calculator._calculate_jd_internal(
         event.jd_ut,
-        retarded_moon=False,
         delta_t_mode="nasa_canon",
+        lunar_canon_method="nasa_shadow_axis_apparent_sun_moon",
     )
 
     assert event.data == expected
+
+
+@pytest.mark.slow
+def test_limiting_canon_event_data_uses_the_same_penumbral_geometry(
+    eclipse_calculator,
+) -> None:
+    event = eclipse_calculator.next_lunar_eclipse_canon(
+        julian_day(2027, 7, 1),
+        kind="penumbral",
+    )
+    contacts = find_lunar_contacts_canon(eclipse_calculator, event.jd_ut)
+    geometry = lunar_canon_geometry(
+        eclipse_calculator,
+        _ut_to_tt_nasa_catalog(event.jd_ut),
+        method="nasa_shadow_axis_apparent_sun_moon",
+    )
+
+    assert event.jd_ut == pytest.approx(contacts.greatest_ut, abs=1.0e-7)
+    assert event.data.is_lunar_eclipse
+    assert str(event.data.eclipse_type) == "Penumbral"
+    assert event.data.eclipse_type.magnitude_umbral == 0.0
+    assert event.data.eclipse_type.magnitude_penumbra == pytest.approx(
+        geometry.penumbral_magnitude,
+        abs=1.0e-12,
+    )
+    assert event.data.eclipse_magnitude == pytest.approx(
+        geometry.penumbral_magnitude,
+        abs=1.0e-12,
+    )
 
 
 def test_unified_native_penumbral_analysis_keeps_contact_model_aligned(eclipse_calculator) -> None:

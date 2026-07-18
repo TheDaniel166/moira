@@ -7,10 +7,11 @@
 - **Correctness and evidence update:** 2026-07-17
 - **Besselian admission update:** 2026-07-17
 - **Polar central-path admission update:** 2026-07-17
+- **Partial-visibility footprint admission update:** 2026-07-18
 - **Target subsystems:** `moira.eclipse`, `moira.eclipse_besselian`,
   `moira.eclipse_geometry`,
-  `moira.eclipse_canon`, solar path geometry, and the eclipse-facing portion of
-  `moira.occultations`
+  `moira.eclipse_canon`, solar path and partial-visibility footprint geometry,
+  and the eclipse-facing portion of `moira.occultations`
 - **Purpose:** Record exactly what the repository proves about eclipse
   geometry, catalog comparison, and numerical stability.
 
@@ -51,6 +52,18 @@ shorter than the coarse scan, truncated contact windows, exact-pole
 canonicalization, pole crossing, and solar greatest-location refinement above
 `89.5` degrees. These are invariant and adversarial tests. External polar-path
 accuracy is established only for the named 2015 product in section 2C.1.
+
+`tests/unit/test_eclipse_footprint.py` adds vessel and topology invariants for
+the first-class partial-visibility product: immutable points and tracks,
+contact ordering and pairing, named boundary-component and time-monotone
+segment identity, closure of each penumbral component through exactly two
+horizon incidences and any paired fold endpoints, both admitted topology
+labels, and the public `sample_count` bounds. Every admitted penumbral kind is
+the single `component_id=0`, with contiguous `segment_id` values across any
+fold. DE441 integration regressions cover the 1991 folded limit graph and a
+1992 sub-minute polar reversal at requested output counts `9`, `99`, `181`,
+`257`, and `721`. These checks prove internal contracts and topology, not
+external coordinate accuracy.
 
 ### B. NASA Five Millennium catalog comparison
 
@@ -96,10 +109,11 @@ central-path measurements; Moira's shape-stable zero fields are checked
 separately as public-vessel invariants. No central line is invented for a
 non-central eclipse.
 
-This four-row slice does not validate a partial-eclipse footprint,
+This four-row slice does not itself validate a partial-eclipse footprint,
 observer-elevation sensitivity, every sampled central-line point, full-track
 ingress/egress geography, or exact solar grazing/tangent boundaries. The
-separate polar product below does not widen those four rows implicitly.
+separate polar and partial-footprint products below do not widen those four
+rows implicitly.
 
 ### C.1 Authoritative polar central-path product
 
@@ -122,32 +136,97 @@ rather than publish an incomplete cone-arc span.
 This closes the named authoritative polar-central fixture gap. It does not
 establish full-atlas path parity, per-row width parity away from greatest,
 observer-elevation behavior, lunar-topography timing, or the separate
-one-limit/terminator-closure width product.
+one-limit/terminator-closure central-shadow width product.
 
-### D. Named NASA lunar contact-duration products
+### C.2 NASA partial-visibility footprint anchors
+
+`tests/fixtures/nasa_solar_penumbral_footprint_reference.json` binds two
+NASA/GSFC Table 2 products with their declared model metadata and source URLs:
+
+- 2003-11-23, the published one-limit connected case; and
+- 2006-03-29, the published two-limit/two-loop case.
+
+Both products are the penumbral visibility footprints of total solar eclipses.
+They exercise both footprint topologies, but they are not an external
+footprint oracle for an event whose global class is partial.
+
+The NASA products use DE200/LE200, their published `k1 = 0.2725076` lunar-radius
+convention, TDT, and true east-positive WGS 84 coordinates. Moira independently
+uses a content-identified DE441/LE441 reader, Earth-reception exact
+common-tangent shadow geometry, and its physical spherical mean-limb radii on
+zero-elevation WGS 84.
+
+`tests/integration/test_eclipse_footprint_nasa_reference.py` compares P1/P4 and,
+where present, P2/P3 plus the named north/south Table 2 boundary anchors. Time
+is compared on a common TT scale and coordinates are matched to the nearest
+lawful named boundary point. The pinned acceptance ceilings are `5 s` and
+`40 km`. They are honest cross-model regression bounds for the declared
+DE200/LE200-plus-`k1` versus DE441 physical-mean-limb difference, not
+uncertainty estimates and not observational error bars.
+
+The same integration slice enforces event classification, contact ordering,
+the presence or absence of P2/P3, expected limit families, WGS 84 coordinate
+bounds, and `one_limit_connected` versus `two_limit_two_loop` topology. NASA's
+maps establish the published topology, but NASA does not provide a dense
+numerical coordinate table for the complete penumbral tracks. No dense-track,
+full-atlas, refraction, elevation, magnitude-contour, or local-apparent-
+circumstance parity is claimed. A globally partial event's greatest footprint
+point is admitted by separate physical/geometric invariants, not by these NASA
+anchor rows.
+
+### D. Named NASA lunar contact products
 
 `tests/integration/test_eclipse_lunar_contacts_nasa_reference.py` compares the
 native mean-limb contact solver with four named rows from NASA's 2001-2100
-lunar catalog:
+lunar catalog and their paired detailed NASA/GSFC eclipse figures:
 
 - 2023-05-05 penumbral;
 - 2024-09-18 partial;
 - 2025-03-14 total; and
 - 2027-07-18 limiting penumbral.
 
-The executable fields are greatest-event timing and the applicable P1-P4,
+The century-catalog fields are greatest-event timing and the applicable P1-P4,
 U1-U4, and U2-U3 phase durations. NASA publishes durations rounded to `0.1`
 minute under VSOP87/ELP2000-82, Danjon enlargement, and catalog Delta-T; Moira
 retains DE441 and its native clock policy. All four greatest-event comparisons
 use a `120`-second cross-model timing envelope. The ordinary rows use a
 `1.0`-minute cross-model duration envelope. The `0.0014`-magnitude 2027
-limiting case uses a separately declared `5.0`-minute envelope: it proves that
-the short penumbral pair remains resolved, not close timing parity at a
-model-sensitive limit.
+limiting case uses a separately declared `5.0`-minute duration envelope: it
+proves that the short penumbral pair remains resolved, not close timing parity
+at a model-sensitive limit.
 
-These rows validate phase durations, not the six individual published contact
-instants. Mean-limb contacts remain distinct from topography-conditioned graze
-or Baily's Beads products.
+The dedicated
+`tests/fixtures/nasa_lunar_contact_instants_reference.json` fixture records all
+14 applicable individual P1, U1, U2, U3, U4, and P4 instants from the paired
+NASA/GSFC figures, together with each source URL, SHA-256 digest, published UT
+text, adopted Delta T, and printed `VSOP87/ELP2000-85` plus `CdT (Danjon)`
+lineage. This figure lineage is not collapsed into the century-duration
+lineage. Source TT is the published UT plus the figure's Delta T. Native UT1
+contacts are transformed through the content-identified DE441 clock;
+NASA-compatibility contacts are compared in their stored TT coordinate.
+
+The first individual-contact comparison isolated an omitted apparent reduction
+as the dominant NASA-compatibility defect. The repaired default method,
+`nasa_shadow_axis_apparent_sun_moon`, evaluates both bodies from one reception
+Earth state, applies reception light-time and then annual aberration to each,
+and excludes gravitational deflection, topocentric parallax, and atmospheric
+refraction. The legacy geometric and retarded methods remain explicit
+comparison policies. Executable evidence also binds the apparent geocentric
+Sun and Moon right ascensions and declinations at the 2025 figure's printed
+greatest-eclipse TT. The remaining bounded difference includes DE441/LE441
+versus VSOP87/ELP2000-85, constants, and source-algorithm differences; it is
+not the former omitted-reduction defect relabeled as ephemeris drift.
+
+The ordinary per-instant ceilings are `120 s` for native DE441 and `10 s` for
+the NASA-compatibility path. The limiting 2027 endpoints use separate `240 s`
+native and `30 s` compatibility robustness ceilings while retaining the
+independent P4-P1 duration gate. NASA-compatible greatest eclipse is bounded at
+`10 s`. The ten-row modern catalog comparison separately bounds greatest
+timing at `10 s` and signed gamma at `2e-4` Earth radii. The ceilings are
+cross-model regression envelopes, not one-second accuracy, uncertainties, UTC
+timestamps, or exact-model parity. Greatest eclipse is a separate event
+instant, not a seventh contact. Mean-limb contacts remain distinct from
+topography-conditioned graze or Baily's Beads products.
 
 ### E. NASA/GSFC solar Besselian per-field comparison
 
@@ -238,15 +317,24 @@ The July repair now implements and exercises:
   divergence, and explicit rejection of incomplete one-limit footprint spans;
 - legal-latitude stellar-graze bracketing and directed north/south occultation
   band boundaries;
-- named NASA partial-path and lunar phase-duration comparisons;
+- named NASA partial-path, lunar phase-duration, and individual-contact
+  comparisons;
 - the first-class instantaneous `SolarBesselianElements` vessel and
-  `EclipseCalculator.solar_besselian_elements(jd_ut1)` engine method; and
+  `EclipseCalculator.solar_besselian_elements(jd_ut1)` engine method;
 - NASA/GSFC per-field Besselian comparisons for partial, total, hybrid, and
-  annular events at five TT epochs each, plus the paired 2015 polar event.
+  annular events at five TT epochs each, plus the paired 2015 polar event;
+- the first-class `SolarEclipseVisibilityFootprint` product, its exact
+  common-tangent mean-limb penumbral contacts, named penumbral and geometric
+  horizon boundary components, and explicit one-limit/two-limit topology; and
+- NASA/GSFC Table 2 anchor comparisons for the 2003 and 2006 partial-visibility
+  products under pinned `5 s` and `40 km` cross-model ceilings. Both authority
+  products are total-eclipse penumbral footprints.
 
-The `Moira` facade, existing eclipse event and path vessels, REST endpoint
-paths, request/response schemas, and native C++ substrate remain unchanged.
-Their unchanged shape is a compatibility fact, not astronomical proof.
+The footprint admission adds `Moira.solar_eclipse_footprint(...)` and
+`POST /v1/eclipses/solar/footprint`. Existing eclipse event and
+`SolarEclipsePath` vessels, `EclipseCalculator.solar_eclipse_path(...)`,
+`POST /v1/eclipses/solar/path`, and the native C++ substrate remain unchanged.
+That compatibility fact is not astronomical proof.
 
 ## 5. Current validation statement
 
@@ -256,25 +344,33 @@ The supportable statement is:
 > NASA catalog classification and TT search-regression coverage, four named
 > NASA solar path-product comparisons spanning partial, total, hybrid, and
 > annular events, one named NASA polar central-path comparison, four named NASA
-> lunar phase-duration comparisons, and bounded cached-Swiss cross-engine
+> lunar phase-duration and individual-contact comparisons, and bounded
+> cached-Swiss cross-engine
 > corroboration. The instantaneous DE441-native Besselian surface has
 > primary-authority per-field cross-model evidence for four representative
-> event classes plus the paired 2015 polar event at five TT epochs each. Exact
-> NASA model parity, full-atlas path validation, per-row polar width parity,
-> and one-limit path-width closure are not claimed.
+> event classes plus the paired 2015 polar event at five TT epochs each. The
+> first-class partial-visibility footprint has NASA/GSFC Table 2 contact and
+> boundary-anchor evidence for one named one-limit total eclipse and one named
+> two-limit total eclipse, plus independent topology and penumbral-component
+> closure invariants. A globally partial event's greatest point is backed by
+> invariants rather than externally anchored by those rows. Exact NASA model
+> parity, dense-track parity, full-atlas path validation, per-row polar width
+> parity, and observationally conditioned footprint parity are not claimed.
 
 ## 6. Remaining evidence work
 
 - Extend Besselian evidence beyond the four named rows and five TT epochs before
   making broader temporal or coverage claims. The current residual envelopes
   are cross-model regression bounds, not exact parity or uncertainties.
-- Extend path-product evidence to observer elevation, full sampled tracks,
-  ingress/egress geography, solar grazing/tangent cases, and a governed
-  one-limit/terminator-closure width product. The named 2015 polar central
-  product and one-point partial product are covered; a full penumbral footprint
-  requires a separately designed vessel.
-- Compare individual P1/P4, U1/U4, and U2/U3 instants, not only phase
-  durations, under matching timescale and mean-limb semantics.
+- Extend path-product evidence to observer elevation, dense externally
+  published partial-visibility tracks, ingress/egress geography beyond the
+  named anchors, solar grazing/tangent cases, magnitude contours, and local
+  apparent circumstances. The first-class mean-limb footprint is admitted,
+  but NASA's sparse Table 2 anchors do not establish dense-track parity.
+- Extend individual lunar-contact evidence beyond the four named modern figure
+  products before making broader temporal or coverage claims. The admitted
+  slice now bounds all applicable contacts for one ordinary penumbral, partial,
+  and total event plus one separately classified limiting event.
 - Keep model-sensitive limiting classifications visible. A local diagnostic
   found a classification difference at the 2015-04-04 near-limit event, but
   that observation is not yet a fixture-backed covenant. Do not force catalog

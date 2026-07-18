@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "source": {
+    "authority": "NASA Goddard Space Flight Center Eclipse Web Site",
+    "topology_url": "https://eclipse.gsfc.nasa.gov/SEmono/reference/map.html",
+    "acknowledgment": "Eclipse Predictions by Fred Espenak, NASA's GSFC",
+    "published_product": "Shadow Contacts and Circumstances: penumbral P contacts and extreme north/south limits",
+    "time_scale": "TDT/TT",
+    "coordinate_semantics": "Latitude is NASA's published geographic latitude. Longitude values use NASA's True Longitude column, east-positive, after the declared Delta T correction from ephemeris longitude.",
+    "topology_semantics": "NASA defines a one-limit penumbral footprint as sunrise and sunset curves joined into one connected distorted figure-eight, and a two-limit footprint as two separate closed loops. P1/P4 are external Earth-penumbra tangencies; P2/P3 are the internal tangencies present only in a two-limit event.",
+    "comparison_scope": "The NASA tables provide sparse P-contact and N/S extreme anchors plus topology. They do not publish a dense coordinate oracle for every penumbral, sunrise, and sunset track sample, so this fixture does not claim dense-track parity.",
+    "reference_model_note": "The named NASA monographs use DE200/LE200, their tabulated k1/k2 lunar-radius conventions, and their declared Delta T. They are a primary-authority cross-model reference for Moira's independently derived DE441/LE441, physical mean-limb, zero-elevation WGS-84 footprint; their rows are not DE441 coefficients or uncertainty bounds.",
+    "retrieved_on": "2026-07-18"
+  },
+  "tolerances": {
+    "anchor_time_s": 5.0,
+    "surface_position_km": 40.0,
+    "penumbral_clearance_km": 0.001,
+    "wgs84_surface_equation_residual": 1e-12
+  },
+  "tolerance_note": "The 5 s and 40 km envelopes are rounded external-comparison ceilings covering the observed DE200/LE200-to-DE441/LE441 model residuals and NASA's 0.1-second/0.1-arcminute table rounding. They are validation tolerances, not NASA uncertainty estimates or broad accuracy claims. The clearance and surface-equation limits are internal geometric invariants.",
+  "de441_runtime_receipt": {
+    "recorded_on": "2026-07-18",
+    "ephemeris": "DE-0441LE-0441",
+    "sample_count": 181,
+    "matching_rule": "Contacts bind by P-kind. Each N/S extreme searches only its explicitly named Moira penumbral boundary family within the admitted time window, then selects the geographically nearest point. The family binding is a DE441 product-semantic assertion distinct from NASA's sparse published coordinate authority.",
+    "max_anchor_time_residual_s": 3.298674524,
+    "max_anchor_time_id": "2006-03-29-two-limit-penumbral-footprint:N1",
+    "max_surface_position_residual_km": 36.777095475,
+    "max_surface_position_id": "2006-03-29-two-limit-penumbral-footprint:P2",
+    "evidence_class": "Moira regression receipt under the named primary-authority comparison; not an external source row"
+  },
+  "events": [
+    {
+      "id": "2003-11-23-one-limit-penumbral-footprint",
+      "kind": "total",
+      "seed_jd": 2452950.5,
+      "expected_topology": "one_limit_connected",
+      "expected_penumbral_track_kinds": [
+        "penumbral_north"
+      ],
+      "source": {
+        "table_1_url": "https://eclipse.gsfc.nasa.gov/SEmono/TSE2003/TSE2003tab/TSE2003-Tab01.html",
+        "table_2_url": "https://eclipse.gsfc.nasa.gov/SEmono/TSE2003/TSE2003tab/TSE2003-Tab02.html",
+        "map_url": "https://eclipse.gsfc.nasa.gov/SEmono/TSE2003/TSE2003gif/TSE2003-1a.GIF",
+        "reference_ephemeris": "DE200/LE200",
+        "delta_t_s": 64.8,
+        "lunar_radius_constants": {
+          "k1_penumbral": 0.2725076,
+          "k2_umbral": 0.272281
+        }
+      },
+      "contacts": [
+        {
+          "kind": "p1",
+          "published_tdt": "2003-11-23T20:47:09.9 TDT/TT",
+          "tt_jd": 2452967.3660868057,
+          "latitude_deg": -20.148333333333333,
+          "longitude_deg": 127.24
+        },
+        {
+          "kind": "p4",
+          "published_tdt": "2003-11-24T00:53:20.3 TDT/TT",
+          "tt_jd": 2452967.5370405093,
+          "latitude_deg": -51.27333333333333,
+          "longitude_deg": -78.79666666666667
+        }
+      ],
+      "extrema": [
+        {
+          "label": "N1",
+          "boundary_kind": "penumbral_north",
+          "published_tdt": "2003-11-23T21:10:09.3 TDT/TT",
+          "tt_jd": 2452967.3820520835,
+          "latitude_deg": -7.696666666666666,
+          "longitude_deg": 126.45166666666667
+        },
+        {
+          "label": "S1",
+          "boundary_kind": "penumbral_north",
+          "published_tdt": "2003-11-24T00:30:23.4 TDT/TT",
+          "tt_jd": 2452967.5211041667,
+          "latitude_deg": -39.79,
+          "longitude_deg": -82.66166666666666
+        }
+      ]
+    },
+    {
+      "id": "2006-03-29-two-limit-penumbral-footprint",
+      "kind": "total",
+      "seed_jd": 2453800.5,
+      "expected_topology": "two_limit_two_loop",
+      "expected_penumbral_track_kinds": [
+        "penumbral_north",
+        "penumbral_south"
+      ],
+      "source": {
+        "table_1_url": "https://eclipse.gsfc.nasa.gov/SEmono/TSE2006/TSE2006tab/TSE2006-tab01.html",
+        "table_2_url": "https://eclipse.gsfc.nasa.gov/SEmono/TSE2006/TSE2006tab/TSE2006-tab02.html",
+        "map_url": "https://eclipse.gsfc.nasa.gov/SEmono/TSE2006/TSE2006fig/TSE2006-fig01a.GIF",
+        "reference_ephemeris": "DE200/LE200",
+        "delta_t_s": 64.9,
+        "lunar_radius_constants": {
+          "k1_penumbral": 0.2725076,
+          "k2_umbral": 0.272281
+        }
+      },
+      "contacts": [
+        {
+          "kind": "p1",
+          "published_tdt": "2006-03-29T07:37:53.4 TDT/TT",
+          "tt_jd": 2453823.8179791667,
+          "latitude_deg": -14.458333333333334,
+          "longitude_deg": -22.116666666666667
+        },
+        {
+          "kind": "p2",
+          "published_tdt": "2006-03-29T09:45:42.1 TDT/TT",
+          "tt_jd": 2453823.9067372684,
+          "latitude_deg": 27.476666666666667,
+          "longitude_deg": -56.715
+        },
+        {
+          "kind": "p3",
+          "published_tdt": "2006-03-29T10:38:32.9 TDT/TT",
+          "tt_jd": 2453823.9434363428,
+          "latitude_deg": 84.46166666666667,
+          "longitude_deg": 149.73833333333334
+        },
+        {
+          "kind": "p4",
+          "published_tdt": "2006-03-29T12:46:45.5 TDT/TT",
+          "tt_jd": 2453824.032471065,
+          "latitude_deg": 43.44166666666667,
+          "longitude_deg": 83.04166666666667
+        }
+      ],
+      "extrema": [
+        {
+          "label": "N1",
+          "boundary_kind": "penumbral_north",
+          "published_tdt": "2006-03-29T09:32:49.8 TDT/TT",
+          "tt_jd": 2453823.8977986113,
+          "latitude_deg": 38.53333333333333,
+          "longitude_deg": -54.43333333333333
+        },
+        {
+          "label": "S1",
+          "boundary_kind": "penumbral_south",
+          "published_tdt": "2006-03-29T08:28:19.3 TDT/TT",
+          "tt_jd": 2453823.8530011573,
+          "latitude_deg": -37.755,
+          "longitude_deg": -32.97833333333333
+        },
+        {
+          "label": "N2",
+          "boundary_kind": "penumbral_north",
+          "published_tdt": "2006-03-29T10:51:16.5 TDT/TT",
+          "tt_jd": 2453823.9522743057,
+          "latitude_deg": 82.75,
+          "longitude_deg": -99.29333333333334
+        },
+        {
+          "label": "S2",
+          "boundary_kind": "penumbral_south",
+          "published_tdt": "2006-03-29T11:56:34.6 TDT/TT",
+          "tt_jd": 2453823.997622685,
+          "latitude_deg": 20.166666666666668,
+          "longitude_deg": 93.58666666666667
+        }
+      ]
+    }
+  ]
+}

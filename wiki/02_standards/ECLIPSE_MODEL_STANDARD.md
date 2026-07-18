@@ -145,6 +145,70 @@ first and then applied consistently across:
 - documentation
 - regression expectations
 
+### 4.3 Solar Partial-Visibility Footprint
+
+`EclipseCalculator.solar_eclipse_footprint(jd_start, *, kind="any",
+backward=False, sample_count=181)` is the first-class engine product for the
+complete mean-limb geographic boundary of a searched solar eclipse.
+`Moira.solar_eclipse_footprint(...)` delegates to that same signature, and
+`POST /v1/eclipses/solar/footprint` exposes the additive transport surface. It
+is separate from the central-line and central-width semantics of
+`SolarEclipsePath`.
+
+The governing construction is:
+
+- reader identity: content-identified DE441/LE441, failing closed for another
+  or indeterminate ephemeris identity;
+- shadow state: the exact common-tangent penumbral cone derived from the
+  Earth-reception light-time Sun and Moon center-of-mass states;
+- limb convention: Moira's physical spherical mean-limb Sun and Moon radii;
+- terrestrial surface: the zero-elevation WGS 84 reference ellipsoid;
+- boundary epochs and public point timescale: UT1, with the corresponding
+  reader-bound TT state derived at each epoch; and
+- longitude convention: true, east-positive geographic longitude.
+
+The result carries external penumbral contacts P1 and P4. A two-limit event
+also carries internal contacts P2 and P3; they are absent for a one-limit
+event. Because P2/P3 are internal contacts of a fully intersecting penumbral
+generator family, `two_limit_two_loop` is admitted only for a central global
+solar eclipse, never for a globally partial event. Named track components
+preserve the north and south penumbral envelopes
+and the geometric sunrise and sunset portions of the boundary. Component
+identity is local to its boundary kind. Each admitted penumbral kind has one
+connected component, identified by `component_id=0`, and exactly two
+incidences on the geometric sunrise/sunset graph. That penumbral component may
+fold in UT1, so contiguous `segment_id` values `0..n-1` identify its strictly
+time-ordered portions; two segments meeting at a fold share the solver-refined
+endpoint. This graph contract avoids either splicing simultaneous roots or
+pretending that the folded portions are disconnected.
+In a two-limit product, the north and south horizon-incidence sets are
+disjoint. Each sunrise or sunset track lies wholly in either the P1-P2 ingress
+interval or the P3-P4 egress interval; no horizon track crosses the P2-P3
+interval where both penumbral limits exist.
+
+The two admitted topology labels are:
+
+- `one_limit_connected`: one penumbral-limit family closes through the
+  geometric horizon into one connected boundary; and
+- `two_limit_two_loop`: north and south penumbral limits participate in two
+  closed boundary loops with disjoint horizon incidences, with P2 and P3
+  marking the internal contacts.
+
+`sample_count` controls only the requested interior temporal sampling density.
+It defaults to `181` and is bounded to the inclusive range `9..721`. A fixed
+internal solve, geometric endpoint clustering, exact horizon incidences, and
+temporal-fold refinement govern `(kind, component_id, segment_id)` structure;
+contacts, folds, and boundary transitions remain solver products rather than
+rounded sample-bin substitutions. The admitted regression checks this
+presentation-only contract at requested counts `9`, `99`, `181`, `257`, and
+`721`.
+
+This is a physical, geometric mean-limb footprint. It does not include
+atmospheric refraction, observer elevation or terrain, lunar-limb topography,
+magnitude or obscuration contours, local apparent contact circumstances, or a
+rendered map projection. Those are distinct observational or presentation
+products and must not be inferred from the footprint vessel.
+
 ### 5. Layer Separation
 
 Moira separates eclipse work into two layers.
@@ -189,11 +253,13 @@ topology. Its refinement may cross a pole and must not clamp a lawful solution
 to an artificial latitude such as `89.5` degrees. Longitude is canonicalized
 only at an exact pole, where it has no geometric meaning.
 
-A partial solar eclipse has no umbral or antumbral central line. The current
-shape-stable `SolarEclipsePath` contract represents that product as the single
-solved point of greatest eclipse with zero central width and zero central
-duration. It does not claim to encode the northern/southern penumbral limits or
-a complete partial-eclipse visibility footprint.
+A partial solar eclipse has no umbral or antumbral central line. The existing
+shape-stable `SolarEclipsePath` contract continues to represent that path
+product as the single solved point of greatest eclipse with zero central width
+and zero central duration. It still does not encode penumbral limits. The
+separate `SolarEclipseVisibilityFootprint` contract in section 4.3 carries the
+full sampled mean-limb visibility boundary without changing those path
+semantics.
 
 ### 5.1 Mean-Limb Contact Policy
 
@@ -226,6 +292,17 @@ For the current codebase:
 
 - `native` = Moira's own DE441-first eclipse model
 - `nasa_compat` = NASA-facing catalog-compatibility path
+
+The default lunar NASA-compatibility method is
+`nasa_shadow_axis_apparent_sun_moon`. At one TT reception epoch it derives the
+Earth barycentric position and velocity once, evaluates both the Sun and Moon
+with reception light-time against that same Earth state, and then applies
+annual aberration to both directions. It does not apply gravitational
+deflection, topocentric parallax, observer elevation, or atmospheric
+refraction. This is a compatibility product definition, not a change to the
+native physical shadow-line doctrine. The earlier geometric-Sun/geometric-Moon
+and geometric-Sun/retarded-Moon method identifiers remain available as
+explicit historical experiments; neither is the default.
 
 ### 7. Validation Philosophy
 
@@ -261,6 +338,48 @@ five TT epochs while separately validating the named WGS 84 central-path
 product under its geographic tolerances. That additional event does not widen
 the claim to atlas-wide temporal or path coverage.
 
+The partial-visibility footprint has a separately bounded primary-authority
+comparison against NASA/GSFC Table 2 products for the 2003
+one-limit-connected and 2006 two-limit/two-loop events. Both authority rows are
+the penumbral visibility footprints of total solar eclipses; they are not
+external footprint validation for an event whose global class is partial.
+Published contact and north/south boundary anchors are compared on a common TT
+scale under `5 s` and `40 km` cross-model ceilings. NASA's products use
+DE200/LE200 and their stated `k1` convention; Moira retains content-identified
+DE441/LE441 and physical mean-limb radii. The ceilings are therefore
+cross-model regression bounds, not physical uncertainties. NASA does not
+supply dense numerical coordinates for the complete penumbral tracks, so the
+validation does not claim dense-track or atlas-wide parity. Independent
+invariant tests carry the proof burden for contact ordering, closure of each
+penumbral component, the two topology classes, and the greatest point for an
+actually partial event.
+
+Individual lunar contact instants have a separate primary-authority gate
+against NASA/GSFC's detailed 2023, 2024, 2025, and limiting 2027 lunar-eclipse
+figures. These figure products publish UT contacts to one second and declare
+`VSOP87/ELP2000-85`, `CdT (Danjon)`, and an event-owned Delta T; they are a
+different source lineage from the century catalog's rounded phase durations.
+Each source contact is placed on TT by adding the figure's declared Delta T.
+Native UT1 contacts cross through the content-identified DE441 ephemeris clock,
+while NASA-compatibility contacts are compared in their stored TT coordinate.
+The default compatibility reduction is independently checked against the 2025
+figure's printed apparent geocentric right ascension and declination for both
+the Sun and Moon before its eclipse roots are admitted. That intermediate
+evidence identified omitted apparent reduction as the dominant defect in the
+former compatibility path. The bounded remainder includes DE441/LE441 versus
+VSOP87/ELP2000-85, constants, and source-algorithm differences.
+
+For the ordinary penumbral, partial, and total rows, the admitted per-instant
+cross-model envelopes are `120 s` for native DE441 and `10 s` for the
+NASA-compatibility path. The `0.0014`-magnitude 2027 penumbral row has separate
+`240 s` native and `30 s` compatibility ceilings and remains solver-robustness
+evidence rather than a close-timing claim; its existing P4-P1 duration gate
+remains independently enforced. NASA-compatible greatest eclipse is bounded
+at `10 s`. The ten-row modern catalog comparison separately bounds greatest
+timing at `10 s` and signed gamma at `2e-4` Earth radii. These ceilings are not
+publication precision, uncertainty estimates, or exact-model parity. Greatest
+eclipse remains a separate event instant, not a seventh contact.
+
 ### 8. Required Result Labeling
 
 Any model-selecting eclipse analysis or compatibility vessel that exposes a
@@ -279,8 +398,11 @@ method identifier used by the non-native path.
 The exported `EclipseEvent` vessel remains unchanged. Model identity is carried
 by the existing `LunarEclipseAnalysis.mode`, `.source_model`, and
 `.canon_method` fields, and by the separately named NASA-compatibility vessels
-and entry points. Existing REST routes expose native results only unless their
-request/response contract already names a compatibility mode.
+and entry points. The repaired default intentionally changes compatibility
+numerics plus the reported `canon_method` and `source_model`; it does not change
+facade signatures, REST paths, or request/response schemas. Existing REST
+routes expose native results only unless their request/response contract
+already names a compatibility mode.
 
 ### 9. Non-Goals
 
@@ -289,6 +411,7 @@ The Moira eclipse standard does not require:
 - exact reproduction of the NASA Five Millennium catalog
 - choosing the mathematically best model for every external authority
 - replacing `DE441` with a shorter-range ephemeris just to improve catalog fit
+- inferring dense partial-footprint parity from sparse published map anchors
 
 Moira is not trying to become a mirror of an external publication. It is trying
 to maintain one coherent mathematical reality of its own.

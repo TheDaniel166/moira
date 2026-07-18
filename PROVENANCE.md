@@ -74,6 +74,54 @@ between NASA's declared DE405 product and Moira's independently evaluated
 DE441 path; they are not NASA uncertainty estimates and do not establish
 full-atlas, lunar-topography, or one-limit/terminator-closure validation.
 
+### JPL Horizons polar occultation validation corpus
+
+`tests/fixtures/jpl_horizons_polar_occultation_reference.json` contains a
+bounded, validation-only JPL Horizons observer-table extract for the
+2026-10-05 lunar occultation of Mars as seen from the geographic North Pole.
+The fixture records the exact Horizons API parameters and returned signature,
+airless apparent right ascension and declination, equatorial angular
+diameters, `UT1-UTC`, and the Moon/Earth DE441 and Mars `mar099` source labels.
+It also preserves the credit `NASA/JPL-Caltech, Solar System Dynamics Group`
+and links the official Horizons API documentation. The separately linked IOTA
+2026 lunar-occultation publication corroborates the event's high-Arctic
+identity; it does not provide the pole contacts or path width.
+
+The four bounded rows place each outer contact in a `0.5 s` UTC bracket by the
+signed airless clearance
+`(Moon diameter + Mars diameter) / 2 - angular separation`. Because the event
+was still in the future when the fixture was retrieved on 2026-07-18, Horizons
+used predictive Earth-orientation data. The fixture therefore requires a
+post-event refresh when measured EOP replaces that prediction. Moira's
+independent DE441 result is admitted under a separate `2 s` cross-model
+contact gate; neither number is an uncertainty estimate.
+
+This corpus establishes only North-Pole outside/inside/outside containment and
+the two pole-boundary contact instants. It does not publish an external
+left/right limit-track corpus or a scalar path width. Those detailed topology
+products are tested instead through independent spherical geometry,
+zero-clearance, distance, ordering, and vessel invariants. The admitted public
+topology uses a spherical mean lunar limb. Finite planetary target disks use
+the equatorial solid-body radii published in JPL Solar System Dynamics'
+[Planetary Physical Parameters](https://ssd.jpl.nasa.gov/planets/phys_par.html);
+the Sun is not in that table and is therefore excluded from this planetary
+topology product in favor of Moira's eclipse surfaces. Saturn's rings are
+explicitly excluded. Profile-conditioned lunar-limb graze
+products and their IOTA evidence remain a separate computational and
+validation surface.
+
+The topology observer is a WGS 84 geodetic level surface with equatorial
+radius `6378.137 km` and flattening `1/298.257223563`, matching Moira's
+topocentric substrate. Its admitted height floor is the negative WGS 84
+semi-minor axis,
+`-6378.137 * (1 - 1/298.257223563) * 1000 m`. This is a computational-domain
+bound that preserves the parallax-envelope proof; it does not assert that
+deep negative level surfaces are realistic observing sites. Positive height
+has no invented observational ceiling. For the extreme computational case in
+which the observer radius reaches a body's geocentric distance, the envelope
+uses the geometric `180 degree` direction-reversal bound; the ordinary
+`asin(R/d)` horizontal-parallax bound applies only while `R < d`.
+
 ### Earth rotation and Delta T
 
 Moira keeps the computational products below distinct. A source that measures

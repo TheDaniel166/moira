@@ -244,6 +244,12 @@ def test_eclipse_routes_match_engine_truth(
         reader=reader,
     )
     direct_lunar_local = calc.lunar_local_circumstances(2451545.0, 0.0, 0.0)
+    direct_lunar_local_nasa_compat = calc.lunar_local_circumstances(
+        2451545.0,
+        0.0,
+        0.0,
+        mode="nasa_compat",
+    )
 
     solar_response = client_with_engine.post(
         "/v1/eclipses/solar/next",
@@ -260,6 +266,15 @@ def test_eclipse_routes_match_engine_truth(
     lunar_local_response = client_with_engine.post(
         "/v1/eclipses/lunar/local",
         json={"jd_start": 2451545.0, "latitude": 0.0, "longitude": 0.0},
+    )
+    lunar_local_nasa_compat_response = client_with_engine.post(
+        "/v1/eclipses/lunar/local",
+        json={
+            "jd_start": 2451545.0,
+            "latitude": 0.0,
+            "longitude": 0.0,
+            "mode": "nasa_compat",
+        },
     )
 
     assert solar_response.status_code == 200
@@ -281,6 +296,88 @@ def test_eclipse_routes_match_engine_truth(
     lunar_local_body = lunar_local_response.json()
     assert lunar_local_body["event"]["jd_ut"] == pytest.approx(direct_lunar_local.analysis.event.jd_ut)
     assert lunar_local_body["greatest"]["visible"] is direct_lunar_local.greatest.visible
+
+    assert lunar_local_nasa_compat_response.status_code == 200
+    lunar_local_nasa_compat_body = lunar_local_nasa_compat_response.json()
+    assert set(lunar_local_nasa_compat_body) == {
+        "mode",
+        "source_model",
+        "canon_method",
+        "event",
+        "latitude",
+        "longitude",
+        "elevation_m",
+        "greatest",
+        "p1",
+        "u1",
+        "u2",
+        "u3",
+        "u4",
+        "p4",
+    }
+    assert set(lunar_local_nasa_compat_body["event"]) == {
+        "jd_ut",
+        "datetime_utc",
+        "data",
+    }
+    assert set(lunar_local_nasa_compat_body["event"]["data"]) == {
+        "eclipse_type",
+        "is_eclipse_season",
+        "is_solar_eclipse",
+        "is_lunar_eclipse",
+        "eclipse_magnitude",
+        "sun_longitude",
+        "moon_longitude",
+        "node_longitude",
+        "moon_latitude",
+        "sun_node_distance",
+        "angular_separation_3d",
+        "saros_index",
+        "metonic_year",
+        "metonic_is_reset",
+    }
+    assert lunar_local_nasa_compat_body["mode"] == "nasa_compat"
+    assert (
+        lunar_local_nasa_compat_body["source_model"]
+        == direct_lunar_local_nasa_compat.analysis.source_model
+    )
+    assert (
+        lunar_local_nasa_compat_body["canon_method"]
+        == direct_lunar_local_nasa_compat.analysis.canon_method
+        == "nasa_shadow_axis_apparent_sun_moon"
+    )
+    assert lunar_local_nasa_compat_body["event"]["jd_ut"] == pytest.approx(
+        direct_lunar_local_nasa_compat.analysis.event.jd_ut
+    )
+    assert lunar_local_nasa_compat_body["latitude"] == pytest.approx(
+        direct_lunar_local_nasa_compat.latitude
+    )
+    assert lunar_local_nasa_compat_body["longitude"] == pytest.approx(
+        direct_lunar_local_nasa_compat.longitude
+    )
+    assert lunar_local_nasa_compat_body["elevation_m"] == pytest.approx(
+        direct_lunar_local_nasa_compat.elevation_m
+    )
+
+    contact_shape = {
+        "jd_ut",
+        "datetime_utc",
+        "azimuth",
+        "altitude",
+        "visible",
+    }
+    for field in ("greatest", "p1", "u1", "u2", "u3", "u4", "p4"):
+        actual = lunar_local_nasa_compat_body[field]
+        expected = getattr(direct_lunar_local_nasa_compat, field)
+        if expected is None:
+            assert actual is None
+            continue
+        assert actual is not None
+        assert set(actual) == contact_shape
+        assert actual["jd_ut"] == pytest.approx(expected.jd_ut)
+        assert actual["azimuth"] == pytest.approx(expected.azimuth)
+        assert actual["altitude"] == pytest.approx(expected.altitude)
+        assert actual["visible"] is expected.visible
 
 
 @pytest.mark.requires_ephemeris

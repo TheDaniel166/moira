@@ -58,7 +58,9 @@ def test_lunar_nasa_fixture_preserves_catalog_provenance_and_signed_gamma() -> N
 
 
 @pytest.mark.slow
-def test_lunar_canon_method_comparison_prefers_geometric_moon_on_modern_sample(eclipse_calculator) -> None:
+def test_lunar_canon_method_comparison_prefers_apparent_sun_moon_on_modern_sample(
+    eclipse_calculator,
+) -> None:
     """Rank compatibility policies on reconstructed catalog UT/TT.
 
     This is compatibility-regression evidence. The separate signed-gamma test
@@ -70,14 +72,29 @@ def test_lunar_canon_method_comparison_prefers_geometric_moon_on_modern_sample(e
         for comparison in compare_lunar_canon_methods(calc, _modern_cases())
     }
 
-    geometric = comparisons["nasa_shadow_axis_geometric_moon"]
-    retarded = comparisons["nasa_shadow_axis_retarded_moon"]
+    apparent = comparisons["nasa_shadow_axis_apparent_sun_moon"]
+    legacy_methods = (
+        comparisons["nasa_shadow_axis_geometric_moon"],
+        comparisons["nasa_shadow_axis_retarded_moon"],
+    )
 
-    assert geometric.method == DEFAULT_LUNAR_CANON_METHOD
-    assert geometric.max_timing_residual_seconds <= 60.0
-    assert geometric.max_gamma_residual_earth_radii <= 0.0015
-    assert geometric.mean_timing_residual_seconds < retarded.mean_timing_residual_seconds
-    assert geometric.max_timing_residual_seconds < retarded.max_timing_residual_seconds
+    assert len(_modern_cases()) == 10
+    assert apparent.method == DEFAULT_LUNAR_CANON_METHOD
+    assert apparent.max_timing_residual_seconds <= 10.0
+    assert apparent.max_gamma_residual_earth_radii <= 2.0e-4
+    for legacy in legacy_methods:
+        assert (
+            apparent.mean_timing_residual_seconds
+            < legacy.mean_timing_residual_seconds
+        )
+        assert (
+            apparent.max_timing_residual_seconds
+            < legacy.max_timing_residual_seconds
+        )
+        assert (
+            apparent.max_gamma_residual_earth_radii
+            < legacy.max_gamma_residual_earth_radii
+        )
 
 
 @pytest.mark.slow
@@ -90,7 +107,7 @@ def test_lunar_canon_geometry_tracks_published_signed_gamma_at_nasa_instants(ecl
             float(row["td_jd"]),
             method=DEFAULT_LUNAR_CANON_METHOD,
         )
-        assert abs(geom.gamma_earth_radii - float(row["gamma"])) <= 0.0015, str(
+        assert abs(geom.gamma_earth_radii - float(row["gamma"])) <= 2.0e-4, str(
             row["label"]
         )
 
@@ -105,11 +122,12 @@ def test_nasa_compat_public_wrapper_stays_within_documented_modern_residual_enve
         gamma_err = abs(compat.gamma_earth_radii - case.nasa_gamma_earth_radii)
 
         assert compat.canon_method == DEFAULT_LUNAR_CANON_METHOD
-        assert "geometric Moon" in compat.source_model
+        assert compat.canon_method == "nasa_shadow_axis_apparent_sun_moon"
+        assert "annual-aberration" in compat.source_model
         assert compat.moira_event.data.is_lunar_eclipse
         assert compat.moira_event.data.eclipse_type.is_total
-        assert err_seconds <= 60.0, case.label
-        assert gamma_err <= 0.0015, case.label
+        assert err_seconds <= 10.0, case.label
+        assert gamma_err <= 2.0e-4, case.label
 
 
 @pytest.mark.slow
