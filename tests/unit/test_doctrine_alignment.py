@@ -7,6 +7,7 @@ from types import SimpleNamespace
 
 import moira
 import moira.nutation_2000a as nutation_module
+import pytest
 
 
 def test_nutation_tables_load_lazily() -> None:
@@ -16,7 +17,7 @@ def test_nutation_tables_load_lazily() -> None:
 
 
 def test_runtime_version_matches_project_metadata_fallback() -> None:
-    assert moira.__version__ == "4.3.0"
+    assert moira.__version__ == "5.0.0"
 
 
 def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch) -> None:
@@ -37,9 +38,11 @@ def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch
     monkeypatch.setattr(moira.facade, "mean_node", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(moira.facade, "mean_lilith", lambda *args, **kwargs: node_result)
     monkeypatch.setattr(moira.facade, "true_lilith", lambda *args, **kwargs: node_result)
-    monkeypatch.setattr(moira.facade, "ut_to_tt", lambda jd: 2451545.0008)
+    jd_tt = 2451545.0008
+    jd_ut1 = 2451545.000004
+    monkeypatch.setattr(moira.facade, "utc_to_tt", lambda jd: jd_tt)
+    monkeypatch.setattr(moira.facade, "utc_to_ut1", lambda jd: jd_ut1)
     monkeypatch.setattr(moira.facade, "true_obliquity", lambda jd: 23.4)
-    monkeypatch.setattr(moira.facade, "delta_t_from_jd", lambda jd: 69.0)
     monkeypatch.setattr(moira.facade, "calculate_houses", lambda *args, **kwargs: house_result)
     monkeypatch.setattr(moira.facade, "find_aspects", lambda *args, **kwargs: aspect_result)
     monkeypatch.setattr(moira.facade, "calculate_lots", lambda *args, **kwargs: lot_result)
@@ -57,7 +60,7 @@ def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch
     assert dict(chart.planets) == chart_result
     assert chart.nodes[moira.Body.TRUE_NODE] is node_result
     assert chart.obliquity == 23.4
-    assert chart.delta_t == 69.0
+    assert chart.delta_t == pytest.approx((jd_tt - jd_ut1) * 86400.0, abs=1.0e-12)
     assert houses is house_result
     assert aspects is aspect_result
     assert lots is lot_result

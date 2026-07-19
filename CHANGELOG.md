@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-07-19
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_5.0.0.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_5.0.0.md`.
+
+### Breaking Changes
+- **Relationship Results Are Immutable**: Synastry truth, classification,
+  relation, condition, network, overlay, composite, and Davison vessels are
+  now frozen, and their nested maps and cusp sequences are defensive immutable
+  copies. Callers that mutated a returned vessel in place must construct a new
+  value instead.
+- **Readiness Uses HTTP Status Semantics**: `GET /ready` now returns HTTP 503
+  whenever its unchanged `ReadyResponse` body reports that the worker is not
+  ready. Liveness remains HTTP 200 at `GET /health`; readiness clients must no
+  longer assume every readiness response has status 200.
+- **Invalid Inputs Fail Explicitly**: Phenomena, planetary observer,
+  planetary-hour, house, primary-direction, and related policy boundaries now
+  reject unsupported, ambiguous, non-finite, or internally contradictory
+  inputs that older releases could coerce or tolerate. Callers relying on those
+  implicit fallbacks must validate inputs or handle the documented engine/REST
+  errors.
+- **Sect-Specific Chaldean Bounds Identity**: Replaced the ambiguous public
+  `chaldean` doctrine and `CHALDEAN_BOUNDS` table with explicit
+  `chaldean_day`/`CHALDEAN_DAY_BOUNDS` and
+  `chaldean_night`/`CHALDEAN_NIGHT_BOUNDS` identities. Bounds callers must
+  choose the governing sect rather than inheriting an undeclared table.
+- **Ramesey Remedy Contract 1.1.0**: Replaced the public profile's
+  instruction-only remedy assessment with non-erasing tri-state fulfillment
+  and clause evidence. Callers bound to the `1.0.0` remedy response must admit
+  the new typed fields and `profile_version="1.1.0"`.
+
 ### Added
 - **Source-Scoped Topocentric Signed Primary Motion**: Added the explicit
   `topocentric_zodiacal_aspect_signed_primary_motion` preset for Makransky's
@@ -457,6 +489,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   retaining Python-owned readiness of the immutable coefficient tables.
 
 ### Changed
+- **Release Artifact Admission**: Tag builds now fail before compilation when
+  the tag, project version, public runtime version, dated changelog boundary,
+  or release documents disagree. Every cibuildwheel artifact receives an
+  installed native-import/version smoke, while the sdist receives Twine,
+  forbidden-kernel-content, isolated-build, native-import, and version checks
+  before the publish job can run.
 - **Primary-Directions Transport Truth**: Kept all eight existing REST paths
   while replacing raw-string, duck-typed, and fallback-prone service behavior
   with canonical typed preset/policy/key resolution and real `PrimaryArc`
@@ -575,6 +613,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as "not ready". This corrects the previous HTTP 200/`ready=false` mismatch.
 
 ### Validation
+- Restored the complete sidereal external-reference fixture to the hosted
+  acceptance lane, including the 1625 epoch under its documented
+  `0.01`-degree cross-engine corroboration envelope; the obsolete deselection
+  and narrower stale comment were removed.
 - Added complete primary-directions engine, facade, and REST coverage for
   quadrant continuity, spherical-plane and inverse-domain behavior, immutable
   vessel and enum contracts, all canonical presets, target/relation/perfection
@@ -707,9 +749,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   documentation-consistency, and native-boundary slices remain part of the
   focused verification posture.
 
-## [4.3.0] - 2026-07-15
+### Western Electional Foundation
 
-### Added
+The following work was staged under the internal `4.3.0` version during
+development but was never tagged or published. It is folded into and released
+as part of `5.0.0`; public upgrade comparisons therefore begin at `4.2.1`.
+
+#### Added
 - **Lilly Classical Perfection**: Added the source-owned
   `lilly_1647_perfection_v1` event analysis through
   `lilly_perfection_at(...)`, `Moira.lilly_perfection_at(...)`, and
@@ -759,6 +805,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Moira` facade, and
   `POST /v1/electional/western/dorotheus-matter-profile`. Results preserve
   source-ordered clauses and angular topics without scoring or recommendation.
+- **Expanded Sahl Matter Registry**: Added independent lending, investment,
+  purchase, sale, and business-partnership profiles beside the fourth-house
+  sequence. Each profile retains its own source-ordered stakes, explicit
+  inputs, unresolved vocabulary, and non-scored result rather than collapsing
+  Sahl's subjects into one generic election.
+- **Expanded Dorothean Matter Registry**: Added buying/selling, lunar-price
+  timing, travel, ship acquisition/construction/launch, land/sea travel,
+  partnership, debt/payment, and will-writing profiles. Sign-nature,
+  Moon-flow, radical-context, and previous-event-window policies remain
+  explicit wherever the source or computation requires them.
+- **Western Electional Judgement**: Added
+  `western_electional_judgement_v1` through the engine, `Moira` facade, and
+  `POST /v1/electional/western/judgement`. It composes exactly one admitted
+  matter profile with its Moon, rooted-context, perfection, remedy,
+  fortification, unresolved-requirement, authority, and provenance evidence;
+  the summary precedence is inspectable and never erases component truth.
+- **Caller-Weighted Electional Ranking**: Added
+  `western_electional_ranking_v1` and
+  `POST /v1/electional/western/ranking` for 2–64 caller-supplied candidate
+  instants. Only complete-under-profile results are scored, weights are
+  explicit finite nonzero inputs, and impeded or indeterminate candidates
+  remain in a separate evidence-bearing partition. No hidden historical
+  weights, advice, or recommendation are introduced.
+- **Observed Judgement Windows**: Added
+  `western_electional_judgement_windows_v1` and
+  `POST /v1/electional/western/judgement-windows` with explicit span, sample,
+  evaluation, refinement, event-seed, window, transition, and cadence bounds.
+  Event hints may seed partial refinement, but only an observed full judgement
+  change is reported as a transition; the sampled product does not claim exact
+  or continuously true boundaries.
 - **Named Western Profile Windows**: Added
   `scan_western_electional_profile(...)`,
   `Moira.western_electional_profile_windows(...)`, and
@@ -767,7 +843,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scan Evidence**: Every scan point now reports its status, qualification
   truth, triggered rule IDs, and not-evaluable rule IDs.
 
-### Changed
+#### Changed
 - Dorotheus V.6 southern descent and V.7 northward crossing now consume the
   same neutral lunar geometry under separate source policies. Solar
   disengagement exposes both signed Sun-Moon conjunction motion and independent
@@ -812,7 +888,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   evaluated, the planetary-hour lord is identified, and the source-undefined
   fortification predicates remain explicitly indeterminate.
 
-### Compatibility
+#### Compatibility
 - The Ramesey profile version is now `1.1.0`. Its remedy response replaces the
   instruction-only assessment literal with typed tri-state fulfillment fields.
   This intentionally corrects a currently unconsumed provisional electional
@@ -840,7 +916,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No score, rank, advice, recommendation, or continuous-boundary claim is
   introduced.
 
-### Validation
+#### Validation
 - Added synthetic-root and DE441 sign-change evidence, Dorotheus clause
   integration, public-export/facade governance, REST serialization, and OpenAPI
   coverage for lunar ecliptic direction.

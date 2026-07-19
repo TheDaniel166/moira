@@ -8,7 +8,7 @@ At this time, only the most recent release series is considered supported for se
 
 | Version | Supported |
 |---------|-----------|
-| Latest 2.x release | Yes |
+| Latest 5.x release | Yes |
 | Older releases | No |
 
 ## Reporting a Vulnerability

@@ -9,8 +9,22 @@ permissions:
   contents: read
 
 jobs:
+  validate-release:
+    name: Validate release identity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Match tag, package, changelog, and release documents
+        run: python scripts/check_release_identity.py --tag "$GITHUB_REF_NAME"
+
   build-wheels:
     name: Build wheels on ${{ matrix.os }}
+    needs: validate-release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -30,6 +44,13 @@ jobs:
           CIBW_BEFORE_BUILD: pip install cmake pybind11
           CIBW_BUILD_VERBOSITY: 1
           CIBW_DEPENDENCY_VERSIONS: latest
+          CIBW_ENVIRONMENT: MOIRA_NO_DOWNLOAD=1
+          CIBW_TEST_COMMAND: >-
+            python -c "import importlib.metadata as md; import moira;
+            from moira import moira_native as mn;
+            assert md.version('moira-astro') == moira.__version__;
+            assert mn.__backend_file__;
+            print(moira.__version__, mn.__backend_file__)"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -38,15 +59,27 @@ jobs:
 
   build-sdist:
     name: Build source distribution
+    needs: validate-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Install build dependencies
-        run: pip install build
+        run: pip install build twine
 
       - name: Build sdist
         run: python -m build --sdist
+
+      - name: Check and smoke-test sdist
+        env:
+          MOIRA_NO_DOWNLOAD: "1"
+        run: |
+          python -m twine check dist/*
+          python -c "import glob, tarfile; paths = glob.glob('dist/*.tar.gz'); assert len(paths) == 1, paths; names = tarfile.open(paths[0]).getnames(); forbidden = [name for name in names if name.lower().endswith('.bsp')]; assert not forbidden, forbidden"
+          python -m venv .sdist-smoke
+          .sdist-smoke/bin/python -m pip install dist/*.tar.gz
+          cd "$RUNNER_TEMP"
+          "$GITHUB_WORKSPACE/.sdist-smoke/bin/python" -c "import importlib.metadata as md; import moira; from moira import moira_native as mn; assert md.version('moira-astro') == moira.__version__; assert mn.__backend_file__; print(moira.__version__, mn.__backend_file__)"
 
       - uses: actions/upload-artifact@v4
         with:

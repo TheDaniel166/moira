@@ -1,6 +1,7 @@
 # Production Readiness Roadmap
 
-Status: active release-hardening roadmap
+Status: historical 2.0.0 release-hardening roadmap; completed and superseded
+by the 5.0.0 release and compatibility notes
 
 Purpose
 -------
@@ -113,12 +114,11 @@ validated locally before release and cannot run in stock CI.
 
 ### Known gap log
 
-**Sidereal 1625 epoch tolerance**: `test_sidereal_external_reference.py` at
-`1625_03_16_ut12` (all ayanamsa systems) fails with a ~30 arcsec error against
-the 3.6 arcsec CI threshold. This is a pre-existing accuracy limit at extreme
-historical dates and is not a 2.0.0 regression. All modern-epoch cases pass.
-The CI deselect flag `-k "not 1625_03_16_ut12"` isolates this gap explicitly.
-Resolution is deferred; the known limit is documented here for audit continuity.
+**Resolved for 5.0.0 — Sidereal 1625 epoch**: the current external-reference
+fixture declares a `0.01`-degree (`36`-arcsecond) cross-engine corroboration
+envelope. The complete fixture, including `1625_03_16_ut12`, passes and the CI
+lane no longer deselects that epoch. This remains secondary-engine
+corroboration, not primary-authority validation.
 
 ### Exit criteria — met
 
@@ -224,14 +224,12 @@ Exit criteria:
 
 ---
 
-## 8. Current Assessment
+## 8. Completion And Supersession
 
-Current state:
-- engine integrity is substantially stronger than before the audit passes
-- high-risk temporal and semantic defects have been removed from core subsystems
-- public API truth is much better aligned with runtime behavior
-- major doctrinal engines now have better boundary discipline
-
-This supports the following practical assessment:
-
-Moira is near release candidate quality at the engine level, but should still complete the final release-contract, documentation, and acceptance steps before being described without qualification as fully production ready.
+This roadmap governed the 2.0.0 hardening campaign and its original exit
+criteria were completed. The later 5.0.0 release is governed by its own release
+and compatibility notes. Its tag, GitHub Actions workflow, and PyPI publication
+records provide the exact release commit and artifact evidence once the release
+is cut. This historical roadmap is retained for audit continuity and is no
+longer a statement that Moira is waiting to enter its first release-candidate
+phase.

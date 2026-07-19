@@ -55,11 +55,10 @@ jobs:
       - name: Houses external reference acceptance (2 cases)
         run: python -m pytest tests/integration/test_houses_external_reference.py -q
 
-      - name: Sidereal external reference acceptance (77 cases)
-        # The 1625_03_16_ut12 epoch has a pre-existing ~30 arcsec tolerance gap
-        # vs. the 3.6 arcsec threshold. That gap is tracked separately and is
-        # not a 2.0.0 regression. All other epochs and ayanamsa systems pass.
-        run: python -m pytest tests/integration/test_sidereal_external_reference.py -q -k "not 1625_03_16_ut12"
+      - name: Sidereal external reference acceptance
+        # The full fixture, including the 1625 epoch, is admitted under the
+        # documented 0.01-degree cross-engine corroboration envelope.
+        run: python -m pytest tests/integration/test_sidereal_external_reference.py -q
 
       # -----------------------------------------------------------------------
       # LOCAL-ONLY slices (require DE441 kernel — not available in CI)
