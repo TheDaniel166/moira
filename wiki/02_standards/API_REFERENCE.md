@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
-**Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete direct-import surface.
+**Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
 
 This is the Python engine/import reference. The HTTP transport surface is
 documented separately in `wiki/02_services/REST_API_REFERENCE.md`.
@@ -115,7 +115,10 @@ for event in m.transits(Body.JUPITER, natal_sun, jd_start, jd_end):
 
 ## 2. API Architecture — Four-Tier Entry Points
 
-Moira exposes its surface through four distinct import points. The tier modules are cumulative. The root package is intentionally curated, while `moira.facade` is the complete direct-import surface.
+Moira exposes its admitted public surface through four distinct import points.
+The tier modules are cumulative. The root package is intentionally curated,
+while `moira.facade` is the complete admitted facade surface. Deliberately
+module-direct research or validation products can remain outside these tiers.
 
 ```
 moira.essentials   ←  Beginner surface: chart, houses, aspects, sidereal
@@ -126,7 +129,7 @@ moira.classical    ←  Adds: dignities, lots, fixed stars, time lords,
 moira.predictive   ←  Adds: transits, progressions, synastry, eclipses,
                            returns, stations, void-of-course, electional
        ↓
-moira.facade      ←  Complete direct-import surface: every subsystem
+moira.facade      ←  Complete admitted facade surface
 
 moira            ←  Curated stable root: Moira, core types, JD/sidereal helpers,
             selected visibility, harmogram, orbital, and policy surfaces
@@ -203,19 +206,24 @@ Adds the complete forecasting and relationship toolkit:
 
 > **Note:** `next_solar_eclipse_at_location` is available from `moira.facade` and `moira.eclipse` directly but is not re-exported through `moira.predictive`.
 
-### `moira.facade` and `moira` — Complete surface vs curated root
+### `moira.facade` and `moira` — Admitted facade vs curated root
 
 ```python
 import moira                 # curated stable root, includes Moira and core types
-from moira.facade import *   # complete direct-import surface
+from moira.facade import *   # complete admitted facade surface
 ```
 
-`moira.facade` adds every remaining subsystem not exposed by the predictive tier.
+`moira.facade` adds every remaining admitted subsystem not exposed by the predictive tier.
 The top-level `moira` package does not mirror the entire facade export list; use
 it when you want the primary facade class plus the curated stable root, and use
-`moira.facade` when you want direct imports for the full low-level API.
+`moira.facade` when you want direct imports for the admitted low-level API.
 
-The complete facade surface adds every remaining subsystem not exposed by the predictive tier:
+Topography-conditioned lunar contact chronology is a deliberate exception:
+it remains available only from `moira.lunar_occultation_contacts` and
+`moira.lunar_limb` while its validation boundary matures. It is not a facade,
+package-root, or REST surface.
+
+The complete admitted facade surface adds every remaining subsystem not exposed by the predictive tier:
 
 - Heliacal visibility (5-criterion model)
 - Parans and paran field analysis
@@ -450,7 +458,7 @@ message.
 | Method | Returns | Description |
 |---|---|---|
 | `aspects(chart, orbs=None, include_minor=True)` | `list[AspectData]` | All natal aspects |
-| `patterns(chart, orb_factor=1.0)` | `list[AspectPattern]` | Named aspect patterns built from the chart's positions and aspects |
+| `patterns(chart, orb_factor=1.0, dominant_only=False)` | `list[AspectPattern]` | Named aspect patterns built from the chart's positions and aspects, with optional maximal-structure filtering |
 | `midpoints(chart, planet_set="classic")` | `list[Midpoint]` | Planetary midpoints for the requested body set |
 | `midpoints_to_point(chart, longitude, orb=1.5)` | `list[tuple[Midpoint, float]]` | Midpoints falling at a given longitude, paired with absolute orb |
 | `harmonic(chart, number)` | `list[HarmonicPosition]` | Harmonic chart positions |
@@ -1241,10 +1249,22 @@ from moira.facade import (
 )
 ```
 
-All `find_*` functions accept `longitudes: dict[str, float]` and optional
-`orb` parameters. They return `list[AspectPattern]`.
+The individual detectors accept their documented aspect list (or positions for
+Stellium) and orb policy. They return `list[AspectPattern]`.
 
-`find_all_patterns(longitudes, ...)` runs all detectors in one call.
+`find_all_patterns(longitudes, aspects=None, orb_factor=1.0, include=None,
+policy=None, dominant_only=False)` runs the registered detectors in one call.
+An explicit `PatternComputationPolicy` takes precedence over the legacy direct
+policy arguments. `Moira.patterns(chart, orb_factor=1.0,
+dominant_only=False)` exposes the same opt-in containment choice.
+
+With `dominant_only=True`, a smaller aspect pattern is removed only when its
+body set and preserved aspect set are both contained in another admitted
+aspect pattern, with at least one of those inclusions strict. For example, an
+embedded Grand Trine is omitted when its Kite is admitted, and a same-body
+Trapeze edge-subgraph is omitted when its Cradle is admitted. Equal-body
+patterns with equal or incomparable edge sets remain; position-based Stelliums
+retain their independent maximal-cluster doctrine.
 
 #### `AspectPattern` fields
 
@@ -1259,6 +1279,14 @@ All `find_*` functions accept `longitudes: dict[str, float]` and optional
 | `all_contributions` | `list[PatternAspectContribution]` | Full aspect/body contribution set |
 | `contributions` | `list[PatternAspectContribution]` | Primary contribution set used for display |
 | `condition_profile` | `PatternConditionProfile` | Consolidated pattern condition profile |
+
+Pattern condition is structural role-resolution truth. `reinforced` means all
+preserved aspect contributions have detector-owned roles, `mixed` means at
+least one remains `member_link`, and `weakened` means there are no aspect
+contributions. These states do not report aspect motion, exactness, harmony, or
+interpretive strength. Grand Trine uses `cycle_member`/`cycle_link`; Minor
+Grand Trine uses `base`/`support`; and Cradle/Trapeze use `axis`/`support`
+roles without arbitrary left/right labels.
 
 ### Chart shape (Jones types)
 
@@ -4028,7 +4056,7 @@ result = some_function(inputs, policy=policy)
 | `YoginiPolicy` | alternate dasha | Yogini year-basis and sequence policy |
 | `AshtakavargaPolicy` | ashtakavarga | shodhana and sign-strength interpretation policy |
 | `ShadbalaPolicy` | shadbala | sufficiency thresholds and component interpretation policy |
-| `PatternComputationPolicy` | patterns | `selection`, `stellium`, `orb_factor` |
+| `PatternComputationPolicy` | patterns | `selection`, `stellium`, `orb_factor`, `dominant_only` |
 | `TimelordComputationPolicy` | timelords | `firdaria_year_policy`, `zr_year_policy` |
 | `VimshottariComputationPolicy` | dasha | `year_policy`, `ayanamsa_policy` |
 | `FixedStarComputationPolicy` | fixed_stars | `lookup_policy`, `heliacal_search_policy` |

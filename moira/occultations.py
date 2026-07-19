@@ -1121,19 +1121,14 @@ def _bisection_root(func, left: float, right: float, *, iterations: int = 48) ->
     return (a + b) / 2.0
 
 
-def _star_topocentric_equatorial(
+def _star_geometric_icrf_direction(
     star_lon: float,
     star_lat: float,
-    jd: float,
-    lat: float,
-    lon: float,
-    observer_elev_m: float = 0.0,
-    *,
-    reader: SpkReader,
+    jd_tt: float,
 ) -> tuple[float, float, float]:
-    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
+    """Recover the geometric ICRF ray behind Moira's true-ecliptic star surface."""
+
     obliquity = true_obliquity(jd_tt)
-    dpsi, _ = nutation(jd_tt)
     true_ra_star, true_dec_star = ecliptic_to_equatorial(star_lon, star_lat, obliquity)
 
     # Recover the geometric ICRF direction from the validated geometric
@@ -1158,7 +1153,51 @@ def _star_topocentric_equatorial(
             (mat[0][2], mat[1][2], mat[2][2]),
         )
 
-    xyz_icrf = mat_vec_mul(_transpose(prec), mat_vec_mul(_transpose(nut), true_equ))
+    return mat_vec_mul(_transpose(prec), mat_vec_mul(_transpose(nut), true_equ))
+
+
+def _star_physical_equatorial(
+    star_lon: float,
+    star_lat: float,
+    jd: float,
+    *,
+    reader: SpkReader,
+) -> tuple[float, float]:
+    """Return the unrefracted, unaberrated physical stellar ray of date.
+
+    Solar-system gravitational deflection is retained because it changes the
+    received photon path. Annual and diurnal aberration are coordinate effects
+    of observer motion and do not belong in the physical Moon-surface
+    intersection geometry.
+    """
+
+    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
+    xyz_icrf = _star_geometric_icrf_direction(star_lon, star_lat, jd_tt)
+    deflectors = [(_geocentric(Body.SUN, jd_tt, reader), SCHWARZSCHILD_RADII["Sun"])]
+    deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
+    deflectors.append((_geocentric(Body.SATURN, jd_tt, reader), SCHWARZSCHILD_RADII["Saturn"]))
+    xyz_physical = apply_deflection(xyz_icrf, deflectors)
+    xyz_physical = apply_frame_bias(xyz_physical)
+    xyz_physical = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz_physical)
+    xyz_physical = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz_physical)
+    ra_star, dec_star, _ = icrf_to_equatorial(xyz_physical)
+    return ra_star, dec_star
+
+
+def _star_topocentric_equatorial(
+    star_lon: float,
+    star_lat: float,
+    jd: float,
+    lat: float,
+    lon: float,
+    observer_elev_m: float = 0.0,
+    *,
+    reader: SpkReader,
+) -> tuple[float, float, float]:
+    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
+    obliquity = true_obliquity(jd_tt)
+    dpsi, _ = nutation(jd_tt)
+    xyz_icrf = _star_geometric_icrf_direction(star_lon, star_lat, jd_tt)
     _, earth_vel = _earth_barycentric_state(jd_tt, reader)
     deflectors = [(_geocentric(Body.SUN, jd_tt, reader), SCHWARZSCHILD_RADII["Sun"])]
     deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
@@ -1231,14 +1270,17 @@ def _reduce_angle_deg(angle_deg: float) -> float:
     return angle_deg % 360.0
 
 
-def _moon_axis_position_angle_deg(jd_tt: float) -> float:
+def _moon_axis_position_angle_deg(
+    jd_tt: float,
+    reader: SpkReader | None = None,
+) -> float:
     """
     Position angle of the Moon's rotation axis.
 
     Implemented from the Meeus / Eckhardt formulation reflected in the
     PyMeeus `moon_position_angle_axis()` method.
     """
-    moon = planet_at(Body.MOON, jd_tt, jd_tt=jd_tt)
+    moon = planet_at(Body.MOON, jd_tt, jd_tt=jd_tt, reader=reader)
     eps = true_obliquity(jd_tt)
     delta_psi, _ = nutation(jd_tt)
     moon_ra_deg, moon_dec_deg = ecliptic_to_equatorial(moon.longitude, moon.latitude, eps)
@@ -1968,7 +2010,8 @@ def lunar_star_graze_circumstances(
         dec_star,
     )
     moon_axis_angle = _moon_axis_position_angle_deg(
-        _ut1_to_ephemeris_tt(jd_ut, reader)
+        _ut1_to_ephemeris_tt(jd_ut, reader),
+        reader,
     )
     axis_angle = _graze_axis_angle_deg(position_angle, moon_axis_angle)
     bright_limb_pa = _position_angle_equatorial(
@@ -2173,7 +2216,10 @@ def lunar_star_graze_line(
             guess_latitude_deg,
             observer_elev_m=observer_elev_m,
             reader=reader,
-            limb_profile_provider=limb_profile_provider,
+            # Nominal means the spherical apparent limb by definition.  A
+            # supplied topographic provider belongs only to the explicitly
+            # practical/profile-conditioned branch below.
+            limb_profile_provider=None,
             refraction_adjusted=refraction_adjusted,
         )
     if semantics == "practical":

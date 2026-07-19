@@ -67,12 +67,12 @@ computed using Moira's lunar geometry and the observer's topocentric
 parallax.
 
 GrazeCircumstances
-    Contact events along the limb during a graze: multiple disappear /
-    reappear epochs as the body crosses limb features.
+    Instantaneous local graze geometry at one epoch and observer site. It is
+    not a sequence of observed or topography-conditioned contact events.
 
 GrazeTableRow
-    One row in a latitude-keyed graze table: latitude, longitude, contact
-    type, position angle.
+    One solved row in a longitude-keyed nominal graze-limit table. It is a
+    predicted path product, not an observed contact record.
 
 GrazeProductGeometry
     The resolved graze geometry at a specific observer lat/lon.
@@ -91,6 +91,21 @@ OccultationPathTopology
     explicit exact-pole ingress/egress contacts. Left/right follows increasing
     UT1 along the track and must not be relabeled geographic north/south. The
     requested observer elevation is retained as result provenance.
+
+Topographic lunar contact chronology
+------------------------------------
+The separate direct-import module ``moira.lunar_occultation_contacts`` owns
+immutable disappearance, reappearance, and tangency contact sequences through
+``lunar_star_topographic_contacts(...)``. It is intentionally not re-exported
+through this compatibility namespace, the ``Moira`` facade, or FastAPI.
+
+Event profiles are prepared through ``moira.lunar_limb`` before the solver
+runs. Their physical reception light cone and sky basis come from the
+content-identified DE441/LE441 reader; lunar orientation comes from the NAIF
+DE440_ME421 frame resources; and the limb relief comes from the official USGS
+LOLA product. Physical contact admission is airless and does not apply
+atmospheric refraction. This modeled chronology is distinct from both nominal
+mean-limb path limits and observed IOTA contact timings.
 
 Functions
 ---------

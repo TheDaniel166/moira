@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "evidence_class": "authority_validation",
+  "product": "observed_lunar_graze_contact_chronology",
+  "source": {
+    "authority": "International Occultation Timing Association (IOTA)",
+    "event": "Spica lunar graze observed near Paint Rock, Texas, on 2024-11-27",
+    "target": "Spica",
+    "event_date_utc": "2024-11-27",
+    "documents": {
+      "contact_reduction": {
+        "title": "Reducing a graze with Pymovie/Pyote",
+        "author": "Joan Dunham",
+        "url": "https://occultations.org/publications/rasc/2025/Reducing_A_Graze_With_Pymovie_and_Pyote.pdf",
+        "mime_type": "application/pdf",
+        "byte_length": 285123,
+        "sha256": "424135fe208cbd232907c8eea374f528a56220ca4c8c7bd8bf6c361302b23486",
+        "last_modified": "Wed, 01 Jan 2025 05:26:51 GMT"
+      },
+      "event_page": {
+        "title": "Spectacular Graze of Spica, 2024 November 27",
+        "url": "https://occultations.org/publications/rasc/2025/20241127Spica.htm",
+        "mime_type": "text/html",
+        "byte_length": 11069,
+        "sha256": "bdeef79e9803b7587e7f0fef5125fb687d0c2374c1d5e33a888dcfbe87fa8e5e",
+        "last_modified": "Wed, 01 Jan 2025 05:26:44 GMT"
+      },
+      "prediction_manual": {
+        "title": "GRAZPREP version 5.0 Manual",
+        "author": "Eberhard Riedel",
+        "url": "https://occultations.org/publications/rasc/2025/GRAZPREP5p0Manual.pdf",
+        "mime_type": "application/pdf",
+        "byte_length": 4871421,
+        "sha256": "7b25742b1fcf02b1a39d9f00cc79bcfe4fe6c908905b1204dcbd21cffc6644c5"
+      }
+    },
+    "prediction_context": {
+      "software": "GRAZPREP 5.0",
+      "topography": "high-resolution LOLA data recalculated for rapid all-position-angle and libration-dependent profiles",
+      "contact_claim": "approximate number and times of disappearances and reappearances",
+      "raw_copc_equivalence": "not asserted; the manual does not publish the reconstruction needed to equate GRAZPREP's recalculated profile with raw USGS LOLA spot tiles",
+      "validation_role": "method context only; observed PyOTE contacts remain the timing authority"
+    },
+    "time_label_in_contact_table": "UT",
+    "time_realization": "GPS-referenced UTC",
+    "table_display_resolution_s": 0.0001,
+    "intended_report_resolution_s": 0.01,
+    "timestamp_interpretation": "The printed UT labels are retained as UTC on the stated 2024-11-27 civil date. An engine comparison must cross UTC to UT1 exactly once.",
+    "uncertainty_semantics": "The source states that every listed timing error is the 0.95 containment level from the PyOTE reduction.",
+    "uncertainty_is_model_tolerance": false,
+    "contact_scope": "Observed and reduced contacts; the list is not asserted to exhaust arbitrarily short unresolved topographic microcontacts.",
+    "tangency_scope": "The source reports disappearance and reappearance contacts only; it does not report a tangency contact.",
+    "observational_limitations": [
+      "Both recordings were overexposed.",
+      "The source describes the disappearances and reappearances as non-instantaneous.",
+      "The Dunham2 recording includes interference from passing-car lights."
+    ],
+    "retrieved_on": "2026-07-18"
+  },
+  "sites": [
+    {
+      "site_id": "Dunham1",
+      "latitude_deg": 31.49531,
+      "longitude_deg": -99.91815,
+      "coordinate_source": "GPS flash timer",
+      "coordinate_resolution_deg": 0.00001,
+      "coordinate_resolution_role": "published decimal resolution; not asserted as geodetic accuracy",
+      "published_height": {
+        "value_m": 500.5,
+        "vertical_reference": "mean_sea_level",
+        "source_label": "above sea level",
+        "source": "Google Earth",
+        "is_wgs84_ellipsoid_height": false
+      },
+      "instrument_height": {
+        "value_m": 500.0,
+        "source": "GPS",
+        "vertical_reference": "instrument-reported; not asserted as WGS84 ellipsoid height"
+      },
+      "validation_height_approximation": {
+        "ellipsoid_height_m": 475.741,
+        "formula": "h = H + N",
+        "source_height_H_m": 500.5,
+        "geoid_undulation_N_m": -24.759,
+        "geoid_model": "NOAA GEOID18 model 14",
+        "geoid_model_error_m": 0.058,
+        "geoid_query_url": "https://geodesy.noaa.gov/api/geoid/ght?lat=31.49531&lon=-99.91815&model=14",
+        "geoid_retrieved_on": "2026-07-18",
+        "horizontal_vertical_realization": "NAD83/NAVD88 approximation; not asserted identical to WGS84",
+        "scope": "validation-only conversion of the published mean-sea-level height"
+      },
+      "timing_system": "Aart Olsen GPS flash tagger",
+      "recording_system": "ZWO ASI178MM with SharpCap",
+      "observed_occultation_interval_count": 5,
+      "contacts": [
+        {
+          "label": "D1",
+          "kind": "disappearance",
+          "published_ut": "10:54:31.3039",
+          "timestamp_utc": "2024-11-27T10:54:31.3039Z",
+          "uncertainty_95_s": 0.0237
+        },
+        {
+          "label": "R1",
+          "kind": "reappearance",
+          "published_ut": "10:54:32.8355",
+          "timestamp_utc": "2024-11-27T10:54:32.8355Z",
+          "uncertainty_95_s": 0.0245
+        },
+        {
+          "label": "D2",
+          "kind": "disappearance",
+          "published_ut": "10:54:34.0220",
+          "timestamp_utc": "2024-11-27T10:54:34.0220Z",
+          "uncertainty_95_s": 0.0196
+        },
+        {
+          "label": "R2",
+          "kind": "reappearance",
+          "published_ut": "10:54:57.6368",
+          "timestamp_utc": "2024-11-27T10:54:57.6368Z",
+          "uncertainty_95_s": 0.0184
+        },
+        {
+          "label": "D3",
+          "kind": "disappearance",
+          "published_ut": "10:56:09.5055",
+          "timestamp_utc": "2024-11-27T10:56:09.5055Z",
+          "uncertainty_95_s": 0.0135
+        },
+        {
+          "label": "R3",
+          "kind": "reappearance",
+          "published_ut": "10:57:00.0714",
+          "timestamp_utc": "2024-11-27T10:57:00.0714Z",
+          "uncertainty_95_s": 0.0192
+        },
+        {
+          "label": "D4",
+          "kind": "disappearance",
+          "published_ut": "10:57:17.2212",
+          "timestamp_utc": "2024-11-27T10:57:17.2212Z",
+          "uncertainty_95_s": 0.0168
+        },
+        {
+          "label": "R4",
+          "kind": "reappearance",
+          "published_ut": "10:57:27.2838",
+          "timestamp_utc": "2024-11-27T10:57:27.2838Z",
+          "uncertainty_95_s": 0.0133
+        },
+        {
+          "label": "D5",
+          "kind": "disappearance",
+          "published_ut": "10:57:27.6316",
+          "timestamp_utc": "2024-11-27T10:57:27.6316Z",
+          "uncertainty_95_s": 0.0196
+        },
+        {
+          "label": "R5",
+          "kind": "reappearance",
+          "published_ut": "10:57:48.3268",
+          "timestamp_utc": "2024-11-27T10:57:48.3268Z",
+          "uncertainty_95_s": 0.0143
+        }
+      ]
+    },
+    {
+      "site_id": "Dunham2",
+      "latitude_deg": 31.49570,
+      "longitude_deg": -99.91792,
+      "coordinate_source": "IOTA-VTI",
+      "coordinate_resolution_deg": 0.00001,
+      "coordinate_resolution_role": "published decimal resolution; not asserted as geodetic accuracy",
+      "published_height": {
+        "value_m": 499.9,
+        "vertical_reference": "mean_sea_level",
+        "source_label": "above sea level",
+        "source": "Google Earth",
+        "is_wgs84_ellipsoid_height": false
+      },
+      "instrument_height": {
+        "value_m": 497.0,
+        "source": "IOTA-VTI",
+        "vertical_reference": "instrument-reported; not asserted as WGS84 ellipsoid height"
+      },
+      "validation_height_approximation": {
+        "ellipsoid_height_m": 475.140,
+        "formula": "h = H + N",
+        "source_height_H_m": 499.9,
+        "geoid_undulation_N_m": -24.760,
+        "geoid_model": "NOAA GEOID18 model 14",
+        "geoid_model_error_m": 0.058,
+        "geoid_query_url": "https://geodesy.noaa.gov/api/geoid/ght?lat=31.49570&lon=-99.91792&model=14",
+        "geoid_retrieved_on": "2026-07-18",
+        "horizontal_vertical_realization": "NAD83/NAVD88 approximation; not asserted identical to WGS84",
+        "scope": "validation-only conversion of the published mean-sea-level height"
+      },
+      "timing_system": "IOTA-VTI",
+      "recording_system": "RunCam with IOTA Video Capture",
+      "observed_occultation_interval_count": 4,
+      "contacts": [
+        {
+          "label": "D1",
+          "kind": "disappearance",
+          "published_ut": "10:54:31.1780",
+          "timestamp_utc": "2024-11-27T10:54:31.1780Z",
+          "uncertainty_95_s": 0.0145
+        },
+        {
+          "label": "R1",
+          "kind": "reappearance",
+          "published_ut": "10:54:33.2681",
+          "timestamp_utc": "2024-11-27T10:54:33.2681Z",
+          "uncertainty_95_s": 0.0101
+        },
+        {
+          "label": "D2",
+          "kind": "disappearance",
+          "published_ut": "10:54:33.9701",
+          "timestamp_utc": "2024-11-27T10:54:33.9701Z",
+          "uncertainty_95_s": 0.0212
+        },
+        {
+          "label": "R2",
+          "kind": "reappearance",
+          "published_ut": "10:54:58.0113",
+          "timestamp_utc": "2024-11-27T10:54:58.0113Z",
+          "uncertainty_95_s": 0.0087
+        },
+        {
+          "label": "D3",
+          "kind": "disappearance",
+          "published_ut": "10:56:09.2413",
+          "timestamp_utc": "2024-11-27T10:56:09.2413Z",
+          "uncertainty_95_s": 0.0142
+        },
+        {
+          "label": "R3",
+          "kind": "reappearance",
+          "published_ut": "10:57:00.2204",
+          "timestamp_utc": "2024-11-27T10:57:00.2204Z",
+          "uncertainty_95_s": 0.0113
+        },
+        {
+          "label": "D4",
+          "kind": "disappearance",
+          "published_ut": "10:57:16.7772",
+          "timestamp_utc": "2024-11-27T10:57:16.7772Z",
+          "uncertainty_95_s": 0.0120
+        },
+        {
+          "label": "R5",
+          "kind": "reappearance",
+          "published_ut": "10:57:48.2962",
+          "timestamp_utc": "2024-11-27T10:57:48.2962Z",
+          "uncertainty_95_s": 0.0110
+        }
+      ]
+    }
+  ],
+  "comparison_policy": {
+    "model_comparison_status": "admitted_in_separate_model_fixture",
+    "model_comparison_fixture": "tests/fixtures/iota_spica_2024_moira_lola_model.json",
+    "model_contact_gate_s": null,
+    "source_supplies_model_tolerance": false,
+    "critical_resolved_visible_interval_s": 0.3478,
+    "critical_interval_role": "observed morphology witness; not a model tolerance",
+    "published_contact_matching": "unique same-kind chronological matches",
+    "additional_microcontacts": "permitted unless an explicit observational duration policy is applied"
+  }
+}

@@ -3,6 +3,7 @@
 #include <pybind11/functional.h>
 #include <array>
 #include <fstream>
+#include <limits>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -1482,6 +1483,18 @@ PYBIND11_MODULE(_moira_native, m) {
         .def_readwrite("radius_km", &lola::SkyPlaneProjection::radius_km)
         .def_readwrite("pa_deg", &lola::SkyPlaneProjection::pa_deg);
 
+    py::class_<lola::SkyPlanePaBinMaxima>(m, "SkyPlanePaBinMaxima")
+        .def_readwrite("bin_indices", &lola::SkyPlanePaBinMaxima::bin_indices)
+        .def_readwrite(
+            "bin_centers_unwrapped_deg",
+            &lola::SkyPlanePaBinMaxima::bin_centers_unwrapped_deg)
+        .def_readwrite("radii_km", &lola::SkyPlanePaBinMaxima::radii_km)
+        .def_readwrite("point_indices", &lola::SkyPlanePaBinMaxima::point_indices)
+        .def_readwrite("bin_count", &lola::SkyPlanePaBinMaxima::bin_count)
+        .def_readwrite(
+            "admitted_source_point_count",
+            &lola::SkyPlanePaBinMaxima::admitted_source_point_count);
+
     py::class_<lola::MaxPerBin>(m, "MaxPerBin")
         .def_readwrite("bins", &lola::MaxPerBin::bins)
         .def_readwrite("radii_km", &lola::MaxPerBin::radii_km)
@@ -1507,7 +1520,28 @@ PYBIND11_MODULE(_moira_native, m) {
         .def("filter_by_radius", &lola::LolaPointCloud::filter_by_radius)
         .def("filter_combined", &lola::LolaPointCloud::filter_combined)
         .def("to_spherical", &lola::LolaPointCloud::to_spherical)
-        .def("project_to_sky_plane", &lola::LolaPointCloud::project_to_sky_plane);
+        .def(
+            "project_to_sky_plane",
+            &lola::LolaPointCloud::project_to_sky_plane,
+            py::arg("observer_dir"),
+            py::arg("sky_east"),
+            py::arg("sky_north"),
+            py::arg("observer_distance_km") =
+                std::numeric_limits<double>::infinity())
+        .def(
+            "project_max_radius_per_pa_bin",
+            &lola::LolaPointCloud::project_max_radius_per_pa_bin,
+            py::arg("observer_dir"),
+            py::arg("sky_east"),
+            py::arg("sky_north"),
+            py::arg("pa_lower_unwrapped_deg"),
+            py::arg("pa_upper_unwrapped_deg"),
+            py::arg("bin_width_deg"),
+            py::arg("observer_distance_km") =
+                std::numeric_limits<double>::infinity(),
+            py::arg("raw_radius_min_km") = py::none(),
+            py::arg("raw_radius_max_km") = py::none(),
+            py::call_guard<py::gil_scoped_release>());
 
     m.def("normalize_vectors_bulk", [](const std::vector<double>& x, const std::vector<double>& y, const std::vector<double>& z) {
         size_t count = x.size();

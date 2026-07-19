@@ -29,8 +29,15 @@ from moira.patterns import (
     pattern_condition_network_profile,
     pattern_condition_profiles,
     pattern_contributions,
+    find_cradles,
+    find_grand_crosses,
+    find_grand_trines,
+    find_minor_grand_trines,
+    find_mystic_rectangles,
+    find_septile_triangles,
     find_stelliums,
     find_t_squares,
+    find_trapezes,
     find_yods,
 )
 
@@ -56,6 +63,10 @@ def _opp(b1: str, b2: str) -> AspectData:
 
 def _sq(b1: str, b2: str) -> AspectData:
     return _make_aspect(b1, b2, "Square", 90.0, "S")
+
+
+def _trine(b1: str, b2: str) -> AspectData:
+    return _make_aspect(b1, b2, "Trine", 120.0, "T")
 
 
 def _sext(b1: str, b2: str) -> AspectData:
@@ -538,7 +549,7 @@ def test_patterns_expose_integrated_condition_profiles_deterministically() -> No
     assert stellium.condition_profile is not None
 
     assert t_square.condition_state is PatternConditionState.REINFORCED
-    assert grand_trine.condition_state is PatternConditionState.MIXED
+    assert grand_trine.condition_state is PatternConditionState.REINFORCED
     assert stellium.condition_state is PatternConditionState.WEAKENED
 
     profiles = pattern_condition_profiles([grand_trine, stellium, t_square])
@@ -546,6 +557,397 @@ def test_patterns_expose_integrated_condition_profiles_deterministically() -> No
     assert [profile.pattern_name for profile in profiles] == sorted(
         profile.pattern_name for profile in profiles
     )
+
+
+def test_symmetric_detector_roles_are_structural_and_reinforced() -> None:
+    grand_trine = find_grand_trines([
+        _trine("Sun", "Moon"),
+        _trine("Moon", "Mars"),
+        _trine("Sun", "Mars"),
+    ])[0]
+    minor_grand_trine = find_minor_grand_trines([
+        _trine("Sun", "Moon"),
+        _sext("Sun", "Mars"),
+        _sext("Moon", "Mars"),
+    ])[0]
+    cradle = find_cradles([
+        _opp("Zulu", "Yankee"),
+        _trine("Zulu", "Alpha"),
+        _trine("Beta", "Yankee"),
+        _sext("Alpha", "Beta"),
+        _sext("Zulu", "Beta"),
+        _sext("Alpha", "Yankee"),
+    ])[0]
+    trapeze = find_trapezes([
+        _opp("Zulu", "Yankee"),
+        _sext("Zulu", "Alpha"),
+        _sext("Alpha", "Beta"),
+        _sext("Beta", "Yankee"),
+    ])[0]
+
+    assert set(grand_trine.body_role_kinds) == {PatternBodyRoleKind.CYCLE_MEMBER}
+    assert grand_trine.contribution_roles == (PatternAspectRoleKind.CYCLE_LINK,) * 3
+
+    minor_roles = {
+        role.body: role.role
+        for role in minor_grand_trine.classification.body_roles  # type: ignore[union-attr]
+    }
+    assert minor_roles == {
+        "Mars": PatternBodyRoleKind.SUPPORT,
+        "Moon": PatternBodyRoleKind.BASE,
+        "Sun": PatternBodyRoleKind.BASE,
+    }
+    assert minor_grand_trine.apex is None
+    assert minor_grand_trine.symmetry_kind is PatternSymmetryKind.SYMMETRIC
+    assert minor_grand_trine.contribution_roles.count(PatternAspectRoleKind.BASE_LINK) == 1
+    assert minor_grand_trine.contribution_roles.count(PatternAspectRoleKind.SUPPORT_LINK) == 2
+
+    for pattern, aspect_count in ((cradle, 6), (trapeze, 4)):
+        roles = {
+            role.body: role.role
+            for role in pattern.classification.body_roles  # type: ignore[union-attr]
+        }
+        assert {body for body, role in roles.items() if role is PatternBodyRoleKind.AXIS} == {
+            "Yankee",
+            "Zulu",
+        }
+        assert {body for body, role in roles.items() if role is PatternBodyRoleKind.SUPPORT} == {
+            "Alpha",
+            "Beta",
+        }
+        assert pattern.contribution_roles.count(PatternAspectRoleKind.AXIS_LINK) == 1
+        assert pattern.contribution_roles.count(PatternAspectRoleKind.SUPPORT_LINK) == aspect_count - 1
+
+    patterns = (grand_trine, minor_grand_trine, cradle, trapeze)
+    assert all(pattern.condition_state is PatternConditionState.REINFORCED for pattern in patterns)
+    assert all(pattern.condition_profile is not None for pattern in patterns)
+    assert all(pattern.condition_profile.generic_contribution_count == 0 for pattern in patterns)  # type: ignore[union-attr]
+    assert sum(pattern.condition_profile.structured_contribution_count for pattern in patterns) == 16  # type: ignore[union-attr]
+
+
+def test_cradle_and_trapeze_roles_do_not_depend_on_aspect_order() -> None:
+    cradle_aspects = [
+        _opp("Zulu", "Yankee"),
+        _trine("Zulu", "Alpha"),
+        _trine("Beta", "Yankee"),
+        _sext("Alpha", "Beta"),
+        _sext("Zulu", "Beta"),
+        _sext("Alpha", "Yankee"),
+    ]
+    trapeze_aspects = [
+        _opp("Zulu", "Yankee"),
+        _sext("Zulu", "Alpha"),
+        _sext("Alpha", "Beta"),
+        _sext("Beta", "Yankee"),
+    ]
+
+    assert find_cradles(cradle_aspects) == find_cradles(list(reversed(cradle_aspects)))
+    assert find_trapezes(trapeze_aspects) == find_trapezes(list(reversed(trapeze_aspects)))
+
+
+def test_other_coherent_symmetric_detectors_preserve_edge_orbits() -> None:
+    grand_cross = find_grand_crosses([
+        _opp("Sun", "Moon"),
+        _opp("Mars", "Venus"),
+        _sq("Sun", "Mars"),
+        _sq("Mars", "Moon"),
+        _sq("Moon", "Venus"),
+        _sq("Venus", "Sun"),
+    ])[0]
+    mystic_rectangle = find_mystic_rectangles([
+        _trine("A", "B"),
+        _trine("C", "D"),
+        _sext("B", "C"),
+        _sext("D", "A"),
+        _opp("A", "C"),
+        _opp("B", "D"),
+    ])[0]
+    sept = 360.0 / 7.0
+    septile_triangle = find_septile_triangles([
+        _make_aspect("C", "B", "Septile", sept),
+        _make_aspect("B", "A", "Biseptile", 2.0 * sept),
+        _make_aspect("C", "A", "Triseptile", 3.0 * sept),
+    ])[0]
+
+    for pattern in (grand_cross, mystic_rectangle):
+        assert set(pattern.body_role_kinds) == {PatternBodyRoleKind.CYCLE_MEMBER}
+        assert pattern.contribution_roles.count(PatternAspectRoleKind.AXIS_LINK) == 2
+        assert pattern.contribution_roles.count(PatternAspectRoleKind.CYCLE_LINK) == 4
+        assert pattern.condition_state is PatternConditionState.REINFORCED
+
+    assert set(septile_triangle.body_role_kinds) == {PatternBodyRoleKind.CYCLE_MEMBER}
+    assert septile_triangle.contribution_roles == (PatternAspectRoleKind.CYCLE_LINK,) * 3
+    assert septile_triangle.condition_state is PatternConditionState.REINFORCED
+
+
+def test_mystic_rectangle_admits_both_alternating_edge_orientations() -> None:
+    first_orientation = [
+        _trine("A", "B"),
+        _trine("C", "D"),
+        _sext("B", "C"),
+        _sext("D", "A"),
+        _opp("A", "C"),
+        _opp("B", "D"),
+    ]
+    second_orientation = [
+        _trine("A", "D"),
+        _trine("B", "C"),
+        _sext("A", "B"),
+        _sext("C", "D"),
+        _opp("A", "C"),
+        _opp("B", "D"),
+    ]
+
+    for aspects in (first_orientation, second_orientation):
+        pattern = find_mystic_rectangles(aspects)[0]
+        assert pattern.bodies == ("A", "B", "C", "D")
+        assert pattern.contribution_roles.count(PatternAspectRoleKind.AXIS_LINK) == 2
+        assert pattern.contribution_roles.count(PatternAspectRoleKind.CYCLE_LINK) == 4
+        assert pattern.condition_state is PatternConditionState.REINFORCED
+
+
+def test_grand_trine_condition_is_independent_of_motion_and_exactness() -> None:
+    tight_applying = [
+        replace(_trine("A", "B"), separation=119.9, orb=0.1, applying=True),
+        replace(_trine("B", "C"), separation=119.9, orb=0.1, applying=True),
+        replace(_trine("A", "C"), separation=119.9, orb=0.1, applying=True),
+    ]
+    near_limit_separating = [
+        replace(_trine("A", "B"), separation=126.9, orb=6.9, applying=False),
+        replace(_trine("B", "C"), separation=126.9, orb=6.9, applying=False),
+        replace(_trine("A", "C"), separation=126.9, orb=6.9, applying=False),
+    ]
+
+    for aspects in (tight_applying, near_limit_separating):
+        profile = find_grand_trines(aspects)[0].condition_profile
+        assert profile is not None
+        assert profile.state is PatternConditionState.REINFORCED
+        assert profile.structured_contribution_count == 3
+        assert profile.generic_contribution_count == 0
+
+
+def test_dominant_only_retains_only_maximal_structural_patterns() -> None:
+    positions = {"A": 0.0, "B": 120.0, "C": 240.0, "D": 60.0}
+    kite_aspects = [
+        _trine("A", "B"),
+        _trine("A", "C"),
+        _trine("B", "C"),
+        _opp("C", "D"),
+        _sext("A", "D"),
+        _sext("B", "D"),
+    ]
+
+    all_selected = find_all_patterns(
+        positions,
+        aspects=kite_aspects,
+        include=["Grand Trine", "Kite"],
+    )
+    dominant = find_all_patterns(
+        positions,
+        aspects=kite_aspects,
+        include=["Grand Trine", "Kite"],
+        dominant_only=True,
+    )
+    grand_trine_only = find_all_patterns(
+        positions,
+        aspects=kite_aspects,
+        include=["Grand Trine"],
+        dominant_only=True,
+    )
+    all_detectors = find_all_patterns(positions, aspects=kite_aspects)
+    all_detectors_dominant = find_all_patterns(
+        positions,
+        aspects=kite_aspects,
+        dominant_only=True,
+    )
+
+    assert [pattern.name for pattern in all_selected] == ["Grand Trine", "Kite"]
+    assert [pattern.name for pattern in dominant] == ["Kite"]
+    assert [pattern.name for pattern in grand_trine_only] == ["Grand Trine"]
+    assert [pattern.name for pattern in all_detectors] == [
+        "Grand Trine",
+        "Kite",
+        "Minor Grand Trine",
+        "Wedge",
+        "Wedge",
+    ]
+    assert [pattern.name for pattern in all_detectors_dominant] == ["Kite"]
+
+
+def test_dominant_only_requires_aspect_subgraph_containment() -> None:
+    positions = {"A": 0.0, "B": 60.0, "C": 120.0, "D": 180.0}
+    aspects = [
+        _sext("A", "B"),
+        _sext("B", "C"),
+        _sext("C", "D"),
+        _opp("A", "D"),
+        _trine("A", "C"),
+    ]
+
+    patterns = find_all_patterns(
+        positions,
+        aspects=aspects,
+        include=["Minor Grand Trine", "Trapeze"],
+        dominant_only=True,
+    )
+
+    assert [pattern.name for pattern in patterns] == ["Minor Grand Trine", "Trapeze"]
+
+
+def test_dominant_only_suppresses_same_body_edge_subgraph_and_preserves_disjoint_patterns() -> None:
+    equal_body_positions = {"A": 0.0, "B": 120.0, "C": 60.0, "D": 180.0}
+    cradle_aspects = [
+        _opp("A", "D"),
+        _trine("A", "B"),
+        _trine("C", "D"),
+        _sext("B", "C"),
+        _sext("A", "C"),
+        _sext("B", "D"),
+    ]
+    equal_body_unfiltered = find_all_patterns(
+        equal_body_positions,
+        aspects=cradle_aspects,
+        include=["Cradle", "Trapeze"],
+    )
+    equal_body = find_all_patterns(
+        equal_body_positions,
+        aspects=cradle_aspects,
+        include=["Cradle", "Trapeze"],
+        dominant_only=True,
+    )
+
+    positions = {
+        "A": 0.0,
+        "B": 120.0,
+        "C": 240.0,
+        "D": 60.0,
+        "E": 10.0,
+        "F": 130.0,
+        "G": 250.0,
+    }
+    aspects = [
+        _trine("A", "B"),
+        _trine("A", "C"),
+        _trine("B", "C"),
+        _opp("C", "D"),
+        _sext("A", "D"),
+        _sext("B", "D"),
+        _trine("E", "F"),
+        _trine("E", "G"),
+        _trine("F", "G"),
+    ]
+    disjoint = find_all_patterns(
+        positions,
+        aspects=aspects,
+        include=["Grand Trine", "Kite"],
+        dominant_only=True,
+    )
+
+    assert [pattern.name for pattern in equal_body_unfiltered] == ["Cradle", "Trapeze"]
+    assert [pattern.name for pattern in equal_body] == ["Cradle"]
+    assert [(pattern.name, pattern.bodies) for pattern in disjoint] == [
+        ("Grand Trine", ("E", "F", "G")),
+        ("Kite", ("A", "B", "C", "D")),
+    ]
+
+
+def test_dominant_only_keeps_position_patterns_incomparable() -> None:
+    positions = {"A": 0.0, "B": 1.0, "C": 2.0, "D": 60.0}
+    kite_aspects = [
+        _trine("A", "B"),
+        _trine("A", "C"),
+        _trine("B", "C"),
+        _opp("C", "D"),
+        _sext("A", "D"),
+        _sext("B", "D"),
+    ]
+
+    patterns = find_all_patterns(
+        positions,
+        aspects=kite_aspects,
+        include=["Stellium", "Kite"],
+        dominant_only=True,
+    )
+
+    assert [pattern.name for pattern in patterns] == ["Kite", "Stellium"]
+
+
+def test_direct_pattern_policy_arguments_are_honored_and_validated() -> None:
+    positions = {"Sun": 0.0, "Moon": 120.0, "Mars": 240.0}
+    aspects = [_trine("Sun", "Moon"), _trine("Moon", "Mars"), _trine("Sun", "Mars")]
+    wide_orb_aspects = [replace(aspect, orb=4.0) for aspect in aspects]
+
+    assert [
+        pattern.name
+        for pattern in find_all_patterns(positions, aspects=aspects, include=["Grand Trine"])
+    ] == ["Grand Trine"]
+    assert find_all_patterns(positions, aspects=aspects, include=[]) == []
+    assert [
+        pattern.name
+        for pattern in find_all_patterns(
+            positions,
+            aspects=wide_orb_aspects,
+            include=["Grand Trine"],
+        )
+    ] == ["Grand Trine"]
+    assert find_all_patterns(
+        positions,
+        aspects=wide_orb_aspects,
+        orb_factor=0.5,
+        include=["Grand Trine"],
+    ) == []
+
+    with pytest.raises(ValueError, match="Pattern orb_factor must be positive and finite"):
+        find_all_patterns(positions, aspects=aspects, orb_factor=0.0)
+    with pytest.raises(ValueError, match="must not repeat names"):
+        find_all_patterns(positions, aspects=aspects, include=["Grand Trine", "Grand Trine"])
+    with pytest.raises(ValueError, match="Unsupported pattern names"):
+        find_all_patterns(positions, aspects=aspects, include=["Unknown Pattern"])
+    with pytest.raises(ValueError, match="dominant_only must be a boolean"):
+        find_all_patterns(
+            positions,
+            aspects=aspects,
+            policy=replace(PatternComputationPolicy(), dominant_only=1),  # type: ignore[arg-type]
+        )
+
+
+@pytest.mark.parametrize("orb_factor", [True, "1.0", float("nan"), float("inf"), float("-inf")])
+def test_pattern_orb_factor_rejects_non_numeric_and_non_finite_values(orb_factor: object) -> None:
+    positions = {"Sun": 0.0, "Moon": 120.0, "Mars": 240.0}
+    aspects = [_trine("Sun", "Moon"), _trine("Moon", "Mars"), _trine("Sun", "Mars")]
+
+    with pytest.raises(ValueError, match="Pattern orb_factor must be positive and finite"):
+        find_all_patterns(
+            positions,
+            aspects=aspects,
+            orb_factor=orb_factor,  # type: ignore[arg-type]
+        )
+
+
+def test_explicit_pattern_policy_takes_precedence_over_legacy_arguments() -> None:
+    positions = {"A": 0.0, "B": 120.0, "C": 240.0, "D": 60.0}
+    aspects = [
+        _trine("A", "B"),
+        _trine("A", "C"),
+        _trine("B", "C"),
+        _opp("C", "D"),
+        _sext("A", "D"),
+        _sext("B", "D"),
+    ]
+    policy = PatternComputationPolicy(
+        selection=PatternSelectionPolicy(include=("Grand Trine", "Kite")),
+        dominant_only=True,
+    )
+
+    patterns = find_all_patterns(
+        positions,
+        aspects=aspects,
+        include=["Grand Trine"],
+        dominant_only=False,
+        policy=policy,
+    )
+
+    assert [pattern.name for pattern in patterns] == ["Kite"]
 
 
 def test_pattern_condition_profiles_align_with_source_pattern_truth() -> None:
@@ -585,7 +987,18 @@ def test_pattern_condition_profile_invariants_fail_loudly_on_internal_drift() ->
     with pytest.raises(ValueError, match="condition_profile structured_contribution_count must match contributions"):
         replace(
             pattern,
-            condition_profile=replace(pattern.condition_profile, structured_contribution_count=1, generic_contribution_count=2),
+            condition_profile=replace(
+                pattern.condition_profile,
+                structured_contribution_count=1,
+                generic_contribution_count=2,
+                state=PatternConditionState.MIXED,
+            ),
+        )
+
+    with pytest.raises(ValueError, match="state must match contribution structure"):
+        replace(
+            pattern.condition_profile,
+            state=PatternConditionState.MIXED,
         )
 
     with pytest.raises(ValueError, match="contribution role counts must cover all_contributions"):

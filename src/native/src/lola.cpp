@@ -1,12 +1,142 @@
 #include "lola.hpp"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 
 namespace moira {
 namespace native {
 namespace lola {
+
+namespace {
+
+constexpr double SKY_BASIS_TOLERANCE = 1.0e-12;
+constexpr double FULL_CIRCLE_DEG = 360.0;
+// The native reducer permits a full circle at the contact-profile doctrine's
+// 0.002-degree cadence (180,000 bins), while bounding inputs that could make
+// an otherwise sparse reduction reserve impractical memory.  Keeping this
+// well below every supported size_t maximum also makes the double-to-size_t
+// conversion provably representable on all admitted platforms.
+constexpr size_t MAX_PA_BIN_COUNT = 262'144;
+
+bool finite_vec3(const Vec3& value) {
+    return std::isfinite(value[0])
+        && std::isfinite(value[1])
+        && std::isfinite(value[2]);
+}
+
+void validate_sky_basis(
+    const Vec3& observer_dir,
+    const Vec3& sky_east,
+    const Vec3& sky_north,
+    const char* operation)
+{
+    if (!finite_vec3(observer_dir)
+        || !finite_vec3(sky_east)
+        || !finite_vec3(sky_north)) {
+        throw std::invalid_argument(
+            std::string(operation) + ": sky-basis vectors must be finite");
+    }
+
+    const double observer_norm = observer_dir.norm();
+    const double east_norm = sky_east.norm();
+    const double north_norm = sky_north.norm();
+    if (observer_norm == 0.0 || east_norm == 0.0 || north_norm == 0.0) {
+        throw std::invalid_argument(
+            std::string(operation) + ": sky-basis vectors must be nonzero");
+    }
+    if (std::abs(observer_norm - 1.0) > SKY_BASIS_TOLERANCE
+        || std::abs(east_norm - 1.0) > SKY_BASIS_TOLERANCE
+        || std::abs(north_norm - 1.0) > SKY_BASIS_TOLERANCE
+        || std::abs(Vec3::dot(observer_dir, sky_east)) > SKY_BASIS_TOLERANCE
+        || std::abs(Vec3::dot(observer_dir, sky_north)) > SKY_BASIS_TOLERANCE
+        || std::abs(Vec3::dot(sky_east, sky_north)) > SKY_BASIS_TOLERANCE) {
+        throw std::invalid_argument(
+            std::string(operation) + ": sky-basis vectors must be orthonormal");
+    }
+}
+
+void validate_observer_distance(double observer_distance_km, const char* operation) {
+    if (std::isnan(observer_distance_km)
+        || observer_distance_km <= 0.0
+        || observer_distance_km == -std::numeric_limits<double>::infinity()) {
+        throw std::invalid_argument(
+            std::string(operation)
+            + ": observer distance must be positive or infinity");
+    }
+}
+
+double normalized_degrees(double angle_deg) {
+    double normalized = std::fmod(angle_deg, FULL_CIRCLE_DEG);
+    if (normalized < 0.0) {
+        normalized += FULL_CIRCLE_DEG;
+    }
+    if (normalized >= FULL_CIRCLE_DEG) {
+        normalized -= FULL_CIRCLE_DEG;
+    }
+    return normalized;
+}
+
+double perspective_equivalent_radius(
+    double plane_radius,
+    double toward_observer,
+    double observer_distance_km,
+    const char* operation)
+{
+    if (!std::isfinite(plane_radius)
+        || plane_radius < 0.0
+        || !std::isfinite(toward_observer)) {
+        throw std::invalid_argument(
+            std::string(operation)
+            + ": projected point coordinates must be finite");
+    }
+    if (!std::isfinite(observer_distance_km)) {
+        return plane_radius;
+    }
+    if (toward_observer >= observer_distance_km) {
+        throw std::invalid_argument(
+            std::string(operation) + ": point reaches or passes the observer");
+    }
+
+    // Preserve the historical D*r/hypot(D-x, r) operation order whenever
+    // every intermediate is representable: ordinary scientific profiles then
+    // retain their exact floating-point values.  The direct numerator or ray
+    // can overflow even though the quotient is finite, so those exceptional
+    // inputs use a scale-free angular ratio instead.
+    const double axial_distance = observer_distance_km - toward_observer;
+    const double ray_distance = std::hypot(axial_distance, plane_radius);
+    const double numerator = observer_distance_km * plane_radius;
+    double equivalent_radius;
+    if (std::isfinite(axial_distance)
+        && std::isfinite(ray_distance)
+        && std::isfinite(numerator)) {
+        equivalent_radius = numerator / ray_distance;
+    } else {
+        const double scale = std::max({
+            observer_distance_km,
+            std::abs(toward_observer),
+            plane_radius,
+        });
+        const double axial_scaled = toward_observer < 0.0
+            ? observer_distance_km / scale
+                + (-toward_observer) / scale
+            : axial_distance / scale;
+        const double plane_scaled = plane_radius / scale;
+        const double plane_to_ray_ratio = plane_scaled
+            / std::hypot(axial_scaled, plane_scaled);
+        equivalent_radius = observer_distance_km * plane_to_ray_ratio;
+    }
+    if (!std::isfinite(equivalent_radius)) {
+        throw std::domain_error(
+            std::string(operation)
+            + ": perspective-equivalent radius is non-finite");
+    }
+    return equivalent_radius;
+}
+
+} // namespace
 
 // ============================================================================
 // LolaPointCloud Implementation
@@ -170,8 +300,16 @@ SphericalCoords LolaPointCloud::to_spherical() const {
 SkyPlaneProjection LolaPointCloud::project_to_sky_plane(
     const Vec3& observer_dir,
     const Vec3& sky_east,
-    const Vec3& sky_north) const
+    const Vec3& sky_north,
+    double observer_distance_km) const
 {
+    validate_sky_basis(
+        observer_dir,
+        sky_east,
+        sky_north,
+        "project_to_sky_plane");
+    validate_observer_distance(observer_distance_km, "project_to_sky_plane");
+
     SkyPlaneProjection result;
     result.east_km.resize(size_);
     result.north_km.resize(size_);
@@ -186,13 +324,193 @@ SkyPlaneProjection LolaPointCloud::project_to_sky_plane(
         
         result.east_km[i] = east;
         result.north_km[i] = north;
-        result.radius_km[i] = std::sqrt(east*east + north*north);
+        const double plane_radius = std::hypot(east, north);
+        const double toward_observer =
+            x_[i] * observer_dir[0]
+            + y_[i] * observer_dir[1]
+            + z_[i] * observer_dir[2];
+        // Equivalent radius r_eq is defined by
+        // asin(r_eq / observer_distance) = angular separation between
+        // the observer-to-centre and observer-to-surface rays.  A point
+        // on the finite-distance tangent circle of a sphere therefore
+        // returns the sphere radius exactly.  Infinite distance preserves
+        // the historical orthographic projection.
+        result.radius_km[i] = perspective_equivalent_radius(
+            plane_radius,
+            toward_observer,
+            observer_distance_km,
+            "project_to_sky_plane");
         
         double pa = std::atan2(east, north) * RAD_TO_DEG;
         if (pa < 0.0) pa += 360.0;
         result.pa_deg[i] = pa;
     }
 
+    return result;
+}
+
+SkyPlanePaBinMaxima LolaPointCloud::project_max_radius_per_pa_bin(
+    const Vec3& observer_dir,
+    const Vec3& sky_east,
+    const Vec3& sky_north,
+    double pa_lower_unwrapped_deg,
+    double pa_upper_unwrapped_deg,
+    double bin_width_deg,
+    double observer_distance_km,
+    std::optional<double> raw_radius_min_km,
+    std::optional<double> raw_radius_max_km) const
+{
+    constexpr const char* operation = "project_max_radius_per_pa_bin";
+    validate_sky_basis(observer_dir, sky_east, sky_north, operation);
+    validate_observer_distance(observer_distance_km, operation);
+
+    if (!std::isfinite(pa_lower_unwrapped_deg)
+        || !std::isfinite(pa_upper_unwrapped_deg)
+        || !std::isfinite(bin_width_deg)) {
+        throw std::invalid_argument(
+            std::string(operation) + ": PA bounds and bin width must be finite");
+    }
+    const double span_deg = pa_upper_unwrapped_deg - pa_lower_unwrapped_deg;
+    if (!std::isfinite(span_deg)
+        || span_deg <= 0.0
+        || span_deg > FULL_CIRCLE_DEG) {
+        throw std::invalid_argument(
+            std::string(operation)
+            + ": unwrapped PA interval must have width in (0, 360]");
+    }
+    if (bin_width_deg <= 0.0 || bin_width_deg > span_deg) {
+        throw std::invalid_argument(
+            std::string(operation)
+            + ": bin width must be positive and no wider than the PA interval");
+    }
+
+    const double bin_count_real = span_deg / bin_width_deg;
+    const double bin_count_rounded = std::round(bin_count_real);
+    if (!std::isfinite(bin_count_real)
+        || bin_count_rounded < 1.0
+        || std::abs(bin_count_real - bin_count_rounded) > 1.0e-10
+        || bin_count_rounded > static_cast<double>(MAX_PA_BIN_COUNT)) {
+        throw std::invalid_argument(
+            std::string(operation)
+            + ": PA interval must contain an integer number of bins no greater "
+              "than 262144");
+    }
+    const size_t bin_count = static_cast<size_t>(bin_count_rounded);
+
+    if (raw_radius_min_km.has_value() != raw_radius_max_km.has_value()) {
+        throw std::invalid_argument(
+            std::string(operation)
+            + ": raw radial shell requires both minimum and maximum bounds");
+    }
+    if (raw_radius_min_km.has_value()) {
+        if (!std::isfinite(*raw_radius_min_km)
+            || !std::isfinite(*raw_radius_max_km)
+            || *raw_radius_min_km < 0.0
+            || *raw_radius_max_km < *raw_radius_min_km) {
+            throw std::invalid_argument(
+                std::string(operation)
+                + ": raw radial shell must be finite, nonnegative, and ordered");
+        }
+    }
+
+    struct BinMaximum {
+        double radius_km;
+        size_t point_index;
+    };
+    std::unordered_map<size_t, BinMaximum> maxima;
+    maxima.reserve(std::min(size_, bin_count));
+
+    SkyPlanePaBinMaxima result;
+    result.bin_count = bin_count;
+    const double lower_normalized = normalized_degrees(pa_lower_unwrapped_deg);
+    constexpr double RAD_TO_DEG =
+        180.0 / 3.141592653589793238462643383279502884;
+
+    for (size_t i = 0; i < size_; ++i) {
+        const double x = x_[i];
+        const double y = y_[i];
+        const double z = z_[i];
+        if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z)) {
+            throw std::invalid_argument(
+                std::string(operation) + ": point coordinates must be finite");
+        }
+
+        const double raw_radius = std::hypot(std::hypot(x, y), z);
+        if (raw_radius_min_km.has_value()
+            && (raw_radius < *raw_radius_min_km
+                || raw_radius > *raw_radius_max_km)) {
+            throw std::domain_error(
+                std::string(operation)
+                + ": point lies outside the admitted raw radial shell");
+        }
+
+        const double east =
+            x * sky_east[0] + y * sky_east[1] + z * sky_east[2];
+        const double north =
+            x * sky_north[0] + y * sky_north[1] + z * sky_north[2];
+        const double plane_radius = std::hypot(east, north);
+        if (plane_radius == 0.0) {
+            // Position angle is undefined on the observer axis.
+            continue;
+        }
+
+        double pa_deg = std::atan2(east, north) * RAD_TO_DEG;
+        pa_deg = normalized_degrees(pa_deg);
+        double offset_deg = pa_deg - lower_normalized;
+        if (offset_deg < 0.0) {
+            offset_deg += FULL_CIRCLE_DEG;
+        }
+        const double unwrapped_pa_deg = pa_lower_unwrapped_deg + offset_deg;
+        if (unwrapped_pa_deg < pa_lower_unwrapped_deg
+            || unwrapped_pa_deg >= pa_upper_unwrapped_deg) {
+            continue;
+        }
+
+        size_t bin_index = static_cast<size_t>(
+            std::floor((unwrapped_pa_deg - pa_lower_unwrapped_deg)
+                / bin_width_deg));
+        // The half-open upper comparison proves this for exact arithmetic;
+        // retain a defensive guard against a floating quotient at bin_count.
+        if (bin_index >= bin_count) {
+            continue;
+        }
+
+        const double toward_observer =
+            x * observer_dir[0]
+            + y * observer_dir[1]
+            + z * observer_dir[2];
+        const double equivalent_radius = perspective_equivalent_radius(
+            plane_radius,
+            toward_observer,
+            observer_distance_km,
+            operation);
+        ++result.admitted_source_point_count;
+        const auto existing = maxima.find(bin_index);
+        if (existing == maxima.end()
+            || equivalent_radius > existing->second.radius_km) {
+            maxima.insert_or_assign(
+                bin_index,
+                BinMaximum{equivalent_radius, i});
+        }
+    }
+
+    result.bin_indices.reserve(maxima.size());
+    for (const auto& [bin_index, ignored] : maxima) {
+        (void)ignored;
+        result.bin_indices.push_back(bin_index);
+    }
+    std::sort(result.bin_indices.begin(), result.bin_indices.end());
+    result.bin_centers_unwrapped_deg.reserve(result.bin_indices.size());
+    result.radii_km.reserve(result.bin_indices.size());
+    result.point_indices.reserve(result.bin_indices.size());
+    for (const size_t bin_index : result.bin_indices) {
+        const BinMaximum& maximum = maxima.at(bin_index);
+        result.bin_centers_unwrapped_deg.push_back(
+            pa_lower_unwrapped_deg
+            + (static_cast<double>(bin_index) + 0.5) * bin_width_deg);
+        result.radii_km.push_back(maximum.radius_km);
+        result.point_indices.push_back(maximum.point_index);
+    }
     return result;
 }
 

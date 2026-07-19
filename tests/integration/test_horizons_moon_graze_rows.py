@@ -23,71 +23,72 @@ def _last(rows: list[dict[str, float]]) -> dict[str, float]:
     return rows[-1]
 
 
-_AS_BOREALIS_ROWS = _parse_iota_annual_graze_section(
-    "https://occultations.org/publications/rasc/2025/nam25grz.txt",
-    "Asellus Borealis",
-)
-
 CASES = [
-    pytest.param(
-        "El Nath worst row",
-        _last(_parse_iota_graze_rows_for_date(
-            "https://occultations.org/publications/rasc/2025/20250307ElNath.txt", 2025, 3, 7
-        )),
-        id="elnath-worst",
-    ),
-    pytest.param(
-        "Spica north worst row",
-        _last(_parse_iota_graze_rows_for_date(
-            "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt", 2024, 11, 27
-        )),
-        id="spica-north-worst",
-    ),
-    pytest.param(
-        "Spica south worst row",
-        _last(_parse_iota_graze_rows_for_date(
-            "https://occultations.org/publications/rasc/2024/20241127SpicaSlimit.txt", 2024, 11, 27
-        )),
-        id="spica-south-worst",
-    ),
-    pytest.param(
-        "Alcyone leading row",
-        _first(_parse_iota_annual_graze_section(
-            "https://occultations.org/publications/rasc/2025/nam25grz.txt", "Alcyone"
-        )),
-        id="alcyone-leading",
-    ),
-    pytest.param(
-        "Merope leading row",
-        _first(_parse_iota_annual_graze_section(
-            "https://occultations.org/publications/rasc/2025/nam25grz.txt", "Merope"
-        )),
-        id="merope-leading",
-    ),
-    pytest.param(
-        "Asellus Borealis control row",
-        _AS_BOREALIS_ROWS[(2 * len(_AS_BOREALIS_ROWS)) // 3],
-        id="asellus-control",
-    ),
-    pytest.param(
-        "Regulus control row",
-        _last(_parse_iota_annual_graze_section(
-            "https://occultations.org/publications/rasc/2025/nam25grz.txt", "Regulus"
-        )),
-        id="regulus-control",
-    ),
+    pytest.param("elnath-worst", id="elnath-worst"),
+    pytest.param("spica-north-worst", id="spica-north-worst"),
+    pytest.param("spica-south-worst", id="spica-south-worst"),
+    pytest.param("alcyone-leading", id="alcyone-leading"),
+    pytest.param("merope-leading", id="merope-leading"),
+    pytest.param("asellus-control", id="asellus-control"),
+    pytest.param("regulus-control", id="regulus-control"),
 ]
+
+
+def _load_case(case_key: str) -> tuple[str, dict[str, float]]:
+    """Acquire one live IOTA row only after pytest admits the network test."""
+    if case_key == "elnath-worst":
+        rows = _parse_iota_graze_rows_for_date(
+            "https://occultations.org/publications/rasc/2025/20250307ElNath.txt",
+            2025,
+            3,
+            7,
+        )
+        return "El Nath worst row", _last(rows)
+    if case_key == "spica-north-worst":
+        rows = _parse_iota_graze_rows_for_date(
+            "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt",
+            2024,
+            11,
+            27,
+        )
+        return "Spica north worst row", _last(rows)
+    if case_key == "spica-south-worst":
+        rows = _parse_iota_graze_rows_for_date(
+            "https://occultations.org/publications/rasc/2024/20241127SpicaSlimit.txt",
+            2024,
+            11,
+            27,
+        )
+        return "Spica south worst row", _last(rows)
+
+    annual_url = "https://occultations.org/publications/rasc/2025/nam25grz.txt"
+    if case_key == "alcyone-leading":
+        return "Alcyone leading row", _first(
+            _parse_iota_annual_graze_section(annual_url, "Alcyone")
+        )
+    if case_key == "merope-leading":
+        return "Merope leading row", _first(
+            _parse_iota_annual_graze_section(annual_url, "Merope")
+        )
+    if case_key == "asellus-control":
+        rows = _parse_iota_annual_graze_section(annual_url, "Asellus Borealis")
+        return "Asellus Borealis control row", rows[(2 * len(rows)) // 3]
+    if case_key == "regulus-control":
+        return "Regulus control row", _last(
+            _parse_iota_annual_graze_section(annual_url, "Regulus")
+        )
+    raise AssertionError(f"unknown IOTA/Horizons case {case_key!r}")
 
 
 @pytest.mark.integration
 @pytest.mark.network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-@pytest.mark.parametrize(("label", "row"), CASES)
+@pytest.mark.parametrize("case_key", CASES)
 def test_moon_topocentric_apparent_position_matches_horizons_on_occultation_rows(
-    label: str,
-    row: dict[str, float],
+    case_key: str,
 ) -> None:
+    label, row = _load_case(case_key)
     moira = sky_position_at(
         Body.MOON,
         row["jd"],

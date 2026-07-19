@@ -77,7 +77,9 @@ def _parse_iota_graze_rows_for_date(
     month: int,
     day: int,
 ) -> list[dict[str, float]]:
-    raw_text = requests.get(url, timeout=30).text
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+    raw_text = response.text
     elev_match = re.search(r"Nominal site altitude\s+([\d.]+)\s*m", raw_text)
     nominal_elev_m = float(elev_match.group(1)) if elev_match else 0.0
     text = raw_text.splitlines()
@@ -105,7 +107,9 @@ def _parse_iota_graze_rows_for_date(
 def _parse_iota_graze_circumstance_rows_for_date(
     url: str,
 ) -> list[dict[str, float | str]]:
-    raw_text = requests.get(url, timeout=30).text
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+    raw_text = response.text
     rows: list[dict[str, float | str]] = []
     for line in raw_text.splitlines():
         match = re.match(
@@ -167,7 +171,9 @@ def _parse_iota_annual_graze_section(
     url: str,
     star_label: str,
 ) -> list[dict[str, float]]:
-    text = requests.get(url, timeout=30).text
+    response = requests.get(url, timeout=30)
+    response.raise_for_status()
+    text = response.text
     sections = [s for s in re.split(r"(?=^#\s*\d+:)", text, flags=re.M) if s.strip().startswith("#")]
 
     section = next(

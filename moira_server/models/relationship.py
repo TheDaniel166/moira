@@ -899,8 +899,23 @@ class ChartShapeResponse(_StrictModel):
 class PatternRequest(_StrictModel):
     chart: RelationshipPartyRequest
     include_nodes: bool = False
-    orb_factor: float = 1.0
+    orb_factor: float = Field(default=1.0, gt=0.0, le=10.0)
     include: list[str] | None = None
+    dominant_only: bool = False
+
+    @field_validator("orb_factor", mode="before")
+    @classmethod
+    def _strict_orb_factor(cls, value: Any) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("orb_factor must be a number")
+        return value
+
+    @field_validator("dominant_only", mode="before")
+    @classmethod
+    def _strict_dominant_only(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("dominant_only must be a boolean")
+        return value
 
 
 class PatternBodyRoleTruthResponse(_StrictModel):

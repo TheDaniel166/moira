@@ -1,0 +1,612 @@
+{
+  "schema_version": 2,
+  "evidence_classes": [
+    "authority_validation",
+    "regression_parity",
+    "physical_or_geometric_invariants"
+  ],
+  "evidence_scope_by_class": {
+    "authority_validation": "the frozen IOTA source chronology, site metadata, and authority-document identities only; it does not supply a model residual tolerance",
+    "regression_parity": "the frozen DE441/LE441 and LOLA reconstruction, resolved topology, and descriptive residuals under Moira-owned gates",
+    "physical_or_geometric_invariants": "contact-state chronology, relief-shell admission, profile coverage, resource identity, and solver residual/bracket contracts"
+  },
+  "product": "moira_de441_lola_rdr_profile_conditioned_lunar_contact_chronology",
+  "authority_boundary": {
+    "observed_fixture": "tests/fixtures/iota_spica_2024_observed_contacts.json",
+    "observed_authority": "International Occultation Timing Association (IOTA) PyOTE contact reduction",
+    "observed_role": "source chronology used to characterize signed timing residuals and resolved topology",
+    "source_supplies_model_tolerance": false,
+    "observational_uncertainties_are_model_tolerances": false,
+    "model_sources": "content-identified DE441/LE441, NAIF lunar orientation, and frozen official USGS Astrogeology LOLA RDR COPC bytes",
+    "grazprep_equivalence": false,
+    "grazprep_role": "method context only; GRAZPREP uses a separately derived LUNLIMB product whose reconstruction and exact-site contact table are not published",
+    "authority_validation_scope": "individual signed timing residuals and resolved contact topology are reported against the named IOTA chronology",
+    "accuracy_claim": "The source supplies no absolute model-accuracy tolerance. The executable 0.5-second threshold below is a Moira-owned cross-model regression and topology-characterization envelope, not IOTA uncertainty or GRAZPREP parity."
+  },
+  "resource_admission": {
+    "lola_mapping_authority": "USGS Astrogeology STAC collection lunar_orbiter_laser_altimeter",
+    "lola_asset_identity_retrieved_on": "2026-07-18",
+    "byte_identity_role": "Moira-frozen byte identities for resources mapped by a fresh official STAC query; not publisher-supplied checksums",
+    "relief_envelope": {
+      "reference_radius_km": 1737.4,
+      "nasa_lro_observed_highest_km": 10.786,
+      "nasa_lola_observed_approximate_absolute_km": 10.0,
+      "observation_sources": [
+        "https://science.nasa.gov/photojournal/highest-point-on-the-moon/",
+        "https://science.nasa.gov/solar-system/moon/10-cool-things-nasas-lunar-reconnaissance-orbiter-is-teaching-us-about-the-moon/"
+      ],
+      "moira_acquisition_policy": "MOIRA_CONTINUOUS_RADIAL_SURFACE_ABSOLUTE_RELIEF_12_KM_V1",
+      "moira_max_absolute_relief_km": 12.0,
+      "cell_intersection": "exact spherical-cap versus 15-degree longitude/latitude cell intersection, including dateline and pole topology",
+      "missing_intersecting_cell_policy": "fail_closed",
+      "cartesian_query": "one Moon-XYZ AABB enclosing every event slice's complete relief-capable locus"
+    },
+    "work_bounds": {
+      "maximum_profile_slices": 4096,
+      "maximum_tiles": 96,
+      "maximum_points_per_tile": 32000000,
+      "maximum_cumulative_copc_node_points": 384000000,
+      "maximum_tile_slice_projections": 320,
+      "maximum_cumulative_point_projection_visits": 6100000000
+    },
+    "full_asset_set_sha256": "e7b37448242b95245ff775af31cc42149659098f1556fade72381fb02b5d534c"
+  },
+  "target": {
+    "name": "Spica",
+    "constructor": "moira.lunar_occultation_contacts.lunar_contact_star_at",
+    "reference_epoch": "TT midpoint of the admitted UT1 search window",
+    "coordinate_frame": "ICRS",
+    "origin": "SOLAR_SYSTEM_BARYCENTER",
+    "direction_semantics": "GEOMETRIC_BARYCENTRIC_UNIT_DIRECTION",
+    "parallax_mas": 13.06,
+    "barycentric_distance_km": 2362693400882750.0,
+    "catalog_identity_contains": "HIP 65474"
+  },
+  "time_admission": {
+    "input_scale": "UTC",
+    "engine_scale": "UT1",
+    "conversion": "Each UTC search-window boundary crosses to UT1 exactly once before profile construction and contact solving.",
+    "result_comparison_scale": "UTC"
+  },
+  "lola_stac_cells": [
+    {
+      "lon_bin_deg": 0,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_0E15E.copc.laz",
+        "byte_length": 217320535,
+        "sha256": "b15cd1f0db59339e7cba347e8d9a1489f9e4805b10ddc0f025480a098983b6fc"
+      }
+    },
+    {
+      "lon_bin_deg": 15,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_15E30E.copc.laz",
+        "byte_length": 225192219,
+        "sha256": "2885e625b24142f7f8f56f8ccaca437782acee8803057f720a6e6de189c7bb21"
+      }
+    },
+    {
+      "lon_bin_deg": 30,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_30E45E.copc.laz",
+        "byte_length": 189132792,
+        "sha256": "67032d3a1ee7c541f91c799d4c6a2b953289508d7c2ce70edd1eaa4893d466ad"
+      }
+    },
+    {
+      "lon_bin_deg": 45,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_45E60E.copc.laz",
+        "byte_length": 150270909,
+        "sha256": "5687e848a44a190f06485ce8c583ef767601d0923670c3b024c3ff70b9312535"
+      }
+    },
+    {
+      "lon_bin_deg": 60,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_60E75E.copc.laz",
+        "byte_length": 131675442,
+        "sha256": "2f976eb6465cded0e69780d9aa4549caa27b73c7f7ecd56d04d6292933a26548"
+      }
+    },
+    {
+      "lon_bin_deg": 75,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_75E90E.copc.laz",
+        "byte_length": 126280775,
+        "sha256": "0775bf837c3e1998982fd2d428b1ec2da2c8536a3df7ff48d28fc2aa0b32e47a"
+      }
+    },
+    {
+      "lon_bin_deg": 90,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_90E105E.copc.laz",
+        "byte_length": 114331081,
+        "sha256": "7467ffd04ec63194a0c2c4168ffb5cc569079a832dcfb1ce54dd35725fbed044"
+      }
+    },
+    {
+      "lon_bin_deg": 105,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_105E120E.copc.laz",
+        "byte_length": 121204801,
+        "sha256": "e486e30acdb40fed1d39d70c484cbe8d762254ab2a58ee8bc588dd5a55a7977c"
+      }
+    },
+    {
+      "lon_bin_deg": 120,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_120E135E.copc.laz",
+        "byte_length": 151507915,
+        "sha256": "594fceabbbc10b3bcafbe8b4efbf90be5f911333761678e46a05c5213e4303c0"
+      }
+    },
+    {
+      "lon_bin_deg": 135,
+      "lat_bin_deg": -90,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-90N-75N_135E150E.copc.laz",
+        "byte_length": 151519021,
+        "sha256": "2b2629580e995f8bbb67f2b2e3fcef415e817bda04218c4b0d6b90bddd7cbfc7"
+      }
+    },
+    {
+      "lon_bin_deg": 30,
+      "lat_bin_deg": -75,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-75N-60N_30E45E.copc.laz",
+        "byte_length": 275705691,
+        "sha256": "aa7b658b8a1eb8c849c9bca63d77138d050781da16b6844998aadf2274aba9d5"
+      }
+    },
+    {
+      "lon_bin_deg": 45,
+      "lat_bin_deg": -75,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-75N-60N_45E60E.copc.laz",
+        "byte_length": 267329763,
+        "sha256": "de64c35a01eef23b6841fdec4b07e48eca94a7eb7a8d9ea95333f82f1e2b8ab8"
+      }
+    },
+    {
+      "lon_bin_deg": 60,
+      "lat_bin_deg": -75,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-75N-60N_60E75E.copc.laz",
+        "byte_length": 172747181,
+        "sha256": "ce2cc86e983c1f413ba1455245ffad5776a9f8966e848a3e40a82e720928afa7"
+      }
+    },
+    {
+      "lon_bin_deg": 75,
+      "lat_bin_deg": -75,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-75N-60N_75E90E.copc.laz",
+        "byte_length": 204435451,
+        "sha256": "73e8e7b84f53d554f1d96e2c74fe2b358548079cea50e7c85d2c8c4bf6454481"
+      }
+    },
+    {
+      "lon_bin_deg": 90,
+      "lat_bin_deg": -75,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-75N-60N_90E105E.copc.laz",
+        "byte_length": 189676788,
+        "sha256": "536015ede17373bdeecf258f8b7caf7e6d760cf4ac3068f41494470c0b25bb7e"
+      }
+    },
+    {
+      "lon_bin_deg": 105,
+      "lat_bin_deg": -75,
+      "asset": {
+        "url": "https://asc-moon.s3-us-west-2.amazonaws.com/hobu/LolaRDR_-75N-60N_105E120E.copc.laz",
+        "byte_length": 213693190,
+        "sha256": "73a5dbf314e071c67662db00f653543b0fc0323ef5d0c06f6a656b1cf5fb6751"
+      }
+    }
+  ],
+  "profile_policy": {
+    "trajectory_step_seconds": 1.0,
+    "position_angle_guard_deg": 0.25,
+    "profile_time_step_seconds": 15.0,
+    "pa_bin_width_deg": 0.002,
+    "max_pa_interpolation_gap_deg": 0.002,
+    "lola_query_floor_km": 10.0,
+    "silhouette_model": "PERSPECTIVE_EQUIVALENT_HALF_OPEN_PA_BIN_MAXIMUM_CENTER_SAMPLE_LINEAR_RECONSTRUCTION",
+    "bin_reconstruction": "the maximum perspective-equivalent radius in each half-open PA bin is assigned to the bin centre; adjacent admitted centres and event epochs are reconstructed linearly",
+    "sub_bin_topography_claim": false,
+    "mean_sphere_pa_bin_arc_m": 60.646701,
+    "empty_bin_policy": "fail_closed; equal bin-width and maximum interpolation gap forbids interpolation across one absent half-open PA bin"
+  },
+  "contact_search_policy": {
+    "scan_step_seconds": 0.001,
+    "time_tolerance_seconds": 0.0001,
+    "clearance_tolerance_deg": 1e-7,
+    "tangency_tolerance_deg": 2e-7,
+    "plateau_tolerance_deg": 1e-12,
+    "chronology_tolerance_seconds": 0.0002,
+    "max_refine_iterations": 96,
+    "max_scan_samples": 300000
+  },
+  "sites": [
+    {
+      "site_id": "Dunham1",
+      "observed_site_id": "Dunham1",
+      "latitude_deg": 31.49531,
+      "longitude_deg": -99.91815,
+      "observer_elevation_m": 475.741,
+      "observer_elevation_semantics": "validation-only H+N approximation copied from the observed fixture; not asserted as an exact WGS84 ellipsoid height",
+      "height_sensitivity": {
+        "tested_elevation_interval_m": [
+          475.0,
+          501.0
+        ],
+        "measured_maximum_matched_feature_shift_s": 0.031019747257232666,
+        "admitted_maximum_matched_feature_shift_s": 0.04,
+        "method": "solve the physical contact geometry at both height endpoints against the frozen baseline profile; require identical model topology and observed-to-model root identities",
+        "role": "measured close-proxy sensitivity for the validation height ambiguity; the profile itself remains frozen at 475.741 m"
+      },
+      "search_window_utc": {
+        "start": "2024-11-27T10:54:20Z",
+        "end": "2024-11-27T10:58:00Z"
+      },
+      "profile_characterization": {
+        "slice_count": 16,
+        "maximum_actual_slice_step_s": 14.666667580604553,
+        "bin_count_per_slice": 3488,
+        "all_bins_contiguous": true,
+        "position_angle_start_unwrapped_deg": 210.79452290667612,
+        "position_angle_end_unwrapped_deg": 217.7685229066761,
+        "source_point_counts": [
+          61609461,
+          61609029,
+          61608591,
+          61608103,
+          61607591,
+          61607174,
+          61606698,
+          61606182,
+          61605735,
+          61605358,
+          61604937,
+          61604476,
+          61604081,
+          61603587,
+          61603155,
+          61602633
+        ],
+        "minimum_radius_km": 1737.392223458093,
+        "maximum_radius_km": 1741.402492298726,
+        "spatial_query_half_width_km": 385.27659978619187,
+        "spatial_query_bounds_moon_xyz_km": [
+          [
+            -224.01968425313353,
+            29.226699705545347,
+            -1748.9819291473798
+          ],
+          [
+            365.78220655474195,
+            799.7798992779291,
+            -1532.367844867782
+          ]
+        ],
+        "realized_profile_sha256": "b50cc421525cb49e3b2d19d223596bdbcc3cf3cc278a9a1b2cb8b9a27a3d8c88"
+      },
+      "geometry": {
+        "mode": "reader_bound_de441",
+        "provenance_contains": "contact-private Klioner (2003) Eq.70 / IAU SOFA Ld-Ldn"
+      },
+      "topology_characterization": {
+        "required_model_contact_count": 10,
+        "required_model_kind_sequence": [
+          "disappearance",
+          "reappearance",
+          "disappearance",
+          "reappearance",
+          "disappearance",
+          "reappearance",
+          "disappearance",
+          "reappearance",
+          "disappearance",
+          "reappearance"
+        ],
+        "observed_to_required_model_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "required_extra_model_indices": [],
+        "extra_contact_semantics": "No model-only contacts occur in the admitted D1 chronology under the declared 1 ms scan feature guarantee.",
+        "matching_rule": "minimum-total-absolute-residual monotone same-kind assignment; equal-cost solutions choose the lexicographically earliest model indices",
+        "matching_optimum_is_unique": true,
+        "second_best_total_absolute_residual_s": null,
+        "second_best_margin_s": null
+      },
+      "contact_regression": {
+        "instant_tolerance_s": 0.003,
+        "role": "frozen current-source Moira output; detects model drift but is not external timing authority",
+        "contacts": [
+          {
+            "model_index": 0,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:54:31.505597Z",
+            "observed_match": "D1"
+          },
+          {
+            "model_index": 1,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:54:32.829871Z",
+            "observed_match": "R1"
+          },
+          {
+            "model_index": 2,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:54:34.212362Z",
+            "observed_match": "D2"
+          },
+          {
+            "model_index": 3,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:54:57.684132Z",
+            "observed_match": "R2"
+          },
+          {
+            "model_index": 4,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:56:09.720876Z",
+            "observed_match": "D3"
+          },
+          {
+            "model_index": 5,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:57:00.089824Z",
+            "observed_match": "R3"
+          },
+          {
+            "model_index": 6,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:57:17.452675Z",
+            "observed_match": "D4"
+          },
+          {
+            "model_index": 7,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:57:27.239466Z",
+            "observed_match": "R4"
+          },
+          {
+            "model_index": 8,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:57:28.012626Z",
+            "observed_match": "D5"
+          },
+          {
+            "model_index": 9,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:57:48.362667Z",
+            "observed_match": "R5"
+          }
+        ],
+        "matched_mean_absolute_residual_s": 0.13714268803596497,
+        "matched_maximum_absolute_residual_s": 0.3810077905654907,
+        "residual_summary_role": "descriptive characterization against IOTA observations, not an authority-supplied acceptance tolerance"
+      },
+      "regression_envelope": {
+        "maximum_absolute_observed_residual_s": 0.5,
+        "role": "Moira-owned cross-model regression and topology-characterization threshold only; not source uncertainty, an absolute accuracy tolerance, or GRAZPREP parity",
+        "budget_components_s": {
+          "frozen_baseline_characterization": 0.382,
+          "measured_height_endpoint_allowance": 0.04,
+          "declared_root_polish_tolerance": 0.0001,
+          "reserved_reporting_and_model_drift_margin": 0.0779
+        }
+      }
+    },
+    {
+      "site_id": "Dunham2",
+      "observed_site_id": "Dunham2",
+      "latitude_deg": 31.49570,
+      "longitude_deg": -99.91792,
+      "observer_elevation_m": 475.140,
+      "observer_elevation_semantics": "validation-only H+N approximation copied from the observed fixture; not asserted as an exact WGS84 ellipsoid height",
+      "height_sensitivity": {
+        "tested_elevation_interval_m": [
+          472.0,
+          500.0
+        ],
+        "measured_maximum_matched_feature_shift_s": 0.028967857360839844,
+        "admitted_maximum_matched_feature_shift_s": 0.04,
+        "method": "solve the physical contact geometry at both height endpoints against the frozen baseline profile; require identical model topology and observed-to-model root identities",
+        "role": "measured close-proxy sensitivity for the validation height ambiguity; the profile itself remains frozen at 475.140 m"
+      },
+      "search_window_utc": {
+        "start": "2024-11-27T10:54:20Z",
+        "end": "2024-11-27T10:58:00Z"
+      },
+      "profile_characterization": {
+        "slice_count": 16,
+        "maximum_actual_slice_step_s": 14.666667580604553,
+        "bin_count_per_slice": 3488,
+        "all_bins_contiguous": true,
+        "position_angle_start_unwrapped_deg": 210.79444664846838,
+        "position_angle_end_unwrapped_deg": 217.76844664846837,
+        "source_point_counts": [
+          61609649,
+          61609198,
+          61608687,
+          61608271,
+          61607803,
+          61607379,
+          61606854,
+          61606412,
+          61605925,
+          61605472,
+          61605105,
+          61604663,
+          61604212,
+          61603794,
+          61603299,
+          61602843
+        ],
+        "minimum_radius_km": 1737.3922311275944,
+        "maximum_radius_km": 1741.40248647677,
+        "spatial_query_half_width_km": 385.2767134192309,
+        "spatial_query_bounds_moon_xyz_km": [
+          [
+            -224.0194179980455,
+            29.224382214646756,
+            -1748.9819779665333
+          ],
+          [
+            365.7824576178088,
+            799.7778090531085,
+            -1532.3688853434453
+          ]
+        ],
+        "realized_profile_sha256": "9c96949ffcf9d31bd85849ae0b8773bbaeab2b61d900b9a70319ab3e7439f3f5"
+      },
+      "geometry": {
+        "mode": "reader_bound_de441",
+        "provenance_contains": "contact-private Klioner (2003) Eq.70 / IAU SOFA Ld-Ldn"
+      },
+      "topology_characterization": {
+        "required_model_contact_count": 10,
+        "required_model_kind_sequence": [
+          "disappearance",
+          "reappearance",
+          "disappearance",
+          "reappearance",
+          "disappearance",
+          "reappearance",
+          "disappearance",
+          "reappearance",
+          "disappearance",
+          "reappearance"
+        ],
+        "observed_to_required_model_indices": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "required_extra_model_indices": [
+          0,
+          1
+        ],
+        "extra_contact_semantics": "A leading model-only disappearance/reappearance pair approximately 1.529 ms wide is retained and required because it exceeds the declared 1 ms scan feature guarantee; the IOTA list is not asserted to exhaust topographic microcontacts.",
+        "required_extra_pair_duration_s": 0.0015288591384887695,
+        "required_extra_pair_duration_tolerance_s": 0.0002,
+        "matching_rule": "minimum-total-absolute-residual monotone same-kind assignment; equal-cost solutions choose the lexicographically earliest model indices",
+        "matching_optimum_is_unique": true,
+        "second_best_total_absolute_residual_s": 2.9152125120162964,
+        "second_best_margin_s": 1.6632378101348877
+      },
+      "contact_regression": {
+        "instant_tolerance_s": 0.003,
+        "role": "frozen current-source Moira output for contacts at or above the declared scan feature scale; detects model drift but is not external timing authority",
+        "contacts": [
+          {
+            "model_index": 0,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:54:29.451173Z",
+            "observed_match": null
+          },
+          {
+            "model_index": 1,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:54:29.452702Z",
+            "observed_match": null
+          },
+          {
+            "model_index": 2,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:54:31.241628Z",
+            "observed_match": "D1"
+          },
+          {
+            "model_index": 3,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:54:33.170967Z",
+            "observed_match": "R1"
+          },
+          {
+            "model_index": 4,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:54:34.024594Z",
+            "observed_match": "D2"
+          },
+          {
+            "model_index": 5,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:54:58.001410Z",
+            "observed_match": "R2"
+          },
+          {
+            "model_index": 6,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:56:09.473402Z",
+            "observed_match": "D3"
+          },
+          {
+            "model_index": 7,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:57:00.378377Z",
+            "observed_match": "R3"
+          },
+          {
+            "model_index": 8,
+            "kind": "disappearance",
+            "timestamp_utc": "2024-11-27T10:57:17.114556Z",
+            "observed_match": "D4"
+          },
+          {
+            "model_index": 9,
+            "kind": "reappearance",
+            "timestamp_utc": "2024-11-27T10:57:48.595617Z",
+            "observed_match": "R5"
+          }
+        ],
+        "matched_mean_absolute_residual_s": 0.1564968377351761,
+        "matched_maximum_absolute_residual_s": 0.337354838848114,
+        "residual_summary_role": "descriptive characterization against IOTA observations, not an authority-supplied acceptance tolerance"
+      },
+      "regression_envelope": {
+        "maximum_absolute_observed_residual_s": 0.5,
+        "role": "Moira-owned cross-model regression and topology-characterization threshold only; not source uncertainty, an absolute accuracy tolerance, or GRAZPREP parity",
+        "budget_components_s": {
+          "frozen_baseline_characterization": 0.338,
+          "measured_height_endpoint_allowance": 0.04,
+          "declared_root_polish_tolerance": 0.0001,
+          "reserved_reporting_and_model_drift_margin": 0.1219
+        }
+      }
+    }
+  ],
+  "extension_scope": {
+    "admitted_sites": [
+      "Dunham1",
+      "Dunham2"
+    ],
+    "status": "Both published observing sites are covered by the named live comparison."
+  }
+}

@@ -15,6 +15,8 @@ Note: Tests skip only when the native module is unavailable in the current envir
 Validates: Requirements 11.1, 11.2, 11.3
 """
 
+import math
+
 import pytest
 
 
@@ -110,6 +112,541 @@ def test_small_point_cloud_construction(small_cloud):
     assert cloud.x_data() is not None
     assert cloud.y_data() is not None
     assert cloud.z_data() is not None
+
+
+def test_perspective_projection_preserves_a_finite_distance_sphere_tangent():
+    radius_km = 1737.4
+    distance_km = 384_400.0
+    tangent_cosine = radius_km / distance_km
+    tangent_point = (
+        radius_km * tangent_cosine,
+        0.0,
+        radius_km * math.sqrt(1.0 - tangent_cosine * tangent_cosine),
+    )
+    cloud = moira_native.LolaPointCloud(
+        [tangent_point[0]],
+        [tangent_point[1]],
+        [tangent_point[2]],
+    )
+
+    perspective = cloud.project_to_sky_plane(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        distance_km,
+    )
+    orthographic = cloud.project_to_sky_plane(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+    )
+
+    assert perspective.radius_km[0] == pytest.approx(radius_km, abs=1.0e-12)
+    assert orthographic.radius_km[0] < radius_km
+    assert perspective.pa_deg[0] == pytest.approx(0.0, abs=1.0e-12)
+
+
+def test_perspective_projection_matches_the_observer_ray_definition():
+    distance_km = 400_000.0
+    points = (
+        (500.0, 1_200.0, -900.0),
+        (-800.0, -700.0, 1_400.0),
+        (1_700.0, 25.0, 40.0),
+    )
+    cloud = moira_native.LolaPointCloud(
+        [point[0] for point in points],
+        [point[1] for point in points],
+        [point[2] for point in points],
+    )
+
+    projection = cloud.project_to_sky_plane(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        distance_km,
+    )
+
+    expected = tuple(
+        distance_km
+        * math.hypot(y, z)
+        / math.sqrt((distance_km - x) ** 2 + y * y + z * z)
+        for x, y, z in points
+    )
+    assert tuple(projection.radius_km) == pytest.approx(expected, abs=1.0e-12)
+
+
+def test_normal_range_perspective_projection_preserves_direct_expression_bits():
+    # D-x=4,000 and r=3,000 form an exact 3-4-5 triangle.  This explicitly
+    # guards the historical D*r/hypot(D-x, r) operation order used by ordinary
+    # LOLA profile points; the overflow fallback must not perturb this path.
+    distance_km = 5_000.0
+    toward_observer_km = 1_000.0
+    plane_radius_km = 3_000.0
+    cloud = moira_native.LolaPointCloud(
+        [toward_observer_km],
+        [plane_radius_km],
+        [0.0],
+    )
+
+    projection = cloud.project_to_sky_plane(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        distance_km,
+    )
+    expected = (
+        distance_km
+        * plane_radius_km
+        / math.hypot(distance_km - toward_observer_km, plane_radius_km)
+    )
+
+    assert projection.radius_km[0] == expected
+
+
+def test_perspective_projection_avoids_finite_quotient_product_overflow():
+    distance_km = 1.0e308
+    plane_radius_km = 1.0e308
+    cloud = moira_native.LolaPointCloud([0.0], [plane_radius_km], [0.0])
+
+    projection = cloud.project_to_sky_plane(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        distance_km,
+    )
+
+    expected = distance_km / math.sqrt(2.0)
+    assert math.isfinite(projection.radius_km[0])
+    assert projection.radius_km[0] == pytest.approx(expected, rel=2.0e-15)
+
+
+def test_fused_reducer_avoids_finite_quotient_product_overflow():
+    distance_km = 1.0e308
+    plane_radius_km = 1.0e308
+    cloud = moira_native.LolaPointCloud([0.0], [plane_radius_km], [0.0])
+
+    result = cloud.project_max_radius_per_pa_bin(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        0.0,
+        180.0,
+        90.0,
+        distance_km,
+    )
+
+    expected = distance_km / math.sqrt(2.0)
+    assert tuple(result.bin_indices) == (1,)
+    assert math.isfinite(result.radii_km[0])
+    assert result.radii_km[0] == pytest.approx(expected, rel=2.0e-15)
+
+
+def test_projection_rejects_nonfinite_intermediate_from_finite_payload():
+    component = math.sqrt(0.5)
+    cloud = moira_native.LolaPointCloud(
+        [float.fromhex("0x1.fffffffffffffp+1023")],
+        [float.fromhex("0x1.fffffffffffffp+1023")],
+        [0.0],
+    )
+
+    with pytest.raises(ValueError, match="projected point coordinates must be finite"):
+        cloud.project_to_sky_plane(
+            moira_native.Vec3(component, -component, 0.0),
+            moira_native.Vec3(component, component, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            400_000.0,
+        )
+
+
+@pytest.mark.parametrize("distance_km", (0.0, -1.0, math.nan))
+def test_perspective_projection_rejects_invalid_observer_distance(distance_km):
+    cloud = moira_native.LolaPointCloud([1.0], [0.0], [0.0])
+
+    with pytest.raises(ValueError, match="observer distance"):
+        cloud.project_to_sky_plane(
+            moira_native.Vec3(1.0, 0.0, 0.0),
+            moira_native.Vec3(0.0, 1.0, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            distance_km,
+        )
+
+
+def test_perspective_projection_rejects_surface_point_past_observer():
+    cloud = moira_native.LolaPointCloud([2.0], [0.0], [0.0])
+
+    with pytest.raises(ValueError, match="reaches or passes"):
+        cloud.project_to_sky_plane(
+            moira_native.Vec3(1.0, 0.0, 0.0),
+            moira_native.Vec3(0.0, 1.0, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            1.0,
+        )
+
+
+def _point_at_position_angle(
+    position_angle_deg: float,
+    plane_radius_km: float,
+    toward_observer_km: float = 100.0,
+) -> tuple[float, float, float]:
+    """Construct a point for the test basis: observer=X, east=Y, north=Z."""
+
+    pa_rad = math.radians(position_angle_deg)
+    return (
+        toward_observer_km,
+        plane_radius_km * math.sin(pa_rad),
+        plane_radius_km * math.cos(pa_rad),
+    )
+
+
+def _python_pa_bin_maxima_reference(
+    points: tuple[tuple[float, float, float], ...],
+    *,
+    lower_deg: float,
+    upper_deg: float,
+    bin_width_deg: float,
+    observer_distance_km: float,
+) -> tuple[dict[int, tuple[float, int]], int]:
+    """Independent scalar definition of the fused native result."""
+
+    maxima: dict[int, tuple[float, int]] = {}
+    admitted = 0
+    lower_normalized = lower_deg % 360.0
+    for point_index, (x, y, z) in enumerate(points):
+        east = y
+        north = z
+        plane_radius = math.hypot(east, north)
+        if plane_radius == 0.0:
+            continue
+        pa_deg = math.degrees(math.atan2(east, north)) % 360.0
+        unwrapped = lower_deg + ((pa_deg - lower_normalized) % 360.0)
+        if not lower_deg <= unwrapped < upper_deg:
+            continue
+        bin_index = math.floor((unwrapped - lower_deg) / bin_width_deg)
+        if math.isinf(observer_distance_km):
+            equivalent_radius = plane_radius
+        else:
+            equivalent_radius = (
+                observer_distance_km
+                * plane_radius
+                / math.hypot(observer_distance_km - x, plane_radius)
+            )
+        admitted += 1
+        previous = maxima.get(bin_index)
+        if previous is None or equivalent_radius > previous[0]:
+            maxima[bin_index] = (equivalent_radius, point_index)
+    return maxima, admitted
+
+
+@pytest.mark.parametrize("observer_distance_km", (math.inf, 400_000.0))
+def test_fused_pa_bin_maxima_matches_independent_wrapped_reference(
+    observer_distance_km,
+):
+    points = (
+        _point_at_position_angle(358.0, 1_700.0),
+        _point_at_position_angle(358.5, 1_705.0),
+        _point_at_position_angle(359.25, 1_702.0),
+        _point_at_position_angle(1.2, 1_710.0),
+        _point_at_position_angle(180.0, 1_720.0),
+        (1_700.0, 0.0, 0.0),  # PA undefined: never admitted.
+    )
+    cloud = moira_native.LolaPointCloud(
+        [point[0] for point in points],
+        [point[1] for point in points],
+        [point[2] for point in points],
+    )
+
+    result = cloud.project_max_radius_per_pa_bin(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        358.0,
+        362.0,
+        1.0,
+        observer_distance_km,
+        1_600.0,
+        1_800.0,
+    )
+    expected, admitted = _python_pa_bin_maxima_reference(
+        points,
+        lower_deg=358.0,
+        upper_deg=362.0,
+        bin_width_deg=1.0,
+        observer_distance_km=observer_distance_km,
+    )
+    expected_indices = tuple(sorted(expected))
+
+    assert result.bin_count == 4
+    assert result.admitted_source_point_count == admitted == 4
+    assert tuple(result.bin_indices) == expected_indices == (0, 1, 3)
+    assert tuple(result.bin_centers_unwrapped_deg) == pytest.approx(
+        tuple(358.0 + (index + 0.5) for index in expected_indices),
+        abs=0.0,
+    )
+    assert tuple(result.radii_km) == pytest.approx(
+        tuple(expected[index][0] for index in expected_indices),
+        abs=1.0e-12,
+    )
+    assert tuple(result.point_indices) == tuple(
+        expected[index][1] for index in expected_indices
+    )
+
+
+def test_fused_pa_bins_use_exact_half_open_edges_and_sparse_empty_bins():
+    # atan2 returns these cardinal position angles exactly: PA 0 is admitted,
+    # while the PA 90 upper edge is excluded from [0, 90).
+    points = (
+        (100.0, 0.0, 1_700.0),
+        (100.0, 1_700.0, 0.0),
+    )
+    cloud = moira_native.LolaPointCloud(
+        [point[0] for point in points],
+        [point[1] for point in points],
+        [point[2] for point in points],
+    )
+
+    result = cloud.project_max_radius_per_pa_bin(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        0.0,
+        90.0,
+        30.0,
+    )
+
+    assert result.bin_count == 3
+    assert result.admitted_source_point_count == 1
+    assert tuple(result.bin_indices) == (0,)
+    assert tuple(result.bin_centers_unwrapped_deg) == (15.0,)
+    assert tuple(result.radii_km) == pytest.approx((1_700.0,), abs=1.0e-12)
+    assert tuple(result.point_indices) == (0,)
+
+
+def test_fused_pa_bin_raw_shell_is_inclusive_and_does_not_clamp():
+    points = (
+        _point_at_position_angle(0.0, 1_700.0, 0.0),
+        _point_at_position_angle(1.5, 1_800.0, 0.0),
+    )
+    cloud = moira_native.LolaPointCloud(
+        [point[0] for point in points],
+        [point[1] for point in points],
+        [point[2] for point in points],
+    )
+
+    result = cloud.project_max_radius_per_pa_bin(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        0.0,
+        2.0,
+        1.0,
+        math.inf,
+        1_700.0,
+        1_800.0,
+    )
+
+    assert result.admitted_source_point_count == 2
+    assert tuple(result.bin_indices) == (0, 1)
+    assert tuple(result.radii_km) == pytest.approx(
+        (1_700.0, 1_800.0),
+        abs=1.0e-12,
+    )
+
+
+@pytest.mark.parametrize(
+    ("radius_km", "shell_min_km", "shell_max_km"),
+    (
+        (1_699.999, 1_700.0, 1_800.0),
+        (1_800.001, 1_700.0, 1_800.0),
+    ),
+)
+def test_fused_pa_bin_reducer_rejects_raw_relief_shell_violations(
+    radius_km,
+    shell_min_km,
+    shell_max_km,
+):
+    # The violating point is outside the requested PA interval. The raw shell
+    # is a dataset-integrity assertion, not a filter, so it must still fail.
+    point = _point_at_position_angle(180.0, radius_km, 0.0)
+    cloud = moira_native.LolaPointCloud([point[0]], [point[1]], [point[2]])
+
+    with pytest.raises(ValueError, match="raw radial shell"):
+        cloud.project_max_radius_per_pa_bin(
+            moira_native.Vec3(1.0, 0.0, 0.0),
+            moira_native.Vec3(0.0, 1.0, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            0.0,
+            10.0,
+            1.0,
+            math.inf,
+            shell_min_km,
+            shell_max_km,
+        )
+
+
+@pytest.mark.parametrize(
+    ("observer_dir", "sky_east", "sky_north", "message"),
+    (
+        ((0.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0), "nonzero"),
+        ((2.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0), "orthonormal"),
+        ((1.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 0.0, 1.0), "orthonormal"),
+        ((math.nan, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0), "finite"),
+    ),
+)
+def test_fused_pa_bin_reducer_rejects_invalid_sky_basis(
+    observer_dir,
+    sky_east,
+    sky_north,
+    message,
+):
+    cloud = moira_native.LolaPointCloud([0.0], [0.0], [1_700.0])
+
+    with pytest.raises(ValueError, match=message):
+        cloud.project_max_radius_per_pa_bin(
+            moira_native.Vec3(*observer_dir),
+            moira_native.Vec3(*sky_east),
+            moira_native.Vec3(*sky_north),
+            0.0,
+            10.0,
+            1.0,
+        )
+
+
+@pytest.mark.parametrize("observer_distance_km", (0.0, -1.0, math.nan, -math.inf))
+def test_fused_pa_bin_reducer_rejects_invalid_observer_distance(
+    observer_distance_km,
+):
+    cloud = moira_native.LolaPointCloud([0.0], [0.0], [1_700.0])
+
+    with pytest.raises(ValueError, match="observer distance"):
+        cloud.project_max_radius_per_pa_bin(
+            moira_native.Vec3(1.0, 0.0, 0.0),
+            moira_native.Vec3(0.0, 1.0, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            0.0,
+            10.0,
+            1.0,
+            observer_distance_km,
+        )
+
+
+@pytest.mark.parametrize(
+    ("lower_deg", "upper_deg", "bin_width_deg", "message"),
+    (
+        (math.nan, 10.0, 1.0, "finite"),
+        (0.0, math.inf, 1.0, "finite"),
+        (10.0, 10.0, 1.0, "width"),
+        (10.0, 9.0, 1.0, "width"),
+        (0.0, 361.0, 1.0, "width"),
+        (0.0, 10.0, 0.0, "bin width"),
+        (0.0, 10.0, 3.0, "integer number"),
+    ),
+)
+def test_fused_pa_bin_reducer_rejects_invalid_bin_contract(
+    lower_deg,
+    upper_deg,
+    bin_width_deg,
+    message,
+):
+    cloud = moira_native.LolaPointCloud([0.0], [0.0], [1_700.0])
+
+    with pytest.raises(ValueError, match=message):
+        cloud.project_max_radius_per_pa_bin(
+            moira_native.Vec3(1.0, 0.0, 0.0),
+            moira_native.Vec3(0.0, 1.0, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            lower_deg,
+            upper_deg,
+            bin_width_deg,
+        )
+
+
+@pytest.mark.parametrize(
+    ("upper_deg", "bin_width_deg"),
+    (
+        (360.0, 360.0 / 262_145.0),
+        # 256 / 2**-56 is exactly 2**64.  On 64-bit Windows, converting
+        # size_t::max() to double also rounds to 2**64, so a max-size_t
+        # comparison does not protect the subsequent integer conversion.
+        (256.0, 2.0**-56),
+    ),
+)
+def test_fused_pa_bin_reducer_rejects_impractical_or_unrepresentable_bin_counts(
+    upper_deg,
+    bin_width_deg,
+):
+    cloud = moira_native.LolaPointCloud([0.0], [0.0], [1_700.0])
+
+    with pytest.raises(ValueError, match="no greater than 262144"):
+        cloud.project_max_radius_per_pa_bin(
+            moira_native.Vec3(1.0, 0.0, 0.0),
+            moira_native.Vec3(0.0, 1.0, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            0.0,
+            upper_deg,
+            bin_width_deg,
+        )
+
+
+def test_fused_pa_bin_reducer_admits_its_bounded_bin_count_ceiling():
+    cloud = moira_native.LolaPointCloud([0.0], [0.0], [1_700.0])
+
+    result = cloud.project_max_radius_per_pa_bin(
+        moira_native.Vec3(1.0, 0.0, 0.0),
+        moira_native.Vec3(0.0, 1.0, 0.0),
+        moira_native.Vec3(0.0, 0.0, 1.0),
+        0.0,
+        256.0,
+        2.0**-10,
+    )
+
+    assert result.bin_count == 262_144
+
+
+@pytest.mark.parametrize(
+    ("raw_min_km", "raw_max_km", "message"),
+    (
+        (1_700.0, None, "both"),
+        (None, 1_800.0, "both"),
+        (math.nan, 1_800.0, "finite"),
+        (1_700.0, math.inf, "finite"),
+        (-1.0, 1_800.0, "nonnegative"),
+        (1_800.0, 1_700.0, "ordered"),
+    ),
+)
+def test_fused_pa_bin_reducer_rejects_invalid_raw_shell(
+    raw_min_km,
+    raw_max_km,
+    message,
+):
+    cloud = moira_native.LolaPointCloud([0.0], [0.0], [1_700.0])
+
+    with pytest.raises(ValueError, match=message):
+        cloud.project_max_radius_per_pa_bin(
+            moira_native.Vec3(1.0, 0.0, 0.0),
+            moira_native.Vec3(0.0, 1.0, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            0.0,
+            10.0,
+            1.0,
+            math.inf,
+            raw_min_km,
+            raw_max_km,
+        )
+
+
+@pytest.mark.parametrize("coordinate", (math.nan, math.inf, -math.inf))
+def test_fused_pa_bin_reducer_rejects_nonfinite_point_payload(coordinate):
+    cloud = moira_native.LolaPointCloud([0.0], [coordinate], [1_700.0])
+
+    with pytest.raises(ValueError, match="point coordinates must be finite"):
+        cloud.project_max_radius_per_pa_bin(
+            moira_native.Vec3(1.0, 0.0, 0.0),
+            moira_native.Vec3(0.0, 1.0, 0.0),
+            moira_native.Vec3(0.0, 0.0, 1.0),
+            0.0,
+            10.0,
+            1.0,
+        )
 
 
 def test_large_point_cloud_construction():

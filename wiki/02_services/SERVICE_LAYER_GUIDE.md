@@ -4,7 +4,12 @@
 
 The **Moira Service Layer** is not merely a collection of helper functions; it is a **Sovereign Orchestration Layer**. The `Moira` class serves as the **High Priestess and Dependency Injection (DI) Container**, binding a persistent `SpkReader` (JPL DE441) to a vast pantheon of computational sub-engines.
 
-The facade enforces a single, inviolable contract: **no sub-engine may be invoked without flowing through the Moira instance**. This guarantees I/O consistency (every call shares the same memory-mapped kernel), temporal consistency (all JD conversions use the same ΔT tables), and doctrinal consistency (policies propagate from the facade to every leaf computation).
+For admitted service calls, the facade enforces one contract: computation
+flows through the `Moira` instance. This keeps reader ownership, time policy,
+and public doctrine coherent. Deliberately module-direct research and
+validation products may remain outside the service layer; they do not acquire
+facade or REST status merely because the engine can compute them. The
+topography-conditioned lunar-contact surface is one such explicit boundary.
 
 ### 1.1 The Lifecycle of a Service Call
 

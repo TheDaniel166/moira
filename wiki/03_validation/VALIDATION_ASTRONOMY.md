@@ -1,7 +1,7 @@
 # Moira Validation Report - Astronomy
 
 **Version:** 1.3
-**Date:** 2026-07-18
+**Date:** 2026-07-19
 **Runtime target:** Python 3.14
 **Validation kernel:** JPL DE441 (engine is kernel-agnostic; see note below)
 **Validation philosophy:** external-reference first, regression-enforced second
@@ -54,6 +54,7 @@ several respects:
 | Local lunar occultations | Swiss `setest/t.exp` | `pytest` | Validated |
 | Occultation path geometry (`where`) | Swiss `t.exp` + live IOTA graze/limit text paths (El Nath, Spica N/S, epsilon Ari, Alcyone, Merope, Asellus Borealis, Regulus) | `pytest` | Validated (implemented slice) |
 | Polar-crossing lunar-occultation path topology | JPL Horizons North-Pole contacts + independent spherical invariants | `pytest` | Validated (named contact/invariant slice) |
+| Topographic lunar-graze contact chronology | IOTA 2024 Spica reductions at two observing sites + official USGS LOLA RDR assets | Frozen fixtures + network source/STAC identity checks + DE441/LE441 solve | Externally characterized and regression-admitted (named two-site slice; no authority-supplied model tolerance) |
 | Sothic heliacal rising | Censorinus 139 AD historical record + latitude trend | `pytest` | Validated |
 | Generalized heliacal / visibility surfaces | Published modern planetary apparition windows; Censorinus 139 AD Sirius slice (delegated stellar corpus); Yallop 1997 lunar class law | `pytest` | Validated (implemented slice) |
 | Rise / set / transit times | JPL Horizons offline fixture; USNO published tables (supplemental) | `pytest` | Validated |
@@ -61,7 +62,10 @@ several respects:
 
 ### Occultation Validation Tracks
 
-Moira now treats occultation validation as two distinct programs:
+Moira treats modern/future path validation and ancient-event reconstruction as
+two distinct programs. The observed/topographic contact surface described
+below is a third, product-specific evidence track rather than an extension of
+either path program:
 
 - `modern_future_occultation_path_validation`
   primary authority: IOTA graze/limit path publications
@@ -157,8 +161,90 @@ invariants: center and boundary epochs share one ordered lattice, boundary
 clearance is numerically zero, each half-width reproduces its center-to-limit
 great-circle distance, and the two greatest half-widths reproduce the public
 total width. No external dense polar limit-track or width parity is claimed.
-The live IOTA ordinary-graze corpus remains separate because its
-profile-conditioned limits do not govern this nominal mean-limb topology.
+The live IOTA ordinary-graze path and limit-line corpus remains separate
+because those prediction products do not govern this nominal mean-limb
+topology or an observed contact chronology.
+
+### Topographic Lunar-Contact Validation Boundary
+
+The direct-import `moira.lunar_occultation_contacts` module owns a separate
+engine-only product: an immutable, strictly ordered sequence of disappearance,
+reappearance, and admitted limiting-tangency contacts at one terrestrial site.
+Its signed clearance is evaluated against an already prepared,
+finite-resolution lunar-limb profile. Half-open-bin maxima are represented at
+bin centres and reconstructed linearly; the product makes no exact sub-bin
+topography claim. It does not mutate or replace
+`LunarOccultation`, the nominal mean-limb path topology, or the existing graze
+limit products. It is not exposed through the `Moira` facade or FastAPI.
+
+The Moira-derived LOLA RDR profile path separates translation from orientation. The caller's
+content-identified DE441/LE441 reader owns the physical Moon-to-observer
+reception light cone. Observer-motion aberration is excluded from that
+surface-intersection ray. The NAIF `moon_pa_de440_200625.bpc` and
+`moon_de440_250416.tf` resources own only the retarded-emission-epoch rotation
+into `MOON_ME_DE440_ME421`. Official USGS Astrogeology LOLA point-cloud assets
+from the `lunar_orbiter_laser_altimeter` STAC collection supply IAU 2015
+Moon-centred Cartesian radii relative to the `1737.4 km` sphere. The immutable
+profile records content hashes and byte lengths for those resources as well as
+the distinct translation and orientation models. Its finite-distance tangent
+circle and perspective-equivalent profile radii retain the actual
+observer-centre/observer-surface angular separation. Missing coverage,
+excessive interpolation gaps, ambiguous reader identity, and unavailable
+no-download resources fail explicitly.
+
+The stellar target is a frozen, named sovereign-registry vessel: its ICRS
+barycentric direction is proper-motion propagated to an explicit TT epoch
+inside the event window. A positive catalog parallax is converted to finite
+distance and translated by the complete reception-epoch observer SSB vector,
+so annual and diurnal parallax share one origin. A contact-private Klioner
+equation-70 light-deflection path binds DE441 Sun, Jupiter, and Saturn
+position/velocity states, closest-passage backtracking, declared SOFA `Ldn`
+limiters, and the exact finite-star deflector-to-source direction before
+bending the incoming stellar ray.
+The Moon light cone remains the retarded geometric location of the blocking
+surface, not the apparent direction of lunar image photons; curvature over the
+final Earth-Moon segment is not modeled. Observer-motion aberration and
+atmospheric refraction are excluded from contact admission: they may change
+apparent coordinates or observing circumstances, but they do not change
+whether the incoming stellar photon ray intersects the lunar surface. The
+contact search stays in UT1 and converts a result to UTC once for civil
+representation.
+
+`tests/fixtures/iota_spica_2024_observed_contacts.json` is primary-authority
+evidence for the observed 2024-11-27 Spica chronology at the Dunham1 and
+Dunham2 sites. It preserves the published disappearance/reappearance order,
+GPS-referenced UTC realization, site and height provenance, source timing-error
+semantics, and identities of the IOTA reduction PDF and event page. The
+network-marked check verifies that those authority documents still match their
+frozen lengths and SHA-256 digests. These are observed IOTA events, not Moira
+predictions; the source timing errors are not model tolerances.
+
+The separate model fixture
+`tests/fixtures/iota_spica_2024_moira_lola_model.json` admits a named
+predicted-versus-observed slice. Its model uses content-identified DE441/LE441,
+the sovereign Spica ICRS record with catalog parallax, a maximum `15 s`
+profile cadence, `0.002 degree` half-open PA bins with no missing-bin
+interpolation, and sixteen official USGS LOLA RDR COPC assets admitted by exact
+URL, byte length, and SHA-256. The network-marked executable test refreshes
+the official STAC mapping before the pinned COPC bytes are decoded.
+
+All ten Dunham1 contacts and all eight Dunham2 contacts have a unique optimum
+under the declared chronological same-kind matcher. Their mean absolute timing
+residuals are `0.137143 s` and `0.156497 s`; their maxima are `0.381008 s` and
+`0.337355 s`.
+Both pass the Moira-owned `0.5 s` cross-model regression and topology envelope.
+That bound is neither source uncertainty nor an absolute accuracy tolerance.
+Dunham1 has no model-only contacts. Dunham2 retains and requires a leading
+model-only disappearance/reappearance pair about `1.529 ms` wide because it
+exceeds the declared `1 ms` scan feature guarantee.
+
+GRAZPREP is not used as a hidden runtime or treated as an equivalent oracle.
+IOTA/ES documents that it consumes a derived, precomputed `LUNLIMB` profile
+set recalculated from LRO/LOLA source data, but the current reconstruction and
+interpolation doctrine are not public. A future product-to-product comparison
+would require exact-site GRAZPREP contact tables and identified LUNLIMB inputs.
+The admitted IOTA timing comparison therefore does not establish
+GRAZPREP/LUNLIMB equivalence.
 
 ---
 

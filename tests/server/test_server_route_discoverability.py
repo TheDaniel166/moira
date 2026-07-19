@@ -46,6 +46,23 @@ def test_openapi_schema_has_ordered_tag_metadata_and_redoc_groups() -> None:
     assert "website-parans" in tag_groups["Website and Batch Support"]
 
 
+def test_topographic_lunar_contacts_remain_outside_fastapi() -> None:
+    schema = create_app(ServerConfig(docs_enabled=True)).openapi()
+
+    assert all(
+        "lunar-contact" not in path and "topographic-contact" not in path
+        for path in schema["paths"]
+    )
+    forbidden_schema_names = {
+        "LunarContactStar",
+        "LunarOccultationContact",
+        "LunarOccultationContactSequence",
+    }
+    assert forbidden_schema_names.isdisjoint(
+        schema.get("components", {}).get("schemas", {})
+    )
+
+
 def test_route_catalog_lists_live_schema_routes(client: TestClient) -> None:
     response = client.get("/v1/meta/routes")
 

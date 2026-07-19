@@ -77,8 +77,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   claim. No arbitrary positive-height ceiling is imposed: if an observer
   radius reaches a body's geocentric distance, the conservative parallax bound
   becomes `180 degrees` rather than incorrectly clamping at `90 degrees`.
+- **First-Class Topographic Lunar Contact Chronology**: Added the direct-import
+  `moira.lunar_occultation_contacts` engine module with immutable contact,
+  visibility, named ICRS astrometric-target, search-policy, profile, and
+  sequence vessels for lunar-stellar disappearance, reappearance, and
+  tangency events. Sovereign-registry directions are proper-motion propagated
+  to an event-owned TT epoch; positive catalog parallax is applied from the
+  complete reception-epoch observer SSB position, and gravitational
+  deflectors are observer-relative. Event-specific, finite-resolution limb
+  profiles are prepared before solving, so contact
+  searches perform no profile I/O. Content-identified DE441/LE441 supplies the
+  physical Moon-to-observer light cone, NAIF DE440_ME421 resources supply lunar
+  orientation, and official USGS LOLA relief supplies the limb topography.
+  Finite-distance tangent-circle geometry and perspective-equivalent radii
+  replace the former orthographic surface shortcut. Physical contact admission
+  uses a contact-private Klioner equation-70 stellar-deflection path with
+  DE441 deflector states, closest-passage backtracking, and declared SOFA
+  `Ldn` limiters while retaining the Moon as the retarded
+  geometric blocker; it is airless and excludes observer-motion aberration and
+  atmospheric refraction. The modeled chronology remains distinct from
+  nominal mean-limb path limits and from observed IOTA contact records.
 
 ### Fixed
+- **Pattern Role And Structural-Containment Doctrine**: Grand Trine now carries
+  explicit cycle-member/cycle-link truth; Minor Grand Trine preserves
+  base/support structure; and Cradle and Trapeze preserve their opposition
+  axes and support bodies. Grand Cross, Mystic Rectangle, and Septile Triangle
+  also preserve their detector-proved edge orbits rather than falling through
+  to generic member links. Structural condition state is now invariant-checked
+  and describes role completeness, not motion or interpretive strength.
+  Cradle, Trapeze, Mystic Rectangle, and Septile Triangle searches no longer
+  depend on incidental body-name orientation, and Trapeze's admitted
+  three-sextile-chain graph is now stated coherently. Added opt-in
+  `dominant_only` policy to
+  `find_all_patterns(...)`, `Moira.patterns(...)`, and the shared
+  `/v1/patterns/*` request, using strict body-and-aspect subgraph containment so
+  a Grand Trine inside an admitted Kite can be hidden without erasing
+  unrelated smaller patterns or position-based Stelliums; same-body strict edge
+  subgraphs are also suppressed. The default remains unfiltered. Restored the
+  documented direct `include` and `orb_factor` behavior, which had been silently
+  overwritten by an implicit default policy. The facade now applies orb scaling
+  during initial aspect admission as well as pattern admission, and engine/REST
+  policy rejects non-finite orb factors. REST policy scalars no longer coerce
+  booleans, numbers, or strings into a different computation choice.
 - **Bounded Occultation Topology Search**: Treats the requested scan step as a
   maximum cell width, admits at most `0.25 d`, 400 days, and 4096 cells, and
   rejects excess work before candidate-envelope evaluation. Boundary cells
@@ -97,6 +138,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reports fixed-site duration at the greatest location rather than global
   footprint lifetime. Detailed fixed-star labels reject surrounding whitespace
   and Solar System body identities before computation.
+- **Topographic Lunar Contact And LOLA Robustness**: Event-profile acquisition
+  now covers the complete declared `+/-12 km` relief shell, maps every
+  intersecting 15-degree USGS STAC cell with exact pole/dateline topology, and
+  fails closed on a missing cell, out-of-shell radius, noncanonical reference
+  radius, malformed COPC node, or exceeded slice/tile/point/projection budget.
+  One tile is streamed through all event slices and released before the next;
+  the native reducer enforces half-open PA bins, a bounded bin count, finite
+  perspective results, and overflow-safe scaled arithmetic without changing
+  ordinary finite-path rounding. Contact search now distinguishes shallow
+  unique tangencies from true plateaus through a two-sided variation witness,
+  never probes outside its local/search window, rejects hidden sub-scan
+  crossing pairs instead of relabeling them as tangencies, and applies its
+  residual, bracket, containment, and chronology contracts again when the
+  immutable result sequence is constructed.
 - **Eclipse Geometry, Visibility, And Clock Integrity**: Defined native solar
   greatest eclipse by the DE441 Earth-reception lunar-shadow axis rather than
   angular conjunction, brought four modern event classes within one published
@@ -367,6 +422,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from the nominal two-sided topology because they can produce disconnected
   micro-topology. Left/right means intrinsic side relative to increasing UT1,
   not north/south latitude, and exact poles use canonical longitude zero.
+- The topographic lunar-contact surface is additive and engine-only through
+  direct imports from `moira.lunar_occultation_contacts` and
+  `moira.lunar_limb`. It adds no `Moira` facade method, FastAPI route, OpenAPI
+  operation, or request/response schema, and leaves the existing nominal
+  occultation path and graze contracts unchanged.
 - Code that mutates the relationship result vessels or their nested maps must
   switch to constructing a new value. Invalid phenomena, planetary observer,
   planetary-hour, and house inputs that were previously tolerated may now
@@ -432,6 +492,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   multimodal component-global greatest selection and range suppression, and
   no more than `0.02 km` width change across two equivalent greatest witnesses
   `0.160973 s` apart.
+- Added a frozen IOTA authority corpus for the observed 2024 Spica lunar-graze
+  contact chronologies at two observing sites. The fixture preserves the
+  reported disappearance/reappearance ordering, GPS-referenced UTC timings,
+  site coordinates and heights, source timing-error semantics, source URLs,
+  document lengths, and SHA-256 identities; a network-marked check detects
+  authority-document drift. A separate network-marked DE441/LE441 and official
+  LOLA-RDR comparison refreshes the STAC mapping, pre-admits sixteen exact COPC
+  byte identities, and finds a unique optimum under the declared monotone
+  same-kind matcher for all ten Dunham1 and all eight Dunham2
+  observed contacts. Maximum absolute residuals are `0.381008 s` and
+  `0.337355 s`, inside a Moira-owned `0.5 s` cross-model regression envelope.
+  Dunham1 has no model-only contacts; Dunham2 retains and requires a leading
+  model-only disappearance/reappearance pair about `1.529 ms` wide because it
+  exceeds the declared `1 ms` scan feature guarantee. The
+  envelope is not source uncertainty, absolute accuracy, or GRAZPREP/LUNLIMB
+  parity.
 - Added primary-authority per-field cross-model validation for instantaneous
   solar Besselian elements using named NASA/GSFC partial, total, hybrid, and
   annular rows at five TT epochs per event. The admitted residual envelopes

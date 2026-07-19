@@ -15,6 +15,7 @@ from moira.occultations import (
     lunar_star_graze_product_at,
     lunar_star_graze_product_track,
     lunar_star_graze_circumstances,
+    lunar_star_graze_line,
     lunar_star_occultation,
 )
 
@@ -425,6 +426,56 @@ def test_moon_axis_position_angle_uses_explicit_tt_without_double_conversion(
 
     assert captured["jd_ut"] == pytest.approx(2451545.123)
     assert captured["jd_tt"] == pytest.approx(2451545.123)
+
+
+def test_moon_axis_position_angle_forwards_explicit_reader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sentinel_reader = object()
+    captured: dict[str, object] = {}
+
+    def _fake_planet_at(body: str, jd_ut: float, **kwargs: object) -> object:
+        captured.update(kwargs)
+        return SimpleNamespace(longitude=10.0, latitude=5.0)
+
+    monkeypatch.setattr(occultations, "planet_at", _fake_planet_at)
+    monkeypatch.setattr(occultations, "true_obliquity", lambda jd_tt: 23.4)
+    monkeypatch.setattr(occultations, "nutation", lambda jd_tt: (0.0, 0.0))
+    monkeypatch.setattr(
+        occultations,
+        "ecliptic_to_equatorial",
+        lambda lon, lat, eps: (lon, lat),
+    )
+
+    occultations._moon_axis_position_angle_deg(2451545.123, sentinel_reader)  # type: ignore[arg-type]
+
+    assert captured["reader"] is sentinel_reader
+
+
+def test_nominal_graze_line_never_admits_a_topographic_provider(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _fake_nominal(*args: object, **kwargs: object) -> float:
+        captured.update(kwargs)
+        return 12.5
+
+    monkeypatch.setattr(occultations, "lunar_star_graze_latitude", _fake_nominal)
+    provider = lambda *args: 0.01
+
+    result = lunar_star_graze_line(
+        0.0,
+        0.0,
+        2451545.0,
+        0.0,
+        0.0,
+        semantics="nominal",
+        limb_profile_provider=provider,
+    )
+
+    assert result == 12.5
+    assert captured["limb_profile_provider"] is None
 
 
 def test_occultation_greatest_location_admits_an_exact_pole() -> None:

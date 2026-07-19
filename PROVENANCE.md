@@ -122,6 +122,85 @@ which the observer radius reaches a body's geocentric distance, the envelope
 uses the geometric `180 degree` direction-reversal bound; the ordinary
 `asin(R/d)` horizontal-parallax bound applies only while `R < d`.
 
+### IOTA observed-contact and official lunar-topography corpus
+
+Moira keeps three lunar-graze products distinct. An IOTA graze or limit-line
+publication is a predicted geographic path product. A Moira
+topography-conditioned contact sequence is a model prediction from an admitted
+lunar profile at one observing site. An observed IOTA disappearance or
+reappearance is a reduced timing measurement. Agreement among those products
+must be tested explicitly; none is relabeled as another.
+
+`tests/fixtures/iota_spica_2024_observed_contacts.json` preserves the ordered
+2024-11-27 Spica disappearance/reappearance chronologies reported by IOTA for
+the two Dunham observing sites. The fixture identifies IOTA as the authority,
+retains the source's GPS-referenced UTC realization, site and height semantics,
+reported 95-percent timing errors, document URLs, byte lengths, and SHA-256
+digests. It is authority evidence for the observed chronology. The source
+errors remain observational reduction errors, not Moira model tolerances, and
+the fixture does not assert that the published list resolves every possible
+short topographic microcontact or any unreported tangency. The network-marked
+test verifies source-document identity and fails closed on byte drift; it does
+not silently regenerate the fixture.
+
+IOTA/ES GRAZPREP uses a separately derived, precomputed `LUNLIMB` product from
+LRO/LOLA source data. Its public manuals describe recalculation across
+libration and position angle but do not publish the current reconstruction,
+interpolation policy, or profile grid. Moira therefore does not label its RDR
+spot reconstruction as GRAZPREP- or LUNLIMB-equivalent. Exact-site GRAZPREP
+contact tables and identified LUNLIMB inputs would form a separate
+product-to-product corpus.
+
+The contact-facing profile builder in `moira.lunar_limb` obtains a physical
+Moon-to-observer reception light cone from the caller's explicitly
+content-identified DE441/LE441 reader. Observer-motion aberration is not folded
+into that surface-intersection ray, and SPICE does not supply a second DE440
+translation for this product. NAIF's `moon_pa_de440_200625.bpc` and
+`moon_de440_250416.tf` supply only the retarded-emission-epoch transformation
+to `MOON_ME_DE440_ME421`. Surface radii come from official USGS Astrogeology
+LOLA assets in the `lunar_orbiter_laser_altimeter` STAC collection, admitted as
+IAU 2015 Moon-centred Cartesian data on the `1737.4 km` reference sphere.
+Source asset URLs and the translation/orientation labels are retained in the
+immutable profile provenance.
+
+The resulting finite-resolution profile uses the finite-distance tangent locus
+and an explicit maximum perspective-equivalent radius per half-open
+position-angle bin. Each maximum is assigned to its bin centre, and adjacent
+admitted centres and event epochs are reconstructed linearly. This preserves
+the declared bin-scale extrema without claiming exact sub-bin topography. It
+is consumed by
+the direct-import engine function
+`moira.lunar_occultation_contacts.lunar_star_topographic_contacts`. Contact
+targets are named records from Moira's sovereign `star_registry.csv` and
+`star_provenance.json`, propagated in ICRS to an explicit TT reference epoch.
+For positive catalog parallax, the observer-to-star ray subtracts the complete
+reception-epoch observer SSB vector in kilometres. A contact-private
+Klioner-equation light-deflection path uses DE441 Sun, Jupiter, and Saturn
+position/velocity states, closest-passage backtracking, declared SOFA `Ldn`
+limiters, and the exact finite-star deflector-to-source direction. Deflection is applied to the incoming
+stellar photon ray; the lunar light cone remains the retarded geometric
+location of the blocking surface, rather than being reinterpreted as the
+apparent direction of photons emitted by the Moon. Curvature over the final
+Earth-Moon segment is not modeled. Contact admission is airless:
+observer-motion aberration and atmospheric refraction change apparent
+coordinates or observing circumstances but are not part of whether the
+stellar photon ray is blocked by the lunar surface. This engine-only surface
+is not exported through `Moira` and has no FastAPI route or REST schema.
+
+`tests/fixtures/iota_spica_2024_moira_lola_model.json` admits the named
+DE441/LE441 plus raw-LOLA-RDR comparison at both Dunham sites. All ten Dunham1
+and all eight Dunham2 published contacts have a unique optimum under the
+declared monotone same-kind matcher. The maximum absolute timing residuals are
+respectively `0.381008 s` and `0.337355 s`, inside a Moira-owned `0.5 s`
+cross-model regression envelope.
+That envelope is not an IOTA uncertainty, an absolute accuracy tolerance, or
+evidence of GRAZPREP/LUNLIMB equivalence. Dunham1 has no model-only contacts.
+Dunham2 retains a leading model-only disappearance/reappearance pair about
+`1.529 ms` wide; it is required because it exceeds the declared `1 ms` scan
+feature guarantee. The network-marked comparison refreshes the
+official STAC cell mapping and admits all sixteen COPC resources by exact URL,
+byte length, and SHA-256 before decode.
+
 ### Earth rotation and Delta T
 
 Moira keeps the computational products below distinct. A source that measures

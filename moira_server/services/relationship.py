@@ -394,6 +394,7 @@ def compute_patterns(engine: Moira, request: PatternRequest):
         _positions_for_analysis(engine, request.chart, request.include_nodes),
         orb_factor=request.orb_factor,
         include=request.include,
+        dominant_only=request.dominant_only,
     )
 
 

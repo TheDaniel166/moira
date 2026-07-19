@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstddef>
+#include <optional>
 #include "geometry.hpp"
 
 /**
@@ -42,6 +43,7 @@ namespace lola {
 // Forward declarations
 struct SphericalCoords;
 struct SkyPlaneProjection;
+struct SkyPlanePaBinMaxima;
 struct FilterResult;
 struct BinnedPoints;
 struct MaxPerBin;
@@ -162,12 +164,41 @@ public:
      * @param observer_dir Unit vector pointing from Moon center to observer
      * @param sky_east Unit vector pointing east in sky plane
      * @param sky_north Unit vector pointing north in sky plane
+     * @param observer_distance_km Finite Moon-centre distance for perspective
+     *        equivalent radii, or positive infinity for orthographic radii
      * @return Sky plane projection with east, north, radius, and position angle
      */
     SkyPlaneProjection project_to_sky_plane(
         const Vec3& observer_dir,
         const Vec3& sky_east,
-        const Vec3& sky_north) const;
+        const Vec3& sky_north,
+        double observer_distance_km) const;
+
+    /**
+     * @brief Fuse sky projection with exact position-angle bin reduction.
+     *
+     * Each finite Cartesian point is projected with the same orthographic or
+     * finite-observer geometry as project_to_sky_plane().  Position angles are
+     * unwrapped from pa_lower_unwrapped_deg and admitted to the exact half-open
+     * interval [lower, upper).  Only the greatest equivalent radius and its
+     * source index are retained for each populated bin, so working memory is
+     * bounded by the input cloud rather than by four per-point projection
+     * arrays.
+     *
+     * If raw radial bounds are supplied, both must be present.  They validate
+     * every source point against the inclusive physical shell without
+     * filtering or clamping any value.
+     */
+    SkyPlanePaBinMaxima project_max_radius_per_pa_bin(
+        const Vec3& observer_dir,
+        const Vec3& sky_east,
+        const Vec3& sky_north,
+        double pa_lower_unwrapped_deg,
+        double pa_upper_unwrapped_deg,
+        double bin_width_deg,
+        double observer_distance_km,
+        std::optional<double> raw_radius_min_km,
+        std::optional<double> raw_radius_max_km) const;
 };
 
 /**
@@ -185,8 +216,20 @@ struct SphericalCoords {
 struct SkyPlaneProjection {
     std::vector<double> east_km;   // East coordinate in kilometers
     std::vector<double> north_km;  // North coordinate in kilometers
-    std::vector<double> radius_km; // Projected radius in kilometers
+    std::vector<double> radius_km; // Orthographic or perspective-equivalent radius in kilometers
     std::vector<double> pa_deg;    // Position angle in degrees [0, 360)
+};
+
+/**
+ * @brief Sparse exact half-open position-angle bin maxima.
+ */
+struct SkyPlanePaBinMaxima {
+    std::vector<size_t> bin_indices;  // Populated bin indices, ascending
+    std::vector<double> bin_centers_unwrapped_deg; // Exact unwrapped bin centres
+    std::vector<double> radii_km;     // Greatest equivalent radius in each bin
+    std::vector<size_t> point_indices; // Source-cloud index of each maximum
+    size_t bin_count = 0;             // Total bins in the requested interval
+    size_t admitted_source_point_count = 0; // Non-axis points in [lower, upper)
 };
 
 /**

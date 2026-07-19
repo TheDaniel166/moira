@@ -75,7 +75,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from enum import StrEnum
-from itertools import combinations
+from itertools import combinations, permutations
 
 from .aspects import AspectData, find_aspects
 from .coordinates import angular_distance
@@ -159,6 +159,7 @@ class PatternBodyRoleKind(StrEnum):
     SUPPORT = "support"
     TAIL = "tail"
     AXIS = "axis"
+    CYCLE_MEMBER = "cycle_member"
     CLUSTER_MEMBER = "cluster_member"
     BOOMERANG = "boomerang"
 
@@ -170,6 +171,7 @@ class PatternAspectRoleKind(StrEnum):
     BASE_LINK = "base_link"
     APEX_LINK = "apex_link"
     AXIS_LINK = "axis_link"
+    CYCLE_LINK = "cycle_link"
     SUPPORT_LINK = "support_link"
 
 
@@ -208,6 +210,7 @@ class PatternComputationPolicy:
     orb_factor: float = 1.0
     selection: PatternSelectionPolicy = field(default_factory=PatternSelectionPolicy)
     stellium: StelliumPolicy = field(default_factory=StelliumPolicy)
+    dominant_only: bool = False
 
     @property
     def is_default(self) -> bool:
@@ -355,6 +358,17 @@ class PatternConditionProfile:
             raise ValueError("PatternConditionProfile invariant failed: contribution role counts must cover all_contributions")
         if self.has_apex != (self.symmetry is PatternSymmetryKind.APEX_BEARING):
             raise ValueError("PatternConditionProfile invariant failed: has_apex must match symmetry")
+        expected_state = (
+            PatternConditionState.WEAKENED
+            if self.all_contribution_count == 0
+            else (
+                PatternConditionState.REINFORCED
+                if self.generic_contribution_count == 0
+                else PatternConditionState.MIXED
+            )
+        )
+        if self.state is not expected_state:
+            raise ValueError("PatternConditionProfile invariant failed: state must match contribution structure")
 
 
 @dataclass(frozen=True, slots=True)
@@ -880,6 +894,12 @@ def _aspect_signature(aspect: AspectData) -> tuple[str, str, str, float, float, 
     )
 
 
+def _aspect_endpoint_signature(aspect: AspectData) -> tuple[str, str]:
+    """Return a canonical unordered endpoint signature for one aspect."""
+
+    return tuple(sorted((aspect.body1, aspect.body2)))
+
+
 def _contribution_signature(
     contribution: PatternAspectContribution,
 ) -> tuple[str, str, str, str, str, float, float, float]:
@@ -1004,6 +1024,7 @@ def _make_pattern(
     apex: str | None = None,
     source_kind: str = "aspect",
     role_overrides: dict[str, str] | None = None,
+    aspect_role_overrides: dict[tuple[str, str], PatternAspectRoleKind] | None = None,
     centroid_longitude: float | None = None,
     max_body_distance: float | None = None,
     orb_limit: float | None = None,
@@ -1021,7 +1042,12 @@ def _make_pattern(
         orb_limit=orb_limit,
     )
     classification = _classify_pattern_truth(name=name, bodies=bodies, apex=apex, detection_truth=detection_truth)
-    contributions = _build_pattern_contributions(name=name, aspects=aspects, classification=classification)
+    contributions = _build_pattern_contributions(
+        name=name,
+        aspects=aspects,
+        classification=classification,
+        role_overrides=aspect_role_overrides,
+    )
     condition_profile = _build_pattern_condition_profile(
         name=name,
         classification=classification,
@@ -1083,6 +1109,8 @@ def _classify_contribution_role(
         return PatternAspectRoleKind.BASE_LINK
     if endpoint_roles == {PatternBodyRoleKind.AXIS}:
         return PatternAspectRoleKind.AXIS_LINK
+    if endpoint_roles == {PatternBodyRoleKind.CYCLE_MEMBER}:
+        return PatternAspectRoleKind.CYCLE_LINK
     if endpoint_roles & {PatternBodyRoleKind.SUPPORT, PatternBodyRoleKind.TAIL, PatternBodyRoleKind.BOOMERANG}:
         return PatternAspectRoleKind.SUPPORT_LINK
     return PatternAspectRoleKind.MEMBER_LINK
@@ -1093,13 +1121,22 @@ def _build_pattern_contributions(
     name: str,
     aspects: tuple[AspectData, ...],
     classification: PatternClassification,
+    role_overrides: dict[tuple[str, str], PatternAspectRoleKind] | None = None,
 ) -> tuple[PatternAspectContribution, ...]:
     """Build the formal contributing aspect relations for one detected pattern."""
 
+    aspect_endpoints = {_aspect_endpoint_signature(aspect) for aspect in aspects}
+    if role_overrides is None:
+        role_overrides = {}
+    elif set(role_overrides) != aspect_endpoints:
+        raise ValueError("Pattern contribution role overrides must cover pattern aspects exactly")
     return tuple(
         PatternAspectContribution(
             pattern_name=name,
-            role=_classify_contribution_role(aspect, classification=classification),
+            role=role_overrides.get(
+                _aspect_endpoint_signature(aspect),
+                _classify_contribution_role(aspect, classification=classification),
+            ),
             body1=aspect.body1,
             body2=aspect.body2,
             aspect_name=aspect.aspect,
@@ -1174,6 +1211,7 @@ def find_grand_trines(
                 aspects=(t_ab, t_bc, t_ac),
                 detector="find_grand_trines",
                 orb_factor=orb_factor,
+                role_overrides={body: "cycle_member" for body in (a, b, c)},
             ))
 
     return _dedup_patterns(results)
@@ -1212,6 +1250,15 @@ def find_grand_crosses(
                     aspects=(opp1, opp2, sq_pr, sq_rq, sq_qs, sq_sp),
                     detector="find_grand_crosses",
                     orb_factor=orb_factor,
+                    role_overrides={body: "cycle_member" for body in (a, b, c, d)},
+                    aspect_role_overrides={
+                        _aspect_endpoint_signature(opp1): PatternAspectRoleKind.AXIS_LINK,
+                        _aspect_endpoint_signature(opp2): PatternAspectRoleKind.AXIS_LINK,
+                        _aspect_endpoint_signature(sq_pr): PatternAspectRoleKind.CYCLE_LINK,
+                        _aspect_endpoint_signature(sq_rq): PatternAspectRoleKind.CYCLE_LINK,
+                        _aspect_endpoint_signature(sq_qs): PatternAspectRoleKind.CYCLE_LINK,
+                        _aspect_endpoint_signature(sq_sp): PatternAspectRoleKind.CYCLE_LINK,
+                    },
                 ))
                 break
 
@@ -1270,23 +1317,41 @@ def find_mystic_rectangles(
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
-    for a, b, c, d in combinations(bodies, 4):
-        for ordering in [(a, b, c, d), (a, b, d, c), (a, c, b, d)]:
-            p, q, r, s = ordering
-            t_pq = _get_aspect(aspect_map, p, q, 120.0, trine_orb)
-            t_rs = _get_aspect(aspect_map, r, s, 120.0, trine_orb)
-            s_qr = _get_aspect(aspect_map, q, r,  60.0, sext_orb)
-            s_sp = _get_aspect(aspect_map, s, p,  60.0, sext_orb)
+    for group in combinations(bodies, 4):
+        matched = False
+        for p, r in combinations(group, 2):
             o_pr = _get_aspect(aspect_map, p, r, 180.0, opp_orb)
-            o_qs = _get_aspect(aspect_map, q, s, 180.0, opp_orb)
-            if t_pq and t_rs and s_qr and s_sp and o_pr and o_qs:
-                results.append(_make_pattern(
-                    name="Mystic Rectangle",
-                    bodies=tuple(sorted([a, b, c, d])),
-                    aspects=(t_pq, t_rs, s_qr, s_sp, o_pr, o_qs),
-                    detector="find_mystic_rectangles",
-                    orb_factor=orb_factor,
-                ))
+            if o_pr is None:
+                continue
+            remaining = tuple(body for body in group if body not in {p, r})
+            o_qs = _get_aspect(aspect_map, remaining[0], remaining[1], 180.0, opp_orb)
+            if o_qs is None:
+                continue
+            for q, s in (remaining, tuple(reversed(remaining))):
+                t_pq = _get_aspect(aspect_map, p, q, 120.0, trine_orb)
+                t_rs = _get_aspect(aspect_map, r, s, 120.0, trine_orb)
+                s_qr = _get_aspect(aspect_map, q, r, 60.0, sext_orb)
+                s_sp = _get_aspect(aspect_map, s, p, 60.0, sext_orb)
+                if t_pq and t_rs and s_qr and s_sp:
+                    results.append(_make_pattern(
+                        name="Mystic Rectangle",
+                        bodies=tuple(sorted(group)),
+                        aspects=(t_pq, t_rs, s_qr, s_sp, o_pr, o_qs),
+                        detector="find_mystic_rectangles",
+                        orb_factor=orb_factor,
+                        role_overrides={body: "cycle_member" for body in group},
+                        aspect_role_overrides={
+                            _aspect_endpoint_signature(t_pq): PatternAspectRoleKind.CYCLE_LINK,
+                            _aspect_endpoint_signature(t_rs): PatternAspectRoleKind.CYCLE_LINK,
+                            _aspect_endpoint_signature(s_qr): PatternAspectRoleKind.CYCLE_LINK,
+                            _aspect_endpoint_signature(s_sp): PatternAspectRoleKind.CYCLE_LINK,
+                            _aspect_endpoint_signature(o_pr): PatternAspectRoleKind.AXIS_LINK,
+                            _aspect_endpoint_signature(o_qs): PatternAspectRoleKind.AXIS_LINK,
+                        },
+                    ))
+                    matched = True
+                    break
+            if matched:
                 break
 
     return _dedup_patterns(results)
@@ -1422,6 +1487,7 @@ def find_minor_grand_trines(
                     aspects=(trine, sext1, sext2),
                     detector="find_minor_grand_trines",
                     orb_factor=orb_factor,
+                    role_overrides={p1: "base", p2: "base", apex: "support"},
                 ))
                 break
 
@@ -1602,25 +1668,31 @@ def find_cradles(
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
-    for a, b, c, d in combinations(bodies, 4):
-        for p, q, r, s in [
-            (a, b, c, d), (a, b, d, c), (a, c, b, d),
-            (a, c, d, b), (a, d, b, c), (a, d, c, b),
-        ]:
-            opp   = _get_aspect(aspect_map, p, s,   180.0, opp_orb)
-            tr_pq = _get_aspect(aspect_map, p, q,   120.0, trine_orb)
-            tr_rs = _get_aspect(aspect_map, r, s,   120.0, trine_orb)
-            sx_qr = _get_aspect(aspect_map, q, r,    60.0, sext_orb)
-            sx_pr = _get_aspect(aspect_map, p, r,    60.0, sext_orb)
-            sx_qs = _get_aspect(aspect_map, q, s,    60.0, sext_orb)
-            if opp and tr_pq and tr_rs and sx_qr and sx_pr and sx_qs:
-                results.append(_make_pattern(
-                    name="Cradle",
-                    bodies=tuple(sorted([a, b, c, d])),
-                    aspects=(opp, tr_pq, tr_rs, sx_qr, sx_pr, sx_qs),
-                    detector="find_cradles",
-                    orb_factor=orb_factor,
-                ))
+    for group in combinations(bodies, 4):
+        matched = False
+        for p, s in combinations(group, 2):
+            opp = _get_aspect(aspect_map, p, s, 180.0, opp_orb)
+            if opp is None:
+                continue
+            remaining = tuple(body for body in group if body not in {p, s})
+            for q, r in (remaining, tuple(reversed(remaining))):
+                tr_pq = _get_aspect(aspect_map, p, q, 120.0, trine_orb)
+                tr_rs = _get_aspect(aspect_map, r, s, 120.0, trine_orb)
+                sx_qr = _get_aspect(aspect_map, q, r, 60.0, sext_orb)
+                sx_pr = _get_aspect(aspect_map, p, r, 60.0, sext_orb)
+                sx_qs = _get_aspect(aspect_map, q, s, 60.0, sext_orb)
+                if tr_pq and tr_rs and sx_qr and sx_pr and sx_qs:
+                    results.append(_make_pattern(
+                        name="Cradle",
+                        bodies=tuple(sorted(group)),
+                        aspects=(opp, tr_pq, tr_rs, sx_qr, sx_pr, sx_qs),
+                        detector="find_cradles",
+                        orb_factor=orb_factor,
+                        role_overrides={p: "axis", s: "axis", q: "support", r: "support"},
+                    ))
+                    matched = True
+                    break
+            if matched:
                 break
 
     return _dedup_patterns(results)
@@ -1631,11 +1703,9 @@ def find_trapezes(
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
     """
-    Trapeze (Trapezoid): four planets in sequence where the two end planets
-    are in opposition and the four outer edges are sextiles, with one
-    diagonal also a sextile.
-    Structure: A sext B sext C sext D, A opp C or B opp D (one diagonal
-    opposition), and A sext D closing the shape.
+    Trapeze (Trapezoid): four planets form a three-sextile chain whose end
+    planets are in opposition.
+    Structure: A sext B, B sext C, C sext D, and A opp D.
 
     Orbs: opposition 8°, sextile 5° — all * orb_factor.
     """
@@ -1645,23 +1715,29 @@ def find_trapezes(
     bodies = _bodies_from(aspects)
     results: list[AspectPattern] = []
 
-    for a, b, c, d in combinations(bodies, 4):
-        for p, q, r, s in [
-            (a, b, c, d), (a, b, d, c), (a, c, b, d),
-            (a, c, d, b), (a, d, b, c), (a, d, c, b),
-        ]:
-            sx_pq = _get_aspect(aspect_map, p, q,  60.0, sext_orb)
-            sx_qr = _get_aspect(aspect_map, q, r,  60.0, sext_orb)
-            sx_rs = _get_aspect(aspect_map, r, s,  60.0, sext_orb)
-            opp   = _get_aspect(aspect_map, p, s, 180.0, opp_orb)
-            if sx_pq and sx_qr and sx_rs and opp:
-                results.append(_make_pattern(
-                    name="Trapeze",
-                    bodies=tuple(sorted([a, b, c, d])),
-                    aspects=(sx_pq, sx_qr, sx_rs, opp),
-                    detector="find_trapezes",
-                    orb_factor=orb_factor,
-                ))
+    for group in combinations(bodies, 4):
+        matched = False
+        for p, s in combinations(group, 2):
+            opp = _get_aspect(aspect_map, p, s, 180.0, opp_orb)
+            if opp is None:
+                continue
+            remaining = tuple(body for body in group if body not in {p, s})
+            for q, r in (remaining, tuple(reversed(remaining))):
+                sx_pq = _get_aspect(aspect_map, p, q, 60.0, sext_orb)
+                sx_qr = _get_aspect(aspect_map, q, r, 60.0, sext_orb)
+                sx_rs = _get_aspect(aspect_map, r, s, 60.0, sext_orb)
+                if sx_pq and sx_qr and sx_rs:
+                    results.append(_make_pattern(
+                        name="Trapeze",
+                        bodies=tuple(sorted(group)),
+                        aspects=(sx_pq, sx_qr, sx_rs, opp),
+                        detector="find_trapezes",
+                        orb_factor=orb_factor,
+                        role_overrides={p: "axis", s: "axis", q: "support", r: "support"},
+                    ))
+                    matched = True
+                    break
+            if matched:
                 break
 
     return _dedup_patterns(results)
@@ -1908,18 +1984,19 @@ def find_septile_triangles(
     bisept  = 2 * 360.0 / 7    # 102.857...
     trisept = 3 * 360.0 / 7    # 154.285...
 
-    for a, b, c in combinations(bodies, 3):
-        for p1, p2, p3 in [(a, b, c), (a, c, b), (b, c, a)]:
+    for group in combinations(bodies, 3):
+        for p1, p2, p3 in permutations(group):
             s1 = _get_aspect(aspect_map, p1, p2, sept,   s_orb)
             s2 = _get_aspect(aspect_map, p2, p3, bisept, s_orb)
             s3 = _get_aspect(aspect_map, p1, p3, trisept, s_orb)
             if s1 and s2 and s3:
                 results.append(_make_pattern(
                     name="Septile Triangle",
-                    bodies=tuple(sorted([a, b, c])),
+                    bodies=tuple(sorted(group)),
                     aspects=(s1, s2, s3),
                     detector="find_septile_triangles",
                     orb_factor=orb_factor,
+                    role_overrides={body: "cycle_member" for body in group},
                 ))
                 break
 
@@ -1955,12 +2032,57 @@ _PATTERN_REGISTRY: dict[str, str] = {
 }
 
 
+def _is_structurally_contained(
+    pattern: AspectPattern,
+    container: AspectPattern,
+) -> bool:
+    """Return whether one aspect pattern is a strict subgraph of another."""
+
+    pattern_bodies = frozenset(pattern.bodies)
+    container_bodies = frozenset(container.bodies)
+    if (
+        pattern.source_kind is not PatternSourceKind.ASPECT
+        or container.source_kind is not PatternSourceKind.ASPECT
+        or not pattern_bodies <= container_bodies
+        or not pattern.all_contributions
+    ):
+        return False
+
+    pattern_aspects = frozenset(
+        _aspect_signature(contribution.aspect)
+        for contribution in pattern.all_contributions
+    )
+    container_aspects = frozenset(
+        _aspect_signature(contribution.aspect)
+        for contribution in container.all_contributions
+    )
+    return (
+        pattern_aspects <= container_aspects
+        and (pattern_bodies < container_bodies or pattern_aspects < container_aspects)
+    )
+
+
+def _retain_dominant_patterns(patterns: list[AspectPattern]) -> list[AspectPattern]:
+    """Retain the maximal elements of the admitted structural-containment order."""
+
+    return [
+        pattern
+        for pattern in patterns
+        if not any(
+            _is_structurally_contained(pattern, container)
+            for container in patterns
+            if container is not pattern
+        )
+    ]
+
+
 def find_all_patterns(
     positions: dict[str, float],
     aspects: list[AspectData] | None = None,
     orb_factor: float = 1.0,
     include: list[str] | None = None,
     policy: PatternComputationPolicy | None = None,
+    dominant_only: bool = False,
 ) -> list[AspectPattern]:
     """
     Detect all aspect patterns in a chart.
@@ -1974,16 +2096,30 @@ def find_all_patterns(
                   Valid names: see _PATTERN_REGISTRY keys.
     policy      : optional explicit backend policy. When supplied it takes
                   precedence over `orb_factor` and `include`.
+    dominant_only : when true, retain only aspect patterns that are not strict
+                    structural subgraphs of another admitted pattern. Position-
+                    based Stelliums remain governed by their own maximal-group
+                    doctrine. An explicit `policy` takes precedence.
 
     Returns
     -------
     list[AspectPattern] sorted by pattern name then body names.
     """
-    policy = _validate_policy(policy)
     positions = _validate_positions(positions)
-    if policy is not None:
-        orb_factor = policy.orb_factor
-        include = list(policy.selection.include) if policy.selection.include is not None else None
+    if policy is None:
+        policy = _validate_policy(PatternComputationPolicy(
+            orb_factor=orb_factor,
+            selection=PatternSelectionPolicy(
+                include=tuple(include) if include is not None else None,
+            ),
+            dominant_only=dominant_only,
+        ))
+    else:
+        policy = _validate_policy(policy)
+
+    orb_factor = policy.orb_factor
+    include = list(policy.selection.include) if policy.selection.include is not None else None
+    dominant_only = policy.dominant_only
 
     if aspects is None:
         aspects = find_aspects(positions, orb_factor=orb_factor)
@@ -2043,6 +2179,9 @@ def find_all_patterns(
         all_found.extend(find_quintile_triangles(aspects, orb_factor=orb_factor))
     if "Septile Triangle" in wanted:
         all_found.extend(find_septile_triangles(aspects, orb_factor=orb_factor))
+
+    if dominant_only:
+        all_found = _retain_dominant_patterns(all_found)
 
     all_found.sort(key=lambda p: (p.name, p.bodies))
     return all_found
@@ -2230,8 +2369,15 @@ def _validate_policy(policy: PatternComputationPolicy | None) -> PatternComputat
         raise ValueError("Unsupported pattern selection policy")
     if not isinstance(policy.stellium, StelliumPolicy):
         raise ValueError("Unsupported stellium policy")
-    if policy.orb_factor <= 0:
-        raise ValueError("Pattern orb_factor must be positive")
+    if not isinstance(policy.dominant_only, bool):
+        raise ValueError("Pattern dominant_only must be a boolean")
+    if (
+        isinstance(policy.orb_factor, bool)
+        or not isinstance(policy.orb_factor, (int, float))
+        or not math.isfinite(policy.orb_factor)
+        or policy.orb_factor <= 0
+    ):
+        raise ValueError("Pattern orb_factor must be positive and finite")
     if policy.stellium.min_bodies < 3:
         raise ValueError("Pattern stellium min_bodies must be at least 3")
     if policy.stellium.orb < 0:

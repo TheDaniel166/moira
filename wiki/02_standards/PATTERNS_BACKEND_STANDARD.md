@@ -7,7 +7,8 @@ definitions, layer boundaries, terminology, invariants, failure doctrine, and
 determinism rules are stated here and are frozen until explicitly superseded by
 a revision to this document.
 
-This document reflects current implementation truth as of Patterns Phase 11. It
+This document reflects current implementation truth through the structural-role
+and dominant-containment admission. It
 describes the subsystem that actually exists in `moira/patterns.py`; it does
 not describe aspirational future capabilities.
 
@@ -33,6 +34,7 @@ The computational core remains the authority for:
 - body ordering inside each detected pattern
 - stellium centroid and spread arithmetic
 - duplicate suppression
+- opt-in cross-detector structural-containment filtering
 
 Later layers may preserve, classify, inspect, aggregate, or network this
 truth. They may not recompute pattern doctrine independently.
@@ -87,6 +89,17 @@ A **pattern condition profile** in Moira is:
 
 `PatternConditionProfile` is derived only from lower-layer truth. It is not a
 second pattern engine.
+
+Its state names describe role-resolution completeness only:
+
+| State | Structural meaning |
+|---|---|
+| `reinforced` | every preserved contributing aspect has a detector-owned structural role |
+| `mixed` | at least one preserved contribution remains the generic `member_link` |
+| `weakened` | the pattern has no aspect contributions, as with the position-based Stellium |
+
+These states do not measure harmony, exactness, applying/separating motion, or
+interpretive strength. `AspectData.applying` is not an input to this profile.
 
 #### 1.6 Pattern chart condition profile
 
@@ -188,7 +201,8 @@ Pattern orb doctrine is embodied by:
 - the caller-visible `orb_factor`
 - current Stellium `orb` and `min_bodies` doctrine
 
-The default policy preserves historical behavior exactly.
+The default policy preserves unfiltered detector admission: all registered
+detectors are selected and cross-detector containment is disabled.
 
 #### 4.3 Policy doctrine
 
@@ -200,11 +214,32 @@ default result.
 | named detector selection | `PatternSelectionPolicy` | all registered patterns admitted |
 | Stellium doctrine | `StelliumPolicy` | `min_bodies=3`, `orb=8.0` |
 | global orb scaling | `PatternComputationPolicy.orb_factor` | `1.0` |
+| cross-detector containment | `PatternComputationPolicy.dominant_only` | `False` |
 
 The normative default is:
 
-> `PatternComputationPolicy()` must preserve the current historical subsystem
+> `PatternComputationPolicy()` must preserve the current unfiltered admission
 > behavior exactly.
+
+#### 4.4 Dominant-containment doctrine
+
+When `dominant_only=True`, a detected aspect pattern is omitted only when it is
+a strict structural subgraph of another admitted aspect pattern. This requires:
+
+- both patterns to be aspect-sourced
+- inclusion of the smaller pattern's body set in the container's body set
+- at least one contribution in the smaller pattern
+- inclusion of every smaller-pattern aspect signature in the larger pattern's
+  full preserved aspect surface
+- strict inclusion in at least one dimension: bodies or aspect signatures
+
+Body count alone is not containment. Equal-body patterns remain present when
+their aspect surfaces are equal or incomparable, but an equal-body strict edge
+subgraph such as Trapeze inside Cradle is omitted. Position-sourced Stelliums
+remain incomparable with aspect patterns and retain their detector-local
+maximal-group rule. Dominance is evaluated only among detectors admitted by the
+current selection policy, so an excluded container cannot hide a requested
+subpattern.
 
 ---
 
@@ -219,6 +254,25 @@ The normative default is:
 - typed body roles
 
 `PatternAspectRoleKind` classifies contribution roles descriptively only.
+
+Detector-owned symmetric topology is preserved without arbitrary left/right
+labels:
+
+- Grand Trine bodies are `cycle_member`; all three trines are `cycle_link`.
+- Minor Grand Trine preserves its public symmetric/no-apex contract: the trine
+  endpoints are `base`, the two-sextile focus is `support`, and its links are
+  one `base_link` plus two `support_link` records.
+- Cradle and Trapeze opposition endpoints are `axis`; the remaining bodies are
+  `support`, producing one `axis_link` and structured support links.
+  The admitted Trapeze graph is specifically a three-sextile chain with its
+  two end bodies in opposition; it is not the six-edge Cradle graph.
+- Grand Cross and Mystic Rectangle bodies are `cycle_member`; opposition
+  diagonals are `axis_link` and perimeter relations are `cycle_link`.
+- Septile Triangle bodies and its three harmonic boundary relations are
+  `cycle_member` and `cycle_link` respectively.
+
+These assignments follow detector-proved graph roles. There is no blanket rule
+that relabels every no-apex pattern as structured.
 
 Classification describes preserved truth. It does not affect detector
 admission, orb arithmetic, or pattern semantics.
@@ -277,6 +331,7 @@ Current explicit failures include:
 - malformed policy objects
 - repeated selection names
 - unsupported selection names
+- non-boolean dominant-only policy
 
 #### 7.2 Internal inconsistency behavior
 
@@ -293,6 +348,7 @@ Silent internal drift is prohibited.
 For identical validated inputs and policy, the subsystem guarantees:
 
 - deterministic pattern inclusion / omission
+- deterministic maximal structural-containment filtering when requested
 - deterministic pattern ordering
 - deterministic body-role preservation
 - deterministic contribution ordering
@@ -440,6 +496,7 @@ Minimum validation commands:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests\unit\test_patterns.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_pattern_facade.py tests\server\test_server_patterns_policy.py -q
 .\.venv\Scripts\python.exe -m pytest tests\unit\test_aspects.py -q -k "find_patterns or public_api"
 .\.venv\Scripts\python.exe -m py_compile moira\patterns.py tests\unit\test_patterns.py
 ```
@@ -458,7 +515,8 @@ The current patterns backend does **not** include:
 - chart-wide interpretive synthesis
 - UI or rendering concerns
 - probabilistic confidence scoring
-- pattern-to-pattern doctrinal inference beyond the current structural layers
+- pattern-to-pattern doctrinal inference beyond the explicit optional
+  structural-containment filter
 
 Those concerns belong to later layers or different subsystems. They are not
 part of the current constitutional backend.

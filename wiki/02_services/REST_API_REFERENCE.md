@@ -449,6 +449,39 @@ prior target contract.
 Fixed-star topology labels must be nonblank, have no surrounding whitespace,
 and must not use a canonical Solar System body identity.
 
+### Topographic Lunar-Contact Engine Boundary
+
+Topography-conditioned lunar contact chronology is intentionally an
+engine-only, direct-import product. Its immutable vessels and solver are
+available from `moira.lunar_occultation_contacts`, while event-specific lunar
+limb profiles are prepared through `moira.lunar_limb`. There is no `Moira`
+facade method, FastAPI route, OpenAPI operation, or request/response schema for
+this product.
+
+The three related products retain separate meanings:
+
+- the existing occultation topology routes return nominal spherical
+  mean-limb path and limit geometry;
+- the engine-only contact solver returns a predicted disappearance,
+  reappearance, or tangency chronology conditioned on a prepared lunar
+  topography profile; and
+- frozen IOTA event reductions preserve observed contact timings as authority
+  evidence rather than relabeling them as model output.
+
+The Moira-derived LOLA RDR profile path uses a content-identified DE441/LE441 physical
+Moon-to-observer light cone, the NAIF DE440_ME421 lunar orientation resources,
+and official USGS LOLA topography. Its finite-distance tangent circle and
+perspective-equivalent radii avoid an orthographic surface approximation.
+The direct-only profile is a declared half-open-bin-maximum, centre-sample
+linear reconstruction and makes no exact sub-bin topography claim.
+Physical contact admission is airless and excludes observer-motion aberration
+and atmospheric refraction; its stellar ray uses the contact-private
+Klioner-equation deflection policy recorded in engine provenance. No
+topographic-contact comparison tolerance or
+numerical validation result is part of the REST contract. The separately
+admitted two-site IOTA/LOLA engine validation does not create a facade method,
+route, schema, or transport-level accuracy promise.
+
 ### Lunar Eclipse Compatibility REST Contract
 
 `POST /v1/eclipses/lunar/local` retains its existing request and response
@@ -540,6 +573,31 @@ or rendered map products. `POST /v1/eclipses/solar/path` and its
 | POST | `/v1/midpoints/pictures` | `midpoint_pictures_route` |
 | POST | `/v1/midpoints/weighting` | `midpoint_weighting_route` |
 | POST | `/v1/midpoints/clusters` | `midpoint_clusters_route` |
+
+### Pattern Search And Dominance Policy
+
+The shared `PatternRequest` for `/v1/patterns/find`,
+`/v1/patterns/chart-profile`, and `/v1/patterns/network` accepts `chart`,
+`include_nodes`, finite `orb_factor` in `(0, 10]`, optional detector-name
+`include`, and `dominant_only` (default `false`). The three routes use the same
+filtered pattern set so their events, chart condition, and network views cannot
+drift. `dominant_only` must be an actual JSON boolean, and `orb_factor` must be
+a JSON number; coercive strings and booleans are rejected.
+
+`dominant_only=true` retains maximal structural aspect patterns. A candidate is
+contained only when its bodies and full preserved aspect signatures are both
+subsets of another admitted aspect-sourced pattern, with at least one strict
+inclusion. Thus a Grand Trine inside a Kite and a same-body Trapeze edge-subgraph
+inside a Cradle are suppressed, while a pattern with a different relation, an
+equal-body equal-edge overlap, or a position-based Stellium is retained.
+Selection happens first: an excluded Kite cannot hide an explicitly requested
+Grand Trine.
+
+Pattern response `condition_profile.state` is role-resolution completeness,
+not applying/separating motion or astrological strength. The structured role
+repair means canonical Grand Trine, Minor Grand Trine, Cradle, and Trapeze
+responses no longer report `mixed` solely because their detectors lacked role
+labels.
 
 ### Positions-In Aspect REST Admission Boundary
 

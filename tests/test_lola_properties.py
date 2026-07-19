@@ -245,7 +245,17 @@ def test_property_14_binning(pas, target_pa, bin_width):
         diff = pas[i] - target_pa
         while diff > 180: diff -= 360
         while diff <= -180: diff += 360
-        assert bins[i] == math.floor(diff / bin_width)
+        scaled = diff / bin_width
+        # The admitted compatibility helper uses C++ ``std::round``: nearest
+        # bin, with exact half values away from zero.  Contact profiles have a
+        # separate half-open-bin doctrine and do not inherit this legacy
+        # rounding rule.
+        expected = (
+            math.floor(scaled + 0.5)
+            if scaled >= 0.0
+            else math.ceil(scaled - 0.5)
+        )
+        assert bins[i] == expected
 
 @given(
     bins=st.lists(st.integers(-10, 10), min_size=1, max_size=100),
@@ -270,13 +280,14 @@ def test_property_15_max_radius_per_bin(bins, radii):
 )
 @settings(max_examples=50)
 def test_property_16_lexsort_parity(bins, radii):
-    # Pure-Python lexsort equivalent (stable sort by (radii, bins))
+    # Pure-Python equivalent of np.lexsort((radii, bins)): the final key
+    # (bins) is primary, and radius is the within-bin secondary key.
     size = min(len(bins), len(radii))
     bins, radii = bins[:size], radii[:size]
     indices = moira_native.lexsort_by_bin_and_radius(bins, radii)
 
     # Build expected using pure Python (equivalent to np.lexsort((radii, bins)))
-    paired = sorted(range(size), key=lambda i: (radii[i], bins[i]))
+    paired = sorted(range(size), key=lambda i: (bins[i], radii[i]))
     expected_indices = paired
     assert list(indices) == expected_indices
 

@@ -148,12 +148,26 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         facade = _facade_module()
         return facade.planetary_node(planet, facade.jd_from_datetime(dt))
 
-    def patterns(self, chart, orb_factor: float = 1.0):
-        """Find all aspect patterns in a chart."""
+    def patterns(
+        self,
+        chart,
+        orb_factor: float = 1.0,
+        dominant_only: bool = False,
+    ):
+        """Find chart aspect patterns, optionally retaining only maximal structures."""
         facade = _facade_module()
         positions = chart.longitudes()
-        asps = facade.find_aspects(positions, speeds=chart.speeds())
-        return facade.find_all_patterns(positions, aspects=asps, orb_factor=orb_factor)
+        asps = facade.find_aspects(
+            positions,
+            speeds=chart.speeds(),
+            orb_factor=orb_factor,
+        )
+        return facade.find_all_patterns(
+            positions,
+            aspects=asps,
+            orb_factor=orb_factor,
+            dominant_only=dominant_only,
+        )
 
     def phenomena(self, body: str, jd_start: float, jd_end: float):
         """Find greatest elongations, perihelion, and aphelion for a body."""
