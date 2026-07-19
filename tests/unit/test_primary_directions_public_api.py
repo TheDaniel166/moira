@@ -6,7 +6,9 @@ without leaking into the intentionally thin root `moira` package.
 """
 
 import moira
+import moira.facade as facade_module
 from moira import primary_directions
+from moira._facade_special import SpecialTopicsFacadeMixin
 
 
 EXPECTED_SYMBOLS = [
@@ -89,3 +91,79 @@ def test_primary_arc_does_not_expose_fictional_key_family() -> None:
     )
     # An arc holds no key, so it must not claim a key family.
     assert not hasattr(arc, "key_family")
+
+
+def test_special_facade_preserves_legacy_primary_direction_arguments_and_adds_policy_controls(
+    monkeypatch,
+) -> None:
+    calls = []
+
+    def fake_find(*args, **kwargs):
+        calls.append((args, kwargs))
+        return "arcs"
+
+    monkeypatch.setattr(facade_module, "find_primary_arcs", fake_find)
+    facade = SpecialTopicsFacadeMixin()
+    result = facade.primary_directions(
+        "chart",
+        "houses",
+        40.0,
+        75.0,
+        False,
+        ["Sun"],
+        ["Moon"],
+        solar_speed=0.9,
+        obliquity=23.4,
+        policy="policy",
+    )
+
+    assert result == "arcs"
+    assert calls == [
+        (
+            ("chart", "houses", 40.0),
+            {
+                "max_arc": 75.0,
+                "include_converse": False,
+                "significators": ["Sun"],
+                "promissors": ["Moon"],
+                "solar_speed": 0.9,
+                "obliquity": 23.4,
+                "policy": "policy",
+            },
+        )
+    ]
+
+
+def test_special_facade_exposes_primary_direction_evaluation_parity(monkeypatch) -> None:
+    facade = SpecialTopicsFacadeMixin()
+    sentinel = object()
+    calls = []
+
+    def record(name):
+        def inner(*args, **kwargs):
+            calls.append((name, args, kwargs))
+            return sentinel
+
+        return inner
+
+    for name in (
+        "primary_directions_policy_preset",
+        "evaluate_primary_direction_relations",
+        "evaluate_primary_direction_condition",
+        "evaluate_primary_directions_aggregate",
+        "evaluate_primary_directions_network",
+    ):
+        monkeypatch.setattr(facade_module, name, record(name))
+
+    assert facade.primary_directions_policy_preset("preset", include_converse=False) is sentinel
+    assert facade.primary_direction_relations("arc", policy="policy") is sentinel
+    assert facade.primary_direction_condition(["arc"], policy="policy") is sentinel
+    assert facade.primary_directions_profile(["arc"], policy="policy") is sentinel
+    assert facade.primary_directions_network(["arc"], policy="policy") is sentinel
+    assert [name for name, _, _ in calls] == [
+        "primary_directions_policy_preset",
+        "evaluate_primary_direction_relations",
+        "evaluate_primary_direction_condition",
+        "evaluate_primary_directions_aggregate",
+        "evaluate_primary_directions_network",
+    ]

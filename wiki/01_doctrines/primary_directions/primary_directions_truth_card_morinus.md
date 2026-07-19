@@ -6,12 +6,12 @@
 
 ## Mathematical Basis
 
-- equatorial primary-direction family
-- on the current admitted conjunction-style surface, it perfects by equatorial
-  right-ascension difference
-- on the current surface:
-  - `direct = (RA_significator - RA_promissor) mod 360`
-  - `converse = (RA_promissor - RA_significator) mod 360`
+- circle-of-position primary-direction family
+- on the current admitted conjunction-style surface, it uses Morin's
+  under-the-pole treatment, presently the same runtime law as Regiomontanus
+- direct is the primum-mobile arc carrying the promissor to the
+  significator's circle of position; traditional converse exchanges those
+  roles rather than merely negating a generally asymmetric arc
 - on the explicit Morinian aspect branch, Moira now admits the circle-of-aspects
   projection when the service layer supplies:
   - `delta_max` for the source body's current node-to-node path segment
@@ -27,7 +27,7 @@
 
 ## Interpretive Meaning
 
-- perfection through a Morinian equatorial doctrine
+- perfection through a Morinian circle-of-position doctrine
 - the full Morinian distinctness is expected to sharpen when the aspect doctrine
   is widened beyond the current conjunction-style branch
 
@@ -49,8 +49,9 @@
 
 - this does **not** claim that the full Morinian aspect family has been
   implemented
-- the current branch is still only partially sovereign:
-  - conjunction-style work remains shared with the equatorial branch
+- the current branch is still only partially method-distinct:
+  - conjunction-style work remains shared with the Regiomontanus under-the-pole
+    branch
   - the aspect-plane branch is now explicit and source-backed
 - on current evidence, Moira does **not** treat conjunction-style Morinus as a
   missing distinct formula awaiting discovery; it treats the absence of a
@@ -58,20 +59,23 @@
 
 ## Epistemic Status
 
-- `verified narrow admission`
+- `historically anchored narrow admission`
+- the Morin Book 22 Hemminga Mars-to-Jupiter example is checked at a declared
+  `0.06 degree` tolerance because the printed source inputs are rounded; the
+  current residual is about `0.11 arcminute`
 
 ## Mathematical Sovereignty
 
 - `shared_narrow`
 - currently shares its admitted runtime law with:
-  - `meridian`
+  - `regiomontanus`
 
 ## Resolution of the Remaining Gap
 
-- the explicit Morinian sovereignty now lives in the aspect-plane branch
+- the explicit Morinian distinctness now lives in the aspect-plane branch
 - conjunction-style Morinus is not currently promoted to a separate runtime law
   because no source-safe distinct governing formula has yet been verified
 - unless such a formula is recovered, the honest long-term stance is:
   - Morinus aspects: distinct
-  - Morinus conjunctions: shared with the equatorial branch
+  - Morinus conjunctions: shared with the Regiomontanus under-the-pole branch
 

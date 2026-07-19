@@ -1177,6 +1177,46 @@ direction.
 | POST | `/v1/primary-directions/network` | `primary_directions_network_route` |
 | POST | `/v1/primary-directions/network/reduction` | `primary_directions_network_reduction_route` |
 
+### Primary-directions transport contract
+
+The eight paths above are stable. The compact and reduction variants share the
+same engine computation; reduction responses add resolved preset/policy, key,
+search-mode, requested observer, and effective house-system truth.
+
+Policy resolution is enum-backed. Canonical preset names are preferred;
+recognized historical aliases remain adapters and the reduction truth preserves
+both requested and canonical identity. A supplied preset may not conflict with
+an explicit method or space. An unqualified Ptolemy `in_zodiaco` request is
+ambiguous and is rejected; clients must choose the aspect, antiscia, or
+parallel preset that names the intended doctrine. The solar key requires an
+explicit positive natal solar rate. `PLACIDUS_MUNDANE` and
+`PLACIDIAN_CLASSIC_SEMI_ARC` reject `in_zodiaco` because those runtime methods
+are mundane-only. Fixed-star targets require conjunction admission, and
+rapt-parallel direct/converse motion remains specific to the configured rapt
+relation and target rather than widening the ordinary policy.
+
+`relations`, `profile`, and `network` accept either engine search inputs or a
+bounded submitted-arc list. Submitted items are validated and reconstructed as
+real `PrimaryArc` vessels; no transport duck type or hidden conversion fallback
+is used. Omission means `engine_search`. An explicitly supplied empty list means
+`submitted_arcs` with no items and returns a valid empty transport response.
+Lists are bounded to 4,096 items. In an empty profile response, `profiles=[]`,
+all counts are zero, and `strongest_significator` / `weakest_significator` are
+`null`; `nearest_arc=0.0` and `farthest_arc=0.0` are transport compatibility
+sentinels only and do not represent measured arcs. An empty network response
+uses `nodes=[]`, `edges=[]`, `isolated=[]`, and `most_connected=null`; that
+vessel has no numeric arc extrema.
+
+Natal latitude/longitude construct the natal chart. `observer_lat` and
+`observer_lon` construct directional houses and own the geographic latitude
+used by primary-direction geometry. Zero is a lawful longitude and is retained.
+`include_relations` controls response depth only; it does not change or mutate
+the engine profile. Arc responses preserve positional `relational_kind`
+separately from the compatibility perfection-kind `relation_kind` field.
+`solar_rate_explicit` distinguishes a generated or submitted natal solar rate
+from the numeric compatibility rate retained on a non-solar submitted arc;
+only the former can support solar-key conversion.
+
 For every `/v1/varshaphal/*` request, the timezone offset supplied on
 `natal_dt` owns the doctrinal civil birth date and therefore the birth year
 used by Muntha and Mudda progression. The offset is not transport-only

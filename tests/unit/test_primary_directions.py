@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import FrozenInstanceError, dataclass
 import math
 
 import pytest
@@ -27,6 +27,8 @@ from moira.primary_directions import (
     PrimaryDirectionMotion,
     PrimaryDirectionPerfectionKind,
     PrimaryDirectionPerfectionPolicy,
+    PrimaryDirectionRelation,
+    PrimaryDirectionRelationProfile,
     PrimaryDirectionSpace,
     PrimaryDirectionTargetClass,
     PrimaryDirectionTargetPolicy,
@@ -148,15 +150,16 @@ def _test_regio_meridian_distance(entry: SpeculumEntry) -> float:
 
 
 def _test_regio_pole(entry: SpeculumEntry, *, geo_lat: float) -> float:
-    md = math.radians(_test_regio_meridian_distance(entry))
     phi = math.radians(geo_lat)
     dec = math.radians(entry.dec)
-    a = math.atan(math.cos(phi) * math.tan(md))
-    b = math.atan(math.tan(phi) * math.cos(md))
-    c = b + dec
-    f = math.atan(math.sin(phi) * math.sin(md) * math.tan(c))
-    zd = a + f
-    return math.degrees(math.asin(max(-1.0, min(1.0, math.sin(phi) * math.sin(zd)))))
+    ha = math.radians(entry.ha)
+    transverse = math.cos(dec) * math.sin(ha)
+    meridional = (
+        math.cos(phi) * math.cos(dec) * math.cos(ha)
+        + math.sin(phi) * math.sin(dec)
+    )
+    sin_zd = abs(transverse) / math.hypot(transverse, meridional)
+    return math.degrees(math.asin(math.sin(phi) * sin_zd))
 
 
 def _test_regio_w(entry: SpeculumEntry, pole_deg: float, *, eastern: bool) -> float:
@@ -224,6 +227,7 @@ def test_speculum_entry_build_lower_hemisphere_fraction() -> None:
 
 def test_primary_arc_years_supports_all_keys() -> None:
     arc = PrimaryArc("Sun", "Moon", arc=10.0, direction=DIRECT, solar_rate=0.5)
+    assert arc.solar_rate_explicit is True
     assert arc.years("ptolemy") == pytest.approx(10.0)
     assert arc.years("naibod") == pytest.approx(10.0 / (360.0 / 365.25))
     assert arc.years("cardan") == pytest.approx(10.0 / (59.0 / 60.0 + 12.0 / 3600.0))
@@ -237,9 +241,19 @@ def test_primary_arc_years_supports_all_keys() -> None:
     assert arc.is_converse is False
 
 
+def test_primary_arc_does_not_treat_compatibility_rate_as_natal_solar_truth() -> None:
+    arc = PrimaryArc("Sun", "Moon", arc=10.0, direction=DIRECT)
+
+    assert arc.solar_rate == pytest.approx(360.0 / 365.25)
+    assert arc.solar_rate_explicit is False
+    assert arc.years("naibod") == pytest.approx(10.0 / (360.0 / 365.25))
+    with pytest.raises(ValueError, match="explicit positive finite natal solar rate"):
+        arc.years("solar")
+
+
 def test_key_policy_exposes_family() -> None:
     assert PrimaryDirectionKeyPolicy(PrimaryDirectionKey.NAIBOD).family is PrimaryDirectionKeyFamily.STATIC
-    assert PrimaryDirectionKeyPolicy(PrimaryDirectionKey.SOLAR).family is PrimaryDirectionKeyFamily.DYNAMIC
+    assert PrimaryDirectionKeyPolicy(PrimaryDirectionKey.SOLAR).family is PrimaryDirectionKeyFamily.STATIC
 
 
 def test_speculum_includes_planets_nodes_and_angles() -> None:
@@ -361,6 +375,10 @@ def test_ptolemy_contra_parallel_target_uses_declination_equivalent_projection()
 
     assert arcs
     assert {arc.promissor for arc in arcs} == {"Venus Contra-Parallel"}
+    assert all(
+        arc.relational_kind is PrimaryDirectionRelationalKind.CONTRA_PARALLEL
+        for arc in arcs
+    )
 
     base_map = {entry.name: entry for entry in speculum(chart, houses, geo_lat=51.5)}
     venus = base_map[Body.VENUS]
@@ -436,6 +454,10 @@ def test_ptolemy_antiscia_target_uses_reflected_longitude_projection() -> None:
     )
 
     assert arcs
+    assert all(
+        arc.relational_kind is PrimaryDirectionRelationalKind.ANTISCION
+        for arc in arcs
+    )
     reflected_longitude = antiscion(chart.planets[Body.VENUS].longitude)
     expected_entry = SpeculumEntry.build(
         f"{Body.VENUS} Antiscion",
@@ -477,6 +499,10 @@ def test_ptolemy_contra_antiscia_target_uses_reflected_longitude_projection() ->
     )
 
     assert arcs
+    assert all(
+        arc.relational_kind is PrimaryDirectionRelationalKind.CONTRA_ANTISCION
+        for arc in arcs
+    )
     reflected_longitude = contra_antiscion(chart.planets[Body.VENUS].longitude)
     expected_entry = SpeculumEntry.build(
         f"{Body.VENUS} Contra-Antiscion",
@@ -647,6 +673,78 @@ def test_catalog_fixed_star_targets_require_angle_or_planet_significators() -> N
         )
 
 
+def test_catalog_fixed_star_targets_require_conjunction_admission() -> None:
+    with pytest.raises(ValueError, match="require conjunction admission"):
+        PrimaryDirectionsPolicy(
+            target_policy=PrimaryDirectionTargetPolicy(
+                admitted_significator_classes=frozenset(
+                    {
+                        PrimaryDirectionTargetClass.ANGLE,
+                        PrimaryDirectionTargetClass.PLANET,
+                    }
+                ),
+                admitted_promissor_classes=frozenset(
+                    {PrimaryDirectionTargetClass.PLANET}
+                ),
+            ),
+            relation_policy=PrimaryDirectionRelationPolicy(
+                frozenset({PrimaryDirectionRelationalKind.ZODIACAL_ASPECT})
+            ),
+            fixed_star_targets=(PrimaryDirectionFixedStarTarget("Sirius"),),
+        )
+
+
+def test_placidian_classic_uses_oblique_ascension_not_ascendant_ra() -> None:
+    chart, houses = _oblique_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PLACIDIAN_CLASSIC_MUNDANE,
+        include_converse=False,
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=[Body.SUN],
+        promissors=[Body.MOON],
+        policy=policy,
+    )
+    entries = {
+        entry.name: entry
+        for entry in speculum(
+            chart,
+            houses,
+            geo_lat=51.5,
+            obliquity=chart.obliquity,
+        )
+    }
+    correct, _ = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+        entries[Body.SUN],
+        entries[Body.MOON],
+        space=PrimaryDirectionSpace.IN_MUNDO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=(houses.armc + 90.0) % 360.0,
+    )
+    ascendant_ra_miswire, _ = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+        entries[Body.SUN],
+        entries[Body.MOON],
+        space=PrimaryDirectionSpace.IN_MUNDO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=entries["ASC"].ra,
+    )
+
+    assert len(arcs) == 1
+    assert arcs[0].arc == pytest.approx(correct)
+    assert abs(correct - ascendant_ra_miswire) > 0.1
+
+
 def test_placidian_rapt_parallel_target_uses_explicit_direct_law() -> None:
     chart, houses = _oblique_chart()
     policy = primary_directions_policy_preset(
@@ -668,6 +766,8 @@ def test_placidian_rapt_parallel_target_uses_explicit_direct_law() -> None:
     assert len(arcs) == 1
     assert arcs[0].direction == DIRECT
     assert arcs[0].promissor == f"{Body.MOON} Rapt Parallel"
+    assert arcs[0].relational_kind is PrimaryDirectionRelationalKind.RAPT_PARALLEL
+    assert relate_primary_arc(arcs[0], policy=policy).arc is arcs[0]
 
     entry_map = {entry.name: entry for entry in speculum(chart, houses, geo_lat=51.5, obliquity=chart.obliquity)}
     expected_arc = compute_placidian_rapt_parallel_arc(entry_map[Body.MOON], entry_map[Body.VENUS])
@@ -739,10 +839,45 @@ def test_placidian_converse_rapt_parallel_target_uses_explicit_converse_law() ->
     assert len(arcs) == 1
     assert arcs[0].direction == CONVERSE
     assert arcs[0].promissor == f"{Body.MOON} Rapt Parallel"
+    assert arcs[0].relational_kind is PrimaryDirectionRelationalKind.RAPT_PARALLEL
+    relation = relate_primary_arc(arcs[0], policy=policy)
+    assert relation.arc is arcs[0]
+    assert (
+        relation.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE
+    )
 
     entry_map = {entry.name: entry for entry in speculum(chart, houses, geo_lat=51.5, obliquity=chart.obliquity)}
     expected_arc = compute_placidian_converse_rapt_parallel_arc(entry_map[Body.MOON], entry_map[Body.VENUS])
     assert arcs[0].arc == pytest.approx(expected_arc)
+
+
+def test_converse_rapt_and_fixed_star_composition_is_target_and_motion_specific() -> None:
+    chart, houses = _oblique_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE,
+        include_converse=False,
+        placidian_rapt_parallel_targets=(PlacidianRaptParallelTarget(Body.MOON),),
+        fixed_star_targets=(PrimaryDirectionFixedStarTarget("Sirius"),),
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=[Body.VENUS],
+        policy=policy,
+    )
+
+    assert {arc.promissor for arc in arcs} == {
+        f"{Body.MOON} Rapt Parallel",
+        "Sirius",
+    }
+    by_promissor = {arc.promissor: arc for arc in arcs}
+    assert by_promissor[f"{Body.MOON} Rapt Parallel"].motion is PrimaryDirectionMotion.CONVERSE
+    assert by_promissor["Sirius"].motion is PrimaryDirectionMotion.DIRECT
+    assert all(relate_primary_arc(arc, policy=policy).arc is arc for arc in arcs)
 
 
 def test_zodiacal_aspect_promissor_requires_admitted_aspect_relation_kind() -> None:
@@ -1330,7 +1465,7 @@ def test_porphyry_is_no_longer_admitted_as_runtime_method() -> None:
         PrimaryDirectionsPolicy(method="porphyry")  # type: ignore[arg-type]
 
 
-def test_in_zodiaco_is_admitted_on_narrow_longitude_surface() -> None:
+def test_ptolemy_zodiacal_suppressed_surface_is_admitted_and_distinct() -> None:
     chart, houses = _oblique_chart()
     mundane_arcs = find_primary_arcs(
         chart,
@@ -1340,6 +1475,7 @@ def test_in_zodiaco_is_admitted_on_narrow_longitude_surface() -> None:
         significators=[Body.SUN],
         promissors=[Body.MOON],
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_MUNDO,
             perfection_policy=PrimaryDirectionPerfectionPolicy(
                 PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION
@@ -1354,6 +1490,7 @@ def test_in_zodiaco_is_admitted_on_narrow_longitude_surface() -> None:
         significators=[Body.SUN],
         promissors=[Body.MOON],
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
@@ -1371,8 +1508,24 @@ def test_in_zodiaco_is_admitted_on_narrow_longitude_surface() -> None:
     assert all(arc.space is PrimaryDirectionSpace.IN_ZODIACO for arc in zodiacal_arcs)
     arc_by_direction = {arc.direction: arc for arc in zodiacal_arcs}
     assert set(arc_by_direction) == {DIRECT, CONVERSE}
-    assert arc_by_direction[DIRECT].arc == pytest.approx((15.0 - 82.0) % 360.0)
-    assert arc_by_direction[CONVERSE].arc == pytest.approx((82.0 - 15.0) % 360.0)
+    sig_zero = SpeculumEntry.build(
+        Body.SUN, 15.0, 0.0, houses.armc, chart.obliquity, 51.5
+    )
+    moon_zero = SpeculumEntry.build(
+        Body.MOON, 82.0, 0.0, houses.armc, chart.obliquity, 51.5
+    )
+    expected_direct, expected_converse = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        sig_zero,
+        moon_zero,
+        space=PrimaryDirectionSpace.IN_ZODIACO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=(houses.armc + 90.0) % 360.0,
+    )
+    assert arc_by_direction[DIRECT].arc == pytest.approx(expected_direct)
+    assert arc_by_direction[CONVERSE].arc == pytest.approx(expected_converse)
     assert any(
         abs(left.arc - right.arc) > 1e-6
         for left, right in zip(zodiacal_arcs, mundane_arcs)
@@ -1389,6 +1542,7 @@ def test_in_zodiaco_promissor_retained_branch_is_admitted_and_distinct() -> None
         significators=[Body.SUN],
         promissors=[Body.MOON],
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
@@ -1409,6 +1563,7 @@ def test_in_zodiaco_promissor_retained_branch_is_admitted_and_distinct() -> None
         significators=[Body.SUN],
         promissors=[Body.MOON],
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED
@@ -1427,8 +1582,16 @@ def test_in_zodiaco_promissor_retained_branch_is_admitted_and_distinct() -> None
     retained_by_direction = {arc.direction: arc for arc in retained_arcs}
     retained_speculum = speculum(chart, houses, geo_lat=51.5, obliquity=chart.obliquity)
     retained_map = {entry.name: entry for entry in retained_speculum}
-    expected_direct = (retained_map[Body.SUN].ra - retained_map[Body.MOON].ra) % 360.0
-    expected_converse = (retained_map[Body.MOON].ra - retained_map[Body.SUN].ra) % 360.0
+    expected_direct, expected_converse = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        retained_map[Body.SUN],
+        retained_map[Body.MOON],
+        space=PrimaryDirectionSpace.IN_ZODIACO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=(houses.armc + 90.0) % 360.0,
+    )
     assert retained_by_direction[DIRECT].arc == pytest.approx(expected_direct)
     assert retained_by_direction[CONVERSE].arc == pytest.approx(expected_converse)
     assert any(
@@ -1439,7 +1602,7 @@ def test_in_zodiaco_promissor_retained_branch_is_admitted_and_distinct() -> None
 
 def test_regiomontanus_is_admitted_on_zodiacal_surface() -> None:
     chart, houses = _oblique_chart()
-    placidus_zodiacal = find_primary_arcs(
+    ptolemy_zodiacal = find_primary_arcs(
         chart,
         houses,
         geo_lat=51.5,
@@ -1447,7 +1610,7 @@ def test_regiomontanus_is_admitted_on_zodiacal_surface() -> None:
         significators=[Body.SUN],
         promissors=[Body.MOON],
         policy=PrimaryDirectionsPolicy(
-            method=PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
@@ -1507,7 +1670,7 @@ def test_regiomontanus_is_admitted_on_zodiacal_surface() -> None:
     assert by_direction[CONVERSE].arc == pytest.approx((w_sig_conv - w_prom_conv) % 360.0)
     assert any(
         abs(left.arc - right.arc) > 1e-6
-        for left, right in zip(regio_zodiacal, placidus_zodiacal)
+        for left, right in zip(regio_zodiacal, ptolemy_zodiacal)
     )
 
 
@@ -1691,6 +1854,10 @@ def test_regiomontanus_supports_house_cusp_targets_with_aspect_inherited_variant
     assert len(arcs) == 2
     assert {arc.significator for arc in arcs} == {"H10"}
     assert {arc.promissor for arc in arcs} == {f"{Body.MOON} Trine"}
+    assert all(
+        arc.relational_kind is PrimaryDirectionRelationalKind.ZODIACAL_ASPECT
+        for arc in arcs
+    )
     by_direction = {arc.direction: arc for arc in arcs}
     cusp_entry = SpeculumEntry.build("H10", houses.cusps[9], 0.0, houses.armc, chart.obliquity, 51.5)
     moon_entry = SpeculumEntry.build(
@@ -1839,6 +2006,7 @@ def test_in_zodiaco_admits_explicit_aspectual_promissors() -> None:
         significators=[Body.SUN],
         promissors=[f"{Body.MOON} Trine"],
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
@@ -1873,8 +2041,51 @@ def test_in_zodiaco_admits_explicit_aspectual_promissors() -> None:
     assert len(arcs) == 2
     assert {arc.promissor for arc in arcs} == {f"{Body.MOON} Trine"}
     arc_by_direction = {arc.direction: arc for arc in arcs}
-    assert arc_by_direction[DIRECT].arc == pytest.approx((15.0 - ((82.0 + 120.0) % 360.0)) % 360.0)
-    assert arc_by_direction[CONVERSE].arc == pytest.approx((((82.0 + 120.0) % 360.0) - 15.0) % 360.0)
+    sig_zero = SpeculumEntry.build(
+        Body.SUN, 15.0, 0.0, houses.armc, chart.obliquity, 51.5
+    )
+    aspect_zero = SpeculumEntry.build(
+        f"{Body.MOON} Trine",
+        (82.0 + 120.0) % 360.0,
+        0.0,
+        houses.armc,
+        chart.obliquity,
+        51.5,
+    )
+    expected_direct, expected_converse = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        sig_zero,
+        aspect_zero,
+        space=PrimaryDirectionSpace.IN_ZODIACO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=(houses.armc + 90.0) % 360.0,
+    )
+    assert arc_by_direction[DIRECT].arc == pytest.approx(expected_direct)
+    assert arc_by_direction[CONVERSE].arc == pytest.approx(expected_converse)
+
+
+def test_zodiacal_aspectual_promissor_materializes_a_house_cusp_source() -> None:
+    chart, houses = _oblique_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ASPECT,
+        include_converse=False,
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=[Body.SUN],
+        promissors=["H10 Trine"],
+        policy=policy,
+    )
+
+    assert len(arcs) == 1
+    assert arcs[0].promissor == "H10 Trine"
+    assert arcs[0].relational_kind is PrimaryDirectionRelationalKind.ZODIACAL_ASPECT
 
 
 def test_in_zodiaco_aspect_inherited_branch_closes_more_of_field_plane_gap() -> None:
@@ -1887,6 +2098,7 @@ def test_in_zodiaco_aspect_inherited_branch_closes_more_of_field_plane_gap() -> 
         significators=[Body.SUN],
         promissors=[f"{Body.MOON} Trine"],
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
@@ -1925,6 +2137,7 @@ def test_in_zodiaco_aspect_inherited_branch_closes_more_of_field_plane_gap() -> 
         significators=[Body.SUN],
         promissors=[f"{Body.MOON} Trine"],
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED
@@ -1969,8 +2182,18 @@ def test_in_zodiaco_aspect_inherited_branch_closes_more_of_field_plane_gap() -> 
         51.5,
     )
     sun_entry = {entry.name: entry for entry in inherited_entries}[Body.SUN]
-    assert inherited_by_direction[DIRECT].arc == pytest.approx((sun_entry.ra - inherited_point.ra) % 360.0)
-    assert inherited_by_direction[CONVERSE].arc == pytest.approx((inherited_point.ra - sun_entry.ra) % 360.0)
+    expected_direct, expected_converse = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        sun_entry,
+        inherited_point,
+        space=PrimaryDirectionSpace.IN_ZODIACO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED,
+        geo_lat=51.5,
+        armc=houses.armc,
+        oa_asc=(houses.armc + 90.0) % 360.0,
+    )
+    assert inherited_by_direction[DIRECT].arc == pytest.approx(expected_direct)
+    assert inherited_by_direction[CONVERSE].arc == pytest.approx(expected_converse)
     assert any(
         abs(left.arc - right.arc) > 1e-6
         for left, right in zip(inherited_arcs, suppressed_arcs)
@@ -2183,11 +2406,13 @@ def test_relation_profile_and_local_condition_surface() -> None:
         "Moon",
         arc=67.0,
         direction=DIRECT,
+        method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
         space=PrimaryDirectionSpace.IN_ZODIACO,
     )
     zodiacal_relation = relate_primary_arc(
         zodiacal_arc,
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
@@ -2208,6 +2433,7 @@ def test_relation_profile_and_local_condition_surface() -> None:
     retained_relation = relate_primary_arc(
         zodiacal_arc,
         policy=PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED
@@ -2260,6 +2486,9 @@ def test_primary_direction_profiles_reject_invalid_shapes() -> None:
     with pytest.raises(ValueError):
         evaluate_primary_directions_network([])
 
+    with pytest.raises(ValueError, match="iterable of PrimaryArc"):
+        evaluate_primary_directions_network(None)  # type: ignore[arg-type]
+
     with pytest.raises(ValueError):
         _ = relate_primary_arc(
             PrimaryArc(
@@ -2276,3 +2505,127 @@ def test_primary_direction_profiles_reject_invalid_shapes() -> None:
         )
 
     assert relation_profile.detected_relation.arc == arc
+
+
+def test_relation_vessels_enforce_space_and_arc_ownership() -> None:
+    mundane_arc = PrimaryArc("Sun", "Moon", arc=10.0, direction=DIRECT)
+    with pytest.raises(ValueError, match="in_mundo arcs require mundane"):
+        PrimaryDirectionRelation(
+            arc=mundane_arc,
+            relation_kind=PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION,
+            converse_doctrine=PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE,
+            key_policy=PrimaryDirectionKeyPolicy(),
+        )
+
+    zodiacal_arc = PrimaryArc(
+        "Sun",
+        "Moon",
+        arc=10.0,
+        direction=DIRECT,
+        method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        space=PrimaryDirectionSpace.IN_ZODIACO,
+    )
+    with pytest.raises(ValueError, match="in_zodiaco arcs require zodiacal"):
+        PrimaryDirectionRelation(
+            arc=zodiacal_arc,
+            relation_kind=PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
+            converse_doctrine=PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE,
+            key_policy=PrimaryDirectionKeyPolicy(),
+        )
+
+    detected = relate_primary_arc(mundane_arc)
+    foreign_arc = PrimaryArc("Venus", "Moon", arc=20.0, direction=DIRECT)
+    foreign = relate_primary_arc(foreign_arc)
+    with pytest.raises(ValueError, match="admitted relations must belong to arc"):
+        PrimaryDirectionRelationProfile(
+            arc=mundane_arc,
+            detected_relation=detected,
+            admitted_relations=(detected, foreign),
+            scored_relations=(detected,),
+        )
+
+
+@pytest.mark.parametrize(
+    "method",
+    (
+        PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+        PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+    ),
+)
+def test_policy_rejects_zodiacal_space_for_mundane_only_methods(
+    method: PrimaryDirectionMethod,
+) -> None:
+    with pytest.raises(ValueError, match="does not admit in_zodiaco"):
+        PrimaryDirectionsPolicy(
+            method=method,
+            space=PrimaryDirectionSpace.IN_ZODIACO,
+            latitude_policy=PrimaryDirectionLatitudePolicy(
+                PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+            ),
+            latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(
+                PrimaryDirectionLatitudeSource.ASSIGNED_ZERO
+            ),
+            perfection_policy=PrimaryDirectionPerfectionPolicy(
+                PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+            ),
+        )
+
+
+def test_core_result_vessels_are_immutable_and_reject_nonfinite_inputs() -> None:
+    entry = SpeculumEntry.build("Sun", 15.0, 0.0, 30.0, 23.4, 40.0)
+    arc = PrimaryArc("Sun", "Moon", arc=10.0, direction=DIRECT)
+
+    with pytest.raises(FrozenInstanceError):
+        entry.lon = 20.0  # type: ignore[misc]
+    with pytest.raises(FrozenInstanceError):
+        arc.arc = 20.0  # type: ignore[misc]
+
+    for bad in (float("nan"), float("inf"), True):
+        with pytest.raises(ValueError):
+            PrimaryArc("Sun", "Moon", arc=bad, direction=DIRECT)  # type: ignore[arg-type]
+        with pytest.raises(ValueError):
+            find_primary_arcs(
+                *_simple_chart(),
+                geo_lat=0.0,
+                max_arc=bad,  # type: ignore[arg-type]
+            )
+
+
+def test_generated_arcs_carry_bodily_and_opposition_relation_identity() -> None:
+    chart, houses = _oblique_chart()
+    bodily = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        include_converse=False,
+        significators=[Body.SUN],
+        promissors=[Body.MOON],
+    )
+    opposition_policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.MERIDIAN_ZODIACAL_ASPECT,
+        include_converse=False,
+    )
+    opposition = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=51.5,
+        max_arc=360.0,
+        significators=[Body.SUN],
+        promissors=[f"{Body.MOON} Opposition"],
+        policy=opposition_policy,
+    )
+
+    assert bodily
+    assert opposition
+    assert all(
+        arc.relational_kind is PrimaryDirectionRelationalKind.CONJUNCTION
+        for arc in bodily
+    )
+    assert all(
+        arc.relational_kind is PrimaryDirectionRelationalKind.OPPOSITION
+        for arc in opposition
+    )
+    relation = relate_primary_arc(opposition[0], policy=opposition_policy)
+    assert relation.relational_kind is PrimaryDirectionRelationalKind.OPPOSITION
+    assert relation.perfection_kind is relation.relation_kind

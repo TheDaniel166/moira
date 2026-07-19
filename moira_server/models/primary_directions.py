@@ -14,8 +14,16 @@ See docs/architecture/P8-14_PRIMARY_DIRECTIONS_FIRST_PASS.md for the full design
 from __future__ import annotations
 
 from datetime import datetime
+from numbers import Real
+from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
+
+from moira.primary_directions import PrimaryDirectionsPreset
+from moira.primary_directions.keys import PrimaryDirectionKey
+from moira.primary_directions.methods import PrimaryDirectionMethod
+from moira.primary_directions.relations import PrimaryDirectionRelationalKind
+from moira.primary_directions.spaces import PrimaryDirectionSpace
 
 from .common import _StrictModel
 from .positions import PositionObserverContextResponse
@@ -29,15 +37,39 @@ class PrimaryDirectionsBaseRequest(_StrictModel):
     """Common parameters for constructing the natal chart and observer environment."""
 
     dt: datetime
-    latitude: float
-    longitude: float
+    latitude: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
     house_system: str | None = None
-    bodies: list[str] | None = None
+    bodies: list[str] | None = Field(default=None, max_length=64)
     include_nodes: bool = False
-    observer_lat: float  # geo_lat for the directions (can differ from natal latitude)
-    observer_lon: float | None = None
-    observer_elev_m: float = 0.0
-    obliquity: float | None = None
+    observer_lat: float = Field(gt=-90.0, lt=90.0, allow_inf_nan=False)
+    observer_lon: float | None = Field(default=None, ge=-180.0, le=180.0, allow_inf_nan=False)
+    observer_elev_m: float = Field(default=0.0, allow_inf_nan=False)
+    obliquity: float | None = Field(default=None, gt=0.0, lt=90.0, allow_inf_nan=False)
+
+    @field_validator(
+        "latitude",
+        "longitude",
+        "observer_lat",
+        "observer_lon",
+        "observer_elev_m",
+        "obliquity",
+        mode="before",
+    )
+    @classmethod
+    def _require_real_coordinate(cls, value):
+        if value is None:
+            return value
+        if not isinstance(value, Real) or isinstance(value, bool):
+            raise ValueError("primary-directions coordinates must be real numbers")
+        return value
+
+    @field_validator("include_nodes", mode="before")
+    @classmethod
+    def _require_boolean_include_nodes(cls, value):
+        if not isinstance(value, bool):
+            raise ValueError("include_nodes must be boolean")
+        return value
 
 
 # ---------------------------------------------------------------------------
@@ -56,11 +88,37 @@ class PrimaryDirectionsPolicyRequest(_StrictModel):
     for the currently admitted surface.
     """
 
-    preset: str | None = None          # e.g. "placidian_mundane", "ptolemy_semiarc" (Phase 2)
-    method: str | None = None          # e.g. "placidus_mundane" (engine PrimaryDirectionMethod value)
-    space: str | None = None           # e.g. "in_mundo" or "in_zodiaco" (engine PrimaryDirectionSpace value)
+    preset: (
+        PrimaryDirectionsPreset
+        | Literal[
+            "placidian_mundane",
+            "ptolemy_semiarc",
+            "regiomontanus",
+            "campanus",
+            "meridian",
+            "morinus",
+            "topocentric",
+        ]
+        | None
+    ) = None
+    method: PrimaryDirectionMethod | None = None
+    space: PrimaryDirectionSpace | None = None
     include_converse: bool | None = None
-    key: str | None = None             # e.g. "NAIBOD", "PTOLEMY", "CARDAN", "SOLAR" (Phase 2)
+    key: PrimaryDirectionKey | None = None
+
+    @field_validator("preset", "method", "space", "key", mode="before")
+    @classmethod
+    def _normalize_policy_token(cls, value):
+        if value is None or not isinstance(value, str):
+            return value
+        return value.strip().lower()
+
+    @field_validator("include_converse", mode="before")
+    @classmethod
+    def _require_boolean_include_converse(cls, value):
+        if value is not None and not isinstance(value, bool):
+            raise ValueError("include_converse must be boolean")
+        return value
 
 
 # ---------------------------------------------------------------------------
@@ -70,9 +128,9 @@ class PrimaryDirectionsPolicyRequest(_StrictModel):
 class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
     """Request for arc search and evaluation surfaces."""
 
-    max_arc: float = Field(default=90.0, gt=0)
-    significators: list[str] | None = None
-    promissors: list[str] | None = None
+    max_arc: float = Field(default=90.0, gt=0.0, le=360.0, allow_inf_nan=False)
+    significators: list[str] | None = Field(default=None, max_length=256)
+    promissors: list[str] | None = Field(default=None, max_length=256)
     policy: PrimaryDirectionsPolicyRequest | None = None
 
     # Phase 2: Optional expansion flags
@@ -80,28 +138,90 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
     include_condition: bool = False   # Include richer per-significator condition data
 
     # Phase 2: Submit pre-computed arcs for re-evaluation (bypasses search)
-    submitted_arcs: list["SubmittedArc"] | None = None
+    submitted_arcs: list["SubmittedArc"] | None = Field(default=None, max_length=4096)
+
+    @field_validator("max_arc", mode="before")
+    @classmethod
+    def _require_real_max_arc(cls, value):
+        if not isinstance(value, Real) or isinstance(value, bool):
+            raise ValueError("max_arc must be a real number")
+        return value
+
+    @field_validator("include_relations", "include_condition", mode="before")
+    @classmethod
+    def _require_boolean_expansion_flag(cls, value):
+        if not isinstance(value, bool):
+            raise ValueError("primary-directions expansion flags must be boolean")
+        return value
 
 
 class PrimaryDirectionsRelationsRequest(_StrictModel):
     """Request for the dedicated relations evaluation endpoint (Phase 2)."""
 
-    submitted_arcs: list["SubmittedArc"]
+    submitted_arcs: list["SubmittedArc"] = Field(max_length=4096)
     policy: PrimaryDirectionsPolicyRequest | None = None
     include_relations: bool = True
     include_condition: bool = False  # Phase 2 condition enrichment
+
+    @field_validator("include_relations", "include_condition", mode="before")
+    @classmethod
+    def _require_boolean_expansion_flag(cls, value):
+        if not isinstance(value, bool):
+            raise ValueError("primary-directions expansion flags must be boolean")
+        return value
 
 
 class SubmittedArc(_StrictModel):
     """Minimal representation of a pre-computed arc for re-evaluation (Phase 2)."""
 
-    significator: str
-    promissor: str
-    arc: float
-    direction: str  # "DIRECT" or "CONVERSE"
-    method: str | None = None
-    space: str | None = None
-    solar_rate: float | None = None
+    significator: str = Field(min_length=1, max_length=128)
+    promissor: str = Field(min_length=1, max_length=128)
+    arc: float = Field(gt=0.0, le=360.0, allow_inf_nan=False)
+    direction: Literal["D", "C"]
+    method: PrimaryDirectionMethod | None = None
+    space: PrimaryDirectionSpace | None = None
+    solar_rate: float | None = Field(default=None, gt=0.0, allow_inf_nan=False)
+    relational_kind: PrimaryDirectionRelationalKind = PrimaryDirectionRelationalKind.CONJUNCTION
+
+    @field_validator("arc", "solar_rate", mode="before")
+    @classmethod
+    def _require_real_arc_value(cls, value):
+        if value is None:
+            return value
+        if not isinstance(value, Real) or isinstance(value, bool):
+            raise ValueError("submitted arc values must be real numbers")
+        return value
+
+    @field_validator("significator", "promissor")
+    @classmethod
+    def _strip_identity(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("primary-direction identities must be non-empty")
+        return stripped
+
+    @field_validator("direction", mode="before")
+    @classmethod
+    def _normalize_direction(cls, value):
+        if not isinstance(value, str):
+            return value
+        token = value.strip().upper()
+        if token in {"D", "DIRECT", "DIR"}:
+            return "D"
+        if token in {"C", "CONVERSE", "CON"}:
+            return "C"
+        return token
+
+    @field_validator("method", "space", "relational_kind", mode="before")
+    @classmethod
+    def _normalize_arc_token(cls, value):
+        return value.strip().lower() if isinstance(value, str) else value
+
+    @model_validator(mode="after")
+    def _reject_self_direction(self):
+        if self.significator == self.promissor:
+            raise ValueError("submitted primary direction may not be a self-direction")
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -134,6 +254,8 @@ class PrimaryArcResponse(_StrictModel):
     space: str
     motion: str
     solar_rate: float
+    solar_rate_explicit: bool = False
+    relational_kind: str = "conjunction"
 
     # Phase 1/2: Years under common keys
     years_naibod: float | None = None
@@ -147,6 +269,10 @@ class PrimaryDirectionRelationResponse(_StrictModel):
     arc: PrimaryArcResponse
     relation_kind: str
     years: float | None = None
+    perfection_kind: str | None = None
+    relational_kind: str | None = None
+    converse_doctrine: str | None = None
+    key: str | None = None
 
 
 class PrimaryDirectionRelationProfileResponse(_StrictModel):
@@ -199,6 +325,8 @@ class PrimaryDirectionsAggregateProfileResponse(_StrictModel):
     converse_count: int
     nearest_arc: float
     farthest_arc: float
+    strongest_significator: str | None = None
+    weakest_significator: str | None = None
 
 
 class PrimaryDirectionsNetworkNodeResponse(_StrictModel):
@@ -206,12 +334,17 @@ class PrimaryDirectionsNetworkNodeResponse(_StrictModel):
     total_count: int
     direct_count: int
     converse_count: int
+    incoming_count: int = 0
+    outgoing_count: int = 0
 
 
 class PrimaryDirectionsNetworkEdgeResponse(_StrictModel):
     promissor: str
     significator: str
     count: int
+    nearest_arc: float | None = None
+    direct_count: int | None = None
+    converse_count: int | None = None
 
 
 class PrimaryDirectionsNetworkProfileResponse(_StrictModel):
@@ -248,6 +381,9 @@ class PrimaryDirectionsResolvedPolicyResponse(_StrictModel):
     admitted_relation_kinds: list[str]
     admitted_significator_classes: list[str]
     admitted_promissor_classes: list[str]
+    requested_preset: str | None = None
+    canonical_preset: str | None = None
+    policy_source: str = "engine_default"
 
 
 class PrimaryDirectionsHouseContextResponse(_StrictModel):
@@ -259,6 +395,7 @@ class PrimaryDirectionsHouseContextResponse(_StrictModel):
 
 class PrimaryDirectionsArcsReductionTruthResponse(_StrictModel):
     engine_surface: str
+    engine_surfaces: list[str] = Field(default_factory=list)
     result_surface: str
     requested_datetime: str
     normalized_datetime_utc: str
@@ -266,6 +403,7 @@ class PrimaryDirectionsArcsReductionTruthResponse(_StrictModel):
     jd_tt: float
     delta_t_seconds: float
     observer: PositionObserverContextResponse
+    natal_observer: PositionObserverContextResponse | None = None
     requested_bodies: list[str] | None = None
     include_nodes_requested: bool
     search_mode: str
@@ -320,6 +458,7 @@ __all__ = [
     "PrimaryDirectionsPolicyRequest",
     "PrimaryDirectionsProfileResponse",
     "PrimaryDirectionsProfileReductionResponse",
+    "PrimaryDirectionsRelationsRequest",
     "PrimaryDirectionsResolvedPolicyResponse",
     "PrimaryDirectionsSearchRequest",
     "PrimaryDirectionsSignificatorProfileResponse",
@@ -328,4 +467,5 @@ __all__ = [
     "PrimaryDirectionRelationProfileResponse",
     "PrimaryDirectionRelationResponse",
     "SpeculumEntryResponse",
+    "SubmittedArc",
 ]

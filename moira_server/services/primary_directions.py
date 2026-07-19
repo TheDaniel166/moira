@@ -1,47 +1,109 @@
-"""Service helpers for P8-14 Primary Directions (first pass).
+"""Transport orchestration for Moira primary directions.
 
-This layer orchestrates chart/houses construction and calls into
-moira.primary_directions with a strong default policy.
-
-See docs/architecture/P8-14_PRIMARY_DIRECTIONS_FIRST_PASS.md for scope.
+The engine owns direction doctrine.  This module resolves the deliberately
+narrow REST policy surface into canonical engine vessels, constructs each
+astronomical context once, and preserves the distinction between searched and
+client-submitted arcs.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from moira import Moira
 from moira.constants import HouseSystem
 from moira.julian import utc_to_tt, utc_to_ut1
 from moira.primary_directions import (
-    PrimaryDirectionMethod,
-    PrimaryDirectionSpace,
+    PrimaryArc,
+    PrimaryDirectionMotion,
     PrimaryDirectionsPolicy,
+    PrimaryDirectionsPreset,
+    evaluate_primary_direction_relations,
+    evaluate_primary_directions_aggregate,
+    evaluate_primary_directions_network,
     find_primary_arcs,
+    primary_directions_policy_preset,
     speculum as compute_speculum,
 )
+from moira.primary_directions.keys import PrimaryDirectionKey, PrimaryDirectionKeyPolicy
+from moira.primary_directions.methods import PrimaryDirectionMethod
+from moira.primary_directions.spaces import PrimaryDirectionSpace
 
 from ..models.primary_directions import (
     PrimaryDirectionsBaseRequest,
+    PrimaryDirectionsRelationsRequest,
     PrimaryDirectionsSearchRequest,
+    SubmittedArc,
 )
 from ._shared import require_aware_datetime, require_supported_chart_bodies
 
+if TYPE_CHECKING:
+    from moira.primary_directions import (
+        PrimaryDirectionRelationProfile,
+        PrimaryDirectionsAggregateProfile,
+        PrimaryDirectionsNetworkProfile,
+    )
 
-_PD_STAGE_SEQUENCE = [
-    "datetime_to_jd",
-    "chart_assembly",
-    "houses_assembly",
+
+_PD_STAGE_SEQUENCE = (
     "policy_resolution",
-    "primary_arc_search",
-]
-_PD_SUBMITTED_STAGE_SEQUENCE = [
     "datetime_to_jd",
     "chart_assembly",
     "houses_assembly",
+    "primary_arc_search",
+)
+_PD_SUBMITTED_STAGE_SEQUENCE = (
     "policy_resolution",
     "submitted_arc_reuse",
-]
+    "datetime_to_jd",
+    "chart_assembly",
+    "houses_assembly",
+)
+
+_LEGACY_PRESET_ALIASES = {
+    "placidian_mundane": PrimaryDirectionsPreset.PLACIDUS_MUNDANE,
+    "ptolemy_semiarc": PrimaryDirectionsPreset.PTOLEMY_MUNDANE,
+    "regiomontanus": PrimaryDirectionsPreset.REGIOMONTANUS_MUNDANE,
+    "campanus": PrimaryDirectionsPreset.CAMPANUS_MUNDANE,
+    "meridian": PrimaryDirectionsPreset.MERIDIAN_MUNDANE,
+    "morinus": PrimaryDirectionsPreset.MORINUS_MUNDANE,
+    "topocentric": PrimaryDirectionsPreset.TOPOCENTRIC_MUNDANE,
+}
+
+_MUNDANE_PRESET_BY_METHOD = {
+    PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionsPreset.PLACIDUS_MUNDANE,
+    PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionsPreset.PLACIDIAN_CLASSIC_MUNDANE,
+    PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionsPreset.PTOLEMY_MUNDANE,
+    PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionsPreset.MERIDIAN_MUNDANE,
+    PrimaryDirectionMethod.MORINUS: PrimaryDirectionsPreset.MORINUS_MUNDANE,
+    PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionsPreset.REGIOMONTANUS_MUNDANE,
+    PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionsPreset.CAMPANUS_MUNDANE,
+    PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionsPreset.TOPOCENTRIC_MUNDANE,
+}
+
+_ZODIACAL_PRESET_BY_METHOD = {
+    PrimaryDirectionMethod.MERIDIAN: PrimaryDirectionsPreset.MERIDIAN_ZODIACAL,
+    PrimaryDirectionMethod.MORINUS: PrimaryDirectionsPreset.MORINUS_ZODIACAL,
+    PrimaryDirectionMethod.REGIOMONTANUS: PrimaryDirectionsPreset.REGIOMONTANUS_ZODIACAL,
+    PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionsPreset.CAMPANUS_ZODIACAL,
+    PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL,
+}
+
+_RAPT_PRESETS = {
+    PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT,
+    PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE,
+}
+
+
+@dataclass(frozen=True, slots=True)
+class ResolvedPrimaryDirectionsPolicy:
+    policy: PrimaryDirectionsPolicy
+    requested_preset: str | None
+    canonical_preset: PrimaryDirectionsPreset
+    policy_source: str
+    chosen_key: PrimaryDirectionKey
+    key_source: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +120,9 @@ class PrimaryDirectionsResolvedPolicyContext:
     admitted_relation_kinds: list[str]
     admitted_significator_classes: list[str]
     admitted_promissor_classes: list[str]
+    requested_preset: str | None
+    canonical_preset: str
+    policy_source: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,12 +143,15 @@ class PrimaryDirectionsObserverContext:
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionsArcsReductionContext:
+    engine_surface: str
+    engine_surfaces: list[str]
     requested_datetime: str
     normalized_datetime_utc: str
     jd_ut: float
     jd_tt: float
     delta_t_seconds: float
     observer: PrimaryDirectionsObserverContext
+    natal_observer: PrimaryDirectionsObserverContext
     requested_bodies: list[str] | None
     include_nodes_requested: bool
     search_mode: str
@@ -99,6 +167,14 @@ class PrimaryDirectionsArcsReductionContext:
     stage_sequence: list[str]
 
 
+@dataclass(frozen=True, slots=True)
+class _PreparedPrimaryDirections:
+    arcs: list[PrimaryArc]
+    resolved: ResolvedPrimaryDirectionsPolicy
+    chart: object | None = None
+    houses: object | None = None
+
+
 class _PrimaryDirectionsChartClock:
     """Private chart proxy with the engine-facing UT1 and TT clocks resolved."""
 
@@ -112,45 +188,132 @@ class _PrimaryDirectionsChartClock:
         return getattr(self._base, name)
 
 
-def _build_arcs_reduction_context(
-    chart,
-    houses,
-    request: PrimaryDirectionsSearchRequest,
-    resolved_policy: PrimaryDirectionsPolicy | None,
-) -> PrimaryDirectionsArcsReductionContext:
-    chosen_key, _ = _chosen_key_and_source(request)
-    observer_lon = request.observer_lon or request.longitude
-    observer = PrimaryDirectionsObserverContext(
-        latitude=request.observer_lat,
-        longitude=observer_lon,
-        elevation_m=request.observer_elev_m,
-        local_sidereal_time_deg=None,
+def _direction_longitude(request: PrimaryDirectionsBaseRequest) -> float:
+    return request.longitude if request.observer_lon is None else request.observer_lon
+
+
+def _preset_for_method_space(
+    method: PrimaryDirectionMethod | None,
+    space: PrimaryDirectionSpace | None,
+) -> PrimaryDirectionsPreset:
+    resolved_method = method or PrimaryDirectionMethod.PLACIDUS_MUNDANE
+    resolved_space = space or PrimaryDirectionSpace.IN_MUNDO
+    if method is None and resolved_space is PrimaryDirectionSpace.IN_ZODIACO:
+        raise ValueError(
+            "A primary-direction zodiacal space requires an explicit unambiguous method or named preset"
+        )
+    if resolved_space is PrimaryDirectionSpace.IN_MUNDO:
+        return _MUNDANE_PRESET_BY_METHOD[resolved_method]
+    if resolved_method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
+        raise ValueError(
+            "Generic Ptolemy in-zodiaco policy is ambiguous; choose a Ptolemy zodiacal aspect, antiscia, or parallel preset"
+        )
+    try:
+        return _ZODIACAL_PRESET_BY_METHOD[resolved_method]
+    except KeyError as exc:
+        raise ValueError(
+            f"No unqualified zodiacal preset is admitted for method {resolved_method.value!r}"
+        ) from exc
+
+
+def _conventional_key(preset: PrimaryDirectionsPreset) -> PrimaryDirectionKey:
+    if preset in {
+        PrimaryDirectionsPreset.PTOLEMY_MUNDANE,
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA,
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ASPECT,
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_PARALLEL,
+        PrimaryDirectionsPreset.MERIDIAN_MUNDANE,
+        PrimaryDirectionsPreset.MERIDIAN_ZODIACAL,
+        PrimaryDirectionsPreset.MERIDIAN_ZODIACAL_ASPECT,
+    }:
+        return PrimaryDirectionKey.PTOLEMY
+    return PrimaryDirectionKey.NAIBOD
+
+
+def resolve_primary_directions_policy(
+    request: PrimaryDirectionsSearchRequest | PrimaryDirectionsRelationsRequest,
+) -> ResolvedPrimaryDirectionsPolicy:
+    """Resolve transport inputs to one coherent canonical engine policy."""
+
+    policy_request = request.policy
+    requested_preset: str | None = None
+    if policy_request is not None and policy_request.preset is not None:
+        requested_preset = str(policy_request.preset)
+        canonical_preset = _LEGACY_PRESET_ALIASES.get(requested_preset)
+        if canonical_preset is None:
+            canonical_preset = PrimaryDirectionsPreset(requested_preset)
+        policy_source = (
+            "legacy_alias" if requested_preset in _LEGACY_PRESET_ALIASES else "canonical_preset"
+        )
+    else:
+        method = policy_request.method if policy_request is not None else None
+        space = policy_request.space if policy_request is not None else None
+        canonical_preset = _preset_for_method_space(method, space)
+        policy_source = "engine_default" if policy_request is None else "policy_fields"
+
+    explicit_key = policy_request.key if policy_request is not None else None
+    chosen_key = explicit_key or _conventional_key(canonical_preset)
+    key_source = "explicit" if explicit_key is not None else (
+        "engine_default"
+        if policy_request is None and chosen_key is PrimaryDirectionKey.NAIBOD
+        else "preset_convention"
     )
-    return PrimaryDirectionsArcsReductionContext(
-        requested_datetime=request.dt.isoformat(),
-        normalized_datetime_utc=chart.datetime_utc.isoformat(),
-        jd_ut=chart.jd_ut,
-        jd_tt=chart.jd_tt,
-        delta_t_seconds=chart.delta_t,
-        observer=observer,
-        requested_bodies=(list(request.bodies) if request.bodies is not None else None),
-        include_nodes_requested=request.include_nodes,
-        search_mode=("submitted_arcs" if request.submitted_arcs else "engine_search"),
-        max_arc=request.max_arc,
-        significators_requested=(list(request.significators) if request.significators is not None else None),
-        promissors_requested=(list(request.promissors) if request.promissors is not None else None),
-        include_relations_requested=request.include_relations,
-        include_condition_requested=request.include_condition,
-        submitted_arc_count=(len(request.submitted_arcs) if request.submitted_arcs is not None else 0),
+
+    if policy_request is None or policy_request.include_converse is None:
+        include_converse = canonical_preset not in _RAPT_PRESETS
+    else:
+        include_converse = policy_request.include_converse
+
+    resolved_policy = primary_directions_policy_preset(
+        canonical_preset,
+        include_converse=include_converse,
+        key_policy=PrimaryDirectionKeyPolicy(chosen_key),
+    )
+
+    if policy_request is not None and policy_request.preset is not None:
+        if policy_request.method is not None and policy_request.method is not resolved_policy.method:
+            raise ValueError(
+                "Primary-directions preset conflicts with the explicitly requested method"
+            )
+        if policy_request.space is not None and policy_request.space is not resolved_policy.space:
+            raise ValueError(
+                "Primary-directions preset conflicts with the explicitly requested space"
+            )
+
+    return ResolvedPrimaryDirectionsPolicy(
+        policy=resolved_policy,
+        requested_preset=requested_preset,
+        canonical_preset=canonical_preset,
+        policy_source=policy_source,
         chosen_key=chosen_key,
-        house_context=PrimaryDirectionsHouseContext(
-            requested_system=request.house_system or HouseSystem.PLACIDUS,
-            effective_system=houses.effective_system,
-            fallback=houses.fallback,
-            fallback_reason=houses.fallback_reason,
+        key_source=key_source,
+    )
+
+
+def _resolved_policy_context(
+    resolved: ResolvedPrimaryDirectionsPolicy,
+) -> PrimaryDirectionsResolvedPolicyContext:
+    policy = resolved.policy
+    return PrimaryDirectionsResolvedPolicyContext(
+        method=str(policy.method),
+        space=str(policy.space),
+        include_converse=policy.include_converse,
+        converse_doctrine=str(policy.converse_doctrine),
+        key=resolved.chosen_key.name,
+        key_source=resolved.key_source,
+        latitude_doctrine=str(policy.latitude_policy.doctrine),
+        latitude_source=str(policy.latitude_source_policy.source),
+        perfection_kind=str(policy.perfection_policy.kind),
+        admitted_relation_kinds=sorted(str(kind) for kind in policy.relation_policy.admitted_kinds),
+        admitted_significator_classes=sorted(
+            str(kind) for kind in policy.target_policy.admitted_significator_classes
         ),
-        resolved_policy=_resolved_policy_context(resolved_policy, request),
-        stage_sequence=list(_PD_SUBMITTED_STAGE_SEQUENCE if request.submitted_arcs else _PD_STAGE_SEQUENCE),
+        admitted_promissor_classes=sorted(
+            str(kind) for kind in policy.target_policy.admitted_promissor_classes
+        ),
+        requested_preset=resolved.requested_preset,
+        canonical_preset=str(resolved.canonical_preset),
+        policy_source=resolved.policy_source,
     )
 
 
@@ -162,432 +325,341 @@ def _build_chart_and_houses(engine: Moira, request: PrimaryDirectionsBaseRequest
         request.dt,
         bodies=request.bodies,
         include_nodes=request.include_nodes,
-        observer_lat=request.observer_lat,
-        observer_lon=request.observer_lon or request.longitude,
+        observer_lat=request.latitude,
+        observer_lon=request.longitude,
         observer_elev_m=request.observer_elev_m,
     )
-
     houses = engine.houses(
         request.dt,
         latitude=request.observer_lat,
-        longitude=request.observer_lon or request.longitude,
+        longitude=_direction_longitude(request),
         system=request.house_system or HouseSystem.PLACIDUS,
     )
-
     return _PrimaryDirectionsChartClock(chart), houses
 
 
-def _chosen_key_and_source(request: PrimaryDirectionsSearchRequest) -> tuple[str, str]:
-    if not request.policy:
-        return "NAIBOD", "engine_default"
-    if request.policy.key:
-        return request.policy.key, "explicit"
+def _convert_submitted_arcs(
+    submitted: list[SubmittedArc],
+    *,
+    resolved: ResolvedPrimaryDirectionsPolicy,
+) -> list[PrimaryArc]:
+    result: list[PrimaryArc] = []
+    for item in submitted:
+        if (
+            resolved.chosen_key is PrimaryDirectionKey.SOLAR
+            and item.solar_rate is None
+        ):
+            raise ValueError(
+                "Submitted arcs evaluated with the solar key require an explicit solar_rate"
+            )
+        method = item.method or resolved.policy.method
+        space = item.space or resolved.policy.space
+        if method is not resolved.policy.method or space is not resolved.policy.space:
+            raise ValueError(
+                "Submitted arc method and space must match the resolved evaluation policy"
+            )
+        motion = (
+            PrimaryDirectionMotion.DIRECT
+            if item.direction == "D"
+            else PrimaryDirectionMotion.CONVERSE
+        )
+        if not resolved.policy.admits_motion(
+            motion,
+            relational_kind=item.relational_kind,
+        ):
+            raise ValueError("Submitted converse arc is not admitted by the resolved policy")
+        if item.relational_kind not in resolved.policy.relation_policy.admitted_kinds:
+            raise ValueError(
+                "Submitted arc relational kind is not admitted by the resolved policy"
+            )
+        kwargs = {
+            "significator": item.significator,
+            "promissor": item.promissor,
+            "arc": item.arc,
+            "direction": item.direction,
+            "method": method,
+            "space": space,
+            "motion": motion,
+            "relational_kind": item.relational_kind,
+        }
+        if item.solar_rate is not None:
+            kwargs["solar_rate"] = item.solar_rate
+        result.append(PrimaryArc(**kwargs))
+    return result
 
-    preset = (request.policy.preset or "").lower()
-    conventional_keys = {
-        "placidian_mundane": "NAIBOD",
-        "ptolemy_semiarc": "PTOLEMY",
-        "regiomontanus": "NAIBOD",
-        "campanus": "NAIBOD",
-        "meridian": "PTOLEMY",
-        "morinus": "NAIBOD",
-        "topocentric": "NAIBOD",
-    }
-    if preset in conventional_keys:
-        return conventional_keys[preset], "preset_convention"
-    return "NAIBOD", "engine_default"
 
-
-def _resolved_policy_context(
-    resolved_policy: PrimaryDirectionsPolicy | None,
+def _prepare_request(
+    engine: Moira,
     request: PrimaryDirectionsSearchRequest,
-) -> PrimaryDirectionsResolvedPolicyContext:
-    policy = resolved_policy if resolved_policy is not None else PrimaryDirectionsPolicy()
-    chosen_key, key_source = _chosen_key_and_source(request)
-    return PrimaryDirectionsResolvedPolicyContext(
-        method=str(policy.method),
-        space=str(policy.space),
-        include_converse=policy.include_converse,
-        converse_doctrine=str(policy.converse_doctrine),
-        key=chosen_key,
-        key_source=key_source,
-        latitude_doctrine=str(policy.latitude_policy.doctrine),
-        latitude_source=str(policy.latitude_source_policy.source),
-        perfection_kind=str(policy.perfection_policy.kind),
-        admitted_relation_kinds=sorted(str(kind) for kind in policy.relation_policy.admitted_kinds),
-        admitted_significator_classes=sorted(
-            str(kind) for kind in policy.target_policy.admitted_significator_classes
-        ),
-        admitted_promissor_classes=sorted(
-            str(kind) for kind in policy.target_policy.admitted_promissor_classes
-        ),
+    *,
+    require_reduction_context: bool,
+    resolved: ResolvedPrimaryDirectionsPolicy | None = None,
+) -> _PreparedPrimaryDirections:
+    resolved = resolved or resolve_primary_directions_policy(request)
+    if request.submitted_arcs is not None:
+        arcs = _convert_submitted_arcs(request.submitted_arcs, resolved=resolved)
+        if not require_reduction_context:
+            return _PreparedPrimaryDirections(arcs=arcs, resolved=resolved)
+        chart, houses = _build_chart_and_houses(engine, request)
+        return _PreparedPrimaryDirections(
+            arcs=arcs,
+            resolved=resolved,
+            chart=chart,
+            houses=houses,
+        )
+
+    chart, houses = _build_chart_and_houses(engine, request)
+    arcs = find_primary_arcs(
+        chart=chart,
+        houses=houses,
+        geo_lat=request.observer_lat,
+        max_arc=request.max_arc,
+        include_converse=resolved.policy.include_converse,
+        significators=request.significators,
+        promissors=request.promissors,
+        obliquity=request.obliquity,
+        policy=resolved.policy,
+    )
+    return _PreparedPrimaryDirections(
+        arcs=arcs,
+        resolved=resolved,
+        chart=chart,
+        houses=houses,
     )
 
 
-def compute_speculum_service(
-    engine: Moira,
-    request: PrimaryDirectionsBaseRequest,
-) -> list:
-    """Compute speculum using engine defaults + provided observer latitude.
+def _build_reduction_context(
+    prepared: _PreparedPrimaryDirections,
+    request: PrimaryDirectionsSearchRequest,
+    *,
+    result_engine_surface: str,
+) -> PrimaryDirectionsArcsReductionContext:
+    if prepared.chart is None or prepared.houses is None:
+        raise RuntimeError("Reduction truth requires prepared chart and house contexts")
+    chart = prepared.chart
+    houses = prepared.houses
+    submitted = request.submitted_arcs is not None
+    source_surface = (
+        "moira.primary_directions.PrimaryArc"
+        if submitted
+        else "moira.primary_directions.find_primary_arcs"
+    )
+    engine_surfaces = [source_surface]
+    if result_engine_surface != source_surface:
+        engine_surfaces.append(result_engine_surface)
+    direction_observer = PrimaryDirectionsObserverContext(
+        latitude=request.observer_lat,
+        longitude=_direction_longitude(request),
+        elevation_m=request.observer_elev_m,
+        local_sidereal_time_deg=getattr(houses, "armc", None),
+    )
+    natal_observer = PrimaryDirectionsObserverContext(
+        latitude=request.latitude,
+        longitude=request.longitude,
+        elevation_m=request.observer_elev_m,
+        local_sidereal_time_deg=None,
+    )
+    stages = list(_PD_SUBMITTED_STAGE_SEQUENCE if submitted else _PD_STAGE_SEQUENCE)
+    if result_engine_surface.endswith("evaluate_primary_directions_aggregate"):
+        stages.append("aggregate_evaluation")
+    elif result_engine_surface.endswith("evaluate_primary_directions_network"):
+        stages.append("network_evaluation")
+    return PrimaryDirectionsArcsReductionContext(
+        engine_surface=result_engine_surface,
+        engine_surfaces=engine_surfaces,
+        requested_datetime=request.dt.isoformat(),
+        normalized_datetime_utc=chart.datetime_utc.isoformat(),
+        jd_ut=chart.jd_ut,
+        jd_tt=chart.jd_tt,
+        delta_t_seconds=chart.delta_t,
+        observer=direction_observer,
+        natal_observer=natal_observer,
+        requested_bodies=(list(request.bodies) if request.bodies is not None else None),
+        include_nodes_requested=request.include_nodes,
+        search_mode="submitted_arcs" if submitted else "engine_search",
+        max_arc=request.max_arc,
+        significators_requested=(
+            list(request.significators) if request.significators is not None else None
+        ),
+        promissors_requested=(
+            list(request.promissors) if request.promissors is not None else None
+        ),
+        include_relations_requested=request.include_relations,
+        include_condition_requested=request.include_condition,
+        submitted_arc_count=len(request.submitted_arcs or ()),
+        chosen_key=prepared.resolved.chosen_key.name,
+        house_context=PrimaryDirectionsHouseContext(
+            requested_system=str(request.house_system or HouseSystem.PLACIDUS),
+            effective_system=str(houses.effective_system),
+            fallback=houses.fallback,
+            fallback_reason=houses.fallback_reason,
+        ),
+        resolved_policy=_resolved_policy_context(prepared.resolved),
+        stage_sequence=stages,
+    )
 
-    First-pass: includes planets, nodes, and the four angles (ASC/MC/DSC/IC).
-    """
+
+def compute_speculum_service(engine: Moira, request: PrimaryDirectionsBaseRequest) -> list:
     chart, houses = _build_chart_and_houses(engine, request)
-    geo_lat = request.observer_lat
-
     return compute_speculum(
         chart,
         houses,
-        geo_lat,
+        request.observer_lat,
         obliquity=request.obliquity,
         bodies=request.bodies,
     )
 
 
-# Simple named presets for Phase 2 policy growth (strong defaults)
-# Use the actual engine enum members so PrimaryDirectionsPolicy construction
-# satisfies the isinstance checks in __post_init__.
-_PRESETS = {
-    "placidian_mundane": {
-        "method": PrimaryDirectionMethod.PLACIDUS_MUNDANE,
-        "space": PrimaryDirectionSpace.IN_MUNDO,
-        "include_converse": True,
-    },
-    "ptolemy_semiarc": {
-        "method": PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
-        "space": PrimaryDirectionSpace.IN_ZODIACO,
-        "include_converse": True,
-    },
-    "topocentric": {
-        "method": PrimaryDirectionMethod.TOPOCENTRIC,
-        "space": PrimaryDirectionSpace.IN_MUNDO,
-        "include_converse": True,
-    },
-    "regiomontanus": {
-        "method": PrimaryDirectionMethod.REGIOMONTANUS,
-        "space": PrimaryDirectionSpace.IN_MUNDO,
-        "include_converse": True,
-    },
-    "campanus": {
-        "method": PrimaryDirectionMethod.CAMPANUS,
-        "space": PrimaryDirectionSpace.IN_MUNDO,
-        "include_converse": True,
-    },
-    "meridian": {
-        "method": PrimaryDirectionMethod.MERIDIAN,
-        "space": PrimaryDirectionSpace.IN_MUNDO,
-        "include_converse": True,
-    },
-    "morinus": {
-        "method": PrimaryDirectionMethod.MORINUS,
-        "space": PrimaryDirectionSpace.IN_MUNDO,
-        "include_converse": True,
-    },
-}
-
-
-def _resolve_policy(req: PrimaryDirectionsSearchRequest | None) -> PrimaryDirectionsPolicy | None:
-    """Resolve a policy object only when the client actually sent policy fields or a preset.
-
-    When the client sends nothing (the common/default case), we return None.
-    This lets the engine use its absolute internal defaults — matching the
-    raw engine calls used in the parity tests.
-
-    Presets are resolved first, then explicit fields override.
-    """
-    if req is None or req.policy is None:
-        return None
-
-    p = req.policy
-    kwargs: dict = {}
-
-    # Apply preset first if provided
-    if p.preset:
-        preset_name = p.preset.lower()
-        if preset_name in _PRESETS:
-            kwargs.update(_PRESETS[preset_name])
-        else:
-            # Unknown preset — fail early with clear validation error
-            supported = ", ".join(sorted(_PRESETS))
-            raise ValueError(f"Unknown preset {p.preset!r}. Supported presets: {supported}")
-
-    if p.method is not None:
-        kwargs["method"] = p.method
-    if p.space is not None:
-        kwargs["space"] = p.space
-    if p.include_converse is not None:
-        kwargs["include_converse"] = p.include_converse
-
-    # Note: key_policy is handled at serialization / years() call time for now (keeps policy surface small)
-
-    if kwargs:
-        return PrimaryDirectionsPolicy(**kwargs)
-
-    return None
-
-
 def compute_arcs_service(
     engine: Moira,
     request: PrimaryDirectionsSearchRequest,
-) -> list:
-    """Return arcs, either by searching or using client-submitted arcs (Phase 2)."""
-    chart, houses = _build_chart_and_houses(engine, request)
-    return _compute_arcs_from_chart_and_houses(chart, houses, request)
-
-
-def _compute_arcs_from_chart_and_houses(chart, houses, request: PrimaryDirectionsSearchRequest) -> list:
-    """Return arcs from prebuilt chart and houses contexts."""
-    # Phase 2 re-evaluation support: if client submitted arcs, use them directly.
-    if request.submitted_arcs:
-        resolved_policy = _resolve_policy(request)
-        return _convert_submitted_arcs(request.submitted_arcs, resolved_policy=resolved_policy)
-
-    geo_lat = request.observer_lat
-
-    resolved_policy = _resolve_policy(request)
-
-    # Determine include_converse preferring the explicit narrow policy
-    include_converse = True
-    if request.policy and request.policy.include_converse is not None:
-        include_converse = request.policy.include_converse
-
-    # Only pass policy when we actually resolved one from client input.
-    # Passing None lets the engine use its absolute internal defaults (matching raw test calls).
-    call_kwargs = {
-        "chart": chart,
-        "houses": houses,
-        "geo_lat": geo_lat,
-        "max_arc": request.max_arc,
-        "include_converse": include_converse,
-        "significators": request.significators,
-        "promissors": request.promissors,
-        "obliquity": request.obliquity,
-    }
-    if resolved_policy is not None:
-        call_kwargs["policy"] = resolved_policy
-
-    return find_primary_arcs(**call_kwargs)
+    *,
+    resolved: ResolvedPrimaryDirectionsPolicy | None = None,
+) -> list[PrimaryArc]:
+    return _prepare_request(
+        engine,
+        request,
+        require_reduction_context=False,
+        resolved=resolved,
+    ).arcs
 
 
 def compute_arcs_with_reduction_service(
     engine: Moira,
     request: PrimaryDirectionsSearchRequest,
-) -> tuple[list, PrimaryDirectionsArcsReductionContext]:
-    """Return arcs together with transport-safe reduction truth."""
-
-    chart, houses = _build_chart_and_houses(engine, request)
-    resolved_policy = _resolve_policy(request)
-    arcs = _compute_arcs_from_chart_and_houses(chart, houses, request)
-    reduction = _build_arcs_reduction_context(chart, houses, request, resolved_policy)
-    return arcs, reduction
-
-
-def compute_profile_with_reduction_service(
-    engine: Moira,
-    request: PrimaryDirectionsSearchRequest,
-):
-    """Return aggregate profile together with transport-safe reduction truth."""
-
-    chart, houses = _build_chart_and_houses(engine, request)
-    resolved_policy = _resolve_policy(request)
-    profile = compute_profile_service(engine, request)
-    reduction = _build_arcs_reduction_context(chart, houses, request, resolved_policy)
-    return profile, reduction
-
-
-def compute_network_with_reduction_service(
-    engine: Moira,
-    request: PrimaryDirectionsSearchRequest,
-):
-    """Return network profile together with transport-safe reduction truth."""
-
-    chart, houses = _build_chart_and_houses(engine, request)
-    resolved_policy = _resolve_policy(request)
-    network = compute_network_service(engine, request)
-    reduction = _build_arcs_reduction_context(chart, houses, request, resolved_policy)
-    return network, reduction
-
-
-def _convert_submitted_arcs(submitted: list, resolved_policy: "PrimaryDirectionsPolicy | None" = None) -> list:
-    """Convert client-submitted arc dicts into lightweight objects usable by evaluation functions (Phase 2).
-
-    If a resolved_policy with a key is provided, the .years() method will use that key when possible.
-    """
-    from dataclasses import dataclass
-
-    chosen_key = None
-    if resolved_policy and hasattr(resolved_policy, "key_policy"):
-        chosen_key = getattr(resolved_policy.key_policy, "key", None)
-
-    @dataclass
-    class _SubmittedArc:
-        significator: str
-        promissor: str
-        arc: float
-        direction: str
-        method: str
-        space: str
-        solar_rate: float
-        _chosen_key: str | None = None
-
-        @property
-        def motion(self) -> str:
-            return "DIRECT" if self.direction.upper() in ("D", "DIRECT") else "CONVERSE"
-
-        @property
-        def is_direct(self) -> bool:
-            return self.motion == "DIRECT"
-
-        @property
-        def is_converse(self) -> bool:
-            return self.motion == "CONVERSE"
-
-        def years(self, key: str | None = None) -> float:
-            key = key or self._chosen_key or "NAIBOD"
-            # Use engine conversion when possible
-            try:
-                from moira.primary_directions.keys import convert_arc_to_time
-                return convert_arc_to_time(self.arc, key, solar_rate=self.solar_rate)
-            except Exception:
-                # Fallback
-                rate = 0.9856 if key.upper() in ("NAIBOD", "N") else 1.0
-                return self.arc / rate
-
-    result = []
-    for item in submitted:
-        result.append(_SubmittedArc(
-            significator=item.significator,
-            promissor=item.promissor,
-            arc=item.arc,
-            direction=item.direction.upper(),
-            method=item.method or "placidus_mundane",
-            space=item.space or "in_mundo",
-            solar_rate=item.solar_rate or 0.9856,
-            _chosen_key=chosen_key,
-        ))
-    return result
+) -> tuple[list[PrimaryArc], PrimaryDirectionsArcsReductionContext]:
+    prepared = _prepare_request(engine, request, require_reduction_context=True)
+    source_surface = (
+        "moira.primary_directions.PrimaryArc"
+        if request.submitted_arcs is not None
+        else "moira.primary_directions.find_primary_arcs"
+    )
+    return prepared.arcs, _build_reduction_context(
+        prepared,
+        request,
+        result_engine_surface=source_surface,
+    )
 
 
 def compute_profile_service(
     engine: Moira,
     request: PrimaryDirectionsSearchRequest,
-):
-    """Search + evaluate into aggregate profile (first-pass convenience + Phase 2 relation/condition depth).
+    *,
+    resolved: ResolvedPrimaryDirectionsPolicy | None = None,
+) -> PrimaryDirectionsAggregateProfile | None:
+    prepared = _prepare_request(
+        engine,
+        request,
+        require_reduction_context=False,
+        resolved=resolved,
+    )
+    if not prepared.arcs:
+        return None
+    return evaluate_primary_directions_aggregate(
+        prepared.arcs,
+        policy=prepared.resolved.policy,
+    )
 
-    - When request.include_relations is True → full relation profiles
-    - When request.include_condition is True → richer per-significator condition data via evaluate_primary_direction_condition
-    """
-    arcs = compute_arcs_service(engine, request)
-    resolved_policy = _resolve_policy(request)
 
-    from moira.primary_directions import evaluate_primary_directions_aggregate
-
-    if not arcs:
-        from moira.primary_directions import PrimaryDirectionsAggregateProfile
-        return PrimaryDirectionsAggregateProfile(
-            profiles=(),
-            total_arcs=0,
-            direct_count=0,
-            converse_count=0,
-            nearest_arc=0.0,
-            farthest_arc=0.0,
-            strongest_significator=None,
-            weakest_significator=None,
+def compute_profile_with_reduction_service(
+    engine: Moira,
+    request: PrimaryDirectionsSearchRequest,
+) -> tuple[PrimaryDirectionsAggregateProfile | None, PrimaryDirectionsArcsReductionContext]:
+    prepared = _prepare_request(engine, request, require_reduction_context=True)
+    profile = (
+        evaluate_primary_directions_aggregate(prepared.arcs, policy=prepared.resolved.policy)
+        if prepared.arcs
+        else None
+    )
+    result_engine_surface = (
+        "moira.primary_directions.evaluate_primary_directions_aggregate"
+        if prepared.arcs
+        else (
+            "moira.primary_directions.PrimaryArc"
+            if request.submitted_arcs is not None
+            else "moira.primary_directions.find_primary_arcs"
         )
-
-    if resolved_policy is not None:
-        agg = evaluate_primary_directions_aggregate(arcs, policy=resolved_policy)
-    else:
-        agg = evaluate_primary_directions_aggregate(arcs)
-
-    # Phase 2: Enrich with full relation profiles when requested (defensive)
-    if getattr(request, "include_relations", False):
-        from moira.primary_directions import evaluate_primary_direction_relations
-
-        for sig_profile in agg.profiles:
-            try:
-                enriched_relation_profiles = []
-                for arc in sig_profile.arcs:
-                    rel_profile = evaluate_primary_direction_relations(arc, policy=resolved_policy)
-                    enriched_relation_profiles.append(rel_profile)
-                object.__setattr__(sig_profile, "relation_profiles", tuple(enriched_relation_profiles))
-            except Exception:
-                pass  # Best effort
-
-    # Condition data is carried natively on the engine PrimaryDirectionsSignificatorProfile
-    # objects returned by evaluate_primary_directions_aggregate (which delegates to
-    # evaluate_primary_direction_condition per significator). The serializer reads .state
-    # directly when include_condition=True. No post-mutation or redundant evaluation required.
-
-    return agg
+    )
+    reduction = _build_reduction_context(
+        prepared,
+        request,
+        result_engine_surface=result_engine_surface,
+    )
+    return profile, reduction
 
 
 def compute_network_service(
     engine: Moira,
     request: PrimaryDirectionsSearchRequest,
-):
-    """Search + network view (first-pass convenience)."""
-    arcs = compute_arcs_service(engine, request)
-    resolved_policy = _resolve_policy(request)
+    *,
+    resolved: ResolvedPrimaryDirectionsPolicy | None = None,
+) -> PrimaryDirectionsNetworkProfile | None:
+    prepared = _prepare_request(
+        engine,
+        request,
+        require_reduction_context=False,
+        resolved=resolved,
+    )
+    if not prepared.arcs:
+        return None
+    return evaluate_primary_directions_network(
+        prepared.arcs,
+        policy=prepared.resolved.policy,
+    )
 
-    from moira.primary_directions import evaluate_primary_directions_network
 
-    if not arcs:
-        from moira.primary_directions import PrimaryDirectionsNetworkProfile
-        return PrimaryDirectionsNetworkProfile(nodes=(), edges=(), most_connected="", isolated=())
-
-    if resolved_policy is not None:
-        return evaluate_primary_directions_network(arcs, policy=resolved_policy)
-    else:
-        return evaluate_primary_directions_network(arcs)
+def compute_network_with_reduction_service(
+    engine: Moira,
+    request: PrimaryDirectionsSearchRequest,
+) -> tuple[PrimaryDirectionsNetworkProfile | None, PrimaryDirectionsArcsReductionContext]:
+    prepared = _prepare_request(engine, request, require_reduction_context=True)
+    network = (
+        evaluate_primary_directions_network(prepared.arcs, policy=prepared.resolved.policy)
+        if prepared.arcs
+        else None
+    )
+    result_engine_surface = (
+        "moira.primary_directions.evaluate_primary_directions_network"
+        if prepared.arcs
+        else (
+            "moira.primary_directions.PrimaryArc"
+            if request.submitted_arcs is not None
+            else "moira.primary_directions.find_primary_arcs"
+        )
+    )
+    reduction = _build_reduction_context(
+        prepared,
+        request,
+        result_engine_surface=result_engine_surface,
+    )
+    return network, reduction
 
 
 def compute_relations_service(
     engine: Moira,
-    request: "PrimaryDirectionsRelationsRequest",
-) -> list:
-    """Evaluate a list of submitted arcs and return rich relation profiles (Phase 2 dedicated endpoint)."""
-    # Convert submitted arcs (this will use policy if present for years etc.)
-    arcs = _convert_submitted_arcs(request.submitted_arcs, resolved_policy=_resolve_policy_for_relations(request))
-
-    from moira.primary_directions import evaluate_primary_direction_relations
-
-    resolved_policy = _resolve_policy_for_relations(request)
-
-    results = []
-    for arc in arcs:
-        rel_profile = evaluate_primary_direction_relations(arc, policy=resolved_policy)
-        results.append(rel_profile)
-
-    return results
-
-
-def _resolve_policy_for_relations(req) -> "PrimaryDirectionsPolicy | None":
-    # Lightweight helper that works with both SearchRequest and RelationsRequest
-    if hasattr(req, "policy") and req.policy:
-        # Reuse the main resolver logic by wrapping
-        # For simplicity in this increment we resolve similarly
-        p = req.policy
-        kwargs = {}
-        if p.preset:
-            preset_name = p.preset.lower()
-            if preset_name in _PRESETS:
-                kwargs.update(_PRESETS[preset_name])
-        if p.method: kwargs["method"] = p.method
-        if p.space: kwargs["space"] = p.space
-        if p.include_converse is not None: kwargs["include_converse"] = p.include_converse
-        if kwargs:
-            from moira.primary_directions import PrimaryDirectionsPolicy
-            return PrimaryDirectionsPolicy(**kwargs)
-    return None
+    request: PrimaryDirectionsRelationsRequest,
+    *,
+    resolved: ResolvedPrimaryDirectionsPolicy | None = None,
+) -> list[PrimaryDirectionRelationProfile]:
+    del engine  # Submitted relation evaluation is deliberately kernel-free.
+    resolved = resolved or resolve_primary_directions_policy(request)
+    arcs = _convert_submitted_arcs(request.submitted_arcs, resolved=resolved)
+    return [
+        evaluate_primary_direction_relations(arc, policy=resolved.policy)
+        for arc in arcs
+    ]
 
 
 __all__ = [
+    "PrimaryDirectionsArcsReductionContext",
+    "ResolvedPrimaryDirectionsPolicy",
     "compute_arcs_service",
     "compute_arcs_with_reduction_service",
     "compute_network_service",
     "compute_network_with_reduction_service",
     "compute_profile_service",
     "compute_profile_with_reduction_service",
+    "compute_relations_service",
     "compute_speculum_service",
+    "resolve_primary_directions_policy",
 ]

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from moira.primary_directions import (
     PrimaryDirectionAntisciaKind,
     PrimaryDirectionAntisciaTarget,
@@ -11,6 +13,7 @@ from moira.primary_directions import (
     PrimaryDirectionMethod,
     PrimaryDirectionMotion,
     PrimaryDirectionPerfectionKind,
+    PrimaryDirectionTargetClass,
     PrimaryDirectionsPreset,
     PtolemaicParallelRelation,
     PtolemaicParallelTarget,
@@ -164,6 +167,37 @@ def test_primary_directions_policy_preset_builds_placidian_converse_rapt_paralle
 
     assert policy.method is PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC
     assert policy.include_converse is False
-    assert policy.converse_doctrine is PrimaryDirectionConverseDoctrine.DIRECT_ONLY
+    assert (
+        policy.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE
+    )
     assert policy.placidian_rapt_parallel_targets == (PlacidianRaptParallelTarget("Moon"),)
     assert policy.placidian_rapt_parallel_motion is PrimaryDirectionMotion.CONVERSE
+    assert policy.admitted_motions == (PrimaryDirectionMotion.DIRECT,)
+    assert policy.admits_motion(
+        PrimaryDirectionMotion.CONVERSE,
+        relational_kind=PrimaryDirectionRelationalKind.RAPT_PARALLEL,
+    )
+
+
+@pytest.mark.parametrize("preset", tuple(PrimaryDirectionsPreset))
+def test_every_preset_composes_with_fixed_star_targets(preset: PrimaryDirectionsPreset) -> None:
+    kwargs = {
+        "fixed_star_targets": (PrimaryDirectionFixedStarTarget("Sirius"),),
+    }
+    if preset in (
+        PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT,
+        PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE,
+    ):
+        kwargs["include_converse"] = False
+
+    policy = primary_directions_policy_preset(preset, **kwargs)
+
+    assert policy.fixed_star_targets == (PrimaryDirectionFixedStarTarget("Sirius"),)
+    assert policy.target_policy.admitted_significator_classes <= frozenset(
+        {
+            # Fixed-star directions are admitted narrowly to planet/angle significators.
+            PrimaryDirectionTargetClass.PLANET,
+            PrimaryDirectionTargetClass.ANGLE,
+        }
+    )

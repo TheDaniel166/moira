@@ -533,8 +533,8 @@ still remain non-verified if its doctrine or validation standing is incomplete.
 
 ## Current Stabilized Runtime Core
 
-After the geometry sovereignty pass, Moira's current runtime-admitted and
-consumer-safe primary-direction geometry core is:
+After the geometry implementation pass, Moira's current runtime-admitted
+primary-direction geometry core is:
 
 - `Placidus mundane`
 - `Ptolemy / semi-arc`
@@ -548,8 +548,8 @@ Morinus is admitted with an explicit doctrinal limit:
 
 - aspect-plane branch: distinct and source-backed when service-layer context is
   supplied
-- conjunction-style branch: shared with the equatorial family on current
-  evidence
+- conjunction-style branch: Morin's circle-of-position treatment, currently
+  shared with the Regiomontanus under-the-pole runtime law
 
 Porphyry is not part of the consumer runtime surface.
 

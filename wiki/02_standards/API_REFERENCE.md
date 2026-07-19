@@ -530,8 +530,13 @@ message.
 | `converse_quotidian_lunar_progression(natal_dt, target_dt, bodies=None)` | `ProgressedChart` | Converse lunar quotidian progression |
 | `planetary_arc_directions(natal_dt, target_dt, arc_body, bodies=None)` | `ProgressedChart` | Planetary-arc directed chart |
 | `converse_planetary_arc_directions(natal_dt, target_dt, arc_body, bodies=None)` | `ProgressedChart` | Converse planetary-arc directed chart |
-| `speculum(chart, houses, geo_lat)` | `list[SpeculumEntry]` | Placidus mundane speculum |
-| `primary_directions(chart, houses, geo_lat, max_arc=90.0, include_converse=True, significators=None, promissors=None)` | `list[PrimaryArc]` | Placidus mundane primary direction arcs |
+| `speculum(chart, houses, geo_lat, *, obliquity=None, bodies=None)` | `list[SpeculumEntry]` | Speculum with established positional compatibility and additive explicit inputs |
+| `primary_directions(chart, houses, geo_lat, max_arc=90.0, include_converse=True, significators=None, promissors=None, *, solar_speed=None, obliquity=None, policy=None)` | `list[PrimaryArc]` | Primary-direction arcs under an explicit optional policy; established positional inputs are unchanged |
+| `primary_directions_policy_preset(preset, **kwargs)` | `PrimaryDirectionsPolicy` | Build one canonical typed policy preset |
+| `primary_direction_relations(arc, *, policy=None)` | `PrimaryDirectionRelationProfile` | Evaluate one arc's admitted/scored relation truth |
+| `primary_direction_condition(arcs, *, policy=None)` | `PrimaryDirectionsSignificatorProfile` | Evaluate one significator's directed condition |
+| `primary_directions_profile(arcs, *, policy=None)` | `PrimaryDirectionsAggregateProfile` | Evaluate a chart-wide primary-directions aggregate |
+| `primary_directions_network(arcs, *, policy=None)` | `PrimaryDirectionsNetworkProfile` | Evaluate the directed promissor-to-significator graph |
 
 ### Hellenistic & Vedic time lords
 
@@ -1899,10 +1904,38 @@ from moira.facade import speculum, find_primary_arcs, SpeculumEntry, PrimaryArc,
 
 spec  = speculum(chart, houses, geo_lat=51.5)
 arcs  = find_primary_arcs(chart, houses, geo_lat=51.5, max_arc=90.0, include_converse=True)
-# list[PrimaryArc(significator, promissor, arc, direction)]
+# list[PrimaryArc(significator, promissor, arc, direction, method, space,
+#                 motion, solar_rate, relational_kind)]
 # arc.years()             → years by key "naibod" (default)
 # arc.years("ptolemy")    → years by Ptolemy key
+# arc.solar_rate_explicit → whether solar_rate is natal/generated provenance
 ```
+
+`PrimaryArc.relational_kind` is the actual positional relation. Relation
+profiles retain the historical `relation_kind` field for perfection kind and
+provide `perfection_kind` as its explicit alias. The solar key is a static
+conversion by one explicit positive natal solar rate; it is not a dynamic
+integration and fails closed without that rate. For compatibility,
+`PrimaryArc.solar_rate` remains numeric when a caller omits the rate, but
+`solar_rate_explicit` is then `False` and solar-key conversion does not treat
+that value as natal provenance. Engine-generated arcs and explicitly supplied
+rates report `True`.
+
+Method/space capability is enforced: `PLACIDUS_MUNDANE` and
+`PLACIDIAN_CLASSIC_SEMI_ARC` are not accepted with `IN_ZODIACO`.
+Placidian-classic geometry uses the equatorial horizon identity
+`OA(ASC) = (ARMC + 90 degrees) mod 360`. Fixed-star targets require
+conjunction admission, while rapt-parallel motion remains specific to the
+configured rapt relation/target. Aspectual points sourced from a house cusp
+materialize that cusp before projection. Supplied Morinus aspect contexts are
+normalized and unique by exact source identity.
+
+Relation vessels bind perfection kind to the arc's space. Relation profiles
+must contain relations owned by their stated arc, and significator profiles
+preserve arc/profile order one-for-one. The method, perfection, relation, and
+target ordered transition-network vessels additionally require a connected,
+degree-valid Euler path or lawfully linearizable circuit; aggregate counts
+alone cannot attest a possible sequence.
 
 ### Firdaria (Persian Time Lords)
 

@@ -11,8 +11,10 @@ orthogonal to primary-direction geometry and direction space.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from enum import StrEnum
+from numbers import Real
 
 __all__ = [
     "PrimaryDirectionKey",
@@ -54,8 +56,9 @@ class PrimaryDirectionKeyPolicy:
 
     @property
     def family(self) -> PrimaryDirectionKeyFamily:
-        if self.key is PrimaryDirectionKey.SOLAR:
-            return PrimaryDirectionKeyFamily.DYNAMIC
+        # This admitted key divides by one explicitly supplied natal solar
+        # rate.  It is chart-conditioned, but it is not a dynamic symbolic-key
+        # integration and must not claim that stronger semantics.
         return PrimaryDirectionKeyFamily.STATIC
 
 
@@ -69,15 +72,28 @@ class PrimaryDirectionKeyTruth:
     fallback_applied: bool = False
 
     def __post_init__(self) -> None:
+        if not isinstance(self.key, PrimaryDirectionKey):
+            raise ValueError("PrimaryDirectionKeyTruth key must be PrimaryDirectionKey")
+        if not isinstance(self.family, PrimaryDirectionKeyFamily):
+            raise ValueError("PrimaryDirectionKeyTruth family must be PrimaryDirectionKeyFamily")
         expected_family = PrimaryDirectionKeyPolicy(self.key).family
         if self.family is not expected_family:
             raise ValueError(
                 "PrimaryDirectionKeyTruth invariant failed: family does not match key"
             )
-        if self.rate_degrees_per_year <= 0.0:
+        if (
+            not isinstance(self.rate_degrees_per_year, Real)
+            or isinstance(self.rate_degrees_per_year, bool)
+            or not math.isfinite(self.rate_degrees_per_year)
+            or self.rate_degrees_per_year <= 0.0
+        ):
             raise ValueError(
                 "PrimaryDirectionKeyTruth invariant failed: rate_degrees_per_year must be positive"
             )
+        if not isinstance(self.requested_key, str):
+            raise ValueError("PrimaryDirectionKeyTruth requested_key must be str")
+        if not isinstance(self.fallback_applied, bool):
+            raise ValueError("PrimaryDirectionKeyTruth fallback_applied must be bool")
         if self.fallback_applied and self.key is not PrimaryDirectionKey.NAIBOD:
             raise ValueError(
                 "PrimaryDirectionKeyTruth invariant failed: fallback must resolve to Naibod"
@@ -87,6 +103,8 @@ class PrimaryDirectionKeyTruth:
 def _resolve_key(key: str | PrimaryDirectionKey) -> tuple[PrimaryDirectionKey, bool]:
     if isinstance(key, PrimaryDirectionKey):
         return key, False
+    if not isinstance(key, str):
+        raise ValueError("Primary direction key must be a string or PrimaryDirectionKey")
     try:
         return PrimaryDirectionKey(str(key).lower()), False
     except ValueError:
@@ -100,9 +118,16 @@ def primary_direction_key_truth(
 ) -> PrimaryDirectionKeyTruth:
     resolved_key, fallback_applied = _resolve_key(key)
     if resolved_key is PrimaryDirectionKey.SOLAR:
-        resolved_rate = abs(solar_rate) if solar_rate is not None else _NAIBOD_RATE
-        if resolved_rate <= 0.0:
-            resolved_rate = _NAIBOD_RATE
+        if (
+            not isinstance(solar_rate, Real)
+            or isinstance(solar_rate, bool)
+            or not math.isfinite(solar_rate)
+            or solar_rate <= 0.0
+        ):
+            raise ValueError(
+                "The solar primary-direction key requires an explicit positive finite natal solar rate"
+            )
+        resolved_rate = float(solar_rate)
     elif resolved_key is PrimaryDirectionKey.PTOLEMY:
         resolved_rate = _PTOLEMY_RATE
     elif resolved_key is PrimaryDirectionKey.CARDAN:
@@ -129,7 +154,12 @@ def convert_arc_to_time(
     *,
     solar_rate: float | None = None,
 ) -> float:
-    if arc <= 0.0:
+    if (
+        not isinstance(arc, Real)
+        or isinstance(arc, bool)
+        or not math.isfinite(arc)
+        or arc <= 0.0
+    ):
         raise ValueError("convert_arc_to_time requires a positive arc")
     truth = primary_direction_key_truth(key, solar_rate=solar_rate)
     return arc / truth.rate_degrees_per_year

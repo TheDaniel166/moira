@@ -39,8 +39,8 @@ Runtime-admitted methods:
 Important qualifier:
 
 - `Morinus` is admitted, but its conjunction-style branch remains shared with
-  the equatorial family while its aspect branch is the clearest distinct
-  surface
+  the Regiomontanus under-the-pole law while its aspect branch is the clearest
+  distinct surface
 
 
 ## Direction Spaces

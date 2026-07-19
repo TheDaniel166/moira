@@ -440,8 +440,10 @@ from .progressions import (
     progression_chart_condition_profile, progression_condition_network_profile,
 )
 from .primary_directions import (
-    SpeculumEntry, PrimaryArc,
-    speculum, find_primary_arcs,
+    SpeculumEntry, PrimaryArc, PrimaryDirectionsPolicy, PrimaryDirectionsPreset,
+    speculum, find_primary_arcs, primary_directions_policy_preset,
+    evaluate_primary_direction_relations, evaluate_primary_direction_condition,
+    evaluate_primary_directions_aggregate, evaluate_primary_directions_network,
     DIRECT, CONVERSE,
 )
 from .synastry import (

@@ -24,16 +24,17 @@ def test_primary_direction_key_truth_exposes_expected_families_and_rates() -> No
     assert naibod.rate_degrees_per_year == pytest.approx(360.0 / 365.25)
     assert cardan.family is PrimaryDirectionKeyFamily.STATIC
     assert cardan.rate_degrees_per_year == pytest.approx(59.0 / 60.0 + 12.0 / 3600.0)
-    assert solar.family is PrimaryDirectionKeyFamily.DYNAMIC
+    assert solar.family is PrimaryDirectionKeyFamily.STATIC
     assert solar.rate_degrees_per_year == pytest.approx(0.9)
 
 
-def test_primary_direction_key_truth_normalizes_unknown_and_bad_solar_rate() -> None:
+def test_primary_direction_key_truth_normalizes_unknown_and_rejects_bad_solar_rate() -> None:
     unknown = primary_direction_key_truth("unknown")
-    solar = primary_direction_key_truth("solar", solar_rate=0.0)
 
     assert unknown.key is PrimaryDirectionKey.NAIBOD
-    assert solar.rate_degrees_per_year == pytest.approx(360.0 / 365.25)
+    for bad_rate in (None, 0.0, -0.5, float("nan"), float("inf"), True):
+        with pytest.raises(ValueError, match="explicit positive finite natal solar rate"):
+            primary_direction_key_truth("solar", solar_rate=bad_rate)  # type: ignore[arg-type]
 
 
 def test_convert_arc_to_time_uses_key_truth() -> None:
@@ -48,8 +49,14 @@ def test_convert_arc_to_time_uses_key_truth() -> None:
 
 
 def test_convert_arc_to_time_rejects_non_positive_arc() -> None:
-    with pytest.raises(ValueError):
-        convert_arc_to_time(0.0)
+    for bad_arc in (0.0, -1.0, float("nan"), float("inf"), True):
+        with pytest.raises(ValueError):
+            convert_arc_to_time(bad_arc)
+
+
+def test_primary_direction_key_truth_rejects_non_string_key_tokens() -> None:
+    with pytest.raises(ValueError, match="string or PrimaryDirectionKey"):
+        primary_direction_key_truth(7)  # type: ignore[arg-type]
 
 
 def test_primary_direction_key_module_exports_curated_surface() -> None:

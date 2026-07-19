@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "primary_directions", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
+        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "speculum", "primary_directions", "primary_directions_policy_preset", "primary_direction_relations", "primary_direction_condition", "primary_directions_profile", "primary_directions_network", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -106,9 +106,23 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             jd_start, jd_end, natal_positions, orb=orb
         )
 
-    def speculum(self, chart, houses, geo_lat: float):
+    def speculum(
+        self,
+        chart,
+        houses,
+        geo_lat: float,
+        *,
+        obliquity: float | None = None,
+        bodies: list[str] | None = None,
+    ):
         """Compute the Placidus mundane speculum for a natal chart."""
-        return _facade_module().speculum(chart, houses, geo_lat)
+        return _facade_module().speculum(
+            chart,
+            houses,
+            geo_lat,
+            obliquity=obliquity,
+            bodies=bodies,
+        )
 
     def primary_directions(
         self,
@@ -119,8 +133,12 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         include_converse: bool = True,
         significators: list[str] | None = None,
         promissors: list[str] | None = None,
+        *,
+        solar_speed: float | None = None,
+        obliquity: float | None = None,
+        policy=None,
     ):
-        """Find Placidus mundane primary direction arcs."""
+        """Find primary-direction arcs under an explicit optional policy."""
         return _facade_module().find_primary_arcs(
             chart,
             houses,
@@ -129,7 +147,30 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             include_converse=include_converse,
             significators=significators,
             promissors=promissors,
+            solar_speed=solar_speed,
+            obliquity=obliquity,
+            policy=policy,
         )
+
+    def primary_directions_policy_preset(self, preset, **kwargs):
+        """Build one canonical primary-directions policy preset."""
+        return _facade_module().primary_directions_policy_preset(preset, **kwargs)
+
+    def primary_direction_relations(self, arc, *, policy=None):
+        """Evaluate the admitted relation profile for one primary arc."""
+        return _facade_module().evaluate_primary_direction_relations(arc, policy=policy)
+
+    def primary_direction_condition(self, arcs, *, policy=None):
+        """Evaluate one significator's directed condition profile."""
+        return _facade_module().evaluate_primary_direction_condition(arcs, policy=policy)
+
+    def primary_directions_profile(self, arcs, *, policy=None):
+        """Evaluate an aggregate primary-directions profile."""
+        return _facade_module().evaluate_primary_directions_aggregate(arcs, policy=policy)
+
+    def primary_directions_network(self, arcs, *, policy=None):
+        """Evaluate the directed promissor-to-significator network."""
+        return _facade_module().evaluate_primary_directions_network(arcs, policy=policy)
 
     def longevity(self, chart, houses):
         """Calculate the Hyleg and Alcocoden."""

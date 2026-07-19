@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Iterable
 
+from ._ordered_network import validate_ordered_transition_counts
+
 __all__ = [
     "PrimaryDirectionPerfectionKind",
     "PrimaryDirectionPerfectionMode",
@@ -63,11 +65,7 @@ class PrimaryDirectionPerfectionPolicy:
     kind: PrimaryDirectionPerfectionKind = PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION
 
     def __post_init__(self) -> None:
-        if self.kind not in (
-            PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
-            PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION,
-            PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION,
-        ):
+        if not isinstance(self.kind, PrimaryDirectionPerfectionKind):
             raise ValueError(f"Unsupported primary direction perfection kind: {self.kind}")
 
 
@@ -80,6 +78,17 @@ class PrimaryDirectionPerfectionTruth:
     world_frame_based: bool
 
     def __post_init__(self) -> None:
+        if not isinstance(self.kind, PrimaryDirectionPerfectionKind):
+            raise ValueError(f"Unsupported primary direction perfection kind on truth: {self.kind}")
+        if not isinstance(self.mode, PrimaryDirectionPerfectionMode):
+            raise ValueError(f"Unsupported primary direction perfection mode: {self.mode}")
+        if (
+            type(self.uses_significator_mundane_fraction) is not bool
+            or type(self.world_frame_based) is not bool
+        ):
+            raise ValueError(
+                "PrimaryDirectionPerfectionTruth invariant failed: trait flags must be bool"
+            )
         expected = {
             PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION: (True, True),
             PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION: (False, False),
@@ -103,7 +112,15 @@ class PrimaryDirectionPerfectionClassification:
     aspectual: bool
 
     def __post_init__(self) -> None:
-        if not self.positional or self.aspectual:
+        if not isinstance(self.truth, PrimaryDirectionPerfectionTruth):
+            raise ValueError(
+                "PrimaryDirectionPerfectionClassification invariant failed: invalid truth"
+            )
+        if type(self.positional) is not bool or type(self.aspectual) is not bool:
+            raise ValueError(
+                "PrimaryDirectionPerfectionClassification invariant failed: flags must be bool"
+            )
+        if self.positional is not True or self.aspectual is not False:
             raise ValueError(
                 "PrimaryDirectionPerfectionClassification invariant failed: current admitted perfection classification mismatch"
             )
@@ -116,6 +133,12 @@ class PrimaryDirectionPerfectionRelation:
     relation_kind: PrimaryDirectionPerfectionKind
 
     def __post_init__(self) -> None:
+        if not isinstance(self.truth, PrimaryDirectionPerfectionTruth):
+            raise ValueError("PrimaryDirectionPerfectionRelation invariant failed: invalid truth")
+        if not isinstance(self.relation_kind, PrimaryDirectionPerfectionKind):
+            raise ValueError(
+                "PrimaryDirectionPerfectionRelation invariant failed: relation_kind must be an enum member"
+            )
         if self.relation_kind is not self.truth.kind:
             raise ValueError(
                 "PrimaryDirectionPerfectionRelation invariant failed: relation_kind must match truth.kind"
@@ -131,19 +154,33 @@ class PrimaryDirectionPerfectionRelationProfile:
     scored_relations: tuple[PrimaryDirectionPerfectionRelation, ...]
 
     def __post_init__(self) -> None:
+        try:
+            admitted_relations = tuple(self.admitted_relations)
+            scored_relations = tuple(self.scored_relations)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionPerfectionRelationProfile invariant failed: relation collections must be iterable"
+            ) from exc
+        object.__setattr__(self, "admitted_relations", admitted_relations)
+        object.__setattr__(self, "scored_relations", scored_relations)
+        if not isinstance(self.truth, PrimaryDirectionPerfectionTruth):
+            raise ValueError("PrimaryDirectionPerfectionRelationProfile invariant failed: invalid truth")
+        if not isinstance(self.detected_relation, PrimaryDirectionPerfectionRelation):
+            raise ValueError(
+                "PrimaryDirectionPerfectionRelationProfile invariant failed: invalid detected relation"
+            )
         if self.detected_relation.truth != self.truth:
             raise ValueError(
                 "PrimaryDirectionPerfectionRelationProfile invariant failed: detected relation truth mismatch"
             )
-        if self.detected_relation not in self.admitted_relations:
+        if self.admitted_relations != (self.detected_relation,):
             raise ValueError(
-                "PrimaryDirectionPerfectionRelationProfile invariant failed: detected relation must be admitted"
+                "PrimaryDirectionPerfectionRelationProfile invariant failed: current doctrine admits exactly the detected relation"
             )
-        for relation in self.scored_relations:
-            if relation not in self.admitted_relations:
-                raise ValueError(
-                    "PrimaryDirectionPerfectionRelationProfile invariant failed: scored relation must be admitted"
-                )
+        if self.scored_relations != self.admitted_relations:
+            raise ValueError(
+                "PrimaryDirectionPerfectionRelationProfile invariant failed: admitted relation must be scored"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,6 +192,20 @@ class PrimaryDirectionPerfectionConditionProfile:
     state: PrimaryDirectionPerfectionConditionState
 
     def __post_init__(self) -> None:
+        if not isinstance(self.truth, PrimaryDirectionPerfectionTruth):
+            raise ValueError("PrimaryDirectionPerfectionConditionProfile invariant failed: invalid truth")
+        if not isinstance(self.classification, PrimaryDirectionPerfectionClassification):
+            raise ValueError(
+                "PrimaryDirectionPerfectionConditionProfile invariant failed: invalid classification"
+            )
+        if not isinstance(self.relation_profile, PrimaryDirectionPerfectionRelationProfile):
+            raise ValueError(
+                "PrimaryDirectionPerfectionConditionProfile invariant failed: invalid relation profile"
+            )
+        if not isinstance(self.state, PrimaryDirectionPerfectionConditionState):
+            raise ValueError(
+                "PrimaryDirectionPerfectionConditionProfile invariant failed: state must be an enum member"
+            )
         if self.classification.truth != self.truth:
             raise ValueError(
                 "PrimaryDirectionPerfectionConditionProfile invariant failed: classification truth mismatch"
@@ -185,13 +236,33 @@ class PrimaryDirectionPerfectionsAggregateProfile:
     world_frame_count: int
 
     def __post_init__(self) -> None:
+        try:
+            profiles = tuple(self.profiles)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionPerfectionsAggregateProfile invariant failed: profiles must be iterable"
+            ) from exc
+        object.__setattr__(self, "profiles", profiles)
         if not self.profiles:
             raise ValueError("PrimaryDirectionPerfectionsAggregateProfile requires at least one profile")
+        if any(not isinstance(profile, PrimaryDirectionPerfectionConditionProfile) for profile in self.profiles):
+            raise ValueError(
+                "PrimaryDirectionPerfectionsAggregateProfile invariant failed: invalid profile type"
+            )
+        if any(
+            type(count) is not int or count < 0
+            for count in (self.total_profiles, self.positional_count, self.world_frame_count)
+        ):
+            raise ValueError(
+                "PrimaryDirectionPerfectionsAggregateProfile invariant failed: counts must be non-negative integers"
+            )
         if self.total_profiles != len(self.profiles):
             raise ValueError(
                 "PrimaryDirectionPerfectionsAggregateProfile invariant failed: total_profiles mismatch"
             )
-        if self.positional_count != len(self.profiles):
+        if self.positional_count != sum(
+            1 for profile in self.profiles if profile.classification.positional
+        ):
             raise ValueError(
                 "PrimaryDirectionPerfectionsAggregateProfile invariant failed: positional_count mismatch"
             )
@@ -199,6 +270,33 @@ class PrimaryDirectionPerfectionsAggregateProfile:
             raise ValueError(
                 "PrimaryDirectionPerfectionsAggregateProfile invariant failed: world_frame_count mismatch"
             )
+
+    @property
+    def mundane_position_count(self) -> int:
+        return sum(
+            1
+            for profile in self.profiles
+            if profile.truth.kind
+            is PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION
+        )
+
+    @property
+    def zodiacal_longitude_count(self) -> int:
+        return sum(
+            1
+            for profile in self.profiles
+            if profile.truth.kind
+            is PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+        )
+
+    @property
+    def zodiacal_projected_count(self) -> int:
+        return sum(
+            1
+            for profile in self.profiles
+            if profile.truth.kind
+            is PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -208,7 +306,9 @@ class PrimaryDirectionPerfectionsNetworkNode:
     count: int
 
     def __post_init__(self) -> None:
-        if self.count <= 0:
+        if not isinstance(self.kind, PrimaryDirectionPerfectionKind):
+            raise ValueError("PrimaryDirectionPerfectionsNetworkNode invariant failed: invalid kind")
+        if type(self.count) is not int or self.count <= 0:
             raise ValueError("PrimaryDirectionPerfectionsNetworkNode invariant failed: count must be positive")
 
 
@@ -220,29 +320,98 @@ class PrimaryDirectionPerfectionsNetworkEdge:
     count: int
 
     def __post_init__(self) -> None:
+        if not isinstance(self.from_kind, PrimaryDirectionPerfectionKind) or not isinstance(
+            self.to_kind, PrimaryDirectionPerfectionKind
+        ):
+            raise ValueError("PrimaryDirectionPerfectionsNetworkEdge invariant failed: invalid kind")
         if self.from_kind == self.to_kind:
             raise ValueError(
                 "PrimaryDirectionPerfectionsNetworkEdge invariant failed: self-edges are not admitted"
             )
-        if self.count <= 0:
+        if type(self.count) is not int or self.count <= 0:
             raise ValueError("PrimaryDirectionPerfectionsNetworkEdge invariant failed: count must be positive")
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionPerfectionsNetworkProfile:
-    """Vessel: Structural profile of the perfections network."""
+    """Vessel: Structural profile of an ordered perfection-transition network."""
     nodes: tuple[PrimaryDirectionPerfectionsNetworkNode, ...]
     edges: tuple[PrimaryDirectionPerfectionsNetworkEdge, ...]
     dominant_kind: PrimaryDirectionPerfectionKind
     isolated_kinds: tuple[PrimaryDirectionPerfectionKind, ...]
 
     def __post_init__(self) -> None:
+        try:
+            nodes = tuple(self.nodes)
+            edges = tuple(self.edges)
+            isolated_kinds = tuple(self.isolated_kinds)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionPerfectionsNetworkProfile invariant failed: network collections must be iterable"
+            ) from exc
+        object.__setattr__(self, "nodes", nodes)
+        object.__setattr__(self, "edges", edges)
+        object.__setattr__(self, "isolated_kinds", isolated_kinds)
         if not self.nodes:
             raise ValueError("PrimaryDirectionPerfectionsNetworkProfile requires at least one node")
+        if any(not isinstance(node, PrimaryDirectionPerfectionsNetworkNode) for node in self.nodes):
+            raise ValueError("PrimaryDirectionPerfectionsNetworkProfile invariant failed: invalid node type")
+        if any(not isinstance(edge, PrimaryDirectionPerfectionsNetworkEdge) for edge in self.edges):
+            raise ValueError("PrimaryDirectionPerfectionsNetworkProfile invariant failed: invalid edge type")
+        if not isinstance(self.dominant_kind, PrimaryDirectionPerfectionKind):
+            raise ValueError("PrimaryDirectionPerfectionsNetworkProfile invariant failed: invalid dominant_kind")
+        if any(not isinstance(kind, PrimaryDirectionPerfectionKind) for kind in self.isolated_kinds):
+            raise ValueError("PrimaryDirectionPerfectionsNetworkProfile invariant failed: invalid isolated kind")
         kinds = [node.kind for node in self.nodes]
         if len(set(kinds)) != len(kinds):
             raise ValueError(
                 "PrimaryDirectionPerfectionsNetworkProfile invariant failed: duplicate nodes"
+            )
+        if len(set(self.isolated_kinds)) != len(self.isolated_kinds):
+            raise ValueError(
+                "PrimaryDirectionPerfectionsNetworkProfile invariant failed: duplicate isolated kinds"
+            )
+        edge_keys = [(edge.from_kind, edge.to_kind) for edge in self.edges]
+        if len(set(edge_keys)) != len(edge_keys):
+            raise ValueError(
+                "PrimaryDirectionPerfectionsNetworkProfile invariant failed: duplicate edges"
+            )
+        node_by_kind = {node.kind: node for node in self.nodes}
+        if any(
+            edge.from_kind not in node_by_kind or edge.to_kind not in node_by_kind
+            for edge in self.edges
+        ):
+            raise ValueError(
+                "PrimaryDirectionPerfectionsNetworkProfile invariant failed: edge endpoint missing from nodes"
+            )
+        if any(
+            edge.count > min(node_by_kind[edge.from_kind].count, node_by_kind[edge.to_kind].count)
+            for edge in self.edges
+        ):
+            raise ValueError(
+                "PrimaryDirectionPerfectionsNetworkProfile invariant failed: edge count exceeds endpoint occurrence count"
+            )
+        if sum(edge.count for edge in self.edges) > sum(node.count for node in self.nodes) - 1:
+            raise ValueError(
+                "PrimaryDirectionPerfectionsNetworkProfile invariant failed: edge count exceeds possible transitions"
+            )
+        validate_ordered_transition_counts(
+            {node.kind: node.count for node in self.nodes},
+            {(edge.from_kind, edge.to_kind): edge.count for edge in self.edges},
+            object_name="PrimaryDirectionPerfectionsNetworkProfile",
+        )
+        expected_dominant = max(self.nodes, key=lambda node: (node.count, node.kind.value)).kind
+        if self.dominant_kind is not expected_dominant:
+            raise ValueError(
+                "PrimaryDirectionPerfectionsNetworkProfile invariant failed: dominant_kind mismatch"
+            )
+        participating = {edge.from_kind for edge in self.edges} | {edge.to_kind for edge in self.edges}
+        expected_isolated = tuple(
+            sorted((kind for kind in kinds if kind not in participating), key=lambda kind: kind.value)
+        )
+        if self.isolated_kinds != expected_isolated:
+            raise ValueError(
+                "PrimaryDirectionPerfectionsNetworkProfile invariant failed: isolated_kinds mismatch"
             )
 
 
@@ -251,6 +420,10 @@ def primary_direction_perfection_truth(
     *,
     policy: PrimaryDirectionPerfectionPolicy | None = None,
 ) -> PrimaryDirectionPerfectionTruth:
+    if not isinstance(kind, PrimaryDirectionPerfectionKind):
+        raise ValueError(f"Unsupported primary direction perfection kind: {kind}")
+    if policy is not None and not isinstance(policy, PrimaryDirectionPerfectionPolicy):
+        raise ValueError("policy must be a PrimaryDirectionPerfectionPolicy")
     resolved_policy = policy if policy is not None else PrimaryDirectionPerfectionPolicy(kind)
     return PrimaryDirectionPerfectionTruth(
         kind=resolved_policy.kind,
@@ -267,6 +440,8 @@ def primary_direction_perfection_truth(
 def classify_primary_direction_perfection(
     truth: PrimaryDirectionPerfectionTruth,
 ) -> PrimaryDirectionPerfectionClassification:
+    if not isinstance(truth, PrimaryDirectionPerfectionTruth):
+        raise ValueError("truth must be a PrimaryDirectionPerfectionTruth")
     return PrimaryDirectionPerfectionClassification(
         truth=truth,
         positional=True,
@@ -277,6 +452,8 @@ def classify_primary_direction_perfection(
 def relate_primary_direction_perfection(
     truth: PrimaryDirectionPerfectionTruth,
 ) -> PrimaryDirectionPerfectionRelation:
+    if not isinstance(truth, PrimaryDirectionPerfectionTruth):
+        raise ValueError("truth must be a PrimaryDirectionPerfectionTruth")
     return PrimaryDirectionPerfectionRelation(
         truth=truth,
         relation_kind=truth.kind,
@@ -286,6 +463,8 @@ def relate_primary_direction_perfection(
 def evaluate_primary_direction_perfection_relations(
     truth: PrimaryDirectionPerfectionTruth,
 ) -> PrimaryDirectionPerfectionRelationProfile:
+    if not isinstance(truth, PrimaryDirectionPerfectionTruth):
+        raise ValueError("truth must be a PrimaryDirectionPerfectionTruth")
     relation = relate_primary_direction_perfection(truth)
     admitted = (relation,)
     return PrimaryDirectionPerfectionRelationProfile(
@@ -299,6 +478,8 @@ def evaluate_primary_direction_perfection_relations(
 def evaluate_primary_direction_perfection_condition(
     truth: PrimaryDirectionPerfectionTruth,
 ) -> PrimaryDirectionPerfectionConditionProfile:
+    if not isinstance(truth, PrimaryDirectionPerfectionTruth):
+        raise ValueError("truth must be a PrimaryDirectionPerfectionTruth")
     return PrimaryDirectionPerfectionConditionProfile(
         truth=truth,
         classification=classify_primary_direction_perfection(truth),
@@ -318,7 +499,11 @@ def evaluate_primary_direction_perfection_condition(
 def evaluate_primary_direction_perfections_aggregate(
     truths: Iterable[PrimaryDirectionPerfectionTruth],
 ) -> PrimaryDirectionPerfectionsAggregateProfile:
-    profiles = tuple(evaluate_primary_direction_perfection_condition(truth) for truth in truths)
+    try:
+        truth_tuple = tuple(truths)
+    except TypeError as exc:
+        raise ValueError("truths must be an iterable of PrimaryDirectionPerfectionTruth") from exc
+    profiles = tuple(evaluate_primary_direction_perfection_condition(truth) for truth in truth_tuple)
     if not profiles:
         raise ValueError("evaluate_primary_direction_perfections_aggregate requires at least one truth")
     return PrimaryDirectionPerfectionsAggregateProfile(
@@ -332,9 +517,15 @@ def evaluate_primary_direction_perfections_aggregate(
 def evaluate_primary_direction_perfections_network(
     truths: Iterable[PrimaryDirectionPerfectionTruth],
 ) -> PrimaryDirectionPerfectionsNetworkProfile:
-    truth_tuple = tuple(truths)
+    """Build transitions between consecutive truths in caller-supplied order."""
+    try:
+        truth_tuple = tuple(truths)
+    except TypeError as exc:
+        raise ValueError("truths must be an iterable of PrimaryDirectionPerfectionTruth") from exc
     if not truth_tuple:
         raise ValueError("evaluate_primary_direction_perfections_network requires at least one truth")
+    if any(not isinstance(truth, PrimaryDirectionPerfectionTruth) for truth in truth_tuple):
+        raise ValueError("truths must contain only PrimaryDirectionPerfectionTruth values")
     counts: dict[PrimaryDirectionPerfectionKind, int] = {}
     for truth in truth_tuple:
         counts[truth.kind] = counts.get(truth.kind, 0) + 1

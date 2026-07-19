@@ -114,12 +114,22 @@ Current truth preserved:
 - compact routes preserve:
   - doctrinal arc metadata
   - relation/profile/network enrichments where already admitted
+  - positional relation identity separately from perfection identity
 - sibling reduction routes now preserve on the search-derived surfaces:
   - resolved policy truth
-  - chosen key and key-source truth
+  - requested/canonical preset and chosen key/key-source truth
   - house fallback/effective-system truth
   - search-mode truth (`engine_search` vs `submitted_arcs`)
   - request and observer context
+  - submitted-arc reconstruction as typed engine vessels
+
+Boundary truth:
+- natal coordinates construct the chart; observer coordinates construct houses
+  and own directional geographic latitude
+- omitted submitted arcs mean search, while an explicit empty list is a lawful
+  empty submitted evaluation
+- ambiguous or conflicting doctrine fails closed; no hidden conversion fallback
+  substitutes a different computation
 
 Current gap:
 - `speculum` remains compact-first

@@ -45,7 +45,7 @@ Not admitted yet:
 
 ## Validation State
 
-The current branch is validated by:
+The current branch has regression and invariant evidence from:
 
 - sovereign antiscia formula tests from the existing substrate
 - explicit primary-direction antiscia primitive tests
@@ -59,6 +59,10 @@ The current branch is validated by:
   - angle:
     - `ASC Contra-Antiscion`
 
+The bundled fixture values are derived from the declared reflection formulas
+and Moira's runtime branch. They are not an independent historical-authority
+oracle; a published worked-example corpus remains pending.
+
 
 ## Present Declaration
 
@@ -68,7 +72,7 @@ It should be described as:
 
 > Ptolemaic zodiacal antiscia / contra-antiscia
 
-This branch is now closed for now on the current recoverable surface.
+This branch is runtime-admitted on the current recoverable surface.
 
 It is not yet a complete reflected target family across all methods.
 

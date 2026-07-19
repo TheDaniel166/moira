@@ -12,7 +12,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import StrEnum
+import math
+from numbers import Real
 from typing import Iterable
+
+from ._ordered_network import validate_ordered_transition_counts
 
 from ..constants import Body
 
@@ -53,7 +57,7 @@ _NODE_NAMES = frozenset(
         "True Node",
     }
 )
-_PLANET_NAMES = frozenset(Body.ALL_PLANETS)
+_PLANET_NAMES = frozenset(name for name in Body.ALL_PLANETS if name not in _NODE_NAMES)
 
 
 class PrimaryDirectionTargetClass(StrEnum):
@@ -106,14 +110,28 @@ class PrimaryDirectionTargetPolicy:
     )
 
     def __post_init__(self) -> None:
-        valid = set(PrimaryDirectionTargetClass)
+        try:
+            significator_classes = frozenset(self.admitted_significator_classes)
+            promissor_classes = frozenset(self.admitted_promissor_classes)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionTargetPolicy invariant failed: admitted classes must be iterable"
+            ) from exc
+        object.__setattr__(self, "admitted_significator_classes", significator_classes)
+        object.__setattr__(self, "admitted_promissor_classes", promissor_classes)
         if not self.admitted_significator_classes or not self.admitted_promissor_classes:
             raise ValueError(
                 "PrimaryDirectionTargetPolicy invariant failed: admitted target classes may not be empty"
             )
-        if not set(self.admitted_significator_classes) <= valid:
+        if not all(
+            isinstance(target_class, PrimaryDirectionTargetClass)
+            for target_class in self.admitted_significator_classes
+        ):
             raise ValueError("Unsupported significator target classes")
-        if not set(self.admitted_promissor_classes) <= valid:
+        if not all(
+            isinstance(target_class, PrimaryDirectionTargetClass)
+            for target_class in self.admitted_promissor_classes
+        ):
             raise ValueError("Unsupported promissor target classes")
 
 
@@ -127,18 +145,43 @@ class PrimaryDirectionTargetTruth:
     aspect_angle: float | None = None
 
     def __post_init__(self) -> None:
-        if not self.name:
+        if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("PrimaryDirectionTargetTruth requires a non-empty target name")
         if not isinstance(self.target_class, PrimaryDirectionTargetClass):
             raise ValueError(f"Unsupported primary-direction target class: {self.target_class}")
         if self.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT:
-            if not self.source_name or not self.aspect_name or self.aspect_angle is None:
+            if (
+                not isinstance(self.source_name, str)
+                or not self.source_name.strip()
+                or not isinstance(self.aspect_name, str)
+                or not self.aspect_name.strip()
+                or isinstance(self.aspect_angle, bool)
+                or not isinstance(self.aspect_angle, Real)
+                or not math.isfinite(float(self.aspect_angle))
+            ):
                 raise ValueError(
                     "PrimaryDirectionTargetTruth invariant failed: aspectual points require source_name, aspect_name, and aspect_angle"
+                )
+            _target_class_for_name(self.source_name)
+            expected_angles = {
+                aspect_name: angle for aspect_name, angle in _MAJOR_ASPECT_ANGLES
+            }
+            expected_angle = expected_angles.get(self.aspect_name)
+            if expected_angle is None or float(self.aspect_angle) != expected_angle:
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: aspect metadata is not an admitted major aspect"
+                )
+            if self.name != f"{self.source_name} {self.aspect_name}":
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: aspect target name does not match its metadata"
                 )
         elif any(value is not None for value in (self.source_name, self.aspect_name, self.aspect_angle)):
             raise ValueError(
                 "PrimaryDirectionTargetTruth invariant failed: non-aspectual targets may not carry aspect metadata"
+            )
+        elif _target_class_for_name(self.name) is not self.target_class:
+            raise ValueError(
+                "PrimaryDirectionTargetTruth invariant failed: target class does not match declared identity"
             )
 
 
@@ -150,9 +193,13 @@ class PrimaryDirectionTargetClassification:
     admitted_as_promissor: bool
 
     def __post_init__(self) -> None:
-        if not isinstance(self.truth.target_class, PrimaryDirectionTargetClass):
+        if not isinstance(self.truth, PrimaryDirectionTargetTruth):
             raise ValueError(
-                "PrimaryDirectionTargetClassification invariant failed: invalid truth target class"
+                "PrimaryDirectionTargetClassification invariant failed: invalid truth"
+            )
+        if type(self.admitted_as_significator) is not bool or type(self.admitted_as_promissor) is not bool:
+            raise ValueError(
+                "PrimaryDirectionTargetClassification invariant failed: admission flags must be bool"
             )
 
 
@@ -161,6 +208,14 @@ class PrimaryDirectionTargetRelation:
     """Vessel: Established relation between a target and the system."""
     truth: PrimaryDirectionTargetTruth
     relation_kind: PrimaryDirectionTargetRelationKind
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.truth, PrimaryDirectionTargetTruth):
+            raise ValueError("PrimaryDirectionTargetRelation invariant failed: invalid truth")
+        if not isinstance(self.relation_kind, PrimaryDirectionTargetRelationKind):
+            raise ValueError(
+                "PrimaryDirectionTargetRelation invariant failed: relation_kind must be an enum member"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,19 +227,54 @@ class PrimaryDirectionTargetRelationProfile:
     scored_relations: tuple[PrimaryDirectionTargetRelation, ...]
 
     def __post_init__(self) -> None:
+        try:
+            admitted_relations = tuple(self.admitted_relations)
+            scored_relations = tuple(self.scored_relations)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionTargetRelationProfile invariant failed: relation collections must be iterable"
+            ) from exc
+        object.__setattr__(self, "admitted_relations", admitted_relations)
+        object.__setattr__(self, "scored_relations", scored_relations)
+        if not isinstance(self.truth, PrimaryDirectionTargetTruth):
+            raise ValueError("PrimaryDirectionTargetRelationProfile invariant failed: invalid truth")
+        if not isinstance(self.detected_relation, PrimaryDirectionTargetRelation):
+            raise ValueError(
+                "PrimaryDirectionTargetRelationProfile invariant failed: invalid detected relation"
+            )
         if self.detected_relation.truth != self.truth:
             raise ValueError(
                 "PrimaryDirectionTargetRelationProfile invariant failed: detected relation truth mismatch"
             )
-        if self.detected_relation not in self.admitted_relations:
-            raise ValueError(
-                "PrimaryDirectionTargetRelationProfile invariant failed: detected relation must be admitted"
-            )
-        for relation in self.scored_relations:
-            if relation not in self.admitted_relations:
+        for label, relations in (
+            ("admitted", self.admitted_relations),
+            ("scored", self.scored_relations),
+        ):
+            if any(
+                not isinstance(relation, PrimaryDirectionTargetRelation)
+                or relation.truth != self.truth
+                for relation in relations
+            ):
+                raise ValueError(
+                    f"PrimaryDirectionTargetRelationProfile invariant failed: {label} relation truth mismatch"
+                )
+            if len(set(relations)) != len(relations):
+                raise ValueError(
+                    f"PrimaryDirectionTargetRelationProfile invariant failed: duplicate {label} relations"
+                )
+        if any(relation not in self.admitted_relations for relation in self.scored_relations):
                 raise ValueError(
                     "PrimaryDirectionTargetRelationProfile invariant failed: scored relation must be admitted"
                 )
+        expected_relations = (
+            ()
+            if self.detected_relation.relation_kind is PrimaryDirectionTargetRelationKind.REJECTED
+            else (self.detected_relation,)
+        )
+        if self.admitted_relations != expected_relations or self.scored_relations != expected_relations:
+            raise ValueError(
+                "PrimaryDirectionTargetRelationProfile invariant failed: relation admission does not match detected relation"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -196,6 +286,20 @@ class PrimaryDirectionTargetConditionProfile:
     state: PrimaryDirectionTargetConditionState
 
     def __post_init__(self) -> None:
+        if not isinstance(self.truth, PrimaryDirectionTargetTruth):
+            raise ValueError("PrimaryDirectionTargetConditionProfile invariant failed: invalid truth")
+        if not isinstance(self.classification, PrimaryDirectionTargetClassification):
+            raise ValueError(
+                "PrimaryDirectionTargetConditionProfile invariant failed: invalid classification"
+            )
+        if not isinstance(self.relation_profile, PrimaryDirectionTargetRelationProfile):
+            raise ValueError(
+                "PrimaryDirectionTargetConditionProfile invariant failed: invalid relation profile"
+            )
+        if not isinstance(self.state, PrimaryDirectionTargetConditionState):
+            raise ValueError(
+                "PrimaryDirectionTargetConditionProfile invariant failed: state must be an enum member"
+            )
         if self.classification.truth != self.truth:
             raise ValueError(
                 "PrimaryDirectionTargetConditionProfile invariant failed: classification truth mismatch"
@@ -203,6 +307,18 @@ class PrimaryDirectionTargetConditionProfile:
         if self.relation_profile.truth != self.truth:
             raise ValueError(
                 "PrimaryDirectionTargetConditionProfile invariant failed: relation truth mismatch"
+            )
+        expected_relation_kind = _relation_kind(
+            self.classification.admitted_as_significator,
+            self.classification.admitted_as_promissor,
+        )
+        if self.relation_profile.detected_relation.relation_kind is not expected_relation_kind:
+            raise ValueError(
+                "PrimaryDirectionTargetConditionProfile invariant failed: relation does not match classification"
+            )
+        if self.state is not _condition_state(expected_relation_kind):
+            raise ValueError(
+                "PrimaryDirectionTargetConditionProfile invariant failed: state does not match admission"
             )
 
 
@@ -219,8 +335,30 @@ class PrimaryDirectionTargetsAggregateProfile:
     universally_admitted_count: int
 
     def __post_init__(self) -> None:
+        try:
+            profiles = tuple(self.profiles)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: profiles must be iterable"
+            ) from exc
+        object.__setattr__(self, "profiles", profiles)
         if not self.profiles:
             raise ValueError("PrimaryDirectionTargetsAggregateProfile requires at least one profile")
+        if any(not isinstance(profile, PrimaryDirectionTargetConditionProfile) for profile in self.profiles):
+            raise ValueError("PrimaryDirectionTargetsAggregateProfile invariant failed: invalid profile type")
+        counts = (
+            self.total_profiles,
+            self.planet_count,
+            self.node_count,
+            self.angle_count,
+            self.house_cusp_count,
+            self.aspect_count,
+            self.universally_admitted_count,
+        )
+        if any(type(count) is not int or count < 0 for count in counts):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: counts must be non-negative integers"
+            )
         if self.total_profiles != len(self.profiles):
             raise ValueError(
                 "PrimaryDirectionTargetsAggregateProfile invariant failed: total_profiles mismatch"
@@ -259,6 +397,50 @@ class PrimaryDirectionTargetsAggregateProfile:
             raise ValueError(
                 "PrimaryDirectionTargetsAggregateProfile invariant failed: aspect_count mismatch"
             )
+        if (
+            self.planet_count
+            + self.node_count
+            + self.angle_count
+            + self.house_cusp_count
+            + self.aspect_count
+            != self.total_profiles
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: class counts must partition profiles"
+            )
+        expected_universal = sum(
+            1
+            for profile in self.profiles
+            if profile.state is PrimaryDirectionTargetConditionState.UNIVERSALLY_ADMITTED
+        )
+        if self.universally_admitted_count != expected_universal:
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: universally_admitted_count mismatch"
+            )
+
+    @property
+    def significator_only_count(self) -> int:
+        return sum(
+            1
+            for profile in self.profiles
+            if profile.state is PrimaryDirectionTargetConditionState.SIGNIFICATOR_ONLY
+        )
+
+    @property
+    def promissor_only_count(self) -> int:
+        return sum(
+            1
+            for profile in self.profiles
+            if profile.state is PrimaryDirectionTargetConditionState.PROMISSOR_ONLY
+        )
+
+    @property
+    def not_admitted_count(self) -> int:
+        return sum(
+            1
+            for profile in self.profiles
+            if profile.state is PrimaryDirectionTargetConditionState.NOT_ADMITTED
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -268,7 +450,9 @@ class PrimaryDirectionTargetsNetworkNode:
     count: int
 
     def __post_init__(self) -> None:
-        if self.count <= 0:
+        if not isinstance(self.target_class, PrimaryDirectionTargetClass):
+            raise ValueError("PrimaryDirectionTargetsNetworkNode invariant failed: invalid target_class")
+        if type(self.count) is not int or self.count <= 0:
             raise ValueError("PrimaryDirectionTargetsNetworkNode invariant failed: count must be positive")
 
 
@@ -280,49 +464,126 @@ class PrimaryDirectionTargetsNetworkEdge:
     count: int
 
     def __post_init__(self) -> None:
+        if not isinstance(self.from_class, PrimaryDirectionTargetClass) or not isinstance(
+            self.to_class, PrimaryDirectionTargetClass
+        ):
+            raise ValueError("PrimaryDirectionTargetsNetworkEdge invariant failed: invalid target class")
         if self.from_class == self.to_class:
             raise ValueError(
                 "PrimaryDirectionTargetsNetworkEdge invariant failed: self-edges are not admitted"
             )
-        if self.count <= 0:
+        if type(self.count) is not int or self.count <= 0:
             raise ValueError("PrimaryDirectionTargetsNetworkEdge invariant failed: count must be positive")
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionTargetsNetworkProfile:
-    """Vessel: Structural profile of the targets network."""
+    """Vessel: Structural profile of an ordered target-class transition network."""
     nodes: tuple[PrimaryDirectionTargetsNetworkNode, ...]
     edges: tuple[PrimaryDirectionTargetsNetworkEdge, ...]
     dominant_class: PrimaryDirectionTargetClass
     isolated_classes: tuple[PrimaryDirectionTargetClass, ...]
 
     def __post_init__(self) -> None:
+        try:
+            nodes = tuple(self.nodes)
+            edges = tuple(self.edges)
+            isolated_classes = tuple(self.isolated_classes)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionTargetsNetworkProfile invariant failed: network collections must be iterable"
+            ) from exc
+        object.__setattr__(self, "nodes", nodes)
+        object.__setattr__(self, "edges", edges)
+        object.__setattr__(self, "isolated_classes", isolated_classes)
         if not self.nodes:
             raise ValueError("PrimaryDirectionTargetsNetworkProfile requires at least one node")
+        if any(not isinstance(node, PrimaryDirectionTargetsNetworkNode) for node in self.nodes):
+            raise ValueError("PrimaryDirectionTargetsNetworkProfile invariant failed: invalid node type")
+        if any(not isinstance(edge, PrimaryDirectionTargetsNetworkEdge) for edge in self.edges):
+            raise ValueError("PrimaryDirectionTargetsNetworkProfile invariant failed: invalid edge type")
+        if not isinstance(self.dominant_class, PrimaryDirectionTargetClass):
+            raise ValueError("PrimaryDirectionTargetsNetworkProfile invariant failed: invalid dominant_class")
+        if any(not isinstance(item, PrimaryDirectionTargetClass) for item in self.isolated_classes):
+            raise ValueError("PrimaryDirectionTargetsNetworkProfile invariant failed: invalid isolated class")
         classes = [node.target_class for node in self.nodes]
         if len(set(classes)) != len(classes):
             raise ValueError(
                 "PrimaryDirectionTargetsNetworkProfile invariant failed: duplicate nodes"
             )
+        if len(set(self.isolated_classes)) != len(self.isolated_classes):
+            raise ValueError(
+                "PrimaryDirectionTargetsNetworkProfile invariant failed: duplicate isolated classes"
+            )
+        edge_keys = [(edge.from_class, edge.to_class) for edge in self.edges]
+        if len(set(edge_keys)) != len(edge_keys):
+            raise ValueError("PrimaryDirectionTargetsNetworkProfile invariant failed: duplicate edges")
+        node_by_class = {node.target_class: node for node in self.nodes}
+        if any(
+            edge.from_class not in node_by_class or edge.to_class not in node_by_class
+            for edge in self.edges
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsNetworkProfile invariant failed: edge endpoint missing from nodes"
+            )
+        if any(
+            edge.count
+            > min(node_by_class[edge.from_class].count, node_by_class[edge.to_class].count)
+            for edge in self.edges
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsNetworkProfile invariant failed: edge count exceeds endpoint occurrence count"
+            )
+        if sum(edge.count for edge in self.edges) > sum(node.count for node in self.nodes) - 1:
+            raise ValueError(
+                "PrimaryDirectionTargetsNetworkProfile invariant failed: edge count exceeds possible transitions"
+            )
+        validate_ordered_transition_counts(
+            {node.target_class: node.count for node in self.nodes},
+            {(edge.from_class, edge.to_class): edge.count for edge in self.edges},
+            object_name="PrimaryDirectionTargetsNetworkProfile",
+        )
+        expected_dominant = max(
+            self.nodes,
+            key=lambda node: (node.count, node.target_class.value),
+        ).target_class
+        if self.dominant_class is not expected_dominant:
+            raise ValueError(
+                "PrimaryDirectionTargetsNetworkProfile invariant failed: dominant_class mismatch"
+            )
+        participating = {edge.from_class for edge in self.edges} | {
+            edge.to_class for edge in self.edges
+        }
+        expected_isolated = tuple(
+            sorted(
+                (target_class for target_class in classes if target_class not in participating),
+                key=lambda target_class: target_class.value,
+            )
+        )
+        if self.isolated_classes != expected_isolated:
+            raise ValueError(
+                "PrimaryDirectionTargetsNetworkProfile invariant failed: isolated_classes mismatch"
+            )
 
 
 def _target_class_for_name(name: str) -> PrimaryDirectionTargetClass:
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Primary-direction target identity must be a non-empty string")
     if name in _ANGLE_NAMES:
         return PrimaryDirectionTargetClass.ANGLE
     if len(name) == 2 and name.startswith("H") and name[1].isdigit() and 1 <= int(name[1]) <= 9:
         return PrimaryDirectionTargetClass.HOUSE_CUSP
     if len(name) == 3 and name.startswith("H") and name[1:].isdigit() and 10 <= int(name[1:]) <= 12:
         return PrimaryDirectionTargetClass.HOUSE_CUSP
+    if name in _NODE_NAMES:
+        return PrimaryDirectionTargetClass.NODE
     if name in _PLANET_NAMES:
         return PrimaryDirectionTargetClass.PLANET
-    if name in _NODE_NAMES or name.endswith("Node") or "Lilith" in name:
-        return PrimaryDirectionTargetClass.NODE
     raise ValueError(f"Unsupported primary-direction target identity: {name}")
 
 
 _MAJOR_ASPECT_ANGLES: tuple[tuple[str, float], ...] = (
     ("Opposition", 180.0),
-    ("Conjunction", 0.0),
     ("Sinister Sextile", 60.0),
     ("Dexter Sextile", -60.0),
     ("Sextile", 60.0),
@@ -370,6 +631,8 @@ def _condition_state(relation_kind: PrimaryDirectionTargetRelationKind) -> Prima
 
 
 def primary_direction_target_truth(name: str) -> PrimaryDirectionTargetTruth:
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Primary-direction target identity must be a non-empty string")
     aspect_components = _aspect_target_components(name)
     if aspect_components is not None:
         source_name, aspect_name, angle = aspect_components
@@ -388,6 +651,10 @@ def classify_primary_direction_target(
     *,
     policy: PrimaryDirectionTargetPolicy | None = None,
 ) -> PrimaryDirectionTargetClassification:
+    if not isinstance(truth, PrimaryDirectionTargetTruth):
+        raise ValueError("truth must be a PrimaryDirectionTargetTruth")
+    if policy is not None and not isinstance(policy, PrimaryDirectionTargetPolicy):
+        raise ValueError("policy must be a PrimaryDirectionTargetPolicy")
     resolved_policy = policy if policy is not None else PrimaryDirectionTargetPolicy()
     return PrimaryDirectionTargetClassification(
         truth=truth,
@@ -401,6 +668,10 @@ def relate_primary_direction_target(
     *,
     policy: PrimaryDirectionTargetPolicy | None = None,
 ) -> PrimaryDirectionTargetRelation:
+    if not isinstance(truth, PrimaryDirectionTargetTruth):
+        raise ValueError("truth must be a PrimaryDirectionTargetTruth")
+    if policy is not None and not isinstance(policy, PrimaryDirectionTargetPolicy):
+        raise ValueError("policy must be a PrimaryDirectionTargetPolicy")
     classification = classify_primary_direction_target(truth, policy=policy)
     return PrimaryDirectionTargetRelation(
         truth=truth,
@@ -416,9 +687,17 @@ def evaluate_primary_direction_target_relations(
     *,
     policy: PrimaryDirectionTargetPolicy | None = None,
 ) -> PrimaryDirectionTargetRelationProfile:
+    if not isinstance(truth, PrimaryDirectionTargetTruth):
+        raise ValueError("truth must be a PrimaryDirectionTargetTruth")
+    if policy is not None and not isinstance(policy, PrimaryDirectionTargetPolicy):
+        raise ValueError("policy must be a PrimaryDirectionTargetPolicy")
     relation = relate_primary_direction_target(truth, policy=policy)
-    admitted = (relation,)
-    scored = admitted if relation.relation_kind is not PrimaryDirectionTargetRelationKind.REJECTED else ()
+    admitted = (
+        ()
+        if relation.relation_kind is PrimaryDirectionTargetRelationKind.REJECTED
+        else (relation,)
+    )
+    scored = admitted
     return PrimaryDirectionTargetRelationProfile(
         truth=truth,
         detected_relation=relation,
@@ -432,6 +711,10 @@ def evaluate_primary_direction_target_condition(
     *,
     policy: PrimaryDirectionTargetPolicy | None = None,
 ) -> PrimaryDirectionTargetConditionProfile:
+    if not isinstance(truth, PrimaryDirectionTargetTruth):
+        raise ValueError("truth must be a PrimaryDirectionTargetTruth")
+    if policy is not None and not isinstance(policy, PrimaryDirectionTargetPolicy):
+        raise ValueError("policy must be a PrimaryDirectionTargetPolicy")
     classification = classify_primary_direction_target(truth, policy=policy)
     relation_profile = evaluate_primary_direction_target_relations(truth, policy=policy)
     return PrimaryDirectionTargetConditionProfile(
@@ -447,7 +730,16 @@ def evaluate_primary_direction_targets_aggregate(
     *,
     policy: PrimaryDirectionTargetPolicy | None = None,
 ) -> PrimaryDirectionTargetsAggregateProfile:
-    profiles = tuple(evaluate_primary_direction_target_condition(truth, policy=policy) for truth in truths)
+    if policy is not None and not isinstance(policy, PrimaryDirectionTargetPolicy):
+        raise ValueError("policy must be a PrimaryDirectionTargetPolicy")
+    try:
+        truth_tuple = tuple(truths)
+    except TypeError as exc:
+        raise ValueError("truths must be an iterable of PrimaryDirectionTargetTruth") from exc
+    profiles = tuple(
+        evaluate_primary_direction_target_condition(truth, policy=policy)
+        for truth in truth_tuple
+    )
     if not profiles:
         raise ValueError("evaluate_primary_direction_targets_aggregate requires at least one truth")
     return PrimaryDirectionTargetsAggregateProfile(
@@ -473,9 +765,25 @@ def evaluate_primary_direction_targets_network(
     *,
     policy: PrimaryDirectionTargetPolicy | None = None,
 ) -> PrimaryDirectionTargetsNetworkProfile:
-    truth_tuple = tuple(truths)
+    """Build class transitions in input order, optionally gating target admission."""
+    if policy is not None and not isinstance(policy, PrimaryDirectionTargetPolicy):
+        raise ValueError("policy must be a PrimaryDirectionTargetPolicy")
+    try:
+        truth_tuple = tuple(truths)
+    except TypeError as exc:
+        raise ValueError("truths must be an iterable of PrimaryDirectionTargetTruth") from exc
     if not truth_tuple:
         raise ValueError("evaluate_primary_direction_targets_network requires at least one truth")
+    if any(not isinstance(truth, PrimaryDirectionTargetTruth) for truth in truth_tuple):
+        raise ValueError("truths must contain only PrimaryDirectionTargetTruth values")
+    if policy is not None and any(
+        evaluate_primary_direction_target_condition(truth, policy=policy).state
+        is PrimaryDirectionTargetConditionState.NOT_ADMITTED
+        for truth in truth_tuple
+    ):
+        raise ValueError(
+            "evaluate_primary_direction_targets_network cannot represent a policy-rejected target"
+        )
     counts: dict[PrimaryDirectionTargetClass, int] = {}
     for truth in truth_tuple:
         counts[truth.target_class] = counts.get(truth.target_class, 0) + 1

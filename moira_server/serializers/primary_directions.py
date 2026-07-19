@@ -1,9 +1,4 @@
-"""Serializers for P8-14 Primary Directions (first pass).
-
-These are thin, declarative mappings only. No new doctrine is computed here.
-
-See docs/architecture/P8-14_PRIMARY_DIRECTIONS_FIRST_PASS.md for scope and limitations.
-"""
+"""Truth-preserving serializers for primary-directions transport vessels."""
 
 from __future__ import annotations
 
@@ -19,63 +14,57 @@ from moira.primary_directions import (
 
 from ..models.primary_directions import (
     PrimaryArcResponse,
-    PrimaryDirectionsArcsReductionResponse,
     PrimaryDirectionRelationProfileResponse,
     PrimaryDirectionRelationResponse,
     PrimaryDirectionsAggregateProfileResponse,
-    PrimaryDirectionsArcsResponse,
+    PrimaryDirectionsArcsReductionResponse,
     PrimaryDirectionsArcsReductionTruthResponse,
+    PrimaryDirectionsArcsResponse,
+    PrimaryDirectionsConditionResponse,
+    PrimaryDirectionsHouseContextResponse,
     PrimaryDirectionsNetworkEdgeResponse,
     PrimaryDirectionsNetworkNodeResponse,
     PrimaryDirectionsNetworkProfileResponse,
     PrimaryDirectionsNetworkReductionResponse,
-    PrimaryDirectionsProfileResponse,
+    PrimaryDirectionsNetworkResponse,
     PrimaryDirectionsProfileReductionResponse,
-    PrimaryDirectionsSignificatorProfileResponse,
-    PrimaryDirectionsHouseContextResponse,
+    PrimaryDirectionsProfileResponse,
     PrimaryDirectionsResolvedPolicyResponse,
+    PrimaryDirectionsSignificatorProfileResponse,
     PrimaryDirectionsSpeculumResponse,
     SpeculumEntryResponse,
 )
-from .positions import _serialize_observer_context
 from ..services.primary_directions import PrimaryDirectionsArcsReductionContext
+from .positions import _serialize_observer_context
 
 
-def _serialize_speculum_entry(e: SpeculumEntry) -> SpeculumEntryResponse:
+def _serialize_speculum_entry(entry: SpeculumEntry) -> SpeculumEntryResponse:
     return SpeculumEntryResponse(
-        name=e.name,
-        lon=e.lon,
-        lat=e.lat,
-        ra=e.ra,
-        dec=e.dec,
-        ha=e.ha,
-        dsa=e.dsa,
-        nsa=e.nsa,
-        upper=e.upper,
-        f=e.f,
+        name=entry.name,
+        lon=entry.lon,
+        lat=entry.lat,
+        ra=entry.ra,
+        dec=entry.dec,
+        ha=entry.ha,
+        dsa=entry.dsa,
+        nsa=entry.nsa,
+        upper=entry.upper,
+        f=entry.f,
     )
 
 
 def serialize_speculum(entries: list[SpeculumEntry]) -> PrimaryDirectionsSpeculumResponse:
     return PrimaryDirectionsSpeculumResponse(
-        entries=[_serialize_speculum_entry(e) for e in entries]
+        entries=[_serialize_speculum_entry(entry) for entry in entries]
     )
 
 
 def _serialize_arc(
     arc: PrimaryArc,
-    years_naibod: float | None = None,
+    *,
     chosen_key: str | None = None,
-    years_for_key: float | None = None,
 ) -> PrimaryArcResponse:
-    raw = (arc.direction or "").upper().strip()
-    if raw in ("D", "DIRECT", "DIR"):
-        direction = "DIRECT"
-    elif raw in ("C", "CONVERSE", "CON"):
-        direction = "CONVERSE"
-    else:
-        direction = raw  # fallback
-
+    direction = "DIRECT" if arc.is_direct else "CONVERSE"
     return PrimaryArcResponse(
         significator=arc.significator,
         promissor=arc.promissor,
@@ -85,8 +74,10 @@ def _serialize_arc(
         space=str(arc.space),
         motion=str(arc.motion),
         solar_rate=arc.solar_rate,
-        years_naibod=years_naibod,
-        years=years_for_key,
+        solar_rate_explicit=arc.solar_rate_explicit,
+        relational_kind=str(arc.relational_kind),
+        years_naibod=arc.years("NAIBOD"),
+        years=arc.years(chosen_key) if chosen_key is not None else None,
         key=chosen_key,
     )
 
@@ -95,30 +86,8 @@ def serialize_arcs(
     arcs: list[PrimaryArc],
     chosen_key: str | None = None,
 ) -> PrimaryDirectionsArcsResponse:
-    # In first pass we compute Naibod years where easy (engine PrimaryArc has .years())
     return PrimaryDirectionsArcsResponse(
-        arcs=[
-            _serialize_arc(
-                a,
-                years_naibod=a.years("NAIBOD") if hasattr(a, "years") else None,
-                chosen_key=chosen_key,
-                years_for_key=a.years(chosen_key) if chosen_key and hasattr(a, "years") else None,
-            )
-            for a in arcs
-        ]
-    )
-
-
-def serialize_arcs_with_reduction(
-    arcs: list[PrimaryArc],
-    reduction: PrimaryDirectionsArcsReductionContext,
-    chosen_key: str | None = None,
-) -> PrimaryDirectionsArcsReductionResponse:
-    """Serialize arc search results together with reduction truth."""
-
-    return PrimaryDirectionsArcsReductionResponse(
-        result=serialize_arcs(arcs, chosen_key=chosen_key),
-        reduction=_serialize_reduction_truth(reduction, result_surface="primary_direction_arc_search"),
+        arcs=[_serialize_arc(arc, chosen_key=chosen_key) for arc in arcs]
     )
 
 
@@ -127,8 +96,10 @@ def _serialize_reduction_truth(
     *,
     result_surface: str,
 ) -> PrimaryDirectionsArcsReductionTruthResponse:
+    resolved = reduction.resolved_policy
     return PrimaryDirectionsArcsReductionTruthResponse(
-        engine_surface="moira.find_primary_arcs",
+        engine_surface=reduction.engine_surface,
+        engine_surfaces=list(reduction.engine_surfaces),
         result_surface=result_surface,
         requested_datetime=reduction.requested_datetime,
         normalized_datetime_utc=reduction.normalized_datetime_utc,
@@ -136,6 +107,7 @@ def _serialize_reduction_truth(
         jd_tt=reduction.jd_tt,
         delta_t_seconds=reduction.delta_t_seconds,
         observer=_serialize_observer_context(reduction.observer),
+        natal_observer=_serialize_observer_context(reduction.natal_observer),
         requested_bodies=reduction.requested_bodies,
         include_nodes_requested=reduction.include_nodes_requested,
         search_mode=reduction.search_mode,
@@ -153,160 +125,191 @@ def _serialize_reduction_truth(
             fallback_reason=reduction.house_context.fallback_reason,
         ),
         resolved_policy=PrimaryDirectionsResolvedPolicyResponse(
-            method=reduction.resolved_policy.method,
-            space=reduction.resolved_policy.space,
-            include_converse=reduction.resolved_policy.include_converse,
-            converse_doctrine=reduction.resolved_policy.converse_doctrine,
-            key=reduction.resolved_policy.key,
-            key_source=reduction.resolved_policy.key_source,
-            latitude_doctrine=reduction.resolved_policy.latitude_doctrine,
-            latitude_source=reduction.resolved_policy.latitude_source,
-            perfection_kind=reduction.resolved_policy.perfection_kind,
-            admitted_relation_kinds=reduction.resolved_policy.admitted_relation_kinds,
-            admitted_significator_classes=reduction.resolved_policy.admitted_significator_classes,
-            admitted_promissor_classes=reduction.resolved_policy.admitted_promissor_classes,
+            method=resolved.method,
+            space=resolved.space,
+            include_converse=resolved.include_converse,
+            converse_doctrine=resolved.converse_doctrine,
+            key=resolved.key,
+            key_source=resolved.key_source,
+            latitude_doctrine=resolved.latitude_doctrine,
+            latitude_source=resolved.latitude_source,
+            perfection_kind=resolved.perfection_kind,
+            admitted_relation_kinds=resolved.admitted_relation_kinds,
+            admitted_significator_classes=resolved.admitted_significator_classes,
+            admitted_promissor_classes=resolved.admitted_promissor_classes,
+            requested_preset=resolved.requested_preset,
+            canonical_preset=resolved.canonical_preset,
+            policy_source=resolved.policy_source,
         ),
         stage_sequence=reduction.stage_sequence,
     )
 
 
-def serialize_profile_with_reduction(
-    agg: PrimaryDirectionsAggregateProfile,
+def serialize_arcs_with_reduction(
+    arcs: list[PrimaryArc],
     reduction: PrimaryDirectionsArcsReductionContext,
-    *,
     chosen_key: str | None = None,
-    include_condition: bool = False,
-) -> PrimaryDirectionsProfileReductionResponse:
-    return PrimaryDirectionsProfileReductionResponse(
-        result=serialize_profile(agg, chosen_key=chosen_key, include_condition=include_condition),
-        reduction=_serialize_reduction_truth(reduction, result_surface="primary_direction_aggregate_profile"),
+) -> PrimaryDirectionsArcsReductionResponse:
+    return PrimaryDirectionsArcsReductionResponse(
+        result=serialize_arcs(arcs, chosen_key=chosen_key),
+        reduction=_serialize_reduction_truth(
+            reduction,
+            result_surface=(
+                "primary_direction_submitted_arcs"
+                if reduction.search_mode == "submitted_arcs"
+                else "primary_direction_arc_search"
+            ),
+        ),
     )
 
 
-def serialize_network_with_reduction(
-    net: PrimaryDirectionsNetworkProfile,
-    reduction: PrimaryDirectionsArcsReductionContext,
+def _serialize_relation(
+    relation: PrimaryDirectionRelation,
     *,
     chosen_key: str | None = None,
-) -> PrimaryDirectionsNetworkReductionResponse:
-    return PrimaryDirectionsNetworkReductionResponse(
-        result=serialize_network(net, chosen_key=chosen_key),
-        reduction=_serialize_reduction_truth(reduction, result_surface="primary_direction_network_profile"),
-    )
-
-
-def _serialize_relation(rel: PrimaryDirectionRelation, chosen_key: str | None = None) -> PrimaryDirectionRelationResponse:
-    years = rel.years
-    if chosen_key and hasattr(rel.arc, "years"):
-        try:
-            years = rel.arc.years(chosen_key)
-        except Exception:
-            pass
-
+) -> PrimaryDirectionRelationResponse:
+    key = chosen_key or relation.key_policy.key.name
+    perfection_kind = str(relation.perfection_kind)
     return PrimaryDirectionRelationResponse(
-        arc=_serialize_arc(rel.arc, chosen_key=chosen_key),
-        relation_kind=str(rel.relation_kind),
-        years=years,
+        arc=_serialize_arc(relation.arc, chosen_key=key),
+        relation_kind=perfection_kind,
+        perfection_kind=perfection_kind,
+        relational_kind=str(relation.relational_kind),
+        converse_doctrine=str(relation.converse_doctrine),
+        key=key,
+        years=relation.arc.years(key),
     )
 
 
 def _serialize_relation_profile(
-    rp: PrimaryDirectionRelationProfile,
+    profile: PrimaryDirectionRelationProfile,
     chosen_key: str | None = None,
 ) -> PrimaryDirectionRelationProfileResponse:
     return PrimaryDirectionRelationProfileResponse(
-        arc=_serialize_arc(rp.arc, chosen_key=chosen_key),
-        detected_relation=_serialize_relation(rp.detected_relation, chosen_key=chosen_key),
-        admitted_relations=[_serialize_relation(r, chosen_key=chosen_key) for r in rp.admitted_relations],
-        scored_relations=[_serialize_relation(r, chosen_key=chosen_key) for r in rp.scored_relations],
+        arc=_serialize_arc(profile.arc, chosen_key=chosen_key),
+        detected_relation=_serialize_relation(
+            profile.detected_relation,
+            chosen_key=chosen_key,
+        ),
+        admitted_relations=[
+            _serialize_relation(relation, chosen_key=chosen_key)
+            for relation in profile.admitted_relations
+        ],
+        scored_relations=[
+            _serialize_relation(relation, chosen_key=chosen_key)
+            for relation in profile.scored_relations
+        ],
     )
 
 
-def _serialize_condition(sp: PrimaryDirectionsSignificatorProfile) -> "PrimaryDirectionsConditionResponse":
-    """Serialize the condition aspect of a significator profile.
-
-    The engine PrimaryDirectionsSignificatorProfile (returned by evaluate_primary_direction_condition
-    and by aggregate which delegates to it) already carries .state and the bound counts.
-    This produces the typed transport vessel.
-    """
-    from ..models.primary_directions import PrimaryDirectionsConditionResponse
-
-    state = getattr(sp, "state", None)
-    state_str = str(state) if state is not None else "mixed"
+def _serialize_condition(
+    profile: PrimaryDirectionsSignificatorProfile,
+) -> PrimaryDirectionsConditionResponse:
     return PrimaryDirectionsConditionResponse(
-        state=state_str,
-        direct_count=getattr(sp, "direct_count", 0),
-        converse_count=getattr(sp, "converse_count", 0),
-        nearest_arc=getattr(sp, "nearest_arc", 0.0),
-        farthest_arc=getattr(sp, "farthest_arc", 0.0),
+        state=str(profile.state),
+        direct_count=profile.direct_count,
+        converse_count=profile.converse_count,
+        nearest_arc=profile.nearest_arc,
+        farthest_arc=profile.farthest_arc,
     )
 
 
 def _serialize_significator_profile(
-    sp: PrimaryDirectionsSignificatorProfile,
-    chosen_key: str | None = None,
-    include_condition: bool = False,
+    profile: PrimaryDirectionsSignificatorProfile,
+    *,
+    chosen_key: str | None,
+    include_relations: bool,
+    include_condition: bool,
 ) -> PrimaryDirectionsSignificatorProfileResponse:
-    # In Phase 2 we populate relation_profiles if the engine object has them
-    relation_profiles = []
-    if hasattr(sp, "relation_profiles") and sp.relation_profiles:
-        relation_profiles = [_serialize_relation_profile(rp) for rp in sp.relation_profiles]
-
-    arcs = [
-        _serialize_arc(
-            a,
-            years_naibod=a.years("NAIBOD") if hasattr(a, "years") else None,
-            chosen_key=chosen_key,
-            years_for_key=a.years(chosen_key) if chosen_key and hasattr(a, "years") else None,
-        )
-        for a in sp.arcs
-    ]
-
-    condition = None
-    if include_condition:
-        # Engine profiles from aggregate already originate from evaluate_primary_direction_condition
-        # and therefore carry the .state field (PrimaryDirectionsConditionState).
-        if hasattr(sp, "state"):
-            condition = _serialize_condition(sp)
-
+    relation_profiles = (
+        [
+            _serialize_relation_profile(item, chosen_key=chosen_key)
+            for item in profile.relation_profiles
+        ]
+        if include_relations
+        else []
+    )
     return PrimaryDirectionsSignificatorProfileResponse(
-        significator=sp.significator,
-        arcs=arcs,
-        direct_count=sp.direct_count,
-        converse_count=sp.converse_count,
-        nearest_arc=sp.nearest_arc,
-        farthest_arc=sp.farthest_arc,
+        significator=profile.significator,
+        arcs=[_serialize_arc(arc, chosen_key=chosen_key) for arc in profile.arcs],
+        direct_count=profile.direct_count,
+        converse_count=profile.converse_count,
+        nearest_arc=profile.nearest_arc,
+        farthest_arc=profile.farthest_arc,
         relation_profiles=relation_profiles,
-        condition=condition,
+        condition=_serialize_condition(profile) if include_condition else None,
     )
 
 
 def serialize_profile(
-    agg: PrimaryDirectionsAggregateProfile,
+    aggregate: PrimaryDirectionsAggregateProfile | None,
     chosen_key: str | None = None,
     include_condition: bool = False,
+    include_relations: bool = False,
 ) -> PrimaryDirectionsProfileResponse:
-    return PrimaryDirectionsProfileResponse(
-        aggregate=PrimaryDirectionsAggregateProfileResponse(
-            profiles=[
-                _serialize_significator_profile(p, chosen_key=chosen_key, include_condition=include_condition)
-                for p in agg.profiles
-            ],
-            total_arcs=agg.total_arcs,
-            direct_count=agg.direct_count,
-            converse_count=agg.converse_count,
-            nearest_arc=agg.nearest_arc,
-            farthest_arc=agg.farthest_arc,
+    if aggregate is None:
+        payload = PrimaryDirectionsAggregateProfileResponse(
+            profiles=[],
+            total_arcs=0,
+            direct_count=0,
+            converse_count=0,
+            nearest_arc=0.0,
+            farthest_arc=0.0,
+            strongest_significator=None,
+            weakest_significator=None,
         )
+    else:
+        payload = PrimaryDirectionsAggregateProfileResponse(
+            profiles=[
+                _serialize_significator_profile(
+                    profile,
+                    chosen_key=chosen_key,
+                    include_relations=include_relations,
+                    include_condition=include_condition,
+                )
+                for profile in aggregate.profiles
+            ],
+            total_arcs=aggregate.total_arcs,
+            direct_count=aggregate.direct_count,
+            converse_count=aggregate.converse_count,
+            nearest_arc=aggregate.nearest_arc,
+            farthest_arc=aggregate.farthest_arc,
+            strongest_significator=aggregate.strongest_significator,
+            weakest_significator=aggregate.weakest_significator,
+        )
+    return PrimaryDirectionsProfileResponse(aggregate=payload)
+
+
+def serialize_profile_with_reduction(
+    aggregate: PrimaryDirectionsAggregateProfile | None,
+    reduction: PrimaryDirectionsArcsReductionContext,
+    *,
+    chosen_key: str | None = None,
+    include_condition: bool = False,
+    include_relations: bool = False,
+) -> PrimaryDirectionsProfileReductionResponse:
+    return PrimaryDirectionsProfileReductionResponse(
+        result=serialize_profile(
+            aggregate,
+            chosen_key=chosen_key,
+            include_condition=include_condition,
+            include_relations=include_relations,
+        ),
+        reduction=_serialize_reduction_truth(
+            reduction,
+            result_surface="primary_direction_aggregate_profile",
+        ),
     )
 
 
 def _serialize_network_node(node) -> PrimaryDirectionsNetworkNodeResponse:
     return PrimaryDirectionsNetworkNodeResponse(
         name=node.name,
-        total_count=getattr(node, "total_count", 0),
-        direct_count=getattr(node, "direct_count", 0),
-        converse_count=getattr(node, "converse_count", 0),
+        total_count=node.total_count,
+        direct_count=node.direct_count,
+        converse_count=node.converse_count,
+        incoming_count=node.incoming_count,
+        outgoing_count=node.outgoing_count,
     )
 
 
@@ -314,26 +317,52 @@ def _serialize_network_edge(edge) -> PrimaryDirectionsNetworkEdgeResponse:
     return PrimaryDirectionsNetworkEdgeResponse(
         promissor=edge.promissor,
         significator=edge.significator,
-        count=getattr(edge, "count", 1),
+        count=edge.count,
+        nearest_arc=edge.nearest_arc,
+        direct_count=edge.direct_count,
+        converse_count=edge.converse_count,
     )
 
 
 def serialize_network(
-    net: PrimaryDirectionsNetworkProfile,
+    network: PrimaryDirectionsNetworkProfile | None,
     chosen_key: str | None = None,
-) -> "PrimaryDirectionsNetworkResponse":
-    from ..models.primary_directions import PrimaryDirectionsNetworkResponse
-    return PrimaryDirectionsNetworkResponse(
-        network=PrimaryDirectionsNetworkProfileResponse(
-            nodes=[_serialize_network_node(n) for n in net.nodes],
-            edges=[_serialize_network_edge(e) for e in net.edges],
-            most_connected=getattr(net, "most_connected", None),
-            isolated=list(getattr(net, "isolated", ())),
+) -> PrimaryDirectionsNetworkResponse:
+    del chosen_key  # Network topology is key-independent.
+    if network is None:
+        payload = PrimaryDirectionsNetworkProfileResponse(
+            nodes=[],
+            edges=[],
+            most_connected=None,
+            isolated=[],
         )
+    else:
+        payload = PrimaryDirectionsNetworkProfileResponse(
+            nodes=[_serialize_network_node(node) for node in network.nodes],
+            edges=[_serialize_network_edge(edge) for edge in network.edges],
+            most_connected=network.most_connected,
+            isolated=list(network.isolated),
+        )
+    return PrimaryDirectionsNetworkResponse(network=payload)
+
+
+def serialize_network_with_reduction(
+    network: PrimaryDirectionsNetworkProfile | None,
+    reduction: PrimaryDirectionsArcsReductionContext,
+    *,
+    chosen_key: str | None = None,
+) -> PrimaryDirectionsNetworkReductionResponse:
+    return PrimaryDirectionsNetworkReductionResponse(
+        result=serialize_network(network, chosen_key=chosen_key),
+        reduction=_serialize_reduction_truth(
+            reduction,
+            result_surface="primary_direction_network_profile",
+        ),
     )
 
 
 __all__ = [
+    "_serialize_relation_profile",
     "serialize_arcs",
     "serialize_arcs_with_reduction",
     "serialize_network",

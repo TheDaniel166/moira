@@ -30,6 +30,8 @@
 - admitted as a narrow explicit branch
 - runtime-selectable on:
   - `in_mundo`
+  - `in_zodiaco` through explicit aspect, antiscia, or parallel presets; an
+    unqualified generic Ptolemy zodiacal request is rejected as ambiguous
 - active relation policy on the plain positional branch:
   - `conjunction`
   - `opposition`
@@ -49,11 +51,14 @@
 
 ## Epistemic Status
 
-- `verified narrow admission`
+- `runtime-admitted narrow branch`
+- rounded published examples provide scoped cross-source corroboration
+- primary-authority validation across the whole mundane and zodiacal family
+  remains incomplete
 
-## Mathematical Sovereignty
+## Mathematical Ownership
 
-- `sovereign on the current admitted branch`
+- `Moira-owned on the current admitted branch`
 - wider Ptolemaic distinctions remain possible later, but the present branch
   is no longer mathematically borrowed
 

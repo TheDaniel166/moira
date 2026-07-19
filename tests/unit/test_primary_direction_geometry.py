@@ -4,6 +4,7 @@ import math
 
 import pytest
 
+import moira.primary_directions.geometry as geometry_module
 from moira.constants import Body
 from moira.primary_directions.geometry import (
     PrimaryDirectionGeometryLaw,
@@ -26,6 +27,187 @@ def _entries() -> tuple[SpeculumEntry, SpeculumEntry]:
     return sig, prom
 
 
+def _circular_separation(left: float, right: float) -> float:
+    return abs((left - right + 180.0) % 360.0 - 180.0)
+
+
+def test_placidian_classic_mundane_position_is_continuous_at_horizon_and_ic() -> None:
+    build = lambda longitude: SpeculumEntry.build(  # noqa: E731 - compact boundary fixture
+        "Point", longitude, 0.0, armc=0.0, obliquity=0.0, geo_lat=0.0
+    )
+
+    before_east_horizon = geometry_module._placidian_mundane_position(build(89.999), 0.0)
+    after_east_horizon = geometry_module._placidian_mundane_position(build(90.001), 0.0)
+    east_of_ic = geometry_module._placidian_mundane_position(build(179.999), 0.0)
+    west_of_ic = geometry_module._placidian_mundane_position(build(180.001), 0.0)
+    before_west_horizon = geometry_module._placidian_mundane_position(build(269.999), 0.0)
+    after_west_horizon = geometry_module._placidian_mundane_position(build(270.001), 0.0)
+
+    assert _circular_separation(before_east_horizon, after_east_horizon) < 0.003
+    assert _circular_separation(east_of_ic, west_of_ic) < 0.003
+    assert _circular_separation(before_west_horizon, after_west_horizon) < 0.003
+    assert geometry_module._placidian_mundane_position(build(135.0), 0.0) == pytest.approx(135.0)
+    assert geometry_module._placidian_mundane_position(build(225.0), 0.0) == pytest.approx(225.0)
+
+
+def test_shared_under_pole_geometry_is_continuous_through_ninety_degree_md() -> None:
+    east = SpeculumEntry.build(
+        "East", 89.999, 20.0, armc=0.0, obliquity=0.0, geo_lat=51.5
+    )
+    west = SpeculumEntry.build(
+        "West", 90.001, 20.0, armc=0.0, obliquity=0.0, geo_lat=51.5
+    )
+    promissor = SpeculumEntry.build(
+        "Promissor", 35.0, -5.0, armc=0.0, obliquity=0.0, geo_lat=51.5
+    )
+
+    east_pole = geometry_module._shared_campanus_regio_pole(east, geo_lat=51.5)
+    west_pole = geometry_module._shared_campanus_regio_pole(west, geo_lat=51.5)
+    assert east_pole > 0.0
+    assert west_pole > 0.0
+    assert west_pole == pytest.approx(east_pole, abs=0.002)
+
+    for method in (
+        PrimaryDirectionMethod.REGIOMONTANUS,
+        PrimaryDirectionMethod.CAMPANUS,
+        PrimaryDirectionMethod.MORINUS,
+    ):
+        before, _ = compute_primary_direction_arcs(
+            method,
+            east,
+            promissor,
+            space=PrimaryDirectionSpace.IN_MUNDO,
+            latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+            geo_lat=51.5,
+            armc=0.0,
+            oa_asc=90.0,
+        )
+        after, _ = compute_primary_direction_arcs(
+            method,
+            west,
+            promissor,
+            space=PrimaryDirectionSpace.IN_MUNDO,
+            latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+            geo_lat=51.5,
+            armc=0.0,
+            oa_asc=90.0,
+        )
+        assert _circular_separation(before, after) < 0.01, method
+
+
+def test_ptolemaic_oa_od_use_the_signed_ascensional_difference_south_of_equator() -> None:
+    geo_lat = -40.0
+    promissor = SpeculumEntry.build(
+        "Promissor", 0.0, 10.0, armc=0.0, obliquity=0.0, geo_lat=geo_lat
+    )
+    asc = SpeculumEntry.build("ASC", 90.0, 0.0, 0.0, 0.0, geo_lat)
+    dsc = SpeculumEntry.build("DSC", 270.0, 0.0, 0.0, 0.0, geo_lat)
+    signed_ad = math.degrees(
+        math.asin(math.tan(math.radians(promissor.dec)) * math.tan(math.radians(geo_lat)))
+    )
+    expected_oa = (promissor.ra - signed_ad) % 360.0
+    expected_od = (promissor.ra + signed_ad) % 360.0
+
+    asc_arc, _ = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        asc,
+        promissor,
+        space=PrimaryDirectionSpace.IN_MUNDO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+        geo_lat=geo_lat,
+        armc=0.0,
+        oa_asc=90.0,
+    )
+    dsc_arc, _ = compute_primary_direction_arcs(
+        PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        dsc,
+        promissor,
+        space=PrimaryDirectionSpace.IN_MUNDO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED,
+        geo_lat=geo_lat,
+        armc=0.0,
+        oa_asc=90.0,
+    )
+
+    assert asc_arc == pytest.approx((expected_oa - 90.0) % 360.0)
+    assert dsc_arc == pytest.approx((expected_od - 90.0) % 360.0)
+
+
+def test_speculum_and_inverse_trig_geometry_fail_closed_without_real_intersection() -> None:
+    with pytest.raises(ValueError, match="no real rise/set semi-arcs"):
+        SpeculumEntry.build(
+            "Circumpolar", 90.0, 0.0, armc=0.0, obliquity=23.4392911, geo_lat=70.0
+        )
+
+    entry = SpeculumEntry.build(
+        "High declination", 0.0, 30.0, armc=0.0, obliquity=0.0, geo_lat=0.0
+    )
+    with pytest.raises(ValueError, match="no real spherical solution"):
+        geometry_module._ptolemaic_ascensional_difference(entry, geo_lat=80.0)
+    with pytest.raises(ValueError, match="no real spherical solution"):
+        geometry_module._under_pole_w(entry, 80.0, eastern=True)
+
+
+def test_speculum_rejects_boolean_and_non_real_coordinate_fields() -> None:
+    direct_values: dict[str, object] = {
+        "name": "Point",
+        "lon": 0.0,
+        "lat": 0.0,
+        "ra": 0.0,
+        "dec": 0.0,
+        "ha": 0.0,
+        "dsa": 90.0,
+        "nsa": 90.0,
+        "upper": True,
+        "f": 0.0,
+    }
+    for field_name in ("lon", "lat", "ra", "dec", "ha", "dsa", "nsa", "f"):
+        for invalid in (True, "not-real"):
+            candidate = dict(direct_values)
+            candidate[field_name] = invalid
+            with pytest.raises(ValueError, match="finite real coordinates"):
+                SpeculumEntry(**candidate)
+
+    build_values: dict[str, object] = {
+        "name": "Point",
+        "lon": 0.0,
+        "lat": 0.0,
+        "armc": 0.0,
+        "obliquity": 0.0,
+        "geo_lat": 0.0,
+    }
+    for field_name in ("lon", "lat", "armc", "obliquity", "geo_lat"):
+        for invalid in (False, "not-real"):
+            candidate = dict(build_values)
+            candidate[field_name] = invalid
+            with pytest.raises(ValueError, match="finite real coordinates"):
+                SpeculumEntry.build(**candidate)
+
+
+@pytest.mark.parametrize(
+    "method",
+    (
+        PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+        PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+    ),
+)
+def test_mundane_only_geometry_rejects_zodiacal_mislabeling(
+    method: PrimaryDirectionMethod,
+) -> None:
+    sig, prom = _entries()
+    with pytest.raises(ValueError, match="does not admit in_zodiaco"):
+        compute_primary_direction_arcs(
+            method,
+            sig,
+            prom,
+            space=PrimaryDirectionSpace.IN_ZODIACO,
+            latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED,
+            geo_lat=51.5,
+            armc=41.0,
+            oa_asc=118.0,
+        )
+
+
 def test_geometry_truth_marks_sovereign_and_shared_methods_explicitly() -> None:
     sovereign = {
         PrimaryDirectionMethod.PLACIDUS_MUNDANE,
@@ -33,11 +215,11 @@ def test_geometry_truth_marks_sovereign_and_shared_methods_explicitly() -> None:
         PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
         PrimaryDirectionMethod.MERIDIAN,
         PrimaryDirectionMethod.REGIOMONTANUS,
-        PrimaryDirectionMethod.CAMPANUS,
         PrimaryDirectionMethod.TOPOCENTRIC,
     }
     shared = {
         PrimaryDirectionMethod.MORINUS,
+        PrimaryDirectionMethod.CAMPANUS,
     }
 
     for method in sovereign:
@@ -54,6 +236,9 @@ def test_geometry_truth_marks_sovereign_and_shared_methods_explicitly() -> None:
     # circle-of-position law, not the equatorial branch it formerly shared.
     assert primary_direction_geometry_truth(
         PrimaryDirectionMethod.MORINUS
+    ).shared_with == (PrimaryDirectionMethod.REGIOMONTANUS,)
+    assert primary_direction_geometry_truth(
+        PrimaryDirectionMethod.CAMPANUS
     ).shared_with == (PrimaryDirectionMethod.REGIOMONTANUS,)
 
 
@@ -303,8 +488,11 @@ def test_morinus_arc_matches_morin_book22_hemminga_oracle() -> None:
 
     # Morinus conjunction geometry is the Regiomontanus circle-of-position law.
     assert morinus_direct == pytest.approx(regio_direct)
-    # And it reproduces Morin's own worked arc of 25 deg 46'.
-    assert morinus_direct == pytest.approx(25.0 + 46.0 / 60.0, abs=0.5)
+    # And it reproduces Morin's own worked arc of 25 deg 46'.  The published
+    # inputs and result are minute-rounded (geographic latitude is stated to a
+    # whole degree); corner sensitivity is below 3 arcminutes, so 0.06 degree
+    # admits source rounding without retaining the former half-degree gate.
+    assert morinus_direct == pytest.approx(25.0 + 46.0 / 60.0, abs=0.06)
 
 
 # Methods whose arc is asymmetric under significator/promissor exchange: the

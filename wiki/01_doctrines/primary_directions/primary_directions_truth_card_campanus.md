@@ -9,7 +9,7 @@
 
 - under-the-pole primary-direction family
 - related to Campanus house-circle doctrine and prime-vertical framing
-- on Moira's currently admitted surface, the strongest verified law is the
+- on Moira's currently admitted surface, the implemented law is the
   shared Campanus-Regiomontanus speculum treatment:
   - `pole = arcsin(sin(phi) * sin(ZD))`
   - `O = arcsin(tan(D) * tan(pole))`
@@ -34,7 +34,7 @@
   - `opposition`
   - `zodiacal_aspect` when explicit aspect-point promissors are admitted by the
     calling policy
-- currently uses the verified shared Campanus-Regiomontanus speculum law on
+- currently uses the implemented shared Campanus-Regiomontanus speculum law on
   the admitted planets / nodes / angles / house-cusps / aspect-point surface
 
 ## Boundary
@@ -49,12 +49,15 @@
 
 ## Epistemic Status
 
-- `verified narrow admission`
+- `shared_narrow runtime admission`
+- invariant and regression tested on the admitted plane law
+- primary-authority worked examples for a distinct wider Campanian family are
+  still pending
 - `doctrine still wider than runtime surface`
 
-## Mathematical Sovereignty
+## Mathematical Ownership
 
-- `sovereign on the current admitted branch`
+- `Moira-owned shared_narrow implementation`
 - the governing law is explicit even where the current admitted Campanian and
   Regiomontanian conjunction-style surface coincides numerically
 - the unresolved issue is not lack of formula on the current branch, but where

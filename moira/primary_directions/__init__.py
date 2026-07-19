@@ -26,6 +26,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from enum import StrEnum
+from numbers import Real
 from typing import TYPE_CHECKING, Iterable
 
 from ..constants import Body, DEG2RAD
@@ -56,7 +57,11 @@ from .latitude_sources import (
     PrimaryDirectionLatitudeSource,
     PrimaryDirectionLatitudeSourcePolicy,
 )
-from .methods import PrimaryDirectionMethod
+from .methods import (
+    PrimaryDirectionMethod,
+    classify_primary_direction_method,
+    primary_direction_method_truth,
+)
 from .morinus import (
     MorinusAspectContext,
     project_morinus_aspect_point,
@@ -155,6 +160,13 @@ _DEFAULT_SOLAR_RATE = 360.0 / 365.25
 DIRECT = "D"
 CONVERSE = "C"
 
+
+def _finite_real(value: object, name: str) -> float:
+    """Return one finite real value while rejecting bool-as-number inputs."""
+    if not isinstance(value, Real) or isinstance(value, bool) or not math.isfinite(value):
+        raise ValueError(f"{name} must be a finite real number")
+    return float(value)
+
 class PrimaryDirectionMotion(StrEnum):
     """Vessel: Enumeration of primary direction motion vectors (Direct/Converse)."""
     DIRECT = "direct"
@@ -221,10 +233,68 @@ class PrimaryDirectionsPolicy:
     placidian_rapt_parallel_motion: PrimaryDirectionMotion | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.include_converse, bool):
+            raise ValueError("PrimaryDirectionsPolicy include_converse must be bool")
         if not isinstance(self.method, PrimaryDirectionMethod):
             raise ValueError(f"Unsupported primary direction method: {self.method}")
         if not isinstance(self.space, PrimaryDirectionSpace):
             raise ValueError(f"Unsupported primary direction space: {self.space}")
+        policy_types = (
+            ("converse_doctrine", self.converse_doctrine, PrimaryDirectionConverseDoctrine),
+            ("key_policy", self.key_policy, PrimaryDirectionKeyPolicy),
+            ("latitude_policy", self.latitude_policy, PrimaryDirectionLatitudePolicy),
+            (
+                "latitude_source_policy",
+                self.latitude_source_policy,
+                PrimaryDirectionLatitudeSourcePolicy,
+            ),
+            ("relation_policy", self.relation_policy, PrimaryDirectionRelationPolicy),
+            ("target_policy", self.target_policy, PrimaryDirectionTargetPolicy),
+            ("perfection_policy", self.perfection_policy, PrimaryDirectionPerfectionPolicy),
+        )
+        for name, value, expected_type in policy_types:
+            if not isinstance(value, expected_type):
+                raise ValueError(
+                    f"PrimaryDirectionsPolicy {name} must be {expected_type.__name__}"
+                )
+
+        sequence_fields = (
+            ("morinus_aspect_contexts", self.morinus_aspect_contexts, MorinusAspectContext),
+            ("antiscia_targets", self.antiscia_targets, PrimaryDirectionAntisciaTarget),
+            (
+                "ptolemaic_parallel_targets",
+                self.ptolemaic_parallel_targets,
+                PtolemaicParallelTarget,
+            ),
+            (
+                "placidian_rapt_parallel_targets",
+                self.placidian_rapt_parallel_targets,
+                PlacidianRaptParallelTarget,
+            ),
+            ("fixed_star_targets", self.fixed_star_targets, PrimaryDirectionFixedStarTarget),
+        )
+        for name, values, expected_type in sequence_fields:
+            if isinstance(values, (str, bytes)):
+                raise ValueError(f"PrimaryDirectionsPolicy {name} must be an iterable of vessels")
+            try:
+                normalized = tuple(values)
+            except TypeError as exc:
+                raise ValueError(
+                    f"PrimaryDirectionsPolicy {name} must be an iterable of vessels"
+                ) from exc
+            if any(not isinstance(value, expected_type) for value in normalized):
+                raise ValueError(
+                    f"PrimaryDirectionsPolicy {name} requires {expected_type.__name__} values"
+                )
+            object.__setattr__(self, name, normalized)
+
+        if (
+            self.placidian_rapt_parallel_motion is not None
+            and not isinstance(self.placidian_rapt_parallel_motion, PrimaryDirectionMotion)
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy placidian_rapt_parallel_motion must be a primary-direction motion"
+            )
         if self.method is not PrimaryDirectionMethod.PLACIDUS_MUNDANE:
             if self.method not in (
                 PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
@@ -238,15 +308,35 @@ class PrimaryDirectionsPolicy:
                 raise ValueError(f"Unsupported primary direction method: {self.method}")
         if self.space not in (PrimaryDirectionSpace.IN_MUNDO, PrimaryDirectionSpace.IN_ZODIACO):
             raise ValueError(f"Unsupported primary direction space: {self.space}")
+        method_classification = classify_primary_direction_method(
+            primary_direction_method_truth(self.method)
+        )
+        if (
+            self.space is PrimaryDirectionSpace.IN_ZODIACO
+            and not method_classification.zodiacal
+        ):
+            raise ValueError(
+                f"PrimaryDirectionsPolicy method {self.method.value!r} does not admit in_zodiaco"
+            )
         if self.include_converse and self.converse_doctrine is PrimaryDirectionConverseDoctrine.DIRECT_ONLY:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: include_converse requires converse doctrine"
             )
+        explicit_converse_rapt = (
+            self.placidian_rapt_parallel_motion is PrimaryDirectionMotion.CONVERSE
+        )
         if (not self.include_converse) and (
             self.converse_doctrine is not PrimaryDirectionConverseDoctrine.DIRECT_ONLY
-        ):
+        ) and not explicit_converse_rapt:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: direct-only policy must disable converse"
+            )
+        if explicit_converse_rapt and (
+            self.converse_doctrine
+            is not PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: converse rapt-parallel motion requires traditional-converse doctrine"
             )
         if self.space is PrimaryDirectionSpace.IN_MUNDO:
             if self.latitude_policy.doctrine is not PrimaryDirectionLatitudeDoctrine.MUNDANE_PRESERVED:
@@ -321,6 +411,13 @@ class PrimaryDirectionsPolicy:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: antiscia_targets must be unique by name"
             )
+        derived_target_names = (
+            antiscia_names + parallel_names + rapt_names + fixed_star_names
+        )
+        if len(set(derived_target_names)) != len(derived_target_names):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: derived target names must be unique across target families"
+            )
         if (
             self.fixed_star_targets
             and not self.target_policy.admitted_significator_classes
@@ -333,6 +430,14 @@ class PrimaryDirectionsPolicy:
         ):
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: current fixed_star_targets admission is limited to angle and planet significators"
+            )
+        if (
+            self.fixed_star_targets
+            and PrimaryDirectionRelationalKind.CONJUNCTION
+            not in self.relation_policy.admitted_kinds
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: fixed_star_targets require conjunction admission"
             )
         if self.ptolemaic_parallel_targets and self.method is not PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
             raise ValueError(
@@ -424,6 +529,26 @@ class PrimaryDirectionsPolicy:
             return (PrimaryDirectionMotion.DIRECT, PrimaryDirectionMotion.CONVERSE)
         return (PrimaryDirectionMotion.DIRECT,)
 
+    def admits_motion(
+        self,
+        motion: PrimaryDirectionMotion,
+        *,
+        relational_kind: PrimaryDirectionRelationalKind,
+    ) -> bool:
+        """Return motion admission under relation-specific rapt doctrine."""
+        if not isinstance(motion, PrimaryDirectionMotion):
+            raise ValueError("PrimaryDirectionsPolicy motion must be PrimaryDirectionMotion")
+        if not isinstance(relational_kind, PrimaryDirectionRelationalKind):
+            raise ValueError(
+                "PrimaryDirectionsPolicy relational_kind must be PrimaryDirectionRelationalKind"
+            )
+        if (
+            relational_kind is PrimaryDirectionRelationalKind.RAPT_PARALLEL
+            and self.placidian_rapt_parallel_motion is not None
+        ):
+            return motion is self.placidian_rapt_parallel_motion
+        return motion in self.admitted_motions
+
 
 def _preset_converse_doctrine(include_converse: bool) -> PrimaryDirectionConverseDoctrine:
     if include_converse:
@@ -431,16 +556,23 @@ def _preset_converse_doctrine(include_converse: bool) -> PrimaryDirectionConvers
     return PrimaryDirectionConverseDoctrine.DIRECT_ONLY
 
 
-def _aspect_target_policy() -> PrimaryDirectionTargetPolicy:
+def _aspect_target_policy(*, fixed_star_targets: bool = False) -> PrimaryDirectionTargetPolicy:
+    significator_classes = {
+        PrimaryDirectionTargetClass.PLANET,
+        PrimaryDirectionTargetClass.NODE,
+        PrimaryDirectionTargetClass.ANGLE,
+        PrimaryDirectionTargetClass.HOUSE_CUSP,
+    }
+    if fixed_star_targets:
+        # The admitted fixed-star branch currently limits significators to
+        # planets and angles; composing it with aspects must preserve both
+        # doctrines instead of letting one keyword silently replace the other.
+        significator_classes &= {
+            PrimaryDirectionTargetClass.PLANET,
+            PrimaryDirectionTargetClass.ANGLE,
+        }
     return PrimaryDirectionTargetPolicy(
-        admitted_significator_classes=frozenset(
-            {
-                PrimaryDirectionTargetClass.PLANET,
-                PrimaryDirectionTargetClass.NODE,
-                PrimaryDirectionTargetClass.ANGLE,
-                PrimaryDirectionTargetClass.HOUSE_CUSP,
-            }
-        ),
+        admitted_significator_classes=frozenset(significator_classes),
         admitted_promissor_classes=frozenset(
             {
                 PrimaryDirectionTargetClass.PLANET,
@@ -464,6 +596,16 @@ def _fixed_star_target_policy() -> PrimaryDirectionTargetPolicy:
     )
 
 
+def _rapt_parallel_relation_policy(
+    *,
+    fixed_star_targets: bool,
+) -> PrimaryDirectionRelationPolicy:
+    admitted = set(placidian_rapt_parallel_relation_policy().admitted_kinds)
+    if fixed_star_targets:
+        admitted.add(PrimaryDirectionRelationalKind.CONJUNCTION)
+    return PrimaryDirectionRelationPolicy(frozenset(admitted))
+
+
 def primary_directions_policy_preset(
     preset: PrimaryDirectionsPreset,
     *,
@@ -484,6 +626,10 @@ def primary_directions_policy_preset(
     }
     if fixed_star_targets:
         base_kwargs["target_policy"] = _fixed_star_target_policy()
+    aspect_kwargs = dict(base_kwargs)
+    aspect_kwargs["target_policy"] = _aspect_target_policy(
+        fixed_star_targets=bool(fixed_star_targets)
+    )
     if preset is PrimaryDirectionsPreset.PLACIDUS_MUNDANE:
         return PrimaryDirectionsPolicy(**base_kwargs)
     if preset is PrimaryDirectionsPreset.PLACIDIAN_CLASSIC_MUNDANE:
@@ -498,7 +644,9 @@ def primary_directions_policy_preset(
             )
         return PrimaryDirectionsPolicy(
             method=PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
-            relation_policy=placidian_rapt_parallel_relation_policy(),
+            relation_policy=_rapt_parallel_relation_policy(
+                fixed_star_targets=bool(fixed_star_targets)
+            ),
             placidian_rapt_parallel_targets=placidian_rapt_parallel_targets,
             placidian_rapt_parallel_motion=PrimaryDirectionMotion.DIRECT,
             **base_kwargs,
@@ -508,12 +656,18 @@ def primary_directions_policy_preset(
             raise ValueError(
                 "PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE is converse-only and does not use the ambient converse toggle"
             )
+        converse_rapt_kwargs = dict(base_kwargs)
+        converse_rapt_kwargs["converse_doctrine"] = (
+            PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE
+        )
         return PrimaryDirectionsPolicy(
             method=PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
-            relation_policy=placidian_rapt_parallel_relation_policy(),
+            relation_policy=_rapt_parallel_relation_policy(
+                fixed_star_targets=bool(fixed_star_targets)
+            ),
             placidian_rapt_parallel_targets=placidian_rapt_parallel_targets,
             placidian_rapt_parallel_motion=PrimaryDirectionMotion.CONVERSE,
-            **base_kwargs,
+            **converse_rapt_kwargs,
         )
     if preset is PrimaryDirectionsPreset.PTOLEMY_MUNDANE:
         return PrimaryDirectionsPolicy(
@@ -549,8 +703,7 @@ def primary_directions_policy_preset(
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASSIGNED_ZERO),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION),
             relation_policy=zodiacal_aspect_relation_policy(),
-            target_policy=_aspect_target_policy(),
-            **base_kwargs,
+            **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_PARALLEL:
         return PrimaryDirectionsPolicy(
@@ -560,9 +713,8 @@ def primary_directions_policy_preset(
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASSIGNED_ZERO),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION),
             relation_policy=ptolemaic_parallel_relation_policy(),
-            target_policy=_aspect_target_policy(),
             ptolemaic_parallel_targets=ptolemaic_parallel_targets,
-            **base_kwargs,
+            **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.MERIDIAN_MUNDANE:
         return PrimaryDirectionsPolicy(method=PrimaryDirectionMethod.MERIDIAN, **base_kwargs)
@@ -584,8 +736,7 @@ def primary_directions_policy_preset(
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
             relation_policy=zodiacal_aspect_relation_policy(),
-            target_policy=_aspect_target_policy(),
-            **base_kwargs,
+            **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.MORINUS_MUNDANE:
         return PrimaryDirectionsPolicy(method=PrimaryDirectionMethod.MORINUS, **base_kwargs)
@@ -607,9 +758,8 @@ def primary_directions_policy_preset(
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
             relation_policy=zodiacal_aspect_relation_policy(),
-            target_policy=_aspect_target_policy(),
             morinus_aspect_contexts=morinus_aspect_contexts,
-            **base_kwargs,
+            **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.REGIOMONTANUS_MUNDANE:
         return PrimaryDirectionsPolicy(method=PrimaryDirectionMethod.REGIOMONTANUS, **base_kwargs)
@@ -631,8 +781,7 @@ def primary_directions_policy_preset(
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
             relation_policy=zodiacal_aspect_relation_policy(),
-            target_policy=_aspect_target_policy(),
-            **base_kwargs,
+            **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.REGIOMONTANUS_ZODIACAL_SIGNIFICATOR_CONDITIONED:
         return PrimaryDirectionsPolicy(
@@ -642,8 +791,7 @@ def primary_directions_policy_preset(
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.SIGNIFICATOR_NATIVE),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
             relation_policy=zodiacal_aspect_relation_policy(),
-            target_policy=_aspect_target_policy(),
-            **base_kwargs,
+            **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.CAMPANUS_MUNDANE:
         return PrimaryDirectionsPolicy(method=PrimaryDirectionMethod.CAMPANUS, **base_kwargs)
@@ -665,8 +813,7 @@ def primary_directions_policy_preset(
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
             relation_policy=zodiacal_aspect_relation_policy(),
-            target_policy=_aspect_target_policy(),
-            **base_kwargs,
+            **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.TOPOCENTRIC_MUNDANE:
         return PrimaryDirectionsPolicy(method=PrimaryDirectionMethod.TOPOCENTRIC, **base_kwargs)
@@ -688,13 +835,12 @@ def primary_directions_policy_preset(
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
             relation_policy=zodiacal_aspect_relation_policy(),
-            target_policy=_aspect_target_policy(),
-            **base_kwargs,
+            **aspect_kwargs,
         )
     raise ValueError(f"Unsupported primary-directions preset: {preset}")
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class SpeculumEntry:
     """
     RITE: The Equatorial Mirror — the Engine that projects a zodiacal point
@@ -751,19 +897,29 @@ class SpeculumEntry:
     f: float
 
     def __post_init__(self) -> None:
-        if not self.name:
+        if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("SpeculumEntry requires a non-empty name")
+        for name in ("lon", "lat", "ra", "dec", "ha", "dsa", "nsa", "f"):
+            try:
+                value = _finite_real(getattr(self, name), f"SpeculumEntry {name}")
+            except ValueError as exc:
+                raise ValueError("SpeculumEntry requires finite real coordinates") from exc
+            object.__setattr__(self, name, value)
+        if not isinstance(self.upper, bool):
+            raise ValueError("SpeculumEntry upper must be bool")
         if not (0.0 <= self.lon < 360.0):
             raise ValueError(f"SpeculumEntry longitude must be normalized: {self.lon}")
+        if not (-90.0 <= self.lat <= 90.0):
+            raise ValueError(f"SpeculumEntry ecliptic latitude out of range: {self.lat}")
         if not (0.0 <= self.ra < 360.0):
             raise ValueError(f"SpeculumEntry right ascension must be normalized: {self.ra}")
         if not (-90.0 <= self.dec <= 90.0):
             raise ValueError(f"SpeculumEntry declination out of range: {self.dec}")
         if not (-180.0 <= self.ha <= 180.0):
             raise ValueError(f"SpeculumEntry hour angle out of range: {self.ha}")
-        if not (0.0 <= self.dsa <= 180.0):
+        if not (0.0 < self.dsa < 180.0):
             raise ValueError(f"SpeculumEntry DSA out of range: {self.dsa}")
-        if not (0.0 <= self.nsa <= 180.0):
+        if not (0.0 < self.nsa < 180.0):
             raise ValueError(f"SpeculumEntry NSA out of range: {self.nsa}")
         if abs((self.dsa + self.nsa) - 180.0) > 1e-7:
             raise ValueError("SpeculumEntry invariant failed: dsa + nsa must equal 180")
@@ -784,6 +940,25 @@ class SpeculumEntry:
         obliquity: float,
         geo_lat: float,
     ) -> SpeculumEntry:
+        inputs = {
+            "longitude": lon,
+            "latitude": lat,
+            "ARMC": armc,
+            "obliquity": obliquity,
+            "geographic latitude": geo_lat,
+        }
+        if not all(
+            isinstance(value, Real)
+            and not isinstance(value, bool)
+            and math.isfinite(value)
+            for value in inputs.values()
+        ):
+            raise ValueError("SpeculumEntry.build requires finite real coordinates")
+        if not -90.0 <= lat <= 90.0:
+            raise ValueError("SpeculumEntry.build requires ecliptic latitude in [-90, 90]")
+        if not -90.0 < geo_lat < 90.0:
+            raise ValueError("SpeculumEntry.build requires geographic latitude in (-90, 90)")
+
         eps = obliquity * DEG2RAD
         phi = geo_lat * DEG2RAD
         l = lon * DEG2RAD
@@ -799,17 +974,26 @@ class SpeculumEntry:
 
         ha = (armc - ra + 180.0) % 360.0 - 180.0
 
-        arg = max(-1.0, min(1.0, -math.tan(phi) * math.tan(dec_r)))
+        arg = -math.tan(phi) * math.tan(dec_r)
+        if arg < -1.0 - 1e-12 or arg > 1.0 + 1e-12:
+            raise ValueError(
+                "SpeculumEntry.build has no real rise/set semi-arcs at this latitude"
+            )
+        arg = max(-1.0, min(1.0, arg))
         dsa = math.degrees(math.acos(arg))
         nsa = 180.0 - dsa
+        if dsa <= 1e-9 or nsa <= 1e-9:
+            raise ValueError(
+                "SpeculumEntry.build does not admit a limiting tangent with a zero semi-arc"
+            )
 
         upper = abs(ha) <= dsa + 1e-9
         if upper:
-            f = ha / dsa if dsa > 1e-9 else 0.0
+            f = ha / dsa
         elif ha > 0:
-            f = 1.0 + (ha - dsa) / nsa if nsa > 1e-9 else 1.0
+            f = 1.0 + (ha - dsa) / nsa
         else:
-            f = -1.0 - (-ha - dsa) / nsa if nsa > 1e-9 else -1.0
+            f = -1.0 - (-ha - dsa) / nsa
 
         return cls(
             name=name,
@@ -852,7 +1036,7 @@ class SpeculumEntry:
         )
 
 
-@dataclass(slots=True)
+@dataclass(frozen=True, slots=True)
 class PrimaryArc:
     """
     RITE: The Primary Path — the Engine that records a single motion cycle
@@ -903,17 +1087,37 @@ class PrimaryArc:
     method: PrimaryDirectionMethod = field(default=PrimaryDirectionMethod.PLACIDUS_MUNDANE)
     space: PrimaryDirectionSpace = field(default=PrimaryDirectionSpace.IN_MUNDO)
     motion: PrimaryDirectionMotion = field(default=PrimaryDirectionMotion.DIRECT)
-    solar_rate: float = field(default=_DEFAULT_SOLAR_RATE)
+    solar_rate: float | None = None
+    relational_kind: PrimaryDirectionRelationalKind = field(
+        default=PrimaryDirectionRelationalKind.CONJUNCTION
+    )
+    _solar_rate_explicit: bool = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        if not self.significator or not self.promissor:
+        if (
+            not isinstance(self.significator, str)
+            or not self.significator.strip()
+            or not isinstance(self.promissor, str)
+            or not self.promissor.strip()
+        ):
             raise ValueError("PrimaryArc requires non-empty significator and promissor")
         if self.significator == self.promissor:
             raise ValueError("PrimaryArc invariant failed: self-directions are not admitted")
+        object.__setattr__(self, "arc", _finite_real(self.arc, "PrimaryArc arc"))
+        solar_rate_explicit = self.solar_rate is not None
+        resolved_solar_rate = (
+            _finite_real(self.solar_rate, "PrimaryArc solar_rate")
+            if solar_rate_explicit
+            else _DEFAULT_SOLAR_RATE
+        )
+        object.__setattr__(self, "solar_rate", resolved_solar_rate)
+        object.__setattr__(self, "_solar_rate_explicit", solar_rate_explicit)
         if self.arc <= 0.0:
             raise ValueError("PrimaryArc invariant failed: arc must be positive")
         if self.solar_rate <= 0.0:
             raise ValueError("PrimaryArc invariant failed: solar_rate must be positive")
+        if not isinstance(self.motion, PrimaryDirectionMotion):
+            raise ValueError(f"Unsupported primary direction motion: {self.motion}")
         expected_direction = DIRECT if self.motion is PrimaryDirectionMotion.DIRECT else CONVERSE
         if self.direction != expected_direction:
             raise ValueError("PrimaryArc invariant failed: direction must match motion")
@@ -934,9 +1138,32 @@ class PrimaryArc:
             raise ValueError(f"Unsupported primary direction method: {self.method}")
         if self.space not in (PrimaryDirectionSpace.IN_MUNDO, PrimaryDirectionSpace.IN_ZODIACO):
             raise ValueError(f"Unsupported primary direction space: {self.space}")
+        method_classification = classify_primary_direction_method(
+            primary_direction_method_truth(self.method)
+        )
+        if (
+            self.space is PrimaryDirectionSpace.IN_ZODIACO
+            and not method_classification.zodiacal
+        ):
+            raise ValueError(
+                f"PrimaryArc method {self.method.value!r} does not admit in_zodiaco"
+            )
+        if not isinstance(self.relational_kind, PrimaryDirectionRelationalKind):
+            raise ValueError(
+                f"Unsupported primary direction relational kind: {self.relational_kind}"
+            )
 
     def years(self, key: str | PrimaryDirectionKey = PrimaryDirectionKey.NAIBOD) -> float:
-        return convert_arc_to_time(self.arc, key, solar_rate=self.solar_rate)
+        return convert_arc_to_time(
+            self.arc,
+            key,
+            solar_rate=self.solar_rate if self._solar_rate_explicit else None,
+        )
+
+    @property
+    def solar_rate_explicit(self) -> bool:
+        """Whether the stored rate came from an explicit/generated natal rate."""
+        return self._solar_rate_explicit
 
     @property
     def is_direct(self) -> bool:
@@ -1000,14 +1227,56 @@ class PrimaryDirectionRelation:
     relation_kind: PrimaryDirectionPerfectionKind
     converse_doctrine: PrimaryDirectionConverseDoctrine
     key_policy: PrimaryDirectionKeyPolicy
+    relational_kind: PrimaryDirectionRelationalKind | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.arc, PrimaryArc):
+            raise ValueError("PrimaryDirectionRelation arc must be PrimaryArc")
+        if not isinstance(self.relation_kind, PrimaryDirectionPerfectionKind):
+            raise ValueError(
+                f"Unsupported primary direction relation kind: {self.relation_kind}"
+            )
         if self.relation_kind not in (
             PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
             PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION,
             PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION,
         ):
             raise ValueError(f"Unsupported primary direction relation kind: {self.relation_kind}")
+        if not isinstance(self.converse_doctrine, PrimaryDirectionConverseDoctrine):
+            raise ValueError(
+                "PrimaryDirectionRelation converse_doctrine must be PrimaryDirectionConverseDoctrine"
+            )
+        if not isinstance(self.key_policy, PrimaryDirectionKeyPolicy):
+            raise ValueError("PrimaryDirectionRelation key_policy must be PrimaryDirectionKeyPolicy")
+        if self.relational_kind is None:
+            object.__setattr__(self, "relational_kind", self.arc.relational_kind)
+        if not isinstance(self.relational_kind, PrimaryDirectionRelationalKind):
+            raise ValueError(
+                "PrimaryDirectionRelation relational_kind must be PrimaryDirectionRelationalKind"
+            )
+        if self.relational_kind is not self.arc.relational_kind:
+            raise ValueError(
+                "PrimaryDirectionRelation invariant failed: relational_kind must match arc"
+            )
+        if (
+            self.arc.space is PrimaryDirectionSpace.IN_MUNDO
+            and self.relation_kind
+            is not PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION
+        ):
+            raise ValueError(
+                "PrimaryDirectionRelation invariant failed: in_mundo arcs require mundane position perfection"
+            )
+        if (
+            self.arc.space is PrimaryDirectionSpace.IN_ZODIACO
+            and self.relation_kind
+            not in (
+                PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION,
+                PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION,
+            )
+        ):
+            raise ValueError(
+                "PrimaryDirectionRelation invariant failed: in_zodiaco arcs require zodiacal perfection"
+            )
         if (
             self.arc.motion is PrimaryDirectionMotion.CONVERSE
             and self.converse_doctrine is PrimaryDirectionConverseDoctrine.DIRECT_ONLY
@@ -1020,6 +1289,11 @@ class PrimaryDirectionRelation:
     def years(self) -> float:
         return self.arc.years(self.key_policy.key)
 
+    @property
+    def perfection_kind(self) -> PrimaryDirectionPerfectionKind:
+        """Explicit name for the compatibility ``relation_kind`` field."""
+        return self.relation_kind
+
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionRelationProfile:
@@ -1030,9 +1304,30 @@ class PrimaryDirectionRelationProfile:
     scored_relations: tuple[PrimaryDirectionRelation, ...]
 
     def __post_init__(self) -> None:
+        if not isinstance(self.arc, PrimaryArc):
+            raise ValueError("PrimaryDirectionRelationProfile arc must be PrimaryArc")
+        if not isinstance(self.detected_relation, PrimaryDirectionRelation):
+            raise ValueError(
+                "PrimaryDirectionRelationProfile detected_relation must be PrimaryDirectionRelation"
+            )
+        for name in ("admitted_relations", "scored_relations"):
+            values = tuple(getattr(self, name))
+            if any(not isinstance(value, PrimaryDirectionRelation) for value in values):
+                raise ValueError(
+                    f"PrimaryDirectionRelationProfile {name} requires relation vessels"
+                )
+            object.__setattr__(self, name, values)
         if self.detected_relation.arc != self.arc:
             raise ValueError(
                 "PrimaryDirectionRelationProfile invariant failed: detected relation must belong to arc"
+            )
+        if any(relation.arc != self.arc for relation in self.admitted_relations):
+            raise ValueError(
+                "PrimaryDirectionRelationProfile invariant failed: admitted relations must belong to arc"
+            )
+        if any(relation.arc != self.arc for relation in self.scored_relations):
+            raise ValueError(
+                "PrimaryDirectionRelationProfile invariant failed: scored relations must belong to arc"
             )
         if self.detected_relation not in self.admitted_relations:
             raise ValueError(
@@ -1052,6 +1347,14 @@ class PrimaryDirectionRelationProfile:
     def scored_relation_kinds(self) -> tuple[PrimaryDirectionPerfectionKind, ...]:
         return tuple(relation.relation_kind for relation in self.scored_relations)
 
+    @property
+    def admitted_relational_kinds(self) -> tuple[PrimaryDirectionRelationalKind, ...]:
+        return tuple(relation.relational_kind for relation in self.admitted_relations)
+
+    @property
+    def scored_relational_kinds(self) -> tuple[PrimaryDirectionRelationalKind, ...]:
+        return tuple(relation.relational_kind for relation in self.scored_relations)
+
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionsSignificatorProfile:
@@ -1066,10 +1369,42 @@ class PrimaryDirectionsSignificatorProfile:
     farthest_arc: float
 
     def __post_init__(self) -> None:
-        if not self.significator:
+        if not isinstance(self.significator, str) or not self.significator.strip():
             raise ValueError("PrimaryDirectionsSignificatorProfile requires a significator")
+        object.__setattr__(self, "arcs", tuple(self.arcs))
+        object.__setattr__(self, "relation_profiles", tuple(self.relation_profiles))
         if not self.arcs:
             raise ValueError("PrimaryDirectionsSignificatorProfile requires at least one arc")
+        if any(not isinstance(arc, PrimaryArc) for arc in self.arcs):
+            raise ValueError("PrimaryDirectionsSignificatorProfile arcs must be PrimaryArc vessels")
+        if any(
+            not isinstance(profile, PrimaryDirectionRelationProfile)
+            for profile in self.relation_profiles
+        ):
+            raise ValueError(
+                "PrimaryDirectionsSignificatorProfile relation_profiles must be relation-profile vessels"
+            )
+        if not isinstance(self.state, PrimaryDirectionsConditionState):
+            raise ValueError(
+                "PrimaryDirectionsSignificatorProfile state must be PrimaryDirectionsConditionState"
+            )
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or value < 0
+            for value in (self.direct_count, self.converse_count)
+        ):
+            raise ValueError(
+                "PrimaryDirectionsSignificatorProfile direction counts must be non-negative integers"
+            )
+        object.__setattr__(
+            self,
+            "nearest_arc",
+            _finite_real(self.nearest_arc, "PrimaryDirectionsSignificatorProfile nearest_arc"),
+        )
+        object.__setattr__(
+            self,
+            "farthest_arc",
+            _finite_real(self.farthest_arc, "PrimaryDirectionsSignificatorProfile farthest_arc"),
+        )
         if len(self.arcs) != len(self.relation_profiles):
             raise ValueError(
                 "PrimaryDirectionsSignificatorProfile invariant failed: arcs/profiles length mismatch"
@@ -1078,9 +1413,26 @@ class PrimaryDirectionsSignificatorProfile:
             raise ValueError(
                 "PrimaryDirectionsSignificatorProfile invariant failed: all arcs must share significator"
             )
+        if any(
+            profile.arc != arc
+            for arc, profile in zip(self.arcs, self.relation_profiles, strict=True)
+        ):
+            raise ValueError(
+                "PrimaryDirectionsSignificatorProfile invariant failed: relation profiles must preserve arc order and identity"
+            )
+        actual_direct = sum(arc.is_direct for arc in self.arcs)
+        actual_converse = len(self.arcs) - actual_direct
+        if self.direct_count != actual_direct or self.converse_count != actual_converse:
+            raise ValueError(
+                "PrimaryDirectionsSignificatorProfile invariant failed: direction counts do not match arc motions"
+            )
         if self.direct_count + self.converse_count != len(self.arcs):
             raise ValueError(
                 "PrimaryDirectionsSignificatorProfile invariant failed: direction counts do not match arc count"
+            )
+        if self.state is not _state_for_arcs(self.arcs):
+            raise ValueError(
+                "PrimaryDirectionsSignificatorProfile invariant failed: state does not match arc motions"
             )
         if self.nearest_arc != min(arc.arc for arc in self.arcs):
             raise ValueError(
@@ -1105,8 +1457,37 @@ class PrimaryDirectionsAggregateProfile:
     weakest_significator: str
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "profiles", tuple(self.profiles))
         if not self.profiles:
             raise ValueError("PrimaryDirectionsAggregateProfile requires at least one significator profile")
+        if any(
+            not isinstance(profile, PrimaryDirectionsSignificatorProfile)
+            for profile in self.profiles
+        ):
+            raise ValueError(
+                "PrimaryDirectionsAggregateProfile profiles must be significator-profile vessels"
+            )
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or value < 0
+            for value in (self.total_arcs, self.direct_count, self.converse_count)
+        ):
+            raise ValueError(
+                "PrimaryDirectionsAggregateProfile counts must be non-negative integers"
+            )
+        object.__setattr__(
+            self,
+            "nearest_arc",
+            _finite_real(self.nearest_arc, "PrimaryDirectionsAggregateProfile nearest_arc"),
+        )
+        object.__setattr__(
+            self,
+            "farthest_arc",
+            _finite_real(self.farthest_arc, "PrimaryDirectionsAggregateProfile farthest_arc"),
+        )
+        if not isinstance(self.strongest_significator, str) or not self.strongest_significator:
+            raise ValueError("PrimaryDirectionsAggregateProfile strongest_significator must be set")
+        if not isinstance(self.weakest_significator, str) or not self.weakest_significator:
+            raise ValueError("PrimaryDirectionsAggregateProfile weakest_significator must be set")
         unique_significators = {profile.significator for profile in self.profiles}
         if len(unique_significators) != len(self.profiles):
             raise ValueError(
@@ -1153,14 +1534,37 @@ class PrimaryDirectionsNetworkNode:
     incoming_count: int
     outgoing_count: int
     total_count: int
+    direct_count: int | None = None
+    converse_count: int | None = None
 
     def __post_init__(self) -> None:
-        if not self.name:
+        if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("PrimaryDirectionsNetworkNode requires a non-empty name")
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or value < 0
+            for value in (self.incoming_count, self.outgoing_count, self.total_count)
+        ):
+            raise ValueError("PrimaryDirectionsNetworkNode counts must be non-negative integers")
         if self.total_count != self.incoming_count + self.outgoing_count:
             raise ValueError(
                 "PrimaryDirectionsNetworkNode invariant failed: total_count mismatch"
             )
+        if (self.direct_count is None) != (self.converse_count is None):
+            raise ValueError(
+                "PrimaryDirectionsNetworkNode direct/converse counts must be both known or both unknown"
+            )
+        if self.direct_count is not None and self.converse_count is not None:
+            if any(
+                not isinstance(value, int) or isinstance(value, bool) or value < 0
+                for value in (self.direct_count, self.converse_count)
+            ):
+                raise ValueError(
+                    "PrimaryDirectionsNetworkNode motion counts must be non-negative integers"
+                )
+            if self.direct_count + self.converse_count != self.total_count:
+                raise ValueError(
+                    "PrimaryDirectionsNetworkNode invariant failed: motion counts must equal total_count"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1170,16 +1574,44 @@ class PrimaryDirectionsNetworkEdge:
     significator: str
     count: int
     nearest_arc: float
+    direct_count: int | None = None
+    converse_count: int | None = None
 
     def __post_init__(self) -> None:
-        if not self.promissor or not self.significator:
+        if (
+            not isinstance(self.promissor, str)
+            or not self.promissor.strip()
+            or not isinstance(self.significator, str)
+            or not self.significator.strip()
+        ):
             raise ValueError("PrimaryDirectionsNetworkEdge requires endpoint names")
         if self.promissor == self.significator:
             raise ValueError("PrimaryDirectionsNetworkEdge invariant failed: self-edge not admitted")
-        if self.count <= 0:
+        if not isinstance(self.count, int) or isinstance(self.count, bool) or self.count <= 0:
             raise ValueError("PrimaryDirectionsNetworkEdge invariant failed: count must be positive")
+        object.__setattr__(
+            self,
+            "nearest_arc",
+            _finite_real(self.nearest_arc, "PrimaryDirectionsNetworkEdge nearest_arc"),
+        )
         if self.nearest_arc <= 0.0:
             raise ValueError("PrimaryDirectionsNetworkEdge invariant failed: nearest_arc must be positive")
+        if (self.direct_count is None) != (self.converse_count is None):
+            raise ValueError(
+                "PrimaryDirectionsNetworkEdge direct/converse counts must be both known or both unknown"
+            )
+        if self.direct_count is not None and self.converse_count is not None:
+            if any(
+                not isinstance(value, int) or isinstance(value, bool) or value < 0
+                for value in (self.direct_count, self.converse_count)
+            ):
+                raise ValueError(
+                    "PrimaryDirectionsNetworkEdge motion counts must be non-negative integers"
+                )
+            if self.direct_count + self.converse_count != self.count:
+                raise ValueError(
+                    "PrimaryDirectionsNetworkEdge invariant failed: motion counts must equal count"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1191,8 +1623,15 @@ class PrimaryDirectionsNetworkProfile:
     isolated: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "nodes", tuple(self.nodes))
+        object.__setattr__(self, "edges", tuple(self.edges))
+        object.__setattr__(self, "isolated", tuple(self.isolated))
         if not self.nodes:
             raise ValueError("PrimaryDirectionsNetworkProfile requires at least one node")
+        if any(not isinstance(node, PrimaryDirectionsNetworkNode) for node in self.nodes):
+            raise ValueError("PrimaryDirectionsNetworkProfile nodes must be node vessels")
+        if any(not isinstance(edge, PrimaryDirectionsNetworkEdge) for edge in self.edges):
+            raise ValueError("PrimaryDirectionsNetworkProfile edges must be edge vessels")
         node_names = [node.name for node in self.nodes]
         if len(set(node_names)) != len(node_names):
             raise ValueError(
@@ -1208,6 +1647,48 @@ class PrimaryDirectionsNetworkProfile:
             raise ValueError(
                 "PrimaryDirectionsNetworkProfile invariant failed: isolated list contains unknown node"
             )
+        if tuple(sorted(self.isolated)) != self.isolated or len(set(self.isolated)) != len(self.isolated):
+            raise ValueError(
+                "PrimaryDirectionsNetworkProfile isolated identities must be unique and sorted"
+            )
+        computed_isolated = tuple(sorted(node.name for node in self.nodes if node.total_count == 0))
+        if self.isolated != computed_isolated:
+            raise ValueError(
+                "PrimaryDirectionsNetworkProfile invariant failed: isolated identities do not match nodes"
+            )
+        incoming = {name: 0 for name in node_set}
+        outgoing = {name: 0 for name in node_set}
+        direct = {name: 0 for name in node_set}
+        converse = {name: 0 for name in node_set}
+        seen_edges: set[tuple[str, str]] = set()
+        for edge in self.edges:
+            identity = (edge.promissor, edge.significator)
+            if identity in seen_edges:
+                raise ValueError("PrimaryDirectionsNetworkProfile invariant failed: duplicate edge")
+            seen_edges.add(identity)
+            outgoing[edge.promissor] += edge.count
+            incoming[edge.significator] += edge.count
+            if edge.direct_count is not None and edge.converse_count is not None:
+                direct[edge.promissor] += edge.direct_count
+                direct[edge.significator] += edge.direct_count
+                converse[edge.promissor] += edge.converse_count
+                converse[edge.significator] += edge.converse_count
+        for node in self.nodes:
+            if (
+                node.incoming_count != incoming[node.name]
+                or node.outgoing_count != outgoing[node.name]
+            ):
+                raise ValueError(
+                    "PrimaryDirectionsNetworkProfile invariant failed: node counts do not match edges"
+                )
+            if node.direct_count is not None and node.converse_count is not None:
+                if (
+                    node.direct_count != direct[node.name]
+                    or node.converse_count != converse[node.name]
+                ):
+                    raise ValueError(
+                        "PrimaryDirectionsNetworkProfile invariant failed: node motion counts do not match edges"
+                    )
         computed_most = max(self.nodes, key=lambda node: (node.total_count, node.name)).name
         if self.most_connected != computed_most:
             raise ValueError(
@@ -1282,8 +1763,35 @@ def _required_relation_kinds_for_requested_promissors(
         except ValueError:
             continue
         if truth.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT:
-            required.add(PrimaryDirectionRelationalKind.ZODIACAL_ASPECT)
+            assert truth.aspect_angle is not None
+            if abs(truth.aspect_angle) <= 1e-12:
+                required.add(PrimaryDirectionRelationalKind.CONJUNCTION)
+            elif abs(abs(truth.aspect_angle) - 180.0) <= 1e-12:
+                required.add(PrimaryDirectionRelationalKind.OPPOSITION)
+            else:
+                required.add(PrimaryDirectionRelationalKind.ZODIACAL_ASPECT)
+        else:
+            required.add(PrimaryDirectionRelationalKind.CONJUNCTION)
     return required
+
+
+def _identity_tuple(
+    values: Iterable[str] | None,
+    name: str,
+) -> tuple[str, ...] | None:
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes)):
+        raise ValueError(f"{name} must be an iterable of target names, not one string")
+    try:
+        normalized = tuple(values)
+    except TypeError as exc:
+        raise ValueError(f"{name} must be an iterable of target names") from exc
+    if any(not isinstance(value, str) or not value.strip() for value in normalized):
+        raise ValueError(f"{name} must contain non-empty string target names")
+    if len(set(normalized)) != len(normalized):
+        raise ValueError(f"{name} may not contain duplicate target names")
+    return normalized
 
 
 def _zodiacal_promissor_entries(
@@ -1477,17 +1985,22 @@ def _fixed_star_promissor_entries(
     armc: float,
     obliquity: float,
     geo_lat: float,
+    latitude_doctrine: PrimaryDirectionLatitudeDoctrine,
 ) -> dict[str, SpeculumEntry]:
     derived: dict[str, SpeculumEntry] = {}
     for target in targets:
-        star_name, longitude, latitude = resolve_primary_direction_fixed_star_point(
+        _catalog_name, longitude, latitude = resolve_primary_direction_fixed_star_point(
             target,
             jd_tt=jd_tt,
         )
         derived[target.name] = SpeculumEntry.build(
-            star_name,
+            target.name,
             longitude,
-            latitude,
+            (
+                0.0
+                if latitude_doctrine is PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+                else latitude
+            ),
             armc,
             obliquity,
             geo_lat,
@@ -1516,15 +2029,27 @@ def speculum(
     obliquity: float | None = None,
     bodies: list[str] | None = None,
 ) -> list[SpeculumEntry]:
-    obl = obliquity if obliquity is not None else chart.obliquity
+    geo_lat = _finite_real(geo_lat, "speculum geographic latitude")
+    if not -90.0 < geo_lat < 90.0:
+        raise ValueError("speculum requires geographic latitude in (-90, 90)")
+    obl = _finite_real(
+        obliquity if obliquity is not None else chart.obliquity,
+        "speculum obliquity",
+    )
+    if not 0.0 <= obl < 90.0:
+        raise ValueError("speculum requires obliquity in [0, 90)")
     armc = houses.armc
 
     entries: list[SpeculumEntry] = []
-    planet_names = bodies if bodies is not None else list(chart.planets.keys())
+    normalized_bodies = _identity_tuple(bodies, "speculum bodies")
+    planet_names = normalized_bodies if normalized_bodies is not None else tuple(chart.planets)
+    if normalized_bodies is not None:
+        missing = tuple(name for name in normalized_bodies if name not in chart.planets)
+        if missing:
+            raise ValueError(f"speculum requested unavailable chart bodies: {missing!r}")
     for name in planet_names:
-        if name in chart.planets:
-            p = chart.planets[name]
-            entries.append(SpeculumEntry.build(name, p.longitude, p.latitude, armc, obl, geo_lat))
+        p = chart.planets[name]
+        entries.append(SpeculumEntry.build(name, p.longitude, p.latitude, armc, obl, geo_lat))
 
     for name, nd in chart.nodes.items():
         entries.append(SpeculumEntry.build(name, nd.longitude, 0.0, armc, obl, geo_lat))
@@ -1552,6 +2077,19 @@ def find_primary_arcs(
     obliquity: float | None = None,
     policy: PrimaryDirectionsPolicy | None = None,
 ) -> list[PrimaryArc]:
+    if not isinstance(include_converse, bool):
+        raise ValueError("find_primary_arcs include_converse must be bool")
+    if policy is not None and not isinstance(policy, PrimaryDirectionsPolicy):
+        raise ValueError("find_primary_arcs policy must be PrimaryDirectionsPolicy")
+    max_arc = _finite_real(max_arc, "find_primary_arcs max_arc")
+    geo_lat = _finite_real(geo_lat, "find_primary_arcs geographic latitude")
+    if not 0.0 < max_arc <= 360.0:
+        raise ValueError("find_primary_arcs requires max_arc in (0, 360]")
+    if not -90.0 < geo_lat < 90.0:
+        raise ValueError("find_primary_arcs requires geographic latitude in (-90, 90)")
+    normalized_significators = _identity_tuple(significators, "find_primary_arcs significators")
+    normalized_promissors = _identity_tuple(promissors, "find_primary_arcs promissors")
+
     resolved_policy = (
         policy
         if policy is not None
@@ -1564,20 +2102,22 @@ def find_primary_arcs(
             ),
         )
     )
-    obl = obliquity if obliquity is not None else chart.obliquity
-
-    if max_arc <= 0.0:
-        raise ValueError("find_primary_arcs requires max_arc > 0")
+    obl = _finite_real(
+        obliquity if obliquity is not None else chart.obliquity,
+        "find_primary_arcs obliquity",
+    )
+    if not 0.0 <= obl < 90.0:
+        raise ValueError("find_primary_arcs requires obliquity in [0, 90)")
 
     if solar_speed is not None:
-        s_rate = abs(solar_speed)
+        s_rate = _finite_real(solar_speed, "find_primary_arcs solar_speed")
     else:
         sun = chart.planets.get(Body.SUN)
         if sun is None:
             raise ValueError(
                 "find_primary_arcs requires explicit solar_speed or a chart with natal Sun speed"
             )
-        s_rate = abs(sun.speed)
+        s_rate = abs(_finite_real(sun.speed, "find_primary_arcs natal Sun speed"))
     if s_rate <= 0.0:
         raise ValueError(
             "find_primary_arcs requires explicit solar_speed or a chart with positive natal Sun speed"
@@ -1585,21 +2125,29 @@ def find_primary_arcs(
 
     spec = speculum(chart, houses, geo_lat, obliquity=obl)
     sp_map = {e.name: e for e in spec}
-    oa_asc = sp_map["ASC"].ra
+    # Oblique ascension of the eastern horizon is an equatorial coordinate:
+    # OA(ASC) = local sidereal time + 90 degrees.  It is not the right
+    # ascension of the ecliptic Ascendant, which differs at non-zero obliquity
+    # and would miswire the Placidian-classic endpoint law.
+    oa_asc = (houses.armc + 90.0) % 360.0
 
     all_names = list(sp_map.keys())
-    sig_candidates = set(significators) if significators is not None else set(all_names)
+    sig_candidates = (
+        set(normalized_significators)
+        if normalized_significators is not None
+        else set(all_names)
+    )
     fixed_star_targets = tuple(
         target
         for target in resolved_policy.fixed_star_targets
-        if promissors is None or target.name in promissors
+        if normalized_promissors is None or target.name in normalized_promissors
     )
     fixed_star_names = {target.name for target in fixed_star_targets}
     antiscia_targets = (
         tuple(
             target
             for target in resolved_policy.antiscia_targets
-            if promissors is None or target.name in promissors
+            if normalized_promissors is None or target.name in normalized_promissors
         )
         if resolved_policy.method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC
         else ()
@@ -1609,7 +2157,7 @@ def find_primary_arcs(
         tuple(
             target
             for target in resolved_policy.ptolemaic_parallel_targets
-            if promissors is None or target.name in promissors
+            if normalized_promissors is None or target.name in normalized_promissors
         )
         if resolved_policy.method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC
         else ()
@@ -1619,7 +2167,7 @@ def find_primary_arcs(
         tuple(
             target
             for target in resolved_policy.placidian_rapt_parallel_targets
-            if promissors is None or target.name in promissors
+            if normalized_promissors is None or target.name in normalized_promissors
         )
         if (
             resolved_policy.method is PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC
@@ -1629,8 +2177,8 @@ def find_primary_arcs(
     )
     placidian_rapt_parallel_names = {target.name for target in placidian_rapt_parallel_targets}
     prom_candidates = (
-        set(promissors)
-        if promissors is not None
+        set(normalized_promissors)
+        if normalized_promissors is not None
         else (
             set(all_names)
             | fixed_star_names
@@ -1640,25 +2188,46 @@ def find_primary_arcs(
         )
     )
     candidate_names = set(all_names) | sig_candidates | prom_candidates
-    required_relation_kinds = _required_relation_kinds_for_requested_promissors(prom_candidates)
-    required_relation_kinds |= {
-        (
+    relational_kind_by_name: dict[str, PrimaryDirectionRelationalKind] = {
+        target.name: (
             PrimaryDirectionRelationalKind.ANTISCION
             if target.kind is PrimaryDirectionAntisciaKind.ANTISCION
             else PrimaryDirectionRelationalKind.CONTRA_ANTISCION
         )
         for target in antiscia_targets
     }
-    required_relation_kinds |= {
-        (
-            PrimaryDirectionRelationalKind.PARALLEL
-            if target.relation is PtolemaicParallelRelation.PARALLEL
-            else PrimaryDirectionRelationalKind.CONTRA_PARALLEL
-        )
-        for target in ptolemaic_parallel_targets
-    }
-    if placidian_rapt_parallel_targets:
-        required_relation_kinds.add(PrimaryDirectionRelationalKind.RAPT_PARALLEL)
+    relational_kind_by_name.update(
+        {
+            target.name: (
+                PrimaryDirectionRelationalKind.PARALLEL
+                if target.relation is PtolemaicParallelRelation.PARALLEL
+                else PrimaryDirectionRelationalKind.CONTRA_PARALLEL
+            )
+            for target in ptolemaic_parallel_targets
+        }
+    )
+    relational_kind_by_name.update(
+        {
+            target.name: PrimaryDirectionRelationalKind.RAPT_PARALLEL
+            for target in placidian_rapt_parallel_targets
+        }
+    )
+    relational_kind_by_name.update(
+        {
+            target.name: PrimaryDirectionRelationalKind.CONJUNCTION
+            for target in fixed_star_targets
+        }
+    )
+    required_relation_kinds = (
+        _required_relation_kinds_for_requested_promissors(normalized_promissors)
+        if normalized_promissors is not None
+        else set()
+    )
+    required_relation_kinds.update(
+        relational_kind_by_name[name]
+        for name in (normalized_promissors or ())
+        if name in relational_kind_by_name
+    )
     if not required_relation_kinds <= resolved_policy.relation_policy.admitted_kinds:
         raise ValueError(
             "find_primary_arcs invariant failed: requested promissors require admitted relation kinds"
@@ -1666,11 +2235,46 @@ def find_primary_arcs(
     target_truths = {}
     for name in candidate_names:
         try:
-            target_truths[name] = primary_direction_target_truth(name)
+            truth = primary_direction_target_truth(name)
         except ValueError:
+            if (
+                name not in relational_kind_by_name
+                and (
+                    normalized_significators is not None
+                    and name in normalized_significators
+                    or normalized_promissors is not None
+                    and name in normalized_promissors
+                )
+            ):
+                raise
             continue
+        target_truths[name] = truth
+        if truth.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT:
+            assert truth.aspect_angle is not None
+            if abs(truth.aspect_angle) <= 1e-12:
+                relational_kind_by_name[name] = PrimaryDirectionRelationalKind.CONJUNCTION
+            elif abs(abs(truth.aspect_angle) - 180.0) <= 1e-12:
+                relational_kind_by_name[name] = PrimaryDirectionRelationalKind.OPPOSITION
+            else:
+                relational_kind_by_name[name] = PrimaryDirectionRelationalKind.ZODIACAL_ASPECT
+        else:
+            relational_kind_by_name.setdefault(
+                name,
+                PrimaryDirectionRelationalKind.CONJUNCTION,
+            )
+    # Aspectual promissors may be derived from a house cusp (for example,
+    # ``H10 Trine``).  Materialize that named source cusp even though the
+    # derived aspect name, rather than the source, is the requested candidate.
+    aspect_source_names = {
+        truth.source_name
+        for truth in target_truths.values()
+        if (
+            truth.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT
+            and truth.source_name is not None
+        )
+    }
     derived_cusps = _house_cusp_entries(
-        candidate_names,
+        candidate_names | aspect_source_names,
         houses,
         armc=houses.armc,
         obliquity=obl,
@@ -1686,10 +2290,22 @@ def find_primary_arcs(
         armc=houses.armc,
         obliquity=obl,
         geo_lat=geo_lat,
+        latitude_doctrine=resolved_policy.latitude_policy.doctrine,
     )
     if derived_fixed_stars:
         sp_map.update(derived_fixed_stars)
         spec.extend(derived_fixed_stars.values())
+    source_bound_targets = (
+        tuple(antiscia_targets)
+        + tuple(ptolemaic_parallel_targets)
+        + tuple(placidian_rapt_parallel_targets)
+    )
+    for target in source_bound_targets:
+        if target.source_name not in sp_map:
+            raise ValueError(
+                f"find_primary_arcs requested derived promissor {target.name!r} "
+                f"but source {target.source_name!r} is unavailable"
+            )
     prom_map: dict[str, SpeculumEntry]
     morinus_context_map = {context.source_name: context for context in resolved_policy.morinus_aspect_contexts}
     if resolved_policy.space is PrimaryDirectionSpace.IN_ZODIACO:
@@ -1748,9 +2364,51 @@ def find_primary_arcs(
     prom_set |= fixed_star_names
     prom_set |= ptolemaic_parallel_names
     prom_set |= placidian_rapt_parallel_names
+    if resolved_policy.placidian_rapt_parallel_motion is not None:
+        # Rapt presets are pair-specific.  Composing configured fixed stars
+        # admits those named conjunction targets, not every ordinary bodily
+        # conjunction merely because both share one relation-kind token.
+        prom_set &= fixed_star_names | placidian_rapt_parallel_names
     placidian_rapt_parallel_map = {
         target.name: target for target in placidian_rapt_parallel_targets
     }
+    if normalized_significators is not None:
+        for name in normalized_significators:
+            truth = target_truths.get(name)
+            if name not in sp_map:
+                raise ValueError(
+                    f"find_primary_arcs requested significator {name!r} is unavailable"
+                )
+            if (
+                truth is None
+                or truth.target_class
+                not in resolved_policy.target_policy.admitted_significator_classes
+            ):
+                raise ValueError(
+                    f"find_primary_arcs requested significator {name!r} is not admitted by policy"
+                )
+    if normalized_promissors is not None:
+        for name in normalized_promissors:
+            if name not in prom_set:
+                raise ValueError(
+                    f"find_primary_arcs requested promissor {name!r} is not admitted by policy"
+                )
+            if (
+                resolved_policy.latitude_policy.doctrine
+                is PrimaryDirectionLatitudeDoctrine.ZODIACAL_SIGNIFICATOR_CONDITIONED
+            ):
+                truth = target_truths.get(name)
+                available = name in sp_map or (
+                    truth is not None
+                    and truth.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT
+                    and truth.source_name in sp_map
+                )
+            else:
+                available = name in prom_map or name in placidian_rapt_parallel_map
+            if not available:
+                raise ValueError(
+                    f"find_primary_arcs requested promissor {name!r} is unavailable"
+                )
 
     results: list[PrimaryArc] = []
     for sig_e in spec:
@@ -1791,6 +2449,12 @@ def find_primary_arcs(
                 continue
             if prom_name not in prom_set or sig_e.name == prom_name:
                 continue
+            relational_kind = relational_kind_by_name.get(
+                prom_name,
+                PrimaryDirectionRelationalKind.CONJUNCTION,
+            )
+            if relational_kind not in resolved_policy.relation_policy.admitted_kinds:
+                continue
             if prom_name in placidian_rapt_parallel_map:
                 source_entry = sp_map.get(placidian_rapt_parallel_map[prom_name].source_name)
                 if source_entry is None or source_entry.name == sig_e.name:
@@ -1814,6 +2478,7 @@ def find_primary_arcs(
                             space=resolved_policy.space,
                             motion=motion,
                             solar_rate=s_rate,
+                            relational_kind=relational_kind,
                         )
                     )
                 continue
@@ -1842,6 +2507,7 @@ def find_primary_arcs(
                         space=resolved_policy.space,
                         motion=PrimaryDirectionMotion.DIRECT,
                         solar_rate=s_rate,
+                        relational_kind=relational_kind,
                     )
                 )
 
@@ -1856,6 +2522,7 @@ def find_primary_arcs(
                         space=resolved_policy.space,
                         motion=PrimaryDirectionMotion.CONVERSE,
                         solar_rate=s_rate,
+                        relational_kind=relational_kind,
                     )
                 )
 
@@ -1867,12 +2534,36 @@ def relate_primary_arc(
     arc: PrimaryArc,
     policy: PrimaryDirectionsPolicy | None = None,
 ) -> PrimaryDirectionRelation:
+    if not isinstance(arc, PrimaryArc):
+        raise ValueError("relate_primary_arc requires a PrimaryArc")
+    if policy is not None and not isinstance(policy, PrimaryDirectionsPolicy):
+        raise ValueError("relate_primary_arc policy must be PrimaryDirectionsPolicy")
     resolved_policy = policy if policy is not None else PrimaryDirectionsPolicy()
+    if arc.method is not resolved_policy.method:
+        raise ValueError(
+            "relate_primary_arc invariant failed: arc method does not match policy method"
+        )
+    if arc.space is not resolved_policy.space:
+        raise ValueError(
+            "relate_primary_arc invariant failed: arc space does not match policy space"
+        )
+    if not resolved_policy.admits_motion(
+        arc.motion,
+        relational_kind=arc.relational_kind,
+    ):
+        raise ValueError(
+            "relate_primary_arc invariant failed: arc motion is not admitted by policy"
+        )
+    if arc.relational_kind not in resolved_policy.relation_policy.admitted_kinds:
+        raise ValueError(
+            "relate_primary_arc invariant failed: arc relational kind is not admitted by policy"
+        )
     return PrimaryDirectionRelation(
         arc=arc,
         relation_kind=resolved_policy.perfection_policy.kind,
         converse_doctrine=resolved_policy.converse_doctrine,
         key_policy=resolved_policy.key_policy,
+        relational_kind=arc.relational_kind,
     )
 
 
@@ -1895,7 +2586,19 @@ def evaluate_primary_direction_condition(
     arcs: Iterable[PrimaryArc],
     policy: PrimaryDirectionsPolicy | None = None,
 ) -> PrimaryDirectionsSignificatorProfile:
-    arc_tuple = tuple(sorted(arcs, key=lambda arc: (arc.arc, arc.promissor, arc.direction)))
+    try:
+        supplied_arcs = tuple(arcs)
+    except TypeError as exc:
+        raise ValueError(
+            "evaluate_primary_direction_condition requires an iterable of PrimaryArc vessels"
+        ) from exc
+    if any(not isinstance(arc, PrimaryArc) for arc in supplied_arcs):
+        raise ValueError(
+            "evaluate_primary_direction_condition requires PrimaryArc vessels"
+        )
+    arc_tuple = tuple(
+        sorted(supplied_arcs, key=lambda arc: (arc.arc, arc.promissor, arc.direction))
+    )
     if not arc_tuple:
         raise ValueError("evaluate_primary_direction_condition requires at least one arc")
     significator = arc_tuple[0].significator
@@ -1924,8 +2627,18 @@ def evaluate_primary_directions_aggregate(
     arcs: Iterable[PrimaryArc],
     policy: PrimaryDirectionsPolicy | None = None,
 ) -> PrimaryDirectionsAggregateProfile:
+    try:
+        arc_tuple = tuple(arcs)
+    except TypeError as exc:
+        raise ValueError(
+            "evaluate_primary_directions_aggregate requires an iterable of PrimaryArc vessels"
+        ) from exc
+    if any(not isinstance(arc, PrimaryArc) for arc in arc_tuple):
+        raise ValueError(
+            "evaluate_primary_directions_aggregate requires PrimaryArc vessels"
+        )
     grouped: dict[str, list[PrimaryArc]] = {}
-    for arc in arcs:
+    for arc in arc_tuple:
         grouped.setdefault(arc.significator, []).append(arc)
     if not grouped:
         raise ValueError("evaluate_primary_directions_aggregate requires at least one arc")
@@ -1952,7 +2665,12 @@ def evaluate_primary_directions_network(
     arcs: Iterable[PrimaryArc],
     policy: PrimaryDirectionsPolicy | None = None,
 ) -> PrimaryDirectionsNetworkProfile:
-    arc_tuple = tuple(arcs)
+    try:
+        arc_tuple = tuple(arcs)
+    except TypeError as exc:
+        raise ValueError(
+            "evaluate_primary_directions_network requires an iterable of PrimaryArc vessels"
+        ) from exc
     if not arc_tuple:
         raise ValueError("evaluate_primary_directions_network requires at least one arc")
 
@@ -1960,12 +2678,19 @@ def evaluate_primary_directions_network(
     edge_map: dict[tuple[str, str], list[PrimaryArc]] = {}
     incoming: dict[str, int] = {}
     outgoing: dict[str, int] = {}
+    direct: dict[str, int] = {}
+    converse: dict[str, int] = {}
     for arc in arc_tuple:
+        if not isinstance(arc, PrimaryArc):
+            raise ValueError("evaluate_primary_directions_network requires PrimaryArc vessels")
         node_names.add(arc.significator)
         node_names.add(arc.promissor)
         edge_map.setdefault((arc.promissor, arc.significator), []).append(arc)
         outgoing[arc.promissor] = outgoing.get(arc.promissor, 0) + 1
         incoming[arc.significator] = incoming.get(arc.significator, 0) + 1
+        motion_counts = direct if arc.is_direct else converse
+        motion_counts[arc.promissor] = motion_counts.get(arc.promissor, 0) + 1
+        motion_counts[arc.significator] = motion_counts.get(arc.significator, 0) + 1
 
     nodes = tuple(
         sorted(
@@ -1975,6 +2700,8 @@ def evaluate_primary_directions_network(
                     incoming_count=incoming.get(name, 0),
                     outgoing_count=outgoing.get(name, 0),
                     total_count=incoming.get(name, 0) + outgoing.get(name, 0),
+                    direct_count=direct.get(name, 0),
+                    converse_count=converse.get(name, 0),
                 )
                 for name in node_names
             ),
@@ -1989,6 +2716,8 @@ def evaluate_primary_directions_network(
                     significator=significator,
                     count=len(group),
                     nearest_arc=min(arc.arc for arc in group),
+                    direct_count=sum(arc.is_direct for arc in group),
+                    converse_count=sum(arc.is_converse for arc in group),
                 )
                 for (promissor, significator), group in edge_map.items()
             ),

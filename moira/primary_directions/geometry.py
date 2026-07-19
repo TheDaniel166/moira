@@ -5,8 +5,10 @@ Standalone geometry owner for the primary-directions subsystem.
 Boundary
 --------
 Owns the explicit computational laws used by the currently admitted
-primary-direction method families, plus the truth surface that states whether a
-method is mathematically sovereign or still using a shared narrow law.
+primary-direction method families, plus the compatibility truth surface that
+states whether a method owns a distinct admitted runtime law or still uses a
+shared narrow law.  Its historical ``sovereignty`` field is not a claim of
+whole-subsystem lineage clearance or external-authority validation.
 """
 
 from __future__ import annotations
@@ -14,11 +16,16 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from enum import StrEnum
+from numbers import Real
 from typing import TYPE_CHECKING, Protocol
 
 from ..constants import DEG2RAD
 from .latitudes import PrimaryDirectionLatitudeDoctrine
-from .methods import PrimaryDirectionMethod
+from .methods import (
+    PrimaryDirectionMethod,
+    classify_primary_direction_method,
+    primary_direction_method_truth,
+)
 from .spaces import PrimaryDirectionSpace
 
 if TYPE_CHECKING:
@@ -31,6 +38,23 @@ __all__ = [
     "primary_direction_geometry_truth",
     "compute_primary_direction_arcs",
 ]
+
+
+_DOMAIN_TOLERANCE = 1e-12
+
+
+def _checked_unit_argument(value: float, *, object_name: str) -> float:
+    """Return a numerically rounded inverse-trig argument or fail closed.
+
+    Values outside the real unit interval describe a missing spherical
+    intersection.  Only round-off immediately adjacent to an endpoint may be
+    coalesced; a physical no-solution case must not be turned into a tangent.
+    """
+    if not math.isfinite(value):
+        raise ValueError(f"{object_name} requires a finite spherical argument")
+    if value < -1.0 - _DOMAIN_TOLERANCE or value > 1.0 + _DOMAIN_TOLERANCE:
+        raise ValueError(f"{object_name} has no real spherical solution")
+    return max(-1.0, min(1.0, value))
 
 
 class _SpeculumLike(Protocol):
@@ -60,14 +84,19 @@ class PrimaryDirectionGeometryLaw(StrEnum):
 
 
 class PrimaryDirectionGeometrySovereignty(StrEnum):
-    """Vessel: Classification of a geometric law as sovereign or shared."""
+    """Compatibility classification for a distinct or shared runtime law.
+
+    ``SOVEREIGN`` is the retained public token for a method-specific admitted
+    implementation.  It does not attest historical completeness, lineage
+    ownership across all five repository axes, or external-oracle validation.
+    """
     SOVEREIGN = "sovereign"
     SHARED_NARROW = "shared_narrow"
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionGeometryTruth:
-    """Vessel: Record of the exact mathematical provenance for a primary direction method."""
+    """Vessel: Record of one method's admitted runtime geometry identity."""
     method: PrimaryDirectionMethod
     law: PrimaryDirectionGeometryLaw
     sovereignty: PrimaryDirectionGeometrySovereignty
@@ -122,7 +151,8 @@ def primary_direction_geometry_truth(
         PrimaryDirectionMethod.CAMPANUS: PrimaryDirectionGeometryTruth(
             method=PrimaryDirectionMethod.CAMPANUS,
             law=PrimaryDirectionGeometryLaw.CAMPANUS_SPECULUM,
-            sovereignty=PrimaryDirectionGeometrySovereignty.SOVEREIGN,
+            sovereignty=PrimaryDirectionGeometrySovereignty.SHARED_NARROW,
+            shared_with=(PrimaryDirectionMethod.REGIOMONTANUS,),
         ),
         PrimaryDirectionMethod.TOPOCENTRIC: PrimaryDirectionGeometryTruth(
             method=PrimaryDirectionMethod.TOPOCENTRIC,
@@ -148,17 +178,29 @@ def _mundane_arc(sig: _SpeculumLike, prom: _SpeculumLike) -> float:
 
 def _placidian_mundane_position(significator: _SpeculumLike, armc: float) -> float:
     if significator.upper:
-        ratio = abs(significator.ha) / significator.dsa if significator.dsa > 1e-9 else 0.0
+        if significator.dsa <= 1e-9:
+            raise ValueError("Placidian mundane position requires a non-zero diurnal semi-arc")
+        ratio = abs(significator.ha) / significator.dsa
         if significator.is_eastern:
             return (armc + 90.0 * ratio) % 360.0
         return (armc - 90.0 * ratio) % 360.0
 
-    ic_ra = (armc + 180.0) % 360.0
+    if significator.nsa <= 1e-9:
+        raise ValueError("Placidian mundane position requires a non-zero nocturnal semi-arc")
     lower_md = abs(abs(significator.ha) - significator.dsa)
-    ratio = lower_md / significator.nsa if significator.nsa > 1e-9 else 0.0
+    ratio = lower_md / significator.nsa
+    if ratio > 1.0 + _DOMAIN_TOLERANCE:
+        raise ValueError("Placidian mundane position lies outside its nocturnal quadrant")
+
+    # Mundane position is one continuous four-quadrant coordinate.  The lower
+    # eastern quadrant begins at the eastern horizon (ARMC + 90) and advances
+    # to the IC (ARMC + 180); the lower western quadrant begins at the western
+    # horizon (ARMC - 90) and advances in the opposite sense to the same IC.
+    # Starting the interpolation at the IC reverses both quadrants and creates
+    # a 90-degree jump at each horizon.
     if significator.is_eastern:
-        return (ic_ra - 90.0 * ratio) % 360.0
-    return (ic_ra + 90.0 * ratio) % 360.0
+        return (armc + 90.0 * (1.0 + ratio)) % 360.0
+    return (armc - 90.0 * (1.0 + ratio)) % 360.0
 
 
 def _placidian_classic_semi_arc_arc(
@@ -173,8 +215,10 @@ def _placidian_classic_semi_arc_arc(
     phi = geo_lat * DEG2RAD
     dec = prom.dec * DEG2RAD
     offset = (oa_asc - mp_sig) * DEG2RAD
-    term = math.tan(dec) * math.tan(phi) * math.cos(offset)
-    term = max(-1.0, min(1.0, term))
+    term = _checked_unit_argument(
+        math.tan(dec) * math.tan(phi) * math.cos(offset),
+        object_name="Placidian classic semi-arc endpoint",
+    )
     ra_end = (math.degrees(math.asin(term)) + mp_sig) % 360.0
     return (prom.ra - ra_end) % 360.0
 
@@ -205,7 +249,7 @@ def _ptolemaic_proportional_semi_arc_arc(
     sig_sa = _semi_arc(sig)
     prom_sa = _semi_arc(prom)
     if sig_sa <= 1e-9 or prom_sa <= 1e-9:
-        return 0.0
+        raise ValueError("Ptolemaic proportional semi-arc requires non-zero semi-arcs")
     proportional_distance = _meridian_distance(sig) / sig_sa
     projected_position = prom_sa * proportional_distance
     prom_md = _meridian_distance(prom)
@@ -222,22 +266,22 @@ def _ptolemaic_proportional_semi_arc_arc(
 def _ptolemaic_ascensional_difference(entry: _SpeculumLike, *, geo_lat: float) -> float:
     phi = geo_lat * DEG2RAD
     dec = entry.dec * DEG2RAD
-    term = max(-1.0, min(1.0, math.tan(dec) * math.tan(phi)))
+    term = _checked_unit_argument(
+        math.tan(dec) * math.tan(phi),
+        object_name="Ptolemaic ascensional difference",
+    )
     return math.degrees(math.asin(term))
 
 
 def _ptolemaic_oblique_ascension(entry: _SpeculumLike, *, geo_lat: float) -> float:
     ad = _ptolemaic_ascensional_difference(entry, geo_lat=geo_lat)
-    if geo_lat >= 0.0:
-        return (entry.ra - ad) % 360.0
-    return (entry.ra + ad) % 360.0
+    # AD already carries the sign of geographic latitude through tan(phi).
+    return (entry.ra - ad) % 360.0
 
 
 def _ptolemaic_oblique_descension(entry: _SpeculumLike, *, geo_lat: float) -> float:
     ad = _ptolemaic_ascensional_difference(entry, geo_lat=geo_lat)
-    if geo_lat >= 0.0:
-        return (entry.ra + ad) % 360.0
-    return (entry.ra - ad) % 360.0
+    return (entry.ra + ad) % 360.0
 
 
 def _ptolemaic_angular_arc(
@@ -260,28 +304,64 @@ def _ptolemaic_angular_arc(
     return None
 
 
-def _shared_campanus_regio_zenith_distance(entry: _SpeculumLike, *, geo_lat: float) -> float:
-    md = math.radians(_meridian_distance(entry))
+def _shared_campanus_regio_sin_zenith_distance(
+    entry: _SpeculumLike,
+    *,
+    geo_lat: float,
+) -> float:
+    """Sine of the angle between the meridian and the body's house circle.
+
+    In the admitted Campanus-Regiomontanus conjunction geometry, the house
+    circle is the great-circle plane through the body and the north-south
+    horizon axis.  In meridian-centred equatorial coordinates, the angle
+    between that plane and the meridian has components
+
+        transverse = cos(dec) sin(HA)
+        meridional = cos(phi) cos(dec) cos(HA) + sin(phi) sin(dec).
+
+    Their ``hypot`` ratio is the branch-independent ``sin(ZD)`` required by
+    ``sin(pole) = sin(phi) sin(ZD)``.  This vector/plane invariant remains
+    continuous through MD=90, unlike a chain of principal ``atan(tan(...))``
+    reductions.
+    """
+    if not math.isfinite(geo_lat) or not -90.0 < geo_lat < 90.0:
+        raise ValueError("Campanus-Regiomontanus geometry requires geographic latitude in (-90, 90)")
+    if not math.isfinite(entry.dec) or not math.isfinite(entry.ha):
+        raise ValueError("Campanus-Regiomontanus geometry requires finite equatorial coordinates")
+
     phi = geo_lat * DEG2RAD
     dec = entry.dec * DEG2RAD
-    a = math.atan(math.cos(phi) * math.tan(md))
-    b = math.atan(math.tan(phi) * math.cos(md))
-    c = b + dec
-    f = math.atan(math.sin(phi) * math.sin(md) * math.tan(c))
-    return math.degrees(a + f)
+    ha = entry.ha * DEG2RAD
+    transverse = math.cos(dec) * math.sin(ha)
+    meridional = (
+        math.cos(phi) * math.cos(dec) * math.cos(ha)
+        + math.sin(phi) * math.sin(dec)
+    )
+    plane_norm = math.hypot(transverse, meridional)
+    if plane_norm <= 1e-15:
+        raise ValueError("Campanus-Regiomontanus house circle is singular at the horizon axis")
+    return abs(transverse) / plane_norm
 
 
 def _shared_campanus_regio_pole(entry: _SpeculumLike, *, geo_lat: float) -> float:
     phi = geo_lat * DEG2RAD
-    zd = math.radians(_shared_campanus_regio_zenith_distance(entry, geo_lat=geo_lat))
-    pole = math.asin(max(-1.0, min(1.0, math.sin(phi) * math.sin(zd))))
+    sin_zd = _shared_campanus_regio_sin_zenith_distance(entry, geo_lat=geo_lat)
+    pole_argument = _checked_unit_argument(
+        math.sin(phi) * sin_zd,
+        object_name="Campanus-Regiomontanus pole",
+    )
+    pole = math.asin(pole_argument)
     return math.degrees(pole)
 
 
 def _under_pole_w(entry: _SpeculumLike, pole_deg: float, *, eastern: bool) -> float:
     dec = entry.dec * DEG2RAD
     pole = pole_deg * DEG2RAD
-    offset = math.asin(max(-1.0, min(1.0, math.tan(dec) * math.tan(pole))))
+    offset_argument = _checked_unit_argument(
+        math.tan(dec) * math.tan(pole),
+        object_name="Oblique ascension under pole",
+    )
+    offset = math.asin(offset_argument)
     if eastern:
         return (entry.ra - math.degrees(offset)) % 360.0
     return (entry.ra + math.degrees(offset)) % 360.0
@@ -315,7 +395,7 @@ def _campanus_under_pole_arc(
 def _topocentric_pole(entry: _SpeculumLike, *, geo_lat: float) -> float:
     sa = _semi_arc(entry)
     if sa <= 1e-9:
-        return 0.0
+        raise ValueError("Topocentric pole requires a non-zero semi-arc")
     md_ratio = _meridian_distance(entry) / sa
     phi = geo_lat * DEG2RAD
     return math.degrees(math.atan(md_ratio * math.tan(phi)))
@@ -435,6 +515,33 @@ def compute_primary_direction_arcs(
     under-the-pole laws, whose arc is taken in a terminus-specific circle of
     position) the two constructions differ, and role exchange is the correct one.
     """
+    if not isinstance(method, PrimaryDirectionMethod):
+        raise ValueError("Primary-direction geometry requires a typed method")
+    if not isinstance(space, PrimaryDirectionSpace):
+        raise ValueError("Primary-direction geometry requires a typed space")
+    if not isinstance(latitude_doctrine, PrimaryDirectionLatitudeDoctrine):
+        raise ValueError("Primary-direction geometry requires a typed latitude doctrine")
+    method_classification = classify_primary_direction_method(
+        primary_direction_method_truth(method)
+    )
+    if space is PrimaryDirectionSpace.IN_ZODIACO and not method_classification.zodiacal:
+        raise ValueError(
+            f"Primary-direction method {method.value!r} does not admit in_zodiaco geometry"
+        )
+    for name, value in (
+        ("geographic latitude", geo_lat),
+        ("ARMC", armc),
+        ("oblique ascension of the ascendant", oa_asc),
+    ):
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, Real)
+            or not math.isfinite(float(value))
+        ):
+            raise ValueError(f"Primary-direction geometry requires finite real {name}")
+    if not -90.0 < float(geo_lat) < 90.0:
+        raise ValueError("Primary-direction geometry requires geographic latitude in (-90, 90)")
+
     direct = _primary_direction_arc(
         method,
         sig,

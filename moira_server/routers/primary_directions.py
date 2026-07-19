@@ -1,15 +1,4 @@
-"""P8-14 Primary Directions routes.
-
-Phase 1 (complete):
-    POST /v1/primary-directions/speculum
-    POST /v1/primary-directions/arcs
-    POST /v1/primary-directions/profile
-    POST /v1/primary-directions/network
-
-Phase 2 additions:
-    - `include_relations: bool` on search requests → richer relation profiles
-    - `submitted_arcs` on search requests → re-evaluation of pre-computed arcs (bypasses search)
-"""
+"""FastAPI routes for the eight admitted primary-directions surfaces."""
 
 from __future__ import annotations
 
@@ -21,6 +10,7 @@ from ..dependencies import get_engine
 from ..models.primary_directions import (
     PrimaryDirectionRelationProfileResponse,
     PrimaryDirectionsArcsReductionResponse,
+    PrimaryDirectionsArcsResponse,
     PrimaryDirectionsBaseRequest,
     PrimaryDirectionsNetworkReductionResponse,
     PrimaryDirectionsNetworkResponse,
@@ -29,9 +19,9 @@ from ..models.primary_directions import (
     PrimaryDirectionsRelationsRequest,
     PrimaryDirectionsSearchRequest,
     PrimaryDirectionsSpeculumResponse,
-    PrimaryDirectionsArcsResponse,
 )
 from ..serializers.primary_directions import (
+    _serialize_relation_profile,
     serialize_arcs,
     serialize_arcs_with_reduction,
     serialize_network,
@@ -49,44 +39,11 @@ from ..services.primary_directions import (
     compute_profile_with_reduction_service,
     compute_relations_service,
     compute_speculum_service,
+    resolve_primary_directions_policy,
 )
 
 
 router = APIRouter(prefix="/v1", tags=["primary-directions"])
-
-
-def _get_chosen_key(request: PrimaryDirectionsSearchRequest) -> str | None:
-    """Resolve the effective time key from policy or preset.
-
-    Explicit client key always wins.
-    When only a preset is supplied, we return a conventional key for that preset
-    so that arcs, relations, and profiles receive consistent years under a
-    well-known symbolic rate. These are transport-layer conventions, not
-    engine doctrine; the engine itself remains the source of truth for the
-    actual conversion.
-    """
-    if not request.policy:
-        return None
-
-    # Explicit key takes precedence (client override)
-    if request.policy.key:
-        return request.policy.key
-
-    # Conventional key derivation for presets we expose (Phase 2 ergonomic polish)
-    preset = (request.policy.preset or "").lower()
-    conventional_keys = {
-        "placidian_mundane": "NAIBOD",
-        "ptolemy_semiarc": "PTOLEMY",
-        "regiomontanus": "NAIBOD",
-        "campanus": "NAIBOD",
-        "meridian": "PTOLEMY",
-        "morinus": "NAIBOD",
-        "topocentric": "NAIBOD",
-    }
-    if preset in conventional_keys:
-        return conventional_keys[preset]
-
-    return None
 
 
 @router.post("/primary-directions/speculum", response_model=PrimaryDirectionsSpeculumResponse)
@@ -94,8 +51,7 @@ def primary_directions_speculum_route(
     request: PrimaryDirectionsBaseRequest,
     engine: Moira = Depends(get_engine),
 ) -> PrimaryDirectionsSpeculumResponse:
-    entries = compute_speculum_service(engine, request)
-    return serialize_speculum(entries)
+    return serialize_speculum(compute_speculum_service(engine, request))
 
 
 @router.post("/primary-directions/arcs", response_model=PrimaryDirectionsArcsResponse)
@@ -103,19 +59,27 @@ def primary_directions_arcs_route(
     request: PrimaryDirectionsSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> PrimaryDirectionsArcsResponse:
-    arcs = compute_arcs_service(engine, request)
-    chosen_key = _get_chosen_key(request)
-    return serialize_arcs(arcs, chosen_key=chosen_key)
+    resolved = resolve_primary_directions_policy(request)
+    return serialize_arcs(
+        compute_arcs_service(engine, request, resolved=resolved),
+        chosen_key=resolved.chosen_key.name,
+    )
 
 
-@router.post("/primary-directions/arcs/reduction", response_model=PrimaryDirectionsArcsReductionResponse)
+@router.post(
+    "/primary-directions/arcs/reduction",
+    response_model=PrimaryDirectionsArcsReductionResponse,
+)
 def primary_directions_arcs_reduction_route(
     request: PrimaryDirectionsSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> PrimaryDirectionsArcsReductionResponse:
     arcs, reduction = compute_arcs_with_reduction_service(engine, request)
-    chosen_key = _get_chosen_key(request)
-    return serialize_arcs_with_reduction(arcs, reduction, chosen_key=chosen_key)
+    return serialize_arcs_with_reduction(
+        arcs,
+        reduction,
+        chosen_key=reduction.chosen_key,
+    )
 
 
 @router.post("/primary-directions/profile", response_model=PrimaryDirectionsProfileResponse)
@@ -123,42 +87,30 @@ def primary_directions_profile_route(
     request: PrimaryDirectionsSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> PrimaryDirectionsProfileResponse:
-    arcs = compute_arcs_service(engine, request)  # get arcs first to check emptiness
-    if not arcs:
-        # Force a clean 200 empty response for extreme empty-case hardening
-        from ..models.primary_directions import (
-            PrimaryDirectionsAggregateProfileResponse,
-            PrimaryDirectionsProfileResponse,
-        )
-        empty_agg = PrimaryDirectionsAggregateProfileResponse(
-            profiles=[],
-            total_arcs=0,
-            direct_count=0,
-            converse_count=0,
-            nearest_arc=0.0,
-            farthest_arc=0.0,
-        )
-        return PrimaryDirectionsProfileResponse(aggregate=empty_agg)
-
-    profile = compute_profile_service(engine, request)
-    chosen_key = _get_chosen_key(request)
-    include_cond = getattr(request, "include_condition", False)
-    return serialize_profile(profile, chosen_key=chosen_key, include_condition=include_cond)
+    resolved = resolve_primary_directions_policy(request)
+    return serialize_profile(
+        compute_profile_service(engine, request, resolved=resolved),
+        chosen_key=resolved.chosen_key.name,
+        include_condition=request.include_condition,
+        include_relations=request.include_relations,
+    )
 
 
-@router.post("/primary-directions/profile/reduction", response_model=PrimaryDirectionsProfileReductionResponse)
+@router.post(
+    "/primary-directions/profile/reduction",
+    response_model=PrimaryDirectionsProfileReductionResponse,
+)
 def primary_directions_profile_reduction_route(
     request: PrimaryDirectionsSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> PrimaryDirectionsProfileReductionResponse:
     profile, reduction = compute_profile_with_reduction_service(engine, request)
-    chosen_key = _get_chosen_key(request)
-    include_cond = getattr(request, "include_condition", False)
     return serialize_profile_with_reduction(
         profile,
         reduction,
-        chosen_key=chosen_key,
-        include_condition=include_cond,
+        chosen_key=reduction.chosen_key,
+        include_condition=request.include_condition,
+        include_relations=request.include_relations,
     )
 
 
@@ -167,44 +119,45 @@ def primary_directions_network_route(
     request: PrimaryDirectionsSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> PrimaryDirectionsNetworkResponse:
-    arcs = compute_arcs_service(engine, request)
-    if not arcs:
-        from ..models.primary_directions import (
-            PrimaryDirectionsNetworkProfileResponse,
-            PrimaryDirectionsNetworkResponse,
-        )
-        empty_net = PrimaryDirectionsNetworkProfileResponse(
-            nodes=[],
-            edges=[],
-            most_connected=None,
-            isolated=[],
-        )
-        return PrimaryDirectionsNetworkResponse(network=empty_net)
-
-    network = compute_network_service(engine, request)
-    chosen_key = _get_chosen_key(request)
-    return serialize_network(network, chosen_key=chosen_key)
+    resolved = resolve_primary_directions_policy(request)
+    return serialize_network(
+        compute_network_service(engine, request, resolved=resolved),
+        chosen_key=resolved.chosen_key.name,
+    )
 
 
-@router.post("/primary-directions/network/reduction", response_model=PrimaryDirectionsNetworkReductionResponse)
+@router.post(
+    "/primary-directions/network/reduction",
+    response_model=PrimaryDirectionsNetworkReductionResponse,
+)
 def primary_directions_network_reduction_route(
     request: PrimaryDirectionsSearchRequest,
     engine: Moira = Depends(get_engine),
 ) -> PrimaryDirectionsNetworkReductionResponse:
     network, reduction = compute_network_with_reduction_service(engine, request)
-    chosen_key = _get_chosen_key(request)
-    return serialize_network_with_reduction(network, reduction, chosen_key=chosen_key)
+    return serialize_network_with_reduction(
+        network,
+        reduction,
+        chosen_key=reduction.chosen_key,
+    )
 
 
-# Phase 2 dedicated lightweight endpoint for rich relation evaluation on submitted arcs
-@router.post("/primary-directions/relations", response_model=list[PrimaryDirectionRelationProfileResponse])
+@router.post(
+    "/primary-directions/relations",
+    response_model=list[PrimaryDirectionRelationProfileResponse],
+)
 def primary_directions_relations_route(
     request: PrimaryDirectionsRelationsRequest,
     engine: Moira = Depends(get_engine),
 ) -> list[PrimaryDirectionRelationProfileResponse]:
-    from ..models.primary_directions import PrimaryDirectionRelationProfileResponse
-    from ..serializers.primary_directions import _serialize_relation_profile
-
-    rel_profiles = compute_relations_service(engine, request)
-    chosen_key = _get_chosen_key(request) if hasattr(request, "policy") else None
-    return [_serialize_relation_profile(rp, chosen_key=chosen_key) for rp in rel_profiles]
+    if not request.include_relations:
+        raise ValueError("The relations endpoint intrinsically returns relation profiles")
+    if request.include_condition:
+        raise ValueError(
+            "The relations endpoint does not expose a condition response; use the profile route"
+        )
+    resolved = resolve_primary_directions_policy(request)
+    return [
+        _serialize_relation_profile(profile, chosen_key=resolved.chosen_key.name)
+        for profile in compute_relations_service(engine, request, resolved=resolved)
+    ]

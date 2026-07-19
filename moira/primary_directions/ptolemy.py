@@ -14,6 +14,9 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from enum import StrEnum
+from numbers import Real
+
+from .targets import PrimaryDirectionTargetClass, primary_direction_target_truth
 
 __all__ = [
     "PtolemaicParallelRelation",
@@ -35,8 +38,19 @@ class PtolemaicParallelTarget:
     relation: PtolemaicParallelRelation = PtolemaicParallelRelation.PARALLEL
 
     def __post_init__(self) -> None:
-        if not self.source_name:
+        if not isinstance(self.source_name, str) or not self.source_name.strip():
             raise ValueError("PtolemaicParallelTarget requires a source_name")
+        if not isinstance(self.relation, PtolemaicParallelRelation):
+            raise ValueError("PtolemaicParallelTarget requires a PtolemaicParallelRelation")
+        truth = primary_direction_target_truth(self.source_name)
+        if truth.target_class not in (
+            PrimaryDirectionTargetClass.PLANET,
+            PrimaryDirectionTargetClass.NODE,
+            PrimaryDirectionTargetClass.ANGLE,
+        ):
+            raise ValueError(
+                "PtolemaicParallelTarget currently requires a planet, node, or angle source"
+            )
 
     @property
     def name(self) -> str:
@@ -64,8 +78,26 @@ def project_ptolemaic_declination_point(
     - solve sin(delta) = sin(eps) * sin(lambda) on the ecliptic
     - choose the ecliptic branch nearest the source longitude
     """
-    if abs(obliquity) <= 1e-9:
-        raise ValueError("Ptolemaic declination projection requires non-zero obliquity")
+    inputs = {
+        "source_longitude": source_longitude,
+        "source_declination": source_declination,
+        "obliquity": obliquity,
+    }
+    if any(
+        not isinstance(value, Real)
+        or isinstance(value, bool)
+        or not math.isfinite(value)
+        for value in inputs.values()
+    ):
+        raise ValueError("Ptolemaic declination projection requires finite real coordinates")
+    if not isinstance(relation, PtolemaicParallelRelation):
+        raise ValueError("Ptolemaic declination projection requires an explicit relation")
+    if not 0.0 <= source_longitude < 360.0:
+        raise ValueError("Ptolemaic source longitude must be normalized to [0, 360)")
+    if not -90.0 <= source_declination <= 90.0:
+        raise ValueError("Ptolemaic source declination must be in [-90, 90]")
+    if not 0.0 < obliquity < 90.0:
+        raise ValueError("Ptolemaic obliquity must be in (0, 90)")
 
     target_declination = (
         source_declination
@@ -79,6 +111,10 @@ def project_ptolemaic_declination_point(
         )
 
     ratio = math.sin(math.radians(target_declination)) / math.sin(math.radians(obliquity))
+    if ratio < -1.0 - 1e-12 or ratio > 1.0 + 1e-12:
+        raise ValueError(
+            "Ptolemaic declination projection has no real ecliptic equivalent"
+        )
     ratio = max(-1.0, min(1.0, ratio))
     principal = math.degrees(math.asin(ratio))
     candidates = (principal % 360.0, (180.0 - principal) % 360.0)

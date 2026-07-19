@@ -145,7 +145,7 @@ def test_primary_directions_arcs_reduction_route_exposes_policy_truth(
     body = resp.json()
     assert "result" in body
     assert "reduction" in body
-    assert body["reduction"]["engine_surface"] == "moira.find_primary_arcs"
+    assert body["reduction"]["engine_surface"] == "moira.primary_directions.find_primary_arcs"
     assert body["reduction"]["result_surface"] == "primary_direction_arc_search"
     assert body["reduction"]["search_mode"] == "engine_search"
     assert body["reduction"]["max_arc"] == pytest.approx(45.0)
@@ -763,7 +763,7 @@ def test_primary_directions_profile_does_not_mask_evaluation_failure(
 
     monkeypatch.setattr(primary_directions_router, "compute_arcs_service", lambda engine, request: [object()])
 
-    def _raise_profile_failure(engine, request):
+    def _raise_profile_failure(engine, request, *, resolved=None):
         raise ValueError("profile evaluation failure witness")
 
     monkeypatch.setattr(primary_directions_router, "compute_profile_service", _raise_profile_failure)
@@ -782,7 +782,7 @@ def test_primary_directions_network_does_not_mask_evaluation_failure(
 
     monkeypatch.setattr(primary_directions_router, "compute_arcs_service", lambda engine, request: [object()])
 
-    def _raise_network_failure(engine, request):
+    def _raise_network_failure(engine, request, *, resolved=None):
         raise ValueError("network evaluation failure witness")
 
     monkeypatch.setattr(primary_directions_router, "compute_network_service", _raise_network_failure)

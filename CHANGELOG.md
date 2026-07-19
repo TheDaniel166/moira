@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Primary-Directions Evaluation Facade**: Added canonical `Moira` delegations
+  for policy-preset construction, single-arc relation evaluation,
+  per-significator condition, chart-wide aggregate profiles, and directed
+  promissor-to-significator networks. Existing `speculum(...)` and
+  `primary_directions(...)` positional calls remain intact and gain only
+  keyword-only obliquity, body, solar-rate, and policy controls.
 - **Provenance-Bearing Harmonic Orb Policy**: Added immutable
   `HarmonicOrbPolicy` and resolved `HarmonicOrbTruth` vessels with the admitted
   Addey inverse-harmonic relation `O_H = O_1 / H`. The configurable H1
@@ -121,6 +127,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   nominal mean-limb path limits and from observed IOTA contact records.
 
 ### Fixed
+- **Primary-Directions Geometry, Identity, And Boundary Integrity**: Made
+  Placidian mundane position continuous through all four quadrants, restored
+  signed Ptolemaic OA/OD behavior, and expressed Regiomontanus, Campanus,
+  Topocentric, and Morinus pole/projection work through explicit spherical
+  geometry. No-real circumpolar, limiting-tangent, and inverse-trigonometric
+  domains now fail closed instead of being broadly clamped or repaired after
+  the fact. Primary-direction vessels now reject coercive, non-finite, and
+  contradictory state; preserve defensive immutable collections; and enforce
+  aggregate and directed-network conservation. Generated arcs carry their
+  actual conjunction, opposition, aspect, parallel, rapt, or reflected
+  `relational_kind`, distinct from perfection-kind compatibility fields.
+  Fixed-star aliases retain caller identity, zodiacal suppression is applied
+  before star-speculum construction, Ptolemy is truthfully classified as both
+  mundane and zodiacal capable, and target recognition no longer admits
+  arbitrary names merely because they end in `Node` or contain `Lilith`.
+  Placidian-classic endpoint geometry now receives the actual horizon
+  coordinate `OA(ASC) = (ARMC + 90 degrees) mod 360`, rather than the right
+  ascension of the ecliptic Ascendant. Method capability is enforced at policy,
+  arc, and geometry boundaries, so `PLACIDUS_MUNDANE` and
+  `PLACIDIAN_CLASSIC_SEMI_ARC` reject `in_zodiaco`. House-cusp-sourced
+  aspectual promissors materialize their named source cusp before projection,
+  and supplied Morinus aspect contexts have normalized, unique, exact source
+  identities.
+  Solar-key conversion now requires an explicit positive natal solar rate and
+  is classified as a static-rate conversion rather than silently falling back
+  to Naibod. `PrimaryArc.solar_rate_explicit` distinguishes that usable natal
+  rate from the numeric compatibility rate retained on older constructed arcs.
+  Fixed-star targets require conjunction admission. Rapt-parallel motion is
+  admitted for the configured rapt relation only, and composing a rapt preset
+  with fixed stars admits only those named stars rather than widening ordinary
+  conjunction targets. Relation vessels enforce space/perfection agreement;
+  relation and significator profiles preserve the exact owning arc and order.
+  Ordered method, perfection, relation, and target transition networks must be
+  realizable as one connected directed Euler path (or a lawfully linearized
+  circuit), not merely satisfy aggregate counts.
 - **Positive-Real Harmonic Identity**: Direct harmonic chart, conjunction,
   pattern-score, and composite calculations now preserve every positive finite
   real H instead of silently coercing `5.5` to `5`. Inputs are normalized to
@@ -385,6 +426,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   retaining Python-owned readiness of the immutable coefficient tables.
 
 ### Changed
+- **Primary-Directions Transport Truth**: Kept all eight existing REST paths
+  while replacing raw-string, duck-typed, and fallback-prone service behavior
+  with canonical typed preset/policy/key resolution and real `PrimaryArc`
+  reconstruction. Conflicting policies and ambiguous generic Ptolemy zodiacal
+  requests fail closed. Omitted submitted arcs mean engine search; an explicit
+  empty list means a lawful empty submitted evaluation; payloads are bounded
+  to 4,096 arcs. Natal coordinates now construct the natal chart, observer
+  coordinates own directional houses and geographic latitude, and zero
+  longitude is preserved. Compact and reduction responses reuse one resolved
+  calculation, `include_relations` gates serialization without mutating frozen
+  profiles, and reduction provenance records requested/canonical policy, key,
+  search mode, observer, and effective-house truth. Arc responses expose
+  `solar_rate_explicit`; an empty profile retains `0.0` only as the transport
+  compatibility sentinel for both arc extrema, while its zero counts and empty
+  profile list remain the governing no-result truth.
 - **Immutable Relationship Results**: Synastry truth, classification,
   relation, condition, network, overlay, composite, and Davison result vessels
   are frozen after validation. Composite planet/node maps, overlay placements,
@@ -419,6 +475,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   validation, and exclude TCP, TLS, reverse-proxy, and public-network latency.
 
 ### Compatibility
+- Existing `Moira.speculum(...)` and `Moira.primary_directions(...)` positional
+  parameters, all eight `/v1/primary-directions/*` paths, and established REST
+  response fields are retained. New facade methods and truth fields are
+  additive. Recognized historical preset names remain explicit aliases;
+  unsupported, conflicting, ambiguous, or scientifically invalid inputs that
+  were previously coerced may now raise engine errors or return REST validation
+  responses.
 - Existing `/v1/harmonics/*` paths and the age-harmonic route remain available.
   Single-H request schemas are widened compatibly from integer to real
   `harmonic`; range, sweep, and transit-forecast harmonic lists remain strict
@@ -473,6 +536,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as "not ready". This corrects the previous HTTP 200/`ready=false` mismatch.
 
 ### Validation
+- Added complete primary-directions engine, facade, and REST coverage for
+  quadrant continuity, spherical-plane and inverse-domain behavior, immutable
+  vessel and enum contracts, all canonical presets, target/relation/perfection
+  identity, OA-Ascendant wiring, method/space capability, relation-specific
+  rapt motion and target containment, explicit solar-rate provenance,
+  house-cusp-derived aspect materialization, Morinus context identity,
+  relation/profile arc ownership, ordered-network path realizability,
+  submitted-versus-search mode, empty transport results, zero-longitude
+  ownership, policy conflict rejection, reduction provenance, and preservation
+  of all eight route paths. Historical
+  evidence is classified honestly: Morin's rounded Hemminga Mars-to-Jupiter
+  example is checked at `0.06 degree` with a current residual of about
+  `0.11 arcminute`; bundled fixed-star and antiscia fixtures remain regression
+  and invariant evidence, and rounded Ptolemaic examples remain scoped
+  cross-source corroboration rather than whole-family authority proof.
 - Added engine, facade, REST, and OpenAPI regression coverage for fractional-H
   non-truncation, zero-Aries canonical-branch truth, strict numeric rejection,
   integer range doctrine, Addey projected/source orb equivalence, explicit and

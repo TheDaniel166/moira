@@ -177,7 +177,9 @@ their distinctness does not emerge uniformly on every primary-direction branch.
 
 #### Moira Policy
 
-- treat the current Campanus branch as a verified narrow admission
+- treat the current Campanus branch as a shared narrow runtime admission
+- do not present the shared law as external-authority validation of the wider
+  Campanian family
 - do not force artificial distinctness where sources do not require it
 - only widen Campanian distinctness when a branch-specific governing law is
   explicit
@@ -226,16 +228,15 @@ that does not automatically imply a distinct conjunction-style directional law.
 #### What Is Unsettled
 
 - whether conjunction-style Morinus has a distinct governing law beyond the
-  equatorial branch
-- whether later sources merely reuse the equatorial relation for conjunctions
-  while reserving Morinian distinctness for aspects
+  circle-of-position treatment it currently shares with Regiomontanus
+- where later Morinian aspect distinctness requires additional runtime branches
 
 #### Moira Policy
 
 - admit explicit Morinian aspect geometry where its formulas are recoverable
 - do not invent a separate conjunction law without a source-safe derivation
 - treat the current conjunction branch as intentionally shared with the
-  equatorial family unless stronger evidence emerges
+  Regiomontanus under-the-pole law unless stronger evidence emerges
 
 ### 8b. Parallels and Rapt Parallels as Primary-Direction Targets
 

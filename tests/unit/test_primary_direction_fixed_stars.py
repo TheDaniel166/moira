@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import moira.primary_directions as primary_directions_module
 from moira.primary_directions.fixed_stars import (
     PrimaryDirectionFixedStarTarget,
     resolve_primary_direction_fixed_star_point,
@@ -50,6 +51,24 @@ def test_resolve_primary_direction_fixed_star_point_uses_sovereign_star_engine()
     assert name == "Sirius"
     assert longitude == pytest.approx(star.longitude)
     assert latitude == pytest.approx(star.latitude)
+
+
+def test_zodiacal_suppressed_fixed_star_is_projected_at_zero_latitude_before_speculum() -> None:
+    target = PublicPrimaryDirectionFixedStarTarget("Algol")
+    star = star_at("Algol", 2451545.0)
+
+    entries = primary_directions_module._fixed_star_promissor_entries(
+        (target,),
+        jd_tt=2451545.0,
+        armc=41.0,
+        obliquity=23.4392911,
+        geo_lat=51.5,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED,
+    )
+
+    projected = entries[target.name]
+    assert projected.lon == pytest.approx(star.longitude)
+    assert projected.lat == 0.0
 
 
 @dataclass

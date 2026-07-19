@@ -95,6 +95,9 @@ def test_primary_direction_perfections_aggregate_and_network_are_deterministic()
     assert aggregate.total_profiles == 4
     assert aggregate.positional_count == 4
     assert aggregate.world_frame_count == 2
+    assert aggregate.mundane_position_count == 2
+    assert aggregate.zodiacal_longitude_count == 1
+    assert aggregate.zodiacal_projected_count == 1
     assert len(network.nodes) == 3
     assert {node.kind for node in network.nodes} == {
         PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
@@ -113,6 +116,120 @@ def test_primary_direction_perfections_reject_invalid_requests() -> None:
         evaluate_primary_direction_perfections_aggregate([])
     with pytest.raises(ValueError):
         evaluate_primary_direction_perfections_network([])
+    with pytest.raises(ValueError):
+        primary_direction_perfection_truth("mundane_position_perfection")  # type: ignore[arg-type]
+
+
+def test_primary_direction_perfection_collections_are_defensive_and_strict() -> None:
+    truth = primary_direction_perfection_truth()
+    relation = relate_primary_direction_perfection(truth)
+    admitted = [relation]
+    scored = [relation]
+    profile = perfection_module.PrimaryDirectionPerfectionRelationProfile(
+        truth=truth,
+        detected_relation=relation,
+        admitted_relations=admitted,  # type: ignore[arg-type]
+        scored_relations=scored,  # type: ignore[arg-type]
+    )
+    admitted.clear()
+    scored.clear()
+    assert profile.admitted_relations == (relation,)
+    assert profile.scored_relations == (relation,)
+
+    with pytest.raises(ValueError):
+        perfection_module.PrimaryDirectionPerfectionTruth(
+            kind="mundane_position_perfection",  # type: ignore[arg-type]
+            mode=PrimaryDirectionPerfectionMode.POSITIONAL,
+            uses_significator_mundane_fraction=True,
+            world_frame_based=True,
+        )
+    with pytest.raises(ValueError):
+        perfection_module.PrimaryDirectionPerfectionClassification(
+            truth=truth,
+            positional=1,  # type: ignore[arg-type]
+            aspectual=False,
+        )
+
+
+def test_primary_direction_perfection_aggregate_and_network_reject_false_structure() -> None:
+    truths = (
+        primary_direction_perfection_truth(),
+        primary_direction_perfection_truth(
+            PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+        ),
+    )
+    aggregate = evaluate_primary_direction_perfections_aggregate(truths)
+    profiles = list(aggregate.profiles)
+    defensive_aggregate = perfection_module.PrimaryDirectionPerfectionsAggregateProfile(
+        profiles=profiles,  # type: ignore[arg-type]
+        total_profiles=2,
+        positional_count=2,
+        world_frame_count=1,
+    )
+    profiles.clear()
+    assert defensive_aggregate.total_profiles == 2
+    with pytest.raises(ValueError):
+        perfection_module.PrimaryDirectionPerfectionsAggregateProfile(
+            profiles=aggregate.profiles,
+            total_profiles=2,
+            positional_count=2,
+            world_frame_count=0,
+        )
+
+    network = evaluate_primary_direction_perfections_network(truths)
+    nodes = list(network.nodes)
+    edges = list(network.edges)
+    isolated = list(network.isolated_kinds)
+    defensive_network = perfection_module.PrimaryDirectionPerfectionsNetworkProfile(
+        nodes=nodes,  # type: ignore[arg-type]
+        edges=edges,  # type: ignore[arg-type]
+        dominant_kind=network.dominant_kind,
+        isolated_kinds=isolated,  # type: ignore[arg-type]
+    )
+    nodes.clear()
+    edges.clear()
+    isolated.clear()
+    assert defensive_network == network
+
+    dangling = perfection_module.PrimaryDirectionPerfectionsNetworkEdge(
+        from_kind=PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
+        to_kind=PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION,
+        count=1,
+    )
+    with pytest.raises(ValueError):
+        perfection_module.PrimaryDirectionPerfectionsNetworkProfile(
+            nodes=network.nodes,
+            edges=(dangling,),
+            dominant_kind=network.dominant_kind,
+            isolated_kinds=(),
+        )
+    with pytest.raises(ValueError):
+        perfection_module.PrimaryDirectionPerfectionsNetworkNode(
+            kind=PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
+            count=True,  # type: ignore[arg-type]
+        )
+
+    with pytest.raises(ValueError, match="transition degrees"):
+        perfection_module.PrimaryDirectionPerfectionsNetworkProfile(
+            nodes=tuple(
+                perfection_module.PrimaryDirectionPerfectionsNetworkNode(kind=item, count=1)
+                for item in PrimaryDirectionPerfectionKind
+            ),
+            edges=(
+                perfection_module.PrimaryDirectionPerfectionsNetworkEdge(
+                    PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
+                    PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION,
+                    1,
+                ),
+                perfection_module.PrimaryDirectionPerfectionsNetworkEdge(
+                    PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
+                    PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION,
+                    1,
+                ),
+            ),
+            dominant_kind=PrimaryDirectionPerfectionKind.MUNDANE_POSITION_PERFECTION,
+            isolated_kinds=(),
+        )
 
 
 def test_primary_direction_perfections_module_exports_curated_surface() -> None:

@@ -1,8 +1,45 @@
 # P8-14 Primary Directions – First Pass Design
 
 **Date:** 2026-05  
-**Status:** Phase 1 design locked and implemented; hardened test suite passing. Phase 2 planning section added below.  
+**Status:** Historical first-pass design; superseded by the current runtime
+contract below and by `P8-14_PRIMARY_DIRECTIONS_TRANSPORT_DESIGN.md`.
 **Scope:** First transport surface over the admitted primary directions engine (speculum + arc search + evaluation), with defined roadmap for subsequent increments.
+
+## Current Runtime Contract (2026-07-19)
+
+The first-pass design below is retained as decision history. It is not runtime
+authority. The admitted transport now has eight stable paths:
+
+```text
+POST /v1/primary-directions/speculum
+POST /v1/primary-directions/arcs
+POST /v1/primary-directions/arcs/reduction
+POST /v1/primary-directions/relations
+POST /v1/primary-directions/profile
+POST /v1/primary-directions/profile/reduction
+POST /v1/primary-directions/network
+POST /v1/primary-directions/network/reduction
+```
+
+The current contract includes named canonical presets, narrowly preserved
+legacy preset aliases, explicit key resolution, submitted-arc evaluation,
+optional relation and condition depth, and reduction provenance. Submitted
+arcs are reconstructed as real immutable engine `PrimaryArc` vessels and are
+bounded to 4,096 entries. `None` means search; an explicitly supplied empty
+list means evaluate no arcs and returns a valid empty transport result.
+
+Natal chart construction uses natal request coordinates. Directional houses
+and geographic primary-direction geometry use observer coordinates. A zero
+longitude is a real coordinate and is never replaced by truthiness fallback.
+Unsupported policy values, conflicting preset/method/space requests, and an
+unqualified Ptolemy zodiacal request fail closed. The server does not silently
+fall back to a different calculation.
+
+The facade preserves its established positional calls and adds only
+keyword-only doctrine inputs and additive evaluation methods. No existing
+route path or response field was removed by this hardening pass.
+
+## Historical First-Pass Design
 
 ## Governing Constraints
 

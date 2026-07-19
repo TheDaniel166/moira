@@ -33,19 +33,26 @@ It does not apply to deferred frontiers such as:
 
 ### Speculum Entry
 
+- every scalar is a finite real value; booleans and coercive strings are not
+  coordinates
 - normalized angular quantities remain normalized
 - declination remains within `[-90, 90]`
 - branch-specific directional quantities must agree with the active geometry law
 - semi-arc structures remain internally coherent where that doctrine applies
+- no-real rise/set geometry and zero-semi-arc limiting tangencies fail closed
 
 ### Primary Arc
 
 - significator and promissor names are non-empty
 - self-directions are not admitted
 - arc values are positive
-- solar rate is positive
+- the stored solar rate is positive, and `solar_rate_explicit` records whether
+  it is a generated/explicit natal rate or the compatibility value
 - motion and direction labels agree
-- method and space must be admitted
+- method and space must be admitted and capability-compatible;
+  `PLACIDUS_MUNDANE` and `PLACIDIAN_CLASSIC_SEMI_ARC` reject `In Zodiaco`
+- positional `relational_kind` is typed and preserves the actual generated
+  conjunction, opposition, aspect, parallel, reflected, or rapt relation
 
 
 ## Doctrine Invariants
@@ -56,6 +63,11 @@ It does not apply to deferred frontiers such as:
 - spaces are limited to `In Mundo` and `In Zodiaco`
 - motion doctrine is limited to `Direct` and `Traditional converse`
 - `Neo-converse` remains outside the admitted surface
+- rapt-parallel motion is admitted against the rapt relation and its configured
+  target only; it does not widen ordinary direct/converse motion admission
+- Placidian-classic endpoint geometry receives
+  `OA(ASC) = (ARMC + 90 degrees) mod 360`, not ecliptic-Ascendant right
+  ascension
 
 ### Key Orthogonality
 
@@ -64,13 +76,24 @@ It does not apply to deferred frontiers such as:
 
 ### Key Doctrine
 
-- an unrecognized key token is coerced to Naibod (admitted leniency) and the coercion is inspectable via `PrimaryDirectionKeyTruth.fallback_applied` / `.requested_key`
+- the low-level historical string adapter may coerce an unrecognized key token
+  to Naibod, and that coercion is inspectable through
+  `PrimaryDirectionKeyTruth.fallback_applied` and `.requested_key`
+- typed policy, facade, and REST surfaces reject unsupported key values
+- `SOLAR` requires one explicit positive finite natal solar rate and is
+  classified as a static rate conversion, not a dynamic integration
+- the compatibility numeric rate on an implicitly constructed `PrimaryArc`
+  remains inspectable but is not usable as natal solar-rate provenance
 
 ### Relation Gating
 
 - derived promissor families may require explicit admitted relation kinds
 - relation doctrine may not be widened ambiently by loose policy fragments
 - branch presets must declare the relation surface they admit
+- positional `relational_kind` and perfection-kind `relation_kind` are distinct
+  truths; the compatibility `perfection_kind` alias must agree with the latter
+- the perfection kind must agree with the owning arc's mundane or zodiacal
+  space
 
 ### Target Gating
 
@@ -78,6 +101,13 @@ It does not apply to deferred frontiers such as:
 - derived target families are admitted only through method-specific law
 - no derived target family may appear globally merely because one branch can
   compute it
+- fixed-star targets require conjunction admission
+- combining fixed-star and rapt targets admits only the configured named
+  targets; it does not widen all ordinary conjunction promissors
+- a house-cusp-sourced aspectual point materializes its named source cusp before
+  projection
+- supplied Morinus aspect contexts have normalized non-empty source identity,
+  are unique by exact `source_name`, and reject impossible path context
 
 
 ## Preset Invariants
@@ -92,9 +122,17 @@ It does not apply to deferred frontiers such as:
 
 - lower-layer vessel ownership remains consistent through relation, condition,
   aggregate, and network layers
+- detected, admitted, and scored relations belong to their profile's owning
+  arc; significator relation profiles preserve the arc sequence one-for-one
 - aggregate counts equal what the underlying profiles imply
 - network edges do not dangle
 - network node names remain unique
+- network incoming/outgoing and direct/converse counts equal their underlying
+  directed arcs
+- ordered method, perfection, relation, and target transition networks form one
+  weakly connected, degree-valid directed Euler path after adjacent
+  self-transition suppression; a circuit must have sufficient node occurrences
+  to be linearized
 - deterministic ordering is preserved across:
   - raw arcs
   - significator profiles
@@ -107,8 +145,15 @@ It does not apply to deferred frontiers such as:
 - invalid doctrine raises `ValueError`
 - invalid vessel state raises `ValueError`
 - invalid preset-target or preset-relation combinations raise `ValueError`
+- method/space capability mismatches raise `ValueError`
 - empty aggregate, network, or profile requests raise `ValueError`
 - no silent fallback occurs for unsupported doctrine
+- inverse-trigonometric arguments outside a round-off-sized real-domain margin
+  raise `ValueError`; they are not broadly clamped into a fabricated solution
+
+At the REST boundary, a valid search with no matches is a successful empty
+transport result. It must not be represented by constructing an invalid empty
+engine aggregate or network vessel.
 
 
 ## Admitted Narrow-Family Invariants
@@ -123,6 +168,8 @@ It does not apply to deferred frontiers such as:
 
 - fixed stars enter only as catalog-backed star identities
 - the admitted branch remains conjunction-only
+- configured fixed-star targets require conjunction admission in the active
+  relation policy
 - the admitted branch remains limited to angles and planets
 
 ### Antiscia

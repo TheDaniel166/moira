@@ -48,5 +48,7 @@
 
 ## Epistemic Status
 
-- `verified narrow admission`
+- `runtime-admitted narrow branch`
+- geometric invariants and regression tests cover the implemented pole law
+- an independent primary-authority worked-example corpus remains pending
 

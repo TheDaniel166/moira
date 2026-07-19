@@ -1,17 +1,51 @@
 # P8-14 Primary Directions – Complete Transport Design & Roadmap
 
-**Document Status:** Authoritative design for P8-14 implementation  
-**Version:** 1.0  
-**Date:** 2026-05  
+**Document Status:** Implemented transport contract; the phased roadmap below
+is retained as historical design context
+**Version:** 2.0
+**Date:** 2026-07-19
 **Owner:** Design agreed with repository author
 
 ## 1. Purpose and Scope
 
 This document defines the complete, phased plan for exposing Moira’s primary directions engine through the REST server (`moira_server`).
 
-It replaces earlier first-pass notes and serves as the single source of truth for all future work on P8-14.
+It replaces the earlier first-pass note as architecture history. Runtime code,
+OpenAPI, and the current REST reference govern exact request and response
+shapes.
 
 **Goal**: Deliver a production-grade, maintainable, and evolvable transport surface over one of the richest and most complex subsystems in the engine, while strictly following Moira Server architectural principles.
+
+## 1.1 Current Admitted Runtime
+
+The transport has eight stable paths: `speculum`, `arcs`, `arcs/reduction`,
+`relations`, `profile`, `profile/reduction`, `network`, and
+`network/reduction`, all under `/v1/primary-directions`.
+
+Current runtime rules:
+
+- canonical enum-backed presets own method/space doctrine; recognized legacy
+  names are adapters whose requested and canonical identities remain visible
+- conflicting preset/method/space requests and ambiguous generic Ptolemy
+  zodiacal requests are rejected
+- key selection preserves requested, canonical, and source truth; the solar
+  key requires an explicit positive solar rate
+- submitted payloads become real immutable `PrimaryArc` vessels, are bounded
+  to 4,096 entries, and never use hidden duck-typed substitutes
+- omitted submitted arcs trigger engine search; an explicit empty list requests
+  an empty evaluation result
+- natal coordinates construct the chart; observer coordinates construct houses
+  and own directional geographic latitude, including a lawful `0.0` longitude
+- compact and reduction routes share one resolved computation; reduction
+  metadata reports policy, key, search mode, observer context, and house-system
+  truth rather than reconstructing a second calculation
+- legitimate no-match results serialize as valid empty response vessels without
+  violating the engine's non-empty aggregate/network invariants
+- `include_relations` controls serialization depth and does not mutate frozen
+  engine profiles
+
+No route path or established response field was removed in reaching this
+contract.
 
 ## 2. Core Design Principles (Non-Negotiable)
 
@@ -37,7 +71,12 @@ These principles govern every decision in this document and all future increment
 
 ## 3. Current State (Phase 1 – Complete & Hardened; Phase 2 Relation Depth started)
 
-**Phase 1 Status**: Fully implemented and extremely hardened (18/18 tests passing).
+The phase counts and future-work statements below are retained as the May 2026
+roadmap record. Statements that describe relations, submitted arcs, reduction
+siblings, condition surfaces, or named presets as future work are superseded
+by Section 1.1.
+
+**Phase 1 Status**: Fully implemented and extremely hardened (18/18 tests passing at that historical checkpoint).
 
 **Phase 2 Progress** (as of latest work):
 - **Relation Depth Expansion** (Priority #1) is now partially live.

@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Iterable
 
+from ._ordered_network import validate_ordered_transition_counts
+
 __all__ = [
     "PrimaryDirectionMethod",
     "PrimaryDirectionMethodKind",
@@ -119,6 +121,20 @@ class PrimaryDirectionMethodTruth:
     under_pole_based: bool
 
     def __post_init__(self) -> None:
+        if not isinstance(self.method, PrimaryDirectionMethod):
+            raise ValueError(f"Unsupported primary direction method on truth: {self.method}")
+        if not isinstance(self.kind, PrimaryDirectionMethodKind):
+            raise ValueError(f"Unsupported primary direction method kind: {self.kind}")
+        if any(
+            type(flag) is not bool
+            for flag in (
+                self.uses_semi_arcs,
+                self.uses_world_frame_geometry,
+                self.latitude_sensitive,
+                self.under_pole_based,
+            )
+        ):
+            raise ValueError("PrimaryDirectionMethodTruth invariant failed: trait flags must be bool")
         expected = {
             PrimaryDirectionMethod.PLACIDUS_MUNDANE: (
                 PrimaryDirectionMethodKind.PLACIDUS_MUNDANE,
@@ -201,9 +217,18 @@ class PrimaryDirectionMethodClassification:
     under_pole_based: bool
 
     def __post_init__(self) -> None:
+        if not isinstance(self.truth, PrimaryDirectionMethodTruth):
+            raise ValueError("PrimaryDirectionMethodClassification invariant failed: invalid truth")
+        if any(
+            type(flag) is not bool
+            for flag in (self.mundane, self.zodiacal, self.semi_arc_based, self.under_pole_based)
+        ):
+            raise ValueError(
+                "PrimaryDirectionMethodClassification invariant failed: flags must be bool"
+            )
         expected = {
             PrimaryDirectionMethod.PLACIDUS_MUNDANE: (True, False, True, False),
-            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: (True, False, True, False),
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: (True, True, True, False),
             PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: (True, False, True, False),
             PrimaryDirectionMethod.MERIDIAN: (True, True, False, False),
             PrimaryDirectionMethod.MORINUS: (True, True, False, True),
@@ -225,6 +250,12 @@ class PrimaryDirectionMethodRelation:
     relation_kind: PrimaryDirectionMethodRelationKind
 
     def __post_init__(self) -> None:
+        if not isinstance(self.truth, PrimaryDirectionMethodTruth):
+            raise ValueError("PrimaryDirectionMethodRelation invariant failed: invalid truth")
+        if not isinstance(self.relation_kind, PrimaryDirectionMethodRelationKind):
+            raise ValueError(
+                "PrimaryDirectionMethodRelation invariant failed: relation_kind must be an enum member"
+            )
         expected_kind = {
             PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionMethodRelationKind.PLACIDIAN_MUNDANE_PERFECTION,
             PrimaryDirectionMethod.PTOLEMY_SEMI_ARC: PrimaryDirectionMethodRelationKind.PTOLEMAIC_SEMI_ARC_PERFECTION,
@@ -248,19 +279,33 @@ class PrimaryDirectionMethodRelationProfile:
     scored_relations: tuple[PrimaryDirectionMethodRelation, ...]
 
     def __post_init__(self) -> None:
+        try:
+            admitted_relations = tuple(self.admitted_relations)
+            scored_relations = tuple(self.scored_relations)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionMethodRelationProfile invariant failed: relation collections must be iterable"
+            ) from exc
+        object.__setattr__(self, "admitted_relations", admitted_relations)
+        object.__setattr__(self, "scored_relations", scored_relations)
+        if not isinstance(self.truth, PrimaryDirectionMethodTruth):
+            raise ValueError("PrimaryDirectionMethodRelationProfile invariant failed: invalid truth")
+        if not isinstance(self.detected_relation, PrimaryDirectionMethodRelation):
+            raise ValueError(
+                "PrimaryDirectionMethodRelationProfile invariant failed: invalid detected relation"
+            )
         if self.detected_relation.truth != self.truth:
             raise ValueError(
                 "PrimaryDirectionMethodRelationProfile invariant failed: detected relation truth mismatch"
             )
-        if self.detected_relation not in self.admitted_relations:
+        if self.admitted_relations != (self.detected_relation,):
             raise ValueError(
-                "PrimaryDirectionMethodRelationProfile invariant failed: detected relation must be admitted"
+                "PrimaryDirectionMethodRelationProfile invariant failed: current doctrine admits exactly the detected relation"
             )
-        for relation in self.scored_relations:
-            if relation not in self.admitted_relations:
-                raise ValueError(
-                    "PrimaryDirectionMethodRelationProfile invariant failed: scored relation must be admitted"
-                )
+        if self.scored_relations != self.admitted_relations:
+            raise ValueError(
+                "PrimaryDirectionMethodRelationProfile invariant failed: admitted relation must be scored"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -272,6 +317,20 @@ class PrimaryDirectionMethodConditionProfile:
     state: PrimaryDirectionMethodConditionState
 
     def __post_init__(self) -> None:
+        if not isinstance(self.truth, PrimaryDirectionMethodTruth):
+            raise ValueError("PrimaryDirectionMethodConditionProfile invariant failed: invalid truth")
+        if not isinstance(self.classification, PrimaryDirectionMethodClassification):
+            raise ValueError(
+                "PrimaryDirectionMethodConditionProfile invariant failed: invalid classification"
+            )
+        if not isinstance(self.relation_profile, PrimaryDirectionMethodRelationProfile):
+            raise ValueError(
+                "PrimaryDirectionMethodConditionProfile invariant failed: invalid relation profile"
+            )
+        if not isinstance(self.state, PrimaryDirectionMethodConditionState):
+            raise ValueError(
+                "PrimaryDirectionMethodConditionProfile invariant failed: state must be an enum member"
+            )
         if self.classification.truth != self.truth:
             raise ValueError(
                 "PrimaryDirectionMethodConditionProfile invariant failed: classification truth mismatch"
@@ -304,8 +363,29 @@ class PrimaryDirectionMethodsAggregateProfile:
     under_pole_count: int
 
     def __post_init__(self) -> None:
+        try:
+            profiles = tuple(self.profiles)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionMethodsAggregateProfile invariant failed: profiles must be iterable"
+            ) from exc
+        object.__setattr__(self, "profiles", profiles)
         if not self.profiles:
             raise ValueError("PrimaryDirectionMethodsAggregateProfile requires at least one profile")
+        if any(not isinstance(profile, PrimaryDirectionMethodConditionProfile) for profile in self.profiles):
+            raise ValueError("PrimaryDirectionMethodsAggregateProfile invariant failed: invalid profile type")
+        if any(
+            type(count) is not int or count < 0
+            for count in (
+                self.total_profiles,
+                self.mundane_count,
+                self.semi_arc_count,
+                self.under_pole_count,
+            )
+        ):
+            raise ValueError(
+                "PrimaryDirectionMethodsAggregateProfile invariant failed: counts must be non-negative integers"
+            )
         if self.total_profiles != len(self.profiles):
             raise ValueError(
                 "PrimaryDirectionMethodsAggregateProfile invariant failed: total_profiles mismatch"
@@ -323,6 +403,11 @@ class PrimaryDirectionMethodsAggregateProfile:
                 "PrimaryDirectionMethodsAggregateProfile invariant failed: under_pole_count mismatch"
             )
 
+    @property
+    def zodiacal_count(self) -> int:
+        """Number of methods capable of zodiacal-space computation."""
+        return sum(1 for profile in self.profiles if profile.classification.zodiacal)
+
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodsNetworkNode:
@@ -331,7 +416,9 @@ class PrimaryDirectionMethodsNetworkNode:
     count: int
 
     def __post_init__(self) -> None:
-        if self.count <= 0:
+        if not isinstance(self.method, PrimaryDirectionMethod):
+            raise ValueError("PrimaryDirectionMethodsNetworkNode invariant failed: invalid method")
+        if type(self.count) is not int or self.count <= 0:
             raise ValueError("PrimaryDirectionMethodsNetworkNode invariant failed: count must be positive")
 
 
@@ -343,29 +430,105 @@ class PrimaryDirectionMethodsNetworkEdge:
     count: int
 
     def __post_init__(self) -> None:
+        if not isinstance(self.from_method, PrimaryDirectionMethod) or not isinstance(
+            self.to_method, PrimaryDirectionMethod
+        ):
+            raise ValueError("PrimaryDirectionMethodsNetworkEdge invariant failed: invalid method")
         if self.from_method == self.to_method:
             raise ValueError(
                 "PrimaryDirectionMethodsNetworkEdge invariant failed: self-edges are not admitted"
             )
-        if self.count <= 0:
+        if type(self.count) is not int or self.count <= 0:
             raise ValueError("PrimaryDirectionMethodsNetworkEdge invariant failed: count must be positive")
 
 
 @dataclass(frozen=True, slots=True)
 class PrimaryDirectionMethodsNetworkProfile:
-    """Vessel: Structural profile of the methods network."""
+    """Vessel: Structural profile of an ordered method-transition network."""
     nodes: tuple[PrimaryDirectionMethodsNetworkNode, ...]
     edges: tuple[PrimaryDirectionMethodsNetworkEdge, ...]
     dominant_method: PrimaryDirectionMethod
     isolated_methods: tuple[PrimaryDirectionMethod, ...]
 
     def __post_init__(self) -> None:
+        try:
+            nodes = tuple(self.nodes)
+            edges = tuple(self.edges)
+            isolated_methods = tuple(self.isolated_methods)
+        except TypeError as exc:
+            raise ValueError(
+                "PrimaryDirectionMethodsNetworkProfile invariant failed: network collections must be iterable"
+            ) from exc
+        object.__setattr__(self, "nodes", nodes)
+        object.__setattr__(self, "edges", edges)
+        object.__setattr__(self, "isolated_methods", isolated_methods)
         if not self.nodes:
             raise ValueError("PrimaryDirectionMethodsNetworkProfile requires at least one node")
+        if any(not isinstance(node, PrimaryDirectionMethodsNetworkNode) for node in self.nodes):
+            raise ValueError("PrimaryDirectionMethodsNetworkProfile invariant failed: invalid node type")
+        if any(not isinstance(edge, PrimaryDirectionMethodsNetworkEdge) for edge in self.edges):
+            raise ValueError("PrimaryDirectionMethodsNetworkProfile invariant failed: invalid edge type")
+        if not isinstance(self.dominant_method, PrimaryDirectionMethod):
+            raise ValueError("PrimaryDirectionMethodsNetworkProfile invariant failed: invalid dominant_method")
+        if any(not isinstance(method, PrimaryDirectionMethod) for method in self.isolated_methods):
+            raise ValueError("PrimaryDirectionMethodsNetworkProfile invariant failed: invalid isolated method")
         methods = [node.method for node in self.nodes]
         if len(set(methods)) != len(methods):
             raise ValueError(
                 "PrimaryDirectionMethodsNetworkProfile invariant failed: duplicate nodes"
+            )
+        if len(set(self.isolated_methods)) != len(self.isolated_methods):
+            raise ValueError(
+                "PrimaryDirectionMethodsNetworkProfile invariant failed: duplicate isolated methods"
+            )
+        edge_keys = [(edge.from_method, edge.to_method) for edge in self.edges]
+        if len(set(edge_keys)) != len(edge_keys):
+            raise ValueError("PrimaryDirectionMethodsNetworkProfile invariant failed: duplicate edges")
+        node_by_method = {node.method: node for node in self.nodes}
+        if any(
+            edge.from_method not in node_by_method or edge.to_method not in node_by_method
+            for edge in self.edges
+        ):
+            raise ValueError(
+                "PrimaryDirectionMethodsNetworkProfile invariant failed: edge endpoint missing from nodes"
+            )
+        if any(
+            edge.count
+            > min(node_by_method[edge.from_method].count, node_by_method[edge.to_method].count)
+            for edge in self.edges
+        ):
+            raise ValueError(
+                "PrimaryDirectionMethodsNetworkProfile invariant failed: edge count exceeds endpoint occurrence count"
+            )
+        if sum(edge.count for edge in self.edges) > sum(node.count for node in self.nodes) - 1:
+            raise ValueError(
+                "PrimaryDirectionMethodsNetworkProfile invariant failed: edge count exceeds possible transitions"
+            )
+        validate_ordered_transition_counts(
+            {node.method: node.count for node in self.nodes},
+            {(edge.from_method, edge.to_method): edge.count for edge in self.edges},
+            object_name="PrimaryDirectionMethodsNetworkProfile",
+        )
+        expected_dominant = max(
+            self.nodes,
+            key=lambda node: (node.count, node.method.value),
+        ).method
+        if self.dominant_method is not expected_dominant:
+            raise ValueError(
+                "PrimaryDirectionMethodsNetworkProfile invariant failed: dominant_method mismatch"
+            )
+        participating = {edge.from_method for edge in self.edges} | {
+            edge.to_method for edge in self.edges
+        }
+        expected_isolated = tuple(
+            sorted(
+                (method for method in methods if method not in participating),
+                key=lambda method: method.value,
+            )
+        )
+        if self.isolated_methods != expected_isolated:
+            raise ValueError(
+                "PrimaryDirectionMethodsNetworkProfile invariant failed: isolated_methods mismatch"
             )
 
 
@@ -374,6 +537,10 @@ def primary_direction_method_truth(
     *,
     policy: PrimaryDirectionMethodPolicy | None = None,
 ) -> PrimaryDirectionMethodTruth:
+    if not isinstance(method, PrimaryDirectionMethod):
+        raise ValueError(f"Unsupported primary direction method: {method}")
+    if policy is not None and not isinstance(policy, PrimaryDirectionMethodPolicy):
+        raise ValueError("policy must be a PrimaryDirectionMethodPolicy")
     resolved_policy = policy if policy is not None else PrimaryDirectionMethodPolicy(method)
     return PrimaryDirectionMethodTruth(
         method=resolved_policy.method,
@@ -406,10 +573,13 @@ def primary_direction_method_truth(
 def classify_primary_direction_method(
     truth: PrimaryDirectionMethodTruth,
 ) -> PrimaryDirectionMethodClassification:
+    if not isinstance(truth, PrimaryDirectionMethodTruth):
+        raise ValueError("truth must be a PrimaryDirectionMethodTruth")
     return PrimaryDirectionMethodClassification(
         truth=truth,
         mundane=True,
         zodiacal=truth.method in (
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             PrimaryDirectionMethod.MERIDIAN,
             PrimaryDirectionMethod.MORINUS,
             PrimaryDirectionMethod.REGIOMONTANUS,
@@ -424,6 +594,8 @@ def classify_primary_direction_method(
 def relate_primary_direction_method(
     truth: PrimaryDirectionMethodTruth,
 ) -> PrimaryDirectionMethodRelation:
+    if not isinstance(truth, PrimaryDirectionMethodTruth):
+        raise ValueError("truth must be a PrimaryDirectionMethodTruth")
     return PrimaryDirectionMethodRelation(
         truth=truth,
         relation_kind={
@@ -442,6 +614,8 @@ def relate_primary_direction_method(
 def evaluate_primary_direction_method_relations(
     truth: PrimaryDirectionMethodTruth,
 ) -> PrimaryDirectionMethodRelationProfile:
+    if not isinstance(truth, PrimaryDirectionMethodTruth):
+        raise ValueError("truth must be a PrimaryDirectionMethodTruth")
     relation = relate_primary_direction_method(truth)
     admitted = (relation,)
     return PrimaryDirectionMethodRelationProfile(
@@ -455,6 +629,8 @@ def evaluate_primary_direction_method_relations(
 def evaluate_primary_direction_method_condition(
     truth: PrimaryDirectionMethodTruth,
 ) -> PrimaryDirectionMethodConditionProfile:
+    if not isinstance(truth, PrimaryDirectionMethodTruth):
+        raise ValueError("truth must be a PrimaryDirectionMethodTruth")
     return PrimaryDirectionMethodConditionProfile(
         truth=truth,
         classification=classify_primary_direction_method(truth),
@@ -475,7 +651,11 @@ def evaluate_primary_direction_method_condition(
 def evaluate_primary_direction_methods_aggregate(
     truths: Iterable[PrimaryDirectionMethodTruth],
 ) -> PrimaryDirectionMethodsAggregateProfile:
-    profiles = tuple(evaluate_primary_direction_method_condition(truth) for truth in truths)
+    try:
+        truth_tuple = tuple(truths)
+    except TypeError as exc:
+        raise ValueError("truths must be an iterable of PrimaryDirectionMethodTruth") from exc
+    profiles = tuple(evaluate_primary_direction_method_condition(truth) for truth in truth_tuple)
     if not profiles:
         raise ValueError("evaluate_primary_direction_methods_aggregate requires at least one truth")
     return PrimaryDirectionMethodsAggregateProfile(
@@ -490,9 +670,15 @@ def evaluate_primary_direction_methods_aggregate(
 def evaluate_primary_direction_methods_network(
     truths: Iterable[PrimaryDirectionMethodTruth],
 ) -> PrimaryDirectionMethodsNetworkProfile:
-    truth_tuple = tuple(truths)
+    """Build transitions between consecutive truths in caller-supplied order."""
+    try:
+        truth_tuple = tuple(truths)
+    except TypeError as exc:
+        raise ValueError("truths must be an iterable of PrimaryDirectionMethodTruth") from exc
     if not truth_tuple:
         raise ValueError("evaluate_primary_direction_methods_network requires at least one truth")
+    if any(not isinstance(truth, PrimaryDirectionMethodTruth) for truth in truth_tuple):
+        raise ValueError("truths must contain only PrimaryDirectionMethodTruth values")
     counts: dict[PrimaryDirectionMethod, int] = {}
     for truth in truth_tuple:
         counts[truth.method] = counts.get(truth.method, 0) + 1

@@ -34,7 +34,7 @@ Admitted now:
 
 - sovereign catalog-backed named stars
 - explicit service-supplied fixed-star targets
-- angle significators only
+- angle and planet significators only
 
 Not admitted yet:
 
@@ -46,7 +46,7 @@ Not admitted yet:
 
 ## Validation State
 
-The current branch is validated by:
+The current branch has regression and invariant evidence from:
 
 - sovereign name-resolution tests
 - direct point-resolution tests against `star_at(...)`
@@ -63,6 +63,10 @@ The current branch is validated by:
 The caller-facing path is now also hardened through
 `primary_directions_policy_preset(...)`, which can thread explicit
 `fixed_star_targets` into the documented method branches.
+
+These bundled examples reconstruct Moira catalog positions and runtime arcs;
+they are not an external historical-authority corpus. Authority validation for
+published fixed-star primary-direction contacts remains pending.
 
 
 ## Present Declaration
