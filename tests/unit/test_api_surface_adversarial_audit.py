@@ -1007,6 +1007,7 @@ _EXPECTED_MOIRA_METHODS = {
     "geodetic_planet_equivalents",
     "get_kernel_status",
     "harmonic",
+    "harmonic_transit_forecast",
     "heliacal_rising",
     "heliacal_rising_event",
     "heliacal_setting",

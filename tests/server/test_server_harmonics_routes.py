@@ -211,6 +211,7 @@ def test_harmonic_routes_are_registered(client: TestClient) -> None:
         "/v1/harmonics/sweep",
         "/v1/harmonics/fingerprint",
         "/v1/harmonics/composite",
+        "/v1/harmonics/transit-forecast",
     }
 
 
@@ -237,7 +238,43 @@ def test_harmonic_chart_route_rejects_invalid_longitude_maps(
     _assert_validation_envelope(empty, message_fragment="at least one body")
     _assert_validation_envelope(empty_name, message_fragment="body names must be non-empty")
     _assert_validation_envelope(duplicate_after_trim, message_fragment="unique after trimming")
-    _assert_validation_envelope(non_finite, message_fragment="longitudes must be finite")
+    _assert_validation_envelope(non_finite, message_fragment="values must be real numbers")
+
+
+@pytest.mark.parametrize("longitude", [True, "10.0"])
+def test_harmonic_routes_reject_coercive_longitude_scalars(
+    client: TestClient,
+    longitude,
+) -> None:
+    responses = (
+        client.post(
+            "/v1/harmonics/chart",
+            json={"longitudes": {"Sun": longitude}, "harmonic": 5},
+        ),
+        client.post(
+            "/v1/harmonics/age-chart",
+            json={
+                "longitudes": {"Sun": longitude},
+                "jd_birth": 1.0,
+                "jd_now": 2.0,
+            },
+        ),
+        client.post(
+            "/v1/harmonics/aspects",
+            json={"longitudes": {"Sun": longitude}},
+        ),
+        client.post(
+            "/v1/harmonics/composite",
+            json={
+                "longitudes_a": {"Sun": longitude},
+                "longitudes_b": {"Moon": 72.0},
+                "harmonic": 5,
+            },
+        ),
+    )
+
+    for response in responses:
+        _assert_validation_envelope(response, message_fragment="real numbers")
 
 
 def test_harmonic_chart_route_rejects_invalid_harmonic_and_oversized_body_map(
@@ -496,3 +533,312 @@ def test_harmonic_analysis_routes_reject_invalid_or_oversized_bounds(
     )
     _assert_validation_envelope(bad_label, message_fragment="must not contain ':'")
     _assert_validation_envelope(oversized_composite, message_fragment="at most 32 bodies")
+
+
+def test_fractional_harmonic_routes_preserve_h55_without_h5_truncation(
+    client: TestClient,
+) -> None:
+    chart_response = client.post(
+        "/v1/harmonics/chart",
+        json={"longitudes": {"Sun": 0.0, "Moon": 72.0}, "harmonic": 5.5},
+    )
+    conjunction_response = client.post(
+        "/v1/harmonics/conjunctions",
+        json={
+            "longitudes": {"Sun": 0.0, "Moon": 72.0},
+            "harmonic": 5.5,
+            "orb": 1.0,
+        },
+    )
+    score_response = client.post(
+        "/v1/harmonics/pattern-score",
+        json={
+            "longitudes": {"Sun": 0.0, "Moon": 72.0},
+            "harmonic": 5.5,
+            "orb": 1.0,
+        },
+    )
+    composite_response = client.post(
+        "/v1/harmonics/composite",
+        json={
+            "longitudes_a": {"Sun": 0.0},
+            "longitudes_b": {"Moon": 72.0},
+            "harmonic": 5.5,
+            "orb": 1.0,
+        },
+    )
+
+    assert chart_response.status_code == 200
+    chart = chart_response.json()
+    by_body = {position["body"]: position for position in chart["positions"]}
+    assert by_body["Moon"]["harmonic_longitude"] == pytest.approx(36.0)
+    assert by_body["Moon"]["harmonic"] == 5.5
+    assert chart["effective_harmonic"] == 5.5
+    assert chart["harmonic_kind"] == "continuous_multiplier"
+    assert chart["provenance"]["preset_name"] is None
+    assert chart["provenance"]["longitude_origin"] == "zero_aries"
+    assert chart["provenance"]["input_branch"] == "[0,360)"
+    assert "continuous_multiplier_validation" in chart["provenance"]["stage_sequence"]
+
+    assert conjunction_response.status_code == 200
+    assert conjunction_response.json()["conjunctions"] == []
+    assert score_response.status_code == 200
+    assert score_response.json()["effective_harmonic"] == 5.5
+    assert score_response.json()["score"] == 0.0
+    assert composite_response.status_code == 200
+    assert composite_response.json()["conjunctions"] == []
+
+
+def test_harmonic_orb_policy_exposes_addey_source_and_projected_limits(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/v1/harmonics/conjunctions",
+        json={
+            "longitudes": {"Sun": 0.0, "Moon": 73.1},
+            "harmonic": 5,
+            "orb": 6.0,
+            "orb_policy": {"scaling_mode": "addey_inverse_harmonic"},
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["conjunctions"]) == 1
+    assert body["conjunctions"][0]["orb"] == pytest.approx(5.5)
+    truth = body["provenance"]["orb_policy"]
+    assert truth == {
+        "scaling_mode": "addey_inverse_harmonic",
+        "reference_harmonic": 1.0,
+        "reference_orb_deg": 6.0,
+        "projected_orb_limit_deg": 6.0,
+        "source_orb_limit_deg": 1.2,
+        "resolved_harmonic": 5.0,
+        "authority": "John Addey, Harmonics in Astrology, Ch. 14",
+        "source_locator": "Harmonics in Astrology, Chapter 14",
+        "formula": "O_H = O_1 / H",
+        "continuous_extension": False,
+        "request_mode": "explicit_policy",
+    }
+
+
+@pytest.mark.parametrize("orb", [True, "1.0"])
+def test_addey_orb_surfaces_reject_coercive_scalars(
+    client: TestClient,
+    orb,
+) -> None:
+    conjunction = client.post(
+        "/v1/harmonics/conjunctions",
+        json={
+            "longitudes": {"Sun": 0.0, "Moon": 72.0},
+            "harmonic": 5,
+            "orb": orb,
+        },
+    )
+    aspects = client.post(
+        "/v1/harmonics/aspects",
+        json={"longitudes": {"Sun": 0.0, "Moon": 72.0}, "orb": orb},
+    )
+    composite = client.post(
+        "/v1/harmonics/composite",
+        json={
+            "longitudes_a": {"Sun": 0.0},
+            "longitudes_b": {"Moon": 72.0},
+            "harmonic": 5,
+            "orb": orb,
+        },
+    )
+
+    for response in (conjunction, aspects, composite):
+        _assert_validation_envelope(response, message_fragment="orb")
+
+
+def test_fractional_harmonic_openapi_is_number_not_integer(client: TestClient) -> None:
+    schemas = client.app.openapi()["components"]["schemas"]
+
+    assert schemas["HarmonicChartRequest"]["properties"]["harmonic"]["type"] == "number"
+    assert schemas["HarmonicCompositeRequest"]["properties"]["harmonic"]["type"] == "number"
+    assert schemas["HarmonicAspectsRequest"]["properties"]["max_harmonic"]["type"] == "integer"
+
+
+@pytest.mark.parametrize("harmonic", [True, "5.5", "NaN"])
+def test_harmonic_chart_rejects_coercive_or_nonfinite_harmonics(
+    client: TestClient,
+    harmonic,
+) -> None:
+    response = client.post(
+        "/v1/harmonics/chart",
+        json={"longitudes": {"Sun": 0.0}, "harmonic": harmonic},
+    )
+
+    _assert_validation_envelope(response, message_fragment="harmonic")
+
+
+def test_sampled_va_informed_harmonic_transit_forecast_route(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/v1/harmonics/transit-forecast",
+        json={
+            "natal_longitudes": {"Sun": 0.0, "Moon": 72.0},
+            "transit_samples": [
+                {"jd_ut": 2451545.0, "longitudes": {"Mars": 144.0}},
+                {"jd_ut": 2451546.0, "longitudes": {"Mars": 144.1}},
+            ],
+            "harmonics": [5],
+            "modes": ["one_transit_two_natal"],
+            "orb": 1.0,
+            "orb_policy": {"scaling_mode": "addey_inverse_harmonic"},
+            "minimum_observed_duration_days": 1.0,
+            "maximum_sample_gap_days": 1.0,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["window_count"] == 1
+    assert body["natal_bodies"] == ["Moon", "Sun"]
+    assert body["transit_bodies"] == ["Mars"]
+    assert body["transit_sample_count"] == 2
+    window = body["windows"][0]
+    assert window["harmonic"] == 5
+    assert window["mode"] == "one_transit_two_natal"
+    assert window["first_sampled_jd_ut"] == 2451545.0
+    assert window["peak_sampled_jd_ut"] == 2451545.0
+    assert window["last_sampled_jd_ut"] == 2451546.0
+    assert window["observed_duration_days"] == 1.0
+    assert window["sample_count"] == 2
+    assert {member["origin"] for member in window["samples"][0]["members"]} == {
+        "natal",
+        "transit",
+    }
+    assert body["provenance"]["geometry"] == "minimum_circular_covering_arc_complete_triple"
+    assert "no Sirius parity" in body["provenance"]["claim_boundary"]
+    assert body["provenance"]["bounds"]["max_candidate_evaluations"] == 25_000
+    assert body["policy"]["orb_policy"]["request_mode"] == "explicit_policy"
+
+
+def test_harmonic_transit_forecast_accepts_reordered_sample_mapping_keys(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/v1/harmonics/transit-forecast",
+        json={
+            "natal_longitudes": {"Sun": 0.0, "Moon": 72.0},
+            "transit_samples": [
+                {
+                    "jd_ut": 2451545.0,
+                    "longitudes": {"Mars": 144.0, "Venus": 10.0},
+                },
+                {
+                    "jd_ut": 2451546.0,
+                    "longitudes": {"Venus": 10.0, "Mars": 144.1},
+                },
+            ],
+            "harmonics": [5],
+            "modes": ["one_transit_two_natal"],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["transit_bodies"] == ["Mars", "Venus"]
+
+
+@pytest.mark.parametrize("longitude", [True, "144.0"])
+def test_harmonic_transit_forecast_rejects_coercive_longitude_scalars(
+    client: TestClient,
+    longitude,
+) -> None:
+    for field in ("natal", "transit"):
+        payload = {
+            "natal_longitudes": {"Sun": 0.0, "Moon": 72.0},
+            "transit_samples": [
+                {"jd_ut": 1.0, "longitudes": {"Mars": 144.0}},
+            ],
+            "harmonics": [5],
+        }
+        if field == "natal":
+            payload["natal_longitudes"]["Sun"] = longitude
+        else:
+            payload["transit_samples"][0]["longitudes"]["Mars"] = longitude
+
+        response = client.post("/v1/harmonics/transit-forecast", json=payload)
+        _assert_validation_envelope(response, message_fragment="real numbers")
+
+
+def test_harmonic_transit_forecast_rejects_oversized_worst_case_output(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/v1/harmonics/transit-forecast",
+        json={
+            "natal_longitudes": {
+                f"Natal {index}": float(index) for index in range(12)
+            },
+            "transit_samples": [
+                {
+                    "jd_ut": 1.0,
+                    "longitudes": {
+                        f"Transit {index}": float(index) for index in range(12)
+                    },
+                },
+            ],
+            "harmonics": list(range(1, 17)),
+        },
+    )
+
+    _assert_validation_envelope(response, message_fragment="25000")
+
+
+@pytest.mark.parametrize(
+    ("payload_update", "message_fragment"),
+    [
+        ({"harmonics": [5.5]}, "positive integers"),
+        (
+            {
+                "transit_samples": [
+                    {"jd_ut": 2.0, "longitudes": {"Mars": 144.0}},
+                    {"jd_ut": 1.0, "longitudes": {"Mars": 144.0}},
+                ]
+            },
+            "strictly increasing",
+        ),
+        (
+            {
+                "transit_samples": [
+                    {"jd_ut": 1.0, "longitudes": {"Mars": 144.0}},
+                    {"jd_ut": 2.0, "longitudes": {"Venus": 144.0}},
+                ]
+            },
+            "identity",
+        ),
+        (
+            {
+                "transit_samples": [
+                    {"jd_ut": -1e308, "longitudes": {"Mars": 144.0}},
+                    {"jd_ut": 0.0, "longitudes": {"Mars": 144.0}},
+                    {"jd_ut": 1e308, "longitudes": {"Mars": 144.0}},
+                ],
+                "maximum_sample_gap_days": 1e308,
+            },
+            "timestamp span must be finite",
+        ),
+    ],
+)
+def test_harmonic_transit_forecast_route_rejects_invalid_domains(
+    client: TestClient,
+    payload_update: dict,
+    message_fragment: str,
+) -> None:
+    payload = {
+        "natal_longitudes": {"Sun": 0.0, "Moon": 72.0},
+        "transit_samples": [
+            {"jd_ut": 1.0, "longitudes": {"Mars": 144.0}},
+        ],
+        "harmonics": [5],
+    }
+    payload.update(payload_update)
+
+    response = client.post("/v1/harmonics/transit-forecast", json=payload)
+
+    _assert_validation_envelope(response, message_fragment=message_fragment)

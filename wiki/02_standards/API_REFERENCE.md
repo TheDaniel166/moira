@@ -461,7 +461,8 @@ message.
 | `patterns(chart, orb_factor=1.0, dominant_only=False)` | `list[AspectPattern]` | Named aspect patterns built from the chart's positions and aspects, with optional maximal-structure filtering |
 | `midpoints(chart, planet_set="classic")` | `list[Midpoint]` | Planetary midpoints for the requested body set |
 | `midpoints_to_point(chart, longitude, orb=1.5)` | `list[tuple[Midpoint, float]]` | Midpoints falling at a given longitude, paired with absolute orb |
-| `harmonic(chart, number)` | `list[HarmonicPosition]` | Harmonic chart positions |
+| `harmonic(chart, number)` | `list[HarmonicPosition]` | Integer cyclic harmonic or zero-Aries-anchored positive-real continuous multiplier |
+| `harmonic_transit_forecast(natal_longitudes, transit_samples, policy)` | `HarmonicTransitForecast` | Sampled VA-informed complete mixed-origin triples; no interpolation or exact-contact claim |
 | `antiscia(chart, orb=1.0)` | `list[AntisciaAspect]` | Antiscia and contra-antiscia aspects |
 
 ### Dignities & essential condition
@@ -1320,17 +1321,73 @@ tree      = svc.tree(15.0)          # midpoints equidistant from 15°
 ### Harmonics
 
 ```python
-from moira.facade import calculate_harmonic, HarmonicPosition, HARMONIC_PRESETS, HarmonicsService
+from moira.facade import (
+    HARMONIC_PRESETS,
+    HarmonicOrbPolicy,
+    HarmonicPosition,
+    HarmonicTransitSample,
+    MixedOriginHarmonicTransitForecastPolicy,
+    MixedOriginHarmonicTransitMode,
+    calculate_harmonic,
+    harmonic_conjunctions,
+    mixed_origin_harmonic_transit_forecast,
+)
 
-h4 = calculate_harmonic(chart.longitudes(include_nodes=False), 4)
-# list[HarmonicPosition(body, natal_lon, harmonic_lon)]
+natal = chart.longitudes(include_nodes=False)
+h55 = calculate_harmonic(natal, 5.5)
+# list[HarmonicPosition]; 5.5 is preserved and is not truncated to 5
 
-# Using the service class:
-svc = HarmonicsService(chart.longitudes(include_nodes=False))
-h5  = svc.harmonic(5)       # list[HarmonicPosition]
+# The orb is the configurable H1 reference and the projected-chart limit.
+orb_policy = HarmonicOrbPolicy(reference_orb_deg=1.0)
+truth = orb_policy.resolve(5.5)
+# truth.projected_orb_limit_deg == 1.0
+# truth.source_orb_limit_deg == 1.0 / 5.5
+
+hits = harmonic_conjunctions(natal, 5.5, orb_policy=orb_policy)
+
+# Sampled VA-informed forecast: caller owns the transit positions and JDs.
+samples = (
+    HarmonicTransitSample(2461000.0, {"Mars": 144.0, "Venus": 216.0}),
+    HarmonicTransitSample(2461000.5, {"Mars": 144.1, "Venus": 216.1}),
+)
+forecast_policy = MixedOriginHarmonicTransitForecastPolicy(
+    harmonics=(5, 7),  # forecast harmonics remain positive integers
+    modes=(MixedOriginHarmonicTransitMode.ONE_TRANSIT_TWO_NATAL,),
+    orb_policy=orb_policy,
+    maximum_sample_gap_days=1.0,
+)
+forecast = mixed_origin_harmonic_transit_forecast(
+    natal,
+    samples,
+    forecast_policy,
+)
 ```
 
-`HARMONIC_PRESETS`: dict of named harmonics, e.g. `{"4th": 4, "5th": 5, ...}`.
+`HARMONIC_PRESETS` is `dict[int, tuple[str, str]]`, mapping an integer harmonic
+to its descriptive name and summary, for example
+`{4: ("Square", "Tension, challenges, action"), ...}`.
+
+Direct single-harmonic projection, conjunction, score, and composite functions
+accept any positive finite real `H`. Inputs are first reduced to the canonical
+zero-Aries `[0, 360)` branch and then projected as
+`(normalized_longitude * H) mod 360`. Integer H is the ordinary cyclic
+harmonic; fractional H is an explicitly origin-anchored continuous multiplier.
+Sweep, aspect-decoding, fingerprint, and transit-forecast harmonic collections
+remain integer.
+
+`HarmonicOrbPolicy` exposes the Addey inverse-H relation `O_H = O_1/H` without
+double scaling. Its `reference_orb_deg` is applied as the projected harmonic
+chart limit; `HarmonicOrbTruth.source_orb_limit_deg` reports the locally
+equivalent source-circle allowance. The legacy positional `orb` remains
+available as an adapter to this same H1-reference policy, but an engine call
+may not supply both `orb` and `orb_policy`.
+
+`mixed_origin_harmonic_transit_forecast` admits only complete triples containing
+one transit plus two natal members or two transits plus one natal member. A
+triple must fit inside one minimum circular covering arc. Returned window times
+are first/peak/last *supplied samples*: the function neither interpolates nor
+claims exact ingress, perfection, egress, or Sirius parity. See
+`HARMONIC_TRANSIT_FORECAST_STANDARD.md` for the complete doctrine.
 
 ### Antiscia
 

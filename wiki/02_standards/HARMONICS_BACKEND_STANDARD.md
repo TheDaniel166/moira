@@ -1,57 +1,116 @@
 # Harmonics Backend Standard
 
-Version: 0.1
-Date: 2026-06-13
-Status: backend standard for Phase 12 evaluation
+Version: 0.2
+Date: 2026-07-19
+Status: admitted backend standard
 
 ## Scope
 
-This standard governs the harmonic-analysis engine surface:
+This standard governs the caller-supplied-longitude harmonic surfaces:
 
 - `moira.harmonics`
+- `moira.harmonic_transits`
 
 It covers:
 
 - direct harmonic chart projection
 - age-harmonic projection
-- harmonic conjunction detection
-- harmonic pattern scoring
-- harmonic series sweeps
+- harmonic conjunction detection and pattern scoring
+- harmonic series sweeps and vibrational fingerprints
 - natal aspect decoding as harmonic conjunctions
 - cross-chart composite harmonic conjunctions
-- vibrational fingerprint summaries
+- explicit harmonic-orb scaling policy and resolved provenance
+- sampled mixed-origin harmonic transit configurations
 - the `HARMONIC_PRESETS` catalogue
 
-It does not govern:
-
-- `moira.harmograms`
-- ordinary aspect doctrine
-- chart construction
-- transit, progression, or event search
-- interpretive narrative text
+It does not govern `moira.harmograms`, ordinary aspect doctrine, chart or
+ephemeris construction, progression search, interpretive narrative, or exact
+harmonic transit ingress/egress solving.
 
 ## Authority And Provenance
 
 The engine documents the harmonic tradition through:
 
-- John Addey, *Harmonics in Astrology*
+- John Addey, *Harmonics in Astrology*, Chapter 14
 - David Hamblin, *Harmonic Charts*
-- David Cochrane, harmonic pattern and vibrational astrology materials
+- David Cochrane's harmonic-pattern and vibrational-astrology materials
 
-The computational core is arithmetic, not ephemeris work. It consumes named
-ecliptic longitudes supplied by a caller and projects them through:
+The VA-informed forecast boundary additionally records:
+
+- [Sirius: Methods for Vibrational Astrology](https://www.astrosoftware.com/cpnew/m/software/sirius/methods_vibrational_astrology.html)
+- [Gisele Terry, Forecasting with Vibrational Astrology, UAC 2018 handout](https://hosted-files.sched.co/uac2018/f2/handout%20for%20Forecasting%20with%20Vibrational%20Astrology.pdf)
+
+These sources inform the admitted mixed-origin cardinalities and the idea of
+activating natal harmonic configurations. They do not establish numerical
+parity with Sirius or supply Moira's sampled-window geometry.
+
+The computational core is arithmetic over longitudes supplied by a caller. It
+does not own the astronomical derivation of those longitudes.
+
+## Governing Harmonic Transformation
+
+Every input longitude is first reduced to Moira's canonical zero-Aries branch:
 
 ```text
-harmonic_longitude = (natal_longitude * harmonic) mod 360
+lambda_0 = longitude mod 360, where lambda_0 is in [0, 360)
+lambda_H = (lambda_0 * H) mod 360
 ```
 
-The backend owns the harmonic transformation and derived analysis over supplied
-longitudes. It does not own the astronomical derivation of those input
-longitudes.
+`H` must be a positive finite real number on a single-harmonic surface. An
+integer `H` is the ordinary cyclic harmonic projection. A non-integer `H` is
+an explicitly zero-Aries-anchored continuous multiplier: it is evaluated from
+the canonical `[0, 360)` representative and must not be described as an
+origin-free circle endomorphism.
+
+This branch rule makes `H=5.5` a first-class value. The engine must not coerce,
+truncate, round, or clamp it to `H=5`.
+
+Integer-range products remain integer by doctrine:
+
+- `harmonic_sweep`
+- `harmonic_aspects`
+- `vibrational_fingerprint`
+- `MixedOriginHarmonicTransitForecastPolicy.harmonics`
+
+`age_harmonic` remains the distinct time-derived surface whose multiplier is
+`(jd_now - jd_birth) / tropical_year`, subject to its established `1e-6`
+positive floor at the exact birth instant. It is not an adapter for arbitrary
+fractional harmonic requests.
+
+## Harmonic-Orb Doctrine
+
+`HarmonicOrbPolicy` is the immutable, provenance-bearing conjunction-orb
+policy. The admitted scaling mode is
+`HarmonicOrbScalingMode.ADDEY_INVERSE_HARMONIC`, expressed as:
+
+```text
+O_H = O_1 / H
+```
+
+`reference_orb_deg` is the caller-configurable H1 reference `O_1`. Resolution
+for one harmonic produces `HarmonicOrbTruth` with two deliberately distinct
+limits:
+
+- `projected_orb_limit_deg = O_1`: the threshold applied after projection on
+  the 360-degree harmonic chart
+- `source_orb_limit_deg = O_1 / H`: the locally equivalent allowance on the
+  source zodiacal circle
+
+The existing `orb` argument and REST field continue to mean the projected
+threshold/H1 reference. Applying `O_1/H` again on the projected chart would
+produce an unintended `1/H^2` source scaling and is prohibited.
+
+For non-integer `H`, the same arithmetic relation is exposed with
+`noninteger_extension=true` (`continuous_extension=true` over REST). That is
+an explicit Moira continuous extension of the cited integer-harmonic rule, not
+an attribution of fractional doctrine to the source.
+
+Callers may use the legacy `orb` argument or `orb_policy`, but not both in the
+same engine call. The default reference orb remains `1.0` degree.
 
 ## Governing Objects
 
-The admitted backend objects are:
+The admitted `moira.harmonics` objects are:
 
 - `HarmonicPosition`
 - `HarmonicConjunction`
@@ -59,121 +118,105 @@ The admitted backend objects are:
 - `HarmonicSweepEntry`
 - `HarmonicAspect`
 - `VibrationFingerprint`
+- `HarmonicOrbScalingMode`
+- `HarmonicOrbPolicy`
+- `HarmonicOrbTruth`
 - `HarmonicsService`
-
-The admitted constants are:
-
 - `HARMONIC_PRESETS`
 
-The preset catalogue is descriptive. It is not a transport permission to expose
-unbounded sweeps or interpretive claims.
+The admitted `moira.harmonic_transits` objects are:
+
+- `HarmonicTransitMemberOrigin`
+- `MixedOriginHarmonicTransitMode`
+- `HarmonicTransitSample`
+- `HarmonicTransitMember`
+- `HarmonicTransitPatternSample`
+- `HarmonicTransitWindow`
+- `HarmonicTransitForecast`
+- `MixedOriginHarmonicTransitForecastPolicy`
+
+The preset catalogue is descriptive. It is not permission to expose unbounded
+sweeps or interpretive claims.
 
 ## Admitted Computations
 
-The current backend admits:
+The harmonic backend admits:
 
 - `calculate_harmonic(planet_longitudes, harmonic)`
 - `age_harmonic(planet_longitudes, jd_birth, jd_now)`
-- `harmonic_conjunctions(planet_longitudes, harmonic, orb=1.0)`
-- `harmonic_pattern_score(planet_longitudes, harmonic, orb=1.0)`
-- `harmonic_sweep(planet_longitudes, max_harmonic=32, orb=1.0)`
-- `harmonic_aspects(planet_longitudes, orb=1.0, max_harmonic=32)`
-- `composite_harmonic(lons_a, lons_b, harmonic, orb=1.0, label_a="A", label_b="B")`
-- `vibrational_fingerprint(planet_longitudes, max_harmonic=32, orb=1.0)`
+- `harmonic_conjunctions(..., harmonic, orb=None, *, orb_policy=None)`
+- `harmonic_pattern_score(..., harmonic, orb=None, *, orb_policy=None)`
+- `harmonic_sweep(..., max_harmonic=32, orb=None, *, orb_policy=None)`
+- `harmonic_aspects(..., orb=None, max_harmonic=32, *, orb_policy=None)`
+- `composite_harmonic(..., harmonic, orb=None, ..., *, orb_policy=None)`
+- `vibrational_fingerprint(..., max_harmonic=32, orb=None, *, orb_policy=None)`
+- `mixed_origin_harmonic_transit_forecast(natal_longitudes, transit_samples, policy)`
 
-These functions are pure computations over dictionaries of body names and
-longitudes. No kernel, location, house, ayanamsa, or time-zone state is owned by
-this module.
+All are pure computations over caller-owned longitudes. They do not own a
+kernel, location, house, ayanamsa, time zone, chart builder, or ephemeris.
+
+The transit forecast is governed separately by
+`HARMONIC_TRANSIT_FORECAST_STANDARD.md`.
 
 ## Required Transport Invariants
 
 Any REST transport for harmonics must preserve:
 
-- requested harmonic number or harmonic range
-- whether the harmonic value is an integer harmonic or an age-derived decimal
-  harmonic
-- input body names as provided, plus normalized result body labels
-- input longitudes used for each body
-- computed harmonic longitudes
-- result ordering rule
-- orb policy for conjunction and aspect products
-- maximum body count
-- maximum harmonic number
-- whether the result is single-chart, age-harmonic, cross-chart, sweep, or
-  fingerprint
-- preset name and description when a requested harmonic is in
+- requested and effective harmonic values without integer truncation
+- harmonic kind: `integer`, `continuous_multiplier`, `age_decimal`,
+  `range_sweep`, or the forecast family's explicit provenance
+- the zero-Aries `[0, 360)` input branch and projection formula
+- caller-supplied longitude ownership, the normalized source longitude used,
+  and engine-normalized result body labels
+- computed harmonic longitudes and deterministic ordering
+- the H1 reference orb, projected limit, source-circle limit, scaling mode,
+  formula, authority, and continuous-extension truth where applicable
+- maximum body, sample, harmonic, and work bounds for the requested product
+- preset name and description only for integer harmonics in
   `HARMONIC_PRESETS`
 
-Transport must reject:
-
-- non-finite longitudes
-- non-finite JDs for age harmonics
-- `jd_now < jd_birth` for age harmonics
-- empty body maps
-- empty body names
-- non-finite or negative orbs
-- unbounded harmonic ranges
-- unbounded body counts
-
-Transport must not silently clamp user inputs in a way that hides user intent.
-The engine currently clamps some harmonic values internally; public transport
-must either reject invalid public values before the engine call or explicitly
-report the effective harmonic used.
+Transport must reject non-finite values, empty or duplicate-trimmed body
+identity, invalid harmonics, invalid policy selectors, unbounded
+ranges, and requests above the product-specific work limits. It must not
+silently clamp or coerce user intent.
 
 ## Validation Requirements
 
-The minimum backend validation corpus is:
+The focused backend corpus is:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_harmonics.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_harmonics.py tests\unit\test_harmonic_transits.py -q
 ```
 
-The validation corpus must continue to cover:
+It must continue to cover:
 
-- `__all__` surface completeness
-- formula truth for `(lon * H) mod 360`
-- output longitude range `[0, 360)`
-- H1 identity with natal longitudes
-- age-harmonic decimal age derivation
-- negative-age rejection
-- conjunction orb bounds
-- pattern-score cluster invariant
-- sweep ordering
-- aspect/conjunction dual-path equivalence
-- composite chart label isolation
-- vibrational fingerprint peak and total-score invariants
+- public surface completeness
+- formula truth and output range
+- fractional `H` distinct from its truncated integer
+- zero-Aries canonical-branch equivalence for out-of-range input longitudes
+- positive-finite-real harmonic rejection policy
+- projected/source orb-limit equivalence and no double scaling
+- integer range doctrine for sweep, aspects, fingerprint, and forecast
+- conjunction, cluster, composite-label, and fingerprint invariants
+- immutable forecast policy, input maps, and result vessels
+- complete-three-member minimum-circular-arc admission
+- both mixed-origin modes
+- sampled window splitting, peak selection, duration filtering, and provenance
 
-Route admission must add adversarial transport tests for malformed body maps,
-non-finite numbers, oversized sweeps, and invalid orbs.
-
-## REST Admission Guidance
-
-The first admissible transport target is a direct, bounded harmonic projection
-route.
-
-Recommended sequence:
-
-1. Direct harmonic chart projection.
-2. Age harmonic projection.
-3. Harmonic conjunctions for one harmonic.
-4. Harmonic pattern score for one harmonic.
-5. Bounded harmonic sweep.
-6. Vibrational fingerprint.
-7. Cross-chart composite harmonics.
-
-Sweeps and fingerprints must be bounded separately from direct projection
-because they can scale by body-pair count and harmonic range.
+REST admission additionally requires adversarial bounds, OpenAPI float-vs-int
+schema, malformed identity, and route serialization coverage.
 
 ## Non-Goals
 
 This standard does not admit:
 
 - interpretive readings of harmonic meaning
-- unbounded harmonic sweeps
-- automatic chart construction
-- transit or progression harmonic searches
-- harmonic event prediction
+- unbounded harmonic sweeps or forecast work
+- automatic chart or ephemeris construction
+- progression harmonic search
+- interpolation between supplied transit samples
+- exact transit ingress, egress, or event-time claims
+- numerical or feature parity with Sirius
 - harmogram spectral analysis
-- background jobs
-- chart image rendering
+- background jobs or chart rendering
 - generic `/v1/special/*` exposure

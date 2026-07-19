@@ -19,6 +19,8 @@ All tests are pure mathematics — no ephemeris required.
 from __future__ import annotations
 
 import math
+from dataclasses import FrozenInstanceError
+from fractions import Fraction
 
 import pytest
 
@@ -28,6 +30,9 @@ from moira.harmonics import (
     HARMONIC_PRESETS,
     HarmonicAspect,
     HarmonicConjunction,
+    HarmonicOrbPolicy,
+    HarmonicOrbScalingMode,
+    HarmonicOrbTruth,
     HarmonicPatternScore,
     HarmonicPosition,
     HarmonicSweepEntry,
@@ -84,8 +89,8 @@ def test_all_names_present_in_module_all():
 
 
 def test_all_count():
-    """__all__ has exactly 16 entries."""
-    assert len(_harm_mod.__all__) == 16
+    """__all__ has exactly 19 entries."""
+    assert len(_harm_mod.__all__) == 19
 
 
 def test_harmonics_are_not_promoted_to_root_public_contract():
@@ -198,11 +203,58 @@ def test_calculate_harmonic_returns_harmonic_position_instances():
     assert all(isinstance(p, HarmonicPosition) for p in result)
 
 
-def test_calculate_harmonic_clamps_to_minimum_one():
-    """Harmonic values below 1 are treated as 1."""
-    h0 = calculate_harmonic({"Sun": 45.0}, 0)
-    h1 = calculate_harmonic({"Sun": 45.0}, 1)
-    assert h0[0].harmonic_longitude == pytest.approx(h1[0].harmonic_longitude)
+def test_calculate_harmonic_rejects_nonpositive_harmonic():
+    """A direct harmonic must not silently clamp nonpositive input to H1."""
+    with pytest.raises(ValueError, match="positive finite real"):
+        calculate_harmonic({"Sun": 45.0}, 0)
+
+
+def test_calculate_harmonic_preserves_fractional_h_exactly():
+    position = calculate_harmonic({"Sun": 10.0}, 5.5)[0]
+
+    assert position.harmonic == pytest.approx(5.5)
+    assert position.harmonic_longitude == pytest.approx(55.0)
+
+
+def test_fractional_harmonic_uses_one_canonical_zero_aries_longitude():
+    projected = [
+        calculate_harmonic({"Sun": longitude}, 5.5)[0]
+        for longitude in (10.0, 370.0, -350.0)
+    ]
+
+    assert [position.natal_longitude for position in projected] == pytest.approx(
+        [10.0, 10.0, 10.0]
+    )
+    assert [position.harmonic_longitude for position in projected] == pytest.approx(
+        [55.0, 55.0, 55.0]
+    )
+
+
+@pytest.mark.parametrize(
+    "invalid_harmonic",
+    [False, 0, -1.0, math.nan, math.inf, -math.inf, "5.5", None],
+)
+def test_single_harmonic_products_reject_invalid_harmonics(invalid_harmonic):
+    calls = (
+        lambda: calculate_harmonic(_LONS_PAIR, invalid_harmonic),
+        lambda: harmonic_conjunctions(_LONS_PAIR, invalid_harmonic),
+        lambda: harmonic_pattern_score(_LONS_PAIR, invalid_harmonic),
+        lambda: composite_harmonic(_LONS_PAIR, _LONS_B, invalid_harmonic),
+    )
+
+    for call in calls:
+        with pytest.raises(ValueError, match="positive finite real"):
+            call()
+
+
+def test_single_harmonic_products_accept_other_real_number_types():
+    harmonic = Fraction(11, 2)
+
+    chart = calculate_harmonic({"Sun": 10.0}, harmonic)
+    score = harmonic_pattern_score({"Sun": 0.0, "Moon": 360.0 / 5.5}, harmonic, 0.001)
+
+    assert chart[0].harmonic == pytest.approx(5.5)
+    assert score.harmonic == pytest.approx(5.5)
 
 
 def test_harmonics_service_get_preset_info_known():
@@ -213,6 +265,79 @@ def test_harmonics_service_get_preset_info_known():
 def test_harmonics_service_get_preset_info_unknown():
     name, _ = HarmonicsService.get_preset_info(99)
     assert "99" in name
+
+
+def test_harmonics_service_get_preset_info_fractional_is_custom():
+    name, description = HarmonicsService.get_preset_info(5.5)
+
+    assert name == "H5.5000"
+    assert description == "Custom harmonic"
+
+
+def test_addey_orb_policy_is_immutable_and_has_fixed_provenance():
+    policy = HarmonicOrbPolicy(reference_orb_deg=6.0)
+
+    assert policy.scaling_mode is HarmonicOrbScalingMode.ADDEY_INVERSE_HARMONIC
+    assert policy.authority == "John Addey, Harmonics in Astrology, Ch. 14"
+    assert policy.source_locator == "Harmonics in Astrology, Chapter 14"
+    assert policy.formula == "O_H = O_1 / H"
+    with pytest.raises(FrozenInstanceError):
+        policy.reference_orb_deg = 4.0
+    with pytest.raises(TypeError):
+        HarmonicOrbPolicy(reference_orb_deg=6.0, authority="caller override")
+
+
+@pytest.mark.parametrize(
+    "invalid_orb",
+    [False, -1.0, math.nan, math.inf, -math.inf, "1.0", None],
+)
+def test_addey_orb_policy_rejects_invalid_reference_orbs(invalid_orb):
+    with pytest.raises(ValueError, match="finite non-negative real"):
+        HarmonicOrbPolicy(reference_orb_deg=invalid_orb)
+
+
+def test_addey_orb_policy_resolves_h5_and_h10_source_limits():
+    policy = HarmonicOrbPolicy(reference_orb_deg=6.0)
+
+    h5 = policy.resolve(5)
+    h10 = policy.resolve(10)
+
+    assert isinstance(h5, HarmonicOrbTruth)
+    assert h5.reference_orb_deg == pytest.approx(6.0)
+    assert h5.projected_orb_limit_deg == pytest.approx(6.0)
+    assert h5.source_orb_limit_deg == pytest.approx(1.2)
+    assert h10.projected_orb_limit_deg == pytest.approx(6.0)
+    assert h10.source_orb_limit_deg == pytest.approx(0.6)
+    assert h5.noninteger_extension is False
+    assert h10.noninteger_extension is False
+    assert h5.authority == policy.authority
+    assert h5.source_locator == policy.source_locator
+    assert h5.formula == policy.formula
+
+
+def test_fractional_orb_truth_flags_moira_continuous_extension():
+    truth = HarmonicOrbPolicy(reference_orb_deg=2.0).resolve(5.5)
+
+    assert truth.harmonic == pytest.approx(5.5)
+    assert truth.projected_orb_limit_deg == pytest.approx(2.0)
+    assert truth.source_orb_limit_deg == pytest.approx(2.0 / 5.5)
+    assert truth.noninteger_extension is True
+
+
+def test_addey_orb_truth_is_immutable_and_constructor_enforces_formula():
+    truth = HarmonicOrbPolicy(reference_orb_deg=6.0).resolve(5)
+
+    with pytest.raises(FrozenInstanceError):
+        truth.source_orb_limit_deg = 6.0
+    with pytest.raises(ValueError, match="reference_orb_deg / harmonic"):
+        HarmonicOrbTruth(
+            harmonic=5,
+            reference_orb_deg=6.0,
+            projected_orb_limit_deg=6.0,
+            source_orb_limit_deg=6.0,
+            scaling_mode=HarmonicOrbScalingMode.ADDEY_INVERSE_HARMONIC,
+            noninteger_extension=False,
+        )
 
 
 # ============================================================================
@@ -331,6 +456,66 @@ def test_harmonic_conjunctions_h4_venus_mars():
     assert vm[0].longitude == pytest.approx(256.0, abs=1e-4)
 
 
+def test_fractional_harmonic_does_not_reuse_truncated_h5_conjunction():
+    h5 = harmonic_conjunctions({"Sun": 0.0, "Moon": 72.0}, 5, orb=0.001)
+    h5_5 = harmonic_conjunctions({"Sun": 0.0, "Moon": 72.0}, 5.5, orb=0.001)
+
+    assert len(h5) == 1
+    assert h5_5 == []
+
+
+def test_fractional_harmonic_conjunction_preserves_resolved_harmonic():
+    longitudes = {"Sun": 0.0, "Moon": 360.0 / 5.5}
+
+    conjunctions = harmonic_conjunctions(longitudes, 5.5, orb=0.001)
+
+    assert len(conjunctions) == 1
+    assert conjunctions[0].harmonic == pytest.approx(5.5)
+    assert conjunctions[0].orb == pytest.approx(0.0, abs=1e-12)
+
+
+def test_addey_policy_uses_o1_on_projected_circle_not_o1_over_h_twice():
+    policy = HarmonicOrbPolicy(reference_orb_deg=6.0)
+
+    admitted = harmonic_conjunctions(
+        {"Sun": 0.0, "Moon": 72.0 + 1.1},
+        5,
+        orb_policy=policy,
+    )
+    rejected = harmonic_conjunctions(
+        {"Sun": 0.0, "Moon": 72.0 + 1.3},
+        5,
+        orb_policy=policy,
+    )
+
+    assert len(admitted) == 1
+    assert admitted[0].orb == pytest.approx(5.5)
+    assert rejected == []
+
+
+def test_legacy_orb_and_explicit_policy_have_identical_numeric_truth():
+    longitudes = {"Sun": 0.0, "Moon": 73.1}
+
+    legacy = harmonic_conjunctions(longitudes, 5, 6.0)
+    explicit = harmonic_conjunctions(
+        longitudes,
+        5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=6.0),
+    )
+
+    assert explicit == legacy
+
+
+def test_harmonic_conjunctions_rejects_conflicting_orb_inputs():
+    with pytest.raises(ValueError, match="cannot both be supplied"):
+        harmonic_conjunctions(
+            _LONS_PAIR,
+            5,
+            1.0,
+            orb_policy=HarmonicOrbPolicy(reference_orb_deg=1.0),
+        )
+
+
 # ============================================================================
 # Phase 6 — harmonic_pattern_score
 # ============================================================================
@@ -386,6 +571,19 @@ def test_harmonic_pattern_score_conjunctions_are_harmonic_conjunction_instances(
 def test_harmonic_pattern_score_harmonic_field():
     ps = harmonic_pattern_score(_LONS, 9, orb=0.001)
     assert ps.harmonic == 9
+
+
+def test_harmonic_pattern_score_preserves_fractional_harmonic():
+    score = harmonic_pattern_score(
+        {"Sun": 0.0, "Moon": 360.0 / 5.5},
+        5.5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=0.001),
+    )
+
+    assert score.harmonic == pytest.approx(5.5)
+    assert score.cluster_sizes == (2,)
+    assert score.score == pytest.approx(1.0)
+    assert all(item.harmonic == pytest.approx(5.5) for item in score.conjunctions)
 
 
 # ============================================================================
@@ -453,6 +651,23 @@ def test_harmonic_sweep_h4_score_geq_1():
     assert h4.score >= 1.0
 
 
+def test_harmonic_sweep_propagates_explicit_orb_policy():
+    longitudes = {"Sun": 0.0, "Moon": 72.1}
+    tight = harmonic_sweep(
+        longitudes,
+        max_harmonic=5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=0.4),
+    )
+    wide = harmonic_sweep(
+        longitudes,
+        max_harmonic=5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=0.6),
+    )
+
+    assert next(entry for entry in tight if entry.harmonic == 5).score == 0.0
+    assert next(entry for entry in wide if entry.harmonic == 5).score == 1.0
+
+
 # ============================================================================
 # Phase 8 — harmonic_aspects
 # ============================================================================
@@ -504,6 +719,23 @@ def test_harmonic_aspects_empty_for_extreme_tight_orb():
     ha = harmonic_aspects({"Saturn": 358.0, "Jupiter": 310.0}, orb=1e-9, max_harmonic=12)
     # Just verify it's a list (may or may not be empty depending on exact math)
     assert isinstance(ha, list)
+
+
+def test_harmonic_aspects_propagates_explicit_orb_policy():
+    longitudes = {"Sun": 0.0, "Moon": 72.1}
+    tight = harmonic_aspects(
+        longitudes,
+        max_harmonic=5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=0.4),
+    )
+    wide = harmonic_aspects(
+        longitudes,
+        max_harmonic=5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=0.6),
+    )
+
+    assert not any(aspect.harmonic == 5 for aspect in tight)
+    assert any(aspect.harmonic == 5 for aspect in wide)
 
 
 # ============================================================================
@@ -563,6 +795,19 @@ def test_composite_harmonic_default_labels():
     for c in ch:
         assert c.planet_a.startswith("A:") or c.planet_a.startswith("B:")
         assert c.planet_b.startswith("A:") or c.planet_b.startswith("B:")
+
+
+def test_composite_harmonic_preserves_fractional_harmonic_and_policy():
+    conjunctions = composite_harmonic(
+        {"Sun": 0.0},
+        {"Moon": 360.0 / 5.5},
+        5.5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=0.001),
+    )
+
+    assert len(conjunctions) == 1
+    assert conjunctions[0].harmonic == pytest.approx(5.5)
+    assert conjunctions[0].orb == pytest.approx(0.0, abs=1e-12)
 
 
 # ============================================================================
@@ -632,6 +877,51 @@ def test_vibrational_fingerprint_no_activated_chart():
 def test_vibrational_fingerprint_sweep_entries_are_correct_type():
     vf = vibrational_fingerprint(_LONS, max_harmonic=5, orb=1.0)
     assert all(isinstance(e, HarmonicSweepEntry) for e in vf.sweep)
+
+
+def test_vibrational_fingerprint_propagates_explicit_orb_policy():
+    longitudes = {"Sun": 0.0, "Moon": 72.1}
+    tight = vibrational_fingerprint(
+        longitudes,
+        max_harmonic=5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=0.4),
+    )
+    wide = vibrational_fingerprint(
+        longitudes,
+        max_harmonic=5,
+        orb_policy=HarmonicOrbPolicy(reference_orb_deg=0.6),
+    )
+
+    assert next(entry for entry in tight.sweep if entry.harmonic == 5).score == 0.0
+    assert next(entry for entry in wide.sweep if entry.harmonic == 5).score == 1.0
+
+
+def test_harmonics_service_preserves_fractional_h_and_orb_policy():
+    policy = HarmonicOrbPolicy(reference_orb_deg=0.001)
+    longitudes = {"Sun": 0.0, "Moon": 360.0 / 5.5}
+
+    positions = HarmonicsService.calculate_harmonic(longitudes, 5.5)
+    conjunctions = HarmonicsService.harmonic_conjunctions(
+        longitudes,
+        5.5,
+        orb_policy=policy,
+    )
+    score = HarmonicsService.harmonic_pattern_score(
+        longitudes,
+        5.5,
+        orb_policy=policy,
+    )
+    composite = HarmonicsService.composite_harmonic(
+        {"Sun": 0.0},
+        {"Moon": 360.0 / 5.5},
+        5.5,
+        orb_policy=policy,
+    )
+
+    assert all(position.harmonic == pytest.approx(5.5) for position in positions)
+    assert len(conjunctions) == 1
+    assert score.harmonic == pytest.approx(5.5)
+    assert len(composite) == 1
 
 
 # ============================================================================

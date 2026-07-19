@@ -3,10 +3,20 @@ from __future__ import annotations
 import importlib
 
 import moira.facade as facade
+from moira.harmonic_transits import (
+    HarmonicTransitSample,
+    MixedOriginHarmonicTransitForecastPolicy,
+)
 from moira.houses import HouseCusps
 
 huber = importlib.import_module("moira.huber")
 nine_parts = importlib.import_module("moira.nine_parts")
+
+
+class _HarmonicChart:
+    def longitudes(self, *, include_nodes: bool) -> dict[str, float]:
+        assert include_nodes is False
+        return {"Sun": 0.0, "Moon": 72.0}
 
 
 def _house_cusps() -> HouseCusps:
@@ -28,6 +38,28 @@ def _nine_parts_planets() -> dict[str, float]:
         "Saturn": 285.0,
         "North Node": 100.0,
     }
+
+
+def test_classical_facade_preserves_fractional_harmonic() -> None:
+    positions = facade.Moira().harmonic(_HarmonicChart(), 5.5)
+
+    by_body = {position.planet: position for position in positions}
+    assert by_body["Moon"].harmonic == 5.5
+    assert by_body["Moon"].harmonic_longitude == 36.0
+
+
+def test_classical_facade_exposes_sampled_harmonic_transit_forecast() -> None:
+    policy = MixedOriginHarmonicTransitForecastPolicy(harmonics=(5,))
+    samples = (HarmonicTransitSample(2451545.0, {"Mars": 144.0}),)
+
+    result = facade.Moira().harmonic_transit_forecast(
+        {"Sun": 0.0, "Moon": 72.0},
+        samples,
+        policy,
+    )
+
+    assert result.window_count == 1
+    assert result.windows[0].harmonic == 5
 
 
 def test_classical_facade_huber_wrappers_delegate_to_engine() -> None:

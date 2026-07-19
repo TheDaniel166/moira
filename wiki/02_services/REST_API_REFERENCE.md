@@ -65,8 +65,9 @@ Implemented:
 - phase 12 opened with bounded Uranian/Hamburg School hypothetical-body
   catalog, single-position, and bulk-position routes, followed by bounded
   Harmonics preset, direct chart, age-harmonic chart, conjunction,
-  pattern-score, aspect, sweep, fingerprint, and composite routes over
-  caller-supplied longitudes, followed by bounded Phase/Photometry illuminated
+  pattern-score, aspect, sweep, fingerprint, composite, and sampled
+  mixed-origin transit-forecast routes over caller-supplied longitudes,
+  followed by bounded Phase/Photometry illuminated
   fraction, synodic, elongation, phase-angle, angular-diameter, and
   apparent-magnitude routes, followed by bounded ordinary Antiscia direct
   reflection, pair contact, and fixed-point contact routes, followed by a
@@ -153,7 +154,7 @@ Not yet broadly exposed as REST families:
 | geodetic | 4 |
 | heliacal | 2 |
 | harmograms | 5 |
-| harmonics | 9 |
+| harmonics | 10 |
 | hermetic-decans | 4 |
 | houses | 2 |
 | huber | 6 |
@@ -1239,6 +1240,7 @@ reduced from UTC to UT1 before astronomical computation.
 | POST | `/v1/harmonics/sweep` | `harmonic_sweep_route` |
 | POST | `/v1/harmonics/fingerprint` | `harmonic_fingerprint_route` |
 | POST | `/v1/harmonics/composite` | `harmonic_composite_route` |
+| POST | `/v1/harmonics/transit-forecast` | `harmonic_transit_forecast_route` |
 | POST | `/v1/harmograms/vector` | `harmogram_vector_route` |
 | POST | `/v1/harmograms/zero-aries-vector` | `harmogram_zero_aries_vector_route` |
 | POST | `/v1/harmograms/intensity-spectrum` | `harmogram_intensity_spectrum_route` |
@@ -1601,27 +1603,58 @@ The admitted Harmonics REST surface is the bounded P12-02
 - `POST /v1/harmonics/sweep`
 - `POST /v1/harmonics/fingerprint`
 - `POST /v1/harmonics/composite`
+- `POST /v1/harmonics/transit-forecast`
 
-These routes accept caller-supplied named ecliptic longitude maps. They do not
+These routes accept caller-supplied named ecliptic longitude maps. Longitude
+scalars and orb values must be JSON numbers; booleans and numeric strings are
+rejected rather than coerced. They do not
 construct charts, derive ephemeris positions, use houses, apply ayanamsa, or
-perform event search. Direct chart responses preserve the requested/effective
-integer harmonic, input count, sorted harmonic-position records, preset
-metadata when known, and provenance identifying `moira.harmonics`,
-`calculate_harmonic`, caller-supplied longitude ownership, and the formula
-`(longitude * harmonic) mod 360`.
+generate transit samples. Direct chart, conjunction, pattern-score, and
+composite requests admit positive finite real `harmonic` values in the REST
+range `1..128`; `5.5` remains `5.5` and is not truncated to `5`. Integer values
+are ordinary cyclic harmonics. Non-integer values are explicit
+zero-Aries-anchored continuous multipliers computed from each input's canonical
+`[0, 360)` representative. Responses preserve the requested/effective value,
+input count, sorted positions, integer-preset metadata when known, and
+provenance identifying `moira.harmonics`, the engine entrypoint, caller-owned
+longitudes, and `(normalized_longitude * harmonic) mod 360`.
 
 Age-harmonic responses preserve the derived decimal harmonic, `jd_birth`,
-`jd_now`, and the basis `(jd_now - jd_birth) / tropical_year`.
+`jd_now`, and the basis `(jd_now - jd_birth) / tropical_year`. Age harmonic is
+not the transport adapter for an arbitrary fractional harmonic request.
 
 Pattern-analysis routes expose one-harmonic conjunctions, one-harmonic pattern
 scores, harmonic aspect decoding, bounded sweeps, bounded vibrational
 fingerprints, and bounded composite harmonic comparison. Sweep and fingerprint
 provenance explicitly labels scores as pattern-density measures rather than
-interpretive judgments.
+interpretive judgments. Aspects, sweeps, and fingerprints retain integer
+harmonic ranges.
+
+Conjunction-bearing requests retain the compatibility `orb` field as the
+configurable H1-reference and projected-chart threshold. Optional
+`orb_policy={"scaling_mode":"addey_inverse_harmonic"}` makes the admitted
+policy selection explicit. Provenance reports the projected limit `O_1`, its
+locally equivalent source-circle allowance `O_1/H`, authority, formula,
+adapter mode, and the continuous-extension flag. Clients must not divide the
+projected threshold by H again.
+
+`POST /v1/harmonics/transit-forecast` evaluates only caller-supplied,
+strictly time-ordered samples at explicitly requested integer harmonics. It
+admits complete triples in either `one_transit_two_natal` or
+`two_transits_one_natal` mode when all three projected positions fit within one
+minimum circular covering arc no wider than the resolved projected orb. It
+returns consecutive *observed windows* whose first, peak, and last times are
+supplied sample witnesses. It performs no interpolation and makes no exact
+ingress, perfection, egress, or Sirius-parity claim. Forecast transport is
+bounded to 12 bodies per origin, 512 samples, 16 requested harmonics, and
+25,000 candidate evaluations. Timestamp sequences must also have finite
+adjacent gaps and a finite total span.
 
 This admission does not expose unbounded harmonic sweeps, automatic chart
-construction, transit/progression harmonic search, harmogram/spectral-analysis
-products, chart rendering, or interpretive narrative text.
+construction, ephemeris sampling, fractional-H forecasting, progression
+harmonic search, interpolated or exact transit-event solving,
+harmogram/spectral-analysis products, chart rendering, or interpretive
+narrative text.
 
 ### Harmograms REST Admission Boundary
 

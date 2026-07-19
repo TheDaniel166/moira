@@ -8,6 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Provenance-Bearing Harmonic Orb Policy**: Added immutable
+  `HarmonicOrbPolicy` and resolved `HarmonicOrbTruth` vessels with the admitted
+  Addey inverse-harmonic relation `O_H = O_1 / H`. The configurable H1
+  reference remains the limit on the projected harmonic chart, while the
+  locally equivalent source-circle allowance is reported separately as `O_1/H`,
+  preventing accidental double division. Non-integer use is explicitly marked
+  as Moira's continuous extension of the cited rule. Conjunction-bearing REST
+  provenance now exposes scaling mode, authority, source locator, formula,
+  projected/source limits, request adapter mode, and extension truth.
+- **VA-Informed Sampled Harmonic Transit Forecasts**: Added the independent
+  `moira.harmonic_transits` module with immutable caller-supplied sample,
+  origin-qualified member, complete-triple, observed-window, policy, and
+  forecast vessels. It admits one-transit/two-natal and
+  two-transits/one-natal configurations at requested integer harmonics using
+  one minimum circular covering arc for all three members. Added
+  `Moira.harmonic_transit_forecast(...)` and
+  `POST /v1/harmonics/transit-forecast` with bounded bodies, samples,
+  harmonics, and candidate evaluations. Window boundaries and peaks are
+  supplied-sample witnesses; provenance explicitly disclaims interpolation,
+  exact ingress/egress, and Sirius parity. The route rejects coercive
+  longitude scalars, non-finite timestamp spans, and requests whose worst-case
+  materialized pattern count exceeds the declared 25,000-evaluation budget.
 - **First-Class Declination Aspects**: Added the governing
   `moira.declination_aspects` module with explicit Parallel/Contra-Parallel
   kinds, admission policy, hemisphere/equator doctrine, immutable analysis
@@ -99,6 +121,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   nominal mean-limb path limits and from observed IOTA contact records.
 
 ### Fixed
+- **Positive-Real Harmonic Identity**: Direct harmonic chart, conjunction,
+  pattern-score, and composite calculations now preserve every positive finite
+  real H instead of silently coercing `5.5` to `5`. Inputs are normalized to
+  the canonical zero-Aries `[0, 360)` branch before multiplication, making the
+  non-integer continuous-multiplier semantics explicit. Integer range/sweep
+  and forecast products remain integer by doctrine. Urania Workspace can now
+  delegate fractional H directly and no longer manufactures a synthetic
+  age-harmonic Julian Day to bypass the former truncation. Harmonic REST
+  longitude and orb scalars now reject booleans and numeric strings rather
+  than silently coercing scientific inputs.
 - **Pattern Role And Structural-Containment Doctrine**: Grand Trine now carries
   explicit cycle-member/cycle-link truth; Minor Grand Trine preserves
   base/support structure; and Cradle and Trapeze preserve their opposition
@@ -387,6 +419,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   validation, and exclude TCP, TLS, reverse-proxy, and public-network latency.
 
 ### Compatibility
+- Existing `/v1/harmonics/*` paths and the age-harmonic route remain available.
+  Single-H request schemas are widened compatibly from integer to real
+  `harmonic`; range, sweep, and transit-forecast harmonic lists remain strict
+  integers. The existing `orb` field remains the H1-reference/projected limit
+  and is adapted to `HarmonicOrbPolicy`; the explicit `orb_policy` object and
+  `/v1/harmonics/transit-forecast` route are additive.
 - Historical `moira.aspects` declination imports, package-root exports,
   `Moira.declination_aspects_from_declinations(...)`, and
   `POST /v1/aspects/from-declinations` remain available. The legacy
@@ -435,6 +473,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as "not ready". This corrects the previous HTTP 200/`ready=false` mismatch.
 
 ### Validation
+- Added engine, facade, REST, and OpenAPI regression coverage for fractional-H
+  non-truncation, zero-Aries canonical-branch truth, strict numeric rejection,
+  integer range doctrine, Addey projected/source orb equivalence, explicit and
+  legacy policy provenance, and composite identity. Added sampled forecast
+  coverage for both mixed-origin modes, complete-arc rejection of pairwise
+  chains, immutable inputs/results, cross-origin body identity, window
+  splitting, duration filtering, deterministic peak selection, request work
+  bounds, serialization, and the no-parity/no-exact-contact claim boundary.
 - Added individual primary-authority lunar-contact comparisons for every
   applicable P1, U1, U2, U3, U4, and P4 instant in named NASA/GSFC 2023
   penumbral, 2024 partial, 2025 total, and limiting 2027 penumbral figures.

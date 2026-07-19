@@ -2,8 +2,9 @@
 Harmonic Engine — moira/harmonics.py
 
 Archetype: Engine
-Purpose: Computes harmonic chart positions by multiplying natal ecliptic
-         longitudes by a harmonic number and reducing modulo 360°, with
+Purpose: Computes harmonic chart positions by multiplying canonical natal
+         ecliptic longitudes by a positive real harmonic and reducing modulo
+         360° from zero Aries, with
          a preset catalogue of astrologically named harmonics, dynamic
          age-harmonic timing, conjunction detection, pattern scoring,
          series sweeps, natal aspect identification, composite resonance
@@ -14,7 +15,8 @@ Boundary declaration:
           catalogue, age harmonic derivation, inter-harmonic conjunction
           detection, Cochrane-style pattern scoring, harmonic series
           sweeps, natal aspect decoding, composite/synastry harmonic
-          comparison, and vibrational fingerprint synthesis.
+          comparison, vibrational fingerprint synthesis, and the explicit
+          Addey inverse-harmonic orb policy.
     Delegates: sign derivation to moira.constants.sign_of.
 
 Import-time side effects: None
@@ -30,6 +32,9 @@ Public surface / exports:
     HarmonicSweepEntry    — one harmonic's score in a series sweep
     HarmonicAspect        — natal pair decoded as an Hth-harmonic conjunction
     VibrationFingerprint  — full vibrational profile across H1..Hmax
+    HarmonicOrbScalingMode — admitted harmonic-orb scaling doctrine
+    HarmonicOrbPolicy      — immutable H1-reference orb policy
+    HarmonicOrbTruth       — resolved projected/source limits and provenance
 
     # Service class
     HarmonicsService      — OOP facade over all harmonic computations
@@ -53,6 +58,9 @@ Public surface / exports:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
+import math
+from numbers import Real
 
 from .constants import TROPICAL_YEAR, sign_of
 
@@ -64,6 +72,9 @@ __all__ = [
     "HarmonicSweepEntry",
     "HarmonicAspect",
     "VibrationFingerprint",
+    "HarmonicOrbScalingMode",
+    "HarmonicOrbPolicy",
+    "HarmonicOrbTruth",
     # Service class
     "HarmonicsService",
     # Constants
@@ -85,6 +96,10 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 _TROPICAL_YEAR: float = TROPICAL_YEAR
+
+_ADDEY_ORB_AUTHORITY = "John Addey, Harmonics in Astrology, Ch. 14"
+_ADDEY_ORB_SOURCE_LOCATOR = "Harmonics in Astrology, Chapter 14"
+_ADDEY_ORB_FORMULA = "O_H = O_1 / H"
 
 
 # ---------------------------------------------------------------------------
@@ -110,6 +125,143 @@ def _circ_mean_360(a: float, b: float) -> float:
 def _h_label(h: float) -> str:
     """Format a harmonic number compactly: integer-valued floats drop the decimal."""
     return f"H{int(h)}" if h == int(h) else f"H{h:.4f}"
+
+
+def _positive_harmonic(value: object) -> float:
+    """Return one positive finite real harmonic without integer coercion."""
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise ValueError("harmonic must be a positive finite real number")
+    harmonic = float(value)
+    if not math.isfinite(harmonic) or harmonic <= 0.0:
+        raise ValueError("harmonic must be a positive finite real number")
+    return harmonic
+
+
+def _nonnegative_orb(value: object, *, name: str = "reference_orb_deg") -> float:
+    """Return one finite non-negative orb expressed in degrees."""
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise ValueError(f"{name} must be a finite non-negative real number")
+    orb = float(value)
+    if not math.isfinite(orb) or orb < 0.0:
+        raise ValueError(f"{name} must be a finite non-negative real number")
+    return orb
+
+
+def _canonical_longitude(value: object) -> float:
+    """Normalize one finite real longitude onto Moira's zero-Aries branch."""
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise ValueError("planet longitudes must be finite real numbers")
+    longitude = float(value)
+    if not math.isfinite(longitude):
+        raise ValueError("planet longitudes must be finite real numbers")
+    return longitude % 360.0
+
+
+class HarmonicOrbScalingMode(str, Enum):
+    """Admitted relation between an H1-reference orb and source-circle orb."""
+
+    ADDEY_INVERSE_HARMONIC = "addey_inverse_harmonic"
+
+
+@dataclass(frozen=True, slots=True)
+class HarmonicOrbTruth:
+    """Resolved orb limits and provenance for one harmonic.
+
+    ``projected_orb_limit_deg`` is the limit on the transformed harmonic
+    circle.  ``source_orb_limit_deg`` is its equivalent local allowance on
+    the source zodiacal circle.  A non-integer harmonic is an explicit Moira
+    continuous extension of Addey's integer-harmonic rule.
+    """
+
+    harmonic: float
+    reference_orb_deg: float
+    projected_orb_limit_deg: float
+    source_orb_limit_deg: float
+    scaling_mode: HarmonicOrbScalingMode
+    noninteger_extension: bool
+    authority: str = field(init=False, default=_ADDEY_ORB_AUTHORITY)
+    source_locator: str = field(init=False, default=_ADDEY_ORB_SOURCE_LOCATOR)
+    formula: str = field(init=False, default=_ADDEY_ORB_FORMULA)
+
+    def __post_init__(self) -> None:
+        harmonic = _positive_harmonic(self.harmonic)
+        reference_orb = _nonnegative_orb(self.reference_orb_deg)
+        projected_limit = _nonnegative_orb(
+            self.projected_orb_limit_deg,
+            name="projected_orb_limit_deg",
+        )
+        source_limit = _nonnegative_orb(
+            self.source_orb_limit_deg,
+            name="source_orb_limit_deg",
+        )
+        if self.scaling_mode is not HarmonicOrbScalingMode.ADDEY_INVERSE_HARMONIC:
+            raise ValueError("unsupported harmonic orb scaling mode")
+        if projected_limit != reference_orb:
+            raise ValueError("projected orb limit must equal the H1 reference orb")
+        expected_source_limit = reference_orb / harmonic
+        if source_limit != expected_source_limit:
+            raise ValueError("source orb limit must equal reference_orb_deg / harmonic")
+        expected_extension = not harmonic.is_integer()
+        if self.noninteger_extension is not expected_extension:
+            raise ValueError("noninteger_extension must describe the resolved harmonic")
+        object.__setattr__(self, "harmonic", harmonic)
+        object.__setattr__(self, "reference_orb_deg", reference_orb)
+        object.__setattr__(self, "projected_orb_limit_deg", projected_limit)
+        object.__setattr__(self, "source_orb_limit_deg", source_limit)
+
+
+@dataclass(frozen=True, slots=True)
+class HarmonicOrbPolicy:
+    """H1-equivalent conjunction-orb policy with fixed Addey provenance."""
+
+    reference_orb_deg: float = 1.0
+    scaling_mode: HarmonicOrbScalingMode = (
+        HarmonicOrbScalingMode.ADDEY_INVERSE_HARMONIC
+    )
+    authority: str = field(init=False, default=_ADDEY_ORB_AUTHORITY)
+    source_locator: str = field(init=False, default=_ADDEY_ORB_SOURCE_LOCATOR)
+    formula: str = field(init=False, default=_ADDEY_ORB_FORMULA)
+
+    def __post_init__(self) -> None:
+        reference_orb = _nonnegative_orb(self.reference_orb_deg)
+        if self.scaling_mode is not HarmonicOrbScalingMode.ADDEY_INVERSE_HARMONIC:
+            raise ValueError("unsupported harmonic orb scaling mode")
+        object.__setattr__(self, "reference_orb_deg", reference_orb)
+
+    def resolve(self, harmonic: float) -> HarmonicOrbTruth:
+        """Resolve projected and source-circle limits for one harmonic."""
+        resolved_harmonic = _positive_harmonic(harmonic)
+        return HarmonicOrbTruth(
+            harmonic=resolved_harmonic,
+            reference_orb_deg=self.reference_orb_deg,
+            projected_orb_limit_deg=self.reference_orb_deg,
+            source_orb_limit_deg=self.reference_orb_deg / resolved_harmonic,
+            scaling_mode=self.scaling_mode,
+            noninteger_extension=not resolved_harmonic.is_integer(),
+        )
+
+
+def _selected_orb_policy(
+    orb: float | None,
+    orb_policy: HarmonicOrbPolicy | None,
+) -> HarmonicOrbPolicy:
+    if orb_policy is not None:
+        if orb is not None:
+            raise ValueError("orb and orb_policy cannot both be supplied")
+        if not isinstance(orb_policy, HarmonicOrbPolicy):
+            raise ValueError("orb_policy must be a HarmonicOrbPolicy")
+        return orb_policy
+    return HarmonicOrbPolicy(
+        reference_orb_deg=1.0 if orb is None else orb,
+    )
+
+
+def _resolve_orb_truth(
+    harmonic: float,
+    orb: float | None,
+    orb_policy: HarmonicOrbPolicy | None,
+) -> HarmonicOrbTruth:
+    return _selected_orb_policy(orb, orb_policy).resolve(harmonic)
 
 
 # ---------------------------------------------------------------------------
@@ -298,7 +450,7 @@ class HarmonicPatternScore:
     }
     [/MACHINE_CONTRACT]
     """
-    harmonic:      int
+    harmonic:      float
     conjunctions:  tuple  # tuple[HarmonicConjunction, ...]
     cluster_sizes: tuple  # tuple[int, ...] sorted descending — one entry per cluster
     score:         float  # sum of n*(n-1)//2 per cluster
@@ -519,7 +671,7 @@ class HarmonicsService:
     @staticmethod
     def calculate_harmonic(
         planet_longitudes: dict[str, float],
-        harmonic: int,
+        harmonic: float,
     ) -> list[HarmonicPosition]:
         """
         Calculate harmonic positions for all bodies.
@@ -527,18 +679,18 @@ class HarmonicsService:
         Parameters
         ----------
         planet_longitudes : dict of body name → natal longitude (degrees)
-        harmonic          : harmonic number (1 = natal, 4 = square harmonic, etc.)
+        harmonic          : positive real harmonic (1 = natal, 4 = square, etc.)
 
         Returns
         -------
         List of HarmonicPosition sorted by harmonic longitude.
         """
-        h = max(1.0, float(int(harmonic)))
+        h = _positive_harmonic(harmonic)
         results = [
             HarmonicPosition(
                 planet=name.strip().title(),
-                natal_longitude=lon,
-                harmonic_longitude=(lon * h) % 360.0,
+                natal_longitude=_canonical_longitude(lon),
+                harmonic_longitude=(_canonical_longitude(lon) * h) % 360.0,
                 harmonic=h,
             )
             for name, lon in planet_longitudes.items()
@@ -547,9 +699,11 @@ class HarmonicsService:
         return results
 
     @staticmethod
-    def get_preset_info(harmonic: int) -> tuple[str, str]:
+    def get_preset_info(harmonic: float) -> tuple[str, str]:
         """Return (name, description) for a harmonic number."""
-        return HARMONIC_PRESETS.get(harmonic, (f"H{harmonic}", "Custom harmonic"))
+        h = _positive_harmonic(harmonic)
+        key = int(h) if h.is_integer() else None
+        return HARMONIC_PRESETS.get(key, (_h_label(h), "Custom harmonic"))
 
     @staticmethod
     def age_harmonic(
@@ -563,59 +717,104 @@ class HarmonicsService:
     @staticmethod
     def harmonic_conjunctions(
         planet_longitudes: dict[str, float],
-        harmonic: int,
-        orb: float = 1.0,
+        harmonic: float,
+        orb: float | None = None,
+        *,
+        orb_policy: HarmonicOrbPolicy | None = None,
     ) -> list[HarmonicConjunction]:
         """Delegate to module-level harmonic_conjunctions()."""
-        return harmonic_conjunctions(planet_longitudes, harmonic, orb)
+        return harmonic_conjunctions(
+            planet_longitudes,
+            harmonic,
+            orb,
+            orb_policy=orb_policy,
+        )
 
     @staticmethod
     def harmonic_pattern_score(
         planet_longitudes: dict[str, float],
-        harmonic: int,
-        orb: float = 1.0,
+        harmonic: float,
+        orb: float | None = None,
+        *,
+        orb_policy: HarmonicOrbPolicy | None = None,
     ) -> HarmonicPatternScore:
         """Delegate to module-level harmonic_pattern_score()."""
-        return harmonic_pattern_score(planet_longitudes, harmonic, orb)
+        return harmonic_pattern_score(
+            planet_longitudes,
+            harmonic,
+            orb,
+            orb_policy=orb_policy,
+        )
 
     @staticmethod
     def harmonic_sweep(
         planet_longitudes: dict[str, float],
         max_harmonic: int = 32,
-        orb: float = 1.0,
+        orb: float | None = None,
+        *,
+        orb_policy: HarmonicOrbPolicy | None = None,
     ) -> list[HarmonicSweepEntry]:
         """Delegate to module-level harmonic_sweep()."""
-        return harmonic_sweep(planet_longitudes, max_harmonic, orb)
+        return harmonic_sweep(
+            planet_longitudes,
+            max_harmonic,
+            orb,
+            orb_policy=orb_policy,
+        )
 
     @staticmethod
     def harmonic_aspects(
         planet_longitudes: dict[str, float],
-        orb: float = 1.0,
+        orb: float | None = None,
         max_harmonic: int = 32,
+        *,
+        orb_policy: HarmonicOrbPolicy | None = None,
     ) -> list[HarmonicAspect]:
         """Delegate to module-level harmonic_aspects()."""
-        return harmonic_aspects(planet_longitudes, orb, max_harmonic)
+        return harmonic_aspects(
+            planet_longitudes,
+            orb,
+            max_harmonic,
+            orb_policy=orb_policy,
+        )
 
     @staticmethod
     def composite_harmonic(
         lons_a: dict[str, float],
         lons_b: dict[str, float],
-        harmonic: int,
-        orb: float = 1.0,
+        harmonic: float,
+        orb: float | None = None,
         label_a: str = "A",
         label_b: str = "B",
+        *,
+        orb_policy: HarmonicOrbPolicy | None = None,
     ) -> list[HarmonicConjunction]:
         """Delegate to module-level composite_harmonic()."""
-        return composite_harmonic(lons_a, lons_b, harmonic, orb, label_a, label_b)
+        return composite_harmonic(
+            lons_a,
+            lons_b,
+            harmonic,
+            orb,
+            label_a,
+            label_b,
+            orb_policy=orb_policy,
+        )
 
     @staticmethod
     def vibrational_fingerprint(
         planet_longitudes: dict[str, float],
         max_harmonic: int = 32,
-        orb: float = 1.0,
+        orb: float | None = None,
+        *,
+        orb_policy: HarmonicOrbPolicy | None = None,
     ) -> VibrationFingerprint:
         """Delegate to module-level vibrational_fingerprint()."""
-        return vibrational_fingerprint(planet_longitudes, max_harmonic, orb)
+        return vibrational_fingerprint(
+            planet_longitudes,
+            max_harmonic,
+            orb,
+            orb_policy=orb_policy,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -631,7 +830,7 @@ _service = HarmonicsService()
 
 def calculate_harmonic(
     planet_longitudes: dict[str, float],
-    harmonic: int,
+    harmonic: float,
 ) -> list[HarmonicPosition]:
     """
     Compute harmonic chart positions by projecting each natal longitude
@@ -640,7 +839,7 @@ def calculate_harmonic(
     Parameters
     ----------
     planet_longitudes : dict of body name → longitude (degrees)
-    harmonic          : harmonic number (integer >= 1)
+    harmonic          : positive finite real harmonic
 
     Returns
     -------
@@ -690,8 +889,8 @@ def age_harmonic(
     results = [
         HarmonicPosition(
             planet=name.strip().title(),
-            natal_longitude=lon,
-            harmonic_longitude=(lon * h) % 360.0,
+            natal_longitude=_canonical_longitude(lon),
+            harmonic_longitude=(_canonical_longitude(lon) * h) % 360.0,
             harmonic=h,
         )
         for name, lon in planet_longitudes.items()
@@ -706,8 +905,10 @@ def age_harmonic(
 
 def harmonic_conjunctions(
     planet_longitudes: dict[str, float],
-    harmonic: int,
-    orb: float = 1.0,
+    harmonic: float,
+    orb: float | None = None,
+    *,
+    orb_policy: HarmonicOrbPolicy | None = None,
 ) -> list[HarmonicConjunction]:
     """
     Find all planet pairs that are conjunct on the Hth harmonic chart.
@@ -722,17 +923,20 @@ def harmonic_conjunctions(
     Parameters
     ----------
     planet_longitudes : dict of body name → natal longitude (degrees)
-    harmonic          : harmonic number (integer >= 1)
-    orb               : maximum circular distance on the harmonic chart
-                        to qualify as a conjunction (degrees, default 1.0)
+    harmonic          : positive finite real harmonic
+    orb               : legacy positional H1-reference conjunction orb;
+                        defaults to 1.0 when no policy is supplied
+    orb_policy        : explicit H1-reference orb policy; mutually exclusive
+                        with ``orb``
 
     Returns
     -------
     List of HarmonicConjunction sorted by orb (tightest first).
     """
-    h = max(1, int(harmonic))
+    h = _positive_harmonic(harmonic)
+    orb_truth = _resolve_orb_truth(h, orb, orb_policy)
     positions: dict[str, float] = {
-        name.strip().title(): (lon * h) % 360.0
+        name.strip().title(): (_canonical_longitude(lon) * h) % 360.0
         for name, lon in planet_longitudes.items()
     }
     names = list(positions.keys())
@@ -742,7 +946,7 @@ def harmonic_conjunctions(
             a, b = names[i], names[j]
             ha, hb = positions[a], positions[b]
             d = _circ_dist_360(ha, hb)
-            if d <= orb:
+            if d <= orb_truth.projected_orb_limit_deg:
                 result.append(HarmonicConjunction(
                     planet_a=a,
                     planet_b=b,
@@ -756,8 +960,10 @@ def harmonic_conjunctions(
 
 def harmonic_pattern_score(
     planet_longitudes: dict[str, float],
-    harmonic: int,
-    orb: float = 1.0,
+    harmonic: float,
+    orb: float | None = None,
+    *,
+    orb_policy: HarmonicOrbPolicy | None = None,
 ) -> HarmonicPatternScore:
     """
     Score the pattern density of a single harmonic for the given chart.
@@ -773,15 +979,21 @@ def harmonic_pattern_score(
     Parameters
     ----------
     planet_longitudes : dict of body name → natal longitude (degrees)
-    harmonic          : harmonic number (integer >= 1)
-    orb               : conjunction orb on the harmonic chart (degrees)
+    harmonic          : positive finite real harmonic
+    orb               : legacy positional H1-reference conjunction orb
+    orb_policy        : explicit H1-reference orb policy
 
     Returns
     -------
     HarmonicPatternScore with conjunctions, cluster_sizes, and score.
     """
-    h = max(1, int(harmonic))
-    conjs = harmonic_conjunctions(planet_longitudes, h, orb)
+    h = _positive_harmonic(harmonic)
+    selected_policy = _selected_orb_policy(orb, orb_policy)
+    conjs = harmonic_conjunctions(
+        planet_longitudes,
+        h,
+        orb_policy=selected_policy,
+    )
 
     if not conjs:
         return HarmonicPatternScore(
@@ -828,7 +1040,9 @@ def harmonic_pattern_score(
 def harmonic_sweep(
     planet_longitudes: dict[str, float],
     max_harmonic: int = 32,
-    orb: float = 1.0,
+    orb: float | None = None,
+    *,
+    orb_policy: HarmonicOrbPolicy | None = None,
 ) -> list[HarmonicSweepEntry]:
     """
     Sweep harmonics H1 through Hmax and rank each by its pattern score.
@@ -847,16 +1061,25 @@ def harmonic_sweep(
     ----------
     planet_longitudes : dict of body name → natal longitude (degrees)
     max_harmonic      : highest harmonic to include in the sweep (default 32)
-    orb               : conjunction orb on each harmonic chart (degrees)
+    orb               : legacy positional H1-reference conjunction orb;
+                        the projected limit remains O1 and the equivalent
+                        source-circle limit is O1/H
+    orb_policy        : explicit H1-reference orb policy; mutually exclusive
+                        with ``orb``
 
     Returns
     -------
     List of HarmonicSweepEntry sorted by score descending, then harmonic ascending.
     """
     n = max(1, int(max_harmonic))
+    selected_policy = _selected_orb_policy(orb, orb_policy)
     entries: list[HarmonicSweepEntry] = []
     for h in range(1, n + 1):
-        ps = harmonic_pattern_score(planet_longitudes, h, orb)
+        ps = harmonic_pattern_score(
+            planet_longitudes,
+            h,
+            orb_policy=selected_policy,
+        )
         entries.append(HarmonicSweepEntry(
             harmonic=h,
             score=ps.score,
@@ -869,8 +1092,10 @@ def harmonic_sweep(
 
 def harmonic_aspects(
     planet_longitudes: dict[str, float],
-    orb: float = 1.0,
+    orb: float | None = None,
     max_harmonic: int = 32,
+    *,
+    orb_policy: HarmonicOrbPolicy | None = None,
 ) -> list[HarmonicAspect]:
     """
     Decode every natal planet pair as a harmonic conjunction.
@@ -889,9 +1114,12 @@ def harmonic_aspects(
     Parameters
     ----------
     planet_longitudes : dict of body name → natal longitude (degrees)
-    orb               : maximum circular distance on the harmonic chart
-                        to qualify (degrees, default 1.0)
+    orb               : legacy positional H1-reference conjunction orb;
+                        the projected limit remains O1 and the equivalent
+                        source-circle limit is O1/H
     max_harmonic      : highest harmonic to test (default 32)
+    orb_policy        : explicit H1-reference orb policy; mutually exclusive
+                        with ``orb``
 
     Returns
     -------
@@ -899,10 +1127,16 @@ def harmonic_aspects(
     first, then tightest orb within each harmonic.
     """
     names_lons: dict[str, float] = {
-        n.strip().title(): lon for n, lon in planet_longitudes.items()
+        n.strip().title(): _canonical_longitude(lon)
+        for n, lon in planet_longitudes.items()
     }
     names = list(names_lons.keys())
     n = max(1, int(max_harmonic))
+    selected_policy = _selected_orb_policy(orb, orb_policy)
+    orb_truth_by_harmonic = {
+        h: selected_policy.resolve(float(h))
+        for h in range(1, n + 1)
+    }
     result: list[HarmonicAspect] = []
 
     for i in range(len(names)):
@@ -913,10 +1147,11 @@ def harmonic_aspects(
             if sep > 180.0:
                 sep = 360.0 - sep
             for h in range(1, n + 1):
+                orb_truth = orb_truth_by_harmonic[h]
                 ha = (lon_a * h) % 360.0
                 hb = (lon_b * h) % 360.0
                 d = _circ_dist_360(ha, hb)
-                if d <= orb:
+                if d <= orb_truth.projected_orb_limit_deg:
                     result.append(HarmonicAspect(
                         planet_a=a,
                         planet_b=b,
@@ -932,10 +1167,12 @@ def harmonic_aspects(
 def composite_harmonic(
     lons_a: dict[str, float],
     lons_b: dict[str, float],
-    harmonic: int,
-    orb: float = 1.0,
+    harmonic: float,
+    orb: float | None = None,
     label_a: str = "A",
     label_b: str = "B",
+    *,
+    orb_policy: HarmonicOrbPolicy | None = None,
 ) -> list[HarmonicConjunction]:
     """
     Find cross-chart harmonic conjunctions between two natal charts.
@@ -952,29 +1189,32 @@ def composite_harmonic(
     ----------
     lons_a     : dict of body name → natal longitude for person A (degrees)
     lons_b     : dict of body name → natal longitude for person B (degrees)
-    harmonic   : harmonic number (integer >= 1)
-    orb        : maximum circular distance to qualify (degrees, default 1.0)
+    harmonic   : positive finite real harmonic
+    orb        : legacy positional H1-reference conjunction orb
     label_a    : prefix for chart A planet names (default "A")
     label_b    : prefix for chart B planet names (default "B")
+    orb_policy : explicit H1-reference orb policy; mutually exclusive with
+                 ``orb``
 
     Returns
     -------
     List of HarmonicConjunction (cross-chart only) sorted by orb tightest first.
     """
-    h = max(1, int(harmonic))
+    h = _positive_harmonic(harmonic)
+    orb_truth = _resolve_orb_truth(h, orb, orb_policy)
     ha: dict[str, float] = {
-        f"{label_a}:{n.strip().title()}": (lon * h) % 360.0
+        f"{label_a}:{n.strip().title()}": (_canonical_longitude(lon) * h) % 360.0
         for n, lon in lons_a.items()
     }
     hb: dict[str, float] = {
-        f"{label_b}:{n.strip().title()}": (lon * h) % 360.0
+        f"{label_b}:{n.strip().title()}": (_canonical_longitude(lon) * h) % 360.0
         for n, lon in lons_b.items()
     }
     result: list[HarmonicConjunction] = []
     for na, la in ha.items():
         for nb, lb in hb.items():
             d = _circ_dist_360(la, lb)
-            if d <= orb:
+            if d <= orb_truth.projected_orb_limit_deg:
                 result.append(HarmonicConjunction(
                     planet_a=na,
                     planet_b=nb,
@@ -989,7 +1229,9 @@ def composite_harmonic(
 def vibrational_fingerprint(
     planet_longitudes: dict[str, float],
     max_harmonic: int = 32,
-    orb: float = 1.0,
+    orb: float | None = None,
+    *,
+    orb_policy: HarmonicOrbPolicy | None = None,
 ) -> VibrationFingerprint:
     """
     Synthesise the full vibrational character of a chart across H1..Hmax.
@@ -1003,14 +1245,23 @@ def vibrational_fingerprint(
     ----------
     planet_longitudes : dict of body name → natal longitude (degrees)
     max_harmonic      : highest harmonic to include (default 32)
-    orb               : conjunction orb on each harmonic chart (degrees)
+    orb               : legacy positional H1-reference conjunction orb;
+                        the projected limit remains O1 and the equivalent
+                        source-circle limit is O1/H
+    orb_policy        : explicit H1-reference orb policy; mutually exclusive
+                        with ``orb``
 
     Returns
     -------
     VibrationFingerprint with sweep (H-ascending), dominant (score-descending),
     total_score, peak_harmonic, and peak_score.
     """
-    sweep_ranked = harmonic_sweep(planet_longitudes, max_harmonic=max_harmonic, orb=orb)
+    sweep_ranked = harmonic_sweep(
+        planet_longitudes,
+        max_harmonic=max_harmonic,
+        orb=orb,
+        orb_policy=orb_policy,
+    )
 
     # Store sweep sorted by harmonic number for stable indexing
     sweep_by_h = tuple(sorted(sweep_ranked, key=lambda e: e.harmonic))

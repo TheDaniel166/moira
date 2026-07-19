@@ -19,6 +19,8 @@ from ..models.harmonics import (
     HarmonicPatternScoreResponse,
     HarmonicSweepRequest,
     HarmonicSweepResponse,
+    HarmonicTransitForecastRequest,
+    HarmonicTransitForecastResponse,
 )
 from ..services.harmonics import (
     compute_age_harmonic_chart,
@@ -29,6 +31,7 @@ from ..services.harmonics import (
     compute_harmonic_fingerprint,
     compute_harmonic_pattern_score,
     compute_harmonic_sweep,
+    compute_harmonic_transit_forecast,
     list_harmonic_presets,
 )
 
@@ -44,7 +47,7 @@ def harmonic_presets_route() -> HarmonicCatalogResponse:
 
 @router.post("/chart", response_model=HarmonicChartResponse)
 def harmonic_chart_route(request: HarmonicChartRequest) -> HarmonicChartResponse:
-    """Project caller-supplied longitudes onto one integer harmonic chart."""
+    """Project longitudes through one integer or zero-Aries continuous multiplier."""
     return compute_harmonic_chart(request)
 
 
@@ -58,7 +61,7 @@ def harmonic_age_chart_route(request: HarmonicAgeChartRequest) -> HarmonicChartR
 def harmonic_conjunctions_route(
     request: HarmonicConjunctionRequest,
 ) -> HarmonicConjunctionsResponse:
-    """Find pairs conjunct on one bounded harmonic chart."""
+    """Find pairs conjunct under one bounded harmonic and explicit orb doctrine."""
     return compute_harmonic_conjunctions(request)
 
 
@@ -92,3 +95,11 @@ def harmonic_fingerprint_route(request: HarmonicSweepRequest) -> HarmonicFingerp
 def harmonic_composite_route(request: HarmonicCompositeRequest) -> HarmonicCompositeResponse:
     """Find cross-chart conjunctions on one bounded harmonic chart."""
     return compute_composite_harmonic(request)
+
+
+@router.post("/transit-forecast", response_model=HarmonicTransitForecastResponse)
+def harmonic_transit_forecast_route(
+    request: HarmonicTransitForecastRequest,
+) -> HarmonicTransitForecastResponse:
+    """Find sampled VA-informed mixed-origin complete triples."""
+    return compute_harmonic_transit_forecast(request)

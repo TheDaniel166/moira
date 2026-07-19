@@ -377,6 +377,7 @@ from .midpoints import (
     activated_midpoints, midpoint_clusters,
 )
 from .harmonics import (
+    HarmonicOrbScalingMode, HarmonicOrbPolicy, HarmonicOrbTruth,
     HarmonicPosition, HarmonicConjunction, HarmonicPatternScore,
     HarmonicSweepEntry, HarmonicAspect, VibrationFingerprint,
     HarmonicsService,
@@ -384,6 +385,13 @@ from .harmonics import (
     calculate_harmonic, age_harmonic,
     harmonic_conjunctions, harmonic_pattern_score, harmonic_sweep,
     harmonic_aspects, composite_harmonic, vibrational_fingerprint,
+)
+from .harmonic_transits import (
+    HarmonicTransitMemberOrigin, MixedOriginHarmonicTransitMode,
+    HarmonicTransitSample, HarmonicTransitMember,
+    HarmonicTransitPatternSample, HarmonicTransitWindow,
+    HarmonicTransitForecast, MixedOriginHarmonicTransitForecastPolicy,
+    mixed_origin_harmonic_transit_forecast,
 )
 from .draconic import (
     DRACONIC_NODE_MODES,
@@ -1610,7 +1618,17 @@ __all__ = [
     "planetary_pictures", "midpoint_weighting",
     "activated_midpoints", "midpoint_clusters",
     # Harmonics
-    "HarmonicPosition", "HarmonicsService", "calculate_harmonic", "HARMONIC_PRESETS",
+    "HarmonicOrbScalingMode", "HarmonicOrbPolicy", "HarmonicOrbTruth",
+    "HarmonicPosition", "HarmonicConjunction", "HarmonicPatternScore",
+    "HarmonicSweepEntry", "HarmonicAspect", "VibrationFingerprint",
+    "HarmonicsService", "HARMONIC_PRESETS", "calculate_harmonic", "age_harmonic",
+    "harmonic_conjunctions", "harmonic_pattern_score", "harmonic_sweep",
+    "harmonic_aspects", "composite_harmonic", "vibrational_fingerprint",
+    "HarmonicTransitMemberOrigin", "MixedOriginHarmonicTransitMode",
+    "HarmonicTransitSample", "HarmonicTransitMember",
+    "HarmonicTransitPatternSample", "HarmonicTransitWindow",
+    "HarmonicTransitForecast", "MixedOriginHarmonicTransitForecastPolicy",
+    "mixed_origin_harmonic_transit_forecast",
     # Draconic
     "DRACONIC_NODE_MODES", "DraconicAnchor", "DraconicChart", "DraconicNodeMode",
     "DraconicPosition", "draconic_chart", "draconic_chart_from_positions",
