@@ -49,6 +49,7 @@ packet, includes:
 - `2` admitted motion doctrines:
   - `Direct`
   - `Traditional converse`
+  - source-scoped `Signed primary motion`
 - explicit relation doctrine
 - explicit preset doctrine
 - validated narrow target families:
@@ -58,13 +59,12 @@ packet, includes:
   - fixed stars
   - antiscia / contra-antiscia
 
-This is materially broader than the current backend standard in
-[PRIMARY_DIRECTIONS_BACKEND_STANDARD.md](../../02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md),
-which still declares itself authoritative only for:
-
-- `Placidus mundane`
-- `In Mundo`
-- `Traditional converse` or `Direct only`
+The current backend standard in
+[PRIMARY_DIRECTIONS_BACKEND_STANDARD.md](../../02_standards/PRIMARY_DIRECTIONS_BACKEND_STANDARD.md)
+now records this widened admitted surface, including the separately bounded
+signed-primary-motion preset. Earlier versions of that standard still declared
+themselves authoritative only for `Placidus mundane`, `In Mundo`, and
+`Traditional converse` or `Direct only`; that historical mismatch is closed.
 
 The doctrine packet in
 [primary_directions_doctrine.md](../../01_doctrines/primary_directions/primary_directions_doctrine.md)

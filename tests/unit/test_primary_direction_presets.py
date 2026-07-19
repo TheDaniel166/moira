@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from moira.primary_directions import (
+    MorinusAspectContext,
     PrimaryDirectionAntisciaKind,
     PrimaryDirectionAntisciaTarget,
     PrimaryDirectionFixedStarTarget,
@@ -13,6 +14,7 @@ from moira.primary_directions import (
     PrimaryDirectionMethod,
     PrimaryDirectionMotion,
     PrimaryDirectionPerfectionKind,
+    PrimaryDirectionSpace,
     PrimaryDirectionTargetClass,
     PrimaryDirectionsPreset,
     PtolemaicParallelRelation,
@@ -51,6 +53,92 @@ def test_primary_directions_policy_preset_builds_aspect_branch() -> None:
             PrimaryDirectionRelationalKind.ZODIACAL_ASPECT,
         }
     )
+
+
+def test_topocentric_signed_primary_motion_preset_is_source_scoped() -> None:
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+
+    assert policy.method is PrimaryDirectionMethod.TOPOCENTRIC
+    assert policy.space is PrimaryDirectionSpace.IN_ZODIACO
+    assert policy.include_converse is True
+    assert (
+        policy.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+    )
+    assert (
+        policy.latitude_policy.doctrine
+        is PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+    )
+    assert (
+        policy.latitude_source_policy.source
+        is PrimaryDirectionLatitudeSource.ASSIGNED_ZERO
+    )
+    assert (
+        policy.perfection_policy.kind
+        is PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+    )
+    assert policy.relation_policy.admitted_kinds == frozenset(
+        {
+            PrimaryDirectionRelationalKind.CONJUNCTION,
+            PrimaryDirectionRelationalKind.OPPOSITION,
+            PrimaryDirectionRelationalKind.ZODIACAL_ASPECT,
+        }
+    )
+
+
+def test_topocentric_signed_primary_motion_preset_rejects_direct_only_override() -> None:
+    with pytest.raises(ValueError, match="requires signed direct/converse admission"):
+        primary_directions_policy_preset(
+            PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION,
+            include_converse=False,
+        )
+
+
+@pytest.mark.parametrize(
+    "advanced_kwargs",
+    (
+        {
+            "morinus_aspect_contexts": (
+                MorinusAspectContext(
+                    source_name="Moon",
+                    maximum_latitude=5.0,
+                    moving_toward_maximum=True,
+                ),
+            )
+        },
+        {
+            "antiscia_targets": (
+                PrimaryDirectionAntisciaTarget(
+                    "Moon",
+                    PrimaryDirectionAntisciaKind.ANTISCION,
+                ),
+            )
+        },
+        {
+            "ptolemaic_parallel_targets": (
+                PtolemaicParallelTarget(
+                    "Moon",
+                    PtolemaicParallelRelation.PARALLEL,
+                ),
+            )
+        },
+        {
+            "placidian_rapt_parallel_targets": (
+                PlacidianRaptParallelTarget("Moon"),
+            )
+        },
+    ),
+)
+def test_topocentric_signed_primary_motion_preset_rejects_doctrine_widening(
+    advanced_kwargs: dict,
+) -> None:
+    with pytest.raises(ValueError, match="does not admit non-fixed-star advanced"):
+        primary_directions_policy_preset(
+            PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION,
+            **advanced_kwargs,
+        )
 
 
 def test_primary_directions_policy_preset_builds_ptolemaic_parallel_branch() -> None:

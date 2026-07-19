@@ -77,11 +77,14 @@ Historical and modern practice differ on whether zodiacal directions:
 #### Stable Distinction
 
 - traditional converse
+- signed primary motion from one ordered shortest-circular arc
 - neo-converse
 
 #### Moira Policy
 
 - converse may never remain a bare boolean in the final subsystem
+- signed primary motion remains confined to its named Topocentric preset and
+  must not be relabeled as traditional or neo-converse
 
 ### 4. Promissor and Significator Scope
 

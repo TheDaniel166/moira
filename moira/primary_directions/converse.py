@@ -13,12 +13,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+import math
+from numbers import Real
 from typing import Iterable
 
 __all__ = [
+    "SIGNED_PRIMARY_MOTION_TOLERANCE_DEG",
+    "PrimaryDirectionMotion",
     "PrimaryDirectionConverseDoctrine",
     "PrimaryDirectionConverseRelationKind",
     "PrimaryDirectionConverseConditionState",
+    "PrimaryDirectionSignedMotionResolution",
     "PrimaryDirectionConversePolicy",
     "PrimaryDirectionConverseTruth",
     "PrimaryDirectionConverseClassification",
@@ -36,25 +41,143 @@ __all__ = [
     "evaluate_primary_direction_converse_condition",
     "evaluate_primary_direction_converse_aggregate",
     "evaluate_primary_direction_converse_network",
+    "resolve_signed_primary_motion",
 ]
+
+
+SIGNED_PRIMARY_MOTION_TOLERANCE_DEG = 1e-12
+
+
+class PrimaryDirectionMotion(StrEnum):
+    """Vessel: Enumeration of primary-direction motion vectors."""
+    DIRECT = "direct"
+    CONVERSE = "converse"
 
 
 class PrimaryDirectionConverseDoctrine(StrEnum):
     """Vessel: Registry of architectural converse doctrines for primary directions."""
     DIRECT_ONLY = "direct_only"
     TRADITIONAL_CONVERSE = "traditional_converse"
+    SIGNED_PRIMARY_MOTION = "signed_primary_motion"
 
 
 class PrimaryDirectionConverseRelationKind(StrEnum):
     """Vessel: Registry of relation kinds for converse treatment."""
     FORWARD_ONLY = "forward_only"
     DIRECT_AND_TRADITIONAL_CONVERSE = "direct_and_traditional_converse"
+    SIGNED_PRIMARY_MOTION = "signed_primary_motion"
 
 
 class PrimaryDirectionConverseConditionState(StrEnum):
     """Vessel: Registry of condition states for converse treatment."""
     DIRECT_ONLY = "direct_only"
     DIRECT_AND_CONVERSE = "direct_and_converse"
+    SIGNED_DIRECT_OR_CONVERSE = "signed_direct_or_converse"
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionSignedMotionResolution:
+    """Vessel: One signed ordered arc resolved to its admitted motion."""
+
+    signed_arc: float
+    magnitude: float
+    motion: PrimaryDirectionMotion | None
+
+    def __post_init__(self) -> None:
+        for name in ("signed_arc", "magnitude"):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value):
+                raise ValueError(
+                    f"PrimaryDirectionSignedMotionResolution {name} must be finite real"
+                )
+            object.__setattr__(self, name, float(value))
+        if self.magnitude < 0.0 or self.magnitude >= 180.0:
+            raise ValueError(
+                "PrimaryDirectionSignedMotionResolution magnitude must be in [0, 180)"
+            )
+        if self.magnitude != abs(self.signed_arc):
+            raise ValueError(
+                "PrimaryDirectionSignedMotionResolution magnitude must equal abs(signed_arc)"
+            )
+        if self.motion is None:
+            if self.signed_arc != 0.0:
+                raise ValueError(
+                    "PrimaryDirectionSignedMotionResolution motion may be absent only at zero"
+                )
+        elif self.motion is PrimaryDirectionMotion.DIRECT:
+            if self.signed_arc <= 0.0:
+                raise ValueError(
+                    "PrimaryDirectionSignedMotionResolution direct motion requires positive signed_arc"
+                )
+        elif self.motion is PrimaryDirectionMotion.CONVERSE:
+            if self.signed_arc >= 0.0:
+                raise ValueError(
+                    "PrimaryDirectionSignedMotionResolution converse motion requires negative signed_arc"
+                )
+        else:
+            raise ValueError(
+                "PrimaryDirectionSignedMotionResolution motion must be a primary-direction motion or None"
+            )
+
+
+def resolve_signed_primary_motion(raw_arc: float) -> PrimaryDirectionSignedMotionResolution:
+    """Classify one ordered arc by its signed shortest circular displacement.
+
+    Coincidence within the declared numerical tolerance is a no-event result.
+    An antipodal displacement has no unique direct/converse sign and therefore
+    fails closed rather than acquiring an arbitrary label.
+    """
+
+    if isinstance(raw_arc, bool) or not isinstance(raw_arc, Real) or not math.isfinite(raw_arc):
+        raise ValueError("resolve_signed_primary_motion requires a finite real raw_arc")
+    signed_arc = math.remainder(float(raw_arc), 360.0)
+    if abs(signed_arc) <= SIGNED_PRIMARY_MOTION_TOLERANCE_DEG:
+        return PrimaryDirectionSignedMotionResolution(
+            signed_arc=0.0,
+            magnitude=0.0,
+            motion=None,
+        )
+    if (
+        abs(abs(signed_arc) - 180.0)
+        <= SIGNED_PRIMARY_MOTION_TOLERANCE_DEG
+    ):
+        raise ValueError(
+            "signed primary motion is directionally ambiguous at an antipodal 180-degree arc"
+        )
+    motion = (
+        PrimaryDirectionMotion.DIRECT
+        if signed_arc > 0.0
+        else PrimaryDirectionMotion.CONVERSE
+    )
+    return PrimaryDirectionSignedMotionResolution(
+        signed_arc=signed_arc,
+        magnitude=abs(signed_arc),
+        motion=motion,
+    )
+
+
+def _relation_kind_for_doctrine(
+    doctrine: PrimaryDirectionConverseDoctrine,
+) -> PrimaryDirectionConverseRelationKind:
+    if doctrine is PrimaryDirectionConverseDoctrine.DIRECT_ONLY:
+        return PrimaryDirectionConverseRelationKind.FORWARD_ONLY
+    if doctrine is PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE:
+        return PrimaryDirectionConverseRelationKind.DIRECT_AND_TRADITIONAL_CONVERSE
+    if doctrine is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION:
+        return PrimaryDirectionConverseRelationKind.SIGNED_PRIMARY_MOTION
+    raise ValueError(f"Unsupported primary direction converse doctrine: {doctrine}")
+
+
+def _condition_state_for_doctrine(
+    doctrine: PrimaryDirectionConverseDoctrine,
+) -> PrimaryDirectionConverseConditionState:
+    if doctrine is PrimaryDirectionConverseDoctrine.DIRECT_ONLY:
+        return PrimaryDirectionConverseConditionState.DIRECT_ONLY
+    if doctrine is PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE:
+        return PrimaryDirectionConverseConditionState.DIRECT_AND_CONVERSE
+    if doctrine is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION:
+        return PrimaryDirectionConverseConditionState.SIGNED_DIRECT_OR_CONVERSE
+    raise ValueError(f"Unsupported primary direction converse doctrine: {doctrine}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -68,7 +191,7 @@ class PrimaryDirectionConversePolicy:
 
     @property
     def include_converse(self) -> bool:
-        return self.doctrine is PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE
+        return self.doctrine is not PrimaryDirectionConverseDoctrine.DIRECT_ONLY
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,12 +203,16 @@ class PrimaryDirectionConverseTruth:
     motion_count: int
 
     def __post_init__(self) -> None:
+        if not isinstance(self.doctrine, PrimaryDirectionConverseDoctrine):
+            raise ValueError(
+                f"Unsupported primary direction converse doctrine: {self.doctrine}"
+            )
         if not self.includes_direct:
             raise ValueError(
                 "PrimaryDirectionConverseTruth invariant failed: direct motion must always be admitted"
             )
         expected_include_converse = (
-            self.doctrine is PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE
+            self.doctrine is not PrimaryDirectionConverseDoctrine.DIRECT_ONLY
         )
         if self.includes_converse is not expected_include_converse:
             raise ValueError(
@@ -128,11 +255,7 @@ class PrimaryDirectionConverseRelation:
     admitted_motions: tuple[str, ...]
 
     def __post_init__(self) -> None:
-        expected_kind = (
-            PrimaryDirectionConverseRelationKind.DIRECT_AND_TRADITIONAL_CONVERSE
-            if self.truth.includes_converse
-            else PrimaryDirectionConverseRelationKind.FORWARD_ONLY
-        )
+        expected_kind = _relation_kind_for_doctrine(self.truth.doctrine)
         if self.relation_kind is not expected_kind:
             raise ValueError(
                 "PrimaryDirectionConverseRelation invariant failed: relation_kind mismatch"
@@ -189,11 +312,7 @@ class PrimaryDirectionConverseConditionProfile:
             raise ValueError(
                 "PrimaryDirectionConverseConditionProfile invariant failed: relation truth mismatch"
             )
-        expected_state = (
-            PrimaryDirectionConverseConditionState.DIRECT_AND_CONVERSE
-            if self.truth.includes_converse
-            else PrimaryDirectionConverseConditionState.DIRECT_ONLY
-        )
+        expected_state = _condition_state_for_doctrine(self.truth.doctrine)
         if self.state is not expected_state:
             raise ValueError(
                 "PrimaryDirectionConverseConditionProfile invariant failed: state mismatch"
@@ -315,11 +434,7 @@ def relate_primary_direction_converse(
 ) -> PrimaryDirectionConverseRelation:
     return PrimaryDirectionConverseRelation(
         truth=truth,
-        relation_kind=(
-            PrimaryDirectionConverseRelationKind.DIRECT_AND_TRADITIONAL_CONVERSE
-            if truth.includes_converse
-            else PrimaryDirectionConverseRelationKind.FORWARD_ONLY
-        ),
+        relation_kind=_relation_kind_for_doctrine(truth.doctrine),
         admitted_motions=(
             ("direct", "converse")
             if truth.includes_converse
@@ -348,11 +463,7 @@ def evaluate_primary_direction_converse_condition(
         truth=truth,
         classification=classify_primary_direction_converse(truth),
         relation_profile=evaluate_primary_direction_converse_relations(truth),
-        state=(
-            PrimaryDirectionConverseConditionState.DIRECT_AND_CONVERSE
-            if truth.includes_converse
-            else PrimaryDirectionConverseConditionState.DIRECT_ONLY
-        ),
+        state=_condition_state_for_doctrine(truth.doctrine),
     )
 
 

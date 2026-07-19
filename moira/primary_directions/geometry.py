@@ -36,6 +36,7 @@ __all__ = [
     "PrimaryDirectionGeometrySovereignty",
     "PrimaryDirectionGeometryTruth",
     "primary_direction_geometry_truth",
+    "compute_primary_direction_arc",
     "compute_primary_direction_arcs",
 ]
 
@@ -436,9 +437,10 @@ def _primary_direction_arc(
     """The single arc of direction the primum mobile turns to carry ``prom`` to
     the circle of position of ``sig`` under the active geometry law.
 
-    This is the one arc-finding operation; direct and converse are this same
-    operation with the significator and promissor roles exchanged (see
-    ``compute_primary_direction_arcs``).
+    This is the ordered geometry primitive. Traditional converse applies it a
+    second time with significator and promissor roles exchanged (see
+    ``compute_primary_direction_arcs``); signed-primary-motion doctrine instead
+    classifies this one result by its signed shortest circular displacement.
     """
     if method is PrimaryDirectionMethod.PTOLEMY_SEMI_ARC:
         angular = _ptolemaic_angular_arc(sig, prom, armc=armc, geo_lat=geo_lat)
@@ -489,7 +491,7 @@ def _primary_direction_arc(
     return _mundane_arc(sig, prom)
 
 
-def compute_primary_direction_arcs(
+def compute_primary_direction_arc(
     method: PrimaryDirectionMethod,
     sig: _SpeculumLike,
     prom: _SpeculumLike,
@@ -499,21 +501,12 @@ def compute_primary_direction_arcs(
     geo_lat: float,
     armc: float,
     oa_asc: float,
-) -> tuple[float, float]:
-    """Return the ``(direct, converse)`` arcs of direction.
+) -> float:
+    """Return one ordered promissor-to-significator arc of primary motion.
 
-    Governing doctrine (J. B. Morin, *Astrologia Gallica* Book 22,
-    *De Directionibus*, Section I, Chapter 7): direct and converse are "a single
-    operation." The arc is always taken in the circle of position of the
-    *preceding* terminus, so the converse arc of significator-to-promissor is the
-    direct arc of promissor-to-significator -- the same law with the two roles
-    exchanged, not the negation of the direct arc.
-
-    For the symmetric method families (the equatorial Meridian law and the
-    zodiacal laws) role exchange coincides with sign reversal, so converse still
-    equals ``-direct`` there. For the asymmetric families (the semi-arc and
-    under-the-pole laws, whose arc is taken in a terminus-specific circle of
-    position) the two constructions differ, and role exchange is the correct one.
+    This is the geometry object used by signed-primary-motion doctrine: it
+    performs one ordered construction and does not calculate a role-exchanged
+    companion arc.
     """
     if not isinstance(method, PrimaryDirectionMethod):
         raise ValueError("Primary-direction geometry requires a typed method")
@@ -541,8 +534,7 @@ def compute_primary_direction_arcs(
             raise ValueError(f"Primary-direction geometry requires finite real {name}")
     if not -90.0 < float(geo_lat) < 90.0:
         raise ValueError("Primary-direction geometry requires geographic latitude in (-90, 90)")
-
-    direct = _primary_direction_arc(
+    return _primary_direction_arc(
         method,
         sig,
         prom,
@@ -552,7 +544,45 @@ def compute_primary_direction_arcs(
         armc=armc,
         oa_asc=oa_asc,
     )
-    converse = _primary_direction_arc(
+
+
+def compute_primary_direction_arcs(
+    method: PrimaryDirectionMethod,
+    sig: _SpeculumLike,
+    prom: _SpeculumLike,
+    *,
+    space: PrimaryDirectionSpace,
+    latitude_doctrine: PrimaryDirectionLatitudeDoctrine,
+    geo_lat: float,
+    armc: float,
+    oa_asc: float,
+) -> tuple[float, float]:
+    """Return traditional ``(direct, converse)`` role-exchanged arcs.
+
+    Governing doctrine (J. B. Morin, *Astrologia Gallica* Book 22,
+    *De Directionibus*, Section I, Chapter 7): direct and converse are "a single
+    operation." The arc is always taken in the circle of position of the
+    *preceding* terminus, so the converse arc of significator-to-promissor is the
+    direct arc of promissor-to-significator -- the same law with the two roles
+    exchanged, not the negation of the direct arc.
+
+    For the symmetric method families (the equatorial Meridian law and the
+    zodiacal laws) role exchange coincides with sign reversal, so converse still
+    equals ``-direct`` there. For the asymmetric families (the semi-arc and
+    under-the-pole laws, whose arc is taken in a terminus-specific circle of
+    position) the two constructions differ, and role exchange is the correct one.
+    """
+    direct = compute_primary_direction_arc(
+        method,
+        sig,
+        prom,
+        space=space,
+        latitude_doctrine=latitude_doctrine,
+        geo_lat=geo_lat,
+        armc=armc,
+        oa_asc=oa_asc,
+    )
+    converse = compute_primary_direction_arc(
         method,
         prom,
         sig,

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import json
 import math
 from pathlib import Path
@@ -7,7 +8,20 @@ from pathlib import Path
 import pytest
 
 import moira.primary_directions.geometry as geometry_module
-from moira.primary_directions import SpeculumEntry
+from moira.constants import Body
+from moira.coordinates import equatorial_to_ecliptic
+from moira.primary_directions import (
+    CONVERSE,
+    PrimaryDirectionConverseDoctrine,
+    PrimaryDirectionMotion,
+    PrimaryDirectionPerfectionKind,
+    PrimaryDirectionRelationalKind,
+    PrimaryDirectionsPreset,
+    SpeculumEntry,
+    find_primary_arcs,
+    primary_directions_policy_preset,
+    relate_primary_arc,
+)
 from moira.primary_directions.geometry import compute_primary_direction_arcs
 from moira.primary_directions.latitudes import PrimaryDirectionLatitudeDoctrine
 from moira.primary_directions.methods import PrimaryDirectionMethod
@@ -20,6 +34,32 @@ _FIXTURE_PATH = (
     / "primary_directions_campanus_topocentric_authority.json"
 )
 _FIXTURE = json.loads(_FIXTURE_PATH.read_text(encoding="utf-8"))
+
+
+@dataclass
+class _SourcePlanet:
+    longitude: float
+    latitude: float = 0.0
+    speed: float = 1.0
+
+
+@dataclass
+class _SourceChart:
+    planets: dict[str, _SourcePlanet]
+    nodes: dict[str, object]
+    obliquity: float
+    jd_tt: float = 2451545.0
+    jd_ut: float = 2451544.9992
+
+
+@dataclass
+class _SourceHouses:
+    armc: float
+    asc: float = 0.0
+    mc: float = 0.0
+    dsc: float = 180.0
+    ic: float = 180.0
+    cusps: tuple[float, ...] = tuple(float(index * 30) for index in range(12))
 
 
 def _equatorial_source_entry(
@@ -70,6 +110,9 @@ def _signed_circular_arc(arc: float) -> float:
 def test_authority_fixture_names_scope_provenance_and_rounding_tolerances() -> None:
     assert _FIXTURE["schema_version"] == 1
     assert "wider Campanus mundane-aspect family" in _FIXTURE["evidence_limit"]
+    assert "negative-arc converse classification" in _FIXTURE["evidence_limit"]
+    assert "traditional role-exchanged converse" in _FIXTURE["evidence_limit"]
+    assert "global neo-converse doctrine" in _FIXTURE["evidence_limit"]
 
     sources = _FIXTURE["sources"]
     assert sources["makransky_primer_part_1"]["isbn"] == "0-9677315-0-X"
@@ -210,8 +253,8 @@ def test_published_topocentric_example_attests_pole_and_under_pole_arc_law() -> 
     )
 
 
-def test_published_topocentric_converse_exposes_current_role_exchange_mismatch() -> None:
-    """Keep the doctrine gap visible without claiming the current labels are source-faithful."""
+def test_traditional_topocentric_converse_remains_role_exchange_for_compatibility() -> None:
+    """The additive signed doctrine must not rewrite the established product."""
     example, sig, prom = _topocentric_worked_entries()
     inputs = example["inputs_deg"]
     published = example["published_results_deg"]
@@ -234,3 +277,62 @@ def test_published_topocentric_converse_exposes_current_role_exchange_mismatch()
     )
     assert direct > 180.0
     assert converse != pytest.approx(published["arc_magnitude"], abs=tolerance)
+
+
+def test_published_topocentric_converse_is_public_under_signed_motion_preset() -> None:
+    example = _FIXTURE["examples"]["topocentric_zodiacal_aspect"]
+    inputs = example["inputs_deg"]
+    published = example["published_results_deg"]
+    tolerance = example["tolerance"]["absolute_deg"]
+    obliquity = _FIXTURE["examples"][
+        "topocentric_origin_text_oblique_ascension"
+    ]["inputs_deg"]["obliquity"]
+    saturn_longitude, saturn_latitude = equatorial_to_ecliptic(
+        inputs["significator_ra"],
+        inputs["significator_declination"],
+        obliquity,
+    )
+    # The source publishes the zero-latitude trine point.  Reconstruct its
+    # source Moon 120 degrees earlier and deliberately give that source a
+    # non-zero native latitude so the preset's assigned-zero doctrine is part
+    # of the public witness rather than an accidental fixture property.
+    moon_longitude = (inputs["promissor_ecliptic_longitude"] - 120.0) % 360.0
+    chart = _SourceChart(
+        planets={
+            Body.SUN: _SourcePlanet(0.0, speed=0.9856),
+            Body.SATURN: _SourcePlanet(saturn_longitude, saturn_latitude),
+            Body.MOON: _SourcePlanet(moon_longitude, latitude=5.0, speed=13.0),
+        },
+        nodes={},
+        obliquity=obliquity,
+    )
+    houses = _SourceHouses(armc=inputs["armc"])
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        inputs["geographic_latitude"],
+        max_arc=10.0,
+        significators=["Saturn"],
+        promissors=["Moon Trine"],
+        policy=policy,
+    )
+
+    assert len(arcs) == 1
+    arc = arcs[0]
+    assert arc.direction == CONVERSE
+    assert arc.motion is PrimaryDirectionMotion.CONVERSE
+    assert arc.relational_kind is PrimaryDirectionRelationalKind.ZODIACAL_ASPECT
+    assert arc.arc == pytest.approx(published["arc_magnitude"], abs=tolerance)
+    relation = relate_primary_arc(arc, policy=policy)
+    assert (
+        relation.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+    )
+    assert (
+        relation.perfection_kind
+        is PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+    )

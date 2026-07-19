@@ -110,15 +110,37 @@ The source prints equatorial inputs and results to `0.01` degree. A complete
 
 #### Motion-convention boundary
 
-The source labels the `-5.37`-degree result **converse**. Moira's ordered raw
-result is `354.6295979056067` degrees, whose signed circular form is the
-source-matching `-5.370402094393285` degrees, but Moira's current
-role-exchanged converse result is `5.4084796290214285` degrees. This is a
-documented convention mismatch: the source is classifying the sign of primary
-motion, while the admitted Moira converse doctrine exchanges promissor and
-significator roles. The source-law comparison passes; public motion-label
-parity is not claimed, and this ledger does not describe that doctrine gap as
-fixed.
+The source labels the `-5.37`-degree result **converse**. Moira preserves two
+different, explicitly named products rather than collapsing their meanings:
+
+- the established `topocentric_zodiacal_aspect` preset retains traditional
+  converse by exchanging promissor and significator roles; its converse arc for
+  the printed entries is `5.4084796290214285` degrees
+- the additive
+  `topocentric_zodiacal_aspect_signed_primary_motion` preset constructs one
+  ordered arc, wraps it to the signed shortest circular displacement, and
+  classifies its sign; positive is direct and negative is converse
+
+For the low-level printed equatorial entries, the ordered raw result is
+`354.6295979056067` degrees and its signed form is the source-matching
+`-5.370402094393285` degrees. The public-preset witness reconstructs Saturn's
+ecliptic position from the printed right ascension and declination, reconstructs
+the Moon source point `120` degrees before the published trine, deliberately
+supplies a non-zero native lunar latitude, and lets the preset assign zero
+latitude to the aspect point. It emits one converse arc of
+`5.359051191104641` degrees, within the source's `0.02`-degree printed-input
+gate. This small difference from the low-level reconstruction reflects the
+public ecliptic-to-equatorial reconstruction path over rounded source inputs;
+it is not a second converse doctrine.
+
+Coincidence within the declared `1e-12`-degree numerical tolerance produces no
+event. An exact or tolerance-coalesced antipodal `180`-degree displacement has
+no unique sign and fails closed. This narrow sign classifier is assigned-zero,
+projected-perfection, Topocentric, zodiacal, and aspect-specific. It does not
+change traditional role exchange and is not the deferred global
+`neo-converse` doctrine. Public searches require explicit, non-empty
+significator and promissor filters; the unrestricted target set is not admitted
+because it necessarily includes a directionally ambiguous MC/IC antipode.
 
 ## 4. Special-target external comparisons
 
@@ -242,7 +264,6 @@ No synthetic expected values are assigned to these branches:
 | Morinus primary-source aspect context | The executable Churchill row is a modern derivation; Morin Book XXII has not been numerically transcribed. | A page-correlated primary-text example or licensed authoritative translation. |
 | Morinus quadrant continuation | The published sextile remains on one arctangent branch. | Published worked values beyond the principal branch at square, trine, or opposition. |
 | Wider Campanus mundane aspects | The Makransky row is a conjunction using the law shared with Regiomontanus. | Published Campanus-specific aspect examples with complete inputs. |
-| Topocentric public motion labels | The signed-primary-motion and role-exchange converse doctrines give different positive magnitudes. | An explicit doctrine decision and separately validated public semantics; the present source-law result alone is insufficient. |
 
 Internal unit tests do exercise node/angle reflections, contra-parallel
 negation, Morinus quadrant continuity, fixed-star-to-planet paths, and wider
@@ -306,7 +327,7 @@ $env:MOIRA_NO_DOWNLOAD='1'
   tests\unit\test_primary_direction_special_target_authority.py -q
 ```
 
-Result: `12 passed`. This receipt exercises the exact fixture products and
+Result: `13 passed`. This receipt exercises the exact fixture products and
 internal visibility covenants described above. It does not run a live network
 oracle, reconstruct every historical chart, validate the additive REST
 vessels, or turn the listed deferrals into supported branches.
@@ -315,10 +336,12 @@ vessels, or turn the listed deferrals into supported branches.
 
 > Moira now has externally anchored, product-specific numerical evidence for
 > one shared Campanus-Regiomontanus mundane conjunction law, two Topocentric
-> under-the-pole laws, one historical zero-latitude Vega direction, one
+> under-the-pole laws, and the source-labeled Topocentric converse product
+> through its narrow signed-primary-motion preset. The traditional
+> role-exchange preset remains a distinct compatible product. Moira also has
+> evidence for one historical zero-latitude Vega direction, one
 > planetary antiscion, one Ptolemaic parallel, direct and converse Placidian
 > rapt-parallel examples, and one Morinus sextile projection. The evidence
 > classes and model differences remain explicit. It does not establish full
-> method-family parity, primary-source coverage for every special target, or
-> agreement between the source's signed-motion label and Moira's current
-> role-exchange converse doctrine.
+> method-family parity, primary-source coverage for every special target, or a
+> general neo-converse law.

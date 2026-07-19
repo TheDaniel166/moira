@@ -51,6 +51,9 @@ $tests = Get-ChildItem tests\unit -Filter 'test_primary_direction*.py' | ForEach
 ### Doctrine and Policy
 
 - admitted method, space, motion, and key boundaries
+- separation of traditional role exchange from the narrow signed-primary-
+  motion classifier, including positive/direct, negative/converse, zero/no-
+  event, antipodal/fail-closed boundaries, and explicit target-filter admission
 - method/space capability rejection, including mundane-only Placidian methods
 - Placidian-classic `OA(ASC) = (ARMC + 90 degrees) mod 360` wiring
 - relation gating
@@ -80,8 +83,10 @@ $tests = Get-ChildItem tests\unit -Filter 'test_primary_direction*.py' | ForEach
   Moira's explicitly shared narrow law, with tolerance derived from the
   source's printed-input precision
 - the Polich origin-text oblique-ascension example and Makransky Topocentric
-  under-the-pole worked arc, without treating the latter's signed
-  direct/converse label as Moira's role-exchange motion doctrine
+  under-the-pole worked arc; the latter's converse label is reproduced only by
+  the assigned-zero/projected
+  `topocentric_zodiacal_aspect_signed_primary_motion` preset, while the
+  established Topocentric aspect preset remains role-exchanged
 - Ptolemaic parallels / contra-parallels
 - Placidian rapt parallels
 - relation-specific Placidian rapt motion and target containment
@@ -112,9 +117,11 @@ unevaluable boundaries are recorded in the
   `0.03 degree`; the source does not attest wider Campanus mundane aspects.
   Polich's printed oblique-ascension example and Makransky's rounded
   Topocentric example attest the named pole and under-the-pole laws at
-  `0.02 degree`. Makransky calls the negative signed result converse; Moira's
-  public traditional-converse product remains role exchange under its declared
-  Morinian doctrine, so that source row is not public motion-label parity.
+  `0.02 degree`. Makransky calls the negative signed result converse; the
+  source-scoped signed-primary-motion preset now reproduces that public label
+  and magnitude within the same printed-input gate. The traditional-converse
+  preset remains role exchange under its declared Morinian doctrine and is not
+  rewritten to force that parity.
 - **Historical product comparison:** Lilly's printed zodiacal projection of
   Vega and zero-latitude Jupiter antiscion to the Ascendant constrain those
   two named products only. They do not validate true-latitude in-mundo stars,
@@ -130,9 +137,8 @@ unevaluable boundaries are recorded in the
   internal antiscia fixtures, exact formula reconstruction, spherical-plane
   sweeps, ordered network conservation, and engine/facade/REST parity.
 
-Wider Campanus mundane aspects, public Topocentric motion-label parity under a
-source that uses Moira's selected converse doctrine, true-latitude and
-star-to-planet fixed-star products, a genuinely source-labeled Ptolemaic
+Wider Campanus mundane aspects, broader Topocentric method/product authority,
+true-latitude and star-to-planet fixed-star products, a genuinely source-labeled Ptolemaic
 contra-parallel, node/angle reflected-source extensions, `cum latitudine`
 antiscia, and a page-correlated primary Morinus aspect-plane example remain
 external-authority gaps. Passing this codex must not be reported as closing
@@ -145,8 +151,15 @@ those gaps.
 - established `Moira.speculum(...)` and `Moira.primary_directions(...)`
   positional compatibility
 - additive facade evaluation methods
+- the additive signed-primary-motion Topocentric aspect preset, its exact
+  reduction provenance, and its OpenAPI enum identity
 - all eight stable `/v1/primary-directions/*` paths, including reduction
   siblings and submitted-arc evaluation
+- rejection of signed-primary-motion on `relations` and any request with
+  `submitted_arcs`, because sign classification requires engine-search raw-arc
+  evidence
+- rejection of missing or empty significator/promissor filters on signed-
+  primary-motion searches
 - additive typed search vessels for antiscia, Ptolemaic parallel, Placidian
   rapt parallel, sovereign fixed-star, and Morinus aspect contexts, with preset
   compatibility, bounded materialization, and exact reduction provenance
@@ -177,6 +190,8 @@ Run:
 
 - `test_primary_direction_relations.py`
 - `test_primary_direction_presets.py`
+- `test_primary_direction_converse.py`
+- `test_primary_direction_campanus_topocentric_authority.py`
 - affected `test_primary_directions.py` branches
 
 

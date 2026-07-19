@@ -33,6 +33,9 @@ EXPECTED_SYMBOLS = [
     "placidian_rapt_parallel_relation_policy",
     "PrimaryDirectionSpace",
     "PrimaryDirectionMotion",
+    "PrimaryDirectionSignedMotionResolution",
+    "SIGNED_PRIMARY_MOTION_TOLERANCE_DEG",
+    "resolve_signed_primary_motion",
     "PrimaryDirectionKey",
     "PrimaryDirectionKeyFamily",
     "PrimaryDirectionLatitudeDoctrine",
@@ -167,3 +170,14 @@ def test_special_facade_exposes_primary_direction_evaluation_parity(monkeypatch)
         "evaluate_primary_directions_aggregate",
         "evaluate_primary_directions_network",
     ]
+
+
+def test_special_facade_builds_signed_topocentric_preset_without_signature_change() -> None:
+    facade = SpecialTopicsFacadeMixin()
+    policy = facade.primary_directions_policy_preset(
+        primary_directions.PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+
+    assert policy.converse_doctrine.value == "signed_primary_motion"
+    assert policy.method.value == "topocentric"
+    assert policy.space.value == "in_zodiaco"

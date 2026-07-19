@@ -5,6 +5,7 @@ import math
 
 import pytest
 
+import moira.primary_directions as primary_directions_module
 from moira.constants import Body
 from moira.primary_directions import (
     CONVERSE,
@@ -284,6 +285,113 @@ def test_find_primary_arcs_simple_equatorial_case() -> None:
     assert arcs[1].motion is PrimaryDirectionMotion.CONVERSE
     assert arcs[1].arc == pytest.approx(270.0)
     assert arcs[0].arc + arcs[1].arc == pytest.approx(360.0)
+
+
+def test_signed_primary_motion_search_emits_one_sign_classified_arc(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    chart, houses = _simple_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+
+    monkeypatch.setattr(
+        primary_directions_module,
+        "compute_primary_direction_arc",
+        lambda *args, **kwargs: 354.63,
+    )
+
+    def forbidden_role_exchange(*args, **kwargs):
+        raise AssertionError("signed primary motion must not compute a role-exchanged arc")
+
+    monkeypatch.setattr(
+        primary_directions_module,
+        "compute_primary_direction_arcs",
+        forbidden_role_exchange,
+    )
+    arcs = find_primary_arcs(
+        chart,
+        houses,
+        geo_lat=0.0,
+        max_arc=10.0,
+        significators=[Body.SUN],
+        promissors=[f"{Body.MOON} Trine"],
+        policy=policy,
+    )
+
+    assert len(arcs) == 1
+    assert arcs[0].motion is PrimaryDirectionMotion.CONVERSE
+    assert arcs[0].direction == CONVERSE
+    assert arcs[0].arc == pytest.approx(5.37)
+
+
+def test_signed_primary_motion_search_omits_zero_and_rejects_antipode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    chart, houses = _simple_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+    search_kwargs = {
+        "chart": chart,
+        "houses": houses,
+        "geo_lat": 0.0,
+        "max_arc": 360.0,
+        "significators": [Body.SUN],
+        "promissors": [f"{Body.MOON} Trine"],
+        "policy": policy,
+    }
+
+    monkeypatch.setattr(
+        primary_directions_module,
+        "compute_primary_direction_arc",
+        lambda *args, **kwargs: 0.0,
+    )
+    assert find_primary_arcs(**search_kwargs) == []
+
+    monkeypatch.setattr(
+        primary_directions_module,
+        "compute_primary_direction_arc",
+        lambda *args, **kwargs: 180.0,
+    )
+    with pytest.raises(ValueError, match="directionally ambiguous"):
+        find_primary_arcs(**search_kwargs)
+
+
+@pytest.mark.parametrize(
+    ("significators", "promissors"),
+    (
+        (None, [f"{Body.MOON} Trine"]),
+        ([Body.SUN], None),
+        ([], [f"{Body.MOON} Trine"]),
+        ([Body.SUN], []),
+    ),
+)
+def test_signed_primary_motion_requires_explicit_nonempty_target_filters(
+    significators,
+    promissors,
+) -> None:
+    chart, houses = _simple_chart()
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+
+    with pytest.raises(ValueError, match="requires explicit non-empty significator"):
+        find_primary_arcs(
+            chart,
+            houses,
+            geo_lat=0.0,
+            significators=significators,
+            promissors=promissors,
+            policy=policy,
+        )
+
+
+def test_signed_primary_motion_policy_is_not_a_global_converse_toggle() -> None:
+    with pytest.raises(ValueError, match="admitted only for the zero-latitude Topocentric"):
+        PrimaryDirectionsPolicy(
+            converse_doctrine=PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION,
+        )
 
 
 def test_find_primary_arcs_respects_max_arc_and_filters() -> None:

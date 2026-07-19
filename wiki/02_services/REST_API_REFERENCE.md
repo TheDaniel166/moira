@@ -1195,6 +1195,28 @@ are mundane-only. Fixed-star targets require conjunction admission, and
 rapt-parallel direct/converse motion remains specific to the configured rapt
 relation and target rather than widening the ordinary policy.
 
+The canonical
+`topocentric_zodiacal_aspect_signed_primary_motion` preset is the explicit
+source-scoped exception to ordinary role-exchanged converse. It computes one
+ordered Topocentric zodiacal-aspect arc with assigned-zero aspect latitude and
+zodiacal projected perfection, then wraps that arc to `(-180, 180)` degrees:
+positive is direct, negative is converse, numerical zero is no event, and the
+directionally ambiguous `180`-degree boundary fails closed. It requires
+`include_converse=true`; under this doctrine the flag admits either label from
+the single ordered construction rather than asking for a role-exchanged second
+arc. It also requires explicit, non-empty `significators` and `promissors`;
+the unrestricted candidate set contains the antipodal MC/IC pair and therefore
+cannot carry one deterministic signed label. The ordinary
+`topocentric_zodiacal_aspect` preset remains unchanged.
+
+Signed-primary-motion is available only when the transport performs
+`engine_search`. The submitted-only `relations` path and every request carrying
+`submitted_arcs` reject that preset because submitted arcs contain a positive
+magnitude and label, not the ordered raw arc required to derive the sign.
+Reduction responses identify the signed doctrine and canonical preset exactly.
+No path or established response field is added or replaced. This narrow preset
+is not the separately deferred global `neo-converse` doctrine.
+
 The six engine-search paths (`arcs`, `profile`, and `network`, including their
 reduction siblings) also accept these additive, typed target/context lists on
 the search request:

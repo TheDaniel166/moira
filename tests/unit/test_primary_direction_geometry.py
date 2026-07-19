@@ -9,6 +9,7 @@ from moira.constants import Body
 from moira.primary_directions.geometry import (
     PrimaryDirectionGeometryLaw,
     PrimaryDirectionGeometrySovereignty,
+    compute_primary_direction_arc,
     compute_primary_direction_arcs,
     primary_direction_geometry_truth,
 )
@@ -506,6 +507,33 @@ _ASYMMETRIC_METHODS = (
     PrimaryDirectionMethod.TOPOCENTRIC,
     PrimaryDirectionMethod.MORINUS,
 )
+
+
+def test_ordered_primary_arc_performs_one_non_role_exchanged_construction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sig, prom = _entries()
+    calls = []
+
+    def fake_ordered(method, ordered_sig, ordered_prom, **kwargs):
+        calls.append((method, ordered_sig, ordered_prom, kwargs))
+        return 354.63
+
+    monkeypatch.setattr(geometry_module, "_primary_direction_arc", fake_ordered)
+    arc = compute_primary_direction_arc(
+        PrimaryDirectionMethod.TOPOCENTRIC,
+        sig,
+        prom,
+        space=PrimaryDirectionSpace.IN_ZODIACO,
+        latitude_doctrine=PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED,
+        geo_lat=51.5,
+        armc=41.0,
+        oa_asc=131.0,
+    )
+
+    assert arc == pytest.approx(354.63)
+    assert len(calls) == 1
+    assert calls[0][1:3] == (sig, prom)
 
 
 def test_converse_is_the_direct_arc_with_roles_exchanged() -> None:

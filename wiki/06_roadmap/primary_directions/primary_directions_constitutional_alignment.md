@@ -49,12 +49,14 @@ An internal primary-directions subsystem is constitutionally aligned when:
 
 - current state:
   - `Direct` and `Traditional converse` are admitted
+  - source-scoped `Signed primary motion` is admitted only through its named
+    Topocentric zodiacal-aspect preset
   - `Neo-converse` remains research-only
 - alignment judgment:
   - aligned through `P10`
 - remaining work:
-  - none required before freeze beyond keeping `Neo-converse` outside the
-    admitted surface
+  - keep signed primary motion confined to its named preset and
+    `Neo-converse` outside the admitted surface
 
 ### Keys
 

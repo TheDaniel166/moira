@@ -94,8 +94,11 @@ against ("match Morinus values" is a software anchor, not a governing law).
 ## Current Moira Admission
 
 - **not admitted**
-- `TRADITIONAL_CONVERSE` remains the only admitted converse doctrine alongside
-  `DIRECT_ONLY`
+- `TRADITIONAL_CONVERSE` remains the ordinary cross-preset converse doctrine
+  alongside `DIRECT_ONLY`
+- `SIGNED_PRIMARY_MOTION` is separately admitted only by the source-scoped
+  `TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION` preset; it classifies the
+  sign of one ordered arc and is not neo-converse
 - no `NEO_CONVERSE` member exists in `PrimaryDirectionConverseDoctrine`
 - no policy, preset, or geometry path references neo-converse
 

@@ -15,7 +15,8 @@ It answers one question:
 ## Core Engine
 
 - speculum construction for the admitted primary-direction families
-- direct and traditional converse motion
+- direct, traditional role-exchanged converse, and the narrow Topocentric
+  signed-primary-motion classifier
 - explicit branch selection through `PrimaryDirectionsPreset` and
   `primary_directions_policy_preset(...)`
 - policy-aware runtime surfaces for method, space, relation, latitude, source,
@@ -59,6 +60,9 @@ Explicit zodiacal latitude branches:
 
 - `Direct`
 - `Traditional converse`
+- `Signed primary motion`, only through
+  `topocentric_zodiacal_aspect_signed_primary_motion` with explicit target
+  filters
 
 Not admitted:
 

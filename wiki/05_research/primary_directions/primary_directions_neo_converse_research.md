@@ -30,6 +30,31 @@ This is the most explicit statement currently in hand from technical software
 documentation.
 
 
+## Admitted Narrow Signed-Motion Boundary
+
+Moira now also admits `signed_primary_motion`, but only through the explicit
+`topocentric_zodiacal_aspect_signed_primary_motion` preset. That doctrine is a
+source-scoped classifier for Makransky's worked Topocentric zodiacal-aspect
+product:
+
+- construct one ordered promissor-to-significator arc
+- assign zero latitude to the aspect point and use projected perfection
+- wrap the arc to the unique signed shortest displacement in
+  `(-180, 180)` degrees
+- classify positive as direct and negative as converse
+- treat numerical coincidence as no event
+- fail closed at the directionally ambiguous `180`-degree boundary
+- require explicit non-empty significator and promissor filters rather than
+  implicitly searching a target set that contains the antipodal MC/IC pair
+
+This admission does **not** implement `neo-converse`. It does not assert motion
+against the diurnal rotation, does not transform every method family's arc,
+does not materialize a companion converse arc, and cannot be selected as a
+generic or ambient converse toggle. Traditional converse continues to exchange
+promissor and significator roles. The two products remain separately named and
+validated.
+
+
 ## Strongest Sources Currently in Hand
 
 ### 1. Martin Gansten on Traditional Converse
@@ -171,7 +196,10 @@ Why:
 
 Current policy should be:
 
-- keep `traditional converse` as the only admitted converse doctrine
+- keep `traditional converse` as the established ordinary, cross-preset
+  converse doctrine
+- keep `signed_primary_motion` confined to its one named, source-validated
+  Topocentric zodiacal-aspect preset
 - classify `neo-converse` as:
   - `research_only`
   - `modern_software_documented`
@@ -213,5 +241,6 @@ Moira now has a clean research position on `neo-converse`:
 
 - real as a modern doctrine label
 - distinct from traditional converse
+- distinct from the admitted narrow signed-primary-motion classifier
 - not yet source-safe enough for implementation
 

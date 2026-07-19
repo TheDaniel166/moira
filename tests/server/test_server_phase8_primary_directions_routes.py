@@ -366,6 +366,53 @@ def test_primary_directions_morinus_context_route_matches_direct_engine(
         direct_arcs=direct_arcs,
     )
 
+
+def test_signed_topocentric_search_route_matches_direct_de441_engine(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    chart, houses = _server_clock_chart_and_houses(moira_engine)
+    preset = (
+        PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+    policy = primary_directions_policy_preset(preset)
+    direct_arcs = find_primary_arcs(
+        chart,
+        houses,
+        _OBSERVER_LAT,
+        max_arc=180.0,
+        significators=["Saturn"],
+        promissors=["Moon Trine"],
+        policy=policy,
+    )
+    assert len(direct_arcs) == 1
+    assert direct_arcs[0].is_converse
+
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 180.0,
+        "significators": ["Saturn"],
+        "promissors": ["Moon Trine"],
+        "policy": {"preset": preset.value},
+    }
+    response = client_with_engine.post(
+        "/v1/primary-directions/arcs/reduction",
+        json=payload,
+    )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    transported = body["result"]["arcs"]
+    assert len(transported) == 1
+    assert transported[0]["direction"] == "CONVERSE"
+    assert transported[0]["arc"] == pytest.approx(direct_arcs[0].arc, abs=1e-10)
+    resolved = body["reduction"]["resolved_policy"]
+    assert resolved["canonical_preset"] == preset.value
+    assert resolved["converse_doctrine"] == "signed_primary_motion"
+    assert resolved["latitude_doctrine"] == "zodiacal_suppressed"
+    assert resolved["latitude_source"] == "assigned_zero"
+    assert resolved["perfection_kind"] == "zodiacal_projected_perfection"
+
 @pytest.mark.requires_ephemeris
 def test_primary_directions_speculum_route_matches_engine(client_with_engine: TestClient, moira_engine) -> None:
     chart, houses = _direct_chart_and_houses(moira_engine)
@@ -1047,6 +1094,65 @@ def test_primary_directions_profile_does_not_mask_evaluation_failure(
 
     assert resp.status_code == 422
     assert "profile evaluation failure witness" in resp.json()["message"]
+
+
+@pytest.mark.parametrize(
+    ("path", "payload"),
+    (
+        (
+            "/v1/primary-directions/arcs",
+            {
+                **_PD_BASE_PAYLOAD,
+                "submitted_arcs": [],
+                "policy": {
+                    "preset": "topocentric_zodiacal_aspect_signed_primary_motion"
+                },
+            },
+        ),
+        (
+            "/v1/primary-directions/relations",
+            {
+                "submitted_arcs": [
+                    {
+                        "significator": "Sun",
+                        "promissor": "Moon",
+                        "arc": 5.0,
+                        "direction": "CONVERSE",
+                    }
+                ],
+                "policy": {
+                    "preset": "topocentric_zodiacal_aspect_signed_primary_motion"
+                },
+            },
+        ),
+    ),
+)
+def test_signed_primary_motion_rest_rejects_submitted_arc_surfaces(
+    client_with_engine: TestClient,
+    path: str,
+    payload: dict,
+) -> None:
+    response = client_with_engine.post(path, json=payload)
+
+    assert response.status_code == 422
+    assert "signed raw-arc evidence" in response.json()["message"]
+
+
+def test_signed_primary_motion_rest_requires_explicit_target_filters(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/primary-directions/arcs",
+        json={
+            **_PD_SEARCH_PAYLOAD,
+            "policy": {
+                "preset": "topocentric_zodiacal_aspect_signed_primary_motion"
+            },
+        },
+    )
+
+    assert response.status_code == 422
+    assert "explicit non-empty significator" in response.json()["message"]
 
 
 def test_primary_directions_network_does_not_mask_evaluation_failure(

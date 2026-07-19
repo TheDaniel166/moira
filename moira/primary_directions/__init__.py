@@ -3,15 +3,13 @@ Moira -- primary_directions/__init__.py
 The primary-directions public engine package for the currently admitted
 recoverable surface.
 
-Boundary: owns speculum construction, mundane fraction arithmetic, direct and
-converse arc computation, and symbolic time-key conversion. Delegates ecliptic-
-to-equatorial coordinate transformation to constants (DEG2RAD/RAD2DEG). Does
-NOT own natal chart construction, house computation, or ephemeris state.
+Boundary: owns speculum construction, mundane fraction arithmetic, traditional
+role-exchanged arc computation, the source-scoped signed-primary-motion
+classifier, and symbolic time-key conversion. Delegates ecliptic-to-equatorial
+coordinate transformation to constants (DEG2RAD/RAD2DEG). Does NOT own natal
+chart construction, house computation, or ephemeris state.
 
-Public surface:
-    DIRECT, CONVERSE,
-    SpeculumEntry, PrimaryArc,
-    speculum, find_primary_arcs
+The curated public surface is declared in ``__all__`` below.
 
 Import-time side effects: None
 
@@ -32,7 +30,13 @@ from typing import TYPE_CHECKING, Iterable
 from ..constants import Body, DEG2RAD
 from ..julian import ut_to_tt as _ut_to_tt, decimal_year as _decimal_year
 from ..planets import approx_year as _pd_approx_year
-from .converse import PrimaryDirectionConverseDoctrine
+from .converse import (
+    SIGNED_PRIMARY_MOTION_TOLERANCE_DEG,
+    PrimaryDirectionConverseDoctrine,
+    PrimaryDirectionMotion,
+    PrimaryDirectionSignedMotionResolution,
+    resolve_signed_primary_motion,
+)
 from .antiscia import (
     PrimaryDirectionAntisciaKind,
     PrimaryDirectionAntisciaTarget,
@@ -42,7 +46,7 @@ from .fixed_stars import (
     PrimaryDirectionFixedStarTarget,
     resolve_primary_direction_fixed_star_point,
 )
-from .geometry import compute_primary_direction_arcs
+from .geometry import compute_primary_direction_arc, compute_primary_direction_arcs
 from .keys import (
     PrimaryDirectionKey,
     PrimaryDirectionKeyFamily,
@@ -101,6 +105,9 @@ __all__ = [
     "CONVERSE",
     "PrimaryDirectionSpace",
     "PrimaryDirectionMotion",
+    "PrimaryDirectionSignedMotionResolution",
+    "SIGNED_PRIMARY_MOTION_TOLERANCE_DEG",
+    "resolve_signed_primary_motion",
     "PrimaryDirectionsPreset",
     "PrimaryDirectionConverseDoctrine",
     "PrimaryDirectionsConditionState",
@@ -167,12 +174,6 @@ def _finite_real(value: object, name: str) -> float:
         raise ValueError(f"{name} must be a finite real number")
     return float(value)
 
-class PrimaryDirectionMotion(StrEnum):
-    """Vessel: Enumeration of primary direction motion vectors (Direct/Converse)."""
-    DIRECT = "direct"
-    CONVERSE = "converse"
-
-
 class PrimaryDirectionsPreset(StrEnum):
     """Vessel: Collection of pre-configured primary direction calculation regimes."""
     PLACIDUS_MUNDANE = "placidus_mundane"
@@ -199,6 +200,9 @@ class PrimaryDirectionsPreset(StrEnum):
     TOPOCENTRIC_MUNDANE = "topocentric_mundane"
     TOPOCENTRIC_ZODIACAL = "topocentric_zodiacal"
     TOPOCENTRIC_ZODIACAL_ASPECT = "topocentric_zodiacal_aspect"
+    TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION = (
+        "topocentric_zodiacal_aspect_signed_primary_motion"
+    )
 
 
 class PrimaryDirectionsConditionState(StrEnum):
@@ -357,9 +361,15 @@ class PrimaryDirectionsPolicy:
                     raise ValueError(
                         "PrimaryDirectionsPolicy invariant failed: zodiacal-suppressed latitude currently requires assigned-zero source"
                     )
-                if self.perfection_policy.kind is not PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION:
+                expected_suppressed_perfection = (
+                    PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+                    if self.converse_doctrine
+                    is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+                    else PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION
+                )
+                if self.perfection_policy.kind is not expected_suppressed_perfection:
                     raise ValueError(
-                        "PrimaryDirectionsPolicy invariant failed: zodiacal-suppressed branch requires zodiacal longitude perfection"
+                        "PrimaryDirectionsPolicy invariant failed: zodiacal-suppressed branch has incompatible perfection doctrine"
                     )
             elif self.latitude_policy.doctrine is PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED:
                 if self.latitude_source_policy.source not in (
@@ -385,6 +395,42 @@ class PrimaryDirectionsPolicy:
             else:
                 raise ValueError(
                     "PrimaryDirectionsPolicy invariant failed: in_zodiaco currently requires explicit admitted zodiacal latitude doctrine"
+                )
+        if self.converse_doctrine is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION:
+            if (
+                self.method is not PrimaryDirectionMethod.TOPOCENTRIC
+                or self.space is not PrimaryDirectionSpace.IN_ZODIACO
+                or self.latitude_policy.doctrine
+                is not PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+                or self.latitude_source_policy.source
+                is not PrimaryDirectionLatitudeSource.ASSIGNED_ZERO
+                or self.perfection_policy.kind
+                is not PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+            ):
+                raise ValueError(
+                    "PrimaryDirectionsPolicy invariant failed: signed primary motion is admitted only for the zero-latitude Topocentric zodiacal projected branch"
+                )
+            if (
+                self.relation_policy.admitted_kinds
+                != zodiacal_aspect_relation_policy().admitted_kinds
+                or self.target_policy
+                != _aspect_target_policy(
+                    fixed_star_targets=bool(self.fixed_star_targets)
+                )
+            ):
+                raise ValueError(
+                    "PrimaryDirectionsPolicy invariant failed: signed primary motion requires the admitted Topocentric zodiacal-aspect relation and target policy"
+                )
+            if any(
+                (
+                    self.morinus_aspect_contexts,
+                    self.antiscia_targets,
+                    self.ptolemaic_parallel_targets,
+                    self.placidian_rapt_parallel_targets,
+                )
+            ):
+                raise ValueError(
+                    "PrimaryDirectionsPolicy invariant failed: signed primary motion does not admit non-fixed-star advanced target or context vessels"
                 )
         source_names = [context.source_name for context in self.morinus_aspect_contexts]
         if len(set(source_names)) != len(source_names):
@@ -836,6 +882,45 @@ def primary_directions_policy_preset(
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
             relation_policy=zodiacal_aspect_relation_policy(),
             **aspect_kwargs,
+        )
+    if (
+        preset
+        is PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    ):
+        if not include_converse:
+            raise ValueError(
+                "PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION requires signed direct/converse admission"
+            )
+        if any(
+            (
+                morinus_aspect_contexts,
+                antiscia_targets,
+                ptolemaic_parallel_targets,
+                placidian_rapt_parallel_targets,
+            )
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION does not admit non-fixed-star advanced target or context vessels"
+            )
+        signed_aspect_kwargs = dict(aspect_kwargs)
+        signed_aspect_kwargs["include_converse"] = True
+        signed_aspect_kwargs["converse_doctrine"] = (
+            PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+        )
+        return PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.TOPOCENTRIC,
+            space=PrimaryDirectionSpace.IN_ZODIACO,
+            latitude_policy=PrimaryDirectionLatitudePolicy(
+                PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
+            ),
+            latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(
+                PrimaryDirectionLatitudeSource.ASSIGNED_ZERO
+            ),
+            perfection_policy=PrimaryDirectionPerfectionPolicy(
+                PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
+            ),
+            relation_policy=zodiacal_aspect_relation_policy(),
+            **signed_aspect_kwargs,
         )
     raise ValueError(f"Unsupported primary-directions preset: {preset}")
 
@@ -2102,6 +2187,14 @@ def find_primary_arcs(
             ),
         )
     )
+    if (
+        resolved_policy.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+        and (not normalized_significators or not normalized_promissors)
+    ):
+        raise ValueError(
+            "signed primary motion requires explicit non-empty significator and promissor filters"
+        )
     obl = _finite_real(
         obliquity if obliquity is not None else chart.obliquity,
         "find_primary_arcs obliquity",
@@ -2477,6 +2570,43 @@ def find_primary_arcs(
                             method=resolved_policy.method,
                             space=resolved_policy.space,
                             motion=motion,
+                            solar_rate=s_rate,
+                            relational_kind=relational_kind,
+                        )
+                    )
+                continue
+
+            if (
+                resolved_policy.converse_doctrine
+                is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+            ):
+                raw_signed = compute_primary_direction_arc(
+                    resolved_policy.method,
+                    sig_e,
+                    prom_e,
+                    space=resolved_policy.space,
+                    latitude_doctrine=resolved_policy.latitude_policy.doctrine,
+                    geo_lat=geo_lat,
+                    armc=houses.armc,
+                    oa_asc=oa_asc,
+                )
+                signed_motion = resolve_signed_primary_motion(raw_signed)
+                if signed_motion.motion is None:
+                    continue
+                if signed_motion.magnitude <= max_arc:
+                    results.append(
+                        PrimaryArc(
+                            significator=sig_e.name,
+                            promissor=prom_e.name,
+                            arc=signed_motion.magnitude,
+                            direction=(
+                                DIRECT
+                                if signed_motion.motion is PrimaryDirectionMotion.DIRECT
+                                else CONVERSE
+                            ),
+                            method=resolved_policy.method,
+                            space=resolved_policy.space,
+                            motion=signed_motion.motion,
                             solar_rate=s_rate,
                             relational_kind=relational_kind,
                         )

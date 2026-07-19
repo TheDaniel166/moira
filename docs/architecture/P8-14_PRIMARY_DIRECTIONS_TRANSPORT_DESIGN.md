@@ -28,6 +28,19 @@ Current runtime rules:
   names are adapters whose requested and canonical identities remain visible
 - conflicting preset/method/space requests and ambiguous generic Ptolemy
   zodiacal requests are rejected
+- the additive
+  `topocentric_zodiacal_aspect_signed_primary_motion` preset classifies one
+  ordered, assigned-zero/projected Topocentric aspect arc by its shortest
+  signed displacement: positive is direct, negative is converse, zero is no
+  event, and the ambiguous `180`-degree boundary fails closed; it does not
+  alter traditional role exchange or admit the deferred global neo-converse
+  doctrine
+- signed-primary-motion is engine-search-only: the `relations` path and any
+  request containing submitted arcs reject it because a submitted positive
+  magnitude and label do not preserve the ordered raw-arc evidence; reduction
+  responses expose the exact preset and doctrine; engine searches require
+  explicit non-empty significator and promissor filters so the default all-
+  target set cannot encounter an undeclared MC/IC antipodal ambiguity
 - key selection preserves requested, canonical, and source truth; the solar
   key requires an explicit positive solar rate
 - submitted payloads become real immutable `PrimaryArc` vessels, are bounded

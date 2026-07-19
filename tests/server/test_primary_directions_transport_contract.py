@@ -13,6 +13,7 @@ from moira.primary_directions import (
     PrimaryArc,
     PrimaryDirectionAntisciaKind,
     PrimaryDirectionAntisciaTarget,
+    PrimaryDirectionConverseDoctrine,
     PrimaryDirectionFixedStarTarget,
     PrimaryDirectionMotion,
     PrimaryDirectionsPreset,
@@ -159,13 +160,69 @@ def test_policy_resolution_uses_canonical_presets_and_keys() -> None:
 def test_every_canonical_engine_preset_is_transport_resolvable() -> None:
     for preset in PrimaryDirectionsPreset:
         resolved = service.resolve_primary_directions_policy(
-            PrimaryDirectionsRelationsRequest(
-                submitted_arcs=[],
-                policy={"preset": preset.value},
-            )
+            _request(policy={"preset": preset.value})
         )
         assert resolved.canonical_preset is preset
         assert resolved.policy is not None
+
+
+def test_signed_primary_motion_transport_is_engine_search_only() -> None:
+    preset = (
+        PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+    resolved = service.resolve_primary_directions_policy(
+        _request(policy={"preset": preset.value})
+    )
+    assert resolved.policy.converse_doctrine is (
+        PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+    )
+
+    with pytest.raises(ValueError, match="requires explicit non-empty significator"):
+        service.compute_arcs_service(
+            _ForbiddenEngine(),
+            _request(policy={"preset": preset.value}),
+        )
+
+    for submitted in ([], [_SUBMITTED]):
+        request = _request(
+            submitted_arcs=submitted,
+            policy={"preset": preset.value},
+        )
+        with pytest.raises(
+            ValueError,
+            match="requires engine search.*signed raw-arc evidence",
+        ):
+            service.compute_arcs_service(_ForbiddenEngine(), request)
+
+    relations_request = PrimaryDirectionsRelationsRequest(
+        submitted_arcs=[_SUBMITTED],
+        policy={"preset": preset.value},
+    )
+    with pytest.raises(
+        ValueError,
+        match="requires engine search.*signed raw-arc evidence",
+    ):
+        primary_directions_relations_route(relations_request, _ForbiddenEngine())
+
+
+def test_traditional_submitted_arc_semantics_remain_available() -> None:
+    request = _request(
+        submitted_arcs=[{**_SUBMITTED, "direction": "CONVERSE"}],
+        policy={"preset": "topocentric_zodiacal_aspect"},
+    )
+    arcs = service.compute_arcs_service(_ForbiddenEngine(), request)
+    assert len(arcs) == 1
+    assert arcs[0].motion is PrimaryDirectionMotion.CONVERSE
+
+    relations = service.compute_relations_service(
+        _ForbiddenEngine(),
+        PrimaryDirectionsRelationsRequest(
+            submitted_arcs=[{**_SUBMITTED, "direction": "CONVERSE"}],
+            policy={"preset": "topocentric_zodiacal_aspect"},
+        ),
+    )
+    assert len(relations) == 1
+    assert relations[0].arc.motion is PrimaryDirectionMotion.CONVERSE
 
 
 def test_advanced_search_inputs_convert_to_exact_engine_vessels() -> None:
@@ -548,6 +605,41 @@ def test_submitted_reduction_reports_actual_source_and_empty_profile(
     assert len(engine.house_calls) == 1
 
 
+def test_signed_primary_motion_search_reduction_exposes_exact_doctrine(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preset = (
+        PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+    )
+    captured: dict = {}
+
+    def _capture_search(**kwargs):
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr(service, "find_primary_arcs", _capture_search)
+    arcs, reduction = service.compute_arcs_with_reduction_service(
+        _RecordingEngine(),
+        _request(
+            significators=["Sun"],
+            promissors=["Moon Trine"],
+            policy={"preset": preset.value},
+        ),
+    )
+    response = serialize_arcs_with_reduction(
+        arcs,
+        reduction,
+        chosen_key=reduction.chosen_key,
+    )
+
+    assert captured["policy"].converse_doctrine is (
+        PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+    )
+    assert response.reduction.search_mode == "engine_search"
+    assert response.reduction.resolved_policy.canonical_preset == preset.value
+    assert response.reduction.resolved_policy.converse_doctrine == "signed_primary_motion"
+
+
 @pytest.mark.parametrize(
     ("request_overrides", "field_name", "expected", "expected_motion"),
     [
@@ -721,6 +813,13 @@ def test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded() -> N
     assert "PrimaryDirectionMethod" in str(policy["method"])
     assert "PrimaryDirectionSpace" in str(policy["space"])
     assert "PrimaryDirectionKey" in str(policy["key"])
+    assert (
+        "topocentric_zodiacal_aspect_signed_primary_motion"
+        in schemas["PrimaryDirectionsPreset"]["enum"]
+    )
+    assert "search-only" in policy["preset"]["description"]
+    assert "explicit non-empty significator" in policy["preset"]["description"]
+    assert "signed raw-arc evidence" in policy["preset"]["description"]
     advanced_schemas = {
         "antiscia_targets": "PrimaryDirectionAntisciaTargetRequest",
         "ptolemaic_parallel_targets": "PtolemaicParallelTargetRequest",

@@ -156,6 +156,8 @@ Known families:
 
 - `Direct`
 - `Traditional converse`
+- `Signed primary motion`, as a source-scoped classification of one ordered
+  Topocentric arc rather than a role-exchanged companion construction
 - `Neo-converse`
 
 Interpretive implication:

@@ -18,6 +18,7 @@ from moira.primary_directions import (
     MorinusAspectContext,
     PrimaryArc,
     PrimaryDirectionAntisciaTarget,
+    PrimaryDirectionConverseDoctrine,
     PrimaryDirectionFixedStarTarget,
     PrimaryDirectionMotion,
     PrimaryDirectionsPolicy,
@@ -372,6 +373,19 @@ def resolve_primary_directions_policy(
                 "Primary-directions preset conflicts with the explicitly requested space"
             )
 
+    if (
+        resolved_policy.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+        and (
+            isinstance(request, PrimaryDirectionsRelationsRequest)
+            or request.submitted_arcs is not None
+        )
+    ):
+        raise ValueError(
+            "Signed primary motion requires engine search; submitted arcs do not carry "
+            "the signed raw-arc evidence needed to derive direct or converse motion"
+        )
+
     return ResolvedPrimaryDirectionsPolicy(
         policy=resolved_policy,
         requested_preset=requested_preset,
@@ -494,6 +508,14 @@ def _prepare_request(
     resolved: ResolvedPrimaryDirectionsPolicy | None = None,
 ) -> _PreparedPrimaryDirections:
     resolved = resolved or resolve_primary_directions_policy(request)
+    if (
+        resolved.policy.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+        and (not request.significators or not request.promissors)
+    ):
+        raise ValueError(
+            "Signed primary motion requires explicit non-empty significator and promissor filters"
+        )
     if request.submitted_arcs is not None:
         arcs = _convert_submitted_arcs(request.submitted_arcs, resolved=resolved)
         if not require_reduction_context:

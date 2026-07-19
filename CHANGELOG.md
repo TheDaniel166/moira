@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Source-Scoped Topocentric Signed Primary Motion**: Added the explicit
+  `topocentric_zodiacal_aspect_signed_primary_motion` preset for Makransky's
+  assigned-zero, projected-perfection Topocentric zodiacal-aspect product. It
+  classifies one ordered shortest circular arc: positive is direct, negative
+  is converse, numerical zero is no event, and the directionally ambiguous
+  `180`-degree boundary fails closed. This is a narrow signed-motion doctrine,
+  not the deferred global neo-converse doctrine and not a replacement for
+  traditional role-exchanged converse. REST admission is engine-search-only;
+  submitted arcs are rejected because they do not preserve the raw signed-arc
+  evidence needed to derive their label. Signed searches require explicit,
+  non-empty significator and promissor filters so an unbounded candidate set
+  cannot encounter an undeclared antipodal ambiguity. Existing facade
+  signatures and all eight `/v1/primary-directions/*` paths remain unchanged.
 - **Primary-Directions Evaluation Facade**: Added canonical `Moira` delegations
   for policy-preset construction, single-arc relation evaluation,
   per-significator condition, chart-wide aggregate profiles, and directed
@@ -142,9 +155,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Topocentric, fixed-star, reflected-point, parallel, rapt-parallel, and
   Morinus worked-example corpora with explicit evidence classes, printed-input
   tolerances, rights notes, and non-evaluable boundaries. The Topocentric
-  corpus preserves the source's signed converse label separately from Moira's
-  declared role-exchange converse doctrine rather than changing public motion
-  semantics to force superficial parity.
+  corpus now exposes the source's signed converse label through its separate
+  signed-primary-motion preset while preserving the established
+  role-exchanged Topocentric preset unchanged.
 - **Primary-Directions Geometry, Identity, And Boundary Integrity**: Made
   Placidian mundane position continuous through all four quadrants, restored
   signed Ptolemaic OA/OD behavior, and expressed Regiomontanus, Campanus,
@@ -503,6 +516,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unsupported, conflicting, ambiguous, or scientifically invalid inputs that
   were previously coerced may now raise engine errors or return REST validation
   responses.
+- The Topocentric signed-primary-motion preset is additive and search-only.
+  Existing submitted-arc evaluation remains available under established
+  doctrines, while signed-primary-motion requests containing submitted arcs
+  fail explicitly because those vessels cannot attest the governing raw-arc
+  sign.
 - Existing `/v1/harmonics/*` paths and the age-harmonic route remain available.
   Single-H request schemas are widened compatibly from integer to real
   `harmonic`; range, sweep, and transit-forecast harmonic lists remain strict
@@ -572,6 +590,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `0.11 arcminute`; Makransky's shared Campanus-Regiomontanus conjunction and
   Topocentric under-the-pole examples are checked at `0.03` and `0.02 degree`,
   respectively; Polich's named-pole oblique ascension is checked separately;
+  the signed-primary-motion public preset emits the Makransky Topocentric
+  product as one converse arc within the same `0.02 degree` gate while the
+  traditional role-exchange result remains covered as a compatibility
+  invariant;
   and Lilly's Vega and Jupiter-antiscion rows constrain only their historical
   zero-latitude zodiacal products. Bundled catalog fixtures remain regression
   evidence, and rounded Ptolemaic/Morinus examples remain scoped corroboration

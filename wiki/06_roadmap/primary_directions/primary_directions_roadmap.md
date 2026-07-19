@@ -47,9 +47,11 @@ Current admitted capability:
 - `2` direction spaces:
   - `In Mundo`
   - `In Zodiaco`
-- `2` motion modes:
+- `3` explicit motion doctrines:
   - `Direct`
   - `Traditional converse`
+  - source-scoped `Signed primary motion` for the named Topocentric
+    zodiacal-aspect preset
 - `4` time keys: `Ptolemy`, `Naibod`, `Cardan`, `Solar`
 - explicit latitude doctrines:
   - `mundane_preserved`
@@ -597,6 +599,8 @@ Status:
 Status:
 
 - `Traditional converse` admitted
+- source-scoped `Signed primary motion` admitted later through one named
+  Topocentric zodiacal-aspect preset
 - `Neo-converse` not yet implemented
 
 ### Stage 8. Widen the Method Catalog

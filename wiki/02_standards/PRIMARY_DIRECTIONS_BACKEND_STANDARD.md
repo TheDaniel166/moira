@@ -15,7 +15,8 @@ This standard therefore describes the subsystem as it actually exists now:
 
 - multiple admitted geometry families
 - `In Mundo` and `In Zodiaco`
-- direct and traditional converse
+- direct, traditional role-exchange converse, and one narrow signed-primary-
+  motion doctrine
 - explicit relation doctrine
 - explicit preset doctrine
 - validated narrow target-family expansions
@@ -173,12 +174,32 @@ Not admitted:
 
 Current admitted motion doctrines:
 
-- `DIRECT`
+- `DIRECT_ONLY`
 - `TRADITIONAL_CONVERSE`
+- `SIGNED_PRIMARY_MOTION`, only through
+  `TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION`
+
+`TRADITIONAL_CONVERSE` preserves the established construction: direct and
+converse are separate ordered calculations with promissor and significator
+roles exchanged. The signed-primary-motion preset does not alter that product.
+It constructs one ordered Topocentric zodiacal-aspect arc with assigned-zero
+aspect latitude and projected perfection, wraps it to the unique signed
+shortest displacement in `(-180, 180)` degrees, and classifies a positive arc
+as direct or a negative arc as converse. Numerical coincidence is no event;
+an exact or tolerance-coalesced `180`-degree displacement has no unique sign and
+fails closed. In this preset, `include_converse=True` admits either label from
+that one construction; it does not request a second role-exchanged arc.
+Searches under this doctrine require explicit, non-empty significator and
+promissor filters. The unrestricted target set contains the antipodal MC/IC
+pair, whose direction is intentionally undefined rather than silently skipped.
 
 Not admitted:
 
 - `NEO_CONVERSE`
+
+`SIGNED_PRIMARY_MOTION` is not `NEO_CONVERSE`. It is a source-scoped sign
+classification for one named Topocentric branch, not a global direction
+against diurnal rotation and not a generic method-wide converse toggle.
 
 #### 3.4 Time-key doctrine
 
@@ -271,6 +292,12 @@ report the exact resolved configuration on reduction responses. Those search
 inputs are not accepted by submitted-arc evaluation, which has no target-
 materialization stage.
 
+The signed-primary-motion preset is likewise engine-search-only at the REST
+boundary. Submitted arcs already carry a positive magnitude and direct or
+converse label, but not the ordered raw arc required to derive that label;
+therefore the submitted-only `relations` path and any search request containing
+`submitted_arcs` reject this preset rather than pretending to reclassify it.
+
 The thin root package `moira` does **not** re-export these internals.
 
 ---
@@ -322,6 +349,10 @@ Cross-layer invariants:
 - branch presets may not silently widen relation or target doctrine
 - derived target families must be realized only through the method-specific law
   that admits them
+- signed-primary-motion may be materialized only by its explicit Topocentric
+  zodiacal-aspect preset, with assigned-zero latitude and projected perfection
+- signed-primary-motion search requires explicit non-empty significator and
+  promissor filters; an explicitly requested antipodal pair still fails closed
 - ordered method/perfection/relation/target transition counts must describe one
   connected, degree-valid directed path or lawfully linearizable circuit
 
@@ -332,6 +363,8 @@ Current policy:
 - invalid doctrine raises `ValueError`
 - invalid vessel state raises `ValueError`
 - invalid preset-target or preset-relation combinations raise `ValueError`
+- signed-primary-motion coincidence produces no event, while its directionally
+  ambiguous `180`-degree boundary raises `ValueError`
 - method/space combinations outside a method's declared capability raise
   `ValueError`
 - empty engine aggregate/network/profile requests raise `ValueError`; REST
@@ -393,8 +426,9 @@ The evidence classes must remain explicit. The Hemminga Mars-to-Jupiter
 example is a named historical-authority comparison. Published Makransky
 examples constrain the shared narrow Campanus-Regiomontanus conjunction law
 and the Topocentric under-the-pole law under their printed-input tolerances;
-the latter source's signed direct/converse naming is not silently substituted
-for Moira's separately declared role-exchange doctrine. Lilly's printed
+the latter source's signed direct/converse naming is admitted only through the
+separate signed-primary-motion preset and does not rewrite Moira's established
+role-exchange doctrine. Lilly's printed
 fixed-star and zero-latitude antiscion rows constrain only those historical
 zodiacal products. Leo/Sepharial declination-equivalent and rapt examples, and
 the modern Morinus circle-of-aspects calculation, remain branch-scoped evidence

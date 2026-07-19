@@ -61,7 +61,21 @@ It does not apply to deferred frontiers such as:
 
 - runtime methods are limited to the admitted recoverable set
 - spaces are limited to `In Mundo` and `In Zodiaco`
-- motion doctrine is limited to `Direct` and `Traditional converse`
+- ordinary motion doctrine remains `Direct` and role-exchanged
+  `Traditional converse`
+- `Signed primary motion` is admitted only through the explicit
+  `topocentric_zodiacal_aspect_signed_primary_motion` preset
+- signed primary motion computes one ordered promissor-to-significator arc;
+  after shortest-circular wrapping, positive means direct and negative means
+  converse, so it never materializes a second role-exchanged companion arc
+- signed-primary-motion coincidence within `1e-12` degree is no event; an exact
+  or tolerance-coalesced `180`-degree arc fails closed because its sign is not
+  unique
+- signed primary motion requires `include_converse=True`; for this doctrine the
+  flag admits either derived label rather than requesting two arc constructions
+- signed primary motion requires explicit, non-empty significator and
+  promissor filters; the implicit all-target set is not admitted because its
+  MC/IC pair is directionally antipodal
 - `Neo-converse` remains outside the admitted surface
 - rapt-parallel motion is admitted against the rapt relation and its configured
   target only; it does not widen ordinary direct/converse motion admission
@@ -124,6 +138,10 @@ It does not apply to deferred frontiers such as:
 - presets may not silently widen relation doctrine
 - presets may not silently widen target doctrine
 - narrow families must remain narrow at the preset boundary
+- the signed-primary-motion preset is exactly Topocentric, `In Zodiaco`,
+  zodiacal-aspect relation doctrine, assigned-zero/suppressed aspect latitude,
+  and zodiacal projected perfection; no generic Topocentric method/space
+  request may acquire that doctrine implicitly
 
 
 ## Cross-Layer Invariants
@@ -154,6 +172,9 @@ It does not apply to deferred frontiers such as:
 - invalid vessel state raises `ValueError`
 - invalid preset-target or preset-relation combinations raise `ValueError`
 - method/space capability mismatches raise `ValueError`
+- signed-primary-motion antipodes and any attempt to disable its direct/converse
+  label admission raise `ValueError`
+- missing or empty signed-primary-motion target filters raise `ValueError`
 - empty aggregate, network, or profile requests raise `ValueError`
 - no silent fallback occurs for unsupported doctrine
 - inverse-trigonometric arguments outside a round-off-sized real-domain margin
@@ -165,6 +186,10 @@ engine aggregate or network vessel.
 Reduction responses must preserve the exact resolved advanced target/context
 configuration, including all Morinus path fields and the relation-specific rapt
 motion; merely reporting a source name is insufficient provenance.
+At the REST boundary, signed-primary-motion is search-only: `relations` and any
+request containing `submitted_arcs` reject it because a submitted positive arc
+and label cannot reconstruct the ordered raw arc whose sign governs the
+doctrine.
 
 
 ## Admitted Narrow-Family Invariants

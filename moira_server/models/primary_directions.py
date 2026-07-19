@@ -105,7 +105,15 @@ class PrimaryDirectionsPolicyRequest(_StrictModel):
             "topocentric",
         ]
         | None
-    ) = None
+    ) = Field(
+        default=None,
+        description=(
+            "Canonical engine preset or retained legacy alias. The signed-primary-motion "
+            "Topocentric preset is search-only, requires explicit non-empty significator "
+            "and promissor filters, and cannot use submitted arcs because they do not "
+            "carry its governing signed raw-arc evidence."
+        ),
+    )
     method: PrimaryDirectionMethod | None = None
     space: PrimaryDirectionSpace | None = None
     include_converse: bool | None = None

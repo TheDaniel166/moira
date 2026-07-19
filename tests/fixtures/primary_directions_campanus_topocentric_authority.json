@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "fixture_scope": "Published numerical source facts for the admitted narrow Campanus-Regiomontanus conjunction law and the Topocentric under-the-pole law.",
-  "evidence_limit": "These examples validate the named low-level laws only. They do not validate the wider Campanus mundane-aspect family, a complete natal-chart reconstruction, or Moira's current direct/converse classification policy.",
+  "fixture_scope": "Published numerical source facts for the admitted narrow Campanus-Regiomontanus conjunction law, the Topocentric under-the-pole law, and the named Topocentric worked example's signed ordered-arc classification.",
+  "evidence_limit": "These examples validate the named low-level laws and, only for the named Topocentric zodiacal-aspect example, the source's negative-arc converse classification. They do not validate the wider Campanus mundane-aspect family, a complete natal-chart reconstruction, traditional role-exchanged converse, or a global neo-converse doctrine.",
   "sources": {
     "makransky_primer_part_1": {
       "author": "Bob Makransky",
