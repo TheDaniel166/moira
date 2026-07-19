@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "corpus_id": "primary_directions_special_target_authority",
+  "doctrine": "Only source-published numerical facts that map to a named current computation are executable. Secondary reconstructions remain distinct from original authority, and unsupported branches are recorded as not_evaluable without synthetic expected values.",
+  "sources": {
+    "lilly_christian_astrology_1659": {
+      "author": "William Lilly",
+      "title": "Christian Astrology",
+      "publication_year": 1659,
+      "url": "https://en.wikisource.org/wiki/File:Christian_Astrology_(Lilly,_1659).djvu",
+      "pages": "765-768",
+      "evidence_class": "authority_validation",
+      "authority_scope": "Lilly's published zodiacal fixed-star and planetary-antiscion directions to the Ascendant",
+      "license_provenance": "Public-domain scan; original numerical facts are cited, not reproduced as page images."
+    },
+    "kolev_lilly_method_1998": {
+      "author": "Rumen Kolev",
+      "title": "William Lilly and His Method of Primary Directions",
+      "publication_year": 1998,
+      "url": "https://babylonianastrology.com/downloads/Lilly1.pdf",
+      "pages": "PDF pages 2-3 and 18; tables 1 and 4",
+      "evidence_class": "cross_engine_corroboration",
+      "authority_scope": "Transcription of Lilly's tables and a Placidus-software reconstruction of the 1616 chart and directions",
+      "license_provenance": "Copyright status not stated in the hosted PDF; this corpus records limited numerical facts and a citation only."
+    },
+    "sepharial_directional_astrology": {
+      "author": "Sepharial",
+      "title": "Directional Astrology, Chapter X: Ptolemy and Placidus",
+      "publication_year": 1921,
+      "url": "https://astroamerica.com/primary.pdf",
+      "pages": "printed pages 57-58; PDF pages 4-5; illustration 6",
+      "evidence_class": "authority_validation",
+      "authority_scope": "Sepharial's published zodiacal parallel worked procedure, not a direct numerical oracle from Ptolemy",
+      "license_provenance": "United States pre-1929 public-domain source text; hosted excerpt provenance is retained by URL."
+    },
+    "leo_griscti_primary_directions": {
+      "author": "Alan Leo; calculator adaptation by Jane Griscti",
+      "title": "Primary Directions, extracted from The Progressed Horoscope",
+      "publication_year": 2010,
+      "url": "https://maestrosdelsaber.com/wp-content/uploads/ftp-files/Astrologia/Astro%20a%20Leo%2C%20Alan/Astro%20Leo%2C%20Alan%20-%20Primary%20Directions.pdf",
+      "pages": "PDF pages 39-40; printed pages 308-309; examples 40-41",
+      "evidence_class": "secondary_source_corroboration",
+      "authority_scope": "Modern calculator-formula adaptation of Alan Leo's 1906/1923 text, preserving the printed direct and converse rapt-parallel examples",
+      "license_provenance": "The adaptation bears a 2010 copyright notice; this corpus records limited numerical facts and a citation only."
+    },
+    "borealis_circle_of_aspects_2024": {
+      "author": "Alexey Borealis",
+      "title": "A Circle of Mundane Aspects",
+      "publication_year": 2024,
+      "url": "https://morinus-astrology.com/circle-of-aspects/",
+      "pages": "worked example headed by Winston Churchill's horoscope",
+      "evidence_class": "secondary_source_corroboration",
+      "authority_scope": "Modern technical derivation and worked Morinus aspect-plane example",
+      "license_provenance": "Site license not stated; this corpus records limited numerical facts and a citation only."
+    },
+    "morin_astrologia_gallica_1661": {
+      "author": "Jean-Baptiste Morin",
+      "title": "Astrologia Gallica",
+      "publication_year": 1661,
+      "url": "https://www.e-rara.ch/download/pdf/1871945.pdf",
+      "doi": "https://doi.org/10.3931/e-rara-1874",
+      "pages": "Book XXII, Section II, Chapters 2-3; page-level numerical transcription still required",
+      "evidence_class": "authority_validation",
+      "authority_scope": "Primary historical authority for Morinus aspect doctrine",
+      "license_provenance": "ETH Bibliothek Rar 9625 scan marked with the Public Domain Mark; attribution and DOI retained."
+    }
+  },
+  "cases": [
+    {
+      "case_id": "lilly_vega_zodiacal_projection_to_asc",
+      "branch": "fixed_star",
+      "status": "evaluable",
+      "evaluator": "fixed_star_zodiacal_direction",
+      "effective_evidence_class": "cross_engine_corroboration",
+      "evidence_layers": [
+        {
+          "source_id": "lilly_christian_astrology_1659",
+          "role": "original published longitude and directional arc"
+        },
+        {
+          "source_id": "kolev_lilly_method_1998",
+          "role": "chart reconstruction, transcription, and independent software recalculation"
+        }
+      ],
+      "product_semantics": "Vega's true-of-date tropical longitude is resolved at the reconstructed 1616 epoch, its latitude is explicitly suppressed, and the resulting zodiacal point is directed to the Ascendant by the admitted Ptolemaic semi-arc law.",
+      "inputs": {
+        "star_name": "Vega",
+        "gregorian_ut1_proxy": {
+          "year": 1616,
+          "month": 9,
+          "day": 29,
+          "hour": 14,
+          "minute": 14,
+          "second": 5
+        },
+        "geo_latitude_degrees": 53.0,
+        "armc_degrees": 222.16666666666666,
+        "ascendant_degrees": 276.68333333333334,
+        "obliquity_degrees": 23.4876,
+        "latitude_doctrine": "zodiacal_suppressed"
+      },
+      "expected": {
+        "lilly": {
+          "longitude_degrees": 280.0,
+          "arc_degrees": 3.2333333333333334
+        },
+        "kolev_reconstruction": {
+          "longitude_degrees": 279.96666666666664,
+          "arc_degrees": 3.1666666666666665
+        }
+      },
+      "tolerance": {
+        "lilly_longitude_degrees": 0.06,
+        "lilly_arc_degrees": 0.1,
+        "kolev_longitude_degrees": 0.03,
+        "kolev_arc_degrees": 0.02
+      },
+      "exclusions": "This does not validate Vega with true latitude in mundo, any fixed-star-to-planet direction, or the historical catalog itself as a modern astrometric oracle."
+    },
+    {
+      "case_id": "lilly_jupiter_antiscion_to_asc",
+      "branch": "antiscia",
+      "status": "evaluable",
+      "evaluator": "antiscia_zodiacal_direction",
+      "effective_evidence_class": "authority_validation",
+      "evidence_layers": [
+        {
+          "source_id": "lilly_christian_astrology_1659",
+          "role": "original chart longitude, antiscion position, and directional arc"
+        },
+        {
+          "source_id": "kolev_lilly_method_1998",
+          "role": "scan transcription and independent recalculation"
+        }
+      ],
+      "product_semantics": "The zero-latitude zodiacal antiscion of Lilly's Jupiter is reflected across the Cancer-Capricorn axis and directed to the Ascendant; cum-latitudine doctrine is excluded.",
+      "inputs": {
+        "source_name": "Jupiter",
+        "kind": "antiscion",
+        "source_longitude_degrees": 261.9166666666667,
+        "geo_latitude_degrees": 53.0,
+        "armc_degrees": 222.16666666666666,
+        "ascendant_degrees": 276.6166666666667,
+        "obliquity_degrees": 23.4876,
+        "latitude_doctrine": "zodiacal_suppressed"
+      },
+      "expected": {
+        "reflected_longitude_degrees": 278.0833333333333,
+        "arc_degrees": 1.4
+      },
+      "tolerance": {
+        "reflected_longitude_degrees": 0.02,
+        "arc_degrees": 0.03
+      },
+      "exclusions": "This does not validate antiscia sourced from nodes or angles, contra-antiscia, or Lilly's separate cum-latitudine construction."
+    },
+    {
+      "case_id": "sepharial_sun_parallel_uranus_zodiacal",
+      "branch": "ptolemaic_parallel",
+      "status": "evaluable",
+      "evaluator": "ptolemaic_declination_projection",
+      "effective_evidence_class": "authority_validation",
+      "evidence_layers": [
+        {
+          "source_id": "sepharial_directional_astrology",
+          "role": "published declination-equivalent longitude, rising sidereal times, and arc"
+        }
+      ],
+      "product_semantics": "Sepharial illustration 6 selects the Cancer branch whose ecliptic declination equals Uranus's north declination; the source rounds the equivalent longitude to a whole degree.",
+      "inputs": {
+        "source_longitude_for_branch_selection_degrees": 94.0,
+        "source_declination_degrees": 23.4,
+        "obliquity_degrees": 23.4392911,
+        "relation": "parallel",
+        "published_source_rise_st_hours": 16.733333333333334,
+        "published_target_rise_st_hours": 22.1
+      },
+      "expected": {
+        "equivalent_longitude_degrees": 94.0,
+        "arc_degrees": 80.5
+      },
+      "tolerance": {
+        "equivalent_longitude_degrees": 1.0,
+        "arc_degrees": 1e-09
+      },
+      "exclusions": "The 94-degree input is an explicit selector for the Cancer solution named by the source, not a claim about Uranus's radical longitude. This case does not validate contra-parallels."
+    },
+    {
+      "case_id": "leo_saturn_rapt_parallel_moon_direct",
+      "branch": "placidian_rapt_parallel",
+      "status": "evaluable",
+      "evaluator": "placidian_rapt_parallel_direct",
+      "effective_evidence_class": "secondary_source_corroboration",
+      "evidence_layers": [
+        {
+          "source_id": "leo_griscti_primary_directions",
+          "role": "published opposite-hemisphere direct example"
+        }
+      ],
+      "product_semantics": "Saturn approaches the upper meridian while the Moon is taken by opposition in right ascension; Saturn's diurnal and the Moon's nocturnal semi-arcs govern the direct rapt parallel.",
+      "inputs": {
+        "promissor": {
+          "name": "Saturn",
+          "ra_degrees": 339.95,
+          "hour_angle_degrees": -67.88333333333334,
+          "dsa_degrees": 76.28333333333333,
+          "nsa_degrees": 103.71666666666667,
+          "upper": true
+        },
+        "significator": {
+          "name": "Moon",
+          "ra_degrees": 103.45,
+          "hour_angle_degrees": 168.61666666666667,
+          "dsa_degrees": 113.5,
+          "nsa_degrees": 66.5,
+          "upper": false
+        }
+      },
+      "expected": {
+        "ra_difference_degrees": 56.5,
+        "secondary_distance_degrees": 30.183333333333334,
+        "arc_degrees": 37.7
+      },
+      "tolerance": {
+        "arc_degrees": 0.02
+      },
+      "exclusions": "This is secondary corroboration through a modern calculator adaptation, not a direct transcription from Placidus's Latin text."
+    },
+    {
+      "case_id": "leo_saturn_rapt_parallel_moon_converse",
+      "branch": "placidian_rapt_parallel",
+      "status": "evaluable",
+      "evaluator": "placidian_rapt_parallel_converse",
+      "effective_evidence_class": "secondary_source_corroboration",
+      "evidence_layers": [
+        {
+          "source_id": "leo_griscti_primary_directions",
+          "role": "published converse example"
+        }
+      ],
+      "product_semantics": "Saturn and Moon move conversely; Saturn's nocturnal and the Moon's nocturnal semi-arcs govern the forward right-ascension construction.",
+      "inputs": {
+        "promissor": {
+          "name": "Saturn",
+          "ra_degrees": 339.95,
+          "hour_angle_degrees": -67.88333333333334,
+          "dsa_degrees": 76.28333333333333,
+          "nsa_degrees": 103.71666666666667,
+          "upper": true
+        },
+        "significator": {
+          "name": "Moon",
+          "ra_degrees": 103.45,
+          "hour_angle_degrees": 168.61666666666667,
+          "dsa_degrees": 113.5,
+          "nsa_degrees": 66.5,
+          "upper": false
+        }
+      },
+      "expected": {
+        "ra_difference_degrees": 123.5,
+        "secondary_distance_degrees": 75.25,
+        "arc_degrees": 36.86666666666667
+      },
+      "tolerance": {
+        "arc_degrees": 0.02
+      },
+      "exclusions": "This is secondary corroboration through a modern calculator adaptation, not a direct transcription from Placidus's Latin text."
+    },
+    {
+      "case_id": "borealis_churchill_jupiter_sinister_sextile",
+      "branch": "morinus_aspect_context",
+      "status": "evaluable",
+      "evaluator": "morinus_aspect_projection",
+      "effective_evidence_class": "secondary_source_corroboration",
+      "evidence_layers": [
+        {
+          "source_id": "borealis_circle_of_aspects_2024",
+          "role": "published modern derivation and worked numerical example"
+        }
+      ],
+      "product_semantics": "Jupiter is departing its northern maximum latitude and is projected by a positive 60-degree sinister sextile along Morinus's aspect circle.",
+      "inputs": {
+        "longitude_degrees": 203.56666666666666,
+        "latitude_degrees": 1.1666666666666667,
+        "maximum_latitude_degrees": 1.5666666666666667,
+        "moving_toward_maximum": false,
+        "aspect_angle_degrees": 60.0
+      },
+      "expected": {
+        "longitude_degrees": 263.55,
+        "latitude_degrees": -0.3333333333333333
+      },
+      "tolerance": {
+        "longitude_degrees": 0.2,
+        "latitude_degrees": 0.2
+      },
+      "source_caveat": "The worked equations and example use 60 degrees; a closing prose reference to 30 degrees is treated as a source typo.",
+      "exclusions": "A single sextile example does not validate Moira's atan2 quadrant continuation through squares, trines, or opposition, and it is not primary-source validation from Morin."
+    }
+  ],
+  "deferred_branches": [
+    {
+      "branch_id": "fixed_star_true_latitude_in_mundo",
+      "status": "not_evaluable",
+      "source_ids": [
+        "lilly_christian_astrology_1659",
+        "kolev_lilly_method_1998"
+      ],
+      "reason": "Lilly explicitly directs Vega's zodiacal projection at latitude zero, and Kolev notes that Vega proper to the Ascendant is circumpolar and impossible in this chart. No reproducible published current-surface true-latitude in-mundo example was found.",
+      "required_evidence": "A named non-circumpolar fixed star, complete chart geometry and epoch, true-latitude doctrine, and a published directional arc."
+    },
+    {
+      "branch_id": "fixed_star_to_planet",
+      "status": "not_evaluable",
+      "source_ids": [
+        "lilly_christian_astrology_1659",
+        "kolev_lilly_method_1998"
+      ],
+      "reason": "Lilly lists star-to-luminary directions, but the accessible reconstruction does not provide a complete, independently reproducible coordinate set for the relevant historical star rows.",
+      "required_evidence": "A page-correlated historical star identity and coordinates, chart geometry, latitude doctrine, significator coordinates, and published arc."
+    },
+    {
+      "branch_id": "antiscia_node_and_angle_sources",
+      "status": "not_evaluable",
+      "source_ids": [
+        "lilly_christian_astrology_1659",
+        "kolev_lilly_method_1998"
+      ],
+      "reason": "The recovered Lilly corpus supplies planetary antiscia only; it cannot externally attest Moira's admitted node- or angle-sourced reflections.",
+      "required_evidence": "An original worked direction explicitly using a node or angle as the reflected source."
+    },
+    {
+      "branch_id": "antiscia_cum_latitudine",
+      "status": "not_evaluable",
+      "source_ids": [
+        "lilly_christian_astrology_1659",
+        "kolev_lilly_method_1998"
+      ],
+      "reason": "Lilly's cum-latitudine antiscia retain source latitude and contra-antiscia reverse its sign, while Moira's currently admitted primary-direction antiscia branch intentionally projects latitude zero.",
+      "required_evidence": "A separately admitted latitude-aware public doctrine and source-matched tests; the zero-latitude helper must not be used as a substitute."
+    },
+    {
+      "branch_id": "ptolemaic_contra_parallel",
+      "status": "not_evaluable",
+      "source_ids": [
+        "sepharial_directional_astrology"
+      ],
+      "reason": "Sepharial illustration 3 publishes Saturn declination 6 degrees 54 minutes south, Pisces 12 degrees 37 minutes, and an 11 degrees 30 minutes arc, but calls it Saturn to the Sun's place rather than a contra-parallel. Relabeling it would be a synthetic adaptation.",
+      "required_evidence": "A published worked example explicitly identified as a zodiacal contra-parallel, with hemisphere signs and branch semantics."
+    },
+    {
+      "branch_id": "placidian_rapt_parallel_primary_source",
+      "status": "not_evaluable",
+      "source_ids": [
+        "leo_griscti_primary_directions"
+      ],
+      "reason": "The executable examples come from a copyrighted modern calculator adaptation of Alan Leo. A stable page- and glyph-correlated transcription from Placidus's primary text has not yet been admitted.",
+      "required_evidence": "Manual transcription of a complete direct or converse example from an authoritative Placidus scan, including body identities, semi-arcs, right ascensions, meridian distances, and arc."
+    },
+    {
+      "branch_id": "morinus_primary_source_aspect_context",
+      "status": "not_evaluable",
+      "source_ids": [
+        "morin_astrologia_gallica_1661",
+        "borealis_circle_of_aspects_2024"
+      ],
+      "reason": "The executable Churchill example is a modern secondary derivation. The public-domain Latin Book XXII scan has not yet been transcribed page by page into a reproducible numerical aspect-context example.",
+      "required_evidence": "A page-correlated transcription and derivation from Morin Book XXII, Section II, Chapters 2-3, or a licensed authoritative translation."
+    },
+    {
+      "branch_id": "morinus_quadrant_continuation",
+      "status": "not_evaluable",
+      "source_ids": [
+        "borealis_circle_of_aspects_2024"
+      ],
+      "reason": "The published sextile remains on one branch and cannot externally validate Moira's atan2 continuation across 90, 120, and 180 degrees.",
+      "required_evidence": "Published worked values beyond the principal arctangent branch; until then continuity is supported only by internal geometric invariants."
+    }
+  ]
+}

@@ -74,6 +74,13 @@ They are admitted as:
 - method-specific derived-point realizations
 - not as generic global target classes
 
+Published Leo/Sepharial rows now constrain the declination-equivalent
+projection narrowly. Sepharial's Saturn row publishes a southern declination
+and an equivalent Pisces point but does not label a contra-parallel; Moira
+therefore records it as a parallel-equivalent example. The contra-parallel
+negation law remains exact formula/invariant evidence until a genuinely labeled
+published contra-parallel computation is admitted.
+
 ### Declared Implementable Next
 
 The Placidian rapt-parallel family is now closed at the current evidence level.
@@ -198,6 +205,9 @@ packet.
 Moira now has a concrete parallel-family policy:
 
 - the Ptolemaic zodiacal branch is admitted
+- its parallel projection has published worked-example corroboration; its
+  contra-parallel branch remains formula/invariant-backed rather than falsely
+  source-labeled
 - the next implementation target inside parallels, if any, must be a new
   source-safe family rather than more internal widening of Placidian rapt work
 - wider method families remain deferred until their governing law is explicit

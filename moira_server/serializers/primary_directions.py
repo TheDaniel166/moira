@@ -13,7 +13,10 @@ from moira.primary_directions import (
 )
 
 from ..models.primary_directions import (
+    MorinusAspectContextRequest,
     PrimaryArcResponse,
+    PrimaryDirectionAntisciaTargetRequest,
+    PrimaryDirectionFixedStarTargetRequest,
     PrimaryDirectionRelationProfileResponse,
     PrimaryDirectionRelationResponse,
     PrimaryDirectionsAggregateProfileResponse,
@@ -32,6 +35,8 @@ from ..models.primary_directions import (
     PrimaryDirectionsResolvedPolicyResponse,
     PrimaryDirectionsSignificatorProfileResponse,
     PrimaryDirectionsSpeculumResponse,
+    PlacidianRaptParallelTargetRequest,
+    PtolemaicParallelTargetRequest,
     SpeculumEntryResponse,
 )
 from ..services.primary_directions import PrimaryDirectionsArcsReductionContext
@@ -140,6 +145,41 @@ def _serialize_reduction_truth(
             requested_preset=resolved.requested_preset,
             canonical_preset=resolved.canonical_preset,
             policy_source=resolved.policy_source,
+            antiscia_targets=[
+                PrimaryDirectionAntisciaTargetRequest(
+                    source_name=target.source_name,
+                    kind=target.kind,
+                )
+                for target in resolved.antiscia_targets
+            ],
+            ptolemaic_parallel_targets=[
+                PtolemaicParallelTargetRequest(
+                    source_name=target.source_name,
+                    relation=target.relation,
+                )
+                for target in resolved.ptolemaic_parallel_targets
+            ],
+            placidian_rapt_parallel_targets=[
+                PlacidianRaptParallelTargetRequest(source_name=target.source_name)
+                for target in resolved.placidian_rapt_parallel_targets
+            ],
+            fixed_star_targets=[
+                PrimaryDirectionFixedStarTargetRequest(star_name=target.star_name)
+                for target in resolved.fixed_star_targets
+            ],
+            morinus_aspect_contexts=[
+                MorinusAspectContextRequest(
+                    source_name=context.source_name,
+                    maximum_latitude=context.maximum_latitude,
+                    moving_toward_maximum=context.moving_toward_maximum,
+                )
+                for context in resolved.morinus_aspect_contexts
+            ],
+            placidian_rapt_parallel_motion=(
+                str(resolved.placidian_rapt_parallel_motion)
+                if resolved.placidian_rapt_parallel_motion is not None
+                else None
+            ),
         ),
         stage_sequence=reduction.stage_sequence,
     )

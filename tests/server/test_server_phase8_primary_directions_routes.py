@@ -8,13 +8,23 @@ Boundary tests: confirm no kernel lifecycle mutation.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import math
 
 import pytest
 from fastapi.testclient import TestClient
 
-from moira.julian import jd_from_datetime
+from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
 from moira.primary_directions import (
+    MorinusAspectContext,
+    PrimaryDirectionAntisciaKind,
+    PrimaryDirectionAntisciaTarget,
+    PrimaryDirectionFixedStarTarget,
+    PrimaryDirectionsPreset,
+    PlacidianRaptParallelTarget,
+    PtolemaicParallelRelation,
+    PtolemaicParallelTarget,
     find_primary_arcs,
+    primary_directions_policy_preset,
     speculum as engine_speculum,
     evaluate_primary_directions_aggregate,
     evaluate_primary_directions_network,
@@ -87,9 +97,274 @@ def _direct_chart_and_houses(moira_engine):
     return chart_for_pd, houses
 
 
+def _server_clock_chart_and_houses(moira_engine):
+    """Build the same chart/house clocks used by the primary-directions service."""
+    chart = moira_engine.chart(
+        _NATAL_DT,
+        bodies=None,
+        include_nodes=False,
+        observer_lat=_NATAL_LAT,
+        observer_lon=_NATAL_LON,
+        observer_elev_m=0.0,
+    )
+    houses = moira_engine.houses(
+        _NATAL_DT,
+        latitude=_OBSERVER_LAT,
+        longitude=_OBSERVER_LON,
+        system="PLACIDUS",
+    )
+
+    class _ChartClock:
+        def __init__(self, base):
+            self._base = base
+            self.jd_ut = utc_to_ut1(base.jd_ut)
+            self.jd_tt = utc_to_tt(base.jd_ut)
+
+        def __getattr__(self, name):
+            return getattr(self._base, name)
+
+    return _ChartClock(chart), houses
+
+
+def _assert_advanced_arc_http_parity(
+    client: TestClient,
+    *,
+    payload: dict,
+    direct_arcs: list,
+) -> None:
+    response = client.post("/v1/primary-directions/arcs", json=payload)
+    assert response.status_code == 200, response.text
+    transported = response.json()["arcs"]
+
+    assert len(transported) == len(direct_arcs)
+    for item, arc in zip(transported, direct_arcs, strict=True):
+        assert item["significator"] == arc.significator
+        assert item["promissor"] == arc.promissor
+        assert item["direction"] == ("DIRECT" if arc.is_direct else "CONVERSE")
+        assert item["motion"] == str(arc.motion)
+        assert item["method"] == str(arc.method)
+        assert item["space"] == str(arc.space)
+        assert item["relational_kind"] == str(arc.relational_kind)
+        assert item["arc"] == pytest.approx(arc.arc, abs=1e-10)
+
+
 # ---------------------------------------------------------------------------
 # Parity witnesses
 # ---------------------------------------------------------------------------
+
+
+def test_primary_directions_antiscia_target_route_matches_direct_engine(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    chart, houses = _server_clock_chart_and_houses(moira_engine)
+    target = PrimaryDirectionAntisciaTarget(
+        "Venus",
+        PrimaryDirectionAntisciaKind.CONTRA_ANTISCION,
+    )
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA,
+        antiscia_targets=(target,),
+    )
+    direct_arcs = find_primary_arcs(
+        chart,
+        houses,
+        _OBSERVER_LAT,
+        max_arc=360.0,
+        significators=["ASC"],
+        promissors=[target.name],
+        policy=policy,
+    )
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 360.0,
+        "significators": ["ASC"],
+        "promissors": [target.name],
+        "policy": {"preset": "ptolemy_zodiacal_antiscia"},
+        "antiscia_targets": [
+            {"source_name": "Venus", "kind": "contra_antiscion"}
+        ],
+    }
+
+    assert direct_arcs
+    _assert_advanced_arc_http_parity(
+        client_with_engine,
+        payload=payload,
+        direct_arcs=direct_arcs,
+    )
+
+
+def test_primary_directions_ptolemaic_parallel_route_matches_direct_engine(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    chart, houses = _server_clock_chart_and_houses(moira_engine)
+    target = PtolemaicParallelTarget(
+        "Venus",
+        PtolemaicParallelRelation.CONTRA_PARALLEL,
+    )
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_PARALLEL,
+        ptolemaic_parallel_targets=(target,),
+    )
+    direct_arcs = find_primary_arcs(
+        chart,
+        houses,
+        _OBSERVER_LAT,
+        max_arc=360.0,
+        significators=["ASC"],
+        promissors=[target.name],
+        policy=policy,
+    )
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 360.0,
+        "significators": ["ASC"],
+        "promissors": [target.name],
+        "policy": {"preset": "ptolemy_zodiacal_parallel"},
+        "ptolemaic_parallel_targets": [
+            {"source_name": "Venus", "relation": "contra_parallel"}
+        ],
+    }
+
+    assert direct_arcs
+    _assert_advanced_arc_http_parity(
+        client_with_engine,
+        payload=payload,
+        direct_arcs=direct_arcs,
+    )
+
+
+def test_primary_directions_fixed_star_route_matches_direct_engine(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    chart, houses = _server_clock_chart_and_houses(moira_engine)
+    target = PrimaryDirectionFixedStarTarget("Sirius")
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.PLACIDUS_MUNDANE,
+        fixed_star_targets=(target,),
+    )
+    direct_arcs = find_primary_arcs(
+        chart,
+        houses,
+        _OBSERVER_LAT,
+        max_arc=360.0,
+        significators=["MC"],
+        promissors=[target.name],
+        policy=policy,
+    )
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 360.0,
+        "significators": ["MC"],
+        "promissors": [target.name],
+        "fixed_star_targets": [{"star_name": "Sirius"}],
+    }
+
+    assert direct_arcs
+    _assert_advanced_arc_http_parity(
+        client_with_engine,
+        payload=payload,
+        direct_arcs=direct_arcs,
+    )
+
+
+@pytest.mark.parametrize(
+    "preset",
+    [
+        PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT,
+        PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE,
+    ],
+)
+def test_primary_directions_rapt_parallel_routes_match_direct_engine(
+    client_with_engine: TestClient,
+    moira_engine,
+    preset: PrimaryDirectionsPreset,
+) -> None:
+    chart, houses = _server_clock_chart_and_houses(moira_engine)
+    target = PlacidianRaptParallelTarget("Moon")
+    policy = primary_directions_policy_preset(
+        preset,
+        include_converse=False,
+        placidian_rapt_parallel_targets=(target,),
+    )
+    direct_arcs = find_primary_arcs(
+        chart,
+        houses,
+        _OBSERVER_LAT,
+        max_arc=360.0,
+        significators=["Venus"],
+        promissors=[target.name],
+        policy=policy,
+    )
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 360.0,
+        "significators": ["Venus"],
+        "promissors": [target.name],
+        "policy": {"preset": preset.value},
+        "placidian_rapt_parallel_targets": [{"source_name": "Moon"}],
+    }
+
+    assert direct_arcs
+    _assert_advanced_arc_http_parity(
+        client_with_engine,
+        payload=payload,
+        direct_arcs=direct_arcs,
+    )
+
+
+def test_primary_directions_morinus_context_route_matches_direct_engine(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    chart, houses = _server_clock_chart_and_houses(moira_engine)
+    moon_latitude = chart.planets["Moon"].latitude
+    maximum_latitude = math.copysign(
+        min(89.0, max(6.0, abs(moon_latitude) + 1.0)),
+        moon_latitude if moon_latitude != 0.0 else 1.0,
+    )
+    context = MorinusAspectContext(
+        source_name="Moon",
+        maximum_latitude=maximum_latitude,
+        moving_toward_maximum=False,
+    )
+    promissor = "Moon Dexter Trine"
+    policy = primary_directions_policy_preset(
+        PrimaryDirectionsPreset.MORINUS_ZODIACAL_ASPECT,
+        morinus_aspect_contexts=(context,),
+    )
+    direct_arcs = find_primary_arcs(
+        chart,
+        houses,
+        _OBSERVER_LAT,
+        max_arc=360.0,
+        significators=["Sun"],
+        promissors=[promissor],
+        policy=policy,
+    )
+    payload = {
+        **_PD_SEARCH_PAYLOAD,
+        "max_arc": 360.0,
+        "significators": ["Sun"],
+        "promissors": [promissor],
+        "policy": {"preset": "morinus_zodiacal_aspect"},
+        "morinus_aspect_contexts": [
+            {
+                "source_name": "Moon",
+                "maximum_latitude": maximum_latitude,
+                "moving_toward_maximum": False,
+            }
+        ],
+    }
+
+    assert direct_arcs
+    _assert_advanced_arc_http_parity(
+        client_with_engine,
+        payload=payload,
+        direct_arcs=direct_arcs,
+    )
 
 @pytest.mark.requires_ephemeris
 def test_primary_directions_speculum_route_matches_engine(client_with_engine: TestClient, moira_engine) -> None:

@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   promissor-to-significator networks. Existing `speculum(...)` and
   `primary_directions(...)` positional calls remain intact and gain only
   keyword-only obliquity, body, solar-rate, and policy controls.
+- **Advanced Primary-Directions REST Inputs**: Added typed, search-only request
+  vessels for Ptolemaic antiscia and parallels, direct/converse Placidian rapt
+  parallels, sovereign-catalog fixed stars, and Morinus aspect path contexts.
+  The existing `arcs`, `profile`, and `network` compact/reduction routes expose
+  them without adding or replacing paths. Preset compatibility, strict identity
+  and scalar validation, duplicate rejection, per-list and combined bounds, and
+  exact resolved-policy provenance keep transport behavior aligned with the
+  existing engine vessels.
 - **Provenance-Bearing Harmonic Orb Policy**: Added immutable
   `HarmonicOrbPolicy` and resolved `HarmonicOrbTruth` vessels with the admitted
   Addey inverse-harmonic relation `O_H = O_1 / H`. The configurable H1
@@ -127,6 +135,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   nominal mean-limb path limits and from observed IOTA contact records.
 
 ### Fixed
+- **Primary-Directions Evidence Semantics**: Corrected the Sepharial Saturn
+  fixture to preserve its published south declination as a parallel-equivalent
+  point instead of manufacturing a positive declination and labeling it an
+  externally attested contra-parallel. Added source-scoped Campanus,
+  Topocentric, fixed-star, reflected-point, parallel, rapt-parallel, and
+  Morinus worked-example corpora with explicit evidence classes, printed-input
+  tolerances, rights notes, and non-evaluable boundaries. The Topocentric
+  corpus preserves the source's signed converse label separately from Moira's
+  declared role-exchange converse doctrine rather than changing public motion
+  semantics to force superficial parity.
 - **Primary-Directions Geometry, Identity, And Boundary Integrity**: Made
   Placidian mundane position continuous through all four quadrants, restored
   signed Ptolemaic OA/OD behavior, and expressed Regiomontanus, Campanus,
@@ -478,7 +496,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Existing `Moira.speculum(...)` and `Moira.primary_directions(...)` positional
   parameters, all eight `/v1/primary-directions/*` paths, and established REST
   response fields are retained. New facade methods and truth fields are
-  additive. Recognized historical preset names remain explicit aliases;
+  additive. Advanced search target/context lists and their reduction fields are
+  additive; `speculum` and submitted-only `relations` request schemas remain
+  scoped to their existing computational products. Recognized historical preset
+  names remain explicit aliases;
   unsupported, conflicting, ambiguous, or scientifically invalid inputs that
   were previously coerced may now raise engine errors or return REST validation
   responses.
@@ -548,9 +569,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of all eight route paths. Historical
   evidence is classified honestly: Morin's rounded Hemminga Mars-to-Jupiter
   example is checked at `0.06 degree` with a current residual of about
-  `0.11 arcminute`; bundled fixed-star and antiscia fixtures remain regression
-  and invariant evidence, and rounded Ptolemaic examples remain scoped
-  cross-source corroboration rather than whole-family authority proof.
+  `0.11 arcminute`; Makransky's shared Campanus-Regiomontanus conjunction and
+  Topocentric under-the-pole examples are checked at `0.03` and `0.02 degree`,
+  respectively; Polich's named-pole oblique ascension is checked separately;
+  and Lilly's Vega and Jupiter-antiscion rows constrain only their historical
+  zero-latitude zodiacal products. Bundled catalog fixtures remain regression
+  evidence, and rounded Ptolemaic/Morinus examples remain scoped corroboration
+  rather than whole-family authority proof. Added kernel-free and DE441-backed
+  request-to-engine parity for all five advanced REST input families, including
+  strict OpenAPI and resolved-provenance witnesses.
 - Added engine, facade, REST, and OpenAPI regression coverage for fractional-H
   non-truncation, zero-Aries canonical-branch truth, strict numeric rejection,
   integer range doctrine, Addey projected/source orb equivalence, explicit and

@@ -76,6 +76,12 @@ $tests = Get-ChildItem tests\unit -Filter 'test_primary_direction*.py' | ForEach
 
 ### Narrow Family Proof
 
+- the Makransky Campanus-Regiomontanus mundane-conjunction example against
+  Moira's explicitly shared narrow law, with tolerance derived from the
+  source's printed-input precision
+- the Polich origin-text oblique-ascension example and Makransky Topocentric
+  under-the-pole worked arc, without treating the latter's signed
+  direct/converse label as Moira's role-exchange motion doctrine
 - Ptolemaic parallels / contra-parallels
 - Placidian rapt parallels
 - relation-specific Placidian rapt motion and target containment
@@ -93,20 +99,43 @@ $tests = Get-ChildItem tests\unit -Filter 'test_primary_direction*.py' | ForEach
 
 ### Evidence Classification
 
+Exact products, computed values, tolerance derivations, source rights, and
+unevaluable boundaries are recorded in the
+[Primary Directions External-Authority Ledger](../../03_validation/PRIMARY_DIRECTIONS_EXTERNAL_AUTHORITY_LEDGER_2026-07-19.md).
+
 - **Historical-authority comparison:** the Morin Book 22 Hemminga
   Mars-to-Jupiter worked arc. The printed source inputs are rounded; the test
   therefore uses a declared `0.06 degree` tolerance, with the current residual
   about `0.11 arcminute`.
-- **Cross-source corroboration:** the rounded Ptolemaic examples in
-  `primary_directions_ptolemy_examples.json`. They are useful branch checks,
-  but are not primary-authority proof of the whole family.
-- **Regression and invariant evidence:** the fixed-star and antiscia fixtures,
-  exact catalog/formula reconstruction, spherical-plane sweeps, ordered network
-  conservation, and engine/facade/REST parity.
+- **Published-source law comparison:** Makransky's rounded
+  Campanus-Regiomontanus conjunction attests the current shared narrow law at
+  `0.03 degree`; the source does not attest wider Campanus mundane aspects.
+  Polich's printed oblique-ascension example and Makransky's rounded
+  Topocentric example attest the named pole and under-the-pole laws at
+  `0.02 degree`. Makransky calls the negative signed result converse; Moira's
+  public traditional-converse product remains role exchange under its declared
+  Morinian doctrine, so that source row is not public motion-label parity.
+- **Historical product comparison:** Lilly's printed zodiacal projection of
+  Vega and zero-latitude Jupiter antiscion to the Ascendant constrain those
+  two named products only. They do not validate true-latitude in-mundo stars,
+  star-to-planet directions, node/angle reflected sources, or `cum latitudine`
+  antiscia.
+- **Cross-source corroboration:** the rounded Leo/Sepharial Ptolemaic
+  declination-equivalent examples and the modern Morinus circle-of-aspects
+  worked example are useful branch checks, but are not primary-authority proof
+  of their whole families. Sepharial's Saturn row is represented with its
+  published south declination as a parallel-equivalent point; it is not
+  mislabeled as an externally attested contra-parallel.
+- **Regression and invariant evidence:** the sovereign-catalog fixed-star and
+  internal antiscia fixtures, exact formula reconstruction, spherical-plane
+  sweeps, ordered network conservation, and engine/facade/REST parity.
 
-Campanus beyond the shared narrow plane law, topocentric worked examples,
-wider fixed-star doctrine, and wider reflected-point doctrine remain external-
-authority validation gaps. Passing this codex must not be reported as closing
+Wider Campanus mundane aspects, public Topocentric motion-label parity under a
+source that uses Moira's selected converse doctrine, true-latitude and
+star-to-planet fixed-star products, a genuinely source-labeled Ptolemaic
+contra-parallel, node/angle reflected-source extensions, `cum latitudine`
+antiscia, and a page-correlated primary Morinus aspect-plane example remain
+external-authority gaps. Passing this codex must not be reported as closing
 those gaps.
 
 ### Public API
@@ -118,6 +147,9 @@ those gaps.
 - additive facade evaluation methods
 - all eight stable `/v1/primary-directions/*` paths, including reduction
   siblings and submitted-arc evaluation
+- additive typed search vessels for antiscia, Ptolemaic parallel, Placidian
+  rapt parallel, sovereign fixed-star, and Morinus aspect contexts, with preset
+  compatibility, bounded materialization, and exact reduction provenance
 
 
 ## Stronger Verification When Touching Specific Areas

@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "fixture_scope": "Published numerical source facts for the admitted narrow Campanus-Regiomontanus conjunction law and the Topocentric under-the-pole law.",
+  "evidence_limit": "These examples validate the named low-level laws only. They do not validate the wider Campanus mundane-aspect family, a complete natal-chart reconstruction, or Moira's current direct/converse classification policy.",
+  "sources": {
+    "makransky_primer_part_1": {
+      "author": "Bob Makransky",
+      "title": "Primary Directions: A Primer of Calculation",
+      "publisher": "Dear Brutus Press",
+      "publication_year": 1988,
+      "isbn": "0-9677315-0-X",
+      "url": "https://www.scribd.com/document/48191844/Bob-Markansky-Primary-Directions-1",
+      "evidence_class": "published_source_worked_example",
+      "rights_note": "The repository retains only minimal bibliographic metadata and numerical facts, not the source scan or substantive prose."
+    },
+    "polich_topocentric_system": {
+      "author": "Vendel Polich",
+      "translator": "Jose M. Lebron",
+      "title": "The Topocentric System",
+      "publisher": "Editorial Regulus",
+      "publication_place": "Buenos Aires",
+      "publication_year": 1975,
+      "url": "https://www.scribd.com/document/761716895/Polich-Vendel-The-Topocentric-System",
+      "evidence_class": "origin_text_numeric_example",
+      "rights_note": "The repository retains only minimal bibliographic metadata and numerical facts, not the source scan or substantive prose."
+    },
+    "makransky_primer_part_2": {
+      "author": "Bob Makransky",
+      "title": "Primary Directions: A Primer of Calculation",
+      "publisher": "Dear Brutus Press",
+      "publication_year": 1988,
+      "isbn": "0-9677315-0-X",
+      "url": "https://www.scribd.com/document/41581638/Makransky-primarydirections-2",
+      "evidence_class": "published_source_worked_example",
+      "rights_note": "The repository retains only minimal bibliographic metadata and numerical facts, not the source scan or substantive prose."
+    }
+  },
+  "examples": {
+    "campanus_regiomontanus_mundane_conjunction": {
+      "source_id": "makransky_primer_part_1",
+      "source_location": "Chapter IV, pp. 39-40; Prince Charles speculum, p. 47",
+      "semantics": {
+        "method_label": "Campanus-Regiomontanus mundane conjunction",
+        "significator": "Mercury",
+        "promissor": "Sun",
+        "motion": "direct",
+        "arc_definition": "promissor W under significator pole minus significator W"
+      },
+      "inputs_deg": {
+        "geographic_latitude": 51.5,
+        "armc": 12.37,
+        "significator_ra": 215.22,
+        "significator_declination": -12.17,
+        "promissor_ra": 230.01,
+        "promissor_declination": -18.38
+      },
+      "published_results_deg": {
+        "significator_pole": 21.27,
+        "significator_q": -4.81,
+        "significator_w": 210.41,
+        "promissor_q_under_significator_pole": -7.43,
+        "promissor_w_under_significator_pole": 222.58,
+        "signed_arc": 12.17
+      },
+      "tolerance": {
+        "absolute_deg": 0.03,
+        "basis": "The source prints inputs and results to 0.01 degree. A full +/-0.005 degree input-rounding corner sweep places the reconstructed arc in [12.15846, 12.19038] degrees."
+      }
+    },
+    "topocentric_origin_text_oblique_ascension": {
+      "source_id": "polich_topocentric_system",
+      "source_location": "Pole law, p. 12; oblique-ascension table example, p. 45",
+      "semantics": {
+        "object": "oblique ascension of an ecliptic degree under a named pole",
+        "pole_law": "tan(pole) = (meridian_distance / semi_arc) * tan(geographic_latitude)",
+        "ecliptic_latitude_deg": 0.0,
+        "branch": "eastern"
+      },
+      "inputs_deg": {
+        "pole": 51.53333333333333,
+        "ecliptic_longitude": 165.02666666666667,
+        "obliquity": 23.439166666666665
+      },
+      "published_results_deg": {
+        "oblique_ascension": 158.75
+      },
+      "tolerance": {
+        "absolute_deg": 0.02,
+        "basis": "The published table result is printed to one arcminute; 0.02 degree allows 1.2 arcminutes for printed-table interpolation and rounding."
+      }
+    },
+    "topocentric_zodiacal_aspect": {
+      "source_id": "makransky_primer_part_2",
+      "source_location": "Chapter VIII, pp. 81-84; Prince Charles speculum and worked example, pp. 91-92",
+      "semantics": {
+        "method_label": "Topocentric",
+        "significator": "Saturn",
+        "promissor": "Moon trine aspect point",
+        "promissor_point_construction": "zodiacal aspect point on the ecliptic with zero latitude",
+        "motion": "converse",
+        "signed_arc_definition": "promissor W under significator pole minus significator W"
+      },
+      "inputs_deg": {
+        "geographic_latitude": 51.5,
+        "armc": 12.37,
+        "significator_ra": 157.63,
+        "significator_declination": 10.92,
+        "promissor_ecliptic_longitude": 150.44,
+        "promissor_ecliptic_latitude": 0.0,
+        "promissor_ra": 152.5,
+        "promissor_declination": 11.32
+      },
+      "published_results_deg": {
+        "significator_meridian_distance_over_semi_arc": 0.45729,
+        "significator_pole": 29.89,
+        "significator_q": 6.37,
+        "significator_w": 151.26,
+        "promissor_q_under_significator_pole": 6.61,
+        "promissor_w_under_significator_pole": 145.89,
+        "signed_arc": -5.37,
+        "arc_magnitude": 5.37
+      },
+      "tolerance": {
+        "absolute_deg": 0.02,
+        "basis": "The source prints equatorial inputs and results to 0.01 degree. A full +/-0.005 degree input-rounding corner sweep places the reconstructed signed arc in [-5.38644, -5.35436] degrees."
+      }
+    }
+  }
+}

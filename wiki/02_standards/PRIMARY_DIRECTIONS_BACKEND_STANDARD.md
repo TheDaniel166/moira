@@ -263,6 +263,13 @@ The `Moira` facade preserves the established `speculum(...)` and
 inputs plus policy-preset, relation, condition, aggregate-profile, and network
 delegations. The eight existing `/v1/primary-directions/*` paths are transport
 surfaces over these engine meanings; route code does not own doctrine.
+The six search-derived paths accept additive typed vessels for the admitted
+antiscia, Ptolemaic-parallel, Placidian-rapt-parallel, fixed-star, and Morinus
+aspect-context branches. Transport resolution must construct the existing
+engine vessels explicitly, enforce the branch/preset compatibility matrix, and
+report the exact resolved configuration on reduction responses. Those search
+inputs are not accepted by submitted-arc evaluation, which has no target-
+materialization stage.
 
 The thin root package `moira` does **not** re-export these internals.
 
@@ -383,10 +390,17 @@ These checks are expected to verify:
   responses, and engine/REST doctrine parity
 
 The evidence classes must remain explicit. The Hemminga Mars-to-Jupiter
-example is a named historical-authority comparison. The bundled fixed-star and
-antiscia fixtures are regression/invariant evidence. Rounded Ptolemaic examples
-are scoped cross-source corroboration. None of those narrower artifacts proves
-all methods, targets, epochs, latitudes, or historical schools.
+example is a named historical-authority comparison. Published Makransky
+examples constrain the shared narrow Campanus-Regiomontanus conjunction law
+and the Topocentric under-the-pole law under their printed-input tolerances;
+the latter source's signed direct/converse naming is not silently substituted
+for Moira's separately declared role-exchange doctrine. Lilly's printed
+fixed-star and zero-latitude antiscion rows constrain only those historical
+zodiacal products. Leo/Sepharial declination-equivalent and rapt examples, and
+the modern Morinus circle-of-aspects calculation, remain branch-scoped evidence
+under their declared source classes. Internal catalog/DE441 reconstructions
+remain regression or substrate evidence. None of these narrower artifacts
+proves all methods, targets, epochs, latitudes, or historical schools.
 
 ---
 

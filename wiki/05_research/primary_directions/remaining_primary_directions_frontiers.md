@@ -71,12 +71,16 @@ What is known:
 - Moira now has a first narrow reflected branch:
   - Ptolemaic zodiacal antiscia / contra-antiscia
 - the mathematical substrate for reflection is explicit
+- Lilly's zero-latitude Jupiter antiscion-to-Ascendant row supplies one
+  historical external product for the planet-source antiscion branch
 
 What is not known:
 
 - whether other method families admit reflected points by the same directional
   law
 - whether reflected doctrine should remain zodiacal-only in some families
+- external numeric authority for node/angle sources and for the admitted
+  contra-antiscion extension
 
 Risk:
 
@@ -142,7 +146,10 @@ Current policy:
 
 What is known:
 
-- conjunction to angles and planets is now explicit and validated
+- conjunction to angles and planets is now explicit and regression-validated
+- one Lilly zero-latitude zodiacal Vega-to-Ascendant row supplies an external
+  historical product, but it does not validate true-latitude in-mundo or
+  star-to-planet products
 - opposition does not currently deserve admission
 
 What is not known:

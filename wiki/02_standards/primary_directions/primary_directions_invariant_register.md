@@ -108,6 +108,14 @@ It does not apply to deferred frontiers such as:
   projection
 - supplied Morinus aspect contexts have normalized non-empty source identity,
   are unique by exact `source_name`, and reject impossible path context
+- REST search target/context vessels construct these same engine objects
+  explicitly; antiscia, Ptolemaic-parallel, rapt-parallel, and Morinus inputs
+  must match the canonical branch preset, while fixed stars must satisfy the
+  resolved conjunction/target policy
+- duplicate derived target identity is rejected across each configured family;
+  all advanced lists are bounded individually and as one materialization set
+- advanced target/context inputs cannot accompany submitted arcs because that
+  evaluation path performs no target materialization
 
 
 ## Preset Invariants
@@ -154,6 +162,9 @@ It does not apply to deferred frontiers such as:
 At the REST boundary, a valid search with no matches is a successful empty
 transport result. It must not be represented by constructing an invalid empty
 engine aggregate or network vessel.
+Reduction responses must preserve the exact resolved advanced target/context
+configuration, including all Morinus path fields and the relation-specific rapt
+motion; merely reporting a source name is insufficient provenance.
 
 
 ## Admitted Narrow-Family Invariants

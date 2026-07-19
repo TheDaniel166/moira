@@ -70,8 +70,8 @@ substrate.
 
 | Branch | Target Ontology | Geometry Family | Relation Surface | Governing Law in Hand | Source Quality | Moira Status | Next Action |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `catalog-backed fixed star conjunction to angles` | named sovereign star target | cross-family, starting with currently admitted methods | `conjunction` | **Yes, narrowly**. Compute the star's true geocentric longitude/latitude by `star_at(...)`, project it into the active speculum like any other explicit point, then measure the arc by the chosen method's existing conjunction law | strong enough for narrow admission | `implemented_validated_branch` | widen to planet significators only after keeping the same sovereign target discipline |
-| `catalog-backed fixed star conjunction to planets` | named sovereign star target | cross-family, starting narrowly | `conjunction` | **Yes, narrowly**. Same as above, but with planet significators instead of angles | moderate-to-strong | `implemented_validated_branch` | keep the branch narrow and defer opposition/aspect widening |
+| `catalog-backed fixed star conjunction to angles` | named sovereign star target | cross-family, starting with currently admitted methods | `conjunction` | **Yes, narrowly**. Compute the star's true geocentric longitude/latitude by `star_at(...)`, project it into the active speculum like any other explicit point, then measure the arc by the chosen method's existing conjunction law | internal sovereign-catalog regression plus one historical zero-latitude zodiacal star-to-ASC product | `implemented_scoped_validation` | keep true-latitude and in-mundo external claims separate |
+| `catalog-backed fixed star conjunction to planets` | named sovereign star target | cross-family, starting narrowly | `conjunction` | **Yes, narrowly**. Same as above, but with planet significators instead of angles | internal sovereign-catalog regression; no external numeric product yet | `implemented_regression_only` | keep the branch narrow and defer opposition/aspect widening |
 | `catalog-backed fixed star opposition` | named sovereign star target | cross-family | `opposition` | **Partially**. The geometrical endpoint is explicit, but historical importance appears much weaker than conjunction, and source practice is less central | moderate | `deferred_narrowly` | admit only after conjunction branch proves stable |
 | `fixed stars as zodiacal aspect targets` | named sovereign star target plus aspect doctrine | `in_zodiaco` families | `zodiacal_aspect` | **Not yet as a family**. The star point itself is explicit, but the wider aspect doctrine should not be admitted before the plain conjunction surface is proven | weak-to-moderate | `deferred` | do not widen until conjunction branch is validated |
 | `fixed stars in mundo / projected mundane stars` | named sovereign star target | `in_mundo` families | likely `conjunction` first | **Partially**. The star engine gives longitude/latitude, and the primary engine can project explicit points, but the exact mundane-star doctrine must be stated carefully per method | moderate | `research_candidate` | start with simple projected speculum treatment only if branch scope remains narrow |
@@ -102,7 +102,10 @@ After the first branch validates cleanly:
 
 - `catalog-backed fixed star conjunction to planets`
 
-This branch is now admitted narrowly in runtime and fixture-backed.
+This branch is now admitted narrowly in runtime and regression-fixture-backed.
+Lilly's Vega-to-Ascendant row independently attests a historical
+zero-latitude zodiacal projection product; it does not attest Moira's
+true-latitude in-mundo or star-to-planet products.
 
 Why:
 
@@ -143,7 +146,10 @@ The fixed-star family should proceed in this order:
 
 Current standing:
 
-- steps `1`, `2`, `3`, and `4` are complete on the current admitted branch
+- steps `1`, `2`, and `4` are complete on the current admitted branch
+- step `3` is externally closed only for the named historical zero-latitude
+  zodiacal star-to-Ascendant product; broader current products remain internal
+  regression/substrate evidence
 - step `5` is next
 
 The stop rule is explicit:
@@ -184,6 +190,10 @@ This keeps the first fixed-star branch fully inside already admitted geometry.
   - [stars.py](../../../moira/stars.py)
   - [star_registry.csv](../../../moira/data/star_registry.csv)
   - [star_provenance.json](../../../moira/data/star_provenance.json)
+- William Lilly, *Christian Astrology* (1659), pp. 765-768, and Rumen
+  Kolev's source-correlated reconstruction of Lilly's direction table:
+  `https://en.wikisource.org/wiki/File:Christian_Astrology_(Lilly,_1659).djvu`
+  `https://babylonianastrology.com/downloads/Lilly1.pdf`
 - Astrodienst Astrowiki, `Fixed Star`:
   emphasizes that fixed stars are usually treated primarily by conjunction,
   especially to luminaries and angles, with very small orbs

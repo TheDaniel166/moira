@@ -228,7 +228,10 @@ from .positions import (
     SkyPositionReductionTruthResponse,
 )
 from .primary_directions import (
+    MorinusAspectContextRequest,
     PrimaryArcResponse,
+    PrimaryDirectionAntisciaTargetRequest,
+    PrimaryDirectionFixedStarTargetRequest,
     PrimaryDirectionRelationProfileResponse,
     PrimaryDirectionRelationResponse,
     PrimaryDirectionsAggregateProfileResponse,
@@ -251,6 +254,8 @@ from .primary_directions import (
     PrimaryDirectionsSearchRequest,
     PrimaryDirectionsSignificatorProfileResponse,
     PrimaryDirectionsSpeculumResponse,
+    PlacidianRaptParallelTargetRequest,
+    PtolemaicParallelTargetRequest,
     SpeculumEntryResponse,
 )
 from .relationship import (
@@ -1202,7 +1207,10 @@ __all__ = [
     "PlanetPositionResponse",
     "PlanetPositionReductionResponse",
     "PlanetPositionReductionTruthResponse",
+    "MorinusAspectContextRequest",
     "PrimaryArcResponse",
+    "PrimaryDirectionAntisciaTargetRequest",
+    "PrimaryDirectionFixedStarTargetRequest",
     "PrimaryDirectionRelationProfileResponse",
     "PrimaryDirectionRelationResponse",
     "PrimaryDirectionsAggregateProfileResponse",
@@ -1225,6 +1233,8 @@ __all__ = [
     "PrimaryDirectionsSearchRequest",
     "PrimaryDirectionsSignificatorProfileResponse",
     "PrimaryDirectionsSpeculumResponse",
+    "PlacidianRaptParallelTargetRequest",
+    "PtolemaicParallelTargetRequest",
     "ProgressedChartResponse",
     "ProgressedDeclinationChartResponse",
     "ProgressedDeclinationChartReductionResponse",

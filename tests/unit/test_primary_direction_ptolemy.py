@@ -25,9 +25,9 @@ def _published_arc_from_rising_times(source_hours: float, target_hours: float) -
 def test_ptolemaic_declination_projection_matches_parallel_style_examples() -> None:
     saturn_like = project_ptolemaic_declination_point(
         source_longitude=340.0,
-        source_declination=6.0 + 54.0 / 60.0,
+        source_declination=-(6.0 + 54.0 / 60.0),
         obliquity=23.4392911,
-        relation=PtolemaicParallelRelation.CONTRA_PARALLEL,
+        relation=PtolemaicParallelRelation.PARALLEL,
     )
     uranus_like = project_ptolemaic_declination_point(
         source_longitude=100.0,

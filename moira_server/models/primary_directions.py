@@ -19,7 +19,11 @@ from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
 
-from moira.primary_directions import PrimaryDirectionsPreset
+from moira.primary_directions import (
+    PrimaryDirectionAntisciaKind,
+    PrimaryDirectionsPreset,
+    PtolemaicParallelRelation,
+)
 from moira.primary_directions.keys import PrimaryDirectionKey
 from moira.primary_directions.methods import PrimaryDirectionMethod
 from moira.primary_directions.relations import PrimaryDirectionRelationalKind
@@ -83,9 +87,10 @@ class PrimaryDirectionsBaseRequest(_StrictModel):
 class PrimaryDirectionsPolicyRequest(_StrictModel):
     """Minimal policy surface for the first pass (Phase 2 policy growth started).
 
-    All other policy dimensions (latitude doctrine, relation policy,
-    target families, perfections, etc.) use the engine's safe defaults
-    for the currently admitted surface.
+    Other doctrine dimensions (latitude policy, relation policy, and
+    perfections) use the selected engine preset. Search-only derived target
+    vessels live on ``PrimaryDirectionsSearchRequest`` rather than this policy
+    object because submitted-arc evaluation does not materialize targets.
     """
 
     preset: (
@@ -122,6 +127,145 @@ class PrimaryDirectionsPolicyRequest(_StrictModel):
 
 
 # ---------------------------------------------------------------------------
+# Search-only advanced target and context inputs
+# ---------------------------------------------------------------------------
+
+def _normalized_primary_direction_identity(value, *, field_name: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} must be a string")
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError(f"{field_name} must be non-empty")
+    return normalized
+
+
+class PrimaryDirectionAntisciaTargetRequest(_StrictModel):
+    """One explicitly configured Ptolemaic antiscia promissor."""
+
+    source_name: str = Field(min_length=1, max_length=128)
+    kind: PrimaryDirectionAntisciaKind = PrimaryDirectionAntisciaKind.ANTISCION
+
+    @field_validator("source_name", mode="before")
+    @classmethod
+    def _normalize_source_name(cls, value):
+        return _normalized_primary_direction_identity(
+            value,
+            field_name="antiscia source_name",
+        )
+
+    @field_validator("kind", mode="before")
+    @classmethod
+    def _normalize_kind(cls, value):
+        return value.strip().lower() if isinstance(value, str) else value
+
+    @property
+    def target_name(self) -> str:
+        suffix = (
+            "Antiscion"
+            if self.kind is PrimaryDirectionAntisciaKind.ANTISCION
+            else "Contra-Antiscion"
+        )
+        return f"{self.source_name} {suffix}"
+
+
+class PtolemaicParallelTargetRequest(_StrictModel):
+    """One explicitly configured Ptolemaic declination-equivalent promissor."""
+
+    source_name: str = Field(min_length=1, max_length=128)
+    relation: PtolemaicParallelRelation = PtolemaicParallelRelation.PARALLEL
+
+    @field_validator("source_name", mode="before")
+    @classmethod
+    def _normalize_source_name(cls, value):
+        return _normalized_primary_direction_identity(
+            value,
+            field_name="Ptolemaic parallel source_name",
+        )
+
+    @field_validator("relation", mode="before")
+    @classmethod
+    def _normalize_relation(cls, value):
+        return value.strip().lower() if isinstance(value, str) else value
+
+    @property
+    def target_name(self) -> str:
+        suffix = (
+            "Parallel"
+            if self.relation is PtolemaicParallelRelation.PARALLEL
+            else "Contra-Parallel"
+        )
+        return f"{self.source_name} {suffix}"
+
+
+class PlacidianRaptParallelTargetRequest(_StrictModel):
+    """One explicitly configured Placidian mundane rapt-parallel promissor."""
+
+    source_name: str = Field(min_length=1, max_length=128)
+
+    @field_validator("source_name", mode="before")
+    @classmethod
+    def _normalize_source_name(cls, value):
+        return _normalized_primary_direction_identity(
+            value,
+            field_name="Placidian rapt-parallel source_name",
+        )
+
+    @property
+    def target_name(self) -> str:
+        return f"{self.source_name} Rapt Parallel"
+
+
+class PrimaryDirectionFixedStarTargetRequest(_StrictModel):
+    """One sovereign-catalog fixed-star promissor identity."""
+
+    star_name: str = Field(min_length=1, max_length=128)
+
+    @field_validator("star_name", mode="before")
+    @classmethod
+    def _normalize_star_name(cls, value):
+        return _normalized_primary_direction_identity(
+            value,
+            field_name="fixed-star star_name",
+        )
+
+    @property
+    def target_name(self) -> str:
+        return self.star_name
+
+
+class MorinusAspectContextRequest(_StrictModel):
+    """Source-owned path context for one Morinus aspectual projection."""
+
+    source_name: str = Field(min_length=1, max_length=128)
+    maximum_latitude: float = Field(gt=-90.0, lt=90.0, allow_inf_nan=False)
+    moving_toward_maximum: bool
+
+    @field_validator("source_name", mode="before")
+    @classmethod
+    def _normalize_source_name(cls, value):
+        return _normalized_primary_direction_identity(
+            value,
+            field_name="Morinus aspect source_name",
+        )
+
+    @field_validator("maximum_latitude", mode="before")
+    @classmethod
+    def _require_usable_maximum_latitude(cls, value):
+        if not isinstance(value, Real) or isinstance(value, bool):
+            raise ValueError("Morinus maximum_latitude must be a real number")
+        if abs(value) <= 1e-9:
+            raise ValueError("Morinus maximum_latitude must be non-zero")
+        return value
+
+    @field_validator("moving_toward_maximum", mode="before")
+    @classmethod
+    def _require_boolean_motion_phase(cls, value):
+        if not isinstance(value, bool):
+            raise ValueError("moving_toward_maximum must be boolean")
+        return value
+
+
+# ---------------------------------------------------------------------------
 # Search request (used by arcs, profile, network)
 # ---------------------------------------------------------------------------
 
@@ -132,6 +276,26 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
     significators: list[str] | None = Field(default=None, max_length=256)
     promissors: list[str] | None = Field(default=None, max_length=256)
     policy: PrimaryDirectionsPolicyRequest | None = None
+    antiscia_targets: list[PrimaryDirectionAntisciaTargetRequest] = Field(
+        default_factory=list,
+        max_length=256,
+    )
+    ptolemaic_parallel_targets: list[PtolemaicParallelTargetRequest] = Field(
+        default_factory=list,
+        max_length=256,
+    )
+    placidian_rapt_parallel_targets: list[PlacidianRaptParallelTargetRequest] = Field(
+        default_factory=list,
+        max_length=256,
+    )
+    fixed_star_targets: list[PrimaryDirectionFixedStarTargetRequest] = Field(
+        default_factory=list,
+        max_length=256,
+    )
+    morinus_aspect_contexts: list[MorinusAspectContextRequest] = Field(
+        default_factory=list,
+        max_length=256,
+    )
 
     # Phase 2: Optional expansion flags
     include_relations: bool = False   # Include full admitted/scored relations per arc
@@ -153,6 +317,46 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
         if not isinstance(value, bool):
             raise ValueError("primary-directions expansion flags must be boolean")
         return value
+
+    @model_validator(mode="after")
+    def _validate_advanced_search_inputs(self):
+        advanced_collections = (
+            self.antiscia_targets,
+            self.ptolemaic_parallel_targets,
+            self.placidian_rapt_parallel_targets,
+            self.fixed_star_targets,
+            self.morinus_aspect_contexts,
+        )
+        advanced_count = sum(len(values) for values in advanced_collections)
+        if advanced_count > 256:
+            raise ValueError(
+                "primary-directions advanced targets and contexts are limited to 256 total"
+            )
+        if self.submitted_arcs is not None and advanced_count:
+            raise ValueError(
+                "primary-directions advanced targets and contexts require engine search, not submitted_arcs"
+            )
+
+        target_names = [
+            target.target_name
+            for targets in (
+                self.antiscia_targets,
+                self.ptolemaic_parallel_targets,
+                self.placidian_rapt_parallel_targets,
+                self.fixed_star_targets,
+            )
+            for target in targets
+        ]
+        if len(set(target_names)) != len(target_names):
+            raise ValueError(
+                "primary-directions advanced target names must be unique across target families"
+            )
+        morinus_sources = [context.source_name for context in self.morinus_aspect_contexts]
+        if len(set(morinus_sources)) != len(morinus_sources):
+            raise ValueError(
+                "primary-directions Morinus aspect contexts must be unique by source_name"
+            )
+        return self
 
 
 class PrimaryDirectionsRelationsRequest(_StrictModel):
@@ -384,6 +588,20 @@ class PrimaryDirectionsResolvedPolicyResponse(_StrictModel):
     requested_preset: str | None = None
     canonical_preset: str | None = None
     policy_source: str = "engine_default"
+    antiscia_targets: list[PrimaryDirectionAntisciaTargetRequest] = Field(default_factory=list)
+    ptolemaic_parallel_targets: list[PtolemaicParallelTargetRequest] = Field(
+        default_factory=list
+    )
+    placidian_rapt_parallel_targets: list[PlacidianRaptParallelTargetRequest] = Field(
+        default_factory=list
+    )
+    fixed_star_targets: list[PrimaryDirectionFixedStarTargetRequest] = Field(
+        default_factory=list
+    )
+    morinus_aspect_contexts: list[MorinusAspectContextRequest] = Field(
+        default_factory=list
+    )
+    placidian_rapt_parallel_motion: str | None = None
 
 
 class PrimaryDirectionsHouseContextResponse(_StrictModel):
@@ -450,6 +668,8 @@ __all__ = [
     "PrimaryDirectionsBaseRequest",
     "PrimaryDirectionsConditionResponse",
     "PrimaryDirectionsHouseContextResponse",
+    "PrimaryDirectionAntisciaTargetRequest",
+    "PrimaryDirectionFixedStarTargetRequest",
     "PrimaryDirectionsNetworkEdgeResponse",
     "PrimaryDirectionsNetworkNodeResponse",
     "PrimaryDirectionsNetworkProfileResponse",
@@ -463,6 +683,9 @@ __all__ = [
     "PrimaryDirectionsSearchRequest",
     "PrimaryDirectionsSignificatorProfileResponse",
     "PrimaryDirectionsSpeculumResponse",
+    "MorinusAspectContextRequest",
+    "PlacidianRaptParallelTargetRequest",
+    "PtolemaicParallelTargetRequest",
     "PrimaryArcResponse",
     "PrimaryDirectionRelationProfileResponse",
     "PrimaryDirectionRelationResponse",

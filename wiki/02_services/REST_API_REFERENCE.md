@@ -1195,12 +1195,40 @@ are mundane-only. Fixed-star targets require conjunction admission, and
 rapt-parallel direct/converse motion remains specific to the configured rapt
 relation and target rather than widening the ordinary policy.
 
-`relations`, `profile`, and `network` accept either engine search inputs or a
-bounded submitted-arc list. Submitted items are validated and reconstructed as
-real `PrimaryArc` vessels; no transport duck type or hidden conversion fallback
-is used. Omission means `engine_search`. An explicitly supplied empty list means
-`submitted_arcs` with no items and returns a valid empty transport response.
-Lists are bounded to 4,096 items. In an empty profile response, `profiles=[]`,
+The six engine-search paths (`arcs`, `profile`, and `network`, including their
+reduction siblings) also accept these additive, typed target/context lists on
+the search request:
+
+- `antiscia_targets`: `{source_name, kind}` where `kind` is `antiscion` or
+  `contra_antiscion`
+- `ptolemaic_parallel_targets`: `{source_name, relation}` where `relation` is
+  `parallel` or `contra_parallel`
+- `placidian_rapt_parallel_targets`: `{source_name}`; direct versus converse is
+  owned by the selected rapt-parallel preset
+- `fixed_star_targets`: `{star_name}` resolved through Moira's sovereign star
+  catalog
+- `morinus_aspect_contexts`:
+  `{source_name, maximum_latitude, moving_toward_maximum}`
+
+Each list and their combined materialized total are bounded to 256 items.
+Duplicate derived identities or duplicate Morinus source contexts fail closed.
+These lists are search materialization inputs, so they cannot accompany
+`submitted_arcs` and are not accepted by the submitted-only `relations`
+request. Antiscia requires `ptolemy_zodiacal_antiscia`, Ptolemaic parallels
+require `ptolemy_zodiacal_parallel`, rapt targets require the corresponding
+direct or converse rapt preset, and Morinus contexts require
+`morinus_zodiacal_aspect`. Fixed stars compose with any preset whose resolved
+relation/target policy admits their conjunction branch. Reduction responses
+preserve the exact resolved target/context vessels and rapt motion; they do not
+collapse a Morinus path context to its source name.
+
+`profile` and `network` accept either engine search inputs or a bounded
+submitted-arc list; `relations` is submitted-only. Submitted items are validated
+and reconstructed as real `PrimaryArc` vessels; no transport duck type or hidden
+conversion fallback is used. On the search-capable routes, omission means
+`engine_search`. An explicitly supplied empty list means `submitted_arcs` with
+no items and returns a valid empty transport response. Lists are bounded to
+4,096 items. In an empty profile response, `profiles=[]`,
 all counts are zero, and `strongest_significator` / `weakest_significator` are
 `null`; `nearest_arc=0.0` and `farthest_arc=0.0` are transport compatibility
 sentinels only and do not represent measured arcs. An empty network response

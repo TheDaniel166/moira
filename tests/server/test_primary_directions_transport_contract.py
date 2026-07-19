@@ -9,9 +9,16 @@ from fastapi import FastAPI
 from pydantic import ValidationError
 
 from moira.primary_directions import (
+    MorinusAspectContext,
     PrimaryArc,
+    PrimaryDirectionAntisciaKind,
+    PrimaryDirectionAntisciaTarget,
+    PrimaryDirectionFixedStarTarget,
     PrimaryDirectionMotion,
     PrimaryDirectionsPreset,
+    PlacidianRaptParallelTarget,
+    PtolemaicParallelRelation,
+    PtolemaicParallelTarget,
     evaluate_primary_directions_aggregate,
     evaluate_primary_directions_network,
 )
@@ -159,6 +166,172 @@ def test_every_canonical_engine_preset_is_transport_resolvable() -> None:
         )
         assert resolved.canonical_preset is preset
         assert resolved.policy is not None
+
+
+def test_advanced_search_inputs_convert_to_exact_engine_vessels() -> None:
+    antiscia = service.resolve_primary_directions_policy(
+        _request(
+            policy={"preset": "ptolemy_zodiacal_antiscia"},
+            antiscia_targets=[
+                {"source_name": " Venus ", "kind": "CONTRA_ANTISCION"}
+            ],
+        )
+    )
+    assert antiscia.policy.antiscia_targets == (
+        PrimaryDirectionAntisciaTarget(
+            "Venus",
+            PrimaryDirectionAntisciaKind.CONTRA_ANTISCION,
+        ),
+    )
+
+    parallels = service.resolve_primary_directions_policy(
+        _request(
+            policy={"preset": "ptolemy_zodiacal_parallel"},
+            ptolemaic_parallel_targets=[
+                {"source_name": "Venus", "relation": "CONTRA_PARALLEL"}
+            ],
+        )
+    )
+    assert parallels.policy.ptolemaic_parallel_targets == (
+        PtolemaicParallelTarget(
+            "Venus",
+            PtolemaicParallelRelation.CONTRA_PARALLEL,
+        ),
+    )
+
+    rapt = service.resolve_primary_directions_policy(
+        _request(
+            policy={"preset": "placidian_mundane_rapt_parallel_direct"},
+            placidian_rapt_parallel_targets=[{"source_name": "Moon"}],
+        )
+    )
+    assert rapt.policy.placidian_rapt_parallel_targets == (
+        PlacidianRaptParallelTarget("Moon"),
+    )
+
+    fixed_star = service.resolve_primary_directions_policy(
+        _request(fixed_star_targets=[{"star_name": "Sirius"}])
+    )
+    assert fixed_star.policy.fixed_star_targets == (
+        PrimaryDirectionFixedStarTarget("Sirius"),
+    )
+
+    morinus = service.resolve_primary_directions_policy(
+        _request(
+            policy={"preset": "morinus_zodiacal_aspect"},
+            morinus_aspect_contexts=[
+                {
+                    "source_name": "Moon",
+                    "maximum_latitude": 5.2,
+                    "moving_toward_maximum": True,
+                }
+            ],
+        )
+    )
+    assert morinus.policy.morinus_aspect_contexts == (
+        MorinusAspectContext("Moon", 5.2, True),
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        (
+            "antiscia_targets",
+            [{"source_name": "Venus", "kind": "antiscion"}],
+        ),
+        (
+            "ptolemaic_parallel_targets",
+            [{"source_name": "Venus", "relation": "parallel"}],
+        ),
+        (
+            "placidian_rapt_parallel_targets",
+            [{"source_name": "Moon"}],
+        ),
+        (
+            "morinus_aspect_contexts",
+            [
+                {
+                    "source_name": "Moon",
+                    "maximum_latitude": 5.2,
+                    "moving_toward_maximum": True,
+                }
+            ],
+        ),
+    ],
+)
+def test_advanced_search_inputs_require_their_governing_preset(
+    field: str,
+    value: list[dict],
+) -> None:
+    request = _request(
+        policy={"preset": "meridian_mundane"},
+        **{field: value},
+    )
+    with pytest.raises(ValueError, match=field):
+        service.resolve_primary_directions_policy(request)
+
+
+def test_advanced_search_inputs_are_bounded_unique_and_search_only() -> None:
+    with pytest.raises(ValidationError, match="unique across target families"):
+        _request(
+            antiscia_targets=[
+                {"source_name": "Venus"},
+                {"source_name": "Venus"},
+            ]
+        )
+    with pytest.raises(ValidationError, match="unique by source_name"):
+        _request(
+            morinus_aspect_contexts=[
+                {
+                    "source_name": "Moon",
+                    "maximum_latitude": 5.2,
+                    "moving_toward_maximum": True,
+                },
+                {
+                    "source_name": "Moon",
+                    "maximum_latitude": 5.3,
+                    "moving_toward_maximum": False,
+                },
+            ]
+        )
+    with pytest.raises(ValidationError, match="limited to 256 total"):
+        _request(
+            antiscia_targets=[
+                {"source_name": f"Source {index}"} for index in range(129)
+            ],
+            ptolemaic_parallel_targets=[
+                {"source_name": f"Other {index}"} for index in range(128)
+            ],
+        )
+    with pytest.raises(ValidationError, match="require engine search"):
+        _request(
+            submitted_arcs=[_SUBMITTED],
+            fixed_star_targets=[{"star_name": "Sirius"}],
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("maximum_latitude", True),
+        ("maximum_latitude", "5.2"),
+        ("maximum_latitude", 0.0),
+        ("moving_toward_maximum", "true"),
+    ],
+)
+def test_morinus_context_rejects_coercive_or_degenerate_values(
+    field: str,
+    value,
+) -> None:
+    context = {
+        "source_name": "Moon",
+        "maximum_latitude": 5.2,
+        "moving_toward_maximum": True,
+    }
+    context[field] = value
+    with pytest.raises(ValidationError):
+        _request(morinus_aspect_contexts=[context])
 
 
 def test_converse_rapt_preset_can_evaluate_its_own_submitted_arc() -> None:
@@ -375,6 +548,92 @@ def test_submitted_reduction_reports_actual_source_and_empty_profile(
     assert len(engine.house_calls) == 1
 
 
+@pytest.mark.parametrize(
+    ("request_overrides", "field_name", "expected", "expected_motion"),
+    [
+        (
+            {
+                "policy": {"preset": "ptolemy_zodiacal_antiscia"},
+                "antiscia_targets": [
+                    {"source_name": "Venus", "kind": "contra_antiscion"}
+                ],
+            },
+            "antiscia_targets",
+            [{"source_name": "Venus", "kind": "contra_antiscion"}],
+            None,
+        ),
+        (
+            {
+                "policy": {"preset": "ptolemy_zodiacal_parallel"},
+                "ptolemaic_parallel_targets": [
+                    {"source_name": "Venus", "relation": "contra_parallel"}
+                ],
+            },
+            "ptolemaic_parallel_targets",
+            [{"source_name": "Venus", "relation": "contra_parallel"}],
+            None,
+        ),
+        (
+            {
+                "policy": {"preset": "placidian_mundane_rapt_parallel_converse"},
+                "placidian_rapt_parallel_targets": [{"source_name": "Moon"}],
+            },
+            "placidian_rapt_parallel_targets",
+            [{"source_name": "Moon"}],
+            "converse",
+        ),
+        (
+            {"fixed_star_targets": [{"star_name": "Sirius"}]},
+            "fixed_star_targets",
+            [{"star_name": "Sirius"}],
+            None,
+        ),
+        (
+            {
+                "policy": {"preset": "morinus_zodiacal_aspect"},
+                "morinus_aspect_contexts": [
+                    {
+                        "source_name": "Moon",
+                        "maximum_latitude": 5.2,
+                        "moving_toward_maximum": True,
+                    }
+                ],
+            },
+            "morinus_aspect_contexts",
+            [
+                {
+                    "source_name": "Moon",
+                    "maximum_latitude": 5.2,
+                    "moving_toward_maximum": True,
+                }
+            ],
+            None,
+        ),
+    ],
+)
+def test_reduction_provenance_preserves_exact_advanced_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+    request_overrides: dict,
+    field_name: str,
+    expected: list[dict],
+    expected_motion: str | None,
+) -> None:
+    monkeypatch.setattr(service, "find_primary_arcs", lambda **kwargs: [])
+    arcs, reduction = service.compute_arcs_with_reduction_service(
+        _RecordingEngine(),
+        _request(**request_overrides),
+    )
+    response = serialize_arcs_with_reduction(
+        arcs,
+        reduction,
+        chosen_key=reduction.chosen_key,
+    )
+
+    resolved = response.reduction.resolved_policy
+    assert [item.model_dump(mode="json") for item in getattr(resolved, field_name)] == expected
+    assert resolved.placidian_rapt_parallel_motion == expected_motion
+
+
 def test_arc_reduction_reports_primary_arc_source_for_submitted_values() -> None:
     engine = _RecordingEngine()
     request = _request(submitted_arcs=[_SUBMITTED])
@@ -462,3 +721,22 @@ def test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded() -> N
     assert "PrimaryDirectionMethod" in str(policy["method"])
     assert "PrimaryDirectionSpace" in str(policy["space"])
     assert "PrimaryDirectionKey" in str(policy["key"])
+    advanced_schemas = {
+        "antiscia_targets": "PrimaryDirectionAntisciaTargetRequest",
+        "ptolemaic_parallel_targets": "PtolemaicParallelTargetRequest",
+        "placidian_rapt_parallel_targets": "PlacidianRaptParallelTargetRequest",
+        "fixed_star_targets": "PrimaryDirectionFixedStarTargetRequest",
+        "morinus_aspect_contexts": "MorinusAspectContextRequest",
+    }
+    for field_name, schema_name in advanced_schemas.items():
+        assert search[field_name]["maxItems"] == 256
+        assert schema_name in str(search[field_name]["items"])
+    assert "PrimaryDirectionAntisciaKind" in str(
+        schemas["PrimaryDirectionAntisciaTargetRequest"]["properties"]["kind"]
+    )
+    assert "PtolemaicParallelRelation" in str(
+        schemas["PtolemaicParallelTargetRequest"]["properties"]["relation"]
+    )
+    resolved_policy = schemas["PrimaryDirectionsResolvedPolicyResponse"]["properties"]
+    for field_name, schema_name in advanced_schemas.items():
+        assert schema_name in str(resolved_policy[field_name]["items"])

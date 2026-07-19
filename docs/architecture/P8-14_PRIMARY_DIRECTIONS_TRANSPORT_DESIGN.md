@@ -34,6 +34,15 @@ Current runtime rules:
   to 4,096 entries, and never use hidden duck-typed substitutes
 - omitted submitted arcs trigger engine search; an explicit empty list requests
   an empty evaluation result
+- engine-search requests may materialize typed antiscia, Ptolemaic-parallel,
+  Placidian-rapt-parallel, sovereign fixed-star, and Morinus aspect-context
+  vessels; the method-bound families must agree with their canonical preset,
+  while fixed stars may compose wherever the resolved policy admits their
+  conjunction target; all configured vessel truth remains visible in reduction
+  responses
+- advanced target/context lists are bounded individually and jointly, reject
+  duplicate derived identities, and cannot be mixed with submitted arcs because
+  submitted evaluation performs no target discovery
 - natal coordinates construct the chart; observer coordinates construct houses
   and own directional geographic latitude, including a lawful `0.0` longitude
 - compact and reduction routes share one resolved computation; reduction

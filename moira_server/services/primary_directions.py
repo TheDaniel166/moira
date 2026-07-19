@@ -15,10 +15,15 @@ from moira import Moira
 from moira.constants import HouseSystem
 from moira.julian import utc_to_tt, utc_to_ut1
 from moira.primary_directions import (
+    MorinusAspectContext,
     PrimaryArc,
+    PrimaryDirectionAntisciaTarget,
+    PrimaryDirectionFixedStarTarget,
     PrimaryDirectionMotion,
     PrimaryDirectionsPolicy,
     PrimaryDirectionsPreset,
+    PlacidianRaptParallelTarget,
+    PtolemaicParallelTarget,
     evaluate_primary_direction_relations,
     evaluate_primary_directions_aggregate,
     evaluate_primary_directions_network,
@@ -123,6 +128,12 @@ class PrimaryDirectionsResolvedPolicyContext:
     requested_preset: str | None
     canonical_preset: str
     policy_source: str
+    antiscia_targets: tuple[PrimaryDirectionAntisciaTarget, ...]
+    ptolemaic_parallel_targets: tuple[PtolemaicParallelTarget, ...]
+    placidian_rapt_parallel_targets: tuple[PlacidianRaptParallelTarget, ...]
+    fixed_star_targets: tuple[PrimaryDirectionFixedStarTarget, ...]
+    morinus_aspect_contexts: tuple[MorinusAspectContext, ...]
+    placidian_rapt_parallel_motion: PrimaryDirectionMotion | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -230,6 +241,83 @@ def _conventional_key(preset: PrimaryDirectionsPreset) -> PrimaryDirectionKey:
     return PrimaryDirectionKey.NAIBOD
 
 
+def _advanced_search_policy_vessels(
+    request: PrimaryDirectionsSearchRequest | PrimaryDirectionsRelationsRequest,
+) -> dict[str, tuple]:
+    """Convert search-only transport inputs to their owning engine vessels."""
+    if not isinstance(request, PrimaryDirectionsSearchRequest):
+        return {
+            "antiscia_targets": (),
+            "ptolemaic_parallel_targets": (),
+            "placidian_rapt_parallel_targets": (),
+            "fixed_star_targets": (),
+            "morinus_aspect_contexts": (),
+        }
+    return {
+        "antiscia_targets": tuple(
+            PrimaryDirectionAntisciaTarget(
+                source_name=item.source_name,
+                kind=item.kind,
+            )
+            for item in request.antiscia_targets
+        ),
+        "ptolemaic_parallel_targets": tuple(
+            PtolemaicParallelTarget(
+                source_name=item.source_name,
+                relation=item.relation,
+            )
+            for item in request.ptolemaic_parallel_targets
+        ),
+        "placidian_rapt_parallel_targets": tuple(
+            PlacidianRaptParallelTarget(source_name=item.source_name)
+            for item in request.placidian_rapt_parallel_targets
+        ),
+        "fixed_star_targets": tuple(
+            PrimaryDirectionFixedStarTarget(star_name=item.star_name)
+            for item in request.fixed_star_targets
+        ),
+        "morinus_aspect_contexts": tuple(
+            MorinusAspectContext(
+                source_name=item.source_name,
+                maximum_latitude=item.maximum_latitude,
+                moving_toward_maximum=item.moving_toward_maximum,
+            )
+            for item in request.morinus_aspect_contexts
+        ),
+    }
+
+
+def _validate_advanced_search_preset(
+    canonical_preset: PrimaryDirectionsPreset,
+    advanced: dict[str, tuple],
+) -> None:
+    """Fail closed instead of allowing a preset builder to ignore inputs."""
+    required_presets = (
+        (
+            "antiscia_targets",
+            frozenset({PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA}),
+        ),
+        (
+            "ptolemaic_parallel_targets",
+            frozenset({PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_PARALLEL}),
+        ),
+        (
+            "placidian_rapt_parallel_targets",
+            frozenset(_RAPT_PRESETS),
+        ),
+        (
+            "morinus_aspect_contexts",
+            frozenset({PrimaryDirectionsPreset.MORINUS_ZODIACAL_ASPECT}),
+        ),
+    )
+    for field_name, admitted_presets in required_presets:
+        if advanced[field_name] and canonical_preset not in admitted_presets:
+            choices = ", ".join(sorted(preset.value for preset in admitted_presets))
+            raise ValueError(
+                f"Primary-directions {field_name} require canonical preset: {choices}"
+            )
+
+
 def resolve_primary_directions_policy(
     request: PrimaryDirectionsSearchRequest | PrimaryDirectionsRelationsRequest,
 ) -> ResolvedPrimaryDirectionsPolicy:
@@ -264,10 +352,14 @@ def resolve_primary_directions_policy(
     else:
         include_converse = policy_request.include_converse
 
+    advanced = _advanced_search_policy_vessels(request)
+    _validate_advanced_search_preset(canonical_preset, advanced)
+
     resolved_policy = primary_directions_policy_preset(
         canonical_preset,
         include_converse=include_converse,
         key_policy=PrimaryDirectionKeyPolicy(chosen_key),
+        **advanced,
     )
 
     if policy_request is not None and policy_request.preset is not None:
@@ -314,6 +406,12 @@ def _resolved_policy_context(
         requested_preset=resolved.requested_preset,
         canonical_preset=str(resolved.canonical_preset),
         policy_source=resolved.policy_source,
+        antiscia_targets=policy.antiscia_targets,
+        ptolemaic_parallel_targets=policy.ptolemaic_parallel_targets,
+        placidian_rapt_parallel_targets=policy.placidian_rapt_parallel_targets,
+        fixed_star_targets=policy.fixed_star_targets,
+        morinus_aspect_contexts=policy.morinus_aspect_contexts,
+        placidian_rapt_parallel_motion=policy.placidian_rapt_parallel_motion,
     )
 
 
