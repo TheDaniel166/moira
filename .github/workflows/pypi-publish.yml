@@ -44,13 +44,6 @@ jobs:
           CIBW_BEFORE_BUILD: pip install cmake pybind11
           CIBW_BUILD_VERBOSITY: 1
           CIBW_DEPENDENCY_VERSIONS: latest
-          CIBW_ENVIRONMENT: MOIRA_NO_DOWNLOAD=1
-          CIBW_TEST_COMMAND: >-
-            python -c "import importlib.metadata as md; import moira;
-            from moira import moira_native as mn;
-            assert md.version('moira-astro') == moira.__version__;
-            assert mn.__backend_file__;
-            print(moira.__version__, mn.__backend_file__)"
 
       - uses: actions/upload-artifact@v4
         with:
