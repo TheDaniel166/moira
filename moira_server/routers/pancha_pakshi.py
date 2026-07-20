@@ -20,12 +20,16 @@ from ..models.pancha_pakshi import (
     PanchaPakshiFixedClockCurrentCellResponse,
     PanchaPakshiFixedClockMaterializationRequest,
     PanchaPakshiFixedClockMaterializationResponse,
+    PanchaPakshiFirstEatBirdMappingRequest,
+    PanchaPakshiFirstEatBirdMappingResponse,
     PanchaPakshiLocalSolarContextRequest,
     PanchaPakshiLocalSolarContextResponse,
     PanchaPakshiNatalMoonIdentityRequest,
     PanchaPakshiNatalMoonIdentityResponse,
     PanchaPakshiNominalScheduleRequest,
     PanchaPakshiNominalScheduleResponse,
+    PanchaPakshiPaduBirdMappingRequest,
+    PanchaPakshiPaduBirdMappingResponse,
     PanchaPakshiProfileInfoResponse,
     PanchaPakshiProfilesResponse,
     PanchaPakshiSolarProportionalCurrentCellRequest,
@@ -39,9 +43,11 @@ from ..serializers.pancha_pakshi import (
     serialize_directed_relationship,
     serialize_fixed_clock_current_cell,
     serialize_fixed_clock_materialization,
+    serialize_first_eat_bird_mapping,
     serialize_local_solar_context,
     serialize_natal_moon_identity,
     serialize_nominal_schedule,
+    serialize_padu_bird_mapping,
     serialize_profile_info,
     serialize_solar_proportional_current_cell,
     serialize_solar_proportional_materialization,
@@ -52,9 +58,11 @@ from ..services.pancha_pakshi import (
     compute_directed_relationship,
     compute_fixed_clock_current_cell,
     compute_fixed_clock_materialization,
+    compute_first_eat_bird_mapping,
     compute_local_solar_context,
     compute_natal_moon_identity,
     compute_nominal_schedule,
+    compute_padu_bird_mapping,
     compute_solar_proportional_current_cell,
     compute_solar_proportional_materialization,
     list_pancha_pakshi_profiles,
@@ -108,6 +116,32 @@ def pancha_pakshi_nominal_schedule_route(
 ) -> PanchaPakshiNominalScheduleResponse:
     """Generate an exact fixed-clock nominal schedule; no astronomy is routed."""
     return serialize_nominal_schedule(compute_nominal_schedule(request))
+
+
+@router.post(
+    "/schedule/first-eat-bird",
+    response_model=PanchaPakshiFirstEatBirdMappingResponse,
+)
+def pancha_pakshi_first_eat_bird_mapping_route(
+    request: PanchaPakshiFirstEatBirdMappingRequest,
+) -> PanchaPakshiFirstEatBirdMappingResponse:
+    """Return one source-attested first-samam Eat seed; route no astronomy."""
+
+    return serialize_first_eat_bird_mapping(
+        compute_first_eat_bird_mapping(request)
+    )
+
+
+@router.post(
+    "/roles/padu",
+    response_model=PanchaPakshiPaduBirdMappingResponse,
+)
+def pancha_pakshi_padu_bird_mapping_route(
+    request: PanchaPakshiPaduBirdMappingRequest,
+) -> PanchaPakshiPaduBirdMappingResponse:
+    """Return one source-attested Padu bird; perform no temporal routing."""
+
+    return serialize_padu_bird_mapping(compute_padu_bird_mapping(request))
 
 
 @router.post(

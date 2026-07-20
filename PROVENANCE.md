@@ -258,7 +258,7 @@ scientific-validity or source-coverage claims.
 
 ## Pancha Pakshi source-scoped witnesses
 
-Moira admits two explicitly named Pancha Pakshi profiles as source-scoped
+Moira admits three explicitly named Pancha Pakshi profiles as source-scoped
 public products. Their private ingestion data records normalized computational
 facts and locators from the 1879 Tamil print catalogued by Internet Archive as
 [`dli.rmrl.000451_images`](https://archive.org/details/dli.rmrl.000451_images)
@@ -552,6 +552,85 @@ current-cell, scoring, and forecast inputs are rejected. The profile remains
 `source_scoped_public`, never becomes a default canon, and does not change the
 1879 aksara-only identity ontology.
 
+Stage 2H admits a third, separate source-scoped profile,
+`bogamuni_chennai_2024_padu_bird_mapping`, with product kind
+`padu_bird_mapping` and only the matching `padu_bird_mapping` capability.
+Rendered-page inspection of the same exact Bogamuni 2024 original PDF, locally
+identified by SHA-256
+`035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`, found
+the Purva weekday Padu stanza and commentary at leaf
+[`n52`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n52/mode/1up),
+the corresponding Amara material at
+[`n60`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n60/mode/1up),
+the repeated combined table at
+[`n157`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n157/mode/1up),
+and its restating commentary at
+[`n158`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n158/mode/1up).
+The two Paksha stanzas govern; the repeated combined table and commentary
+confirm them. The normalized product therefore has exactly fourteen
+Paksha-by-weekday cells, one for each explicit Purva/Amara and Sunday-through-
+Saturday pair, and no day/night axis.
+
+This product preserves Padu as the source's death-or-inoperative bird. It does
+not convert Padu into the schedule's instantaneous `RULE` activity, an
+authority-day label, or the separately labelled eating bird. In particular,
+the primary witnesses label an eating-bird table and authority days but do not
+present an independently governed `Adhikara Pakshi` table. `Bharana` occurs as
+secondary terminology rather than a primary source-table label. Moira
+therefore admits neither `Adhikara Pakshi` nor `Bharana Pakshi` as an alias or
+separate product, and it does not relabel the existing `first_eat_bird` field.
+Uromarisi 1934 and the additional Bogar material remain separately observed,
+unbound research context. Neither the Stage 2H profile nor its decision binds
+them, and they supply neither runtime cells nor admission proof.
+
+The Stage 2H lookup requires the explicit profile, source Paksha, and weekday.
+It performs no astronomical or civil-day routing, natal identity, day/night or
+schedule selection, materialization, current-cell judgment, condition or
+score, or forecast. The profile is `source_scoped_public`, has no default, and
+does not alter either prior profile.
+
+The public surfaces are `pancha_pakshi_padu_bird_mapping(...)`,
+`Moira.pancha_pakshi_padu_bird_mapping(...)`, and
+`POST /v1/pancha-pakshi/roles/padu`. The canonical Stage 2H profile, manifest,
+and admission-decision SHA-256 values are respectively
+`5de0d1e28d47fad8be6a2a1ab648f2ed71eaf742be2775d166ea44981e96ff10`,
+`eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03`, and
+`9ea7c871643bb8fc68d420223d0090ca91699154c761c67ccaf9201f401906cd`.
+
+Stage 2I adds `first_eat_bird_mapping` to the unchanged 1879 profile. The
+source-owned object is one named schedule generator's first-samam EAT seed,
+selected only by explicit profile Paksha, day/night half, and weekday. Rendered
+inspection binds Purva day to
+[`n16`](https://archive.org/details/dli.rmrl.000451_images/page/n16/mode/1up),
+Purva night to
+[`n21`](https://archive.org/details/dli.rmrl.000451_images/page/n21/mode/1up),
+Amara day to
+[`n26`](https://archive.org/details/dli.rmrl.000451_images/page/n26/mode/1up),
+and Amara night to
+[`n31`](https://archive.org/details/dli.rmrl.000451_images/page/n31/mode/1up).
+The 28 cells already reside in the hash-bound schedule profile, so Stage 2I is
+a manifest-only capability transition: profile SHA-256 remains
+`4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64`,
+while the manifest SHA-256 becomes
+`d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8`
+and the admission-decision SHA-256 is
+`83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807`.
+
+The Uromarisi-attributed 1934 publication corroborates all 28 cells at
+[`n6`](https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934/page/n6/mode/1up)
+and
+[`n36`-`n37`](https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934/page/n36/mode/1up).
+Its inspected PDF SHA-256 is
+`e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`.
+This is separate-publication corroboration; independent textual lineage is not
+established, it supplies no runtime cell, and it does not justify a universal
+canon or `corroborated_public` status. The result is not an ambient whole-day
+eating bird, Padu, authority/Adhikara/Bharana bird, current activity,
+condition, strength, score, electional judgment, or forecast. The public
+surfaces are `pancha_pakshi_first_eat_bird_mapping(...)`,
+`Moira.pancha_pakshi_first_eat_bird_mapping(...)`, and strict
+`POST /v1/pancha-pakshi/schedule/first-eat-bird`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The latter's
 official catalog says sixth edition/2014 while its inspected internal title
@@ -577,16 +656,21 @@ The governing research boundary, admission tiers, conflicts, fail-closed
 invariants, and public contract are documented in
 [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
 Public access is additive through `moira.pancha_pakshi`, package-root and
-`moira.vedic` exports, six kernel-free and seven kernel-backed `Moira` methods,
-and twelve explicit-profile `/v1/pancha-pakshi` routes. No API selects a default
-profile. The 1879 astronomical-paksha route occurs only through its explicit
-geocentric policy and never supplies an inferred label to another operation.
+`moira.vedic` exports, eight kernel-free and seven kernel-backed `Moira`
+methods, and fourteen explicit-profile `/v1/pancha-pakshi` routes. No API
+selects a default profile. The 1879 astronomical-paksha route occurs only
+through its explicit geocentric policy and never supplies an inferred label to
+another operation.
 Fixed-clock and solar-proportional current-cell selection occur only through
 their separate explicit solar-half-precedence policies; the former may return
 an uncovered-tail status, while the latter always selects one cell from
 complete-half coverage. Natal identity occurs only through the separate 2024
-profile and fixed modern composition. Condition, scoring, automatic schedule
-routing, and forecasting remain outside the admitted surface.
+profile and fixed modern composition. Padu lookup occurs only through the
+separate 2024 Padu profile and explicit Paksha/weekday labels. First-EAT lookup
+occurs only through the separate Stage 2I route and never materializes or
+selects a current schedule. Condition,
+scoring, automatic schedule routing, and forecasting remain outside the
+admitted surface.
 
 The 2026-07-20 blind, representative-grid, and later adjudicating reviews are
 recorded in

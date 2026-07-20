@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20",
+  "decided_at_utc": "2026-07-20T23:28:13Z",
+  "decision_kind": "source_scoped_first_samam_eat_seed_mapping_admission",
+  "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+  "prior_admission": {
+    "decision_id": "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20",
+    "fixture_path": "tests/fixtures/pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20.json",
+    "fixture_sha256": "9ea7c871643bb8fc68d420223d0090ca91699154c761c67ccaf9201f401906cd",
+    "relationship": "append_only_manifest_transition_on_existing_profile_after_stage_2h"
+  },
+  "profile_binding": {
+    "path": "moira/data/pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
+    "sha256": "4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64",
+    "content_changed": false,
+    "admission_status": "source_scoped_public",
+    "product_kind": "aksara_prasna_operating_schedule",
+    "default_selection_allowed": false,
+    "capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "first_eat_bird_mapping",
+      "directed_relationships",
+      "astronomical_context",
+      "astronomical_paksha_inference",
+      "fixed_clock_materialization",
+      "fixed_clock_current_cell_selection",
+      "solar_proportional_materialization",
+      "solar_proportional_current_cell_selection"
+    ]
+  },
+  "manifest_transition": {
+    "path": "moira/data/pancha_pakshi_manifest.json",
+    "prior_sha256": "eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03",
+    "current_sha256": "d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "prior_generated_at_utc": "2026-07-20T22:42:10Z",
+    "current_generated_at_utc": "2026-07-20T23:28:13Z",
+    "prior_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context",
+      "astronomical_paksha_inference",
+      "fixed_clock_materialization",
+      "fixed_clock_current_cell_selection",
+      "solar_proportional_materialization",
+      "solar_proportional_current_cell_selection"
+    ],
+    "current_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "first_eat_bird_mapping",
+      "directed_relationships",
+      "astronomical_context",
+      "astronomical_paksha_inference",
+      "fixed_clock_materialization",
+      "fixed_clock_current_cell_selection",
+      "solar_proportional_materialization",
+      "solar_proportional_current_cell_selection"
+    ],
+    "added_capability": "first_eat_bird_mapping",
+    "profile_count_changed": false,
+    "profile_content_changed": false,
+    "profile_product_kind_changed": false,
+    "profile_admission_status_changed": false,
+    "default_selection_policy_changed": false,
+    "profile_entry_decision_id": "pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20"
+  },
+  "primary_source": {
+    "witness_id": "dli.rmrl.000451_images",
+    "bibliographic_label": "Agastya-attributed Pancha Pakshi Sastram, Mattoovar Colalumbal Press, Madras, 1879",
+    "archive_item_url": "https://archive.org/details/dli.rmrl.000451_images",
+    "archive_pdf_name": "dli.rmrl.000451.pdf",
+    "archive_pdf_source_status": "internet_archive_derivative",
+    "archive_pdf_md5": "0736b952fb587132c2181a383ff10cfb",
+    "archive_pdf_sha1": "d41ff5c2d569de6422435b20135b58be82a68560",
+    "locally_verified_pdf_sha256": "ed52945ee141faa3f6967b8f043077b95abef9ff674ffb83eaba633417c669c9",
+    "review_method": "page_images_rendered_and_visually_inspected_ocr_used_only_for_navigation"
+  },
+  "source_readings": {
+    "purva_day": {
+      "governing_locator_id": "ia_n16",
+      "same_witness_confirmation_locator_ids": ["ia_n10", "ia_n19_n20"],
+      "sunday_through_saturday": ["vulture", "owl", "vulture", "owl", "crow", "cock", "peacock"]
+    },
+    "purva_night": {
+      "governing_locator_id": "ia_n21",
+      "same_witness_confirmation_locator_ids": ["ia_n22", "ia_n22_n25", "ia_n23"],
+      "sunday_through_saturday": ["crow", "cock", "crow", "cock", "peacock", "vulture", "owl"]
+    },
+    "amara_day": {
+      "governing_locator_id": "ia_n26",
+      "same_witness_confirmation_locator_ids": ["ia_n27_n30", "ia_n28"],
+      "sunday_through_saturday": ["cock", "peacock", "cock", "crow", "owl", "vulture", "peacock"]
+    },
+    "amara_night": {
+      "governing_locator_id": "ia_n31",
+      "same_witness_confirmation_locator_ids": ["ia_n32", "ia_n32_n35", "ia_n33"],
+      "sunday_through_saturday": ["vulture", "cock", "vulture", "owl", "crow", "peacock", "cock"]
+    }
+  },
+  "same_witness_reading_status": {
+    "blind_reading_role": "superseded_for_amara_night_cells_by_later_n31_through_n35_adjudication",
+    "adjudicated_runtime_status": "current_profile_uses_the_corrected_amara_night_vector",
+    "independent_review_label_scope": "separate_rereading_of_the_same_1879_artifact_not_independent_witness_corroboration"
+  },
+  "separate_publication_corroboration": {
+    "witness_id": "kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "bibliographic_label": "Uromarisi-attributed Vinaadi Pancha Pakshi Mulamum, 1934",
+    "institutional_catalog_url": "https://www.tamildigitallibrary.in/book-detail?id=jZY9lup2kZl6TuXGlZQdjZp0jZMy",
+    "archive_item_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "locally_verified_pdf_sha256": "e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0",
+    "locator_roles": {
+      "ia_n6": "purva_day_and_night_corroboration",
+      "ia_n36_n37": "amara_day_and_night_corroboration"
+    },
+    "cell_agreement": "all_28_cells",
+    "evidence_class": "separate_publication_corroboration",
+    "textual_lineage_independence": "not_established",
+    "runtime_role": "none"
+  },
+  "computational_object": {
+    "engine_function": "pancha_pakshi_first_eat_bird_mapping",
+    "facade_method": "Moira.pancha_pakshi_first_eat_bird_mapping",
+    "rest_route": "POST /v1/pancha-pakshi/schedule/first-eat-bird",
+    "result_vessel": "PanchaPakshiFirstEatBirdMapping",
+    "source_owned_object": "named_schedule_generator_first_samam_eat_seed",
+    "input_axes": [
+      "explicit_profile_id",
+      "explicit_profile_paksha",
+      "explicit_day_or_night_half",
+      "explicit_weekday"
+    ],
+    "output": "one_first_eat_bird",
+    "source_table_semantics": "profile_paksha_half_weekday_first_samam_eat_seed_not_padu_authority_condition_or_score",
+    "schedule_materialization": "not_performed",
+    "temporal_routing": "not_performed",
+    "profile_composition": "not_performed"
+  },
+  "validation_evidence": {
+    "exact_source_cells": 28,
+    "source_table_test": "tests/unit/test_pancha_pakshi_first_eat_bird_mapping.py",
+    "required_invariants": [
+      "one seed for each of two profile Pakshas times two halves times seven weekdays",
+      "each result equals the existing nominal schedule first_eat_bird and first EAT cell",
+      "each result binds the canonical named generator and its complete source-locator tuple",
+      "no datetime location inferred Paksha Padu natal bird condition score or forecast input",
+      "the seed is not a whole-day eating bird or a generic authority bird",
+      "the profile remains source_scoped_public with no default and no implicit composition"
+    ]
+  },
+  "public_claim": "The named 1879 profile exposes each schedule generator's source-attested first-samam EAT seed as a pure immutable lookup.",
+  "public_nonclaims": [
+    "The returned bird is not an ambient whole-day eating bird.",
+    "The returned bird is not Padu, Adhikara, Bharana, a day ruler, or a generic authority bird.",
+    "No instantaneous activity, current cell, datetime, location, astronomical Paksha, or natal identity is selected.",
+    "No condition, strength, score, electional judgment, or forecast is computed.",
+    "The separate-publication corroboration does not establish an independent textual lineage or a universal canon.",
+    "The 1879 profile is not implicitly composed with either 2024 profile."
+  ],
+  "artifact_distribution_boundary": {
+    "status": "source_artifacts_not_packaged",
+    "distributed_material": "normalized_rules_code_schema_tests_and_provenance_only",
+    "excluded_material": "archive_pdf_scan_ocr_page_images_copied_layout_source_prose_and_third_party_translation"
+  }
+}

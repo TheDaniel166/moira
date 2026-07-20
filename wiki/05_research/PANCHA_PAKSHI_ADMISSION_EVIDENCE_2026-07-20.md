@@ -1,5 +1,149 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2I First-Samam EAT-Seed Addendum
+
+Stage 2I admits `first_eat_bird_mapping` as one granular capability of the
+unchanged `agastya_madras_1879_akshara_fixed_clock` profile. It does not add a
+fourth profile or alter the normalized 1879 source data. The
+[`Stage 2I admission decision`](../../tests/fixtures/pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20.json)
+has canonical SHA-256
+`83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807`.
+It binds the unchanged profile SHA-256
+`4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64`,
+the frozen Stage 2H decision SHA-256
+`9ea7c871643bb8fc68d420223d0090ca91699154c761c67ccaf9201f401906cd`,
+and the manifest transition from
+`eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03`
+to `d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8`.
+
+The governing witness remains the Agastya-attributed Madras 1879 print. Its
+Internet Archive derivative PDF is `dli.rmrl.000451.pdf`, archive MD5
+`0736b952fb587132c2181a383ff10cfb`, archive SHA-1
+`d41ff5c2d569de6422435b20135b58be82a68560`, and locally verified SHA-256
+`ed52945ee141faa3f6967b8f043077b95abef9ff674ffb83eaba633417c669c9`.
+Rendered-page inspection, with OCR used only for navigation, binds the first
+samam's weekday EAT seed at [Purva-day leaf n16](https://archive.org/details/dli.rmrl.000451_images/page/n16/mode/1up),
+[Purva-night leaf n21](https://archive.org/details/dli.rmrl.000451_images/page/n21/mode/1up),
+[Amara-day leaf n26](https://archive.org/details/dli.rmrl.000451_images/page/n26/mode/1up),
+and [Amara-night leaf n31](https://archive.org/details/dli.rmrl.000451_images/page/n31/mode/1up).
+
+| Context | Sunday | Monday | Tuesday | Wednesday | Thursday | Friday | Saturday |
+|---|---|---|---|---|---|---|---|
+| Purva day | Vulture | Owl | Vulture | Owl | Crow | Cock | Peacock |
+| Purva night | Crow | Cock | Crow | Cock | Peacock | Vulture | Owl |
+| Amara day | Cock | Peacock | Cock | Crow | Owl | Vulture | Peacock |
+| Amara night | Vulture | Cock | Vulture | Owl | Crow | Peacock | Cock |
+
+These 28 values are schedule-generator seeds, not ambient or whole-day eating
+birds. Each seed names the bird that begins the selected generator's first
+samam in EAT; later samams advance under the separately normalized progression
+rule. The public result therefore carries `generator_id`, exact source axes,
+`first_eat_bird`, the complete canonical generator locator tuple, and profile
+provenance without materializing a schedule.
+
+The 1934 Uromarisi publication provides separate-publication corroboration of
+all 28 cells at [leaf n6](https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934/page/n6/mode/1up)
+and [leaves n36-n37](https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934/page/n36/mode/1up).
+The inspected PDF's SHA-256 is
+`e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`.
+This is a physically separate publication, but independent textual lineage is
+not established; it does not contribute runtime cells or raise the profile to
+`corroborated_public`. The frozen blind reading is also not an independent
+witness and is superseded for Amara-night cells by the later `n31`-`n35`
+adjudication reflected in the canonical profile.
+
+The public surfaces are the kernel-free
+`pancha_pakshi_first_eat_bird_mapping(...)`,
+`Moira.pancha_pakshi_first_eat_bird_mapping(...)`, and strict
+`POST /v1/pancha-pakshi/schedule/first-eat-bird`. They accept only explicit
+`profile_id`, `profile_paksha`, day/night half, and weekday. They perform no
+datetime or location routing, astronomical Paksha inference, schedule
+materialization, natal identity, or cross-profile composition. The result is
+not Padu, an authority day or bird, Adhikara/Bharana, a current activity,
+condition, strength, score, electional judgment, or forecast.
+
+The current public family has three profiles, fifteen `Moira` methods (eight
+kernel-free and seven kernel-backed), and fourteen REST routes.
+
+Validation checks all 28 cells against the canonical generator table and the
+existing schedule's `first_eat_bird` and initial EAT cell. It also checks exact
+locator/provenance binding, capability isolation, vessel immutability, strict
+facade/REST/OpenAPI shapes, and reconstruction of the frozen Stage 2F and 2H
+manifests. No source PDF, OCR, rendered page, copied layout, source prose, or
+translation is bundled.
+
+## Stage 2H Padu-Bird Mapping Addendum
+
+Stage 2H admits the separate
+`bogamuni_chennai_2024_padu_bird_mapping` profile with product kind and sole
+capability `padu_bird_mapping`, `source_scoped_public` status, and no default.
+The
+[`Stage 2H admission decision`](../../tests/fixtures/pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20.json)
+has canonical SHA-256
+`9ea7c871643bb8fc68d420223d0090ca91699154c761c67ccaf9201f401906cd`.
+It binds profile SHA-256
+`5de0d1e28d47fad8be6a2a1ab648f2ed71eaf742be2775d166ea44981e96ff10`
+and manifest SHA-256
+`eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03`,
+while freezing the prior Stage 2G decision at
+`3da998bc78c6c1fc4ec1c71629dc6b3872725ef25f73965474d5e894deec1575`.
+
+The primary witness is the same Bogamuni-attributed 2024 sixth edition used as
+a separately scoped source in Stage 2G. The Internet Archive original PDF is
+`Acc.No.44757-PanjapatchiSashthiram-2024.pdf`, archive MD5
+`abe489a832ac38a0270335b7429776f3`, archive SHA-1
+`6ddad8f2577883f6859829f534e8ee7b8330ade8`, and locally verified SHA-256
+`035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`.
+Rendered original-page inspection, with OCR used only for navigation, found the
+governing Purva weekday Padu stanza and commentary at IA leaf `n52`, the Amara
+material at `n60`, the repeated combined table at `n157`, and its restating
+commentary at `n158`.
+
+Stage 2H declares
+`paksha_stanzas_govern_repeated_combined_table_confirms`. The Paksha
+stanzas govern; the combined table and commentary repeat and confirm the
+same fourteen cells. The normalized table is exactly two explicit source
+Paksha labels by seven weekdays:
+
+| Paksha | Sunday | Monday | Tuesday | Wednesday | Thursday | Friday | Saturday |
+|---|---|---|---|---|---|---|---|
+| Purva | Owl | Crow | Cock | Peacock | Vulture | Owl | Vulture |
+| Amara | Crow | Owl | Vulture | Peacock | Cock | Peacock | Cock |
+
+There is no day/night axis. `PanchaPakshiPaduBirdMapping` preserves Padu as the
+weekday's death-or-inoperative bird and explicitly states that it is not the
+schedule's `RULE` activity. The source layers separately label an eating-bird
+table and authority days; they do not present an `Adhikara Pakshi` table.
+Bharana is secondary-only terminology. Moira therefore admits no
+Adhikara/Bharana alias or product and does not relabel the existing
+`first_eat_bird` schedule field. Uromarisi 1934 and the separately inspected
+Bogar material are not bound by the Stage 2H Padu profile or decision; they
+contribute no Padu runtime cell. Stage 2I later records Uromarisi only as
+corroboration of the separate 1879 first-EAT object.
+
+The public surfaces are the kernel-free
+`pancha_pakshi_padu_bird_mapping(...)`,
+`Moira.pancha_pakshi_padu_bird_mapping(...)`, and strict
+`POST /v1/pancha-pakshi/roles/padu`. They accept only explicit `profile_id`,
+`profile_paksha`, and weekday. The result exposes the selected bird, direct
+attestation status, source semantics, assembly policy, three canonical
+locators, provenance, and omissions. It performs no astronomical or civil-day
+routing, natal identity, schedule/materialization/current-cell operation,
+condition evaluation, score, or forecast. At the Stage 2H boundary, the public
+family had three profiles, fourteen `Moira` methods (seven kernel-free and
+seven kernel-backed), and thirteen REST routes.
+
+Validation keeps evidence classes separate. The four rendered pages and exact
+fourteen-cell projection are source-table evidence. Completeness,
+Paksha/weekday ownership, no-day/night shape, canonical locator binding,
+immutable provenance, capability separation, and strict facade/REST/OpenAPI
+contracts are structural evidence. Separately observed Uromarisi/Bogar material
+is not fixture-bound and does not make the runtime table cross-witness or
+universal, and there is no external
+condition, scoring, electional, or forecasting oracle. As in every prior phase,
+no source PDF, OCR, rendered page, copied layout, source prose, or translation
+is bundled.
+
 ## Stage 2G Natal-Moon Identity Addendum
 
 Stage 2G admits the separate
@@ -705,7 +849,7 @@ current bounded public status.
 | Source-artifact policy | Satisfied: witnesses are reference-only and never bundled; this is not an admission gate. |
 | Identity product | Satisfied for the named aksara/query-or-name-initial product; explicitly not natal Moon identity. |
 | Source-owned examples | Resolved into a complete source-owned Pūrva-night assignment oracle and confirmed Amara-night examples. |
-| Public vessels and transport | Deferred at this checkpoint; admitted later by the Phase 1 and Stage 2A through Stage 2G decisions above. |
+| Public vessels and transport | Deferred at this checkpoint; admitted later by the Phase 1 and Stage 2A through Stage 2I decisions above. |
 
 ## Validation Receipt
 
@@ -751,10 +895,18 @@ asserted.
    evidence and admission. Stage 2F lunar-paksha inference remains its own modern numeric
    policy plus source-scoped mapping and may not be routed into a schedule
    automatically.
+5. Preserve the Stage 2H Padu product as a pure Paksha-by-weekday source table.
+   Any alternate Padu doctrine, Adhikara/Bharana role, condition, score, or
+   forecast requires its own governing source, ontology, admission, and tests.
+6. Preserve the Stage 2I first-EAT product as a pure first-samam seed lookup.
+   It must not acquire whole-day eating-bird, Padu, authority, condition,
+   score, electional, or forecasting semantics without separate admission.
 
-The present resting place is two tested, source-scoped public profiles: the
+The present resting place is three tested, source-scoped public profiles: the
 corrected 1879 aksara schedule with the separately named Stage 2A through Stage
-2E modern compositions and Stage 2F source-mapped astronomical inference, plus
-the separate 2024 source table and Stage 2G modern natal-Moon composition.
-Neither is a universal canon, and unresolved or alternate doctrine must not be
-silently inferred through the public API.
+2E modern compositions, Stage 2F source-mapped astronomical inference, and
+Stage 2I source-attested first-samam EAT-seed lookup, plus
+the separate 2024 nakshatra table and Stage 2G modern natal-Moon composition,
+plus the Stage 2H 2024 Padu-only table. None is a universal canon, and
+unresolved or alternate doctrine must not be silently inferred through the
+public API.

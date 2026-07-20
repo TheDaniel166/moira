@@ -70,11 +70,16 @@ def _stage2f_manifest_text() -> str:
         for entry in manifest["profiles"]
         if entry["profile_id"] == "agastya_madras_1879_akshara_fixed_clock"
     ]
+    entry = manifest["profiles"][0]
+    entry["capabilities"].remove("first_eat_bird_mapping")
+    entry["admission_decision_id"] = (
+        "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
+    )
     return json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
 
 
-def test_stage2f_artifacts_and_live_bindings_are_hash_exact() -> None:
-    manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+def test_stage2f_artifacts_and_reconstructed_bindings_are_hash_exact() -> None:
+    manifest = json.loads(_stage2f_manifest_text())
     decision = json.loads(_DECISION.read_text(encoding="utf-8"))
     evidence = json.loads(_MAPPING_EVIDENCE.read_text(encoding="utf-8"))
     entry = next(

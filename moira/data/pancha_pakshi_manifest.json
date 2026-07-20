@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at_utc": "2026-07-20T21:27:47Z",
+  "generated_at_utc": "2026-07-20T23:28:13Z",
   "hash_algorithm": "sha256",
   "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
   "profiles": [
@@ -14,6 +14,7 @@
       "capabilities": [
         "aksara_identity",
         "nominal_schedule",
+        "first_eat_bird_mapping",
         "directed_relationships",
         "astronomical_context",
         "astronomical_paksha_inference",
@@ -22,7 +23,7 @@
         "solar_proportional_materialization",
         "solar_proportional_current_cell_selection"
       ],
-      "admission_decision_id": "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
+      "admission_decision_id": "pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20"
     },
     {
       "profile_id": "bogamuni_chennai_2024_nakshatra_natal_identity",
@@ -36,6 +37,18 @@
         "natal_identity"
       ],
       "admission_decision_id": "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20"
+    },
+    {
+      "profile_id": "bogamuni_chennai_2024_padu_bird_mapping",
+      "path": "pancha_pakshi_bogamuni_chennai_2024_padu_bird_mapping.json",
+      "sha256": "5de0d1e28d47fad8be6a2a1ab648f2ed71eaf742be2775d166ea44981e96ff10",
+      "admission_status": "source_scoped_public",
+      "product_kind": "padu_bird_mapping",
+      "default_selection_allowed": false,
+      "capabilities": [
+        "padu_bird_mapping"
+      ],
+      "admission_decision_id": "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20"
     }
   ]
 }

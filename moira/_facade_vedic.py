@@ -69,6 +69,8 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             "pancha_pakshi_astronomical_paksha",
             "pancha_pakshi_nakshatra_bird_mapping",
             "pancha_pakshi_natal_moon_identity",
+            "pancha_pakshi_first_eat_bird_mapping",
+            "pancha_pakshi_padu_bird_mapping",
             "pancha_pakshi_identity_from_initial_vowel",
             "pancha_pakshi_directed_relationship", "pancha_pakshi_schedule",
             "pancha_pakshi_local_solar_context",
@@ -263,6 +265,38 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             profile_id,
             profile_paksha=profile_paksha,
             nakshatra_index=nakshatra_index,
+        )
+
+    def pancha_pakshi_padu_bird_mapping(
+        self,
+        profile_id: str,
+        *,
+        profile_paksha: _pancha_pakshi.PanchaPakshiPaksha,
+        weekday: _pancha_pakshi.PanchaPakshiWeekday,
+    ) -> _pancha_pakshi.PanchaPakshiPaduBirdMapping:
+        """Return one source-attested Paksha-and-weekday Padu bird."""
+
+        return _pancha_pakshi.pancha_pakshi_padu_bird_mapping(
+            profile_id,
+            profile_paksha=profile_paksha,
+            weekday=weekday,
+        )
+
+    def pancha_pakshi_first_eat_bird_mapping(
+        self,
+        profile_id: str,
+        *,
+        profile_paksha: _pancha_pakshi.PanchaPakshiPaksha,
+        half: _pancha_pakshi.PanchaPakshiHalf,
+        weekday: _pancha_pakshi.PanchaPakshiWeekday,
+    ) -> _pancha_pakshi.PanchaPakshiFirstEatBirdMapping:
+        """Return one source generator's weekday first-samam EAT seed."""
+
+        return _pancha_pakshi.pancha_pakshi_first_eat_bird_mapping(
+            profile_id,
+            profile_paksha=profile_paksha,
+            half=half,
+            weekday=weekday,
         )
 
     def pancha_pakshi_identity_from_initial_vowel(

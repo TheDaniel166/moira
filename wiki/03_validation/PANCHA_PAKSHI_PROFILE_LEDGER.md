@@ -8,8 +8,9 @@ never creates a default canon.
 
 | Profile | Witness and text policy | Product and capabilities | Admission | Public surface | Validation boundary |
 |---|---|---|---|---|---|
-| `agastya_madras_1879_akshara_fixed_clock` | Agastya-attributed Madras 1879 print, IA `dli.rmrl.000451_images`; identified grids govern bird/activity assignments, explicit prose and verse govern chronology; leaves `n16` and `n26` directly map waxing/Purva and waning/Amara; astronomical classification, local-solar context, fixed-clock materialization/current-cell selection, and solar-proportional materialization/current-cell selection are separately labelled modern Moira policies | `aksara_prasna_operating_schedule`; `aksara_identity`, `nominal_schedule`, `directed_relationships`, `astronomical_context`, `astronomical_paksha_inference`, `fixed_clock_materialization`, `fixed_clock_current_cell_selection`, `solar_proportional_materialization`, `solar_proportional_current_cell_selection` | `source_scoped_public`; no default | `moira.pancha_pakshi`, package root, `moira.vedic`, and the shared family of thirteen `Moira` methods and twelve `/v1/pancha-pakshi` routes; capability gates preserve its eleven admitted operations | Profile hash/schema and exact-arithmetic integrity, 10 identity symbols, 28 schedules, 700 cells, 20 directed pairs; direct lunar-half mapping locators, exact geocentric phase-half ownership, single reader-bound TT, and strict no-location/no-routing inference; local-solar boundary ordering, half/weekday selection, UTC-to-UT1 adapter, and polar failure; fixed/proportional interval invariants; machine-assisted source reading, no competent-human Tamil sign-off, no independent-witness collation, no external Pancha Pakshi oracle |
-| `bogamuni_chennai_2024_nakshatra_natal_identity` | Bogamuni-attributed 2024 sixth edition, IA `acc.-no.-44757-panjapatchi-sashthiram-2024`; Purva table at `n52`, governing Amara verse at `n64`, phase binding at `n167`; malformed adjacent Amara commentary is rejected under declared verse precedence; birth-Moon application, Lahiri true ayanamsa, and equal-27-sector placement are explicitly modern Moira composition | `natal_moon_bird_identity`; `nakshatra_bird_mapping`, `natal_identity` | `source_scoped_public`; no default | Pure mapping and natal-identity engine/facade exports plus strict `POST /v1/pancha-pakshi/identity/natal-moon` within the shared thirteen-method/twelve-route family | Profile/manifest hash and exact 54-cell partition; source locator and conflict preservation; all exact/adjacent nakshatra boundaries; one reader-bound TT epoch; strict source-versus-modern provenance and REST fields; DE441 execution is substrate evidence, not a natal oracle; Tamil review is an optional confidence upgrade rather than an admission blocker |
+| `agastya_madras_1879_akshara_fixed_clock` | Agastya-attributed Madras 1879 print, IA `dli.rmrl.000451_images`; identified grids govern bird/activity assignments, explicit prose and verse govern chronology; leaves `n16`, `n21`, `n26`, and `n31` govern the four first-samam EAT-seed rows, while `n16` and `n26` also map waxing/Purva and waning/Amara; astronomical classification, local-solar context, fixed-clock materialization/current-cell selection, and solar-proportional materialization/current-cell selection are separately labelled modern Moira policies | `aksara_prasna_operating_schedule`; `aksara_identity`, `nominal_schedule`, `first_eat_bird_mapping`, `directed_relationships`, `astronomical_context`, `astronomical_paksha_inference`, `fixed_clock_materialization`, `fixed_clock_current_cell_selection`, `solar_proportional_materialization`, `solar_proportional_current_cell_selection` | `source_scoped_public`; no default | `moira.pancha_pakshi`, package root, `moira.vedic`, and the shared family of fifteen `Moira` methods and fourteen `/v1/pancha-pakshi` routes; ten capability-gated computations plus the two shared discovery/info methods | Profile hash/schema and exact-arithmetic integrity, 10 identity symbols, 28 first-EAT seeds, 28 schedules, 700 cells, 20 directed pairs; exact seed/schedule parity and canonical locator binding; direct lunar-half mapping locators, exact geocentric phase-half ownership, single reader-bound TT, and strict no-location/no-routing inference; local-solar boundary ordering, half/weekday selection, UTC-to-UT1 adapter, and polar failure; fixed/proportional interval invariants; machine-assisted source reading, separate-publication Uromarisi corroboration with unestablished textual-lineage independence, no competent-human Tamil sign-off, no external Pancha Pakshi oracle |
+| `bogamuni_chennai_2024_nakshatra_natal_identity` | Bogamuni-attributed 2024 sixth edition, IA `acc.-no.-44757-panjapatchi-sashthiram-2024`; Purva table at `n52`, governing Amara verse at `n64`, phase binding at `n167`; malformed adjacent Amara commentary is rejected under declared verse precedence; birth-Moon application, Lahiri true ayanamsa, and equal-27-sector placement are explicitly modern Moira composition | `natal_moon_bird_identity`; `nakshatra_bird_mapping`, `natal_identity` | `source_scoped_public`; no default | Pure mapping and natal-identity engine/facade exports plus strict `POST /v1/pancha-pakshi/identity/natal-moon` within the shared fifteen-method/fourteen-route family | Profile/manifest hash and exact 54-cell partition; source locator and conflict preservation; all exact/adjacent nakshatra boundaries; one reader-bound TT epoch; strict source-versus-modern provenance and REST fields; DE441 execution is substrate evidence, not a natal oracle; Tamil review is an optional confidence upgrade rather than an admission blocker |
+| `bogamuni_chennai_2024_padu_bird_mapping` | Bogamuni-attributed 2024 sixth edition; governing Purva weekday stanza at `n52`, governing Amara material at `n60`, internally repeated combined table at `n157`, and restating commentary at `n158`; Paksha stanzas govern and the repeated layers confirm | `padu_bird_mapping`; `padu_bird_mapping` only | `source_scoped_public`; no default | Pure engine/package/facade lookup plus strict `POST /v1/pancha-pakshi/roles/padu` within the shared fifteen-method/fourteen-route family | Exact 14-cell Paksha-by-weekday table, no day/night axis, three canonical locators per result, immutable source semantics/provenance, and strict rejection of temporal, schedule, `RULE`, `first_eat_bird`, Adhikara/Bharana, condition, score, and forecast semantics; Uromarisi/Bogar material is unbound research context, not runtime or decision input |
 
 ## Admission Bindings
 
@@ -57,7 +58,7 @@ never creates a default canon.
 - 2024 profile schema: `1`
 - Canonical 2024 profile SHA-256:
   `e3642f61756ed7b8c413ddfbde2844769aea1994d4e69ae27594b2059b549b6a`
-- Canonical current manifest SHA-256:
+- Canonical Stage 2G manifest SHA-256:
   `979bb6df8a31d0ff9603ef396b0f569f17ecca6f6dc21def220ad682a425eb61`
 - Internet Archive original PDF MD5:
   `abe489a832ac38a0270335b7429776f3`
@@ -69,6 +70,42 @@ never creates a default canon.
   [`pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20.json`](../../tests/fixtures/pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20.json)
 - Stage 2G decision SHA-256:
   `3da998bc78c6c1fc4ec1c71629dc6b3872725ef25f73965474d5e894deec1575`
+
+### 2024 Padu Profile And Stage 2H Binding
+
+- Padu profile schema: `1`
+- Canonical Padu profile SHA-256:
+  `5de0d1e28d47fad8be6a2a1ab648f2ed71eaf742be2775d166ea44981e96ff10`
+- Canonical Stage 2H manifest SHA-256:
+  `eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03`
+- Internet Archive original PDF MD5:
+  `abe489a832ac38a0270335b7429776f3`
+- Internet Archive original PDF SHA-1:
+  `6ddad8f2577883f6859829f534e8ee7b8330ade8`
+- Locally verified PDF SHA-256:
+  `035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`
+- Stage 2H admission decision:
+  [`pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20.json`](../../tests/fixtures/pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20.json)
+- Stage 2H decision SHA-256:
+  `9ea7c871643bb8fc68d420223d0090ca91699154c761c67ccaf9201f401906cd`
+
+### 1879 First-EAT Capability And Stage 2I Binding
+
+- Canonical 1879 profile SHA-256, unchanged:
+  `4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64`
+- Prior Stage 2H manifest SHA-256:
+  `eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03`
+- Canonical Stage 2I manifest SHA-256:
+  `d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8`
+- Governing 1879 leaves: Purva day `n16`, Purva night `n21`, Amara day
+  `n26`, and Amara night `n31`
+- Stage 2I admission decision:
+  [`pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20.json`](../../tests/fixtures/pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20.json)
+- Stage 2I decision SHA-256:
+  `83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807`
+- Uromarisi 1934 role: all-28-cell separate-publication corroboration at
+  `n6` and `n36`-`n37`; textual-lineage independence is not established and
+  the publication supplies no runtime cell
 
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
@@ -96,6 +133,9 @@ separate Stage 2F product classifies apparent geocentric Moon-Sun elongation and
 maps Shukla/waxing to Purva or Krishna/waning to Amara from the named source
 locators. It accepts no location and never selects or materializes a schedule,
 routes its result into another operation, or claims a universal mapping.
+Its Stage 2I lookup exposes only the selected generator's first-samam EAT seed.
+It does not materialize a schedule, describe a whole day, or create Padu,
+authority, Adhikara/Bharana, condition, score, or forecast semantics.
 
 The admitted 2024 profile does not compute an aksara identity, nominal or
 materialized schedule, directed relationship, current cell, authority bird,
@@ -105,6 +145,15 @@ geocentric, Lahiri-true, and equal-27-sector composition remains visibly
 Moira-owned. Its malformed Amara commentary and the Uromarisi witness remain
 non-runtime evidence, and no default or cross-witness normalized canon is
 claimed.
+
+The admitted Padu profile computes only one explicit Paksha-by-weekday lookup.
+It has no day/night axis and does not infer Paksha or weekday from an instant.
+It does not compute an identity, schedule, current cell, authority bird,
+condition, score, or electional window. Padu is not the schedule's `RULE`
+activity and is not relabelled as `first_eat_bird`, Adhikara, or Bharana. The
+primary witnesses' eating-bird and authority-day labels remain distinct.
+Separately observed Uromarisi/Bogar material is not bound by the Stage 2H
+profile or decision and does not expand the runtime product.
 
 ## Evidence Classification
 
@@ -161,8 +210,24 @@ claimed.
   and adjacent-representable tests are mathematical invariants. DE441 exercises
   the shared-TT apparent geocentric path. These evidence classes are reported
   separately and none is an external natal-identity oracle.
+- Stage 2H source evidence consists of the rendered Bogamuni original pages at
+  `n52`, `n60`, `n157`, and `n158` and the normalized 14-cell projection. Exact
+  one-cell-per-Paksha/weekday completeness, no-day/night shape, canonical
+  locator binding, immutability, capability isolation, and strict request
+  shape are structural invariants. Separately observed Uromarisi/Bogar material
+  is not fixture-bound or imported into the runtime table, and none of this
+  evidence validates a
+  condition, scoring, or electional product.
+- Stage 2I source evidence consists of the rendered 1879 leaves `n16`, `n21`,
+  `n26`, and `n31` and the already normalized 28-cell generator seed table.
+  Same-witness grids confirm the mapping; exact completeness, canonical
+  locator binding, parity with the existing schedule's first-EAT field and
+  first EAT cell, immutability, capability isolation, and strict request shape
+  are structural invariants. Uromarisi 1934 corroborates all cells as a
+  separate publication, but its textual-lineage independence is not
+  established and it contributes no runtime data or universal-canon proof.
 - The multi-pass review is machine-assisted reconciliation, not an external
   oracle or competent-human Tamil attestation.
 - Unadmitted witnesses and rejected text layers remain non-executable until
   independently normalized and admitted as their own products; they do not
-  modify either profile merely by appearing in a conflict ledger.
+  modify any admitted profile merely by appearing in a conflict ledger.

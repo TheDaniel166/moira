@@ -97,10 +97,28 @@ _REQUIRED_NATAL_OMISSIONS = {
     "scoring",
     "window_search",
 }
+_REQUIRED_PADU_OMISSIONS = {
+    "aksara_identity",
+    "nakshatra_bird_mapping",
+    "natal_identity",
+    "nominal_schedule",
+    "directed_relationships",
+    "astronomical_paksha_inference",
+    "clock_materialization",
+    "current_cell_selection",
+    "authority_birds",
+    "adhikara_bird_mapping",
+    "bharana_bird_mapping",
+    "vinadi",
+    "condition",
+    "scoring",
+    "window_search",
+}
 _PRODUCT_CAPABILITIES = {
     "aksara_prasna_operating_schedule": (
         PanchaPakshiCapability.AKSARA_IDENTITY,
         PanchaPakshiCapability.NOMINAL_SCHEDULE,
+        PanchaPakshiCapability.FIRST_EAT_BIRD_MAPPING,
         PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
         PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
         PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
@@ -113,6 +131,7 @@ _PRODUCT_CAPABILITIES = {
         PanchaPakshiCapability.NAKSHATRA_BIRD_MAPPING,
         PanchaPakshiCapability.NATAL_IDENTITY,
     ),
+    "padu_bird_mapping": (PanchaPakshiCapability.PADU_BIRD_MAPPING,),
 }
 _PUBLIC_ADMISSION_STATUSES = frozenset(
     {
@@ -172,6 +191,14 @@ class _NakshatraBirdRule:
 
 
 @dataclass(frozen=True, slots=True)
+class _PaduBirdRule:
+    profile_paksha: PanchaPakshiPaksha
+    weekday: PanchaPakshiWeekday
+    bird: PanchaPakshiBird
+    source_locator_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class _ScheduleGenerator:
     generator_id: str
     paksha: PanchaPakshiPaksha
@@ -181,6 +208,26 @@ class _ScheduleGenerator:
     activity_offsets: tuple[tuple[PanchaPakshiActivity, int], ...]
     chronological_activities: tuple[PanchaPakshiActivity, ...]
     source_locator_ids: tuple[str, ...]
+
+    def first_eat_bird_for(
+        self,
+        weekday: PanchaPakshiWeekday,
+    ) -> PanchaPakshiBird:
+        """Return the source-labelled weekday seed from this generator."""
+
+        if not isinstance(weekday, PanchaPakshiWeekday):
+            raise TypeError("weekday must be a PanchaPakshiWeekday")
+        for candidate, bird in zip(
+            _WEEKDAYS,
+            self.first_eat_by_weekday,
+            strict=True,
+        ):
+            if candidate is weekday:
+                return bird
+        raise PanchaPakshiDataError(
+            f"generator {self.generator_id!r} has no first-EAT seed for "
+            f"{weekday.value!r}"
+        )
 
     def offset_for(self, activity: PanchaPakshiActivity) -> int:
         for candidate, offset in self.activity_offsets:
@@ -352,7 +399,59 @@ class PanchaPakshiNatalIdentityProfile:
         )
 
 
-PanchaPakshiAnyProfile = PanchaPakshiProfile | PanchaPakshiNatalIdentityProfile
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiPaduBirdProfile:
+    """Strict internal profile for one source-owned Padu-bird table."""
+
+    profile_id: str
+    admission_status: PanchaPakshiAdmissionStatus
+    product_kind: str
+    default_selection_allowed: bool
+    capabilities: tuple[PanchaPakshiCapability, ...]
+    admission_decision_id: str
+    derivation_status: str
+    assembly_policy: str
+    title: str
+    source: PanchaPakshiSource
+    source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    padu_bird_mapping_kind: str
+    source_table_semantics: str
+    padu_bird_rules: tuple[_PaduBirdRule, ...]
+    explicit_omissions: tuple[PanchaPakshiOmission, ...]
+    research_conflict_ledger: tuple[PanchaPakshiConflictWitness, ...]
+
+    def locator(self, locator_id: str) -> PanchaPakshiSourceLocator:
+        for locator in self.source_locators:
+            if locator.locator_id == locator_id:
+                return locator
+        raise PanchaPakshiDataError(
+            f"profile {self.profile_id!r} references unknown locator "
+            f"{locator_id!r}"
+        )
+
+    def padu_bird_rule(
+        self,
+        profile_paksha: PanchaPakshiPaksha,
+        weekday: PanchaPakshiWeekday,
+    ) -> _PaduBirdRule:
+        if not isinstance(profile_paksha, PanchaPakshiPaksha):
+            raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+        if not isinstance(weekday, PanchaPakshiWeekday):
+            raise TypeError("weekday must be a PanchaPakshiWeekday")
+        for rule in self.padu_bird_rules:
+            if rule.profile_paksha is profile_paksha and rule.weekday is weekday:
+                return rule
+        raise PanchaPakshiDataError(
+            f"profile {self.profile_id!r} has no {profile_paksha.value!r} "
+            f"Padu bird for {weekday.value!r}"
+        )
+
+
+PanchaPakshiAnyProfile = (
+    PanchaPakshiProfile
+    | PanchaPakshiNatalIdentityProfile
+    | PanchaPakshiPaduBirdProfile
+)
 
 
 def available_pancha_pakshi_profiles() -> tuple[PanchaPakshiProfileDescriptor, ...]:
@@ -507,7 +606,7 @@ def generate_pancha_pakshi_schedule(
         raise TypeError("weekday must be a PanchaPakshiWeekday")
 
     generator = profile.generator(paksha, half)
-    first_eat = generator.first_eat_by_weekday[_WEEKDAYS.index(weekday)]
+    first_eat = generator.first_eat_bird_for(weekday)
     span = (
         profile.temporal_model.day_span_nazhigai
         if half is PanchaPakshiHalf.DAY
@@ -659,7 +758,11 @@ def _require_profile(profile: PanchaPakshiProfile) -> None:
 def _require_any_profile(profile: PanchaPakshiAnyProfile) -> None:
     if not isinstance(
         profile,
-        (PanchaPakshiProfile, PanchaPakshiNatalIdentityProfile),
+        (
+            PanchaPakshiProfile,
+            PanchaPakshiNatalIdentityProfile,
+            PanchaPakshiPaduBirdProfile,
+        ),
     ):
         raise TypeError("profile must be a registered Pancha Pakshi profile")
 
@@ -925,11 +1028,17 @@ def _load_profile_cached(
             f"hash mismatch for Pancha Pakshi profile {profile_id!r}"
         )
     document = _require_dict(_read_json(data_path), f"profile {profile_id!r}")
-    parser = (
-        _parse_profile_document
-        if entry["product_kind"] == "aksara_prasna_operating_schedule"
-        else _parse_natal_identity_profile_document
-    )
+    parsers = {
+        "aksara_prasna_operating_schedule": _parse_profile_document,
+        "natal_moon_bird_identity": _parse_natal_identity_profile_document,
+        "padu_bird_mapping": _parse_padu_bird_profile_document,
+    }
+    try:
+        parser = parsers[entry["product_kind"]]
+    except KeyError as exc:
+        raise PanchaPakshiDataError(
+            f"profile {profile_id!r} has no registered parser"
+        ) from exc
     profile = parser(
         document,
         admission_status=PanchaPakshiAdmissionStatus(entry["admission_status"]),
@@ -948,8 +1057,10 @@ def _load_profile_cached(
         )
     if isinstance(profile, PanchaPakshiProfile):
         _validate_generated_completeness(profile)
-    else:
+    elif isinstance(profile, PanchaPakshiNatalIdentityProfile):
         _validate_natal_mapping_completeness(profile)
+    else:
+        _validate_padu_mapping_completeness(profile)
     return profile
 
 
@@ -2477,6 +2588,346 @@ def _parse_natal_identity_profile_document(
         explicit_omissions=tuple(omissions),
         research_conflict_ledger=tuple(conflicts),
     )
+
+
+def _parse_padu_bird_profile_document(
+    document: dict[str, Any],
+    *,
+    admission_status: PanchaPakshiAdmissionStatus,
+    default_selection_allowed: bool,
+    capabilities: tuple[PanchaPakshiCapability, ...],
+    admission_decision_id: str,
+) -> PanchaPakshiPaduBirdProfile:
+    """Parse one pure Bogamuni Paksha-by-weekday Padu-bird table."""
+
+    if not isinstance(admission_status, PanchaPakshiAdmissionStatus):
+        raise PanchaPakshiDataError("admission_status must be a known enum value")
+    _require_bool(default_selection_allowed, "default_selection_allowed")
+    if default_selection_allowed:
+        raise PanchaPakshiDataError(
+            "default_selection_allowed must remain false; no universal canon exists"
+        )
+    if capabilities != _PRODUCT_CAPABILITIES["padu_bird_mapping"]:
+        raise PanchaPakshiDataError(
+            "manifest capabilities disagree with Padu product kind or "
+            "canonical capability order"
+        )
+    _require_string(admission_decision_id, "admission_decision_id")
+
+    _require_exact_keys(
+        document,
+        {
+            "schema_version",
+            "profile",
+            "source",
+            "source_locators",
+            "padu_bird_mapping",
+            "explicit_omissions",
+            "research_conflict_ledger",
+        },
+        "Padu profile document",
+    )
+    if _require_int(document["schema_version"], "profile.schema_version") != 1:
+        raise PanchaPakshiDataError("unsupported Pancha Pakshi Padu profile schema")
+
+    meta = _require_dict(document["profile"], "profile.profile")
+    _require_exact_keys(
+        meta,
+        {
+            "profile_id",
+            "product_kind",
+            "derivation_status",
+            "assembly_policy",
+            "title",
+        },
+        "profile.profile",
+    )
+    expected_meta = {
+        "profile_id": "bogamuni_chennai_2024_padu_bird_mapping",
+        "product_kind": "padu_bird_mapping",
+        "derivation_status": "visually_verified_source_weekday_padu_bird_table",
+        "assembly_policy": (
+            "paksha_stanzas_govern_repeated_combined_table_confirms"
+        ),
+        "title": "Bogamuni 2024 Paksha-and-weekday Padu-bird mapping",
+    }
+    if meta != expected_meta:
+        raise PanchaPakshiDataError("Padu profile identity or doctrine is unknown")
+
+    source_obj = _require_dict(document["source"], "profile.source")
+    expected_source = {
+        "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+        "title": "போகமுனிவர் பஞ்சபட்சி சாஸ்திரம் உரையுடன்",
+        "traditional_attribution": "Bogamuni",
+        "authorship_status": "traditional_attribution_not_asserted_authorship",
+        "publication_place": "Vadapalani, Chennai",
+        "publisher": "Thamarai Noolagam",
+        "publication_year": 2024,
+        "language": "Tamil",
+        "archive_item_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+        "archive_original_image_zip_name": "not_applicable_no_original_image_zip_bound",
+        "archive_original_image_zip_source_status": "not_applicable_pdf_is_internet_archive_original",
+        "archive_original_image_zip_md5": "not_applicable",
+        "archive_original_image_zip_sha1": "not_applicable",
+        "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+        "archive_pdf_source_status": "internet_archive_original",
+        "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+        "archive_pdf_sha1": "6ddad8f2577883f6859829f534e8ee7b8330ade8",
+        "locally_verified_pdf_sha256": "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990",
+        "catalogued_contributor_note": "The sixth edition names R. C. Mohan as editor; Moira does not convert that editorial credit into authorship of the traditionally attributed work.",
+        "artifact_distribution_status": "reference_only_source_artifacts_not_packaged",
+        "redistribution_policy": "normalized_rules_only_no_scan_ocr_page_images_layout_source_prose_or_third_party_translation",
+        "license_scope": "mit_covers_moira_authored_code_schema_prose_and_profile_representation",
+        "artifact_distribution_note": "The archive PDF is a research input, not a package asset. Moira distributes only independently normalized rule data, code, schema, and provenance prose; no scan, OCR, page image, copied layout, source prose, or third-party translation is bundled.",
+    }
+    if source_obj != expected_source:
+        raise PanchaPakshiDataError(
+            "Padu profile source identity or distribution contract is unknown"
+        )
+    source = PanchaPakshiSource(**expected_source)
+
+    expected_locator_specs = (
+        (
+            "bogar_n52_purva_padu",
+            "n52",
+            (
+                "IA leaf n52 / PDF page 53 / printed page 43: Purva "
+                "weekday Padu-bird stanza and commentary"
+            ),
+            "source_attested_purva_weekday_padu_bird_mapping",
+        ),
+        (
+            "bogar_n60_amara_padu",
+            "n60",
+            (
+                "IA leaf n60 / PDF page 61 / printed page 51: Amara "
+                "weekday Padu-bird stanza and commentary"
+            ),
+            "source_attested_amara_weekday_padu_bird_mapping",
+        ),
+        (
+            "bogar_n157_combined_padu_table",
+            "n157",
+            (
+                "IA leaf n157 / PDF page 158 / printed page 148: repeated "
+                "combined Purva and Amara weekday Padu-bird table"
+            ),
+            "source_repeated_combined_weekday_padu_bird_table",
+        ),
+        (
+            "bogar_n158_combined_padu_commentary",
+            "n158",
+            (
+                "IA leaf n158 / PDF page 159 / printed page 149: commentary "
+                "restates both weekday Padu-bird mappings"
+            ),
+            "source_repeated_combined_weekday_padu_bird_commentary",
+        ),
+    )
+    raw_locators = _require_list(document["source_locators"], "source_locators")
+    locators = tuple(
+        PanchaPakshiSourceLocator(
+            locator_id=locator_id,
+            witness_id=source.witness_id,
+            label=label,
+            url=f"{source.archive_item_url}/page/{leaf}/mode/1up",
+            evidence_role=evidence_role,
+        )
+        for locator_id, leaf, label, evidence_role in expected_locator_specs
+    )
+    expected_locator_documents = [
+        {
+            "locator_id": locator.locator_id,
+            "witness_id": locator.witness_id,
+            "label": locator.label,
+            "url": locator.url,
+            "evidence_role": locator.evidence_role,
+        }
+        for locator in locators
+    ]
+    if raw_locators != expected_locator_documents:
+        raise PanchaPakshiDataError(
+            "Padu profile source locator ledger disagrees with exact evidence"
+        )
+    locator_ids = {locator.locator_id for locator in locators}
+
+    mapping_obj = _require_dict(
+        document["padu_bird_mapping"],
+        "padu_bird_mapping",
+    )
+    _require_exact_keys(
+        mapping_obj,
+        {"mapping_kind", "source_table_semantics", "assembly_policy", "entries"},
+        "padu_bird_mapping",
+    )
+    mapping_kind = _require_string(
+        mapping_obj["mapping_kind"],
+        "padu_bird_mapping.mapping_kind",
+    )
+    if mapping_kind != "profile_paksha_and_weekday_to_padu_bird":
+        raise PanchaPakshiDataError("Padu-bird mapping kind is unknown")
+    source_table_semantics = _require_string(
+        mapping_obj["source_table_semantics"],
+        "padu_bird_mapping.source_table_semantics",
+    )
+    if source_table_semantics != (
+        "profile_paksha_weekday_death_or_inoperative_bird_not_schedule_rule_"
+        "activity"
+    ):
+        raise PanchaPakshiDataError("Padu-bird source semantics are unknown")
+    if mapping_obj["assembly_policy"] != meta["assembly_policy"]:
+        raise PanchaPakshiDataError(
+            "Padu-bird mapping assembly policy disagrees with profile"
+        )
+
+    purva_birds = (
+        PanchaPakshiBird.OWL,
+        PanchaPakshiBird.CROW,
+        PanchaPakshiBird.COCK,
+        PanchaPakshiBird.PEACOCK,
+        PanchaPakshiBird.VULTURE,
+        PanchaPakshiBird.OWL,
+        PanchaPakshiBird.VULTURE,
+    )
+    amara_birds = (
+        PanchaPakshiBird.CROW,
+        PanchaPakshiBird.OWL,
+        PanchaPakshiBird.VULTURE,
+        PanchaPakshiBird.PEACOCK,
+        PanchaPakshiBird.COCK,
+        PanchaPakshiBird.PEACOCK,
+        PanchaPakshiBird.COCK,
+    )
+    expected_mapping_entries = tuple(
+        (paksha, weekday, birds[index], locator_ids_for_paksha)
+        for paksha, birds, locator_ids_for_paksha in (
+            (
+                PanchaPakshiPaksha.PURVA,
+                purva_birds,
+                (
+                    "bogar_n52_purva_padu",
+                    "bogar_n157_combined_padu_table",
+                    "bogar_n158_combined_padu_commentary",
+                ),
+            ),
+            (
+                PanchaPakshiPaksha.AMARA,
+                amara_birds,
+                (
+                    "bogar_n60_amara_padu",
+                    "bogar_n157_combined_padu_table",
+                    "bogar_n158_combined_padu_commentary",
+                ),
+            ),
+        )
+        for index, weekday in enumerate(_WEEKDAYS)
+    )
+    raw_mapping_entries = _require_list(
+        mapping_obj["entries"],
+        "padu_bird_mapping.entries",
+    )
+    expected_mapping_documents = [
+        {
+            "profile_paksha": paksha.value,
+            "weekday": weekday.value,
+            "bird": bird.value,
+            "source_locators": list(source_locator_ids),
+        }
+        for paksha, weekday, bird, source_locator_ids in expected_mapping_entries
+    ]
+    if raw_mapping_entries != expected_mapping_documents:
+        raise PanchaPakshiDataError(
+            "Padu-bird table disagrees with the 14 visually verified source cells"
+        )
+    padu_bird_rules = tuple(
+        _PaduBirdRule(
+            profile_paksha=paksha,
+            weekday=weekday,
+            bird=bird,
+            source_locator_ids=source_locator_ids,
+        )
+        for paksha, weekday, bird, source_locator_ids in expected_mapping_entries
+    )
+
+    omissions: list[PanchaPakshiOmission] = []
+    for index, raw_omission in enumerate(
+        _require_list(document["explicit_omissions"], "explicit_omissions")
+    ):
+        context = f"explicit_omissions[{index}]"
+        omission = _require_dict(raw_omission, context)
+        _require_exact_keys(omission, {"feature", "status", "reason"}, context)
+        parsed = PanchaPakshiOmission(
+            feature=_require_string(omission["feature"], f"{context}.feature"),
+            status=_require_string(omission["status"], f"{context}.status"),
+            reason=_require_string(omission["reason"], f"{context}.reason"),
+        )
+        if parsed.status != "omitted":
+            raise PanchaPakshiDataError(f"{context}.status must be omitted")
+        omissions.append(parsed)
+    if (
+        {omission.feature for omission in omissions} != _REQUIRED_PADU_OMISSIONS
+        or len(omissions) != len(_REQUIRED_PADU_OMISSIONS)
+    ):
+        raise PanchaPakshiDataError(
+            "Padu profile explicit omissions are incomplete or duplicated"
+        )
+
+    conflicts = _require_list(
+        document["research_conflict_ledger"],
+        "research_conflict_ledger",
+    )
+    if conflicts:
+        raise PanchaPakshiDataError(
+            "Padu profile must not invent a research conflict witness"
+        )
+
+    referenced_locator_ids = {
+        locator_id
+        for rule in padu_bird_rules
+        for locator_id in rule.source_locator_ids
+    }
+    if referenced_locator_ids != locator_ids:
+        raise PanchaPakshiDataError(
+            "Padu source locator ledger contains unreferenced or missing evidence"
+        )
+
+    return PanchaPakshiPaduBirdProfile(
+        profile_id=meta["profile_id"],
+        admission_status=admission_status,
+        product_kind=meta["product_kind"],
+        default_selection_allowed=default_selection_allowed,
+        capabilities=capabilities,
+        admission_decision_id=admission_decision_id,
+        derivation_status=meta["derivation_status"],
+        assembly_policy=meta["assembly_policy"],
+        title=meta["title"],
+        source=source,
+        source_locators=tuple(locators),
+        padu_bird_mapping_kind=mapping_kind,
+        source_table_semantics=source_table_semantics,
+        padu_bird_rules=padu_bird_rules,
+        explicit_omissions=tuple(omissions),
+        research_conflict_ledger=(),
+    )
+
+
+def _validate_padu_mapping_completeness(
+    profile: PanchaPakshiPaduBirdProfile,
+) -> None:
+    expected_keys = {
+        (paksha, weekday)
+        for paksha in PanchaPakshiPaksha
+        for weekday in PanchaPakshiWeekday
+    }
+    actual_keys = {
+        (rule.profile_paksha, rule.weekday) for rule in profile.padu_bird_rules
+    }
+    if actual_keys != expected_keys or len(profile.padu_bird_rules) != 14:
+        raise PanchaPakshiDataError(
+            "Padu profile does not provide exactly one mapping for all 14 cells"
+        )
+    for paksha, weekday in expected_keys:
+        profile.padu_bird_rule(paksha, weekday)
 
 
 def _validate_natal_mapping_completeness(

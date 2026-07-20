@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from moira.pancha_pakshi import (
     PanchaPakshiActivity,
@@ -54,6 +54,21 @@ class PanchaPakshiAksaraIdentityRequest(PanchaPakshiProfileRequest):
 class PanchaPakshiNominalScheduleRequest(PanchaPakshiProfileRequest):
     paksha: PanchaPakshiPaksha
     half: PanchaPakshiHalf
+    weekday: PanchaPakshiWeekday
+
+
+class PanchaPakshiFirstEatBirdMappingRequest(PanchaPakshiProfileRequest):
+    """Select one source-attested first-samam Eat bird without scheduling."""
+
+    profile_paksha: PanchaPakshiPaksha
+    half: PanchaPakshiHalf
+    weekday: PanchaPakshiWeekday
+
+
+class PanchaPakshiPaduBirdMappingRequest(PanchaPakshiProfileRequest):
+    """Select one source-attested Padu bird without temporal routing."""
+
+    profile_paksha: PanchaPakshiPaksha
     weekday: PanchaPakshiWeekday
 
 
@@ -431,6 +446,61 @@ class PanchaPakshiNakshatraBirdMappingResponse(_StrictModel):
         max_length=1,
     )
     provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiPaduBirdMappingResponse(_StrictModel):
+    """One source table cell; not a schedule activity or current-time role."""
+
+    profile_id: str
+    profile_paksha: PanchaPakshiPaksha
+    weekday: PanchaPakshiWeekday
+    bird: PanchaPakshiBird
+    mapping_status: Literal["direct_source_attested"]
+    source_table_semantics: Literal[
+        "profile_paksha_weekday_death_or_inoperative_bird_not_schedule_"
+        "rule_activity"
+    ]
+    assembly_policy: Literal[
+        "paksha_stanzas_govern_repeated_combined_table_confirms"
+    ]
+    source_locators: list[PanchaPakshiSourceLocatorResponse] = Field(
+        min_length=3,
+        max_length=3,
+    )
+    provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiFirstEatBirdMappingResponse(_StrictModel):
+    """One first-samam Eat seed; not Padu, authority, condition, or score."""
+
+    profile_id: str
+    generator_id: str
+    profile_paksha: PanchaPakshiPaksha
+    half: PanchaPakshiHalf
+    weekday: PanchaPakshiWeekday
+    first_eat_bird: PanchaPakshiBird
+    mapping_status: Literal["direct_source_attested"]
+    source_table_semantics: Literal[
+        "profile_paksha_half_weekday_first_samam_eat_seed_not_padu_"
+        "authority_condition_or_score"
+    ]
+    source_locators: list[PanchaPakshiSourceLocatorResponse] = Field(
+        min_length=3,
+        max_length=4,
+    )
+    provenance: PanchaPakshiProvenanceResponse
+
+    @model_validator(mode="after")
+    def _canonical_locator_count(
+        self,
+    ) -> "PanchaPakshiFirstEatBirdMappingResponse":
+        expected = 3 if self.half is PanchaPakshiHalf.DAY else 4
+        if len(self.source_locators) != expected:
+            raise ValueError(
+                f"{self.half.value} mapping must contain exactly "
+                f"{expected} canonical source locators"
+            )
+        return self
 
 
 class PanchaPakshiNatalMoonIdentityPolicyResponse(_StrictModel):

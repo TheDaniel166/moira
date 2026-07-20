@@ -1,0 +1,290 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "profile_id": "bogamuni_chennai_2024_padu_bird_mapping",
+    "product_kind": "padu_bird_mapping",
+    "derivation_status": "visually_verified_source_weekday_padu_bird_table",
+    "assembly_policy": "paksha_stanzas_govern_repeated_combined_table_confirms",
+    "title": "Bogamuni 2024 Paksha-and-weekday Padu-bird mapping"
+  },
+  "source": {
+    "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "title": "போகமுனிவர் பஞ்சபட்சி சாஸ்திரம் உரையுடன்",
+    "traditional_attribution": "Bogamuni",
+    "authorship_status": "traditional_attribution_not_asserted_authorship",
+    "publication_place": "Vadapalani, Chennai",
+    "publisher": "Thamarai Noolagam",
+    "publication_year": 2024,
+    "language": "Tamil",
+    "archive_item_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "archive_original_image_zip_name": "not_applicable_no_original_image_zip_bound",
+    "archive_original_image_zip_source_status": "not_applicable_pdf_is_internet_archive_original",
+    "archive_original_image_zip_md5": "not_applicable",
+    "archive_original_image_zip_sha1": "not_applicable",
+    "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+    "archive_pdf_source_status": "internet_archive_original",
+    "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+    "archive_pdf_sha1": "6ddad8f2577883f6859829f534e8ee7b8330ade8",
+    "locally_verified_pdf_sha256": "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990",
+    "catalogued_contributor_note": "The sixth edition names R. C. Mohan as editor; Moira does not convert that editorial credit into authorship of the traditionally attributed work.",
+    "artifact_distribution_status": "reference_only_source_artifacts_not_packaged",
+    "redistribution_policy": "normalized_rules_only_no_scan_ocr_page_images_layout_source_prose_or_third_party_translation",
+    "license_scope": "mit_covers_moira_authored_code_schema_prose_and_profile_representation",
+    "artifact_distribution_note": "The archive PDF is a research input, not a package asset. Moira distributes only independently normalized rule data, code, schema, and provenance prose; no scan, OCR, page image, copied layout, source prose, or third-party translation is bundled."
+  },
+  "source_locators": [
+    {
+      "locator_id": "bogar_n52_purva_padu",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n52 / PDF page 53 / printed page 43: Purva weekday Padu-bird stanza and commentary",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n52/mode/1up",
+      "evidence_role": "source_attested_purva_weekday_padu_bird_mapping"
+    },
+    {
+      "locator_id": "bogar_n60_amara_padu",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n60 / PDF page 61 / printed page 51: Amara weekday Padu-bird stanza and commentary",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n60/mode/1up",
+      "evidence_role": "source_attested_amara_weekday_padu_bird_mapping"
+    },
+    {
+      "locator_id": "bogar_n157_combined_padu_table",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n157 / PDF page 158 / printed page 148: repeated combined Purva and Amara weekday Padu-bird table",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n157/mode/1up",
+      "evidence_role": "source_repeated_combined_weekday_padu_bird_table"
+    },
+    {
+      "locator_id": "bogar_n158_combined_padu_commentary",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n158 / PDF page 159 / printed page 149: commentary restates both weekday Padu-bird mappings",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n158/mode/1up",
+      "evidence_role": "source_repeated_combined_weekday_padu_bird_commentary"
+    }
+  ],
+  "padu_bird_mapping": {
+    "mapping_kind": "profile_paksha_and_weekday_to_padu_bird",
+    "source_table_semantics": "profile_paksha_weekday_death_or_inoperative_bird_not_schedule_rule_activity",
+    "assembly_policy": "paksha_stanzas_govern_repeated_combined_table_confirms",
+    "entries": [
+      {
+        "profile_paksha": "purva",
+        "weekday": "sunday",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n52_purva_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "weekday": "monday",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n52_purva_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "weekday": "tuesday",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n52_purva_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "weekday": "wednesday",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n52_purva_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "weekday": "thursday",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n52_purva_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "weekday": "friday",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n52_purva_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "weekday": "saturday",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n52_purva_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "weekday": "sunday",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n60_amara_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "weekday": "monday",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n60_amara_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "weekday": "tuesday",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n60_amara_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "weekday": "wednesday",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n60_amara_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "weekday": "thursday",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n60_amara_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "weekday": "friday",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n60_amara_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "weekday": "saturday",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n60_amara_padu",
+          "bogar_n157_combined_padu_table",
+          "bogar_n158_combined_padu_commentary"
+        ]
+      }
+    ]
+  },
+  "explicit_omissions": [
+    {
+      "feature": "aksara_identity",
+      "status": "omitted",
+      "reason": "The weekday Padu-bird table is not an aksara or name-initial identity."
+    },
+    {
+      "feature": "nakshatra_bird_mapping",
+      "status": "omitted",
+      "reason": "This profile does not carry a nakshatra-to-bird table."
+    },
+    {
+      "feature": "natal_identity",
+      "status": "omitted",
+      "reason": "The source-owned weekday lookup is not composed with a natal identity."
+    },
+    {
+      "feature": "nominal_schedule",
+      "status": "omitted",
+      "reason": "No day or night operating schedule is admitted from this profile."
+    },
+    {
+      "feature": "directed_relationships",
+      "status": "omitted",
+      "reason": "No bird relationship matrix is admitted from this profile."
+    },
+    {
+      "feature": "astronomical_paksha_inference",
+      "status": "omitted",
+      "reason": "The lookup requires an explicit source-profile Paksha and performs no lunar-phase inference."
+    },
+    {
+      "feature": "clock_materialization",
+      "status": "omitted",
+      "reason": "No fixed-clock or solar-proportional materialization is admitted."
+    },
+    {
+      "feature": "current_cell_selection",
+      "status": "omitted",
+      "reason": "No instant or current schedule cell is selected."
+    },
+    {
+      "feature": "authority_birds",
+      "status": "omitted",
+      "reason": "Padu is preserved as its own source term; no generic authority-bird doctrine is admitted."
+    },
+    {
+      "feature": "adhikara_bird_mapping",
+      "status": "omitted",
+      "reason": "No Adhikara-bird mapping is admitted from this Padu-only profile."
+    },
+    {
+      "feature": "bharana_bird_mapping",
+      "status": "omitted",
+      "reason": "No Bharana-bird mapping is admitted from this Padu-only profile."
+    },
+    {
+      "feature": "vinadi",
+      "status": "omitted",
+      "reason": "No vinadi subdivision doctrine is admitted from this profile."
+    },
+    {
+      "feature": "condition",
+      "status": "omitted",
+      "reason": "No bird-condition doctrine is admitted; Padu is not converted to a schedule activity."
+    },
+    {
+      "feature": "scoring",
+      "status": "omitted",
+      "reason": "No strength, auspiciousness, or compatibility score is admitted."
+    },
+    {
+      "feature": "window_search",
+      "status": "omitted",
+      "reason": "No electional search or forecast surface is admitted."
+    }
+  ],
+  "research_conflict_ledger": []
+}

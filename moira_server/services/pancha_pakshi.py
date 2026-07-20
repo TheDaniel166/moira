@@ -6,7 +6,9 @@ from moira import Moira
 from moira.pancha_pakshi import (
     available_pancha_pakshi_profiles,
     pancha_pakshi_directed_relationship,
+    pancha_pakshi_first_eat_bird_mapping,
     pancha_pakshi_identity_from_initial_vowel,
+    pancha_pakshi_padu_bird_mapping,
     pancha_pakshi_profile_info,
     pancha_pakshi_schedule,
 )
@@ -17,9 +19,11 @@ from ..models.pancha_pakshi import (
     PanchaPakshiDirectedRelationshipRequest,
     PanchaPakshiFixedClockCurrentCellRequest,
     PanchaPakshiFixedClockMaterializationRequest,
+    PanchaPakshiFirstEatBirdMappingRequest,
     PanchaPakshiLocalSolarContextRequest,
     PanchaPakshiNatalMoonIdentityRequest,
     PanchaPakshiNominalScheduleRequest,
+    PanchaPakshiPaduBirdMappingRequest,
     PanchaPakshiProfilesResponse,
     PanchaPakshiSolarProportionalCurrentCellRequest,
     PanchaPakshiSolarProportionalMaterializationRequest,
@@ -51,6 +55,29 @@ def compute_nominal_schedule(request: PanchaPakshiNominalScheduleRequest):
         request.profile_id,
         paksha=request.paksha,
         half=request.half,
+        weekday=request.weekday,
+    )
+
+
+def compute_first_eat_bird_mapping(
+    request: PanchaPakshiFirstEatBirdMappingRequest,
+):
+    """Return one pure source-generator first-samam Eat-bird lookup."""
+
+    return pancha_pakshi_first_eat_bird_mapping(
+        request.profile_id,
+        profile_paksha=request.profile_paksha,
+        half=request.half,
+        weekday=request.weekday,
+    )
+
+
+def compute_padu_bird_mapping(request: PanchaPakshiPaduBirdMappingRequest):
+    """Return one pure Paksha-and-weekday source-table lookup."""
+
+    return pancha_pakshi_padu_bird_mapping(
+        request.profile_id,
+        profile_paksha=request.profile_paksha,
         weekday=request.weekday,
     )
 

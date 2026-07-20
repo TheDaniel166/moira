@@ -5,7 +5,7 @@
 
 **Computational domain:** Source-scoped five-bird timing doctrine
 
-**Status:** Two named source-scoped public profiles; no default or universal
+**Status:** Three named source-scoped public profiles; no default or universal
 canon
 
 ## 1. Current Boundary
@@ -24,6 +24,7 @@ capabilities:
 
 - `aksara_identity`;
 - `nominal_schedule`;
+- `first_eat_bird_mapping`;
 - `directed_relationships`;
 - `astronomical_context`;
 - `astronomical_paksha_inference`;
@@ -50,6 +51,13 @@ It does not select a schedule, supply paksha to another operation, or infer
 natal identity. Every schedule, materialization, and current-cell caller still
 supplies `purva` or `amara` explicitly.
 
+Stage 2I exposes one already normalized source component of that same 1879
+profile as a pure lookup: the named schedule generator's first-samam EAT seed.
+It accepts explicit profile Paksha, day/night half, and weekday, and performs
+no schedule materialization, temporal routing, or interpretation as a
+whole-day eating bird, Padu, Adhikara/Bharana, authority bird, condition, or
+score.
+
 The second public profile is
 `bogamuni_chennai_2024_nakshatra_natal_identity`. It admits exactly two
 capabilities:
@@ -63,6 +71,20 @@ not a claim that the source explicitly specifies birth-Moon or ayanamsa
 calculation. It supplies no aksara identity, schedule, relationship,
 materialization, current cell, condition, score, or forecast, and it does not
 alter the 1879 profile.
+
+The third public profile is
+`bogamuni_chennai_2024_padu_bird_mapping`. It admits exactly one capability:
+
+- `padu_bird_mapping`.
+
+Its product is the source's separate fourteen-cell Purva/Amara-by-weekday Padu
+bird table. Callers supply both source Paksha and weekday explicitly. The table
+has no day/night axis, performs no astronomical routing, and is not a schedule
+or identity product. Padu remains the source-labelled death-or-inoperative
+bird; it is not converted into `RULE`, `first_eat_bird`, an Adhikara bird, or a
+generic authority bird. The profile supplies no natal identity, schedule,
+materialization, current cell, condition, score, or forecast, and it alters
+neither prior profile.
 
 ## 2. Admission Tiers
 
@@ -122,7 +144,10 @@ The implementation keeps these objects distinct:
 - **astronomical paksha inference policy** â€” a separately admitted modern
   geocentric lunar-phase classifier whose exact half-open numeric boundary is
   Moira-owned and whose waxing/Purva and waning/Amara translation is owned by
-  the named source profile.
+  the named source profile; and
+- **Padu-bird mapping** - one source-owned `(Purva|Amara, weekday) -> bird`
+  table with no day/night or schedule dimension and no implicit synonymy with
+  authority-day, eating-bird, Rule-activity, Adhikara, or Bharana products.
 
 No object may silently acquire data from another profile. A source locator is
 part of computational truth, not decorative documentation. Admission status,
@@ -403,6 +428,86 @@ materialization, current-cell selection, score, or forecast. The 1879
 astronomical-paksha route remains standalone and does not acquire natal
 semantics.
 
+### Stage 2H source-owned Padu-bird table
+
+Stage 2H adds `PanchaPakshiPaduBirdMapping` and the separate
+`bogamuni_chennai_2024_padu_bird_mapping` profile. Rendered-page inspection of
+the exact Bogamuni 2024 Internet Archive original PDF, locally identified by
+SHA-256
+`035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`, found
+the Purva weekday Padu stanza and commentary at leaf `n52`, the Amara material
+at `n60`, the repeated combined table at `n157`, and its restating commentary
+at `n158`. The declared assembly policy is
+`paksha_stanzas_govern_repeated_combined_table_confirms`: the Paksha
+stanzas govern, while the later combined table and commentary confirm
+rather than silently replace them.
+
+The complete source-owned mapping is:
+
+| Paksha | Sunday | Monday | Tuesday | Wednesday | Thursday | Friday | Saturday |
+|---|---|---|---|---|---|---|---|
+| Purva | Owl | Crow | Cock | Peacock | Vulture | Owl | Vulture |
+| Amara | Crow | Owl | Vulture | Peacock | Cock | Peacock | Cock |
+
+These are exactly fourteen `(profile_paksha, weekday)` cells. There is no
+day/night axis. The result calls the selected value Padu and retains the
+source semantics
+`profile_paksha_weekday_death_or_inoperative_bird_not_schedule_rule_activity`.
+It does not inspect or transform a nominal schedule, derive a weekday from an
+instant, select a current cell, or reinterpret instantaneous `RULE` activity.
+
+The source layers also distinguish an eating-bird table and authority days;
+they do not state that either object is an `Adhikara Pakshi` table. Bharana is
+secondary-only terminology rather than the governing primary table label.
+Moira therefore admits no Adhikara/Bharana alias or product and
+does not relabel the pre-existing schedule field `first_eat_bird`. Uromarisi
+1934 and the separately inspected Bogar material are unbound research context
+only: neither the Stage 2H profile nor its decision binds them, and they do not
+contribute runtime cells, create synonymy, or prove admission.
+
+The product is a pure explicit-label lookup. It performs no astronomical or
+civil-day routing, natal identity, schedule/materialization/current-cell
+operation, condition evaluation, score, or forecast. It has no default and
+does not add Padu semantics to either earlier profile.
+
+### Stage 2I source-owned first-samam EAT seed
+
+Stage 2I adds `PanchaPakshiFirstEatBirdMapping` and the granular
+`first_eat_bird_mapping` capability to the unchanged 1879 schedule profile.
+The computational object is exactly
+`(profile_id, profile_paksha, half, weekday) -> first_eat_bird`. Rendered-page
+inspection binds the four governing source leaves: `n16` for Purva day, `n21`
+for Purva night, `n26` for Amara day, and `n31` for Amara night. The schedule
+grids and continuation leaves already bound to each named generator are
+same-witness confirmation, not independent evidence.
+
+| Context | Sunday | Monday | Tuesday | Wednesday | Thursday | Friday | Saturday |
+|---|---|---|---|---|---|---|---|
+| Purva day | Vulture | Owl | Vulture | Owl | Crow | Cock | Peacock |
+| Purva night | Crow | Cock | Crow | Cock | Peacock | Vulture | Owl |
+| Amara day | Cock | Peacock | Cock | Crow | Owl | Vulture | Peacock |
+| Amara night | Vulture | Cock | Vulture | Owl | Crow | Peacock | Cock |
+
+These are exactly 28 first-samam seeds. The bird begins the selected
+generator's first samam in EAT; later samams advance under that generator's
+separate progression rule. The result therefore does not describe an ambient
+or whole-day eating bird. It exposes the generator ID, exact input axes,
+`first_eat_bird`, canonical generator locators, and profile provenance without
+materializing the 25-cell schedule.
+
+The Uromarisi 1934 publication is a physically separate artifact and
+corroborates all 28 cells at leaves `n6` and `n36`-`n37`. Its textual-lineage
+independence from the related teaching tradition is not established, so it is
+separate-publication corroboration rather than runtime data, a universal-canon
+proof, or grounds for `corroborated_public` status. The earlier blind reading's
+Amara-night vector is explicitly superseded by the later `n31`-`n35`
+adjudication; the canonical profile contains the corrected vector above.
+
+The source phrase `adhikara nalil` does not supply a separate authority-bird
+table or prove synonymy. Stage 2I therefore admits no Padu, authority,
+Adhikara/Bharana, condition, strength, scoring, electional, or forecasting
+semantics and composes none of the three profiles.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -416,7 +521,7 @@ defects, not values that may be averaged or repaired by symmetry.
 | Schedule cells | A later edition contains a verse/commentary mismatch that duplicates one bird and omits another. | Fail the affected layer; do not infer the missing bird. |
 | Relationships | The 1879 table is directed and nonuniform; later tables use different assignments. | No reciprocity, symmetry inference, or cross-witness merge. |
 | Timing | The inspected 1879 source attests fixed thirty-nazhigai halves, not proportional sunrise-to-sunset scaling. | Seasonal scaling, if admitted, is a separate policy and capability. |
-| Padu and adhikara | Padu tables occur in later witnesses; no independent adhikara/bharana table was established. | Do not manufacture a day ruler from instantaneous Rule activity. |
+| Padu, first-EAT, and authority vocabulary | The Bogamuni weekday Padu table and the 1879 first-samam EAT seeds are separately complete; primary layers mention authority days without supplying an `Adhikara Pakshi` table, and Bharana is secondary-only terminology. | Preserve the Padu and first-samam EAT objects as separate source-scoped lookups. Do not manufacture an Adhikara/Bharana alias or derive a day ruler from either lookup or instantaneous Rule activity. |
 
 Conflict-ledger witnesses and rejected text layers are not executable merely
 because they are recorded. The named 2024 profile admits only its declared
@@ -525,6 +630,24 @@ one phase locator, and a nested mapping whose profile, Paksha, nakshatra, bird,
 and provenance equal the direct identity fields. Schedule, current-cell,
 scoring, and forecast claims are errors.
 
+For the Stage 2H profile, `padu_bird_mapping` must contain exactly one entry for
+every `(purva|amara, Sunday..Saturday)` pair and no day/night key. Every result
+must equal the canonical profile cell, carry the three source locators for its
+Paksha stanza plus the repeated combined table and commentary, retain the
+declared stanza-precedence assembly policy, and report astronomical routing as
+`not_performed`. Schedule inspection, `RULE`-activity conversion,
+`first_eat_bird` relabelling, Adhikara/Bharana aliasing, natal identity,
+current-cell selection, scoring, and forecasting are errors.
+
+For the Stage 2I capability, the unchanged 1879 profile must contain exactly
+one first-EAT seed for every `(purva|amara, day|night, Sunday..Saturday)`
+combination. Every result must equal the canonical generator's weekday seed,
+carry that generator ID and its complete ordered source-locator tuple, and
+match both `PanchaPakshiSchedule.first_eat_bird` and the first samam's EAT
+cell. Datetime or location routing, inferred Paksha, schedule materialization,
+Padu or authority aliasing, whole-day semantics, natal identity, condition,
+scoring, and forecasting are errors.
+
 Unknown values, hash mismatches, incomplete tables, mixed profiles, capability
 drift, and unresolved verse/commentary conflicts are errors. They are not
 warnings or fallback opportunities.
@@ -603,10 +726,27 @@ aware datetime. REST additionally requires the exact Stage 2G policy ID. No
 form accepts location, caller-supplied paksha/nakshatra/bird/ayanamsa,
 schedule/current-cell controls, scoring, or forecast policy.
 
+Stage 2H adds the kernel-free pure-table
+`pancha_pakshi_padu_bird_mapping(...)`,
+`Moira.pancha_pakshi_padu_bird_mapping(...)`, and
+`POST /v1/pancha-pakshi/roles/padu` surfaces. Each accepts an explicit profile,
+`profile_paksha`, and weekday only. No form accepts an instant, location,
+day/night half, schedule, activity, natal identity, Adhikara/Bharana alias,
+condition, score, or forecast input.
+
+Stage 2I adds the kernel-free pure-table
+`pancha_pakshi_first_eat_bird_mapping(...)`,
+`Moira.pancha_pakshi_first_eat_bird_mapping(...)`, and
+`POST /v1/pancha-pakshi/schedule/first-eat-bird` surfaces. Each accepts only an
+explicit profile, `profile_paksha`, day/night half, and weekday. No form accepts
+an instant, location, inferred Paksha, Padu or authority role, schedule
+materialization, natal identity, condition, score, or forecast input.
+
 All computations require `profile_id`. Public results are immutable and carry
 profile-owned provenance and omissions. Exact nazhigai values remain rational
 in the engine and serialize as `{numerator, denominator}` at the transport
-boundary.
+boundary. The current family contains three profiles, fifteen `Moira` methods
+(eight kernel-free and seven kernel-backed), and fourteen REST routes.
 
 Stage 2F accepts a datetime but no location and performs only instantaneous
 astronomical-paksha inference. The five location-bearing Stage 2A-E operations
@@ -621,7 +761,11 @@ unique cell under its named fixed-clock policy or the explicit unmaterialized
 tail status. The proportional materialization operation separately maps exact
 nominal fractions across the governing half, while its separately named
 selector returns the unique current proportional cell. Neither proportional
-operation borrows fixed-clock semantics.
+operation borrows fixed-clock semantics. Stage 2H remains separate from every
+temporal product: it performs one pure Padu-table lookup and never routes that
+bird into a schedule, identity, condition, or forecast. Stage 2I likewise
+returns only one named generator's first-samam EAT seed and never materializes
+the schedule or promotes that seed into a whole-day or authority role.
 
 ## 8. Evidence And Validation
 
@@ -765,6 +909,34 @@ reader-bound TT execution path. These are respectively source-table evidence,
 mathematical boundary evidence, and astronomical execution evidence; none is
 an external natal-identity oracle or a universal-canon proof.
 
+Stage 2H validation separately verifies the Bogamuni `n52` and `n60` governing
+Paksha stanzas, the `n157` and `n158` internal repetitions, all fourteen exact
+Paksha-by-weekday cells, profile/manifest/decision hash integrity, immutable
+provenance, capability isolation, and strict facade/REST/OpenAPI contracts.
+Adversarial checks reject a day/night dimension, foreign locators, incomplete
+or duplicated cells, forged birds, `RULE` equivalence, `first_eat_bird` or
+Adhikara/Bharana relabelling, and temporal or scoring fields. These are
+source-table and structural-contract evidence, not an external condition,
+electional, or forecasting oracle.
+
+The chained
+[`Stage 2I admission decision`](../../tests/fixtures/pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20.json)
+binds the unchanged 1879 profile at SHA-256
+`4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64`,
+the frozen Stage 2H decision at SHA-256
+`9ea7c871643bb8fc68d420223d0090ca91699154c761c67ccaf9201f401906cd`,
+and the manifest transition from
+`eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03`
+to `d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8`.
+Its decision digest is
+`83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807`.
+Stage 2I validation checks all 28 cells, the four governing 1879 leaves,
+same-witness locator retention, parity with the existing nominal schedule's
+first-EAT field and initial EAT cell, immutable canonical provenance,
+capability isolation, and strict facade/REST/OpenAPI shapes. Uromarisi 1934 is
+recorded only as separate-publication corroboration with unestablished textual
+lineage independence; it supplies no runtime cell or universal-canon proof.
+
 Schema/hash/source checks are regression integrity; exact closure, bijection,
 partition, immutability, and no-default checks are structural invariants; the
 named leaf readings are source-specific evidence. None is an external oracle
@@ -783,9 +955,10 @@ rights-clearance phase or a public-admission blocker.
 ## 10. Deferred Products
 
 The following require separately named sources, policies, capabilities, and
-tests: source-attested or alternate solar-proportional doctrines and any selectors
-belonging to those unadmitted doctrines; Padu, Bharana, and Adhikara birds;
-vinadi subdivision; condition/scoring; and electional window search.
+tests: source-attested or alternate solar-proportional doctrines and any
+selectors belonging to those unadmitted doctrines; alternate Padu doctrines;
+Bharana or Adhikara bird products; vinadi subdivision; condition/scoring; and
+electional window search.
 Fixed-clock materialization, fixed-clock current-cell selection,
 solar-proportional materialization, and solar-proportional current-cell
 selection are admitted only through their explicit Stage 2B, Stage 2C, Stage
@@ -795,4 +968,10 @@ Astronomical paksha inference is admitted only through the separate Stage 2F
 policy and never supplies paksha to those operations automatically. Natal-Moon
 identity is admitted only through the separate Stage 2G Bogamuni profile and
 fixed modern composition; alternate natal doctrines remain separate future
-profiles rather than overrides to this one.
+profiles rather than overrides to this one. Padu-bird lookup is admitted only
+through the separate Stage 2H profile and its explicit Paksha-by-weekday table;
+it does not supply any schedule, identity, Adhikara/Bharana alias, condition,
+score, or forecast.
+First-samam EAT lookup is admitted only through the Stage 2I capability on the
+1879 profile. It does not materialize a schedule or supply an ambient eating,
+Padu, authority, Adhikara/Bharana, condition, score, or forecast role.

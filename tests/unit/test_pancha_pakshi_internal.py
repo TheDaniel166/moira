@@ -47,6 +47,7 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
             capabilities=(
                 PanchaPakshiCapability.AKSARA_IDENTITY,
                 PanchaPakshiCapability.NOMINAL_SCHEDULE,
+                PanchaPakshiCapability.FIRST_EAT_BIRD_MAPPING,
                 PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
                 PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
                 PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
@@ -59,7 +60,7 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
                 ),
             ),
             admission_decision_id=(
-                "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
+                "pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20"
             ),
         ),
         type(available_pancha_pakshi_profiles()[0])(
@@ -75,6 +76,16 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
                 "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20"
             ),
         ),
+        type(available_pancha_pakshi_profiles()[0])(
+            profile_id="bogamuni_chennai_2024_padu_bird_mapping",
+            admission_status=PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
+            product_kind="padu_bird_mapping",
+            default_selection_allowed=False,
+            capabilities=(PanchaPakshiCapability.PADU_BIRD_MAPPING,),
+            admission_decision_id=(
+                "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20"
+            ),
+        ),
     )
     assert profile.profile_id == PROFILE_ID
     assert profile.admission_status is PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC
@@ -83,6 +94,7 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
     assert profile.capabilities == (
         PanchaPakshiCapability.AKSARA_IDENTITY,
         PanchaPakshiCapability.NOMINAL_SCHEDULE,
+        PanchaPakshiCapability.FIRST_EAT_BIRD_MAPPING,
         PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
         PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
         PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,

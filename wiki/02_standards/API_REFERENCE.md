@@ -253,7 +253,7 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 |---|---|
 | Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |
 | Panchanga | `panchanga_at`, `sankranti_at`, `PanchangaResult`, `TithiPaksha`, `PanchangaPolicy` |
-| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_astronomical_paksha_at`, `pancha_pakshi_nakshatra_bird_mapping`, `pancha_pakshi_natal_moon_identity_at`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_solar_proportional_current_cell_at`, `pancha_pakshi_directed_relationship` |
+| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_first_eat_bird_mapping`, `pancha_pakshi_astronomical_paksha_at`, `pancha_pakshi_nakshatra_bird_mapping`, `pancha_pakshi_natal_moon_identity_at`, `pancha_pakshi_padu_bird_mapping`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_solar_proportional_current_cell_at`, `pancha_pakshi_directed_relationship` |
 | Vedic dignities | `vedic_dignity`, `planetary_relationships`, `VedicDignityResult`, `DignityConditionProfile`, `ChartDignityProfile` |
 | Varga (divisional) | `navamsa`, `saptamsa`, `dashamansa`, `dwadashamsa`, `trimshamsa` + 11 more vargas, `VargaPoint` |
 | Vimshottari Dasha | `vimshottari`, `current_dasha`, `dasha_balance`, `dasha_active_line`, `DashaPeriod`, `VimshottariComputationPolicy` |
@@ -4864,9 +4864,11 @@ from moira.vedic import (
     pancha_pakshi_profile_info,
     pancha_pakshi_identity_from_initial_vowel,
     pancha_pakshi_schedule,
+    pancha_pakshi_first_eat_bird_mapping,
     pancha_pakshi_astronomical_paksha_at,
     pancha_pakshi_nakshatra_bird_mapping,
     pancha_pakshi_natal_moon_identity_at,
+    pancha_pakshi_padu_bird_mapping,
     pancha_pakshi_local_solar_context_at,
     pancha_pakshi_fixed_clock_materialization_at,
     pancha_pakshi_fixed_clock_current_cell_at,
@@ -4894,6 +4896,8 @@ from moira.vedic import (
     PanchaPakshiNakshatraBirdMapping,
     PanchaPakshiNatalMoonIdentity,
     PanchaPakshiNatalMoonIdentityPolicy,
+    PanchaPakshiFirstEatBirdMapping,
+    PanchaPakshiPaduBirdMapping,
     PanchaPakshiBird,
     PanchaPakshiPaksha,
     PanchaPakshiHalf,
@@ -4907,9 +4911,11 @@ from moira.vedic import (
 | `pancha_pakshi_profile_info(profile_id)` | `PanchaPakshiProfileInfo` | Inspect admission, capabilities, source, locators, conflicts, and omissions |
 | `pancha_pakshi_identity_from_initial_vowel(profile_id, initial_vowel)` | `PanchaPakshiInitialVowelIdentity` | Resolve one explicitly listed aksara/query-or-name initial; not natal Moon identity |
 | `pancha_pakshi_schedule(profile_id, *, paksha, half, weekday)` | `PanchaPakshiSchedule` | Materialize one exact nominal fixed-clock schedule from explicit source labels |
+| `pancha_pakshi_first_eat_bird_mapping(profile_id, *, profile_paksha, half, weekday)` | `PanchaPakshiFirstEatBirdMapping` | Return one named generator's directly attested first-samam EAT seed without materializing its schedule or assigning whole-day/authority semantics |
 | `pancha_pakshi_astronomical_paksha_at(profile_id, jd_ut1, *, reader=None)` | `PanchaPakshiAstronomicalPakshaInference` | Classify apparent geocentric Moon-minus-Sun elongation on one reader-bound TT and map Shukla/waxing to Purva or Krishna/waning to Amara for the named profile; no location or schedule routing |
 | `pancha_pakshi_nakshatra_bird_mapping(profile_id, *, profile_paksha, nakshatra_index)` | `PanchaPakshiNakshatraBirdMapping` | Return one directly attested source-table cell without computing or claiming a natal Moon |
 | `pancha_pakshi_natal_moon_identity_at(profile_id, jd_ut1, *, reader=None)` | `PanchaPakshiNatalMoonIdentity` | Apply the named Bogamuni table through the fixed modern apparent-geocentric, Lahiri-true, equal-27-sector natal-Moon policy while exposing every intermediate and source mapping |
+| `pancha_pakshi_padu_bird_mapping(profile_id, *, profile_paksha, weekday)` | `PanchaPakshiPaduBirdMapping` | Return one directly attested Padu bird from the explicit Paksha-by-weekday table; no day/night, instant, schedule, or activity conversion |
 | `pancha_pakshi_local_solar_context_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiLocalSolarContext` | Resolve topocentric local-solar half and local-mean-solar weekday from UT1, retain caller-supplied paksha, and select the existing nominal schedule |
 | `pancha_pakshi_fixed_clock_materialization_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockMaterialization` | Anchor the selected nominal schedule at governing sunrise or sunset, apply its exact offsets on reader-bound TT, project endpoints to UT1, and report unclipped solar-boundary topology without selecting a current cell |
 | `pancha_pakshi_fixed_clock_current_cell_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockCurrentCellSelection` | Resolve the governing solar half first, then return its unique half-open fixed-clock cell or the explicit unmaterialized long-half-tail status |
@@ -4980,6 +4986,35 @@ selection, materialization, current-cell selection, scoring, or forecast.
 | `PanchaPakshiNakshatraBirdMapping` | Pure source-table Paksha, nakshatra index/name, bird, direct-attestation status, declared verse precedence, one mapping locator, and profile provenance; no epoch or natal claim |
 | `PanchaPakshiNatalMoonIdentityPolicy` | Fixed astronomical origin/frame/corrections/time scales, half-open phase and nakshatra ownership, source phase binding, Lahiri-true modern composition, verse precedence, and explicit non-performance fields |
 | `PanchaPakshiNatalMoonIdentity` | All astronomical and sidereal intermediates, phase mapping, nakshatra placement, nested source-table mapping, immutable policy, and route-specific provenance |
+
+`PanchaPakshiPaduBirdMapping` is the pure Stage 2H source-table vessel. The
+separate `bogamuni_chennai_2024_padu_bird_mapping` profile contains exactly
+fourteen cells: two explicit source Paksha labels by seven weekdays, with no
+day/night axis. Purva cells cite the governing `n52` stanza; Amara cells cite
+`n60`; every result also cites the repeated combined table at `n157` and its
+restating commentary at `n158`. Its assembly policy is
+`paksha_stanzas_govern_repeated_combined_table_confirms`, and its source
+semantics are
+`profile_paksha_weekday_death_or_inoperative_bird_not_schedule_rule_activity`.
+The lookup accepts no instant, location, half, schedule, natal, condition,
+score, or forecast input. It neither converts Padu to `RULE` nor relabels
+`first_eat_bird`, authority day, Adhikara, or Bharana.
+
+| Stage 2H vessel | Public contract |
+|---|---|
+| `PanchaPakshiPaduBirdMapping` | Explicit profile Paksha and weekday, one directly attested Padu bird, three canonical locators, stanza-precedence assembly policy, source-table semantics, and profile provenance; no temporal or schedule claim |
+
+`PanchaPakshiFirstEatBirdMapping` is the pure Stage 2I source-table vessel on
+the unchanged 1879 profile. Its 28 possible cells cover two explicit profile
+Pakshas, two day/night halves, and seven weekdays. Each result identifies the
+canonical generator, its first-samam EAT bird, direct-attestation status, fixed
+source semantics, complete generator locator tuple, and profile provenance.
+It accepts no instant, location, inferred Paksha, schedule-materialization,
+Padu/authority/Adhikara/Bharana, natal, condition, score, or forecast input.
+
+| Stage 2I vessel | Public contract |
+|---|---|
+| `PanchaPakshiFirstEatBirdMapping` | Explicit profile, Paksha, half, and weekday; canonical generator ID; one directly attested `first_eat_bird`; full generator locator tuple and provenance; no temporal, whole-day, authority, or materialized-schedule claim |
 
 `PanchaPakshiLocalSolarContextPolicy` is fixed and inspectable:
 `policy_id="local_solar_day_explicit_paksha_v1"`, caller-supplied source-label
@@ -5057,7 +5092,9 @@ The current `agastya_madras_1879_akshara_fixed_clock` profile is
 `source_scoped_public` and can never be selected implicitly. It performs no
 natal mapping, subdivision, or scoring computation. Its separately admitted
 Stage 2F product performs only explicit astronomical paksha inference and
-source-label mapping; it does not alter any schedule route. The modern
+source-label mapping; it does not alter any schedule route. Its Stage 2I
+capability exposes only one named generator's first-samam EAT seed and performs
+no time routing, schedule materialization, or authority-role inference. The modern
 `local_solar_day_explicit_paksha_v1` policy derives only topocentric
 sunrise/sunset context, day/night half, and local-mean-solar weekday while the
 paksha remains explicit. It returns the nominal schedule, not a current cell or
@@ -5082,11 +5119,21 @@ schedule, relationship, materialization, current cell, authority bird,
 subdivision, condition, score, or window search. It does not alter or extend
 the 1879 profile.
 
-The `Moira` facade supplies the six kernel-free operations as
+The separate `bogamuni_chennai_2024_padu_bird_mapping` profile is likewise
+`source_scoped_public`, no-default, and Padu-only. It admits exactly one
+Paksha-by-weekday lookup capability and supplies no day/night axis, identity,
+schedule, materialization, current cell, authority-bird alias, condition,
+score, or forecast. The primary evidence distinguishes eating bird and
+authority day rather than attesting an `Adhikara Pakshi` table; Bharana remains
+secondary-only terminology. Neither term aliases the public Padu vessel.
+
+The `Moira` facade supplies these eight kernel-free operations:
 `pancha_pakshi_profiles`, `pancha_pakshi_profile_info`,
 `pancha_pakshi_identity_from_initial_vowel`,
-`pancha_pakshi_schedule`, `pancha_pakshi_directed_relationship`, and
-`pancha_pakshi_nakshatra_bird_mapping`; those methods are kernel-free. It
+`pancha_pakshi_schedule`, `pancha_pakshi_directed_relationship`,
+`pancha_pakshi_nakshatra_bird_mapping`, and
+`pancha_pakshi_padu_bird_mapping`, plus
+`pancha_pakshi_first_eat_bird_mapping`. It
 additionally supplies the kernel-backed
 `pancha_pakshi_astronomical_paksha(profile_id, dt)`,
 `pancha_pakshi_natal_moon_identity(profile_id, dt)`,
@@ -5110,6 +5157,10 @@ policy, and functions. The astronomical-paksha and natal-Moon facades accept an
 aware datetime but no location or caller-supplied paksha. The former's inferred
 label is never ambiently routed into the five location-bearing operations, and
 the latter returns an identity only without routing into any schedule family.
+The Stage 2H function, vessel, and facade lookup are also exported through all
+three Python surfaces and perform no clock or kernel access.
+The Stage 2I function, vessel, and facade lookup are likewise exported through
+all three surfaces and return only the named generator's first-samam EAT seed.
 
 ---
 

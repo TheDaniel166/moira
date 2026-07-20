@@ -108,7 +108,14 @@ Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jat
   is always `selected`, with no fixed-clock tail or fallback. Paksha remains
   caller supplied on every schedule, materialization, and current-cell surface;
   the standalone astronomical inference is never applied automatically, and
-  the 1879 profile remains explicitly non-natal. A separate named Bogamuni 2024
+  the 1879 profile remains explicitly non-natal. A pure Stage 2I lookup exposes
+  the selected 1879 generator's first-samam EAT seed from explicit profile
+  Paksha, day/night half, and weekday. It does not materialize the schedule or
+  promote that seed into a whole-day eating bird, Padu, authority,
+  Adhikara/Bharana, condition, score, or forecast. All 28 cells are directly
+  bound to the governing 1879 leaves and separately corroborated by the 1934
+  Uromarisi publication; textual-lineage independence is not claimed. A
+  separate named Bogamuni 2024
   profile preserves a complete 54-cell Purva/Amara-by-nakshatra bird table.
   Its Amara verse governs because the adjacent commentary duplicates Shravana
   and omits Revati; that malformed commentary remains visible as rejected
@@ -120,7 +127,17 @@ Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jat
   source-table bird with every intermediate and locator visible. The source
   attests nakshatra birds and phase labels; birth-Moon application, Lahiri, and
   the equal-sector boundary policy are explicitly Moira-owned, not source
-  claims. It never routes into a schedule, current cell, score, or forecast.
+  claims. It never routes into a schedule, current cell, score, or forecast. A
+  third source-scoped Bogamuni 2024 profile,
+  `bogamuni_chennai_2024_padu_bird_mapping`, preserves the separate 14-cell
+  Purva/Amara-by-weekday Padu-bird table. It is a pure explicit-label lookup:
+  the source table has no day/night axis, and its death-or-inoperative bird is
+  not relabelled as a schedule `RULE` activity, a generic authority bird, or
+  the separately labelled eating bird. The primary witnesses do not present an
+  `Adhikara Pakshi` table, while Bharana is secondary terminology only; neither
+  alias nor product is admitted. The Padu profile performs no natal identity,
+  astronomical routing, schedule/current-cell selection, condition scoring,
+  or forecast.
 - **Dashas** — Vimshottari with nakshatra balance; Chara Dasha (K.N. Rao's named lineage); Varshaphal (annual charts).
 - **Vargas** — divisional charts (navamsa, dashamansa, dwadashamsa, saptamsa, trimshamsa, and more); Vimshopaka Bala (BPHS 20-point varga-dignity strength over all four classical groups) with vargottama detection.
 - **Yogas** — 60 classical yogas across six families (Pancha Mahapurusha, Chandra, Surya, all 32 Nabhasa, Raja core, Dhana core), each returned as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, and per-yoga primary-source citations.

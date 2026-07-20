@@ -28,7 +28,6 @@ _PROFILE_PATH = (
     / "data"
     / "pancha_pakshi_bogamuni_chennai_2024_nakshatra_natal_identity.json"
 )
-_MANIFEST_PATH = _ROOT / "moira" / "data" / "pancha_pakshi_manifest.json"
 _ADMISSION_PATH = (
     _ROOT
     / "tests"
@@ -136,7 +135,9 @@ def test_stage2g_admission_fixture_binds_source_table_and_modern_nonclaims() -> 
     }
     assert decision["manifest_binding"] == {
         "path": "moira/data/pancha_pakshi_manifest.json",
-        "sha256": hashlib.sha256(_canonical_bytes(_MANIFEST_PATH)).hexdigest(),
+        "sha256": (
+            "979bb6df8a31d0ff9603ef396b0f569f17ecca6f6dc21def220ad682a425eb61"
+        ),
         "hash_canonicalization": (
             "UTF-8 text with CRLF and CR normalized to LF"
         ),

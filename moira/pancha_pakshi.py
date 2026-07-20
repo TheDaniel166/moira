@@ -54,6 +54,8 @@ class PanchaPakshiCapability(str, Enum):
     ASTRONOMICAL_PAKSHA_INFERENCE = "astronomical_paksha_inference"
     NAKSHATRA_BIRD_MAPPING = "nakshatra_bird_mapping"
     NATAL_IDENTITY = "natal_identity"
+    PADU_BIRD_MAPPING = "padu_bird_mapping"
+    FIRST_EAT_BIRD_MAPPING = "first_eat_bird_mapping"
     FIXED_CLOCK_MATERIALIZATION = "fixed_clock_materialization"
     FIXED_CLOCK_CURRENT_CELL_SELECTION = "fixed_clock_current_cell_selection"
     SOLAR_PROPORTIONAL_MATERIALIZATION = "solar_proportional_materialization"
@@ -511,6 +513,201 @@ class PanchaPakshiNakshatraBirdMapping:
             raise ValueError("mapping source locator disagrees with source table")
         if self.source_locators[0] != profile.locator(rule.source_locator_ids[0]):
             raise ValueError("mapping source locator is not canonical")
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiFirstEatBirdMapping:
+    """One source generator's weekday first-samam EAT seed.
+
+    This pure lookup exposes the bird from which the named source schedule
+    begins.  It does not materialize that schedule or reinterpret the seed as
+    Padu, an authority bird, condition, score, or forecast.
+    """
+
+    profile_id: str
+    generator_id: str
+    profile_paksha: PanchaPakshiPaksha
+    half: PanchaPakshiHalf
+    weekday: PanchaPakshiWeekday
+    first_eat_bird: PanchaPakshiBird
+    mapping_status: str
+    source_table_semantics: str
+    source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.profile_id, str):
+            raise TypeError("profile_id must be a string")
+        if not self.profile_id:
+            raise ValueError("profile_id must not be empty")
+        if not isinstance(self.generator_id, str):
+            raise TypeError("generator_id must be a string")
+        if not self.generator_id:
+            raise ValueError("generator_id must not be empty")
+        if not isinstance(self.profile_paksha, PanchaPakshiPaksha):
+            raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+        if not isinstance(self.half, PanchaPakshiHalf):
+            raise TypeError("half must be a PanchaPakshiHalf")
+        if not isinstance(self.weekday, PanchaPakshiWeekday):
+            raise TypeError("weekday must be a PanchaPakshiWeekday")
+        if not isinstance(self.first_eat_bird, PanchaPakshiBird):
+            raise TypeError("first_eat_bird must be a PanchaPakshiBird")
+        if self.mapping_status != "direct_source_attested":
+            raise ValueError("mapping_status must be direct_source_attested")
+        if self.source_table_semantics != (
+            "profile_paksha_half_weekday_first_samam_eat_seed_not_padu_"
+            "authority_condition_or_score"
+        ):
+            raise ValueError("source_table_semantics is unknown")
+        if (
+            not isinstance(self.source_locators, tuple)
+            or not self.source_locators
+            or any(
+                not isinstance(locator, PanchaPakshiSourceLocator)
+                for locator in self.source_locators
+            )
+        ):
+            raise TypeError(
+                "source_locators must contain canonical generator locators"
+            )
+        if len(
+            {locator.locator_id for locator in self.source_locators}
+        ) != len(self.source_locators):
+            raise ValueError("source_locators must be unique")
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+        if self.provenance.profile_id != self.profile_id:
+            raise ValueError("provenance profile disagrees with profile_id")
+        if (
+            PanchaPakshiCapability.FIRST_EAT_BIRD_MAPPING
+            not in self.provenance.capabilities
+        ):
+            raise ValueError(
+                "provenance does not admit first-EAT-bird mapping"
+            )
+        if self.provenance.astronomical_routing_status != "not_performed":
+            raise ValueError(
+                "first-EAT-bird lookup must not perform astronomical routing"
+            )
+
+        from ._pancha_pakshi import _profile_provenance
+
+        profile = _profile_for_public_capability(
+            self.profile_id,
+            PanchaPakshiCapability.FIRST_EAT_BIRD_MAPPING,
+        )
+        if self.provenance != _profile_provenance(profile):
+            raise ValueError("provenance is not canonical")
+        generator = profile.generator(self.profile_paksha, self.half)
+        if self.generator_id != generator.generator_id:
+            raise ValueError(
+                "generator_id disagrees with profile_paksha and half"
+            )
+        expected_bird = generator.first_eat_bird_for(self.weekday)
+        if self.first_eat_bird is not expected_bird:
+            raise ValueError("mapping disagrees with the canonical source table")
+        canonical_locators = tuple(
+            profile.locator(locator_id)
+            for locator_id in generator.source_locator_ids
+        )
+        if self.source_locators != canonical_locators:
+            raise ValueError(
+                "mapping source locators are not canonical generator locators"
+            )
+        if any(
+            locator.witness_id != self.provenance.source.witness_id
+            for locator in self.source_locators
+        ):
+            raise ValueError("mapping source locators disagree with provenance")
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiPaduBirdMapping:
+    """One source-attested Paksha-and-weekday Padu bird.
+
+    The source describes the Padu bird as the weekday's death or inoperative
+    bird.  This pure lookup does not select a day/night half, inspect a
+    schedule, or reinterpret the bird as an instantaneous ``RULE`` activity.
+    """
+
+    profile_id: str
+    profile_paksha: PanchaPakshiPaksha
+    weekday: PanchaPakshiWeekday
+    bird: PanchaPakshiBird
+    mapping_status: str
+    source_table_semantics: str
+    assembly_policy: str
+    source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.profile_id, str):
+            raise TypeError("profile_id must be a string")
+        if not self.profile_id:
+            raise ValueError("profile_id must not be empty")
+        if not isinstance(self.profile_paksha, PanchaPakshiPaksha):
+            raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+        if not isinstance(self.weekday, PanchaPakshiWeekday):
+            raise TypeError("weekday must be a PanchaPakshiWeekday")
+        if not isinstance(self.bird, PanchaPakshiBird):
+            raise TypeError("bird must be a PanchaPakshiBird")
+        if self.mapping_status != "direct_source_attested":
+            raise ValueError("mapping_status must be direct_source_attested")
+        if self.source_table_semantics != (
+            "profile_paksha_weekday_death_or_inoperative_bird_not_schedule_"
+            "rule_activity"
+        ):
+            raise ValueError("source_table_semantics is unknown")
+        if self.assembly_policy != (
+            "paksha_stanzas_govern_repeated_combined_table_confirms"
+        ):
+            raise ValueError("assembly_policy is unknown")
+        if (
+            not isinstance(self.source_locators, tuple)
+            or len(self.source_locators) != 3
+            or any(
+                not isinstance(locator, PanchaPakshiSourceLocator)
+                for locator in self.source_locators
+            )
+        ):
+            raise TypeError("source_locators must contain three source locators")
+        if len({locator.locator_id for locator in self.source_locators}) != 3:
+            raise ValueError("source_locators must be unique")
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+        if self.provenance.profile_id != self.profile_id:
+            raise ValueError("provenance profile disagrees with profile_id")
+        if (
+            PanchaPakshiCapability.PADU_BIRD_MAPPING
+            not in self.provenance.capabilities
+        ):
+            raise ValueError("provenance does not admit Padu-bird mapping")
+        if self.provenance.assembly_policy != self.assembly_policy:
+            raise ValueError("provenance assembly policy disagrees with mapping")
+        if self.provenance.astronomical_routing_status != "not_performed":
+            raise ValueError("Padu-bird lookup must not perform astronomical routing")
+
+        from ._pancha_pakshi import _profile_provenance
+
+        profile = _profile_for_public_capability(
+            self.profile_id,
+            PanchaPakshiCapability.PADU_BIRD_MAPPING,
+        )
+        if self.provenance != _profile_provenance(profile):
+            raise ValueError("provenance is not canonical")
+        rule = profile.padu_bird_rule(self.profile_paksha, self.weekday)
+        if rule.bird is not self.bird:
+            raise ValueError("mapping disagrees with the canonical source table")
+        canonical_locators = tuple(
+            profile.locator(locator_id) for locator_id in rule.source_locator_ids
+        )
+        if self.source_locators != canonical_locators:
+            raise ValueError("mapping source locators are not canonical")
+        if any(
+            locator.witness_id != self.provenance.source.witness_id
+            for locator in self.source_locators
+        ):
+            raise ValueError("mapping source locators disagree with provenance")
 
 
 @dataclass(frozen=True, slots=True)
@@ -1949,6 +2146,99 @@ def pancha_pakshi_nakshatra_bird_mapping(
     )
 
 
+def pancha_pakshi_first_eat_bird_mapping(
+    profile_id: str,
+    *,
+    profile_paksha: PanchaPakshiPaksha,
+    half: PanchaPakshiHalf,
+    weekday: PanchaPakshiWeekday,
+) -> PanchaPakshiFirstEatBirdMapping:
+    """Return one source generator's weekday first-samam EAT seed.
+
+    This is a pure lookup over an explicitly named, source-scoped profile.  It
+    does not infer Paksha or civil context, materialize a schedule, or derive
+    Padu, authority, condition, score, or forecast semantics.
+    """
+
+    from ._pancha_pakshi import (
+        PanchaPakshiProfile,
+        _profile_provenance,
+        _resolve_locators,
+    )
+
+    if not isinstance(profile_paksha, PanchaPakshiPaksha):
+        raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+    if not isinstance(half, PanchaPakshiHalf):
+        raise TypeError("half must be a PanchaPakshiHalf")
+    if not isinstance(weekday, PanchaPakshiWeekday):
+        raise TypeError("weekday must be a PanchaPakshiWeekday")
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.FIRST_EAT_BIRD_MAPPING,
+    )
+    if not isinstance(profile, PanchaPakshiProfile):
+        raise PanchaPakshiDataError(
+            "first-EAT-bird mapping requires an operating-schedule profile"
+        )
+    generator = profile.generator(profile_paksha, half)
+    first_eat_bird = generator.first_eat_bird_for(weekday)
+    return PanchaPakshiFirstEatBirdMapping(
+        profile_id=profile.profile_id,
+        generator_id=generator.generator_id,
+        profile_paksha=profile_paksha,
+        half=half,
+        weekday=weekday,
+        first_eat_bird=first_eat_bird,
+        mapping_status="direct_source_attested",
+        source_table_semantics=(
+            "profile_paksha_half_weekday_first_samam_eat_seed_not_padu_"
+            "authority_condition_or_score"
+        ),
+        source_locators=_resolve_locators(
+            profile,
+            generator.source_locator_ids,
+        ),
+        provenance=_profile_provenance(profile),
+    )
+
+
+def pancha_pakshi_padu_bird_mapping(
+    profile_id: str,
+    *,
+    profile_paksha: PanchaPakshiPaksha,
+    weekday: PanchaPakshiWeekday,
+) -> PanchaPakshiPaduBirdMapping:
+    """Return one source-attested Paksha-and-weekday Padu bird.
+
+    This is an immutable table lookup.  It performs no astronomical routing,
+    day/night selection, schedule lookup, activity conversion, scoring, or
+    forecast computation.
+    """
+
+    from ._pancha_pakshi import _profile_provenance, _resolve_locators
+
+    if not isinstance(profile_paksha, PanchaPakshiPaksha):
+        raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+    if not isinstance(weekday, PanchaPakshiWeekday):
+        raise TypeError("weekday must be a PanchaPakshiWeekday")
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.PADU_BIRD_MAPPING,
+    )
+    rule = profile.padu_bird_rule(profile_paksha, weekday)
+    return PanchaPakshiPaduBirdMapping(
+        profile_id=profile.profile_id,
+        profile_paksha=profile_paksha,
+        weekday=weekday,
+        bird=rule.bird,
+        mapping_status="direct_source_attested",
+        source_table_semantics=profile.source_table_semantics,
+        assembly_policy=profile.assembly_policy,
+        source_locators=_resolve_locators(profile, rule.source_locator_ids),
+        provenance=_profile_provenance(profile),
+    )
+
+
 def pancha_pakshi_natal_moon_identity_at(
     profile_id: str,
     jd_ut1: float,
@@ -2994,6 +3284,7 @@ __all__ = [
     "PanchaPakshiFixedClockCurrentCellSelectionPolicy",
     "PanchaPakshiFixedClockMaterialization",
     "PanchaPakshiFixedClockMaterializationPolicy",
+    "PanchaPakshiFirstEatBirdMapping",
     "PanchaPakshiHalf",
     "PanchaPakshiInitialVowelIdentity",
     "PanchaPakshiLocalSolarContext",
@@ -3003,6 +3294,7 @@ __all__ = [
     "PanchaPakshiNatalMoonIdentity",
     "PanchaPakshiNatalMoonIdentityPolicy",
     "PanchaPakshiOmission",
+    "PanchaPakshiPaduBirdMapping",
     "PanchaPakshiPaksha",
     "PanchaPakshiProfileDescriptor",
     "PanchaPakshiProfileInfo",
@@ -3024,10 +3316,12 @@ __all__ = [
     "pancha_pakshi_directed_relationship",
     "pancha_pakshi_fixed_clock_current_cell_at",
     "pancha_pakshi_fixed_clock_materialization_at",
+    "pancha_pakshi_first_eat_bird_mapping",
     "pancha_pakshi_identity_from_initial_vowel",
     "pancha_pakshi_local_solar_context_at",
     "pancha_pakshi_nakshatra_bird_mapping",
     "pancha_pakshi_natal_moon_identity_at",
+    "pancha_pakshi_padu_bird_mapping",
     "pancha_pakshi_profile_info",
     "pancha_pakshi_schedule",
     "pancha_pakshi_solar_proportional_current_cell_at",

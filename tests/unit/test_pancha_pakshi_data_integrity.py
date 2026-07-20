@@ -19,6 +19,9 @@ _PROFILE = _DATA / "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json"
 _NATAL_PROFILE = (
     _DATA / "pancha_pakshi_bogamuni_chennai_2024_nakshatra_natal_identity.json"
 )
+_PADU_PROFILE = (
+    _DATA / "pancha_pakshi_bogamuni_chennai_2024_padu_bird_mapping.json"
+)
 _INDEPENDENT_REVIEW = (
     _ROOT / "tests" / "fixtures" / "pancha_pakshi_1879_independent_review.json"
 )
@@ -95,8 +98,8 @@ _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID = (
 _SOLAR_PROPORTIONAL_CURRENT_CELL_DECISION_ID = (
     "pancha_pakshi_1879_solar_proportional_current_cell_2026_07_20"
 )
-_ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID = (
-    "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
+_CURRENT_1879_ADMISSION_DECISION_ID = (
+    "pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20"
 )
 _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256 = (
     "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4"
@@ -107,6 +110,7 @@ _CURRENT_SCHEMA_V3_PROFILE_SHA256 = (
 _CURRENT_CAPABILITIES = (
     pakshi.PanchaPakshiCapability.AKSARA_IDENTITY,
     pakshi.PanchaPakshiCapability.NOMINAL_SCHEDULE,
+    pakshi.PanchaPakshiCapability.FIRST_EAT_BIRD_MAPPING,
     pakshi.PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
     pakshi.PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
     pakshi.PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
@@ -133,7 +137,7 @@ def _parse_current_document(document: dict) -> pakshi.PanchaPakshiProfile:
         admission_status=pakshi.PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
         default_selection_allowed=False,
         capabilities=_CURRENT_CAPABILITIES,
-        admission_decision_id=_ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID,
+        admission_decision_id=_CURRENT_1879_ADMISSION_DECISION_ID,
     )
 
 
@@ -148,12 +152,12 @@ def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
         "profiles",
     }
     assert manifest["schema_version"] == 2
-    assert manifest["generated_at_utc"] == "2026-07-20T21:27:47Z"
+    assert manifest["generated_at_utc"] == "2026-07-20T23:28:13Z"
     assert manifest["hash_algorithm"] == "sha256"
     assert manifest["hash_canonicalization"] == (
         "UTF-8 text with CRLF and CR normalized to LF before hashing"
     )
-    assert len(manifest["profiles"]) == 2
+    assert len(manifest["profiles"]) == 3
     entry = manifest["profiles"][0]
     assert entry == {
         "profile_id": _PROFILE_ID,
@@ -163,7 +167,7 @@ def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
         "product_kind": "aksara_prasna_operating_schedule",
         "default_selection_allowed": False,
         "capabilities": _CURRENT_CAPABILITY_VALUES,
-        "admission_decision_id": _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID,
+        "admission_decision_id": _CURRENT_1879_ADMISSION_DECISION_ID,
     }
     assert entry["sha256"] == _CURRENT_SCHEMA_V3_PROFILE_SHA256
     natal_entry = manifest["profiles"][1]
@@ -182,6 +186,24 @@ def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
     assert natal_entry["sha256"] == hashlib.sha256(
         _canonical_bytes(_NATAL_PROFILE)
     ).hexdigest()
+    padu_entry = manifest["profiles"][2]
+    assert padu_entry == {
+        "profile_id": "bogamuni_chennai_2024_padu_bird_mapping",
+        "path": _PADU_PROFILE.name,
+        "sha256": (
+                "5de0d1e28d47fad8be6a2a1ab648f2ed71eaf742be2775d166ea44981e96ff10"
+        ),
+        "admission_status": "source_scoped_public",
+        "product_kind": "padu_bird_mapping",
+        "default_selection_allowed": False,
+        "capabilities": ["padu_bird_mapping"],
+        "admission_decision_id": (
+            "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20"
+        ),
+    }
+    assert padu_entry["sha256"] == hashlib.sha256(
+        _canonical_bytes(_PADU_PROFILE)
+    ).hexdigest()
 
 
 def test_schema_v3_profile_requires_manifest_policy_keywords() -> None:
@@ -197,7 +219,7 @@ def test_schema_v3_profile_requires_manifest_policy_keywords() -> None:
             admission_status=pakshi.PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
             default_selection_allowed=True,
             capabilities=_CURRENT_CAPABILITIES,
-            admission_decision_id=_ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID,
+            admission_decision_id=_CURRENT_1879_ADMISSION_DECISION_ID,
         )
 
 
@@ -335,7 +357,7 @@ def test_public_admission_migrates_metadata_without_rewriting_frozen_evidence() 
     entry = manifest["profiles"][0]
     assert decision["decision_id"] == _PHASE_1_DECISION_ID
     assert entry["admission_decision_id"] == (
-        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
+        _CURRENT_1879_ADMISSION_DECISION_ID
     )
     assert admission["admission_status"] == entry["admission_status"]
     assert admission["product_kind"] == entry["product_kind"]
@@ -496,7 +518,7 @@ def test_local_solar_context_admission_is_additive_and_hash_bound() -> None:
     assert transition["profile_admission_status_changed"] is False
     assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert entry["admission_decision_id"] == (
-        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
+        _CURRENT_1879_ADMISSION_DECISION_ID
     )
 
     computation = decision["computational_object"]
@@ -687,7 +709,7 @@ def test_fixed_clock_materialization_admission_is_additive_and_hash_bound() -> N
     assert transition["profile_admission_status_changed"] is False
     assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert entry["admission_decision_id"] == (
-        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
+        _CURRENT_1879_ADMISSION_DECISION_ID
     )
 
     computation = decision["computational_object"]
@@ -938,7 +960,7 @@ def test_fixed_clock_current_cell_admission_is_additive_and_hash_bound() -> None
     assert transition["default_selection_policy_changed"] is False
     assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert entry["admission_decision_id"] == (
-        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
+        _CURRENT_1879_ADMISSION_DECISION_ID
     )
 
     computation = decision["computational_object"]
@@ -1204,7 +1226,7 @@ def test_solar_proportional_materialization_admission_is_additive_and_hash_bound
     assert transition["default_selection_policy_changed"] is False
     assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert entry["admission_decision_id"] == (
-        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
+        _CURRENT_1879_ADMISSION_DECISION_ID
     )
 
     computation = decision["computational_object"]
@@ -1482,7 +1504,7 @@ def test_solar_proportional_current_cell_admission_is_additive_and_hash_bound() 
     assert transition["default_selection_policy_changed"] is False
     assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert entry["admission_decision_id"] == (
-        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
+        _CURRENT_1879_ADMISSION_DECISION_ID
     )
 
     computation = decision["computational_object"]

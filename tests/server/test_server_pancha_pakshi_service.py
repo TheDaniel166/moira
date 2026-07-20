@@ -95,7 +95,7 @@ def test_profile_catalog_and_info_service_preserve_no_default_policy() -> None:
     info = pancha_pakshi_profile(_PROFILE_ID)
 
     assert catalog.default_profile_selected is False
-    assert catalog.total == 2
+    assert catalog.total == 3
     assert any(profile.profile_id == _PROFILE_ID for profile in catalog.profiles)
     assert info == pancha_pakshi_profile_info(_PROFILE_ID)
     serialized = serialize_profile_info(info)

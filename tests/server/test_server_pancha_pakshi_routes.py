@@ -333,7 +333,7 @@ def test_profiles_and_profile_info_expose_source_scope_without_a_default(
     assert profiles.status_code == 200
     catalog = profiles.json()
     assert catalog["default_profile_selected"] is False
-    assert catalog["total"] == 2
+    assert catalog["total"] == 3
     descriptor = next(item for item in catalog["profiles"] if item["profile_id"] == _PROFILE_ID)
     assert descriptor["admission_status"] == "source_scoped_public"
     assert descriptor["default_selection_allowed"] is False
@@ -1291,7 +1291,7 @@ def test_pancha_pakshi_routes_are_registered(client: TestClient) -> None:
         if route.path.startswith("/v1/pancha-pakshi/")
     }
 
-    assert len(paths) == 12
+    assert len(paths) == 14
     assert paths == {
         "/v1/pancha-pakshi/profiles",
         "/v1/pancha-pakshi/profiles/{profile_id}",
@@ -1300,11 +1300,13 @@ def test_pancha_pakshi_routes_are_registered(client: TestClient) -> None:
         "/v1/pancha-pakshi/context/astronomical-paksha",
         "/v1/pancha-pakshi/schedule/fixed-clock",
         "/v1/pancha-pakshi/schedule/fixed-clock/current-cell",
+        "/v1/pancha-pakshi/schedule/first-eat-bird",
         "/v1/pancha-pakshi/schedule/nominal",
         "/v1/pancha-pakshi/schedule/solar-proportional",
         "/v1/pancha-pakshi/schedule/solar-proportional/current-cell",
         "/v1/pancha-pakshi/context/local-solar",
         "/v1/pancha-pakshi/relationships/directed",
+        "/v1/pancha-pakshi/roles/padu",
     }
 
 

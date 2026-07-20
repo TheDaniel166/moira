@@ -9,17 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **First-Class Source-Scoped Pancha Pakshi**: Added immutable public vessels,
-  package-root and `moira.vedic` exports, six kernel-free `Moira` methods, one
+  package-root and `moira.vedic` exports, eight kernel-free `Moira` methods, one
   kernel-backed astronomical-paksha inference method, one
   kernel-backed local-solar context method, one kernel-backed fixed-clock
   materialization method, one kernel-backed fixed-clock current-cell method,
   one kernel-backed solar-proportional materialization method, one kernel-backed
   solar-proportional current-cell method, one kernel-backed natal-Moon identity
-  method, and twelve strict
+  method, and fourteen strict
   `/v1/pancha-pakshi` routes for profile discovery, aksara identity, exact
   nominal schedules, directed relationships, source-mapped astronomical
-  paksha, natal-Moon identity, local-solar context, and
-  fixed-clock and solar-proportional materialization plus their separately
+  paksha, natal-Moon identity, source-scoped Padu and first-samam EAT-seed
+  lookups, local-solar context,
+  and fixed-clock and solar-proportional materialization plus their separately
   governed current-cell selectors. Manifest schema 2 owns finite admission
   status, exact product capabilities, admission
   decision identity, and a permanently false default-selection flag. The
@@ -146,6 +147,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   bird mapping, and the policy publishes the canonical `Lahiri` token used by
   Moira's sidereal APIs. No default canon or automatic schedule routing is
   introduced, and the 1879 aksara profile is unchanged.
+- **Pancha Pakshi Padu-Bird Mapping**: Added the third source-scoped profile
+  `bogamuni_chennai_2024_padu_bird_mapping`, immutable
+  `PanchaPakshiPaduBirdMapping`, pure
+  `pancha_pakshi_padu_bird_mapping(...)`, matching `Moira` facade method, and
+  strict `POST /v1/pancha-pakshi/roles/padu`. Rendered-page inspection of the
+  Bogamuni 2024 original PDF (locally verified SHA-256
+  `035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`)
+  binds the governing Purva and Amara weekday stanzas to IA leaves `n52` and
+  `n60`, and the repeated combined table and commentary to `n157` and `n158`.
+  The declared stanza-precedence policy preserves exactly fourteen
+  Paksha-by-weekday cells with no day/night axis. Padu remains the source's
+  death-or-inoperative bird and is never converted into schedule `RULE`,
+  `first_eat_bird`, an authority-bird abstraction, or an Adhikara/Bharana
+  alias. The primary witnesses distinguish an eating-bird table and authority
+  days rather than presenting an `Adhikara Pakshi` table; Bharana remains
+  secondary-only terminology. Uromarisi 1934 and Bogar material remain
+  separately observed, unbound research context, not runtime cells or Stage 2H
+  admission proof. The strict API accepts only
+  explicit profile, source Paksha, and weekday and performs no astronomical or
+  civil-day routing, natal identity, schedule/materialization/current-cell
+  operation, condition, score, or forecast. The canonical profile, manifest,
+  and admission-decision hashes are respectively
+  `5de0d1e28d47fad8be6a2a1ab648f2ed71eaf742be2775d166ea44981e96ff10`,
+  `eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03`, and
+  `9ea7c871643bb8fc68d420223d0090ca91699154c761c67ccaf9201f401906cd`.
+- **Pancha Pakshi First-Samam EAT-Seed Mapping**: Added the granular
+  `first_eat_bird_mapping` capability to the unchanged 1879 profile, immutable
+  `PanchaPakshiFirstEatBirdMapping`, pure
+  `pancha_pakshi_first_eat_bird_mapping(...)`, matching `Moira` method, and
+  strict `POST /v1/pancha-pakshi/schedule/first-eat-bird`. Explicit profile
+  Paksha, day/night half, and weekday select exactly one of the 28 normalized
+  generator seeds bound to 1879 IA leaves `n16`, `n21`, `n26`, and `n31`; the
+  result exposes the generator ID, `first_eat_bird`, complete canonical
+  generator locators, and provenance without materializing a schedule. The
+  seed is not a whole-day eating bird, Padu, authority/Adhikara/Bharana role,
+  current activity, condition, score, electional judgment, or forecast.
+  Uromarisi 1934 corroborates all 28 cells as a separate publication, while
+  textual-lineage independence remains unestablished and no corroborating
+  witness supplies runtime data. The profile hash remains
+  `4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64`;
+  the Stage 2I manifest and admission-decision hashes are
+  `d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8`
+  and `83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807`.
 - **Pancha Pakshi Research And Admission Evidence**: Preserved the original
   blind reading, representative-grid reading, page-image adjudication, and
   machine reconciliation as frozen historical records. The adjudication
@@ -244,6 +288,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Source-table validation, boundary invariants, and DE441 execution are
   separate evidence classes; none is claimed as an external natal-identity
   oracle.
+- Stage 2H validation binds the governing Bogamuni leaves `n52` and `n60`, the
+  same-witness repetitions at `n157` and `n158`, all fourteen exact
+  Paksha-by-weekday cells, three canonical locators per result, profile/
+  manifest/decision hashes, immutable provenance, capability isolation, and
+  strict facade/REST/OpenAPI shapes. Adversarial checks reject day/night or
+  temporal fields, incomplete/duplicated/forged cells, foreign locators,
+  schedule-`RULE` conversion, `first_eat_bird` or Adhikara/Bharana relabelling,
+  and scoring or forecast claims. This is source-table and structural evidence,
+  not a condition, electional, or forecasting oracle.
+- Stage 2I validation binds all 28 first-samam EAT seeds to the four governing
+  1879 leaves and complete canonical generator locator tuples. Every lookup is
+  checked against the existing nominal schedule's `first_eat_bird` and first
+  EAT cell; adversarial tests cover immutable vessel/provenance truth,
+  capability and profile isolation, no materializer call, strict facade/REST/
+  OpenAPI shapes, and exact reconstruction of the frozen Stage 2F and Stage 2H
+  manifests. Uromarisi 1934 is recorded as separate-publication corroboration,
+  not independent-textual-lineage proof, runtime data, or a universal canon.
 
 ## [5.0.0] - 2026-07-19
 

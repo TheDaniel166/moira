@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20",
+  "decided_at_utc": "2026-07-20T22:42:10Z",
+  "decision_kind": "source_scoped_paksha_weekday_padu_bird_mapping",
+  "profile_id": "bogamuni_chennai_2024_padu_bird_mapping",
+  "prior_admission": {
+    "decision_id": "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20",
+    "fixture_path": "tests/fixtures/pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20.json",
+    "fixture_sha256": "3da998bc78c6c1fc4ec1c71629dc6b3872725ef25f73965474d5e894deec1575",
+    "relationship": "append_only_new_profile_no_mutation_or_implicit_composition"
+  },
+  "profile_binding": {
+    "path": "moira/data/pancha_pakshi_bogamuni_chennai_2024_padu_bird_mapping.json",
+    "sha256": "5de0d1e28d47fad8be6a2a1ab648f2ed71eaf742be2775d166ea44981e96ff10",
+    "admission_status": "source_scoped_public",
+    "product_kind": "padu_bird_mapping",
+    "default_selection_allowed": false,
+    "capabilities": [
+      "padu_bird_mapping"
+    ]
+  },
+  "manifest_binding": {
+    "path": "moira/data/pancha_pakshi_manifest.json",
+    "sha256": "eae9fc471da08eccf24515ef12cdaf59330aa1b7ad7f9d43432c7a1482704a03",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "profile_entry_decision_id": "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20"
+  },
+  "primary_source": {
+    "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "bibliographic_label": "Bogamuni-attributed Pancha Pakshi Sastram with commentary, R. C. Mohan editor, sixth edition, Thamarai Noolagam, Chennai, November 2024",
+    "archive_item_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+    "archive_pdf_source_status": "internet_archive_original",
+    "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+    "archive_pdf_sha1": "6ddad8f2577883f6859829f534e8ee7b8330ade8",
+    "locally_verified_pdf_sha256": "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990",
+    "review_method": "page_images_rendered_and_visually_inspected_ocr_used_only_for_navigation"
+  },
+  "source_readings": {
+    "purva_weekday_padu_birds": {
+      "governing_locator": "IA leaf n52 / PDF page 53 / printed page 43",
+      "entries": {
+        "sunday": "owl",
+        "monday": "crow",
+        "tuesday": "cock",
+        "wednesday": "peacock",
+        "thursday": "vulture",
+        "friday": "owl",
+        "saturday": "vulture"
+      }
+    },
+    "amara_weekday_padu_birds": {
+      "governing_locator": "IA leaf n60 / PDF page 61 / printed page 51",
+      "entries": {
+        "sunday": "crow",
+        "monday": "owl",
+        "tuesday": "vulture",
+        "wednesday": "peacock",
+        "thursday": "cock",
+        "friday": "peacock",
+        "saturday": "cock"
+      }
+    },
+    "repeated_combined_table": {
+      "table_locator": "IA leaf n157 / PDF page 158 / printed page 148",
+      "commentary_locator": "IA leaf n158 / PDF page 159 / printed page 149",
+      "role": "separate_repetition_within_same_witness_confirms_all_14_cells"
+    }
+  },
+  "computational_object": {
+    "source_owned_object": "profile_paksha_and_weekday_to_padu_bird_table",
+    "source_semantics": "weekday_death_or_inoperative_bird",
+    "input_axes": [
+      "explicit_profile_paksha",
+      "explicit_weekday"
+    ],
+    "output": "one_padu_bird",
+    "activity_equivalence": "not_equated_to_schedule_rule_or_any_instantaneous_activity",
+    "temporal_routing": "not_performed",
+    "profile_composition": "not_performed"
+  },
+  "validation_evidence": {
+    "exact_source_cells": 14,
+    "source_table_test": "tests/unit/test_pancha_pakshi_padu_bird_mapping.py",
+    "required_invariants": [
+      "one mapping for each of two source-profile Pakshas times seven weekdays",
+      "each cell binds its governing Paksha leaf and both combined-table leaves",
+      "no day or night half input",
+      "no instant location natal identity schedule condition score or forecast input",
+      "Padu is not PanchaPakshiActivity.RULE",
+      "both previously admitted profiles and their authority-bird omissions remain unchanged"
+    ]
+  },
+  "public_claim": "The named profile exposes the Bogamuni witness's normalized Paksha-and-weekday Padu-bird table as a pure immutable lookup.",
+  "public_nonclaims": [
+    "Padu is not generalized into a common authority-bird role.",
+    "No Adhikara or Bharana bird is admitted.",
+    "No astronomical Paksha inference is performed.",
+    "No day or night half, instant, location, natal bird, schedule, condition, score, or forecast is selected.",
+    "The Padu bird is not reinterpreted as the schedule's rule activity.",
+    "The Padu profile is not implicitly composed with either earlier admitted profile."
+  ],
+  "artifact_distribution_boundary": {
+    "status": "source_artifacts_not_packaged",
+    "distributed_material": "normalized_rules_code_schema_tests_and_provenance_only",
+    "excluded_material": "archive_pdf_scan_ocr_page_images_copied_layout_source_prose_and_third_party_translation"
+  }
+}

@@ -49,8 +49,10 @@ Implemented:
   Decans/Decanates direct and chart-backed decanate-placement plus Hermetic
   catalog/longitude/rising/night-hour routes
 - source-scoped Pancha Pakshi admission adds explicit-profile discovery,
-  aksara identity, exact nominal schedule, directed relationship, and bounded
-  astronomical-paksha inference, local-solar context, fixed-clock
+  aksara and natal identity, exact nominal schedule, directed relationship,
+  pure Padu and first-samam EAT-seed lookups, and bounded astronomical-paksha
+  inference, local-solar
+  context, fixed-clock
   materialization, and fixed-clock current-cell routes, plus separate
   solar-proportional materialization and current-cell routes; it selects no
   default, the inference route accepts neither location nor paksha, and all five
@@ -181,7 +183,7 @@ Not yet broadly exposed as REST families:
 | nine-parts | 1 |
 | occultations | 12 |
 | orbits | 2 |
-| pancha-pakshi | 12 |
+| pancha-pakshi | 14 |
 | panchanga | 4 |
 | parans | 8 |
 | patterns | 3 |
@@ -750,7 +752,9 @@ those relationship-chart routes.
 | GET | `/v1/pancha-pakshi/profiles/{profile_id}` | `pancha_pakshi_profile_route` |
 | POST | `/v1/pancha-pakshi/identity/aksara` | `pancha_pakshi_aksara_identity_route` |
 | POST | `/v1/pancha-pakshi/identity/natal-moon` | `pancha_pakshi_natal_moon_identity_route` |
+| POST | `/v1/pancha-pakshi/roles/padu` | `pancha_pakshi_padu_bird_mapping_route` |
 | POST | `/v1/pancha-pakshi/schedule/nominal` | `pancha_pakshi_nominal_schedule_route` |
+| POST | `/v1/pancha-pakshi/schedule/first-eat-bird` | `pancha_pakshi_first_eat_bird_mapping_route` |
 | POST | `/v1/pancha-pakshi/context/astronomical-paksha` | `pancha_pakshi_astronomical_paksha_route` |
 | POST | `/v1/pancha-pakshi/context/local-solar` | `pancha_pakshi_local_solar_context_route` |
 | POST | `/v1/pancha-pakshi/schedule/fixed-clock` | `pancha_pakshi_fixed_clock_materialization_route` |
@@ -761,10 +765,14 @@ those relationship-chart routes.
 
 Every computation request requires `profile_id`; no route selects a default.
 The first admitted profile,
-`agastya_madras_1879_akshara_fixed_clock`, exposes only the named 1879
-aksara/query-or-name-initial fixed-clock schedule and its stored directed
-relationship matrix. Schedule inputs are explicit source labels: `purva` or
-`amara`, `day` or `night`, and weekday.
+`agastya_madras_1879_akshara_fixed_clock`, binds the named 1879
+aksara/query-or-name-initial and operating-schedule source substrate. Its
+capability-gated products expose identity, nominal schedule, first-samam EAT
+seed, directed relationships, and separately labelled astronomical,
+local-solar, fixed-clock, and solar-proportional policies. They do not admit
+Padu, natal identity, condition, scoring, or forecasting semantics. Schedule
+inputs remain explicit source labels: `purva` or `amara`, `day` or `night`, and
+weekday.
 
 The additive Stage 2F request contains only `profile_id`, aware `dt`, and the
 required literal
@@ -825,6 +833,48 @@ corroborates the Purva grouping and exhibits a related malformed Amara
 commentary but is not imported into the runtime table. Neither archival source
 artifact, OCR, rendered page, source prose, copied layout, nor translation is
 bundled.
+
+The separate Stage 2H route requires
+`profile_id="bogamuni_chennai_2024_padu_bird_mapping"`, an explicit
+`profile_paksha` (`purva` or `amara`), and an explicit weekday. Those are its
+only request fields. The strict request rejects datetime, location, day/night
+half, schedule or activity fields, natal inputs, policy IDs, Adhikara/Bharana
+aliases, condition, score, and forecast controls.
+
+`PanchaPakshiPaduBirdMappingResponse` returns the explicit profile Paksha and
+weekday, one bird, `mapping_status="direct_source_attested"`, the exact
+death-or-inoperative source-table semantics, the stanza-precedence assembly
+policy, three canonical source locators, and profile provenance. Purva cells
+cite the governing Bogamuni leaf `n52`; Amara cells cite `n60`; all cells also
+cite the repeated combined table and commentary at `n157` and `n158`. The
+table has exactly fourteen cells and no day/night axis.
+
+Padu is not converted to the schedule's `RULE` activity, a current-time role,
+an authority bird, or the separately labelled eating bird. The primary
+witnesses label an eating-bird table and authority days rather than an
+`Adhikara Pakshi` table, while Bharana is secondary-only terminology. The API
+therefore admits neither alias nor product and does not relabel
+`first_eat_bird`. Uromarisi 1934 and Bogar material remain separately observed,
+unbound research context and supply no REST/runtime cell or Stage 2H admission
+proof.
+
+The Stage 2I route requires
+`profile_id="agastya_madras_1879_akshara_fixed_clock"`, explicit
+`profile_paksha` (`purva` or `amara`), explicit `half` (`day` or `night`), and
+an explicit weekday. Those are its only request fields. The strict request
+rejects datetime, location, inferred Paksha, Padu or authority aliases,
+schedule/materialization controls, natal inputs, condition, score, and forecast
+fields.
+
+`PanchaPakshiFirstEatBirdMappingResponse` returns the named generator ID, exact
+input axes, `first_eat_bird`, `mapping_status="direct_source_attested"`, fixed
+source-table semantics, the complete canonical generator locator tuple, and
+profile provenance. The 28 possible cells bind the governing 1879 leaves
+`n16`, `n21`, `n26`, and `n31`; the other returned locators are same-witness
+generator confirmation. The operation does not materialize the 25-cell
+schedule. Its bird is only that generator's first-samam EAT seed, not an
+ambient whole-day eating bird, Padu, an authority/Adhikara/Bharana bird,
+current activity, condition, score, electional judgment, or forecast.
 
 The additive local-solar context request contains `profile_id`, aware `dt`,
 `latitude`, `longitude`, caller-supplied `paksha`, and the required literal
@@ -930,9 +980,12 @@ is ambiently inserted into another operation. The family does not accept a
 caller-supplied natal Moon longitude, paksha/nakshatra/bird override on the
 natal route, caller-supplied sunrise, timezone policy, scoring rule, or inferred
 name. Natal identity occurs only on the explicit Stage 2G route. The family
-performs no implicit seasonal scaling, vinadi subdivision,
-Padu/Bharana/Adhikara computation, condition scoring, window search, or
-cross-witness normalization. Fixed 1,440-second
+performs no implicit seasonal scaling, vinadi subdivision, Bharana/Adhikara
+computation, condition scoring, window search, or cross-witness normalization.
+Padu lookup occurs only on the explicit Stage 2H pure-table route and never
+supplies an input to another operation. First-EAT lookup occurs only on the
+explicit Stage 2I pure-table route and never materializes or selects a current
+schedule. Fixed 1,440-second
 nominal-offset materialization occurs only on the explicit Stage 2B route;
 proportional full-half materialization occurs only on the explicit Stage 2D
 route under its distinct modern policy, and proportional current-cell selection
@@ -941,7 +994,10 @@ still returns no materialized interval, and Stage 2F never selects a schedule.
 Fixed-clock current-cell selection occurs only on the explicit Stage 2C route
 under its separate required policy and applies only to the Stage 2B fixed-clock
 cells. Stage 2G likewise never selects or materializes a schedule, current cell,
-score, or forecast.
+score, or forecast. Stage 2H accepts no instant or location and never selects a
+schedule, current cell, identity, condition, score, or forecast. Stage 2I also
+accepts no instant or location and returns only one source-scoped generator
+seed.
 
 ### Sidereal And Nakshatra Utility REST Admission Boundary
 

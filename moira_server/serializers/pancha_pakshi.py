@@ -14,6 +14,7 @@ from moira.pancha_pakshi import (
     PanchaPakshiFixedClockCurrentCellSelectionPolicy,
     PanchaPakshiFixedClockMaterialization,
     PanchaPakshiFixedClockMaterializationPolicy,
+    PanchaPakshiFirstEatBirdMapping,
     PanchaPakshiInitialVowelIdentity,
     PanchaPakshiLocalSolarContext,
     PanchaPakshiLocalSolarContextPolicy,
@@ -21,6 +22,7 @@ from moira.pancha_pakshi import (
     PanchaPakshiNatalMoonIdentity,
     PanchaPakshiNatalMoonIdentityPolicy,
     PanchaPakshiOmission,
+    PanchaPakshiPaduBirdMapping,
     PanchaPakshiProfileDescriptor,
     PanchaPakshiProfileInfo,
     PanchaPakshiProvenance,
@@ -46,6 +48,7 @@ from ..models.pancha_pakshi import (
     PanchaPakshiFixedClockCurrentCellSelectionPolicyResponse,
     PanchaPakshiFixedClockMaterializationPolicyResponse,
     PanchaPakshiFixedClockMaterializationResponse,
+    PanchaPakshiFirstEatBirdMappingResponse,
     PanchaPakshiFractionResponse,
     PanchaPakshiLocalSolarContextPolicyResponse,
     PanchaPakshiLocalSolarContextResponse,
@@ -54,6 +57,7 @@ from ..models.pancha_pakshi import (
     PanchaPakshiNatalMoonIdentityResponse,
     PanchaPakshiNominalScheduleResponse,
     PanchaPakshiOmissionResponse,
+    PanchaPakshiPaduBirdMappingResponse,
     PanchaPakshiProfileDescriptorResponse,
     PanchaPakshiProfileInfoResponse,
     PanchaPakshiProvenanceResponse,
@@ -234,6 +238,47 @@ def serialize_nakshatra_bird_mapping(
         mapping_status=mapping.mapping_status,
         source_table_semantics=mapping.source_table_semantics,
         assembly_policy=mapping.assembly_policy,
+        source_locators=[
+            serialize_source_locator(locator) for locator in mapping.source_locators
+        ],
+        provenance=serialize_provenance(mapping.provenance),
+    )
+
+
+def serialize_padu_bird_mapping(
+    mapping: PanchaPakshiPaduBirdMapping,
+) -> PanchaPakshiPaduBirdMappingResponse:
+    """Serialize one pure source-table Padu lookup without temporal fields."""
+
+    return PanchaPakshiPaduBirdMappingResponse(
+        profile_id=mapping.profile_id,
+        profile_paksha=mapping.profile_paksha,
+        weekday=mapping.weekday,
+        bird=mapping.bird,
+        mapping_status=mapping.mapping_status,
+        source_table_semantics=mapping.source_table_semantics,
+        assembly_policy=mapping.assembly_policy,
+        source_locators=[
+            serialize_source_locator(locator) for locator in mapping.source_locators
+        ],
+        provenance=serialize_provenance(mapping.provenance),
+    )
+
+
+def serialize_first_eat_bird_mapping(
+    mapping: PanchaPakshiFirstEatBirdMapping,
+) -> PanchaPakshiFirstEatBirdMappingResponse:
+    """Serialize one source-generator Eat seed without temporal inference."""
+
+    return PanchaPakshiFirstEatBirdMappingResponse(
+        profile_id=mapping.profile_id,
+        generator_id=mapping.generator_id,
+        profile_paksha=mapping.profile_paksha,
+        half=mapping.half,
+        weekday=mapping.weekday,
+        first_eat_bird=mapping.first_eat_bird,
+        mapping_status=mapping.mapping_status,
+        source_table_semantics=mapping.source_table_semantics,
         source_locators=[
             serialize_source_locator(locator) for locator in mapping.source_locators
         ],
