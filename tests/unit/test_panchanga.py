@@ -61,12 +61,9 @@ def _expected_tithi_index(sun_tropical: float, moon_tropical: float,
                            jd: float = _J2000) -> int:
     """
     Independent calculation of tithi index from first principles.
-    Uses the same ayanamsa as the module default (Lahiri).
+    Ayanamsa is a common longitude offset and cancels from elongation.
     """
-    from moira.sidereal import tropical_to_sidereal
-    sun_sid = tropical_to_sidereal(sun_tropical, jd, system="Lahiri")
-    moon_sid = tropical_to_sidereal(moon_tropical, jd, system="Lahiri")
-    diff = (moon_sid - sun_sid) % 360.0
+    diff = (moon_tropical - sun_tropical) % 360.0
     return min(int(diff / 12.0), 29)
 
 
@@ -422,11 +419,58 @@ class TestTithiPaksha:
         # Tithis 1–15 (indices 0–14) are Shukla Paksha
         for idx in range(0, 15):
             result = _panchanga(0.0, idx * 12.0 + 1.0)
-            assert result.tithi.index == idx or True  # index depends on ayanamsa
+            assert result.tithi.index == idx
         # Direct: if tithi.index < 15 → Shukla
         r = _panchanga(0.0, 6.0)   # Moon-Sun elongation ≈ 6° → tithi index ~0
         # Just verify classification constant values are stable
         assert TithiPaksha.SHUKLA != TithiPaksha.KRISHNA
+
+    @pytest.mark.parametrize(
+        "ayanamsa_system",
+        ["Lahiri", "Fagan-Bradley", "Raman"],
+    )
+    @pytest.mark.parametrize(
+        "elongation",
+        [float(value) for value in range(0, 360, 6)],
+    )
+    def test_exact_tithi_and_karana_boundaries_are_ayanamsa_independent(
+        self,
+        ayanamsa_system,
+        elongation,
+    ):
+        result = panchanga_at(
+            0.0,
+            elongation,
+            _J2000,
+            ayanamsa_system=ayanamsa_system,
+        )
+
+        assert result.tithi.index == int(elongation / 12.0)
+        assert result.karana.index == int(elongation / 6.0)
+
+    @pytest.mark.parametrize(
+        "ayanamsa_system",
+        ["Lahiri", "Fagan-Bradley", "Raman"],
+    )
+    def test_exact_new_and_full_moon_own_the_following_half(
+        self,
+        ayanamsa_system,
+    ):
+        new_moon = panchanga_at(
+            123.0,
+            123.0,
+            _J2000,
+            ayanamsa_system=ayanamsa_system,
+        )
+        full_moon = panchanga_at(
+            123.0,
+            303.0,
+            _J2000,
+            ayanamsa_system=ayanamsa_system,
+        )
+
+        assert new_moon.tithi.index == 0
+        assert full_moon.tithi.index == 15
 
 
 class TestYogaClass:

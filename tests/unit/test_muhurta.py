@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from moira.muhurta import classify_muhurta, score_muhurta
@@ -195,3 +197,14 @@ class TestPersonalMuhurtaScore:
         ps = personal_muhurta_score(pg, 15.0, 15.0)
         assert ps.tara.tara_name == "Janma"
         assert ps.breakdown["tara"] == pytest.approx(0.0)
+
+    def test_tara_indices_share_one_ulp_boundary_recovery(self) -> None:
+        pg = self._panchanga()
+        janma = math.nextafter(40.0 / 3.0, -math.inf)
+        transit = math.nextafter(80.0 / 3.0, -math.inf)
+
+        ps = personal_muhurta_score(pg, janma, transit)
+
+        assert ps.tara.janma_nakshatra_index == 1
+        assert ps.tara.target_nakshatra_index == 2
+        assert ps.tara.tara_name == "Sampat"

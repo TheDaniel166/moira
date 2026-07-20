@@ -16,6 +16,9 @@ _ROOT = Path(__file__).resolve().parents[2]
 _DATA = _ROOT / "moira" / "data"
 _MANIFEST = _DATA / "pancha_pakshi_manifest.json"
 _PROFILE = _DATA / "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json"
+_NATAL_PROFILE = (
+    _DATA / "pancha_pakshi_bogamuni_chennai_2024_nakshatra_natal_identity.json"
+)
 _INDEPENDENT_REVIEW = (
     _ROOT / "tests" / "fixtures" / "pancha_pakshi_1879_independent_review.json"
 )
@@ -67,7 +70,14 @@ _SOLAR_PROPORTIONAL_MATERIALIZATION_ADMISSION = (
     / "fixtures"
     / "pancha_pakshi_1879_solar_proportional_materialization_2026_07_20.json"
 )
+_SOLAR_PROPORTIONAL_CURRENT_CELL_ADMISSION = (
+    _ROOT
+    / "tests"
+    / "fixtures"
+    / "pancha_pakshi_1879_solar_proportional_current_cell_2026_07_20.json"
+)
 _PROFILE_ID = "agastya_madras_1879_akshara_fixed_clock"
+_NATAL_PROFILE_ID = "bogamuni_chennai_2024_nakshatra_natal_identity"
 _PRIOR_PROFILE_SHA256 = "02f1252cbcff10f680148b0213021d30db043c0ecc7387be727ad5d60de04e98"
 _PHASE_1_DECISION_ID = "pancha_pakshi_1879_source_scoped_public_2026_07_20"
 _LOCAL_SOLAR_CONTEXT_DECISION_ID = (
@@ -82,6 +92,30 @@ _FIXED_CLOCK_CURRENT_CELL_DECISION_ID = (
 _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID = (
     "pancha_pakshi_1879_solar_proportional_materialization_2026_07_20"
 )
+_SOLAR_PROPORTIONAL_CURRENT_CELL_DECISION_ID = (
+    "pancha_pakshi_1879_solar_proportional_current_cell_2026_07_20"
+)
+_ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID = (
+    "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
+)
+_SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256 = (
+    "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4"
+)
+_CURRENT_SCHEMA_V3_PROFILE_SHA256 = (
+    "4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64"
+)
+_CURRENT_CAPABILITIES = (
+    pakshi.PanchaPakshiCapability.AKSARA_IDENTITY,
+    pakshi.PanchaPakshiCapability.NOMINAL_SCHEDULE,
+    pakshi.PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
+    pakshi.PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+    pakshi.PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
+    pakshi.PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
+    pakshi.PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
+    pakshi.PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
+    pakshi.PanchaPakshiCapability.SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION,
+)
+_CURRENT_CAPABILITY_VALUES = [capability.value for capability in _CURRENT_CAPABILITIES]
 
 
 def _canonical_bytes(path: Path) -> bytes:
@@ -98,17 +132,10 @@ def _parse_current_document(document: dict) -> pakshi.PanchaPakshiProfile:
         document,
         admission_status=pakshi.PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
         default_selection_allowed=False,
-        capabilities=(
-            pakshi.PanchaPakshiCapability.AKSARA_IDENTITY,
-            pakshi.PanchaPakshiCapability.NOMINAL_SCHEDULE,
-            pakshi.PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
-            pakshi.PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
-            pakshi.PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
-            pakshi.PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
-            pakshi.PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
-        ),
-        admission_decision_id=_SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID,
+        capabilities=_CURRENT_CAPABILITIES,
+        admission_decision_id=_ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID,
     )
+
 
 def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
@@ -121,34 +148,43 @@ def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
         "profiles",
     }
     assert manifest["schema_version"] == 2
-    assert manifest["generated_at_utc"] == "2026-07-20T17:30:39Z"
+    assert manifest["generated_at_utc"] == "2026-07-20T21:27:47Z"
     assert manifest["hash_algorithm"] == "sha256"
     assert manifest["hash_canonicalization"] == (
         "UTF-8 text with CRLF and CR normalized to LF before hashing"
     )
-    assert len(manifest["profiles"]) == 1
+    assert len(manifest["profiles"]) == 2
     entry = manifest["profiles"][0]
     assert entry == {
         "profile_id": _PROFILE_ID,
         "path": _PROFILE.name,
-        "sha256": hashlib.sha256(_canonical_bytes(_PROFILE)).hexdigest(),
+        "sha256": _CURRENT_SCHEMA_V3_PROFILE_SHA256,
         "admission_status": "source_scoped_public",
         "product_kind": "aksara_prasna_operating_schedule",
         "default_selection_allowed": False,
-        "capabilities": [
-            "aksara_identity",
-            "nominal_schedule",
-            "directed_relationships",
-            "astronomical_context",
-            "fixed_clock_materialization",
-            "fixed_clock_current_cell_selection",
-            "solar_proportional_materialization",
-        ],
-        "admission_decision_id": _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID,
+        "capabilities": _CURRENT_CAPABILITY_VALUES,
+        "admission_decision_id": _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID,
     }
+    assert entry["sha256"] == _CURRENT_SCHEMA_V3_PROFILE_SHA256
+    natal_entry = manifest["profiles"][1]
+    assert natal_entry == {
+        "profile_id": _NATAL_PROFILE_ID,
+        "path": _NATAL_PROFILE.name,
+        "sha256": "e3642f61756ed7b8c413ddfbde2844769aea1994d4e69ae27594b2059b549b6a",
+        "admission_status": "source_scoped_public",
+        "product_kind": "natal_moon_bird_identity",
+        "default_selection_allowed": False,
+        "capabilities": ["nakshatra_bird_mapping", "natal_identity"],
+        "admission_decision_id": (
+            "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20"
+        ),
+    }
+    assert natal_entry["sha256"] == hashlib.sha256(
+        _canonical_bytes(_NATAL_PROFILE)
+    ).hexdigest()
 
 
-def test_schema_v2_profile_requires_manifest_policy_keywords() -> None:
+def test_schema_v3_profile_requires_manifest_policy_keywords() -> None:
     document = _document()
     profile = _parse_current_document(document)
     assert profile.admission_status is pakshi.PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC
@@ -160,18 +196,8 @@ def test_schema_v2_profile_requires_manifest_policy_keywords() -> None:
             document,
             admission_status=pakshi.PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
             default_selection_allowed=True,
-            capabilities=(
-                pakshi.PanchaPakshiCapability.AKSARA_IDENTITY,
-                pakshi.PanchaPakshiCapability.NOMINAL_SCHEDULE,
-                pakshi.PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
-                pakshi.PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
-                pakshi.PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
-                pakshi.PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
-                pakshi.PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
-            ),
-            admission_decision_id=(
-                _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID
-            ),
+            capabilities=_CURRENT_CAPABILITIES,
+            admission_decision_id=_ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID,
         )
 
 
@@ -259,9 +285,10 @@ def test_public_admission_migrates_metadata_without_rewriting_frozen_evidence() 
     assert migration["prior_schema_version"] == 1
     assert migration["current_schema_version"] == 2
     assert migration["prior_profile_sha256"] == _PRIOR_PROFILE_SHA256
-    assert migration["current_profile_sha256"] == hashlib.sha256(
-        _canonical_bytes(_PROFILE)
-    ).hexdigest()
+    assert (
+        migration["current_profile_sha256"]
+        == _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
     assert migration["metadata_changes_only"] == [
         "profile schema version 1 to 2",
         "admission state moved from profile facts to manifest policy",
@@ -308,7 +335,7 @@ def test_public_admission_migrates_metadata_without_rewriting_frozen_evidence() 
     entry = manifest["profiles"][0]
     assert decision["decision_id"] == _PHASE_1_DECISION_ID
     assert entry["admission_decision_id"] == (
-        _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID
+        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
     )
     assert admission["admission_status"] == entry["admission_status"]
     assert admission["product_kind"] == entry["product_kind"]
@@ -318,13 +345,7 @@ def test_public_admission_migrates_metadata_without_rewriting_frozen_evidence() 
         "nominal_schedule",
         "directed_relationships",
     ]
-    assert entry["capabilities"] == [
-        *admission["capabilities"],
-        "astronomical_context",
-        "fixed_clock_materialization",
-        "fixed_clock_current_cell_selection",
-        "solar_proportional_materialization",
-    ]
+    assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert admission["governing_witness_id"] == _document()["source"]["witness_id"]
     assert admission["astronomical_routing_status"] == "not_performed"
     assert admission["exact_public_claim"] == (
@@ -409,19 +430,21 @@ def test_local_solar_context_admission_is_additive_and_hash_bound() -> None:
         "moira/data/"
         "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json"
     )
-    assert profile_binding["sha256"] == hashlib.sha256(
-        _canonical_bytes(_PROFILE)
-    ).hexdigest()
+    assert profile_binding["sha256"] == _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
     assert profile_binding["profile_content_changed"] is False
     assert profile_binding["admission_status"] == "source_scoped_public"
     assert profile_binding["default_selection_allowed"] is False
 
     transition = decision["manifest_transition"]
     reconstructed_phase_1_manifest = copy.deepcopy(manifest)
+    reconstructed_phase_1_manifest["profiles"] = [copy.deepcopy(entry)]
     reconstructed_phase_1_manifest["generated_at_utc"] = (
         phase_1["decided_at_utc"]
     )
     reconstructed_phase_1_entry = reconstructed_phase_1_manifest["profiles"][0]
+    reconstructed_phase_1_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
     reconstructed_phase_1_entry["capabilities"] = phase_1["admission"][
         "capabilities"
     ]
@@ -440,8 +463,12 @@ def test_local_solar_context_admission_is_additive_and_hash_bound() -> None:
         reconstructed_phase_1_bytes
     ).hexdigest()
     reconstructed_stage_2a_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2a_manifest["profiles"] = [copy.deepcopy(entry)]
     reconstructed_stage_2a_manifest["generated_at_utc"] = decision["decided_at_utc"]
     reconstructed_stage_2a_entry = reconstructed_stage_2a_manifest["profiles"][0]
+    reconstructed_stage_2a_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
     reconstructed_stage_2a_entry["capabilities"] = transition[
         "current_capabilities"
     ]
@@ -467,14 +494,9 @@ def test_local_solar_context_admission_is_additive_and_hash_bound() -> None:
     assert transition["added_capability"] == "astronomical_context"
     assert transition["profile_product_kind_changed"] is False
     assert transition["profile_admission_status_changed"] is False
-    assert entry["capabilities"] == [
-        *transition["current_capabilities"],
-        "fixed_clock_materialization",
-        "fixed_clock_current_cell_selection",
-        "solar_proportional_materialization",
-    ]
+    assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert entry["admission_decision_id"] == (
-        _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID
+        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
     )
 
     computation = decision["computational_object"]
@@ -592,22 +614,21 @@ def test_fixed_clock_materialization_admission_is_additive_and_hash_bound() -> N
         "moira/data/"
         "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json"
     )
-    assert profile_binding["sha256"] == hashlib.sha256(
-        _canonical_bytes(_PROFILE)
-    ).hexdigest()
-    assert profile_binding["sha256"] == (
-        "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4"
-    )
+    assert profile_binding["sha256"] == _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
     assert profile_binding["profile_content_changed"] is False
     assert profile_binding["admission_status"] == "source_scoped_public"
     assert profile_binding["default_selection_allowed"] is False
 
     transition = decision["manifest_transition"]
     reconstructed_stage_2a_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2a_manifest["profiles"] = [copy.deepcopy(entry)]
     reconstructed_stage_2a_manifest["generated_at_utc"] = stage_2a[
         "decided_at_utc"
     ]
     reconstructed_stage_2a_entry = reconstructed_stage_2a_manifest["profiles"][0]
+    reconstructed_stage_2a_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
     reconstructed_stage_2a_entry["capabilities"] = stage_2a[
         "manifest_transition"
     ]["current_capabilities"]
@@ -629,10 +650,14 @@ def test_fixed_clock_materialization_admission_is_additive_and_hash_bound() -> N
         "4587306ded9b5760940e7f80c45b6c40132590473e910ea9350c9d7fa141a2ee"
     )
     reconstructed_stage_2b_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2b_manifest["profiles"] = [copy.deepcopy(entry)]
     reconstructed_stage_2b_manifest["generated_at_utc"] = decision[
         "decided_at_utc"
     ]
     reconstructed_stage_2b_entry = reconstructed_stage_2b_manifest["profiles"][0]
+    reconstructed_stage_2b_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
     reconstructed_stage_2b_entry["capabilities"] = transition[
         "current_capabilities"
     ]
@@ -660,13 +685,9 @@ def test_fixed_clock_materialization_admission_is_additive_and_hash_bound() -> N
     assert transition["added_capability"] == "fixed_clock_materialization"
     assert transition["profile_product_kind_changed"] is False
     assert transition["profile_admission_status_changed"] is False
-    assert entry["capabilities"] == [
-        *transition["current_capabilities"],
-        "fixed_clock_current_cell_selection",
-        "solar_proportional_materialization",
-    ]
+    assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert entry["admission_decision_id"] == (
-        _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID
+        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
     )
 
     computation = decision["computational_object"]
@@ -833,7 +854,7 @@ def test_fixed_clock_current_cell_admission_is_additive_and_hash_bound() -> None
             "moira/data/"
             "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json"
         ),
-        "sha256": hashlib.sha256(_canonical_bytes(_PROFILE)).hexdigest(),
+        "sha256": _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256,
         "profile_content_changed": False,
         "admission_status": "source_scoped_public",
         "product_kind": "aksara_prasna_operating_schedule",
@@ -845,10 +866,14 @@ def test_fixed_clock_current_cell_admission_is_additive_and_hash_bound() -> None
 
     transition = decision["manifest_transition"]
     reconstructed_stage_2b_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2b_manifest["profiles"] = [copy.deepcopy(entry)]
     reconstructed_stage_2b_manifest["generated_at_utc"] = stage_2b[
         "decided_at_utc"
     ]
     reconstructed_stage_2b_entry = reconstructed_stage_2b_manifest["profiles"][0]
+    reconstructed_stage_2b_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
     reconstructed_stage_2b_entry["capabilities"] = stage_2b[
         "manifest_transition"
     ]["current_capabilities"]
@@ -870,10 +895,14 @@ def test_fixed_clock_current_cell_admission_is_additive_and_hash_bound() -> None
         "766f92650bc050f4c88670f8fd6307036ff49a97e812c9efc9a428fb76e53e17"
     )
     reconstructed_stage_2c_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2c_manifest["profiles"] = [copy.deepcopy(entry)]
     reconstructed_stage_2c_manifest["generated_at_utc"] = decision[
         "decided_at_utc"
     ]
     reconstructed_stage_2c_entry = reconstructed_stage_2c_manifest["profiles"][0]
+    reconstructed_stage_2c_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
     reconstructed_stage_2c_entry["capabilities"] = transition[
         "current_capabilities"
     ]
@@ -907,12 +936,9 @@ def test_fixed_clock_current_cell_admission_is_additive_and_hash_bound() -> None
     assert transition["profile_product_kind_changed"] is False
     assert transition["profile_admission_status_changed"] is False
     assert transition["default_selection_policy_changed"] is False
-    assert entry["capabilities"] == [
-        *transition["current_capabilities"],
-        "solar_proportional_materialization",
-    ]
+    assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
     assert entry["admission_decision_id"] == (
-        _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID
+        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
     )
 
     computation = decision["computational_object"]
@@ -1094,7 +1120,7 @@ def test_solar_proportional_materialization_admission_is_additive_and_hash_bound
             "moira/data/"
             "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json"
         ),
-        "sha256": hashlib.sha256(_canonical_bytes(_PROFILE)).hexdigest(),
+        "sha256": _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256,
         "profile_content_changed": False,
         "admission_status": "source_scoped_public",
         "product_kind": "aksara_prasna_operating_schedule",
@@ -1106,10 +1132,14 @@ def test_solar_proportional_materialization_admission_is_additive_and_hash_bound
 
     transition = decision["manifest_transition"]
     reconstructed_stage_2c_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2c_manifest["profiles"] = [copy.deepcopy(entry)]
     reconstructed_stage_2c_manifest["generated_at_utc"] = stage_2c[
         "decided_at_utc"
     ]
     reconstructed_stage_2c_entry = reconstructed_stage_2c_manifest["profiles"][0]
+    reconstructed_stage_2c_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
     reconstructed_stage_2c_entry["capabilities"] = stage_2c[
         "manifest_transition"
     ]["current_capabilities"]
@@ -1130,8 +1160,31 @@ def test_solar_proportional_materialization_admission_is_additive_and_hash_bound
     assert transition["prior_manifest_sha256"] == (
         "366f13deb4b213267b7a6e937b776cd3c3908178e11b29ba238fb3ed47f25e44"
     )
+    reconstructed_stage_2d_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2d_manifest["profiles"] = [copy.deepcopy(entry)]
+    reconstructed_stage_2d_manifest["generated_at_utc"] = decision[
+        "decided_at_utc"
+    ]
+    reconstructed_stage_2d_entry = reconstructed_stage_2d_manifest["profiles"][0]
+    reconstructed_stage_2d_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
+    reconstructed_stage_2d_entry["capabilities"] = transition[
+        "current_capabilities"
+    ]
+    reconstructed_stage_2d_entry["admission_decision_id"] = decision[
+        "decision_id"
+    ]
+    reconstructed_stage_2d_bytes = (
+        json.dumps(
+            reconstructed_stage_2d_manifest,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
     assert transition["current_manifest_sha256"] == hashlib.sha256(
-        _canonical_bytes(_MANIFEST)
+        reconstructed_stage_2d_bytes
     ).hexdigest()
     assert transition["current_manifest_sha256"] == (
         "6dbbf05383c7a4eb3eadebf70fdb1130ab5081ef83175bc387755ffda4db9121"
@@ -1149,8 +1202,10 @@ def test_solar_proportional_materialization_admission_is_additive_and_hash_bound
     assert transition["profile_product_kind_changed"] is False
     assert transition["profile_admission_status_changed"] is False
     assert transition["default_selection_policy_changed"] is False
-    assert entry["capabilities"] == transition["current_capabilities"]
-    assert entry["admission_decision_id"] == decision["decision_id"]
+    assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
+    assert entry["admission_decision_id"] == (
+        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
+    )
 
     computation = decision["computational_object"]
     assert computation["engine_function"] == (
@@ -1273,9 +1328,346 @@ def test_solar_proportional_materialization_admission_is_additive_and_hash_bound
     }
 
 
-def test_schema_v2_metadata_migration_reconstructs_frozen_profile_hash() -> None:
+def test_solar_proportional_current_cell_admission_is_additive_and_hash_bound() -> None:
+    decision = json.loads(
+        _SOLAR_PROPORTIONAL_CURRENT_CELL_ADMISSION.read_text(
+            encoding="utf-8"
+        )
+    )
+    stage_2d = json.loads(
+        _SOLAR_PROPORTIONAL_MATERIALIZATION_ADMISSION.read_text(
+            encoding="utf-8"
+        )
+    )
+    manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+    entry = manifest["profiles"][0]
+
+    assert set(decision) == {
+        "schema_version",
+        "decision_id",
+        "decided_at_utc",
+        "decision_kind",
+        "profile_id",
+        "prior_admission",
+        "profile_binding",
+        "manifest_transition",
+        "computational_object",
+        "selection_doctrine",
+        "authority_and_provenance",
+        "validation_evidence",
+        "public_claim",
+        "public_nonclaims",
+        "artifact_distribution_boundary",
+    }
+    assert decision["schema_version"] == 1
+    assert decision["decision_id"] == (
+        _SOLAR_PROPORTIONAL_CURRENT_CELL_DECISION_ID
+    )
+    assert decision["decision_kind"] == (
+        "additive_modern_solar_proportional_current_cell_selection_admission"
+    )
+    assert decision["profile_id"] == _PROFILE_ID
+    assert pakshi._require_utc_timestamp(
+        decision["decided_at_utc"],
+        "solar_proportional_current_cell.decided_at_utc",
+    ) == decision["decided_at_utc"]
+    assert hashlib.sha256(
+        _canonical_bytes(_SOLAR_PROPORTIONAL_CURRENT_CELL_ADMISSION)
+    ).hexdigest() == (
+        "4ddf0a5fa5b680fa83a7bb3052ecbc5d1a9c2f685c466290f22121dd02724d18"
+    )
+
+    prior = decision["prior_admission"]
+    assert prior == {
+        "decision_id": _SOLAR_PROPORTIONAL_MATERIALIZATION_DECISION_ID,
+        "fixture_path": _SOLAR_PROPORTIONAL_MATERIALIZATION_ADMISSION.name,
+        "fixture_sha256": hashlib.sha256(
+            _canonical_bytes(_SOLAR_PROPORTIONAL_MATERIALIZATION_ADMISSION)
+        ).hexdigest(),
+        "hash_canonicalization": (
+            "UTF-8 text with CRLF and CR normalized to LF"
+        ),
+    }
+    assert prior["fixture_sha256"] == (
+        "e31e0664090b9a38bdcd52b660c04998a0412eab223f4a84fe745b9e54d25383"
+    )
+
+    profile_binding = decision["profile_binding"]
+    assert profile_binding == {
+        "path": (
+            "moira/data/"
+            "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json"
+        ),
+        "sha256": _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256,
+        "profile_content_changed": False,
+        "admission_status": "source_scoped_public",
+        "product_kind": "aksara_prasna_operating_schedule",
+        "default_selection_allowed": False,
+    }
+    assert profile_binding["sha256"] == (
+        "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4"
+    )
+
+    transition = decision["manifest_transition"]
+    reconstructed_stage_2d_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2d_manifest["profiles"] = [copy.deepcopy(entry)]
+    reconstructed_stage_2d_manifest["generated_at_utc"] = stage_2d[
+        "decided_at_utc"
+    ]
+    reconstructed_stage_2d_entry = reconstructed_stage_2d_manifest["profiles"][0]
+    reconstructed_stage_2d_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
+    reconstructed_stage_2d_entry["capabilities"] = stage_2d[
+        "manifest_transition"
+    ]["current_capabilities"]
+    reconstructed_stage_2d_entry["admission_decision_id"] = stage_2d[
+        "decision_id"
+    ]
+    reconstructed_stage_2d_bytes = (
+        json.dumps(
+            reconstructed_stage_2d_manifest,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
+    assert transition["prior_manifest_sha256"] == hashlib.sha256(
+        reconstructed_stage_2d_bytes
+    ).hexdigest()
+    assert transition["prior_manifest_sha256"] == (
+        "6dbbf05383c7a4eb3eadebf70fdb1130ab5081ef83175bc387755ffda4db9121"
+    )
+    reconstructed_stage_2e_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2e_manifest["profiles"] = [copy.deepcopy(entry)]
+    reconstructed_stage_2e_manifest["generated_at_utc"] = decision[
+        "decided_at_utc"
+    ]
+    reconstructed_stage_2e_entry = reconstructed_stage_2e_manifest["profiles"][0]
+    reconstructed_stage_2e_entry["sha256"] = (
+        _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+    )
+    reconstructed_stage_2e_entry["capabilities"] = transition[
+        "current_capabilities"
+    ]
+    reconstructed_stage_2e_entry["admission_decision_id"] = decision[
+        "decision_id"
+    ]
+    reconstructed_stage_2e_bytes = (
+        json.dumps(
+            reconstructed_stage_2e_manifest,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
+    assert transition["current_manifest_sha256"] == hashlib.sha256(
+        reconstructed_stage_2e_bytes
+    ).hexdigest()
+    assert transition["current_manifest_sha256"] == (
+        "d2b5f8f1ae7e067d257eeb24b533be1d33349446d56d361ea59f4a71472eca70"
+    )
+    assert transition["prior_capabilities"] == stage_2d[
+        "manifest_transition"
+    ]["current_capabilities"]
+    assert transition["current_capabilities"] == [
+        *transition["prior_capabilities"],
+        "solar_proportional_current_cell_selection",
+    ]
+    assert transition["added_capability"] == (
+        "solar_proportional_current_cell_selection"
+    )
+    assert transition["profile_product_kind_changed"] is False
+    assert transition["profile_admission_status_changed"] is False
+    assert transition["default_selection_policy_changed"] is False
+    assert entry["capabilities"] == _CURRENT_CAPABILITY_VALUES
+    assert entry["admission_decision_id"] == (
+        _ASTRONOMICAL_PAKSHA_INFERENCE_DECISION_ID
+    )
+
+    computation = decision["computational_object"]
+    assert computation["engine_function"] == (
+        "pancha_pakshi_solar_proportional_current_cell_at"
+    )
+    assert computation["facade_method"] == (
+        "Moira.pancha_pakshi_solar_proportional_current_cell"
+    )
+    assert computation["rest_route"] == (
+        "POST /v1/pancha-pakshi/schedule/solar-proportional/current-cell"
+    )
+    assert computation["result_vessel"] == (
+        "PanchaPakshiSolarProportionalCurrentCellSelection"
+    )
+    assert computation["policy_vessel"] == (
+        "PanchaPakshiSolarProportionalCurrentCellSelectionPolicy"
+    )
+    assert computation["cell_vessel"] == "PanchaPakshiSolarProportionalCell"
+    assert computation["selection_status_enum"] == (
+        "PanchaPakshiCurrentCellSelectionStatus"
+    )
+    assert computation["admitted_selection_status_values"] == ["selected"]
+    assert computation["policy"] == {
+        "policy_id": (
+            "solar_proportional_current_cell_half_open_solar_precedence_v1"
+        ),
+        "materialization_policy_id": (
+            "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+        ),
+        "paksha_basis": "caller_supplied_source_label",
+        "selection_time_scale": "reader_bound_tt",
+        "interval_ownership": "half_open",
+        "solar_half_precedence": (
+            "resolve_governing_solar_half_before_selection"
+        ),
+        "membership_tolerance_seconds": 0.0,
+        "coverage_requirement": "complete_governing_solar_half",
+        "required_match_count": 1,
+        "unmaterialized_solar_half_tail_status": "not_applicable",
+        "invalid_match_policy": "fail_closed",
+        "fixed_clock_mixing_status": "not_performed",
+        "astronomical_paksha_inference_status": "not_performed",
+    }
+    assert computation["provenance_routing_status"] == (
+        "solar_proportional_current_cell_selection_performed_paksha_caller_"
+        "supplied_no_fixed_clock_mixing_or_inference"
+    )
+
+    doctrine = decision["selection_doctrine"]
+    assert "governing half-open local-solar half first" in doctrine[
+        "composition_rule"
+    ]
+    assert "start_jd_tt <= requested_jd_tt < end_jd_tt" in doctrine[
+        "cell_membership_rule"
+    ]
+    assert "newly governing half" in doctrine[
+        "solar_boundary_precedence_rule"
+    ]
+    assert "exactly one proportional cell" in doctrine[
+        "complete_coverage_rule"
+    ]
+    assert "only admitted Stage 2E result status is selected" in doctrine[
+        "selection_status_rule"
+    ]
+    assert "zero or multiple match fails closed" in doctrine["tolerance_rule"]
+    assert "substitute fixed-clock cells" in doctrine["no_repair_rule"]
+    assert "Fail explicitly" in doctrine["polar_policy"]
+
+    authority = decision["authority_and_provenance"]
+    assert authority["policy_origin"] == (
+        "modern_moira_interval_membership_policy"
+    )
+    prior_materialization = authority["prior_materialization_binding"]
+    assert prior_materialization["decision_sha256"] == prior["fixture_sha256"]
+    assert prior_materialization["policy_id"] == (
+        "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+    )
+    assert authority["membership_authority"]["authority_kind"] == (
+        "declared_moira_policy_and_structural_invariant"
+    )
+    inherited_omission = authority["inherited_route_specific_omission"]
+    assert inherited_omission["feature"] == (
+        "source_attested_solar_proportional_materialization"
+    )
+    assert inherited_omission["status"] == "omitted"
+    assert "changes only the astronomical routing status" in (
+        inherited_omission["rule"]
+    )
+    assert authority["external_pancha_pakshi_current_cell_oracle_status"] == (
+        "none"
+    )
+    assert authority["independent_witness_corroboration_status"] == (
+        "not_performed"
+    )
+
+    validation = decision["validation_evidence"]
+    assert validation["evidence_class"] == (
+        "structural_and_physical_invariants_over_admitted_stage_2d_"
+        "materialization"
+    )
+    assert "inclusive anchor" in validation["membership_semantics"]
+    assert "no null or tail state exists" in validation[
+        "complete_coverage_semantics"
+    ]
+    assert "zero and multiple TT matches fail closed" in validation[
+        "invalid_cardinality_semantics"
+    ]
+    assert "converted exactly once" in validation["time_scale_semantics"]
+    assert "changes only its routing status" in validation[
+        "provenance_semantics"
+    ]
+    assert validation["external_current_cell_validation"] == (
+        "none_no_external_oracle_claimed"
+    )
+    assert validation["accuracy_claim"] == (
+        "no_new_solar_boundary_proportional_timing_or_historical_accuracy_claim"
+    )
+    assert {
+        "historical attestation that the 1879 witness prescribed proportional sunrise-to-sunset timing or Moira's current-cell policy",
+        "astronomical or lunar inference of Purva or Amara paksha",
+        "fixed 1440-second nazhigai materialization or fallback",
+        "a null or unmaterialized solar-half tail result",
+        "natal Moon or nakshatra identity",
+        "condition evaluation, scoring, or electional window search",
+        "external-oracle parity or independent-witness corroboration",
+        "a universal or default Pancha Pakshi canon",
+    } <= set(decision["public_nonclaims"])
+    assert decision["artifact_distribution_boundary"] == {
+        "source_artifact_policy_changed": False,
+        "profile_source_artifact_added": False,
+        "policy_effect": (
+            "The standing non-bundling architecture remains unchanged. "
+            "Stage 2E composes only already admitted symbolic facts, "
+            "astronomical intervals, and deterministic interval membership; "
+            "no archival scan, copied source expression, or third-party "
+            "artifact is distributed."
+        ),
+    }
+
+
+def test_schema_v3_to_v2_to_v1_migrations_reconstruct_frozen_profile_hash() -> None:
     current = _PROFILE.read_text(encoding="utf-8")
-    prior = current.replace('"schema_version": 2', '"schema_version": 1', 1)
+    schema_v2 = current.replace('"schema_version": 3', '"schema_version": 2', 1)
+    schema_v2 = schema_v2.replace(
+        '"label": "IA leaf n16: explicit waxing/Purva mapping, Purva-day '
+        'weekday first-EAT verse, and representative prose",',
+        '"label": "IA leaf n16: Purva-day weekday first-EAT verse and '
+        'representative prose",',
+        1,
+    )
+    schema_v2 = schema_v2.replace(
+        '"label": "IA leaf n26: explicit waning/Amara mapping, Amara-day '
+        'weekday first-EAT verse, and progression rule",',
+        '"label": "IA leaf n26: Amara-day weekday first-EAT verse and '
+        'progression rule",',
+        1,
+    )
+    schema_v2 = schema_v2.replace(
+        '"evidence_role": '
+        '"explicit_lunar_phase_half_mapping_and_current_schedule_rule_reading"',
+        '"evidence_role": "current_schedule_rule_reading"',
+        2,
+    )
+    schema_v2 = schema_v2.replace(
+        '  "lunar_paksha_mapping": {\n'
+        '    "mapping_kind": '
+        '"source_attested_lunar_phase_half_to_profile_paksha",\n'
+        '    "entries": [\n'
+        '      {"lunar_phase_half": "waxing", "profile_paksha": "purva", '
+        '"source_locators": ["ia_n16"]},\n'
+        '      {"lunar_phase_half": "waning", "profile_paksha": "amara", '
+        '"source_locators": ["ia_n26"]}\n'
+        '    ]\n'
+        '  },\n',
+        "",
+        1,
+    )
+    assert '"schema_version": 2' in schema_v2
+    assert '"lunar_paksha_mapping"' not in schema_v2
+    assert hashlib.sha256(
+        schema_v2.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+    ).hexdigest() == _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256
+
+    prior = schema_v2.replace('"schema_version": 2', '"schema_version": 1', 1)
     prior = prior.replace(
         '    {"feature": "authority_birds", "status": "omitted", '
         '"reason": "No source-owned Padu, Bharana, or Adhikara bird product '

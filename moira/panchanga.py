@@ -723,7 +723,10 @@ def panchanga_at(
     # ------------------------------------------------------------------
     # Tithi  (Moon–Sun elongation / 12°)
     # ------------------------------------------------------------------
-    diff_ms = (moon_sid - sun_sid) % 360.0
+    # Ayanamsa is a common angular offset and therefore cancels from the
+    # Moon-Sun elongation. Subtract the supplied tropical longitudes directly
+    # so exact phase boundaries cannot acquire ayanamsa-dependent ownership.
+    diff_ms = (moon_tropical_lon - sun_tropical_lon) % 360.0
     tithi_idx = int(diff_ms / 12.0)                # 0–29
     tithi_idx = min(tithi_idx, 29)                 # floating-point safety at 360°
     deg_in_tithi = diff_ms - tithi_idx * 12.0

@@ -528,7 +528,7 @@ def ashtottari(
     if not math.isfinite(natal_jd):
         raise ValueError("natal_jd must be finite")
 
-    from .sidereal import tropical_to_sidereal, NAKSHATRA_SPAN
+    from .sidereal import NAKSHATRA_SPAN, _nakshatra_sector, tropical_to_sidereal
 
     year_days = _resolve_year_days(policy.year_basis)
     levels = max(1, min(levels, 4))
@@ -546,9 +546,7 @@ def ashtottari(
     sid_lon = tropical_to_sidereal(
         moon_tropical_lon, natal_jd, system=policy.ayanamsa_system
     )
-    nak_idx = int(sid_lon % 360.0 / NAKSHATRA_SPAN)
-    nak_idx = min(nak_idx, 26)
-    deg_in_nak = (sid_lon % 360.0) - nak_idx * NAKSHATRA_SPAN
+    _, nak_idx, deg_in_nak = _nakshatra_sector(sid_lon)
     fraction_elapsed = deg_in_nak / NAKSHATRA_SPAN
 
     starting_lord = ASHTOTTARI_NAKSHATRA_LORD[nak_idx]
@@ -604,7 +602,7 @@ def yogini_dasha(
     if not math.isfinite(natal_jd):
         raise ValueError("natal_jd must be finite")
 
-    from .sidereal import tropical_to_sidereal, NAKSHATRA_SPAN
+    from .sidereal import NAKSHATRA_SPAN, _nakshatra_sector, tropical_to_sidereal
 
     year_days = _resolve_year_days(policy.year_basis)
     levels = max(1, min(levels, 4))
@@ -613,9 +611,7 @@ def yogini_dasha(
     sid_lon = tropical_to_sidereal(
         moon_tropical_lon, natal_jd, system=policy.ayanamsa_system
     )
-    nak_idx = int(sid_lon % 360.0 / NAKSHATRA_SPAN)
-    nak_idx = min(nak_idx, 26)
-    deg_in_nak = (sid_lon % 360.0) - nak_idx * NAKSHATRA_SPAN
+    _, nak_idx, deg_in_nak = _nakshatra_sector(sid_lon)
     fraction_elapsed = deg_in_nak / NAKSHATRA_SPAN
 
     # Starting Yogini index

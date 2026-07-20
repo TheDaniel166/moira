@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "profile": {
     "profile_id": "agastya_madras_1879_akshara_fixed_clock",
     "product_kind": "aksara_prasna_operating_schedule",
@@ -57,9 +57,9 @@
     {
       "locator_id": "ia_n16",
       "witness_id": "dli.rmrl.000451_images",
-      "label": "IA leaf n16: Purva-day weekday first-EAT verse and representative prose",
+      "label": "IA leaf n16: explicit waxing/Purva mapping, Purva-day weekday first-EAT verse, and representative prose",
       "url": "https://archive.org/details/dli.rmrl.000451_images/page/n16/mode/1up",
-      "evidence_role": "current_schedule_rule_reading"
+      "evidence_role": "explicit_lunar_phase_half_mapping_and_current_schedule_rule_reading"
     },
     {
       "locator_id": "ia_n19_n20",
@@ -99,9 +99,9 @@
     {
       "locator_id": "ia_n26",
       "witness_id": "dli.rmrl.000451_images",
-      "label": "IA leaf n26: Amara-day weekday first-EAT verse and progression rule",
+      "label": "IA leaf n26: explicit waning/Amara mapping, Amara-day weekday first-EAT verse, and progression rule",
       "url": "https://archive.org/details/dli.rmrl.000451_images/page/n26/mode/1up",
-      "evidence_role": "current_schedule_rule_reading"
+      "evidence_role": "explicit_lunar_phase_half_mapping_and_current_schedule_rule_reading"
     },
     {
       "locator_id": "ia_n27_n30",
@@ -153,6 +153,13 @@
       "evidence_role": "machine_reviewed_directed_relationship_prose"
     }
   ],
+  "lunar_paksha_mapping": {
+    "mapping_kind": "source_attested_lunar_phase_half_to_profile_paksha",
+    "entries": [
+      {"lunar_phase_half": "waxing", "profile_paksha": "purva", "source_locators": ["ia_n16"]},
+      {"lunar_phase_half": "waning", "profile_paksha": "amara", "source_locators": ["ia_n26"]}
+    ]
+  },
   "birds": ["vulture", "owl", "crow", "cock", "peacock"],
   "weekdays": ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
   "activities": ["eat", "walk", "rule", "sleep", "die"],

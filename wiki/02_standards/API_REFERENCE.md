@@ -253,7 +253,7 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 |---|---|
 | Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |
 | Panchanga | `panchanga_at`, `sankranti_at`, `PanchangaResult`, `TithiPaksha`, `PanchangaPolicy` |
-| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_directed_relationship` |
+| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_astronomical_paksha_at`, `pancha_pakshi_nakshatra_bird_mapping`, `pancha_pakshi_natal_moon_identity_at`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_solar_proportional_current_cell_at`, `pancha_pakshi_directed_relationship` |
 | Vedic dignities | `vedic_dignity`, `planetary_relationships`, `VedicDignityResult`, `DignityConditionProfile`, `ChartDignityProfile` |
 | Varga (divisional) | `navamsa`, `saptamsa`, `dashamansa`, `dwadashamsa`, `trimshamsa` + 11 more vargas, `VargaPoint` |
 | Vimshottari Dasha | `vimshottari`, `current_dasha`, `dasha_balance`, `dasha_active_line`, `DashaPeriod`, `VimshottariComputationPolicy` |
@@ -4781,6 +4781,12 @@ pp = pancha_pakshi_schedule(
     weekday=PanchaPakshiWeekday.SUNDAY,
 )
 
+# Standalone source-mapped lunar-half inference; no location or schedule routing
+pp_paksha = m.pancha_pakshi_astronomical_paksha(
+    'agastya_madras_1879_akshara_fixed_clock',
+    datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc),
+)
+
 # Modern local-solar context; caller still supplies the source-label paksha
 pp_context = m.pancha_pakshi_local_solar_context(
     'agastya_madras_1879_akshara_fixed_clock',
@@ -4850,7 +4856,7 @@ from moira.vedic import (
 
 ---
 
-### Pancha Pakshi (Source-Scoped 1879 Profile)
+### Pancha Pakshi (Named Source-Scoped Profiles)
 
 ```python
 from moira.vedic import (
@@ -4858,10 +4864,14 @@ from moira.vedic import (
     pancha_pakshi_profile_info,
     pancha_pakshi_identity_from_initial_vowel,
     pancha_pakshi_schedule,
+    pancha_pakshi_astronomical_paksha_at,
+    pancha_pakshi_nakshatra_bird_mapping,
+    pancha_pakshi_natal_moon_identity_at,
     pancha_pakshi_local_solar_context_at,
     pancha_pakshi_fixed_clock_materialization_at,
     pancha_pakshi_fixed_clock_current_cell_at,
     pancha_pakshi_solar_proportional_materialization_at,
+    pancha_pakshi_solar_proportional_current_cell_at,
     pancha_pakshi_directed_relationship,
     PanchaPakshiCurrentCellSelectionStatus,
     PanchaPakshiFixedClockCell,
@@ -4873,9 +4883,17 @@ from moira.vedic import (
     PanchaPakshiLocalSolarContextPolicy,
     PanchaPakshiMaterializedCellRelation,
     PanchaPakshiSolarProportionalCell,
+    PanchaPakshiSolarProportionalCurrentCellSelection,
+    PanchaPakshiSolarProportionalCurrentCellSelectionPolicy,
     PanchaPakshiSolarProportionalMaterialization,
     PanchaPakshiSolarProportionalMaterializationPolicy,
     PanchaPakshiSolarBoundaryRelation,
+    PanchaPakshiAstronomicalPaksha,
+    PanchaPakshiAstronomicalPakshaInference,
+    PanchaPakshiAstronomicalPakshaInferencePolicy,
+    PanchaPakshiNakshatraBirdMapping,
+    PanchaPakshiNatalMoonIdentity,
+    PanchaPakshiNatalMoonIdentityPolicy,
     PanchaPakshiBird,
     PanchaPakshiPaksha,
     PanchaPakshiHalf,
@@ -4889,11 +4907,79 @@ from moira.vedic import (
 | `pancha_pakshi_profile_info(profile_id)` | `PanchaPakshiProfileInfo` | Inspect admission, capabilities, source, locators, conflicts, and omissions |
 | `pancha_pakshi_identity_from_initial_vowel(profile_id, initial_vowel)` | `PanchaPakshiInitialVowelIdentity` | Resolve one explicitly listed aksara/query-or-name initial; not natal Moon identity |
 | `pancha_pakshi_schedule(profile_id, *, paksha, half, weekday)` | `PanchaPakshiSchedule` | Materialize one exact nominal fixed-clock schedule from explicit source labels |
+| `pancha_pakshi_astronomical_paksha_at(profile_id, jd_ut1, *, reader=None)` | `PanchaPakshiAstronomicalPakshaInference` | Classify apparent geocentric Moon-minus-Sun elongation on one reader-bound TT and map Shukla/waxing to Purva or Krishna/waning to Amara for the named profile; no location or schedule routing |
+| `pancha_pakshi_nakshatra_bird_mapping(profile_id, *, profile_paksha, nakshatra_index)` | `PanchaPakshiNakshatraBirdMapping` | Return one directly attested source-table cell without computing or claiming a natal Moon |
+| `pancha_pakshi_natal_moon_identity_at(profile_id, jd_ut1, *, reader=None)` | `PanchaPakshiNatalMoonIdentity` | Apply the named Bogamuni table through the fixed modern apparent-geocentric, Lahiri-true, equal-27-sector natal-Moon policy while exposing every intermediate and source mapping |
 | `pancha_pakshi_local_solar_context_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiLocalSolarContext` | Resolve topocentric local-solar half and local-mean-solar weekday from UT1, retain caller-supplied paksha, and select the existing nominal schedule |
 | `pancha_pakshi_fixed_clock_materialization_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockMaterialization` | Anchor the selected nominal schedule at governing sunrise or sunset, apply its exact offsets on reader-bound TT, project endpoints to UT1, and report unclipped solar-boundary topology without selecting a current cell |
 | `pancha_pakshi_fixed_clock_current_cell_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockCurrentCellSelection` | Resolve the governing solar half first, then return its unique half-open fixed-clock cell or the explicit unmaterialized long-half-tail status |
 | `pancha_pakshi_solar_proportional_materialization_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiSolarProportionalMaterialization` | Map every exact nominal offset fraction independently across the actual governing solar half on reader-bound TT, publish TT and UT1 endpoints, and return the complete 25-cell half-open schedule without current-cell selection |
+| `pancha_pakshi_solar_proportional_current_cell_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiSolarProportionalCurrentCellSelection` | Resolve the governing solar half first, materialize its complete Stage 2D proportional schedule, and return the unique cell containing the requested reader-bound TT instant under exact half-open ownership |
 | `pancha_pakshi_directed_relationship(profile_id, subject, target)` | `PanchaPakshiDirectedRelationship` | Return one stored ordered non-self relation without reciprocal inference |
+
+`PanchaPakshiAstronomicalPakshaInferencePolicy` is immutable and has no
+caller-configurable switches. Its only policy ID is
+`apparent_geocentric_moon_sun_longitude_paksha_half_open_v1`: UT1 is converted
+once to reader-bound TT, and apparent geocentric Sun and Moon longitudes are
+evaluated in the true ecliptic of date on that shared TT coordinate with
+aberration, gravitational deflection, and nutation enabled. The normalized
+`Moon - Sun` longitude occupies `[0, 360)` degrees. Exact half-open ownership is
+`[0, 180)` Shukla and `[180, 360)` Krishna with `0.0`-degree tolerance and no
+snapping. A common ayanamsa is not applied because it cancels from this
+difference.
+
+The named profile's source-attested mapping is Shukla/waxing to Purva at IA
+leaf `n16`, and Krishna/waning to Amara at `n26`. That machine-assisted visual
+reading remains pending competent-human Tamil review and is source-scoped, not
+an independent-witness or universal-canon claim.
+
+| Stage 2F vessel | Public contract |
+|---|---|
+| `PanchaPakshiAstronomicalPaksha` | Finite astronomical phase-half enum: `shukla` or `krishna`; it remains distinct from the profile-owned `purva`/`amara` enum |
+| `PanchaPakshiAstronomicalPakshaInferencePolicy` | Origin, frame, corrections, time scales, elongation definition, exact half-open boundary ownership, source mapping basis and locators, plus explicit non-performance of schedule selection, materialization, and natal identity |
+| `PanchaPakshiAstronomicalPakshaInference` | Profile ID, requested UT1 and TT, Sun/Moon longitudes, normalized elongation, astronomical and profile labels, exactly one direct mapping locator, immutable policy, and route-specific provenance |
+
+The inference accepts no location or caller-supplied paksha. It never selects or
+materializes a schedule, identifies a current cell, feeds the result into
+another operation, or infers natal identity.
+
+`PanchaPakshiNakshatraBirdMapping` is the pure Stage 2G source-table vessel. The
+named `bogamuni_chennai_2024_nakshatra_natal_identity` profile contains exactly
+54 cells: two profile Paksha labels by 27 named nakshatras. Purva mappings cite
+the rendered original at IA leaf `n52`; Amara mappings cite the complete verse
+at `n64`. The adjacent Amara commentary duplicates Shravana and omits Revati,
+so `assembly_policy="verse_precedence_for_nakshatra_partition"` preserves that
+commentary as rejected conflict evidence and does not repair or blend it. The
+source-table vessel states
+`source_table_semantics="nakshatra_bird_table_not_explicitly_natal_moon"`.
+
+`PanchaPakshiNatalMoonIdentityPolicy` is fixed, immutable, and has policy ID
+`bogamuni_2024_apparent_lahiri_natal_moon_identity_v1`. One UT1 instant becomes
+one reader-bound TT epoch. Apparent geocentric Sun and Moon longitudes in the
+true ecliptic of date determine the half-open Shukla/Krishna phase; the source
+binding at Bogamuni leaf `n167` maps that half to Purva or Amara. The same TT
+epoch supplies Lahiri true ayanamsa and the sidereal Moon, which is classified
+into 27 equal half-open `40/3`-degree sectors. Exact internal boundaries belong
+to the following nakshatra, with maximum-one-ULP-below recovery only for the
+binary representation of an exact mathematical boundary.
+The policy's public token is exactly `ayanamsa_system="Lahiri"`, matching
+`Ayanamsa.LAHIRI` and the strict sidereal transport vocabulary.
+
+The policy explicitly reports
+`composition_status="modern_moira_policy_not_source_claim"` and
+`ayanamsa_status="fixed_modern_moira_policy_not_source_attested"`: the source
+attests phase labels and nakshatra birds, not birth-Moon application, Lahiri, or
+the equal-sector computational partition. The result exposes requested UT1/TT,
+Sun and tropical Moon, elongation, astronomical and profile Paksha, phase
+locator, ayanamsa, sidereal Moon, nakshatra index/name/degrees, nested bird
+mapping and locator, full policy, and provenance. It performs no schedule
+selection, materialization, current-cell selection, scoring, or forecast.
+
+| Stage 2G vessel | Public contract |
+|---|---|
+| `PanchaPakshiNakshatraBirdMapping` | Pure source-table Paksha, nakshatra index/name, bird, direct-attestation status, declared verse precedence, one mapping locator, and profile provenance; no epoch or natal claim |
+| `PanchaPakshiNatalMoonIdentityPolicy` | Fixed astronomical origin/frame/corrections/time scales, half-open phase and nakshatra ownership, source phase binding, Lahiri-true modern composition, verse precedence, and explicit non-performance fields |
+| `PanchaPakshiNatalMoonIdentity` | All astronomical and sidereal intermediates, phase mapping, nakshatra placement, nested source-table mapping, immutable policy, and route-specific provenance |
 
 `PanchaPakshiLocalSolarContextPolicy` is fixed and inspectable:
 `policy_id="local_solar_day_explicit_paksha_v1"`, caller-supplied source-label
@@ -4949,41 +5035,81 @@ paksha inference.
 | `PanchaPakshiSolarProportionalMaterializationPolicy` | Explicit caller-supplied-paksha, topocentric solar-half, reader-bound-TT mapping, UT1 publication, exact endpoint-closure, and half-open ownership doctrine, with fixed-clock seconds and current-cell selection marked not used or not performed |
 | `PanchaPakshiSolarProportionalCell` | Ordered schedule index, unchanged nominal cell, exact `start_offset_fraction`, `end_offset_fraction`, and `span_fraction`, TT/UT1 endpoints, and TT duration |
 
+`PanchaPakshiSolarProportionalCurrentCellSelectionPolicy` admits only
+`policy_id="solar_proportional_current_cell_half_open_solar_precedence_v1"`
+and binds the Stage 2D materialization policy. Stage 2A resolves the governing
+solar half before selection; the requested instant is converted to reader-bound
+TT once; and membership is exactly
+`start_jd_tt <= requested_jd_tt < end_jd_tt` with `0.0 s` tolerance. The anchor
+belongs to cell zero, shared endpoints belong to the following cell, and exact
+sunrise or sunset belongs to the new half. Complete Stage 2D coverage makes
+`selection_status="selected"` and one non-null materialization member the only
+lawful result. Zero or multiple matches fail closed. The selector admits no
+tail, fallback, fixed-clock mixing, clipping, wrapping, borrowing, astronomical
+paksha inference, or natal identity.
+
+| Stage 2E vessel | Public contract |
+|---|---|
+| `PanchaPakshiSolarProportionalCurrentCellSelection` | Complete governing Stage 2D `materialization`, immutable selection `policy`, requested TT witness, selected-only status, one non-null materialization member, and route-specific provenance |
+| `PanchaPakshiSolarProportionalCurrentCellSelectionPolicy` | Stage 2D policy binding, caller-supplied paksha, reader-bound-TT selection, exact half-open ownership, solar-half-first precedence, zero tolerance, complete-coverage requirement, exactly-one-match failure policy, and explicit non-use of fixed-clock mixing or paksha inference |
+
 The current `agastya_madras_1879_akshara_fixed_clock` profile is
 `source_scoped_public` and can never be selected implicitly. It performs no
-astronomical paksha inference, natal mapping, subdivision, or scoring
-computation. The modern
+natal mapping, subdivision, or scoring computation. Its separately admitted
+Stage 2F product performs only explicit astronomical paksha inference and
+source-label mapping; it does not alter any schedule route. The modern
 `local_solar_day_explicit_paksha_v1` policy derives only topocentric
 sunrise/sunset context, day/night half, and local-mean-solar weekday while the
 paksha remains explicit. It returns the nominal schedule, not a current cell or
 clock-time interval. Stage 2B separately materializes fixed 1,440-second
 nazhigai offsets, and Stage 2C selects a current cell only from that fixed-clock
 materialization. Stage 2D is a distinct explicit modern Moira policy that maps
-the exact nominal fractions across the actual solar half and does not select a
-current cell. The named 1879 witness attests the nominal schedule, rational
-offsets, bird/activity assignments, chronology, and locators; it does not
-attest proportional sunrise-to-sunset timing. Every result carries immutable
+the exact nominal fractions across the actual solar half. Stage 2E separately
+selects the unique current cell from that complete materialization. The named
+1879 witness attests the nominal schedule, rational offsets, bird/activity
+assignments, chronology, locators, and the waxing/Purva and waning/Amara
+mapping; it does not attest Moira's exact numerical phase boundaries or
+proportional sunrise-to-sunset timing. Every result carries immutable
 profile-owned provenance and declared omissions. See the
 [governing admission standard](./PANCHA_PAKSHI_RESEARCH_STANDARD.md) for the
 source and evidence boundary.
 
-The `Moira` facade supplies the five Phase 1 operations as
+The separate `bogamuni_chennai_2024_nakshatra_natal_identity` profile is also
+`source_scoped_public` and can never be selected implicitly. It admits only the
+pure 54-cell `nakshatra_bird_mapping` product and its explicitly modern
+`natal_identity` composition. It supplies no aksara identity, operating
+schedule, relationship, materialization, current cell, authority bird,
+subdivision, condition, score, or window search. It does not alter or extend
+the 1879 profile.
+
+The `Moira` facade supplies the six kernel-free operations as
 `pancha_pakshi_profiles`, `pancha_pakshi_profile_info`,
 `pancha_pakshi_identity_from_initial_vowel`,
-`pancha_pakshi_schedule`, and `pancha_pakshi_directed_relationship`; those
-methods are kernel-free. It additionally supplies the kernel-backed
+`pancha_pakshi_schedule`, `pancha_pakshi_directed_relationship`, and
+`pancha_pakshi_nakshatra_bird_mapping`; those methods are kernel-free. It
+additionally supplies the kernel-backed
+`pancha_pakshi_astronomical_paksha(profile_id, dt)`,
+`pancha_pakshi_natal_moon_identity(profile_id, dt)`,
 `pancha_pakshi_local_solar_context(profile_id, dt, latitude, longitude, *,
 paksha)` and `pancha_pakshi_fixed_clock_materialization(profile_id, dt,
 latitude, longitude, *, paksha)`, plus the
 `pancha_pakshi_fixed_clock_current_cell(profile_id, dt, latitude, longitude,
 *, paksha)` and
 `pancha_pakshi_solar_proportional_materialization(profile_id, dt, latitude,
+longitude, *, paksha)` and
+`pancha_pakshi_solar_proportional_current_cell(profile_id, dt, latitude,
 longitude, *, paksha)` adapters for aware datetimes. The low-level
 engine functions accept UT1 JD, while the facade preserves UTC civil anchoring
 before the UT1 conversion. Fixed-clock and solar-proportional offset arithmetic
 use reader-bound TT under their distinct policies, with both TT and projected
-UT1 endpoints returned. The Stage 2D engine function, result, policy, and cell
-vessels are first-class exports from `moira`, `moira.facade`, and `moira.vedic`.
+UT1 endpoints returned. The Stage 2D and Stage 2E engine functions, result,
+policy, and cell vessels are first-class exports from `moira`, `moira.facade`,
+and `moira.vedic`; the Stage 2F function, enum, result, and policy vessels are
+exported through those same surfaces, as are the Stage 2G mapping, natal result,
+policy, and functions. The astronomical-paksha and natal-Moon facades accept an
+aware datetime but no location or caller-supplied paksha. The former's inferred
+label is never ambiently routed into the five location-bearing operations, and
+the latter returns an identity only without routing into any schedule family.
 
 ---
 
@@ -5004,6 +5130,13 @@ from moira.vedic import (
 | `sankranti_at(jd_start, jd_end, reader=None)` | `→ SankrantiResult` | Solar ingress into each rashi in a date range |
 | `tithi_condition_profile(result)` | `→ TithiConditionProfile` | Tithi quality assessment |
 | `panchanga_profile(result)` | `→ PanchangaProfile` | Aggregate Panchanga quality profile |
+
+Tithi and Karana share the normalized tropical `Moon - Sun` phase coordinate.
+The common ayanamsa would cancel from that difference, so Moira does not derive
+these boundaries by subtracting two separately rounded sidereal longitudes.
+This preserves exact conjunction, opposition, tithi, and half-tithi ownership;
+the Panchanga result still publishes the selected sidereal longitudes for the
+products that use them.
 
 #### `PanchangaResult` fields
 

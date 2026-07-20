@@ -258,16 +258,18 @@ scientific-validity or source-coverage claims.
 
 ## Pancha Pakshi source-scoped witnesses
 
-Moira admits one explicitly named Pancha Pakshi profile as a source-scoped
-public product. Its private ingestion data records normalized computational
+Moira admits two explicitly named Pancha Pakshi profiles as source-scoped
+public products. Their private ingestion data records normalized computational
 facts and locators from the 1879 Tamil print catalogued by Internet Archive as
-[`dli.rmrl.000451_images`](https://archive.org/details/dli.rmrl.000451_images).
-The source is traditionally attributed to Agastya; that attribution is
-bibliographic metadata, not a verified historical-authorship claim. The print
-is a research witness, not a package asset. Moira records independently
-normalized computational rules and source locators; it never bundles archival
-scans, PDFs, OCR, page images, copied table layouts, source prose, or
-third-party translations.
+[`dli.rmrl.000451_images`](https://archive.org/details/dli.rmrl.000451_images)
+and the 2024 Tamil edition catalogued as
+[`acc.-no.-44757-panjapatchi-sashthiram-2024`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024).
+The sources are traditionally attributed to Agastya and Bogamuni respectively;
+those attributions are bibliographic metadata, not verified
+historical-authorship claims. Both editions are research witnesses, not package
+assets. Moira records independently normalized computational rules and source
+locators; it never bundles archival scans, PDFs, OCR, page images, copied table
+layouts, source prose, or third-party translations.
 
 Internet Archive metadata classifies `dli.rmrl.000451_images.zip` as the
 original image archive and `dli.rmrl.000451.pdf` as a derivative PDF. The
@@ -279,11 +281,22 @@ contribution and life dates remain unresolved bibliographic questions, but
 they do not create a Moira distribution issue because no source expression is
 copied into the package.
 
+Internet Archive metadata classifies
+`Acc.No.44757-PanjapatchiSashthiram-2024.pdf` as the original 2024 PDF. Its
+recorded MD5 is `abe489a832ac38a0270335b7429776f3`, its recorded SHA-1 is
+`6ddad8f2577883f6859829f534e8ee7b8330ade8`, and the locally verified SHA-256
+is `035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`.
+The edition names R. C. Mohan as editor; Moira preserves that as editorial
+metadata and does not convert it into authorship. The hashes identify the
+research witness without importing or redistributing the file.
+
 The public profile `agastya_madras_1879_akshara_fixed_clock` is restricted to
 the witness's aksara/query-or-name-initial operating schedule, fixed-clock
-timing, and directed relationship matrix. It must not be represented as a
-natal-Moon canon. Exact source locators and archive file checksums are retained
-in the machine-readable profile. The schema-v2 manifest owns its
+timing, directed relationship matrix, and directly attested mapping from waxing
+and waning lunar halves to its Purva and Amara source labels. It must not be
+represented as a natal-Moon canon. Exact source locators and archive file
+checksums are retained in the machine-readable profile. Profile schema 3 owns
+the normalized lunar-half mapping; the schema-v2 manifest owns its
 `source_scoped_public` decision, admitted capabilities, and explicit
 `default_selection_allowed=false` policy; the runtime loader rejects a
 data/manifest hash mismatch or capability/product disagreement.
@@ -409,11 +422,141 @@ structural validation boundary. The existing JPL Horizons evidence governs
 only the inherited topocentric solar anchors; there is no external Pancha
 Pakshi proportional-timing oracle or independent-witness corroboration.
 
-Later Bogar- and Uromarisi-attributed editions and Sarasvati Mahal Library
-series 213 are retained only as metadata in a conflict ledger. The latter's
+Stage 2E separately adds `solar_proportional_current_cell_selection` through
+the modern Moira policy
+`solar_proportional_current_cell_half_open_solar_precedence_v1`. It composes the
+unchanged Stage 2D materialization. Stage 2A resolves the governing solar half
+first, then the requested instant is converted once to the same reader-bound TT
+coordinate used by the proportional cells. Membership is exact and half-open,
+with `0.0 s` tolerance: the anchor belongs to cell zero, every shared endpoint
+belongs to the following cell, and the old half's final endpoint is excluded.
+Exact sunrise or sunset therefore belongs to the newly governing half.
+
+Unlike the fixed-clock selector, the proportional selector has no uncovered
+solar-half tail. Stage 2D covers the complete governing half exactly once, so a
+lawful Stage 2E result is always `selected` with one non-null member of that
+materialization. Zero or multiple matches fail closed; no null state,
+fixed-clock borrowing, clipping, wrapping, repetition, tolerance, or fallback
+is admitted. Paksha remains caller supplied, while astronomical paksha
+inference and natal identity remain unperformed. Stage 2E preserves the Stage
+2D route-specific omission `source_attested_solar_proportional_materialization`
+and changes only the astronomical routing status to
+`solar_proportional_current_cell_selection_performed_paksha_caller_supplied_no_fixed_clock_mixing_or_inference`.
+
+The additive
+`pancha_pakshi_1879_solar_proportional_current_cell_2026_07_20.json` decision
+binds the unchanged profile hash, frozen Stage 2D decision and manifest,
+manifest-only capability transition, exact selection policy, provenance
+transformation, and structural validation boundary. DE441 and the existing JPL
+Horizons evidence govern only the reader-bound clock path and inherited solar
+anchors; neither is an external Pancha Pakshi current-cell oracle.
+
+Stage 2F separately adds `astronomical_paksha_inference` and one normalized
+source mapping to the same named profile. Machine-assisted visual reading of
+the exact 1879 derivative PDF found direct waxing-to-Purva wording at IA leaf
+[`n16`](https://archive.org/details/dli.rmrl.000451_images/page/n16/mode/1up)
+and direct waning-to-Amara wording at leaf
+[`n26`](https://archive.org/details/dli.rmrl.000451_images/page/n26/mode/1up).
+The frozen reading record
+`pancha_pakshi_1879_lunar_paksha_mapping_reading_2026_07_20.json` binds those
+locators to the exact archive witness and has canonical SHA-256
+`9ce3686a90a41af916a370b8d4ec04637f22a1d32f872180c6d8a1b790e25a0e`.
+Its status remains
+`machine_assisted_visual_reading_pending_competent_tamil_review`. The two
+normalized mapping facts are public only for this source-scoped profile; they
+are not independent-witness corroboration or a universal terminology claim.
+
+The modern computational policy is
+`apparent_geocentric_moon_sun_longitude_paksha_half_open_v1`. From one explicit
+UT1 instant it derives one reader-bound TT coordinate, evaluates apparent
+geocentric Sun and Moon longitudes in the true ecliptic of date on that shared
+coordinate, and normalizes `Moon - Sun` into `[0, 360)` degrees. Exact half-open
+ownership assigns `[0, 180)` to Shukla/waxing/Purva and `[180, 360)` to
+Krishna/waning/Amara, so `0` belongs to Shukla/Purva and `180` to
+Krishna/Amara. The boundary tolerance is zero and there is no snapping,
+topocentric or civil-day override. No ayanamsa is applied because the same
+longitude offset would cancel in the difference; Panchanga now likewise uses
+the direct tropical Moon-Sun difference for exact tithi and karana boundary
+stability rather than subtracting two separately rounded sidereal values.
+
+The low-level, facade, and transport surfaces are respectively
+`pancha_pakshi_astronomical_paksha_at(...)`,
+`Moira.pancha_pakshi_astronomical_paksha(...)`, and
+`POST /v1/pancha-pakshi/context/astronomical-paksha`. The transport request
+accepts only an explicit `profile_id`, timezone-aware `dt`, and the exact policy
+ID; it accepts no location or caller-supplied paksha. The result exposes the
+UT1/TT witnesses, policy, both longitudes, normalized elongation, astronomical
+and profile labels, the selected mapping locator, and route-specific
+provenance. It does not select or materialize a schedule, choose a current cell,
+feed its result automatically into another route, or infer natal identity.
+
+The chained
+`pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20.json` decision has
+canonical SHA-256
+`1020b28d5da8d0e823cadd352ea2236c69cbb636660a573eb5d74b8c131bc5d8`.
+It freezes the Stage 2E decision at
+`4ddf0a5fa5b680fa83a7bb3052ecbc5d1a9c2f685c466290f22121dd02724d18`,
+the prior manifest at
+`d2b5f8f1ae7e067d257eeb24b533be1d33349446d56d361ea59f4a71472eca70`,
+and the prior profile at
+`876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4`.
+The admitted profile and manifest digests become respectively
+`4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64`
+and `a4fdceee4089c2812d9d77be763c1738152a63231b3f06847ea93383e4a3b327`.
+Admission remains `source_scoped_public`; product kind and the no-default rule
+do not change. Neither source artifact nor copied source expression enters the
+package.
+
+Stage 2G admits the separate profile
+`bogamuni_chennai_2024_nakshatra_natal_identity` with product kind
+`natal_moon_bird_identity` and capabilities `nakshatra_bird_mapping` and
+`natal_identity`. Rendered-page inspection of the original Internet Archive PDF
+established the complete Purva nakshatra-bird partition at leaf
+[`n52`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n52/mode/1up),
+the complete Amara verse partition at leaf
+[`n64`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n64/mode/1up),
+and the source phase-to-Purva/Amara binding at leaf
+[`n167`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n167/mode/1up).
+The Amara commentary adjacent to the governing verse duplicates Shravana and
+omits Revati. The declared assembly policy
+`verse_precedence_for_nakshatra_partition` therefore admits the complete verse
+and preserves the malformed commentary as rejected conflict evidence; it does
+not silently repair the commentary. The Uromarisi-attributed 1934 witness at
+[`kvc-0354-vinaadi-pajasapatchi-mulamum-1934`](https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934)
+corroborates the Purva grouping at leaf `n18` and independently exhibits a
+malformed Amara commentary at leaf `n61`, but its table is not imported into
+runtime truth.
+
+The source witnesses attest phase labels and nakshatra-to-bird associations;
+they do not explicitly state a birth-Moon computation or an ayanamsa. The
+separate fixed policy
+`bogamuni_2024_apparent_lahiri_natal_moon_identity_v1` is therefore labelled
+`modern_moira_policy_not_source_claim`. It evaluates apparent geocentric Sun
+and Moon longitudes in the true ecliptic of date on one reader-bound TT epoch,
+uses half-open Moon-minus-Sun phase ownership, applies Lahiri true ayanamsa,
+and assigns the sidereal Moon to 27 equal half-open `40/3`-degree sectors.
+Exact internal boundaries belong to the following nakshatra; a maximum
+one-ULP-below recovery exists only to restore the mathematically exact boundary
+after binary representation, not as a tolerance band. The result exposes both
+source mappings, every astronomical and sidereal intermediate, and the modern
+composition status. It performs no schedule selection, materialization,
+current-cell selection, scoring, or forecast.
+
+The public surfaces are `pancha_pakshi_nakshatra_bird_mapping(...)` for the pure
+source-table product, `pancha_pakshi_natal_moon_identity_at(...)` for the UT1
+composition, `Moira.pancha_pakshi_natal_moon_identity(...)` for aware civil
+instants, and `POST /v1/pancha-pakshi/identity/natal-moon`. The REST request
+accepts only explicit `profile_id`, timezone-aware `dt`, and the exact policy
+ID; location, supplied paksha or nakshatra, bird, ayanamsa selection, schedule,
+current-cell, scoring, and forecast inputs are rejected. The profile remains
+`source_scoped_public`, never becomes a default canon, and does not change the
+1879 aksara-only identity ontology.
+
+The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
+213 are retained as conflict or bibliographic evidence. The latter's
 official catalog says sixth edition/2014 while its inspected internal title
 page says fifth edition/September 2011; both records remain visible. Their
-verse/commentary disagreements are not resolved or copied into runtime truth.
+unadmitted verse/commentary disagreements are not copied into runtime truth.
 Archive rights or license labels are not runtime inputs and are not public
 admission gates, because no modern scans, prose, layouts, or table
 transcriptions are packaged.
@@ -434,12 +577,16 @@ The governing research boundary, admission tiers, conflicts, fail-closed
 invariants, and public contract are documented in
 [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
 Public access is additive through `moira.pancha_pakshi`, package-root and
-`moira.vedic` exports, five kernel-free and four kernel-backed `Moira` methods,
-and nine explicit-profile `/v1/pancha-pakshi` routes. No API selects a default
-profile. Fixed-clock current-cell selection occurs only through its explicit
-solar-half-precedence policy; proportional materialization is a separate
-modern policy and does not yet select a current cell. Condition, scoring, and
-paksha inference remain outside the admitted surface.
+`moira.vedic` exports, six kernel-free and seven kernel-backed `Moira` methods,
+and twelve explicit-profile `/v1/pancha-pakshi` routes. No API selects a default
+profile. The 1879 astronomical-paksha route occurs only through its explicit
+geocentric policy and never supplies an inferred label to another operation.
+Fixed-clock and solar-proportional current-cell selection occur only through
+their separate explicit solar-half-precedence policies; the former may return
+an uncovered-tail status, while the latter always selects one cell from
+complete-half coverage. Natal identity occurs only through the separate 2024
+profile and fixed modern composition. Condition, scoring, automatic schedule
+routing, and forecasting remain outside the admitted surface.
 
 The 2026-07-20 blind, representative-grid, and later adjudicating reviews are
 recorded in

@@ -9,20 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **First-Class Source-Scoped Pancha Pakshi**: Added immutable public vessels,
-  package-root and `moira.vedic` exports, five kernel-free `Moira` methods, one
+  package-root and `moira.vedic` exports, six kernel-free `Moira` methods, one
+  kernel-backed astronomical-paksha inference method, one
   kernel-backed local-solar context method, one kernel-backed fixed-clock
   materialization method, one kernel-backed fixed-clock current-cell method,
-  one kernel-backed solar-proportional materialization method, and nine strict
+  one kernel-backed solar-proportional materialization method, one kernel-backed
+  solar-proportional current-cell method, one kernel-backed natal-Moon identity
+  method, and twelve strict
   `/v1/pancha-pakshi` routes for profile discovery, aksara identity, exact
-  nominal schedules, directed relationships, local-solar context, and
-  fixed-clock and solar-proportional materialization plus fixed-clock
-  current-cell selection. Manifest schema 2
-  owns finite admission status,
-  exact product capabilities, admission
+  nominal schedules, directed relationships, source-mapped astronomical
+  paksha, natal-Moon identity, local-solar context, and
+  fixed-clock and solar-proportional materialization plus their separately
+  governed current-cell selectors. Manifest schema 2 owns finite admission
+  status, exact product capabilities, admission
   decision identity, and a permanently false default-selection flag. The
-  admitted `agastya_madras_1879_akshara_fixed_clock` profile is limited to the
-  Agastya-attributed Madras 1879 query/name-initial fixed-clock product; no
-  ambient or universal Pancha Pakshi canon is selected. Exact-rational
+  profile schema 3 separately owns the normalized lunar-half/source-label
+  mapping. The admitted `agastya_madras_1879_akshara_fixed_clock` profile is
+  limited to the Agastya-attributed Madras 1879 query/name-initial fixed-clock
+  product; no ambient or universal Pancha Pakshi canon is selected. Exact-rational
   nazhigai values remain `Fraction` objects in the engine and serialize as
   numerator/denominator pairs. Every public computation carries source,
   locator, assembly-policy, admission, capability, astronomical-routing, and
@@ -84,6 +88,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   policy; route-specific provenance replaces its source-layer
   `seasonal_scaling` omission with an explicit omission of source attestation
   for the separately performed modern composition.
+- **Pancha Pakshi Solar-Proportional Current Cell**: Added the separately named
+  `solar_proportional_current_cell_half_open_solar_precedence_v1` selection
+  policy. Stage 2A first resolves the governing sunrise or sunset half, Stage
+  2D materializes its complete proportional schedule, and the requested instant
+  is converted to reader-bound TT once before exact `[start, end)` membership.
+  The anchor belongs to cell zero, shared endpoints belong to the following
+  cell, and exact sunrise or sunset belongs to the newly governing half. Because
+  the proportional schedule covers that half completely, a lawful result is
+  always `selected` with one non-null cell; zero or multiple matches fail closed
+  instead of introducing a fixed-clock tail, tolerance, clipping, wrapping,
+  borrowing, or fallback. Paksha remains caller supplied, and lunar paksha
+  inference, natal identity, and fixed-clock mixing remain unperformed.
+- **Pancha Pakshi Astronomical Paksha Inference**: Added the immutable
+  `PanchaPakshiAstronomicalPakshaInferencePolicy` and
+  `PanchaPakshiAstronomicalPakshaInference` vessels, the low-level
+  `pancha_pakshi_astronomical_paksha_at(...)` engine function,
+  `Moira.pancha_pakshi_astronomical_paksha(...)`, and strict
+  `POST /v1/pancha-pakshi/context/astronomical-paksha`. The fixed
+  `apparent_geocentric_moon_sun_longitude_paksha_half_open_v1` policy evaluates
+  apparent geocentric Sun and Moon longitudes in the true ecliptic of date on
+  one reader-bound TT coordinate. Normalized Moon-minus-Sun elongation assigns
+  `[0, 180)` to Shukla and `[180, 360)` to Krishna with zero tolerance or
+  snapping; exact conjunction therefore belongs to Shukla and exact opposition
+  to Krishna. The named 1879 profile maps waxing/Shukla to Purva from IA leaf
+  `n16` and waning/Krishna to Amara from leaf `n26`. This mapping is
+  source-scoped, machine-assisted visual reading pending competent-human Tamil
+  review, not a universal-canon claim. The inference accepts no location or
+  caller-supplied paksha and performs no schedule selection, materialization,
+  current-cell selection, automatic routing into another operation, or natal
+  identity. Only normalized facts, source locators, and Moira-authored policy
+  are distributed; the archival scan, PDF, OCR, page images, source expression,
+  and third-party translations remain unbundled.
+- **Pancha Pakshi Natal-Moon Identity**: Added the separate source-scoped
+  `bogamuni_chennai_2024_nakshatra_natal_identity` profile, immutable
+  `PanchaPakshiNakshatraBirdMapping`, `PanchaPakshiNatalMoonIdentityPolicy`, and
+  `PanchaPakshiNatalMoonIdentity` vessels, pure
+  `pancha_pakshi_nakshatra_bird_mapping(...)`, low-level
+  `pancha_pakshi_natal_moon_identity_at(...)`, both `Moira` facade methods, and
+  strict `POST /v1/pancha-pakshi/identity/natal-moon`. Rendered original-page
+  inspection binds the complete Purva table to Bogamuni 2024 IA leaf `n52`, the
+  governing Amara verse to `n64`, and the phase/Paksha binding to `n167`. The
+  malformed adjacent Amara commentary duplicates Shravana and omits Revati; it
+  is retained as rejected conflict evidence under the declared
+  `verse_precedence_for_nakshatra_partition` policy, never silently repaired.
+  The Uromarisi 1934 witness corroborates the Purva grouping and confirms a
+  malformed Amara-commentary boundary, but is not imported into runtime truth.
+  Because neither source explicitly specifies a birth-Moon calculation or
+  ayanamsa, applying the table to apparent geocentric Moon/Sun geometry,
+  reader-bound TT, Lahiri true ayanamsa, and 27 equal half-open nakshatras is
+  labelled `modern_moira_policy_not_source_claim`. The request accepts only an
+  explicit profile, aware instant, and exact policy ID; it rejects location,
+  supplied paksha/nakshatra/bird/ayanamsa, schedule, current-cell, scoring, and
+  forecast controls. The response exposes all astronomical, sidereal, mapping,
+  source-locator, composition, and omission witnesses. The result vessel
+  re-derives its nakshatra from the stored sidereal Moon before accepting its
+  bird mapping, and the policy publishes the canonical `Lahiri` token used by
+  Moira's sidereal APIs. No default canon or automatic schedule routing is
+  introduced, and the 1879 aksara profile is unchanged.
 - **Pancha Pakshi Research And Admission Evidence**: Preserved the original
   blind reading, representative-grid reading, page-image adjudication, and
   machine reconciliation as frozen historical records. The adjudication
@@ -94,11 +156,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   computational surface of 10 identity symbols, 28 schedules, 700 cells, and 20
   directed relationships. Competent-human Tamil review and independent-witness
   collation remain incomplete evidence upgrades and barriers to corroborated,
-  generalized, natal, or default-canon claims—not blockers for this explicitly
-  source-scoped product. The standing non-bundling architecture remains in
+  generalized, or default-canon claims—not blockers for these explicitly
+  source-scoped products. The standing non-bundling architecture remains in
   force; archival scans, PDFs, OCR, page images, copied layouts, source prose,
   and third-party translations are not distributed, and no rights-clearance
   phase was introduced.
+
+### Fixed
+- **Nakshatra Boundary Ownership**: Centralized equal-27-sector classification
+  so exact internal `k × 40/3`-degree boundaries belong to the following
+  nakshatra across the public sidereal and Vimshottari consumers. A bounded
+  maximum-one-ULP recovery corrects only binary representations of those exact
+  mathematical boundaries; it is not an orb or tolerance band. TT-explicit
+  internal sidereal helpers also let reader-backed compositions reuse one
+  already-derived TT epoch instead of converting it a second time.
+- **Panchanga Phase-Boundary Coherence**: Tithi and Karana now derive their
+  shared phase coordinate by directly subtracting the tropical Moon and Sun
+  longitudes. Their common ayanamsa would cancel mathematically, so avoiding
+  two separately rounded sidereal conversions keeps exact conjunction,
+  opposition, tithi, and half-tithi boundary ownership stable while preserving
+  the published sidereal longitudes elsewhere in the Panchanga result.
 
 ### Changed
 - **Shared Local Solar Day Boundary**: Extracted the existing topocentric
@@ -139,6 +216,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   modern composition. The existing Horizons fixture remains authority evidence
   only for the inherited solar boundaries; no external Pancha Pakshi
   proportional-timing oracle or new historical-accuracy claim is asserted.
+- Stage 2E validation checks exact zero-tolerance membership at the anchor, all
+  24 proportional cell boundaries, preceding representable instants, cell
+  midpoints, and the excluded old-half endpoint under solar-half-first
+  precedence. It also checks selected-only/non-null result semantics, immutable
+  policy and provenance binding, strict facade/REST admission, and fail-closed
+  rejection of zero, multiple, or foreign-cell matches. DE441 exercises the
+  reader-bound TT/UT1 boundary path; it is not an external Pancha Pakshi oracle.
+- Stage 2F validation binds the direct source readings at IA leaves `n16` and
+  `n26`, exact `0`/`180`-degree half-open ownership, single-conversion
+  UT1-to-reader-bound-TT semantics, shared-TT Sun/Moon evaluation, immutable
+  policy/result/provenance consistency, capability gating, and strict
+  facade/REST fields. DE441 exercises the astronomical substrate, while
+  synthetic boundary cases and Panchanga coherence checks prove the declared
+  partition; neither is an external Pancha Pakshi oracle or independent-witness
+  corroboration.
+- Stage 2G validation binds the Bogamuni source-table locators at IA leaves
+  `n52` and `n64`, the phase-label locator at `n167`, all 54 exact
+  Paksha/nakshatra cells, declared verse precedence, the preserved malformed
+  commentary conflict, strict capability/profile separation, and immutable
+  source-versus-modern-composition provenance. Mathematical tests cover every
+  exact equal-sector boundary and its adjacent representable values. The
+  admission decision binds both the profile and the current manifest digest,
+  and Ashtottari, Yogini, Vimshottari, and Muhurta share the same canonical
+  nakshatra boundary classifier. A DE441 execution smoke exercises the
+  apparent geocentric reader-bound TT path.
+  Source-table validation, boundary invariants, and DE441 execution are
+  separate evidence classes; none is claimed as an external natal-identity
+  oracle.
 
 ## [5.0.0] - 2026-07-19
 

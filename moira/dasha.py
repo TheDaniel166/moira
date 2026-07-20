@@ -52,7 +52,14 @@ from datetime import datetime
 
 from .constants import JULIAN_YEAR
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd
-from .sidereal import tropical_to_sidereal, Ayanamsa, NAKSHATRA_LORDS, NAKSHATRA_SPAN, NAKSHATRA_NAMES
+from .sidereal import (
+    Ayanamsa,
+    NAKSHATRA_LORDS,
+    NAKSHATRA_NAMES,
+    NAKSHATRA_SPAN,
+    _nakshatra_sector,
+    tropical_to_sidereal,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -1002,10 +1009,9 @@ def vimshottari(
     sid_lon = tropical_to_sidereal(moon_tropical_lon, natal_jd, system=ayanamsa_system)
 
     # 2. Identify birth nakshatra
-    nak_idx = int(sid_lon / NAKSHATRA_SPAN) % 27
+    _, nak_idx, degrees_elapsed = _nakshatra_sector(sid_lon)
 
     # 3. Compute how far through the nakshatra the Moon has travelled
-    degrees_elapsed = sid_lon - nak_idx * NAKSHATRA_SPAN
     fraction_elapsed = degrees_elapsed / NAKSHATRA_SPAN  # 0.0–1.0
 
     # 4. The first Mahadasha lord is the lord of the birth nakshatra
@@ -1185,8 +1191,7 @@ def dasha_balance(
 
     sid_lon = tropical_to_sidereal(moon_tropical_lon, natal_jd, system=ayanamsa_system)
 
-    nak_idx = int(sid_lon / NAKSHATRA_SPAN) % 27
-    degrees_elapsed = sid_lon - nak_idx * NAKSHATRA_SPAN
+    _, nak_idx, degrees_elapsed = _nakshatra_sector(sid_lon)
     fraction_elapsed = degrees_elapsed / NAKSHATRA_SPAN
 
     lord = NAKSHATRA_LORDS[nak_idx]

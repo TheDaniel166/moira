@@ -329,7 +329,7 @@ def test_context_requires_an_explicit_paksha_enum_before_routing(
         ),
     )
 
-    with pytest.raises(TypeError, match="astronomical paksha inference is not admitted"):
+    with pytest.raises(TypeError, match="ambient astronomical paksha inference"):
         pancha_pakshi_local_solar_context_at(
             _PROFILE_ID,
             _JD,

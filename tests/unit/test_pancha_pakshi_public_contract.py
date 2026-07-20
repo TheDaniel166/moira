@@ -10,6 +10,10 @@ from pathlib import Path
 
 import pytest
 
+import moira
+import moira.facade as facade
+import moira.pancha_pakshi as pancha_pakshi
+import moira.vedic as vedic
 from moira.pancha_pakshi import (
     PanchaPakshiActivity,
     PanchaPakshiAdmissionStatus,
@@ -159,12 +163,30 @@ def test_public_registry_is_source_scoped_and_has_no_default() -> None:
                 PanchaPakshiCapability.NOMINAL_SCHEDULE,
                 PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
                 PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+                PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
                 PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
                 PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
                 PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
+                (
+                    PanchaPakshiCapability
+                    .SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION
+                ),
             ),
             admission_decision_id=(
-                "pancha_pakshi_1879_solar_proportional_materialization_2026_07_20"
+                "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
+            ),
+        ),
+        type(available_pancha_pakshi_profiles()[0])(
+            profile_id="bogamuni_chennai_2024_nakshatra_natal_identity",
+            admission_status=PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
+            product_kind="natal_moon_bird_identity",
+            default_selection_allowed=False,
+            capabilities=(
+                PanchaPakshiCapability.NAKSHATRA_BIRD_MAPPING,
+                PanchaPakshiCapability.NATAL_IDENTITY,
+            ),
+            admission_decision_id=(
+                "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20"
             ),
         ),
     )
@@ -173,6 +195,24 @@ def test_public_registry_is_source_scoped_and_has_no_default() -> None:
         pancha_pakshi_profile_info()  # type: ignore[call-arg]
     with pytest.raises(ValueError, match="no default canon"):
         pancha_pakshi_profile_info("")
+
+
+def test_stage2e_public_exports_share_identity_and_facade_is_bound() -> None:
+    names = (
+        "PanchaPakshiSolarProportionalCurrentCellSelection",
+        "PanchaPakshiSolarProportionalCurrentCellSelectionPolicy",
+        "pancha_pakshi_solar_proportional_current_cell_at",
+    )
+    for name in names:
+        expected = getattr(pancha_pakshi, name)
+        assert getattr(moira, name) is expected
+        assert getattr(facade, name) is expected
+        assert getattr(vedic, name) is expected
+
+    assert hasattr(
+        moira.Moira,
+        "pancha_pakshi_solar_proportional_current_cell",
+    )
 
 
 def test_public_gate_rejects_a_research_only_profile(
@@ -234,9 +274,11 @@ def test_public_vessels_are_immutable_and_carry_scope_and_omissions() -> None:
         PanchaPakshiCapability.NOMINAL_SCHEDULE,
         PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
         PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+        PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
         PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
         PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
         PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION,
     )
     assert {omission.feature for omission in provenance.declared_omissions} == {
         "authority_birds",

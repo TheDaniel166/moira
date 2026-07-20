@@ -12,10 +12,13 @@ assignments, while explicit prose and verse govern chronology; visual grid
 order is never treated as chronological authority.  Each generated cell
 retains the governing rule, grid, and duration locators.
 
-No sunrise scaling, astronomical paksha routing, scoring, cross-witness
-relationship normalization, vinadi subdivision, or natal mapping is performed
-in this private layer.  The one relationship surface is the source-scoped,
-explicitly directed 20-cell matrix from the 1879 witness.
+No scoring, cross-witness relationship normalization, or vinadi subdivision
+is performed in this private layer.  Astronomical paksha inference is a
+separate, source-mapped product and never ambiently selects or materializes a
+schedule.  The 2024 natal profile is separately parsed and preserves its
+source nakshatra-bird table as an object distinct from Moira's modern
+birth-Moon and Lahiri composition.  The one relationship surface remains the
+source-scoped, explicitly directed 20-cell matrix from the 1879 witness.
 """
 
 from __future__ import annotations
@@ -35,6 +38,7 @@ from typing import Any
 from .pancha_pakshi import (
     PanchaPakshiActivity,
     PanchaPakshiAdmissionStatus,
+    PanchaPakshiAstronomicalPaksha,
     PanchaPakshiBird,
     PanchaPakshiCapability,
     PanchaPakshiConflictWitness,
@@ -81,16 +85,34 @@ _REQUIRED_OMISSIONS = {
     "vinadi",
     "seasonal_scaling",
 }
+_REQUIRED_NATAL_OMISSIONS = {
+    "aksara_identity",
+    "nominal_schedule",
+    "directed_relationships",
+    "clock_materialization",
+    "current_cell_selection",
+    "authority_birds",
+    "vinadi",
+    "condition",
+    "scoring",
+    "window_search",
+}
 _PRODUCT_CAPABILITIES = {
     "aksara_prasna_operating_schedule": (
         PanchaPakshiCapability.AKSARA_IDENTITY,
         PanchaPakshiCapability.NOMINAL_SCHEDULE,
         PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
         PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+        PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
         PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
         PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
         PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
-    )
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION,
+    ),
+    "natal_moon_bird_identity": (
+        PanchaPakshiCapability.NAKSHATRA_BIRD_MAPPING,
+        PanchaPakshiCapability.NATAL_IDENTITY,
+    ),
 }
 _PUBLIC_ADMISSION_STATUSES = frozenset(
     {
@@ -133,6 +155,23 @@ class _RelationshipRule:
 
 
 @dataclass(frozen=True, slots=True)
+class _LunarPakshaMappingRule:
+    lunar_phase_half: str
+    astronomical_paksha: PanchaPakshiAstronomicalPaksha
+    profile_paksha: PanchaPakshiPaksha
+    source_locator_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class _NakshatraBirdRule:
+    profile_paksha: PanchaPakshiPaksha
+    nakshatra_index: int
+    nakshatra: str
+    bird: PanchaPakshiBird
+    source_locator_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class _ScheduleGenerator:
     generator_id: str
     paksha: PanchaPakshiPaksha
@@ -171,6 +210,8 @@ class PanchaPakshiProfile:
     initial_vowel_identity_kind: str
     initial_vowel_is_natal_moon_identity: bool
     vowel_rules: tuple[_VowelRule, ...]
+    lunar_paksha_mapping_kind: str
+    lunar_paksha_mapping_rules: tuple[_LunarPakshaMappingRule, ...]
     temporal_model: _TemporalModel
     duration_rules: tuple[_DurationRule, ...]
     generators: tuple[_ScheduleGenerator, ...]
@@ -219,6 +260,100 @@ class PanchaPakshiProfile:
             f"{subject.value!r} -> {target.value!r}"
         )
 
+    def lunar_paksha_mapping_rule(
+        self,
+        astronomical_paksha: PanchaPakshiAstronomicalPaksha,
+    ) -> _LunarPakshaMappingRule:
+        if not isinstance(
+            astronomical_paksha,
+            PanchaPakshiAstronomicalPaksha,
+        ):
+            raise TypeError(
+                "astronomical_paksha must be a PanchaPakshiAstronomicalPaksha"
+            )
+        for rule in self.lunar_paksha_mapping_rules:
+            if rule.astronomical_paksha is astronomical_paksha:
+                return rule
+        raise PanchaPakshiDataError(
+            f"profile {self.profile_id!r} has no mapping for "
+            f"{astronomical_paksha.value!r}"
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiNatalIdentityProfile:
+    """Strict internal profile for a source table plus modern natal policy."""
+
+    profile_id: str
+    admission_status: PanchaPakshiAdmissionStatus
+    product_kind: str
+    default_selection_allowed: bool
+    capabilities: tuple[PanchaPakshiCapability, ...]
+    admission_decision_id: str
+    derivation_status: str
+    assembly_policy: str
+    title: str
+    source: PanchaPakshiSource
+    source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    lunar_paksha_mapping_kind: str
+    lunar_paksha_mapping_rules: tuple[_LunarPakshaMappingRule, ...]
+    nakshatra_bird_mapping_kind: str
+    source_table_semantics: str
+    modern_composition_kind: str
+    nakshatra_bird_rules: tuple[_NakshatraBirdRule, ...]
+    explicit_omissions: tuple[PanchaPakshiOmission, ...]
+    research_conflict_ledger: tuple[PanchaPakshiConflictWitness, ...]
+
+    def locator(self, locator_id: str) -> PanchaPakshiSourceLocator:
+        for locator in self.source_locators:
+            if locator.locator_id == locator_id:
+                return locator
+        raise PanchaPakshiDataError(
+            f"profile {self.profile_id!r} references unknown locator {locator_id!r}"
+        )
+
+    def lunar_paksha_mapping_rule(
+        self,
+        astronomical_paksha: PanchaPakshiAstronomicalPaksha,
+    ) -> _LunarPakshaMappingRule:
+        if not isinstance(astronomical_paksha, PanchaPakshiAstronomicalPaksha):
+            raise TypeError(
+                "astronomical_paksha must be a PanchaPakshiAstronomicalPaksha"
+            )
+        for rule in self.lunar_paksha_mapping_rules:
+            if rule.astronomical_paksha is astronomical_paksha:
+                return rule
+        raise PanchaPakshiDataError(
+            f"profile {self.profile_id!r} has no mapping for "
+            f"{astronomical_paksha.value!r}"
+        )
+
+    def nakshatra_bird_rule(
+        self,
+        profile_paksha: PanchaPakshiPaksha,
+        nakshatra_index: int,
+    ) -> _NakshatraBirdRule:
+        if not isinstance(profile_paksha, PanchaPakshiPaksha):
+            raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+        if isinstance(nakshatra_index, bool) or not isinstance(
+            nakshatra_index,
+            int,
+        ):
+            raise TypeError("nakshatra_index must be an integer")
+        for rule in self.nakshatra_bird_rules:
+            if (
+                rule.profile_paksha is profile_paksha
+                and rule.nakshatra_index == nakshatra_index
+            ):
+                return rule
+        raise PanchaPakshiDataError(
+            f"profile {self.profile_id!r} has no {profile_paksha.value!r} "
+            f"mapping for nakshatra index {nakshatra_index}"
+        )
+
+
+PanchaPakshiAnyProfile = PanchaPakshiProfile | PanchaPakshiNatalIdentityProfile
+
 
 def available_pancha_pakshi_profiles() -> tuple[PanchaPakshiProfileDescriptor, ...]:
     """List explicitly admitted public profiles; no default is selected."""
@@ -241,7 +376,7 @@ def available_pancha_pakshi_profiles() -> tuple[PanchaPakshiProfileDescriptor, .
     )
 
 
-def load_pancha_pakshi_profile(profile_id: str) -> PanchaPakshiProfile:
+def load_pancha_pakshi_profile(profile_id: str) -> PanchaPakshiAnyProfile:
     """Load one explicitly named, hash-verified internal profile."""
 
     if not isinstance(profile_id, str):
@@ -252,7 +387,7 @@ def load_pancha_pakshi_profile(profile_id: str) -> PanchaPakshiProfile:
 
 
 def _profile_provenance(
-    profile: PanchaPakshiProfile,
+    profile: PanchaPakshiAnyProfile,
     *,
     astronomical_routing_status: str = "not_performed",
 ) -> PanchaPakshiProvenance:
@@ -278,11 +413,11 @@ def _profile_provenance(
 
 
 def pancha_pakshi_profile_info(
-    profile: PanchaPakshiProfile,
+    profile: PanchaPakshiAnyProfile,
 ) -> PanchaPakshiProfileInfo:
     """Return public profile metadata without exposing loader internals."""
 
-    _require_profile(profile)
+    _require_any_profile(profile)
     return PanchaPakshiProfileInfo(
         title=profile.title,
         provenance=_profile_provenance(profile),
@@ -521,12 +656,20 @@ def _require_profile(profile: PanchaPakshiProfile) -> None:
         raise TypeError("profile must be a PanchaPakshiProfile")
 
 
+def _require_any_profile(profile: PanchaPakshiAnyProfile) -> None:
+    if not isinstance(
+        profile,
+        (PanchaPakshiProfile, PanchaPakshiNatalIdentityProfile),
+    ):
+        raise TypeError("profile must be a registered Pancha Pakshi profile")
+
+
 def _dedupe(values: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(dict.fromkeys(values))
 
 
 def _resolve_locators(
-    profile: PanchaPakshiProfile, locator_ids: tuple[str, ...]
+    profile: PanchaPakshiAnyProfile, locator_ids: tuple[str, ...]
 ) -> tuple[PanchaPakshiSourceLocator, ...]:
     return tuple(profile.locator(locator_id) for locator_id in locator_ids)
 
@@ -764,7 +907,7 @@ def _read_manifest(path: Path) -> tuple[dict[str, Any], ...]:
 @lru_cache(maxsize=None)
 def _load_profile_cached(
     profile_id: str, manifest_path_text: str
-) -> PanchaPakshiProfile:
+) -> PanchaPakshiAnyProfile:
     manifest_path = Path(manifest_path_text)
     entries = _read_manifest(manifest_path)
     matches = [entry for entry in entries if entry["profile_id"] == profile_id]
@@ -782,7 +925,12 @@ def _load_profile_cached(
             f"hash mismatch for Pancha Pakshi profile {profile_id!r}"
         )
     document = _require_dict(_read_json(data_path), f"profile {profile_id!r}")
-    profile = _parse_profile_document(
+    parser = (
+        _parse_profile_document
+        if entry["product_kind"] == "aksara_prasna_operating_schedule"
+        else _parse_natal_identity_profile_document
+    )
+    profile = parser(
         document,
         admission_status=PanchaPakshiAdmissionStatus(entry["admission_status"]),
         default_selection_allowed=entry["default_selection_allowed"],
@@ -798,7 +946,10 @@ def _load_profile_cached(
         raise PanchaPakshiDataError(
             f"manifest metadata disagrees with profile {profile_id!r}"
         )
-    _validate_generated_completeness(profile)
+    if isinstance(profile, PanchaPakshiProfile):
+        _validate_generated_completeness(profile)
+    else:
+        _validate_natal_mapping_completeness(profile)
     return profile
 
 
@@ -838,6 +989,7 @@ def _parse_profile_document(
             "profile",
             "source",
             "source_locators",
+            "lunar_paksha_mapping",
             "birds",
             "weekdays",
             "activities",
@@ -851,7 +1003,7 @@ def _parse_profile_document(
         },
         "profile document",
     )
-    if _require_int(document["schema_version"], "profile.schema_version") != 2:
+    if _require_int(document["schema_version"], "profile.schema_version") != 3:
         raise PanchaPakshiDataError("unsupported Pancha Pakshi profile schema")
 
     meta = _require_dict(document["profile"], "profile.profile")
@@ -1062,6 +1214,94 @@ def _parse_profile_document(
             raise PanchaPakshiDataError("primary locator URL leaves the source witness")
         locator_ids.add(parsed.locator_id)
         locators.append(parsed)
+
+    lunar_mapping_obj = _require_dict(
+        document["lunar_paksha_mapping"],
+        "lunar_paksha_mapping",
+    )
+    _require_exact_keys(
+        lunar_mapping_obj,
+        {"mapping_kind", "entries"},
+        "lunar_paksha_mapping",
+    )
+    lunar_paksha_mapping_kind = _require_string(
+        lunar_mapping_obj["mapping_kind"],
+        "lunar_paksha_mapping.mapping_kind",
+    )
+    if lunar_paksha_mapping_kind != (
+        "source_attested_lunar_phase_half_to_profile_paksha"
+    ):
+        raise PanchaPakshiDataError("lunar paksha mapping kind is unknown")
+
+    expected_lunar_mappings = (
+        (
+            "waxing",
+            PanchaPakshiAstronomicalPaksha.SHUKLA,
+            PanchaPakshiPaksha.PURVA,
+            ("ia_n16",),
+        ),
+        (
+            "waning",
+            PanchaPakshiAstronomicalPaksha.KRISHNA,
+            PanchaPakshiPaksha.AMARA,
+            ("ia_n26",),
+        ),
+    )
+    lunar_paksha_mapping_rules: list[_LunarPakshaMappingRule] = []
+    raw_lunar_mapping_entries = _require_list(
+        lunar_mapping_obj["entries"],
+        "lunar_paksha_mapping.entries",
+    )
+    if len(raw_lunar_mapping_entries) != len(expected_lunar_mappings):
+        raise PanchaPakshiDataError(
+            "lunar paksha mapping must contain waxing and waning exactly once"
+        )
+    for index, (raw_rule, expected) in enumerate(
+        zip(raw_lunar_mapping_entries, expected_lunar_mappings, strict=True)
+    ):
+        context = f"lunar_paksha_mapping.entries[{index}]"
+        rule = _require_dict(raw_rule, context)
+        _require_exact_keys(
+            rule,
+            {"lunar_phase_half", "profile_paksha", "source_locators"},
+            context,
+        )
+        lunar_phase_half = _require_string(
+            rule["lunar_phase_half"],
+            f"{context}.lunar_phase_half",
+        )
+        profile_paksha = _require_enum(
+            PanchaPakshiPaksha,
+            rule["profile_paksha"],
+            f"{context}.profile_paksha",
+        )
+        source_locator_ids = _parse_locator_ids(
+            rule["source_locators"],
+            f"{context}.source_locators",
+            locator_ids,
+        )
+        (
+            expected_half,
+            astronomical_paksha,
+            expected_profile_paksha,
+            expected_locator_ids,
+        ) = expected
+        if (
+            lunar_phase_half != expected_half
+            or profile_paksha is not expected_profile_paksha
+            or source_locator_ids != expected_locator_ids
+        ):
+            raise PanchaPakshiDataError(
+                f"{context} disagrees with the source-attested mapping"
+            )
+        lunar_paksha_mapping_rules.append(
+            _LunarPakshaMappingRule(
+                lunar_phase_half=lunar_phase_half,
+                astronomical_paksha=astronomical_paksha,
+                profile_paksha=profile_paksha,
+                source_locator_ids=source_locator_ids,
+            )
+        )
 
     birds = tuple(
         _require_enum(PanchaPakshiBird, value, f"birds[{index}]")
@@ -1487,6 +1727,8 @@ def _parse_profile_document(
         referenced_locator_ids.update(generator.source_locator_ids)
     for rule in relationship_rules:
         referenced_locator_ids.update(rule.source_locator_ids)
+    for rule in lunar_paksha_mapping_rules:
+        referenced_locator_ids.update(rule.source_locator_ids)
     if referenced_locator_ids != locator_ids:
         raise PanchaPakshiDataError(
             "primary source locator ledger contains unreferenced or missing evidence"
@@ -1510,6 +1752,8 @@ def _parse_profile_document(
         initial_vowel_identity_kind=identity_kind,
         initial_vowel_is_natal_moon_identity=False,
         vowel_rules=tuple(vowel_rules),
+        lunar_paksha_mapping_kind=lunar_paksha_mapping_kind,
+        lunar_paksha_mapping_rules=tuple(lunar_paksha_mapping_rules),
         temporal_model=temporal_model,
         duration_rules=tuple(duration_rules),
         generators=tuple(generators),
@@ -1519,6 +1763,740 @@ def _parse_profile_document(
         explicit_omissions=tuple(omissions),
         research_conflict_ledger=tuple(conflicts),
     )
+
+
+def _parse_natal_identity_profile_document(
+    document: dict[str, Any],
+    *,
+    admission_status: PanchaPakshiAdmissionStatus,
+    default_selection_allowed: bool,
+    capabilities: tuple[PanchaPakshiCapability, ...],
+    admission_decision_id: str,
+) -> PanchaPakshiNatalIdentityProfile:
+    """Parse the Bogamuni profile without weakening the schedule schema."""
+
+    from .sidereal import NAKSHATRA_NAMES
+
+    if not isinstance(admission_status, PanchaPakshiAdmissionStatus):
+        raise PanchaPakshiDataError("admission_status must be a known enum value")
+    _require_bool(default_selection_allowed, "default_selection_allowed")
+    if default_selection_allowed:
+        raise PanchaPakshiDataError(
+            "default_selection_allowed must remain false; no universal canon exists"
+        )
+    if (
+        not isinstance(capabilities, tuple)
+        or capabilities != _PRODUCT_CAPABILITIES["natal_moon_bird_identity"]
+    ):
+        raise PanchaPakshiDataError(
+            "manifest capabilities disagree with natal product kind or "
+            "canonical capability order"
+        )
+    _require_string(admission_decision_id, "admission_decision_id")
+
+    _require_exact_keys(
+        document,
+        {
+            "schema_version",
+            "profile",
+            "source",
+            "source_locators",
+            "lunar_paksha_mapping",
+            "nakshatra_bird_mapping",
+            "modern_composition",
+            "explicit_omissions",
+            "research_conflict_ledger",
+        },
+        "natal profile document",
+    )
+    if _require_int(document["schema_version"], "profile.schema_version") != 1:
+        raise PanchaPakshiDataError(
+            "unsupported Pancha Pakshi natal profile schema"
+        )
+
+    meta = _require_dict(document["profile"], "profile.profile")
+    _require_exact_keys(
+        meta,
+        {
+            "profile_id",
+            "product_kind",
+            "derivation_status",
+            "assembly_policy",
+            "title",
+        },
+        "profile.profile",
+    )
+    profile_id = _require_string(meta["profile_id"], "profile.profile_id")
+    if profile_id != "bogamuni_chennai_2024_nakshatra_natal_identity":
+        raise PanchaPakshiDataError("natal profile identity is unknown")
+    if meta["product_kind"] != "natal_moon_bird_identity":
+        raise PanchaPakshiDataError("natal profile product_kind is unknown")
+    if meta["derivation_status"] != (
+        "visually_verified_source_partition_with_explicit_modern_natal_moon_"
+        "composition"
+    ):
+        raise PanchaPakshiDataError("natal profile derivation_status is unknown")
+    if meta["assembly_policy"] != (
+        "verse_precedence_for_nakshatra_partition"
+    ):
+        raise PanchaPakshiDataError("natal profile assembly_policy is unknown")
+    if meta["title"] != (
+        "Bogamuni 2024 nakshatra-bird table with explicit modern Lahiri "
+        "natal-Moon composition"
+    ):
+        raise PanchaPakshiDataError("natal profile title is unknown")
+
+    source_obj = _require_dict(document["source"], "profile.source")
+    source_keys = {
+        "witness_id",
+        "title",
+        "traditional_attribution",
+        "authorship_status",
+        "publication_place",
+        "publisher",
+        "publication_year",
+        "language",
+        "archive_item_url",
+        "archive_original_image_zip_name",
+        "archive_original_image_zip_source_status",
+        "archive_original_image_zip_md5",
+        "archive_original_image_zip_sha1",
+        "archive_pdf_name",
+        "archive_pdf_source_status",
+        "archive_pdf_md5",
+        "archive_pdf_sha1",
+        "locally_verified_pdf_sha256",
+        "catalogued_contributor_note",
+        "artifact_distribution_status",
+        "redistribution_policy",
+        "license_scope",
+        "artifact_distribution_note",
+    }
+    _require_exact_keys(source_obj, source_keys, "profile.source")
+    source = PanchaPakshiSource(
+        witness_id=_require_string(source_obj["witness_id"], "source.witness_id"),
+        title=_require_string(source_obj["title"], "source.title"),
+        traditional_attribution=_require_string(
+            source_obj["traditional_attribution"],
+            "source.traditional_attribution",
+        ),
+        authorship_status=_require_string(
+            source_obj["authorship_status"],
+            "source.authorship_status",
+        ),
+        publication_place=_require_string(
+            source_obj["publication_place"],
+            "source.publication_place",
+        ),
+        publisher=_require_string(source_obj["publisher"], "source.publisher"),
+        publication_year=_require_int(
+            source_obj["publication_year"],
+            "source.publication_year",
+        ),
+        language=_require_string(source_obj["language"], "source.language"),
+        archive_item_url=_require_string(
+            source_obj["archive_item_url"],
+            "source.archive_item_url",
+        ),
+        archive_original_image_zip_name=_require_string(
+            source_obj["archive_original_image_zip_name"],
+            "source.archive_original_image_zip_name",
+        ),
+        archive_original_image_zip_source_status=_require_string(
+            source_obj["archive_original_image_zip_source_status"],
+            "source.archive_original_image_zip_source_status",
+        ),
+        archive_original_image_zip_md5=_require_string(
+            source_obj["archive_original_image_zip_md5"],
+            "source.archive_original_image_zip_md5",
+        ),
+        archive_original_image_zip_sha1=_require_string(
+            source_obj["archive_original_image_zip_sha1"],
+            "source.archive_original_image_zip_sha1",
+        ),
+        archive_pdf_name=_require_string(
+            source_obj["archive_pdf_name"],
+            "source.archive_pdf_name",
+        ),
+        archive_pdf_source_status=_require_string(
+            source_obj["archive_pdf_source_status"],
+            "source.archive_pdf_source_status",
+        ),
+        archive_pdf_md5=_require_string(
+            source_obj["archive_pdf_md5"],
+            "source.archive_pdf_md5",
+        ),
+        archive_pdf_sha1=_require_string(
+            source_obj["archive_pdf_sha1"],
+            "source.archive_pdf_sha1",
+        ),
+        locally_verified_pdf_sha256=_require_string(
+            source_obj["locally_verified_pdf_sha256"],
+            "source.locally_verified_pdf_sha256",
+        ),
+        catalogued_contributor_note=_require_string(
+            source_obj["catalogued_contributor_note"],
+            "source.catalogued_contributor_note",
+        ),
+        artifact_distribution_status=_require_string(
+            source_obj["artifact_distribution_status"],
+            "source.artifact_distribution_status",
+        ),
+        redistribution_policy=_require_string(
+            source_obj["redistribution_policy"],
+            "source.redistribution_policy",
+        ),
+        license_scope=_require_string(
+            source_obj["license_scope"],
+            "source.license_scope",
+        ),
+        artifact_distribution_note=_require_string(
+            source_obj["artifact_distribution_note"],
+            "source.artifact_distribution_note",
+        ),
+    )
+    if source.witness_id != "acc.-no.-44757-panjapatchi-sashthiram-2024":
+        raise PanchaPakshiDataError("natal profile witness identity is unknown")
+    if source.authorship_status != "traditional_attribution_not_asserted_authorship":
+        raise PanchaPakshiDataError("source authorship_status is unknown")
+    if source.traditional_attribution != "Bogamuni":
+        raise PanchaPakshiDataError("source traditional attribution is unknown")
+    if source.title != "போகமுனிவர் பஞ்சபட்சி சாஸ்திரம் உரையுடன்":
+        raise PanchaPakshiDataError("source title is unknown")
+    if source.publication_place != "Vadapalani, Chennai":
+        raise PanchaPakshiDataError("source publication_place is unknown")
+    if source.publisher != "Thamarai Noolagam":
+        raise PanchaPakshiDataError("source publisher is unknown")
+    if source.publication_year != 2024:
+        raise PanchaPakshiDataError("source publication_year is unknown")
+    if source.language != "Tamil":
+        raise PanchaPakshiDataError("source language is unknown")
+    if "R. C. Mohan" not in source.catalogued_contributor_note:
+        raise PanchaPakshiDataError("source editor attribution is unknown")
+    if source.archive_item_url != (
+        "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024"
+    ):
+        raise PanchaPakshiDataError("source archive_item_url is unknown")
+    if (
+        source.archive_original_image_zip_name
+        != "not_applicable_no_original_image_zip_bound"
+        or source.archive_original_image_zip_source_status
+        != "not_applicable_pdf_is_internet_archive_original"
+        or source.archive_original_image_zip_md5 != "not_applicable"
+        or source.archive_original_image_zip_sha1 != "not_applicable"
+    ):
+        raise PanchaPakshiDataError(
+            "natal profile must not mislabel an IA derivative image ZIP as original"
+        )
+    if source.archive_pdf_name != "Acc.No.44757-PanjapatchiSashthiram-2024.pdf":
+        raise PanchaPakshiDataError("source archive PDF identity is unknown")
+    if source.archive_pdf_source_status != "internet_archive_original":
+        raise PanchaPakshiDataError("source PDF must retain its original-file status")
+    if source.archive_pdf_md5 != "abe489a832ac38a0270335b7429776f3":
+        raise PanchaPakshiDataError("source archive PDF MD5 disagrees with IA metadata")
+    if source.archive_pdf_sha1 != "6ddad8f2577883f6859829f534e8ee7b8330ade8":
+        raise PanchaPakshiDataError("source archive PDF SHA-1 disagrees with IA metadata")
+    if source.locally_verified_pdf_sha256 != (
+        "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990"
+    ):
+        raise PanchaPakshiDataError("source locally verified PDF SHA-256 is unknown")
+    if source.artifact_distribution_status != (
+        "reference_only_source_artifacts_not_packaged"
+    ):
+        raise PanchaPakshiDataError("source artifact distribution status is unknown")
+    if source.redistribution_policy != (
+        "normalized_rules_only_no_scan_ocr_page_images_layout_source_prose_or_"
+        "third_party_translation"
+    ):
+        raise PanchaPakshiDataError("source redistribution policy is unknown")
+    if source.license_scope != (
+        "mit_covers_moira_authored_code_schema_prose_and_profile_representation"
+    ):
+        raise PanchaPakshiDataError("source license scope is unknown")
+
+    expected_locator_specs = (
+        (
+            "bogar_n52_purva",
+            "n52",
+            "source_attested_purva_nakshatra_bird_partition",
+        ),
+        (
+            "bogar_n64_amara_verse",
+            "n64",
+            "governing_amara_verse_nakshatra_bird_partition",
+        ),
+        (
+            "bogar_n64_amara_commentary_conflict",
+            "n64",
+            "rejected_adjacent_commentary_partition_conflict",
+        ),
+        (
+            "bogar_n167_phase",
+            "n167",
+            "source_attested_new_moon_purva_full_moon_amara_mapping",
+        ),
+    )
+    raw_locators = _require_list(document["source_locators"], "source_locators")
+    if len(raw_locators) != len(expected_locator_specs):
+        raise PanchaPakshiDataError("natal profile source locator ledger is incomplete")
+    locators: list[PanchaPakshiSourceLocator] = []
+    locator_ids: set[str] = set()
+    for index, (raw_locator, expected) in enumerate(
+        zip(raw_locators, expected_locator_specs, strict=True)
+    ):
+        context = f"source_locators[{index}]"
+        locator = _require_dict(raw_locator, context)
+        _require_exact_keys(
+            locator,
+            {"locator_id", "witness_id", "label", "url", "evidence_role"},
+            context,
+        )
+        parsed = PanchaPakshiSourceLocator(
+            locator_id=_require_string(locator["locator_id"], f"{context}.locator_id"),
+            witness_id=_require_string(locator["witness_id"], f"{context}.witness_id"),
+            label=_require_string(locator["label"], f"{context}.label"),
+            url=_require_string(locator["url"], f"{context}.url"),
+            evidence_role=_require_string(
+                locator["evidence_role"],
+                f"{context}.evidence_role",
+            ),
+        )
+        expected_id, expected_leaf, expected_role = expected
+        if (
+            parsed.locator_id != expected_id
+            or parsed.witness_id != source.witness_id
+            or parsed.url
+            != f"{source.archive_item_url}/page/{expected_leaf}/mode/1up"
+            or parsed.evidence_role != expected_role
+        ):
+            raise PanchaPakshiDataError(f"{context} disagrees with source evidence")
+        if parsed.locator_id in locator_ids:
+            raise PanchaPakshiDataError("duplicate source locator identity")
+        locator_ids.add(parsed.locator_id)
+        locators.append(parsed)
+
+    lunar_mapping_obj = _require_dict(
+        document["lunar_paksha_mapping"],
+        "lunar_paksha_mapping",
+    )
+    _require_exact_keys(
+        lunar_mapping_obj,
+        {"mapping_kind", "entries"},
+        "lunar_paksha_mapping",
+    )
+    lunar_paksha_mapping_kind = _require_string(
+        lunar_mapping_obj["mapping_kind"],
+        "lunar_paksha_mapping.mapping_kind",
+    )
+    if lunar_paksha_mapping_kind != (
+        "source_attested_lunar_phase_half_to_profile_paksha"
+    ):
+        raise PanchaPakshiDataError("lunar paksha mapping kind is unknown")
+    expected_lunar_mappings = (
+        (
+            "waxing",
+            PanchaPakshiAstronomicalPaksha.SHUKLA,
+            PanchaPakshiPaksha.PURVA,
+        ),
+        (
+            "waning",
+            PanchaPakshiAstronomicalPaksha.KRISHNA,
+            PanchaPakshiPaksha.AMARA,
+        ),
+    )
+    raw_lunar_entries = _require_list(
+        lunar_mapping_obj["entries"],
+        "lunar_paksha_mapping.entries",
+    )
+    if len(raw_lunar_entries) != 2:
+        raise PanchaPakshiDataError(
+            "lunar paksha mapping must contain waxing and waning exactly once"
+        )
+    lunar_paksha_mapping_rules: list[_LunarPakshaMappingRule] = []
+    for index, (raw_entry, expected) in enumerate(
+        zip(raw_lunar_entries, expected_lunar_mappings, strict=True)
+    ):
+        context = f"lunar_paksha_mapping.entries[{index}]"
+        entry = _require_dict(raw_entry, context)
+        _require_exact_keys(
+            entry,
+            {"lunar_phase_half", "profile_paksha", "source_locators"},
+            context,
+        )
+        lunar_phase_half = _require_string(
+            entry["lunar_phase_half"],
+            f"{context}.lunar_phase_half",
+        )
+        profile_paksha = _require_enum(
+            PanchaPakshiPaksha,
+            entry["profile_paksha"],
+            f"{context}.profile_paksha",
+        )
+        source_locator_ids = _parse_locator_ids(
+            entry["source_locators"],
+            f"{context}.source_locators",
+            locator_ids,
+        )
+        expected_half, astronomical_paksha, expected_profile_paksha = expected
+        if (
+            lunar_phase_half != expected_half
+            or profile_paksha is not expected_profile_paksha
+            or source_locator_ids != ("bogar_n167_phase",)
+        ):
+            raise PanchaPakshiDataError(
+                f"{context} disagrees with the source-attested phase mapping"
+            )
+        lunar_paksha_mapping_rules.append(
+            _LunarPakshaMappingRule(
+                lunar_phase_half=lunar_phase_half,
+                astronomical_paksha=astronomical_paksha,
+                profile_paksha=profile_paksha,
+                source_locator_ids=source_locator_ids,
+            )
+        )
+
+    mapping_obj = _require_dict(
+        document["nakshatra_bird_mapping"],
+        "nakshatra_bird_mapping",
+    )
+    _require_exact_keys(
+        mapping_obj,
+        {"mapping_kind", "source_table_semantics", "assembly_policy", "entries"},
+        "nakshatra_bird_mapping",
+    )
+    mapping_kind = _require_string(
+        mapping_obj["mapping_kind"],
+        "nakshatra_bird_mapping.mapping_kind",
+    )
+    if mapping_kind != "profile_paksha_and_nakshatra_to_bird":
+        raise PanchaPakshiDataError("nakshatra-bird mapping kind is unknown")
+    source_table_semantics = _require_string(
+        mapping_obj["source_table_semantics"],
+        "nakshatra_bird_mapping.source_table_semantics",
+    )
+    if source_table_semantics != (
+        "nakshatra_bird_table_not_explicitly_natal_moon"
+    ):
+        raise PanchaPakshiDataError("nakshatra-bird source semantics are unknown")
+    if mapping_obj["assembly_policy"] != meta["assembly_policy"]:
+        raise PanchaPakshiDataError(
+            "nakshatra-bird mapping assembly policy disagrees with profile"
+        )
+
+    purva_birds = (
+        (PanchaPakshiBird.VULTURE,) * 5
+        + (PanchaPakshiBird.OWL,) * 6
+        + (PanchaPakshiBird.CROW,) * 5
+        + (PanchaPakshiBird.COCK,) * 5
+        + (PanchaPakshiBird.PEACOCK,) * 6
+    )
+    amara_birds = (
+        (PanchaPakshiBird.PEACOCK,) * 5
+        + (PanchaPakshiBird.COCK,) * 6
+        + (PanchaPakshiBird.CROW,) * 5
+        + (PanchaPakshiBird.OWL,) * 5
+        + (PanchaPakshiBird.VULTURE,) * 6
+    )
+    expected_mapping_entries = tuple(
+        (
+            paksha,
+            nakshatra_index,
+            NAKSHATRA_NAMES[nakshatra_index],
+            birds[nakshatra_index],
+            (locator_id,),
+        )
+        for paksha, birds, locator_id in (
+            (PanchaPakshiPaksha.PURVA, purva_birds, "bogar_n52_purva"),
+            (PanchaPakshiPaksha.AMARA, amara_birds, "bogar_n64_amara_verse"),
+        )
+        for nakshatra_index in range(27)
+    )
+    raw_mapping_entries = _require_list(
+        mapping_obj["entries"],
+        "nakshatra_bird_mapping.entries",
+    )
+    if len(raw_mapping_entries) != len(expected_mapping_entries):
+        raise PanchaPakshiDataError(
+            "nakshatra-bird table must contain all 54 Paksha/nakshatra cells"
+        )
+    nakshatra_bird_rules: list[_NakshatraBirdRule] = []
+    for index, (raw_entry, expected) in enumerate(
+        zip(raw_mapping_entries, expected_mapping_entries, strict=True)
+    ):
+        context = f"nakshatra_bird_mapping.entries[{index}]"
+        entry = _require_dict(raw_entry, context)
+        _require_exact_keys(
+            entry,
+            {
+                "profile_paksha",
+                "nakshatra_index",
+                "nakshatra",
+                "bird",
+                "source_locators",
+            },
+            context,
+        )
+        parsed = _NakshatraBirdRule(
+            profile_paksha=_require_enum(
+                PanchaPakshiPaksha,
+                entry["profile_paksha"],
+                f"{context}.profile_paksha",
+            ),
+            nakshatra_index=_require_int(
+                entry["nakshatra_index"],
+                f"{context}.nakshatra_index",
+            ),
+            nakshatra=_require_string(entry["nakshatra"], f"{context}.nakshatra"),
+            bird=_require_enum(
+                PanchaPakshiBird,
+                entry["bird"],
+                f"{context}.bird",
+            ),
+            source_locator_ids=_parse_locator_ids(
+                entry["source_locators"],
+                f"{context}.source_locators",
+                locator_ids,
+            ),
+        )
+        (
+            expected_paksha,
+            expected_index,
+            expected_name,
+            expected_bird,
+            expected_locator_ids,
+        ) = expected
+        if (
+            parsed.profile_paksha is not expected_paksha
+            or parsed.nakshatra_index != expected_index
+            or parsed.nakshatra != expected_name
+            or parsed.bird is not expected_bird
+            or parsed.source_locator_ids != expected_locator_ids
+        ):
+            raise PanchaPakshiDataError(
+                f"{context} disagrees with the visually verified source partition"
+            )
+        nakshatra_bird_rules.append(parsed)
+
+    composition = _require_dict(
+        document["modern_composition"],
+        "modern_composition",
+    )
+    expected_composition = {
+        "composition_kind": (
+            "modern_moira_natal_moon_over_source_nakshatra_bird_table"
+        ),
+        "source_table_natal_status": "not_explicitly_natal_moon",
+        "lunar_position": "apparent_geocentric_true_ecliptic_of_date",
+        "ayanamsa_system": "Lahiri",
+        "ayanamsa_mode": "true",
+        "ayanamsa_source_status": "not_attested_by_source_modern_policy",
+        "nakshatra_partition": "27_equal_half_open_40_over_3_degree_sectors",
+        "boundary_ownership": "exact_internal_boundary_to_following_nakshatra",
+        "binary_boundary_recovery": "maximum_one_ulp_below_internal_boundary",
+    }
+    _require_exact_keys(composition, set(expected_composition), "modern_composition")
+    if composition != expected_composition:
+        raise PanchaPakshiDataError("modern natal composition doctrine is unknown")
+
+    omissions: list[PanchaPakshiOmission] = []
+    for index, raw_omission in enumerate(
+        _require_list(document["explicit_omissions"], "explicit_omissions")
+    ):
+        context = f"explicit_omissions[{index}]"
+        omission = _require_dict(raw_omission, context)
+        _require_exact_keys(omission, {"feature", "status", "reason"}, context)
+        parsed = PanchaPakshiOmission(
+            feature=_require_string(omission["feature"], f"{context}.feature"),
+            status=_require_string(omission["status"], f"{context}.status"),
+            reason=_require_string(omission["reason"], f"{context}.reason"),
+        )
+        if parsed.status != "omitted":
+            raise PanchaPakshiDataError(f"{context}.status must be omitted")
+        omissions.append(parsed)
+    if (
+        {omission.feature for omission in omissions} != _REQUIRED_NATAL_OMISSIONS
+        or len(omissions) != len(_REQUIRED_NATAL_OMISSIONS)
+    ):
+        raise PanchaPakshiDataError(
+            "natal profile explicit omissions are incomplete or duplicated"
+        )
+
+    conflicts: list[PanchaPakshiConflictWitness] = []
+    for index, raw_conflict in enumerate(
+        _require_list(
+            document["research_conflict_ledger"],
+            "research_conflict_ledger",
+        )
+    ):
+        context = f"research_conflict_ledger[{index}]"
+        conflict = _require_dict(raw_conflict, context)
+        _require_exact_keys(
+            conflict,
+            {
+                "witness_id",
+                "bibliographic_label",
+                "record_url",
+                "record_identity",
+                "conflict_locators",
+                "evidence_status",
+                "runtime_status",
+            },
+            context,
+        )
+        conflict_locators = tuple(
+            _require_string(locator, f"{context}.conflict_locators[{locator_index}]")
+            for locator_index, locator in enumerate(
+                _require_list(
+                    conflict["conflict_locators"],
+                    f"{context}.conflict_locators",
+                )
+            )
+        )
+        if not conflict_locators:
+            raise PanchaPakshiDataError(f"{context}.conflict_locators is empty")
+        parsed = PanchaPakshiConflictWitness(
+            witness_id=_require_string(
+                conflict["witness_id"],
+                f"{context}.witness_id",
+            ),
+            bibliographic_label=_require_string(
+                conflict["bibliographic_label"],
+                f"{context}.bibliographic_label",
+            ),
+            record_url=_require_string(
+                conflict["record_url"],
+                f"{context}.record_url",
+            ),
+            record_identity=_require_string(
+                conflict["record_identity"],
+                f"{context}.record_identity",
+            ),
+            conflict_locators=conflict_locators,
+            evidence_status=_require_string(
+                conflict["evidence_status"],
+                f"{context}.evidence_status",
+            ),
+            runtime_status=_require_string(
+                conflict["runtime_status"],
+                f"{context}.runtime_status",
+            ),
+        )
+        if not parsed.record_url.startswith("https://"):
+            raise PanchaPakshiDataError("conflict witness record URL must be HTTPS")
+        if parsed.runtime_status not in {
+            "rejected_by_declared_verse_precedence",
+            "not_imported",
+        }:
+            raise PanchaPakshiDataError("conflict witness runtime status is unknown")
+        conflicts.append(parsed)
+    expected_conflict_contracts = (
+        (
+            "bogamuni_2024_adjacent_amara_commentary",
+            source.archive_item_url,
+            ("bogar_n64_amara_commentary_conflict",),
+            "visually_verified_commentary_overlaps_shravana_and_omits_revati",
+            "rejected_by_declared_verse_precedence",
+        ),
+        (
+            "kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+            "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+            (
+                "IA leaf n18: Purva corroboration",
+                "IA leaf n61: malformed Amara commentary",
+            ),
+            (
+                "visually_reviewed_secondary_witness_purva_corroboration_and_"
+                "amara_commentary_conflict"
+            ),
+            "not_imported",
+        ),
+    )
+    actual_conflict_contracts = tuple(
+        (
+            conflict.witness_id,
+            conflict.record_url,
+            conflict.conflict_locators,
+            conflict.evidence_status,
+            conflict.runtime_status,
+        )
+        for conflict in conflicts
+    )
+    if actual_conflict_contracts != expected_conflict_contracts:
+        raise PanchaPakshiDataError(
+            "natal research conflict ledger disagrees with the two named "
+            "witness contracts"
+        )
+    if "abe489a832ac38a0270335b7429776f3" not in conflicts[0].record_identity:
+        raise PanchaPakshiDataError(
+            "Bogamuni conflict witness lacks the original-PDF identity"
+        )
+    if "5832ca69b64c1429342fba8c3b3012dc" not in conflicts[1].record_identity:
+        raise PanchaPakshiDataError(
+            "Uromarisi conflict witness lacks the original-PDF identity"
+        )
+
+    referenced_locator_ids = {
+        locator_id
+        for rule in lunar_paksha_mapping_rules
+        for locator_id in rule.source_locator_ids
+    }
+    referenced_locator_ids.update(
+        locator_id
+        for rule in nakshatra_bird_rules
+        for locator_id in rule.source_locator_ids
+    )
+    referenced_locator_ids.update(
+        locator_id
+        for conflict in conflicts
+        for locator_id in conflict.conflict_locators
+        if locator_id in locator_ids
+    )
+    if referenced_locator_ids != locator_ids:
+        raise PanchaPakshiDataError(
+            "natal source locator ledger contains unreferenced or missing evidence"
+        )
+
+    return PanchaPakshiNatalIdentityProfile(
+        profile_id=profile_id,
+        admission_status=admission_status,
+        product_kind=meta["product_kind"],
+        default_selection_allowed=default_selection_allowed,
+        capabilities=capabilities,
+        admission_decision_id=admission_decision_id,
+        derivation_status=meta["derivation_status"],
+        assembly_policy=meta["assembly_policy"],
+        title=_require_string(meta["title"], "profile.title"),
+        source=source,
+        source_locators=tuple(locators),
+        lunar_paksha_mapping_kind=lunar_paksha_mapping_kind,
+        lunar_paksha_mapping_rules=tuple(lunar_paksha_mapping_rules),
+        nakshatra_bird_mapping_kind=mapping_kind,
+        source_table_semantics=source_table_semantics,
+        modern_composition_kind=composition["composition_kind"],
+        nakshatra_bird_rules=tuple(nakshatra_bird_rules),
+        explicit_omissions=tuple(omissions),
+        research_conflict_ledger=tuple(conflicts),
+    )
+
+
+def _validate_natal_mapping_completeness(
+    profile: PanchaPakshiNatalIdentityProfile,
+) -> None:
+    expected_keys = {
+        (paksha, nakshatra_index)
+        for paksha in PanchaPakshiPaksha
+        for nakshatra_index in range(27)
+    }
+    actual_keys = {
+        (rule.profile_paksha, rule.nakshatra_index)
+        for rule in profile.nakshatra_bird_rules
+    }
+    if actual_keys != expected_keys or len(profile.nakshatra_bird_rules) != 54:
+        raise PanchaPakshiDataError(
+            "natal profile does not provide exactly one mapping for all 54 cells"
+        )
+    for paksha, nakshatra_index in expected_keys:
+        profile.nakshatra_bird_rule(paksha, nakshatra_index)
 
 
 def _validate_generated_completeness(profile: PanchaPakshiProfile) -> None:

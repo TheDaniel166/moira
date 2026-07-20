@@ -77,13 +77,18 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 ### Vedic / Jyotish Suite
 
-Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jataka, Saravali, Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras, and the named 1879 Agastya-attributed Pancha Pakshi witness) with per-rule citations; where classical sources disagree, the disagreement is an explicit policy switch or a recorded note — never a silent choice.
+Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jataka, Saravali, Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras, and the named 1879 Agastya- and 2024 Bogamuni-attributed Pancha Pakshi witnesses) with per-rule citations; where classical sources disagree, the disagreement is an explicit policy switch or a recorded note — never a silent choice.
 
 - **Sidereal foundation** — 40+ ayanamsa systems including star-anchored "True" ayanamsas; 27-nakshatra system; Panchanga.
 - **Pancha Pakshi** — an explicitly named Agastya-attributed Madras 1879
   aksara/query-or-name-initial fixed-clock schedule and directed relationship
   profile, with exact rational timing, source locators, declared omissions,
-  and no implicit or universal default. An explicit modern local-solar context
+  and no implicit or universal default. A separate astronomical-paksha product
+  evaluates apparent geocentric Moon-minus-Sun longitude in the true ecliptic
+  of date and maps `[0, 180)` Shukla/waxing to the profile's source-attested
+  Purva label and `[180, 360)` Krishna/waning to Amara. It accepts no location
+  and never selects a schedule, materializes a clock, supplies paksha to another
+  operation, or infers natal identity. An explicit modern local-solar context
   policy can derive topocentric day/night and local-mean-solar weekday for an
   aware instant and location while requiring the caller to supply Purva or
   Amara. A separate modern fixed-clock policy anchors the selected schedule at
@@ -97,9 +102,25 @@ Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jat
   the exact nominal offset fractions and map them independently across the
   complete governing day or night half on reader-bound TT, returning 25
   half-open TT/UT1 cells with exact astronomical-boundary closure. The 1879
-  witness is not credited with that proportional rule. Paksha remains caller
-  supplied, and the proportional surface does not yet select a current cell or
-  infer lunar paksha.
+  witness is not credited with that proportional rule. A separate
+  solar-half-first selector identifies the unique proportional cell through
+  exact half-open TT ownership; complete-half coverage means its lawful status
+  is always `selected`, with no fixed-clock tail or fallback. Paksha remains
+  caller supplied on every schedule, materialization, and current-cell surface;
+  the standalone astronomical inference is never applied automatically, and
+  the 1879 profile remains explicitly non-natal. A separate named Bogamuni 2024
+  profile preserves a complete 54-cell Purva/Amara-by-nakshatra bird table.
+  Its Amara verse governs because the adjacent commentary duplicates Shravana
+  and omits Revati; that malformed commentary remains visible as rejected
+  conflict evidence. The fixed modern
+  `bogamuni_2024_apparent_lahiri_natal_moon_identity_v1` composition evaluates
+  apparent geocentric Sun and Moon positions on one reader-bound TT epoch,
+  derives the source-mapped lunar half, applies Lahiri true ayanamsa, assigns
+  the Moon to one of 27 equal half-open nakshatras, and returns the selected
+  source-table bird with every intermediate and locator visible. The source
+  attests nakshatra birds and phase labels; birth-Moon application, Lahiri, and
+  the equal-sector boundary policy are explicitly Moira-owned, not source
+  claims. It never routes into a schedule, current cell, score, or forecast.
 - **Dashas** — Vimshottari with nakshatra balance; Chara Dasha (K.N. Rao's named lineage); Varshaphal (annual charts).
 - **Vargas** — divisional charts (navamsa, dashamansa, dwadashamsa, saptamsa, trimshamsa, and more); Vimshopaka Bala (BPHS 20-point varga-dignity strength over all four classical groups) with vargottama detection.
 - **Yogas** — 60 classical yogas across six families (Pancha Mahapurusha, Chandra, Surya, all 32 Nabhasa, Raja core, Dhana core), each returned as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, and per-yoga primary-source citations.

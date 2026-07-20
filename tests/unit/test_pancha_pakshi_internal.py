@@ -49,12 +49,30 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
                 PanchaPakshiCapability.NOMINAL_SCHEDULE,
                 PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
                 PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+                PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
                 PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
                 PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
                 PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
+                (
+                    PanchaPakshiCapability
+                    .SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION
+                ),
             ),
             admission_decision_id=(
-                "pancha_pakshi_1879_solar_proportional_materialization_2026_07_20"
+                "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
+            ),
+        ),
+        type(available_pancha_pakshi_profiles()[0])(
+            profile_id="bogamuni_chennai_2024_nakshatra_natal_identity",
+            admission_status=PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
+            product_kind="natal_moon_bird_identity",
+            default_selection_allowed=False,
+            capabilities=(
+                PanchaPakshiCapability.NAKSHATRA_BIRD_MAPPING,
+                PanchaPakshiCapability.NATAL_IDENTITY,
+            ),
+            admission_decision_id=(
+                "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20"
             ),
         ),
     )
@@ -67,9 +85,11 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
         PanchaPakshiCapability.NOMINAL_SCHEDULE,
         PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
         PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+        PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
         PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
         PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
         PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION,
     )
     assert profile.derivation_status == (
         "machine_reconciled_source_assignment_pending_competent_tamil_review"

@@ -421,10 +421,10 @@ def personal_muhurta_score(
     policy = policy or MuhurtaPolicy()
     base = score_muhurta(panchanga, policy)
 
-    from .sidereal import NAKSHATRA_SPAN
+    from .sidereal import _nakshatra_sector
 
-    janma_nak = int(janma_moon_sidereal_lon % 360.0 // NAKSHATRA_SPAN)
-    target_nak = int(transit_moon_sidereal_lon % 360.0 // NAKSHATRA_SPAN)
+    _, janma_nak, _ = _nakshatra_sector(janma_moon_sidereal_lon)
+    _, target_nak, _ = _nakshatra_sector(transit_moon_sidereal_lon)
     tara = tara_bala(janma_nak, target_nak)
     chandra = chandra_bala(janma_moon_sidereal_lon, transit_moon_sidereal_lon)
 

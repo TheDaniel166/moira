@@ -12,6 +12,8 @@ from ..dependencies import get_engine
 from ..models.pancha_pakshi import (
     PanchaPakshiAksaraIdentityRequest,
     PanchaPakshiAksaraIdentityResponse,
+    PanchaPakshiAstronomicalPakshaRequest,
+    PanchaPakshiAstronomicalPakshaResponse,
     PanchaPakshiDirectedRelationshipRequest,
     PanchaPakshiDirectedRelationshipResponse,
     PanchaPakshiFixedClockCurrentCellRequest,
@@ -20,30 +22,40 @@ from ..models.pancha_pakshi import (
     PanchaPakshiFixedClockMaterializationResponse,
     PanchaPakshiLocalSolarContextRequest,
     PanchaPakshiLocalSolarContextResponse,
+    PanchaPakshiNatalMoonIdentityRequest,
+    PanchaPakshiNatalMoonIdentityResponse,
     PanchaPakshiNominalScheduleRequest,
     PanchaPakshiNominalScheduleResponse,
     PanchaPakshiProfileInfoResponse,
     PanchaPakshiProfilesResponse,
+    PanchaPakshiSolarProportionalCurrentCellRequest,
+    PanchaPakshiSolarProportionalCurrentCellResponse,
     PanchaPakshiSolarProportionalMaterializationRequest,
     PanchaPakshiSolarProportionalMaterializationResponse,
 )
 from ..serializers.pancha_pakshi import (
     serialize_aksara_identity,
+    serialize_astronomical_paksha,
     serialize_directed_relationship,
     serialize_fixed_clock_current_cell,
     serialize_fixed_clock_materialization,
     serialize_local_solar_context,
+    serialize_natal_moon_identity,
     serialize_nominal_schedule,
     serialize_profile_info,
+    serialize_solar_proportional_current_cell,
     serialize_solar_proportional_materialization,
 )
 from ..services.pancha_pakshi import (
     compute_aksara_identity,
+    compute_astronomical_paksha,
     compute_directed_relationship,
     compute_fixed_clock_current_cell,
     compute_fixed_clock_materialization,
     compute_local_solar_context,
+    compute_natal_moon_identity,
     compute_nominal_schedule,
+    compute_solar_proportional_current_cell,
     compute_solar_proportional_materialization,
     list_pancha_pakshi_profiles,
     pancha_pakshi_profile,
@@ -75,12 +87,42 @@ def pancha_pakshi_aksara_identity_route(
     return serialize_aksara_identity(compute_aksara_identity(request))
 
 
+@router.post(
+    "/identity/natal-moon",
+    response_model=PanchaPakshiNatalMoonIdentityResponse,
+)
+def pancha_pakshi_natal_moon_identity_route(
+    request: PanchaPakshiNatalMoonIdentityRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> PanchaPakshiNatalMoonIdentityResponse:
+    """Apply a named source table through the fixed modern natal-Moon policy."""
+
+    return serialize_natal_moon_identity(
+        compute_natal_moon_identity(engine, request)
+    )
+
+
 @router.post("/schedule/nominal", response_model=PanchaPakshiNominalScheduleResponse)
 def pancha_pakshi_nominal_schedule_route(
     request: PanchaPakshiNominalScheduleRequest,
 ) -> PanchaPakshiNominalScheduleResponse:
     """Generate an exact fixed-clock nominal schedule; no astronomy is routed."""
     return serialize_nominal_schedule(compute_nominal_schedule(request))
+
+
+@router.post(
+    "/context/astronomical-paksha",
+    response_model=PanchaPakshiAstronomicalPakshaResponse,
+)
+def pancha_pakshi_astronomical_paksha_route(
+    request: PanchaPakshiAstronomicalPakshaRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> PanchaPakshiAstronomicalPakshaResponse:
+    """Infer the named profile paksha from geocentric lunar elongation."""
+
+    return serialize_astronomical_paksha(
+        compute_astronomical_paksha(engine, request)
+    )
 
 
 @router.post(
@@ -125,6 +167,21 @@ def pancha_pakshi_solar_proportional_materialization_route(
 
     return serialize_solar_proportional_materialization(
         compute_solar_proportional_materialization(engine, request)
+    )
+
+
+@router.post(
+    "/schedule/solar-proportional/current-cell",
+    response_model=PanchaPakshiSolarProportionalCurrentCellResponse,
+)
+def pancha_pakshi_solar_proportional_current_cell_route(
+    request: PanchaPakshiSolarProportionalCurrentCellRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> PanchaPakshiSolarProportionalCurrentCellResponse:
+    """Select the unique proportional cell for the requested instant."""
+
+    return serialize_solar_proportional_current_cell(
+        compute_solar_proportional_current_cell(engine, request)
     )
 
 

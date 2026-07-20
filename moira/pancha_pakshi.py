@@ -2,10 +2,11 @@
 
 Pancha Pakshi is represented as a registry of named computational profiles,
 not as one ambient canon.  Every computation therefore requires an explicit
-``profile_id``.  The first admitted profile is the 1879 Madras
-aksara/query-or-name-initial fixed-clock operating schedule; it is not a
-natal-Moon identity, an astronomical paksha router, a seasonally scaled clock,
-or a scoring doctrine.
+``profile_id``.  The 1879 Madras profile remains an aksara/query-or-name-
+initial operating schedule.  A separate Bogamuni 2024 profile preserves a
+source-attested Paksha-and-nakshatra bird table and admits an explicit modern
+Moira composition that applies that table to the apparent Lahiri sidereal
+natal Moon.  The source table itself is not relabelled as a birth-Moon rule.
 
 The private :mod:`moira._pancha_pakshi` module owns hash-verified source-data
 ingestion and exact table materialization.  This module owns the stable public
@@ -50,10 +51,15 @@ class PanchaPakshiCapability(str, Enum):
     NOMINAL_SCHEDULE = "nominal_schedule"
     DIRECTED_RELATIONSHIPS = "directed_relationships"
     ASTRONOMICAL_CONTEXT = "astronomical_context"
+    ASTRONOMICAL_PAKSHA_INFERENCE = "astronomical_paksha_inference"
+    NAKSHATRA_BIRD_MAPPING = "nakshatra_bird_mapping"
     NATAL_IDENTITY = "natal_identity"
     FIXED_CLOCK_MATERIALIZATION = "fixed_clock_materialization"
     FIXED_CLOCK_CURRENT_CELL_SELECTION = "fixed_clock_current_cell_selection"
     SOLAR_PROPORTIONAL_MATERIALIZATION = "solar_proportional_materialization"
+    SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION = (
+        "solar_proportional_current_cell_selection"
+    )
     AUTHORITY_BIRDS = "authority_birds"
     SUBDIVISIONS = "subdivisions"
     CONDITION = "condition"
@@ -78,10 +84,17 @@ class PanchaPakshiActivity(str, Enum):
 
 
 class PanchaPakshiPaksha(str, Enum):
-    """Source labels only; no astronomical phase mapping is implied."""
+    """Profile-owned source labels, distinct from astronomical phase halves."""
 
     PURVA = "purva"
     AMARA = "amara"
+
+
+class PanchaPakshiAstronomicalPaksha(str, Enum):
+    """Geocentric lunar phase halves used by the explicit inference product."""
+
+    SHUKLA = "shukla"
+    KRISHNA = "krishna"
 
 
 class PanchaPakshiHalf(str, Enum):
@@ -121,7 +134,7 @@ class PanchaPakshiMaterializedCellRelation(str, Enum):
 
 
 class PanchaPakshiCurrentCellSelectionStatus(str, Enum):
-    """Outcome of exact fixed-clock membership at the requested instant."""
+    """Outcome of one explicitly governed current-cell selection."""
 
     SELECTED = "selected"
     UNMATERIALIZED_SOLAR_HALF_TAIL = "unmaterialized_solar_half_tail"
@@ -216,6 +229,530 @@ class PanchaPakshiProfileInfo:
     provenance: PanchaPakshiProvenance
     source_locators: tuple[PanchaPakshiSourceLocator, ...]
     known_conflict_witnesses: tuple[PanchaPakshiConflictWitness, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiAstronomicalPakshaInferencePolicy:
+    """The fixed astronomical and source-mapping doctrine for Stage 2F.
+
+    The astronomical object is the apparent geocentric Moon-minus-Sun
+    longitude in the true ecliptic of date.  Its two half-open semicircles
+    define Shukla and Krishna; a profile-owned, source-attested mapping then
+    translates those astronomical halves to Purva and Amara.  This vessel is
+    immutable and has no caller-configurable switches.
+    """
+
+    policy_id: str = field(
+        default="apparent_geocentric_moon_sun_longitude_paksha_half_open_v1",
+        init=False,
+    )
+    input_time_scale: str = field(default="ut1", init=False)
+    ephemeris_time_scale: str = field(default="reader_bound_tt", init=False)
+    position_origin: str = field(default="geocentric", init=False)
+    position_frame: str = field(default="true_ecliptic_of_date", init=False)
+    apparent: bool = field(default=True, init=False)
+    aberration: bool = field(default=True, init=False)
+    grav_deflection: bool = field(default=True, init=False)
+    nutation: bool = field(default=True, init=False)
+    elongation_definition: str = field(
+        default="normalized_moon_longitude_minus_sun_longitude",
+        init=False,
+    )
+    elongation_domain: str = field(
+        default="degrees_half_open_0_360",
+        init=False,
+    )
+    shukla_interval: str = field(
+        default="0_inclusive_180_exclusive",
+        init=False,
+    )
+    krishna_interval: str = field(
+        default="180_inclusive_360_exclusive",
+        init=False,
+    )
+    boundary_tolerance_degrees: float = field(default=0.0, init=False)
+    ayanamsa_status: str = field(
+        default="not_applied_common_longitude_offset_cancels",
+        init=False,
+    )
+    profile_mapping_basis: str = field(
+        default="direct_source_attested_waxing_waning",
+        init=False,
+    )
+    purva_source_locator_id: str = field(default="ia_n16", init=False)
+    amara_source_locator_id: str = field(default="ia_n26", init=False)
+    schedule_selection_status: str = field(default="not_performed", init=False)
+    materialization_status: str = field(default="not_performed", init=False)
+    natal_identity_status: str = field(default="not_performed", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiAstronomicalPakshaInference:
+    """One instantaneous astronomical phase-half to profile-label inference."""
+
+    profile_id: str
+    requested_jd_ut1: float
+    requested_jd_tt: float
+    policy: PanchaPakshiAstronomicalPakshaInferencePolicy
+    sun_longitude_deg: float
+    moon_longitude_deg: float
+    moon_minus_sun_elongation_deg: float
+    astronomical_paksha: PanchaPakshiAstronomicalPaksha
+    profile_paksha: PanchaPakshiPaksha
+    mapping_status: str
+    mapping_source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.profile_id, str):
+            raise TypeError("profile_id must be a string")
+        if not self.profile_id:
+            raise ValueError("profile_id must not be empty")
+        for name, value in (
+            ("requested_jd_ut1", self.requested_jd_ut1),
+            ("requested_jd_tt", self.requested_jd_tt),
+            ("sun_longitude_deg", self.sun_longitude_deg),
+            ("moon_longitude_deg", self.moon_longitude_deg),
+            (
+                "moon_minus_sun_elongation_deg",
+                self.moon_minus_sun_elongation_deg,
+            ),
+        ):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise TypeError(f"{name} must be a real number")
+            if not math.isfinite(value):
+                raise ValueError(f"{name} must be finite")
+        for name, value in (
+            ("sun_longitude_deg", self.sun_longitude_deg),
+            ("moon_longitude_deg", self.moon_longitude_deg),
+            (
+                "moon_minus_sun_elongation_deg",
+                self.moon_minus_sun_elongation_deg,
+            ),
+        ):
+            if not 0.0 <= value < 360.0:
+                raise ValueError(f"{name} must lie in [0, 360)")
+        if not isinstance(
+            self.policy,
+            PanchaPakshiAstronomicalPakshaInferencePolicy,
+        ):
+            raise TypeError(
+                "policy must be a "
+                "PanchaPakshiAstronomicalPakshaInferencePolicy"
+            )
+        if not isinstance(
+            self.astronomical_paksha,
+            PanchaPakshiAstronomicalPaksha,
+        ):
+            raise TypeError(
+                "astronomical_paksha must be a PanchaPakshiAstronomicalPaksha"
+            )
+        if not isinstance(self.profile_paksha, PanchaPakshiPaksha):
+            raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+        if self.mapping_status != "direct_source_attested":
+            raise ValueError("mapping_status must be direct_source_attested")
+        if (
+            not isinstance(self.mapping_source_locators, tuple)
+            or len(self.mapping_source_locators) != 1
+            or not isinstance(
+                self.mapping_source_locators[0],
+                PanchaPakshiSourceLocator,
+            )
+        ):
+            raise TypeError(
+                "mapping_source_locators must contain one source locator"
+            )
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+        if self.provenance.profile_id != self.profile_id:
+            raise ValueError("provenance profile disagrees with profile_id")
+        if (
+            PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE
+            not in self.provenance.capabilities
+        ):
+            raise ValueError(
+                "provenance does not admit astronomical paksha inference"
+            )
+
+        expected_elongation = (
+            self.moon_longitude_deg - self.sun_longitude_deg
+        ) % 360.0
+        if self.moon_minus_sun_elongation_deg != expected_elongation:
+            raise ValueError(
+                "moon_minus_sun_elongation_deg disagrees with the longitudes"
+            )
+
+        if self.moon_minus_sun_elongation_deg < 180.0:
+            expected_astronomical = PanchaPakshiAstronomicalPaksha.SHUKLA
+            expected_profile = PanchaPakshiPaksha.PURVA
+            expected_locator_id = self.policy.purva_source_locator_id
+        else:
+            expected_astronomical = PanchaPakshiAstronomicalPaksha.KRISHNA
+            expected_profile = PanchaPakshiPaksha.AMARA
+            expected_locator_id = self.policy.amara_source_locator_id
+        if self.astronomical_paksha is not expected_astronomical:
+            raise ValueError(
+                "astronomical_paksha disagrees with half-open elongation policy"
+            )
+        if self.profile_paksha is not expected_profile:
+            raise ValueError(
+                "profile_paksha disagrees with the source-attested mapping"
+            )
+        if self.mapping_source_locators[0].locator_id != expected_locator_id:
+            raise ValueError(
+                "mapping source locator disagrees with the inferred paksha"
+            )
+        canonical_profile = _profile_for_public_capability(
+            self.profile_id,
+            PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
+        )
+        if (
+            self.mapping_source_locators[0]
+            != canonical_profile.locator(expected_locator_id)
+        ):
+            raise ValueError(
+                "mapping source locator disagrees with the canonical "
+                "profile locator"
+            )
+        if (
+            self.mapping_source_locators[0].witness_id
+            != self.provenance.source.witness_id
+        ):
+            raise ValueError(
+                "mapping source locator disagrees with the provenance witness"
+            )
+        if self.provenance.astronomical_routing_status != (
+            "astronomical_paksha_inference_performed_source_mapped_no_"
+            "schedule_materialization_or_natal_identity"
+        ):
+            raise ValueError(
+                "provenance does not describe the astronomical paksha route"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiNakshatraBirdMapping:
+    """One pure source-table mapping, without a natal-Moon claim.
+
+    The Bogamuni witness associates each named nakshatra with one bird in each
+    of its Purva and Amara partitions.  This immutable vessel represents only
+    that source statement.  It does not select an epoch, compute a Moon, or
+    assert that the table itself is explicitly natal.
+    """
+
+    profile_id: str
+    profile_paksha: PanchaPakshiPaksha
+    nakshatra_index: int
+    nakshatra: str
+    bird: PanchaPakshiBird
+    mapping_status: str
+    source_table_semantics: str
+    assembly_policy: str
+    source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        from .sidereal import NAKSHATRA_NAMES
+
+        if not isinstance(self.profile_id, str):
+            raise TypeError("profile_id must be a string")
+        if not self.profile_id:
+            raise ValueError("profile_id must not be empty")
+        if not isinstance(self.profile_paksha, PanchaPakshiPaksha):
+            raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+        if isinstance(self.nakshatra_index, bool) or not isinstance(
+            self.nakshatra_index,
+            int,
+        ):
+            raise TypeError("nakshatra_index must be an integer")
+        if not 0 <= self.nakshatra_index < len(NAKSHATRA_NAMES):
+            raise ValueError("nakshatra_index must lie in [0, 26]")
+        if self.nakshatra != NAKSHATRA_NAMES[self.nakshatra_index]:
+            raise ValueError("nakshatra disagrees with nakshatra_index")
+        if not isinstance(self.bird, PanchaPakshiBird):
+            raise TypeError("bird must be a PanchaPakshiBird")
+        if self.mapping_status != "direct_source_attested":
+            raise ValueError("mapping_status must be direct_source_attested")
+        if self.source_table_semantics != (
+            "nakshatra_bird_table_not_explicitly_natal_moon"
+        ):
+            raise ValueError("source_table_semantics is unknown")
+        if self.assembly_policy != "verse_precedence_for_nakshatra_partition":
+            raise ValueError("assembly_policy is unknown")
+        if (
+            not isinstance(self.source_locators, tuple)
+            or len(self.source_locators) != 1
+            or not isinstance(self.source_locators[0], PanchaPakshiSourceLocator)
+        ):
+            raise TypeError("source_locators must contain one source locator")
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+        if self.provenance.profile_id != self.profile_id:
+            raise ValueError("provenance profile disagrees with profile_id")
+        if (
+            PanchaPakshiCapability.NAKSHATRA_BIRD_MAPPING
+            not in self.provenance.capabilities
+        ):
+            raise ValueError("provenance does not admit nakshatra-bird mapping")
+        if self.provenance.assembly_policy != self.assembly_policy:
+            raise ValueError("provenance assembly policy disagrees with mapping")
+
+        profile = _profile_for_public_capability(
+            self.profile_id,
+            PanchaPakshiCapability.NAKSHATRA_BIRD_MAPPING,
+        )
+        rule = profile.nakshatra_bird_rule(
+            self.profile_paksha,
+            self.nakshatra_index,
+        )
+        if rule.nakshatra != self.nakshatra or rule.bird is not self.bird:
+            raise ValueError("mapping disagrees with the canonical source table")
+        if rule.source_locator_ids != (self.source_locators[0].locator_id,):
+            raise ValueError("mapping source locator disagrees with source table")
+        if self.source_locators[0] != profile.locator(rule.source_locator_ids[0]):
+            raise ValueError("mapping source locator is not canonical")
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiNatalMoonIdentityPolicy:
+    """Fixed Stage 2G doctrine for the Bogamuni natal-Moon composition."""
+
+    policy_id: str = field(
+        default="bogamuni_2024_apparent_lahiri_natal_moon_identity_v1",
+        init=False,
+    )
+    composition_status: str = field(
+        default="modern_moira_policy_not_source_claim",
+        init=False,
+    )
+    source_table_semantics: str = field(
+        default="nakshatra_bird_table_not_explicitly_natal_moon",
+        init=False,
+    )
+    input_time_scale: str = field(default="ut1", init=False)
+    ephemeris_time_scale: str = field(default="reader_bound_tt", init=False)
+    position_origin: str = field(default="geocentric", init=False)
+    position_frame: str = field(default="true_ecliptic_of_date", init=False)
+    apparent: bool = field(default=True, init=False)
+    aberration: bool = field(default=True, init=False)
+    grav_deflection: bool = field(default=True, init=False)
+    nutation: bool = field(default=True, init=False)
+    elongation_definition: str = field(
+        default="normalized_moon_longitude_minus_sun_longitude",
+        init=False,
+    )
+    shukla_interval: str = field(
+        default="0_inclusive_180_exclusive",
+        init=False,
+    )
+    krishna_interval: str = field(
+        default="180_inclusive_360_exclusive",
+        init=False,
+    )
+    phase_boundary_tolerance_degrees: float = field(default=0.0, init=False)
+    phase_to_profile_mapping: str = field(
+        default="direct_source_attested_new_moon_purva_full_moon_amara",
+        init=False,
+    )
+    phase_mapping_source_locator_id: str = field(
+        default="bogar_n167_phase",
+        init=False,
+    )
+    ayanamsa_system: str = field(default="Lahiri", init=False)
+    ayanamsa_mode: str = field(default="true", init=False)
+    ayanamsa_status: str = field(
+        default="fixed_modern_moira_policy_not_source_attested",
+        init=False,
+    )
+    nakshatra_partition: str = field(
+        default="27_equal_half_open_40_over_3_degree_sectors",
+        init=False,
+    )
+    exact_internal_boundary_ownership: str = field(
+        default="following_nakshatra",
+        init=False,
+    )
+    binary_boundary_recovery: str = field(
+        default="maximum_one_ulp_below_internal_boundary",
+        init=False,
+    )
+    mapping_assembly_policy: str = field(
+        default="verse_precedence_for_nakshatra_partition",
+        init=False,
+    )
+    schedule_selection_status: str = field(default="not_performed", init=False)
+    materialization_status: str = field(default="not_performed", init=False)
+    current_cell_status: str = field(default="not_performed", init=False)
+    scoring_status: str = field(default="not_performed", init=False)
+    forecast_status: str = field(default="not_performed", init=False)
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiNatalMoonIdentity:
+    """One modern natal-Moon composition over a source-owned bird table."""
+
+    profile_id: str
+    requested_jd_ut1: float
+    requested_jd_tt: float
+    policy: PanchaPakshiNatalMoonIdentityPolicy
+    sun_longitude_deg: float
+    moon_tropical_longitude_deg: float
+    moon_minus_sun_elongation_deg: float
+    astronomical_paksha: PanchaPakshiAstronomicalPaksha
+    profile_paksha: PanchaPakshiPaksha
+    phase_mapping_source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    ayanamsa_deg: float
+    moon_sidereal_longitude_deg: float
+    nakshatra_index: int
+    nakshatra: str
+    degrees_in_nakshatra: float
+    bird: PanchaPakshiBird
+    bird_mapping: PanchaPakshiNakshatraBirdMapping
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        from .sidereal import (
+            NAKSHATRA_NAMES,
+            NAKSHATRA_SPAN,
+            _nakshatra_position_from_sidereal,
+        )
+
+        if not isinstance(self.profile_id, str):
+            raise TypeError("profile_id must be a string")
+        if not self.profile_id:
+            raise ValueError("profile_id must not be empty")
+        for name, value in (
+            ("requested_jd_ut1", self.requested_jd_ut1),
+            ("requested_jd_tt", self.requested_jd_tt),
+            ("sun_longitude_deg", self.sun_longitude_deg),
+            ("moon_tropical_longitude_deg", self.moon_tropical_longitude_deg),
+            (
+                "moon_minus_sun_elongation_deg",
+                self.moon_minus_sun_elongation_deg,
+            ),
+            ("ayanamsa_deg", self.ayanamsa_deg),
+            ("moon_sidereal_longitude_deg", self.moon_sidereal_longitude_deg),
+            ("degrees_in_nakshatra", self.degrees_in_nakshatra),
+        ):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise TypeError(f"{name} must be a real number")
+            if not math.isfinite(value):
+                raise ValueError(f"{name} must be finite")
+        for name, value in (
+            ("sun_longitude_deg", self.sun_longitude_deg),
+            ("moon_tropical_longitude_deg", self.moon_tropical_longitude_deg),
+            (
+                "moon_minus_sun_elongation_deg",
+                self.moon_minus_sun_elongation_deg,
+            ),
+            ("moon_sidereal_longitude_deg", self.moon_sidereal_longitude_deg),
+        ):
+            if not 0.0 <= value < 360.0:
+                raise ValueError(f"{name} must lie in [0, 360)")
+        if not isinstance(self.policy, PanchaPakshiNatalMoonIdentityPolicy):
+            raise TypeError("policy must be a PanchaPakshiNatalMoonIdentityPolicy")
+        if not isinstance(self.astronomical_paksha, PanchaPakshiAstronomicalPaksha):
+            raise TypeError(
+                "astronomical_paksha must be a PanchaPakshiAstronomicalPaksha"
+            )
+        if not isinstance(self.profile_paksha, PanchaPakshiPaksha):
+            raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+        if (
+            not isinstance(self.phase_mapping_source_locators, tuple)
+            or len(self.phase_mapping_source_locators) != 1
+            or not isinstance(
+                self.phase_mapping_source_locators[0],
+                PanchaPakshiSourceLocator,
+            )
+        ):
+            raise TypeError(
+                "phase_mapping_source_locators must contain one source locator"
+            )
+        if isinstance(self.nakshatra_index, bool) or not isinstance(
+            self.nakshatra_index,
+            int,
+        ):
+            raise TypeError("nakshatra_index must be an integer")
+        if not 0 <= self.nakshatra_index < len(NAKSHATRA_NAMES):
+            raise ValueError("nakshatra_index must lie in [0, 26]")
+        if self.nakshatra != NAKSHATRA_NAMES[self.nakshatra_index]:
+            raise ValueError("nakshatra disagrees with nakshatra_index")
+        if not 0.0 <= self.degrees_in_nakshatra < NAKSHATRA_SPAN:
+            raise ValueError("degrees_in_nakshatra lies outside its sector")
+        canonical_nakshatra = _nakshatra_position_from_sidereal(
+            self.moon_sidereal_longitude_deg
+        )
+        if (
+            self.nakshatra_index != canonical_nakshatra.nakshatra_index
+            or self.nakshatra != canonical_nakshatra.nakshatra
+            or self.degrees_in_nakshatra != canonical_nakshatra.degrees_in
+        ):
+            raise ValueError(
+                "nakshatra index, name, and degrees must equal the shared "
+                "sidereal classification of moon_sidereal_longitude_deg"
+            )
+        if not isinstance(self.bird, PanchaPakshiBird):
+            raise TypeError("bird must be a PanchaPakshiBird")
+        if not isinstance(self.bird_mapping, PanchaPakshiNakshatraBirdMapping):
+            raise TypeError(
+                "bird_mapping must be a PanchaPakshiNakshatraBirdMapping"
+            )
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+        if self.provenance.profile_id != self.profile_id:
+            raise ValueError("provenance profile disagrees with profile_id")
+        if PanchaPakshiCapability.NATAL_IDENTITY not in self.provenance.capabilities:
+            raise ValueError("provenance does not admit natal identity")
+        if self.provenance.astronomical_routing_status != (
+            "natal_moon_identity_performed_modern_lahiri_composition_no_"
+            "schedule_materialization_current_cell_scoring_or_forecast"
+        ):
+            raise ValueError("provenance does not describe the natal-Moon route")
+
+        expected_elongation = (
+            self.moon_tropical_longitude_deg - self.sun_longitude_deg
+        ) % 360.0
+        if self.moon_minus_sun_elongation_deg != expected_elongation:
+            raise ValueError("elongation disagrees with the tropical longitudes")
+        expected_astronomical = (
+            PanchaPakshiAstronomicalPaksha.SHUKLA
+            if expected_elongation < 180.0
+            else PanchaPakshiAstronomicalPaksha.KRISHNA
+        )
+        if self.astronomical_paksha is not expected_astronomical:
+            raise ValueError("astronomical_paksha disagrees with elongation")
+        if not math.isclose(
+            (self.moon_tropical_longitude_deg - self.ayanamsa_deg) % 360.0,
+            self.moon_sidereal_longitude_deg,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise ValueError("sidereal longitude disagrees with the ayanamsa")
+        if (
+            self.bird_mapping.profile_id != self.profile_id
+            or self.bird_mapping.profile_paksha is not self.profile_paksha
+            or self.bird_mapping.nakshatra_index != self.nakshatra_index
+            or self.bird_mapping.nakshatra != self.nakshatra
+            or self.bird_mapping.bird is not self.bird
+            or self.bird_mapping.provenance != self.provenance
+        ):
+            raise ValueError("bird mapping disagrees with the natal identity")
+
+        profile = _profile_for_public_capability(
+            self.profile_id,
+            PanchaPakshiCapability.NATAL_IDENTITY,
+        )
+        phase_rule = profile.lunar_paksha_mapping_rule(self.astronomical_paksha)
+        if phase_rule.profile_paksha is not self.profile_paksha:
+            raise ValueError("profile Paksha disagrees with the source phase mapping")
+        if phase_rule.source_locator_ids != (
+            self.phase_mapping_source_locators[0].locator_id,
+        ):
+            raise ValueError("phase locator disagrees with the source phase mapping")
+        if self.phase_mapping_source_locators[0] != profile.locator(
+            phase_rule.source_locator_ids[0]
+        ):
+            raise ValueError("phase mapping source locator is not canonical")
 
 
 @dataclass(frozen=True, slots=True)
@@ -937,6 +1474,159 @@ class PanchaPakshiSolarProportionalMaterialization:
             )
 
 
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSolarProportionalCurrentCellSelectionPolicy:
+    """The bounded modern proportional current-cell doctrine for Stage 2E.
+
+    The governing Stage 2D materialization is a complete half-open partition
+    of its local-solar half.  Selection therefore requires exactly one TT
+    match and admits neither a null/tail state nor any repair or inference.
+    """
+
+    policy_id: str = field(
+        default="solar_proportional_current_cell_half_open_solar_precedence_v1",
+        init=False,
+    )
+    materialization_policy_id: str = field(
+        default="solar_proportional_nominal_offsets_over_governing_half_tt_v1",
+        init=False,
+    )
+    paksha_basis: str = field(
+        default="caller_supplied_source_label",
+        init=False,
+    )
+    selection_time_scale: str = field(default="reader_bound_tt", init=False)
+    interval_ownership: str = field(default="half_open", init=False)
+    solar_half_precedence: str = field(
+        default="resolve_governing_solar_half_before_selection",
+        init=False,
+    )
+    membership_tolerance_seconds: float = field(default=0.0, init=False)
+    coverage_requirement: str = field(
+        default="complete_governing_solar_half",
+        init=False,
+    )
+    required_match_count: int = field(default=1, init=False)
+    unmaterialized_solar_half_tail_status: str = field(
+        default="not_applicable",
+        init=False,
+    )
+    invalid_match_policy: str = field(default="fail_closed", init=False)
+    fixed_clock_mixing_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+    astronomical_paksha_inference_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSolarProportionalCurrentCellSelection:
+    """Unique current cell in one complete Stage 2D materialization."""
+
+    materialization: PanchaPakshiSolarProportionalMaterialization
+    policy: PanchaPakshiSolarProportionalCurrentCellSelectionPolicy
+    requested_jd_tt: float
+    selection_status: PanchaPakshiCurrentCellSelectionStatus
+    current_cell: PanchaPakshiSolarProportionalCell
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.materialization,
+            PanchaPakshiSolarProportionalMaterialization,
+        ):
+            raise TypeError(
+                "materialization must be a "
+                "PanchaPakshiSolarProportionalMaterialization"
+            )
+        if not isinstance(
+            self.policy,
+            PanchaPakshiSolarProportionalCurrentCellSelectionPolicy,
+        ):
+            raise TypeError(
+                "policy must be a "
+                "PanchaPakshiSolarProportionalCurrentCellSelectionPolicy"
+            )
+        if isinstance(self.requested_jd_tt, bool) or not isinstance(
+            self.requested_jd_tt,
+            (int, float),
+        ):
+            raise TypeError("requested_jd_tt must be a real number")
+        if not math.isfinite(self.requested_jd_tt):
+            raise ValueError("requested_jd_tt must be finite")
+        if not isinstance(
+            self.selection_status,
+            PanchaPakshiCurrentCellSelectionStatus,
+        ):
+            raise TypeError(
+                "selection_status must be a PanchaPakshiCurrentCellSelectionStatus"
+            )
+        if self.selection_status is not PanchaPakshiCurrentCellSelectionStatus.SELECTED:
+            raise ValueError(
+                "solar-proportional current-cell selection requires selected status"
+            )
+        if not isinstance(
+            self.current_cell,
+            PanchaPakshiSolarProportionalCell,
+        ):
+            raise TypeError(
+                "current_cell must be a PanchaPakshiSolarProportionalCell"
+            )
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+
+        materialization = self.materialization
+        if (
+            self.policy.materialization_policy_id
+            != materialization.policy.policy_id
+        ):
+            raise ValueError(
+                "selection policy does not bind the supplied materialization policy"
+            )
+        if (
+            PanchaPakshiCapability.SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION
+            not in self.provenance.capabilities
+        ):
+            raise ValueError(
+                "selection provenance does not admit solar-proportional "
+                "current-cell selection"
+            )
+        expected_provenance = _solar_proportional_current_cell_provenance(
+            materialization
+        )
+        if self.provenance != expected_provenance:
+            raise ValueError(
+                "selection provenance must equal the exact Stage 2E "
+                "transformation of its Stage 2D materialization provenance"
+            )
+        if not (
+            materialization.anchor_jd_tt
+            <= self.requested_jd_tt
+            < materialization.governing_solar_half_end_jd_tt
+        ):
+            raise ValueError(
+                "requested_jd_tt must lie in the governing half-open solar half"
+            )
+
+        matches = tuple(
+            cell
+            for cell in materialization.cells
+            if cell.start_jd_tt <= self.requested_jd_tt < cell.end_jd_tt
+        )
+        if len(matches) != self.policy.required_match_count:
+            raise ValueError(
+                "solar-proportional materialization must provide exactly one "
+                "half-open TT match"
+            )
+        if matches[0] is not self.current_cell:
+            raise ValueError(
+                "current_cell must be the unique materialization tuple member"
+            )
+
+
 _WEEKDAY_FROM_LOCAL_SOLAR_INDEX = (
     PanchaPakshiWeekday.SUNDAY,
     PanchaPakshiWeekday.MONDAY,
@@ -949,6 +1639,14 @@ _WEEKDAY_FROM_LOCAL_SOLAR_INDEX = (
 _LOCAL_SOLAR_ROUTING_STATUS = (
     "local_solar_half_and_weekday_performed_paksha_caller_supplied"
 )
+_ASTRONOMICAL_PAKSHA_INFERENCE_STATUS = (
+    "astronomical_paksha_inference_performed_source_mapped_no_schedule_"
+    "materialization_or_natal_identity"
+)
+_NATAL_MOON_IDENTITY_STATUS = (
+    "natal_moon_identity_performed_modern_lahiri_composition_no_schedule_"
+    "materialization_current_cell_scoring_or_forecast"
+)
 _FIXED_CLOCK_MATERIALIZATION_STATUS = (
     "fixed_clock_materialization_performed_paksha_caller_supplied_no_current_cell"
 )
@@ -959,6 +1657,10 @@ _FIXED_CLOCK_CURRENT_CELL_SELECTION_STATUS = (
 _SOLAR_PROPORTIONAL_MATERIALIZATION_STATUS = (
     "solar_proportional_materialization_performed_paksha_caller_supplied_"
     "no_current_cell_or_inference"
+)
+_SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION_STATUS = (
+    "solar_proportional_current_cell_selection_performed_paksha_caller_"
+    "supplied_no_fixed_clock_mixing_or_inference"
 )
 _SOLAR_PROPORTIONAL_SOURCE_NONATTESTATION = PanchaPakshiOmission(
     feature="source_attested_solar_proportional_materialization",
@@ -1050,6 +1752,342 @@ def pancha_pakshi_directed_relationship(
     )
 
 
+def _pancha_pakshi_apparent_moon_sun_geometry(
+    jd_ut1: float,
+    *,
+    reader: SpkReader | None,
+    policy: (
+        PanchaPakshiAstronomicalPakshaInferencePolicy
+        | PanchaPakshiNatalMoonIdentityPolicy
+    ),
+) -> tuple[float, float, float, float]:
+    """Return shared reader-bound TT and apparent Sun/Moon phase geometry."""
+
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
+    from .constants import Body
+    from .planets import planet_at
+    from .spk_reader import get_reader
+
+    if isinstance(jd_ut1, bool) or not isinstance(jd_ut1, (int, float)):
+        raise TypeError("jd_ut1 must be a real number")
+    if not math.isfinite(jd_ut1):
+        raise ValueError("jd_ut1 must be finite")
+    if not isinstance(
+        policy,
+        (
+            PanchaPakshiAstronomicalPakshaInferencePolicy,
+            PanchaPakshiNatalMoonIdentityPolicy,
+        ),
+    ):
+        raise TypeError("policy must govern Pancha Pakshi lunar geometry")
+    if policy.position_frame != "true_ecliptic_of_date":
+        raise PanchaPakshiDataError("lunar geometry policy frame is unknown")
+
+    selected_reader = get_reader() if reader is None else reader
+    requested_jd_tt = _ut1_to_ephemeris_tt(jd_ut1, selected_reader)
+    positions = {
+        body: planet_at(
+            body,
+            jd_ut1,
+            reader=selected_reader,
+            apparent=policy.apparent,
+            aberration=policy.aberration,
+            grav_deflection=policy.grav_deflection,
+            nutation=policy.nutation,
+            center=policy.position_origin,
+            frame="ecliptic",
+            observer_lat=None,
+            observer_lon=None,
+            observer_elev_m=0.0,
+            lst_deg=None,
+            jd_tt=requested_jd_tt,
+        )
+        for body in (Body.SUN, Body.MOON)
+    }
+    try:
+        sun_longitude = float(positions[Body.SUN].longitude) % 360.0
+        moon_longitude = float(positions[Body.MOON].longitude) % 360.0
+    except (AttributeError, KeyError, TypeError, ValueError) as exc:
+        raise PanchaPakshiDataError(
+            "planetary substrate did not return finite Sun and Moon longitudes"
+        ) from exc
+    if not math.isfinite(sun_longitude) or not math.isfinite(moon_longitude):
+        raise PanchaPakshiDataError(
+            "planetary substrate did not return finite Sun and Moon longitudes"
+        )
+    return (
+        requested_jd_tt,
+        sun_longitude,
+        moon_longitude,
+        (moon_longitude - sun_longitude) % 360.0,
+    )
+
+
+def pancha_pakshi_astronomical_paksha_at(
+    profile_id: str,
+    jd_ut1: float,
+    *,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiAstronomicalPakshaInference:
+    """Infer the named profile's Paksha label from lunar phase geometry.
+
+    ``jd_ut1`` is an explicit UT1 Julian Day.  The governing astronomical
+    coordinate is the apparent geocentric Moon-minus-Sun longitude in the
+    true ecliptic of date.  Exact half-open ownership assigns ``0`` degrees to
+    Shukla and ``180`` degrees to Krishna.  The result performs no schedule
+    selection, clock materialization, or natal identity inference.
+    """
+
+    from ._pancha_pakshi import _profile_provenance, _resolve_locators
+
+    if isinstance(jd_ut1, bool) or not isinstance(jd_ut1, (int, float)):
+        raise TypeError("jd_ut1 must be a real number")
+    if not math.isfinite(jd_ut1):
+        raise ValueError("jd_ut1 must be finite")
+
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.ASTRONOMICAL_PAKSHA_INFERENCE,
+    )
+    policy = PanchaPakshiAstronomicalPakshaInferencePolicy()
+    (
+        requested_jd_tt,
+        sun_longitude,
+        moon_longitude,
+        elongation,
+    ) = _pancha_pakshi_apparent_moon_sun_geometry(
+        jd_ut1,
+        reader=reader,
+        policy=policy,
+    )
+    astronomical_paksha = (
+        PanchaPakshiAstronomicalPaksha.SHUKLA
+        if elongation < 180.0
+        else PanchaPakshiAstronomicalPaksha.KRISHNA
+    )
+    mapping_rule = profile.lunar_paksha_mapping_rule(astronomical_paksha)
+    expected_phase_half = (
+        "waxing"
+        if astronomical_paksha is PanchaPakshiAstronomicalPaksha.SHUKLA
+        else "waning"
+    )
+    if mapping_rule.lunar_phase_half != expected_phase_half:
+        raise PanchaPakshiDataError(
+            "profile lunar-phase mapping disagrees with astronomical paksha"
+        )
+
+    return PanchaPakshiAstronomicalPakshaInference(
+        profile_id=profile.profile_id,
+        requested_jd_ut1=float(jd_ut1),
+        requested_jd_tt=requested_jd_tt,
+        policy=policy,
+        sun_longitude_deg=sun_longitude,
+        moon_longitude_deg=moon_longitude,
+        moon_minus_sun_elongation_deg=elongation,
+        astronomical_paksha=astronomical_paksha,
+        profile_paksha=mapping_rule.profile_paksha,
+        mapping_status="direct_source_attested",
+        mapping_source_locators=_resolve_locators(
+            profile,
+            mapping_rule.source_locator_ids,
+        ),
+        provenance=_profile_provenance(
+            profile,
+            astronomical_routing_status=_ASTRONOMICAL_PAKSHA_INFERENCE_STATUS,
+        ),
+    )
+
+
+def _pancha_pakshi_nakshatra_bird_mapping_for_profile(
+    profile,
+    *,
+    profile_paksha: PanchaPakshiPaksha,
+    nakshatra_index: int,
+) -> PanchaPakshiNakshatraBirdMapping:
+    from ._pancha_pakshi import _profile_provenance, _resolve_locators
+
+    if not isinstance(profile_paksha, PanchaPakshiPaksha):
+        raise TypeError("profile_paksha must be a PanchaPakshiPaksha")
+    if isinstance(nakshatra_index, bool) or not isinstance(nakshatra_index, int):
+        raise TypeError("nakshatra_index must be an integer")
+    if not 0 <= nakshatra_index < 27:
+        raise ValueError("nakshatra_index must lie in [0, 26]")
+    rule = profile.nakshatra_bird_rule(profile_paksha, nakshatra_index)
+    provenance = _profile_provenance(profile)
+    return PanchaPakshiNakshatraBirdMapping(
+        profile_id=profile.profile_id,
+        profile_paksha=profile_paksha,
+        nakshatra_index=nakshatra_index,
+        nakshatra=rule.nakshatra,
+        bird=rule.bird,
+        mapping_status="direct_source_attested",
+        source_table_semantics=(
+            "nakshatra_bird_table_not_explicitly_natal_moon"
+        ),
+        assembly_policy=profile.assembly_policy,
+        source_locators=_resolve_locators(profile, rule.source_locator_ids),
+        provenance=provenance,
+    )
+
+
+def pancha_pakshi_nakshatra_bird_mapping(
+    profile_id: str,
+    *,
+    profile_paksha: PanchaPakshiPaksha,
+    nakshatra_index: int,
+) -> PanchaPakshiNakshatraBirdMapping:
+    """Return one source-table mapping without applying a natal-Moon policy."""
+
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.NAKSHATRA_BIRD_MAPPING,
+    )
+    return _pancha_pakshi_nakshatra_bird_mapping_for_profile(
+        profile,
+        profile_paksha=profile_paksha,
+        nakshatra_index=nakshatra_index,
+    )
+
+
+def pancha_pakshi_natal_moon_identity_at(
+    profile_id: str,
+    jd_ut1: float,
+    *,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiNatalMoonIdentity:
+    """Compose a natal Moon with one named source-scoped bird table.
+
+    ``jd_ut1`` is converted to reader-bound TT exactly once.  Apparent
+    geocentric Sun and Moon positions determine the lunar half; the same TT
+    epoch governs the fixed Lahiri-true sidereal Moon.  Source evidence owns
+    only the phase-label and nakshatra-bird mappings.  Their application to a
+    natal Moon is the explicit modern policy carried by the result.
+    """
+
+    from ._pancha_pakshi import _profile_provenance, _resolve_locators
+    from .sidereal import (
+        _ayanamsa_at_tt,
+        _nakshatra_position_from_sidereal,
+    )
+
+    if isinstance(jd_ut1, bool) or not isinstance(jd_ut1, (int, float)):
+        raise TypeError("jd_ut1 must be a real number")
+    if not math.isfinite(jd_ut1):
+        raise ValueError("jd_ut1 must be finite")
+
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.NATAL_IDENTITY,
+    )
+    policy = PanchaPakshiNatalMoonIdentityPolicy()
+    (
+        requested_jd_tt,
+        sun_longitude,
+        moon_longitude,
+        elongation,
+    ) = _pancha_pakshi_apparent_moon_sun_geometry(
+        jd_ut1,
+        reader=reader,
+        policy=policy,
+    )
+    astronomical_paksha = (
+        PanchaPakshiAstronomicalPaksha.SHUKLA
+        if elongation < 180.0
+        else PanchaPakshiAstronomicalPaksha.KRISHNA
+    )
+    phase_rule = profile.lunar_paksha_mapping_rule(astronomical_paksha)
+    expected_phase_half = (
+        "waxing"
+        if astronomical_paksha is PanchaPakshiAstronomicalPaksha.SHUKLA
+        else "waning"
+    )
+    if phase_rule.lunar_phase_half != expected_phase_half:
+        raise PanchaPakshiDataError(
+            "profile lunar-phase mapping disagrees with astronomical paksha"
+        )
+
+    ayanamsa_deg = float(
+        _ayanamsa_at_tt(
+            requested_jd_tt,
+            policy.ayanamsa_system,
+            policy.ayanamsa_mode,
+        )
+    )
+    if not math.isfinite(ayanamsa_deg):
+        raise PanchaPakshiDataError("sidereal substrate returned non-finite ayanamsa")
+    moon_sidereal_longitude = (moon_longitude - ayanamsa_deg) % 360.0
+    nakshatra_position = _nakshatra_position_from_sidereal(
+        moon_sidereal_longitude
+    )
+    provenance = _profile_provenance(
+        profile,
+        astronomical_routing_status=_NATAL_MOON_IDENTITY_STATUS,
+    )
+    mapping = _pancha_pakshi_nakshatra_bird_mapping_for_profile(
+        profile,
+        profile_paksha=phase_rule.profile_paksha,
+        nakshatra_index=nakshatra_position.nakshatra_index,
+    )
+    mapping = replace(mapping, provenance=provenance)
+    return PanchaPakshiNatalMoonIdentity(
+        profile_id=profile.profile_id,
+        requested_jd_ut1=float(jd_ut1),
+        requested_jd_tt=requested_jd_tt,
+        policy=policy,
+        sun_longitude_deg=sun_longitude,
+        moon_tropical_longitude_deg=moon_longitude,
+        moon_minus_sun_elongation_deg=elongation,
+        astronomical_paksha=astronomical_paksha,
+        profile_paksha=phase_rule.profile_paksha,
+        phase_mapping_source_locators=_resolve_locators(
+            profile,
+            phase_rule.source_locator_ids,
+        ),
+        ayanamsa_deg=ayanamsa_deg,
+        moon_sidereal_longitude_deg=nakshatra_position.sidereal_lon,
+        nakshatra_index=nakshatra_position.nakshatra_index,
+        nakshatra=nakshatra_position.nakshatra,
+        degrees_in_nakshatra=nakshatra_position.degrees_in,
+        bird=mapping.bird,
+        bird_mapping=mapping,
+        provenance=provenance,
+    )
+
+
+def _pancha_pakshi_natal_moon_identity_from_utc(
+    profile_id: str,
+    jd_utc: float,
+    *,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiNatalMoonIdentity:
+    """Facade adapter converting one UTC Julian Day to the UT1 product."""
+
+    from .julian import utc_to_ut1
+
+    return pancha_pakshi_natal_moon_identity_at(
+        profile_id,
+        utc_to_ut1(jd_utc),
+        reader=reader,
+    )
+
+
+def _pancha_pakshi_astronomical_paksha_from_utc(
+    profile_id: str,
+    jd_utc: float,
+    *,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiAstronomicalPakshaInference:
+    """Facade adapter converting one UTC Julian Day to the public UT1 route."""
+
+    from .julian import utc_to_ut1
+
+    return pancha_pakshi_astronomical_paksha_at(
+        profile_id,
+        utc_to_ut1(jd_utc),
+        reader=reader,
+    )
+
+
 def pancha_pakshi_schedule(
     profile_id: str,
     *,
@@ -1079,7 +2117,8 @@ def _require_context_paksha(
     if not isinstance(paksha, PanchaPakshiPaksha):
         raise TypeError(
             "paksha must be an explicit PanchaPakshiPaksha source label; "
-            "astronomical paksha inference is not admitted"
+            "schedule, context, and materialization routes do not perform "
+            "ambient astronomical paksha inference"
         )
     return paksha
 
@@ -1595,6 +2634,19 @@ def _solar_proportional_provenance(
     )
 
 
+def _solar_proportional_current_cell_provenance(
+    materialization: PanchaPakshiSolarProportionalMaterialization,
+) -> PanchaPakshiProvenance:
+    """Name Stage 2E while preserving Stage 2D source-policy separation."""
+
+    return replace(
+        materialization.provenance,
+        astronomical_routing_status=(
+            _SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION_STATUS
+        ),
+    )
+
+
 def _pancha_pakshi_solar_proportional_for_solar_day(
     profile: PanchaPakshiProfile,
     solar_day: LocalSolarDay,
@@ -1798,9 +2850,138 @@ def _pancha_pakshi_solar_proportional_materialization_from_utc(
     )
 
 
+def _pancha_pakshi_solar_proportional_current_cell_for_solar_day(
+    profile: PanchaPakshiProfile,
+    solar_day: LocalSolarDay,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader,
+) -> PanchaPakshiSolarProportionalCurrentCellSelection:
+    """Select the unique half-open TT cell from one Stage 2D partition."""
+
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
+
+    materialization = _pancha_pakshi_solar_proportional_for_solar_day(
+        profile,
+        solar_day,
+        paksha=paksha,
+        reader=reader,
+    )
+    policy = PanchaPakshiSolarProportionalCurrentCellSelectionPolicy()
+    requested_jd_tt = _ut1_to_ephemeris_tt(solar_day.jd, reader)
+    if not (
+        materialization.anchor_jd_tt
+        <= requested_jd_tt
+        < materialization.governing_solar_half_end_jd_tt
+    ):
+        raise PanchaPakshiDataError(
+            "requested TT instant escaped the governing half-open solar half"
+        )
+
+    matches = tuple(
+        cell
+        for cell in materialization.cells
+        if cell.start_jd_tt <= requested_jd_tt < cell.end_jd_tt
+    )
+    if len(matches) != policy.required_match_count:
+        raise PanchaPakshiDataError(
+            "solar-proportional current-cell selection requires exactly one "
+            "half-open TT match"
+        )
+
+    return PanchaPakshiSolarProportionalCurrentCellSelection(
+        materialization=materialization,
+        policy=policy,
+        requested_jd_tt=requested_jd_tt,
+        selection_status=PanchaPakshiCurrentCellSelectionStatus.SELECTED,
+        current_cell=matches[0],
+        provenance=_solar_proportional_current_cell_provenance(
+            materialization
+        ),
+    )
+
+
+def pancha_pakshi_solar_proportional_current_cell_at(
+    profile_id: str,
+    jd_ut1: float,
+    latitude: float,
+    longitude: float,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiSolarProportionalCurrentCellSelection:
+    """Select the proportional cell current in the governing solar half.
+
+    The governing half is resolved before the unchanged Stage 2D
+    materialization is constructed.  Membership is exact and half-open on
+    reader-bound TT; the complete proportional partition must yield one cell.
+    """
+
+    from ._local_solar_day import _local_solar_day_from_ut1
+    from .spk_reader import get_reader
+
+    selected_paksha = _require_context_paksha(paksha)
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION,
+    )
+    selected_reader = get_reader() if reader is None else reader
+    solar_day = _local_solar_day_from_ut1(
+        jd_ut1,
+        latitude,
+        longitude,
+        selected_reader,
+        bounds_owner="pancha-pakshi-solar-proportional-current-cell",
+    )
+    return _pancha_pakshi_solar_proportional_current_cell_for_solar_day(
+        profile,
+        solar_day,
+        paksha=selected_paksha,
+        reader=selected_reader,
+    )
+
+
+def _pancha_pakshi_solar_proportional_current_cell_from_utc(
+    profile_id: str,
+    jd_utc: float,
+    latitude: float,
+    longitude: float,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiSolarProportionalCurrentCellSelection:
+    """Facade adapter preserving UTC civil-noon selection before UT1."""
+
+    from ._local_solar_day import _local_solar_day_from_utc
+    from .spk_reader import get_reader
+
+    selected_paksha = _require_context_paksha(paksha)
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION,
+    )
+    selected_reader = get_reader() if reader is None else reader
+    solar_day = _local_solar_day_from_utc(
+        jd_utc,
+        latitude,
+        longitude,
+        selected_reader,
+        bounds_owner="pancha-pakshi-solar-proportional-current-cell",
+    )
+    return _pancha_pakshi_solar_proportional_current_cell_for_solar_day(
+        profile,
+        solar_day,
+        paksha=selected_paksha,
+        reader=selected_reader,
+    )
+
+
 __all__ = [
     "PanchaPakshiActivity",
     "PanchaPakshiAdmissionStatus",
+    "PanchaPakshiAstronomicalPaksha",
+    "PanchaPakshiAstronomicalPakshaInference",
+    "PanchaPakshiAstronomicalPakshaInferencePolicy",
     "PanchaPakshiBird",
     "PanchaPakshiCapability",
     "PanchaPakshiConflictWitness",
@@ -1818,6 +2999,9 @@ __all__ = [
     "PanchaPakshiLocalSolarContext",
     "PanchaPakshiLocalSolarContextPolicy",
     "PanchaPakshiMaterializedCellRelation",
+    "PanchaPakshiNakshatraBirdMapping",
+    "PanchaPakshiNatalMoonIdentity",
+    "PanchaPakshiNatalMoonIdentityPolicy",
     "PanchaPakshiOmission",
     "PanchaPakshiPaksha",
     "PanchaPakshiProfileDescriptor",
@@ -1827,6 +3011,8 @@ __all__ = [
     "PanchaPakshiSchedule",
     "PanchaPakshiScheduleCell",
     "PanchaPakshiSolarProportionalCell",
+    "PanchaPakshiSolarProportionalCurrentCellSelection",
+    "PanchaPakshiSolarProportionalCurrentCellSelectionPolicy",
     "PanchaPakshiSolarProportionalMaterialization",
     "PanchaPakshiSolarProportionalMaterializationPolicy",
     "PanchaPakshiSolarBoundaryRelation",
@@ -1834,12 +3020,16 @@ __all__ = [
     "PanchaPakshiSourceLocator",
     "PanchaPakshiWeekday",
     "available_pancha_pakshi_profiles",
+    "pancha_pakshi_astronomical_paksha_at",
     "pancha_pakshi_directed_relationship",
     "pancha_pakshi_fixed_clock_current_cell_at",
     "pancha_pakshi_fixed_clock_materialization_at",
     "pancha_pakshi_identity_from_initial_vowel",
     "pancha_pakshi_local_solar_context_at",
+    "pancha_pakshi_nakshatra_bird_mapping",
+    "pancha_pakshi_natal_moon_identity_at",
     "pancha_pakshi_profile_info",
     "pancha_pakshi_schedule",
+    "pancha_pakshi_solar_proportional_current_cell_at",
     "pancha_pakshi_solar_proportional_materialization_at",
 ]

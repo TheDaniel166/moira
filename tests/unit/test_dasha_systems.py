@@ -282,6 +282,42 @@ class TestYoginiSubPeriods:
 
 
 # ===========================================================================
+# Shared nakshatra boundary ownership
+# ===========================================================================
+
+class TestSharedNakshatraBoundaryOwnership:
+
+    @pytest.mark.parametrize("system", ("ashtottari", "yogini"))
+    def test_first_predecessor_of_internal_boundary_belongs_to_following_sector(
+        self,
+        monkeypatch,
+        system,
+    ):
+        boundary = 40.0 / 3.0
+        predecessor = math.nextafter(boundary, -math.inf)
+        monkeypatch.setattr(
+            "moira.sidereal.tropical_to_sidereal",
+            lambda *args, **kwargs: predecessor,
+        )
+
+        if system == "ashtottari":
+            periods = ashtottari(
+                0.0,
+                _J2000,
+                levels=1,
+                policy=AshtottariPolicy(bypass_eligibility=True),
+            )
+            expected_lord = ASHTOTTARI_NAKSHATRA_LORD[1]
+        else:
+            periods = yogini_dasha(0.0, _J2000, levels=1)
+            expected_lord = YOGINI_SEQUENCE[1]
+
+        assert periods[0].lord == expected_lord
+        assert periods[0].start_jd == _J2000
+        assert periods[0].end_jd > periods[0].start_jd
+
+
+# ===========================================================================
 # 9. AlternateDashaPeriod vessel
 # ===========================================================================
 

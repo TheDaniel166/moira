@@ -13,12 +13,15 @@ from moira.pancha_pakshi import (
 
 from ..models.pancha_pakshi import (
     PanchaPakshiAksaraIdentityRequest,
+    PanchaPakshiAstronomicalPakshaRequest,
     PanchaPakshiDirectedRelationshipRequest,
     PanchaPakshiFixedClockCurrentCellRequest,
     PanchaPakshiFixedClockMaterializationRequest,
     PanchaPakshiLocalSolarContextRequest,
+    PanchaPakshiNatalMoonIdentityRequest,
     PanchaPakshiNominalScheduleRequest,
     PanchaPakshiProfilesResponse,
+    PanchaPakshiSolarProportionalCurrentCellRequest,
     PanchaPakshiSolarProportionalMaterializationRequest,
 )
 from ..serializers.pancha_pakshi import serialize_profile_descriptor
@@ -49,6 +52,30 @@ def compute_nominal_schedule(request: PanchaPakshiNominalScheduleRequest):
         paksha=request.paksha,
         half=request.half,
         weekday=request.weekday,
+    )
+
+
+def compute_astronomical_paksha(
+    engine: Moira,
+    request: PanchaPakshiAstronomicalPakshaRequest,
+):
+    """Delegate the sole admitted lunar-paksha policy through the facade."""
+
+    return engine.pancha_pakshi_astronomical_paksha(
+        request.profile_id,
+        request.dt,
+    )
+
+
+def compute_natal_moon_identity(
+    engine: Moira,
+    request: PanchaPakshiNatalMoonIdentityRequest,
+):
+    """Delegate the fixed modern natal-Moon composition through the facade."""
+
+    return engine.pancha_pakshi_natal_moon_identity(
+        request.profile_id,
+        request.dt,
     )
 
 
@@ -104,6 +131,21 @@ def compute_solar_proportional_materialization(
     """Delegate proportional solar-half materialization through the facade."""
 
     return engine.pancha_pakshi_solar_proportional_materialization(
+        request.profile_id,
+        request.dt,
+        request.latitude,
+        request.longitude,
+        paksha=request.paksha,
+    )
+
+
+def compute_solar_proportional_current_cell(
+    engine: Moira,
+    request: PanchaPakshiSolarProportionalCurrentCellRequest,
+):
+    """Delegate proportional current-cell selection through the facade."""
+
+    return engine.pancha_pakshi_solar_proportional_current_cell(
         request.profile_id,
         request.dt,
         request.latitude,

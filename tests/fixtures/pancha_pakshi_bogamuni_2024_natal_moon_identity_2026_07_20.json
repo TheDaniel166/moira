@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20",
+  "decided_at_utc": "2026-07-20T21:27:47Z",
+  "decision_kind": "source_scoped_nakshatra_bird_mapping_with_modern_natal_moon_composition",
+  "profile_id": "bogamuni_chennai_2024_nakshatra_natal_identity",
+  "profile_binding": {
+    "path": "moira/data/pancha_pakshi_bogamuni_chennai_2024_nakshatra_natal_identity.json",
+    "sha256": "e3642f61756ed7b8c413ddfbde2844769aea1994d4e69ae27594b2059b549b6a",
+    "admission_status": "source_scoped_public",
+    "product_kind": "natal_moon_bird_identity",
+    "default_selection_allowed": false,
+    "capabilities": [
+      "nakshatra_bird_mapping",
+      "natal_identity"
+    ]
+  },
+  "manifest_binding": {
+    "path": "moira/data/pancha_pakshi_manifest.json",
+    "sha256": "979bb6df8a31d0ff9603ef396b0f569f17ecca6f6dc21def220ad682a425eb61",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "profile_entry_decision_id": "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20"
+  },
+  "primary_source": {
+    "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "bibliographic_label": "Bogamuni-attributed Pancha Pakshi Sastram with commentary, R. C. Mohan editor, sixth edition, Thamarai Noolagam, Chennai, November 2024",
+    "archive_item_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+    "archive_pdf_source_status": "internet_archive_original",
+    "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+    "archive_pdf_sha1": "6ddad8f2577883f6859829f534e8ee7b8330ade8",
+    "locally_verified_pdf_sha256": "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990",
+    "review_method": "page_images_rendered_and_visually_inspected_ocr_used_only_for_navigation"
+  },
+  "source_readings": {
+    "purva_partition": {
+      "locator": "IA leaf n52 / PDF page 53 / printed page 43",
+      "normalized_ranges": [
+        {
+          "nakshatra_indices": [
+            0,
+            4
+          ],
+          "bird": "vulture"
+        },
+        {
+          "nakshatra_indices": [
+            5,
+            10
+          ],
+          "bird": "owl"
+        },
+        {
+          "nakshatra_indices": [
+            11,
+            15
+          ],
+          "bird": "crow"
+        },
+        {
+          "nakshatra_indices": [
+            16,
+            20
+          ],
+          "bird": "cock"
+        },
+        {
+          "nakshatra_indices": [
+            21,
+            26
+          ],
+          "bird": "peacock"
+        }
+      ]
+    },
+    "amara_partition": {
+      "governing_locator": "IA leaf n64 / PDF page 65 / printed page 55",
+      "governing_layer": "verse",
+      "assembly_policy": "verse_precedence_for_nakshatra_partition",
+      "normalized_ranges": [
+        {
+          "nakshatra_indices": [
+            0,
+            4
+          ],
+          "bird": "peacock"
+        },
+        {
+          "nakshatra_indices": [
+            5,
+            10
+          ],
+          "bird": "cock"
+        },
+        {
+          "nakshatra_indices": [
+            11,
+            15
+          ],
+          "bird": "crow"
+        },
+        {
+          "nakshatra_indices": [
+            16,
+            20
+          ],
+          "bird": "owl"
+        },
+        {
+          "nakshatra_indices": [
+            21,
+            26
+          ],
+          "bird": "vulture"
+        }
+      ],
+      "rejected_adjacent_commentary": "overlaps_shravana_and_omits_revati_no_runtime_repair"
+    },
+    "phase_mapping": {
+      "locator": "IA leaf n167 / PDF page 168 / printed page 158",
+      "mappings": [
+        {
+          "astronomical_half": "shukla_waxing",
+          "profile_paksha": "purva"
+        },
+        {
+          "astronomical_half": "krishna_waning",
+          "profile_paksha": "amara"
+        }
+      ]
+    }
+  },
+  "independent_witness_status": {
+    "witness_id": "kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "record_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "archive_pdf_md5": "5832ca69b64c1429342fba8c3b3012dc",
+    "purva_locator_and_role": "IA leaf n18 corroborates the Purva partition",
+    "amara_locator_and_role": "IA leaf n61 preserves malformed Amara commentary",
+    "runtime_status": "not_imported"
+  },
+  "computational_object": {
+    "source_owned_object": "profile_paksha_and_named_nakshatra_to_bird_table",
+    "source_table_natal_status": "not_explicitly_natal_moon",
+    "modern_composition": "apparent_geocentric_true_ecliptic_of_date_moon_with_lahiri_true_ayanamsa",
+    "input_time_scale": "ut1",
+    "ephemeris_time_scale": "reader_bound_tt_shared_once",
+    "nakshatra_partition": "27_equal_half_open_40_over_3_degree_sectors",
+    "exact_internal_boundary_ownership": "following_nakshatra",
+    "binary_boundary_recovery": "maximum_one_ulp_below_internal_boundary"
+  },
+  "validation_evidence": {
+    "exact_source_cells": 54,
+    "source_partition_test": "tests/unit/test_pancha_pakshi_natal_identity.py",
+    "boundary_test": "tests/unit/test_sidereal_nakshatra_boundaries.py",
+    "de441_test_status": "structural_execution_coherence_not_pancha_doctrine_oracle",
+    "required_invariants": [
+      "one mapping for each of two Pakshas times 27 nakshatras",
+      "no schedule capability or runtime path",
+      "one reader-bound UT1-to-TT conversion shared by Sun Moon and ayanamsa",
+      "returned bird equals the pure source-table cell"
+    ]
+  },
+  "public_claim": "The named profile exposes its normalized source nakshatra-bird table and an explicit modern Moira natal-Moon composition over that table.",
+  "public_nonclaims": [
+    "The 2024 source does not explicitly identify the table as a birth-Moon rule.",
+    "The 2024 source does not specify Lahiri or another ayanamsa.",
+    "The rejected adjacent Amara commentary is not repaired by symmetry.",
+    "DE441 execution coherence is not external validation of Pancha Pakshi doctrine.",
+    "No schedule materialization current-cell scoring condition or forecast product is admitted."
+  ],
+  "artifact_distribution_boundary": {
+    "status": "source_artifacts_not_packaged",
+    "distributed_material": "normalized_rules_code_schema_tests_and_provenance_only",
+    "excluded_material": "archive_pdf_scan_ocr_page_images_copied_layout_source_prose_and_third_party_translation"
+  }
+}

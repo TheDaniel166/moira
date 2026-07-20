@@ -10,6 +10,7 @@ from pydantic import Field, field_validator
 from moira.pancha_pakshi import (
     PanchaPakshiActivity,
     PanchaPakshiAdmissionStatus,
+    PanchaPakshiAstronomicalPaksha,
     PanchaPakshiBird,
     PanchaPakshiCapability,
     PanchaPakshiCurrentCellSelectionStatus,
@@ -73,6 +74,66 @@ class PanchaPakshiLocalSolarContextRequest(PanchaPakshiProfileRequest):
         return value.astimezone(timezone.utc)
 
 
+class PanchaPakshiAstronomicalPakshaRequest(PanchaPakshiProfileRequest):
+    """Infer the source-mapped paksha from one aware civil instant."""
+
+    dt: datetime
+    policy_id: Literal[
+        "apparent_geocentric_moon_sun_longitude_paksha_half_open_v1"
+    ]
+
+    @field_validator("dt", mode="before")
+    @classmethod
+    def _require_iso_datetime_input(cls, value: object) -> object:
+        if isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            raise ValueError("dt must be an ISO 8601 date-time")
+        candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
+        try:
+            datetime.fromisoformat(candidate)
+        except ValueError as exc:
+            raise ValueError("dt must be an ISO 8601 date-time") from exc
+        return value
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime_utc(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value.astimezone(timezone.utc)
+
+
+class PanchaPakshiNatalMoonIdentityRequest(PanchaPakshiProfileRequest):
+    """Apply the one admitted natal-Moon composition at an aware instant."""
+
+    dt: datetime
+    policy_id: Literal[
+        "bogamuni_2024_apparent_lahiri_natal_moon_identity_v1"
+    ]
+
+    @field_validator("dt", mode="before")
+    @classmethod
+    def _require_iso_datetime_input(cls, value: object) -> object:
+        if isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            raise ValueError("dt must be an ISO 8601 date-time")
+        candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
+        try:
+            datetime.fromisoformat(candidate)
+        except ValueError as exc:
+            raise ValueError("dt must be an ISO 8601 date-time") from exc
+        return value
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime_utc(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value.astimezone(timezone.utc)
+
+
 class PanchaPakshiFixedClockMaterializationRequest(PanchaPakshiProfileRequest):
     """Materialize one fixed-clock schedule from an aware civil instant."""
 
@@ -122,6 +183,27 @@ class PanchaPakshiSolarProportionalMaterializationRequest(
     paksha: PanchaPakshiPaksha
     policy_id: Literal[
         "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+    ]
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime_utc(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value.astimezone(timezone.utc)
+
+
+class PanchaPakshiSolarProportionalCurrentCellRequest(
+    PanchaPakshiProfileRequest
+):
+    """Select one proportional cell for an explicit aware civil instant."""
+
+    dt: datetime
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    paksha: PanchaPakshiPaksha
+    policy_id: Literal[
+        "solar_proportional_current_cell_half_open_solar_precedence_v1"
     ]
 
     @field_validator("dt")
@@ -276,6 +358,151 @@ class PanchaPakshiNominalScheduleResponse(_StrictModel):
     span_nazhigai: PanchaPakshiFractionResponse
     samam_span_nazhigai: PanchaPakshiFractionResponse
     cells: list[PanchaPakshiScheduleCellResponse]
+    provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiAstronomicalPakshaInferencePolicyResponse(_StrictModel):
+    policy_id: Literal[
+        "apparent_geocentric_moon_sun_longitude_paksha_half_open_v1"
+    ]
+    input_time_scale: Literal["ut1"]
+    ephemeris_time_scale: Literal["reader_bound_tt"]
+    position_origin: Literal["geocentric"]
+    position_frame: Literal["true_ecliptic_of_date"]
+    apparent: Literal[True]
+    aberration: Literal[True]
+    grav_deflection: Literal[True]
+    nutation: Literal[True]
+    elongation_definition: Literal[
+        "normalized_moon_longitude_minus_sun_longitude"
+    ]
+    elongation_domain: Literal["degrees_half_open_0_360"]
+    shukla_interval: Literal["0_inclusive_180_exclusive"]
+    krishna_interval: Literal["180_inclusive_360_exclusive"]
+    boundary_tolerance_degrees: Literal[0.0]
+    ayanamsa_status: Literal[
+        "not_applied_common_longitude_offset_cancels"
+    ]
+    profile_mapping_basis: Literal[
+        "direct_source_attested_waxing_waning"
+    ]
+    purva_source_locator_id: Literal["ia_n16"]
+    amara_source_locator_id: Literal["ia_n26"]
+    schedule_selection_status: Literal["not_performed"]
+    materialization_status: Literal["not_performed"]
+    natal_identity_status: Literal["not_performed"]
+
+
+class PanchaPakshiAstronomicalPakshaResponse(_StrictModel):
+    profile_id: str
+    requested_jd_ut1: float = Field(allow_inf_nan=False)
+    requested_jd_tt: float = Field(allow_inf_nan=False)
+    policy: PanchaPakshiAstronomicalPakshaInferencePolicyResponse
+    sun_longitude_deg: float = Field(ge=0.0, lt=360.0)
+    moon_longitude_deg: float = Field(ge=0.0, lt=360.0)
+    moon_minus_sun_elongation_deg: float = Field(ge=0.0, lt=360.0)
+    astronomical_paksha: PanchaPakshiAstronomicalPaksha
+    profile_paksha: PanchaPakshiPaksha
+    mapping_status: Literal["direct_source_attested"]
+    mapping_source_locators: list[PanchaPakshiSourceLocatorResponse] = Field(
+        min_length=1,
+        max_length=1,
+    )
+    provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiNakshatraBirdMappingResponse(_StrictModel):
+    """One source-table cell, explicitly distinct from the natal composition."""
+
+    profile_id: str
+    profile_paksha: PanchaPakshiPaksha
+    nakshatra_index: int = Field(ge=0, le=26)
+    nakshatra: str
+    bird: PanchaPakshiBird
+    mapping_status: Literal["direct_source_attested"]
+    source_table_semantics: Literal[
+        "nakshatra_bird_table_not_explicitly_natal_moon"
+    ]
+    assembly_policy: Literal[
+        "verse_precedence_for_nakshatra_partition"
+    ]
+    source_locators: list[PanchaPakshiSourceLocatorResponse] = Field(
+        min_length=1,
+        max_length=1,
+    )
+    provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiNatalMoonIdentityPolicyResponse(_StrictModel):
+    policy_id: Literal[
+        "bogamuni_2024_apparent_lahiri_natal_moon_identity_v1"
+    ]
+    composition_status: Literal["modern_moira_policy_not_source_claim"]
+    source_table_semantics: Literal[
+        "nakshatra_bird_table_not_explicitly_natal_moon"
+    ]
+    input_time_scale: Literal["ut1"]
+    ephemeris_time_scale: Literal["reader_bound_tt"]
+    position_origin: Literal["geocentric"]
+    position_frame: Literal["true_ecliptic_of_date"]
+    apparent: Literal[True]
+    aberration: Literal[True]
+    grav_deflection: Literal[True]
+    nutation: Literal[True]
+    elongation_definition: Literal[
+        "normalized_moon_longitude_minus_sun_longitude"
+    ]
+    shukla_interval: Literal["0_inclusive_180_exclusive"]
+    krishna_interval: Literal["180_inclusive_360_exclusive"]
+    phase_boundary_tolerance_degrees: Literal[0.0]
+    phase_to_profile_mapping: Literal[
+        "direct_source_attested_new_moon_purva_full_moon_amara"
+    ]
+    phase_mapping_source_locator_id: Literal["bogar_n167_phase"]
+    ayanamsa_system: Literal["Lahiri"]
+    ayanamsa_mode: Literal["true"]
+    ayanamsa_status: Literal[
+        "fixed_modern_moira_policy_not_source_attested"
+    ]
+    nakshatra_partition: Literal[
+        "27_equal_half_open_40_over_3_degree_sectors"
+    ]
+    exact_internal_boundary_ownership: Literal["following_nakshatra"]
+    binary_boundary_recovery: Literal[
+        "maximum_one_ulp_below_internal_boundary"
+    ]
+    mapping_assembly_policy: Literal[
+        "verse_precedence_for_nakshatra_partition"
+    ]
+    schedule_selection_status: Literal["not_performed"]
+    materialization_status: Literal["not_performed"]
+    current_cell_status: Literal["not_performed"]
+    scoring_status: Literal["not_performed"]
+    forecast_status: Literal["not_performed"]
+
+
+class PanchaPakshiNatalMoonIdentityResponse(_StrictModel):
+    """Transparent result for the modern natal-Moon/source-table composition."""
+
+    profile_id: str
+    requested_jd_ut1: float = Field(allow_inf_nan=False)
+    requested_jd_tt: float = Field(allow_inf_nan=False)
+    policy: PanchaPakshiNatalMoonIdentityPolicyResponse
+    sun_longitude_deg: float = Field(ge=0.0, lt=360.0)
+    moon_tropical_longitude_deg: float = Field(ge=0.0, lt=360.0)
+    moon_minus_sun_elongation_deg: float = Field(ge=0.0, lt=360.0)
+    astronomical_paksha: PanchaPakshiAstronomicalPaksha
+    profile_paksha: PanchaPakshiPaksha
+    phase_mapping_source_locators: list[
+        PanchaPakshiSourceLocatorResponse
+    ] = Field(min_length=1, max_length=1)
+    ayanamsa_deg: float = Field(allow_inf_nan=False)
+    moon_sidereal_longitude_deg: float = Field(ge=0.0, lt=360.0)
+    nakshatra_index: int = Field(ge=0, le=26)
+    nakshatra: str
+    degrees_in_nakshatra: float = Field(ge=0.0, lt=40.0 / 3.0)
+    bird: PanchaPakshiBird
+    bird_mapping: PanchaPakshiNakshatraBirdMappingResponse
     provenance: PanchaPakshiProvenanceResponse
 
 
@@ -453,4 +680,50 @@ class PanchaPakshiSolarProportionalMaterializationResponse(_StrictModel):
     governing_solar_half_end_jd_ut1: float
     solar_half_duration_seconds_tt: float = Field(gt=0.0)
     cells: list[PanchaPakshiSolarProportionalCellResponse]
+    provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiSolarProportionalCurrentCellSelectionPolicyResponse(
+    _StrictModel
+):
+    policy_id: Literal[
+        "solar_proportional_current_cell_half_open_solar_precedence_v1"
+    ]
+    materialization_policy_id: Literal[
+        "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+    ]
+    paksha_basis: Literal["caller_supplied_source_label"]
+    selection_time_scale: Literal["reader_bound_tt"]
+    interval_ownership: Literal["half_open"]
+    solar_half_precedence: Literal[
+        "resolve_governing_solar_half_before_selection"
+    ]
+    membership_tolerance_seconds: Literal[0.0]
+    coverage_requirement: Literal["complete_governing_solar_half"]
+    required_match_count: Literal[1]
+    unmaterialized_solar_half_tail_status: Literal["not_applicable"]
+    invalid_match_policy: Literal["fail_closed"]
+    fixed_clock_mixing_status: Literal["not_performed"]
+    astronomical_paksha_inference_status: Literal["not_performed"]
+
+
+class PanchaPakshiSolarProportionalCurrentCellResponse(_StrictModel):
+    """One selected proportional cell without the full materialization."""
+
+    profile_id: str
+    requested_jd_ut1: float
+    requested_jd_tt: float
+    latitude: float
+    longitude: float
+    paksha: PanchaPakshiPaksha
+    half: PanchaPakshiHalf
+    weekday: PanchaPakshiWeekday
+    policy: PanchaPakshiSolarProportionalCurrentCellSelectionPolicyResponse
+    anchor_jd_tt: float
+    anchor_jd_ut1: float
+    governing_solar_half_end_jd_tt: float
+    governing_solar_half_end_jd_ut1: float
+    solar_half_duration_seconds_tt: float = Field(gt=0.0)
+    selection_status: Literal["selected"]
+    current_cell: PanchaPakshiSolarProportionalCellResponse
     provenance: PanchaPakshiProvenanceResponse

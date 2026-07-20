@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 422
+- Total non-documentation routes: 425
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 418
+- Versioned `/v1` routes: 421
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -50,10 +50,12 @@ Implemented:
   catalog/longitude/rising/night-hour routes
 - source-scoped Pancha Pakshi admission adds explicit-profile discovery,
   aksara identity, exact nominal schedule, directed relationship, and bounded
-  local-solar context, fixed-clock materialization, and fixed-clock current-cell
-  routes, plus a separate solar-proportional materialization route; it selects
-  no default, and all four astronomical routes require caller-supplied paksha
-  rather than inferring it from the Moon
+  astronomical-paksha inference, local-solar context, fixed-clock
+  materialization, and fixed-clock current-cell routes, plus separate
+  solar-proportional materialization and current-cell routes; it selects no
+  default, the inference route accepts neither location nor paksha, and all five
+  schedule-related astronomical routes continue to require caller-supplied
+  paksha
 - Phase 11 admitted surfaces: fixed stars, variable stars, multiple stars,
   asteroids, comets, asteroid subsets/families, Manazil, and planetary/
   small-body nodes
@@ -179,7 +181,7 @@ Not yet broadly exposed as REST families:
 | nine-parts | 1 |
 | occultations | 12 |
 | orbits | 2 |
-| pancha-pakshi | 9 |
+| pancha-pakshi | 12 |
 | panchanga | 4 |
 | parans | 8 |
 | patterns | 3 |
@@ -747,11 +749,14 @@ those relationship-chart routes.
 | GET | `/v1/pancha-pakshi/profiles` | `pancha_pakshi_profiles_route` |
 | GET | `/v1/pancha-pakshi/profiles/{profile_id}` | `pancha_pakshi_profile_route` |
 | POST | `/v1/pancha-pakshi/identity/aksara` | `pancha_pakshi_aksara_identity_route` |
+| POST | `/v1/pancha-pakshi/identity/natal-moon` | `pancha_pakshi_natal_moon_identity_route` |
 | POST | `/v1/pancha-pakshi/schedule/nominal` | `pancha_pakshi_nominal_schedule_route` |
+| POST | `/v1/pancha-pakshi/context/astronomical-paksha` | `pancha_pakshi_astronomical_paksha_route` |
 | POST | `/v1/pancha-pakshi/context/local-solar` | `pancha_pakshi_local_solar_context_route` |
 | POST | `/v1/pancha-pakshi/schedule/fixed-clock` | `pancha_pakshi_fixed_clock_materialization_route` |
 | POST | `/v1/pancha-pakshi/schedule/fixed-clock/current-cell` | `pancha_pakshi_fixed_clock_current_cell_route` |
 | POST | `/v1/pancha-pakshi/schedule/solar-proportional` | `pancha_pakshi_solar_proportional_materialization_route` |
+| POST | `/v1/pancha-pakshi/schedule/solar-proportional/current-cell` | `pancha_pakshi_solar_proportional_current_cell_route` |
 | POST | `/v1/pancha-pakshi/relationships/directed` | `pancha_pakshi_directed_relationship_route` |
 
 Every computation request requires `profile_id`; no route selects a default.
@@ -760,6 +765,66 @@ The first admitted profile,
 aksara/query-or-name-initial fixed-clock schedule and its stored directed
 relationship matrix. Schedule inputs are explicit source labels: `purva` or
 `amara`, `day` or `night`, and weekday.
+
+The additive Stage 2F request contains only `profile_id`, aware `dt`, and the
+required literal
+`policy_id="apparent_geocentric_moon_sun_longitude_paksha_half_open_v1"`.
+It accepts no latitude, longitude, observer elevation, caller-supplied paksha,
+ayanamsa, correction switch, schedule selector, or natal input. The aware
+datetime is normalized to UTC, crosses the facade boundary to UT1 once, and is
+converted once to the reader-bound TT used by both body evaluations.
+
+The `PanchaPakshiAstronomicalPakshaResponse` publishes requested UT1 and TT,
+apparent geocentric Sun and Moon longitudes in the true ecliptic of date,
+normalized Moon-minus-Sun elongation, the `shukla` or `krishna` astronomical
+half, the source-mapped `purva` or `amara` profile label, exactly one mapping
+locator, the immutable policy, and provenance. The policy owns exact half-open
+classification with no tolerance or snapping: `[0, 180)` is
+Shukla/waxing/Purva and `[180, 360)` is Krishna/waning/Amara. Exact `0` and
+`180` degrees therefore belong to Shukla/Purva and Krishna/Amara respectively.
+No ayanamsa is applied because a common longitude offset cancels from the phase
+difference.
+
+The Purva mapping is directly attested at IA leaf `n16`, and the Amara mapping
+at `n26`, for this named 1879 profile. Their reading status remains
+machine-assisted visual reading pending competent-human Tamil review; the route
+does not claim an independently corroborated or universal vocabulary. It
+performs no schedule selection, materialization, current-cell selection,
+automatic routing into another request, or natal identity. No source scan,
+PDF, OCR, page image, copied expression, or translation is bundled.
+
+The separate Stage 2G route requires
+`profile_id="bogamuni_chennai_2024_nakshatra_natal_identity"`, an aware `dt`,
+and the exact literal
+`policy_id="bogamuni_2024_apparent_lahiri_natal_moon_identity_v1"`. Those are
+the only request fields. Location, supplied paksha, nakshatra or bird,
+caller-selected ayanamsa, correction switches, schedule/current-cell controls,
+scoring, and forecast controls are rejected. The aware datetime is normalized
+to UTC, crosses to UT1 once, and derives one reader-bound TT epoch shared by the
+apparent geocentric Sun/Moon evaluation and the Lahiri-true sidereal Moon.
+The response policy spells the interoperable ayanamsa token exactly as
+`ayanamsa_system="Lahiri"`, matching the existing sidereal request surface.
+
+`PanchaPakshiNatalMoonIdentityResponse` exposes requested UT1/TT, tropical Sun
+and Moon longitudes, Moon-minus-Sun elongation, astronomical and source Paksha,
+the phase-mapping locator, Lahiri ayanamsa, sidereal Moon longitude, 0-based
+nakshatra index and name, degrees within the sector, the nested source-table
+bird mapping and locator, the complete immutable policy, and provenance. The
+policy states that applying the source table to a birth Moon, selecting Lahiri
+true ayanamsa, and using 27 equal half-open `40/3`-degree sectors are a modern
+Moira composition, not claims found in the source. Exact internal boundaries
+belong to the following nakshatra; the bounded one-ULP recovery only restores a
+mathematically exact boundary after binary representation.
+
+The named Bogamuni 2024 source attests the Purva table at IA leaf `n52`, the
+complete Amara verse at `n64`, and the phase/Paksha binding at `n167`. The
+adjacent Amara commentary duplicates Shravana and omits Revati, so the declared
+`verse_precedence_for_nakshatra_partition` policy retains it as rejected
+conflict evidence instead of repairing or mixing it. The Uromarisi 1934 witness
+corroborates the Purva grouping and exhibits a related malformed Amara
+commentary but is not imported into the runtime table. Neither archival source
+artifact, OCR, rendered page, source prose, copied layout, nor translation is
+bundled.
 
 The additive local-solar context request contains `profile_id`, aware `dt`,
 `latitude`, `longitude`, caller-supplied `paksha`, and the required literal
@@ -832,24 +897,51 @@ not infer paksha from the Moon. The named 1879 witness attests the nominal
 schedule and exact rational offsets, but it does not attest proportional
 sunrise-to-sunset timing.
 
+The additive Stage 2E current-cell request uses the same explicit profile,
+aware `dt`, bounded location, and caller-supplied paksha, plus the required
+literal
+`policy_id="solar_proportional_current_cell_half_open_solar_precedence_v1"`.
+It resolves the governing solar half first, constructs the unchanged Stage 2D
+materialization with the same reader, converts the requested instant to
+reader-bound TT once, and applies exact zero-tolerance half-open membership.
+The anchor belongs to cell zero, shared endpoints belong to the following cell,
+and exact sunrise or sunset belongs to the newly governing half.
+
+`PanchaPakshiSolarProportionalCurrentCellResponse` is deliberately compact. It
+contains profile, requested UT1/TT, location, paksha, half, weekday, the complete
+13-field selection policy, TT/UT1 governing bounds, TT half duration,
+`selection_status="selected"`, one non-null proportional cell, and provenance;
+it does not duplicate the complete 25-cell materialization. Stage 2D covers the
+entire governing solar half, so the route exposes no null cell or fixed-clock
+tail status. Zero or multiple matches fail closed rather than invoking
+tolerance, clipping, wrapping, borrowing, fixed-clock fallback, or inference.
+
 Responses preserve admission status, capabilities, decision identity, source
 and locator provenance, assembly policy, astronomical-routing status, and
 declared omissions. Exact nazhigai values serialize as integer
 `numerator`/`denominator` objects rather than binary floats.
 
-Only the local-solar context, fixed-clock materialization, fixed-clock
-current-cell, and solar-proportional materialization routes accept a datetime
-and location. The family does not accept a natal Moon, nakshatra,
-caller-supplied sunrise, timezone policy, scoring rule, or inferred name. It
-performs no astronomical paksha inference, implicit or ambient seasonal
-scaling, vinadi subdivision,
+The astronomical-paksha and natal-Moon routes accept a datetime but no location
+and return only their respective instantaneous products. The local-solar context,
+fixed-clock materialization, fixed-clock current-cell, solar-proportional
+materialization, and solar-proportional current-cell routes accept both a
+datetime and location and continue to require caller-supplied paksha. No result
+is ambiently inserted into another operation. The family does not accept a
+caller-supplied natal Moon longitude, paksha/nakshatra/bird override on the
+natal route, caller-supplied sunrise, timezone policy, scoring rule, or inferred
+name. Natal identity occurs only on the explicit Stage 2G route. The family
+performs no implicit seasonal scaling, vinadi subdivision,
 Padu/Bharana/Adhikara computation, condition scoring, window search, or
-cross-witness normalization. Fixed 1,440-second nominal-offset materialization
-occurs only on the explicit Stage 2B route; proportional full-half
-materialization occurs only on the explicit Stage 2D route under its distinct
-modern policy. The context route alone still returns no materialized interval.
-Current-cell selection occurs only on the explicit Stage 2C route under its
-separate required policy and applies only to the Stage 2B fixed-clock cells.
+cross-witness normalization. Fixed 1,440-second
+nominal-offset materialization occurs only on the explicit Stage 2B route;
+proportional full-half materialization occurs only on the explicit Stage 2D
+route under its distinct modern policy, and proportional current-cell selection
+occurs only on the explicit Stage 2E route. The Stage 2A context route alone
+still returns no materialized interval, and Stage 2F never selects a schedule.
+Fixed-clock current-cell selection occurs only on the explicit Stage 2C route
+under its separate required policy and applies only to the Stage 2B fixed-clock
+cells. Stage 2G likewise never selects or materializes a schedule, current cell,
+score, or forecast.
 
 ### Sidereal And Nakshatra Utility REST Admission Boundary
 

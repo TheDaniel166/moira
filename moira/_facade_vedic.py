@@ -66,12 +66,16 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         "frozen": [
             "panchanga", "panchanga_profile",
             "pancha_pakshi_profiles", "pancha_pakshi_profile_info",
+            "pancha_pakshi_astronomical_paksha",
+            "pancha_pakshi_nakshatra_bird_mapping",
+            "pancha_pakshi_natal_moon_identity",
             "pancha_pakshi_identity_from_initial_vowel",
             "pancha_pakshi_directed_relationship", "pancha_pakshi_schedule",
             "pancha_pakshi_local_solar_context",
             "pancha_pakshi_fixed_clock_materialization",
             "pancha_pakshi_fixed_clock_current_cell",
             "pancha_pakshi_solar_proportional_materialization",
+            "pancha_pakshi_solar_proportional_current_cell",
             "shadbala",
             "shadbala_for_chart", "shadbala_profile", "shadbala_condition",
             "shadbala_network", "bhava_bala", "bhava_bala_for_chart",
@@ -218,6 +222,49 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         """Describe one explicitly named Pancha Pakshi profile."""
         return _pancha_pakshi.pancha_pakshi_profile_info(profile_id)
 
+    def pancha_pakshi_astronomical_paksha(
+        self,
+        profile_id: str,
+        dt: datetime,
+    ) -> _pancha_pakshi.PanchaPakshiAstronomicalPakshaInference:
+        """Infer the source-mapped Paksha from geocentric lunar phase."""
+
+        facade = _facade_module()
+        return _pancha_pakshi._pancha_pakshi_astronomical_paksha_from_utc(
+            profile_id,
+            facade.jd_from_datetime(dt),
+            reader=self._reader,
+        )
+
+    def pancha_pakshi_natal_moon_identity(
+        self,
+        profile_id: str,
+        dt: datetime,
+    ) -> _pancha_pakshi.PanchaPakshiNatalMoonIdentity:
+        """Apply the named source table through the fixed natal-Moon policy."""
+
+        facade = _facade_module()
+        return _pancha_pakshi._pancha_pakshi_natal_moon_identity_from_utc(
+            profile_id,
+            facade.jd_from_datetime(dt),
+            reader=self._reader,
+        )
+
+    def pancha_pakshi_nakshatra_bird_mapping(
+        self,
+        profile_id: str,
+        *,
+        profile_paksha: _pancha_pakshi.PanchaPakshiPaksha,
+        nakshatra_index: int,
+    ) -> _pancha_pakshi.PanchaPakshiNakshatraBirdMapping:
+        """Return one source-table cell without applying natal-Moon policy."""
+
+        return _pancha_pakshi.pancha_pakshi_nakshatra_bird_mapping(
+            profile_id,
+            profile_paksha=profile_paksha,
+            nakshatra_index=nakshatra_index,
+        )
+
     def pancha_pakshi_identity_from_initial_vowel(
         self,
         profile_id: str,
@@ -334,6 +381,27 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
 
         facade = _facade_module()
         return _pancha_pakshi._pancha_pakshi_solar_proportional_materialization_from_utc(
+            profile_id,
+            facade.jd_from_datetime(dt),
+            latitude,
+            longitude,
+            paksha=paksha,
+            reader=self._reader,
+        )
+
+    def pancha_pakshi_solar_proportional_current_cell(
+        self,
+        profile_id: str,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+        *,
+        paksha: _pancha_pakshi.PanchaPakshiPaksha,
+    ) -> _pancha_pakshi.PanchaPakshiSolarProportionalCurrentCellSelection:
+        """Select the current cell from the proportional solar-half partition."""
+
+        facade = _facade_module()
+        return _pancha_pakshi._pancha_pakshi_solar_proportional_current_cell_from_utc(
             profile_id,
             facade.jd_from_datetime(dt),
             latitude,

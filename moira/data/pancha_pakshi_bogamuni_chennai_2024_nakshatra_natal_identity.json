@@ -1,0 +1,665 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "profile_id": "bogamuni_chennai_2024_nakshatra_natal_identity",
+    "product_kind": "natal_moon_bird_identity",
+    "derivation_status": "visually_verified_source_partition_with_explicit_modern_natal_moon_composition",
+    "assembly_policy": "verse_precedence_for_nakshatra_partition",
+    "title": "Bogamuni 2024 nakshatra-bird table with explicit modern Lahiri natal-Moon composition"
+  },
+  "source": {
+    "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "title": "போகமுனிவர் பஞ்சபட்சி சாஸ்திரம் உரையுடன்",
+    "traditional_attribution": "Bogamuni",
+    "authorship_status": "traditional_attribution_not_asserted_authorship",
+    "publication_place": "Vadapalani, Chennai",
+    "publisher": "Thamarai Noolagam",
+    "publication_year": 2024,
+    "language": "Tamil",
+    "archive_item_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "archive_original_image_zip_name": "not_applicable_no_original_image_zip_bound",
+    "archive_original_image_zip_source_status": "not_applicable_pdf_is_internet_archive_original",
+    "archive_original_image_zip_md5": "not_applicable",
+    "archive_original_image_zip_sha1": "not_applicable",
+    "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+    "archive_pdf_source_status": "internet_archive_original",
+    "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+    "archive_pdf_sha1": "6ddad8f2577883f6859829f534e8ee7b8330ade8",
+    "locally_verified_pdf_sha256": "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990",
+    "catalogued_contributor_note": "The sixth edition names R. C. Mohan as editor; Moira does not convert that editorial credit into authorship of the traditionally attributed work.",
+    "artifact_distribution_status": "reference_only_source_artifacts_not_packaged",
+    "redistribution_policy": "normalized_rules_only_no_scan_ocr_page_images_layout_source_prose_or_third_party_translation",
+    "license_scope": "mit_covers_moira_authored_code_schema_prose_and_profile_representation",
+    "artifact_distribution_note": "The archive PDF is a research input, not a package asset. Moira distributes only independently normalized rule data, code, schema, and provenance prose; no scan, OCR, page image, copied layout, source prose, or third-party translation is bundled."
+  },
+  "source_locators": [
+    {
+      "locator_id": "bogar_n52_purva",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n52 / PDF page 53 / printed page 43: Purva nakshatra-bird partition",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n52/mode/1up",
+      "evidence_role": "source_attested_purva_nakshatra_bird_partition"
+    },
+    {
+      "locator_id": "bogar_n64_amara_verse",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n64 / PDF page 65 / printed page 55: governing Amara nakshatra-bird verse",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n64/mode/1up",
+      "evidence_role": "governing_amara_verse_nakshatra_bird_partition"
+    },
+    {
+      "locator_id": "bogar_n64_amara_commentary_conflict",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n64 / PDF page 65 / printed page 55: adjacent commentary overlaps Shravana and omits Revati",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n64/mode/1up",
+      "evidence_role": "rejected_adjacent_commentary_partition_conflict"
+    },
+    {
+      "locator_id": "bogar_n167_phase",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n167 / PDF page 168 / printed page 158: Purva begins after new moon and Amara after full moon",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n167/mode/1up",
+      "evidence_role": "source_attested_new_moon_purva_full_moon_amara_mapping"
+    }
+  ],
+  "lunar_paksha_mapping": {
+    "mapping_kind": "source_attested_lunar_phase_half_to_profile_paksha",
+    "entries": [
+      {
+        "lunar_phase_half": "waxing",
+        "profile_paksha": "purva",
+        "source_locators": [
+          "bogar_n167_phase"
+        ]
+      },
+      {
+        "lunar_phase_half": "waning",
+        "profile_paksha": "amara",
+        "source_locators": [
+          "bogar_n167_phase"
+        ]
+      }
+    ]
+  },
+  "nakshatra_bird_mapping": {
+    "mapping_kind": "profile_paksha_and_nakshatra_to_bird",
+    "source_table_semantics": "nakshatra_bird_table_not_explicitly_natal_moon",
+    "assembly_policy": "verse_precedence_for_nakshatra_partition",
+    "entries": [
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 0,
+        "nakshatra": "Ashwini",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 1,
+        "nakshatra": "Bharani",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 2,
+        "nakshatra": "Krittika",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 3,
+        "nakshatra": "Rohini",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 4,
+        "nakshatra": "Mrigashira",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 5,
+        "nakshatra": "Ardra",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 6,
+        "nakshatra": "Punarvasu",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 7,
+        "nakshatra": "Pushya",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 8,
+        "nakshatra": "Ashlesha",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 9,
+        "nakshatra": "Magha",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 10,
+        "nakshatra": "Purva Phalguni",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 11,
+        "nakshatra": "Uttara Phalguni",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 12,
+        "nakshatra": "Hasta",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 13,
+        "nakshatra": "Chitra",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 14,
+        "nakshatra": "Swati",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 15,
+        "nakshatra": "Vishakha",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 16,
+        "nakshatra": "Anuradha",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 17,
+        "nakshatra": "Jyeshtha",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 18,
+        "nakshatra": "Mula",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 19,
+        "nakshatra": "Purva Ashadha",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 20,
+        "nakshatra": "Uttara Ashadha",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 21,
+        "nakshatra": "Shravana",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 22,
+        "nakshatra": "Dhanishtha",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 23,
+        "nakshatra": "Shatabhisha",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 24,
+        "nakshatra": "Purva Bhadrapada",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 25,
+        "nakshatra": "Uttara Bhadrapada",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "purva",
+        "nakshatra_index": 26,
+        "nakshatra": "Revati",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n52_purva"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 0,
+        "nakshatra": "Ashwini",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 1,
+        "nakshatra": "Bharani",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 2,
+        "nakshatra": "Krittika",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 3,
+        "nakshatra": "Rohini",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 4,
+        "nakshatra": "Mrigashira",
+        "bird": "peacock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 5,
+        "nakshatra": "Ardra",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 6,
+        "nakshatra": "Punarvasu",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 7,
+        "nakshatra": "Pushya",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 8,
+        "nakshatra": "Ashlesha",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 9,
+        "nakshatra": "Magha",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 10,
+        "nakshatra": "Purva Phalguni",
+        "bird": "cock",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 11,
+        "nakshatra": "Uttara Phalguni",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 12,
+        "nakshatra": "Hasta",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 13,
+        "nakshatra": "Chitra",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 14,
+        "nakshatra": "Swati",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 15,
+        "nakshatra": "Vishakha",
+        "bird": "crow",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 16,
+        "nakshatra": "Anuradha",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 17,
+        "nakshatra": "Jyeshtha",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 18,
+        "nakshatra": "Mula",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 19,
+        "nakshatra": "Purva Ashadha",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 20,
+        "nakshatra": "Uttara Ashadha",
+        "bird": "owl",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 21,
+        "nakshatra": "Shravana",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 22,
+        "nakshatra": "Dhanishtha",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 23,
+        "nakshatra": "Shatabhisha",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 24,
+        "nakshatra": "Purva Bhadrapada",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 25,
+        "nakshatra": "Uttara Bhadrapada",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      },
+      {
+        "profile_paksha": "amara",
+        "nakshatra_index": 26,
+        "nakshatra": "Revati",
+        "bird": "vulture",
+        "source_locators": [
+          "bogar_n64_amara_verse"
+        ]
+      }
+    ]
+  },
+  "modern_composition": {
+    "composition_kind": "modern_moira_natal_moon_over_source_nakshatra_bird_table",
+    "source_table_natal_status": "not_explicitly_natal_moon",
+    "lunar_position": "apparent_geocentric_true_ecliptic_of_date",
+    "ayanamsa_system": "Lahiri",
+    "ayanamsa_mode": "true",
+    "ayanamsa_source_status": "not_attested_by_source_modern_policy",
+    "nakshatra_partition": "27_equal_half_open_40_over_3_degree_sectors",
+    "boundary_ownership": "exact_internal_boundary_to_following_nakshatra",
+    "binary_boundary_recovery": "maximum_one_ulp_below_internal_boundary"
+  },
+  "explicit_omissions": [
+    {
+      "feature": "aksara_identity",
+      "status": "omitted",
+      "reason": "This profile does not reinterpret the Bogamuni nakshatra table as an aksara or name-initial identity."
+    },
+    {
+      "feature": "nominal_schedule",
+      "status": "omitted",
+      "reason": "No operating schedule is admitted from this profile."
+    },
+    {
+      "feature": "directed_relationships",
+      "status": "omitted",
+      "reason": "No bird relationship matrix is admitted from this profile."
+    },
+    {
+      "feature": "clock_materialization",
+      "status": "omitted",
+      "reason": "No fixed-clock or solar-proportional materialization is admitted from this profile."
+    },
+    {
+      "feature": "current_cell_selection",
+      "status": "omitted",
+      "reason": "No current-cell selection is admitted from this profile."
+    },
+    {
+      "feature": "authority_birds",
+      "status": "omitted",
+      "reason": "No day authority-bird doctrine is admitted from this profile."
+    },
+    {
+      "feature": "vinadi",
+      "status": "omitted",
+      "reason": "No vinadi subdivision doctrine is admitted from this profile."
+    },
+    {
+      "feature": "condition",
+      "status": "omitted",
+      "reason": "No bird-condition doctrine is admitted from this profile."
+    },
+    {
+      "feature": "scoring",
+      "status": "omitted",
+      "reason": "No strength, auspiciousness, or compatibility score is admitted from this profile."
+    },
+    {
+      "feature": "window_search",
+      "status": "omitted",
+      "reason": "No electional search or forecast surface is admitted from this profile."
+    }
+  ],
+  "research_conflict_ledger": [
+    {
+      "witness_id": "bogamuni_2024_adjacent_amara_commentary",
+      "bibliographic_label": "Bogamuni-attributed 2024 sixth edition, commentary adjacent to the Amara verse",
+      "record_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "record_identity": "original PDF MD5 abe489a832ac38a0270335b7429776f3; commentary on IA leaf n64",
+      "conflict_locators": [
+        "bogar_n64_amara_commentary_conflict"
+      ],
+      "evidence_status": "visually_verified_commentary_overlaps_shravana_and_omits_revati",
+      "runtime_status": "rejected_by_declared_verse_precedence"
+    },
+    {
+      "witness_id": "kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+      "bibliographic_label": "Uromarisi-attributed Vinaadi Pancha Pakshi Mulamum, 1934",
+      "record_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+      "record_identity": "original PDF MD5 5832ca69b64c1429342fba8c3b3012dc",
+      "conflict_locators": [
+        "IA leaf n18: Purva corroboration",
+        "IA leaf n61: malformed Amara commentary"
+      ],
+      "evidence_status": "visually_reviewed_secondary_witness_purva_corroboration_and_amara_commentary_conflict",
+      "runtime_status": "not_imported"
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
-  "generated_at_utc": "2026-07-20T17:30:39Z",
+  "generated_at_utc": "2026-07-20T21:27:47Z",
   "hash_algorithm": "sha256",
   "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
   "profiles": [
     {
       "profile_id": "agastya_madras_1879_akshara_fixed_clock",
       "path": "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
-      "sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+      "sha256": "4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64",
       "admission_status": "source_scoped_public",
       "product_kind": "aksara_prasna_operating_schedule",
       "default_selection_allowed": false,
@@ -16,11 +16,26 @@
         "nominal_schedule",
         "directed_relationships",
         "astronomical_context",
+        "astronomical_paksha_inference",
         "fixed_clock_materialization",
         "fixed_clock_current_cell_selection",
-        "solar_proportional_materialization"
+        "solar_proportional_materialization",
+        "solar_proportional_current_cell_selection"
       ],
-      "admission_decision_id": "pancha_pakshi_1879_solar_proportional_materialization_2026_07_20"
+      "admission_decision_id": "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
+    },
+    {
+      "profile_id": "bogamuni_chennai_2024_nakshatra_natal_identity",
+      "path": "pancha_pakshi_bogamuni_chennai_2024_nakshatra_natal_identity.json",
+      "sha256": "e3642f61756ed7b8c413ddfbde2844769aea1994d4e69ae27594b2059b549b6a",
+      "admission_status": "source_scoped_public",
+      "product_kind": "natal_moon_bird_identity",
+      "default_selection_allowed": false,
+      "capabilities": [
+        "nakshatra_bird_mapping",
+        "natal_identity"
+      ],
+      "admission_decision_id": "pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20"
     }
   ]
 }

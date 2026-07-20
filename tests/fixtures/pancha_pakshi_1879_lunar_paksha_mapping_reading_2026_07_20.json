@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "evidence_id": "pancha_pakshi_1879_lunar_paksha_mapping_reading_2026_07_20",
+  "recorded_at_utc": "2026-07-20T20:06:19Z",
+  "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+  "source_binding": {
+    "witness_id": "dli.rmrl.000451_images",
+    "archive_item_url": "https://archive.org/details/dli.rmrl.000451_images",
+    "archive_pdf_name": "dli.rmrl.000451.pdf",
+    "archive_pdf_md5": "0736b952fb587132c2181a383ff10cfb",
+    "archive_pdf_sha1": "d41ff5c2d569de6422435b20135b58be82a68560",
+    "locally_verified_pdf_sha256": "ed52945ee141faa3f6967b8f043077b95abef9ff674ffb83eaba633417c669c9"
+  },
+  "normalized_readings": [
+    {
+      "source_locator_id": "ia_n16",
+      "archive_leaf": "n16",
+      "derivative_pdf_page": 17,
+      "lunar_phase_half": "waxing",
+      "profile_paksha": "purva",
+      "evidence_kind": "direct_source_attestation",
+      "reading_status": "machine_assisted_visual_reading_pending_competent_tamil_review"
+    },
+    {
+      "source_locator_id": "ia_n26",
+      "archive_leaf": "n26",
+      "derivative_pdf_page": 27,
+      "lunar_phase_half": "waning",
+      "profile_paksha": "amara",
+      "evidence_kind": "direct_source_attestation",
+      "reading_status": "machine_assisted_visual_reading_pending_competent_tamil_review"
+    }
+  ],
+  "reading_doctrine": {
+    "mapping_scope": "named_1879_source_scoped_profile_only",
+    "mapping_completeness": "two_directly_attested_lunar_phase_halves",
+    "source_supplied_numeric_boundary_status": "not_attested",
+    "modern_boundary_policy_required": true,
+    "independent_witness_corroboration_status": "not_performed",
+    "universal_canon_claim": false
+  },
+  "artifact_distribution_boundary": {
+    "source_artifact_packaged": false,
+    "source_expression_copied": false,
+    "page_image_packaged": false,
+    "ocr_packaged": false,
+    "normalized_source_facts_only": true
+  }
+}

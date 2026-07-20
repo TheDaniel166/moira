@@ -1,5 +1,243 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2G Natal-Moon Identity Addendum
+
+Stage 2G admits the separate
+`bogamuni_chennai_2024_nakshatra_natal_identity` profile with product kind
+`natal_moon_bird_identity`, capabilities `nakshatra_bird_mapping` and
+`natal_identity`, `source_scoped_public` status, and no default. The
+[`Stage 2G admission decision`](../../tests/fixtures/pancha_pakshi_bogamuni_2024_natal_moon_identity_2026_07_20.json)
+has canonical SHA-256
+`3da998bc78c6c1fc4ec1c71629dc6b3872725ef25f73965474d5e894deec1575`.
+It binds profile SHA-256
+`e3642f61756ed7b8c413ddfbde2844769aea1994d4e69ae27594b2059b549b6a`
+and manifest SHA-256
+`979bb6df8a31d0ff9603ef396b0f569f17ecca6f6dc21def220ad682a425eb61`.
+
+The primary witness is the Bogamuni-attributed 2024 sixth edition catalogued by
+Internet Archive as
+[`acc.-no.-44757-panjapatchi-sashthiram-2024`](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024).
+The inspected original PDF is `Acc.No.44757-PanjapatchiSashthiram-2024.pdf`,
+archive MD5 `abe489a832ac38a0270335b7429776f3`, archive SHA-1
+`6ddad8f2577883f6859829f534e8ee7b8330ade8`, and locally verified SHA-256
+`035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`.
+Rendered original-page inspection—not OCR alone—established the complete Purva
+nakshatra-bird table at IA leaf `n52`, the complete Amara verse at `n64`, and
+the source phase-to-Purva/Amara binding at `n167`.
+
+The commentary adjacent to the Amara verse is internally malformed: it
+duplicates Shravana and omits Revati. Stage 2G declares
+`verse_precedence_for_nakshatra_partition`, uses the complete verse for the
+27-cell Amara partition, and preserves the commentary at `n64` as rejected
+conflict evidence. It does not infer the omitted cell, repair the commentary by
+symmetry, or blend text layers. The Uromarisi-attributed 1934 witness at
+[`kvc-0354-vinaadi-pajasapatchi-mulamum-1934`](https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934)
+corroborates the Purva grouping at leaf `n18` and independently exhibits
+malformed Amara commentary at `n61`. That bounded corroboration does not govern
+the runtime table or raise the entire profile to `corroborated_public`.
+
+`PanchaPakshiNakshatraBirdMapping` preserves the pure 2-by-27 source table and
+states `nakshatra_bird_table_not_explicitly_natal_moon`. The source witnesses
+attest phase labels and nakshatra birds; they do not explicitly prescribe a
+birth-Moon calculation, Lahiri ayanamsa, or an equal-27-sector numerical
+taxonomy. `PanchaPakshiNatalMoonIdentityPolicy` therefore exposes
+`composition_status="modern_moira_policy_not_source_claim"` and the sole policy
+ID `bogamuni_2024_apparent_lahiri_natal_moon_identity_v1`.
+
+The modern composition converts one explicit UT1 instant once to reader-bound
+TT. Apparent geocentric Sun and Moon longitudes in the true ecliptic of date
+determine the half-open Shukla/Krishna phase and source Paksha. The same TT epoch
+governs Lahiri true ayanamsa and the sidereal Moon. Twenty-seven equal half-open
+`40/3`-degree sectors assign exact internal boundaries to the following
+nakshatra. A maximum-one-ULP-below recovery exists only to recover the binary
+representation of an exact mathematical boundary and is not a tolerance band.
+
+The public surfaces are the kernel-free pure mapping function and facade method,
+the kernel-backed `pancha_pakshi_natal_moon_identity_at(...)` and
+`Moira.pancha_pakshi_natal_moon_identity(...)`, and strict
+`POST /v1/pancha-pakshi/identity/natal-moon`. REST accepts only `profile_id`,
+aware `dt`, and the exact policy ID. It rejects location, supplied
+paksha/nakshatra/bird/ayanamsa, schedule/current-cell controls, scoring, and
+forecast inputs. The result exposes every astronomical and sidereal
+intermediate, phase and bird mappings, locators, modern composition status,
+provenance, and omissions; no schedule routing occurs.
+
+Validation keeps its evidence classes separate. The named pages and exact
+54-cell projection are source-table evidence. Exact-boundary and
+adjacent-representable tests are mathematical invariants. DE441 executes the
+apparent geocentric reader-bound TT path, but is not a Pancha Pakshi or
+natal-identity oracle. Facade, serializer, REST, OpenAPI, export, profile/hash,
+capability, and immutable-vessel tests protect the public contract. Competent
+human Tamil review remains a welcome confidence upgrade, not a blocker to this
+narrow source-scoped admission or a prerequisite for publishing the API.
+
+The source-artifact boundary remains unchanged. The PDFs and rendered research
+pages are not bundled; Moira distributes only independently normalized symbolic
+rules, source identities and locators, Moira-authored policy/schema/prose, and
+validation metadata. The 1879 aksara profile remains distinct and unchanged.
+
+## Stage 2F Astronomical Paksha Inference Addendum
+
+Stage 2F admits `astronomical_paksha_inference` for the same explicitly named
+`source_scoped_public` profile. Unlike Stages 2A-E, it adds a normalized source
+fact to the profile: machine-assisted visual reading of the exact 1879 witness
+directly maps waxing to Purva at IA leaf `n16` and waning to Amara at `n26`.
+The frozen
+[`source-reading record`](../../tests/fixtures/pancha_pakshi_1879_lunar_paksha_mapping_reading_2026_07_20.json)
+has canonical SHA-256
+`9ce3686a90a41af916a370b8d4ec04637f22a1d32f872180c6d8a1b790e25a0e`.
+Its status remains
+`machine_assisted_visual_reading_pending_competent_tamil_review`; it does not
+claim independent-witness corroboration or a universal Pancha Pakshi vocabulary.
+
+The chained
+[`Stage 2F admission decision`](../../tests/fixtures/pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20.json)
+has canonical SHA-256
+`1020b28d5da8d0e823cadd352ea2236c69cbb636660a573eb5d74b8c131bc5d8`.
+It freezes the Stage 2E decision at
+`4ddf0a5fa5b680fa83a7bb3052ecbc5d1a9c2f685c466290f22121dd02724d18`,
+the prior manifest at
+`d2b5f8f1ae7e067d257eeb24b533be1d33349446d56d361ea59f4a71472eca70`,
+and the prior profile at
+`876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4`.
+The schema-3 profile digest becomes
+`4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64`
+and the schema-2 manifest digest becomes
+`a4fdceee4089c2812d9d77be763c1738152a63231b3f06847ea93383e4a3b327`.
+Admission status, product kind, and `default_selection_allowed=false` remain
+unchanged.
+
+The governing objects are `PanchaPakshiAstronomicalPakshaInference`, the
+`PanchaPakshiAstronomicalPaksha` enum, and immutable
+`PanchaPakshiAstronomicalPakshaInferencePolicy`. The only admitted policy is
+`apparent_geocentric_moon_sun_longitude_paksha_half_open_v1`. It converts the
+explicit UT1 instant once to reader-bound TT and evaluates apparent geocentric
+Sun and Moon longitudes in the true ecliptic of date on that same coordinate.
+Normalized `Moon - Sun` longitude assigns `[0, 180)` to Shukla/waxing/Purva and
+`[180, 360)` to Krishna/waning/Amara. Exact `0` belongs to Shukla/Purva and exact
+`180` to Krishna/Amara; tolerance, snapping, civil-day override, and
+topocentric override are absent. Ayanamsa has no role because a common longitude
+offset cancels from the phase difference.
+
+The low-level engine, facade, and REST surfaces are
+`pancha_pakshi_astronomical_paksha_at(...)`,
+`Moira.pancha_pakshi_astronomical_paksha(...)`, and
+`POST /v1/pancha-pakshi/context/astronomical-paksha`. The transport request
+accepts only explicit `profile_id`, aware `dt`, and the exact policy ID. There is
+no location or caller-supplied paksha. The result publishes UT1/TT, both
+longitudes, normalized elongation, astronomical half, source-mapped profile
+label, exactly one direct mapping locator, policy, and provenance. It does not
+select or materialize a schedule, choose a current cell, route its result into
+another operation, or infer natal identity.
+
+Stage 2F validation is intentionally partitioned. The leaf readings establish
+only the source-label mapping. Synthetic `0`/`180` and adjacent-representable
+cases establish the modern half-open classifier; DE441 exercises the actual
+reader-bound astronomical path; and Panchanga coherence checks confirm that
+tithi and karana use the direct tropical Moon-Sun difference, where common
+ayanamsa cancels, rather than separately rounded sidereal operands. Facade,
+transport, OpenAPI, capability, immutable-vessel, schema/hash, and locator
+checks protect the public contract. None of this is an external Pancha Pakshi
+oracle, a new phase-event timing accuracy claim, competent-human Tamil sign-off,
+or independent-witness collation.
+
+The standing source-artifact boundary is unchanged. Stage 2F distributes only
+normalized facts, locators, Moira-authored policy, and validation metadata. It
+does not package an archival scan, PDF, OCR, page image, copied source
+expression, or third-party translation.
+
+## Stage 2E Solar-Proportional Current-Cell Addendum
+
+Stage 2E admits one further capability,
+`solar_proportional_current_cell_selection`, for the same
+`source_scoped_public` profile. The profile document remains unchanged at
+canonical SHA-256
+`876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4`,
+and default selection remains forbidden. The chained decision is recorded in
+[`pancha_pakshi_1879_solar_proportional_current_cell_2026_07_20.json`](../../tests/fixtures/pancha_pakshi_1879_solar_proportional_current_cell_2026_07_20.json),
+whose canonical SHA-256 is
+`4ddf0a5fa5b680fa83a7bb3052ecbc5d1a9c2f685c466290f22121dd02724d18`.
+It freezes the Stage 2D decision at SHA-256
+`e31e0664090b9a38bdcd52b660c04998a0412eab223f4a84fe745b9e54d25383`,
+the prior manifest at SHA-256
+`6dbbf05383c7a4eb3eadebf70fdb1130ab5081ef83175bc387755ffda4db9121`,
+and binds the new manifest at SHA-256
+`d2b5f8f1ae7e067d257eeb24b533be1d33349446d56d361ea59f4a71472eca70`.
+
+The governing object is
+`PanchaPakshiSolarProportionalCurrentCellSelection`, with immutable
+`PanchaPakshiSolarProportionalCurrentCellSelectionPolicy`. Its only admitted
+policy is
+`solar_proportional_current_cell_half_open_solar_precedence_v1`, explicitly a
+modern deterministic Moira selection policy rather than an 1879 source claim.
+
+Stage 2A first resolves the governing half-open solar half. Stage 2D then
+materializes that half's complete 25-cell proportional partition with the same
+configured reader. The requested UT1 instant is converted once to reader-bound
+TT and tested by exact `start_jd_tt <= requested_jd_tt < end_jd_tt` membership
+with `0.0 s` tolerance. The anchor belongs to cell zero, every shared endpoint
+belongs to the following cell, and exact sunrise or sunset is routed into the
+new governing half before selection.
+
+Complete Stage 2D coverage makes `selected` the only lawful status and requires
+one non-null tuple member. Zero or multiple matches fail closed. Stage 2E has no
+fixed-clock tail state and performs no clipping, wrapping, repetition,
+borrowing, fixed-clock mixing, fallback, paksha inference, or natal identity.
+Paksha remains an explicit caller-supplied source label.
+
+The low-level engine, facade, and REST surfaces are respectively
+`pancha_pakshi_solar_proportional_current_cell_at(...)`,
+`Moira.pancha_pakshi_solar_proportional_current_cell(...)`, and
+`POST /v1/pancha-pakshi/schedule/solar-proportional/current-cell`. The compact
+REST response publishes one non-null cell and governing bounds without
+duplicating the complete Stage 2D materialization. Result provenance equals the
+Stage 2D provenance with only its routing status changed to
+`solar_proportional_current_cell_selection_performed_paksha_caller_supplied_no_fixed_clock_mixing_or_inference`;
+the omission `source_attested_solar_proportional_materialization` remains
+unchanged.
+
+Validation is bounded to solar-half-first routing, exact TT interval ownership,
+complete-coverage and exactly-one-match invariants, policy/result immutability,
+provenance identity, admission/hash integrity, facade/transport strictness, and
+failure of gap, overlap, foreign-cell, tail-state, or mixed-policy vessels. The
+configured content-identified `DE-0441LE-0441` reader exercises the published
+UT1-to-TT boundary path. This is not an external Pancha Pakshi current-cell
+oracle, independent-witness corroboration, or a new historical-accuracy claim.
+
+### Stage 2E Implementation Verification
+
+The admitted implementation was verified on 2026-07-20 with the project
+Python 3.14.3 `.venv`, `MOIRA_TEST_MODE=1`,
+`MOIRA_STRICT_KNOWN_ISSUES=1`, and downloads disabled:
+
+- `249` focused Stage 2A through Stage 2E engine, shared-solar-boundary,
+  Planetary Hours regression, admission/hash, public-contract/facade,
+  adversarial-export, and Pancha Pakshi FastAPI service/route-registration/
+  OpenAPI tests passed with no skips;
+- `4` dedicated live route-catalog and OpenAPI discoverability tests passed;
+- the configured content-identified `DE-0441LE-0441` reader exercised all `96`
+  published interior proportional boundaries across day and night halves at two
+  seasonal epochs; every UT1 boundary round-tripped to its stored TT boundary
+  and selected the following cell without tolerance or snapping;
+- a real in-process `TestClient` request through the configured engine returned
+  HTTP `200`, `selection_status="selected"`, one non-null cell, `0.0 s`
+  membership tolerance, the declared routing status, and no duplicated
+  materialization or 25-cell payload;
+- the live registry contained `423` non-documentation routes, `419` `/v1`
+  routes, and exactly `10` `/v1/pancha-pakshi` routes;
+- canonical SHA-256 recomputation produced manifest digest
+  `d2b5f8f1ae7e067d257eeb24b533be1d33349446d56d361ea59f4a71472eca70`
+  and Stage 2E decision digest
+  `4ddf0a5fa5b680fa83a7bb3052ecbc5d1a9c2f685c466290f22121dd02724d18`;
+  and
+- documentation consistency, changed-module compilation, Python 3.10 grammar,
+  package/native import identity, and tracked-diff whitespace checks passed.
+
+This receipt validates the deterministic policy, public contract, and
+reader-bound numerical behavior. It does not turn DE441, structural interval
+invariants, or the inherited Horizons solar-boundary fixture into an external
+Pancha Pakshi current-cell oracle.
+
 ## Stage 2D Solar-Proportional Materialization Addendum
 
 Stage 2D admits one further capability,
@@ -467,7 +705,7 @@ current bounded public status.
 | Source-artifact policy | Satisfied: witnesses are reference-only and never bundled; this is not an admission gate. |
 | Identity product | Satisfied for the named aksara/query-or-name-initial product; explicitly not natal Moon identity. |
 | Source-owned examples | Resolved into a complete source-owned Pūrva-night assignment oracle and confirmed Amara-night examples. |
-| Public vessels and transport | Deferred at this checkpoint; admitted later by the Phase 1 and Stage 2A through Stage 2D decisions above. |
+| Public vessels and transport | Deferred at this checkpoint; admitted later by the Phase 1 and Stage 2A through Stage 2G decisions above. |
 
 ## Validation Receipt
 
@@ -507,11 +745,16 @@ asserted.
    Pancha Pakshi witness rather than an adjacent omen or compatibility system.
 3. Preserve any disagreement by witness and text layer; do not merge doctrines
    or repair them by symmetry.
-4. Treat the admitted Stage 2D proportional materialization as modern policy;
-   source-attested or alternate proportional doctrine and proportional
-   current-cell selection require separate evidence and admission.
+4. Treat the admitted Stage 2D proportional materialization and Stage 2E
+   current-cell selection as modern policies; source-attested or alternate
+   proportional doctrines and alternate natal identities require separate
+   evidence and admission. Stage 2F lunar-paksha inference remains its own modern numeric
+   policy plus source-scoped mapping and may not be routed into a schedule
+   automatically.
 
-The present resting place is the corrected, tested, source-scoped public
-profile plus the separately named Stage 2A, Stage 2B, Stage 2C, and Stage 2D
-modern compositions. It is not a universal canon, and the unresolved research
-above must not be silently inferred through the public API.
+The present resting place is two tested, source-scoped public profiles: the
+corrected 1879 aksara schedule with the separately named Stage 2A through Stage
+2E modern compositions and Stage 2F source-mapped astronomical inference, plus
+the separate 2024 source table and Stage 2G modern natal-Moon composition.
+Neither is a universal canon, and unresolved or alternate doctrine must not be
+silently inferred through the public API.

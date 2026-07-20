@@ -278,6 +278,53 @@ def _solar_proportional_materialization() -> SimpleNamespace:
     )
 
 
+def _solar_proportional_current_cell_selection() -> SimpleNamespace:
+    materialization = _solar_proportional_materialization()
+    current_cell = materialization.cells[0]
+    requested_jd_tt = (
+        current_cell.start_jd_tt + current_cell.end_jd_tt
+    ) / 2.0
+    materialization.context.requested_jd_ut1 = (
+        materialization.anchor_jd_ut1
+        + (requested_jd_tt - materialization.anchor_jd_tt)
+    )
+    return SimpleNamespace(
+        materialization=materialization,
+        policy=SimpleNamespace(
+            policy_id=(
+                "solar_proportional_current_cell_half_open_"
+                "solar_precedence_v1"
+            ),
+            materialization_policy_id=(
+                "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+            ),
+            paksha_basis="caller_supplied_source_label",
+            selection_time_scale="reader_bound_tt",
+            interval_ownership="half_open",
+            solar_half_precedence=(
+                "resolve_governing_solar_half_before_selection"
+            ),
+            membership_tolerance_seconds=0.0,
+            coverage_requirement="complete_governing_solar_half",
+            required_match_count=1,
+            unmaterialized_solar_half_tail_status="not_applicable",
+            invalid_match_policy="fail_closed",
+            fixed_clock_mixing_status="not_performed",
+            astronomical_paksha_inference_status="not_performed",
+        ),
+        requested_jd_tt=requested_jd_tt,
+        selection_status="selected",
+        current_cell=current_cell,
+        provenance=replace(
+            materialization.provenance,
+            astronomical_routing_status=(
+                "solar_proportional_current_cell_selection_performed_"
+                "paksha_caller_supplied_no_fixed_clock_mixing_or_inference"
+            ),
+        ),
+    )
+
+
 def test_profiles_and_profile_info_expose_source_scope_without_a_default(
     client: TestClient,
 ) -> None:
@@ -286,7 +333,7 @@ def test_profiles_and_profile_info_expose_source_scope_without_a_default(
     assert profiles.status_code == 200
     catalog = profiles.json()
     assert catalog["default_profile_selected"] is False
-    assert catalog["total"] >= 1
+    assert catalog["total"] == 2
     descriptor = next(item for item in catalog["profiles"] if item["profile_id"] == _PROFILE_ID)
     assert descriptor["admission_status"] == "source_scoped_public"
     assert descriptor["default_selection_allowed"] is False
@@ -295,6 +342,18 @@ def test_profiles_and_profile_info_expose_source_scope_without_a_default(
         "nominal_schedule",
         "directed_relationships",
     }
+    natal_descriptor = next(
+        item
+        for item in catalog["profiles"]
+        if item["profile_id"]
+        == "bogamuni_chennai_2024_nakshatra_natal_identity"
+    )
+    assert natal_descriptor["product_kind"] == "natal_moon_bird_identity"
+    assert natal_descriptor["capabilities"] == [
+        "nakshatra_bird_mapping",
+        "natal_identity",
+    ]
+    assert natal_descriptor["default_selection_allowed"] is False
 
     response = client.get(f"/v1/pancha-pakshi/profiles/{_PROFILE_ID}")
 
@@ -1003,6 +1062,183 @@ def test_solar_proportional_route_rejects_implicit_or_mixed_timing_policy(
         )
 
 
+def test_solar_proportional_current_cell_route_returns_one_selected_cell(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    selection = _solar_proportional_current_cell_selection()
+    calls = []
+
+    def compute(_engine, request):
+        calls.append(request)
+        return selection
+
+    monkeypatch.setattr(
+        "moira_server.routers.pancha_pakshi."
+        "compute_solar_proportional_current_cell",
+        compute,
+    )
+    response = client.post(
+        "/v1/pancha-pakshi/schedule/solar-proportional/current-cell",
+        json={
+            "profile_id": _PROFILE_ID,
+            "dt": "2026-07-20T12:00:00-04:00",
+            "latitude": 13.0827,
+            "longitude": 80.2707,
+            "paksha": "purva",
+            "policy_id": (
+                "solar_proportional_current_cell_half_open_"
+                "solar_precedence_v1"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+    assert len(calls) == 1
+    assert calls[0].dt.isoformat() == "2026-07-20T16:00:00+00:00"
+    body = response.json()
+    assert body["profile_id"] == _PROFILE_ID
+    assert body["requested_jd_ut1"] == (
+        selection.materialization.context.requested_jd_ut1
+    )
+    assert body["requested_jd_tt"] == selection.requested_jd_tt
+    assert body["latitude"] == 13.0827
+    assert body["longitude"] == 80.2707
+    assert body["paksha"] == "purva"
+    assert body["half"] == "day"
+    assert body["weekday"] == "sunday"
+    assert body["policy"] == {
+        "policy_id": (
+            "solar_proportional_current_cell_half_open_solar_precedence_v1"
+        ),
+        "materialization_policy_id": (
+            "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+        ),
+        "paksha_basis": "caller_supplied_source_label",
+        "selection_time_scale": "reader_bound_tt",
+        "interval_ownership": "half_open",
+        "solar_half_precedence": (
+            "resolve_governing_solar_half_before_selection"
+        ),
+        "membership_tolerance_seconds": 0.0,
+        "coverage_requirement": "complete_governing_solar_half",
+        "required_match_count": 1,
+        "unmaterialized_solar_half_tail_status": "not_applicable",
+        "invalid_match_policy": "fail_closed",
+        "fixed_clock_mixing_status": "not_performed",
+        "astronomical_paksha_inference_status": "not_performed",
+    }
+    assert body["solar_half_duration_seconds_tt"] == 39600.0
+    assert body["selection_status"] == "selected"
+    assert body["current_cell"]["schedule_cell_index"] == 0
+    assert body["current_cell"]["start_offset_fraction"] == {
+        "numerator": 0,
+        "denominator": 1,
+    }
+    assert body["current_cell"]["end_offset_fraction"] == {
+        "numerator": 1,
+        "denominator": 24,
+    }
+    assert "cells" not in body
+    assert "local_solar_context" not in body
+    assert "materialization" not in body
+    assert body["provenance"]["astronomical_routing_status"] == (
+        "solar_proportional_current_cell_selection_performed_"
+        "paksha_caller_supplied_no_fixed_clock_mixing_or_inference"
+    )
+
+
+def test_solar_proportional_current_cell_route_rejects_implicit_or_mixed_policy(
+    client: TestClient,
+) -> None:
+    path = "/v1/pancha-pakshi/schedule/solar-proportional/current-cell"
+    base = {
+        "profile_id": _PROFILE_ID,
+        "dt": "2026-07-20T16:00:00Z",
+        "latitude": 13.0827,
+        "longitude": 80.2707,
+        "paksha": "purva",
+        "policy_id": (
+            "solar_proportional_current_cell_half_open_solar_precedence_v1"
+        ),
+    }
+    responses = (
+        (
+            client.post(
+                path,
+                json={key: value for key, value in base.items() if key != "policy_id"},
+            ),
+            "Field required",
+        ),
+        (
+            client.post(
+                path,
+                json={
+                    **base,
+                    "policy_id": (
+                        "solar_proportional_nominal_offsets_over_"
+                        "governing_half_tt_v1"
+                    ),
+                },
+            ),
+            "solar_proportional_current_cell_half_open_solar_precedence_v1",
+        ),
+        (
+            client.post(
+                path,
+                json={
+                    **base,
+                    "policy_id": (
+                        "fixed_clock_current_cell_half_open_solar_precedence_v1"
+                    ),
+                },
+            ),
+            "solar_proportional_current_cell_half_open_solar_precedence_v1",
+        ),
+        (
+            client.post(path, json={**base, "dt": "2026-07-20T16:00:00"}),
+            "timezone-aware",
+        ),
+        (
+            client.post(path, json={**base, "latitude": -90.1}),
+            "greater than or equal to -90",
+        ),
+        (
+            client.post(path, json={**base, "longitude": 180.1}),
+            "less than or equal to 180",
+        ),
+        (
+            client.post(path, json={**base, "current_cell": True}),
+            "Extra inputs are not permitted",
+        ),
+        (
+            client.post(path, json={**base, "half": "day"}),
+            "Extra inputs are not permitted",
+        ),
+        (
+            client.post(path, json={**base, "membership_tolerance_seconds": 1}),
+            "Extra inputs are not permitted",
+        ),
+        (
+            client.post(path, json={**base, "solar_half_wrap": "repeat"}),
+            "Extra inputs are not permitted",
+        ),
+        (
+            client.post(path, json={**base, "infer_paksha": True}),
+            "Extra inputs are not permitted",
+        ),
+        (
+            client.post(path, json={**base, "natal_bird": "owl"}),
+            "Extra inputs are not permitted",
+        ),
+    )
+    for response, message_fragment in responses:
+        _assert_validation_envelope(
+            response,
+            message_fragment=message_fragment,
+        )
+
+
 def test_directed_relationship_route_does_not_infer_reciprocity(client: TestClient) -> None:
     response = client.post(
         "/v1/pancha-pakshi/relationships/directed",
@@ -1055,14 +1291,18 @@ def test_pancha_pakshi_routes_are_registered(client: TestClient) -> None:
         if route.path.startswith("/v1/pancha-pakshi/")
     }
 
+    assert len(paths) == 12
     assert paths == {
         "/v1/pancha-pakshi/profiles",
         "/v1/pancha-pakshi/profiles/{profile_id}",
         "/v1/pancha-pakshi/identity/aksara",
+        "/v1/pancha-pakshi/identity/natal-moon",
+        "/v1/pancha-pakshi/context/astronomical-paksha",
         "/v1/pancha-pakshi/schedule/fixed-clock",
         "/v1/pancha-pakshi/schedule/fixed-clock/current-cell",
         "/v1/pancha-pakshi/schedule/nominal",
         "/v1/pancha-pakshi/schedule/solar-proportional",
+        "/v1/pancha-pakshi/schedule/solar-proportional/current-cell",
         "/v1/pancha-pakshi/context/local-solar",
         "/v1/pancha-pakshi/relationships/directed",
     }
@@ -1307,3 +1547,96 @@ def test_pancha_pakshi_openapi_is_strict_typed_and_source_scoped(
         "exclusiveMinimum"
     ] == 0.0
     assert "current_cell" not in proportional_response["properties"]
+    proportional_current_request = components[
+        "PanchaPakshiSolarProportionalCurrentCellRequest"
+    ]
+    assert proportional_current_request["additionalProperties"] is False
+    assert set(proportional_current_request["required"]) == {
+        "profile_id",
+        "dt",
+        "latitude",
+        "longitude",
+        "paksha",
+        "policy_id",
+    }
+    assert proportional_current_request["properties"]["dt"]["format"] == (
+        "date-time"
+    )
+    assert proportional_current_request["properties"]["policy_id"]["const"] == (
+        "solar_proportional_current_cell_half_open_solar_precedence_v1"
+    )
+    proportional_current_policy = components[
+        "PanchaPakshiSolarProportionalCurrentCellSelectionPolicyResponse"
+    ]
+    assert proportional_current_policy["additionalProperties"] is False
+    assert set(proportional_current_policy["required"]) == {
+        "policy_id",
+        "materialization_policy_id",
+        "paksha_basis",
+        "selection_time_scale",
+        "interval_ownership",
+        "solar_half_precedence",
+        "membership_tolerance_seconds",
+        "coverage_requirement",
+        "required_match_count",
+        "unmaterialized_solar_half_tail_status",
+        "invalid_match_policy",
+        "fixed_clock_mixing_status",
+        "astronomical_paksha_inference_status",
+    }
+    assert proportional_current_policy["properties"]["policy_id"]["const"] == (
+        "solar_proportional_current_cell_half_open_solar_precedence_v1"
+    )
+    assert proportional_current_policy["properties"]["materialization_policy_id"][
+        "const"
+    ] == "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+    assert proportional_current_policy["properties"]["selection_time_scale"][
+        "const"
+    ] == "reader_bound_tt"
+    assert proportional_current_policy["properties"]["interval_ownership"][
+        "const"
+    ] == "half_open"
+    assert proportional_current_policy["properties"][
+        "membership_tolerance_seconds"
+    ]["const"] == 0.0
+    assert proportional_current_policy["properties"]["coverage_requirement"][
+        "const"
+    ] == "complete_governing_solar_half"
+    assert proportional_current_policy["properties"]["required_match_count"][
+        "const"
+    ] == 1
+    assert proportional_current_policy["properties"][
+        "unmaterialized_solar_half_tail_status"
+    ]["const"] == "not_applicable"
+    assert proportional_current_policy["properties"]["invalid_match_policy"][
+        "const"
+    ] == "fail_closed"
+    proportional_current_response = components[
+        "PanchaPakshiSolarProportionalCurrentCellResponse"
+    ]
+    assert proportional_current_response["additionalProperties"] is False
+    assert set(proportional_current_response["required"]) == {
+        "profile_id",
+        "requested_jd_ut1",
+        "requested_jd_tt",
+        "latitude",
+        "longitude",
+        "paksha",
+        "half",
+        "weekday",
+        "policy",
+        "anchor_jd_tt",
+        "anchor_jd_ut1",
+        "governing_solar_half_end_jd_tt",
+        "governing_solar_half_end_jd_ut1",
+        "solar_half_duration_seconds_tt",
+        "selection_status",
+        "current_cell",
+        "provenance",
+    }
+    assert proportional_current_response["properties"]["selection_status"][
+        "const"
+    ] == "selected"
+    assert proportional_current_response["properties"]["current_cell"] == {
+        "$ref": "#/components/schemas/PanchaPakshiSolarProportionalCellResponse"
+    }

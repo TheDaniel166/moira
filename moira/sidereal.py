@@ -281,7 +281,7 @@ _STAR_ANCHORED: dict[str, tuple[str, float]] = {
 }
 
 
-def _star_anchored_ayanamsa(system: str, jd: float) -> float:
+def _star_anchored_ayanamsa_at_tt(system: str, jd_tt: float) -> float:
     """
     Compute a star-anchored ayanamsa from the actual apparent tropical
     longitude of the anchor star.
@@ -297,23 +297,61 @@ def _star_anchored_ayanamsa(system: str, jd: float) -> float:
     to the caller rather than being silently swallowed.
     """
     from .stars import star_at
-    from .julian import ut_to_tt
-
     star_name, target_sid = _STAR_ANCHORED[system]
 
     try:
-        # star_at expects JD in TT; difference from UT is ~1 min, negligible
-        # for proper motion but we compute it correctly anyway
-        jd_tt = ut_to_tt(jd)
         star = star_at(star_name, jd_tt)
         return (star.longitude - target_sid) % 360.0
     except (LookupError, FileNotFoundError):
         # Star not in catalog or registry absent — fall back to polynomial
         base = _AYANAMSA_AT_J2000[system]
-        jd_tt = ut_to_tt(jd)
         extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd_tt)
         dpsi_deg, _ = nutation(jd_tt)
         return base + general_precession_in_longitude(jd_tt) + extra_drift + dpsi_deg
+
+
+def _ayanamsa_at_tt(
+    jd_tt: float,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    mode: str = "true",
+) -> float:
+    """Compute an ayanamsa from an epoch already expressed in TT.
+
+    This private boundary exists for readers that have already composed their
+    kernel-specific UT1-to-TT clock path. It never performs another clock
+    conversion. Public callers continue to use :func:`ayanamsa`, whose input
+    contract remains UT.
+    """
+    if mode not in ("mean", "true"):
+        raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
+
+    if isinstance(system, UserDefinedAyanamsa):
+        precession = general_precession_in_longitude(jd_tt)
+        T = centuries_from_j2000(jd_tt)
+        base = system.reference_value_j2000 + precession + system.drift_per_century * T
+        if mode == "true":
+            dpsi_deg, _ = nutation(jd_tt)
+            return base + dpsi_deg
+        return base
+
+    if system not in _AYANAMSA_AT_J2000:
+        raise ValueError(
+            f"Unknown ayanamsa system '{system}'. "
+            f"Choose from: {list(_AYANAMSA_AT_J2000)}"
+        )
+
+    if mode == "true" and system in _STAR_ANCHORED:
+        return _star_anchored_ayanamsa_at_tt(system, jd_tt)
+
+    base = _AYANAMSA_AT_J2000[system]
+    precession = general_precession_in_longitude(jd_tt)
+    extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd_tt)
+
+    if mode == "mean":
+        return base + precession + extra_drift
+
+    dpsi_deg, _ = nutation(jd_tt)
+    return base + precession + extra_drift + dpsi_deg
 
 
 def ayanamsa(
@@ -358,38 +396,19 @@ def ayanamsa(
     """
     if mode not in ("mean", "true"):
         raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
-
     jd_tt = ut_to_tt(jd)
+    return _ayanamsa_at_tt(jd_tt, system, mode)
 
-    # --- UserDefinedAyanamsa branch -----------------------------------------
-    if isinstance(system, UserDefinedAyanamsa):
-        precession = general_precession_in_longitude(jd_tt)
-        T = centuries_from_j2000(jd_tt)
-        base = system.reference_value_j2000 + precession + system.drift_per_century * T
-        if mode == "true":
-            dpsi_deg, _ = nutation(jd_tt)
-            return base + dpsi_deg
-        return base
 
-    # --- Named system branch ------------------------------------------------
-    if system not in _AYANAMSA_AT_J2000:
-        raise ValueError(
-            f"Unknown ayanamsa system '{system}'. "
-            f"Choose from: {list(_AYANAMSA_AT_J2000)}"
-        )
-
-    if mode == "true" and system in _STAR_ANCHORED:
-        return _star_anchored_ayanamsa(system, jd)
-
-    base = _AYANAMSA_AT_J2000[system]
-    precession = general_precession_in_longitude(jd_tt)
-    extra_drift = _AYANAMSA_DRIFT_PER_CENTURY.get(system, 0.0) * centuries_from_j2000(jd_tt)
-
-    if mode == "mean":
-        return base + precession + extra_drift
-    else:  # "true", polynomial systems
-        dpsi_deg, _ = nutation(jd_tt)
-        return base + precession + extra_drift + dpsi_deg
+def _tropical_to_sidereal_at_tt(
+    tropical_longitude: float,
+    jd_tt: float,
+    system: 'str | UserDefinedAyanamsa' = Ayanamsa.LAHIRI,
+    mode: str = "true",
+) -> float:
+    """Convert a tropical longitude using an epoch already expressed in TT."""
+    ayan = _ayanamsa_at_tt(jd_tt, system, mode)
+    return (tropical_longitude - ayan) % 360.0
 
 
 def tropical_to_sidereal(
@@ -405,8 +424,10 @@ def tropical_to_sidereal(
     -------
     Sidereal longitude in degrees [0, 360)
     """
-    ayan = ayanamsa(jd, system, mode)
-    return (tropical_longitude - ayan) % 360.0
+    if mode not in ("mean", "true"):
+        raise ValueError(f"mode must be 'mean' or 'true', got {mode!r}")
+    jd_tt = ut_to_tt(jd)
+    return _tropical_to_sidereal_at_tt(tropical_longitude, jd_tt, system, mode)
 
 
 def sidereal_to_tropical(
@@ -464,6 +485,38 @@ NAKSHATRA_LORDS: list[str] = [
 
 # 4 padas (quarters) per nakshatra, each = 3°20' = 3.3333°
 PADA_SPAN = NAKSHATRA_SPAN / 4
+
+
+def _nakshatra_sector(sidereal_longitude: float) -> tuple[float, int, float]:
+    """Classify a longitude in the 27 equal half-open sidereal sectors.
+
+    Internal boundaries are the rational angles ``k * 40/3`` degrees. A
+    value equal to the closest binary float for such a boundary, or exactly
+    its first predecessor float, belongs to the following nakshatra. The
+    recovery is deliberately bounded: the second predecessor remains in the
+    preceding sector, and the predecessor of 360 degrees is never moved
+    across the zodiac seam.
+
+    Returns ``(normalized_longitude, zero_based_index, degrees_in_sector)``.
+    """
+    sid_lon = sidereal_longitude % 360.0
+
+    # A negative value infinitesimally below zero can round its positive
+    # remainder to 360.0. Preserve its lawful place in Revati rather than
+    # turning it into the 0-degree seam.
+    if sid_lon == 360.0:
+        sid_lon = math.nextafter(360.0, -math.inf)
+
+    scaled = sid_lon * 3.0 / 40.0
+    candidate = int(round(scaled))
+    if 1 <= candidate < 27:
+        boundary = candidate * 40.0 / 3.0
+        if sid_lon == boundary or sid_lon == math.nextafter(boundary, -math.inf):
+            return boundary, candidate, 0.0
+
+    idx = min(int(math.floor(scaled)), 26)
+    left_boundary = idx * 40.0 / 3.0
+    return sid_lon, idx, sid_lon - left_boundary
 
 
 @dataclass(slots=True)
@@ -552,6 +605,22 @@ class NakshatraPosition:
                 f"[sidereal {self.sidereal_lon:.4f}°]")
 
 
+def _nakshatra_position_from_sidereal(
+    sidereal_longitude: float,
+) -> NakshatraPosition:
+    """Build the canonical nakshatra vessel from a sidereal longitude."""
+    sid_lon, idx, degrees_in = _nakshatra_sector(sidereal_longitude)
+    pada = min(int(degrees_in / PADA_SPAN) + 1, 4)
+    return NakshatraPosition(
+        nakshatra=NAKSHATRA_NAMES[idx],
+        nakshatra_index=idx,
+        nakshatra_lord=NAKSHATRA_LORDS[idx],
+        pada=pada,
+        degrees_in=degrees_in,
+        sidereal_lon=sid_lon,
+    )
+
+
 def nakshatra_of(
     tropical_longitude: float,
     jd: float,
@@ -571,19 +640,7 @@ def nakshatra_of(
     NakshatraPosition dataclass
     """
     sid_lon = tropical_to_sidereal(tropical_longitude, jd, system=ayanamsa_system)
-    idx = int(sid_lon / NAKSHATRA_SPAN) % 27
-    degrees_in = sid_lon - idx * NAKSHATRA_SPAN
-    pada = int(degrees_in / PADA_SPAN) + 1
-    # Clamp pada to [1, 4] — floating-point safety at the very boundary
-    pada = min(pada, 4)
-    return NakshatraPosition(
-        nakshatra=NAKSHATRA_NAMES[idx],
-        nakshatra_index=idx,
-        nakshatra_lord=NAKSHATRA_LORDS[idx],
-        pada=pada,
-        degrees_in=degrees_in,
-        sidereal_lon=sid_lon,
-    )
+    return _nakshatra_position_from_sidereal(sid_lon)
 
 
 def all_nakshatras_at(

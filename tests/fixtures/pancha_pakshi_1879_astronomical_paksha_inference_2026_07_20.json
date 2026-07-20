@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20",
+  "decided_at_utc": "2026-07-20T20:06:19Z",
+  "decision_kind": "source_mapping_and_modern_astronomical_paksha_inference_admission",
+  "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+  "prior_admission": {
+    "decision_id": "pancha_pakshi_1879_solar_proportional_current_cell_2026_07_20",
+    "fixture_path": "pancha_pakshi_1879_solar_proportional_current_cell_2026_07_20.json",
+    "fixture_sha256": "4ddf0a5fa5b680fa83a7bb3052ecbc5d1a9c2f685c466290f22121dd02724d18",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF"
+  },
+  "source_reading_evidence": {
+    "evidence_id": "pancha_pakshi_1879_lunar_paksha_mapping_reading_2026_07_20",
+    "fixture_path": "pancha_pakshi_1879_lunar_paksha_mapping_reading_2026_07_20.json",
+    "fixture_sha256": "9ce3686a90a41af916a370b8d4ec04637f22a1d32f872180c6d8a1b790e25a0e",
+    "purva_mapping_locator_id": "ia_n16",
+    "amara_mapping_locator_id": "ia_n26",
+    "reading_status": "machine_assisted_visual_reading_pending_competent_tamil_review"
+  },
+  "profile_transition": {
+    "path": "moira/data/pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
+    "prior_sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+    "current_sha256": "4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64",
+    "prior_schema_version": 2,
+    "current_schema_version": 3,
+    "profile_content_changed": true,
+    "normalized_source_fact_added": "lunar_paksha_mapping",
+    "admission_status": "source_scoped_public",
+    "product_kind": "aksara_prasna_operating_schedule",
+    "default_selection_allowed": false
+  },
+  "manifest_transition": {
+    "prior_manifest_sha256": "d2b5f8f1ae7e067d257eeb24b533be1d33349446d56d361ea59f4a71472eca70",
+    "current_manifest_sha256": "a4fdceee4089c2812d9d77be763c1738152a63231b3f06847ea93383e4a3b327",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "prior_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context",
+      "fixed_clock_materialization",
+      "fixed_clock_current_cell_selection",
+      "solar_proportional_materialization",
+      "solar_proportional_current_cell_selection"
+    ],
+    "current_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context",
+      "astronomical_paksha_inference",
+      "fixed_clock_materialization",
+      "fixed_clock_current_cell_selection",
+      "solar_proportional_materialization",
+      "solar_proportional_current_cell_selection"
+    ],
+    "added_capability": "astronomical_paksha_inference",
+    "profile_product_kind_changed": false,
+    "profile_admission_status_changed": false,
+    "default_selection_policy_changed": false
+  },
+  "computational_object": {
+    "engine_function": "pancha_pakshi_astronomical_paksha_at",
+    "facade_method": "Moira.pancha_pakshi_astronomical_paksha",
+    "rest_route": "POST /v1/pancha-pakshi/context/astronomical-paksha",
+    "result_vessel": "PanchaPakshiAstronomicalPakshaInference",
+    "policy_vessel": "PanchaPakshiAstronomicalPakshaInferencePolicy",
+    "astronomical_enum": "PanchaPakshiAstronomicalPaksha",
+    "policy": {
+      "policy_id": "apparent_geocentric_moon_sun_longitude_paksha_half_open_v1",
+      "input_time_scale": "ut1",
+      "ephemeris_time_scale": "reader_bound_tt",
+      "position_origin": "geocentric",
+      "position_frame": "true_ecliptic_of_date",
+      "apparent": true,
+      "aberration": true,
+      "grav_deflection": true,
+      "nutation": true,
+      "elongation_definition": "normalized_moon_longitude_minus_sun_longitude",
+      "elongation_domain": "degrees_half_open_0_360",
+      "shukla_interval": "0_inclusive_180_exclusive",
+      "krishna_interval": "180_inclusive_360_exclusive",
+      "boundary_tolerance_degrees": 0.0,
+      "ayanamsa_status": "not_applied_common_longitude_offset_cancels",
+      "profile_mapping_basis": "direct_source_attested_waxing_waning",
+      "purva_source_locator_id": "ia_n16",
+      "amara_source_locator_id": "ia_n26",
+      "schedule_selection_status": "not_performed",
+      "materialization_status": "not_performed",
+      "natal_identity_status": "not_performed"
+    },
+    "provenance_routing_status": "astronomical_paksha_inference_performed_source_mapped_no_schedule_materialization_or_natal_identity",
+    "engine_inputs": [
+      "explicit_profile_id",
+      "jd_ut1"
+    ],
+    "facade_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "rest_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "location_input": "none_geocentric_product",
+    "caller_supplied_paksha_input": "none",
+    "derived_values": [
+      "reader_bound_jd_tt",
+      "apparent_geocentric_sun_longitude",
+      "apparent_geocentric_moon_longitude",
+      "normalized_moon_minus_sun_elongation",
+      "astronomical_paksha",
+      "source_mapped_profile_paksha"
+    ]
+  },
+  "boundary_doctrine": {
+    "elongation_formula": "(moon_longitude_deg - sun_longitude_deg) modulo 360 degrees",
+    "shukla_ownership": "0 <= elongation < 180 degrees",
+    "krishna_ownership": "180 <= elongation < 360 degrees",
+    "exact_new_moon_owner": "shukla_and_purva",
+    "exact_full_moon_owner": "krishna_and_amara",
+    "rounded_360_normalization": "normalize_to_0_degrees",
+    "tolerance_degrees": 0.0,
+    "snapping": "none",
+    "civil_day_override": "none",
+    "topocentric_override": "none"
+  },
+  "authority_and_provenance": {
+    "source_mapping_authority": "named_1879_witness_direct_attestation_at_ia_n16_and_ia_n26",
+    "source_mapping_scope": "named_source_scoped_profile_only",
+    "astronomical_phase_object_authority": "apparent_geocentric_ecliptic_longitude_excess",
+    "numeric_boundary_policy_origin": "modern_moira_half_open_policy",
+    "ephemeris_authority": "reader_bound_jpl_de_le_kernel",
+    "ayanamsa_role": "none_common_longitude_offset_cancels",
+    "independent_witness_corroboration_status": "not_performed",
+    "universal_canon_status": "not_claimed"
+  },
+  "validation_evidence": {
+    "evidence_classes": [
+      "primary_source_mapping_attestation",
+      "physical_and_geometric_invariants",
+      "internal_panchanga_coherence",
+      "reader_bound_de441_execution",
+      "transport_contract_validation"
+    ],
+    "synthetic_boundary_matrix": "0, immediately below 180, 180, immediately above 180, immediately below 360, and normalized 360",
+    "time_scale_semantics": "UTC crosses to UT1 once at the facade boundary and UT1 converts once to the reader-bound TT consumed by both body evaluations",
+    "panchanga_semantics": "Tithi and Karana use direct tropical Moon-minus-Sun elongation so ayanamsa cancellation cannot change exact boundary ownership",
+    "source_semantics": "each inferred profile label carries exactly its own direct source locator",
+    "capability_semantics": "profile admission and astronomical_paksha_inference capability are checked before kernel access",
+    "transport_semantics": "the request accepts only profile_id, aware dt, and the exact policy ID",
+    "external_pancha_pakshi_oracle_status": "none",
+    "accuracy_claim": "no_new_phase_event_timing_or_universal_pancha_pakshi_accuracy_claim"
+  },
+  "public_claim": "Given an explicit admitted profile and UT1 instant, classify the apparent geocentric Moon-Sun longitude excess under exact half-open ownership and return the directly source-mapped Purva or Amara label with its evidence locator.",
+  "public_nonclaims": [
+    "a universal or default Pancha Pakshi canon",
+    "independent-witness corroboration of the 1879 terminology",
+    "source attestation of Moira's exact zero-degree and 180-degree boundary ownership",
+    "topocentric or location-specific lunar paksha",
+    "schedule selection, materialization, or current-cell selection",
+    "automatic insertion of inferred paksha into existing schedule routes",
+    "natal Moon, nakshatra, or birth-bird identity",
+    "condition evaluation, scoring, authority birds, subdivisions, or window search",
+    "external Pancha Pakshi oracle parity"
+  ],
+  "artifact_distribution_boundary": {
+    "source_artifact_policy_changed": false,
+    "profile_source_artifact_added": false,
+    "policy_effect": "Stage 2F stores only normalized source facts, locators, Moira-authored policy, and validation metadata; it packages no archival scan, OCR, page image, copied source expression, or third-party translation."
+  }
+}
