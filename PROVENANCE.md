@@ -256,11 +256,11 @@ admitted source row. Computational guards admit finite Delta-T years only in
 `[-40000000, +40000000]`. These binary64 representability bounds are not
 scientific-validity or source-coverage claims.
 
-## Pancha Pakshi research witnesses
+## Pancha Pakshi source-scoped witnesses
 
-Moira's Pancha Pakshi work is an internal, non-admitted research surface. The
-private data records normalized computational facts and locators from the 1879
-Tamil print catalogued by Internet Archive as
+Moira admits one explicitly named Pancha Pakshi profile as a source-scoped
+public product. Its private ingestion data records normalized computational
+facts and locators from the 1879 Tamil print catalogued by Internet Archive as
 [`dli.rmrl.000451_images`](https://archive.org/details/dli.rmrl.000451_images).
 The source is traditionally attributed to Agastya; that attribution is
 bibliographic metadata, not a verified historical-authorship claim. The print
@@ -271,7 +271,7 @@ third-party translations.
 
 Internet Archive metadata classifies `dli.rmrl.000451_images.zip` as the
 original image archive and `dli.rmrl.000451.pdf` as a derivative PDF. The
-private profile retains the archive MD5/SHA-1 identities of both, plus the
+source-scoped profile retains the archive MD5/SHA-1 identities of both, plus the
 locally verified PDF SHA-256. Those hashes identify the exact witness used for
 research; they do not import or redistribute either file. The same metadata
 names Ti. Kandasami Pillai as having reviewed the edition. His exact
@@ -279,12 +279,72 @@ contribution and life dates remain unresolved bibliographic questions, but
 they do not create a Moira distribution issue because no source expression is
 copied into the package.
 
-The internal profile `agastya_madras_1879_akshara_fixed_clock` is restricted
-to the witness's query/name-letter operating schedule and fixed-clock timing.
-It must not be represented as a natal-Moon canon. Exact source locators and
-archive file checksums are retained in the machine-readable profile. The
-manifest retains the canonical profile digest, and the runtime loader rejects
-a data/manifest hash mismatch.
+The public profile `agastya_madras_1879_akshara_fixed_clock` is restricted to
+the witness's aksara/query-or-name-initial operating schedule, fixed-clock
+timing, and directed relationship matrix. It must not be represented as a
+natal-Moon canon. Exact source locators and archive file checksums are retained
+in the machine-readable profile. The schema-v2 manifest owns its
+`source_scoped_public` decision, admitted capabilities, and explicit
+`default_selection_allowed=false` policy; the runtime loader rejects a
+data/manifest hash mismatch or capability/product disagreement.
+
+Stage 2A adds `astronomical_context` through the explicitly modern Moira policy
+`local_solar_day_explicit_paksha_v1`; it does not attribute that composition to
+the 1879 witness. The low-level engine accepts a UT1 instant and location,
+while datetime-facing facade and REST callers supply a timezone-aware instant
+that is normalized to UTC through the established civil-anchor conversion.
+The policy uses the existing configured-reader-backed topocentric
+`-0.833`-degree solar-altitude crossings to resolve the governing sunrise,
+sunset, and next sunrise. The observer elevation is explicitly fixed at `0 m`;
+the altitude signal is unrefracted, while the threshold incorporates
+conventional standard refraction and solar semidiameter. It derives the
+day/night half and the local-mean-solar weekday at the governing sunrise, then
+selects the unchanged nominal source schedule using an explicit caller-supplied
+Purva or Amara label.
+
+This context product does not infer paksha from lunar geometry, proportionally
+stretch nominal durations, convert nazhigai offsets to Julian Days or
+datetimes, or assert a current activity. The underlying profile document and
+its canonical SHA-256 remain unchanged. The additive
+`pancha_pakshi_1879_local_solar_context_2026_07_20.json` decision chains the
+modern capability to the earlier source-scoped admission without raising its
+evidence status to `corroborated_public`.
+
+Stage 2B separately adds `fixed_clock_materialization` through the explicitly
+modern Moira policy
+`fixed_24_minute_nazhigai_from_local_solar_half_start_v1`. The underlying 1879
+profile remains unchanged: it continues to own the exact nominal
+thirty-nazhigai schedule, rational offsets, and source locators, but it is not
+credited with the modern astronomical/time-scale composition. The University
+of Madras [*Tamil Lexicon*, page 2231](https://dsal.uchicago.edu/cgi-bin/app/tamil-lex_query.py?qs=%E0%AE%A8%E0%AE%BE%E0%AE%B4%E0%AE%BF%E0%AE%95%E0%AF%88&searchhws=yes&matchtype=exact)
+supplies the lexical unit definition that one nazhigai is sixty vinadi or
+twenty-four minutes. The [IERS TT glossary](https://www.iers.org/SharedDocs/Glossareintraege/EN/T/tt)
+states that TT is conventionally realized as `TAI + 32.184 s`, and
+[IERS Technical Note 29](https://www.iers.org/SharedDocs/Publikationen/EN/IERS/Publications/tn/TechnNote29/tn29.pdf?__blob=publicationFile&v=1)
+states that the TT unit agrees with the SI second on the geoid.
+
+The policy selects the unchanged nominal schedule through Stage 2A, anchors a
+day schedule at governing topocentric sunrise or a night schedule at governing
+topocentric sunset, and converts each exact offset using
+`1 nazhigai = 1,440 SI seconds`. The offset is added on reader-bound TT and each
+endpoint is projected to UT1. Thirty nazhigai therefore always spans exactly
+`43,200` SI seconds on TT. The fixed end is never clipped or stretched to the
+astronomical sunset or next sunrise. Instead, the signed
+`fixed_end_jd_tt - solar_end_jd_tt` residual and its
+`before`/`coalescent`/`after` relation remain visible; absolute residuals no
+greater than `0.0001 s` are coalescent under an explicitly numerical policy.
+The result deliberately does not select a current cell, so an instant can
+remain inside the astronomical half while lying outside the fixed schedule.
+Solar-proportional scaling remains a different, non-admitted capability.
+
+The Stage 2B authority roles remain separate. The 1879 witness governs nominal
+schedule facts; the *Tamil Lexicon* governs the fixed nazhigai unit; IERS
+governs the TT/SI-second time-scale basis; and the frozen Stage 2A Horizons
+comparison governs only the solar anchor. The additive
+`pancha_pakshi_1879_fixed_clock_materialization_2026_07_20.json` decision binds
+those roles, the unchanged profile hash, the frozen Stage 2A decision, and the
+manifest-only capability transition. It is not an external Pancha Pakshi
+current-cell oracle or independent-witness corroboration.
 
 Later Bogar- and Uromarisi-attributed editions and Sarasvati Mahal Library
 series 213 are retained only as metadata in a conflict ledger. The latter's
@@ -298,31 +358,40 @@ transcriptions are packaged.
 Moira's MIT license covers Moira-authored code, schema, and prose. Archival
 artifacts are outside the distributed product rather than materials Moira
 attempts to relicense. Only independently normalized symbolic rules,
-bibliographic facts, hashes, and locators are eligible for a profile. Public
-admission is blocked by unreconciled source readings and incomplete doctrinal
-validation, not by a blank archive license field, contributor biography, or a
-separate archival-rights clearance step. Because the standing policy forbids
-bundling protected source expression, archival-artifact rights review is
-outside Moira's Pancha Pakshi admission process.
+bibliographic facts, hashes, and locators are eligible for a profile. The
+absence of competent-human Tamil review and independent-witness collation
+limits the current claim to this named machine-reconciled witness; it prevents
+a corroborated, generalized, or default-canon claim but does not block the
+narrow source-scoped public product. A blank archive license field,
+contributor biography, or separate archival-rights clearance step does not
+govern admission. The standing non-bundling policy keeps protected source
+expression outside Moira's distributed product.
 
-The governing research boundary, conflicts, fail-closed invariants, and public
-admission criteria are documented in
+The governing research boundary, admission tiers, conflicts, fail-closed
+invariants, and public contract are documented in
 [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
-There are intentionally no Pancha Pakshi root exports, facade methods, or REST
-routes at this stage.
+Public access is additive through `moira.pancha_pakshi`, package-root and
+`moira.vedic` exports, five kernel-free and two kernel-backed `Moira` methods,
+and seven explicit-profile `/v1/pancha-pakshi` routes. No API selects a default
+profile or a current schedule cell.
 
-The 2026-07-20 blind and representative-grid review is recorded in
+The 2026-07-20 blind, representative-grid, and later adjudicating reviews are
+recorded in
 [`PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md`](./wiki/05_research/PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md).
-Both frozen source records agree with the profile on the duration surface and
-the numeric `30/5/6` structure of the displayed Pūrva-day half, but the grid
-record does not establish a full day/night scope. The blind record alone also
-matches the full temporal model, vowel map, and three weekday-seed surfaces;
-those are one-source/profile matches, not independent consensus. Material
-night-grid, Amara-night seed, relationship, and table-semantic disagreements
-remain. The reconciliation is explicitly non-executable and is not an
-external authority oracle. The blind reading and representative-grid reading
-are preserved as separate hash-bound records;
-reconciliation cannot silently rewrite either source record.
+The original two records remain frozen with their disagreements intact. The
+later multi-pass page-image adjudication established the full `30/5/6`
+day/night scope and table axes, confirmed the Amara-night schedule and complete
+directed relationship matrix, and demonstrated that the prior Pūrva-night
+generator was wrong. The corrected source-scoped profile treats identified grids as
+bird/activity assignment evidence while taking chronology only from explicit
+prose and verse. That reconciliation remains machine-assisted historical
+evidence, not competent-human Tamil sign-off or an external authority oracle;
+it cannot silently rewrite either earlier source record. The additive
+`pancha_pakshi_1879_public_admission_2026_07_20.json` decision links the former
+and current profile hashes and records the narrower source-scoped public claim,
+capabilities, nonclaims, evidence limits, and unchanged computational
+projection. Admission and provenance metadata are deliberately outside that
+projection because the migration changes them.
 
 ## Provenance history
 

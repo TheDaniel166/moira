@@ -6,11 +6,11 @@ kind and admission status.  The only initial-vowel identity implemented here
 is the 1879 witness's *aksara* (question/name-initial) identity; it is not a
 natal Moon or nakshatra identity.
 
-The 1879 tables are materialized from the current reading of four source-stated
-transition rules.  Independent review has not reconciled the printed-grid
-semantics, so those grids remain non-executable review evidence rather than
-corroboration.  Each generated cell retains the governing rule and duration
-locators plus separately labelled grid-review locators.
+The 1879 tables are materialized from the machine-reconciled reading of four
+source-stated transition rules.  Identified grid axes govern bird/activity
+assignments, while explicit prose and verse govern chronology; visual grid
+order is never treated as chronological authority.  Each generated cell
+retains the governing rule, grid, and duration locators.
 
 No sunrise scaling, astronomical paksha routing, scoring, cross-witness
 relationship normalization, vinadi subdivision, or natal mapping is performed
@@ -32,6 +32,29 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from .pancha_pakshi import (
+    PanchaPakshiActivity,
+    PanchaPakshiAdmissionStatus,
+    PanchaPakshiBird,
+    PanchaPakshiCapability,
+    PanchaPakshiConflictWitness,
+    PanchaPakshiDataError,
+    PanchaPakshiDirectedRelationship,
+    PanchaPakshiHalf,
+    PanchaPakshiInitialVowelIdentity,
+    PanchaPakshiOmission,
+    PanchaPakshiPaksha,
+    PanchaPakshiProfileDescriptor,
+    PanchaPakshiProfileInfo,
+    PanchaPakshiProvenance,
+    PanchaPakshiRelation,
+    PanchaPakshiSchedule,
+    PanchaPakshiScheduleCell,
+    PanchaPakshiSource,
+    PanchaPakshiSourceLocator,
+    PanchaPakshiWeekday,
+)
+
 
 _DATA_DIRECTORY = Path(__file__).resolve().parent / "data"
 _MANIFEST_PATH = _DATA_DIRECTORY / "pancha_pakshi_manifest.json"
@@ -39,53 +62,6 @@ _HASH_CANONICALIZATION = (
     "UTF-8 text with CRLF and CR normalized to LF before hashing"
 )
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
-
-
-class PanchaPakshiDataError(RuntimeError):
-    """Raised when bundled Pancha Pakshi research data fails closed."""
-
-
-class PanchaPakshiBird(str, Enum):
-    VULTURE = "vulture"
-    OWL = "owl"
-    CROW = "crow"
-    COCK = "cock"
-    PEACOCK = "peacock"
-
-
-class PanchaPakshiActivity(str, Enum):
-    EAT = "eat"
-    WALK = "walk"
-    RULE = "rule"
-    SLEEP = "sleep"
-    DIE = "die"
-
-
-class PanchaPakshiPaksha(str, Enum):
-    """Source labels only; no astronomical phase mapping is implied here."""
-
-    PURVA = "purva"
-    AMARA = "amara"
-
-
-class PanchaPakshiHalf(str, Enum):
-    DAY = "day"
-    NIGHT = "night"
-
-
-class PanchaPakshiWeekday(str, Enum):
-    SUNDAY = "sunday"
-    MONDAY = "monday"
-    TUESDAY = "tuesday"
-    WEDNESDAY = "wednesday"
-    THURSDAY = "thursday"
-    FRIDAY = "friday"
-    SATURDAY = "saturday"
-
-
-class PanchaPakshiRelation(str, Enum):
-    FRIEND = "friend"
-    ENEMY = "enemy"
 
 
 _BIRDS = tuple(PanchaPakshiBird)
@@ -98,147 +74,28 @@ _CONTEXTS = {
     (PanchaPakshiPaksha.AMARA, PanchaPakshiHalf.NIGHT): "amara_night",
 }
 _REQUIRED_OMISSIONS = {
+    "authority_birds",
     "natal_mapping",
     "scoring",
     "cross_witness_normalized_relationship_policy",
     "vinadi",
     "seasonal_scaling",
 }
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiSourceLocator:
-    locator_id: str
-    witness_id: str
-    label: str
-    url: str
-    evidence_role: str
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiSource:
-    witness_id: str
-    title: str
-    traditional_attribution: str
-    authorship_status: str
-    publication_place: str
-    publisher: str
-    publication_year: int
-    language: str
-    archive_item_url: str
-    archive_original_image_zip_name: str
-    archive_original_image_zip_source_status: str
-    archive_original_image_zip_md5: str
-    archive_original_image_zip_sha1: str
-    archive_pdf_name: str
-    archive_pdf_source_status: str
-    archive_pdf_md5: str
-    archive_pdf_sha1: str
-    locally_verified_pdf_sha256: str
-    catalogued_contributor_note: str
-    artifact_distribution_status: str
-    redistribution_policy: str
-    license_scope: str
-    artifact_distribution_note: str
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiProfileDescriptor:
-    profile_id: str
-    admission_status: str
-    product_kind: str
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiOmission:
-    feature: str
-    status: str
-    reason: str
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiConflictWitness:
-    witness_id: str
-    bibliographic_label: str
-    record_url: str
-    record_identity: str
-    conflict_locators: tuple[str, ...]
-    evidence_status: str
-    runtime_status: str
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiInitialVowelIdentity:
-    profile_id: str
-    identity_kind: str
-    input_symbol: str
-    normalized_symbol: str
-    bird: PanchaPakshiBird
-    is_natal_moon_identity: bool
-    source_locators: tuple[PanchaPakshiSourceLocator, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiDirectedRelationship:
-    profile_id: str
-    model_kind: str
-    subject: PanchaPakshiBird
-    target: PanchaPakshiBird
-    relation: PanchaPakshiRelation
-    is_reciprocal_inference: bool
-    source_locators: tuple[PanchaPakshiSourceLocator, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiScheduleCell:
-    samam_index: int
-    sequence_index: int
-    bird: PanchaPakshiBird
-    activity: PanchaPakshiActivity
-    start_nazhigai: Fraction
-    end_nazhigai: Fraction
-    duration_nazhigai: Fraction
-    derivation_status: str
-    assembly_policy: str
-    source_locators: tuple[PanchaPakshiSourceLocator, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class PanchaPakshiSchedule:
-    profile_id: str
-    admission_status: str
-    product_kind: str
-    generator_id: str
-    paksha: PanchaPakshiPaksha
-    half: PanchaPakshiHalf
-    weekday: PanchaPakshiWeekday
-    first_eat_bird: PanchaPakshiBird
-    temporal_model_kind: str
-    span_nazhigai: Fraction
-    samam_span_nazhigai: Fraction
-    cells: tuple[PanchaPakshiScheduleCell, ...]
-
-    def cell_at_nazhigai(
-        self, offset_nazhigai: Fraction | int
-    ) -> PanchaPakshiScheduleCell:
-        """Return the half-open cell containing an exact nominal offset."""
-
-        if isinstance(offset_nazhigai, bool) or not isinstance(
-            offset_nazhigai, (Fraction, int)
-        ):
-            raise TypeError("offset_nazhigai must be an int or Fraction")
-        offset = Fraction(offset_nazhigai)
-        if offset < 0 or offset >= self.span_nazhigai:
-            raise ValueError(
-                "offset_nazhigai must lie in the half-open interval "
-                f"[0, {self.span_nazhigai})"
-            )
-        for cell in self.cells:
-            if cell.start_nazhigai <= offset < cell.end_nazhigai:
-                return cell
-        raise PanchaPakshiDataError(
-            "validated schedule contains an uncovered nominal offset"
-        )
+_PRODUCT_CAPABILITIES = {
+    "aksara_prasna_operating_schedule": (
+        PanchaPakshiCapability.AKSARA_IDENTITY,
+        PanchaPakshiCapability.NOMINAL_SCHEDULE,
+        PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
+        PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+        PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
+    )
+}
+_PUBLIC_ADMISSION_STATUSES = frozenset(
+    {
+        PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
+        PanchaPakshiAdmissionStatus.CORROBORATED_PUBLIC,
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -296,8 +153,11 @@ class _ScheduleGenerator:
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiProfile:
     profile_id: str
-    admission_status: str
+    admission_status: PanchaPakshiAdmissionStatus
     product_kind: str
+    default_selection_allowed: bool
+    capabilities: tuple[PanchaPakshiCapability, ...]
+    admission_decision_id: str
     derivation_status: str
     assembly_policy: str
     title: str
@@ -359,27 +219,74 @@ class PanchaPakshiProfile:
 
 
 def available_pancha_pakshi_profiles() -> tuple[PanchaPakshiProfileDescriptor, ...]:
-    """List explicit bundled profiles; this does not select a default."""
+    """List explicitly admitted public profiles; no default is selected."""
 
     entries = _read_manifest(_MANIFEST_PATH)
     return tuple(
         PanchaPakshiProfileDescriptor(
             profile_id=entry["profile_id"],
-            admission_status=entry["admission_status"],
+            admission_status=PanchaPakshiAdmissionStatus(entry["admission_status"]),
             product_kind=entry["product_kind"],
+            default_selection_allowed=entry["default_selection_allowed"],
+            capabilities=tuple(
+                PanchaPakshiCapability(value) for value in entry["capabilities"]
+            ),
+            admission_decision_id=entry["admission_decision_id"],
         )
         for entry in entries
+        if PanchaPakshiAdmissionStatus(entry["admission_status"])
+        in _PUBLIC_ADMISSION_STATUSES
     )
 
 
 def load_pancha_pakshi_profile(profile_id: str) -> PanchaPakshiProfile:
-    """Load one explicitly named, hash-verified research profile."""
+    """Load one explicitly named, hash-verified internal profile."""
 
     if not isinstance(profile_id, str):
         raise TypeError("profile_id must be a string")
     if not profile_id:
         raise ValueError("profile_id must not be empty; there is no default canon")
     return _load_profile_cached(profile_id, str(_MANIFEST_PATH.resolve()))
+
+
+def _profile_provenance(
+    profile: PanchaPakshiProfile,
+    *,
+    astronomical_routing_status: str = "not_performed",
+) -> PanchaPakshiProvenance:
+    if not isinstance(astronomical_routing_status, str) or not (
+        astronomical_routing_status.strip()
+    ):
+        raise PanchaPakshiDataError(
+            "astronomical_routing_status must be a non-empty string"
+        )
+    return PanchaPakshiProvenance(
+        profile_id=profile.profile_id,
+        admission_status=profile.admission_status,
+        product_kind=profile.product_kind,
+        default_selection_allowed=profile.default_selection_allowed,
+        capabilities=profile.capabilities,
+        admission_decision_id=profile.admission_decision_id,
+        derivation_status=profile.derivation_status,
+        assembly_policy=profile.assembly_policy,
+        astronomical_routing_status=astronomical_routing_status,
+        source=profile.source,
+        declared_omissions=profile.explicit_omissions,
+    )
+
+
+def pancha_pakshi_profile_info(
+    profile: PanchaPakshiProfile,
+) -> PanchaPakshiProfileInfo:
+    """Return public profile metadata without exposing loader internals."""
+
+    _require_profile(profile)
+    return PanchaPakshiProfileInfo(
+        title=profile.title,
+        provenance=_profile_provenance(profile),
+        source_locators=profile.source_locators,
+        known_conflict_witnesses=profile.research_conflict_ledger,
+    )
 
 
 def pancha_pakshi_identity_from_initial_vowel(
@@ -410,6 +317,7 @@ def pancha_pakshi_identity_from_initial_vowel(
                 source_locators=_resolve_locators(
                     profile, rule.source_locator_ids
                 ),
+                provenance=_profile_provenance(profile),
             )
     raise ValueError(
         f"initial_vowel {initial_vowel!r} is not explicitly mapped by "
@@ -440,6 +348,7 @@ def pancha_pakshi_directed_relationship(
         relation=rule.relation,
         is_reciprocal_inference=False,
         source_locators=_resolve_locators(profile, rule.source_locator_ids),
+        provenance=_profile_provenance(profile),
     )
 
 
@@ -557,6 +466,7 @@ def generate_pancha_pakshi_schedule(
         span_nazhigai=span,
         samam_span_nazhigai=profile.temporal_model.samam_span_nazhigai,
         cells=tuple(cells),
+        provenance=_profile_provenance(profile),
     )
 
 
@@ -683,6 +593,12 @@ def _require_int(value: Any, context: str) -> int:
     return value
 
 
+def _require_bool(value: Any, context: str) -> bool:
+    if not isinstance(value, bool):
+        raise PanchaPakshiDataError(f"{context} must be a boolean")
+    return value
+
+
 def _require_enum(enum_type: type[Enum], value: Any, context: str) -> Any:
     text = _require_string(value, context)
     try:
@@ -738,7 +654,7 @@ def _read_manifest(path: Path) -> tuple[dict[str, Any], ...]:
         },
         "pancha_pakshi_manifest",
     )
-    if _require_int(manifest["schema_version"], "manifest.schema_version") != 1:
+    if _require_int(manifest["schema_version"], "manifest.schema_version") != 2:
         raise PanchaPakshiDataError("unsupported Pancha Pakshi manifest schema")
     _require_utc_timestamp(
         manifest["generated_at_utc"], "manifest.generated_at_utc"
@@ -753,12 +669,22 @@ def _read_manifest(path: Path) -> tuple[dict[str, Any], ...]:
     entries: list[dict[str, Any]] = []
     profile_ids: set[str] = set()
     paths: set[str] = set()
+    admission_decision_ids: set[str] = set()
     for index, raw_entry in enumerate(raw_entries):
         context = f"manifest.profiles[{index}]"
         entry = _require_dict(raw_entry, context)
         _require_exact_keys(
             entry,
-            {"profile_id", "path", "sha256", "admission_status", "product_kind"},
+            {
+                "profile_id",
+                "path",
+                "sha256",
+                "admission_status",
+                "product_kind",
+                "default_selection_allowed",
+                "capabilities",
+                "admission_decision_id",
+            },
             context,
         )
         profile_id = _require_string(entry["profile_id"], f"{context}.profile_id")
@@ -768,16 +694,67 @@ def _read_manifest(path: Path) -> tuple[dict[str, Any], ...]:
         digest = _require_string(entry["sha256"], f"{context}.sha256")
         if not _SHA256_PATTERN.fullmatch(digest):
             raise PanchaPakshiDataError(f"{context}.sha256 is not a lowercase SHA-256")
-        if entry["admission_status"] != "research_only":
+        admission_status = _require_enum(
+            PanchaPakshiAdmissionStatus,
+            entry["admission_status"],
+            f"{context}.admission_status",
+        )
+        if _require_bool(
+            entry["default_selection_allowed"],
+            f"{context}.default_selection_allowed",
+        ):
             raise PanchaPakshiDataError(
-                f"{context}.admission_status must remain research_only"
+                f"{context}.default_selection_allowed must remain false; "
+                "no universal Pancha Pakshi canon is admitted"
             )
-        if entry["product_kind"] != "aksara_prasna_operating_schedule":
+        product_kind = _require_string(
+            entry["product_kind"], f"{context}.product_kind"
+        )
+        expected_capabilities = _PRODUCT_CAPABILITIES.get(product_kind)
+        if expected_capabilities is None:
             raise PanchaPakshiDataError(f"{context}.product_kind is unknown")
-        if profile_id in profile_ids or str(relative) in paths:
-            raise PanchaPakshiDataError("manifest contains duplicate profile identity")
+        raw_capabilities = _require_list(
+            entry["capabilities"], f"{context}.capabilities"
+        )
+        capabilities = tuple(
+            _require_enum(
+                PanchaPakshiCapability,
+                raw_capability,
+                f"{context}.capabilities[{capability_index}]",
+            )
+            for capability_index, raw_capability in enumerate(raw_capabilities)
+        )
+        if not capabilities or len(capabilities) != len(set(capabilities)):
+            raise PanchaPakshiDataError(
+                f"{context}.capabilities must be non-empty and unique"
+            )
+        if capabilities != expected_capabilities:
+            raise PanchaPakshiDataError(
+                f"{context}.capabilities disagree with product_kind or "
+                "canonical capability order"
+            )
+        admission_decision_id = _require_string(
+            entry["admission_decision_id"], f"{context}.admission_decision_id"
+        )
+        if (
+            admission_status in _PUBLIC_ADMISSION_STATUSES
+            and not admission_decision_id.startswith("pancha_pakshi_")
+        ):
+            raise PanchaPakshiDataError(
+                f"{context}.admission_decision_id is not a Pancha Pakshi decision"
+            )
+        if (
+            profile_id in profile_ids
+            or str(relative) in paths
+            or admission_decision_id in admission_decision_ids
+        ):
+            raise PanchaPakshiDataError(
+                "manifest contains a duplicate profile, path, or admission "
+                "decision identity"
+            )
         profile_ids.add(profile_id)
         paths.add(str(relative))
+        admission_decision_ids.add(admission_decision_id)
         entries.append(entry)
     return tuple(entries)
 
@@ -803,10 +780,17 @@ def _load_profile_cached(
             f"hash mismatch for Pancha Pakshi profile {profile_id!r}"
         )
     document = _require_dict(_read_json(data_path), f"profile {profile_id!r}")
-    profile = _parse_profile_document(document)
+    profile = _parse_profile_document(
+        document,
+        admission_status=PanchaPakshiAdmissionStatus(entry["admission_status"]),
+        default_selection_allowed=entry["default_selection_allowed"],
+        capabilities=tuple(
+            PanchaPakshiCapability(value) for value in entry["capabilities"]
+        ),
+        admission_decision_id=entry["admission_decision_id"],
+    )
     if (
         profile.profile_id != entry["profile_id"]
-        or profile.admission_status != entry["admission_status"]
         or profile.product_kind != entry["product_kind"]
     ):
         raise PanchaPakshiDataError(
@@ -816,7 +800,35 @@ def _load_profile_cached(
     return profile
 
 
-def _parse_profile_document(document: dict[str, Any]) -> PanchaPakshiProfile:
+def _parse_profile_document(
+    document: dict[str, Any],
+    *,
+    admission_status: PanchaPakshiAdmissionStatus,
+    default_selection_allowed: bool,
+    capabilities: tuple[PanchaPakshiCapability, ...],
+    admission_decision_id: str,
+) -> PanchaPakshiProfile:
+    if not isinstance(admission_status, PanchaPakshiAdmissionStatus):
+        raise PanchaPakshiDataError("admission_status must be a known enum value")
+    _require_bool(default_selection_allowed, "default_selection_allowed")
+    if default_selection_allowed:
+        raise PanchaPakshiDataError(
+            "default_selection_allowed must remain false; no universal canon exists"
+        )
+    if (
+        not isinstance(capabilities, tuple)
+        or not capabilities
+        or any(
+            not isinstance(capability, PanchaPakshiCapability)
+            for capability in capabilities
+        )
+        or len(capabilities) != len(set(capabilities))
+    ):
+        raise PanchaPakshiDataError(
+            "capabilities must be a non-empty tuple of unique known values"
+        )
+    _require_string(admission_decision_id, "admission_decision_id")
+
     _require_exact_keys(
         document,
         {
@@ -837,7 +849,7 @@ def _parse_profile_document(document: dict[str, Any]) -> PanchaPakshiProfile:
         },
         "profile document",
     )
-    if _require_int(document["schema_version"], "profile.schema_version") != 1:
+    if _require_int(document["schema_version"], "profile.schema_version") != 2:
         raise PanchaPakshiDataError("unsupported Pancha Pakshi profile schema")
 
     meta = _require_dict(document["profile"], "profile.profile")
@@ -845,7 +857,6 @@ def _parse_profile_document(document: dict[str, Any]) -> PanchaPakshiProfile:
         meta,
         {
             "profile_id",
-            "admission_status",
             "product_kind",
             "derivation_status",
             "assembly_policy",
@@ -854,17 +865,20 @@ def _parse_profile_document(document: dict[str, Any]) -> PanchaPakshiProfile:
         "profile.profile",
     )
     profile_id = _require_string(meta["profile_id"], "profile.profile_id")
-    if meta["admission_status"] != "research_only":
-        raise PanchaPakshiDataError("profile admission_status must remain research_only")
     if meta["product_kind"] != "aksara_prasna_operating_schedule":
         raise PanchaPakshiDataError("profile product_kind is unknown")
+    if capabilities != _PRODUCT_CAPABILITIES[meta["product_kind"]]:
+        raise PanchaPakshiDataError(
+            "manifest capabilities disagree with profile product_kind or "
+            "canonical capability order"
+        )
     if meta["derivation_status"] != (
-        "rule_derived_with_unreconciled_table_comparison"
+        "machine_reconciled_source_assignment_pending_competent_tamil_review"
     ):
         raise PanchaPakshiDataError("profile derivation_status is unknown")
     if meta["assembly_policy"] != (
-        "current_rule_reading_generates_printed_grids_are_non_executable_"
-        "review_evidence"
+        "resolved_grid_axes_assign_birds_explicit_prose_and_verse_govern_"
+        "chronology"
     ):
         raise PanchaPakshiDataError("profile assembly_policy is unknown")
 
@@ -1322,7 +1336,7 @@ def _parse_profile_document(document: dict[str, Any]) -> PanchaPakshiProfile:
     relationship_model_kind = _require_string(
         relationship_obj["model_kind"], "directed_relationships.model_kind"
     )
-    if relationship_model_kind != "source_scoped_directed_1879_unreconciled":
+    if relationship_model_kind != "source_scoped_directed_1879_machine_reviewed":
         raise PanchaPakshiDataError("directed relationship model kind is unknown")
     relationship_self_policy = _require_string(
         relationship_obj["self_relation_policy"],
@@ -1400,8 +1414,9 @@ def _parse_profile_document(document: dict[str, Any]) -> PanchaPakshiProfile:
         omissions.append(parsed)
     if {omission.feature for omission in omissions} != _REQUIRED_OMISSIONS:
         raise PanchaPakshiDataError(
-            "profile must explicitly omit natal mapping, scoring, cross-witness "
-            "relationship normalization, vinadi, and seasonal scaling"
+            "profile must explicitly omit authority birds, natal mapping, "
+            "scoring, cross-witness relationship normalization, vinadi, and "
+            "seasonal scaling"
         )
     if len(omissions) != len(_REQUIRED_OMISSIONS):
         raise PanchaPakshiDataError("explicit omissions contain duplicates")
@@ -1477,8 +1492,11 @@ def _parse_profile_document(document: dict[str, Any]) -> PanchaPakshiProfile:
 
     return PanchaPakshiProfile(
         profile_id=profile_id,
-        admission_status=meta["admission_status"],
+        admission_status=admission_status,
         product_kind=meta["product_kind"],
+        default_selection_allowed=default_selection_allowed,
+        capabilities=capabilities,
+        admission_decision_id=admission_decision_id,
         derivation_status=meta["derivation_status"],
         assembly_policy=meta["assembly_policy"],
         title=_require_string(meta["title"], "profile.title"),

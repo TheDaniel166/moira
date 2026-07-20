@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_1879_source_scoped_public_2026_07_20",
+  "decided_at_utc": "2026-07-20T13:53:14Z",
+  "decision_kind": "source_scoped_public_admission",
+  "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+  "profile_migration": {
+    "prior_schema_version": 1,
+    "current_schema_version": 2,
+    "prior_profile_sha256": "02f1252cbcff10f680148b0213021d30db043c0ecc7387be727ad5d60de04e98",
+    "current_profile_sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
+    "metadata_changes_only": [
+      "profile schema version 1 to 2",
+      "admission state moved from profile facts to manifest policy",
+      "title changed from research profile to source-scoped profile",
+      "omission reasons changed from research-profile to source-scoped-profile wording",
+      "authority-bird nonclaim added to runtime omissions"
+    ]
+  },
+  "semantic_projection": {
+    "algorithm_id": "pancha_pakshi_computational_semantics_v1",
+    "scope": "identity mapping, temporal model, exact durations, generated schedule cells, and directed relationship values; intentionally excludes admission and provenance metadata changed by this migration",
+    "canonicalization": "UTF-8 JSON with sorted object keys, no insignificant whitespace, and exact fractions represented as numerator-denominator integer pairs",
+    "sha256": "7ac6da0aa5a556d1e510f87b73fff767be56749bf263e0722c925eeed01bafec",
+    "identity_symbol_count": 10,
+    "schedule_count": 28,
+    "schedule_cell_count": 700,
+    "directed_relationship_count": 20
+  },
+  "admission": {
+    "admission_status": "source_scoped_public",
+    "product_kind": "aksara_prasna_operating_schedule",
+    "exact_public_claim": "Agastya-attributed Madras 1879 aksara/query-or-name-initial fixed-clock Pancha Pakshi operating schedule and directed relationship matrix",
+    "default_selection_allowed": false,
+    "capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships"
+    ],
+    "governing_witness_id": "dli.rmrl.000451_images",
+    "astronomical_routing_status": "not_performed",
+    "text_layer_policy": "identified grids govern bird/activity assignments; explicit prose and verse govern chronology; visual grid order is not chronological authority"
+  },
+  "evidence_records": [
+    {
+      "path": "pancha_pakshi_1879_blind_reading_2026_07_20.json",
+      "sha256": "4fe6982e7e49a92be5c0b197963351103b312b52247fc0b36b96b1f821beb59a"
+    },
+    {
+      "path": "pancha_pakshi_1879_grid_reading_2026_07_20.json",
+      "sha256": "54a73f3151459ab754b86cff651882619e680e2089f83e5ee8ae10d3b70e5f74"
+    },
+    {
+      "path": "pancha_pakshi_1879_adjudication_2026_07_20.json",
+      "sha256": "0ed8122b1063b6f261476f219be42fe2bec1e1b261e6d5e68dc103a7c6eb92e2"
+    },
+    {
+      "path": "pancha_pakshi_1879_independent_review.json",
+      "sha256": "c6a12875ba3bce6666e9c6f365c13a0aa5ff95c719920a14cb254359dc2842e8"
+    }
+  ],
+  "evidence_limits": {
+    "competent_tamil_signoff": false,
+    "independent_witness_collation": "not_completed",
+    "external_oracle_status": "none",
+    "effect": "limits the claim to this named machine-reconciled witness and prevents any universal or default canon claim"
+  },
+  "public_nonclaims": [
+    "natal Moon or nakshatra identity",
+    "astronomical paksha routing",
+    "civil-date or sunrise weekday routing",
+    "seasonal or sunrise-scaled timing",
+    "vinadi or finer subdivisions",
+    "Padu, Bharana, or Adhikara birds",
+    "condition scoring or electional window search",
+    "cross-witness normalized relationships",
+    "universal Pancha Pakshi canon"
+  ],
+  "artifact_distribution_boundary": {
+    "included": "Moira-authored code, schemas, explanatory prose, normalized symbolic facts, bibliographic facts, hashes, and source locators",
+    "not_bundled": [
+      "archival scans",
+      "derivative PDFs",
+      "OCR",
+      "page images",
+      "copied table layouts",
+      "source prose",
+      "third-party translations"
+    ],
+    "policy_effect": "This is the standing non-bundling architecture, not a rights-clearance gate."
+  }
+}

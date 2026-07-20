@@ -183,6 +183,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
+        "name": "pancha-pakshi",
+        "x-displayName": "Pancha Pakshi",
+        "description": "Named source-scoped aksara, nominal schedule, and directed-relation products.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "shadbala",
         "x-displayName": "Shadbala",
         "description": "Shadbala result, profile, network, condition, and Bhava Bala (house strength) surfaces.",

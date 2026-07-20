@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_1879_local_solar_context_2026_07_20",
+  "decided_at_utc": "2026-07-20T14:54:31Z",
+  "decision_kind": "additive_modern_local_solar_context_admission",
+  "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+  "prior_admission": {
+    "decision_id": "pancha_pakshi_1879_source_scoped_public_2026_07_20",
+    "fixture_path": "pancha_pakshi_1879_public_admission_2026_07_20.json",
+    "fixture_sha256": "cc091c6d6df8491526ce1425d57eba74db1ff8ead137bb0b5535764e2a0413dd",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF"
+  },
+  "profile_binding": {
+    "path": "moira/data/pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
+    "sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+    "profile_content_changed": false,
+    "admission_status": "source_scoped_public",
+    "default_selection_allowed": false
+  },
+  "manifest_transition": {
+    "prior_manifest_sha256": "a0c8fe51dd7c3bbd867a85aa1099fe68657edccf558976df3ffdcd3688ba5d2c",
+    "current_manifest_sha256": "4587306ded9b5760940e7f80c45b6c40132590473e910ea9350c9d7fa141a2ee",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "prior_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships"
+    ],
+    "current_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context"
+    ],
+    "added_capability": "astronomical_context",
+    "profile_product_kind_changed": false,
+    "profile_admission_status_changed": false
+  },
+  "computational_object": {
+    "engine_function": "pancha_pakshi_local_solar_context_at",
+    "facade_method": "Moira.pancha_pakshi_local_solar_context",
+    "rest_route": "POST /v1/pancha-pakshi/context/local-solar",
+    "result_vessel": "PanchaPakshiLocalSolarContext",
+    "policy_vessel": "PanchaPakshiLocalSolarContextPolicy",
+    "policy": {
+      "policy_id": "local_solar_day_explicit_paksha_v1",
+      "paksha_basis": "caller_supplied_source_label",
+      "solar_day_basis": "topocentric_sunrise_to_next_sunrise",
+      "solar_event_altitude_deg": -0.833,
+      "observer_elevation_m": 0.0,
+      "solar_altitude_refraction_mode": "unrefracted_signal_standard_refraction_and_semidiameter_in_threshold",
+      "half_basis": "topocentric_sunrise_sunset",
+      "weekday_basis": "local_mean_solar_time_at_governing_sunrise",
+      "offset_materialization_status": "not_performed"
+    },
+    "provenance_routing_status": "local_solar_half_and_weekday_performed_paksha_caller_supplied",
+    "engine_inputs": [
+      "explicit_profile_id",
+      "jd_ut1",
+      "latitude",
+      "longitude",
+      "caller_supplied_paksha"
+    ],
+    "facade_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "rest_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "derived_values": [
+      "governing_topocentric_sunrise_jd_ut1",
+      "sunset_jd_ut1",
+      "next_sunrise_jd_ut1",
+      "day_or_night_half",
+      "local_mean_solar_weekday_at_governing_sunrise",
+      "existing_nominal_schedule_selected_from_supplied_paksha_derived_half_and_derived_weekday"
+    ],
+    "validation_surfaces": [
+      "tests/unit/test_local_solar_day.py",
+      "tests/unit/test_pancha_pakshi_local_solar_context.py",
+      "tests/unit/test_pancha_pakshi_public_contract.py",
+      "tests/unit/test_pancha_pakshi_public_facade.py",
+      "tests/server/test_server_pancha_pakshi_service.py",
+      "tests/server/test_server_pancha_pakshi_routes.py"
+    ]
+  },
+  "assembly_doctrine": {
+    "astronomical_layer": "The existing Moira local-solar-day resolver determines the sunrise-to-next-sunrise window, topocentric sunrise/sunset half, and local-mean-solar weekday.",
+    "source_layer": "The caller supplies the 1879 profile's Purva or Amara source label; the existing source-owned nominal schedule remains unchanged.",
+    "composition_rule": "Select the existing nominal schedule using caller-supplied paksha plus astronomically derived half and weekday.",
+    "boundary_rule": "Day is sunrise inclusive to sunset exclusive; night is sunset inclusive to next sunrise exclusive.",
+    "polar_policy": "Fail explicitly when lawful sunrise/sunset bounds do not exist.",
+    "materialization_rule": "Do not convert nominal nazhigai offsets into event instants and do not claim a current schedule cell."
+  },
+  "authority_and_provenance": {
+    "policy_origin": "modern_moira_composition_policy",
+    "historical_source_attestation": "not_claimed_for_the_astronomical_composition",
+    "solar_geometry": "existing configured-reader-backed topocentric -0.833 degree solar-altitude crossing",
+    "time_scale": "UT1 for resolved solar-event Julian Days",
+    "weekday": "local mean solar time at the governing sunrise, Sunday zero through Saturday six",
+    "nominal_schedule_origin": "unchanged named 1879 source-scoped profile",
+    "evidence_class": "composition invariants and regression coverage over the established local-solar boundary",
+    "external_pancha_pakshi_oracle_status": "none"
+  },
+  "validation_evidence": {
+    "evidence_class": "authority_validation",
+    "validated_at_utc": "2026-07-20T15:19:19Z",
+    "scope": "astronomical local-solar sunrise and sunset boundary only; does not validate the historical Pancha Pakshi doctrine",
+    "authority": "JPL Horizons observer tables",
+    "fixture_path": "tests/fixtures/horizons_rise_set_reference.json",
+    "fixture_sha256": "d850ac06164ef041e3f9c8e80aaeea7cf23adfd644f6259b73e500510b6d5255",
+    "fixture_hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
+    "case_id": "sun-new-york-equinox",
+    "comparison_semantics": "Moira topocentric -0.833 degree UT1 solar-event Julian Days against the Horizons-derived fixture's -0.8333 degree UT labels",
+    "moira_solar_event_altitude_deg": -0.833,
+    "authority_fixture_altitude_deg": -0.8333,
+    "content_identified_kernel": "DE-0441LE-0441",
+    "tolerance_seconds": 2.0,
+    "observed_sunrise_error_seconds": 0.08175373077392578,
+    "observed_sunset_error_seconds": 0.1232340931892395
+  },
+  "public_claim": "Given an explicit profile, UT1 instant, location, and caller-supplied Purva or Amara source label, resolve the governing local-solar day, day/night half, local-mean-solar weekday, and corresponding unchanged nominal 1879 schedule.",
+  "public_nonclaims": [
+    "astronomical or lunar inference of Purva or Amara paksha",
+    "natal Moon or nakshatra identity",
+    "conversion of nominal nazhigai offsets to Julian Days or datetimes",
+    "a current Pancha Pakshi activity or schedule cell",
+    "solar-proportional or seasonal scaling of nominal durations",
+    "vinadi or finer subdivisions",
+    "Padu, Bharana, or Adhikara birds",
+    "condition evaluation, scoring, or electional window search",
+    "cross-witness normalization or corroborated public status",
+    "a universal or default Pancha Pakshi canon"
+  ],
+  "artifact_distribution_boundary": {
+    "source_artifact_policy_changed": false,
+    "profile_source_artifact_added": false,
+    "policy_effect": "The standing non-bundling architecture remains unchanged; this additive modern policy requires no new source artifact or rights-clearance phase."
+  }
+}

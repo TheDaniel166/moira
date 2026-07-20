@@ -1,12 +1,16 @@
 # Pancha Pakshi Implementation Handoff — 2026-07-19
 
-> Resume from
-> [`PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md`](./PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md).
-> The independent review requested below was attempted and exposed material
-> unreconciled source readings; this document remains the implementation
-> checkpoint receipt, not the latest admission decision.
+> **Superseded checkpoint.** Resume from
+> [`PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md`](./PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md)
+> and the live
+> [`research and admission standard`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
+> This file preserves the pre-admission resting state. Phase 0 subsequently
+> established a source-scoped public tier and Phase 1 admitted the named 1879
+> aksara/fixed-clock product without selecting a default canon. Competent-human
+> Tamil review and independent-witness collation remain evidence upgrades and
+> broader-claim gates, not blockers for that narrow public product.
 
-## Resting State
+## Historical Resting State
 
 The working tree is intentionally uncommitted and coherent. The Pancha Pakshi
 work has reached an internal research checkpoint; no package-root export,
@@ -119,7 +123,7 @@ Additional checks:
   agreement, a scope-limited displayed-half match, and one-record/profile
   matches; it remains explicitly non-executable
 
-## Tomorrow's Start Sequence
+## Historical Resume Sequence
 
 1. Run `git status --short --branch`; preserve this exact uncommitted scope.
 2. Re-run the 66-test checkpoint above.

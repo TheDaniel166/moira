@@ -60,6 +60,7 @@ from .routers import (
     nine_parts_router,
     orbits_router,
     panchanga_router,
+    pancha_pakshi_router,
     phase_router,
     phenomena_router,
     paran_packet_router,
@@ -169,6 +170,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(varshaphal_router)
     app.include_router(primary_directions_router)
     app.include_router(panchanga_router)    # Phase-9 Panchanga doctrine surface
+    app.include_router(pancha_pakshi_router)  # Named source-scoped Pancha Pakshi profiles
     app.include_router(shadbala_router)     # Phase-9 Shadbala doctrine surface
     app.include_router(jaimini_router)      # Phase-9 Jaimini doctrine surface
     app.include_router(dignities_router)    # Phase-9 Classical Dignities doctrine surface

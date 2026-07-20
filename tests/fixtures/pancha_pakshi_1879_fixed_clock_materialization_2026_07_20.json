@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20",
+  "decided_at_utc": "2026-07-20T15:50:57Z",
+  "decision_kind": "additive_modern_fixed_clock_materialization_admission",
+  "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+  "prior_admission": {
+    "decision_id": "pancha_pakshi_1879_local_solar_context_2026_07_20",
+    "fixture_path": "pancha_pakshi_1879_local_solar_context_2026_07_20.json",
+    "fixture_sha256": "de8e40c161a327695702b9b152f89da8e848f32aafb4d0b155176d28381c9fd2",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF"
+  },
+  "profile_binding": {
+    "path": "moira/data/pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
+    "sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+    "profile_content_changed": false,
+    "admission_status": "source_scoped_public",
+    "default_selection_allowed": false
+  },
+  "manifest_transition": {
+    "prior_manifest_sha256": "4587306ded9b5760940e7f80c45b6c40132590473e910ea9350c9d7fa141a2ee",
+    "current_manifest_sha256": "766f92650bc050f4c88670f8fd6307036ff49a97e812c9efc9a428fb76e53e17",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "prior_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context"
+    ],
+    "current_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context",
+      "fixed_clock_materialization"
+    ],
+    "added_capability": "fixed_clock_materialization",
+    "profile_product_kind_changed": false,
+    "profile_admission_status_changed": false
+  },
+  "computational_object": {
+    "engine_function": "pancha_pakshi_fixed_clock_materialization_at",
+    "facade_method": "Moira.pancha_pakshi_fixed_clock_materialization",
+    "rest_route": "POST /v1/pancha-pakshi/schedule/fixed-clock",
+    "result_vessel": "PanchaPakshiFixedClockMaterialization",
+    "policy_vessel": "PanchaPakshiFixedClockMaterializationPolicy",
+    "policy": {
+      "policy_id": "fixed_24_minute_nazhigai_from_local_solar_half_start_v1",
+      "paksha_basis": "caller_supplied_source_label",
+      "solar_context_basis": "topocentric_sunrise_to_next_sunrise",
+      "day_anchor": "governing_topocentric_sunrise",
+      "night_anchor": "governing_topocentric_sunset",
+      "nazhigai_seconds": 1440,
+      "half_span_nazhigai": 30,
+      "half_span_seconds": 43200,
+      "offset_arithmetic_time_scale": "reader_bound_tt",
+      "published_endpoint_time_scale": "ut1",
+      "interval_ownership": "half_open",
+      "solar_end_clipping": "none",
+      "topology_metric": "fixed_end_jd_tt_minus_solar_end_jd_tt",
+      "topology_coalescence_seconds": 0.0001,
+      "current_cell_status": "not_performed",
+      "solar_proportional_scaling_status": "not_performed"
+    },
+    "provenance_routing_status": "fixed_clock_materialization_performed_paksha_caller_supplied_no_current_cell",
+    "engine_inputs": [
+      "explicit_profile_id",
+      "jd_ut1",
+      "latitude",
+      "longitude",
+      "caller_supplied_paksha"
+    ],
+    "facade_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "rest_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "derived_values": [
+      "governing_local_solar_context",
+      "source_owned_nominal_schedule",
+      "local_solar_half_start_anchor_jd_ut1",
+      "materialized_half_open_cell_intervals_jd_ut1",
+      "fixed_end_jd_ut1",
+      "solar_end_jd_ut1",
+      "signed_fixed_end_minus_solar_end_seconds_tt",
+      "fixed_end_topology"
+    ]
+  },
+  "assembly_doctrine": {
+    "source_layer": "The unchanged 1879 source-scoped profile governs the exact nominal thirty-nazhigai half, samams, cell sequence, and rational activity offsets.",
+    "astronomical_layer": "The admitted Stage 2A local-solar context governs the containing solar half, weekday, schedule selection, sunrise anchor, sunset anchor, and solar half end.",
+    "clock_layer": "One nazhigai is the modern explicitly sourced fixed unit of 1440 SI seconds. Exact rational nominal offsets are added to the reader-bound TT representation of the selected half start, and each endpoint is projected back to UT1.",
+    "anchor_rule": "Day starts at the governing topocentric sunrise; night starts at the governing topocentric sunset.",
+    "boundary_rule": "Every materialized cell is half-open; an exact cell endpoint belongs to the next cell, while the fixed half endpoint is excluded.",
+    "fixed_end_rule": "Thirty nazhigai always materializes as 43200 SI seconds on reader-bound TT.",
+    "solar_end_rule": "The materialized fixed end is never clipped or stretched to the astronomical sunset or next sunrise.",
+    "topology_rule": "Classify the signed fixed-end minus solar-end difference as before, coalescent, or after, with absolute differences no greater than 0.0001 second treated as coalescent.",
+    "current_cell_rule": "Do not select or claim a current schedule cell; a requested instant may lie outside the fixed span even while it remains inside the governing solar half.",
+    "polar_policy": "Fail explicitly when lawful sunrise and sunset bounds do not exist."
+  },
+  "authority_and_provenance": {
+    "policy_origin": "modern_moira_composition_policy",
+    "historical_source_attestation": "The named 1879 witness attests only the exact nominal thirty-nazhigai schedule and offsets used by the unchanged profile; the SI-second projection and astronomical composition are not attributed to it.",
+    "historical_source_binding": {
+      "witness_id": "dli.rmrl.000451_images",
+      "profile_sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+      "temporal_locator_ids": [
+        "ia_n6"
+      ],
+      "duration_locator_ids": [
+        "ia_n6",
+        "ia_n23",
+        "ia_n28",
+        "ia_n33"
+      ],
+      "evidence_role": "nominal schedule structure and exact rational offsets only"
+    },
+    "nazhigai_unit_authority": {
+      "authority": "University of Madras, Tamil Lexicon",
+      "edition": "Madras, University of Madras, 1924-1936",
+      "entry": "nazhigai (Tamil Lexicon headword U+0BA8 U+0BBE U+0BB4 U+0BBF U+0B95 U+0BC8)",
+      "page": 2231,
+      "url": "https://dsal.uchicago.edu/cgi-bin/app/tamil-lex_query.py?qs=%E0%AE%A8%E0%AE%BE%E0%AE%B4%E0%AE%BF%E0%AE%95%E0%AF%88&searchhws=yes&matchtype=exact",
+      "assertion": "one nazhigai is an Indian hour of 60 vinadi or 24 minutes",
+      "evidence_role": "fixed unit conversion only"
+    },
+    "tt_authority": {
+      "authority": "International Earth Rotation and Reference Systems Service",
+      "glossary_url": "https://www.iers.org/SharedDocs/Glossareintraege/EN/T/tt",
+      "technical_note": "IERS Technical Note No. 29",
+      "technical_note_url": "https://www.iers.org/SharedDocs/Publikationen/EN/IERS/Publications/tn/TechnNote29/tn29.pdf?__blob=publicationFile&v=1",
+      "technical_note_page": 9,
+      "assertion": "TT is conventionally realized as TAI plus 32.184 seconds and its unit agrees with the SI second on the geoid",
+      "evidence_role": "SI-second time-coordinate basis for fixed offset addition"
+    },
+    "solar_anchor_authority": {
+      "prior_decision_id": "pancha_pakshi_1879_local_solar_context_2026_07_20",
+      "prior_decision_sha256": "de8e40c161a327695702b9b152f89da8e848f32aafb4d0b155176d28381c9fd2",
+      "authority": "JPL Horizons observer tables",
+      "fixture_path": "tests/fixtures/horizons_rise_set_reference.json",
+      "fixture_sha256": "d850ac06164ef041e3f9c8e80aaeea7cf23adfd644f6259b73e500510b6d5255",
+      "case_id": "sun-new-york-equinox",
+      "tolerance_seconds": 2.0,
+      "evidence_role": "topocentric sunrise and sunset anchor validation only"
+    },
+    "external_pancha_pakshi_current_cell_oracle_status": "none"
+  },
+  "validation_evidence": {
+    "source_semantics": "exact rational invariant checks against the unchanged profile and its named source locators",
+    "unit_semantics": "authority binding to the University of Madras Tamil Lexicon entry",
+    "time_scale_semantics": "authority binding to the IERS TT convention and SI-second unit",
+    "solar_anchor_semantics": "the frozen Stage 2A JPL Horizons comparison remains the authority check for the astronomical anchor only",
+    "materialization_semantics": "exact rational offset, contiguity, half-open ownership, no-clipping, topology-sign, and round-trip invariants",
+    "topology_coalescence_seconds": 0.0001,
+    "topology_coalescence_evidence_class": "numerical policy, not astronomical or historical accuracy",
+    "external_current_cell_validation": "not_applicable_because_no_current_cell_is_claimed"
+  },
+  "public_claim": "Given an explicit profile, UT1 instant, location, and caller-supplied Purva or Amara source label, resolve the governing local-solar half and nominal schedule, anchor it at that half's sunrise or sunset, add its exact nazhigai offsets as fixed SI seconds on reader-bound TT, project all half-open endpoints to UT1, and expose the unclipped fixed-end topology against the astronomical half end.",
+  "public_nonclaims": [
+    "a current Pancha Pakshi activity or schedule cell",
+    "clipping or stretching the fixed schedule to the astronomical half",
+    "solar-proportional or seasonal scaling of nominal durations",
+    "historical source attestation for the modern SI-second and astronomical composition policy",
+    "astronomical or lunar inference of Purva or Amara paksha",
+    "natal Moon or nakshatra identity",
+    "vinadi or finer subdivisions",
+    "Padu, Bharana, or Adhikara birds",
+    "condition evaluation, scoring, or electional window search",
+    "cross-witness normalization or corroborated public status",
+    "a universal or default Pancha Pakshi canon"
+  ],
+  "artifact_distribution_boundary": {
+    "source_artifact_policy_changed": false,
+    "profile_source_artifact_added": false,
+    "policy_effect": "The standing non-bundling architecture remains unchanged; the added authorities are cited by bibliographic identity and URL, and no archival scan, copied source expression, or third-party artifact is distributed."
+  }
+}

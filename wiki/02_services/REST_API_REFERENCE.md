@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-07-18
+Date audited: 2026-07-20
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 408
+- Total non-documentation routes: 420
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 404
+- Versioned `/v1` routes: 416
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -48,6 +48,11 @@ Implemented:
   routes, Varga direct and chart-backed generic/named/Shodashvarga/batch routes, and
   Decans/Decanates direct and chart-backed decanate-placement plus Hermetic
   catalog/longitude/rising/night-hour routes
+- source-scoped Pancha Pakshi admission adds explicit-profile discovery,
+  aksara identity, exact nominal schedule, directed relationship, and bounded
+  local-solar context plus fixed-clock materialization routes; it selects no
+  default, and both astronomical routes require caller-supplied paksha rather
+  than inferring it from the Moon
 - Phase 11 admitted surfaces: fixed stars, variable stars, multiple stars,
   asteroids, comets, asteroid subsets/families, Manazil, and planetary/
   small-body nodes
@@ -173,6 +178,7 @@ Not yet broadly exposed as REST families:
 | nine-parts | 1 |
 | occultations | 12 |
 | orbits | 2 |
+| pancha-pakshi | 7 |
 | panchanga | 4 |
 | parans | 8 |
 | patterns | 3 |
@@ -732,6 +738,67 @@ those relationship-chart routes.
 | POST | `/v1/muhurta/direct/score` | `muhurta_direct_score_route` |
 | POST | `/v1/muhurta/chart/classification` | `muhurta_chart_classification_route` |
 | POST | `/v1/muhurta/chart/score` | `muhurta_chart_score_route` |
+
+### Pancha Pakshi Source-Scoped Routes
+
+| Method | Path | Handler |
+|---|---|---|
+| GET | `/v1/pancha-pakshi/profiles` | `pancha_pakshi_profiles_route` |
+| GET | `/v1/pancha-pakshi/profiles/{profile_id}` | `pancha_pakshi_profile_route` |
+| POST | `/v1/pancha-pakshi/identity/aksara` | `pancha_pakshi_aksara_identity_route` |
+| POST | `/v1/pancha-pakshi/schedule/nominal` | `pancha_pakshi_nominal_schedule_route` |
+| POST | `/v1/pancha-pakshi/context/local-solar` | `pancha_pakshi_local_solar_context_route` |
+| POST | `/v1/pancha-pakshi/schedule/fixed-clock` | `pancha_pakshi_fixed_clock_materialization_route` |
+| POST | `/v1/pancha-pakshi/relationships/directed` | `pancha_pakshi_directed_relationship_route` |
+
+Every computation request requires `profile_id`; no route selects a default.
+The first admitted profile,
+`agastya_madras_1879_akshara_fixed_clock`, exposes only the named 1879
+aksara/query-or-name-initial fixed-clock schedule and its stored directed
+relationship matrix. Schedule inputs are explicit source labels: `purva` or
+`amara`, `day` or `night`, and weekday.
+
+The additive local-solar context request contains `profile_id`, aware `dt`,
+`latitude`, `longitude`, caller-supplied `paksha`, and the required literal
+`policy_id="local_solar_day_explicit_paksha_v1"`. It derives the governing
+topocentric sunrise, sunset, next sunrise, day/night half, and
+local-mean-solar weekday, then selects the existing nominal schedule. The
+response exposes `requested_jd_ut1`, the three solar-event UT1 JDs, location,
+paksha, half, weekday, the complete fixed policy vessel, nominal schedule, and
+provenance.
+
+The policy vessel makes the horizon convention explicit: observer elevation
+is fixed at `0 m`, the solar-altitude signal is unrefracted, and the
+`-0.833`-degree threshold incorporates conventional standard refraction and
+solar semidiameter. The route does not accept an ambient elevation or weather
+model.
+
+The additive fixed-clock request contains the same `profile_id`, aware `dt`,
+`latitude`, `longitude`, and caller-supplied `paksha`, plus the required literal
+`policy_id="fixed_24_minute_nazhigai_from_local_solar_half_start_v1"`. It
+anchors day at governing sunrise or night at governing sunset, applies each
+exact nominal offset as `1440` SI seconds per nazhigai on reader-bound TT, and
+projects every endpoint to UT1. The response includes the Stage 2A context,
+complete fixed policy, TT and UT1 anchor/end fields, signed
+`fixed_end_jd_tt_minus_solar_end_jd_tt` topology, boundary relation, all
+half-open materialized cells, and provenance. The fixed end is never clipped or
+stretched to the solar end; `0.0001 s` is only the numerical topology
+coalescence threshold.
+
+Responses preserve admission status, capabilities, decision identity, source
+and locator provenance, assembly policy, astronomical-routing status, and
+declared omissions. Exact nazhigai values serialize as integer
+`numerator`/`denominator` objects rather than binary floats.
+
+Only the local-solar context and fixed-clock materialization routes accept a
+datetime and location. The family does not accept a natal Moon, nakshatra,
+caller-supplied sunrise, timezone policy, scoring rule, or inferred name. It
+performs no astronomical paksha inference, current-cell selection,
+solar-proportional or seasonal scaling, vinadi subdivision,
+Padu/Bharana/Adhikara computation, condition scoring, window search, or
+cross-witness normalization. Nominal-offset materialization occurs only on the
+explicit fixed-clock route under its required Stage 2B policy; the context
+route alone still returns no materialized interval.
 
 ### Sidereal And Nakshatra Utility REST Admission Boundary
 

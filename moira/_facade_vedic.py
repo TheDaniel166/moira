@@ -2,19 +2,21 @@
 Internal Vedic-method mixin for the public Moira facade.
 
 These wrappers preserve the public ``Moira`` convenience surface while
-delegating Panchanga, Shadbala, Jaimini, Ashtakavarga, and Varga computation
-to their owning modules.
+delegating Panchanga, Pancha Pakshi, Shadbala, Jaimini, Ashtakavarga, and
+Varga computation to their owning modules.
 """
 
 from __future__ import annotations
 
 import importlib
 import sys
+from datetime import datetime
 from typing import Any
 
 _shadbala = importlib.import_module("moira.shadbala")
 _varga = importlib.import_module("moira.varga")
 _panchanga = importlib.import_module("moira.panchanga")
+_pancha_pakshi = importlib.import_module("moira.pancha_pakshi")
 
 
 def _facade_module() -> Any:
@@ -34,8 +36,8 @@ THEOREM: Mixin that provides Vedic astrological convenience wrappers for the
 RITE OF PURPOSE:
     VedicFacadeMixin gives Python callers direct, coherent access to the
     Vedic families already admitted through engine/root and REST surfaces:
-    Panchanga, Shadbala, Jaimini, Ashtakavarga, and Varga. It does not create
-    new doctrine or route-shaped envelopes.
+    Panchanga, Pancha Pakshi, Shadbala, Jaimini, Ashtakavarga, and Varga. It
+    does not create new doctrine or route-shaped envelopes.
 
 LAW OF OPERATION:
     Responsibilities:
@@ -51,8 +53,9 @@ LAW OF OPERATION:
     Structural invariants:
         - All methods delegate to owning module/root callables.
 
-Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
-       moira.jaimini, moira.ashtakavarga, moira.varga.
+Canon: Moira Sovereign Facade Architecture; moira.panchanga,
+       moira.pancha_pakshi, moira.shadbala, moira.jaimini,
+       moira.ashtakavarga, moira.varga.
 
 [MACHINE_CONTRACT v1]
 {
@@ -61,7 +64,13 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
     "risk": "medium",
     "api": {
         "frozen": [
-            "panchanga", "panchanga_profile", "shadbala",
+            "panchanga", "panchanga_profile",
+            "pancha_pakshi_profiles", "pancha_pakshi_profile_info",
+            "pancha_pakshi_identity_from_initial_vowel",
+            "pancha_pakshi_directed_relationship", "pancha_pakshi_schedule",
+            "pancha_pakshi_local_solar_context",
+            "pancha_pakshi_fixed_clock_materialization",
+            "shadbala",
             "shadbala_for_chart", "shadbala_profile", "shadbala_condition",
             "shadbala_network", "bhava_bala", "bhava_bala_for_chart",
             "jaimini_karakas",
@@ -193,6 +202,101 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga, moira.shadbala,
     def panchanga_profile(self, result):
         """Build the Panchanga profile for an existing Panchanga result."""
         return _facade_module().panchanga_profile(result)
+
+    def pancha_pakshi_profiles(
+        self,
+    ) -> tuple[_pancha_pakshi.PanchaPakshiProfileDescriptor, ...]:
+        """List named Pancha Pakshi profiles without selecting a default."""
+        return _pancha_pakshi.available_pancha_pakshi_profiles()
+
+    def pancha_pakshi_profile_info(
+        self,
+        profile_id: str,
+    ) -> _pancha_pakshi.PanchaPakshiProfileInfo:
+        """Describe one explicitly named Pancha Pakshi profile."""
+        return _pancha_pakshi.pancha_pakshi_profile_info(profile_id)
+
+    def pancha_pakshi_identity_from_initial_vowel(
+        self,
+        profile_id: str,
+        initial_vowel: str,
+    ) -> _pancha_pakshi.PanchaPakshiInitialVowelIdentity:
+        """Resolve a source-scoped aksara identity for a named profile."""
+        return _pancha_pakshi.pancha_pakshi_identity_from_initial_vowel(
+            profile_id,
+            initial_vowel,
+        )
+
+    def pancha_pakshi_directed_relationship(
+        self,
+        profile_id: str,
+        subject: _pancha_pakshi.PanchaPakshiBird,
+        target: _pancha_pakshi.PanchaPakshiBird,
+    ) -> _pancha_pakshi.PanchaPakshiDirectedRelationship:
+        """Resolve one stored directed relationship without reciprocity inference."""
+        return _pancha_pakshi.pancha_pakshi_directed_relationship(
+            profile_id,
+            subject,
+            target,
+        )
+
+    def pancha_pakshi_schedule(
+        self,
+        profile_id: str,
+        *,
+        paksha: _pancha_pakshi.PanchaPakshiPaksha,
+        half: _pancha_pakshi.PanchaPakshiHalf,
+        weekday: _pancha_pakshi.PanchaPakshiWeekday,
+    ) -> _pancha_pakshi.PanchaPakshiSchedule:
+        """Generate one exact nominal schedule from a named source profile."""
+        return _pancha_pakshi.pancha_pakshi_schedule(
+            profile_id,
+            paksha=paksha,
+            half=half,
+            weekday=weekday,
+        )
+
+    def pancha_pakshi_local_solar_context(
+        self,
+        profile_id: str,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+        *,
+        paksha: _pancha_pakshi.PanchaPakshiPaksha,
+    ) -> _pancha_pakshi.PanchaPakshiLocalSolarContext:
+        """Route an explicit Paksha through the enclosing local solar day."""
+
+        facade = _facade_module()
+        return _pancha_pakshi._pancha_pakshi_local_solar_context_from_utc(
+            profile_id,
+            facade.jd_from_datetime(dt),
+            latitude,
+            longitude,
+            paksha=paksha,
+            reader=self._reader,
+        )
+
+    def pancha_pakshi_fixed_clock_materialization(
+        self,
+        profile_id: str,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+        *,
+        paksha: _pancha_pakshi.PanchaPakshiPaksha,
+    ) -> _pancha_pakshi.PanchaPakshiFixedClockMaterialization:
+        """Materialize fixed offsets from the governing solar-half start."""
+
+        facade = _facade_module()
+        return _pancha_pakshi._pancha_pakshi_fixed_clock_materialization_from_utc(
+            profile_id,
+            facade.jd_from_datetime(dt),
+            latitude,
+            longitude,
+            paksha=paksha,
+            reader=self._reader,
+        )
 
     def shadbala(
         self,

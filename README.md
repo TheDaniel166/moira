@@ -77,9 +77,20 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 ### Vedic / Jyotish Suite
 
-Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jataka, Saravali, Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras) with per-rule citations; where classical sources disagree, the disagreement is an explicit policy switch or a recorded note — never a silent choice.
+Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jataka, Saravali, Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras, and the named 1879 Agastya-attributed Pancha Pakshi witness) with per-rule citations; where classical sources disagree, the disagreement is an explicit policy switch or a recorded note — never a silent choice.
 
 - **Sidereal foundation** — 40+ ayanamsa systems including star-anchored "True" ayanamsas; 27-nakshatra system; Panchanga.
+- **Pancha Pakshi** — an explicitly named Agastya-attributed Madras 1879
+  aksara/query-or-name-initial fixed-clock schedule and directed relationship
+  profile, with exact rational timing, source locators, declared omissions,
+  and no implicit or universal default. An explicit modern local-solar context
+  policy can derive topocentric day/night and local-mean-solar weekday for an
+  aware instant and location while requiring the caller to supply Purva or
+  Amara. A separate modern fixed-clock policy anchors the selected schedule at
+  sunrise or sunset, treats one nazhigai as exactly 1,440 SI seconds on
+  reader-bound TT, and publishes half-open UT1 cell intervals plus their
+  unclipped relation to the astronomical half end. It does not infer lunar
+  paksha, proportionally scale the schedule, or claim a current cell.
 - **Dashas** — Vimshottari with nakshatra balance; Chara Dasha (K.N. Rao's named lineage); Varshaphal (annual charts).
 - **Vargas** — divisional charts (navamsa, dashamansa, dwadashamsa, saptamsa, trimshamsa, and more); Vimshopaka Bala (BPHS 20-point varga-dignity strength over all four classical groups) with vargottama detection.
 - **Yogas** — 60 classical yogas across six families (Pancha Mahapurusha, Chandra, Surya, all 32 Nabhasa, Raja core, Dhana core), each returned as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, and per-yoga primary-source citations.

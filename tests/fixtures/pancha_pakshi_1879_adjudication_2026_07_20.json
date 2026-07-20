@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "record_id": "pancha_pakshi_1879_adjudication_2026_07_20",
+  "record_kind": "frozen_machine_assisted_image_adjudication",
+  "created_at_utc": "2026-07-20T12:29:43Z",
+  "reviewer_identity": "Codex multi-pass page-image adjudication",
+  "protocol": {
+    "protocol_id": "independent_page_image_adjudication_v1",
+    "prompt_scope": "Re-read the exact 1879 witness by independent schedule, relationship, temporal, and fraction tasks; identify table axes before pairing cells; preserve the earlier frozen records unchanged; then compare only normalized results.",
+    "source_isolation_observed_for_blind_tasks": true,
+    "ocr_role": "locator_only",
+    "governing_evidence": "page_images",
+    "chronology_policy": "explicit prose and verse govern chronology; visual grid order supplies assignments only after its axes are identified",
+    "competent_tamil_signoff": false,
+    "public_admission_effect": "none"
+  },
+  "witness": {
+    "archive_item_id": "dli.rmrl.000451_images",
+    "publication_year": 1879,
+    "archive_pdf_md5": "0736b952fb587132c2181a383ff10cfb",
+    "archive_pdf_sha1": "d41ff5c2d569de6422435b20135b58be82a68560",
+    "locally_verified_pdf_sha256": "ed52945ee141faa3f6967b8f043077b95abef9ff674ffb83eaba633417c669c9",
+    "leaf_mapping": "PDF page P corresponds to Internet Archive leaf n(P-1)"
+  },
+  "findings": {
+    "temporal_model": {
+      "status": "machine_resolved_for_private_profile",
+      "locators": ["ia_n6", "ia_n15"],
+      "values": {
+        "day_span_nazhigai": 30,
+        "night_span_nazhigai": 30,
+        "samam_count_per_half": 5,
+        "samam_span_nazhigai": 6
+      }
+    },
+    "duration_vector_nazhigai": {
+      "status": "machine_resolved_for_private_profile",
+      "locators": ["ia_n6", "ia_n18", "ia_n23", "ia_n28", "ia_n33", "ia_n50", "ia_n51"],
+      "values": {
+        "eat": [5, 4],
+        "walk": [3, 2],
+        "rule": [2, 1],
+        "sleep": [3, 4],
+        "die": [1, 2]
+      }
+    },
+    "paired_weekday_headings": {
+      "status": "machine_resolved_for_private_profile",
+      "locators": ["ia_n24", "ia_n25", "ia_n34", "ia_n35"],
+      "policy": "paired names are discrete weekday alternatives sharing one complete table",
+      "purva_night": [["sunday", "tuesday"], ["monday", "wednesday"], ["thursday"], ["friday"], ["saturday"]],
+      "amara_night": [["monday", "saturday"], ["friday"], ["tuesday", "sunday"], ["wednesday"], ["thursday"]]
+    },
+    "table_axes": {
+      "status": "machine_resolved_for_private_profile",
+      "locators": ["ia_n22", "ia_n24", "ia_n25", "ia_n32", "ia_n34", "ia_n35"],
+      "vakkiya_grid": "weekday-selector rows by activity columns, with vowel-and-bird assignments in cells",
+      "ezhuthu_grid": "samam rows by activity columns, with vowel-and-bird assignments in cells",
+      "thozhil_grid": "samam rows by bird columns, with activities in cells",
+      "chronology_source": "explicit prose and verse, not left-to-right grid layout"
+    },
+    "purva_night_generator": {
+      "status": "machine_resolved_for_private_profile",
+      "locators": ["ia_n21", "ia_n22", "ia_n23", "ia_n24", "ia_n25"],
+      "first_eat_by_weekday": ["crow", "cock", "crow", "cock", "peacock", "vulture", "owl"],
+      "eat_step_per_samam": 1,
+      "activity_offsets": {"eat": 0, "walk": 2, "rule": -1, "sleep": 1, "die": -2},
+      "chronological_activities": ["eat", "rule", "die", "walk", "sleep"],
+      "sunday_first_samam": [["crow", "eat"], ["owl", "rule"], ["vulture", "die"], ["peacock", "walk"], ["cock", "sleep"]]
+    },
+    "amara_night_generator": {
+      "status": "machine_confirmed_existing_private_profile",
+      "locators": ["ia_n31", "ia_n32", "ia_n33", "ia_n34", "ia_n35"],
+      "first_eat_by_weekday": ["vulture", "cock", "vulture", "owl", "crow", "peacock", "cock"],
+      "eat_step_per_samam": 1,
+      "activity_offsets": {"eat": 0, "walk": -2, "rule": 1, "sleep": -1, "die": 2},
+      "chronological_activities": ["eat", "sleep", "walk", "die", "rule"],
+      "sunday_first_samam": [["vulture", "eat"], ["peacock", "sleep"], ["cock", "walk"], ["crow", "die"], ["owl", "rule"]]
+    },
+    "directed_relationships": {
+      "status": "machine_confirmed_existing_private_profile",
+      "locators": ["ia_n41", "ia_n42", "ia_n52"],
+      "direction_grammar": "subject-to-target",
+      "self_relation_policy": "undefined",
+      "friend_edges": [["vulture", "crow"], ["owl", "vulture"], ["owl", "cock"], ["owl", "peacock"], ["crow", "vulture"], ["crow", "cock"], ["crow", "peacock"], ["cock", "crow"], ["cock", "peacock"], ["peacock", "crow"], ["peacock", "cock"]],
+      "enemy_edges": [["vulture", "owl"], ["vulture", "cock"], ["vulture", "peacock"], ["owl", "crow"], ["crow", "owl"], ["cock", "vulture"], ["cock", "owl"], ["peacock", "vulture"], ["peacock", "owl"]],
+      "same_matrix_applies_to": ["purva", "amara"]
+    },
+    "activity_synonyms": {
+      "status": "machine_resolved_for_private_profile",
+      "locators": ["ia_n6", "ia_n18", "ia_n23", "ia_n28", "ia_n33"],
+      "policy": "lexical variants map into the same five computational activities and do not create additional states"
+    }
+  },
+  "limitations": {
+    "competent_tamil_signoff": false,
+    "independent_witness_collation": "not_completed",
+    "universal_doctrine_claim": false,
+    "public_api_admission": false
+  }
+}

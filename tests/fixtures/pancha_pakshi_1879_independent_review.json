@@ -1,13 +1,13 @@
 {
-  "schema_version": 1,
-  "fixture_id": "pancha_pakshi_1879_reconciliation_2026_07_20",
+  "schema_version": 2,
+  "fixture_id": "pancha_pakshi_1879_reconciliation_2026_07_20_v2",
   "evidence_class": "machine_assisted_reconciliation",
-  "created_at_utc": "2026-07-20T10:11:31Z",
-  "status": "non_executable_unreconciled",
+  "created_at_utc": "2026-07-20T12:29:43Z",
+  "status": "private_executable_machine_reconciled",
   "admission_effect": "blocks_public_admission",
   "reviewed_profile": {
     "path": "moira/data/pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
-    "sha256": "5a63ee007a32ec242fd47b91a4b22ff22c6c59d87c0b4716f0c0c562260a98ae",
+    "sha256": "02f1252cbcff10f680148b0213021d30db043c0ecc7387be727ad5d60de04e98",
     "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
     "admission_status": "research_only"
   },
@@ -21,188 +21,126 @@
       "record_id": "pancha_pakshi_1879_grid_reading_2026_07_20",
       "path": "pancha_pakshi_1879_grid_reading_2026_07_20.json",
       "sha256": "54a73f3151459ab754b86cff651882619e680e2089f83e5ee8ae10d3b70e5f74"
+    },
+    {
+      "record_id": "pancha_pakshi_1879_adjudication_2026_07_20",
+      "path": "pancha_pakshi_1879_adjudication_2026_07_20.json",
+      "sha256": "0ed8122b1063b6f261476f219be42fe2bec1e1b261e6d5e68dc103a7c6eb92e2"
     }
   ],
   "reconciliation_method": {
     "reviewer_identity": "Codex root orchestration",
-    "protocol_id": "two_record_reconciliation_v1",
-    "rule": "Only normalized values present with the same scope in both frozen source records enter agreed_machine_readings. Matching values whose governing scope remains unresolved are labelled partial_cross_record_matches and are not generalized. A full surface found in one record and the profile is labelled separately and is not independent consensus. Every material mismatch remains an unresolved finding and cannot become an executable oracle.",
+    "protocol_id": "multi_pass_page_image_reconciliation_v2",
+    "rule": "The original blind and representative-grid records remain frozen historical evidence. A later set of isolated page-image reviews first identified the governing table axes, direction grammar, and prose chronology, then adjudicated the earlier disagreements. Grid cells may attest bird/activity assignments only after the axes are known; explicit prose and verse govern chronological order.",
     "ocr_role": "locator_only_in_source_records",
-    "competent_tamil_signoff": false
+    "frozen_source_records_preserved": true,
+    "competent_tamil_signoff": false,
+    "external_oracle_status": "none"
   },
-  "agreed_machine_readings": {
-    "duration_vector_nazhigai": {
-      "eat": [5, 4],
-      "walk": [3, 2],
-      "rule": [2, 1],
-      "sleep": [3, 4],
-      "die": [1, 2]
-    }
+  "historical_disagreements": {
+    "prior_status": "non_executable_unreconciled",
+    "finding_ids": [
+      "temporal_model_scope",
+      "purva_night_grid_assembly",
+      "amara_night_weekday_seeds",
+      "amara_night_grid_assembly",
+      "directed_relationship_matrix",
+      "printed_grid_semantics"
+    ],
+    "preservation_policy": "The two earlier source records retain their original readings and hashes; this reconciliation records why the later adjudication selected a computational reading without rewriting either record."
   },
-  "partial_cross_record_matches": {
-    "displayed_half_structure": {
-      "evidence_status": "both_records_match_values_scope_not_generalized",
-      "source_scope": "displayed_purva_day_construction_only",
-      "values": {
-        "half_span_nazhigai": 30,
-        "samam_count": 5,
-        "samam_span_nazhigai": 6
-      }
-    }
-  },
-  "single_record_profile_matches": {
-    "source_record_id": "pancha_pakshi_1879_blind_reading_2026_07_20",
-    "evidence_status": "one_source_reading_matches_profile_not_independent_consensus",
+  "adjudicated_machine_readings": {
     "temporal_model": {
       "day_span_nazhigai": 30,
       "night_span_nazhigai": 30,
       "samam_count_per_half": 5,
       "samam_span_nazhigai": 6
     },
-    "initial_vowels": {
-      "அ": "vulture",
-      "இ": "owl",
-      "உ": "crow",
-      "எ": "cock",
-      "ஒ": "peacock"
+    "duration_vector_nazhigai": {
+      "eat": [5, 4],
+      "walk": [3, 2],
+      "rule": [2, 1],
+      "sleep": [3, 4],
+      "die": [1, 2]
     },
-    "first_eat_by_weekday": {
-      "purva_day": ["vulture", "owl", "vulture", "owl", "crow", "cock", "peacock"],
-      "purva_night": ["crow", "cock", "crow", "cock", "peacock", "vulture", "owl"],
-      "amara_day": ["cock", "peacock", "cock", "crow", "owl", "vulture", "peacock"]
+    "table_semantics": {
+      "weekday_heading_policy": "paired names are discrete weekday alternatives sharing one complete table",
+      "grid_role": "bird/activity assignment evidence after axes are identified",
+      "chronology_role": "explicit prose and verse govern chronological order"
+    },
+    "purva_night": {
+      "first_eat_by_weekday": ["crow", "cock", "crow", "cock", "peacock", "vulture", "owl"],
+      "eat_step_per_samam": 1,
+      "activity_offsets": {"eat": 0, "walk": 2, "rule": -1, "sleep": 1, "die": -2},
+      "chronological_activities": ["eat", "rule", "die", "walk", "sleep"],
+      "sunday_first_samam": [["crow", "eat"], ["owl", "rule"], ["vulture", "die"], ["peacock", "walk"], ["cock", "sleep"]]
+    },
+    "amara_night": {
+      "first_eat_by_weekday": ["vulture", "cock", "vulture", "owl", "crow", "peacock", "cock"],
+      "eat_step_per_samam": 1,
+      "activity_offsets": {"eat": 0, "walk": -2, "rule": 1, "sleep": -1, "die": 2},
+      "chronological_activities": ["eat", "sleep", "walk", "die", "rule"]
+    },
+    "directed_relationships": {
+      "self_relation_policy": "undefined",
+      "friend_edges": [["vulture", "crow"], ["owl", "vulture"], ["owl", "cock"], ["owl", "peacock"], ["crow", "vulture"], ["crow", "cock"], ["crow", "peacock"], ["cock", "crow"], ["cock", "peacock"], ["peacock", "crow"], ["peacock", "cock"]],
+      "all_other_nonself_edges": "enemy"
     }
   },
-  "unresolved_findings": [
+  "resolved_findings": [
     {
       "finding_id": "temporal_model_scope",
-      "surface": "day_and_night_half_structure",
-      "status": "unresolved",
-      "profile_snapshot": {"day_span_nazhigai": 30, "night_span_nazhigai": 30, "samam_count_per_half": 5, "samam_span_nazhigai": 6},
-      "source_readings": [
-        {
-          "record_id": "pancha_pakshi_1879_blind_reading_2026_07_20",
-          "reading_status": "matches_full_profile_temporal_model",
-          "locator_ids": ["ia_n6", "ia_n15"],
-          "reading": {"day_span_nazhigai": 30, "night_span_nazhigai": 30, "samam_count_per_half": 5, "samam_span_nazhigai": 6}
-        },
-        {
-          "record_id": "pancha_pakshi_1879_grid_reading_2026_07_20",
-          "reading_status": "matches_displayed_half_values_but_broader_scope_unresolved",
-          "locator_ids": ["ia_n17"],
-          "reading": {"half_span_nazhigai": 30, "samam_count": 5, "samam_span_nazhigai": 6, "scope_question": "Does the fixed thirty-nazhigai statement govern both day and night or only the displayed Purva-day construction?"}
-        }
-      ],
-      "required_resolution": "Tamil review must establish whether the thirty-nazhigai and five-samam statement governs both day and night across every regime."
+      "status": "machine_resolved_for_private_profile",
+      "governing_locator_ids": ["ia_n6", "ia_n15"],
+      "resolution": "The thirty-nazhigai half, five samams, and six-nazhigai samam govern both day and night in both regimes."
     },
     {
       "finding_id": "purva_night_grid_assembly",
-      "surface": "purva_night_sunday_first_samam",
-      "status": "unresolved",
-      "profile_snapshot": [["crow", "eat"], ["vulture", "rule"], ["cock", "die"], ["owl", "walk"], ["peacock", "sleep"]],
-      "source_readings": [
-        {
-          "record_id": "pancha_pakshi_1879_blind_reading_2026_07_20",
-          "reading_status": "conflicts_with_profile",
-          "locator_ids": ["ia_n21", "ia_n22", "ia_n23", "ia_n24"],
-          "reading": [["crow", "eat"], ["owl", "rule"], ["vulture", "die"], ["peacock", "walk"], ["cock", "sleep"]]
-        },
-        {
-          "record_id": "pancha_pakshi_1879_grid_reading_2026_07_20",
-          "reading_status": "different_weekday_and_unresolved_table_axes",
-          "locator_ids": ["ia_n25"],
-          "reading": {"weekday": "thursday", "bird_order": ["peacock", "cock", "crow", "owl", "vulture"], "activity_row": ["eat", "rule", "die", "walk", "sleep"]}
-        }
-      ],
-      "required_resolution": "Tamil review must establish how the printed bird rows, activity rows, and alternate or skip rule assemble temporal cells."
+      "status": "machine_resolved_for_private_profile",
+      "governing_locator_ids": ["ia_n21", "ia_n22", "ia_n23", "ia_n24", "ia_n25"],
+      "resolution": "The prior private generator was wrong; the corrected step, offsets, and Sunday first samam are recorded in adjudicated_machine_readings."
     },
     {
       "finding_id": "amara_night_weekday_seeds",
-      "surface": "amara_night_first_eat_by_weekday",
-      "status": "unresolved",
-      "profile_snapshot": ["vulture", "cock", "vulture", "owl", "crow", "peacock", "cock"],
-      "source_readings": [
-        {
-          "record_id": "pancha_pakshi_1879_blind_reading_2026_07_20",
-          "reading_status": "conflicts_for_wednesday_thursday_saturday",
-          "locator_ids": ["ia_n31", "ia_n32"],
-          "reading": ["vulture", "cock", "vulture", "cock", "owl", "peacock", "crow"]
-        },
-        {
-          "record_id": "pancha_pakshi_1879_grid_reading_2026_07_20",
-          "reading_status": "supports_profile_for_wednesday_only",
-          "locator_ids": ["ia_n35"],
-          "reading": {"weekday": "wednesday", "first_printed_bird": "owl"}
-        }
-      ],
-      "required_resolution": "Tamil review must re-read the weekday pairings and seed declarations on IA leaves n31-n35."
+      "status": "machine_resolved_for_private_profile",
+      "governing_locator_ids": ["ia_n31", "ia_n32", "ia_n34", "ia_n35"],
+      "resolution": "The existing private Sun-through-Sat seed vector is confirmed."
     },
     {
       "finding_id": "amara_night_grid_assembly",
-      "surface": "amara_night_sunday_tuesday_first_samam",
-      "status": "unresolved",
-      "profile_snapshot": [["vulture", "eat"], ["cock", "walk"], ["owl", "rule"], ["peacock", "sleep"], ["crow", "die"]],
-      "source_readings": [
-        {
-          "record_id": "pancha_pakshi_1879_blind_reading_2026_07_20",
-          "reading_status": "conflicts_with_profile",
-          "locator_ids": ["ia_n31", "ia_n32", "ia_n33", "ia_n34"],
-          "reading": [["vulture", "eat"], ["cock", "sleep"], ["crow", "walk"], ["peacock", "die"], ["owl", "rule"]]
-        },
-        {
-          "record_id": "pancha_pakshi_1879_grid_reading_2026_07_20",
-          "reading_status": "printed_rows_match_profile_only_if_columns_are_paired",
-          "locator_ids": ["ia_n35"],
-          "reading": {"bird_order": ["vulture", "cock", "owl", "peacock", "crow"], "activity_row": ["eat", "walk", "rule", "sleep", "die"], "pairing_status": "unresolved_table_axes"}
-        }
-      ],
-      "required_resolution": "Tamil review must identify whether the displayed rows are bird assignments, activity sequence, or generator instructions."
+      "status": "machine_resolved_for_private_profile",
+      "governing_locator_ids": ["ia_n31", "ia_n32", "ia_n33", "ia_n34", "ia_n35"],
+      "resolution": "The existing private Amara-night step, offsets, chronology, and assignments are confirmed."
     },
     {
       "finding_id": "directed_relationship_matrix",
-      "surface": "directed_nonself_relationships",
-      "status": "unresolved",
-      "profile_snapshot": {"friend_edges": [["vulture", "crow"], ["owl", "vulture"], ["owl", "cock"], ["owl", "peacock"], ["crow", "vulture"], ["crow", "cock"], ["crow", "peacock"], ["cock", "crow"], ["cock", "peacock"], ["peacock", "crow"], ["peacock", "cock"]], "all_other_nonself_edges": "enemy"},
-      "source_readings": [
-        {
-          "record_id": "pancha_pakshi_1879_blind_reading_2026_07_20",
-          "reading_status": "not_certified_from_1879",
-          "locator_ids": ["ia_n41", "ia_n42"],
-          "reading": "A clearer 1867 parallel printing provisionally corroborated the normalized edges, but the faded 1879 verse did not certify every cell."
-        }
-      ],
-      "required_resolution": "A competent reader must independently transcribe and identify the governing 1879 relationship layer before any cell becomes public doctrine."
+      "status": "machine_resolved_for_private_profile",
+      "governing_locator_ids": ["ia_n41", "ia_n42", "ia_n52"],
+      "resolution": "All twenty directed nonself cells are confirmed; direction is subject-to-target and reciprocity is never inferred."
     },
     {
       "finding_id": "printed_grid_semantics",
-      "surface": "schedule_assembly_policy",
-      "status": "unresolved",
-      "profile_snapshot": "current_rule_reading_generates_printed_grids_are_non_executable_review_evidence",
-      "source_readings": [
-        {
-          "record_id": "pancha_pakshi_1879_blind_reading_2026_07_20",
-          "reading_status": "damaged_rotation_prose",
-          "locator_ids": ["ia_n15", "ia_n22", "ia_n26", "ia_n32"],
-          "reading": "The alternate or skip arrangement was not human-reviewed."
-        },
-        {
-          "record_id": "pancha_pakshi_1879_grid_reading_2026_07_20",
-          "reading_status": "unresolved_table_axes",
-          "locator_ids": ["ia_n19", "ia_n25", "ia_n29", "ia_n35"],
-          "reading": "Bird and activity rows were preserved separately because their pairing semantics were not established."
-        }
-      ],
-      "required_resolution": "Tamil review must explain the table axes and assembly prose before the grids can serve as executable authority fixtures."
+      "status": "machine_resolved_for_private_profile",
+      "governing_locator_ids": ["ia_n19", "ia_n22", "ia_n25", "ia_n29", "ia_n32", "ia_n35"],
+      "resolution": "Identified table axes make the grids assignment evidence, while explicit prose and verse remain the only chronological authority."
     }
   ],
-  "tamil_review_questions": [
-    "Does the fixed thirty-nazhigai and five-samam statement govern both day and night across every regime, or only the displayed Purva-day construction?",
-    "Do the duration glyphs on IA leaves n6, n10, n18, and n50-n51 unambiguously mean 1 1/4, 1 1/2, 2, 3/4, and 1/2 nazhigai?",
-    "Do paired weekday headings mean two discrete weekdays rather than a range or another grouping rule?",
-    "What exactly do the five printed rows and columns represent: bird assignments, temporal sequence, seed states, or transition instructions?",
-    "How do the Purva-night alternate or skip instructions map a first bird to the remaining four activities?",
-    "What are the exact Wednesday, Thursday, and Saturday Amara-night seed birds?",
-    "Does the 1879 relationship material define every ordered pair directly, and which leaf or text layer governs conflicts?",
-    "Are the alternate activity terms in the witness computational synonyms or distinct doctrinal layers?"
+  "remaining_admission_gaps": [
+    {
+      "gap_id": "competent_tamil_review",
+      "status": "not_completed",
+      "effect": "blocks_public_admission"
+    },
+    {
+      "gap_id": "independent_witness_collation",
+      "status": "not_completed",
+      "effect": "blocks_public_admission"
+    },
+    {
+      "gap_id": "public_vessel_and_transport_design",
+      "status": "intentionally_deferred",
+      "effect": "no_public_surface"
+    }
   ],
   "artifact_distribution_boundary": {
     "policy_status": "reference_only_source_artifacts_not_packaged",

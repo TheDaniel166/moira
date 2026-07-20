@@ -1,15 +1,24 @@
 {
-  "schema_version": 1,
-  "generated_at_utc": "2026-07-20T11:03:23Z",
+  "schema_version": 2,
+  "generated_at_utc": "2026-07-20T15:50:57Z",
   "hash_algorithm": "sha256",
   "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
   "profiles": [
     {
       "profile_id": "agastya_madras_1879_akshara_fixed_clock",
       "path": "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
-      "sha256": "5a63ee007a32ec242fd47b91a4b22ff22c6c59d87c0b4716f0c0c562260a98ae",
-      "admission_status": "research_only",
-      "product_kind": "aksara_prasna_operating_schedule"
+      "sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+      "admission_status": "source_scoped_public",
+      "product_kind": "aksara_prasna_operating_schedule",
+      "default_selection_allowed": false,
+      "capabilities": [
+        "aksara_identity",
+        "nominal_schedule",
+        "directed_relationships",
+        "astronomical_context",
+        "fixed_clock_materialization"
+      ],
+      "admission_decision_id": "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20"
     }
   ]
 }

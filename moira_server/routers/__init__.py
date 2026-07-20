@@ -43,6 +43,7 @@ from .vedic_extended import (
 from .nodes import router as nodes_router
 from .nine_parts import router as nine_parts_router
 from .panchanga import router as panchanga_router
+from .pancha_pakshi import router as pancha_pakshi_router
 from .orbits import router as orbits_router
 from .phase import router as phase_router
 from .phenomena import router as phenomena_router
@@ -118,6 +119,7 @@ __all__ = [
     "nine_parts_router",
     "orbits_router",
     "panchanga_router",
+    "pancha_pakshi_router",
     "phase_router",
     "phenomena_router",
     "paran_packet_router",

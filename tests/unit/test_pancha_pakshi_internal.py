@@ -10,7 +10,9 @@ import moira
 from moira import Moira
 from moira._pancha_pakshi import (
     PanchaPakshiActivity,
+    PanchaPakshiAdmissionStatus,
     PanchaPakshiBird,
+    PanchaPakshiCapability,
     PanchaPakshiHalf,
     PanchaPakshiPaksha,
     PanchaPakshiRelation,
@@ -35,23 +37,42 @@ def profile():
     return load_pancha_pakshi_profile(PROFILE_ID)
 
 
-def test_profile_is_explicitly_named_and_research_only(profile) -> None:
+def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) -> None:
     assert available_pancha_pakshi_profiles() == (
         type(available_pancha_pakshi_profiles()[0])(
             profile_id=PROFILE_ID,
-            admission_status="research_only",
+            admission_status=PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
             product_kind="aksara_prasna_operating_schedule",
+            default_selection_allowed=False,
+            capabilities=(
+                PanchaPakshiCapability.AKSARA_IDENTITY,
+                PanchaPakshiCapability.NOMINAL_SCHEDULE,
+                PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
+                PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+                PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
+            ),
+            admission_decision_id=(
+                "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20"
+            ),
         ),
     )
     assert profile.profile_id == PROFILE_ID
-    assert profile.admission_status == "research_only"
+    assert profile.admission_status is PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC
     assert profile.product_kind == "aksara_prasna_operating_schedule"
+    assert profile.default_selection_allowed is False
+    assert profile.capabilities == (
+        PanchaPakshiCapability.AKSARA_IDENTITY,
+        PanchaPakshiCapability.NOMINAL_SCHEDULE,
+        PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
+        PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
+        PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
+    )
     assert profile.derivation_status == (
-        "rule_derived_with_unreconciled_table_comparison"
+        "machine_reconciled_source_assignment_pending_competent_tamil_review"
     )
     assert profile.assembly_policy == (
-        "current_rule_reading_generates_printed_grids_are_non_executable_"
-        "review_evidence"
+        "resolved_grid_axes_assign_birds_explicit_prose_and_verse_govern_"
+        "chronology"
     )
 
     with pytest.raises(ValueError, match="no default canon"):
@@ -60,10 +81,11 @@ def test_profile_is_explicitly_named_and_research_only(profile) -> None:
         load_pancha_pakshi_profile("unidentified_blended_canon")
 
 
-def test_research_surface_remains_out_of_the_public_engine() -> None:
+def test_private_loader_remains_out_of_the_public_engine() -> None:
     assert not hasattr(moira, "load_pancha_pakshi_profile")
     assert not hasattr(moira, "PanchaPakshiProfile")
-    assert not any(name.startswith("pancha_pakshi") for name in dir(Moira))
+    assert hasattr(moira, "pancha_pakshi_schedule")
+    assert hasattr(Moira, "pancha_pakshi_schedule")
 
 
 def test_akshara_identity_is_not_a_natal_moon_mapping(profile) -> None:
@@ -133,10 +155,10 @@ def test_uniform_durations_are_exact_fractions(profile) -> None:
             generate_purva_night_schedule,
             (
                 (PanchaPakshiBird.CROW, PanchaPakshiActivity.EAT),
-                (PanchaPakshiBird.VULTURE, PanchaPakshiActivity.RULE),
-                (PanchaPakshiBird.COCK, PanchaPakshiActivity.DIE),
-                (PanchaPakshiBird.OWL, PanchaPakshiActivity.WALK),
-                (PanchaPakshiBird.PEACOCK, PanchaPakshiActivity.SLEEP),
+                (PanchaPakshiBird.OWL, PanchaPakshiActivity.RULE),
+                (PanchaPakshiBird.VULTURE, PanchaPakshiActivity.DIE),
+                (PanchaPakshiBird.PEACOCK, PanchaPakshiActivity.WALK),
+                (PanchaPakshiBird.COCK, PanchaPakshiActivity.SLEEP),
             ),
         ),
         (
@@ -177,8 +199,8 @@ def test_four_source_generators_materialize_current_profile_sunday_rows(
     assert all(
         cell.assembly_policy
         == (
-            "current_rule_reading_generates_printed_grids_are_non_executable_"
-            "review_evidence"
+            "resolved_grid_axes_assign_birds_explicit_prose_and_verse_govern_"
+            "chronology"
         )
         for cell in schedule.cells
     )
@@ -186,6 +208,87 @@ def test_four_source_generators_materialize_current_profile_sunday_rows(
         "ia_n6" in {locator.locator_id for locator in cell.source_locators}
         for cell in schedule.cells
     )
+
+
+def test_purva_night_matches_source_owned_weekday_and_samam_oracle(profile) -> None:
+    chronology = (
+        PanchaPakshiActivity.EAT,
+        PanchaPakshiActivity.RULE,
+        PanchaPakshiActivity.DIE,
+        PanchaPakshiActivity.WALK,
+        PanchaPakshiActivity.SLEEP,
+    )
+    assignment_rows = {
+        "A": (
+            PanchaPakshiBird.CROW,
+            PanchaPakshiBird.OWL,
+            PanchaPakshiBird.VULTURE,
+            PanchaPakshiBird.PEACOCK,
+            PanchaPakshiBird.COCK,
+        ),
+        "B": (
+            PanchaPakshiBird.COCK,
+            PanchaPakshiBird.CROW,
+            PanchaPakshiBird.OWL,
+            PanchaPakshiBird.VULTURE,
+            PanchaPakshiBird.PEACOCK,
+        ),
+        "C": (
+            PanchaPakshiBird.PEACOCK,
+            PanchaPakshiBird.COCK,
+            PanchaPakshiBird.CROW,
+            PanchaPakshiBird.OWL,
+            PanchaPakshiBird.VULTURE,
+        ),
+        "D": (
+            PanchaPakshiBird.VULTURE,
+            PanchaPakshiBird.PEACOCK,
+            PanchaPakshiBird.COCK,
+            PanchaPakshiBird.CROW,
+            PanchaPakshiBird.OWL,
+        ),
+        "E": (
+            PanchaPakshiBird.OWL,
+            PanchaPakshiBird.VULTURE,
+            PanchaPakshiBird.PEACOCK,
+            PanchaPakshiBird.COCK,
+            PanchaPakshiBird.CROW,
+        ),
+    }
+    weekday_rows = {
+        PanchaPakshiWeekday.SUNDAY: ("A", "B", "C", "D", "E"),
+        PanchaPakshiWeekday.MONDAY: ("B", "C", "D", "E", "A"),
+        PanchaPakshiWeekday.TUESDAY: ("A", "B", "C", "D", "E"),
+        PanchaPakshiWeekday.WEDNESDAY: ("B", "C", "D", "E", "A"),
+        PanchaPakshiWeekday.THURSDAY: ("C", "D", "E", "A", "B"),
+        PanchaPakshiWeekday.FRIDAY: ("D", "E", "A", "B", "C"),
+        PanchaPakshiWeekday.SATURDAY: ("E", "A", "B", "C", "D"),
+    }
+
+    generator = profile.generator(
+        PanchaPakshiPaksha.PURVA, PanchaPakshiHalf.NIGHT
+    )
+    assert generator.eat_step_per_samam == 1
+    assert {
+        activity: generator.offset_for(activity)
+        for activity in PanchaPakshiActivity
+    } == {
+        PanchaPakshiActivity.EAT: 0,
+        PanchaPakshiActivity.WALK: 2,
+        PanchaPakshiActivity.RULE: -1,
+        PanchaPakshiActivity.SLEEP: 1,
+        PanchaPakshiActivity.DIE: -2,
+    }
+    assert generator.chronological_activities == chronology
+
+    for weekday, expected_rows in weekday_rows.items():
+        schedule = generate_purva_night_schedule(profile, weekday)
+        for samam_index, row_id in enumerate(expected_rows, start=1):
+            samam = tuple(
+                cell for cell in schedule.cells if cell.samam_index == samam_index
+            )
+            assert tuple(cell.activity for cell in samam) == chronology
+            assert tuple(cell.bird for cell in samam) == assignment_rows[row_id]
 
 
 def test_all_context_weekday_schedules_are_complete_and_contiguous(profile) -> None:
@@ -246,7 +349,7 @@ def test_relationships_are_complete_directed_source_cells(profile) -> None:
 
     assert len(profile.relationship_rules) == 20
     assert owl_to_peacock.model_kind == (
-        "source_scoped_directed_1879_unreconciled"
+        "source_scoped_directed_1879_machine_reviewed"
     )
     assert owl_to_peacock.relation is PanchaPakshiRelation.FRIEND
     assert peacock_to_owl.relation is PanchaPakshiRelation.ENEMY
@@ -263,6 +366,7 @@ def test_relationships_are_complete_directed_source_cells(profile) -> None:
 
 def test_omissions_and_conflict_witnesses_remain_explicit(profile) -> None:
     assert {omission.feature for omission in profile.explicit_omissions} == {
+        "authority_birds",
         "natal_mapping",
         "scoring",
         "cross_witness_normalized_relationship_policy",

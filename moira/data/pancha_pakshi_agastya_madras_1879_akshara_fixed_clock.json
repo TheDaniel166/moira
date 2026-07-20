@@ -1,12 +1,11 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "profile": {
     "profile_id": "agastya_madras_1879_akshara_fixed_clock",
-    "admission_status": "research_only",
     "product_kind": "aksara_prasna_operating_schedule",
-    "derivation_status": "rule_derived_with_unreconciled_table_comparison",
-    "assembly_policy": "current_rule_reading_generates_printed_grids_are_non_executable_review_evidence",
-    "title": "Agastya-attributed Madras 1879 Pancha Pakshi research profile"
+    "derivation_status": "machine_reconciled_source_assignment_pending_competent_tamil_review",
+    "assembly_policy": "resolved_grid_axes_assign_birds_explicit_prose_and_verse_govern_chronology",
+    "title": "Agastya-attributed Madras 1879 Pancha Pakshi source-scoped profile"
   },
   "source": {
     "witness_id": "dli.rmrl.000451_images",
@@ -67,7 +66,7 @@
       "witness_id": "dli.rmrl.000451_images",
       "label": "IA leaves n19-n20: Purva-day schedule grids",
       "url": "https://archive.org/details/dli.rmrl.000451_images/page/n19/mode/1up",
-      "evidence_role": "non_executable_unreconciled_schedule_grids"
+      "evidence_role": "machine_reconciled_assignment_grid_not_chronological_authority"
     },
     {
       "locator_id": "ia_n21",
@@ -88,7 +87,7 @@
       "witness_id": "dli.rmrl.000451_images",
       "label": "IA leaves n22-n25: Purva-night schedule grids",
       "url": "https://archive.org/details/dli.rmrl.000451_images/page/n22/mode/1up",
-      "evidence_role": "non_executable_unreconciled_schedule_grids"
+      "evidence_role": "machine_reconciled_assignment_grid_not_chronological_authority"
     },
     {
       "locator_id": "ia_n23",
@@ -109,7 +108,7 @@
       "witness_id": "dli.rmrl.000451_images",
       "label": "IA leaves n27-n30: Amara-day examples and schedule grids",
       "url": "https://archive.org/details/dli.rmrl.000451_images/page/n27/mode/1up",
-      "evidence_role": "non_executable_unreconciled_schedule_grids"
+      "evidence_role": "machine_reconciled_assignment_grid_not_chronological_authority"
     },
     {
       "locator_id": "ia_n28",
@@ -137,7 +136,7 @@
       "witness_id": "dli.rmrl.000451_images",
       "label": "IA leaves n32-n35: Amara-night schedule grids",
       "url": "https://archive.org/details/dli.rmrl.000451_images/page/n32/mode/1up",
-      "evidence_role": "non_executable_unreconciled_schedule_grids"
+      "evidence_role": "machine_reconciled_assignment_grid_not_chronological_authority"
     },
     {
       "locator_id": "ia_n33",
@@ -149,9 +148,9 @@
     {
       "locator_id": "ia_n52",
       "witness_id": "dli.rmrl.000451_images",
-      "label": "IA leaf n52: current directed friend/enemy reading; independent certification pending",
+      "label": "IA leaf n52: machine-reviewed directed friend/enemy prose list",
       "url": "https://archive.org/details/dli.rmrl.000451_images/page/n52/mode/1up",
-      "evidence_role": "contested_non_executable_directed_relationship_reading"
+      "evidence_role": "machine_reviewed_directed_relationship_prose"
     }
   ],
   "birds": ["vulture", "owl", "crow", "cock", "peacock"],
@@ -215,8 +214,8 @@
         {"weekday": "friday", "bird": "vulture"},
         {"weekday": "saturday", "bird": "owl"}
       ],
-      "eat_step_per_samam": 2,
-      "activity_offsets": {"eat": 0, "walk": -1, "rule": -2, "sleep": 2, "die": 1},
+      "eat_step_per_samam": 1,
+      "activity_offsets": {"eat": 0, "walk": 2, "rule": -1, "sleep": 1, "die": -2},
       "chronological_activities": ["eat", "rule", "die", "walk", "sleep"],
       "source_locators": ["ia_n21", "ia_n22", "ia_n22_n25", "ia_n23"]
     },
@@ -258,7 +257,7 @@
     }
   ],
   "directed_relationships": {
-    "model_kind": "source_scoped_directed_1879_unreconciled",
+    "model_kind": "source_scoped_directed_1879_machine_reviewed",
     "self_relation_policy": "undefined",
     "cells": [
       {"subject": "vulture", "target": "owl", "relation": "enemy", "source_locators": ["ia_n52"]},
@@ -284,10 +283,11 @@
     ]
   },
   "explicit_omissions": [
+    {"feature": "authority_birds", "status": "omitted", "reason": "No source-owned Padu, Bharana, or Adhikara bird product is admitted; instantaneous Rule activity is not reinterpreted as a day ruler."},
     {"feature": "natal_mapping", "status": "omitted", "reason": "No explicit natal-nakshatra or natal-Moon identity map was verified in this 1879 witness; it must not be inferred from the aksara mapping."},
-    {"feature": "scoring", "status": "omitted", "reason": "No scoring doctrine is admitted for this research profile."},
+    {"feature": "scoring", "status": "omitted", "reason": "No scoring doctrine is admitted for this source-scoped profile."},
     {"feature": "cross_witness_normalized_relationship_policy", "status": "omitted", "reason": "Only this witness's directed 20-cell matrix is represented; no reciprocal, cross-witness, or normalized relationship policy is inferred."},
-    {"feature": "vinadi", "status": "omitted", "reason": "No vinadi-level subdivision doctrine is admitted for this research profile."},
+    {"feature": "vinadi", "status": "omitted", "reason": "No vinadi-level subdivision doctrine is admitted for this source-scoped profile."},
     {"feature": "seasonal_scaling", "status": "omitted", "reason": "This witness is represented only by its fixed 30-nazhigai day and night halves; sunrise-scaled materialization is not part of this profile."}
   ],
   "research_conflict_ledger": [

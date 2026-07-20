@@ -8,33 +8,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Pancha Pakshi Research Foundation**: Added a private, non-admitted
-  Pancha Pakshi doctrine layer with immutable source-scoped vessels,
-  exact-rational nazhigai arithmetic, per-cell source locators, a hash-bearing
-  data manifest, and fail-closed completeness and bijection validation. The
-  bundled `agastya_madras_1879_akshara_fixed_clock` profile is explicitly
-  limited to the query/name-letter operating-schedule witness and fixed-clock
-  timing; it is not a natal-Moon canon and is not a default. A metadata-only
-  conflict ledger preserves the
-  verse/commentary, duration, relationship, and source-witness boundaries found in
-  later witnesses without importing their scans, prose, layouts, or tables.
-  A blind source reading and a separate representative-grid reading are now
-  preserved as distinct hash-bound records with a non-executable
-  reconciliation. Both records agree with the profile on the duration vector
-  and the numeric `30/5/6` structure of the displayed Pūrva-day half, without
-  establishing that structure's complete day/night scope. The blind record
-  alone also matches the full temporal model, vowel map, and three weekday seed
-  surfaces, which are explicitly not independent consensus. The records
-  preserve unresolved Pūrva-night assembly, Amara-night seed and assembly,
-  relationship, and table-semantic disagreements. Archive provenance
-  now distinguishes the original image ZIP from the derivative PDF and records
-  catalogued contributor metadata, the standing non-bundling policy, and the
-  MIT package scope. Archival rights metadata is explicitly outside public
-  admission because source artifacts and copied expression are never bundled.
-  Public exports, facade methods, and REST routes remain deliberately absent
-  because independent readings did not reconcile, and competent Tamil review,
-  cross-witness collation, and explicit text-layer precedence remain
-  incomplete.
+- **First-Class Source-Scoped Pancha Pakshi**: Added immutable public vessels,
+  package-root and `moira.vedic` exports, five kernel-free `Moira` methods, one
+  kernel-backed local-solar context method, one kernel-backed fixed-clock
+  materialization method, and seven strict
+  `/v1/pancha-pakshi` routes for profile discovery, aksara identity, exact
+  nominal schedules, directed relationships, local-solar context, and
+  fixed-clock materialization. Manifest schema 2 owns finite admission status,
+  exact product capabilities, admission
+  decision identity, and a permanently false default-selection flag. The
+  admitted `agastya_madras_1879_akshara_fixed_clock` profile is limited to the
+  Agastya-attributed Madras 1879 query/name-initial fixed-clock product; no
+  ambient or universal Pancha Pakshi canon is selected. Exact-rational
+  nazhigai values remain `Fraction` objects in the engine and serialize as
+  numerator/denominator pairs. Every public computation carries source,
+  locator, assembly-policy, admission, capability, astronomical-routing, and
+  omission provenance.
+- **Pancha Pakshi Local-Solar Context**: Added the explicitly modern
+  `local_solar_day_explicit_paksha_v1` composition policy. Given a
+  timezone-aware instant normalized to UTC, location, explicit profile, and
+  caller-supplied `purva` or `amara`
+  source label, it derives the governing reader-backed topocentric sunrise,
+  sunset, next sunrise, day/night half, and local-mean-solar weekday, then
+  selects the unchanged nominal 1879 schedule. The result exposes the policy
+  including its fixed `0 m` observer elevation and unrefracted-signal/
+  threshold-refraction convention, and exposes UT1 boundaries without
+  inferring lunar paksha, converting nominal
+  nazhigai offsets into instants, or claiming a current activity. The profile
+  data and profile hash are unchanged; an additive admission decision chains
+  this capability to the Phase 1 source-scoped decision without asserting
+  `corroborated_public` status.
+- **Pancha Pakshi Fixed-Clock Materialization**: Added the explicitly modern
+  `fixed_24_minute_nazhigai_from_local_solar_half_start_v1` policy. It anchors
+  the selected source-owned day schedule at topocentric sunrise or night
+  schedule at topocentric sunset, converts each exact rational nazhigai offset
+  to fixed SI seconds, adds those offsets on reader-bound TT, and projects the
+  half-open endpoints to UT1. One nazhigai is exactly `1,440 s`, so the
+  thirty-nazhigai fixed span is always `43,200 s`. The materialized span is
+  neither clipped nor stretched to the astronomical half; its signed
+  fixed-end-minus-solar-end TT residual and `before`/`coalescent`/`after`
+  topology remain visible under an explicit `0.0001 s` numerical coalescence
+  policy. The result does not claim a current cell and does not admit
+  solar-proportional scaling. The new decision fixture chains the unchanged
+  profile and Stage 2A decision while binding the University of Madras Tamil
+  Lexicon nazhigai unit, IERS TT/SI-second convention, and the existing
+  JPL-Horizons-validated solar anchor within their separate authority roles.
+- **Pancha Pakshi Research And Admission Evidence**: Preserved the original
+  blind reading, representative-grid reading, page-image adjudication, and
+  machine reconciliation as frozen historical records. The adjudication
+  established the full `30/5/6` day/night scope and table axes, confirmed the
+  Amara-night schedule and all twenty directed nonself relationship cells, and
+  corrected the former Pūrva-night generator. A new additive admission fixture
+  links the former and schema-v2 profile hashes and binds the unchanged
+  computational surface of 10 identity symbols, 28 schedules, 700 cells, and 20
+  directed relationships. Competent-human Tamil review and independent-witness
+  collation remain incomplete evidence upgrades and barriers to corroborated,
+  generalized, natal, or default-canon claims—not blockers for this explicitly
+  source-scoped product. The standing non-bundling architecture remains in
+  force; archival scans, PDFs, OCR, page images, copied layouts, source prose,
+  and third-party translations are not distributed, and no rights-clearance
+  phase was introduced.
 
 ### Changed
 - **Shared Local Solar Day Boundary**: Extracted the existing topocentric
@@ -44,6 +77,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   shared result while retaining its existing public vessels, method
   signatures, FastAPI schemas, Chaldean sequence, temporal-hour arithmetic,
   numerical output, and error semantics.
+
+### Validation
+- The Stage 2A astronomical boundary is checked against the offline JPL
+  Horizons `sun-new-york-equinox` observer-table fixture. With the discovered,
+  content-identified `DE-0441LE-0441` kernel, sunrise and sunset differed by
+  `0.082 s` and `0.123 s`, respectively, within the fixture's `2 s` authority
+  gate. This validates the local-solar boundary only, not the historical
+  Pancha Pakshi doctrine.
+- Stage 2B validation separately checks exact rational-to-SI-second
+  materialization, TT-to-UT1 endpoint projection, half-open ownership,
+  no-clipping behavior, and the signed fixed-end topology. The `0.0001 s`
+  coalescence is numerical policy rather than historical or astronomical
+  accuracy, and no external current-cell oracle is claimed because the public
+  product deliberately selects no current cell.
 
 ## [5.0.0] - 2026-07-19
 
@@ -651,6 +698,12 @@ Detailed release and migration guidance is available in
   as "not ready". This corrects the previous HTTP 200/`ready=false` mismatch.
 
 ### Validation
+- Added hash-chain and manifest-transition coverage for the additive Pancha
+  Pakshi context decision, plus configured-reader, exact-sunset boundary,
+  capability/admission gate, explicit-paksha, immutable-policy, aware-datetime
+  adapter, service, REST, OpenAPI, and no-offset-materialization tests. These
+  establish composition and transport integrity; they are not an external
+  Pancha Pakshi oracle or independent-witness corroboration.
 - Restored the complete sidereal external-reference fixture to the hosted
   acceptance lane, including the 1625 epoch under its documented
   `0.01`-degree cross-engine corroboration envelope; the obsolete deselection

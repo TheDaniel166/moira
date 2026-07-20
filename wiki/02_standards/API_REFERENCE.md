@@ -253,6 +253,7 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 |---|---|
 | Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |
 | Panchanga | `panchanga_at`, `sankranti_at`, `PanchangaResult`, `TithiPaksha`, `PanchangaPolicy` |
+| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_directed_relationship` |
 | Vedic dignities | `vedic_dignity`, `planetary_relationships`, `VedicDignityResult`, `DignityConditionProfile`, `ChartDignityProfile` |
 | Varga (divisional) | `navamsa`, `saptamsa`, `dashamansa`, `dwadashamsa`, `trimshamsa` + 11 more vargas, `VargaPoint` |
 | Vimshottari Dasha | `vimshottari`, `current_dasha`, `dasha_balance`, `dasha_active_line`, `DashaPeriod`, `VimshottariComputationPolicy` |
@@ -4755,7 +4756,7 @@ from moira.sky.visibility import (
 
 ## 21. `moira.vedic` — Vedic Astrology Surface
 
-`moira.vedic` collects every Vedic-domain subsystem into a single coherent import surface. It inherits the full `moira.essentials` surface and adds: sidereal positioning, nakshatras, panchanga, all 16 vargas, Vedic dignities, Vimshottari and alternate dasha systems (Ashtottari, Yogini), Jaimini karakas, Ashtakavarga, and Shadbala.
+`moira.vedic` collects every Vedic-domain subsystem into a single coherent import surface. It inherits the full `moira.essentials` surface and adds: sidereal positioning, nakshatras, panchanga, source-scoped Pancha Pakshi, all 16 vargas, Vedic dignities, Vimshottari and alternate dasha systems (Ashtottari, Yogini), Jaimini karakas, Ashtakavarga, and Shadbala.
 
 It does not include the Western classical surface (Arabic lots, Firdaria, Zodiacal Releasing, Huber, etc.). For that, use `moira.classical`. For the complete surface, use `moira.facade`.
 
@@ -4771,6 +4772,32 @@ naks = all_nakshatras_at(chart.longitudes(), chart.jd)
 
 # Panchanga
 pg   = panchanga_at(chart.longitudes()['Sun'], chart.longitudes()['Moon'], chart.jd)
+
+# Source-scoped nominal Pancha Pakshi; no datetime, location, or default profile
+pp = pancha_pakshi_schedule(
+    'agastya_madras_1879_akshara_fixed_clock',
+    paksha=PanchaPakshiPaksha.PURVA,
+    half=PanchaPakshiHalf.DAY,
+    weekday=PanchaPakshiWeekday.SUNDAY,
+)
+
+# Modern local-solar context; caller still supplies the source-label paksha
+pp_context = m.pancha_pakshi_local_solar_context(
+    'agastya_madras_1879_akshara_fixed_clock',
+    datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc),
+    28.6,
+    77.2,
+    paksha=PanchaPakshiPaksha.PURVA,
+)
+
+# Explicit modern fixed-clock materialization; no current-cell selection
+pp_fixed = m.pancha_pakshi_fixed_clock_materialization(
+    'agastya_madras_1879_akshara_fixed_clock',
+    datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc),
+    28.6,
+    77.2,
+    paksha=PanchaPakshiPaksha.PURVA,
+)
 
 # Vedic dignities
 d    = vedic_dignity('Mars', chart.longitudes()['Mars'])
@@ -4811,6 +4838,92 @@ from moira.vedic import (
 | `sidereal_lon` | `float` | Sidereal longitude used for the calculation |
 
 `UserDefinedAyanamsa` — define a custom ayanamsa by specifying an offset in degrees or a reference epoch.
+
+---
+
+### Pancha Pakshi (Source-Scoped 1879 Profile)
+
+```python
+from moira.vedic import (
+    available_pancha_pakshi_profiles,
+    pancha_pakshi_profile_info,
+    pancha_pakshi_identity_from_initial_vowel,
+    pancha_pakshi_schedule,
+    pancha_pakshi_local_solar_context_at,
+    pancha_pakshi_fixed_clock_materialization_at,
+    pancha_pakshi_directed_relationship,
+    PanchaPakshiFixedClockCell,
+    PanchaPakshiFixedClockMaterialization,
+    PanchaPakshiFixedClockMaterializationPolicy,
+    PanchaPakshiLocalSolarContext,
+    PanchaPakshiLocalSolarContextPolicy,
+    PanchaPakshiMaterializedCellRelation,
+    PanchaPakshiSolarBoundaryRelation,
+    PanchaPakshiBird,
+    PanchaPakshiPaksha,
+    PanchaPakshiHalf,
+    PanchaPakshiWeekday,
+)
+```
+
+| Function | Return | Description |
+|---|---|---|
+| `available_pancha_pakshi_profiles()` | `tuple[PanchaPakshiProfileDescriptor, ...]` | List public named profiles without selecting a default |
+| `pancha_pakshi_profile_info(profile_id)` | `PanchaPakshiProfileInfo` | Inspect admission, capabilities, source, locators, conflicts, and omissions |
+| `pancha_pakshi_identity_from_initial_vowel(profile_id, initial_vowel)` | `PanchaPakshiInitialVowelIdentity` | Resolve one explicitly listed aksara/query-or-name initial; not natal Moon identity |
+| `pancha_pakshi_schedule(profile_id, *, paksha, half, weekday)` | `PanchaPakshiSchedule` | Materialize one exact nominal fixed-clock schedule from explicit source labels |
+| `pancha_pakshi_local_solar_context_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiLocalSolarContext` | Resolve topocentric local-solar half and local-mean-solar weekday from UT1, retain caller-supplied paksha, and select the existing nominal schedule |
+| `pancha_pakshi_fixed_clock_materialization_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockMaterialization` | Anchor the selected nominal schedule at governing sunrise or sunset, apply its exact offsets on reader-bound TT, project endpoints to UT1, and report unclipped solar-boundary topology without selecting a current cell |
+| `pancha_pakshi_directed_relationship(profile_id, subject, target)` | `PanchaPakshiDirectedRelationship` | Return one stored ordered non-self relation without reciprocal inference |
+
+`PanchaPakshiLocalSolarContextPolicy` is fixed and inspectable:
+`policy_id="local_solar_day_explicit_paksha_v1"`, caller-supplied source-label
+paksha, topocentric sunrise-to-next-sunrise day, `-0.833`-degree solar-event
+altitude, fixed `0 m` observer elevation, unrefracted altitude signal with
+conventional standard refraction and solar semidiameter incorporated in the
+threshold, sunrise/sunset half, local-mean-solar weekday at governing sunrise,
+and `offset_materialization_status="not_performed"`. The result exposes the
+requested UT1 JD, sunrise/sunset/next-sunrise UT1 JDs, location, paksha, half,
+weekday, policy, selected nominal schedule, and provenance. Its provenance
+routing status is
+`local_solar_half_and_weekday_performed_paksha_caller_supplied`.
+
+`PanchaPakshiFixedClockMaterializationPolicy` admits only
+`policy_id="fixed_24_minute_nazhigai_from_local_solar_half_start_v1"`. Day
+anchors at governing topocentric sunrise and night at governing topocentric
+sunset. One nazhigai is exactly `1440` SI seconds; the fixed 30-nazhigai half is
+`43200` seconds. Exact offsets are added on reader-bound TT, endpoints are
+projected to UT1, intervals are half-open, and the fixed end is never clipped
+or stretched to the solar end. The result reports
+`fixed_end_jd_tt_minus_solar_end_jd_tt` with `0.0001 s` numerical coalescence,
+per-cell solar-half relations, and routing status
+`fixed_clock_materialization_performed_paksha_caller_supplied_no_current_cell`.
+It performs neither current-cell selection nor solar-proportional scaling.
+
+The current `agastya_madras_1879_akshara_fixed_clock` profile is
+`source_scoped_public` and can never be selected implicitly. It performs no
+astronomical paksha inference, natal mapping, current-cell selection,
+solar-proportional scaling, subdivision, or scoring computation. The modern
+`local_solar_day_explicit_paksha_v1` policy derives only topocentric
+sunrise/sunset context, day/night half, and local-mean-solar weekday while the
+paksha remains explicit. It returns the nominal schedule, not a current cell or
+clock-time interval. Only the separate fixed-clock policy materializes those
+nominal offsets. Every result carries immutable profile-owned provenance and
+declared omissions. See the
+[governing admission standard](./PANCHA_PAKSHI_RESEARCH_STANDARD.md) for the
+source and evidence boundary.
+
+The `Moira` facade supplies the five Phase 1 operations as
+`pancha_pakshi_profiles`, `pancha_pakshi_profile_info`,
+`pancha_pakshi_identity_from_initial_vowel`,
+`pancha_pakshi_schedule`, and `pancha_pakshi_directed_relationship`; those
+methods are kernel-free. It additionally supplies the kernel-backed
+`pancha_pakshi_local_solar_context(profile_id, dt, latitude, longitude, *,
+paksha)` and `pancha_pakshi_fixed_clock_materialization(profile_id, dt,
+latitude, longitude, *, paksha)` adapters for aware datetimes. The low-level
+engine functions accept UT1 JD, while the facade preserves UTC civil anchoring
+before the UT1 conversion. Fixed-clock offset arithmetic itself is reader-bound
+TT, with both TT and projected UT1 endpoints returned.
 
 ---
 
