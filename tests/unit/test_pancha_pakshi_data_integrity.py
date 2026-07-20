@@ -55,6 +55,12 @@ _FIXED_CLOCK_MATERIALIZATION_ADMISSION = (
     / "fixtures"
     / "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20.json"
 )
+_FIXED_CLOCK_CURRENT_CELL_ADMISSION = (
+    _ROOT
+    / "tests"
+    / "fixtures"
+    / "pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20.json"
+)
 _PROFILE_ID = "agastya_madras_1879_akshara_fixed_clock"
 _PRIOR_PROFILE_SHA256 = "02f1252cbcff10f680148b0213021d30db043c0ecc7387be727ad5d60de04e98"
 _PHASE_1_DECISION_ID = "pancha_pakshi_1879_source_scoped_public_2026_07_20"
@@ -63,6 +69,9 @@ _LOCAL_SOLAR_CONTEXT_DECISION_ID = (
 )
 _FIXED_CLOCK_MATERIALIZATION_DECISION_ID = (
     "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20"
+)
+_FIXED_CLOCK_CURRENT_CELL_DECISION_ID = (
+    "pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20"
 )
 
 
@@ -86,8 +95,9 @@ def _parse_current_document(document: dict) -> pakshi.PanchaPakshiProfile:
             pakshi.PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
             pakshi.PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
             pakshi.PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
+            pakshi.PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
         ),
-        admission_decision_id=_FIXED_CLOCK_MATERIALIZATION_DECISION_ID,
+        admission_decision_id=_FIXED_CLOCK_CURRENT_CELL_DECISION_ID,
     )
 
 def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
@@ -101,7 +111,7 @@ def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
         "profiles",
     }
     assert manifest["schema_version"] == 2
-    assert manifest["generated_at_utc"] == "2026-07-20T15:50:57Z"
+    assert manifest["generated_at_utc"] == "2026-07-20T16:38:01Z"
     assert manifest["hash_algorithm"] == "sha256"
     assert manifest["hash_canonicalization"] == (
         "UTF-8 text with CRLF and CR normalized to LF before hashing"
@@ -121,8 +131,9 @@ def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
             "directed_relationships",
             "astronomical_context",
             "fixed_clock_materialization",
+            "fixed_clock_current_cell_selection",
         ],
-        "admission_decision_id": _FIXED_CLOCK_MATERIALIZATION_DECISION_ID,
+        "admission_decision_id": _FIXED_CLOCK_CURRENT_CELL_DECISION_ID,
     }
 
 
@@ -144,8 +155,9 @@ def test_schema_v2_profile_requires_manifest_policy_keywords() -> None:
                 pakshi.PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
                 pakshi.PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
                 pakshi.PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
+                pakshi.PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
             ),
-            admission_decision_id=_FIXED_CLOCK_MATERIALIZATION_DECISION_ID,
+            admission_decision_id=_FIXED_CLOCK_CURRENT_CELL_DECISION_ID,
         )
 
 
@@ -281,9 +293,7 @@ def test_public_admission_migrates_metadata_without_rewriting_frozen_evidence() 
     admission = decision["admission"]
     entry = manifest["profiles"][0]
     assert decision["decision_id"] == _PHASE_1_DECISION_ID
-    assert entry["admission_decision_id"] == (
-        _FIXED_CLOCK_MATERIALIZATION_DECISION_ID
-    )
+    assert entry["admission_decision_id"] == _FIXED_CLOCK_CURRENT_CELL_DECISION_ID
     assert admission["admission_status"] == entry["admission_status"]
     assert admission["product_kind"] == entry["product_kind"]
     assert admission["default_selection_allowed"] is False
@@ -296,6 +306,7 @@ def test_public_admission_migrates_metadata_without_rewriting_frozen_evidence() 
         *admission["capabilities"],
         "astronomical_context",
         "fixed_clock_materialization",
+        "fixed_clock_current_cell_selection",
     ]
     assert admission["governing_witness_id"] == _document()["source"]["witness_id"]
     assert admission["astronomical_routing_status"] == "not_performed"
@@ -442,10 +453,9 @@ def test_local_solar_context_admission_is_additive_and_hash_bound() -> None:
     assert entry["capabilities"] == [
         *transition["current_capabilities"],
         "fixed_clock_materialization",
+        "fixed_clock_current_cell_selection",
     ]
-    assert entry["admission_decision_id"] == (
-        _FIXED_CLOCK_MATERIALIZATION_DECISION_ID
-    )
+    assert entry["admission_decision_id"] == _FIXED_CLOCK_CURRENT_CELL_DECISION_ID
 
     computation = decision["computational_object"]
     assert computation["engine_function"] == (
@@ -598,13 +608,31 @@ def test_fixed_clock_materialization_admission_is_additive_and_hash_bound() -> N
     assert transition["prior_manifest_sha256"] == (
         "4587306ded9b5760940e7f80c45b6c40132590473e910ea9350c9d7fa141a2ee"
     )
+    reconstructed_stage_2b_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2b_manifest["generated_at_utc"] = decision[
+        "decided_at_utc"
+    ]
+    reconstructed_stage_2b_entry = reconstructed_stage_2b_manifest["profiles"][0]
+    reconstructed_stage_2b_entry["capabilities"] = transition[
+        "current_capabilities"
+    ]
+    reconstructed_stage_2b_entry["admission_decision_id"] = decision[
+        "decision_id"
+    ]
+    reconstructed_stage_2b_bytes = (
+        json.dumps(
+            reconstructed_stage_2b_manifest,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
     assert transition["current_manifest_sha256"] == hashlib.sha256(
-        _canonical_bytes(_MANIFEST)
+        reconstructed_stage_2b_bytes
     ).hexdigest()
     assert transition["prior_capabilities"] == stage_2a[
         "manifest_transition"
     ]["current_capabilities"]
-    assert transition["current_capabilities"] == entry["capabilities"]
     assert transition["current_capabilities"] == [
         *transition["prior_capabilities"],
         "fixed_clock_materialization",
@@ -612,7 +640,11 @@ def test_fixed_clock_materialization_admission_is_additive_and_hash_bound() -> N
     assert transition["added_capability"] == "fixed_clock_materialization"
     assert transition["profile_product_kind_changed"] is False
     assert transition["profile_admission_status_changed"] is False
-    assert entry["admission_decision_id"] == decision["decision_id"]
+    assert entry["capabilities"] == [
+        *transition["current_capabilities"],
+        "fixed_clock_current_cell_selection",
+    ]
+    assert entry["admission_decision_id"] == _FIXED_CLOCK_CURRENT_CELL_DECISION_ID
 
     computation = decision["computational_object"]
     assert computation["engine_function"] == (
@@ -712,6 +744,239 @@ def test_fixed_clock_materialization_admission_is_additive_and_hash_bound() -> N
         "cross-witness normalization or corroborated public status",
         "a universal or default Pancha Pakshi canon",
     } <= set(decision["public_nonclaims"])
+
+
+def test_fixed_clock_current_cell_admission_is_additive_and_hash_bound() -> None:
+    decision = json.loads(
+        _FIXED_CLOCK_CURRENT_CELL_ADMISSION.read_text(encoding="utf-8")
+    )
+    stage_2b = json.loads(
+        _FIXED_CLOCK_MATERIALIZATION_ADMISSION.read_text(encoding="utf-8")
+    )
+    manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
+    entry = manifest["profiles"][0]
+
+    assert set(decision) == {
+        "schema_version",
+        "decision_id",
+        "decided_at_utc",
+        "decision_kind",
+        "profile_id",
+        "prior_admission",
+        "profile_binding",
+        "manifest_transition",
+        "computational_object",
+        "selection_doctrine",
+        "authority_and_provenance",
+        "validation_evidence",
+        "public_claim",
+        "public_nonclaims",
+        "artifact_distribution_boundary",
+    }
+    assert decision["schema_version"] == 1
+    assert decision["decision_id"] == _FIXED_CLOCK_CURRENT_CELL_DECISION_ID
+    assert decision["decision_kind"] == (
+        "additive_modern_fixed_clock_current_cell_selection_admission"
+    )
+    assert decision["profile_id"] == _PROFILE_ID
+    assert pakshi._require_utc_timestamp(
+        decision["decided_at_utc"],
+        "fixed_clock_current_cell.decided_at_utc",
+    ) == decision["decided_at_utc"]
+    assert hashlib.sha256(
+        _canonical_bytes(_FIXED_CLOCK_CURRENT_CELL_ADMISSION)
+    ).hexdigest() == (
+        "b0698a4163a12dc6049cb30907d6e9dfebad790b35cc3661a41d77df89482976"
+    )
+
+    prior = decision["prior_admission"]
+    assert prior == {
+        "decision_id": _FIXED_CLOCK_MATERIALIZATION_DECISION_ID,
+        "fixture_path": _FIXED_CLOCK_MATERIALIZATION_ADMISSION.name,
+        "fixture_sha256": hashlib.sha256(
+            _canonical_bytes(_FIXED_CLOCK_MATERIALIZATION_ADMISSION)
+        ).hexdigest(),
+        "hash_canonicalization": (
+            "UTF-8 text with CRLF and CR normalized to LF"
+        ),
+    }
+    assert prior["fixture_sha256"] == (
+        "67cd0ac7cae74556dce702deb29708a5e99a4d19c79184444e3a81d903934449"
+    )
+
+    profile_binding = decision["profile_binding"]
+    assert profile_binding == {
+        "path": (
+            "moira/data/"
+            "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json"
+        ),
+        "sha256": hashlib.sha256(_canonical_bytes(_PROFILE)).hexdigest(),
+        "profile_content_changed": False,
+        "admission_status": "source_scoped_public",
+        "product_kind": "aksara_prasna_operating_schedule",
+        "default_selection_allowed": False,
+    }
+    assert profile_binding["sha256"] == (
+        "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4"
+    )
+
+    transition = decision["manifest_transition"]
+    reconstructed_stage_2b_manifest = copy.deepcopy(manifest)
+    reconstructed_stage_2b_manifest["generated_at_utc"] = stage_2b[
+        "decided_at_utc"
+    ]
+    reconstructed_stage_2b_entry = reconstructed_stage_2b_manifest["profiles"][0]
+    reconstructed_stage_2b_entry["capabilities"] = stage_2b[
+        "manifest_transition"
+    ]["current_capabilities"]
+    reconstructed_stage_2b_entry["admission_decision_id"] = stage_2b[
+        "decision_id"
+    ]
+    reconstructed_stage_2b_bytes = (
+        json.dumps(
+            reconstructed_stage_2b_manifest,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
+    assert transition["prior_manifest_sha256"] == hashlib.sha256(
+        reconstructed_stage_2b_bytes
+    ).hexdigest()
+    assert transition["prior_manifest_sha256"] == (
+        "766f92650bc050f4c88670f8fd6307036ff49a97e812c9efc9a428fb76e53e17"
+    )
+    assert transition["current_manifest_sha256"] == hashlib.sha256(
+        _canonical_bytes(_MANIFEST)
+    ).hexdigest()
+    assert transition["current_manifest_sha256"] == (
+        "366f13deb4b213267b7a6e937b776cd3c3908178e11b29ba238fb3ed47f25e44"
+    )
+    assert transition["prior_capabilities"] == stage_2b[
+        "manifest_transition"
+    ]["current_capabilities"]
+    assert transition["current_capabilities"] == entry["capabilities"]
+    assert transition["current_capabilities"] == [
+        *transition["prior_capabilities"],
+        "fixed_clock_current_cell_selection",
+    ]
+    assert transition["added_capability"] == (
+        "fixed_clock_current_cell_selection"
+    )
+    assert transition["profile_product_kind_changed"] is False
+    assert transition["profile_admission_status_changed"] is False
+    assert transition["default_selection_policy_changed"] is False
+    assert entry["admission_decision_id"] == decision["decision_id"]
+
+    computation = decision["computational_object"]
+    assert computation["engine_function"] == (
+        "pancha_pakshi_fixed_clock_current_cell_at"
+    )
+    assert computation["facade_method"] == (
+        "Moira.pancha_pakshi_fixed_clock_current_cell"
+    )
+    assert computation["rest_route"] == (
+        "POST /v1/pancha-pakshi/schedule/fixed-clock/current-cell"
+    )
+    assert computation["result_vessel"] == (
+        "PanchaPakshiFixedClockCurrentCellSelection"
+    )
+    assert computation["policy_vessel"] == (
+        "PanchaPakshiFixedClockCurrentCellSelectionPolicy"
+    )
+    assert computation["selection_status_enum"] == (
+        "PanchaPakshiCurrentCellSelectionStatus"
+    )
+    assert computation["selection_status_values"] == [
+        "selected",
+        "unmaterialized_solar_half_tail",
+    ]
+    assert computation["policy"] == {
+        "policy_id": "fixed_clock_current_cell_half_open_solar_precedence_v1",
+        "materialization_policy_id": (
+            "fixed_24_minute_nazhigai_from_local_solar_half_start_v1"
+        ),
+        "paksha_basis": "caller_supplied_source_label",
+        "selection_time_scale": "reader_bound_tt",
+        "interval_ownership": "half_open",
+        "solar_half_precedence": (
+            "resolve_governing_solar_half_before_selection"
+        ),
+        "membership_tolerance_seconds": 0.0,
+        "unmaterialized_solar_half_tail": "explicit_no_current_cell",
+        "solar_end_clipping": "none",
+        "fixed_span_wrap": "none",
+        "fixed_span_repeat": "none",
+        "solar_proportional_scaling_status": "not_performed",
+        "astronomical_paksha_inference_status": "not_performed",
+    }
+    assert computation["provenance_routing_status"] == (
+        "fixed_clock_current_cell_selection_performed_paksha_caller_"
+        "supplied_no_scaling_or_inference"
+    )
+
+    doctrine = decision["selection_doctrine"]
+    assert "governing half-open local-solar half first" in doctrine[
+        "composition_rule"
+    ]
+    assert "start_jd_tt <= requested_jd_tt < end_jd_tt" in doctrine[
+        "cell_membership_rule"
+    ]
+    assert "newly governing half" in doctrine[
+        "solar_boundary_precedence_rule"
+    ]
+    assert "unmaterialized_solar_half_tail" in doctrine[
+        "long_solar_half_rule"
+    ]
+    assert "no post-solar-boundary cell" in doctrine["short_solar_half_rule"]
+    assert "no tolerance" in doctrine["tolerance_rule"]
+    assert "Do not clip, wrap, repeat, stretch" in doctrine["no_repair_rule"]
+
+    authority = decision["authority_and_provenance"]
+    assert authority["policy_origin"] == (
+        "modern_moira_interval_membership_policy"
+    )
+    assert authority["prior_materialization_binding"]["decision_sha256"] == (
+        prior["fixture_sha256"]
+    )
+    assert authority["membership_authority"]["authority_kind"] == (
+        "declared_moira_policy_and_structural_invariant"
+    )
+    assert authority["external_pancha_pakshi_current_cell_oracle_status"] == (
+        "none"
+    )
+    assert authority["independent_witness_corroboration_status"] == (
+        "not_performed"
+    )
+
+    validation = decision["validation_evidence"]
+    assert validation["evidence_class"] == (
+        "structural_and_physical_invariants_only"
+    )
+    assert validation["external_current_cell_validation"] == (
+        "none_no_external_oracle_claimed"
+    )
+    assert validation["accuracy_claim"] == (
+        "no_new_astronomical_or_historical_accuracy_claim"
+    )
+    assert {
+        "astronomical or lunar inference of Purva or Amara paksha",
+        "solar-proportional or seasonal scaling of nominal durations",
+        "a fabricated current cell in an unmaterialized solar-half tail",
+        "condition evaluation, scoring, or electional window search",
+        "external-oracle parity or independent-witness corroboration",
+        "a universal or default Pancha Pakshi canon",
+    } <= set(decision["public_nonclaims"])
+    assert decision["artifact_distribution_boundary"] == {
+        "source_artifact_policy_changed": False,
+        "profile_source_artifact_added": False,
+        "policy_effect": (
+            "The standing non-bundling architecture remains unchanged. "
+            "Stage 2C composes only already admitted symbolic facts and "
+            "computed intervals; no archival scan, copied source expression, "
+            "or third-party artifact is distributed."
+        ),
+    }
 
 
 def test_schema_v2_metadata_migration_reconstructs_frozen_profile_hash() -> None:

@@ -15,6 +15,7 @@ object.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from fractions import Fraction
@@ -51,6 +52,7 @@ class PanchaPakshiCapability(str, Enum):
     ASTRONOMICAL_CONTEXT = "astronomical_context"
     NATAL_IDENTITY = "natal_identity"
     FIXED_CLOCK_MATERIALIZATION = "fixed_clock_materialization"
+    FIXED_CLOCK_CURRENT_CELL_SELECTION = "fixed_clock_current_cell_selection"
     SOLAR_PROPORTIONAL_MATERIALIZATION = "solar_proportional_materialization"
     AUTHORITY_BIRDS = "authority_birds"
     SUBDIVISIONS = "subdivisions"
@@ -116,6 +118,13 @@ class PanchaPakshiMaterializedCellRelation(str, Enum):
     WITHIN_GOVERNING_SOLAR_HALF = "within_governing_solar_half"
     CROSSES_GOVERNING_SOLAR_HALF_END = "crosses_governing_solar_half_end"
     AFTER_GOVERNING_SOLAR_HALF = "after_governing_solar_half"
+
+
+class PanchaPakshiCurrentCellSelectionStatus(str, Enum):
+    """Outcome of exact fixed-clock membership at the requested instant."""
+
+    SELECTED = "selected"
+    UNMATERIALIZED_SOLAR_HALF_TAIL = "unmaterialized_solar_half_tail"
 
 
 @dataclass(frozen=True, slots=True)
@@ -438,6 +447,169 @@ class PanchaPakshiFixedClockMaterialization:
     provenance: PanchaPakshiProvenance
 
 
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiFixedClockCurrentCellSelectionPolicy:
+    """The bounded modern current-cell doctrine admitted for Stage 2C.
+
+    The governing astronomical half is resolved before fixed-clock membership.
+    Membership then uses the materializer's reader-bound TT endpoints with
+    exact half-open ownership.  No tolerance, clipping, wrap, repetition,
+    scaling, or astronomical paksha inference is permitted.
+    """
+
+    policy_id: str = field(
+        default="fixed_clock_current_cell_half_open_solar_precedence_v1",
+        init=False,
+    )
+    materialization_policy_id: str = field(
+        default="fixed_24_minute_nazhigai_from_local_solar_half_start_v1",
+        init=False,
+    )
+    paksha_basis: str = field(
+        default="caller_supplied_source_label",
+        init=False,
+    )
+    selection_time_scale: str = field(default="reader_bound_tt", init=False)
+    interval_ownership: str = field(default="half_open", init=False)
+    solar_half_precedence: str = field(
+        default="resolve_governing_solar_half_before_selection",
+        init=False,
+    )
+    membership_tolerance_seconds: float = field(default=0.0, init=False)
+    unmaterialized_solar_half_tail: str = field(
+        default="explicit_no_current_cell",
+        init=False,
+    )
+    solar_end_clipping: str = field(default="none", init=False)
+    fixed_span_wrap: str = field(default="none", init=False)
+    fixed_span_repeat: str = field(default="none", init=False)
+    solar_proportional_scaling_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+    astronomical_paksha_inference_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiFixedClockCurrentCellSelection:
+    """Current fixed-clock cell under governing-solar-half precedence."""
+
+    materialization: PanchaPakshiFixedClockMaterialization
+    policy: PanchaPakshiFixedClockCurrentCellSelectionPolicy
+    requested_jd_tt: float
+    selection_status: PanchaPakshiCurrentCellSelectionStatus
+    current_cell: PanchaPakshiFixedClockCell | None
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.materialization,
+            PanchaPakshiFixedClockMaterialization,
+        ):
+            raise TypeError(
+                "materialization must be a PanchaPakshiFixedClockMaterialization"
+            )
+        if not isinstance(
+            self.policy,
+            PanchaPakshiFixedClockCurrentCellSelectionPolicy,
+        ):
+            raise TypeError(
+                "policy must be a PanchaPakshiFixedClockCurrentCellSelectionPolicy"
+            )
+        if isinstance(self.requested_jd_tt, bool) or not isinstance(
+            self.requested_jd_tt,
+            (int, float),
+        ):
+            raise TypeError("requested_jd_tt must be a real number")
+        if not math.isfinite(self.requested_jd_tt):
+            raise ValueError("requested_jd_tt must be finite")
+        if not isinstance(
+            self.selection_status,
+            PanchaPakshiCurrentCellSelectionStatus,
+        ):
+            raise TypeError(
+                "selection_status must be a PanchaPakshiCurrentCellSelectionStatus"
+            )
+        if self.current_cell is not None and not isinstance(
+            self.current_cell,
+            PanchaPakshiFixedClockCell,
+        ):
+            raise TypeError(
+                "current_cell must be a PanchaPakshiFixedClockCell or None"
+            )
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+
+        materialization = self.materialization
+        if (
+            self.policy.materialization_policy_id
+            != materialization.policy.policy_id
+        ):
+            raise ValueError(
+                "selection policy does not bind the supplied materialization policy"
+            )
+        if self.provenance.profile_id != materialization.context.profile_id:
+            raise ValueError(
+                "selection provenance profile disagrees with the materialization"
+            )
+        if (
+            PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION
+            not in self.provenance.capabilities
+        ):
+            raise ValueError(
+                "selection provenance does not admit fixed-clock current-cell selection"
+            )
+        if not (
+            materialization.anchor_jd_tt
+            <= self.requested_jd_tt
+            < materialization.governing_solar_half_end_jd_tt
+        ):
+            raise ValueError(
+                "requested_jd_tt must lie in the governing half-open solar half"
+            )
+
+        matches = tuple(
+            cell
+            for cell in materialization.cells
+            if cell.start_jd_tt <= self.requested_jd_tt < cell.end_jd_tt
+        )
+        if self.selection_status is PanchaPakshiCurrentCellSelectionStatus.SELECTED:
+            if self.current_cell is None:
+                raise ValueError("selected status requires a current cell")
+            if len(matches) != 1 or matches[0] is not self.current_cell:
+                raise ValueError(
+                    "selected current cell must be the unique half-open TT match"
+                )
+            return
+
+        if self.selection_status is not (
+            PanchaPakshiCurrentCellSelectionStatus.UNMATERIALIZED_SOLAR_HALF_TAIL
+        ):
+            raise ValueError("unsupported current-cell selection status")
+        if self.current_cell is not None:
+            raise ValueError(
+                "unmaterialized solar-half tail status requires current_cell=None"
+            )
+        if matches:
+            raise ValueError(
+                "unmaterialized solar-half tail cannot contain a materialized cell"
+            )
+        if not (
+            materialization.fixed_end_jd_tt
+            < materialization.governing_solar_half_end_jd_tt
+            and materialization.fixed_end_jd_tt
+            <= self.requested_jd_tt
+            < materialization.governing_solar_half_end_jd_tt
+        ):
+            raise ValueError(
+                "unmaterialized solar-half tail requires fixed_end <= requested "
+                "< solar_end with fixed_end < solar_end"
+            )
+
+
 _WEEKDAY_FROM_LOCAL_SOLAR_INDEX = (
     PanchaPakshiWeekday.SUNDAY,
     PanchaPakshiWeekday.MONDAY,
@@ -452,6 +624,10 @@ _LOCAL_SOLAR_ROUTING_STATUS = (
 )
 _FIXED_CLOCK_MATERIALIZATION_STATUS = (
     "fixed_clock_materialization_performed_paksha_caller_supplied_no_current_cell"
+)
+_FIXED_CLOCK_CURRENT_CELL_SELECTION_STATUS = (
+    "fixed_clock_current_cell_selection_performed_paksha_caller_supplied_"
+    "no_scaling_or_inference"
 )
 _SI_SECONDS_PER_DAY = 86_400
 
@@ -900,16 +1076,167 @@ def _pancha_pakshi_fixed_clock_materialization_from_utc(
     )
 
 
+def _pancha_pakshi_fixed_clock_current_cell_for_solar_day(
+    profile: PanchaPakshiProfile,
+    solar_day: LocalSolarDay,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader,
+) -> PanchaPakshiFixedClockCurrentCellSelection:
+    """Select exact TT membership after resolving the governing solar half."""
+
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
+    from ._pancha_pakshi import _profile_provenance
+
+    materialization = _pancha_pakshi_fixed_clock_for_solar_day(
+        profile,
+        solar_day,
+        paksha=paksha,
+        reader=reader,
+    )
+    policy = PanchaPakshiFixedClockCurrentCellSelectionPolicy()
+    requested_jd_tt = _ut1_to_ephemeris_tt(solar_day.jd, reader)
+    if not (
+        materialization.anchor_jd_tt
+        <= requested_jd_tt
+        < materialization.governing_solar_half_end_jd_tt
+    ):
+        raise PanchaPakshiDataError(
+            "requested TT instant escaped the governing half-open solar half"
+        )
+
+    matches = tuple(
+        cell
+        for cell in materialization.cells
+        if cell.start_jd_tt <= requested_jd_tt < cell.end_jd_tt
+    )
+    if len(matches) == 1:
+        selection_status = PanchaPakshiCurrentCellSelectionStatus.SELECTED
+        current_cell = matches[0]
+    elif len(matches) > 1:
+        raise PanchaPakshiDataError(
+            "materialized fixed-clock cells overlap at the requested TT instant"
+        )
+    elif (
+        materialization.fixed_end_jd_tt
+        < materialization.governing_solar_half_end_jd_tt
+        and materialization.fixed_end_jd_tt
+        <= requested_jd_tt
+        < materialization.governing_solar_half_end_jd_tt
+    ):
+        selection_status = (
+            PanchaPakshiCurrentCellSelectionStatus.UNMATERIALIZED_SOLAR_HALF_TAIL
+        )
+        current_cell = None
+    else:
+        raise PanchaPakshiDataError(
+            "requested TT instant has no lawful fixed-clock cell membership"
+        )
+
+    return PanchaPakshiFixedClockCurrentCellSelection(
+        materialization=materialization,
+        policy=policy,
+        requested_jd_tt=requested_jd_tt,
+        selection_status=selection_status,
+        current_cell=current_cell,
+        provenance=_profile_provenance(
+            profile,
+            astronomical_routing_status=(
+                _FIXED_CLOCK_CURRENT_CELL_SELECTION_STATUS
+            ),
+        ),
+    )
+
+
+def pancha_pakshi_fixed_clock_current_cell_at(
+    profile_id: str,
+    jd_ut1: float,
+    latitude: float,
+    longitude: float,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiFixedClockCurrentCellSelection:
+    """Select the fixed-clock cell current under governing-half precedence.
+
+    The local solar half is resolved from ``jd_ut1`` before materialization.
+    Membership is exact and half-open on reader-bound TT.  A long solar half
+    may lawfully return an explicit unmaterialized-tail result; cells extending
+    past a short solar half never remain eligible after its boundary.
+    """
+
+    from ._local_solar_day import _local_solar_day_from_ut1
+    from .spk_reader import get_reader
+
+    selected_paksha = _require_context_paksha(paksha)
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
+    )
+    selected_reader = get_reader() if reader is None else reader
+    solar_day = _local_solar_day_from_ut1(
+        jd_ut1,
+        latitude,
+        longitude,
+        selected_reader,
+        bounds_owner="pancha-pakshi-fixed-clock-current-cell",
+    )
+    return _pancha_pakshi_fixed_clock_current_cell_for_solar_day(
+        profile,
+        solar_day,
+        paksha=selected_paksha,
+        reader=selected_reader,
+    )
+
+
+def _pancha_pakshi_fixed_clock_current_cell_from_utc(
+    profile_id: str,
+    jd_utc: float,
+    latitude: float,
+    longitude: float,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiFixedClockCurrentCellSelection:
+    """Facade adapter preserving UTC civil-noon selection before UT1."""
+
+    from ._local_solar_day import _local_solar_day_from_utc
+    from .spk_reader import get_reader
+
+    selected_paksha = _require_context_paksha(paksha)
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
+    )
+    selected_reader = get_reader() if reader is None else reader
+    solar_day = _local_solar_day_from_utc(
+        jd_utc,
+        latitude,
+        longitude,
+        selected_reader,
+        bounds_owner="pancha-pakshi-fixed-clock-current-cell",
+    )
+    return _pancha_pakshi_fixed_clock_current_cell_for_solar_day(
+        profile,
+        solar_day,
+        paksha=selected_paksha,
+        reader=selected_reader,
+    )
+
+
 __all__ = [
     "PanchaPakshiActivity",
     "PanchaPakshiAdmissionStatus",
     "PanchaPakshiBird",
     "PanchaPakshiCapability",
     "PanchaPakshiConflictWitness",
+    "PanchaPakshiCurrentCellSelectionStatus",
     "PanchaPakshiDataError",
     "PanchaPakshiDirectedRelationship",
     "PanchaPakshiError",
     "PanchaPakshiFixedClockCell",
+    "PanchaPakshiFixedClockCurrentCellSelection",
+    "PanchaPakshiFixedClockCurrentCellSelectionPolicy",
     "PanchaPakshiFixedClockMaterialization",
     "PanchaPakshiFixedClockMaterializationPolicy",
     "PanchaPakshiHalf",
@@ -931,6 +1258,7 @@ __all__ = [
     "PanchaPakshiWeekday",
     "available_pancha_pakshi_profiles",
     "pancha_pakshi_directed_relationship",
+    "pancha_pakshi_fixed_clock_current_cell_at",
     "pancha_pakshi_fixed_clock_materialization_at",
     "pancha_pakshi_identity_from_initial_vowel",
     "pancha_pakshi_local_solar_context_at",

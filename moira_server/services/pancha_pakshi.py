@@ -14,6 +14,7 @@ from moira.pancha_pakshi import (
 from ..models.pancha_pakshi import (
     PanchaPakshiAksaraIdentityRequest,
     PanchaPakshiDirectedRelationshipRequest,
+    PanchaPakshiFixedClockCurrentCellRequest,
     PanchaPakshiFixedClockMaterializationRequest,
     PanchaPakshiLocalSolarContextRequest,
     PanchaPakshiNominalScheduleRequest,
@@ -72,6 +73,21 @@ def compute_fixed_clock_materialization(
     """Delegate fixed-clock materialization through the public facade."""
 
     return engine.pancha_pakshi_fixed_clock_materialization(
+        request.profile_id,
+        request.dt,
+        request.latitude,
+        request.longitude,
+        paksha=request.paksha,
+    )
+
+
+def compute_fixed_clock_current_cell(
+    engine: Moira,
+    request: PanchaPakshiFixedClockCurrentCellRequest,
+):
+    """Delegate bounded current-cell selection through the public facade."""
+
+    return engine.pancha_pakshi_fixed_clock_current_cell(
         request.profile_id,
         request.dt,
         request.latitude,

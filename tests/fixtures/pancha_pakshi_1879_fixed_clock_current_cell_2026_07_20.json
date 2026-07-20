@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20",
+  "decided_at_utc": "2026-07-20T16:38:01Z",
+  "decision_kind": "additive_modern_fixed_clock_current_cell_selection_admission",
+  "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+  "prior_admission": {
+    "decision_id": "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20",
+    "fixture_path": "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20.json",
+    "fixture_sha256": "67cd0ac7cae74556dce702deb29708a5e99a4d19c79184444e3a81d903934449",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF"
+  },
+  "profile_binding": {
+    "path": "moira/data/pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
+    "sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+    "profile_content_changed": false,
+    "admission_status": "source_scoped_public",
+    "product_kind": "aksara_prasna_operating_schedule",
+    "default_selection_allowed": false
+  },
+  "manifest_transition": {
+    "prior_manifest_sha256": "766f92650bc050f4c88670f8fd6307036ff49a97e812c9efc9a428fb76e53e17",
+    "current_manifest_sha256": "366f13deb4b213267b7a6e937b776cd3c3908178e11b29ba238fb3ed47f25e44",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "prior_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context",
+      "fixed_clock_materialization"
+    ],
+    "current_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context",
+      "fixed_clock_materialization",
+      "fixed_clock_current_cell_selection"
+    ],
+    "added_capability": "fixed_clock_current_cell_selection",
+    "profile_product_kind_changed": false,
+    "profile_admission_status_changed": false,
+    "default_selection_policy_changed": false
+  },
+  "computational_object": {
+    "engine_function": "pancha_pakshi_fixed_clock_current_cell_at",
+    "facade_method": "Moira.pancha_pakshi_fixed_clock_current_cell",
+    "rest_route": "POST /v1/pancha-pakshi/schedule/fixed-clock/current-cell",
+    "result_vessel": "PanchaPakshiFixedClockCurrentCellSelection",
+    "policy_vessel": "PanchaPakshiFixedClockCurrentCellSelectionPolicy",
+    "selection_status_enum": "PanchaPakshiCurrentCellSelectionStatus",
+    "selection_status_values": [
+      "selected",
+      "unmaterialized_solar_half_tail"
+    ],
+    "policy": {
+      "policy_id": "fixed_clock_current_cell_half_open_solar_precedence_v1",
+      "materialization_policy_id": "fixed_24_minute_nazhigai_from_local_solar_half_start_v1",
+      "paksha_basis": "caller_supplied_source_label",
+      "selection_time_scale": "reader_bound_tt",
+      "interval_ownership": "half_open",
+      "solar_half_precedence": "resolve_governing_solar_half_before_selection",
+      "membership_tolerance_seconds": 0.0,
+      "unmaterialized_solar_half_tail": "explicit_no_current_cell",
+      "solar_end_clipping": "none",
+      "fixed_span_wrap": "none",
+      "fixed_span_repeat": "none",
+      "solar_proportional_scaling_status": "not_performed",
+      "astronomical_paksha_inference_status": "not_performed"
+    },
+    "provenance_routing_status": "fixed_clock_current_cell_selection_performed_paksha_caller_supplied_no_scaling_or_inference",
+    "engine_inputs": [
+      "explicit_profile_id",
+      "jd_ut1",
+      "latitude",
+      "longitude",
+      "caller_supplied_paksha"
+    ],
+    "facade_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "rest_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "derived_values": [
+      "governing_local_solar_context",
+      "admitted_fixed_clock_materialization",
+      "requested_jd_tt",
+      "selection_status",
+      "selected_materialized_cell_or_explicit_null"
+    ]
+  },
+  "selection_doctrine": {
+    "composition_rule": "Resolve the governing half-open local-solar half first, materialize only that half under the admitted Stage 2B fixed-clock policy, then compare the requested reader-bound TT instant with those materialized TT cell intervals.",
+    "cell_membership_rule": "A cell owns requested_jd_tt exactly when start_jd_tt <= requested_jd_tt < end_jd_tt. Shared endpoints belong to the following cell and the final fixed endpoint is excluded.",
+    "solar_boundary_precedence_rule": "At exact topocentric sunset or sunrise, Stage 2A first routes the instant into the newly governing half. Cells from the prior fixed span that extend beyond its astronomical half end remain inspectable but are ineligible for current-cell selection.",
+    "long_solar_half_rule": "When the fixed twelve-hour span ends before the governing astronomical half, every instant from the excluded fixed end through the excluded solar-half end has status unmaterialized_solar_half_tail and current_cell is null.",
+    "short_solar_half_rule": "When the fixed span extends beyond the governing astronomical half, only instants inside the governing half are eligible; no post-solar-boundary cell from that span may win selection.",
+    "tolerance_rule": "Current-cell membership has no tolerance. The Stage 2B 0.0001-second fixed-end topology coalescence is classification policy only and never changes interval ownership.",
+    "no_repair_rule": "Do not clip, wrap, repeat, stretch, borrow, or retain a cell to conceal an unmaterialized solar-half tail.",
+    "polar_policy": "Fail explicitly when lawful sunrise and sunset bounds do not exist."
+  },
+  "authority_and_provenance": {
+    "policy_origin": "modern_moira_interval_membership_policy",
+    "historical_source_attestation": "The named 1879 witness governs the unchanged nominal schedule, cell chronology, bird/activity assignments, rational offsets, and source locators. It is not credited with the modern astronomical, TT, or current-selection composition.",
+    "prior_materialization_binding": {
+      "decision_id": "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20",
+      "decision_sha256": "67cd0ac7cae74556dce702deb29708a5e99a4d19c79184444e3a81d903934449",
+      "policy_id": "fixed_24_minute_nazhigai_from_local_solar_half_start_v1",
+      "evidence_role": "complete source, unit, time-scale, solar-anchor, and materialized-cell input to selection"
+    },
+    "membership_authority": {
+      "authority_kind": "declared_moira_policy_and_structural_invariant",
+      "assertion": "Selection is deterministic half-open interval membership over the admitted Stage 2B TT endpoints after Stage 2A has selected the governing solar half.",
+      "evidence_role": "selection semantics only"
+    },
+    "external_pancha_pakshi_current_cell_oracle_status": "none",
+    "external_oracle_requirement_for_bounded_claim": "not_required_for_deterministic_membership_over_already_admitted_intervals",
+    "independent_witness_corroboration_status": "not_performed"
+  },
+  "validation_evidence": {
+    "evidence_class": "structural_and_physical_invariants_only",
+    "membership_semantics": "all cell midpoints, all shared endpoints, the inclusive anchor, and excluded fixed end obey exact half-open TT ownership",
+    "solar_precedence_semantics": "exact sunset and sunrise route to the new governing half before current-cell membership is evaluated",
+    "long_half_semantics": "the unmaterialized solar-half tail returns its named status and a null current_cell without wrap, repeat, clipping, or scaling",
+    "short_half_semantics": "post-solar-boundary cells from the prior fixed span are never eligible for current selection",
+    "topology_coalescence_separation": "the Stage 2B 0.0001-second topology coalescence does not alter exact current-cell membership",
+    "capability_semantics": "profile admission and the fixed_clock_current_cell_selection capability are checked before astronomical resolution",
+    "external_current_cell_validation": "none_no_external_oracle_claimed",
+    "accuracy_claim": "no_new_astronomical_or_historical_accuracy_claim"
+  },
+  "public_claim": "Given an explicit profile, UT1 instant, location, and caller-supplied Purva or Amara source label, resolve the governing local-solar half, compose its admitted fixed-clock materialization, and return either the unique half-open materialized cell containing the reader-bound TT instant or the explicit unmaterialized_solar_half_tail state when a long solar half continues beyond the fixed span.",
+  "public_nonclaims": [
+    "astronomical or lunar inference of Purva or Amara paksha",
+    "clipping, wrapping, repeating, or stretching the fixed schedule",
+    "solar-proportional or seasonal scaling of nominal durations",
+    "a fabricated current cell in an unmaterialized solar-half tail",
+    "eligibility of prior-half cells after the governing solar boundary",
+    "natal Moon or nakshatra identity",
+    "vinadi or finer subdivisions",
+    "Padu, Bharana, or Adhikara birds",
+    "condition evaluation, scoring, or electional window search",
+    "external-oracle parity or independent-witness corroboration",
+    "cross-witness normalization or corroborated public status",
+    "a universal or default Pancha Pakshi canon"
+  ],
+  "artifact_distribution_boundary": {
+    "source_artifact_policy_changed": false,
+    "profile_source_artifact_added": false,
+    "policy_effect": "The standing non-bundling architecture remains unchanged. Stage 2C composes only already admitted symbolic facts and computed intervals; no archival scan, copied source expression, or third-party artifact is distributed."
+  }
+}

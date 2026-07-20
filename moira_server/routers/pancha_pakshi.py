@@ -14,6 +14,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiAksaraIdentityResponse,
     PanchaPakshiDirectedRelationshipRequest,
     PanchaPakshiDirectedRelationshipResponse,
+    PanchaPakshiFixedClockCurrentCellRequest,
+    PanchaPakshiFixedClockCurrentCellResponse,
     PanchaPakshiFixedClockMaterializationRequest,
     PanchaPakshiFixedClockMaterializationResponse,
     PanchaPakshiLocalSolarContextRequest,
@@ -26,6 +28,7 @@ from ..models.pancha_pakshi import (
 from ..serializers.pancha_pakshi import (
     serialize_aksara_identity,
     serialize_directed_relationship,
+    serialize_fixed_clock_current_cell,
     serialize_fixed_clock_materialization,
     serialize_local_solar_context,
     serialize_nominal_schedule,
@@ -34,6 +37,7 @@ from ..serializers.pancha_pakshi import (
 from ..services.pancha_pakshi import (
     compute_aksara_identity,
     compute_directed_relationship,
+    compute_fixed_clock_current_cell,
     compute_fixed_clock_materialization,
     compute_local_solar_context,
     compute_nominal_schedule,
@@ -87,6 +91,21 @@ def pancha_pakshi_fixed_clock_materialization_route(
 
     return serialize_fixed_clock_materialization(
         compute_fixed_clock_materialization(engine, request)
+    )
+
+
+@router.post(
+    "/schedule/fixed-clock/current-cell",
+    response_model=PanchaPakshiFixedClockCurrentCellResponse,
+)
+def pancha_pakshi_fixed_clock_current_cell_route(
+    request: PanchaPakshiFixedClockCurrentCellRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> PanchaPakshiFixedClockCurrentCellResponse:
+    """Select at most one fixed-clock cell for the requested instant."""
+
+    return serialize_fixed_clock_current_cell(
+        compute_fixed_clock_current_cell(engine, request)
     )
 
 

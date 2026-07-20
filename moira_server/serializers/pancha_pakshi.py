@@ -8,6 +8,8 @@ from moira.pancha_pakshi import (
     PanchaPakshiConflictWitness,
     PanchaPakshiDirectedRelationship,
     PanchaPakshiFixedClockCell,
+    PanchaPakshiFixedClockCurrentCellSelection,
+    PanchaPakshiFixedClockCurrentCellSelectionPolicy,
     PanchaPakshiFixedClockMaterialization,
     PanchaPakshiFixedClockMaterializationPolicy,
     PanchaPakshiInitialVowelIdentity,
@@ -28,6 +30,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiConflictWitnessResponse,
     PanchaPakshiDirectedRelationshipResponse,
     PanchaPakshiFixedClockCellResponse,
+    PanchaPakshiFixedClockCurrentCellResponse,
+    PanchaPakshiFixedClockCurrentCellSelectionPolicyResponse,
     PanchaPakshiFixedClockMaterializationPolicyResponse,
     PanchaPakshiFixedClockMaterializationResponse,
     PanchaPakshiFractionResponse,
@@ -323,4 +327,69 @@ def serialize_fixed_clock_materialization(
             serialize_fixed_clock_cell(cell) for cell in materialization.cells
         ],
         provenance=serialize_provenance(materialization.provenance),
+    )
+
+
+def serialize_fixed_clock_current_cell_selection_policy(
+    policy: PanchaPakshiFixedClockCurrentCellSelectionPolicy,
+) -> PanchaPakshiFixedClockCurrentCellSelectionPolicyResponse:
+    return PanchaPakshiFixedClockCurrentCellSelectionPolicyResponse(
+        policy_id=policy.policy_id,
+        materialization_policy_id=policy.materialization_policy_id,
+        paksha_basis=policy.paksha_basis,
+        selection_time_scale=policy.selection_time_scale,
+        interval_ownership=policy.interval_ownership,
+        solar_half_precedence=policy.solar_half_precedence,
+        membership_tolerance_seconds=policy.membership_tolerance_seconds,
+        unmaterialized_solar_half_tail=policy.unmaterialized_solar_half_tail,
+        solar_end_clipping=policy.solar_end_clipping,
+        fixed_span_wrap=policy.fixed_span_wrap,
+        fixed_span_repeat=policy.fixed_span_repeat,
+        solar_proportional_scaling_status=(
+            policy.solar_proportional_scaling_status
+        ),
+        astronomical_paksha_inference_status=(
+            policy.astronomical_paksha_inference_status
+        ),
+    )
+
+
+def serialize_fixed_clock_current_cell(
+    selection: PanchaPakshiFixedClockCurrentCellSelection,
+) -> PanchaPakshiFixedClockCurrentCellResponse:
+    materialization = selection.materialization
+    context = materialization.context
+    return PanchaPakshiFixedClockCurrentCellResponse(
+        profile_id=context.profile_id,
+        requested_jd_ut1=context.requested_jd_ut1,
+        requested_jd_tt=selection.requested_jd_tt,
+        latitude=context.latitude,
+        longitude=context.longitude,
+        paksha=context.paksha,
+        half=context.half,
+        weekday=context.weekday,
+        policy=serialize_fixed_clock_current_cell_selection_policy(
+            selection.policy
+        ),
+        anchor_jd_tt=materialization.anchor_jd_tt,
+        anchor_jd_ut1=materialization.anchor_jd_ut1,
+        governing_solar_half_end_jd_tt=(
+            materialization.governing_solar_half_end_jd_tt
+        ),
+        governing_solar_half_end_jd_ut1=(
+            materialization.governing_solar_half_end_jd_ut1
+        ),
+        fixed_end_jd_tt=materialization.fixed_end_jd_tt,
+        fixed_end_jd_ut1=materialization.fixed_end_jd_ut1,
+        signed_fixed_end_minus_solar_end_seconds_tt=(
+            materialization.signed_fixed_end_minus_solar_end_seconds_tt
+        ),
+        solar_boundary_relation=materialization.solar_boundary_relation,
+        selection_status=selection.selection_status,
+        current_cell=(
+            None
+            if selection.current_cell is None
+            else serialize_fixed_clock_cell(selection.current_cell)
+        ),
+        provenance=serialize_provenance(selection.provenance),
     )

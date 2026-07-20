@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at_utc": "2026-07-20T15:50:57Z",
+  "generated_at_utc": "2026-07-20T16:38:01Z",
   "hash_algorithm": "sha256",
   "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
   "profiles": [
@@ -16,9 +16,10 @@
         "nominal_schedule",
         "directed_relationships",
         "astronomical_context",
-        "fixed_clock_materialization"
+        "fixed_clock_materialization",
+        "fixed_clock_current_cell_selection"
       ],
-      "admission_decision_id": "pancha_pakshi_1879_fixed_clock_materialization_2026_07_20"
+      "admission_decision_id": "pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20"
     }
   ]
 }

@@ -89,8 +89,12 @@ Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jat
   Amara. A separate modern fixed-clock policy anchors the selected schedule at
   sunrise or sunset, treats one nazhigai as exactly 1,440 SI seconds on
   reader-bound TT, and publishes half-open UT1 cell intervals plus their
-  unclipped relation to the astronomical half end. It does not infer lunar
-  paksha, proportionally scale the schedule, or claim a current cell.
+  unclipped relation to the astronomical half end. A separately named
+  solar-half-first selector returns the unique current fixed-clock cell under
+  exact half-open TT ownership, or the explicit
+  `unmaterialized_solar_half_tail` status when a long solar half outlasts the
+  fixed span. It does not infer lunar paksha or proportionally scale, wrap,
+  repeat, or clip the schedule.
 - **Dashas** — Vimshottari with nakshatra balance; Chara Dasha (K.N. Rao's named lineage); Varshaphal (annual charts).
 - **Vargas** — divisional charts (navamsa, dashamansa, dwadashamsa, saptamsa, trimshamsa, and more); Vimshopaka Bala (BPHS 20-point varga-dignity strength over all four classical groups) with vargottama detection.
 - **Yogas** — 60 classical yogas across six families (Pancha Mahapurusha, Chandra, Surya, all 32 Nabhasa, Raja core, Dhana core), each returned as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, and per-yoga primary-source citations.

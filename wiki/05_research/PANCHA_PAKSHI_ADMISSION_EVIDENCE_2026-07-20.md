@@ -1,5 +1,59 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2C Fixed-Clock Current-Cell Addendum
+
+Stage 2C admits one further capability,
+`fixed_clock_current_cell_selection`, for the same `source_scoped_public`
+profile. The profile document remains unchanged at canonical SHA-256
+`876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4`,
+and default selection remains forbidden. The chained decision is recorded in
+[`pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20.json`](../../tests/fixtures/pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20.json),
+whose canonical SHA-256 is
+`b0698a4163a12dc6049cb30907d6e9dfebad790b35cc3661a41d77df89482976`.
+It freezes the Stage 2B decision at SHA-256
+`67cd0ac7cae74556dce702deb29708a5e99a4d19c79184444e3a81d903934449`,
+the prior manifest at SHA-256
+`766f92650bc050f4c88670f8fd6307036ff49a97e812c9efc9a428fb76e53e17`,
+and binds the new manifest at SHA-256
+`366f13deb4b213267b7a6e937b776cd3c3908178e11b29ba238fb3ed47f25e44`.
+
+The governing object is `PanchaPakshiFixedClockCurrentCellSelection`, with the
+immutable `PanchaPakshiFixedClockCurrentCellSelectionPolicy` and finite
+`PanchaPakshiCurrentCellSelectionStatus` values `selected` and
+`unmaterialized_solar_half_tail`. Its only admitted policy is
+`fixed_clock_current_cell_half_open_solar_precedence_v1`. This is explicitly a
+modern Moira interval-membership policy, not an additional rule attributed to
+the 1879 witness.
+
+The policy resolves the governing half-open local-solar half before selecting
+from that half's Stage 2B materialization. The requested instant is converted
+once to reader-bound TT and belongs to a cell exactly when
+`start_jd_tt <= requested_jd_tt < end_jd_tt`. Membership tolerance is `0.0 s`:
+shared endpoints belong to the following cell, the fixed end is excluded, and
+the Stage 2B `0.0001 s` topology coalescence cannot alter current-cell
+ownership. At exact sunset or sunrise, the newly governing solar half wins;
+post-boundary cells from the previous short half remain inspectable but cannot
+remain current.
+
+When a long solar half outlasts its fixed span, the result reports
+`unmaterialized_solar_half_tail` and `current_cell=None`. It never clips, wraps,
+repeats, stretches, borrows, or retains a cell. Paksha remains caller supplied;
+astronomical paksha inference and solar-proportional scaling remain
+`not_performed`.
+
+The low-level engine, facade, and REST surfaces are respectively
+`pancha_pakshi_fixed_clock_current_cell_at(...)`,
+`Moira.pancha_pakshi_fixed_clock_current_cell(...)`, and
+`POST /v1/pancha-pakshi/schedule/fixed-clock/current-cell`. The provenance
+routing status is
+`fixed_clock_current_cell_selection_performed_paksha_caller_supplied_no_scaling_or_inference`.
+Validation is limited to structural and physical invariants over the already
+admitted Stage 2B cells: midpoint and boundary membership, solar-half
+precedence, explicit tail behavior, capability gating, immutable result
+consistency, and strict facade/transport policy. No external current-cell
+oracle, independent-witness corroboration, or new astronomical or historical
+accuracy claim is asserted.
+
 ## Stage 2B Fixed-Clock Materialization Addendum
 
 Stage 2B admits one further capability, `fixed_clock_materialization`, for the
@@ -365,10 +419,10 @@ asserted.
    Pancha Pakshi witness rather than an adjacent omen or compatibility system.
 3. Preserve any disagreement by witness and text layer; do not merge doctrines
    or repair them by symmetry.
-4. Admit any current-cell selection, solar-proportional timing, or broader
-   doctrine only through a separately named policy and evidence decision.
+4. Admit solar-proportional timing or broader doctrine only through a
+   separately named policy and evidence decision.
 
 The present resting place is the corrected, tested, source-scoped public
-profile plus the separately named Stage 2A and Stage 2B modern compositions.
-It is not a universal canon, and the unresolved research above must not be
-silently inferred through the public API.
+profile plus the separately named Stage 2A, Stage 2B, and Stage 2C modern
+compositions. It is not a universal canon, and the unresolved research above
+must not be silently inferred through the public API.

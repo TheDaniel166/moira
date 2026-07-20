@@ -11,10 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **First-Class Source-Scoped Pancha Pakshi**: Added immutable public vessels,
   package-root and `moira.vedic` exports, five kernel-free `Moira` methods, one
   kernel-backed local-solar context method, one kernel-backed fixed-clock
-  materialization method, and seven strict
+  materialization method, one kernel-backed fixed-clock current-cell method,
+  and eight strict
   `/v1/pancha-pakshi` routes for profile discovery, aksara identity, exact
   nominal schedules, directed relationships, local-solar context, and
-  fixed-clock materialization. Manifest schema 2 owns finite admission status,
+  fixed-clock materialization and current-cell selection. Manifest schema 2
+  owns finite admission status,
   exact product capabilities, admission
   decision identity, and a permanently false default-selection flag. The
   admitted `agastya_madras_1879_akshara_fixed_clock` profile is limited to the
@@ -53,6 +55,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   profile and Stage 2A decision while binding the University of Madras Tamil
   Lexicon nazhigai unit, IERS TT/SI-second convention, and the existing
   JPL-Horizons-validated solar anchor within their separate authority roles.
+- **Pancha Pakshi Fixed-Clock Current Cell**: Added the explicitly modern
+  `fixed_clock_current_cell_half_open_solar_precedence_v1` policy. It resolves
+  the governing half-open local-solar half before comparing the requested
+  reader-bound TT instant with that half's admitted Stage 2B cells. Shared cell
+  endpoints belong to the following cell with exactly `0.0 s` membership
+  tolerance; the Stage 2B `0.0001 s` topology coalescence never changes
+  ownership. At sunrise or sunset the new governing half takes precedence, so
+  cells from a prior short half cannot remain current. When a long solar half
+  outlasts the fixed span, the result returns
+  `unmaterialized_solar_half_tail` and an explicit null current cell rather
+  than clipping, wrapping, repeating, stretching, or retaining a cell. Paksha
+  remains caller supplied, and lunar inference and solar-proportional scaling
+  remain unperformed. Admission is chained through a new fixture without
+  changing the profile data, source-scoped status, product kind, or no-default
+  rule.
 - **Pancha Pakshi Research And Admission Evidence**: Preserved the original
   blind reading, representative-grid reading, page-image adjudication, and
   machine reconciliation as frozen historical records. The adjudication
@@ -89,8 +106,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   materialization, TT-to-UT1 endpoint projection, half-open ownership,
   no-clipping behavior, and the signed fixed-end topology. The `0.0001 s`
   coalescence is numerical policy rather than historical or astronomical
-  accuracy, and no external current-cell oracle is claimed because the public
-  product deliberately selects no current cell.
+  accuracy, and no external current-cell oracle is claimed because the Stage
+  2B materialization deliberately selects no current cell.
+- Stage 2C validation checks solar-half-first precedence, all half-open cell
+  midpoints and shared endpoints, the inclusive anchor and excluded fixed end,
+  explicit long-half-tail behavior, short-half post-boundary ineligibility,
+  zero-tolerance membership, immutable status/cell consistency, capability
+  gates, facade/REST policy strictness, and the frozen Stage 2B manifest chain.
+  This is structural and physical-invariant evidence over already admitted
+  intervals; it is not external current-cell parity or a new astronomical or
+  historical accuracy claim.
 
 ## [5.0.0] - 2026-07-19
 

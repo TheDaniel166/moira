@@ -88,6 +88,7 @@ _PRODUCT_CAPABILITIES = {
         PanchaPakshiCapability.DIRECTED_RELATIONSHIPS,
         PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
         PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
+        PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
     )
 }
 _PUBLIC_ADMISSION_STATUSES = frozenset(

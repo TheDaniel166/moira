@@ -12,6 +12,7 @@ from moira.pancha_pakshi import (
     PanchaPakshiAdmissionStatus,
     PanchaPakshiBird,
     PanchaPakshiCapability,
+    PanchaPakshiCurrentCellSelectionStatus,
     PanchaPakshiHalf,
     PanchaPakshiMaterializedCellRelation,
     PanchaPakshiPaksha,
@@ -81,6 +82,25 @@ class PanchaPakshiFixedClockMaterializationRequest(PanchaPakshiProfileRequest):
     paksha: PanchaPakshiPaksha
     policy_id: Literal[
         "fixed_24_minute_nazhigai_from_local_solar_half_start_v1"
+    ]
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime_utc(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value.astimezone(timezone.utc)
+
+
+class PanchaPakshiFixedClockCurrentCellRequest(PanchaPakshiProfileRequest):
+    """Select one fixed-clock cell for an explicit aware civil instant."""
+
+    dt: datetime
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    paksha: PanchaPakshiPaksha
+    policy_id: Literal[
+        "fixed_clock_current_cell_half_open_solar_precedence_v1"
     ]
 
     @field_validator("dt")
@@ -312,4 +332,51 @@ class PanchaPakshiFixedClockMaterializationResponse(_StrictModel):
     signed_fixed_end_minus_solar_end_seconds_tt: float
     solar_boundary_relation: PanchaPakshiSolarBoundaryRelation
     cells: list[PanchaPakshiFixedClockCellResponse]
+    provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiFixedClockCurrentCellSelectionPolicyResponse(_StrictModel):
+    policy_id: Literal[
+        "fixed_clock_current_cell_half_open_solar_precedence_v1"
+    ]
+    materialization_policy_id: Literal[
+        "fixed_24_minute_nazhigai_from_local_solar_half_start_v1"
+    ]
+    paksha_basis: Literal["caller_supplied_source_label"]
+    selection_time_scale: Literal["reader_bound_tt"]
+    interval_ownership: Literal["half_open"]
+    solar_half_precedence: Literal[
+        "resolve_governing_solar_half_before_selection"
+    ]
+    membership_tolerance_seconds: Literal[0.0]
+    unmaterialized_solar_half_tail: Literal["explicit_no_current_cell"]
+    solar_end_clipping: Literal["none"]
+    fixed_span_wrap: Literal["none"]
+    fixed_span_repeat: Literal["none"]
+    solar_proportional_scaling_status: Literal["not_performed"]
+    astronomical_paksha_inference_status: Literal["not_performed"]
+
+
+class PanchaPakshiFixedClockCurrentCellResponse(_StrictModel):
+    """Bounded current-cell result without the full materialized schedule."""
+
+    profile_id: str
+    requested_jd_ut1: float
+    requested_jd_tt: float
+    latitude: float
+    longitude: float
+    paksha: PanchaPakshiPaksha
+    half: PanchaPakshiHalf
+    weekday: PanchaPakshiWeekday
+    policy: PanchaPakshiFixedClockCurrentCellSelectionPolicyResponse
+    anchor_jd_tt: float
+    anchor_jd_ut1: float
+    governing_solar_half_end_jd_tt: float
+    governing_solar_half_end_jd_ut1: float
+    fixed_end_jd_tt: float
+    fixed_end_jd_ut1: float
+    signed_fixed_end_minus_solar_end_seconds_tt: float
+    solar_boundary_relation: PanchaPakshiSolarBoundaryRelation
+    selection_status: PanchaPakshiCurrentCellSelectionStatus
+    current_cell: PanchaPakshiFixedClockCellResponse | None
     provenance: PanchaPakshiProvenanceResponse

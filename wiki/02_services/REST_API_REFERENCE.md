@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 420
+- Total non-documentation routes: 421
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 416
+- Versioned `/v1` routes: 417
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -50,9 +50,9 @@ Implemented:
   catalog/longitude/rising/night-hour routes
 - source-scoped Pancha Pakshi admission adds explicit-profile discovery,
   aksara identity, exact nominal schedule, directed relationship, and bounded
-  local-solar context plus fixed-clock materialization routes; it selects no
-  default, and both astronomical routes require caller-supplied paksha rather
-  than inferring it from the Moon
+  local-solar context, fixed-clock materialization, and fixed-clock current-cell
+  routes; it selects no default, and all three astronomical routes require
+  caller-supplied paksha rather than inferring it from the Moon
 - Phase 11 admitted surfaces: fixed stars, variable stars, multiple stars,
   asteroids, comets, asteroid subsets/families, Manazil, and planetary/
   small-body nodes
@@ -178,7 +178,7 @@ Not yet broadly exposed as REST families:
 | nine-parts | 1 |
 | occultations | 12 |
 | orbits | 2 |
-| pancha-pakshi | 7 |
+| pancha-pakshi | 8 |
 | panchanga | 4 |
 | parans | 8 |
 | patterns | 3 |
@@ -749,6 +749,7 @@ those relationship-chart routes.
 | POST | `/v1/pancha-pakshi/schedule/nominal` | `pancha_pakshi_nominal_schedule_route` |
 | POST | `/v1/pancha-pakshi/context/local-solar` | `pancha_pakshi_local_solar_context_route` |
 | POST | `/v1/pancha-pakshi/schedule/fixed-clock` | `pancha_pakshi_fixed_clock_materialization_route` |
+| POST | `/v1/pancha-pakshi/schedule/fixed-clock/current-cell` | `pancha_pakshi_fixed_clock_current_cell_route` |
 | POST | `/v1/pancha-pakshi/relationships/directed` | `pancha_pakshi_directed_relationship_route` |
 
 Every computation request requires `profile_id`; no route selects a default.
@@ -785,20 +786,44 @@ half-open materialized cells, and provenance. The fixed end is never clipped or
 stretched to the solar end; `0.0001 s` is only the numerical topology
 coalescence threshold.
 
+The additive current-cell request contains the same `profile_id`, aware `dt`,
+`latitude`, `longitude`, and caller-supplied `paksha`, plus the required literal
+`policy_id="fixed_clock_current_cell_half_open_solar_precedence_v1"`. It first
+resolves the governing half-open local-solar half, then applies exact
+zero-tolerance membership on reader-bound TT to that half's admitted Stage 2B
+cells. The response includes profile, requested UT1/TT, location, paksha, half,
+weekday, immutable selection policy, TT/UT1 anchor and end witnesses, signed
+solar-end residual and topology, finite `selection_status`, selected
+materialized `current_cell` or explicit null, and provenance. The complete
+materialization remains the governing engine object without being duplicated
+as a nested transport payload.
+
+The status is `selected` when exactly one cell satisfies
+`start_jd_tt <= requested_jd_tt < end_jd_tt`. Shared endpoints belong to the
+following cell and the fixed end is excluded. At exact sunset or sunrise, the
+new governing half takes precedence; cells extending past the prior half's
+solar end are never eligible. When a long solar half continues after the fixed
+span, the route returns `unmaterialized_solar_half_tail` and
+`current_cell=null`. It never clips, wraps, repeats, stretches, or retains a
+cell, and the Stage 2B `0.0001 s` topology coalescence does not affect
+membership.
+
 Responses preserve admission status, capabilities, decision identity, source
 and locator provenance, assembly policy, astronomical-routing status, and
 declared omissions. Exact nazhigai values serialize as integer
 `numerator`/`denominator` objects rather than binary floats.
 
-Only the local-solar context and fixed-clock materialization routes accept a
-datetime and location. The family does not accept a natal Moon, nakshatra,
+Only the local-solar context, fixed-clock materialization, and fixed-clock
+current-cell routes accept a datetime and location. The family does not accept
+a natal Moon, nakshatra,
 caller-supplied sunrise, timezone policy, scoring rule, or inferred name. It
-performs no astronomical paksha inference, current-cell selection,
-solar-proportional or seasonal scaling, vinadi subdivision,
+performs no astronomical paksha inference, solar-proportional or seasonal
+scaling, vinadi subdivision,
 Padu/Bharana/Adhikara computation, condition scoring, window search, or
 cross-witness normalization. Nominal-offset materialization occurs only on the
 explicit fixed-clock route under its required Stage 2B policy; the context
-route alone still returns no materialized interval.
+route alone still returns no materialized interval. Current-cell selection
+occurs only on the explicit Stage 2C route under its separate required policy.
 
 ### Sidereal And Nakshatra Utility REST Admission Boundary
 

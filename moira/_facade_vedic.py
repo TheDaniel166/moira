@@ -70,6 +70,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             "pancha_pakshi_directed_relationship", "pancha_pakshi_schedule",
             "pancha_pakshi_local_solar_context",
             "pancha_pakshi_fixed_clock_materialization",
+            "pancha_pakshi_fixed_clock_current_cell",
             "shadbala",
             "shadbala_for_chart", "shadbala_profile", "shadbala_condition",
             "shadbala_network", "bhava_bala", "bhava_bala_for_chart",
@@ -290,6 +291,27 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
 
         facade = _facade_module()
         return _pancha_pakshi._pancha_pakshi_fixed_clock_materialization_from_utc(
+            profile_id,
+            facade.jd_from_datetime(dt),
+            latitude,
+            longitude,
+            paksha=paksha,
+            reader=self._reader,
+        )
+
+    def pancha_pakshi_fixed_clock_current_cell(
+        self,
+        profile_id: str,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+        *,
+        paksha: _pancha_pakshi.PanchaPakshiPaksha,
+    ) -> _pancha_pakshi.PanchaPakshiFixedClockCurrentCellSelection:
+        """Select the current fixed-clock cell after solar-half routing."""
+
+        facade = _facade_module()
+        return _pancha_pakshi._pancha_pakshi_fixed_clock_current_cell_from_utc(
             profile_id,
             facade.jd_from_datetime(dt),
             latitude,

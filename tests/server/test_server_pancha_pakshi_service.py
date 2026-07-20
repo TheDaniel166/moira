@@ -7,9 +7,11 @@ from fractions import Fraction
 
 import pytest
 
+import moira_server.models as public_models
 from moira.pancha_pakshi import (
     PanchaPakshiBird,
     PanchaPakshiFixedClockCell,
+    PanchaPakshiFixedClockCurrentCellSelectionPolicy,
     PanchaPakshiFixedClockMaterializationPolicy,
     PanchaPakshiHalf,
     PanchaPakshiMaterializedCellRelation,
@@ -23,6 +25,7 @@ from moira.pancha_pakshi import (
 from moira_server.models.pancha_pakshi import (
     PanchaPakshiAksaraIdentityRequest,
     PanchaPakshiDirectedRelationshipRequest,
+    PanchaPakshiFixedClockCurrentCellRequest,
     PanchaPakshiFixedClockMaterializationRequest,
     PanchaPakshiLocalSolarContextRequest,
     PanchaPakshiNominalScheduleRequest,
@@ -31,6 +34,7 @@ from moira_server.serializers.pancha_pakshi import (
     serialize_aksara_identity,
     serialize_directed_relationship,
     serialize_fixed_clock_cell,
+    serialize_fixed_clock_current_cell_selection_policy,
     serialize_fixed_clock_materialization_policy,
     serialize_nominal_schedule,
     serialize_profile_info,
@@ -38,6 +42,7 @@ from moira_server.serializers.pancha_pakshi import (
 from moira_server.services.pancha_pakshi import (
     compute_aksara_identity,
     compute_directed_relationship,
+    compute_fixed_clock_current_cell,
     compute_fixed_clock_materialization,
     compute_local_solar_context,
     compute_nominal_schedule,
@@ -49,6 +54,19 @@ from moira_server.services.pancha_pakshi import (
 pytestmark = pytest.mark.network
 
 _PROFILE_ID = "agastya_madras_1879_akshara_fixed_clock"
+
+
+def test_fixed_clock_current_cell_transport_models_are_public() -> None:
+    expected = {
+        "PanchaPakshiFixedClockCurrentCellRequest",
+        "PanchaPakshiFixedClockCurrentCellResponse",
+        "PanchaPakshiFixedClockCurrentCellSelectionPolicyResponse",
+    }
+    assert expected <= set(public_models.__all__)
+    for name in expected:
+        assert getattr(public_models, name).__module__ == (
+            "moira_server.models.pancha_pakshi"
+        )
 
 
 def test_profile_catalog_and_info_service_preserve_no_default_policy() -> None:
@@ -192,6 +210,50 @@ def test_fixed_clock_materialization_service_delegates_through_facade_with_norma
     ]
 
 
+def test_fixed_clock_current_cell_service_delegates_through_facade_with_normalized_utc() -> None:
+    sentinel = object()
+    calls = []
+
+    class FacadeStub:
+        def pancha_pakshi_fixed_clock_current_cell(
+            self,
+            profile_id,
+            dt,
+            latitude,
+            longitude,
+            *,
+            paksha,
+        ):
+            calls.append((profile_id, dt, latitude, longitude, paksha))
+            return sentinel
+
+    request = PanchaPakshiFixedClockCurrentCellRequest(
+        profile_id=_PROFILE_ID,
+        dt=datetime(
+            2026,
+            7,
+            20,
+            12,
+            tzinfo=timezone(timedelta(hours=-4)),
+        ),
+        latitude=13.0827,
+        longitude=80.2707,
+        paksha="purva",
+        policy_id="fixed_clock_current_cell_half_open_solar_precedence_v1",
+    )
+
+    assert compute_fixed_clock_current_cell(FacadeStub(), request) is sentinel
+    assert calls == [
+        (
+            _PROFILE_ID,
+            datetime(2026, 7, 20, 16, tzinfo=timezone.utc),
+            13.0827,
+            80.2707,
+            PanchaPakshiPaksha.PURVA,
+        )
+    ]
+
+
 def test_fixed_clock_policy_and_cell_serializers_match_engine_contract() -> None:
     schedule = pancha_pakshi_schedule(
         _PROFILE_ID,
@@ -245,3 +307,29 @@ def test_fixed_clock_policy_and_cell_serializers_match_engine_contract() -> None
         "denominator": 1,
     }
     assert cell.solar_half_relation == "within_governing_solar_half"
+
+
+def test_fixed_clock_current_cell_policy_serializer_is_exhaustive() -> None:
+    policy = serialize_fixed_clock_current_cell_selection_policy(
+        PanchaPakshiFixedClockCurrentCellSelectionPolicy()
+    )
+
+    assert policy.model_dump() == {
+        "policy_id": "fixed_clock_current_cell_half_open_solar_precedence_v1",
+        "materialization_policy_id": (
+            "fixed_24_minute_nazhigai_from_local_solar_half_start_v1"
+        ),
+        "paksha_basis": "caller_supplied_source_label",
+        "selection_time_scale": "reader_bound_tt",
+        "interval_ownership": "half_open",
+        "solar_half_precedence": (
+            "resolve_governing_solar_half_before_selection"
+        ),
+        "membership_tolerance_seconds": 0.0,
+        "unmaterialized_solar_half_tail": "explicit_no_current_cell",
+        "solar_end_clipping": "none",
+        "fixed_span_wrap": "none",
+        "fixed_span_repeat": "none",
+        "solar_proportional_scaling_status": "not_performed",
+        "astronomical_paksha_inference_status": "not_performed",
+    }

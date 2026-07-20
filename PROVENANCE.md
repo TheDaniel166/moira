@@ -346,6 +346,35 @@ those roles, the unchanged profile hash, the frozen Stage 2A decision, and the
 manifest-only capability transition. It is not an external Pancha Pakshi
 current-cell oracle or independent-witness corroboration.
 
+Stage 2C separately adds `fixed_clock_current_cell_selection` through the
+explicitly modern Moira policy
+`fixed_clock_current_cell_half_open_solar_precedence_v1`. It composes the
+unchanged Stage 2B materialization rather than rewriting the source profile or
+its fixed-clock policy. The governing local-solar half is resolved first; the
+requested instant is then represented on the same reader-bound TT coordinate
+as the materialized cells and tested against their exact half-open intervals
+with `0.0 s` membership tolerance. Shared endpoints belong to the following
+cell and the fixed endpoint is excluded. The separate Stage 2B `0.0001 s`
+topology coalescence remains descriptive and never changes ownership.
+
+This solar-half-first precedence prevents cells from a prior short half from
+remaining current after sunset or sunrise. When a long solar half outlasts the
+fixed span, the uncovered interval is not repaired: the public result reports
+`unmaterialized_solar_half_tail` with `current_cell=None`. Clipping, wrapping,
+repeating, stretching, borrowing, solar-proportional scaling, and astronomical
+paksha inference remain unperformed. Paksha remains an explicit caller-supplied
+source label.
+
+The additive
+`pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20.json` decision binds the
+unchanged profile hash, frozen Stage 2B decision and manifest, manifest-only
+capability transition, policy, selection statuses, and structural validation
+boundary. The 1879 witness still governs only the nominal schedule facts; the
+selection policy is Moira-owned composition. There is no external Pancha
+Pakshi current-cell oracle or independent-witness corroboration, and the
+bounded deterministic membership result does not raise the profile above
+`source_scoped_public`.
+
 Later Bogar- and Uromarisi-attributed editions and Sarasvati Mahal Library
 series 213 are retained only as metadata in a conflict ledger. The latter's
 official catalog says sixth edition/2014 while its inspected internal title
@@ -371,9 +400,11 @@ The governing research boundary, admission tiers, conflicts, fail-closed
 invariants, and public contract are documented in
 [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
 Public access is additive through `moira.pancha_pakshi`, package-root and
-`moira.vedic` exports, five kernel-free and two kernel-backed `Moira` methods,
-and seven explicit-profile `/v1/pancha-pakshi` routes. No API selects a default
-profile or a current schedule cell.
+`moira.vedic` exports, five kernel-free and three kernel-backed `Moira` methods,
+and eight explicit-profile `/v1/pancha-pakshi` routes. No API selects a default
+profile. Current-cell selection occurs only through its explicit fixed-clock,
+solar-half-precedence policy; condition, scoring, paksha inference, and
+proportional timing remain outside the admitted surface.
 
 The 2026-07-20 blind, representative-grid, and later adjudicating reviews are
 recorded in
