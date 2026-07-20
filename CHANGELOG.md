@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Pancha Pakshi Research Foundation**: Added a private, non-admitted
+  Pancha Pakshi doctrine layer with immutable source-scoped vessels,
+  exact-rational nazhigai arithmetic, per-cell source locators, a hash-bearing
+  data manifest, and fail-closed completeness and bijection validation. The
+  bundled `agastya_madras_1879_akshara_fixed_clock` profile is explicitly
+  limited to the query/name-letter operating-schedule witness and fixed-clock
+  timing; it is not a natal-Moon canon and is not a default. A metadata-only
+  conflict ledger preserves the
+  verse/commentary, duration, relationship, and source-witness boundaries found in
+  later witnesses without importing their scans, prose, layouts, or tables.
+  A blind source reading and a separate representative-grid reading are now
+  preserved as distinct hash-bound records with a non-executable
+  reconciliation. Both records agree with the profile on the duration vector
+  and the numeric `30/5/6` structure of the displayed Pūrva-day half, without
+  establishing that structure's complete day/night scope. The blind record
+  alone also matches the full temporal model, vowel map, and three weekday seed
+  surfaces, which are explicitly not independent consensus. The records
+  preserve unresolved Pūrva-night assembly, Amara-night seed and assembly,
+  relationship, and table-semantic disagreements. Archive provenance
+  now distinguishes the original image ZIP from the derivative PDF and records
+  catalogued contributor metadata, the standing non-bundling policy, and the
+  MIT package scope. Archival rights metadata is explicitly outside public
+  admission because source artifacts and copied expression are never bundled.
+  Public exports, facade methods, and REST routes remain deliberately absent
+  because independent readings did not reconcile, and competent Tamil review,
+  cross-witness collation, and explicit text-layer precedence remain
+  incomplete.
+
+### Changed
+- **Shared Local Solar Day Boundary**: Extracted the existing topocentric
+  sunrise-to-sunrise window selection, UTC/UT1 civil-noon anchoring, geographic
+  validation, polar failure, and local-mean-solar weekday policy into the
+  private `moira._local_solar_day` boundary. Planetary Hours now consumes that
+  shared result while retaining its existing public vessels, method
+  signatures, FastAPI schemas, Chaldean sequence, temporal-hour arithmetic,
+  numerical output, and error semantics.
+
 ## [5.0.0] - 2026-07-19
 
 Detailed release and migration guidance is available in

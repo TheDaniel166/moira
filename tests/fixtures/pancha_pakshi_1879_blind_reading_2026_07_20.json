@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "record_id": "pancha_pakshi_1879_blind_reading_2026_07_20",
+  "record_kind": "frozen_machine_assisted_source_reading",
+  "created_at_utc": "2026-07-20T10:08:00Z",
+  "reviewer_identity": "Codex subagent pakshi_blind_transcription",
+  "protocol": {
+    "protocol_id": "blind_source_transcription_v1",
+    "prompt_scope": "Read the exact 1879 witness, freeze normalized findings before comparison, and do not inspect Moira's Pancha Pakshi profile, data, tests, changelog, provenance, standard, or handoff.",
+    "isolation_observed": true,
+    "source_inputs": ["Internet Archive scan", "Internet Archive derivative PDF", "Internet Archive OCR and scandata"],
+    "ocr_role": "locator_only",
+    "governing_evidence": "page_images",
+    "competent_tamil_signoff": false
+  },
+  "witness": {
+    "archive_item_id": "dli.rmrl.000451_images",
+    "publication_year": 1879,
+    "archive_pdf_md5": "0736b952fb587132c2181a383ff10cfb",
+    "archive_pdf_sha1": "d41ff5c2d569de6422435b20135b58be82a68560",
+    "locally_verified_pdf_sha256": "ed52945ee141faa3f6967b8f043077b95abef9ff674ffb83eaba633417c669c9",
+    "leaf_mapping": "PDF page P corresponds to Internet Archive leaf n(P-1)"
+  },
+  "readings": {
+    "initial_vowels": {
+      "status": "high_confidence_machine_reading",
+      "locators": ["ia_n5"],
+      "values": {
+        "அ": "vulture",
+        "இ": "owl",
+        "உ": "crow",
+        "எ": "cock",
+        "ஒ": "peacock"
+      }
+    },
+    "temporal_model": {
+      "status": "high_confidence_machine_reading",
+      "locators": ["ia_n6", "ia_n15"],
+      "values": {
+        "day_span_nazhigai": 30,
+        "night_span_nazhigai": 30,
+        "samam_count_per_half": 5,
+        "samam_span_nazhigai": 6
+      }
+    },
+    "duration_vector_nazhigai": {
+      "status": "high_confidence_machine_reading_pending_human_glyph_review",
+      "locators": ["ia_n6", "ia_n18", "ia_n23", "ia_n28", "ia_n33"],
+      "values": {
+        "eat": [5, 4],
+        "walk": [3, 2],
+        "rule": [2, 1],
+        "sleep": [3, 4],
+        "die": [1, 2]
+      }
+    },
+    "first_eat_by_weekday": {
+      "purva_day": {
+        "locators": ["ia_n16"],
+        "values": ["vulture", "owl", "vulture", "owl", "crow", "cock", "peacock"]
+      },
+      "purva_night": {
+        "locators": ["ia_n21", "ia_n22"],
+        "values": ["crow", "cock", "crow", "cock", "peacock", "vulture", "owl"]
+      },
+      "amara_day": {
+        "locators": ["ia_n26", "ia_n27"],
+        "values": ["cock", "peacock", "cock", "crow", "owl", "vulture", "peacock"]
+      },
+      "amara_night": {
+        "locators": ["ia_n31", "ia_n32"],
+        "values": ["vulture", "cock", "vulture", "cock", "owl", "peacock", "crow"]
+      }
+    },
+    "chronological_activities": {
+      "purva_day": {
+        "locators": ["ia_n18"],
+        "values": ["eat", "walk", "rule", "sleep", "die"]
+      },
+      "purva_night": {
+        "locators": ["ia_n22", "ia_n23"],
+        "values": ["eat", "rule", "die", "walk", "sleep"]
+      },
+      "amara_day": {
+        "locators": ["ia_n26", "ia_n28"],
+        "values": ["eat", "die", "sleep", "rule", "walk"]
+      },
+      "amara_night": {
+        "locators": ["ia_n26", "ia_n32", "ia_n33"],
+        "values": ["eat", "sleep", "walk", "die", "rule"]
+      }
+    },
+    "representative_first_samam": {
+      "purva_day_sunday_tuesday": {
+        "locators": ["ia_n16", "ia_n18", "ia_n19", "ia_n20"],
+        "pairs": [["vulture", "eat"], ["owl", "walk"], ["crow", "rule"], ["cock", "sleep"], ["peacock", "die"]]
+      },
+      "purva_night_sunday_tuesday": {
+        "locators": ["ia_n21", "ia_n22", "ia_n23", "ia_n24"],
+        "pairs": [["crow", "eat"], ["owl", "rule"], ["vulture", "die"], ["peacock", "walk"], ["cock", "sleep"]]
+      },
+      "amara_day_sunday_tuesday": {
+        "locators": ["ia_n26", "ia_n28", "ia_n29"],
+        "pairs": [["cock", "eat"], ["owl", "die"], ["peacock", "sleep"], ["crow", "rule"], ["vulture", "walk"]]
+      },
+      "amara_night_sunday_tuesday": {
+        "locators": ["ia_n31", "ia_n32", "ia_n33", "ia_n34"],
+        "pairs": [["vulture", "eat"], ["cock", "sleep"], ["crow", "walk"], ["peacock", "die"], ["owl", "rule"]]
+      }
+    }
+  },
+  "unresolved": {
+    "directed_relationships": {
+      "locators": ["ia_n41", "ia_n42"],
+      "status": "not_certified_from_1879",
+      "note": "The faded 1879 friendship verse did not support certification of every directed edge. A clearer 1867 parallel printing was provisional corroboration only and is not an executable oracle."
+    },
+    "table_semantics": "The damaged rotation and alternate or skip prose did not establish a human-reviewed assembly doctrine."
+  }
+}

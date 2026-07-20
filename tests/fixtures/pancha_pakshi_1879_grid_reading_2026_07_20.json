@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "record_id": "pancha_pakshi_1879_grid_reading_2026_07_20",
+  "record_kind": "frozen_machine_assisted_representative_grid_reading",
+  "created_at_utc": "2026-07-20T10:08:00Z",
+  "reviewer_identity": "Codex subagent pakshi_worked_examples",
+  "protocol": {
+    "protocol_id": "representative_grid_reading_v1",
+    "prompt_scope": "Locate source-owned worked examples and independently read representative printed rows for a Tamil-review packet.",
+    "source_inputs": ["Internet Archive derivative PDF", "rendered page images"],
+    "ocr_role": "locator_only",
+    "governing_evidence": "page_images",
+    "pairing_policy": "Bird and activity rows are preserved separately because their table-axis semantics are unresolved.",
+    "competent_tamil_signoff": false
+  },
+  "witness": {
+    "archive_item_id": "dli.rmrl.000451_images",
+    "publication_year": 1879,
+    "archive_pdf_md5": "0736b952fb587132c2181a383ff10cfb",
+    "archive_pdf_sha1": "d41ff5c2d569de6422435b20135b58be82a68560",
+    "locally_verified_pdf_sha256": "ed52945ee141faa3f6967b8f043077b95abef9ff674ffb83eaba633417c669c9",
+    "leaf_mapping": "PDF page P corresponds to Internet Archive leaf n(P-1)"
+  },
+  "structural_readings": [
+    {
+      "reading_id": "fixed_half_and_samam_structure",
+      "locators": ["ia_n17"],
+      "values": {"half_span_nazhigai": 30, "samam_count": 5, "samam_span_nazhigai": 6},
+      "status": "machine_read_pending_human_scope_confirmation"
+    },
+    {
+      "reading_id": "duration_vector",
+      "locators": ["ia_n10", "ia_n18", "ia_n50", "ia_n51"],
+      "values": {"eat": [5, 4], "walk": [3, 2], "rule": [2, 1], "sleep": [3, 4], "die": [1, 2]},
+      "status": "machine_read_pending_human_fraction_glyph_confirmation"
+    }
+  ],
+  "representative_grid_rows": [
+    {
+      "reading_id": "purva_day_sunday_tuesday_samam_1",
+      "locators": ["ia_n19"],
+      "printed_bird_order": ["vulture", "owl", "crow", "cock", "peacock"],
+      "printed_activity_row": ["eat", "walk", "rule", "sleep", "die"],
+      "pairing_status": "unresolved_table_axes"
+    },
+    {
+      "reading_id": "purva_day_sunday_tuesday_samam_2",
+      "locators": ["ia_n19"],
+      "printed_bird_order": ["vulture", "owl", "crow", "cock", "peacock"],
+      "printed_activity_row": ["walk", "rule", "sleep", "die", "eat"],
+      "pairing_status": "unresolved_table_axes"
+    },
+    {
+      "reading_id": "purva_night_thursday_samam_1",
+      "locators": ["ia_n25"],
+      "printed_bird_order": ["peacock", "cock", "crow", "owl", "vulture"],
+      "printed_activity_row": ["eat", "rule", "die", "walk", "sleep"],
+      "pairing_status": "unresolved_table_axes"
+    },
+    {
+      "reading_id": "purva_night_thursday_samam_2",
+      "locators": ["ia_n25"],
+      "printed_bird_order": ["peacock", "cock", "crow", "owl", "vulture"],
+      "printed_activity_row": ["rule", "die", "walk", "sleep", "eat"],
+      "pairing_status": "unresolved_table_axes"
+    },
+    {
+      "reading_id": "amara_day_monday_saturday_samam_1",
+      "locators": ["ia_n29"],
+      "printed_bird_order": ["peacock", "owl", "cock", "vulture", "crow"],
+      "printed_activity_row": ["eat", "walk", "rule", "sleep", "die"],
+      "pairing_status": "unresolved_table_axes"
+    },
+    {
+      "reading_id": "amara_day_monday_saturday_samam_2",
+      "locators": ["ia_n29"],
+      "printed_bird_order": ["peacock", "owl", "cock", "vulture", "crow"],
+      "printed_activity_row": ["die", "eat", "walk", "rule", "sleep"],
+      "pairing_status": "unresolved_table_axes"
+    },
+    {
+      "reading_id": "amara_night_sunday_tuesday_samam_1",
+      "locators": ["ia_n35"],
+      "printed_bird_order": ["vulture", "cock", "owl", "peacock", "crow"],
+      "printed_activity_row": ["eat", "walk", "rule", "sleep", "die"],
+      "pairing_status": "unresolved_table_axes"
+    },
+    {
+      "reading_id": "amara_night_wednesday_samam_1",
+      "locators": ["ia_n35"],
+      "printed_bird_order": ["owl", "peacock", "crow", "vulture", "cock"],
+      "printed_activity_row": ["eat", "walk", "rule", "sleep", "die"],
+      "pairing_status": "unresolved_table_axes"
+    }
+  ],
+  "human_review_questions": [
+    "Does the fixed thirty-nazhigai statement govern both day and night or only the displayed Purva-day construction?",
+    "Do the fraction glyphs unambiguously normalize to 1 1/4, 1 1/2, 2, 3/4, and 1/2?",
+    "Do paired weekday headings denote two discrete weekdays?",
+    "Do printed rows encode assignments, temporal sequence, seed states, or transition instructions?",
+    "How do the lower-quality Purva-night headers and alternate or skip rule assemble cells?",
+    "Are the alternate Eat and Sleep terms computational synonyms in this witness?"
+  ]
+}

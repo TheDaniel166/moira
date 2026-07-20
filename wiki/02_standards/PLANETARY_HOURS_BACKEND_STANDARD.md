@@ -12,6 +12,11 @@ This standard governs the dedicated planetary-hours engine in:
 
 - `moira/planetary_hours.py`
 
+Its enclosing sunrise-to-sunrise window is resolved by the shared private
+astronomical boundary in `moira/_local_solar_day.py`. Planetary Hours retains
+ownership of the Chaldean sequence and temporal-hour division; the shared
+module does not own either doctrine.
+
 Current public surface:
 
 - `PlanetaryHour`
@@ -46,8 +51,12 @@ The day ruler is selected from weekday rulership:
 The astronomical boundaries are delegated:
 
 - Julian Day conversion: `moira.julian`
-- sunrise/sunset approximation: `moira._solar._sunrise_sunset`
-- sunrise/sunset refinement: `moira._solar._refine_sunrise`
+- enclosing local solar day and local-mean-solar weekday:
+  `moira._local_solar_day`
+- sunrise/sunset approximation beneath that boundary:
+  `moira._solar._sunrise_sunset`
+- sunrise/sunset refinement beneath that boundary:
+  `moira._solar._refine_sunrise`
 - SPK resource access: `moira.spk_reader`
 
 Refinement is governed by the topocentric geometric Sun-altitude crossing at
@@ -154,10 +163,11 @@ state. Silent substitution is forbidden.
 
 ## 6. Polar And High-Latitude Policy
 
-The current engine delegates sunrise and sunset resolution to `_solar`.
-The engine fails explicitly when the requested local solar day has no sunrise
-or no sunset altitude crossing. Transport preserves that failure without
-inventing a schedule.
+The current engine delegates its enclosing local solar day to
+`_local_solar_day`, which in turn delegates the physical crossings to
+`_solar`. The engine fails explicitly when the requested local solar day has
+no sunrise or no sunset altitude crossing. Transport preserves that failure
+without inventing a schedule.
 
 Minimum acceptable public policy:
 
@@ -174,7 +184,7 @@ Minimum validation for transport admission:
 
 ```powershell
 .\.venv\Scripts\python.exe -m py_compile moira\planetary_hours.py tests\unit\test_planetary_hours_api.py
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_planetary_hours_api.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_local_solar_day.py tests\unit\test_planetary_hours_api.py -q
 ```
 
 The transport test suite must additionally cover:

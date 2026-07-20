@@ -4,6 +4,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
+import moira._local_solar_day as local_solar_day_module
 from moira.constants import Body
 import moira.planetary_hours as planetary_hours_module
 
@@ -12,17 +13,17 @@ def test_planetary_hours_explicit_reader_bypasses_singleton(monkeypatch: pytest.
     explicit_reader = object()
 
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_sunrise_sunset",
         lambda jd_noon, latitude, longitude, reader: (jd_noon - 0.75, jd_noon - 0.25),
     )
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_refine_sunrise",
         lambda jd_guess, latitude, longitude, reader, is_rise: jd_guess,
     )
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "get_reader",
         lambda: pytest.fail("get_reader should not run when an explicit reader is supplied"),
     )
@@ -34,16 +35,16 @@ def test_planetary_hours_explicit_reader_bypasses_singleton(monkeypatch: pytest.
 
 def test_planetary_hours_day_and_hours_are_immutable(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_sunrise_sunset",
         lambda jd_noon, latitude, longitude, reader: (jd_noon - 0.75, jd_noon - 0.25),
     )
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_refine_sunrise",
         lambda jd_guess, latitude, longitude, reader, is_rise: jd_guess,
     )
-    monkeypatch.setattr(planetary_hours_module, "get_reader", lambda: object())
+    monkeypatch.setattr(local_solar_day_module, "get_reader", lambda: object())
 
     result = planetary_hours_module.planetary_hours(2451545.5, 0.0, 0.0)
 
@@ -63,16 +64,16 @@ def test_planetary_hours_uses_previous_sunrise_window_before_today_sunrise(
     }
 
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_sunrise_sunset",
         lambda jd_noon, latitude, longitude, reader: sunrise_sunset_by_noon[jd_noon],
     )
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_refine_sunrise",
         lambda jd_guess, latitude, longitude, reader, is_rise: jd_guess,
     )
-    monkeypatch.setattr(planetary_hours_module, "get_reader", lambda: object())
+    monkeypatch.setattr(local_solar_day_module, "get_reader", lambda: object())
 
     result = planetary_hours_module.planetary_hours(2451545.10, 0.0, 0.0)
 
@@ -92,16 +93,16 @@ def test_planetary_hours_uses_current_window_after_today_sunrise(
     }
 
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_sunrise_sunset",
         lambda jd_noon, latitude, longitude, reader: sunrise_sunset_by_noon[jd_noon],
     )
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_refine_sunrise",
         lambda jd_guess, latitude, longitude, reader, is_rise: jd_guess,
     )
-    monkeypatch.setattr(planetary_hours_module, "get_reader", lambda: object())
+    monkeypatch.setattr(local_solar_day_module, "get_reader", lambda: object())
 
     result = planetary_hours_module.planetary_hours(2451546.10, 0.0, 0.0)
 
@@ -121,18 +122,18 @@ def test_planetary_hours_rejects_refinement_outside_local_day(
     }
 
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_sunrise_sunset",
         lambda jd_noon, latitude, longitude, reader: sunrise_sunset_by_noon[jd_noon],
     )
     monkeypatch.setattr(
-        planetary_hours_module,
+        local_solar_day_module,
         "_refine_sunrise",
         lambda jd_guess, latitude, longitude, reader, is_rise: (
             jd_guess if is_rise else jd_guess + 5.0
         ),
     )
-    monkeypatch.setattr(planetary_hours_module, "get_reader", lambda: object())
+    monkeypatch.setattr(local_solar_day_module, "get_reader", lambda: object())
 
     with pytest.raises(ValueError, match="escaped its local day"):
         planetary_hours_module.planetary_hours(2460476.50, 40.7128, -74.0060)
@@ -220,12 +221,12 @@ def test_planetary_hours_engine_rejects_invalid_inputs(
 
 def test_local_weekday_uses_longitude_and_floor_for_bce() -> None:
     # 2023-12-31 UTC is already local Monday at a Sydney sunrise.
-    assert planetary_hours_module._local_weekday_at_sunrise(
+    assert local_solar_day_module._local_weekday_at_sunrise(
         2460310.28, 151.2093,
     ) == 1
     # Negative JDs must floor rather than truncate toward zero.
     sunrise_bce = -1000.2523388558844
-    assert planetary_hours_module._local_weekday_at_sunrise(sunrise_bce, 0.0) == 2
+    assert local_solar_day_module._local_weekday_at_sunrise(sunrise_bce, 0.0) == 2
 
 
 def test_real_sydney_monday_begins_with_moon_and_polar_day_fails() -> None:

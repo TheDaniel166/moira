@@ -13,6 +13,7 @@ import moira._facade_predictive as predictive_facade
 import moira._facade_spatial as spatial_facade
 import moira._facade_special as special_facade
 import moira._facade_vedic as vedic_facade
+import moira._local_solar_day as local_solar_day
 import moira.astrocartography as astrocartography
 import moira.julian as julian
 import moira.obliquity as obliquity
@@ -300,9 +301,9 @@ def test_planetary_hours_utc_adapter_converts_instant_and_civil_noons(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     noons: list[float] = []
-    monkeypatch.setattr(planetary_hours, "utc_to_ut1", lambda jd: jd - 0.01)
+    monkeypatch.setattr(local_solar_day, "utc_to_ut1", lambda jd: jd - 0.01)
     monkeypatch.setattr(
-        planetary_hours,
+        local_solar_day,
         "_sunrise_sunset",
         lambda jd_noon, _lat, _lon, _reader: (
             noons.append(jd_noon) or jd_noon - 0.75,
@@ -310,7 +311,7 @@ def test_planetary_hours_utc_adapter_converts_instant_and_civil_noons(
         ),
     )
     monkeypatch.setattr(
-        planetary_hours,
+        local_solar_day,
         "_refine_sunrise",
         lambda jd_guess, _lat, _lon, _reader, is_rise: jd_guess,
     )

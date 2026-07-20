@@ -256,6 +256,74 @@ admitted source row. Computational guards admit finite Delta-T years only in
 `[-40000000, +40000000]`. These binary64 representability bounds are not
 scientific-validity or source-coverage claims.
 
+## Pancha Pakshi research witnesses
+
+Moira's Pancha Pakshi work is an internal, non-admitted research surface. The
+private data records normalized computational facts and locators from the 1879
+Tamil print catalogued by Internet Archive as
+[`dli.rmrl.000451_images`](https://archive.org/details/dli.rmrl.000451_images).
+The source is traditionally attributed to Agastya; that attribution is
+bibliographic metadata, not a verified historical-authorship claim. The print
+is a research witness, not a package asset. Moira records independently
+normalized computational rules and source locators; it never bundles archival
+scans, PDFs, OCR, page images, copied table layouts, source prose, or
+third-party translations.
+
+Internet Archive metadata classifies `dli.rmrl.000451_images.zip` as the
+original image archive and `dli.rmrl.000451.pdf` as a derivative PDF. The
+private profile retains the archive MD5/SHA-1 identities of both, plus the
+locally verified PDF SHA-256. Those hashes identify the exact witness used for
+research; they do not import or redistribute either file. The same metadata
+names Ti. Kandasami Pillai as having reviewed the edition. His exact
+contribution and life dates remain unresolved bibliographic questions, but
+they do not create a Moira distribution issue because no source expression is
+copied into the package.
+
+The internal profile `agastya_madras_1879_akshara_fixed_clock` is restricted
+to the witness's query/name-letter operating schedule and fixed-clock timing.
+It must not be represented as a natal-Moon canon. Exact source locators and
+archive file checksums are retained in the machine-readable profile. The
+manifest retains the canonical profile digest, and the runtime loader rejects
+a data/manifest hash mismatch.
+
+Later Bogar- and Uromarisi-attributed editions and Sarasvati Mahal Library
+series 213 are retained only as metadata in a conflict ledger. The latter's
+official catalog says sixth edition/2014 while its inspected internal title
+page says fifth edition/September 2011; both records remain visible. Their
+verse/commentary disagreements are not resolved or copied into runtime truth.
+Archive rights or license labels are not runtime inputs and are not public
+admission gates, because no modern scans, prose, layouts, or table
+transcriptions are packaged.
+
+Moira's MIT license covers Moira-authored code, schema, and prose. Archival
+artifacts are outside the distributed product rather than materials Moira
+attempts to relicense. Only independently normalized symbolic rules,
+bibliographic facts, hashes, and locators are eligible for a profile. Public
+admission is blocked by unreconciled source readings and incomplete doctrinal
+validation, not by a blank archive license field, contributor biography, or a
+separate archival-rights clearance step. Because the standing policy forbids
+bundling protected source expression, archival-artifact rights review is
+outside Moira's Pancha Pakshi admission process.
+
+The governing research boundary, conflicts, fail-closed invariants, and public
+admission criteria are documented in
+[`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
+There are intentionally no Pancha Pakshi root exports, facade methods, or REST
+routes at this stage.
+
+The 2026-07-20 blind and representative-grid review is recorded in
+[`PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md`](./wiki/05_research/PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md).
+Both frozen source records agree with the profile on the duration surface and
+the numeric `30/5/6` structure of the displayed Pūrva-day half, but the grid
+record does not establish a full day/night scope. The blind record alone also
+matches the full temporal model, vowel map, and three weekday-seed surfaces;
+those are one-source/profile matches, not independent consensus. Material
+night-grid, Amara-night seed, relationship, and table-semantic disagreements
+remain. The reconciliation is explicitly non-executable and is not an
+external authority oracle. The blind reading and representative-grid reading
+are preserved as separate hash-bound records;
+reconciliation cannot silently rewrite either source record.
+
 ## Provenance history
 
 Earlier in Moira's release history, during a licensing discussion with the Swiss Ephemeris authors, the house module carried — as a conservative precaution — an attribution notice referencing `swehouse.c`, and written permission was obtained from the authors. Moira's house implementation is independently derived from the mathematical definitions; the precautionary attribution was therefore determined to be unnecessary and was removed.

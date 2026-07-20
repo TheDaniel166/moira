@@ -5,9 +5,10 @@ for any geographic location and input instant, resolved onto the enclosing
 sunrise-based local day.
 
 Boundary: owns Chaldean hour sequence arithmetic, daytime/nighttime hour
-division, and planetary hour lookup. Delegates solar position and
-sunrise/sunset computation to _solar. Delegates Julian Day arithmetic to
-julian. Does NOT own ephemeris state or geographic coordinate conversion.
+division, and planetary hour lookup. Delegates the enclosing sunrise-based
+window to _local_solar_day, solar event geometry to _solar through that shared
+boundary, and Julian Day arithmetic to julian. Does NOT own ephemeris state or
+geographic coordinate conversion.
 
 Public surface:
     PlanetaryHour, PlanetaryHoursDay,
@@ -23,10 +24,15 @@ External dependency assumptions:
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from datetime import datetime
 
+from ._local_solar_day import (
+    LocalSolarDay,
+    _local_solar_day_from_utc,
+    _local_solar_day_from_ut1,
+    _resolve_local_solar_day,
+)
 from .constants import Body
 from .julian import (
     CalendarDateTime,
@@ -34,48 +40,8 @@ from .julian import (
     calendar_datetime_from_jd,
     datetime_from_jd,
     format_jd_utc,
-    utc_to_ut1,
 )
-from .spk_reader import get_reader, SpkReader
-from ._solar import _sunrise_sunset, _refine_sunrise
-
-
-def _refine_solar_event_near(
-    jd_guess: float,
-    latitude: float,
-    longitude: float,
-    reader: SpkReader,
-    *,
-    is_rise: bool,
-) -> float:
-    """Refine a sunrise/sunset approximation while preserving day locality."""
-    jd_event = _refine_sunrise(jd_guess, latitude, longitude, reader, is_rise=is_rise)
-    if not math.isfinite(jd_event):
-        raise ValueError("solar event refinement returned a non-finite JD")
-    if abs(jd_guess - jd_event) > 0.75:
-        raise ValueError(
-            f"solar event refinement escaped its local day: guess={jd_guess}, "
-            f"refined={jd_event}"
-        )
-    return jd_event
-
-
-def _validate_inputs(jd: float, latitude: float, longitude: float) -> None:
-    for name, value in (("jd", jd), ("latitude", latitude), ("longitude", longitude)):
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
-            raise TypeError(f"{name} must be a real number")
-        if not math.isfinite(value):
-            raise ValueError(f"{name} must be finite")
-    if not -90.0 <= latitude <= 90.0:
-        raise ValueError("latitude must be within [-90, 90] degrees")
-    if not -180.0 <= longitude <= 180.0:
-        raise ValueError("longitude must be within [-180, 180] degrees")
-
-
-def _local_weekday_at_sunrise(jd_sunrise: float, longitude: float) -> int:
-    """Return local-mean-solar weekday with Sunday=0 through Saturday=6."""
-    local_mean_jd = jd_sunrise + longitude / 360.0
-    return math.floor(local_mean_jd + 1.5) % 7
+from .spk_reader import SpkReader
 
 
 # ---------------------------------------------------------------------------
@@ -128,7 +94,7 @@ class PlanetaryHour:
             - Serve as a value inside PlanetaryHoursDay.hours
         Non-responsibilities:
             - Computing hour boundaries (delegates to planetary_hours)
-            - Computing sunrise/sunset (delegates to _sunrise_sunset / _refine_sunrise)
+            - Resolving the local solar day (delegates to _local_solar_day)
         Dependencies:
             - Populated by planetary_hours()
         Structural invariants:
@@ -216,7 +182,7 @@ class PlanetaryHoursDay:
             - Serve as the return type of planetary_hours()
         Non-responsibilities:
             - Computing hour boundaries (delegates to planetary_hours)
-            - Computing sunrise/sunset (delegates to _sunrise_sunset / _refine_sunrise)
+            - Resolving the local solar day (delegates to _local_solar_day)
         Dependencies:
             - Populated by planetary_hours()
             - sunrise_utc / sunset_utc delegate to datetime_from_jd()
@@ -317,78 +283,28 @@ def _planetary_hours_resolved(
     PlanetaryHoursDay with the sunrise, sunset, and 24 planetary hours for the
     sunrise-to-sunrise local window containing *jd*.
     """
-    # Anchor to the UT day containing jd, then choose the sunrise-based local
-    # day window that actually contains the instant.
-    jd_noon = current_noon_ut1
-
-    jd_sr_approx, jd_ss_approx = _sunrise_sunset(jd_noon, latitude, longitude, reader)
-    jd_sunrise_today = _refine_solar_event_near(
-        jd_sr_approx,
+    solar_day = _resolve_local_solar_day(
+        jd,
         latitude,
         longitude,
         reader,
-        is_rise=True,
+        previous_noon_ut1=previous_noon_ut1,
+        current_noon_ut1=current_noon_ut1,
+        next_noon_ut1=next_noon_ut1,
+        bounds_owner="planetary-hours",
     )
-    jd_sunset_today = _refine_solar_event_near(
-        jd_ss_approx,
-        latitude,
-        longitude,
-        reader,
-        is_rise=False,
-    )
+    return _planetary_hours_for_solar_day(solar_day)
 
-    if jd < jd_sunrise_today:
-        jd_prev_sr_approx, jd_prev_ss_approx = _sunrise_sunset(
-            previous_noon_ut1,
-            latitude,
-            longitude,
-            reader,
-        )
-        jd_sunrise = _refine_solar_event_near(
-            jd_prev_sr_approx,
-            latitude,
-            longitude,
-            reader,
-            is_rise=True,
-        )
-        jd_sunset = _refine_solar_event_near(
-            jd_prev_ss_approx,
-            latitude,
-            longitude,
-            reader,
-            is_rise=False,
-        )
-        jd_next_sunrise = jd_sunrise_today
-    else:
-        jd_sunrise = jd_sunrise_today
-        jd_sunset = jd_sunset_today
-        jd_nr_approx, _ = _sunrise_sunset(
-            next_noon_ut1, latitude, longitude, reader
-        )
-        jd_next_sunrise = _refine_solar_event_near(
-            jd_nr_approx,
-            latitude,
-            longitude,
-            reader,
-            is_rise=True,
-        )
 
-    if not jd_sunrise < jd_sunset < jd_next_sunrise:
-        raise ValueError(
-            "planetary-hours solar bounds must satisfy sunrise < sunset < next sunrise; "
-            f"got {jd_sunrise}, {jd_sunset}, {jd_next_sunrise}"
-        )
-    if not jd_sunrise <= jd < jd_next_sunrise:
-        raise ValueError(
-            f"resolved solar window [{jd_sunrise}, {jd_next_sunrise}) "
-            f"does not contain requested JD {jd}"
-        )
-
-    # The surface has coordinates but no timezone. Local mean solar time is
-    # therefore the explicit policy for the weekday whose sunrise begins the
-    # planetary day.
-    weekday = _local_weekday_at_sunrise(jd_sunrise, longitude)
-    day_ruler_idx = _DAY_RULER_IDX[weekday]
+def _planetary_hours_for_solar_day(solar_day: LocalSolarDay) -> PlanetaryHoursDay:
+    """Apply Chaldean hour arithmetic to one resolved local solar day."""
+    jd = solar_day.jd
+    latitude = solar_day.latitude
+    longitude = solar_day.longitude
+    jd_sunrise = solar_day.sunrise_jd
+    jd_sunset = solar_day.sunset_jd
+    jd_next_sunrise = solar_day.next_sunrise_jd
+    day_ruler_idx = _DAY_RULER_IDX[solar_day.weekday]
 
     # Day hours: 12 equal hours from sunrise to sunset
     day_duration = jd_sunset - jd_sunrise
@@ -444,21 +360,14 @@ def _planetary_hours_from_utc(
     reader: SpkReader | None = None,
 ) -> PlanetaryHoursDay:
     """Resolve a facade UTC instant without losing its civil-day anchor."""
-    _validate_inputs(jd_utc, latitude, longitude)
-    if reader is None:
-        reader = get_reader()
-
-    current_noon_utc = math.floor(jd_utc - 0.5) + 1.0
-    jd_ut1 = utc_to_ut1(jd_utc)
-    return _planetary_hours_resolved(
-        jd_ut1,
+    solar_day = _local_solar_day_from_utc(
+        jd_utc,
         latitude,
         longitude,
         reader,
-        previous_noon_ut1=utc_to_ut1(current_noon_utc - 1.0),
-        current_noon_ut1=utc_to_ut1(current_noon_utc),
-        next_noon_ut1=utc_to_ut1(current_noon_utc + 1.0),
+        bounds_owner="planetary-hours",
     )
+    return _planetary_hours_for_solar_day(solar_day)
 
 
 def planetary_hours(
@@ -484,17 +393,11 @@ def planetary_hours(
     reader : SpkReader or None
         Explicit kernel reader, or the active reader when omitted.
     """
-    _validate_inputs(jd, latitude, longitude)
-    if reader is None:
-        reader = get_reader()
-
-    current_noon_ut1 = math.floor(jd - 0.5) + 1.0
-    return _planetary_hours_resolved(
+    solar_day = _local_solar_day_from_ut1(
         jd,
         latitude,
         longitude,
         reader,
-        previous_noon_ut1=current_noon_ut1 - 1.0,
-        current_noon_ut1=current_noon_ut1,
-        next_noon_ut1=current_noon_ut1 + 1.0,
+        bounds_owner="planetary-hours",
     )
+    return _planetary_hours_for_solar_day(solar_day)

@@ -1,0 +1,322 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+    "admission_status": "research_only",
+    "product_kind": "aksara_prasna_operating_schedule",
+    "derivation_status": "rule_derived_with_unreconciled_table_comparison",
+    "assembly_policy": "current_rule_reading_generates_printed_grids_are_non_executable_review_evidence",
+    "title": "Agastya-attributed Madras 1879 Pancha Pakshi research profile"
+  },
+  "source": {
+    "witness_id": "dli.rmrl.000451_images",
+    "title": "பஞ்சபட்சி சாஸ்திரம்",
+    "traditional_attribution": "Agastya",
+    "authorship_status": "traditional_attribution_not_asserted_authorship",
+    "publication_place": "Madras",
+    "publisher": "Mattoovar Colalumbal Press",
+    "publication_year": 1879,
+    "language": "Tamil",
+    "archive_item_url": "https://archive.org/details/dli.rmrl.000451_images",
+    "archive_original_image_zip_name": "dli.rmrl.000451_images.zip",
+    "archive_original_image_zip_source_status": "internet_archive_original",
+    "archive_original_image_zip_md5": "823f14099d376ac86a358349de292e1f",
+    "archive_original_image_zip_sha1": "5e3dcda52dcd87f9d5a91d23f22de605cfbd01ce",
+    "archive_pdf_name": "dli.rmrl.000451.pdf",
+    "archive_pdf_source_status": "internet_archive_derivative",
+    "archive_pdf_md5": "0736b952fb587132c2181a383ff10cfb",
+    "archive_pdf_sha1": "d41ff5c2d569de6422435b20135b58be82a68560",
+    "locally_verified_pdf_sha256": "ed52945ee141faa3f6967b8f043077b95abef9ff674ffb83eaba633417c669c9",
+    "catalogued_contributor_note": "Internet Archive metadata names Ti. Kandasami Pillai as having reviewed the edition; his exact contribution and life dates remain unverified.",
+    "artifact_distribution_status": "reference_only_source_artifacts_not_packaged",
+    "redistribution_policy": "normalized_rules_only_no_scan_ocr_page_images_layout_source_prose_or_third_party_translation",
+    "license_scope": "mit_covers_moira_authored_code_schema_prose_and_profile_representation",
+    "artifact_distribution_note": "The archive files and their expression are research inputs, not package assets. Moira distributes only its independently normalized rules, code, schema, and prose; it never redistributes the archive image ZIP, derivative PDF, OCR, page images, copied table layout, source prose, or third-party translations. Archive license metadata and contributor biography therefore do not govern public admission."
+  },
+  "source_locators": [
+    {
+      "locator_id": "ia_n5",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n5: five initial-vowel to bird declarations",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n5/mode/1up",
+      "evidence_role": "explicit_identity_rule"
+    },
+    {
+      "locator_id": "ia_n6",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n6: 30-nazhigai half, five six-nazhigai samams, and uniform activity durations",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n6/mode/1up",
+      "evidence_role": "explicit_temporal_and_duration_rule"
+    },
+    {
+      "locator_id": "ia_n10",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n10: repeated initial-vowel mapping and explicit Purva-day 25-cell assembly",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n10/mode/1up",
+      "evidence_role": "explicit_identity_and_current_schedule_assembly_reading"
+    },
+    {
+      "locator_id": "ia_n16",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n16: Purva-day weekday first-EAT verse and representative prose",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n16/mode/1up",
+      "evidence_role": "current_schedule_rule_reading"
+    },
+    {
+      "locator_id": "ia_n19_n20",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaves n19-n20: Purva-day schedule grids",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n19/mode/1up",
+      "evidence_role": "non_executable_unreconciled_schedule_grids"
+    },
+    {
+      "locator_id": "ia_n21",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n21: Purva-night weekday first-EAT verse and example rows",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n21/mode/1up",
+      "evidence_role": "current_schedule_rule_reading"
+    },
+    {
+      "locator_id": "ia_n22",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n22: Purva-night progression rule and schedule grid",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n22/mode/1up",
+      "evidence_role": "current_schedule_progression_reading"
+    },
+    {
+      "locator_id": "ia_n22_n25",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaves n22-n25: Purva-night schedule grids",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n22/mode/1up",
+      "evidence_role": "non_executable_unreconciled_schedule_grids"
+    },
+    {
+      "locator_id": "ia_n23",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n23: Purva-night carry-forward confirmation of uniform durations",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n23/mode/1up",
+      "evidence_role": "duration_carry_forward_confirmation"
+    },
+    {
+      "locator_id": "ia_n26",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n26: Amara-day weekday first-EAT verse and progression rule",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n26/mode/1up",
+      "evidence_role": "current_schedule_rule_reading"
+    },
+    {
+      "locator_id": "ia_n27_n30",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaves n27-n30: Amara-day examples and schedule grids",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n27/mode/1up",
+      "evidence_role": "non_executable_unreconciled_schedule_grids"
+    },
+    {
+      "locator_id": "ia_n28",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n28: Amara-day carry-forward confirmation of uniform durations",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n28/mode/1up",
+      "evidence_role": "duration_carry_forward_confirmation"
+    },
+    {
+      "locator_id": "ia_n31",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n31: Amara-night weekday first-EAT verse and example rows",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n31/mode/1up",
+      "evidence_role": "current_schedule_rule_reading"
+    },
+    {
+      "locator_id": "ia_n32",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n32: Amara-night progression rule and schedule grid",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n32/mode/1up",
+      "evidence_role": "current_schedule_progression_reading"
+    },
+    {
+      "locator_id": "ia_n32_n35",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaves n32-n35: Amara-night schedule grids",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n32/mode/1up",
+      "evidence_role": "non_executable_unreconciled_schedule_grids"
+    },
+    {
+      "locator_id": "ia_n33",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n33: Amara-night carry-forward confirmation of uniform durations",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n33/mode/1up",
+      "evidence_role": "duration_carry_forward_confirmation"
+    },
+    {
+      "locator_id": "ia_n52",
+      "witness_id": "dli.rmrl.000451_images",
+      "label": "IA leaf n52: current directed friend/enemy reading; independent certification pending",
+      "url": "https://archive.org/details/dli.rmrl.000451_images/page/n52/mode/1up",
+      "evidence_role": "contested_non_executable_directed_relationship_reading"
+    }
+  ],
+  "birds": ["vulture", "owl", "crow", "cock", "peacock"],
+  "weekdays": ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+  "activities": ["eat", "walk", "rule", "sleep", "die"],
+  "initial_vowel_identity": {
+    "identity_kind": "aksara_query_or_name_initial_vowel",
+    "not_natal_moon_identity": true,
+    "entries": [
+      {"symbols": ["A", "அ"], "bird": "vulture", "source_locators": ["ia_n5", "ia_n10"]},
+      {"symbols": ["I", "இ"], "bird": "owl", "source_locators": ["ia_n5", "ia_n10"]},
+      {"symbols": ["U", "உ"], "bird": "crow", "source_locators": ["ia_n5", "ia_n10"]},
+      {"symbols": ["E", "எ"], "bird": "cock", "source_locators": ["ia_n5", "ia_n10"]},
+      {"symbols": ["O", "ஒ"], "bird": "peacock", "source_locators": ["ia_n5", "ia_n10"]}
+    ]
+  },
+  "temporal_model": {
+    "model_kind": "fixed_nominal_nazhigai_halves",
+    "day_span_nazhigai": {"numerator": 30, "denominator": 1},
+    "night_span_nazhigai": {"numerator": 30, "denominator": 1},
+    "samam_count_per_half": 5,
+    "samam_span_nazhigai": {"numerator": 6, "denominator": 1},
+    "source_locators": ["ia_n6"]
+  },
+  "duration_vector_nazhigai": [
+    {"activity": "eat", "duration": {"numerator": 5, "denominator": 4}, "source_locators": ["ia_n6", "ia_n23", "ia_n28", "ia_n33"]},
+    {"activity": "walk", "duration": {"numerator": 3, "denominator": 2}, "source_locators": ["ia_n6", "ia_n23", "ia_n28", "ia_n33"]},
+    {"activity": "rule", "duration": {"numerator": 2, "denominator": 1}, "source_locators": ["ia_n6", "ia_n23", "ia_n28", "ia_n33"]},
+    {"activity": "sleep", "duration": {"numerator": 3, "denominator": 4}, "source_locators": ["ia_n6", "ia_n23", "ia_n28", "ia_n33"]},
+    {"activity": "die", "duration": {"numerator": 1, "denominator": 2}, "source_locators": ["ia_n6", "ia_n23", "ia_n28", "ia_n33"]}
+  ],
+  "schedule_generators": [
+    {
+      "generator_id": "purva_day",
+      "paksha": "purva",
+      "half": "day",
+      "first_eat_by_weekday": [
+        {"weekday": "sunday", "bird": "vulture"},
+        {"weekday": "monday", "bird": "owl"},
+        {"weekday": "tuesday", "bird": "vulture"},
+        {"weekday": "wednesday", "bird": "owl"},
+        {"weekday": "thursday", "bird": "crow"},
+        {"weekday": "friday", "bird": "cock"},
+        {"weekday": "saturday", "bird": "peacock"}
+      ],
+      "eat_step_per_samam": -1,
+      "activity_offsets": {"eat": 0, "walk": 1, "rule": 2, "sleep": 3, "die": 4},
+      "chronological_activities": ["eat", "walk", "rule", "sleep", "die"],
+      "source_locators": ["ia_n10", "ia_n16", "ia_n19_n20"]
+    },
+    {
+      "generator_id": "purva_night",
+      "paksha": "purva",
+      "half": "night",
+      "first_eat_by_weekday": [
+        {"weekday": "sunday", "bird": "crow"},
+        {"weekday": "monday", "bird": "cock"},
+        {"weekday": "tuesday", "bird": "crow"},
+        {"weekday": "wednesday", "bird": "cock"},
+        {"weekday": "thursday", "bird": "peacock"},
+        {"weekday": "friday", "bird": "vulture"},
+        {"weekday": "saturday", "bird": "owl"}
+      ],
+      "eat_step_per_samam": 2,
+      "activity_offsets": {"eat": 0, "walk": -1, "rule": -2, "sleep": 2, "die": 1},
+      "chronological_activities": ["eat", "rule", "die", "walk", "sleep"],
+      "source_locators": ["ia_n21", "ia_n22", "ia_n22_n25", "ia_n23"]
+    },
+    {
+      "generator_id": "amara_day",
+      "paksha": "amara",
+      "half": "day",
+      "first_eat_by_weekday": [
+        {"weekday": "sunday", "bird": "cock"},
+        {"weekday": "monday", "bird": "peacock"},
+        {"weekday": "tuesday", "bird": "cock"},
+        {"weekday": "wednesday", "bird": "crow"},
+        {"weekday": "thursday", "bird": "owl"},
+        {"weekday": "friday", "bird": "vulture"},
+        {"weekday": "saturday", "bird": "peacock"}
+      ],
+      "eat_step_per_samam": 2,
+      "activity_offsets": {"eat": 0, "walk": 2, "rule": -1, "sleep": 1, "die": -2},
+      "chronological_activities": ["eat", "die", "sleep", "rule", "walk"],
+      "source_locators": ["ia_n26", "ia_n27_n30", "ia_n28"]
+    },
+    {
+      "generator_id": "amara_night",
+      "paksha": "amara",
+      "half": "night",
+      "first_eat_by_weekday": [
+        {"weekday": "sunday", "bird": "vulture"},
+        {"weekday": "monday", "bird": "cock"},
+        {"weekday": "tuesday", "bird": "vulture"},
+        {"weekday": "wednesday", "bird": "owl"},
+        {"weekday": "thursday", "bird": "crow"},
+        {"weekday": "friday", "bird": "peacock"},
+        {"weekday": "saturday", "bird": "cock"}
+      ],
+      "eat_step_per_samam": 1,
+      "activity_offsets": {"eat": 0, "walk": -2, "rule": 1, "sleep": -1, "die": 2},
+      "chronological_activities": ["eat", "sleep", "walk", "die", "rule"],
+      "source_locators": ["ia_n31", "ia_n32", "ia_n32_n35", "ia_n33"]
+    }
+  ],
+  "directed_relationships": {
+    "model_kind": "source_scoped_directed_1879_unreconciled",
+    "self_relation_policy": "undefined",
+    "cells": [
+      {"subject": "vulture", "target": "owl", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "vulture", "target": "crow", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "vulture", "target": "cock", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "vulture", "target": "peacock", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "owl", "target": "vulture", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "owl", "target": "crow", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "owl", "target": "cock", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "owl", "target": "peacock", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "crow", "target": "vulture", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "crow", "target": "owl", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "crow", "target": "cock", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "crow", "target": "peacock", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "cock", "target": "vulture", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "cock", "target": "owl", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "cock", "target": "crow", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "cock", "target": "peacock", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "peacock", "target": "vulture", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "peacock", "target": "owl", "relation": "enemy", "source_locators": ["ia_n52"]},
+      {"subject": "peacock", "target": "crow", "relation": "friend", "source_locators": ["ia_n52"]},
+      {"subject": "peacock", "target": "cock", "relation": "friend", "source_locators": ["ia_n52"]}
+    ]
+  },
+  "explicit_omissions": [
+    {"feature": "natal_mapping", "status": "omitted", "reason": "No explicit natal-nakshatra or natal-Moon identity map was verified in this 1879 witness; it must not be inferred from the aksara mapping."},
+    {"feature": "scoring", "status": "omitted", "reason": "No scoring doctrine is admitted for this research profile."},
+    {"feature": "cross_witness_normalized_relationship_policy", "status": "omitted", "reason": "Only this witness's directed 20-cell matrix is represented; no reciprocal, cross-witness, or normalized relationship policy is inferred."},
+    {"feature": "vinadi", "status": "omitted", "reason": "No vinadi-level subdivision doctrine is admitted for this research profile."},
+    {"feature": "seasonal_scaling", "status": "omitted", "reason": "This witness is represented only by its fixed 30-nazhigai day and night halves; sunrise-scaled materialization is not part of this profile."}
+  ],
+  "research_conflict_ledger": [
+    {
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "bibliographic_label": "போகமுனிவர் பஞ்சபட்சி சாஸ்திரம் உரையுடன்; editor R. C. Mohan; Thamarai Noolagam; 2024",
+      "record_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "record_identity": "original PDF md5 abe489a832ac38a0270335b7429776f3; Internet Archive PDM label only",
+      "conflict_locators": ["n39 schedule", "n55-n57 relationships", "n63 durations", "n64 natal map"],
+      "evidence_status": "metadata_and_locator_only_not_transcribed",
+      "runtime_status": "not_imported"
+    },
+    {
+      "witness_id": "kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+      "bibliographic_label": "Urōmariṣi-attributed Vinadi Pancha Pakshi; commentary Thanjai Karunanidhi Pillai; Sri Bharati Press; 1934",
+      "record_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+      "record_identity": "original PDF md5 5832ca69b64c1429342fba8c3b3012dc; Internet Archive PDM label only",
+      "conflict_locators": ["n61 natal and duration commentary"],
+      "evidence_status": "metadata_and_locator_only_not_transcribed",
+      "runtime_status": "not_imported"
+    },
+    {
+      "witness_id": "TVA_BOK_0022647",
+      "bibliographic_label": "வாலையருள் பதினெண் சித்தர்கள் பஞ்சபட்சி சாஸ்திரம் : உரையும் விளக்கமும்; Sarasvati Mahal Library series 213; official TDL catalog says sixth edition and 2014, while the inspected internal title page says fifth edition and September 2011; lxxiii + 495 pages",
+      "record_url": "https://tamildigitallibrary.in/",
+      "record_identity": "Tamil Digital Library id TVA_BOK_0022647; catalog-vs-internal-title-page edition/date discrepancy unresolved; bibliographic reference only and no source artifact imported",
+      "conflict_locators": [],
+      "evidence_status": "bibliographic_metadata_only_untranscribed",
+      "runtime_status": "not_imported"
+    }
+  ]
+}
