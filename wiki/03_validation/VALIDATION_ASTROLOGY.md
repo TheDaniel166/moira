@@ -568,7 +568,9 @@ plus the existing internal coverage for matching, policy, and field behavior.
 
 **Current validation surface:** `tests/unit/test_experimental_validation.py`,
 `tests/unit/test_session_fixes.py`,
-`tests/integration/test_gauquelin_external_reference.py`
+`tests/integration/test_gauquelin_external_reference.py`,
+`scripts/validate_g5_gauquelin_sectors.py`, and
+`wiki/03_validation/GAUQUELIN_G5_HISTORICAL_VALIDATION_2026-07-20.md`
 
 Validated against the canonical diurnal-arc sector model:
 - sector falls in 1-36 when ordinary rise/set geometry exists and is `None`
@@ -581,8 +583,16 @@ Validated against the canonical diurnal-arc sector model:
   `horizon_status` while leaving sector-derived quantities undefined
 - cached Swiss `swe_gauquelin_sector()` method-0 Sun rows match within the
   fixture precision of `1e-3` sector units
+- 1,107 of 1,120 historical CFEPP Mars assignments match exactly after the
+  source's 12-sector grouping is applied; all 13 differences are adjacent-bin
+  cases within `0.535°` of a 12-sector boundary
+- 904 of 916 explicit-LMT Müller Mars assignments match exactly at 36-sector
+  resolution; seven differences are adjacent bins and five remain source
+  outliers
 
-This technique is already validated and should not be described as merely
+The external personal-record archive remains non-bundled.  Its committed
+aggregate fixture contains no names, dates, places, or coordinates.  This
+technique is already validated and should not be described as merely
 "mentioned."
 
 ### 7.6 Manazil / Lunar Mansions
