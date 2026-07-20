@@ -256,6 +256,39 @@ admitted source row. Computational guards admit finite Delta-T years only in
 `[-40000000, +40000000]`. These binary64 representability bounds are not
 scientific-validity or source-coverage claims.
 
+## Gauquelin historical-sector validation witness
+
+The 2026-07-20 historical-sector audit uses a user-supplied g5 temporary-data
+archive only as a non-bundled validation witness.  Its SHA-256 is
+`889B27999D787574F9CE0771BEB8BA41AC91D1B1362D6A03D12442022821B0BC`.
+The archive contains CFEPP, CSICOP, Ertel, and Müller personal records and is
+not distributed in Moira.  The committed aggregate fixture contains counts,
+comparison results, and the archive hash only.
+
+The g5 import definitions and conversion code were inspected at commit
+`bf0db345b58127a438121b74ebf4ad843243a573`.  g5 source code is GPL-3.0 and is
+not copied or adapted into Moira.  Accompanying written correspondence states
+that CC-BY-SA attribution is acceptable for g5 and Open Gauquelin data, but
+Moira does not rely on that statement to bundle the archive.  The validation
+harness is independently written MIT-licensed Moira code.
+
+The CFEPP tranche is treated as a clean numerical comparison because it
+contains explicit UTC and coordinates.  The 1,120 rows comprise the official
+first 1,066 plus 54 Nienhuys supplements.  Moira matches 1,107 assignments
+exactly; the 13 differences are adjacent 12-sector bins within `0.535°` of a
+boundary.  Historical assignments remain fallible evidence and do not rewrite
+the engine algorithm.  The explicit-LMT Müller subset independently produces
+904/916 exact 36-sector assignments, with seven adjacent differences and five
+larger source-adjudication cases; its remaining 167 correction-coded rows are
+deferred.  Ertel requires joins to birth time and place records.
+CSICOP is retained only as a sensitivity audit: the literal g5 converter's
+hour-12 AM/PM behavior gives 304/408 exact assignments, while conventional
+noon/midnight semantics give 326/408 exact and 406/408 within two 36-sector
+bins.  No policy is silently selected; two large outliers remain for source
+adjudication.
+The complete custody, method, limitations, and reproduction command are in
+[`GAUQUELIN_G5_HISTORICAL_VALIDATION_2026-07-20.md`](./wiki/03_validation/GAUQUELIN_G5_HISTORICAL_VALIDATION_2026-07-20.md).
+
 ## Pancha Pakshi source-scoped witnesses
 
 Moira admits three explicitly named Pancha Pakshi profiles as source-scoped
