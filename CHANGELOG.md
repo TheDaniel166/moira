@@ -12,10 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   package-root and `moira.vedic` exports, five kernel-free `Moira` methods, one
   kernel-backed local-solar context method, one kernel-backed fixed-clock
   materialization method, one kernel-backed fixed-clock current-cell method,
-  and eight strict
+  one kernel-backed solar-proportional materialization method, and nine strict
   `/v1/pancha-pakshi` routes for profile discovery, aksara identity, exact
   nominal schedules, directed relationships, local-solar context, and
-  fixed-clock materialization and current-cell selection. Manifest schema 2
+  fixed-clock and solar-proportional materialization plus fixed-clock
+  current-cell selection. Manifest schema 2
   owns finite admission status,
   exact product capabilities, admission
   decision identity, and a permanently false default-selection flag. The
@@ -70,6 +71,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   remain unperformed. Admission is chained through a new fixture without
   changing the profile data, source-scoped status, product kind, or no-default
   rule.
+- **Pancha Pakshi Solar-Proportional Materialization**: Added the explicitly
+  modern `solar_proportional_nominal_offsets_over_governing_half_tt_v1`
+  policy. It preserves every exact nominal source offset as a reduced fraction
+  of the thirty-nazhigai schedule, maps each endpoint independently across the
+  complete governing solar half on reader-bound TT, projects interior
+  endpoints to UT1, and returns 25 contiguous half-open cells with exact
+  anchor and solar-end closure. The fixed `1,440 s` nazhigai conversion is not
+  used on this route. Paksha remains caller supplied, and current-cell
+  selection and astronomical paksha inference remain unperformed. The hashed
+  1879 profile remains unchanged and is not credited with this proportional
+  policy; route-specific provenance replaces its source-layer
+  `seasonal_scaling` omission with an explicit omission of source attestation
+  for the separately performed modern composition.
 - **Pancha Pakshi Research And Admission Evidence**: Preserved the original
   blind reading, representative-grid reading, page-image adjudication, and
   machine reconciliation as frozen historical records. The adjudication
@@ -116,6 +130,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This is structural and physical-invariant evidence over already admitted
   intervals; it is not external current-cell parity or a new astronomical or
   historical accuracy claim.
+- Stage 2D validation checks exact reduced endpoint fractions, independent
+  common-anchor mapping on reader-bound TT, positive contiguous half-open cells
+  for long and short day and night halves, exact TT/UT1 outer closure,
+  capability gating, immutable vessels that reject fraction/endpoint drift or
+  contradictory routing provenance, strict facade/REST policy admission, and
+  provenance that distinguishes missing source attestation from performed
+  modern composition. The existing Horizons fixture remains authority evidence
+  only for the inherited solar boundaries; no external Pancha Pakshi
+  proportional-timing oracle or new historical-accuracy claim is asserted.
 
 ## [5.0.0] - 2026-07-19
 

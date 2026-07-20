@@ -51,9 +51,10 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
                 PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
                 PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
                 PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
+                PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
             ),
             admission_decision_id=(
-                "pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20"
+                "pancha_pakshi_1879_solar_proportional_materialization_2026_07_20"
             ),
         ),
     )
@@ -68,6 +69,7 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
         PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
         PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
         PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
     )
     assert profile.derivation_status == (
         "machine_reconciled_source_assignment_pending_competent_tamil_review"

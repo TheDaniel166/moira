@@ -161,9 +161,10 @@ def test_public_registry_is_source_scoped_and_has_no_default() -> None:
                 PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
                 PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
                 PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
+                PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
             ),
             admission_decision_id=(
-                "pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20"
+                "pancha_pakshi_1879_solar_proportional_materialization_2026_07_20"
             ),
         ),
     )
@@ -235,6 +236,7 @@ def test_public_vessels_are_immutable_and_carry_scope_and_omissions() -> None:
         PanchaPakshiCapability.ASTRONOMICAL_CONTEXT,
         PanchaPakshiCapability.FIXED_CLOCK_MATERIALIZATION,
         PanchaPakshiCapability.FIXED_CLOCK_CURRENT_CELL_SELECTION,
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
     )
     assert {omission.feature for omission in provenance.declared_omissions} == {
         "authority_birds",

@@ -121,6 +121,9 @@ from .pancha_pakshi import (
     PanchaPakshiRelation,
     PanchaPakshiSchedule,
     PanchaPakshiScheduleCell,
+    PanchaPakshiSolarProportionalCell,
+    PanchaPakshiSolarProportionalMaterialization,
+    PanchaPakshiSolarProportionalMaterializationPolicy,
     PanchaPakshiSolarBoundaryRelation,
     PanchaPakshiSource,
     PanchaPakshiSourceLocator,
@@ -133,6 +136,7 @@ from .pancha_pakshi import (
     pancha_pakshi_local_solar_context_at,
     pancha_pakshi_profile_info,
     pancha_pakshi_schedule,
+    pancha_pakshi_solar_proportional_materialization_at,
 )
 
 # ── Vedic Dignities ──────────────────────────────────────────────────────
@@ -407,6 +411,9 @@ _VEDIC_OWN: list[str] = [
     "PanchaPakshiRelation",
     "PanchaPakshiSchedule",
     "PanchaPakshiScheduleCell",
+    "PanchaPakshiSolarProportionalCell",
+    "PanchaPakshiSolarProportionalMaterialization",
+    "PanchaPakshiSolarProportionalMaterializationPolicy",
     "PanchaPakshiSolarBoundaryRelation",
     "PanchaPakshiSource",
     "PanchaPakshiSourceLocator",
@@ -419,6 +426,7 @@ _VEDIC_OWN: list[str] = [
     "pancha_pakshi_local_solar_context_at",
     "pancha_pakshi_profile_info",
     "pancha_pakshi_schedule",
+    "pancha_pakshi_solar_proportional_materialization_at",
     # Vedic dignities
     "VedicDignityRank",
     "CompoundRelationship",

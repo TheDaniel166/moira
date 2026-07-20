@@ -16,6 +16,8 @@ from moira.pancha_pakshi import (
     PanchaPakshiHalf,
     PanchaPakshiMaterializedCellRelation,
     PanchaPakshiPaksha,
+    PanchaPakshiSolarProportionalCell,
+    PanchaPakshiSolarProportionalMaterializationPolicy,
     PanchaPakshiWeekday,
     pancha_pakshi_directed_relationship,
     pancha_pakshi_identity_from_initial_vowel,
@@ -29,6 +31,7 @@ from moira_server.models.pancha_pakshi import (
     PanchaPakshiFixedClockMaterializationRequest,
     PanchaPakshiLocalSolarContextRequest,
     PanchaPakshiNominalScheduleRequest,
+    PanchaPakshiSolarProportionalMaterializationRequest,
 )
 from moira_server.serializers.pancha_pakshi import (
     serialize_aksara_identity,
@@ -38,6 +41,8 @@ from moira_server.serializers.pancha_pakshi import (
     serialize_fixed_clock_materialization_policy,
     serialize_nominal_schedule,
     serialize_profile_info,
+    serialize_solar_proportional_cell,
+    serialize_solar_proportional_materialization_policy,
 )
 from moira_server.services.pancha_pakshi import (
     compute_aksara_identity,
@@ -46,6 +51,7 @@ from moira_server.services.pancha_pakshi import (
     compute_fixed_clock_materialization,
     compute_local_solar_context,
     compute_nominal_schedule,
+    compute_solar_proportional_materialization,
     list_pancha_pakshi_profiles,
     pancha_pakshi_profile,
 )
@@ -61,6 +67,10 @@ def test_fixed_clock_current_cell_transport_models_are_public() -> None:
         "PanchaPakshiFixedClockCurrentCellRequest",
         "PanchaPakshiFixedClockCurrentCellResponse",
         "PanchaPakshiFixedClockCurrentCellSelectionPolicyResponse",
+        "PanchaPakshiSolarProportionalMaterializationRequest",
+        "PanchaPakshiSolarProportionalCellResponse",
+        "PanchaPakshiSolarProportionalMaterializationPolicyResponse",
+        "PanchaPakshiSolarProportionalMaterializationResponse",
     }
     assert expected <= set(public_models.__all__)
     for name in expected:
@@ -254,6 +264,54 @@ def test_fixed_clock_current_cell_service_delegates_through_facade_with_normaliz
     ]
 
 
+def test_solar_proportional_service_delegates_through_facade_with_normalized_utc() -> None:
+    sentinel = object()
+    calls = []
+
+    class FacadeStub:
+        def pancha_pakshi_solar_proportional_materialization(
+            self,
+            profile_id,
+            dt,
+            latitude,
+            longitude,
+            *,
+            paksha,
+        ):
+            calls.append((profile_id, dt, latitude, longitude, paksha))
+            return sentinel
+
+    request = PanchaPakshiSolarProportionalMaterializationRequest(
+        profile_id=_PROFILE_ID,
+        dt=datetime(
+            2026,
+            7,
+            20,
+            12,
+            tzinfo=timezone(timedelta(hours=-4)),
+        ),
+        latitude=13.0827,
+        longitude=80.2707,
+        paksha="purva",
+        policy_id=(
+            "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+        ),
+    )
+
+    assert compute_solar_proportional_materialization(
+        FacadeStub(), request
+    ) is sentinel
+    assert calls == [
+        (
+            _PROFILE_ID,
+            datetime(2026, 7, 20, 16, tzinfo=timezone.utc),
+            13.0827,
+            80.2707,
+            PanchaPakshiPaksha.PURVA,
+        )
+    ]
+
+
 def test_fixed_clock_policy_and_cell_serializers_match_engine_contract() -> None:
     schedule = pancha_pakshi_schedule(
         _PROFILE_ID,
@@ -333,3 +391,68 @@ def test_fixed_clock_current_cell_policy_serializer_is_exhaustive() -> None:
         "solar_proportional_scaling_status": "not_performed",
         "astronomical_paksha_inference_status": "not_performed",
     }
+
+
+def test_solar_proportional_policy_and_cell_serializers_are_exhaustive() -> None:
+    schedule = pancha_pakshi_schedule(
+        _PROFILE_ID,
+        paksha=PanchaPakshiPaksha.PURVA,
+        half=PanchaPakshiHalf.DAY,
+        weekday=PanchaPakshiWeekday.SUNDAY,
+    )
+    nominal_cell = schedule.cells[0]
+    policy = serialize_solar_proportional_materialization_policy(
+        PanchaPakshiSolarProportionalMaterializationPolicy()
+    )
+    start_jd_tt = 2461242.0
+    end_jd_tt = start_jd_tt + 1650.0 / 86400.0
+    duration_seconds_tt = (end_jd_tt - start_jd_tt) * 86400.0
+    cell = serialize_solar_proportional_cell(
+        PanchaPakshiSolarProportionalCell(
+            schedule_cell_index=0,
+            nominal_cell=nominal_cell,
+            start_offset_fraction=Fraction(0),
+            end_offset_fraction=Fraction(1, 24),
+            span_fraction=Fraction(1, 24),
+            start_jd_tt=start_jd_tt,
+            end_jd_tt=end_jd_tt,
+            start_jd_ut1=2461241.9992,
+            end_jd_ut1=2461241.9992 + 1650.0 / 86400.0,
+            duration_seconds_tt=duration_seconds_tt,
+        )
+    )
+
+    assert policy.model_dump() == {
+        "policy_id": (
+            "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+        ),
+        "paksha_basis": "caller_supplied_source_label",
+        "solar_context_basis": "topocentric_sunrise_to_next_sunrise",
+        "day_anchor": "governing_topocentric_sunrise",
+        "night_anchor": "governing_topocentric_sunset",
+        "nominal_offset_basis": "exact_fraction_of_nominal_schedule_span",
+        "mapping_time_scale": "reader_bound_tt",
+        "published_endpoint_time_scale": "ut1",
+        "endpoint_mapping": (
+            "independent_anchor_plus_fraction_of_governing_solar_half"
+        ),
+        "endpoint_closure": "exact_anchor_and_governing_solar_half_end",
+        "interval_ownership": "half_open",
+        "solar_end_clipping": "none",
+        "solar_half_wrap": "none",
+        "solar_half_repeat": "none",
+        "fixed_nazhigai_seconds_status": "not_used",
+        "current_cell_status": "not_performed",
+        "astronomical_paksha_inference_status": "not_performed",
+    }
+    assert cell.schedule_cell_index == 0
+    assert cell.start_offset_fraction.model_dump() == {
+        "numerator": 0,
+        "denominator": 1,
+    }
+    assert cell.end_offset_fraction.model_dump() == {
+        "numerator": 1,
+        "denominator": 24,
+    }
+    assert cell.span_fraction == cell.end_offset_fraction
+    assert cell.duration_seconds_tt == duration_seconds_tt

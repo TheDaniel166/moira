@@ -71,6 +71,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             "pancha_pakshi_local_solar_context",
             "pancha_pakshi_fixed_clock_materialization",
             "pancha_pakshi_fixed_clock_current_cell",
+            "pancha_pakshi_solar_proportional_materialization",
             "shadbala",
             "shadbala_for_chart", "shadbala_profile", "shadbala_condition",
             "shadbala_network", "bhava_bala", "bhava_bala_for_chart",
@@ -312,6 +313,27 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
 
         facade = _facade_module()
         return _pancha_pakshi._pancha_pakshi_fixed_clock_current_cell_from_utc(
+            profile_id,
+            facade.jd_from_datetime(dt),
+            latitude,
+            longitude,
+            paksha=paksha,
+            reader=self._reader,
+        )
+
+    def pancha_pakshi_solar_proportional_materialization(
+        self,
+        profile_id: str,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+        *,
+        paksha: _pancha_pakshi.PanchaPakshiPaksha,
+    ) -> _pancha_pakshi.PanchaPakshiSolarProportionalMaterialization:
+        """Map nominal offsets proportionally over the governing solar half."""
+
+        facade = _facade_module()
+        return _pancha_pakshi._pancha_pakshi_solar_proportional_materialization_from_utc(
             profile_id,
             facade.jd_from_datetime(dt),
             latitude,

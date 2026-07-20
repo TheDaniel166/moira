@@ -789,6 +789,9 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "PanchaPakshiRelation",
     "PanchaPakshiSchedule",
     "PanchaPakshiScheduleCell",
+    "PanchaPakshiSolarProportionalCell",
+    "PanchaPakshiSolarProportionalMaterialization",
+    "PanchaPakshiSolarProportionalMaterializationPolicy",
     "PanchaPakshiSolarBoundaryRelation",
     "PanchaPakshiSource",
     "PanchaPakshiSourceLocator",
@@ -801,6 +804,7 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "pancha_pakshi_local_solar_context_at",
     "pancha_pakshi_profile_info",
     "pancha_pakshi_schedule",
+    "pancha_pakshi_solar_proportional_materialization_at",
 })
 
 _EXPECTED_ROOT_ONLY_NAMES = {
@@ -1196,6 +1200,7 @@ _EXPECTED_MOIRA_METHODS.update({
     'pancha_pakshi_local_solar_context',
     'pancha_pakshi_fixed_clock_materialization',
     'pancha_pakshi_fixed_clock_current_cell',
+    'pancha_pakshi_solar_proportional_materialization',
     'practical_progressed_astrodynes',
     'progressed_astrodyne_accessory_relation',
     'progressed_astrodyne_compound_total_influence',

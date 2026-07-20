@@ -303,6 +303,9 @@ from .pancha_pakshi import (
     PanchaPakshiRelation,
     PanchaPakshiSchedule,
     PanchaPakshiScheduleCell,
+    PanchaPakshiSolarProportionalCell,
+    PanchaPakshiSolarProportionalMaterialization,
+    PanchaPakshiSolarProportionalMaterializationPolicy,
     PanchaPakshiSolarBoundaryRelation,
     PanchaPakshiSource,
     PanchaPakshiSourceLocator,
@@ -315,6 +318,7 @@ from .pancha_pakshi import (
     pancha_pakshi_local_solar_context_at,
     pancha_pakshi_profile_info,
     pancha_pakshi_schedule,
+    pancha_pakshi_solar_proportional_materialization_at,
 )
 from .dasha_systems import (
     ASHTOTTARI_YEARS,
@@ -1097,6 +1101,9 @@ __all__ = [
     "PanchaPakshiRelation",
     "PanchaPakshiSchedule",
     "PanchaPakshiScheduleCell",
+    "PanchaPakshiSolarProportionalCell",
+    "PanchaPakshiSolarProportionalMaterialization",
+    "PanchaPakshiSolarProportionalMaterializationPolicy",
     "PanchaPakshiSolarBoundaryRelation",
     "PanchaPakshiSource",
     "PanchaPakshiSourceLocator",
@@ -1109,6 +1116,7 @@ __all__ = [
     "pancha_pakshi_local_solar_context_at",
     "pancha_pakshi_profile_info",
     "pancha_pakshi_schedule",
+    "pancha_pakshi_solar_proportional_materialization_at",
     # Muhurta (Vedic electional) — Tier 2 competitive gap work
     "MuhurtaPolicy",
     "MuhurtaClassification",

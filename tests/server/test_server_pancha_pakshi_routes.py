@@ -10,6 +10,7 @@ import pytest
 
 from moira.pancha_pakshi import (
     PanchaPakshiHalf,
+    PanchaPakshiOmission,
     PanchaPakshiPaksha,
     PanchaPakshiWeekday,
     pancha_pakshi_schedule,
@@ -133,6 +134,145 @@ def _fixed_clock_current_cell_selection(*, tail: bool) -> SimpleNamespace:
             astronomical_routing_status=(
                 "fixed_clock_current_cell_selection_performed_"
                 "paksha_caller_supplied_no_scaling_or_inference"
+            ),
+        ),
+    )
+
+
+def _solar_proportional_materialization() -> SimpleNamespace:
+    schedule = pancha_pakshi_schedule(
+        _PROFILE_ID,
+        paksha=PanchaPakshiPaksha.PURVA,
+        half=PanchaPakshiHalf.DAY,
+        weekday=PanchaPakshiWeekday.SUNDAY,
+    )
+    anchor_jd_tt = 2461241.9998
+    tt_minus_ut1_days = 69.0 / 86400.0
+    solar_half_duration_seconds_tt = 11.0 * 3600.0
+    solar_half_days_tt = solar_half_duration_seconds_tt / 86400.0
+    governing_end_jd_tt = anchor_jd_tt + solar_half_days_tt
+    context = SimpleNamespace(
+        profile_id=_PROFILE_ID,
+        requested_jd_ut1=2461242.1667,
+        latitude=13.0827,
+        longitude=80.2707,
+        sunrise_jd_ut1=anchor_jd_tt - tt_minus_ut1_days,
+        sunset_jd_ut1=governing_end_jd_tt - tt_minus_ut1_days,
+        next_sunrise_jd_ut1=(
+            governing_end_jd_tt - tt_minus_ut1_days + 13.0 / 24.0
+        ),
+        paksha=PanchaPakshiPaksha.PURVA,
+        half=PanchaPakshiHalf.DAY,
+        weekday=PanchaPakshiWeekday.SUNDAY,
+        policy=SimpleNamespace(
+            policy_id="local_solar_day_explicit_paksha_v1",
+            paksha_basis="caller_supplied_source_label",
+            solar_day_basis="topocentric_sunrise_to_next_sunrise",
+            solar_event_altitude_deg=-0.833,
+            observer_elevation_m=0.0,
+            solar_altitude_refraction_mode=(
+                "unrefracted_signal_standard_refraction_and_semidiameter_in_threshold"
+            ),
+            half_basis="topocentric_sunrise_sunset",
+            weekday_basis="local_mean_solar_time_at_governing_sunrise",
+            offset_materialization_status="not_performed",
+        ),
+        nominal_schedule=schedule,
+        provenance=replace(
+            schedule.provenance,
+            astronomical_routing_status=(
+                "local_solar_half_and_weekday_performed_paksha_caller_supplied"
+            ),
+        ),
+    )
+    cells = []
+    for index, nominal_cell in enumerate(schedule.cells):
+        start_fraction = nominal_cell.start_nazhigai / schedule.span_nazhigai
+        end_fraction = nominal_cell.end_nazhigai / schedule.span_nazhigai
+        span_fraction = nominal_cell.duration_nazhigai / schedule.span_nazhigai
+        cells.append(
+            SimpleNamespace(
+                schedule_cell_index=index,
+                nominal_cell=nominal_cell,
+                start_offset_fraction=start_fraction,
+                end_offset_fraction=end_fraction,
+                span_fraction=span_fraction,
+                start_jd_tt=(
+                    anchor_jd_tt + float(start_fraction) * solar_half_days_tt
+                ),
+                end_jd_tt=(
+                    anchor_jd_tt + float(end_fraction) * solar_half_days_tt
+                ),
+                start_jd_ut1=(
+                    anchor_jd_tt
+                    + float(start_fraction) * solar_half_days_tt
+                    - tt_minus_ut1_days
+                ),
+                end_jd_ut1=(
+                    anchor_jd_tt
+                    + float(end_fraction) * solar_half_days_tt
+                    - tt_minus_ut1_days
+                ),
+                duration_seconds_tt=(
+                    float(span_fraction) * solar_half_duration_seconds_tt
+                ),
+            )
+        )
+    policy = SimpleNamespace(
+        policy_id=(
+            "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+        ),
+        paksha_basis="caller_supplied_source_label",
+        solar_context_basis="topocentric_sunrise_to_next_sunrise",
+        day_anchor="governing_topocentric_sunrise",
+        night_anchor="governing_topocentric_sunset",
+        nominal_offset_basis="exact_fraction_of_nominal_schedule_span",
+        mapping_time_scale="reader_bound_tt",
+        published_endpoint_time_scale="ut1",
+        endpoint_mapping=(
+            "independent_anchor_plus_fraction_of_governing_solar_half"
+        ),
+        endpoint_closure="exact_anchor_and_governing_solar_half_end",
+        interval_ownership="half_open",
+        solar_end_clipping="none",
+        solar_half_wrap="none",
+        solar_half_repeat="none",
+        fixed_nazhigai_seconds_status="not_used",
+        current_cell_status="not_performed",
+        astronomical_paksha_inference_status="not_performed",
+    )
+    declared_omissions = tuple(
+        omission
+        for omission in schedule.provenance.declared_omissions
+        if omission.feature != "seasonal_scaling"
+    ) + (
+        PanchaPakshiOmission(
+            feature="source_attested_solar_proportional_materialization",
+            status="omitted",
+            reason=(
+                "The 1879 witness does not attest solar-proportional scaling; "
+                "Moira Stage 2D performs a separately admitted modern "
+                "proportional composition under its explicit policy."
+            ),
+        ),
+    )
+    return SimpleNamespace(
+        context=context,
+        policy=policy,
+        anchor_jd_tt=anchor_jd_tt,
+        anchor_jd_ut1=anchor_jd_tt - tt_minus_ut1_days,
+        governing_solar_half_end_jd_tt=governing_end_jd_tt,
+        governing_solar_half_end_jd_ut1=(
+            governing_end_jd_tt - tt_minus_ut1_days
+        ),
+        solar_half_duration_seconds_tt=solar_half_duration_seconds_tt,
+        cells=tuple(cells),
+        provenance=replace(
+            schedule.provenance,
+            declared_omissions=declared_omissions,
+            astronomical_routing_status=(
+                "solar_proportional_materialization_performed_"
+                "paksha_caller_supplied_no_current_cell_or_inference"
             ),
         ),
     )
@@ -712,6 +852,157 @@ def test_fixed_clock_current_cell_route_rejects_implicit_or_ambient_policy(
         )
 
 
+def test_solar_proportional_route_serializes_exact_full_half_materialization(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    materialization = _solar_proportional_materialization()
+    calls = []
+
+    def compute(_engine, request):
+        calls.append(request)
+        return materialization
+
+    monkeypatch.setattr(
+        "moira_server.routers.pancha_pakshi."
+        "compute_solar_proportional_materialization",
+        compute,
+    )
+    response = client.post(
+        "/v1/pancha-pakshi/schedule/solar-proportional",
+        json={
+            "profile_id": _PROFILE_ID,
+            "dt": "2026-07-20T12:00:00-04:00",
+            "latitude": 13.0827,
+            "longitude": 80.2707,
+            "paksha": "purva",
+            "policy_id": (
+                "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+    assert len(calls) == 1
+    assert calls[0].dt.isoformat() == "2026-07-20T16:00:00+00:00"
+    body = response.json()
+    assert body["local_solar_context"]["half"] == "day"
+    assert body["local_solar_context"]["weekday"] == "sunday"
+    assert body["policy"] == {
+        "policy_id": (
+            "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+        ),
+        "paksha_basis": "caller_supplied_source_label",
+        "solar_context_basis": "topocentric_sunrise_to_next_sunrise",
+        "day_anchor": "governing_topocentric_sunrise",
+        "night_anchor": "governing_topocentric_sunset",
+        "nominal_offset_basis": "exact_fraction_of_nominal_schedule_span",
+        "mapping_time_scale": "reader_bound_tt",
+        "published_endpoint_time_scale": "ut1",
+        "endpoint_mapping": (
+            "independent_anchor_plus_fraction_of_governing_solar_half"
+        ),
+        "endpoint_closure": "exact_anchor_and_governing_solar_half_end",
+        "interval_ownership": "half_open",
+        "solar_end_clipping": "none",
+        "solar_half_wrap": "none",
+        "solar_half_repeat": "none",
+        "fixed_nazhigai_seconds_status": "not_used",
+        "current_cell_status": "not_performed",
+        "astronomical_paksha_inference_status": "not_performed",
+    }
+    assert body["solar_half_duration_seconds_tt"] == 39600.0
+    assert len(body["cells"]) == 25
+    first = body["cells"][0]
+    last = body["cells"][-1]
+    assert first["start_offset_fraction"] == {
+        "numerator": 0,
+        "denominator": 1,
+    }
+    assert first["end_offset_fraction"] == {
+        "numerator": 1,
+        "denominator": 24,
+    }
+    assert first["span_fraction"] == first["end_offset_fraction"]
+    assert first["duration_seconds_tt"] == 1650.0
+    assert last["end_offset_fraction"] == {
+        "numerator": 1,
+        "denominator": 1,
+    }
+    assert body["anchor_jd_tt"] == first["start_jd_tt"]
+    assert body["governing_solar_half_end_jd_tt"] == last["end_jd_tt"]
+    assert "current_cell" not in body
+    provenance = body["provenance"]
+    assert "solar_proportional_materialization" in provenance["capabilities"]
+    omissions = {item["feature"]: item for item in provenance["declared_omissions"]}
+    assert "seasonal_scaling" not in omissions
+    assert omissions["source_attested_solar_proportional_materialization"][
+        "status"
+    ] == "omitted"
+    assert provenance["astronomical_routing_status"] == (
+        "solar_proportional_materialization_performed_"
+        "paksha_caller_supplied_no_current_cell_or_inference"
+    )
+
+
+def test_solar_proportional_route_rejects_implicit_or_mixed_timing_policy(
+    client: TestClient,
+) -> None:
+    path = "/v1/pancha-pakshi/schedule/solar-proportional"
+    base = {
+        "profile_id": _PROFILE_ID,
+        "dt": "2026-07-20T16:00:00Z",
+        "latitude": 13.0827,
+        "longitude": 80.2707,
+        "paksha": "purva",
+        "policy_id": (
+            "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+        ),
+    }
+    responses = (
+        (
+            client.post(
+                path,
+                json={key: value for key, value in base.items() if key != "policy_id"},
+            ),
+            "Field required",
+        ),
+        (
+            client.post(
+                path,
+                json={
+                    **base,
+                    "policy_id": (
+                        "fixed_24_minute_nazhigai_from_local_solar_half_start_v1"
+                    ),
+                },
+            ),
+            "solar_proportional_nominal_offsets_over_governing_half_tt_v1",
+        ),
+        (
+            client.post(path, json={**base, "dt": "2026-07-20T16:00:00"}),
+            "timezone-aware",
+        ),
+        (
+            client.post(path, json={**base, "current_cell": True}),
+            "Extra inputs are not permitted",
+        ),
+        (
+            client.post(path, json={**base, "nazhigai_seconds": 1440}),
+            "Extra inputs are not permitted",
+        ),
+        (
+            client.post(path, json={**base, "solar_half_wrap": "repeat"}),
+            "Extra inputs are not permitted",
+        ),
+    )
+    for response, message_fragment in responses:
+        _assert_validation_envelope(
+            response,
+            message_fragment=message_fragment,
+        )
+
+
 def test_directed_relationship_route_does_not_infer_reciprocity(client: TestClient) -> None:
     response = client.post(
         "/v1/pancha-pakshi/relationships/directed",
@@ -771,6 +1062,7 @@ def test_pancha_pakshi_routes_are_registered(client: TestClient) -> None:
         "/v1/pancha-pakshi/schedule/fixed-clock",
         "/v1/pancha-pakshi/schedule/fixed-clock/current-cell",
         "/v1/pancha-pakshi/schedule/nominal",
+        "/v1/pancha-pakshi/schedule/solar-proportional",
         "/v1/pancha-pakshi/context/local-solar",
         "/v1/pancha-pakshi/relationships/directed",
     }
@@ -940,3 +1232,78 @@ def test_pancha_pakshi_openapi_is_strict_typed_and_source_scoped(
         "selected",
         "unmaterialized_solar_half_tail",
     ]
+    proportional_request = components[
+        "PanchaPakshiSolarProportionalMaterializationRequest"
+    ]
+    assert proportional_request["additionalProperties"] is False
+    assert set(proportional_request["required"]) == {
+        "profile_id",
+        "dt",
+        "latitude",
+        "longitude",
+        "paksha",
+        "policy_id",
+    }
+    assert proportional_request["properties"]["dt"]["format"] == "date-time"
+    assert proportional_request["properties"]["policy_id"]["const"] == (
+        "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+    )
+    proportional_policy = components[
+        "PanchaPakshiSolarProportionalMaterializationPolicyResponse"
+    ]
+    assert proportional_policy["additionalProperties"] is False
+    assert proportional_policy["properties"]["nominal_offset_basis"]["const"] == (
+        "exact_fraction_of_nominal_schedule_span"
+    )
+    assert proportional_policy["properties"]["mapping_time_scale"]["const"] == (
+        "reader_bound_tt"
+    )
+    assert proportional_policy["properties"]["endpoint_mapping"]["const"] == (
+        "independent_anchor_plus_fraction_of_governing_solar_half"
+    )
+    assert proportional_policy["properties"]["endpoint_closure"]["const"] == (
+        "exact_anchor_and_governing_solar_half_end"
+    )
+    assert proportional_policy["properties"]["fixed_nazhigai_seconds_status"][
+        "const"
+    ] == "not_used"
+    assert proportional_policy["properties"]["current_cell_status"]["const"] == (
+        "not_performed"
+    )
+    proportional_cell = components["PanchaPakshiSolarProportionalCellResponse"]
+    assert proportional_cell["additionalProperties"] is False
+    assert proportional_cell["properties"]["schedule_cell_index"]["minimum"] == 0
+    assert proportional_cell["properties"]["duration_seconds_tt"][
+        "exclusiveMinimum"
+    ] == 0.0
+    assert set(proportional_cell["required"]) == {
+        "schedule_cell_index",
+        "nominal_cell",
+        "start_offset_fraction",
+        "end_offset_fraction",
+        "span_fraction",
+        "start_jd_tt",
+        "end_jd_tt",
+        "start_jd_ut1",
+        "end_jd_ut1",
+        "duration_seconds_tt",
+    }
+    proportional_response = components[
+        "PanchaPakshiSolarProportionalMaterializationResponse"
+    ]
+    assert proportional_response["additionalProperties"] is False
+    assert set(proportional_response["required"]) == {
+        "local_solar_context",
+        "policy",
+        "anchor_jd_tt",
+        "anchor_jd_ut1",
+        "governing_solar_half_end_jd_tt",
+        "governing_solar_half_end_jd_ut1",
+        "solar_half_duration_seconds_tt",
+        "cells",
+        "provenance",
+    }
+    assert proportional_response["properties"]["solar_half_duration_seconds_tt"][
+        "exclusiveMinimum"
+    ] == 0.0
+    assert "current_cell" not in proportional_response["properties"]

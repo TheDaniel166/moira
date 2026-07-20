@@ -193,7 +193,8 @@ solar half. It is not an accuracy tolerance or historical assertion.
 The result does not identify a current cell. The requested instant can remain
 inside the governing astronomical half while lying outside the materialized
 fixed span. No precedence is invented for that condition, and no
-solar-proportional scaling is admitted. The provenance routing status is
+solar-proportional scaling is performed or admitted by this fixed-clock result.
+The provenance routing status is
 `fixed_clock_materialization_performed_paksha_caller_supplied_no_current_cell`.
 
 ### Stage 2C modern fixed-clock current-cell selection
@@ -230,6 +231,40 @@ paksha inference remain `not_performed`. The provenance routing status is
 `fixed_clock_current_cell_selection_performed_paksha_caller_supplied_no_scaling_or_inference`.
 This is a modern deterministic interval-membership claim, not an assertion
 that the 1879 witness specified Moira's astronomical or time-scale composition.
+
+### Stage 2D modern solar-proportional materialization
+
+The additive
+`solar_proportional_nominal_offsets_over_governing_half_tt_v1` policy is a
+separate Moira-owned composition. Its governing object is
+`PanchaPakshiSolarProportionalMaterialization`, with immutable
+`PanchaPakshiSolarProportionalMaterializationPolicy` and
+`PanchaPakshiSolarProportionalCell` members. It does not change the fixed-clock
+Stage 2B or Stage 2C products.
+
+Stage 2A supplies the governing half, astronomical bounds, weekday, and
+unchanged nominal schedule. For every exact nominal endpoint `n` in the
+thirty-nazhigai span `N`, Stage 2D retains the reduced fraction `f = n / N`.
+The governing anchor and solar-half end are converted through the same reader
+to TT. Every interior endpoint is computed independently as
+`anchor_jd_tt + float(f) * (solar_end_jd_tt - anchor_jd_tt)`, rather than by
+accumulating cell durations, and is then projected to UT1. The zero endpoint
+and final endpoint are set exactly to the governing TT and UT1 bounds. All 25
+cells are positive, contiguous, and half-open; the solar-half end is excluded.
+
+The fixed `1,440 s` nazhigai conversion is not used. Because the normalized
+fractions close on the complete governing half, no clipping, wrapping,
+repetition, borrowing, or tail fabrication occurs. Paksha remains caller
+supplied. Current-cell selection and astronomical paksha inference remain
+`not_performed`. The provenance routing status is
+`solar_proportional_materialization_performed_paksha_caller_supplied_no_current_cell_or_inference`.
+
+The 1879 witness governs the nominal schedule and exact rational offsets, not
+the proportional sunrise-to-sunset mapping. Route-specific provenance therefore
+replaces the raw profile omission `seasonal_scaling` with
+`source_attested_solar_proportional_materialization`: the result states both
+that modern materialization was performed and that the source did not attest
+that policy, without making contradictory claims or rewriting earlier results.
 
 The source reading is machine-assisted. It has not received competent-human
 Tamil sign-off and has not been collated against a genuinely independent
@@ -307,6 +342,25 @@ carry no cell and must lie from the excluded fixed end to the excluded end of a
 longer governing solar half. No prior-half cell, clipping, wrapping, repeating,
 stretching, proportional scaling, or paksha inference is permitted.
 
+For the additive solar-proportional capability, the profile must also admit
+`solar_proportional_materialization`; the complete Stage 2A context, unchanged
+nominal schedule, and caller-supplied paksha remain governing inputs; every
+nominal endpoint fraction must remain exact, reduced, ordered, and bounded by
+zero and one; and every TT endpoint must be derived independently from the
+common anchor and complete governing-half TT span. The first and final TT and
+UT1 endpoints must equal the governing solar-half bounds exactly. All 25 cells
+must be positive, contiguous, and half-open. The fixed nazhigai-second rule,
+current-cell selection, clipping, wrapping, repetition, tail fabrication, and
+paksha inference are prohibited. Result provenance must distinguish performed
+modern composition from absent source attestation.
+
+The detached public result can prove its exact fraction-to-TT mapping, outer
+UT1 closure, and UT1 ordering/contiguity from its own fields. It cannot replay
+the reader-dependent inverse for an interior TT endpoint after the configured
+reader has been detached. Interior TT-to-UT1 truth therefore belongs to the
+governing factory path and its reader-bound tests; it is not presented as a
+self-contained vessel invariant.
+
 Unknown values, hash mismatches, incomplete tables, mixed profiles, capability
 drift, and unresolved verse/commentary conflicts are errors. They are not
 warnings or fallback opportunities.
@@ -344,19 +398,30 @@ caller-supplied paksha, and only the
 contains the complete Stage 2B materialization, requested TT witness, finite
 selection status, selected materialized cell or explicit null, and provenance.
 
+Stage 2D adds the separately governed kernel-backed
+`pancha_pakshi_solar_proportional_materialization_at(...)`,
+`Moira.pancha_pakshi_solar_proportional_materialization(...)`, and
+`POST /v1/pancha-pakshi/schedule/solar-proportional` surfaces. They accept the
+same explicit profile, aware datetime or UT1 instant, location, and
+caller-supplied paksha. The result contains the complete Stage 2A context,
+policy, governing TT/UT1 anchor and end, TT half duration, 25 proportionally
+materialized cells with exact nominal fractions, and route-specific
+provenance. It does not select a current cell.
+
 All computations require `profile_id`. Public results are immutable and carry
 profile-owned provenance and omissions. Exact nazhigai values remain rational
 in the engine and serialize as `{numerator, denominator}` at the transport
 boundary.
 
-Only the three Stage 2 operations accept a datetime and location. No operation
+Only the four Stage 2 operations accept a datetime and location. No operation
 accepts a natal Moon, nakshatra, score, inferred name, caller-supplied sunrise,
-or timezone policy. All three require explicit paksha. The context operation returns
+or timezone policy. All four require explicit paksha. The context operation returns
 only the selected nominal schedule; the fixed-clock operation returns all
 materialized half-open cell intervals and their solar-half topology without a
 current-activity judgment; and the current-cell operation returns only the
 unique cell under its named fixed-clock policy or the explicit unmaterialized
-tail status. None performs solar-proportional scaling.
+tail status. The proportional operation separately maps exact nominal fractions
+across the governing half and returns no current-cell judgment.
 
 ## 8. Evidence And Validation
 
@@ -395,6 +460,14 @@ the exact solar-half-first, half-open TT membership policy and the explicit
 unmaterialized-tail result without presenting deterministic selection as an
 external Pancha Pakshi oracle or independent-witness corroboration.
 
+The chained
+[`Stage 2D admission decision`](../../tests/fixtures/pancha_pakshi_1879_solar_proportional_materialization_2026_07_20.json)
+binds the unchanged profile hash, frozen Stage 2C decision and manifest, and
+manifest-only addition of `solar_proportional_materialization`. It records the
+exact fraction-over-governing-half TT policy, independent endpoint derivation,
+outer closure, and route-specific omission resolution without attributing the
+modern composition to the 1879 witness.
+
 Stage 2A validation proves policy immutability, capability gating, solar-bound
 ordering, half-open boundary ownership, weekday and nominal-schedule selection,
 UTC-to-UT1 adapter behavior, strict transport fields, and explicit polar
@@ -426,6 +499,16 @@ clipping, wrapping, repeating, scaling, or paksha inference. This is structural
 and physical-invariant evidence over admitted inputs; no external current-cell
 oracle or new astronomical-accuracy claim is made.
 
+Stage 2D validation reconstructs and verifies the frozen Stage 2C manifest,
+then proves reduced fraction ordering and unit closure, independent
+common-anchor TT endpoint mapping, exact TT/UT1 outer closure, 25 positive
+contiguous half-open cells across long and short day and night halves,
+capability gating, immutable vessels, strict facade/transport policy admission,
+rejection of fraction/endpoint drift and contradictory routing provenance, and
+honest route-specific provenance. The inherited Horizons comparison still
+governs only the solar anchor. No external Pancha Pakshi proportional-timing
+oracle or new historical-accuracy claim is made.
+
 Schema/hash/source checks are regression integrity; exact closure, bijection,
 partition, immutability, and no-default checks are structural invariants; the
 named leaf readings are source-specific evidence. None is an external oracle
@@ -445,9 +528,10 @@ rights-clearance phase or a public-admission blocker.
 
 The following require separately named sources, policies, capabilities, and
 tests: astronomical or lunar inference of Purva/Amara; natal-Moon identity;
-seasonal, sunrise-scaled, or other solar-proportional timing; Padu, Bharana,
-and Adhikara birds; vinadi subdivision; condition/scoring; and electional
-window search. Nominal-offset materialization and current-cell selection are
-admitted only through their explicit Stage 2B and Stage 2C policies and
-surfaces above; neither may be inferred from the source-scoped profile or from
+source-attested or alternate solar-proportional doctrines and proportional
+current-cell selection; Padu, Bharana, and Adhikara birds; vinadi subdivision;
+condition/scoring; and electional window search. Fixed-clock materialization,
+fixed-clock current-cell selection, and solar-proportional materialization are
+admitted only through their explicit Stage 2B, Stage 2C, and Stage 2D policies
+and surfaces above; none may be inferred from the source-scoped profile or from
 the Stage 2A local-solar context alone.

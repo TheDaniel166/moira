@@ -21,6 +21,9 @@ from moira.pancha_pakshi import (
     PanchaPakshiProvenance,
     PanchaPakshiSchedule,
     PanchaPakshiScheduleCell,
+    PanchaPakshiSolarProportionalCell,
+    PanchaPakshiSolarProportionalMaterialization,
+    PanchaPakshiSolarProportionalMaterializationPolicy,
     PanchaPakshiSource,
     PanchaPakshiSourceLocator,
 )
@@ -43,6 +46,9 @@ from ..models.pancha_pakshi import (
     PanchaPakshiProfileInfoResponse,
     PanchaPakshiProvenanceResponse,
     PanchaPakshiScheduleCellResponse,
+    PanchaPakshiSolarProportionalCellResponse,
+    PanchaPakshiSolarProportionalMaterializationPolicyResponse,
+    PanchaPakshiSolarProportionalMaterializationResponse,
     PanchaPakshiSourceLocatorResponse,
     PanchaPakshiSourceResponse,
 )
@@ -392,4 +398,76 @@ def serialize_fixed_clock_current_cell(
             else serialize_fixed_clock_cell(selection.current_cell)
         ),
         provenance=serialize_provenance(selection.provenance),
+    )
+
+
+def serialize_solar_proportional_materialization_policy(
+    policy: PanchaPakshiSolarProportionalMaterializationPolicy,
+) -> PanchaPakshiSolarProportionalMaterializationPolicyResponse:
+    return PanchaPakshiSolarProportionalMaterializationPolicyResponse(
+        policy_id=policy.policy_id,
+        paksha_basis=policy.paksha_basis,
+        solar_context_basis=policy.solar_context_basis,
+        day_anchor=policy.day_anchor,
+        night_anchor=policy.night_anchor,
+        nominal_offset_basis=policy.nominal_offset_basis,
+        mapping_time_scale=policy.mapping_time_scale,
+        published_endpoint_time_scale=policy.published_endpoint_time_scale,
+        endpoint_mapping=policy.endpoint_mapping,
+        endpoint_closure=policy.endpoint_closure,
+        interval_ownership=policy.interval_ownership,
+        solar_end_clipping=policy.solar_end_clipping,
+        solar_half_wrap=policy.solar_half_wrap,
+        solar_half_repeat=policy.solar_half_repeat,
+        fixed_nazhigai_seconds_status=policy.fixed_nazhigai_seconds_status,
+        current_cell_status=policy.current_cell_status,
+        astronomical_paksha_inference_status=(
+            policy.astronomical_paksha_inference_status
+        ),
+    )
+
+
+def serialize_solar_proportional_cell(
+    cell: PanchaPakshiSolarProportionalCell,
+) -> PanchaPakshiSolarProportionalCellResponse:
+    return PanchaPakshiSolarProportionalCellResponse(
+        schedule_cell_index=cell.schedule_cell_index,
+        nominal_cell=serialize_schedule_cell(cell.nominal_cell),
+        start_offset_fraction=serialize_fraction(cell.start_offset_fraction),
+        end_offset_fraction=serialize_fraction(cell.end_offset_fraction),
+        span_fraction=serialize_fraction(cell.span_fraction),
+        start_jd_tt=cell.start_jd_tt,
+        end_jd_tt=cell.end_jd_tt,
+        start_jd_ut1=cell.start_jd_ut1,
+        end_jd_ut1=cell.end_jd_ut1,
+        duration_seconds_tt=cell.duration_seconds_tt,
+    )
+
+
+def serialize_solar_proportional_materialization(
+    materialization: PanchaPakshiSolarProportionalMaterialization,
+) -> PanchaPakshiSolarProportionalMaterializationResponse:
+    return PanchaPakshiSolarProportionalMaterializationResponse(
+        local_solar_context=serialize_local_solar_context(
+            materialization.context
+        ),
+        policy=serialize_solar_proportional_materialization_policy(
+            materialization.policy
+        ),
+        anchor_jd_tt=materialization.anchor_jd_tt,
+        anchor_jd_ut1=materialization.anchor_jd_ut1,
+        governing_solar_half_end_jd_tt=(
+            materialization.governing_solar_half_end_jd_tt
+        ),
+        governing_solar_half_end_jd_ut1=(
+            materialization.governing_solar_half_end_jd_ut1
+        ),
+        solar_half_duration_seconds_tt=(
+            materialization.solar_half_duration_seconds_tt
+        ),
+        cells=[
+            serialize_solar_proportional_cell(cell)
+            for cell in materialization.cells
+        ],
+        provenance=serialize_provenance(materialization.provenance),
     )

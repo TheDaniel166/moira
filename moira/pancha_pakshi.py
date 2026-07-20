@@ -16,7 +16,7 @@ object.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from fractions import Fraction
 from typing import TYPE_CHECKING
@@ -610,6 +610,333 @@ class PanchaPakshiFixedClockCurrentCellSelection:
             )
 
 
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSolarProportionalMaterializationPolicy:
+    """The bounded modern solar-proportional doctrine admitted for Stage 2D.
+
+    Exact source-owned nominal offsets become rational fractions of the
+    schedule's full 30-nazhigai span.  Each endpoint is then mapped
+    independently over the governing local-solar half on reader-bound TT.
+    The policy neither interprets one nazhigai as 1,440 seconds nor performs
+    current-cell selection or astronomical Paksha inference.
+    """
+
+    policy_id: str = field(
+        default="solar_proportional_nominal_offsets_over_governing_half_tt_v1",
+        init=False,
+    )
+    paksha_basis: str = field(
+        default="caller_supplied_source_label",
+        init=False,
+    )
+    solar_context_basis: str = field(
+        default="topocentric_sunrise_to_next_sunrise",
+        init=False,
+    )
+    day_anchor: str = field(
+        default="governing_topocentric_sunrise",
+        init=False,
+    )
+    night_anchor: str = field(
+        default="governing_topocentric_sunset",
+        init=False,
+    )
+    nominal_offset_basis: str = field(
+        default="exact_fraction_of_nominal_schedule_span",
+        init=False,
+    )
+    mapping_time_scale: str = field(default="reader_bound_tt", init=False)
+    published_endpoint_time_scale: str = field(default="ut1", init=False)
+    endpoint_mapping: str = field(
+        default="independent_anchor_plus_fraction_of_governing_solar_half",
+        init=False,
+    )
+    endpoint_closure: str = field(
+        default="exact_anchor_and_governing_solar_half_end",
+        init=False,
+    )
+    interval_ownership: str = field(default="half_open", init=False)
+    solar_end_clipping: str = field(default="none", init=False)
+    solar_half_wrap: str = field(default="none", init=False)
+    solar_half_repeat: str = field(default="none", init=False)
+    fixed_nazhigai_seconds_status: str = field(
+        default="not_used",
+        init=False,
+    )
+    current_cell_status: str = field(default="not_performed", init=False)
+    astronomical_paksha_inference_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSolarProportionalCell:
+    """One nominal cell mapped over the governing solar half.
+
+    The three fractional fields retain the exact rational mapping doctrine.
+    TT and UT1 endpoints are floating astronomical coordinates and therefore
+    remain distinct from those source-owned fractions.
+    """
+
+    schedule_cell_index: int
+    nominal_cell: PanchaPakshiScheduleCell
+    start_offset_fraction: Fraction
+    end_offset_fraction: Fraction
+    span_fraction: Fraction
+    start_jd_tt: float
+    end_jd_tt: float
+    start_jd_ut1: float
+    end_jd_ut1: float
+    duration_seconds_tt: float
+
+    def __post_init__(self) -> None:
+        if (
+            isinstance(self.schedule_cell_index, bool)
+            or not isinstance(self.schedule_cell_index, int)
+        ):
+            raise TypeError("schedule_cell_index must be an integer")
+        if self.schedule_cell_index < 0:
+            raise ValueError("schedule_cell_index must be non-negative")
+        if not isinstance(self.nominal_cell, PanchaPakshiScheduleCell):
+            raise TypeError("nominal_cell must be a PanchaPakshiScheduleCell")
+
+        for name, value in (
+            ("start_offset_fraction", self.start_offset_fraction),
+            ("end_offset_fraction", self.end_offset_fraction),
+            ("span_fraction", self.span_fraction),
+        ):
+            if not isinstance(value, Fraction):
+                raise TypeError(f"{name} must be a Fraction")
+        if not (
+            Fraction(0) <= self.start_offset_fraction
+            < self.end_offset_fraction <= Fraction(1)
+        ):
+            raise ValueError(
+                "solar-proportional offset fractions must satisfy "
+                "0 <= start < end <= 1"
+            )
+        if self.span_fraction != (
+            self.end_offset_fraction - self.start_offset_fraction
+        ):
+            raise ValueError("span_fraction must equal end minus start")
+
+        nominal_span = Fraction(30)
+        if self.start_offset_fraction != (
+            self.nominal_cell.start_nazhigai / nominal_span
+        ):
+            raise ValueError(
+                "start_offset_fraction disagrees with the nominal cell"
+            )
+        if self.end_offset_fraction != (
+            self.nominal_cell.end_nazhigai / nominal_span
+        ):
+            raise ValueError(
+                "end_offset_fraction disagrees with the nominal cell"
+            )
+        if self.span_fraction != (
+            self.nominal_cell.duration_nazhigai / nominal_span
+        ):
+            raise ValueError("span_fraction disagrees with the nominal cell")
+
+        for name, value in (
+            ("start_jd_tt", self.start_jd_tt),
+            ("end_jd_tt", self.end_jd_tt),
+            ("start_jd_ut1", self.start_jd_ut1),
+            ("end_jd_ut1", self.end_jd_ut1),
+            ("duration_seconds_tt", self.duration_seconds_tt),
+        ):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise TypeError(f"{name} must be a real number")
+            if not math.isfinite(value):
+                raise ValueError(f"{name} must be finite")
+        if not self.start_jd_tt < self.end_jd_tt:
+            raise ValueError("cell TT endpoints must be strictly increasing")
+        if not self.start_jd_ut1 < self.end_jd_ut1:
+            raise ValueError("cell UT1 endpoints must be strictly increasing")
+        if self.duration_seconds_tt <= 0.0:
+            raise ValueError("duration_seconds_tt must be positive")
+        endpoint_duration_seconds = (
+            self.end_jd_tt - self.start_jd_tt
+        ) * 86_400.0
+        if not math.isclose(
+            self.duration_seconds_tt,
+            endpoint_duration_seconds,
+            rel_tol=1e-12,
+            abs_tol=1e-7,
+        ):
+            raise ValueError(
+                "duration_seconds_tt disagrees with the mapped TT endpoints"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSolarProportionalMaterialization:
+    """Solar-proportional projection of one selected nominal half.
+
+    The detached vessel proves its exact fraction-to-TT mapping, outer UT1
+    closure, and UT1 ordering/contiguity.  Interior TT-to-UT1 inverse truth is
+    reader-dependent and is therefore established by the governing factory,
+    not replayed without a reader inside ``__post_init__``.
+    """
+
+    context: PanchaPakshiLocalSolarContext
+    policy: PanchaPakshiSolarProportionalMaterializationPolicy
+    anchor_jd_tt: float
+    anchor_jd_ut1: float
+    governing_solar_half_end_jd_tt: float
+    governing_solar_half_end_jd_ut1: float
+    solar_half_duration_seconds_tt: float
+    cells: tuple[PanchaPakshiSolarProportionalCell, ...]
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.context, PanchaPakshiLocalSolarContext):
+            raise TypeError("context must be a PanchaPakshiLocalSolarContext")
+        if not isinstance(
+            self.policy,
+            PanchaPakshiSolarProportionalMaterializationPolicy,
+        ):
+            raise TypeError(
+                "policy must be a "
+                "PanchaPakshiSolarProportionalMaterializationPolicy"
+            )
+        for name, value in (
+            ("anchor_jd_tt", self.anchor_jd_tt),
+            ("anchor_jd_ut1", self.anchor_jd_ut1),
+            (
+                "governing_solar_half_end_jd_tt",
+                self.governing_solar_half_end_jd_tt,
+            ),
+            (
+                "governing_solar_half_end_jd_ut1",
+                self.governing_solar_half_end_jd_ut1,
+            ),
+            (
+                "solar_half_duration_seconds_tt",
+                self.solar_half_duration_seconds_tt,
+            ),
+        ):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise TypeError(f"{name} must be a real number")
+            if not math.isfinite(value):
+                raise ValueError(f"{name} must be finite")
+        if not self.anchor_jd_tt < self.governing_solar_half_end_jd_tt:
+            raise ValueError("governing solar-half TT bounds must be ordered")
+        if not self.anchor_jd_ut1 < self.governing_solar_half_end_jd_ut1:
+            raise ValueError("governing solar-half UT1 bounds must be ordered")
+
+        expected_anchor_ut1 = (
+            self.context.sunrise_jd_ut1
+            if self.context.half is PanchaPakshiHalf.DAY
+            else self.context.sunset_jd_ut1
+        )
+        expected_end_ut1 = (
+            self.context.sunset_jd_ut1
+            if self.context.half is PanchaPakshiHalf.DAY
+            else self.context.next_sunrise_jd_ut1
+        )
+        if self.anchor_jd_ut1 != expected_anchor_ut1:
+            raise ValueError("anchor_jd_ut1 disagrees with the governing half")
+        if self.governing_solar_half_end_jd_ut1 != expected_end_ut1:
+            raise ValueError(
+                "governing_solar_half_end_jd_ut1 disagrees with the context"
+            )
+
+        endpoint_duration_seconds = (
+            self.governing_solar_half_end_jd_tt - self.anchor_jd_tt
+        ) * 86_400.0
+        if self.solar_half_duration_seconds_tt != endpoint_duration_seconds:
+            raise ValueError(
+                "solar_half_duration_seconds_tt disagrees with the TT bounds"
+            )
+        if self.solar_half_duration_seconds_tt <= 0.0:
+            raise ValueError("solar_half_duration_seconds_tt must be positive")
+
+        schedule = self.context.nominal_schedule
+        if schedule.span_nazhigai != Fraction(30):
+            raise ValueError(
+                "solar-proportional policy requires a 30-nazhigai schedule"
+            )
+        if not isinstance(self.cells, tuple):
+            raise TypeError("cells must be a tuple")
+        if len(self.cells) != len(schedule.cells) or not self.cells:
+            raise ValueError(
+                "cells must map every nominal schedule cell exactly once"
+            )
+        governing_span_days_tt = (
+            self.governing_solar_half_end_jd_tt - self.anchor_jd_tt
+        )
+        for schedule_cell_index, (nominal_cell, cell) in enumerate(
+            zip(schedule.cells, self.cells, strict=True)
+        ):
+            if not isinstance(cell, PanchaPakshiSolarProportionalCell):
+                raise TypeError(
+                    "cells must contain PanchaPakshiSolarProportionalCell values"
+                )
+            if cell.schedule_cell_index != schedule_cell_index:
+                raise ValueError("solar-proportional cell indices are not ordered")
+            if cell.nominal_cell != nominal_cell:
+                raise ValueError(
+                    "solar-proportional cell disagrees with the nominal schedule"
+                )
+            expected_start_jd_tt = (
+                self.anchor_jd_tt
+                if cell.start_offset_fraction == 0
+                else self.anchor_jd_tt
+                + float(cell.start_offset_fraction) * governing_span_days_tt
+            )
+            expected_end_jd_tt = (
+                self.governing_solar_half_end_jd_tt
+                if cell.end_offset_fraction == 1
+                else self.anchor_jd_tt
+                + float(cell.end_offset_fraction) * governing_span_days_tt
+            )
+            if cell.start_jd_tt != expected_start_jd_tt:
+                raise ValueError(
+                    "cell start_jd_tt does not match its exact nominal fraction"
+                )
+            if cell.end_jd_tt != expected_end_jd_tt:
+                raise ValueError(
+                    "cell end_jd_tt does not match its exact nominal fraction"
+                )
+
+        if self.cells[0].start_offset_fraction != Fraction(0):
+            raise ValueError("first cell must begin at exact fraction zero")
+        if self.cells[-1].end_offset_fraction != Fraction(1):
+            raise ValueError("last cell must end at exact fraction one")
+        if self.cells[0].start_jd_tt != self.anchor_jd_tt:
+            raise ValueError("first cell must close exactly on the TT anchor")
+        if self.cells[0].start_jd_ut1 != self.anchor_jd_ut1:
+            raise ValueError("first cell must close exactly on the UT1 anchor")
+        if (
+            self.cells[-1].end_jd_tt
+            != self.governing_solar_half_end_jd_tt
+        ):
+            raise ValueError("last cell must close exactly on the TT solar end")
+        if (
+            self.cells[-1].end_jd_ut1
+            != self.governing_solar_half_end_jd_ut1
+        ):
+            raise ValueError("last cell must close exactly on the UT1 solar end")
+        for left, right in zip(self.cells, self.cells[1:]):
+            if left.end_offset_fraction != right.start_offset_fraction:
+                raise ValueError("cell fractions must be contiguous")
+            if left.end_jd_tt != right.start_jd_tt:
+                raise ValueError("cell TT endpoints must be contiguous")
+            if left.end_jd_ut1 != right.start_jd_ut1:
+                raise ValueError("cell UT1 endpoints must be contiguous")
+
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+        expected_provenance = _solar_proportional_provenance(self.context)
+        if self.provenance != expected_provenance:
+            raise ValueError(
+                "materialization provenance must equal the exact Stage 2D "
+                "transformation of its local-solar context provenance"
+            )
+
+
 _WEEKDAY_FROM_LOCAL_SOLAR_INDEX = (
     PanchaPakshiWeekday.SUNDAY,
     PanchaPakshiWeekday.MONDAY,
@@ -628,6 +955,19 @@ _FIXED_CLOCK_MATERIALIZATION_STATUS = (
 _FIXED_CLOCK_CURRENT_CELL_SELECTION_STATUS = (
     "fixed_clock_current_cell_selection_performed_paksha_caller_supplied_"
     "no_scaling_or_inference"
+)
+_SOLAR_PROPORTIONAL_MATERIALIZATION_STATUS = (
+    "solar_proportional_materialization_performed_paksha_caller_supplied_"
+    "no_current_cell_or_inference"
+)
+_SOLAR_PROPORTIONAL_SOURCE_NONATTESTATION = PanchaPakshiOmission(
+    feature="source_attested_solar_proportional_materialization",
+    status="omitted",
+    reason=(
+        "The 1879 witness does not attest solar-proportional scaling; "
+        "Moira Stage 2D performs a separately admitted modern proportional "
+        "composition under its explicit policy."
+    ),
 )
 _SI_SECONDS_PER_DAY = 86_400
 
@@ -1224,6 +1564,240 @@ def _pancha_pakshi_fixed_clock_current_cell_from_utc(
     )
 
 
+def _solar_proportional_provenance(
+    context: PanchaPakshiLocalSolarContext,
+) -> PanchaPakshiProvenance:
+    """Return Stage 2D provenance without conflating source and policy truth."""
+
+    provenance = context.provenance
+    seasonal_scaling_omissions = tuple(
+        omission
+        for omission in provenance.declared_omissions
+        if omission.feature == "seasonal_scaling"
+    )
+    if len(seasonal_scaling_omissions) != 1:
+        raise PanchaPakshiDataError(
+            "Stage 2D context provenance must contain exactly one "
+            "seasonal_scaling source omission"
+        )
+    declared_omissions = tuple(
+        _SOLAR_PROPORTIONAL_SOURCE_NONATTESTATION
+        if omission.feature == "seasonal_scaling"
+        else omission
+        for omission in provenance.declared_omissions
+    )
+    return replace(
+        provenance,
+        declared_omissions=declared_omissions,
+        astronomical_routing_status=(
+            _SOLAR_PROPORTIONAL_MATERIALIZATION_STATUS
+        ),
+    )
+
+
+def _pancha_pakshi_solar_proportional_for_solar_day(
+    profile: PanchaPakshiProfile,
+    solar_day: LocalSolarDay,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader,
+) -> PanchaPakshiSolarProportionalMaterialization:
+    """Map one nominal half independently over its governing solar half."""
+
+    from ._ephemeris_time import (
+        _ephemeris_tt_to_ut1,
+        _ut1_to_ephemeris_tt,
+    )
+
+    context = _pancha_pakshi_context_for_solar_day(
+        profile,
+        solar_day,
+        paksha=paksha,
+    )
+    policy = PanchaPakshiSolarProportionalMaterializationPolicy()
+    schedule = context.nominal_schedule
+    if schedule.span_nazhigai != Fraction(30):
+        raise PanchaPakshiDataError(
+            "solar-proportional policy requires a 30-nazhigai schedule"
+        )
+
+    if context.half is PanchaPakshiHalf.DAY:
+        anchor_jd_ut1 = context.sunrise_jd_ut1
+        governing_end_jd_ut1 = context.sunset_jd_ut1
+    else:
+        anchor_jd_ut1 = context.sunset_jd_ut1
+        governing_end_jd_ut1 = context.next_sunrise_jd_ut1
+
+    anchor_jd_tt = _ut1_to_ephemeris_tt(anchor_jd_ut1, reader)
+    governing_end_jd_tt = _ut1_to_ephemeris_tt(
+        governing_end_jd_ut1,
+        reader,
+    )
+    if not (
+        math.isfinite(anchor_jd_tt)
+        and math.isfinite(governing_end_jd_tt)
+        and anchor_jd_tt < governing_end_jd_tt
+    ):
+        raise PanchaPakshiDataError(
+            "reader-bound TT solar-half bounds must be finite and ordered"
+        )
+
+    solar_half_span_days_tt = governing_end_jd_tt - anchor_jd_tt
+    solar_half_duration_seconds_tt = (
+        solar_half_span_days_tt * _SI_SECONDS_PER_DAY
+    )
+    offsets = {
+        offset
+        for nominal_cell in schedule.cells
+        for offset in (
+            nominal_cell.start_nazhigai,
+            nominal_cell.end_nazhigai,
+        )
+    }
+    if Fraction(0) not in offsets or schedule.span_nazhigai not in offsets:
+        raise PanchaPakshiDataError(
+            "nominal schedule does not expose both outer half endpoints"
+        )
+
+    endpoint_fractions: dict[Fraction, Fraction] = {}
+    endpoints_tt: dict[Fraction, float] = {}
+    endpoints_ut1: dict[Fraction, float] = {}
+    for offset_nazhigai in sorted(offsets):
+        offset_fraction = offset_nazhigai / schedule.span_nazhigai
+        endpoint_fractions[offset_nazhigai] = offset_fraction
+        if offset_nazhigai == 0:
+            endpoint_jd_tt = anchor_jd_tt
+            endpoint_jd_ut1 = anchor_jd_ut1
+        elif offset_nazhigai == schedule.span_nazhigai:
+            endpoint_jd_tt = governing_end_jd_tt
+            endpoint_jd_ut1 = governing_end_jd_ut1
+        else:
+            endpoint_jd_tt = anchor_jd_tt + (
+                float(offset_fraction) * solar_half_span_days_tt
+            )
+            endpoint_jd_ut1 = _ephemeris_tt_to_ut1(endpoint_jd_tt, reader)
+        if not math.isfinite(endpoint_jd_ut1):
+            raise PanchaPakshiDataError(
+                "solar-proportional UT1 projection returned a non-finite JD"
+            )
+        endpoints_tt[offset_nazhigai] = endpoint_jd_tt
+        endpoints_ut1[offset_nazhigai] = endpoint_jd_ut1
+
+    materialized_cells = tuple(
+        PanchaPakshiSolarProportionalCell(
+            schedule_cell_index=schedule_cell_index,
+            nominal_cell=nominal_cell,
+            start_offset_fraction=(
+                endpoint_fractions[nominal_cell.start_nazhigai]
+            ),
+            end_offset_fraction=(
+                endpoint_fractions[nominal_cell.end_nazhigai]
+            ),
+            span_fraction=(
+                nominal_cell.duration_nazhigai / schedule.span_nazhigai
+            ),
+            start_jd_tt=endpoints_tt[nominal_cell.start_nazhigai],
+            end_jd_tt=endpoints_tt[nominal_cell.end_nazhigai],
+            start_jd_ut1=endpoints_ut1[nominal_cell.start_nazhigai],
+            end_jd_ut1=endpoints_ut1[nominal_cell.end_nazhigai],
+            duration_seconds_tt=(
+                endpoints_tt[nominal_cell.end_nazhigai]
+                - endpoints_tt[nominal_cell.start_nazhigai]
+            )
+            * _SI_SECONDS_PER_DAY,
+        )
+        for schedule_cell_index, nominal_cell in enumerate(schedule.cells)
+    )
+    return PanchaPakshiSolarProportionalMaterialization(
+        context=context,
+        policy=policy,
+        anchor_jd_tt=anchor_jd_tt,
+        anchor_jd_ut1=anchor_jd_ut1,
+        governing_solar_half_end_jd_tt=governing_end_jd_tt,
+        governing_solar_half_end_jd_ut1=governing_end_jd_ut1,
+        solar_half_duration_seconds_tt=solar_half_duration_seconds_tt,
+        cells=materialized_cells,
+        provenance=_solar_proportional_provenance(context),
+    )
+
+
+def pancha_pakshi_solar_proportional_materialization_at(
+    profile_id: str,
+    jd_ut1: float,
+    latitude: float,
+    longitude: float,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiSolarProportionalMaterialization:
+    """Scale exact nominal offsets over the governing local-solar half.
+
+    The local solar half is resolved before mapping.  Its UT1 outer bounds are
+    converted to reader-bound TT exactly once, every source-owned nominal
+    offset is independently mapped as a rational fraction of that TT span,
+    and only interior endpoints are projected back to UT1.  Paksha remains a
+    caller-supplied source label; no current-cell selection occurs.
+    """
+
+    from ._local_solar_day import _local_solar_day_from_ut1
+    from .spk_reader import get_reader
+
+    selected_paksha = _require_context_paksha(paksha)
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
+    )
+    selected_reader = get_reader() if reader is None else reader
+    solar_day = _local_solar_day_from_ut1(
+        jd_ut1,
+        latitude,
+        longitude,
+        selected_reader,
+        bounds_owner="pancha-pakshi-solar-proportional-materialization",
+    )
+    return _pancha_pakshi_solar_proportional_for_solar_day(
+        profile,
+        solar_day,
+        paksha=selected_paksha,
+        reader=selected_reader,
+    )
+
+
+def _pancha_pakshi_solar_proportional_materialization_from_utc(
+    profile_id: str,
+    jd_utc: float,
+    latitude: float,
+    longitude: float,
+    *,
+    paksha: PanchaPakshiPaksha,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiSolarProportionalMaterialization:
+    """Facade adapter preserving UTC civil-noon selection before UT1."""
+
+    from ._local_solar_day import _local_solar_day_from_utc
+    from .spk_reader import get_reader
+
+    selected_paksha = _require_context_paksha(paksha)
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.SOLAR_PROPORTIONAL_MATERIALIZATION,
+    )
+    selected_reader = get_reader() if reader is None else reader
+    solar_day = _local_solar_day_from_utc(
+        jd_utc,
+        latitude,
+        longitude,
+        selected_reader,
+        bounds_owner="pancha-pakshi-solar-proportional-materialization",
+    )
+    return _pancha_pakshi_solar_proportional_for_solar_day(
+        profile,
+        solar_day,
+        paksha=selected_paksha,
+        reader=selected_reader,
+    )
+
+
 __all__ = [
     "PanchaPakshiActivity",
     "PanchaPakshiAdmissionStatus",
@@ -1252,6 +1826,9 @@ __all__ = [
     "PanchaPakshiRelation",
     "PanchaPakshiSchedule",
     "PanchaPakshiScheduleCell",
+    "PanchaPakshiSolarProportionalCell",
+    "PanchaPakshiSolarProportionalMaterialization",
+    "PanchaPakshiSolarProportionalMaterializationPolicy",
     "PanchaPakshiSolarBoundaryRelation",
     "PanchaPakshiSource",
     "PanchaPakshiSourceLocator",
@@ -1264,4 +1841,5 @@ __all__ = [
     "pancha_pakshi_local_solar_context_at",
     "pancha_pakshi_profile_info",
     "pancha_pakshi_schedule",
+    "pancha_pakshi_solar_proportional_materialization_at",
 ]

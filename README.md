@@ -93,8 +93,13 @@ Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jat
   solar-half-first selector returns the unique current fixed-clock cell under
   exact half-open TT ownership, or the explicit
   `unmaterialized_solar_half_tail` status when a long solar half outlasts the
-  fixed span. It does not infer lunar paksha or proportionally scale, wrap,
-  repeat, or clip the schedule.
+  fixed span. A distinct modern solar-proportional policy can instead preserve
+  the exact nominal offset fractions and map them independently across the
+  complete governing day or night half on reader-bound TT, returning 25
+  half-open TT/UT1 cells with exact astronomical-boundary closure. The 1879
+  witness is not credited with that proportional rule. Paksha remains caller
+  supplied, and the proportional surface does not yet select a current cell or
+  infer lunar paksha.
 - **Dashas** — Vimshottari with nakshatra balance; Chara Dasha (K.N. Rao's named lineage); Varshaphal (annual charts).
 - **Vargas** — divisional charts (navamsa, dashamansa, dwadashamsa, saptamsa, trimshamsa, and more); Vimshopaka Bala (BPHS 20-point varga-dignity strength over all four classical groups) with vargottama detection.
 - **Yogas** — 60 classical yogas across six families (Pancha Mahapurusha, Chandra, Surya, all 32 Nabhasa, Raja core, Dhana core), each returned as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, and per-yoga primary-source citations.

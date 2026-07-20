@@ -111,6 +111,27 @@ class PanchaPakshiFixedClockCurrentCellRequest(PanchaPakshiProfileRequest):
         return value.astimezone(timezone.utc)
 
 
+class PanchaPakshiSolarProportionalMaterializationRequest(
+    PanchaPakshiProfileRequest
+):
+    """Scale exact nominal offsets over one governing local-solar half."""
+
+    dt: datetime
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    paksha: PanchaPakshiPaksha
+    policy_id: Literal[
+        "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+    ]
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime_utc(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value.astimezone(timezone.utc)
+
+
 class PanchaPakshiDirectedRelationshipRequest(PanchaPakshiProfileRequest):
     subject: PanchaPakshiBird
     target: PanchaPakshiBird
@@ -379,4 +400,57 @@ class PanchaPakshiFixedClockCurrentCellResponse(_StrictModel):
     solar_boundary_relation: PanchaPakshiSolarBoundaryRelation
     selection_status: PanchaPakshiCurrentCellSelectionStatus
     current_cell: PanchaPakshiFixedClockCellResponse | None
+    provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiSolarProportionalMaterializationPolicyResponse(_StrictModel):
+    policy_id: Literal[
+        "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+    ]
+    paksha_basis: Literal["caller_supplied_source_label"]
+    solar_context_basis: Literal["topocentric_sunrise_to_next_sunrise"]
+    day_anchor: Literal["governing_topocentric_sunrise"]
+    night_anchor: Literal["governing_topocentric_sunset"]
+    nominal_offset_basis: Literal["exact_fraction_of_nominal_schedule_span"]
+    mapping_time_scale: Literal["reader_bound_tt"]
+    published_endpoint_time_scale: Literal["ut1"]
+    endpoint_mapping: Literal[
+        "independent_anchor_plus_fraction_of_governing_solar_half"
+    ]
+    endpoint_closure: Literal["exact_anchor_and_governing_solar_half_end"]
+    interval_ownership: Literal["half_open"]
+    solar_end_clipping: Literal["none"]
+    solar_half_wrap: Literal["none"]
+    solar_half_repeat: Literal["none"]
+    fixed_nazhigai_seconds_status: Literal["not_used"]
+    current_cell_status: Literal["not_performed"]
+    astronomical_paksha_inference_status: Literal["not_performed"]
+
+
+class PanchaPakshiSolarProportionalCellResponse(_StrictModel):
+    """One cell whose exact fractions refer to the governing solar half."""
+
+    schedule_cell_index: int = Field(ge=0)
+    nominal_cell: PanchaPakshiScheduleCellResponse
+    start_offset_fraction: PanchaPakshiFractionResponse
+    end_offset_fraction: PanchaPakshiFractionResponse
+    span_fraction: PanchaPakshiFractionResponse
+    start_jd_tt: float
+    end_jd_tt: float
+    start_jd_ut1: float
+    end_jd_ut1: float
+    duration_seconds_tt: float = Field(gt=0.0)
+
+
+class PanchaPakshiSolarProportionalMaterializationResponse(_StrictModel):
+    """Full proportional materialization with no current-cell judgment."""
+
+    local_solar_context: PanchaPakshiLocalSolarContextResponse
+    policy: PanchaPakshiSolarProportionalMaterializationPolicyResponse
+    anchor_jd_tt: float
+    anchor_jd_ut1: float
+    governing_solar_half_end_jd_tt: float
+    governing_solar_half_end_jd_ut1: float
+    solar_half_duration_seconds_tt: float = Field(gt=0.0)
+    cells: list[PanchaPakshiSolarProportionalCellResponse]
     provenance: PanchaPakshiProvenanceResponse

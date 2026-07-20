@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_1879_solar_proportional_materialization_2026_07_20",
+  "decided_at_utc": "2026-07-20T17:30:39Z",
+  "decision_kind": "additive_modern_solar_proportional_materialization_admission",
+  "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+  "prior_admission": {
+    "decision_id": "pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20",
+    "fixture_path": "pancha_pakshi_1879_fixed_clock_current_cell_2026_07_20.json",
+    "fixture_sha256": "b0698a4163a12dc6049cb30907d6e9dfebad790b35cc3661a41d77df89482976",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF"
+  },
+  "profile_binding": {
+    "path": "moira/data/pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
+    "sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+    "profile_content_changed": false,
+    "admission_status": "source_scoped_public",
+    "product_kind": "aksara_prasna_operating_schedule",
+    "default_selection_allowed": false
+  },
+  "manifest_transition": {
+    "prior_manifest_sha256": "366f13deb4b213267b7a6e937b776cd3c3908178e11b29ba238fb3ed47f25e44",
+    "current_manifest_sha256": "6dbbf05383c7a4eb3eadebf70fdb1130ab5081ef83175bc387755ffda4db9121",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "prior_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context",
+      "fixed_clock_materialization",
+      "fixed_clock_current_cell_selection"
+    ],
+    "current_capabilities": [
+      "aksara_identity",
+      "nominal_schedule",
+      "directed_relationships",
+      "astronomical_context",
+      "fixed_clock_materialization",
+      "fixed_clock_current_cell_selection",
+      "solar_proportional_materialization"
+    ],
+    "added_capability": "solar_proportional_materialization",
+    "profile_product_kind_changed": false,
+    "profile_admission_status_changed": false,
+    "default_selection_policy_changed": false
+  },
+  "computational_object": {
+    "engine_function": "pancha_pakshi_solar_proportional_materialization_at",
+    "facade_method": "Moira.pancha_pakshi_solar_proportional_materialization",
+    "rest_route": "POST /v1/pancha-pakshi/schedule/solar-proportional",
+    "result_vessel": "PanchaPakshiSolarProportionalMaterialization",
+    "policy_vessel": "PanchaPakshiSolarProportionalMaterializationPolicy",
+    "cell_vessel": "PanchaPakshiSolarProportionalCell",
+    "policy": {
+      "policy_id": "solar_proportional_nominal_offsets_over_governing_half_tt_v1",
+      "paksha_basis": "caller_supplied_source_label",
+      "solar_context_basis": "topocentric_sunrise_to_next_sunrise",
+      "day_anchor": "governing_topocentric_sunrise",
+      "night_anchor": "governing_topocentric_sunset",
+      "nominal_offset_basis": "exact_fraction_of_nominal_schedule_span",
+      "mapping_time_scale": "reader_bound_tt",
+      "published_endpoint_time_scale": "ut1",
+      "endpoint_mapping": "independent_anchor_plus_fraction_of_governing_solar_half",
+      "endpoint_closure": "exact_anchor_and_governing_solar_half_end",
+      "interval_ownership": "half_open",
+      "solar_end_clipping": "none",
+      "solar_half_wrap": "none",
+      "solar_half_repeat": "none",
+      "fixed_nazhigai_seconds_status": "not_used",
+      "current_cell_status": "not_performed",
+      "astronomical_paksha_inference_status": "not_performed"
+    },
+    "provenance_routing_status": "solar_proportional_materialization_performed_paksha_caller_supplied_no_current_cell_or_inference",
+    "engine_inputs": [
+      "explicit_profile_id",
+      "jd_ut1",
+      "latitude",
+      "longitude",
+      "caller_supplied_paksha"
+    ],
+    "facade_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "rest_time_input": "timezone-aware datetime normalized to UTC through the established civil-anchor to UT1 adapter",
+    "derived_values": [
+      "governing_local_solar_context",
+      "source_owned_nominal_schedule",
+      "exact_nominal_endpoint_fractions",
+      "governing_solar_half_tt_span",
+      "materialized_half_open_cell_intervals_tt_and_ut1",
+      "exact_anchor_and_solar_end_closure"
+    ]
+  },
+  "mapping_doctrine": {
+    "composition_rule": "Stage 2A resolves the governing local-solar half and source-owned nominal schedule while Paksha remains caller supplied. Stage 2D maps that schedule without changing its bird, activity, chronology, rational offset, or locator facts.",
+    "fraction_rule": "For every exact nominal endpoint n and nominal schedule span N, retain f=n/N as an exact reduced fraction. The fixed 1440-second nazhigai conversion is not used.",
+    "time_rule": "Convert the governing solar-half anchor and end through the same reader to TT. Every interior endpoint is computed independently as anchor_jd_tt plus float(f) times the complete governing solar-half TT span; cell durations are never accumulated.",
+    "closure_rule": "The zero endpoint is exactly the Stage 2A anchor and the final endpoint is exactly the Stage 2A governing solar-half end in both TT and published UT1. Interior TT endpoints are projected back to UT1 through the same reader.",
+    "boundary_rule": "All 25 cells are contiguous, positive, and half-open. Shared endpoints belong to the following cell and the governing solar-half endpoint is excluded.",
+    "repair_rule": "No clipping, wrapping, repetition, fixed-span borrowing, or tail fabrication occurs because the normalized schedule closes exactly on the governing solar half by construction.",
+    "current_cell_rule": "This admission materializes the complete proportional schedule but does not select or claim a current cell.",
+    "polar_policy": "Fail explicitly when lawful sunrise and sunset bounds do not exist."
+  },
+  "authority_and_provenance": {
+    "policy_origin": "modern_moira_solar_proportional_materialization_policy",
+    "historical_source_attestation": "The named 1879 witness governs only the unchanged nominal thirty-nazhigai schedule, rational offsets, bird/activity assignments, chronology, and source locators. It is not credited with proportional sunrise-to-sunset timing.",
+    "historical_source_binding": {
+      "witness_id": "dli.rmrl.000451_images",
+      "profile_sha256": "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4",
+      "evidence_role": "nominal schedule structure and exact rational offset fractions only"
+    },
+    "solar_anchor_binding": {
+      "decision_id": "pancha_pakshi_1879_local_solar_context_2026_07_20",
+      "decision_sha256": "de8e40c161a327695702b9b152f89da8e848f32aafb4d0b155176d28381c9fd2",
+      "authority": "JPL Horizons observer tables",
+      "fixture_path": "tests/fixtures/horizons_rise_set_reference.json",
+      "fixture_sha256": "d850ac06164ef041e3f9c8e80aaeea7cf23adfd644f6259b73e500510b6d5255",
+      "case_id": "sun-new-york-equinox",
+      "tolerance_seconds": 2.0,
+      "evidence_role": "topocentric sunrise and sunset anchor validation only"
+    },
+    "time_scale_authority": {
+      "authority": "International Earth Rotation and Reference Systems Service",
+      "basis": "reader-bound TT",
+      "evidence_role": "uniform elapsed-time coordinate for proportional endpoint mapping"
+    },
+    "route_specific_omission_resolution": {
+      "source_profile_omission": "seasonal_scaling",
+      "result_omission": "source_attested_solar_proportional_materialization",
+      "rule": "The Stage 2D result must not claim both that proportional scaling is omitted and performed. Its provenance preserves that the 1879 witness does not attest the policy while naming the separately admitted modern composition. The hashed source profile and earlier public results remain unchanged."
+    },
+    "external_pancha_pakshi_proportional_timing_oracle_status": "none",
+    "independent_witness_corroboration_status": "not_performed"
+  },
+  "validation_evidence": {
+    "evidence_class": "structural_and_physical_invariants_with_inherited_solar_anchor_authority",
+    "fraction_semantics": "all exact nominal endpoint fractions are reduced, ordered, contiguous, positive by cell, and close exactly from zero to one",
+    "mapping_semantics": "every TT endpoint is independently derived from the common anchor and complete solar-half span rather than accumulated durations",
+    "closure_semantics": "the first and final TT and UT1 endpoints equal the governing solar-half bounds exactly",
+    "interval_semantics": "all 25 half-open cells are positive and contiguous for long and short day and night halves",
+    "time_scale_semantics": "interior endpoints are mapped on reader-bound TT and projected to UT1 through the same reader",
+    "detached_vessel_boundary": "The detached result validates exact fraction-to-TT mapping, outer UT1 closure, and UT1 ordering and contiguity. Reader-dependent interior TT-to-UT1 inverse truth is established by the governing factory path and reader-bound tests because the result vessel does not retain the configured reader.",
+    "capability_semantics": "profile admission and solar_proportional_materialization capability are checked before astronomical resolution",
+    "provenance_semantics": "result provenance distinguishes absent historical attestation from the performed modern composition",
+    "external_proportional_timing_validation": "none_no_external_pancha_pakshi_oracle_claimed",
+    "accuracy_claim": "no_new_solar_boundary_or_historical_accuracy_claim"
+  },
+  "public_claim": "Given an explicit profile, UT1 instant, location, and caller-supplied Purva or Amara source label, resolve the governing local-solar half and nominal schedule, preserve every exact nominal offset as a fraction of that schedule span, map those fractions independently across the complete governing TT half, project interior endpoints to UT1, and return 25 contiguous half-open cells that close exactly at the astronomical half end.",
+  "public_nonclaims": [
+    "historical attestation that the 1879 witness prescribed proportional sunrise-to-sunset timing",
+    "a current Pancha Pakshi activity or schedule cell",
+    "fixed 1440-second nazhigai materialization",
+    "astronomical or lunar inference of Purva or Amara paksha",
+    "natal Moon or nakshatra identity",
+    "vinadi or finer subdivisions",
+    "Padu, Bharana, or Adhikara birds",
+    "condition evaluation, scoring, or electional window search",
+    "external-oracle parity or independent-witness corroboration",
+    "cross-witness normalization or corroborated public status",
+    "a universal or default Pancha Pakshi canon"
+  ],
+  "artifact_distribution_boundary": {
+    "source_artifact_policy_changed": false,
+    "profile_source_artifact_added": false,
+    "policy_effect": "The standing non-bundling architecture remains unchanged. Stage 2D composes only already admitted symbolic facts and computed astronomical intervals; no archival scan, copied source expression, or third-party artifact is distributed."
+  }
+}

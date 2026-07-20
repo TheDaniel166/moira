@@ -335,7 +335,9 @@ astronomical sunset or next sunrise. Instead, the signed
 greater than `0.0001 s` are coalescent under an explicitly numerical policy.
 The result deliberately does not select a current cell, so an instant can
 remain inside the astronomical half while lying outside the fixed schedule.
-Solar-proportional scaling remains a different, non-admitted capability.
+Solar-proportional scaling remains a different capability from this fixed-clock
+product and is admitted only through the separately named Stage 2D policy
+below.
 
 The Stage 2B authority roles remain separate. The 1879 witness governs nominal
 schedule facts; the *Tamil Lexicon* governs the fixed nazhigai unit; IERS
@@ -375,6 +377,38 @@ Pakshi current-cell oracle or independent-witness corroboration, and the
 bounded deterministic membership result does not raise the profile above
 `source_scoped_public`.
 
+Stage 2D separately adds `solar_proportional_materialization` through the
+explicitly modern Moira policy
+`solar_proportional_nominal_offsets_over_governing_half_tt_v1`. It preserves
+the source-owned nominal schedule and treats every exact nominal endpoint as a
+reduced fraction of its complete thirty-nazhigai span. The governing sunrise or
+sunset anchor and solar-half end are converted through the same configured
+reader to TT. Each interior endpoint is derived independently from the common
+anchor and complete TT span, then projected to UT1; the outer TT and UT1
+endpoints are the exact governing solar-half bounds. The result therefore has
+25 positive contiguous half-open cells and needs no clipping, wrapping,
+repetition, fixed-span borrowing, or tail fabrication.
+
+This proportional mapping is a modern Moira composition, not a rule attributed
+to the 1879 witness. The witness continues to govern the unchanged nominal
+schedule, exact rational offsets, bird/activity assignments, chronology, and
+source locators. The fixed `1,440 s` nazhigai conversion is not used. Paksha
+remains caller supplied, and current-cell selection and astronomical paksha
+inference remain unperformed. To avoid contradictory provenance, the Stage 2D
+result replaces the source-profile `seasonal_scaling` omission with
+`source_attested_solar_proportional_materialization`: the performed modern
+operation is visible while its absence from the historical witness remains
+equally explicit. Earlier profile, context, and fixed-clock results remain
+unchanged.
+
+The additive
+`pancha_pakshi_1879_solar_proportional_materialization_2026_07_20.json`
+decision binds the unchanged profile hash, frozen Stage 2C decision and
+manifest, exact proportional policy, route-specific provenance resolution, and
+structural validation boundary. The existing JPL Horizons evidence governs
+only the inherited topocentric solar anchors; there is no external Pancha
+Pakshi proportional-timing oracle or independent-witness corroboration.
+
 Later Bogar- and Uromarisi-attributed editions and Sarasvati Mahal Library
 series 213 are retained only as metadata in a conflict ledger. The latter's
 official catalog says sixth edition/2014 while its inspected internal title
@@ -400,11 +434,12 @@ The governing research boundary, admission tiers, conflicts, fail-closed
 invariants, and public contract are documented in
 [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
 Public access is additive through `moira.pancha_pakshi`, package-root and
-`moira.vedic` exports, five kernel-free and three kernel-backed `Moira` methods,
-and eight explicit-profile `/v1/pancha-pakshi` routes. No API selects a default
-profile. Current-cell selection occurs only through its explicit fixed-clock,
-solar-half-precedence policy; condition, scoring, paksha inference, and
-proportional timing remain outside the admitted surface.
+`moira.vedic` exports, five kernel-free and four kernel-backed `Moira` methods,
+and nine explicit-profile `/v1/pancha-pakshi` routes. No API selects a default
+profile. Fixed-clock current-cell selection occurs only through its explicit
+solar-half-precedence policy; proportional materialization is a separate
+modern policy and does not yet select a current cell. Condition, scoring, and
+paksha inference remain outside the admitted surface.
 
 The 2026-07-20 blind, representative-grid, and later adjudicating reviews are
 recorded in

@@ -1,5 +1,93 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2D Solar-Proportional Materialization Addendum
+
+Stage 2D admits one further capability,
+`solar_proportional_materialization`, for the same `source_scoped_public`
+profile. The profile document remains unchanged at canonical SHA-256
+`876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4`,
+and default selection remains forbidden. The chained decision is recorded in
+[`pancha_pakshi_1879_solar_proportional_materialization_2026_07_20.json`](../../tests/fixtures/pancha_pakshi_1879_solar_proportional_materialization_2026_07_20.json),
+whose canonical SHA-256 is
+`e31e0664090b9a38bdcd52b660c04998a0412eab223f4a84fe745b9e54d25383`.
+It freezes the Stage 2C decision at SHA-256
+`b0698a4163a12dc6049cb30907d6e9dfebad790b35cc3661a41d77df89482976`,
+the prior manifest at SHA-256
+`366f13deb4b213267b7a6e937b776cd3c3908178e11b29ba238fb3ed47f25e44`,
+and binds the new manifest at SHA-256
+`6dbbf05383c7a4eb3eadebf70fdb1130ab5081ef83175bc387755ffda4db9121`.
+
+The governing object is `PanchaPakshiSolarProportionalMaterialization`, with
+immutable `PanchaPakshiSolarProportionalMaterializationPolicy` and
+`PanchaPakshiSolarProportionalCell` vessels. Its only admitted policy is
+`solar_proportional_nominal_offsets_over_governing_half_tt_v1`, explicitly a
+modern Moira composition rather than an 1879 source claim.
+
+Stage 2A supplies the governing local-solar half and unchanged nominal
+schedule. Every exact nominal endpoint is retained as a reduced fraction of
+the full thirty-nazhigai schedule. The anchor and solar-half end are converted
+through the same configured reader to TT; interior endpoints are derived
+independently from the common anchor and complete TT span, then projected to
+UT1. The outer TT and UT1 endpoints are exactly the governing solar bounds.
+The result contains 25 positive contiguous half-open cells and performs no
+fixed-second conversion, clipping, wrapping, repetition, tail fabrication, or
+duration accumulation.
+
+The low-level engine, facade, and REST surfaces are respectively
+`pancha_pakshi_solar_proportional_materialization_at(...)`,
+`Moira.pancha_pakshi_solar_proportional_materialization(...)`, and
+`POST /v1/pancha-pakshi/schedule/solar-proportional`. Paksha remains caller
+supplied; current-cell selection and astronomical paksha inference remain
+`not_performed`. The provenance routing status is
+`solar_proportional_materialization_performed_paksha_caller_supplied_no_current_cell_or_inference`.
+
+The raw profile's `seasonal_scaling` omission remains honest source-layer
+metadata: the 1879 witness does not attest the proportional rule. The Stage 2D
+result avoids claiming the same operation both omitted and performed by
+replacing that item with
+`source_attested_solar_proportional_materialization`, preserving the historical
+non-attestation while naming the separately performed modern composition.
+Earlier public results and the hashed profile are unchanged.
+
+Validation is bounded to exact-fraction, independent-mapping, TT/UT1 closure,
+half-open topology, capability, immutability, facade/transport, and provenance
+invariants, including rejection of forged fraction/endpoint mappings and
+contradictory Stage 2D routing provenance. The existing JPL Horizons comparison
+remains authority evidence only for the inherited topocentric solar anchor. No
+external Pancha Pakshi proportional-timing oracle, independent-witness
+corroboration, current-cell claim, or new astronomical or historical accuracy
+claim is asserted.
+
+The detached result validates fraction-to-TT mapping, outer UT1 closure, and
+UT1 ordering/contiguity from its fields. Reader-dependent interior TT-to-UT1
+inverse truth is validated on the factory path, where the configured reader is
+available; the focused linear-clock test checks every interior endpoint rather
+than treating a detached vessel as an astronomical oracle.
+
+### Stage 2D Implementation Verification
+
+The admitted implementation was verified on 2026-07-20 with the project
+Python 3.14.3 `.venv`, `MOIRA_TEST_MODE=1`,
+`MOIRA_STRICT_KNOWN_ISSUES=1`, and downloads disabled:
+
+- `202` combined Stage 2A through Stage 2D engine, admission/hash,
+  public-contract/facade, adversarial-export, FastAPI service/route/OpenAPI, and
+  route-discovery tests passed;
+- the configured content-identified `DE-0441LE-0441` reader exercised the
+  Stage 2D TT/UT1 structural invariants and the inherited offline Horizons
+  solar-boundary gate;
+- a real in-process `TestClient` request through the configured engine returned
+  HTTP `200`, all `25` cells, exact zero-to-one outer fractions, no
+  `current_cell`, and the declared Stage 2D routing status;
+- documentation consistency, changed-module compilation, Python 3.10 grammar
+  parsing, canonical manifest/decision hashes, native import identity, and
+  tracked-diff whitespace checks passed.
+
+This receipt validates the implemented policy and transport contract. It does
+not turn DE441, the internal structural invariants, or the inherited Horizons
+solar-boundary fixture into an external Pancha Pakshi proportional-timing
+oracle.
+
 ## Stage 2C Fixed-Clock Current-Cell Addendum
 
 Stage 2C admits one further capability,
@@ -379,7 +467,7 @@ current bounded public status.
 | Source-artifact policy | Satisfied: witnesses are reference-only and never bundled; this is not an admission gate. |
 | Identity product | Satisfied for the named aksara/query-or-name-initial product; explicitly not natal Moon identity. |
 | Source-owned examples | Resolved into a complete source-owned Pūrva-night assignment oracle and confirmed Amara-night examples. |
-| Public vessels and transport | Deferred at this checkpoint; admitted later by the Phase 1, Stage 2A, and Stage 2B decisions above. |
+| Public vessels and transport | Deferred at this checkpoint; admitted later by the Phase 1 and Stage 2A through Stage 2D decisions above. |
 
 ## Validation Receipt
 
@@ -419,10 +507,11 @@ asserted.
    Pancha Pakshi witness rather than an adjacent omen or compatibility system.
 3. Preserve any disagreement by witness and text layer; do not merge doctrines
    or repair them by symmetry.
-4. Admit solar-proportional timing or broader doctrine only through a
-   separately named policy and evidence decision.
+4. Treat the admitted Stage 2D proportional materialization as modern policy;
+   source-attested or alternate proportional doctrine and proportional
+   current-cell selection require separate evidence and admission.
 
 The present resting place is the corrected, tested, source-scoped public
-profile plus the separately named Stage 2A, Stage 2B, and Stage 2C modern
-compositions. It is not a universal canon, and the unresolved research above
-must not be silently inferred through the public API.
+profile plus the separately named Stage 2A, Stage 2B, Stage 2C, and Stage 2D
+modern compositions. It is not a universal canon, and the unresolved research
+above must not be silently inferred through the public API.

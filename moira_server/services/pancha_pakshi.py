@@ -19,6 +19,7 @@ from ..models.pancha_pakshi import (
     PanchaPakshiLocalSolarContextRequest,
     PanchaPakshiNominalScheduleRequest,
     PanchaPakshiProfilesResponse,
+    PanchaPakshiSolarProportionalMaterializationRequest,
 )
 from ..serializers.pancha_pakshi import serialize_profile_descriptor
 
@@ -88,6 +89,21 @@ def compute_fixed_clock_current_cell(
     """Delegate bounded current-cell selection through the public facade."""
 
     return engine.pancha_pakshi_fixed_clock_current_cell(
+        request.profile_id,
+        request.dt,
+        request.latitude,
+        request.longitude,
+        paksha=request.paksha,
+    )
+
+
+def compute_solar_proportional_materialization(
+    engine: Moira,
+    request: PanchaPakshiSolarProportionalMaterializationRequest,
+):
+    """Delegate proportional solar-half materialization through the facade."""
+
+    return engine.pancha_pakshi_solar_proportional_materialization(
         request.profile_id,
         request.dt,
         request.latitude,

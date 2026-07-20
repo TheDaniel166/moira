@@ -253,7 +253,7 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 |---|---|
 | Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |
 | Panchanga | `panchanga_at`, `sankranti_at`, `PanchangaResult`, `TithiPaksha`, `PanchangaPolicy` |
-| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_directed_relationship` |
+| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_directed_relationship` |
 | Vedic dignities | `vedic_dignity`, `planetary_relationships`, `VedicDignityResult`, `DignityConditionProfile`, `ChartDignityProfile` |
 | Varga (divisional) | `navamsa`, `saptamsa`, `dashamansa`, `dwadashamsa`, `trimshamsa` + 11 more vargas, `VargaPoint` |
 | Vimshottari Dasha | `vimshottari`, `current_dasha`, `dasha_balance`, `dasha_active_line`, `DashaPeriod`, `VimshottariComputationPolicy` |
@@ -4861,6 +4861,7 @@ from moira.vedic import (
     pancha_pakshi_local_solar_context_at,
     pancha_pakshi_fixed_clock_materialization_at,
     pancha_pakshi_fixed_clock_current_cell_at,
+    pancha_pakshi_solar_proportional_materialization_at,
     pancha_pakshi_directed_relationship,
     PanchaPakshiCurrentCellSelectionStatus,
     PanchaPakshiFixedClockCell,
@@ -4871,6 +4872,9 @@ from moira.vedic import (
     PanchaPakshiLocalSolarContext,
     PanchaPakshiLocalSolarContextPolicy,
     PanchaPakshiMaterializedCellRelation,
+    PanchaPakshiSolarProportionalCell,
+    PanchaPakshiSolarProportionalMaterialization,
+    PanchaPakshiSolarProportionalMaterializationPolicy,
     PanchaPakshiSolarBoundaryRelation,
     PanchaPakshiBird,
     PanchaPakshiPaksha,
@@ -4888,6 +4892,7 @@ from moira.vedic import (
 | `pancha_pakshi_local_solar_context_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiLocalSolarContext` | Resolve topocentric local-solar half and local-mean-solar weekday from UT1, retain caller-supplied paksha, and select the existing nominal schedule |
 | `pancha_pakshi_fixed_clock_materialization_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockMaterialization` | Anchor the selected nominal schedule at governing sunrise or sunset, apply its exact offsets on reader-bound TT, project endpoints to UT1, and report unclipped solar-boundary topology without selecting a current cell |
 | `pancha_pakshi_fixed_clock_current_cell_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockCurrentCellSelection` | Resolve the governing solar half first, then return its unique half-open fixed-clock cell or the explicit unmaterialized long-half-tail status |
+| `pancha_pakshi_solar_proportional_materialization_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiSolarProportionalMaterialization` | Map every exact nominal offset fraction independently across the actual governing solar half on reader-bound TT, publish TT and UT1 endpoints, and return the complete 25-cell half-open schedule without current-cell selection |
 | `pancha_pakshi_directed_relationship(profile_id, subject, target)` | `PanchaPakshiDirectedRelationship` | Return one stored ordered non-self relation without reciprocal inference |
 
 `PanchaPakshiLocalSolarContextPolicy` is fixed and inspectable:
@@ -4925,17 +4930,40 @@ half that outlasts the fixed span returns
 The selector performs no clipping, wrapping, repeating, proportional scaling,
 or astronomical paksha inference. Its other finite status is `selected`.
 
+`PanchaPakshiSolarProportionalMaterializationPolicy` is the separate Stage 2D
+policy and admits only
+`policy_id="solar_proportional_nominal_offsets_over_governing_half_tt_v1"`.
+Each exact source nominal offset is divided by the complete 30-nazhigai nominal
+span, and every resulting rational endpoint fraction is mapped independently
+as anchor plus that fraction of the actual governing local-solar half on
+reader-bound TT. Interior endpoints are projected to UT1 through the same
+reader; the outer endpoints close exactly on the TT and UT1 anchor and
+governing solar-half end. The result contains exactly 25 contiguous, positive,
+half-open cells and performs no clipping, wrapping, repetition, fixed
+1,440-second nazhigai conversion, current-cell selection, or astronomical
+paksha inference.
+
+| Stage 2D vessel | Public contract |
+|---|---|
+| `PanchaPakshiSolarProportionalMaterialization` | Stage 2A `context`, immutable `policy`, TT/UT1 anchor and governing-half-end fields, `solar_half_duration_seconds_tt`, 25 `cells`, and profile-owned `provenance` |
+| `PanchaPakshiSolarProportionalMaterializationPolicy` | Explicit caller-supplied-paksha, topocentric solar-half, reader-bound-TT mapping, UT1 publication, exact endpoint-closure, and half-open ownership doctrine, with fixed-clock seconds and current-cell selection marked not used or not performed |
+| `PanchaPakshiSolarProportionalCell` | Ordered schedule index, unchanged nominal cell, exact `start_offset_fraction`, `end_offset_fraction`, and `span_fraction`, TT/UT1 endpoints, and TT duration |
+
 The current `agastya_madras_1879_akshara_fixed_clock` profile is
 `source_scoped_public` and can never be selected implicitly. It performs no
-astronomical paksha inference, natal mapping, solar-proportional scaling,
-subdivision, or scoring computation. The modern
+astronomical paksha inference, natal mapping, subdivision, or scoring
+computation. The modern
 `local_solar_day_explicit_paksha_v1` policy derives only topocentric
 sunrise/sunset context, day/night half, and local-mean-solar weekday while the
 paksha remains explicit. It returns the nominal schedule, not a current cell or
-clock-time interval. Only the separate fixed-clock policy materializes those
-nominal offsets, and only the separately admitted Stage 2C policy selects a
-current fixed-clock cell. Every result carries immutable profile-owned provenance and
-declared omissions. See the
+clock-time interval. Stage 2B separately materializes fixed 1,440-second
+nazhigai offsets, and Stage 2C selects a current cell only from that fixed-clock
+materialization. Stage 2D is a distinct explicit modern Moira policy that maps
+the exact nominal fractions across the actual solar half and does not select a
+current cell. The named 1879 witness attests the nominal schedule, rational
+offsets, bird/activity assignments, chronology, and locators; it does not
+attest proportional sunrise-to-sunset timing. Every result carries immutable
+profile-owned provenance and declared omissions. See the
 [governing admission standard](./PANCHA_PAKSHI_RESEARCH_STANDARD.md) for the
 source and evidence boundary.
 
@@ -4948,10 +4976,14 @@ methods are kernel-free. It additionally supplies the kernel-backed
 paksha)` and `pancha_pakshi_fixed_clock_materialization(profile_id, dt,
 latitude, longitude, *, paksha)`, plus the
 `pancha_pakshi_fixed_clock_current_cell(profile_id, dt, latitude, longitude,
-*, paksha)` adapter for aware datetimes. The low-level
+*, paksha)` and
+`pancha_pakshi_solar_proportional_materialization(profile_id, dt, latitude,
+longitude, *, paksha)` adapters for aware datetimes. The low-level
 engine functions accept UT1 JD, while the facade preserves UTC civil anchoring
-before the UT1 conversion. Fixed-clock offset arithmetic itself is reader-bound
-TT, with both TT and projected UT1 endpoints returned.
+before the UT1 conversion. Fixed-clock and solar-proportional offset arithmetic
+use reader-bound TT under their distinct policies, with both TT and projected
+UT1 endpoints returned. The Stage 2D engine function, result, policy, and cell
+vessels are first-class exports from `moira`, `moira.facade`, and `moira.vedic`.
 
 ---
 

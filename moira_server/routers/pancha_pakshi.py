@@ -24,6 +24,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiNominalScheduleResponse,
     PanchaPakshiProfileInfoResponse,
     PanchaPakshiProfilesResponse,
+    PanchaPakshiSolarProportionalMaterializationRequest,
+    PanchaPakshiSolarProportionalMaterializationResponse,
 )
 from ..serializers.pancha_pakshi import (
     serialize_aksara_identity,
@@ -33,6 +35,7 @@ from ..serializers.pancha_pakshi import (
     serialize_local_solar_context,
     serialize_nominal_schedule,
     serialize_profile_info,
+    serialize_solar_proportional_materialization,
 )
 from ..services.pancha_pakshi import (
     compute_aksara_identity,
@@ -41,6 +44,7 @@ from ..services.pancha_pakshi import (
     compute_fixed_clock_materialization,
     compute_local_solar_context,
     compute_nominal_schedule,
+    compute_solar_proportional_materialization,
     list_pancha_pakshi_profiles,
     pancha_pakshi_profile,
 )
@@ -106,6 +110,21 @@ def pancha_pakshi_fixed_clock_current_cell_route(
 
     return serialize_fixed_clock_current_cell(
         compute_fixed_clock_current_cell(engine, request)
+    )
+
+
+@router.post(
+    "/schedule/solar-proportional",
+    response_model=PanchaPakshiSolarProportionalMaterializationResponse,
+)
+def pancha_pakshi_solar_proportional_materialization_route(
+    request: PanchaPakshiSolarProportionalMaterializationRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> PanchaPakshiSolarProportionalMaterializationResponse:
+    """Materialize exact nominal fractions over the governing solar half."""
+
+    return serialize_solar_proportional_materialization(
+        compute_solar_proportional_materialization(engine, request)
     )
 
 
