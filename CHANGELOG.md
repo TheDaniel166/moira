@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-07-21
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_5.1.0.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_5.1.0.md`.
+
 ### Added
+- **Explicit Halb and Oriental/Occidental Dignity Policies**: Added independent
+  `include_halb` and `include_oriental_occidental` controls to the engine and
+  all six dignity REST routes. Defaults preserve the existing condition labels,
+  structured truth, and score contributions; disabling a condition removes
+  only that condition without changing the underlying sect or phase geometry.
 - **Native-Strengthened Bulk Eclipse Ranges**: Routed
   `EclipseCalculator.solar_eclipses_in_range()` and
   `lunar_eclipses_in_range()` through conservative native TT syzygy-candidate
@@ -520,6 +531,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   phase was introduced.
 
 ### Fixed
+- **Bounded Meridian-Event Absence**: `find_phenomena()` now omits a
+  `Transit` or `AntiTransit` key when no corresponding meridian crossing exists
+  inside its documented 24-hour window, while preserving `get_transit()`'s
+  explicit no-bracket failure. This is required for lunar windows because the
+  interval between successive lunar meridian crossings can exceed 24 hours.
+- **Release Validation Contracts**: Updated the physics-layer node reference
+  test to use the reader-owned ephemeris clock, removed invalid Python 3.14
+  bans on supported annotation syntax, disabled benchmark-like Hypothesis
+  deadlines on kernel-backed correctness properties, restored the global
+  kernel reader after the sovereign-manifest routing test, and refreshed the
+  deterministic DE441 Dorotheus regression value after the admitted clock
+  correction.
 - **Nakshatra Boundary Ownership**: Centralized equal-27-sector classification
   so exact internal `k × 40/3`-degree boundaries belong to the following
   nakshatra across the public sidereal and Vimshottari consumers. A bounded

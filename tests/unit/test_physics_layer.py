@@ -473,7 +473,7 @@ from moira.planets import _approx_year
     lat=st.floats(min_value=-80, max_value=80),
     lon=st.floats(min_value=-180, max_value=180),
 )
-@settings(max_examples=50)
+@settings(max_examples=50, deadline=None)
 def test_pbt_sky_position_agrees_with_planet_at(body, jd, lat, lon):
     """
     For any body, JD, and observer location, converting sky_position_at RA/Dec
@@ -523,14 +523,14 @@ def test_pbt_sky_position_agrees_with_planet_at(body, jd, lat, lon):
 # ---------------------------------------------------------------------------
 
 from moira.nodes import true_node
-from moira.nodes import _approx_year as _node_approx_year
+from moira._ephemeris_time import _ut1_to_ephemeris_tt
 from moira.coordinates import mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
 from moira.constants import DEG2RAD, RAD2DEG
 
 
 @pytest.mark.requires_ephemeris
 @given(jd=st.floats(min_value=2400000, max_value=2600000))
-@settings(max_examples=50)
+@settings(max_examples=50, deadline=None)
 def test_pbt_true_node_matrix_vs_scalar(jd):
     """
     For any JD in 2400000–2600000, the matrix-pipeline true_node longitude must
@@ -547,8 +547,7 @@ def test_pbt_true_node_matrix_vs_scalar(jd):
     from moira.nodes import _TRUE_NODE_STEP
 
     reader = get_reader()
-    year, *_ = _node_approx_year(jd)
-    jd_tt = ut_to_tt(jd, year)
+    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
     dpsi_deg, deps_deg = nutation(jd_tt)
     obliquity = mean_obliquity(jd_tt) + deps_deg
     eps = obliquity * DEG2RAD

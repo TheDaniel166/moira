@@ -721,13 +721,15 @@ def find_phenomena(
         temperature_c,
     )
 
-    transit = get_transit(body_name, jd_start, lat, lon, upper=True)
-    if jd_start <= transit < jd_start + 1.0:
-        results["Transit"] = transit
-
-    anti_transit = get_transit(body_name, jd_start, lat, lon, upper=False)
-    if jd_start <= anti_transit < jd_start + 1.0:
-        results["AntiTransit"] = anti_transit
+    for event_name, upper in (("Transit", True), ("AntiTransit", False)):
+        try:
+            transit = get_transit(body_name, jd_start, lat, lon, upper=upper)
+        except RuntimeError as exc:
+            if str(exc) != "no meridian transit bracket found in the 24-hour window":
+                raise
+            continue
+        if jd_start <= transit < jd_start + 1.0:
+            results[event_name] = transit
 
     return results
 

@@ -67,6 +67,23 @@ def test_twilight_sunrise_and_sunset_match_find_phenomena() -> None:
     assert abs(twilight.sunset - phenomena["Set"]) * 86400.0 < 0.5
 
 
+def test_find_phenomena_omits_meridian_event_absent_from_window(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(rise_set, "_find_horizon_events", lambda *args, **kwargs: {})
+
+    def _transit(*args, upper: bool, **kwargs) -> float:
+        if upper:
+            raise RuntimeError("no meridian transit bracket found in the 24-hour window")
+        return 100.5
+
+    monkeypatch.setattr(rise_set, "get_transit", _transit)
+
+    assert find_phenomena("Moon", 100.0, 0.0, 0.0) == {
+        "AntiTransit": 100.5,
+    }
+
+
 @pytest.mark.slow
 def test_twilight_handles_polar_day_or_night_without_raising() -> None:
     jd_day = 2460481.5  # near northern summer solstice

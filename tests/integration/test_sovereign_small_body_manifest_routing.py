@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -32,6 +33,7 @@ def test_public_asteroid_route_prefers_sovereign_manifest_when_configured(monkey
     if planetary_path is None:
         pytest.skip("No planetary kernel is installed")
 
+    original_manifest = os.environ.get(SOVEREIGN_SMALL_BODY_MANIFEST_ENV)
     monkeypatch.setenv(SOVEREIGN_SMALL_BODY_MANIFEST_ENV, str(_MANIFEST))
     reset_singleton()
 
@@ -52,3 +54,8 @@ def test_public_asteroid_route_prefers_sovereign_manifest_when_configured(monkey
     finally:
         explicit_pool.close()
         reset_singleton()
+        if original_manifest is None:
+            monkeypatch.delenv(SOVEREIGN_SMALL_BODY_MANIFEST_ENV, raising=False)
+        else:
+            monkeypatch.setenv(SOVEREIGN_SMALL_BODY_MANIFEST_ENV, original_manifest)
+        set_kernel_path(planetary_path)

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import ast
-import re
 from pathlib import Path
 
 import pytest
@@ -36,24 +35,6 @@ _FORBIDDEN_IMPORT_ROOTS = {
     "shared.qt_sovereign",
 }
 
-_FORBIDDEN_TYPING_NAMES = {
-    "Optional",
-    "Union",
-    "Dict",
-    "List",
-    "Tuple",
-    "Set",
-    "FrozenSet",
-    "Type",
-    "TypeVar",
-    "Callable",
-}
-
-_FORBIDDEN_FUTURE_IMPORT = re.compile(
-    r"from\s+__future__\s+import\s+annotations"
-)
-
-
 def _is_forbidden_import(module_name: str | None) -> bool:
     """Return True when *module_name* matches a forbidden import root."""
     if not module_name:
@@ -67,15 +48,12 @@ def _is_forbidden_import(module_name: str | None) -> bool:
 @pytest.mark.parametrize("path", _ALL_SOURCE_PY, ids=_source_id)
 def test_no_forbidden_port_patterns(path: Path) -> None:
     """
-    No moira source file may use forbidden import roots or pre-3.14 typing
-    patterns.
+    No moira source file may depend on forbidden application-layer imports.
+
+    Moira supports Python 3.10 through 3.14, so compatible ``typing`` names
+    and ``from __future__ import annotations`` remain lawful engine syntax.
     """
     source = path.read_text(encoding="utf-8-sig")
-
-    assert not _FORBIDDEN_FUTURE_IMPORT.search(source), (
-        f"{_source_id(path)}: 'from __future__ import annotations' is disallowed by Moira's "
-        f"Python 3.14 port standard because the import is no longer needed here; remove it"
-    )
 
     tree = ast.parse(source, filename=str(path))
 
@@ -94,31 +72,3 @@ def test_no_forbidden_port_patterns(path: Path) -> None:
                     f"{_source_id(path)}:{node.lineno} forbidden import "
                     f"'from {node.module} import ...'"
                 )
-
-            if node.module == "typing":
-                for alias in node.names:
-                    assert alias.name not in _FORBIDDEN_TYPING_NAMES, (
-                        f"{_source_id(path)}:{node.lineno} forbidden import "
-                        f"'from typing import {alias.name}' - "
-                        f"see python314-standards.md for the replacement"
-                    )
-
-            if node.module == "__future__":
-                for alias in node.names:
-                    if alias.name == "annotations":
-                        pytest.fail(
-                            f"{_source_id(path)}:{node.lineno} forbidden import "
-                            "'from __future__ import annotations' under Moira's Python 3.14 "
-                            "port standard"
-                        )
-
-        if (
-            isinstance(node, ast.Attribute)
-            and isinstance(node.value, ast.Name)
-            and node.value.id == "typing"
-            and node.attr in _FORBIDDEN_TYPING_NAMES
-        ):
-            pytest.fail(
-                f"{_source_id(path)}:{node.lineno} forbidden 'typing.{node.attr}' - "
-                f"see python314-standards.md for the replacement"
-            )
