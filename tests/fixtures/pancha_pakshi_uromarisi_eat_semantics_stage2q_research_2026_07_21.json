@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_eat_semantics_stage2q_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T13:54:14Z",
+  "decision_kind": "research_only_machine_assisted_semantic_atom_transcription_pilot",
+  "admission_status": "research_only",
+  "stage": "2Q",
+  "prior_boundaries": {
+    "stage2p_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_illness_grid_stage2p_research_2026_07_21.json",
+    "stage2p_decision_sha256": "449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "primary_witness": {
+    "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+    "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi Mulamum Uraiyum, with Tanjai Karunanidhi Pillai, 1934",
+    "archive_details_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "locally_verified_pdf_sha256": "e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0",
+    "inspection_method": "rendered_original_page_review_at_220_dpi_with_archive_ocr_alignment_for_navigation",
+    "inspected_pdf_pages": [116, 117, 118],
+    "printed_page_range": "114-116",
+    "source_expression_storage": "not_distributed"
+  },
+  "governing_object": {
+    "context_family": "illness",
+    "parent_activity": "eat",
+    "source_owned_object": "cell_local_historical_statement_semantic_atoms",
+    "pilot_cell_count": 5,
+    "transcription_scope": "bounded_semantic_atoms_not_verbatim_transcription",
+    "translation_status": "machine_assisted_bounded_gloss_not_admitted",
+    "medical_truth_status": "not_evaluated",
+    "runtime_status": "not_admitted"
+  },
+  "semantic_ontology": {
+    "resolution_statement": "records_only_that_the_witness_states_resolution",
+    "stated_duration_days": "records_exact_day_value_or_finite_alternative_stated_by_the_witness",
+    "prescribed_response": "preserves_distinct_historical_response_categories_without_medical_endorsement",
+    "medicine_reference": "records_presence_of_a_medicine_reference_without_identifying_or_recommending_treatment",
+    "prithivi_reference": "records_presence_of_the_source_term_without_asserting_an_elemental_diagnosis",
+    "unresolved_relation_clause": "preserves_that_a_repeated_relation_clause_is_present_without_normalizing_its_doctrinal_semantics",
+    "uncertainty": "records_cell_local_limits_and_terms_deliberately_left_uninterpreted"
+  },
+  "eat_cells": [
+    {
+      "ordinal": 1,
+      "verse": 230,
+      "pdf_pages": [116],
+      "printed_pages": [114],
+      "archive_ocr_navigation_lines": [5380, 5399],
+      "resolution_statement": "stated_to_resolve",
+      "stated_duration_days": {"kind": "finite_alternative", "values": [4, 5], "confidence": "high"},
+      "prescribed_response": [
+        {"category": "vinayaka_abhisheka", "confidence": "high"}
+      ],
+      "medicine_reference": {"status": "present", "confidence": "medium"},
+      "prithivi_reference": {"status": "not_recorded", "confidence": "medium"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "medicine_clause_not_expanded_beyond_presence",
+        "remaining_prognostic_language_not_normalized"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "verse": 231,
+      "pdf_pages": [116, 117],
+      "printed_pages": [114, 115],
+      "archive_ocr_navigation_lines": [5401, 5424],
+      "resolution_statement": "stated_to_resolve",
+      "stated_duration_days": {"kind": "exact", "values": [7], "confidence": "high"},
+      "prescribed_response": [
+        {"category": "vinayaka_archana_and_prostration", "confidence": "high"}
+      ],
+      "medicine_reference": {"status": "not_recorded", "confidence": "medium"},
+      "prithivi_reference": {"status": "present", "confidence": "medium"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "prithivi_clause_not_normalized_as_diagnosis_or_cause",
+        "remaining_prognostic_language_not_normalized"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "verse": 232,
+      "pdf_pages": [117],
+      "printed_pages": [115],
+      "archive_ocr_navigation_lines": [5426, 5443],
+      "resolution_statement": "stated_to_resolve",
+      "stated_duration_days": {"kind": "exact", "values": [9], "confidence": "high"},
+      "prescribed_response": [
+        {"category": "vinayaka_puja", "confidence": "high"}
+      ],
+      "medicine_reference": {"status": "not_recorded", "confidence": "medium"},
+      "prithivi_reference": {"status": "not_recorded", "confidence": "medium"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "remaining_prognostic_language_not_normalized"
+      ]
+    },
+    {
+      "ordinal": 4,
+      "verse": 233,
+      "pdf_pages": [117],
+      "printed_pages": [115],
+      "archive_ocr_navigation_lines": [5444, 5459],
+      "resolution_statement": "stated_to_resolve",
+      "stated_duration_days": {"kind": "exact", "values": [13], "confidence": "high"},
+      "prescribed_response": [
+        {"category": "vinayaka_named_food_offerings", "confidence": "high"},
+        {"category": "brahmin_hospitality", "confidence": "high"}
+      ],
+      "medicine_reference": {"status": "not_recorded", "confidence": "medium"},
+      "prithivi_reference": {"status": "present", "confidence": "high"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "named_offering_items_not_distributed",
+        "prithivi_clause_not_normalized_as_diagnosis_or_cause",
+        "remaining_prognostic_language_not_normalized"
+      ]
+    },
+    {
+      "ordinal": 5,
+      "verse": 234,
+      "pdf_pages": [117, 118],
+      "printed_pages": [115, 116],
+      "archive_ocr_navigation_lines": [5461, 5486],
+      "resolution_statement": "stated_to_resolve",
+      "stated_duration_days": {"kind": "exact", "values": [15], "confidence": "high"},
+      "prescribed_response": [
+        {"category": "vinayaka_abhisheka", "confidence": "high"},
+        {"category": "brahmin_food_donation", "confidence": "high"}
+      ],
+      "medicine_reference": {"status": "not_recorded", "confidence": "medium"},
+      "prithivi_reference": {"status": "present", "confidence": "high"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "prithivi_clause_not_normalized_as_diagnosis_or_cause",
+        "remaining_prognostic_language_not_normalized"
+      ]
+    }
+  ],
+  "repeatability_contract": {
+    "cell_identity": "parent_activity_plus_explicit_ordinal",
+    "locator_tuple": "verse_plus_pdf_pages_plus_printed_pages_plus_archive_ocr_navigation_lines",
+    "source_check": "rendered_page_controls_semantics_and_archive_ocr_only_aligns_navigation",
+    "machine_check": "canonical_fixture_hash_and_exact_per_cell_assertions",
+    "verbatim_transcription_required_for_this_pilot": false,
+    "human_language_reviewer_dependency": "none"
+  },
+  "ambiguity_policy": {
+    "unresolved_term_inference": "forbidden",
+    "generic_favorable_unfavorable_label": "forbidden",
+    "condition_or_numeric_score": "forbidden",
+    "medical_recommendation_or_advice": "forbidden",
+    "automatic_stage2o_to_uromarisi_binding": "forbidden",
+    "default_selector": null
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "public_nonclaims": [
+    "These records summarize what one historical witness states; they do not establish medical truth.",
+    "No diagnosis, prognosis, medical advice, treatment recommendation, condition score, electional judgment, or forecast is exposed.",
+    "No full translation or Tamil source expression is distributed.",
+    "No disputed relation clause is normalized or used computationally.",
+    "No Stage 2K selector is attributed to the Uromarisi witness and no Stage 2O result is routed to these cells.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": "The archival PDF, rendered pages, OCR, Tamil source expression, and full translations are not distributed. This fixture preserves bibliographic identity, hashes, locators, bounded machine-assisted semantic atoms, per-cell uncertainty, and the fail-closed research decision only."
+}

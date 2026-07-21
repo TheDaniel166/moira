@@ -736,6 +736,30 @@ forbidden. The manifest and all public surfaces are unchanged. No human-language
 reviewer is an admission dependency. The research decision SHA-256 is
 `449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`.
 
+### Stage 2Q research-only EAT-cell semantic-atom pilot
+
+Stage 2Q applies a bounded source-owned vocabulary to only the five EAT cells
+from the Stage 2P illness grid. The governing object is a cell-local record of
+what the historical witness states: resolution, stated duration, distinct
+prescribed-response categories, medicine and `prithivi` term references,
+unresolved relation clauses, and uncertainty. It is not a generic favorable or
+unfavorable label and is not a condition or numeric score.
+
+Rendered PDF pages `116–118` control the reading. Archive.org OCR line spans
+are retained only as navigation aids. The source-stated durations are `4 or
+5`, `7`, `9`, `13`, and `15` days for ordinals one through five. Each cell is
+machine-checked by its exact activity, ordinal, verse, page tuple, OCR
+navigation span, semantic atoms, and canonical fixture hash. Tamil source
+expression and full translations remain outside the distributed artifact.
+
+This pilot describes a historical text; it neither validates its medical
+claims nor offers diagnosis, prognosis, advice, or treatment. Disputed
+relation clauses remain present with null semantics. No selector is bound, no
+Stage 2O result is routed to an outcome, and no runtime profile, data,
+capability, engine, facade, or REST surface changes. No human-language reviewer
+is required. The research decision SHA-256 is
+`7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -1202,8 +1226,8 @@ tests: source-attested or alternate solar-proportional doctrines and any
 selectors belonging to those unadmitted doctrines; alternate Padu doctrines;
 Bharana or Adhikara bird products; alternate Sookshma selector doctrines,
 any cross-witness binding of Stage 2K selectors to Uromarisi ordinal outcomes,
-vinadi clock routing, and semantic outcome products beyond the Stage 2J axis
-and Stage 2P research-only illness locator grid;
+vinadi clock routing, and semantic outcome products beyond the Stage 2J axis,
+Stage 2P research-only illness locator grid, and Stage 2Q five-cell EAT pilot;
 condition/scoring; and electional window search.
 Fixed-clock materialization, fixed-clock current-cell selection,
 solar-proportional materialization, and solar-proportional current-cell

@@ -821,6 +821,21 @@ profile, manifest, engine, facade, and REST state remain unchanged. The Stage
 2P decision fixture has canonical SHA-256
 `449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`.
 
+Stage 2Q pilots a source-owned semantic vocabulary on only the five EAT cells,
+verses `230–234` on PDF pages `116–118`. Rendered-page review controls the
+reading and Archive.org OCR supplies navigation alignment only. The bounded
+record preserves source-stated resolution and exact duration alternatives,
+distinct prescribed-response categories, medicine and `prithivi` term
+references, unresolved relation clauses, and cell-local uncertainty. It does
+not distribute Tamil source expression or a full translation and does not
+assert that any historical illness statement is medically true. Generic
+favorable/unfavorable labels, condition or numeric scoring, diagnosis, advice,
+selector binding, and runtime exposure remain forbidden. The profile,
+manifest, engine, facade, and REST state remain unchanged, with no
+human-language reviewer dependency. The Stage 2Q decision fixture has
+canonical SHA-256
+`7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;
@@ -872,7 +887,8 @@ change either source profile or bind an outcome. Stage 2O permits civil-time
 routing into that join only when both timing and selector policies are named;
 it provides no automatic policy selection or outcome interpretation. Stage 2P
 adds only the page-and-verse locator structure of the 1934 Uromarisi illness
-grid; it adds no translated or normalized outcome and no runtime binding.
+grid. Stage 2Q adds a research-only semantic-atom pilot for its five EAT cells,
+with per-cell uncertainty but no medical-truth claim or runtime binding.
 Condition, scoring, automatic policy fallback, and forecasting remain outside
 the admitted surface.
 

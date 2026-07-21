@@ -287,6 +287,28 @@ never creates a default canon.
 - Four profiles, manifest, engine, facade, and REST surface: unchanged; no
   human-language reviewer required
 
+### Stage 2Q Research-Only Uromarisi EAT Semantic Atoms
+
+- Admission kind: research-only five-cell semantic-transcription pilot; no
+  profile or capability
+- Stage 2Q decision:
+  [`pancha_pakshi_uromarisi_eat_semantics_stage2q_research_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_eat_semantics_stage2q_research_2026_07_21.json)
+- Stage 2Q decision SHA-256:
+  `7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9`
+- Bound predecessor: exact Stage 2P decision SHA-256
+  `449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`
+- Reviewed cells: EAT ordinals `1–5`, verses `230–234`, rendered PDF pages
+  `116–118`, printed pages `114–116`
+- Source-stated duration atoms: `4 or 5`, `7`, `9`, `13`, and `15` days
+- Preserved distinctions: separate devotional-response categories, medicine
+  and `prithivi` references, unresolved relation clauses, and cell-local
+  uncertainty
+- Nonclaims: no medical-truth validation, diagnosis, prognosis, advice,
+  generic good/bad label, condition or numeric score, or full translation
+- Selector and runtime boundary: no Stage 2K attribution, Stage 2O routing,
+  profile, manifest, engine, facade, or REST change; no human-language reviewer
+  required
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:

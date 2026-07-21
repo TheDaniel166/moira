@@ -263,6 +263,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Uromarisi EAT Semantics Stage 2Q Research Pilot**:
+  Transcribed bounded semantic atoms for the five EAT-period illness cells in
+  verses `230–234` of the exact Stage 2P witness. Rendered PDF pages `116–118`
+  control the reading; Archive.org OCR lines are navigation aids only. The
+  source-stated resolution durations are preserved as `4 or 5`, `7`, `9`,
+  `13`, and `15` days, while distinct devotional-response categories,
+  medicine and `prithivi` term references, and unresolved relation clauses
+  remain separate with per-cell uncertainty. These records describe one
+  historical witness and do not establish medical truth. No generic good/bad
+  label, numeric score, diagnosis, advice, selector binding, runtime data, or
+  public surface was added. No human Tamil reviewer is required. The Stage 2Q
+  decision SHA-256 is
+  `7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9`.
 - **Pancha Pakshi Uromarisi Illness Grid Stage 2P Research Gate**: Verified
   the exact Archive.org 1934 Uromarisi-attributed PDF at SHA-256
   `e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`
