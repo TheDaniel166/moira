@@ -263,6 +263,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Uromarisi RULE Semantics Stage 2S Research Extension**:
+  Extended the machine-assisted semantic-atom method to RULE-period illness
+  verses `241–245` on rendered PDF pages `120–122`. All five cells state
+  resolution, with time expressions of `3` days, `5` days, within `8` days,
+  `10` days, and `12` days; the upper bound remains distinct from exact days.
+  Source deity titles, prescribed actions, fire-clause roles, Saturn-dosha
+  references, historical effect language, and one surface no-enmity statement
+  remain cell-local and uncertainty-bearing. None is accepted as a diagnosis,
+  medical cause, symptom, score, or runtime relation. No selector binding,
+  runtime data, or public surface was added, and no human Tamil reviewer is
+  required. The Stage 2S decision SHA-256 is
+  `85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d`.
 - **Pancha Pakshi Uromarisi WALK Semantics Stage 2R Research Extension**:
   Extended the Stage 2Q semantic-atom method to WALK-period illness verses
   `235–239` on rendered PDF pages `118–120`. The source-stated time expressions

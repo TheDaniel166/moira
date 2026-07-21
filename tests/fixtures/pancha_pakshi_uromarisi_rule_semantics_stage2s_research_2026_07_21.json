@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_rule_semantics_stage2s_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T14:39:30Z",
+  "decision_kind": "research_only_machine_assisted_semantic_atom_transcription_extension",
+  "admission_status": "research_only",
+  "stage": "2S",
+  "prior_boundaries": {
+    "stage2r_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_walk_semantics_stage2r_research_2026_07_21.json",
+    "stage2r_decision_sha256": "361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "primary_witness": {
+    "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+    "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi Mulamum Uraiyum, with Tanjai Karunanidhi Pillai, 1934",
+    "archive_details_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "locally_verified_pdf_sha256": "e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0",
+    "inspection_method": "rendered_original_page_review_at_220_dpi_with_archive_ocr_alignment_for_navigation",
+    "inspected_pdf_pages": [120, 121, 122],
+    "printed_page_range": "118-120",
+    "source_expression_storage": "not_distributed"
+  },
+  "governing_object": {
+    "context_family": "illness",
+    "parent_activity": "rule",
+    "source_owned_object": "cell_local_historical_statement_semantic_atoms",
+    "pilot_cell_count": 5,
+    "transcription_scope": "bounded_semantic_atoms_not_verbatim_transcription",
+    "ontology_relation_to_stage2r": "additive_extension_for_fire_saturn_dosha_and_effect_references",
+    "translation_status": "machine_assisted_bounded_gloss_not_admitted",
+    "medical_truth_status": "not_evaluated",
+    "runtime_status": "not_admitted"
+  },
+  "semantic_ontology": {
+    "disposition_statement": "records_only_the_source_stated_resolution_disposition",
+    "stated_time_expression": "distinguishes_exact_days_from_upper_bound_days",
+    "deity_reference": "preserves_the_source_title_and_whether_grace_or_an_action_is_stated",
+    "response_or_mediation": "distinguishes_an_explicitly_prescribed_historical_action_from_a_stated_mediation_without_medical_endorsement",
+    "fire_reference": "records_presence_and_a_bounded_clause_role_without_accepting_a_diagnosis_or_causal_fact",
+    "saturn_dosha_reference": "records_presence_without_accepting_a_diagnostic_or_causal_claim",
+    "activity_relation_clause": "records_a_surface_relation_statement_without_binding_it_to_runtime_doctrine",
+    "effect_reference": "records_bounded_historical_effect_language_without_converting_it_to_symptoms_or_scores",
+    "uncertainty": "records_cell_local_limits_and_terms_deliberately_left_uninterpreted"
+  },
+  "rule_cells": [
+    {
+      "ordinal": 1,
+      "verse": 241,
+      "pdf_pages": [120, 121],
+      "printed_pages": [118, 119],
+      "archive_ocr_navigation_lines": [5629, 5657],
+      "disposition_statement": {"value": "stated_to_resolve", "confidence": "high"},
+      "stated_time_expression": {"kind": "exact_days", "values": [3], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "shiva", "relation": "actions_prescribed", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "shiva_abhisheka", "relation": "prescribed", "confidence": "high"},
+        {"category": "shiva_circumambulation", "relation": "prescribed", "confidence": "high"}
+      ],
+      "fire_reference": {"status": "present", "role": "heat_attribution", "confidence": "high"},
+      "saturn_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "activity_relation_clause": {"status": "not_recorded", "surface_statement": null, "runtime_semantics": null},
+      "effect_reference": [
+        {"category": "body_heat_and_melting_simile", "confidence": "high"}
+      ],
+      "uncertainty": [
+        "fire_clause_not_accepted_as_diagnosis_or_cause",
+        "effect_simile_not_normalized_as_symptom_or_severity"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "verse": 242,
+      "pdf_pages": [121],
+      "printed_pages": [119],
+      "archive_ocr_navigation_lines": [5658, 5672],
+      "disposition_statement": {"value": "stated_to_resolve", "confidence": "high"},
+      "stated_time_expression": {"kind": "exact_days", "values": [5], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "shiva", "relation": "grace_reference", "confidence": "high"}
+      ],
+      "response_or_mediation": [],
+      "fire_reference": {"status": "present", "role": "non_harm_clause_semantics_unresolved", "confidence": "medium"},
+      "saturn_dosha_reference": {"status": "present", "confidence": "high"},
+      "activity_relation_clause": {"status": "not_recorded", "surface_statement": null, "runtime_semantics": null},
+      "effect_reference": [
+        {"category": "minimal_harm_or_strength_statement", "confidence": "medium"}
+      ],
+      "uncertainty": [
+        "fire_clause_semantics_not_normalized",
+        "saturn_dosha_clause_not_accepted_as_diagnosis_or_cause",
+        "effect_statement_not_normalized_as_severity"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "verse": 243,
+      "pdf_pages": [121],
+      "printed_pages": [119],
+      "archive_ocr_navigation_lines": [5675, 5694],
+      "disposition_statement": {"value": "stated_to_resolve", "confidence": "high"},
+      "stated_time_expression": {"kind": "upper_bound_days", "values": [8], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "shiva", "relation": "abhisheka_prescribed", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "shiva_abhisheka", "relation": "prescribed", "confidence": "high"}
+      ],
+      "fire_reference": {"status": "present", "role": "dosha_attribution", "confidence": "high"},
+      "saturn_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "activity_relation_clause": {"status": "not_recorded", "surface_statement": null, "runtime_semantics": null},
+      "effect_reference": [],
+      "uncertainty": [
+        "fire_dosha_clause_not_accepted_as_diagnosis_or_cause"
+      ]
+    },
+    {
+      "ordinal": 4,
+      "verse": 244,
+      "pdf_pages": [121, 122],
+      "printed_pages": [119, 120],
+      "archive_ocr_navigation_lines": [5696, 5717],
+      "disposition_statement": {"value": "stated_to_resolve", "confidence": "high"},
+      "stated_time_expression": {"kind": "exact_days", "values": [10], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "shiva", "relation": "abhisheka_prescribed", "confidence": "high"},
+        {"source_title": "lakshmi", "relation": "grace_reference", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "shiva_abhisheka", "relation": "prescribed", "confidence": "high"}
+      ],
+      "fire_reference": {"status": "not_recorded", "role": null, "confidence": "medium"},
+      "saturn_dosha_reference": {"status": "present", "confidence": "high"},
+      "activity_relation_clause": {"status": "present", "surface_statement": "no_enmity", "runtime_semantics": null},
+      "effect_reference": [],
+      "uncertainty": [
+        "saturn_dosha_clause_not_accepted_as_diagnosis_or_cause",
+        "activity_relation_statement_not_bound_to_runtime_doctrine"
+      ]
+    },
+    {
+      "ordinal": 5,
+      "verse": 245,
+      "pdf_pages": [122],
+      "printed_pages": [120],
+      "archive_ocr_navigation_lines": [5720, 5740],
+      "disposition_statement": {"value": "stated_to_resolve", "confidence": "high"},
+      "stated_time_expression": {"kind": "exact_days", "values": [12], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "parameshvara", "relation": "grace_reference", "confidence": "high"},
+        {"source_title": "uma_parvati", "relation": "grace_reference", "confidence": "high"}
+      ],
+      "response_or_mediation": [],
+      "fire_reference": {"status": "present", "role": "heat_attribution", "confidence": "high"},
+      "saturn_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "activity_relation_clause": {"status": "not_recorded", "surface_statement": null, "runtime_semantics": null},
+      "effect_reference": [
+        {"category": "strength_reduction", "confidence": "high"},
+        {"category": "absence_of_joy", "confidence": "high"}
+      ],
+      "uncertainty": [
+        "fire_clause_not_accepted_as_diagnosis_or_cause",
+        "effect_statements_not_normalized_as_symptoms_or_scores"
+      ]
+    }
+  ],
+  "repeatability_contract": {
+    "cell_identity": "parent_activity_plus_explicit_ordinal",
+    "locator_tuple": "verse_plus_pdf_pages_plus_printed_pages_plus_archive_ocr_navigation_lines",
+    "source_check": "rendered_page_controls_semantics_and_archive_ocr_only_aligns_navigation",
+    "machine_check": "canonical_fixture_hash_and_exact_per_cell_assertions",
+    "verbatim_transcription_required_for_this_extension": false,
+    "human_language_reviewer_dependency": "none"
+  },
+  "ambiguity_policy": {
+    "exact_day_inference_from_upper_bound": "forbidden",
+    "deity_title_collapsing": "forbidden",
+    "fire_or_dosha_as_medical_cause": "forbidden",
+    "effect_reference_as_symptom_or_score": "forbidden",
+    "activity_relation_runtime_binding": "forbidden",
+    "generic_favorable_unfavorable_label": "forbidden",
+    "condition_or_numeric_score": "forbidden",
+    "medical_recommendation_or_advice": "forbidden",
+    "automatic_stage2o_to_uromarisi_binding": "forbidden",
+    "default_selector": null
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "public_nonclaims": [
+    "These records summarize what one historical witness states; they do not establish medical truth.",
+    "Fire, Saturn-dosha, and effect clauses are not accepted as diagnoses, causes, symptoms, or scores.",
+    "No diagnosis, prognosis, medical advice, treatment recommendation, condition score, electional judgment, or forecast is exposed.",
+    "No full translation or Tamil source expression is distributed.",
+    "No activity relation statement is bound to runtime doctrine.",
+    "No Stage 2K selector is attributed to the Uromarisi witness and no Stage 2O result is routed to these cells.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": "The archival PDF, rendered pages, OCR, Tamil source expression, and full translations are not distributed. This fixture preserves bibliographic identity, hashes, locators, bounded machine-assisted semantic atoms, per-cell uncertainty, and the fail-closed research decision only."
+}

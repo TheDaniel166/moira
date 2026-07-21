@@ -783,6 +783,27 @@ capability, engine, facade, or REST surface changes. No human-language reviewer
 is required. The research decision SHA-256 is
 `361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6`.
 
+### Stage 2S research-only RULE-cell semantic-atom extension
+
+Stage 2S applies the cell-local method to RULE verses `241–245`. All five
+cells state resolution, with time expressions of `3` days, `5` days, within
+`8` days, `10` days, and `12` days. The third cell remains an upper bound and
+must not be rewritten as an exact eighth-day event.
+
+The source adds fire-clause roles, Saturn-dosha references, bounded historical
+effect language, and one surface no-enmity statement. These remain separate
+from source deity titles and explicit actions. No fire or dosha clause becomes
+a medical cause, no effect phrase becomes a symptom or score, and the relation
+statement is not bound to runtime doctrine.
+
+Rendered PDF pages `120–122` control the reading; Archive.org OCR lines are
+navigation aids only. This is a historical-text record, not medical
+validation, diagnosis, prognosis, advice, treatment, condition scoring, or
+forecasting. No selector, Stage 2O routing, runtime profile, manifest,
+capability, engine, facade, or REST surface changes. No human-language reviewer
+is required. The research decision SHA-256 is
+`85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -1250,8 +1271,8 @@ selectors belonging to those unadmitted doctrines; alternate Padu doctrines;
 Bharana or Adhikara bird products; alternate Sookshma selector doctrines,
 any cross-witness binding of Stage 2K selectors to Uromarisi ordinal outcomes,
 vinadi clock routing, and semantic outcome products beyond the Stage 2J axis,
-Stage 2P research-only illness locator grid, Stage 2Q five-cell EAT pilot, and
-Stage 2R five-cell WALK extension;
+Stage 2P research-only illness locator grid, Stage 2Q five-cell EAT pilot,
+Stage 2R five-cell WALK extension, and Stage 2S five-cell RULE extension;
 condition/scoring; and electional window search.
 Fixed-clock materialization, fixed-clock current-cell selection,
 solar-proportional materialization, and solar-proportional current-cell

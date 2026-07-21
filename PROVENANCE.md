@@ -850,6 +850,19 @@ no human-language reviewer dependency. The Stage 2R decision fixture has
 canonical SHA-256
 `361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6`.
 
+Stage 2S extends the bounded vocabulary to the five RULE cells, verses
+`241–245` on PDF pages `120–122`. All five state resolution, but the record
+preserves exact-day expressions separately from the third cell's upper bound.
+Source deity titles, explicit actions, fire-clause roles, Saturn-dosha
+references, historical effect language, and the fourth cell's surface
+no-enmity statement remain cell-local and uncertainty-bearing. They are not
+accepted as diagnoses, medical causes, symptoms, scores, or runtime relation
+doctrine. The record distributes no Tamil source expression or full
+translation and changes no selector, runtime profile, manifest, engine,
+facade, or REST state. No human-language reviewer is required. The Stage 2S
+decision fixture has canonical SHA-256
+`85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;
@@ -903,7 +916,9 @@ it provides no automatic policy selection or outcome interpretation. Stage 2P
 adds only the page-and-verse locator structure of the 1934 Uromarisi illness
 grid. Stage 2Q adds a research-only semantic-atom pilot for its five EAT cells,
 and Stage 2R extends the same boundary to five WALK cells. Both retain per-cell
-uncertainty and make no medical-truth claim or runtime binding.
+uncertainty. Stage 2S continues it through five RULE cells while keeping fire,
+dosha, effect, and relation clauses non-runtime. None makes a medical-truth
+claim or runtime binding.
 Condition, scoring, automatic policy fallback, and forecasting remain outside
 the admitted surface.
 

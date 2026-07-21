@@ -335,6 +335,30 @@ never creates a default canon.
   profile, manifest, engine, facade, or REST change; no human-language reviewer
   required
 
+### Stage 2S Research-Only Uromarisi RULE Semantic Atoms
+
+- Admission kind: research-only five-cell semantic-transcription extension;
+  no profile or capability
+- Stage 2S decision:
+  [`pancha_pakshi_uromarisi_rule_semantics_stage2s_research_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_rule_semantics_stage2s_research_2026_07_21.json)
+- Stage 2S decision SHA-256:
+  `85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d`
+- Bound predecessor: exact Stage 2R decision SHA-256
+  `361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6`
+- Reviewed cells: RULE ordinals `1–5`, verses `241–245`, rendered PDF pages
+  `120–122`, printed pages `118–120`
+- Source-stated time atoms: `3` days, `5` days, within `8` days, `10` days,
+  and `12` days; the upper bound is not rewritten as exact
+- Disposition: all five state resolution
+- Preserved distinctions: source deity titles, prescribed actions,
+  fire-clause roles, Saturn-dosha references, effect language, one surface
+  no-enmity statement, and cell-local uncertainty
+- Nonclaims: no medical-truth validation, diagnosis, cause, symptom, advice,
+  generic good/bad label, condition or numeric score, or full translation
+- Selector and runtime boundary: no Stage 2K attribution, Stage 2O routing,
+  activity-relation binding, profile, manifest, engine, facade, or REST change;
+  no human-language reviewer required
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:
