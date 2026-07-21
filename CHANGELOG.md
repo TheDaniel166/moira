@@ -226,6 +226,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526`,
   `584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`, and
   `10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70`.
+- **Pancha Pakshi Ramadevar Candidate Disambiguation Stage 2M**: Resolved the
+  catalogued candidate to the exact Commissionerate of Indian Medicine and
+  Homoeopathy record: serial `859`, manuscript `A5`, titled `Ramadevar
+  Panchapakshi`. The 63-page catalog supplies no leaves, transcription,
+  physical description, incipit, colophon, date, computational rules, or
+  copying history, so the candidate remains title-only and cannot clear the
+  independent-witness gate. Separately accessible `Ramadevar Patchini` and
+  `Patchani 108` records were disambiguated as yoga, philosophy, medicine,
+  alchemy, or ritual works rather than the five-bird temporal product. No
+  runtime data, manifest, admission status, capability, facade, or REST
+  surface changed, and no human-language reviewer is required. The Stage 2M
+  decision SHA-256 is
+  `921e604bcd81298aa6eb903acc967e68cfcf6e743c7d1379788ff9996212c6db`.
+- **Pancha Pakshi Independent-Witness Collation Stage 2L**: Added a hash-bound
+  research-only collation of the Sarasvati Mahal Library 2014 sixth edition
+  and the two supplied modern guides. The institutional compilation exactly
+  agrees with the admitted 1879 profile on all seven Purva-day first-EAT seeds
+  and the waxing-day duration vector, while preserving three materially
+  different regime-specific vectors and an explicit Agastya/Bogar versus
+  Uromarisi ordering conflict. The Narasimhan guide is retained only as a
+  secondary comparator because it has no bibliography or primary-text
+  lineage; the Canva/AI-marked guide is rejected for unrelated tarot content.
+  No inspected comparable witness establishes textual-lineage independence,
+  so all four profiles remain `source_scoped_public`; no runtime data,
+  manifest, capability, facade, or REST change was made. No human-language
+  reviewer is required. The Stage 2L decision SHA-256 is
+  `5534ddde1c0b87fa5fc3332112d02fd1c48c38e0a79f45f4a75a3e3c728a4c34`.
 - **Pancha Pakshi Human-Review Dependency Removed From Runtime Truth**:
   Replaced the live 1879 profile's legacy
   `pending_competent_tamil_review` derivation token with

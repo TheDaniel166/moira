@@ -591,6 +591,77 @@ or Uromarisi-outcome binding. Outcome interpretation, condition, scoring,
 electional search, and forecasting remain unadmitted. Human-language review is
 not an admission or maintenance dependency.
 
+### Stage 2L independent-witness collation gate
+
+Stage 2L is a completed research collation and a non-admission decision. It
+inspects the exact 574-page Sarasvati Mahal Library 2014 sixth edition of
+*Valaiyarul Patinen Siddhargal Panchapakshi Sastram*, the 89-page G. R.
+Narasimhan secondary guide supplied for review, and a second 21-page supplied
+guide that is rejected for unrelated tarot contamination. No artifact enters
+the package.
+
+The Sarasvati editor states that the verses derive chiefly from library
+palm-leaf manuscripts and a minor share of printed books, while the
+explanations, mathematical notes, and tables include editorial contributions.
+The source inventory names Agastya manuscript `777`, Kumbamuni manuscript
+`7015`, and Bogar and Uromarisi material. The editor also explicitly records
+different activity-order doctrines between Agastya/Bogar and Uromarisi and
+selects Agastya/Bogar for most of the compilation. This makes the volume a
+strong multi-source conflict comparator, but not a textually independent
+witness: no stemma or copying history establishes independence from the
+already admitted witnesses.
+
+The collation preserves both agreement and disagreement:
+
+- all seven Purva-day first-EAT seeds agree with the 1879 profile;
+- the waxing-day EAT/WALK/RULE/SLEEP/DIE vector agrees exactly at
+  `(5/4, 3/2, 2, 3/4, 1/2)` nazhigai;
+- the compilation and Narasimhan guide instead use waxing-night
+  `(5/4, 5/4, 1, 1, 3/2)`, waning-day
+  `(2, 3/2, 3/4, 1/2, 5/4)`, and waning-night
+  `(7/4, 7/4, 3/4, 3/4, 1)` vectors; and
+- the secondary guide supplies natal-star tables as well as aksara methods,
+  which cannot reinterpret the admitted 1879 aksara/query product.
+
+Publication separation, institutional custody, exact row agreement, and a
+modern guide's repeated tables do not individually establish textual
+independence. The Stage 2L decision therefore remains `research_only`, leaves
+all four public profiles `source_scoped_public`, and changes no profile,
+manifest, capability, engine, facade, or REST surface. No human-language
+reviewer is required. A future corroboration attempt must obtain an accessible
+candidate such as the catalogued Ramadevar manuscript, establish its copying
+history, and collate one named product with repeatable locators before any
+separate admission decision.
+
+### Stage 2M Ramadevar candidate identity and access gate
+
+Stage 2M resolves the catalog identity without inferring manuscript content.
+The Commissionerate of Indian Medicine and Homoeopathy catalog identifies
+serial `859`, manuscript `A5`, as `Ramadevar Panchapakshi` on PDF page 52.
+The catalog provides no item-level leaf images, transcription, physical
+description, date, incipit, explicit, colophon, provenance chain, copying
+history, or computational rules. The candidate is therefore exactly
+identified but remains `catalog_title_only`; product comparability and textual
+independence are `not_assessable`.
+
+Similar names must remain separate objects. G.O.M.L. `R.8978 Ramadevar
+Patchini` is catalogued as a gnana, breath, and yoga work. British Library EAP
+`EAP1217/1/2851`, Tamil University reference `TU_TAMIL_2058-01_2661`, is an
+eighteenth-century 108-poem work on philosophy and ashtanga yoga. The same
+Commissionerate catalog lists a different `Ramadevar Patchani - 108` inside
+manuscript `27`, and the 1991 Sarasvati Mahal *Ramadevar Sutiram: Ashtanga
+Patchini, Valai Pujai* governs medicine, alchemy, yoga, and ritual. None is the
+five-bird temporal product merely because it shares a Ramadevar attribution,
+`Patchani` wording, or a 108-poem count.
+
+The required acquisition object is specifically Commissionerate manuscript
+`A5`: a complete facsimile or critical transcription plus item-level physical,
+scribal, custodial, and copying-history metadata. Only after one named Pancha
+Pakshi computational product can be collated cell by cell with repeatable leaf
+locators may a separate admission decision be considered. Stage 2M changes no
+profile, manifest, capability, engine, facade, or REST surface and creates no
+human-language-review dependency.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -602,6 +673,7 @@ defects, not values that may be averaged or repaired by symmetry.
 | Amara nakshatra partition | The Bogamuni 2024 verse is complete while its adjacent commentary duplicates Shravana and omits Revati. | The named 2024 profile declares verse precedence and rejects the malformed commentary; never blend or repair the layers. |
 | Duration vectors | The 1879 witness has one vector; later witnesses contain regime-specific or non-closing vectors. | Durations belong to the named witness and text layer. |
 | Vinadi temporal selectors | The 2024 editorial witness separately names a weighted Sūkṣma selector and an equal-fifths Eka Sūkṣma selector; Uromarisi ordinal witnesses supply no arithmetic binding. | Preserve both named policies, select neither by default, and do not attach either to Uromarisi outcomes without an explicit cross-witness composition decision. |
+| Ramadevar title identity | Catalogs separately identify `Panchapakshi`, `Patchini`, `Patchani 108`, and `Ashtanga Patchini` works under Ramadevar attribution. | Never merge by attribution, spelling similarity, or poem count; require exact manuscript identity and product-level content. |
 | Schedule cells | A later edition contains a verse/commentary mismatch that duplicates one bird and omits another. | Fail the affected layer; do not infer the missing bird. |
 | Relationships | The 1879 table is directed and nonuniform; later tables use different assignments. | No reciprocity, symmetry inference, or cross-witness merge. |
 | Timing | The inspected 1879 source attests fixed thirty-nazhigai halves, not proportional sunrise-to-sunset scaling. | Seasonal scaling, if admitted, is a separate policy and capability. |

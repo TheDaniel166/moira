@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_ramadevar_candidate_stage2m_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T11:32:36Z",
+  "stage": "2M",
+  "decision_kind": "research_only_candidate_identity_and_access_gate",
+  "admission_status": "research_only",
+  "prior_public_state": {
+    "stage": "2L",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955",
+    "decision_path": "tests/fixtures/pancha_pakshi_independent_witness_stage2l_research_2026_07_21.json",
+    "decision_sha256": "5534ddde1c0b87fa5fc3332112d02fd1c48c38e0a79f45f4a75a3e3c728a4c34",
+    "manifest_changed": false
+  },
+  "gate": {
+    "question": "Can the catalogued Commissionerate A5 Ramadevar Panchapakshi candidate be inspected and shown to be a comparable, textually independent Pancha Pakshi witness?",
+    "result": "candidate_identified_but_content_and_copying_history_unavailable",
+    "reason": "The exact institutional catalog row is accessible, but it supplies only a serial number, manuscript identifier, and title. No leaf images, transcription, incipit, colophon, date, physical description, computational rules, provenance chain, or copying history for A5 was located. Separately accessible Ramadevar Patchani witnesses govern yoga, philosophy, medicine, alchemy, or ritual and are not the five-bird temporal product."
+  },
+  "target_candidate": {
+    "candidate_id": "commissionerate_ramadevar_panchapakshi_859_a5",
+    "holding_institution": "Commissionerate of Indian Medicine and Homoeopathy Department, Arumbakkam, Chennai 106",
+    "catalog_record_url": "https://tamildigitallibrary.in/Articles/%E0%AE%A8%E0%AF%82%E0%AE%B2%E0%AF%8D-21115-Catalogue%20of%20palm%20leaves%20manuscripts%20at%20commissionerate%20of%20Indian%20medicine%20and%20homeopathy%20department%20Arumbakkam%2C%20Chennai",
+    "catalog_pdf_url": "https://tamildigitallibrary.in/assets/docs/uploads/primary_files/book/TVA_BOK_0021115_Palm_Manuscripts.pdf",
+    "catalog_pdf_name": "TVA_BOK_0021115_Palm_Manuscripts.pdf",
+    "catalog_pdf_sha256": "8bf4541aa46e3526d3218b1c35ae7bf174298ff6e29e86d9e10e7389dd5b5e4b",
+    "catalog_pdf_page_count": 63,
+    "inspection_method": "rendered_page_review_with_embedded_text_used_for_navigation",
+    "locators": [
+      {
+        "pdf_page": 1,
+        "role": "catalog_title_and_holding_institution"
+      },
+      {
+        "pdf_page": 2,
+        "role": "collection_scope_includes_medicine_astrology_magic_yoga_and_gnana_without_item_level_provenance"
+      },
+      {
+        "pdf_page": 52,
+        "role": "serial_859_manuscript_A5_exact_title_Ramadevar_Panchapakshi"
+      }
+    ],
+    "catalog_fields_present": {
+      "serial_number": "859",
+      "manuscript_number": "A5",
+      "title": "Ramadevar Panchapakshi"
+    },
+    "required_fields_absent": [
+      "leaf_images_or_facsimile",
+      "critical_or_diplomatic_transcription",
+      "leaf_count_and_dimensions",
+      "condition_and_completeness",
+      "script_and_hand_description",
+      "date_or_date_range",
+      "incipit_and_explicit",
+      "colophon_or_scribal_statement",
+      "prior_owner_or_acquisition_history",
+      "copying_relationship_to_other_pancha_pakshi_witnesses",
+      "named_computational_product_and_rules"
+    ],
+    "content_access_status": "catalog_title_only",
+    "textual_lineage_independence": "not_assessable",
+    "product_comparability": "not_assessable"
+  },
+  "disambiguated_false_cognates": [
+    {
+      "witness_id": "goml_r8978_ramadevar_patchini",
+      "institution": "Government Oriental Manuscripts Library, Chennai",
+      "catalog_identity": "Descriptive Catalogue of the Tamil Manuscripts, volume 30, G.O.M.L. publication 426, 1999",
+      "catalog_pdf_name": "TVA_BOK_0000209_Tamil_Manuscript_Catalog.pdf",
+      "catalog_pdf_sha256": "4ff7f72891c6d53c3eaac502f1f1217a0cb950b60611524bfaff854d38b03ec4",
+      "catalog_pdf_page_count": 174,
+      "locators": [
+        {
+          "pdf_page": 2,
+          "role": "Tamil_catalog_identity_volume_and_date"
+        },
+        {
+          "pdf_page": 3,
+          "role": "English_catalog_identity_volume_and_date"
+        },
+        {
+          "pdf_page": 93,
+          "printed_page": 91,
+          "role": "R8978_title_folios_extent_condition_completeness_and_gnana_yoga_description"
+        },
+        {
+          "pdf_page": 94,
+          "printed_page": 92,
+          "role": "explicit_catalog_note_classifies_the_work_as_gnana_breath_and_yoga"
+        }
+      ],
+      "catalog_facts": {
+        "shelfmark": "R.8978",
+        "title": "Ramadevar Patchini",
+        "folios": "47-57a",
+        "extent_letters": 21648,
+        "language": "Tamil",
+        "condition": "old_injured",
+        "completeness": "complete",
+        "content_class": "gnana_breath_and_yoga"
+      },
+      "same_product_as_target": false,
+      "exclusion_reason": "Patchini here names a yoga and philosophical work, not a five-bird identity or temporal schedule."
+    },
+    {
+      "witness_id": "british_library_eap1217_1_2851_ramadevar_patchani",
+      "institution": "Tamil University Palmleaf Manuscript Department with British Library Endangered Archives Programme digital copy",
+      "catalog_url": "https://searcharchives.bl.uk/catalog/040-004540639",
+      "digital_content_url": "https://eap.bl.uk/archive-file/EAP1217-1-2851",
+      "shelfmark": "EAP1217/1/2851",
+      "original_institution_reference": "TU_TAMIL_2058-01_2661",
+      "date_range": "18th_century",
+      "extent_leaves": 38,
+      "extent_images": 79,
+      "dimensions": "22cm_x_3.5cm",
+      "condition": "fair",
+      "content_class": "philosophical_thoughts_for_livelihood_and_ashtanga_yoga_in_108_poems",
+      "same_product_as_target": false,
+      "exclusion_reason": "The institutional description expressly classifies the 108 poems as philosophy and ashtanga yoga, not Pancha Pakshi computation."
+    },
+    {
+      "witness_id": "commissionerate_manuscript_27_ramadevar_patchani_108",
+      "institution": "Commissionerate of Indian Medicine and Homoeopathy Department, Arumbakkam, Chennai 106",
+      "catalog_pdf_sha256": "8bf4541aa46e3526d3218b1c35ae7bf174298ff6e29e86d9e10e7389dd5b5e4b",
+      "locator": {
+        "pdf_page": 4,
+        "serial_number": "27",
+        "manuscript_number": "27"
+      },
+      "catalog_context": "Ramadevar Patchani 108 occurs inside a composite row with Agasthiyar Karumanam 50, Dakshanamoorthy Suthiram 16, and Romarishi 100.",
+      "same_record_as_target": false,
+      "exclusion_reason": "It has a different manuscript identifier and title from serial 859 manuscript A5 Ramadevar Panchapakshi."
+    },
+    {
+      "witness_id": "sarasvati_mahal_ramadevar_sutiram_ashtanga_patchini_1991",
+      "institution": "Sarasvati Mahal Library, Thanjavur",
+      "catalog_url": "https://tamildigitallibrary.in/Articles/%E0%AE%A8%E0%AF%82%E0%AE%B2%E0%AF%8D-24632-%E0%AE%87%E0%AE%B0%E0%AE%BE%E0%AE%AE%E0%AE%A4%E0%AF%87%E0%AE%B5%E0%AE%B0%E0%AF%8D%20%E0%AE%9A%E0%AF%82%E0%AE%A4%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%B0%E0%AE%AE%E0%AF%8D-%E0%AE%85%E0%AE%B7%E0%AF%8D%E0%AE%9F%E0%AE%BE%E0%AE%99%E0%AF%8D%E0%AE%95%20%E0%AE%AA%E0%AE%9F%E0%AF%8D%E0%AE%9A%E0%AE%BF%E0%AE%A3%E0%AE%BF%2C%20%E0%AE%B5%E0%AE%BE%E0%AE%B2%E0%AF%88%20%E0%AE%AA%E0%AF%82%E0%AE%9C%E0%AF%88",
+      "pdf_name": "TVA_BOK_0024632_Ramadevar_Sutiram.pdf",
+      "pdf_sha256": "238987ee86aba6b17c963031616fc58598fa308df0c8ffec2a6314ed89156021",
+      "pdf_page_count": 209,
+      "locators": [
+        {
+          "pdf_page": 4,
+          "role": "publisher_foreword_frames_the_work_as_siddha_medicine_alchemy_yoga_and_ritual"
+        },
+        {
+          "pdf_page": 7,
+          "role": "editor_introduction_identifies_ashtanga_yoga_and_the_works_72_topics"
+        },
+        {
+          "pdf_page": 10,
+          "role": "contents_begin_with_alchemical_and_medical_products_under_Ramadevar_Sutiram_Ashtanga_Patchani_Valai_Pujai"
+        }
+      ],
+      "same_product_as_target": false,
+      "exclusion_reason": "The publication governs medicine, alchemy, yoga, ritual, and related siddha practices rather than a five-bird temporal schedule."
+    }
+  ],
+  "identity_policy": {
+    "patchani_equals_panchapakshi": false,
+    "shared_ramadevar_attribution_establishes_same_work": false,
+    "shared_108_poem_count_establishes_same_work": false,
+    "catalog_title_establishes_computational_content": false,
+    "institutional_custody_establishes_textual_independence": false,
+    "ambiguity_behavior": "fail_closed_and_keep_each_identifier_separate"
+  },
+  "copying_history_determination": {
+    "target_A5": "unavailable",
+    "false_cognates": "irrelevant_to_target_independence_because_they_are_different_products",
+    "independence_gate": "not_cleared"
+  },
+  "required_next_evidence": [
+    "obtain_a_complete_facsimile_or_critical_transcription_of_commissionerate_manuscript_A5",
+    "obtain_item_level_cataloging_for_A5_including_leaf_count_condition_completeness_script_date_incipit_explicit_and_colophon",
+    "obtain_acquisition_prior_owner_scribe_or_copying_history_sufficient_to_assess_textual_independence",
+    "identify_one_named_pancha_pakshi_computational_product_in_A5",
+    "collate_that_product_cell_by_cell_against_an_existing_profile_with_repeatable_leaf_locators",
+    "preserve_all_disagreements_and_make_any_admission_change_in_a_separate_decision"
+  ],
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "admission_status_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false,
+    "corroborated_public_profile_created": false
+  },
+  "public_nonclaims": [
+    "The A5 catalog title is not treated as manuscript content.",
+    "Ramadevar Patchani is not treated as an alternate spelling or automatic alias of Ramadevar Panchapakshi.",
+    "The 18th-century EAP Patchani witness does not corroborate a Pancha Pakshi profile.",
+    "No copying history or textual independence is claimed for A5.",
+    "No human Tamil reviewer is required.",
+    "No source artifact is distributed."
+  ],
+  "artifact_distribution_boundary": "The downloaded institutional PDFs and rendered page images remain temporary research inputs and are not bundled. This fixture preserves only bibliographic identities, hashes, locators, normalized catalog facts, identity exclusions, access gaps, and the non-admission decision."
+}

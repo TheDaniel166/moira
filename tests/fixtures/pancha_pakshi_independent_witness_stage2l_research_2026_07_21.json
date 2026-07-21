@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_independent_witness_stage2l_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T11:17:38Z",
+  "stage": "2L",
+  "decision_kind": "research_only_independent_witness_collation_gate",
+  "admission_status": "research_only",
+  "prior_public_state": {
+    "stage": "2K",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955",
+    "decision_path": "tests/fixtures/pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_2026_07_21.json",
+    "decision_sha256": "10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70",
+    "manifest_changed": false
+  },
+  "gate": {
+    "question": "Does the inspected evidence establish a genuinely independent Pancha Pakshi textual witness that corroborates one already normalized public product closely enough for corroborated_public admission?",
+    "required_evidence": [
+      "an_exact_identified_witness_with_repeatable_page_or_leaf_locators",
+      "a_named_computational_product_comparable_to_one_existing_profile_product",
+      "documented_textual_lineage_independence_rather_than_publication_separation_alone",
+      "agreement_and_disagreement_preserved_by_witness_and_text_layer",
+      "no_runtime_data_import_without_a_separate_profile_and_admission_decision"
+    ],
+    "result": "collation_completed_gate_not_cleared",
+    "reason": "The strongest institutional comparator is a multi-source editorial compilation that explicitly uses Agastya, Bogar, Uromarisi, and other manuscript or printed layers but supplies no stemma or copying history. It corroborates selected facts and preserves material conflicts, while textual-lineage independence from the admitted witnesses remains unestablished."
+  },
+  "inspected_witnesses": [
+    {
+      "witness_id": "tva_bok_0022647_valaiyarul_patinen_siddhargal_2014",
+      "bibliographic_identity": "Valaiyarul Patinen Siddhargal Panchapakshi Sastram: Uraiyum Vilakkamum, sixth edition, Sarasvati Mahal Library and Research Centre, Thanjavur, August 2014",
+      "official_catalog_url": "https://tamildigitallibrary.in/Articles/%E0%AE%A8%E0%AF%82%E0%AE%B2%E0%AF%8D-22647-%E0%AE%B5%E0%AE%BE%E0%AE%B2%E0%AF%88%E0%AE%AF%E0%AE%B0%E0%AF%81%E0%AE%B3%E0%AF%8D%20%E0%AE%AA%E0%AE%A4%E0%AE%BF%E0%AE%A9%E0%AF%86%E0%AE%A3%E0%AF%8D%20%E0%AE%9A%E0%AE%BF%E0%AE%A4%E0%AF%8D%E0%AE%A4%E0%AE%B0%E0%AF%8D%E0%AE%95%E0%AE%B3%E0%AF%8D%20%E0%AE%AA%E0%AE%9E%E0%AF%8D%E0%AE%9A%E0%AE%AA%E0%AE%9F%E0%AF%8D%E0%AE%9A%E0%AE%BF%20%E0%AE%9A%E0%AE%BE%E0%AE%B8%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%B0%E0%AE%AE%E0%AF%8D-%E0%AE%89%E0%AE%B0%E0%AF%88%E0%AE%AF%E0%AF%81%E0%AE%AE%E0%AF%8D%20%E0%AE%B5%E0%AE%BF%E0%AE%B3%E0%AE%95%E0%AF%8D%E0%AE%95%E0%AE%AE%E0%AF%81%E0%AE%AE%E0%AF%8D",
+      "official_pdf_name": "TVA_BOK_0022647_வாலையருள்_பதினெண்_சித்தர்கள்.pdf",
+      "pdf_sha256": "894f88c3381f026aa1963861dd30e1f74039aa32a89fd84015efb3a098dc5366",
+      "pdf_page_count": 574,
+      "inspection_method": "rendered_page_review_with_embedded_ocr_used_only_for_navigation",
+      "evidence_class": "institutional_multi_source_editorial_comparator",
+      "textual_lineage_independence": "not_established",
+      "locators": [
+        {
+          "pdf_page": 2,
+          "role": "title_editor_and_sarasvati_mahal_publication_identity"
+        },
+        {
+          "pdf_page": 4,
+          "role": "publisher_foreword_states_that_the_edition_was_created_from_a_tamil_manuscript_and_comparison_of_multiple_manuscripts_and_books"
+        },
+        {
+          "pdf_page": 30,
+          "printed_page": 27,
+          "role": "editor_states_that_verses_come_from_sarasvati_mahal_palm_leaf_manuscripts_and_a_minor_share_of_printed_books_while_explanations_math_and_tables_are_editorial_contributions"
+        },
+        {
+          "pdf_page": 31,
+          "printed_page": 28,
+          "role": "second_edition_note_names_bogar_and_uromarisi_sources_added_after_the_first_edition"
+        },
+        {
+          "pdf_page": 33,
+          "printed_page": 30,
+          "role": "editor_explicitly_preserves_different_activity_ordering_between_agastya_bogar_and_uromarisi_and_selects_agastya_bogar_for_most_of_this_compilation"
+        },
+        {
+          "pdf_page": 37,
+          "printed_page": 34,
+          "role": "source_inventory_identifies_incomplete_agastya_manuscript_777_kumbamuni_manuscript_7015_and_a_complete_uromarisi_vinadi_work"
+        },
+        {
+          "pdf_page": 88,
+          "printed_page": 11,
+          "role": "purva_day_first_eat_bird_weekday_rule"
+        },
+        {
+          "pdf_page": 89,
+          "printed_page": 12,
+          "role": "four_distinct_purva_and_amara_day_night_activity_orders"
+        },
+        {
+          "pdf_page": 136,
+          "printed_page": 59,
+          "role": "waxing_day_and_night_duration_vectors"
+        },
+        {
+          "pdf_page": 209,
+          "printed_page": 132,
+          "role": "waning_day_and_night_duration_vectors"
+        },
+        {
+          "pdf_page": 302,
+          "printed_page": 225,
+          "role": "editorial_expansion_of_a_source_manuscript_purva_day_first_samam_with_exact_activity_durations"
+        }
+      ]
+    },
+    {
+      "witness_id": "gr_narasimhan_simplified_pancha_pakshi_2018",
+      "file_name": "475383861-a-simplified-pancha-pakshi-pdf.pdf",
+      "bibliographic_identity": "G. R. Narasimhan, A Simple Guide to Pancha Pakshi Sastra, Zodiac Services, dated internally to June 2018",
+      "pdf_sha256": "1694ca303d5f49a13b9269fe9ee1e39607e1709df756ff6bbdf137bc1c589243",
+      "pdf_page_count": 89,
+      "inspection_method": "rendered_page_review_and_complete_embedded_text_search",
+      "evidence_class": "modern_secondary_table_comparator",
+      "textual_lineage_independence": "not_documented",
+      "source_citation_status": "no_bibliography_citations_or_primary_text_lineage_found",
+      "locators": [
+        {
+          "pdf_page": 4,
+          "role": "general_introduction_without_source_citation"
+        },
+        {
+          "pdf_page": 5,
+          "role": "thirty_nazhigai_half_five_six_nazhigai_yamas_and_apahara_description"
+        },
+        {
+          "pdf_page": 6,
+          "role": "natal_star_identity_table"
+        },
+        {
+          "pdf_page": 11,
+          "role": "representative_waxing_vulture_sunday_day_and_night_detailed_table"
+        },
+        {
+          "pdf_page": 82,
+          "role": "representative_waning_peacock_sunday_day_and_night_detailed_table"
+        },
+        {
+          "pdf_page": 89,
+          "role": "conclusion_without_bibliography_or_primary_source_identification"
+        }
+      ]
+    },
+    {
+      "witness_id": "panch_pakshi_guide_canva_2025",
+      "file_name": "876259337-Panch-Pakshi-Guide-1.pdf",
+      "bibliographic_identity": "Panch Pakshi Guide, Canva-produced PDF, metadata author BootcampX Support, created 2025-04-17",
+      "pdf_sha256": "3498501cf3fd43ec2b0f2b8dab497b6c431713af1373f229a496bb8c7f6b7b9d",
+      "pdf_page_count": 21,
+      "inspection_method": "rendered_page_review_and_embedded_text_search",
+      "evidence_class": "rejected_unreliable_modern_guide",
+      "metadata_ai_generated_content": true,
+      "rejection_reasons": [
+        "page_6_discusses_tarot_major_and_minor_arcana_under_a_pancha_pakshi_heading",
+        "page_10_discusses_the_king_of_pentacles_and_tarot_deck_cleansing",
+        "unrelated_template_contamination_prevents_reliable_doctrinal_use",
+        "no_primary_source_lineage_or_repeatable_pancha_pakshi_table_evidence"
+      ]
+    }
+  ],
+  "catalog_only_candidates": [
+    {
+      "candidate_id": "ramadevar_panchapakshi_manuscript_859_a5",
+      "institution": "Tamil Digital Library catalog of palm-leaf manuscripts",
+      "catalog_url": "https://www.tamildigitallibrary.in/admin/assets/book/TVA_BOK_0021115_Palm_Manuscripts.pdf",
+      "catalog_locator": "serial_859_manuscript_A5",
+      "catalog_label": "Ramadevar Panchapakshi",
+      "content_access_status": "catalog_record_only_no_manuscript_images_or_normalizable_rules_inspected",
+      "independence_status": "promising_but_not_established"
+    },
+    {
+      "candidate_id": "raghavanandana_panchapakshi_tika_catalog_324",
+      "institution": "Rajendralala Mitra Notices of Sanskrit Manuscripts first series, 1871",
+      "catalog_url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Notices_of_Sanskrit_mss_%28IA_noticesofsanskri01mitr%29.pdf",
+      "catalog_locator": "notice_324_page_183",
+      "catalog_label": "Panchapakshi Tika by Raghavanandana, 20 leaves, approximately 200 slokas",
+      "content_access_status": "catalog_description_only_no_manuscript_text_or_comparable_schedule_rules_inspected",
+      "independence_status": "possible_distinct_sanskrit_horoscopic_tradition_not_yet_shown_to_govern_the_same_product"
+    }
+  ],
+  "collation": {
+    "shared_structural_facts": [
+      "five_named_birds",
+      "five_activities_eat_walk_rule_sleep_die",
+      "thirty_nazhigai_per_day_or_night_half",
+      "five_six_nazhigai_samams_per_half",
+      "one_bird_per_activity_within_a_samam"
+    ],
+    "purva_day_first_eat_bird_weekday_mapping": {
+      "agastya_1879_locator": "ia_n16",
+      "sarasvati_2014_locator": "pdf_page_88_printed_page_11",
+      "agreement": "exact_all_seven_cells",
+      "cells": {
+        "sunday": "vulture",
+        "monday": "owl",
+        "tuesday": "vulture",
+        "wednesday": "owl",
+        "thursday": "crow",
+        "friday": "cock",
+        "saturday": "peacock"
+      },
+      "evidence_limit": "agreement_within_an_explicitly_overlapping_agastya_bogar_editorial_compilation_not_independent_textual_corroboration"
+    },
+    "duration_vectors_nazhigai": {
+      "agastya_1879_all_regimes": {
+        "eat": "5/4",
+        "walk": "3/2",
+        "rule": "2",
+        "sleep": "3/4",
+        "die": "1/2"
+      },
+      "sarasvati_2014_and_narasimhan_waxing_day": {
+        "eat": "5/4",
+        "walk": "3/2",
+        "rule": "2",
+        "sleep": "3/4",
+        "die": "1/2"
+      },
+      "sarasvati_2014_and_narasimhan_waxing_night": {
+        "eat": "5/4",
+        "walk": "5/4",
+        "rule": "1",
+        "sleep": "1",
+        "die": "3/2"
+      },
+      "sarasvati_2014_and_narasimhan_waning_day": {
+        "eat": "2",
+        "walk": "3/2",
+        "rule": "3/4",
+        "sleep": "1/2",
+        "die": "5/4"
+      },
+      "sarasvati_2014_and_narasimhan_waning_night": {
+        "eat": "7/4",
+        "walk": "7/4",
+        "rule": "3/4",
+        "sleep": "3/4",
+        "die": "1"
+      },
+      "finding": "Only the waxing-day vector agrees with the admitted 1879 uniform vector. The other three regime vectors materially disagree and must remain separate."
+    },
+    "activity_ordering_finding": "The Sarasvati editor explicitly records different activity-order doctrines for Agastya/Bogar and Uromarisi and selects the former for most of the compilation. This is conflict evidence, not a basis for merging the admitted profiles.",
+    "identity_ontology_finding": "The Sarasvati compilation and Narasimhan guide include natal-star identity alongside aksara methods, while the admitted 1879 public product remains aksara/query-or-name-initial only. Shared schedule vocabulary does not authorize a natal reinterpretation of that profile.",
+    "narasimhan_relationship_to_sarasvati": "All four inspected regime-specific duration vectors agree exactly between the modern guide and the Sarasvati compilation. Without citations or a lineage statement, this establishes secondary agreement only and proves neither direct copying nor textual independence.",
+    "textual_lineage_determination": "not_established_for_any_comparable_witness",
+    "admission_tier_after_collation": "source_scoped_public_unchanged"
+  },
+  "ambiguity_policy": {
+    "publication_separation_equals_textual_independence": false,
+    "institutional_publication_equals_primary_independent_witness": false,
+    "matching_rows_override_conflicting_rows": false,
+    "modern_secondary_guide_can_supply_runtime_truth": false,
+    "catalog_record_can_supply_computational_rules": false,
+    "human_language_reviewer_dependency": "none",
+    "unresolved_lineage_behavior": "fail_closed_at_source_scoped_public"
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "admission_status_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false,
+    "corroborated_public_profile_created": false
+  },
+  "required_evidence_for_future_corroboration": [
+    "obtain_images_or_a_critical_transcription_of_a_catalogued_candidate_such_as_ramadevar_panchapakshi",
+    "establish_the_candidates_copying_history_or_other_documented_basis_for_textual_independence",
+    "collate_one_named_existing_product_cell_by_cell_with_repeatable_locators",
+    "preserve_every_disagreement_by_witness_and_text_layer",
+    "make_any_profile_manifest_or_public_admission_change_in_a_separate_decision"
+  ],
+  "public_nonclaims": [
+    "No inspected witness clears the corroborated_public independence gate.",
+    "The Sarasvati compilation is not treated as independent merely because it is institutional or separately published.",
+    "The Narasimhan guide is not a primary authority or runtime data source.",
+    "The Canva guide supplies no reliable Pancha Pakshi evidence.",
+    "No regime-specific duration vector is imported into an existing profile.",
+    "No natal identity schedule condition score electional judgment or forecast is admitted.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": "No inspected PDF, page image, OCR, layout, source prose, or translation is distributed. This fixture preserves only bibliographic facts, cryptographic hashes, page locators, normalized comparison facts, conflicts, and the non-admission decision."
+}

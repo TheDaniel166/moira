@@ -291,7 +291,7 @@ The complete custody, method, limitations, and reproduction command are in
 
 ## Pancha Pakshi source-scoped witnesses
 
-Moira admits three explicitly named Pancha Pakshi profiles as source-scoped
+Moira admits four explicitly named Pancha Pakshi profiles as source-scoped
 public products. Their private ingestion data records normalized computational
 facts and locators from the 1879 Tamil print catalogued by Internet Archive as
 [`dli.rmrl.000451_images`](https://archive.org/details/dli.rmrl.000451_images)
@@ -726,11 +726,64 @@ manifest, and admission decision SHA-256 values are
 `10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70`.
 No human-language reviewer is a runtime, admission, or maintenance dependency.
 
+Stage 2L performs an independent-witness collation gate without changing that
+public state. The hash-bound research decision records rendered inspection of
+the Sarasvati Mahal Library's 574-page 2014 sixth edition of *Valaiyarul
+Patinen Siddhargal Panchapakshi Sastram*, SHA-256
+`894f88c3381f026aa1963861dd30e1f74039aa32a89fd84015efb3a098dc5366`,
+and the two user-supplied modern guides. The institutional edition says that
+its verses derive chiefly from Sarasvati Mahal palm-leaf manuscripts and a
+minor share of printed books, while its explanations, mathematical notes, and
+tables include editorial contributions. It identifies Agastya manuscript
+`777`, Kumbamuni manuscript `7015`, Bogar and Uromarisi layers, and explicitly
+preserves different Agastya/Bogar and Uromarisi activity-order doctrines.
+
+The collation finds exact agreement for the seven Purva-day first-EAT seeds
+and the Purva-day duration vector. It also finds material disagreement: the
+2014 compilation uses distinct duration vectors for waxing night, waning day,
+and waning night, whereas the admitted 1879 profile owns one uniform vector.
+G. R. Narasimhan's 2018 secondary guide reproduces all four regime vectors but
+provides no bibliography or primary-text lineage. The second supplied guide is
+rejected because its AI-marked Canva artifact contains unrelated tarot
+material. The institutional compilation is separately published and
+multi-source, but it supplies no manuscript stemma or copying history;
+textual-lineage independence from the admitted witnesses is therefore not
+established. Stage 2L keeps every profile `source_scoped_public`, creates no
+runtime data or public surface, and does not admit a default or universal
+canon. Its research-decision SHA-256 is
+`5534ddde1c0b87fa5fc3332112d02fd1c48c38e0a79f45f4a75a3e3c728a4c34`.
+
+Stage 2M follows the Ramadevar candidate without treating a similar title as
+content. The exact Commissionerate of Indian Medicine and Homoeopathy catalog,
+SHA-256
+`8bf4541aa46e3526d3218b1c35ae7bf174298ff6e29e86d9e10e7389dd5b5e4b`,
+identifies serial `859`, manuscript `A5`, as `Ramadevar Panchapakshi` on PDF
+page 52. It supplies no leaf images, transcription, physical description,
+date, incipit, explicit, colophon, acquisition chain, copying history, or
+computational rules for that item. Content and textual independence are
+therefore not assessable.
+
+The investigation separately excludes name-adjacent works. G.O.M.L. manuscript
+`R.8978`, catalogued on PDF pages 93-94 of the 1999 volume with SHA-256
+`4ff7f72891c6d53c3eaac502f1f1217a0cb950b60611524bfaff854d38b03ec4`,
+is a complete old and injured `Ramadevar Patchini` work on gnana, breath, and
+yoga. British Library EAP shelfmark `EAP1217/1/2851`, original Tamil University
+reference `TU_TAMIL_2058-01_2661`, is an eighteenth-century 108-poem Patchani
+work expressly classified as philosophy and ashtanga yoga. The Commissionerate
+catalog also lists a separate `Ramadevar Patchani - 108` inside manuscript
+`27`, while the 1991 Sarasvati Mahal *Ramadevar Sutiram: Ashtanga Patchini,
+Valai Pujai* is a medicine, alchemy, yoga, and ritual publication. Shared
+Ramadevar attribution, `Patchani` wording, or a 108-poem count does not make
+any of these the `A5` Panchapakshi witness. Stage 2M remains research-only,
+changes no public or runtime state, and has decision SHA-256
+`921e604bcd81298aa6eb903acc967e68cfcf6e743c7d1379788ff9996212c6db`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
-213 are retained as conflict or bibliographic evidence. The latter's
-official catalog says sixth edition/2014 while its inspected internal title
-page says fifth edition/September 2011; both records remain visible. Their
-unadmitted verse/commentary disagreements are not copied into runtime truth.
+213 are retained as conflict or bibliographic evidence. The exact inspected
+series 213 artifact identifies itself as the sixth edition of August 2014;
+its front matter also preserves the earlier fifth-edition foreword and its
+1991 first-edition history. Their unadmitted verse/commentary disagreements
+are not copied into runtime truth.
 Archive rights or license labels are not runtime inputs and are not public
 admission gates, because no modern scans, prose, layouts, or table
 transcriptions are packaged.
@@ -767,7 +820,10 @@ occurs only through the separate Stage 2I route and never materializes or
 selects a current schedule. Stage 2J Uromarisi outcome evidence remains
 research-only; Stage 2K exposes only the two separately sourced explicit
 Bogamuni temporal selectors and cannot route a clock instant or compose an
-outcome. Condition,
+outcome. Stage 2L adds only witness-collation evidence and leaves
+`corroborated_public` unassigned. Stage 2M disambiguates the title-only `A5`
+Ramadevar Panchapakshi candidate from non-Panchapakshi `Patchani` witnesses and
+also leaves `corroborated_public` unassigned. Condition,
 scoring, automatic schedule routing, and forecasting remain outside the
 admitted surface.
 

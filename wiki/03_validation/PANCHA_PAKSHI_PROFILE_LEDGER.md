@@ -158,6 +158,57 @@ never creates a default canon.
   forecasting: not performed
 - Human-language reviewer dependency: none
 
+### Stage 2L Independent-Witness Collation Gate
+
+- Admission status: `research_only`; no profile or capability admitted
+- Stage 2L research decision:
+  [`pancha_pakshi_independent_witness_stage2l_research_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_independent_witness_stage2l_research_2026_07_21.json)
+- Stage 2L decision SHA-256:
+  `5534ddde1c0b87fa5fc3332112d02fd1c48c38e0a79f45f4a75a3e3c728a4c34`
+- Bound Stage 2K manifest SHA-256, unchanged:
+  `584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`
+- Sarasvati Mahal 2014 sixth-edition PDF SHA-256 and governing locators:
+  `894f88c3381f026aa1963861dd30e1f74039aa32a89fd84015efb3a098dc5366`;
+  PDF pages 2, 4, 30, 31, 33, 37, 88, 89, 136, 209, and 302
+- Narasimhan 2018 secondary-guide PDF SHA-256:
+  `1694ca303d5f49a13b9269fe9ee1e39607e1709df756ff6bbdf137bc1c589243`;
+  no bibliography or primary-text lineage found
+- Rejected Canva/AI-marked guide SHA-256:
+  `3498501cf3fd43ec2b0f2b8dab497b6c431713af1373f229a496bb8c7f6b7b9d`;
+  unrelated tarot material occurs on rendered pages 6 and 10
+- Exact agreement: all seven Purva-day first-EAT seeds and the waxing-day
+  duration vector
+- Preserved conflict: the institutional compilation and secondary guide use
+  three additional regime-specific vectors that disagree with the 1879
+  profile's uniform vector
+- Textual-lineage independence and `corroborated_public`: not established;
+  runtime and manifest unchanged; no human-language reviewer required
+
+### Stage 2M Ramadevar Candidate Identity And Access Gate
+
+- Admission status: `research_only`; no profile or capability admitted
+- Stage 2M research decision:
+  [`pancha_pakshi_ramadevar_candidate_stage2m_research_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_ramadevar_candidate_stage2m_research_2026_07_21.json)
+- Stage 2M decision SHA-256:
+  `921e604bcd81298aa6eb903acc967e68cfcf6e743c7d1379788ff9996212c6db`
+- Bound Stage 2L decision SHA-256, unchanged:
+  `5534ddde1c0b87fa5fc3332112d02fd1c48c38e0a79f45f4a75a3e3c728a4c34`
+- Bound Stage 2K manifest SHA-256, unchanged:
+  `584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`
+- Commissionerate catalog PDF SHA-256:
+  `8bf4541aa46e3526d3218b1c35ae7bf174298ff6e29e86d9e10e7389dd5b5e4b`;
+  PDF pages 1, 2, and 52 identify the holding collection and exact serial
+  `859`, manuscript `A5`, title `Ramadevar Panchapakshi`
+- G.O.M.L. 1999 descriptive catalog PDF SHA-256:
+  `4ff7f72891c6d53c3eaac502f1f1217a0cb950b60611524bfaff854d38b03ec4`;
+  PDF pages 93-94 classify `R.8978 Ramadevar Patchini` as gnana, breath, and
+  yoga rather than Pancha Pakshi computation
+- British Library EAP `EAP1217/1/2851` is an eighteenth-century 108-poem
+  philosophy and ashtanga-yoga Patchani witness, not the `A5` candidate
+- `A5` content, product comparability, copying history, textual independence,
+  and `corroborated_public`: not assessable or established
+- Runtime and manifest unchanged; no human-language reviewer required
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:
@@ -296,6 +347,13 @@ profile or decision and does not expand the runtime product.
   remain unadmitted. Hash, exact-rational, and surface-absence tests are
   regression and structural evidence only; they are not a prognostic oracle or
   public capability.
+- Stage 2L source evidence consists of rendered inspection of the Sarasvati
+  Mahal 2014 sixth-edition PDF at pages 2, 4, 30, 31, 33, 37, 88, 89, 136,
+  209, and 302, plus the two supplied modern guides. Exact seven-cell and
+  rational-vector comparisons preserve both agreement and conflict. Hash,
+  manifest-absence, and surface-absence checks are regression and structural
+  evidence. The collation establishes neither textual-lineage independence
+  nor `corroborated_public`; the rejected Canva guide contributes no doctrine.
 - The multi-pass review is machine-assisted reconciliation with explicit
   uncertainty and no human-review dependency; it is not an external oracle or
   linguistic-authority claim.

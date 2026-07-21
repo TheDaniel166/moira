@@ -1,5 +1,100 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2M Ramadevar Candidate Identity And Access Gate — 2026-07-21
+
+Stage 2M follows the Ramadevar lead to the exact institutional record without
+turning a catalog title into computational evidence. The
+[`Stage 2M research decision`](../../tests/fixtures/pancha_pakshi_ramadevar_candidate_stage2m_research_2026_07_21.json)
+has canonical SHA-256
+`921e604bcd81298aa6eb903acc967e68cfcf6e743c7d1379788ff9996212c6db`.
+It binds the unchanged Stage 2L decision SHA-256
+`5534ddde1c0b87fa5fc3332112d02fd1c48c38e0a79f45f4a75a3e3c728a4c34`
+and manifest SHA-256
+`584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`.
+
+The 63-page *Catalogue of Palm Leaves Manuscripts at Commissionerate of
+Indian Medicine and Homoeopathy Department, Arumbakkam* has SHA-256
+`8bf4541aa46e3526d3218b1c35ae7bf174298ff6e29e86d9e10e7389dd5b5e4b`.
+Rendered pages 1 and 2 establish the holding collection and its broad medical,
+astrological, magical, yoga, and gnana scope. Rendered page 52 identifies
+serial `859`, manuscript `A5`, as `Ramadevar Panchapakshi`. That row supplies
+no leaves, transcription, dimensions, condition, completeness, script, date,
+incipit, explicit, colophon, prior ownership, acquisition path, copying
+history, or computational rules. The candidate is real and exactly located,
+but remains title-only; neither product comparability nor textual independence
+can be assessed.
+
+The search also resolves misleadingly similar Ramadevar works. The 1999
+G.O.M.L. descriptive catalog, SHA-256
+`4ff7f72891c6d53c3eaac502f1f1217a0cb950b60611524bfaff854d38b03ec4`,
+classifies complete manuscript `R.8978 Ramadevar Patchini` on rendered PDF
+pages 93-94 as a 21,648-letter work on gnana, breath, and yoga. British Library
+EAP `EAP1217/1/2851`, original Tamil University reference
+`TU_TAMIL_2058-01_2661`, is independently catalogued as an eighteenth-century
+108-poem work on philosophy and ashtanga yoga. The Commissionerate catalog
+itself lists a different `Ramadevar Patchani - 108` inside manuscript `27` on
+page 4. Finally, the 1991 Sarasvati Mahal *Ramadevar Sutiram: Ashtanga
+Patchini, Valai Pujai*, SHA-256
+`238987ee86aba6b17c963031616fc58598fa308df0c8ffec2a6314ed89156021`,
+is framed on rendered pages 4, 7, and 10 as medicine, alchemy, yoga, ritual,
+and related Siddha practice. None supplies the five-bird temporal product.
+
+`Patchani` is therefore not an automatic spelling alias for `Panchapakshi`,
+and shared Ramadevar attribution or a 108-poem count does not establish work
+identity. Clearing the gate now requires the actual Commissionerate `A5`
+leaves or a critical transcription, item-level physical and copying-history
+metadata, and a leaf-located collation of one named Pancha Pakshi product.
+Stage 2M changes no runtime data, manifest, admission status, engine export,
+facade method, or REST route. No human Tamil reviewer is required.
+
+## Stage 2L Independent-Witness Collation Gate — 2026-07-21
+
+Stage 2L completes the next research gate without admitting a new profile or
+raising an existing profile to `corroborated_public`. The
+[`Stage 2L research decision`](../../tests/fixtures/pancha_pakshi_independent_witness_stage2l_research_2026_07_21.json)
+has canonical SHA-256
+`5534ddde1c0b87fa5fc3332112d02fd1c48c38e0a79f45f4a75a3e3c728a4c34`.
+It binds the unchanged Stage 2K manifest SHA-256
+`584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`
+and Stage 2K decision SHA-256
+`10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70`.
+
+The strongest comparator is the Tamil Digital Library artifact for the
+Sarasvati Mahal Library 2014 sixth edition of *Valaiyarul Patinen Siddhargal
+Panchapakshi Sastram*. The inspected 574-page PDF has SHA-256
+`894f88c3381f026aa1963861dd30e1f74039aa32a89fd84015efb3a098dc5366`.
+Rendered pages 2 and 4 establish the edition and institutional source method;
+pages 30, 31, 33, and 37 preserve the editor's source-layer statements,
+including Agastya manuscript `777`, Kumbamuni manuscript `7015`, later Bogar
+and Uromarisi additions, and explicit disagreement between Agastya/Bogar and
+Uromarisi activity orders. Pages 88 and 89 preserve the Purva-day first-EAT
+rule and the four day/night ordering doctrines. Pages 136 and 209 preserve all
+four regime-specific duration vectors, and page 302 shows the editor's
+manuscript-based Purva-day first-samam expansion.
+
+The exact seven-cell Purva-day first-EAT mapping and waxing-day duration vector
+agree with the admitted 1879 profile. Three duration vectors do not: the
+institutional compilation owns separate waxing-night, waning-day, and
+waning-night values, while the 1879 profile owns one uniform vector. The
+supplied 89-page G. R. Narasimhan guide, SHA-256
+`1694ca303d5f49a13b9269fe9ee1e39607e1709df756ff6bbdf137bc1c589243`,
+reproduces all four institutional vectors but contains no bibliography,
+citation, or primary-text lineage. It is therefore useful as a modern
+secondary comparator only. The supplied 21-page Canva artifact, SHA-256
+`3498501cf3fd43ec2b0f2b8dab497b6c431713af1373f229a496bb8c7f6b7b9d`,
+is rejected: metadata marks AI-generated content and rendered pages 6 and 10
+contain unrelated tarot-deck material.
+
+The Sarasvati volume is a separately published institutional compilation, but
+its declared source overlap and lack of a manuscript stemma or copying history
+leave textual-lineage independence unresolved. Catalog records for a
+Ramadevar Panchapakshi palm-leaf manuscript and Raghavanandana's Sanskrit
+*Panchapakshi Tika* identify future candidates, but their computational text
+was not available for collation. Publication separation, catalog existence,
+or exact agreement alone cannot clear the gate. Stage 2L therefore changes no
+runtime data, manifest, admission status, engine export, facade method, or REST
+route. No human Tamil reviewer is required.
+
 ## Stage 2K Sookshma Temporal-Selector Admission — 2026-07-21
 
 Stage 2K admits the two source-attested Bogamuni 2024 editorial selectors as
@@ -986,8 +1081,11 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
 1. Preserve the two now-admitted Stage 2K selectors as separate explicit
    policies with no default. Any binding to Uromarisi ordinal outcomes still
    requires a named cross-witness composition decision and its own tests.
-2. Collate the normalized rules against at least one genuinely independent
-   Pancha Pakshi witness rather than an adjacent omen or compatibility system.
+2. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
+   Panchapakshi` candidate and excludes several `Patchani` false cognates, but
+   the target remains title-only. The next attempt must obtain the actual `A5`
+   leaves or critical transcription plus item-level physical, custodial, and
+   copying-history metadata before any corroborated admission.
 3. Preserve any disagreement by witness and text layer; do not merge doctrines
    or repair them by symmetry.
 4. Treat the admitted Stage 2D proportional materialization and Stage 2E
