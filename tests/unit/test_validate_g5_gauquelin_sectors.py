@@ -243,7 +243,14 @@ def test_csicop_parser_rejects_unknown_clock_semantics(
     row = ["2 5 1934", "8 25", ampm, timezone, "88", "3", "30", "41", 36]
     _write_fixture(archive_path, csicop_rows=[row])
 
-    with pytest.raises(ValueError, match="invalid CSICOP row"):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "invalid CSICOP row 2: unknown AM/PM marker"
+            if ampm == "X"
+            else "invalid CSICOP row 2: unsupported CSICOP timezone '9'"
+        ),
+    ):
         load_csicop_records(archive_path, conventional_noon_midnight=False)
 
 

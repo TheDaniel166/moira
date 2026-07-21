@@ -258,7 +258,9 @@ def load_csicop_records(
             local = datetime(year, month, day) + timedelta(hours=hour, minutes=minute)
             timezone_text = row["ZEITZONE"]
             if timezone_text not in CSICOP_WITNESSED_TIMEZONES:
-                raise ValueError("unsupported CSICOP timezone")
+                raise ValueError(
+                    f"unsupported CSICOP timezone {timezone_text!r}"
+                )
             west_offset_hours = (
                 10.5 if timezone_text == "0,5" else float(timezone_text)
             )
@@ -267,7 +269,7 @@ def load_csicop_records(
             latitude = float(row["LA1"]) + float(row["LA2"]) / 60.0
             source_sector = int(row["MARS"])
         except (KeyError, TypeError, ValueError) as exc:
-            raise ValueError(f"invalid CSICOP row {row_number}") from exc
+            raise ValueError(f"invalid CSICOP row {row_number}: {exc}") from exc
         if not 1 <= source_sector <= 36:
             raise ValueError(f"invalid CSICOP sector at row {row_number}")
         if not (-180.0 <= longitude <= 180.0 and -90.0 <= latitude <= 90.0):
