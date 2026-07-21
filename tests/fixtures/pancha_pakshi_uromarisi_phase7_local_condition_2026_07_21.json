@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase7_local_condition_2026_07_21",
+  "decided_at_utc": "2026-07-21T19:01:32Z",
+  "decision_kind": "research_only_constitutional_phase7_integrated_local_condition_closure",
+  "admission_status": "research_only",
+  "constitutional_phase": 7,
+  "prior_boundary": {
+    "phase6_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase6_relation_inspectability_2026_07_21.json",
+    "phase6_decision_sha256": "b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12",
+    "phase5_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase5_relations_2026_07_21.json",
+    "phase5_decision_sha256": "e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1",
+    "phase4_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase4_policy_2026_07_21.json",
+    "phase4_decision_sha256": "4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "governing_object": {
+    "condition_module": "moira._pancha_pakshi_condition",
+    "local_condition_vessel": "PanchaPakshiHistoricalLocalConditionProfile",
+    "condition_corpus_vessel": "PanchaPakshiUromarisiPhase7LocalConditionCorpus",
+    "materialization_operation": "pancha_pakshi_uromarisi_local_conditions_under_policy",
+    "local_unit": "one_exact_classification_plus_its_exact_relation_record_under_one_explicit_policy",
+    "profile_count": 24,
+    "blocked_conflict_count": 1,
+    "blocked_conflict_verse": 250,
+    "condition_doctrine_status": "not_admitted",
+    "runtime_surface_status": "not_created"
+  },
+  "policy_contract": {
+    "policy_id": "moira_explicit_uromarisi_activity_ordinal_lookup_research_v1",
+    "policy_type": "PanchaPakshiHistoricalClassificationPolicy",
+    "policy_required": true,
+    "default_policy": null,
+    "temporal_selector_binding": "none",
+    "stage2k_composition": "not_admitted"
+  },
+  "condition_ontology": {
+    "evaluation_status": "not_evaluable_no_admitted_condition_doctrine",
+    "favorability_status": "not_assigned",
+    "condition_score": null,
+    "prognosis_status": "not_performed",
+    "medical_use_status": "forbidden",
+    "admission_status": "research_only",
+    "relation_detection_is_visible": true,
+    "relation_admission_is_visible": true,
+    "relation_scoring_is_visible": true,
+    "detected_relation_count": 17,
+    "admitted_relation_count": 0,
+    "scored_relation_count": 0
+  },
+  "integration_contract": {
+    "classification_and_relation_identity_must_match": true,
+    "classification_and_relation_source_binding_must_match": true,
+    "corpus_policy_must_match_every_profile_policy": true,
+    "canonical_classification_order_must_be_preserved": true,
+    "canonical_relation_order_must_be_preserved": true,
+    "every_relation_record_has_exactly_one_profile": true,
+    "profile_container_is_immutable_tuple": true,
+    "non_profile_member_is_rejected": true,
+    "admitted_relation_semantics_are_rejected": true,
+    "scored_relation_semantics_are_rejected": true
+  },
+  "lookup_contract": [
+    {
+      "lookup": "condition_at",
+      "activity": "eat",
+      "ordinal": 1,
+      "expected_verse": 230,
+      "expected_relation_detected": true,
+      "expected_evaluation_status": "not_evaluable_no_admitted_condition_doctrine"
+    },
+    {
+      "lookup": "condition_at",
+      "activity": "rule",
+      "ordinal": 1,
+      "expected_verse": 241,
+      "expected_relation_detected": false,
+      "expected_evaluation_status": "not_evaluable_no_admitted_condition_doctrine"
+    },
+    {
+      "lookup": "condition_at",
+      "activity": "sleep",
+      "ordinal": 5,
+      "expected_result": null,
+      "absence_reason": "no_classified_cell_after_verse250_conflict"
+    },
+    {
+      "lookup": "condition_for_verse",
+      "verse": 250,
+      "expected_result": null,
+      "absence_reason": "blocked_identity_conflict_not_repaired"
+    }
+  ],
+  "ambiguity_policy": {
+    "detected_relation_as_condition_judgment": "forbidden",
+    "surface_category_as_favorability": "forbidden",
+    "disposition_as_generic_good_or_bad": "forbidden",
+    "condition_score_invention": "forbidden",
+    "prognostic_interpretation": "forbidden",
+    "medical_interpretation_or_advice": "forbidden",
+    "temporal_selector_binding": "forbidden",
+    "verse250_conflict_repair": "forbidden",
+    "missing_profile_fallback": "forbidden"
+  },
+  "phase7_closure": {
+    "status": "complete_private_research_boundary",
+    "next_constitutional_phase": 8,
+    "next_phase_scope": "aggregate_structural_intelligence_only",
+    "phase8_may_aggregate": [
+      "profile_count",
+      "activity_coverage",
+      "evaluation_status_counts",
+      "relation_detection_counts",
+      "relation_admission_counts",
+      "relation_scoring_counts"
+    ],
+    "phase8_may_not_assume": [
+      "favorable_or_unfavorable_condition",
+      "numeric_condition_score",
+      "resolved_relation_meaning",
+      "prediction_prognosis_diagnosis_or_advice",
+      "temporal_selector_or_runtime_binding",
+      "verse250_identity_resolution"
+    ]
+  },
+  "admission_decision": {
+    "runtime_data_admitted": false,
+    "runtime_profile_admitted": false,
+    "manifest_entry_admitted": false,
+    "package_export_admitted": false,
+    "facade_method_admitted": false,
+    "rest_route_admitted": false,
+    "condition_doctrine_admitted": false,
+    "condition_score_admitted": false,
+    "prediction_or_prognosis_admitted": false,
+    "medical_use_admitted": false
+  },
+  "public_nonclaims": [
+    "A local condition profile is an exact structural integration, not an evaluative judgment.",
+    "All 24 profiles remain not evaluable because no condition doctrine is admitted.",
+    "Detected relation clauses are visible but are neither admitted nor scored.",
+    "Missing SLEEP ordinal 5 and verse 250 produce no profile without fallback or repair.",
+    "No selector, runtime profile, public export, facade method, REST route, prognosis, advice, or medical use is created.",
+    "No human Tamil reviewer is required; actual A5 manuscript content remains optional future corroboration."
+  ]
+}

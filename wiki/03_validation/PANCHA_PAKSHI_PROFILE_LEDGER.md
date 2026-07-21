@@ -543,6 +543,29 @@ never creates a default canon.
 - Phase 7 boundary: ready for separately governed integrated local condition
   work only
 
+### Constitutional Phase 7 Uromarisi Integrated Local Condition
+
+- Admission kind: private structural local-condition corpus; no runtime profile
+  or capability
+- Phase 7 decision:
+  [`pancha_pakshi_uromarisi_phase7_local_condition_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_phase7_local_condition_2026_07_21.json)
+- Phase 7 decision SHA-256:
+  `401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`
+- Bound predecessor: exact Phase 6 SHA-256
+  `b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`
+- Required policy: explicit
+  `moira_explicit_uromarisi_activity_ordinal_lookup_research_v1`; no default
+- Coverage: `24` exact classification/relation pairs; verse `250` excluded
+- Cross-layer invariants: activity, ordinal, verse, source binding, canonical
+  order, relation membership, and policy identity must agree
+- Evaluation status: all `24`
+  `not_evaluable_no_admitted_condition_doctrine`
+- Judgment boundary: favorability unassigned, score `None`, prognosis not
+  performed, medical use forbidden, admission research-only
+- Nonclaims: no evaluative doctrine, generic good/bad label, score, selector,
+  runtime profile, package export, facade, or REST surface
+- Phase 8 boundary: ready for aggregate structural intelligence only
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:

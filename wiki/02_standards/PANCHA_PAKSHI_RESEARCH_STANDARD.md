@@ -1023,6 +1023,34 @@ Phase 7 inherits no favorable/unfavorable or scoring doctrine. The Phase 6
 decision SHA-256 is
 `b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`.
 
+### Constitutional Phase 7 integrated local condition
+
+Phase 7 defines `PanchaPakshiHistoricalLocalConditionProfile` as one exact
+classification/relation pair under the explicit Phase 4 activity/ordinal
+policy. `PanchaPakshiUromarisiPhase7LocalConditionCorpus` contains one such
+profile for every unconflicted relation record. Materialization requires the
+typed policy and has no default or temporal-selector binding.
+
+The classification and relation must share activity, ordinal, verse, source
+decision identity, and source digest. The corpus must preserve the canonical
+classification and relation order, retain the same policy on every profile,
+use an immutable tuple, reject non-profile members, and cover all `24` cells.
+SLEEP ordinal `5` and verse `250` remain absent without fallback or repair.
+
+This local condition is a structural integration only. Its sole evaluation
+status is `not_evaluable_no_admitted_condition_doctrine`; favorability is
+`not_assigned`, condition score is `None`, prognosis is not performed, medical
+use is forbidden, and admission remains research-only. Relation detection,
+admission, and scoring are visible separately. Since Phase 6 admits and scores
+zero relations, Phase 7 rejects injected admitted or scored relation state.
+
+Phase 7 adds no source truth, relation meaning, evaluative doctrine, generic
+good/bad label, numeric score, selector binding, runtime profile, manifest
+entry, package export, facade method, REST route, prediction, diagnosis, advice,
+or medical-truth claim. Its completion permits Phase 8 aggregate structural
+intelligence only. The Phase 7 decision SHA-256 is
+`401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial

@@ -263,6 +263,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Constitutional Phase 7 Integrated Local Condition**: Added a
+  private policy-bound local-condition vessel and a complete `24`-profile
+  corpus. Each profile pairs one exact Phase 2 classification with its exact
+  Phase 5 relation record and source binding. Because no condition doctrine or
+  relation meaning is admitted, all profiles are explicitly
+  `not_evaluable_no_admitted_condition_doctrine`; favorability is unassigned,
+  score is `None`, and prognosis is not performed. Cross-layer identity,
+  source, ordering, policy, admission, and scoring drift fail closed. No
+  runtime profile, manifest, export, facade, REST, or native surface was added.
+  The Phase 7 decision SHA-256 is
+  `401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`.
 - **Pancha Pakshi Constitutional Phase 6 Relation Hardening/Inspectability**:
   Added derived-only identity, source-binding, presence-count, subset, activity,
   ordinal, and verse views over the private Phase 5 relation corpus. Detected

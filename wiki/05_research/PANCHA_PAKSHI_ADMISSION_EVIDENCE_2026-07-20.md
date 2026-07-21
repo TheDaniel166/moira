@@ -1,5 +1,35 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Constitutional Phase 7 Integrated Local Condition — 2026-07-21
+
+The
+[`Phase 7 decision`](../../tests/fixtures/pancha_pakshi_uromarisi_phase7_local_condition_2026_07_21.json)
+has canonical SHA-256
+`401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`.
+It binds the exact Phase 6 decision at
+`b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`,
+the Phase 5 relation decision, Phase 4 policy decision, and unchanged manifest.
+
+Phase 7 materializes `24` immutable local profiles. Each profile pairs one
+classification with its exact relation record under the mandatory explicit
+activity/ordinal policy. The implementation proves identity and source-binding
+agreement, canonical ordering, complete relation coverage, and one shared
+policy. Cross-layer substitution, reordered profiles, non-profile members, and
+injected admitted or scored relation state fail closed.
+
+Every profile is explicitly
+`not_evaluable_no_admitted_condition_doctrine`. Favorability is unassigned,
+condition score is null, prognosis is not performed, medical use is forbidden,
+and admission remains research-only. Relation detection stays inspectable, but
+it is never promoted into an evaluation. SLEEP ordinal `5` and verse `250`
+produce no local profile without fallback or conflict repair.
+
+Phase 7 adds no source atom, resolved relation meaning, generic judgment,
+numeric score, temporal selection, selector attribution, runtime data, profile,
+manifest entry, package export, facade method, REST route, prediction,
+prognosis, diagnosis, advice, or medical-truth claim. Phase 8 may aggregate only
+stored structural facts unless a separate doctrine is lawfully established.
+
 ## Constitutional Phase 6 Relation Hardening/Inspectability — 2026-07-21
 
 The
@@ -1503,18 +1533,21 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
    derived views explicitly distinguish detected, admitted, and scored subsets,
    harden typed membership, and preserve exact lookup absence without resolving
    relation meaning or widening runtime admission.
-6. Constitutional Phase 7 is the next lawful implementation step. Any
-   integrated local condition must have its own governing object and doctrine;
-   it may not reinterpret detection as favorability, admission, or score.
-7. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
+6. Constitutional Phase 7 is closed at the private research boundary. Its `24`
+   policy-bound profiles integrate exact classification and relation truth while
+   remaining explicitly not evaluable, unscored, and non-prognostic.
+7. Constitutional Phase 8 is the next lawful implementation step. It may
+   aggregate stored structural facts across the local profiles, but it may not
+   invent evaluative doctrine, relation meaning, condition score, or prognosis.
+8. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
    the target remains title-only. Actual `A5` leaves or a critical transcription
    plus item-level physical, custodial, and copying-history metadata are needed
-   only before a `corroborated_public` claim, not before private Phase 7 work.
-8. Preserve every disagreement by witness and text layer; do not merge doctrines
+   only before a `corroborated_public` claim, not before private Phase 8 work.
+9. Preserve every disagreement by witness and text layer; do not merge doctrines
    or repair them by symmetry. The verse `256+` illness-duration material is a
    separate prospective product, not unfinished coverage in this corpus.
-9. Preserve existing admitted products at their current boundaries: Stage 2D/E
+10. Preserve existing admitted products at their current boundaries: Stage 2D/E
    materialization and current-cell selection remain modern; Stage 2F paksha
    inference remains separate; Stage 2H Padu remains a pure Paksha-by-weekday
    lookup; and Stage 2I first-EAT remains a pure first-samam seed lookup. None
@@ -1542,7 +1575,9 @@ Phase 4 explicit activity-plus-ordinal policy closure with both temporal
 selectors left unbound, plus the private constitutional Phase 5 relation corpus
 over all `24` classified cells with no endpoint, direction, or scoring meaning,
 plus the private constitutional Phase 6 hardening and inspectability closure
-with `17` detected, `0` admitted, and `0` scored relations.
+with `17` detected, `0` admitted, and `0` scored relations, plus the private
+constitutional Phase 7 corpus of `24` structurally integrated but explicitly
+not-evaluable local conditions.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

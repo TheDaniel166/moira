@@ -1016,6 +1016,29 @@ condition whose doctrine must be separately established. The Phase 6 decision
 fixture has canonical SHA-256
 `b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`.
 
+Constitutional Phase 7 creates one private integrated local-condition profile
+for each of the `24` unconflicted cells. The governing unit pairs an exact
+Phase 2 classification with its exact Phase 5 relation record under the
+mandatory Phase 4 explicit activity/ordinal policy. Classification and relation
+identity and source binding must match, canonical order is preserved, and each
+relation record has exactly one profile.
+
+The integration is structural, not evaluative. All profiles carry
+`not_evaluable_no_admitted_condition_doctrine`, `not_assigned` favorability, a
+null condition score, no prognosis, forbidden medical use, and research-only
+admission. Relation detection remains visible, but Phase 6 establishes zero
+admitted and zero scored relations; Phase 7 rejects any attempted admission or
+scoring drift rather than turning detection or a surface category into a
+condition judgment.
+
+Phase 7 adds no source truth, resolved relation meaning, favorable/unfavorable
+label, numeric score, selector binding, runtime data, profile, manifest entry,
+package export, facade method, REST route, prediction, prognosis, diagnosis,
+advice, or medical claim. Completion opens Phase 8 only for aggregate
+structural intelligence over the stored local profiles. The Phase 7 decision
+fixture has canonical SHA-256
+`401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;
