@@ -13,6 +13,8 @@ from fastapi.testclient import TestClient
 
 from moira.julian import jd_from_datetime
 from moira.timelords import (
+    DecennialPolicy,
+    TimelordComputationPolicy,
     current_decennials,
     decennial_active_pair,
     decennial_active_path,
@@ -72,6 +74,7 @@ def test_decennials_sequence_route_matches_engine(
     assert body["total_count"] == len(direct)
     assert body["major_count"] == sum(1 for p in direct if p.level == 1)
     assert body["levels_generated"] == 2
+    assert body["deep_subdivision_method"] is None
 
     first = body["periods"][0]
     assert first["level"] == 1
@@ -79,6 +82,7 @@ def test_decennials_sequence_route_matches_engine(
     assert first["years"] == pytest.approx(direct[0].years, rel=1e-6)
     assert first["sequence_kind"] == direct[0].sequence_kind
     assert first["sect_light"] == direct[0].sect_light
+    assert first["deep_subdivision_method"] is None
 
 
 # ---------------------------------------------------------------------------
@@ -252,6 +256,82 @@ def test_decennials_sequence_rejects_levels_out_of_range(client_with_engine: Tes
         json={"natal": {**_NATAL_PAYLOAD, "levels": 5}},
     )
     assert resp.status_code == 422
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    ("method", "levels"),
+    [("valens", 4), ("hephaistio", 3)],
+)
+def test_decennials_sequence_route_reaches_explicit_deep_policy(
+    client_with_engine: TestClient,
+    moira_engine,
+    method: str,
+    levels: int,
+) -> None:
+    natal_positions, natal_jd = _natal_positions_and_jd(moira_engine)
+    policy = TimelordComputationPolicy(
+        decennials=DecennialPolicy(deep_subdivision_method=method)
+    )
+    direct = decennials(
+        natal_jd,
+        natal_positions,
+        is_day_chart=True,
+        levels=levels,
+        policy=policy,
+    )
+
+    response = client_with_engine.post(
+        "/v1/timelords/decennials/sequence",
+        json={
+            "natal": {
+                **_NATAL_PAYLOAD,
+                "levels": levels,
+                "deep_subdivision_method": method,
+            }
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total_count"] == len(direct)
+    assert body["levels_generated"] == levels
+    assert body["deep_subdivision_method"] == method
+    deep_periods = [period for period in body["periods"] if period["level"] >= 3]
+    assert deep_periods
+    assert {period["deep_subdivision_method"] for period in deep_periods} == {method}
+
+
+@pytest.mark.parametrize(
+    "natal",
+    [
+        {
+            **_NATAL_PAYLOAD,
+            "levels": 2,
+            "deep_subdivision_method": "valens",
+        },
+        {**_NATAL_PAYLOAD, "levels": 3},
+        {
+            **_NATAL_PAYLOAD,
+            "levels": 4,
+            "deep_subdivision_method": "hephaistio",
+        },
+        {
+            **_NATAL_PAYLOAD,
+            "levels": 3,
+            "deep_subdivision_method": "firmicus",
+        },
+    ],
+)
+def test_decennials_sequence_rejects_unsupported_deep_policy_combinations(
+    client_with_engine: TestClient,
+    natal: dict,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/timelords/decennials/sequence",
+        json={"natal": natal},
+    )
+    assert response.status_code == 422
 
 
 def test_decennials_current_rejects_naive_current_dt(client_with_engine: TestClient) -> None:

@@ -29,6 +29,8 @@ EclipseCalculator
     lunar_local_circumstances(jd_start, latitude, longitude, *,
                               elevation_m=0.0, kind="any", backward=False,
                               mode="native")
+    lunar_eclipse_visibility_map(jd_start, *, kind="any", backward=False,
+                                 mode="native", sample_count=181)
     next_solar_eclipse(jd_start, kind="any")
     previous_solar_eclipse(jd_start, kind="any")
     solar_local_circumstances(jd_start, latitude, longitude, *,
@@ -90,6 +92,11 @@ LunarEclipseAnalysis
 LunarEclipseLocalCircumstances
     Observer-specific local lunar eclipse data.
 
+LunarEclipseVisibilityMap
+    Global zero-elevation WGS-84 Moon-center horizon rings for every contact
+    that occurs. Each ring names its sublunar point and therefore its visible
+    side. This is a visibility map, not a solar-style shadow path.
+
 LunarEclipseContacts  (from eclipse_contacts)
     Precise UT1 contact time set: P1 (1st penumbral), U1 (1st umbral),
     U2 (start of totality), U3 (end of totality), U4 (last umbral),
@@ -128,6 +135,10 @@ from moira.eclipse import (
     LocalContactCircumstances,
     LunarEclipseAnalysis,
     LunarEclipseLocalCircumstances,
+    LunarEclipseVisibilityContactKind,
+    LunarEclipseVisibilityLimit,
+    LunarEclipseVisibilityMap,
+    LunarEclipseVisibilityPoint,
     SolarBodyCircumstances,
     SolarBesselianElements,
     SolarEclipseFootprintBoundaryKind,
@@ -172,6 +183,10 @@ __all__ = [
     # Lunar eclipse
     "LunarEclipseAnalysis",
     "LunarEclipseLocalCircumstances",
+    "LunarEclipseVisibilityContactKind",
+    "LunarEclipseVisibilityPoint",
+    "LunarEclipseVisibilityLimit",
+    "LunarEclipseVisibilityMap",
     "LunarEclipseContacts",
     # Functions
     "next_solar_eclipse_at_location",

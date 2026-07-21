@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "speculum", "primary_directions", "primary_directions_policy_preset", "primary_direction_relations", "primary_direction_condition", "primary_directions_profile", "primary_directions_network", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
+        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "lunar_eclipse_visibility_map", "speculum", "primary_directions", "primary_directions_policy_preset", "primary_direction_relations", "primary_direction_condition", "primary_directions_profile", "primary_directions_network", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -90,6 +90,25 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             jd_start,
             kind=kind,
             backward=backward,
+            sample_count=sample_count,
+        )
+
+    def lunar_eclipse_visibility_map(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+        mode: str = "native",
+        sample_count: int = 181,
+    ):
+        """Return global contact-horizon limits for one lunar eclipse."""
+        facade = _facade_module()
+        return facade.EclipseCalculator(reader=self._reader).lunar_eclipse_visibility_map(
+            jd_start,
+            kind=kind,
+            backward=backward,
+            mode=mode,
             sample_count=sample_count,
         )
 

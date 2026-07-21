@@ -1,12 +1,16 @@
 # Western Systems Audit
 
-> **Point-in-time audit (2026-06).** This document is the broad Western audit
-> record for that period. Current code, standards, facade exports, and REST
-> route registration govern present capability claims.
+> **Point-in-time audit (2026-06), corrected 2026-07-21.** This document is the
+> broad Western audit record for that period. Current code, standards, facade
+> exports, and REST route registration govern present capability claims. In
+> particular, the Valens distributions/transmissions interpretive layer is now
+> quarantined; historical statements below that call it P1–P12 complete or
+> REST/dignity-ready are superseded. The separate explicit Valens L3/L4
+> Decennials chronology remains admitted.
 
 **Document:** `wiki/07_audit/WESTERN_SYSTEMS_AUDIT.md` (canonical broad Western audit)
 **Created:** 2026-06 (initial draft)
-**Last updated:** 2026-06 (comprehensive codebase audit: Almuten Figuris & Compound Rulerships, Ecliptic Sinister / Dexter Aspect Direction Flags, MC-Equal Houses, Progressed Synastry, and Subplanetary Zenith/Nadir points verified as fully implemented; Mermaid graphs and scores updated accordingly)
+**Last updated:** 2026-07-21 (Valens interpretive-layer quarantine and REST exposure correction)
 **Focus:** Broad Western tradition (Hellenistic/Greek + Medieval/Arabic + Renaissance + Modern Western including psychological, Uranian/Hamburg, Cosmobiology, etc.), as explicitly scoped. Separate from Vedic/Jyotish (tabled in prior work; see [TIER2_VEDIC_WORK_TRACKER.md](../06_roadmap/TIER2_VEDIC_WORK_TRACKER.md)).
 **Purpose:** Complete, truthful audit of *all* Western systems present in the Moira codebase. Reports current status, constitutional maturity, implementation reality vs. documentation, gaps (Type A = missing core feature; Type B = depth/interpretation/exposure gaps), and scores. "Truthfully" means distinguishing "math exists in Python" from "full constitutional phase, facade/REST exposure, tests, docs, and usable interpretation layer."
 
@@ -14,7 +18,7 @@
 - Direct code inspection (moira/*.py, primary_directions/, facade.py and _facade_*.py, moira_server/, tests/).
 - Existing constitutional artifacts: *_BACKEND_STANDARD.md (e.g. HOUSES, DIGNITIES, TIMELORDS, PRIMARY_DIRECTIONS, PROGRESSIONS, ASPECT, LOTS, SYNASTRY, TRANSITS, STARS), CONSTITUTIONAL_PROCESS.md.
 - Prior audits/roadmaps (cross-referenced, with notes on staleness): [FEATURE_AUDIT_2026.md](FEATURE_AUDIT_2026.md), [WESTERN_HELLENISTIC_GAP_TRACKER.md](../06_roadmap/hellenistic_completion/WESTERN_HELLENISTIC_GAP_TRACKER.md) (Hellenistic focus), [hellenistic_completion_roadmap.md](../06_roadmap/hellenistic_completion/hellenistic_completion_roadmap.md) (note: partially outdated per 2026-05/06 code verification), [MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md](MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md), individual doctrine/roadmap files in `wiki/` (e.g. primary-directions research and `timelords/decennials_admission_doctrine.md`).
-- Recent work: Valens Distributions/Aphesis layer brought to full P1–P12 (see decennials_admission_doctrine.md and TIMELORDS_BACKEND_STANDARD.md §1.4 update).
+- Current correction: Valens chronological deep subdivision is admitted; the distinct distributions/delineations layer is quarantined under TIMELORDS_BACKEND_STANDARD.md §1.4.
 - Exposure: Public Moira facade, server routers, __all__ exports.
 - No invention; all claims backed by file reads/greps/listings as of this session. "Gaps" called out even if docs claim completeness.
 
@@ -24,7 +28,7 @@
 
 ## Executive Summary
 
-Moira has exceptionally strong Western coverage in core natal construction (houses, aspects, dignities, lots) and predictive machinery (progressions, primary directions with many methods, transits, timelords). Recent constitutional work has closed major Hellenistic gaps (e.g. full Valens Distributions layer to P12, many "absent" items from old hellenistic roadmap now implemented: whole-sign aspects, planetary joys, is_besieged, oriental/occidental, hal b, etc.).
+Moira has exceptionally strong Western coverage in core natal construction (houses, aspects, dignities, lots) and predictive machinery (progressions, primary directions with many methods, transits, timelords). Whole-sign aspects, aspect direction/overcoming, planetary joys, besiegement, oriental/occidental condition, and halb are implemented. The separate Valens distributions/delineations layer remains a gap pending source-complete admission.
 
 **Truthful caveats (as of this audit):**
 - Many systems have deep *code* (especially primary_directions/ with extensive truth cards, methods, targets) and wiki documentation, but facade/REST/server exposure and end-to-end interpretation layers can lag (Type B gaps).
@@ -42,7 +46,7 @@ Moira has exceptionally strong Western coverage in core natal construction (hous
 | Dignities, Strength, Rulership & Condition | 88% | Essential (domicile+), accidental (hayz, halb, joy, oriental, besieged, solar, receptions); triplicity/bounds/face as first-class; many standards | Type B: full Medieval/Arabic compound rulership or psychological dignity models limited; some bounds tables strong (Egyptian) but cross-doctrine depth varies | Med |
 | Lots, Parts & Special Points | 90% | ~hundreds of lots with sect reversal; nine_parts; Uranian points via dedicated support | Depth: full interpretive "meaning" layers for obscure lots thinner than core Fortune/Spirit | Low |
 | Natal Interpretation Aids | 75% | Chart shape, harmonics, some intensity (Huber age points) | Psychological/ modern Western (e.g. full chart pattern psychology, midpoint trees as primary) partial | Med |
-| Predictive — Time Lord Systems | 85% (up from ~78% in 2026-05 audit) | Profections, Firdaria (incl. Bonatti), Zodiacal Releasing (multi-lot), Decennials (core + Valens deep L3/L4 now full P1-P12 constitutional); Hyleg etc. | Triacontaeteris deferred (insufficient source per gate); broader Medieval/Arabic dasha-like or other time lords (e.g. some Persian) absent or thin | High (but recent closure strong) |
+| Predictive — Time Lord Systems | 82% | Profections, Firdaria (incl. Bonatti), Zodiacal Releasing (multi-lot), Decennials core plus explicit Valens L3/L4 and Hephaistio L3 chronology; Hyleg etc. | Valens distributions/delineations quarantined; Triacontaeteris deferred; broader Medieval/Arabic time-lord families absent or thin | High |
 | Predictive — Transits, Progressions, Directions, Returns | 93% | Extensive progressions (40+ techniques); primary directions (many methods: Ptolemy, Placidus, Morinus, Regiomontanus, Topocentric, etc. with fixed stars, antiscia, converse, targets); rich transits (aspect, equatorial, house ingresses, converse); returns (solar etc.) | Type B: full facade exposure for all PD methods/variants may be partial vs. wiki depth; some return flavors (e.g. varshaphal) more Vedic-flavored | Low-Med |
 | Relational & Synastry | 85% | Core synastry (aspects, houses, midpoints, composites, Davison with MC correction); progressed synastry | Major gaps: transits to composite/Davison, cross-chart patterns | High |
 | Spatial & Locational (ACG, Local Space, etc.) | 83% | Basic ACG (MC/IC/ASC/DSC lines), zenith/nadir sub-planetary points, parans, local space, geodetic; relocated charts | Extended bodies/fixed stars for broader ACG coverage; full 3D/spatial interpretation; richer map/render exposure for spatial products | High |
@@ -56,7 +60,7 @@ Moira has exceptionally strong Western coverage in core natal construction (hous
 3. Full exposure/interpretation for deep primary directions variants.
 4. Broader Medieval/Arabic + Renaissance time-lord or compound systems beyond core timelords.
 5. Modern Western psychological/ Uranian advanced interpretive layers.
-6. (Resolved/reduced): Hellenistic aphesis/distributions (now P1-P12 complete via Valens layer + dignities wiring), Progressed Synastry, and Subplanetary Zenith/Nadir points.
+6. Hellenistic distributions/delineations — quarantined until source-complete and unscored; Progressed Synastry and Subplanetary Zenith/Nadir points remain resolved/reduced.
 
 See detailed sections + references for full lists.
 
@@ -131,7 +135,7 @@ graph TD
         N4 --> N5[Natal Aids (shapes, harmonics)<br/>Partial depth]
     end
     subgraph "Predictive"
-        P1[Time Lords<br/>Profections/Firdaria/ZR/Decennials+Valens P1-P12 Full] -->|Recent full closure| P2[Transits/Progressions<br/>Extensive]
+        P1[Time Lords<br/>Profections/Firdaria/ZR/Decennials chronology] -->|Strong core; delineations quarantined| P2[Transits/Progressions<br/>Extensive]
         P2 --> P3[Primary Directions<br/>Deep wiki+code many methods<br/>Incomplete: full facade/exposure for all variants]
         P3 --> P4[Returns & Other<br/>Strong core]
     end
@@ -345,12 +349,14 @@ This starts the "in order" deep audit of the audit doc's first category. All 22 
 - Traditional Almuten Figuris (`almuten_figuris`): Full Medieval/Arabic calculation scoring essential dignities across the five Hylegical/aphetic points (Sun, Moon, Ascendant, Lot of Fortune, prenatal Syzygy), accidental dignities via house placement, and day/hour rulers. Preserves backward-compatible fallback mode for essential-only calculations on Sun, Moon, and Ascendant.
 - Accidental: hayz, halb (implemented), joy (is_in_joy + PLANETARY_JOYS), oriental/occidental, besieged (is_besieged), solar (cazimi etc. via phenomena), mutual receptions.
 - Many supporting: triplicity.py, egyptian_bounds.py (Ptolemaic/Chaldean tables), dignities_types.
-- Recent P7 Valens Distributions wiring (include_timelord_distributions flag, scores forwarding to calculate_dignities, timelord_distribution_condition).
+- No Valens timelord-score extension remains in the dignity engine or REST
+  policy; source-independent numerical contributions are rejected.
 - DIGNITIES_BACKEND_STANDARD (high phase).
 
 **Incomplete / Gaps (truthful):**
 - Modern psychological or customizable planetary strength weighting models (while Medieval/Arabic compound is fully implemented via Almutens, custom user-defined weights remain a Type B depth gap).
 - Some bounds cross-doctrine (strong Egyptian, partial others in places).
+- Valens distributions are not an admitted dignity condition or score source.
 
 **Score:** 95% | **Priority:** Low | **Refs:** DIGNITIES_BACKEND_STANDARD.md, EGYPTIAN_BOUNDS..., TRIPLICITY..., dignities.py (Almuten Figuris + Compound Rulerships), dignities_types.py + recent timelords P7 edits, hellenistic roadmap verification.
 
@@ -383,14 +389,17 @@ This starts the "in order" deep audit of the audit doc's first category. All 22 
 - Profections (annual/monthly, classical rulers - profections.py).
 - Firdaria (diurnal/nocturnal/Bonatti, active pair etc. - timelords.py + facade).
 - Zodiacal Releasing (multi-lot Fortune/Spirit/Eros/Necessity, LB, angularity, profiles, active path - timelords.py, full constitutional).
-- Decennials (129mo core L1/L2 + Valens deep L3/L4 + Hephaistio L3; now full P1-P12 with distributions layer, effects on periods/profiles, dignities bridge - see decennials_admission_doctrine.md + TIMELORDS_BACKEND_STANDARD §1.4 + recent P6-P12 work).
+- Decennials (129-month core L1/L2 plus explicit Valens deep L3/L4 and
+  Hephaistio L3 chronology; see TIMELORDS_BACKEND_STANDARD §1.2).
 - Hyleg/Alcocoden notes in audits.
 
 **Incomplete / Gaps (truthful):**
 - Triacontaeteris constitutionally deferred (insufficient first-principles source per gate in WESTERN tracker).
+- Valens distributions/delineations quarantined pending item-complete source
+  transcription, explicit contextual policy, and unscored fixtures.
 - Broader Medieval/Arabic or Persian time lord variants (Type A/B beyond core).
 
-**Score:** 85% (major recent uplift from Valens P1-P12 + P7 wiring) | **Priority:** High (but largely closed) | **Refs:** TIMELORDS_BACKEND_STANDARD.md (incl. new §1.4), decennials_admission_doctrine.md (full packet + P1-P12 table), timelords.py (core + valens block + P7 dignities), profections.py.
+**Score:** 82% | **Priority:** High | **Refs:** TIMELORDS_BACKEND_STANDARD.md §§1.2–1.4, decennials_admission_doctrine.md (historical research plus corrective status), timelords.py, profections.py.
 
 ### 7. Predictive — Transits, Progressions, Directions & Returns (Deep Sub on Primary Directions)
 **Fully Implemented:**
@@ -452,7 +461,7 @@ This starts the "in order" deep audit of the audit doc's first category. All 22 
 
 ## Cross-Cutting Concerns (Truthful)
 
-- **Constitutional Process:** Many core Western at Phase 11 (standards declare current truth). Recent Valens layer explicitly brought to P1-P12. Some sub-systems (PD depth) have wiki "truth cards" but not all elevated to full standard freeze.
+- **Constitutional Process:** Many core Western surfaces are at Phase 11. The Valens distributions/delineations candidate is quarantined rather than frozen. Some sub-systems (PD depth) have wiki "truth cards" but not all are elevated to full standard freeze.
 - **Source Backing:** Strong for Hellenistic (Valens admissions, etc.); variable for modern/Western extensions.
 - **Facade/Server Exposure:** Core calc often present; exposure varies (timelords, houses, aspects strong; some PD variants and special less so).
 - **Tests:** High in many areas (e.g. houses noted 1189+); adversarial/edge per recent work.
@@ -462,7 +471,7 @@ This starts the "in order" deep audit of the audit doc's first category. All 22 
 
 ## Consolidated Gaps, Scores, Recommendations (from this audit + sources)
 
-(See Executive Summary table + per-category for details. Top ones align with FEATURE_AUDIT/WESTERN tracker but updated for 2026-06 closures like Valens full.)
+(See Executive Summary table + per-category for details. Historical 2026-06 closure claims are corrected by the 2026-07-21 quarantine notice.)
 
 **Recommendations:**
 - Prioritize relational/spatial exposure and interpretation for website/user impact.
@@ -489,7 +498,7 @@ This starts the "in order" deep audit of the audit doc's first category. All 22 
 - WESTERN_HELLENISTIC_GAP_TRACKER.md (Hellenistic-specific, with recent Valens closure notes)
 - wiki/06_roadmap/hellenistic_completion/hellenistic_completion_roadmap.md (historical; note updates)
 - Individual wiki/02_standards/*_BACKEND_STANDARD.md (Western: ASPECT, DIGNITIES, HOUSES, LOTS, PRIMARY_DIRECTIONS [extensive], PROGRESSIONS, SYNASTRY, TIMELORDS [incl. recent Valens §1.4], TRANSITS, STARS, etc.)
-- wiki/01_doctrines/timelords/decennials_admission_doctrine.md (Valens Distributions full packet + P1-P12 status)
+- wiki/01_doctrines/timelords/decennials_admission_doctrine.md (historical Valens research record plus current corrective status)
 - moira/ source tree (as inventoried via list_dir/grep)
 - [MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md](MOIRA_COMPETITIVE_ANALYSIS_2026-05-25.md)
 - Primary directions wiki/ subdocs (many truth cards, methods, etc.)

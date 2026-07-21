@@ -72,29 +72,25 @@ subdivision is admitted, deep-method truth.
 `Hephaistio L4` is not constitutionalized by this standard and remains
 deferred.
 
-#### §1.4 Valens Distributions (Admitted Interpretive Layer)
+#### §1.4 Valens Distributions (Quarantined Candidate Layer)
 
-Valens Distributions (also called transmissions or "10-Year, 9-Month Distribution of Propitious and Impropitious Times" and the Four Lots rules) is the interpretive layer from Vettius Valens, *Anthologies* Bk IV.17–24 (planets + Ascendant), IV.25 (Four Lots: Fortune, Daimon, Love, Necessity), and related sections (IV.5 mutual transmissions, IV.26/30 one-fourth methods).
+The Valens distributions/transmissions delineation layer is **not admitted**.
+The earlier implementation did not preserve the receiver relation needed to
+select a source item, duplicated incomplete tables, attached effects
+automatically, and inferred benefic/malefic scores from English keywords. Those
+behaviours are not source-owned doctrine and have been removed.
 
-It does **not** define new core period arithmetic. The 10y9m sequencing is already provided by the admitted Decennials engine (129-month majors, zodiacal order from sect light). The layer supplies:
+This quarantine is separate from
+`DecennialPolicy.deep_subdivision_method="valens"`. That explicit policy selects
+the admitted Valens chronological subdivision described in §1.2; it does not
+enable delineations, effects, polarities, or dignity scores.
 
-- Verbatim source effect tables (P1 truth preservation).
-- Typed `ValensDistributionEffect` vessels (P2–P5).
-- Local condition scores and polarities on `DecennialConditionProfile` / `ZRConditionProfile` (P7).
-- Chart-wide aggregates and simple network projections (P8–P9).
-- Explicit bridges into the dignity engine as `AccidentalDignityCondition` contributions under the "timelord" category (P7/P9 cross-wiring, following the precedent of `overcoming()` in aspects.py and other Hellenistic conditions).
-
-**Canonical entry points (all in `moira/timelords.py`):**
-- `get_valens_planet_distribution(distributor, receiver)`
-- `get_valens_lot_distribution_quality(...)`
-- `formalize_valens_distributions_for_chronocrator(chronocrator, ...)`
-- `valens_distribution_as_accidental_condition(...)` and `build_valens_distribution_scores_from_periods(...)` (for dignities consumers)
-- Effects are automatically attached to `DecennialPeriod` (and `ReleasingPeriod`) instances produced by `decennials()` / `zodiacal_releasing()` when the layer policy is enabled.
-- Scores surface on the corresponding `*ConditionProfile` objects and can be fed to `calculate_dignities(..., valens_distribution_scores=..., policy=...)` when `include_timelord_distributions=True`.
-
-**Source discipline:** All effect text and rules are preserved verbatim (or near-verbatim) from tool-extracted Valens PDF material. Full admitted packet lives in `wiki/01_doctrines/timelords/decennials_admission_doctrine.md`.
-
-**Constitutional status:** This layer is declared at Phase 11 (Architecture Freeze) as an admitted interpretive/relational extension inside the timelords family. It does not modify the core computational definitions in §1.1–§1.3.
+While quarantined, the interpretive layer has no public export, period/profile
+field, automatic attachment, REST option, score, aggregate, or dignity bridge.
+Admission requires an item-complete source transcription; explicit distributor,
+receiver, sect, operative-place, aspect, and Lot policies; typed unscored result
+semantics; and source-owned fixtures proving each admitted relation. Generic
+good/bad labels and numerical scores are outside the admitted design.
 
 The internal arithmetic is doctrinal rather than astronomical:
 
@@ -163,25 +159,8 @@ according to the constitutional dependency graph.
 | 9 | Network Intelligence | `FirdarActivePair`, `firdar_active_pair()` | `DecennialActivePair`, `DecennialActivePath`, `decennial_active_pair()`, `decennial_active_path()` | `ZRLevelPair`, `zr_level_pair()` |
 | 10 | Hardening | `validate_firdaria_output()` | `validate_decennials_output()` | `validate_releasing_output()` |
 
-**Valens Distributions (interpretive / relational layer on Decennials + ZR):**
-
-This is an additional admitted Hellenistic layer (Valens Anthologies Bk IV.17–25, related transmissions) providing explicit effect vessels, local condition scores, and dignities bridges for "distributions/transmissions of the stars and the Four Lots". It does not alter core arithmetic; it is a pure P1–P12 interpretive add-on whose canonical home is inside the timelords module (on `DecennialPeriod` / `ReleasingPeriod` + their `*ConditionProfile` surfaces) with cross-wiring into dignities.
-
-| Layer | Phase | Valens Distributions (on Decennials / ZR) |
-|---|---|---|
-| 1 | Truth Preservation | `VALENS_*_DISTRIBUTIONS` dicts (verbatim source tables) |
-| 2 | Classification | `ValensDistributionEffect` dataclass |
-| 3 | Inspectability | `get_valens_planet_distribution`, `get_valens_lot_distribution_quality` |
-| 4 | Policy | `VALENS_DISTRIBUTIONS_POLICY` |
-| 5 | Relational Formalization | `formalize_valens_distributions_for_chronocrator(...)` (explicit list vessels) |
-| 6 | Relational Hardening | `harden_valens_effects`, `_validate...`, `validate_valens_layer`, versioned effects |
-| 7 | Integrated Local Condition | `valens_*` fields on `DecennialConditionProfile` / `ZRConditionProfile`; `integrate_valens...` + `compute_valens...`; auto-population in period builders; P7 bridges to dignities |
-| 8 | Aggregate Intelligence | `aggregate_valens_distributions(periods)` (chart-wide) |
-| 9 | Network Intelligence | `valens_distribution_network(effects)`; `valens_distribution_as_accidental_condition`, `build_valens_distribution_scores_from_periods` (P9 facade/dignities hooks) |
-| 10 | Hardening | `DecennialPeriod`/`ReleasingPeriod` post_init validation for effects; policy surface |
-| 11 | Architecture Freeze | Declared constitutional in this standard (see §1.4 below) |
-
-The layer reached full P1–P12 constitutional status in 2026-06 per the process in `wiki/00_foundations/CONSTITUTIONAL_PROCESS.md` and the pre-Phase-1 packet in `decennials_admission_doctrine.md`.
+**Valens Distributions:** quarantined under §1.4. They are not an additional
+layer on the admitted Decennials or Zodiacal Releasing architecture.
 
 ---
 

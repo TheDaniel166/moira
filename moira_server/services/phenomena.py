@@ -63,6 +63,7 @@ from ..models.phenomena import (
     LunarOccultationPathTopologyAtRequest,
     LunarOccultationPathTopologyRequest,
     LunarEclipseLocationRequest,
+    LunarEclipseVisibilityRequest,
     LunarOccultationRequest,
     LunarStarOccultationRequest,
     LunarStarOccultationPathAtRequest,
@@ -525,6 +526,32 @@ def compute_lunar_eclipse_local(engine: Moira, request: LunarEclipseLocationRequ
         elevation_m=request.elevation_m,
         kind=kind,
         mode=mode,
+    )
+
+
+def compute_lunar_eclipse_visibility(
+    engine: Moira,
+    request: LunarEclipseVisibilityRequest,
+):
+    _require_finite(request.jd_start, "jd_start")
+    if not 9 <= request.sample_count <= 721:
+        raise ValueError("sample_count must be between 9 and 721")
+    kind = _require_allowed(
+        request.kind,
+        "lunar eclipse kind",
+        _VALID_LUNAR_ECLIPSE_KINDS,
+    )
+    mode = _require_allowed(
+        request.mode,
+        "lunar eclipse mode",
+        _VALID_LUNAR_ECLIPSE_MODES,
+    )
+    return engine.lunar_eclipse_visibility_map(
+        request.jd_start,
+        kind=kind,
+        backward=request.backward,
+        mode=mode,
+        sample_count=request.sample_count,
     )
 
 
@@ -1013,6 +1040,7 @@ __all__ = [
     "compute_all_lunar_occultations",
     "compute_close_approaches",
     "compute_lunar_eclipse_local",
+    "compute_lunar_eclipse_visibility",
     "compute_lunar_occultations",
     "compute_lunar_occultation_path_at",
     "compute_lunar_occultation_paths",

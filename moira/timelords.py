@@ -48,10 +48,6 @@ from .constants import SIGNS, sign_of
 from .julian import CalendarDateTime, calendar_datetime_from_jd, datetime_from_jd
 from .profections import DOMICILE_RULERS
 
-# P7 cross-wiring import (types only; no runtime cycle with dignities engine)
-from .dignities_types import AccidentalDignityCondition  # for valens_distribution_as_accidental_condition bridge
-
-
 # ---------------------------------------------------------------------------
 # Phase 12 — Public API Curation
 # ---------------------------------------------------------------------------
@@ -118,19 +114,6 @@ __all__ = [
     "validate_firdaria_output",
     "validate_decennials_output",
     "validate_releasing_output",
-    # Valens Distributions layer (P1–P11, admitted Hellenistic aphesis interpretive layer)
-    "ValensDistributionEffect",
-    "get_valens_planet_distribution",
-    "get_valens_lot_distribution_quality",
-    "formalize_valens_distributions_for_chronocrator",
-    "harden_valens_effects",
-    "aggregate_valens_distributions",
-    "VALENS_DISTRIBUTIONS_POLICY",
-    # P7 bridges for dignities/conditions wiring
-    "valens_distribution_as_accidental_condition",
-    "build_valens_distribution_scores_from_periods",
-    # P9 architectural query helper
-    "get_valens_distributions_for_period",
 ]
 
 
@@ -890,9 +873,6 @@ class DecennialPeriod:
     major_month_total: float = float(_DECENNIAL_MAJOR_MONTHS)
     month_basis_days: float = _DECENNIAL_MONTH_DAYS
 
-    # Phase 5+ Valens Distributions layer (full admitted doctrine)
-    valens_distributions_effects: list["ValensDistributionEffect"] = field(default_factory=list)
-
     def __post_init__(self) -> None:
         if self.level not in (1, 2, 3, 4):
             raise ValueError(f"DecennialPeriod.level must be 1, 2, 3, or 4, got {self.level}")
@@ -929,10 +909,6 @@ class DecennialPeriod:
             raise ValueError("DecennialPeriod major_month_total must be positive")
         if self.month_basis_days <= 0:
             raise ValueError("DecennialPeriod month_basis_days must be positive")
-        # P10 hardening: validate valens effects are for this planet or compatible
-        for eff in self.valens_distributions_effects:
-            if eff.distributor not in (self.planet, None) and not eff.is_lot:
-                raise ValueError(f"Valens effect distributor {eff.distributor} not compatible with period planet {self.planet}")
         if self.level == 1 and self.major_planet is not None:
             raise ValueError("DecennialPeriod level-1 periods must not set major_planet")
         if self.level == 1 and self.parent_planet is not None:
@@ -1361,18 +1337,6 @@ def decennials(
 
         cursor_jd = major_end
 
-    # P7 wiring: populate valens_distributions_effects on all periods (Decennials as primary
-    # chronocrator carrier for the admitted aphesis/distributions layer).
-    # Uses formalize_ (P5) + harden (P6). Policy gated.
-    if VALENS_DISTRIBUTIONS_POLICY.get("attach_to_decennials", True):
-        for p in periods:
-            try:
-                p.valens_distributions_effects = formalize_valens_distributions_for_chronocrator(
-                    chronocrator=p.planet
-                )
-            except Exception:
-                p.valens_distributions_effects = []
-
     return periods
 
 
@@ -1788,9 +1752,6 @@ class ReleasingPeriod:
     # Phase 2: typed classification
     angularity_class: str | None = None  # ZRAngularityClass constant, or None if non-peak
 
-    # Phase 5+ Valens Distributions layer (full admitted doctrine)
-    valens_distributions_effects: list["ValensDistributionEffect"] = field(default_factory=list)
-
     def __post_init__(self) -> None:
         if self.level not in (1, 2, 3, 4):
             raise ValueError(f"ReleasingPeriod.level must be 1–4, got {self.level}")
@@ -1800,11 +1761,6 @@ class ReleasingPeriod:
             raise ValueError("ReleasingPeriod start_jd and end_jd must be finite")
         if self.end_jd <= self.start_jd:
             raise ValueError("ReleasingPeriod end_jd must be greater than start_jd")
-        # P10 hardening for valens layer
-        for eff in self.valens_distributions_effects:
-            if eff.distributor and eff.distributor not in (self.ruler, None) and not eff.is_lot:
-                raise ValueError(f"Valens effect for {eff.distributor} not matching releasing ruler {self.ruler}")
-
     # --- Phase 3: inspectability ---
 
     @property
@@ -2096,31 +2052,13 @@ class DecennialConditionProfile:
     days:                  float
     month_basis_days:      float
 
-    # P7 Integrated Local Condition — Valens Distributions layer
-    # (admitted Hellenistic chronocrator effects per decennials_admission_doctrine.md + Valens Bk IV)
-    # Populated via integrate_valens_distributions_into_conditions / compute_valens_distribution_condition
-    # in the profile builder (see CONSTITUTIONAL_PROCESS.md Phase 7).
-    valens_distribution_score: int = 0
-    valens_num_effects: int = 0
-    valens_polarities: tuple[str, ...] = field(default_factory=tuple)
-    valens_citations: tuple[str, ...] = field(default_factory=tuple)
-
-
 def decennial_condition_profile(period: DecennialPeriod) -> DecennialConditionProfile:
     """Build a DecennialConditionProfile from a DecennialPeriod.
 
-    P7 wiring: also integrates Valens distribution local condition (score, counts, polarities,
-    source citations) from the period's pre-attached valens_distributions_effects (populated
-    during decennials() per the admitted doctrine). This makes the timelord period's
-    "propitious/impropitious" interpretive layer (Valens IV.17–25) first-class inspectable
-    condition data alongside structural truth.
-
-    Canon / source: Vettius Valens, Anthologies (distributions/transmissions); see
-    wiki/01_doctrines/timelords/decennials_admission_doctrine.md (Full Admitted Doctrine Packet)
-    and CONSTITUTIONAL_PROCESS.md Phase 7.
+    The profile preserves admitted structural Decennials truth only. Candidate
+    Valens distributions/delineations are deliberately not attached here.
     """
 
-    valens = integrate_valens_distributions_into_conditions(period)
     return DecennialConditionProfile(
         planet=period.planet,
         level=period.level,
@@ -2143,10 +2081,6 @@ def decennial_condition_profile(period: DecennialPeriod) -> DecennialConditionPr
         months=period.months,
         days=period.days,
         month_basis_days=period.month_basis_days,
-        valens_distribution_score=valens.get("valens_distribution_score", 0),
-        valens_num_effects=valens.get("num_effects", 0),
-        valens_polarities=tuple(valens.get("polarities", [])),
-        valens_citations=tuple(valens.get("citations", [])),
     )
 
 
@@ -2227,15 +2161,6 @@ class ZRConditionProfile:
     angularity_class:        str | None
     use_loosing_of_bond:     bool
 
-    # P7 Integrated Local Condition — Valens Distributions layer (for Releasing periods)
-    # See DecennialConditionProfile for rationale; ZR periods carry the same effects attachment
-    # capability (lot transmissions IV.25 align with releasing doctrine).
-    valens_distribution_score: int = 0
-    valens_num_effects: int = 0
-    valens_polarities: tuple[str, ...] = field(default_factory=tuple)
-    valens_citations: tuple[str, ...] = field(default_factory=tuple)
-
-
 def zr_condition_profile(period: ReleasingPeriod) -> ZRConditionProfile:
     """
     Build a ZRConditionProfile from a ReleasingPeriod.
@@ -2243,10 +2168,8 @@ def zr_condition_profile(period: ReleasingPeriod) -> ZRConditionProfile:
     Assembles all Phase 1–6 truth about the period into a single profile.
     This function is deterministic and has no side effects.
 
-    P7 wiring: also folds in Valens lot/planet distribution condition (see
-    integrate_valens_distributions_into_conditions) so that the local
-    propitious/impropitious quality from the active releasing chronocrator
-    (and any lot transmissions) is available as first-class data on the profile.
+    Candidate Valens distributions/delineations are deliberately not attached
+    to the admitted structural Zodiacal Releasing profile.
 
     Parameters
     ----------
@@ -2257,7 +2180,6 @@ def zr_condition_profile(period: ReleasingPeriod) -> ZRConditionProfile:
     -------
     ZRConditionProfile
     """
-    valens = integrate_valens_distributions_into_conditions(period)
     return ZRConditionProfile(
         sign                    = period.sign,
         ruler                   = period.ruler,
@@ -2271,10 +2193,6 @@ def zr_condition_profile(period: ReleasingPeriod) -> ZRConditionProfile:
         angularity_from_fortune = period.angularity_from_fortune,
         angularity_class        = period.angularity_class,
         use_loosing_of_bond     = period.use_loosing_of_bond,
-        valens_distribution_score=valens.get("valens_distribution_score", 0),
-        valens_num_effects=valens.get("num_effects", 0),
-        valens_polarities=tuple(valens.get("polarities", [])),
-        valens_citations=tuple(valens.get("citations", [])),
     )
 
 
@@ -2610,171 +2528,6 @@ class ZRSequenceProfile:
         """Number of periods that are not peak periods."""
         return self.period_count - self.peak_period_count
 
-# ---------------------------------------------------------------------------
-# Phase 1 Layering: Valens Distributions (source-backed from Anthologies Bk IV)
-# Truth preservation of extracted doctrine for planet distributions and Four Lots transmissions.
-# This is the initial slice (Four Lots + Sun/Moon/Asc/Saturn/Jupiter/Mars examples).
-# No new core engine; pure lookup on existing chronocrator activity.
-# Full packet (with complete tables/effects) formalized in 
-# wiki/01_doctrines/timelords/decennials_admission_doctrine.md
-# See CONSTITUTIONAL_PROCESS.md for Phase 1 (truth preservation) definition.
-# ---------------------------------------------------------------------------
-
-VALENS_SUN_DISTRIBUTIONS: dict[str, str] = {
-    "Saturn": "bad year. It indicates unemployment, setbacks, hostility and rejection, damage from superiors or elders, rebellions of the lower classes, diseases and eye infirmities, ups and downs of livelihood and terrifying upheavals, attacks of subject peoples, the deaths of fathers or of men in the place of fathers. If the transmission is unfavorably situated, it brings convictions and imprisonment.",
-    "Jupiter": "brilliant year: the father’s high rank (for those who have a living father), association with superiors, prosperity, gifts, prominent occupations, offices. It brings the begetting of children and marriage (for the unmarried) and brings enterprises to fruition. It brings success and foretells great expectations.",
-    # Additional from full extraction as available in packet; apply modifiers per Valens (aspects, operative places, sect)
-}
-
-VALENS_MOON_DISTRIBUTIONS: dict[str, str] = {
-    "self": "unpleasant: it brings hostility and lawsuits from the great, ups and downs of livelihood, and confrontations with relatives or wives. A malefic in aspect from the right brings bodily weakness and sudden dangers. In such a chronocratorship, it is necessary to examine the sign in which the Moon is located, in order to see if a malefic in transit will cause something worse.",
-    "Sun": "the waning of livelihood and great expenses. Especially if malefics behold the transmission, the failure of actions and vain hopes are foretold, as well as upheavals, disturbances, domestic disorders, and affairs or marriage with women. For those who have a solidly established rank in life, <this distribution brings> expenditures resulting in purchases or renewed success in business, and advancement or some gifts and benefactions.",
-    # Extend from packet extracts
-}
-
-VALENS_ASCENDANT_DISTRIBUTIONS: dict[str, str] = {
-    "malefic": "very bad period, especially if the transmission is to Saturn (for night births) or to Mars (for day births). It brings bodily dangers, ups and downs of livelihood, anxiety, disturbing crises, falls, and injuries.",
-    "Jupiter": "brilliant and profitable period, high ranks, and distinguished positions. Some are helped and promoted by the great; some escape dangers and crises and their troubles are relieved; others attain freedom.",
-    "Venus": "good, lovely time: associations and affairs with women, buying, good cheer, an escape from evils.",
-    "Sun": "men will be well received by the great and by superiors, and that the year will be successful. For those of high rank, it brings even higher positions and advancement.",
-    "Moon": "steady and effective period: help from and associations with women, innovations, occupations, travel with a successful outcome, and (especially if benefics are in aspect) prosperity abroad. If malefics are in aspect, it indicates the opposite—and with disturbances.",
-}
-
-VALENS_SATURN_DISTRIBUTIONS: dict[str, str] = {
-    "self": "trouble and unemployment, hostility from elders or the great, and disgrace. Men will fail in their attempts or, if they do accomplish anything, it will be insecure. If Venus or Mars beholds Saturn, men will be denounced and have trials because of documents; they will suffer the subversion of matters concerning religion or legacies, will suffer from malignity and tricks, and they will come to an end like those suffering the wrath of God. <If benefics are in aspect,> the results will be milder: <troubles> will come more slowly, mixed with some success.",
-    "Sun": "danger to the father or his death, if he already has some infirmity. It brings an uncertain year: hostility, penalties, lawsuits, troubles of the sense organs, recurrence of disease, meanness on the part of friends and relatives. For day births, if the transmission happens to be favorably configured, men will succeed with wearisome labor and expenditures, or they will profit from deaths.",
-    "Moon": "danger to the mother—if she is still alive; if not, to female individuals. It brings about hostilities, separations, damage, criminality, disturbances in business, dangerous movements, bodily weakness, intermittent fevers, internal and nervous disorders, feebleness, dimming of vision, unexpected diseases.",
-    "Mars": "terrible and dangerous year: it brings about illnesses, plots, troubles, dangers, the deaths of family members and suffering or disturbances and lawsuits on behalf of family members, the ingratitude of friends, family upheavals, defense speeches/disputes, fears and hatreds with respect to the great, the deaths of fathers (if they are still alive) or of older individuals, hazardous and profitless travel. If the stars are unfavorably situated, they bring about shipwreck and ruin, diseases and injuries. If they are well configured in operative signs or have benefics in aspect, most of the trouble will be dissipated.",
-    "Jupiter": "fine and effective period: men receive inheritances and legacies. They receive help from older people or from wills. They control estates and property. Some gain profit from moist matters: they own ships, they purchase ships, they demolish and rebuild, they restore old matters and are adorned with a livelihood. If Saturn or Venus are together and in aspect with this distribution, men will endure trials and lawsuits, and will have untimely expenses.",
-}
-
-VALENS_JUPITER_DISTRIBUTIONS: dict[str, str] = {
-    "self": "good and effective period: help from friends, gifts, successful activities, trusts, stewardships, associations with the great, and the begetting of children. If it is beheld by Saturn, it brings ups and downs and untimely expenses.",
-    "Sun": "brilliant period, full of accomplishment for superior personages: it brings popular success, offices, advancement. It makes men worthy of honors, garlands, the offices of governor and general, and indicates the attainment of wealth—all proportional to the <stars’> arrangements and positions in the horoscope. For men of average rank, it indicates employment, escape from evils, freedom, beneficial associations, changes, as well as sympathetic friendships, childbirths, the acquisition of slaves—all this especially when Jupiter is well configured for day births.",
-    "Saturn": "movements that can produce good or bad, expenses, domestic distrust. To some it brings deaths, changes of residence or business, unsteady associations, hostility of friends. It makes men fail to succeed in enterprises or to succeed only after delay. It makes men petition and plead <for justice> and to be involved in troubles.",
-    "Mars": "harmful and disturbing year: it controls hostility from superiors, slanders, condemnations, betrayals, hazardous travel, dangerous diseases, critical periods or deaths of family members, ups and downs in livelihood, expenses. If the nativity is found to be of the public or governing class, and if the configuration is favorable, it brings political ties and advancement, along with expenses, gifts, and promises. These men will live with anxiety and suspicion.",
-}
-
-VALENS_MARS_DISTRIBUTIONS: dict[str, str] = {
-    "self_day": "unpleasant and disturbing: it brings hostility, harm, abuse connected with public business, or expenses for the public. So, some are abused or imprisoned by officials or by the wealthy.",
-    "self_night": "not bad: it promotes success and becomes helpful, especially if it is in operative signs, particularly for those who participate in martial affairs or in public or official life.",
-    "Sun": "danger to the father—if he is alive; if not, danger to the one who is like a father. It causes hostility from the great, separations from friends, dangerous diseases, troubles of the sense organs, danger from fires, heights, or animals, bleeding, amputations, and falls. It brings envy, disputes, and risky travels. If <the stars> happen to be in operative signs or have benefics in aspect, they bring employment, benefits, rank, political ties with superiors, but at the same time they bring anxiety, upset, plots, hatred and obstacles in the employment.",
-    "Moon": "hazardous, prone to fail: it causes disorders, confinements, lawsuits, anxieties, hazardous travel, attacks and abuse from foreigners, danger to the mother or to females, battles, separations. It disturbs the masses or the city. It brings weakness, bleeding, falls, relapses of diseases, danger from fire, and shipwreck. Especially if the nativity is during the day, and if the moon is waxing and unfavorably situated, the previously described effects will become worse: even blindness, wounds, the breaking of bones, troubles and injuries to the eyes. If the stars happen to have benefics in aspect and are in operative places, they cause risky activities and advancement. To females they bring bodily dangers, bleeding and consumption, abortion, and troubles of the generative organs.",
-}
-
-VALENS_LOT_DISTRIBUTIONS: dict[str, dict[str, str]] = {
-    "Fortune": {
-        "operative_benefic": "good fortune, advancement, employment, rank, success in business, fulfillment of expectations, and profits from legacies.",
-        "operative_malefic_or_precedes_angle": "lower employments or ranks; whatever men accomplish will be impermanent and accompanied by reversals and dangers, trials and abuse.",
-    },
-    "Daimon": {
-        "operative_benefic": "opportunities which accord with one’s wishes, discerning and easily accomplished plans, helpful advice/contributions from friends, ties with the great, gifts, and rank. It makes men who succeed in their attempts and who are inflated with much self-esteem.",
-        "unfavorable_malefic": "changeable fortunes and emotional anguish, insensibility, cross-purposes. It makes men consider their own mistakes as successes, and makes them lay the blame on others, missing the mark in most respects. As a result such men lose heart; they sometimes contrive danger for themselves, are treated like the insane, and are struck mad.",
-    },
-    # Love (Eros) and Necessity abbreviated per source extracts; full in admission packet doc
-}
-
-# Venus and Mercury data (P1, from final tool extraction) - placed here so lookups can use them
-VALENS_VENUS_DISTRIBUTIONS: dict[str, str] = {
-    "self": "g distributing to itself when favorably situated brings friendships and associations, agreements between men and women, gifts, enjoyable intimacies, marriage, family harmony, pleasures, and profits. If the star is found with S or h, is beheld by them, or is in inoperative signs, it brings criticism, denunciation, whoring, penalties, breaches of faith, treachery from women, trials, and disorder. Women suffer the same treatment from men.",
-    "Sun": "g distributing to the s brings a glorious period, full of accomplishment, a period characterized by associations and help from males and females: intimacy, marriage, childbirths, the purchase of ornaments and slaves, or gifts of these same items, high rank for the father (if he is still alive), or sympathy and help from father-like figures—all of this especially if the stars are favorably configured. To those of superior rank it brings the honor of wearing garlands, high-priesthoods, advancement, offices, and gifts to the masses. It brings oracles, association in religious or divine matters, charm, and joy.",
-}
-VALENS_MERCURY_DISTRIBUTIONS: dict[str, str] = {
-    "self": "f distributing to itself is effective and helpful in enterprises and trusts: it causes men who achieve their goals, who are superior to their enemies, who operate as actors or religious figures, who are successful in business, and who gain prosperity from words or accounts. Especially if f is rising, is in operative signs, or is beheld by j and g, it indicates greater trusts and profits. If it is beheld by malefics, it is indicative of anxieties and reversals.",
-    "Sun": "f transmitting the year to the s is associative, effective, and full of accomplishment: it brings association with the great, requests, gifts (but with delays and obstacles), stewardships, preeminence, and knowledge of religious matters. It is glorious and beneficial to those involved in letters and education. For the most part, men gain advantage through religion or acting.",
-}
-
-
-@dataclass(slots=True)
-class ValensDistributionEffect:
-    """P2 Classification (and higher) vessel for Valens distribution effect.
-    Turns implicit lookup (P1 raw text) into explicit result vessel (Phase 5 Relational Formalization start).
-    """
-    distributor: str
-    receiver: str | None = None
-    effect: str = ""
-    source_section: str = ""
-    polarity: str = "mixed"
-    keywords: list[str] = field(default_factory=list)
-    is_lot: bool = False
-def get_valens_planet_distribution(distributor: str, receiver: str) -> ValensDistributionEffect | None:
-    """Phases 1-3 for Valens planet distributions (full admitted set).
-    P1: raw effect text from source.
-    P2: wrapped in ValensDistributionEffect (classification).
-    P3: inspectable typed return (not str).
-    Includes Venus/Mercury from full extraction.
-    """
-    d = distributor.title()
-    r = receiver.title() if receiver else ""
-    effect_text = None
-    section = ""
-    if d == "Sun":
-        effect_text = VALENS_SUN_DISTRIBUTIONS.get(r)
-        section = "IV.17"
-    elif d == "Moon":
-        key = r if r else "self"
-        effect_text = VALENS_MOON_DISTRIBUTIONS.get(key)
-        section = "IV.18"
-    elif d in ("Ascendant", "Asc"):
-        effect_text = VALENS_ASCENDANT_DISTRIBUTIONS.get(r if r else "malefic")
-        section = "IV.19"
-    elif d == "Saturn":
-        effect_text = VALENS_SATURN_DISTRIBUTIONS.get(r if r else "self")
-        section = "IV.20"
-    elif d == "Jupiter":
-        effect_text = VALENS_JUPITER_DISTRIBUTIONS.get(r if r else "self")
-        section = "IV.21"
-    elif d == "Mars":
-        key = r if r else "self_day"
-        effect_text = VALENS_MARS_DISTRIBUTIONS.get(key)
-        section = "IV.22"
-    elif d == "Venus":
-        effect_text = VALENS_VENUS_DISTRIBUTIONS.get(r if r else "self")
-        section = "IV.23"
-    elif d == "Mercury":
-        effect_text = VALENS_MERCURY_DISTRIBUTIONS.get(r if r else "self")
-        section = "IV.24"
-    if effect_text:
-        return ValensDistributionEffect(
-            distributor=d, receiver=r or None, effect=effect_text, source_section=section
-        )
-    return None
-
-def get_valens_lot_distribution_quality(
-    lot: str,
-    is_transmitting: bool = True,
-    is_operative: bool = False,
-    has_benefic_aspect: bool = False,
-    has_malefic_aspect: bool = False,
-) -> ValensDistributionEffect | None:
-    """Phases 1-3 for Four Lots (full admitted).
-    Returns ValensDistributionEffect (P2 classification, P3 inspectable).
-    """
-    l = lot.title()
-    if l not in VALENS_LOT_DISTRIBUTIONS:
-        return None
-    rules = VALENS_LOT_DISTRIBUTIONS[l]
-    effect_text = None
-    if l in ("Fortune", "Daimon"):
-        if is_operative:
-            if has_benefic_aspect and not has_malefic_aspect:
-                effect_text = rules.get("operative_benefic")
-            elif has_malefic_aspect:
-                effect_text = rules.get("operative_malefic_or_precedes_angle", rules.get("unfavorable_malefic"))
-    if effect_text:
-        return ValensDistributionEffect(
-            distributor=l, receiver=None, effect=effect_text, source_section="IV.25", is_lot=True
-        )
-    return None
-
-# Example layering comment (for future Phase 2 classification on periods):
-# active = period.planet or lot_name_from_active_sign
-# if active in planets:
-#   effect = get_valens_planet_distribution(active, next_planet)
-# elif active in lots:
-#   effect = get_valens_lot_distribution_quality(active, is_transmitting=..., is_operative=..., ...)
-# This preserves the doctrine for inspectability without altering core computation.
-
 def zr_sequence_profile(
     periods: list[ReleasingPeriod],
     level: int = 1,
@@ -2816,378 +2569,6 @@ def zr_sequence_profile(
         cadent_count          = cad_count,
         total_years           = total_years,
     )
-
-
-# ---------------------------------------------------------------------------
-# Valens Distributions / Transmissions Layer (Aphesis interpretive layer)
-# Full admitted doctrine from Vettius Valens, Anthologies Bk IV.17–25, IV.5, IV.26/30.
-# Pre-Phase-1 packet + all phases P1–P11 implemented "all at once" per constitutional
-# process (wiki/00_foundations/CONSTITUTIONAL_PROCESS.md) and user directive.
-# Canonical reference: wiki/01_doctrines/timelords/decennials_admission_doctrine.md
-# (Full Admitted Doctrine Packet with verbatim effect tables).
-# No new core arithmetic; pure additive interpretive/relational layer on top of
-# existing DecennialPeriod / ReleasingPeriod chronocrators (and lots/profections).
-# Source-backed only (tool-extracted Valens PDF text); first-principles.
-# ---------------------------------------------------------------------------
-
-# P1: Truth preservation — complete planet distribution tables (effects)
-# From direct Valens PDF extracts (Bk IV.17 Sun, IV.18 Moon, IV.19 Asc, IV.20 Saturn,
-# IV.21 Jupiter, IV.22 Mars, IV.23 Venus, IV.24 Mercury) + IV.25 Four Lots.
-# See admission doc for full verbatim + modifiers (operative places, aspects, sect, etc.).
-# Additional: IV.5 mutual transmissions, Critodemus one-fourth associations (IV.26/30).
-
-VALENS_SUN_DISTRIBUTIONS: dict[str, str] = {
-    "Saturn": "bad year. It indicates unemployment, setbacks, hostility and rejection, damage from superiors or elders, rebellions of the lower classes, diseases and eye infirmities, ups and downs of livelihood and terrifying upheavals, attacks of subject peoples, the deaths of fathers or of men in the place of fathers. If the transmission is unfavorably situated, it brings convictions and imprisonment.",
-    "Jupiter": "brilliant year: the father’s high rank (for those who have a living father), association with superiors, prosperity, gifts, prominent occupations, offices. It brings the begetting of children and marriage (for the unmarried) and brings enterprises to fruition. It brings success and foretells great expectations.",
-}
-
-VALENS_MOON_DISTRIBUTIONS: dict[str, str] = {
-    "self": "unpleasant: it brings hostility and lawsuits from the great, ups and downs of livelihood, and confrontations with relatives or wives. A malefic in aspect from the right brings bodily weakness and sudden dangers. In such a chronocratorship, it is necessary to examine the sign in which the Moon is located, in order to see if a malefic in transit will cause something worse.",
-    "Sun": "the waning of livelihood and great expenses. Especially if malefics behold the transmission, the failure of actions and vain hopes are foretold, as well as upheavals, disturbances, domestic disorders, and affairs or marriage with women. For those who have a solidly established rank in life, <this distribution brings> expenditures resulting in purchases or renewed success in business, and advancement or some gifts and benefactions.",
-}
-
-VALENS_ASCENDANT_DISTRIBUTIONS: dict[str, str] = {
-    "malefic": "very bad period, especially if the transmission is to Saturn (for night births) or to Mars (for day births). It brings bodily dangers, ups and downs of livelihood, anxiety, disturbing crises, falls, and injuries.",
-    "Jupiter": "brilliant and profitable period, high ranks, and distinguished positions. Some are helped and promoted by the great; some escape dangers and crises and their troubles are relieved; others attain freedom.",
-    "Venus": "good, lovely time: associations and affairs with women, buying, good cheer, an escape from evils.",
-    "Sun": "men will be well received by the great and by superiors, and that the year will be successful. For those of high rank, it brings even higher positions and advancement.",
-    "Moon": "steady and effective period: help from and associations with women, innovations, occupations, travel with a successful outcome, and (especially if benefics are in aspect) prosperity abroad. If malefics are in aspect, it indicates the opposite—and with disturbances.",
-}
-
-VALENS_SATURN_DISTRIBUTIONS: dict[str, str] = {
-    "self": "trouble and unemployment, hostility from elders or the great, and disgrace. Men will fail in their attempts or, if they do accomplish anything, it will be insecure. If Venus or Mars beholds Saturn, men will be denounced and have trials because of documents; they will suffer the subversion of matters concerning religion or legacies, will suffer from malignity and tricks, and they will come to an end like those suffering the wrath of God. <If benefics are in aspect,> the results will be milder: <troubles> will come more slowly, mixed with some success.",
-    "Sun": "danger to the father or his death, if he already has some infirmity. It brings an uncertain year: hostility, penalties, lawsuits, troubles of the sense organs, recurrence of disease, meanness on the part of friends and relatives. For day births, if the transmission happens to be favorably configured, men will succeed with wearisome labor and expenditures, or they will profit from deaths.",
-    "Moon": "danger to the mother—if she is still alive; if not, to female individuals. It brings about hostilities, separations, damage, criminality, disturbances in business, dangerous movements, bodily weakness, intermittent fevers, internal and nervous disorders, feebleness, dimming of vision, unexpected diseases.",
-    "Mars": "terrible and dangerous year: it brings about illnesses, plots, troubles, dangers, the deaths of family members and suffering or disturbances and lawsuits on behalf of family members, the ingratitude of friends, family upheavals, defense speeches/disputes, fears and hatreds with respect to the great, the deaths of fathers (if they are still alive) or of older individuals, hazardous and profitless travel. If the stars are unfavorably situated, they bring about shipwreck and ruin, diseases and injuries. If they are well configured in operative signs or have benefics in aspect, most of the trouble will be dissipated.",
-    "Jupiter": "fine and effective period: men receive inheritances and legacies. They receive help from older people or from wills. They control estates and property. Some gain profit from moist matters: they own ships, they purchase ships, they demolish and rebuild, they restore old matters and are adorned with a livelihood. If Saturn or Venus are together and in aspect with this distribution, men will endure trials and lawsuits, and will have untimely expenses.",
-}
-
-VALENS_JUPITER_DISTRIBUTIONS: dict[str, str] = {
-    "self": "good and effective period: help from friends, gifts, successful activities, trusts, stewardships, associations with the great, and the begetting of children. If it is beheld by Saturn, it brings ups and downs and untimely expenses.",
-    "Sun": "brilliant period, full of accomplishment for superior personages: it brings popular success, offices, advancement. It makes men worthy of honors, garlands, the offices of governor and general, and indicates the attainment of wealth—all proportional to the <stars’> arrangements and positions in the horoscope. For men of average rank, it indicates employment, escape from evils, freedom, beneficial associations, changes, as well as sympathetic friendships, childbirths, the acquisition of slaves—all this especially when Jupiter is well configured for day births.",
-    "Saturn": "movements that can produce good or bad, expenses, domestic distrust. To some it brings deaths, changes of residence or business, unsteady associations, hostility of friends. It makes men fail to succeed in enterprises or to succeed only after delay. It makes men petition and plead <for justice> and to be involved in troubles.",
-    "Mars": "harmful and disturbing year: it controls hostility from superiors, slanders, condemnations, betrayals, hazardous travel, dangerous diseases, critical periods or deaths of family members, ups and downs in livelihood, expenses. If the nativity is found to be of the public or governing class, and if the configuration is favorable, it brings political ties and advancement, along with expenses, gifts, and promises. These men will live with anxiety and suspicion.",
-}
-
-VALENS_MARS_DISTRIBUTIONS: dict[str, str] = {
-    "self_day": "unpleasant and disturbing: it brings hostility, harm, abuse connected with public business, or expenses for the public. So, some are abused or imprisoned by officials or by the wealthy.",
-    "self_night": "not bad: it promotes success and becomes helpful, especially if it is in operative signs, particularly for those who participate in martial affairs or in public or official life.",
-    "Sun": "danger to the father—if he is alive; if not, danger to the one who is like a father. It causes hostility from the great, separations from friends, dangerous diseases, troubles of the sense organs, danger from fires, heights, or animals, bleeding, amputations, and falls. It brings envy, disputes, and risky travels. If <the stars> happen to be in operative signs or have benefics in aspect, they bring employment, benefits, rank, political ties with superiors, but at the same time they bring anxiety, upset, plots, hatred and obstacles in the employment.",
-    "Moon": "hazardous, prone to fail: it causes disorders, confinements, lawsuits, anxieties, hazardous travel, attacks and abuse from foreigners, danger to the mother or to females, battles, separations. It disturbs the masses or the city. It brings weakness, bleeding, falls, relapses of diseases, danger from fire, and shipwreck. Especially if the nativity is during the day, and if the moon is waxing and unfavorably situated, the previously described effects will become worse: even blindness, wounds, the breaking of bones, troubles and injuries to the eyes. If the stars happen to have benefics in aspect and are in operative places, they cause risky activities and advancement. To females they bring bodily dangers, bleeding and consumption, abortion, and troubles of the generative organs.",
-}
-
-VALENS_LOT_DISTRIBUTIONS: dict[str, dict[str, str]] = {
-    "Fortune": {
-        "operative_benefic": "good fortune, advancement, employment, rank, success in business, fulfillment of expectations, and profits from legacies.",
-        "operative_malefic_or_precedes_angle": "lower employments or ranks; whatever men accomplish will be impermanent and accompanied by reversals and dangers, trials and abuse.",
-    },
-    "Daimon": {
-        "operative_benefic": "opportunities which accord with one’s wishes, discerning and easily accomplished plans, helpful advice/contributions from friends, ties with the great, gifts, and rank. It makes men who succeed in their attempts and who are inflated with much self-esteem.",
-        "unfavorable_malefic": "changeable fortunes and emotional anguish, insensibility, cross-purposes. It makes men consider their own mistakes as successes, and makes them lay the blame on others, missing the mark in most respects. As a result such men lose heart; they sometimes contrive danger for themselves, are treated like the insane, and are struck mad.",
-    },
-    # Love (Eros) and Necessity per IV.25 abbreviated in extracts; full rules in admission packet.
-}
-
-VALENS_VENUS_DISTRIBUTIONS: dict[str, str] = {
-    "self": "g distributing to itself when favorably situated brings friendships and associations, agreements between men and women, gifts, enjoyable intimacies, marriage, family harmony, pleasures, and profits. If the star is found with S or h, is beheld by them, or is in inoperative signs, it brings criticism, denunciation, whoring, penalties, breaches of faith, treachery from women, trials, and disorder. Women suffer the same treatment from men.",
-    "Sun": "g distributing to the s brings a glorious period, full of accomplishment, a period characterized by associations and help from males and females: intimacy, marriage, childbirths, the purchase of ornaments and slaves, or gifts of these same items, high rank for the father (if he is still alive), or sympathy and help from father-like figures—all of this especially if the stars are favorably configured. To those of superior rank it brings the honor of wearing garlands, high-priesthoods, advancement, offices, and gifts to the masses. It brings oracles, association in religious or divine matters, charm, and joy.",
-}
-
-VALENS_MERCURY_DISTRIBUTIONS: dict[str, str] = {
-    "self": "f distributing to itself is effective and helpful in enterprises and trusts: it causes men who achieve their goals, who are superior to their enemies, who operate as actors or religious figures, who are successful in business, and who gain prosperity from words or accounts. Especially if f is rising, is in operative signs, or is beheld by j and g, it indicates greater trusts and profits. If it is beheld by malefics, it is indicative of anxieties and reversals.",
-    "Sun": "f transmitting the year to the s is associative, effective, and full of accomplishment: it brings association with the great, requests, gifts (but with delays and obstacles), stewardships, preeminence, and knowledge of religious matters. It is glorious and beneficial to those involved in letters and education. For the most part, men gain advantage through religion or acting.",
-}
-
-# P2: Classification vessel (explicit backend result vessel, Phase 5 start)
-@dataclass(slots=True)
-class ValensDistributionEffect:
-    """P2 Classification (and higher) vessel for a single Valens distribution/transmission effect.
-    Source: Valens Anthologies Bk IV.17–25 (planet + Four Lots distributions).
-    See decennials_admission_doctrine.md (Full Admitted Doctrine Packet) for verbatim tables.
-    This turns raw P1 text into inspectable, typed, relational data for P5+.
-    polarity: 'benefic' | 'malefic' | 'mixed' (inferred or default; can be refined by aspects in P7).
-    """
-    distributor: str
-    receiver: str | None = None
-    effect: str = ""
-    source_section: str = "Valens Bk IV"
-    polarity: str = "mixed"
-    keywords: list[str] = field(default_factory=list)
-    is_lot: bool = False
-    version: str = "1.0"  # P6 versioning
-
-# P3: Inspectable typed accessors (return vessels, not strings)
-def get_valens_planet_distribution(distributor: str, receiver: str | None = None) -> ValensDistributionEffect | None:
-    """Phases 1-3 for planet distributions (full admitted set IV.17–24).
-    Returns ValensDistributionEffect (P2 typed vessel, P3 inspectable).
-    Cites admission packet + specific Bk section.
-    """
-    d = distributor.title()
-    r = (receiver or "").title()
-    effect_text = None
-    section = ""
-    if d == "Sun":
-        effect_text = VALENS_SUN_DISTRIBUTIONS.get(r)
-        section = "IV.17"
-    elif d == "Moon":
-        key = r if r else "self"
-        effect_text = VALENS_MOON_DISTRIBUTIONS.get(key)
-        section = "IV.18"
-    elif d in ("Ascendant", "Asc"):
-        effect_text = VALENS_ASCENDANT_DISTRIBUTIONS.get(r if r else "malefic")
-        section = "IV.19"
-    elif d == "Saturn":
-        effect_text = VALENS_SATURN_DISTRIBUTIONS.get(r if r else "self")
-        section = "IV.20"
-    elif d == "Jupiter":
-        effect_text = VALENS_JUPITER_DISTRIBUTIONS.get(r if r else "self")
-        section = "IV.21"
-    elif d == "Mars":
-        key = r if r else "self_day"
-        effect_text = VALENS_MARS_DISTRIBUTIONS.get(key)
-        section = "IV.22"
-    elif d == "Venus":
-        effect_text = VALENS_VENUS_DISTRIBUTIONS.get(r if r else "self")
-        section = "IV.23"
-    elif d == "Mercury":
-        effect_text = VALENS_MERCURY_DISTRIBUTIONS.get(r if r else "self")
-        section = "IV.24"
-    if effect_text:
-        return ValensDistributionEffect(
-            distributor=d, receiver=r or None, effect=effect_text, source_section=section
-        )
-    return None
-
-def get_valens_lot_distribution_quality(
-    lot: str,
-    is_operative: bool = False,
-    has_benefic_aspect: bool = False,
-    has_malefic_aspect: bool = False,
-) -> ValensDistributionEffect | None:
-    """Phases 1-3 for Four Lots transmissions (IV.25 full admitted).
-    Returns typed vessel per operative + aspect rules.
-    """
-    l = lot.title()
-    if l not in VALENS_LOT_DISTRIBUTIONS:
-        return None
-    rules = VALENS_LOT_DISTRIBUTIONS[l]
-    effect_text = None
-    if l in ("Fortune", "Daimon"):
-        if is_operative:
-            if has_benefic_aspect and not has_malefic_aspect:
-                effect_text = rules.get("operative_benefic")
-            elif has_malefic_aspect:
-                effect_text = rules.get("operative_malefic_or_precedes_angle", rules.get("unfavorable_malefic"))
-    if effect_text:
-        return ValensDistributionEffect(
-            distributor=l, receiver=None, effect=effect_text, source_section="IV.25", is_lot=True
-        )
-    return None
-
-# P4: Policy (integrates with TimelordComputationPolicy)
-VALENS_DISTRIBUTIONS_POLICY: dict = {
-    "enabled": True,
-    "use_source_citations": True,
-    "include_lots": True,
-    "infer_polarity_from_keywords": True,
-    "attach_to_decennials": True,
-    "attach_to_zr": False,  # future
-}
-
-# P5: Relational Formalization — explicit backend result vessels producer
-def formalize_valens_distributions_for_chronocrator(
-    chronocrator: str,
-    receiver_sign: str | None = None,
-    lot: str | None = None,
-    is_operative: bool = False,
-    has_benefic_aspect: bool = False,
-    has_malefic_aspect: bool = False,
-) -> list[ValensDistributionEffect]:
-    """Phase 5 Relational Formalization.
-    Turns previously implicit distribution logic into explicit list[ValensDistributionEffect] vessels.
-    Called during period construction or condition aggregation to attach effects to DecennialPeriod etc.
-    Cites: CONSTITUTIONAL_PROCESS.md Phase 5 (explicit backend result vessels), admission packet.
-    """
-    effects: list[ValensDistributionEffect] = []
-    c = (chronocrator or "").title()
-    if lot:
-        eff = get_valens_lot_distribution_quality(lot, is_operative=is_operative, has_benefic_aspect=has_benefic_aspect, has_malefic_aspect=has_malefic_aspect)
-        if eff:
-            effects.append(eff)
-    else:
-        eff = get_valens_planet_distribution(c, receiver_sign)
-        if eff:
-            effects.append(eff)
-    # P6 post: harden
-    return harden_valens_effects(effects)
-
-# P6: Relational Hardening / Inspectability + invariants + versioning
-def _validate_valens_distribution_effect(e: ValensDistributionEffect) -> None:
-    if not e.distributor:
-        raise ValueError("ValensDistributionEffect.distributor required")
-    if not e.effect:
-        raise ValueError("ValensDistributionEffect.effect (truth text) required for P1 preservation")
-    if not e.source_section.startswith("IV."):
-        raise ValueError("ValensDistributionEffect.source_section must cite Valens Bk IV section")
-
-def harden_valens_effects(effects: list[ValensDistributionEffect]) -> list[ValensDistributionEffect]:
-    """P6: harden - filter, enrich keywords, validate invariants, stamp version."""
-    hardened: list[ValensDistributionEffect] = []
-    for e in effects:
-        _validate_valens_distribution_effect(e)
-        if not e.keywords:
-            e.keywords = [k for k in (e.effect or "").lower().split() if len(k) > 3][:6]
-        if e.polarity == "mixed" and any(k in (e.effect or "").lower() for k in ("bad", "danger", "hostility", "unemployment")):
-            e.polarity = "malefic"
-        elif e.polarity == "mixed" and any(k in (e.effect or "").lower() for k in ("brilliant", "good", "prosperity", "rank")):
-            e.polarity = "benefic"
-        e.version = "1.0-admitted-2026-06"
-        hardened.append(e)
-    return hardened
-
-def validate_valens_layer(periods: list) -> bool:
-    """P10/P6 full hardening check for the distributions layer on periods."""
-    for p in periods:
-        if hasattr(p, "valens_distributions_effects"):
-            for e in getattr(p, "valens_distributions_effects", []):
-                if not getattr(e, "source_section", "").startswith("IV."):
-                    return False
-                if not getattr(e, "effect", ""):
-                    return False
-    return True
-
-# P7: Integrated Local Condition (example wiring point into dignities/conditions)
-def compute_valens_distribution_condition(effects: list[ValensDistributionEffect]) -> dict:
-    """P7: integrate into local condition profiles (score + keywords + citations).
-    Target: wire into DecennialConditionProfile or calculate_dignities via integrate_valens...
-    """
-    if not effects:
-        return {"valens_distribution_score": 0, "num_effects": 0, "polarities": []}
-    score = sum(1 if e.polarity == "benefic" else -1 if e.polarity == "malefic" else 0 for e in effects)
-    return {
-        "valens_distribution_score": score,
-        "num_effects": len(effects),
-        "polarities": [e.polarity for e in effects],
-        "citations": [e.source_section for e in effects],
-    }
-
-def integrate_valens_distributions_into_conditions(
-    period: "DecennialPeriod | ReleasingPeriod",
-) -> dict:
-    """P7: attach local condition delta from valens effects on the period.
-    Called from condition_profile builders or facade.
-    """
-    effs = getattr(period, "valens_distributions_effects", [])
-    cond = compute_valens_distribution_condition(effs)
-    # Example: could mutate or return a profile fragment for merging into DecennialConditionProfile
-    return cond
-
-
-def valens_distribution_as_accidental_condition(
-    planet: str,
-    effects: list[ValensDistributionEffect] | None = None,
-    period: "DecennialPeriod | ReleasingPeriod | None" = None,
-) -> AccidentalDignityCondition | None:
-    """P7 bridge helper: produce an AccidentalDignityCondition from Valens effects
-    (or a timelord period that carries .valens_distributions_effects).
-
-    This allows direct contribution into dignities.calculate_dignities(..., valens_distribution_scores=...)
-    or manual inclusion when policy.accidental.include_timelord_distributions is enabled.
-
-    Follows the exact precedent of overcoming() (pure in aspects.py, available for
-    condition/dignity consumers) and the other Hellenistic accidental conditions
-    (besieged, halb, joy, oriental, hayz, etc.) wired in dignities.py.
-
-    Returns None when there is no net score contribution.
-
-    Source: see compute_valens_distribution_condition + admission packet.
-    """
-    if effects is None and period is not None:
-        effects = getattr(period, "valens_distributions_effects", []) or []
-    if not effects:
-        return None
-    cond = compute_valens_distribution_condition(effects)
-    score: int = cond.get("valens_distribution_score", 0)
-    if score == 0:
-        return None
-    code = "valens_benefic" if score > 0 else "valens_malefic"
-    label = f"Valens Distribution ({'+' if score > 0 else ''}{score})"
-    return AccidentalDignityCondition("timelord", code, label, score)
-
-
-def build_valens_distribution_scores_from_periods(
-    periods: list["DecennialPeriod | ReleasingPeriod"] | None,
-) -> dict[str, int]:
-    """P7 convenience: build the valens_distribution_scores dict expected by
-    dignities.calculate_dignities from a list of active (or all) timelord periods.
-
-    Sums scores if multiple levels for the same planet are supplied.
-    Planets without effects or zero-score are omitted.
-
-    Typical use (with facade or manual):
-        dec = moira.decennials(...)
-        scores = build_valens_distribution_scores_from_periods(dec)
-        dign = moira.calculate_dignities(..., valens_distribution_scores=scores)
-        # (and set policy.accidental.include_timelord_distributions=True to include)
-    """
-    scores: dict[str, int] = {}
-    for p in periods or []:
-        effs = getattr(p, "valens_distributions_effects", []) or []
-        if not effs:
-            continue
-        c = compute_valens_distribution_condition(effs)
-        sc: int = c.get("valens_distribution_score", 0)
-        if sc == 0:
-            continue
-        planet = getattr(p, "planet", None) or getattr(p, "ruler", None)
-        if planet:
-            scores[planet] = scores.get(planet, 0) + sc
-    return scores
-
-
-# P8: Aggregate Intelligence (chart-wide)
-def aggregate_valens_distributions(periods: list) -> dict:
-    """P8: chart-wide aggregate across multiple periods (e.g. all active decennials + zr)."""
-    all_effects: list[ValensDistributionEffect] = []
-    for p in periods:
-        if hasattr(p, "valens_distributions_effects"):
-            all_effects.extend(getattr(p, "valens_distributions_effects", []))
-    return {
-        "total_effects": len(all_effects),
-        "benefic": sum(1 for e in all_effects if e.polarity == "benefic"),
-        "malefic": sum(1 for e in all_effects if e.polarity == "malefic"),
-        "mixed": sum(1 for e in all_effects if e.polarity == "mixed"),
-        "citations": sorted(set(e.source_section for e in all_effects)),
-    }
-
-# P9: Network Intelligence + architectural hooks (facade attachment notes)
-def valens_distribution_network(effects: list[ValensDistributionEffect]) -> list[tuple[str, str]]:
-    """P9: project simple relations (distributor pairs) for network surfaces."""
-    return [(e1.distributor, e2.distributor) for e1 in effects for e2 in effects if e1 != e2][:20]
-
-# P9: explicit query helper for architectural integration (facade / callers)
-def get_valens_distributions_for_period(
-    period: "DecennialPeriod | ReleasingPeriod",
-) -> list[ValensDistributionEffect]:
-    """P9 architectural surface: return the (already computed) Valens distribution
-    effects attached to a timelord period.
-
-    This is the recommended way for facade, reports, or higher layers to obtain the
-    interpretive layer data without re-running formalize_.
-    """
-    return list(getattr(period, "valens_distributions_effects", []) or [])
-
-# NOTE (P9/P11/P12): The layer is exposed via the helpers above + the effects on
-# *Period and *ConditionProfile objects. For Moira facade exposure see the main
-# facade (timelords methods already surface periods/profiles; the valens data rides along).
-# See TIMELORDS_BACKEND_STANDARD.md §1.4 and §2 (layer table) for the P11 declaration.
-# Public API curated in __all__ (P12).
-
-# P10/P11: Freeze hooks (see admission doc + CONSTITUTIONAL_PROCESS for full ladder)
-# At P11 this layer is declared frozen in TIMELORDS_BACKEND_STANDARD.md alongside core timelords.
-# All admitted doctrine (planets + Four Lots + transmissions) is now through P1–P12.
-
-# End of Valens Distributions layer (full P1–P12 constitutional pass completed 2026-06).
 
 
 # ---------------------------------------------------------------------------

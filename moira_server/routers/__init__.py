@@ -22,6 +22,7 @@ from .galactic_houses import router as galactic_houses_router
 from .gauquelin import router as gauquelin_router
 from .harmograms import router as harmograms_router
 from .harmonics import router as harmonics_router
+from .hellenistic_aspects import router as hellenistic_aspects_router
 from .health import router as health_router
 from .huber import router as huber_router
 from .jaimini import router as jaimini_router
@@ -98,6 +99,7 @@ __all__ = [
     "gauquelin_router",
     "harmograms_router",
     "harmonics_router",
+    "hellenistic_aspects_router",
     "hermetic_decans_router",
     "health_router",
     "huber_router",

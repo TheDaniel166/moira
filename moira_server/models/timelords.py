@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from .common import _StrictModel
 
@@ -187,6 +188,9 @@ class FirdarActivePairOptionalResponse(_StrictModel):
 # P8-08 Decennials request models
 # ---------------------------------------------------------------------------
 
+DecennialDeepSubdivisionMethod = Literal["valens", "hephaistio"]
+
+
 class DecennialNatalRequest(_StrictModel):
     """Natal basis for Decennials computations.
 
@@ -198,6 +202,23 @@ class DecennialNatalRequest(_StrictModel):
     dt: datetime
     is_day_chart: bool
     levels: int = Field(default=2, ge=1, le=4)
+    deep_subdivision_method: DecennialDeepSubdivisionMethod | None = None
+
+    @model_validator(mode="after")
+    def _valid_deep_subdivision(self) -> "DecennialNatalRequest":
+        if self.levels < 3 and self.deep_subdivision_method is not None:
+            raise ValueError(
+                "deep_subdivision_method is permitted only for levels 3-4"
+            )
+        if self.levels >= 3 and self.deep_subdivision_method is None:
+            raise ValueError(
+                "levels 3-4 require an explicit deep_subdivision_method"
+            )
+        if self.levels == 4 and self.deep_subdivision_method != "valens":
+            raise ValueError(
+                "level 4 is admitted only with deep_subdivision_method='valens'"
+            )
+        return self
 
 
 class DecennialBaseRequest(_StrictModel):
@@ -239,6 +260,7 @@ class DecennialPeriodResponse(_StrictModel):
     sub_index: int | None
     ancestor_planets: list[str]
     sequence_position: int
+    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
 class DecennialMajorGroupResponse(_StrictModel):
@@ -253,16 +275,19 @@ class DecennialSequenceResponse(_StrictModel):
     major_count: int
     sub_count: int
     levels_generated: int
+    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
 class DecennialGroupsResponse(_StrictModel):
     groups: list[DecennialMajorGroupResponse]
     major_count: int
+    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
 class DecennialCurrentResponse(_StrictModel):
     major: DecennialPeriodResponse
     sub: DecennialPeriodResponse
+    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
 class DecennialConditionProfileResponse(_StrictModel):
@@ -300,6 +325,7 @@ class DecennialSequenceProfileResponse(_StrictModel):
     sequence_kind: str | None
     sect_light: str | None
     deepest_level: int
+    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
 class DecennialActivePairResponse(_StrictModel):
@@ -316,6 +342,7 @@ class DecennialActivePairOptionalResponse(_StrictModel):
 
     active: bool
     pair: DecennialActivePairResponse | None
+    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
 class DecennialActivePathResponse(_StrictModel):
@@ -329,6 +356,7 @@ class DecennialActivePathOptionalResponse(_StrictModel):
 
     active: bool
     path: DecennialActivePathResponse | None
+    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
 # ---------------------------------------------------------------------------

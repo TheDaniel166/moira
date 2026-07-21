@@ -50,7 +50,6 @@ class AccidentalDignityPolicyRequest(_StrictModel):
     solar: SolarConditionPolicyRequest = Field(default_factory=SolarConditionPolicyRequest)
     mutual_reception: MutualReceptionPolicyRequest = Field(default_factory=MutualReceptionPolicyRequest)
     sect: SectHayzPolicyRequest = Field(default_factory=SectHayzPolicyRequest)
-    include_timelord_distributions: bool = False
 
 
 class DignityComputationPolicyRequest(_StrictModel):

@@ -39,6 +39,7 @@ from .routers import (
     harmograms_router,
     geodetic_router,
     harmonics_router,
+    hellenistic_aspects_router,
     hermetic_decans_router,
     health_router,
     huber_router,
@@ -166,6 +167,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(dasha_router)
     app.include_router(progressions_router)
     app.include_router(relationship_router)
+    app.include_router(hellenistic_aspects_router)  # Whole-sign direction and overcoming truth
     app.include_router(timelords_router)
     app.include_router(varshaphal_router)
     app.include_router(primary_directions_router)

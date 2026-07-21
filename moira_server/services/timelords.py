@@ -10,12 +10,14 @@ from moira.timelords import (
     DecennialActivePath,
     DecennialMajorGroup,
     DecennialPeriod,
+    DecennialPolicy,
     DecennialSequenceProfile,
     FirdarActivePair,
     FirdarMajorGroup,
     FirdarPeriod,
     FirdarSequenceProfile,
     ReleasingPeriod,
+    TimelordComputationPolicy,
     ZRLevelPair,
     ZRPeriodGroup,
     ZRSequenceProfile,
@@ -194,6 +196,17 @@ def _natal_positions_and_jd(engine: Moira, natal_request: DecennialNatalRequest)
     return natal_positions, natal_jd
 
 
+def _decennial_policy(
+    natal_request: DecennialNatalRequest,
+) -> TimelordComputationPolicy:
+    """Materialize the caller's explicit admitted deep-subdivision doctrine."""
+    return TimelordComputationPolicy(
+        decennials=DecennialPolicy(
+            deep_subdivision_method=natal_request.deep_subdivision_method,
+        )
+    )
+
+
 def _decennial_periods(engine: Moira, request: DecennialBaseRequest) -> list[DecennialPeriod]:
     natal_positions, natal_jd = _natal_positions_and_jd(engine, request.natal)
     return decennials(
@@ -201,6 +214,7 @@ def _decennial_periods(engine: Moira, request: DecennialBaseRequest) -> list[Dec
         natal_positions,
         request.natal.is_day_chart,
         levels=request.natal.levels,
+        policy=_decennial_policy(request.natal),
     )
 
 
@@ -233,6 +247,7 @@ def compute_current_decennials_service(
         request.natal.is_day_chart,
         current_jd,
         levels=request.natal.levels,
+        policy=_decennial_policy(request.natal),
     )
 
 

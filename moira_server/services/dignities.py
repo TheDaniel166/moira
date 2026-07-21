@@ -87,7 +87,6 @@ def _policy_from_request(
             mercury_sect_model=request_policy.accidental.sect.mercury_sect_model,
             include_hayz=request_policy.accidental.sect.include_hayz,
         ),
-        include_timelord_distributions=request_policy.accidental.include_timelord_distributions,
     )
     return DignityComputationPolicy(essential=essential, accidental=accidental)
 

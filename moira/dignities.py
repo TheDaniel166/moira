@@ -663,12 +663,6 @@ class DignitiesService:
         planet_positions: list[dict],
         house_positions: list[dict],
         policy: DignityComputationPolicy | None = None,
-        # P7 wiring support: optional per-planet valens distribution scores (from active
-        # DecennialPeriod / ReleasingPeriod .valens_distributions_effects via
-        # compute_valens_distribution_condition or timelords helpers). When policy
-        # accidental.include_timelord_distributions is True these contribute as
-        # "timelord" accidental conditions (following Hellenistic condition precedent).
-        valens_distribution_scores: dict[str, int] | None = None,
     ) -> list[PlanetaryDignity]:
         """
         Calculate dignities for all planets admitted by the active doctrine.
@@ -750,9 +744,6 @@ class DignitiesService:
 
             essential_truth = self._get_essential_dignity_truth(planet, sign, policy, is_day_chart)
 
-            vscore = 0
-            if valens_distribution_scores:
-                vscore = valens_distribution_scores.get(planet, 0)
             acc_list, acc_score, accidental_truth, sect_truth = self._get_accidental_dignities(
                 planet=planet,
                 house=house,
@@ -765,7 +756,6 @@ class DignitiesService:
                 mercury_rises_before_sun=mercury_rises_before_sun,
                 policy=policy,
                 chart_positions=planet_lons,
-                valens_distribution_score=vscore,
             )
 
             results.append(PlanetaryDignity(
@@ -1130,8 +1120,6 @@ class DignitiesService:
         mercury_rises_before_sun: bool = True,
         policy: DignityComputationPolicy | None = None,
         chart_positions: dict[str, float] | None = None,
-        # P7: optional valens/timelord distribution score contribution (from active chronocrator periods)
-        valens_distribution_score: int = 0,
     ) -> tuple[list[str], int, AccidentalDignityTruth, SectTruth]:
         policy = DignityComputationPolicy() if policy is None else policy
         dignities: list[str] = []
@@ -1272,22 +1260,6 @@ class DignitiesService:
                 conditions.append(besieged_condition)
                 score += besieged_condition.score
 
-        # -- P7: Valens Distributions / Timelord chronocrator condition (Hellenistic layer) --
-        # Wired from timelords (ValensDistributionEffect scores via compute_valens_distribution_condition
-        # or the valens_distribution_as_accidental_condition helper). Follows precedent of
-        # overcoming() (aspects.py) and other interpretive Hellenistic conditions (besieged, halb, joy, etc.)
-        # being expressible as AccidentalDignityCondition contributions. Opt-in via policy.
-        timelord_condition: AccidentalDignityCondition | None = None
-        if policy.accidental.include_timelord_distributions and valens_distribution_score != 0:
-            code = "valens_benefic" if valens_distribution_score > 0 else "valens_malefic"
-            label = f"Valens Distribution ({'+' if valens_distribution_score > 0 else ''}{valens_distribution_score})"
-            timelord_condition = AccidentalDignityCondition(
-                "timelord", code, label, valens_distribution_score,
-            )
-            dignities.append(timelord_condition.label)
-            conditions.append(timelord_condition)
-            score += timelord_condition.score
-
         accidental_truth = AccidentalDignityTruth(
             conditions=conditions,
             house_condition=house_condition,
@@ -1299,7 +1271,6 @@ class DignitiesService:
             joy_condition=joy_condition,
             oriental_condition=oriental_condition,
             besieged_condition=besieged_condition,
-            timelord_distribution_condition=timelord_condition,
         )
 
         return dignities, score, accidental_truth, sect_truth
@@ -2171,8 +2142,6 @@ def calculate_dignities(
     planet_positions: list[dict],
     house_positions: list[dict],
     policy: DignityComputationPolicy | None = None,
-    # P7: forwarded to service (see service.calculate_dignities docstring)
-    valens_distribution_scores: dict[str, int] | None = None,
 ) -> list[PlanetaryDignity]:
     """
     Calculate essential and accidental dignities.
@@ -2182,11 +2151,9 @@ def calculate_dignities(
     planet_positions : list of {'name': str, 'degree': float, 'is_retrograde': bool}
     house_positions  : list of {'number': int, 'degree': float}
     policy           : optional DignityComputationPolicy
-    valens_distribution_scores : optional per-planet valens/timelord scores for P7 wiring
     """
     return _service.calculate_dignities(
         planet_positions, house_positions, policy=policy,
-        valens_distribution_scores=valens_distribution_scores,
     )
 
 

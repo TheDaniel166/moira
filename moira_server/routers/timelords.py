@@ -185,7 +185,11 @@ def decennials_sequence_route(
     engine: Moira = Depends(get_engine),
 ) -> DecennialSequenceResponse:
     periods = compute_decennials_sequence(engine, request)
-    return serialize_decennials_sequence(periods, levels_generated=request.natal.levels)
+    return serialize_decennials_sequence(
+        periods,
+        levels_generated=request.natal.levels,
+        deep_subdivision_method=request.natal.deep_subdivision_method,
+    )
 
 
 @router.post("/timelords/decennials/groups", response_model=DecennialGroupsResponse)
@@ -193,7 +197,10 @@ def decennials_groups_route(
     request: DecennialBaseRequest,
     engine: Moira = Depends(get_engine),
 ) -> DecennialGroupsResponse:
-    return serialize_decennials_groups(compute_decennials_groups(engine, request))
+    return serialize_decennials_groups(
+        compute_decennials_groups(engine, request),
+        deep_subdivision_method=request.natal.deep_subdivision_method,
+    )
 
 
 @router.post("/timelords/decennials/current", response_model=DecennialCurrentResponse)
@@ -202,7 +209,11 @@ def decennials_current_route(
     engine: Moira = Depends(get_engine),
 ) -> DecennialCurrentResponse:
     major, sub = compute_current_decennials_service(engine, request)
-    return serialize_current_decennials(major, sub)
+    return serialize_current_decennials(
+        major,
+        sub,
+        deep_subdivision_method=request.natal.deep_subdivision_method,
+    )
 
 
 @router.post("/timelords/decennials/profile", response_model=DecennialSequenceProfileResponse)
@@ -211,7 +222,8 @@ def decennials_profile_route(
     engine: Moira = Depends(get_engine),
 ) -> DecennialSequenceProfileResponse:
     return serialize_decennial_sequence_profile(
-        compute_decennial_sequence_profile_service(engine, request)
+        compute_decennial_sequence_profile_service(engine, request),
+        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 
@@ -221,7 +233,8 @@ def decennials_active_pair_route(
     engine: Moira = Depends(get_engine),
 ) -> DecennialActivePairOptionalResponse:
     return serialize_decennial_active_pair_optional(
-        compute_decennial_active_pair_service(engine, request)
+        compute_decennial_active_pair_service(engine, request),
+        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 
@@ -231,7 +244,8 @@ def decennials_active_path_route(
     engine: Moira = Depends(get_engine),
 ) -> DecennialActivePathOptionalResponse:
     return serialize_decennial_active_path_optional(
-        compute_decennial_active_path_service(engine, request)
+        compute_decennial_active_path_service(engine, request),
+        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 

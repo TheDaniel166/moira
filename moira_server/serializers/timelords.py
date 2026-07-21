@@ -209,6 +209,7 @@ def _serialize_decennial_period(period: DecennialPeriod) -> DecennialPeriodRespo
         sub_index=period.sub_index,
         ancestor_planets=list(period.ancestor_planets),
         sequence_position=period.sequence_position,
+        deep_subdivision_method=period.deep_subdivision_method,
     )
 
 
@@ -243,6 +244,7 @@ def _serialize_decennial_condition_profile(
 def serialize_decennials_sequence(
     periods: list[DecennialPeriod],
     levels_generated: int,
+    deep_subdivision_method: str | None = None,
 ) -> DecennialSequenceResponse:
     serialized = [_serialize_decennial_period(p) for p in periods]
     major_count = sum(1 for p in periods if p.level == 1)
@@ -252,10 +254,14 @@ def serialize_decennials_sequence(
         major_count=major_count,
         sub_count=len(periods) - major_count,
         levels_generated=levels_generated,
+        deep_subdivision_method=deep_subdivision_method,
     )
 
 
-def serialize_decennials_groups(groups: list[DecennialMajorGroup]) -> DecennialGroupsResponse:
+def serialize_decennials_groups(
+    groups: list[DecennialMajorGroup],
+    deep_subdivision_method: str | None = None,
+) -> DecennialGroupsResponse:
     serialized = [
         DecennialMajorGroupResponse(
             major=_serialize_decennial_period(g.major),
@@ -264,21 +270,28 @@ def serialize_decennials_groups(groups: list[DecennialMajorGroup]) -> DecennialG
         )
         for g in groups
     ]
-    return DecennialGroupsResponse(groups=serialized, major_count=len(groups))
+    return DecennialGroupsResponse(
+        groups=serialized,
+        major_count=len(groups),
+        deep_subdivision_method=deep_subdivision_method,
+    )
 
 
 def serialize_current_decennials(
     major: DecennialPeriod,
     sub: DecennialPeriod,
+    deep_subdivision_method: str | None = None,
 ) -> DecennialCurrentResponse:
     return DecennialCurrentResponse(
         major=_serialize_decennial_period(major),
         sub=_serialize_decennial_period(sub),
+        deep_subdivision_method=deep_subdivision_method,
     )
 
 
 def serialize_decennial_sequence_profile(
     profile: DecennialSequenceProfile,
+    deep_subdivision_method: str | None = None,
 ) -> DecennialSequenceProfileResponse:
     return DecennialSequenceProfileResponse(
         profiles=[_serialize_decennial_condition_profile(p) for p in profile.profiles],
@@ -291,14 +304,20 @@ def serialize_decennial_sequence_profile(
         sequence_kind=profile.sequence_kind,
         sect_light=profile.sect_light,
         deepest_level=profile.deepest_level,
+        deep_subdivision_method=deep_subdivision_method,
     )
 
 
 def serialize_decennial_active_pair_optional(
     pair: DecennialActivePair | None,
+    deep_subdivision_method: str | None = None,
 ) -> DecennialActivePairOptionalResponse:
     if pair is None:
-        return DecennialActivePairOptionalResponse(active=False, pair=None)
+        return DecennialActivePairOptionalResponse(
+            active=False,
+            pair=None,
+            deep_subdivision_method=deep_subdivision_method,
+        )
     serialized = DecennialActivePairResponse(
         major_profile=_serialize_decennial_condition_profile(pair.major_profile),
         sub_profile=(
@@ -311,20 +330,33 @@ def serialize_decennial_active_pair_optional(
         is_same_lord_type=pair.is_same_lord_type,
         shares_sect_light=pair.shares_sect_light,
     )
-    return DecennialActivePairOptionalResponse(active=True, pair=serialized)
+    return DecennialActivePairOptionalResponse(
+        active=True,
+        pair=serialized,
+        deep_subdivision_method=deep_subdivision_method,
+    )
 
 
 def serialize_decennial_active_path_optional(
     path: DecennialActivePath | None,
+    deep_subdivision_method: str | None = None,
 ) -> DecennialActivePathOptionalResponse:
     if path is None:
-        return DecennialActivePathOptionalResponse(active=False, path=None)
+        return DecennialActivePathOptionalResponse(
+            active=False,
+            path=None,
+            deep_subdivision_method=deep_subdivision_method,
+        )
     serialized = DecennialActivePathResponse(
         profiles=[_serialize_decennial_condition_profile(p) for p in path.profiles],
         deepest_level=path.deepest_level,
         has_deep_subdivision=path.has_deep_subdivision,
     )
-    return DecennialActivePathOptionalResponse(active=True, path=serialized)
+    return DecennialActivePathOptionalResponse(
+        active=True,
+        path=serialized,
+        deep_subdivision_method=deep_subdivision_method,
+    )
 
 
 # ---------------------------------------------------------------------------

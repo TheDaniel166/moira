@@ -66,6 +66,10 @@ from .phenomena import (
 )
 from .orbits import DistanceExtremes, KeplerianElements, distance_extremes_at, orbital_elements_at
 from .eclipse import (
+    LunarEclipseVisibilityContactKind,
+    LunarEclipseVisibilityLimit,
+    LunarEclipseVisibilityMap,
+    LunarEclipseVisibilityPoint,
     SolarEclipseFootprintBoundaryKind,
     SolarEclipsePenumbralContactKind,
     SolarEclipseFootprintTopology,
@@ -925,6 +929,10 @@ __all__ = [
     "SolarEclipseFootprintContacts",
     "SolarEclipseLimitTrack",
     "SolarEclipseVisibilityFootprint",
+    "LunarEclipseVisibilityContactKind",
+    "LunarEclipseVisibilityPoint",
+    "LunarEclipseVisibilityLimit",
+    "LunarEclipseVisibilityMap",
     "OccultationGeographicPole",
     "OccultationPathBoundaryPoint",
     "OccultationPathBoundarySide",

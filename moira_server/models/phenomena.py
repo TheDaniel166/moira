@@ -284,6 +284,84 @@ class LunarEclipseLocalCircumstancesResponse(_StrictModel):
     p4: LocalContactCircumstancesResponse | None = None
 
 
+_MIN_COMPUTATIONAL_JD = -40_000_000.0
+_MAX_COMPUTATIONAL_JD = 40_000_000.0
+
+
+LunarEclipseSearchKind = Literal["any", "total", "partial", "penumbral"]
+LunarEclipseAnalysisModeValue = Literal["native", "nasa_compat"]
+LunarEclipseVisibilityContactKindValue = Literal[
+    "p1", "u1", "u2", "greatest", "u3", "u4", "p4"
+]
+
+
+class LunarEclipseVisibilityRequest(_StrictModel):
+    jd_start: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    kind: LunarEclipseSearchKind = "any"
+    backward: bool = False
+    mode: LunarEclipseAnalysisModeValue = "native"
+    sample_count: int = Field(default=181, ge=9, le=721)
+
+    @field_validator("jd_start", mode="before")
+    @classmethod
+    def _valid_jd_start(cls, value: Any) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("jd_start must be an integer or float")
+        parsed = float(value)
+        if not isfinite(parsed):
+            raise ValueError("jd_start must be finite")
+        return parsed
+
+    @field_validator("backward", mode="before")
+    @classmethod
+    def _valid_backward(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("backward must be a boolean")
+        return value
+
+    @field_validator("sample_count", mode="before")
+    @classmethod
+    def _valid_sample_count(cls, value: Any) -> int:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError("sample_count must be an integer")
+        return value
+
+
+class LunarEclipseVisibilityPointResponse(_StrictModel):
+    latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+
+
+class LunarEclipseVisibilityLimitResponse(_StrictModel):
+    contact: LunarEclipseVisibilityContactKindValue
+    jd_ut: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    datetime_utc: str
+    sublunar_point: LunarEclipseVisibilityPointResponse
+    points: list[LunarEclipseVisibilityPointResponse] = Field(min_length=9)
+
+
+class LunarEclipseVisibilityMapResponse(_StrictModel):
+    mode: LunarEclipseAnalysisModeValue
+    source_model: str
+    canon_method: str | None = None
+    event: EclipseEventResponse
+    limits: list[LunarEclipseVisibilityLimitResponse] = Field(min_length=3)
+    ephemeris: Literal["DE-0441LE-0441"]
+    surface_model: Literal["WGS84_ZERO_ELEVATION"]
+    horizon_model: Literal["RETARDED_GEOMETRIC_MOON_CENTER"]
+    time_scale: Literal["UT1"]
+    atmospheric_refraction: Literal[False]
+    visible_side: Literal["CONTAINS_SUBLUNAR_POINT"]
+
+
 class SolarEclipsePathRequest(_StrictModel):
     jd_start: float
     kind: str = "any"
@@ -311,10 +389,6 @@ SolarEclipsePenumbralContactKindValue = Literal["p1", "p2", "p3", "p4"]
 SolarEclipseFootprintTopologyValue = Literal[
     "one_limit_connected", "two_limit_two_loop"
 ]
-
-_MIN_COMPUTATIONAL_JD = -40_000_000.0
-_MAX_COMPUTATIONAL_JD = 40_000_000.0
-
 
 class SolarEclipseFootprintRequest(_StrictModel):
     jd_start: float = Field(
@@ -1106,6 +1180,13 @@ __all__ = [
     "LocalContactCircumstancesResponse",
     "LunarEclipseLocalCircumstancesResponse",
     "LunarEclipseLocationRequest",
+    "LunarEclipseAnalysisModeValue",
+    "LunarEclipseSearchKind",
+    "LunarEclipseVisibilityContactKindValue",
+    "LunarEclipseVisibilityLimitResponse",
+    "LunarEclipseVisibilityMapResponse",
+    "LunarEclipseVisibilityPointResponse",
+    "LunarEclipseVisibilityRequest",
     "LunarOccultationRequest",
     "LunarOccultationPathAtRequest",
     "LunarOccultationPathRequest",

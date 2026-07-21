@@ -9,6 +9,9 @@ from moira.eclipse import (
     EclipseEvent,
     LocalContactCircumstances,
     LunarEclipseLocalCircumstances,
+    LunarEclipseVisibilityLimit,
+    LunarEclipseVisibilityMap,
+    LunarEclipseVisibilityPoint,
     SolarEclipseFootprintContacts,
     SolarEclipseFootprintPoint,
     SolarEclipseLimitTrack,
@@ -66,6 +69,9 @@ from ..models.phenomena import (
     LastAspectResponse,
     LocalContactCircumstancesResponse,
     LunarEclipseLocalCircumstancesResponse,
+    LunarEclipseVisibilityLimitResponse,
+    LunarEclipseVisibilityMapResponse,
+    LunarEclipseVisibilityPointResponse,
     LunarOccultationResponse,
     NatalAngularContactResponse,
     OccultationPathBoundaryPointResponse,
@@ -297,6 +303,54 @@ def _serialize_footprint_ut1_datetime(jd_ut: float) -> str:
         return datetime_from_jd(jd_utc).isoformat()
     except ValueError:
         return calendar_datetime_from_jd(jd_utc).isoformat()
+
+
+def serialize_lunar_eclipse_visibility_point(
+    point: LunarEclipseVisibilityPoint,
+) -> LunarEclipseVisibilityPointResponse:
+    return LunarEclipseVisibilityPointResponse(
+        latitude_deg=point.latitude_deg,
+        longitude_deg=point.longitude_deg,
+    )
+
+
+def serialize_lunar_eclipse_visibility_limit(
+    limit: LunarEclipseVisibilityLimit,
+) -> LunarEclipseVisibilityLimitResponse:
+    return LunarEclipseVisibilityLimitResponse(
+        contact=limit.contact.value,
+        jd_ut=limit.jd_ut,
+        datetime_utc=_serialize_footprint_ut1_datetime(limit.jd_ut),
+        sublunar_point=serialize_lunar_eclipse_visibility_point(
+            limit.sublunar_point
+        ),
+        points=[
+            serialize_lunar_eclipse_visibility_point(point)
+            for point in limit.points
+        ],
+    )
+
+
+def serialize_lunar_eclipse_visibility_map(
+    visibility_map: LunarEclipseVisibilityMap,
+) -> LunarEclipseVisibilityMapResponse:
+    analysis = visibility_map.analysis
+    return LunarEclipseVisibilityMapResponse(
+        mode=analysis.mode,
+        source_model=analysis.source_model,
+        canon_method=analysis.canon_method,
+        event=serialize_eclipse_event(analysis.event),
+        limits=[
+            serialize_lunar_eclipse_visibility_limit(limit)
+            for limit in visibility_map.limits
+        ],
+        ephemeris=visibility_map.ephemeris,
+        surface_model=visibility_map.surface_model,
+        horizon_model=visibility_map.horizon_model,
+        time_scale=visibility_map.time_scale,
+        atmospheric_refraction=visibility_map.atmospheric_refraction,
+        visible_side=visibility_map.visible_side,
+    )
 
 
 def serialize_solar_eclipse_footprint_point(
@@ -838,6 +892,9 @@ __all__ = [
     "serialize_last_aspect",
     "serialize_local_contact",
     "serialize_lunar_eclipse_local",
+    "serialize_lunar_eclipse_visibility_limit",
+    "serialize_lunar_eclipse_visibility_map",
+    "serialize_lunar_eclipse_visibility_point",
     "serialize_lunar_occultation",
     "serialize_natal_angular_contact",
     "serialize_occultation_path_boundary_point",

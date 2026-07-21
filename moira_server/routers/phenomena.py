@@ -19,6 +19,8 @@ from ..models.phenomena import (
     HeliacalPlanetEventRequest,
     LunarEclipseLocalCircumstancesResponse,
     LunarEclipseLocationRequest,
+    LunarEclipseVisibilityMapResponse,
+    LunarEclipseVisibilityRequest,
     LunarOccultationRequest,
     LunarOccultationPathAtRequest,
     LunarOccultationPathRequest,
@@ -81,6 +83,7 @@ from ..serializers.phenomena import (
     serialize_event_instant,
     serialize_general_visibility_event,
     serialize_lunar_eclipse_local,
+    serialize_lunar_eclipse_visibility_map,
     serialize_lunar_occultation,
     serialize_natal_angular_contact,
     serialize_occultation_path_geometry,
@@ -108,6 +111,7 @@ from ..services.phenomena import (
     compute_close_approaches,
     compute_general_visibility_event,
     compute_lunar_eclipse_local,
+    compute_lunar_eclipse_visibility,
     compute_lunar_occultations,
     compute_lunar_occultation_path_at,
     compute_lunar_occultation_paths,
@@ -292,6 +296,19 @@ def lunar_eclipse_local_route(
     engine: Moira = Depends(get_engine),
 ) -> LunarEclipseLocalCircumstancesResponse:
     return serialize_lunar_eclipse_local(compute_lunar_eclipse_local(engine, request))
+
+
+@router.post(
+    "/eclipses/lunar/visibility",
+    response_model=LunarEclipseVisibilityMapResponse,
+)
+def lunar_eclipse_visibility_route(
+    request: LunarEclipseVisibilityRequest,
+    engine: Moira = Depends(get_engine),
+) -> LunarEclipseVisibilityMapResponse:
+    return serialize_lunar_eclipse_visibility_map(
+        compute_lunar_eclipse_visibility(engine, request)
+    )
 
 
 @router.post("/eclipses/solar/path", response_model=SolarEclipsePathResponse)

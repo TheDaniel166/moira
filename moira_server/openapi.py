@@ -135,6 +135,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "relationship",
     },
     {
+        "name": "hellenistic-aspects",
+        "x-displayName": "Hellenistic Whole-Sign Aspects",
+        "description": "Whole-sign Ptolemaic aspects, sinister/dexter direction, and overcoming relations.",
+        "x-family": "relationship",
+    },
+    {
         "name": "draconic",
         "x-displayName": "Draconic",
         "description": "Node-anchored draconic longitude rotations and chart materialization.",

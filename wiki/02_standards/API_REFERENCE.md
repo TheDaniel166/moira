@@ -739,6 +739,7 @@ generic search integration, or remedy-fulfillment assessment.
 |---|---|---|
 | `eclipse(dt)` | `EclipseData` | Full eclipse geometry and classification for a datetime |
 | `solar_eclipse_footprint(jd_start, *, kind="any", backward=False, sample_count=181)` | `SolarEclipseVisibilityFootprint` | Complete zero-elevation WGS 84 mean-limb penumbral visibility boundary |
+| `lunar_eclipse_visibility_map(jd_start, *, kind="any", backward=False, mode="native", sample_count=181)` | `LunarEclipseVisibilityMap` | Global contact-horizon limits for lunar-eclipse map rendering |
 
 ---
 
@@ -4584,6 +4585,8 @@ from moira.sky.eclipse import (
     SolarEclipsePath, SolarEclipseLocalCircumstances,
     SolarBodyCircumstances, LocalContactCircumstances,
     LunarEclipseAnalysis, LunarEclipseLocalCircumstances, LunarEclipseContacts,
+    LunarEclipseVisibilityContactKind, LunarEclipseVisibilityPoint,
+    LunarEclipseVisibilityLimit, LunarEclipseVisibilityMap,
     next_solar_eclipse_at_location, find_lunar_contacts,
 )
 ```
@@ -4617,6 +4620,9 @@ nasa_ana = calc.analyze_lunar_eclipse(
 lc = calc.lunar_local_circumstances(
     jd_start, lat, lon, elevation_m=0.0, kind="any", mode="native"
 )
+lunar_map = calc.lunar_eclipse_visibility_map(
+    jd_start, kind="any", mode="native", sample_count=181
+)
 
 # Inclusive bulk ranges (global maxima in UT1)
 solar_range = calc.solar_eclipses_in_range(jd_start, jd_start + 3652.5)
@@ -4636,6 +4642,27 @@ classification, deduplication, inclusive filtering, and public vessel assembly.
 If one native evaluator cannot cover the padded interval, the same methods use
 the explicit Python manuscript. The older native generic-event scanners are not
 used as public classification or contact products.
+
+**Lunar visibility-map engine signatures**
+
+| Surface | Exact signature | Returns |
+|---|---|---|
+| `EclipseCalculator` | `lunar_eclipse_visibility_map(jd_start, *, kind="any", backward=False, mode="native", sample_count=181)` | `LunarEclipseVisibilityMap` |
+| `Moira` facade | `lunar_eclipse_visibility_map(jd_start, *, kind="any", backward=False, mode="native", sample_count=181)` | `LunarEclipseVisibilityMap` |
+
+The map contains one `LunarEclipseVisibilityLimit` for every contact that
+exists for the selected eclipse, in chronological order. Each limit carries
+its contact kind, UT1 epoch, closed geographic ring, and sublunar point; the
+visible side is the side containing the sublunar point. Total eclipses expose
+P1/U1/U2/greatest/U3/U4/P4, partial eclipses omit U2/U3, and penumbral-only
+eclipses expose P1/greatest/P4.
+
+The boundary is an exact ellipsoid-tangency product in scaled WGS-84 space,
+using the retarded DE441/LE441 Moon-center reception vector. It deliberately
+excludes atmosphere, terrain, observer elevation, and lunar-limb relief and
+therefore does not replace observer-local apparent circumstances. The Python
+layer owns contact policy and public semantics; no native C++ port is used for
+this seven-contact assembly.
 
 **Solar footprint engine signatures**
 

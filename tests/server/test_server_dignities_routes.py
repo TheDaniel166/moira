@@ -319,6 +319,28 @@ def test_dignities_chart_route_rejects_invalid_policy_value(
     _assert_validation_envelope(response)
 
 
+def test_dignities_routes_reject_unadmitted_timelord_distribution_transport(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/dignities/chart",
+        json={
+            **_PAYLOAD,
+            "policy": {
+                "accidental": {
+                    "include_timelord_distributions": True,
+                }
+            },
+        },
+    )
+
+    _assert_validation_envelope(response)
+    assert (
+        "body.policy.accidental.include_timelord_distributions"
+        in response.json()["details"]
+    )
+
+
 @pytest.mark.requires_ephemeris
 def test_dignities_routes_do_not_call_kernel_lifecycle_mutators(
     client_with_engine: TestClient,

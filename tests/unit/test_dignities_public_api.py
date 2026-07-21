@@ -7,6 +7,9 @@ owning module while helper machinery remains internal.
 Scope: moira.dignities exports only. No computation is performed.
 """
 
+from dataclasses import fields
+from inspect import signature
+
 import moira.dignities as _dignities_module
 
 
@@ -161,4 +164,18 @@ class TestModuleAgreement:
 
     def test_curated_count_is_76(self):
         assert len(_CURATED_PUBLIC_NAMES) == 93
+
+    def test_unadmitted_valens_score_hook_is_absent(self):
+        assert "valens_distribution_scores" not in signature(
+            _dignities_module.calculate_dignities
+        ).parameters
+        assert "valens_distribution_scores" not in signature(
+            _dignities_module.DignitiesService.calculate_dignities
+        ).parameters
+        assert "include_timelord_distributions" not in {
+            item.name for item in fields(_dignities_module.AccidentalDignityPolicy)
+        }
+        assert "timelord_distribution_condition" not in {
+            item.name for item in fields(_dignities_module.AccidentalDignityTruth)
+        }
 

@@ -121,7 +121,7 @@ from .eclipse_canon import (
     LUNAR_CANON_METHOD_IDS,
 )
 from .eclipse_contacts import LunarEclipseContacts, find_lunar_contacts
-from .corrections import apply_light_time
+from .corrections import apply_frame_bias, apply_light_time
 from .obliquity import nutation, true_obliquity
 from .polar_motion import PolarMotionRegistry, polar_motion_matrix
 from .geoutils import (
@@ -138,6 +138,10 @@ __all__ = [
     "LocalContactCircumstances",
     "LunarEclipseAnalysis",
     "LunarEclipseLocalCircumstances",
+    "LunarEclipseVisibilityContactKind",
+    "LunarEclipseVisibilityPoint",
+    "LunarEclipseVisibilityLimit",
+    "LunarEclipseVisibilityMap",
     "LunarEclipseAnalysisMode",
     "LunarEclipseContacts",
     "LunarCanonContacts",
@@ -1162,6 +1166,128 @@ class LunarEclipseLocalCircumstances:
     p4: LocalContactCircumstances | None = None
 
 
+class LunarEclipseVisibilityContactKind(str, Enum):
+    """Named lunar-eclipse instants whose horizon limits form the map."""
+
+    P1 = "p1"
+    U1 = "u1"
+    U2 = "u2"
+    GREATEST = "greatest"
+    U3 = "u3"
+    U4 = "u4"
+    P4 = "p4"
+
+
+@dataclass(frozen=True, slots=True)
+class LunarEclipseVisibilityPoint:
+    """One zero-elevation WGS-84 geographic point."""
+
+    latitude_deg: float
+    longitude_deg: float
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("latitude_deg", self.latitude_deg),
+            ("longitude_deg", self.longitude_deg),
+        ):
+            if isinstance(value, bool) or not isinstance(value, Real):
+                raise TypeError(f"{name} must be a real number")
+            value = float(value)
+            if not math.isfinite(value):
+                raise ValueError(f"{name} must be finite")
+            object.__setattr__(self, name, value)
+        if not -90.0 <= self.latitude_deg <= 90.0:
+            raise ValueError("latitude_deg must be in [-90, 90]")
+        if not -180.0 <= self.longitude_deg <= 180.0:
+            raise ValueError("longitude_deg must be in [-180, 180]")
+
+
+@dataclass(frozen=True, slots=True)
+class LunarEclipseVisibilityLimit:
+    """Geometric Moon-center horizon at one eclipse contact instant.
+
+    ``points`` is a closed ring on the WGS-84 ellipsoid. The visible side is
+    the side containing ``sublunar_point``.
+    """
+
+    contact: LunarEclipseVisibilityContactKind
+    jd_ut: float
+    sublunar_point: LunarEclipseVisibilityPoint
+    points: tuple[LunarEclipseVisibilityPoint, ...]
+
+    def __post_init__(self) -> None:
+        try:
+            contact = LunarEclipseVisibilityContactKind(self.contact)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("invalid lunar eclipse visibility contact") from exc
+        object.__setattr__(self, "contact", contact)
+        if isinstance(self.jd_ut, bool) or not isinstance(self.jd_ut, Real):
+            raise TypeError("jd_ut must be a real Julian Day")
+        jd_ut = float(self.jd_ut)
+        if not math.isfinite(jd_ut):
+            raise ValueError("jd_ut must be finite")
+        object.__setattr__(self, "jd_ut", jd_ut)
+        if not isinstance(self.sublunar_point, LunarEclipseVisibilityPoint):
+            raise TypeError("sublunar_point must be a LunarEclipseVisibilityPoint")
+        points = tuple(self.points)
+        if len(points) < 9:
+            raise ValueError("a lunar visibility limit requires at least 9 points")
+        if not all(isinstance(point, LunarEclipseVisibilityPoint) for point in points):
+            raise TypeError("points must contain LunarEclipseVisibilityPoint values")
+        if points[0] != points[-1]:
+            raise ValueError("a lunar visibility limit must be a closed ring")
+        object.__setattr__(self, "points", points)
+
+
+@dataclass(frozen=True, slots=True)
+class LunarEclipseVisibilityMap:
+    """Global contact-horizon map for one lunar eclipse.
+
+    Each limit is the exact tangent intersection of the retarded geocentric
+    Moon-center line of sight with the zero-elevation WGS-84 ellipsoid at the
+    named contact. Atmosphere, terrain, elevation, and lunar-limb relief are
+    deliberately excluded. This is a visibility-boundary product, not a
+    solar-style shadow track.
+    """
+
+    analysis: LunarEclipseAnalysis
+    limits: tuple[LunarEclipseVisibilityLimit, ...]
+    ephemeris: str
+    surface_model: str = field(default="WGS84_ZERO_ELEVATION", init=False)
+    horizon_model: str = field(default="RETARDED_GEOMETRIC_MOON_CENTER", init=False)
+    time_scale: str = field(default="UT1", init=False)
+    atmospheric_refraction: bool = field(default=False, init=False)
+    visible_side: str = field(default="CONTAINS_SUBLUNAR_POINT", init=False)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.analysis, LunarEclipseAnalysis):
+            raise TypeError("analysis must be a LunarEclipseAnalysis")
+        if not self.analysis.event.data.is_lunar_eclipse:
+            raise ValueError("visibility map analysis must describe a lunar eclipse")
+        limits = tuple(self.limits)
+        if not limits or not all(
+            isinstance(limit, LunarEclipseVisibilityLimit) for limit in limits
+        ):
+            raise ValueError("limits must contain lunar eclipse visibility limits")
+        contacts = tuple(limit.contact for limit in limits)
+        if contacts[0] is not LunarEclipseVisibilityContactKind.P1:
+            raise ValueError("visibility limits must begin with P1")
+        if contacts[-1] is not LunarEclipseVisibilityContactKind.P4:
+            raise ValueError("visibility limits must end with P4")
+        if contacts.count(LunarEclipseVisibilityContactKind.GREATEST) != 1:
+            raise ValueError("visibility limits must contain greatest exactly once")
+        if len(set(contacts)) != len(contacts):
+            raise ValueError("visibility limit contacts must be unique")
+        if any(left.jd_ut >= right.jd_ut for left, right in zip(limits, limits[1:])):
+            raise ValueError("visibility limits must be strictly time ordered")
+        sample_counts = {len(limit.points) for limit in limits}
+        if len(sample_counts) != 1:
+            raise ValueError("all visibility limits must use the same sample count")
+        if not isinstance(self.ephemeris, str) or not self.ephemeris.strip():
+            raise ValueError("ephemeris is required")
+        object.__setattr__(self, "limits", limits)
+
+
 @dataclass(frozen=True, slots=True)
 class SolarBodyCircumstances:
     """
@@ -1353,7 +1479,8 @@ class EclipseCalculator:
                    "next_lunar_eclipse",
                    "previous_lunar_eclipse", "next_lunar_eclipse_canon",
                    "previous_lunar_eclipse_canon", "analyze_lunar_eclipse",
-                   "lunar_local_circumstances", "solar_local_circumstances",
+                   "lunar_local_circumstances", "lunar_eclipse_visibility_map",
+                   "solar_local_circumstances",
                    "next_solar_eclipse", "previous_solar_eclipse"],
         "internal": ["_calculate_jd_internal", "_lunar_shadow_axis_distance_km",
                      "_refine_lunar_maximum_for_kind", "_lunar_shadow_geometry_tt",
@@ -2149,6 +2276,84 @@ class EclipseCalculator:
             u3=local_contact(contacts.u3_ut),
             u4=local_contact(contacts.u4_ut),
             p4=local_contact(contacts.p4_ut),
+        )
+
+    def lunar_eclipse_visibility_map(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+        mode: LunarEclipseAnalysisMode = "native",
+        sample_count: int = 181,
+    ) -> LunarEclipseVisibilityMap:
+        """Return global Moon-center horizon limits for one lunar eclipse.
+
+        One closed WGS-84 limit is emitted for every contact that occurs,
+        including greatest eclipse. The visible side of each limit is the side
+        containing its sublunar point. ``sample_count`` controls only the
+        emitted ring density; it does not alter contact solving or geometry.
+        """
+
+        if isinstance(jd_start, bool) or not isinstance(jd_start, Real):
+            raise TypeError("jd_start must be a real Julian Day")
+        jd_start = float(jd_start)
+        if not math.isfinite(jd_start):
+            raise ValueError("jd_start must be finite")
+        if isinstance(sample_count, bool) or not isinstance(sample_count, int):
+            raise TypeError("sample_count must be an integer")
+        if not _LUNAR_VISIBILITY_MIN_SAMPLES <= sample_count <= _LUNAR_VISIBILITY_MAX_SAMPLES:
+            raise ValueError(
+                "sample_count must be between "
+                f"{_LUNAR_VISIBILITY_MIN_SAMPLES} and "
+                f"{_LUNAR_VISIBILITY_MAX_SAMPLES}"
+            )
+
+        analysis = self.analyze_lunar_eclipse(
+            jd_start,
+            kind=kind,
+            backward=backward,
+            mode=mode,
+        )
+        identity = _reader_identity_at(
+            self._reader,
+            _ut1_to_ephemeris_tt(analysis.event.jd_ut, self._reader),
+        )
+        if (
+            identity is None
+            or identity.planetary_ephemeris != "DE441"
+            or identity.lunar_ephemeris != "LE441"
+        ):
+            raise RuntimeError(
+                "lunar eclipse visibility maps are admitted only for a "
+                "content-identified DE441/LE441 reader"
+            )
+
+        contacts = analysis.contacts
+        suffix = "_ut" if mode == "nasa_compat" else ""
+        contact_epochs = (
+            (LunarEclipseVisibilityContactKind.P1, getattr(contacts, f"p1{suffix}")),
+            (LunarEclipseVisibilityContactKind.U1, getattr(contacts, f"u1{suffix}")),
+            (LunarEclipseVisibilityContactKind.U2, getattr(contacts, f"u2{suffix}")),
+            (LunarEclipseVisibilityContactKind.GREATEST, analysis.event.jd_ut),
+            (LunarEclipseVisibilityContactKind.U3, getattr(contacts, f"u3{suffix}")),
+            (LunarEclipseVisibilityContactKind.U4, getattr(contacts, f"u4{suffix}")),
+            (LunarEclipseVisibilityContactKind.P4, getattr(contacts, f"p4{suffix}")),
+        )
+        limits = tuple(
+            _lunar_visibility_limit_at(
+                self,
+                contact,
+                jd_ut,
+                sample_count=sample_count,
+            )
+            for contact, jd_ut in contact_epochs
+            if jd_ut is not None
+        )
+        return LunarEclipseVisibilityMap(
+            analysis=analysis,
+            limits=limits,
+            ephemeris=identity.summary_label,
         )
 
     def solar_local_circumstances(
@@ -3364,6 +3569,8 @@ _SOLAR_PENUMBRAL_DEFAULT_SAMPLES = 181
 _SOLAR_PENUMBRAL_SOLVER_SAMPLES = 721
 _SOLAR_PENUMBRAL_MIN_SAMPLES = 9
 _SOLAR_PENUMBRAL_MAX_SAMPLES = 721
+_LUNAR_VISIBILITY_MIN_SAMPLES = 9
+_LUNAR_VISIBILITY_MAX_SAMPLES = 721
 _SOLAR_PENUMBRAL_AZIMUTH_BRACKETS = 360
 _SOLAR_PENUMBRAL_CONTACT_STEP_DAYS = 10.0 / 1440.0
 _SOLAR_PENUMBRAL_CONTACT_SCAN_STEPS = 48
@@ -3900,6 +4107,178 @@ def _earth_fixed_solar_shadow(
         fundamental_east_unit_itrf=fundamental_east,
         fundamental_north_unit_itrf=fundamental_north,
         sun_xyz_from_earth_itrf_km=sun_xyz_itrf_km,
+    )
+
+
+def _earth_fixed_lunar_reception_vector(
+    calc: EclipseCalculator,
+    jd_ut: float,
+) -> tuple[float, float, float]:
+    """Return the retarded geocentric Moon vector in ITRF coordinates.
+
+    The staging is the geometric counterpart of the canonical topocentric
+    position path: reception-time light travel, ICRF frame bias, true
+    equator/equinox of date, physical GAST, and admitted polar motion. Annual
+    and diurnal aberration, atmosphere, terrain, and observer elevation do not
+    belong to this global geometric horizon product.
+    """
+
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, calc._reader)
+    earth_ssb = _earth_barycentric(jd_tt, calc._reader)
+    moon_icrf, _light_time_days = apply_light_time(
+        Body.MOON,
+        jd_tt,
+        calc._reader,
+        earth_ssb,
+        lambda body, epoch, reader: _barycentric(body, epoch, reader),
+    )
+    moon_j2000 = apply_frame_bias(moon_icrf)
+    moon_tete = mat_vec_mul(
+        mat_mul(
+            nutation_matrix_equatorial(jd_tt),
+            precession_matrix_equatorial(jd_tt),
+        ),
+        moon_j2000,
+    )
+
+    dpsi_deg, _deps_deg = nutation(jd_tt)
+    gast_rad = math.radians(
+        apparent_sidereal_time(jd_ut, dpsi_deg, true_obliquity(jd_tt))
+    )
+    cos_gast = math.cos(gast_rad)
+    sin_gast = math.sin(gast_rad)
+    moon_tirs = (
+        cos_gast * moon_tete[0] + sin_gast * moon_tete[1],
+        -sin_gast * moon_tete[0] + cos_gast * moon_tete[1],
+        moon_tete[2],
+    )
+    x_p_arcsec, y_p_arcsec = PolarMotionRegistry.polar_motion_at(jd_ut)
+    return mat_vec_mul(
+        _transpose_matrix_3x3(polar_motion_matrix(x_p_arcsec, y_p_arcsec)),
+        moon_tirs,
+    )
+
+
+def _wgs84_surface_point(
+    scaled_xyz: tuple[float, float, float],
+) -> LunarEclipseVisibilityPoint:
+    """Convert a unit-sphere point scaled onto WGS-84 to geodetic degrees."""
+
+    x_km = EARTH_RADIUS_KM * scaled_xyz[0]
+    y_km = EARTH_RADIUS_KM * scaled_xyz[1]
+    z_km = _WGS84_POLAR_RADIUS_KM * scaled_xyz[2]
+    longitude_deg = math.degrees(math.atan2(y_km, x_km))
+    horizontal_km = math.hypot(x_km, y_km)
+    latitude_deg = math.degrees(
+        math.atan2(
+            z_km * EARTH_RADIUS_KM * EARTH_RADIUS_KM,
+            horizontal_km * _WGS84_POLAR_RADIUS_KM * _WGS84_POLAR_RADIUS_KM,
+        )
+    )
+    return LunarEclipseVisibilityPoint(
+        latitude_deg=latitude_deg,
+        longitude_deg=longitude_deg,
+    )
+
+
+def _wgs84_subpoint_for_external_xyz(
+    xyz_km: tuple[float, float, float],
+) -> LunarEclipseVisibilityPoint:
+    """Return the WGS-84 normal-foot subpoint of an external ITRF point."""
+
+    x_km, y_km, z_km = xyz_km
+    horizontal_km = math.hypot(x_km, y_km)
+    if horizontal_km == 0.0:
+        latitude_deg = math.copysign(90.0, z_km)
+        longitude_deg = 0.0
+    else:
+        a = EARTH_RADIUS_KM
+        b = _WGS84_POLAR_RADIUS_KM
+        eccentricity_sq = 1.0 - (b * b) / (a * a)
+        second_eccentricity_sq = (a * a - b * b) / (b * b)
+        auxiliary = math.atan2(z_km * a, horizontal_km * b)
+        sin_auxiliary = math.sin(auxiliary)
+        cos_auxiliary = math.cos(auxiliary)
+        latitude_deg = math.degrees(
+            math.atan2(
+                z_km
+                + second_eccentricity_sq
+                * b
+                * sin_auxiliary
+                * sin_auxiliary
+                * sin_auxiliary,
+                horizontal_km
+                - eccentricity_sq
+                * a
+                * cos_auxiliary
+                * cos_auxiliary
+                * cos_auxiliary,
+            )
+        )
+        longitude_deg = math.degrees(math.atan2(y_km, x_km))
+    return LunarEclipseVisibilityPoint(latitude_deg, longitude_deg)
+
+
+def _lunar_visibility_limit_at(
+    calc: EclipseCalculator,
+    contact: LunarEclipseVisibilityContactKind,
+    jd_ut: float,
+    *,
+    sample_count: int,
+) -> LunarEclipseVisibilityLimit:
+    """Solve one Moon-center/ellipsoid tangent ring analytically.
+
+    Scaling WGS-84 to a unit sphere turns the observer-horizon condition into
+    the plane ``q dot m = 1`` on ``q dot q = 1``. Their intersection is a
+    circle in scaled space and therefore an exact ellipse on WGS-84.
+    """
+
+    moon_x, moon_y, moon_z = _earth_fixed_lunar_reception_vector(calc, jd_ut)
+    scaled_moon = (
+        moon_x / EARTH_RADIUS_KM,
+        moon_y / EARTH_RADIUS_KM,
+        moon_z / _WGS84_POLAR_RADIUS_KM,
+    )
+    moon_scale = math.sqrt(_shadow_dot(scaled_moon, scaled_moon))
+    if not math.isfinite(moon_scale) or moon_scale <= 1.0:
+        raise ArithmeticError("the Moon must lie outside the WGS-84 ellipsoid")
+    moon_unit = _shadow_scale(scaled_moon, 1.0 / moon_scale)
+    circle_center = _shadow_scale(scaled_moon, 1.0 / (moon_scale * moon_scale))
+    circle_radius = math.sqrt(1.0 - 1.0 / (moon_scale * moon_scale))
+
+    reference = (0.0, 0.0, 1.0) if abs(moon_unit[2]) < 0.9 else (0.0, 1.0, 0.0)
+    basis_one = _shadow_unit(
+        _shadow_cross(moon_unit, reference),
+        label="lunar horizon first tangent basis",
+    )
+    basis_two = _shadow_unit(
+        _shadow_cross(moon_unit, basis_one),
+        label="lunar horizon second tangent basis",
+    )
+
+    points: list[LunarEclipseVisibilityPoint] = []
+    for index in range(sample_count - 1):
+        angle = 2.0 * math.pi * index / (sample_count - 1)
+        scaled_surface = _shadow_add(
+            circle_center,
+            _shadow_scale(
+                _shadow_add(
+                    _shadow_scale(basis_one, math.cos(angle)),
+                    _shadow_scale(basis_two, math.sin(angle)),
+                ),
+                circle_radius,
+            ),
+        )
+        points.append(_wgs84_surface_point(scaled_surface))
+    points.append(points[0])
+
+    return LunarEclipseVisibilityLimit(
+        contact=contact,
+        jd_ut=jd_ut,
+        sublunar_point=_wgs84_subpoint_for_external_xyz(
+            (moon_x, moon_y, moon_z)
+        ),
+        points=tuple(points),
     )
 
 

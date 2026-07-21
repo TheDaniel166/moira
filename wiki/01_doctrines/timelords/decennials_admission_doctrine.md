@@ -1,5 +1,16 @@
 # Decennials Admission Doctrine
 
+> **Corrective admission status — 2026-07-21.** Core Decennials chronology,
+> including explicit `valens` L3/L4 and `hephaistio` L3 subdivision policies,
+> remains admitted. The separate Valens distributions/transmissions
+> *interpretive* layer is quarantined and not part of Moira's public engine or
+> REST surface. Earlier P1–P12 completion declarations later in this historical
+> research record are rescinded: the implementation duplicated incomplete
+> tables, omitted the required receiver/context relation during automatic
+> attachment, inferred polarity and scores from English keywords, and lacked
+> item-level source fixtures. Re-admission requires a new source-complete,
+> unscored doctrine and validation pass.
+
 ## Purpose
 
 This document defines the pre-constitutional doctrine layer for Moira's

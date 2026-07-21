@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 432
+- Total non-documentation routes: 435
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 428
+- Versioned `/v1` routes: 431
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -159,12 +159,13 @@ Not yet broadly exposed as REST families:
 | draconic | 3 |
 | egyptian-bounds | 7 |
 | electional | 12 |
-| eclipses | 6 |
+| eclipses | 7 |
 | galactic | 6 |
 | galactic-houses | 3 |
 | gauquelin | 3 |
 | geodetic | 4 |
 | heliacal | 2 |
+| hellenistic-aspects | 2 |
 | harmograms | 5 |
 | harmonics | 10 |
 | hermetic-decans | 4 |
@@ -365,6 +366,7 @@ Admitted products:
 | POST | `/v1/eclipses/lunar/next` | `next_lunar_eclipse_route` |
 | POST | `/v1/eclipses/solar/local-visible` | `next_visible_solar_eclipse_route` |
 | POST | `/v1/eclipses/lunar/local` | `lunar_eclipse_local_route` |
+| POST | `/v1/eclipses/lunar/visibility` | `lunar_eclipse_visibility_route` |
 | POST | `/v1/eclipses/solar/path` | `solar_eclipse_path_route` |
 | POST | `/v1/eclipses/solar/footprint` | `solar_eclipse_footprint_route` |
 | POST | `/v1/occultations/close-approaches` | `close_approaches_route` |
@@ -515,6 +517,31 @@ This is an intentional numerical and provenance-label change within the
 existing contract. No route was added or renamed, and no request or response
 field changed. `POST /v1/eclipses/lunar/next` remains the existing native
 search surface.
+
+### Global Lunar-Eclipse Visibility REST Contract
+
+`POST /v1/eclipses/lunar/visibility` exposes
+`Moira.lunar_eclipse_visibility_map(...)` for global map rendering. The
+request accepts `jd_start`, `kind` (`any`, `total`, `partial`, or
+`penumbral`), `backward`, `mode` (`native` or `nasa_compat`), and
+`sample_count`. The density defaults to `181` and is constrained to the
+inclusive range `9..721`.
+
+The response contains the searched lunar eclipse and one closed geographic
+horizon ring for every phase contact that actually occurs: P1, optional U1,
+optional U2, greatest eclipse, optional U3, optional U4, and P4. Each limit
+also carries the sublunar point. The visible side of a ring is explicitly the
+side containing that point, allowing a map client to draw or shade the
+contact-specific visibility hemisphere without recomputing astronomy.
+
+This is not a solar-style shadow path. Each ring is the exact tangent
+intersection between the retarded geocentric Moon-center line of sight and
+the zero-elevation WGS-84 ellipsoid at the named UT1 contact. The product is
+admitted only with a content-identified DE441/LE441 reader. Metadata declares
+`RETARDED_GEOMETRIC_MOON_CENTER`, no atmospheric refraction, and the exclusion
+of observer elevation, terrain, and lunar-limb relief. `sample_count` changes
+only the emitted closed-ring density; contact solving and geometry are
+unchanged.
 
 ### Solar Partial-Visibility Footprint REST Contract
 
@@ -1132,6 +1159,26 @@ not a Muhurta product or a search route.
 | POST | `/v1/dignities/chart/profile` | `dignities_chart_profile_route` |
 | POST | `/v1/dignities/chart/network` | `dignities_chart_network_route` |
 
+The REST dignity policy does not admit
+`include_timelord_distributions`. Valens distribution scoring is quarantined;
+supplying that former option is a `422 validation_error`, not an inert no-op.
+
+## Hellenistic Whole-Sign Aspect Routes
+
+| Method | Path | Handler | Kernel |
+|---|---|---|---|
+| POST | `/v1/aspects/hellenistic/whole-sign` | `whole_sign_aspects_route` | No |
+| POST | `/v1/aspects/hellenistic/overcoming` | `overcoming_route` | No |
+
+Both routes accept caller-supplied tropical ecliptic longitudes in degrees and
+perform no ephemeris or chart-motion calculation. The whole-sign route returns
+the admitted aspect relation, aspect direction, sign degrees, typed
+classification, and both directed overcoming predicates for every relation.
+The direct overcoming route returns both predicates and the winning body, or
+`null` when neither body is in the tenth-sign overcoming relation. Longitudes
+are normalized modulo 360; names are trimmed, longitudes must be finite, and a
+whole-sign request is bounded to 2–64 uniquely named bodies.
+
 ## Church of Light Astrodynes Routes
 
 | Method | Path | Handler | Kernel |
@@ -1455,6 +1502,14 @@ direction.
 | POST | `/v1/timelords/zodiacal-releasing/current` | `zr_current_route` |
 | POST | `/v1/timelords/zodiacal-releasing/profile` | `zr_profile_route` |
 | POST | `/v1/timelords/zodiacal-releasing/level-pair` | `zr_level_pair_route` |
+
+Every Decennials request carries `levels` and an explicit optional
+`deep_subdivision_method`. Levels 1–2 reject a deep method; levels 3–4 reject
+an omitted method; `hephaistio` admits level 3 only; `valens` admits levels 3
+and 4. Responses preserve the selected method at the top level and on every
+deep period/profile. This `valens` value selects chronological subdivision
+only and does not enable the quarantined Valens delineation layer.
+
 | POST | `/v1/dasha/vimshottari/sequence` | `dasha_sequence_route` |
 | POST | `/v1/dasha/vimshottari/balance` | `dasha_balance_route` |
 | POST | `/v1/dasha/vimshottari/current` | `dasha_current_route` |

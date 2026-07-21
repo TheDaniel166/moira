@@ -8,6 +8,8 @@ Scope: moira.timelords.__all__ contract and Decennials-era export freeze.
 No computation is performed; all assertions are import-resolution checks.
 """
 
+from dataclasses import fields
+
 import moira
 import moira.classical as _classical_module
 import moira.facade as _facade_module
@@ -77,6 +79,16 @@ _INTERNAL_NAMES = [
     "_TOTAL_MINOR_YEARS",
 ]
 
+_QUARANTINED_VALENS_NAMES = [
+    "ValensDistributionEffect",
+    "VALENS_DISTRIBUTIONS_POLICY",
+    "formalize_valens_distributions_for_chronocrator",
+    "harden_valens_effects",
+    "aggregate_valens_distributions",
+    "valens_distribution_as_accidental_condition",
+    "build_valens_distribution_scores_from_periods",
+]
+
 _DECAENNIAL_FORWARD_NAMES = [
     "DecennialSequenceKind",
     "DecennialPolicy",
@@ -137,6 +149,25 @@ class TestTimelordsInternalsRemainInternal:
             assert name not in _timelords_module.__all__, (
                 f"{name!r} leaked into moira.timelords.__all__"
             )
+
+
+class TestValensInterpretiveLayerIsQuarantined:
+    def test_candidate_names_are_not_engine_or_forwarded_surfaces(self):
+        for name in _QUARANTINED_VALENS_NAMES:
+            assert not hasattr(_timelords_module, name)
+            assert not hasattr(_classical_module, name)
+            assert not hasattr(_facade_module, name)
+
+    def test_period_and_profile_vessels_have_no_interpretive_payload(self):
+        vessel_types = (
+            _timelords_module.DecennialPeriod,
+            _timelords_module.ReleasingPeriod,
+            _timelords_module.DecennialConditionProfile,
+            _timelords_module.ZRConditionProfile,
+        )
+        for vessel_type in vessel_types:
+            names = {item.name for item in fields(vessel_type)}
+            assert not any(name.startswith("valens_") for name in names)
 
 
 class TestDecennialsForwardedSurfaces:

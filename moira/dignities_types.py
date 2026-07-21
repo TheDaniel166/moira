@@ -302,14 +302,6 @@ class AccidentalDignityPolicy:
     solar: SolarConditionPolicy = field(default_factory=SolarConditionPolicy)
     mutual_reception: MutualReceptionPolicy = field(default_factory=MutualReceptionPolicy)
     sect: SectHayzPolicy = field(default_factory=SectHayzPolicy)
-    # P7 cross-layer wiring from timelords Valens Distributions (Hellenistic chronocrator effects).
-    # When True, callers supplying active valens distribution scores/effects for a planet
-    # (via the valens_distribution_score or the bridge helper) can have them contribute
-    # as an accidental "timelord" / "valens_distribution" condition.
-    # Precedent: overcoming() (aspects.py) + other Hellenistic conditions (halb, besieged, joy, etc.)
-    # are available as pure or accidental contributions; this makes the admitted Valens
-    # distributions layer (see decennials_admission_doctrine.md) consumable by the dignity engine.
-    include_timelord_distributions: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -1409,8 +1401,6 @@ class AccidentalDignityTruth:
     joy_condition: AccidentalDignityCondition | None = None
     oriental_condition: AccidentalDignityCondition | None = None
     besieged_condition: AccidentalDignityCondition | None = None
-    # P7: optional contribution from Valens timelord distributions layer (when policy + data supplied)
-    timelord_distribution_condition: AccidentalDignityCondition | None = None
 
 
 @dataclass(slots=True)
