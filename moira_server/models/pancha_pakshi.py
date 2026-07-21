@@ -122,6 +122,55 @@ class PanchaPakshiScheduleSookshmaSelectionRequest(_StrictModel):
         return value
 
 
+class PanchaPakshiCivilTimeSookshmaSelectionRequest(_StrictModel):
+    """Route one aware instant under explicit timing and selector policies."""
+
+    schedule_profile_id: str = Field(min_length=1)
+    selector_profile_id: str = Field(min_length=1)
+    dt: datetime
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    profile_paksha: PanchaPakshiPaksha
+    subject_bird: PanchaPakshiBird
+    timing_policy_id: Literal[
+        "fixed_24_minute_nazhigai_from_local_solar_half_start_v1",
+        "solar_proportional_nominal_offsets_over_governing_half_tt_v1",
+    ]
+    selector_policy_id: Literal[
+        "bogamuni_2024_weighted_sookshma_samam_v1",
+        "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+    ]
+
+    @field_validator("schedule_profile_id", "selector_profile_id")
+    @classmethod
+    def _non_blank_profile_ids(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("profile ids must be non-empty; there is no default")
+        return value
+
+    @field_validator("dt", mode="before")
+    @classmethod
+    def _require_iso_datetime_input(cls, value: object) -> object:
+        if isinstance(value, datetime):
+            return value
+        if not isinstance(value, str):
+            raise ValueError("dt must be an ISO 8601 date-time")
+        candidate = value[:-1] + "+00:00" if value.endswith("Z") else value
+        try:
+            datetime.fromisoformat(candidate)
+        except ValueError as exc:
+            raise ValueError("dt must be an ISO 8601 date-time") from exc
+        return value
+
+    @field_validator("dt")
+    @classmethod
+    def _aware_datetime_utc(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("dt must be timezone-aware")
+        return value.astimezone(timezone.utc)
+
+
 class PanchaPakshiLocalSolarContextRequest(PanchaPakshiProfileRequest):
     """Route one aware civil instant through the admitted local-solar policy."""
 
@@ -934,3 +983,51 @@ class PanchaPakshiSolarProportionalCurrentCellResponse(_StrictModel):
     selection_status: Literal["selected"]
     current_cell: PanchaPakshiSolarProportionalCellResponse
     provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiCivilTimeSookshmaRoutingPolicyResponse(_StrictModel):
+    policy_id: Literal["civil_time_materialized_samam_to_stage2n_v1"]
+    composition_status: Literal["modern_moira_policy_not_source_claim"]
+    timing_policy_selection: Literal["caller_named_no_default"]
+    selector_policy_selection: Literal["caller_named_no_default"]
+    selection_time_scale: Literal["reader_bound_tt"]
+    samam_derivation: Literal[
+        "current_materialized_cell_nominal_samam_index"
+    ]
+    elapsed_derivation: Literal[
+        "binary64_tt_values_lifted_exactly_to_fraction_then_normalized_"
+        "over_materialized_samam_span_times_six"
+    ]
+    interval_ownership: Literal["half_open"]
+    fixed_tail_policy: Literal[
+        "preserve_explicit_unmaterialized_solar_half_tail"
+    ]
+    automatic_timing_fallback: Literal["forbidden"]
+    astronomical_paksha_inference_status: Literal["not_performed"]
+    uromarisi_outcome_binding_status: Literal["not_performed"]
+    outcome_interpretation_status: Literal["not_performed"]
+
+
+class PanchaPakshiCivilTimeSookshmaSelectionResponse(_StrictModel):
+    schedule_profile_id: str
+    selector_profile_id: str
+    timing_policy_id: Literal[
+        "fixed_24_minute_nazhigai_from_local_solar_half_start_v1",
+        "solar_proportional_nominal_offsets_over_governing_half_tt_v1",
+    ]
+    selector_policy_id: Literal[
+        "bogamuni_2024_weighted_sookshma_samam_v1",
+        "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+    ]
+    subject_bird: PanchaPakshiBird
+    routing_policy: PanchaPakshiCivilTimeSookshmaRoutingPolicyResponse
+    current_cell_selection: (
+        PanchaPakshiFixedClockCurrentCellResponse
+        | PanchaPakshiSolarProportionalCurrentCellResponse
+    )
+    selection_status: Literal["selected", "unmaterialized_solar_half_tail"]
+    samam_index: int | None = Field(default=None, ge=1, le=5)
+    samam_start_jd_tt: float | None = None
+    samam_end_jd_tt: float | None = None
+    elapsed_nazhigai: PanchaPakshiFractionResponse | None = None
+    composition: PanchaPakshiScheduleSookshmaSelectionResponse | None = None

@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_civil_time_sookshma_selection_stage2o_2026_07_21",
+  "decided_at_utc": "2026-07-21T21:30:00Z",
+  "decision_kind": "explicit_modern_civil_time_routing_into_stage2n",
+  "stage": "2O",
+  "prior_implementation_boundary": {
+    "decision_id": "pancha_pakshi_schedule_sookshma_composition_stage2n_2026_07_21",
+    "fixture_path": "tests/fixtures/pancha_pakshi_schedule_sookshma_composition_stage2n_2026_07_21.json",
+    "fixture_sha256": "084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9",
+    "relationship": "stage2o_derives_the_stage2n_samam_and_exact_elapsed_offset_from_one_explicitly_selected_materialization_policy"
+  },
+  "bound_public_products": {
+    "schedule_profile_id": "agastya_madras_1879_akshara_fixed_clock",
+    "selector_profile_id": "bogamuni_chennai_2024_sookshma_temporal_selector",
+    "fixed_clock_policy_id": "fixed_24_minute_nazhigai_from_local_solar_half_start_v1",
+    "solar_proportional_policy_id": "solar_proportional_nominal_offsets_over_governing_half_tt_v1",
+    "selector_policy_ids": [
+      "bogamuni_2024_weighted_sookshma_samam_v1",
+      "bogamuni_2024_eka_sookshma_equal_fifths_v1"
+    ],
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955",
+    "manifest_changed": false,
+    "profile_count_changed": false,
+    "profile_capabilities_changed": false
+  },
+  "computational_object": {
+    "function": "pancha_pakshi_civil_time_sookshma_selection_at",
+    "facade_method": "Moira.pancha_pakshi_civil_time_sookshma_selection",
+    "rest_route": "POST /v1/pancha-pakshi/sookshma/civil-time-select",
+    "result_vessel": "PanchaPakshiCivilTimeSookshmaSelection",
+    "routing_policy_vessel": "PanchaPakshiCivilTimeSookshmaRoutingPolicy",
+    "routing_policy_id": "civil_time_materialized_samam_to_stage2n_v1",
+    "inputs": [
+      "explicit_schedule_profile_id",
+      "explicit_selector_profile_id",
+      "aware_civil_instant",
+      "explicit_latitude_and_longitude",
+      "explicit_profile_paksha",
+      "explicit_subject_bird",
+      "explicit_timing_policy_id",
+      "explicit_selector_policy_id"
+    ],
+    "samam_derivation": "read_the_current_materialized_cells_nominal_samam_index",
+    "elapsed_derivation": "lift_the_stored_requested_start_and_end_binary64_tt_values_exactly_to_rationals_then_compute_requested_minus_start_over_end_minus_start_times_six",
+    "interval_ownership": "half_open",
+    "fixed_long_half_tail": "preserved_as_unmaterialized_solar_half_tail_with_null_samam_elapsed_and_composition",
+    "automatic_timing_fallback": "forbidden",
+    "astronomical_paksha_inference": "not_performed",
+    "uromarisi_outcome_binding": "not_performed",
+    "outcome_interpretation": "not_performed"
+  },
+  "ambiguity_policy": {
+    "default_schedule_profile": null,
+    "default_selector_profile": null,
+    "default_timing_policy": null,
+    "default_selector_policy": null,
+    "default_profile_paksha": null,
+    "default_subject_bird": null,
+    "automatic_fixed_to_proportional_fallback": "forbidden",
+    "source_claim_for_routing_composition": false,
+    "composition_status": "modern_moira_policy_not_source_claim"
+  },
+  "validation_evidence": {
+    "engine_test": "tests/unit/test_pancha_pakshi_civil_time_sookshma_selection.py",
+    "transport_test": "tests/server/test_server_pancha_pakshi_civil_time_sookshma.py",
+    "required_invariants": [
+      "both_timing_policies_are_caller_named_and_neither_is_defaulted",
+      "both_stage2k_selector_policies_remain_caller_named_and_distinct",
+      "the_current_materialized_cell_determines_the_samam",
+      "the_stored_reader_bound_tt_values_determine_one_exact_normalized_fraction",
+      "shared_samam_boundaries_belong_to_the_following_samam",
+      "fixed_clock_long_half_tail_never_falls_back_to_proportional_routing",
+      "tail_results_preserve_the_subject_and_both_policy_choices_without_composition",
+      "no_outcome_condition_score_election_or_forecast_input_or_result_is_admitted"
+    ]
+  },
+  "public_claim": "One aware civil instant may be routed through a caller-selected fixed-clock or solar-proportional materialization into the existing explicit Stage 2N composition, with samam and elapsed nazhigai derived transparently from the selected materialized TT interval.",
+  "public_nonclaims": [
+    "The routing composition is not attributed to either historical witness.",
+    "No default chooses between fixed-clock and solar-proportional timing.",
+    "No default chooses between weighted Sookshma and equal Eka Sookshma.",
+    "No astronomical lunar paksha is inferred; the source profile label remains caller supplied.",
+    "A fixed-clock long-half tail is not filled by proportional fallback.",
+    "No Uromarisi outcome table or prognostic prose is bound to the selected ordinal.",
+    "No condition, score, electional judgment, or forecast is returned.",
+    "No new historical profile, source capability, or independent-witness claim is introduced.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": {
+    "status": "unchanged_source_artifacts_not_packaged",
+    "distributed_material": "moira_authored_routing_code_schema_tests_decision_metadata_and_provenance_prose_only",
+    "excluded_material": "archive_scans_ocr_page_images_copied_layout_source_prose_and_third_party_translation"
+  }
+}

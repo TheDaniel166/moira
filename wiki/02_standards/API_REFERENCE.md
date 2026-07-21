@@ -253,7 +253,7 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 |---|---|
 | Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |
 | Panchanga | `panchanga_at`, `sankranti_at`, `PanchangaResult`, `TithiPaksha`, `PanchangaPolicy` |
-| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_first_eat_bird_mapping`, `pancha_pakshi_astronomical_paksha_at`, `pancha_pakshi_nakshatra_bird_mapping`, `pancha_pakshi_natal_moon_identity_at`, `pancha_pakshi_padu_bird_mapping`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_solar_proportional_current_cell_at`, `pancha_pakshi_directed_relationship` |
+| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_first_eat_bird_mapping`, `pancha_pakshi_astronomical_paksha_at`, `pancha_pakshi_nakshatra_bird_mapping`, `pancha_pakshi_natal_moon_identity_at`, `pancha_pakshi_padu_bird_mapping`, `pancha_pakshi_sookshma_temporal_selection`, `pancha_pakshi_schedule_sookshma_temporal_selection`, `pancha_pakshi_civil_time_sookshma_selection_at`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_solar_proportional_current_cell_at`, `pancha_pakshi_directed_relationship` |
 | Vedic dignities | `vedic_dignity`, `planetary_relationships`, `VedicDignityResult`, `DignityConditionProfile`, `ChartDignityProfile` |
 | Varga (divisional) | `navamsa`, `saptamsa`, `dashamansa`, `dwadashamsa`, `trimshamsa` + 11 more vargas, `VargaPoint` |
 | Vimshottari Dasha | `vimshottari`, `current_dasha`, `dasha_balance`, `dasha_active_line`, `DashaPeriod`, `VimshottariComputationPolicy` |
@@ -4870,6 +4870,8 @@ from moira.vedic import (
     pancha_pakshi_natal_moon_identity_at,
     pancha_pakshi_padu_bird_mapping,
     pancha_pakshi_sookshma_temporal_selection,
+    pancha_pakshi_schedule_sookshma_temporal_selection,
+    pancha_pakshi_civil_time_sookshma_selection_at,
     pancha_pakshi_local_solar_context_at,
     pancha_pakshi_fixed_clock_materialization_at,
     pancha_pakshi_fixed_clock_current_cell_at,
@@ -4903,6 +4905,11 @@ from moira.vedic import (
     PanchaPakshiSookshmaSelection,
     PanchaPakshiSookshmaSelectorPolicy,
     PanchaPakshiSookshmaSelectorPolicyId,
+    PanchaPakshiSookshmaTimingPolicyId,
+    PanchaPakshiScheduleSookshmaCompositionPolicy,
+    PanchaPakshiScheduleSookshmaSelection,
+    PanchaPakshiCivilTimeSookshmaRoutingPolicy,
+    PanchaPakshiCivilTimeSookshmaSelection,
     PanchaPakshiBird,
     PanchaPakshiPaksha,
     PanchaPakshiHalf,
@@ -4922,6 +4929,8 @@ from moira.vedic import (
 | `pancha_pakshi_natal_moon_identity_at(profile_id, jd_ut1, *, reader=None)` | `PanchaPakshiNatalMoonIdentity` | Apply the named Bogamuni table through the fixed modern apparent-geocentric, Lahiri-true, equal-27-sector natal-Moon policy while exposing every intermediate and source mapping |
 | `pancha_pakshi_padu_bird_mapping(profile_id, *, profile_paksha, weekday)` | `PanchaPakshiPaduBirdMapping` | Return one directly attested Padu bird from the explicit Paksha-by-weekday table; no day/night, instant, schedule, or activity conversion |
 | `pancha_pakshi_sookshma_temporal_selection(profile_id, *, policy_id, parent_activity, elapsed_nazhigai)` | `PanchaPakshiSookshmaSelection` | Select one exact half-open interval within a six-nazhigai samam under a mandatory weighted or equal-fifths policy; no default, clock, astronomy, schedule, Uromarisi outcome, or prognostic interpretation |
+| `pancha_pakshi_schedule_sookshma_temporal_selection(schedule_profile_id, selector_profile_id, *, profile_paksha, half, weekday, samam_index, subject_bird, selector_policy_id, elapsed_nazhigai)` | `PanchaPakshiScheduleSookshmaSelection` | Compose one explicit nominal schedule samam and subject bird with one explicit selector policy and exact elapsed fraction; no clock or outcome binding |
+| `pancha_pakshi_civil_time_sookshma_selection_at(schedule_profile_id, selector_profile_id, jd_ut1, latitude, longitude, *, profile_paksha, subject_bird, timing_policy_id, selector_policy_id, reader=None)` | `PanchaPakshiCivilTimeSookshmaSelection` | Route one instant through an explicit fixed-clock or solar-proportional materialization, derive samam and exact elapsed fraction, and invoke Stage 2N without policy fallback or outcome interpretation |
 | `pancha_pakshi_local_solar_context_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiLocalSolarContext` | Resolve topocentric local-solar half and local-mean-solar weekday from UT1, retain caller-supplied paksha, and select the existing nominal schedule |
 | `pancha_pakshi_fixed_clock_materialization_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockMaterialization` | Anchor the selected nominal schedule at governing sunrise or sunset, apply its exact offsets on reader-bound TT, project endpoints to UT1, and report unclipped solar-boundary topology without selecting a current cell |
 | `pancha_pakshi_fixed_clock_current_cell_at(profile_id, jd_ut1, latitude, longitude, *, paksha, reader=None)` | `PanchaPakshiFixedClockCurrentCellSelection` | Resolve the governing solar half first, then return its unique half-open fixed-clock cell or the explicit unmaterialized long-half-tail status |
@@ -5173,7 +5182,10 @@ latitude, longitude, *, paksha)`, plus the
 `pancha_pakshi_solar_proportional_materialization(profile_id, dt, latitude,
 longitude, *, paksha)` and
 `pancha_pakshi_solar_proportional_current_cell(profile_id, dt, latitude,
-longitude, *, paksha)` adapters for aware datetimes. The low-level
+longitude, *, paksha)` and
+`pancha_pakshi_civil_time_sookshma_selection(schedule_profile_id,
+selector_profile_id, dt, latitude, longitude, *, profile_paksha, subject_bird,
+timing_policy_id, selector_policy_id)` adapters for aware datetimes. The low-level
 engine functions accept UT1 JD, while the facade preserves UTC civil anchoring
 before the UT1 conversion. Fixed-clock and solar-proportional offset arithmetic
 use reader-bound TT under their distinct policies, with both TT and projected
@@ -5183,7 +5195,7 @@ and `moira.vedic`; the Stage 2F function, enum, result, and policy vessels are
 exported through those same surfaces, as are the Stage 2G mapping, natal result,
 policy, and functions. The astronomical-paksha and natal-Moon facades accept an
 aware datetime but no location or caller-supplied paksha. The former's inferred
-label is never ambiently routed into the five location-bearing operations, and
+label is never ambiently routed into the six location-bearing operations, and
 the latter returns an identity only without routing into any schedule family.
 The Stage 2H function, vessel, and facade lookup are also exported through all
 three Python surfaces and perform no clock or kernel access.
@@ -5200,6 +5212,13 @@ the modern `explicit_schedule_samam_subject_bird_sookshma_v1` policy. It still
 performs no clock, astronomy, Uromarisi outcome, condition, score, or forecast
 operation. The matching strict route is
 `POST /v1/pancha-pakshi/sookshma/schedule-select`.
+The Stage 2O method additionally requires an aware datetime, location, source
+Paksha, subject bird, explicit timing policy, and explicit selector policy. It
+derives samam and elapsed nazhigai from the selected materialized reader-bound
+TT interval under `civil_time_materialized_samam_to_stage2n_v1`. A fixed-clock
+long-half tail remains an explicit null composition and never falls back to
+solar-proportional timing. The matching strict route is
+`POST /v1/pancha-pakshi/sookshma/civil-time-select`.
 
 ---
 

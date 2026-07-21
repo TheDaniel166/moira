@@ -1,5 +1,36 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2O Explicit Civil-Time-To-Sookshma Routing — 2026-07-21
+
+Stage 2O binds the existing timing materializations to the Stage 2N
+composition under a new, explicitly modern routing policy. The
+[`Stage 2O decision`](../../tests/fixtures/pancha_pakshi_civil_time_sookshma_selection_stage2o_2026_07_21.json)
+has canonical SHA-256
+`2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+It binds the unchanged Stage 2N decision SHA-256
+`084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`
+and unchanged manifest SHA-256
+`584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`.
+
+Every call names both source profiles, an aware civil instant and location,
+source Paksha, subject bird, one of the existing fixed-clock or
+solar-proportional materialization policy IDs, and one Stage 2K selector
+policy. The current materialized cell supplies the samam. The stored
+reader-bound TT requested instant and samam endpoints are lifted from binary64
+exactly into rational arithmetic and normalized to the samam's six nazhigai
+span before the unchanged Stage 2N join is evaluated. Shared boundaries belong
+to the following samam.
+
+The policy is `civil_time_materialized_samam_to_stage2n_v1` and
+`modern_moira_policy_not_source_claim`. It neither attributes this routing to
+a historical witness nor chooses a timing or selector default. A fixed-clock
+long-half tail remains `unmaterialized_solar_half_tail` with no samam, elapsed
+offset, or composition; no proportional fallback occurs. Paksha remains caller
+supplied. No astronomical paksha inference, Uromarisi outcome, condition,
+score, electional judgment, or forecast is produced. All four profiles, their
+capabilities, and the manifest remain unchanged, and no human-language reviewer
+is required.
+
 ## Stage 2N Explicit Schedule-To-Sookshma Composition — 2026-07-21
 
 Stage 2N resumes the implementation sequence while leaving Commissionerate
@@ -288,8 +319,8 @@ materialization, natal identity, or cross-profile composition. The result is
 not Padu, an authority day or bird, Adhikara/Bharana, a current activity,
 condition, strength, score, electional judgment, or forecast.
 
-The current public family has four profiles, seventeen `Moira` methods (ten
-kernel-free and seven kernel-backed), and sixteen REST routes.
+The current public family has four profiles, eighteen `Moira` methods (ten
+kernel-free and eight kernel-backed), and seventeen REST routes.
 
 Validation checks all 28 cells against the canonical generator table and the
 existing schedule's `first_eat_bird` and initial EAT cell. It also checks exact
@@ -1143,7 +1174,9 @@ Stage 2I source-attested first-samam EAT-seed lookup, plus
 the separate 2024 nakshatra table and Stage 2G modern natal-Moon composition,
 plus the Stage 2H 2024 Padu-only table, plus the Stage 2K exact Sookshma
 temporal-selector profile with two mandatory explicit policies, plus the
-Stage 2N explicit modern schedule composition with no clock or outcome binding.
+Stage 2N explicit modern schedule composition with no clock or outcome binding,
+plus Stage 2O civil-time routing under mandatory timing and selector policies
+with no fallback or outcome binding.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

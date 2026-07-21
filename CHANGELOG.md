@@ -15,14 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   materialization method, one kernel-backed fixed-clock current-cell method,
   one kernel-backed solar-proportional materialization method, one kernel-backed
   solar-proportional current-cell method, one kernel-backed natal-Moon identity
-  method, and sixteen strict
+  method, one kernel-backed civil-time Sookshma routing method, and seventeen strict
   `/v1/pancha-pakshi` routes for profile discovery, aksara identity, exact
   nominal schedules, directed relationships, source-mapped astronomical
   paksha, natal-Moon identity, source-scoped Padu and first-samam EAT-seed
   lookups, explicit Sookshma temporal selection and schedule composition,
   local-solar context,
   and fixed-clock and solar-proportional materialization plus their separately
-  governed current-cell selectors. Manifest schema 2 owns finite admission
+  governed current-cell selectors and explicit civil-time Sookshma composition.
+  Manifest schema 2 owns finite admission
   status, exact product capabilities, admission
   decision identity, and a permanently false default-selection flag. The
   profile schema 3 separately owns the normalized lunar-half/source-label
@@ -244,6 +245,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unchanged; A5 acquisition is optional future corroboration rather than a
   blocker. The Stage 2N decision SHA-256 is
   `084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`.
+- **Pancha Pakshi Civil-Time Sookshma Routing Stage 2O**: Added the immutable
+  `PanchaPakshiCivilTimeSookshmaSelection` and routing-policy vessels,
+  `pancha_pakshi_civil_time_sookshma_selection_at(...)`, matching `Moira`
+  facade method, and strict
+  `POST /v1/pancha-pakshi/sookshma/civil-time-select`. Every call names both
+  source profiles, an aware instant and location, source Paksha, subject bird,
+  one of the existing fixed-clock or solar-proportional materialization policy
+  IDs, and one of the two Stage 2K selector policy IDs. The current
+  materialized cell supplies the samam; the stored binary64 requested/start/end
+  TT values are lifted exactly to rational numbers and normalized over that
+  samam to six nazhigai before the unchanged Stage 2N composition runs. There
+  is no timing default or fallback: a fixed-clock long-half tail remains an
+  explicit null-composition tail even though the proportional policy could
+  cover the same instant. Astronomical paksha inference, Uromarisi outcomes,
+  condition, score, electional judgment, and forecasting remain unperformed.
+  All four profiles and the manifest are unchanged. The Stage 2O decision
+  SHA-256 is
+  `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
 - **Pancha Pakshi Ramadevar Candidate Disambiguation Stage 2M**: Resolved the
   catalogued candidate to the exact Commissionerate of Indian Medicine and
   Homoeopathy record: serial `859`, manuscript `A5`, titled `Ramadevar

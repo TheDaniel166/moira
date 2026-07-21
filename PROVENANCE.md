@@ -793,6 +793,19 @@ manifest remain unchanged. The Stage 2N decision fixture has canonical
 SHA-256
 `084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`.
 
+Stage 2O adds a second, explicitly modern composition without changing either
+profile or the manifest. The caller must name the fixed-clock or
+solar-proportional materialization policy and one Stage 2K selector policy.
+The selected materialized cell supplies the samam, and the stored requested,
+start, and end TT binary64 values are lifted exactly to rational numbers before
+normalization to the samam's six nazhigai span. This arithmetic is Moira-owned
+routing policy, not a historical-source claim. The fixed-clock long-half tail
+remains explicit and never falls through to proportional timing. Paksha remains
+caller supplied; no lunar inference, Uromarisi outcome, condition, score,
+election, or forecast is composed. The Stage 2O decision fixture has canonical
+SHA-256
+`2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;
@@ -820,8 +833,8 @@ The governing research boundary, admission tiers, conflicts, fail-closed
 invariants, and public contract are documented in
 [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
 Public access is additive through `moira.pancha_pakshi`, package-root and
-`moira.vedic` exports, ten kernel-free and seven kernel-backed `Moira`
-methods, and sixteen explicit-profile `/v1/pancha-pakshi` routes. No API
+`moira.vedic` exports, ten kernel-free and eight kernel-backed `Moira`
+methods, and seventeen explicit-profile `/v1/pancha-pakshi` routes. No API
 selects a default profile. The 1879 astronomical-paksha route occurs only
 through its explicit geocentric policy and never supplies an inferred label to
 another operation.
@@ -840,9 +853,11 @@ outcome. Stage 2L adds only witness-collation evidence and leaves
 Ramadevar Panchapakshi candidate from non-Panchapakshi `Patchani` witnesses and
 also leaves `corroborated_public` unassigned. Stage 2N separately permits only
 the explicit modern schedule-to-Sookshma join described above; it does not
-change either source profile or bind an outcome. Condition,
-scoring, automatic schedule routing, and forecasting remain outside the
-admitted surface.
+change either source profile or bind an outcome. Stage 2O permits civil-time
+routing into that join only when both timing and selector policies are named;
+it provides no automatic policy selection or outcome interpretation.
+Condition, scoring, automatic policy fallback, and forecasting remain outside
+the admitted surface.
 
 The 2026-07-20 blind, representative-grid, and later adjudicating reviews are
 recorded in

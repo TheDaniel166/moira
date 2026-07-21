@@ -756,6 +756,8 @@ those relationship-chart routes.
 | POST | `/v1/pancha-pakshi/schedule/nominal` | `pancha_pakshi_nominal_schedule_route` |
 | POST | `/v1/pancha-pakshi/schedule/first-eat-bird` | `pancha_pakshi_first_eat_bird_mapping_route` |
 | POST | `/v1/pancha-pakshi/sookshma/select` | `pancha_pakshi_sookshma_temporal_selection_route` |
+| POST | `/v1/pancha-pakshi/sookshma/schedule-select` | `pancha_pakshi_schedule_sookshma_temporal_selection_route` |
+| POST | `/v1/pancha-pakshi/sookshma/civil-time-select` | `pancha_pakshi_civil_time_sookshma_selection_route` |
 | POST | `/v1/pancha-pakshi/context/astronomical-paksha` | `pancha_pakshi_astronomical_paksha_route` |
 | POST | `/v1/pancha-pakshi/context/local-solar` | `pancha_pakshi_local_solar_context_route` |
 | POST | `/v1/pancha-pakshi/schedule/fixed-clock` | `pancha_pakshi_fixed_clock_materialization_route` |
@@ -764,7 +766,19 @@ those relationship-chart routes.
 | POST | `/v1/pancha-pakshi/schedule/solar-proportional/current-cell` | `pancha_pakshi_solar_proportional_current_cell_route` |
 | POST | `/v1/pancha-pakshi/relationships/directed` | `pancha_pakshi_directed_relationship_route` |
 
-Every computation request requires `profile_id`; no route selects a default.
+The Stage 2O civil-time request requires both profile IDs, aware `dt`,
+latitude, longitude, caller-supplied source Paksha, subject bird, one of the
+existing fixed-clock or solar-proportional materialization policy IDs, and one
+Stage 2K selector policy ID. There are no defaults. The response preserves the
+selected current-cell vessel, explicit routing policy, derived samam and exact
+rational elapsed nazhigai, and nested Stage 2N composition. A fixed-clock
+`unmaterialized_solar_half_tail` instead carries null samam, elapsed offset,
+and composition and is never replaced by proportional fallback. The request
+accepts no astronomical-paksha inference, outcome, condition, score, election,
+or forecast control.
+
+Every computation request requires an explicitly named profile ID or profile
+IDs; no route selects a default.
 The first admitted profile,
 `agastya_madras_1879_akshara_fixed_clock`, binds the named 1879
 aksara/query-or-name-initial and operating-schedule source substrate. Its

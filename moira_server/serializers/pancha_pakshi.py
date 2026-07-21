@@ -7,6 +7,8 @@ from fractions import Fraction
 from moira.pancha_pakshi import (
     PanchaPakshiAstronomicalPakshaInference,
     PanchaPakshiAstronomicalPakshaInferencePolicy,
+    PanchaPakshiCivilTimeSookshmaRoutingPolicy,
+    PanchaPakshiCivilTimeSookshmaSelection,
     PanchaPakshiConflictWitness,
     PanchaPakshiDirectedRelationship,
     PanchaPakshiFixedClockCell,
@@ -47,6 +49,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiAstronomicalPakshaInferencePolicyResponse,
     PanchaPakshiAstronomicalPakshaResponse,
     PanchaPakshiConflictWitnessResponse,
+    PanchaPakshiCivilTimeSookshmaRoutingPolicyResponse,
+    PanchaPakshiCivilTimeSookshmaSelectionResponse,
     PanchaPakshiDirectedRelationshipResponse,
     PanchaPakshiFixedClockCellResponse,
     PanchaPakshiFixedClockCurrentCellResponse,
@@ -847,4 +851,65 @@ def serialize_solar_proportional_current_cell(
         selection_status=selection.selection_status,
         current_cell=serialize_solar_proportional_cell(selection.current_cell),
         provenance=serialize_provenance(selection.provenance),
+    )
+
+
+def serialize_civil_time_sookshma_routing_policy(
+    policy: PanchaPakshiCivilTimeSookshmaRoutingPolicy,
+) -> PanchaPakshiCivilTimeSookshmaRoutingPolicyResponse:
+    return PanchaPakshiCivilTimeSookshmaRoutingPolicyResponse(
+        policy_id=policy.policy_id,
+        composition_status=policy.composition_status,
+        timing_policy_selection=policy.timing_policy_selection,
+        selector_policy_selection=policy.selector_policy_selection,
+        selection_time_scale=policy.selection_time_scale,
+        samam_derivation=policy.samam_derivation,
+        elapsed_derivation=policy.elapsed_derivation,
+        interval_ownership=policy.interval_ownership,
+        fixed_tail_policy=policy.fixed_tail_policy,
+        automatic_timing_fallback=policy.automatic_timing_fallback,
+        astronomical_paksha_inference_status=(
+            policy.astronomical_paksha_inference_status
+        ),
+        uromarisi_outcome_binding_status=(
+            policy.uromarisi_outcome_binding_status
+        ),
+        outcome_interpretation_status=policy.outcome_interpretation_status,
+    )
+
+
+def serialize_civil_time_sookshma_selection(
+    selection: PanchaPakshiCivilTimeSookshmaSelection,
+) -> PanchaPakshiCivilTimeSookshmaSelectionResponse:
+    current = selection.current_cell_selection
+    if isinstance(current, PanchaPakshiFixedClockCurrentCellSelection):
+        serialized_current = serialize_fixed_clock_current_cell(current)
+    else:
+        serialized_current = serialize_solar_proportional_current_cell(current)
+    return PanchaPakshiCivilTimeSookshmaSelectionResponse(
+        schedule_profile_id=selection.schedule_profile_id,
+        selector_profile_id=selection.selector_profile_id,
+        timing_policy_id=selection.timing_policy_id,
+        selector_policy_id=selection.selector_policy_id,
+        subject_bird=selection.subject_bird,
+        routing_policy=serialize_civil_time_sookshma_routing_policy(
+            selection.routing_policy
+        ),
+        current_cell_selection=serialized_current,
+        selection_status=selection.selection_status,
+        samam_index=selection.samam_index,
+        samam_start_jd_tt=selection.samam_start_jd_tt,
+        samam_end_jd_tt=selection.samam_end_jd_tt,
+        elapsed_nazhigai=(
+            None
+            if selection.elapsed_nazhigai is None
+            else serialize_fraction(selection.elapsed_nazhigai)
+        ),
+        composition=(
+            None
+            if selection.composition is None
+            else serialize_schedule_sookshma_temporal_selection(
+                selection.composition
+            )
+        ),
     )

@@ -1304,7 +1304,7 @@ def test_pancha_pakshi_routes_are_registered(client: TestClient) -> None:
         if route.path.startswith("/v1/pancha-pakshi/")
     }
 
-    assert len(paths) == 16
+    assert len(paths) == 17
     assert paths == {
         "/v1/pancha-pakshi/profiles",
         "/v1/pancha-pakshi/profiles/{profile_id}",
@@ -1322,6 +1322,7 @@ def test_pancha_pakshi_routes_are_registered(client: TestClient) -> None:
         "/v1/pancha-pakshi/roles/padu",
         "/v1/pancha-pakshi/sookshma/select",
         "/v1/pancha-pakshi/sookshma/schedule-select",
+        "/v1/pancha-pakshi/sookshma/civil-time-select",
     }
 
 

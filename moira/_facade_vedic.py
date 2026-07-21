@@ -74,6 +74,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             "pancha_pakshi_padu_bird_mapping",
             "pancha_pakshi_sookshma_temporal_selection",
             "pancha_pakshi_schedule_sookshma_temporal_selection",
+            "pancha_pakshi_civil_time_sookshma_selection",
             "pancha_pakshi_identity_from_initial_vowel",
             "pancha_pakshi_directed_relationship", "pancha_pakshi_schedule",
             "pancha_pakshi_local_solar_context",
@@ -331,6 +332,40 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
                 subject_bird=subject_bird,
                 selector_policy_id=selector_policy_id,
                 elapsed_nazhigai=elapsed_nazhigai,
+            )
+        )
+
+    def pancha_pakshi_civil_time_sookshma_selection(
+        self,
+        schedule_profile_id: str,
+        selector_profile_id: str,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+        *,
+        profile_paksha: _pancha_pakshi.PanchaPakshiPaksha,
+        subject_bird: _pancha_pakshi.PanchaPakshiBird,
+        timing_policy_id: _pancha_pakshi.PanchaPakshiSookshmaTimingPolicyId,
+        selector_policy_id: (
+            _pancha_pakshi.PanchaPakshiSookshmaSelectorPolicyId
+        ),
+    ) -> _pancha_pakshi.PanchaPakshiCivilTimeSookshmaSelection:
+        """Route one aware instant through explicit timing and selector policy."""
+
+        facade = _facade_module()
+        return (
+            _pancha_pakshi
+            ._pancha_pakshi_civil_time_sookshma_selection_from_utc(
+                schedule_profile_id,
+                selector_profile_id,
+                facade.jd_from_datetime(dt),
+                latitude,
+                longitude,
+                profile_paksha=profile_paksha,
+                subject_bird=subject_bird,
+                timing_policy_id=timing_policy_id,
+                selector_policy_id=selector_policy_id,
+                reader=self._reader,
             )
         )
 

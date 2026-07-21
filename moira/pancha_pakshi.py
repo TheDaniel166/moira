@@ -95,6 +95,15 @@ class PanchaPakshiSookshmaSelectorPolicyId(str, Enum):
     )
 
 
+class PanchaPakshiSookshmaTimingPolicyId(str, Enum):
+    """Explicit existing materialization used for civil-time routing."""
+
+    FIXED_CLOCK = "fixed_24_minute_nazhigai_from_local_solar_half_start_v1"
+    SOLAR_PROPORTIONAL = (
+        "solar_proportional_nominal_offsets_over_governing_half_tt_v1"
+    )
+
+
 class PanchaPakshiPaksha(str, Enum):
     """Profile-owned source labels, distinct from astronomical phase halves."""
 
@@ -1154,6 +1163,255 @@ class PanchaPakshiScheduleSookshmaSelection:
         )
         if self.sookshma_selection != canonical_selection:
             raise ValueError("Sookshma selection is not canonical")
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiCivilTimeSookshmaRoutingPolicy:
+    """Modern Stage 2O clock route into the exact Stage 2N composition."""
+
+    policy_id: str = field(
+        default="civil_time_materialized_samam_to_stage2n_v1",
+        init=False,
+    )
+    composition_status: str = field(
+        default="modern_moira_policy_not_source_claim",
+        init=False,
+    )
+    timing_policy_selection: str = field(
+        default="caller_named_no_default",
+        init=False,
+    )
+    selector_policy_selection: str = field(
+        default="caller_named_no_default",
+        init=False,
+    )
+    selection_time_scale: str = field(
+        default="reader_bound_tt",
+        init=False,
+    )
+    samam_derivation: str = field(
+        default="current_materialized_cell_nominal_samam_index",
+        init=False,
+    )
+    elapsed_derivation: str = field(
+        default=(
+            "binary64_tt_values_lifted_exactly_to_fraction_then_normalized_"
+            "over_materialized_samam_span_times_six"
+        ),
+        init=False,
+    )
+    interval_ownership: str = field(default="half_open", init=False)
+    fixed_tail_policy: str = field(
+        default="preserve_explicit_unmaterialized_solar_half_tail",
+        init=False,
+    )
+    automatic_timing_fallback: str = field(default="forbidden", init=False)
+    astronomical_paksha_inference_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+    uromarisi_outcome_binding_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+    outcome_interpretation_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiCivilTimeSookshmaSelection:
+    """One civil instant routed through explicit timing and selector policies."""
+
+    schedule_profile_id: str
+    selector_profile_id: str
+    timing_policy_id: PanchaPakshiSookshmaTimingPolicyId
+    selector_policy_id: PanchaPakshiSookshmaSelectorPolicyId
+    subject_bird: PanchaPakshiBird
+    routing_policy: PanchaPakshiCivilTimeSookshmaRoutingPolicy
+    current_cell_selection: (
+        PanchaPakshiFixedClockCurrentCellSelection
+        | PanchaPakshiSolarProportionalCurrentCellSelection
+    )
+    selection_status: PanchaPakshiCurrentCellSelectionStatus
+    samam_index: int | None
+    samam_start_jd_tt: float | None
+    samam_end_jd_tt: float | None
+    elapsed_nazhigai: Fraction | None
+    composition: PanchaPakshiScheduleSookshmaSelection | None
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("schedule_profile_id", self.schedule_profile_id),
+            ("selector_profile_id", self.selector_profile_id),
+        ):
+            if not isinstance(value, str):
+                raise TypeError(f"{name} must be a string")
+            if not value:
+                raise ValueError(f"{name} must not be empty")
+        if not isinstance(
+            self.timing_policy_id,
+            PanchaPakshiSookshmaTimingPolicyId,
+        ):
+            raise TypeError(
+                "timing_policy_id must be a PanchaPakshiSookshmaTimingPolicyId"
+            )
+        if not isinstance(
+            self.selector_policy_id,
+            PanchaPakshiSookshmaSelectorPolicyId,
+        ):
+            raise TypeError(
+                "selector_policy_id must be a "
+                "PanchaPakshiSookshmaSelectorPolicyId"
+            )
+        if not isinstance(self.subject_bird, PanchaPakshiBird):
+            raise TypeError("subject_bird must be a PanchaPakshiBird")
+        if not isinstance(
+            self.routing_policy,
+            PanchaPakshiCivilTimeSookshmaRoutingPolicy,
+        ):
+            raise TypeError(
+                "routing_policy must be a "
+                "PanchaPakshiCivilTimeSookshmaRoutingPolicy"
+            )
+        fixed = isinstance(
+            self.current_cell_selection,
+            PanchaPakshiFixedClockCurrentCellSelection,
+        )
+        proportional = isinstance(
+            self.current_cell_selection,
+            PanchaPakshiSolarProportionalCurrentCellSelection,
+        )
+        if fixed == proportional:
+            raise TypeError(
+                "current_cell_selection must be exactly one admitted timing "
+                "selection vessel"
+            )
+        expected_timing_policy_id = (
+            PanchaPakshiSookshmaTimingPolicyId.FIXED_CLOCK
+            if fixed
+            else PanchaPakshiSookshmaTimingPolicyId.SOLAR_PROPORTIONAL
+        )
+        if self.timing_policy_id is not expected_timing_policy_id:
+            raise ValueError(
+                "timing_policy_id disagrees with current_cell_selection"
+            )
+        materialization = self.current_cell_selection.materialization
+        context = materialization.context
+        if context.profile_id != self.schedule_profile_id:
+            raise ValueError(
+                "timing selection profile disagrees with schedule_profile_id"
+            )
+        if materialization.policy.policy_id != self.timing_policy_id.value:
+            raise ValueError(
+                "timing policy does not match the materialization policy"
+            )
+        if not isinstance(
+            self.selection_status,
+            PanchaPakshiCurrentCellSelectionStatus,
+        ):
+            raise TypeError(
+                "selection_status must be a "
+                "PanchaPakshiCurrentCellSelectionStatus"
+            )
+        if (
+            self.selection_status
+            is not self.current_cell_selection.selection_status
+        ):
+            raise ValueError(
+                "selection_status disagrees with current_cell_selection"
+            )
+
+        if self.selection_status is (
+            PanchaPakshiCurrentCellSelectionStatus
+            .UNMATERIALIZED_SOLAR_HALF_TAIL
+        ):
+            if not fixed:
+                raise ValueError(
+                    "only fixed-clock routing can produce an unmaterialized tail"
+                )
+            if any(
+                value is not None
+                for value in (
+                    self.samam_index,
+                    self.samam_start_jd_tt,
+                    self.samam_end_jd_tt,
+                    self.elapsed_nazhigai,
+                    self.composition,
+                )
+            ):
+                raise ValueError(
+                    "unmaterialized tail must not contain a derived composition"
+                )
+            return
+
+        if self.selection_status is not (
+            PanchaPakshiCurrentCellSelectionStatus.SELECTED
+        ):
+            raise ValueError("unsupported Stage 2O selection status")
+        if self.current_cell_selection.current_cell is None:
+            raise ValueError("selected timing route requires a current cell")
+        if (
+            isinstance(self.samam_index, bool)
+            or not isinstance(self.samam_index, int)
+            or not 1 <= self.samam_index <= 5
+        ):
+            raise ValueError("selected route requires samam_index in [1, 5]")
+        for name, value in (
+            ("samam_start_jd_tt", self.samam_start_jd_tt),
+            ("samam_end_jd_tt", self.samam_end_jd_tt),
+        ):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise TypeError(f"{name} must be a real number")
+            if not math.isfinite(value):
+                raise ValueError(f"{name} must be finite")
+        if not self.samam_start_jd_tt < self.samam_end_jd_tt:
+            raise ValueError("materialized samam endpoints must increase")
+        if not isinstance(self.elapsed_nazhigai, Fraction):
+            raise TypeError("elapsed_nazhigai must be a Fraction")
+        if not Fraction() <= self.elapsed_nazhigai < Fraction(6):
+            raise ValueError("elapsed_nazhigai must lie in [0, 6)")
+        if not isinstance(
+            self.composition,
+            PanchaPakshiScheduleSookshmaSelection,
+        ):
+            raise TypeError(
+                "composition must be a PanchaPakshiScheduleSookshmaSelection"
+            )
+
+        current_cell = self.current_cell_selection.current_cell
+        if current_cell.nominal_cell.samam_index != self.samam_index:
+            raise ValueError("samam_index disagrees with current materialized cell")
+        (
+            expected_start,
+            expected_end,
+            expected_elapsed,
+        ) = _stage2o_materialized_samam_coordinates(
+            self.current_cell_selection,
+            self.samam_index,
+        )
+        if self.samam_start_jd_tt != expected_start:
+            raise ValueError("samam_start_jd_tt is not canonical")
+        if self.samam_end_jd_tt != expected_end:
+            raise ValueError("samam_end_jd_tt is not canonical")
+        if self.elapsed_nazhigai != expected_elapsed:
+            raise ValueError("elapsed_nazhigai is not canonical")
+        if self.composition.schedule_profile_id != self.schedule_profile_id:
+            raise ValueError("composition schedule profile is not canonical")
+        if self.composition.selector_profile_id != self.selector_profile_id:
+            raise ValueError("composition selector profile is not canonical")
+        if self.composition.samam_index != self.samam_index:
+            raise ValueError("composition samam is not canonical")
+        if self.composition.subject_bird is not self.subject_bird:
+            raise ValueError("composition subject bird is not canonical")
+        if self.composition.elapsed_nazhigai != self.elapsed_nazhigai:
+            raise ValueError("composition elapsed offset is not canonical")
+        if (
+            self.composition.sookshma_selection.policy.policy_id
+            is not self.selector_policy_id
+        ):
+            raise ValueError("composition selector policy is not canonical")
 
 
 @dataclass(frozen=True, slots=True)
@@ -3866,6 +4124,288 @@ def _pancha_pakshi_solar_proportional_current_cell_from_utc(
     )
 
 
+def _stage2o_materialized_samam_coordinates(
+    current_cell_selection: (
+        PanchaPakshiFixedClockCurrentCellSelection
+        | PanchaPakshiSolarProportionalCurrentCellSelection
+    ),
+    samam_index: int,
+) -> tuple[float, float, Fraction]:
+    """Derive exact normalized samam offset from stored binary64 TT values."""
+
+    if not isinstance(
+        current_cell_selection,
+        (
+            PanchaPakshiFixedClockCurrentCellSelection,
+            PanchaPakshiSolarProportionalCurrentCellSelection,
+        ),
+    ):
+        raise TypeError("current_cell_selection is not an admitted timing vessel")
+    if (
+        current_cell_selection.selection_status
+        is not PanchaPakshiCurrentCellSelectionStatus.SELECTED
+        or current_cell_selection.current_cell is None
+    ):
+        raise ValueError("materialized samam coordinates require selected status")
+    if isinstance(samam_index, bool) or not isinstance(samam_index, int):
+        raise TypeError("samam_index must be an integer")
+    if not 1 <= samam_index <= 5:
+        raise ValueError("samam_index must lie in [1, 5]")
+
+    cells = tuple(
+        cell
+        for cell in current_cell_selection.materialization.cells
+        if cell.nominal_cell.samam_index == samam_index
+    )
+    if len(cells) != 5:
+        raise PanchaPakshiDataError(
+            "materialization must contain five cells in the selected samam"
+        )
+    if tuple(cell.nominal_cell.sequence_index for cell in cells) != (
+        1,
+        2,
+        3,
+        4,
+        5,
+    ):
+        raise PanchaPakshiDataError(
+            "selected materialized samam cells are not canonically ordered"
+        )
+    samam_start_jd_tt = cells[0].start_jd_tt
+    samam_end_jd_tt = cells[-1].end_jd_tt
+    requested_jd_tt = current_cell_selection.requested_jd_tt
+    if not samam_start_jd_tt <= requested_jd_tt < samam_end_jd_tt:
+        raise PanchaPakshiDataError(
+            "requested TT instant does not belong to the selected samam"
+        )
+
+    exact_start = Fraction.from_float(samam_start_jd_tt)
+    exact_end = Fraction.from_float(samam_end_jd_tt)
+    exact_requested = Fraction.from_float(requested_jd_tt)
+    exact_span = exact_end - exact_start
+    if exact_span <= 0:
+        raise PanchaPakshiDataError(
+            "selected materialized samam has no positive exact TT span"
+        )
+    elapsed_nazhigai = (
+        (exact_requested - exact_start) * Fraction(6) / exact_span
+    )
+    if not Fraction() <= elapsed_nazhigai < Fraction(6):
+        raise PanchaPakshiDataError(
+            "normalized Stage 2O elapsed offset escaped [0, 6)"
+        )
+    return samam_start_jd_tt, samam_end_jd_tt, elapsed_nazhigai
+
+
+def _stage2o_selection_from_current_cell(
+    selector_profile_id: str,
+    current_cell_selection: (
+        PanchaPakshiFixedClockCurrentCellSelection
+        | PanchaPakshiSolarProportionalCurrentCellSelection
+    ),
+    *,
+    timing_policy_id: PanchaPakshiSookshmaTimingPolicyId,
+    subject_bird: PanchaPakshiBird,
+    selector_policy_id: PanchaPakshiSookshmaSelectorPolicyId,
+) -> PanchaPakshiCivilTimeSookshmaSelection:
+    """Assemble Stage 2O from one already selected materialization policy."""
+
+    context = current_cell_selection.materialization.context
+    if current_cell_selection.selection_status is (
+        PanchaPakshiCurrentCellSelectionStatus
+        .UNMATERIALIZED_SOLAR_HALF_TAIL
+    ):
+        return PanchaPakshiCivilTimeSookshmaSelection(
+            schedule_profile_id=context.profile_id,
+            selector_profile_id=selector_profile_id,
+            timing_policy_id=timing_policy_id,
+            selector_policy_id=selector_policy_id,
+            subject_bird=subject_bird,
+            routing_policy=PanchaPakshiCivilTimeSookshmaRoutingPolicy(),
+            current_cell_selection=current_cell_selection,
+            selection_status=current_cell_selection.selection_status,
+            samam_index=None,
+            samam_start_jd_tt=None,
+            samam_end_jd_tt=None,
+            elapsed_nazhigai=None,
+            composition=None,
+        )
+
+    current_cell = current_cell_selection.current_cell
+    if current_cell is None:
+        raise PanchaPakshiDataError(
+            "selected Stage 2O timing route returned no current cell"
+        )
+    samam_index = current_cell.nominal_cell.samam_index
+    (
+        samam_start_jd_tt,
+        samam_end_jd_tt,
+        elapsed_nazhigai,
+    ) = _stage2o_materialized_samam_coordinates(
+        current_cell_selection,
+        samam_index,
+    )
+    composition = pancha_pakshi_schedule_sookshma_temporal_selection(
+        context.profile_id,
+        selector_profile_id,
+        profile_paksha=context.paksha,
+        half=context.half,
+        weekday=context.weekday,
+        samam_index=samam_index,
+        subject_bird=subject_bird,
+        selector_policy_id=selector_policy_id,
+        elapsed_nazhigai=elapsed_nazhigai,
+    )
+    return PanchaPakshiCivilTimeSookshmaSelection(
+        schedule_profile_id=context.profile_id,
+        selector_profile_id=selector_profile_id,
+        timing_policy_id=timing_policy_id,
+        selector_policy_id=selector_policy_id,
+        subject_bird=subject_bird,
+        routing_policy=PanchaPakshiCivilTimeSookshmaRoutingPolicy(),
+        current_cell_selection=current_cell_selection,
+        selection_status=current_cell_selection.selection_status,
+        samam_index=samam_index,
+        samam_start_jd_tt=samam_start_jd_tt,
+        samam_end_jd_tt=samam_end_jd_tt,
+        elapsed_nazhigai=elapsed_nazhigai,
+        composition=composition,
+    )
+
+
+def _require_stage2o_inputs(
+    selector_profile_id: str,
+    *,
+    timing_policy_id: PanchaPakshiSookshmaTimingPolicyId,
+    subject_bird: PanchaPakshiBird,
+    selector_policy_id: PanchaPakshiSookshmaSelectorPolicyId,
+) -> None:
+    if not isinstance(
+        timing_policy_id,
+        PanchaPakshiSookshmaTimingPolicyId,
+    ):
+        raise TypeError(
+            "timing_policy_id must be a PanchaPakshiSookshmaTimingPolicyId; "
+            "there is no default"
+        )
+    if not isinstance(subject_bird, PanchaPakshiBird):
+        raise TypeError("subject_bird must be a PanchaPakshiBird")
+    if not isinstance(
+        selector_policy_id,
+        PanchaPakshiSookshmaSelectorPolicyId,
+    ):
+        raise TypeError(
+            "selector_policy_id must be a "
+            "PanchaPakshiSookshmaSelectorPolicyId; there is no default"
+        )
+    _profile_for_public_capability(
+        selector_profile_id,
+        PanchaPakshiCapability.SOOKSHMA_TEMPORAL_SELECTION,
+    )
+
+
+def pancha_pakshi_civil_time_sookshma_selection_at(
+    schedule_profile_id: str,
+    selector_profile_id: str,
+    jd_ut1: float,
+    latitude: float,
+    longitude: float,
+    *,
+    profile_paksha: PanchaPakshiPaksha,
+    subject_bird: PanchaPakshiBird,
+    timing_policy_id: PanchaPakshiSookshmaTimingPolicyId,
+    selector_policy_id: PanchaPakshiSookshmaSelectorPolicyId,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiCivilTimeSookshmaSelection:
+    """Route one UT1 civil instant into Stage 2N under explicit policies."""
+
+    _require_stage2o_inputs(
+        selector_profile_id,
+        timing_policy_id=timing_policy_id,
+        subject_bird=subject_bird,
+        selector_policy_id=selector_policy_id,
+    )
+    if timing_policy_id is PanchaPakshiSookshmaTimingPolicyId.FIXED_CLOCK:
+        current_cell_selection = pancha_pakshi_fixed_clock_current_cell_at(
+            schedule_profile_id,
+            jd_ut1,
+            latitude,
+            longitude,
+            paksha=profile_paksha,
+            reader=reader,
+        )
+    else:
+        current_cell_selection = (
+            pancha_pakshi_solar_proportional_current_cell_at(
+                schedule_profile_id,
+                jd_ut1,
+                latitude,
+                longitude,
+                paksha=profile_paksha,
+                reader=reader,
+            )
+        )
+    return _stage2o_selection_from_current_cell(
+        selector_profile_id,
+        current_cell_selection,
+        timing_policy_id=timing_policy_id,
+        subject_bird=subject_bird,
+        selector_policy_id=selector_policy_id,
+    )
+
+
+def _pancha_pakshi_civil_time_sookshma_selection_from_utc(
+    schedule_profile_id: str,
+    selector_profile_id: str,
+    jd_utc: float,
+    latitude: float,
+    longitude: float,
+    *,
+    profile_paksha: PanchaPakshiPaksha,
+    subject_bird: PanchaPakshiBird,
+    timing_policy_id: PanchaPakshiSookshmaTimingPolicyId,
+    selector_policy_id: PanchaPakshiSookshmaSelectorPolicyId,
+    reader: SpkReader | None = None,
+) -> PanchaPakshiCivilTimeSookshmaSelection:
+    """Facade adapter preserving UTC local-solar selection semantics."""
+
+    _require_stage2o_inputs(
+        selector_profile_id,
+        timing_policy_id=timing_policy_id,
+        subject_bird=subject_bird,
+        selector_policy_id=selector_policy_id,
+    )
+    if timing_policy_id is PanchaPakshiSookshmaTimingPolicyId.FIXED_CLOCK:
+        current_cell_selection = (
+            _pancha_pakshi_fixed_clock_current_cell_from_utc(
+                schedule_profile_id,
+                jd_utc,
+                latitude,
+                longitude,
+                paksha=profile_paksha,
+                reader=reader,
+            )
+        )
+    else:
+        current_cell_selection = (
+            _pancha_pakshi_solar_proportional_current_cell_from_utc(
+                schedule_profile_id,
+                jd_utc,
+                latitude,
+                longitude,
+                paksha=profile_paksha,
+                reader=reader,
+            )
+        )
+    return _stage2o_selection_from_current_cell(
+        selector_profile_id,
+        current_cell_selection,
+        timing_policy_id=timing_policy_id,
+        subject_bird=subject_bird,
+        selector_policy_id=selector_policy_id,
+    )
+
+
 __all__ = [
     "PanchaPakshiActivity",
     "PanchaPakshiAdmissionStatus",
@@ -3873,6 +4413,8 @@ __all__ = [
     "PanchaPakshiAstronomicalPakshaInference",
     "PanchaPakshiAstronomicalPakshaInferencePolicy",
     "PanchaPakshiBird",
+    "PanchaPakshiCivilTimeSookshmaRoutingPolicy",
+    "PanchaPakshiCivilTimeSookshmaSelection",
     "PanchaPakshiCapability",
     "PanchaPakshiConflictWitness",
     "PanchaPakshiCurrentCellSelectionStatus",
@@ -3916,9 +4458,11 @@ __all__ = [
     "PanchaPakshiSookshmaSelection",
     "PanchaPakshiSookshmaSelectorPolicy",
     "PanchaPakshiSookshmaSelectorPolicyId",
+    "PanchaPakshiSookshmaTimingPolicyId",
     "PanchaPakshiWeekday",
     "available_pancha_pakshi_profiles",
     "pancha_pakshi_astronomical_paksha_at",
+    "pancha_pakshi_civil_time_sookshma_selection_at",
     "pancha_pakshi_directed_relationship",
     "pancha_pakshi_fixed_clock_current_cell_at",
     "pancha_pakshi_fixed_clock_materialization_at",

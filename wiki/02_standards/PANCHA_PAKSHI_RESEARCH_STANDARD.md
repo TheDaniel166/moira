@@ -113,10 +113,11 @@ astronomical context, schedule composition, Uromarisi outcome, condition,
 score, electional window, or forecast. It has no default, and no human-language
 reviewer is required.
 
-Stage 2N adds no fifth profile and changes none of these capabilities. It is a
-separate modern composition operation across the named 1879 schedule profile
-and the named 2024 selector profile. Every profile, schedule axis, samam,
-subject bird, selector policy, and exact elapsed offset remains mandatory.
+Stages 2N and 2O add no fifth profile and change none of these capabilities.
+They are separate modern composition operations across the named 1879
+schedule profile and the named 2024 selector profile. Every policy-driving
+profile, schedule or civil-time axis, subject bird, timing policy, selector
+policy, and explicit or derived exact elapsed offset remains visible.
 
 ## 2. Admission Tiers
 
@@ -686,6 +687,30 @@ electional search, or forecasting. The profile documents, capabilities, and
 manifest are unchanged. The decision fixture SHA-256 is
 `084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`.
 
+### Stage 2O explicit civil-time-to-Sookshma routing
+
+Stage 2O is a separate modern routing decision layered on Stage 2N. The caller
+must name both profiles, aware civil instant, location, source Paksha, subject
+bird, timing policy, and selector policy. Timing is exactly one of the already
+admitted fixed-clock or solar-proportional materializations; neither is a
+default and no fallback is allowed.
+
+The current materialized cell determines the samam. Moira lifts the stored
+binary64 requested, samam-start, and samam-end reader-bound TT values exactly
+to `Fraction`, computes `(requested - start) / (end - start) * 6`, and supplies
+that exact offset to Stage 2N. Shared boundaries remain half-open and therefore
+belong to the following samam. A fixed-clock long-half tail returns the
+existing `unmaterialized_solar_half_tail` with null samam, offset, and
+composition; it is never silently filled by the proportional route.
+
+The routing policy is
+`civil_time_materialized_samam_to_stage2n_v1` and is explicitly
+`modern_moira_policy_not_source_claim`. Paksha remains caller supplied. No
+astronomical paksha inference, Uromarisi outcome binding, translation,
+condition, scoring, electional search, or forecasting occurs. Profiles,
+capabilities, and manifest remain unchanged. The decision fixture SHA-256 is
+`2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -927,7 +952,7 @@ All computations require `profile_id`. Public results are immutable and carry
 profile-owned provenance and omissions. Exact nazhigai values remain rational
 in the engine and serialize as `{numerator, denominator}` at the transport
 boundary. The current family contains four profiles, seventeen `Moira` methods
-(ten kernel-free and seven kernel-backed), and sixteen REST routes.
+(ten kernel-free and eight kernel-backed), and seventeen REST routes.
 
 Stage 2F accepts a datetime but no location and performs only instantaneous
 astronomical-paksha inference. The five location-bearing Stage 2A-E operations

@@ -14,6 +14,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiAksaraIdentityResponse,
     PanchaPakshiAstronomicalPakshaRequest,
     PanchaPakshiAstronomicalPakshaResponse,
+    PanchaPakshiCivilTimeSookshmaSelectionRequest,
+    PanchaPakshiCivilTimeSookshmaSelectionResponse,
     PanchaPakshiDirectedRelationshipRequest,
     PanchaPakshiDirectedRelationshipResponse,
     PanchaPakshiFixedClockCurrentCellRequest,
@@ -44,6 +46,7 @@ from ..models.pancha_pakshi import (
 from ..serializers.pancha_pakshi import (
     serialize_aksara_identity,
     serialize_astronomical_paksha,
+    serialize_civil_time_sookshma_selection,
     serialize_directed_relationship,
     serialize_fixed_clock_current_cell,
     serialize_fixed_clock_materialization,
@@ -61,6 +64,7 @@ from ..serializers.pancha_pakshi import (
 from ..services.pancha_pakshi import (
     compute_aksara_identity,
     compute_astronomical_paksha,
+    compute_civil_time_sookshma_selection,
     compute_directed_relationship,
     compute_fixed_clock_current_cell,
     compute_fixed_clock_materialization,
@@ -177,6 +181,21 @@ def pancha_pakshi_schedule_sookshma_temporal_selection_route(
 
     return serialize_schedule_sookshma_temporal_selection(
         compute_schedule_sookshma_temporal_selection(request)
+    )
+
+
+@router.post(
+    "/sookshma/civil-time-select",
+    response_model=PanchaPakshiCivilTimeSookshmaSelectionResponse,
+)
+def pancha_pakshi_civil_time_sookshma_selection_route(
+    request: PanchaPakshiCivilTimeSookshmaSelectionRequest,
+    engine: Annotated[Moira, Depends(get_engine)],
+) -> PanchaPakshiCivilTimeSookshmaSelectionResponse:
+    """Route civil time under explicit timing and Sookshma policies."""
+
+    return serialize_civil_time_sookshma_selection(
+        compute_civil_time_sookshma_selection(engine, request)
     )
 
 

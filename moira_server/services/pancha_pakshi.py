@@ -7,6 +7,7 @@ from fractions import Fraction
 from moira import Moira
 from moira.pancha_pakshi import (
     PanchaPakshiSookshmaSelectorPolicyId,
+    PanchaPakshiSookshmaTimingPolicyId,
     available_pancha_pakshi_profiles,
     pancha_pakshi_directed_relationship,
     pancha_pakshi_first_eat_bird_mapping,
@@ -21,6 +22,7 @@ from moira.pancha_pakshi import (
 from ..models.pancha_pakshi import (
     PanchaPakshiAksaraIdentityRequest,
     PanchaPakshiAstronomicalPakshaRequest,
+    PanchaPakshiCivilTimeSookshmaSelectionRequest,
     PanchaPakshiDirectedRelationshipRequest,
     PanchaPakshiFixedClockCurrentCellRequest,
     PanchaPakshiFixedClockMaterializationRequest,
@@ -124,6 +126,29 @@ def compute_schedule_sookshma_temporal_selection(
         elapsed_nazhigai=Fraction(
             request.elapsed_nazhigai.numerator,
             request.elapsed_nazhigai.denominator,
+        ),
+    )
+
+
+def compute_civil_time_sookshma_selection(
+    engine: Moira,
+    request: PanchaPakshiCivilTimeSookshmaSelectionRequest,
+):
+    """Route civil time through one named materialization and selector."""
+
+    return engine.pancha_pakshi_civil_time_sookshma_selection(
+        request.schedule_profile_id,
+        request.selector_profile_id,
+        request.dt,
+        request.latitude,
+        request.longitude,
+        profile_paksha=request.profile_paksha,
+        subject_bird=request.subject_bird,
+        timing_policy_id=PanchaPakshiSookshmaTimingPolicyId(
+            request.timing_policy_id
+        ),
+        selector_policy_id=PanchaPakshiSookshmaSelectorPolicyId(
+            request.selector_policy_id
         ),
     )
 
