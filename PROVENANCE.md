@@ -881,6 +881,94 @@ changes, and no human-language reviewer is required. The Stage 2T decision
 fixture has canonical SHA-256
 `09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`.
 
+Stage 2U reviews the five unconflicted DIE cells, verses `251–255` on PDF pages
+`124–126`, and carries verse `250` only as the blocked Stage 2T precursor. The
+first cell preserves a rule-enmity mortality branch within two months and a
+separate six-month source `tanmai` branch that is not normalized. The second
+preserves both an instantaneous marker and a one-year marker without inventing
+a harmonization. The remaining three cells state no numeric duration. All
+mortality, body-destruction, nonresolution, space/void, fate, deity, activity
+relation, and unclear source-branch language remains historical and cell-local;
+none becomes prediction, medical truth, diagnosis, prognosis, cause, symptom,
+score, advice, deterministic fate, calendar doctrine, or runtime relation.
+Verse `256` begins a separate illness-duration section and is outside the
+bounded record. No selector, profile, manifest, engine, facade, or REST state
+changes, and no human-language reviewer is required. The Stage 2U decision
+fixture has canonical SHA-256
+`4954c13c33aa755bc0e8c6f47b7825d6ddb8346a2b6df39edf804872e81cbf70`.
+
+The constitutional Phase 2 closure consumes the hash-bound Stage 2Q–2U
+semantic records without moving their source expressions or data into the
+published runtime. The private, data-free module
+`moira._pancha_pakshi_classification` defines typed historical disposition,
+time-expression, and semantic-marker classes plus immutable cell, conflict,
+and complete-corpus vessels. The closure fixture contains `24` classifications
+in exact EAT/WALK/RULE/SLEEP/DIE counts `5/5/5/4/5`; every classification
+retains its source decision ID and SHA-256 and at least one cell-local
+uncertainty. Tests derive every class directly from the prior semantic atom
+rather than accepting a hand-authored classification independently.
+
+Verse `250` remains a separate conflict vessel: heading and verse say DIE
+ordinal 5 while commentary says SLEEP ordinal 5. It has no classification
+payload and cannot also occupy the classified corpus. The closure adds no
+runtime profile, data manifest entry, capability, package export, facade
+method, or REST route. It authorizes only private Phase 3 inspectability over
+existing fields and malformed-vessel hardening; it authorizes no new doctrine,
+medical prognosis, score, advice, temporal selector binding, or runtime
+relation. Human Tamil review, the separate illness-duration section beginning
+at verse `256`, and the Commissionerate `A5` manuscript are not Phase 3 entry
+requirements. `A5` content and copying history remain required only for a
+future independent-corroboration claim. The Phase 2 closure fixture has
+canonical SHA-256
+`a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`.
+
+Constitutional Phase 3 adds inspectability only to those private Phase 2
+vessels. Cell properties return already-stored identity and source binding,
+lexically ordered marker values, and exact presence tests for mortality
+language and stated, conditional, or unreconciled time shapes. Conflict
+properties return all heading, verse, and commentary activity assignments,
+their distinct set, their exact agreement relation, and the existing source
+binding. Corpus properties and lookups expose deterministic verses, counts,
+source bindings, marker-filtered subsets, activity groups, and exact
+activity/ordinal or verse identity without fallback.
+
+Vessel hardening now requires immutable tuple containers, the exact bounded
+verse/ordinal matrix, activity-compatible Phase 2 time classes, one source
+decision binding per activity, and the Stage 2T source binding for the verse
+`250` conflict. Consequently SLEEP ordinal 5 and verse `250` return no
+classification while conflict lookup for verse `250` remains present. These
+are derived structural facts, not an outcome or repair. Phase 3 changes no
+source semantics, doctrine, data, profile, manifest, capability, package
+export, facade method, or REST route. Its completion opens Phase 4 only for a
+separate explicit policy decision; it selects no default and attributes no
+Stage 2K selector to Uromarisi. The Phase 3 decision fixture has canonical
+SHA-256
+`2fd93585f8d2d439882ee77cdeb28e5509e916cd752357d60caaa003cc9fb2ca`.
+
+Constitutional Phase 4 admits one policy only within the private research
+layer: `moira_explicit_uromarisi_activity_ordinal_lookup_research_v1`. The
+policy vessel requires its typed ID and makes its derivation visible as a
+modern Moira research rule over the source-owned activity/ordinal axis. It
+records caller-supplied activity and ordinal, no source-attested or admitted
+temporal selector binding, no Stage 2K composition, no outcome interpretation,
+forbidden medical use, and `research_only` admission.
+
+The policy-governed operation requires the corpus, policy, activity, and
+ordinal as explicit arguments and delegates to the unchanged Phase 3
+`classification_at` lookup. It neither accepts elapsed time nor selects a
+Sookshma interval. Absence remains absence: SLEEP ordinal 5 still returns no
+classification and verse `250` remains only a separate conflict. The two
+Bogamuni 2024 selector IDs remain recorded as unadmitted cross-witness
+candidates; neither is attributed to or composed with Uromarisi.
+
+Phase 4 adds no runtime data, profile, manifest entry, capability, package
+export, facade method, or REST route. It does not create prediction, prognosis,
+diagnosis, advice, condition, score, or relation doctrine. Phase 4 completion
+opens Phase 5 only for explicit relational formalization; it does not resolve
+the existing source relation clauses in advance. The Phase 4 decision fixture
+has canonical SHA-256
+`4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;

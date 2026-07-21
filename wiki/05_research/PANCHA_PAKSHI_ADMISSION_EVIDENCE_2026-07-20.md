@@ -1,5 +1,128 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Constitutional Phase 4 Doctrine/Policy Closure — 2026-07-21
+
+The
+[`Phase 4 decision`](../../tests/fixtures/pancha_pakshi_uromarisi_phase4_policy_2026_07_21.json)
+has canonical SHA-256
+`4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9`
+and binds the exact Phase 3 decision at
+`2fd93585f8d2d439882ee77cdeb28e5509e916cd752357d60caaa003cc9fb2ca`.
+
+Phase 4 adds one private policy:
+`moira_explicit_uromarisi_activity_ordinal_lookup_research_v1`. Its vessel
+states that the caller supplies activity and ordinal, no temporal selector is
+source-attested or admitted, Stage 2K composition is unadmitted, interpretation
+is unperformed, medical use is forbidden, and admission remains research-only.
+The policy is a modern Moira control over the source-owned ordinal axis, not a
+computational rule attributed to Uromarisi.
+
+The policy-governed operation requires all four inputs—corpus, policy,
+activity, and ordinal—and delegates exactly to Phase 3 lookup. It accepts no
+time or selector input and preserves absence without fallback. Machine cases
+bind EAT/1 to verse `230`, RULE/4 to `244`, DIE/5 to `255`, and SLEEP/5 to no
+classification. Verse `250` remains independently visible only as a conflict.
+
+The two admitted Stage 2K Bogamuni selector IDs are recorded as separately
+sourced, unbound candidates. No automatic composition or Uromarisi attribution
+is made. Phase 4 adds no source atom, relation doctrine, condition, score,
+prognosis, advice, runtime profile, manifest entry, export, facade method, or
+REST route. Phase 5 may now formalize relations, but inherits no resolved
+meaning for the activity-relation clauses.
+
+## Constitutional Phase 3 Inspectability Closure — 2026-07-21
+
+The
+[`Phase 3 decision`](../../tests/fixtures/pancha_pakshi_uromarisi_phase3_inspectability_2026_07_21.json)
+has canonical SHA-256
+`2fd93585f8d2d439882ee77cdeb28e5509e916cd752357d60caaa003cc9fb2ca`
+and binds the exact Phase 2 closure at
+`a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`.
+
+Phase 3 adds derived-only views to the private cell, conflict, and complete
+corpus vessels. Cell views return stored identity, source binding, lexical
+marker names, mortality-language presence, and time-shape presence. Conflict
+views return the three stored text layers without precedence. Corpus views and
+typed lookups expose exact verses, counts, bindings, subsets, and identities
+without reconstructing source doctrine.
+
+The absence policy is machine-checked: SLEEP ordinal 5 and verse `250` have no
+classification, while verse `250` has one separately retrievable conflict.
+There is no symmetry repair, adjacent lookup, DIE substitution, or default.
+Hardening rejects mutable containers, a wrong verse/ordinal matrix,
+activity-incompatible time classes, multiple source bindings within one
+activity, a conflict detached from Stage 2T, and malformed lookup inputs.
+
+Phase 3 is complete at the private research boundary. It adds no semantic atom,
+classification, doctrine, condition, score, prognosis, advice, selector,
+profile, manifest entry, public export, facade method, or REST route. Phase 4
+may now decide an explicit doctrine or policy, but it inherits no default,
+Uromarisi selector attribution, runtime outcome admission, or public API
+authorization.
+
+## Constitutional Phase 2 Classification Closure — 2026-07-21
+
+The
+[`Phase 2 closure decision`](../../tests/fixtures/pancha_pakshi_uromarisi_phase2_classification_closure_2026_07_21.json)
+has canonical SHA-256
+`a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`.
+It binds the exact Stage 2Q–2U decisions and unchanged manifest rather than
+copying source expression into runtime data.
+
+The private, data-free module `moira._pancha_pakshi_classification` supplies
+typed historical disposition, time-expression, and semantic-presence classes;
+immutable cell and text-layer-conflict vessels; and one complete-corpus vessel.
+The closure fixture records `24` classified cells with exact activity counts
+`5/5/5/4/5`. Its tests locate the corresponding prior cell and independently
+derive the disposition, time class, semantic markers, source decision/hash, and
+uncertainty count before constructing the typed vessel.
+
+Verse `250` remains outside classification. Its heading and verse say DIE
+ordinal 5 while its commentary says SLEEP ordinal 5, so it is represented only
+as a conflict with a null classification payload. The corpus rejects any attempt
+to classify that verse, lose a cell, duplicate an identity, change deterministic
+order, omit uncertainty, or mismatch mortality and disposition semantics.
+
+Phase 2 is therefore complete at the private research boundary. Phase 3 may
+begin with derived inspectability and malformed-vessel hardening only. It may
+not create doctrine, interpretation, prognosis, advice, condition, score,
+selector binding, profile admission, package exports, facade methods, or REST
+routes. Temporal policy remains Phase 4. A competent Tamil reviewer is not a
+gate; Commissionerate `A5` content is required only for a future independent
+corroboration claim; and the verse `256+` illness-duration section is a separate
+product.
+
+## Stage 2U Uromarisi DIE Semantics — 2026-07-21
+
+Stage 2U reviews the five unconflicted DIE ordinals under the bounded semantic
+method. The
+[`Stage 2U research decision`](../../tests/fixtures/pancha_pakshi_uromarisi_die_semantics_stage2u_research_2026_07_21.json)
+has canonical SHA-256
+`4954c13c33aa755bc0e8c6f47b7825d6ddb8346a2b6df39edf804872e81cbf70`
+and binds the unchanged Stage 2T, Stage 2P, and manifest hashes.
+
+Rendered PDF pages `124–126`, printed pages `122–124`, control the reading;
+Archive.org OCR lines `5862–5964` provide navigation alignment only. Verses
+`251–255` produce five DIE semantic records. The first contains a rule-enmity
+mortality branch within two months and a distinct six-month `tanmai` branch
+that remains unnormalized. The second contains both an instantaneous marker
+and a one-year marker; no relation between them is invented. The remaining
+three cells state no numeric duration.
+
+Verse `250` remains the blocked Stage 2T text-layer identity conflict. Stage 2U
+does not use it as a DIE cell, does not create a sixth ordinal, and does not
+resolve its SLEEP-versus-DIE disagreement. Verse `256` explicitly begins the
+separate illness-duration section and is excluded.
+
+Mortality, life departure, body destruction, nonresolution, space/void, fate,
+deity, relation, and source-branch language remains historical and cell-local.
+It is not prediction, medical truth, diagnosis, prognosis, cause, symptom,
+score, advice, deterministic fate, calendar doctrine, or runtime relation.
+Tamil source expression, OCR, page images, and full translations are not
+distributed. No Stage 2K selector is attributed to Uromarisi, no Stage 2O
+result is routed to these records, and no profile, manifest, engine, facade, or
+REST surface changes. No human-language reviewer is required.
+
 ## Stage 2T Uromarisi SLEEP Semantics and Identity Conflict — 2026-07-21
 
 Stage 2T reviews the SLEEP locator sequence under the bounded semantic method.
@@ -1291,39 +1414,42 @@ path exists. The adjudication remains machine-assisted research evidence, so
 no linguistic-authority claim, external-oracle parity, universal-doctrine
 claim, or admission beyond the later explicitly bounded decisions is asserted.
 
-## Remaining Research Sequence
+## Constitutional Continuation And Remaining Research Sequence
 
-1. Preserve the two Stage 2K selectors as separate explicit policies with no
-   default. Stage 2N now permits only the named modern schedule-to-selector
-   composition, and Stage 2O adds civil-time routing only under a mandatory
-   timing policy. Stage 2P supplies the provisional illness-context locator
-   index, and Stages 2Q–2T demonstrate the source-owned ontology and repeatable
-   machine-checked semantic transcription on five EAT, five WALK, five RULE,
-   and four unconflicted SLEEP cells, with verse `250` blocked by text-layer
-   identity conflict. Any Uromarisi selector binding remains a separate
-   explicit modern decision.
-   Expansion beyond these nineteen unconflicted cells must preserve per-cell
-   uncertainty and must not collapse distinct statements to generic good/bad
-   or numeric scores.
-2. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
+1. Constitutional Phase 2 is closed at the private research boundary. Its
+   exact corpus comprises five EAT, five WALK, five RULE, four SLEEP, and five
+   DIE classifications, with verse `250` retained solely as an unclassifiable
+   text-layer identity conflict. Do not add another classification unless its
+   Phase 1 truth, source locator, uncertainty, and derivation rule are first
+   preserved.
+2. Constitutional Phase 3 is closed at the private research boundary. Its
+   derived convenience views, exact absence behavior, and vessel hardening add
+   no source semantics, interpretation, doctrine, condition, score, prognosis,
+   advice, selector binding, runtime profile, export, facade method, or REST
+   route.
+3. Constitutional Phase 4 is closed at the private research boundary. It admits
+   exactly one explicit activity-plus-ordinal lookup policy with no default,
+   temporal inference, Stage 2K selector binding, outcome interpretation, or
+   public surface. The two Stage 2K selectors remain separate, named, unbound
+   candidates and neither is attributed to Uromarisi.
+4. Constitutional Phase 5 is the next lawful implementation step. It may
+   formalize source-owned relations among already preserved objects, but it may
+   not invent relation meanings, collapse witness conflicts, infer a temporal
+   selector, introduce good/bad labels or scores, or widen runtime admission.
+5. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
-   the target remains title-only. The next attempt must obtain the actual `A5`
-   leaves or critical transcription plus item-level physical, custodial, and
-   copying-history metadata before any corroborated admission.
-3. Preserve any disagreement by witness and text layer; do not merge doctrines
-   or repair them by symmetry.
-4. Treat the admitted Stage 2D proportional materialization and Stage 2E
-   current-cell selection as modern policies; source-attested or alternate
-   proportional doctrines and alternate natal identities require separate
-   evidence and admission. Stage 2F lunar-paksha inference remains its own modern numeric
-   policy plus source-scoped mapping and may not be routed into a schedule
-   automatically.
-5. Preserve the Stage 2H Padu product as a pure Paksha-by-weekday source table.
-   Any alternate Padu doctrine, Adhikara/Bharana role, condition, score, or
-   forecast requires its own governing source, ontology, admission, and tests.
-6. Preserve the Stage 2I first-EAT product as a pure first-samam seed lookup.
-   It must not acquire whole-day eating-bird, Padu, authority, condition,
-   score, electional, or forecasting semantics without separate admission.
+   the target remains title-only. Actual `A5` leaves or a critical transcription
+   plus item-level physical, custodial, and copying-history metadata are needed
+   only before a `corroborated_public` claim, not before private Phase 5 work.
+6. Preserve every disagreement by witness and text layer; do not merge doctrines
+   or repair them by symmetry. The verse `256+` illness-duration material is a
+   separate prospective product, not unfinished coverage in this corpus.
+7. Preserve existing admitted products at their current boundaries: Stage 2D/E
+   materialization and current-cell selection remain modern; Stage 2F paksha
+   inference remains separate; Stage 2H Padu remains a pure Paksha-by-weekday
+   lookup; and Stage 2I first-EAT remains a pure first-samam seed lookup. None
+   silently acquires Uromarisi outcome, authority, condition, score, electional,
+   or forecasting semantics.
 
 The present resting place is four tested, source-scoped public profiles: the
 corrected 1879 aksara schedule with the separately named Stage 2A through Stage
@@ -1337,8 +1463,13 @@ plus Stage 2O civil-time routing under mandatory timing and selector policies
 with no fallback or outcome binding, plus the Stage 2P research-only illness
 locator grid and Stage 2Q five-cell EAT semantic-atom pilot with no runtime
 payload or medical-truth claim, plus the Stage 2R five-cell WALK extension,
-Stage 2S five-cell RULE extension, and Stage 2T four-cell SLEEP extension with
-verse `250` blocked under the same boundary.
+Stage 2S five-cell RULE extension, Stage 2T four-cell SLEEP extension with verse
+`250` blocked under the same boundary, Stage 2U five-cell DIE extension, and the
+private constitutional Phase 2 classification closure over all `24`
+unconflicted records, and the private constitutional Phase 3 derived
+inspectability and vessel-hardening closure, plus the private constitutional
+Phase 4 explicit activity-plus-ordinal policy closure with both temporal
+selectors left unbound.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

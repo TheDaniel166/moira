@@ -830,6 +830,138 @@ capability, engine, facade, or REST surface changes. No human-language reviewer
 is required. The research decision SHA-256 is
 `09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`.
 
+### Stage 2U research-only DIE semantic atoms
+
+Stage 2U records five unconflicted DIE ordinals from verses `251–255`. Verse
+`250` is not used as a sixth ordinal or silently repaired: it remains only the
+blocked Stage 2T precursor whose heading and verse say DIE ordinal 5 while its
+commentary says SLEEP ordinal 5.
+
+The first DIE cell preserves a conditional mortality upper bound of two months
+and a separate six-month source `tanmai` branch whose meaning is not normalized.
+The second preserves both an instantaneous marker and a one-year marker without
+harmonizing them. The other three cells contain no numeric time expression.
+Mortality, life-departure, body-destruction, nonresolution, space/void, fate,
+deity, activity-relation, and unclear source-branch clauses are bounded
+historical atoms, not prediction, diagnosis, prognosis, cause, symptom, score,
+advice, deterministic fate, or runtime doctrine.
+
+Rendered PDF pages `124–126` control the reading; Archive.org OCR lines are
+navigation aids only. Verse `256` begins a separate illness-duration section
+and terminates Stage 2U scope. No selector, Stage 2O routing, runtime profile,
+manifest, capability, engine, facade, or REST surface changes. No human-language
+reviewer is required. The research decision SHA-256 is
+`4954c13c33aa755bc0e8c6f47b7825d6ddb8346a2b6df39edf804872e81cbf70`.
+
+### Constitutional Phase 2 classification closure
+
+Phase 2 closes at the private research boundary over the `24` unconflicted
+illness-context records. The data-free internal module
+`moira._pancha_pakshi_classification` owns the typed descriptive model:
+
+- `PanchaPakshiHistoricalDisposition` preserves exact source-statement classes
+  rather than favorable/unfavorable labels;
+- `PanchaPakshiHistoricalTimeClass` distinguishes exact, upper-bound,
+  conditional, multiple, unreconciled, and unstated time shapes without
+  selecting a temporal policy;
+- `PanchaPakshiHistoricalSemanticMarker` records only the presence of named
+  response, mediation, elemental/dosha, deity/fate, effect, activity-relation,
+  mortality, and source-branch atoms;
+- `PanchaPakshiHistoricalCellClassification` binds those classes to one
+  activity, ordinal, verse, source decision/hash, and nonempty uncertainty;
+- `PanchaPakshiHistoricalIdentityConflict` carries disagreeing text-layer
+  identities without a classification payload; and
+- `PanchaPakshiUromarisiPhase2ClassificationCorpus` enforces exact
+  `5/5/5/4/5` coverage, uniqueness, deterministic order, and the blocked verse
+  `250` identity.
+
+Every closure row is machine-derived from the exact Stage 2Q–2U semantic atom:
+EAT uses its resolution and duration fields, WALK/RULE/SLEEP use their
+disposition and time-expression fields, and DIE uses mortality form and
+time-expression fields. Presence markers and uncertainty counts are likewise
+projected from the source record. Construction fails on inconsistent
+activity/disposition, mortality marker, uncertainty, coverage, order, identity,
+or conflict state.
+
+This closure opens Phase 3 only for private derived convenience views and
+vessel consistency/malformed-construction hardening. Phase 3 may not add
+doctrine, interpretation, generic judgment, condition, score, prognosis,
+medical advice, temporal policy, Uromarisi selector binding, runtime profile,
+public export, facade method, or REST route. Selector doctrine belongs to
+constitutional Phase 4. Human Tamil review is not required; Commissionerate
+`A5` acquisition gates only a future `corroborated_public` claim; and verse
+`256` begins a separately scoped product. The Phase 2 closure SHA-256 is
+`a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`.
+
+### Constitutional Phase 3 inspectability closure
+
+Phase 3 consumes only the frozen private Phase 2 vessels. It adds no source
+record or classification. Its cell properties expose:
+
+- `(activity, ordinal)` identity and `(decision ID, SHA-256)` source binding;
+- deterministic lexical semantic-marker values;
+- exact stored presence of mortality language; and
+- whether the existing time class is stated, conditional, or explicitly
+  unreconciled.
+
+Conflict properties expose heading, verse, and commentary assignments, their
+distinct activities, heading/verse agreement, and source binding without
+selecting a governing layer. Corpus properties expose classified and blocked
+verses, activity counts, unique source bindings, mortality-language cells, and
+unstated-time cells. Typed lookups return cells by activity or identity and
+return classifications and conflicts by verse. Absence returns `None`; no
+adjacent, symmetric, or cross-activity fallback exists.
+
+Phase 3 hardens immutable tuple containers, exact EAT `230–234`, WALK
+`235–239`, RULE `241–245`, SLEEP `246–249`, and DIE `251–255` identity
+matrices, activity-specific Phase 2 time classes, one source binding per
+activity, and the Stage 2T source binding of the verse `250` conflict. Thus
+`classification_at(SLEEP, 5)` and `classification_for_verse(250)` are absent,
+while `conflict_for_verse(250)` remains present.
+
+These are derived views and consistency rules only. They are not prediction,
+prognosis, condition, score, advice, outcome selection, temporal policy, or
+runtime admission. No package, facade, REST, manifest, or profile surface
+changes. Phase 3 completion permits Phase 4 to make one explicit doctrine or
+policy decision, but supplies no default or inherited Uromarisi selector
+binding. The Phase 3 decision SHA-256 is
+`2fd93585f8d2d439882ee77cdeb28e5509e916cd752357d60caaa003cc9fb2ca`.
+
+### Constitutional Phase 4 doctrine and policy closure
+
+Phase 4 admits one private research policy:
+`moira_explicit_uromarisi_activity_ordinal_lookup_research_v1`. The typed
+`PanchaPakshiHistoricalClassificationPolicy` requires
+`PanchaPakshiHistoricalClassificationPolicyId.EXPLICIT_ACTIVITY_ORDINAL` and
+exposes these fixed boundaries:
+
+- the policy is a modern Moira research rule over source-owned ordinals;
+- activity and ordinal are caller supplied explicitly;
+- no temporal selector is source-attested or admitted;
+- Stage 2K composition is not admitted;
+- outcome interpretation is not performed;
+- medical use is forbidden; and
+- admission remains `research_only`.
+
+`pancha_pakshi_uromarisi_classification_under_policy` requires corpus, policy,
+typed activity, and ordinal with no default. It delegates exactly to the Phase
+3 activity/ordinal lookup and preserves `None` without fallback. It accepts no
+instant, clock, elapsed duration, samam offset, or selector policy. SLEEP
+ordinal 5 therefore remains absent and verse `250` remains only a conflict.
+
+The Bogamuni 2024 weighted-Sookshma and Eka-Sookshma equal-fifths policy IDs
+remain visible as separate unadmitted cross-witness candidates. Neither is
+attributed to the Uromarisi witness, selected automatically, or routed into the
+historical classifications. A future composition would require its own
+explicit governing object, provenance, non-medical semantics, and admission
+decision.
+
+Phase 4 adds no relation doctrine, condition, score, prognosis, advice,
+runtime profile, manifest entry, package export, facade method, or REST route.
+Its completion permits Phase 5 relational formalization only; no unresolved
+activity-relation clause is silently resolved. The Phase 4 decision SHA-256 is
+`4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial

@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase4_policy_2026_07_21",
+  "decided_at_utc": "2026-07-21T18:14:52Z",
+  "decision_kind": "research_only_constitutional_phase4_doctrine_and_policy_closure",
+  "admission_status": "research_only",
+  "constitutional_phase": 4,
+  "prior_boundary": {
+    "phase3_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase3_inspectability_2026_07_21.json",
+    "phase3_decision_sha256": "2fd93585f8d2d439882ee77cdeb28e5509e916cd752357d60caaa003cc9fb2ca",
+    "phase2_closure_path": "tests/fixtures/pancha_pakshi_uromarisi_phase2_classification_closure_2026_07_21.json",
+    "phase2_closure_sha256": "a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "governing_object": {
+    "classification_module": "moira._pancha_pakshi_classification",
+    "source_owned_identity_axis": "parent_activity_plus_explicit_ordinal",
+    "policy_owned_operation": "caller_supplied_activity_and_ordinal_classification_lookup",
+    "policy_derivation_status": "modern_moira_research_policy_over_source_owned_ordinals",
+    "temporal_selection_performed": false,
+    "outcome_interpretation_performed": false,
+    "runtime_profile_status": "not_created",
+    "public_surface_status": "not_created"
+  },
+  "admitted_private_policy": {
+    "policy_id": "moira_explicit_uromarisi_activity_ordinal_lookup_research_v1",
+    "policy_enum": "PanchaPakshiHistoricalClassificationPolicyId.EXPLICIT_ACTIVITY_ORDINAL",
+    "policy_vessel": "PanchaPakshiHistoricalClassificationPolicy",
+    "operation": "pancha_pakshi_uromarisi_classification_under_policy",
+    "derivation_status": "modern_moira_research_policy_over_source_owned_ordinals",
+    "required_inputs": ["corpus", "policy", "activity", "ordinal"],
+    "default_policy": null,
+    "activity_input_status": "caller_supplied_explicit",
+    "ordinal_input_status": "caller_supplied_explicit",
+    "temporal_selector_binding_status": "none_source_attested_or_admitted",
+    "stage2k_selector_composition_status": "not_admitted",
+    "outcome_interpretation_status": "not_performed",
+    "medical_use_status": "forbidden",
+    "admission_status": "research_only",
+    "lookup_delegation": "unchanged_phase3_classification_at",
+    "absence_policy": "return_none_without_fallback"
+  },
+  "unadmitted_cross_witness_selector_candidates": [
+    {
+      "policy_id": "bogamuni_2024_weighted_sookshma_samam_v1",
+      "source_profile": "bogamuni_chennai_2024_sookshma_temporal_selector",
+      "uromarisi_binding_status": "not_source_attested_or_admitted",
+      "automatic_composition": false
+    },
+    {
+      "policy_id": "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+      "source_profile": "bogamuni_chennai_2024_sookshma_temporal_selector",
+      "uromarisi_binding_status": "not_source_attested_or_admitted",
+      "automatic_composition": false
+    }
+  ],
+  "policy_invariants": {
+    "mandatory_policy_argument": true,
+    "mandatory_typed_activity": true,
+    "mandatory_ordinal_range": "one_through_five",
+    "default_or_fallback_policy": "forbidden",
+    "temporal_inference_from_clock_or_elapsed_time": "forbidden",
+    "stage2k_selector_binding": "forbidden",
+    "missing_sleep_ordinal5_repair": "forbidden",
+    "verse250_conflict_normalization": "forbidden",
+    "generic_good_bad_label": "forbidden",
+    "condition_or_numeric_score": "forbidden",
+    "prediction_prognosis_diagnosis_or_advice": "forbidden",
+    "runtime_relation_binding": "forbidden"
+  },
+  "verified_policy_cases": [
+    {"activity": "eat", "ordinal": 1, "classification_verse": 230},
+    {"activity": "rule", "ordinal": 4, "classification_verse": 244},
+    {"activity": "sleep", "ordinal": 5, "classification_verse": null},
+    {"activity": "die", "ordinal": 5, "classification_verse": 255}
+  ],
+  "phase4_closure": {
+    "status": "complete_at_private_research_boundary",
+    "phase5_entry_status": "ready_for_relational_formalization_only",
+    "phase5_does_not_inherit": [
+      "resolved_activity_relation_semantics",
+      "temporal_selector_binding",
+      "condition_scoring_prognosis_or_advice",
+      "runtime_outcome_admission",
+      "public_api_authorization"
+    ],
+    "automatic_public_admission": false
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "package_export_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "public_nonclaims": [
+    "The Phase 4 policy governs explicit ordinal lookup only and performs no temporal selection.",
+    "The policy is modern Moira research policy and is not attributed to the Uromarisi witness as a computational rule.",
+    "Neither Bogamuni Stage 2K selector is bound to the Uromarisi classifications.",
+    "A missing classification remains absent; SLEEP ordinal 5 is not supplied by verse 250 or a DIE cell.",
+    "Historical mortality language remains non-predictive and cannot be used for prognosis, diagnosis, condition, scoring, or advice.",
+    "Phase 5 readiness authorizes relational formalization only and does not resolve the source relation clauses in advance.",
+    "No human Tamil reviewer is required."
+  ]
+}

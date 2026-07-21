@@ -263,6 +263,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Constitutional Phase 4 Doctrine/Policy Closure**: Added one
+  private typed policy,
+  `moira_explicit_uromarisi_activity_ordinal_lookup_research_v1`, and one
+  policy-required classification operation. Callers must explicitly supply the
+  private corpus, policy vessel, typed activity, and ordinal `1..5`; there is no
+  default or fallback. The policy is explicitly modern Moira research policy
+  over source-owned activity/ordinal identities, performs no temporal
+  selection, and delegates unchanged to the Phase 3 lookup. Thus SLEEP ordinal
+  5 remains absent. Both Bogamuni Stage 2K selector IDs remain separately named
+  but unbound cross-witness candidates: neither is source-attested or admitted
+  for Uromarisi and no automatic composition exists. No condition, score,
+  prognosis, advice, relation binding, runtime profile, export, facade, or REST
+  surface was added. The Phase 4 decision SHA-256 is
+  `4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9`.
+- **Pancha Pakshi Constitutional Phase 3 Inspectability Closure**: Added
+  derived-only convenience properties and lookups to the private Uromarisi
+  classification vessels. Cell views expose stored identity, source binding,
+  deterministic marker names, mortality-language presence, and stated,
+  conditional, or unreconciled time-shape flags. Conflict views expose all
+  three text-layer assignments without precedence. Corpus views expose exact
+  verses, counts, source bindings, mortality/time subsets, activity lookup,
+  classification lookup, and conflict lookup; absence returns `None` without
+  fallback, so SLEEP ordinal 5 and verse `250` remain unclassified while the
+  verse `250` conflict remains separately visible. Hardening now rejects mutable
+  containers, wrong verse/ordinal matrices, activity/time incompatibility,
+  split per-activity source bindings, and a conflict detached from the SLEEP
+  source decision. Phase 3 closes privately with no new semantics, doctrine,
+  selector, condition, score, prognosis, profile, export, facade, or REST
+  surface. The Phase 3 decision SHA-256 is
+  `2fd93585f8d2d439882ee77cdeb28e5509e916cd752357d60caaa003cc9fb2ca`.
+- **Pancha Pakshi Constitutional Phase 2 Classification Closure**: Added the
+  private, data-free `moira._pancha_pakshi_classification` vocabulary and a
+  hash-bound closure corpus that classifies all `24` unconflicted Uromarisi
+  illness-context cells across EAT/WALK/RULE/SLEEP/DIE as exact projections of
+  the Stage 2Q–2U semantic atoms. The model preserves typed source-statement
+  dispositions, time-expression shapes, semantic-reference presence, source
+  decision identity, and per-cell uncertainty. Verse `250` remains a separate
+  unclassifiable text-layer conflict with no classification payload. Invariants
+  reject activity/disposition mismatch, mortality-marker inconsistency, missing
+  uncertainty, incomplete or unordered coverage, duplicate identity, and
+  conflict normalization. Phase 2 closes only at the private research boundary;
+  Phase 3 may add derived inspectability and vessel hardening but no doctrine,
+  prognosis, score, selector binding, profile, export, facade method, or REST
+  route. The closure SHA-256 is
+  `a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`.
+- **Pancha Pakshi Uromarisi DIE Semantics Stage 2U Research Extension**:
+  Reviewed the five unconflicted DIE-period illness verses `251–255` on
+  rendered PDF pages `124–126`, while carrying verse `250` only as the blocked
+  Stage 2T precursor. The first cell preserves a conditional two-month upper
+  bound and a separate six-month source branch; the second preserves both an
+  instantaneous marker and a one-year marker without harmonizing them; the
+  remaining cells state no numeric duration. Mortality, body-destruction,
+  nonresolution, space/void, fate, deity, relation, and source-branch language
+  remains historical and non-runtime—not prediction, diagnosis, prognosis,
+  cause, symptom, score, advice, or deterministic fate. Verse `256` begins a
+  separate illness-duration section and is excluded. No selector, manifest,
+  engine, facade, or REST surface changed, and no human Tamil reviewer is
+  required. The Stage 2U decision SHA-256 is
+  `4954c13c33aa755bc0e8c6f47b7825d6ddb8346a2b6df39edf804872e81cbf70`.
 - **Pancha Pakshi Uromarisi SLEEP Semantics Stage 2T Research Extension**:
   Reviewed SLEEP-period illness verses `246–250` on rendered PDF pages
   `122–124`. Verses `246–249` yield four unconflicted semantic records with

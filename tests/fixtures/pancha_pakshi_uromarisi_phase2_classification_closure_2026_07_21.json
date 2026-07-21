@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase2_classification_closure_2026_07_21",
+  "decided_at_utc": "2026-07-21T15:51:39Z",
+  "decision_kind": "research_only_constitutional_phase2_classification_closure",
+  "admission_status": "research_only",
+  "constitutional_phase": 2,
+  "prior_truth_boundaries": {
+    "stage2q": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_eat_semantics_stage2q_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_eat_semantics_stage2q_research_2026_07_21",
+      "sha256": "7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9",
+      "cell_key": "eat_cells"
+    },
+    "stage2r": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_walk_semantics_stage2r_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_walk_semantics_stage2r_research_2026_07_21",
+      "sha256": "361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6",
+      "cell_key": "walk_cells"
+    },
+    "stage2s": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_rule_semantics_stage2s_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_rule_semantics_stage2s_research_2026_07_21",
+      "sha256": "85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d",
+      "cell_key": "rule_cells"
+    },
+    "stage2t": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21",
+      "sha256": "09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a",
+      "cell_key": "sleep_cells"
+    },
+    "stage2u": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_die_semantics_stage2u_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_die_semantics_stage2u_research_2026_07_21",
+      "sha256": "4954c13c33aa755bc0e8c6f47b7825d6ddb8346a2b6df39edf804872e81cbf70",
+      "cell_key": "die_cells"
+    },
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "governing_object": {
+    "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+    "context_family": "illness",
+    "classification_module": "moira._pancha_pakshi_classification",
+    "classification_schema_version": 1,
+    "source_owned_object": "twenty_four_unconflicted_historical_cell_classifications_plus_one_blocked_identity_conflict",
+    "classified_cell_count": 24,
+    "blocked_conflict_count": 1,
+    "activity_counts": {"eat": 5, "walk": 5, "rule": 5, "sleep": 4, "die": 5},
+    "runtime_profile_status": "not_created",
+    "public_surface_status": "not_created"
+  },
+  "classification_derivation": {
+    "disposition": {
+      "eat": "resolution_statement",
+      "walk": "disposition_statement.value",
+      "rule": "disposition_statement.value",
+      "sleep": "disposition_statement.value",
+      "die": "mortality_statement.form"
+    },
+    "time_class": {
+      "eat": "stated_duration_days.kind_with_explicit_days_unit",
+      "walk": "stated_time_expression.kind",
+      "rule": "stated_time_expression.kind",
+      "sleep": "stated_time_expression.kind",
+      "die": "stated_time_expression.kind"
+    },
+    "semantic_markers": "presence_only_projection_from_named_source_atom_fields",
+    "uncertainty_count": "exact_length_of_cell_uncertainty_array",
+    "inference_beyond_preserved_truth": "forbidden"
+  },
+  "classified_cells": [
+    {"source_ref": "stage2q", "activity": "eat", "ordinal": 1, "verse": 230, "disposition": "stated_to_resolve", "time_class": "finite_alternative_days", "semantic_markers": ["prescribed_response", "treatment_or_mediation_reference", "activity_relation_clause"], "uncertainty_count": 2},
+    {"source_ref": "stage2q", "activity": "eat", "ordinal": 2, "verse": 231, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["prescribed_response", "elemental_or_dosha_reference", "activity_relation_clause"], "uncertainty_count": 2},
+    {"source_ref": "stage2q", "activity": "eat", "ordinal": 3, "verse": 232, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["prescribed_response", "activity_relation_clause"], "uncertainty_count": 1},
+    {"source_ref": "stage2q", "activity": "eat", "ordinal": 4, "verse": 233, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["prescribed_response", "elemental_or_dosha_reference", "activity_relation_clause"], "uncertainty_count": 3},
+    {"source_ref": "stage2q", "activity": "eat", "ordinal": 5, "verse": 234, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["prescribed_response", "elemental_or_dosha_reference", "activity_relation_clause"], "uncertainty_count": 2},
+
+    {"source_ref": "stage2r", "activity": "walk", "ordinal": 1, "verse": 235, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["prescribed_response", "deity_or_fate_reference", "activity_relation_clause"], "uncertainty_count": 1},
+    {"source_ref": "stage2r", "activity": "walk", "ordinal": 2, "verse": 236, "disposition": "stated_to_abate", "time_class": "exact_days", "semantic_markers": ["elemental_or_dosha_reference", "deity_or_fate_reference", "activity_relation_clause"], "uncertainty_count": 3},
+    {"source_ref": "stage2r", "activity": "walk", "ordinal": 3, "verse": 237, "disposition": "stated_to_abate", "time_class": "upper_bound_days", "semantic_markers": ["elemental_or_dosha_reference", "deity_or_fate_reference", "activity_relation_clause"], "uncertainty_count": 3},
+    {"source_ref": "stage2r", "activity": "walk", "ordinal": 4, "verse": 238, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["treatment_or_mediation_reference", "elemental_or_dosha_reference", "deity_or_fate_reference", "activity_relation_clause"], "uncertainty_count": 3},
+    {"source_ref": "stage2r", "activity": "walk", "ordinal": 5, "verse": 239, "disposition": "timed_progression_without_explicit_resolution", "time_class": "upper_bound_months", "semantic_markers": ["prescribed_response", "elemental_or_dosha_reference", "deity_or_fate_reference", "activity_relation_clause"], "uncertainty_count": 3},
+
+    {"source_ref": "stage2s", "activity": "rule", "ordinal": 1, "verse": 241, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["prescribed_response", "elemental_or_dosha_reference", "deity_or_fate_reference", "effect_reference"], "uncertainty_count": 2},
+    {"source_ref": "stage2s", "activity": "rule", "ordinal": 2, "verse": 242, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["elemental_or_dosha_reference", "deity_or_fate_reference", "effect_reference"], "uncertainty_count": 3},
+    {"source_ref": "stage2s", "activity": "rule", "ordinal": 3, "verse": 243, "disposition": "stated_to_resolve", "time_class": "upper_bound_days", "semantic_markers": ["prescribed_response", "elemental_or_dosha_reference", "deity_or_fate_reference"], "uncertainty_count": 1},
+    {"source_ref": "stage2s", "activity": "rule", "ordinal": 4, "verse": 244, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["prescribed_response", "elemental_or_dosha_reference", "deity_or_fate_reference", "activity_relation_clause"], "uncertainty_count": 2},
+    {"source_ref": "stage2s", "activity": "rule", "ordinal": 5, "verse": 245, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["elemental_or_dosha_reference", "deity_or_fate_reference", "effect_reference"], "uncertainty_count": 2},
+
+    {"source_ref": "stage2t", "activity": "sleep", "ordinal": 1, "verse": 246, "disposition": "stated_resolution_with_difficulty", "time_class": "upper_bound_days", "semantic_markers": ["prescribed_response", "elemental_or_dosha_reference", "deity_or_fate_reference", "activity_relation_clause"], "uncertainty_count": 2},
+    {"source_ref": "stage2t", "activity": "sleep", "ordinal": 2, "verse": 247, "disposition": "stated_resolution_with_recurrence_warning", "time_class": "upper_bound_days", "semantic_markers": ["prescribed_response", "deity_or_fate_reference", "effect_reference"], "uncertainty_count": 2},
+    {"source_ref": "stage2t", "activity": "sleep", "ordinal": 3, "verse": 248, "disposition": "stated_to_resolve", "time_class": "exact_days", "semantic_markers": ["prescribed_response", "treatment_or_mediation_reference", "elemental_or_dosha_reference", "deity_or_fate_reference", "effect_reference"], "uncertainty_count": 3},
+    {"source_ref": "stage2t", "activity": "sleep", "ordinal": 4, "verse": 249, "disposition": "conditional_mortality_or_resolution", "time_class": "conditional_upper_bound_months", "semantic_markers": ["prescribed_response", "deity_or_fate_reference", "effect_reference", "activity_relation_clause", "mortality_language"], "uncertainty_count": 4},
+
+    {"source_ref": "stage2u", "activity": "die", "ordinal": 1, "verse": 251, "disposition": "body_destruction_or_mortality_language", "time_class": "conditional_multiple_month_markers", "semantic_markers": ["elemental_or_dosha_reference", "deity_or_fate_reference", "effect_reference", "activity_relation_clause", "mortality_language", "source_branch_reference"], "uncertainty_count": 4},
+    {"source_ref": "stage2u", "activity": "die", "ordinal": 2, "verse": 252, "disposition": "life_departure_and_body_destruction_language", "time_class": "unreconciled_multiple_source_markers", "semantic_markers": ["elemental_or_dosha_reference", "deity_or_fate_reference", "effect_reference", "activity_relation_clause", "mortality_language"], "uncertainty_count": 4},
+    {"source_ref": "stage2u", "activity": "die", "ordinal": 3, "verse": 253, "disposition": "life_departure_with_return_stated_difficult", "time_class": "not_stated", "semantic_markers": ["elemental_or_dosha_reference", "deity_or_fate_reference", "effect_reference", "activity_relation_clause", "mortality_language"], "uncertainty_count": 4},
+    {"source_ref": "stage2u", "activity": "die", "ordinal": 4, "verse": 254, "disposition": "conditional_death_occurrence_and_body_destruction_language", "time_class": "not_stated", "semantic_markers": ["elemental_or_dosha_reference", "effect_reference", "activity_relation_clause", "mortality_language", "source_branch_reference"], "uncertainty_count": 4},
+    {"source_ref": "stage2u", "activity": "die", "ordinal": 5, "verse": 255, "disposition": "life_departure_and_no_return_language", "time_class": "not_stated", "semantic_markers": ["deity_or_fate_reference", "effect_reference", "mortality_language"], "uncertainty_count": 3}
+  ],
+  "blocked_conflicts": [
+    {
+      "source_ref": "stage2t",
+      "verse": 250,
+      "candidate_ordinal": 5,
+      "heading_activity": "die",
+      "verse_activity": "die",
+      "commentary_activity": "sleep",
+      "classification_status": "unclassifiable_text_layer_identity_conflict",
+      "classification_payload": null
+    }
+  ],
+  "classification_invariants": {
+    "cell_identity": "unique_activity_plus_ordinal_and_unique_verse",
+    "coverage": "exact_5_5_5_4_5_activity_counts",
+    "ordering": "eat_walk_rule_sleep_die_then_ordinal",
+    "mortality_consistency": "mortality_marker_if_and_only_if_disposition_contains_mortality_or_life_departure_semantics",
+    "uncertainty": "at_least_one_source_local_uncertainty_per_classified_cell",
+    "blocked_conflict": "verse250_has_no_classification_payload",
+    "generic_good_bad_labels": "forbidden",
+    "numeric_condition_or_score": "forbidden",
+    "prediction_prognosis_diagnosis_or_advice": "forbidden",
+    "temporal_selector_binding": "forbidden_in_phase2",
+    "runtime_relation_binding": "forbidden_in_phase2"
+  },
+  "phase2_closure": {
+    "status": "complete_at_research_boundary",
+    "phase3_entry_status": "ready_for_private_inspectability_only",
+    "phase3_permitted_scope": [
+      "derived_convenience_views_over_existing_classification_fields",
+      "vessel_consistency_and_malformed_construction_hardening",
+      "no_new_doctrine_or_interpretation"
+    ],
+    "phase3_nonrequirements": [
+      "human_tamil_review",
+      "commissionerate_a5_manuscript_for_source_scoped_research",
+      "temporal_selector_policy_choice",
+      "verses_256_and_later_outside_the_bounded_grid"
+    ],
+    "corroborated_public_still_requires": [
+      "independent_witness_identity_and_copying_history",
+      "item_level_content_collation"
+    ],
+    "automatic_public_admission": false
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "package_export_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "public_nonclaims": [
+    "Phase 2 classification describes one historical witness and does not establish medical truth.",
+    "No classification is a prediction, prognosis, diagnosis, treatment recommendation, condition, score, or favorable/unfavorable judgment.",
+    "Verse 250 remains unclassifiable and is not repaired by symmetry or adjacent-cell inference.",
+    "Phase 2 performs no temporal selection and binds no Stage 2K policy to Uromarisi.",
+    "Phase 3 readiness authorizes private derived inspectability only; it does not authorize doctrine, runtime outcomes, facade methods, or REST routes.",
+    "No human Tamil reviewer is required."
+  ]
+}

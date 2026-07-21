@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_die_semantics_stage2u_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T15:45:00Z",
+  "decision_kind": "research_only_semantic_atom_extension_with_blocked_precursor_conflict",
+  "admission_status": "research_only",
+  "stage": "2U",
+  "prior_boundaries": {
+    "stage2t_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21.json",
+    "stage2t_decision_sha256": "09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a",
+    "stage2p_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_illness_grid_stage2p_research_2026_07_21.json",
+    "stage2p_decision_sha256": "449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "primary_witness": {
+    "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+    "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi Mulamum Uraiyum, with Tanjai Karunanidhi Pillai, 1934",
+    "archive_details_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "locally_verified_pdf_sha256": "e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0",
+    "inspection_method": "rendered_original_page_review_at_220_dpi_with_archive_ocr_alignment_for_navigation",
+    "inspected_pdf_pages": [124, 125, 126],
+    "printed_page_range": "122-124",
+    "source_expression_storage": "not_distributed"
+  },
+  "governing_object": {
+    "context_family": "illness",
+    "parent_activity": "die",
+    "source_owned_object": "five_unconflicted_die_cell_semantic_records_with_blocked_verse250_precursor",
+    "unconflicted_cell_count": 5,
+    "blocked_precursor_count": 1,
+    "transcription_scope": "bounded_semantic_atoms_not_verbatim_transcription",
+    "ontology_relation_to_stage2t": "additive_extension_for_mortality_time_space_void_fate_and_activity_relation_language",
+    "translation_status": "machine_assisted_bounded_gloss_not_admitted",
+    "medical_truth_status": "not_evaluated",
+    "runtime_status": "not_admitted"
+  },
+  "semantic_ontology": {
+    "mortality_statement": "records_historical_mortality_or_life_departure_language_without_prediction_or_medical_validation",
+    "stated_time_expression": "preserves_exact_upper_bound_and_unreconciled_multiple_time_markers_without_harmonization",
+    "activity_relation_clause": "records_surface_rule_enmity_or_no_enmity_conditions_without_runtime_binding",
+    "space_or_void_reference": "records_akasha_open_space_and_suniyam_references_without_accepting_diagnostic_or_causal_claims",
+    "deity_or_fate_reference": "preserves_source_titles_and_fate_account_language_without_theological_normalization",
+    "effect_reference": "records_bounded_body_destruction_distress_and_nonresolution_language_without_symptoms_or_scores",
+    "source_branch_reference": "preserves_source_local_branch_terms_that_cannot_be_safely_normalized",
+    "uncertainty": "records_cell_local_limits_and_forbids_harmonizing_conflicting_or_unclear_clauses"
+  },
+  "die_cells": [
+    {
+      "ordinal": 1,
+      "verse": 251,
+      "pdf_pages": [124, 125],
+      "printed_pages": [122, 123],
+      "archive_ocr_navigation_lines": [5862, 5887],
+      "identity_status": "unconflicted_die",
+      "mortality_statement": {"status": "present", "form": "body_destruction_or_mortality_language", "prediction_status": "forbidden", "confidence": "high"},
+      "stated_time_expression": {
+        "kind": "conditional_multiple_month_markers",
+        "branches": [
+          {"condition": "rule_enmity", "outcome": "mortality_language", "kind": "upper_bound_months", "values": [2]},
+          {"condition": "source_tanmai_branch", "outcome": "not_safely_normalized", "kind": "months", "values": [6]}
+        ],
+        "confidence": "high"
+      },
+      "activity_relation_clause": {"status": "present", "surface_statement": "rule_enmity_branch", "runtime_semantics": null},
+      "space_or_void_reference": [{"category": "akasha_open_space_dosha", "confidence": "high"}],
+      "deity_or_fate_reference": [{"source_title": "kootruvan_or_yama", "relation": "mortality_agent_language", "confidence": "high"}],
+      "effect_reference": [{"category": "body_destruction_language", "confidence": "high"}],
+      "source_branch_reference": [{"source_token": "tanmai", "normalization": null, "confidence": "low"}],
+      "uncertainty": [
+        "tanmai_branch_not_normalized",
+        "akasha_open_space_dosha_not_accepted_as_diagnosis_or_cause",
+        "mortality_language_not_medical_prognosis_or_prediction",
+        "activity_relation_branch_not_bound_to_runtime_doctrine"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "verse": 252,
+      "pdf_pages": [125],
+      "printed_pages": [123],
+      "archive_ocr_navigation_lines": [5888, 5904],
+      "identity_status": "unconflicted_die",
+      "mortality_statement": {"status": "present", "form": "life_departure_and_body_destruction_language", "prediction_status": "forbidden", "confidence": "high"},
+      "stated_time_expression": {
+        "kind": "unreconciled_multiple_source_markers",
+        "markers": [
+          {"kind": "instantaneous", "values": []},
+          {"kind": "within_years", "values": [1]}
+        ],
+        "harmonization": "forbidden",
+        "confidence": "high"
+      },
+      "activity_relation_clause": {"status": "present", "surface_statement": "rule_enmity_branch", "runtime_semantics": null},
+      "space_or_void_reference": [{"category": "suniyam_joined_dosha", "confidence": "high"}],
+      "deity_or_fate_reference": [{"source_title": "kootruvan_or_yama", "relation": "mortality_agent_language", "confidence": "high"}],
+      "effect_reference": [
+        {"category": "life_departure_language", "confidence": "high"},
+        {"category": "body_destruction_language", "confidence": "high"}
+      ],
+      "source_branch_reference": [],
+      "uncertainty": [
+        "instantaneous_and_one_year_markers_not_harmonized",
+        "suniyam_reference_not_accepted_as_diagnosis_or_cause",
+        "mortality_language_not_medical_prognosis_or_prediction",
+        "activity_relation_branch_not_bound_to_runtime_doctrine"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "verse": 253,
+      "pdf_pages": [125],
+      "printed_pages": [123],
+      "archive_ocr_navigation_lines": [5906, 5920],
+      "identity_status": "unconflicted_die",
+      "mortality_statement": {"status": "present", "form": "life_departure_with_return_stated_difficult", "prediction_status": "forbidden", "confidence": "high"},
+      "stated_time_expression": {"kind": "not_stated", "confidence": "high"},
+      "activity_relation_clause": {"status": "present", "surface_statement": "earth_rule_enmity_disallowed", "runtime_semantics": null},
+      "space_or_void_reference": [
+        {"category": "akasha_open_space_dosha", "confidence": "high"},
+        {"category": "suniyam_relation", "confidence": "high"}
+      ],
+      "deity_or_fate_reference": [{"source_title": "ganges", "relation": "curse_comparison", "confidence": "medium"}],
+      "effect_reference": [
+        {"category": "life_departure_language", "confidence": "high"},
+        {"category": "return_or_resolution_stated_difficult", "confidence": "high"}
+      ],
+      "source_branch_reference": [],
+      "uncertainty": [
+        "space_and_void_references_not_accepted_as_diagnoses_or_causes",
+        "curse_comparison_not_normalized_as_causal_mechanism",
+        "mortality_language_not_medical_prognosis_or_prediction",
+        "activity_relation_statement_not_bound_to_runtime_doctrine"
+      ]
+    },
+    {
+      "ordinal": 4,
+      "verse": 254,
+      "pdf_pages": [125, 126],
+      "printed_pages": [123, 124],
+      "archive_ocr_navigation_lines": [5923, 5946],
+      "identity_status": "unconflicted_die",
+      "mortality_statement": {"status": "present", "form": "conditional_death_occurrence_and_body_destruction_language", "prediction_status": "forbidden", "confidence": "high"},
+      "stated_time_expression": {"kind": "not_stated", "confidence": "high"},
+      "activity_relation_clause": {"status": "present", "surface_statement": "rule_enmity_required", "runtime_semantics": null},
+      "space_or_void_reference": [{"category": "suniyam_join_required", "confidence": "high"}],
+      "deity_or_fate_reference": [],
+      "effect_reference": [
+        {"category": "body_destruction_language", "confidence": "high"},
+        {"category": "nonresolution_or_incurability_language", "confidence": "high"},
+        {"category": "distress_language", "confidence": "high"}
+      ],
+      "source_branch_reference": [
+        {"source_token": "enemy_day", "normalization": null, "confidence": "medium"},
+        {"source_token": "death_time_day", "normalization": null, "confidence": "medium"}
+      ],
+      "uncertainty": [
+        "enemy_day_and_death_time_day_not_bound_to_calendar_or_runtime_objects",
+        "suniyam_reference_not_accepted_as_diagnosis_or_cause",
+        "nonresolution_language_not_medical_prognosis",
+        "activity_relation_branch_not_bound_to_runtime_doctrine"
+      ]
+    },
+    {
+      "ordinal": 5,
+      "verse": 255,
+      "pdf_pages": [126],
+      "printed_pages": [124],
+      "archive_ocr_navigation_lines": [5948, 5964],
+      "identity_status": "unconflicted_die",
+      "mortality_statement": {"status": "present", "form": "life_departure_and_no_return_language", "prediction_status": "forbidden", "confidence": "high"},
+      "stated_time_expression": {"kind": "not_stated", "confidence": "high"},
+      "activity_relation_clause": {"status": "not_recorded", "surface_statement": null, "runtime_semantics": null},
+      "space_or_void_reference": [],
+      "deity_or_fate_reference": [
+        {"source_title": "brahmadeva", "relation": "written_account_or_fate_language", "confidence": "high"},
+        {"source_title": "kalan", "relation": "mortality_agent_arrival_language", "confidence": "high"}
+      ],
+      "effect_reference": [
+        {"category": "body_destruction_language", "confidence": "high"},
+        {"category": "life_departure_and_no_return_language", "confidence": "high"}
+      ],
+      "source_branch_reference": [],
+      "uncertainty": [
+        "written_account_language_not_normalized_as_deterministic_runtime_fate",
+        "mortality_agent_language_not_theologically_normalized",
+        "mortality_language_not_medical_prognosis_or_prediction"
+      ]
+    }
+  ],
+  "stage2t_conflict_carry_forward": {
+    "verse": 250,
+    "prior_candidate_ordinal": 5,
+    "identity_status": "blocked_text_layer_identity_conflict",
+    "heading_layer_activity": "die",
+    "verse_layer_activity": "die",
+    "commentary_layer_activity": "sleep",
+    "stage2u_treatment": "blocked_precursor_only",
+    "is_die_cell": false,
+    "is_sixth_die_ordinal": false,
+    "semantic_normalization_performed": false,
+    "resolution_policy": "preserve_stage2t_conflict_without_assignment_or_repair"
+  },
+  "scope_termination": {
+    "next_verse": 256,
+    "next_section": "illness_duration",
+    "included_in_stage2u": false,
+    "policy": "stop_at_end_of_five_explicit_die_ordinals"
+  },
+  "repeatability_contract": {
+    "cell_identity": "parent_activity_plus_explicit_ordinal_plus_verse_and_heading_agreement",
+    "locator_tuple": "verse_plus_pdf_pages_plus_printed_pages_plus_archive_ocr_navigation_lines",
+    "source_check": "rendered_page_controls_semantics_and_archive_ocr_only_aligns_navigation",
+    "machine_check": "canonical_fixture_hash_exact_per_cell_assertions_exact_conflict_carry_forward_and_scope_termination",
+    "verbatim_transcription_required_for_this_extension": false,
+    "human_language_reviewer_dependency": "none"
+  },
+  "ambiguity_policy": {
+    "identity_inference_from_verse250": "forbidden",
+    "mortality_language_as_prediction_or_medical_prognosis": "forbidden",
+    "multiple_time_marker_harmonization": "forbidden",
+    "space_or_void_reference_as_medical_cause": "forbidden",
+    "fate_language_as_deterministic_runtime_rule": "forbidden",
+    "effect_reference_as_symptom_or_score": "forbidden",
+    "activity_relation_runtime_binding": "forbidden",
+    "source_branch_calendar_or_runtime_binding": "forbidden",
+    "generic_favorable_unfavorable_label": "forbidden",
+    "condition_or_numeric_score": "forbidden",
+    "medical_recommendation_or_advice": "forbidden",
+    "automatic_stage2o_to_uromarisi_binding": "forbidden",
+    "default_selector": null
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "public_nonclaims": [
+    "These records summarize what one historical witness states; they do not establish medical truth.",
+    "Mortality, body destruction, nonresolution, space, void, fate, and deity clauses are not predictions, diagnoses, causes, symptoms, scores, advice, or deterministic runtime rules.",
+    "Verse 250 remains blocked and is neither a Stage 2U DIE cell nor a sixth DIE ordinal.",
+    "The instantaneous and one-year markers in verse 252 are not harmonized.",
+    "Verse 256 begins a separate illness-duration section and is outside Stage 2U.",
+    "No full translation or Tamil source expression is distributed.",
+    "No activity relation or source branch is bound to runtime doctrine.",
+    "No Stage 2K selector is attributed to the Uromarisi witness and no Stage 2O result is routed to these cells.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": "The archival PDF, rendered pages, OCR, Tamil source expression, and full translations are not distributed. This fixture preserves bibliographic identity, hashes, locators, bounded machine-assisted semantic atoms, the blocked precursor conflict, per-cell uncertainty, and the fail-closed research decision only."
+}

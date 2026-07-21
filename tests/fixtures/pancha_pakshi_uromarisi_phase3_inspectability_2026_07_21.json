@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase3_inspectability_2026_07_21",
+  "decided_at_utc": "2026-07-21T17:40:48Z",
+  "decision_kind": "research_only_constitutional_phase3_inspectability_closure",
+  "admission_status": "research_only",
+  "constitutional_phase": 3,
+  "prior_boundary": {
+    "phase2_closure_path": "tests/fixtures/pancha_pakshi_uromarisi_phase2_classification_closure_2026_07_21.json",
+    "phase2_closure_sha256": "a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "governing_object": {
+    "classification_module": "moira._pancha_pakshi_classification",
+    "classified_cell_count": 24,
+    "blocked_conflict_count": 1,
+    "source_of_truth": "frozen_phase2_classification_vessels",
+    "inspectability_rule": "derive_only_from_already_stored_fields",
+    "new_source_semantics": false,
+    "new_doctrine": false,
+    "runtime_profile_status": "not_created",
+    "public_surface_status": "not_created"
+  },
+  "inspectability_contract": {
+    "cell_properties": [
+      "identity",
+      "source_binding",
+      "semantic_marker_names",
+      "has_mortality_language",
+      "has_stated_time",
+      "has_conditional_time",
+      "has_unreconciled_time_markers"
+    ],
+    "conflict_properties": [
+      "activity_by_layer",
+      "distinct_activities",
+      "heading_and_verse_agree",
+      "source_binding"
+    ],
+    "corpus_properties": [
+      "classified_verses",
+      "blocked_verses",
+      "activity_counts",
+      "source_bindings",
+      "mortality_language_cells",
+      "unstated_time_cells"
+    ],
+    "corpus_lookups": [
+      "cells_for_activity",
+      "classification_at",
+      "classification_for_verse",
+      "conflict_for_verse"
+    ],
+    "lookup_absence_policy": "return_none_without_fallback_or_adjacent_inference",
+    "ordering_policy": "canonical_phase2_corpus_order_or_lexical_marker_order",
+    "mutation_policy": "immutable_tuple_and_frozenset_results"
+  },
+  "hardening_invariants": {
+    "container_types": "cells_and_conflicts_must_be_tuples",
+    "exact_identity_matrix": "eat_230_234_walk_235_239_rule_241_245_sleep_246_249_die_251_255",
+    "exact_ordinals": "one_through_five_except_sleep_one_through_four",
+    "time_class_compatibility": "activity_specific_phase2_time_classes_only",
+    "source_binding_consistency": "one_source_decision_binding_per_activity",
+    "conflict_binding_consistency": "verse250_binding_equals_sleep_source_binding",
+    "conflict_separation": "classification_for_verse250_is_none_and_conflict_for_verse250_is_present",
+    "typed_lookup_inputs": "activity_enum_positive_verse_and_ordinal_one_through_five",
+    "derived_only": "no_property_or_lookup_adds_interpretation_or_policy"
+  },
+  "verified_derived_views": {
+    "classified_verse_count": 24,
+    "blocked_verses": [250],
+    "activity_counts": {"eat": 5, "walk": 5, "rule": 5, "sleep": 4, "die": 5},
+    "source_binding_count": 5,
+    "mortality_language_verses": [249, 251, 252, 253, 254, 255],
+    "unstated_time_verses": [253, 254, 255],
+    "conditional_time_verses": [249, 251],
+    "unreconciled_time_marker_verses": [252],
+    "sleep_ordinal5_classification": null,
+    "verse250_classification": null,
+    "verse250_conflict_present": true
+  },
+  "phase3_closure": {
+    "status": "complete_at_private_research_boundary",
+    "phase4_entry_status": "ready_for_explicit_doctrine_or_policy_decision_only",
+    "phase4_does_not_inherit": [
+      "a_default_selector",
+      "uromarisi_attribution_for_stage2k_selectors",
+      "runtime_outcome_admission",
+      "condition_scoring_prognosis_or_advice",
+      "public_api_authorization"
+    ],
+    "automatic_phase4_policy_selection": false,
+    "automatic_public_admission": false
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "package_export_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "public_nonclaims": [
+    "Inspectability exposes only values already present in Phase 2 classifications.",
+    "Mortality-language and time-shape properties are presence checks, not predictions, prognosis, condition, severity, or advice.",
+    "The absent SLEEP ordinal 5 classification remains absent and is not supplied by verse 250 or a DIE cell.",
+    "Verse 250 lookup preserves classification absence and conflict presence as separate facts.",
+    "Phase 3 performs no temporal selection and binds no Stage 2K policy to Uromarisi.",
+    "Phase 4 readiness does not choose a policy or authorize a runtime or public surface.",
+    "No human Tamil reviewer is required."
+  ]
+}

@@ -388,6 +388,115 @@ never creates a default canon.
   conflict resolution, activity-relation binding, profile, manifest, engine,
   facade, or REST change; no human-language reviewer required
 
+### Stage 2U Research-Only Uromarisi DIE Semantic Atoms
+
+- Admission kind: five-cell semantic-transcription extension with one blocked
+  precursor carried forward; no profile or capability
+- Stage 2U decision:
+  [`pancha_pakshi_uromarisi_die_semantics_stage2u_research_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_die_semantics_stage2u_research_2026_07_21.json)
+- Stage 2U decision SHA-256:
+  `4954c13c33aa755bc0e8c6f47b7825d6ddb8346a2b6df39edf804872e81cbf70`
+- Bound predecessors: exact Stage 2T decision SHA-256
+  `09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`
+  and unchanged Stage 2P locator decision SHA-256
+  `449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`
+- Unconflicted cells: DIE ordinals `1–5`, verses `251–255`, rendered PDF pages
+  `124–126`, printed pages `122–124`
+- Time atoms: a conditional two-month upper bound and separate six-month source
+  branch in ordinal 1; unreconciled instantaneous and one-year markers in
+  ordinal 2; no numeric duration in ordinals 3–5
+- Blocked precursor: verse `250` remains the Stage 2T identity conflict and is
+  neither a DIE cell nor a sixth DIE ordinal
+- Preserved distinctions: mortality and life-departure statements, relation
+  branches, space/void references, fate and deity titles, effect language,
+  unclear source branches, and per-cell uncertainty
+- Scope stop: verse `256` begins the separate illness-duration section
+- Nonclaims: no prediction, medical truth, diagnosis, prognosis, cause, symptom,
+  advice, deterministic fate, generic good/bad label, condition or numeric
+  score, or full translation
+- Selector and runtime boundary: no Stage 2K attribution, Stage 2O routing,
+  time-marker harmonization, conflict resolution, relation or calendar binding,
+  profile, manifest, engine, facade, or REST change; no human-language reviewer
+  required
+
+### Constitutional Phase 2 Uromarisi Classification Closure
+
+- Admission kind: private research classification; no profile or capability
+- Closure decision:
+  [`pancha_pakshi_uromarisi_phase2_classification_closure_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_phase2_classification_closure_2026_07_21.json)
+- Closure decision SHA-256:
+  `a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`
+- Bound truth decisions: exact Stage 2Q, 2R, 2S, 2T, and 2U hashes plus the
+  unchanged manifest hash
+- Classified coverage: `24` cells; EAT/WALK/RULE/SLEEP/DIE counts
+  `5/5/5/4/5`
+- Blocked identity: verse `250` has a typed conflict vessel and no
+  classification payload
+- Typed axes: exact historical disposition; time-expression shape; presence of
+  response, mediation, elemental/dosha, deity/fate, effect, activity-relation,
+  mortality, and source-branch atoms; source decision/hash; uncertainty count
+- Derivation proof: every classification value and presence marker is projected
+  directly from its hash-bound Stage 2Q–2U cell
+- Failure doctrine: rejects lossy disposition/activity combinations,
+  mortality-marker mismatch, missing uncertainty, incomplete or unordered
+  corpus coverage, duplicate identities, and conflict normalization
+- Phase 3 status: ready for private inspectability and vessel hardening only;
+  no doctrine, selector binding, condition, score, prognosis, public profile,
+  package export, facade method, or REST route
+- Non-gates: no human Tamil reviewer; no `A5` manuscript unless claiming
+  `corroborated_public`; no verse `256+` material in this bounded product
+
+### Constitutional Phase 3 Uromarisi Inspectability Closure
+
+- Admission kind: private derived inspectability; no profile or capability
+- Phase 3 decision:
+  [`pancha_pakshi_uromarisi_phase3_inspectability_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_phase3_inspectability_2026_07_21.json)
+- Phase 3 decision SHA-256:
+  `2fd93585f8d2d439882ee77cdeb28e5509e916cd752357d60caaa003cc9fb2ca`
+- Bound predecessor: exact Phase 2 closure SHA-256
+  `a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`
+- Cell inspectability: identity, source binding, deterministic marker names,
+  mortality-language presence, and stated/conditional/unreconciled time flags
+- Conflict inspectability: exact layer assignments, distinct activities,
+  heading/verse agreement, and source binding without precedence
+- Corpus inspectability: exact classified/blocked verses, counts, unique source
+  bindings, mortality/unstated-time subsets, activity groups, and typed identity
+  or verse lookups
+- Absence doctrine: no classification for SLEEP ordinal 5 or verse `250`; the
+  verse `250` conflict remains independently retrievable; no fallback
+- Hardening: immutable containers, exact verse/ordinal matrix,
+  activity-compatible time classes, one source binding per activity, exact
+  conflict binding, and typed lookup inputs
+- Nonclaims: no new semantic atom, classification, doctrine, selector,
+  condition, score, prognosis, advice, runtime profile, public export, facade,
+  or REST surface
+- Phase 4 boundary: ready for a separate explicit policy decision only; no
+  default and no inherited Uromarisi selector binding
+
+### Constitutional Phase 4 Uromarisi Doctrine/Policy Closure
+
+- Admission kind: private explicit research policy; no profile or capability
+- Phase 4 decision:
+  [`pancha_pakshi_uromarisi_phase4_policy_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_phase4_policy_2026_07_21.json)
+- Phase 4 decision SHA-256:
+  `4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9`
+- Bound predecessor: exact Phase 3 SHA-256
+  `2fd93585f8d2d439882ee77cdeb28e5509e916cd752357d60caaa003cc9fb2ca`
+- Admitted private policy:
+  `moira_explicit_uromarisi_activity_ordinal_lookup_research_v1`
+- Required inputs: private corpus, typed policy, typed activity, ordinal `1..5`;
+  no default
+- Computation: unchanged Phase 3 activity/ordinal lookup; no instant, clock,
+  elapsed duration, Sookshma selection, fallback, or outcome interpretation
+- Cross-witness boundary: both Stage 2K Bogamuni selector IDs remain named but
+  unbound and unadmitted for Uromarisi
+- Absence boundary: SLEEP ordinal 5 remains `None`; verse `250` remains only the
+  typed conflict
+- Nonclaims: no prediction, prognosis, diagnosis, advice, condition, score,
+  relation doctrine, runtime profile, package export, facade, or REST surface
+- Phase 5 boundary: ready for relational formalization only; existing relation
+  clauses remain unresolved until explicitly modeled
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:
