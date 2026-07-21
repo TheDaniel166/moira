@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from math import gcd
 from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
@@ -70,6 +71,30 @@ class PanchaPakshiPaduBirdMappingRequest(PanchaPakshiProfileRequest):
 
     profile_paksha: PanchaPakshiPaksha
     weekday: PanchaPakshiWeekday
+
+
+class PanchaPakshiFractionRequest(_StrictModel):
+    """One exact, reduced rational input; floating point is not admitted."""
+
+    numerator: int
+    denominator: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _reduced_form(self) -> "PanchaPakshiFractionRequest":
+        if gcd(abs(self.numerator), self.denominator) != 1:
+            raise ValueError("fraction input must be in reduced form")
+        return self
+
+
+class PanchaPakshiSookshmaSelectionRequest(PanchaPakshiProfileRequest):
+    """Select within one samam under one explicitly named source policy."""
+
+    policy_id: Literal[
+        "bogamuni_2024_weighted_sookshma_samam_v1",
+        "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+    ]
+    parent_activity: PanchaPakshiActivity
+    elapsed_nazhigai: PanchaPakshiFractionRequest
 
 
 class PanchaPakshiLocalSolarContextRequest(PanchaPakshiProfileRequest):
@@ -466,6 +491,63 @@ class PanchaPakshiPaduBirdMappingResponse(_StrictModel):
     source_locators: list[PanchaPakshiSourceLocatorResponse] = Field(
         min_length=3,
         max_length=3,
+    )
+    provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiSookshmaActivityDurationResponse(_StrictModel):
+    activity: PanchaPakshiActivity
+    duration_nazhigai: PanchaPakshiFractionResponse
+
+
+class PanchaPakshiSookshmaSelectorPolicyResponse(_StrictModel):
+    policy_id: Literal[
+        "bogamuni_2024_weighted_sookshma_samam_v1",
+        "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+    ]
+    source_layer: str
+    partition_kind: Literal["weighted_activity_durations", "five_equal_parts"]
+    container_span_nazhigai: PanchaPakshiFractionResponse
+    interval_count: Literal[5]
+    interval_ownership: Literal["half_open"]
+    sequence_policy: str
+    activity_assignment_status: Literal[
+        "source_attested_cyclic_activity_rows",
+        "not_attested",
+    ]
+    activity_durations_nazhigai: list[
+        PanchaPakshiSookshmaActivityDurationResponse
+    ] = Field(max_length=5)
+    automatic_policy_selection: Literal["forbidden"]
+    uromarisi_composition_status: Literal[
+        "not_performed_requires_separate_explicit_cross_witness_decision"
+    ]
+    outcome_interpretation_status: Literal["not_performed"]
+    source_locator_ids: list[str] = Field(min_length=2, max_length=2)
+
+
+class PanchaPakshiSookshmaIntervalResponse(_StrictModel):
+    ordinal: int = Field(ge=1, le=5)
+    activity: PanchaPakshiActivity | None
+    start_nazhigai: PanchaPakshiFractionResponse
+    end_nazhigai: PanchaPakshiFractionResponse
+    duration_nazhigai: PanchaPakshiFractionResponse
+
+
+class PanchaPakshiSookshmaSelectionResponse(_StrictModel):
+    profile_id: str
+    parent_activity: PanchaPakshiActivity
+    elapsed_nazhigai: PanchaPakshiFractionResponse
+    policy: PanchaPakshiSookshmaSelectorPolicyResponse
+    intervals: list[PanchaPakshiSookshmaIntervalResponse] = Field(
+        min_length=5,
+        max_length=5,
+    )
+    selected_ordinal: int = Field(ge=1, le=5)
+    selected_interval: PanchaPakshiSookshmaIntervalResponse
+    source_locators: list[PanchaPakshiSourceLocatorResponse] = Field(
+        min_length=2,
+        max_length=2,
     )
     provenance: PanchaPakshiProvenanceResponse
 

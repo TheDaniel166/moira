@@ -1,5 +1,103 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2K Sookshma Temporal-Selector Admission — 2026-07-21
+
+Stage 2K admits the two source-attested Bogamuni 2024 editorial selectors as
+explicit, separate policies on a new source-scoped profile. The
+[`Stage 2K admission decision`](../../tests/fixtures/pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_2026_07_21.json)
+has SHA-256
+`10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70`.
+It binds profile SHA-256
+`596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526`
+and current manifest SHA-256
+`584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`.
+
+The governing object is an exact elapsed rational offset within one
+six-nazhigai samam. Every call must name one of these policies:
+
+- `bogamuni_2024_weighted_sookshma_samam_v1`, from IA leaves `n156` and
+  `n157`, rotates the exact EAT `3/2`, WALK `5/4`, RULE `2`, SLEEP `3/4`, DIE
+  `1/2` duration vector from the named parent activity; or
+- `bogamuni_2024_eka_sookshma_equal_fifths_v1`, from `n156` and `n168`,
+  returns five exact `6/5`-nazhigai ordinal cells with no invented activity
+  assignment.
+
+Both policies use exact `[start, end)` ownership over `[0, 6)`. Neither is a
+default, they are not interchangeable, and no automatic selection is allowed.
+The selected policy, all five intervals, unique ordinal and interval, source
+locators, and provenance remain visible. The admission performs no datetime,
+civil-clock, astronomical, schedule, Uromarisi-outcome, condition, score,
+electional, or forecasting composition. It creates no human-language-review
+dependency. The live 1879 profile also replaces its obsolete pending-review
+token with `machine_reconciled_source_assignment_with_declared_uncertainty`;
+frozen historical receipts retain their original evidence labels.
+
+## Stage 2J Vinadi Research Gate — 2026-07-21
+
+Stage 2J is a research recovery, not a public admission. The
+[`Stage 2J research decision`](../../tests/fixtures/pancha_pakshi_uromarisi_vinadi_stage2j_research_2026_07_21.json)
+has canonical SHA-256
+`d04ed0f3716fe605dc5d8172114dc759b30c4e87be968eebc36e35a23d789243`.
+It binds the unchanged Stage 2I manifest SHA-256
+`d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8`
+and Stage 2I decision SHA-256
+`83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807`.
+No runtime profile, data, manifest capability, engine vessel, facade method, or
+REST route changes.
+
+Rendered inspection of the Uromarisi-attributed 1932 publication recovered a
+source-owned five-position vinadi ordinal axis beneath each of the five named
+activities. PDF page 5 enumerates first through fifth vinadi result headings
+under multiple contexts; PDF page 88 contains governing verses 228 and 229;
+PDF page 89 begins the ordinal result sequence. Independent digest
+re-verification corrected the previously recorded value: the inspected
+197-page PDF has SHA-256
+`dbd12d7e26f39ca7f9650a17311b5483eb478844144544a2cbb11aac7c3d6243`.
+The [official Tamil Digital Library catalog](https://tamildigitallibrary.in/book-details/TWpFNU1EST1BdG9aYXRvejB0bzk-/TkE9PUF0b1phdG96MHRvOQ--/TWpBPUF0b1phdG96MHRvOQ--/)
+identifies the 1932 Chennai publication and Sarasvati Mahal Library holding.
+
+The [official 1922 Tamil Digital Library publication](https://tamildigitallibrary.in/Articles/%E0%AE%A8%E0%AF%82%E0%AE%B2%E0%AF%8D-24741-%E0%AE%B0%E0%AF%8B%E0%AE%AE%E0%AE%B0%E0%AE%BF%E0%AE%B7%E0%AE%BF%20%E0%AE%85%E0%AE%B0%E0%AF%81%E0%AE%B3%E0%AE%BF%E0%AE%9A%E0%AF%8D%E0%AE%9A%E0%AF%86%E0%AE%AF%E0%AF%8D%E0%AE%A4%20%E0%AE%B5%E0%AE%BF%E0%AE%A8%E0%AE%BE%E0%AE%9F%E0%AE%BF%20%E0%AE%AA%E0%AE%9E%E0%AF%8D%E0%AE%9A%E0%AE%AA%E0%AE%9F%E0%AF%8D%E0%AE%9A%E0%AE%BF%20%E0%AE%AE%E0%AF%82%E0%AE%B2%E0%AE%AE%E0%AF%81%E0%AE%AE%E0%AF%8D-%E0%AE%A4%E0%AE%9E%E0%AF%8D%E0%AE%9A%E0%AF%88%20%E0%AE%95%E0%AE%B0%E0%AF%81%E0%AE%A3%E0%AE%BE%E0%AE%A8%E0%AE%BF%E0%AE%A4%E0%AE%BF%20%E0%AE%AA%E0%AE%BF%E0%AE%B3%E0%AF%8D%E0%AE%B3%E0%AF%88%E0%AE%AF%E0%AE%BE%E0%AE%B5%E0%AE%B0%E0%AF%8D%E0%AE%95%E0%AE%B3%E0%AE%BE%E0%AE%B2%E0%AF%8D%2C%20%E0%AE%9A%E0%AF%86%E0%AE%AF%E0%AF%8D%E0%AE%A4%20%E0%AE%A8%E0%AF%82%E0%AE%A4%E0%AE%A9%20%E0%AE%89%E0%AE%B0%E0%AF%88%E0%AE%AF%E0%AF%81%E0%AE%AE%E0%AF%8D)
+includes Karunanidhi Pillai commentary. Rendered PDF page 115 (printed page
+113) preserves verses 227 through 229; page 116 (printed page 114) restates
+the demand for accurate nazhigai division but supplies no selector arithmetic.
+The inspected 298-page PDF has SHA-256
+`51b4b34890412fd57011aebe0c1ab22ab1800e5035a84bbbb9330ea0f6597741`.
+
+The separately published
+[Uromarisi-attributed 1934 volume](https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934)
+preserves the same verse numbers and ordinal organization. Rendered inspection located verses
+227 through 229 at PDF page 115 (printed page 113) and the first through fourth
+EAT-vinadi outcomes beginning at PDF pages 116 through 117 (printed pages 114
+through 115). Its inspected 166-page PDF has SHA-256
+`e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`.
+This is separate-publication corroboration; textual-lineage independence is
+not established.
+
+The Uromarisi witnesses require accurate vinadi placement but do not supply
+selector arithmetic on the inspected governing pages. The separately named
+editorial layers in the
+[Bogamuni-attributed 2024 publication](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024)
+do supply two incompatible selector candidates. Rendered PDF pages 157 and 158
+(printed pages 147 and 148) give weighted Sūkṣma durations EAT `3/2`, WALK
+`5/4`, RULE `2`, SLEEP `3/4`, and DIE `1/2` nazhigai, closing exactly to one
+six-nazhigai samam, with cyclic rows beginning at the named activity. PDF page
+169 (printed page 159) separately names Eka Sūkṣma and directs that each
+samam's nazhigai be divided into five equal parts. The inspected PDF has
+SHA-256
+`035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`.
+
+The two doctrines are preserved as provisional policies
+`bogamuni_2024_weighted_sookshma_samam_v1` and
+`bogamuni_2024_eka_sookshma_equal_fifths_v1`. They are not interchangeable,
+neither is a default, and neither is automatically bound to Uromarisi ordinal
+outcomes. Machine-assisted reading is insufficient to normalize prognostic
+prose, but there is no human-language-review dependency. Stage 2J therefore
+remains research-only because selector choice and cross-witness composition
+are unadmitted. Automatic temporal routing, translation-backed outcomes,
+composition with admitted schedules or identities, condition, scoring,
+electional judgment, and forecasting remain forbidden pending their own
+explicit normalization and admission.
+
 ## Stage 2I First-Samam EAT-Seed Addendum
 
 Stage 2I admits `first_eat_bird_mapping` as one granular capability of the
@@ -62,8 +160,8 @@ materialization, natal identity, or cross-profile composition. The result is
 not Padu, an authority day or bird, Adhikara/Bharana, a current activity,
 condition, strength, score, electional judgment, or forecast.
 
-The current public family has three profiles, fifteen `Moira` methods (eight
-kernel-free and seven kernel-backed), and fourteen REST routes.
+The current public family has four profiles, sixteen `Moira` methods (nine
+kernel-free and seven kernel-backed), and fifteen REST routes.
 
 Validation checks all 28 cells against the canonical generator table and the
 existing schedule's `first_eat_bird` and initial EAT cell. It also checks exact
@@ -211,9 +309,9 @@ Validation keeps its evidence classes separate. The named pages and exact
 adjacent-representable tests are mathematical invariants. DE441 executes the
 apparent geocentric reader-bound TT path, but is not a Pancha Pakshi or
 natal-identity oracle. Facade, serializer, REST, OpenAPI, export, profile/hash,
-capability, and immutable-vessel tests protect the public contract. Competent
-human Tamil review remains a welcome confidence upgrade, not a blocker to this
-narrow source-scoped admission or a prerequisite for publishing the API.
+capability, and immutable-vessel tests protect the public contract. Exact
+source locators and reading uncertainty remain visible; there is no
+human-language-review dependency for this narrow source-scoped admission.
 
 The source-artifact boundary remains unchanged. The PDFs and rendered research
 pages are not bundled; Moira distributes only independently normalized symbolic
@@ -231,8 +329,10 @@ The frozen
 has canonical SHA-256
 `9ce3686a90a41af916a370b8d4ec04637f22a1d32f872180c6d8a1b790e25a0e`.
 Its status remains
-`machine_assisted_visual_reading_pending_competent_tamil_review`; it does not
-claim independent-witness corroboration or a universal Pancha Pakshi vocabulary.
+`machine_assisted_visual_reading_pending_competent_tamil_review`; this legacy
+provenance label records how the source reading was originally classified and
+does not create a human-review dependency. It does not claim independent-
+witness corroboration or a universal Pancha Pakshi vocabulary.
 
 The chained
 [`Stage 2F admission decision`](../../tests/fixtures/pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20.json)
@@ -282,8 +382,8 @@ tithi and karana use the direct tropical Moon-Sun difference, where common
 ayanamsa cancels, rather than separately rounded sidereal operands. Facade,
 transport, OpenAPI, capability, immutable-vessel, schema/hash, and locator
 checks protect the public contract. None of this is an external Pancha Pakshi
-oracle, a new phase-event timing accuracy claim, competent-human Tamil sign-off,
-or independent-witness collation.
+oracle, a new phase-event timing accuracy claim, linguistic-authority claim, or
+independent-witness collation.
 
 The standing source-artifact boundary is unchanged. Stage 2F distributes only
 normalized facts, locators, Moira-authored policy, and validation metadata. It
@@ -655,8 +755,8 @@ Phase 1 admits `agastya_madras_1879_akshara_fixed_clock` as
 and directed relationship matrix. Its admitted capabilities are
 `aksara_identity`, `nominal_schedule`, and `directed_relationships`.
 
-This decision does not convert the machine reading into competent-human Tamil
-review or independent-witness consensus. Those gaps remain explicit and
+This decision does not convert the machine reading into independent-witness
+consensus or a linguistic-authority claim. Those limits remain explicit and
 prevent a corroborated, generalized, natal, or default-canon claim. They do not
 prevent publication of this narrowly named witness product with its provenance
 and omissions attached to every result.
@@ -702,9 +802,9 @@ directed nonself relationship cells; and proved that the existing Pūrva-night
 generator was wrong. The profile record then acquired the corrected
 Pūrva-night step and offsets.
 
-This was machine-assisted resolution for the then-private profile, not
-competent-human Tamil sign-off, independent-witness consensus, or public
-doctrine. That historical reconciliation itself added no package-root export,
+This was machine-assisted resolution for the then-private profile, not a
+linguistic-authority claim, independent-witness consensus, or public doctrine.
+That historical reconciliation itself added no package-root export,
 `Moira` facade method, FastAPI route, OpenAPI schema, or native path; the later
 Phase 1, Stage 2A, and Stage 2B decisions above admitted the bounded public
 surfaces separately.
@@ -749,8 +849,8 @@ inspect the profile before freezing their readings. Each record names its
 reviewer identity, protocol, witness hashes, timestamp, and per-reading leaves.
 The reconciliation binds all three record hashes and the corrected profile
 hash. OCR was used only to locate leaves; page images governed every recorded
-reading. This is independently produced machine-assisted evidence, not
-competent-human Tamil sign-off.
+reading. This is independently produced machine-assisted evidence with its
+uncertainty visible and no human-review dependency.
 
 ## Machine-Adjudicated Readings
 
@@ -780,7 +880,7 @@ that the profile is a universal Pancha Pakshi canon.
 
 | Finding | Historical machine-reconciliation result | Remaining boundary |
 |---|---|---|
-| Temporal-model scope | IA leaves n6 and n15 establish the fixed `30/5/6` structure for both day and night. | Competent-human Tamil confirmation remains necessary for a corroborated or universal claim, not for the bounded source-scoped product. |
+| Temporal-model scope | IA leaves n6 and n15 establish the fixed `30/5/6` structure for both day and night. | Independent-witness collation remains necessary for a corroborated claim; no human-review dependency applies to the bounded source-scoped product. |
 | Paired headings and table axes | Paired names are weekday alternatives. Vākkiya grids select weekday assignments; Eḻuttu and Toḻil grids expose samam/activity/bird assignments under their identified axes. | Visual grid order is never chronological authority. |
 | Pūrva-night assembly | The prior generator was wrong. Sunday/Tuesday begins `Crow-Eat, Owl-Rule, Vulture-Die, Peacock-Walk, Cock-Sleep`; step and offsets are corrected in the profile. | The corrected 175-cell surface is public only as part of the named source-bound product. |
 | Amara-night seeds and assembly | Sun–Sat seeds remain `Vulture, Cock, Vulture, Owl, Crow, Peacock, Cock`; the existing step, offsets, chronology, and assignments are confirmed. | No universal doctrine is inferred. |
@@ -810,11 +910,11 @@ exercise:
   govern public admission because no source artifact or copied expression is
   distributed.
 
-## Competent Tamil Review Packet
+## Reproducible Tamil Source-Reading Packet
 
-The next competent reviewer should inspect the exact hashed witness and
-confirm or reject these machine readings in writing, with leaf locators and a
-signed reconciliation table:
+This packet preserves the exact hashed witness, leaf locators, and machine
+readings so that any future source review can reproduce, confirm, or reject
+them. It creates no human-language-review dependency:
 
 1. n6, n10, n18, and n50–n51 assign `1 1/4, 1 1/2, 2, 3/4, 1/2`
    nazhigai to Eat, Walk, Rule, Sleep, and Die respectively.
@@ -843,7 +943,7 @@ current bounded public status.
 | Gate | State at the historical checkpoint |
 |---|---|
 | Machine-assisted transcription and adjudication | Completed for the then-private profile; all six prior findings resolved without rewriting the frozen records. |
-| Competent Tamil review | Not completed. |
+| Human-language review | Not an admission dependency; no reviewer is required. |
 | Independent-witness collation | Not completed; the 1867 parallel relationship reading is provisional only. |
 | Assignment/chronology precedence | Resolved for the named source profile: identified grids govern assignments; explicit prose and verse govern chronology. |
 | Source-artifact policy | Satisfied: witnesses are reference-only and never bundled; this is not an admission gate. |
@@ -878,13 +978,14 @@ corrected source-owned Pūrva-night assignments, generic schedule invariants,
 and preservation of the shared Python solar-day boundary. The two real
 solar-window tests used the discovered DE441 resource; no Pancha Pakshi native
 path exists. The adjudication remains machine-assisted research evidence, so
-no competent-human Tamil attestation, external-oracle parity, universal-
-doctrine claim, or admission beyond the later explicitly bounded decisions is
-asserted.
+no linguistic-authority claim, external-oracle parity, universal-doctrine
+claim, or admission beyond the later explicitly bounded decisions is asserted.
 
 ## Remaining Research Sequence
 
-1. Obtain competent-human Tamil confirmation using the packet above.
+1. Preserve the two now-admitted Stage 2K selectors as separate explicit
+   policies with no default. Any binding to Uromarisi ordinal outcomes still
+   requires a named cross-witness composition decision and its own tests.
 2. Collate the normalized rules against at least one genuinely independent
    Pancha Pakshi witness rather than an adjacent omen or compatibility system.
 3. Preserve any disagreement by witness and text layer; do not merge doctrines
@@ -902,11 +1003,13 @@ asserted.
    It must not acquire whole-day eating-bird, Padu, authority, condition,
    score, electional, or forecasting semantics without separate admission.
 
-The present resting place is three tested, source-scoped public profiles: the
+The present resting place is four tested, source-scoped public profiles: the
 corrected 1879 aksara schedule with the separately named Stage 2A through Stage
 2E modern compositions, Stage 2F source-mapped astronomical inference, and
 Stage 2I source-attested first-samam EAT-seed lookup, plus
 the separate 2024 nakshatra table and Stage 2G modern natal-Moon composition,
-plus the Stage 2H 2024 Padu-only table. None is a universal canon, and
+plus the Stage 2H 2024 Padu-only table, plus the Stage 2K exact Sookshma
+temporal-selector profile with two mandatory explicit policies and no outcome
+binding. None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

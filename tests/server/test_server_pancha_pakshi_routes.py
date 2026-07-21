@@ -333,7 +333,7 @@ def test_profiles_and_profile_info_expose_source_scope_without_a_default(
     assert profiles.status_code == 200
     catalog = profiles.json()
     assert catalog["default_profile_selected"] is False
-    assert catalog["total"] == 3
+    assert catalog["total"] == 4
     descriptor = next(item for item in catalog["profiles"] if item["profile_id"] == _PROFILE_ID)
     assert descriptor["admission_status"] == "source_scoped_public"
     assert descriptor["default_selection_allowed"] is False
@@ -354,6 +354,19 @@ def test_profiles_and_profile_info_expose_source_scope_without_a_default(
         "natal_identity",
     ]
     assert natal_descriptor["default_selection_allowed"] is False
+    sookshma_descriptor = next(
+        item
+        for item in catalog["profiles"]
+        if item["profile_id"]
+        == "bogamuni_chennai_2024_sookshma_temporal_selector"
+    )
+    assert sookshma_descriptor["product_kind"] == (
+        "sookshma_temporal_selector"
+    )
+    assert sookshma_descriptor["capabilities"] == [
+        "sookshma_temporal_selection"
+    ]
+    assert sookshma_descriptor["default_selection_allowed"] is False
 
     response = client.get(f"/v1/pancha-pakshi/profiles/{_PROFILE_ID}")
 
@@ -1291,7 +1304,7 @@ def test_pancha_pakshi_routes_are_registered(client: TestClient) -> None:
         if route.path.startswith("/v1/pancha-pakshi/")
     }
 
-    assert len(paths) == 14
+    assert len(paths) == 15
     assert paths == {
         "/v1/pancha-pakshi/profiles",
         "/v1/pancha-pakshi/profiles/{profile_id}",
@@ -1307,6 +1320,7 @@ def test_pancha_pakshi_routes_are_registered(client: TestClient) -> None:
         "/v1/pancha-pakshi/context/local-solar",
         "/v1/pancha-pakshi/relationships/directed",
         "/v1/pancha-pakshi/roles/padu",
+        "/v1/pancha-pakshi/sookshma/select",
     }
 
 

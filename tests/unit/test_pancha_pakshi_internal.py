@@ -86,6 +86,19 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
                 "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20"
             ),
         ),
+        type(available_pancha_pakshi_profiles()[0])(
+            profile_id="bogamuni_chennai_2024_sookshma_temporal_selector",
+            admission_status=PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
+            product_kind="sookshma_temporal_selector",
+            default_selection_allowed=False,
+            capabilities=(
+                PanchaPakshiCapability.SOOKSHMA_TEMPORAL_SELECTION,
+            ),
+            admission_decision_id=(
+                "pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_"
+                "2026_07_21"
+            ),
+        ),
     )
     assert profile.profile_id == PROFILE_ID
     assert profile.admission_status is PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC
@@ -104,7 +117,7 @@ def test_profile_is_explicitly_named_source_scoped_and_never_default(profile) ->
         PanchaPakshiCapability.SOLAR_PROPORTIONAL_CURRENT_CELL_SELECTION,
     )
     assert profile.derivation_status == (
-        "machine_reconciled_source_assignment_pending_competent_tamil_review"
+        "machine_reconciled_source_assignment_with_declared_uncertainty"
     )
     assert profile.assembly_policy == (
         "resolved_grid_axes_assign_birds_explicit_prose_and_verse_govern_"

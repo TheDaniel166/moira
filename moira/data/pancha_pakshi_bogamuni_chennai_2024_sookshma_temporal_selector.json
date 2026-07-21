@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "profile": {
+    "profile_id": "bogamuni_chennai_2024_sookshma_temporal_selector",
+    "product_kind": "sookshma_temporal_selector",
+    "derivation_status": "visually_verified_source_sookshma_selector_policies",
+    "assembly_policy": "preserve_weighted_and_equal_fifths_as_distinct_explicit_policies",
+    "title": "Bogamuni 2024 Sookshma temporal selector policies"
+  },
+  "source": {
+    "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "title": "போகமுனிவர் பஞ்சபட்சி சாஸ்திரம் உரையுடன்",
+    "traditional_attribution": "Bogamuni",
+    "authorship_status": "traditional_attribution_not_asserted_authorship",
+    "publication_place": "Vadapalani, Chennai",
+    "publisher": "Thamarai Noolagam",
+    "publication_year": 2024,
+    "language": "Tamil",
+    "archive_item_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "archive_original_image_zip_name": "not_applicable_no_original_image_zip_bound",
+    "archive_original_image_zip_source_status": "not_applicable_pdf_is_internet_archive_original",
+    "archive_original_image_zip_md5": "not_applicable",
+    "archive_original_image_zip_sha1": "not_applicable",
+    "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+    "archive_pdf_source_status": "internet_archive_original",
+    "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+    "archive_pdf_sha1": "6ddad8f2577883f6859829f534e8ee7b8330ade8",
+    "locally_verified_pdf_sha256": "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990",
+    "catalogued_contributor_note": "The sixth edition names R. C. Mohan as editor; Moira does not convert that editorial credit into authorship of the traditionally attributed work.",
+    "artifact_distribution_status": "reference_only_source_artifacts_not_packaged",
+    "redistribution_policy": "normalized_rules_only_no_scan_ocr_page_images_layout_source_prose_or_third_party_translation",
+    "license_scope": "mit_covers_moira_authored_code_schema_prose_and_profile_representation",
+    "artifact_distribution_note": "The archive PDF is a research input, not a package asset. Moira distributes only independently normalized rule data, code, schema, and provenance prose; no scan, OCR, page image, copied layout, source prose, or third-party translation is bundled."
+  },
+  "source_locators": [
+    {
+      "locator_id": "bogar_n156_samam_context",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n156 / PDF page 157 / printed page 147: six-nazhigai samam context",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n156/mode/1up",
+      "evidence_role": "source_attested_six_nazhigai_samam_context"
+    },
+    {
+      "locator_id": "bogar_n157_weighted_sookshma",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n157 / PDF page 158 / printed page 148: weighted Sookshma activity vector and cyclic rows",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n157/mode/1up",
+      "evidence_role": "source_attested_weighted_sookshma_selector"
+    },
+    {
+      "locator_id": "bogar_n168_eka_sookshma",
+      "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "label": "IA leaf n168 / PDF page 169 / printed page 159: Eka Sookshma Chakra equal-fifths rule",
+      "url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024/page/n168/mode/1up",
+      "evidence_role": "source_attested_eka_sookshma_equal_fifths_selector"
+    }
+  ],
+  "selector_policies": [
+    {
+      "policy_id": "bogamuni_2024_weighted_sookshma_samam_v1",
+      "source_layer": "sookshma_pakshi_editorial_section",
+      "partition_kind": "weighted_activity_durations",
+      "container_span_nazhigai": {
+        "numerator": 6,
+        "denominator": 1
+      },
+      "interval_count": 5,
+      "interval_ownership": "half_open",
+      "sequence_policy": "cyclic_activity_order_with_each_row_beginning_at_its_named_activity",
+      "activity_assignment_status": "source_attested_cyclic_activity_rows",
+      "activity_durations_nazhigai": [
+        {
+          "activity": "eat",
+          "duration": {
+            "numerator": 3,
+            "denominator": 2
+          }
+        },
+        {
+          "activity": "walk",
+          "duration": {
+            "numerator": 5,
+            "denominator": 4
+          }
+        },
+        {
+          "activity": "rule",
+          "duration": {
+            "numerator": 2,
+            "denominator": 1
+          }
+        },
+        {
+          "activity": "sleep",
+          "duration": {
+            "numerator": 3,
+            "denominator": 4
+          }
+        },
+        {
+          "activity": "die",
+          "duration": {
+            "numerator": 1,
+            "denominator": 2
+          }
+        }
+      ],
+      "source_locators": [
+        "bogar_n156_samam_context",
+        "bogar_n157_weighted_sookshma"
+      ]
+    },
+    {
+      "policy_id": "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+      "source_layer": "eka_sookshma_chakra_editorial_section",
+      "partition_kind": "five_equal_parts",
+      "container_span_nazhigai": {
+        "numerator": 6,
+        "denominator": 1
+      },
+      "interval_count": 5,
+      "interval_ownership": "half_open",
+      "sequence_policy": "ordinal_only_no_subactivity_assignment_attested",
+      "activity_assignment_status": "not_attested",
+      "activity_durations_nazhigai": [],
+      "source_locators": [
+        "bogar_n156_samam_context",
+        "bogar_n168_eka_sookshma"
+      ]
+    }
+  ],
+  "policy_relation": {
+    "default_policy_id": null,
+    "policies_are_interchangeable": false,
+    "automatic_policy_selection": "forbidden",
+    "uromarisi_composition_status": "not_performed_requires_separate_explicit_cross_witness_decision",
+    "outcome_interpretation_status": "not_performed"
+  },
+  "explicit_omissions": [
+    {
+      "feature": "uromarisi_outcome_binding",
+      "status": "omitted",
+      "reason": "The Bogamuni editorial selectors are not automatically bound to Uromarisi ordinal outcomes."
+    },
+    {
+      "feature": "clock_or_civil_time_routing",
+      "status": "omitted",
+      "reason": "The selector accepts only an exact elapsed offset within one six-nazhigai samam."
+    },
+    {
+      "feature": "astronomical_context",
+      "status": "omitted",
+      "reason": "No lunar phase, location, sunrise, sunset, or ephemeris computation is performed."
+    },
+    {
+      "feature": "schedule_composition",
+      "status": "omitted",
+      "reason": "The selector is not attached to an admitted day or night operating schedule."
+    },
+    {
+      "feature": "natal_identity",
+      "status": "omitted",
+      "reason": "No natal bird or birth-Moon identity is selected."
+    },
+    {
+      "feature": "padu_bird_mapping",
+      "status": "omitted",
+      "reason": "No Padu bird is selected or inferred."
+    },
+    {
+      "feature": "outcome_interpretation",
+      "status": "omitted",
+      "reason": "No prognostic text or outcome is normalized or returned."
+    },
+    {
+      "feature": "condition",
+      "status": "omitted",
+      "reason": "No condition or strength doctrine is admitted."
+    },
+    {
+      "feature": "scoring",
+      "status": "omitted",
+      "reason": "No auspiciousness, compatibility, or power score is admitted."
+    },
+    {
+      "feature": "window_search",
+      "status": "omitted",
+      "reason": "No electional search or forecast surface is admitted."
+    }
+  ],
+  "research_conflict_ledger": []
+}

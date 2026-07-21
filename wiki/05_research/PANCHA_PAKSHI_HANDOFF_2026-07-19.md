@@ -1,14 +1,21 @@
 # Pancha Pakshi Implementation Handoff — 2026-07-19
 
+> **2026-07-21 Stage 2K update:** The two Bogamuni editorial Sookshma
+> selectors are now admitted through a separate source-scoped profile. Policy
+> selection is mandatory per call; there is no default, Uromarisi outcome
+> binding, clock routing, astronomy, schedule composition, condition, score,
+> or forecast. No human Tamil reviewer is a runtime or admission dependency.
+>
 > **Superseded checkpoint.** Resume from
 > [`PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md`](./PANCHA_PAKSHI_ADMISSION_EVIDENCE_2026-07-20.md)
 > and the live
 > [`research and admission standard`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
 > This file preserves the pre-admission resting state. Phase 0 subsequently
 > established a source-scoped public tier and Phase 1 admitted the named 1879
-> aksara/fixed-clock product without selecting a default canon. Competent-human
-> Tamil review and independent-witness collation remain evidence upgrades and
-> broader-claim gates, not blockers for that narrow public product.
+> aksara/fixed-clock product without selecting a default canon. The live
+> standard now carries no human-review dependency; independent-witness
+> collation remains the evidence gate for a corroborated claim, not a blocker
+> for that narrow public product.
 
 ## Historical Resting State
 

@@ -35,6 +35,9 @@ from moira.pancha_pakshi import (
     PanchaPakshiSolarProportionalMaterializationPolicy,
     PanchaPakshiSource,
     PanchaPakshiSourceLocator,
+    PanchaPakshiSookshmaInterval,
+    PanchaPakshiSookshmaSelection,
+    PanchaPakshiSookshmaSelectorPolicy,
 )
 
 from ..models.pancha_pakshi import (
@@ -69,6 +72,10 @@ from ..models.pancha_pakshi import (
     PanchaPakshiSolarProportionalMaterializationResponse,
     PanchaPakshiSourceLocatorResponse,
     PanchaPakshiSourceResponse,
+    PanchaPakshiSookshmaActivityDurationResponse,
+    PanchaPakshiSookshmaIntervalResponse,
+    PanchaPakshiSookshmaSelectionResponse,
+    PanchaPakshiSookshmaSelectorPolicyResponse,
 )
 
 
@@ -262,6 +269,70 @@ def serialize_padu_bird_mapping(
             serialize_source_locator(locator) for locator in mapping.source_locators
         ],
         provenance=serialize_provenance(mapping.provenance),
+    )
+
+
+def serialize_sookshma_selector_policy(
+    policy: PanchaPakshiSookshmaSelectorPolicy,
+) -> PanchaPakshiSookshmaSelectorPolicyResponse:
+    return PanchaPakshiSookshmaSelectorPolicyResponse(
+        policy_id=policy.policy_id.value,
+        source_layer=policy.source_layer,
+        partition_kind=policy.partition_kind,
+        container_span_nazhigai=serialize_fraction(
+            policy.container_span_nazhigai
+        ),
+        interval_count=policy.interval_count,
+        interval_ownership=policy.interval_ownership,
+        sequence_policy=policy.sequence_policy,
+        activity_assignment_status=policy.activity_assignment_status,
+        activity_durations_nazhigai=[
+            PanchaPakshiSookshmaActivityDurationResponse(
+                activity=activity,
+                duration_nazhigai=serialize_fraction(duration),
+            )
+            for activity, duration in policy.activity_durations_nazhigai
+        ],
+        automatic_policy_selection=policy.automatic_policy_selection,
+        uromarisi_composition_status=policy.uromarisi_composition_status,
+        outcome_interpretation_status=policy.outcome_interpretation_status,
+        source_locator_ids=list(policy.source_locator_ids),
+    )
+
+
+def serialize_sookshma_interval(
+    interval: PanchaPakshiSookshmaInterval,
+) -> PanchaPakshiSookshmaIntervalResponse:
+    return PanchaPakshiSookshmaIntervalResponse(
+        ordinal=interval.ordinal,
+        activity=interval.activity,
+        start_nazhigai=serialize_fraction(interval.start_nazhigai),
+        end_nazhigai=serialize_fraction(interval.end_nazhigai),
+        duration_nazhigai=serialize_fraction(interval.duration_nazhigai),
+    )
+
+
+def serialize_sookshma_temporal_selection(
+    selection: PanchaPakshiSookshmaSelection,
+) -> PanchaPakshiSookshmaSelectionResponse:
+    return PanchaPakshiSookshmaSelectionResponse(
+        profile_id=selection.profile_id,
+        parent_activity=selection.parent_activity,
+        elapsed_nazhigai=serialize_fraction(selection.elapsed_nazhigai),
+        policy=serialize_sookshma_selector_policy(selection.policy),
+        intervals=[
+            serialize_sookshma_interval(interval)
+            for interval in selection.intervals
+        ],
+        selected_ordinal=selection.selected_ordinal,
+        selected_interval=serialize_sookshma_interval(
+            selection.selected_interval
+        ),
+        source_locators=[
+            serialize_source_locator(locator)
+            for locator in selection.source_locators
+        ],
+        provenance=serialize_provenance(selection.provenance),
     )
 
 

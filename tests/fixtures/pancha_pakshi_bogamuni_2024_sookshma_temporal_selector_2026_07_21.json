@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_2026_07_21",
+  "decided_at_utc": "2026-07-21T14:30:00Z",
+  "decision_kind": "source_scoped_explicit_sookshma_temporal_selector_policies",
+  "stage": "2K",
+  "profile_id": "bogamuni_chennai_2024_sookshma_temporal_selector",
+  "prior_research": {
+    "decision_id": "pancha_pakshi_uromarisi_vinadi_stage2j_research_2026_07_21",
+    "fixture_path": "tests/fixtures/pancha_pakshi_uromarisi_vinadi_stage2j_research_2026_07_21.json",
+    "fixture_sha256": "d04ed0f3716fe605dc5d8172114dc759b30c4e87be968eebc36e35a23d789243",
+    "prior_manifest_sha256": "d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8",
+    "relationship": "admit_only_the_two_researched_bogamuni_selectors_without_uromarisi_outcome_composition"
+  },
+  "profile_binding": {
+    "path": "moira/data/pancha_pakshi_bogamuni_chennai_2024_sookshma_temporal_selector.json",
+    "sha256": "596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526",
+    "admission_status": "source_scoped_public",
+    "product_kind": "sookshma_temporal_selector",
+    "default_selection_allowed": false,
+    "capabilities": [
+      "sookshma_temporal_selection"
+    ]
+  },
+  "manifest_binding": {
+    "path": "moira/data/pancha_pakshi_manifest.json",
+    "sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955",
+    "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF",
+    "profile_entry_decision_id": "pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_2026_07_21"
+  },
+  "primary_source": {
+    "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "bibliographic_label": "Bogamuni-attributed Pancha Pakshi Sastram with commentary, R. C. Mohan editor, sixth edition, Thamarai Noolagam, Chennai, November 2024",
+    "archive_item_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+    "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+    "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+    "archive_pdf_sha1": "6ddad8f2577883f6859829f534e8ee7b8330ade8",
+    "locally_verified_pdf_sha256": "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990",
+    "review_method": "page_images_rendered_and_visually_inspected_ocr_used_only_for_navigation",
+    "human_language_reviewer_dependency": "none"
+  },
+  "source_readings": {
+    "samam_context": "IA leaf n156 / PDF page 157 / printed page 147",
+    "weighted_selector": "IA leaf n157 / PDF page 158 / printed page 148",
+    "equal_fifths_selector": "IA leaf n168 / PDF page 169 / printed page 159"
+  },
+  "computational_object": {
+    "source_owned_object": "exact_elapsed_offset_within_one_six_nazhigai_samam",
+    "container_span_nazhigai": "6",
+    "input_axes": [
+      "explicit_profile_id",
+      "explicit_selector_policy_id",
+      "parent_activity_context",
+      "exact_elapsed_nazhigai_fraction"
+    ],
+    "interval_ownership": "half_open",
+    "output": "one_selected_ordinal_and_the_five_exact_intervals",
+    "clock_or_civil_time_routing": "not_performed",
+    "astronomical_routing": "not_performed",
+    "schedule_composition": "not_performed",
+    "uromarisi_outcome_composition": "not_performed",
+    "outcome_interpretation": "not_performed"
+  },
+  "selector_policies": [
+    {
+      "policy_id": "bogamuni_2024_weighted_sookshma_samam_v1",
+      "partition": "activity_weighted_cyclic_rows",
+      "duration_vector_nazhigai": [
+        "3/2",
+        "5/4",
+        "2",
+        "3/4",
+        "1/2"
+      ],
+      "exact_sum_nazhigai": "6"
+    },
+    {
+      "policy_id": "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+      "partition": "five_equal_ordinal_only_parts",
+      "each_duration_nazhigai": "6/5",
+      "subactivity_assignment": "not_attested"
+    }
+  ],
+  "ambiguity_policy": {
+    "default_policy": "none",
+    "automatic_policy_selection": "forbidden",
+    "policies_are_interchangeable": false,
+    "weighted_parent_activity_rotation": "source_attested",
+    "equal_fifths_subactivity_assignment": "not_invented",
+    "uromarisi_binding": "requires_separate_explicit_cross_witness_decision"
+  },
+  "validation_evidence": {
+    "engine_test": "tests/unit/test_pancha_pakshi_sookshma_temporal_selection.py",
+    "transport_test": "tests/server/test_server_pancha_pakshi_sookshma.py",
+    "required_invariants": [
+      "policy_id is mandatory and has no default",
+      "exact rational arithmetic closes both policies to six nazhigai",
+      "each elapsed offset in the half-open domain selects exactly one interval",
+      "equal-fifths cells carry no invented activity assignment",
+      "no datetime location astronomy schedule outcome condition score or forecast input",
+      "prior profiles retain their previous capabilities and no-default status"
+    ]
+  },
+  "public_claim": "The named profile exposes two distinct Bogamuni editorial Sookshma partition policies, selected explicitly per call, as exact temporal selectors within one six-nazhigai samam.",
+  "public_nonclaims": [
+    "Neither policy is attributed to the Uromarisi lineage.",
+    "No default or automatic rule chooses between the policies.",
+    "The equal-fifths policy does not assign subactivities.",
+    "No civil time astronomical context or admitted schedule is composed.",
+    "No Uromarisi ordinal outcome prognostic text condition score electional judgment or forecast is returned.",
+    "No human Tamil reviewer is required for runtime admission or continued use."
+  ],
+  "artifact_distribution_boundary": {
+    "status": "source_artifacts_not_packaged",
+    "distributed_material": "normalized_rules_code_schema_tests_and_provenance_only",
+    "excluded_material": "archive_pdf_scan_ocr_page_images_copied_layout_source_prose_and_third_party_translation"
+  }
+}

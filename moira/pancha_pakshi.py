@@ -56,6 +56,7 @@ class PanchaPakshiCapability(str, Enum):
     NATAL_IDENTITY = "natal_identity"
     PADU_BIRD_MAPPING = "padu_bird_mapping"
     FIRST_EAT_BIRD_MAPPING = "first_eat_bird_mapping"
+    SOOKSHMA_TEMPORAL_SELECTION = "sookshma_temporal_selection"
     FIXED_CLOCK_MATERIALIZATION = "fixed_clock_materialization"
     FIXED_CLOCK_CURRENT_CELL_SELECTION = "fixed_clock_current_cell_selection"
     SOLAR_PROPORTIONAL_MATERIALIZATION = "solar_proportional_materialization"
@@ -83,6 +84,15 @@ class PanchaPakshiActivity(str, Enum):
     RULE = "rule"
     SLEEP = "sleep"
     DIE = "die"
+
+
+class PanchaPakshiSookshmaSelectorPolicyId(str, Enum):
+    """Explicitly selectable, source-scoped Sookshma partition doctrines."""
+
+    WEIGHTED_SOOKSHMA = "bogamuni_2024_weighted_sookshma_samam_v1"
+    EKA_SOOKSHMA_EQUAL_FIFTHS = (
+        "bogamuni_2024_eka_sookshma_equal_fifths_v1"
+    )
 
 
 class PanchaPakshiPaksha(str, Enum):
@@ -708,6 +718,289 @@ class PanchaPakshiPaduBirdMapping:
             for locator in self.source_locators
         ):
             raise ValueError("mapping source locators disagree with provenance")
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSookshmaSelectorPolicy:
+    """One explicitly selected source-attested Sookshma partition doctrine."""
+
+    policy_id: PanchaPakshiSookshmaSelectorPolicyId
+    source_layer: str
+    partition_kind: str
+    container_span_nazhigai: Fraction
+    interval_count: int
+    interval_ownership: str
+    sequence_policy: str
+    activity_assignment_status: str
+    activity_durations_nazhigai: tuple[
+        tuple[PanchaPakshiActivity, Fraction], ...
+    ]
+    automatic_policy_selection: str
+    uromarisi_composition_status: str
+    outcome_interpretation_status: str
+    source_locator_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.policy_id,
+            PanchaPakshiSookshmaSelectorPolicyId,
+        ):
+            raise TypeError(
+                "policy_id must be a PanchaPakshiSookshmaSelectorPolicyId"
+            )
+        if self.container_span_nazhigai != Fraction(6):
+            raise ValueError("Sookshma policy container must span six nazhigai")
+        if self.interval_count != 5:
+            raise ValueError("Sookshma policy must define five intervals")
+        if self.interval_ownership != "half_open":
+            raise ValueError("Sookshma interval ownership must be half_open")
+        if self.automatic_policy_selection != "forbidden":
+            raise ValueError("automatic Sookshma policy selection is forbidden")
+        if self.uromarisi_composition_status != (
+            "not_performed_requires_separate_explicit_cross_witness_decision"
+        ):
+            raise ValueError("Uromarisi composition status is not canonical")
+        if self.outcome_interpretation_status != "not_performed":
+            raise ValueError("outcome interpretation must remain not_performed")
+        if (
+            not isinstance(self.source_locator_ids, tuple)
+            or len(self.source_locator_ids) != 2
+            or any(
+                not isinstance(locator_id, str) or not locator_id
+                for locator_id in self.source_locator_ids
+            )
+        ):
+            raise TypeError("source_locator_ids must contain two locator ids")
+
+        weighted_durations = (
+            (PanchaPakshiActivity.EAT, Fraction(3, 2)),
+            (PanchaPakshiActivity.WALK, Fraction(5, 4)),
+            (PanchaPakshiActivity.RULE, Fraction(2)),
+            (PanchaPakshiActivity.SLEEP, Fraction(3, 4)),
+            (PanchaPakshiActivity.DIE, Fraction(1, 2)),
+        )
+        if (
+            self.policy_id
+            is PanchaPakshiSookshmaSelectorPolicyId.WEIGHTED_SOOKSHMA
+        ):
+            if self.source_layer != "sookshma_pakshi_editorial_section":
+                raise ValueError("weighted Sookshma source layer is unknown")
+            if self.partition_kind != "weighted_activity_durations":
+                raise ValueError("weighted Sookshma partition kind is unknown")
+            if self.sequence_policy != (
+                "cyclic_activity_order_with_each_row_beginning_at_its_named_"
+                "activity"
+            ):
+                raise ValueError("weighted Sookshma sequence policy is unknown")
+            if self.activity_assignment_status != (
+                "source_attested_cyclic_activity_rows"
+            ):
+                raise ValueError(
+                    "weighted Sookshma activity assignment is unknown"
+                )
+            if self.activity_durations_nazhigai != weighted_durations:
+                raise ValueError(
+                    "weighted Sookshma activity durations are not canonical"
+                )
+            if sum(
+                (duration for _, duration in self.activity_durations_nazhigai),
+                Fraction(),
+            ) != self.container_span_nazhigai:
+                raise ValueError("weighted Sookshma durations do not close")
+        else:
+            if self.source_layer != "eka_sookshma_chakra_editorial_section":
+                raise ValueError("Eka Sookshma source layer is unknown")
+            if self.partition_kind != "five_equal_parts":
+                raise ValueError("Eka Sookshma partition kind is unknown")
+            if self.sequence_policy != (
+                "ordinal_only_no_subactivity_assignment_attested"
+            ):
+                raise ValueError("Eka Sookshma sequence policy is unknown")
+            if self.activity_assignment_status != "not_attested":
+                raise ValueError(
+                    "Eka Sookshma must not invent activity assignments"
+                )
+            if self.activity_durations_nazhigai:
+                raise ValueError(
+                    "Eka Sookshma must not carry weighted activity durations"
+                )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSookshmaInterval:
+    """One exact half-open position inside a selected Sookshma policy."""
+
+    ordinal: int
+    activity: PanchaPakshiActivity | None
+    start_nazhigai: Fraction
+    end_nazhigai: Fraction
+    duration_nazhigai: Fraction
+
+    def __post_init__(self) -> None:
+        if isinstance(self.ordinal, bool) or not isinstance(self.ordinal, int):
+            raise TypeError("ordinal must be an integer")
+        if not 1 <= self.ordinal <= 5:
+            raise ValueError("ordinal must lie in [1, 5]")
+        if self.activity is not None and not isinstance(
+            self.activity,
+            PanchaPakshiActivity,
+        ):
+            raise TypeError("activity must be a PanchaPakshiActivity or None")
+        for name, value in (
+            ("start_nazhigai", self.start_nazhigai),
+            ("end_nazhigai", self.end_nazhigai),
+            ("duration_nazhigai", self.duration_nazhigai),
+        ):
+            if not isinstance(value, Fraction):
+                raise TypeError(f"{name} must be a Fraction")
+        if not (
+            Fraction() <= self.start_nazhigai < self.end_nazhigai <= Fraction(6)
+        ):
+            raise ValueError("Sookshma interval bounds must lie within [0, 6]")
+        if self.end_nazhigai - self.start_nazhigai != self.duration_nazhigai:
+            raise ValueError("Sookshma interval duration disagrees with bounds")
+
+
+def _sookshma_intervals_for_policy(
+    policy: PanchaPakshiSookshmaSelectorPolicy,
+    parent_activity: PanchaPakshiActivity,
+) -> tuple[PanchaPakshiSookshmaInterval, ...]:
+    if not isinstance(policy, PanchaPakshiSookshmaSelectorPolicy):
+        raise TypeError("policy must be a PanchaPakshiSookshmaSelectorPolicy")
+    if not isinstance(parent_activity, PanchaPakshiActivity):
+        raise TypeError("parent_activity must be a PanchaPakshiActivity")
+
+    if (
+        policy.policy_id
+        is PanchaPakshiSookshmaSelectorPolicyId.WEIGHTED_SOOKSHMA
+    ):
+        activity_order = tuple(PanchaPakshiActivity)
+        start_index = activity_order.index(parent_activity)
+        ordered_activities = (
+            activity_order[start_index:] + activity_order[:start_index]
+        )
+        durations = dict(policy.activity_durations_nazhigai)
+        cells = tuple(
+            (activity, durations[activity]) for activity in ordered_activities
+        )
+    else:
+        cells = tuple(
+            (None, policy.container_span_nazhigai / policy.interval_count)
+            for _ in range(policy.interval_count)
+        )
+
+    intervals: list[PanchaPakshiSookshmaInterval] = []
+    cursor = Fraction()
+    for ordinal, (activity, duration) in enumerate(cells, start=1):
+        end = cursor + duration
+        intervals.append(
+            PanchaPakshiSookshmaInterval(
+                ordinal=ordinal,
+                activity=activity,
+                start_nazhigai=cursor,
+                end_nazhigai=end,
+                duration_nazhigai=duration,
+            )
+        )
+        cursor = end
+    if cursor != policy.container_span_nazhigai:
+        raise PanchaPakshiDataError("Sookshma intervals do not close exactly")
+    return tuple(intervals)
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSookshmaSelection:
+    """One exact policy-selected Sookshma ordinal without outcome semantics."""
+
+    profile_id: str
+    parent_activity: PanchaPakshiActivity
+    elapsed_nazhigai: Fraction
+    policy: PanchaPakshiSookshmaSelectorPolicy
+    intervals: tuple[PanchaPakshiSookshmaInterval, ...]
+    selected_ordinal: int
+    selected_interval: PanchaPakshiSookshmaInterval
+    source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    provenance: PanchaPakshiProvenance
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.profile_id, str):
+            raise TypeError("profile_id must be a string")
+        if not self.profile_id:
+            raise ValueError("profile_id must not be empty")
+        if not isinstance(self.parent_activity, PanchaPakshiActivity):
+            raise TypeError("parent_activity must be a PanchaPakshiActivity")
+        if not isinstance(self.elapsed_nazhigai, Fraction):
+            raise TypeError("elapsed_nazhigai must be a Fraction")
+        if not Fraction() <= self.elapsed_nazhigai < Fraction(6):
+            raise ValueError("elapsed_nazhigai must lie in the half-open [0, 6)")
+        if not isinstance(self.policy, PanchaPakshiSookshmaSelectorPolicy):
+            raise TypeError(
+                "policy must be a PanchaPakshiSookshmaSelectorPolicy"
+            )
+        expected_intervals = _sookshma_intervals_for_policy(
+            self.policy,
+            self.parent_activity,
+        )
+        if self.intervals != expected_intervals:
+            raise ValueError("Sookshma intervals are not canonical")
+        matches = tuple(
+            interval
+            for interval in self.intervals
+            if interval.start_nazhigai
+            <= self.elapsed_nazhigai
+            < interval.end_nazhigai
+        )
+        if len(matches) != 1:
+            raise ValueError("Sookshma selection must have exactly one match")
+        if self.selected_interval != matches[0]:
+            raise ValueError("selected_interval is not the exact half-open match")
+        if self.selected_ordinal != self.selected_interval.ordinal:
+            raise ValueError("selected_ordinal disagrees with selected_interval")
+        if (
+            not isinstance(self.source_locators, tuple)
+            or len(self.source_locators) != 2
+            or any(
+                not isinstance(locator, PanchaPakshiSourceLocator)
+                for locator in self.source_locators
+            )
+        ):
+            raise TypeError("source_locators must contain two canonical locators")
+        if tuple(
+            locator.locator_id for locator in self.source_locators
+        ) != self.policy.source_locator_ids:
+            raise ValueError("source locators disagree with selected policy")
+        if not isinstance(self.provenance, PanchaPakshiProvenance):
+            raise TypeError("provenance must be a PanchaPakshiProvenance")
+        if self.provenance.profile_id != self.profile_id:
+            raise ValueError("provenance profile disagrees with profile_id")
+        if (
+            PanchaPakshiCapability.SOOKSHMA_TEMPORAL_SELECTION
+            not in self.provenance.capabilities
+        ):
+            raise ValueError(
+                "provenance does not admit Sookshma temporal selection"
+            )
+        if self.provenance.astronomical_routing_status != "not_performed":
+            raise ValueError(
+                "Sookshma temporal selection must not route astronomy"
+            )
+
+        from ._pancha_pakshi import _profile_provenance, _resolve_locators
+
+        profile = _profile_for_public_capability(
+            self.profile_id,
+            PanchaPakshiCapability.SOOKSHMA_TEMPORAL_SELECTION,
+        )
+        rule = profile.sookshma_policy_rule(self.policy.policy_id)
+        if self.policy != _sookshma_public_policy(profile, rule):
+            raise ValueError("selected Sookshma policy is not canonical")
+        if self.source_locators != _resolve_locators(
+            profile,
+            rule.source_locator_ids,
+        ):
+            raise ValueError("source locators are not canonical")
+        if self.provenance != _profile_provenance(profile):
+            raise ValueError("provenance is not canonical")
 
 
 @dataclass(frozen=True, slots=True)
@@ -2239,6 +2532,97 @@ def pancha_pakshi_padu_bird_mapping(
     )
 
 
+def _sookshma_public_policy(profile, rule) -> PanchaPakshiSookshmaSelectorPolicy:
+    """Materialize one validated internal selector rule as a public policy."""
+
+    return PanchaPakshiSookshmaSelectorPolicy(
+        policy_id=rule.policy_id,
+        source_layer=rule.source_layer,
+        partition_kind=rule.partition_kind,
+        container_span_nazhigai=rule.container_span_nazhigai,
+        interval_count=rule.interval_count,
+        interval_ownership=rule.interval_ownership,
+        sequence_policy=rule.sequence_policy,
+        activity_assignment_status=rule.activity_assignment_status,
+        activity_durations_nazhigai=rule.activity_durations_nazhigai,
+        automatic_policy_selection=profile.automatic_policy_selection,
+        uromarisi_composition_status=profile.uromarisi_composition_status,
+        outcome_interpretation_status=profile.outcome_interpretation_status,
+        source_locator_ids=rule.source_locator_ids,
+    )
+
+
+def pancha_pakshi_sookshma_temporal_selection(
+    profile_id: str,
+    *,
+    policy_id: PanchaPakshiSookshmaSelectorPolicyId,
+    parent_activity: PanchaPakshiActivity,
+    elapsed_nazhigai: Fraction,
+) -> PanchaPakshiSookshmaSelection:
+    """Select one exact Sookshma ordinal under a caller-named policy.
+
+    The input is an exact offset within one six-nazhigai samam.  The function
+    performs no clock, civil-time, astronomical, schedule, Uromarisi-outcome,
+    condition, scoring, electional, or forecasting composition.
+    """
+
+    from ._pancha_pakshi import (
+        PanchaPakshiSookshmaSelectorProfile,
+        _profile_provenance,
+        _resolve_locators,
+    )
+
+    if not isinstance(
+        policy_id,
+        PanchaPakshiSookshmaSelectorPolicyId,
+    ):
+        raise TypeError(
+            "policy_id must be a PanchaPakshiSookshmaSelectorPolicyId; "
+            "there is no default"
+        )
+    if not isinstance(parent_activity, PanchaPakshiActivity):
+        raise TypeError("parent_activity must be a PanchaPakshiActivity")
+    if not isinstance(elapsed_nazhigai, Fraction):
+        raise TypeError("elapsed_nazhigai must be an exact Fraction")
+    if not Fraction() <= elapsed_nazhigai < Fraction(6):
+        raise ValueError("elapsed_nazhigai must lie in the half-open [0, 6)")
+
+    profile = _profile_for_public_capability(
+        profile_id,
+        PanchaPakshiCapability.SOOKSHMA_TEMPORAL_SELECTION,
+    )
+    if not isinstance(profile, PanchaPakshiSookshmaSelectorProfile):
+        raise PanchaPakshiDataError(
+            "Sookshma temporal selection requires a selector profile"
+        )
+    rule = profile.sookshma_policy_rule(policy_id)
+    policy = _sookshma_public_policy(profile, rule)
+    intervals = _sookshma_intervals_for_policy(policy, parent_activity)
+    matches = tuple(
+        interval
+        for interval in intervals
+        if interval.start_nazhigai
+        <= elapsed_nazhigai
+        < interval.end_nazhigai
+    )
+    if len(matches) != 1:
+        raise PanchaPakshiDataError(
+            "Sookshma half-open selection did not yield exactly one interval"
+        )
+    selected = matches[0]
+    return PanchaPakshiSookshmaSelection(
+        profile_id=profile.profile_id,
+        parent_activity=parent_activity,
+        elapsed_nazhigai=elapsed_nazhigai,
+        policy=policy,
+        intervals=intervals,
+        selected_ordinal=selected.ordinal,
+        selected_interval=selected,
+        source_locators=_resolve_locators(profile, rule.source_locator_ids),
+        provenance=_profile_provenance(profile),
+    )
+
+
 def pancha_pakshi_natal_moon_identity_at(
     profile_id: str,
     jd_ut1: float,
@@ -3310,6 +3694,10 @@ __all__ = [
     "PanchaPakshiSolarBoundaryRelation",
     "PanchaPakshiSource",
     "PanchaPakshiSourceLocator",
+    "PanchaPakshiSookshmaInterval",
+    "PanchaPakshiSookshmaSelection",
+    "PanchaPakshiSookshmaSelectorPolicy",
+    "PanchaPakshiSookshmaSelectorPolicyId",
     "PanchaPakshiWeekday",
     "available_pancha_pakshi_profiles",
     "pancha_pakshi_astronomical_paksha_at",
@@ -3324,6 +3712,7 @@ __all__ = [
     "pancha_pakshi_padu_bird_mapping",
     "pancha_pakshi_profile_info",
     "pancha_pakshi_schedule",
+    "pancha_pakshi_sookshma_temporal_selection",
     "pancha_pakshi_solar_proportional_current_cell_at",
     "pancha_pakshi_solar_proportional_materialization_at",
 ]

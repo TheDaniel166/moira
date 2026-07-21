@@ -60,6 +60,16 @@ def _digest(path: Path) -> str:
     return hashlib.sha256(_canonical_text(path).encode("utf-8")).hexdigest()
 
 
+def _stage2f_profile_text() -> str:
+    """Project the live profile back to its Stage 2F derivation label."""
+
+    return _canonical_text(_PROFILE).replace(
+        "machine_reconciled_source_assignment_with_declared_uncertainty",
+        "machine_reconciled_source_assignment_pending_competent_tamil_review",
+        1,
+    )
+
+
 def _stage2f_manifest_text() -> str:
     """Project the append-only manifest back to its Stage 2F state."""
 
@@ -71,6 +81,7 @@ def _stage2f_manifest_text() -> str:
         if entry["profile_id"] == "agastya_madras_1879_akshara_fixed_clock"
     ]
     entry = manifest["profiles"][0]
+    entry["sha256"] = _CURRENT_PROFILE_SHA256
     entry["capabilities"].remove("first_eat_bird_mapping")
     entry["admission_decision_id"] = (
         "pancha_pakshi_1879_astronomical_paksha_inference_2026_07_20"
@@ -88,7 +99,9 @@ def test_stage2f_artifacts_and_reconstructed_bindings_are_hash_exact() -> None:
         if candidate["profile_id"] == decision["profile_id"]
     )
 
-    assert _digest(_PROFILE) == _CURRENT_PROFILE_SHA256
+    assert hashlib.sha256(_stage2f_profile_text().encode("utf-8")).hexdigest() == (
+        _CURRENT_PROFILE_SHA256
+    )
     assert hashlib.sha256(_stage2f_manifest_text().encode("utf-8")).hexdigest() == (
         _STAGE2F_MANIFEST_SHA256
     )
@@ -150,7 +163,7 @@ def test_schema3_profile_carries_exact_two_direct_source_mappings() -> None:
 
 
 def test_prior_profile_and_manifest_are_reconstructible_exactly() -> None:
-    current_profile = _canonical_text(_PROFILE)
+    current_profile = _stage2f_profile_text()
     mapping_block = (
         '  "lunar_paksha_mapping": {\n'
         '    "mapping_kind": "source_attested_lunar_phase_half_to_profile_paksha",\n'

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from fractions import Fraction
+
 from moira import Moira
 from moira.pancha_pakshi import (
+    PanchaPakshiSookshmaSelectorPolicyId,
     available_pancha_pakshi_profiles,
     pancha_pakshi_directed_relationship,
     pancha_pakshi_first_eat_bird_mapping,
@@ -11,6 +14,7 @@ from moira.pancha_pakshi import (
     pancha_pakshi_padu_bird_mapping,
     pancha_pakshi_profile_info,
     pancha_pakshi_schedule,
+    pancha_pakshi_sookshma_temporal_selection,
 )
 
 from ..models.pancha_pakshi import (
@@ -27,6 +31,7 @@ from ..models.pancha_pakshi import (
     PanchaPakshiProfilesResponse,
     PanchaPakshiSolarProportionalCurrentCellRequest,
     PanchaPakshiSolarProportionalMaterializationRequest,
+    PanchaPakshiSookshmaSelectionRequest,
 )
 from ..serializers.pancha_pakshi import serialize_profile_descriptor
 
@@ -79,6 +84,22 @@ def compute_padu_bird_mapping(request: PanchaPakshiPaduBirdMappingRequest):
         request.profile_id,
         profile_paksha=request.profile_paksha,
         weekday=request.weekday,
+    )
+
+
+def compute_sookshma_temporal_selection(
+    request: PanchaPakshiSookshmaSelectionRequest,
+):
+    """Select one exact interval without clock, astronomy, or outcomes."""
+
+    return pancha_pakshi_sookshma_temporal_selection(
+        request.profile_id,
+        policy_id=PanchaPakshiSookshmaSelectorPolicyId(request.policy_id),
+        parent_activity=request.parent_activity,
+        elapsed_nazhigai=Fraction(
+            request.elapsed_nazhigai.numerator,
+            request.elapsed_nazhigai.denominator,
+        ),
     )
 
 

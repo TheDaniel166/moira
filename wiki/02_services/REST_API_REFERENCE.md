@@ -755,6 +755,7 @@ those relationship-chart routes.
 | POST | `/v1/pancha-pakshi/roles/padu` | `pancha_pakshi_padu_bird_mapping_route` |
 | POST | `/v1/pancha-pakshi/schedule/nominal` | `pancha_pakshi_nominal_schedule_route` |
 | POST | `/v1/pancha-pakshi/schedule/first-eat-bird` | `pancha_pakshi_first_eat_bird_mapping_route` |
+| POST | `/v1/pancha-pakshi/sookshma/select` | `pancha_pakshi_sookshma_temporal_selection_route` |
 | POST | `/v1/pancha-pakshi/context/astronomical-paksha` | `pancha_pakshi_astronomical_paksha_route` |
 | POST | `/v1/pancha-pakshi/context/local-solar` | `pancha_pakshi_local_solar_context_route` |
 | POST | `/v1/pancha-pakshi/schedule/fixed-clock` | `pancha_pakshi_fixed_clock_materialization_route` |
@@ -795,8 +796,8 @@ difference.
 
 The Purva mapping is directly attested at IA leaf `n16`, and the Amara mapping
 at `n26`, for this named 1879 profile. Their reading status remains
-machine-assisted visual reading pending competent-human Tamil review; the route
-does not claim an independently corroborated or universal vocabulary. It
+machine-assisted visual reading with explicit uncertainty and no human-review
+dependency; the route does not claim an independently corroborated or universal vocabulary. It
 performs no schedule selection, materialization, current-cell selection,
 automatic routing into another request, or natal identity. No source scan,
 PDF, OCR, page image, copied expression, or translation is bundled.
@@ -875,6 +876,21 @@ generator confirmation. The operation does not materialize the 25-cell
 schedule. Its bird is only that generator's first-samam EAT seed, not an
 ambient whole-day eating bird, Padu, an authority/Adhikara/Bharana bird,
 current activity, condition, score, electional judgment, or forecast.
+
+The Stage 2K selector route requires
+`profile_id="bogamuni_chennai_2024_sookshma_temporal_selector"`, one explicit
+`policy_id`, one `parent_activity`, and an exact reduced
+`elapsed_nazhigai={numerator, denominator}` in `[0, 6)`. The only policy IDs
+are `bogamuni_2024_weighted_sookshma_samam_v1` and
+`bogamuni_2024_eka_sookshma_equal_fifths_v1`; neither is a default. The
+weighted response rotates the exact activity-duration vector from the parent
+activity. The equal-fifths response contains five exact ordinal cells with
+`activity=null`, because no subactivity assignment is attested. The response
+echoes the selected policy, all five exact half-open intervals, the unique
+selected ordinal and interval, two source locators, and provenance. The strict
+request rejects floating-point offsets, unreduced fractions, datetime,
+location, schedule, Uromarisi outcome, condition, score, electional, and
+forecast fields. No human-language reviewer is required.
 
 The additive local-solar context request contains `profile_id`, aware `dt`,
 `latitude`, `longitude`, caller-supplied `paksha`, and the required literal
@@ -980,7 +996,7 @@ is ambiently inserted into another operation. The family does not accept a
 caller-supplied natal Moon longitude, paksha/nakshatra/bird override on the
 natal route, caller-supplied sunrise, timezone policy, scoring rule, or inferred
 name. Natal identity occurs only on the explicit Stage 2G route. The family
-performs no implicit seasonal scaling, vinadi subdivision, Bharana/Adhikara
+performs no implicit seasonal scaling, vinadi or Uromarisi-outcome routing, Bharana/Adhikara
 computation, condition scoring, window search, or cross-witness normalization.
 Padu lookup occurs only on the explicit Stage 2H pure-table route and never
 supplies an input to another operation. First-EAT lookup occurs only on the
@@ -998,6 +1014,9 @@ score, or forecast. Stage 2H accepts no instant or location and never selects a
 schedule, current cell, identity, condition, score, or forecast. Stage 2I also
 accepts no instant or location and returns only one source-scoped generator
 seed.
+Stage 2K performs only explicit exact Sookshma selection within one samam; it
+never supplies a clock, schedule, Uromarisi outcome, condition, score, or
+forecast to another operation.
 
 ### Sidereal And Nakshatra Utility REST Admission Boundary
 

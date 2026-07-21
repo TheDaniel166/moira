@@ -22,6 +22,10 @@ _NATAL_PROFILE = (
 _PADU_PROFILE = (
     _DATA / "pancha_pakshi_bogamuni_chennai_2024_padu_bird_mapping.json"
 )
+_SOOKSHMA_PROFILE = (
+    _DATA
+    / "pancha_pakshi_bogamuni_chennai_2024_sookshma_temporal_selector.json"
+)
 _INDEPENDENT_REVIEW = (
     _ROOT / "tests" / "fixtures" / "pancha_pakshi_1879_independent_review.json"
 )
@@ -105,7 +109,7 @@ _SOURCE_SCOPED_SCHEMA_V2_PROFILE_SHA256 = (
     "876e4cc7cc5d894f5e558ac733913e84a8b779f72c77661e89d448fd1e05ced4"
 )
 _CURRENT_SCHEMA_V3_PROFILE_SHA256 = (
-    "4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64"
+    "d80d205716eb9f24a2a23949c6df241a1aba251749efa94d3b20fa36be0258f4"
 )
 _CURRENT_CAPABILITIES = (
     pakshi.PanchaPakshiCapability.AKSARA_IDENTITY,
@@ -152,12 +156,12 @@ def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
         "profiles",
     }
     assert manifest["schema_version"] == 2
-    assert manifest["generated_at_utc"] == "2026-07-20T23:28:13Z"
+    assert manifest["generated_at_utc"] == "2026-07-21T14:30:00Z"
     assert manifest["hash_algorithm"] == "sha256"
     assert manifest["hash_canonicalization"] == (
         "UTF-8 text with CRLF and CR normalized to LF before hashing"
     )
-    assert len(manifest["profiles"]) == 3
+    assert len(manifest["profiles"]) == 4
     entry = manifest["profiles"][0]
     assert entry == {
         "profile_id": _PROFILE_ID,
@@ -203,6 +207,24 @@ def test_manifest_hash_and_profile_metadata_match_packaged_data() -> None:
     }
     assert padu_entry["sha256"] == hashlib.sha256(
         _canonical_bytes(_PADU_PROFILE)
+    ).hexdigest()
+    sookshma_entry = manifest["profiles"][3]
+    assert sookshma_entry == {
+        "profile_id": "bogamuni_chennai_2024_sookshma_temporal_selector",
+        "path": _SOOKSHMA_PROFILE.name,
+        "sha256": (
+            "596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526"
+        ),
+        "admission_status": "source_scoped_public",
+        "product_kind": "sookshma_temporal_selector",
+        "default_selection_allowed": False,
+        "capabilities": ["sookshma_temporal_selection"],
+        "admission_decision_id": (
+            "pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_2026_07_21"
+        ),
+    }
+    assert sookshma_entry["sha256"] == hashlib.sha256(
+        _canonical_bytes(_SOOKSHMA_PROFILE)
     ).hexdigest()
 
 
@@ -1647,7 +1669,11 @@ def test_solar_proportional_current_cell_admission_is_additive_and_hash_bound() 
 
 
 def test_schema_v3_to_v2_to_v1_migrations_reconstruct_frozen_profile_hash() -> None:
-    current = _PROFILE.read_text(encoding="utf-8")
+    current = _PROFILE.read_text(encoding="utf-8").replace(
+        "machine_reconciled_source_assignment_with_declared_uncertainty",
+        "machine_reconciled_source_assignment_pending_competent_tamil_review",
+        1,
+    )
     schema_v2 = current.replace('"schema_version": 3', '"schema_version": 2', 1)
     schema_v2 = schema_v2.replace(
         '"label": "IA leaf n16: explicit waxing/Purva mapping, Purva-day '

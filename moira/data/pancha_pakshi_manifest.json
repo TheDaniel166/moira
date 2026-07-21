@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
-  "generated_at_utc": "2026-07-20T23:28:13Z",
+  "generated_at_utc": "2026-07-21T14:30:00Z",
   "hash_algorithm": "sha256",
   "hash_canonicalization": "UTF-8 text with CRLF and CR normalized to LF before hashing",
   "profiles": [
     {
       "profile_id": "agastya_madras_1879_akshara_fixed_clock",
       "path": "pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
-      "sha256": "4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64",
+      "sha256": "d80d205716eb9f24a2a23949c6df241a1aba251749efa94d3b20fa36be0258f4",
       "admission_status": "source_scoped_public",
       "product_kind": "aksara_prasna_operating_schedule",
       "default_selection_allowed": false,
@@ -49,6 +49,18 @@
         "padu_bird_mapping"
       ],
       "admission_decision_id": "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20"
+    },
+    {
+      "profile_id": "bogamuni_chennai_2024_sookshma_temporal_selector",
+      "path": "pancha_pakshi_bogamuni_chennai_2024_sookshma_temporal_selector.json",
+      "sha256": "596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526",
+      "admission_status": "source_scoped_public",
+      "product_kind": "sookshma_temporal_selector",
+      "default_selection_allowed": false,
+      "capabilities": [
+        "sookshma_temporal_selection"
+      ],
+      "admission_decision_id": "pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_2026_07_21"
     }
   ]
 }

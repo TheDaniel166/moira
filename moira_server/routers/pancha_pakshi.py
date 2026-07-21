@@ -36,6 +36,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiSolarProportionalCurrentCellResponse,
     PanchaPakshiSolarProportionalMaterializationRequest,
     PanchaPakshiSolarProportionalMaterializationResponse,
+    PanchaPakshiSookshmaSelectionRequest,
+    PanchaPakshiSookshmaSelectionResponse,
 )
 from ..serializers.pancha_pakshi import (
     serialize_aksara_identity,
@@ -51,6 +53,7 @@ from ..serializers.pancha_pakshi import (
     serialize_profile_info,
     serialize_solar_proportional_current_cell,
     serialize_solar_proportional_materialization,
+    serialize_sookshma_temporal_selection,
 )
 from ..services.pancha_pakshi import (
     compute_aksara_identity,
@@ -65,6 +68,7 @@ from ..services.pancha_pakshi import (
     compute_padu_bird_mapping,
     compute_solar_proportional_current_cell,
     compute_solar_proportional_materialization,
+    compute_sookshma_temporal_selection,
     list_pancha_pakshi_profiles,
     pancha_pakshi_profile,
 )
@@ -142,6 +146,20 @@ def pancha_pakshi_padu_bird_mapping_route(
     """Return one source-attested Padu bird; perform no temporal routing."""
 
     return serialize_padu_bird_mapping(compute_padu_bird_mapping(request))
+
+
+@router.post(
+    "/sookshma/select",
+    response_model=PanchaPakshiSookshmaSelectionResponse,
+)
+def pancha_pakshi_sookshma_temporal_selection_route(
+    request: PanchaPakshiSookshmaSelectionRequest,
+) -> PanchaPakshiSookshmaSelectionResponse:
+    """Select one exact Sookshma interval under an explicit policy."""
+
+    return serialize_sookshma_temporal_selection(
+        compute_sookshma_temporal_selection(request)
+    )
 
 
 @router.post(

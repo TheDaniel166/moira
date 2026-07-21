@@ -5,7 +5,7 @@
 
 **Computational domain:** Source-scoped five-bird timing doctrine
 
-**Status:** Three named source-scoped public profiles; no default or universal
+**Status:** Four named source-scoped public profiles; no default or universal
 canon
 
 ## 1. Current Boundary
@@ -58,6 +58,18 @@ no schedule materialization, temporal routing, or interpretation as a
 whole-day eating bird, Padu, Adhikara/Bharana, authority bird, condition, or
 score.
 
+Stage 2J recovered a separately witnessed vinadi research object without
+admitting a runtime capability. The bounded object is a five-position ordinal axis beneath
+each named activity. Uromarisi-attributed witnesses require accurate vinadi
+division without supplying arithmetic, while a Bogamuni-attributed editorial
+witness separately supplies two incompatible selectors: weighted Sūkṣma
+intervals and equal-fifths Eka Sūkṣma intervals. Neither selector is bound to
+the Uromarisi ordinal outcomes, and neither is a default. Stage 2K admits only
+the two Bogamuni editorial selectors through a separate profile and mandatory
+caller policy selection. No admitted profile, manifest capability, public
+vessel, facade method, or REST route may infer the cross-witness Uromarisi
+composition.
+
 The second public profile is
 `bogamuni_chennai_2024_nakshatra_natal_identity`. It admits exactly two
 capabilities:
@@ -86,6 +98,21 @@ generic authority bird. The profile supplies no natal identity, schedule,
 materialization, current cell, condition, score, or forecast, and it alters
 neither prior profile.
 
+The fourth public profile is
+`bogamuni_chennai_2024_sookshma_temporal_selector`. It admits exactly one
+capability:
+
+- `sookshma_temporal_selection`.
+
+Each call supplies an explicit selector policy, parent activity, and exact
+elapsed `Fraction` within one six-nazhigai samam. The weighted policy rotates
+the source-attested activity-duration vector from the parent activity. The
+equal-fifths policy yields five ordinal-only cells and assigns no subactivity.
+Both use exact half-open intervals. The profile supplies no datetime,
+astronomical context, schedule composition, Uromarisi outcome, condition,
+score, electional window, or forecast. It has no default, and no human-language
+reviewer is required.
+
 ## 2. Admission Tiers
 
 Admission belongs to a named profile and product, not to Pancha Pakshi as a
@@ -101,10 +128,11 @@ There is no `universal_default` status. The schema rejects
 `default_selection_allowed=true`. Adding a default would require a new
 doctrinal and schema decision rather than an unnoticed manifest edit.
 
-Competent-human Tamil review and independent-witness collation strengthen the
-evidence tier. They are required before a corroborated, generalized, or
-default-canon claim, but their absence does not prevent a narrowly and honestly
-labelled `source_scoped_public` product.
+Machine-assisted source reading is admissible when the exact witness, rendered
+page locator, text-layer uncertainty, conflicts, and nonclaims remain visible.
+There is no human-language-review dependency. Independent-witness collation is
+required only for `corroborated_public`; it is not required for a narrowly and
+honestly labelled `source_scoped_public` product.
 
 ## 3. Governing Objects
 
@@ -170,7 +198,8 @@ The admitted reading is deliberately narrow:
   regimes;
 - machine-assisted visual reading directly maps waxing lunar phase to Purva at
   IA leaf `n16` and waning phase to Amara at `n26`; that normalized mapping is
-  source-scoped and remains pending competent-human Tamil review;
+  source-scoped, its reading uncertainty remains explicit, and it carries no
+  human-review dependency;
 - each fixed half contains five samams of six nazhigai, totalling thirty
   nazhigai;
 - activity durations are exact: Eat `5/4`, Walk `3/2`, Rule `2`, Sleep `3/4`,
@@ -328,11 +357,11 @@ replaces the raw profile omission `seasonal_scaling` with
 that modern materialization was performed and that the source did not attest
 that policy, without making contradictory claims or rewriting earlier results.
 
-The source reading is machine-assisted. It has not received competent-human
-Tamil sign-off and has not been collated against a genuinely independent
-witness. Every public result therefore carries the profile's source-scoped
-status, decision identity, source identity, assembly policy, astronomical
-routing status, and declared omissions.
+The source reading is machine-assisted and has not been collated against a
+genuinely independent witness. Every public result therefore carries the
+profile's source-scoped status, decision identity, source identity, assembly
+policy, astronomical routing status, and declared omissions. Human-language
+review is not an admission dependency.
 
 ### Stage 2E modern solar-proportional current-cell selection
 
@@ -371,9 +400,10 @@ the proportional rule source-attested.
 Stage 2F adds `PanchaPakshiAstronomicalPakshaInference` and its immutable
 `PanchaPakshiAstronomicalPakshaInferencePolicy`. Machine-assisted visual reading
 of the exact 1879 witness directly maps waxing to Purva at IA leaf `n16` and
-waning to Amara at `n26`. This mapping belongs only to the named profile and
-remains pending competent-human Tamil review; it is not independent-witness
-corroboration or a universal Pancha Pakshi vocabulary.
+waning to Amara at `n26`. This mapping belongs only to the named profile, keeps
+its machine-assisted reading uncertainty visible, and carries no human-review
+dependency; it is not independent-witness corroboration or a universal Pancha
+Pakshi vocabulary.
 
 The numeric classifier is the modern Moira policy
 `apparent_geocentric_moon_sun_longitude_paksha_half_open_v1`. One UT1 instant
@@ -506,7 +536,60 @@ adjudication; the canonical profile contains the corrected vector above.
 The source phrase `adhikara nalil` does not supply a separate authority-bird
 table or prove synonymy. Stage 2I therefore admits no Padu, authority,
 Adhikara/Bharana, condition, strength, scoring, electional, or forecasting
-semantics and composes none of the three profiles.
+semantics and composes none of the four profiles.
+
+### Stage 2J research-only vinadi recovery
+
+Stage 2J records the source-owned object
+`(activity, explicit vinadi ordinal 1..5, named context)` from rendered review
+of Uromarisi-attributed 1922, 1932, and 1934 publications. These witnesses
+preserve governing verses 228 and 229 and organize contextual outcomes by
+first through fifth vinadi positions beneath EAT, WALK, RULE, SLEEP, and DIE.
+The 1922 Karunanidhi Pillai commentary reiterates that the nazhigai must be
+divided accurately but supplies no arithmetic selector. The 1932 contents also
+expose distinct birth/natal, illness, journey, and house-foundation context
+families. Separate publication does not establish independent textual lineage.
+
+Rendered review of the Bogamuni-attributed 2024 editorial witness recovers two
+separately named and incompatible temporal selectors for one six-nazhigai
+samam:
+
+- provisional policy `bogamuni_2024_weighted_sookshma_samam_v1` uses activity
+  durations EAT `3/2`, WALK `5/4`, RULE `2`, SLEEP `3/4`, and DIE `1/2`
+  nazhigai, which close exactly to six, with cyclic order beginning at the
+  named activity; and
+- provisional policy `bogamuni_2024_eka_sookshma_equal_fifths_v1` divides the
+  samam's nazhigai into five equal parts.
+
+These policies are not synonyms and may not be blended or silently selected.
+Neither is automatically bound to the Uromarisi ordinal outcome tables; that
+would be a cross-witness composition requiring its own explicit admission.
+Machine-assisted reading also does not support normalizing or translating the
+context-specific prognostic statements. Stage 2J therefore remains
+`research_only` because selector choice and witness composition are unadmitted,
+not because no source-attested formula exists. There is no human-language-review
+dependency. Uromarisi clock routing, source-outcome normalization, automatic
+composition, and Uromarisi-linked public exposure continue to fail closed.
+
+### Stage 2K explicit Sookshma temporal-selector admission
+
+Stage 2K converts only the two Bogamuni 2024 editorial selector candidates
+into one separate source-scoped public profile. The caller must select exactly
+one policy on every call:
+
+- `bogamuni_2024_weighted_sookshma_samam_v1` rotates EAT `3/2`, WALK `5/4`,
+  RULE `2`, SLEEP `3/4`, and DIE `1/2` nazhigai from the named parent
+  activity; and
+- `bogamuni_2024_eka_sookshma_equal_fifths_v1` divides the six-nazhigai samam
+  into five exact `6/5`-nazhigai ordinal cells without assigning activities.
+
+`elapsed_nazhigai` is an exact reduced rational in `[0, 6)`. Interval ownership
+is `[start, end)`, so every lawful offset has exactly one match. The selected
+policy and all five intervals are returned. There is no default, automatic
+policy choice, clock or civil-time routing, astronomy, schedule composition,
+or Uromarisi-outcome binding. Outcome interpretation, condition, scoring,
+electional search, and forecasting remain unadmitted. Human-language review is
+not an admission or maintenance dependency.
 
 ## 5. Conflicts That Forbid Blending Or A Default
 
@@ -518,10 +601,12 @@ defects, not values that may be averaged or repaired by symmetry.
 | Identity ontology | The 1879 opening uses query/name initials; later presentations use birth nakshatra and Moon paksha. | Never label the 1879 mapping as natal identity. |
 | Amara nakshatra partition | The Bogamuni 2024 verse is complete while its adjacent commentary duplicates Shravana and omits Revati. | The named 2024 profile declares verse precedence and rejects the malformed commentary; never blend or repair the layers. |
 | Duration vectors | The 1879 witness has one vector; later witnesses contain regime-specific or non-closing vectors. | Durations belong to the named witness and text layer. |
+| Vinadi temporal selectors | The 2024 editorial witness separately names a weighted Sūkṣma selector and an equal-fifths Eka Sūkṣma selector; Uromarisi ordinal witnesses supply no arithmetic binding. | Preserve both named policies, select neither by default, and do not attach either to Uromarisi outcomes without an explicit cross-witness composition decision. |
 | Schedule cells | A later edition contains a verse/commentary mismatch that duplicates one bird and omits another. | Fail the affected layer; do not infer the missing bird. |
 | Relationships | The 1879 table is directed and nonuniform; later tables use different assignments. | No reciprocity, symmetry inference, or cross-witness merge. |
 | Timing | The inspected 1879 source attests fixed thirty-nazhigai halves, not proportional sunrise-to-sunset scaling. | Seasonal scaling, if admitted, is a separate policy and capability. |
 | Padu, first-EAT, and authority vocabulary | The Bogamuni weekday Padu table and the 1879 first-samam EAT seeds are separately complete; primary layers mention authority days without supplying an `Adhikara Pakshi` table, and Bharana is secondary-only terminology. | Preserve the Padu and first-samam EAT objects as separate source-scoped lookups. Do not manufacture an Adhikara/Bharana alias or derive a day ruler from either lookup or instantaneous Rule activity. |
+| Vinadi ordinal routing | Uromarisi-attributed 1922, 1932, and 1934 publications attest first through fifth vinadi result positions beneath activities without arithmetic; the 2024 editorial comparator separately attests weighted and equal-fifths selectors. | Preserve the ordinal axis and both selector candidates as research evidence only. Do not infer their cross-witness binding, choose a default, normalize prognostic prose, or compose them with an admitted profile without a separate decision. |
 
 Conflict-ledger witnesses and rejected text layers are not executable merely
 because they are recorded. The named 2024 profile admits only its declared
@@ -745,8 +830,8 @@ materialization, natal identity, condition, score, or forecast input.
 All computations require `profile_id`. Public results are immutable and carry
 profile-owned provenance and omissions. Exact nazhigai values remain rational
 in the engine and serialize as `{numerator, denominator}` at the transport
-boundary. The current family contains three profiles, fifteen `Moira` methods
-(eight kernel-free and seven kernel-backed), and fourteen REST routes.
+boundary. The current family contains four profiles, sixteen `Moira` methods
+(nine kernel-free and seven kernel-backed), and fifteen REST routes.
 
 Stage 2F accepts a datetime but no location and performs only instantaneous
 astronomical-paksha inference. The five location-bearing Stage 2A-E operations
@@ -937,6 +1022,18 @@ capability isolation, and strict facade/REST/OpenAPI shapes. Uromarisi 1934 is
 recorded only as separate-publication corroboration with unestablished textual
 lineage independence; it supplies no runtime cell or universal-canon proof.
 
+The
+[`Stage 2J research decision`](../../tests/fixtures/pancha_pakshi_uromarisi_vinadi_stage2j_research_2026_07_21.json)
+has canonical SHA-256
+`d04ed0f3716fe605dc5d8172114dc759b30c4e87be968eebc36e35a23d789243`.
+It binds the unchanged Stage 2I manifest and decision, four inspected PDF
+hashes and exact page locators, the recovered five-position ordinal axis, the
+two exact rational selector candidates, and the fail-closed no-default and
+no-cross-witness-binding policy. Its regression tests also prove that no
+vinadi token entered the manifest, package exports, facade, or REST routes.
+This is source-specific structural and policy-conflict research evidence, not
+translation authority, external prognostic parity, or public admission.
+
 Schema/hash/source checks are regression integrity; exact closure, bijection,
 partition, immutability, and no-default checks are structural invariants; the
 named leaf readings are source-specific evidence. None is an external oracle
@@ -957,8 +1054,11 @@ rights-clearance phase or a public-admission blocker.
 The following require separately named sources, policies, capabilities, and
 tests: source-attested or alternate solar-proportional doctrines and any
 selectors belonging to those unadmitted doctrines; alternate Padu doctrines;
-Bharana or Adhikara bird products; vinadi subdivision; condition/scoring; and
-electional window search.
+Bharana or Adhikara bird products; alternate Sookshma selector doctrines,
+any cross-witness binding of Stage 2K selectors to Uromarisi ordinal outcomes,
+vinadi clock routing,
+and context-specific outcome products beyond the Stage 2J research-only axis;
+condition/scoring; and electional window search.
 Fixed-clock materialization, fixed-clock current-cell selection,
 solar-proportional materialization, and solar-proportional current-cell
 selection are admitted only through their explicit Stage 2B, Stage 2C, Stage

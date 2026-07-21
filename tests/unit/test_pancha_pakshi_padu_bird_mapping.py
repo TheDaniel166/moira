@@ -66,11 +66,20 @@ def _stage2h_manifest_bytes() -> bytes:
 
     manifest = json.loads(_MANIFEST_PATH.read_text(encoding="utf-8"))
     manifest["generated_at_utc"] = "2026-07-20T22:42:10Z"
+    manifest["profiles"] = [
+        entry
+        for entry in manifest["profiles"]
+        if entry["profile_id"]
+        != "bogamuni_chennai_2024_sookshma_temporal_selector"
+    ]
     schedule_entry = next(
         entry
         for entry in manifest["profiles"]
         if entry["profile_id"]
         == "agastya_madras_1879_akshara_fixed_clock"
+    )
+    schedule_entry["sha256"] = (
+        "4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64"
     )
     schedule_entry["capabilities"].remove("first_eat_bird_mapping")
     schedule_entry["admission_decision_id"] = (

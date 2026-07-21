@@ -56,6 +56,7 @@ from .pancha_pakshi import (
     PanchaPakshiScheduleCell,
     PanchaPakshiSource,
     PanchaPakshiSourceLocator,
+    PanchaPakshiSookshmaSelectorPolicyId,
     PanchaPakshiWeekday,
 )
 
@@ -114,6 +115,18 @@ _REQUIRED_PADU_OMISSIONS = {
     "scoring",
     "window_search",
 }
+_REQUIRED_SOOKSHMA_OMISSIONS = {
+    "uromarisi_outcome_binding",
+    "clock_or_civil_time_routing",
+    "astronomical_context",
+    "schedule_composition",
+    "natal_identity",
+    "padu_bird_mapping",
+    "outcome_interpretation",
+    "condition",
+    "scoring",
+    "window_search",
+}
 _PRODUCT_CAPABILITIES = {
     "aksara_prasna_operating_schedule": (
         PanchaPakshiCapability.AKSARA_IDENTITY,
@@ -132,6 +145,9 @@ _PRODUCT_CAPABILITIES = {
         PanchaPakshiCapability.NATAL_IDENTITY,
     ),
     "padu_bird_mapping": (PanchaPakshiCapability.PADU_BIRD_MAPPING,),
+    "sookshma_temporal_selector": (
+        PanchaPakshiCapability.SOOKSHMA_TEMPORAL_SELECTION,
+    ),
 }
 _PUBLIC_ADMISSION_STATUSES = frozenset(
     {
@@ -447,10 +463,75 @@ class PanchaPakshiPaduBirdProfile:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class _SookshmaSelectorRule:
+    policy_id: PanchaPakshiSookshmaSelectorPolicyId
+    source_layer: str
+    partition_kind: str
+    container_span_nazhigai: Fraction
+    interval_count: int
+    interval_ownership: str
+    sequence_policy: str
+    activity_assignment_status: str
+    activity_durations_nazhigai: tuple[
+        tuple[PanchaPakshiActivity, Fraction], ...
+    ]
+    source_locator_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiSookshmaSelectorProfile:
+    """Strict profile for two distinct source-attested Sookshma selectors."""
+
+    profile_id: str
+    admission_status: PanchaPakshiAdmissionStatus
+    product_kind: str
+    default_selection_allowed: bool
+    capabilities: tuple[PanchaPakshiCapability, ...]
+    admission_decision_id: str
+    derivation_status: str
+    assembly_policy: str
+    title: str
+    source: PanchaPakshiSource
+    source_locators: tuple[PanchaPakshiSourceLocator, ...]
+    selector_rules: tuple[_SookshmaSelectorRule, ...]
+    automatic_policy_selection: str
+    uromarisi_composition_status: str
+    outcome_interpretation_status: str
+    explicit_omissions: tuple[PanchaPakshiOmission, ...]
+    research_conflict_ledger: tuple[PanchaPakshiConflictWitness, ...]
+
+    def locator(self, locator_id: str) -> PanchaPakshiSourceLocator:
+        for locator in self.source_locators:
+            if locator.locator_id == locator_id:
+                return locator
+        raise PanchaPakshiDataError(
+            f"profile {self.profile_id!r} references unknown locator "
+            f"{locator_id!r}"
+        )
+
+    def sookshma_policy_rule(
+        self,
+        policy_id: PanchaPakshiSookshmaSelectorPolicyId,
+    ) -> _SookshmaSelectorRule:
+        if not isinstance(policy_id, PanchaPakshiSookshmaSelectorPolicyId):
+            raise TypeError(
+                "policy_id must be a PanchaPakshiSookshmaSelectorPolicyId"
+            )
+        for rule in self.selector_rules:
+            if rule.policy_id is policy_id:
+                return rule
+        raise PanchaPakshiDataError(
+            f"profile {self.profile_id!r} has no selector policy "
+            f"{policy_id.value!r}"
+        )
+
+
 PanchaPakshiAnyProfile = (
     PanchaPakshiProfile
     | PanchaPakshiNatalIdentityProfile
     | PanchaPakshiPaduBirdProfile
+    | PanchaPakshiSookshmaSelectorProfile
 )
 
 
@@ -762,6 +843,7 @@ def _require_any_profile(profile: PanchaPakshiAnyProfile) -> None:
             PanchaPakshiProfile,
             PanchaPakshiNatalIdentityProfile,
             PanchaPakshiPaduBirdProfile,
+            PanchaPakshiSookshmaSelectorProfile,
         ),
     ):
         raise TypeError("profile must be a registered Pancha Pakshi profile")
@@ -1032,6 +1114,9 @@ def _load_profile_cached(
         "aksara_prasna_operating_schedule": _parse_profile_document,
         "natal_moon_bird_identity": _parse_natal_identity_profile_document,
         "padu_bird_mapping": _parse_padu_bird_profile_document,
+        "sookshma_temporal_selector": (
+            _parse_sookshma_selector_profile_document
+        ),
     }
     try:
         parser = parsers[entry["product_kind"]]
@@ -1059,8 +1144,12 @@ def _load_profile_cached(
         _validate_generated_completeness(profile)
     elif isinstance(profile, PanchaPakshiNatalIdentityProfile):
         _validate_natal_mapping_completeness(profile)
-    else:
+    elif isinstance(profile, PanchaPakshiPaduBirdProfile):
         _validate_padu_mapping_completeness(profile)
+    elif not isinstance(profile, PanchaPakshiSookshmaSelectorProfile):
+        raise PanchaPakshiDataError(
+            f"unknown parsed Pancha Pakshi profile type for {profile_id!r}"
+        )
     return profile
 
 
@@ -1138,7 +1227,7 @@ def _parse_profile_document(
             "canonical capability order"
         )
     if meta["derivation_status"] != (
-        "machine_reconciled_source_assignment_pending_competent_tamil_review"
+        "machine_reconciled_source_assignment_with_declared_uncertainty"
     ):
         raise PanchaPakshiDataError("profile derivation_status is unknown")
     if meta["assembly_policy"] != (
@@ -2906,6 +2995,427 @@ def _parse_padu_bird_profile_document(
         padu_bird_mapping_kind=mapping_kind,
         source_table_semantics=source_table_semantics,
         padu_bird_rules=padu_bird_rules,
+        explicit_omissions=tuple(omissions),
+        research_conflict_ledger=(),
+    )
+
+
+def _parse_sookshma_selector_profile_document(
+    document: dict[str, Any],
+    *,
+    admission_status: PanchaPakshiAdmissionStatus,
+    default_selection_allowed: bool,
+    capabilities: tuple[PanchaPakshiCapability, ...],
+    admission_decision_id: str,
+) -> PanchaPakshiSookshmaSelectorProfile:
+    """Parse the distinct weighted and equal-fifths Sookshma policies."""
+
+    if not isinstance(admission_status, PanchaPakshiAdmissionStatus):
+        raise PanchaPakshiDataError("admission_status must be a known enum value")
+    _require_bool(default_selection_allowed, "default_selection_allowed")
+    if default_selection_allowed:
+        raise PanchaPakshiDataError(
+            "default_selection_allowed must remain false; selector policy "
+            "choice is explicit"
+        )
+    if capabilities != _PRODUCT_CAPABILITIES["sookshma_temporal_selector"]:
+        raise PanchaPakshiDataError(
+            "manifest capabilities disagree with Sookshma selector product"
+        )
+    _require_string(admission_decision_id, "admission_decision_id")
+
+    _require_exact_keys(
+        document,
+        {
+            "schema_version",
+            "profile",
+            "source",
+            "source_locators",
+            "selector_policies",
+            "policy_relation",
+            "explicit_omissions",
+            "research_conflict_ledger",
+        },
+        "Sookshma selector profile document",
+    )
+    if _require_int(document["schema_version"], "profile.schema_version") != 1:
+        raise PanchaPakshiDataError(
+            "unsupported Pancha Pakshi Sookshma selector profile schema"
+        )
+
+    meta = _require_dict(document["profile"], "profile.profile")
+    expected_meta = {
+        "profile_id": "bogamuni_chennai_2024_sookshma_temporal_selector",
+        "product_kind": "sookshma_temporal_selector",
+        "derivation_status": (
+            "visually_verified_source_sookshma_selector_policies"
+        ),
+        "assembly_policy": (
+            "preserve_weighted_and_equal_fifths_as_distinct_explicit_policies"
+        ),
+        "title": "Bogamuni 2024 Sookshma temporal selector policies",
+    }
+    if meta != expected_meta:
+        raise PanchaPakshiDataError(
+            "Sookshma selector profile identity or doctrine is unknown"
+        )
+
+    source_obj = _require_dict(document["source"], "profile.source")
+    expected_source = {
+        "witness_id": "acc.-no.-44757-panjapatchi-sashthiram-2024",
+        "title": "போகமுனிவர் பஞ்சபட்சி சாஸ்திரம் உரையுடன்",
+        "traditional_attribution": "Bogamuni",
+        "authorship_status": "traditional_attribution_not_asserted_authorship",
+        "publication_place": "Vadapalani, Chennai",
+        "publisher": "Thamarai Noolagam",
+        "publication_year": 2024,
+        "language": "Tamil",
+        "archive_item_url": (
+            "https://archive.org/details/"
+            "acc.-no.-44757-panjapatchi-sashthiram-2024"
+        ),
+        "archive_original_image_zip_name": (
+            "not_applicable_no_original_image_zip_bound"
+        ),
+        "archive_original_image_zip_source_status": (
+            "not_applicable_pdf_is_internet_archive_original"
+        ),
+        "archive_original_image_zip_md5": "not_applicable",
+        "archive_original_image_zip_sha1": "not_applicable",
+        "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+        "archive_pdf_source_status": "internet_archive_original",
+        "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+        "archive_pdf_sha1": "6ddad8f2577883f6859829f534e8ee7b8330ade8",
+        "locally_verified_pdf_sha256": (
+            "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990"
+        ),
+        "catalogued_contributor_note": (
+            "The sixth edition names R. C. Mohan as editor; Moira does not "
+            "convert that editorial credit into authorship of the "
+            "traditionally attributed work."
+        ),
+        "artifact_distribution_status": (
+            "reference_only_source_artifacts_not_packaged"
+        ),
+        "redistribution_policy": (
+            "normalized_rules_only_no_scan_ocr_page_images_layout_source_"
+            "prose_or_third_party_translation"
+        ),
+        "license_scope": (
+            "mit_covers_moira_authored_code_schema_prose_and_profile_"
+            "representation"
+        ),
+        "artifact_distribution_note": (
+            "The archive PDF is a research input, not a package asset. Moira "
+            "distributes only independently normalized rule data, code, "
+            "schema, and provenance prose; no scan, OCR, page image, copied "
+            "layout, source prose, or third-party translation is bundled."
+        ),
+    }
+    if source_obj != expected_source:
+        raise PanchaPakshiDataError(
+            "Sookshma source identity or distribution contract is unknown"
+        )
+    source = PanchaPakshiSource(**expected_source)
+
+    expected_locator_specs = (
+        (
+            "bogar_n156_samam_context",
+            "n156",
+            (
+                "IA leaf n156 / PDF page 157 / printed page 147: "
+                "six-nazhigai samam context"
+            ),
+            "source_attested_six_nazhigai_samam_context",
+        ),
+        (
+            "bogar_n157_weighted_sookshma",
+            "n157",
+            (
+                "IA leaf n157 / PDF page 158 / printed page 148: weighted "
+                "Sookshma activity vector and cyclic rows"
+            ),
+            "source_attested_weighted_sookshma_selector",
+        ),
+        (
+            "bogar_n168_eka_sookshma",
+            "n168",
+            (
+                "IA leaf n168 / PDF page 169 / printed page 159: Eka "
+                "Sookshma Chakra equal-fifths rule"
+            ),
+            "source_attested_eka_sookshma_equal_fifths_selector",
+        ),
+    )
+    locators = tuple(
+        PanchaPakshiSourceLocator(
+            locator_id=locator_id,
+            witness_id=source.witness_id,
+            label=label,
+            url=f"{source.archive_item_url}/page/{leaf}/mode/1up",
+            evidence_role=evidence_role,
+        )
+        for locator_id, leaf, label, evidence_role in expected_locator_specs
+    )
+    expected_locator_documents = [
+        {
+            "locator_id": locator.locator_id,
+            "witness_id": locator.witness_id,
+            "label": locator.label,
+            "url": locator.url,
+            "evidence_role": locator.evidence_role,
+        }
+        for locator in locators
+    ]
+    if _require_list(document["source_locators"], "source_locators") != (
+        expected_locator_documents
+    ):
+        raise PanchaPakshiDataError(
+            "Sookshma source locator ledger disagrees with exact evidence"
+        )
+    locator_ids = {locator.locator_id for locator in locators}
+
+    raw_policies = _require_list(
+        document["selector_policies"],
+        "selector_policies",
+    )
+    if len(raw_policies) != 2:
+        raise PanchaPakshiDataError(
+            "Sookshma profile must contain exactly two explicit policies"
+        )
+    selector_rules: list[_SookshmaSelectorRule] = []
+    for index, raw_policy in enumerate(raw_policies):
+        context = f"selector_policies[{index}]"
+        obj = _require_dict(raw_policy, context)
+        _require_exact_keys(
+            obj,
+            {
+                "policy_id",
+                "source_layer",
+                "partition_kind",
+                "container_span_nazhigai",
+                "interval_count",
+                "interval_ownership",
+                "sequence_policy",
+                "activity_assignment_status",
+                "activity_durations_nazhigai",
+                "source_locators",
+            },
+            context,
+        )
+        policy_id = _require_enum(
+            PanchaPakshiSookshmaSelectorPolicyId,
+            obj["policy_id"],
+            f"{context}.policy_id",
+        )
+        raw_durations = _require_list(
+            obj["activity_durations_nazhigai"],
+            f"{context}.activity_durations_nazhigai",
+        )
+        durations: list[tuple[PanchaPakshiActivity, Fraction]] = []
+        for duration_index, raw_duration in enumerate(raw_durations):
+            duration_context = (
+                f"{context}.activity_durations_nazhigai[{duration_index}]"
+            )
+            duration_obj = _require_dict(raw_duration, duration_context)
+            _require_exact_keys(
+                duration_obj,
+                {"activity", "duration"},
+                duration_context,
+            )
+            durations.append(
+                (
+                    _require_enum(
+                        PanchaPakshiActivity,
+                        duration_obj["activity"],
+                        f"{duration_context}.activity",
+                    ),
+                    _parse_fraction(
+                        duration_obj["duration"],
+                        f"{duration_context}.duration",
+                    ),
+                )
+            )
+        rule = _SookshmaSelectorRule(
+            policy_id=policy_id,
+            source_layer=_require_string(
+                obj["source_layer"], f"{context}.source_layer"
+            ),
+            partition_kind=_require_string(
+                obj["partition_kind"], f"{context}.partition_kind"
+            ),
+            container_span_nazhigai=_parse_fraction(
+                obj["container_span_nazhigai"],
+                f"{context}.container_span_nazhigai",
+            ),
+            interval_count=_require_int(
+                obj["interval_count"], f"{context}.interval_count"
+            ),
+            interval_ownership=_require_string(
+                obj["interval_ownership"], f"{context}.interval_ownership"
+            ),
+            sequence_policy=_require_string(
+                obj["sequence_policy"], f"{context}.sequence_policy"
+            ),
+            activity_assignment_status=_require_string(
+                obj["activity_assignment_status"],
+                f"{context}.activity_assignment_status",
+            ),
+            activity_durations_nazhigai=tuple(durations),
+            source_locator_ids=_parse_locator_ids(
+                obj["source_locators"],
+                f"{context}.source_locators",
+                locator_ids,
+            ),
+        )
+        selector_rules.append(rule)
+
+    expected_policy_ids = set(PanchaPakshiSookshmaSelectorPolicyId)
+    if {rule.policy_id for rule in selector_rules} != expected_policy_ids:
+        raise PanchaPakshiDataError(
+            "Sookshma profile must define each admitted policy exactly once"
+        )
+    weighted = next(
+        rule
+        for rule in selector_rules
+        if rule.policy_id
+        is PanchaPakshiSookshmaSelectorPolicyId.WEIGHTED_SOOKSHMA
+    )
+    if weighted.activity_durations_nazhigai != (
+        (PanchaPakshiActivity.EAT, Fraction(3, 2)),
+        (PanchaPakshiActivity.WALK, Fraction(5, 4)),
+        (PanchaPakshiActivity.RULE, Fraction(2)),
+        (PanchaPakshiActivity.SLEEP, Fraction(3, 4)),
+        (PanchaPakshiActivity.DIE, Fraction(1, 2)),
+    ):
+        raise PanchaPakshiDataError(
+            "weighted Sookshma duration vector is not canonical"
+        )
+    if (
+        weighted.source_layer != "sookshma_pakshi_editorial_section"
+        or weighted.partition_kind != "weighted_activity_durations"
+        or weighted.sequence_policy
+        != "cyclic_activity_order_with_each_row_beginning_at_its_named_activity"
+        or weighted.activity_assignment_status
+        != "source_attested_cyclic_activity_rows"
+        or weighted.source_locator_ids
+        != ("bogar_n156_samam_context", "bogar_n157_weighted_sookshma")
+    ):
+        raise PanchaPakshiDataError(
+            "weighted Sookshma doctrine or evidence binding is not canonical"
+        )
+    if sum(
+        (duration for _, duration in weighted.activity_durations_nazhigai),
+        Fraction(),
+    ) != Fraction(6):
+        raise PanchaPakshiDataError(
+            "weighted Sookshma duration vector does not close to six"
+        )
+    equal = next(
+        rule
+        for rule in selector_rules
+        if rule.policy_id
+        is PanchaPakshiSookshmaSelectorPolicyId.EKA_SOOKSHMA_EQUAL_FIFTHS
+    )
+    if equal.activity_durations_nazhigai:
+        raise PanchaPakshiDataError(
+            "Eka Sookshma policy must not invent activity assignments"
+        )
+    if (
+        equal.source_layer != "eka_sookshma_chakra_editorial_section"
+        or equal.partition_kind != "five_equal_parts"
+        or equal.sequence_policy
+        != "ordinal_only_no_subactivity_assignment_attested"
+        or equal.activity_assignment_status != "not_attested"
+        or equal.source_locator_ids
+        != ("bogar_n156_samam_context", "bogar_n168_eka_sookshma")
+    ):
+        raise PanchaPakshiDataError(
+            "Eka Sookshma doctrine or evidence binding is not canonical"
+        )
+    for rule in selector_rules:
+        if (
+            rule.container_span_nazhigai != Fraction(6)
+            or rule.interval_count != 5
+            or rule.interval_ownership != "half_open"
+        ):
+            raise PanchaPakshiDataError(
+                "Sookshma policy container or interval contract is invalid"
+            )
+
+    relation = _require_dict(document["policy_relation"], "policy_relation")
+    expected_relation = {
+        "default_policy_id": None,
+        "policies_are_interchangeable": False,
+        "automatic_policy_selection": "forbidden",
+        "uromarisi_composition_status": (
+            "not_performed_requires_separate_explicit_cross_witness_decision"
+        ),
+        "outcome_interpretation_status": "not_performed",
+    }
+    if relation != expected_relation:
+        raise PanchaPakshiDataError(
+            "Sookshma policy relation must preserve no-default separation"
+        )
+
+    raw_omissions = _require_list(
+        document["explicit_omissions"],
+        "explicit_omissions",
+    )
+    omissions: list[PanchaPakshiOmission] = []
+    for index, raw_omission in enumerate(raw_omissions):
+        context = f"explicit_omissions[{index}]"
+        omission = _require_dict(raw_omission, context)
+        _require_exact_keys(omission, {"feature", "status", "reason"}, context)
+        parsed = PanchaPakshiOmission(
+            feature=_require_string(omission["feature"], f"{context}.feature"),
+            status=_require_string(omission["status"], f"{context}.status"),
+            reason=_require_string(omission["reason"], f"{context}.reason"),
+        )
+        if parsed.status != "omitted":
+            raise PanchaPakshiDataError(f"{context}.status must be omitted")
+        omissions.append(parsed)
+    if (
+        {omission.feature for omission in omissions}
+        != _REQUIRED_SOOKSHMA_OMISSIONS
+        or len(omissions) != len(_REQUIRED_SOOKSHMA_OMISSIONS)
+    ):
+        raise PanchaPakshiDataError(
+            "Sookshma profile explicit omissions are incomplete or duplicated"
+        )
+    if _require_list(
+        document["research_conflict_ledger"],
+        "research_conflict_ledger",
+    ):
+        raise PanchaPakshiDataError(
+            "Sookshma profile must preserve policy conflict internally"
+        )
+    referenced_locator_ids = {
+        locator_id
+        for rule in selector_rules
+        for locator_id in rule.source_locator_ids
+    }
+    if referenced_locator_ids != locator_ids:
+        raise PanchaPakshiDataError(
+            "Sookshma locator ledger contains unreferenced or missing evidence"
+        )
+
+    return PanchaPakshiSookshmaSelectorProfile(
+        profile_id=meta["profile_id"],
+        admission_status=admission_status,
+        product_kind=meta["product_kind"],
+        default_selection_allowed=default_selection_allowed,
+        capabilities=capabilities,
+        admission_decision_id=admission_decision_id,
+        derivation_status=meta["derivation_status"],
+        assembly_policy=meta["assembly_policy"],
+        title=meta["title"],
+        source=source,
+        source_locators=locators,
+        selector_rules=tuple(selector_rules),
+        automatic_policy_selection=relation["automatic_policy_selection"],
+        uromarisi_composition_status=relation["uromarisi_composition_status"],
+        outcome_interpretation_status=relation["outcome_interpretation_status"],
         explicit_omissions=tuple(omissions),
         research_conflict_ledger=(),
     )

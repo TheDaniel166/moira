@@ -200,6 +200,19 @@ def test_public_registry_is_source_scoped_and_has_no_default() -> None:
                 "pancha_pakshi_bogamuni_2024_padu_bird_mapping_2026_07_20"
             ),
         ),
+        type(available_pancha_pakshi_profiles()[0])(
+            profile_id="bogamuni_chennai_2024_sookshma_temporal_selector",
+            admission_status=PanchaPakshiAdmissionStatus.SOURCE_SCOPED_PUBLIC,
+            product_kind="sookshma_temporal_selector",
+            default_selection_allowed=False,
+            capabilities=(
+                PanchaPakshiCapability.SOOKSHMA_TEMPORAL_SELECTION,
+            ),
+            admission_decision_id=(
+                "pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_"
+                "2026_07_21"
+            ),
+        ),
     )
 
     with pytest.raises(TypeError):

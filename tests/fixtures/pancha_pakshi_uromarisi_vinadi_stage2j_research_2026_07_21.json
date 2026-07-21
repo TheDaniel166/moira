@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_vinadi_stage2j_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T08:57:00Z",
+  "updated_at_utc": "2026-07-21T09:32:00Z",
+  "decision_kind": "research_only_vinadi_axis_and_selector_conflict_recovery",
+  "admission_status": "research_only",
+  "prior_public_state": {
+    "stage": "2I",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8",
+    "decision_path": "tests/fixtures/pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20.json",
+    "decision_sha256": "83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807",
+    "manifest_changed": false
+  },
+  "witnesses": [
+    {
+      "witness_id": "tva_bok_0021902_vinadi_pancha_pakshi_1932",
+      "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi, P. L. Arunachala Mudaliar & Brothers, Chennai, 1932",
+      "official_catalog_url": "https://tamildigitallibrary.in/book-details/TWpFNU1EST1BdG9aYXRvejB0bzk-/TkE9PUF0b1phdG96MHRvOQ--/TWpBPUF0b1phdG96MHRvOQ--/",
+      "catalog_holding": "Sarasvati Mahal Library",
+      "pdf_sha256": "dbd12d7e26f39ca7f9650a17311b5483eb478844144544a2cbb11aac7c3d6243",
+      "pdf_page_count": 197,
+      "inspection_method": "rendered_page_review_with_embedded_text_used_only_for_navigation",
+      "locators": [
+        {
+          "pdf_page": 5,
+          "role": "contents_enumerate_first_through_fifth_vinadi_results_under_each_activity_and_multiple_contexts"
+        },
+        {
+          "pdf_page": 88,
+          "role": "verses_228_229_governing_vinadi_doctrine"
+        },
+        {
+          "pdf_page": 89,
+          "role": "ordinal_result_sequence_begins"
+        }
+      ]
+    },
+    {
+      "witness_id": "tva_bok_0024741_vinadi_pancha_pakshi_1922_commentary",
+      "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi with Tanjai Karunanidhi Pillai commentary, Subramaniya Vilasam Press, Chennai, 1922",
+      "official_catalog_url": "https://tamildigitallibrary.in/Articles/%E0%AE%A8%E0%AF%82%E0%AE%B2%E0%AF%8D-24741-%E0%AE%B0%E0%AF%8B%E0%AE%AE%E0%AE%B0%E0%AE%BF%E0%AE%B7%E0%AE%BF%20%E0%AE%85%E0%AE%B0%E0%AF%81%E0%AE%B3%E0%AE%BF%E0%AE%9A%E0%AF%8D%E0%AE%9A%E0%AF%86%E0%AE%AF%E0%AF%8D%E0%AE%A4%20%E0%AE%B5%E0%AE%BF%E0%AE%A8%E0%AE%BE%E0%AE%9F%E0%AE%BF%20%E0%AE%AA%E0%AE%9E%E0%AF%8D%E0%AE%9A%E0%AE%AA%E0%AE%9F%E0%AF%8D%E0%AE%9A%E0%AE%BF%20%E0%AE%AE%E0%AF%82%E0%AE%B2%E0%AE%AE%E0%AF%81%E0%AE%AE%E0%AF%8D-%E0%AE%A4%E0%AE%9E%E0%AF%8D%E0%AE%9A%E0%AF%88%20%E0%AE%95%E0%AE%B0%E0%AF%81%E0%AE%A3%E0%AE%BE%E0%AE%A8%E0%AE%BF%E0%AE%A4%E0%AE%BF%20%E0%AE%AA%E0%AE%BF%E0%AE%B3%E0%AF%8D%E0%AE%B3%E0%AF%88%E0%AE%AF%E0%AE%BE%E0%AE%B5%E0%AE%B0%E0%AF%8D%E0%AE%95%E0%AE%B3%E0%AE%BE%E0%AE%B2%E0%AF%8D%2C%20%E0%AE%9A%E0%AF%86%E0%AE%AF%E0%AF%8D%E0%AE%A4%20%E0%AE%A8%E0%AF%82%E0%AE%A4%E0%AE%A9%20%E0%AE%89%E0%AE%B0%E0%AF%88%E0%AE%AF%E0%AF%81%E0%AE%AE%E0%AF%8D",
+      "pdf_sha256": "51b4b34890412fd57011aebe0c1ab22ab1800e5035a84bbbb9330ea0f6597741",
+      "pdf_page_count": 298,
+      "inspection_method": "rendered_page_review_of_source_and_commentary",
+      "locators": [
+        {
+          "pdf_page": 115,
+          "printed_page": 113,
+          "role": "verses_227_229_state_that_correct_vinadi_placement_and_nazhigai_division_matter"
+        },
+        {
+          "pdf_page": 116,
+          "printed_page": 114,
+          "role": "commentary_restates_required_accuracy_without_supplying_selector_arithmetic"
+        }
+      ]
+    },
+    {
+      "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+      "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi Mulamum Uraiyum, with Tanjai Karunanidhi Pillai, 1934",
+      "archive_details_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+      "archive_pdf_name": "KVC0354-Vinaadi PajasapatchiMulamum-1934.pdf",
+      "archive_pdf_md5": "5832ca69b64c1429342fba8c3b3012dc",
+      "pdf_sha256": "e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0",
+      "pdf_page_count": 166,
+      "inspection_method": "rendered_page_review_with_archive_ocr_used_only_for_navigation",
+      "locators": [
+        {
+          "pdf_page": 115,
+          "printed_page": 113,
+          "role": "verses_227_229_governing_vinadi_doctrine"
+        },
+        {
+          "pdf_page": 116,
+          "printed_page": 114,
+          "role": "first_and_second_vinadi_results_under_eat_begin"
+        },
+        {
+          "pdf_page": 117,
+          "printed_page": 115,
+          "role": "third_and_fourth_vinadi_results_under_eat_continue"
+        }
+      ]
+    },
+    {
+      "witness_id": "acc_44757_panjapatchi_sashthiram_2024_selector_comparator",
+      "bibliographic_identity": "Bogamuni-attributed Pancha Pakshi Sastram with commentary and editorial layers, R. C. Mohan editor, sixth edition, Thamarai Noolagam, Chennai, November 2024",
+      "archive_details_url": "https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024",
+      "archive_pdf_name": "Acc.No.44757-PanjapatchiSashthiram-2024.pdf",
+      "archive_pdf_md5": "abe489a832ac38a0270335b7429776f3",
+      "pdf_sha256": "035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990",
+      "inspection_method": "rendered_page_review_with_archive_ocr_used_only_for_navigation",
+      "text_layer_scope": "named_editorial_sookshma_sections_not_bound_to_uromarisi_outcomes",
+      "locators": [
+        {
+          "pdf_page": 157,
+          "printed_page": 147,
+          "role": "jamam_and_nazhigai_context_preceding_weighted_sookshma_pakshi"
+        },
+        {
+          "pdf_page": 158,
+          "printed_page": 148,
+          "role": "weighted_sookshma_pakshi_vector_and_cyclic_rows"
+        },
+        {
+          "pdf_page": 169,
+          "printed_page": 159,
+          "role": "eka_sookshma_chakra_and_explicit_equal_fifth_rule"
+        }
+      ]
+    }
+  ],
+  "cross_edition_finding": {
+    "agreement": "The inspected 1922, 1932, and 1934 Uromarisi-attributed publications preserve verses 228 and 229 and organize results by first through fifth vinadi positions under named activities.",
+    "textual_lineage_independence": "not_established",
+    "evidence_class": "separate_publication_corroboration"
+  },
+  "recovered_computational_object": {
+    "source_owned_object": "five_position_vinadi_ordinal_axis_under_each_activity",
+    "parent_activities": [
+      "eat",
+      "walk",
+      "rule",
+      "sleep",
+      "die"
+    ],
+    "ordinal_values": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "attested_context_families": [
+      "birth_or_natal",
+      "illness",
+      "journey",
+      "house_foundation"
+    ],
+    "routing_status": "unbound_between_uromarisi_ordinals_and_separate_selector_doctrines",
+    "timing_formula_status": "not_stated_in_inspected_uromarisi_governing_pages_but_two_separate_comparator_formulas_are_attested",
+    "equal_subdivision_status": "attested_only_as_separate_eka_sookshma_editorial_policy",
+    "outcome_normalization_status": "not_performed"
+  },
+  "temporal_selector_findings": {
+    "uromarisi_lineage": {
+      "finding": "Verses 228 and 229 require accurate vinadi placement and refer to dividing nazhigai, while the inspected source and commentary pages do not state the selector arithmetic.",
+      "automatic_binding_status": "not_attested"
+    },
+    "separate_source_attested_candidates": [
+      {
+        "provisional_policy_id": "bogamuni_2024_weighted_sookshma_samam_v1",
+        "source_layer": "sookshma_pakshi_editorial_section",
+        "container": "one_six_nazhigai_samam",
+        "activity_duration_nazhigai": {
+          "eat": "3/2",
+          "walk": "5/4",
+          "rule": "2",
+          "sleep": "3/4",
+          "die": "1/2"
+        },
+        "duration_sum_nazhigai": "6",
+        "sequence_policy": "cyclic_activity_order_with_each_row_beginning_at_its_named_activity",
+        "source_locators": [
+          "PDF page 157 / printed page 147",
+          "PDF page 158 / printed page 148"
+        ]
+      },
+      {
+        "provisional_policy_id": "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+        "source_layer": "eka_sookshma_chakra_editorial_section",
+        "container": "one_samam",
+        "partition_rule": "five_equal_half_open_parts",
+        "exact_boundary_formula": "start_plus_k_times_span_over_5_for_k_0_through_5",
+        "source_locators": [
+          "PDF page 169 / printed page 159"
+        ]
+      }
+    ],
+    "conflict": "The named weighted and equal-fifth doctrines are not interchangeable and must never be blended or selected by default.",
+    "uromarisi_composition_status": "forbidden_without_a_separate_explicit_cross_witness_or_modern_composition_decision",
+    "recommended_next_surface": "two_explicit_policy_selectors_without_default_and_without_outcome_interpretation"
+  },
+  "ambiguity_policy": {
+    "permitted_research_input": "explicit_ordinal_label_only",
+    "automatic_clock_to_uromarisi_ordinal_routing": "forbidden",
+    "explicit_weighted_selector_research": "permitted_only_under_its_named_bogamuni_editorial_policy",
+    "explicit_equal_fifths_selector_research": "permitted_only_under_its_named_eka_sookshma_editorial_policy",
+    "implicit_selector_or_default": "forbidden",
+    "composition_with_admitted_schedule_or_identity": "forbidden",
+    "translation_or_prognostic_interpretation": "not_admitted",
+    "human_language_reviewer_dependency": "none"
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "required_evidence_for_future_admission": [
+    "choose_one_explicit_selector_policy_per_call_with_no_default",
+    "preserve_weighted_and_equal_fifth_doctrines_as_distinct_products",
+    "do_not_bind_either_comparator_selector_to_uromarisi_outcomes_without_a_separate_composition_decision",
+    "one_context_family_normalized_at_a_time_with_named_semantics",
+    "repeatable_page_locator_and_independent_transcription_checks_for_every_admitted_rule",
+    "separate_runtime_profile_manifest_capability_and_public_surface_decision",
+    "structural_and_adversarial_tests_that_fail_closed_on_unresolved_routing"
+  ],
+  "public_nonclaims": [
+    "No vinadi duration or clock routing is admitted.",
+    "Neither comparator selector is attributed to the Uromarisi lineage.",
+    "No default chooses between weighted Sookshma Pakshi and equal Eka Sookshma.",
+    "No source outcome prose or machine translation is normalized into runtime data.",
+    "No vinadi condition score electional judgment or forecast is exposed.",
+    "No cross-profile composition or universal Pancha Pakshi canon is claimed."
+  ],
+  "artifact_distribution_boundary": "Archival PDFs, page images, OCR, layouts, source prose, and translations are not distributed. This fixture preserves only bibliographic facts, cryptographic hashes, page locators, bounded structural findings, and the admission decision."
+}

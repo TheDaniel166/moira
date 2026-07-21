@@ -9,16 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **First-Class Source-Scoped Pancha Pakshi**: Added immutable public vessels,
-  package-root and `moira.vedic` exports, eight kernel-free `Moira` methods, one
+  package-root and `moira.vedic` exports, nine kernel-free `Moira` methods, one
   kernel-backed astronomical-paksha inference method, one
   kernel-backed local-solar context method, one kernel-backed fixed-clock
   materialization method, one kernel-backed fixed-clock current-cell method,
   one kernel-backed solar-proportional materialization method, one kernel-backed
   solar-proportional current-cell method, one kernel-backed natal-Moon identity
-  method, and fourteen strict
+  method, and fifteen strict
   `/v1/pancha-pakshi` routes for profile discovery, aksara identity, exact
   nominal schedules, directed relationships, source-mapped astronomical
   paksha, natal-Moon identity, source-scoped Padu and first-samam EAT-seed
+  lookups, explicit Sookshma temporal selection,
   lookups, local-solar context,
   and fixed-clock and solar-proportional materialization plus their separately
   governed current-cell selectors. Manifest schema 2 owns finite admission
@@ -114,8 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   snapping; exact conjunction therefore belongs to Shukla and exact opposition
   to Krishna. The named 1879 profile maps waxing/Shukla to Purva from IA leaf
   `n16` and waning/Krishna to Amara from leaf `n26`. This mapping is
-  source-scoped, machine-assisted visual reading pending competent-human Tamil
-  review, not a universal-canon claim. The inference accepts no location or
+  source-scoped machine-assisted visual reading with explicit uncertainty and
+  no human-review dependency, not a universal-canon claim. The inference accepts no location or
   caller-supplied paksha and performs no schedule selection, materialization,
   current-cell selection, automatic routing into another operation, or natal
   identity. Only normalized facts, source locators, and Moira-authored policy
@@ -190,6 +191,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the Stage 2I manifest and admission-decision hashes are
   `d1aba3757910ded019cb6a2a5d6fb92c2e1ebbea755c26953dff1347834bf0e8`
   and `83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807`.
+- **Pancha Pakshi Vinadi Stage 2J Research Gate**: Recovered a source-attested
+  five-position vinadi ordinal axis beneath each named activity from rendered
+  review of Uromarisi-attributed 1922, 1932, and 1934 publications. Rendered
+  review of a separately scoped Bogamuni-attributed 2024 editorial witness also
+  recovered two incompatible selectors: weighted Sūkṣma durations `(3/2,
+  5/4, 2, 3/4, 1/2)` closing exactly to six nazhigai, and separately named Eka
+  Sūkṣma equal fifths. The hash-bound research decision preserves exact witness
+  and page locators, selects no default, and forbids automatic binding to the
+  Uromarisi outcome tables. Human-language review is not a dependency.
+  Translation-backed outcomes, condition, scoring, electional judgment, and
+  forecasting remain unadmitted. No runtime profile, manifest capability,
+  public vessel, facade method, or REST route was added. The Stage 2J decision
+  SHA-256 is
+  `d04ed0f3716fe605dc5d8172114dc759b30c4e87be968eebc36e35a23d789243`.
+- **Pancha Pakshi Sookshma Temporal Selection Stage 2K**: Added the separate
+  source-scoped `bogamuni_chennai_2024_sookshma_temporal_selector` profile,
+  immutable selector-policy, interval, and selection vessels, the pure
+  `pancha_pakshi_sookshma_temporal_selection(...)` engine function, matching
+  `Moira` facade method, and strict
+  `POST /v1/pancha-pakshi/sookshma/select`. Every call must explicitly choose
+  either `bogamuni_2024_weighted_sookshma_samam_v1` or
+  `bogamuni_2024_eka_sookshma_equal_fifths_v1`; there is no default or
+  automatic policy selection. The weighted policy rotates the exact
+  `(3/2, 5/4, 2, 3/4, 1/2)`-nazhigai activity vector from the named parent
+  activity, while the equal-fifths policy returns five exact `6/5`-nazhigai
+  ordinal cells and invents no subactivity assignment. Both use exact reduced
+  rational input and half-open `[start, end)` ownership within one
+  six-nazhigai samam. The surface performs no datetime, civil-clock,
+  astronomical, schedule, Uromarisi-outcome, condition, score, electional, or
+  forecasting composition. Human-language review is not a runtime or
+  admission dependency. The profile, current manifest, and Stage 2K decision
+  hashes are respectively
+  `596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526`,
+  `584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`, and
+  `10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70`.
+- **Pancha Pakshi Human-Review Dependency Removed From Runtime Truth**:
+  Replaced the live 1879 profile's legacy
+  `pending_competent_tamil_review` derivation token with
+  `machine_reconciled_source_assignment_with_declared_uncertainty`. Frozen
+  historical research and admission receipts retain their original labels,
+  but no human Tamil reviewer is a current runtime, admission, or maintenance
+  requirement. The resulting live 1879 profile SHA-256 is
+  `d80d205716eb9f24a2a23949c6df241a1aba251749efa94d3b20fa36be0258f4`.
 - **Pancha Pakshi Research And Admission Evidence**: Preserved the original
   blind reading, representative-grid reading, page-image adjudication, and
   machine reconciliation as frozen historical records. The adjudication
@@ -198,10 +242,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   corrected the former Pūrva-night generator. A new additive admission fixture
   links the former and schema-v2 profile hashes and binds the unchanged
   computational surface of 10 identity symbols, 28 schedules, 700 cells, and 20
-  directed relationships. Competent-human Tamil review and independent-witness
-  collation remain incomplete evidence upgrades and barriers to corroborated,
-  generalized, or default-canon claims—not blockers for these explicitly
-  source-scoped products. The standing non-bundling architecture remains in
+  directed relationships. Independent-witness collation remains a barrier to
+  corroborated claims; machine-assisted source reading carries explicit
+  uncertainty but no human-review dependency for these source-scoped products.
+  The standing non-bundling architecture remains in
   force; archival scans, PDFs, OCR, page images, copied layouts, source prose,
   and third-party translations are not distributed, and no rights-clearance
   phase was introduced.

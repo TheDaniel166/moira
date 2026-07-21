@@ -116,6 +116,25 @@ def _digest(path: Path) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def _stage2i_manifest_bytes() -> bytes:
+    """Project the append-only live manifest back to Stage 2I exactly."""
+
+    manifest = json.loads(_MANIFEST_PATH.read_text(encoding="utf-8"))
+    manifest["generated_at_utc"] = "2026-07-20T23:28:13Z"
+    manifest["profiles"] = [
+        entry
+        for entry in manifest["profiles"]
+        if entry["profile_id"]
+        != "bogamuni_chennai_2024_sookshma_temporal_selector"
+    ]
+    manifest["profiles"][0]["sha256"] = (
+        "4fe769b6f13c4a719c9d31446dd3fef413eca5d3ce1f56340aada9f99b0dce64"
+    )
+    return (
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
+    ).encode("utf-8")
+
+
 def _mapping(
     *,
     profile_paksha: pakshi.PanchaPakshiPaksha = (
@@ -135,7 +154,9 @@ def _mapping(
 def test_stage2i_admission_chains_stage2h_and_binds_live_manifest() -> None:
     decision = json.loads(_ADMISSION_PATH.read_text(encoding="utf-8"))
 
-    assert _digest(_MANIFEST_PATH) == _MANIFEST_SHA256
+    assert hashlib.sha256(_stage2i_manifest_bytes()).hexdigest() == (
+        _MANIFEST_SHA256
+    )
     assert _digest(_ADMISSION_PATH) == _ADMISSION_SHA256
     assert _digest(_PRIOR_ADMISSION_PATH) == _PRIOR_ADMISSION_SHA256
     assert decision["decision_id"] == _DECISION_ID

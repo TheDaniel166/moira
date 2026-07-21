@@ -3,7 +3,7 @@
   "profile": {
     "profile_id": "agastya_madras_1879_akshara_fixed_clock",
     "product_kind": "aksara_prasna_operating_schedule",
-    "derivation_status": "machine_reconciled_source_assignment_pending_competent_tamil_review",
+    "derivation_status": "machine_reconciled_source_assignment_with_declared_uncertainty",
     "assembly_policy": "resolved_grid_axes_assign_birds_explicit_prose_and_verse_govern_chronology",
     "title": "Agastya-attributed Madras 1879 Pancha Pakshi source-scoped profile"
   },

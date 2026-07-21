@@ -11,6 +11,7 @@ from __future__ import annotations
 import importlib
 import sys
 from datetime import datetime
+from fractions import Fraction
 from typing import Any
 
 _shadbala = importlib.import_module("moira.shadbala")
@@ -71,6 +72,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             "pancha_pakshi_natal_moon_identity",
             "pancha_pakshi_first_eat_bird_mapping",
             "pancha_pakshi_padu_bird_mapping",
+            "pancha_pakshi_sookshma_temporal_selection",
             "pancha_pakshi_identity_from_initial_vowel",
             "pancha_pakshi_directed_relationship", "pancha_pakshi_schedule",
             "pancha_pakshi_local_solar_context",
@@ -280,6 +282,23 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             profile_id,
             profile_paksha=profile_paksha,
             weekday=weekday,
+        )
+
+    def pancha_pakshi_sookshma_temporal_selection(
+        self,
+        profile_id: str,
+        *,
+        policy_id: _pancha_pakshi.PanchaPakshiSookshmaSelectorPolicyId,
+        parent_activity: _pancha_pakshi.PanchaPakshiActivity,
+        elapsed_nazhigai: Fraction,
+    ) -> _pancha_pakshi.PanchaPakshiSookshmaSelection:
+        """Select one exact Sookshma interval under a caller-named policy."""
+
+        return _pancha_pakshi.pancha_pakshi_sookshma_temporal_selection(
+            profile_id,
+            policy_id=policy_id,
+            parent_activity=parent_activity,
+            elapsed_nazhigai=elapsed_nazhigai,
         )
 
     def pancha_pakshi_first_eat_bird_mapping(

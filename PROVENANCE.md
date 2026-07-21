@@ -495,9 +495,15 @@ The frozen reading record
 locators to the exact archive witness and has canonical SHA-256
 `9ce3686a90a41af916a370b8d4ec04637f22a1d32f872180c6d8a1b790e25a0e`.
 Its status remains
-`machine_assisted_visual_reading_pending_competent_tamil_review`. The two
-normalized mapping facts are public only for this source-scoped profile; they
-are not independent-witness corroboration or a universal terminology claim.
+`machine_assisted_visual_reading_pending_competent_tamil_review` as a frozen
+legacy label; it records the original evidence classification and creates no
+human-review dependency. The live profile now uses
+`machine_reconciled_source_assignment_with_declared_uncertainty`; its current
+SHA-256 is
+`d80d205716eb9f24a2a23949c6df241a1aba251749efa94d3b20fa36be0258f4`.
+The two normalized mapping facts are public only for
+this source-scoped profile; they are not independent-witness corroboration or a
+universal terminology claim.
 
 The modern computational policy is
 `apparent_geocentric_moon_sun_longitude_paksha_half_open_v1`. From one explicit
@@ -664,6 +670,62 @@ surfaces are `pancha_pakshi_first_eat_bird_mapping(...)`,
 `Moira.pancha_pakshi_first_eat_bird_mapping(...)`, and strict
 `POST /v1/pancha-pakshi/schedule/first-eat-bird`.
 
+Stage 2J is a research-only recovery from three Uromarisi-attributed
+publications plus one separately scoped selector comparator. The
+[official Tamil Digital Library catalog](https://tamildigitallibrary.in/book-details/TWpFNU1EST1BdG9aYXRvejB0bzk-/TkE9PUF0b1phdG96MHRvOQ--/TWpBPUF0b1phdG96MHRvOQ--/)
+identifies the 1932 *Vinadi Pancha Pakshi* publication and Sarasvati Mahal
+Library holding; its
+inspected 197-page PDF has SHA-256
+`dbd12d7e26f39ca7f9650a17311b5483eb478844144544a2cbb11aac7c3d6243`.
+Rendered review of PDF pages 5, 88, and 89 establishes a five-position vinadi
+ordinal axis beneath the named activities and multiple context-specific result
+families. The 1922 Karunanidhi Pillai commentary witness has inspected PDF
+SHA-256
+`51b4b34890412fd57011aebe0c1ab22ab1800e5035a84bbbb9330ea0f6597741`;
+rendered pages 115 and 116 require accurate vinadi and nazhigai division but
+supply no arithmetic selector. The
+[separate 1934 publication at Internet Archive](https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934)
+has inspected PDF
+SHA-256
+`e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`;
+rendered PDF pages 115 through 117 preserve the same governing verse numbers
+and ordinal organization. Textual-lineage independence is not established.
+
+The separately scoped
+[Bogamuni-attributed 2024 comparator](https://archive.org/details/acc.-no.-44757-panjapatchi-sashthiram-2024)
+has inspected PDF SHA-256
+`035eab41f62cf078180c03e99ec9eacf8edf2d2dc6d3dc31b37e6a6dfdb09990`.
+Rendered pages 157 and 158 attest a weighted Sūkṣma vector EAT `3/2`, WALK
+`5/4`, RULE `2`, SLEEP `3/4`, and DIE `1/2` nazhigai, closing exactly to six;
+page 169 separately attests an Eka Sūkṣma division into five equal parts. The
+two selectors are incompatible, neither is a default, and neither is
+automatically bound to Uromarisi ordinal outcomes. Machine-assisted reading is
+not sufficient to normalize prognostic prose, but no human-language reviewer
+is required. The Stage 2J decision records the bibliographic facts, hashes,
+locators, bounded structural finding, exact rational selector candidates, and
+fail-closed no-default/no-cross-witness-binding policy. Its SHA-256 is
+`d04ed0f3716fe605dc5d8172114dc759b30c4e87be968eebc36e35a23d789243`.
+No source artifact is bundled, no manifest or runtime data changes, and no
+engine, facade, or REST surface is created.
+
+Stage 2K subsequently admits only the two Bogamuni 2024 editorial selectors
+through the separate
+`bogamuni_chennai_2024_sookshma_temporal_selector` profile. The weighted
+policy binds rendered IA leaves `n156` and `n157`; the equal-fifths policy
+binds `n156` and `n168`. Every call explicitly names one policy, a parent
+activity, and an exact elapsed rational offset in `[0, 6)`. No default or
+automatic selector exists. The weighted vector closes exactly to six
+nazhigai; the equal policy creates five exact `6/5`-nazhigai ordinal cells and
+does not invent activity assignments. Neither policy is attributed to the
+Uromarisi lineage or bound to its ordinal outcomes. Civil-clock routing,
+astronomy, schedule composition, outcome interpretation, condition, scoring,
+electional search, and forecasting are not performed. The profile, current
+manifest, and admission decision SHA-256 values are
+`596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526`,
+`584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`, and
+`10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70`.
+No human-language reviewer is a runtime, admission, or maintenance dependency.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The latter's
 official catalog says sixth edition/2014 while its inspected internal title
@@ -677,10 +739,11 @@ Moira's MIT license covers Moira-authored code, schema, and prose. Archival
 artifacts are outside the distributed product rather than materials Moira
 attempts to relicense. Only independently normalized symbolic rules,
 bibliographic facts, hashes, and locators are eligible for a profile. The
-absence of competent-human Tamil review and independent-witness collation
-limits the current claim to this named machine-reconciled witness; it prevents
-a corroborated, generalized, or default-canon claim but does not block the
-narrow source-scoped public product. A blank archive license field,
+absence of independent-witness collation limits the current claim to this
+named machine-reconciled witness; it prevents a corroborated, generalized, or
+default-canon claim but does not block the narrow source-scoped public product.
+The source-reading uncertainty remains explicit, with no human-review
+dependency. A blank archive license field,
 contributor biography, or separate archival-rights clearance step does not
 govern admission. The standing non-bundling policy keeps protected source
 expression outside Moira's distributed product.
@@ -689,8 +752,8 @@ The governing research boundary, admission tiers, conflicts, fail-closed
 invariants, and public contract are documented in
 [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
 Public access is additive through `moira.pancha_pakshi`, package-root and
-`moira.vedic` exports, eight kernel-free and seven kernel-backed `Moira`
-methods, and fourteen explicit-profile `/v1/pancha-pakshi` routes. No API
+`moira.vedic` exports, nine kernel-free and seven kernel-backed `Moira`
+methods, and fifteen explicit-profile `/v1/pancha-pakshi` routes. No API
 selects a default profile. The 1879 astronomical-paksha route occurs only
 through its explicit geocentric policy and never supplies an inferred label to
 another operation.
@@ -701,7 +764,10 @@ complete-half coverage. Natal identity occurs only through the separate 2024
 profile and fixed modern composition. Padu lookup occurs only through the
 separate 2024 Padu profile and explicit Paksha/weekday labels. First-EAT lookup
 occurs only through the separate Stage 2I route and never materializes or
-selects a current schedule. Condition,
+selects a current schedule. Stage 2J Uromarisi outcome evidence remains
+research-only; Stage 2K exposes only the two separately sourced explicit
+Bogamuni temporal selectors and cannot route a clock instant or compose an
+outcome. Condition,
 scoring, automatic schedule routing, and forecasting remain outside the
 admitted surface.
 
@@ -715,7 +781,7 @@ directed relationship matrix, and demonstrated that the prior Pūrva-night
 generator was wrong. The corrected source-scoped profile treats identified grids as
 bird/activity assignment evidence while taking chronology only from explicit
 prose and verse. That reconciliation remains machine-assisted historical
-evidence, not competent-human Tamil sign-off or an external authority oracle;
+evidence, not a linguistic-authority claim or an external authority oracle;
 it cannot silently rewrite either earlier source record. The additive
 `pancha_pakshi_1879_public_admission_2026_07_20.json` decision links the former
 and current profile hashes and records the narrower source-scoped public claim,
