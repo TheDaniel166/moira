@@ -1004,6 +1004,159 @@ class PanchaPakshiSookshmaSelection:
 
 
 @dataclass(frozen=True, slots=True)
+class PanchaPakshiScheduleSookshmaCompositionPolicy:
+    """Explicit modern policy joining one schedule samam to one selector.
+
+    The caller continues to own every doctrinal choice: both profiles, the
+    schedule axes, the subject bird, the Sookshma selector, and the exact
+    elapsed offset.  This policy derives only the subject bird's parent
+    activity in the named samam.  It performs no clock routing or outcome
+    interpretation.
+    """
+
+    policy_id: str = field(
+        default="explicit_schedule_samam_subject_bird_sookshma_v1",
+        init=False,
+    )
+    composition_status: str = field(
+        default="modern_moira_policy_not_source_claim",
+        init=False,
+    )
+    schedule_selection_basis: str = field(
+        default="caller_named_profile_paksha_half_weekday_and_samam",
+        init=False,
+    )
+    parent_activity_basis: str = field(
+        default="unique_subject_bird_cell_in_selected_schedule_samam",
+        init=False,
+    )
+    selector_policy_basis: str = field(
+        default="caller_named_no_default",
+        init=False,
+    )
+    elapsed_offset_basis: str = field(
+        default="caller_supplied_exact_nazhigai_within_samam",
+        init=False,
+    )
+    clock_or_civil_time_routing_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+    uromarisi_outcome_binding_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+    outcome_interpretation_status: str = field(
+        default="not_performed",
+        init=False,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiScheduleSookshmaSelection:
+    """One explicit cross-profile schedule-to-Sookshma composition."""
+
+    schedule_profile_id: str
+    selector_profile_id: str
+    schedule: PanchaPakshiSchedule
+    samam_index: int
+    subject_bird: PanchaPakshiBird
+    parent_schedule_cell: PanchaPakshiScheduleCell
+    elapsed_nazhigai: Fraction
+    composition_policy: PanchaPakshiScheduleSookshmaCompositionPolicy
+    sookshma_selection: PanchaPakshiSookshmaSelection
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("schedule_profile_id", self.schedule_profile_id),
+            ("selector_profile_id", self.selector_profile_id),
+        ):
+            if not isinstance(value, str):
+                raise TypeError(f"{name} must be a string")
+            if not value:
+                raise ValueError(f"{name} must not be empty")
+        if not isinstance(self.schedule, PanchaPakshiSchedule):
+            raise TypeError("schedule must be a PanchaPakshiSchedule")
+        if self.schedule.profile_id != self.schedule_profile_id:
+            raise ValueError("schedule profile disagrees with schedule_profile_id")
+        if isinstance(self.samam_index, bool) or not isinstance(
+            self.samam_index,
+            int,
+        ):
+            raise TypeError("samam_index must be an integer")
+        if not 1 <= self.samam_index <= 5:
+            raise ValueError("samam_index must lie in [1, 5]")
+        if not isinstance(self.subject_bird, PanchaPakshiBird):
+            raise TypeError("subject_bird must be a PanchaPakshiBird")
+        if not isinstance(self.parent_schedule_cell, PanchaPakshiScheduleCell):
+            raise TypeError(
+                "parent_schedule_cell must be a PanchaPakshiScheduleCell"
+            )
+        matches = tuple(
+            cell
+            for cell in self.schedule.cells
+            if cell.samam_index == self.samam_index
+            and cell.bird is self.subject_bird
+        )
+        if len(matches) != 1 or self.parent_schedule_cell != matches[0]:
+            raise ValueError(
+                "parent_schedule_cell must be the unique subject-bird cell "
+                "in the selected samam"
+            )
+        if not isinstance(self.elapsed_nazhigai, Fraction):
+            raise TypeError("elapsed_nazhigai must be a Fraction")
+        if not Fraction() <= self.elapsed_nazhigai < Fraction(6):
+            raise ValueError("elapsed_nazhigai must lie in the half-open [0, 6)")
+        if not isinstance(
+            self.composition_policy,
+            PanchaPakshiScheduleSookshmaCompositionPolicy,
+        ):
+            raise TypeError(
+                "composition_policy must be a "
+                "PanchaPakshiScheduleSookshmaCompositionPolicy"
+            )
+        if not isinstance(
+            self.sookshma_selection,
+            PanchaPakshiSookshmaSelection,
+        ):
+            raise TypeError(
+                "sookshma_selection must be a PanchaPakshiSookshmaSelection"
+            )
+        if self.sookshma_selection.profile_id != self.selector_profile_id:
+            raise ValueError(
+                "Sookshma selection profile disagrees with selector_profile_id"
+            )
+        if (
+            self.sookshma_selection.parent_activity
+            is not self.parent_schedule_cell.activity
+        ):
+            raise ValueError(
+                "Sookshma parent activity disagrees with the schedule cell"
+            )
+        if self.sookshma_selection.elapsed_nazhigai != self.elapsed_nazhigai:
+            raise ValueError(
+                "Sookshma elapsed offset disagrees with the composition"
+            )
+
+        canonical_schedule = pancha_pakshi_schedule(
+            self.schedule_profile_id,
+            paksha=self.schedule.paksha,
+            half=self.schedule.half,
+            weekday=self.schedule.weekday,
+        )
+        if self.schedule != canonical_schedule:
+            raise ValueError("schedule is not canonical")
+        canonical_selection = pancha_pakshi_sookshma_temporal_selection(
+            self.selector_profile_id,
+            policy_id=self.sookshma_selection.policy.policy_id,
+            parent_activity=self.parent_schedule_cell.activity,
+            elapsed_nazhigai=self.elapsed_nazhigai,
+        )
+        if self.sookshma_selection != canonical_selection:
+            raise ValueError("Sookshma selection is not canonical")
+
+
+@dataclass(frozen=True, slots=True)
 class PanchaPakshiNatalMoonIdentityPolicy:
     """Fixed Stage 2G doctrine for the Bogamuni natal-Moon composition."""
 
@@ -2623,6 +2776,69 @@ def pancha_pakshi_sookshma_temporal_selection(
     )
 
 
+def pancha_pakshi_schedule_sookshma_temporal_selection(
+    schedule_profile_id: str,
+    selector_profile_id: str,
+    *,
+    profile_paksha: PanchaPakshiPaksha,
+    half: PanchaPakshiHalf,
+    weekday: PanchaPakshiWeekday,
+    samam_index: int,
+    subject_bird: PanchaPakshiBird,
+    selector_policy_id: PanchaPakshiSookshmaSelectorPolicyId,
+    elapsed_nazhigai: Fraction,
+) -> PanchaPakshiScheduleSookshmaSelection:
+    """Compose one named schedule samam with one explicit Sookshma policy.
+
+    Source evidence owns each input profile independently.  Their composition
+    is a declared modern Moira policy: it locates the subject bird's unique
+    cell in the selected samam and uses that cell's activity as the Sookshma
+    parent.  The exact elapsed offset remains caller supplied.  No civil time,
+    Uromarisi outcome, condition, score, election, or forecast is inferred.
+    """
+
+    if isinstance(samam_index, bool) or not isinstance(samam_index, int):
+        raise TypeError("samam_index must be an integer")
+    if not 1 <= samam_index <= 5:
+        raise ValueError("samam_index must lie in [1, 5]")
+    if not isinstance(subject_bird, PanchaPakshiBird):
+        raise TypeError("subject_bird must be a PanchaPakshiBird")
+
+    schedule = pancha_pakshi_schedule(
+        schedule_profile_id,
+        paksha=profile_paksha,
+        half=half,
+        weekday=weekday,
+    )
+    matches = tuple(
+        cell
+        for cell in schedule.cells
+        if cell.samam_index == samam_index and cell.bird is subject_bird
+    )
+    if len(matches) != 1:
+        raise PanchaPakshiDataError(
+            "selected schedule samam did not yield exactly one subject-bird cell"
+        )
+    parent_cell = matches[0]
+    selection = pancha_pakshi_sookshma_temporal_selection(
+        selector_profile_id,
+        policy_id=selector_policy_id,
+        parent_activity=parent_cell.activity,
+        elapsed_nazhigai=elapsed_nazhigai,
+    )
+    return PanchaPakshiScheduleSookshmaSelection(
+        schedule_profile_id=schedule.profile_id,
+        selector_profile_id=selection.profile_id,
+        schedule=schedule,
+        samam_index=samam_index,
+        subject_bird=subject_bird,
+        parent_schedule_cell=parent_cell,
+        elapsed_nazhigai=elapsed_nazhigai,
+        composition_policy=PanchaPakshiScheduleSookshmaCompositionPolicy(),
+        sookshma_selection=selection,
+    )
+
+
 def pancha_pakshi_natal_moon_identity_at(
     profile_id: str,
     jd_ut1: float,
@@ -3695,6 +3911,8 @@ __all__ = [
     "PanchaPakshiSource",
     "PanchaPakshiSourceLocator",
     "PanchaPakshiSookshmaInterval",
+    "PanchaPakshiScheduleSookshmaCompositionPolicy",
+    "PanchaPakshiScheduleSookshmaSelection",
     "PanchaPakshiSookshmaSelection",
     "PanchaPakshiSookshmaSelectorPolicy",
     "PanchaPakshiSookshmaSelectorPolicyId",
@@ -3712,6 +3930,7 @@ __all__ = [
     "pancha_pakshi_padu_bird_mapping",
     "pancha_pakshi_profile_info",
     "pancha_pakshi_schedule",
+    "pancha_pakshi_schedule_sookshma_temporal_selection",
     "pancha_pakshi_sookshma_temporal_selection",
     "pancha_pakshi_solar_proportional_current_cell_at",
     "pancha_pakshi_solar_proportional_materialization_at",

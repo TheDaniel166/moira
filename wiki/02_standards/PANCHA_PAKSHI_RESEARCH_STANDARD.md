@@ -113,6 +113,11 @@ astronomical context, schedule composition, Uromarisi outcome, condition,
 score, electional window, or forecast. It has no default, and no human-language
 reviewer is required.
 
+Stage 2N adds no fifth profile and changes none of these capabilities. It is a
+separate modern composition operation across the named 1879 schedule profile
+and the named 2024 selector profile. Every profile, schedule axis, samam,
+subject bird, selector policy, and exact elapsed offset remains mandatory.
+
 ## 2. Admission Tiers
 
 Admission belongs to a named profile and product, not to Pancha Pakshi as a
@@ -662,6 +667,25 @@ locators may a separate admission decision be considered. Stage 2M changes no
 profile, manifest, capability, engine, facade, or REST surface and creates no
 human-language-review dependency.
 
+### Stage 2N explicit schedule-to-Sookshma composition
+
+Stage 2N is the separate composition decision required by the earlier
+no-blending rule. The caller names the admitted 1879 schedule profile, admitted
+Bogamuni 2024 selector profile, source Paksha, half, weekday, samam `1..5`,
+subject bird, selector policy, and exact elapsed `Fraction` within the samam.
+Moira generates the schedule, requires exactly one cell for that subject bird
+in that samam, and uses the cell's activity as the Stage 2K parent activity.
+
+The composition policy is
+`explicit_schedule_samam_subject_bird_sookshma_v1` and is explicitly
+`modern_moira_policy_not_source_claim`. Neither source is credited with the
+cross-profile join. Both source provenances remain present in the nested
+result. There is still no default, clock or civil-time routing, astronomical
+routing, Uromarisi outcome binding, translation, condition, scoring,
+electional search, or forecasting. The profile documents, capabilities, and
+manifest are unchanged. The decision fixture SHA-256 is
+`084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -678,7 +702,7 @@ defects, not values that may be averaged or repaired by symmetry.
 | Relationships | The 1879 table is directed and nonuniform; later tables use different assignments. | No reciprocity, symmetry inference, or cross-witness merge. |
 | Timing | The inspected 1879 source attests fixed thirty-nazhigai halves, not proportional sunrise-to-sunset scaling. | Seasonal scaling, if admitted, is a separate policy and capability. |
 | Padu, first-EAT, and authority vocabulary | The Bogamuni weekday Padu table and the 1879 first-samam EAT seeds are separately complete; primary layers mention authority days without supplying an `Adhikara Pakshi` table, and Bharana is secondary-only terminology. | Preserve the Padu and first-samam EAT objects as separate source-scoped lookups. Do not manufacture an Adhikara/Bharana alias or derive a day ruler from either lookup or instantaneous Rule activity. |
-| Vinadi ordinal routing | Uromarisi-attributed 1922, 1932, and 1934 publications attest first through fifth vinadi result positions beneath activities without arithmetic; the 2024 editorial comparator separately attests weighted and equal-fifths selectors. | Preserve the ordinal axis and both selector candidates as research evidence only. Do not infer their cross-witness binding, choose a default, normalize prognostic prose, or compose them with an admitted profile without a separate decision. |
+| Vinadi ordinal routing | Uromarisi-attributed 1922, 1932, and 1934 publications attest first through fifth vinadi result positions beneath activities without arithmetic; the 2024 editorial comparator separately attests weighted and equal-fifths selectors. | Preserve the ordinal axis and both selector candidates. Stage 2N permits only its separately decided modern schedule composition; do not infer Uromarisi binding, choose a default, normalize prognostic prose, or attach outcomes. |
 
 Conflict-ledger witnesses and rejected text layers are not executable merely
 because they are recorded. The named 2024 profile admits only its declared
@@ -902,8 +926,8 @@ materialization, natal identity, condition, score, or forecast input.
 All computations require `profile_id`. Public results are immutable and carry
 profile-owned provenance and omissions. Exact nazhigai values remain rational
 in the engine and serialize as `{numerator, denominator}` at the transport
-boundary. The current family contains four profiles, sixteen `Moira` methods
-(nine kernel-free and seven kernel-backed), and fifteen REST routes.
+boundary. The current family contains four profiles, seventeen `Moira` methods
+(ten kernel-free and seven kernel-backed), and sixteen REST routes.
 
 Stage 2F accepts a datetime but no location and performs only instantaneous
 astronomical-paksha inference. The five location-bearing Stage 2A-E operations

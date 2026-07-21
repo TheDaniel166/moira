@@ -9,18 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **First-Class Source-Scoped Pancha Pakshi**: Added immutable public vessels,
-  package-root and `moira.vedic` exports, nine kernel-free `Moira` methods, one
+  package-root and `moira.vedic` exports, ten kernel-free `Moira` methods, one
   kernel-backed astronomical-paksha inference method, one
   kernel-backed local-solar context method, one kernel-backed fixed-clock
   materialization method, one kernel-backed fixed-clock current-cell method,
   one kernel-backed solar-proportional materialization method, one kernel-backed
   solar-proportional current-cell method, one kernel-backed natal-Moon identity
-  method, and fifteen strict
+  method, and sixteen strict
   `/v1/pancha-pakshi` routes for profile discovery, aksara identity, exact
   nominal schedules, directed relationships, source-mapped astronomical
   paksha, natal-Moon identity, source-scoped Padu and first-samam EAT-seed
-  lookups, explicit Sookshma temporal selection,
-  lookups, local-solar context,
+  lookups, explicit Sookshma temporal selection and schedule composition,
+  local-solar context,
   and fixed-clock and solar-proportional materialization plus their separately
   governed current-cell selectors. Manifest schema 2 owns finite admission
   status, exact product capabilities, admission
@@ -226,6 +226,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526`,
   `584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`, and
   `10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70`.
+- **Pancha Pakshi Schedule-Sookshma Composition Stage 2N**: Added the explicit
+  modern `explicit_schedule_samam_subject_bird_sookshma_v1` composition,
+  immutable policy and result vessels, the pure
+  `pancha_pakshi_schedule_sookshma_temporal_selection(...)` engine function,
+  matching `Moira` method, and strict
+  `POST /v1/pancha-pakshi/sookshma/schedule-select`. Every call names both the
+  1879 schedule profile and 2024 selector profile, source Paksha, half,
+  weekday, samam `1..5`, subject bird, one of the two Stage 2K selector
+  policies, and an exact elapsed `Fraction`. The operation generates the
+  named schedule, locates the subject bird's unique cell in the named samam,
+  and uses only that cell's activity as the selector parent. This cross-profile
+  join is labelled a modern Moira policy rather than attributed to either
+  witness. It performs no clock or civil-time routing, astronomy, Uromarisi
+  outcome binding, interpretation, condition, score, electional judgment, or
+  forecast. The four source profiles, capabilities, and manifest remain
+  unchanged; A5 acquisition is optional future corroboration rather than a
+  blocker. The Stage 2N decision SHA-256 is
+  `084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`.
 - **Pancha Pakshi Ramadevar Candidate Disambiguation Stage 2M**: Resolved the
   catalogued candidate to the exact Commissionerate of Indian Medicine and
   Homoeopathy record: serial `859`, manuscript `A5`, titled `Ramadevar

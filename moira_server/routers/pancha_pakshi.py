@@ -36,6 +36,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiSolarProportionalCurrentCellResponse,
     PanchaPakshiSolarProportionalMaterializationRequest,
     PanchaPakshiSolarProportionalMaterializationResponse,
+    PanchaPakshiScheduleSookshmaSelectionRequest,
+    PanchaPakshiScheduleSookshmaSelectionResponse,
     PanchaPakshiSookshmaSelectionRequest,
     PanchaPakshiSookshmaSelectionResponse,
 )
@@ -53,6 +55,7 @@ from ..serializers.pancha_pakshi import (
     serialize_profile_info,
     serialize_solar_proportional_current_cell,
     serialize_solar_proportional_materialization,
+    serialize_schedule_sookshma_temporal_selection,
     serialize_sookshma_temporal_selection,
 )
 from ..services.pancha_pakshi import (
@@ -68,6 +71,7 @@ from ..services.pancha_pakshi import (
     compute_padu_bird_mapping,
     compute_solar_proportional_current_cell,
     compute_solar_proportional_materialization,
+    compute_schedule_sookshma_temporal_selection,
     compute_sookshma_temporal_selection,
     list_pancha_pakshi_profiles,
     pancha_pakshi_profile,
@@ -159,6 +163,20 @@ def pancha_pakshi_sookshma_temporal_selection_route(
 
     return serialize_sookshma_temporal_selection(
         compute_sookshma_temporal_selection(request)
+    )
+
+
+@router.post(
+    "/sookshma/schedule-select",
+    response_model=PanchaPakshiScheduleSookshmaSelectionResponse,
+)
+def pancha_pakshi_schedule_sookshma_temporal_selection_route(
+    request: PanchaPakshiScheduleSookshmaSelectionRequest,
+) -> PanchaPakshiScheduleSookshmaSelectionResponse:
+    """Compose explicit schedule axes with one explicit Sookshma policy."""
+
+    return serialize_schedule_sookshma_temporal_selection(
+        compute_schedule_sookshma_temporal_selection(request)
     )
 
 

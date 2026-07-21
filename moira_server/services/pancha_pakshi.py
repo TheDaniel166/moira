@@ -14,6 +14,7 @@ from moira.pancha_pakshi import (
     pancha_pakshi_padu_bird_mapping,
     pancha_pakshi_profile_info,
     pancha_pakshi_schedule,
+    pancha_pakshi_schedule_sookshma_temporal_selection,
     pancha_pakshi_sookshma_temporal_selection,
 )
 
@@ -31,6 +32,7 @@ from ..models.pancha_pakshi import (
     PanchaPakshiProfilesResponse,
     PanchaPakshiSolarProportionalCurrentCellRequest,
     PanchaPakshiSolarProportionalMaterializationRequest,
+    PanchaPakshiScheduleSookshmaSelectionRequest,
     PanchaPakshiSookshmaSelectionRequest,
 )
 from ..serializers.pancha_pakshi import serialize_profile_descriptor
@@ -96,6 +98,29 @@ def compute_sookshma_temporal_selection(
         request.profile_id,
         policy_id=PanchaPakshiSookshmaSelectorPolicyId(request.policy_id),
         parent_activity=request.parent_activity,
+        elapsed_nazhigai=Fraction(
+            request.elapsed_nazhigai.numerator,
+            request.elapsed_nazhigai.denominator,
+        ),
+    )
+
+
+def compute_schedule_sookshma_temporal_selection(
+    request: PanchaPakshiScheduleSookshmaSelectionRequest,
+):
+    """Compose explicit schedule axes without routing a clock or outcomes."""
+
+    return pancha_pakshi_schedule_sookshma_temporal_selection(
+        request.schedule_profile_id,
+        request.selector_profile_id,
+        profile_paksha=request.profile_paksha,
+        half=request.half,
+        weekday=request.weekday,
+        samam_index=request.samam_index,
+        subject_bird=request.subject_bird,
+        selector_policy_id=PanchaPakshiSookshmaSelectorPolicyId(
+            request.selector_policy_id
+        ),
         elapsed_nazhigai=Fraction(
             request.elapsed_nazhigai.numerator,
             request.elapsed_nazhigai.denominator,

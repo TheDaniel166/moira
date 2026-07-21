@@ -35,6 +35,8 @@ from moira.pancha_pakshi import (
     PanchaPakshiSolarProportionalMaterializationPolicy,
     PanchaPakshiSource,
     PanchaPakshiSourceLocator,
+    PanchaPakshiScheduleSookshmaCompositionPolicy,
+    PanchaPakshiScheduleSookshmaSelection,
     PanchaPakshiSookshmaInterval,
     PanchaPakshiSookshmaSelection,
     PanchaPakshiSookshmaSelectorPolicy,
@@ -65,6 +67,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiProfileInfoResponse,
     PanchaPakshiProvenanceResponse,
     PanchaPakshiScheduleCellResponse,
+    PanchaPakshiScheduleSookshmaCompositionPolicyResponse,
+    PanchaPakshiScheduleSookshmaSelectionResponse,
     PanchaPakshiSolarProportionalCellResponse,
     PanchaPakshiSolarProportionalCurrentCellResponse,
     PanchaPakshiSolarProportionalCurrentCellSelectionPolicyResponse,
@@ -333,6 +337,48 @@ def serialize_sookshma_temporal_selection(
             for locator in selection.source_locators
         ],
         provenance=serialize_provenance(selection.provenance),
+    )
+
+
+def serialize_schedule_sookshma_composition_policy(
+    policy: PanchaPakshiScheduleSookshmaCompositionPolicy,
+) -> PanchaPakshiScheduleSookshmaCompositionPolicyResponse:
+    return PanchaPakshiScheduleSookshmaCompositionPolicyResponse(
+        policy_id=policy.policy_id,
+        composition_status=policy.composition_status,
+        schedule_selection_basis=policy.schedule_selection_basis,
+        parent_activity_basis=policy.parent_activity_basis,
+        selector_policy_basis=policy.selector_policy_basis,
+        elapsed_offset_basis=policy.elapsed_offset_basis,
+        clock_or_civil_time_routing_status=(
+            policy.clock_or_civil_time_routing_status
+        ),
+        uromarisi_outcome_binding_status=(
+            policy.uromarisi_outcome_binding_status
+        ),
+        outcome_interpretation_status=policy.outcome_interpretation_status,
+    )
+
+
+def serialize_schedule_sookshma_temporal_selection(
+    selection: PanchaPakshiScheduleSookshmaSelection,
+) -> PanchaPakshiScheduleSookshmaSelectionResponse:
+    return PanchaPakshiScheduleSookshmaSelectionResponse(
+        schedule_profile_id=selection.schedule_profile_id,
+        selector_profile_id=selection.selector_profile_id,
+        schedule=serialize_nominal_schedule(selection.schedule),
+        samam_index=selection.samam_index,
+        subject_bird=selection.subject_bird,
+        parent_schedule_cell=serialize_schedule_cell(
+            selection.parent_schedule_cell
+        ),
+        elapsed_nazhigai=serialize_fraction(selection.elapsed_nazhigai),
+        composition_policy=serialize_schedule_sookshma_composition_policy(
+            selection.composition_policy
+        ),
+        sookshma_selection=serialize_sookshma_temporal_selection(
+            selection.sookshma_selection
+        ),
     )
 
 

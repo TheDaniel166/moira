@@ -5153,14 +5153,15 @@ score, or forecast. The primary evidence distinguishes eating bird and
 authority day rather than attesting an `Adhikara Pakshi` table; Bharana remains
 secondary-only terminology. Neither term aliases the public Padu vessel.
 
-The `Moira` facade supplies these nine kernel-free operations:
+The `Moira` facade supplies these ten kernel-free operations:
 `pancha_pakshi_profiles`, `pancha_pakshi_profile_info`,
 `pancha_pakshi_identity_from_initial_vowel`,
 `pancha_pakshi_schedule`, `pancha_pakshi_directed_relationship`,
 `pancha_pakshi_nakshatra_bird_mapping`, and
 `pancha_pakshi_padu_bird_mapping`,
 `pancha_pakshi_first_eat_bird_mapping`, and
-`pancha_pakshi_sookshma_temporal_selection`. It
+`pancha_pakshi_sookshma_temporal_selection`, and
+`pancha_pakshi_schedule_sookshma_temporal_selection`. It
 additionally supplies the kernel-backed
 `pancha_pakshi_astronomical_paksha(profile_id, dt)`,
 `pancha_pakshi_natal_moon_identity(profile_id, dt)`,
@@ -5192,6 +5193,13 @@ The Stage 2K selector function, policy ID, policy, interval, result vessel, and
 facade method are exported through the same surfaces. The method requires an
 explicit policy and exact elapsed `Fraction`; it performs no clock, astronomy,
 schedule, Uromarisi outcome, condition, score, or forecast composition.
+The separate Stage 2N method requires both profile IDs, explicit schedule
+axes, samam, subject bird, selector policy, and exact elapsed `Fraction`. It
+derives the subject bird's parent activity from the named schedule samam under
+the modern `explicit_schedule_samam_subject_bird_sookshma_v1` policy. It still
+performs no clock, astronomy, Uromarisi outcome, condition, score, or forecast
+operation. The matching strict route is
+`POST /v1/pancha-pakshi/sookshma/schedule-select`.
 
 ---
 

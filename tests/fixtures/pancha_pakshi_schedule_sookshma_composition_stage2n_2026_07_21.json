@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_schedule_sookshma_composition_stage2n_2026_07_21",
+  "decided_at_utc": "2026-07-21T19:30:00Z",
+  "decision_kind": "explicit_modern_cross_profile_schedule_sookshma_composition",
+  "stage": "2N",
+  "prior_research_boundary": {
+    "decision_id": "pancha_pakshi_ramadevar_candidate_stage2m_research_2026_07_21",
+    "fixture_path": "tests/fixtures/pancha_pakshi_ramadevar_candidate_stage2m_research_2026_07_21.json",
+    "fixture_sha256": "921e604bcd81298aa6eb903acc967e68cfcf6e743c7d1379788ff9996212c6db",
+    "relationship": "A5_acquisition_remains_optional_future_corroboration_not_a_blocker_for_explicit_modern_composition"
+  },
+  "bound_public_products": {
+    "schedule_profile": {
+      "profile_id": "agastya_madras_1879_akshara_fixed_clock",
+      "profile_path": "moira/data/pancha_pakshi_agastya_madras_1879_akshara_fixed_clock.json",
+      "profile_sha256": "d80d205716eb9f24a2a23949c6df241a1aba251749efa94d3b20fa36be0258f4",
+      "admission_decision_id": "pancha_pakshi_1879_first_eat_bird_mapping_2026_07_20",
+      "admission_decision_sha256": "83c9bc0a423c09ccc113007625fee4a7d6b9ee1e890827f71595c96c3f826807",
+      "used_capability": "nominal_schedule"
+    },
+    "selector_profile": {
+      "profile_id": "bogamuni_chennai_2024_sookshma_temporal_selector",
+      "profile_path": "moira/data/pancha_pakshi_bogamuni_chennai_2024_sookshma_temporal_selector.json",
+      "profile_sha256": "596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526",
+      "admission_decision_id": "pancha_pakshi_bogamuni_2024_sookshma_temporal_selector_2026_07_21",
+      "admission_decision_sha256": "10bcfbd70dda28fd399e5c95b8bfa237b8e48f3b2cb20901fc21e0261a73cf70",
+      "used_capability": "sookshma_temporal_selection"
+    },
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955",
+    "manifest_changed": false,
+    "profile_capabilities_changed": false
+  },
+  "computational_object": {
+    "function": "pancha_pakshi_schedule_sookshma_temporal_selection",
+    "facade_method": "Moira.pancha_pakshi_schedule_sookshma_temporal_selection",
+    "rest_route": "POST /v1/pancha-pakshi/sookshma/schedule-select",
+    "result_vessel": "PanchaPakshiScheduleSookshmaSelection",
+    "composition_policy_vessel": "PanchaPakshiScheduleSookshmaCompositionPolicy",
+    "composition_policy_id": "explicit_schedule_samam_subject_bird_sookshma_v1",
+    "inputs": [
+      "explicit_schedule_profile_id",
+      "explicit_selector_profile_id",
+      "explicit_profile_paksha",
+      "explicit_half",
+      "explicit_weekday",
+      "explicit_samam_index_1_through_5",
+      "explicit_subject_bird",
+      "explicit_selector_policy_id",
+      "exact_elapsed_nazhigai_fraction_within_samam"
+    ],
+    "derivation": "generate_the_named_schedule_select_the_unique_subject_bird_cell_in_the_named_samam_use_its_activity_as_parent_then_apply_the_explicit_stage2k_selector",
+    "interval_ownership": "inherited_exact_half_open_stage2k_policy",
+    "clock_or_civil_time_routing": "not_performed",
+    "astronomical_routing": "not_performed",
+    "uromarisi_outcome_binding": "not_performed",
+    "outcome_interpretation": "not_performed"
+  },
+  "ambiguity_policy": {
+    "default_schedule_profile": null,
+    "default_selector_profile": null,
+    "default_selector_policy": null,
+    "default_schedule_axes": null,
+    "default_subject_bird": null,
+    "default_elapsed_offset": null,
+    "automatic_cross_profile_composition": "forbidden",
+    "source_claim_for_composition": false,
+    "composition_status": "modern_moira_policy_not_source_claim"
+  },
+  "validation_evidence": {
+    "engine_test": "tests/unit/test_pancha_pakshi_schedule_sookshma_composition.py",
+    "transport_test": "tests/server/test_server_pancha_pakshi_schedule_sookshma.py",
+    "structural_coverage": "all_4_paksha_half_regimes_times_7_weekdays_times_5_samams_times_5_subject_birds",
+    "required_invariants": [
+      "every_selected_samam_has_exactly_one_schedule_cell_for_each_subject_bird",
+      "parent_activity_is_derived_only_from_that_unique_schedule_cell",
+      "both_stage2k_selector_policies_remain_explicit_and_distinct",
+      "equal_fifths_composition_invents_no_subactivity",
+      "all_profile_schedule_subject_policy_and_elapsed_inputs_are_mandatory",
+      "no_datetime_location_astronomy_outcome_condition_score_or_forecast_input_is_accepted",
+      "both_source_profile_provenance_vessels_remain_visible_in_the_nested_result"
+    ]
+  },
+  "public_claim": "One explicitly named source schedule and one explicitly named Sookshma selector may be composed under a declared modern policy to derive the selected subject bird's parent activity and exact Sookshma interval within a caller-named samam.",
+  "public_nonclaims": [
+    "The cross-profile composition is not attributed to either historical witness.",
+    "No default selects either profile, schedule axis, subject bird, selector policy, or elapsed offset.",
+    "No clock or civil-time instant is converted into a samam or elapsed offset.",
+    "No Uromarisi outcome table or prognostic prose is bound to the selected ordinal.",
+    "No condition, score, electional judgment, or forecast is returned.",
+    "The Commissionerate A5 manuscript is not required for this explicitly modern composition and remains a future corroboration candidate.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": {
+    "status": "unchanged_source_artifacts_not_packaged",
+    "distributed_material": "moira_authored_composition_code_schema_tests_decision_metadata_and_provenance_prose_only",
+    "excluded_material": "archive_scans_ocr_page_images_copied_layout_source_prose_and_third_party_translation"
+  }
+}

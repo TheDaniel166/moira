@@ -8,9 +8,9 @@ never creates a default canon.
 
 | Profile | Witness and text policy | Product and capabilities | Admission | Public surface | Validation boundary |
 |---|---|---|---|---|---|
-| `agastya_madras_1879_akshara_fixed_clock` | Agastya-attributed Madras 1879 print, IA `dli.rmrl.000451_images`; identified grids govern bird/activity assignments, explicit prose and verse govern chronology; leaves `n16`, `n21`, `n26`, and `n31` govern the four first-samam EAT-seed rows, while `n16` and `n26` also map waxing/Purva and waning/Amara; astronomical classification, local-solar context, fixed-clock materialization/current-cell selection, and solar-proportional materialization/current-cell selection are separately labelled modern Moira policies | `aksara_prasna_operating_schedule`; `aksara_identity`, `nominal_schedule`, `first_eat_bird_mapping`, `directed_relationships`, `astronomical_context`, `astronomical_paksha_inference`, `fixed_clock_materialization`, `fixed_clock_current_cell_selection`, `solar_proportional_materialization`, `solar_proportional_current_cell_selection` | `source_scoped_public`; no default | `moira.pancha_pakshi`, package root, `moira.vedic`, and the shared family of sixteen `Moira` methods and fifteen `/v1/pancha-pakshi` routes; ten capability-gated computations plus the two shared discovery/info methods | Profile hash/schema and exact-arithmetic integrity, 10 identity symbols, 28 first-EAT seeds, 28 schedules, 700 cells, 20 directed pairs; exact seed/schedule parity and canonical locator binding; direct lunar-half mapping locators, exact geocentric phase-half ownership, single reader-bound TT, and strict no-location/no-routing inference; local-solar boundary ordering, half/weekday selection, UTC-to-UT1 adapter, and polar failure; fixed/proportional interval invariants; machine-assisted source reading with explicit uncertainty and no human-review dependency, separate-publication Uromarisi corroboration with unestablished textual-lineage independence, no external Pancha Pakshi oracle |
-| `bogamuni_chennai_2024_nakshatra_natal_identity` | Bogamuni-attributed 2024 sixth edition, IA `acc.-no.-44757-panjapatchi-sashthiram-2024`; Purva table at `n52`, governing Amara verse at `n64`, phase binding at `n167`; malformed adjacent Amara commentary is rejected under declared verse precedence; birth-Moon application, Lahiri true ayanamsa, and equal-27-sector placement are explicitly modern Moira composition | `natal_moon_bird_identity`; `nakshatra_bird_mapping`, `natal_identity` | `source_scoped_public`; no default | Pure mapping and natal-identity engine/facade exports plus strict `POST /v1/pancha-pakshi/identity/natal-moon` within the shared sixteen-method/fifteen-route family | Profile/manifest hash and exact 54-cell partition; source locator and conflict preservation; all exact/adjacent nakshatra boundaries; one reader-bound TT epoch; strict source-versus-modern provenance and REST fields; DE441 execution is substrate evidence, not a natal oracle; machine-assisted source reading has no human-review dependency |
-| `bogamuni_chennai_2024_padu_bird_mapping` | Bogamuni-attributed 2024 sixth edition; governing Purva weekday stanza at `n52`, governing Amara material at `n60`, internally repeated combined table at `n157`, and restating commentary at `n158`; Paksha stanzas govern and the repeated layers confirm | `padu_bird_mapping`; `padu_bird_mapping` only | `source_scoped_public`; no default | Pure engine/package/facade lookup plus strict `POST /v1/pancha-pakshi/roles/padu` within the shared sixteen-method/fifteen-route family | Exact 14-cell Paksha-by-weekday table, no day/night axis, three canonical locators per result, immutable source semantics/provenance, and strict rejection of temporal, schedule, `RULE`, `first_eat_bird`, Adhikara/Bharana, condition, score, and forecast semantics; Uromarisi/Bogar material is unbound research context, not runtime or decision input |
+| `agastya_madras_1879_akshara_fixed_clock` | Agastya-attributed Madras 1879 print, IA `dli.rmrl.000451_images`; identified grids govern bird/activity assignments, explicit prose and verse govern chronology; leaves `n16`, `n21`, `n26`, and `n31` govern the four first-samam EAT-seed rows, while `n16` and `n26` also map waxing/Purva and waning/Amara; astronomical classification, local-solar context, fixed-clock materialization/current-cell selection, solar-proportional materialization/current-cell selection, and the Stage 2N cross-profile join are separately labelled modern Moira policies | `aksara_prasna_operating_schedule`; `aksara_identity`, `nominal_schedule`, `first_eat_bird_mapping`, `directed_relationships`, `astronomical_context`, `astronomical_paksha_inference`, `fixed_clock_materialization`, `fixed_clock_current_cell_selection`, `solar_proportional_materialization`, `solar_proportional_current_cell_selection` | `source_scoped_public`; no default | `moira.pancha_pakshi`, package root, `moira.vedic`, and the shared family of seventeen `Moira` methods and sixteen `/v1/pancha-pakshi` routes; ten capability-gated computations plus the two shared discovery/info methods and the separate cross-profile composition | Profile hash/schema and exact-arithmetic integrity, 10 identity symbols, 28 first-EAT seeds, 28 schedules, 700 cells, 20 directed pairs; exact seed/schedule parity and canonical locator binding; direct lunar-half mapping locators, exact geocentric phase-half ownership, single reader-bound TT, and strict no-location/no-routing inference; local-solar boundary ordering, half/weekday selection, UTC-to-UT1 adapter, and polar failure; fixed/proportional interval invariants; Stage 2N all-samam subject-bird uniqueness; machine-assisted source reading with explicit uncertainty and no human-review dependency, separate-publication Uromarisi corroboration with unestablished textual-lineage independence, no external Pancha Pakshi oracle |
+| `bogamuni_chennai_2024_nakshatra_natal_identity` | Bogamuni-attributed 2024 sixth edition, IA `acc.-no.-44757-panjapatchi-sashthiram-2024`; Purva table at `n52`, governing Amara verse at `n64`, phase binding at `n167`; malformed adjacent Amara commentary is rejected under declared verse precedence; birth-Moon application, Lahiri true ayanamsa, and equal-27-sector placement are explicitly modern Moira composition | `natal_moon_bird_identity`; `nakshatra_bird_mapping`, `natal_identity` | `source_scoped_public`; no default | Pure mapping and natal-identity engine/facade exports plus strict `POST /v1/pancha-pakshi/identity/natal-moon` within the shared seventeen-method/sixteen-route family | Profile/manifest hash and exact 54-cell partition; source locator and conflict preservation; all exact/adjacent nakshatra boundaries; one reader-bound TT epoch; strict source-versus-modern provenance and REST fields; DE441 execution is substrate evidence, not a natal oracle; machine-assisted source reading has no human-review dependency |
+| `bogamuni_chennai_2024_padu_bird_mapping` | Bogamuni-attributed 2024 sixth edition; governing Purva weekday stanza at `n52`, governing Amara material at `n60`, internally repeated combined table at `n157`, and restating commentary at `n158`; Paksha stanzas govern and the repeated layers confirm | `padu_bird_mapping`; `padu_bird_mapping` only | `source_scoped_public`; no default | Pure engine/package/facade lookup plus strict `POST /v1/pancha-pakshi/roles/padu` within the shared seventeen-method/sixteen-route family | Exact 14-cell Paksha-by-weekday table, no day/night axis, three canonical locators per result, immutable source semantics/provenance, and strict rejection of temporal, schedule, `RULE`, `first_eat_bird`, Adhikara/Bharana, condition, score, and forecast semantics; Uromarisi/Bogar material is unbound research context, not runtime or decision input |
 | `bogamuni_chennai_2024_sookshma_temporal_selector` | Bogamuni-attributed 2024 editorial layers; six-nazhigai samam context at `n156`, weighted Sookshma vector and cyclic rows at `n157`, and distinct Eka Sookshma equal-fifths rule at `n168` | `sookshma_temporal_selector`; `sookshma_temporal_selection` only | `source_scoped_public`; no default and automatic policy selection forbidden | Pure exact selector through engine/package/facade plus strict `POST /v1/pancha-pakshi/sookshma/select` | Mandatory explicit policy; exact `Fraction` input in `[0, 6)`; weighted rotations close exactly to six; equal fifths are exact `6/5` ordinal-only cells with no invented activity; strict half-open uniqueness; no datetime, astronomy, schedule, Uromarisi outcome, condition, score, window, or forecast composition |
 
 ## Admission Bindings
@@ -209,6 +209,34 @@ never creates a default canon.
   and `corroborated_public`: not assessable or established
 - Runtime and manifest unchanged; no human-language reviewer required
 
+### Stage 2N Explicit Schedule-To-Sookshma Composition
+
+- Admission kind: explicit modern cross-profile composition; no new profile or
+  profile capability
+- Stage 2N decision:
+  [`pancha_pakshi_schedule_sookshma_composition_stage2n_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_schedule_sookshma_composition_stage2n_2026_07_21.json)
+- Stage 2N decision SHA-256:
+  `084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`
+- Bound 1879 schedule profile SHA-256, unchanged:
+  `d80d205716eb9f24a2a23949c6df241a1aba251749efa94d3b20fa36be0258f4`
+- Bound 2024 selector profile SHA-256, unchanged:
+  `596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526`
+- Bound manifest SHA-256, unchanged:
+  `584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`
+- Policy: `explicit_schedule_samam_subject_bird_sookshma_v1`, explicitly
+  `modern_moira_policy_not_source_claim`
+- Mandatory axes: both profile IDs, source Paksha, half, weekday, samam
+  `1..5`, subject bird, one Stage 2K selector policy, and exact elapsed
+  nazhigai `Fraction`
+- Structural coverage: all four Paksha/half regimes, seven weekdays, five
+  samams, and five subject birds; each selected samam must contain exactly one
+  parent cell for that bird
+- Clock/civil-time routing, astronomy, Uromarisi outcome binding, outcome
+  interpretation, condition, score, electional search, and forecasting: not
+  performed
+- A5 acquisition remains optional future corroboration; no human-language
+  reviewer required
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:
@@ -244,9 +272,10 @@ axis accepts explicit ordinal labels as research evidence, while its weighted
 Sūkṣma and equal-fifths Eka Sūkṣma selectors remain distinct, unbound research
 candidates at that research stage. Stage 2K now admits those two Bogamuni
 selectors only as explicit, separate temporal policies; it does not admit a
-default, Uromarisi binding, translation-backed outcome,
-current-cell composition, condition, score, electional judgment, or forecast
-is claimed.
+default, Uromarisi binding, translation-backed outcome, current-cell
+composition, condition, score, electional judgment, or forecast. Stage 2N
+separately admits only an explicit nominal-schedule join at a caller-supplied
+samam offset; it still performs no clock routing or outcome interpretation.
 
 The admitted 2024 profile does not compute an aksara identity, nominal or
 materialized schedule, directed relationship, current cell, authority bird,

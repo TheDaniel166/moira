@@ -1,5 +1,38 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2N Explicit Schedule-To-Sookshma Composition — 2026-07-21
+
+Stage 2N resumes the implementation sequence while leaving Commissionerate
+`A5` as optional future corroboration. The
+[`Stage 2N composition decision`](../../tests/fixtures/pancha_pakshi_schedule_sookshma_composition_stage2n_2026_07_21.json)
+has canonical SHA-256
+`084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`.
+It binds the unchanged 1879 schedule profile SHA-256
+`d80d205716eb9f24a2a23949c6df241a1aba251749efa94d3b20fa36be0258f4`,
+unchanged 2024 selector profile SHA-256
+`596c003c62ebbda913ca28aef318d77cb7b1cf42d92d3b1b7a20a44a01dd6526`,
+and unchanged current manifest SHA-256
+`584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955`.
+
+The governing object is a caller-named schedule samam and subject bird joined
+to one explicitly selected Stage 2K policy at an exact elapsed samam offset.
+The operation generates the named schedule, requires the subject bird's unique
+cell in samam `1..5`, and passes that cell's activity to the unchanged
+Sookshma selector. Every input remains mandatory: both profile IDs, source
+Paksha, half, weekday, samam, subject bird, selector policy, and exact reduced
+`Fraction`. The returned vessel preserves the complete schedule and its 1879
+provenance alongside the complete selector result and its 2024 provenance.
+
+The join is explicitly
+`explicit_schedule_samam_subject_bird_sookshma_v1`, a
+`modern_moira_policy_not_source_claim`; it is not attributed to either source.
+It performs no datetime, civil-clock, astronomical, Uromarisi outcome,
+translation, condition, scoring, electional, or forecasting operation. The
+equal-fifths policy still supplies ordinals only and invents no subactivity.
+All four profile entries and their capabilities remain unchanged. No human
+Tamil reviewer or A5 manuscript access is required for this bounded modern
+composition.
+
 ## Stage 2M Ramadevar Candidate Identity And Access Gate — 2026-07-21
 
 Stage 2M follows the Ramadevar lead to the exact institutional record without
@@ -255,8 +288,8 @@ materialization, natal identity, or cross-profile composition. The result is
 not Padu, an authority day or bird, Adhikara/Bharana, a current activity,
 condition, strength, score, electional judgment, or forecast.
 
-The current public family has four profiles, sixteen `Moira` methods (nine
-kernel-free and seven kernel-backed), and fifteen REST routes.
+The current public family has four profiles, seventeen `Moira` methods (ten
+kernel-free and seven kernel-backed), and sixteen REST routes.
 
 Validation checks all 28 cells against the canonical generator table and the
 existing schedule's `first_eat_bird` and initial EAT cell. It also checks exact
@@ -1078,9 +1111,11 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
 
 ## Remaining Research Sequence
 
-1. Preserve the two now-admitted Stage 2K selectors as separate explicit
-   policies with no default. Any binding to Uromarisi ordinal outcomes still
-   requires a named cross-witness composition decision and its own tests.
+1. Preserve the two Stage 2K selectors as separate explicit policies with no
+   default. Stage 2N now permits only the named modern schedule-to-selector
+   composition at a caller-supplied exact offset. Clock routing and any binding
+   to Uromarisi ordinal outcomes remain separate future decisions with their
+   own tests.
 2. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
    the target remains title-only. The next attempt must obtain the actual `A5`
@@ -1107,7 +1142,8 @@ corrected 1879 aksara schedule with the separately named Stage 2A through Stage
 Stage 2I source-attested first-samam EAT-seed lookup, plus
 the separate 2024 nakshatra table and Stage 2G modern natal-Moon composition,
 plus the Stage 2H 2024 Padu-only table, plus the Stage 2K exact Sookshma
-temporal-selector profile with two mandatory explicit policies and no outcome
-binding. None is a universal canon, and
+temporal-selector profile with two mandatory explicit policies, plus the
+Stage 2N explicit modern schedule composition with no clock or outcome binding.
+None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

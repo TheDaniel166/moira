@@ -778,6 +778,21 @@ any of these the `A5` Panchapakshi witness. Stage 2M remains research-only,
 changes no public or runtime state, and has decision SHA-256
 `921e604bcd81298aa6eb903acc967e68cfcf6e743c7d1379788ff9996212c6db`.
 
+Stage 2N resumes the admitted implementation path without making acquisition
+of `A5` a blocker. The separately named
+`explicit_schedule_samam_subject_bird_sookshma_v1` modern policy composes the
+admitted 1879 nominal schedule with the admitted Bogamuni 2024 selector only
+when every profile, schedule axis, subject bird, selector policy, and exact
+elapsed samam offset is supplied by the caller. It derives the parent activity
+from the subject bird's unique cell in the selected schedule samam and then
+applies the unchanged Stage 2K selector. Both nested source provenances remain
+visible; the cross-profile join itself is not attributed to either witness.
+No clock, astronomy, Uromarisi outcome, interpretation, condition, score,
+election, or forecast is performed. The profiles, capability ledger, and
+manifest remain unchanged. The Stage 2N decision fixture has canonical
+SHA-256
+`084190606dc358abce7cc1879aa898a0071bce421b1eda8845b113520a7c36a9`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;
@@ -805,8 +820,8 @@ The governing research boundary, admission tiers, conflicts, fail-closed
 invariants, and public contract are documented in
 [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](./wiki/02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md).
 Public access is additive through `moira.pancha_pakshi`, package-root and
-`moira.vedic` exports, nine kernel-free and seven kernel-backed `Moira`
-methods, and fifteen explicit-profile `/v1/pancha-pakshi` routes. No API
+`moira.vedic` exports, ten kernel-free and seven kernel-backed `Moira`
+methods, and sixteen explicit-profile `/v1/pancha-pakshi` routes. No API
 selects a default profile. The 1879 astronomical-paksha route occurs only
 through its explicit geocentric policy and never supplies an inferred label to
 another operation.
@@ -823,7 +838,9 @@ Bogamuni temporal selectors and cannot route a clock instant or compose an
 outcome. Stage 2L adds only witness-collation evidence and leaves
 `corroborated_public` unassigned. Stage 2M disambiguates the title-only `A5`
 Ramadevar Panchapakshi candidate from non-Panchapakshi `Patchani` witnesses and
-also leaves `corroborated_public` unassigned. Condition,
+also leaves `corroborated_public` unassigned. Stage 2N separately permits only
+the explicit modern schedule-to-Sookshma join described above; it does not
+change either source profile or bind an outcome. Condition,
 scoring, automatic schedule routing, and forecasting remain outside the
 admitted surface.
 

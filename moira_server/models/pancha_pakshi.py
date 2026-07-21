@@ -97,6 +97,31 @@ class PanchaPakshiSookshmaSelectionRequest(PanchaPakshiProfileRequest):
     elapsed_nazhigai: PanchaPakshiFractionRequest
 
 
+class PanchaPakshiScheduleSookshmaSelectionRequest(_StrictModel):
+    """Compose explicit schedule axes with one explicit Sookshma policy."""
+
+    schedule_profile_id: str = Field(min_length=1)
+    selector_profile_id: str = Field(min_length=1)
+    profile_paksha: PanchaPakshiPaksha
+    half: PanchaPakshiHalf
+    weekday: PanchaPakshiWeekday
+    samam_index: int = Field(ge=1, le=5)
+    subject_bird: PanchaPakshiBird
+    selector_policy_id: Literal[
+        "bogamuni_2024_weighted_sookshma_samam_v1",
+        "bogamuni_2024_eka_sookshma_equal_fifths_v1",
+    ]
+    elapsed_nazhigai: PanchaPakshiFractionRequest
+
+    @field_validator("schedule_profile_id", "selector_profile_id")
+    @classmethod
+    def _non_blank_profile_ids(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("profile ids must be non-empty; there is no default")
+        return value
+
+
 class PanchaPakshiLocalSolarContextRequest(PanchaPakshiProfileRequest):
     """Route one aware civil instant through the admitted local-solar policy."""
 
@@ -550,6 +575,36 @@ class PanchaPakshiSookshmaSelectionResponse(_StrictModel):
         max_length=2,
     )
     provenance: PanchaPakshiProvenanceResponse
+
+
+class PanchaPakshiScheduleSookshmaCompositionPolicyResponse(_StrictModel):
+    policy_id: Literal["explicit_schedule_samam_subject_bird_sookshma_v1"]
+    composition_status: Literal["modern_moira_policy_not_source_claim"]
+    schedule_selection_basis: Literal[
+        "caller_named_profile_paksha_half_weekday_and_samam"
+    ]
+    parent_activity_basis: Literal[
+        "unique_subject_bird_cell_in_selected_schedule_samam"
+    ]
+    selector_policy_basis: Literal["caller_named_no_default"]
+    elapsed_offset_basis: Literal[
+        "caller_supplied_exact_nazhigai_within_samam"
+    ]
+    clock_or_civil_time_routing_status: Literal["not_performed"]
+    uromarisi_outcome_binding_status: Literal["not_performed"]
+    outcome_interpretation_status: Literal["not_performed"]
+
+
+class PanchaPakshiScheduleSookshmaSelectionResponse(_StrictModel):
+    schedule_profile_id: str
+    selector_profile_id: str
+    schedule: PanchaPakshiNominalScheduleResponse
+    samam_index: int = Field(ge=1, le=5)
+    subject_bird: PanchaPakshiBird
+    parent_schedule_cell: PanchaPakshiScheduleCellResponse
+    elapsed_nazhigai: PanchaPakshiFractionResponse
+    composition_policy: PanchaPakshiScheduleSookshmaCompositionPolicyResponse
+    sookshma_selection: PanchaPakshiSookshmaSelectionResponse
 
 
 class PanchaPakshiFirstEatBirdMappingResponse(_StrictModel):

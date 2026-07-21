@@ -73,6 +73,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             "pancha_pakshi_first_eat_bird_mapping",
             "pancha_pakshi_padu_bird_mapping",
             "pancha_pakshi_sookshma_temporal_selection",
+            "pancha_pakshi_schedule_sookshma_temporal_selection",
             "pancha_pakshi_identity_from_initial_vowel",
             "pancha_pakshi_directed_relationship", "pancha_pakshi_schedule",
             "pancha_pakshi_local_solar_context",
@@ -299,6 +300,38 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
             policy_id=policy_id,
             parent_activity=parent_activity,
             elapsed_nazhigai=elapsed_nazhigai,
+        )
+
+    def pancha_pakshi_schedule_sookshma_temporal_selection(
+        self,
+        schedule_profile_id: str,
+        selector_profile_id: str,
+        *,
+        profile_paksha: _pancha_pakshi.PanchaPakshiPaksha,
+        half: _pancha_pakshi.PanchaPakshiHalf,
+        weekday: _pancha_pakshi.PanchaPakshiWeekday,
+        samam_index: int,
+        subject_bird: _pancha_pakshi.PanchaPakshiBird,
+        selector_policy_id: (
+            _pancha_pakshi.PanchaPakshiSookshmaSelectorPolicyId
+        ),
+        elapsed_nazhigai: Fraction,
+    ) -> _pancha_pakshi.PanchaPakshiScheduleSookshmaSelection:
+        """Compose one named schedule samam with an explicit selector."""
+
+        return (
+            _pancha_pakshi
+            .pancha_pakshi_schedule_sookshma_temporal_selection(
+                schedule_profile_id,
+                selector_profile_id,
+                profile_paksha=profile_paksha,
+                half=half,
+                weekday=weekday,
+                samam_index=samam_index,
+                subject_bird=subject_bird,
+                selector_policy_id=selector_policy_id,
+                elapsed_nazhigai=elapsed_nazhigai,
+            )
         )
 
     def pancha_pakshi_first_eat_bird_mapping(
