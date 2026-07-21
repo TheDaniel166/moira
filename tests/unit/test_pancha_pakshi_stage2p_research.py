@@ -147,11 +147,19 @@ def test_stage2p_preserves_semantic_and_runtime_fail_closed_boundaries() -> None
     assert ambiguity["condition_or_score_mapping"] == "forbidden"
     assert ambiguity["human_language_reviewer_dependency"] == "none"
 
+    phase12_governance_names = {
+        "PanchaPakshiUromarisiConstitutionStatus",
+        "pancha_pakshi_uromarisi_constitution_status",
+    }
     for surface in (moira, pakshi, vedic, facade.Moira):
         assert not [
             name
             for name in dir(surface)
-            if "uromarisi" in name.lower() or "illness_grid" in name.lower()
+            if (
+                "uromarisi" in name.lower()
+                and name not in phase12_governance_names
+            )
+            or "illness_grid" in name.lower()
         ]
     assert all(
         "uromarisi" not in route.path.lower()

@@ -264,7 +264,8 @@ def test_public_signature_exports_and_facade_keep_both_policies_required() -> No
 def test_stage2o_decision_binds_unchanged_profiles_and_explicit_policies() -> None:
     raw = _DECISION.read_bytes()
     decision = json.loads(raw)
-    assert hashlib.sha256(raw).hexdigest() == (
+    canonical = raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+    assert hashlib.sha256(canonical.encode("utf-8")).hexdigest() == (
         "2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df"
     )
     assert decision["stage"] == "2O"

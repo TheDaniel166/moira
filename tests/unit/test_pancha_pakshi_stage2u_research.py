@@ -199,11 +199,19 @@ def test_repeatability_and_runtime_boundaries_fail_closed() -> None:
     assert ambiguity["automatic_stage2o_to_uromarisi_binding"] == "forbidden"
     assert ambiguity["default_selector"] is None
 
+    phase12_governance_names = {
+        "PanchaPakshiUromarisiConstitutionStatus",
+        "pancha_pakshi_uromarisi_constitution_status",
+    }
     for surface in (moira, pakshi, vedic, facade.Moira):
         assert not [
             name
             for name in dir(surface)
-            if "uromarisi" in name.lower() or "illness_outcome" in name.lower()
+            if (
+                "uromarisi" in name.lower()
+                and name not in phase12_governance_names
+            )
+            or "illness_outcome" in name.lower()
         ]
     assert all(
         "uromarisi" not in route.path.lower()

@@ -44,6 +44,37 @@ class PanchaPakshiAdmissionStatus(str, Enum):
     CORROBORATED_PUBLIC = "corroborated_public"
 
 
+@dataclass(frozen=True, slots=True)
+class PanchaPakshiUromarisiConstitutionStatus:
+    """Public governance status without exposing private research data."""
+
+    process: str = field(default="SCP", init=False)
+    completed_phases: tuple[int, ...] = field(
+        default=tuple(range(1, 13)), init=False
+    )
+    admission_status: PanchaPakshiAdmissionStatus = field(
+        default=PanchaPakshiAdmissionStatus.RESEARCH_ONLY, init=False
+    )
+    public_product: str = field(
+        default="constitutional_status_only", init=False
+    )
+    historical_data_status: str = field(default="private_not_exposed", init=False)
+    network_status: str = field(
+        default="private_structural_no_admitted_edges", init=False
+    )
+    relation_semantics_status: str = field(default="not_admitted", init=False)
+    graph_metric_status: str = field(
+        default="not_evaluable_no_admitted_relation_edges", init=False
+    )
+    condition_evaluation_status: str = field(
+        default="not_evaluable_no_admitted_condition_doctrine", init=False
+    )
+    prognosis_status: str = field(default="not_performed", init=False)
+    medical_use_status: str = field(default="forbidden", init=False)
+    manifest_profile_status: str = field(default="not_admitted", init=False)
+    rest_route_status: str = field(default="not_admitted", init=False)
+
+
 class PanchaPakshiCapability(str, Enum):
     """Independently admitted computation available from a profile."""
 
@@ -2583,6 +2614,13 @@ def available_pancha_pakshi_profiles() -> tuple[PanchaPakshiProfileDescriptor, .
     return _available()
 
 
+def pancha_pakshi_uromarisi_constitution_status(
+) -> PanchaPakshiUromarisiConstitutionStatus:
+    """Return stable SCP closure metadata, never the private research corpus."""
+
+    return PanchaPakshiUromarisiConstitutionStatus()
+
+
 def _profile_for_public_capability(
     profile_id: str,
     capability: PanchaPakshiCapability | None = None,
@@ -4459,6 +4497,7 @@ __all__ = [
     "PanchaPakshiSookshmaSelectorPolicy",
     "PanchaPakshiSookshmaSelectorPolicyId",
     "PanchaPakshiSookshmaTimingPolicyId",
+    "PanchaPakshiUromarisiConstitutionStatus",
     "PanchaPakshiWeekday",
     "available_pancha_pakshi_profiles",
     "pancha_pakshi_astronomical_paksha_at",
@@ -4478,4 +4517,5 @@ __all__ = [
     "pancha_pakshi_sookshma_temporal_selection",
     "pancha_pakshi_solar_proportional_current_cell_at",
     "pancha_pakshi_solar_proportional_materialization_at",
+    "pancha_pakshi_uromarisi_constitution_status",
 ]

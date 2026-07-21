@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase10_full_subsystem_hardening_2026_07_21",
+  "decided_at_utc": "2026-07-21T23:40:00Z",
+  "decision_kind": "research_only_constitutional_phase10_full_subsystem_hardening",
+  "admission_status": "research_only",
+  "constitutional_phase": 10,
+  "prior_boundary": {
+    "phase9_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase9_network_intelligence_2026_07_21.json",
+    "phase9_decision_sha256": "49935df6e96595b5cd365dbea12acabcf862eb81a120c3d9122d29ad4962872b"
+  },
+  "governing_object": {
+    "hardening_module": "moira._pancha_pakshi_hardening",
+    "receipt_vessel": "PanchaPakshiUromarisiPhase10HardeningReceipt",
+    "receipt_operation": "pancha_pakshi_uromarisi_hardening_receipt",
+    "fingerprint_schema": "pancha_pakshi_uromarisi_hardened_structure_v1",
+    "failure_policy": "fail_closed"
+  },
+  "hardening_contract": {
+    "layer_sequence": [
+      "source_atoms",
+      "classification",
+      "inspectability",
+      "explicit_policy",
+      "relations",
+      "relation_inspectability",
+      "local_conditions",
+      "aggregate_intelligence",
+      "network_intelligence"
+    ],
+    "profile_count": 24,
+    "relation_candidate_count": 17,
+    "admitted_edge_count": 0,
+    "scored_edge_count": 0,
+    "blocked_verses": [250],
+    "source_binding_count": 5,
+    "structural_sha256": "2133ad1c72ea5209facbb83ff8f40cfd09c1efea5340df7943fe08ff599cface",
+    "invariant_status": "hardened",
+    "ordering_status": "deterministic",
+    "inference_policy": "no_implicit_repair"
+  },
+  "frozen_invariants": [
+    "classification_relation_profile_and_node_identity_agree",
+    "all_cross_layer_source_bindings_agree",
+    "all_containers_are_immutable_and_canonically_ordered",
+    "detected_absent_unresolved_named_admitted_and_scored_states_remain_distinct",
+    "policy_identity_is_explicit_and_has_no_default",
+    "blocked_verse250_remains_outside_materialized_cells",
+    "missing_sleep_ordinal5_remains_absent",
+    "candidate_clauses_do_not_become_edges",
+    "unavailable_graph_metrics_do_not_become_zero",
+    "condition_score_prognosis_and_medical_use_remain_unavailable"
+  ],
+  "adversarial_contract": {
+    "reordered_nodes": "reject",
+    "duplicated_nodes": "reject",
+    "forged_source_binding": "reject",
+    "mismatched_aggregate": "reject",
+    "injected_admitted_edge": "reject",
+    "injected_scored_edge": "reject",
+    "implicit_policy_default": "reject",
+    "conflict_repair": "reject",
+    "metric_zero_substitution": "reject"
+  },
+  "phase10_closure": {
+    "status": "complete_private_full_subsystem_hardening",
+    "next_constitutional_phase": 11,
+    "next_phase_scope": "architecture_freeze_and_validation_codex_only",
+    "architecture_document_may_now_follow_executable_truth": true
+  },
+  "admission_decision": {
+    "runtime_data_admitted": false,
+    "runtime_profile_admitted": false,
+    "manifest_entry_admitted": false,
+    "package_export_admitted": false,
+    "facade_method_admitted": false,
+    "rest_route_admitted": false,
+    "prediction_or_prognosis_admitted": false,
+    "medical_use_admitted": false
+  }
+}

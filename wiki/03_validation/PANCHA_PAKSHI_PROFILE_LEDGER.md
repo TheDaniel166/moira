@@ -588,6 +588,49 @@ never creates a default canon.
 - Sequence status: agreed private Phases 1–8 complete; no automatic Phase 9 and
   no public admission
 
+### Constitutional Phase 9 Uromarisi Network Intelligence
+
+- Admission kind: private structural projection
+- Decision SHA-256:
+  `49935df6e96595b5cd365dbea12acabcf862eb81a120c3d9122d29ad4962872b`
+- Structure: `24` canonical nodes, `17` detected-clause candidates, `0`
+  admitted edges, and `0` scored edges
+- Metric status: `not_evaluable_no_admitted_relation_edges`
+- Failure boundary: no endpoint, direction, topology, weight, self-loop,
+  duplicate-edge, or verse `250` repair
+
+### Constitutional Phase 10 Uromarisi Full-Subsystem Hardening
+
+- Admission kind: private deterministic cross-layer receipt
+- Decision SHA-256:
+  `9ef977585ad1dc9dc517316eb864a8de26f462fb852977bfef936d8756ef64a0`
+- Structural SHA-256:
+  `2133ad1c72ea5209facbb83ff8f40cfd09c1efea5340df7943fe08ff599cface`
+- Frozen invariants: identity, source binding, policy, order, absence, blocked
+  conflict, empty edge sets, not-evaluable conditions, and fail-closed misuse
+
+### Constitutional Phase 11 Uromarisi Architecture Freeze
+
+- Admission kind: architecture standard and validation codex
+- Decision SHA-256:
+  `697eecaf22cf4e8d42ca9b7044633e6407ca8d5577dd4407180029cfc00055c0`
+- Frozen standard:
+  [`PANCHA_PAKSHI_UROMARISI_BACKEND_STANDARD.md`](../02_standards/PANCHA_PAKSHI_UROMARISI_BACKEND_STANDARD.md)
+- Phase 12-eligible product: immutable constitutional status only
+
+### Constitutional Phase 12 Uromarisi Public API Curation
+
+- Public product: `PanchaPakshiUromarisiConstitutionStatus`
+- Public operation: `pancha_pakshi_uromarisi_constitution_status()`
+- Decision SHA-256:
+  `581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03`
+- Admitted surfaces: package root, `moira.pancha_pakshi`, `moira.vedic`, facade
+  module, and kernel-free `Moira` method
+- Excluded surfaces: historical/network data, manifest profile, REST route,
+  relation semantics, graph metrics, score, prognosis, and medical use
+- SCP status: Phases 1-12 complete; future source truth requires a new
+  admission process
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:

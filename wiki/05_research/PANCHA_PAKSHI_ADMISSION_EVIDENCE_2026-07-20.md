@@ -1536,7 +1536,7 @@ path exists. The adjudication remains machine-assisted research evidence, so
 no linguistic-authority claim, external-oracle parity, universal-doctrine
 claim, or admission beyond the later explicitly bounded decisions is asserted.
 
-## Constitutional Eight-Phase Closure And Future Decision Boundary
+## Constitutional Eight-Phase Closure And Later SCP Continuation
 
 1. Constitutional Phase 2 is closed at the private research boundary. Its
    exact corpus comprises five EAT, five WALK, five RULE, four SLEEP, and five
@@ -1568,7 +1568,8 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
 7. Constitutional Phase 8 is closed at the private research boundary. Its
    immutable aggregate records complete structural partitions without ranking,
    weighting, judging, scoring, or forecasting. The agreed Phases 1–8 are
-   complete; Phase 9 is not automatic and public admission is not authorized.
+   complete. That boundary required a new explicit Phase 9 decision, which the
+   later SCP continuation below supplies without retroactively changing Phase 8.
 8. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
    the target remains title-only. Actual `A5` leaves or a critical transcription
@@ -1583,6 +1584,34 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
    lookup; and Stage 2I first-EAT remains a pure first-samam seed lookup. None
    silently acquires Uromarisi outcome, authority, condition, score, electional,
    or forecasting semantics.
+
+## SCP Phases 9-12 Closeout
+
+The explicit continuation decision authorizes SCP Phases 9-12 but adds no new
+historical source truth. Phase 9 creates 24 canonical private nodes and 17
+detected-clause candidate annotations. Endpoints and direction remain
+unestablished, so admitted and scored edge sets are empty and graph metrics are
+not evaluable. Its decision SHA-256 is
+`49935df6e96595b5cd365dbea12acabcf862eb81a120c3d9122d29ad4962872b`.
+
+Phase 10 freezes the complete cross-layer chain under structural SHA-256
+`2133ad1c72ea5209facbb83ff8f40cfd09c1efea5340df7943fe08ff599cface`.
+Its focused adversarial contract rejects ordering, identity, binding, conflict,
+policy, edge, scoring, and metric substitutions. The decision SHA-256 is
+`9ef977585ad1dc9dc517316eb864a8de26f462fb852977bfef936d8756ef64a0`.
+
+Phase 11 freezes the backend architecture and validation codex only after
+Phase 10 establishes executable invariants. Its decision SHA-256 is
+`697eecaf22cf4e8d42ca9b7044633e6407ca8d5577dd4407180029cfc00055c0`.
+
+Phase 12 admits only the immutable constitutional-status vessel and package/
+facade operation. The status returns no historical or network data and creates
+no manifest profile or REST route. It preserves `research_only`, forbidden
+medical use, no prognosis, and unavailable relation/graph/condition semantics.
+Its decision SHA-256 is
+`581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03`.
+No human-language reviewer or Commissionerate A5 artifact is required for this
+closure; A5 remains relevant only to a future `corroborated_public` claim.
 
 The present resting place is four tested, source-scoped public profiles: the
 corrected 1879 aksara schedule with the separately named Stage 2A through Stage
@@ -1608,7 +1637,9 @@ plus the private constitutional Phase 6 hardening and inspectability closure
 with `17` detected, `0` admitted, and `0` scored relations, plus the private
 constitutional Phase 7 corpus of `24` structurally integrated but explicitly
 not-evaluable local conditions, plus the private constitutional Phase 8
-structural aggregate and formal closure of the agreed eight-phase sequence.
+structural aggregate, the private Phase 9 network projection, the private
+Phase 10 hardening receipt, the Phase 11 architecture freeze and validation
+codex, and the Phase 12 governance-status-only public surface.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

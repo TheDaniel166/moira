@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase9_network_intelligence_2026_07_21",
+  "decided_at_utc": "2026-07-21T23:30:00Z",
+  "decision_kind": "research_only_constitutional_phase9_structural_network_intelligence",
+  "admission_status": "research_only",
+  "constitutional_phase": 9,
+  "prior_boundary": {
+    "phase8_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase8_aggregate_intelligence_2026_07_21.json",
+    "phase8_decision_sha256": "b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "authorization": {
+    "explicit_user_transition": true,
+    "authorized_scope": "scp_phases_9_through_12",
+    "source_truth_expansion_authorized": false,
+    "public_research_data_admission_authorized": false
+  },
+  "governing_object": {
+    "network_module": "moira._pancha_pakshi_network",
+    "network_vessel": "PanchaPakshiUromarisiPhase9Network",
+    "network_operation": "pancha_pakshi_uromarisi_network",
+    "node_source": "PanchaPakshiUromarisiPhase7LocalConditionCorpus",
+    "aggregate_source": "PanchaPakshiUromarisiPhase8AggregateIntelligence",
+    "projection_kind": "nodes_and_source_clause_candidate_annotations_only"
+  },
+  "network_contract": {
+    "node_count": 24,
+    "node_ids": [
+      "eat:1:verse:230",
+      "eat:2:verse:231",
+      "eat:3:verse:232",
+      "eat:4:verse:233",
+      "eat:5:verse:234",
+      "walk:1:verse:235",
+      "walk:2:verse:236",
+      "walk:3:verse:237",
+      "walk:4:verse:238",
+      "walk:5:verse:239",
+      "rule:1:verse:241",
+      "rule:2:verse:242",
+      "rule:3:verse:243",
+      "rule:4:verse:244",
+      "rule:5:verse:245",
+      "sleep:1:verse:246",
+      "sleep:2:verse:247",
+      "sleep:3:verse:248",
+      "sleep:4:verse:249",
+      "die:1:verse:251",
+      "die:2:verse:252",
+      "die:3:verse:253",
+      "die:4:verse:254",
+      "die:5:verse:255"
+    ],
+    "relation_candidate_count": 17,
+    "admitted_edge_count": 0,
+    "scored_edge_count": 0,
+    "blocked_verses": [250],
+    "endpoint_status": "not_established",
+    "direction_status": "not_established",
+    "metric_status": "not_evaluable_no_admitted_relation_edges",
+    "topology_status": "not_materialized_no_admitted_edges",
+    "medical_use_status": "forbidden"
+  },
+  "network_invariants": {
+    "one_node_per_phase7_profile": true,
+    "canonical_profile_order_preserved": true,
+    "node_ids_are_unique": true,
+    "one_candidate_per_detected_clause": true,
+    "candidate_order_preserved": true,
+    "candidate_source_bindings_preserved": true,
+    "endpoints_are_not_inferred": true,
+    "direction_is_not_inferred": true,
+    "admitted_edges_are_empty": true,
+    "scored_edges_are_empty": true,
+    "graph_metrics_are_not_evaluable": true,
+    "blocked_verse250_is_preserved": true
+  },
+  "ambiguity_policy": {
+    "surface_category_as_endpoint": "forbidden",
+    "surface_category_as_direction": "forbidden",
+    "candidate_as_admitted_edge": "forbidden",
+    "absence_as_zero_weight_edge": "forbidden",
+    "missing_metric_as_numeric_zero": "forbidden",
+    "duplicate_edge_collapse": "forbidden",
+    "self_loop_repair": "forbidden",
+    "verse250_conflict_repair": "forbidden"
+  },
+  "phase9_closure": {
+    "status": "complete_private_structural_network_boundary",
+    "next_constitutional_phase": 10,
+    "next_phase_scope": "full_subsystem_hardening_only",
+    "endpoint_evidence_required_before_edge_admission": true,
+    "a5_required_for_private_phase10": false
+  },
+  "admission_decision": {
+    "runtime_data_admitted": false,
+    "runtime_profile_admitted": false,
+    "manifest_entry_admitted": false,
+    "package_export_admitted": false,
+    "facade_method_admitted": false,
+    "rest_route_admitted": false,
+    "network_edge_admitted": false,
+    "network_metric_admitted": false,
+    "prediction_or_prognosis_admitted": false,
+    "medical_use_admitted": false
+  }
+}

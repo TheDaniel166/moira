@@ -146,6 +146,7 @@ from .pancha_pakshi import (
     PanchaPakshiSookshmaSelectorPolicy,
     PanchaPakshiSookshmaSelectorPolicyId,
     PanchaPakshiSookshmaTimingPolicyId,
+    PanchaPakshiUromarisiConstitutionStatus,
     PanchaPakshiWeekday,
     available_pancha_pakshi_profiles,
     pancha_pakshi_astronomical_paksha_at,
@@ -165,6 +166,7 @@ from .pancha_pakshi import (
     pancha_pakshi_sookshma_temporal_selection,
     pancha_pakshi_solar_proportional_current_cell_at,
     pancha_pakshi_solar_proportional_materialization_at,
+    pancha_pakshi_uromarisi_constitution_status,
 )
 
 # ── Vedic Dignities ──────────────────────────────────────────────────────
@@ -464,6 +466,7 @@ _VEDIC_OWN: list[str] = [
     "PanchaPakshiSookshmaSelectorPolicy",
     "PanchaPakshiSookshmaSelectorPolicyId",
     "PanchaPakshiSookshmaTimingPolicyId",
+    "PanchaPakshiUromarisiConstitutionStatus",
     "PanchaPakshiWeekday",
     "available_pancha_pakshi_profiles",
     "pancha_pakshi_astronomical_paksha_at",
@@ -483,6 +486,7 @@ _VEDIC_OWN: list[str] = [
     "pancha_pakshi_sookshma_temporal_selection",
     "pancha_pakshi_solar_proportional_current_cell_at",
     "pancha_pakshi_solar_proportional_materialization_at",
+    "pancha_pakshi_uromarisi_constitution_status",
     # Vedic dignities
     "VedicDignityRank",
     "CompoundRelationship",

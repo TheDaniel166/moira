@@ -1062,6 +1062,34 @@ requires a new explicit decision. The Phase 8 decision fixture has canonical
 SHA-256
 `b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13`.
 
+The later explicit SCP transition authorizes Phases 9-12 without expanding
+source truth. Phase 9 projects the same 24 profiles into canonical nodes and
+attaches the 17 detected clauses as candidate annotations. Because the bounded
+records establish neither endpoints nor direction, it admits zero edges and
+marks topology metrics not evaluable. Its decision SHA-256 is
+`49935df6e96595b5cd365dbea12acabcf862eb81a120c3d9122d29ad4962872b`.
+
+Phase 10 freezes the complete cross-layer identity, source-binding, ordering,
+absence, conflict, and failure contract. Its canonical structural fingerprint
+is `2133ad1c72ea5209facbb83ff8f40cfd09c1efea5340df7943fe08ff599cface`
+and its decision SHA-256 is
+`9ef977585ad1dc9dc517316eb864a8de26f462fb852977bfef936d8756ef64a0`.
+This is regression integrity for the bounded structure, not an external
+historical or medical authority claim.
+
+Phase 11 freezes the executable architecture in
+`PANCHA_PAKSHI_UROMARISI_BACKEND_STANDARD.md`, including its validation codex,
+private boundaries, and explicit nonclaims. Its decision SHA-256 is
+`697eecaf22cf4e8d42ca9b7044633e6407ca8d5577dd4407180029cfc00055c0`.
+
+Phase 12 admits only immutable constitutional-status metadata through the
+package and `Moira` facade. The historical corpus, local profiles, aggregate,
+network, hardening receipt, manifest, and REST transport remain private or
+unchanged. The status truthfully reports `research_only`, no admitted relation
+semantics or graph metrics, no prognosis, and forbidden medical use. Its
+decision SHA-256 is
+`581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;

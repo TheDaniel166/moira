@@ -1079,6 +1079,58 @@ not authorized; either requires a separate explicit decision. The Phase 8
 decision SHA-256 is
 `b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13`.
 
+### Constitutional Phase 9 network intelligence
+
+The explicitly authorized Phase 9 projection contains one immutable node for
+each of the 24 Phase 7 profiles and one candidate annotation for each of the 17
+detected source clauses. Node identity and order preserve activity, ordinal,
+verse, and source binding exactly. A candidate remains owned by its source
+node and is not an edge.
+
+Because endpoint and direction remain `not_established`, admitted and scored
+edge tuples are empty, topology is not materialized, and graph metrics are
+`not_evaluable_no_admitted_relation_edges`. Absence is not a zero-weight edge;
+surface categories do not become endpoints; and verse `250` remains blocked.
+The Phase 9 decision SHA-256 is
+`49935df6e96595b5cd365dbea12acabcf862eb81a120c3d9122d29ad4962872b`.
+
+### Constitutional Phase 10 full-subsystem hardening
+
+Phase 10 freezes the complete source-to-network receipt chain. It preserves
+policy identity, canonical node IDs, five source decision bindings, 24
+profiles, 17 candidates, empty admitted/scored edges, and blocked verse 250.
+The canonical structural fingerprint is
+`2133ad1c72ea5209facbb83ff8f40cfd09c1efea5340df7943fe08ff599cface`.
+Malformed types, reordered or duplicated members, forged source bindings,
+mismatched aggregates, invented edges, implicit defaults, conflict repairs,
+and numeric substitution for unavailable metrics fail closed. The Phase 10
+decision SHA-256 is
+`9ef977585ad1dc9dc517316eb864a8de26f462fb852977bfef936d8756ef64a0`.
+
+### Constitutional Phase 11 architecture freeze and validation codex
+
+The formal backend architecture is frozen in
+[`PANCHA_PAKSHI_UROMARISI_BACKEND_STANDARD.md`](PANCHA_PAKSHI_UROMARISI_BACKEND_STANDARD.md).
+It records executable terminology, ordering, policy, relation, condition,
+network, hardening, failure, validation, public/private, and nonclaim doctrine.
+The standard admits only immutable governance status as a Phase 12 candidate;
+historical and network data remain private. The Phase 11 decision SHA-256 is
+`697eecaf22cf4e8d42ca9b7044633e6407ca8d5577dd4407180029cfc00055c0`.
+
+### Constitutional Phase 12 public API curation
+
+Phase 12 exposes `PanchaPakshiUromarisiConstitutionStatus` and
+`pancha_pakshi_uromarisi_constitution_status()` through the package and facade.
+The immutable result reports completion of SCP Phases 1-12, `research_only`
+admission, private historical/network data, unadmitted relation semantics,
+unavailable graph and condition evaluation, no prognosis, and forbidden
+medical use.
+
+This is governance metadata, not a runtime profile. It adds no manifest entry,
+REST route, research fixture I/O, historical cell, relation candidate, edge,
+score, or interpretation. The Phase 12 decision SHA-256 is
+`581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial

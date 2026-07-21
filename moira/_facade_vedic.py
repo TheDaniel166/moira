@@ -67,6 +67,7 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
         "frozen": [
             "panchanga", "panchanga_profile",
             "pancha_pakshi_profiles", "pancha_pakshi_profile_info",
+            "pancha_pakshi_uromarisi_constitution_status",
             "pancha_pakshi_astronomical_paksha",
             "pancha_pakshi_nakshatra_bird_mapping",
             "pancha_pakshi_natal_moon_identity",
@@ -220,6 +221,13 @@ Canon: Moira Sovereign Facade Architecture; moira.panchanga,
     ) -> tuple[_pancha_pakshi.PanchaPakshiProfileDescriptor, ...]:
         """List named Pancha Pakshi profiles without selecting a default."""
         return _pancha_pakshi.available_pancha_pakshi_profiles()
+
+    def pancha_pakshi_uromarisi_constitution_status(
+        self,
+    ) -> _pancha_pakshi.PanchaPakshiUromarisiConstitutionStatus:
+        """Return public governance metadata without private research data."""
+
+        return _pancha_pakshi.pancha_pakshi_uromarisi_constitution_status()
 
     def pancha_pakshi_profile_info(
         self,

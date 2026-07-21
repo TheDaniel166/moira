@@ -239,6 +239,15 @@ def test_phase3_hardening_rejects_inconsistent_vessels_without_new_doctrine() ->
     assert decision["phase3_closure"]["automatic_public_admission"] is False
     assert classification_module.__all__ == ()
 
+    phase12_governance_names = {
+        "PanchaPakshiUromarisiConstitutionStatus",
+        "pancha_pakshi_uromarisi_constitution_status",
+    }
     for surface in (moira, pakshi, vedic, facade.Moira):
-        assert not [name for name in dir(surface) if "uromarisi" in name.lower()]
+        assert not [
+            name
+            for name in dir(surface)
+            if "uromarisi" in name.lower()
+            and name not in phase12_governance_names
+        ]
     assert all("uromarisi" not in route.path.lower() for route in router_module.router.routes)

@@ -350,12 +350,19 @@ def test_phase2_closure_opens_only_private_phase3_inspectability() -> None:
     assert "human_tamil_review" in phase2["phase3_nonrequirements"]
     assert classification_module.__all__ == ()
 
+    phase12_governance_names = {
+        "PanchaPakshiUromarisiConstitutionStatus",
+        "pancha_pakshi_uromarisi_constitution_status",
+    }
     for surface in (moira, pakshi, vedic, facade.Moira):
         assert not [
             name
             for name in dir(surface)
             if "historicalcell" in name.lower()
             or "historical_cell" in name.lower()
-            or "uromarisi" in name.lower()
+            or (
+                "uromarisi" in name.lower()
+                and name not in phase12_governance_names
+            )
         ]
     assert all("uromarisi" not in route.path.lower() for route in router_module.router.routes)

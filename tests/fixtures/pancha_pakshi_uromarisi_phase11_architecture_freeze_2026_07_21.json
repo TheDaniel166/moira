@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase11_architecture_freeze_2026_07_21",
+  "decided_at_utc": "2026-07-21T23:50:00Z",
+  "decision_kind": "research_only_constitutional_phase11_architecture_freeze_and_validation_codex",
+  "admission_status": "research_only",
+  "constitutional_phase": 11,
+  "prior_boundary": {
+    "phase10_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase10_full_subsystem_hardening_2026_07_21.json",
+    "phase10_decision_sha256": "9ef977585ad1dc9dc517316eb864a8de26f462fb852977bfef936d8756ef64a0",
+    "phase10_structural_sha256": "2133ad1c72ea5209facbb83ff8f40cfd09c1efea5340df7943fe08ff599cface"
+  },
+  "architecture_freeze": {
+    "standard_path": "wiki/02_standards/PANCHA_PAKSHI_UROMARISI_BACKEND_STANDARD.md",
+    "standard_sha256": "c71860b482458230ac0b78a2f593286e40294cd51bbc0767bfe3e2c5e2de9b72",
+    "terminology_frozen": true,
+    "ordering_frozen": true,
+    "failure_doctrine_frozen": true,
+    "public_private_boundary_frozen": true,
+    "validation_codex_present": true
+  },
+  "stable_private_vessels": [
+    "PanchaPakshiUromarisiPhase2ClassificationCorpus",
+    "PanchaPakshiUromarisiPhase5RelationCorpus",
+    "PanchaPakshiUromarisiPhase7LocalConditionCorpus",
+    "PanchaPakshiUromarisiPhase8AggregateIntelligence",
+    "PanchaPakshiUromarisiPhase9Network",
+    "PanchaPakshiUromarisiPhase10HardeningReceipt"
+  ],
+  "phase12_eligible_surface": {
+    "product": "immutable_constitutional_status_only",
+    "package_export_eligible": true,
+    "facade_method_eligible": true,
+    "manifest_profile_eligible": false,
+    "rest_route_eligible": false,
+    "historical_data_eligible": false,
+    "network_data_eligible": false,
+    "evaluation_or_medical_data_eligible": false
+  },
+  "phase11_closure": {
+    "status": "complete_architecture_freeze_and_validation_codex",
+    "next_constitutional_phase": 12,
+    "next_phase_scope": "curate_constitutional_status_public_surface_only"
+  },
+  "admission_decision": {
+    "runtime_data_admitted": false,
+    "runtime_profile_admitted": false,
+    "manifest_entry_admitted": false,
+    "package_export_admitted": false,
+    "facade_method_admitted": false,
+    "rest_route_admitted": false,
+    "prediction_or_prognosis_admitted": false,
+    "medical_use_admitted": false
+  }
+}

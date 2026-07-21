@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase12_public_api_curation_2026_07_21",
+  "decided_at_utc": "2026-07-21T23:59:00Z",
+  "decision_kind": "constitutional_phase12_public_api_curation_of_governance_status_only",
+  "constitutional_phase": 12,
+  "prior_boundary": {
+    "phase11_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase11_architecture_freeze_2026_07_21.json",
+    "phase11_decision_sha256": "697eecaf22cf4e8d42ca9b7044633e6407ca8d5577dd4407180029cfc00055c0",
+    "backend_standard_path": "wiki/02_standards/PANCHA_PAKSHI_UROMARISI_BACKEND_STANDARD.md",
+    "backend_standard_sha256": "c71860b482458230ac0b78a2f593286e40294cd51bbc0767bfe3e2c5e2de9b72"
+  },
+  "governing_object": {
+    "public_vessel": "PanchaPakshiUromarisiConstitutionStatus",
+    "public_operation": "pancha_pakshi_uromarisi_constitution_status",
+    "public_product": "constitutional_status_only",
+    "kernel_required": false,
+    "research_fixture_io_performed": false,
+    "historical_data_returned": false
+  },
+  "public_contract": {
+    "process": "SCP",
+    "completed_phases": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "admission_status": "research_only",
+    "public_product": "constitutional_status_only",
+    "historical_data_status": "private_not_exposed",
+    "network_status": "private_structural_no_admitted_edges",
+    "relation_semantics_status": "not_admitted",
+    "graph_metric_status": "not_evaluable_no_admitted_relation_edges",
+    "condition_evaluation_status": "not_evaluable_no_admitted_condition_doctrine",
+    "prognosis_status": "not_performed",
+    "medical_use_status": "forbidden",
+    "manifest_profile_status": "not_admitted",
+    "rest_route_status": "not_admitted"
+  },
+  "curated_surface": {
+    "moira.pancha_pakshi": true,
+    "moira_root": true,
+    "moira.facade_module": true,
+    "moira.vedic": true,
+    "Moira_facade_method": true,
+    "manifest_profile": false,
+    "fastapi_route": false
+  },
+  "private_surface_exclusions": [
+    "historical_source_atoms",
+    "historical_classifications",
+    "historical_relation_records",
+    "local_condition_profiles",
+    "aggregate_intelligence",
+    "network_nodes",
+    "relation_candidates",
+    "hardening_receipt",
+    "condition_scores",
+    "prognosis",
+    "medical_interpretation"
+  ],
+  "phase12_closure": {
+    "status": "complete_public_api_curation",
+    "completed_constitutional_phases": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    "next_constitutional_phase": null,
+    "historical_research_boundary_remains_private": true,
+    "future_source_truth_requires_new_admission_process": true,
+    "a5_required_for_this_closure": false
+  },
+  "admission_decision": {
+    "constitutional_status_package_export_admitted": true,
+    "constitutional_status_facade_method_admitted": true,
+    "runtime_data_admitted": false,
+    "runtime_profile_admitted": false,
+    "manifest_entry_admitted": false,
+    "rest_route_admitted": false,
+    "network_data_admitted": false,
+    "network_edge_admitted": false,
+    "network_metric_admitted": false,
+    "prediction_or_prognosis_admitted": false,
+    "medical_use_admitted": false
+  }
+}

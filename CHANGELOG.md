@@ -273,6 +273,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   automatic Phase 9 or public admission. No runtime profile, manifest, export,
   facade, REST, or native surface was added. The Phase 8 decision SHA-256 is
   `b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13`.
+- **Pancha Pakshi Constitutional Phase 12 Public API Curation**: Added the
+  immutable, kernel-free `PanchaPakshiUromarisiConstitutionStatus` and
+  `pancha_pakshi_uromarisi_constitution_status()` package/facade surface. It
+  exposes governance status only: SCP Phases 1-12 are complete, Uromarisi data
+  remains private `research_only`, relation semantics and graph metrics remain
+  unadmitted, and medical use remains forbidden. No historical record,
+  network, manifest profile, REST route, score, or prognosis was admitted. The
+  Phase 12 decision SHA-256 is
+  `581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03`.
+- **Pancha Pakshi Constitutional Phase 11 Architecture Freeze**: Added the
+  formal Uromarisi backend standard and validation codex after executable
+  hardening. It freezes terminology, identity, ordering, failure doctrine,
+  private/public boundaries, evidence classes, and nonclaims. The Phase 11
+  decision SHA-256 is
+  `697eecaf22cf4e8d42ca9b7044633e6407ca8d5577dd4407180029cfc00055c0`.
+- **Pancha Pakshi Constitutional Phase 10 Full-Subsystem Hardening**: Added a
+  private deterministic receipt across source atoms, classification, policy,
+  relations, conditions, aggregate, and network. The exact structural
+  fingerprint is
+  `2133ad1c72ea5209facbb83ff8f40cfd09c1efea5340df7943fe08ff599cface`;
+  adversarial identity, binding, order, conflict, and edge invention fail
+  closed. The Phase 10 decision SHA-256 is
+  `9ef977585ad1dc9dc517316eb864a8de26f462fb852977bfef936d8756ef64a0`.
+- **Pancha Pakshi Constitutional Phase 9 Network Intelligence**: Added a
+  private deterministic projection of 24 local-condition nodes and 17 detected
+  clause candidates. Because source endpoints and direction remain
+  unestablished, admitted and scored edges are empty and topology metrics are
+  explicitly not evaluable. The Phase 9 decision SHA-256 is
+  `49935df6e96595b5cd365dbea12acabcf862eb81a120c3d9122d29ad4962872b`.
 - **Pancha Pakshi Constitutional Phase 7 Integrated Local Condition**: Added a
   private policy-bound local-condition vessel and a complete `24`-profile
   corpus. Each profile pairs one exact Phase 2 classification with its exact
