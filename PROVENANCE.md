@@ -806,6 +806,21 @@ election, or forecast is composed. The Stage 2O decision fixture has canonical
 SHA-256
 `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
 
+Stage 2P returns to the primary Uromarisi-attributed 1934 witness for a bounded
+research-only structural recovery. The Archive.org PDF was locally verified
+at SHA-256
+`e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`
+and PDF pages `115–126` were rendered and reviewed. The illness context forms
+a complete five-activity by five-vinadi-ordinal locator grid: verses `230–239`
+and `241–255`, with transition verse `240` excluded and the separate duration
+section beginning at verse `256`. The decision preserves only structure,
+bibliographic identity, hashes, and repeatable page/verse locators. It copies
+no source expression and performs no translation, outcome normalization,
+medical or prognostic interpretation, scoring, or selector binding. The
+profile, manifest, engine, facade, and REST state remain unchanged. The Stage
+2P decision fixture has canonical SHA-256
+`449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;
@@ -855,7 +870,9 @@ also leaves `corroborated_public` unassigned. Stage 2N separately permits only
 the explicit modern schedule-to-Sookshma join described above; it does not
 change either source profile or bind an outcome. Stage 2O permits civil-time
 routing into that join only when both timing and selector policies are named;
-it provides no automatic policy selection or outcome interpretation.
+it provides no automatic policy selection or outcome interpretation. Stage 2P
+adds only the page-and-verse locator structure of the 1934 Uromarisi illness
+grid; it adds no translated or normalized outcome and no runtime binding.
 Condition, scoring, automatic policy fallback, and forecasting remain outside
 the admitted surface.
 

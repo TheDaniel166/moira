@@ -264,6 +264,29 @@ never creates a default canon.
 - Four profiles, their capabilities, and manifest: unchanged; no
   human-language reviewer required
 
+### Stage 2P Research-Only Uromarisi Illness Grid
+
+- Admission kind: research-only structural locator recovery; no profile or
+  capability
+- Stage 2P decision:
+  [`pancha_pakshi_uromarisi_illness_grid_stage2p_research_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_illness_grid_stage2p_research_2026_07_21.json)
+- Stage 2P decision SHA-256:
+  `449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`
+- Primary 1934 Uromarisi PDF SHA-256:
+  `e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`
+- Inspected range: rendered PDF pages `115–126`, printed pages `113–124`
+- Recovered object: illness context, five parent activities by five explicit
+  vinadi ordinals, exactly 25 unique locator cells
+- Cell verses: `230–239` and `241–255`; verse `240` is an intervening
+  transition and verse `256` begins the separate illness-duration section
+- Payload boundary: activity, ordinal, verse, and page spans only; no copied
+  Tamil expression, translation, normalized outcome, condition, score,
+  medical advice, electional judgment, or forecast
+- Selector boundary: neither Stage 2K policy is attributed to Uromarisi and
+  Stage 2O routing remains unbound
+- Four profiles, manifest, engine, facade, and REST surface: unchanged; no
+  human-language reviewer required
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:

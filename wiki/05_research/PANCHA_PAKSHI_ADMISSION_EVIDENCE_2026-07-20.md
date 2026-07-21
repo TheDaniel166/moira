@@ -1,5 +1,36 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2P Uromarisi Illness-Grid Research Gate — 2026-07-21
+
+Stage 2P advances the remaining Uromarisi branch by recovering one complete
+context structure without translating or admitting its prognostic payload. The
+[`Stage 2P research decision`](../../tests/fixtures/pancha_pakshi_uromarisi_illness_grid_stage2p_research_2026_07_21.json)
+has canonical SHA-256
+`449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`.
+It binds the unchanged Stage 2J research decision, Stage 2O decision, and
+manifest SHA-256 values.
+
+The exact Archive.org 1934 Uromarisi-attributed PDF was downloaded and locally
+verified at SHA-256
+`e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`.
+Rendered original-page review covered PDF pages `115–126`, corresponding to
+printed pages `113–124`. The illness section contains exactly five activity
+blocks—EAT, WALK, RULE, SLEEP, and DIE—and each block contains explicitly
+headed first through fifth vinadi results. The complete 25-cell locator grid
+binds verses `230–239` and `241–255` to their PDF and printed-page spans.
+Verse `240` is an intervening transition and is not an ordinal cell. Verse
+`256` begins a separate illness-duration section after the grid.
+
+This is structural source evidence only. The decision preserves activity,
+ordinal, verse, and page locators but copies no Tamil source expression and
+performs no translation or outcome normalization. The grid states no selector
+arithmetic, so neither Bogamuni Stage 2K policy is attributed to Uromarisi and
+no Stage 2O civil-time result is routed into it. Medical advice, diagnosis,
+prognosis, condition mapping, numeric scoring, electional judgment, and
+forecasting remain outside the admitted surface. The four profiles, manifest,
+engine, facade, and REST routes are unchanged. No human-language reviewer is
+required.
+
 ## Stage 2O Explicit Civil-Time-To-Sookshma Routing — 2026-07-21
 
 Stage 2O binds the existing timing materializations to the Stage 2N
@@ -1144,9 +1175,12 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
 
 1. Preserve the two Stage 2K selectors as separate explicit policies with no
    default. Stage 2N now permits only the named modern schedule-to-selector
-   composition at a caller-supplied exact offset. Clock routing and any binding
-   to Uromarisi ordinal outcomes remain separate future decisions with their
-   own tests.
+   composition, and Stage 2O adds civil-time routing only under a mandatory
+   timing policy. Stage 2P now supplies the complete illness-context locator
+   grid but no semantic outcomes. Any Uromarisi selector binding remains a
+   separate explicit modern decision. Outcome admission first requires a
+   source-owned ontology, repeatable machine-checked transcription, per-cell
+   uncertainty, and no collapse to generic good/bad or numeric scores.
 2. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
    the target remains title-only. The next attempt must obtain the actual `A5`
@@ -1176,7 +1210,8 @@ plus the Stage 2H 2024 Padu-only table, plus the Stage 2K exact Sookshma
 temporal-selector profile with two mandatory explicit policies, plus the
 Stage 2N explicit modern schedule composition with no clock or outcome binding,
 plus Stage 2O civil-time routing under mandatory timing and selector policies
-with no fallback or outcome binding.
+with no fallback or outcome binding, plus the Stage 2P research-only illness
+locator grid with no translated or normalized payload.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

@@ -711,6 +711,31 @@ condition, scoring, electional search, or forecasting occurs. Profiles,
 capabilities, and manifest remain unchanged. The decision fixture SHA-256 is
 `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
 
+### Stage 2P research-only Uromarisi illness-grid recovery
+
+Stage 2P selects one Stage 2J context family for structural recovery without
+admitting its outcome semantics. The primary witness is the exact 166-page
+1934 Uromarisi-attributed *Vinadi Pancha Pakshi Mulamum Uraiyum* PDF, locally
+verified at SHA-256
+`e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`.
+Rendered review of PDF pages `115–126` establishes a complete illness grid:
+EAT, WALK, RULE, SLEEP, and DIE each contain first through fifth vinadi outcome
+statement blocks.
+
+The 25 cell locators are verses `230–239` and `241–255`. Verse `240` is an
+intervening transition rather than an ordinal cell heading. Verse `256` begins
+a separate illness-duration section after the grid. Each cell records only its
+activity, ordinal, verse, and PDF/printed-page span. Tamil source expression,
+translations, and normalized outcome payloads are not distributed or admitted.
+
+This grid does not supply selector arithmetic and does not establish that
+either Stage 2K Bogamuni policy belongs to the Uromarisi lineage. Stage 2O
+therefore cannot route into it. Outcome labels, condition mapping, numeric
+scores, medical advice, prognosis, electional judgment, and forecasting remain
+forbidden. The manifest and all public surfaces are unchanged. No human-language
+reviewer is an admission dependency. The research decision SHA-256 is
+`449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -1177,8 +1202,8 @@ tests: source-attested or alternate solar-proportional doctrines and any
 selectors belonging to those unadmitted doctrines; alternate Padu doctrines;
 Bharana or Adhikara bird products; alternate Sookshma selector doctrines,
 any cross-witness binding of Stage 2K selectors to Uromarisi ordinal outcomes,
-vinadi clock routing,
-and context-specific outcome products beyond the Stage 2J research-only axis;
+vinadi clock routing, and semantic outcome products beyond the Stage 2J axis
+and Stage 2P research-only illness locator grid;
 condition/scoring; and electional window search.
 Fixed-clock materialization, fixed-clock current-cell selection,
 solar-proportional materialization, and solar-proportional current-cell

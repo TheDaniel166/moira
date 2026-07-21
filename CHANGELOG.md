@@ -263,6 +263,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Uromarisi Illness Grid Stage 2P Research Gate**: Verified
+  the exact Archive.org 1934 Uromarisi-attributed PDF at SHA-256
+  `e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`
+  and rendered PDF pages `115–126`. Added a research-only decision indexing
+  the complete illness-context structure as five parent activities by five
+  explicit vinadi ordinals. The 25 cells bind verses `230–239` and `241–255`
+  to repeatable PDF/printed-page locators; transition verse `240` and the
+  separate illness-duration section beginning at verse `256` remain outside
+  the grid. No source outcome statement is copied, translated, normalized,
+  scored, or exposed. Neither Stage 2K selector is attributed to Uromarisi,
+  and Stage 2O does not route into the research grid. The four profiles,
+  manifest, engine, facade, and REST surface are unchanged. The Stage 2P
+  decision SHA-256 is
+  `449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`.
 - **Pancha Pakshi Ramadevar Candidate Disambiguation Stage 2M**: Resolved the
   catalogued candidate to the exact Commissionerate of Indian Medicine and
   Homoeopathy record: serial `859`, manuscript `A5`, titled `Ramadevar

@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_illness_grid_stage2p_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T22:00:00Z",
+  "decision_kind": "research_only_illness_context_outcome_grid_locator_recovery",
+  "admission_status": "research_only",
+  "stage": "2P",
+  "prior_boundaries": {
+    "stage2j_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_vinadi_stage2j_research_2026_07_21.json",
+    "stage2j_decision_sha256": "d04ed0f3716fe605dc5d8172114dc759b30c4e87be968eebc36e35a23d789243",
+    "stage2o_decision_path": "tests/fixtures/pancha_pakshi_civil_time_sookshma_selection_stage2o_2026_07_21.json",
+    "stage2o_decision_sha256": "2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "primary_witness": {
+    "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+    "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi Mulamum Uraiyum, with Tanjai Karunanidhi Pillai, 1934",
+    "archive_details_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "archive_pdf_name": "KVC0354-Vinaadi PajasapatchiMulamum-1934.pdf",
+    "archive_pdf_md5": "5832ca69b64c1429342fba8c3b3012dc",
+    "locally_verified_pdf_sha256": "e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0",
+    "pdf_page_count": 166,
+    "inspection_method": "rendered_original_page_review_with_archive_ocr_used_only_for_navigation",
+    "inspected_pdf_pages": [
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126
+    ],
+    "printed_page_range": "113-124"
+  },
+  "recovered_computational_object": {
+    "context_family": "illness",
+    "source_owned_object": "activity_by_explicit_vinadi_ordinal_outcome_statement_locator_grid",
+    "grid_shape": "five_parent_activities_by_five_explicit_ordinals",
+    "cell_count": 25,
+    "parent_activities": [
+      "eat",
+      "walk",
+      "rule",
+      "sleep",
+      "die"
+    ],
+    "ordinal_values": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "heading_pattern_status": "directly_visible_for_each_activity_and_ordinal_block",
+    "selector_arithmetic_status": "not_supplied_by_this_grid",
+    "outcome_semantic_normalization_status": "not_performed",
+    "translation_status": "not_admitted",
+    "prognostic_interpretation_status": "not_admitted"
+  },
+  "illness_grid": [
+    {
+      "parent_activity": "eat",
+      "cells": [
+        {"ordinal": 1, "verse": 230, "pdf_pages": [116], "printed_pages": [114]},
+        {"ordinal": 2, "verse": 231, "pdf_pages": [116], "printed_pages": [114]},
+        {"ordinal": 3, "verse": 232, "pdf_pages": [117], "printed_pages": [115]},
+        {"ordinal": 4, "verse": 233, "pdf_pages": [117], "printed_pages": [115]},
+        {"ordinal": 5, "verse": 234, "pdf_pages": [117, 118], "printed_pages": [115, 116]}
+      ]
+    },
+    {
+      "parent_activity": "walk",
+      "cells": [
+        {"ordinal": 1, "verse": 235, "pdf_pages": [118], "printed_pages": [116]},
+        {"ordinal": 2, "verse": 236, "pdf_pages": [118], "printed_pages": [116]},
+        {"ordinal": 3, "verse": 237, "pdf_pages": [119], "printed_pages": [117]},
+        {"ordinal": 4, "verse": 238, "pdf_pages": [119], "printed_pages": [117]},
+        {"ordinal": 5, "verse": 239, "pdf_pages": [119, 120], "printed_pages": [117, 118]}
+      ]
+    },
+    {
+      "parent_activity": "rule",
+      "cells": [
+        {"ordinal": 1, "verse": 241, "pdf_pages": [120], "printed_pages": [118]},
+        {"ordinal": 2, "verse": 242, "pdf_pages": [121], "printed_pages": [119]},
+        {"ordinal": 3, "verse": 243, "pdf_pages": [121], "printed_pages": [119]},
+        {"ordinal": 4, "verse": 244, "pdf_pages": [121, 122], "printed_pages": [119, 120]},
+        {"ordinal": 5, "verse": 245, "pdf_pages": [122], "printed_pages": [120]}
+      ]
+    },
+    {
+      "parent_activity": "sleep",
+      "cells": [
+        {"ordinal": 1, "verse": 246, "pdf_pages": [122, 123], "printed_pages": [120, 121]},
+        {"ordinal": 2, "verse": 247, "pdf_pages": [123], "printed_pages": [121]},
+        {"ordinal": 3, "verse": 248, "pdf_pages": [123], "printed_pages": [121]},
+        {"ordinal": 4, "verse": 249, "pdf_pages": [123, 124], "printed_pages": [121, 122]},
+        {"ordinal": 5, "verse": 250, "pdf_pages": [124], "printed_pages": [122]}
+      ]
+    },
+    {
+      "parent_activity": "die",
+      "cells": [
+        {"ordinal": 1, "verse": 251, "pdf_pages": [124, 125], "printed_pages": [122, 123]},
+        {"ordinal": 2, "verse": 252, "pdf_pages": [125], "printed_pages": [123]},
+        {"ordinal": 3, "verse": 253, "pdf_pages": [125], "printed_pages": [123]},
+        {"ordinal": 4, "verse": 254, "pdf_pages": [125, 126], "printed_pages": [123, 124]},
+        {"ordinal": 5, "verse": 255, "pdf_pages": [126], "printed_pages": [124]}
+      ]
+    }
+  ],
+  "structural_notes": {
+    "verse_240_status": "intervening_transition_verse_not_an_illness_grid_cell_heading",
+    "post_grid_material": "verse_256_begins_a_separate_illness_duration_section_after_the_twenty_five_cell_grid",
+    "cell_payload_status": "source_expression_not_copied_and_semantic_outcomes_not_normalized"
+  },
+  "ambiguity_policy": {
+    "permitted_runtime_input": null,
+    "automatic_stage2o_to_uromarisi_binding": "forbidden",
+    "weighted_selector_binding": "not_attested",
+    "equal_fifths_selector_binding": "not_attested",
+    "default_selector": null,
+    "outcome_label_inference": "forbidden",
+    "condition_or_score_mapping": "forbidden",
+    "human_language_reviewer_dependency": "none"
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "required_evidence_for_future_admission": [
+    "define_a_source_owned_outcome_ontology_without_collapsing_distinct_statements_into_good_bad_or_numeric_score",
+    "produce_repeatable_machine_checked_transcriptions_for_each_candidate_cell",
+    "record_semantic_uncertainty_per_cell_and_preserve_unresolved_terms",
+    "make_any_cross_witness_selector_binding_a_separate_explicit_modern_composition_with_no_default",
+    "validate_one_context_family_before_considering_another",
+    "keep_condition_scoring_electional_and_forecasting_products_separate"
+  ],
+  "public_nonclaims": [
+    "No illness outcome statement is translated or normalized into runtime data.",
+    "No medical advice, diagnosis, prognosis, condition score, electional judgment, or forecast is exposed.",
+    "No Stage 2K selector is attributed to the Uromarisi witness.",
+    "No Stage 2O civil-time result is routed to this research grid.",
+    "No default selector or outcome vocabulary is introduced.",
+    "The twenty-five-cell locator grid is structural source evidence, not prognostic validation.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": "The archival PDF, rendered pages, OCR, Tamil source expression, layout, and translations are not distributed. This fixture preserves bibliographic identity, hashes, page and verse locators, grid structure, and the fail-closed research decision only."
+}
