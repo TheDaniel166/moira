@@ -1,5 +1,36 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2R Uromarisi WALK Semantic-Atom Extension — 2026-07-21
+
+Stage 2R extends the bounded Stage 2Q transcription method to WALK ordinals one
+through five. The
+[`Stage 2R research decision`](../../tests/fixtures/pancha_pakshi_uromarisi_walk_semantics_stage2r_research_2026_07_21.json)
+has canonical SHA-256
+`361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6`
+and binds the unchanged Stage 2Q and manifest hashes.
+
+Rendered PDF pages `118–120`, printed pages `116–118`, control the reading of
+verses `235–239`; Archive.org OCR lines `5488–5603` provide navigation
+alignment only. The five time expressions are `10` days, `15` days, within
+`20` days, `25` days, and within one month. Exact and upper-bound forms remain
+distinct, and the month is not converted into days.
+
+The source does not use one uniform disposition. Ordinals one and four state
+resolution, ordinals two and three state abatement, and ordinal five describes
+a timed progression without explicitly stating resolution. Stage 2R therefore
+extends rather than flattens the Stage 2Q ontology. Source deity titles and
+their stated relations, explicit responses, medicine or physician references,
+water-clause roles, the Navagraha-dosha reference, unresolved activity
+relations, and uncertainty remain cell-local.
+
+These are machine-assisted records of historical statements, not medical
+truth, diagnosis, prognosis, advice, treatment, condition scoring, electional
+judgment, or forecasting. Tamil source expression, OCR, page images, and full
+translations are not distributed. No Stage 2K selector is attributed to
+Uromarisi, no Stage 2O result is routed to these cells, and no profile,
+manifest, engine, facade, or REST surface changes. No human-language reviewer
+is required.
+
 ## Stage 2Q Uromarisi EAT Semantic-Atom Pilot — 2026-07-21
 
 Stage 2Q continues from the complete Stage 2P locator grid without admitting
@@ -1207,11 +1238,11 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
    default. Stage 2N now permits only the named modern schedule-to-selector
    composition, and Stage 2O adds civil-time routing only under a mandatory
    timing policy. Stage 2P supplies the complete illness-context locator grid,
-   and Stage 2Q now demonstrates the source-owned ontology and repeatable
-   machine-checked semantic transcription on the five EAT cells. Any Uromarisi
-   selector binding remains a separate explicit modern decision. Expansion
-   beyond the pilot must preserve per-cell uncertainty and must not collapse
-   distinct statements to generic good/bad or numeric scores.
+   and Stages 2Q–2R demonstrate the source-owned ontology and repeatable
+   machine-checked semantic transcription on the five EAT and five WALK cells.
+   Any Uromarisi selector binding remains a separate explicit modern decision.
+   Expansion beyond these ten cells must preserve per-cell uncertainty and
+   must not collapse distinct statements to generic good/bad or numeric scores.
 2. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
    the target remains title-only. The next attempt must obtain the actual `A5`
@@ -1243,7 +1274,8 @@ Stage 2N explicit modern schedule composition with no clock or outcome binding,
 plus Stage 2O civil-time routing under mandatory timing and selector policies
 with no fallback or outcome binding, plus the Stage 2P research-only illness
 locator grid and Stage 2Q five-cell EAT semantic-atom pilot with no runtime
-payload or medical-truth claim.
+payload or medical-truth claim, plus the Stage 2R five-cell WALK extension
+under the same boundary.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

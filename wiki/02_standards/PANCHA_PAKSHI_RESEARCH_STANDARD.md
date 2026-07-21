@@ -760,6 +760,29 @@ capability, engine, facade, or REST surface changes. No human-language reviewer
 is required. The research decision SHA-256 is
 `7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9`.
 
+### Stage 2R research-only WALK-cell semantic-atom extension
+
+Stage 2R applies the same cell-local method to WALK verses `235–239` while
+extending the ontology only where the text requires it. Ordinals one and four
+state resolution; ordinals two and three state abatement; ordinal five gives a
+timed progression without an explicit resolution statement. These dispositions
+must not be collapsed into one generic outcome.
+
+The time expressions are exactly `10` days, `15` days, within `20` days, `25`
+days, and within one month. Exact and upper-bound forms remain distinct, and a
+month is never silently converted into days. Source deity titles and their
+stated relations, explicit response categories, medicine or physician
+references, water-clause roles, the Navagraha-dosha reference, and unresolved
+activity relations remain cell-local and uncertainty-bearing.
+
+Rendered PDF pages `118–120` control the reading; Archive.org OCR lines are
+navigation aids only. This is a historical-text record, not medical
+validation, diagnosis, prognosis, advice, treatment, condition scoring, or
+forecasting. No selector, Stage 2O routing, runtime profile, manifest,
+capability, engine, facade, or REST surface changes. No human-language reviewer
+is required. The research decision SHA-256 is
+`361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -1227,7 +1250,8 @@ selectors belonging to those unadmitted doctrines; alternate Padu doctrines;
 Bharana or Adhikara bird products; alternate Sookshma selector doctrines,
 any cross-witness binding of Stage 2K selectors to Uromarisi ordinal outcomes,
 vinadi clock routing, and semantic outcome products beyond the Stage 2J axis,
-Stage 2P research-only illness locator grid, and Stage 2Q five-cell EAT pilot;
+Stage 2P research-only illness locator grid, Stage 2Q five-cell EAT pilot, and
+Stage 2R five-cell WALK extension;
 condition/scoring; and electional window search.
 Fixed-clock materialization, fixed-clock current-cell selection,
 solar-proportional materialization, and solar-proportional current-cell

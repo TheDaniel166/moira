@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_walk_semantics_stage2r_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T14:19:24Z",
+  "decision_kind": "research_only_machine_assisted_semantic_atom_transcription_extension",
+  "admission_status": "research_only",
+  "stage": "2R",
+  "prior_boundaries": {
+    "stage2q_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_eat_semantics_stage2q_research_2026_07_21.json",
+    "stage2q_decision_sha256": "7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "primary_witness": {
+    "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+    "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi Mulamum Uraiyum, with Tanjai Karunanidhi Pillai, 1934",
+    "archive_details_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "locally_verified_pdf_sha256": "e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0",
+    "inspection_method": "rendered_original_page_review_at_220_dpi_with_archive_ocr_alignment_for_navigation",
+    "inspected_pdf_pages": [118, 119, 120],
+    "printed_page_range": "116-118",
+    "source_expression_storage": "not_distributed"
+  },
+  "governing_object": {
+    "context_family": "illness",
+    "parent_activity": "walk",
+    "source_owned_object": "cell_local_historical_statement_semantic_atoms",
+    "pilot_cell_count": 5,
+    "transcription_scope": "bounded_semantic_atoms_not_verbatim_transcription",
+    "ontology_relation_to_stage2q": "additive_extension_preserving_nonresolution_dispositions_and_bounded_time_expressions",
+    "translation_status": "machine_assisted_bounded_gloss_not_admitted",
+    "medical_truth_status": "not_evaluated",
+    "runtime_status": "not_admitted"
+  },
+  "semantic_ontology": {
+    "disposition_statement": "preserves_resolution_abatement_or_timed_progression_without_forcing_one_generic_outcome",
+    "stated_time_expression": "distinguishes_exact_days_upper_bound_days_and_upper_bound_months",
+    "deity_reference": "preserves_the_source_title_and_whether_worship_grace_or_abhisheka_is_stated",
+    "response_or_mediation": "distinguishes_an_explicitly_prescribed_historical_action_from_a_stated_mediation_without_medical_endorsement",
+    "medicine_or_physician_reference": "records_presence_without_identifying_or_recommending_treatment",
+    "water_reference": "records_presence_and_a_bounded_clause_role_without_asserting_elemental_diagnosis_or_cause",
+    "navagraha_dosha_reference": "records_presence_without_accepting_a_diagnostic_claim",
+    "unresolved_relation_clause": "preserves_repeated_activity_relation_language_without_normalizing_its_doctrinal_semantics",
+    "uncertainty": "records_cell_local_limits_and_terms_deliberately_left_uninterpreted"
+  },
+  "walk_cells": [
+    {
+      "ordinal": 1,
+      "verse": 235,
+      "pdf_pages": [118],
+      "printed_pages": [116],
+      "archive_ocr_navigation_lines": [5488, 5507],
+      "disposition_statement": {"value": "stated_to_resolve", "confidence": "high"},
+      "stated_time_expression": {"kind": "exact_days", "values": [10], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "vadivelar", "relation": "worship_prescribed", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "vadivelar_worship", "relation": "prescribed", "confidence": "high"}
+      ],
+      "medicine_or_physician_reference": {"status": "not_recorded", "confidence": "medium"},
+      "water_reference": {"status": "not_recorded", "role": null, "confidence": "medium"},
+      "navagraha_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "remaining_prognostic_language_not_normalized"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "verse": 236,
+      "pdf_pages": [118, 119],
+      "printed_pages": [116, 117],
+      "archive_ocr_navigation_lines": [5509, 5539],
+      "disposition_statement": {"value": "stated_to_abate", "confidence": "medium"},
+      "stated_time_expression": {"kind": "exact_days", "values": [15], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "kumaraguru", "relation": "grace_reference", "confidence": "high"}
+      ],
+      "response_or_mediation": [],
+      "medicine_or_physician_reference": {"status": "not_recorded", "confidence": "medium"},
+      "water_reference": {"status": "present", "role": "antagonistic_relation", "confidence": "medium"},
+      "navagraha_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "abatement_wording_not_elevated_to_full_resolution",
+        "water_relation_not_normalized_as_diagnosis_or_cause",
+        "remaining_prognostic_language_not_normalized"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "verse": 237,
+      "pdf_pages": [119],
+      "printed_pages": [117],
+      "archive_ocr_navigation_lines": [5540, 5556],
+      "disposition_statement": {"value": "stated_to_abate", "confidence": "high"},
+      "stated_time_expression": {"kind": "upper_bound_days", "values": [20], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "shanmuga", "relation": "grace_reference", "confidence": "high"}
+      ],
+      "response_or_mediation": [],
+      "medicine_or_physician_reference": {"status": "not_recorded", "confidence": "medium"},
+      "water_reference": {"status": "present", "role": "affliction_attribution", "confidence": "medium"},
+      "navagraha_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "water_attribution_not_normalized_as_diagnosis_or_cause",
+        "closing_instruction_not_normalized",
+        "remaining_prognostic_language_not_normalized"
+      ]
+    },
+    {
+      "ordinal": 4,
+      "verse": 238,
+      "pdf_pages": [119],
+      "printed_pages": [117],
+      "archive_ocr_navigation_lines": [5558, 5574],
+      "disposition_statement": {"value": "stated_to_resolve", "confidence": "high"},
+      "stated_time_expression": {"kind": "exact_days", "values": [25], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "shanmuga", "relation": "grace_reference", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "physician_treatment_reference", "relation": "stated_mediation", "confidence": "high"},
+        {"category": "shanti_rite", "relation": "stated_mediation", "confidence": "high"}
+      ],
+      "medicine_or_physician_reference": {"status": "present", "confidence": "high"},
+      "water_reference": {"status": "present", "role": "constituent_attribution", "confidence": "high"},
+      "navagraha_dosha_reference": {"status": "present", "confidence": "high"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "medium", "semantics": null},
+      "uncertainty": [
+        "historical_treatment_reference_not_medical_advice",
+        "water_attribution_not_normalized_as_diagnosis_or_cause",
+        "navagraha_clause_not_accepted_as_diagnosis"
+      ]
+    },
+    {
+      "ordinal": 5,
+      "verse": 239,
+      "pdf_pages": [119, 120],
+      "printed_pages": [117, 118],
+      "archive_ocr_navigation_lines": [5576, 5603],
+      "disposition_statement": {"value": "timed_progression_without_explicit_resolution", "confidence": "high"},
+      "stated_time_expression": {"kind": "upper_bound_months", "values": [1], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "velavar", "relation": "abhisheka_prescribed", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "velavar_abhisheka", "relation": "prescribed", "confidence": "high"}
+      ],
+      "medicine_or_physician_reference": {"status": "not_recorded", "confidence": "medium"},
+      "water_reference": {"status": "present", "role": "transformation_clause_semantics_unresolved", "confidence": "high"},
+      "navagraha_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "unresolved_relation_clause": {"status": "present", "confidence": "high", "semantics": null},
+      "uncertainty": [
+        "no_resolution_inferred_from_timed_progression",
+        "water_transformation_clause_not_normalized",
+        "illness_growth_statement_not_normalized"
+      ]
+    }
+  ],
+  "repeatability_contract": {
+    "cell_identity": "parent_activity_plus_explicit_ordinal",
+    "locator_tuple": "verse_plus_pdf_pages_plus_printed_pages_plus_archive_ocr_navigation_lines",
+    "source_check": "rendered_page_controls_semantics_and_archive_ocr_only_aligns_navigation",
+    "machine_check": "canonical_fixture_hash_and_exact_per_cell_assertions",
+    "verbatim_transcription_required_for_this_extension": false,
+    "human_language_reviewer_dependency": "none"
+  },
+  "ambiguity_policy": {
+    "resolution_inference_from_abatement_or_progression": "forbidden",
+    "day_conversion_from_month_expression": "forbidden",
+    "deity_title_collapsing": "forbidden",
+    "unresolved_term_inference": "forbidden",
+    "generic_favorable_unfavorable_label": "forbidden",
+    "condition_or_numeric_score": "forbidden",
+    "medical_recommendation_or_advice": "forbidden",
+    "automatic_stage2o_to_uromarisi_binding": "forbidden",
+    "default_selector": null
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "public_nonclaims": [
+    "These records summarize what one historical witness states; they do not establish medical truth.",
+    "Abatement and timed progression are not silently rewritten as resolution.",
+    "No diagnosis, prognosis, medical advice, treatment recommendation, condition score, electional judgment, or forecast is exposed.",
+    "No full translation or Tamil source expression is distributed.",
+    "No disputed relation, water, or dosha clause is accepted as a medical or computational fact.",
+    "No Stage 2K selector is attributed to the Uromarisi witness and no Stage 2O result is routed to these cells.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": "The archival PDF, rendered pages, OCR, Tamil source expression, and full translations are not distributed. This fixture preserves bibliographic identity, hashes, locators, bounded machine-assisted semantic atoms, per-cell uncertainty, and the fail-closed research decision only."
+}

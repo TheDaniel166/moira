@@ -836,6 +836,20 @@ human-language reviewer dependency. The Stage 2Q decision fixture has
 canonical SHA-256
 `7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9`.
 
+Stage 2R extends that vocabulary to the five WALK cells, verses `235–239` on
+PDF pages `118–120`. It preserves exact-day, upper-bound-day, and
+upper-bound-month expressions rather than coercing them into one numerical
+unit. Resolution, abatement, and timed progression without explicit resolution
+remain distinct. Source deity titles, explicit responses, medicine or
+physician references, water-clause roles, the Navagraha-dosha reference, and
+unresolved activity relations remain cell-local with uncertainty. The record
+does not distribute Tamil source expression or a full translation and does not
+assert that any historical illness statement is medically true. No selector,
+runtime profile, manifest, engine, facade, or REST state changes, and there is
+no human-language reviewer dependency. The Stage 2R decision fixture has
+canonical SHA-256
+`361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;
@@ -888,7 +902,8 @@ routing into that join only when both timing and selector policies are named;
 it provides no automatic policy selection or outcome interpretation. Stage 2P
 adds only the page-and-verse locator structure of the 1934 Uromarisi illness
 grid. Stage 2Q adds a research-only semantic-atom pilot for its five EAT cells,
-with per-cell uncertainty but no medical-truth claim or runtime binding.
+and Stage 2R extends the same boundary to five WALK cells. Both retain per-cell
+uncertainty and make no medical-truth claim or runtime binding.
 Condition, scoring, automatic policy fallback, and forecasting remain outside
 the admitted surface.
 
