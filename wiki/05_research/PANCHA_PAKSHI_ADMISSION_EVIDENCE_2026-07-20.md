@@ -1,5 +1,36 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Constitutional Phase 6 Relation Hardening/Inspectability — 2026-07-21
+
+The
+[`Phase 6 decision`](../../tests/fixtures/pancha_pakshi_uromarisi_phase6_relation_inspectability_2026_07_21.json)
+has canonical SHA-256
+`b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`.
+It binds the exact Phase 5 relation decision at
+`e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1`,
+the Phase 4 policy decision, and the unchanged manifest.
+
+Phase 6 adds derived inspectability and explicit cross-vessel hardening only.
+The relation corpus now exposes exact identities, source bindings, presence
+counts, typed activity filtering, exact activity/ordinal and verse lookup, and
+separate detected, not-recorded, unresolved, named-surface, admitted, and scored
+subsets. All views preserve stored Phase 5 ordering and semantics.
+
+The distinction is material: `17` records are detected because their source
+clauses are present, but `0` relation meanings are admitted and `0` relations
+are scored. Seven records are explicitly not recorded, ten remain unresolved,
+and seven retain named bounded surface categories. None of those categories is
+silently promoted to resolved doctrine. Non-record corpus members now fail with
+an explicit type error before identity inspection.
+
+SLEEP ordinal `5` and verse `250` return no relation record without fallback or
+conflict repair. Phase 6 adds no source truth, endpoint, direction, condition,
+score, temporal selection, selector attribution, runtime data, profile,
+manifest entry, package export, facade method, REST route, prediction,
+prognosis, diagnosis, advice, or medical-truth claim. Phase 7 may consider a
+separately governed integrated local condition, but inherits no condition or
+scoring doctrine from this closure.
+
 ## Constitutional Phase 5 Relational Formalization — 2026-07-21
 
 The
@@ -1468,19 +1499,22 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
    typed records preserve exact relation-clause presence, absence, bounded
    surface categories, confidence, and source bindings without inferring
    endpoints, direction, meaning, favorability, condition, or score.
-5. Constitutional Phase 6 is the next lawful implementation step. It may add
-   derived relation inspectability and strengthen cross-vessel consistency, but
-   it may not resolve any relation meaning, introduce admitted or scored
-   subsets, infer a selector, or widen runtime admission.
-6. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
+5. Constitutional Phase 6 is closed at the private research boundary. Its
+   derived views explicitly distinguish detected, admitted, and scored subsets,
+   harden typed membership, and preserve exact lookup absence without resolving
+   relation meaning or widening runtime admission.
+6. Constitutional Phase 7 is the next lawful implementation step. Any
+   integrated local condition must have its own governing object and doctrine;
+   it may not reinterpret detection as favorability, admission, or score.
+7. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
    the target remains title-only. Actual `A5` leaves or a critical transcription
    plus item-level physical, custodial, and copying-history metadata are needed
-   only before a `corroborated_public` claim, not before private Phase 6 work.
-7. Preserve every disagreement by witness and text layer; do not merge doctrines
+   only before a `corroborated_public` claim, not before private Phase 7 work.
+8. Preserve every disagreement by witness and text layer; do not merge doctrines
    or repair them by symmetry. The verse `256+` illness-duration material is a
    separate prospective product, not unfinished coverage in this corpus.
-8. Preserve existing admitted products at their current boundaries: Stage 2D/E
+9. Preserve existing admitted products at their current boundaries: Stage 2D/E
    materialization and current-cell selection remain modern; Stage 2F paksha
    inference remains separate; Stage 2H Padu remains a pure Paksha-by-weekday
    lookup; and Stage 2I first-EAT remains a pure first-samam seed lookup. None
@@ -1506,7 +1540,9 @@ unconflicted records, and the private constitutional Phase 3 derived
 inspectability and vessel-hardening closure, plus the private constitutional
 Phase 4 explicit activity-plus-ordinal policy closure with both temporal
 selectors left unbound, plus the private constitutional Phase 5 relation corpus
-over all `24` classified cells with no endpoint, direction, or scoring meaning.
+over all `24` classified cells with no endpoint, direction, or scoring meaning,
+plus the private constitutional Phase 6 hardening and inspectability closure
+with `17` detected, `0` admitted, and `0` scored relations.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

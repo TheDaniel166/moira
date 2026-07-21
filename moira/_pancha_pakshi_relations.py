@@ -137,6 +137,45 @@ class PanchaPakshiHistoricalRelationRecord:
 
         return self.source_decision_id, self.source_decision_sha256
 
+    @property
+    def identity(self) -> tuple[PanchaPakshiActivity, int, int]:
+        """Return the classified activity, ordinal, and verse identity."""
+
+        return self.activity, self.ordinal, self.verse
+
+    @property
+    def is_detected(self) -> bool:
+        """Report source-clause detection without implying semantic admission."""
+
+        return self.presence is PanchaPakshiHistoricalRelationPresence.PRESENT
+
+    @property
+    def is_admitted(self) -> bool:
+        """Report runtime-semantic admission independently from detection."""
+
+        return self.runtime_semantics_status == "admitted"
+
+    @property
+    def is_scored(self) -> bool:
+        """Report scoring independently from detection and admission."""
+
+        return self.scoring_status == "performed"
+
+    @property
+    def has_unresolved_clause(self) -> bool:
+        """Report the exact unresolved surface category only."""
+
+        return (
+            self.surface_kind
+            is PanchaPakshiHistoricalRelationSurfaceKind.UNRESOLVED_CLAUSE
+        )
+
+    @property
+    def has_named_surface_category(self) -> bool:
+        """Report a named bounded surface category without resolving its meaning."""
+
+        return self.surface_kind in _NAMED_SURFACE_KINDS
+
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiUromarisiPhase5RelationCorpus:
@@ -156,6 +195,11 @@ class PanchaPakshiUromarisiPhase5RelationCorpus:
             )
         if not isinstance(self.records, tuple):
             raise TypeError("records must be an immutable tuple")
+        if any(
+            not isinstance(record, PanchaPakshiHistoricalRelationRecord)
+            for record in self.records
+        ):
+            raise TypeError("records must contain PanchaPakshiHistoricalRelationRecord")
         if len(self.records) != len(self.classification_corpus.cells):
             raise ValueError("every classified cell must have one relation record")
 
@@ -198,6 +242,112 @@ class PanchaPakshiUromarisiPhase5RelationCorpus:
             }
         ):
             raise ValueError("the bounded corpus requires 17 present and 7 absent clauses")
+
+    @property
+    def record_identities(
+        self,
+    ) -> tuple[tuple[PanchaPakshiActivity, int, int], ...]:
+        """Return deterministic relation-record identities."""
+
+        return tuple(record.identity for record in self.records)
+
+    @property
+    def source_bindings(self) -> tuple[tuple[str, str], ...]:
+        """Return unique source bindings in first-appearance order."""
+
+        return tuple(dict.fromkeys(record.source_binding for record in self.records))
+
+    @property
+    def presence_counts(
+        self,
+    ) -> tuple[tuple[PanchaPakshiHistoricalRelationPresence, int], ...]:
+        """Return detected and not-recorded counts without combining them."""
+
+        counts = Counter(record.presence for record in self.records)
+        return tuple((presence, counts[presence]) for presence in (
+            PanchaPakshiHistoricalRelationPresence.PRESENT,
+            PanchaPakshiHistoricalRelationPresence.NOT_RECORDED,
+        ))
+
+    @property
+    def detected_records(self) -> tuple[PanchaPakshiHistoricalRelationRecord, ...]:
+        """Return source-detected clauses without admitting their semantics."""
+
+        return tuple(record for record in self.records if record.is_detected)
+
+    @property
+    def not_recorded_records(
+        self,
+    ) -> tuple[PanchaPakshiHistoricalRelationRecord, ...]:
+        """Return explicit source absences without treating them as unresolved."""
+
+        return tuple(record for record in self.records if not record.is_detected)
+
+    @property
+    def unresolved_records(
+        self,
+    ) -> tuple[PanchaPakshiHistoricalRelationRecord, ...]:
+        """Return detected clauses whose bounded surface meaning remains unresolved."""
+
+        return tuple(record for record in self.records if record.has_unresolved_clause)
+
+    @property
+    def named_surface_records(
+        self,
+    ) -> tuple[PanchaPakshiHistoricalRelationRecord, ...]:
+        """Return named surface categories without treating them as resolved meaning."""
+
+        return tuple(
+            record for record in self.records if record.has_named_surface_category
+        )
+
+    @property
+    def admitted_records(self) -> tuple[PanchaPakshiHistoricalRelationRecord, ...]:
+        """Return the explicitly admitted subset, which is empty at Phase 6."""
+
+        return tuple(record for record in self.records if record.is_admitted)
+
+    @property
+    def scored_records(self) -> tuple[PanchaPakshiHistoricalRelationRecord, ...]:
+        """Return the explicitly scored subset, which is empty at Phase 6."""
+
+        return tuple(record for record in self.records if record.is_scored)
+
+    def records_for_activity(
+        self, activity: PanchaPakshiActivity
+    ) -> tuple[PanchaPakshiHistoricalRelationRecord, ...]:
+        """Return records for one explicit activity without inference."""
+
+        if not isinstance(activity, PanchaPakshiActivity):
+            raise TypeError("activity must be PanchaPakshiActivity")
+        return tuple(record for record in self.records if record.activity is activity)
+
+    def relation_at(
+        self, activity: PanchaPakshiActivity, ordinal: int
+    ) -> PanchaPakshiHistoricalRelationRecord | None:
+        """Look up one activity/ordinal relation record without fallback."""
+
+        if not isinstance(activity, PanchaPakshiActivity):
+            raise TypeError("activity must be PanchaPakshiActivity")
+        if type(ordinal) is not int or not 1 <= ordinal <= 5:
+            raise ValueError("ordinal must be an integer from 1 through 5")
+        return next(
+            (
+                record
+                for record in self.records
+                if record.activity is activity and record.ordinal == ordinal
+            ),
+            None,
+        )
+
+    def relation_for_verse(
+        self, verse: int
+    ) -> PanchaPakshiHistoricalRelationRecord | None:
+        """Look up one classified verse without repairing blocked conflicts."""
+
+        if type(verse) is not int or verse <= 0:
+            raise ValueError("verse must be a positive integer")
+        return next((record for record in self.records if record.verse == verse), None)
 
 
 __all__: tuple[str, ...] = ()

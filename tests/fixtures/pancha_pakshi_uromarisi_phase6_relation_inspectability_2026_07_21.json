@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase6_relation_inspectability_2026_07_21",
+  "decided_at_utc": "2026-07-21T18:46:11Z",
+  "decision_kind": "research_only_constitutional_phase6_relation_hardening_and_inspectability_closure",
+  "admission_status": "research_only",
+  "constitutional_phase": 6,
+  "prior_boundary": {
+    "phase5_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase5_relations_2026_07_21.json",
+    "phase5_decision_sha256": "e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1",
+    "phase4_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase4_policy_2026_07_21.json",
+    "phase4_decision_sha256": "4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "governing_object": {
+    "relation_module": "moira._pancha_pakshi_relations",
+    "relation_record_vessel": "PanchaPakshiHistoricalRelationRecord",
+    "relation_corpus_vessel": "PanchaPakshiUromarisiPhase5RelationCorpus",
+    "operation": "derived_inspectability_and_cross_vessel_hardening_only",
+    "source_record_count": 24,
+    "source_semantics_added": false,
+    "relation_meaning_resolved": false,
+    "condition_layer_created": false,
+    "runtime_surface_created": false
+  },
+  "record_inspectability_contract": {
+    "identity": "typed_activity_ordinal_verse_tuple",
+    "source_binding": "decision_id_sha256_tuple",
+    "is_detected": "presence_is_present",
+    "is_admitted": "runtime_semantics_status_is_admitted",
+    "is_scored": "scoring_status_is_performed",
+    "has_unresolved_clause": "surface_kind_is_unresolved_clause",
+    "has_named_surface_category": "surface_kind_is_one_of_the_five_named_bounded_categories"
+  },
+  "corpus_inspectability_contract": {
+    "record_identities": "canonical_order_without_reconstruction",
+    "source_bindings": "unique_first_appearance_order",
+    "presence_counts": "present_and_not_recorded_kept_distinct",
+    "detected_records": "exact_present_subset",
+    "not_recorded_records": "exact_absence_subset",
+    "unresolved_records": "exact_unresolved_clause_subset",
+    "named_surface_records": "exact_named_surface_subset",
+    "admitted_records": "exact_runtime_admitted_subset",
+    "scored_records": "exact_scored_subset",
+    "records_for_activity": "typed_activity_filter_without_inference",
+    "relation_at": "typed_activity_ordinal_lookup_without_fallback",
+    "relation_for_verse": "positive_verse_lookup_without_conflict_repair"
+  },
+  "subset_contract": {
+    "detected_count": 17,
+    "not_recorded_count": 7,
+    "unresolved_count": 10,
+    "named_surface_count": 7,
+    "admitted_count": 0,
+    "scored_count": 0,
+    "detected_does_not_imply_admitted": true,
+    "admitted_does_not_imply_scored": true,
+    "named_surface_does_not_imply_resolved_meaning": true,
+    "not_recorded_does_not_mean_unresolved": true
+  },
+  "lookup_contract": [
+    {
+      "lookup": "relation_at",
+      "activity": "eat",
+      "ordinal": 1,
+      "expected_verse": 230,
+      "expected_presence": "present",
+      "expected_surface_kind": "unresolved_clause"
+    },
+    {
+      "lookup": "relation_at",
+      "activity": "rule",
+      "ordinal": 1,
+      "expected_verse": 241,
+      "expected_presence": "not_recorded",
+      "expected_surface_kind": null
+    },
+    {
+      "lookup": "relation_at",
+      "activity": "rule",
+      "ordinal": 4,
+      "expected_verse": 244,
+      "expected_presence": "present",
+      "expected_surface_kind": "no_enmity"
+    },
+    {
+      "lookup": "relation_at",
+      "activity": "sleep",
+      "ordinal": 5,
+      "expected_result": null,
+      "absence_reason": "no_classified_cell_after_verse250_conflict"
+    },
+    {
+      "lookup": "relation_for_verse",
+      "verse": 250,
+      "expected_result": null,
+      "absence_reason": "blocked_identity_conflict_not_repaired"
+    }
+  ],
+  "hardening_contract": {
+    "records_container_must_be_tuple": true,
+    "every_member_must_be_typed_relation_record": true,
+    "record_and_classification_identity_order_must_match": true,
+    "record_and_classification_source_binding_must_match": true,
+    "presence_and_phase2_marker_must_match": true,
+    "invalid_activity_type": "type_error",
+    "invalid_ordinal_or_verse": "value_error",
+    "missing_lookup": "return_none_without_fallback",
+    "verse250_conflict_repair": "forbidden"
+  },
+  "phase6_closure": {
+    "status": "complete_private_research_boundary",
+    "next_constitutional_phase": 7,
+    "next_phase_scope": "integrated_local_condition_only",
+    "phase7_may_not_assume": [
+      "relation_endpoint_or_direction",
+      "resolved_unresolved_clause_meaning",
+      "relation_admission_or_score",
+      "generic_favorable_or_unfavorable_judgment",
+      "temporal_selector_or_runtime_binding",
+      "verse250_identity_resolution"
+    ]
+  },
+  "admission_decision": {
+    "runtime_data_admitted": false,
+    "runtime_profile_admitted": false,
+    "manifest_entry_admitted": false,
+    "package_export_admitted": false,
+    "facade_method_admitted": false,
+    "rest_route_admitted": false,
+    "relation_semantics_admitted": false,
+    "condition_or_score_admitted": false,
+    "prediction_or_prognosis_admitted": false,
+    "medical_use_admitted": false
+  },
+  "public_nonclaims": [
+    "Detected, admitted, and scored are separate subsets; only detected contains records at Phase 6.",
+    "Inspectability helpers derive from stored Phase 5 records and add no source atom or relation meaning.",
+    "Named surface categories remain bounded labels, not resolved relation doctrine.",
+    "Missing SLEEP ordinal 5 and verse 250 return no relation record without fallback or repair.",
+    "No condition, score, temporal binding, runtime profile, public export, facade method, or REST route is created.",
+    "No human Tamil reviewer is required; actual A5 manuscript content remains optional future corroboration."
+  ]
+}

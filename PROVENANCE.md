@@ -992,6 +992,30 @@ only for relational hardening and inspectability. The Phase 5 decision fixture
 has canonical SHA-256
 `e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1`.
 
+Constitutional Phase 6 hardens the private relation corpus and exposes only
+derived inspectability. Each record now reports its stored identity and whether
+it is detected, admitted, scored, unresolved, or a named bounded surface
+category. The corpus exposes deterministic identities, unique source bindings,
+presence counts, exact detected/not-recorded/unresolved/named/admitted/scored
+subsets, typed activity filtering, and exact activity/ordinal and verse
+lookups.
+
+Detection means only that the source clause is present. The Phase 6 admitted
+and scored subsets are both empty; neither is inferred from detection or a
+named surface category. The views preserve `17` detected, `7` not recorded,
+`10` unresolved, and `7` named-surface records. SLEEP ordinal `5` and verse
+`250` return no relation record without fallback or conflict repair. Corpus
+construction also rejects non-record members before attempting identity or
+source-binding inspection.
+
+Phase 6 adds no source atom, resolved relation meaning, endpoint, direction,
+condition, score, selector binding, runtime data, profile, manifest entry,
+package export, facade method, REST route, prediction, prognosis, diagnosis,
+advice, or medical claim. Completion opens Phase 7 only for an integrated local
+condition whose doctrine must be separately established. The Phase 6 decision
+fixture has canonical SHA-256
+`b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;

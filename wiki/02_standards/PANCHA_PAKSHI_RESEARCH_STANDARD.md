@@ -993,6 +993,36 @@ score, or medical-truth claim. Its completion permits Phase 6 relational
 hardening and inspectability only. The Phase 5 decision SHA-256 is
 `e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1`.
 
+### Constitutional Phase 6 relation hardening and inspectability
+
+Phase 6 adds derived-only views to the Phase 5 vessels. A relation record may
+expose its exact activity/ordinal/verse identity, source binding, detection,
+admission, scoring, unresolved-clause status, and named-surface status. These
+properties must read stored Phase 5 state and must not reconstruct or normalize
+source semantics.
+
+The corpus may expose deterministic record identities and source bindings;
+separate present and not-recorded counts; exact detected, not-recorded,
+unresolved, named-surface, admitted, and scored subsets; typed activity
+filtering; and exact activity/ordinal and verse lookup. Detected means only
+`presence == present`. It does not imply semantic admission. Admission does not
+imply scoring. At this boundary the detected subset contains `17` records while
+the admitted and scored subsets are both empty.
+
+Missing lookup returns `None` without fallback. SLEEP ordinal `5` remains
+absent, verse `250` remains the blocked classification conflict, and neither may
+be repaired into a relation record. Invalid activity types, ordinals, verses,
+containers, and member types fail explicitly. Derived collections are immutable
+tuples and preserve canonical Phase 5 ordering.
+
+Phase 6 adds no source truth, relation meaning, endpoint, direction, condition,
+score, selector binding, runtime profile, manifest entry, package export,
+facade method, REST route, prediction, diagnosis, advice, or medical-truth
+claim. Its completion permits Phase 7 integrated-local-condition work only;
+Phase 7 inherits no favorable/unfavorable or scoring doctrine. The Phase 6
+decision SHA-256 is
+`b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial

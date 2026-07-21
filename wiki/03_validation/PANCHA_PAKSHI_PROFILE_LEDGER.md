@@ -521,6 +521,28 @@ never creates a default canon.
   runtime profile, package export, facade, or REST surface
 - Phase 6 boundary: ready for relational hardening and inspectability only
 
+### Constitutional Phase 6 Uromarisi Relation Hardening/Inspectability
+
+- Admission kind: private derived relation views; no profile or capability
+- Phase 6 decision:
+  [`pancha_pakshi_uromarisi_phase6_relation_inspectability_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_phase6_relation_inspectability_2026_07_21.json)
+- Phase 6 decision SHA-256:
+  `b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`
+- Bound predecessor: exact Phase 5 SHA-256
+  `e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1`
+- Derived subsets: detected `17`, not recorded `7`, unresolved `10`, named
+  surface `7`, admitted `0`, scored `0`
+- Inspectability: typed identities, source bindings, presence counts, subset
+  views, activity filters, activity/ordinal lookup, and verse lookup
+- Hardening: typed tuple members required; identity, order, source binding, and
+  Phase 2 marker consistency remain mandatory
+- Absence boundary: SLEEP ordinal `5` and verse `250` return `None` without
+  fallback or conflict repair
+- Nonclaims: no resolved meaning, endpoint, direction, condition, score,
+  selector, runtime profile, package export, facade, or REST surface
+- Phase 7 boundary: ready for separately governed integrated local condition
+  work only
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:

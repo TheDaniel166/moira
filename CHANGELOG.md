@@ -263,6 +263,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Constitutional Phase 6 Relation Hardening/Inspectability**:
+  Added derived-only identity, source-binding, presence-count, subset, activity,
+  ordinal, and verse views over the private Phase 5 relation corpus. Detected
+  (`17`), admitted (`0`), and scored (`0`) relations are now explicitly
+  distinct; not-recorded (`7`), unresolved (`10`), and named-surface (`7`)
+  subsets remain separate. Malformed record members fail closed, SLEEP ordinal
+  `5` and verse `250` return no relation without fallback, and no relation
+  meaning, condition, score, runtime profile, export, facade, REST, or native
+  surface was added. The Phase 6 decision SHA-256 is
+  `b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12`.
 - **Pancha Pakshi Constitutional Phase 5 Relational Formalization**: Added a
   private typed relation layer over all `24` unconflicted Uromarisi
   classifications. It preserves `17` present clauses and `7` explicitly
