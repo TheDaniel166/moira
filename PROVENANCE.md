@@ -1039,6 +1039,29 @@ structural intelligence over the stored local profiles. The Phase 7 decision
 fixture has canonical SHA-256
 `401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`.
 
+Constitutional Phase 8 creates one private immutable structural aggregate over
+the complete Phase 7 local-condition corpus. It counts `24` profiles with
+activity coverage EAT `5`, WALK `5`, RULE `5`, SLEEP `4`, and DIE `5`; all `24`
+remain `not_evaluable_no_admitted_condition_doctrine`. Relation counts remain
+`17` detected, `7` not recorded, `10` unresolved, `7` named-surface, `0`
+admitted, and `0` scored. Verse `250` remains the sole blocked conflict.
+
+The aggregate validates that activity and evaluation counts cover all profiles,
+detected plus not-recorded covers the corpus, unresolved plus named-surface
+covers detected relations, and scored remains a subset of admitted and
+detected. Aggregation is repeatable and immutable. Counts are not rankings,
+weights, favorable/unfavorable judgments, condition scores, prognoses, or
+medical evidence.
+
+Phase 8 adds no source truth, relation meaning, evaluative doctrine, selector
+binding, runtime data, profile, manifest entry, package export, facade method,
+REST route, prediction, prognosis, diagnosis, advice, or medical claim. It
+closes the agreed eight-phase private research sequence. There is no automatic
+Phase 9 transition and no public admission; any network work or admission review
+requires a new explicit decision. The Phase 8 decision fixture has canonical
+SHA-256
+`b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;

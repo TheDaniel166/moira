@@ -1051,6 +1051,34 @@ or medical-truth claim. Its completion permits Phase 8 aggregate structural
 intelligence only. The Phase 7 decision SHA-256 is
 `401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`.
 
+### Constitutional Phase 8 aggregate intelligence and sequence closure
+
+Phase 8 defines `PanchaPakshiUromarisiPhase8AggregateIntelligence` as a frozen
+structural summary derived from the complete Phase 7 corpus. Its materializer
+accepts only `PanchaPakshiUromarisiPhase7LocalConditionCorpus` and counts stored
+facts without reclassifying, reinterpreting, ranking, or weighting profiles.
+
+The exact aggregate is `24` profiles; activity coverage EAT `5`, WALK `5`, RULE
+`5`, SLEEP `4`, and DIE `5`; evaluation status
+`not_evaluable_no_admitted_condition_doctrine` for all `24`; relations `17`
+detected, `7` not recorded, `10` unresolved, `7` named-surface, `0` admitted,
+and `0` scored; and blocked verse tuple `(250,)`.
+
+Activity and evaluation counts must cover all profiles. Detected plus
+not-recorded must cover the corpus; unresolved plus named-surface must cover the
+detected subset; scored must remain a subset of admitted and detected; admitted
+and scored must both remain empty. Canonical activity order, repeatability, and
+immutability are mandatory. A count cannot become a rank, weight, judgment,
+score, prognosis, or source meaning.
+
+Phase 8 adds no source truth, evaluative doctrine, selector binding, runtime
+profile, manifest entry, package export, facade method, REST route, prediction,
+diagnosis, advice, or medical-truth claim. It closes the agreed eight-phase
+private sequence. Phase 9 network work is not automatic and public exposure is
+not authorized; either requires a separate explicit decision. The Phase 8
+decision SHA-256 is
+`b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial

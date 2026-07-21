@@ -1,5 +1,34 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Constitutional Phase 8 Aggregate Intelligence / Eight-Phase Closure — 2026-07-21
+
+The
+[`Phase 8 decision`](../../tests/fixtures/pancha_pakshi_uromarisi_phase8_aggregate_intelligence_2026_07_21.json)
+has canonical SHA-256
+`b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13`.
+It binds the exact Phase 7 decision at
+`401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`,
+the Phase 6 hardening decision, Phase 4 policy decision, and unchanged manifest.
+
+Phase 8 derives one frozen aggregate from the `24` Phase 7 profiles. It records
+activity coverage `5/5/5/4/5`, all `24` profiles as not evaluable, relation
+subsets of `17` detected, `7` not recorded, `10` unresolved, `7` named-surface,
+`0` admitted, and `0` scored, and blocked verse `250`. Repeated materialization
+is identical and the vessel is immutable.
+
+The aggregate rejects incomplete profile, activity, evaluation, or relation
+partitions; noncanonical activity order; admitted or scored relation drift; and
+loss of the blocked conflict. Counts remain structural facts only. They are not
+ranks, weights, favorable/unfavorable judgments, condition scores, prognoses,
+or medical evidence.
+
+Phase 8 adds no source atom, resolved relation meaning, evaluative doctrine,
+temporal selection, selector attribution, runtime data, profile, manifest entry,
+package export, facade method, REST route, prediction, prognosis, diagnosis,
+advice, or medical-truth claim. The agreed private Phases 1–8 are now complete.
+There is no automatic Phase 9 transition and public exposure remains
+unauthorized; either requires a new explicit decision.
+
 ## Constitutional Phase 7 Integrated Local Condition — 2026-07-21
 
 The
@@ -1507,7 +1536,7 @@ path exists. The adjudication remains machine-assisted research evidence, so
 no linguistic-authority claim, external-oracle parity, universal-doctrine
 claim, or admission beyond the later explicitly bounded decisions is asserted.
 
-## Constitutional Continuation And Remaining Research Sequence
+## Constitutional Eight-Phase Closure And Future Decision Boundary
 
 1. Constitutional Phase 2 is closed at the private research boundary. Its
    exact corpus comprises five EAT, five WALK, five RULE, four SLEEP, and five
@@ -1536,14 +1565,15 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
 6. Constitutional Phase 7 is closed at the private research boundary. Its `24`
    policy-bound profiles integrate exact classification and relation truth while
    remaining explicitly not evaluable, unscored, and non-prognostic.
-7. Constitutional Phase 8 is the next lawful implementation step. It may
-   aggregate stored structural facts across the local profiles, but it may not
-   invent evaluative doctrine, relation meaning, condition score, or prognosis.
+7. Constitutional Phase 8 is closed at the private research boundary. Its
+   immutable aggregate records complete structural partitions without ranking,
+   weighting, judging, scoring, or forecasting. The agreed Phases 1–8 are
+   complete; Phase 9 is not automatic and public admission is not authorized.
 8. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
    the target remains title-only. Actual `A5` leaves or a critical transcription
    plus item-level physical, custodial, and copying-history metadata are needed
-   only before a `corroborated_public` claim, not before private Phase 8 work.
+   only before a `corroborated_public` claim and do not alter private closure.
 9. Preserve every disagreement by witness and text layer; do not merge doctrines
    or repair them by symmetry. The verse `256+` illness-duration material is a
    separate prospective product, not unfinished coverage in this corpus.
@@ -1577,7 +1607,8 @@ over all `24` classified cells with no endpoint, direction, or scoring meaning,
 plus the private constitutional Phase 6 hardening and inspectability closure
 with `17` detected, `0` admitted, and `0` scored relations, plus the private
 constitutional Phase 7 corpus of `24` structurally integrated but explicitly
-not-evaluable local conditions.
+not-evaluable local conditions, plus the private constitutional Phase 8
+structural aggregate and formal closure of the agreed eight-phase sequence.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

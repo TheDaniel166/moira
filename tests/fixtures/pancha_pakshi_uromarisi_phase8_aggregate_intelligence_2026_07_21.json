@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase8_aggregate_intelligence_2026_07_21",
+  "decided_at_utc": "2026-07-21T19:11:44Z",
+  "decision_kind": "research_only_constitutional_phase8_aggregate_intelligence_and_eight_phase_closure",
+  "admission_status": "research_only",
+  "constitutional_phase": 8,
+  "prior_boundary": {
+    "phase7_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase7_local_condition_2026_07_21.json",
+    "phase7_decision_sha256": "401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be",
+    "phase6_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase6_relation_inspectability_2026_07_21.json",
+    "phase6_decision_sha256": "b175bcd1e537fb551cd26b18d6e6caa37f7a574b7e0a96b336d6fbb97eff9b12",
+    "phase4_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase4_policy_2026_07_21.json",
+    "phase4_decision_sha256": "4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "governing_object": {
+    "aggregate_module": "moira._pancha_pakshi_aggregate",
+    "aggregate_vessel": "PanchaPakshiUromarisiPhase8AggregateIntelligence",
+    "aggregate_operation": "pancha_pakshi_uromarisi_aggregate_intelligence",
+    "input_vessel": "PanchaPakshiUromarisiPhase7LocalConditionCorpus",
+    "aggregation_kind": "deterministic_structural_counts_only",
+    "ranking_performed": false,
+    "weighting_performed": false,
+    "condition_scoring_performed": false,
+    "prognostic_interpretation_performed": false,
+    "runtime_surface_created": false
+  },
+  "aggregate_contract": {
+    "policy_id": "moira_explicit_uromarisi_activity_ordinal_lookup_research_v1",
+    "profile_count": 24,
+    "activity_counts": [
+      ["eat", 5],
+      ["walk", 5],
+      ["rule", 5],
+      ["sleep", 4],
+      ["die", 5]
+    ],
+    "evaluation_status_counts": [
+      ["not_evaluable_no_admitted_condition_doctrine", 24]
+    ],
+    "relation_detected_count": 17,
+    "relation_not_recorded_count": 7,
+    "relation_unresolved_count": 10,
+    "relation_named_surface_count": 7,
+    "relation_admitted_count": 0,
+    "relation_scored_count": 0,
+    "blocked_verses": [250],
+    "aggregation_status": "structural_counts_only",
+    "ranking_status": "not_performed",
+    "weighting_status": "not_performed",
+    "favorability_status": "not_assigned",
+    "condition_score": null,
+    "prognosis_status": "not_performed",
+    "admission_status": "research_only"
+  },
+  "aggregate_invariants": {
+    "activity_counts_sum_to_profile_count": true,
+    "evaluation_counts_sum_to_profile_count": true,
+    "detected_plus_not_recorded_equals_profile_count": true,
+    "unresolved_plus_named_surface_equals_detected": true,
+    "scored_is_subset_of_admitted": true,
+    "admitted_is_subset_of_detected": true,
+    "admitted_and_scored_are_both_empty": true,
+    "blocked_verse250_is_preserved": true,
+    "canonical_activity_order_is_preserved": true,
+    "aggregate_is_repeatable_and_immutable": true
+  },
+  "ambiguity_policy": {
+    "count_as_rank": "forbidden",
+    "count_as_weight": "forbidden",
+    "detected_count_as_favorability": "forbidden",
+    "activity_count_as_condition_score": "forbidden",
+    "not_evaluable_count_as_prognosis": "forbidden",
+    "surface_category_count_as_resolved_meaning": "forbidden",
+    "temporal_selector_binding": "forbidden",
+    "verse250_conflict_repair": "forbidden"
+  },
+  "eight_phase_closure": {
+    "status": "complete_private_research_sequence",
+    "completed_phases": [1, 2, 3, 4, 5, 6, 7, 8],
+    "next_phase": null,
+    "automatic_phase9_transition": false,
+    "optional_future_network_scope": "requires_a_new_explicit_user_and_constitutional_decision",
+    "admission_review_status": "not_started",
+    "public_exposure_status": "not_authorized",
+    "remaining_external_corroboration": "commissionerate_A5_optional_until_any_future_corroborated_public_claim"
+  },
+  "admission_decision": {
+    "runtime_data_admitted": false,
+    "runtime_profile_admitted": false,
+    "manifest_entry_admitted": false,
+    "package_export_admitted": false,
+    "facade_method_admitted": false,
+    "rest_route_admitted": false,
+    "aggregate_score_admitted": false,
+    "prediction_or_prognosis_admitted": false,
+    "medical_use_admitted": false
+  },
+  "public_nonclaims": [
+    "Aggregate intelligence contains structural counts only and is not a condition score or judgment.",
+    "All 24 profiles remain not evaluable; 17 detected relations remain unadmitted and unscored.",
+    "Activity coverage and relation subset counts are not ranks, weights, forecasts, or medical evidence.",
+    "Verse 250 remains the sole blocked conflict and is not repaired by aggregation.",
+    "No selector, runtime profile, public export, facade method, REST route, prognosis, advice, or medical use is created.",
+    "The agreed eight-phase private sequence is complete; any network phase requires a new explicit decision."
+  ]
+}

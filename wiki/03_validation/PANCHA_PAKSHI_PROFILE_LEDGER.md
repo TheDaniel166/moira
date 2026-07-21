@@ -566,6 +566,28 @@ never creates a default canon.
   runtime profile, package export, facade, or REST surface
 - Phase 8 boundary: ready for aggregate structural intelligence only
 
+### Constitutional Phase 8 Uromarisi Aggregate Intelligence / Sequence Closure
+
+- Admission kind: private structural aggregate; no runtime profile or capability
+- Phase 8 decision:
+  [`pancha_pakshi_uromarisi_phase8_aggregate_intelligence_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_phase8_aggregate_intelligence_2026_07_21.json)
+- Phase 8 decision SHA-256:
+  `b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13`
+- Bound predecessor: exact Phase 7 SHA-256
+  `401c90b7d7c15663427e034a527f983054800f948019cf12b404a0086b3203be`
+- Profile and activity counts: `24`; EAT `5`, WALK `5`, RULE `5`, SLEEP `4`,
+  DIE `5`
+- Evaluation count: all `24` not evaluable
+- Relation counts: detected `17`, not recorded `7`, unresolved `10`, named
+  surface `7`, admitted `0`, scored `0`
+- Conflict boundary: blocked verse tuple `(250,)`
+- Aggregate invariants: complete count partitions, canonical order,
+  repeatability, immutability, and no admitted/scored relations
+- Nonclaims: no ranking, weighting, judgment, condition score, prognosis,
+  selector, runtime profile, package export, facade, or REST surface
+- Sequence status: agreed private Phases 1–8 complete; no automatic Phase 9 and
+  no public admission
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:

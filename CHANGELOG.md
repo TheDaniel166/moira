@@ -263,6 +263,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Constitutional Phase 8 Aggregate Intelligence / Eight-Phase
+  Closure**: Added a private immutable structural aggregate over the `24`
+  Phase 7 profiles. It preserves activity coverage `5/5/5/4/5`, all `24`
+  profiles as not evaluable, relation subsets of `17` detected, `7` not
+  recorded, `10` unresolved, `7` named-surface, `0` admitted, and `0` scored,
+  plus blocked verse `250`. Counts are never ranks, weights, judgments, scores,
+  or forecasts. The agreed eight-phase private sequence is closed with no
+  automatic Phase 9 or public admission. No runtime profile, manifest, export,
+  facade, REST, or native surface was added. The Phase 8 decision SHA-256 is
+  `b193b3ba62d1c5eb57d526777310fa16f29c81fa999e69b813670c680ba2fd13`.
 - **Pancha Pakshi Constitutional Phase 7 Integrated Local Condition**: Added a
   private policy-bound local-condition vessel and a complete `24`-profile
   corpus. Each profile pairs one exact Phase 2 classification with its exact
