@@ -52,6 +52,10 @@ filter.  Ertel's `MA12` equals `floor((MARS - 1) / 3) + 1` for all 4,384 rows.
 The archive also contains a LibreOffice lock file.  The harness ignores it and
 never treats it as evidence.
 
+The archive member names and the four sanctioned row counts are fail-closed
+invariants.  A same-named archive with added or missing rows is rejected rather
+than reported with stale canonical corpus sizes.
+
 ## CFEPP computation
 
 For every CFEPP row, the harness:

@@ -4,10 +4,10 @@ The supplied archive contains historical personal records.  This script reads
 it in place and emits aggregate evidence only: no name, birth date, place, or
 coordinate is copied into the repository or report.
 
-The first numerical tranche is CFEPP because that source supplies an explicit
-UTC date/time and coordinates.  The other three files are inventoried here but
-require source-specific civil-time reconstruction (or joins) before their
-historical sector assignments can be compared responsibly.
+CFEPP is compared from explicit UTC and coordinates; Muller's explicit-LMT
+subset is converted from longitude; CSICOP retains two declared clock policies.
+Ertel and Muller's non-LMT rows remain inventory-only until their missing joins
+or correction semantics can be established.
 """
 
 from __future__ import annotations
@@ -17,13 +17,12 @@ import csv
 import hashlib
 import io
 import json
-import math
 import zipfile
 from collections import Counter
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path, PurePosixPath
-from typing import Iterable
 
 from moira.facade import Moira
 from moira_server.models.gauquelin import GauquelinChartSectorsRequest
@@ -36,6 +35,13 @@ EXPECTED_FILES: dict[str, tuple[str, int, int]] = {
     "ertel-4384-sport-raw.csv": ("MARS", 1, 36),
     "muller5-1083-medics-raw.csv": ("MARS", 1, 36),
 }
+EXPECTED_WITNESS_ROWS: dict[str, int] = {
+    "cfepp-1120-nienhuys-raw.csv": 1120,
+    "csicop-408-irving-raw.csv": 408,
+    "ertel-4384-sport-raw.csv": 4384,
+    "muller5-1083-medics-raw.csv": 1083,
+}
+CSICOP_WITNESSED_TIMEZONES = frozenset({"5", "6", "7", "8", "0,5"})
 
 CFEPP_REQUIRED_FIELDS = frozenset(
     {"UNIV_DATE", "UT", "LONG", "LAT", "S"}
@@ -118,7 +124,9 @@ def _read_rows(
     return list(reader.fieldnames), list(reader)
 
 
-def inventory_archive(path: Path) -> dict[str, object]:
+def inventory_archive(
+    path: Path, *, enforce_witness_counts: bool = True
+) -> dict[str, object]:
     with zipfile.ZipFile(path) as archive:
         entries = _safe_csv_entries(archive)
         missing = sorted(set(EXPECTED_FILES) - set(entries))
@@ -131,6 +139,12 @@ def inventory_archive(path: Path) -> dict[str, object]:
         files: dict[str, object] = {}
         for basename, (sector_field, minimum, maximum) in EXPECTED_FILES.items():
             fields, rows = _read_rows(archive, entries[basename])
+            expected_rows = EXPECTED_WITNESS_ROWS[basename]
+            if enforce_witness_counts and len(rows) != expected_rows:
+                raise ValueError(
+                    f"{basename}: expected {expected_rows} witness rows, "
+                    f"found {len(rows)}"
+                )
             if sector_field not in fields:
                 raise ValueError(f"{basename}: missing field {sector_field!r}")
             sectors = [int(row[sector_field]) for row in rows]
@@ -242,15 +256,20 @@ def load_csicop_records(
                 # of 12 A/P, so the alternative can be audited explicitly.
                 hour += 12
             local = datetime(year, month, day) + timedelta(hours=hour, minutes=minute)
+            timezone_text = row["ZEITZONE"]
+            if timezone_text not in CSICOP_WITNESSED_TIMEZONES:
+                raise ValueError(
+                    f"unsupported CSICOP timezone {timezone_text!r}"
+                )
             west_offset_hours = (
-                10.5 if row["ZEITZONE"] == "0,5" else float(row["ZEITZONE"])
+                10.5 if timezone_text == "0,5" else float(timezone_text)
             )
             instant = (local + timedelta(hours=west_offset_hours)).replace(tzinfo=UTC)
             longitude = -(float(row["LO1"]) + float(row["LO2"]) / 60.0)
             latitude = float(row["LA1"]) + float(row["LA2"]) / 60.0
             source_sector = int(row["MARS"])
         except (KeyError, TypeError, ValueError) as exc:
-            raise ValueError(f"invalid CSICOP row {row_number}") from exc
+            raise ValueError(f"invalid CSICOP row {row_number}: {exc}") from exc
         if not 1 <= source_sector <= 36:
             raise ValueError(f"invalid CSICOP sector at row {row_number}")
         if not (-180.0 <= longitude <= 180.0 and -90.0 <= latitude <= 90.0):
@@ -312,6 +331,8 @@ def load_muller_lmt_records(path: Path) -> list[MullerLmtRecord]:
             raise ValueError(f"invalid Muller LMT row {row_number}") from exc
         if not 1 <= source_sector <= 36:
             raise ValueError(f"invalid Muller sector at row {row_number}")
+        if not (-180.0 <= longitude <= 180.0 and -90.0 <= latitude <= 90.0):
+            raise ValueError(f"invalid Muller coordinates at row {row_number}")
         records.append(
             MullerLmtRecord(
                 instant_utc=instant,
@@ -334,12 +355,22 @@ def circular_sector_distance(a: int, b: int, sectors: int) -> int:
     return min(raw, sectors - raw)
 
 
+def _distance_to_boundary(diurnal_position: float | None, width: float) -> float:
+    if diurnal_position is None:
+        raise RuntimeError(
+            "defined Gauquelin sector is missing its diurnal position"
+        )
+    remainder = diurnal_position % width
+    return min(remainder, width - remainder)
+
+
 def compare_cfepp(
     records: Iterable[CfeppRecord],
     *,
     engine: Moira,
     limit: int | None = None,
 ) -> dict[str, object]:
+    records = tuple(records)
     compared = exact = undefined = 0
     distance_counts: Counter[int] = Counter()
     source_counts: Counter[int] = Counter()
@@ -388,9 +419,9 @@ def compare_cfepp(
         if distance == 0:
             tranche_counts[tranche]["exact"] += 1
         else:
-            assert position.diurnal_position is not None
-            remainder = position.diurnal_position % 30.0
-            mismatch_boundary_distances.append(min(remainder, 30.0 - remainder))
+            mismatch_boundary_distances.append(
+                _distance_to_boundary(position.diurnal_position, 30.0)
+            )
 
     defined = compared - undefined
     tranches: dict[str, object] = {}
@@ -407,7 +438,7 @@ def compare_cfepp(
         }
     return {
         "corpus": "CFEPP first 1066 official plus 54 supplementary",
-        "rows_available": 1120,
+        "rows_available": len(records),
         "rows_compared": compared,
         "defined": defined,
         "undefined": undefined,
@@ -450,6 +481,7 @@ def compare_csicop(
     time_policy: str,
     limit: int | None = None,
 ) -> dict[str, object]:
+    records = tuple(records)
     compared = exact = undefined = 0
     distance_counts: Counter[int] = Counter()
     mismatch_boundary_distances: list[float] = []
@@ -479,15 +511,15 @@ def compare_csicop(
         distance_counts[distance] += 1
         exact += distance == 0
         if distance != 0:
-            assert position.diurnal_position is not None
-            remainder = position.diurnal_position % 10.0
-            mismatch_boundary_distances.append(min(remainder, 10.0 - remainder))
+            mismatch_boundary_distances.append(
+                _distance_to_boundary(position.diurnal_position, 10.0)
+            )
 
     defined = compared - undefined
     return {
         "corpus": "CSICOP 408 athletes",
         "time_policy": time_policy,
-        "rows_available": 408,
+        "rows_available": len(records),
         "rows_compared": compared,
         "defined": defined,
         "undefined": undefined,
@@ -519,8 +551,13 @@ def compare_muller_lmt(
     records: Iterable[MullerLmtRecord],
     *,
     engine: Moira,
+    rows_available: int | None = None,
     limit: int | None = None,
 ) -> dict[str, object]:
+    records = tuple(records)
+    total_rows = len(records) if rows_available is None else rows_available
+    if total_rows < len(records):
+        raise ValueError("Muller total rows cannot be smaller than LMT rows")
     compared = exact = undefined = 0
     distance_counts: Counter[int] = Counter()
     mismatch_boundary_distances: list[float] = []
@@ -550,16 +587,16 @@ def compare_muller_lmt(
         distance_counts[distance] += 1
         exact += distance == 0
         if distance != 0:
-            assert position.diurnal_position is not None
-            remainder = position.diurnal_position % 10.0
-            mismatch_boundary_distances.append(min(remainder, 10.0 - remainder))
+            mismatch_boundary_distances.append(
+                _distance_to_boundary(position.diurnal_position, 10.0)
+            )
 
     defined = compared - undefined
     return {
         "corpus": "Muller 1083 medics, explicit LMT subset",
-        "rows_available": 1083,
-        "rows_lmt": 916,
-        "rows_non_lmt_deferred": 167,
+        "rows_available": total_rows,
+        "rows_lmt": len(records),
+        "rows_non_lmt_deferred": total_rows - len(records),
         "rows_compared": compared,
         "defined": defined,
         "undefined": undefined,
@@ -589,22 +626,34 @@ def compare_muller_lmt(
 
 def build_report(path: Path, *, limit: int | None = None) -> dict[str, object]:
     inventory = inventory_archive(path)
+    inventory_files = inventory["files"]
     engine = Moira()
-    comparison = compare_cfepp(load_cfepp_records(path), engine=engine, limit=limit)
+    cfepp_records = load_cfepp_records(path)
+    csicop_literal_records = load_csicop_records(
+        path, conventional_noon_midnight=False
+    )
+    csicop_conventional_records = load_csicop_records(
+        path, conventional_noon_midnight=True
+    )
+    muller_records = load_muller_lmt_records(path)
+    comparison = compare_cfepp(cfepp_records, engine=engine, limit=limit)
     csicop_g5 = compare_csicop(
-        load_csicop_records(path, conventional_noon_midnight=False),
+        csicop_literal_records,
         engine=engine,
         time_policy="literal_g5_2019_raw2tmp",
         limit=limit,
     )
     csicop_conventional = compare_csicop(
-        load_csicop_records(path, conventional_noon_midnight=True),
+        csicop_conventional_records,
         engine=engine,
         time_policy="conventional_12_hour_noon_midnight",
         limit=limit,
     )
     muller_lmt = compare_muller_lmt(
-        load_muller_lmt_records(path), engine=engine, limit=limit
+        muller_records,
+        engine=engine,
+        rows_available=inventory_files["muller5-1083-medics-raw.csv"]["rows"],
+        limit=limit,
     )
     return {
         "schema": "moira.gauquelin.g5_validation.v1",
@@ -626,23 +675,17 @@ def build_report(path: Path, *, limit: int | None = None) -> dict[str, object]:
     }
 
 
-def _json_default(value: object) -> object:
-    if isinstance(value, float) and not math.isfinite(value):
-        return None
-    raise TypeError(f"cannot encode {type(value).__name__}")
-
-
-def main() -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("archive", type=Path)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--output", type=Path, default=None)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.limit is not None and args.limit <= 0:
         parser.error("--limit must be positive")
 
     report = build_report(args.archive.resolve(), limit=args.limit)
-    encoded = json.dumps(report, indent=2, sort_keys=True, default=_json_default) + "\n"
+    encoded = json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n"
     if args.output is None:
         print(encoded, end="")
     else:
