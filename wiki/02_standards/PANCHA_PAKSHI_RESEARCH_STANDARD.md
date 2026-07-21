@@ -962,6 +962,37 @@ Its completion permits Phase 5 relational formalization only; no unresolved
 activity-relation clause is silently resolved. The Phase 4 decision SHA-256 is
 `4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9`.
 
+### Constitutional Phase 5 relational formalization
+
+Phase 5 creates a private typed `PanchaPakshiHistoricalRelationRecord` for each
+of the `24` unconflicted Phase 2 classifications and binds them in
+`PanchaPakshiUromarisiPhase5RelationCorpus`. A record is owned by the classified
+activity, ordinal, and verse and must retain that classification's exact source
+decision identity and digest.
+
+Relation presence projects only the Phase 2 `activity_relation_clause` marker.
+The complete corpus contains `17` present and `7` explicitly not-recorded
+clauses. Ten EAT/WALK records retain `unresolved_clause` plus their stated high
+or medium confidence. Seven RULE/SLEEP/DIE records preserve only an exact
+bounded surface category: `no_enmity`, `rule_enmity_disallowed`,
+`rule_enmity_branch`, `earth_rule_enmity_disallowed`, or
+`rule_enmity_required`. Because those bounded atoms state no relation-specific
+confidence, the typed record must use `not_stated`; it may not invent one.
+
+Neither presence nor a surface category establishes relation endpoints,
+direction, normalized meaning, favorability, condition, score, prognosis, or
+runtime semantics. A not-recorded clause cannot be rewritten as present, an
+unresolved clause cannot be normalized, and verse `250` remains outside the
+relation corpus as an identity conflict. The corpus must match all Phase 2
+cells in canonical order, preserve source bindings exactly, and fail closed on
+any marker, ordering, or binding mismatch.
+
+Phase 5 adds no selector binding, runtime profile, manifest entry, package
+export, facade method, REST route, prediction, diagnosis, advice, condition,
+score, or medical-truth claim. Its completion permits Phase 6 relational
+hardening and inspectability only. The Phase 5 decision SHA-256 is
+`e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial

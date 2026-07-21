@@ -263,6 +263,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Constitutional Phase 5 Relational Formalization**: Added a
+  private typed relation layer over all `24` unconflicted Uromarisi
+  classifications. It preserves `17` present clauses and `7` explicitly
+  not-recorded clauses; `10` EAT/WALK clauses remain unresolved, while `7`
+  later clauses retain only their exact bounded surface categories. Relation
+  endpoints, direction, meaning, favorability, condition, score, prognosis,
+  temporal selection, and runtime behavior are not inferred. Verse `250`
+  remains outside the relation corpus as an identity conflict. No profile,
+  manifest, public export, facade, REST, or native surface was added. The
+  Phase 5 decision SHA-256 is
+  `e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1`.
 - **Pancha Pakshi Constitutional Phase 4 Doctrine/Policy Closure**: Added one
   private typed policy,
   `moira_explicit_uromarisi_activity_ordinal_lookup_research_v1`, and one

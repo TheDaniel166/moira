@@ -969,6 +969,29 @@ the existing source relation clauses in advance. The Phase 4 decision fixture
 has canonical SHA-256
 `4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9`.
 
+Constitutional Phase 5 formalizes one private relation record for each of the
+`24` unconflicted Phase 2 classifications. The governing object is a
+classified-cell-owned source relation record, not a favorable/unfavorable
+judgment. It binds the Phase 4 decision, Phase 2 closure, unchanged manifest,
+and exact Stage 2Q through Stage 2U source decisions by canonical digest.
+
+The relation corpus preserves `17` present clauses and `7` clauses explicitly
+not recorded. Ten EAT/WALK clauses remain `unresolved_clause`, retaining their
+source confidence without normalized meaning. Seven RULE/SLEEP/DIE clauses
+retain only the bounded surface categories `no_enmity`,
+`rule_enmity_disallowed`, `rule_enmity_branch`,
+`earth_rule_enmity_disallowed`, and `rule_enmity_required`; their source atoms
+state no relation-specific confidence, so Phase 5 records none. Surface labels
+do not establish endpoints, direction, semantics, condition, or score. Verse
+`250` remains excluded as the existing text-layer identity conflict.
+
+Phase 5 adds no runtime data, profile, manifest entry, capability, package
+export, facade method, REST route, selector binding, prediction, prognosis,
+diagnosis, advice, condition, score, or medical claim. Completion opens Phase 6
+only for relational hardening and inspectability. The Phase 5 decision fixture
+has canonical SHA-256
+`e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1`.
+
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
 series 213 artifact identifies itself as the sixth edition of August 2014;

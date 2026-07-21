@@ -497,6 +497,30 @@ never creates a default canon.
 - Phase 5 boundary: ready for relational formalization only; existing relation
   clauses remain unresolved until explicitly modeled
 
+### Constitutional Phase 5 Uromarisi Relational Formalization
+
+- Admission kind: private typed relation corpus; no profile or capability
+- Phase 5 decision:
+  [`pancha_pakshi_uromarisi_phase5_relations_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_phase5_relations_2026_07_21.json)
+- Phase 5 decision SHA-256:
+  `e8e189f75418cc96bc6930e2e93d2cfcebc849cb4080001ee4b4b07b158908d1`
+- Bound predecessors: exact Phase 4 SHA-256
+  `4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9`
+  and exact Phase 2 SHA-256
+  `a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2`
+- Governing object: one classified-cell-owned source relation record per
+  unconflicted Phase 2 cell
+- Coverage: `24` records; `17` present clauses and `7` not recorded
+- Surface preservation: `10` unresolved EAT/WALK clauses and `7` exact bounded
+  RULE/SLEEP/DIE surface categories
+- Confidence boundary: retain stated high/medium confidence for unresolved
+  clauses; use `not_stated` where the bounded atom supplies none
+- Conflict boundary: verse `250` remains outside the corpus with no repair
+- Nonclaims: no endpoints, direction, normalized meaning, favorability,
+  condition, score, prediction, prognosis, medical truth, temporal selection,
+  runtime profile, package export, facade, or REST surface
+- Phase 6 boundary: ready for relational hardening and inspectability only
+
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)
 - Evidence narrative:

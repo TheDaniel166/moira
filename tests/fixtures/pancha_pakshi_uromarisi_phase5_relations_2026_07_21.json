@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_phase5_relations_2026_07_21",
+  "decided_at_utc": "2026-07-21T18:32:19Z",
+  "decision_kind": "research_only_constitutional_phase5_relational_formalization",
+  "admission_status": "research_only",
+  "constitutional_phase": 5,
+  "prior_boundary": {
+    "phase4_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase4_policy_2026_07_21.json",
+    "phase4_decision_sha256": "4a444c91bab9a4949664e6bca4e64ad0ee341b439019db831429e4548bd2c4f9",
+    "phase2_closure_path": "tests/fixtures/pancha_pakshi_uromarisi_phase2_classification_closure_2026_07_21.json",
+    "phase2_closure_sha256": "a5cd64696d4c040554f2c235056dfd28477fd0796fc82306f44ae43473d434e2",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "source_decision_boundaries": {
+    "stage2q": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_eat_semantics_stage2q_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_eat_semantics_stage2q_research_2026_07_21",
+      "sha256": "7b4311912ece7f49b30773604c91537ca5fa2a9e02b75baeebfb5bdc2575bcd9",
+      "cell_key": "eat_cells",
+      "relation_key": "unresolved_relation_clause"
+    },
+    "stage2r": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_walk_semantics_stage2r_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_walk_semantics_stage2r_research_2026_07_21",
+      "sha256": "361a0a334a73623cb0b2c1b0e73489db2c20d3c259e04540a303510113f0e0d6",
+      "cell_key": "walk_cells",
+      "relation_key": "unresolved_relation_clause"
+    },
+    "stage2s": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_rule_semantics_stage2s_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_rule_semantics_stage2s_research_2026_07_21",
+      "sha256": "85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d",
+      "cell_key": "rule_cells",
+      "relation_key": "activity_relation_clause"
+    },
+    "stage2t": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21",
+      "sha256": "09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a",
+      "cell_key": "sleep_cells",
+      "relation_key": "activity_relation_clause"
+    },
+    "stage2u": {
+      "path": "tests/fixtures/pancha_pakshi_uromarisi_die_semantics_stage2u_research_2026_07_21.json",
+      "decision_id": "pancha_pakshi_uromarisi_die_semantics_stage2u_research_2026_07_21",
+      "sha256": "4954c13c33aa755bc0e8c6f47b7825d6ddb8346a2b6df39edf804872e81cbf70",
+      "cell_key": "die_cells",
+      "relation_key": "activity_relation_clause"
+    }
+  },
+  "governing_object": {
+    "relation_module": "moira._pancha_pakshi_relations",
+    "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+    "relation_unit": "classified_cell_owned_source_relation_record",
+    "coverage": "all_24_unconflicted_phase2_classifications",
+    "present_clause_count": 17,
+    "not_recorded_clause_count": 7,
+    "unresolved_clause_count": 10,
+    "named_surface_category_count": 7,
+    "blocked_conflict_count": 1,
+    "blocked_conflict_verse": 250,
+    "endpoint_status": "not_established",
+    "direction_status": "not_established",
+    "runtime_semantics_status": "not_admitted",
+    "scoring_status": "not_performed"
+  },
+  "ambiguity_policy": {
+    "unresolved_clause_normalization": "forbidden",
+    "surface_category_as_relation_meaning": "forbidden",
+    "relation_endpoint_inference": "forbidden",
+    "relation_direction_inference": "forbidden",
+    "absence_from_unresolved_semantics": "forbidden",
+    "verse250_conflict_repair": "forbidden",
+    "generic_favorable_unfavorable_label": "forbidden",
+    "condition_or_numeric_score": "forbidden",
+    "prediction_prognosis_diagnosis_or_advice": "forbidden",
+    "temporal_selector_binding": "forbidden",
+    "default_selector": null
+  },
+  "relation_records": [
+    {"activity": "eat", "ordinal": 1, "verse": 230, "source_ref": "stage2q", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "eat", "ordinal": 2, "verse": 231, "source_ref": "stage2q", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "eat", "ordinal": 3, "verse": 232, "source_ref": "stage2q", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "eat", "ordinal": 4, "verse": 233, "source_ref": "stage2q", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "eat", "ordinal": 5, "verse": 234, "source_ref": "stage2q", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "walk", "ordinal": 1, "verse": 235, "source_ref": "stage2r", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "walk", "ordinal": 2, "verse": 236, "source_ref": "stage2r", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "walk", "ordinal": 3, "verse": 237, "source_ref": "stage2r", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "walk", "ordinal": 4, "verse": 238, "source_ref": "stage2r", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "medium"},
+    {"activity": "walk", "ordinal": 5, "verse": 239, "source_ref": "stage2r", "presence": "present", "surface_kind": "unresolved_clause", "confidence": "high"},
+    {"activity": "rule", "ordinal": 1, "verse": 241, "source_ref": "stage2s", "presence": "not_recorded", "surface_kind": null, "confidence": "not_stated"},
+    {"activity": "rule", "ordinal": 2, "verse": 242, "source_ref": "stage2s", "presence": "not_recorded", "surface_kind": null, "confidence": "not_stated"},
+    {"activity": "rule", "ordinal": 3, "verse": 243, "source_ref": "stage2s", "presence": "not_recorded", "surface_kind": null, "confidence": "not_stated"},
+    {"activity": "rule", "ordinal": 4, "verse": 244, "source_ref": "stage2s", "presence": "present", "surface_kind": "no_enmity", "confidence": "not_stated"},
+    {"activity": "rule", "ordinal": 5, "verse": 245, "source_ref": "stage2s", "presence": "not_recorded", "surface_kind": null, "confidence": "not_stated"},
+    {"activity": "sleep", "ordinal": 1, "verse": 246, "source_ref": "stage2t", "presence": "present", "surface_kind": "rule_enmity_disallowed", "confidence": "not_stated"},
+    {"activity": "sleep", "ordinal": 2, "verse": 247, "source_ref": "stage2t", "presence": "not_recorded", "surface_kind": null, "confidence": "not_stated"},
+    {"activity": "sleep", "ordinal": 3, "verse": 248, "source_ref": "stage2t", "presence": "not_recorded", "surface_kind": null, "confidence": "not_stated"},
+    {"activity": "sleep", "ordinal": 4, "verse": 249, "source_ref": "stage2t", "presence": "present", "surface_kind": "rule_enmity_branch", "confidence": "not_stated"},
+    {"activity": "die", "ordinal": 1, "verse": 251, "source_ref": "stage2u", "presence": "present", "surface_kind": "rule_enmity_branch", "confidence": "not_stated"},
+    {"activity": "die", "ordinal": 2, "verse": 252, "source_ref": "stage2u", "presence": "present", "surface_kind": "rule_enmity_branch", "confidence": "not_stated"},
+    {"activity": "die", "ordinal": 3, "verse": 253, "source_ref": "stage2u", "presence": "present", "surface_kind": "earth_rule_enmity_disallowed", "confidence": "not_stated"},
+    {"activity": "die", "ordinal": 4, "verse": 254, "source_ref": "stage2u", "presence": "present", "surface_kind": "rule_enmity_required", "confidence": "not_stated"},
+    {"activity": "die", "ordinal": 5, "verse": 255, "source_ref": "stage2u", "presence": "not_recorded", "surface_kind": null, "confidence": "not_stated"}
+  ],
+  "phase5_invariants": {
+    "one_record_per_classified_cell": true,
+    "canonical_activity_ordinal_order": true,
+    "phase2_identity_and_source_binding_preserved": true,
+    "relation_presence_derived_only_from_phase2_marker": true,
+    "surface_categories_derived_only_from_phase1_atoms": true,
+    "unresolved_clauses_remain_unresolved": true,
+    "not_recorded_is_not_rewritten_as_unresolved": true,
+    "verse250_remains_outside_relation_corpus": true,
+    "endpoint_or_direction_semantics_added": false,
+    "favorability_condition_or_score_added": false,
+    "temporal_or_runtime_binding_added": false
+  },
+  "phase5_closure": {
+    "status": "complete_private_research_boundary",
+    "next_constitutional_phase": 6,
+    "next_phase_scope": "relational_hardening_and_inspectability_only",
+    "phase6_may_not_assume": [
+      "resolved_unresolved_clause_meaning",
+      "relation_endpoints_or_direction",
+      "favorable_or_unfavorable_relation",
+      "condition_or_numeric_score",
+      "temporal_selector_or_runtime_binding",
+      "verse250_identity_resolution"
+    ]
+  },
+  "admission_decision": {
+    "runtime_data_admitted": false,
+    "runtime_profile_admitted": false,
+    "manifest_entry_admitted": false,
+    "package_export_admitted": false,
+    "facade_method_admitted": false,
+    "rest_route_admitted": false,
+    "condition_or_score_admitted": false,
+    "prediction_or_prognosis_admitted": false,
+    "medical_use_admitted": false
+  },
+  "public_nonclaims": [
+    "These records formalize what the bounded historical source atoms preserve; they do not establish medical or predictive truth.",
+    "A surface category is not a resolved relation meaning, endpoint, direction, condition, or score.",
+    "No unresolved EAT or WALK clause is normalized, and no not-recorded clause is treated as present.",
+    "Verse 250 remains an identity conflict and receives no relation record.",
+    "No selector is bound and no runtime, public, facade, or REST surface is created.",
+    "No human Tamil reviewer is required; actual A5 manuscript content remains optional future corroboration."
+  ]
+}
