@@ -133,7 +133,20 @@ def test_dignities_preserve_legacy_semantics_while_exposing_structured_truth() -
         {"name": "Saturn", "degree": 200.0, "is_retrograde": True},
     ]
 
-    by_name = {d.planet: d for d in calculate_dignities(planet_positions, house_positions)}
+    legacy_policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+            sect=SectHayzPolicy(include_halb=False),
+        )
+    )
+    by_name = {
+        d.planet: d
+        for d in calculate_dignities(
+            planet_positions,
+            house_positions,
+            policy=legacy_policy,
+        )
+    }
 
     assert (
         by_name["Sun"].essential_dignity,
@@ -239,7 +252,19 @@ def test_dignities_expose_structured_solar_condition_truth() -> None:
         {"name": "Saturn", "degree": 310.0, "is_retrograde": False},
     ]
 
-    mercury = {d.planet: d for d in calculate_dignities(planet_positions, house_positions)}["Mercury"]
+    policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+        )
+    )
+    mercury = {
+        d.planet: d
+        for d in calculate_dignities(
+            planet_positions,
+            house_positions,
+            policy=policy,
+        )
+    }["Mercury"]
 
     assert mercury.accidental_dignities == ["Angular (H4)", "Direct", "Combust", "In Hayz"]
     assert mercury.solar_truth.present is True
@@ -439,6 +464,7 @@ def test_dignities_narrow_policy_explicitly_disables_selected_conditions() -> No
     ]
     policy = DignityComputationPolicy(
         accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
             solar=SolarConditionPolicy(
                 include_cazimi=False,
                 include_combust=False,
@@ -451,6 +477,7 @@ def test_dignities_narrow_policy_explicitly_disables_selected_conditions() -> No
             sect=SectHayzPolicy(
                 mercury_sect_model=MercurySectModel.LONGITUDE_HEURISTIC,
                 include_hayz=False,
+                include_halb=False,
             ),
         )
     )
@@ -474,6 +501,80 @@ def test_dignities_narrow_policy_explicitly_disables_selected_conditions() -> No
     assert by_name["Mercury"].solar_kind is SolarConditionKind.NONE
     assert by_name["Venus"].receptions == []
     assert by_name["Mars"].receptions == []
+
+
+def test_halb_policy_switch_controls_condition_and_score() -> None:
+    house_positions = _equal_houses(300.0)
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Mercury", "degree": 132.0, "is_retrograde": False},
+    ]
+    enabled_policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+            sect=SectHayzPolicy(include_hayz=False, include_halb=True),
+        )
+    )
+    disabled_policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+            sect=SectHayzPolicy(include_hayz=False, include_halb=False),
+        )
+    )
+
+    enabled = {
+        item.planet: item
+        for item in calculate_dignities(
+            planet_positions, house_positions, policy=enabled_policy
+        )
+    }["Mercury"]
+    disabled = {
+        item.planet: item
+        for item in calculate_dignities(
+            planet_positions, house_positions, policy=disabled_policy
+        )
+    }["Mercury"]
+
+    assert "In Halb" in enabled.accidental_dignities
+    assert enabled.accidental_truth.halb_condition is not None
+    assert "In Halb" not in disabled.accidental_dignities
+    assert disabled.accidental_truth.halb_condition is None
+    assert enabled.accidental_score == (
+        disabled.accidental_score + enabled.accidental_truth.halb_condition.score
+    )
+
+
+def test_oriental_occidental_policy_switch_controls_condition_and_score() -> None:
+    house_positions = _equal_houses(300.0)
+    planet_positions = [
+        {"name": "Sun", "degree": 130.0, "is_retrograde": False},
+        {"name": "Venus", "degree": 10.0, "is_retrograde": False},
+    ]
+    disabled_policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+        )
+    )
+
+    enabled = {
+        item.planet: item
+        for item in calculate_dignities(planet_positions, house_positions)
+    }["Venus"]
+    disabled = {
+        item.planet: item
+        for item in calculate_dignities(
+            planet_positions, house_positions, policy=disabled_policy
+        )
+    }["Venus"]
+
+    assert "Oriental" in enabled.accidental_dignities
+    assert enabled.accidental_truth.oriental_condition is not None
+    assert "Oriental" not in disabled.accidental_dignities
+    assert disabled.accidental_truth.oriental_condition is None
+    assert enabled.accidental_score == (
+        disabled.accidental_score
+        + enabled.accidental_truth.oriental_condition.score
+    )
 
 
 def test_dignity_policy_surface_is_deterministic_and_inspectable() -> None:

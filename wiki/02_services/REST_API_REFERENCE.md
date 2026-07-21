@@ -1159,6 +1159,13 @@ not a Muhurta product or a search route.
 | POST | `/v1/dignities/chart/profile` | `dignities_chart_profile_route` |
 | POST | `/v1/dignities/chart/network` | `dignities_chart_network_route` |
 
+All six routes accept the shared optional dignity policy. Its accidental
+branch exposes `include_oriental_occidental` (default `true`), while
+`accidental.sect` exposes independent `include_hayz` and `include_halb`
+controls (both default `true`). Disabling a condition removes its label,
+structured truth vessel, and score contribution. These fields are explicit
+selection policy; they do not change the underlying phase or sect geometry.
+
 The REST dignity policy does not admit
 `include_timelord_distributions`. Valens distribution scoring is quarantined;
 supplying that former option is a `422 validation_error`, not an inert no-op.

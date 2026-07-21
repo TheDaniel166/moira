@@ -179,3 +179,9 @@ class TestModuleAgreement:
             item.name for item in fields(_dignities_module.AccidentalDignityTruth)
         }
 
+    def test_halb_and_phase_inclusion_switches_are_explicit_and_default_on(self):
+        policy = _dignities_module.DignityComputationPolicy()
+        assert policy.accidental.sect.include_hayz is True
+        assert policy.accidental.sect.include_halb is True
+        assert policy.accidental.include_oriental_occidental is True
+

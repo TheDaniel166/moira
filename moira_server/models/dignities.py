@@ -42,11 +42,13 @@ class MutualReceptionPolicyRequest(_StrictModel):
 class SectHayzPolicyRequest(_StrictModel):
     mercury_sect_model: MercurySectModel = MercurySectModel.LONGITUDE_HEURISTIC
     include_hayz: bool = True
+    include_halb: bool = True
 
 
 class AccidentalDignityPolicyRequest(_StrictModel):
     include_house_strength: bool = True
     include_motion: bool = True
+    include_oriental_occidental: bool = True
     solar: SolarConditionPolicyRequest = Field(default_factory=SolarConditionPolicyRequest)
     mutual_reception: MutualReceptionPolicyRequest = Field(default_factory=MutualReceptionPolicyRequest)
     sect: SectHayzPolicyRequest = Field(default_factory=SectHayzPolicyRequest)

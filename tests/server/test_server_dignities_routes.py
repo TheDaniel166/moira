@@ -342,6 +342,50 @@ def test_dignities_routes_reject_unadmitted_timelord_distribution_transport(
 
 
 @pytest.mark.requires_ephemeris
+def test_dignities_route_exposes_halb_and_phase_policy_switches(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    payload = {
+        **_PAYLOAD,
+        "policy": {
+            "accidental": {
+                "include_oriental_occidental": False,
+                "sect": {
+                    "include_hayz": False,
+                    "include_halb": False,
+                },
+            }
+        },
+    }
+    request = DignitiesChartRequest(**payload)
+    direct = compute_dignities_chart(moira_engine, request)
+
+    response = client_with_engine.post("/v1/dignities/chart", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [item["total_score"] for item in body["dignities"]] == [
+        item.total_score for item in direct
+    ]
+    for item in body["dignities"]:
+        truth = item["accidental_truth"]
+        assert truth["halb_condition"] is None
+        assert truth["oriental_condition"] is None
+
+
+def test_dignities_openapi_declares_halb_and_phase_policy_switches(
+    client_with_engine: TestClient,
+) -> None:
+    schemas = client_with_engine.app.openapi()["components"]["schemas"]
+    assert "include_halb" in schemas["SectHayzPolicyRequest"]["properties"]
+    assert (
+        "include_oriental_occidental"
+        in schemas["AccidentalDignityPolicyRequest"]["properties"]
+    )
+
+
+@pytest.mark.requires_ephemeris
 def test_dignities_routes_do_not_call_kernel_lifecycle_mutators(
     client_with_engine: TestClient,
     monkeypatch: pytest.MonkeyPatch,

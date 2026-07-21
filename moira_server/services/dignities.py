@@ -73,6 +73,9 @@ def _policy_from_request(
     accidental = AccidentalDignityPolicy(
         include_house_strength=request_policy.accidental.include_house_strength,
         include_motion=request_policy.accidental.include_motion,
+        include_oriental_occidental=(
+            request_policy.accidental.include_oriental_occidental
+        ),
         solar=SolarConditionPolicy(
             include_cazimi=request_policy.accidental.solar.include_cazimi,
             include_combust=request_policy.accidental.solar.include_combust,
@@ -86,6 +89,7 @@ def _policy_from_request(
         sect=SectHayzPolicy(
             mercury_sect_model=request_policy.accidental.sect.mercury_sect_model,
             include_hayz=request_policy.accidental.sect.include_hayz,
+            include_halb=request_policy.accidental.sect.include_halb,
         ),
     )
     return DignityComputationPolicy(essential=essential, accidental=accidental)

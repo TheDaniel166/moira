@@ -1209,8 +1209,13 @@ class DignitiesService:
             score += hayz_condition.score
 
         halb_condition: AccidentalDignityCondition | None = None
-        if hayz_condition is None and sign and is_in_halb(
-            planet, sign, house, is_day_chart, mercury_rises_before_sun
+        if (
+            policy.accidental.sect.include_halb
+            and hayz_condition is None
+            and sign
+            and is_in_halb(
+                planet, sign, house, is_day_chart, mercury_rises_before_sun
+            )
         ):
             halb_condition = AccidentalDignityCondition("sect", "halb", "In Halb", SCORE_HALB)
             dignities.append(halb_condition.label)
@@ -1229,7 +1234,11 @@ class DignitiesService:
         # occidental is debilitating (-2).  For inferior planets (Mercury/Venus):
         # the reverse — occidental is beneficial, oriental is debilitating.
         oriental_condition: AccidentalDignityCondition | None = None
-        phase = oriental_occidental(planet, planet_lon, sun_lon)
+        phase = (
+            oriental_occidental(planet, planet_lon, sun_lon)
+            if policy.accidental.include_oriental_occidental
+            else None
+        )
         if phase is not None:
             is_superior = planet in _SUPERIOR_PLANETS
             if phase == "oriental":

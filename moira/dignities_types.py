@@ -287,10 +287,11 @@ class MutualReceptionPolicy:
 
 @dataclass(frozen=True, slots=True)
 class SectHayzPolicy:
-    """Policy surface for sect and hayz doctrine already embodied by the engine."""
+    """Policy surface for sect, Hayz, and Halb inclusion behavior."""
 
     mercury_sect_model: MercurySectModel = MercurySectModel.LONGITUDE_HEURISTIC
     include_hayz: bool = True
+    include_halb: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -299,6 +300,7 @@ class AccidentalDignityPolicy:
 
     include_house_strength: bool = True
     include_motion: bool = True
+    include_oriental_occidental: bool = True
     solar: SolarConditionPolicy = field(default_factory=SolarConditionPolicy)
     mutual_reception: MutualReceptionPolicy = field(default_factory=MutualReceptionPolicy)
     sect: SectHayzPolicy = field(default_factory=SectHayzPolicy)

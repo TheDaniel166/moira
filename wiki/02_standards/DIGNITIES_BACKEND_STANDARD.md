@@ -237,9 +237,23 @@ The default policy is normative:
 > `DignityComputationPolicy()` must preserve the current historical subsystem
 > behavior exactly.
 
-#### 4.3 Sect and hayz doctrine
+The accidental inclusion controls include:
 
-Sect and hayz doctrine is embodied by:
+| Policy field | Default | Governs |
+|---|---:|---|
+| `AccidentalDignityPolicy.include_oriental_occidental` | `True` | Oriental/Occidental phase classification and its score contribution |
+| `SectHayzPolicy.include_hayz` | `True` | Full-Hayz condition and score contribution |
+| `SectHayzPolicy.include_halb` | `True` | Exact-two-of-three Halb condition and score contribution |
+
+Setting one of these fields to `False` removes that condition from labels,
+structured accidental truth, and additive scoring without changing the
+underlying sign, sect, house, or longitude inputs. Hayz and Halb are separately
+selectable; when both are enabled, full Hayz takes precedence and Halb remains
+the partial, exactly-two-of-three state.
+
+#### 4.3 Sect, hayz, and halb doctrine
+
+Sect, Hayz, and Halb doctrine is embodied by:
 
 - `SECT`
 - `PREFERRED_HEMISPHERE`
