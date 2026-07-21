@@ -2,7 +2,7 @@
   "schema_version": 1,
   "decision_id": "pancha_pakshi_uromarisi_phase12_public_api_curation_2026_07_21",
   "decided_at_utc": "2026-07-21T23:59:00Z",
-  "decision_kind": "constitutional_phase12_public_api_curation_of_governance_status_only",
+  "decision_kind": "constitutional_phase12_public_api_curation_of_governance_status_only_including_rest",
   "constitutional_phase": 12,
   "prior_boundary": {
     "phase11_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_phase11_architecture_freeze_2026_07_21.json",
@@ -16,7 +16,8 @@
     "public_product": "constitutional_status_only",
     "kernel_required": false,
     "research_fixture_io_performed": false,
-    "historical_data_returned": false
+    "historical_data_returned": false,
+    "rest_route": "GET /v1/pancha-pakshi/constitution/uromarisi"
   },
   "public_contract": {
     "process": "SCP",
@@ -31,7 +32,7 @@
     "prognosis_status": "not_performed",
     "medical_use_status": "forbidden",
     "manifest_profile_status": "not_admitted",
-    "rest_route_status": "not_admitted"
+    "rest_route_status": "admitted_governance_status_only"
   },
   "curated_surface": {
     "moira.pancha_pakshi": true,
@@ -40,7 +41,7 @@
     "moira.vedic": true,
     "Moira_facade_method": true,
     "manifest_profile": false,
-    "fastapi_route": false
+    "fastapi_route": true
   },
   "private_surface_exclusions": [
     "historical_source_atoms",
@@ -69,7 +70,7 @@
     "runtime_data_admitted": false,
     "runtime_profile_admitted": false,
     "manifest_entry_admitted": false,
-    "rest_route_admitted": false,
+    "rest_route_admitted": true,
     "network_data_admitted": false,
     "network_edge_admitted": false,
     "network_metric_admitted": false,

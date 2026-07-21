@@ -241,6 +241,27 @@ Important:
 - direct extension success is not sufficient
 - audit scripts do not count as production routing
 
+Admitted slice (2026-07-21):
+
+- `EclipseCalculator.solar_eclipses_in_range()` and
+  `EclipseCalculator.lunar_eclipses_in_range()` route a conservative,
+  two-degree native TT syzygy-candidate scan through the content-identified
+  planetary reader.
+- Python retains reader-bound TT/UT1 conversion, physical maximum refinement,
+  eclipse classification, result assembly, deduplication, and inclusive range
+  filtering. Readers that cannot construct one evaluator across the padded
+  interval use the explicit Python manuscript.
+- Direct parity covers a ten-year DE441 corpus with every solar/lunar class
+  produced by that interval and a 0.1-second timing tolerance. Existing NASA
+  and secondary-engine oracle suites retain their prior thresholds.
+- `tests/artifacts/benchmarks/native_bulk_eclipse_ranges.json` measures the
+  admitted public methods at 1, 10, 100, and 1,000 years. The one- and ten-year
+  rows include the Python manuscript baseline; longer rows record public-route
+  scaling only.
+- The older `find_solar_eclipses` and `find_lunar_eclipses` generic-event
+  functions remain experimental and are not admitted as public classification
+  or contact products.
+
 ---
 
 ## Track E: Cartography Closure

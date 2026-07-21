@@ -1,7 +1,7 @@
 # Moira REST API Reference
 
 Version: 0.1.0 transport surface
-Date audited: 2026-07-20
+Date audited: 2026-07-21
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,9 +16,9 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 425
+- Total non-documentation routes: 432
 - Operational/meta routes: 4
-- Versioned `/v1` routes: 421
+- Versioned `/v1` routes: 428
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 
@@ -49,8 +49,10 @@ Implemented:
   Decans/Decanates direct and chart-backed decanate-placement plus Hermetic
   catalog/longitude/rising/night-hour routes
 - source-scoped Pancha Pakshi admission adds explicit-profile discovery,
-  aksara and natal identity, exact nominal schedule, directed relationship,
-  pure Padu and first-samam EAT-seed lookups, and bounded astronomical-paksha
+  governance-only Uromarisi constitutional status, aksara and natal identity,
+  a pure nakshatra-to-bird source-table lookup, exact nominal schedule,
+  directed relationship, pure Padu and first-samam EAT-seed lookups, and
+  bounded astronomical-paksha
   inference, local-solar
   context, fixed-clock
   materialization, and fixed-clock current-cell routes, plus separate
@@ -183,7 +185,7 @@ Not yet broadly exposed as REST families:
 | nine-parts | 1 |
 | occultations | 12 |
 | orbits | 2 |
-| pancha-pakshi | 14 |
+| pancha-pakshi | 19 |
 | panchanga | 4 |
 | parans | 8 |
 | patterns | 3 |
@@ -750,8 +752,10 @@ those relationship-chart routes.
 |---|---|---|
 | GET | `/v1/pancha-pakshi/profiles` | `pancha_pakshi_profiles_route` |
 | GET | `/v1/pancha-pakshi/profiles/{profile_id}` | `pancha_pakshi_profile_route` |
+| GET | `/v1/pancha-pakshi/constitution/uromarisi` | `pancha_pakshi_uromarisi_constitution_status_route` |
 | POST | `/v1/pancha-pakshi/identity/aksara` | `pancha_pakshi_aksara_identity_route` |
 | POST | `/v1/pancha-pakshi/identity/natal-moon` | `pancha_pakshi_natal_moon_identity_route` |
+| POST | `/v1/pancha-pakshi/mappings/nakshatra-bird` | `pancha_pakshi_nakshatra_bird_mapping_route` |
 | POST | `/v1/pancha-pakshi/roles/padu` | `pancha_pakshi_padu_bird_mapping_route` |
 | POST | `/v1/pancha-pakshi/schedule/nominal` | `pancha_pakshi_nominal_schedule_route` |
 | POST | `/v1/pancha-pakshi/schedule/first-eat-bird` | `pancha_pakshi_first_eat_bird_mapping_route` |
@@ -779,6 +783,13 @@ or forecast control.
 
 Every computation request requires an explicitly named profile ID or profile
 IDs; no route selects a default.
+The kernel-free nakshatra mapping route accepts only `profile_id`, explicit
+source `profile_paksha`, and a zero-based `nakshatra_index` in `[0, 26]`; it
+does not infer a natal Moon, ayanamsa, instant, condition, score, or forecast.
+The Uromarisi constitution route exposes immutable SCP closure and admission
+metadata only. Historical cells, classifications, candidate relations, graph
+data, condition values, prognosis, and medical interpretation remain private
+and are not transport fields.
 The first admitted profile,
 `agastya_madras_1879_akshara_fixed_clock`, binds the named 1879
 aksara/query-or-name-initial and operating-schedule source substrate. Its

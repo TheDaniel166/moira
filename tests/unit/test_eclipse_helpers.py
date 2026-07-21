@@ -491,6 +491,34 @@ def test_lunar_canon_geometry_and_search_path_are_available(eclipse_calculator) 
     assert event.data.eclipse_type.is_total
 
 
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    ("method_name", "seed_jd", "expects_future"),
+    [
+        ("next_lunar_eclipse", 2452450.404149002, True),
+        ("next_lunar_eclipse_canon", 2452450.404149002, True),
+        ("previous_lunar_eclipse", 2451564.696703502, False),
+        ("previous_lunar_eclipse_canon", 2451564.6958791944, False),
+        ("next_solar_eclipse", 2451580.039294384, True),
+        ("previous_solar_eclipse", 2451727.309234012, False),
+    ],
+)
+def test_eclipse_search_maximum_respects_strict_seed_direction(
+    eclipse_calculator,
+    method_name: str,
+    seed_jd: float,
+    expects_future: bool,
+) -> None:
+    # Each DE441 seed lies between a syzygy and its nearby refined maximum.
+    # The search must skip that maximum when it is on the wrong side of seed.
+    event = getattr(eclipse_calculator, method_name)(seed_jd)
+
+    if expects_future:
+        assert event.jd_ut > seed_jd
+    else:
+        assert event.jd_ut < seed_jd
+
+
 def test_unified_lunar_analysis_api_exposes_native_and_canon_modes(eclipse_calculator) -> None:
     native = eclipse_calculator.analyze_lunar_eclipse(2451560.0, kind="total", mode="native")
     assert native.mode == "native"

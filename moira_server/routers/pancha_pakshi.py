@@ -26,6 +26,8 @@ from ..models.pancha_pakshi import (
     PanchaPakshiFirstEatBirdMappingResponse,
     PanchaPakshiLocalSolarContextRequest,
     PanchaPakshiLocalSolarContextResponse,
+    PanchaPakshiNakshatraBirdMappingRequest,
+    PanchaPakshiNakshatraBirdMappingResponse,
     PanchaPakshiNatalMoonIdentityRequest,
     PanchaPakshiNatalMoonIdentityResponse,
     PanchaPakshiNominalScheduleRequest,
@@ -42,6 +44,7 @@ from ..models.pancha_pakshi import (
     PanchaPakshiScheduleSookshmaSelectionResponse,
     PanchaPakshiSookshmaSelectionRequest,
     PanchaPakshiSookshmaSelectionResponse,
+    PanchaPakshiUromarisiConstitutionStatusResponse,
 )
 from ..serializers.pancha_pakshi import (
     serialize_aksara_identity,
@@ -52,6 +55,7 @@ from ..serializers.pancha_pakshi import (
     serialize_fixed_clock_materialization,
     serialize_first_eat_bird_mapping,
     serialize_local_solar_context,
+    serialize_nakshatra_bird_mapping,
     serialize_natal_moon_identity,
     serialize_nominal_schedule,
     serialize_padu_bird_mapping,
@@ -60,6 +64,7 @@ from ..serializers.pancha_pakshi import (
     serialize_solar_proportional_materialization,
     serialize_schedule_sookshma_temporal_selection,
     serialize_sookshma_temporal_selection,
+    serialize_uromarisi_constitution_status,
 )
 from ..services.pancha_pakshi import (
     compute_aksara_identity,
@@ -70,6 +75,7 @@ from ..services.pancha_pakshi import (
     compute_fixed_clock_materialization,
     compute_first_eat_bird_mapping,
     compute_local_solar_context,
+    compute_nakshatra_bird_mapping,
     compute_natal_moon_identity,
     compute_nominal_schedule,
     compute_padu_bird_mapping,
@@ -79,6 +85,7 @@ from ..services.pancha_pakshi import (
     compute_sookshma_temporal_selection,
     list_pancha_pakshi_profiles,
     pancha_pakshi_profile,
+    uromarisi_constitution_status,
 )
 
 
@@ -97,6 +104,19 @@ def pancha_pakshi_profile_route(
 ) -> PanchaPakshiProfileInfoResponse:
     """Return provenance, omissions, and witness metadata for one profile."""
     return serialize_profile_info(pancha_pakshi_profile(profile_id))
+
+
+@router.get(
+    "/constitution/uromarisi",
+    response_model=PanchaPakshiUromarisiConstitutionStatusResponse,
+)
+def pancha_pakshi_uromarisi_constitution_status_route(
+) -> PanchaPakshiUromarisiConstitutionStatusResponse:
+    """Return SCP closure metadata without exposing private research data."""
+
+    return serialize_uromarisi_constitution_status(
+        uromarisi_constitution_status()
+    )
 
 
 @router.post("/identity/aksara", response_model=PanchaPakshiAksaraIdentityResponse)
@@ -119,6 +139,20 @@ def pancha_pakshi_natal_moon_identity_route(
 
     return serialize_natal_moon_identity(
         compute_natal_moon_identity(engine, request)
+    )
+
+
+@router.post(
+    "/mappings/nakshatra-bird",
+    response_model=PanchaPakshiNakshatraBirdMappingResponse,
+)
+def pancha_pakshi_nakshatra_bird_mapping_route(
+    request: PanchaPakshiNakshatraBirdMappingRequest,
+) -> PanchaPakshiNakshatraBirdMappingResponse:
+    """Return one attested table cell without inferring natal identity."""
+
+    return serialize_nakshatra_bird_mapping(
+        compute_nakshatra_bird_mapping(request)
     )
 
 

@@ -4,6 +4,8 @@
 #include "evaluators.hpp"
 #include "solvers.hpp"
 #include "coordinates.hpp"
+#include <cmath>
+#include <stdexcept>
 #include <vector>
 #include <string>
 
@@ -18,6 +20,113 @@ struct Event {
     double value;
     std::string description;
 };
+
+/**
+ * @brief Return a conservative set of solar or lunar syzygy candidates.
+ *
+ * This is discovery only: the separation ceiling deliberately admits a
+ * superset and must not be treated as eclipse classification.  Python owns
+ * the time policy, event refinement, classification, and public result.
+ */
+inline std::vector<double> find_eclipse_syzygy_candidates(
+    std::shared_ptr<IEvaluator> sun,
+    std::shared_ptr<IEvaluator> moon,
+    double jd_start_tt,
+    double jd_end_tt,
+    bool opposition,
+    double max_separation_deg = 3.0,
+    double step_days = 2.0
+) {
+    if (!sun || !moon) {
+        throw std::invalid_argument("eclipse syzygy candidates require Sun and Moon evaluators");
+    }
+    if (!std::isfinite(jd_start_tt) || !std::isfinite(jd_end_tt)) {
+        throw std::invalid_argument("eclipse syzygy candidate bounds must be finite");
+    }
+    if (!std::isfinite(max_separation_deg)
+        || max_separation_deg <= 0.0
+        || max_separation_deg > 10.0) {
+        throw std::invalid_argument("eclipse syzygy candidate separation must be in (0, 10] degrees");
+    }
+    if (!std::isfinite(step_days) || step_days <= 0.0 || step_days > 5.0) {
+        throw std::invalid_argument("eclipse syzygy candidate step must be in (0, 5] days");
+    }
+    if (jd_end_tt < jd_start_tt || jd_end_tt - jd_start_tt < 2.0 * step_days) {
+        return {};
+    }
+
+    auto separation = [&](double jd_tt) {
+        double r_s[6], r_m[6];
+        sun->evaluate(jd_tt, r_s);
+        moon->evaluate(jd_tt, r_m);
+        Vec3 sun_direction = Vec3({r_s[0], r_s[1], r_s[2]});
+        if (opposition) {
+            sun_direction = Vec3({-r_s[0], -r_s[1], -r_s[2]});
+        }
+        return angular_separation(
+            sun_direction,
+            Vec3({r_m[0], r_m[1], r_m[2]})
+        );
+    };
+
+    auto extrema = find_extrema(
+        separation,
+        jd_start_tt,
+        jd_end_tt,
+        step_days,
+        1e-9
+    );
+    std::vector<double> candidates;
+    candidates.reserve(extrema.size());
+    for (double jd_tt : extrema) {
+        if (separation(jd_tt) > max_separation_deg) {
+            continue;
+        }
+        if (!candidates.empty() && std::abs(jd_tt - candidates.back()) < step_days) {
+            continue;
+        }
+        candidates.push_back(jd_tt);
+    }
+    return candidates;
+}
+
+inline std::vector<double> find_solar_syzygy_candidates(
+    std::shared_ptr<IEvaluator> sun,
+    std::shared_ptr<IEvaluator> moon,
+    double jd_start_tt,
+    double jd_end_tt,
+    double max_separation_deg = 3.0,
+    double step_days = 2.0
+) {
+    return find_eclipse_syzygy_candidates(
+        sun,
+        moon,
+        jd_start_tt,
+        jd_end_tt,
+        false,
+        max_separation_deg,
+        step_days
+    );
+}
+
+inline std::vector<double> find_lunar_syzygy_candidates(
+    std::shared_ptr<IEvaluator> sun,
+    std::shared_ptr<IEvaluator> moon,
+    double jd_start_tt,
+    double jd_end_tt,
+    double max_separation_deg = 3.0,
+    double step_days = 2.0
+) {
+    return find_eclipse_syzygy_candidates(
+        sun,
+        moon,
+        jd_start_tt,
+        jd_end_tt,
+        true,
+        max_separation_deg,
+        step_days
+    );
+}
 
 /**
  * @brief THEOREM: Planetary Station Discovery.

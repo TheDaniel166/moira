@@ -79,7 +79,12 @@ from .julian import (
     utc_to_ut1,
     ut_to_tt_nasa_canon,
 )
-from ._ephemeris_time import _reader_identity_at, _ut1_to_ephemeris_tt
+from ._ephemeris_time import (
+    _ephemeris_tt_to_ut1,
+    _reader_identity_at,
+    _ut1_to_ephemeris_tt,
+)
+from . import moira_native as _moira_native
 from .eclipse_besselian import (
     SolarBesselianElements,
     _SolarShadowAxisState,
@@ -2604,6 +2609,88 @@ class EclipseCalculator:
         """Return the previous solar eclipse maximum before *jd_start*."""
         return self._search_solar_eclipse(jd_start, kind=kind, backward=True)
 
+    def _lunar_eclipse_near_syzygy(
+        self,
+        phase_jd: float,
+        *,
+        kind_key: str,
+        use_canon: bool,
+    ) -> EclipseEvent | None:
+        """Refine and classify one full-moon neighborhood under Python doctrine."""
+        phase_data = self.calculate_jd(phase_jd)
+        if not phase_data.is_eclipse_season:
+            return None
+
+        if use_canon:
+            best_jd = find_lunar_contacts_canon(self, phase_jd).greatest_ut
+            best_data = self._calculate_jd_internal(
+                best_jd,
+                delta_t_mode="nasa_canon",
+                lunar_canon_method=DEFAULT_LUNAR_CANON_METHOD,
+            )
+            if _matches_lunar_kind(best_data, kind_key):
+                return EclipseEvent(jd_ut=best_jd, data=best_data)
+            return None
+
+        # Umbral and penumbral events intentionally retain their separately
+        # declared native vector policies. Compute only the requested family.
+        if kind_key in {"any", "total", "partial"}:
+            best_jd = self._refine_lunar_maximum_for_kind(phase_jd, "total")
+            best_data = self._calculate_jd_internal(
+                best_jd,
+                retarded_moon=True,
+            )
+            umbral_match = (
+                _matches_lunar_kind(best_data, kind_key)
+                if kind_key != "any"
+                else (
+                    best_data.is_lunar_eclipse
+                    and (
+                        best_data.eclipse_type.is_total
+                        or best_data.eclipse_type.is_partial
+                    )
+                )
+            )
+            if umbral_match:
+                return EclipseEvent(jd_ut=best_jd, data=best_data)
+
+        if kind_key in {"any", "penumbral"}:
+            best_jd = self._refine_lunar_maximum_for_kind(phase_jd, "penumbral")
+            best_data = self._calculate_jd_internal(
+                best_jd,
+                retarded_moon=False,
+            )
+            if _matches_lunar_kind(best_data, "penumbral"):
+                return EclipseEvent(jd_ut=best_jd, data=best_data)
+        return None
+
+    def _solar_eclipse_near_syzygy(
+        self,
+        phase_jd: float,
+        *,
+        kind_key: str,
+    ) -> EclipseEvent | None:
+        """Refine and classify one new-moon neighborhood under Python doctrine."""
+        phase_data = self.calculate_jd(phase_jd)
+        if not phase_data.is_eclipse_season:
+            return None
+
+        best_jd = _refine_solar_maximum(
+            self,
+            phase_jd,
+            tol_days=1.0e-9,
+        )
+        best_data = self.calculate_jd(best_jd)
+        kind_matches = _matches_solar_kind(best_data, kind_key)
+        if kind_key == "central" and kind_matches:
+            kind_matches = (
+                self._native_solar_shadow_axis_distance_km(best_jd)
+                <= EARTH_RADIUS_KM
+            )
+        if not kind_matches:
+            return None
+        return EclipseEvent(jd_ut=best_jd, data=best_data)
+
     def _search_lunar_eclipse(
         self,
         jd_start: float,
@@ -2628,61 +2715,26 @@ class EclipseCalculator:
         if cached is not None:
             return cached
 
+        def is_in_requested_direction(candidate_jd: float) -> bool:
+            # The syzygy and the refined eclipse maximum are distinct epochs.
+            # A phase found on the requested side of the seed can therefore
+            # refine to a maximum on the wrong side and must be skipped.
+            return candidate_jd < jd_start if backward else candidate_jd > jd_start
+
         if backward:
             phase_jd = last_full_moon(jd_start, reader=self._reader)
         else:
             phase_jd = next_moon_phase("Full Moon", jd_start, reader=self._reader).jd_ut
 
         for _ in range(max_lunations):
-            phase_data = self.calculate_jd(phase_jd)
-            if phase_data.is_eclipse_season:
-                if use_canon:
-                    best_jd = find_lunar_contacts_canon(self, phase_jd).greatest_ut
-                    best_data = self._calculate_jd_internal(
-                        best_jd,
-                        delta_t_mode="nasa_canon",
-                        lunar_canon_method=DEFAULT_LUNAR_CANON_METHOD,
-                    )
-                    if _matches_lunar_kind(best_data, kind_key):
-                        event = EclipseEvent(jd_ut=best_jd, data=best_data)
-                        self._lunar_search_cache[cache_key] = event
-                        return event
-                else:
-                    # Umbral and penumbral events intentionally retain their
-                    # separately declared native vector policies.  Compute only
-                    # the family needed by the requested result.
-                    if kind_key in {"any", "total", "partial"}:
-                        best_jd = self._refine_lunar_maximum_for_kind(phase_jd, "total")
-                        best_data = self._calculate_jd_internal(
-                            best_jd,
-                            retarded_moon=True,
-                        )
-                        umbral_match = (
-                            _matches_lunar_kind(best_data, kind_key)
-                            if kind_key != "any"
-                            else (
-                                best_data.is_lunar_eclipse
-                                and (
-                                    best_data.eclipse_type.is_total
-                                    or best_data.eclipse_type.is_partial
-                                )
-                            )
-                        )
-                        if umbral_match:
-                            event = EclipseEvent(jd_ut=best_jd, data=best_data)
-                            self._lunar_search_cache[cache_key] = event
-                            return event
-
-                    if kind_key in {"any", "penumbral"}:
-                        best_jd = self._refine_lunar_maximum_for_kind(phase_jd, "penumbral")
-                        best_data = self._calculate_jd_internal(
-                            best_jd,
-                            retarded_moon=False,
-                        )
-                        if _matches_lunar_kind(best_data, "penumbral"):
-                            event = EclipseEvent(jd_ut=best_jd, data=best_data)
-                            self._lunar_search_cache[cache_key] = event
-                            return event
+            event = self._lunar_eclipse_near_syzygy(
+                phase_jd,
+                kind_key=kind_key,
+                use_canon=use_canon,
+            )
+            if event is not None and is_in_requested_direction(event.jd_ut):
+                self._lunar_search_cache[cache_key] = event
+                return event
 
             if backward:
                 phase_jd = last_full_moon(phase_jd - 1.0, reader=self._reader)
@@ -2722,6 +2774,11 @@ class EclipseCalculator:
         if cached is not None:
             return cached
 
+        def is_in_requested_direction(candidate_jd: float) -> bool:
+            # New Moon and the refined solar maximum need not occur in the
+            # same order relative to the caller's seed.
+            return candidate_jd < jd_start if backward else candidate_jd > jd_start
+
         if backward:
             phase_jd = last_new_moon(jd_start, reader=self._reader)
         else:
@@ -2730,24 +2787,10 @@ class EclipseCalculator:
         lunations_searched = 0
         while max_lunations is None or lunations_searched < max_lunations:
             lunations_searched += 1
-            phase_data = self.calculate_jd(phase_jd)
-            if phase_data.is_eclipse_season:
-                best_jd = _refine_solar_maximum(
-                    self,
-                    phase_jd,
-                    tol_days=1.0e-9,
-                )
-                best_data = self.calculate_jd(best_jd)
-                kind_matches = _matches_solar_kind(best_data, kind_key)
-                if kind_key == "central" and kind_matches:
-                    kind_matches = (
-                        self._native_solar_shadow_axis_distance_km(best_jd)
-                        <= EARTH_RADIUS_KM
-                    )
-                if kind_matches:
-                    event = EclipseEvent(jd_ut=best_jd, data=best_data)
-                    self._solar_search_cache[cache_key] = event
-                    return event
+            event = self._solar_eclipse_near_syzygy(phase_jd, kind_key=kind_key)
+            if event is not None and is_in_requested_direction(event.jd_ut):
+                self._solar_search_cache[cache_key] = event
+                return event
 
             if backward:
                 phase_jd = last_new_moon(phase_jd - 1.0, reader=self._reader)
@@ -2764,18 +2807,126 @@ class EclipseCalculator:
             f"{max_lunations} lunations"
         )
 
-    def solar_eclipses_in_range(
+    def _native_eclipse_syzygy_candidates(
+        self,
+        family: str,
+        jd_start: float,
+        jd_end: float,
+    ) -> list[float] | None:
+        """Return native-discovered candidate epochs in UT1, or None if unavailable.
+
+        Native owns only the dense TT separation scan. The 2-degree ceiling is
+        intentionally a loose superset gate, not eclipse classification.
+        """
+        native_reader = self._reader
+        if not isinstance(native_reader, SpkReader):
+            primary_reader = getattr(
+                native_reader,
+                "_primary_planetary_reader",
+                None,
+            )
+            native_reader = primary_reader() if callable(primary_reader) else None
+        if not isinstance(native_reader, SpkReader):
+            return None
+        native_find = getattr(
+            _moira_native,
+            f"find_{family}_syzygy_candidates",
+            None,
+        )
+        if not callable(native_find):
+            return None
+
+        padded_start_ut1 = jd_start - _NATIVE_BULK_ECLIPSE_PADDING_DAYS
+        padded_end_ut1 = jd_end + _NATIVE_BULK_ECLIPSE_PADDING_DAYS
+        padded_start_tt = _ut1_to_ephemeris_tt(padded_start_ut1, self._reader)
+        padded_end_tt = _ut1_to_ephemeris_tt(padded_end_ut1, self._reader)
+
+        evaluator_specs = (
+            (399, 3),
+            (3, 0),
+            (10, 0),
+            (301, 3),
+        )
+        evaluators = [
+            native_reader.evaluator(
+                target,
+                center,
+                padded_start_tt,
+                jd_end_tt=padded_end_tt,
+            )
+            for target, center in evaluator_specs
+        ]
+        if any(evaluator is None for evaluator in evaluators):
+            return None
+
+        earth_from_emb, emb_from_ssb, sun_from_ssb, moon_from_emb = evaluators
+        earth_from_ssb = _moira_native.SumEvaluator(
+            earth_from_emb,
+            emb_from_ssb,
+        )
+        sun_from_earth = _moira_native.RelativeEvaluator(
+            sun_from_ssb,
+            earth_from_ssb,
+        )
+        moon_from_ssb = _moira_native.SumEvaluator(
+            emb_from_ssb,
+            moon_from_emb,
+        )
+        moon_from_earth = _moira_native.RelativeEvaluator(
+            moon_from_ssb,
+            earth_from_ssb,
+        )
+
+        candidates_tt = native_find(
+            sun_from_earth,
+            moon_from_earth,
+            padded_start_tt,
+            padded_end_tt,
+            _NATIVE_BULK_ECLIPSE_CANDIDATE_SEPARATION_DEG,
+            _NATIVE_BULK_ECLIPSE_SCAN_STEP_DAYS,
+        )
+        return [
+            _ephemeris_tt_to_ut1(float(candidate_tt), self._reader)
+            for candidate_tt in candidates_tt
+        ]
+
+    def _eclipses_from_syzygy_candidates(
+        self,
+        family: str,
+        candidates_ut1: list[float],
+        jd_start: float,
+        jd_end: float,
+    ) -> list[EclipseEvent]:
+        """Refine a native candidate superset through Python eclipse doctrine."""
+        events: list[EclipseEvent] = []
+        for candidate_ut1 in candidates_ut1:
+            if family == "solar":
+                event = self._solar_eclipse_near_syzygy(
+                    candidate_ut1,
+                    kind_key="any",
+                )
+            else:
+                event = self._lunar_eclipse_near_syzygy(
+                    candidate_ut1,
+                    kind_key="any",
+                    use_canon=False,
+                )
+            if event is None or not jd_start <= event.jd_ut <= jd_end:
+                continue
+            if any(abs(event.jd_ut - prior.jd_ut) <= 1.0e-7 for prior in events):
+                continue
+            events.append(event)
+        events.sort(key=lambda event: event.jd_ut)
+        return events
+
+    def _solar_eclipses_in_range_python(
         self,
         jd_start: float,
         jd_end: float,
     ) -> list[EclipseEvent]:
-        """Return all solar eclipses whose maximum falls within [jd_start, jd_end].
-
-        Chains successive ``next_solar_eclipse`` calls, advancing past each
-        found event, until the next eclipse maximum falls after *jd_end*.
-        """
+        """Canonical Python range manuscript used for fallback and parity."""
         events: list[EclipseEvent] = []
-        jd = jd_start
+        jd = math.nextafter(jd_start, -math.inf)
         while True:
             event = self.next_solar_eclipse(jd)
             if event.jd_ut > jd_end:
@@ -2784,18 +2935,14 @@ class EclipseCalculator:
             jd = event.jd_ut + 1.0
         return events
 
-    def lunar_eclipses_in_range(
+    def _lunar_eclipses_in_range_python(
         self,
         jd_start: float,
         jd_end: float,
     ) -> list[EclipseEvent]:
-        """Return all lunar eclipses whose maximum falls within [jd_start, jd_end].
-
-        Chains successive ``next_lunar_eclipse`` calls, advancing past each
-        found event, until the next eclipse maximum falls after *jd_end*.
-        """
+        """Canonical Python range manuscript used for fallback and parity."""
         events: list[EclipseEvent] = []
-        jd = jd_start
+        jd = math.nextafter(jd_start, -math.inf)
         while True:
             event = self.next_lunar_eclipse(jd)
             if event.jd_ut > jd_end:
@@ -2803,6 +2950,62 @@ class EclipseCalculator:
             events.append(event)
             jd = event.jd_ut + 1.0
         return events
+
+    def solar_eclipses_in_range(
+        self,
+        jd_start: float,
+        jd_end: float,
+    ) -> list[EclipseEvent]:
+        """Return all solar eclipses whose maximum falls within [jd_start, jd_end].
+
+        A native TT scan discovers a conservative candidate superset. Python
+        retains phase refinement, classification, event assembly, and inclusive
+        range filtering. Readers without one native evaluator spanning the
+        padded interval use the canonical Python manuscript.
+        """
+        if jd_end < jd_start:
+            return []
+        candidates = self._native_eclipse_syzygy_candidates(
+            "solar",
+            jd_start,
+            jd_end,
+        )
+        if candidates is None:
+            return self._solar_eclipses_in_range_python(jd_start, jd_end)
+        return self._eclipses_from_syzygy_candidates(
+            "solar",
+            candidates,
+            jd_start,
+            jd_end,
+        )
+
+    def lunar_eclipses_in_range(
+        self,
+        jd_start: float,
+        jd_end: float,
+    ) -> list[EclipseEvent]:
+        """Return all lunar eclipses whose maximum falls within [jd_start, jd_end].
+
+        A native TT scan discovers a conservative candidate superset. Python
+        retains phase refinement, classification, event assembly, and inclusive
+        range filtering. Readers without one native evaluator spanning the
+        padded interval use the canonical Python manuscript.
+        """
+        if jd_end < jd_start:
+            return []
+        candidates = self._native_eclipse_syzygy_candidates(
+            "lunar",
+            jd_start,
+            jd_end,
+        )
+        if candidates is None:
+            return self._lunar_eclipses_in_range_python(jd_start, jd_end)
+        return self._eclipses_from_syzygy_candidates(
+            "lunar",
+            candidates,
+            jd_start,
+            jd_end,
+        )
 
     def eclipse_hits_in_range(
         self,
@@ -3170,6 +3373,14 @@ _SOLAR_PENUMBRAL_ENDPOINT_PROBES_DAYS = tuple(
     seconds / 86400.0
     for seconds in (0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0)
 )
+
+
+_NATIVE_BULK_ECLIPSE_PADDING_DAYS = 35.0
+# Public solar/lunar geometry is entered only inside a 1.5-degree syzygy
+# neighborhood. Two degrees is therefore a conservative discovery superset,
+# not a hidden eclipse classifier.
+_NATIVE_BULK_ECLIPSE_CANDIDATE_SEPARATION_DEG = 2.0
+_NATIVE_BULK_ECLIPSE_SCAN_STEP_DAYS = 2.0
 _SOLAR_PENUMBRAL_TOPOLOGY_MARGIN_KM2 = 1.0e-4
 _SOLAR_PENUMBRAL_CLEARANCE_TOLERANCE_KM = 1.0e-3
 _WGS84_FLATTENING = 1.0 / 298.257223563

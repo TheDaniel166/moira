@@ -184,8 +184,12 @@ def test_repeatability_and_runtime_boundaries_fail_closed() -> None:
             )
             or "illness_outcome" in name.lower()
         ]
+    assert {
+        route.path
+        for route in router_module.router.routes
+        if "uromarisi" in route.path.lower()
+    } == {"/v1/pancha-pakshi/constitution/uromarisi"}
     assert all(
-        "uromarisi" not in route.path.lower()
-        and "illness-outcome" not in route.path.lower()
+        "illness-outcome" not in route.path.lower()
         for route in router_module.router.routes
     )

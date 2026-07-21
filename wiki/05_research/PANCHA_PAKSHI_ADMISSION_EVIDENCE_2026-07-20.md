@@ -715,8 +715,8 @@ materialization, natal identity, or cross-profile composition. The result is
 not Padu, an authority day or bird, Adhikara/Bharana, a current activity,
 condition, strength, score, electional judgment, or forecast.
 
-The current public family has four profiles, eighteen `Moira` methods (ten
-kernel-free and eight kernel-backed), and seventeen REST routes.
+The current public family has four profiles, nineteen `Moira` methods (eleven
+kernel-free and eight kernel-backed), and nineteen REST routes.
 
 Validation checks all 28 cells against the canonical generator table and the
 existing schedule's `first_eat_bird` and initial EAT cell. It also checks exact
@@ -1605,11 +1605,12 @@ Phase 10 establishes executable invariants. Its decision SHA-256 is
 `697eecaf22cf4e8d42ca9b7044633e6407ca8d5577dd4407180029cfc00055c0`.
 
 Phase 12 admits only the immutable constitutional-status vessel and package/
-facade operation. The status returns no historical or network data and creates
-no manifest profile or REST route. It preserves `research_only`, forbidden
-medical use, no prognosis, and unavailable relation/graph/condition semantics.
+facade operation. Its governance-only REST route returns the same status with
+no historical or network data and creates no manifest profile. It preserves
+`research_only`, forbidden medical use, no prognosis, and unavailable
+relation/graph/condition semantics.
 Its decision SHA-256 is
-`581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03`.
+`47ddf7348a235245ca89dc637a20be37b7bec244aa1ded968c9c04b884d05a6d`.
 No human-language reviewer or Commissionerate A5 artifact is required for this
 closure; A5 remains relevant only to a future `corroborated_public` claim.
 

@@ -12,11 +12,13 @@ from moira.pancha_pakshi import (
     pancha_pakshi_directed_relationship,
     pancha_pakshi_first_eat_bird_mapping,
     pancha_pakshi_identity_from_initial_vowel,
+    pancha_pakshi_nakshatra_bird_mapping,
     pancha_pakshi_padu_bird_mapping,
     pancha_pakshi_profile_info,
     pancha_pakshi_schedule,
     pancha_pakshi_schedule_sookshma_temporal_selection,
     pancha_pakshi_sookshma_temporal_selection,
+    pancha_pakshi_uromarisi_constitution_status,
 )
 
 from ..models.pancha_pakshi import (
@@ -28,6 +30,7 @@ from ..models.pancha_pakshi import (
     PanchaPakshiFixedClockMaterializationRequest,
     PanchaPakshiFirstEatBirdMappingRequest,
     PanchaPakshiLocalSolarContextRequest,
+    PanchaPakshiNakshatraBirdMappingRequest,
     PanchaPakshiNatalMoonIdentityRequest,
     PanchaPakshiNominalScheduleRequest,
     PanchaPakshiPaduBirdMappingRequest,
@@ -50,6 +53,12 @@ def list_pancha_pakshi_profiles() -> PanchaPakshiProfilesResponse:
 
 def pancha_pakshi_profile(profile_id: str):
     return pancha_pakshi_profile_info(profile_id)
+
+
+def uromarisi_constitution_status():
+    """Return only the admitted immutable SCP governance status."""
+
+    return pancha_pakshi_uromarisi_constitution_status()
 
 
 def compute_aksara_identity(request: PanchaPakshiAksaraIdentityRequest):
@@ -88,6 +97,18 @@ def compute_padu_bird_mapping(request: PanchaPakshiPaduBirdMappingRequest):
         request.profile_id,
         profile_paksha=request.profile_paksha,
         weekday=request.weekday,
+    )
+
+
+def compute_nakshatra_bird_mapping(
+    request: PanchaPakshiNakshatraBirdMappingRequest,
+):
+    """Return one source-table cell without natal-Moon composition."""
+
+    return pancha_pakshi_nakshatra_bird_mapping(
+        request.profile_id,
+        profile_paksha=request.profile_paksha,
+        nakshatra_index=request.nakshatra_index,
     )
 
 

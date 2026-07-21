@@ -1,0 +1,133 @@
+{
+  "schema": "moira.native_bulk_eclipse_ranges.benchmark.v1",
+  "evidence_class": "performance_only",
+  "generated_utc": "2026-07-21T21:03:44.725667+00:00",
+  "moira_version": "5.0.0",
+  "python": "3.14.3",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+  "kernel": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp",
+  "start_jd_ut1": 2451545.0,
+  "candidate_policy": {
+    "separation_ceiling_deg": 2.0,
+    "scan_step_days": 2.0,
+    "padding_days": 35.0,
+    "native_role": "candidate discovery only",
+    "python_role": "time policy, refinement, classification, range filtering, result assembly"
+  },
+  "timing_policy": {
+    "warm_reader": true,
+    "normal_repeats": 3,
+    "long_horizon_repeats": 1,
+    "python_baseline_horizons_years": [
+      1,
+      10
+    ]
+  },
+  "results": {
+    "1": {
+      "solar": {
+        "event_count": 4,
+        "native_seconds": [
+          0.038049599999794737,
+          0.038536499996553175,
+          0.04569880000053672
+        ],
+        "native_median_seconds": 0.038536499996553175,
+        "python_seconds": [
+          0.9936286000011023,
+          0.859399900000426,
+          0.8472828000012669
+        ],
+        "python_median_seconds": 0.859399900000426,
+        "speedup_median": 22.300932883819065,
+        "max_parity_residual_seconds": 0.06211996078491211
+      },
+      "lunar": {
+        "event_count": 2,
+        "native_seconds": [
+          0.01766759999736678,
+          0.016594999993685633,
+          0.021679999998013955
+        ],
+        "native_median_seconds": 0.01766759999736678,
+        "python_seconds": [
+          0.5482302000018535,
+          0.5559608999974444,
+          0.5620763999977498
+        ],
+        "python_median_seconds": 0.5559608999974444,
+        "speedup_median": 31.46782245920816,
+        "max_parity_residual_seconds": 0.006759166717529297
+      }
+    },
+    "10": {
+      "solar": {
+        "event_count": 22,
+        "native_seconds": [
+          0.212537200000952,
+          0.19919519999530166,
+          0.1946539999989909
+        ],
+        "native_median_seconds": 0.19919519999530166,
+        "python_seconds": [
+          5.656183899998723,
+          5.556072100000165,
+          5.820121899996593
+        ],
+        "python_median_seconds": 5.656183899998723,
+        "speedup_median": 28.395181711869228,
+        "max_parity_residual_seconds": 0.06211996078491211
+      },
+      "lunar": {
+        "event_count": 24,
+        "native_seconds": [
+          0.196664499999315,
+          0.19928490000165766,
+          0.20713500000420026
+        ],
+        "native_median_seconds": 0.19928490000165766,
+        "python_seconds": [
+          5.99769589999778,
+          5.824128299995209,
+          5.672249000002921
+        ],
+        "python_median_seconds": 5.824128299995209,
+        "speedup_median": 29.225135973406733,
+        "max_parity_residual_seconds": 0.05568265914916992
+      }
+    },
+    "100": {
+      "solar": {
+        "event_count": 223,
+        "native_seconds": [
+          4.447323599997617
+        ],
+        "native_median_seconds": 4.447323599997617
+      },
+      "lunar": {
+        "event_count": 223,
+        "native_seconds": [
+          4.961004700002377
+        ],
+        "native_median_seconds": 4.961004700002377
+      }
+    },
+    "1000": {
+      "solar": {
+        "event_count": 2367,
+        "native_seconds": [
+          55.302105100003246
+        ],
+        "native_median_seconds": 55.302105100003246
+      },
+      "lunar": {
+        "event_count": 2370,
+        "native_seconds": [
+          61.84687589999521
+        ],
+        "native_median_seconds": 61.84687589999521
+      }
+    }
+  }
+}

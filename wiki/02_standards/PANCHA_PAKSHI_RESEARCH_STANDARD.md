@@ -1120,16 +1120,18 @@ historical and network data remain private. The Phase 11 decision SHA-256 is
 ### Constitutional Phase 12 public API curation
 
 Phase 12 exposes `PanchaPakshiUromarisiConstitutionStatus` and
-`pancha_pakshi_uromarisi_constitution_status()` through the package and facade.
+`pancha_pakshi_uromarisi_constitution_status()` through the package and facade,
+and exposes that same governance-only product through
+`GET /v1/pancha-pakshi/constitution/uromarisi`.
 The immutable result reports completion of SCP Phases 1-12, `research_only`
 admission, private historical/network data, unadmitted relation semantics,
 unavailable graph and condition evaluation, no prognosis, and forbidden
 medical use.
 
-This is governance metadata, not a runtime profile. It adds no manifest entry,
-REST route, research fixture I/O, historical cell, relation candidate, edge,
-score, or interpretation. The Phase 12 decision SHA-256 is
-`581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03`.
+This is governance metadata, not a runtime profile. The strict REST response
+adds no manifest entry, research fixture I/O, historical cell, relation
+candidate, edge, score, or interpretation. The Phase 12 decision SHA-256 is
+`47ddf7348a235245ca89dc637a20be37b7bec244aa1ded968c9c04b884d05a6d`.
 
 ## 5. Conflicts That Forbid Blending Or A Default
 
@@ -1344,13 +1346,15 @@ passed to a schedule operation.
 
 Stage 2G adds the kernel-free pure-table
 `pancha_pakshi_nakshatra_bird_mapping(...)` and
-`Moira.pancha_pakshi_nakshatra_bird_mapping(...)` surfaces, plus the
+`Moira.pancha_pakshi_nakshatra_bird_mapping(...)` surfaces, plus
+`POST /v1/pancha-pakshi/mappings/nakshatra-bird`, and the
 kernel-backed `pancha_pakshi_natal_moon_identity_at(...)`,
 `Moira.pancha_pakshi_natal_moon_identity(...)`, and
 `POST /v1/pancha-pakshi/identity/natal-moon` surfaces. The natal engine takes
-an explicit profile and UT1 JD; facade and REST take an explicit profile and
-aware datetime. REST additionally requires the exact Stage 2G policy ID. No
-form accepts location, caller-supplied paksha/nakshatra/bird/ayanamsa,
+an explicit profile and UT1 JD; facade and natal REST take an explicit profile
+and aware datetime. Natal REST additionally requires the exact Stage 2G policy
+ID. The pure-table REST route instead requires explicit source Paksha and a
+zero-based nakshatra index. No form accepts location, caller-supplied bird/ayanamsa,
 schedule/current-cell controls, scoring, or forecast policy.
 
 Stage 2H adds the kernel-free pure-table
@@ -1372,8 +1376,8 @@ materialization, natal identity, condition, score, or forecast input.
 All computations require `profile_id`. Public results are immutable and carry
 profile-owned provenance and omissions. Exact nazhigai values remain rational
 in the engine and serialize as `{numerator, denominator}` at the transport
-boundary. The current family contains four profiles, seventeen `Moira` methods
-(ten kernel-free and eight kernel-backed), and seventeen REST routes.
+boundary. The current family contains four profiles, nineteen `Moira` methods
+(eleven kernel-free and eight kernel-backed), and nineteen REST routes.
 
 Stage 2F accepts a datetime but no location and performs only instantaneous
 astronomical-paksha inference. The five location-bearing Stage 2A-E operations

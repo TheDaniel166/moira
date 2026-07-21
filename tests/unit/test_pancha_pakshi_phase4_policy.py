@@ -254,4 +254,8 @@ def test_phase4_failure_and_nonadmission_boundaries_remain_private() -> None:
             if "uromarisi" in name.lower()
             and name not in phase12_governance_names
         ]
-    assert all("uromarisi" not in route.path.lower() for route in router_module.router.routes)
+    assert {
+        route.path
+        for route in router_module.router.routes
+        if "uromarisi" in route.path.lower()
+    } == {"/v1/pancha-pakshi/constitution/uromarisi"}

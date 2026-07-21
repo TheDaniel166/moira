@@ -773,3 +773,41 @@ def test_native_find_lunar_eclipses_detects_known_window_and_skips_empty_window(
     assert event.type == "Lunar Eclipse"
     assert event.t_start <= event.t_mid <= event.t_end
     assert event.value >= 0.0
+
+
+@pytest.mark.requires_ephemeris
+def test_native_syzygy_candidate_discovery_is_a_conservative_bulk_surface() -> None:
+    kernel_path = find_planetary_kernel()
+    jd_start_tt = 2451500.0
+    jd_end_tt = 2451950.0
+
+    with SpkReader(kernel_path) as reader:
+        _earth_ssb, _sun_ssb, _moon_ssb, sun_geo, moon_geo = _earth_sun_moon_geometry(
+            reader,
+            jd_start_tt,
+        )
+        solar = moira_native.find_solar_syzygy_candidates(
+            sun_geo,
+            moon_geo,
+            jd_start_tt,
+            jd_end_tt,
+            2.0,
+            2.0,
+        )
+        lunar = moira_native.find_lunar_syzygy_candidates(
+            sun_geo,
+            moon_geo,
+            jd_start_tt,
+            jd_end_tt,
+            2.0,
+            2.0,
+        )
+
+    assert solar == sorted(solar)
+    assert lunar == sorted(lunar)
+    assert all(jd_start_tt <= jd <= jd_end_tt for jd in solar + lunar)
+    assert any(abs(jd - 2451580.0) < 1.0 for jd in solar)
+    assert any(abs(jd - 2451564.7) < 1.0 for jd in lunar)
+    # Discovery is intentionally a superset, not final eclipse admission.
+    assert len(solar) > 4
+    assert len(lunar) > 2

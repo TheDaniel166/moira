@@ -97,7 +97,7 @@ These benchmarks shall be measured against the reference implementation on ident
 
 ## 7. Native Status Matrix
 
-Status date: 2026-05-08
+Status date: 2026-07-21
 
 This matrix records the current implementation state of the native backend as it exists in code and checked-in benchmark artifacts. It distinguishes native existence from dispatcher routing and from high-level engine adoption.
 
@@ -114,7 +114,8 @@ This matrix records the current implementation state of the native backend as it
 | Native small-body reader ownership | Yes | Yes | Yes | Yes | Yes | Small-body kernels now run through native-owned reader logic; validation is present; performance baseline is still incomplete. |
 | Persistent evaluator classes (`ChebyshevEvaluator`, `RelativeEvaluator`, `TopocentricEvaluator`) | Yes | Partial | Partial | Script-only | No | Present in bindings and benchmark/audit scripts, but not yet a normal high-level engine route. |
 | Search pool / native event search primitives | Yes | Partial | Partial | Script-only | No | `SearchPool`, station, ingress, and occultation primitives exist in the extension, but engine-wide adoption remains limited. |
-| Native eclipse discovery (`find_solar_eclipses`, `find_lunar_eclipses`) | Yes | Partial | Partial | Script-only | No | Kernels exist in bindings, but `moira/eclipse.py` still remains primarily Python-orchestrated rather than native-dispatched. |
+| Native eclipse candidate discovery (`find_solar_syzygy_candidates`, `find_lunar_syzygy_candidates`) | Yes | Yes | Yes | Yes | Yes | The public `solar_eclipses_in_range` and `lunar_eclipses_in_range` methods use a conservative native TT separation scan, then retain Python-owned refinement, classification, inclusive-range filtering, and `EclipseEvent` assembly. The checked public-route artifact is `tests/artifacts/benchmarks/native_bulk_eclipse_ranges.json`. |
+| Legacy native final-event discovery (`find_solar_eclipses`, `find_lunar_eclipses`) | Yes | Partial | Partial | Script-only | No | These older generic-`Event` kernels remain directly tested but are not public truth: their simplified classification and contact semantics are not routed into `EclipseCalculator`. |
 | Cartography helpers | Yes | Partial | Partial | No | No | Native cartography functions are present in bindings, but the repository is in flux around the Python cartography surfaces. |
 | Harmogram-native acceleration | No clear evidence | No | No | No | No | The architecture target exists, but this repository does not yet show a validated native harmogram path. |
 
@@ -131,13 +132,15 @@ It is weaker in:
 
 - broad high-level engine routing
 - stable performance wins for the full planetary native segment path
-- evidence-backed adoption of native search and eclipse products into the public Python engine
+- evidence-backed adoption of native search products beyond the admitted bulk
+  eclipse candidate-discovery slice
 
 The practical reading is therefore:
 
 - the forge is real
 - the reader substrate is materially advanced
-- the high-level event engine is still predominantly Python-governed
+- the high-level event engine remains Python-governed, with bulk eclipse
+  candidate discovery now natively strengthened
 - benchmark and tracker claims must be read against the checked artifact set, not against intended phase language alone
 
 ## 8. Uranian Doctrine Alignment

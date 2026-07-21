@@ -253,7 +253,7 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 |---|---|
 | Sidereal & Nakshatras | `UserDefinedAyanamsa`, `NakshatraPosition`, `nakshatra_of`, `all_nakshatras_at` |
 | Panchanga | `panchanga_at`, `sankranti_at`, `PanchangaResult`, `TithiPaksha`, `PanchangaPolicy` |
-| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_first_eat_bird_mapping`, `pancha_pakshi_astronomical_paksha_at`, `pancha_pakshi_nakshatra_bird_mapping`, `pancha_pakshi_natal_moon_identity_at`, `pancha_pakshi_padu_bird_mapping`, `pancha_pakshi_sookshma_temporal_selection`, `pancha_pakshi_schedule_sookshma_temporal_selection`, `pancha_pakshi_civil_time_sookshma_selection_at`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_solar_proportional_current_cell_at`, `pancha_pakshi_directed_relationship` |
+| Pancha Pakshi | `available_pancha_pakshi_profiles`, `pancha_pakshi_uromarisi_constitution_status`, `pancha_pakshi_profile_info`, `pancha_pakshi_identity_from_initial_vowel`, `pancha_pakshi_schedule`, `pancha_pakshi_first_eat_bird_mapping`, `pancha_pakshi_astronomical_paksha_at`, `pancha_pakshi_nakshatra_bird_mapping`, `pancha_pakshi_natal_moon_identity_at`, `pancha_pakshi_padu_bird_mapping`, `pancha_pakshi_sookshma_temporal_selection`, `pancha_pakshi_schedule_sookshma_temporal_selection`, `pancha_pakshi_civil_time_sookshma_selection_at`, `pancha_pakshi_local_solar_context_at`, `pancha_pakshi_fixed_clock_materialization_at`, `pancha_pakshi_fixed_clock_current_cell_at`, `pancha_pakshi_solar_proportional_materialization_at`, `pancha_pakshi_solar_proportional_current_cell_at`, `pancha_pakshi_directed_relationship` |
 | Vedic dignities | `vedic_dignity`, `planetary_relationships`, `VedicDignityResult`, `DignityConditionProfile`, `ChartDignityProfile` |
 | Varga (divisional) | `navamsa`, `saptamsa`, `dashamansa`, `dwadashamsa`, `trimshamsa` + 11 more vargas, `VargaPoint` |
 | Vimshottari Dasha | `vimshottari`, `current_dasha`, `dasha_balance`, `dasha_active_line`, `DashaPeriod`, `VimshottariComputationPolicy` |
@@ -4618,9 +4618,24 @@ lc = calc.lunar_local_circumstances(
     jd_start, lat, lon, elevation_m=0.0, kind="any", mode="native"
 )
 
+# Inclusive bulk ranges (global maxima in UT1)
+solar_range = calc.solar_eclipses_in_range(jd_start, jd_start + 3652.5)
+lunar_range = calc.lunar_eclipses_in_range(jd_start, jd_start + 3652.5)
+
 # Geometry snapshot at any epoch
 snap = calc.calculate_jd(jd_start)   # → EclipseData
 ```
+
+`solar_eclipses_in_range(jd_start, jd_end)` and
+`lunar_eclipses_in_range(jd_start, jd_end)` include maxima on both interval
+boundaries and return time-ordered `EclipseEvent` lists. With a compatible
+content-identified planetary reader, C++ scans a padded TT interval for a
+conservative two-degree syzygy-candidate superset. Python remains authoritative
+for reader-bound TT/UT1 conversion, physical maximum refinement, eclipse
+classification, deduplication, inclusive filtering, and public vessel assembly.
+If one native evaluator cannot cover the padded interval, the same methods use
+the explicit Python manuscript. The older native generic-event scanners are not
+used as public classification or contact products.
 
 **Solar footprint engine signatures**
 
@@ -4920,6 +4935,7 @@ from moira.vedic import (
 | Function | Return | Description |
 |---|---|---|
 | `available_pancha_pakshi_profiles()` | `tuple[PanchaPakshiProfileDescriptor, ...]` | List public named profiles without selecting a default |
+| `pancha_pakshi_uromarisi_constitution_status()` | `PanchaPakshiUromarisiConstitutionStatus` | Return immutable SCP closure and admission metadata without exposing private historical/network research |
 | `pancha_pakshi_profile_info(profile_id)` | `PanchaPakshiProfileInfo` | Inspect admission, capabilities, source, locators, conflicts, and omissions |
 | `pancha_pakshi_identity_from_initial_vowel(profile_id, initial_vowel)` | `PanchaPakshiInitialVowelIdentity` | Resolve one explicitly listed aksara/query-or-name initial; not natal Moon identity |
 | `pancha_pakshi_schedule(profile_id, *, paksha, half, weekday)` | `PanchaPakshiSchedule` | Materialize one exact nominal fixed-clock schedule from explicit source labels |
@@ -4973,6 +4989,9 @@ so `assembly_policy="verse_precedence_for_nakshatra_partition"` preserves that
 commentary as rejected conflict evidence and does not repair or blend it. The
 source-table vessel states
 `source_table_semantics="nakshatra_bird_table_not_explicitly_natal_moon"`.
+The strict transport equivalent is
+`POST /v1/pancha-pakshi/mappings/nakshatra-bird`; it accepts only explicit
+profile, source Paksha, and zero-based nakshatra index.
 
 `PanchaPakshiNatalMoonIdentityPolicy` is fixed, immutable, and has policy ID
 `bogamuni_2024_apparent_lahiri_natal_moon_identity_v1`. One UT1 instant becomes

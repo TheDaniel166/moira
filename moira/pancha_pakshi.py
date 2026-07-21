@@ -72,7 +72,9 @@ class PanchaPakshiUromarisiConstitutionStatus:
     prognosis_status: str = field(default="not_performed", init=False)
     medical_use_status: str = field(default="forbidden", init=False)
     manifest_profile_status: str = field(default="not_admitted", init=False)
-    rest_route_status: str = field(default="not_admitted", init=False)
+    rest_route_status: str = field(
+        default="admitted_governance_status_only", init=False
+    )
 
 
 class PanchaPakshiCapability(str, Enum):

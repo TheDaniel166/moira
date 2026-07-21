@@ -32,7 +32,7 @@ _STANDARD_PATH = _ROOT / "wiki" / "02_standards" / (
     "PANCHA_PAKSHI_UROMARISI_BACKEND_STANDARD.md"
 )
 _MANIFEST_PATH = _ROOT / "moira" / "data" / "pancha_pakshi_manifest.json"
-_DECISION_SHA256 = "581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03"
+_DECISION_SHA256 = "47ddf7348a235245ca89dc637a20be37b7bec244aa1ded968c9c04b884d05a6d"
 _PHASE11_SHA256 = "697eecaf22cf4e8d42ca9b7044633e6407ca8d5577dd4407180029cfc00055c0"
 _STANDARD_SHA256 = "c71860b482458230ac0b78a2f593286e40294cd51bbc0767bfe3e2c5e2de9b72"
 
@@ -96,13 +96,15 @@ def test_public_exports_and_facade_share_one_curated_identity() -> None:
     )
 
 
-def test_phase12_does_not_admit_private_data_manifest_or_rest() -> None:
+def test_phase12_admits_only_status_rest_and_keeps_private_data_out() -> None:
     decision = _decision()
     manifest = _MANIFEST_PATH.read_text(encoding="utf-8")
     assert decision["decision_id"] not in manifest
     assert "uromarisi" not in manifest.lower()
     route_paths = tuple(route.path for route in router_module.router.routes)
-    assert all("constitution" not in path for path in route_paths)
+    assert "/v1/pancha-pakshi/constitution/uromarisi" in route_paths
+    assert decision["curated_surface"]["fastapi_route"] is True
+    assert decision["admission_decision"]["rest_route_admitted"] is True
     for namespace in (moira, facade, pakshi, vedic, router_module):
         assert not hasattr(namespace, "PanchaPakshiUromarisiPhase9Network")
         assert not hasattr(

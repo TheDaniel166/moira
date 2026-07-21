@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Native-Strengthened Bulk Eclipse Ranges**: Routed
+  `EclipseCalculator.solar_eclipses_in_range()` and
+  `lunar_eclipses_in_range()` through conservative native TT syzygy-candidate
+  discovery when the content-identified planetary reader can cover the padded
+  interval. Python retains time policy, physical refinement, classification,
+  strict inclusive range semantics, deduplication, fallback, and full
+  `EclipseEvent` assembly. The legacy native generic-event scanners remain
+  experimental. Added DE441 native/Python parity, adversarial, GIL, public-route,
+  and benchmark evidence across 1-, 10-, 100-, and 1,000-year ranges.
 - **First-Class Source-Scoped Pancha Pakshi**: Added immutable public vessels,
   package-root and `moira.vedic` exports, ten kernel-free `Moira` methods, one
   kernel-backed astronomical-paksha inference method, one

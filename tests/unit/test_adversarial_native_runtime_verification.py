@@ -215,3 +215,37 @@ def test_adversarial_native_event_searches_return_empty_on_reversed_windows() ->
             EARTH_RADIUS_KM,
             0.2,
         ) == []
+        assert moira_native.find_solar_syzygy_candidates(
+            sun_geo,
+            moon_geo,
+            jd_b,
+            jd_a,
+            2.0,
+            2.0,
+        ) == []
+        assert moira_native.find_lunar_syzygy_candidates(
+            sun_geo,
+            moon_geo,
+            jd_b,
+            jd_a,
+            2.0,
+            2.0,
+        ) == []
+        with pytest.raises(ValueError, match="separation"):
+            moira_native.find_solar_syzygy_candidates(
+                sun_geo,
+                moon_geo,
+                jd_a - 40.0,
+                jd_b + 40.0,
+                11.0,
+                2.0,
+            )
+        with pytest.raises(ValueError, match="step"):
+            moira_native.find_lunar_syzygy_candidates(
+                sun_geo,
+                moon_geo,
+                jd_a - 40.0,
+                jd_b + 40.0,
+                2.0,
+                6.0,
+            )

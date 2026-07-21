@@ -250,4 +250,8 @@ def test_phase3_hardening_rejects_inconsistent_vessels_without_new_doctrine() ->
             if "uromarisi" in name.lower()
             and name not in phase12_governance_names
         ]
-    assert all("uromarisi" not in route.path.lower() for route in router_module.router.routes)
+    assert {
+        route.path
+        for route in router_module.router.routes
+        if "uromarisi" in route.path.lower()
+    } == {"/v1/pancha-pakshi/constitution/uromarisi"}

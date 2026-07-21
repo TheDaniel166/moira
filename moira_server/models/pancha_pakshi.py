@@ -73,6 +73,13 @@ class PanchaPakshiPaduBirdMappingRequest(PanchaPakshiProfileRequest):
     weekday: PanchaPakshiWeekday
 
 
+class PanchaPakshiNakshatraBirdMappingRequest(PanchaPakshiProfileRequest):
+    """Select one pure source-table cell without natal-Moon inference."""
+
+    profile_paksha: PanchaPakshiPaksha
+    nakshatra_index: int = Field(ge=0, le=26)
+
+
 class PanchaPakshiFractionRequest(_StrictModel):
     """One exact, reduced rational input; floating point is not admitted."""
 
@@ -422,6 +429,35 @@ class PanchaPakshiProfilesResponse(_StrictModel):
     profiles: list[PanchaPakshiProfileDescriptorResponse]
     total: int
     default_profile_selected: bool = False
+
+
+class PanchaPakshiUromarisiConstitutionStatusResponse(_StrictModel):
+    """Public SCP governance status; never private historical/network data."""
+
+    process: Literal["SCP"]
+    completed_phases: list[int] = Field(min_length=12, max_length=12)
+    admission_status: PanchaPakshiAdmissionStatus
+    public_product: Literal["constitutional_status_only"]
+    historical_data_status: Literal["private_not_exposed"]
+    network_status: Literal["private_structural_no_admitted_edges"]
+    relation_semantics_status: Literal["not_admitted"]
+    graph_metric_status: Literal[
+        "not_evaluable_no_admitted_relation_edges"
+    ]
+    condition_evaluation_status: Literal[
+        "not_evaluable_no_admitted_condition_doctrine"
+    ]
+    prognosis_status: Literal["not_performed"]
+    medical_use_status: Literal["forbidden"]
+    manifest_profile_status: Literal["not_admitted"]
+    rest_route_status: Literal["admitted_governance_status_only"]
+
+    @field_validator("completed_phases")
+    @classmethod
+    def _exact_scp_phases(cls, value: list[int]) -> list[int]:
+        if value != list(range(1, 13)):
+            raise ValueError("completed_phases must be the exact SCP 1-12 closure")
+        return value
 
 
 class PanchaPakshiAksaraIdentityResponse(_StrictModel):

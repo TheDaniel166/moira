@@ -161,8 +161,12 @@ def test_stage2p_preserves_semantic_and_runtime_fail_closed_boundaries() -> None
             )
             or "illness_grid" in name.lower()
         ]
+    assert {
+        route.path
+        for route in router_module.router.routes
+        if "uromarisi" in route.path.lower()
+    } == {"/v1/pancha-pakshi/constitution/uromarisi"}
     assert all(
-        "uromarisi" not in route.path.lower()
-        and "illness-grid" not in route.path.lower()
+        "illness-grid" not in route.path.lower()
         for route in router_module.router.routes
     )

@@ -623,11 +623,11 @@ never creates a default canon.
 - Public product: `PanchaPakshiUromarisiConstitutionStatus`
 - Public operation: `pancha_pakshi_uromarisi_constitution_status()`
 - Decision SHA-256:
-  `581c137bbbd0fdfe11f61dbb43bfb6cc6e1dafd420f52dd80c2413a4a59ada03`
+  `47ddf7348a235245ca89dc637a20be37b7bec244aa1ded968c9c04b884d05a6d`
 - Admitted surfaces: package root, `moira.pancha_pakshi`, `moira.vedic`, facade
-  module, and kernel-free `Moira` method
-- Excluded surfaces: historical/network data, manifest profile, REST route,
-  relation semantics, graph metrics, score, prognosis, and medical use
+  module, kernel-free `Moira` method, and governance-only REST route
+- Excluded surfaces: historical/network data, manifest profile, relation
+  semantics, graph metrics, score, prognosis, and medical use
 - SCP status: Phases 1-12 complete; future source truth requires a new
   admission process
 

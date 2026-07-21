@@ -1431,6 +1431,14 @@ PYBIND11_MODULE(_moira_native, m) {
         py::gil_scoped_release release;
         return find_lunar_eclipses(sun, moon, jd_start, jd_end, r_sun_km, r_moon_km, r_earth_km, dt_days);
     }, py::arg("sun"), py::arg("moon"), py::arg("jd_start"), py::arg("jd_end"), py::arg("r_sun_km"), py::arg("r_moon_km"), py::arg("r_earth_km"), py::arg("dt_days"));
+    m.def("find_solar_syzygy_candidates", [](std::shared_ptr<IEvaluator> sun, std::shared_ptr<IEvaluator> moon, double jd_start_tt, double jd_end_tt, double max_separation_deg, double step_days) {
+        py::gil_scoped_release release;
+        return find_solar_syzygy_candidates(sun, moon, jd_start_tt, jd_end_tt, max_separation_deg, step_days);
+    }, py::arg("sun"), py::arg("moon"), py::arg("jd_start_tt"), py::arg("jd_end_tt"), py::arg("max_separation_deg") = 3.0, py::arg("step_days") = 2.0);
+    m.def("find_lunar_syzygy_candidates", [](std::shared_ptr<IEvaluator> sun, std::shared_ptr<IEvaluator> moon, double jd_start_tt, double jd_end_tt, double max_separation_deg, double step_days) {
+        py::gil_scoped_release release;
+        return find_lunar_syzygy_candidates(sun, moon, jd_start_tt, jd_end_tt, max_separation_deg, step_days);
+    }, py::arg("sun"), py::arg("moon"), py::arg("jd_start_tt"), py::arg("jd_end_tt"), py::arg("max_separation_deg") = 3.0, py::arg("step_days") = 2.0);
     
     py::class_<Event>(m, "Event")
         .def_readwrite("type", &Event::type)

@@ -42,6 +42,7 @@ from moira.pancha_pakshi import (
     PanchaPakshiSookshmaInterval,
     PanchaPakshiSookshmaSelection,
     PanchaPakshiSookshmaSelectorPolicy,
+    PanchaPakshiUromarisiConstitutionStatus,
 )
 
 from ..models.pancha_pakshi import (
@@ -84,6 +85,7 @@ from ..models.pancha_pakshi import (
     PanchaPakshiSookshmaIntervalResponse,
     PanchaPakshiSookshmaSelectionResponse,
     PanchaPakshiSookshmaSelectorPolicyResponse,
+    PanchaPakshiUromarisiConstitutionStatusResponse,
 )
 
 
@@ -91,6 +93,28 @@ def serialize_fraction(value: Fraction) -> PanchaPakshiFractionResponse:
     return PanchaPakshiFractionResponse(
         numerator=value.numerator,
         denominator=value.denominator,
+    )
+
+
+def serialize_uromarisi_constitution_status(
+    status: PanchaPakshiUromarisiConstitutionStatus,
+) -> PanchaPakshiUromarisiConstitutionStatusResponse:
+    """Serialize governance metadata without touching private research data."""
+
+    return PanchaPakshiUromarisiConstitutionStatusResponse(
+        process=status.process,
+        completed_phases=list(status.completed_phases),
+        admission_status=status.admission_status,
+        public_product=status.public_product,
+        historical_data_status=status.historical_data_status,
+        network_status=status.network_status,
+        relation_semantics_status=status.relation_semantics_status,
+        graph_metric_status=status.graph_metric_status,
+        condition_evaluation_status=status.condition_evaluation_status,
+        prognosis_status=status.prognosis_status,
+        medical_use_status=status.medical_use_status,
+        manifest_profile_status=status.manifest_profile_status,
+        rest_route_status=status.rest_route_status,
     )
 
 

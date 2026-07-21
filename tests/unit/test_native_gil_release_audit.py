@@ -41,6 +41,8 @@ def test_first_wave_native_binding_inventory_marks_long_running_pure_native_path
         'm.def("find_occultations",',
         'm.def("find_solar_eclipses", [](std::shared_ptr<IEvaluator> sun, std::shared_ptr<IEvaluator> moon, double jd_start, double jd_end, double r_sun_km, double r_moon_km, double dt_days) {',
         'm.def("find_lunar_eclipses", [](std::shared_ptr<IEvaluator> sun, std::shared_ptr<IEvaluator> moon, double jd_start, double jd_end, double r_sun_km, double r_moon_km, double r_earth_km, double dt_days) {',
+        'm.def("find_solar_syzygy_candidates", [](std::shared_ptr<IEvaluator> sun, std::shared_ptr<IEvaluator> moon, double jd_start_tt, double jd_end_tt, double max_separation_deg, double step_days) {',
+        'm.def("find_lunar_syzygy_candidates", [](std::shared_ptr<IEvaluator> sun, std::shared_ptr<IEvaluator> moon, double jd_start_tt, double jd_end_tt, double max_separation_deg, double step_days) {',
         'm.def("target_topocentric_altitude",',
         'm.def("find_sun_at_alt",',
         'm.def("search_heliacal_rising",',

@@ -16,6 +16,7 @@ import pytest
 from dataclasses import fields
 from unittest.mock import MagicMock, patch
 
+import moira.eclipse as eclipse
 from moira.eclipse import EclipseHit, EclipseEvent, EclipseData, EclipseCalculator
 
 
@@ -280,6 +281,103 @@ def test_lunar_eclipses_in_range_returns_events(eclipse_calculator):
     assert len(events) >= 3
     for ev in events:
         assert jd_start <= ev.jd_ut <= jd_end
+
+
+@pytest.mark.requires_ephemeris
+def test_public_bulk_eclipse_range_reaches_native_candidate_discovery(
+    eclipse_calculator,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = {"solar": 0, "lunar": 0}
+    original_solar = eclipse._moira_native.find_solar_syzygy_candidates
+    original_lunar = eclipse._moira_native.find_lunar_syzygy_candidates
+
+    def solar_wrapper(*args, **kwargs):
+        calls["solar"] += 1
+        return original_solar(*args, **kwargs)
+
+    def lunar_wrapper(*args, **kwargs):
+        calls["lunar"] += 1
+        return original_lunar(*args, **kwargs)
+
+    monkeypatch.setattr(
+        eclipse._moira_native,
+        "find_solar_syzygy_candidates",
+        solar_wrapper,
+    )
+    monkeypatch.setattr(
+        eclipse._moira_native,
+        "find_lunar_syzygy_candidates",
+        lunar_wrapper,
+    )
+
+    calc = EclipseCalculator(reader=eclipse_calculator._reader)
+    calc.solar_eclipses_in_range(2451545.0, 2451545.0 + 365.25)
+    calc.lunar_eclipses_in_range(2451545.0, 2451545.0 + 365.25)
+
+    assert calls == {"solar": 1, "lunar": 1}
+
+
+@pytest.mark.requires_ephemeris
+def test_bulk_eclipse_range_uses_explicit_python_fallback(
+    eclipse_calculator,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    jd_start = 2451545.0
+    jd_end = jd_start + 365.25
+    calc = EclipseCalculator(reader=eclipse_calculator._reader)
+    expected_calc = EclipseCalculator(reader=eclipse_calculator._reader)
+
+    monkeypatch.setattr(
+        calc,
+        "_native_eclipse_syzygy_candidates",
+        lambda *_args, **_kwargs: None,
+    )
+
+    solar = calc.solar_eclipses_in_range(jd_start, jd_end)
+    lunar = calc.lunar_eclipses_in_range(jd_start, jd_end)
+    expected_solar = expected_calc._solar_eclipses_in_range_python(jd_start, jd_end)
+    expected_lunar = expected_calc._lunar_eclipses_in_range_python(jd_start, jd_end)
+
+    assert [event.jd_ut for event in solar] == [event.jd_ut for event in expected_solar]
+    assert [event.jd_ut for event in lunar] == [event.jd_ut for event in expected_lunar]
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.slow
+def test_native_bulk_eclipse_ranges_match_python_manuscript(eclipse_calculator) -> None:
+    jd_start = 2451545.0
+    jd_end = jd_start + 365.25 * 10.0
+
+    for family in ("solar", "lunar"):
+        accelerated_calc = EclipseCalculator(reader=eclipse_calculator._reader)
+        manuscript_calc = EclipseCalculator(reader=eclipse_calculator._reader)
+        accelerated = getattr(
+            accelerated_calc,
+            f"{family}_eclipses_in_range",
+        )(jd_start, jd_end)
+        manuscript = getattr(
+            manuscript_calc,
+            f"_{family}_eclipses_in_range_python",
+        )(jd_start, jd_end)
+
+        assert len(accelerated) == len(manuscript)
+        assert [str(event.data.eclipse_type) for event in accelerated] == [
+            str(event.data.eclipse_type)
+            for event in manuscript
+        ]
+        for native_event, python_event in zip(accelerated, manuscript):
+            assert native_event.jd_ut == pytest.approx(
+                python_event.jd_ut,
+                abs=0.1 / 86400.0,
+            )
+            assert native_event.data.is_solar_eclipse == python_event.data.is_solar_eclipse
+            assert native_event.data.is_lunar_eclipse == python_event.data.is_lunar_eclipse
+
+
+def test_bulk_eclipse_ranges_return_empty_for_reversed_interval(eclipse_calculator) -> None:
+    assert eclipse_calculator.solar_eclipses_in_range(2451600.0, 2451500.0) == []
+    assert eclipse_calculator.lunar_eclipses_in_range(2451600.0, 2451500.0) == []
 
 
 @pytest.mark.requires_ephemeris

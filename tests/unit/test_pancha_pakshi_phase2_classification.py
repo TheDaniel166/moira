@@ -365,4 +365,8 @@ def test_phase2_closure_opens_only_private_phase3_inspectability() -> None:
                 and name not in phase12_governance_names
             )
         ]
-    assert all("uromarisi" not in route.path.lower() for route in router_module.router.routes)
+    assert {
+        route.path
+        for route in router_module.router.routes
+        if "uromarisi" in route.path.lower()
+    } == {"/v1/pancha-pakshi/constitution/uromarisi"}
