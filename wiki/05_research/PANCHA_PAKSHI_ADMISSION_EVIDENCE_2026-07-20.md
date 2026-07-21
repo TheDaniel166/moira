@@ -1,5 +1,35 @@
 # Pancha Pakshi Admission Evidence — 2026-07-20
 
+## Stage 2T Uromarisi SLEEP Semantics and Identity Conflict — 2026-07-21
+
+Stage 2T reviews the SLEEP locator sequence under the bounded semantic method.
+The
+[`Stage 2T research decision`](../../tests/fixtures/pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21.json)
+has canonical SHA-256
+`09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`
+and binds the unchanged Stage 2S, Stage 2P, and manifest hashes.
+
+Rendered PDF pages `122–124`, printed pages `120–122`, control the reading;
+Archive.org OCR lines `5743–5859` provide navigation alignment only. Verses
+`246–249` produce four unconflicted SLEEP records: within `8` days, within `15`
+days, exact `20` days, and a conditional mortality-or-resolution branch within
+three months.
+
+Verse `250` is not an unconflicted fifth SLEEP cell. Its heading and verse
+assign DIE ordinal 5, while its commentary assigns SLEEP ordinal 5. Stage 2T
+preserves all three layers, performs no payload normalization, and leaves the
+prior hash-bound Stage 2P locator fixture unchanged. Current truth is four
+unconflicted SLEEP cells plus one blocked identity-conflict candidate.
+
+Resolution difficulty, recurrence, mortality, distress, harm, wind-dosha,
+treatment, ritual, and relation language remains historical and cell-local.
+It is not prediction, medical truth, diagnosis, cause, symptom, score, advice,
+or runtime doctrine. Tamil source expression, OCR, page images, and full
+translations are not distributed. No Stage 2K selector is attributed to
+Uromarisi, no Stage 2O result is routed to these records, and no profile,
+manifest, engine, facade, or REST surface changes. No human-language reviewer
+is required.
+
 ## Stage 2S Uromarisi RULE Semantic-Atom Extension — 2026-07-21
 
 Stage 2S extends the bounded method to RULE ordinals one through five. The
@@ -92,8 +122,8 @@ machine-assisted and carries no human-language reviewer dependency.
 
 ## Stage 2P Uromarisi Illness-Grid Research Gate — 2026-07-21
 
-Stage 2P advances the remaining Uromarisi branch by recovering one complete
-context structure without translating or admitting its prognostic payload. The
+Stage 2P advances the remaining Uromarisi branch by recovering one provisional
+locator structure without translating or admitting its prognostic payload. The
 [`Stage 2P research decision`](../../tests/fixtures/pancha_pakshi_uromarisi_illness_grid_stage2p_research_2026_07_21.json)
 has canonical SHA-256
 `449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`.
@@ -104,10 +134,10 @@ The exact Archive.org 1934 Uromarisi-attributed PDF was downloaded and locally
 verified at SHA-256
 `e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`.
 Rendered original-page review covered PDF pages `115–126`, corresponding to
-printed pages `113–124`. The illness section contains exactly five activity
-blocks—EAT, WALK, RULE, SLEEP, and DIE—and each block contains explicitly
-headed first through fifth vinadi results. The complete 25-cell locator grid
-binds verses `230–239` and `241–255` to their PDF and printed-page spans.
+printed pages `113–124`. The provisional 25-locator index binds verses
+`230–239` and `241–255` to their PDF and printed-page spans. Stage 2T later
+establishes that verse `250` has a heading/verse versus commentary parent-
+activity conflict and is not an unconflicted fifth SLEEP cell.
 Verse `240` is an intervening transition and is not an ordinal cell. Verse
 `256` begins a separate illness-duration section after the grid.
 
@@ -1266,13 +1296,15 @@ claim, or admission beyond the later explicitly bounded decisions is asserted.
 1. Preserve the two Stage 2K selectors as separate explicit policies with no
    default. Stage 2N now permits only the named modern schedule-to-selector
    composition, and Stage 2O adds civil-time routing only under a mandatory
-   timing policy. Stage 2P supplies the complete illness-context locator grid,
-   and Stages 2Q–2S demonstrate the source-owned ontology and repeatable
-   machine-checked semantic transcription on the five EAT, five WALK, and five
-   RULE cells.
-   Any Uromarisi selector binding remains a separate explicit modern decision.
-   Expansion beyond these fifteen cells must preserve per-cell uncertainty and
-   must not collapse distinct statements to generic good/bad or numeric scores.
+   timing policy. Stage 2P supplies the provisional illness-context locator
+   index, and Stages 2Q–2T demonstrate the source-owned ontology and repeatable
+   machine-checked semantic transcription on five EAT, five WALK, five RULE,
+   and four unconflicted SLEEP cells, with verse `250` blocked by text-layer
+   identity conflict. Any Uromarisi selector binding remains a separate
+   explicit modern decision.
+   Expansion beyond these nineteen unconflicted cells must preserve per-cell
+   uncertainty and must not collapse distinct statements to generic good/bad
+   or numeric scores.
 2. Stage 2M exactly identifies the Commissionerate `A5 Ramadevar
    Panchapakshi` candidate and excludes several `Patchani` false cognates, but
    the target remains title-only. The next attempt must obtain the actual `A5`
@@ -1304,8 +1336,9 @@ Stage 2N explicit modern schedule composition with no clock or outcome binding,
 plus Stage 2O civil-time routing under mandatory timing and selector policies
 with no fallback or outcome binding, plus the Stage 2P research-only illness
 locator grid and Stage 2Q five-cell EAT semantic-atom pilot with no runtime
-payload or medical-truth claim, plus the Stage 2R five-cell WALK extension and
-Stage 2S five-cell RULE extension under the same boundary.
+payload or medical-truth claim, plus the Stage 2R five-cell WALK extension,
+Stage 2S five-cell RULE extension, and Stage 2T four-cell SLEEP extension with
+verse `250` blocked under the same boundary.
 None is a universal canon, and
 unresolved or alternate doctrine must not be silently inferred through the
 public API.

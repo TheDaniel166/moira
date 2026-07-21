@@ -263,6 +263,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All four profiles and the manifest are unchanged. The Stage 2O decision
   SHA-256 is
   `2ea686e774ba4468c0515f621771b8a142c79f04d89b69839f482e05c37b40df`.
+- **Pancha Pakshi Uromarisi SLEEP Semantics Stage 2T Research Extension**:
+  Reviewed SLEEP-period illness verses `246–250` on rendered PDF pages
+  `122–124`. Verses `246–249` yield four unconflicted semantic records with
+  upper-bound `8` days, upper-bound `15` days, exact `20` days, and a
+  conditional three-month mortality-or-resolution branch. Verse `250` is
+  blocked: its heading and verse assign DIE ordinal 5 while its commentary
+  assigns SLEEP ordinal 5. Stage 2T therefore refines the earlier Stage 2P
+  locator claim without mutating that hash-bound fixture. Mortality,
+  recurrence, distress, harm, wind-dosha, treatment, ritual, and relation
+  language remains historical and non-runtime—not prediction, diagnosis,
+  advice, symptom, score, or medical truth. No selector, manifest, engine,
+  facade, or REST surface changed, and no human Tamil reviewer is required.
+  The Stage 2T decision SHA-256 is
+  `09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`.
 - **Pancha Pakshi Uromarisi RULE Semantics Stage 2S Research Extension**:
   Extended the machine-assisted semantic-atom method to RULE-period illness
   verses `241–245` on rendered PDF pages `120–122`. All five cells state

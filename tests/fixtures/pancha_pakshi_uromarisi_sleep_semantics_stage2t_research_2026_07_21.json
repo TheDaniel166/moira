@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "decision_id": "pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21",
+  "decided_at_utc": "2026-07-21T14:53:40Z",
+  "decision_kind": "research_only_semantic_atom_extension_with_text_layer_identity_conflict",
+  "admission_status": "research_only",
+  "stage": "2T",
+  "prior_boundaries": {
+    "stage2s_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_rule_semantics_stage2s_research_2026_07_21.json",
+    "stage2s_decision_sha256": "85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d",
+    "stage2p_decision_path": "tests/fixtures/pancha_pakshi_uromarisi_illness_grid_stage2p_research_2026_07_21.json",
+    "stage2p_decision_sha256": "449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2",
+    "manifest_path": "moira/data/pancha_pakshi_manifest.json",
+    "manifest_sha256": "584d2b28bd2c7537f8ebb029633ed7bce682ed02ee38bf32402901940887c955"
+  },
+  "primary_witness": {
+    "witness_id": "kvc_0354_vinaadi_pajasapatchi_mulamum_1934",
+    "bibliographic_identity": "Uromarisi-attributed Vinadi Pancha Pakshi Mulamum Uraiyum, with Tanjai Karunanidhi Pillai, 1934",
+    "archive_details_url": "https://archive.org/details/kvc-0354-vinaadi-pajasapatchi-mulamum-1934",
+    "locally_verified_pdf_sha256": "e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0",
+    "inspection_method": "rendered_original_page_review_at_220_dpi_with_archive_ocr_alignment_for_navigation",
+    "inspected_pdf_pages": [122, 123, 124],
+    "printed_page_range": "120-122",
+    "source_expression_storage": "not_distributed"
+  },
+  "governing_object": {
+    "context_family": "illness",
+    "parent_activity": "sleep",
+    "source_owned_object": "four_unconflicted_cell_semantic_records_plus_one_text_layer_identity_conflict",
+    "unconflicted_cell_count": 4,
+    "conflicted_candidate_count": 1,
+    "transcription_scope": "bounded_semantic_atoms_not_verbatim_transcription",
+    "ontology_relation_to_stage2s": "additive_extension_for_resolution_difficulty_recurrence_wind_and_conditional_mortality_language",
+    "translation_status": "machine_assisted_bounded_gloss_not_admitted",
+    "medical_truth_status": "not_evaluated",
+    "runtime_status": "not_admitted"
+  },
+  "semantic_ontology": {
+    "disposition_statement": "preserves_resolution_difficulty_recurrence_and_conditional_mortality_or_resolution_without_generic_labels",
+    "stated_time_expression": "distinguishes_exact_upper_bound_and_conditional_branch_time_expressions",
+    "deity_reference": "preserves_source_titles_and_their_stated_action_relations",
+    "response_or_mediation": "distinguishes_prescribed_historical_actions_from_treatment_mediation_without_medical_endorsement",
+    "wind_dosha_reference": "records_presence_without_accepting_a_diagnostic_or_causal_claim",
+    "effect_reference": "records_bounded_distress_or_harm_language_without_converting_it_to_symptoms_or_scores",
+    "conditional_mortality_reference": "records_historical_mortality_language_without_prediction_or_medical_validation",
+    "activity_relation_clause": "records_a_surface_branch_condition_without_binding_it_to_runtime_doctrine",
+    "text_layer_identity_conflict": "blocks_semantic_normalization_when_heading_verse_and_commentary_assign_different_parent_activities",
+    "uncertainty": "records_cell_local_limits_and_terms_deliberately_left_uninterpreted"
+  },
+  "sleep_cells": [
+    {
+      "ordinal": 1,
+      "verse": 246,
+      "pdf_pages": [122, 123],
+      "printed_pages": [120, 121],
+      "archive_ocr_navigation_lines": [5743, 5771],
+      "identity_status": "unconflicted_sleep",
+      "disposition_statement": {"value": "stated_resolution_with_difficulty", "confidence": "high"},
+      "stated_time_expression": {"kind": "upper_bound_days", "values": [8], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "kali", "relation": "abhisheka_prescribed", "confidence": "high"},
+        {"source_title": "anjaneya", "relation": "circumambulation_prescribed", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "kali_abhisheka", "relation": "prescribed", "confidence": "high"},
+        {"category": "anjaneya_shrine_circumambulation", "relation": "prescribed", "confidence": "high"}
+      ],
+      "wind_dosha_reference": {"status": "present", "confidence": "high"},
+      "effect_reference": [],
+      "conditional_mortality_reference": {"status": "not_recorded"},
+      "activity_relation_clause": {"status": "present", "surface_statement": "rule_enmity_disallowed", "runtime_semantics": null},
+      "uncertainty": [
+        "wind_dosha_clause_not_accepted_as_diagnosis_or_cause",
+        "activity_relation_statement_not_bound_to_runtime_doctrine"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "verse": 247,
+      "pdf_pages": [123],
+      "printed_pages": [121],
+      "archive_ocr_navigation_lines": [5773, 5793],
+      "identity_status": "unconflicted_sleep",
+      "disposition_statement": {"value": "stated_resolution_with_recurrence_warning", "confidence": "high"},
+      "stated_time_expression": {"kind": "upper_bound_days", "values": [15], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "kali", "relation": "abhisheka_prescribed", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "kali_abhisheka", "relation": "prescribed", "confidence": "high"}
+      ],
+      "wind_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "effect_reference": [
+        {"category": "mental_distress", "confidence": "high"},
+        {"category": "recurrence_warning", "confidence": "high"}
+      ],
+      "conditional_mortality_reference": {"status": "not_recorded"},
+      "activity_relation_clause": {"status": "not_recorded", "surface_statement": null, "runtime_semantics": null},
+      "uncertainty": [
+        "distress_language_not_normalized_as_symptom_or_severity",
+        "recurrence_warning_not_medical_prognosis"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "verse": 248,
+      "pdf_pages": [123],
+      "printed_pages": [121],
+      "archive_ocr_navigation_lines": [5795, 5810],
+      "identity_status": "unconflicted_sleep",
+      "disposition_statement": {"value": "stated_to_resolve", "confidence": "high"},
+      "stated_time_expression": {"kind": "exact_days", "values": [20], "confidence": "high"},
+      "deity_reference": [
+        {"source_title": "kali", "relation": "offerings_prescribed", "confidence": "high"},
+        {"source_title": "vairavar", "relation": "garland_prescribed", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "kali_bali_offering", "relation": "prescribed", "confidence": "high"},
+        {"category": "kali_pongal_offering", "relation": "prescribed", "confidence": "high"},
+        {"category": "vairavar_garland", "relation": "prescribed", "confidence": "high"},
+        {"category": "physician_medicine", "relation": "stated_mediation", "confidence": "high"}
+      ],
+      "wind_dosha_reference": {"status": "present", "confidence": "high"},
+      "effect_reference": [
+        {"category": "body_harm_or_pain_language", "confidence": "high"}
+      ],
+      "conditional_mortality_reference": {"status": "not_recorded"},
+      "activity_relation_clause": {"status": "not_recorded", "surface_statement": null, "runtime_semantics": null},
+      "uncertainty": [
+        "wind_dosha_clause_not_accepted_as_diagnosis_or_cause",
+        "historical_treatment_reference_not_medical_advice",
+        "harm_language_not_normalized_as_symptom_or_severity"
+      ]
+    },
+    {
+      "ordinal": 4,
+      "verse": 249,
+      "pdf_pages": [123, 124],
+      "printed_pages": [121, 122],
+      "archive_ocr_navigation_lines": [5812, 5839],
+      "identity_status": "unconflicted_sleep",
+      "disposition_statement": {"value": "conditional_mortality_or_resolution", "confidence": "high"},
+      "stated_time_expression": {
+        "kind": "conditional_upper_bound_months",
+        "branches": [
+          {"condition": "rule_enmity", "outcome": "mortality_language", "values": [3]},
+          {"condition": "otherwise", "outcome": "stated_to_resolve", "values": [3]}
+        ],
+        "confidence": "high"
+      },
+      "deity_reference": [
+        {"source_title": "kali", "relation": "abhisheka_prescribed", "confidence": "high"}
+      ],
+      "response_or_mediation": [
+        {"category": "kali_abhisheka", "relation": "prescribed_with_uncertain_efficacy", "confidence": "high"}
+      ],
+      "wind_dosha_reference": {"status": "not_recorded", "confidence": "medium"},
+      "effect_reference": [
+        {"category": "severe_harm_language", "confidence": "high"}
+      ],
+      "conditional_mortality_reference": {"status": "present", "prediction_status": "forbidden"},
+      "activity_relation_clause": {"status": "present", "surface_statement": "rule_enmity_branch", "runtime_semantics": null},
+      "uncertainty": [
+        "mortality_language_not_medical_prognosis_or_prediction",
+        "ritual_efficacy_not_asserted",
+        "activity_relation_branch_not_bound_to_runtime_doctrine",
+        "severity_language_not_normalized_as_score"
+      ]
+    }
+  ],
+  "conflicted_candidates": [
+    {
+      "candidate_ordinal": 5,
+      "verse": 250,
+      "pdf_pages": [124],
+      "printed_pages": [122],
+      "archive_ocr_navigation_lines": [5841, 5859],
+      "identity_status": "blocked_text_layer_identity_conflict",
+      "heading_layer_activity": "die",
+      "verse_layer_activity": "die",
+      "commentary_layer_activity": "sleep",
+      "payload_markers": {
+        "mortality_language_present": true,
+        "commentary_upper_bound_days_candidate": 5,
+        "semantic_normalization_performed": false
+      },
+      "resolution_policy": "preserve_each_text_layer_and_do_not_assign_the_candidate_to_sleep_or_die_runtime_outcomes",
+      "uncertainty": [
+        "parent_activity_identity_conflicts_between_heading_verse_and_commentary",
+        "mortality_payload_not_normalized",
+        "time_expression_not_admitted_as_a_cell_semantic_atom"
+      ]
+    }
+  ],
+  "stage2p_structural_refinement": {
+    "prior_locator_claim": "five_sleep_ordinals_including_verse_250",
+    "current_finding": "verse_250_is_a_locator_candidate_with_heading_and_verse_assigned_to_die_but_commentary_assigned_to_sleep",
+    "prior_fixture_mutated": false,
+    "current_truth": "four_unconflicted_sleep_cells_plus_one_blocked_identity_conflict",
+    "runtime_effect": "none"
+  },
+  "repeatability_contract": {
+    "cell_identity": "parent_activity_plus_explicit_ordinal_plus_text_layer_agreement",
+    "locator_tuple": "verse_plus_pdf_pages_plus_printed_pages_plus_archive_ocr_navigation_lines",
+    "source_check": "rendered_page_controls_semantics_and_archive_ocr_only_aligns_navigation",
+    "machine_check": "canonical_fixture_hash_exact_per_cell_assertions_and_exact_conflict_assertions",
+    "verbatim_transcription_required_for_this_extension": false,
+    "human_language_reviewer_dependency": "none"
+  },
+  "ambiguity_policy": {
+    "identity_inference_across_conflicting_text_layers": "forbidden",
+    "mortality_language_as_prediction_or_medical_prognosis": "forbidden",
+    "ritual_efficacy_assertion": "forbidden",
+    "wind_dosha_as_medical_cause": "forbidden",
+    "effect_reference_as_symptom_or_score": "forbidden",
+    "activity_relation_runtime_binding": "forbidden",
+    "generic_favorable_unfavorable_label": "forbidden",
+    "condition_or_numeric_score": "forbidden",
+    "medical_recommendation_or_advice": "forbidden",
+    "automatic_stage2o_to_uromarisi_binding": "forbidden",
+    "default_selector": null
+  },
+  "admission_decision": {
+    "runtime_profile_created": false,
+    "runtime_data_changed": false,
+    "manifest_changed": false,
+    "public_capability_created": false,
+    "engine_surface_created": false,
+    "facade_surface_created": false,
+    "rest_surface_created": false
+  },
+  "public_nonclaims": [
+    "These records summarize what one historical witness states; they do not establish medical truth.",
+    "Mortality, recurrence, distress, harm, wind-dosha, and ritual clauses are not predictions, diagnoses, causes, symptoms, scores, or advice.",
+    "Verse 250 is not admitted as a SLEEP or DIE outcome because its text layers disagree about parent activity identity.",
+    "No full translation or Tamil source expression is distributed.",
+    "No activity relation statement is bound to runtime doctrine.",
+    "No Stage 2K selector is attributed to the Uromarisi witness and no Stage 2O result is routed to these cells.",
+    "No human Tamil reviewer is required."
+  ],
+  "artifact_distribution_boundary": "The archival PDF, rendered pages, OCR, Tamil source expression, and full translations are not distributed. This fixture preserves bibliographic identity, hashes, locators, bounded machine-assisted semantic atoms, the exact text-layer conflict, per-cell uncertainty, and the fail-closed research decision only."
+}

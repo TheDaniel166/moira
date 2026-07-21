@@ -275,8 +275,10 @@ never creates a default canon.
 - Primary 1934 Uromarisi PDF SHA-256:
   `e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`
 - Inspected range: rendered PDF pages `115–126`, printed pages `113–124`
-- Recovered object: illness context, five parent activities by five explicit
-  vinadi ordinals, exactly 25 unique locator cells
+- Recovered object: provisional illness locator index with five parent
+  activities by five explicit ordinals; Stage 2T later blocks verse `250` as a
+  heading/verse versus commentary identity conflict rather than an
+  unconflicted SLEEP cell
 - Cell verses: `230–239` and `241–255`; verse `240` is an intervening
   transition and verse `256` begins the separate illness-duration section
 - Payload boundary: activity, ordinal, verse, and page spans only; no copied
@@ -358,6 +360,33 @@ never creates a default canon.
 - Selector and runtime boundary: no Stage 2K attribution, Stage 2O routing,
   activity-relation binding, profile, manifest, engine, facade, or REST change;
   no human-language reviewer required
+
+### Stage 2T Research-Only Uromarisi SLEEP Semantic Atoms
+
+- Admission kind: four-cell semantic-transcription extension plus one blocked
+  text-layer identity conflict; no profile or capability
+- Stage 2T decision:
+  [`pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21.json`](../../tests/fixtures/pancha_pakshi_uromarisi_sleep_semantics_stage2t_research_2026_07_21.json)
+- Stage 2T decision SHA-256:
+  `09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`
+- Bound predecessors: exact Stage 2S decision SHA-256
+  `85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d`
+  and unchanged Stage 2P locator decision SHA-256
+  `449efb11b81741e1ac591d6a93033023f67892ac835cbcb178103606eb729dd2`
+- Unconflicted cells: SLEEP ordinals `1–4`, verses `246–249`, rendered PDF
+  pages `122–124`, printed pages `120–122`
+- Time atoms: within `8` days, within `15` days, exact `20` days, and a
+  conditional mortality-or-resolution branch within three months
+- Blocked candidate: verse `250`; heading and verse say DIE ordinal 5 while
+  commentary says SLEEP ordinal 5
+- Preserved distinctions: resolution difficulty, recurrence, deity and ritual
+  actions, treatment mediation, wind-dosha, distress, harm, conditional
+  mortality language, activity relation, and per-cell uncertainty
+- Nonclaims: no prediction, medical truth, diagnosis, cause, symptom, advice,
+  generic good/bad label, condition or numeric score, or full translation
+- Selector and runtime boundary: no Stage 2K attribution, Stage 2O routing,
+  conflict resolution, activity-relation binding, profile, manifest, engine,
+  facade, or REST change; no human-language reviewer required
 
 - Governing standard:
   [`PANCHA_PAKSHI_RESEARCH_STANDARD.md`](../02_standards/PANCHA_PAKSHI_RESEARCH_STANDARD.md)

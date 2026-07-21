@@ -810,10 +810,12 @@ Stage 2P returns to the primary Uromarisi-attributed 1934 witness for a bounded
 research-only structural recovery. The Archive.org PDF was locally verified
 at SHA-256
 `e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`
-and PDF pages `115–126` were rendered and reviewed. The illness context forms
-a complete five-activity by five-vinadi-ordinal locator grid: verses `230–239`
+and PDF pages `115–126` were rendered and reviewed. Stage 2P indexed a
+provisional five-activity by five-vinadi-ordinal locator grid: verses `230–239`
 and `241–255`, with transition verse `240` excluded and the separate duration
-section beginning at verse `256`. The decision preserves only structure,
+section beginning at verse `256`. Stage 2T later refines verse `250` to a
+blocked text-layer identity conflict rather than an unconflicted SLEEP cell.
+The Stage 2P decision preserves only structure,
 bibliographic identity, hashes, and repeatable page/verse locators. It copies
 no source expression and performs no translation, outcome normalization,
 medical or prognostic interpretation, scoring, or selector binding. The
@@ -862,6 +864,22 @@ translation and changes no selector, runtime profile, manifest, engine,
 facade, or REST state. No human-language reviewer is required. The Stage 2S
 decision fixture has canonical SHA-256
 `85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d`.
+
+Stage 2T reviews the five Stage 2P SLEEP locators on PDF pages `122–124` but
+admits semantic records for only verses `246–249`. Verse `250` has a direct
+text-layer identity conflict: its heading and verse identify DIE ordinal 5,
+while its commentary identifies SLEEP ordinal 5. The prior hash-bound Stage 2P
+fixture remains unchanged as historical locator evidence, but its five-cell
+SLEEP claim is refined to four unconflicted cells plus one blocked candidate.
+The four records preserve resolution difficulty, recurrence, exact and
+upper-bound time, conditional mortality-or-resolution language, deity and
+ritual references, treatment mediation, wind-dosha, harm, distress, and
+surface activity relations with cell-local uncertainty. None becomes medical
+truth, prediction, diagnosis, cause, symptom, score, advice, or runtime
+doctrine. No selector, profile, manifest, engine, facade, or REST state
+changes, and no human-language reviewer is required. The Stage 2T decision
+fixture has canonical SHA-256
+`09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`.
 
 The remaining Uromarisi-attributed edition and Sarasvati Mahal Library series
 213 are retained as conflict or bibliographic evidence. The exact inspected
@@ -918,7 +936,9 @@ grid. Stage 2Q adds a research-only semantic-atom pilot for its five EAT cells,
 and Stage 2R extends the same boundary to five WALK cells. Both retain per-cell
 uncertainty. Stage 2S continues it through five RULE cells while keeping fire,
 dosha, effect, and relation clauses non-runtime. None makes a medical-truth
-claim or runtime binding.
+claim or runtime binding. Stage 2T adds four unconflicted SLEEP records and
+blocks verse `250` because its heading and verse disagree with its commentary
+about parent activity identity.
 Condition, scoring, automatic policy fallback, and forecasting remain outside
 the admitted surface.
 

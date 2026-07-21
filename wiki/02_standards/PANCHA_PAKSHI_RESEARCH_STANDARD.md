@@ -718,15 +718,18 @@ admitting its outcome semantics. The primary witness is the exact 166-page
 1934 Uromarisi-attributed *Vinadi Pancha Pakshi Mulamum Uraiyum* PDF, locally
 verified at SHA-256
 `e2ab7a64d4d4e540c30bc464c12923e6f14e93fbbe15d73e459e9c62a5815da0`.
-Rendered review of PDF pages `115–126` establishes a complete illness grid:
-EAT, WALK, RULE, SLEEP, and DIE each contain first through fifth vinadi outcome
-statement blocks.
+Rendered review of PDF pages `115–126` established a provisional 25-locator
+illness grid. Stage 2T later refines verse `250`: its heading and verse assign
+DIE ordinal 5 while its commentary assigns SLEEP ordinal 5, so it is a blocked
+identity-conflict candidate rather than an unconflicted SLEEP cell.
 
 The 25 cell locators are verses `230–239` and `241–255`. Verse `240` is an
 intervening transition rather than an ordinal cell heading. Verse `256` begins
 a separate illness-duration section after the grid. Each cell records only its
-activity, ordinal, verse, and PDF/printed-page span. Tamil source expression,
-translations, and normalized outcome payloads are not distributed or admitted.
+activity, ordinal, verse, and PDF/printed-page span. Stage 2T preserves the
+verse `250` layer conflict without mutating the historical Stage 2P fixture.
+Tamil source expression, translations, and normalized outcome payloads are not
+distributed or admitted.
 
 This grid does not supply selector arithmetic and does not establish that
 either Stage 2K Bogamuni policy belongs to the Uromarisi lineage. Stage 2O
@@ -804,6 +807,29 @@ capability, engine, facade, or REST surface changes. No human-language reviewer
 is required. The research decision SHA-256 is
 `85142480188a00ddec3de6f192a36025f282ca0eefa4643a6f1d74da4cec811d`.
 
+### Stage 2T research-only SLEEP semantic atoms and identity conflict
+
+Stage 2T reviews SLEEP verses `246–250` but produces only four unconflicted
+semantic records. Verses `246–249` preserve resolution difficulty, recurrence,
+an exact 20-day expression, two upper-bound day expressions, and a conditional
+three-month mortality-or-resolution branch. Mortality, recurrence, distress,
+harm, wind-dosha, treatment, ritual, and activity-relation language remain
+historical atoms rather than prediction, diagnosis, cause, symptom, score,
+advice, or runtime doctrine.
+
+Verse `250` is blocked by text-layer identity conflict. Its heading and verse
+assign DIE ordinal 5, while its commentary assigns SLEEP ordinal 5. No layer
+is silently preferred, and neither its mortality language nor its candidate
+five-day commentary expression is normalized into a cell payload. The Stage
+2P fixture remains unchanged as historical locator evidence; current truth is
+four unconflicted SLEEP cells plus one blocked candidate.
+
+Rendered PDF pages `122–124` control the reading; Archive.org OCR lines are
+navigation aids only. No selector, Stage 2O routing, runtime profile, manifest,
+capability, engine, facade, or REST surface changes. No human-language reviewer
+is required. The research decision SHA-256 is
+`09f7651325cdac058d9816b85b031ef528f514ae91fb8cd9636452b8d7fb302a`.
+
 ## 5. Conflicts That Forbid Blending Or A Default
 
 The following are different computational doctrines or unresolved editorial
@@ -821,6 +847,7 @@ defects, not values that may be averaged or repaired by symmetry.
 | Timing | The inspected 1879 source attests fixed thirty-nazhigai halves, not proportional sunrise-to-sunset scaling. | Seasonal scaling, if admitted, is a separate policy and capability. |
 | Padu, first-EAT, and authority vocabulary | The Bogamuni weekday Padu table and the 1879 first-samam EAT seeds are separately complete; primary layers mention authority days without supplying an `Adhikara Pakshi` table, and Bharana is secondary-only terminology. | Preserve the Padu and first-samam EAT objects as separate source-scoped lookups. Do not manufacture an Adhikara/Bharana alias or derive a day ruler from either lookup or instantaneous Rule activity. |
 | Vinadi ordinal routing | Uromarisi-attributed 1922, 1932, and 1934 publications attest first through fifth vinadi result positions beneath activities without arithmetic; the 2024 editorial comparator separately attests weighted and equal-fifths selectors. | Preserve the ordinal axis and both selector candidates. Stage 2N permits only its separately decided modern schedule composition; do not infer Uromarisi binding, choose a default, normalize prognostic prose, or attach outcomes. |
+| Verse 250 parent activity | The heading and verse assign DIE ordinal 5 while the commentary assigns SLEEP ordinal 5. | Preserve all layers, block semantic normalization, and do not assign the candidate to either parent activity at runtime. |
 
 Conflict-ledger witnesses and rejected text layers are not executable merely
 because they are recorded. The named 2024 profile admits only its declared
@@ -1272,7 +1299,8 @@ Bharana or Adhikara bird products; alternate Sookshma selector doctrines,
 any cross-witness binding of Stage 2K selectors to Uromarisi ordinal outcomes,
 vinadi clock routing, and semantic outcome products beyond the Stage 2J axis,
 Stage 2P research-only illness locator grid, Stage 2Q five-cell EAT pilot,
-Stage 2R five-cell WALK extension, and Stage 2S five-cell RULE extension;
+Stage 2R five-cell WALK extension, Stage 2S five-cell RULE extension, and Stage
+2T four-cell SLEEP extension with verse `250` blocked by identity conflict;
 condition/scoring; and electional window search.
 Fixed-clock materialization, fixed-clock current-cell selection,
 solar-proportional materialization, and solar-proportional current-cell
