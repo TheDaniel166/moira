@@ -1,0 +1,1617 @@
+{
+  "source": {
+    "authority": "NASA/GSFC Five Millennium Catalog of Lunar Eclipses",
+    "url": "https://eclipse.gsfc.nasa.gov/LEcat5/LE1901-2000.html",
+    "retrieved_utc": "2026-07-22",
+    "catalog_time_scale": "TD/TT",
+    "shadow_enlargement": "Danjon",
+    "row_count": 229,
+    "evidence_class": "primary-authority cross-model classification corpus",
+    "note": "Static facts copied from the official 1901-2000 catalog; no network access is used by tests."
+  },
+  "rows": [
+    {
+      "catalog_number": "09422",
+      "date": "1901-May-03",
+      "greatest_td": "18:30:38",
+      "delta_t_s": -1,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09423",
+      "date": "1901-Oct-27",
+      "greatest_td": "15:15:18",
+      "delta_t_s": 0,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09424",
+      "date": "1902-Apr-22",
+      "greatest_td": "18:52:40",
+      "delta_t_s": 0,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09425",
+      "date": "1902-Oct-17",
+      "greatest_td": "06:03:26",
+      "delta_t_s": 1,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09426",
+      "date": "1903-Apr-12",
+      "greatest_td": "00:12:59",
+      "delta_t_s": 2,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09427",
+      "date": "1903-Oct-06",
+      "greatest_td": "15:17:33",
+      "delta_t_s": 2,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09428",
+      "date": "1904-Mar-02",
+      "greatest_td": "03:02:34",
+      "delta_t_s": 3,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09429",
+      "date": "1904-Mar-31",
+      "greatest_td": "12:32:28",
+      "delta_t_s": 3,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09430",
+      "date": "1904-Sep-24",
+      "greatest_td": "17:34:44",
+      "delta_t_s": 3,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09431",
+      "date": "1905-Feb-19",
+      "greatest_td": "19:00:02",
+      "delta_t_s": 4,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09432",
+      "date": "1905-Aug-15",
+      "greatest_td": "03:40:59",
+      "delta_t_s": 5,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09433",
+      "date": "1906-Feb-09",
+      "greatest_td": "07:46:58",
+      "delta_t_s": 5,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09434",
+      "date": "1906-Aug-04",
+      "greatest_td": "13:00:10",
+      "delta_t_s": 6,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09435",
+      "date": "1907-Jan-29",
+      "greatest_td": "13:38:00",
+      "delta_t_s": 6,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09436",
+      "date": "1907-Jul-25",
+      "greatest_td": "04:22:27",
+      "delta_t_s": 7,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09437",
+      "date": "1908-Jan-18",
+      "greatest_td": "13:21:36",
+      "delta_t_s": 8,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09438",
+      "date": "1908-Jun-14",
+      "greatest_td": "14:06:32",
+      "delta_t_s": 8,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09439",
+      "date": "1908-Jul-13",
+      "greatest_td": "21:33:55",
+      "delta_t_s": 8,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09440",
+      "date": "1908-Dec-07",
+      "greatest_td": "21:55:09",
+      "delta_t_s": 9,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09441",
+      "date": "1909-Jun-04",
+      "greatest_td": "01:28:51",
+      "delta_t_s": 10,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09442",
+      "date": "1909-Nov-27",
+      "greatest_td": "08:54:41",
+      "delta_t_s": 10,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09443",
+      "date": "1910-May-24",
+      "greatest_td": "05:34:16",
+      "delta_t_s": 11,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09444",
+      "date": "1910-Nov-17",
+      "greatest_td": "00:20:52",
+      "delta_t_s": 12,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09445",
+      "date": "1911-May-13",
+      "greatest_td": "05:56:24",
+      "delta_t_s": 12,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09446",
+      "date": "1911-Nov-06",
+      "greatest_td": "15:36:45",
+      "delta_t_s": 13,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09447",
+      "date": "1912-Apr-01",
+      "greatest_td": "22:14:16",
+      "delta_t_s": 13,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09448",
+      "date": "1912-Sep-26",
+      "greatest_td": "11:44:50",
+      "delta_t_s": 14,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09449",
+      "date": "1913-Mar-22",
+      "greatest_td": "11:57:49",
+      "delta_t_s": 15,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09450",
+      "date": "1913-Sep-15",
+      "greatest_td": "12:48:19",
+      "delta_t_s": 15,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09451",
+      "date": "1914-Mar-12",
+      "greatest_td": "04:13:08",
+      "delta_t_s": 16,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09452",
+      "date": "1914-Sep-04",
+      "greatest_td": "13:54:57",
+      "delta_t_s": 17,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09453",
+      "date": "1915-Jan-31",
+      "greatest_td": "04:57:42",
+      "delta_t_s": 17,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09454",
+      "date": "1915-Mar-01",
+      "greatest_td": "18:19:32",
+      "delta_t_s": 17,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09455",
+      "date": "1915-Jul-26",
+      "greatest_td": "12:24:39",
+      "delta_t_s": 18,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09456",
+      "date": "1915-Aug-24",
+      "greatest_td": "21:27:17",
+      "delta_t_s": 18,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09457",
+      "date": "1916-Jan-20",
+      "greatest_td": "08:39:41",
+      "delta_t_s": 18,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09458",
+      "date": "1916-Jul-15",
+      "greatest_td": "04:46:07",
+      "delta_t_s": 19,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09459",
+      "date": "1917-Jan-08",
+      "greatest_td": "07:44:48",
+      "delta_t_s": 19,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09460",
+      "date": "1917-Jul-04",
+      "greatest_td": "21:39:04",
+      "delta_t_s": 20,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09461",
+      "date": "1917-Dec-28",
+      "greatest_td": "09:46:32",
+      "delta_t_s": 20,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09462",
+      "date": "1918-Jun-24",
+      "greatest_td": "10:28:03",
+      "delta_t_s": 20,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09463",
+      "date": "1918-Dec-17",
+      "greatest_td": "19:06:01",
+      "delta_t_s": 21,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09464",
+      "date": "1919-May-15",
+      "greatest_td": "01:14:00",
+      "delta_t_s": 21,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09465",
+      "date": "1919-Nov-07",
+      "greatest_td": "23:44:28",
+      "delta_t_s": 21,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09466",
+      "date": "1920-May-03",
+      "greatest_td": "01:51:08",
+      "delta_t_s": 21,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09467",
+      "date": "1920-Oct-27",
+      "greatest_td": "14:11:38",
+      "delta_t_s": 22,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09468",
+      "date": "1921-Apr-22",
+      "greatest_td": "07:44:39",
+      "delta_t_s": 22,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09469",
+      "date": "1921-Oct-16",
+      "greatest_td": "22:53:59",
+      "delta_t_s": 22,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09470",
+      "date": "1922-Mar-13",
+      "greatest_td": "11:28:48",
+      "delta_t_s": 23,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09471",
+      "date": "1922-Apr-11",
+      "greatest_td": "20:32:12",
+      "delta_t_s": 23,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09472",
+      "date": "1922-Oct-06",
+      "greatest_td": "00:43:50",
+      "delta_t_s": 23,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09473",
+      "date": "1923-Mar-03",
+      "greatest_td": "03:32:09",
+      "delta_t_s": 23,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09474",
+      "date": "1923-Aug-26",
+      "greatest_td": "10:39:52",
+      "delta_t_s": 23,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09475",
+      "date": "1924-Feb-20",
+      "greatest_td": "16:08:55",
+      "delta_t_s": 24,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09476",
+      "date": "1924-Aug-14",
+      "greatest_td": "20:20:30",
+      "delta_t_s": 24,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09477",
+      "date": "1925-Feb-08",
+      "greatest_td": "21:42:22",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09478",
+      "date": "1925-Aug-04",
+      "greatest_td": "11:52:57",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09479",
+      "date": "1926-Jan-28",
+      "greatest_td": "21:20:24",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09480",
+      "date": "1926-Jun-25",
+      "greatest_td": "21:25:07",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09481",
+      "date": "1926-Jul-25",
+      "greatest_td": "05:00:12",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09482",
+      "date": "1926-Dec-19",
+      "greatest_td": "06:20:07",
+      "delta_t_s": 24,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09483",
+      "date": "1927-Jun-15",
+      "greatest_td": "08:24:41",
+      "delta_t_s": 24,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09484",
+      "date": "1927-Dec-08",
+      "greatest_td": "17:35:10",
+      "delta_t_s": 24,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09485",
+      "date": "1928-Jun-03",
+      "greatest_td": "12:09:57",
+      "delta_t_s": 24,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09486",
+      "date": "1928-Nov-27",
+      "greatest_td": "09:01:47",
+      "delta_t_s": 24,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09487",
+      "date": "1929-May-23",
+      "greatest_td": "12:37:45",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09488",
+      "date": "1929-Nov-17",
+      "greatest_td": "00:03:13",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09489",
+      "date": "1930-Apr-13",
+      "greatest_td": "05:58:54",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09490",
+      "date": "1930-Oct-07",
+      "greatest_td": "19:07:10",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09491",
+      "date": "1931-Apr-02",
+      "greatest_td": "20:07:55",
+      "delta_t_s": 24,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09492",
+      "date": "1931-Sep-26",
+      "greatest_td": "19:48:29",
+      "delta_t_s": 24,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09493",
+      "date": "1932-Mar-22",
+      "greatest_td": "12:32:39",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09494",
+      "date": "1932-Sep-14",
+      "greatest_td": "21:01:00",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09495",
+      "date": "1933-Feb-10",
+      "greatest_td": "13:17:33",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09496",
+      "date": "1933-Mar-12",
+      "greatest_td": "02:33:03",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09497",
+      "date": "1933-Aug-05",
+      "greatest_td": "19:46:05",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09498",
+      "date": "1933-Sep-04",
+      "greatest_td": "04:52:20",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09499",
+      "date": "1934-Jan-30",
+      "greatest_td": "16:42:42",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09500",
+      "date": "1934-Jul-26",
+      "greatest_td": "12:15:38",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09501",
+      "date": "1935-Jan-19",
+      "greatest_td": "15:47:35",
+      "delta_t_s": 24,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09502",
+      "date": "1935-Jul-16",
+      "greatest_td": "05:00:05",
+      "delta_t_s": 24,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09503",
+      "date": "1936-Jan-08",
+      "greatest_td": "18:09:58",
+      "delta_t_s": 24,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09504",
+      "date": "1936-Jul-04",
+      "greatest_td": "17:25:23",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09505",
+      "date": "1936-Dec-28",
+      "greatest_td": "03:49:09",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09506",
+      "date": "1937-May-25",
+      "greatest_td": "07:51:34",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09507",
+      "date": "1937-Nov-18",
+      "greatest_td": "08:19:26",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09508",
+      "date": "1938-May-14",
+      "greatest_td": "08:44:00",
+      "delta_t_s": 24,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09509",
+      "date": "1938-Nov-07",
+      "greatest_td": "22:26:42",
+      "delta_t_s": 24,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09510",
+      "date": "1939-May-03",
+      "greatest_td": "15:11:43",
+      "delta_t_s": 24,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09511",
+      "date": "1939-Oct-28",
+      "greatest_td": "06:36:43",
+      "delta_t_s": 24,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09512",
+      "date": "1940-Mar-23",
+      "greatest_td": "19:48:19",
+      "delta_t_s": 24,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09513",
+      "date": "1940-Apr-22",
+      "greatest_td": "04:26:25",
+      "delta_t_s": 25,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09514",
+      "date": "1940-Oct-16",
+      "greatest_td": "08:01:17",
+      "delta_t_s": 25,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09515",
+      "date": "1941-Mar-13",
+      "greatest_td": "11:55:47",
+      "delta_t_s": 25,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09516",
+      "date": "1941-Sep-05",
+      "greatest_td": "17:47:15",
+      "delta_t_s": 25,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09517",
+      "date": "1942-Mar-03",
+      "greatest_td": "00:21:54",
+      "delta_t_s": 25,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09518",
+      "date": "1942-Aug-26",
+      "greatest_td": "03:48:25",
+      "delta_t_s": 26,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09519",
+      "date": "1943-Feb-20",
+      "greatest_td": "05:38:23",
+      "delta_t_s": 26,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09520",
+      "date": "1943-Aug-15",
+      "greatest_td": "19:28:46",
+      "delta_t_s": 26,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09521",
+      "date": "1944-Feb-09",
+      "greatest_td": "05:14:57",
+      "delta_t_s": 26,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09522",
+      "date": "1944-Jul-06",
+      "greatest_td": "04:40:01",
+      "delta_t_s": 27,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09523",
+      "date": "1944-Aug-04",
+      "greatest_td": "12:26:51",
+      "delta_t_s": 27,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09524",
+      "date": "1944-Dec-29",
+      "greatest_td": "14:49:35",
+      "delta_t_s": 27,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09525",
+      "date": "1945-Jun-25",
+      "greatest_td": "15:14:22",
+      "delta_t_s": 27,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09526",
+      "date": "1945-Dec-19",
+      "greatest_td": "02:20:47",
+      "delta_t_s": 27,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09527",
+      "date": "1946-Jun-14",
+      "greatest_td": "18:39:17",
+      "delta_t_s": 28,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09528",
+      "date": "1946-Dec-08",
+      "greatest_td": "17:48:28",
+      "delta_t_s": 28,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09529",
+      "date": "1947-Jun-03",
+      "greatest_td": "19:15:44",
+      "delta_t_s": 28,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09530",
+      "date": "1947-Nov-28",
+      "greatest_td": "08:34:29",
+      "delta_t_s": 28,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09531",
+      "date": "1948-Apr-23",
+      "greatest_td": "13:39:18",
+      "delta_t_s": 28,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09532",
+      "date": "1948-Oct-18",
+      "greatest_td": "02:35:41",
+      "delta_t_s": 29,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09533",
+      "date": "1949-Apr-13",
+      "greatest_td": "04:11:25",
+      "delta_t_s": 29,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09534",
+      "date": "1949-Oct-07",
+      "greatest_td": "02:56:55",
+      "delta_t_s": 29,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09535",
+      "date": "1950-Apr-02",
+      "greatest_td": "20:44:34",
+      "delta_t_s": 29,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09536",
+      "date": "1950-Sep-26",
+      "greatest_td": "04:17:11",
+      "delta_t_s": 29,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09537",
+      "date": "1951-Mar-23",
+      "greatest_td": "10:37:33",
+      "delta_t_s": 30,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09538",
+      "date": "1951-Aug-17",
+      "greatest_td": "03:14:39",
+      "delta_t_s": 30,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09539",
+      "date": "1951-Sep-15",
+      "greatest_td": "12:27:06",
+      "delta_t_s": 30,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09540",
+      "date": "1952-Feb-11",
+      "greatest_td": "00:39:48",
+      "delta_t_s": 30,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09541",
+      "date": "1952-Aug-05",
+      "greatest_td": "19:47:55",
+      "delta_t_s": 30,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09542",
+      "date": "1953-Jan-29",
+      "greatest_td": "23:47:49",
+      "delta_t_s": 30,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09543",
+      "date": "1953-Jul-26",
+      "greatest_td": "12:21:10",
+      "delta_t_s": 30,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09544",
+      "date": "1954-Jan-19",
+      "greatest_td": "02:32:21",
+      "delta_t_s": 31,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09545",
+      "date": "1954-Jul-16",
+      "greatest_td": "00:20:51",
+      "delta_t_s": 31,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09546",
+      "date": "1955-Jan-08",
+      "greatest_td": "12:33:20",
+      "delta_t_s": 31,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09547",
+      "date": "1955-Jun-05",
+      "greatest_td": "14:23:23",
+      "delta_t_s": 31,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09548",
+      "date": "1955-Nov-29",
+      "greatest_td": "17:00:00",
+      "delta_t_s": 31,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09549",
+      "date": "1956-May-24",
+      "greatest_td": "15:31:52",
+      "delta_t_s": 32,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09550",
+      "date": "1956-Nov-18",
+      "greatest_td": "06:48:16",
+      "delta_t_s": 32,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09551",
+      "date": "1957-May-13",
+      "greatest_td": "22:31:28",
+      "delta_t_s": 32,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09552",
+      "date": "1957-Nov-07",
+      "greatest_td": "14:27:30",
+      "delta_t_s": 32,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09553",
+      "date": "1958-Apr-04",
+      "greatest_td": "04:00:15",
+      "delta_t_s": 32,
+      "type_code": "Ne"
+    },
+    {
+      "catalog_number": "09554",
+      "date": "1958-May-03",
+      "greatest_td": "12:13:29",
+      "delta_t_s": 32,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09555",
+      "date": "1958-Oct-27",
+      "greatest_td": "15:27:50",
+      "delta_t_s": 33,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09556",
+      "date": "1959-Mar-24",
+      "greatest_td": "20:11:57",
+      "delta_t_s": 33,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09557",
+      "date": "1959-Sep-17",
+      "greatest_td": "01:03:37",
+      "delta_t_s": 33,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09558",
+      "date": "1960-Mar-13",
+      "greatest_td": "08:28:21",
+      "delta_t_s": 33,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09559",
+      "date": "1960-Sep-05",
+      "greatest_td": "11:21:51",
+      "delta_t_s": 33,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09560",
+      "date": "1961-Mar-02",
+      "greatest_td": "13:28:40",
+      "delta_t_s": 34,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09561",
+      "date": "1961-Aug-26",
+      "greatest_td": "03:08:51",
+      "delta_t_s": 34,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09562",
+      "date": "1962-Feb-19",
+      "greatest_td": "13:03:42",
+      "delta_t_s": 34,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09563",
+      "date": "1962-Jul-17",
+      "greatest_td": "11:54:49",
+      "delta_t_s": 34,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09564",
+      "date": "1962-Aug-15",
+      "greatest_td": "19:57:30",
+      "delta_t_s": 34,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09565",
+      "date": "1963-Jan-09",
+      "greatest_td": "23:19:42",
+      "delta_t_s": 35,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09566",
+      "date": "1963-Jul-06",
+      "greatest_td": "22:02:59",
+      "delta_t_s": 35,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09567",
+      "date": "1963-Dec-30",
+      "greatest_td": "11:07:25",
+      "delta_t_s": 35,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09568",
+      "date": "1964-Jun-25",
+      "greatest_td": "01:06:50",
+      "delta_t_s": 35,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09569",
+      "date": "1964-Dec-19",
+      "greatest_td": "02:37:54",
+      "delta_t_s": 36,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09570",
+      "date": "1965-Jun-14",
+      "greatest_td": "01:49:26",
+      "delta_t_s": 36,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09571",
+      "date": "1965-Dec-08",
+      "greatest_td": "17:10:32",
+      "delta_t_s": 36,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09572",
+      "date": "1966-May-04",
+      "greatest_td": "21:12:06",
+      "delta_t_s": 37,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09573",
+      "date": "1966-Oct-29",
+      "greatest_td": "10:12:53",
+      "delta_t_s": 37,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09574",
+      "date": "1967-Apr-24",
+      "greatest_td": "12:07:04",
+      "delta_t_s": 38,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09575",
+      "date": "1967-Oct-18",
+      "greatest_td": "10:15:48",
+      "delta_t_s": 38,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09576",
+      "date": "1968-Apr-13",
+      "greatest_td": "04:48:01",
+      "delta_t_s": 39,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09577",
+      "date": "1968-Oct-06",
+      "greatest_td": "11:42:35",
+      "delta_t_s": 39,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09578",
+      "date": "1969-Apr-02",
+      "greatest_td": "18:33:06",
+      "delta_t_s": 39,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09579",
+      "date": "1969-Aug-27",
+      "greatest_td": "10:48:15",
+      "delta_t_s": 40,
+      "type_code": "Ne"
+    },
+    {
+      "catalog_number": "09580",
+      "date": "1969-Sep-25",
+      "greatest_td": "20:10:19",
+      "delta_t_s": 40,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09581",
+      "date": "1970-Feb-21",
+      "greatest_td": "08:30:43",
+      "delta_t_s": 40,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09582",
+      "date": "1970-Aug-17",
+      "greatest_td": "03:24:06",
+      "delta_t_s": 41,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09583",
+      "date": "1971-Feb-10",
+      "greatest_td": "07:45:21",
+      "delta_t_s": 41,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09584",
+      "date": "1971-Aug-06",
+      "greatest_td": "19:43:52",
+      "delta_t_s": 42,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09585",
+      "date": "1972-Jan-30",
+      "greatest_td": "10:54:05",
+      "delta_t_s": 42,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09586",
+      "date": "1972-Jul-26",
+      "greatest_td": "07:16:22",
+      "delta_t_s": 43,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09587",
+      "date": "1973-Jan-18",
+      "greatest_td": "21:17:58",
+      "delta_t_s": 43,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09588",
+      "date": "1973-Jun-15",
+      "greatest_td": "20:50:41",
+      "delta_t_s": 44,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09589",
+      "date": "1973-Jul-15",
+      "greatest_td": "11:39:19",
+      "delta_t_s": 44,
+      "type_code": "Nb"
+    },
+    {
+      "catalog_number": "09590",
+      "date": "1973-Dec-10",
+      "greatest_td": "01:45:06",
+      "delta_t_s": 44,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09591",
+      "date": "1974-Jun-04",
+      "greatest_td": "22:16:44",
+      "delta_t_s": 45,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09592",
+      "date": "1974-Nov-29",
+      "greatest_td": "15:14:07",
+      "delta_t_s": 45,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09593",
+      "date": "1975-May-25",
+      "greatest_td": "05:48:47",
+      "delta_t_s": 46,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09594",
+      "date": "1975-Nov-18",
+      "greatest_td": "22:24:12",
+      "delta_t_s": 46,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09595",
+      "date": "1976-May-13",
+      "greatest_td": "19:55:08",
+      "delta_t_s": 47,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09596",
+      "date": "1976-Nov-06",
+      "greatest_td": "23:01:59",
+      "delta_t_s": 47,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09597",
+      "date": "1977-Apr-04",
+      "greatest_td": "04:19:04",
+      "delta_t_s": 48,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09598",
+      "date": "1977-Sep-27",
+      "greatest_td": "08:30:08",
+      "delta_t_s": 48,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09599",
+      "date": "1978-Mar-24",
+      "greatest_td": "16:23:11",
+      "delta_t_s": 49,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09600",
+      "date": "1978-Sep-16",
+      "greatest_td": "19:05:01",
+      "delta_t_s": 49,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09601",
+      "date": "1979-Mar-13",
+      "greatest_td": "21:08:52",
+      "delta_t_s": 50,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09602",
+      "date": "1979-Sep-06",
+      "greatest_td": "10:55:02",
+      "delta_t_s": 50,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09603",
+      "date": "1980-Mar-01",
+      "greatest_td": "20:46:03",
+      "delta_t_s": 51,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09604",
+      "date": "1980-Jul-27",
+      "greatest_td": "19:08:59",
+      "delta_t_s": 51,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09605",
+      "date": "1980-Aug-26",
+      "greatest_td": "03:31:20",
+      "delta_t_s": 51,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09606",
+      "date": "1981-Jan-20",
+      "greatest_td": "07:50:48",
+      "delta_t_s": 51,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09607",
+      "date": "1981-Jul-17",
+      "greatest_td": "04:47:40",
+      "delta_t_s": 52,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09608",
+      "date": "1982-Jan-09",
+      "greatest_td": "19:56:44",
+      "delta_t_s": 52,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09609",
+      "date": "1982-Jul-06",
+      "greatest_td": "07:31:47",
+      "delta_t_s": 53,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09610",
+      "date": "1982-Dec-30",
+      "greatest_td": "11:29:37",
+      "delta_t_s": 53,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09611",
+      "date": "1983-Jun-25",
+      "greatest_td": "08:23:11",
+      "delta_t_s": 53,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09612",
+      "date": "1983-Dec-20",
+      "greatest_td": "01:49:57",
+      "delta_t_s": 54,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09613",
+      "date": "1984-May-15",
+      "greatest_td": "04:41:03",
+      "delta_t_s": 54,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09614",
+      "date": "1984-Jun-13",
+      "greatest_td": "14:26:39",
+      "delta_t_s": 54,
+      "type_code": "Nb"
+    },
+    {
+      "catalog_number": "09615",
+      "date": "1984-Nov-08",
+      "greatest_td": "17:56:08",
+      "delta_t_s": 54,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09616",
+      "date": "1985-May-04",
+      "greatest_td": "19:57:19",
+      "delta_t_s": 55,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09617",
+      "date": "1985-Oct-28",
+      "greatest_td": "17:43:17",
+      "delta_t_s": 55,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09618",
+      "date": "1986-Apr-24",
+      "greatest_td": "12:43:30",
+      "delta_t_s": 55,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09619",
+      "date": "1986-Oct-17",
+      "greatest_td": "19:18:54",
+      "delta_t_s": 55,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09620",
+      "date": "1987-Apr-14",
+      "greatest_td": "02:19:50",
+      "delta_t_s": 55,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09621",
+      "date": "1987-Oct-07",
+      "greatest_td": "04:02:30",
+      "delta_t_s": 56,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09622",
+      "date": "1988-Mar-03",
+      "greatest_td": "16:13:41",
+      "delta_t_s": 56,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09623",
+      "date": "1988-Aug-27",
+      "greatest_td": "11:05:29",
+      "delta_t_s": 56,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09624",
+      "date": "1989-Feb-20",
+      "greatest_td": "15:36:18",
+      "delta_t_s": 56,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09625",
+      "date": "1989-Aug-17",
+      "greatest_td": "03:09:07",
+      "delta_t_s": 57,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09626",
+      "date": "1990-Feb-09",
+      "greatest_td": "19:12:02",
+      "delta_t_s": 57,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09627",
+      "date": "1990-Aug-06",
+      "greatest_td": "14:13:16",
+      "delta_t_s": 57,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09628",
+      "date": "1991-Jan-30",
+      "greatest_td": "05:59:38",
+      "delta_t_s": 58,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09629",
+      "date": "1991-Jun-27",
+      "greatest_td": "03:15:41",
+      "delta_t_s": 58,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09630",
+      "date": "1991-Jul-26",
+      "greatest_td": "18:08:50",
+      "delta_t_s": 58,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09631",
+      "date": "1991-Dec-21",
+      "greatest_td": "10:34:00",
+      "delta_t_s": 58,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09632",
+      "date": "1992-Jun-15",
+      "greatest_td": "04:57:57",
+      "delta_t_s": 59,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09633",
+      "date": "1992-Dec-09",
+      "greatest_td": "23:45:05",
+      "delta_t_s": 59,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09634",
+      "date": "1993-Jun-04",
+      "greatest_td": "13:01:26",
+      "delta_t_s": 59,
+      "type_code": "T+"
+    },
+    {
+      "catalog_number": "09635",
+      "date": "1993-Nov-29",
+      "greatest_td": "06:27:06",
+      "delta_t_s": 60,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09636",
+      "date": "1994-May-25",
+      "greatest_td": "03:31:20",
+      "delta_t_s": 60,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09637",
+      "date": "1994-Nov-18",
+      "greatest_td": "06:44:54",
+      "delta_t_s": 61,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09638",
+      "date": "1995-Apr-15",
+      "greatest_td": "12:19:04",
+      "delta_t_s": 61,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09639",
+      "date": "1995-Oct-08",
+      "greatest_td": "16:05:12",
+      "delta_t_s": 61,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09640",
+      "date": "1996-Apr-04",
+      "greatest_td": "00:10:47",
+      "delta_t_s": 62,
+      "type_code": "T-"
+    },
+    {
+      "catalog_number": "09641",
+      "date": "1996-Sep-27",
+      "greatest_td": "02:55:24",
+      "delta_t_s": 62,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09642",
+      "date": "1997-Mar-24",
+      "greatest_td": "04:40:28",
+      "delta_t_s": 62,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09643",
+      "date": "1997-Sep-16",
+      "greatest_td": "18:47:42",
+      "delta_t_s": 63,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09644",
+      "date": "1998-Mar-13",
+      "greatest_td": "04:21:08",
+      "delta_t_s": 63,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09645",
+      "date": "1998-Aug-08",
+      "greatest_td": "02:25:57",
+      "delta_t_s": 63,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09646",
+      "date": "1998-Sep-06",
+      "greatest_td": "11:11:11",
+      "delta_t_s": 63,
+      "type_code": "N"
+    },
+    {
+      "catalog_number": "09647",
+      "date": "1999-Jan-31",
+      "greatest_td": "16:18:35",
+      "delta_t_s": 63,
+      "type_code": "Nx"
+    },
+    {
+      "catalog_number": "09648",
+      "date": "1999-Jul-28",
+      "greatest_td": "11:34:46",
+      "delta_t_s": 64,
+      "type_code": "P"
+    },
+    {
+      "catalog_number": "09649",
+      "date": "2000-Jan-21",
+      "greatest_td": "04:44:34",
+      "delta_t_s": 64,
+      "type_code": "T"
+    },
+    {
+      "catalog_number": "09650",
+      "date": "2000-Jul-16",
+      "greatest_td": "13:56:39",
+      "delta_t_s": 64,
+      "type_code": "T+"
+    }
+  ]
+}

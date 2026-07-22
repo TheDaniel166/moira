@@ -49,14 +49,20 @@ altitude, and local disk overlap do not define the global event instant.
 
 ### 4. Native Geometry Policy
 
-The native eclipse model must use one explicit and internally consistent vector
-policy. For the current Moira standard:
+Each native eclipse product must use one explicit and internally consistent
+vector policy. Solar and lunar eclipses govern different physical objects, so
+their policies are named separately rather than forced into one apparent-state
+construction. For the current Moira standard:
 
 - ephemeris basis: `DE441`
 - event-solving timescale: `TT`
-- shadow-axis definition: the line through the DE441 Sun and Moon
-  center-of-mass states on one Earth-reception light cone
-- lunar umbral centering: the current native retarded-Moon policy
+- lunar shadow-axis definition: the line through Earth opposite the incoming
+  reception-light-time-corrected DE441 solar direction
+- lunar Moon state: the physical geocentric DE441 Moon center at the event TT
+  epoch; an Earth-observer light-time-retarded Moon is an apparent product and
+  does not define intersection with Earth's shadow at that epoch
+- lunar centering, classification, and contacts: one shared physical-Moon
+  policy for penumbral, partial, and total event families
 - solar centering: Earth-reception light-time Sun/Moon shadow-axis policy
 - celestial frame: true equator and equinox of date
 - stellar aberration: omitted from the physical shadow-line definition
@@ -69,6 +75,11 @@ intersection remains annular.
 
 This choice is not justified by NASA-catalog agreement. It is justified by
 internal coherence with Moira's own physical event model.
+
+The apparent retarded-Moon lunar objective remains available only inside named
+diagnostic and compatibility comparisons. It is not a native event-family
+selector. In particular, event type may not change merely because a search asks
+for an umbral rather than penumbral family.
 
 ### 4.1 Instantaneous Solar Besselian Elements
 
@@ -379,6 +390,20 @@ at `10 s`. The ten-row modern catalog comparison separately bounds greatest
 timing at `10 s` and signed gamma at `2e-4` Earth radii. These ceilings are not
 publication precision, uncertainty estimates, or exact-model parity. Greatest
 eclipse remains a separate event instant, not a seventh contact.
+
+The physical-Moon native policy has an additional adversarial classification
+gate. Across the fifteen admitted NASA catalog maxima spanning years -1801
+through 2801 and all three lunar event classes, its TT greatest-eclipse residual
+must remain lower than the explicitly diagnostic Earth-observer retarded-Moon
+comparator. A separate static primary-authority corpus classifies all 229 NASA
+catalog maxima from 1901 through 2000 on their published TD/TT basis: 83
+penumbral, 65 partial, and 81 total events. NASA's Danjon/Chauvenet boundary
+tables supply another public-search corpus: seven post-Gregorian events that
+must remain penumbral rather than flip to partial, plus nine shallow candidates
+that the Danjon model must skip entirely. The limiting 1988 Mar 03 row
+additionally requires search, snapshot classification, and contact-family
+identity to agree. These are century-scale classification plus selected cross-
+model and boundary regressions, not Five Millennium full-catalog validation.
 
 ### 8. Required Result Labeling
 

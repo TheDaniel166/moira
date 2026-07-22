@@ -19,7 +19,7 @@
 #include "evaluators.hpp"
 #include "separation.hpp"
 #include "events.hpp"
-#include "cartography.hpp"
+#include "eclipse_footprint.hpp"
 #include "search_pool.hpp"
 #include "lola.hpp"
 #include "visibility.hpp"
@@ -899,9 +899,9 @@ py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t sta
     return out_dict;
 }
 
-// --- Cartography Helpers ---
-// Note: cartography Python bindings are omitted pending numpy-free redesign.
-// The C++ kernels remain available in cartography.hpp for future re-binding.
+// Eclipse-footprint bindings below accept ordinary Python sequences. Public
+// doctrine and topology remain in moira/eclipse.py; this boundary has no
+// NumPy or buffer-library dependency.
 
 
 } // namespace
@@ -933,6 +933,140 @@ PYBIND11_MODULE(_moira_native, m) {
             }
             return out;
         });
+
+    py::class_<PenumbralClearanceScan>(m, "PenumbralClearanceScan")
+        .def_readonly("sampled_maximum", &PenumbralClearanceScan::sampled_maximum)
+        .def_readonly(
+            "local_maximum_brackets",
+            &PenumbralClearanceScan::local_maximum_brackets
+        );
+
+    py::class_<PenumbralClearanceScanner>(m, "PenumbralClearanceScanner")
+        .def(
+            py::init([](
+                const std::vector<double>& epochs,
+                const std::vector<std::array<double, 8>>& rows
+            ) {
+                std::vector<PenumbralClearanceShadow> shadows;
+                shadows.reserve(rows.size());
+                for (const auto& row : rows) {
+                    shadows.push_back({
+                        {row[0], row[1], row[2]},
+                        {row[3], row[4], row[5]},
+                        row[6],
+                        row[7],
+                    });
+                }
+                return PenumbralClearanceScanner(epochs, std::move(shadows));
+            }),
+            py::arg("epochs"),
+            py::arg("shadow_rows")
+        )
+        .def_property_readonly("size", &PenumbralClearanceScanner::size)
+        .def(
+            "scan",
+            [](
+                const PenumbralClearanceScanner& scanner,
+                const std::array<double, 3>& site_xyz_itrf_km,
+                double witness_epoch,
+                const std::array<double, 8>& row
+            ) {
+                const PenumbralClearanceShadow witness{
+                    {row[0], row[1], row[2]},
+                    {row[3], row[4], row[5]},
+                    row[6],
+                    row[7],
+                };
+                py::gil_scoped_release release;
+                return scanner.scan(site_xyz_itrf_km, witness_epoch, witness);
+            },
+            py::arg("site_xyz_itrf_km"),
+            py::arg("witness_epoch"),
+            py::arg("witness_shadow_row")
+        );
+
+    py::class_<PenumbralEnvelopeCandidate>(m, "PenumbralEnvelopeCandidate")
+        .def_readonly("azimuth_rad", &PenumbralEnvelopeCandidate::azimuth_rad)
+        .def_readonly("xyz_itrf_km", &PenumbralEnvelopeCandidate::xyz_itrf_km)
+        .def_readonly("latitude_deg", &PenumbralEnvelopeCandidate::latitude_deg)
+        .def_readonly("longitude_deg", &PenumbralEnvelopeCandidate::longitude_deg)
+        .def_readonly(
+            "signed_half_chord_sq_km2",
+            &PenumbralEnvelopeCandidate::signed_half_chord_sq_km2
+        );
+
+    m.def(
+        "penumbral_lawful_azimuth_interval",
+        [](const std::array<double, 15>& row) {
+            const PenumbralEnvelopeShadow shadow{
+                {
+                    {row[0], row[1], row[2]},
+                    {row[3], row[4], row[5]},
+                    row[7],
+                    row[8],
+                },
+                row[6],
+                {row[9], row[10], row[11]},
+                {row[12], row[13], row[14]},
+            };
+            try {
+                py::gil_scoped_release release;
+                eclipse_footprint_detail::validate_envelope_shadow(shadow);
+                return eclipse_footprint_detail::lawful_azimuth_interval(shadow);
+            } catch (const std::invalid_argument&) {
+                throw;
+            } catch (const std::runtime_error& error) {
+                PyErr_SetString(PyExc_ArithmeticError, error.what());
+                throw py::error_already_set();
+            }
+        },
+        py::arg("shadow_row")
+    );
+
+    m.def(
+        "penumbral_envelope_candidates",
+        [](
+            const std::array<double, 15>& row,
+            const std::array<double, 8>& before_row,
+            const std::array<double, 8>& after_row
+        ) {
+            const PenumbralEnvelopeShadow shadow{
+                {
+                    {row[0], row[1], row[2]},
+                    {row[3], row[4], row[5]},
+                    row[7],
+                    row[8],
+                },
+                row[6],
+                {row[9], row[10], row[11]},
+                {row[12], row[13], row[14]},
+            };
+            const PenumbralClearanceShadow before{
+                {before_row[0], before_row[1], before_row[2]},
+                {before_row[3], before_row[4], before_row[5]},
+                before_row[6],
+                before_row[7],
+            };
+            const PenumbralClearanceShadow after{
+                {after_row[0], after_row[1], after_row[2]},
+                {after_row[3], after_row[4], after_row[5]},
+                after_row[6],
+                after_row[7],
+            };
+            try {
+                py::gil_scoped_release release;
+                return penumbral_envelope_candidates(shadow, before, after);
+            } catch (const std::invalid_argument&) {
+                throw;
+            } catch (const std::runtime_error& error) {
+                PyErr_SetString(PyExc_ArithmeticError, error.what());
+                throw py::error_already_set();
+            }
+        },
+        py::arg("shadow_row"),
+        py::arg("before_shadow_row"),
+        py::arg("after_shadow_row")
+    );
 
     py::class_<ChebyshevEvaluator, IEvaluator, std::shared_ptr<ChebyshevEvaluator>>(m, "ChebyshevEvaluator")
         .def(py::init<double, double, size_t, size_t, size_t, std::vector<double>>());
@@ -1467,8 +1601,8 @@ PYBIND11_MODULE(_moira_native, m) {
         .def(py::init<double, double, double, double, double, double>(),
              py::arg("ra_deg"), py::arg("dec_deg"), py::arg("pmra_mas"), py::arg("pmdec_mas"), py::arg("parallax"), py::arg("rv"));
 
-    // --- Cartography ---
-    // Bindings omitted pending integration; C++ kernels remain in cartography.hpp.
+    // Legacy observer-grid cartography is intentionally not admitted here.
+    // Its magnitude/raster products are distinct from the public footprint.
 
     // --- LOLA (Lunar Orbiter Laser Altimeter) ---
     

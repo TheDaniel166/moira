@@ -194,14 +194,11 @@ def find_lunar_contacts(
     ):
         raise ValueError("contact search window must have finite ordered bounds")
 
-    center_data = calculator.calculate_jd(center_jd)
-    # Astronomical event identity includes penumbral eclipses, but the native
-    # contact vector policy remains family-specific: retarded Moon for umbral
-    # partial/total events and geometric Moon for penumbral-only events.
-    use_retarded_moon = (
-        center_data.eclipse_type.is_partial
-        or center_data.eclipse_type.is_total
-    )
+    # Contacts, greatest eclipse, and public classification all use the Moon's
+    # physical geocentric state at the event TT epoch.  The incoming solar
+    # direction defines Earth's shadow; an Earth-observer light-time-retarded
+    # Moon would be a different apparent product.
+    use_retarded_moon = False
 
     greatest = refine_minimum(
         lambda jd: calculator._lunar_shadow_axis_distance_km(

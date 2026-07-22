@@ -190,6 +190,10 @@ __all__ = [
 
 ECLIPSE_SEASON_THRESHOLD  = 18.0   # degrees Sun–Node distance (eclipse window)
 ECLIPSE_LATITUDE_THRESHOLD = 2.0   # degrees Moon latitude (grazing limit)
+# Discovery superset only. Native lunar classification is performed by exact
+# physical shadow/Moon overlap once a snapshot enters this opposition
+# neighborhood; this angle is never itself an eclipse classifier.
+_LUNAR_SHADOW_CANDIDATE_SEPARATION_DEG = 2.0
 
 # ---------------------------------------------------------------------------
 # Saros / Metonic
@@ -1483,7 +1487,7 @@ class EclipseCalculator:
                    "solar_local_circumstances",
                    "next_solar_eclipse", "previous_solar_eclipse"],
         "internal": ["_calculate_jd_internal", "_lunar_shadow_axis_distance_km",
-                     "_refine_lunar_maximum_for_kind", "_lunar_shadow_geometry_tt",
+                     "_refine_lunar_maximum", "_lunar_shadow_geometry_tt",
                      "_native_solar_conjunction_distance_deg",
                      "_native_solar_shadow_axis_state_tt",
                      "_native_lunar_event_geometry_tt", "_lunar_event_geometry_ut",
@@ -1556,10 +1560,10 @@ class EclipseCalculator:
 
         Notes
         -----
-        This surface uses the geometric Moon path for lunar geometry.
-        Native lunar maximum search uses a different event model for umbral
-        and partial eclipses; use :meth:`calculate_lunar_event_jd` when you
-        need that explicit native event geometry.
+        Lunar geometry uses the Moon's physical geocentric state at the event
+        TT epoch.  The incoming solar direction remains reception-light-time
+        corrected because it defines the physical Earth-shadow axis at that
+        epoch.
         """
         return self.calculate_jd(utc_to_ut1(jd_from_datetime(dt)))
 
@@ -1624,7 +1628,10 @@ class EclipseCalculator:
         native_solar_center_moon_radius = None
         native_solar_surface_sun_radius = None
         native_solar_surface_moon_radius = None
-        if abs(angular_sep - 180.0) < 1.5:
+        if (
+            abs(angular_sep - 180.0)
+            < _LUNAR_SHADOW_CANDIDATE_SEPARATION_DEG
+        ):
             if lunar_canon_method is None:
                 (
                     native_lunar_axis_km,
@@ -1738,7 +1745,7 @@ class EclipseCalculator:
         self,
         jd_ut: float,
         *,
-        retarded_moon: bool = True,
+        retarded_moon: bool = False,
         delta_t_mode: str = "native",
     ) -> float:
         """
@@ -1757,8 +1764,10 @@ class EclipseCalculator:
         # geometric Sun vector.
         sun_xyz, _ = apply_light_time(Body.SUN, jd_tt, self._reader, earth_ssb, _barycentric)
         if retarded_moon:
-            # Greatest eclipse is observed from Earth. Using the retarded Moon
-            # direction materially improves event centering for umbral events.
+            # Retained only for explicitly named diagnostic/compatibility
+            # comparisons.  A light-time-retarded Moon is an apparent
+            # Earth-observer state, not the physical Moon center intersecting
+            # Earth's shadow at this TT epoch.
             moon_xyz, _ = apply_light_time(Body.MOON, jd_tt, self._reader, earth_ssb, _barycentric)
         else:
             moon_xyz = _geocentric(Body.MOON, jd_tt, self._reader)
@@ -1768,19 +1777,17 @@ class EclipseCalculator:
         perp = [moon_xyz[i] - axis_proj * axis_unit[i] for i in range(3)]
         return math.sqrt(sum(v * v for v in perp))
 
-    def _refine_lunar_maximum_for_kind(
+    def _refine_lunar_maximum(
         self,
         center_jd: float,
-        kind: str,
         *,
         delta_t_mode: str = "native",
     ) -> float:
-        """Refine the lunar greatest-eclipse JD for the given eclipse kind."""
-        use_retarded_moon = kind != "penumbral"
+        """Refine one physical lunar greatest-eclipse JD."""
         return _refine_minimum(
             lambda jd: self._lunar_shadow_axis_distance_km(
                 jd,
-                retarded_moon=use_retarded_moon,
+                retarded_moon=False,
                 delta_t_mode=delta_t_mode,
             ),
             center_jd,
@@ -2018,9 +2025,11 @@ class EclipseCalculator:
         """
         Return native lunar-event geometry in physical units at TT.
 
-        This uses the same shadow-axis policy as native event centering:
-        retarded Sun for the shadow axis, and either retarded or geometric Moon
-        depending on the native event family being modeled.
+        Native event geometry uses the incoming, reception-light-time-corrected
+        solar direction for Earth's physical shadow axis and the Moon's actual
+        geocentric state at the event TT epoch.  ``retarded_moon=True`` remains
+        available only to explicitly named diagnostics and compatibility work;
+        it is not an admitted native event-family policy.
         """
         earth_ssb = _earth_barycentric(jd_tt, self._reader)
         sun_xyz, _ = apply_light_time(Body.SUN, jd_tt, self._reader, earth_ssb, _barycentric)
@@ -2055,9 +2064,8 @@ class EclipseCalculator:
         """
         Return native lunar-event geometry in physical units at UT.
 
-        The returned values are all derived from the same Sun/Moon vector policy
-        so native contact solving does not mix retarded and geometric lunar
-        quantities in one event model.
+        The returned values are all derived from one explicitly selected vector
+        policy so diagnostics cannot accidentally mix lunar states.
         """
         jd_tt = self._jd_tt_from_ut(jd_ut, delta_t_mode=delta_t_mode)
         (
@@ -2076,10 +2084,8 @@ class EclipseCalculator:
         """
         Compute geometric eclipse geometry for a given UT Julian Day.
 
-        For lunar events this uses the geometric Moon path. Native lunar
-        greatest-eclipse search uses retarded-Moon geometry for umbral and
-        partial event centering; that distinct model is exposed separately via
-        :meth:`calculate_lunar_event_jd`.
+        For lunar events this uses the physical geocentric Moon path shared by
+        native greatest-eclipse search, classification, and contacts.
         """
         return self._calculate_jd_internal(jd, retarded_moon=False)
 
@@ -2098,10 +2104,9 @@ class EclipseCalculator:
         jd : float
             Julian Day (UT) of the event instant to evaluate.
         kind : str
-            Native lunar event family. ``"umbral"`` uses the retarded Moon
-            path used for umbral and partial greatest-eclipse centering;
-            ``"penumbral"`` uses the geometric Moon path used for penumbral
-            native search.
+            Lunar event family to evaluate.  Both families share the physical
+            geocentric Moon state; the selector remains part of the stable
+            public surface and rejects non-lunar family names.
         delta_t_mode : str
             Delta-T conversion policy forwarded to the internal TT conversion.
         """
@@ -2113,7 +2118,7 @@ class EclipseCalculator:
             )
         return self._calculate_jd_internal(
             jd,
-            retarded_moon=(kind_key == "umbral"),
+            retarded_moon=False,
             delta_t_mode=delta_t_mode,
         )
 
@@ -2837,36 +2842,16 @@ class EclipseCalculator:
                 return EclipseEvent(jd_ut=best_jd, data=best_data)
             return None
 
-        # Umbral and penumbral events intentionally retain their separately
-        # declared native vector policies. Compute only the requested family.
-        if kind_key in {"any", "total", "partial"}:
-            best_jd = self._refine_lunar_maximum_for_kind(phase_jd, "total")
-            best_data = self._calculate_jd_internal(
-                best_jd,
-                retarded_moon=True,
-            )
-            umbral_match = (
-                _matches_lunar_kind(best_data, kind_key)
-                if kind_key != "any"
-                else (
-                    best_data.is_lunar_eclipse
-                    and (
-                        best_data.eclipse_type.is_total
-                        or best_data.eclipse_type.is_partial
-                    )
-                )
-            )
-            if umbral_match:
-                return EclipseEvent(jd_ut=best_jd, data=best_data)
-
-        if kind_key in {"any", "penumbral"}:
-            best_jd = self._refine_lunar_maximum_for_kind(phase_jd, "penumbral")
-            best_data = self._calculate_jd_internal(
-                best_jd,
-                retarded_moon=False,
-            )
-            if _matches_lunar_kind(best_data, "penumbral"):
-                return EclipseEvent(jd_ut=best_jd, data=best_data)
+        # Every lunar family shares one physical Moon/shadow state.  Refine and
+        # classify the event once; the requested family filters that result but
+        # never selects a different vector policy or maximum.
+        best_jd = self._refine_lunar_maximum(phase_jd)
+        best_data = self._calculate_jd_internal(
+            best_jd,
+            retarded_moon=False,
+        )
+        if _matches_lunar_kind(best_data, kind_key):
+            return EclipseEvent(jd_ut=best_jd, data=best_data)
         return None
 
     def _solar_eclipse_near_syzygy(
@@ -3364,6 +3349,43 @@ def _classify(
     near_node    = (sun_node_dist < ECLIPSE_SEASON_THRESHOLD
                     and abs(moon_lat) < ECLIPSE_LATITUDE_THRESHOLD)
 
+    native_lunar_geometry = (
+        native_lunar_axis_km is not None
+        and native_lunar_moon_radius_km is not None
+        and native_lunar_umbra_radius_km is not None
+        and native_lunar_penumbra_radius_km is not None
+    )
+    if native_lunar_geometry:
+        if native_lunar_axis_km < native_lunar_umbra_radius_km + native_lunar_moon_radius_km:
+            umbral_mag = (
+                native_lunar_umbra_radius_km
+                + native_lunar_moon_radius_km
+                - native_lunar_axis_km
+            ) / (2.0 * native_lunar_moon_radius_km)
+            pen_mag = (
+                native_lunar_penumbra_radius_km
+                + native_lunar_moon_radius_km
+                - native_lunar_axis_km
+            ) / (2.0 * native_lunar_moon_radius_km)
+
+            if native_lunar_axis_km < native_lunar_umbra_radius_km - native_lunar_moon_radius_km:
+                et = EclipseType(False, False, True, False, umbral_mag, pen_mag)
+            else:
+                et = EclipseType(True, False, False, False, umbral_mag, pen_mag)
+            return et, False, True, umbral_mag
+
+        pen_limit_km = native_lunar_penumbra_radius_km + native_lunar_moon_radius_km
+        if native_lunar_axis_km < pen_limit_km:
+            pen_mag = (
+                pen_limit_km - native_lunar_axis_km
+            ) / (2.0 * native_lunar_moon_radius_km)
+            et = EclipseType(False, False, False, False, 0.0, pen_mag)
+            return et, False, True, pen_mag
+
+        # An exact native candidate with no disk/shadow overlap is not an
+        # eclipse; do not fall through to the older angular approximation.
+        return _none
+
     if not near_node:
         return _none
 
@@ -3440,38 +3462,6 @@ def _classify(
 
     # --- Lunar eclipse ---
     if is_full_moon:
-        if (
-            native_lunar_axis_km is not None
-            and native_lunar_moon_radius_km is not None
-            and native_lunar_umbra_radius_km is not None
-            and native_lunar_penumbra_radius_km is not None
-        ):
-            if native_lunar_axis_km < native_lunar_umbra_radius_km + native_lunar_moon_radius_km:
-                umbral_mag = (
-                    native_lunar_umbra_radius_km
-                    + native_lunar_moon_radius_km
-                    - native_lunar_axis_km
-                ) / (2.0 * native_lunar_moon_radius_km)
-                pen_mag = (
-                    native_lunar_penumbra_radius_km
-                    + native_lunar_moon_radius_km
-                    - native_lunar_axis_km
-                ) / (2.0 * native_lunar_moon_radius_km)
-
-                if native_lunar_axis_km < native_lunar_umbra_radius_km - native_lunar_moon_radius_km:
-                    et = EclipseType(False, False, True, False, umbral_mag, pen_mag)
-                else:
-                    et = EclipseType(True, False, False, False, umbral_mag, pen_mag)
-                return et, False, True, umbral_mag
-
-            pen_limit_km = native_lunar_penumbra_radius_km + native_lunar_moon_radius_km
-            if native_lunar_axis_km < pen_limit_km:
-                pen_mag = (
-                    pen_limit_km - native_lunar_axis_km
-                ) / (2.0 * native_lunar_moon_radius_km)
-                et = EclipseType(False, False, False, False, 0.0, pen_mag)
-                return et, False, True, pen_mag
-
         shadow_sep = shadow_axis_offset_deg(angular_sep)
 
         if shadow_sep < shadow_radius + moon_radius:
@@ -3583,10 +3573,12 @@ _SOLAR_PENUMBRAL_ENDPOINT_PROBES_DAYS = tuple(
 
 
 _NATIVE_BULK_ECLIPSE_PADDING_DAYS = 35.0
-# Public solar/lunar geometry is entered only inside a 1.5-degree syzygy
-# neighborhood. Two degrees is therefore a conservative discovery superset,
-# not a hidden eclipse classifier.
-_NATIVE_BULK_ECLIPSE_CANDIDATE_SEPARATION_DEG = 2.0
+# Native solar/lunar candidate geometry is entered within at most the shared
+# two-degree discovery neighborhood. Exact cone/disk geometry performs the
+# subsequent classification; this bound is not a hidden eclipse classifier.
+_NATIVE_BULK_ECLIPSE_CANDIDATE_SEPARATION_DEG = (
+    _LUNAR_SHADOW_CANDIDATE_SEPARATION_DEG
+)
 _NATIVE_BULK_ECLIPSE_SCAN_STEP_DAYS = 2.0
 _SOLAR_PENUMBRAL_TOPOLOGY_MARGIN_KM2 = 1.0e-4
 _SOLAR_PENUMBRAL_CLEARANCE_TOLERANCE_KM = 1.0e-3
@@ -5068,6 +5060,17 @@ def _penumbral_lawful_azimuth_interval(
 ) -> tuple[float, float, bool]:
     """Return one unwrapped lawful generator interval and periodicity."""
 
+    native_solver = getattr(
+        _moira_native,
+        "penumbral_lawful_azimuth_interval",
+        None,
+    )
+    if callable(native_solver):
+        left, right, periodic = native_solver(
+            _penumbral_envelope_shadow_row(shadow)
+        )
+        return float(left), float(right), bool(periodic)
+
     maximum, minimum = _penumbral_generator_extrema(shadow)
     maximum_azimuth, maximum_margin = maximum
     _minimum_azimuth, minimum_margin = minimum
@@ -5476,35 +5479,61 @@ def _penumbral_envelope_points(
 ]:
     """Solve C=0 and fixed-ITRF dC/dt=0 on the generator boundary."""
 
-    def derivative_at(azimuth: float) -> float | None:
-        point = _penumbral_generator_point(shadow, azimuth)
-        if point is None:
-            point = _penumbral_generator_point(shadow, azimuth, tangent=True)
-        if point is None:
-            return None
-        return (
-            _penumbral_clearance_km(after, point.xyz_itrf_km)
-            - _penumbral_clearance_km(before, point.xyz_itrf_km)
+    native_solver = getattr(
+        _moira_native,
+        "penumbral_envelope_candidates",
+        None,
+    )
+    if callable(native_solver):
+        candidate_points = tuple(
+            _PenumbralGeneratorPoint(
+                azimuth_rad=float(candidate.azimuth_rad),
+                xyz_itrf_km=tuple(float(value) for value in candidate.xyz_itrf_km),
+                latitude_deg=float(candidate.latitude_deg),
+                longitude_deg=float(candidate.longitude_deg),
+                signed_half_chord_sq_km2=float(
+                    candidate.signed_half_chord_sq_km2
+                ),
+            )
+            for candidate in native_solver(
+                _penumbral_envelope_shadow_row(shadow),
+                _penumbral_clearance_shadow_row(before),
+                _penumbral_clearance_shadow_row(after),
+            )
         )
+    else:
+        def derivative_at(azimuth: float) -> float | None:
+            point = _penumbral_generator_point(shadow, azimuth)
+            if point is None:
+                point = _penumbral_generator_point(shadow, azimuth, tangent=True)
+            if point is None:
+                return None
+            return (
+                _penumbral_clearance_km(after, point.xyz_itrf_km)
+                - _penumbral_clearance_km(before, point.xyz_itrf_km)
+            )
 
-    left, right, _periodic = _penumbral_lawful_azimuth_interval(shadow)
+        left, right, _periodic = _penumbral_lawful_azimuth_interval(shadow)
 
-    def objective(angle: float) -> float:
-        value = derivative_at(angle)
-        if value is None:
-            raise ArithmeticError("penumbral envelope root escaped its cone arc")
-        return value
+        def objective(angle: float) -> float:
+            value = derivative_at(angle)
+            if value is None:
+                raise ArithmeticError("penumbral envelope root escaped its cone arc")
+            return value
 
-    roots = _adaptive_azimuth_roots(objective, left, right)
+        roots = _adaptive_azimuth_roots(objective, left, right)
+        candidate_points = tuple(
+            point
+            for azimuth in _deduplicate_azimuths(roots)
+            if (point := _penumbral_generator_point(shadow, azimuth)) is not None
+        )
 
     admitted: dict[
         SolarEclipseFootprintBoundaryKind,
         list[_PenumbralGeneratorPoint],
     ] = {}
-    for azimuth in _deduplicate_azimuths(roots):
-        point = _penumbral_generator_point(shadow, azimuth)
-        if point is None:
-            continue
+    for point in candidate_points:
+        azimuth = point.azimuth_rad
         center_clearance = _penumbral_clearance_km(shadow, point.xyz_itrf_km)
         before_clearance = _penumbral_clearance_km(before, point.xyz_itrf_km)
         after_clearance = _penumbral_clearance_km(after, point.xyz_itrf_km)
@@ -5593,11 +5622,42 @@ class _PenumbralEnvelopeNode:
     point: SolarEclipseFootprintPoint
 
 
+def _penumbral_clearance_shadow_row(
+    shadow: _EarthFixedSolarShadow,
+) -> tuple[float, float, float, float, float, float, float, float]:
+    """Flatten the Python-owned cone state for the native clearance helper."""
+
+    return (
+        *shadow.fundamental_plane_point_xyz_km,
+        *shadow.axis_unit_away_from_sun,
+        shadow.penumbral_radius_km,
+        shadow.penumbral_cone_slope,
+    )
+
+
+def _penumbral_envelope_shadow_row(
+    shadow: _EarthFixedSolarShadow,
+) -> tuple[float, ...]:
+    """Flatten the Python-owned cone and basis for native root discovery."""
+
+    return (
+        *shadow.fundamental_plane_point_xyz_km,
+        *shadow.axis_unit_away_from_sun,
+        shadow.axis_projection_km,
+        shadow.penumbral_radius_km,
+        shadow.penumbral_cone_slope,
+        *shadow.fundamental_east_unit_itrf,
+        *shadow.fundamental_north_unit_itrf,
+    )
+
+
 def _continuous_site_maximum_clearance(
     shadow_at,
     xyz_itrf_km: tuple[float, float, float],
     witness_epoch: float,
     solver_epochs: tuple[float, ...],
+    *,
+    native_scanner=None,
 ) -> float:
     """Return a bounded continuous maximum of fixed-site cone clearance.
 
@@ -5606,22 +5666,36 @@ def _continuous_site_maximum_clearance(
     never enters this bounded admission witness.
     """
 
-    epochs = tuple(sorted({*solver_epochs, witness_epoch}))
-    values = tuple(
-        _penumbral_clearance_km(shadow_at(epoch), xyz_itrf_km)
-        for epoch in epochs
-    )
-    maximum = max(values)
+    if native_scanner is None:
+        epochs = tuple(sorted({*solver_epochs, witness_epoch}))
+        values = tuple(
+            _penumbral_clearance_km(shadow_at(epoch), xyz_itrf_km)
+            for epoch in epochs
+        )
+        maximum = max(values)
+        brackets = tuple(
+            (epochs[index - 1], epochs[index], epochs[index + 1])
+            for index in range(1, len(epochs) - 1)
+            if values[index] >= values[index - 1]
+            and values[index] >= values[index + 1]
+        )
+    else:
+        scan = native_scanner.scan(
+            xyz_itrf_km,
+            witness_epoch,
+            _penumbral_clearance_shadow_row(shadow_at(witness_epoch)),
+        )
+        maximum = float(scan.sampled_maximum)
+        brackets = tuple(
+            tuple(float(epoch) for epoch in bracket)
+            for bracket in scan.local_maximum_brackets
+        )
     golden = (math.sqrt(5.0) - 1.0) / 2.0
 
     def objective(epoch: float) -> float:
         return _penumbral_clearance_km(shadow_at(epoch), xyz_itrf_km)
 
-    for index in range(1, len(epochs) - 1):
-        if values[index] < values[index - 1] or values[index] < values[index + 1]:
-            continue
-        left = epochs[index - 1]
-        right = epochs[index + 1]
+    for left, _center, right in brackets:
         x1 = right - golden * (right - left)
         x2 = left + golden * (right - left)
         f1 = objective(x1)
@@ -5651,6 +5725,7 @@ def _penumbral_envelope_nodes_at(
     *,
     globally_admit: bool,
     solver_epochs: tuple[float, ...],
+    native_clearance_scanner=None,
 ) -> dict[
     SolarEclipseFootprintBoundaryKind,
     tuple[_PenumbralEnvelopeNode, ...],
@@ -5671,6 +5746,7 @@ def _penumbral_envelope_nodes_at(
                     generator.xyz_itrf_km,
                     epoch,
                     solver_epochs,
+                    native_scanner=native_clearance_scanner,
                 )
                 if maximum > _SOLAR_PENUMBRAL_CLEARANCE_TOLERANCE_KM:
                     continue
@@ -5695,6 +5771,7 @@ def _continue_penumbral_envelope_node(
     seed_azimuth_rad: float,
     kind: SolarEclipseFootprintBoundaryKind,
     solver_epochs: tuple[float, ...],
+    native_clearance_scanner=None,
 ) -> _PenumbralEnvelopeNode | None:
     """Correct one known horizon-connected envelope branch at a new epoch."""
 
@@ -5849,6 +5926,7 @@ def _continue_penumbral_envelope_node(
         generator.xyz_itrf_km,
         epoch,
         solver_epochs,
+        native_scanner=native_clearance_scanner,
     )
     if maximum > _SOLAR_PENUMBRAL_CLEARANCE_TOLERANCE_KM:
         return None
@@ -5867,6 +5945,7 @@ def _refine_penumbral_envelope_fold(
     solver_epochs: tuple[float, ...],
     *,
     inside_nodes_hint: tuple[_PenumbralEnvelopeNode, ...] = (),
+    native_clearance_scanner=None,
 ) -> _PenumbralEnvelopeNode:
     """Refine the common endpoint where two time-slice roots coalesce."""
 
@@ -5876,6 +5955,7 @@ def _refine_penumbral_envelope_fold(
             epoch,
             globally_admit=False,
             solver_epochs=solver_epochs,
+            native_clearance_scanner=native_clearance_scanner,
         ).get(kind, ())
 
     inside_nodes = (
@@ -5939,6 +6019,7 @@ def _refine_penumbral_envelope_fold(
         fold_generator.xyz_itrf_km,
         inside,
         solver_epochs,
+        native_scanner=native_clearance_scanner,
     )
     if maximum > _SOLAR_PENUMBRAL_CLEARANCE_TOLERANCE_KM:
         raise ArithmeticError(
@@ -6414,6 +6495,22 @@ def _solve_solar_penumbral_tracks(
             _SOLAR_PENUMBRAL_SOLVER_SAMPLES,
         )
     )
+    native_clearance_scanner_type = getattr(
+        _moira_native,
+        "PenumbralClearanceScanner",
+        None,
+    )
+    native_clearance_scanner = (
+        native_clearance_scanner_type(
+            global_solver_epochs,
+            tuple(
+                _penumbral_clearance_shadow_row(shadow_at(epoch))
+                for epoch in global_solver_epochs
+            ),
+        )
+        if callable(native_clearance_scanner_type)
+        else None
+    )
 
     slices_by_kind: dict[
         SolarEclipseFootprintBoundaryKind,
@@ -6425,6 +6522,7 @@ def _solve_solar_penumbral_tracks(
             epoch,
             globally_admit=True,
             solver_epochs=global_solver_epochs,
+            native_clearance_scanner=native_clearance_scanner,
         )
         for kind in expected_limit_kinds:
             nodes = list(solved.get(kind, ()))
@@ -6466,6 +6564,7 @@ def _solve_solar_penumbral_tracks(
                         generator.xyz_itrf_km,
                         epoch,
                         global_solver_epochs,
+                        native_scanner=native_clearance_scanner,
                     )
                     if maximum > _SOLAR_PENUMBRAL_CLEARANCE_TOLERANCE_KM:
                         raise ArithmeticError(
@@ -6575,6 +6674,7 @@ def _solve_solar_penumbral_tracks(
                             last_node.generator.azimuth_rad,
                             kind,
                             global_solver_epochs,
+                            native_clearance_scanner=native_clearance_scanner,
                         )
                         if corrected is None or (
                             _itrf_distance_sq(
@@ -6625,6 +6725,49 @@ def _solve_solar_penumbral_tracks(
     envelope_tracks: list[SolarEclipseLimitTrack] = []
     for kind in sorted(expected_limit_kinds, key=lambda value: value.value):
         kind_junctions = ordered_junctions[kind]
+        horizon_junction_snap_days = 0.5 / 86400.0
+        horizon_junction_snap_distance_sq = 0.25 * 0.25
+
+        def snap_node_to_horizon_junction(
+            node: _PenumbralEnvelopeNode,
+        ) -> _PenumbralEnvelopeNode:
+            """Replace one bounded numerical endpoint with its exact junction.
+
+            Adaptive azimuth roots immediately beside a horizon incidence can
+            differ from the independently solved authoritative junction by one
+            binary64 epoch step and a few tens of metres.  That numerical seed
+            is the same topological point, not a second component or fold arm.
+            Keep the public coincidence law strict by normalizing only a
+            uniquely close node before component assembly.
+            """
+
+            node_xyz = node.generator.xyz_itrf_km
+            candidates = tuple(
+                junction
+                for junction in kind_junctions
+                if abs(node.jd_ut - junction.jd_ut)
+                <= horizon_junction_snap_days
+                and _itrf_distance_sq(
+                    node_xyz,
+                    _wgs84_surface_xyz_km(
+                        junction.latitude_deg,
+                        junction.longitude_deg,
+                    ),
+                )
+                <= horizon_junction_snap_distance_sq
+            )
+            if not candidates:
+                return node
+            if len(candidates) != 1:
+                raise ArithmeticError(
+                    "penumbral node is ambiguously close to multiple horizon junctions"
+                )
+            junction = candidates[0]
+            return _PenumbralEnvelopeNode(
+                jd_ut=junction.jd_ut,
+                generator=node.generator,
+                point=junction,
+            )
 
         def is_horizon_junction(node: _PenumbralEnvelopeNode) -> bool:
             return any(
@@ -6657,6 +6800,7 @@ def _solve_solar_penumbral_tracks(
                     epoch,
                     global_solver_epochs,
                     inside_nodes_hint=tuple(previous_nodes),
+                    native_clearance_scanner=native_clearance_scanner,
                 )
                 for branch_id in previous_branch_ids:
                     if not _footprint_points_coincide(
@@ -6672,6 +6816,7 @@ def _solve_solar_penumbral_tracks(
                     previous_epoch,
                     global_solver_epochs,
                     inside_nodes_hint=tuple(current_nodes),
+                    native_clearance_scanner=native_clearance_scanner,
                 )
                 for index, node in enumerate(current_nodes):
                     branch_id = len(branches)
@@ -6772,7 +6917,10 @@ def _solve_solar_penumbral_tracks(
 
         canonical_branches: list[tuple[SolarEclipseFootprintPoint, ...]] = []
         for branch in branches:
-            ordered_nodes = sorted(branch, key=lambda node: node.jd_ut)
+            ordered_nodes = sorted(
+                (snap_node_to_horizon_junction(node) for node in branch),
+                key=lambda node: node.jd_ut,
+            )
             unique_nodes: list[_PenumbralEnvelopeNode] = []
             for node in ordered_nodes:
                 if unique_nodes and abs(node.jd_ut - unique_nodes[-1].jd_ut) <= 1.0e-12:

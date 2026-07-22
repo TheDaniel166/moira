@@ -1,6 +1,17 @@
 #ifndef MOIRA_NATIVE_CARTOGRAPHY_HPP
 #define MOIRA_NATIVE_CARTOGRAPHY_HPP
 
+/*
+ * LEGACY, UNADMITTED ECLIPSE OBSERVER-GRID EXPERIMENTS.
+ *
+ * No production translation unit includes this header and no Python binding
+ * exposes it.  Its raster maxima, magnitude contours, and cross-track products
+ * do not share the semantics of EclipseCalculator.solar_eclipse_footprint().
+ * The admitted NumPy-free footprint substrate lives in eclipse_footprint.hpp.
+ * Do not rebind these routines without separately defining and validating the
+ * observer-grid product, correction policy, authority, units, and tolerances.
+ */
+
 #include <vector>
 #include <cmath>
 #include <algorithm>

@@ -102,6 +102,7 @@ def test_ancient_lunar_total_residual_breakdown_is_explicit(eclipse_calculator) 
     canon_geometric = tt_to_ut_nasa_canon(canon_geometric_tt)
     canon_retarded = tt_to_ut_nasa_canon(canon_retarded_tt)
     native_retarded_tt = _ut1_to_ephemeris_tt(native_retarded, calc._reader)
+    native_geometric_tt = _ut1_to_ephemeris_tt(native_geometric, calc._reader)
     nasa_retarded_tt = ut_to_tt_nasa_canon(nasa_retarded)
 
     native_retarded_err = abs(_error_seconds(native_retarded, expected))
@@ -114,14 +115,15 @@ def test_ancient_lunar_total_residual_breakdown_is_explicit(eclipse_calculator) 
     canon_alignment_geometric = abs(_error_seconds(nasa_geometric, canon_geometric))
     canon_alignment_retarded = abs(_error_seconds(nasa_retarded, canon_retarded))
 
-    native_tt_residual = abs(_error_seconds(native_retarded_tt, expected_tt))
-    assert native_tt_residual <= 360.0
-    assert native_retarded_err < native_geometric_err
-    assert native_retarded_err < nasa_geometric_err
-    assert native_retarded_err < nasa_retarded_err
+    native_retarded_tt_residual = abs(_error_seconds(native_retarded_tt, expected_tt))
+    native_geometric_tt_residual = abs(_error_seconds(native_geometric_tt, expected_tt))
+    assert native_geometric_tt_residual <= 360.0
+    assert native_geometric_tt_residual < native_retarded_tt_residual
 
-    # The retarded/geometric Moon choice is a real contributor, but smaller
-    # than the time-scale branch change for this ancient case.
+    # The apparent/physical Moon choice is a real contributor, but smaller than
+    # the time-scale branch change for this ancient case.  Raw UT residuals can
+    # rank the branches in the opposite order through Delta-T cancellation, so
+    # they remain diagnostic values only and never select native doctrine.
     assert native_moon_model_shift >= 20.0
     assert delta_t_branch_shift >= 300.0
 

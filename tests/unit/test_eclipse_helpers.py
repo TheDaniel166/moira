@@ -451,11 +451,12 @@ def test_total_lunar_eclipse_reports_larger_penumbral_than_umbral_magnitude(ecli
     assert data.eclipse_type.magnitude_penumbra > data.eclipse_type.magnitude_umbral
 
 
-def test_explicit_native_lunar_event_surface_exposes_model_choice(eclipse_calculator) -> None:
+def test_explicit_native_lunar_event_families_share_physical_moon_state(eclipse_calculator) -> None:
     geometric = eclipse_calculator.calculate_jd(2451564.705)
     native_umbral = eclipse_calculator.calculate_lunar_event_jd(2451564.705, kind="umbral")
     native_penumbral = eclipse_calculator.calculate_lunar_event_jd(2451564.705, kind="penumbral")
 
+    assert geometric == native_umbral
     assert geometric == native_penumbral
     assert native_umbral.is_lunar_eclipse
     assert native_umbral.eclipse_type.is_total

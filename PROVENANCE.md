@@ -52,6 +52,24 @@ or substitute for Moira's content-identified DE441/LE441 geometry. NASA's
 requested acknowledgment is retained verbatim in the fixture:
 `Eclipse Predictions by Fred Espenak, NASA's GSFC`.
 
+### NASA/GSFC lunar eclipse catalog validation corpus
+
+`tests/fixtures/eclipse_nasa_lunar_1901_2000.json` contains a complete,
+validation-only transcription of the 229 entries in the official NASA/GSFC
+[Five Millennium Catalog of Lunar Eclipses, 1901-2000](https://eclipse.gsfc.nasa.gov/LEcat5/LE1901-2000.html),
+retrieved on 2026-07-22. The fixture records the catalog number, calendar date,
+greatest-eclipse time in TD/TT, published Delta T, and NASA type code for each
+event. Its metadata preserves the catalog's Danjon shadow-enlargement
+convention and the exact source URL.
+
+This corpus is primary external evidence for century-scale event identity,
+ordering, greatest-eclipse timing, and eclipse type family under NASA's stated
+catalog semantics. It is not a runtime ephemeris, a coefficient or discovery
+source, or a substitute for Moira's independently evaluated DE441/LE441
+geometry. Timing residuals measure the difference between those named products
+and are not NASA uncertainty estimates. Tests use the static fixture without
+network access and do not import catalog values into engine computation.
+
 ### NASA/GSFC polar central-path validation corpus
 
 `tests/fixtures/nasa_solar_polar_path_reference.json` is a bounded,

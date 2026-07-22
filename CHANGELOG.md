@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.2] - 2026-07-22
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_5.1.2.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_5.1.2.md`.
+
+### Added
+- **NumPy-free native solar-footprint substrate**: added bounded C++17 helpers
+  for dense penumbral-clearance scanning, lawful azimuth-interval evaluation,
+  and penumbral envelope-candidate discovery. Python continues to own eclipse
+  doctrine, topology, ambiguity handling, fallback, and public result vessels;
+  no NumPy runtime dependency was introduced.
+- **Century lunar-eclipse authority corpus**: added all 229 entries from the
+  official NASA/GSFC 1901-2000 lunar-eclipse catalog as validation-only facts,
+  with explicit TD/TT, Danjon-shadow, source, and type-code semantics.
+
+### Fixed
+- **Solar footprint horizon topology**: repaired close horizon-root discovery
+  and exact sunrise/sunset junction assembly for the affected 2027-2031 solar
+  footprints. Connected penumbral components now close with their lawful two
+  horizon incidences instead of raising an incidence-count error.
+- **Physical lunar event geometry**: unified greatest-eclipse search,
+  classification, and contacts on the Moon's physical geocentric state at the
+  event TT epoch while retaining the reception-light-time solar direction for
+  Earth's shadow axis. The retarded Moon remains an explicitly apparent
+  diagnostic/observer product rather than the global event classifier.
+- **Lunar discovery superset**: widened candidate admission to the declared
+  two-degree opposition neighborhood and retained exact cone/disk geometry as
+  the classifier. This restores the missed 1922-03-13 and 1940-03-23
+  penumbral eclipses and corrects 1988-03-03 from partial to penumbral.
+
+### Validation
+- Classified all 229 NASA/GSFC lunar eclipses from 1901 through 2000 with the
+  published type family at the catalog TD/TT maxima.
+- Recovered the complete 229-event sequence, in order and with matching type
+  families, through forward, backward, and bulk range-search paths; the
+  greatest-eclipse TT residual stayed below 55 seconds in that corpus.
+- Exercised native/Python footprint parity, topology regressions, and the
+  kernel-free native parity baseline. Performance measurements remain
+  benchmark evidence, not scientific validation.
+
 ## [5.1.1] - 2026-07-22
 
 ### Fixed
