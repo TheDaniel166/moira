@@ -42,7 +42,8 @@ def _identity(
 
 DE430_IDENTITY = _identity("DE-0430LE-0430", "DE430", "LE430", -25.85)
 DE441_IDENTITY = _identity("DE-0441LE-0441", "DE441", "LE441", -25.936)
-DE440_IDENTITY = _identity("DE-0440LE-0440", "DE440", "LE440", None)
+DE440_IDENTITY = _identity("DE-0440LE-0440", "DE440", "LE440", -25.936)
+UNADMITTED_IDENTITY = _identity("DE-0431LE-0431", "DE431", "LE431", None)
 
 
 @pytest.mark.parametrize(
@@ -79,18 +80,37 @@ def test_hpiers_to_de441_correction_is_explicit_and_de430_is_zero() -> None:
     assert de441.seconds == pytest.approx(raw.seconds + expected, abs=1.0e-12)
 
 
+def test_de440_historical_delta_t_uses_its_admitted_tidal_basis() -> None:
+    jd_ut1 = julian_day(1850, 1, 1, 0.0)
+    reader = SimpleNamespace(_kernel_identity=DE440_IDENTITY)
+
+    bound = _ephemeris_delta_t(jd_ut1, reader)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut1, reader)
+
+    assert bound.identity == DE440_IDENTITY
+    assert bound.raw.retarget_mode == "declared"
+    assert bound.correction_seconds == pytest.approx(
+        bound.raw.correction_to(-25.936),
+        abs=1.0e-12,
+    )
+    assert jd_tt == pytest.approx(
+        jd_ut1 + bound.seconds / 86400.0,
+        abs=1.0e-15,
+    )
+
+
 def test_unknown_tidal_basis_fails_only_for_basis_sensitive_source() -> None:
     ancient = julian_day(-1000, 1, 1, 0.0)
     with pytest.raises(_EphemerisTimeBasisError, match="unadmitted tidal basis"):
         _ephemeris_delta_t(
             ancient,
-            SimpleNamespace(_kernel_identity=DE440_IDENTITY),
+            SimpleNamespace(_kernel_identity=UNADMITTED_IDENTITY),
         )
 
     modern = julian_day(2000, 1, 1, 12.0)
     bound = _ephemeris_delta_t(
         modern,
-        SimpleNamespace(_kernel_identity=DE440_IDENTITY),
+        SimpleNamespace(_kernel_identity=UNADMITTED_IDENTITY),
     )
     assert bound.raw.source_product == "iers_eop_direct"
     assert bound.correction_seconds == 0.0

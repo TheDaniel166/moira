@@ -115,11 +115,14 @@ class _EphemerisKernelIdentity:
 _DE_LE_SUMMARY_LABEL = re.compile(r"^DE-(\d{4})LE-(\d{4})$")
 
 # Product-specific authority mappings only.  HPIERS declares its Delta-T table
-# for DE430/LE430 at -25.85 arcsec/cy^2; JPL Horizons documents -25.936 for
-# DE441.  Do not infer adjacent DE/LE releases from numerical or naming
+# for DE430/LE430 at -25.85 arcsec/cy^2.  JPL's DE440/DE441 release record and
+# Horizons historical-Delta-T policy establish -25.936 arcsec/cy^2 for the
+# DE440-generation lunar solution.  DE440 and DE441 are admitted separately;
+# do not infer any other adjacent DE/LE release from numerical or naming
 # similarity.
 _ADMITTED_LUNAR_TIDAL_ACCELERATIONS: dict[tuple[str, str], float] = {
     ("DE430", "LE430"): -25.85,
+    ("DE440", "LE440"): -25.936,
     ("DE441", "LE441"): -25.936,
 }
 

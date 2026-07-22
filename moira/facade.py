@@ -2404,7 +2404,7 @@ __all__ += [
 ]
 
 
-__version__ = "5.1.0"
+__version__ = "5.1.1"
 __author__  = "Moira contributors"
 
 

@@ -56,6 +56,7 @@ def _open_reader(
     ("filename", "label", "planetary", "lunar", "tidal_acceleration"),
     (
         ("renamed-kernel.bsp", "DE-0441LE-0441", "DE441", "LE441", -25.936),
+        ("de440.bsp", "DE-0440LE-0440", "DE440", "LE440", -25.936),
         ("de441.bsp", "DE-0430LE-0430", "DE430", "LE430", -25.85),
     ),
 )
@@ -86,12 +87,12 @@ def test_spk_reader_identity_comes_from_summary_content_not_filename(
 
 def test_coherent_unmapped_de_le_identity_remains_representable() -> None:
     identity = spk_reader._ephemeris_kernel_identity_from_catalog(
-        _catalog("DE-0440LE-0440")
+        _catalog("DE-0431LE-0431")
     )
 
-    assert identity.summary_label == "DE-0440LE-0440"
-    assert identity.planetary_ephemeris == "DE440"
-    assert identity.lunar_ephemeris == "LE440"
+    assert identity.summary_label == "DE-0431LE-0431"
+    assert identity.planetary_ephemeris == "DE431"
+    assert identity.lunar_ephemeris == "LE431"
     assert identity.lunar_tidal_acceleration_arcsec_per_cy2 is None
 
 

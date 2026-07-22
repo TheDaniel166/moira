@@ -218,6 +218,18 @@ units, transformation lineage, and runtime-admission status are recorded in
 | `aam_glaam_annual.txt` | NOAA PSL global atmospheric angular momentum annual means | Diagnostic research proxy only; not admitted to the public Delta-T mean. |
 | `oam_ecco_annual.txt` | IERS ECCO annual-mean oceanic LOD proxy | Diagnostic research proxy only; not admitted to the public Delta-T mean. |
 
+Reader-bound historical Delta-T translation admits lunar tidal acceleration
+only for exact, content-derived DE/LE identities. DE440/LE440 and DE441/LE441
+are separately admitted at `-25.936 arcsec/cy²`. The primary JPL
+[DE440/DE441 release paper](https://ssd.jpl.nasa.gov/doc/Park.2021.AJ.DE440.pdf)
+establishes the shared release family, source fit, and the distinct lunar
+core/mantle damping policy, while the official
+[Horizons release record](https://ssd.jpl.nasa.gov/horizons/news.html) states
+the `-25.936 arcsec/cy²` historical-Delta-T adjustment for that generation.
+This is an explicit two-product admission, not a rule for inferring the basis
+of DE431, another adjacent release, or a kernel whose summary identity is
+unknown.
+
 The admitted Delta-T mean is source-priority total truth through the final
 aggregate product (currently the Jan–Apr 2026 partial mean). Full-year means
 are placed at the mean epoch of their twelve first-of-month USNO samples; the

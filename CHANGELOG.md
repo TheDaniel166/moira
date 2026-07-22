@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.1] - 2026-07-22
+
+### Fixed
+- **DE440 historical Delta-T clock binding**: admitted the content-identified
+  `DE440`/`LE440` lunar tidal acceleration basis at
+  `-25.936 arcsec/cy²`. Reader-backed charts before the 1972 atomic-clock
+  boundary now translate the historical Delta-T source product onto DE440
+  instead of raising `_EphemerisTimeBasisError`. Unknown and unadmitted DE/LE
+  identities continue to fail closed; modern direct-EOP epochs remain
+  numerically unchanged.
+
 ## [5.1.0] - 2026-07-21
 
 Detailed release and migration guidance is available in
