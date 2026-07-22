@@ -6789,6 +6789,53 @@ def _solve_solar_penumbral_tracks(
                 continue
             canonical_branches.append(tuple(node.point for node in unique_nodes))
 
+        # Exact horizon junctions are independently solved and admitted as
+        # continuous fixed-site path limits.  A folded arm can nevertheless
+        # disappear from one isolated structural epoch immediately beside a
+        # junction, leaving the exact seed as a singleton while the lawful arm
+        # ends at the preceding 0.25-second probe.  Join only that bounded
+        # endpoint gap; never synthesize an intermediate root or weaken the
+        # component-closure invariant below.
+        horizon_endpoint_bridge_days = 0.5 / 86400.0
+        for junction in kind_junctions:
+            if any(
+                _footprint_points_coincide(junction, endpoint)
+                for branch in canonical_branches
+                for endpoint in (branch[0], branch[-1])
+            ):
+                continue
+            candidates: list[tuple[float, float, int, int]] = []
+            junction_xyz = _wgs84_surface_xyz_km(
+                junction.latitude_deg,
+                junction.longitude_deg,
+            )
+            for branch_index, branch in enumerate(canonical_branches):
+                for endpoint_index in (0, -1):
+                    endpoint = branch[endpoint_index]
+                    gap_days = abs(endpoint.jd_ut - junction.jd_ut)
+                    distance_sq = _itrf_distance_sq(
+                        _wgs84_surface_xyz_km(
+                            endpoint.latitude_deg,
+                            endpoint.longitude_deg,
+                        ),
+                        junction_xyz,
+                    )
+                    if (
+                        gap_days <= horizon_endpoint_bridge_days
+                        and distance_sq <= fold_join_distance_sq
+                    ):
+                        candidates.append(
+                            (gap_days, distance_sq, branch_index, endpoint_index)
+                        )
+            if len(candidates) != 1:
+                continue
+            _gap, _distance, branch_index, endpoint_index = candidates[0]
+            branch = canonical_branches[branch_index]
+            if endpoint_index == 0 and junction.jd_ut < branch[0].jd_ut:
+                canonical_branches[branch_index] = (junction, *branch)
+            elif endpoint_index == -1 and junction.jd_ut > branch[-1].jd_ut:
+                canonical_branches[branch_index] = (*branch, junction)
+
         if not canonical_branches:
             raise ArithmeticError(f"{kind.value} produced no complete envelope segment")
 
