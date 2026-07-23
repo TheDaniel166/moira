@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.0] - 2026-07-23
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_5.2.0.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_5.2.0.md`.
+
+### Added
+- **First-class solar global circumstances**: added scale-explicit U1-U4
+  contacts, central-line limits, greatest eclipse, independently solved
+  greatest duration, equatorial and ecliptic conjunctions, geocentric body
+  states, signed gamma, Besselian elements, and the existing WGS-84 footprint
+  in one immutable result.
+- **First-class lunar global circumstances**: added mode-pure native and
+  NASA-compatibility results carrying greatest eclipse, Sun and Moon
+  astrometry, shadow radii and magnitudes, signed gamma, contacts, phase
+  durations, Delta T, and ephemeris identity.
+- **Adaptive spherical eclipse cartography**: added NumPy-free,
+  projection-independent maximum-visible magnitude and obscuration fields on
+  a conforming adaptive icosphere, with antimeridian-safe flat-map segments
+  and retained spherical globe topology.
+- **Typed eclipse transport**: added REST endpoints for solar global
+  circumstances, solar cartography, and lunar global circumstances.
+
+### Fixed
+- **Near-singular hybrid horizon topology**: retained the authoritative exact
+  sunrise/sunset junction while pruning only bounded numerical micro-branches,
+  repairing the 2049 hybrid incidence failure without weakening component
+  invariants.
+- **Polar and seam rendering topology**: contour extraction now uses shared
+  spherical edge identity and explicit antimeridian splitting instead of
+  projection-space chord assumptions.
+
+### Validation
+- Exercised 330 tests across 33 eclipse-related files after the initial
+  implementation, including total, annular, hybrid, polar, topology,
+  cartography, public API, native boundary, and REST coverage.
+- Bound the new solar global vessel to NASA/GSFC Besselian rows spanning
+  partial, total, hybrid, and annular events.
+- Bound the new lunar global vessel to hashed NASA figure records spanning
+  penumbral, partial, total, and limiting penumbral events.
+- Corroborated the detailed 2027-08-02 solar and 2026-08-28 lunar products
+  against separately declared EclipseWise DE405/DE430 rows. Cross-model
+  agreement remains corroboration rather than an assertion of identical
+  ephemeris, limb, or Delta-T models.
+
 ## [5.1.2] - 2026-07-22
 
 Detailed release and migration guidance is available in

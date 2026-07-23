@@ -13,6 +13,11 @@ FIXTURE_PATH = (
     / "fixtures"
     / "lunar_eclipse_global_parameters_reference.json"
 )
+NASA_CONTACT_FIXTURE_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "fixtures"
+    / "nasa_lunar_contact_instants_reference.json"
+)
 
 
 def _sexagesimal_degrees(value: str, *, hours: bool = False) -> float:
@@ -140,3 +145,82 @@ def test_nasa_compat_lunar_global_fields_correlate_with_declared_eclipsewise_row
         float(source["delta_t_seconds"]),
         abs=0.1,
     )
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "row",
+    json.loads(
+        NASA_CONTACT_FIXTURE_PATH.read_text(encoding="utf-8")
+    )["events"],
+    ids=lambda row: f"{row['label']} global vessel",
+)
+def test_lunar_global_vessel_tracks_nasa_contact_corpus_across_event_classes(
+    eclipse_calculator,
+    row: dict[str, object],
+) -> None:
+    """Bind the first-class global result to the hashed NASA figure corpus."""
+
+    result = eclipse_calculator.lunar_global_circumstances(
+        _calendar_jd(str(row["greatest_ut"])) - 10.0,
+        kind=str(row["kind"]),
+        mode="nasa_compat",
+    )
+    assert result.mode == "nasa_compat"
+    assert result.ephemeris == "DE-0441LE-0441"
+    eclipse_type = result.analysis.event.data.eclipse_type
+    if row["kind"] == "penumbral":
+        assert not any(
+            (
+                eclipse_type.is_partial,
+                eclipse_type.is_annular,
+                eclipse_type.is_total,
+                eclipse_type.is_hybrid,
+            )
+        )
+    else:
+        assert getattr(eclipse_type, f"is_{row['kind']}") is True
+
+    printed_geometry = row.get("printed_greatest_geometry")
+    if isinstance(printed_geometry, dict) and "greatest_td" in printed_geometry:
+        expected_greatest_tt = _calendar_jd(str(printed_geometry["greatest_td"]))
+    else:
+        expected_greatest_tt = _calendar_jd(str(row["greatest_ut"])) + (
+            float(row["delta_t_s"]) / 86400.0
+        )
+    assert abs(result.greatest.jd_tt - expected_greatest_tt) * 86400.0 <= 10.0
+
+    contacts = row["contacts_ut"]
+    duration_tolerance_seconds = 2.0 * float(
+        row["nasa_compat_tt_tolerance_s"]
+    )
+    expected_penumbral = (
+        _calendar_jd(str(contacts["p4"]))
+        - _calendar_jd(str(contacts["p1"]))
+    ) * 86400.0
+    assert result.penumbral_duration_seconds == pytest.approx(
+        expected_penumbral,
+        abs=duration_tolerance_seconds,
+    )
+    if "u1" in contacts:
+        expected_partial = (
+            _calendar_jd(str(contacts["u4"]))
+            - _calendar_jd(str(contacts["u1"]))
+        ) * 86400.0
+        assert result.partial_duration_seconds == pytest.approx(
+            expected_partial,
+            abs=duration_tolerance_seconds,
+        )
+    else:
+        assert result.partial_duration_seconds is None
+    if "u2" in contacts:
+        expected_total = (
+            _calendar_jd(str(contacts["u3"]))
+            - _calendar_jd(str(contacts["u2"]))
+        ) * 86400.0
+        assert result.total_duration_seconds == pytest.approx(
+            expected_total,
+            abs=duration_tolerance_seconds,
+        )
+    else:
+        assert result.total_duration_seconds is None

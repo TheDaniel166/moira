@@ -1,10 +1,10 @@
 """Global circumstances for one searched solar eclipse.
 
-This first admission preserves the existing path and footprint products by
-reference.  It promotes their greatest-eclipse, central-line-limit, P-contact,
-Besselian, body-state, magnitude, obscuration, width, and duration information
-without claiming that distinct U1-U4 cone tangencies or greatest duration have
-already been solved.
+This admission preserves the existing path and footprint products by
+reference while assembling their greatest-eclipse, central-line-limit,
+P-contact, Besselian, body-state, magnitude, obscuration, width, and duration
+information.  It also exposes independently solved U1-U4 cone tangencies,
+equatorial and ecliptic conjunctions, and greatest-duration circumstances.
 """
 
 from __future__ import annotations

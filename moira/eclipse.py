@@ -7072,7 +7072,7 @@ def _solve_solar_penumbral_tracks(
     for kind in sorted(expected_limit_kinds, key=lambda value: value.value):
         kind_junctions = ordered_junctions[kind]
         horizon_junction_snap_days = 0.5 / 86400.0
-        horizon_junction_snap_distance_sq = 0.25 * 0.25
+        horizon_junction_snap_distance_sq = 0.5 * 0.5
 
         def snap_node_to_horizon_junction(
             node: _PenumbralEnvelopeNode,
@@ -7081,10 +7081,11 @@ def _solve_solar_penumbral_tracks(
 
             Adaptive azimuth roots immediately beside a horizon incidence can
             differ from the independently solved authoritative junction by one
-            binary64 epoch step and a few tens of metres.  That numerical seed
+            binary64 epoch step and a few hundred metres.  That numerical seed
             is the same topological point, not a second component or fold arm.
             Keep the public coincidence law strict by normalizing only a
-            uniquely close node before component assembly.
+            uniquely close node inside the half-second/half-kilometre
+            neighborhood before component assembly.
             """
 
             node_xyz = node.generator.xyz_itrf_km
@@ -7275,7 +7276,13 @@ def _solve_solar_penumbral_tracks(
                         unique_nodes[-1].point,
                     ):
                         raise ArithmeticError(
-                            "one penumbral segment acquired two points at one epoch"
+                            "one penumbral segment acquired two points at one epoch: "
+                            f"left=({unique_nodes[-1].jd_ut:.16f}, "
+                            f"{unique_nodes[-1].point.latitude_deg:.12f}, "
+                            f"{unique_nodes[-1].point.longitude_deg:.12f}) "
+                            f"right=({node.jd_ut:.16f}, "
+                            f"{node.point.latitude_deg:.12f}, "
+                            f"{node.point.longitude_deg:.12f})"
                         )
                     continue
                 unique_nodes.append(node)
