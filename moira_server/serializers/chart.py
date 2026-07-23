@@ -12,6 +12,9 @@ from ..models.chart import (
     ChartReductionResponse,
     ChartReductionTruthResponse,
     ChartResponse,
+    HouseBoundaryCurvePointResponse,
+    HouseBoundaryGeometryResponse,
+    HouseBoundaryGeometrySetResponse,
     HousePolicyRequest,
     HousePolicyResponse,
     HousesReductionResponse,
@@ -137,6 +140,42 @@ def serialize_houses(houses: HouseCusps) -> HousesResponse:
             polar_fallback=PolarFallbackPolicy.FALLBACK_TO_PORPHYRY,
         )
 
+    boundary_geometry = None
+    if houses.boundary_geometry is not None:
+        boundary_geometry = HouseBoundaryGeometrySetResponse(
+            effective_system=houses.boundary_geometry.effective_system,
+            availability=houses.boundary_geometry.availability.value,
+            frame=houses.boundary_geometry.frame,
+            obliquity_deg=houses.boundary_geometry.obliquity_deg,
+            observer_latitude_deg=houses.boundary_geometry.observer_latitude_deg,
+            zodiac_offset_deg=houses.boundary_geometry.zodiac_offset_deg,
+            boundaries=[
+                HouseBoundaryGeometryResponse(
+                    house=boundary.house,
+                    kind=boundary.kind.value,
+                    cusp_longitude=boundary.cusp_longitude,
+                    anchor_direction=list(boundary.anchor_direction),
+                    plane_normal=(
+                        list(boundary.plane_normal)
+                        if boundary.plane_normal is not None
+                        else None
+                    ),
+                    curve_points=[
+                        HouseBoundaryCurvePointResponse(
+                            direction=list(point.direction),
+                            right_ascension_deg=point.right_ascension_deg,
+                            declination_deg=point.declination_deg,
+                        )
+                        for point in boundary.curve_points
+                    ],
+                    event_phase=boundary.event_phase,
+                    event_fraction=boundary.event_fraction,
+                )
+                for boundary in houses.boundary_geometry.boundaries
+            ],
+            reason=houses.boundary_geometry.reason,
+        )
+
     return HousesResponse(
         system=houses.system,
         effective_system=houses.effective_system,
@@ -156,6 +195,7 @@ def serialize_houses(houses: HouseCusps) -> HousesResponse:
         vertex=houses.vertex,
         anti_vertex=houses.anti_vertex,
         cusps=list(houses.cusps),
+        boundary_geometry=boundary_geometry,
     )
 
 

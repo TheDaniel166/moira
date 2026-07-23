@@ -14,6 +14,8 @@ _CURATED_PUBLIC_NAMES = [
     # Enums / doctrine
     "HouseSystemFamily",
     "HouseSystemCuspBasis",
+    "HouseBoundaryGeometryKind",
+    "HouseBoundaryGeometryAvailability",
     "UnknownSystemPolicy",
     "PolarFallbackPolicy",
     # Classification / policy
@@ -22,6 +24,9 @@ _CURATED_PUBLIC_NAMES = [
     "HousePolicy",
     # Result vessels
     "HouseCusps",
+    "HouseBoundaryCurvePoint",
+    "HouseBoundaryGeometry",
+    "HouseBoundaryGeometrySet",
     "DerivedHouseCusps",
     "HousePlacement",
     "HouseBoundaryProfile",
@@ -94,11 +99,11 @@ class TestModuleLevelResolution:
 
 
 class TestModuleCounts:
-    def test_curated_count_is_41(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 41
+    def test_curated_count_is_46(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 46
 
-    def test_houses_all_count_is_41(self):
-        assert len(_houses_module.__all__) == 41
+    def test_houses_all_count_is_46(self):
+        assert len(_houses_module.__all__) == 46
 
 
 class TestInternalsRemainInternal:

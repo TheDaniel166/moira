@@ -144,6 +144,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         longitude: float,
         system: str | None = None,
         policy: Any | None = None,
+        include_boundary_geometry: bool = False,
     ):
         """Calculate house cusps for a time and geographic location."""
         facade = _facade_module()
@@ -151,7 +152,12 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         jd_ut1 = facade.utc_to_ut1(jd)
         house_system = facade.HouseSystem.PLACIDUS if system is None else system
         return facade.calculate_houses(
-            jd_ut1, latitude, longitude, house_system, policy=policy
+            jd_ut1,
+            latitude,
+            longitude,
+            house_system,
+            policy=policy,
+            include_boundary_geometry=include_boundary_geometry,
         )
 
     def sky_position(

@@ -30,7 +30,16 @@ del _sys, _find_planetary_kernel
 
 from .constants import Body, HouseSystem
 from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
-from .houses import HouseCusps, DerivedHouseCusps, derived_houses
+from .houses import (
+    HouseBoundaryCurvePoint,
+    HouseBoundaryGeometry,
+    HouseBoundaryGeometryAvailability,
+    HouseBoundaryGeometryKind,
+    HouseBoundaryGeometrySet,
+    HouseCusps,
+    DerivedHouseCusps,
+    derived_houses,
+)
 from .galactic_houses import (
     GalacticAngles,
     GalacticHouseCusps,
@@ -975,6 +984,11 @@ __all__ = [
     "OccultationPoleCrossing",
     "OccultationPoleCrossingPhase",
     "HouseCusps",
+    "HouseBoundaryCurvePoint",
+    "HouseBoundaryGeometry",
+    "HouseBoundaryGeometryAvailability",
+    "HouseBoundaryGeometryKind",
+    "HouseBoundaryGeometrySet",
     "DerivedHouseCusps",
     "derived_houses",
     "GalacticAngles",

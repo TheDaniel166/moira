@@ -181,7 +181,8 @@ External dependency assumptions:
       greenwich_mean_sidereal_time).
     - moira.obliquity must be importable (true_obliquity, nutation).
     - moira.coordinates must be importable (normalize_degrees).
-    - moira.constants must be importable (DEG2RAD, RAD2DEG, HouseSystem, sign_of).
+    - moira.constants must be importable (DEG2RAD, RAD2DEG, HouseSystem,
+      HOUSE_SYSTEM_NAMES, sign_of).
     - Solar-anchored house systems may resolve the Sun's longitude through the
       narrow solar-anchor Engine when that longitude is not supplied explicitly.
 """
@@ -192,7 +193,7 @@ import math
 from dataclasses import dataclass, field
 from enum import Enum
 
-from .constants import DEG2RAD, RAD2DEG, HouseSystem, sign_of
+from .constants import DEG2RAD, RAD2DEG, HOUSE_SYSTEM_NAMES, HouseSystem, sign_of
 from .coordinates import normalize_degrees
 from .julian import local_sidereal_time, ut_to_tt, greenwich_mean_sidereal_time
 from .obliquity import true_obliquity, nutation
@@ -203,6 +204,8 @@ __all__ = [
     # Enums / doctrine
     "HouseSystemFamily",
     "HouseSystemCuspBasis",
+    "HouseBoundaryGeometryKind",
+    "HouseBoundaryGeometryAvailability",
     "UnknownSystemPolicy",
     "PolarFallbackPolicy",
     # Classification / policy
@@ -211,6 +214,9 @@ __all__ = [
     "HousePolicy",
     # Result vessels
     "HouseCusps",
+    "HouseBoundaryCurvePoint",
+    "HouseBoundaryGeometry",
+    "HouseBoundaryGeometrySet",
     "DerivedHouseCusps",
     "HousePlacement",
     "HouseBoundaryProfile",
@@ -380,6 +386,20 @@ class HouseSystemCuspBasis(str, Enum):
     GREAT_CIRCLE         = "great_circle"
     APC_FORMULA          = "apc_formula"
     SOLAR_POSITION       = "solar_position"
+
+
+class HouseBoundaryGeometryKind(str, Enum):
+    """Spatial object that actually governs one house boundary."""
+
+    GREAT_CIRCLE_PLANE = "great_circle_plane"
+    SEMI_ARC_EVENT_CURVE = "semi_arc_event_curve"
+
+
+class HouseBoundaryGeometryAvailability(str, Enum):
+    """Admission state for the spatial extension of a house figure."""
+
+    COMPLETE = "complete"
+    CUSP_INTERSECTIONS_ONLY = "cusp_intersections_only"
 
 
 @dataclass(frozen=True, slots=True)
@@ -839,6 +859,142 @@ def _solar_house_anchor_longitude(jd_ut: float) -> float:
     return _solar_longitude(jd_ut)
 
 
+@dataclass(frozen=True, slots=True)
+class HouseBoundaryCurvePoint:
+    """One sampled direction on a non-planar house-boundary event curve."""
+
+    direction: tuple[float, float, float]
+    right_ascension_deg: float
+    declination_deg: float
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "direction", tuple(self.direction))
+        _require(len(self.direction) == 3, "house boundary curve direction must contain 3 components")
+        _require(
+            all(math.isfinite(component) for component in self.direction),
+            "house boundary curve direction must be finite",
+        )
+        _require_finite("right_ascension_deg", self.right_ascension_deg)
+        _require_finite("declination_deg", self.declination_deg)
+        _require(
+            0.0 <= self.right_ascension_deg < 360.0,
+            "house boundary curve right ascension must be in [0, 360)",
+        )
+        _require(
+            -90.0 <= self.declination_deg <= 90.0,
+            "house boundary curve declination must be in [-90, 90]",
+        )
+        _require(
+            abs(math.sqrt(sum(component * component for component in self.direction)) - 1.0) < 1e-10,
+            "house boundary curve direction must be a unit vector",
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class HouseBoundaryGeometry:
+    """
+    Frame-explicit spatial geometry for one opening house boundary.
+
+    Plane-defined systems carry an oriented unit ``plane_normal``. Event/root
+    systems carry ordered ``curve_points`` sampled from the governing event
+    condition. ``anchor_direction`` is the physical tropical ecliptic
+    intersection even when ``cusp_longitude`` is expressed in a shifted
+    sidereal zodiac.
+    """
+
+    house: int
+    kind: HouseBoundaryGeometryKind
+    cusp_longitude: float
+    anchor_direction: tuple[float, float, float]
+    plane_normal: tuple[float, float, float] | None = None
+    curve_points: tuple[HouseBoundaryCurvePoint, ...] = ()
+    event_phase: str | None = None
+    event_fraction: float | None = None
+
+    def __post_init__(self) -> None:
+        _require(
+            isinstance(self.kind, HouseBoundaryGeometryKind),
+            "house boundary geometry kind must be a HouseBoundaryGeometryKind",
+            TypeError,
+        )
+        _require(1 <= self.house <= 12, "house boundary geometry house must be in [1, 12]")
+        _require_finite("cusp_longitude", self.cusp_longitude)
+        _require(
+            0.0 <= self.cusp_longitude < 360.0,
+            "house boundary cusp longitude must be in [0, 360)",
+        )
+        object.__setattr__(self, "anchor_direction", tuple(self.anchor_direction))
+        object.__setattr__(self, "curve_points", tuple(self.curve_points))
+        _require(len(self.anchor_direction) == 3, "house boundary anchor must contain 3 components")
+        _require(
+            abs(math.sqrt(sum(component * component for component in self.anchor_direction)) - 1.0) < 1e-10,
+            "house boundary anchor must be a unit vector",
+        )
+
+        if self.kind == HouseBoundaryGeometryKind.GREAT_CIRCLE_PLANE:
+            _require(self.plane_normal is not None, "great-circle boundary requires a plane normal")
+            _require(not self.curve_points, "great-circle boundary cannot also carry event-curve samples")
+            normal = tuple(self.plane_normal)
+            object.__setattr__(self, "plane_normal", normal)
+            _require(len(normal) == 3, "house boundary plane normal must contain 3 components")
+            _require(
+                abs(math.sqrt(sum(component * component for component in normal)) - 1.0) < 1e-10,
+                "house boundary plane normal must be a unit vector",
+            )
+            _require(
+                abs(sum(a * b for a, b in zip(normal, self.anchor_direction, strict=True))) < 1e-8,
+                "house boundary anchor must lie in its great-circle plane",
+            )
+            _require(self.event_phase is None, "great-circle boundary cannot carry event phase")
+            _require(self.event_fraction is None, "great-circle boundary cannot carry event fraction")
+        else:
+            _require(self.plane_normal is None, "event-curve boundary cannot carry a plane normal")
+            _require(len(self.curve_points) >= 3, "event-curve boundary requires at least 3 samples")
+            _require(self.event_phase is not None, "event-curve boundary requires an event phase")
+            _require(self.event_fraction is not None, "event-curve boundary requires an event fraction")
+            _require(
+                0.0 < self.event_fraction < 1.0,
+                "event-curve boundary fraction must lie in (0, 1)",
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class HouseBoundaryGeometrySet:
+    """Spatial admission result for all boundaries of one effective house figure."""
+
+    effective_system: str
+    availability: HouseBoundaryGeometryAvailability
+    frame: str
+    obliquity_deg: float
+    observer_latitude_deg: float
+    zodiac_offset_deg: float
+    boundaries: tuple[HouseBoundaryGeometry, ...] = ()
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        _require(
+            isinstance(self.availability, HouseBoundaryGeometryAvailability),
+            "house boundary geometry availability must be a HouseBoundaryGeometryAvailability",
+            TypeError,
+        )
+        _require(bool(self.effective_system), "house boundary geometry effective system must be declared")
+        object.__setattr__(self, "boundaries", tuple(self.boundaries))
+        _require_finite("obliquity_deg", self.obliquity_deg)
+        _require_finite("observer_latitude_deg", self.observer_latitude_deg)
+        _require_finite("zodiac_offset_deg", self.zodiac_offset_deg)
+        _require(bool(self.frame), "house boundary geometry frame must be declared")
+        if self.availability == HouseBoundaryGeometryAvailability.COMPLETE:
+            _require(len(self.boundaries) == 12, "complete house boundary geometry requires 12 boundaries")
+            _require(
+                tuple(boundary.house for boundary in self.boundaries) == tuple(range(1, 13)),
+                "complete house boundary geometry must be ordered house 1 through 12",
+            )
+            _require(self.reason is None, "complete house boundary geometry cannot carry an unavailable reason")
+        else:
+            _require(not self.boundaries, "cusp-intersections-only geometry cannot carry spatial boundaries")
+            _require(bool(self.reason), "cusp-intersections-only geometry requires an explicit reason")
+
+
 @dataclass(slots=True, frozen=True)
 class HouseCusps:
     """
@@ -904,6 +1060,7 @@ class HouseCusps:
     fallback_reason:  str | None                   = None    # Why fallback occurred; None when fallback is False
     classification:   HouseSystemClassification | None = None  # Doctrinal classification of effective_system
     policy:           HousePolicy = field(default_factory=HousePolicy.default)  # Policy that governed fallback resolution
+    boundary_geometry: HouseBoundaryGeometrySet | None = None  # Frame-explicit spatial boundaries when admitted
 
     @property
     def dsc(self) -> float:
@@ -993,6 +1150,11 @@ class HouseCusps:
             "HouseCusps invariant violated: policy must be a HousePolicy",
             TypeError,
         )
+        if self.boundary_geometry is not None:
+            _require(
+                self.boundary_geometry.effective_system == self.effective_system,
+                "HouseCusps invariant violated: boundary geometry effective system mismatch",
+            )
 
     def sign_of_cusp(self, house: int) -> tuple[str, str, float]:
         """Return (sign, symbol, degree_within_sign) for house 1–12."""
@@ -3204,6 +3366,475 @@ def _apc(armc: float, obliquity: float, lat: float) -> list[float]:
     return _finalize_cusps(cusps, context="_apc")
 
 
+_HOUSE_BOUNDARY_FRAME = "true_equator_and_equinox_of_date"
+_PLACIDUS_CURVE_SAMPLE_COUNT = 49
+
+
+def _boundary_plane(
+    *,
+    house: int,
+    cusp_longitude: float,
+    tropical_cusp_longitude: float,
+    obliquity_deg: float,
+    plane_normal: tuple[float, float, float],
+) -> HouseBoundaryGeometry:
+    """Build one admitted great-circle boundary from its governing plane."""
+
+    return HouseBoundaryGeometry(
+        house=house,
+        kind=HouseBoundaryGeometryKind.GREAT_CIRCLE_PLANE,
+        cusp_longitude=normalize_degrees(cusp_longitude),
+        anchor_direction=_equatorial_ecliptic_direction(
+            tropical_cusp_longitude,
+            obliquity_deg,
+        ),
+        plane_normal=_normalize3(plane_normal),
+    )
+
+
+def _opposite_boundary_plane(
+    source: HouseBoundaryGeometry,
+    *,
+    house: int,
+    cusp_longitude: float,
+    tropical_cusp_longitude: float,
+    obliquity_deg: float,
+) -> HouseBoundaryGeometry:
+    """Orient the antipodal opening boundary from an admitted source plane."""
+
+    _require(source.plane_normal is not None, "opposite boundary source must be planar")
+    return _boundary_plane(
+        house=house,
+        cusp_longitude=cusp_longitude,
+        tropical_cusp_longitude=tropical_cusp_longitude,
+        obliquity_deg=obliquity_deg,
+        plane_normal=tuple(-component for component in source.plane_normal),
+    )
+
+
+def _placidus_event_curve_points(
+    *,
+    armc_deg: float,
+    latitude_deg: float,
+    fraction: float,
+    phase: str,
+) -> tuple[HouseBoundaryCurvePoint, ...]:
+    """
+    Sample one Placidus semi-arc event curve in true equatorial axes.
+
+    At each declination for which rising and setting exist, the governing
+    condition determines right ascension directly:
+
+    - upper: ``RA = ARMC + fraction * DSA(dec)``
+    - lower: ``RA = IC - fraction * NSA(dec)``
+
+    The resulting directions are the boundary itself, not an interpolation
+    between ecliptic cusp longitudes.
+    """
+
+    _require(phase in {"upper", "lower"}, "Placidus event phase must be upper or lower")
+    _require(0.0 < fraction < 1.0, "Placidus event fraction must lie in (0, 1)")
+
+    latitude_rad = math.radians(latitude_deg)
+    limit_deg = min(89.999999, max(0.0, 90.0 - abs(latitude_deg)) - 1e-7)
+    _require(limit_deg > 0.0, "Placidus event curve has no rise/set declination domain")
+    points: list[HouseBoundaryCurvePoint] = []
+
+    for index in range(_PLACIDUS_CURVE_SAMPLE_COUNT):
+        declination_deg = -limit_deg + 2.0 * limit_deg * index / (_PLACIDUS_CURVE_SAMPLE_COUNT - 1)
+        declination_rad = math.radians(declination_deg)
+        event_argument = -math.tan(latitude_rad) * math.tan(declination_rad)
+        event_argument = max(-1.0, min(1.0, event_argument))
+        dsa_deg = math.degrees(math.acos(event_argument))
+        if phase == "upper":
+            right_ascension_deg = armc_deg + fraction * dsa_deg
+        else:
+            right_ascension_deg = armc_deg + 180.0 - fraction * (180.0 - dsa_deg)
+
+        ra_rad = math.radians(right_ascension_deg)
+        cos_dec = math.cos(declination_rad)
+        direction = (
+            cos_dec * math.cos(ra_rad),
+            cos_dec * math.sin(ra_rad),
+            math.sin(declination_rad),
+        )
+        points.append(
+            HouseBoundaryCurvePoint(
+                direction=direction,
+                right_ascension_deg=normalize_degrees(right_ascension_deg),
+                declination_deg=declination_deg,
+            )
+        )
+
+    return tuple(points)
+
+
+def _placidus_event_boundary(
+    *,
+    house: int,
+    cusp_longitude: float,
+    tropical_cusp_longitude: float,
+    obliquity_deg: float,
+    armc_deg: float,
+    latitude_deg: float,
+    fraction: float,
+    phase: str,
+) -> HouseBoundaryGeometry:
+    """Build one primary Placidus event boundary."""
+
+    anchor_direction = _equatorial_ecliptic_direction(
+        tropical_cusp_longitude,
+        obliquity_deg,
+    )
+    anchor_point = HouseBoundaryCurvePoint(
+        direction=anchor_direction,
+        right_ascension_deg=normalize_degrees(
+            math.degrees(math.atan2(anchor_direction[1], anchor_direction[0]))
+        ),
+        declination_deg=math.degrees(math.asin(anchor_direction[2])),
+    )
+    sampled_points = list(
+        _placidus_event_curve_points(
+            armc_deg=armc_deg,
+            latitude_deg=latitude_deg,
+            fraction=fraction,
+            phase=phase,
+        )
+    )
+    if all(
+        abs(point.declination_deg - anchor_point.declination_deg) > 1e-10
+        for point in sampled_points
+    ):
+        sampled_points.append(anchor_point)
+        sampled_points.sort(key=lambda point: point.declination_deg)
+
+    return HouseBoundaryGeometry(
+        house=house,
+        kind=HouseBoundaryGeometryKind.SEMI_ARC_EVENT_CURVE,
+        cusp_longitude=normalize_degrees(cusp_longitude),
+        anchor_direction=anchor_direction,
+        curve_points=tuple(sampled_points),
+        event_phase=phase,
+        event_fraction=fraction,
+    )
+
+
+def _opposite_event_boundary(
+    source: HouseBoundaryGeometry,
+    *,
+    house: int,
+    cusp_longitude: float,
+    tropical_cusp_longitude: float,
+    obliquity_deg: float,
+) -> HouseBoundaryGeometry:
+    """Construct an antipodal Placidus boundary from its primary event curve."""
+
+    _require(
+        source.kind == HouseBoundaryGeometryKind.SEMI_ARC_EVENT_CURVE,
+        "opposite event boundary source must be an event curve",
+    )
+    points = tuple(
+        HouseBoundaryCurvePoint(
+            direction=tuple(-component for component in point.direction),
+            right_ascension_deg=normalize_degrees(point.right_ascension_deg + 180.0),
+            declination_deg=-point.declination_deg,
+        )
+        for point in reversed(source.curve_points)
+    )
+    return HouseBoundaryGeometry(
+        house=house,
+        kind=HouseBoundaryGeometryKind.SEMI_ARC_EVENT_CURVE,
+        cusp_longitude=normalize_degrees(cusp_longitude),
+        anchor_direction=_equatorial_ecliptic_direction(
+            tropical_cusp_longitude,
+            obliquity_deg,
+        ),
+        curve_points=points,
+        event_phase=f"antipodal_{source.event_phase}",
+        event_fraction=source.event_fraction,
+    )
+
+
+def _pole_height_geometry_specs(
+    *,
+    system: str,
+    armc_deg: float,
+    asc_deg: float,
+    mc_deg: float,
+    obliquity_deg: float,
+    latitude_deg: float,
+) -> dict[int, tuple[float, float]]:
+    """Return primary plane specifications for the admitted pole-height family."""
+
+    phi = math.radians(latitude_deg)
+    if system == HouseSystem.REGIOMONTANUS:
+        phi_h1 = math.degrees(math.atan(math.tan(phi) * math.sin(math.radians(30.0))))
+        phi_h2 = math.degrees(math.atan(math.tan(phi) * math.sin(math.radians(60.0))))
+        return {
+            2: (armc_deg + 120.0, phi_h2),
+            3: (armc_deg + 150.0, phi_h1),
+            11: (armc_deg + 30.0, phi_h1),
+            12: (armc_deg + 60.0, phi_h2),
+        }
+    if system == HouseSystem.TOPOCENTRIC:
+        phi_h1 = math.degrees(math.atan(math.tan(phi) / 3.0))
+        phi_h2 = math.degrees(math.atan(2.0 * math.tan(phi) / 3.0))
+        return {
+            2: (armc_deg + 120.0, phi_h2),
+            3: (armc_deg + 150.0, phi_h1),
+            11: (armc_deg + 30.0, phi_h1),
+            12: (armc_deg + 60.0, phi_h2),
+        }
+    if system == HouseSystem.KOCH:
+        return _koch_pole_height_specs(
+            armc_deg,
+            mc_deg,
+            obliquity_deg,
+            latitude_deg,
+        )
+    if system == HouseSystem.ALCABITIUS:
+        return {
+            house: (ra_deg, 0.0)
+            for house, ra_deg in _alcabitius_zero_pole_specs(
+                armc_deg,
+                asc_deg,
+                obliquity_deg,
+                latitude_deg,
+            ).items()
+        }
+    raise ValueError(f"no admitted pole-height geometry for system {system!r}")
+
+
+def _build_house_boundary_geometry(
+    *,
+    effective_system: str,
+    tropical_cusps: list[float],
+    armc_deg: float,
+    obliquity_deg: float,
+    latitude_deg: float,
+    zodiac_offset_deg: float,
+) -> HouseBoundaryGeometrySet:
+    """Preserve the effective house system's governing spatial objects."""
+
+    cusp_longitudes = tuple(
+        normalize_degrees(cusp - zodiac_offset_deg)
+        for cusp in tropical_cusps
+    )
+    common = {
+        "effective_system": effective_system,
+        "frame": _HOUSE_BOUNDARY_FRAME,
+        "obliquity_deg": obliquity_deg,
+        "observer_latitude_deg": latitude_deg,
+        "zodiac_offset_deg": zodiac_offset_deg,
+    }
+    boundaries: dict[int, HouseBoundaryGeometry] = {}
+    east, north, zenith = _local_horizon_basis(armc_deg, latitude_deg)
+
+    if effective_system == HouseSystem.CAMPANUS:
+        for house in range(1, 13):
+            alpha = math.radians((120.0 - 30.0 * house) % 360.0)
+            normal = (
+                math.cos(alpha) * east[0] + math.sin(alpha) * zenith[0],
+                math.cos(alpha) * east[1] + math.sin(alpha) * zenith[1],
+                math.cos(alpha) * east[2] + math.sin(alpha) * zenith[2],
+            )
+            boundaries[house] = _boundary_plane(
+                house=house,
+                cusp_longitude=cusp_longitudes[house - 1],
+                tropical_cusp_longitude=tropical_cusps[house - 1],
+                obliquity_deg=obliquity_deg,
+                plane_normal=normal,
+            )
+
+    elif effective_system == HouseSystem.AZIMUTHAL:
+        north_sequence = {11: 150.0, 12: 120.0, 1: 90.0, 2: 60.0, 3: 30.0}
+        south_sequence = {11: 30.0, 12: 60.0, 1: 90.0, 2: 120.0, 3: 150.0}
+
+        def _sequence_score(sequence: dict[int, float]) -> float:
+            score = 0.0
+            for house, azimuth_deg in sequence.items():
+                horizon_direction = _horizon_direction_from_azimuth(
+                    azimuth_deg,
+                    east=east,
+                    north=north,
+                )
+                normal = _normalize3(_cross3(zenith, horizon_direction))
+                primary, secondary = _ecliptic_intersection_candidates(normal, obliquity_deg)
+                longitude = _select_azimuth_branch(
+                    primary,
+                    secondary,
+                    azimuth_deg=azimuth_deg,
+                    east=east,
+                    north=north,
+                    obliquity_deg=obliquity_deg,
+                )
+                score += _circular_distance(longitude, tropical_cusps[house - 1])
+            return score
+
+        sequence = min((north_sequence, south_sequence), key=_sequence_score)
+        for house, azimuth_deg in sequence.items():
+            horizon_direction = _horizon_direction_from_azimuth(
+                azimuth_deg,
+                east=east,
+                north=north,
+            )
+            boundaries[house] = _boundary_plane(
+                house=house,
+                cusp_longitude=cusp_longitudes[house - 1],
+                tropical_cusp_longitude=tropical_cusps[house - 1],
+                obliquity_deg=obliquity_deg,
+                plane_normal=_cross3(zenith, horizon_direction),
+            )
+        boundaries[10] = _boundary_plane(
+            house=10,
+            cusp_longitude=cusp_longitudes[9],
+            tropical_cusp_longitude=tropical_cusps[9],
+            obliquity_deg=obliquity_deg,
+            plane_normal=east,
+        )
+        boundaries[4] = _opposite_boundary_plane(
+            boundaries[10],
+            house=4,
+            cusp_longitude=cusp_longitudes[3],
+            tropical_cusp_longitude=tropical_cusps[3],
+            obliquity_deg=obliquity_deg,
+        )
+        for source_house, opposite_house in ((11, 5), (12, 6), (1, 7), (2, 8), (3, 9)):
+            boundaries[opposite_house] = _opposite_boundary_plane(
+                boundaries[source_house],
+                house=opposite_house,
+                cusp_longitude=cusp_longitudes[opposite_house - 1],
+                tropical_cusp_longitude=tropical_cusps[opposite_house - 1],
+                obliquity_deg=obliquity_deg,
+            )
+
+    elif effective_system in {
+        HouseSystem.REGIOMONTANUS,
+        HouseSystem.TOPOCENTRIC,
+        HouseSystem.KOCH,
+        HouseSystem.ALCABITIUS,
+    }:
+        specs = _pole_height_geometry_specs(
+            system=effective_system,
+            armc_deg=armc_deg,
+            asc_deg=tropical_cusps[0],
+            mc_deg=tropical_cusps[9],
+            obliquity_deg=obliquity_deg,
+            latitude_deg=latitude_deg,
+        )
+        for house, (ra_deg, pole_height_deg) in specs.items():
+            boundaries[house] = _boundary_plane(
+                house=house,
+                cusp_longitude=cusp_longitudes[house - 1],
+                tropical_cusp_longitude=tropical_cusps[house - 1],
+                obliquity_deg=obliquity_deg,
+                plane_normal=_ra_pole_plane_normal(ra_deg % 360.0, pole_height_deg),
+            )
+        boundaries[1] = _boundary_plane(
+            house=1,
+            cusp_longitude=cusp_longitudes[0],
+            tropical_cusp_longitude=tropical_cusps[0],
+            obliquity_deg=obliquity_deg,
+            plane_normal=zenith,
+        )
+        boundaries[10] = _boundary_plane(
+            house=10,
+            cusp_longitude=cusp_longitudes[9],
+            tropical_cusp_longitude=tropical_cusps[9],
+            obliquity_deg=obliquity_deg,
+            plane_normal=east,
+        )
+        for source_house, opposite_house in (
+            (1, 7),
+            (2, 8),
+            (3, 9),
+            (10, 4),
+            (11, 5),
+            (12, 6),
+        ):
+            boundaries[opposite_house] = _opposite_boundary_plane(
+                boundaries[source_house],
+                house=opposite_house,
+                cusp_longitude=cusp_longitudes[opposite_house - 1],
+                tropical_cusp_longitude=tropical_cusps[opposite_house - 1],
+                obliquity_deg=obliquity_deg,
+            )
+
+    elif effective_system == HouseSystem.PLACIDUS:
+        boundaries[1] = _boundary_plane(
+            house=1,
+            cusp_longitude=cusp_longitudes[0],
+            tropical_cusp_longitude=tropical_cusps[0],
+            obliquity_deg=obliquity_deg,
+            plane_normal=zenith,
+        )
+        boundaries[10] = _boundary_plane(
+            house=10,
+            cusp_longitude=cusp_longitudes[9],
+            tropical_cusp_longitude=tropical_cusps[9],
+            obliquity_deg=obliquity_deg,
+            plane_normal=east,
+        )
+        for house, fraction, phase in (
+            (11, 1.0 / 3.0, "upper"),
+            (12, 2.0 / 3.0, "upper"),
+            (3, 1.0 / 3.0, "lower"),
+            (2, 2.0 / 3.0, "lower"),
+        ):
+            boundaries[house] = _placidus_event_boundary(
+                house=house,
+                cusp_longitude=cusp_longitudes[house - 1],
+                tropical_cusp_longitude=tropical_cusps[house - 1],
+                obliquity_deg=obliquity_deg,
+                armc_deg=armc_deg,
+                latitude_deg=latitude_deg,
+                fraction=fraction,
+                phase=phase,
+            )
+        for source_house, opposite_house in (
+            (1, 7),
+            (2, 8),
+            (3, 9),
+            (10, 4),
+            (11, 5),
+            (12, 6),
+        ):
+            source = boundaries[source_house]
+            if source.kind == HouseBoundaryGeometryKind.GREAT_CIRCLE_PLANE:
+                boundaries[opposite_house] = _opposite_boundary_plane(
+                    source,
+                    house=opposite_house,
+                    cusp_longitude=cusp_longitudes[opposite_house - 1],
+                    tropical_cusp_longitude=tropical_cusps[opposite_house - 1],
+                    obliquity_deg=obliquity_deg,
+                )
+            else:
+                boundaries[opposite_house] = _opposite_event_boundary(
+                    source,
+                    house=opposite_house,
+                    cusp_longitude=cusp_longitudes[opposite_house - 1],
+                    tropical_cusp_longitude=tropical_cusps[opposite_house - 1],
+                    obliquity_deg=obliquity_deg,
+                )
+
+    else:
+        system_name = HOUSE_SYSTEM_NAMES.get(effective_system, effective_system)
+        return HouseBoundaryGeometrySet(
+            **common,
+            availability=HouseBoundaryGeometryAvailability.CUSP_INTERSECTIONS_ONLY,
+            reason=(
+                f"{system_name} defines admitted ecliptic cusp intersections, "
+                "but no off-ecliptic spatial boundary object is admitted"
+            ),
+        )
+
+    return HouseBoundaryGeometrySet(
+        **common,
+        availability=HouseBoundaryGeometryAvailability.COMPLETE,
+        boundaries=tuple(boundaries[house] for house in range(1, 13)),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Main public function
 # ---------------------------------------------------------------------------
@@ -3217,6 +3848,7 @@ def calculate_houses(
     policy:          HousePolicy | None = None,
     sun_longitude:   float | None = None,
     ayanamsa_offset: float | None = None,
+    include_boundary_geometry: bool = False,
 ) -> HouseCusps:
     """
     Calculate house cusps for a given Universal Time and observer location.
@@ -3281,6 +3913,10 @@ def calculate_houses(
         system: House system identifier; one of the HouseSystem constants.
             Defaults to HouseSystem.PLACIDUS.
         policy: HousePolicy governing fallback doctrine.  Keyword-only.
+        include_boundary_geometry: When true, preserve the effective system's
+            admitted frame-explicit spatial boundary objects in
+            ``HouseCusps.boundary_geometry``. Defaults to false so existing
+            cusp-only callers do not pay the sampling or transport cost.
             Defaults to HousePolicy.default() (silent fallback, current behavior).
         sun_longitude: Optional geocentric tropical solar longitude (degrees).
             If supplied, SUNSHINE and SOLAR_SIGN houses use this value directly
@@ -3332,6 +3968,7 @@ def calculate_houses(
         policy=active_policy,
         sun_longitude=sun_lon,
         ayanamsa_offset=ayanamsa_offset,
+        include_boundary_geometry=include_boundary_geometry,
     )
 
 
@@ -4317,6 +4954,7 @@ def houses_from_armc(
     policy: HousePolicy | None = None,
     sun_longitude: float | None = None,
     ayanamsa_offset: float | None = None,
+    include_boundary_geometry: bool = False,
 ) -> HouseCusps:
     """
     Compute house cusps from ARMC and obliquity.
@@ -4337,6 +4975,11 @@ def houses_from_armc(
         sun_longitude: Geocentric ecliptic longitude of the Sun (degrees).
             Required only when ``system == HouseSystem.SUNSHINE``; ignored
             for all other systems.
+        ayanamsa_offset: Optional zodiac-label offset in degrees. Physical
+            boundary vectors remain in the declared true-equatorial frame.
+        include_boundary_geometry: When true, preserve the effective system's
+            admitted frame-explicit spatial boundary objects. Systems without
+            an admitted off-ecliptic object report cusp intersections only.
 
     Returns:
         A :class:`HouseCusps` vessel using the same policy, fallback,
@@ -4577,6 +5220,18 @@ def houses_from_armc(
             )
 
     _shift = ayanamsa_offset if ayanamsa_offset is not None else 0.0
+    boundary_geometry = (
+        _build_house_boundary_geometry(
+            effective_system=effective_system,
+            tropical_cusps=cusps,
+            armc_deg=armc,
+            obliquity_deg=obliquity,
+            latitude_deg=lat,
+            zodiac_offset_deg=_shift,
+        )
+        if include_boundary_geometry
+        else None
+    )
     return HouseCusps(
         system=system,
         cusps=[normalize_degrees(c - _shift) for c in cusps],
@@ -4591,6 +5246,7 @@ def houses_from_armc(
         fallback_reason=fallback_reason,
         classification=classify_house_system(effective_system),
         policy=active_policy,
+        boundary_geometry=boundary_geometry,
     )
 
 

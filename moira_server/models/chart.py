@@ -117,6 +117,7 @@ class HousesRequest(_StrictModel):
     longitude: float = Field(ge=-180.0, le=180.0)
     system: str | None = None
     policy: HousePolicyRequest | None = None
+    include_boundary_geometry: bool = False
 
 
 class HousePolicyResponse(_StrictModel):
@@ -125,6 +126,34 @@ class HousePolicyResponse(_StrictModel):
     """
     unknown_system: UnknownSystemPolicy
     polar_fallback: PolarFallbackPolicy
+
+
+class HouseBoundaryCurvePointResponse(_StrictModel):
+    direction: list[float]
+    right_ascension_deg: float
+    declination_deg: float
+
+
+class HouseBoundaryGeometryResponse(_StrictModel):
+    house: int = Field(ge=1, le=12)
+    kind: str
+    cusp_longitude: float
+    anchor_direction: list[float]
+    plane_normal: list[float] | None = None
+    curve_points: list[HouseBoundaryCurvePointResponse] = Field(default_factory=list)
+    event_phase: str | None = None
+    event_fraction: float | None = None
+
+
+class HouseBoundaryGeometrySetResponse(_StrictModel):
+    effective_system: str
+    availability: str
+    frame: str
+    obliquity_deg: float
+    observer_latitude_deg: float
+    zodiac_offset_deg: float
+    boundaries: list[HouseBoundaryGeometryResponse] = Field(default_factory=list)
+    reason: str | None = None
 
 
 class HousesResponse(_StrictModel):
@@ -146,6 +175,7 @@ class HousesResponse(_StrictModel):
     vertex: float | None = None
     anti_vertex: float | None = None
     cusps: list[float]
+    boundary_geometry: HouseBoundaryGeometrySetResponse | None = None
 
 
 class HouseSystemClassificationResponse(_StrictModel):
@@ -198,6 +228,9 @@ __all__ = [
     "ChartNodeReductionSummaryResponse",
     "HousePolicyRequest",
     "HousePolicyResponse",
+    "HouseBoundaryCurvePointResponse",
+    "HouseBoundaryGeometryResponse",
+    "HouseBoundaryGeometrySetResponse",
     "HouseSystemClassificationResponse",
     "HousesReductionResponse",
     "HousesReductionTruthResponse",

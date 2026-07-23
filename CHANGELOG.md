@@ -29,6 +29,11 @@ Detailed release and migration guidance is available in
   and retained spherical globe topology.
 - **Typed eclipse transport**: added REST endpoints for solar global
   circumstances, solar cartography, and lunar global circumstances.
+- **Frame-explicit house boundaries**: added an opt-in immutable geometry
+  vessel for admitted great-circle planes and Placidus semi-arc event curves,
+  with exact cusp incidences, effective-system fallback truth, sidereal label
+  separation, explicit cusp-only unavailability, facade exports, and typed
+  `/v1/houses` transport.
 
 ### Fixed
 - **Near-singular hybrid horizon topology**: retained the authoritative exact
@@ -47,6 +52,9 @@ Detailed release and migration guidance is available in
   partial, total, hybrid, and annular events.
 - Bound the new lunar global vessel to hashed NASA figure records spanning
   penumbral, partial, total, and limiting penumbral events.
+- Exercised spatial house-boundary invariants across plane-defined families,
+  Placidus event curves, southern and high-latitude cases, sidereal labels,
+  effective fallback, public exports, and REST serialization.
 - Corroborated the detailed 2027-08-02 solar and 2026-08-28 lunar products
   against separately declared EclipseWise DE405/DE430 rows. Cross-model
   agreement remains corroboration rather than an assertion of identical

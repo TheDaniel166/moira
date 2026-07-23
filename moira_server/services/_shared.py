@@ -106,6 +106,7 @@ def build_houses_context(engine: Moira, request: HousesRequest):
             latitude=request.latitude,
             longitude=request.longitude,
             system=system,
+            include_boundary_geometry=request.include_boundary_geometry,
         )
 
     return calculate_houses(
@@ -114,6 +115,7 @@ def build_houses_context(engine: Moira, request: HousesRequest):
         longitude=request.longitude,
         system=system,
         policy=engine_policy,
+        include_boundary_geometry=request.include_boundary_geometry,
     )
 
 
