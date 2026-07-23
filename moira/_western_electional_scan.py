@@ -32,12 +32,14 @@ __all__ = [
 
 
 class WesternElectionalProfileId(str, Enum):
+    """Vessel: Registry of western electional profile id values."""
     RAMESEY_MOON_CONDITION_V1 = "ramesey_moon_condition_v1"
     SAHL_MOON_CONDITION_V1 = "sahl_moon_condition_v1"
     DOROTHEUS_MOON_CONDITION_V1 = "dorotheus_moon_condition_v1"
 
 
 class WesternElectionalQualificationStatus(str, Enum):
+    """Vessel: Registry of western electional qualification status values."""
     CLEAR = "clear_of_profile_impediments"
     TRIGGERED = "one_or_more_profile_impediments"
     INDETERMINATE = "indeterminate"
@@ -45,6 +47,7 @@ class WesternElectionalQualificationStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalProfileParameter:
+    """Vessel: Structured western electional profile parameter data."""
     name: str
     value: str | bool | None
 
@@ -55,6 +58,7 @@ class WesternElectionalProfileParameter:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalProfileScanPolicy:
+    """Vessel: Structured western electional profile scan policy data."""
     qualifying_statuses: tuple[WesternElectionalQualificationStatus, ...]
     step_days: float = 1.0 / 24.0
     merge_gap_days: float | None = None
@@ -104,6 +108,7 @@ class WesternElectionalProfileScanPolicy:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalStatusCount:
+    """Vessel: Structured western electional status count data."""
     status: WesternElectionalQualificationStatus
     count: int
 
@@ -114,6 +119,7 @@ class WesternElectionalStatusCount:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalSampleWitness:
+    """Vessel: Structured western electional sample witness data."""
     jd_ut: float
     status: WesternElectionalQualificationStatus
     qualifies: bool
@@ -133,6 +139,7 @@ class WesternElectionalSampleWitness:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalProfileWindow:
+    """Vessel: Structured western electional profile window data."""
     jd_start: float
     jd_end: float
     duration_hours: float
@@ -154,6 +161,7 @@ class WesternElectionalProfileWindow:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalProfileScan:
+    """Vessel: Structured western electional profile scan data."""
     profile_id: WesternElectionalProfileId
     profile_version: str
     jd_start: float

@@ -196,6 +196,7 @@ class DorotheusSupplementaryIndicator:
 
 @dataclass(frozen=True, slots=True)
 class DorotheusPlacementWitness:
+    """Vessel: Structured dorotheus placement witness data."""
     body: str
     role: str
     longitude: float
@@ -218,6 +219,7 @@ class DorotheusPlacementWitness:
 
 @dataclass(frozen=True, slots=True)
 class DorotheusRootOutcomeWitness:
+    """Vessel: Structured dorotheus root outcome witness data."""
     moon: DorotheusPlacementWitness
     moon_sign_lord: DorotheusPlacementWitness
     pattern: DorotheusRootOutcomePattern
@@ -228,6 +230,7 @@ class DorotheusRootOutcomeWitness:
 
 @dataclass(frozen=True, slots=True)
 class DorotheusMatterSignificatorWitness:
+    """Vessel: Structured dorotheus matter significator witness data."""
     body: str
     placement: DorotheusPlacementWitness
     under_rays: bool
@@ -274,6 +277,7 @@ class DorotheusMatterSignificatorWitness:
 
 @dataclass(frozen=True, slots=True)
 class DorotheusRadicalityWitness:
+    """Vessel: Structured dorotheus radicality witness data."""
     election_class: WesternElectionClass
     natal_required: bool
     natal_provided: bool
@@ -318,6 +322,7 @@ DOROTHEUS_ROOTED_CONTEXT_V1 = DorotheusRootedContextPolicy()
 
 @dataclass(frozen=True, slots=True)
 class DorotheusRootedContextEvaluation:
+    """Vessel: Structured dorotheus rooted context evaluation data."""
     jd_ut: float
     profile_id: str
     profile_version: str

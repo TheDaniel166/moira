@@ -44,12 +44,14 @@ __all__ = [
 
 
 class WesternElectionalRankingContributionId(str, Enum):
+    """Vessel: Registry of western electional ranking contribution id values."""
     DIRECT_PERFECTION_PRESENT = "direct_perfection_present"
     TRANSLATION_OF_LIGHT_PRESENT = "translation_of_light_present"
     COLLECTION_OF_LIGHT_PRESENT = "collection_of_light_present"
 
 
 class WesternElectionalRankingCandidateState(str, Enum):
+    """Vessel: Registry of western electional ranking candidate state values."""
     RANKED = "ranked_complete_under_profile"
     EXCLUDED_IMPEDED = "excluded_impeded"
     EXCLUDED_INDETERMINATE = "excluded_indeterminate"
@@ -70,6 +72,7 @@ _CONTRIBUTION_PERFECTION_KIND = {
 
 @dataclass(frozen=True, slots=True)
 class ElectionalRankingPolicy:
+    """Vessel: Structured electional ranking policy data."""
     profile_id: str = "western_electional_ranking_v1"
     profile_version: str = "1.0.0"
     ranking_authority: str = "moira_owned_caller_weighted_numeric_decision_support"
@@ -99,6 +102,7 @@ WESTERN_ELECTIONAL_RANKING_V1 = ElectionalRankingPolicy()
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalRankingWeight:
+    """Vessel: Structured western electional ranking weight data."""
     contribution_id: WesternElectionalRankingContributionId
     weight: float
 
@@ -119,6 +123,7 @@ class WesternElectionalRankingWeight:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalRankingContribution:
+    """Vessel: Structured western electional ranking contribution data."""
     contribution_id: WesternElectionalRankingContributionId
     raw_value: float
     normalization: str
@@ -152,6 +157,7 @@ class WesternElectionalRankingContribution:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalRankedCandidate:
+    """Vessel: Structured western electional ranked candidate data."""
     input_index: int
     jd_ut: float
     state: WesternElectionalRankingCandidateState
@@ -186,6 +192,7 @@ class WesternElectionalRankedCandidate:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalExcludedCandidate:
+    """Vessel: Structured western electional excluded candidate data."""
     input_index: int
     jd_ut: float
     state: WesternElectionalRankingCandidateState
@@ -211,6 +218,7 @@ class WesternElectionalExcludedCandidate:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalRankingEvaluation:
+    """Vessel: Structured western electional ranking evaluation data."""
     profile_id: str
     profile_version: str
     policy: ElectionalRankingPolicy

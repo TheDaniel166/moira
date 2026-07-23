@@ -658,6 +658,7 @@ class LunarOccultationContactSequence:
 
 @dataclass(frozen=True, slots=True)
 class _SolvedContact:
+    """Vessel: Structured solved contact data."""
     jd_ut1: float
     kind: LunarContactKind
     visibility_before: LunarVisibilityState

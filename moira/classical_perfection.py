@@ -50,6 +50,7 @@ _AUTHORITY = (
 
 
 class ClassicalPerfectionEventKind(StrEnum):
+    """Vessel: Registry of classical perfection event kind values."""
     ASPECT_EXACT = "aspect_exact"
     STATION_RETROGRADE = "station_retrograde"
     STATION_DIRECT = "station_direct"
@@ -57,12 +58,14 @@ class ClassicalPerfectionEventKind(StrEnum):
 
 
 class ClassicalPerfectionState(StrEnum):
+    """Vessel: Registry of classical perfection state values."""
     PRESENT = "present"
     ABSENT = "absent"
     INDETERMINATE = "indeterminate"
 
 
 class LillyPerfectionKind(StrEnum):
+    """Vessel: Registry of Lilly perfection kind values."""
     DIRECT = "direct_perfection"
     TRANSLATION = "translation_of_light"
     COLLECTION = "collection_of_light"
@@ -73,6 +76,7 @@ class LillyPerfectionKind(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class ClassicalBodyState:
+    """Vessel: Structured classical body state data."""
     body: str
     longitude: float
     speed: float
@@ -89,6 +93,7 @@ class ClassicalBodyState:
 
 @dataclass(frozen=True, slots=True)
 class ClassicalPerfectionEvent:
+    """Vessel: Structured classical perfection event data."""
     event_id: str
     jd_ut: float
     kind: ClassicalPerfectionEventKind
@@ -115,6 +120,7 @@ class ClassicalPerfectionEvent:
 
 @dataclass(frozen=True, slots=True)
 class LillyPerfectionWitness:
+    """Vessel: Structured Lilly perfection witness data."""
     kind: LillyPerfectionKind
     state: ClassicalPerfectionState
     actors: tuple[str, ...]
@@ -126,6 +132,7 @@ class LillyPerfectionWitness:
 
 @dataclass(frozen=True, slots=True)
 class LillyPerfectionPolicy:
+    """Vessel: Structured Lilly perfection policy data."""
     profile_id: str = "lilly_1647_perfection_v1"
     profile_version: str = "1.0.0"
     aspect_scope: str = "tropical_zodiacal_ptolemaic_exact"
@@ -170,6 +177,7 @@ LILLY_1647_PERFECTION_V1 = LillyPerfectionPolicy()
 
 @dataclass(frozen=True, slots=True)
 class ClassicalPerfectionAnalysis:
+    """Vessel: Structured classical perfection analysis data."""
     jd_start: float
     jd_end: float
     significator_a: str

@@ -195,7 +195,12 @@ def _is_vessel_class(node: ast.ClassDef) -> bool:
             
     # 2. Check base classes
     for base in node.bases:
-        if isinstance(base, ast.Name) and base.id in {"NamedTuple", "Enum", "StrEnum"}:
+        if isinstance(base, ast.Name) and base.id in {
+            "NamedTuple",
+            "Enum",
+            "StrEnum",
+            "Protocol",
+        }:
             return True
             
     # 3. Check for behavioral methods (Actors have logic)
@@ -464,6 +469,19 @@ def test_checker_missing_module_docstring_produces_mod001(tmp_path: Path) -> Non
 def test_checker_compliant_class_passes(tmp_path: Path) -> None:
     """Class with all required markers produces no CLS-001 violations."""
     source = f'"""Module docstring."""\n\nclass SyntheticClass:\n{_COMPLIANT_CLASS_BODY}\n'
+    path = _write_tmp(tmp_path, source)
+    assert check_class_docstrings(path) == []
+
+
+def test_checker_protocol_with_basic_contract_docstring_passes(tmp_path: Path) -> None:
+    """Protocol interfaces are contracts, not stateful architectural actors."""
+    source = (
+        '"""Module docstring."""\n\n'
+        "from typing import Protocol\n\n"
+        "class SyntheticProtocol(Protocol):\n"
+        '    """Side-effect-free callable interface."""\n\n'
+        "    def __call__(self, value: float) -> float: ...\n"
+    )
     path = _write_tmp(tmp_path, source)
     assert check_class_docstrings(path) == []
 

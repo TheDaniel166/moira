@@ -130,6 +130,7 @@ class ProgressedContactSearchPolicy:
 
 @dataclass(frozen=True, slots=True)
 class ProgressedContactMoment:
+    """Vessel: Structured progressed contact moment data."""
     event: str
     dt: datetime
     jd_ut: float
@@ -144,6 +145,7 @@ class ProgressedContactMoment:
 
 @dataclass(frozen=True, slots=True)
 class ProgressedContactWindow:
+    """Vessel: Structured progressed contact window data."""
     entry: ProgressedContactMoment
     closest_approaches: tuple[ProgressedContactMoment, ...]
     exit: ProgressedContactMoment
@@ -153,6 +155,7 @@ class ProgressedContactWindow:
 
 @dataclass(frozen=True, slots=True)
 class ProgressedContactSearchResult:
+    """Vessel: Structured progressed contact search result data."""
     query: ProgressedContactQuery
     start_dt: datetime
     end_dt: datetime
@@ -165,6 +168,7 @@ class ProgressedContactSearchResult:
 
 @dataclass(frozen=True, slots=True)
 class ProgressedVariableInfluenceTruth:
+    """Vessel: Structured progressed variable influence truth data."""
     query: ProgressedContactQuery
     start_dt: datetime
     end_dt: datetime
@@ -187,6 +191,7 @@ class ProgressedVariableInfluenceTruth:
 
 @dataclass(frozen=True, slots=True)
 class _Evaluation:
+    """Vessel: Structured evaluation data."""
     moment: ProgressedContactMoment
     relation: ProgressedMajorAspectRelation | ProgressedAccessoryAspectRelation
     reenforcement: ProgressedReenforcementTruth | None
@@ -273,6 +278,52 @@ def _default_step_hours(query: ProgressedContactQuery) -> float:
 
 
 class _Evaluator:
+    """
+    RITE: The Progressed Contact Evaluator
+
+    THEOREM: Owns one search-local mapping from civil instants to progressed
+    contact evaluations under an explicit house and reader policy.
+
+    RITE OF PURPOSE:
+        Centralizes the reusable natal state, terminal construction, and
+        memoized evaluation needed by one progressed-contact search.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Bind the natal chart, reader, house policy, and contact query.
+            - Build required progressed terminals for candidate instants.
+            - Cache evaluations only within this evaluator instance.
+        Non-responsibilities:
+            - Select global kernels or mutate public doctrine.
+            - Persist results beyond the owning search.
+        Dependencies:
+            - Planetary reader, progressed terminal builders, and house engine.
+        Structural invariants:
+            - The natal state and query remain fixed for the evaluator lifetime.
+            - Cached values are keyed by the exact candidate datetime.
+
+    Canon: Church of Light progressed-aspect timing doctrine as admitted by
+    this module.
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.progressed_astrodynes_search._Evaluator",
+      "risk": "high",
+      "api": {"public_methods": [], "internal_methods": ["_terminal_map"]},
+      "state": {"mutable": true, "owners": ["one progressed-contact search"]},
+      "effects": {"signals_emitted": [], "io": ["reader-backed computation"]},
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {"raises": ["ValueError", "OutOfRangeError"], "policy": "raise"},
+      "succession": {"stance": "terminal"},
+      "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
+    }
+    [/MACHINE_CONTRACT]
+    """
+
     def __init__(
         self,
         natal_dt: datetime,

@@ -42,7 +42,7 @@ from pathlib import Path
 
 from .constants import Body
 from .heliacal import HeliacalEventKind
-from .julian import CalendarDateTime, calendar_datetime_from_jd
+from .julian import CalendarDateTime, calendar_datetime_from_jd, julian_day
 
 __all__ = [
     "BABYLON_LATITUDE_DEG",
@@ -59,6 +59,7 @@ __all__ = [
     "BabylonianSourceQuality",
     "ChronologyConfidence",
     "BabylonianHistoricalPhenomenon",
+    "BabylonianPlanetaryVisibilityEvidence",
     "BabylonianPlanetaryReference",
     "BABYLONIAN_MERCURY_REFERENCES",
     "BABYLONIAN_VENUS_REFERENCES",
@@ -72,6 +73,7 @@ __all__ = [
     "babylonian_month_length",
     "babylonian_month_start",
     "babylonian_planetary_reference",
+    "julian_calendar_day_from_jd",
     "julian_calendar_day_to_jd",
 ]
 
@@ -88,6 +90,7 @@ _INTERCALARY_MONTH_CODES = frozenset({"6b", "12b"})
 class BabylonianChronologyAuthority(StrEnum):
     """Vessel: Registry of authoritative chronology regimes."""
     DE_JONG_2021 = "de_jong_2021"
+    DE_JONG_FOERTMEYER_2010 = "de_jong_foertmeyer_2010"
     PARKER_DUBBERSTEIN_1956 = "parker_dubberstein_1956"
 
 
@@ -126,6 +129,7 @@ class BabylonianHoldoutReason(StrEnum):
     OMITTED_PHASE_SOURCE = "omitted_phase_source"
     TERMINUS_SUPPORT_ONLY = "terminus_support_only"
     SOURCE_SOLVER_MISMATCH = "source_solver_mismatch"
+    VISIBILITY_DOCTRINE_NOT_IMPLEMENTED = "visibility_doctrine_not_implemented"
     MIXED = "mixed"
 
 
@@ -187,11 +191,32 @@ class BabylonianCivilDay:
 
     @property
     def calendar_utc(self) -> CalendarDateTime:
+        """Return the equivalent instant expressed in Moira's Gregorian calendar."""
         return calendar_datetime_from_jd(self.jd)
 
     @property
     def date_tuple(self) -> tuple[int, int, int]:
-        return (self.calendar_utc.year, self.calendar_utc.month, self.calendar_utc.day)
+        """Return the source's Julian-calendar civil label."""
+        return (self.year, self.month, self.day)
+
+
+def julian_calendar_day_from_jd(jd: float) -> BabylonianCivilDay:
+    """Convert a JD instant to its proleptic Julian-calendar civil day."""
+
+    if not math.isfinite(jd):
+        raise ValueError("jd must be finite")
+
+    shifted = jd + 0.5
+    z = math.floor(shifted)
+    f = shifted - z
+    b = z + 1524
+    c = math.floor((b - 122.1) / 365.25)
+    d = math.floor(365.25 * c)
+    e = math.floor((b - d) / 30.6001)
+    day = math.floor(b - d - math.floor(30.6001 * e) + f)
+    month = e - 1 if e < 14 else e - 13
+    year = c - 4716 if month > 2 else c - 4715
+    return BabylonianCivilDay(year, month, day)
 
 
 @dataclass(frozen=True, slots=True)
@@ -207,8 +232,10 @@ class BabylonianCivilWindow:
             raise ValueError("BabylonianCivilWindow end must not precede start")
 
     def contains_calendar_date(self, date: CalendarDateTime) -> bool:
-        day_tuple = (date.year, date.month, date.day)
-        return self.start.date_tuple <= day_tuple <= self.end.date_tuple
+        """Test a Moira Gregorian calendar result against this absolute window."""
+
+        jd = julian_day(date.year, date.month, date.day, 0.0)
+        return self.start.jd <= jd < self.end.jd + 1.0
 
 
 def _normalize_month_code(month: int | str) -> str:
@@ -343,8 +370,28 @@ def babylonian_calendar_to_civil_day(year: int, month: int | str, day: int) -> B
             f"Babylonian day must be between 1 and {month_length} for year={year}, month={month!r}"
         )
     jd = month_start.jd + (day - 1)
-    calendar = calendar_datetime_from_jd(jd)
-    return BabylonianCivilDay(calendar.year, calendar.month, calendar.day)
+    return julian_calendar_day_from_jd(jd)
+
+
+@dataclass(frozen=True, slots=True)
+class BabylonianPlanetaryVisibilityEvidence:
+    """Source-published physical visibility quantities for one planetary row."""
+
+    extinction_coefficient_mag_per_airmass: float
+    refracted_elevation_deg: float
+    geometric_arcus_visionis_deg: float
+    nominal_date_delta_days: int
+    source_fit_bracketed: bool = False
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.extinction_coefficient_mag_per_airmass):
+            raise ValueError("Visibility evidence extinction coefficient must be finite")
+        if self.extinction_coefficient_mag_per_airmass < 0.0:
+            raise ValueError("Visibility evidence extinction coefficient must be non-negative")
+        if not math.isfinite(self.refracted_elevation_deg):
+            raise ValueError("Visibility evidence refracted elevation must be finite")
+        if not math.isfinite(self.geometric_arcus_visionis_deg):
+            raise ValueError("Visibility evidence geometric arcus visionis must be finite")
 
 
 @dataclass(frozen=True, slots=True)
@@ -364,6 +411,7 @@ class BabylonianPlanetaryReference:
     source: str
     source_url: str
     note: str
+    visibility_evidence: BabylonianPlanetaryVisibilityEvidence | None = None
 
     def __post_init__(self) -> None:
         if self.body not in {Body.MERCURY, Body.VENUS}:
@@ -716,277 +764,172 @@ BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA: tuple[BabylonianHistoricalPhenomenon, ...
 )
 
 
+_DE_JONG_FOERTMEYER_2010_SOURCE = (
+    "de Jong & Foertmeyer 2010 Table 1 (Long Chronology)"
+)
+_DE_JONG_FOERTMEYER_2010_URL = (
+    "https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf"
+)
+
+
+def _de_jong_foertmeyer_venus_reference(
+    *,
+    reference_id: str,
+    event_kind: HeliacalEventKind,
+    source_day: BabylonianCivilDay,
+    row_label: str,
+    extinction_coefficient: float,
+    refracted_elevation_deg: float,
+    geometric_arcus_visionis_deg: float,
+    nominal_date_delta_days: int,
+    source_fit_bracketed: bool = False,
+) -> BabylonianPlanetaryReference:
+    """Build one source-faithful Table 1 row without claiming solver admission."""
+
+    return BabylonianPlanetaryReference(
+        id=reference_id,
+        body=Body.VENUS,
+        event_kind=event_kind,
+        latitude_deg=BABYLON_LATITUDE_DEG,
+        longitude_deg=BABYLON_LONGITUDE_DEG,
+        observation_class=BabylonianObservationClass.OBSERVED,
+        admission_strength=BabylonianAdmissionStrength.HOLDOUT,
+        validation_status=BabylonianValidationStatus.CANDIDATE,
+        holdout_reason=BabylonianHoldoutReason.VISIBILITY_DOCTRINE_NOT_IMPLEMENTED,
+        source_window=BabylonianCivilWindow(
+            start=source_day,
+            end=source_day,
+            authority=BabylonianChronologyAuthority.DE_JONG_FOERTMEYER_2010,
+            note=f"Long Chronology Table 1 row, {row_label}.",
+        ),
+        admitted_window=None,
+        source=_DE_JONG_FOERTMEYER_2010_SOURCE,
+        source_url=_DE_JONG_FOERTMEYER_2010_URL,
+        note=(
+            "Physical-visibility source row retained as a candidate until Moira "
+            "implements and validates the source's Tousey-Koomen point-source doctrine."
+        ),
+        visibility_evidence=BabylonianPlanetaryVisibilityEvidence(
+            extinction_coefficient_mag_per_airmass=extinction_coefficient,
+            refracted_elevation_deg=refracted_elevation_deg,
+            geometric_arcus_visionis_deg=geometric_arcus_visionis_deg,
+            nominal_date_delta_days=nominal_date_delta_days,
+            source_fit_bracketed=source_fit_bracketed,
+        ),
+    )
+
+
 BABYLONIAN_VENUS_REFERENCES: tuple[BabylonianPlanetaryReference, ...] = (
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y1_el_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y1_el_long",
         event_kind=HeliacalEventKind.ACRONYCHAL_SETTING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.WEAK,
-        validation_status=BabylonianValidationStatus.ADMITTED,
-        holdout_reason=None,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1700, 3, 23),
-            end=BabylonianCivilDay(-1700, 3, 23),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 1 EL, Julian date 23-Mar -1700.",
-        ),
-        admitted_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1700, 3, 22),
-            end=BabylonianCivilDay(-1700, 3, 28),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Weak admitted Venus window, sized to the source and current solver agreement.",
-        ),
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable Ammisaduqa Year 1 evening last row with solver agreement inside 5 days.",
+        source_day=BabylonianCivilDay(-1700, 3, 23),
+        row_label="Year 1 EL, Julian date 23-Mar -1700",
+        extinction_coefficient=0.25,
+        refracted_elevation_deg=5.0,
+        geometric_arcus_visionis_deg=7.3,
+        nominal_date_delta_days=0,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y1_mf_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y1_mf_long",
         event_kind=HeliacalEventKind.HELIACAL_RISING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.WEAK,
-        validation_status=BabylonianValidationStatus.ADMITTED,
-        holdout_reason=None,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1700, 3, 28),
-            end=BabylonianCivilDay(-1700, 3, 28),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 1 MF, Julian date 28-Mar -1700.",
-        ),
-        admitted_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1700, 3, 25),
-            end=BabylonianCivilDay(-1700, 4, 2),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Weak admitted Venus window, sized to the source and current solver agreement.",
-        ),
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable Ammisaduqa Year 1 morning first row with solver agreement inside 5 days.",
+        source_day=BabylonianCivilDay(-1700, 3, 28),
+        row_label="Year 1 MF, Julian date 28-Mar -1700",
+        extinction_coefficient=0.19,
+        refracted_elevation_deg=3.6,
+        geometric_arcus_visionis_deg=5.9,
+        nominal_date_delta_days=-1,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y2_ml_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y2_ml_long",
         event_kind=HeliacalEventKind.HELIACAL_SETTING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.WEAK,
-        validation_status=BabylonianValidationStatus.ADMITTED,
-        holdout_reason=None,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1700, 12, 12),
-            end=BabylonianCivilDay(-1700, 12, 12),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 2 ML, Julian date 12-Dec -1700.",
-        ),
-        admitted_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1700, 12, 8),
-            end=BabylonianCivilDay(-1700, 12, 17),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Weak admitted Venus window, sized to the source and current solver agreement.",
-        ),
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable Ammisaduqa Year 2 morning last row with solver agreement inside 5 days.",
+        source_day=BabylonianCivilDay(-1700, 12, 12),
+        row_label="Year 2 ML, Julian date 12-Dec -1700",
+        extinction_coefficient=0.31,
+        refracted_elevation_deg=4.1,
+        geometric_arcus_visionis_deg=7.7,
+        nominal_date_delta_days=-4,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y2_ef_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y2_ef_long",
         event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.WEAK,
-        validation_status=BabylonianValidationStatus.ADMITTED,
-        holdout_reason=None,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1699, 2, 17),
-            end=BabylonianCivilDay(-1699, 2, 17),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 2 EF, Julian date 17-Feb -1699.",
-        ),
-        admitted_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1699, 2, 13),
-            end=BabylonianCivilDay(-1699, 2, 20),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Weak admitted Venus window, sized to the source and current solver agreement.",
-        ),
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable Ammisaduqa Year 2 evening first row with solver agreement inside 5 days.",
+        source_day=BabylonianCivilDay(-1699, 2, 17),
+        row_label="Year 2 EF, Julian date 17-Feb -1699",
+        extinction_coefficient=0.29,
+        refracted_elevation_deg=3.6,
+        geometric_arcus_visionis_deg=7.4,
+        nominal_date_delta_days=2,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y3_el_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y3_el_long",
         event_kind=HeliacalEventKind.ACRONYCHAL_SETTING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.HOLDOUT,
-        validation_status=BabylonianValidationStatus.CANDIDATE,
-        holdout_reason=BabylonianHoldoutReason.SOURCE_SOLVER_MISMATCH,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1699, 10, 13),
-            end=BabylonianCivilDay(-1699, 10, 13),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 3 EL, Julian date 13-Oct -1699.",
-        ),
-        admitted_window=None,
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable source row, but current solver lands more than 8 days late, so it remains a holdout.",
+        source_day=BabylonianCivilDay(-1699, 10, 13),
+        row_label="Year 3 EL, Julian date 13-Oct -1699",
+        extinction_coefficient=0.52,
+        refracted_elevation_deg=5.6,
+        geometric_arcus_visionis_deg=9.6,
+        nominal_date_delta_days=-6,
+        source_fit_bracketed=True,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y3_mf_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y3_mf_long",
         event_kind=HeliacalEventKind.HELIACAL_RISING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.WEAK,
-        validation_status=BabylonianValidationStatus.ADMITTED,
-        holdout_reason=None,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1699, 11, 4),
-            end=BabylonianCivilDay(-1699, 11, 4),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 3 MF, Julian date 4-Nov -1699.",
-        ),
-        admitted_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1699, 11, 1),
-            end=BabylonianCivilDay(-1699, 11, 9),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Weak admitted Venus window, sized to the source and current solver agreement.",
-        ),
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable Ammisaduqa Year 3 morning first row with solver agreement inside 5 days.",
+        source_day=BabylonianCivilDay(-1699, 11, 4),
+        row_label="Year 3 MF, Julian date 4-Nov -1699",
+        extinction_coefficient=0.13,
+        refracted_elevation_deg=3.8,
+        geometric_arcus_visionis_deg=4.4,
+        nominal_date_delta_days=-2,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y4_ml_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y4_ml_long",
         event_kind=HeliacalEventKind.HELIACAL_SETTING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.WEAK,
-        validation_status=BabylonianValidationStatus.ADMITTED,
-        holdout_reason=None,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1698, 7, 15),
-            end=BabylonianCivilDay(-1698, 7, 15),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 4 ML, Julian date 15-Jul -1698.",
-        ),
-        admitted_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1698, 7, 12),
-            end=BabylonianCivilDay(-1698, 7, 20),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Weak admitted Venus window, sized to the source and current solver agreement.",
-        ),
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable Ammisaduqa Year 4 morning last row with solver agreement inside 5 days.",
+        source_day=BabylonianCivilDay(-1698, 7, 15),
+        row_label="Year 4 ML, Julian date 15-Jul -1698",
+        extinction_coefficient=0.29,
+        refracted_elevation_deg=3.1,
+        geometric_arcus_visionis_deg=7.3,
+        nominal_date_delta_days=-4,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y4_ef_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y4_ef_long",
         event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.HOLDOUT,
-        validation_status=BabylonianValidationStatus.CANDIDATE,
-        holdout_reason=BabylonianHoldoutReason.SOURCE_SOLVER_MISMATCH,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1698, 9, 13),
-            end=BabylonianCivilDay(-1698, 9, 13),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 4 EF, Julian date 13-Sep -1698.",
-        ),
-        admitted_window=None,
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable source row, but current solver lands more than 12 days late, so it remains a holdout.",
+        source_day=BabylonianCivilDay(-1698, 9, 13),
+        row_label="Year 4 EF, Julian date 13-Sep -1698",
+        extinction_coefficient=0.18,
+        refracted_elevation_deg=3.0,
+        geometric_arcus_visionis_deg=5.3,
+        nominal_date_delta_days=-11,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y10_ml_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y10_ml_long",
         event_kind=HeliacalEventKind.HELIACAL_SETTING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.HOLDOUT,
-        validation_status=BabylonianValidationStatus.CANDIDATE,
-        holdout_reason=BabylonianHoldoutReason.SOURCE_SOLVER_MISMATCH,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1692, 12, 12),
-            end=BabylonianCivilDay(-1692, 12, 12),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 10 ML, Julian date 12-Dec -1692.",
-        ),
-        admitted_window=None,
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable source row, but the current generalized solver does not return a corresponding event in the tested window.",
+        source_day=BabylonianCivilDay(-1692, 12, 12),
+        row_label="Year 10 ML, Julian date 12-Dec -1692",
+        extinction_coefficient=0.28,
+        refracted_elevation_deg=2.8,
+        geometric_arcus_visionis_deg=7.1,
+        nominal_date_delta_days=-2,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y10_ef_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y10_ef_long",
         event_kind=HeliacalEventKind.ACRONYCHAL_RISING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.WEAK,
-        validation_status=BabylonianValidationStatus.ADMITTED,
-        holdout_reason=None,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1691, 2, 15),
-            end=BabylonianCivilDay(-1691, 2, 15),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 10 EF, Julian date 15-Feb -1691.",
-        ),
-        admitted_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1691, 2, 11),
-            end=BabylonianCivilDay(-1691, 2, 19),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Weak admitted Venus window, sized to the source and current solver agreement.",
-        ),
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable Ammisaduqa Year 10 evening first row with solver agreement inside 5 days.",
+        source_day=BabylonianCivilDay(-1691, 2, 15),
+        row_label="Year 10 EF, Julian date 15-Feb -1691",
+        extinction_coefficient=0.29,
+        refracted_elevation_deg=3.7,
+        geometric_arcus_visionis_deg=7.4,
+        nominal_date_delta_days=3,
     ),
-    BabylonianPlanetaryReference(
-        id="venus_ammisaduqa_y14_mf_long",
-        body=Body.VENUS,
+    _de_jong_foertmeyer_venus_reference(
+        reference_id="venus_ammisaduqa_y14_mf_long",
         event_kind=HeliacalEventKind.HELIACAL_RISING,
-        latitude_deg=BABYLON_LATITUDE_DEG,
-        longitude_deg=BABYLON_LONGITUDE_DEG,
-        observation_class=BabylonianObservationClass.OBSERVED,
-        admission_strength=BabylonianAdmissionStrength.WEAK,
-        validation_status=BabylonianValidationStatus.ADMITTED,
-        holdout_reason=None,
-        source_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1687, 1, 13),
-            end=BabylonianCivilDay(-1687, 1, 13),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Long Chronology Table 1 row, Year 14 MF, Julian date 13-Jan -1687.",
-        ),
-        admitted_window=BabylonianCivilWindow(
-            start=BabylonianCivilDay(-1687, 1, 10),
-            end=BabylonianCivilDay(-1687, 1, 18),
-            authority=BabylonianChronologyAuthority.DE_JONG_2021,
-            note="Weak admitted Venus window, sized to the source and current solver agreement.",
-        ),
-        source="de Jong & Foertmeyer 2010 Table 1 (Long Chronology)",
-        source_url="https://www.exorientelux.nl/download/JEOL/JEOL42_De_Jong_Foertmeyer.pdf",
-        note="Reliable Ammisaduqa Year 14 morning first row with solver agreement inside 5 days.",
+        source_day=BabylonianCivilDay(-1687, 1, 13),
+        row_label="Year 14 MF, Julian date 13-Jan -1687",
+        extinction_coefficient=0.23,
+        refracted_elevation_deg=4.6,
+        geometric_arcus_visionis_deg=6.7,
+        nominal_date_delta_days=0,
     ),
 )
 

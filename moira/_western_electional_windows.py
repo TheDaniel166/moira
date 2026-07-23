@@ -53,11 +53,13 @@ _MAX_TOLERANCE_SECONDS = 3600.0
 
 
 class WesternElectionalWindowScanMode(str, Enum):
+    """Vessel: Registry of western electional window scan mode values."""
     SAMPLED = "sampled"
     PARTIALLY_EVENT_REFINED = "partially_event_refined"
 
 
 class WesternElectionalBoundaryResolution(str, Enum):
+    """Vessel: Registry of western electional boundary resolution values."""
     REQUEST_BOUND = "request_bound"
     SAMPLED_BRACKET = "sampled_bracket"
     ADAPTIVELY_REFINED_BRACKET = "adaptively_refined_bracket"
@@ -65,6 +67,7 @@ class WesternElectionalBoundaryResolution(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalJudgementWindowPolicy:
+    """Vessel: Structured western electional judgement window policy data."""
     profile_id: str = "western_electional_judgement_windows_v1"
     profile_version: str = "1.0.0"
     mode: WesternElectionalWindowScanMode = WesternElectionalWindowScanMode.SAMPLED
@@ -140,6 +143,7 @@ WESTERN_ELECTIONAL_JUDGEMENT_WINDOWS_V1 = WesternElectionalJudgementWindowPolicy
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalJudgementSignature:
+    """Vessel: Structured western electional judgement signature data."""
     judgement_state: str
     moon_status: str
     matter_status: str
@@ -159,6 +163,7 @@ class WesternElectionalJudgementSignature:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalTransitionCause:
+    """Vessel: Structured western electional transition cause data."""
     cause_id: str
     before_value: str
     after_value: str
@@ -173,6 +178,7 @@ class WesternElectionalTransitionCause:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalCandidateEvent:
+    """Vessel: Structured western electional candidate event data."""
     event_id: str
     jd_ut: float
     source_component: str
@@ -190,6 +196,7 @@ class WesternElectionalCandidateEvent:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalWindowBoundary:
+    """Vessel: Structured western electional window boundary data."""
     resolution: WesternElectionalBoundaryResolution
     estimate_jd_ut: float
     bracket_start_jd_ut: float
@@ -227,6 +234,7 @@ class WesternElectionalWindowBoundary:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalJudgementWindow:
+    """Vessel: Structured western electional judgement window data."""
     window_index: int
     exactness: WesternElectionalWindowScanMode
     jd_start_estimate: float
@@ -258,6 +266,7 @@ class WesternElectionalJudgementWindow:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalJudgementWindowScan:
+    """Vessel: Structured western electional judgement window scan data."""
     jd_start: float
     jd_end: float
     latitude: float

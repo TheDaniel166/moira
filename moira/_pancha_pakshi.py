@@ -159,6 +159,7 @@ _PUBLIC_ADMISSION_STATUSES = frozenset(
 
 @dataclass(frozen=True, slots=True)
 class _VowelRule:
+    """Vessel: Structured vowel rule data."""
     symbols: tuple[str, ...]
     bird: PanchaPakshiBird
     source_locator_ids: tuple[str, ...]
@@ -166,6 +167,7 @@ class _VowelRule:
 
 @dataclass(frozen=True, slots=True)
 class _TemporalModel:
+    """Vessel: Structured temporal model data."""
     model_kind: str
     day_span_nazhigai: Fraction
     night_span_nazhigai: Fraction
@@ -176,6 +178,7 @@ class _TemporalModel:
 
 @dataclass(frozen=True, slots=True)
 class _DurationRule:
+    """Vessel: Structured duration rule data."""
     activity: PanchaPakshiActivity
     duration_nazhigai: Fraction
     source_locator_ids: tuple[str, ...]
@@ -183,6 +186,7 @@ class _DurationRule:
 
 @dataclass(frozen=True, slots=True)
 class _RelationshipRule:
+    """Vessel: Structured relationship rule data."""
     subject: PanchaPakshiBird
     target: PanchaPakshiBird
     relation: PanchaPakshiRelation
@@ -191,6 +195,7 @@ class _RelationshipRule:
 
 @dataclass(frozen=True, slots=True)
 class _LunarPakshaMappingRule:
+    """Vessel: Structured lunar paksha mapping rule data."""
     lunar_phase_half: str
     astronomical_paksha: PanchaPakshiAstronomicalPaksha
     profile_paksha: PanchaPakshiPaksha
@@ -199,6 +204,7 @@ class _LunarPakshaMappingRule:
 
 @dataclass(frozen=True, slots=True)
 class _NakshatraBirdRule:
+    """Vessel: Structured nakshatra bird rule data."""
     profile_paksha: PanchaPakshiPaksha
     nakshatra_index: int
     nakshatra: str
@@ -208,6 +214,7 @@ class _NakshatraBirdRule:
 
 @dataclass(frozen=True, slots=True)
 class _PaduBirdRule:
+    """Vessel: Structured padu bird rule data."""
     profile_paksha: PanchaPakshiPaksha
     weekday: PanchaPakshiWeekday
     bird: PanchaPakshiBird
@@ -216,6 +223,7 @@ class _PaduBirdRule:
 
 @dataclass(frozen=True, slots=True)
 class _ScheduleGenerator:
+    """Vessel: Structured schedule generator data."""
     generator_id: str
     paksha: PanchaPakshiPaksha
     half: PanchaPakshiHalf
@@ -256,6 +264,7 @@ class _ScheduleGenerator:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiProfile:
+    """Vessel: Structured pancha pakshi profile data."""
     profile_id: str
     admission_status: PanchaPakshiAdmissionStatus
     product_kind: str
@@ -465,6 +474,7 @@ class PanchaPakshiPaduBirdProfile:
 
 @dataclass(frozen=True, slots=True)
 class _SookshmaSelectorRule:
+    """Vessel: Structured sookshma selector rule data."""
     policy_id: PanchaPakshiSookshmaSelectorPolicyId
     source_layer: str
     partition_kind: str

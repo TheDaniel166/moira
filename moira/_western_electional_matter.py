@@ -174,6 +174,7 @@ _PHASE_BOUNDARY_TOLERANCE_DEG = 1e-9
 
 
 class DorotheusMatterProfileId(str, Enum):
+    """Vessel: Registry of dorotheus matter profile id values."""
     DEMOLITION = "dorotheus_demolition_v1"
     LEASING = "dorotheus_leasing_v1"
     BUYING_AND_SELLING = "dorotheus_buying_and_selling_v1"
@@ -203,12 +204,14 @@ _SIGN_NATURE_PROFILES = frozenset(
 
 
 class DorotheusMatterClauseRole(str, Enum):
+    """Vessel: Registry of dorotheus matter clause role values."""
     FORTIFIER = "fortifier"
     GATE = "gate"
     WITNESS = "witness"
 
 
 class DorotheusMatterClauseState(str, Enum):
+    """Vessel: Registry of dorotheus matter clause state values."""
     SATISFIED = "satisfied"
     CLEAR = "clear"
     TRIGGERED = "triggered"
@@ -217,6 +220,7 @@ class DorotheusMatterClauseState(str, Enum):
 
 
 class DorotheusMatterProfileStatus(str, Enum):
+    """Vessel: Registry of dorotheus matter profile status values."""
     CLEAR = "clear_of_explicit_profile_impediments"
     TRIGGERED = "one_or_more_explicit_profile_impediments"
     DESCRIPTIVE = "descriptive_witnesses_only"
@@ -225,6 +229,7 @@ class DorotheusMatterProfileStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class DorotheusAngularPlaceWitness:
+    """Vessel: Structured dorotheus angular place witness data."""
     whole_sign_place: int
     topic: str
     sign: str
@@ -243,6 +248,7 @@ class DorotheusAngularPlaceWitness:
 
 @dataclass(frozen=True, slots=True)
 class DorotheusMatterClauseWitness:
+    """Vessel: Structured dorotheus matter clause witness data."""
     clause_id: str
     source_order: int
     role: DorotheusMatterClauseRole
@@ -269,6 +275,7 @@ class DorotheusMatterClauseWitness:
 
 @dataclass(frozen=True, slots=True)
 class DorotheusMatterProfilePolicy:
+    """Vessel: Structured dorotheus matter profile policy data."""
     profile_id: DorotheusMatterProfileId
     profile_version: str = "1.0.0"
     angular_place_policy: str = "whole_sign_places_from_tropical_ascendant"
@@ -464,6 +471,7 @@ _EPHEMERAL_ONLY_PROFILES = frozenset(
 
 @dataclass(frozen=True, slots=True)
 class DorotheusMatterProfileEvaluation:
+    """Vessel: Structured dorotheus matter profile evaluation data."""
     jd_ut: float
     profile_id: DorotheusMatterProfileId
     profile_version: str

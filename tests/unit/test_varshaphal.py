@@ -387,8 +387,8 @@ def test_tajika_yogas_distinguish_ithasala_from_isarpha() -> None:
     aspects = tajika_aspects(
         {
             "Sun": 10.0,
-            "Moon": 130.0,
-            "Mars": 100.0,
+            "Moon": 131.0,
+            "Mars": 101.0,
             "Mercury": 70.0,
             "Jupiter": 250.0,
             "Venus": 190.0,
@@ -416,6 +416,27 @@ def test_tajika_yogas_distinguish_ithasala_from_isarpha() -> None:
 
     assert isarpha.favorable is False
     assert ithasala.favorable is True
+
+
+def test_tajika_yogas_do_not_invent_direction_at_exact_contact() -> None:
+    aspects = tajika_aspects(
+        {
+            "Sun": 10.0,
+            "Moon": 130.0,
+        },
+        planet_speeds={
+            "Sun": 1.0,
+            "Moon": 13.0,
+        },
+    )
+
+    assert len(aspects) == 1
+    assert aspects[0].aspect.orb == pytest.approx(0.0)
+    assert aspects[0].aspect.applying is None
+    assert not any(
+        yoga.name in {"Ithasala", "Isarpha"}
+        for yoga in tajika_yogas(aspects)
+    )
 
 
 def test_tajika_yogas_detect_nakta_with_moon_bridge() -> None:
@@ -457,7 +478,7 @@ def test_tajika_yogas_detect_yamaya_with_slow_intermediary() -> None:
             "Moon": 20.0,
             "Mars": 250.0,
             "Mercury": 0.0,
-            "Jupiter": 90.0,
+            "Jupiter": 91.0,
             "Venus": 20.0,
             "Saturn": 300.0,
         },
@@ -486,7 +507,7 @@ def test_tajika_yogas_detect_kamboola_when_moon_joins_ithasala() -> None:
     planets = {
         "Sun": 0.0,
         "Moon": 0.0,
-        "Mars": 60.0,
+        "Mars": 61.0,
         "Mercury": 200.0,
         "Jupiter": 260.0,
         "Venus": 320.0,
@@ -555,7 +576,7 @@ def test_tajika_yogas_detect_manahoo_when_malefic_blocks_faster_planet() -> None
         "Moon": 220.0,
         "Mars": 40.0,
         "Mercury": 150.0,
-        "Jupiter": 60.0,
+        "Jupiter": 61.0,
         "Venus": 300.0,
         "Saturn": 0.0,
     }
@@ -650,7 +671,7 @@ def test_tajika_yogas_detect_duttota_with_explicit_role_context() -> None:
         "Moon": 20.0,
         "Mars": 120.0,
         "Mercury": 90.0,
-        "Jupiter": 240.0,
+        "Jupiter": 241.0,
         "Venus": 120.0,
         "Saturn": 40.0,
     }

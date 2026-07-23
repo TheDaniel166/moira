@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, slots=True)
 class GlobeVertex:
+    """Vessel: Structured globe vertex data."""
     index: int
     xyz: tuple[float, float, float]
     latitude_deg: float
@@ -16,11 +17,13 @@ class GlobeVertex:
 
 @dataclass(frozen=True, slots=True)
 class GlobeTriangle:
+    """Vessel: Structured globe triangle data."""
     vertices: tuple[int, int, int]
 
 
 @dataclass(frozen=True, slots=True)
 class GlobeMesh:
+    """Vessel: Structured globe mesh data."""
     vertices: tuple[GlobeVertex, ...]
     triangles: tuple[GlobeTriangle, ...]
     depth: int
@@ -28,6 +31,7 @@ class GlobeMesh:
 
 @dataclass(frozen=True, slots=True)
 class GlobeContourComponent:
+    """Vessel: Structured globe contour component data."""
     points: tuple[tuple[float, float], ...]
     closed: bool
 

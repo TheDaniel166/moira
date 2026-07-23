@@ -66,6 +66,7 @@ def _finite(name: str, value: float) -> float:
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseCentralLineLimit:
+    """Vessel: Structured solar eclipse central line limit data."""
     kind: str
     epoch: EclipseEpoch
     latitude_deg: float
@@ -81,12 +82,14 @@ class SolarEclipseCentralLineLimit:
 
 
 class SolarEclipseConjunctionKind(str, Enum):
+    """Vessel: Registry of solar eclipse conjunction kind values."""
     EQUATORIAL = "equatorial"
     ECLIPTIC = "ecliptic"
 
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseConjunction:
+    """Vessel: Structured solar eclipse conjunction data."""
     kind: SolarEclipseConjunctionKind
     epoch: EclipseEpoch
 
@@ -99,6 +102,7 @@ class SolarEclipseConjunction:
 
 
 class SolarEclipseUmbralContactKind(str, Enum):
+    """Vessel: Registry of solar eclipse umbral contact kind values."""
     U1 = "u1"
     U2 = "u2"
     U3 = "u3"
@@ -107,6 +111,7 @@ class SolarEclipseUmbralContactKind(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseUmbralContact:
+    """Vessel: Structured solar eclipse umbral contact data."""
     kind: SolarEclipseUmbralContactKind
     epoch: EclipseEpoch
     latitude_deg: float
@@ -126,6 +131,7 @@ class SolarEclipseUmbralContact:
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseUmbralContacts:
+    """Vessel: Structured solar eclipse umbral contacts data."""
     u1: SolarEclipseUmbralContact
     u2: SolarEclipseUmbralContact
     u3: SolarEclipseUmbralContact
@@ -143,6 +149,7 @@ class SolarEclipseUmbralContacts:
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseGreatestSite:
+    """Vessel: Structured solar eclipse greatest site data."""
     epoch: EclipseEpoch
     latitude_deg: float
     longitude_deg: float
@@ -192,6 +199,7 @@ class SolarEclipseGreatestSite:
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseGlobalCircumstances:
+    """Vessel: Structured solar eclipse global circumstances data."""
     event: "EclipseEvent"
     greatest: SolarEclipseGreatestSite
     greatest_duration: SolarEclipseGreatestSite | None

@@ -5,8 +5,10 @@ import pytest
 from moira.babylonian import (
     BABYLONIAN_MERCURY_REFERENCES,
     BABYLONIAN_VENUS_AMMISADUQA_PHENOMENA,
+    BABYLONIAN_VENUS_REFERENCES,
     BabylonianAdmissionStrength,
     BabylonianCalendarDate,
+    BabylonianChronologyAuthority,
     BabylonianHoldoutReason,
     BabylonianObservationClass,
     BabylonianSourceQuality,
@@ -20,6 +22,7 @@ from moira.babylonian import (
     babylonian_venus_ammisaduqa_phenomena,
     holdout_babylonian_mercury_references,
     holdout_babylonian_venus_references,
+    julian_calendar_day_from_jd,
     julian_calendar_day_to_jd,
 )
 from moira.heliacal import HeliacalEventKind
@@ -28,7 +31,7 @@ from moira.julian import calendar_datetime_from_jd
 
 def test_julian_calendar_day_to_jd_round_trips_historical_source_dates() -> None:
     jd = julian_calendar_day_to_jd(-388, 10, 30, 0.0)
-    calendar = calendar_datetime_from_jd(jd)
+    calendar = julian_calendar_day_from_jd(jd)
 
     assert (calendar.year, calendar.month, calendar.day) == (-388, 10, 30)
 
@@ -171,22 +174,49 @@ def test_venus_ammisaduqa_source_rows_preserve_year_month_day_labels() -> None:
     assert (rows["venus_ammisaduqa_y14_mf"].source_year, rows["venus_ammisaduqa_y14_mf"].babylonian_month, rows["venus_ammisaduqa_y14_mf"].babylonian_day) == (14, "VIII", "7")
 
 
-def test_admitted_babylonian_venus_registry_exposes_solver_supported_rows() -> None:
-    assert {reference.id for reference in admitted_babylonian_venus_references()} == {
-        "venus_ammisaduqa_y1_el_long",
-        "venus_ammisaduqa_y1_mf_long",
-        "venus_ammisaduqa_y2_ml_long",
-        "venus_ammisaduqa_y2_ef_long",
-        "venus_ammisaduqa_y3_mf_long",
-        "venus_ammisaduqa_y4_ml_long",
-        "venus_ammisaduqa_y10_ef_long",
-        "venus_ammisaduqa_y14_mf_long",
-    }
+def test_babylonian_venus_registry_does_not_claim_legacy_solver_admission() -> None:
+    assert admitted_babylonian_venus_references() == ()
 
 
-def test_holdout_babylonian_venus_registry_exposes_unproven_rows() -> None:
-    assert {reference.id for reference in holdout_babylonian_venus_references()} == {
-        "venus_ammisaduqa_y3_el_long",
-        "venus_ammisaduqa_y4_ef_long",
-        "venus_ammisaduqa_y10_ml_long",
+def test_babylonian_venus_registry_preserves_physical_model_rows_as_candidates() -> None:
+    assert holdout_babylonian_venus_references() == BABYLONIAN_VENUS_REFERENCES
+    assert all(
+        reference.holdout_reason
+        is BabylonianHoldoutReason.VISIBILITY_DOCTRINE_NOT_IMPLEMENTED
+        for reference in BABYLONIAN_VENUS_REFERENCES
+    )
+    assert all(
+        reference.source_window.authority
+        is BabylonianChronologyAuthority.DE_JONG_FOERTMEYER_2010
+        for reference in BABYLONIAN_VENUS_REFERENCES
+    )
+
+
+def test_babylonian_venus_registry_transcribes_de_jong_foertmeyer_table_1_evidence() -> None:
+    expected = {
+        "venus_ammisaduqa_y1_el_long": (0.25, 5.0, 7.3, 0, False),
+        "venus_ammisaduqa_y1_mf_long": (0.19, 3.6, 5.9, -1, False),
+        "venus_ammisaduqa_y2_ml_long": (0.31, 4.1, 7.7, -4, False),
+        "venus_ammisaduqa_y2_ef_long": (0.29, 3.6, 7.4, 2, False),
+        "venus_ammisaduqa_y3_el_long": (0.52, 5.6, 9.6, -6, True),
+        "venus_ammisaduqa_y3_mf_long": (0.13, 3.8, 4.4, -2, False),
+        "venus_ammisaduqa_y4_ml_long": (0.29, 3.1, 7.3, -4, False),
+        "venus_ammisaduqa_y4_ef_long": (0.18, 3.0, 5.3, -11, False),
+        "venus_ammisaduqa_y10_ml_long": (0.28, 2.8, 7.1, -2, False),
+        "venus_ammisaduqa_y10_ef_long": (0.29, 3.7, 7.4, 3, False),
+        "venus_ammisaduqa_y14_mf_long": (0.23, 4.6, 6.7, 0, False),
     }
+
+    actual = {}
+    for reference in BABYLONIAN_VENUS_REFERENCES:
+        evidence = reference.visibility_evidence
+        assert evidence is not None
+        actual[reference.id] = (
+            evidence.extinction_coefficient_mag_per_airmass,
+            evidence.refracted_elevation_deg,
+            evidence.geometric_arcus_visionis_deg,
+            evidence.nominal_date_delta_days,
+            evidence.source_fit_bracketed,
+        )
+
+    assert actual == expected

@@ -20,7 +20,7 @@ _JD_J2000 = 2451545.0
 _LAT_77 = 77.0
 _OB_J2000 = true_obliquity(ut_to_tt(_JD_J2000))
 _ARMC_VALID = 90.0
-_LON_VALID = 260.0
+_LON_VALID = -100.0
 
 
 def test_search_experimental_topocentric_finds_unique_ordered_solution_at_77n_armc_90() -> None:

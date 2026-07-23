@@ -6,10 +6,18 @@ import pytest
 
 import moira.phase as phase
 from moira.constants import Body
-from moira.julian import julian_day
+from moira.julian import _TIDAL_NDOT_DE441, julian_day
+from moira.spk_reader import _EphemerisKernelIdentity
 
 
 class _ZeroSunReader:
+    _kernel_identity = _EphemerisKernelIdentity(
+        "DE-0441LE-0441",
+        "DE441",
+        "LE441",
+        _TIDAL_NDOT_DE441,
+    )
+
     def position(self, center: int, target: int, jd: float):
         assert (center, target) == (0, 10)
         return (0.0, 0.0, 0.0)

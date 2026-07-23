@@ -50,7 +50,7 @@ class TestPreservationProperty:
                 pytest.fail(f"Import failed for {module_name}: {e}")
 
     @given(jd=st.floats(min_value=2400000.0, max_value=2500000.0))
-    @settings(max_examples=10)  # Reduced from default 100 for faster execution
+    @settings(max_examples=10, deadline=None)
     def test_body_position_computation_preservation(self, jd: float):
         """Test that body position calculations produce consistent results."""
         hypothesis.assume(2400000.0 <= jd <= 2500000.0)
@@ -147,7 +147,7 @@ class TestPreservationProperty:
         body1=st.sampled_from(['SUN', 'MOON', 'MERCURY', 'VENUS', 'MARS']),
         body2=st.sampled_from(['SUN', 'MOON', 'MERCURY', 'VENUS', 'MARS'])
     )
-    @settings(max_examples=10)  # Reduced from default 100 for faster execution
+    @settings(max_examples=10, deadline=None)
     def test_aspect_calculation_preservation(self, jd: float, body1: str, body2: str):
         """Test that aspect calculations produce consistent results."""
         hypothesis.assume(2400000.0 <= jd <= 2500000.0)

@@ -104,6 +104,7 @@ class PanchaPakshiCapability(str, Enum):
 
 
 class PanchaPakshiBird(str, Enum):
+    """Vessel: Registry of Pancha Pakshi bird values."""
     VULTURE = "vulture"
     OWL = "owl"
     CROW = "crow"
@@ -112,6 +113,7 @@ class PanchaPakshiBird(str, Enum):
 
 
 class PanchaPakshiActivity(str, Enum):
+    """Vessel: Registry of Pancha Pakshi activity values."""
     EAT = "eat"
     WALK = "walk"
     RULE = "rule"
@@ -152,11 +154,13 @@ class PanchaPakshiAstronomicalPaksha(str, Enum):
 
 
 class PanchaPakshiHalf(str, Enum):
+    """Vessel: Registry of Pancha Pakshi half values."""
     DAY = "day"
     NIGHT = "night"
 
 
 class PanchaPakshiWeekday(str, Enum):
+    """Vessel: Registry of Pancha Pakshi weekday values."""
     SUNDAY = "sunday"
     MONDAY = "monday"
     TUESDAY = "tuesday"
@@ -167,6 +171,7 @@ class PanchaPakshiWeekday(str, Enum):
 
 
 class PanchaPakshiRelation(str, Enum):
+    """Vessel: Registry of Pancha Pakshi relation values."""
     FRIEND = "friend"
     ENEMY = "enemy"
 
@@ -196,6 +201,7 @@ class PanchaPakshiCurrentCellSelectionStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiSourceLocator:
+    """Vessel: Structured Pancha Pakshi source locator data."""
     locator_id: str
     witness_id: str
     label: str
@@ -205,6 +211,7 @@ class PanchaPakshiSourceLocator:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiSource:
+    """Vessel: Structured Pancha Pakshi source data."""
     witness_id: str
     title: str
     traditional_attribution: str
@@ -232,6 +239,7 @@ class PanchaPakshiSource:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiProfileDescriptor:
+    """Vessel: Structured Pancha Pakshi profile descriptor data."""
     profile_id: str
     admission_status: PanchaPakshiAdmissionStatus
     product_kind: str
@@ -242,6 +250,7 @@ class PanchaPakshiProfileDescriptor:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiOmission:
+    """Vessel: Structured Pancha Pakshi omission data."""
     feature: str
     status: str
     reason: str
@@ -249,6 +258,7 @@ class PanchaPakshiOmission:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiConflictWitness:
+    """Vessel: Structured Pancha Pakshi conflict witness data."""
     witness_id: str
     bibliographic_label: str
     record_url: str
@@ -1691,6 +1701,7 @@ class PanchaPakshiNatalMoonIdentity:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiInitialVowelIdentity:
+    """Vessel: Structured Pancha Pakshi initial vowel identity data."""
     profile_id: str
     identity_kind: str
     input_symbol: str
@@ -1703,6 +1714,7 @@ class PanchaPakshiInitialVowelIdentity:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiDirectedRelationship:
+    """Vessel: Structured Pancha Pakshi directed relationship data."""
     profile_id: str
     model_kind: str
     subject: PanchaPakshiBird
@@ -1715,6 +1727,7 @@ class PanchaPakshiDirectedRelationship:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiScheduleCell:
+    """Vessel: Structured Pancha Pakshi schedule cell data."""
     samam_index: int
     sequence_index: int
     bird: PanchaPakshiBird
@@ -1729,6 +1742,7 @@ class PanchaPakshiScheduleCell:
 
 @dataclass(frozen=True, slots=True)
 class PanchaPakshiSchedule:
+    """Vessel: Structured Pancha Pakshi schedule data."""
     profile_id: str
     admission_status: PanchaPakshiAdmissionStatus
     product_kind: str

@@ -330,6 +330,33 @@ def test_visibility_checks_surface_target_failures_instead_of_returning_none(
         )
 
 
+def test_visibility_check_uses_geometric_altitude_when_refraction_is_disabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("moira.heliacal._target_apparent_magnitude", lambda *args, **kwargs: -4.0)
+    monkeypatch.setattr("moira.heliacal._arcus_visionis", lambda *args, **kwargs: 6.5)
+    monkeypatch.setattr("moira.heliacal._find_sun_at_alt", lambda *args, **kwargs: 2451545.25)
+    monkeypatch.setattr("moira.heliacal._true_altitude", lambda *args, **kwargs: 1.25)
+    monkeypatch.setattr(
+        "moira.heliacal._target_altitude",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("refracted altitude path must not run")
+        ),
+    )
+
+    result = heliacal_module._check_visibility(
+        Body.VENUS,
+        2451545.0,
+        0.0,
+        0.0,
+        morning=True,
+        model=VisibilityModel(),
+        use_refraction=False,
+    )
+
+    assert result == pytest.approx((2451545.25, 1.25, -6.5, -4.0))
+
+
 def test_target_alt_visibility_checks_surface_target_failures_instead_of_returning_none(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -519,6 +546,56 @@ def test_visibility_assessment_applies_refraction_to_geometric_altitude(
             "temperature_c": 5.0,
             "relative_humidity": 0.75,
         }
+    )
+
+
+def test_visibility_event_uses_the_same_refraction_policy_for_search_and_assessment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_check_visibility(*args, **kwargs):
+        captured["search_use_refraction"] = kwargs["use_refraction"]
+        return 2451545.25, 1.0, -6.5, -4.0
+
+    def fake_visibility_assessment(*args, **kwargs):
+        policy = kwargs["policy"]
+        captured["assessment_policy"] = policy
+        return VisibilityAssessment(
+            body=Body.VENUS,
+            jd_ut=2451545.25,
+            criterion_family=VisibilityCriterionFamily.LIMITING_MAGNITUDE_THRESHOLD,
+            effective_limiting_magnitude=6.5,
+            apparent_magnitude=-4.0,
+            true_altitude_deg=1.0,
+            apparent_altitude_deg=1.0,
+            local_horizon_altitude_deg=0.0,
+            solar_elongation_deg=-15.0,
+            is_geometrically_visible=True,
+            is_bright_enough=True,
+            observable=True,
+        )
+
+    monkeypatch.setattr("moira.heliacal._check_visibility", fake_check_visibility)
+    monkeypatch.setattr("moira.heliacal._signed_elongation", lambda *args, **kwargs: -15.0)
+    monkeypatch.setattr("moira.heliacal.visibility_assessment", fake_visibility_assessment)
+
+    visibility_policy = VisibilityPolicy(use_refraction=False)
+    event = visibility_event(
+        Body.VENUS,
+        HeliacalEventKind.HELIACAL_RISING,
+        2451545.0,
+        0.0,
+        0.0,
+        visibility_policy=visibility_policy,
+        search_policy=VisibilitySearchPolicy(search_window_days=1),
+    )
+
+    assert event is not None
+    assert captured["search_use_refraction"] is False
+    assert captured["assessment_policy"] is visibility_policy
+    assert event.assessment.apparent_altitude_deg == pytest.approx(
+        event.assessment.true_altitude_deg
     )
 
 

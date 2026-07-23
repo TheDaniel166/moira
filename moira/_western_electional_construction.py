@@ -89,17 +89,20 @@ _DIURNAL_SIGNS = frozenset(("Aries", "Leo", "Sagittarius", "Gemini", "Libra", "A
 
 
 class DorotheusAscensionalClass(str, Enum):
+    """Vessel: Registry of dorotheus ascensional class values."""
     STRAIGHT = "straight"
     CROOKED = "crooked"
     NOT_EVALUABLE = "not_evaluable"
 
 
 class DorotheusConstructionClauseRole(str, Enum):
+    """Vessel: Registry of dorotheus construction clause role values."""
     FORTIFIER = "fortifier"
     GATE = "gate"
 
 
 class DorotheusConstructionClauseState(str, Enum):
+    """Vessel: Registry of dorotheus construction clause state values."""
     SATISFIED = "satisfied"
     CLEAR = "clear"
     TRIGGERED = "triggered"
@@ -107,6 +110,7 @@ class DorotheusConstructionClauseState(str, Enum):
 
 
 class DorotheusConstructionStatus(str, Enum):
+    """Vessel: Registry of dorotheus construction status values."""
     CLEAR = "clear_of_profile_impediments"
     TRIGGERED = "one_or_more_profile_impediments"
     INDETERMINATE = "indeterminate"
@@ -114,6 +118,7 @@ class DorotheusConstructionStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class DorotheusSignNatureWitness:
+    """Vessel: Structured dorotheus sign nature witness data."""
     ascendant_longitude: float
     ascendant_sign: str
     geographic_latitude: float
@@ -147,6 +152,7 @@ class DorotheusSignNatureWitness:
 
 @dataclass(frozen=True, slots=True)
 class DorotheusConstructionClauseWitness:
+    """Vessel: Structured dorotheus construction clause witness data."""
     clause_id: str
     source_order: int
     role: DorotheusConstructionClauseRole
@@ -169,6 +175,7 @@ class DorotheusConstructionClauseWitness:
 
 @dataclass(frozen=True, slots=True)
 class DorotheusConstructionPolicy:
+    """Vessel: Structured dorotheus construction policy data."""
     profile_id: str = "dorotheus_construction_v1"
     profile_version: str = "1.1.0"
     ascensional_policy: str = "oblique_ascensional_arc_at_election_latitude"
@@ -196,6 +203,7 @@ DOROTHEUS_CONSTRUCTION_V1 = DorotheusConstructionPolicy()
 
 @dataclass(frozen=True, slots=True)
 class DorotheusConstructionEvaluation:
+    """Vessel: Structured dorotheus construction evaluation data."""
     jd_ut: float
     profile_id: str
     profile_version: str

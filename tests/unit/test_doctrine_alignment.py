@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+from importlib.metadata import version
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -17,7 +18,7 @@ def test_nutation_tables_load_lazily() -> None:
 
 
 def test_runtime_version_matches_project_metadata_fallback() -> None:
-    assert moira.__version__ == "5.1.2"
+    assert moira.__version__ == version("moira-astro")
 
 
 def test_moira_behavior_smoke_chart_houses_aspects_lots_and_transits(monkeypatch) -> None:

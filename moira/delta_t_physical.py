@@ -151,6 +151,7 @@ def _reference_slope() -> float:
 
 @dataclass(frozen=True, slots=True)
 class _SMHPoint:
+    """Vessel: One Stephenson-Morrison-Hohenkerk data point."""
     year: float
     delta_t: float
     error: float
@@ -529,6 +530,7 @@ def _cosine_taper(year: float) -> float:
 
 @dataclass(frozen=True, slots=True)
 class _ResidualSplineFit:
+    """Vessel: Structured residual spline fit data."""
     spline: None
     cv_rms: float
     in_sample_rms: float

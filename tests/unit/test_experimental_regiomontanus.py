@@ -77,7 +77,7 @@ def test_calculate_houses_default_policy_still_falls_back_for_regiomontanus_no_s
     houses = calculate_houses(
         _JD_J2000,
         _LAT_77,
-        300.0,
+        -60.0,
         HouseSystem.REGIOMONTANUS,
     )
 

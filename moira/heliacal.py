@@ -2291,6 +2291,7 @@ def _check_visibility(
     lon: float,
     morning: bool,
     model: VisibilityModel,
+    use_refraction: bool = True,
 ) -> tuple[float, float, float, float] | None:
     """
     Check whether *body* is visible at the arcus-visionis twilight moment on
@@ -2298,6 +2299,9 @@ def _check_visibility(
 
     Returns ``(twilight_jd, planet_alt_deg, sun_alt_deg, magnitude)`` if
     visible, else ``None``.
+
+    ``use_refraction`` governs the altitude used for the horizon test.  It must
+    match the public ``VisibilityPolicy`` used to assess the returned event.
 
     Raises:
         ValueError: Propagated by downstream magnitude/altitude helpers for
@@ -2310,14 +2314,18 @@ def _check_visibility(
     twilight_jd = _find_sun_at_alt(jd_midnight, lat, lon, -av, morning)
     if twilight_jd is None:
         return None
-    planet_alt = _target_altitude(
-        body,
-        twilight_jd,
-        lat,
-        lon,
-        pressure_mbar=model.pressure_mbar,
-        temperature_c=model.temperature_c,
-        relative_humidity=model.relative_humidity,
+    planet_alt = (
+        _target_altitude(
+            body,
+            twilight_jd,
+            lat,
+            lon,
+            pressure_mbar=model.pressure_mbar,
+            temperature_c=model.temperature_c,
+            relative_humidity=model.relative_humidity,
+        )
+        if use_refraction
+        else _true_altitude(body, twilight_jd, lat, lon)
     )
     if planet_alt <= model.horizon_altitude_deg:
         return None
@@ -2376,12 +2384,15 @@ def _check_visibility_with_target_alt(
     morning: bool,
     target_solar_altitude_deg: float,
     model: VisibilityModel,
+    use_refraction: bool = True,
 ) -> tuple[float, float, float, float] | None:
     """
     Evaluate visibility on a day at an explicit solar-altitude threshold.
 
     Returns ``(twilight_jd, target_alt_deg, sun_alt_deg, magnitude)`` when the
     target is above local horizon and bright enough at the threshold moment.
+
+    ``use_refraction`` governs the altitude used for the horizon test.
 
     Side effects: None.
     """
@@ -2390,14 +2401,18 @@ def _check_visibility_with_target_alt(
     twilight_jd = _find_sun_at_alt(jd_midnight, lat, lon, target_solar_altitude_deg, morning)
     if twilight_jd is None:
         return None
-    planet_alt = _target_altitude(
-        body,
-        twilight_jd,
-        lat,
-        lon,
-        pressure_mbar=model.pressure_mbar,
-        temperature_c=model.temperature_c,
-        relative_humidity=model.relative_humidity,
+    planet_alt = (
+        _target_altitude(
+            body,
+            twilight_jd,
+            lat,
+            lon,
+            pressure_mbar=model.pressure_mbar,
+            temperature_c=model.temperature_c,
+            relative_humidity=model.relative_humidity,
+        )
+        if use_refraction
+        else _true_altitude(body, twilight_jd, lat, lon)
     )
     if planet_alt <= model.horizon_altitude_deg:
         return None
@@ -2530,6 +2545,7 @@ def _search_visibility_event(
     model: VisibilityModel,
     search_days: int,
     target_solar_altitude_deg: float | None = None,
+    use_refraction: bool = True,
 ) -> tuple[float, float, float, float, float] | None:
     """
     Execute the core forward visibility-event search state machine.
@@ -2539,6 +2555,9 @@ def _search_visibility_event(
 
     The return payload is ``(jd_ut, target_alt_deg, sun_alt_deg,
     apparent_mag, signed_elongation_deg)``.
+
+    ``use_refraction`` is forwarded to every daily visibility check so that
+    search doctrine cannot diverge from the public assessment doctrine.
 
     Side effects: None.
     """
@@ -2552,7 +2571,17 @@ def _search_visibility_event(
         HeliacalEventKind.COSMIC_SETTING,
     )
     check = (
-        (lambda jd_midnight: _check_visibility(body, jd_midnight, lat, lon, morning=morning, model=model))
+        (
+            lambda jd_midnight: _check_visibility(
+                body,
+                jd_midnight,
+                lat,
+                lon,
+                morning=morning,
+                model=model,
+                use_refraction=use_refraction,
+            )
+        )
         if target_solar_altitude_deg is None
         else (
             lambda jd_midnight: _check_visibility_with_target_alt(
@@ -2563,6 +2592,7 @@ def _search_visibility_event(
                 morning=morning,
                 target_solar_altitude_deg=target_solar_altitude_deg,
                 model=model,
+                use_refraction=use_refraction,
             )
         )
     )
@@ -3192,6 +3222,11 @@ def visibility_event(
         else resolved_heliacal_policy.visibility_policy
     )
     resolved_search_policy = search_policy if search_policy is not None else VisibilitySearchPolicy()
+    search_uses_refraction = (
+        resolved_visibility_policy.use_refraction
+        if resolved_visibility_policy is not None
+        else True
+    )
 
     model = _effective_visibility_model(
         HeliacalPolicy(
@@ -3337,6 +3372,7 @@ def visibility_event(
                 if event_kind in (HeliacalEventKind.COSMIC_RISING, HeliacalEventKind.COSMIC_SETTING)
                 else None
             ),
+            use_refraction=search_uses_refraction,
         )
         if result is None:
             return None
@@ -3355,7 +3391,15 @@ def visibility_event(
             se = _signed_elongation(body, jd_midnight + 0.5)
             if se >= 0.0 or abs(se) < _ELONG_MIN:
                 continue
-            vis = _check_visibility(body, jd_midnight, lat, lon, morning=True, model=model)
+            vis = _check_visibility(
+                body,
+                jd_midnight,
+                lat,
+                lon,
+                morning=True,
+                model=model,
+                use_refraction=search_uses_refraction,
+            )
             if vis is not None:
                 jd_ev, p_alt, s_alt, mag = vis
                 return _general_event_from_tuple(
@@ -3375,7 +3419,15 @@ def visibility_event(
             se = _signed_elongation(body, jd_midnight + 0.5)
             abs_se = abs(se)
             if se < 0.0 and abs_se >= _ELONG_MIN:
-                vis = _check_visibility(body, jd_midnight, lat, lon, morning=True, model=model)
+                vis = _check_visibility(
+                    body,
+                    jd_midnight,
+                    lat,
+                    lon,
+                    morning=True,
+                    model=model,
+                    use_refraction=search_uses_refraction,
+                )
                 if vis is not None:
                     jd_ev, p_alt, s_alt, mag = vis
                     last = (jd_ev, p_alt, s_alt, mag, se)
@@ -3396,7 +3448,15 @@ def visibility_event(
             se = _signed_elongation(body, jd_midnight + 0.5)
             if se <= 0.0 or abs(se) < _ELONG_MIN:
                 continue
-            vis = _check_visibility(body, jd_midnight, lat, lon, morning=False, model=model)
+            vis = _check_visibility(
+                body,
+                jd_midnight,
+                lat,
+                lon,
+                morning=False,
+                model=model,
+                use_refraction=search_uses_refraction,
+            )
             if vis is not None:
                 jd_ev, p_alt, s_alt, mag = vis
                 return _general_event_from_tuple(
@@ -3416,7 +3476,15 @@ def visibility_event(
             se = _signed_elongation(body, jd_midnight + 0.5)
             abs_se = abs(se)
             if se > 0.0 and abs_se >= _ELONG_MIN:
-                vis = _check_visibility(body, jd_midnight, lat, lon, morning=False, model=model)
+                vis = _check_visibility(
+                    body,
+                    jd_midnight,
+                    lat,
+                    lon,
+                    morning=False,
+                    model=model,
+                    use_refraction=search_uses_refraction,
+                )
                 if vis is not None:
                     jd_ev, p_alt, s_alt, mag = vis
                     last = (jd_ev, p_alt, s_alt, mag, se)
@@ -3441,6 +3509,7 @@ def visibility_event(
             model=model,
             search_days=search_days,
             target_solar_altitude_deg=_COSMIC_SOLAR_ALTITUDE_DEG,
+            use_refraction=search_uses_refraction,
         )
         if result is None:
             return None

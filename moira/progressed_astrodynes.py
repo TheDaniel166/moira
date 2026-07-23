@@ -455,6 +455,7 @@ def progressed_aspect_at_distance(
 
 @dataclass(frozen=True, slots=True)
 class ProgressedMutualReceptionTruth:
+    """Vessel: Structured progressed mutual reception truth data."""
     tier: ProgressedAstrodyneTier
     major_bonus_each: float
     tier_divisor: float
@@ -496,6 +497,7 @@ def progressed_aspect_harmony(
 
 @dataclass(frozen=True, slots=True)
 class ProgressedTotalInfluenceTruth:
+    """Vessel: Structured progressed total influence truth data."""
     unit: ProgressedInfluenceUnit
     duration: float
     average_factor: float
@@ -545,6 +547,7 @@ class ProgressedCompoundQuantity:
 
 @dataclass(frozen=True, slots=True)
 class ProgressedCompoundInfluenceTruth:
+    """Vessel: Structured progressed compound influence truth data."""
     duration: ProgressedCompoundDuration
     average_factor: float
     manual_average_power: float
@@ -745,6 +748,7 @@ class ProgressedBodyPlacement:
 
 @dataclass(frozen=True, slots=True)
 class ProgressedNormalBodyProfile:
+    """Vessel: Structured progressed normal body profile data."""
     body: str
     placement: ProgressedBodyPlacement
     natal: ProgressedNatalBodyValue

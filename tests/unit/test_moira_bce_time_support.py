@@ -13,6 +13,8 @@ from moira.stations import StationEvent
 from moira.timelords import FirdarPeriod, ReleasingPeriod
 from moira.transits import IngressEvent, TransitEvent
 from moira.constants import Body, KM_PER_AU
+from moira.julian import _TIDAL_NDOT_DE441
+from moira.spk_reader import _EphemerisKernelIdentity
 
 
 def test_datetime_from_jd_still_rejects_bce_for_python_datetime() -> None:
@@ -98,6 +100,13 @@ def test_bce_time_lord_objects_render_without_crashing() -> None:
 
 def test_heliocentric_helpers_accept_bce_jd_without_datetime_conversion(monkeypatch) -> None:
     class DummyReader:
+        _kernel_identity = _EphemerisKernelIdentity(
+            "DE-0441LE-0441",
+            "DE441",
+            "LE441",
+            _TIDAL_NDOT_DE441,
+        )
+
         def position(self, center: int, target: int, jd_tt: float):
             return (1.0, 0.0, 0.0)
 

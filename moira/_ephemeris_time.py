@@ -20,6 +20,7 @@ from .julian import (
 )
 from .spk_reader import (
     KernelReader,
+    OutOfRangeError,
     _EphemerisKernelIdentity,
 )
 
@@ -97,6 +98,13 @@ def _ephemeris_delta_t(
     raw_jd_tt = jd_ut1 + resolved.seconds / 86400.0
     identity = _reader_identity_at(reader, raw_jd_tt)
     if identity is None:
+        configured_identity = getattr(reader, "_kernel_identity", None)
+        if isinstance(configured_identity, _EphemerisKernelIdentity):
+            raise OutOfRangeError(
+                "planetary ephemeris does not cover the requested historical "
+                f"epoch JD(TT) {raw_jd_tt}",
+                out_of_range_times=True,
+            )
         raise _EphemerisTimeBasisError(
             "historical Delta-T requires a content-identified planetary "
             "ephemeris reader"

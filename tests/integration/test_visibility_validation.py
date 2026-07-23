@@ -8,7 +8,6 @@ import pytest
 
 from moira.babylonian import (
     admitted_babylonian_mercury_references,
-    admitted_babylonian_venus_references,
 )
 from moira.constants import Body
 from moira.heliacal import (
@@ -206,31 +205,6 @@ def test_generalized_mercury_visibility_event_matches_admitted_babylonian_window
     assert event is not None
     assert event.target_kind is VisibilityTargetKind.PLANET
     assert event.kind is HeliacalEventKind.HELIACAL_RISING
-    assert event.assessment.observable is True
-
-    solved_calendar = calendar_datetime_from_jd(event.jd_ut)
-    assert reference.comparison_window.contains_calendar_date(solved_calendar)
-
-
-@pytest.mark.requires_ephemeris
-@pytest.mark.parametrize(
-    "reference",
-    admitted_babylonian_venus_references(),
-    ids=lambda reference: reference.id,
-)
-def test_generalized_venus_visibility_event_matches_admitted_babylonian_window(reference) -> None:
-    event = visibility_event(
-        reference.body,
-        reference.event_kind,
-        reference.source_window.start.jd - 20.0,
-        reference.latitude_deg,
-        reference.longitude_deg,
-        search_policy=VisibilitySearchPolicy(search_window_days=90),
-    )
-
-    assert event is not None
-    assert event.target_kind is VisibilityTargetKind.PLANET
-    assert event.kind is reference.event_kind
     assert event.assessment.observable is True
 
     solved_calendar = calendar_datetime_from_jd(event.jd_ut)

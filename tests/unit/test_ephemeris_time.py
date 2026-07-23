@@ -28,7 +28,7 @@ from moira.julian import (
 )
 from moira.constants import Body
 from moira.planets import planet_at
-from moira.spk_reader import _EphemerisKernelIdentity, KernelPool
+from moira.spk_reader import _EphemerisKernelIdentity, KernelPool, OutOfRangeError
 
 
 def _identity(
@@ -214,6 +214,21 @@ def test_reader_identity_change_between_raw_and_corrected_tt_fails_closed() -> N
 
     with pytest.raises(_EphemerisTimeBasisError, match="identity boundary"):
         _ephemeris_delta_t(jd_ut1, _ChangingReader())
+
+
+def test_identified_reader_without_epoch_coverage_raises_out_of_range() -> None:
+    class _OutOfCoverageReader:
+        _kernel_identity = DE441_IDENTITY
+
+        @staticmethod
+        def _ephemeris_kernel_identity_at(_jd_tt: float):
+            return None
+
+    with pytest.raises(OutOfRangeError, match="does not cover"):
+        _ephemeris_delta_t(
+            julian_day(-2000, 1, 1, 0.0),
+            _OutOfCoverageReader(),
+        )
 
 
 def test_kernel_pool_rejects_conflicting_clock_owners_at_one_epoch() -> None:

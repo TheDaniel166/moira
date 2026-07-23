@@ -85,6 +85,7 @@ _HARD_OFFSETS = frozenset((0, 3, 6, 9))
 
 
 class SahlMatterProfileId(str, Enum):
+    """Vessel: Registry of sahl matter profile id values."""
     LENDING = "sahl_lending_v1"
     INVESTMENT = "sahl_investment_v1"
     PURCHASE = "sahl_purchase_v1"
@@ -99,6 +100,7 @@ class SahlMatterProfileId(str, Enum):
 
 
 class SahlMatterClauseRole(str, Enum):
+    """Vessel: Registry of sahl matter clause role values."""
     FORTIFIER = "fortifier"
     GATE = "gate"
     OUTCOME = "outcome"
@@ -106,6 +108,7 @@ class SahlMatterClauseRole(str, Enum):
 
 
 class SahlMatterClauseState(str, Enum):
+    """Vessel: Registry of sahl matter clause state values."""
     SATISFIED = "satisfied"
     CLEAR = "clear"
     TRIGGERED = "triggered"
@@ -114,6 +117,7 @@ class SahlMatterClauseState(str, Enum):
 
 
 class SahlMatterProfileStatus(str, Enum):
+    """Vessel: Registry of sahl matter profile status values."""
     CLEAR = "clear_of_explicit_profile_gates"
     TRIGGERED = "one_or_more_explicit_profile_gates"
     INDETERMINATE = "indeterminate"
@@ -121,6 +125,7 @@ class SahlMatterProfileStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class SahlMatterMeasurement:
+    """Vessel: Structured sahl matter measurement data."""
     name: str
     value: float | str | bool | None
     units: str | None = None
@@ -136,6 +141,7 @@ class SahlMatterMeasurement:
 
 @dataclass(frozen=True, slots=True)
 class SahlMatterClauseWitness:
+    """Vessel: Structured sahl matter clause witness data."""
     clause_id: str
     source_order: int
     role: SahlMatterClauseRole
@@ -163,6 +169,7 @@ class SahlMatterClauseWitness:
 
 @dataclass(frozen=True, slots=True)
 class SahlMatterProfilePolicy:
+    """Vessel: Structured sahl matter profile policy data."""
     profile_id: SahlMatterProfileId
     profile_version: str = "1.0.0"
     aspect_policy: str = "whole_sign_configuration_and_sahl_moiety_join"
@@ -248,6 +255,7 @@ _MATTERS = {
 
 @dataclass(frozen=True, slots=True)
 class SahlMatterProfileEvaluation:
+    """Vessel: Structured sahl matter profile evaluation data."""
     jd_ut: float
     profile_id: SahlMatterProfileId
     profile_version: str

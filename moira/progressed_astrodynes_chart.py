@@ -96,6 +96,7 @@ class ChurchOfLightSymbolicDate:
 
 @dataclass(frozen=True, slots=True)
 class ChurchOfLightProgressionTimeTruth:
+    """Vessel: Structured Church of Light progression time truth data."""
     natal_jd_ut: float
     target_jd_ut: float
     greenwich_noon_jd_ut: float
@@ -123,6 +124,7 @@ class ChurchOfLightProgressionTimeTruth:
 
 @dataclass(frozen=True, slots=True)
 class ChurchOfLightProgressionGeometry:
+    """Vessel: Structured Church of Light progression geometry data."""
     natal_dt: datetime
     target_dt: datetime
     observer_lat: float
@@ -164,6 +166,7 @@ class ChurchOfLightProgressionGeometry:
 
 @dataclass(frozen=True, slots=True)
 class ChurchOfLightProgressedAstrodynesChart:
+    """Vessel: Structured Church of Light progressed astrodynes chart data."""
     geometry: ChurchOfLightProgressionGeometry
     natal: AstrodyneChartResult
     normal: ProgressedNormalHoroscope

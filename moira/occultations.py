@@ -2798,6 +2798,7 @@ def _solve_occultation_clearance_center(
 
 @dataclass(frozen=True, slots=True)
 class _OccultationPathCalculation:
+    """Vessel: Structured occultation path calculation data."""
     jd_start: float
     jd_end: float
     jd_greatest: float

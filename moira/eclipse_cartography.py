@@ -35,6 +35,7 @@ __all__ = [
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseMapSample:
+    """Vessel: Structured solar eclipse map sample data."""
     latitude_deg: float
     longitude_deg: float
     visible: bool
@@ -85,6 +86,7 @@ class SolarEclipseMapSample:
 
 @dataclass(frozen=True, slots=True)
 class EclipseContourComponent:
+    """Vessel: Structured eclipse contour component data."""
     quantity: str
     threshold: float
     component_id: int
@@ -125,6 +127,7 @@ class EclipseContourComponent:
 
 @dataclass(frozen=True, slots=True)
 class EclipseContourLevel:
+    """Vessel: Structured eclipse contour level data."""
     quantity: str
     threshold: float
     components: tuple[EclipseContourComponent, ...]
@@ -151,6 +154,7 @@ class EclipseContourLevel:
 
 @dataclass(frozen=True, slots=True)
 class SolarEclipseCartography:
+    """Vessel: Structured solar eclipse cartography data."""
     global_circumstances: "SolarEclipseGlobalCircumstances"
     samples: tuple[SolarEclipseMapSample, ...]
     magnitude_levels: tuple[EclipseContourLevel, ...]

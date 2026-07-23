@@ -308,6 +308,51 @@ The subsystem must distinguish:
 Visibility is inherently model-dependent.
 That fact must stay visible.
 
+### V2.4a Babylonian Venus physical-model boundary
+
+The De Jong and Foertmeyer (2010) Ammisaduqa Table 1 rows are a valid
+historical and physical-model corpus, but they are not validation evidence for
+Moira's current `LIMITING_MAGNITUDE_THRESHOLD` implementation.
+
+The source product solves for the atmospheric extinction at which Venus is
+just visible on the recorded date.  It also publishes:
+
+- refracted Venus elevation
+- geometric arcus visionis
+- nominal-date offset at 0.25 mag/airmass
+
+Those quantities are now preserved together as source evidence in
+`BABYLONIAN_VENUS_REFERENCES`.  The rows remain candidates until the governing
+visibility doctrine is implemented.  They must not be re-admitted by widening
+date windows around the legacy solver.
+
+The recovered primary-source chain is:
+
+1. Koomen et al. (1952) Maryland twilight-sky brightness surface, interpolated
+   by target altitude, Sun-target azimuth difference, and solar altitude
+2. Rozenberg (1966) near-horizon airmass
+3. explicit atmospheric extinction and refraction
+4. the Tousey-Koomen point-source threshold used by De Jong (2012)
+5. a declared human-eye visibility-probability threshold
+6. an intraday search for the maximum visibility margin
+
+Inklaar's 1989 Hecht/Blackwell formulation is sufficiently documented to
+reconstruct the geometry, twilight surface, and older eye threshold.  A
+controlled reconstruction reproduced the Table 1 elevation and arcus products
+closely, but inferred systematically higher extinction coefficients.  It is
+therefore useful corroboration, not De Jong-model parity.  Moira must not label
+an Inklaar/Hecht implementation as the later Tousey-Koomen doctrine.
+
+Admission requires all of the following:
+
+- a named point-source criterion family distinct from the legacy arcus family
+- source-derived interpolation, airmass, extinction, refraction, and intraday
+  search semantics
+- recovery of the published Table 1 extinction, elevation, and geometric
+  arcus quantities under stated tolerances
+- explicit handling of source-bracketed fits
+- independent modern cases or invariants beyond the historical corpus
+
 ### V2.5 First admitted formula chain
 
 For the first admitted criterion family, the formulas should be layered like

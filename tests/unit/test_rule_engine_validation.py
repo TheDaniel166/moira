@@ -564,11 +564,10 @@ class TestHarmonics:
         result = calculate_harmonic({"Sun": 123.456}, 5)
         assert abs(result[0].natal_longitude - 123.456) < _FLOAT_TOL
 
-    def test_harmonic_number_clamped_to_1(self):
+    def test_harmonic_number_zero_is_rejected(self):
         from moira.harmonics import calculate_harmonic
-        result = calculate_harmonic({"Sun": 50.0}, 0)
-        # harmonic clamped to max(1, 0) = 1 → identity
-        assert abs(result[0].harmonic_longitude - 50.0) < _FLOAT_TOL
+        with pytest.raises(ValueError, match="positive finite real"):
+            calculate_harmonic({"Sun": 50.0}, 0)
 
 
 # ---------------------------------------------------------------------------

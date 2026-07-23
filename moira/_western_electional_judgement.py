@@ -93,17 +93,20 @@ _DOROTHEUS_SIGN_NATURE_PROFILE_IDS = frozenset(
 
 
 class WesternElectionalJudgementDoctrine(str, Enum):
+    """Vessel: Registry of western electional judgement doctrine values."""
     DOROTHEUS = "dorotheus_matter_with_lilly_perfection"
     SAHL = "sahl_matter_with_lilly_perfection"
 
 
 class WesternElectionalJudgementState(str, Enum):
+    """Vessel: Registry of western electional judgement state values."""
     COMPLETE = "complete_under_profile"
     IMPEDED = "impeded"
     INDETERMINATE = "indeterminate"
 
 
 class WesternElectionalComponentState(str, Enum):
+    """Vessel: Registry of western electional component state values."""
     COMPLETE = "complete"
     IMPEDED = "impeded"
     INDETERMINATE = "indeterminate"
@@ -111,12 +114,14 @@ class WesternElectionalComponentState(str, Enum):
 
 
 class WesternElectionalRequirementState(str, Enum):
+    """Vessel: Registry of western electional requirement state values."""
     UNRESOLVED = "unresolved"
     EXCLUDED = "excluded"
 
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalJudgementPolicy:
+    """Vessel: Structured western electional judgement policy data."""
     profile_id: str = "western_electional_judgement_v1"
     profile_version: str = "1.0.0"
     composition_authority: str = "moira_owned_explicit_cross_source_composition"
@@ -142,6 +147,7 @@ WESTERN_ELECTIONAL_JUDGEMENT_V1 = WesternElectionalJudgementPolicy()
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalJudgementSelection:
+    """Vessel: Structured western electional judgement selection data."""
     doctrine: WesternElectionalJudgementDoctrine
     matter_profile_id: str
     perfection_profile_id: str
@@ -257,6 +263,7 @@ class WesternElectionalJudgementSelection:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalComponentSummary:
+    """Vessel: Structured western electional component summary data."""
     component_id: str
     profile_id: str | None
     state: WesternElectionalComponentState
@@ -269,6 +276,7 @@ class WesternElectionalComponentSummary:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalRequirementWitness:
+    """Vessel: Structured western electional requirement witness data."""
     requirement_id: str
     component_id: str
     state: WesternElectionalRequirementState
@@ -287,6 +295,7 @@ class WesternElectionalRequirementWitness:
 
 @dataclass(frozen=True, slots=True)
 class WesternElectionalJudgementEvaluation:
+    """Vessel: Structured western electional judgement evaluation data."""
     jd_ut: float
     latitude: float
     longitude: float

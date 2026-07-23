@@ -17,6 +17,7 @@ from .planets import sky_position_at
 
 @dataclass(frozen=True, slots=True)
 class _SolarApparentDiscGeometry:
+    """Vessel: Structured solar apparent disc geometry data."""
     separation_deg: float
     sun_radius_deg: float
     moon_radius_deg: float

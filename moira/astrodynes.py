@@ -1996,6 +1996,7 @@ def _build_chart_aggregate(
 
 @dataclass(frozen=True, slots=True)
 class AstrodyneNetworkNode:
+    """Vessel: Structured astrodyne network node data."""
     body: str
     sign: str
     house: int
@@ -2005,6 +2006,7 @@ class AstrodyneNetworkNode:
 
 @dataclass(frozen=True, slots=True)
 class AstrodyneNetworkEdge:
+    """Vessel: Structured astrodyne network edge data."""
     kind: AstrodyneRelationKind
     body_a: str
     body_b: str
@@ -2021,6 +2023,7 @@ class AstrodyneNetworkEdge:
 
 @dataclass(frozen=True, slots=True)
 class AstrodyneNetwork:
+    """Vessel: Structured astrodyne network data."""
     nodes: tuple[AstrodyneNetworkNode, ...]
     edges: tuple[AstrodyneNetworkEdge, ...]
 
