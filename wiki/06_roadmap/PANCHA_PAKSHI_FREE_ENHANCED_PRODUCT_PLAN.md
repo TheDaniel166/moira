@@ -1,10 +1,41 @@
 # Pancha Pakshi Free and Enhanced Product Plan
 
-**Status:** Approved product plan for the next additive Moira package release and
-the subsequent website feature.
+**Status:** Core product shipped; Enhanced workflow expansion and launch
+observation remain in progress.
 
-**Recommended package release:** `moira-astro 5.1.0` (the Pancha Pakshi public
-surface is additive and materially larger than the current `5.0.0` surface).
+**Current production boundary (2026-07-22):** The website is pinned to
+`moira-astro 5.1.2`, all 19 admitted REST operations are contract-accounted
+for, and the public `/pancha-pakshi` product is live. The current production
+website artifact is `a387a51ac8f3f5048f85c028e0fe028161fc9ff8`.
+
+### Completion boundary
+
+The package release, website adapter, and Free public beta in Phases 1–3 are
+complete. The first Enhanced workflow is also live: entitled Enhanced,
+Workspace, and administrator users may explore an exact caller-selected local
+date and time through the protected `atInstant` path.
+
+The shipped product includes both admitted identity methods, manual natal data
+entry, birth-data import from an existing saved chart, explicit timing and
+Sookshma policy selection, one frozen-instant composition path, the dial and
+current-half timeline, interval inspection, relation and derivation evidence,
+method and source receipts, honest non-selection states, responsive
+presentation, and production entitlement enforcement.
+
+Phase 4 is not complete. Its remaining Enhanced product work is:
+
+1. a bounded 31-day planner;
+2. side-by-side timing and Sookshma policy comparison;
+3. multi-subject comparison for up to five subjects;
+4. dedicated account-persistent Pancha Pakshi subjects and locations (saved
+   chart birth-data import already exists, but is not this complete workflow);
+5. bounded CSV, ICS, and PDF export; and
+6. user-authored transition reminders.
+
+Phase 5 is active rather than complete: production observation began with the
+2026-07-22 public launch. Presentation and reliability may be tuned from that
+evidence, but doctrine, source boundaries, and the prohibition on scoring
+remain unchanged.
 
 ## Product constitution
 
@@ -132,7 +163,7 @@ Required invariants:
 
 ## Implementation sequence
 
-### 1. Package closure and release
+### 1. Package closure and release — Complete
 
 - Finish and isolate the existing Pancha Pakshi work from unrelated changes.
 - Correct the current changelog route-count drift (`17` must become `19`).
@@ -141,6 +172,10 @@ Required invariants:
 - Add `RELEASE_NOTES_5.1.0.md` and `COMPATIBILITY_NOTES_5.1.0.md`.
 - Build and inspect the wheel and sdist, including all admitted manifest data.
 - Tag and publish only after the release identity and public-surface gates pass.
+
+Completed through the patched `moira-astro 5.1.2` release. The original
+`5.1.0` target remains below as historical implementation intent; subsequent
+patches are the production authority.
 
 Likely package files:
 
@@ -153,12 +188,17 @@ Likely package files:
 
 No engine-semantic change is expected for tiering.
 
-### 2. Website engine adapter
+### 2. Website engine adapter — Complete
 
 - Pin staging and production to `moira-astro 5.1.0`.
 - Assert the exact Pancha Pakshi OpenAPI contract before enabling the feature.
 - Add the lossless composition helper and typed shared contract.
 - Register public and Enhanced tRPC procedures behind a feature kill switch.
+
+Production uses exact engine-version and OpenAPI admission checks, a lossless
+shared contract, one frozen-instant composition function, public catalog and
+identity procedures, Free `current`, protected Enhanced `atInstant`, tier
+inheritance, privacy-safe usage receipts, and a fail-closed feature switch.
 
 Likely website files:
 
@@ -168,7 +208,7 @@ Likely website files:
 - `shared/panchaPakshi.ts`
 - `shared/tiers.ts`
 
-### 3. Free public beta
+### 3. Free public beta — Complete
 
 - Ship identity selection, explicit policies, present snapshot, current-half
   timeline, relation facts, provenance, and boundary/failure handling.
@@ -176,7 +216,10 @@ Likely website files:
   documentation, and accessibility coverage.
 - Do not advertise Enhanced Pancha features until the entitlement path exists.
 
-### 4. Enhanced workflow
+The public route, presentation, accessibility coverage, explicit evidence
+boundaries, and entitlement-aware Enhanced entry point are live.
+
+### 4. Enhanced workflow — In progress
 
 - Add arbitrary-time exploration, 31-day planning, policy comparison,
   multi-subject comparison, saved subjects, exports, and reminders.
@@ -184,11 +227,21 @@ Likely website files:
   not mix this with unrelated schema work.
 - Update Pricing and FAQ copy only after anonymous and Enhanced staging smokes.
 
-### 5. Observe and harden
+Shipped: exact arbitrary-time exploration for Enhanced, Workspace, and
+administrator users, plus reuse of existing saved-chart birth data.
+
+Remaining: the 31-day planner, side-by-side policy comparison, multi-subject
+comparison, dedicated Pancha Pakshi persistence, CSV/ICS/PDF export, and
+transition reminders. Existing saved-chart import must not be reported as
+completion of the dedicated persistence workflow.
+
+### 5. Observe and harden — Active
 
 - Observe for 30 days.
 - Tune batching, caching, and presentation only; do not alter doctrine or add
   scoring in response to engagement metrics.
+
+The observation window began with the 2026-07-22 public production launch.
 
 ## Verification gates
 
