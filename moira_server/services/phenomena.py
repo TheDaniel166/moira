@@ -63,6 +63,7 @@ from ..models.phenomena import (
     LunarOccultationPathTopologyAtRequest,
     LunarOccultationPathTopologyRequest,
     LunarEclipseLocationRequest,
+    LunarEclipseGlobalCircumstancesRequest,
     LunarEclipseVisibilityRequest,
     LunarOccultationRequest,
     LunarStarOccultationRequest,
@@ -84,6 +85,8 @@ from ..models.phenomena import (
     RiseSetPhenomenaRequest,
     RiseSetPolicyRequest,
     SolarEclipseFootprintRequest,
+    SolarEclipseCartographyRequest,
+    SolarEclipseGlobalCircumstancesRequest,
     SolarEclipsePathRequest,
     RiseSetTransitRequest,
     SolarEclipseLocationRequest,
@@ -555,6 +558,29 @@ def compute_lunar_eclipse_visibility(
     )
 
 
+def compute_lunar_eclipse_global_circumstances(
+    engine: Moira,
+    request: LunarEclipseGlobalCircumstancesRequest,
+):
+    _require_finite(request.jd_start, "jd_start")
+    kind = _require_allowed(
+        request.kind,
+        "lunar eclipse kind",
+        _VALID_LUNAR_ECLIPSE_KINDS,
+    )
+    mode = _require_allowed(
+        request.mode,
+        "lunar eclipse mode",
+        _VALID_LUNAR_ECLIPSE_MODES,
+    )
+    return engine.lunar_global_circumstances(
+        request.jd_start,
+        kind=kind,
+        backward=request.backward,
+        mode=mode,
+    )
+
+
 def compute_solar_eclipse_path(engine: Moira, request: SolarEclipsePathRequest):
     _require_finite(request.jd_start, "jd_start")
     if request.sample_count < 1:
@@ -581,6 +607,46 @@ def compute_solar_eclipse_footprint(
         kind=kind,
         backward=request.backward,
         sample_count=request.sample_count,
+    )
+
+
+def compute_solar_eclipse_global_circumstances(
+    engine: Moira,
+    request: SolarEclipseGlobalCircumstancesRequest,
+):
+    _require_finite(request.jd_start, "jd_start")
+    kind = _require_allowed(
+        request.kind,
+        "solar eclipse kind",
+        _VALID_SOLAR_ECLIPSE_KINDS,
+    )
+    return engine.solar_global_circumstances(
+        request.jd_start,
+        kind=kind,
+        backward=request.backward,
+    )
+
+
+def compute_solar_eclipse_cartography(
+    engine: Moira,
+    request: SolarEclipseCartographyRequest,
+):
+    _require_finite(request.jd_start, "jd_start")
+    kind = _require_allowed(
+        request.kind,
+        "solar eclipse kind",
+        _VALID_SOLAR_ECLIPSE_KINDS,
+    )
+    return engine.solar_eclipse_cartography(
+        request.jd_start,
+        kind=kind,
+        backward=request.backward,
+        magnitude_levels=tuple(request.magnitude_levels),
+        obscuration_levels=tuple(request.obscuration_levels),
+        mesh_depth=request.mesh_depth,
+        time_samples=request.time_samples,
+        angular_tolerance_deg=request.angular_tolerance_deg,
+        field_tolerance=request.field_tolerance,
     )
 
 
@@ -1040,6 +1106,7 @@ __all__ = [
     "compute_all_lunar_occultations",
     "compute_close_approaches",
     "compute_lunar_eclipse_local",
+    "compute_lunar_eclipse_global_circumstances",
     "compute_lunar_eclipse_visibility",
     "compute_lunar_occultations",
     "compute_lunar_occultation_path_at",
@@ -1063,6 +1130,8 @@ __all__ = [
     "compute_retrograde_periods",
     "compute_rise_set_phenomena",
     "compute_solar_eclipse_footprint",
+    "compute_solar_eclipse_global_circumstances",
+    "compute_solar_eclipse_cartography",
     "compute_solar_eclipse_path",
     "compute_rise_set_transit",
     "compute_station_state",

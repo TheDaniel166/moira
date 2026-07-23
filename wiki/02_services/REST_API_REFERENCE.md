@@ -367,8 +367,11 @@ Admitted products:
 | POST | `/v1/eclipses/solar/local-visible` | `next_visible_solar_eclipse_route` |
 | POST | `/v1/eclipses/lunar/local` | `lunar_eclipse_local_route` |
 | POST | `/v1/eclipses/lunar/visibility` | `lunar_eclipse_visibility_route` |
+| POST | `/v1/eclipses/lunar/global-circumstances` | `lunar_eclipse_global_circumstances_route` |
 | POST | `/v1/eclipses/solar/path` | `solar_eclipse_path_route` |
 | POST | `/v1/eclipses/solar/footprint` | `solar_eclipse_footprint_route` |
+| POST | `/v1/eclipses/solar/global-circumstances` | `solar_eclipse_global_circumstances_route` |
+| POST | `/v1/eclipses/solar/cartography` | `solar_eclipse_cartography_route` |
 | POST | `/v1/occultations/close-approaches` | `close_approaches_route` |
 | POST | `/v1/occultations/lunar` | `lunar_occultations_route` |
 | POST | `/v1/occultations/lunar-star` | `lunar_star_occultations_route` |
@@ -584,6 +587,41 @@ This endpoint does not add observer elevation or terrain, lunar-limb
 topography, magnitude or obscuration contours, local apparent circumstances,
 or rendered map products. `POST /v1/eclipses/solar/path` and its
 `SolarEclipsePath` response remain unchanged.
+
+### Global Eclipse Circumstances And Solar Cartography REST Contracts
+
+`POST /v1/eclipses/solar/global-circumstances` returns the searched event,
+P-contact topology, independently solved U1-U4 contacts where applicable,
+central-line limits, equatorial and ecliptic conjunction epochs, greatest
+eclipse, independently optimized greatest duration, apparent geocentric
+Sun/Moon states, Besselian elements and signed gamma, and explicit ephemeris,
+surface, limb, TT/UT1, and Delta-T metadata. Partial eclipses return `null` for
+central-only products rather than fabricated zero contacts.
+
+`POST /v1/eclipses/lunar/global-circumstances` returns the selected
+`native` or `nasa_compat` geocentric analysis, scale-explicit greatest epoch,
+phase contacts and durations, apparent geocentric body parameters, signed
+gamma, separate penumbral/umbral magnitudes, shadow radii, and model identity.
+It does not emit a solar-style geographic path.
+
+`POST /v1/eclipses/solar/cartography` accepts strictly increasing magnitude
+and obscuration thresholds, `mesh_depth` in `0..3`, and an odd `time_samples`
+count in `9..129`. `angular_tolerance_deg` is bounded to `0.1..90`, and
+`field_tolerance` to `1e-6..0.25`. Its response preserves the parent global circumstances,
+the evaluated spherical-mesh samples, and distinct magnitude and obscuration
+contour levels. Contour segments carry both `component_id` and `segment_id`;
+antimeridian crossings are split so no serialized segment contains a longitude
+jump greater than 180 degrees. The same geographic vertices can therefore be
+used by flat maps and 3D globes without projection-specific engine geometry.
+It also reports achieved refinement depth, triangle count, maximum angular
+edge, unresolved-edge count, and whether the requested convergence policy was
+met within the depth budget.
+
+The cartography daylight policy is
+`GEOMETRIC_SUN_CENTER_NONNEGATIVE_ALTITUDE`. It is WGS-84 zero elevation,
+spherical mean limb, NumPy-free, and explicitly reports
+`duration_contours_available=false`. Refraction, terrain, weather, lunar-limb
+topography, and duration contours are not inferred by transport.
 
 ## Relationship And Pattern Routes
 

@@ -121,6 +121,30 @@ from .eclipse_canon import (
     LUNAR_CANON_METHOD_IDS,
 )
 from .eclipse_contacts import LunarEclipseContacts, find_lunar_contacts
+from .eclipse_global import EclipseEpoch, EclipseGeocentricBodyState
+from .lunar_eclipse_global import (
+    LunarEclipseGlobalCircumstances,
+    LunarEclipseShadowState,
+    _build_lunar_global_circumstances,
+)
+from .solar_eclipse_global import (
+    SolarEclipseCentralLineLimit,
+    SolarEclipseConjunction,
+    SolarEclipseConjunctionKind,
+    SolarEclipseGlobalCircumstances,
+    SolarEclipseGreatestSite,
+    SolarEclipseUmbralContact,
+    SolarEclipseUmbralContactKind,
+    SolarEclipseUmbralContacts,
+    _build_solar_global_circumstances,
+)
+from .eclipse_cartography import (
+    EclipseContourComponent,
+    EclipseContourLevel,
+    SolarEclipseCartography,
+    SolarEclipseMapSample,
+    _build_solar_eclipse_cartography,
+)
 from .corrections import apply_frame_bias, apply_light_time
 from .obliquity import nutation, true_obliquity
 from .polar_motion import PolarMotionRegistry, polar_motion_matrix
@@ -143,6 +167,22 @@ __all__ = [
     "LunarEclipseVisibilityLimit",
     "LunarEclipseVisibilityMap",
     "LunarEclipseAnalysisMode",
+    "EclipseEpoch",
+    "EclipseGeocentricBodyState",
+    "LunarEclipseShadowState",
+    "LunarEclipseGlobalCircumstances",
+    "SolarEclipseCentralLineLimit",
+    "SolarEclipseConjunctionKind",
+    "SolarEclipseConjunction",
+    "SolarEclipseUmbralContactKind",
+    "SolarEclipseUmbralContact",
+    "SolarEclipseUmbralContacts",
+    "SolarEclipseGreatestSite",
+    "SolarEclipseGlobalCircumstances",
+    "SolarEclipseMapSample",
+    "EclipseContourComponent",
+    "EclipseContourLevel",
+    "SolarEclipseCartography",
     "LunarEclipseContacts",
     "LunarCanonContacts",
     "LunarCanonGeometry",
@@ -2016,14 +2056,14 @@ class EclipseCalculator:
         jd_tt = _ut1_to_ephemeris_tt(jd_ut, self._reader)
         return self._native_solar_shadow_geometry_tt(jd_tt)[0]
 
-    def _native_lunar_event_geometry_tt(
+    def _native_lunar_event_axis_geometry_tt(
         self,
         jd_tt: float,
         *,
         retarded_moon: bool,
-    ) -> tuple[float, float, float, float, float]:
+    ) -> tuple[float, float, float, float, float, float]:
         """
-        Return native lunar-event geometry in physical units at TT.
+        Return oriented native lunar-event geometry in physical units at TT.
 
         Native event geometry uses the incoming, reception-light-time-corrected
         solar direction for Earth's physical shadow axis and the Moon's actual
@@ -2049,10 +2089,66 @@ class EclipseCalculator:
         perp = [moon_xyz[i] - axis_proj * axis_unit[i] for i in range(3)]
         axis_km = math.sqrt(sum(v * v for v in perp))
 
+        celestial_north = (0.0, 0.0, 1.0)
+        north_axis_projection = sum(
+            celestial_north[i] * axis_unit[i]
+            for i in range(3)
+        )
+        fundamental_north = tuple(
+            celestial_north[i] - north_axis_projection * axis_unit[i]
+            for i in range(3)
+        )
+        fundamental_north_norm = math.sqrt(
+            sum(v * v for v in fundamental_north)
+        )
+        if fundamental_north_norm == 0.0:
+            raise ArithmeticError(
+                "native lunar shadow-axis north orientation is undefined "
+                "at the celestial pole"
+            )
+        northward_offset_km = sum(
+            perp[i] * fundamental_north[i] / fundamental_north_norm
+            for i in range(3)
+        )
+
         moon_radius_km = math.radians(moon_radius_deg) * moon_dist
         umbra_radius_km = math.radians(umbra_radius_deg) * moon_dist
         penumbra_radius_km = math.radians(penumbra_radius_deg) * moon_dist
-        return axis_km, moon_radius_km, umbra_radius_km, penumbra_radius_km, moon_dist
+        return (
+            axis_km,
+            northward_offset_km,
+            moon_radius_km,
+            umbra_radius_km,
+            penumbra_radius_km,
+            moon_dist,
+        )
+
+    def _native_lunar_event_geometry_tt(
+        self,
+        jd_tt: float,
+        *,
+        retarded_moon: bool,
+    ) -> tuple[float, float, float, float, float]:
+        """Return the established unoriented native lunar geometry tuple."""
+
+        (
+            axis_km,
+            _northward_offset_km,
+            moon_radius_km,
+            umbra_radius_km,
+            penumbra_radius_km,
+            moon_dist,
+        ) = self._native_lunar_event_axis_geometry_tt(
+            jd_tt,
+            retarded_moon=retarded_moon,
+        )
+        return (
+            axis_km,
+            moon_radius_km,
+            umbra_radius_km,
+            penumbra_radius_km,
+            moon_dist,
+        )
 
     def _lunar_event_geometry_ut(
         self,
@@ -2209,6 +2305,29 @@ class EclipseCalculator:
             )
 
         raise ValueError(f"Unsupported lunar eclipse analysis mode: {mode!r}")
+
+    def lunar_global_circumstances(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+        mode: LunarEclipseAnalysisMode = "native",
+    ) -> LunarEclipseGlobalCircumstances:
+        """Return a scale-explicit geocentric summary of one lunar eclipse."""
+
+        if isinstance(jd_start, bool) or not isinstance(jd_start, Real):
+            raise TypeError("jd_start must be a real Julian Day")
+        jd_start = float(jd_start)
+        if not math.isfinite(jd_start):
+            raise ValueError("jd_start must be finite")
+        analysis = self.analyze_lunar_eclipse(
+            jd_start,
+            kind=kind,
+            backward=backward,
+            mode=mode,
+        )
+        return _build_lunar_global_circumstances(self, analysis)
 
     def lunar_local_circumstances(
         self,
@@ -2718,6 +2837,60 @@ class EclipseCalculator:
             max_eclipse_lat=max_lat,
             max_eclipse_lon=max_lon,
             eclipse_data=path_data,
+        )
+
+    def solar_global_circumstances(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+    ) -> SolarEclipseGlobalCircumstances:
+        """Return the admitted global summary for one solar eclipse."""
+
+        if isinstance(jd_start, bool) or not isinstance(jd_start, Real):
+            raise TypeError("jd_start must be a real Julian Day")
+        jd_start = float(jd_start)
+        if not math.isfinite(jd_start):
+            raise ValueError("jd_start must be finite")
+        return _build_solar_global_circumstances(
+            self,
+            jd_start=jd_start,
+            kind=kind,
+            backward=backward,
+        )
+
+    def solar_eclipse_cartography(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+        magnitude_levels=(0.2, 0.4, 0.6, 0.8, 0.9),
+        obscuration_levels=(0.2, 0.4, 0.6, 0.8, 0.9),
+        mesh_depth: int = 1,
+        time_samples: int = 17,
+        angular_tolerance_deg: float = 8.0,
+        field_tolerance: float = 0.01,
+    ) -> SolarEclipseCartography:
+        """Return projection-independent maximum-visible eclipse contours."""
+
+        if isinstance(jd_start, bool) or not isinstance(jd_start, Real):
+            raise TypeError("jd_start must be a real Julian Day")
+        jd_start = float(jd_start)
+        if not math.isfinite(jd_start):
+            raise ValueError("jd_start must be finite")
+        return _build_solar_eclipse_cartography(
+            self,
+            jd_start=jd_start,
+            kind=kind,
+            backward=backward,
+            magnitude_levels=magnitude_levels,
+            obscuration_levels=obscuration_levels,
+            mesh_depth=mesh_depth,
+            time_samples=time_samples,
+            angular_tolerance_deg=angular_tolerance_deg,
+            field_tolerance=field_tolerance,
         )
 
     def solar_eclipse_footprint(
@@ -4764,6 +4937,179 @@ def _penumbral_generator_extrema(
     return (
         _periodic_scalar_extreme(margin, maximize=True),
         _periodic_scalar_extreme(margin, maximize=False),
+    )
+
+
+def _central_generator_line(
+    shadow: _EarthFixedSolarShadow,
+    azimuth_rad: float,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    radial = _shadow_add(
+        _shadow_scale(
+            shadow.fundamental_east_unit_itrf,
+            math.cos(azimuth_rad),
+        ),
+        _shadow_scale(
+            shadow.fundamental_north_unit_itrf,
+            math.sin(azimuth_rad),
+        ),
+    )
+    origin = _shadow_add(
+        shadow.fundamental_plane_point_xyz_km,
+        _shadow_scale(radial, shadow.central_radius_km),
+    )
+    direction = _shadow_add(
+        shadow.axis_unit_away_from_sun,
+        _shadow_scale(radial, -shadow.central_cone_slope),
+    )
+    return origin, direction
+
+
+def _central_generator_margin_km2(
+    shadow: _EarthFixedSolarShadow,
+    azimuth_rad: float,
+) -> float:
+    origin, direction = _central_generator_line(shadow, azimuth_rad)
+    signed_parameter_half_chord_sq, _roots = _wgs84_line_intersection_parameters(
+        origin,
+        direction,
+    )
+    return signed_parameter_half_chord_sq * _shadow_dot(direction, direction)
+
+
+def _central_generator_extrema(
+    shadow: _EarthFixedSolarShadow,
+) -> tuple[tuple[float, float], tuple[float, float]]:
+    margin = lambda azimuth: _central_generator_margin_km2(shadow, azimuth)
+    return (
+        _periodic_scalar_extreme(margin, maximize=True),
+        _periodic_scalar_extreme(margin, maximize=False),
+    )
+
+
+def _central_generator_tangent_point(
+    shadow: _EarthFixedSolarShadow,
+    azimuth_rad: float,
+) -> tuple[float, float]:
+    origin, direction = _central_generator_line(shadow, azimuth_rad)
+    coefficient_a, coefficient_b, _coefficient_c = (
+        _wgs84_line_quadratic_coefficients(origin, direction)
+    )
+    parameter = -coefficient_b / coefficient_a
+    if parameter < shadow.axis_projection_km:
+        raise ArithmeticError("central-cone tangency lies behind the Moon")
+    if parameter - shadow.axis_projection_km <= MOON_RADIUS_KM:
+        raise ArithmeticError(
+            "central-cone tangency has no physical Earth intersection "
+            "beyond the Moon"
+        )
+    xyz_itrf_km = _shadow_add(
+        origin,
+        _shadow_scale(direction, parameter),
+    )
+    return _wgs84_geodetic_from_xyz_km(xyz_itrf_km)
+
+
+def _solve_solar_umbral_contacts(
+    calc: EclipseCalculator,
+    jd_ut: float,
+) -> SolarEclipseUmbralContacts:
+    """Solve U1-U4 as external/internal central-cone tangencies with WGS-84."""
+
+    cache: dict[
+        float,
+        tuple[
+            _EarthFixedSolarShadow,
+            tuple[tuple[float, float], tuple[float, float]],
+        ],
+    ] = {}
+
+    def state(epoch: float):
+        key = float(epoch)
+        if key not in cache:
+            shadow = _earth_fixed_solar_shadow(calc, key)
+            if shadow is None:
+                raise ArithmeticError(
+                    "solar central shadow is undefined during U-contact solve"
+                )
+            cache[key] = (shadow, _central_generator_extrema(shadow))
+        return cache[key]
+
+    center_extrema = state(jd_ut)[1]
+    if center_extrema[0][1] <= 0.0 or center_extrema[1][1] <= 0.0:
+        raise ArithmeticError(
+            "central eclipse seed does not carry a closed two-limit "
+            "central-shadow footprint"
+        )
+
+    def solve(
+        kind: SolarEclipseUmbralContactKind,
+        *,
+        direction: float,
+        internal: bool,
+    ) -> SolarEclipseUmbralContact:
+        extreme_index = 1 if internal else 0
+
+        def margin(epoch: float) -> float:
+            return state(epoch)[1][extreme_index][1]
+
+        inside = jd_ut
+        step = direction * (2.0 / 1440.0)
+        for _ in range(240):
+            outside = inside + step
+            if margin(outside) <= 0.0:
+                left, right = (
+                    (outside, inside)
+                    if direction < 0.0
+                    else (inside, outside)
+                )
+                root = _bisection_root(margin, left, right)
+                shadow, extrema = state(root)
+                azimuth = extrema[extreme_index][0]
+                latitude, longitude = _central_generator_tangent_point(
+                    shadow,
+                    azimuth,
+                )
+                jd_tt = _ut1_to_ephemeris_tt(root, calc._reader)
+                return SolarEclipseUmbralContact(
+                    kind=kind,
+                    epoch=EclipseEpoch(
+                        jd_tt=jd_tt,
+                        jd_ut1=root,
+                        delta_t_seconds=(jd_tt - root) * 86400.0,
+                        time_policy=(
+                            "content-identified ephemeris-bound Moira Delta T"
+                        ),
+                    ),
+                    latitude_deg=latitude,
+                    longitude_deg=longitude,
+                )
+            inside = outside
+        raise _SearchLimitReached(
+            f"{kind.value.upper()} was not bracketed within eight hours of GE"
+        )
+
+    return SolarEclipseUmbralContacts(
+        u1=solve(
+            SolarEclipseUmbralContactKind.U1,
+            direction=-1.0,
+            internal=False,
+        ),
+        u2=solve(
+            SolarEclipseUmbralContactKind.U2,
+            direction=-1.0,
+            internal=True,
+        ),
+        u3=solve(
+            SolarEclipseUmbralContactKind.U3,
+            direction=1.0,
+            internal=True,
+        ),
+        u4=solve(
+            SolarEclipseUmbralContactKind.U4,
+            direction=1.0,
+            internal=False,
+        ),
     )
 
 
@@ -6975,14 +7321,80 @@ def _solve_solar_penumbral_tracks(
                         candidates.append(
                             (gap_days, distance_sq, branch_index, endpoint_index)
                         )
-            if len(candidates) != 1:
+            if not candidates:
                 continue
+            if len(candidates) == 1:
+                _gap, _distance, branch_index, endpoint_index = candidates[0]
+                branch = canonical_branches[branch_index]
+                if endpoint_index == 0 and junction.jd_ut < branch[0].jd_ut:
+                    canonical_branches[branch_index] = (junction, *branch)
+                elif endpoint_index == -1 and junction.jd_ut > branch[-1].jd_ut:
+                    canonical_branches[branch_index] = (*branch, junction)
+                continue
+            candidates.sort(
+                key=lambda candidate: (
+                    -(
+                        canonical_branches[candidate[2]][-1].jd_ut
+                        - canonical_branches[candidate[2]][0].jd_ut
+                    ),
+                    candidate[1],
+                    candidate[0],
+                    candidate[2],
+                    candidate[3],
+                )
+            )
             _gap, _distance, branch_index, endpoint_index = candidates[0]
             branch = canonical_branches[branch_index]
-            if endpoint_index == 0 and junction.jd_ut < branch[0].jd_ut:
-                canonical_branches[branch_index] = (junction, *branch)
-            elif endpoint_index == -1 and junction.jd_ut > branch[-1].jd_ut:
-                canonical_branches[branch_index] = (*branch, junction)
+            branch_span_days = branch[-1].jd_ut - branch[0].jd_ut
+            if branch_span_days <= horizon_endpoint_bridge_days:
+                continue
+            if endpoint_index == 0:
+                suffix = tuple(
+                    point for point in branch if point.jd_ut > junction.jd_ut
+                )
+                if not suffix:
+                    continue
+                canonical_branches[branch_index] = (junction, *suffix)
+            elif endpoint_index == -1:
+                prefix = tuple(
+                    point for point in branch if point.jd_ut < junction.jd_ut
+                )
+                if not prefix:
+                    continue
+                canonical_branches[branch_index] = (*prefix, junction)
+            else:
+                continue
+
+            # The same near-singular solve may emit a numerical micro-arm
+            # wholly inside the bounded junction neighborhood.  Once the
+            # independently solved junction has replaced the long branch's
+            # endpoint, that sub-half-second chatter is not a second physical
+            # component and must not survive as an unpaired fold.
+            retained: list[tuple[SolarEclipseFootprintPoint, ...]] = []
+            for candidate_index, candidate_branch in enumerate(canonical_branches):
+                if candidate_index == branch_index:
+                    retained.append(candidate_branch)
+                    continue
+                if (
+                    candidate_branch[-1].jd_ut - candidate_branch[0].jd_ut
+                    <= horizon_endpoint_bridge_days
+                    and all(
+                        abs(point.jd_ut - junction.jd_ut)
+                        <= horizon_endpoint_bridge_days
+                        and _itrf_distance_sq(
+                            _wgs84_surface_xyz_km(
+                                point.latitude_deg,
+                                point.longitude_deg,
+                            ),
+                            junction_xyz,
+                        )
+                        <= fold_join_distance_sq
+                        for point in candidate_branch
+                    )
+                ):
+                    continue
+                retained.append(candidate_branch)
+            canonical_branches = retained
 
         if not canonical_branches:
             raise ArithmeticError(f"{kind.value} produced no complete envelope segment")

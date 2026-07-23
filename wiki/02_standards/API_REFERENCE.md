@@ -739,6 +739,9 @@ generic search integration, or remedy-fulfillment assessment.
 |---|---|---|
 | `eclipse(dt)` | `EclipseData` | Full eclipse geometry and classification for a datetime |
 | `solar_eclipse_footprint(jd_start, *, kind="any", backward=False, sample_count=181)` | `SolarEclipseVisibilityFootprint` | Complete zero-elevation WGS 84 mean-limb penumbral visibility boundary |
+| `solar_global_circumstances(jd_start, *, kind="any", backward=False)` | `SolarEclipseGlobalCircumstances` | Scale-explicit global contacts, conjunctions, GE/GD, body states, and provenance |
+| `solar_eclipse_cartography(jd_start, *, kind="any", backward=False, magnitude_levels=..., obscuration_levels=..., mesh_depth=1, time_samples=17, angular_tolerance_deg=8.0, field_tolerance=0.01)` | `SolarEclipseCartography` | NumPy-free adaptive spherical maximum-visible magnitude and obscuration contours |
+| `lunar_global_circumstances(jd_start, *, kind="any", backward=False, mode="native")` | `LunarEclipseGlobalCircumstances` | Mode-pure geocentric contacts, parameters, body states, and durations |
 | `lunar_eclipse_visibility_map(jd_start, *, kind="any", backward=False, mode="native", sample_count=181)` | `LunarEclipseVisibilityMap` | Global contact-horizon limits for lunar-eclipse map rendering |
 
 ---
@@ -4582,6 +4585,9 @@ from moira.sky.eclipse import (
     SolarEclipseFootprintTopology, SolarEclipseFootprintPoint,
     SolarEclipsePenumbralContact, SolarEclipseFootprintContacts,
     SolarEclipseLimitTrack, SolarEclipseVisibilityFootprint,
+    EclipseEpoch, EclipseGeocentricBodyState,
+    SolarEclipseGlobalCircumstances, SolarEclipseCartography,
+    LunarEclipseGlobalCircumstances,
     SolarEclipsePath, SolarEclipseLocalCircumstances,
     SolarBodyCircumstances, LocalContactCircumstances,
     LunarEclipseAnalysis, LunarEclipseLocalCircumstances, LunarEclipseContacts,
@@ -4607,6 +4613,17 @@ path      = calc.solar_eclipse_path(jd_start, kind="any", sample_count=9)
 footprint = calc.solar_eclipse_footprint(
     jd_start, kind="any", sample_count=181
 )
+solar_global = calc.solar_global_circumstances(jd_start, kind="any")
+solar_map = calc.solar_eclipse_cartography(
+    jd_start,
+    kind="any",
+    magnitude_levels=(0.2, 0.4, 0.6, 0.8, 0.9),
+    obscuration_levels=(0.2, 0.4, 0.6, 0.8, 0.9),
+    mesh_depth=1,
+    time_samples=17,
+    angular_tolerance_deg=8.0,
+    field_tolerance=0.01,
+)
 full      = calc.next_solar_eclipse_at_location(
     jd_start, lat, lon, elevation_m=0.0, kind="any"
 )  # search + circumstances combined
@@ -4622,6 +4639,9 @@ lc = calc.lunar_local_circumstances(
 )
 lunar_map = calc.lunar_eclipse_visibility_map(
     jd_start, kind="any", mode="native", sample_count=181
+)
+lunar_global = calc.lunar_global_circumstances(
+    jd_start, kind="any", mode="native"
 )
 
 # Inclusive bulk ranges (global maxima in UT1)
@@ -4663,6 +4683,25 @@ excludes atmosphere, terrain, observer elevation, and lunar-limb relief and
 therefore does not replace observer-local apparent circumstances. The Python
 layer owns contact policy and public semantics; no native C++ port is used for
 this seven-contact assembly.
+
+**Global-circumstances and cartography signatures**
+
+| Surface | Exact signature | Returns |
+|---|---|---|
+| `EclipseCalculator` / `Moira` | `solar_global_circumstances(jd_start, *, kind="any", backward=False)` | `SolarEclipseGlobalCircumstances` |
+| `EclipseCalculator` / `Moira` | `solar_eclipse_cartography(jd_start, *, kind="any", backward=False, magnitude_levels=(0.2, 0.4, 0.6, 0.8, 0.9), obscuration_levels=(0.2, 0.4, 0.6, 0.8, 0.9), mesh_depth=1, time_samples=17, angular_tolerance_deg=8.0, field_tolerance=0.01)` | `SolarEclipseCartography` |
+| `EclipseCalculator` / `Moira` | `lunar_global_circumstances(jd_start, *, kind="any", backward=False, mode="native")` | `LunarEclipseGlobalCircumstances` |
+
+Solar global circumstances distinguish greatest eclipse from greatest duration,
+carry separate equatorial/ecliptic conjunction epochs, expose U1-U4 only for
+central events, and preserve explicit TT/UT1/Delta-T metadata. Lunar global
+circumstances retain mode-pure shadow geometry, contacts, phase durations, and
+geocentric body parameters. The cartography method emits observer-local maximum
+magnitude and obscuration as distinct contour families. Contour identity is
+`(component_id, segment_id)`; antimeridian splits are open transport-safe
+segments of one spherical component. Duration contours are not admitted.
+The result reports the achieved conforming refinement depth, triangle count,
+maximum angular edge, and unresolved-edge convergence state.
 
 **Solar footprint engine signatures**
 

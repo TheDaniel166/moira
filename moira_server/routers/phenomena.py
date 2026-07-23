@@ -19,6 +19,8 @@ from ..models.phenomena import (
     HeliacalPlanetEventRequest,
     LunarEclipseLocalCircumstancesResponse,
     LunarEclipseLocationRequest,
+    LunarEclipseGlobalCircumstancesRequest,
+    LunarEclipseGlobalCircumstancesResponse,
     LunarEclipseVisibilityMapResponse,
     LunarEclipseVisibilityRequest,
     LunarOccultationRequest,
@@ -59,6 +61,10 @@ from ..models.phenomena import (
     RiseSetPhenomenaResponse,
     RiseSetTransitRequest,
     SolarEclipseFootprintRequest,
+    SolarEclipseCartographyRequest,
+    SolarEclipseCartographyResponse,
+    SolarEclipseGlobalCircumstancesRequest,
+    SolarEclipseGlobalCircumstancesResponse,
     SolarEclipseLocalCircumstancesResponse,
     SolarEclipseLocationRequest,
     SolarEclipsePathRequest,
@@ -83,6 +89,7 @@ from ..serializers.phenomena import (
     serialize_event_instant,
     serialize_general_visibility_event,
     serialize_lunar_eclipse_local,
+    serialize_lunar_eclipse_global_circumstances,
     serialize_lunar_eclipse_visibility_map,
     serialize_lunar_occultation,
     serialize_natal_angular_contact,
@@ -100,6 +107,8 @@ from ..serializers.phenomena import (
     serialize_retrograde_period,
     serialize_rise_set_phenomena,
     serialize_solar_eclipse_footprint,
+    serialize_solar_eclipse_cartography,
+    serialize_solar_eclipse_global_circumstances,
     serialize_solar_eclipse_path,
     serialize_solar_eclipse_local,
     serialize_station_event,
@@ -111,6 +120,7 @@ from ..services.phenomena import (
     compute_close_approaches,
     compute_general_visibility_event,
     compute_lunar_eclipse_local,
+    compute_lunar_eclipse_global_circumstances,
     compute_lunar_eclipse_visibility,
     compute_lunar_occultations,
     compute_lunar_occultation_path_at,
@@ -143,6 +153,8 @@ from ..services.phenomena import (
     compute_rise_set_phenomena,
     compute_rise_set_transit,
     compute_solar_eclipse_footprint,
+    compute_solar_eclipse_cartography,
+    compute_solar_eclipse_global_circumstances,
     compute_station_state,
     compute_stations,
     compute_solar_eclipse_path,
@@ -311,6 +323,19 @@ def lunar_eclipse_visibility_route(
     )
 
 
+@router.post(
+    "/eclipses/lunar/global-circumstances",
+    response_model=LunarEclipseGlobalCircumstancesResponse,
+)
+def lunar_eclipse_global_circumstances_route(
+    request: LunarEclipseGlobalCircumstancesRequest,
+    engine: Moira = Depends(get_engine),
+) -> LunarEclipseGlobalCircumstancesResponse:
+    return serialize_lunar_eclipse_global_circumstances(
+        compute_lunar_eclipse_global_circumstances(engine, request)
+    )
+
+
 @router.post("/eclipses/solar/path", response_model=SolarEclipsePathResponse)
 def solar_eclipse_path_route(
     request: SolarEclipsePathRequest,
@@ -329,6 +354,32 @@ def solar_eclipse_footprint_route(
 ) -> SolarEclipseVisibilityFootprintResponse:
     return serialize_solar_eclipse_footprint(
         compute_solar_eclipse_footprint(engine, request)
+    )
+
+
+@router.post(
+    "/eclipses/solar/global-circumstances",
+    response_model=SolarEclipseGlobalCircumstancesResponse,
+)
+def solar_eclipse_global_circumstances_route(
+    request: SolarEclipseGlobalCircumstancesRequest,
+    engine: Moira = Depends(get_engine),
+) -> SolarEclipseGlobalCircumstancesResponse:
+    return serialize_solar_eclipse_global_circumstances(
+        compute_solar_eclipse_global_circumstances(engine, request)
+    )
+
+
+@router.post(
+    "/eclipses/solar/cartography",
+    response_model=SolarEclipseCartographyResponse,
+)
+def solar_eclipse_cartography_route(
+    request: SolarEclipseCartographyRequest,
+    engine: Moira = Depends(get_engine),
+) -> SolarEclipseCartographyResponse:
+    return serialize_solar_eclipse_cartography(
+        compute_solar_eclipse_cartography(engine, request)
     )
 
 

@@ -1,0 +1,59 @@
+{
+  "source": {
+    "authority": "Eclipse Predictions by Fred Espenak, EclipseWise.com",
+    "url": "https://eclipsewise.com/lunar/LEprime/2001-2100/LE2026Aug28Pprime.html",
+    "retrieved_on": "2026-07-23",
+    "page_last_updated": "2022-02-27",
+    "archived_sha256": null,
+    "evidence_class": "cross_model_corroboration",
+    "ephemerides": "JPL DE430",
+    "lunar_origin": "Moon center of mass",
+    "shadow_rule": "Herald/Sinnott elliptical atmospheric shadow",
+    "shadow_enlargement": 1.0,
+    "time_scales": "TD and UT1",
+    "delta_t_seconds": 72.3,
+    "comparison_note": "Moira uses content-identified DE441/LE441. The current nasa_compat mode uses Moira's spherical mean-limb conical shadow with its NASA-catalog Delta-T policy; it is not an exact DE430 Herald/Sinnott implementation. These fields therefore corroborate like-named products across declared models and are not native golden values.",
+    "exploratory_tolerances": {
+      "right_ascension_arcsec": 2.0,
+      "declination_arcsec": 2.0,
+      "semidiameter_arcsec": 1.0,
+      "horizontal_parallax_arcsec": 0.25,
+      "gamma_earth_radii": 0.0002,
+      "magnitude": 0.005,
+      "greatest_tt_seconds": 10.0
+    }
+  },
+  "events": [
+    {
+      "label": "2026-08-28 partial",
+      "kind": "partial",
+      "greatest_td": "2026-08-28T04:14:04.3",
+      "greatest_ut1": "2026-08-28T04:12:52.0",
+      "penumbral_magnitude": 1.96645,
+      "umbral_magnitude": 0.93187,
+      "gamma_earth_radii": 0.49644,
+      "sun": {
+        "right_ascension": "10:26:57.9",
+        "declination": "+09:42:52.7",
+        "semidiameter": "00:15:50.0",
+        "horizontal_parallax": "00:00:08.7"
+      },
+      "moon": {
+        "right_ascension": "22:26:06.3",
+        "declination": "-09:18:03.6",
+        "semidiameter": "00:15:18.2",
+        "horizontal_parallax": "00:56:09.9"
+      },
+      "penumbra_radius_deg": 1.2152,
+      "umbra_radius_deg": 0.6874,
+      "contacts_ut1": {
+        "p1": "2026-08-28T01:23:29.0",
+        "u1": "2026-08-28T02:33:21.4",
+        "u4": "2026-08-28T05:52:09.3",
+        "p4": "2026-08-28T07:01:59.8"
+      },
+      "penumbral_duration_seconds": 20310.8,
+      "partial_duration_seconds": 11927.9
+    }
+  ]
+}

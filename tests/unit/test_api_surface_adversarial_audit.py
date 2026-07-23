@@ -766,6 +766,22 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
 })
 
 _EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "EclipseEpoch",
+    "EclipseGeocentricBodyState",
+    "LunarEclipseGlobalCircumstances",
+    "LunarEclipseShadowState",
+    "SolarEclipseCentralLineLimit",
+    "SolarEclipseConjunction",
+    "SolarEclipseConjunctionKind",
+    "SolarEclipseGlobalCircumstances",
+    "SolarEclipseGreatestSite",
+    "SolarEclipseUmbralContact",
+    "SolarEclipseUmbralContactKind",
+    "SolarEclipseUmbralContacts",
+    "SolarEclipseMapSample",
+    "EclipseContourComponent",
+    "EclipseContourLevel",
+    "SolarEclipseCartography",
     "PanchaPakshiActivity",
     "PanchaPakshiAdmissionStatus",
     "PanchaPakshiAstronomicalPaksha",
@@ -1188,6 +1204,9 @@ _EXPECTED_MOIRA_METHODS = {
 
 # Explicit facade-method admissions added since the original frozen baseline.
 _EXPECTED_MOIRA_METHODS.update({
+    'lunar_global_circumstances',
+    'solar_global_circumstances',
+    'solar_eclipse_cartography',
     'lunar_ecliptic_direction_at',
     'ashtakavarga',
     'moon_connection_flow_at',

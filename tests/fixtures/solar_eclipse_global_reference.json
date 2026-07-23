@@ -1,0 +1,70 @@
+{
+  "source": {
+    "authority": "Eclipse Predictions by Fred Espenak, EclipseWise.com",
+    "url": "https://eclipsewise.com/solar/SEprime/2001-2100/SE2027Aug02Tprime.html",
+    "retrieved_on": "2026-07-23",
+    "page_last_updated": "2022-03-03",
+    "archived_sha256": null,
+    "evidence_class": "cross_model_corroboration",
+    "ephemerides": "JPL DE405",
+    "lunar_origin": "Moon center of mass",
+    "time_scales": "TD and UT1",
+    "delta_t_seconds": 72.8,
+    "comparison_note": "Moira uses content-identified DE441/LE441, WGS-84, its spherical mean-limb model, and its ephemeris-bound Delta-T policy. These published DE405 values corroborate like-named global products across declared models; they are not Moira regression goldens.",
+    "cross_model_tolerances": {
+      "contact_time_seconds": 5.0,
+      "contact_position_degrees": 0.35,
+      "greatest_eclipse_time_seconds": 5.0,
+      "greatest_duration_time_seconds": 5.0,
+      "greatest_site_position_degrees": 0.05,
+      "duration_seconds": 1.0,
+      "path_width_km": 1.0
+    }
+  },
+  "events": [
+    {
+      "label": "2027-08-02 total",
+      "kind": "total",
+      "conjunctions": {
+        "equatorial_ut1": "2027-08-02T10:00:57.9",
+        "ecliptic_ut1": "2027-08-02T10:05:10.8"
+      },
+      "greatest_eclipse": {
+        "ut1": "2027-08-02T10:06:37.4",
+        "latitude_deg": 25.5033333333,
+        "longitude_deg": 33.1833333333,
+        "path_width_km": 257.7,
+        "duration_seconds": 382.64
+      },
+      "greatest_duration": {
+        "ut1": "2027-08-02T10:00:21.0",
+        "latitude_deg": 26.8133333333,
+        "longitude_deg": 31.1333333333,
+        "path_width_km": 257.2,
+        "duration_seconds": 383.24
+      },
+      "umbral_contacts": {
+        "u1": {
+          "ut1": "2027-08-02T08:23:25.0",
+          "latitude_deg": 27.84,
+          "longitude_deg": -44.0216666667
+        },
+        "u2": {
+          "ut1": "2027-08-02T08:26:38.3",
+          "latitude_deg": 28.0816666667,
+          "longitude_deg": -44.9283333333
+        },
+        "u3": {
+          "ut1": "2027-08-02T11:46:40.3",
+          "latitude_deg": -12.3616666667,
+          "longitude_deg": 90.885
+        },
+        "u4": {
+          "ut1": "2027-08-02T11:49:53.1",
+          "latitude_deg": -12.6066666667,
+          "longitude_deg": 90.0
+        }
+      }
+    }
+  ]
+}

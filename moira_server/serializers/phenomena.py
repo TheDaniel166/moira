@@ -8,15 +8,21 @@ from moira.eclipse import (
     EclipseData,
     EclipseEvent,
     LocalContactCircumstances,
+    LunarEclipseGlobalCircumstances,
     LunarEclipseLocalCircumstances,
     LunarEclipseVisibilityLimit,
     LunarEclipseVisibilityMap,
     LunarEclipseVisibilityPoint,
+    SolarEclipseCartography,
+    SolarEclipseCentralLineLimit,
+    SolarEclipseUmbralContact,
+    SolarEclipseUmbralContacts,
     SolarEclipseFootprintContacts,
     SolarEclipseFootprintPoint,
     SolarEclipseLimitTrack,
     SolarEclipsePenumbralContact,
     SolarEclipseVisibilityFootprint,
+    SolarEclipseGlobalCircumstances,
     SolarEclipsePath,
     SolarBodyCircumstances,
     SolarEclipseLocalCircumstances,
@@ -68,7 +74,14 @@ from ..models.phenomena import (
     GeneralVisibilityEventResponse,
     LastAspectResponse,
     LocalContactCircumstancesResponse,
+    EclipseEpochResponse,
+    EclipseGeocentricBodyStateResponse,
+    LunarEclipseGlobalCircumstancesResponse,
     LunarEclipseLocalCircumstancesResponse,
+    LunarEclipseShadowStateResponse,
+    EclipseContourComponentResponse,
+    EclipseContourLevelResponse,
+    EclipseContourPointResponse,
     LunarEclipseVisibilityLimitResponse,
     LunarEclipseVisibilityMapResponse,
     LunarEclipseVisibilityPointResponse,
@@ -106,6 +119,15 @@ from ..models.phenomena import (
     RiseSetPhenomenaResponse,
     SolarBodyCircumstancesResponse,
     SolarEclipseFootprintContactsResponse,
+    SolarBesselianElementsResponse,
+    SolarEclipseCartographyResponse,
+    SolarEclipseCentralLineLimitResponse,
+    SolarEclipseConjunctionResponse,
+    SolarEclipseGlobalCircumstancesResponse,
+    SolarEclipseGreatestSiteResponse,
+    SolarEclipseUmbralContactResponse,
+    SolarEclipseUmbralContactsResponse,
+    SolarEclipseMapSampleResponse,
     SolarEclipseFootprintPointResponse,
     SolarEclipseLimitTrackResponse,
     SolarEclipsePenumbralContactResponse,
@@ -350,6 +372,286 @@ def serialize_lunar_eclipse_visibility_map(
         time_scale=visibility_map.time_scale,
         atmospheric_refraction=visibility_map.atmospheric_refraction,
         visible_side=visibility_map.visible_side,
+    )
+
+
+def serialize_lunar_eclipse_global_circumstances(
+    circumstances: LunarEclipseGlobalCircumstances,
+) -> LunarEclipseGlobalCircumstancesResponse:
+    return LunarEclipseGlobalCircumstancesResponse(
+        mode=circumstances.mode,
+        source_model=circumstances.source_model,
+        canon_method=circumstances.analysis.canon_method,
+        event=serialize_eclipse_event(circumstances.analysis.event),
+        greatest=EclipseEpochResponse(
+            jd_tt=circumstances.greatest.jd_tt,
+            jd_ut1=circumstances.greatest.jd_ut1,
+            delta_t_seconds=circumstances.greatest.delta_t_seconds,
+            time_policy=circumstances.greatest.time_policy,
+        ),
+        sun=EclipseGeocentricBodyStateResponse(
+            body=circumstances.sun.body,
+            right_ascension_deg=circumstances.sun.right_ascension_deg,
+            declination_deg=circumstances.sun.declination_deg,
+            distance_km=circumstances.sun.distance_km,
+            semidiameter_deg=circumstances.sun.semidiameter_deg,
+            horizontal_parallax_deg=(
+                circumstances.sun.horizontal_parallax_deg
+            ),
+            origin=circumstances.sun.origin,
+            frame=circumstances.sun.frame,
+            correction_policy=circumstances.sun.correction_policy,
+        ),
+        moon=EclipseGeocentricBodyStateResponse(
+            body=circumstances.moon.body,
+            right_ascension_deg=circumstances.moon.right_ascension_deg,
+            declination_deg=circumstances.moon.declination_deg,
+            distance_km=circumstances.moon.distance_km,
+            semidiameter_deg=circumstances.moon.semidiameter_deg,
+            horizontal_parallax_deg=(
+                circumstances.moon.horizontal_parallax_deg
+            ),
+            origin=circumstances.moon.origin,
+            frame=circumstances.moon.frame,
+            correction_policy=circumstances.moon.correction_policy,
+        ),
+        shadow=LunarEclipseShadowStateResponse(
+            gamma_earth_radii=circumstances.shadow.gamma_earth_radii,
+            axis_distance_km=circumstances.shadow.axis_distance_km,
+            moon_radius_earth_radii=(
+                circumstances.shadow.moon_radius_earth_radii
+            ),
+            umbra_radius_earth_radii=(
+                circumstances.shadow.umbra_radius_earth_radii
+            ),
+            penumbra_radius_earth_radii=(
+                circumstances.shadow.penumbra_radius_earth_radii
+            ),
+            umbral_magnitude=circumstances.shadow.umbral_magnitude,
+            penumbral_magnitude=circumstances.shadow.penumbral_magnitude,
+            shadow_model=circumstances.shadow.shadow_model,
+        ),
+        penumbral_duration_seconds=(
+            circumstances.penumbral_duration_seconds
+        ),
+        partial_duration_seconds=circumstances.partial_duration_seconds,
+        total_duration_seconds=circumstances.total_duration_seconds,
+        ephemeris=circumstances.ephemeris,
+    )
+
+
+def _serialize_eclipse_epoch(epoch) -> EclipseEpochResponse:
+    return EclipseEpochResponse(
+        jd_tt=epoch.jd_tt,
+        jd_ut1=epoch.jd_ut1,
+        delta_t_seconds=epoch.delta_t_seconds,
+        time_policy=epoch.time_policy,
+    )
+
+
+def _serialize_eclipse_body_state(state) -> EclipseGeocentricBodyStateResponse:
+    return EclipseGeocentricBodyStateResponse(
+        body=state.body,
+        right_ascension_deg=state.right_ascension_deg,
+        declination_deg=state.declination_deg,
+        distance_km=state.distance_km,
+        semidiameter_deg=state.semidiameter_deg,
+        horizontal_parallax_deg=state.horizontal_parallax_deg,
+        origin=state.origin,
+        frame=state.frame,
+        correction_policy=state.correction_policy,
+    )
+
+
+def _serialize_solar_central_line_limit(
+    limit: SolarEclipseCentralLineLimit | None,
+) -> SolarEclipseCentralLineLimitResponse | None:
+    if limit is None:
+        return None
+    return SolarEclipseCentralLineLimitResponse(
+        kind=limit.kind,
+        epoch=_serialize_eclipse_epoch(limit.epoch),
+        latitude_deg=limit.latitude_deg,
+        longitude_deg=limit.longitude_deg,
+    )
+
+
+def _serialize_solar_umbral_contact(
+    contact: SolarEclipseUmbralContact,
+) -> SolarEclipseUmbralContactResponse:
+    return SolarEclipseUmbralContactResponse(
+        kind=contact.kind.value,
+        epoch=_serialize_eclipse_epoch(contact.epoch),
+        latitude_deg=contact.latitude_deg,
+        longitude_deg=contact.longitude_deg,
+    )
+
+
+def _serialize_solar_umbral_contacts(
+    contacts: SolarEclipseUmbralContacts | None,
+) -> SolarEclipseUmbralContactsResponse | None:
+    if contacts is None:
+        return None
+    return SolarEclipseUmbralContactsResponse(
+        u1=_serialize_solar_umbral_contact(contacts.u1),
+        u2=_serialize_solar_umbral_contact(contacts.u2),
+        u3=_serialize_solar_umbral_contact(contacts.u3),
+        u4=_serialize_solar_umbral_contact(contacts.u4),
+    )
+
+
+def _serialize_solar_greatest_site(
+    site,
+) -> SolarEclipseGreatestSiteResponse:
+    return SolarEclipseGreatestSiteResponse(
+        epoch=_serialize_eclipse_epoch(site.epoch),
+        latitude_deg=site.latitude_deg,
+        longitude_deg=site.longitude_deg,
+        path_width_km=site.path_width_km,
+        central_duration_seconds=site.central_duration_seconds,
+        sun_altitude_deg=site.sun_altitude_deg,
+        sun_azimuth_deg=site.sun_azimuth_deg,
+        moon_altitude_deg=site.moon_altitude_deg,
+        moon_azimuth_deg=site.moon_azimuth_deg,
+        separation_deg=site.separation_deg,
+        sun_semidiameter_deg=site.sun_semidiameter_deg,
+        moon_semidiameter_deg=site.moon_semidiameter_deg,
+        magnitude=site.magnitude,
+        obscuration=site.obscuration,
+        local_class=site.local_class,
+    )
+
+
+def serialize_solar_eclipse_global_circumstances(
+    circumstances: SolarEclipseGlobalCircumstances,
+) -> SolarEclipseGlobalCircumstancesResponse:
+    greatest = circumstances.greatest
+    besselian = circumstances.besselian
+    return SolarEclipseGlobalCircumstancesResponse(
+        event=serialize_eclipse_event(circumstances.event),
+        greatest=_serialize_solar_greatest_site(greatest),
+        greatest_duration=(
+            _serialize_solar_greatest_site(circumstances.greatest_duration)
+            if circumstances.greatest_duration is not None
+            else None
+        ),
+        equatorial_conjunction=SolarEclipseConjunctionResponse(
+            kind=circumstances.equatorial_conjunction.kind.value,
+            epoch=_serialize_eclipse_epoch(
+                circumstances.equatorial_conjunction.epoch
+            ),
+        ),
+        ecliptic_conjunction=SolarEclipseConjunctionResponse(
+            kind=circumstances.ecliptic_conjunction.kind.value,
+            epoch=_serialize_eclipse_epoch(
+                circumstances.ecliptic_conjunction.epoch
+            ),
+        ),
+        topology=circumstances.footprint.topology.value,
+        penumbral_contacts=serialize_solar_eclipse_footprint_contacts(
+            circumstances.footprint.contacts
+        ),
+        besselian=SolarBesselianElementsResponse(
+            jd_ut1=besselian.jd_ut1,
+            jd_tt=besselian.jd_tt,
+            x=besselian.x,
+            y=besselian.y,
+            d=besselian.d,
+            mu=besselian.mu,
+            l1=besselian.l1,
+            l2=besselian.l2,
+            tan_f1=besselian.tan_f1,
+            tan_f2=besselian.tan_f2,
+            ephemeris=besselian.ephemeris,
+            axis_model=besselian.axis_model,
+            frame=besselian.frame,
+            hour_angle_model=besselian.hour_angle_model,
+            radius_model=besselian.radius_model,
+        ),
+        sun=_serialize_eclipse_body_state(circumstances.sun),
+        moon=_serialize_eclipse_body_state(circumstances.moon),
+        gamma_earth_radii=circumstances.gamma_earth_radii,
+        umbral_contacts=_serialize_solar_umbral_contacts(
+            circumstances.umbral_contacts
+        ),
+        first_central_line_limit=_serialize_solar_central_line_limit(
+            circumstances.first_central_line_limit
+        ),
+        last_central_line_limit=_serialize_solar_central_line_limit(
+            circumstances.last_central_line_limit
+        ),
+        ephemeris=circumstances.ephemeris,
+        surface_model=circumstances.surface_model,
+        limb_model=circumstances.limb_model,
+        umbral_contacts_admitted=circumstances.umbral_contacts_admitted,
+        greatest_duration_admitted=circumstances.greatest_duration_admitted,
+    )
+
+
+def serialize_solar_eclipse_cartography(
+    cartography: SolarEclipseCartography,
+) -> SolarEclipseCartographyResponse:
+    def serialize_level(level) -> EclipseContourLevelResponse:
+        return EclipseContourLevelResponse(
+            quantity=level.quantity,
+            threshold=level.threshold,
+            components=[
+                EclipseContourComponentResponse(
+                    quantity=component.quantity,
+                    threshold=component.threshold,
+                    component_id=component.component_id,
+                    segment_id=component.segment_id,
+                    closed=component.closed,
+                    points=[
+                        EclipseContourPointResponse(
+                            latitude_deg=latitude,
+                            longitude_deg=longitude,
+                        )
+                        for latitude, longitude in component.points
+                    ],
+                )
+                for component in level.components
+            ],
+        )
+
+    return SolarEclipseCartographyResponse(
+        global_circumstances=serialize_solar_eclipse_global_circumstances(
+            cartography.global_circumstances
+        ),
+        samples=[
+            SolarEclipseMapSampleResponse(
+                latitude_deg=sample.latitude_deg,
+                longitude_deg=sample.longitude_deg,
+                visible=sample.visible,
+                magnitude=sample.magnitude,
+                magnitude_jd_ut1=sample.magnitude_jd_ut1,
+                obscuration=sample.obscuration,
+                obscuration_jd_ut1=sample.obscuration_jd_ut1,
+                local_class=sample.local_class,
+                sun_altitude_deg=sample.sun_altitude_deg,
+            )
+            for sample in cartography.samples
+        ],
+        magnitude_levels=[
+            serialize_level(level)
+            for level in cartography.magnitude_levels
+        ],
+        obscuration_levels=[
+            serialize_level(level)
+            for level in cartography.obscuration_levels
+        ],
+        mesh_depth=cartography.mesh_depth,
+        achieved_mesh_depth=cartography.achieved_mesh_depth,
+        mesh_triangle_count=cartography.mesh_triangle_count,
+        time_samples=cartography.time_samples,
+        angular_tolerance_deg=cartography.angular_tolerance_deg,
+        field_tolerance=cartography.field_tolerance,
+        maximum_angular_edge_deg=cartography.maximum_angular_edge_deg,
+        converged=cartography.converged,
+        unresolved_edge_count=cartography.unresolved_edge_count,
+        daylight_policy=cartography.daylight_policy,
+        duration_contours_available=cartography.duration_contours_available,
+        projection=cartography.projection,
     )
 
 
@@ -892,6 +1194,7 @@ __all__ = [
     "serialize_last_aspect",
     "serialize_local_contact",
     "serialize_lunar_eclipse_local",
+    "serialize_lunar_eclipse_global_circumstances",
     "serialize_lunar_eclipse_visibility_limit",
     "serialize_lunar_eclipse_visibility_map",
     "serialize_lunar_eclipse_visibility_point",
@@ -922,6 +1225,8 @@ __all__ = [
     "serialize_rise_set_phenomena",
     "serialize_solar_body_circumstances",
     "serialize_solar_eclipse_footprint",
+    "serialize_solar_eclipse_global_circumstances",
+    "serialize_solar_eclipse_cartography",
     "serialize_solar_eclipse_footprint_contacts",
     "serialize_solar_eclipse_footprint_point",
     "serialize_solar_eclipse_limit_track",

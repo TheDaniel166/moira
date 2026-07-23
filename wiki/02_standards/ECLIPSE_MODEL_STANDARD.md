@@ -220,6 +220,64 @@ magnitude or obscuration contours, local apparent contact circumstances, or a
 rendered map projection. Those are distinct observational or presentation
 products and must not be inferred from the footprint vessel.
 
+### 4.4 Solar Global Circumstances And Cartography
+
+`EclipseCalculator.solar_global_circumstances(...)` and the matching `Moira`
+facade method assemble one scale-explicit DE441/LE441 event summary. The result
+contains TT/UT1 epochs and Delta T policy, apparent geocentric Sun/Moon states,
+signed Besselian gamma, exact apparent-disc magnitude and obscuration at
+greatest eclipse, P contacts by reference to the footprint, central-line
+limits, independently solved U1-U4 cone/WGS-84 contacts, apparent-geocentric
+equatorial and ecliptic conjunctions, greatest eclipse, and independently
+optimized greatest duration. Partial events lawfully carry no U contacts,
+central-line limits, or greatest-duration site.
+
+Greatest eclipse and greatest duration are distinct products. Greatest
+duration searches every sampled local maximum plus both central-path endpoints
+and solves local second/third central contacts at the axis/WGS-84 site. If its
+maximum occurs exactly at a central-line tangency, instantaneous path width is
+zero because the axis footprint has collapsed to that tangent point.
+
+`EclipseCalculator.solar_eclipse_cartography(...)` maps maximum *visible*
+magnitude and obscuration separately. Each WGS-84 zero-elevation site searches
+P1-P4, refines every sampled local maximum and geometric horizon crossing, and
+requires non-negative geometric Sun-center altitude. It uses a deterministic
+closed icosphere and exact spherical marching-triangle connectivity; it is not
+a latitude/longitude raster and has no NumPy dependency. Exact-threshold
+vertices use deterministic vertex identity. Components are split at the
+antimeridian into `(component_id, segment_id)` pieces so a flat renderer never
+draws a false world-spanning chord; those endpoints remain coincident on a 3D
+globe.
+
+The admitted cartography product exposes magnitude and obscuration only.
+Duration contours, atmospheric refraction, terrain/elevation, weather,
+lunar-limb topography, and projection-specific screen coordinates remain
+outside this contract. `mesh_depth`, bounded to `0..3`, is the deterministic
+adaptive-refinement budget rather than a promise of uniform subdivision.
+Shared mesh edges are refined conformingly when requested thresholds,
+visibility/class state, polar/seam topology, angular tolerance, or measured
+midpoint interpolation error require it. The result reports achieved depth,
+triangle count, maximum angular edge, unresolved edge count, and convergence
+explicitly. A native batch accelerator remains deferred until a measured
+dense-field bottleneck justifies its added boundary and parity cost.
+
+### 4.5 Lunar Global Circumstances
+
+`EclipseCalculator.lunar_global_circumstances(...)` and the matching `Moira`
+facade method expose one geocentric lunar-eclipse summary without inventing a
+solar-style terrestrial path. The immutable result carries a scale-explicit
+greatest epoch, mode-consistent contact analysis, penumbral/partial/total
+durations where applicable, apparent geocentric Sun/Moon coordinates,
+semidiameters and horizontal parallaxes, signed shadow-axis gamma, separate
+penumbral and umbral magnitudes, shadow radii/model identity, and ephemeris,
+frame, origin, limb, and time-policy metadata.
+
+`native` and `nasa_compat` remain explicit profiles. Native gamma is derived
+from native physical shadow vectors; compatibility values are never borrowed
+into the native result. Published DE430/Herald-Sinnott rows are cross-model
+corroboration unless and until their ephemeris resource and complete shadow
+policy are separately admitted.
+
 ### 5. Layer Separation
 
 Moira separates eclipse work into two layers.

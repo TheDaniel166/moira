@@ -31,6 +31,8 @@ EclipseCalculator
                               mode="native")
     lunar_eclipse_visibility_map(jd_start, *, kind="any", backward=False,
                                  mode="native", sample_count=181)
+    lunar_global_circumstances(jd_start, *, kind="any", backward=False,
+                               mode="native")
     next_solar_eclipse(jd_start, kind="any")
     previous_solar_eclipse(jd_start, kind="any")
     solar_local_circumstances(jd_start, latitude, longitude, *,
@@ -39,6 +41,9 @@ EclipseCalculator
                        sample_count=9)
     solar_eclipse_footprint(jd_start, *, kind="any", backward=False,
                             sample_count=181)
+    solar_global_circumstances(jd_start, *, kind="any", backward=False)
+    solar_eclipse_cartography(jd_start, *, kind="any", backward=False,
+                              mesh_depth=1, time_samples=17)
     next_solar_eclipse_at_location(jd_start, latitude, longitude, *,
                                    elevation_m=0.0, kind="any",
                                    max_lunations=360)
@@ -129,21 +134,37 @@ from __future__ import annotations
 
 from moira.eclipse import (
     EclipseCalculator,
+    EclipseContourComponent,
+    EclipseContourLevel,
     EclipseData,
+    EclipseEpoch,
+    EclipseGeocentricBodyState,
     EclipseEvent,
     EclipseType,
     LocalContactCircumstances,
     LunarEclipseAnalysis,
+    LunarEclipseGlobalCircumstances,
     LunarEclipseLocalCircumstances,
+    LunarEclipseShadowState,
     LunarEclipseVisibilityContactKind,
     LunarEclipseVisibilityLimit,
     LunarEclipseVisibilityMap,
     LunarEclipseVisibilityPoint,
     SolarBodyCircumstances,
     SolarBesselianElements,
+    SolarEclipseCentralLineLimit,
+    SolarEclipseConjunction,
+    SolarEclipseConjunctionKind,
     SolarEclipseFootprintBoundaryKind,
     SolarEclipsePenumbralContactKind,
     SolarEclipseFootprintTopology,
+    SolarEclipseGlobalCircumstances,
+    SolarEclipseGreatestSite,
+    SolarEclipseUmbralContact,
+    SolarEclipseUmbralContactKind,
+    SolarEclipseUmbralContacts,
+    SolarEclipseMapSample,
+    SolarEclipseCartography,
     SolarEclipseFootprintPoint,
     SolarEclipsePenumbralContact,
     SolarEclipseFootprintContacts,
@@ -161,16 +182,30 @@ from moira.eclipse_contacts import (
 __all__ = [
     # Primary engine
     "EclipseCalculator",
+    "EclipseContourComponent",
+    "EclipseContourLevel",
     # Classification
     "EclipseType",
     # Geometry snapshot
     "EclipseData",
+    "EclipseEpoch",
+    "EclipseGeocentricBodyState",
     "EclipseEvent",
     # Solar eclipse
     "SolarBesselianElements",
+    "SolarEclipseCentralLineLimit",
+    "SolarEclipseConjunctionKind",
+    "SolarEclipseConjunction",
     "SolarEclipseFootprintBoundaryKind",
     "SolarEclipsePenumbralContactKind",
     "SolarEclipseFootprintTopology",
+    "SolarEclipseGlobalCircumstances",
+    "SolarEclipseGreatestSite",
+    "SolarEclipseUmbralContactKind",
+    "SolarEclipseUmbralContact",
+    "SolarEclipseUmbralContacts",
+    "SolarEclipseMapSample",
+    "SolarEclipseCartography",
     "SolarEclipseFootprintPoint",
     "SolarEclipsePenumbralContact",
     "SolarEclipseFootprintContacts",
@@ -182,7 +217,9 @@ __all__ = [
     "LocalContactCircumstances",
     # Lunar eclipse
     "LunarEclipseAnalysis",
+    "LunarEclipseGlobalCircumstances",
     "LunarEclipseLocalCircumstances",
+    "LunarEclipseShadowState",
     "LunarEclipseVisibilityContactKind",
     "LunarEclipseVisibilityPoint",
     "LunarEclipseVisibilityLimit",

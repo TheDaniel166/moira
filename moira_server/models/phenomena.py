@@ -295,6 +295,95 @@ LunarEclipseVisibilityContactKindValue = Literal[
 ]
 
 
+class LunarEclipseGlobalCircumstancesRequest(_StrictModel):
+    jd_start: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    kind: LunarEclipseSearchKind = "any"
+    backward: bool = False
+    mode: LunarEclipseAnalysisModeValue = "native"
+
+    @field_validator("jd_start", mode="before")
+    @classmethod
+    def _valid_jd_start(cls, value: Any) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("jd_start must be an integer or float")
+        parsed = float(value)
+        if not isfinite(parsed):
+            raise ValueError("jd_start must be finite")
+        return parsed
+
+    @field_validator("backward", mode="before")
+    @classmethod
+    def _valid_backward(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("backward must be a boolean")
+        return value
+
+
+class EclipseEpochResponse(_StrictModel):
+    jd_tt: float = Field(allow_inf_nan=False)
+    jd_ut1: float = Field(allow_inf_nan=False)
+    delta_t_seconds: float = Field(allow_inf_nan=False)
+    time_policy: str = Field(min_length=1)
+
+
+class EclipseGeocentricBodyStateResponse(_StrictModel):
+    body: Literal["Sun", "Moon"]
+    right_ascension_deg: float = Field(ge=0.0, lt=360.0, allow_inf_nan=False)
+    declination_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    distance_km: float = Field(gt=0.0, allow_inf_nan=False)
+    semidiameter_deg: float = Field(gt=0.0, lt=90.0, allow_inf_nan=False)
+    horizontal_parallax_deg: float = Field(
+        gt=0.0,
+        lt=90.0,
+        allow_inf_nan=False,
+    )
+    origin: Literal["earth_center"]
+    frame: Literal["true_equator_and_equinox_of_date"]
+    correction_policy: str = Field(min_length=1)
+
+
+class LunarEclipseShadowStateResponse(_StrictModel):
+    gamma_earth_radii: float = Field(allow_inf_nan=False)
+    axis_distance_km: float = Field(ge=0.0, allow_inf_nan=False)
+    moon_radius_earth_radii: float = Field(gt=0.0, allow_inf_nan=False)
+    umbra_radius_earth_radii: float = Field(gt=0.0, allow_inf_nan=False)
+    penumbra_radius_earth_radii: float = Field(gt=0.0, allow_inf_nan=False)
+    umbral_magnitude: float = Field(allow_inf_nan=False)
+    penumbral_magnitude: float = Field(allow_inf_nan=False)
+    shadow_model: str = Field(min_length=1)
+
+
+class LunarEclipseGlobalCircumstancesResponse(_StrictModel):
+    mode: LunarEclipseAnalysisModeValue
+    source_model: str = Field(min_length=1)
+    canon_method: str | None = None
+    event: EclipseEventResponse
+    greatest: EclipseEpochResponse
+    sun: EclipseGeocentricBodyStateResponse
+    moon: EclipseGeocentricBodyStateResponse
+    shadow: LunarEclipseShadowStateResponse
+    penumbral_duration_seconds: float | None = Field(
+        default=None,
+        ge=0.0,
+        allow_inf_nan=False,
+    )
+    partial_duration_seconds: float | None = Field(
+        default=None,
+        ge=0.0,
+        allow_inf_nan=False,
+    )
+    total_duration_seconds: float | None = Field(
+        default=None,
+        ge=0.0,
+        allow_inf_nan=False,
+    )
+    ephemeris: Literal["DE-0441LE-0441"]
+
+
 class LunarEclipseVisibilityRequest(_StrictModel):
     jd_start: float = Field(
         ge=_MIN_COMPUTATIONAL_JD,
@@ -466,6 +555,235 @@ class SolarEclipseVisibilityFootprintResponse(_StrictModel):
     limb_model: Literal["SPHERICAL_MEAN_LIMB"]
     time_scale: Literal["UT1"]
     atmospheric_refraction: Literal[False]
+
+
+class SolarEclipseGlobalCircumstancesRequest(_StrictModel):
+    jd_start: float = Field(
+        ge=_MIN_COMPUTATIONAL_JD,
+        le=_MAX_COMPUTATIONAL_JD,
+        allow_inf_nan=False,
+    )
+    kind: SolarEclipseSearchKind = "any"
+    backward: bool = False
+
+    @field_validator("jd_start", mode="before")
+    @classmethod
+    def _valid_jd_start(cls, value: Any) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("jd_start must be an integer or float")
+        parsed = float(value)
+        if not isfinite(parsed):
+            raise ValueError("jd_start must be finite")
+        return parsed
+
+    @field_validator("backward", mode="before")
+    @classmethod
+    def _valid_backward(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("backward must be a boolean")
+        return value
+
+
+class SolarEclipseCentralLineLimitResponse(_StrictModel):
+    kind: Literal["first", "last"]
+    epoch: EclipseEpochResponse
+    latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+
+
+class SolarEclipseConjunctionResponse(_StrictModel):
+    kind: Literal["equatorial", "ecliptic"]
+    epoch: EclipseEpochResponse
+
+
+class SolarEclipseUmbralContactResponse(_StrictModel):
+    kind: Literal["u1", "u2", "u3", "u4"]
+    epoch: EclipseEpochResponse
+    latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+
+
+class SolarEclipseUmbralContactsResponse(_StrictModel):
+    u1: SolarEclipseUmbralContactResponse
+    u2: SolarEclipseUmbralContactResponse
+    u3: SolarEclipseUmbralContactResponse
+    u4: SolarEclipseUmbralContactResponse
+
+
+class SolarEclipseGreatestSiteResponse(_StrictModel):
+    epoch: EclipseEpochResponse
+    latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+    path_width_km: float = Field(ge=0.0, allow_inf_nan=False)
+    central_duration_seconds: float = Field(ge=0.0, allow_inf_nan=False)
+    sun_altitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    sun_azimuth_deg: float = Field(ge=0.0, le=360.0, allow_inf_nan=False)
+    moon_altitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    moon_azimuth_deg: float = Field(ge=0.0, le=360.0, allow_inf_nan=False)
+    separation_deg: float = Field(ge=0.0, le=180.0, allow_inf_nan=False)
+    sun_semidiameter_deg: float = Field(gt=0.0, lt=90.0, allow_inf_nan=False)
+    moon_semidiameter_deg: float = Field(gt=0.0, lt=90.0, allow_inf_nan=False)
+    magnitude: float = Field(ge=0.0, allow_inf_nan=False)
+    obscuration: float = Field(ge=0.0, le=1.0, allow_inf_nan=False)
+    local_class: Literal["none", "partial", "annular", "total"]
+
+
+class SolarBesselianElementsResponse(_StrictModel):
+    jd_ut1: float = Field(allow_inf_nan=False)
+    jd_tt: float = Field(allow_inf_nan=False)
+    x: float = Field(allow_inf_nan=False)
+    y: float = Field(allow_inf_nan=False)
+    d: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    mu: float = Field(ge=0.0, lt=360.0, allow_inf_nan=False)
+    l1: float = Field(gt=0.0, allow_inf_nan=False)
+    l2: float = Field(allow_inf_nan=False)
+    tan_f1: float = Field(gt=0.0, allow_inf_nan=False)
+    tan_f2: float = Field(gt=0.0, allow_inf_nan=False)
+    ephemeris: Literal["DE-0441LE-0441"]
+    axis_model: str
+    frame: str
+    hour_angle_model: str
+    radius_model: str
+
+
+class SolarEclipseGlobalCircumstancesResponse(_StrictModel):
+    event: EclipseEventResponse
+    greatest: SolarEclipseGreatestSiteResponse
+    greatest_duration: SolarEclipseGreatestSiteResponse | None = None
+    equatorial_conjunction: SolarEclipseConjunctionResponse
+    ecliptic_conjunction: SolarEclipseConjunctionResponse
+    topology: SolarEclipseFootprintTopologyValue
+    penumbral_contacts: SolarEclipseFootprintContactsResponse
+    besselian: SolarBesselianElementsResponse
+    sun: EclipseGeocentricBodyStateResponse
+    moon: EclipseGeocentricBodyStateResponse
+    gamma_earth_radii: float = Field(allow_inf_nan=False)
+    umbral_contacts: SolarEclipseUmbralContactsResponse | None = None
+    first_central_line_limit: SolarEclipseCentralLineLimitResponse | None = None
+    last_central_line_limit: SolarEclipseCentralLineLimitResponse | None = None
+    ephemeris: Literal["DE-0441LE-0441"]
+    surface_model: Literal["WGS84_ZERO_ELEVATION"]
+    limb_model: Literal["SPHERICAL_MEAN_LIMB"]
+    umbral_contacts_admitted: Literal[True]
+    greatest_duration_admitted: Literal[True]
+
+
+class SolarEclipseCartographyRequest(SolarEclipseGlobalCircumstancesRequest):
+    magnitude_levels: list[float] = Field(
+        default=[0.2, 0.4, 0.6, 0.8, 0.9],
+        min_length=1,
+        max_length=20,
+    )
+    obscuration_levels: list[float] = Field(
+        default=[0.2, 0.4, 0.6, 0.8, 0.9],
+        min_length=1,
+        max_length=20,
+    )
+    mesh_depth: int = Field(default=1, ge=0, le=3)
+    time_samples: int = Field(default=17, ge=9, le=129)
+    angular_tolerance_deg: float = Field(
+        default=8.0,
+        ge=0.1,
+        le=90.0,
+        allow_inf_nan=False,
+    )
+    field_tolerance: float = Field(
+        default=0.01,
+        ge=1.0e-6,
+        le=0.25,
+        allow_inf_nan=False,
+    )
+
+    @field_validator("magnitude_levels", "obscuration_levels")
+    @classmethod
+    def _valid_levels(cls, values: list[float]) -> list[float]:
+        if any(not isfinite(value) or not 0.0 < value <= 1.0 for value in values):
+            raise ValueError("contour levels must be finite and in (0, 1]")
+        if values != sorted(set(values)):
+            raise ValueError("contour levels must be strictly increasing and unique")
+        return values
+
+    @field_validator("mesh_depth", "time_samples", mode="before")
+    @classmethod
+    def _integer_policy(cls, value: Any) -> int:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError("mesh_depth and time_samples must be integers")
+        return value
+
+    @field_validator("time_samples")
+    @classmethod
+    def _odd_time_samples(cls, value: int) -> int:
+        if value % 2 == 0:
+            raise ValueError("time_samples must be odd")
+        return value
+
+
+class SolarEclipseMapSampleResponse(_StrictModel):
+    latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+    visible: bool
+    magnitude: float = Field(ge=0.0, allow_inf_nan=False)
+    magnitude_jd_ut1: float | None = Field(default=None, allow_inf_nan=False)
+    obscuration: float = Field(ge=0.0, le=1.0, allow_inf_nan=False)
+    obscuration_jd_ut1: float | None = Field(default=None, allow_inf_nan=False)
+    local_class: Literal["none", "partial", "annular", "total"]
+    sun_altitude_deg: float | None = Field(
+        default=None,
+        ge=-90.0,
+        le=90.0,
+        allow_inf_nan=False,
+    )
+
+
+class EclipseContourPointResponse(_StrictModel):
+    latitude_deg: float = Field(ge=-90.0, le=90.0, allow_inf_nan=False)
+    longitude_deg: float = Field(ge=-180.0, le=180.0, allow_inf_nan=False)
+
+
+class EclipseContourComponentResponse(_StrictModel):
+    quantity: Literal["magnitude", "obscuration"]
+    threshold: float = Field(gt=0.0, le=1.0, allow_inf_nan=False)
+    component_id: int = Field(ge=0)
+    segment_id: int = Field(ge=0)
+    closed: bool
+    points: list[EclipseContourPointResponse] = Field(min_length=2)
+
+
+class EclipseContourLevelResponse(_StrictModel):
+    quantity: Literal["magnitude", "obscuration"]
+    threshold: float = Field(gt=0.0, le=1.0, allow_inf_nan=False)
+    components: list[EclipseContourComponentResponse]
+
+
+class SolarEclipseCartographyResponse(_StrictModel):
+    global_circumstances: SolarEclipseGlobalCircumstancesResponse
+    samples: list[SolarEclipseMapSampleResponse] = Field(min_length=12)
+    magnitude_levels: list[EclipseContourLevelResponse]
+    obscuration_levels: list[EclipseContourLevelResponse]
+    mesh_depth: int = Field(ge=0, le=3)
+    achieved_mesh_depth: int = Field(ge=0, le=3)
+    mesh_triangle_count: int = Field(ge=20)
+    time_samples: int = Field(ge=9, le=129)
+    angular_tolerance_deg: float = Field(
+        ge=0.1,
+        le=90.0,
+        allow_inf_nan=False,
+    )
+    field_tolerance: float = Field(
+        ge=1.0e-6,
+        le=0.25,
+        allow_inf_nan=False,
+    )
+    maximum_angular_edge_deg: float = Field(
+        ge=0.0,
+        le=180.0,
+        allow_inf_nan=False,
+    )
+    converged: bool
+    unresolved_edge_count: int = Field(ge=0)
+    daylight_policy: Literal["GEOMETRIC_SUN_CENTER_NONNEGATIVE_ALTITUDE"]
+    duration_contours_available: Literal[False]
+    projection: Literal["SPHERICAL_GEOGRAPHIC"]
 
 
 class CloseApproachRequest(_StrictModel):
@@ -1170,6 +1488,8 @@ __all__ = [
     "CloseApproachResponse",
     "CloseApproachSearchResponse",
     "EclipseDataResponse",
+    "EclipseEpochResponse",
+    "EclipseGeocentricBodyStateResponse",
     "EclipseEventResponse",
     "EclipseSearchRequest",
     "EventInstantResponse",
@@ -1180,6 +1500,9 @@ __all__ = [
     "LocalContactCircumstancesResponse",
     "LunarEclipseLocalCircumstancesResponse",
     "LunarEclipseLocationRequest",
+    "LunarEclipseGlobalCircumstancesRequest",
+    "LunarEclipseGlobalCircumstancesResponse",
+    "LunarEclipseShadowStateResponse",
     "LunarEclipseAnalysisModeValue",
     "LunarEclipseSearchKind",
     "LunarEclipseVisibilityContactKindValue",
@@ -1269,6 +1592,20 @@ __all__ = [
     "SolarEclipseSearchKind",
     "SolarEclipseFootprintBoundaryKindValue",
     "SolarEclipseFootprintRequest",
+    "SolarEclipseGlobalCircumstancesRequest",
+    "SolarEclipseGlobalCircumstancesResponse",
+    "SolarEclipseCentralLineLimitResponse",
+    "SolarEclipseConjunctionResponse",
+    "SolarEclipseUmbralContactResponse",
+    "SolarEclipseUmbralContactsResponse",
+    "SolarEclipseGreatestSiteResponse",
+    "SolarBesselianElementsResponse",
+    "SolarEclipseCartographyRequest",
+    "SolarEclipseCartographyResponse",
+    "SolarEclipseMapSampleResponse",
+    "EclipseContourPointResponse",
+    "EclipseContourComponentResponse",
+    "EclipseContourLevelResponse",
     "SolarEclipseFootprintPointResponse",
     "SolarEclipsePenumbralContactKindValue",
     "SolarEclipsePenumbralContactResponse",

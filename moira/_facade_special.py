@@ -60,7 +60,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "lunar_eclipse_visibility_map", "speculum", "primary_directions", "primary_directions_policy_preset", "primary_direction_relations", "primary_direction_condition", "primary_directions_profile", "primary_directions_network", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
+        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "solar_global_circumstances", "solar_eclipse_cartography", "lunar_eclipse_visibility_map", "lunar_global_circumstances", "speculum", "primary_directions", "primary_directions_policy_preset", "primary_direction_relations", "primary_direction_condition", "primary_directions_profile", "primary_directions_network", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -110,6 +110,71 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             backward=backward,
             mode=mode,
             sample_count=sample_count,
+        )
+
+    def solar_global_circumstances(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+    ):
+        """Return the admitted global summary for one solar eclipse."""
+        facade = _facade_module()
+        return facade.EclipseCalculator(
+            reader=self._reader
+        ).solar_global_circumstances(
+            jd_start,
+            kind=kind,
+            backward=backward,
+        )
+
+    def solar_eclipse_cartography(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+        magnitude_levels=(0.2, 0.4, 0.6, 0.8, 0.9),
+        obscuration_levels=(0.2, 0.4, 0.6, 0.8, 0.9),
+        mesh_depth: int = 1,
+        time_samples: int = 17,
+        angular_tolerance_deg: float = 8.0,
+        field_tolerance: float = 0.01,
+    ):
+        """Return projection-independent maximum-visible eclipse contours."""
+        facade = _facade_module()
+        return facade.EclipseCalculator(
+            reader=self._reader
+        ).solar_eclipse_cartography(
+            jd_start,
+            kind=kind,
+            backward=backward,
+            magnitude_levels=magnitude_levels,
+            obscuration_levels=obscuration_levels,
+            mesh_depth=mesh_depth,
+            time_samples=time_samples,
+            angular_tolerance_deg=angular_tolerance_deg,
+            field_tolerance=field_tolerance,
+        )
+
+    def lunar_global_circumstances(
+        self,
+        jd_start: float,
+        *,
+        kind: str = "any",
+        backward: bool = False,
+        mode: str = "native",
+    ):
+        """Return a scale-explicit geocentric lunar-eclipse summary."""
+        facade = _facade_module()
+        return facade.EclipseCalculator(
+            reader=self._reader
+        ).lunar_global_circumstances(
+            jd_start,
+            kind=kind,
+            backward=backward,
+            mode=mode,
         )
 
     def eclipse_hits_in_range(
