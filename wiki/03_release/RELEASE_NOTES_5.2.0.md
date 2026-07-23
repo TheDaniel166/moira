@@ -1,16 +1,14 @@
-# Moira 5.2.0 - Eclipse Cartography and Spatial House Geometry
+# Moira 5.2.0 - Global Eclipse Circumstances and Adaptive Cartography
 
 **Release date:** 2026-07-23
 
 **Public upgrade path:** 5.1.2 to 5.2.0
 
 Moira 5.2.0 promotes global solar and lunar eclipse circumstances into
-first-class, immutable engine products, admits a NumPy-free spherical
-cartography surface for maximum-visible magnitude and obscuration, and
-preserves the actual spatial objects behind admitted house boundaries. The
-release is additive at the public API boundary and keeps astronomical policy,
-timescales, ephemeris identity, surface model, house-system identity, fallback,
-and known exclusions explicit.
+first-class, immutable engine products and admits a NumPy-free spherical
+cartography surface for maximum-visible magnitude and obscuration. The release
+is additive at the public API boundary and keeps astronomical policy,
+timescales, ephemeris identity, surface model, and known exclusions explicit.
 
 ## Solar global circumstances
 
@@ -84,38 +82,11 @@ Request bounds and response convergence metadata are typed in the OpenAPI
 contract. The server remains a transport layer; solver and cartography
 doctrine stay in the engine.
 
-## Frame-explicit house boundaries
-
-`calculate_houses(...)`, `houses_from_armc(...)`, and `Moira.houses(...)` now
-accept `include_boundary_geometry=True`. The returned `HouseCusps` then carries
-an immutable `HouseBoundaryGeometrySet` for the effective house system:
-
-- Campanus and Azimuthal preserve their local-frame great-circle planes;
-- Regiomontanus, Topocentric, Koch, and Alcabitius preserve their admitted
-  pole-height or equatorial-sector planes; and
-- Placidus preserves four cardinal great-circle planes plus eight sampled
-  semi-arc event curves, each including its exact ecliptic cusp incidence.
-
-The geometry is expressed in the declared
-`true_equator_and_equinox_of_date` frame. A sidereal offset changes the zodiac
-labels and `zodiac_offset_deg`; it does not rotate the physical directions or
-plane normals.
-
-Systems whose current public product admits only ecliptic cusp intersections
-return `availability="cusp_intersections_only"` with an explicit reason and no
-fabricated 3D walls. Polar and unknown-system fallback follow the effective
-system, never the originally requested label.
-
-The house REST request accepts the same opt-in flag and serializes the geometry
-without reconstructing it in the transport layer.
-
 ## Validation evidence
 
 The release exercises total, annular, hybrid, partial, polar-central, and
 near-singular solar geometry; penumbral, partial, total, and limiting lunar
-geometry; adaptive-mesh closure; antimeridian splitting; frame-explicit
-great-circle and event-curve house boundaries; southern and high-latitude
-cases; effective-system fallback; sidereal label separation; public exports;
+geometry; adaptive-mesh closure; antimeridian splitting; public exports;
 native boundary behavior; and REST serialization.
 
 The new global vessels are bound to the repository's existing NASA/GSFC
