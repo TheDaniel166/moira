@@ -26,6 +26,7 @@ queried back as jd_tt directly with center = 10 (Sun).
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -45,8 +46,8 @@ from moira.daf_writer import write_spk_type13
 HORIZONS_URL = "https://ssd.jpl.nasa.gov/api/horizons.api"
 SBDB_URL = "https://ssd-api.jpl.nasa.gov/sbdb.api"
 WINDOW = ("1600-01-01", "2500-01-01")  # uniform DE441 small-body span (inside 1599..2501)
-STEP_DAYS = 30
-WINDOW_SIZE = 5
+STEP_DAYS = 10
+WINDOW_SIZE = 7
 SHARD_SIZE = 25
 CENTER = 10
 FRAME = 1
@@ -222,11 +223,30 @@ def _limited_record_is_current(record: dict) -> bool:
     )
 
 
-def _shard_cached(kpath: Path, mpath: Path) -> dict | None:
+def _metadata_matches_build(meta: dict, expected_numbers: set[int]) -> bool:
+    """Return whether shard metadata is an exact cache hit for this build."""
+    if tuple(meta.get("window", ())) != WINDOW:
+        return False
+    if meta.get("step_days") != STEP_DAYS or meta.get("window_size") != WINDOW_SIZE:
+        return False
+    if meta.get("failures"):
+        return False
+    record_numbers = {int(record["number"]) for record in meta.get("records", ())}
+    return record_numbers == expected_numbers
+
+
+def _shard_cached(
+    kpath: Path,
+    mpath: Path,
+    *,
+    expected_numbers: set[int],
+) -> dict | None:
     if not (kpath.exists() and mpath.exists()):
         return None
     try:
         meta = json.loads(mpath.read_text())
+        if not _metadata_matches_build(meta, expected_numbers):
+            return None
         if not all(_limited_record_is_current(record) for record in meta["records"]):
             return None
         want = {r["naif_id"] for r in meta["records"]}
@@ -237,19 +257,79 @@ def _shard_cached(kpath: Path, mpath: Path) -> dict | None:
             have = set(int(x) for x in k.covered_bodies())
         finally:
             k.close()
-        return meta if want <= have else None
+        return meta if want == have else None
     except Exception:  # noqa: BLE001
         return None
 
 
-def main() -> None:
-    targets_path = Path(sys.argv[1])
-    start_idx = int(sys.argv[2])
-    count = int(sys.argv[3])
-    outdir = Path(sys.argv[4]) if len(sys.argv) > 4 else ROOT / "moira" / "kernels" / "asteroids"
-    outdir.mkdir(parents=True, exist_ok=True)
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("targets", type=Path)
+    parser.add_argument("start", type=int)
+    parser.add_argument("count", type=int)
+    parser.add_argument(
+        "outdir",
+        nargs="?",
+        type=Path,
+        default=ROOT / "moira" / "kernels" / "asteroids",
+    )
+    parser.add_argument("--step-days", type=int, default=STEP_DAYS)
+    parser.add_argument("--window-size", type=int, default=WINDOW_SIZE)
+    parser.add_argument("--throttle-seconds", type=float, default=THROTTLE_S)
+    parser.add_argument(
+        "--max-runtime-hours",
+        type=float,
+        help=(
+            "stop cleanly after this many hours; the current shard is always "
+            "written and verified before stopping"
+        ),
+    )
+    args = parser.parse_args()
+    if args.start < 0:
+        parser.error("START must be non-negative")
+    if args.count < 1:
+        parser.error("COUNT must be positive")
+    if args.step_days < 1:
+        parser.error("--step-days must be positive")
+    if args.window_size < 2:
+        parser.error("--window-size must be at least 2")
+    if args.throttle_seconds < 0:
+        parser.error("--throttle-seconds must be non-negative")
+    if args.max_runtime_hours is not None and args.max_runtime_hours <= 0:
+        parser.error("--max-runtime-hours must be positive")
+    return args
 
-    slice_targets = json.loads(targets_path.read_text())[start_idx : start_idx + count]
+
+def main() -> None:
+    global STEP_DAYS, WINDOW_SIZE, THROTTLE_S
+
+    args = _parse_args()
+    STEP_DAYS = args.step_days
+    WINDOW_SIZE = args.window_size
+    THROTTLE_S = args.throttle_seconds
+
+    targets_path = args.targets
+    start_idx = args.start
+    count = args.count
+    outdir = args.outdir
+    outdir.mkdir(parents=True, exist_ok=True)
+    run_started = time.perf_counter()
+    runtime_limit_s = (
+        args.max_runtime_hours * 60.0 * 60.0
+        if args.max_runtime_hours is not None
+        else None
+    )
+
+    all_targets = json.loads(targets_path.read_text())
+    all_numbers = [int(target["number"]) for target in all_targets]
+    if len(all_numbers) != len(set(all_numbers)):
+        raise ValueError(f"{targets_path} contains duplicate asteroid numbers")
+    slice_targets = all_targets[start_idx : start_idx + count]
+    if len(slice_targets) != count:
+        raise ValueError(
+            f"requested {count} targets from index {start_idx}, "
+            f"but only {len(slice_targets)} are available"
+        )
     shards: dict[int, list] = {}
     for local, t in enumerate(slice_targets):
         shards.setdefault((start_idx + local) // SHARD_SIZE, []).append(t)
@@ -257,15 +337,19 @@ def main() -> None:
     m_records: list[dict] = []
     m_naif: dict[str, int] = {}
     m_failures: list[dict] = []
+    completed_shards = 0
+    stopped_at_time_limit = False
 
     for sidx in sorted(shards):
         kpath = outdir / f"{SHARD_PREFIX}_{sidx:03d}.bsp"
         mpath = outdir / f"{SHARD_PREFIX}_{sidx:03d}.metadata.json"
-        cached = _shard_cached(kpath, mpath)
+        expected_numbers = {int(target["number"]) for target in shards[sidx]}
+        cached = _shard_cached(kpath, mpath, expected_numbers=expected_numbers)
         if cached is not None:
             m_records.extend(cached["records"])
             m_naif.update(cached["naif_map"])
             m_failures.extend(cached.get("failures", []))
+            completed_shards += 1
             print(f"=== shard {sidx:03d}: SKIP (cached, {len(cached['records'])}) ===", flush=True)
             continue
 
@@ -319,17 +403,96 @@ def main() -> None:
         m_records.extend(records)
         m_naif.update(shard_meta["naif_map"])
         m_failures.extend(failures)
+        completed_shards += 1
         worst = max((r["max_node_error_km"] for r in records), default=0.0)
         print(f"  shard {sidx:03d} -> {kpath.name} ({kpath.stat().st_size/1024:.0f} KB), "
               f"{len(records)} bodies, worst {worst:.2e} km, {len(failures)} failed", flush=True)
+        if (
+            runtime_limit_s is not None
+            and time.perf_counter() - run_started >= runtime_limit_s
+        ):
+            stopped_at_time_limit = True
+            print(
+                f"TIME LIMIT: stopped cleanly after shard {sidx:03d}; "
+                "restart with the same command to resume",
+                flush=True,
+            )
+            break
 
     master = {
         "requested": len(slice_targets), "built": len(m_records), "failed": len(m_failures),
         "window": WINDOW, "step_days": STEP_DAYS, "window_size": WINDOW_SIZE,
+        "completed_shards": completed_shards,
+        "planned_shards": len(shards),
+        "stopped_at_time_limit": stopped_at_time_limit,
         "naif_map": m_naif, "records": m_records, "failures": m_failures,
     }
     (outdir / "unified_master.json").write_text(json.dumps(master, indent=2))
-    print(f"\nDONE: {len(m_records)} built, {len(m_failures)} failed, {len(shards)} shards", flush=True)
+    _write_manifest(outdir, records=m_records)
+    state = "PAUSED" if stopped_at_time_limit else "DONE"
+    print(
+        f"\n{state}: {len(m_records)} built, {len(m_failures)} failed, "
+        f"{completed_shards}/{len(shards)} shards processed",
+        flush=True,
+    )
+
+
+def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
+    """Emit the loader manifest for the shards built by this invocation."""
+    shard_entries: list[dict] = []
+    for mpath in sorted(outdir.glob(f"{SHARD_PREFIX}_*.metadata.json")):
+        meta = json.loads(mpath.read_text())
+        if not _metadata_matches_build(
+            meta,
+            {int(record["number"]) for record in meta.get("records", ())},
+        ):
+            continue
+        kpath = outdir / meta["kernel"]
+        if not kpath.exists():
+            continue
+        bodies = [record["naif_id"] for record in meta["records"]]
+        shard_entries.append(
+            {
+                "index": meta["shard"],
+                "path": meta["kernel"],
+                "body_count": len(bodies),
+                "bodies": bodies,
+            }
+        )
+    shard_entries.sort(key=lambda shard: shard["index"])
+
+    coverage_exceptions = []
+    for record in records:
+        if "coverage_policy" not in record:
+            continue
+        provenance = record["coverage_provenance"]
+        coverage_exceptions.append(
+            {
+                "naif_id": record["naif_id"],
+                "name": record["name"],
+                "start_date": record["start"],
+                "end_date": record["stop"],
+                "policy": record["coverage_policy"],
+                "authority": provenance["authority"],
+                "orbit_id": provenance["orbit_id"],
+                "solution_date": provenance["solution_date"],
+            }
+        )
+
+    manifest = {
+        "source": "MOIRA UNIFIED ASTEROID CATALOG (JPL Horizons)",
+        "coverage": {
+            "start_date": WINDOW[0],
+            "end_date": WINDOW[1],
+            "note": "default DE441 small-body span; see coverage_exceptions",
+        },
+        "coverage_exceptions": coverage_exceptions,
+        "sampling": {"step_days": STEP_DAYS, "window_size": WINDOW_SIZE},
+        "body_count": sum(shard["body_count"] for shard in shard_entries),
+        "shard_count": len(shard_entries),
+        "shards": shard_entries,
+    }
+    (outdir / "manifest.json").write_text(json.dumps(manifest, indent=2))
 
 
 if __name__ == "__main__":

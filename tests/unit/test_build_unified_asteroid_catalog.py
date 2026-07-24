@@ -1,4 +1,5 @@
 import io
+import sys
 import urllib.error
 
 from scripts import build_unified_asteroid_catalog as catalog_builder
@@ -55,6 +56,50 @@ def test_regular_body_keeps_uniform_catalog_window(monkeypatch) -> None:
     assert fetched == [("1;", *catalog_builder.WINDOW)]
     assert body["clamped"] is False
     assert "coverage_policy" not in body
+
+
+def test_tighter_catalog_sampling_policy_is_the_default() -> None:
+    assert catalog_builder.STEP_DAYS == 10
+    assert catalog_builder.WINDOW_SIZE == 7
+
+
+def test_cached_metadata_requires_exact_build_policy_and_membership() -> None:
+    meta = {
+        "window": list(catalog_builder.WINDOW),
+        "step_days": 10,
+        "window_size": 7,
+        "records": [{"number": 1}, {"number": 33}],
+        "failures": [],
+    }
+
+    assert catalog_builder._metadata_matches_build(meta, {1, 33}) is True
+
+    meta["step_days"] = 30
+    assert catalog_builder._metadata_matches_build(meta, {1, 33}) is False
+    meta["step_days"] = 10
+
+    assert catalog_builder._metadata_matches_build(meta, {1}) is False
+    meta["failures"] = [{"number": 33, "error": "transient failure"}]
+    assert catalog_builder._metadata_matches_build(meta, {1, 33}) is False
+
+
+def test_four_hour_runtime_limit_is_admitted(monkeypatch) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "build_unified_asteroid_catalog.py",
+            "targets.json",
+            "0",
+            "1",
+            "--max-runtime-hours",
+            "4",
+        ],
+    )
+
+    args = catalog_builder._parse_args()
+
+    assert args.max_runtime_hours == 4.0
 
 
 def test_transient_jpl_response_is_retried(monkeypatch) -> None:
