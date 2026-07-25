@@ -196,27 +196,19 @@ class DecennialNatalRequest(_StrictModel):
 
     is_day_chart: True for a diurnal (day) chart — governs the sect-light
     anchor and sequence ordering.
-    levels: depth of sub-period generation (1=major only, 2=sub, 3=day-sub, 4=hour-sub).
+    levels: admitted sub-period depth (1=major only, 2=sub).
     """
 
     dt: datetime
     is_day_chart: bool
-    levels: int = Field(default=2, ge=1, le=4)
+    levels: int = Field(default=2, ge=1, le=2)
     deep_subdivision_method: DecennialDeepSubdivisionMethod | None = None
 
     @model_validator(mode="after")
     def _valid_deep_subdivision(self) -> "DecennialNatalRequest":
-        if self.levels < 3 and self.deep_subdivision_method is not None:
+        if self.deep_subdivision_method is not None:
             raise ValueError(
-                "deep_subdivision_method is permitted only for levels 3-4"
-            )
-        if self.levels >= 3 and self.deep_subdivision_method is None:
-            raise ValueError(
-                "levels 3-4 require an explicit deep_subdivision_method"
-            )
-        if self.levels == 4 and self.deep_subdivision_method != "valens":
-            raise ValueError(
-                "level 4 is admitted only with deep_subdivision_method='valens'"
+                "Decennial levels 3-4 and deep_subdivision_method are not admitted"
             )
         return self
 

@@ -1,22 +1,27 @@
 # Moira Decans Backend Standard
 
-Version: 1.0
-Date: 2026-06-11
-Status: Current implementation truth; P9-12 REST admission prerequisite
+Version: 1.1
+Date: 2026-07-25
+Status: Classical decanates admitted; Hermetic catalog in research quarantine
+
+> **Containment correction.** Direct comparison with the currently inspected
+> Liber Hermetis witness contradicts the name order attributed to it by
+> `moira.hermetic_decans`. The Hermetic catalog and every result derived from
+> that catalog are therefore excluded from the package root, facade, and REST
+> application pending a source-led reconstruction.
 
 ## Governing Principle
 
-Moira has two related but distinct decan subsystems:
+Moira has one admitted decan subsystem and one quarantined research module:
 
 - `moira.decanates` owns classical Chaldean faces, triplicity decans, and
   Vedic drekkana placement.
-- `moira.hermetic_decans` owns the tropical Hermetic 36-decan name order,
-  ruling-star table, rising-decan lookup, and nightly decan-hour division.
+- `moira.hermetic_decans` preserves a disputed 36-name/ruling-star catalog and
+  its lookup geometry for research only.
 
-These surfaces must not be collapsed into one vague "decan" product. The REST
-surface must preserve which doctrine produced the result, which zodiacal frame
-was consumed, and whether the computation is simple longitude placement or an
-astronomical night-hour product.
+These surfaces must not be collapsed into one vague "decan" product. Only
+`moira.decanates` may be presented as admitted doctrine. The quarantined module
+must not appear in the REST route registry or curated Python import surfaces.
 
 ---
 
@@ -45,22 +50,22 @@ Chaldean faces and triplicity decans consume tropical longitude directly.
 Vedic drekkana consumes tropical longitude plus JD and delegates sidereal
 reduction to `moira.sidereal.tropical_to_sidereal(...)`.
 
-#### 1.2 Hermetic decan
+#### 1.2 Quarantined Hermetic decan candidate
 
-A **Hermetic decan** is:
+A candidate record in the current research catalog is:
 
-> One of the 36 tropical Hellenistic-Hermetic decan names in ecliptic order,
-> paired with its magical/astrological ruling star assignment.
+> One of 36 tropical ten-degree slots paired with a disputed name and
+> ruling-star assignment that has not passed source admission.
 
-The ruling stars are not positional markers and are not expected to lie inside
-their assigned tropical 10-degree spans.
+This is a description of stored data, not a claim that the name, order,
+star assignment, or tropical framing is historically correct.
 
-#### 1.3 Hermetic decan night
+#### 1.3 Quarantined catalog night partition
 
 A **DecanHoursNight** is:
 
-> The 12 Hermetic decan hours spanning sunset to next sunrise for one observer
-> location and date.
+> A structural 12-part sunset-to-sunrise partition labeled from the
+> quarantined catalog.
 
 Its hour vessels preserve hour number, decan name, ruling star, and exact JD
 boundaries.
@@ -69,16 +74,16 @@ boundaries.
 
 ### 2. Layer Structure
 
-Current implemented layers:
+Current implemented layers and admission states:
 
 ```text
 P1 - Decanate truth               (DecanatePosition)
-P2 - Hermetic catalog truth       (DECAN_NAMES, DECAN_RULING_STARS, list_decans)
-P3 - Hermetic longitude lookup    (decan_for_longitude, decan_index)
-P4 - Hermetic rising decan        (decan_at)
-P5 - Hermetic night-hour vessel   (DecanHour, DecanHoursNight)
-P6 - Hermetic night-hour compute  (decan_hours)
-P7 - Public API curation          (root/classical/facade exports)
+P2 - Quarantined catalog data     (DECAN_NAMES, DECAN_RULING_STARS, list_decans)
+P3 - Research lookup geometry     (decan_for_longitude, decan_index)
+P4 - Research rising lookup       (decan_at)
+P5 - Research night vessels       (DecanHour, DecanHoursNight)
+P6 - Research night partition     (decan_hours)
+P7 - Public containment           (excluded from root/facade/REST)
 ```
 
 Layer boundary rules:
@@ -86,9 +91,8 @@ Layer boundary rules:
 - Decanate routes must expose the producing doctrine.
 - Tropical Chaldean and triplicity routes must not imply sidereal reduction.
 - Vedic drekkana routes must expose JD and ayanamsa policy input.
-- Hermetic catalog routes must not imply fixed-star positional computation.
-- Hermetic night-hour routes may call the existing astronomical engine but must
-  validate finite JD/location inputs before doing so.
+- No Hermetic catalog, rising, or night-hour routes may be registered while
+  the catalog remains quarantined.
 
 ---
 
@@ -103,7 +107,10 @@ Layer boundary rules:
 | `triplicity_decan(longitude)` | Tropical triplicity decan placement |
 | `vedic_drekkana(longitude, jd, ayanamsa_system="Lahiri")` | Vedic D3 placement after sidereal reduction |
 
-#### `moira.hermetic_decans`
+#### `moira.hermetic_decans` (direct research import only)
+
+The symbols below are retained to support reconstruction and structural
+testing. They are not part of `moira`, `moira.facade`, or the REST contract.
 
 | Name | Meaning |
 |---|---|
@@ -129,13 +136,14 @@ Layer boundary rules:
   with Mars at Aries 0 degrees.
 - Triplicity and Vedic drekkana rulership use the same-element sign sequence:
   own sign, fifth sign, ninth sign.
-- Hermetic decan names are ordered by fixed tropical 10-degree spans.
-- Hermetic night hours partition the computed sunset-to-sunrise interval into
-  twelve contiguous equal temporal hours.
+- The quarantined catalog code orders its stored labels by fixed tropical
+  10-degree spans; this does not validate the historical catalog.
+- Its night algorithm partitions the computed sunset-to-sunrise interval into
+  twelve contiguous equal temporal hours; this validates geometry only.
 
 #### 4.2 Failure doctrine
 
-Current engine truth:
+Current admitted and quarantined structural behavior:
 
 - `chaldean_face`, `triplicity_decan`, `vedic_drekkana`, and
   `decan_for_longitude` reject non-finite longitudes.
@@ -152,28 +160,23 @@ calling rising-decan or night-hour computations.
 
 ### 5. Validation Scope
 
-The decan backend is currently validated through:
+The admitted decanate backend and quarantined research module are tested
+separately through:
 
 - `tests/unit/test_decanates.py`
 - `tests/unit/test_hermetic_decans.py`
 
 ### 6. Validation Claims
 
-The following claims are currently verified:
+The following admitted claims are currently verified:
 
 1. `DecanatePosition` is frozen and enforces system/range invariants.
 2. Chaldean faces preserve the declared Mars-starting planetary cycle.
 3. Triplicity decans preserve same-element ruling-sign doctrine.
 4. Vedic drekkana performs sidereal reduction and preserves traditional rulers.
-5. Hermetic decan longitude lookup rejects non-finite inputs and normalizes
-   longitudes.
-6. Hermetic catalog/index/ruling-star functions preserve the 36-decan order.
-7. Hermetic rising decan uses TT obliquity and agrees with house-engine
-   Ascendant mapping for representative cases.
-8. `DecanHour` and `DecanHoursNight` are frozen and validate hour/night
-   partition invariants.
-9. Decan night-hour computation preserves sunset-to-sunrise boundary truth in
-   focused tests.
+5. Quarantined-module tests verify internal lookup, vessel, and astronomical
+   partition consistency only. They do not validate the catalog against a
+   primary historical source.
 
 ### 7. Validation Commands
 
@@ -181,24 +184,22 @@ The minimum verification slice for this standard is:
 
 ```powershell
 .\.venv\Scripts\python.exe -m py_compile moira\decanates.py moira\hermetic_decans.py tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py tests\server\test_server_decans_routes.py -q
 ```
 
 ---
 
 ## Part III - REST Admission Frontier
 
-P9-12 may proceed to REST transport after this standard.
-
-First admitted REST shape:
+The admitted REST shape is:
 
 - direct-sync decanate routes for Chaldean face, triplicity decan, and Vedic
   drekkana
-- Hermetic catalog and longitude routes
-- Hermetic rising-decan and night-hour routes with explicit JD/location inputs
 
 Deferred:
 
 - chart-backed routes that derive planetary longitudes from a natal/event chart
 - fixed-star positional routes for decan ruling stars
 - interpretive decan meanings
+- every Hermetic catalog/longitude/rising/night-hour route until the catalog
+  is reconstructed and separately admitted

@@ -195,6 +195,12 @@ The current engine supports the following reference classes where resolvable:
   - `Spirit`
   - `Eros (Valens)`
 
+`Fortune` and `Spirit` are resolvable only when both Sun and Moon are present.
+`Eros (Valens)` is resolvable only when both of those derived references were
+actually admitted and built. Missing luminaries never fall back to 0°; every
+direct and transitive dependency follows the configured unresolved-reference
+policy (`SKIP` or `RAISE`).
+
 No additional reference doctrine is implied by this document.
 
 #### 4.3 Reversal doctrine
@@ -204,6 +210,9 @@ Day/night reversal doctrine is embodied directly by each `PartDefinition`’s
 
 - `reverse_at_night` is `True`
 - the chart is not a day chart
+
+The source-verified Dorothean entries `Siblings (Number)` (I.21) and
+`Time of Children` (II.11) reverse at night.
 
 #### 4.4 Policy doctrine
 
@@ -218,8 +227,9 @@ default result.
 
 The normative default is:
 
-> `LotsComputationPolicy()` must preserve the current historical subsystem
-> behavior exactly.
+> `LotsComputationPolicy()` preserves the current admitted failure and
+> derived-reference doctrine exactly; it does not preserve superseded
+> fabricated-luminary behavior.
 
 ---
 

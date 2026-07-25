@@ -13,8 +13,6 @@ from fastapi.testclient import TestClient
 
 from moira.julian import jd_from_datetime
 from moira.timelords import (
-    DecennialPolicy,
-    TimelordComputationPolicy,
     current_decennials,
     decennial_active_pair,
     decennial_active_path,
@@ -258,29 +256,15 @@ def test_decennials_sequence_rejects_levels_out_of_range(client_with_engine: Tes
     assert resp.status_code == 422
 
 
-@pytest.mark.requires_ephemeris
 @pytest.mark.parametrize(
     ("method", "levels"),
     [("valens", 4), ("hephaistio", 3)],
 )
-def test_decennials_sequence_route_reaches_explicit_deep_policy(
+def test_decennials_sequence_route_quarantines_named_deep_policies(
     client_with_engine: TestClient,
-    moira_engine,
     method: str,
     levels: int,
 ) -> None:
-    natal_positions, natal_jd = _natal_positions_and_jd(moira_engine)
-    policy = TimelordComputationPolicy(
-        decennials=DecennialPolicy(deep_subdivision_method=method)
-    )
-    direct = decennials(
-        natal_jd,
-        natal_positions,
-        is_day_chart=True,
-        levels=levels,
-        policy=policy,
-    )
-
     response = client_with_engine.post(
         "/v1/timelords/decennials/sequence",
         json={
@@ -292,14 +276,7 @@ def test_decennials_sequence_route_reaches_explicit_deep_policy(
         },
     )
 
-    assert response.status_code == 200
-    body = response.json()
-    assert body["total_count"] == len(direct)
-    assert body["levels_generated"] == levels
-    assert body["deep_subdivision_method"] == method
-    deep_periods = [period for period in body["periods"] if period["level"] >= 3]
-    assert deep_periods
-    assert {period["deep_subdivision_method"] for period in deep_periods} == {method}
+    assert response.status_code == 422
 
 
 @pytest.mark.parametrize(

@@ -345,7 +345,26 @@ def test_decennials_rejects_missing_or_nonfinite_longitudes() -> None:
         )
 
 
-def test_decennials_valens_deep_subdivision_admits_levels_three_and_four() -> None:
+@pytest.mark.parametrize("levels", [3, 4])
+def test_decennials_quarantines_levels_three_and_four(levels: int) -> None:
+    from moira.timelords import decennials
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    with pytest.raises(ValueError, match="levels must be 1–2"):
+        decennials(2451545.0, natal_positions, True, levels=levels)
+
+
+@pytest.mark.parametrize("method", ["valens", "hephaistio"])
+def test_decennials_quarantines_deep_subdivision_policies(method: str) -> None:
     from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
 
     natal_positions = {
@@ -357,164 +376,19 @@ def test_decennials_valens_deep_subdivision_admits_levels_three_and_four() -> No
         "Jupiter": 250.0,
         "Saturn": 300.0,
     }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-
-    periods = decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
-
-    assert any(period.level == 3 for period in periods)
-    assert any(period.level == 4 for period in periods)
-    assert all(
-        period.deep_subdivision_method == "valens"
-        for period in periods
-        if period.level >= 3
+    policy = TimelordComputationPolicy(
+        decennials=DecennialPolicy(deep_subdivision_method=method)
     )
 
-
-def test_decennials_hephaistio_admits_level_three_only() -> None:
-    from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
-
-    natal_positions = {
-        "Sun": 10.0,
-        "Mercury": 20.0,
-        "Venus": 50.0,
-        "Mars": 110.0,
-        "Moon": 200.0,
-        "Jupiter": 250.0,
-        "Saturn": 300.0,
-    }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="hephaistio"))
-
-    periods = decennials(2451545.0, natal_positions, True, levels=3, policy=policy)
-
-    assert any(period.level == 3 for period in periods)
-    assert not any(period.level == 4 for period in periods)
-    assert all(
-        period.deep_subdivision_method == "hephaistio"
-        for period in periods
-        if period.level == 3
-    )
+    with pytest.raises(ValueError, match="deep_subdivision_method is not admitted"):
+        decennials(2451545.0, natal_positions, True, levels=2, policy=policy)
 
 
-def test_decennials_rejects_unadmitted_deep_levels_without_supported_policy() -> None:
-    from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
-
-    natal_positions = {
-        "Sun": 10.0,
-        "Mercury": 20.0,
-        "Venus": 50.0,
-        "Mars": 110.0,
-        "Moon": 200.0,
-        "Jupiter": 250.0,
-        "Saturn": 300.0,
-    }
-
-    with pytest.raises(ValueError, match="supports up to level 2"):
-        decennials(2451545.0, natal_positions, True, levels=3)
-
-    hephaistio = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="hephaistio"))
-    with pytest.raises(ValueError, match="supports up to level 3"):
-        decennials(2451545.0, natal_positions, True, levels=4, policy=hephaistio)
-
-
-def test_decennials_deep_subdivision_preserves_recursive_proportions() -> None:
-    from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
-
-    natal_positions = {
-        "Sun": 10.0,
-        "Mercury": 20.0,
-        "Venus": 50.0,
-        "Mars": 110.0,
-        "Moon": 200.0,
-        "Jupiter": 250.0,
-        "Saturn": 300.0,
-    }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    periods = decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
-
-    l2_sun = next(period for period in periods if period.level == 2 and period.major_planet == "Sun" and period.planet == "Sun")
-    l3_sun = next(
-        period for period in periods
-        if period.level == 3 and period.ancestor_planets == ("Sun", "Sun") and period.planet == "Sun"
-    )
-    l4_sun = next(
-        period for period in periods
-        if period.level == 4 and period.ancestor_planets == ("Sun", "Sun", "Sun") and period.planet == "Sun"
-    )
-
-    assert l3_sun.days == pytest.approx(l2_sun.days * (19.0 / 129.0), abs=1e-9)
-    assert l4_sun.days == pytest.approx(l3_sun.days * (19.0 / 129.0), abs=1e-9)
-
-
-def test_current_decennials_returns_deepest_active_period_when_requested() -> None:
-    from moira.timelords import current_decennials, decennials, DecennialPolicy, TimelordComputationPolicy
-
-    natal_positions = {
-        "Sun": 10.0,
-        "Mercury": 20.0,
-        "Venus": 50.0,
-        "Mars": 110.0,
-        "Moon": 200.0,
-        "Jupiter": 250.0,
-        "Saturn": 300.0,
-    }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    periods = decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
-    l4 = next(period for period in periods if period.level == 4)
-    mid_jd = (l4.start_jd + l4.end_jd) / 2.0
-
-    major, leaf = current_decennials(2451545.0, natal_positions, True, mid_jd, levels=4, policy=policy)
-
-    assert major.level == 1
-    assert leaf.level == 4
-
-
-def test_validate_decennials_output_passes_for_genuine_deep_output() -> None:
-    from moira.timelords import decennials, validate_decennials_output, DecennialPolicy, TimelordComputationPolicy
-
-    natal_positions = {
-        "Sun": 10.0,
-        "Mercury": 20.0,
-        "Venus": 50.0,
-        "Mars": 110.0,
-        "Moon": 200.0,
-        "Jupiter": 250.0,
-        "Saturn": 300.0,
-    }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-
-    validate_decennials_output(decennials(2451545.0, natal_positions, True, levels=4, policy=policy))
-
-
-def test_validate_decennials_output_detects_deep_method_drift() -> None:
-    """Deep Decennials validation rejects lineage whose deep method drifts from its parent."""
-    from moira.timelords import decennials, validate_decennials_output, DecennialPolicy, TimelordComputationPolicy
+def test_validate_decennials_output_rejects_quarantined_deep_period() -> None:
+    """The output validator fails closed on legacy or tampered L3/L4 vessels."""
     import dataclasses
 
-    natal_positions = {
-        "Sun": 10.0,
-        "Mercury": 20.0,
-        "Venus": 50.0,
-        "Mars": 110.0,
-        "Moon": 200.0,
-        "Jupiter": 250.0,
-        "Saturn": 300.0,
-    }
-
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    periods = decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
-    target = next(period for period in periods if period.level == 3)
-    broken = dataclasses.replace(target)
-    object.__setattr__(broken, "deep_subdivision_method", "hephaistio")
-    tampered = [broken if period is target else period for period in periods]
-
-    with pytest.raises(ValueError, match="must preserve deep_subdivision_method of parent"):
-        validate_decennials_output(tampered)
-
-
-def test_validate_decennials_output_detects_invalid_parent_level_truth() -> None:
-    """Deep Decennials validation rejects subordinate periods with broken parent-level truth."""
-    from moira.timelords import decennials, validate_decennials_output, DecennialPolicy, TimelordComputationPolicy
-    import dataclasses
+    from moira.timelords import decennials, validate_decennials_output
 
     natal_positions = {
         "Sun": 10.0,
@@ -525,16 +399,13 @@ def test_validate_decennials_output_detects_invalid_parent_level_truth() -> None
         "Jupiter": 250.0,
         "Saturn": 300.0,
     }
-
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="hephaistio"))
-    periods = decennials(2451545.0, natal_positions, True, levels=3, policy=policy)
-    target = next(period for period in periods if period.level == 3)
+    periods = decennials(2451545.0, natal_positions, True)
+    target = next(period for period in periods if period.level == 2)
     broken = dataclasses.replace(target)
-    object.__setattr__(broken, "parent_level", 1)
-    tampered = [broken if period is target else period for period in periods]
+    object.__setattr__(broken, "level", 3)
 
-    with pytest.raises(ValueError, match="must preserve parent_level=2"):
-        validate_decennials_output(tampered)
+    with pytest.raises(ValueError, match="levels 3–4 are not admitted"):
+        validate_decennials_output([broken if period is target else period for period in periods])
 
 
 def test_zodiacal_releasing_uses_same_sign_spirit_adjustment() -> None:
@@ -600,12 +471,19 @@ def test_zodiacal_releasing_level_scaling_uses_symbolic_units() -> None:
     assert level_4.years == pytest.approx(15.0 / 1728.0, abs=1e-9)
 
 
-def test_current_releasing_rejects_dates_beyond_full_primary_circuit() -> None:
+@pytest.mark.parametrize("days_past_cap", [0.0, 1.0])
+def test_current_releasing_rejects_dates_at_or_beyond_full_primary_circuit(
+    days_past_cap: float,
+) -> None:
     from moira.timelords import _TOTAL_MINOR_YEARS, current_releasing
 
     natal_jd = 2451545.0
     with pytest.raises(ValueError, match="full Zodiacal Releasing circuit cap"):
-        current_releasing(0.0, natal_jd, natal_jd + _TOTAL_MINOR_YEARS * 360.0 + 1.0)
+        current_releasing(
+            0.0,
+            natal_jd,
+            natal_jd + _TOTAL_MINOR_YEARS * 360.0 + days_past_cap,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -762,29 +640,31 @@ def test_firdar_is_node_period_on_sub_periods() -> None:
 # ---------------------------------------------------------------------------
 
 def test_releasing_angularity_class_on_peak_periods() -> None:
-    """Peak periods carry a non-None angularity_class."""
+    """Peak periods are exactly the angular places from Fortune."""
     from moira.timelords import zodiacal_releasing, ZRAngularityClass
 
     periods = zodiacal_releasing(65.0, 2451545.0, levels=1,
                                   lot_name="Spirit", fortune_longitude=10.0)
     for p in periods:
         if p.is_peak_period:
-            assert p.angularity_class in {
-                ZRAngularityClass.ANGULAR,
-                ZRAngularityClass.SUCCEDENT,
-                ZRAngularityClass.CADENT,
-            }
+            assert p.angularity_class == ZRAngularityClass.ANGULAR
+            assert p.angularity_from_fortune in {1, 4, 7, 10}
 
 
-def test_releasing_angularity_class_none_on_non_peak_periods() -> None:
-    """Non-peak periods have angularity_class = None."""
-    from moira.timelords import zodiacal_releasing
+def test_releasing_classifies_all_twelve_places_when_fortune_is_supplied() -> None:
+    """Every sign receives its 1–12 place and angularity class from Fortune."""
+    from moira.timelords import ZRAngularityClass, zodiacal_releasing
 
     periods = zodiacal_releasing(65.0, 2451545.0, levels=1,
                                   lot_name="Spirit", fortune_longitude=10.0)
-    for p in periods:
-        if not p.is_peak_period:
-            assert p.angularity_class is None
+    assert {p.angularity_from_fortune for p in periods} == set(range(1, 13))
+    assert sum(p.angularity_class == ZRAngularityClass.ANGULAR for p in periods) == 4
+    assert sum(p.angularity_class == ZRAngularityClass.SUCCEDENT for p in periods) == 4
+    assert sum(p.angularity_class == ZRAngularityClass.CADENT for p in periods) == 4
+    assert all(
+        p.is_peak_period == (p.angularity_class == ZRAngularityClass.ANGULAR)
+        for p in periods
+    )
 
 
 def test_releasing_angular_houses_are_classified_angular() -> None:
@@ -918,6 +798,38 @@ def test_releasing_period_rejects_inverted_jd() -> None:
     with pytest.raises(ValueError, match="end_jd must be greater than start_jd"):
         ReleasingPeriod(level=1, sign="Aries", ruler="Mars",
                         start_jd=2451546.0, end_jd=2451545.0, years=1.0)
+
+
+@pytest.mark.parametrize(
+    ("angularity", "angularity_class", "is_peak", "message"),
+    [
+        (13, "cadent", False, "must be 1"),
+        (2, "angular", False, "must match"),
+        (2, "succedent", True, "must identify angular"),
+        (None, "angular", False, "require angularity_from_fortune"),
+    ],
+)
+def test_releasing_period_rejects_inconsistent_fortune_angularity(
+    angularity: int | None,
+    angularity_class: str | None,
+    is_peak: bool,
+    message: str,
+) -> None:
+    """Direct vessels cannot encode contradictory Fortune angularity truth."""
+    from moira.timelords import ReleasingPeriod
+
+    with pytest.raises(ValueError, match=message):
+        ReleasingPeriod(
+            level=1,
+            sign="Aries",
+            ruler="Mars",
+            start_jd=2451545.0,
+            end_jd=2451546.0,
+            years=1.0,
+            angularity_from_fortune=angularity,
+            angularity_class=angularity_class,
+            is_peak_period=is_peak,
+        )
 
 
 def test_releasing_period_level_name() -> None:
@@ -1090,7 +1002,7 @@ def test_timelord_policy_rejects_unadmitted_decennials_variants() -> None:
             TimelordComputationPolicy(decennials=DecennialPolicy(month_basis_days=29.5))
         )
 
-    with pytest.raises(ValueError, match="deep_subdivision_method must be 'valens', 'hephaistio', or None"):
+    with pytest.raises(ValueError, match="deep_subdivision_method is not admitted"):
         _validate_timelord_policy(
             TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="firmicus"))
         )
@@ -1472,9 +1384,9 @@ def test_decennial_major_group_rejects_wrong_major_truth_and_unordered_subs() ->
         DecennialMajorGroup(major=first_group.major, subs=reversed_subs)
 
 
-def test_group_decennials_builds_recursive_sub_groups_for_deep_output() -> None:
-    """Deep Decennials output groups into one-level-at-a-time recursive sub-groups."""
-    from moira.timelords import decennials, group_decennials, DecennialPolicy, TimelordComputationPolicy
+def test_group_decennials_stops_at_admitted_level_two() -> None:
+    """Admitted Decennials groups have Level-2 leaves and no deeper output."""
+    from moira.timelords import decennials, group_decennials
 
     natal_positions = {
         "Sun": 10.0,
@@ -1485,23 +1397,18 @@ def test_group_decennials_builds_recursive_sub_groups_for_deep_output() -> None:
         "Jupiter": 250.0,
         "Saturn": 300.0,
     }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    groups = group_decennials(decennials(2451545.0, natal_positions, True, levels=4, policy=policy))
+    groups = group_decennials(decennials(2451545.0, natal_positions, True))
 
     first_group = groups[0]
     assert first_group.has_sub_groups
     assert len(first_group.sub_groups) == 7
-    assert first_group.sub_groups[0].level == 2
-    assert first_group.sub_groups[0].has_sub_groups
-    assert first_group.sub_groups[0].sub_groups[0].level == 3
-    assert first_group.sub_groups[0].sub_groups[0].has_sub_groups
-    assert first_group.sub_groups[0].sub_groups[0].sub_groups[0].level == 4
-    assert first_group.sub_groups[0].sub_groups[0].sub_groups[0].is_leaf
+    assert all(group.level == 2 for group in first_group.sub_groups)
+    assert all(group.is_leaf for group in first_group.sub_groups)
 
 
-def test_decennial_major_group_all_periods_flat_includes_deep_descendants() -> None:
-    """DecennialMajorGroup.all_periods_flat returns the major and all nested descendants."""
-    from moira.timelords import decennials, group_decennials, DecennialPolicy, TimelordComputationPolicy
+def test_decennial_major_group_all_periods_flat_contains_only_admitted_levels() -> None:
+    """Flattened Decennials groups contain one major and its seven L2 children."""
+    from moira.timelords import decennials, group_decennials
 
     natal_positions = {
         "Sun": 10.0,
@@ -1512,19 +1419,18 @@ def test_decennial_major_group_all_periods_flat_includes_deep_descendants() -> N
         "Jupiter": 250.0,
         "Saturn": 300.0,
     }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="hephaistio"))
-    first_group = group_decennials(decennials(2451545.0, natal_positions, True, levels=3, policy=policy))[0]
+    first_group = group_decennials(decennials(2451545.0, natal_positions, True))[0]
 
     flat = first_group.all_periods_flat()
 
     assert flat[0] == first_group.major
-    assert any(period.level == 3 for period in flat)
-    assert len(flat) == 1 + 7 + 49
+    assert {period.level for period in flat} == {1, 2}
+    assert len(flat) == 1 + 7
 
 
-def test_decennial_major_group_active_sub_group_at_returns_recursive_node() -> None:
-    """DecennialMajorGroup.active_sub_group_at returns the immediate recursive node active at jd."""
-    from moira.timelords import decennials, group_decennials, DecennialPolicy, TimelordComputationPolicy
+def test_decennial_major_group_active_sub_group_at_returns_level_two_node() -> None:
+    """The active recursive node is an admitted Level-2 leaf."""
+    from moira.timelords import decennials, group_decennials
 
     natal_positions = {
         "Sun": 10.0,
@@ -1535,8 +1441,7 @@ def test_decennial_major_group_active_sub_group_at_returns_recursive_node() -> N
         "Jupiter": 250.0,
         "Saturn": 300.0,
     }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    first_group = group_decennials(decennials(2451545.0, natal_positions, True, levels=4, policy=policy))[0]
+    first_group = group_decennials(decennials(2451545.0, natal_positions, True))[0]
     first_sub_group = first_group.sub_groups[0]
     mid_jd = (first_sub_group.period.start_jd + first_sub_group.period.end_jd) / 2.0
 
@@ -1544,11 +1449,13 @@ def test_decennial_major_group_active_sub_group_at_returns_recursive_node() -> N
 
     assert result is not None
     assert result.period == first_sub_group.period
+    assert result.level == 2
+    assert result.is_leaf
 
 
 def test_decennial_period_group_rejects_invalid_child_level_or_containment() -> None:
     """DecennialPeriodGroup hardens one-level nesting and parent containment."""
-    from moira.timelords import decennials, group_decennials, DecennialPeriodGroup, DecennialPolicy, TimelordComputationPolicy
+    from moira.timelords import decennials, group_decennials, DecennialPeriodGroup
     import dataclasses
 
     natal_positions = {
@@ -1560,15 +1467,15 @@ def test_decennial_period_group_rejects_invalid_child_level_or_containment() -> 
         "Jupiter": 250.0,
         "Saturn": 300.0,
     }
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    first_group = group_decennials(decennials(2451545.0, natal_positions, True, levels=4, policy=policy))[0]
+    first_group = group_decennials(decennials(2451545.0, natal_positions, True))[0]
     l2_group = first_group.sub_groups[0]
-    l4_group = l2_group.sub_groups[0].sub_groups[0]
 
     with pytest.raises(ValueError, match="exactly one level deeper"):
-        DecennialPeriodGroup(period=l2_group.period, sub_groups=[l4_group])
+        DecennialPeriodGroup(period=l2_group.period, sub_groups=[l2_group])
 
-    shifted = dataclasses.replace(l2_group.sub_groups[0].period, start_jd=l2_group.period.start_jd - 1.0)
+    shifted = dataclasses.replace(l2_group.period)
+    object.__setattr__(shifted, "level", 3)
+    object.__setattr__(shifted, "start_jd", l2_group.period.start_jd - 1.0)
     with pytest.raises(ValueError, match="starts before parent period"):
         DecennialPeriodGroup(
             period=l2_group.period,
@@ -1776,11 +1683,9 @@ def test_decennial_condition_profile_lord_type_luminary() -> None:
             assert decennial_condition_profile(period).lord_type == "luminary"
 
 
-def test_decennial_condition_profile_deep_period_preserves_lineage_truth() -> None:
-    """Deep Decennials profiles preserve parent lineage and deep-method truth."""
+def test_decennial_condition_profile_level_two_preserves_lineage_truth() -> None:
+    """Admitted Level-2 profiles preserve lineage and no deep method."""
     from moira.timelords import (
-        DecennialPolicy,
-        TimelordComputationPolicy,
         decennials,
         decennial_condition_profile,
     )
@@ -1795,20 +1700,19 @@ def test_decennial_condition_profile_deep_period_preserves_lineage_truth() -> No
         "Saturn": 300.0,
     }
 
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    deep_period = next(
+    sub_period = next(
         period
-        for period in decennials(2451545.0, natal_positions, True, levels=4, policy=policy)
-        if period.level == 4
+        for period in decennials(2451545.0, natal_positions, True)
+        if period.level == 2
     )
-    profile = decennial_condition_profile(deep_period)
+    profile = decennial_condition_profile(sub_period)
 
-    assert profile.level == 4
-    assert profile.parent_planet == deep_period.parent_planet
-    assert profile.parent_level == 3
-    assert profile.ancestor_planets == deep_period.ancestor_planets
-    assert profile.effective_major_planet == deep_period.major_planet
-    assert profile.deep_subdivision_method == "valens"
+    assert profile.level == 2
+    assert profile.parent_planet == sub_period.parent_planet
+    assert profile.parent_level == 1
+    assert profile.ancestor_planets == sub_period.ancestor_planets
+    assert profile.effective_major_planet == sub_period.major_planet
+    assert profile.deep_subdivision_method is None
     assert profile.month_basis_days == pytest.approx(30.0)
 
 
@@ -1833,16 +1737,24 @@ def test_zr_condition_profile_fields_match_period() -> None:
     assert profile.use_loosing_of_bond     == p.use_loosing_of_bond
 
 
-def test_zr_condition_profile_angularity_class_none_for_non_peak() -> None:
-    """zr_condition_profile has None angularity_class for non-peak periods."""
-    from moira.timelords import zodiacal_releasing, zr_condition_profile
+def test_zr_condition_profile_preserves_non_peak_angularity_class() -> None:
+    """Succedent and cadent periods retain their Fortune-relative class."""
+    from moira.timelords import ZRAngularityClass, zodiacal_releasing, zr_condition_profile
     JD_BIRTH = 2451545.0
-    FORTUNE_LON = 120.0  # Fortune in Gemini → house 1 from itself, angular
-    periods = zodiacal_releasing(FORTUNE_LON, JD_BIRTH, levels=1)
+    FORTUNE_LON = 120.0
+    periods = zodiacal_releasing(
+        FORTUNE_LON,
+        JD_BIRTH,
+        levels=1,
+        fortune_longitude=FORTUNE_LON,
+    )
     non_peak = [p for p in periods if not p.is_peak_period]
     assert non_peak, "expected at least one non-peak period in the sequence"
     for p in non_peak:
-        assert zr_condition_profile(p).angularity_class is None
+        assert zr_condition_profile(p).angularity_class in {
+            ZRAngularityClass.SUCCEDENT,
+            ZRAngularityClass.CADENT,
+        }
 
 
 def test_zr_condition_profile_level_range() -> None:
@@ -1982,11 +1894,9 @@ def test_decennial_sequence_profile_totals_and_doctrine_truth() -> None:
     assert agg.deep_subdivision_method is None
 
 
-def test_decennial_sequence_profile_deep_output_preserves_level_map_and_method() -> None:
-    """Deep Decennials aggregates preserve total profile counts, level map, and method truth."""
+def test_decennial_sequence_profile_stops_at_admitted_level_two() -> None:
+    """Decennials aggregates expose only the admitted L1/L2 level map."""
     from moira.timelords import (
-        DecennialPolicy,
-        TimelordComputationPolicy,
         decennials,
         decennial_sequence_profile,
     )
@@ -2001,14 +1911,15 @@ def test_decennial_sequence_profile_deep_output_preserves_level_map_and_method()
         "Saturn": 300.0,
     }
 
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    agg = decennial_sequence_profile(decennials(_P8_JD_BIRTH, natal_positions, True, levels=4, policy=policy))
+    agg = decennial_sequence_profile(
+        decennials(_P8_JD_BIRTH, natal_positions, True)
+    )
 
     assert agg.major_count == 7
-    assert agg.profile_count == 2800
-    assert agg.level_count_map == {1: 7, 2: 49, 3: 343, 4: 2401}
-    assert agg.deepest_level == 4
-    assert agg.deep_subdivision_method == "valens"
+    assert agg.profile_count == 56
+    assert agg.level_count_map == {1: 7, 2: 49}
+    assert agg.deepest_level == 2
+    assert agg.deep_subdivision_method is None
 
 
 def test_decennial_sequence_profile_rejects_mismatched_count() -> None:
@@ -2052,13 +1963,19 @@ def test_zr_sequence_profile_period_count_is_12() -> None:
     assert agg.period_count == 12
 
 
-def test_zr_sequence_profile_angular_plus_succedent_plus_cadent_equals_peak() -> None:
-    """In ZRSequenceProfile, angular+succedent+cadent equals peak_period_count."""
+def test_zr_sequence_profile_classifies_all_places_and_peaks_are_angular() -> None:
+    """Fortune supplied: 12 classified places, with angular periods as peaks."""
     from moira.timelords import zodiacal_releasing, zr_sequence_profile
-    periods = zodiacal_releasing(_P8_FORTUNE, _P8_JD_BIRTH, levels=1)
+    periods = zodiacal_releasing(
+        _P8_FORTUNE,
+        _P8_JD_BIRTH,
+        levels=1,
+        fortune_longitude=_P8_FORTUNE,
+    )
     agg = zr_sequence_profile(periods, level=1)
-    assert agg.angular_count + agg.succedent_count + agg.cadent_count \
-           == agg.peak_period_count
+    assert (agg.angular_count, agg.succedent_count, agg.cadent_count) == (4, 4, 4)
+    assert agg.angular_count + agg.succedent_count + agg.cadent_count == agg.period_count
+    assert agg.peak_period_count == agg.angular_count
 
 
 def test_zr_sequence_profile_non_peak_count_property() -> None:
@@ -2274,11 +2191,9 @@ def test_decennial_active_pair_rejects_sub_as_major() -> None:
         )
 
 
-def test_decennial_active_path_returns_full_deep_lineage() -> None:
-    """decennial_active_path returns one active profile per generated Decennials level."""
+def test_decennial_active_path_returns_full_admitted_lineage() -> None:
+    """decennial_active_path returns the active L1/L2 lineage."""
     from moira.timelords import (
-        DecennialPolicy,
-        TimelordComputationPolicy,
         decennial_active_path,
         decennials,
     )
@@ -2293,19 +2208,18 @@ def test_decennial_active_path_returns_full_deep_lineage() -> None:
         "Saturn": 300.0,
     }
 
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    periods = decennials(_P8_JD_BIRTH, natal_positions, True, levels=4, policy=policy)
-    active_leaf = next(period for period in periods if period.level == 4)
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
+    active_leaf = next(period for period in periods if period.level == 2)
     mid_jd = (active_leaf.start_jd + active_leaf.end_jd) / 2.0
 
     path = decennial_active_path(periods, mid_jd)
 
     assert path is not None
-    assert [profile.level for profile in path.profiles] == [1, 2, 3, 4]
+    assert [profile.level for profile in path.profiles] == [1, 2]
     assert path.major_profile.level == 1
-    assert path.deepest_profile.level == 4
-    assert path.deepest_level == 4
-    assert path.has_deep_subdivision
+    assert path.deepest_profile.level == 2
+    assert path.deepest_level == 2
+    assert not path.has_deep_subdivision
 
 
 def test_decennial_active_path_returns_none_outside_sequence() -> None:
@@ -2328,10 +2242,10 @@ def test_decennial_active_path_returns_none_outside_sequence() -> None:
 
 def test_decennial_active_path_rejects_non_contiguous_levels() -> None:
     """DecennialActivePath rejects profile tuples that skip a level."""
+    import dataclasses
+
     from moira.timelords import (
         DecennialActivePath,
-        DecennialPolicy,
-        TimelordComputationPolicy,
         decennial_condition_profile,
         decennials,
     )
@@ -2346,20 +2260,20 @@ def test_decennial_active_path_rejects_non_contiguous_levels() -> None:
         "Saturn": 300.0,
     }
 
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    periods = decennials(_P8_JD_BIRTH, natal_positions, True, levels=4, policy=policy)
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
     level1 = decennial_condition_profile(next(period for period in periods if period.level == 1))
-    level3 = decennial_condition_profile(next(period for period in periods if period.level == 3))
+    level3 = dataclasses.replace(
+        decennial_condition_profile(next(period for period in periods if period.level == 2))
+    )
+    object.__setattr__(level3, "level", 3)
 
     with pytest.raises(ValueError, match="advance one level at a time"):
         DecennialActivePath(profiles=(level1, level3))
 
 
-def test_decennial_subsystem_surfaces_agree_on_active_deep_state() -> None:
-    """Current, grouped, aggregate, pair, and path Decennials surfaces agree on one deep active instant."""
+def test_decennial_subsystem_surfaces_agree_on_active_admitted_state() -> None:
+    """Current, grouped, aggregate, pair, and path surfaces agree at L1/L2."""
     from moira.timelords import (
-        DecennialPolicy,
-        TimelordComputationPolicy,
         current_decennials,
         decennial_active_pair,
         decennial_active_path,
@@ -2378,26 +2292,30 @@ def test_decennial_subsystem_surfaces_agree_on_active_deep_state() -> None:
         "Saturn": 300.0,
     }
 
-    policy = TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="valens"))
-    periods = decennials(_P8_JD_BIRTH, natal_positions, True, levels=4, policy=policy)
+    periods = decennials(_P8_JD_BIRTH, natal_positions, True)
     groups = group_decennials(periods)
     aggregate = decennial_sequence_profile(periods)
-    active_leaf = next(period for period in periods if period.level == 4)
+    active_leaf = next(period for period in periods if period.level == 2)
     mid_jd = (active_leaf.start_jd + active_leaf.end_jd) / 2.0
 
-    major, leaf = current_decennials(_P8_JD_BIRTH, natal_positions, True, mid_jd, levels=4, policy=policy)
+    major, leaf = current_decennials(
+        _P8_JD_BIRTH,
+        natal_positions,
+        True,
+        mid_jd,
+    )
     pair = decennial_active_pair(periods, mid_jd)
     path = decennial_active_path(periods, mid_jd)
     group = next(item for item in groups if item.major.planet == major.planet)
 
     assert pair is not None
     assert path is not None
-    assert aggregate.level_count_map == {1: 7, 2: 49, 3: 343, 4: 2401}
-    assert aggregate.deepest_level == 4
+    assert aggregate.level_count_map == {1: 7, 2: 49}
+    assert aggregate.deepest_level == 2
     assert group.active_sub_group_at(mid_jd) is not None
     assert major.planet == pair.major_profile.planet == path.major_profile.planet == group.major.planet
     assert leaf.planet == path.deepest_profile.planet
-    assert leaf.level == path.deepest_level == 4
+    assert leaf.level == path.deepest_level == 2
     assert pair.sub_profile is not None
     assert pair.sub_profile.planet == path.profiles[1].planet
 

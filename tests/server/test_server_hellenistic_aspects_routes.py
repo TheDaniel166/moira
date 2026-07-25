@@ -72,7 +72,7 @@ def test_overcoming_route_is_bidirectional_and_normalizes_longitudes(
         "/v1/aspects/hellenistic/overcoming",
         json={
             "body1": "Mars",
-            "longitude1": 455.0,
+            "longitude1": 275.0,
             "body2": "Saturn",
             "longitude2": 5.0,
         },
@@ -80,7 +80,7 @@ def test_overcoming_route_is_bidirectional_and_normalizes_longitudes(
 
     assert response.status_code == 200
     body = response.json()
-    assert body["longitude1"] == pytest.approx(95.0)
+    assert body["longitude1"] == pytest.approx(275.0)
     assert body["longitude2"] == pytest.approx(5.0)
     assert body["body1_overcomes_body2"] is True
     assert body["body2_overcomes_body1"] is False

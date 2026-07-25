@@ -16,10 +16,10 @@ transport contract documented for that family.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 438
-- Registered OpenAPI operations: 438 (GET 36, POST 402)
+- Registered OpenAPI paths: 434
+- Registered OpenAPI operations: 434 (GET 35, POST 399)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 434
+- Versioned `/v1` paths: 430
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -48,9 +48,10 @@ Implemented:
   Ashtakavarga direct and chart-backed result/profile/sign-profile/
   transit-strength routes, and alternate dasha direct and chart-backed
   Ashtottari/Yogini sequence/profile plus period-profile
-  routes, Varga direct and chart-backed generic/named/Shodashvarga/batch routes, and
-  Decans/Decanates direct and chart-backed decanate-placement plus Hermetic
-  catalog/longitude/rising/night-hour routes
+  routes, Varga direct and chart-backed generic/named/Shodashvarga/batch routes,
+  and Decanates direct and chart-backed decanate-placement routes. The disputed
+  Hermetic catalog/longitude/rising/night-hour family is quarantined and absent
+  from the application registry
 - source-scoped Pancha Pakshi admission adds explicit-profile discovery,
   governance-only Uromarisi constitutional status, aksara and natal identity,
   a pure nakshatra-to-bird source-table lookup, exact nominal schedule,
@@ -180,7 +181,6 @@ Not yet broadly exposed as REST families:
 | hellenistic-aspects | 2 |
 | harmograms | 5 |
 | harmonics | 10 |
-| hermetic-decans | 4 |
 | houses | 2 |
 | huber | 6 |
 | jaimini | 8 |
@@ -1395,10 +1395,6 @@ include the primary-source citation for the selected variant.
 | POST | `/v1/decanates/set` | `decanate_set_route` |
 | POST | `/v1/decanates/chart/vedic-drekkana` | `vedic_drekkana_chart_route` |
 | POST | `/v1/decanates/chart/set` | `decanate_set_chart_route` |
-| GET | `/v1/hermetic-decans/catalog` | `hermetic_decan_catalog_route` |
-| POST | `/v1/hermetic-decans/longitude` | `hermetic_decan_longitude_route` |
-| POST | `/v1/hermetic-decans/rising` | `hermetic_rising_decan_route` |
-| POST | `/v1/hermetic-decans/night-hours` | `hermetic_decan_night_hours_route` |
 
 ## Astrocartography Routes
 
@@ -1560,12 +1556,10 @@ direction.
 | POST | `/v1/timelords/zodiacal-releasing/profile` | `zr_profile_route` |
 | POST | `/v1/timelords/zodiacal-releasing/level-pair` | `zr_level_pair_route` |
 
-Every Decennials request carries `levels` and an explicit optional
-`deep_subdivision_method`. Levels 1–2 reject a deep method; levels 3–4 reject
-an omitted method; `hephaistio` admits level 3 only; `valens` admits levels 3
-and 4. Responses preserve the selected method at the top level and on every
-deep period/profile. This `valens` value selects chronological subdivision
-only and does not enable the quarantined Valens delineation layer.
+Every Decennials request is limited to `levels` 1–2.
+`deep_subdivision_method` remains a compatibility field but every non-null
+value is rejected. Valens and Hephaistio L3/L4 chronology is quarantined
+separately from the already quarantined Valens delineation layer.
 
 | POST | `/v1/dasha/vimshottari/sequence` | `dasha_sequence_route` |
 | POST | `/v1/dasha/vimshottari/balance` | `dasha_balance_route` |
@@ -2818,10 +2812,6 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/harmonics/transit-forecast` | harmonics | `harmonic_transit_forecast_route_v1_harmonics_transit_forecast_post` |
 | `POST` | `/v1/heliacal/planet` | phenomena | `planet_heliacal_event_route_v1_heliacal_planet_post` |
 | `POST` | `/v1/heliacal/visibility-event` | phenomena | `general_visibility_event_route_v1_heliacal_visibility_event_post` |
-| `GET` | `/v1/hermetic-decans/catalog` | hermetic-decans | `hermetic_decan_catalog_route_v1_hermetic_decans_catalog_get` |
-| `POST` | `/v1/hermetic-decans/longitude` | hermetic-decans | `hermetic_decan_longitude_route_v1_hermetic_decans_longitude_post` |
-| `POST` | `/v1/hermetic-decans/night-hours` | hermetic-decans | `hermetic_decan_night_hours_route_v1_hermetic_decans_night_hours_post` |
-| `POST` | `/v1/hermetic-decans/rising` | hermetic-decans | `hermetic_rising_decan_route_v1_hermetic_decans_rising_post` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
 | `POST` | `/v1/houses/reduction` | chart | `houses_reduction_route_v1_houses_reduction_post` |
 | `POST` | `/v1/huber/age-point` | huber | `huber_age_point_route_v1_huber_age_point_post` |

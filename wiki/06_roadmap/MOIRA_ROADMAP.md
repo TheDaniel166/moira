@@ -398,16 +398,18 @@ This keeps the engine boundary clean:
 For reference, capabilities where Moira exceeds the standard Swiss Ephemeris distribution:
 
 - **IAU 2000A full nutation** (1,358 luni-solar + 1,056 planetary terms) — SwissEph uses a truncated version in its default mode
-- **Hermetic decans** with all 36 Egyptian decan ruling stars and their computed positions
+- **Classical decanates** with admitted Chaldean face, triplicity-decan, and
+  Vedic drekkana computations; the disputed Hermetic name/star catalog is
+  research-only
 - **Centaur SPK kernels** (Pholus, Chariklo, Asbolus, Hylonome) — SwissEph has fewer
 - **TNO kernel support** (Quaoar, Varuna, Ixion, Orcus) via SPK Type 13
 - **512 Arabic part / Lot definitions** — SwissEph ships far fewer
 - **Primary directions** (Placidus semi-arc, mundane) — SwissEph requires the `swe_dirhut()` C function
-- **Hermetic / Ptolemaic 36-decan hour system** with sunrise/sunset computation
+- **Planetary hours** with day/night sunrise and sunset computation
 - **Tertiary progressions** alongside secondary and solar arc
 - **Relativistic aberration and deflection** applied uniformly to all bodies
 - **Constellations directory** (34 constellation star groups)
-- **Planetary hours** with full day/night cycle and decan hours
+- **Planetary hours** with a full admitted day/night cycle
 - **Royal stars**, **Behenian stars**, **Pleiades / Hyades** as named groups
 - **Multiple star systems** — Kepler orbital mechanics for visual binaries (Sirius B, α Centauri AB); VISUAL / WIDE / SPECTROSCOPIC / OPTICAL types; 8-system catalog
 - **Eclipse Saros classification** with heptagonal vertex labelling

@@ -1,6 +1,6 @@
 """
 Moira — Lots Engine
-Governs computation of Arabic Parts (Hermetic Lots) for ~430 named lots using the formula Lot = ASC + Add − Subtract (mod 360°) with automatic day/night reversal.
+Governs computation of named Arabic Parts (Hermetic Lots) using the formula Lot = ASC + Add − Subtract (mod 360°) with catalogue-controlled day/night reversal.
 
 Boundary: owns the comprehensive lots catalogue, the reference-key resolver, the day/night reversal logic, and the ArabicPart and PartDefinition result types. Delegates chart data access to moira.chart.ChartContext.
 
@@ -113,7 +113,7 @@ class PartDefinition:
         PartDefinition is the atomic unit of the lots catalogue.  It separates
         the definition of a lot from its computation, allowing the catalogue to
         be inspected, filtered, and extended without touching the calculation
-        engine.  Without this vessel, the ~430 lot formulas would be embedded
+        engine. Without this vessel, the lot formulas would be embedded
         as raw tuples with no semantic labels.
 
     LAW OF OPERATION:
@@ -157,7 +157,7 @@ class PartDefinition:
 
 
 # ---------------------------------------------------------------------------
-# Comprehensive parts catalogue  (~430 entries)
+# Comprehensive parts catalogue
 # ---------------------------------------------------------------------------
 
 PARTS_DEFINITIONS: list[PartDefinition] = [
@@ -624,7 +624,7 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("Slaves 3",                          "Moon",          "Mars",           True,  "hellenistic"),
     PartDefinition("Slaves 4A",                         "Mercury",       "Mars",           True,  "hellenistic"),
     PartDefinition("Slaves 4B",                         "Mercury",       "Sun",            False, "hellenistic"),
-    PartDefinition("Siblings (Number)",                 "Jupiter",       "Mercury",        False, "hellenistic,medieval"),
+    PartDefinition("Siblings (Number)",                 "Jupiter",       "Mercury",        True,  "hellenistic,medieval"),
     PartDefinition("Slyness",                           "Neptune",       "Pluto",          False, "modern"),
     PartDefinition("Soldiers & Policemen",              "Saturn",        "Mars",           True,  "medieval"),
     PartDefinition("Sons",                              "Moon",          "Sun",            False, "modern"),
@@ -671,7 +671,7 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("Time for Action",                   "Jupiter",       "Sun",            False, "medieval,horary"),
     PartDefinition("Time Occupied by Action",           "Saturn",        "Sun",            False, "medieval,horary"),
     PartDefinition("Time of Attainment",                "Ruler H10",     "Lord of Hour",   True,  "medieval,horary"),
-    PartDefinition("Time of Children",                  "Jupiter",       "Mars",           False, "hellenistic,medieval"),
+    PartDefinition("Time of Children",                  "Jupiter",       "Mars",           True,  "hellenistic,medieval"),
     PartDefinition("Timidity",                          "Saturn",        "Neptune",        False, "modern"),
     PartDefinition("Torture",                           "Saturn",        "Moon",           False, "medieval,horary"),
     PartDefinition("Transformation",                    "Ruler H4",      "Dsc",            False, "modern"),
@@ -1543,15 +1543,17 @@ class ArabicPartsService:
             - Return a list of ArabicPart results.
         Non-responsibilities:
             - Does not own the catalogue; PARTS_DEFINITIONS is module-level.
-            - Does not validate chart completeness before computation.
+            - Does not require every catalogue reference to be present before
+              computation; missing references are handled per lot by policy.
             - Does not perform any I/O or kernel access.
         Dependencies:
             - moira.chart.ChartContext for planet longitudes, house cusps,
               Ascendant, and MC.
             - moira.constants.sign_of for sign derivation in ArabicPart.
         Failure behavior:
-            - Unresolvable ingredient keys return 0.0 silently; the lot is
-              still computed and included in the result list.
+            - Unresolvable ingredient keys never fabricate a 0° longitude.
+            - The default SKIP policy omits the affected lot; the RAISE policy
+              raises ValueError naming the unresolved reference.
         Truth preservation:
             - Returned ArabicPart results preserve the resolved doctrinal path
               through computation_truth, including operand reversal and
@@ -1589,7 +1591,7 @@ class ArabicPartsService:
         "state": {"mutable": false, "owners": []},
         "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
         "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-        "failures": {"policy": "silent_default"},
+        "failures": {"policy": "policy_skip_or_raise"},
         "succession": {"stance": "terminal", "override_points": []},
         "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
     }
@@ -2031,30 +2033,33 @@ class ArabicPartsService:
             refs["Lord of Hour"] = lord_of_hour
             store_ref("Lord of Hour", lord_of_hour, "external", "lord_of_hour")
 
-        # Pre-compute Fortune and Spirit
-        if is_day:
-            fortune_lon = (asc + norm.get("Moon", 0) - norm.get("Sun", 0)) % 360.0
-            spirit_lon  = (asc + norm.get("Sun",  0) - norm.get("Moon", 0)) % 360.0
-        else:
-            fortune_lon = (asc + norm.get("Sun",  0) - norm.get("Moon", 0)) % 360.0
-            spirit_lon  = (asc + norm.get("Moon", 0) - norm.get("Sun",  0)) % 360.0
-        if policy.derived.include_fortune:
-            refs["Fortune"] = fortune_lon
-            store_ref("Fortune", fortune_lon, "derived_lot", "part_of_fortune")
-        if policy.derived.include_spirit:
-            refs["Spirit"] = spirit_lon
-            store_ref("Spirit", spirit_lon, "derived_lot", "part_of_spirit")
+        # Fortune and Spirit require both luminaries. Missing bodies remain
+        # unresolved so the configured SKIP/RAISE policy governs every direct
+        # and transitive lot dependency without fabricated 0° longitudes.
+        if "Sun" in norm and "Moon" in norm:
+            if is_day:
+                fortune_lon = (asc + norm["Moon"] - norm["Sun"]) % 360.0
+                spirit_lon  = (asc + norm["Sun"]  - norm["Moon"]) % 360.0
+            else:
+                fortune_lon = (asc + norm["Sun"]  - norm["Moon"]) % 360.0
+                spirit_lon  = (asc + norm["Moon"] - norm["Sun"]) % 360.0
+            if policy.derived.include_fortune:
+                refs["Fortune"] = fortune_lon
+                store_ref("Fortune", fortune_lon, "derived_lot", "part_of_fortune")
+            if policy.derived.include_spirit:
+                refs["Spirit"] = spirit_lon
+                store_ref("Spirit", spirit_lon, "derived_lot", "part_of_spirit")
 
         # Eros (Valens) = Asc + Spirit - Fortune  (reversible)
         if (
             policy.derived.include_eros_valens
-            and policy.derived.include_fortune
-            and policy.derived.include_spirit
+            and "Fortune" in refs
+            and "Spirit" in refs
         ):
             if is_day:
-                refs["Eros (Valens)"] = (asc + spirit_lon  - fortune_lon) % 360.0
+                refs["Eros (Valens)"] = (asc + refs["Spirit"] - refs["Fortune"]) % 360.0
             else:
-                refs["Eros (Valens)"] = (asc + fortune_lon - spirit_lon)  % 360.0
+                refs["Eros (Valens)"] = (asc + refs["Fortune"] - refs["Spirit"]) % 360.0
             store_ref("Eros (Valens)", refs["Eros (Valens)"], "derived_lot", "eros_valens")
 
         # House rulers H1–H12

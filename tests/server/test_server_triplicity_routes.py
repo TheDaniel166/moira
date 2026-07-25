@@ -58,11 +58,11 @@ def test_triplicity_assignment_route_matches_engine_day_context() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["sign"] == direct.sign
-    assert body["day_ruler"] == direct.day_ruler == "Mars"
-    assert body["night_ruler"] == direct.night_ruler == "Venus"
+    assert body["day_ruler"] == direct.day_ruler == "Venus"
+    assert body["night_ruler"] == direct.night_ruler == "Mars"
     assert body["participating_ruler"] == direct.participating_ruler == "Moon"
-    assert body["active_ruler"] == direct.active_ruler == "Mars"
-    assert body["inactive_ruler"] == direct.inactive_ruler == "Venus"
+    assert body["active_ruler"] == direct.active_ruler == "Venus"
+    assert body["inactive_ruler"] == direct.inactive_ruler == "Mars"
     assert body["element"] == direct.element.value == "water"
 
 

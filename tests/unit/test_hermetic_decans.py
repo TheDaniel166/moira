@@ -29,6 +29,25 @@ def _dummy_star(name: str = "Sirius"):
     )
 
 
+def test_quarantined_catalog_is_not_curated_by_package_or_facade() -> None:
+    import moira
+    import moira.facade as facade
+
+    quarantined_symbols = {
+        "DecanHour",
+        "DecanHoursNight",
+        "DECAN_NAMES",
+        "DECAN_RULING_STARS",
+        "list_decans",
+        "available_decans",
+        "decan_for_longitude",
+        "decan_at",
+        "decan_hours",
+    }
+    assert quarantined_symbols.isdisjoint(moira.__all__)
+    assert all(not hasattr(facade, name) for name in quarantined_symbols)
+
+
 def test_solar_declination_ra_uses_tt_obliquity() -> None:
     import moira._solar as solar_module
 

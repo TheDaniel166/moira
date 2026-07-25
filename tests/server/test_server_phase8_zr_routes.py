@@ -151,6 +151,34 @@ def test_zr_profile_route_matches_engine(client_with_engine: TestClient) -> None
     assert body["profiles"][0]["sign"] == direct_profile.profiles[0].sign
 
 
+def test_zr_profile_route_classifies_all_twelve_places_from_fortune(
+    client_with_engine: TestClient,
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/timelords/zodiacal-releasing/profile",
+        json={
+            **_BASE_PAYLOAD,
+            "natal": {
+                **_NATAL_PAYLOAD,
+                "fortune_longitude": _LOT_LONGITUDE,
+            },
+            "profile_level": 1,
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert (
+        body["angular_count"],
+        body["succedent_count"],
+        body["cadent_count"],
+    ) == (4, 4, 4)
+    assert body["peak_period_count"] == body["angular_count"]
+    assert {
+        profile["angularity_from_fortune"] for profile in body["profiles"]
+    } == set(range(1, 13))
+
+
 # ---------------------------------------------------------------------------
 # Level-pair parity witness
 # ---------------------------------------------------------------------------

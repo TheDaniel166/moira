@@ -5,7 +5,15 @@
 **Auditor:** TheDaniel166  
 **Method:** 12-domain coverage matrix. Moira assessed from code inspection; competitors from public documentation (manuals, feature pages, tutorials).
 
-**Post-audit implementation update (2026-05-15):** Relocated chart generation has since been implemented in the live codebase via `moira.chart.relocated_chart()` and `Moira.relocated_chart()`. Converse transit search has also since been implemented across the live transit surfaces: `find_transits()` / `next_transit()` in `transits.py`, `find_aspect_transits()` in `transits_aspects.py`, `find_declination_transits()` in `transits_equatorial.py`, and `find_house_ingresses()` in `transits_houses.py`, all via an explicit reverse-time search mode. The traditional solar-sign frame has likewise been implemented in the live house engine as an explicit `HouseSystem.SOLAR_SIGN`, distinct from Sunshine. East Point / Equatorial Ascendant has now also been implemented in the live house engine as `HouseCusps.east_point`, computed from the Morinus-style equatorial projection of `ARMC + 90°`. A thin `solar_return_chart()` wrapper has now also been added on top of the existing return-time and chart-assembly substrate. Decennials has now also been fully implemented and constitutionalized in the live timelords subsystem, including the shared `L1/L2` core, `Valens` deep doctrine through `L4`, and `Hephaistio` through `L3`. The audit sections below are updated to reflect those closures.
+> **Current-state correction (2026-07-25).** This is a point-in-time comparison,
+> not a current capability ledger. The admitted Decennials surface now ends at
+> L2; the named Valens and Hephaistio deep-subdivision candidates fail closed.
+> The disputed Hermetic name/star catalog is retained only for source research
+> and is absent from the package root, facade, and registered REST application.
+> Current standards and registered runtime surfaces supersede contrary cells or
+> post-audit notes below.
+
+**Post-audit implementation update (2026-05-15, historical):** Relocated chart generation has since been implemented in the live codebase via `moira.chart.relocated_chart()` and `Moira.relocated_chart()`. Converse transit search has also since been implemented across the live transit surfaces: `find_transits()` / `next_transit()` in `transits.py`, `find_aspect_transits()` in `transits_aspects.py`, `find_declination_transits()` in `transits_equatorial.py`, and `find_house_ingresses()` in `transits_houses.py`, all via an explicit reverse-time search mode. The traditional solar-sign frame has likewise been implemented in the live house engine as an explicit `HouseSystem.SOLAR_SIGN`, distinct from Sunshine. East Point / Equatorial Ascendant has now also been implemented in the live house engine as `HouseCusps.east_point`, computed from the Morinus-style equatorial projection of `ARMC + 90°`. A thin `solar_return_chart()` wrapper has now also been added on top of the existing return-time and chart-assembly substrate.
 
 **Cell scoring:** ✓ full | ~ partial | ✗ absent | ? unclear  
 **Gap types:** A = missing feature | B = depth gap  
@@ -189,7 +197,7 @@ chains. `wiki/02_standards/DIGNITIES_BACKEND_STANDARD.md` is authoritative.
 | Triplicity lords (Dorothean / Lilly) | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✓ | ✗ | ✗ |
 | Egyptian / Ptolemaic bounds | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
 | Decanates / faces | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ |
-| Hermetic decanates | ✓ | ~ | ✓ | ~ | ✗ | ~ | ✗ | ✗ | ✗ |
+| Hermetic decanates | ✗¹ | ~ | ✓ | ~ | ✗ | ~ | ✗ | ✗ | ✗ |
 | Almuten calculation | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
 | Peregrine status | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
 | Mutual reception | ✓ | ✓ | ✓ | ✓ | ~ | ✓ | ✓ | ✗ | ~ |
@@ -199,6 +207,10 @@ chains. `wiki/02_standards/DIGNITIES_BACKEND_STANDARD.md` is authoritative.
 | Sect (diurnal/nocturnal) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ |
 
 **Gap notes:**  
+
+¹ Moira retains an internal research catalog, but no Hermetic decan result is
+currently source-admitted or exposed through the package root, facade, or
+registered REST application.
 No gaps identified in this domain. All features are fully implemented in `dignities.py`
 and supporting modules.
 

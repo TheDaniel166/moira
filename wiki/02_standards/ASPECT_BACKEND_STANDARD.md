@@ -76,6 +76,15 @@ Declination is a second angular coordinate on the celestial sphere. It is not
 full Cartesian 3D geometry because radial distance is not part of these
 relationships.
 
+#### 1.2.2 Whole-sign direction and overcoming
+
+`moira.aspects` also owns Hellenistic whole-sign direction and the directed
+`overcoming(lon1, lon2)` predicate. Sign counting is inclusive: the first
+body overcomes the second only when the first occupies the tenth sign from the
+second, which is nine zero-based sign steps forward. Reversing the operands
+reverses the question. A third-sign/fourth-sign confusion must not be accepted
+as overcoming merely because the bodies form an undirected square.
+
 #### 1.3 Admitted aspect
 
 An aspect is **admitted** when the admission test passes. Admission is binary:
@@ -442,7 +451,6 @@ aspect backend:
 | Interpretation (e.g. "this aspect is challenging") | Doctrine-specific; belongs above the engine |
 | Dignity weighting or reception scoring | Requires a separate dignity model |
 | Body-specific orb weights | Not in current `AspectPolicy` |
-| Sinister/dexter distinction | Requires directional awareness not yet in scope |
 | Antiscion contacts | A separate geometric computation |
 | Cross-chart (synastry) relational policies | Multi-chart context not yet in scope |
 | Kite, Mystic Rectangle, Grand Quintile | Require oriented topology or 5-body matching |
@@ -461,7 +469,7 @@ aspect backend:
 | Python version | 3.14.x (as resolved by `.venv`) |
 | Test runner | `pytest` via `.venv\Scripts\python.exe -m pytest` |
 | Test file | `tests/unit/test_aspects.py` |
-| Baseline | 272 tests, all passing |
+| Baseline | Focused aspect test file passes under strict known-issues mode |
 | Acceptable result | 0 failures, 0 errors |
 
 No test in `test_aspects.py` may be modified to make the implementation pass.
@@ -487,6 +495,7 @@ Each invariant is identified by a short code for traceable reference.
 | T-6 | For a Contra-Parallel: `orb == abs(dec1 + dec2)` |
 | T-7 | `dec1` and `dec2` are in `[-90, +90]` |
 | T-8 | Parallel and Contra-Parallel hemisphere predicates are mutually exclusive |
+| T-9 | `overcoming(lon1, lon2)` is true exactly when `(sign1 - sign2) mod 12 == 9` |
 
 #### INV-CLASS — Classification
 

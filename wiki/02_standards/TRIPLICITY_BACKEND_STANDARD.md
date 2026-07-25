@@ -148,13 +148,11 @@ for an unrecognised doctrine argument.
 | Fire (Aries, Leo, Sagittarius) | Sun | Jupiter | Saturn |
 | Earth (Taurus, Virgo, Capricorn) | Venus | Moon | Mars |
 | Air (Gemini, Libra, Aquarius) | Saturn | Mercury | Jupiter |
-| Water (Cancer, Scorpio, Pisces) | Mars | Venus | Moon |
+| Water (Cancer, Scorpio, Pisces) | Venus | Mars | Moon |
 
-**Water triplicity scholarly commitment**: The assignment of Mars as the
-water-triplicity day ruler follows Pingree's 1976 critical edition of
-Dorotheus. Some later redactions assign Mars only to mixed-sect contexts;
-Moira preserves Pingree's edition as the canonical source for
-`DOROTHEAN_PINGREE_1976`. See module docstring for extended provenance note.
+**Water triplicity source commitment**: Dorotheus I.1 assigns Venus by day,
+Mars by night, and the Moon as participating ruler. Moira preserves that order
+for `DOROTHEAN_PINGREE_1976`; see the module docstring for the source boundary.
 
 ---
 
@@ -389,13 +387,13 @@ without a doctrine revision.
 | Gemini | True | Saturn | Mercury | Jupiter | air |
 | Libra | False | Mercury | Saturn | Jupiter | air |
 | Aquarius | True | Saturn | Mercury | Jupiter | air |
-| Cancer | True | Mars | Venus | Moon | water |
-| Scorpio | False | Venus | Mars | Moon | water |
-| Pisces | True | Mars | Venus | Moon | water |
+| Cancer | True | Venus | Mars | Moon | water |
+| Scorpio | False | Mars | Venus | Moon | water |
+| Pisces | True | Venus | Mars | Moon | water |
 
 #### 12.2 Water triplicity Pingree commitment
 
-The assignment `Cancer/Scorpio/Pisces → day: Mars, night: Venus, participating: Moon`
+The assignment `Cancer/Scorpio/Pisces → day: Venus, night: Mars, participating: Moon`
 is the authoritative DOROTHEAN_PINGREE_1976 value. Any change to this triple
 requires a new doctrine member and must not alter the existing table entry.
 
@@ -410,9 +408,9 @@ requires a new doctrine member and must not alter the existing table entry.
 | Saturn | Aries | True | AWARD_REDUCED | 1 |
 | Saturn | Aries | True | IGNORE | 0 |
 | Moon | Aries | True | AWARD_REDUCED | 0 |
-| Mars | Cancer | True | IGNORE | 3 |
-| Venus | Cancer | False | IGNORE | 3 |
-| Mars | Cancer | False | IGNORE | 0 |
+| Venus | Cancer | True | IGNORE | 3 |
+| Mars | Cancer | False | IGNORE | 3 |
+| Venus | Cancer | False | IGNORE | 0 |
 | Moon | Cancer | True | AWARD_REDUCED | 1 |
 | Sun | Ophiuchus | True | AWARD_REDUCED | 0 |
 | Uranus | Aries | True | AWARD_REDUCED | 0 |

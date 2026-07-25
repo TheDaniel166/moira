@@ -845,7 +845,7 @@ _DECENNIAL_MAJOR_MONTHS = sum(_DECENNIAL_MONTHS.values())
 _DECENNIAL_MONTH_DAYS = 30.0
 _DECENNIAL_LUMINARIES: frozenset[str] = frozenset({"Sun", "Moon"})
 _DECENNIAL_PLANETARIES: frozenset[str] = frozenset({"Mercury", "Venus", "Mars", "Jupiter", "Saturn"})
-_DECENNIAL_MAX_LEVEL = 4
+_DECENNIAL_MAX_LEVEL = 2
 _DECENNIAL_DEEP_METHODS: frozenset[str] = frozenset({"valens", "hephaistio"})
 
 
@@ -940,7 +940,7 @@ class DecennialPeriod:
         if self.level <= 2 and self.deep_subdivision_method is not None:
             raise ValueError("DecennialPeriod deep_subdivision_method applies only to levels 3 and 4")
         if self.level == 4 and self.deep_subdivision_method != "valens":
-            raise ValueError("DecennialPeriod level-4 periods are admitted only for deep_subdivision_method='valens'")
+            raise ValueError("Legacy DecennialPeriod level-4 vessels require deep_subdivision_method='valens'")
         if self.sequence:
             if self.major_index >= len(self.sequence):
                 raise ValueError("DecennialPeriod major_index must lie inside preserved sequence")
@@ -1173,6 +1173,19 @@ def _normalize_lon(lon: float) -> float:
     return lon % 360.0
 
 
+def _require_admitted_decennial_periods(
+    periods: list[DecennialPeriod],
+    *,
+    caller: str,
+) -> None:
+    if any(period.level > _DECENNIAL_MAX_LEVEL for period in periods):
+        raise ValueError(f"{caller}: Decennial levels 3–4 are not admitted")
+    if any(period.deep_subdivision_method is not None for period in periods):
+        raise ValueError(
+            f"{caller}: Decennial deep_subdivision_method is not admitted"
+        )
+
+
 def _validate_decennial_positions(natal_positions: dict[str, float]) -> None:
     if not isinstance(natal_positions, dict):
         raise TypeError("natal_positions must be a dict of classical planet longitudes")
@@ -1199,14 +1212,6 @@ def _decennial_sequence(natal_positions: dict[str, float], is_day_chart: bool) -
     )
 
 
-def _decennial_supported_max_level(policy: "DecennialPolicy") -> int:
-    if policy.deep_subdivision_method is None:
-        return 2
-    if policy.deep_subdivision_method == "hephaistio":
-        return 3
-    return _DECENNIAL_MAX_LEVEL
-
-
 def _append_decennial_children(
     parent: DecennialPeriod,
     *,
@@ -1215,6 +1220,11 @@ def _append_decennial_children(
     deep_subdivision_method: str | None,
     periods: list[DecennialPeriod],
 ) -> None:
+    if target_level > _DECENNIAL_MAX_LEVEL or deep_subdivision_method is not None:
+        raise ValueError(
+            "_append_decennial_children: Decennial levels 3–4 and deep "
+            "subdivision methods are not admitted"
+        )
     if parent.level >= target_level:
         return
 
@@ -1275,12 +1285,14 @@ def decennials(
     policy: "TimelordComputationPolicy | None" = None,
 ) -> list[DecennialPeriod]:
     """
-    Generate Decennials major periods and admitted deeper sub-periods.
+    Generate admitted Decennials major periods and Level-2 sub-periods.
 
     The minimum admitted Moira engine starts from the sect light, orders the
     seven classical planets by zodiacal succession from that point, assigns
     129 months to each major period, and subdivides each major by the
     transmitted unequal month-allotments of the seven classical planets.
+    Levels 3–4 remain quarantined pending source-backed subdivision doctrine
+    and independent validation.
     """
     if not math.isfinite(natal_jd):
         raise ValueError(f"decennials: natal_jd must be finite, got {natal_jd!r}")
@@ -1288,12 +1300,6 @@ def decennials(
         raise ValueError(f"decennials: levels must be 1–{_DECENNIAL_MAX_LEVEL}")
     _validate_decennial_positions(natal_positions)
     pol = _resolve_timelord_policy(policy)
-    max_level = _decennial_supported_max_level(pol.decennials)
-    if levels > max_level:
-        raise ValueError(
-            f"decennials: levels={levels} requires admitted deep_subdivision_method "
-            f"supporting up to level {levels}; current policy supports up to level {max_level}"
-        )
 
     sequence = _decennial_sequence(natal_positions, is_day_chart)
     sect_light = "Sun" if is_day_chart else "Moon"
@@ -1379,6 +1385,10 @@ def current_decennials(
 
 def validate_decennials_output(periods: list[DecennialPeriod]) -> None:
     """Verify that a decennials() output satisfies ordering and containment invariants."""
+    _require_admitted_decennial_periods(
+        periods,
+        caller="validate_decennials_output",
+    )
     by_level: dict[int, list[DecennialPeriod]] = {
         level: [period for period in periods if period.level == level]
         for level in range(1, _DECENNIAL_MAX_LEVEL + 1)
@@ -1413,20 +1423,8 @@ def validate_decennials_output(periods: list[DecennialPeriod]) -> None:
                 raise ValueError(
                     f"validate_decennials_output: period '{period.planet}' (L{period.level}) has ancestor path length {len(period.ancestor_planets)}, expected {period.level - 1}"
                 )
-            if period.level >= 3 and period.deep_subdivision_method is None:
-                raise ValueError(
-                    f"validate_decennials_output: period '{period.planet}' (L{period.level}) must preserve deep_subdivision_method"
-                )
-            if period.level == 4 and period.deep_subdivision_method != "valens":
-                raise ValueError(
-                    f"validate_decennials_output: period '{period.planet}' (L4) is admitted only under deep_subdivision_method='valens'"
-                )
             parent_path = period.ancestor_planets
             child_groups.setdefault((period.level - 1, parent_path), []).append(period)
-        elif period.deep_subdivision_method is not None:
-            raise ValueError(
-                f"validate_decennials_output: level-1 period '{period.planet}' must not preserve deep_subdivision_method"
-            )
 
     for major in level1:
         if major.sequence_kind != _decennial_sequence_kind(bool(major.is_day_chart)):
@@ -1470,10 +1468,6 @@ def validate_decennials_output(periods: list[DecennialPeriod]) -> None:
                 raise ValueError(
                     f"validate_decennials_output: period '{period.planet}' (L{level}) must preserve immediate parent planet '{parent.planet}'"
                 )
-            if parent.level >= 3 and period.deep_subdivision_method != parent.deep_subdivision_method:
-                raise ValueError(
-                    f"validate_decennials_output: period '{period.planet}' (L{level}) must preserve deep_subdivision_method of parent '{parent.planet}'"
-                )
 
     for parent_key, children in child_groups.items():
         parent = path_map[parent_key]
@@ -1504,6 +1498,7 @@ def validate_decennials_output(periods: list[DecennialPeriod]) -> None:
 
 def group_decennials(periods: list[DecennialPeriod]) -> list[DecennialMajorGroup]:
     """Group a flat Decennials output into major-period relation vessels."""
+    _require_admitted_decennial_periods(periods, caller="group_decennials")
 
     def _build_decennial_sub_groups(parent: DecennialPeriod) -> list[DecennialPeriodGroup]:
         children = [
@@ -1659,8 +1654,11 @@ def _validate_timelord_policy(
         raise ValueError(f"policy.decennials.major_months must remain {_DECENNIAL_MAJOR_MONTHS}")
     if abs(policy.decennials.month_basis_days - _DECENNIAL_MONTH_DAYS) > 1e-12:
         raise ValueError(f"policy.decennials.month_basis_days must remain {_DECENNIAL_MONTH_DAYS}")
-    if policy.decennials.deep_subdivision_method not in _DECENNIAL_DEEP_METHODS | {None}:
-        raise ValueError("policy.decennials.deep_subdivision_method must be 'valens', 'hephaistio', or None")
+    if policy.decennials.deep_subdivision_method is not None:
+        raise ValueError(
+            "policy.decennials.deep_subdivision_method is not admitted; "
+            "Valens and Hephaistio deep methods remain deferred"
+        )
     if policy.zr_year.year_days <= 0:
         raise ValueError("policy.zr_year.year_days must be positive")
     return policy
@@ -1750,7 +1748,7 @@ class ReleasingPeriod:
     # Phase 1: preserved generative context
     use_loosing_of_bond: bool = True  # whether LB doctrine was active during generation
     # Phase 2: typed classification
-    angularity_class: str | None = None  # ZRAngularityClass constant, or None if non-peak
+    angularity_class: str | None = None  # ZRAngularityClass constant, or None when Fortune is unavailable
 
     def __post_init__(self) -> None:
         if self.level not in (1, 2, 3, 4):
@@ -1761,6 +1759,25 @@ class ReleasingPeriod:
             raise ValueError("ReleasingPeriod start_jd and end_jd must be finite")
         if self.end_jd <= self.start_jd:
             raise ValueError("ReleasingPeriod end_jd must be greater than start_jd")
+        if self.angularity_from_fortune is not None:
+            if self.angularity_from_fortune not in range(1, 13):
+                raise ValueError(
+                    "ReleasingPeriod.angularity_from_fortune must be 1–12 or None"
+                )
+            expected_class = _zr_angularity_class(self.angularity_from_fortune)
+            if self.angularity_class != expected_class:
+                raise ValueError(
+                    "ReleasingPeriod.angularity_class must match angularity_from_fortune"
+                )
+            expected_peak = self.angularity_from_fortune in _ANGULAR_HOUSES
+            if self.is_peak_period != expected_peak:
+                raise ValueError(
+                    "ReleasingPeriod.is_peak_period must identify angular places from Fortune"
+                )
+        elif self.angularity_class is not None or self.is_peak_period:
+            raise ValueError(
+                "ReleasingPeriod Fortune angularity fields require angularity_from_fortune"
+            )
     # --- Phase 3: inspectability ---
 
     @property
@@ -2059,6 +2076,10 @@ def decennial_condition_profile(period: DecennialPeriod) -> DecennialConditionPr
     Valens distributions/delineations are deliberately not attached here.
     """
 
+    _require_admitted_decennial_periods(
+        [period],
+        caller="decennial_condition_profile",
+    )
     return DecennialConditionProfile(
         planet=period.planet,
         level=period.level,
@@ -2352,6 +2373,16 @@ class DecennialSequenceProfile:
     deep_subdivision_method: str | None = None
 
     def __post_init__(self) -> None:
+        if self.deepest_level > _DECENNIAL_MAX_LEVEL:
+            raise ValueError(
+                "DecennialSequenceProfile Decennial levels 3–4 are not admitted"
+            )
+        if self.deep_subdivision_method is not None or any(
+            profile.deep_subdivision_method is not None for profile in self.profiles
+        ):
+            raise ValueError(
+                "DecennialSequenceProfile deep_subdivision_method is not admitted"
+            )
         major_profiles = tuple(profile for profile in self.profiles if profile.level == 1)
         if self.major_count != len(major_profiles):
             raise ValueError("DecennialSequenceProfile.major_count must equal the number of level-1 profiles")
@@ -2367,19 +2398,6 @@ class DecennialSequenceProfile:
             raise ValueError("DecennialSequenceProfile.level_count_map[1] must equal major_count")
         if self.deepest_level != max(self.level_count_map, default=1):
             raise ValueError("DecennialSequenceProfile.deepest_level must match the deepest level present in level_count_map")
-        deep_methods = {
-            profile.deep_subdivision_method
-            for profile in self.profiles
-            if profile.deep_subdivision_method is not None
-        }
-        if len(deep_methods) > 1:
-            raise ValueError("DecennialSequenceProfile profiles must agree on deep_subdivision_method")
-        if self.deepest_level >= 3 and not deep_methods:
-            raise ValueError("DecennialSequenceProfile deepest_level >= 3 requires deep_subdivision_method")
-        if deep_methods and self.deep_subdivision_method != next(iter(deep_methods)):
-            raise ValueError("DecennialSequenceProfile.deep_subdivision_method must match deep profiles")
-        if self.deepest_level <= 2 and self.deep_subdivision_method is not None:
-            raise ValueError("DecennialSequenceProfile.deep_subdivision_method applies only to deep output")
 
     @property
     def profile_count(self) -> int:
@@ -2389,6 +2407,10 @@ class DecennialSequenceProfile:
 def decennial_sequence_profile(periods: list[DecennialPeriod]) -> DecennialSequenceProfile:
     """Build a DecennialSequenceProfile from a flat Decennials period list."""
 
+    _require_admitted_decennial_periods(
+        periods,
+        caller="decennial_sequence_profile",
+    )
     profiles = tuple(decennial_condition_profile(period) for period in periods)
     major_profiles = tuple(profile for profile in profiles if profile.level == 1)
     luminary_count = sum(1 for profile in major_profiles if profile.lord_type == "luminary")
@@ -2447,7 +2469,9 @@ class ZRSequenceProfile:
             - Depends on `ZRAngularityClass` semantics admitted by this Pillar.
         Structural invariants:
             - `period_count` equals `len(profiles)`.
-            - Angular-class counts match the supplied profiles and sum to `peak_period_count`.
+            - Angular-class counts match the supplied profiles and sum to the
+              number of profiles classified relative to Fortune.
+            - `angular_count` equals `peak_period_count`.
         Failure behavior:
             - Raises `ValueError` when aggregate counts do not match the supplied profiles.
 
@@ -2512,10 +2536,17 @@ class ZRSequenceProfile:
             1 for p in self.profiles if p.angularity_class == ZRAngularityClass.CADENT
         ):
             raise ValueError("ZRSequenceProfile.cadent_count does not match profiles")
+        classified_count = sum(
+            1 for p in self.profiles if p.angularity_class is not None
+        )
         if self.angular_count + self.succedent_count + self.cadent_count \
-                != self.peak_period_count:
+                != classified_count:
             raise ValueError(
-                "ZRSequenceProfile angular + succedent + cadent must equal peak_period_count"
+                "ZRSequenceProfile angular + succedent + cadent must equal classified profiles"
+            )
+        if self.angular_count != self.peak_period_count:
+            raise ValueError(
+                "ZRSequenceProfile angular_count must equal peak_period_count"
             )
 
     @property
@@ -2789,6 +2820,10 @@ def decennial_active_pair(
     """
     if not math.isfinite(jd):
         raise ValueError(f"decennial_active_pair: jd must be finite, got {jd!r}")
+    _require_admitted_decennial_periods(
+        periods,
+        caller="decennial_active_pair",
+    )
     active_major = next(
         (period for period in periods if period.level == 1 and period.is_active_at(jd)),
         None,
@@ -2812,6 +2847,10 @@ def decennial_active_path(
     """Return the full active Decennials lineage at *jd*, or None if no major is active."""
     if not math.isfinite(jd):
         raise ValueError(f"decennial_active_path: jd must be finite, got {jd!r}")
+    _require_admitted_decennial_periods(
+        periods,
+        caller="decennial_active_path",
+    )
     active_profiles = tuple(
         decennial_condition_profile(period)
         for period in sorted(
@@ -3070,12 +3109,7 @@ def _fortune_angularity(sign: str, fortune_sign: str | None) -> int | None:
     if fortune_sign is None:
         return None
     offset = (_sign_index(sign) - _sign_index(fortune_sign)) % 12
-    return {
-        0: 1,
-        3: 4,
-        6: 7,
-        9: 10,
-    }.get(offset)
+    return offset + 1
 
 
 def _resolve_releasing_start_sign(
@@ -3155,7 +3189,7 @@ def _generate_releasing(
             years=effective_years,
             lot_name=lot_name,
             is_loosing_of_bond=next_is_loosing_of_bond,
-            is_peak_period=angularity_from_fortune is not None,
+            is_peak_period=angularity_from_fortune in _ANGULAR_HOUSES,
             angularity_from_fortune=angularity_from_fortune,
             use_loosing_of_bond=use_loosing_of_bond,
             angularity_class=_zr_angularity_class(angularity_from_fortune),
@@ -3345,7 +3379,8 @@ def current_releasing(
     ------
     ValueError
         If current_jd is not finite.
-        If current_jd is before natal_jd or beyond one full primary releasing circuit.
+        If current_jd is before natal_jd or at or beyond one full primary
+        releasing circuit.
     """
     pol = _resolve_timelord_policy(policy)
     _eff_cap_days = _TOTAL_MINOR_YEARS * pol.zr_year.year_days
@@ -3355,8 +3390,10 @@ def current_releasing(
     if current_jd < natal_jd:
         raise ValueError("current_jd must not be earlier than natal_jd.")
 
-    if current_jd > natal_jd + _eff_cap_days:
-        raise ValueError("current_jd is beyond the full Zodiacal Releasing circuit cap.")
+    if current_jd >= natal_jd + _eff_cap_days:
+        raise ValueError(
+            "current_jd is at or beyond the full Zodiacal Releasing circuit cap."
+        )
 
     all_periods = zodiacal_releasing(
         lot_longitude,

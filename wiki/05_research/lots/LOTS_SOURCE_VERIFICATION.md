@@ -17,7 +17,7 @@ Verification follows the Moira authority hierarchy:
 3. **Firmicus** — Firmicus Maternus, *Matheseos* (AATPB, Bram trans., Noyes Press 1975)  
    PDF acquired 2026-04-19. Full formula survey complete; 16 entries verified, 2 corrections applied (Session 2).
 4. **Dorotheus** — *Carmen Astrologicum* (Pingree trans., 1976; Skyscript/Houlding OCR reproductions)  
-   PDFs acquired 2026-04-21. Three volumes: Book I (dorotheus1.pdf, 21 pp.), Book II (dorotheus2.pdf, 22 pp.), Book III (dorotheus3.pdf, 7 pp.). Books IV–V (electional, interrogations) not yet acquired. Full lot survey of available text complete; 7 formulas confirmed correct, 0 corrections to lots.py this session, 2 new deferred issues (D9–D10).
+   PDFs acquired 2026-04-21. Three volumes: Book I (dorotheus1.pdf, 21 pp.), Book II (dorotheus2.pdf, 22 pp.), Book III (dorotheus3.pdf, 7 pp.). Books IV–V (electional, interrogations) not yet acquired. Full lot survey of available text complete; 7 formulas confirmed correct. D9–D10 were resolved in the 2026-07-25 containment pass.
 
 ---
 
@@ -386,9 +386,9 @@ Formula as stated: Asc + Saturn − Venus (always). Day formula matches lots.py 
 
 ---
 
-### New Deferred Issues
+### Resolved Issues
 
-#### D9. Siblings (Number) — reversal missing in lots.py (DEFERRED)
+#### D9. Siblings (Number) — reversal restored (RESOLVED 2026-07-25)
 
 **Dorotheus I.21 (Pingree p.180):** "Count from the degree in which Mercury is to Jupiter, and add to it the degrees of the ascendent **[by day]** or **subtract it from the ascendent thirty [degrees at a time] [by night]**."
 
@@ -396,15 +396,16 @@ Day: Asc + Jupiter − Mercury. Night: Asc − (Jupiter − Mercury) = Asc + Mer
 
 **lots.py entry (line 632):**  
 ```python
-PartDefinition("Siblings (Number)", "Jupiter", "Mercury", False, "hellenistic,medieval")
+PartDefinition("Siblings (Number)", "Jupiter", "Mercury", True, "hellenistic,medieval")
 ```
-Day formula matches Dorotheus. The `False` value omits the night reversal.
+Day and night formulas now match the explicit Dorotheus I.21 instruction.
 
-**Resolution path:** Confirm against Paulus/Valens before changing. If other Hellenistic sources agree with Dorotheus, change `False` → `True`.
+**Resolution:** The direct Dorotheus witness is sufficient for this
+Dorotheus-oriented correction; no broader cross-author equivalence is implied.
 
 ---
 
-#### D10. Time of Children — reversal missing in lots.py (DEFERRED)
+#### D10. Time of Children — reversal restored (RESOLVED 2026-07-25)
 
 **Dorotheus II.11 (Pingree p.209–210):** "Count from Mars to Jupiter and add to it the degrees of the ascendent **[by day]** or **subtract it from the ascendent [by night]**, thirty at a time."
 
@@ -412,11 +413,12 @@ Day: Asc + Jupiter − Mars. Night: Asc − (Jupiter − Mars) = Asc + Mars − 
 
 **lots.py entry (line 679):**  
 ```python
-PartDefinition("Time of Children", "Jupiter", "Mars", False, "hellenistic,medieval")
+PartDefinition("Time of Children", "Jupiter", "Mars", True, "hellenistic,medieval")
 ```
-Day formula matches Dorotheus. The `False` value omits the night reversal.
+Day and night formulas now match the explicit Dorotheus II.11 instruction.
 
-**Resolution path:** Confirm against Paulus/Valens before changing. If other Hellenistic sources agree with Dorotheus, change `False` → `True`.
+**Resolution:** The direct Dorotheus witness is sufficient for this
+Dorotheus-oriented correction; no broader cross-author equivalence is implied.
 
 ---
 
@@ -558,8 +560,8 @@ Sources not yet directly checked against primary text:
 - [ ] Mother (Dorotheus) — formula Asc + Venus − Moon (no reversal) per I.14; consideration of `Mother (Dorotheus)` entry pending
 - [ ] Physical Courage (Firmicus §51: Moon→Jupiter) — name/attribution before adding (D7)
 - [ ] Glory (Firmicus §56: day Jupiter→Venus, night Venus→Jupiter) — name/attribution before adding (D8)
-- [ ] Siblings (Number) `False` → `True`? — confirm against Paulus/Valens before changing (D9)
-- [ ] Time of Children `False` → `True`? — confirm against Paulus/Valens before changing (D10)
+- [x] Siblings (Number) `False` → `True` — resolved from Dorotheus I.21 and corrected 2026-07-25 (D9)
+- [x] Time of Children `False` → `True` — resolved from Dorotheus II.11 and corrected 2026-07-25 (D10)
 - [ ] Marriage (Women, Dorotheus) reversal source — II.3 gives no qualifier; cross-check Paulus/Valens
 - [ ] Debt naming & operand direction — Valens II.23 vs al-Bīrūnī #12; `Debtor` formula matches al-Bīrūnī Debt; `Debt` formula matches al-Bīrūnī Rectitude — needs Valens II.23 re-read (D11)
 - [ ] Illness (Ancients) sub: Mercury (lots.py) vs Venus (al-Bīrūnī #31) — needs source identification for lots.py attribution (D12)

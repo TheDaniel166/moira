@@ -41,6 +41,7 @@ from moira.aspects import (
     find_out_of_bounds,
     find_patterns,
     find_whole_sign_aspects,
+    overcoming,
 )
 
 
@@ -59,6 +60,27 @@ def test_find_aspects_detects_wraparound_conjunction() -> None:
     assert aspect.body1 == "Sun"
     assert aspect.body2 == "Moon"
     assert aspect.orb == 2.0
+
+
+@pytest.mark.parametrize(
+    ("superior_lon", "inferior_lon"),
+    [
+        (0.0, 90.0),       # Aries is the tenth sign from Cancer.
+        (359.999, 89.999), # Pisces is the tenth sign from Gemini.
+        (270.0, 0.0),      # Capricorn is the tenth sign from Aries.
+    ],
+)
+def test_overcoming_is_the_directed_tenth_sign_relation(
+    superior_lon: float,
+    inferior_lon: float,
+) -> None:
+    assert overcoming(superior_lon, inferior_lon) is True
+    assert overcoming(inferior_lon, superior_lon) is False
+
+
+def test_overcoming_requires_a_whole_sign_square() -> None:
+    assert overcoming(0.0, 89.999) is False
+    assert overcoming(0.0, 120.0) is False
 
 
 def test_aspects_from_longitudes_wrap_boundary_is_inclusive() -> None:

@@ -261,12 +261,6 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "classical-vedic",
     },
     {
-        "name": "hermetic-decans",
-        "x-displayName": "Hermetic Decans",
-        "description": "Hermetic decan catalog, position, chart, and star surfaces.",
-        "x-family": "classical-vedic",
-    },
-    {
         "name": "manazil",
         "x-displayName": "Manazil",
         "description": "Arabic lunar mansion catalog, position, bulk, and tradition lookup surfaces.",

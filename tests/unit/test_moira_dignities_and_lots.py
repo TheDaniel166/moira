@@ -1754,6 +1754,67 @@ def test_lots_default_policy_preserves_current_behavior() -> None:
     assert LotsComputationPolicy().is_default is True
 
 
+@pytest.mark.parametrize("missing_luminary", ["Sun", "Moon"])
+def test_lots_do_not_fabricate_luminary_derived_references(
+    missing_luminary: str,
+) -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    positions.pop(missing_luminary)
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    names = {
+        part.name
+        for part in calculate_lots(positions, house_cusps, True)
+    }
+
+    assert "Fortune" not in names
+    assert "Spirit" not in names
+    assert "Basis (Firmicus)" not in names
+    assert "Basis (Valens)" not in names
+    assert "Eros (Valens)" not in names
+    assert "Necessity (Persian)" not in names
+    assert "Siblings (Number)" in names
+
+
+def test_source_verified_dorothean_lots_reverse_at_night() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    day = {
+        part.name: part
+        for part in calculate_lots(positions, house_cusps, True)
+    }
+    night = {
+        part.name: part
+        for part in calculate_lots(positions, house_cusps, False)
+    }
+
+    assert day["Siblings (Number)"].longitude == pytest.approx(170.0)
+    assert night["Siblings (Number)"].longitude == pytest.approx(190.0)
+    assert day["Time of Children"].longitude == pytest.approx(215.0)
+    assert night["Time of Children"].longitude == pytest.approx(145.0)
+    assert night["Siblings (Number)"].computation_truth is not None
+    assert night["Siblings (Number)"].computation_truth.reversed_for_chart is True
+    assert night["Time of Children"].computation_truth is not None
+    assert night["Time of Children"].computation_truth.reversed_for_chart is True
+
+
 def test_lots_narrow_policy_explicitly_disables_selected_reference_doctrine() -> None:
     positions = {
         "Sun": 100.0,

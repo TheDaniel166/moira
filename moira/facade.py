@@ -1491,17 +1491,6 @@ from .varshaphal import (
     varshaphal_sahams,
     build_varshaphal_chart,
 )
-from .hermetic_decans import (
-    DecanHour,
-    DecanHoursNight,
-    DECAN_NAMES,
-    DECAN_RULING_STARS,
-    list_decans,
-    available_decans,
-    decan_for_longitude,
-    decan_at,
-    decan_hours,
-)
 from .dignities import (
     DOMICILE,
     MODERN_DOMICILE,
@@ -2408,9 +2397,6 @@ __all__ += [
     "VarshaphalSahamDefinition", "VarshaphalSaham", "MunthaConditionProfile", "MuddaDashaPeriod", "MuddaDasha", "MuddaDashaActivation", "TasiraPeriod", "TasiraDasha", "MuddaPeriodJudgement", "MuddaPeriodResultProfile", "VarshaphalChart",
     "muntha", "mudda_dasha", "active_mudda_dasha", "tasira_periods", "active_tasira_period", "mudda_period_judgement", "tajika_panchavargi_strength", "tajika_shadbala_profile", "tajika_aspects", "tajika_yogas", "varshesha", "varshaphal_judgement_profile", "varshaphal_year_judgement", "varshaphal_topic_judgements", "varshaphal_topic_windows", "varshaphal_year_summary",
     "muntha_condition_profile", "varshaphal_sahams", "build_varshaphal_chart",
-    "DecanHour", "DecanHoursNight", "DECAN_NAMES", "DECAN_RULING_STARS",
-    "list_decans", "available_decans", "decan_for_longitude",
-    "decan_at", "decan_hours",
     "DOMICILE", "MODERN_DOMICILE", "EXALTATION", "DETRIMENT", "MODERN_DETRIMENT", "FALL", "SECT",
     "PREFERRED_HEMISPHERE", "PREFERRED_GENDER", "PLANETARY_JOYS",
     "DispositorshipSubjectSet", "DispositorshipRulership",

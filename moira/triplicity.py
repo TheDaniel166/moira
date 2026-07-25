@@ -37,13 +37,10 @@ Provenance note — DOROTHEAN_PINGREE_1976
 -----------------------------------------
 The table _TRIPLICITY_RULERS_DOROTHEAN_PINGREE_1976 is transcribed from
 Dorotheus of Sidon "Carmen Astrologicum", as edited and translated by
-David Pingree (Teubner, Leipzig, 1976). The water-triplicity assignment
-(Cancer / Scorpio / Pisces → Mars [day ruler], Venus [night ruler], Moon
-[participating ruler]) follows Pingree's edition, where Mars governs the
-water triplicity by day. This is attested in Pingree's critical apparatus
-and differs from some later redactions that assign Mars only to mixed-sect
-contexts. This module preserves Pingree's edition as the canonical source
-for the DOROTHEAN_PINGREE_1976 doctrine value.
+David Pingree (Teubner, Leipzig, 1976). In Book I.1 the water triplicity
+(Cancer / Scorpio / Pisces) is assigned to Venus by day, Mars by night,
+with the Moon participating. This module preserves that source order for
+the DOROTHEAN_PINGREE_1976 doctrine value.
 """
 
 from __future__ import annotations
@@ -185,8 +182,8 @@ _SIGNS_TO_ELEMENT: dict[frozenset, TriplicityElement] = {
 
 # Dorotheus/Pingree 1976: (day_ruler, night_ruler, participating_ruler) per sign.
 # Fire: Sun/Jupiter/Saturn   Earth: Venus/Moon/Mars
-# Air:  Saturn/Mercury/Jupiter   Water: Mars/Venus/Moon
-# See module docstring provenance note for the water-triplicity scholarly commitment.
+# Air:  Saturn/Mercury/Jupiter   Water: Venus/Mars/Moon
+# See module docstring provenance note for the Book I.1 source commitment.
 _TRIPLICITY_RULERS_DOROTHEAN_PINGREE_1976: dict[str, tuple[str, str, str]] = {
     "Aries":       ("Sun",    "Jupiter", "Saturn"),
     "Leo":         ("Sun",    "Jupiter", "Saturn"),
@@ -197,9 +194,9 @@ _TRIPLICITY_RULERS_DOROTHEAN_PINGREE_1976: dict[str, tuple[str, str, str]] = {
     "Gemini":      ("Saturn", "Mercury", "Jupiter"),
     "Libra":       ("Saturn", "Mercury", "Jupiter"),
     "Aquarius":    ("Saturn", "Mercury", "Jupiter"),
-    "Cancer":      ("Mars",   "Venus",   "Moon"),   # Pingree: Mars=day, Venus=night
-    "Scorpio":     ("Mars",   "Venus",   "Moon"),
-    "Pisces":      ("Mars",   "Venus",   "Moon"),
+    "Cancer":      ("Venus",  "Mars",    "Moon"),
+    "Scorpio":     ("Venus",  "Mars",    "Moon"),
+    "Pisces":      ("Venus",  "Mars",    "Moon"),
 }
 
 # Precomputed: (day_ruler, night_ruler, participating_ruler) → tuple of signs

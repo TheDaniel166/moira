@@ -1727,55 +1727,12 @@ d3   = vedic_drekkana(longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI)
 | `degree_in_decan` | `float` | Degrees elapsed within the 10° decan span |
 | `longitude_used` | `float` | Longitude actually classified after any required normalization |
 
-### Hermetic Decans
+### Hermetic Decans — Research Quarantine
 
-```python
-from moira import (
-    DecanHour, DecanHoursNight,
-    DECAN_NAMES, DECAN_RULING_STARS,
-    list_decans, available_decans,
-    decan_for_longitude, decan_at, decan_hours,
-)
-
-name = decan_for_longitude(longitude)
-night = decan_hours(jd, latitude, longitude)
-```
-
-| Function | Returns | Description |
-|---|---|---|
-| `list_decans()` | `list[str]` | All 36 Hermetic decan names in tropical ecliptic order |
-| `available_decans()` | `list[str]` | Hermetic decans whose ruling star is present in the catalog |
-| `decan_for_longitude(lon)` | `str` | Hermetic decan name for a tropical longitude |
-| `decan_at(jd, lat, lon)` | `str` | Hermetic decan containing the Ascendant at a given moment and location |
-| `decan_hours(jd, lat, lon, reader=None)` | `DecanHoursNight` | Twelve Hermetic decan night hours for the night containing `jd` |
-
-#### `DecanHour` fields
-
-| Field | Type | Description |
-|---|---|---|
-| `hour_number` | `int` | Hour number within the night, 1-12 |
-| `decan` | `str` | Hermetic decan name ruling the hour |
-| `ruling_star` | `str` | Ruling fixed star name for the decan |
-| `jd_start` | `float` | Hour start JD |
-| `jd_end` | `float` | Hour end JD |
-
-#### `DecanHoursNight` fields
-
-| Field | Type | Description |
-|---|---|---|
-| `date_jd` | `float` | Reference JD for the computed night |
-| `latitude` | `float` | Observer latitude in degrees |
-| `longitude` | `float` | Observer longitude in degrees |
-| `sunset_jd` | `float` | Sunset JD beginning the night |
-| `next_sunrise_jd` | `float` | Sunrise JD ending the night |
-| `hours` | `tuple[DecanHour, ...]` | Ordered immutable tuple of the 12 decan night hours |
-
-#### Hermetic Decan constants
-
-| Public symbol | Kind | Description |
-|---|---|---|
-| `DECAN_NAMES` | `dict[str, str]` | Decan constant name → display name mapping (36 entries) |
-| `DECAN_RULING_STARS` | `dict[str, str]` | Decan name → ruling fixed star mapping (36 entries) |
+The current `moira.hermetic_decans` catalog is not source-admitted and is not
+exported from `moira` or `moira.facade`. Its direct module import remains
+available only for source reconstruction and internal structural testing; it
+is not part of the supported Python API contract.
 
 ---
 
@@ -1986,6 +1943,29 @@ from moira.facade import (
 | `sequence_kind` | `FirdarSequenceKind` | Sequence family metadata |
 | `is_node_period` | `bool` | Whether the period belongs to the nodal sequence |
 
+### Decennials
+
+```python
+from moira.facade import (
+    decennials, current_decennials, group_decennials,
+    decennial_condition_profile, decennial_sequence_profile,
+    decennial_active_pair, decennial_active_path,
+    validate_decennials_output,
+    DecennialPeriod, DecennialPolicy,
+)
+```
+
+| Function | Returns | Description |
+|---|---|---|
+| `decennials(jd_natal, natal_positions, is_day_chart, levels=2, policy=None)` | `list[DecennialPeriod]` | Admitted L1/L2 sequence from the sect light |
+| `current_decennials(..., jd_now, levels=2, policy=None)` | `tuple[DecennialPeriod, DecennialPeriod]` | Active major and L2 period |
+| `group_decennials(periods)` | `list[DecennialMajorGroup]` | Major periods with their L2 children |
+| `decennial_active_path(periods, jd)` | `DecennialActivePath \| None` | Active admitted L1/L2 lineage |
+
+The public engine accepts only levels 1–2. Any L3/L4 request or non-`None`
+`DecennialPolicy.deep_subdivision_method` fails closed; the named Valens and
+Hephaistio deep policies are research candidates, not admitted API behavior.
+
 ### Zodiacal Releasing
 
 ```python
@@ -2002,7 +1982,7 @@ from moira.facade import (
 | Function | Returns | Description |
 |---|---|---|
 | `zodiacal_releasing(lot_lon, jd_natal, levels=4)` | `list[ReleasingPeriod]` | Full ZR sequence from a Lot |
-| `current_releasing(lot_lon, jd_natal, jd_now, levels=4)` | `ReleasingPeriod` | Active period at jd_now |
+| `current_releasing(lot_lon, jd_natal, jd_now, fortune_longitude=None)` | `list[ReleasingPeriod]` | Active period at each available level; rejects the exact 211-symbolic-year endpoint and later |
 | `group_releasing(periods)` | `list[ZRPeriodGroup]` | Grouped by Level 1 sign |
 | `zr_level_pair(lot_lon, jd_natal, jd_now)` | `ZRLevelPair` | Active Level 1 + Level 2 pair |
 
@@ -2018,10 +1998,10 @@ from moira.facade import (
 | `years` | `float` | Period length in years |
 | `lot_name` | `str` | Lot used for the releasing sequence |
 | `is_loosing_of_bond` | `bool` | Whether the period begins with a Loosing of the Bond |
-| `is_peak_period` | `bool` | True at peak periods |
-| `angularity_from_fortune` | `int` | Angularity offset from Fortune |
+| `is_peak_period` | `bool` | True only in places 1, 4, 7, or 10 from Fortune |
+| `angularity_from_fortune` | `int \| None` | Inclusive place 1–12 from Fortune; `None` when Fortune is omitted |
 | `use_loosing_of_bond` | `bool` | Whether Loosing of the Bond is enabled |
-| `angularity_class` | `ZRAngularityClass` | Angular / succedent / cadent class |
+| `angularity_class` | `ZRAngularityClass \| None` | Angular / succedent / cadent class; `None` only when Fortune is omitted |
 
 ### Vimshottari Dasha
 

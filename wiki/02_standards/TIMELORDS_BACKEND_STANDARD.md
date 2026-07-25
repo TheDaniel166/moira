@@ -5,6 +5,12 @@
 **Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
+> **Phase-1 containment correction — 2026-07-25.** Decennials Levels 3–4
+> and both named deep-subdivision policies are quarantined. The admitted
+> runtime and REST surface ends at L2. Zodiacal Releasing now classifies all
+> twelve places from Fortune, identifies only angular places as peaks, and
+> rejects queries at or beyond the exact full-circuit endpoint.
+
 ---
 
 ## Part I — Architecture Standard
@@ -50,9 +56,8 @@ cycle spans 903 months, or 75 years 3 months.
 The authoritative engine is `decennials(natal_jd, natal_positions, is_day_chart)`.
 It accepts a natal Julian Day, the seven classical longitudes, and a sect
 indicator and returns a flat list of `DecennialPeriod` records covering the
-complete admitted sequence. Each record preserves level, planet, sequence
-truth, major lineage, parent lineage, duration, sequence kind, and, when deep
-subdivision is admitted, deep-method truth.
+   complete admitted sequence. Each record preserves level, planet, sequence
+   truth, major lineage, parent lineage, duration, and sequence kind.
 
 **Sequence kinds (`DecennialSequenceKind`):**
 
@@ -66,11 +71,12 @@ subdivision is admitted, deep-method truth.
 | Doctrine | Admitted levels |
 |---|---|
 | Shared Decennials core | `L1 + L2` |
-| `deep_subdivision_method="valens"` | `L3 + L4` |
-| `deep_subdivision_method="hephaistio"` | `L3` only |
+| `deep_subdivision_method="valens"` | Not admitted |
+| `deep_subdivision_method="hephaistio"` | Not admitted |
 
-`Hephaistio L4` is not constitutionalized by this standard and remains
-deferred.
+Any request for L3/L4 or either named deep method fails closed. Readmission
+requires a source-backed rule for projecting the deeper historical periods
+onto the engine's explicit time bases.
 
 #### §1.4 Valens Distributions (Quarantined Candidate Layer)
 
@@ -80,10 +86,10 @@ select a source item, duplicated incomplete tables, attached effects
 automatically, and inferred benefic/malefic scores from English keywords. Those
 behaviours are not source-owned doctrine and have been removed.
 
-This quarantine is separate from
-`DecennialPolicy.deep_subdivision_method="valens"`. That explicit policy selects
-the admitted Valens chronological subdivision described in §1.2; it does not
-enable delineations, effects, polarities, or dignity scores.
+This quarantine is separate from the Decennial deep-chronology quarantine.
+Neither `DecennialPolicy.deep_subdivision_method="valens"` nor
+`"hephaistio"` is selectable in the admitted runtime. Neither quarantine
+enables delineations, effects, polarities, or dignity scores.
 
 While quarantined, the interpretive layer has no public export, period/profile
 field, automatic attachment, REST option, score, aggregate, or dignity bridge.
@@ -97,7 +103,7 @@ The internal arithmetic is doctrinal rather than astronomical:
 - major periods are fixed at `129` months
 - the month basis is fixed at `30` days
 - `L2` rotates the minor-month allotments from each major lord
-- deeper levels recurse proportionally within the admitted method boundary
+- no L3/L4 recursion is admitted
 
 #### §1.3 Zodiacal Releasing
 
@@ -117,16 +123,22 @@ the module. It assigns years-per-sign based on planetary minor years under the
 Hellenistic system. This mapping is the foundational arithmetic of the technique and
 is not configurable at call time.
 
-**Loosing of the Bond:** When the Level-1 and Level-2 releasing signs are the same or
-are in a relationship defined by the technique's doctrine, a Loosing of the Bond
-condition fires. The `is_loosing_of_bond` field on `ReleasingPeriod` preserves this
-designation; it is not recomputed from the sign names after the fact.
+**Loosing of the Bond:** After a complete twelve-sign subcycle that began in one
+of the long-period signs, the admitted generator transfers the next period to the
+opposite sign and marks that receiving period as a Loosing of the Bond.
+`ReleasingPeriod.is_loosing_of_bond` preserves this generative event; it is not
+inferred from an upper/lower-level sign match after the fact.
 
 **Angularity from Fortune:** Each sign's relationship to the natal Lot of Fortune
 determines its angularity class. Angular signs (1, 4, 7, 10 from Fortune) carry the
 `ANGULAR` classification; the following signs carry `SUCCEDENT`; the remaining carry
 `CADENT`. This classification is preserved as an integer (1-based distance) and a
 typed `ZRAngularityClass` on each period.
+
+When Fortune is supplied, every period receives one of the twelve integer
+places and one of the three classes. `is_peak_period` is true only for the four
+angular places. When Fortune is omitted, the place and class are both `None`
+and `is_peak_period` is false.
 
 | `ZRAngularityClass` Value | Meaning |
 |---|---|
@@ -137,6 +149,10 @@ typed `ZRAngularityClass` on each period.
 **Levels:** Four levels of releasing are computed simultaneously. Level 1 is the
 outermost (slowest), Level 4 is the innermost (fastest). All four are returned in a
 single flat list discriminated by the `level` field.
+
+**Full-circuit boundary:** The twelve `MINOR_YEARS` values sum to 211 symbolic
+years. `current_releasing()` accepts instants inside that half-open interval
+and rejects an instant exactly at, or later than, its endpoint.
 
 ---
 
@@ -151,7 +167,7 @@ according to the constitutional dependency graph.
 | 1 | Truth Preservation | `FirdarPeriod` | `DecennialPeriod` | `ReleasingPeriod` |
 | 2 | Classification | `FirdarSequenceKind` | `DecennialSequenceKind` | `ZRAngularityClass` |
 | 3 | Inspectability | `is_active_at()`, duration properties | lineage helpers, `is_active_at()`, duration properties | `is_active_at()`, duration properties |
-| 4 | Policy | `sequence_kind` parameter | `DecennialPolicy`, `deep_subdivision_method` | `lot_name`, `use_loosing_of_bond` |
+| 4 | Policy | `sequence_kind` parameter | `DecennialPolicy` (deep method fixed to `None`) | `lot_name`, `use_loosing_of_bond` |
 | 5 | Relational Formalization | `FirdarMajorGroup`, `group_firdaria()` | `DecennialMajorGroup`, `DecennialPeriodGroup`, `group_decennials()` | `ZRPeriodGroup`, `group_releasing()` |
 | 6 | Relational Hardening | subset properties, chronological guard | recursive containment and chronology guards | containment guard, `is_leaf`, `all_periods_flat()` |
 | 7 | Integrated Local Condition | `FirdarConditionProfile`, `firdar_condition_profile()` | `DecennialConditionProfile`, `decennial_condition_profile()` | `ZRConditionProfile`, `zr_condition_profile()` |
@@ -225,7 +241,7 @@ The doctrinal choices made by the timelords subsystem are explicit and located.
 | `L2` subdivision mode | `DecennialPolicy.subperiod_mode` | `rotated_minor_months` |
 | Major period length | `DecennialPolicy.major_months` | `129` |
 | Month basis | `DecennialPolicy.month_basis_days` | `30` |
-| Deep method | `DecennialPolicy.deep_subdivision_method` | `None` |
+| Deep method | `DecennialPolicy.deep_subdivision_method` | `None`; all non-`None` values rejected |
 
 ---
 
@@ -300,14 +316,14 @@ used loosely.
 | **major period** | A `FirdarPeriod` with `level=1`; one of the 9 time-lord allocations spanning the full 75-year cycle |
 | **sub-period** | A `FirdarPeriod` with `level=2`; a subdivision of a major period |
 | **sequence kind** | The `FirdarSequenceKind` value determining which planet leads the Firdaria sequence |
-| **level** | An integer 1–4 in Zodiacal Releasing, 1–4 in admitted Decennials doctrine, or 1–2 in Firdaria, identifying the recursive depth of a period |
-| **Loosing of the Bond** | The specific Hellenistic condition where Level-1 and Level-2 releasing align according to doctrine; preserved as a boolean on `ReleasingPeriod` |
+| **level** | An integer 1–4 in Zodiacal Releasing, or 1–2 in admitted Decennials and Firdaria output, identifying the recursive depth of a period |
+| **Loosing of the Bond** | The opposite-sign transfer after a complete subcycle beginning in a long-period sign; preserved as a boolean on the receiving `ReleasingPeriod` |
 | **angularity from Fortune** | The 1-based sign distance of a releasing period's sign from the natal Lot of Fortune; typed as `ZRAngularityClass` |
 | **lot** | The natal Lot (Spirit, Fortune, or other) from which releasing proceeds; identified by `lot_name` only |
 | **MINOR_YEARS** | The immutable sign-to-duration mapping; the arithmetic basis of the releasing technique |
 | **lord type** | The doctrinal classification of a Firdaria planet: `luminary`, `planet`, or `node`; not a concept in Zodiacal Releasing |
 | **sect light** | The luminary of sect that leads the admitted Decennials sequence: `Sun` by day, `Moon` by night |
-| **deep subdivision method** | The admitted Decennials lineage for recursive subdivision beyond `L2`: `valens` or `hephaistio` |
+| **deep subdivision method** | A quarantined Decennials policy field; `valens` and `hephaistio` are named research candidates but neither is admitted |
 | **condition profile** | A flat doctrinal summary of a single period, integrating all layers from truth preservation through relational hardening |
 | **sequence profile** | A chart-wide or sequence-wide aggregate derived from a full list of condition profiles |
 | **active pair** | The simultaneous major/sub lord combination at a point in time; a network node in Firdaria |
@@ -336,9 +352,8 @@ major periods, these are equal. For sub-periods, they differ.
 
 **`is_loosing_of_bond` and `is_peak_period`**
 `is_loosing_of_bond` is a doctrinal Hellenistic designation preserved from the
-engine. `is_peak_period` on `ZRConditionProfile` is a derived convenience boolean
-(always equal to `is_loosing_of_bond` for the period it summarizes). The former is
-canonical; the latter is a profile convenience.
+engine's opposite-sign transfer. `is_peak_period` is independently derived from
+the period's angular place relative to Fortune. Neither flag implies the other.
 
 **`angularity_from_fortune` and `ZRAngularityClass`**
 `angularity_from_fortune` is the raw 1-based integer distance. `ZRAngularityClass`
@@ -379,13 +394,13 @@ active admitted levels. They must not be conflated.
 - `angularity_class`, if set, is a valid `ZRAngularityClass` value
 
 **`DecennialPeriod`:**
-- `level` is 1, 2, 3, or 4
+- admitted engine output has `level` 1 or 2; the vessel can still deserialize
+  legacy L3/L4 records, but those records fail admitted-output validation
 - `start_jd < end_jd`
 - `planet` is one of the seven classical planets
 - `level=1` periods preserve no `major_planet`, `parent_planet`, or `ancestor_planets`
 - `level>=2` periods preserve `major_planet`, `parent_planet`, `parent_level`, and `ancestor_planets`
-- `level>=3` periods preserve `deep_subdivision_method`
-- `level=4` periods are admitted only under `deep_subdivision_method='valens'`
+- every admitted period has `deep_subdivision_method is None`
 
 **`FirdarMajorGroup`:**
 - `subs` contains only `FirdarPeriod` records with `major_planet == self.period.planet`
@@ -418,7 +433,7 @@ active admitted levels. They must not be conflated.
 **`DecennialConditionProfile`:**
 - `years > 0`, `months > 0`, and `days > 0`
 - `lord_type` is one of `'luminary'` or `'planet'`
-- `level>=3` profiles preserve `deep_subdivision_method`
+- admitted profiles have `level <= 2` and `deep_subdivision_method is None`
 
 **`DashaActiveLine` (dasha domain — not in scope here):** see `DASHA_BACKEND_STANDARD.md`
 
@@ -437,8 +452,8 @@ active admitted levels. They must not be conflated.
 - The sum of all level-1 Decennials period durations in a complete sequence equals
   exactly 903 months, or 75 years 3 months, on the admitted 360-day month basis.
 - `DecennialPeriod.sequence_kind` is preserved across all admitted Decennials levels.
-- `DecennialPeriod.deep_subdivision_method` is `None` for `L1/L2`, required for
-  admitted deep levels, and never admits `Hephaistio L4`.
+- `DecennialPeriod.deep_subdivision_method` is `None` for every admitted
+  runtime output; L3/L4 output validation fails closed.
 
 ---
 
@@ -454,10 +469,13 @@ active admitted levels. They must not be conflated.
 - `level_count_map[1] == major_count`
 - `sum(level_count_map.values()) == profile_count`
 - `deepest_level == max(level_count_map)`
-- `deep_subdivision_method` is `None` for non-deep output and matches all deep profiles otherwise
+- `deepest_level <= 2`
+- `deep_subdivision_method is None`
 
 **`ZRSequenceProfile`:**
-- `angular_count + succedent_count + cadent_count == peak_period_count`
+- `angular_count + succedent_count + cadent_count` equals the number of
+  profiles classified relative to Fortune
+- `angular_count == peak_period_count`
 - `period_count == len(profiles)`
 - `total_years > 0`
 
@@ -478,7 +496,7 @@ active admitted levels. They must not be conflated.
 - `profiles` is never empty
 - the first profile is always level 1
 - levels advance one step at a time
-- `deepest_level >= 3` if and only if `has_deep_subdivision`
+- admitted paths have `deepest_level <= 2` and `has_deep_subdivision == False`
 
 **`ZRLevelPair`:**
 - `house_distance` is in the range [1, 12]
@@ -644,8 +662,9 @@ Any validation suite for this subsystem must demonstrate the following:
   in any `FirdarSequenceProfile` constructed from a valid sequence.
 - `luminary_major_count + planetary_major_count == major_count`
   in any `DecennialSequenceProfile` constructed from a valid sequence.
-- `angular_count + succedent_count + cadent_count == peak_period_count`
-  in any `ZRSequenceProfile` constructed from a valid sequence.
+- `angular_count + succedent_count + cadent_count` equals the number of profiles
+  with a non-null Fortune angularity classification.
+- `angular_count == peak_period_count`.
 
 **Network correctness:**
 - `firdar_active_pair()` returns `None` for JDs outside the sequence.
@@ -699,8 +718,9 @@ The following are explicitly outside the scope of this subsystem as constitution
 - **Triacontaeteris.** This adjacent 30-year chronocrator family is not admitted by
   this standard and remains constitutionally deferred pending source recovery.
 
-- **Hephaistio L4.** The Hephaistio deep-subdivision lineage is constitutionalized
-  through `L3` only. `L4` under `hephaistio` is explicitly out of scope.
+- **Decennial L3/L4.** Both Valens and Hephaistio deep-subdivision lineages are
+  quarantined pending a source-backed projection doctrine. No named deep
+  method is selectable in the admitted engine or REST surface.
 
 - **Transit and progression overlay.** Correlating time-lord periods with transit or
   progression charts is a cross-subsystem concern and is not part of this standard.

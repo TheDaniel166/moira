@@ -320,11 +320,11 @@ class TestTriplicityAssignmentFor:
             assert a.participating_ruler == "Jupiter"
 
     def test_water_triplicity_rulers_pingree(self):
-        # Authority: Pingree ed. 1976 — Mars governs water by day.
+        # Authority: Dorotheus I.1, Pingree ed. 1976.
         for sign in WATER_SIGNS:
             a = triplicity_assignment_for(sign, is_day_chart=True)
-            assert a.day_ruler          == "Mars"
-            assert a.night_ruler        == "Venus"
+            assert a.day_ruler          == "Venus"
+            assert a.night_ruler        == "Mars"
             assert a.participating_ruler == "Moon"
 
     def test_sibling_signs_share_identical_signs_tuple(self):
@@ -447,14 +447,14 @@ class TestTriplicityScore:
                                              participating_policy=policy)
                         assert s >= 0, f"{planet}/{sign}/day={is_day}/{policy}"
 
-    # Water triplicity (Pingree) — Mars scores by day
+    # Water triplicity (Dorotheus I.1) — Venus by day, Mars by night
 
-    def test_water_mars_scores_by_day(self):
+    def test_water_venus_scores_by_day(self):
         for sign in WATER_SIGNS:
-            assert triplicity_score("Mars",  sign, is_day_chart=True)  == 3
-            assert triplicity_score("Venus", sign, is_day_chart=False) == 3
-            assert triplicity_score("Mars",  sign, is_day_chart=False) == 0
-            assert triplicity_score("Venus", sign, is_day_chart=True)  == 0
+            assert triplicity_score("Venus", sign, is_day_chart=True) == 3
+            assert triplicity_score("Mars", sign, is_day_chart=False) == 3
+            assert triplicity_score("Venus", sign, is_day_chart=False) == 0
+            assert triplicity_score("Mars", sign, is_day_chart=True) == 0
 
 
 # ---------------------------------------------------------------------------

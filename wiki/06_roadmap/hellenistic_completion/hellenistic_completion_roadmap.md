@@ -1,6 +1,13 @@
 # Hellenistic Astrology Completion Roadmap
 
-**Note (2026-05-29 code verification):** A documentation + code verification pass against this roadmap (cross-referenced with [WESTERN_HELLENISTIC_GAP_TRACKER.md](WESTERN_HELLENISTIC_GAP_TRACKER.md) and [FEATURE_AUDIT_2026.md](../../07_audit/FEATURE_AUDIT_2026.md)) found that many items listed as "Partial" or "Absent" below are now implemented in the live codebase (e.g., first-class triplicity/bound/face in EssentialDignityKind, PLANETARY_JOYS + is_in_joy, PTOLEMAIC/CHALDEAN bounds tables + doctrine support, is_in_halb + SCORE_HALB, oriental_occidental(), is_besieged(), AspectDomain.WHOLE_SIGN + find_whole_sign_aspects()). The roadmap text below is retained for historical reference but is partially outdated. See the gap tracker for the then-current verified status and remaining gaps.
+> **Phase-1 correction (2026-07-25).** The roadmap body remains historical.
+> Whole-sign direction and overcoming are now implemented and tested. The
+> Decennials public computation boundary ends at L2, and the disputed Hermetic
+> decan catalog is quarantined from package-root, facade, and registered REST
+> surfaces. See the current backend standards rather than the old status tables
+> below.
+
+**Note (2026-05-29 code verification):** A documentation + code verification pass against this roadmap (cross-referenced with [WESTERN_HELLENISTIC_GAP_TRACKER.md](WESTERN_HELLENISTIC_GAP_TRACKER.md) and [FEATURE_AUDIT_2026.md](../../07_audit/FEATURE_AUDIT_2026.md)) found that many items listed as "Partial" or "Absent" below are now implemented in the live codebase (e.g., first-class triplicity/bound/face in EssentialDignityKind, PLANETARY_JOYS + is_in_joy, PTOLEMAIC/CHALDEAN bounds tables + doctrine support, is_in_halb + SCORE_HALB, oriental_occidental(), is_besieged(), AspectDomain.WHOLE_SIGN + find_whole_sign_aspects()). The roadmap text below is retained for historical reference but is partially outdated.
 
 ## Purpose
 

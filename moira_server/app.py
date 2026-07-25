@@ -40,7 +40,6 @@ from .routers import (
     geodetic_router,
     harmonics_router,
     hellenistic_aspects_router,
-    hermetic_decans_router,
     health_router,
     huber_router,
     jaimini_router,
@@ -185,7 +184,6 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(alternate_dashas_router)  # Phase-9 alternate dasha systems
     app.include_router(varga_router)  # Phase-9 Varga divisional chart surface
     app.include_router(decanates_router)  # Phase-9 decanate doctrine surface
-    app.include_router(hermetic_decans_router)  # Phase-9 Hermetic decan surface
     app.include_router(astrocartography_router)  # Phase-10 bounded spatial line/point surface
     app.include_router(local_space_router)  # Phase-10 observer-local horizon surface
     app.include_router(geodetic_router)  # Phase-10 geodetic zodiac mapping surface

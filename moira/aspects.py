@@ -125,13 +125,14 @@ Future layers (not current scope)
 - Kite, Mystic Rectangle, Grand Quintile, and other oriented or 5-body patterns
 - Dignity weighting, reception scoring, or body-specific strength modifiers
 - Configurable doctrine tables (e.g. body-specific orb weights)
-- Sinister/dexter distinction, antiscion contacts
+- Antiscion contacts
 - Cross-chart (synastry) relational policies
 - State-machine tracking for aspect perfection / separation arcs
 
 Boundary declaration
 --------------------
-Owns: longitude and whole-sign aspect detection, orb arithmetic,
+Owns: longitude and whole-sign aspect detection, whole-sign direction and
+      overcoming, orb arithmetic,
       applying/separating determination, stationary detection,
       ``AspectData``, and the longitude signed-motion witness.
 Delegates: aspect definition tables and tier lists to ``moira.constants``,
@@ -2540,8 +2541,10 @@ def overcoming(lon1: float, lon2: float) -> bool:
     """
     sign1 = int((lon1 % 360.0 + 1e-11) // 30) % 12
     sign2 = int((lon2 % 360.0 + 1e-11) // 30) % 12
+    # Count zodiacally forward from body2. Its tenth sign is nine sign-steps
+    # away because body2's own sign is counted as the first place.
     diff = (sign1 - sign2) % 12
-    return diff == 3  # body1 is 3 signs ahead = 10th-sign from body2
+    return diff == 9
 
 
 # ---------------------------------------------------------------------------

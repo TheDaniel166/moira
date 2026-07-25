@@ -3,6 +3,12 @@
 **Status:** Research-backed proposal for the next additive package and hosted
 product work. It is not an admission receipt for deferred doctrine.
 
+> **Engine correction (2026-07-25).** This proposal does not override the
+> admitted engine boundary. Decennials currently ends at L2 and still needs an
+> explicit schematic-versus-civil time projection policy. Hermetic decans are
+> source-quarantined and unavailable to product tiers until separately
+> reconstructed and admitted.
+
 **Release posture:** The current package is `moira-astro 5.0.0`. Assign the
 Hellenistic release number only when its final scope is frozen. Package and REST
 closure must precede website entitlement work.
@@ -183,8 +189,8 @@ second practitioner application.
 | Lots | Complete catalog | Fortune, Spirit, Eros, and Necessity with formulas/reversal truth | Existing curated ten-lot set, saved comparisons | Full catalog, filters, dependencies, conditions, and networks |
 | Annual profection | Complete | Current year, lord, activated house, and source-visible derivation | Full annual/monthly schedule, arbitrary-date lookup, saved timeline | Batch generation and case comparison |
 | Zodiacal Releasing | Complete | Current Fortune or Spirit L1/L2 and next transition | Full L1-L4 personal timelines, Fortune/Spirit comparison, saved history and alerts | Multi-lot case comparison, batch work, overlays, and policy audit |
-| Decennials | Complete admitted core | Current major lord after REST closure | Complete admitted personal timeline after transport closure | Deep policy inspection and cross-technique case work after hardening |
-| Hermetic decans | Complete | Clearly labelled lookup teaser where contextually relevant | Full personal tools | Full inspector and research comparison |
+| Decennials | L1/L2 schematic core only | Deferred pending explicit civil projection policy | Deferred pending the same engine policy | Research comparison only after separate admission |
+| Hermetic decans | Research quarantine | Unavailable | Unavailable | Source reconstruction only until separately admitted |
 | Persian/Medieval Firdaria | Complete, separately labelled | Not in Hellenistic page | Optional personal Traditional-timing lane | Full Traditional research lane; never called Hellenistic |
 | Dorothean moment inspection | Complete | One user-supplied moment summary | Finite user-supplied candidate comparison | Bounded constraint scans and saved window sets |
 | Primary directions | Complete mixed-lineage subsystem | No practitioner workbench | Current/next named Ptolemaic result only after scoped validation | Full existing workbench with every method's lineage shown |

@@ -1,15 +1,13 @@
 # Decennials Admission Doctrine
 
-> **Corrective admission status — 2026-07-21.** Core Decennials chronology,
-> including explicit `valens` L3/L4 and `hephaistio` L3 subdivision policies,
-> remains admitted. The separate Valens distributions/transmissions
-> *interpretive* layer is quarantined and not part of Moira's public engine or
-> REST surface. Earlier P1–P12 completion declarations later in this historical
-> research record are rescinded: the implementation duplicated incomplete
-> tables, omitted the required receiver/context relation during automatic
-> attachment, inferred polarity and scores from English keywords, and lacked
-> item-level source fixtures. Re-admission requires a new source-complete,
-> unscored doctrine and validation pass.
+> **Corrective admission status — 2026-07-25.** Only the shared Decennials
+> L1/L2 chronology is admitted. The `valens` and `hephaistio` L3/L4 policies
+> are quarantined because the current recursive implementation lacks a
+> source-backed rule for projecting those deeper periods onto Moira's explicit
+> time bases. The separate Valens distributions/transmissions *interpretive*
+> layer also remains quarantined. Later historical completion declarations in
+> this research record are superseded by this notice. Re-admission requires
+> source-complete, unscored doctrine and validation passes for each boundary.
 
 ## Purpose
 
@@ -333,10 +331,11 @@ life and a schematic 360-day distribution model.
 
 ### 6. Variants and policy surfaces
 
-The research pass supports one immediately admissible future policy distinction
-and two deferred ones.
+The historical research pass proposed one future policy distinction. The
+2026-07-25 containment review did not find enough authority to keep it
+admitted.
 
-Phase-4 policy candidate now admitted:
+Quarantined Phase-4 policy candidates:
 
 - **deep-subdivision method**: `valens` vs `hephaistio`
 
@@ -345,10 +344,10 @@ Reason:
 - modern operational witnesses consistently report that Valens and Hephaistio
   agree on the first internal layer but diverge once deeper day/hour-style
   subdivision is pursued
-- the present source pass supports a sharper admission boundary:
-  - `valens`: admissible for day and hour subdivision
-  - `hephaistio`: admissible for day subdivision, but not yet for hour
-    subdivision
+- modern operational witnesses are insufficient to define Moira's time-basis
+  projection contract for either candidate
+- direct source recovery and an explicit projection rule are required before
+  either candidate can be readmitted
 
 Policy surfaces still deferred:
 
@@ -359,12 +358,10 @@ So the minimum constitutional stance is:
 
 - admit one canonical sect-light start
 - admit L1 + L2 as the minimum engine
-- admit `valens|hephaistio` as the one clean policy branch for future deeper
-  implementation
-- admit `valens` for `L3 + L4`
-- admit `hephaistio` for `L3` only
-- keep `hephaistio L4` deferred pending a stronger direct witness
-- keep that branch dormant unless deeper subdivision is actually implemented
+- retain `valens|hephaistio` only as named research candidates
+- reject both candidates at runtime
+- keep all L3/L4 output deferred until the source and projection contracts are
+  separately admitted
 
 ### 7. Minimum engine vs deferred work
 
@@ -412,13 +409,11 @@ The research pass therefore admits the following Decennials doctrine packet:
 - **internal arithmetic basis:** 360-day distribution logic
 - **projection doctrine:** explicit conversion from lived chronology to
   schematic distribution time
-- **admitted future policy branch:** `valens|hephaistio` for deeper
+- **quarantined future policy candidates:** `valens|hephaistio` for deeper
   subdivision only
-- **admitted deeper-boundary:** `valens` supports `L3 + L4`; `hephaistio`
-  supports `L3` only on current evidence
-- **deferred variants:** alternate start doctrine, alternate calendar
-  projection doctrine, `hephaistio L4`, richer delineational and aggregate
-  layers
+- **admitted deeper-boundary:** none; L3/L4 are rejected
+- **deferred variants:** alternate start doctrine, explicit lived-time
+  projection doctrine, all L3/L4 chronology, and richer delineational layers
 
 
 ## Admission Boundary

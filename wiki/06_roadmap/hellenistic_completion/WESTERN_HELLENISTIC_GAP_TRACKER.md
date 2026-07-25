@@ -1,5 +1,13 @@
 # Western / Hellenistic Gap Tracker – Documentation-Level Review
 
+> **Current-state correction (2026-07-25).** The narrative below records an
+> earlier documentation-led research pass and is not a present runtime receipt.
+> Phase-1 containment now admits Decennials only through L2, rejects the named
+> Valens/Hephaistio deep-subdivision candidates, quarantines the Hermetic decan
+> catalog from public and REST surfaces, and corrects whole-sign overcoming.
+> `TIMELORDS_BACKEND_STANDARD.md`, `DECANS_BACKEND_STANDARD.md`, and
+> `ASPECT_BACKEND_STANDARD.md` govern those current boundaries.
+
 **Last active:** 2026-05-29 (source research gate for aphesis/distributions + Triacontaeteris per user directive)  
 **Status:** Source research complete for prioritized gap (aphesis/dist + Triacontaeteris). Gate applied: "only if it can be implemeted from first principles and source backed, not from your memory or training". Core 10y9m distribution covered by existing Decennials (Valens Bk VI.6.6 alignment); Triacontaeteris insufficient source. Tracker enriched with verbatim extracts + citations. No new code. See "Source Research..." section. Ready for user direction on next (e.g. thin four-lots layer or other P2 gap).
 
@@ -212,7 +220,12 @@ This verification pass updates the doc-level view with code reality.
 - Decennials connection in secondary (Kepler Hellenistic Sourcebook extract): "This device is used in the 10 year, 9 month procedure called “decennials,” ..."
 
 **Moira code cross-check (post-research):**
-- `moira/timelords.py`: Full Decennials engine (`decennials()`, DecennialPeriod etc.) using 129-month majors (_DECENNIAL_MONTHS sum=129 exactly: Sat30+Jup12+Mar15+Sun19+Ven8+Mer20+Moon25), zodiacal order from sect light (Sun/Moon), L1/L2 core + deep "valens"/"hephaistio" for L3/L4. Matches 10y9m (129mo/12=10.75y) structure, Valens/Hephaistio deep doctrine per TIMELORDS_BACKEND_STANDARD.md and post-audit notes in FEATURE_AUDIT_2026.md.
+- `moira/timelords.py`: Decennials uses the 129-month major arithmetic
+  (_DECENNIAL_MONTHS sum=129 exactly:
+  Sat30+Jup12+Mar15+Sun19+Ven8+Mer20+Moon25) and zodiacal order from the sect
+  light. The admitted computation ends at L2. Earlier claims in this tracker
+  that the named `valens`/`hephaistio` candidates supplied L3/L4 doctrine are
+  superseded by their 2026-07-25 quarantine.
 - Zodiacal Releasing (zodiacal_releasing) and profections already present; ZR annotation in source PDF explicitly ties Valens lot distributions (Bk IV.4/4.7 etc.) to the ZR technique.
 - No "aphesis", "triacontaeteris", or "Critodemus" strings in timelords (prior verification correct for literal terms), but the 10y9m *system* is present as Decennials.
 
@@ -273,7 +286,16 @@ Read this file.
 
 **Research Gate Outcome (per explicit user constraint):** Started with aphesis/distributions + Triacontaeteris via targeted web/PDF extraction on Valens (no memory/training used for rules). 
 
-- 10y9m aphesis/distribution of propitious/impropitious times (Valens Bk VI.6.6 + subdist 6.7, Critodemus associations in IV.26/III): Core arithmetic/sequencing (129mo=10y9m majors from sect light in zodiacal order, planetary minor-year subs) **already implemented** as `decennials()` (with Valens/Hephaistio deep L3/L4) in moira/timelords.py + exposed on facade. ZR covers the lot-based "aphesis"/distributions origin (per PDF annotation on Valens Bk IV lot chapters). Four Lots specific rules (Bk IV.25: transmitting/receiving in operative places + benefic/malefic aspect/angle for rank/prosperity) are source-extractable for a possible thin additive evaluator (no new astro needed). 
+- 10y9m aphesis/distribution of propitious/impropitious times (Valens Bk
+  VI.6.6 + subdist 6.7, Critodemus associations in IV.26/III): the schematic
+  129-month major arithmetic and L1/L2 subdivision are implemented in
+  `decennials()`. Deep Valens/Hephaistio subdivision is not admitted, and civil
+  date projection remains a separate unresolved policy. ZR covers the
+  lot-based "aphesis"/distributions origin (per PDF annotation on Valens Bk IV
+  lot chapters). Four Lots specific rules (Bk IV.25: transmitting/receiving in
+  operative places + benefic/malefic aspect/angle for rank/prosperity) are
+  source-extractable for a possible thin additive evaluator (no new astro
+  needed).
 - Triacontaeteris: **No usable first-principles source** found (no 30y time-lord algorithm, start logic, tables, or chronocrator rules in Valens/Hephaistio extracts or searches; only tangential 30y Saturn calc or ZR sign periods already covered).
 
 **Conclusion:** Per "only if it can be implemeted from first principles and source backed", do not write new implementation code for these as "gaps". Core of aphesis/dist is covered source-backed; Triacontaeteris cannot proceed. Tracker table + this section updated with extracts/cites. No code changes. 

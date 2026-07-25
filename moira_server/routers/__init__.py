@@ -9,7 +9,7 @@ from .batch import router as batch_router
 from .chart import router as chart_router
 from .chart_wheel import router as chart_wheel_router
 from .dasha import router as dasha_router
-from .decans import decanates_router, hermetic_decans_router
+from .decans import decanates_router
 from .dignities import router as dignities_router
 from .draconic import router as draconic_router
 from .egyptian_bounds import router as egyptian_bounds_router
@@ -100,7 +100,6 @@ __all__ = [
     "harmograms_router",
     "harmonics_router",
     "hellenistic_aspects_router",
-    "hermetic_decans_router",
     "health_router",
     "huber_router",
     "jaimini_router",

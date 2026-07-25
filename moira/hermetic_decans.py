@@ -4,11 +4,19 @@ Moira — Hermetic Decan Engine
 
 Archetype: Engine
 
+Status
+------
+**Research quarantine.** The preserved 36-name and ruling-star catalog does
+not match the currently inspected Liber Hermetis witness and therefore is not
+an admitted Moira doctrine. This module remains directly importable only so
+the catalog and its geometry can be audited and reconstructed. It is excluded
+from the package root, facade, and REST application.
+
 Purpose
 -------
-Governs the 36 Hermetic decan faces of the Egyptian-Hellenistic tradition,
-mapping the tropical zodiac onto decan names and their ruling fixed stars,
-and computing the 12 decan night hours for a given location and date.
+Preserves the quarantined catalog, tropical lookup geometry, rising-decan
+calculation, and 12-part night division for source comparison. Its outputs
+must not be presented as source-verified Hermetic decan doctrine.
 
 Tradition and frame of reference
 ---------------------------------
@@ -21,10 +29,9 @@ Hellenistic astrology synthesised that lore with the Babylonian zodiac
 (~300–100 BCE), the decans were re-mapped onto three equal 10° spans per
 tropical sign — a frame fixed to the equinoxes, not the stars.
 
-The decan names (Horaios, Tomalos, Athafra ...) and their ruling-star
-assignments are sourced from the **Liber Hermetis** (~200 AD), the primary
-surviving Hermetic decan text, as confirmed by Robert Hand's Project Hindsight
-translation and Wilhelm Gundel's *Dekane und Dekansternbilder* (1936).
+The current decan names and ruling-star assignments were previously attributed
+to the **Liber Hermetis**. Direct comparison has contradicted that attribution,
+so the catalog requires a fresh source ledger before any public readmission.
 
 Ruling stars as magical rulerships
 ------------------------------------
@@ -50,8 +57,8 @@ External dependency assumptions
 No Qt main thread required. No database access. Rising-decan and night-hour
 computations require a valid ``SpkReader`` (or the module singleton).
 
-Public surface
---------------
+Research surface
+----------------
 ``DecanHour``          — vessel for a single decan night hour.
 ``DecanHoursNight``    — vessel for all 12 decan hours of a night.
 ``DECAN_NAMES``        — dict of decan constant to name string (36 entries).
@@ -78,12 +85,9 @@ from ._solar import _sunrise_sunset, _refine_sunrise
 # ---------------------------------------------------------------------------
 # 36 decan name constants
 #
-# Source: Liber Hermetis (~200 AD), Hellenistic-Hermetic tradition.
-# The Liber Hermetis cycles through a set of 12 base names three times across
-# the zodiac (once per quadrant: Aries–Cancer, Leo–Scorpio, Sagittarius–Pisces).
-# The "II" and "III" suffixes are a modern disambiguation convention — the
-# ancient text simply repeats the same names.  E.g. "Sothis" appears in
-# Cancer, Libra, and Pisces; "II"/"III" are not in the source.
+# Provenance disputed: the prior Liber Hermetis attribution is contradicted by
+# the currently inspected witness. Preserve these labels for reconstruction;
+# do not treat their order or repeated-name scheme as source-verified.
 # ---------------------------------------------------------------------------
 
 HORAIOS        = "Horaios"
@@ -169,11 +173,9 @@ DECAN_NAMES: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # DECAN_RULING_STARS: decan name → ruling star name (36 entries)
 #
-# Source: Liber Hermetis (~200 AD), tropical Hellenistic-Hermetic tradition.
-# These are magical/astrological rulerships — the stars are NOT expected to
-# reside within their decan's tropical 10° span.  Precession (~24° since the
-# Hellenistic era) has shifted all stars relative to tropical positions; this
-# drift is inherent to the tradition and is not an error.
+# Provenance disputed: these assignments require a source ledger before
+# readmission. Their internal use as catalog labels does not establish a
+# historical rulership doctrine or positional relation.
 # ---------------------------------------------------------------------------
 
 DECAN_RULING_STARS: dict[str, str] = {
