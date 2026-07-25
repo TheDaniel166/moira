@@ -4592,8 +4592,8 @@
       "description": "A corpus-bounded validation of Gauquelin sector computation, plus-zone policy, and cached method-0 comparison.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "e756f5dd367627cc402ad8ea8b3eb2892294e22557f4b4a66171e5c77fb28bda",
-      "source_bytes": 7617,
+      "source_sha256": "bdd9d47546999c5febf152439870d6ca204e4ff583c93fbb1306e618572cb901",
+      "source_bytes": 7621,
       "last_verified": "2026-07-25",
       "prerender": true,
       "markdown": true,
@@ -4790,5 +4790,5 @@
       "compatibility_notes_sha256": "29444c2679369678e9c09056f68df67ff1be2d0ac069d01a425789fe5702af62"
     }
   ],
-  "manifest_sha256": "6ee32e6af5e2c929a8e42dadc9d1bffd16b3d3059a5ad5e60a133fe6019d3479"
+  "manifest_sha256": "81c4386de0853e4edf636ff29a91e366e9d5d09eafc8bf53250055b52a377db2"
 }

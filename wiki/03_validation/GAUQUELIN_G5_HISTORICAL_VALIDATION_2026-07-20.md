@@ -136,8 +136,9 @@ With the external archive present and a DE441 kernel installed:
 
 ```powershell
 $env:MOIRA_AUTO_DOWNLOAD = '0'
+$g5Archive = 'C:\path\to\g5-tmp-g-sectors.zip'
 .\.venv\Scripts\python.exe scripts\validate_g5_gauquelin_sectors.py `
-  'C:\Users\nilad\Downloads\g5-tmp-g-sectors.zip' `
+  $g5Archive `
   --output .\tmp\gauquelin-g5-full.json
 ```
 
