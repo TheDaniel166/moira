@@ -35,6 +35,8 @@ jobs:
         run: |
           python scripts/check_doc_consistency.py
           python scripts/check_release_identity.py
+          python scripts/build_website_docs_bundle.py --check
+          python scripts/sync_git_wiki.py --check
 
       - name: Run public surface and release hardening suites
         run: |

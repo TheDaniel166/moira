@@ -50,7 +50,17 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 - **Planets and luminaries** — geocentric and topocentric reduction with iterative light-time, annual aberration, multi-body relativistic deflection (Sun, Jupiter, Saturn, Earth), IAU 2006 frame bias, and WGS-84 topocentric parallax.
 - **Fixed stars** — sovereign registry of 1,809 named stars with proper motion, parallax, epoch propagation, and Stellar Quality classification. Audited anchor residual against SOFA/ERFA: 0.00048 arcseconds (J1000–J3000).
-- **Asteroid catalog** — unified catalog of 1,382 asteroids covering all 119 recognized asteroid families, including the classical four (Ceres, Pallas, Juno, Vesta), Centaurs (Chiron, Pholus, Chariklo, Asbolus, Hylonome), and Trans-Neptunians (Ixion, Quaoar, Varuna, Orcus). Built from JPL Horizons as 56 Type-13 SPK shards covering 1600–2500 CE at sub-milliarcsecond interpolation fidelity, discovered via manifest under any kernel search root. User-supplied `.bsp` kernels remain supported via the integrated `daf_writer` for any of the 887,000+ numbered minor planets in the JPL catalog.
+- **Position-capable asteroid ephemeris** — an optional external catalog of
+  1,382 selected asteroids, including the classical four (Ceres, Pallas, Juno,
+  Vesta), Centaurs (Chiron, Pholus, Chariklo, Asbolus, Hylonome), and
+  Trans-Neptunians (Ixion, Quaoar, Varuna, Orcus). It is built from JPL
+  Horizons as 56 Type-13 SPK shards covering 1600–2500 CE at
+  sub-milliarcsecond interpolation fidelity and is discovered by manifest
+  under any kernel search root. This positional product is distinct from the
+  bundled Proper25/PDS family-membership catalog (342 families, 200,726 unique
+  numbered asteroids, 221,095 membership rows). User-supplied `.bsp` kernels
+  remain supported through `daf_writer` for numbered minor planets available
+  from the selected source.
 - **Numbered periodic comets** — 497 comets (1P/Halley through 516P) from JPL Horizons as sharded Type-13 kernels (1600–2500 CE), with canonical numbered designations (`"1P/Halley"`) and curated short aliases accepted as inputs.
 - **Uranian / Hamburg School bodies** — 8 hypothetical transneptunian planets (Cupido through Poseidon) plus Transpluto.
 - **Lunar nodes and apsides** — True Node, Mean Node, Mean Lilith, True Lilith, and orbital nodes/apsides for all planetary bodies.
@@ -354,7 +364,8 @@ Note for pre-4.0.0 installs: the single-file supplemental kernels (`comets.bsp`,
 | IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; native C++ (`_moira_native`) |
 | DE-series planetary kernel | JPL | No | de430 (~128 MB), de440 (~114 MB), or de441 (~3.1 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
-| Unified asteroid catalog | JPL Horizons | No | 1,382 asteroids across all 119 families; 56 Type-13 shards, 1600–2500 CE; separate download, manifest-discovered |
+| Position-capable asteroid ephemeris | JPL Horizons | No | 1,382 selected asteroids; 56 Type-13 shards, 1600–2500 CE; separate download, manifest-discovered |
+| Asteroid-family membership catalog | Proper25 + retained NASA PDS exclusions | Yes | 342 families; 200,726 unique numbered asteroids; 221,095 many-to-many membership rows; no positional ephemeris implied |
 | Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards, 1600–2500 CE; separate download, manifest-discovered |
 
 ---

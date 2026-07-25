@@ -1,10 +1,15 @@
 # Moira Validation Report - Astronomy
 
-**Version:** 1.3
-**Date:** 2026-07-19
+**Version:** 1.4
+**Date:** 2026-07-25
 **Runtime target:** Python 3.14
 **Validation kernel:** JPL DE441 (engine is kernel-agnostic; see note below)
 **Validation philosophy:** external-reference first, regression-enforced second
+
+> **Recent release evidence.** The bounded NASA lunar-eclipse corpus,
+> global eclipse circumstances/cartography, lunar-node frame, and installed
+> small-body readiness evidence added in Moira 5.1-5.2 is indexed in the
+> [5.1-5.2 release validation ledger](RELEASE_VALIDATION_5_1_TO_5_2.md).
 
 > **Kernel note.** All numerical results in this document were obtained with
 > JPL DE441 installed. Moira is kernel-agnostic: it accepts de430, de440, or

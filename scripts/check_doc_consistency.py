@@ -24,8 +24,16 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 PRIMARY_DOCS = (
     Path("README.md"),
+    Path("wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md"),
     Path("wiki/02_services/SERVICE_LAYER_GUIDE.md"),
     Path("wiki/02_standards/API_REFERENCE.md"),
+    Path("wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md"),
+    Path("wiki/03_validation/VALIDATION_ASTRONOMY.md"),
+    Path("wiki/03_validation/VALIDATION_ASTROLOGY.md"),
+    Path("wiki/03_validation/VALIDATION_EXPERIMENTAL.md"),
+    Path("wiki/03_validation/RELEASE_VALIDATION_5_1_TO_5_2.md"),
+    Path("wiki/06_roadmap/MOIRA_ROADMAP.md"),
+    Path("website_docs/publication_sources.json"),
     Path("moira.wiki/API_REFERENCE.md"),
 )
 
@@ -55,11 +63,23 @@ FORBIDDEN_PATTERNS = (
         label="removed decan_at reader parameter",
         pattern=re.compile(r"decan_at\([^\n)]*reader\s*="),
     ),
+    ForbiddenPattern(
+        label="superseded 2015 asteroid-family body count",
+        pattern=re.compile(r"143[,\s]?711"),
+    ),
+    ForbiddenPattern(
+        label="superseded asteroid-family count",
+        pattern=re.compile(r"\b119\s+(?:recognized\s+)?(?:asteroid\s+)?famil(?:y|ies)\b", re.IGNORECASE),
+    ),
 )
 
 
 REQUIRED_PATTERNS: dict[Path, tuple[RequiredPattern, ...]] = {
     Path("wiki/02_standards/API_REFERENCE.md"): (
+        RequiredPattern(
+            label="current engine baseline",
+            pattern=re.compile(r"\*\*Engine baseline:\*\* 5\.2\.3"),
+        ),
         RequiredPattern(
             label="naive datetime rejection contract",
             pattern=re.compile(
@@ -95,7 +115,62 @@ REQUIRED_PATTERNS: dict[Path, tuple[RequiredPattern, ...]] = {
             pattern=re.compile(r"FALLBACK_TO_PLACIDUS"),
         ),
     ),
+    Path("wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md"): (
+        RequiredPattern(
+            label="planetary reduction implementation entry point",
+            pattern=re.compile(r"`planet_at\(\.\.\.\)`"),
+        ),
+        RequiredPattern(
+            label="planetary reduction REST inspection route",
+            pattern=re.compile(r"`POST /v1/pipeline/positions/planet`"),
+        ),
+        RequiredPattern(
+            label="metadata-only small-body boundary",
+            pattern=re.compile(r"metadata-only manifest does not make a body\s+position-capable"),
+        ),
+    ),
+    Path("wiki/03_validation/VALIDATION_ASTRONOMY.md"): (
+        RequiredPattern(
+            label="recent release evidence ledger",
+            pattern=re.compile(r"RELEASE_VALIDATION_5_1_TO_5_2\.md"),
+        ),
+    ),
+    Path("wiki/03_validation/VALIDATION_ASTROLOGY.md"): (
+        RequiredPattern(
+            label="recent release evidence ledger",
+            pattern=re.compile(r"RELEASE_VALIDATION_5_1_TO_5_2\.md"),
+        ),
+    ),
+    Path("wiki/03_validation/VALIDATION_EXPERIMENTAL.md"): (
+        RequiredPattern(
+            label="recent release evidence ledger",
+            pattern=re.compile(r"RELEASE_VALIDATION_5_1_TO_5_2\.md"),
+        ),
+    ),
+    Path("wiki/06_roadmap/MOIRA_ROADMAP.md"): (
+        RequiredPattern(
+            label="living roadmap disclaimer",
+            pattern=re.compile(r"Living engineering roadmap"),
+        ),
+    ),
+    Path("website_docs/publication_sources.json"): (
+        RequiredPattern(
+            label="correct planetary reduction source mapping",
+            pattern=re.compile(
+                r'"id": "planetary-reduction"[\s\S]*?'
+                r'"source": "wiki/02_standards/PLANETARY_REDUCTION_PIPELINE\.md"'
+            ),
+        ),
+        RequiredPattern(
+            label="private research excluded from public allowlist",
+            pattern=re.compile(r'"release_history_floor": "5\.0\.0"'),
+        ),
+    ),
     Path("moira.wiki/API_REFERENCE.md"): (
+        RequiredPattern(
+            label="current engine baseline",
+            pattern=re.compile(r"\*\*Engine baseline:\*\* 5\.2\.3"),
+        ),
         RequiredPattern(
             label="naive datetime rejection contract",
             pattern=re.compile(

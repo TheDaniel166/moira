@@ -1,0 +1,788 @@
+{
+  "schema_version": 1,
+  "source_repository": "https://github.com/TheDaniel166/moira",
+  "last_verified": "2026-07-25",
+  "engine_release": {
+    "name": "moira-astro",
+    "version": "5.2.3",
+    "tag": "v5.2.3",
+    "commit": "17bcfd14a80ca0aea35ad4cdeb5fb79cdfcb3da5",
+    "release_date": "2026-07-25",
+    "requires_python": ">=3.10",
+    "supported_python": [
+      "3.10",
+      "3.11",
+      "3.12",
+      "3.13",
+      "3.14"
+    ],
+    "license": "MIT",
+    "kernel_policy": {
+      "planetary_readers": [
+        "DE430",
+        "DE440",
+        "DE441"
+      ],
+      "flagship_full_range_reader": "DE441",
+      "small_body_availability": "An installed BSP-backed manifest is required; catalog metadata alone is not an ephemeris."
+    }
+  },
+  "contract_sources": [
+    {
+      "id": "python_api_reference",
+      "source": "wiki/02_standards/API_REFERENCE.md",
+      "source_sha256": "f73671bed361b9c573c77dfa05369a15135f6c395c30a632a2e0303ad11c4ccd"
+    },
+    {
+      "id": "python_root_exports",
+      "source": "moira/__init__.py",
+      "source_sha256": "bc0e9e2e81ce74811793b33e401f4a6d011415956138c2a95d081fdb6d7d5dbf"
+    },
+    {
+      "id": "python_facade",
+      "source": "moira/facade.py",
+      "source_sha256": "4ddd45be98b55734043bdca0ebe9b990046dce52b4b3c2888dbf24c667187af4"
+    },
+    {
+      "id": "rest_api_reference",
+      "source": "wiki/02_services/REST_API_REFERENCE.md",
+      "source_sha256": "60a779dd733e170f224c8e552d4ea0b56d8c7f2284a3e34edb9207acecaa63b9"
+    },
+    {
+      "id": "rest_router_registration",
+      "source": "moira_server/app.py",
+      "source_sha256": "0032ab227ca71854f952fdf2f0efe38ab3e40e8cab654680dc1017438321a809"
+    },
+    {
+      "id": "planetary_reduction",
+      "source": "wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md",
+      "source_sha256": "10ce4f1d22729d9834f7df8a7cf75ad71a8646b0afb3f9edb4e60a4ace9f42ad"
+    }
+  ],
+  "catalog_metrics": {
+    "position_capable_asteroid_ephemeris": {
+      "body_count": 1382,
+      "shard_count": 56,
+      "availability": "external_install_required",
+      "source": "moira/kernels/asteroids/manifest.json"
+    },
+    "position_capable_periodic_comet_ephemeris": {
+      "body_count": 497,
+      "shard_count": 20,
+      "availability": "external_install_required",
+      "source": "moira/kernels/comets/manifest.json"
+    },
+    "asteroid_family_membership_catalog": {
+      "family_count": 342,
+      "unique_numbered_asteroid_count": 200726,
+      "membership_row_count": 221095,
+      "maximum_memberships_per_asteroid": 4,
+      "semantics": "Many-to-many HCM catalog membership; overlaps and nested families are preserved.",
+      "source": "moira/data/asteroid_families.metadata.json",
+      "catalog_sha256": "ded401f8c57d69d44009651bbd81bd0463975bc5503408fe4406648eb1d05234"
+    }
+  },
+  "documents": [
+    {
+      "id": "light-box-doctrine",
+      "kind": "doc",
+      "route": "/docs/light-box-doctrine",
+      "output": "client/src/docs-content/light-box.md",
+      "source": "wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md",
+      "title": "The Light Box Doctrine",
+      "nav_label": "Light Box Doctrine",
+      "description": "Moira's philosophical and technical commitment to inspectable intermediate values, declared algorithms, and reproducible numerical results.",
+      "content_class": "evergreen_doctrine",
+      "schema_type": "TechArticle",
+      "source_sha256": "340fb5f6801ea54630c13163506f5fb6784c2671a4b169bf9c1f85dbd1f9836a",
+      "source_bytes": 14468,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "api-reference",
+      "kind": "doc",
+      "route": "/docs/api-reference",
+      "output": "client/src/docs-content/api-reference.md",
+      "source": "wiki/02_standards/API_REFERENCE.md",
+      "title": "API Reference",
+      "nav_label": "API Reference",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 5.2.3.",
+      "content_class": "generated_current_fact",
+      "schema_type": "TechArticle",
+      "source_sha256": "f73671bed361b9c573c77dfa05369a15135f6c395c30a632a2e0303ad11c4ccd",
+      "source_bytes": 285798,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "planetary-reduction",
+      "kind": "doc",
+      "route": "/docs/planetary-reduction",
+      "output": "client/src/docs-content/planetary-reduction.md",
+      "source": "wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md",
+      "title": "Planetary Reduction Pipeline",
+      "nav_label": "Planetary Reduction",
+      "description": "The declared path from JPL SPK state vectors through light time, deflection, aberration, frame transforms, and optional topocentric correction.",
+      "content_class": "evergreen_architecture",
+      "schema_type": "TechArticle",
+      "source_sha256": "10ce4f1d22729d9834f7df8a7cf75ad71a8646b0afb3f9edb4e60a4ace9f42ad",
+      "source_bytes": 5415,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "aspects-orbs",
+      "kind": "doc",
+      "route": "/docs/aspects-orbs",
+      "output": "client/src/docs-content/aspects-orbs.md",
+      "source": "wiki/02_standards/ASPECT_BACKEND_STANDARD.md",
+      "title": "Aspects & Orbs",
+      "nav_label": "Aspects & Orbs",
+      "description": "Moira's aspect backend standard: relation geometry, orb policy, classification, graph invariants, and deterministic assembly.",
+      "content_class": "evergreen_doctrine",
+      "schema_type": "TechArticle",
+      "source_sha256": "e2028f05022e6bf0fb2729053c17a71102ed7c20b926743375d9e38e6706a7a4",
+      "source_bytes": 32209,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "houses-cusps",
+      "kind": "doc",
+      "route": "/docs/houses-cusps",
+      "output": "client/src/docs-content/houses-cusps.md",
+      "source": "wiki/02_standards/HOUSES_BACKEND_STANDARD.md",
+      "title": "Houses & Cusps",
+      "nav_label": "Houses & Cusps",
+      "description": "House-system policy, cusp calculation, high-latitude behavior, effective fallback, and admitted spatial boundary geometry.",
+      "content_class": "evergreen_doctrine",
+      "schema_type": "TechArticle",
+      "source_sha256": "9d2e82f2cb31a4424e37cd16a4f95789eef619a5871b77a13531abc8eb97c4cc",
+      "source_bytes": 30647,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "dignities-sect",
+      "kind": "doc",
+      "route": "/docs/dignities-sect",
+      "output": "client/src/docs-content/dignities-sect.md",
+      "source": "wiki/02_standards/DIGNITIES_BACKEND_STANDARD.md",
+      "title": "Dignities & Sect",
+      "nav_label": "Dignities & Sect",
+      "description": "Essential dignity doctrine, sect and phase geometry, explicit policy controls, scoring, and provenance boundaries.",
+      "content_class": "evergreen_doctrine",
+      "schema_type": "TechArticle",
+      "source_sha256": "bb3b72653fe82952b67e86c8f43f7f455b31256ae9352a06d2707290a59506c9",
+      "source_bytes": 22650,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "timing-timelords",
+      "kind": "doc",
+      "route": "/docs/timing-timelords",
+      "output": "client/src/docs-content/timing-timelords.md",
+      "source": "wiki/02_standards/TIMELORDS_BACKEND_STANDARD.md",
+      "title": "Timing & Timelords",
+      "nav_label": "Timing & Timelords",
+      "description": "Firdaria, decennials, Zodiacal Releasing, time-boundary ownership, and immutable timelord result contracts.",
+      "content_class": "evergreen_doctrine",
+      "schema_type": "TechArticle",
+      "source_sha256": "93f33aee9af1ca5f02f47cce521d5702877fe922935a9150ff04fcba4fed6e6e",
+      "source_bytes": 35803,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "vimshottari-dasha",
+      "kind": "doc",
+      "route": "/docs/vimshottari-dasha",
+      "output": "client/src/docs-content/vimshottari-dasha.md",
+      "source": "wiki/02_standards/DASHA_BACKEND_STANDARD.md",
+      "title": "Vimshottari Dasha",
+      "nav_label": "Vimshottari Dasha",
+      "description": "Vimshottari cycle construction, nakshatra boundary ownership, balances, nested periods, and result invariants.",
+      "content_class": "evergreen_doctrine",
+      "schema_type": "TechArticle",
+      "source_sha256": "b8fd1e751c9f67dab5f0a946c0009b739099fe3a3452919453530d5875e45428",
+      "source_bytes": 21035,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "fixed-star-logic",
+      "kind": "doc",
+      "route": "/docs/fixed-star-logic",
+      "output": "client/src/docs-content/fixed-star-logic.md",
+      "source": "wiki/02_standards/STARS_BACKEND_STANDARD.md",
+      "title": "Fixed Star Logic",
+      "nav_label": "Fixed Star Logic",
+      "description": "Star identity, Gaia-backed astrometry, proper motion, topocentric policy, heliacal products, and provenance.",
+      "content_class": "evergreen_doctrine",
+      "schema_type": "TechArticle",
+      "source_sha256": "b263c90faf943d4c20b9a0b3c99a693fc6da9be2ca4f6b6362968296133d2b5f",
+      "source_bytes": 13625,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "service-layer",
+      "kind": "doc",
+      "route": "/docs/service-layer",
+      "output": "client/src/docs-content/service-layer.md",
+      "source": "wiki/02_services/SERVICE_LAYER_GUIDE.md",
+      "title": "Service Layer Guide",
+      "nav_label": "Service Layer",
+      "description": "Facade orchestration, reader ownership, transport boundaries, and production integration patterns.",
+      "content_class": "evergreen_architecture",
+      "schema_type": "TechArticle",
+      "source_sha256": "0c7618cbb8461d264c77b8202f65637bd25c174dd907a3ab1e11b94a873c3b06",
+      "source_bytes": 48252,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "beyond-swiss-ephemeris",
+      "kind": "doc",
+      "route": "/docs/beyond-swiss-ephemeris",
+      "output": "client/src/docs-content/beyond-swiss.md",
+      "source": "wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md",
+      "title": "Beyond Swiss Ephemeris",
+      "nav_label": "Beyond Swiss Ephemeris",
+      "description": "A product-specific architecture comparison covering open reduction, modern data products, explicit policy, and evidence boundaries.",
+      "content_class": "editorial_historical",
+      "schema_type": "TechArticle",
+      "source_sha256": "768cd540fca620e7668e8196dbe43b66dc74ac05ca713d0ad481f0738398d76a",
+      "source_bytes": 20151,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "roadmap",
+      "kind": "doc",
+      "route": "/docs/roadmap",
+      "output": "client/src/docs-content/roadmap.md",
+      "source": "wiki/06_roadmap/MOIRA_ROADMAP.md",
+      "title": "Moira Roadmap",
+      "nav_label": "Roadmap",
+      "description": "A living engineering roadmap; planned and historical entries do not themselves define admitted public API or validation status.",
+      "content_class": "editorial_historical",
+      "schema_type": "TechArticle",
+      "source_sha256": "ec4fd5ac0381382a93d7feb1bf2c5567a651c054d898420cf3b21a7244e7b4db",
+      "source_bytes": 21746,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true
+    },
+    {
+      "id": "astronomy",
+      "kind": "validation_report",
+      "route": "/validation/astronomy",
+      "output": "client/src/validation-reports/astronomy.md",
+      "source": "wiki/03_validation/VALIDATION_ASTRONOMY.md",
+      "title": "Validation Report — Astronomy",
+      "nav_label": "Astronomy Report",
+      "description": "External-reference evidence for Moira's IAU, JPL, time-scale, eclipse, occultation, and observational astronomy surfaces.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "2a2bb4981824b36f664a25d89f36c463cb8a6b09216c93a45ce1d54dcf76413a",
+      "source_bytes": 60565,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "partial",
+        "oracles": [
+          "IAU SOFA/ERFA",
+          "JPL Horizons",
+          "NASA/GSFC",
+          "USNO",
+          "IOTA"
+        ],
+        "scope": "Mixed astronomy validation report; each section owns its corpus, semantics, and tolerance.",
+        "evidence_paths": [
+          "wiki/03_validation/VALIDATION_ASTRONOMY.md"
+        ],
+        "document_version": "1.4",
+        "receipt_date": "2026-07-25"
+      }
+    },
+    {
+      "id": "astrology",
+      "kind": "validation_report",
+      "route": "/validation/astrology",
+      "output": "client/src/validation-reports/astrology.md",
+      "source": "wiki/03_validation/VALIDATION_ASTROLOGY.md",
+      "title": "Validation Report — Astrology",
+      "nav_label": "Astrology Report",
+      "description": "Bounded external comparisons, doctrine checks, invariants, and explicit non-oracle cases for astrological convention layers.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "ca4cdfd384014b6ef96e985f9e46f1a59d1b2159ed9e88f58adecc7fc72738fa",
+      "source_bytes": 35609,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "partial",
+        "oracles": [
+          "Swiss Ephemeris fixtures",
+          "Astro.com",
+          "canonical doctrine tables",
+          "structural invariants"
+        ],
+        "scope": "Mixed convention-layer report; external software is used only where a stable matching product exists.",
+        "evidence_paths": [
+          "wiki/03_validation/VALIDATION_ASTROLOGY.md"
+        ],
+        "document_version": "1.5",
+        "receipt_date": "2026-07-25"
+      }
+    },
+    {
+      "id": "experimental",
+      "kind": "validation_report",
+      "route": "/validation/experimental",
+      "output": "client/src/validation-reports/experimental.md",
+      "source": "wiki/03_validation/VALIDATION_EXPERIMENTAL.md",
+      "title": "Validation Report — Experimental",
+      "nav_label": "Experimental Report",
+      "description": "Validation and partial-closure records for experimental, modernized, or mixed-oracle computation surfaces.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "4029371bae0561875409dcac62b53f514ac424917c758085c5ec81d973345eaf",
+      "source_bytes": 21755,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "partial",
+        "oracles": [
+          "SOFA/ERFA",
+          "AAVSO",
+          "GCVS",
+          "published orbit ephemerides",
+          "structural invariants"
+        ],
+        "scope": "Mixed experimental report with explicit validated and partial subsections.",
+        "evidence_paths": [
+          "wiki/03_validation/VALIDATION_EXPERIMENTAL.md"
+        ],
+        "document_version": "2.2",
+        "receipt_date": "2026-07-25"
+      }
+    },
+    {
+      "id": "rose-of-venus",
+      "kind": "validation_case",
+      "route": "/validation/rose-of-venus",
+      "output": "client/src/validation-content/rose-of-venus.md",
+      "source": "wiki/03_standards/VALIDATION_CASE_VENUS_STAR.md",
+      "title": "Rose of Venus (2026–2032)",
+      "nav_label": "Rose of Venus",
+      "description": "A bounded Sun–Venus conjunction sequence compared with JPL Horizons under declared apparent-geocentric semantics.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "03de826620830e6266e2c2204a8ffedddd5d954162c8264a5a2c755c49627da3",
+      "source_bytes": 3640,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "validated",
+        "oracles": [
+          "JPL Horizons"
+        ],
+        "scope": "Sun-Venus apparent geocentric conjunction sequence from 2026 through 2032.",
+        "evidence_paths": [
+          "wiki/03_standards/VALIDATION_CASE_VENUS_STAR.md"
+        ]
+      }
+    },
+    {
+      "id": "eclipse-canon-comparison",
+      "kind": "validation_case",
+      "route": "/validation/eclipse-canon-comparison",
+      "output": "client/src/validation-content/eclipse-canon-comparison.md",
+      "source": "wiki/03_validation/ECLIPSE_CATALOG_COMPARISON.md",
+      "title": "Eclipse Canon Comparison",
+      "nav_label": "Eclipse Canon",
+      "description": "Readable solar and lunar eclipse catalog comparisons with explicit NASA, Swiss, and model-basis boundaries.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "0bb2dfc24bcd377afc89f36594e9a0fe299dd6bd4d6f259cdd0ff1e236944974",
+      "source_bytes": 15386,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "partial",
+        "oracles": [
+          "NASA eclipse catalogs",
+          "Swiss eclipse fixtures"
+        ],
+        "scope": "Readable catalog comparison; model-basis differences and unproved products remain explicit.",
+        "evidence_paths": [
+          "wiki/03_validation/ECLIPSE_CATALOG_COMPARISON.md"
+        ]
+      }
+    },
+    {
+      "id": "killer-validation-index",
+      "kind": "validation_case",
+      "route": "/validation/killer-validation-index",
+      "output": "client/src/validation-content/killer-validation-index.md",
+      "source": "wiki/03_validation/KILLER_VALIDATION_INDEX.md",
+      "title": "Killer Validation Index",
+      "nav_label": "Killer Validation Index",
+      "description": "An index of adversarial, authority, parity, and invariant evidence across Moira's protected computation zones.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "118dc3dca54cf009fb7fc2549acc8ddbffaa57e87df58d99f86710af4d1ed44b",
+      "source_bytes": 8768,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "documented",
+        "oracles": [
+          "multiple named authorities",
+          "regression artifacts",
+          "physical and structural invariants"
+        ],
+        "scope": "Index only; every linked evidence record owns its own authority class and boundary.",
+        "evidence_paths": [
+          "wiki/03_validation/KILLER_VALIDATION_INDEX.md"
+        ]
+      }
+    },
+    {
+      "id": "polar-house-external-reference",
+      "kind": "validation_case",
+      "route": "/validation/polar-house-external-reference",
+      "output": "client/src/validation-content/polar-house-external-reference.md",
+      "source": "wiki/03_validation/POLAR_HOUSE_EXTERNAL_REFERENCE.md",
+      "title": "Polar House External Reference",
+      "nav_label": "Polar House Reference",
+      "description": "High-latitude house behavior compared with a cached Swiss reference under explicit fallback and availability semantics.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "13221238d38ef13bc2e3e8b7f6f1f153cbfc9f97773605a160d5654b9fc74e7c",
+      "source_bytes": 2079,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "validated",
+        "oracles": [
+          "cached Swiss setest/t.exp fixture"
+        ],
+        "scope": "Named high-latitude house cases under explicit system and fallback policy.",
+        "evidence_paths": [
+          "wiki/03_validation/POLAR_HOUSE_EXTERNAL_REFERENCE.md"
+        ]
+      }
+    },
+    {
+      "id": "ancient-occultation-program",
+      "kind": "validation_case",
+      "route": "/validation/ancient-occultation-program",
+      "output": "client/src/validation-content/ancient-occultation-program.md",
+      "source": "wiki/03_validation/ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md",
+      "title": "Ancient Occultation Program",
+      "nav_label": "Ancient Occultation",
+      "description": "The separate validation program for ancient occultations, source uncertainty, time models, and archaeological records.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "e786c0b78248985dc2c94bf3c2ac81c9e1b1e679109d083f2b405bf1f40ca1f3",
+      "source_bytes": 3456,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "documented",
+        "oracles": [
+          "historical and archaeological records"
+        ],
+        "scope": "Validation program and uncertainty policy; not every candidate event is externally closed.",
+        "evidence_paths": [
+          "wiki/03_validation/ANCIENT_OCCULTATION_VALIDATION_PROGRAM.md"
+        ]
+      }
+    },
+    {
+      "id": "adversarial-stress-tests",
+      "kind": "validation_case",
+      "route": "/validation/adversarial-stress-tests",
+      "output": "client/src/validation-content/adversarial-stress-tests.md",
+      "source": "wiki/03_validation/ADVERSARIAL_SINGULARITY_DEFECT_LEDGER.md",
+      "title": "Adversarial Stress Tests",
+      "nav_label": "Adversarial Stress Tests",
+      "description": "Coordinate seams, polar singularities, degenerate geometry, and fail-visible defect records.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "a261814f1544d20099caed7c0494ad14440c0cd9f2f4df390a24741820476051",
+      "source_bytes": 15579,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "documented",
+        "oracles": [
+          "physical invariants",
+          "structural invariants",
+          "regression fixtures"
+        ],
+        "scope": "Fail-visible singularity and defect ledger; regression evidence is not external truth.",
+        "evidence_paths": [
+          "wiki/03_validation/ADVERSARIAL_SINGULARITY_DEFECT_LEDGER.md"
+        ],
+        "document_version": "1.6",
+        "receipt_date": "2026-05-21"
+      }
+    },
+    {
+      "id": "gauquelin-g5-historical",
+      "kind": "validation_case",
+      "route": "/validation/gauquelin-g5-historical",
+      "output": "client/src/validation-content/gauquelin-g5-historical.md",
+      "source": "wiki/03_validation/GAUQUELIN_G5_HISTORICAL_VALIDATION_2026-07-20.md",
+      "title": "Gauquelin g5 Historical Validation",
+      "nav_label": "Gauquelin g5",
+      "description": "A corpus-bounded validation of Gauquelin sector computation, plus-zone policy, and cached method-0 comparison.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "e756f5dd367627cc402ad8ea8b3eb2892294e22557f4b4a66171e5c77fb28bda",
+      "source_bytes": 7617,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "validated",
+        "oracles": [
+          "Gauquelin g5 historical dataset",
+          "cached Swiss method-0 rows"
+        ],
+        "scope": "Named historical corpus and plus-zone policy only.",
+        "evidence_paths": [
+          "wiki/03_validation/GAUQUELIN_G5_HISTORICAL_VALIDATION_2026-07-20.md"
+        ]
+      }
+    },
+    {
+      "id": "release-evidence-5-1-to-5-2",
+      "kind": "validation_case",
+      "route": "/validation/release-evidence-5-1-to-5-2",
+      "output": "client/src/validation-content/release-evidence-5-1-to-5-2.md",
+      "source": "wiki/03_validation/RELEASE_VALIDATION_5_1_TO_5_2.md",
+      "title": "Moira 5.1–5.2 Release Evidence",
+      "nav_label": "5.1–5.2 Evidence",
+      "description": "A status-explicit index of the validation and documented evidence added from Moira 5.1.0 through 5.2.3.",
+      "content_class": "versioned_evidence_receipt",
+      "schema_type": "TechArticle",
+      "source_sha256": "e2598028b574254a5307f85c322668ae0d653f2905810ed2032bf71924f698b0",
+      "source_bytes": 5697,
+      "last_verified": "2026-07-25",
+      "prerender": true,
+      "markdown": true,
+      "sitemap": true,
+      "validation": {
+        "status": "documented",
+        "oracles": [
+          "release-specific authority corpora",
+          "physical and structural invariants"
+        ],
+        "scope": "Status-explicit index; each release row states whether its evidence is validated, partial, or documented.",
+        "evidence_paths": [
+          "wiki/03_validation/RELEASE_VALIDATION_5_1_TO_5_2.md"
+        ]
+      }
+    }
+  ],
+  "releases": [
+    {
+      "version": "5.2.3",
+      "date": "2026-07-25",
+      "title": "Installed Small-Body Manifest Readiness",
+      "added": [],
+      "changed": [],
+      "fixed": [
+        "Automatic discovery now distinguishes metadata-only wheel manifests from installed asteroid and comet ephemerides.",
+        "Explicitly configured and partially installed manifest sets remain fail-visible."
+      ],
+      "validation": [
+        "Metadata-only, complete, partial, and explicit discovery modes were exercised through facade readiness, server startup, /ready behavior, and a wheel-shaped isolated install."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_5.2.3.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_5.2.3.md",
+      "tag": "v5.2.3",
+      "release_notes_sha256": "a0fbc359489c728a295405e7509ffd286db26eb368b9ed369364e43c168460a5",
+      "compatibility_notes_sha256": "b6fc3ed7a49b41ad9b06af5ef2ec3c94ddcbe483fe8eda64607f968b19b164fa"
+    },
+    {
+      "version": "5.2.2",
+      "date": "2026-07-25",
+      "title": "Node Frames and Proper25 Families",
+      "added": [
+        "Mean Node and Mean Lilith now expose an explicit mean-equinox versus true-equinox nutation policy.",
+        "The admitted asteroid-family catalog now contains 342 families, 200,726 unique numbered asteroids, and 221,095 many-to-many membership rows."
+      ],
+      "changed": [],
+      "fixed": [
+        "True lunar-node geometry is formed from the instantaneous osculating plane and transformed through the declared frame chain.",
+        "Family lookup and REST transport preserve nested and overlapping memberships while retaining one deterministic display-primary family."
+      ],
+      "validation": [
+        "ERFA/IERS mean-node authority, true-node crossing invariants, named Swiss corroboration, catalog hashes/counts/overlaps, REST transport, and annotation refresh were exercised."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_5.2.2.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_5.2.2.md",
+      "tag": "v5.2.2",
+      "release_notes_sha256": "79632841797bc1a2021610a59be24aa608566094a3f3431816307323d6c1ea76",
+      "compatibility_notes_sha256": "210cbf270996f6901c2e631b37062a387f60fe8021a9d44f63599b8b3f88df6e"
+    },
+    {
+      "version": "5.2.1",
+      "date": "2026-07-23",
+      "title": "Spatial House-Boundary Geometry",
+      "added": [
+        "An opt-in immutable house-boundary vessel exposes admitted great-circle planes and Placidus semi-arc event curves with effective-system and availability truth."
+      ],
+      "changed": [],
+      "fixed": [],
+      "validation": [
+        "Plane-defined and Placidus boundaries, southern and high-latitude cases, sidereal labels, fallback, public exports, and REST serialization were exercised."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_5.2.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_5.2.1.md",
+      "tag": "v5.2.1",
+      "release_notes_sha256": "b8ad64fad94e2761cf05a83466b2916aa19674a5aef934dc1bc45f3da359ba03",
+      "compatibility_notes_sha256": "75d090af24c12ef1ef1726987cf497c6b797c5c3222aa624e95026be78cf9732"
+    },
+    {
+      "version": "5.2.0",
+      "date": "2026-07-23",
+      "title": "Global Eclipse Circumstances and Cartography",
+      "added": [
+        "First-class solar global circumstances include contacts, central-line limits, greatest eclipse, greatest duration, conjunctions, states, gamma, Besselian elements, and the WGS-84 footprint.",
+        "First-class lunar global circumstances expose mode-pure native and NASA-compatible astrometry, shadow geometry, magnitudes, contacts, durations, Delta T, and ephemeris identity.",
+        "Projection-independent adaptive spherical magnitude and obscuration cartography preserves convergence and antimeridian topology.",
+        "Typed REST endpoints expose solar global circumstances, solar cartography, and lunar global circumstances."
+      ],
+      "changed": [],
+      "fixed": [
+        "Near-singular hybrid horizon topology and polar/seam contour extraction were hardened without weakening component invariants."
+      ],
+      "validation": [
+        "NASA/GSFC Besselian and hashed lunar-figure corpora provide the primary bounded evidence; named EclipseWise rows provide separate cross-model corroboration."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_5.2.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_5.2.0.md",
+      "tag": "v5.2.0",
+      "release_notes_sha256": "3543097af4e6c24a8bf6d4d2d8ef50005f226d95870d3d1cb5e2cbee6fec9fe6",
+      "compatibility_notes_sha256": "a82bc40a8474376191fcfc53f53ecb5cfc05c0a853d496fd64f5e0d569dbae07"
+    },
+    {
+      "version": "5.1.2",
+      "date": "2026-07-22",
+      "title": "Eclipse Geometry Hardening",
+      "added": [
+        "A NumPy-free native solar-footprint substrate accelerates bounded candidate discovery while Python retains eclipse doctrine and topology.",
+        "A provenance-recorded NASA/GSFC corpus covers all 229 lunar eclipses from 1901 through 2000."
+      ],
+      "changed": [],
+      "fixed": [
+        "Solar footprint horizon-root discovery and exact sunrise/sunset junction assembly were repaired for affected 2027–2031 events.",
+        "Lunar greatest-eclipse geometry, classification, contacts, and candidate admission now share the declared physical event state."
+      ],
+      "validation": [
+        "All 229 NASA events match the published type family, and forward, backward, and bulk searches recover the complete ordered sequence with greatest-eclipse TT residual below 55 seconds for that corpus."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_5.1.2.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_5.1.2.md",
+      "tag": "v5.1.2",
+      "release_notes_sha256": "624280d9026e53293f20328fe3a88e537934c8098f58accc4324d412dd8de6bc",
+      "compatibility_notes_sha256": "7a22185a97709cd9e4eef8fedfe65543053fa886bed64ce6fb02876086979f40"
+    },
+    {
+      "version": "5.1.1",
+      "date": "2026-07-22",
+      "title": "DE440 Historical Delta-T Repair",
+      "added": [],
+      "changed": [],
+      "fixed": [
+        "Historical, basis-sensitive DE440/LE440 charts now bind Delta T to the content-identified kernel's admitted tidal basis while unknown DE/LE identities continue to fail closed."
+      ],
+      "validation": [
+        "Content-derived identity, historical clock conversion, unchanged modern direct-EOP behavior, and retained unknown-identity refusal were exercised."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_5.1.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_5.1.1.md",
+      "tag": "v5.1.1",
+      "release_notes_sha256": "59190b9802cd253b21ad1d912e1959d0afd97a116dc1bff3aa9743218f5d226e",
+      "compatibility_notes_sha256": "651f3d541ac939756477226d50e5a3d9c119f43110723d5d5cb4d8e30082936b"
+    },
+    {
+      "version": "5.1.0",
+      "date": "2026-07-21",
+      "title": "Source-Scoped Policy and Evidence",
+      "added": [
+        "Dignity computation now exposes independent Halb and Oriental/Occidental inclusion policies across the engine and all six REST routes.",
+        "Bulk solar and lunar eclipse ranges use conservative native TT syzygy candidates while Python retains time policy, physical refinement, classification, and result assembly.",
+        "The admitted Pancha Pakshi surface is explicitly source-scoped, provenance-bearing, policy-explicit, and has no ambient universal default.",
+        "A bounded Gauquelin g5 historical validation program records its dataset, plus-zone policy, comparator, and tolerances."
+      ],
+      "changed": [
+        "Planetary Hours now consumes the shared local-solar-day boundary while retaining its public vessels and semantics."
+      ],
+      "fixed": [
+        "Missing meridian crossings inside a bounded search window are represented as absent events instead of invented results.",
+        "Nakshatra and Panchanga phase boundaries now share exact half-open ownership rules."
+      ],
+      "validation": [
+        "Pancha source tests establish source fidelity and invariants rather than empirical efficacy; Gauquelin evidence is limited to its named corpus; snapshots remain regression evidence."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_5.1.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_5.1.0.md",
+      "tag": "v5.1.0",
+      "release_notes_sha256": "dfd2061a97cb90dfe24421fc7880435c27a8bf137cd69d9a1b035087f57f102e",
+      "compatibility_notes_sha256": "29444c2679369678e9c09056f68df67ff1be2d0ac069d01a425789fe5702af62"
+    }
+  ],
+  "manifest_sha256": "e3abbca7206692c600b1a48f20bc872e6e9364a8c1e0ab3f0321e6f4c14d79e4"
+}

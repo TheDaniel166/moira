@@ -1,8 +1,13 @@
 ## Moira Experimental Validation
 
-Version: 2.1
-Date: 2026-05-21
+Version: 2.2
+Date: 2026-07-25
 Runtime target: Python 3.14
+
+> Recent release evidence for the bounded Gauquelin, eclipse cartography,
+> house-boundary geometry, node-frame, asteroid-family, and small-body
+> readiness products is indexed in the
+> [5.1-5.2 release validation ledger](RELEASE_VALIDATION_5_1_TO_5_2.md).
 
 This document covers Moira subsystems that are experimental, modernized, or
 not normally validated against a single canonical astrology package. In this

@@ -1,11 +1,16 @@
 # Moira Validation Report - Astrology
 
-**Version:** 1.4
-**Date:** 2026-05-21
+**Version:** 1.5
+**Date:** 2026-07-25
 **Runtime target:** Python 3.14
 **Validation philosophy:** external astrology software where stable and meaningful;
 canonical formulas and doctrine tables where no stable oracle exists; Moira as
 regression baseline once behavior is validated
+
+> **Recent release evidence.** The source-scoped Pancha Pakshi boundary,
+> dignity policy controls, Gauquelin g5 corpus, spatial house-boundary
+> geometry, and node/family evidence added in Moira 5.1-5.2 is indexed in the
+> [5.1-5.2 release validation ledger](RELEASE_VALIDATION_5_1_TO_5_2.md).
 
 ---
 

@@ -175,15 +175,17 @@ Moira can offer both.
 
 ---
 
-### Asteroid Families — Physical Origin as Astrological Qualifier
+### Asteroid Families — Source-Admitted Dynamical Membership
 
-The Hirayama asteroid families are clusters of bodies sharing nearly identical orbital
-parameters — fragments of the same parent body shattered by collision billions of years
-ago. Every member of the Koronis family, the Flora family, the Vesta family, the
-Nysa-Polana complex: physically made of the same rock.
+Asteroid-family catalogs group bodies from their proper orbital elements. The
+families are often interpreted as collisional populations, but a catalog
+membership is evidence of admission by the named source rather than proof that
+every listed body shares one genetic origin.
 
-Moira bundles the **Nesvorný et al. (2015) catalog**: 143,711 numbered asteroids
-assigned to 119 dynamical families.
+Moira bundles the **Proper25 plus retained NASA PDS exclusion catalog**:
+342 admitted families, 200,726 unique numbered asteroids, and 221,095
+many-to-many membership rows. Nested and overlapping memberships are
+preserved.
 
 ```
 asteroid_family(158)              → "Koronis(2)"
@@ -371,7 +373,7 @@ No mainstream astrological software works in this frame.
 | Stellar color as measured spectral fact | No photometric catalog at scale | Gaia BP-RP embedded per star |
 | Light-time vs. true star position | No stellar distances | Gaia parallax; `star_light_time_split()` |
 | 368 named asteroids, no setup | Default SwissEph: 4 + Chiron/Pholus | Four bundled kernels + named registry |
-| Asteroid family physical-origin layer | Nesvorný catalog not compiled for software | 143,711 bodies, 119 families, bundled; `find_resonant_aspects()` |
+| Asteroid-family membership layer | Current proper-element catalogs require explicit admission and overlap policy | Proper25 plus retained NASA PDS exclusions: 342 families, 200,726 unique numbered asteroids, 221,095 membership rows; `find_resonant_aspects()` |
 | Orbital elements for any kernel body | Pre-tabulated data only | `orbital_elements_at()` in `orbits.py` |
 | Eris, Sedna, Makemake, Haumea, Gonggong | Undiscovered | Discovered 2002–2007; SPK kernels available |
 | Interstellar object charts | Unknown objects | 'Oumuamua (2017), Borisov (2019), 3I/ATLAS (2025) |

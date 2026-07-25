@@ -1,8 +1,12 @@
 # Moira Engine — Feature Roadmap & Mathematical Accuracy Register
 
-**Engine version**: post-Phase α (sub-arcsecond accuracy certified)
-**Last updated**: 2026-04-04 (harmograms H1-H5 completed; bridge layer expanded; selective root exports added)
-**Purpose**: Canonical record of implementation status, missing features, and mathematical improvement opportunities.
+**Engine baseline**: 5.2.3
+**Last reviewed**: 2026-07-25
+**Status**: Living engineering roadmap. Individual validation claims are
+controlled by `wiki/03_validation/` and release notes, not by roadmap status.
+**Purpose**: Record implemented areas, remaining gaps, and mathematical
+improvement opportunities without treating planned or historical entries as
+admitted public API.
 
 ---
 
