@@ -356,6 +356,7 @@ from .dignities import (
     ReceptionMode,
     PlanetaryConditionState,
     EssentialDignityDoctrine,
+    HalbHayzDoctrine,
     MercurySectModel,
     EssentialDignityPolicy,
     SolarConditionPolicy,
@@ -624,15 +625,22 @@ from .rise_set import (
 from .phase import angular_diameter
 from .dignities import (
     sect_light, is_day_chart, almuten_figuris, almuten_of_degree, find_phasis,
-    is_in_hayz, is_in_sect, SectStateKind, SectTruth, SectClassification,
+    halb_required_hemisphere, is_in_hayz, is_in_sect,
+    SectStateKind, SectTruth, SectClassification,
 )
 from .sidereal import NakshatraPosition, nakshatra_of, all_nakshatras_at
 from .antiscia import AntisciaAspect, find_antiscia, antiscia_to_point
-from .profections import ProfectionResult, annual_profection, monthly_profection, profection_schedule
+from .profections import (
+    LeapDayAnniversaryPolicy,
+    ProfectionResult,
+    annual_profection,
+    monthly_profection,
+    profection_schedule,
+)
 from .timelords import (
     FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, FIRDARIA_NOCTURNAL_BONATTI,
     CHALDEAN_ORDER, MINOR_YEARS,
-    FirdarSequenceKind, DecennialSequenceKind, ZRAngularityClass,
+    FirdarSequenceKind, DecennialSequenceKind, DecennialTimeBasis, ZRAngularityClass,
     FirdarYearPolicy, DecennialPolicy, ZRYearPolicy, TimelordComputationPolicy, DEFAULT_TIMELORD_POLICY,
     FirdarPeriod, DecennialPeriod, ReleasingPeriod,
     FirdarPeriod as FirdarPeriodTL,
@@ -1675,6 +1683,7 @@ __all__ = [
     "ReceptionMode",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
+    "HalbHayzDoctrine",
     "MercurySectModel",
     "EssentialDignityPolicy",
     "SolarConditionPolicy",
@@ -1875,17 +1884,18 @@ __all__ = [
     "angular_diameter",
     # Dignities extensions
     "sect_light", "is_day_chart", "almuten_figuris", "almuten_of_degree", "find_phasis",
-    "is_in_hayz", "is_in_sect",
+    "halb_required_hemisphere", "is_in_hayz", "is_in_sect",
     # Nakshatras
     "NakshatraPosition", "nakshatra_of", "all_nakshatras_at",
     # Antiscia
     "AntisciaAspect", "find_antiscia", "antiscia_to_point",
     # Profections
-    "ProfectionResult", "annual_profection", "monthly_profection", "profection_schedule",
+    "LeapDayAnniversaryPolicy", "ProfectionResult",
+    "annual_profection", "monthly_profection", "profection_schedule",
     # Time lords — Firdaria
     "FIRDARIA_DIURNAL", "FIRDARIA_NOCTURNAL", "FIRDARIA_NOCTURNAL_BONATTI",
     "CHALDEAN_ORDER", "MINOR_YEARS",
-    "FirdarSequenceKind", "DecennialSequenceKind", "ZRAngularityClass",
+    "FirdarSequenceKind", "DecennialSequenceKind", "DecennialTimeBasis", "ZRAngularityClass",
     "FirdarYearPolicy", "DecennialPolicy", "ZRYearPolicy", "TimelordComputationPolicy", "DEFAULT_TIMELORD_POLICY",
     "FirdarPeriod", "FirdarPeriodTL", "DecennialPeriod", "ReleasingPeriod",
     "FirdarMajorGroup", "DecennialMajorGroup", "DecennialPeriodGroup", "ZRPeriodGroup",

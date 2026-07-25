@@ -1539,6 +1539,13 @@ direction.
 | POST | `/v1/profections/annual` | `annual_profection_route` |
 | POST | `/v1/profections/monthly` | `monthly_profection_route` |
 | POST | `/v1/profections/schedule` | `profection_schedule_route` |
+
+`/v1/profections/schedule` requires timezone-aware natal and current
+datetimes. It computes completed age at the natal civil anniversary in the
+natal timezone, rejects pre-birth instants, and requires
+`leap_day_policy="february_28"` or `"march_1"` for a February 29 nativity.
+The response includes `age_basis` and `leap_day_policy`.
+
 | POST | `/v1/timelords/firdaria/sequence` | `firdaria_sequence_route` |
 | POST | `/v1/timelords/firdaria/groups` | `firdaria_groups_route` |
 | POST | `/v1/timelords/firdaria/current` | `firdaria_current_route` |
@@ -1560,6 +1567,18 @@ Every Decennials request is limited to `levels` 1–2.
 `deep_subdivision_method` remains a compatibility field but every non-null
 value is rejected. Valens and Hephaistio L3/L4 chronology is quarantined
 separately from the already quarantined Valens delineation layer.
+
+Decennials period responses preserve
+`time_basis="valens_lived_days_to_360_day_distribution"`,
+`calendar_projection_basis="elapsed_julian_days_from_natal_jd"`,
+`sequence_origin_jd`, `start_distribution_day`, `end_distribution_day`, and
+`distribution_years`. Sequence, current, and profile responses repeat the
+basis and origin at top level. ISO dates and JDs are projections from elapsed
+lived days, not civil-month anniversary claims.
+
+For `/v1/timelords/zodiacal-releasing/profile`, `profile_level` must be less
+than or equal to the request's generated `levels`. Empty or unavailable-level
+profiles fail validation instead of returning an empty aggregate.
 
 | POST | `/v1/dasha/vimshottari/sequence` | `dasha_sequence_route` |
 | POST | `/v1/dasha/vimshottari/balance` | `dasha_balance_route` |

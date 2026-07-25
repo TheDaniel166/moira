@@ -11,6 +11,13 @@
 > twelve places from Fortune, identifies only angular places as peaks, and
 > rejects queries at or beyond the exact full-circuit endpoint.
 
+> **Phase-2 time-basis correction — 2026-07-25.** Decennials now preserves a
+> machine-readable dual-basis receipt. Its periods are measured on the
+> Valens 360-day distribution coordinate, while `start_jd`/`end_jd` are
+> explicitly identified as elapsed-Julian-day projections from the natal
+> instant. Annual profection schedule ages are civil-anniversary ages.
+> Zodiacal Releasing profile requests must ask for a level that was generated.
+
 ---
 
 ## Part I — Architecture Standard
@@ -50,14 +57,37 @@ structure; only the planet ordering changes.
 Decennials is a Hellenistic planetary time-lord technique assigning major life
 periods to the sect light and then proceeding through the seven classical
 planets in zodiacal order from that luminary. The admitted Moira doctrine uses
-129-month major periods and a 360-day internal month basis. The complete major
-cycle spans 903 months, or 75 years 3 months.
+129-month major periods, 30-day schematic months, and a 360-day distribution
+year. The complete major cycle spans 903 schematic months, or 75 years
+3 months in distribution notation.
 
 The authoritative engine is `decennials(natal_jd, natal_positions, is_day_chart)`.
 It accepts a natal Julian Day, the seven classical longitudes, and a sect
 indicator and returns a flat list of `DecennialPeriod` records covering the
-   complete admitted sequence. Each record preserves level, planet, sequence
-   truth, major lineage, parent lineage, duration, and sequence kind.
+complete admitted sequence. Each record preserves level, planet, sequence
+truth, major lineage, parent lineage, duration, sequence kind, and the full
+time-basis receipt.
+
+Valens distinguishes the 365¼-day universal/lived year from the 360-day
+distribution year. Moira therefore does not describe a 129-month major as
+129 civil-calendar months. The engine:
+
+1. counts the target instant by elapsed lived days from `natal_jd`;
+2. locates that elapsed-day coordinate within the 360-day distribution
+   sequence; and
+3. exposes the resulting civil JD/date only as a projection of the symbolic
+   boundary from the natal instant.
+
+The following fields make that distinction inspectable:
+
+| Surface | Value / meaning |
+|---|---|
+| `DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION` | Frozen distribution-time doctrine token |
+| `DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD` | Frozen calendar-projection token |
+| `sequence_origin_jd` | Natal JD from which elapsed lived days are counted |
+| `start_distribution_day`, `end_distribution_day` | Half-open elapsed-day bounds in distribution space |
+| `distribution_years` | Period duration divided by 360 |
+| `start_jd`, `end_jd` | Calendar projections, not claims of civil-month anniversaries |
 
 **Sequence kinds (`DecennialSequenceKind`):**
 
@@ -149,6 +179,12 @@ and `is_peak_period` is false.
 **Levels:** Four levels of releasing are computed simultaneously. Level 1 is the
 outermost (slowest), Level 4 is the innermost (fastest). All four are returned in a
 single flat list discriminated by the `level` field.
+
+`zr_sequence_profile(periods, level)` rejects an empty period list and rejects
+any requested level absent from the supplied periods. The REST
+`profile_level` must therefore be less than or equal to the request's generated
+`levels`; an impossible profile request is never serialized as an empty,
+apparently valid aggregate.
 
 **Full-circuit boundary:** The twelve `MINOR_YEARS` values sum to 211 symbolic
 years. `current_releasing()` accepts instants inside that half-open interval
@@ -252,6 +288,7 @@ The following are the constitutional public vessels of the timelords subsystem.
 **Enumerations:**
 - `FirdarSequenceKind` — discriminates the Firdaria sequence variant
 - `DecennialSequenceKind` — discriminates the Decennials sequence variant
+- `DecennialTimeBasis` — names the admitted distribution and projection bases
 - `ZRAngularityClass` — discriminates the angularity of a releasing period from Fortune
 
 **Truth-preservation vessels:**
@@ -323,6 +360,8 @@ used loosely.
 | **MINOR_YEARS** | The immutable sign-to-duration mapping; the arithmetic basis of the releasing technique |
 | **lord type** | The doctrinal classification of a Firdaria planet: `luminary`, `planet`, or `node`; not a concept in Zodiacal Releasing |
 | **sect light** | The luminary of sect that leads the admitted Decennials sequence: `Sun` by day, `Moon` by night |
+| **distribution day** | An elapsed lived-day coordinate interpreted inside the 360-day Decennials distribution model |
+| **calendar projection** | A JD/date obtained by adding the distribution-day offset to `sequence_origin_jd`; not a civil-month anniversary claim |
 | **deep subdivision method** | A quarantined Decennials policy field; `valens` and `hephaistio` are named research candidates but neither is admitted |
 | **condition profile** | A flat doctrinal summary of a single period, integrating all layers from truth preservation through relational hardening |
 | **sequence profile** | A chart-wide or sequence-wide aggregate derived from a full list of condition profiles |
@@ -450,7 +489,10 @@ active admitted levels. They must not be conflated.
 - The sum of all level-1 Firdaria period durations in a complete sequence equals
   exactly 75 years (modulo floating-point accumulation).
 - The sum of all level-1 Decennials period durations in a complete sequence equals
-  exactly 903 months, or 75 years 3 months, on the admitted 360-day month basis.
+  exactly 903 schematic months, or 75 years 3 months, on the admitted
+  30-day-month / 360-day-year distribution basis.
+- All periods in one Decennials sequence preserve the same time-basis and
+  sequence-origin receipt.
 - `DecennialPeriod.sequence_kind` is preserved across all admitted Decennials levels.
 - `DecennialPeriod.deep_subdivision_method` is `None` for every admitted
   runtime output; L3/L4 output validation fails closed.
@@ -643,6 +685,9 @@ Any validation suite for this subsystem must demonstrate the following:
 - A `ReleasingPeriod` returned by `zodiacal_releasing()` carries `sign`, `ruler`,
   `level`, `lot_name`, `years`, `is_loosing_of_bond`, and `angularity_from_fortune`
   without truncation.
+- A `DecennialPeriod` carries one consistent `time_basis`,
+  `calendar_projection_basis`, `sequence_origin_jd`, and distribution-day
+  interval without forcing consumers to infer them from JD arithmetic.
 
 **Relational integrity:**
 - All sub-periods in a `FirdarMajorGroup` have `major_planet` matching the group's

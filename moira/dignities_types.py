@@ -38,6 +38,7 @@ __all__ = [
     "DispositorshipConditionState",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
+    "HalbHayzDoctrine",
     "MercurySectModel",
     # Policy dataclasses
     "EssentialDignityPolicy",
@@ -250,6 +251,12 @@ class EssentialDignityDoctrine(StrEnum):
     MODERN_CO_RULERS = "modern_co_rulers"
 
 
+class HalbHayzDoctrine(StrEnum):
+    """Named Halb/Hayz doctrine admitted by the dignity engine."""
+
+    AL_QABISI_BONATTI_DYKES_2007 = "al_qabisi_bonatti_dykes_2007"
+
+
 class MercurySectModel(StrEnum):
     """Named Mercury sect models supported by this engine."""
 
@@ -289,6 +296,7 @@ class MutualReceptionPolicy:
 class SectHayzPolicy:
     """Policy surface for sect, Hayz, and Halb inclusion behavior."""
 
+    doctrine: HalbHayzDoctrine = HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007
     mercury_sect_model: MercurySectModel = MercurySectModel.LONGITUDE_HEURISTIC
     include_hayz: bool = True
     include_halb: bool = True
@@ -1296,6 +1304,7 @@ class SectClassification:
 
     state: SectStateKind
     in_sect: bool
+    in_halb: bool
     in_hayz: bool
 
 
@@ -1375,18 +1384,21 @@ class SectTruth:
     whether the flattened `In Hayz` accidental label should be emitted.
     """
 
+    doctrine: HalbHayzDoctrine
     is_day_chart: bool
     sect_light: str
     planet_sect: str | None
-    mercury_rises_before_sun: bool
+    mercury_rises_before_sun: bool | None
     in_sect: bool
+    in_halb: bool
     in_hayz: bool
     preferred_hemisphere: str | None
     actual_hemisphere: str
     hemisphere_matches: bool
     preferred_gender: str | None
     actual_gender: str
-    gender_matches: bool
+    gender_matches: bool | None
+    hayz_evaluable: bool
 
 
 @dataclass(slots=True)
@@ -1653,6 +1665,8 @@ class PlanetaryDignity:
                 raise ValueError("PlanetaryDignity invariant failed: sect_classification requires sect_truth")
             if self.sect_classification.in_sect != self.sect_truth.in_sect:
                 raise ValueError("PlanetaryDignity invariant failed: sect classification in_sect mismatch")
+            if self.sect_classification.in_halb != self.sect_truth.in_halb:
+                raise ValueError("PlanetaryDignity invariant failed: sect classification in_halb mismatch")
             if self.sect_classification.in_hayz != self.sect_truth.in_hayz:
                 raise ValueError("PlanetaryDignity invariant failed: sect classification in_hayz mismatch")
 

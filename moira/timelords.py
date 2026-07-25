@@ -23,6 +23,7 @@ External dependencies:
 Public surface:
     FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, FIRDARIA_NOCTURNAL_BONATTI,
     CHALDEAN_ORDER, MINOR_YEARS, FirdarSequenceKind, DecennialSequenceKind,
+    DecennialTimeBasis,
     ZRAngularityClass, FirdarYearPolicy, DecennialPolicy, ZRYearPolicy, TimelordComputationPolicy,
     DEFAULT_TIMELORD_POLICY, FirdarPeriod, DecennialPeriod, ReleasingPeriod,
     FirdarMajorGroup, DecennialMajorGroup, DecennialPeriodGroup, ZRPeriodGroup,
@@ -62,6 +63,7 @@ __all__ = [
     # Classification namespaces
     "FirdarSequenceKind",
     "DecennialSequenceKind",
+    "DecennialTimeBasis",
     "ZRAngularityClass",
     # Policy surfaces
     "FirdarYearPolicy",
@@ -181,6 +183,15 @@ class DecennialSequenceKind:
 
     DIURNAL_SOLAR = "diurnal_solar"
     NOCTURNAL_LUNAR = "nocturnal_lunar"
+
+
+class DecennialTimeBasis:
+    """Frozen provenance tokens for admitted Decennials time arithmetic."""
+
+    VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION = (
+        "valens_lived_days_to_360_day_distribution"
+    )
+    ELAPSED_JULIAN_DAYS_FROM_NATAL_JD = "elapsed_julian_days_from_natal_jd"
 
 
 class ZRAngularityClass:
@@ -851,7 +862,7 @@ _DECENNIAL_DEEP_METHODS: frozenset[str] = frozenset({"valens", "hephaistio"})
 
 @dataclass(slots=True)
 class DecennialPeriod:
-    """Truth-preservation vessel for one Decennials major or sub-period."""
+    """One period with symbolic distribution and calendar-projection truth."""
 
     level: int
     planet: str
@@ -859,6 +870,9 @@ class DecennialPeriod:
     end_jd: float
     years: float
     months: float
+    sequence_origin_jd: float
+    time_basis: str = DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION
+    calendar_projection_basis: str = DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD
     major_planet: str | None = None
     parent_planet: str | None = None
     parent_level: int | None = None
@@ -880,8 +894,30 @@ class DecennialPeriod:
             raise ValueError(f"DecennialPeriod.planet must be a classical planet, got {self.planet!r}")
         if not math.isfinite(self.start_jd) or not math.isfinite(self.end_jd):
             raise ValueError("DecennialPeriod start_jd and end_jd must be finite")
+        if not math.isfinite(self.sequence_origin_jd):
+            raise ValueError("DecennialPeriod sequence_origin_jd must be finite")
         if self.end_jd <= self.start_jd:
             raise ValueError("DecennialPeriod end_jd must be greater than start_jd")
+        if self.start_jd < self.sequence_origin_jd:
+            raise ValueError(
+                "DecennialPeriod start_jd must not precede sequence_origin_jd"
+            )
+        if (
+            self.time_basis
+            != DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION
+        ):
+            raise ValueError(
+                "DecennialPeriod time_basis must preserve the admitted "
+                "Valens lived-day to 360-day distribution basis"
+            )
+        if (
+            self.calendar_projection_basis
+            != DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD
+        ):
+            raise ValueError(
+                "DecennialPeriod calendar_projection_basis must preserve "
+                "elapsed Julian days from natal_jd"
+            )
         if self.years <= 0:
             raise ValueError("DecennialPeriod years must be positive")
         if self.months <= 0:
@@ -1018,6 +1054,15 @@ class DecennialPeriod:
     def is_active_at(self, jd: float) -> bool:
         return self.start_jd <= jd < self.end_jd
 
+    def is_active_distribution_day(self, distribution_day: float) -> bool:
+        """Return whether an elapsed lived-day coordinate falls in this period."""
+
+        return (
+            self.start_distribution_day
+            <= distribution_day
+            < self.end_distribution_day
+        )
+
     @property
     def start_dt(self) -> datetime:
         return datetime_from_jd(self.start_jd)
@@ -1037,6 +1082,24 @@ class DecennialPeriod:
     @property
     def days(self) -> float:
         return self.end_jd - self.start_jd
+
+    @property
+    def start_distribution_day(self) -> float:
+        """Elapsed lived days from the natal sequence origin."""
+
+        return self.start_jd - self.sequence_origin_jd
+
+    @property
+    def end_distribution_day(self) -> float:
+        """Elapsed lived days from the natal sequence origin."""
+
+        return self.end_jd - self.sequence_origin_jd
+
+    @property
+    def distribution_years(self) -> float:
+        """Nominal 360-day distribution years represented by this period."""
+
+        return self.days / (12.0 * self.month_basis_days)
 
 
 @dataclass(slots=True)
@@ -1184,6 +1247,34 @@ def _require_admitted_decennial_periods(
         raise ValueError(
             f"{caller}: Decennial deep_subdivision_method is not admitted"
         )
+    if periods:
+        first = periods[0]
+        if (
+            first.time_basis
+            != DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION
+        ):
+            raise ValueError(f"{caller}: Decennial time_basis is not admitted")
+        if (
+            first.calendar_projection_basis
+            != DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD
+        ):
+            raise ValueError(
+                f"{caller}: Decennial calendar_projection_basis is not admitted"
+            )
+        if not math.isfinite(first.sequence_origin_jd):
+            raise ValueError(
+                f"{caller}: Decennial sequence_origin_jd must be finite"
+            )
+        if any(
+            period.time_basis != first.time_basis
+            or period.calendar_projection_basis != first.calendar_projection_basis
+            or period.sequence_origin_jd != first.sequence_origin_jd
+            for period in periods[1:]
+        ):
+            raise ValueError(
+                f"{caller}: Decennial periods must preserve one time-basis "
+                "and sequence-origin receipt"
+            )
 
 
 def _validate_decennial_positions(natal_positions: dict[str, float]) -> None:
@@ -1251,6 +1342,9 @@ def _append_decennial_children(
             end_jd=child_end,
             years=child_months / 12.0,
             months=child_months,
+            sequence_origin_jd=parent.sequence_origin_jd,
+            time_basis=parent.time_basis,
+            calendar_projection_basis=parent.calendar_projection_basis,
             major_planet=parent.planet if parent.level == 1 else parent.major_planet,
             parent_planet=parent.planet,
             parent_level=parent.level,
@@ -1291,6 +1385,9 @@ def decennials(
     seven classical planets by zodiacal succession from that point, assigns
     129 months to each major period, and subdivides each major by the
     transmitted unequal month-allotments of the seven classical planets.
+    Its 30-day months are schematic distribution units. ``start_jd`` and
+    ``end_jd`` project the resulting elapsed-day offsets from ``natal_jd``;
+    they are not civil-calendar month arithmetic.
     Levels 3–4 remain quarantined pending source-backed subdivision doctrine
     and independent validation.
     """
@@ -1321,6 +1418,9 @@ def decennials(
                 end_jd=major_end,
                 years=major_months / 12.0,
                 months=major_months,
+                sequence_origin_jd=natal_jd,
+                time_basis=pol.decennials.time_basis,
+                calendar_projection_basis=pol.decennials.calendar_projection_basis,
                 is_day_chart=is_day_chart,
                 sect_light=sect_light,
                 sequence_kind=sequence_kind,
@@ -1355,14 +1455,24 @@ def current_decennials(
     levels: int = 2,
     policy: "TimelordComputationPolicy | None" = None,
 ) -> tuple[DecennialPeriod, DecennialPeriod]:
-    """Return the active Decennials major and sub-period at `current_jd`."""
+    """Return the active periods at an elapsed lived-day coordinate."""
     if not math.isfinite(current_jd):
         raise ValueError(f"current_decennials: current_jd must be finite, got {current_jd!r}")
+    if current_jd < natal_jd:
+        raise ValueError("current_decennials: current_jd must not be earlier than natal_jd")
 
     periods = decennials(natal_jd, natal_positions, is_day_chart, levels=levels, policy=policy)
     major_periods = [period for period in periods if period.level == 1]
+    current_distribution_day = current_jd - natal_jd
 
-    active_major = next((period for period in major_periods if period.is_active_at(current_jd)), None)
+    active_major = next(
+        (
+            period
+            for period in major_periods
+            if period.is_active_distribution_day(current_distribution_day)
+        ),
+        None,
+    )
     if active_major is None:
         raise ValueError(
             f"current_jd {current_jd} falls outside the Decennials cycle starting at natal_jd {natal_jd}."
@@ -1372,7 +1482,12 @@ def current_decennials(
         return active_major, active_major
 
     active_leaf = max(
-        (period for period in periods if period.level >= 2 and period.is_active_at(current_jd)),
+        (
+            period
+            for period in periods
+            if period.level >= 2
+            and period.is_active_distribution_day(current_distribution_day)
+        ),
         key=lambda period: period.level,
         default=None,
     )
@@ -1585,9 +1700,10 @@ class DecennialPolicy:
     """
     Doctrine surface for the admitted minimum Decennials engine.
 
-    This policy freezes the currently admitted doctrine explicitly, while
-    leaving deferred historical variants unselectable until separately
-    admitted.
+    This policy freezes the currently admitted doctrine explicitly, including
+    the Valens lived-day/360-day distribution basis and its elapsed-JD
+    projection. Deferred historical variants remain unselectable until
+    separately admitted.
     """
 
     start_lord_basis: str = "sect_light"
@@ -1595,6 +1711,8 @@ class DecennialPolicy:
     subperiod_mode: str = "rotated_minor_months"
     major_months: float = float(_DECENNIAL_MAJOR_MONTHS)
     month_basis_days: float = _DECENNIAL_MONTH_DAYS
+    time_basis: str = DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION
+    calendar_projection_basis: str = DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD
     deep_subdivision_method: str | None = None
 
 
@@ -1654,6 +1772,22 @@ def _validate_timelord_policy(
         raise ValueError(f"policy.decennials.major_months must remain {_DECENNIAL_MAJOR_MONTHS}")
     if abs(policy.decennials.month_basis_days - _DECENNIAL_MONTH_DAYS) > 1e-12:
         raise ValueError(f"policy.decennials.month_basis_days must remain {_DECENNIAL_MONTH_DAYS}")
+    if (
+        policy.decennials.time_basis
+        != DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION
+    ):
+        raise ValueError(
+            "policy.decennials.time_basis must preserve the admitted Valens "
+            "lived-day to 360-day distribution basis"
+        )
+    if (
+        policy.decennials.calendar_projection_basis
+        != DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD
+    ):
+        raise ValueError(
+            "policy.decennials.calendar_projection_basis must preserve "
+            "elapsed Julian days from natal_jd"
+        )
     if policy.decennials.deep_subdivision_method is not None:
         raise ValueError(
             "policy.decennials.deep_subdivision_method is not admitted; "
@@ -2068,6 +2202,12 @@ class DecennialConditionProfile:
     months:                float
     days:                  float
     month_basis_days:      float
+    time_basis:            str
+    calendar_projection_basis: str
+    sequence_origin_jd:    float
+    start_distribution_day: float
+    end_distribution_day:  float
+    distribution_years:    float
 
 def decennial_condition_profile(period: DecennialPeriod) -> DecennialConditionProfile:
     """Build a DecennialConditionProfile from a DecennialPeriod.
@@ -2102,6 +2242,12 @@ def decennial_condition_profile(period: DecennialPeriod) -> DecennialConditionPr
         months=period.months,
         days=period.days,
         month_basis_days=period.month_basis_days,
+        time_basis=period.time_basis,
+        calendar_projection_basis=period.calendar_projection_basis,
+        sequence_origin_jd=period.sequence_origin_jd,
+        start_distribution_day=period.start_distribution_day,
+        end_distribution_day=period.end_distribution_day,
+        distribution_years=period.distribution_years,
     )
 
 
@@ -2368,6 +2514,9 @@ class DecennialSequenceProfile:
     total_major_months: float
     sequence_kind: str | None
     sect_light: str | None
+    time_basis: str
+    calendar_projection_basis: str
+    sequence_origin_jd: float
     level_count_map: dict[int, int] = field(default_factory=dict)
     deepest_level: int = 1
     deep_subdivision_method: str | None = None
@@ -2382,6 +2531,32 @@ class DecennialSequenceProfile:
         ):
             raise ValueError(
                 "DecennialSequenceProfile deep_subdivision_method is not admitted"
+            )
+        if (
+            self.time_basis
+            != DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION
+        ):
+            raise ValueError("DecennialSequenceProfile time_basis is not admitted")
+        if (
+            self.calendar_projection_basis
+            != DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD
+        ):
+            raise ValueError(
+                "DecennialSequenceProfile calendar_projection_basis is not admitted"
+            )
+        if not math.isfinite(self.sequence_origin_jd):
+            raise ValueError(
+                "DecennialSequenceProfile sequence_origin_jd must be finite"
+            )
+        if any(
+            profile.time_basis != self.time_basis
+            or profile.calendar_projection_basis != self.calendar_projection_basis
+            or profile.sequence_origin_jd != self.sequence_origin_jd
+            for profile in self.profiles
+        ):
+            raise ValueError(
+                "DecennialSequenceProfile profiles must share the aggregate "
+                "time-basis receipt"
             )
         major_profiles = tuple(profile for profile in self.profiles if profile.level == 1)
         if self.major_count != len(major_profiles):
@@ -2407,6 +2582,8 @@ class DecennialSequenceProfile:
 def decennial_sequence_profile(periods: list[DecennialPeriod]) -> DecennialSequenceProfile:
     """Build a DecennialSequenceProfile from a flat Decennials period list."""
 
+    if not periods:
+        raise ValueError("decennial_sequence_profile: periods must not be empty")
     _require_admitted_decennial_periods(
         periods,
         caller="decennial_sequence_profile",
@@ -2437,6 +2614,9 @@ def decennial_sequence_profile(periods: list[DecennialPeriod]) -> DecennialSeque
         total_major_months=total_months,
         sequence_kind=sequence_kind,
         sect_light=sect_light,
+        time_basis=periods[0].time_basis,
+        calendar_projection_basis=periods[0].calendar_projection_basis,
+        sequence_origin_jd=periods[0].sequence_origin_jd,
         level_count_map=level_count_map,
         deepest_level=deepest_level,
         deep_subdivision_method=deep_method,
@@ -2580,6 +2760,16 @@ def zr_sequence_profile(
     -------
     ZRSequenceProfile
     """
+    if not 1 <= level <= _ZR_MAX_LEVEL:
+        raise ValueError(f"zr_sequence_profile: level must be 1–{_ZR_MAX_LEVEL}")
+    if not periods:
+        raise ValueError("zr_sequence_profile: periods must not be empty")
+    available_levels = {period.level for period in periods}
+    if level not in available_levels:
+        raise ValueError(
+            f"zr_sequence_profile: level {level} is not present in periods; "
+            f"available levels are {sorted(available_levels)}"
+        )
     level_profiles = tuple(
         zr_condition_profile(p) for p in periods if p.level == level
     )

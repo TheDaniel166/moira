@@ -19,6 +19,7 @@ from moira.dignities import (
     EssentialDignityKind,
     EssentialDignityDoctrine,
     EssentialDignityPolicy,
+    HalbHayzDoctrine,
     MercurySectModel,
     MODERN_DETRIMENT,
     MODERN_DOMICILE,
@@ -43,6 +44,8 @@ from moira.dignities import (
     calculate_dispositorship_subsystem_profile,
     compare_dispositorship,
     calculate_receptions,
+    halb_required_hemisphere,
+    is_in_halb,
     is_in_hayz,
     is_in_sect,
     mutual_receptions,
@@ -121,7 +124,7 @@ def test_dignities_identify_essential_dignity_mutual_reception_and_hayz() -> Non
     assert "Mutual Reception (Venus)" in by_name["Mars"].accidental_dignities
 
 
-def test_dignities_preserve_legacy_semantics_while_exposing_structured_truth() -> None:
+def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
     house_positions = _equal_houses(300.0)
     planet_positions = [
         {"name": "Sun", "degree": 130.0, "is_retrograde": False},
@@ -164,7 +167,11 @@ def test_dignities_preserve_legacy_semantics_while_exposing_structured_truth() -
         by_name["Mars"].essential_dignity,
         by_name["Mars"].accidental_dignities,
         by_name["Mars"].accidental_score,
-    ) == ("Detriment", ["Angular (H4)", "Direct", "Mutual Reception (Venus)"], 11)
+    ) == (
+        "Detriment",
+        ["Angular (H4)", "Direct", "Mutual Reception (Venus)", "In Hayz"],
+        13,
+    )
 
     sun = by_name["Sun"]
     assert sun.essential_truth is not None
@@ -196,7 +203,7 @@ def test_dignities_preserve_legacy_semantics_while_exposing_structured_truth() -
     assert venus.essential_classification.kind is EssentialDignityKind.DETRIMENT
     assert venus.essential_classification.polarity is ConditionPolarity.WEAKENING
     assert venus.sect_classification is not None
-    assert venus.sect_classification.state is SectStateKind.OUT_OF_SECT
+    assert venus.sect_classification.state is SectStateKind.IN_HALB
     assert venus.solar_classification.kind is SolarConditionKind.NONE
     assert venus.solar_classification.present is False
     assert [r.kind for r in venus.reception_classification] == [ReceptionKind.DOMICILE]
@@ -266,7 +273,7 @@ def test_dignities_expose_structured_solar_condition_truth() -> None:
         )
     }["Mercury"]
 
-    assert mercury.accidental_dignities == ["Angular (H4)", "Direct", "Combust", "In Hayz"]
+    assert mercury.accidental_dignities == ["Angular (H4)", "Direct", "Combust"]
     assert mercury.solar_truth.present is True
     assert mercury.solar_truth.condition == "combust"
     assert mercury.solar_truth.label == "Combust"
@@ -274,17 +281,19 @@ def test_dignities_expose_structured_solar_condition_truth() -> None:
     assert mercury.solar_truth.distance_from_sun == pytest.approx(5.0, abs=1e-12)
     assert mercury.accidental_truth.solar_condition.label == "Combust"
     assert mercury.sect_truth is not None
-    assert mercury.sect_truth.in_hayz is True
-    assert [c.category for c in mercury.accidental_truth.conditions] == ["house", "motion", "solar", "sect"]
+    assert mercury.sect_truth.in_sect is True
+    assert mercury.sect_truth.in_halb is False
+    assert mercury.sect_truth.in_hayz is False
+    assert mercury.sect_truth.hayz_evaluable is False
+    assert [c.category for c in mercury.accidental_truth.conditions] == ["house", "motion", "solar"]
     assert mercury.solar_classification.kind is SolarConditionKind.COMBUST
     assert mercury.solar_classification.polarity is ConditionPolarity.WEAKENING
     assert mercury.sect_classification is not None
-    assert mercury.sect_classification.state is SectStateKind.IN_HAYZ
+    assert mercury.sect_classification.state is SectStateKind.IN_SECT
     assert [c.kind for c in mercury.accidental_classification.conditions] == [
         AccidentalConditionKind.ANGULAR,
         AccidentalConditionKind.DIRECT,
         AccidentalConditionKind.COMBUST,
-        AccidentalConditionKind.HAYZ,
     ]
 
 
@@ -527,13 +536,13 @@ def test_halb_policy_switch_controls_condition_and_score() -> None:
         for item in calculate_dignities(
             planet_positions, house_positions, policy=enabled_policy
         )
-    }["Mercury"]
+    }["Sun"]
     disabled = {
         item.planet: item
         for item in calculate_dignities(
             planet_positions, house_positions, policy=disabled_policy
         )
-    }["Mercury"]
+    }["Sun"]
 
     assert "In Halb" in enabled.accidental_dignities
     assert enabled.accidental_truth.halb_condition is not None
@@ -542,6 +551,75 @@ def test_halb_policy_switch_controls_condition_and_score() -> None:
     assert enabled.accidental_score == (
         disabled.accidental_score + enabled.accidental_truth.halb_condition.score
     )
+
+
+def test_halb_uses_sect_relative_hemisphere_in_day_and_night_charts() -> None:
+    assert halb_required_hemisphere("Sun", is_day_chart=True) == "above"
+    assert halb_required_hemisphere("Sun", is_day_chart=False) == "below"
+    assert halb_required_hemisphere("Mars", is_day_chart=True) == "below"
+    assert halb_required_hemisphere("Mars", is_day_chart=False) == "above"
+
+    assert is_in_halb("Sun", "Aries", 9, is_day_chart=True)
+    assert not is_in_halb("Sun", "Aries", 3, is_day_chart=True)
+    assert is_in_halb("Sun", "Aries", 3, is_day_chart=False)
+    assert not is_in_halb("Sun", "Aries", 9, is_day_chart=False)
+
+    assert is_in_halb("Mars", "Cancer", 3, is_day_chart=True)
+    assert not is_in_halb("Mars", "Cancer", 9, is_day_chart=True)
+    assert is_in_halb("Mars", "Cancer", 9, is_day_chart=False)
+    assert not is_in_halb("Mars", "Cancer", 3, is_day_chart=False)
+
+
+def test_hayz_is_halb_plus_planetary_gender_and_mars_is_feminine() -> None:
+    assert is_in_hayz("Mars", "Cancer", 9, is_day_chart=False)
+    assert not is_in_hayz("Mars", "Leo", 9, is_day_chart=False)
+    assert not is_in_hayz("Mars", "Cancer", 3, is_day_chart=False)
+
+
+def test_mercury_sect_requires_phase_and_mercury_hayz_is_not_invented() -> None:
+    with pytest.raises(ValueError, match="Mercury sect requires"):
+        is_in_sect("Mercury", is_day_chart=True)
+
+    assert halb_required_hemisphere(
+        "Mercury",
+        is_day_chart=True,
+        mercury_rises_before_sun=True,
+    ) == "above"
+    assert is_in_halb(
+        "Mercury",
+        "Gemini",
+        9,
+        is_day_chart=True,
+        mercury_rises_before_sun=True,
+    )
+    assert not is_in_hayz(
+        "Mercury",
+        "Gemini",
+        9,
+        is_day_chart=True,
+        mercury_rises_before_sun=True,
+    )
+
+
+def test_dignity_chart_requires_sun_and_does_not_fabricate_mercury_phase() -> None:
+    with pytest.raises(ValueError, match="Sun"):
+        calculate_dignities(
+            [{"name": "Mars", "degree": 15.0}],
+            _equal_houses(0.0),
+        )
+
+    result = calculate_dignities(
+        [
+            {"name": "Sun", "degree": 200.0},
+            {"name": "Mars", "degree": 15.0},
+        ],
+        _equal_houses(0.0),
+    )
+    mars = next(item for item in result if item.planet == "Mars")
+    assert mars.sect_truth is not None
+    assert mars.sect_truth.doctrine is HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007
+    assert mars.sect_truth.mercury_rises_before_sun is None
+    assert mars.sect_truth.in_halb is mars.sect_truth.hemisphere_matches
 
 
 def test_oriental_occidental_policy_switch_controls_condition_and_score() -> None:
@@ -2745,9 +2823,9 @@ def test_moira_wrappers_for_dignities_and_lots_match_module_level_calculations(
     natal_chart,
     natal_houses,
 ) -> None:
-    lons = natal_chart.longitudes(include_nodes=False)
+    lons = natal_chart.longitudes(include_nodes=True)
     cusps_map = {i + 1: c for i, c in enumerate(natal_houses.cusps)}
-    day = sect_light(lons.get("Sun", 0.0), natal_houses.asc) == "Sun"
+    day = sect_light(lons["Sun"], natal_houses.asc) == "Sun"
 
     expected_lots = calculate_lots(lons, cusps_map, day)
     actual_lots = moira_engine.lots(natal_chart, natal_houses)

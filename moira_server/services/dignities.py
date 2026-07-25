@@ -87,6 +87,7 @@ def _policy_from_request(
             include_exaltation=request_policy.accidental.mutual_reception.include_exaltation,
         ),
         sect=SectHayzPolicy(
+            doctrine=request_policy.accidental.sect.doctrine,
             mercury_sect_model=request_policy.accidental.sect.mercury_sect_model,
             include_hayz=request_policy.accidental.sect.include_hayz,
             include_halb=request_policy.accidental.sect.include_halb,

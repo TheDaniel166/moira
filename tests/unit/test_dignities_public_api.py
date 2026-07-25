@@ -30,6 +30,7 @@ _CURATED_PUBLIC_NAMES = [
     "DispositorshipConditionState",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
+    "HalbHayzDoctrine",
     "MercurySectModel",
     # Policy
     "EssentialDignityPolicy",
@@ -97,6 +98,7 @@ _CURATED_PUBLIC_NAMES = [
     "find_phasis",
     "mutual_receptions",
     "is_in_sect",
+    "halb_required_hemisphere",
     "is_in_hayz",
     "is_in_halb",
     "is_in_joy",
@@ -162,8 +164,8 @@ class TestModuleAgreement:
                 f"DignitiesService.{name} disappeared; helper should remain internal"
             )
 
-    def test_curated_count_is_76(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 93
+    def test_curated_count_is_95(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 95
 
     def test_unadmitted_valens_score_hook_is_absent(self):
         assert "valens_distribution_scores" not in signature(

@@ -43,8 +43,8 @@ def test_profection_routes_match_engine_truth(client_with_engine: TestClient, mo
     direct_monthly = monthly_profection(houses.asc, 24, 3)
     direct_schedule = profection_schedule(
         houses.asc,
-        chart.jd_ut,
-        moira_engine.chart(current_dt).jd_ut,
+        natal_dt,
+        current_dt,
         natal_positions=natal_positions,
     )
 
@@ -69,6 +69,7 @@ def test_profection_routes_match_engine_truth(client_with_engine: TestClient, mo
     assert monthly_response.json()["lord_of_month"] == direct_monthly[2]
 
     assert schedule_response.status_code == 200
+    assert schedule_response.json()["age_basis"] == "civil_anniversary"
     assert schedule_response.json()["profected_house"] == direct_schedule.profected_house
     assert schedule_response.json()["lord_of_year"] == direct_schedule.lord_of_year
 

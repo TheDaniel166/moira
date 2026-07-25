@@ -9,6 +9,13 @@
 > this research record are superseded by this notice. Re-admission requires
 > source-complete, unscored doctrine and validation passes for each boundary.
 
+> **Phase-2 implementation receipt — 2026-07-25.** The admitted L1/L2 engine
+> now exposes the dual-basis rule directly on every period and through REST:
+> `time_basis=valens_lived_days_to_360_day_distribution`,
+> `calendar_projection_basis=elapsed_julian_days_from_natal_jd`, and the natal
+> `sequence_origin_jd`. Calendar dates are projections from elapsed lived
+> days, not assertions that schematic 30-day months are civil months.
+
 ## Purpose
 
 This document defines the pre-constitutional doctrine layer for Moira's
@@ -329,6 +336,26 @@ In other words, the technique is not simply "365.25 everywhere" and not simply
 "360 everywhere." The doctrinal core is the interaction between real elapsed
 life and a schematic 360-day distribution model.
 
+The 2026-07-25 implementation resolves that projection for the shared L1/L2
+core. Let `elapsed_lived_days = current_jd - natal_jd`. That same elapsed-day
+count is located in the half-open 360-day distribution sequence. A period
+boundary at distribution offset `d` is projected as `natal_jd + d`. This
+matches Valens's procedure of counting the actual days lived (whole lived
+years at 365¼ days plus the partial year) and then expressing that total in
+360-day distribution years.
+
+Every generated `DecennialPeriod` therefore preserves:
+
+- `sequence_origin_jd`
+- `time_basis=valens_lived_days_to_360_day_distribution`
+- `calendar_projection_basis=elapsed_julian_days_from_natal_jd`
+- `start_distribution_day` and `end_distribution_day`
+- `distribution_years`
+
+`start_jd`, `end_jd`, and their ISO calendar renderings remain useful
+projections, but they must not be described as adding 10 years 9
+civil-calendar months.
+
 ### 6. Variants and policy surfaces
 
 The historical research pass proposed one future policy distinction. The
@@ -352,7 +379,8 @@ Reason:
 Policy surfaces still deferred:
 
 - alternate starting-lord doctrine
-- alternate calendar projection conventions beyond the explicit dual-basis core
+- alternate calendar projection conventions beyond the admitted elapsed-day
+  projection
 
 So the minimum constitutional stance is:
 
@@ -404,16 +432,18 @@ The research pass therefore admits the following Decennials doctrine packet:
 - **starting lord:** sect light only
 - **sequence rule:** planets encountered in zodiacal order from the sect light
 - **major period length:** 129 months for each major lord
-- **cycle length:** 75 years 3 months across seven major lords
+- **cycle length:** 75 years 3 months in distribution notation across seven
+  major lords
 - **minimum depth:** L1 + L2
 - **internal arithmetic basis:** 360-day distribution logic
-- **projection doctrine:** explicit conversion from lived chronology to
-  schematic distribution time
+- **projection doctrine:** locate actual elapsed lived days in schematic
+  360-day distribution time; project boundaries from natal JD by that elapsed
+  day offset
 - **quarantined future policy candidates:** `valens|hephaistio` for deeper
   subdivision only
 - **admitted deeper-boundary:** none; L3/L4 are rejected
-- **deferred variants:** alternate start doctrine, explicit lived-time
-  projection doctrine, all L3/L4 chronology, and richer delineational layers
+- **deferred variants:** alternate start doctrine, alternate projection
+  conventions, all L3/L4 chronology, and richer delineational layers
 
 
 ## Admission Boundary

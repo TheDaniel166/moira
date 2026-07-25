@@ -114,6 +114,19 @@ def test_decennials_major_periods_have_expected_lengths_and_cycle() -> None:
     assert all(period.is_nocturnal_lunar is False for period in major)
     assert all(period.month_basis_days == pytest.approx(30.0, abs=1e-12) for period in major)
     assert all(period.major_month_total == pytest.approx(129.0, abs=1e-12) for period in major)
+    assert all(period.sequence_origin_jd == pytest.approx(2451545.0) for period in major)
+    assert all(
+        period.time_basis
+        == "valens_lived_days_to_360_day_distribution"
+        for period in major
+    )
+    assert all(
+        period.calendar_projection_basis == "elapsed_julian_days_from_natal_jd"
+        for period in major
+    )
+    assert major[0].start_distribution_day == pytest.approx(0.0)
+    assert major[0].end_distribution_day == pytest.approx(3870.0)
+    assert major[0].distribution_years == pytest.approx(10.75)
     assert all(period.sequence == ("Sun", "Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn") for period in major)
     assert major[-1].end_jd - major[0].start_jd == pytest.approx(903.0 * 30.0, abs=1e-9)
 
@@ -184,6 +197,7 @@ def test_decennial_period_rejects_phase3_truth_breaks() -> None:
         "end_jd": 2451546.0,
         "years": 1.0,
         "months": 12.0,
+        "sequence_origin_jd": 2451545.0,
         "sect_light": "Sun",
         "sequence_kind": DecennialSequenceKind.DIURNAL_SOLAR,
         "sequence": ("Sun", "Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn"),
@@ -263,6 +277,7 @@ def test_decennial_period_rejects_unknown_sequence_kind() -> None:
             end_jd=2451546.0,
             years=1.0,
             months=12.0,
+            sequence_origin_jd=2451545.0,
             sequence_kind="sideways",
         )
 
@@ -284,6 +299,44 @@ def test_current_decennials_returns_active_major_and_subperiod() -> None:
 
     assert major.planet == "Sun"
     assert sub.planet == "Mercury"
+
+
+def test_current_decennials_uses_elapsed_distribution_days_and_rejects_prebirth() -> None:
+    from moira.timelords import current_decennials
+
+    natal_jd = 2451545.0
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    before_boundary, _ = current_decennials(
+        natal_jd,
+        natal_positions,
+        True,
+        natal_jd + 3869.999,
+    )
+    at_boundary, _ = current_decennials(
+        natal_jd,
+        natal_positions,
+        True,
+        natal_jd + 3870.0,
+    )
+
+    assert before_boundary.planet == "Sun"
+    assert at_boundary.planet == "Mercury"
+    with pytest.raises(ValueError, match="must not be earlier than natal_jd"):
+        current_decennials(
+            natal_jd,
+            natal_positions,
+            True,
+            natal_jd - 1.0,
+        )
 
 
 def test_decennials_levels_one_returns_only_major_periods_and_current_pair_collapses() -> None:
@@ -406,6 +459,30 @@ def test_validate_decennials_output_rejects_quarantined_deep_period() -> None:
 
     with pytest.raises(ValueError, match="levels 3–4 are not admitted"):
         validate_decennials_output([broken if period is target else period for period in periods])
+
+
+def test_decennial_profile_rejects_tampered_time_basis_receipt() -> None:
+    """A mutable period cannot smuggle an unadmitted time basis into a profile."""
+    import dataclasses
+
+    from moira.timelords import decennials, decennial_condition_profile
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    broken = dataclasses.replace(
+        decennials(2451545.0, natal_positions, True, levels=1)[0]
+    )
+    broken.time_basis = "civil_years"
+
+    with pytest.raises(ValueError, match="time_basis is not admitted"):
+        decennial_condition_profile(broken)
 
 
 def test_zodiacal_releasing_uses_same_sign_spirit_adjustment() -> None:
@@ -880,6 +957,14 @@ def test_timelord_default_policy_is_frozen_sentinel() -> None:
     assert DEFAULT_TIMELORD_POLICY.decennials.subperiod_mode == "rotated_minor_months"
     assert DEFAULT_TIMELORD_POLICY.decennials.major_months == pytest.approx(129.0)
     assert DEFAULT_TIMELORD_POLICY.decennials.month_basis_days == pytest.approx(30.0)
+    assert (
+        DEFAULT_TIMELORD_POLICY.decennials.time_basis
+        == "valens_lived_days_to_360_day_distribution"
+    )
+    assert (
+        DEFAULT_TIMELORD_POLICY.decennials.calendar_projection_basis
+        == "elapsed_julian_days_from_natal_jd"
+    )
     assert DEFAULT_TIMELORD_POLICY.decennials.deep_subdivision_method is None
     assert DEFAULT_TIMELORD_POLICY.zr_year.year_days == pytest.approx(360.0)
 
@@ -1000,6 +1085,22 @@ def test_timelord_policy_rejects_unadmitted_decennials_variants() -> None:
     with pytest.raises(ValueError, match="month_basis_days must remain 30.0"):
         _validate_timelord_policy(
             TimelordComputationPolicy(decennials=DecennialPolicy(month_basis_days=29.5))
+        )
+
+    with pytest.raises(ValueError, match="time_basis must preserve"):
+        _validate_timelord_policy(
+            TimelordComputationPolicy(
+                decennials=DecennialPolicy(time_basis="civil_years")
+            )
+        )
+
+    with pytest.raises(ValueError, match="calendar_projection_basis must preserve"):
+        _validate_timelord_policy(
+            TimelordComputationPolicy(
+                decennials=DecennialPolicy(
+                    calendar_projection_basis="add_civil_years"
+                )
+            )
         )
 
     with pytest.raises(ValueError, match="deep_subdivision_method is not admitted"):
@@ -1947,9 +2048,43 @@ def test_decennial_sequence_profile_rejects_mismatched_count() -> None:
             total_major_months=agg.total_major_months,
             sequence_kind=agg.sequence_kind,
             sect_light=agg.sect_light,
+            time_basis=agg.time_basis,
+            calendar_projection_basis=agg.calendar_projection_basis,
+            sequence_origin_jd=agg.sequence_origin_jd,
             level_count_map=agg.level_count_map,
             deepest_level=agg.deepest_level,
             deep_subdivision_method=agg.deep_subdivision_method,
+        )
+
+
+def test_decennial_sequence_profile_rejects_mixed_time_basis_receipts() -> None:
+    """The aggregate cannot relabel profiles computed under another time basis."""
+    import dataclasses
+
+    from moira.timelords import decennials, decennial_sequence_profile
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+
+    aggregate = decennial_sequence_profile(
+        decennials(_P8_JD_BIRTH, natal_positions, True)
+    )
+    relabeled_profile = dataclasses.replace(
+        aggregate.profiles[0],
+        time_basis="civil_years",
+    )
+
+    with pytest.raises(ValueError, match="share the aggregate time-basis receipt"):
+        dataclasses.replace(
+            aggregate,
+            profiles=(relabeled_profile, *aggregate.profiles[1:]),
         )
 
 
@@ -1961,6 +2096,17 @@ def test_zr_sequence_profile_period_count_is_12() -> None:
     periods = zodiacal_releasing(_P8_FORTUNE, _P8_JD_BIRTH, levels=1)
     agg = zr_sequence_profile(periods, level=1)
     assert agg.period_count == 12
+
+
+def test_zr_sequence_profile_rejects_empty_or_unavailable_level() -> None:
+    from moira.timelords import zodiacal_releasing, zr_sequence_profile
+
+    with pytest.raises(ValueError, match="periods must not be empty"):
+        zr_sequence_profile([], level=1)
+
+    periods = zodiacal_releasing(_P8_FORTUNE, _P8_JD_BIRTH, levels=1)
+    with pytest.raises(ValueError, match="level 2 is not present"):
+        zr_sequence_profile(periods, level=2)
 
 
 def test_zr_sequence_profile_classifies_all_places_and_peaks_are_angular() -> None:

@@ -111,9 +111,10 @@ def compute_profection_schedule(engine: Moira, request: ProfectionScheduleReques
     require_aware_datetime(request.current_dt)
     return profection_schedule(
         natal_asc=houses.asc,
-        natal_jd=jd_from_datetime(request.natal.dt),
-        current_jd=jd_from_datetime(request.current_dt),
+        natal_dt=request.natal.dt,
+        current_dt=request.current_dt,
         natal_positions=_natal_positions(chart, request.natal.include_nodes),
+        leap_day_policy=request.leap_day_policy,
     )
 
 

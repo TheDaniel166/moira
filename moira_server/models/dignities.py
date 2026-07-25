@@ -11,6 +11,7 @@ from pydantic import Field, field_validator, model_validator
 from moira.constants import HouseSystem
 from moira.dignities_types import (
     EssentialDignityDoctrine,
+    HalbHayzDoctrine,
     MercurySectModel,
 )
 
@@ -40,6 +41,7 @@ class MutualReceptionPolicyRequest(_StrictModel):
 
 
 class SectHayzPolicyRequest(_StrictModel):
+    doctrine: HalbHayzDoctrine = HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007
     mercury_sect_model: MercurySectModel = MercurySectModel.LONGITUDE_HEURISTIC
     include_hayz: bool = True
     include_halb: bool = True

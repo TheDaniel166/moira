@@ -23,6 +23,7 @@ _CURATED_PUBLIC_NAMES = [
     "MINOR_YEARS",
     "FirdarSequenceKind",
     "DecennialSequenceKind",
+    "DecennialTimeBasis",
     "ZRAngularityClass",
     "FirdarYearPolicy",
     "DecennialPolicy",
@@ -91,6 +92,7 @@ _QUARANTINED_VALENS_NAMES = [
 
 _DECAENNIAL_FORWARD_NAMES = [
     "DecennialSequenceKind",
+    "DecennialTimeBasis",
     "DecennialPolicy",
     "DecennialPeriod",
     "DecennialMajorGroup",
@@ -133,11 +135,11 @@ class TestTimelordsModuleLevelResolution:
 
 
 class TestTimelordsCounts:
-    def test_curated_count_is_52(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 52
+    def test_curated_count_is_53(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 53
 
-    def test_timelords_all_count_is_52(self):
-        assert len(_timelords_module.__all__) == 52
+    def test_timelords_all_count_is_53(self):
+        assert len(_timelords_module.__all__) == 53
 
 
 class TestTimelordsInternalsRemainInternal:

@@ -68,15 +68,36 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
 [/MACHINE_CONTRACT]
     """
 
-    def lots(self, chart, houses):
+    def lots(
+        self,
+        chart,
+        houses,
+        *,
+        policy=None,
+        syzygy=None,
+        prenatal_new_moon=None,
+        prenatal_full_moon=None,
+        lord_of_hour=None,
+    ):
         """Compute Arabic Parts / Hermetic Lots for a chart."""
         facade = _facade_module()
-        lons = chart.longitudes(include_nodes=False)
+        lons = chart.longitudes(include_nodes=True)
+        if "Sun" not in lons:
+            raise ValueError("Sun not found in chart - include it when calling chart()")
         cusps_map = {i + 1: c for i, c in enumerate(houses.cusps)}
-        day = facade.is_day_chart(lons.get("Sun", 0.0), houses.asc)
-        return facade.calculate_lots(lons, cusps_map, day)
+        day = facade.is_day_chart(lons["Sun"], houses.asc)
+        return facade.calculate_lots(
+            lons,
+            cusps_map,
+            day,
+            policy=policy,
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+        )
 
-    def dignities(self, chart, houses):
+    def dignities(self, chart, houses, *, policy=None):
         """Compute essential and accidental dignities for chart planets."""
         facade = _facade_module()
         planet_dicts = [
@@ -91,7 +112,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             {"number": i + 1, "degree": cusp}
             for i, cusp in enumerate(houses.cusps)
         ]
-        return facade.calculate_dignities(planet_dicts, house_dicts)
+        return facade.calculate_dignities(planet_dicts, house_dicts, policy=policy)
 
     def mutual_receptions(self, chart, by_exaltation: bool = False):
         """Find mutual receptions between planets."""
@@ -337,30 +358,47 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         natal_dt: datetime,
         current_dt: datetime,
         natal_positions: dict[str, float] | None = None,
+        *,
+        leap_day_policy=None,
     ):
         """Compute the current annual profection."""
         facade = _facade_module()
         return facade.profection_schedule(
             natal_asc,
-            facade.jd_from_datetime(natal_dt),
-            facade.jd_from_datetime(current_dt),
+            natal_dt,
+            current_dt,
             natal_positions,
+            leap_day_policy=leap_day_policy,
         )
 
     def firdaria(self, natal_dt: datetime, natal_chart, natal_houses=None):
         """Compute the Firdaria from birth."""
         facade = _facade_module()
+        if natal_houses is None:
+            raise ValueError("natal_houses is required to determine sect")
         sun = natal_chart.planets.get("Sun")
-        asc = natal_houses.asc if natal_houses is not None else 0.0
-        day = facade.is_day_chart(sun.longitude if sun else 0.0, asc)
+        if sun is None:
+            raise ValueError("Sun not found in natal chart - include it when calling chart()")
+        day = facade.is_day_chart(sun.longitude, natal_houses.asc)
         return facade.firdaria(facade.jd_from_datetime(natal_dt), day)
 
-    def decennials(self, natal_dt: datetime, natal_chart, natal_houses=None, *, policy=None):
+    def decennials(
+        self,
+        natal_dt: datetime,
+        natal_chart,
+        natal_houses=None,
+        *,
+        levels: int = 2,
+        policy=None,
+    ):
         """Compute the Decennials sequence from birth."""
         facade = _facade_module()
+        if natal_houses is None:
+            raise ValueError("natal_houses is required to determine sect")
         sun = natal_chart.planets.get("Sun")
-        asc = natal_houses.asc if natal_houses is not None else 0.0
-        day = facade.is_day_chart(sun.longitude if sun else 0.0, asc)
+        if sun is None:
+            raise ValueError("Sun not found in natal chart - include it when calling chart()")
+        day = facade.is_day_chart(sun.longitude, natal_houses.asc)
         longitudes = natal_chart.longitudes(include_nodes=False)
         positions = {
             planet: longitudes[planet]
@@ -370,15 +408,28 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             facade.jd_from_datetime(natal_dt),
             positions,
             day,
+            levels=levels,
             policy=policy,
         )
 
-    def current_decennials(self, natal_dt: datetime, current_dt: datetime, natal_chart, natal_houses=None, *, policy=None):
+    def current_decennials(
+        self,
+        natal_dt: datetime,
+        current_dt: datetime,
+        natal_chart,
+        natal_houses=None,
+        *,
+        levels: int = 2,
+        policy=None,
+    ):
         """Compute the active Decennials major and sub-period at a target date."""
         facade = _facade_module()
+        if natal_houses is None:
+            raise ValueError("natal_houses is required to determine sect")
         sun = natal_chart.planets.get("Sun")
-        asc = natal_houses.asc if natal_houses is not None else 0.0
-        day = facade.is_day_chart(sun.longitude if sun else 0.0, asc)
+        if sun is None:
+            raise ValueError("Sun not found in natal chart - include it when calling chart()")
+        day = facade.is_day_chart(sun.longitude, natal_houses.asc)
         longitudes = natal_chart.longitudes(include_nodes=False)
         positions = {
             planet: longitudes[planet]
@@ -389,6 +440,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             positions,
             day,
             facade.jd_from_datetime(current_dt),
+            levels=levels,
             policy=policy,
         )
 
@@ -397,6 +449,11 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         lot_longitude: float,
         natal_dt: datetime,
         levels: int = 4,
+        *,
+        lot_name: str = "Spirit",
+        fortune_longitude: float | None = None,
+        use_loosing_of_bond: bool = True,
+        policy=None,
     ):
         """Generate Zodiacal Releasing periods from a Lot."""
         facade = _facade_module()
@@ -404,6 +461,10 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             lot_longitude,
             facade.jd_from_datetime(natal_dt),
             levels=levels,
+            lot_name=lot_name,
+            fortune_longitude=fortune_longitude,
+            use_loosing_of_bond=use_loosing_of_bond,
+            policy=policy,
         )
 
     def vimshottari_dasha(

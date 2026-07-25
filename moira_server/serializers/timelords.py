@@ -65,6 +65,8 @@ def serialize_profection_result(result: ProfectionResult) -> ProfectionResultRes
         lord_of_year=result.lord_of_year,
         activated_planets=list(result.activated_planets),
         monthly_lords=list(result.monthly_lords),
+        age_basis=result.age_basis,
+        leap_day_policy=result.leap_day_policy,
     )
 
 
@@ -197,6 +199,12 @@ def _serialize_decennial_period(period: DecennialPeriod) -> DecennialPeriodRespo
         years=period.years,
         months=period.months,
         days=period.days,
+        time_basis=period.time_basis,
+        calendar_projection_basis=period.calendar_projection_basis,
+        sequence_origin_jd=period.sequence_origin_jd,
+        start_distribution_day=period.start_distribution_day,
+        end_distribution_day=period.end_distribution_day,
+        distribution_years=period.distribution_years,
         start_date=period.start_dt.isoformat(),
         end_date=period.end_dt.isoformat(),
         major_planet=period.major_planet,
@@ -238,6 +246,12 @@ def _serialize_decennial_condition_profile(
         months=profile.months,
         days=profile.days,
         month_basis_days=profile.month_basis_days,
+        time_basis=profile.time_basis,
+        calendar_projection_basis=profile.calendar_projection_basis,
+        sequence_origin_jd=profile.sequence_origin_jd,
+        start_distribution_day=profile.start_distribution_day,
+        end_distribution_day=profile.end_distribution_day,
+        distribution_years=profile.distribution_years,
     )
 
 
@@ -246,6 +260,8 @@ def serialize_decennials_sequence(
     levels_generated: int,
     deep_subdivision_method: str | None = None,
 ) -> DecennialSequenceResponse:
+    if not periods:
+        raise ValueError("serialize_decennials_sequence: periods must not be empty")
     serialized = [_serialize_decennial_period(p) for p in periods]
     major_count = sum(1 for p in periods if p.level == 1)
     return DecennialSequenceResponse(
@@ -254,6 +270,9 @@ def serialize_decennials_sequence(
         major_count=major_count,
         sub_count=len(periods) - major_count,
         levels_generated=levels_generated,
+        time_basis=periods[0].time_basis,
+        calendar_projection_basis=periods[0].calendar_projection_basis,
+        sequence_origin_jd=periods[0].sequence_origin_jd,
         deep_subdivision_method=deep_subdivision_method,
     )
 
@@ -285,6 +304,9 @@ def serialize_current_decennials(
     return DecennialCurrentResponse(
         major=_serialize_decennial_period(major),
         sub=_serialize_decennial_period(sub),
+        time_basis=major.time_basis,
+        calendar_projection_basis=major.calendar_projection_basis,
+        sequence_origin_jd=major.sequence_origin_jd,
         deep_subdivision_method=deep_subdivision_method,
     )
 
@@ -303,6 +325,9 @@ def serialize_decennial_sequence_profile(
         total_major_months=profile.total_major_months,
         sequence_kind=profile.sequence_kind,
         sect_light=profile.sect_light,
+        time_basis=profile.time_basis,
+        calendar_projection_basis=profile.calendar_projection_basis,
+        sequence_origin_jd=profile.sequence_origin_jd,
         deepest_level=profile.deepest_level,
         deep_subdivision_method=deep_subdivision_method,
     )

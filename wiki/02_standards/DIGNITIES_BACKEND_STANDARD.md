@@ -234,22 +234,24 @@ The accidental doctrine surface is explicit through:
 
 The default policy is normative:
 
-> `DignityComputationPolicy()` must preserve the current historical subsystem
-> behavior exactly.
+> `DignityComputationPolicy()` preserves the currently admitted, named
+> doctrine. It must not preserve a legacy behavior after that behavior has
+> been shown to contradict the admitted source.
 
 The accidental inclusion controls include:
 
 | Policy field | Default | Governs |
 |---|---:|---|
 | `AccidentalDignityPolicy.include_oriental_occidental` | `True` | Oriental/Occidental phase classification and its score contribution |
+| `SectHayzPolicy.doctrine` | `AL_QABISI_BONATTI_DYKES_2007` | Named Halb/Hayz lineage |
 | `SectHayzPolicy.include_hayz` | `True` | Full-Hayz condition and score contribution |
-| `SectHayzPolicy.include_halb` | `True` | Exact-two-of-three Halb condition and score contribution |
+| `SectHayzPolicy.include_halb` | `True` | Sect-relative hemisphere condition and score contribution |
 
 Setting one of these fields to `False` removes that condition from labels,
 structured accidental truth, and additive scoring without changing the
 underlying sign, sect, house, or longitude inputs. Hayz and Halb are separately
-selectable; when both are enabled, full Hayz takes precedence and Halb remains
-the partial, exactly-two-of-three state.
+selectable; when both are enabled, full Hayz takes precedence in the additive
+label/score while the underlying `in_halb` truth remains preserved.
 
 #### 4.3 Sect, hayz, and halb doctrine
 
@@ -258,7 +260,30 @@ Sect, Hayz, and Halb doctrine is embodied by:
 - `SECT`
 - `PREFERRED_HEMISPHERE`
 - `PREFERRED_GENDER`
-- the current Mercury sect model
+- `HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007`
+- the explicit Mercury phase model
+
+Under the admitted al-Qabisi/Bonatti lineage, Halb is not an
+exact-two-of-three approximation to Hayz. It is the planet's sect-relative
+hemisphere condition:
+
+| Planetary sect | Day chart | Night chart |
+|---|---|---|
+| Diurnal | Above horizon | Below horizon |
+| Nocturnal | Below horizon | Above horizon |
+
+Hayz is Halb plus placement in a sign of the planet's own gender. The admitted
+gender table treats Sun, Jupiter, and Saturn as masculine; Moon, Venus, and
+Mars as feminine; and Mercury as neutral. Because no source-owned Mercury
+gender assignment is admitted, Mercury can receive explicit sect and Halb
+truth but `hayz_evaluable=False` and no invented Hayz judgment.
+
+Mercury sect is phase-dependent. Standalone Mercury sect/Halb calls require an
+explicit `mercury_rises_before_sun` value. Chart-level dignity computation
+derives that phase only when both Sun and Mercury are present. It never
+substitutes a conjunction or another synthetic value for a missing Mercury.
+An explicit Sun is mandatory because chart sect and solar conditions cannot be
+computed truthfully without it.
 
 This truth is preserved and classified explicitly even where it does not affect
 the current additive score.
@@ -529,6 +554,7 @@ The following inputs must always fail clearly and consistently.
 
 | Function / vessel | Bad input or drift | Error |
 |---|---|---|
+| `calculate_dignities` | missing Sun position | `ValueError` |
 | `calculate_dignities` | duplicate classic planet entry | `ValueError` |
 | `calculate_dignities` | non-finite longitude | `ValueError` |
 | `calculate_dignities` | non-boolean `is_retrograde` | `ValueError` |

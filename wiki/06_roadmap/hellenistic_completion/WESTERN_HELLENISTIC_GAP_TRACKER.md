@@ -8,6 +8,12 @@
 > `TIMELORDS_BACKEND_STANDARD.md`, `DECANS_BACKEND_STANDARD.md`, and
 > `ASPECT_BACKEND_STANDARD.md` govern those current boundaries.
 
+> **Phase-2 correction (2026-07-25).** Halb is implemented as the
+> al-Qabisi/Bonatti sect-relative hemisphere condition; Hayz adds sign gender.
+> The old exact-two-of-three description is rejected. Profection schedules now
+> use civil anniversaries, Decennials carries an explicit dual-time-basis
+> receipt, and impossible ZR profile depths fail closed.
+
 **Last active:** 2026-05-29 (source research gate for aphesis/distributions + Triacontaeteris per user directive)  
 **Status:** Source research complete for prioritized gap (aphesis/dist + Triacontaeteris). Gate applied: "only if it can be implemeted from first principles and source backed, not from your memory or training". Core 10y9m distribution covered by existing Decennials (Valens Bk VI.6.6 alignment); Triacontaeteris insufficient source. Tracker enriched with verbatim extracts + citations. No new code. See "Source Research..." section. Ready for user direction on next (e.g. thin four-lots layer or other P2 gap).
 
@@ -68,7 +74,11 @@ Many "gaps" noted are Type B (depth) rather than Type A (missing core feature).
 Per MOIRA_ROADMAP.md and standards, many items marked "Done" or at Phase 11 freeze (current implementation truth, no aspirational claims).
 
 ### Documented Partial / Depth Gaps (from sources)
-- Dignities: Egyptian bounds full; Ptolemaic/Chaldean terms partial/absent in some contexts. Triplicity as scoring but not always first-class EssentialDignityKind in all surfaces. Hayz present, halb missing. Oriental/occidental and besieging noted as missing in older roadmap but code surfaces (oriental_occidental, is_besieged) now exist in dignities.py (per prior code spot-checks; needs verification).
+- Dignities: Egyptian, Ptolemaic, and admitted Chaldean bounds are selectable;
+  triplicity/bound/face are first-class essential-dignity truth; Halb and Hayz
+  are implemented under a named source doctrine. Remaining gaps must be
+  established from the current dignity standard and runtime, not this older
+  documentation-led inventory.
 - Synastry (per SYNASTRY_BACKEND_STANDARD and FEATURE_AUDIT): Core present and constitutionalized, but depth gaps in progressed synastry, transits to composite/Davison, synastry aspect patterns.
 - Astrocartography/Spatial: Basic ACG present; Zenith/Nadir and extended bodies (asteroids/stars) missing.
 - Time Lords: Strong on several, but aphesis/distributions (Hellenistic) absent, Triacontaeteris absent.
@@ -90,7 +100,7 @@ Prioritized primarily from FEATURE_AUDIT_2026.md Top 10 (Western-relevant) + hel
 | **ACG Zenith / Nadir Lines** | Absent | Zenith/Nadir lines in astrocartography | P2 (score 6) | FEATURE_AUDIT_2026.md; astrocartography.py produces only basic 4 lines. |
 | **ACG for Asteroids / Fixed Stars** | Absent | RA/Dec paths for extended bodies in ACG | P2 (score 6) | FEATURE_AUDIT_2026.md; acg_lines() is generic but sources limited to classical planets. |
 | **Hellenistic Essential Dignity Completion (Phase 1)** | Partial (core domicile/exaltation + scoring) | Promote triplicity/bound/face to first-class EssentialDignityKind; full Planetary Joys (is_in_joy exists in some form) | High (per roadmap) | hellenistic_completion_roadmap.md Phase 1; DIGNITIES_BACKEND_STANDARD (current truth at high phase, but roadmap lists specific extensions). |
-| **Bounds Expansion & Halb (Phase 2)** | Egyptian full; others partial/absent | Ptolemaic + Chaldean term tables; Halb condition | High (per roadmap) | hellenistic_completion_roadmap.md Phase 2; EGYPTIAN_BOUNDS_BACKEND_STANDARD and DIGNITIES. |
+| **Bounds Expansion & Halb (historical Phase 2)** | Implemented on current admitted surfaces | Maintain source-owned bounds policy and al-Qabisi/Bonatti Halb/Hayz truth; do not restore exact-two-of-three logic | Closed for the admitted core | Current `DIGNITIES_BACKEND_STANDARD.md` and bounds standard govern. |
 | **Planetary Condition Expansion (Phase 3)** | Partial (cazimi etc.; some functions present) | Full oriental/occidental, besieging in general engine, sinister/dexter in aspects, overcoming (katarchein) | High (per roadmap) | hellenistic_completion_roadmap.md Phase 3; DIGNITIES and ASPECT standards. |
 | **Whole-Sign Aspects (Phase 4)** | Absent (degree-based dominant) | Sign-based aspect mode (no orb, sign-count) as alternative | High (per roadmap) | hellenistic_completion_roadmap.md Phase 4; ASPECT_BACKEND_STANDARD. |
 | **Other Hellenistic Absent (roadmap)** | Varies | Planetary joys (foundational), Overcoming, Besieging (enclosure), Whole-sign aspects | As phased | hellenistic_completion_roadmap.md "Absent" table. |
@@ -157,8 +167,11 @@ Many standards emphasize "this reflects current implementation truth... does not
   - `EgyptianBoundsDoctrine` supports `EGYPTIAN`, `PTOLEMAIC`,
     `CHALDEAN_DAY`, and `CHALDEAN_NIGHT`.
   - egyptian_bound_of / bound logic routes on doctrine.
-  - is_in_halb implemented, SCORE_HALB=1, wired in calculate_dignities as "halb" condition (when not full hayz but partial sect conditions met).
-  - **Conclusion:** Bounds tables + Halb present (doc outdated).
+  - `is_in_halb` and `SCORE_HALB=1` are wired into dignity truth/scoring under
+    the sect-relative hemisphere doctrine; Hayz is the additional
+    same-gender-sign state.
+  - **Conclusion:** Bounds tables plus named Halb/Hayz doctrine are present;
+    the former partial-match description was incorrect.
 
 - **Phase 3 (Planetary Condition + etc.):** **Mostly implemented**.
   - oriental_occidental(planet, planet_lon, sun_lon) fully present with Ptolemaic defs for superior/inferior.

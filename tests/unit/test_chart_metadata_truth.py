@@ -390,13 +390,20 @@ def test_moira_decennials_delegates_to_timelord_wrapper(monkeypatch) -> None:
     )
     natal_houses = SimpleNamespace(asc=100.0)
 
-    result = engine.decennials(natal_dt, natal_chart, natal_houses, policy=policy)
+    result = engine.decennials(
+        natal_dt,
+        natal_chart,
+        natal_houses,
+        levels=1,
+        policy=policy,
+    )
 
     assert result is fake_periods
     assert seen["args"][0] == jd_from_datetime(natal_dt)
     assert seen["args"][1]["Sun"] == 15.0
     assert seen["args"][1]["Moon"] == 44.0
     assert seen["args"][2] is True
+    assert seen["kwargs"]["levels"] == 1
     assert seen["kwargs"]["policy"] is policy
 
 
@@ -429,14 +436,153 @@ def test_moira_current_decennials_delegates_to_timelord_wrapper(monkeypatch) -> 
         },
     )
 
-    result = engine.current_decennials(natal_dt, current_dt, natal_chart, policy=policy)
+    natal_houses = SimpleNamespace(asc=100.0)
+
+    result = engine.current_decennials(
+        natal_dt,
+        current_dt,
+        natal_chart,
+        natal_houses,
+        levels=1,
+        policy=policy,
+    )
 
     assert result is fake_pair
     assert seen["args"][0] == jd_from_datetime(natal_dt)
     assert seen["args"][1]["Saturn"] == 300.0
     assert seen["args"][2] is False
     assert seen["args"][3] == jd_from_datetime(current_dt)
+    assert seen["kwargs"]["levels"] == 1
     assert seen["kwargs"]["policy"] is policy
+
+
+def test_moira_classical_wrappers_reject_missing_sect_inputs() -> None:
+    engine = facade.Moira()
+    natal_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+    chart_without_sun = SimpleNamespace(
+        planets={},
+        longitudes=lambda include_nodes=False: {
+            "Moon": 44.0,
+            "Mercury": 20.0,
+            "Venus": 50.0,
+            "Mars": 110.0,
+            "Jupiter": 250.0,
+            "Saturn": 300.0,
+        },
+    )
+    houses = SimpleNamespace(asc=100.0, cusps=tuple(range(12)))
+
+    with pytest.raises(ValueError, match="Sun not found"):
+        engine.lots(chart_without_sun, houses)
+    with pytest.raises(ValueError, match="natal_houses is required"):
+        engine.firdaria(natal_dt, chart_without_sun)
+    with pytest.raises(ValueError, match="Sun not found"):
+        engine.firdaria(natal_dt, chart_without_sun, houses)
+    with pytest.raises(ValueError, match="natal_houses is required"):
+        engine.decennials(natal_dt, chart_without_sun)
+    with pytest.raises(ValueError, match="Sun not found"):
+        engine.current_decennials(
+            natal_dt,
+            natal_dt,
+            chart_without_sun,
+            houses,
+        )
+
+
+def test_moira_lots_and_dignities_forward_full_policy_inputs(monkeypatch) -> None:
+    lots_seen: dict[str, object] = {}
+    dignities_seen: dict[str, object] = {}
+    lots_result = object()
+    dignities_result = object()
+    lots_policy = object()
+    dignities_policy = object()
+
+    def fake_calculate_lots(*args, **kwargs):
+        lots_seen["args"] = args
+        lots_seen["kwargs"] = kwargs
+        return lots_result
+
+    def fake_calculate_dignities(*args, **kwargs):
+        dignities_seen["args"] = args
+        dignities_seen["kwargs"] = kwargs
+        return dignities_result
+
+    monkeypatch.setattr(facade, "calculate_lots", fake_calculate_lots)
+    monkeypatch.setattr(facade, "calculate_dignities", fake_calculate_dignities)
+    monkeypatch.setattr(facade, "is_day_chart", lambda sun_lon, asc: True)
+
+    include_nodes_calls: list[bool] = []
+
+    def longitudes(*, include_nodes=True):
+        include_nodes_calls.append(include_nodes)
+        return {"Sun": 15.0, "Moon": 44.0, "North Node": 123.0}
+
+    chart = SimpleNamespace(
+        planets={
+            "Sun": SimpleNamespace(longitude=15.0, speed=1.0),
+            "Moon": SimpleNamespace(longitude=44.0, speed=-1.0),
+        },
+        longitudes=longitudes,
+    )
+    houses = SimpleNamespace(asc=100.0, cusps=tuple(float(i * 30) for i in range(12)))
+    engine = facade.Moira()
+
+    assert engine.lots(
+        chart,
+        houses,
+        policy=lots_policy,
+        syzygy=22.0,
+        prenatal_new_moon=33.0,
+        prenatal_full_moon=44.0,
+        lord_of_hour=55.0,
+    ) is lots_result
+    assert engine.dignities(chart, houses, policy=dignities_policy) is dignities_result
+
+    assert include_nodes_calls == [True]
+    assert lots_seen["args"][0]["North Node"] == 123.0
+    assert lots_seen["kwargs"] == {
+        "policy": lots_policy,
+        "syzygy": 22.0,
+        "prenatal_new_moon": 33.0,
+        "prenatal_full_moon": 44.0,
+        "lord_of_hour": 55.0,
+    }
+    assert dignities_seen["kwargs"] == {"policy": dignities_policy}
+
+
+def test_moira_zodiacal_releasing_forwards_full_doctrine(monkeypatch) -> None:
+    seen: dict[str, object] = {}
+    fake_periods = object()
+    policy = object()
+
+    def fake_zodiacal_releasing(*args, **kwargs):
+        seen["args"] = args
+        seen["kwargs"] = kwargs
+        return fake_periods
+
+    monkeypatch.setattr(facade, "zodiacal_releasing", fake_zodiacal_releasing)
+    engine = facade.Moira()
+    natal_dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
+
+    result = engine.zodiacal_releasing(
+        123.0,
+        natal_dt,
+        levels=3,
+        lot_name="Fortune",
+        fortune_longitude=44.0,
+        use_loosing_of_bond=False,
+        policy=policy,
+    )
+
+    assert result is fake_periods
+    assert seen["args"] == (123.0, jd_from_datetime(natal_dt))
+    assert seen["kwargs"] == {
+        "levels": 3,
+        "lot_name": "Fortune",
+        "fortune_longitude": 44.0,
+        "use_loosing_of_bond": False,
+        "policy": policy,
+    }
 
 
 def test_moira_planetary_node_delegates_to_singular_wrapper(monkeypatch) -> None:

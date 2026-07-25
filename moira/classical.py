@@ -70,7 +70,7 @@ from .dignities import (
     SectStateKind, SolarConditionKind,
     ReceptionKind, ReceptionBasis, ReceptionMode,
     PlanetaryConditionState,
-    EssentialDignityDoctrine, MercurySectModel,
+    EssentialDignityDoctrine, HalbHayzDoctrine, MercurySectModel,
     EssentialDignityPolicy, SolarConditionPolicy,
     MutualReceptionPolicy, SectHayzPolicy,
     AccidentalDignityPolicy, DignityComputationPolicy,
@@ -88,7 +88,7 @@ from .dignities import (
     calculate_condition_network_profile,
     DignitiesService,
     sect_light, is_day_chart, almuten_figuris, almuten_of_degree, find_phasis,
-    is_in_hayz, is_in_sect,
+    halb_required_hemisphere, is_in_hayz, is_in_sect,
     mutual_receptions,
 )
 
@@ -164,7 +164,8 @@ from .sidereal import NakshatraPosition, nakshatra_of, all_nakshatras_at
 
 # ── Profections ──────────────────────────────────────────────────────────
 from .profections import (
-    ProfectionResult, annual_profection, monthly_profection, profection_schedule,
+    LeapDayAnniversaryPolicy, ProfectionResult,
+    annual_profection, monthly_profection, profection_schedule,
 )
 
 # ── Planetary hours ──────────────────────────────────────────────────────
@@ -178,7 +179,7 @@ from .longevity import HylegResult, find_hyleg, calculate_longevity
 from .timelords import (
     FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, FIRDARIA_NOCTURNAL_BONATTI,
     CHALDEAN_ORDER, MINOR_YEARS,
-    FirdarSequenceKind, DecennialSequenceKind, ZRAngularityClass,
+    FirdarSequenceKind, DecennialSequenceKind, DecennialTimeBasis, ZRAngularityClass,
     FirdarYearPolicy, DecennialPolicy, ZRYearPolicy,
     TimelordComputationPolicy, DEFAULT_TIMELORD_POLICY,
     FirdarPeriod as FirdarPeriodTL, DecennialPeriod, ReleasingPeriod,
@@ -276,7 +277,7 @@ _CLASSICAL_OWN: list[str] = [
     "SectStateKind", "SolarConditionKind",
     "ReceptionKind", "ReceptionBasis", "ReceptionMode",
     "PlanetaryConditionState",
-    "EssentialDignityDoctrine", "MercurySectModel",
+    "EssentialDignityDoctrine", "HalbHayzDoctrine", "MercurySectModel",
     "EssentialDignityPolicy", "SolarConditionPolicy",
     "MutualReceptionPolicy", "SectHayzPolicy",
     "AccidentalDignityPolicy", "DignityComputationPolicy",
@@ -294,7 +295,7 @@ _CLASSICAL_OWN: list[str] = [
     "calculate_condition_network_profile",
     "DignitiesService",
     "sect_light", "is_day_chart", "almuten_figuris", "almuten_of_degree", "find_phasis",
-    "is_in_hayz", "is_in_sect",
+    "halb_required_hemisphere", "is_in_hayz", "is_in_sect",
     "mutual_receptions",
     # Lots
     "LotReferenceKind", "LotReversalKind", "LotDependencyRole",
@@ -351,7 +352,8 @@ _CLASSICAL_OWN: list[str] = [
     # Nakshatras
     "NakshatraPosition", "nakshatra_of", "all_nakshatras_at",
     # Profections
-    "ProfectionResult", "annual_profection", "monthly_profection", "profection_schedule",
+    "LeapDayAnniversaryPolicy", "ProfectionResult",
+    "annual_profection", "monthly_profection", "profection_schedule",
     # Planetary hours
     "PlanetaryHourClassical", "PlanetaryHoursDay", "planetary_hours",
     # Longevity
@@ -359,7 +361,7 @@ _CLASSICAL_OWN: list[str] = [
     # Timelords — Firdaria
     "FIRDARIA_DIURNAL", "FIRDARIA_NOCTURNAL", "FIRDARIA_NOCTURNAL_BONATTI",
     "CHALDEAN_ORDER", "MINOR_YEARS",
-    "FirdarSequenceKind", "DecennialSequenceKind", "ZRAngularityClass",
+    "FirdarSequenceKind", "DecennialSequenceKind", "DecennialTimeBasis", "ZRAngularityClass",
     "FirdarYearPolicy", "DecennialPolicy", "ZRYearPolicy",
     "TimelordComputationPolicy", "DEFAULT_TIMELORD_POLICY",
     "FirdarPeriodTL", "DecennialPeriod", "ReleasingPeriod",

@@ -611,6 +611,7 @@ from .dignities import (
     DispositorshipConditionState,
     PlanetaryConditionState,
     EssentialDignityDoctrine,
+    HalbHayzDoctrine,
     MercurySectModel,
     # Policy dataclasses
     EssentialDignityPolicy,
@@ -661,6 +662,7 @@ from .dignities import (
     DignitiesService,
     # Module-level functions
     is_in_sect,
+    halb_required_hemisphere,
     is_in_hayz,
     is_in_halb,
     is_in_joy,
@@ -1422,6 +1424,7 @@ __all__ = [
     "DispositorshipConditionState",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
+    "HalbHayzDoctrine",
     "MercurySectModel",
     "EssentialDignityPolicy",
     "SolarConditionPolicy",
@@ -1468,6 +1471,7 @@ __all__ = [
     "PlanetaryDignity",
     "DignitiesService",
     "is_in_sect",
+    "halb_required_hemisphere",
     "is_in_hayz",
     "is_in_halb",
     "is_in_joy",

@@ -472,8 +472,8 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `dignities(chart, houses)` | `list[PlanetaryDignity]` | Essential and accidental dignities |
-| `lots(chart, houses)` | `list[ArabicPart]` | Arabic Parts / Hermetic Lots |
+| `dignities(chart, houses, *, policy=None)` | `list[PlanetaryDignity]` | Essential and accidental dignities with lossless policy forwarding |
+| `lots(chart, houses, *, policy=None, syzygy=None, prenatal_new_moon=None, prenatal_full_moon=None, lord_of_hour=None)` | `list[ArabicPart]` | Arabic Parts / Hermetic Lots with nodes and optional external references preserved |
 | `mutual_receptions(chart, by_exaltation=False)` | `list[tuple]` | `(planet_a, planet_b, type)` mutual reception triples |
 | `astrodynes(body_inputs, cusp_signs, intercepted_signs_by_house=None, policy=None)` | `AstrodyneChartResult` | Kernel-free Church of Light natal Astrodynes from explicit chart geometry |
 
@@ -481,7 +481,7 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `profection(natal_asc, natal_dt, current_dt, natal_positions=None)` | `ProfectionResult` | Annual profection house and time lord |
+| `profection(natal_asc, natal_dt, current_dt, natal_positions=None, *, leap_day_policy=None)` | `ProfectionResult` | Annual profection from completed civil age in the natal timezone |
 | `nakshatras(chart, ayanamsa_system=Ayanamsa.LAHIRI)` | `dict[str, NakshatraPosition]` | Nakshatra for each planet |
 | `planetary_hours(dt, latitude, longitude)` | `PlanetaryHoursDay` | Day and night planetary hour rulers |
 
@@ -545,8 +545,10 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `firdaria(natal_dt, natal_chart, natal_houses=None)` | `list[FirdarPeriod]` | Persian Firdaria sequence from birth |
-| `zodiacal_releasing(lot_longitude, natal_dt, levels=4)` | `list[ReleasingPeriod]` | Zodiacal Releasing from a Lot |
+| `firdaria(natal_dt, natal_chart, natal_houses)` | `list[FirdarPeriod]` | Persian Firdaria sequence; explicit houses and Sun are required for sect |
+| `decennials(natal_dt, natal_chart, natal_houses, *, levels=2, policy=None)` | `list[DecennialPeriod]` | Admitted L1/L2 Decennials sequence with explicit sect and time-basis truth |
+| `current_decennials(natal_dt, current_dt, natal_chart, natal_houses, *, levels=2, policy=None)` | `tuple[DecennialPeriod, DecennialPeriod]` | Active Decennials major/sub-period on the elapsed lived-day coordinate |
+| `zodiacal_releasing(lot_longitude, natal_dt, levels=4, *, lot_name="Spirit", fortune_longitude=None, use_loosing_of_bond=True, policy=None)` | `list[ReleasingPeriod]` | Zodiacal Releasing with all doctrine inputs forwarded |
 | `vimshottari_dasha(natal_chart, natal_dt, levels=2, ayanamsa_system=Ayanamsa.LAHIRI)` | `list[DashaPeriod]` | Vimshottari Dasha sequence from Moon nakshatra |
 
 ### Synastry & relationship charts
@@ -1615,18 +1617,28 @@ exalt   = svc.exaltation()
 ```python
 from moira.facade import (
     annual_profection, monthly_profection, profection_schedule,
-    ProfectionResult,
+    LeapDayAnniversaryPolicy, ProfectionResult,
 )
 
-result = annual_profection(natal_asc_lon, jd_natal, jd_now)
-# ProfectionResult(house_number, sign, time_lord, activated_planets)
+result = profection_schedule(
+    natal_asc_lon,
+    natal_dt,
+    current_dt,
+    leap_day_policy=LeapDayAnniversaryPolicy.FEBRUARY_28,
+)
+# result.age_years, result.profected_house, result.lord_of_year
 ```
 
 | Function | Returns | Description |
 |---|---|---|
-| `annual_profection(natal_asc, jd_natal, jd_now)` | `ProfectionResult` | Whole-sign annual profection |
-| `monthly_profection(natal_asc, jd_natal, jd_now)` | `ProfectionResult` | Monthly subdivision |
-| `profection_schedule(natal_asc, jd_natal, jd_now, natal_positions=None)` | `ProfectionResult` | Annual profection with activated-planet detection |
+| `annual_profection(natal_asc, age_years, natal_positions=None, activation_orb=5.0)` | `ProfectionResult` | Whole-sign annual profection for an explicit completed age |
+| `monthly_profection(natal_asc, age_years, month_index)` | `tuple[float, str, str]` | Monthly subdivision for an explicit age and month index |
+| `profection_schedule(natal_asc, natal_dt, current_dt, natal_positions=None, *, leap_day_policy=None)` | `ProfectionResult` | Civil-anniversary age plus activated-planet detection |
+
+`profection_schedule()` requires timezone-aware datetimes, compares the current
+instant in the natal timezone, and rejects pre-birth instants. February 29
+nativities require an explicit `february_28` or `march_1` policy. The result
+preserves `age_basis="civil_anniversary"` and the selected policy.
 
 ### Nakshatras (Vedic lunar mansions)
 
@@ -1951,7 +1963,7 @@ from moira.facade import (
     decennial_condition_profile, decennial_sequence_profile,
     decennial_active_pair, decennial_active_path,
     validate_decennials_output,
-    DecennialPeriod, DecennialPolicy,
+    DecennialPeriod, DecennialPolicy, DecennialTimeBasis,
 )
 ```
 
@@ -1965,6 +1977,12 @@ from moira.facade import (
 The public engine accepts only levels 1–2. Any L3/L4 request or non-`None`
 `DecennialPolicy.deep_subdivision_method` fails closed; the named Valens and
 Hephaistio deep policies are research candidates, not admitted API behavior.
+
+Every period preserves `time_basis`, `calendar_projection_basis`,
+`sequence_origin_jd`, `start_distribution_day`, `end_distribution_day`, and
+`distribution_years`. `start_jd`/`end_jd` are elapsed-day projections from the
+natal instant; they do not mean that schematic 30-day months were added as
+civil calendar months.
 
 ### Zodiacal Releasing
 
@@ -1981,10 +1999,14 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `zodiacal_releasing(lot_lon, jd_natal, levels=4)` | `list[ReleasingPeriod]` | Full ZR sequence from a Lot |
+| `zodiacal_releasing(lot_lon, jd_natal, levels=4, *, lot_name="Spirit", fortune_longitude=None, use_loosing_of_bond=True, policy=None)` | `list[ReleasingPeriod]` | Full ZR sequence with explicit Lot, Fortune, bond, and time-basis policy |
 | `current_releasing(lot_lon, jd_natal, jd_now, fortune_longitude=None)` | `list[ReleasingPeriod]` | Active period at each available level; rejects the exact 211-symbolic-year endpoint and later |
 | `group_releasing(periods)` | `list[ZRPeriodGroup]` | Grouped by Level 1 sign |
 | `zr_level_pair(lot_lon, jd_natal, jd_now)` | `ZRLevelPair` | Active Level 1 + Level 2 pair |
+
+`zr_sequence_profile(periods, level)` rejects an empty input and a requested
+level absent from the generated period list. REST callers must keep
+`profile_level <= levels`.
 
 #### `ReleasingPeriod` fields
 

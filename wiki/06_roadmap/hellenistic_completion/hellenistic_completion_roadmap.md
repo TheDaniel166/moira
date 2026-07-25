@@ -7,6 +7,14 @@
 > surfaces. See the current backend standards rather than the old status tables
 > below.
 
+> **Phase-2 doctrine correction (2026-07-25).** The former
+> “exact-two-of-three” Halb plan was rejected after a source pass.
+> `is_in_halb()` now implements the al-Qabisi/Bonatti sect-relative hemisphere
+> rule; Hayz adds the planet's own sign gender. Mars is feminine and Mercury is
+> neutral. Missing Sun or Mercury phase truth is no longer fabricated. Annual
+> profection schedules use completed civil anniversaries, and Decennials
+> transport preserves its dual time-basis receipt.
+
 **Note (2026-05-29 code verification):** A documentation + code verification pass against this roadmap (cross-referenced with [WESTERN_HELLENISTIC_GAP_TRACKER.md](WESTERN_HELLENISTIC_GAP_TRACKER.md) and [FEATURE_AUDIT_2026.md](../../07_audit/FEATURE_AUDIT_2026.md)) found that many items listed as "Partial" or "Absent" below are now implemented in the live codebase (e.g., first-class triplicity/bound/face in EssentialDignityKind, PLANETARY_JOYS + is_in_joy, PTOLEMAIC/CHALDEAN bounds tables + doctrine support, is_in_halb + SCORE_HALB, oriental_occidental(), is_besieged(), AspectDomain.WHOLE_SIGN + find_whole_sign_aspects()). The roadmap text below is retained for historical reference but is partially outdated.
 
 ## Purpose
@@ -63,7 +71,7 @@ Companion documents:
 |---------|-------------|--------------------------------|---------------------|
 | Bounds/terms | Egyptian bounds only | Ptolemaic terms, Chaldaean terms | **Corrected**: source-transmitted `PTOLEMAIC_BOUNDS` plus explicit `CHALDEAN_DAY_BOUNDS` and `CHALDEAN_NIGHT_BOUNDS` in `egyptian_bounds.py` |
 | Essential dignity enum | Domicile, exaltation, detriment, fall, peregrine | Triplicity, bound, face as first-class `EssentialDignityKind` members | **Implemented**: TRIPLICITY, BOUND, FACE in EssentialDignityKind + scoring in dignities.py/longevity.py |
-| Hayz | `is_in_hayz()` | Halb (the nocturnal partial-hayz) | **Implemented**: is_in_halb() + SCORE_HALB + wiring in calculate_dignities |
+| Hayz | `is_in_hayz()` | Source-correct Halb/Hayz provenance and Mercury evaluability | **Implemented**: named al-Qabisi/Bonatti doctrine, sect-relative Halb, gender-added Hayz, explicit Mercury truth |
 | Planetary condition | Cazimi, combust, under the beams | Oriental/occidental (morning/evening star), besieging | **Implemented**: oriental_occidental(), is_besieged() + conditions |
 | Aspect direction | Sinister/dexter exists in primary directions | Not in the general aspect engine | Partial: direction logic present; full general engine + overcoming needs confirmation |
 
@@ -214,10 +222,10 @@ Egyptian bounds, and implement the halb condition.
 5. Route `egyptian_bound_of()` and `bound_ruler()` through the policy
    doctrine to select the correct table.
 
-6. Implement `is_in_halb()` in `moira/dignities.py`:
-   Halb is satisfied when a planet meets two of the three hayz conditions
-   (sect + hemisphere, sect + sign gender, or hemisphere + sign gender)
-   but not all three.
+6. Implement `is_in_halb()` in `moira/dignities.py` under the admitted
+   al-Qabisi/Bonatti doctrine. A diurnal planet requires the upper hemisphere
+   by day and lower hemisphere by night; a nocturnal planet requires the
+   inverse. Hayz adds placement in a sign of the planet's own gender.
 
 7. Add `HALB = "halb"` to `AccidentalConditionKind` with
    `SCORE_HALB = 1` and polarity `STRENGTHENING`.
@@ -230,8 +238,9 @@ Egyptian bounds, and implement the halb condition.
   returns Venus for 15 degrees Aries (Ptolemaic: Venus rules 6-14).
 - `egyptian_bound_of(15.0, policy=BoundsPolicy(doctrine=EGYPTIAN))`
   returns Mercury for 15 degrees Aries (Egyptian: Mercury rules 12-20).
-- `is_in_halb("Moon", ...)` returns `True` when Moon is in sect and in
-  a feminine sign but in the upper hemisphere (two of three conditions met).
+- `is_in_halb("Moon", ...)` returns `True` for Moon above the horizon in a
+  night chart, independently of sign gender.
+- `is_in_hayz("Moon", ...)` additionally requires a feminine sign.
 - All existing Egyptian bounds tests pass without modification.
 
 **Constitutional target:** P1 for Ptolemaic and Chaldean bounds.
@@ -386,7 +395,8 @@ Phase 4 requires Phase 3 for aspect direction infrastructure.
 - Ptolemaic bounds: tabular test against Tetrabiblos I.21 (Hephaistion
   reconstruction, Robbins translation).
 - Chaldean bounds: tabular test against Pingree, Yavanajataka (1978).
-- Halb: combinatorial tests of the three-condition partial match.
+- Halb/Hayz: exhaustive day/night, diurnal/nocturnal, hemisphere, and sign
+  gender matrices, including Mercury's neutral/non-evaluable Hayz truth.
 - Regression: all existing `test_egyptian_bounds.py` tests must pass.
 
 ### Phase 3
@@ -450,6 +460,11 @@ Phase 4 requires Phase 3 for aspect direction infrastructure.
   Sect: Ch. 7.  Overcoming: Ch. 11.  Whole-sign aspects: Ch. 11.
 - D. Pingree, *The Yavanajataka of Sphujidhvaja* (Harvard, 1978).
   Chaldean bounds.
+- al-Qabisi, *Introduction to Astrology*, and Guido Bonatti, *Book of
+  Astronomy*, in Benjamin Dykes's English translations. Sect-relative Halb
+  and Hayz conditions.
+- Porphyry, *Introduction to the Tetrabiblos*, excerpts preserving Antiochus.
+  Planetary gender, including feminine Mars and neutral Mercury.
 - Robert Hand, "Whole Sign Houses: The Oldest House System" (ARHAT, 2000).
   Whole-sign aspect rationale.
 - Existing Moira modules: `moira/dignities.py`, `moira/longevity.py`,

@@ -3,12 +3,13 @@ Moira — profections.py
 The Profection Engine: governs annual and monthly profection calculations
 (Hellenistic time-lord technique).
 
-Boundary: owns profection arithmetic, domicile ruler lookup, and activated-planet
-detection. Delegates sign derivation to constants. Delegates Julian Day arithmetic
-to julian. Does NOT own natal chart construction or ephemeris state.
+Boundary: owns profection arithmetic, civil-anniversary age resolution,
+domicile ruler lookup, and activated-planet detection. Delegates sign
+derivation to constants. Does NOT own natal chart construction or ephemeris
+state.
 
 Public surface:
-    DOMICILE_RULERS, ProfectionResult,
+    DOMICILE_RULERS, LeapDayAnniversaryPolicy, ProfectionResult,
     annual_profection, monthly_profection, profection_schedule
 
 Import-time side effects: None
@@ -20,17 +21,26 @@ External dependency assumptions:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
+from enum import StrEnum
 
 from .constants import sign_of
-from .julian import decimal_year_from_jd
 
 __all__ = [
     "DOMICILE_RULERS",
+    "LeapDayAnniversaryPolicy",
     "ProfectionResult",
     "annual_profection",
     "monthly_profection",
     "profection_schedule",
 ]
+
+
+class LeapDayAnniversaryPolicy(StrEnum):
+    """Civil-anniversary policy for a February 29 nativity."""
+
+    FEBRUARY_28 = "february_28"
+    MARCH_1 = "march_1"
 
 
 # ---------------------------------------------------------------------------
@@ -101,7 +111,7 @@ class ProfectionResult:
       "id": "moira.profections.ProfectionResult",
       "risk": "high",
       "api": {
-        "frozen": ["age_years", "profected_house", "profected_asc_lon", "profected_sign", "lord_of_year", "activated_planets", "monthly_lords"],
+        "frozen": ["age_years", "profected_house", "profected_asc_lon", "profected_sign", "lord_of_year", "activated_planets", "monthly_lords", "age_basis", "leap_day_policy"],
         "internal": []
       },
       "state": {"mutable": true, "owners": ["annual_profection", "profection_schedule"]},
@@ -123,6 +133,8 @@ class ProfectionResult:
     lord_of_year:      str        # classical domicile ruler of the profected sign
     activated_planets: list[str]  # planets within orb of the profected Ascendant
     monthly_lords:     list[str]  # lord of each of the 12 profected months (12 items)
+    age_basis:          str = "explicit_completed_age"
+    leap_day_policy:    LeapDayAnniversaryPolicy | None = None
 
     def __repr__(self) -> str:
         acts = ", ".join(self.activated_planets) if self.activated_planets else "—"
@@ -247,24 +259,28 @@ def monthly_profection(
 
 def profection_schedule(
     natal_asc: float,
-    natal_jd: float,
-    current_jd: float,
+    natal_dt: datetime,
+    current_dt: datetime,
     natal_positions: dict[str, float] | None = None,
+    *,
+    leap_day_policy: LeapDayAnniversaryPolicy | str | None = None,
 ) -> ProfectionResult:
     """
-    Compute the current profection from birth JD and current JD.
+    Compute the current profection from civil anniversary chronology.
 
-    Age is determined from the fractional elapsed Julian years (365.25 days).
-    The integer part of the elapsed years is used as the completed age.
+    Completed age advances on the anniversary of the natal local date and time,
+    not after a fixed 365.25-day quotient. Both datetimes must be timezone-aware;
+    the current instant is compared in the natal timezone. A February 29
+    nativity requires an explicit anniversary policy.
 
     Parameters
     ----------
     natal_asc : float
         Natal Ascendant longitude in degrees (0–360).
-    natal_jd : float
-        Julian Day (UT) of birth.
-    current_jd : float
-        Julian Day (UT) of the date to evaluate.
+    natal_dt : datetime
+        Timezone-aware civil birth datetime.
+    current_dt : datetime
+        Timezone-aware instant to evaluate.
     natal_positions : dict[str, float] or None
         Natal planet positions for activated-planet detection.
 
@@ -272,6 +288,50 @@ def profection_schedule(
     -------
     ProfectionResult
     """
-    elapsed_days = current_jd - natal_jd
-    age_years    = int(elapsed_days / 365.25)  # completed years
-    return annual_profection(natal_asc, age_years, natal_positions)
+    for label, value in (("natal_dt", natal_dt), ("current_dt", current_dt)):
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError(f"{label} must be timezone-aware")
+    if current_dt < natal_dt:
+        raise ValueError("current_dt must not be before natal_dt")
+
+    resolved_policy: LeapDayAnniversaryPolicy | None
+    if leap_day_policy is None:
+        resolved_policy = None
+    else:
+        try:
+            resolved_policy = LeapDayAnniversaryPolicy(leap_day_policy)
+        except ValueError as exc:
+            raise ValueError(
+                "leap_day_policy must be 'february_28' or 'march_1'"
+            ) from exc
+
+    is_leap_day_nativity = natal_dt.month == 2 and natal_dt.day == 29
+    if is_leap_day_nativity and resolved_policy is None:
+        raise ValueError(
+            "leap_day_policy is required for a February 29 nativity"
+        )
+
+    current_local = current_dt.astimezone(natal_dt.tzinfo)
+    candidate_age = current_local.year - natal_dt.year
+    try:
+        anniversary = natal_dt.replace(year=current_local.year)
+    except ValueError:
+        assert resolved_policy is not None
+        if resolved_policy is LeapDayAnniversaryPolicy.FEBRUARY_28:
+            anniversary = natal_dt.replace(
+                year=current_local.year,
+                month=2,
+                day=28,
+            )
+        else:
+            anniversary = natal_dt.replace(
+                year=current_local.year,
+                month=3,
+                day=1,
+            )
+    age_years = candidate_age - int(current_local < anniversary)
+
+    result = annual_profection(natal_asc, age_years, natal_positions)
+    result.age_basis = "civil_anniversary"
+    result.leap_day_policy = resolved_policy
+    return result

@@ -69,6 +69,9 @@ def test_decennials_sequence_route_matches_engine(
 
     assert resp.status_code == 200
     body = resp.json()
+    assert body["time_basis"] == "valens_lived_days_to_360_day_distribution"
+    assert body["calendar_projection_basis"] == "elapsed_julian_days_from_natal_jd"
+    assert body["sequence_origin_jd"] == pytest.approx(natal_jd)
     assert body["total_count"] == len(direct)
     assert body["major_count"] == sum(1 for p in direct if p.level == 1)
     assert body["levels_generated"] == 2
@@ -80,6 +83,9 @@ def test_decennials_sequence_route_matches_engine(
     assert first["years"] == pytest.approx(direct[0].years, rel=1e-6)
     assert first["sequence_kind"] == direct[0].sequence_kind
     assert first["sect_light"] == direct[0].sect_light
+    assert first["start_distribution_day"] == pytest.approx(0.0)
+    assert first["end_distribution_day"] == pytest.approx(3870.0)
+    assert first["distribution_years"] == pytest.approx(10.75)
     assert first["deep_subdivision_method"] is None
 
 
@@ -124,6 +130,9 @@ def test_decennials_current_route_matches_engine(
 
     assert resp.status_code == 200
     body = resp.json()
+    assert body["time_basis"] == "valens_lived_days_to_360_day_distribution"
+    assert body["calendar_projection_basis"] == "elapsed_julian_days_from_natal_jd"
+    assert body["sequence_origin_jd"] == pytest.approx(natal_jd)
     assert body["major"]["planet"] == direct_major.planet
     assert body["major"]["level"] == 1
     assert body["sub"]["planet"] == direct_sub.planet
@@ -146,6 +155,9 @@ def test_decennials_profile_route_matches_engine(
 
     assert resp.status_code == 200
     body = resp.json()
+    assert body["time_basis"] == "valens_lived_days_to_360_day_distribution"
+    assert body["calendar_projection_basis"] == "elapsed_julian_days_from_natal_jd"
+    assert body["sequence_origin_jd"] == pytest.approx(natal_jd)
     assert body["major_count"] == direct_profile.major_count
     assert body["profile_count"] == direct_profile.profile_count
     assert body["luminary_major_count"] == direct_profile.luminary_major_count

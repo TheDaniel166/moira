@@ -28,9 +28,10 @@ Public surface / exports:
     PlanetaryDignity      — result dataclass for one planet's dignity state
     DignitiesService      — service class for computing dignities from chart data
     DOMICILE / EXALTATION / DETRIMENT / FALL — essential dignity tables
-    SECT / PREFERRED_HEMISPHERE / PREFERRED_GENDER — hayz/sect tables
+    SECT / PREFERRED_HEMISPHERE / PREFERRED_GENDER — Halb/Hayz doctrine tables
     is_in_sect()          — sect membership test
-    is_in_hayz()          — hayz test (all three sect conditions)
+    halb_required_hemisphere() — sect-relative Halb hemisphere
+    is_in_hayz()          — Hayz test (Halb plus planetary sign gender)
     calculate_dignities() — module-level convenience wrapper
     sect_light()          — determine chart sect light (Sun or Moon)
     is_day_chart()        — boolean day/night test
@@ -79,6 +80,7 @@ __all__ = [
     "DispositorshipConditionState",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
+    "HalbHayzDoctrine",
     "MercurySectModel",
     # Policy dataclasses
     "EssentialDignityPolicy",
@@ -129,6 +131,7 @@ __all__ = [
     "DignitiesService",
     # Module-level functions
     "is_in_sect",
+    "halb_required_hemisphere",
     "is_in_hayz",
     "is_in_halb",
     "is_in_joy",
@@ -229,7 +232,7 @@ SCORE_SUNBEAMS   = -4   # 8 degrees-17 degrees
 SCORE_MR_DOMICILE   = 5
 SCORE_MR_EXALTATION = 4
 SCORE_JOY        =  3   # planet in its joy house
-SCORE_HALB       =  1   # partial hayz (two of three sect conditions)
+SCORE_HALB       =  1   # sect-relative hemisphere condition
 SCORE_ORIENTAL   =  2   # oriental planet (favourable phase)
 SCORE_OCCIDENTAL = -2   # occidental planet (unfavourable phase)
 SCORE_BESIEGED   = -5   # enclosed between two malefics
@@ -253,14 +256,11 @@ SECT: dict[str, str] = {
     "Mercury": "sect_light",  # changes with Sun: diurnal if it rises/sets before Sun
 }
 
-# Preferred hemisphere: 'above' (houses 7–12) or 'below' (houses 1–6)
-PREFERRED_HEMISPHERE: dict[str, str] = {
-    "Sun":     "above",
-    "Jupiter": "above",
-    "Saturn":  "above",
-    "Moon":    "below",
-    "Venus":   "below",
-    "Mars":    "above",   # Mars prefers above horizon in day chart; simplified
+# Sect-relative Halb hemisphere: diurnal planets are above by day and below
+# by night; nocturnal planets reverse that relation.
+PREFERRED_HEMISPHERE: dict[str, dict[str, str]] = {
+    "diurnal": {"day": "above", "night": "below"},
+    "nocturnal": {"day": "below", "night": "above"},
 }
 
 # Masculine signs (fire + air): Aries, Gemini, Leo, Libra, Sagittarius, Aquarius
@@ -278,8 +278,8 @@ PREFERRED_GENDER: dict[str, str] = {
     "Saturn":  "masculine",
     "Moon":    "feminine",
     "Venus":   "feminine",
-    "Mars":    "masculine",
-    "Mercury": "either",   # Mercury works in either gender
+    "Mars":    "feminine",
+    "Mercury": "neutral",
 }
 
 
@@ -290,7 +290,7 @@ PREFERRED_GENDER: dict[str, str] = {
 def is_in_sect(
     planet: str,
     is_day_chart: bool,
-    mercury_rises_before_sun: bool = True,
+    mercury_rises_before_sun: bool | None = None,
 ) -> bool:
     """
     Return True if the planet is in its preferred sect.
@@ -313,9 +313,39 @@ def is_in_sect(
         return is_day_chart
     if sect == "nocturnal":
         return not is_day_chart
+    if mercury_rises_before_sun is None:
+        raise ValueError(
+            "Mercury sect requires an explicit mercury_rises_before_sun phase."
+        )
     # Mercury ("sect_light"): diurnal when rising before Sun, else nocturnal
     mercury_sect = "diurnal" if mercury_rises_before_sun else "nocturnal"
     return mercury_sect == ("diurnal" if is_day_chart else "nocturnal")
+
+
+def halb_required_hemisphere(
+    planet: str,
+    is_day_chart: bool,
+    mercury_rises_before_sun: bool | None = None,
+) -> str | None:
+    """
+    Return the sect-relative hemisphere required for Halb.
+
+    Under the admitted al-Qabisi doctrine, diurnal planets belong above the
+    horizon by day and below it by night; nocturnal planets reverse that
+    relation. Mercury's effective sect must therefore be supplied through its
+    explicit phase when Mercury is queried.
+    """
+    planet_sect = SECT.get(planet)
+    if planet_sect is None:
+        return None
+    if planet_sect == "sect_light":
+        if mercury_rises_before_sun is None:
+            raise ValueError(
+                "Mercury Halb requires an explicit mercury_rises_before_sun phase."
+            )
+        planet_sect = "diurnal" if mercury_rises_before_sun else "nocturnal"
+    chart_key = "day" if is_day_chart else "night"
+    return PREFERRED_HEMISPHERE[planet_sect][chart_key]
 
 
 def is_in_hayz(
@@ -323,18 +353,15 @@ def is_in_hayz(
     sign: str,
     house: int,
     is_day_chart: bool,
-    mercury_rises_before_sun: bool = True,
+    mercury_rises_before_sun: bool | None = None,
 ) -> bool:
     """
-    Return True if the planet is in hayz (fully satisfying all sect conditions).
+    Return True if the planet is in Hayz under the admitted doctrine.
 
-    Hayz requires all three conditions to be met simultaneously:
-      1. Planet is in its preferred sect (diurnal planet in day chart, or
-         nocturnal planet in night chart; Mercury follows heliacal phase).
-      2. Planet is in its preferred hemisphere (above horizon = houses 7–12;
-         below horizon = houses 1–6).
-      3. Planet is in a sign of its preferred gender (masculine = fire/air;
-         feminine = earth/water).
+    Hayz is Halb (the correct sect-relative hemisphere) plus placement in a
+    sign of the planet's own gender. Mercury is neutral in the admitted source
+    and no gender-assignment rule is admitted, so Mercury never receives an
+    invented Hayz judgment.
 
     Hayz is traditionally considered the highest form of accidental strength.
 
@@ -349,35 +376,21 @@ def is_in_hayz(
     if planet not in SECT:
         return False
 
-    # Condition 1: correct sect
-    if not is_in_sect(planet, is_day_chart, mercury_rises_before_sun):
+    if not is_in_halb(
+        planet,
+        sign,
+        house,
+        is_day_chart,
+        mercury_rises_before_sun,
+    ):
         return False
 
-    # Condition 2: preferred hemisphere
-    preferred_hemi = PREFERRED_HEMISPHERE.get(planet)
-    if preferred_hemi == "above":
-        # Above horizon = houses 7 through 12
-        in_preferred_hemi = (7 <= house <= 12)
-    elif preferred_hemi == "below":
-        # Below horizon = houses 1 through 6
-        in_preferred_hemi = (1 <= house <= 6)
-    else:
-        in_preferred_hemi = True  # unknown planet — do not penalise
-
-    if not in_preferred_hemi:
-        return False
-
-    # Condition 3: preferred sign gender
     preferred_gender = PREFERRED_GENDER.get(planet)
     if preferred_gender == "masculine":
-        in_preferred_gender = sign in MASCULINE_SIGNS
-    elif preferred_gender == "feminine":
-        in_preferred_gender = sign in FEMININE_SIGNS
-    else:
-        # Mercury ("either") is content in any sign gender
-        in_preferred_gender = True
-
-    return in_preferred_gender
+        return sign in MASCULINE_SIGNS
+    if preferred_gender == "feminine":
+        return sign in FEMININE_SIGNS
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -408,42 +421,26 @@ def is_in_halb(
     sign: str,
     house: int,
     is_day_chart: bool,
-    mercury_rises_before_sun: bool = True,
+    mercury_rises_before_sun: bool | None = None,
 ) -> bool:
     """
-    Return True if the planet is in halb (partial hayz).
+    Return True if the planet occupies its sect-relative Halb hemisphere.
 
-    Halb requires exactly two of the three hayz conditions to be met:
-      1. Planet is in its preferred sect.
-      2. Planet is in its preferred hemisphere.
-      3. Planet is in a sign of its preferred gender.
-
-    When all three are met the planet is in full hayz, not halb.
-    When fewer than two are met the planet is neither in hayz nor halb.
+    The ``sign`` parameter remains in the public signature for compatibility;
+    sign gender belongs to Hayz, not Halb, and is deliberately not consulted.
     """
     if planet not in SECT:
         return False
 
-    cond_sect = is_in_sect(planet, is_day_chart, mercury_rises_before_sun)
-
-    preferred_hemi = PREFERRED_HEMISPHERE.get(planet)
-    if preferred_hemi == "above":
-        cond_hemi = 7 <= house <= 12
-    elif preferred_hemi == "below":
-        cond_hemi = 1 <= house <= 6
-    else:
-        cond_hemi = True
-
-    preferred_gender = PREFERRED_GENDER.get(planet)
-    if preferred_gender == "masculine":
-        cond_gender = sign in MASCULINE_SIGNS
-    elif preferred_gender == "feminine":
-        cond_gender = sign in FEMININE_SIGNS
-    else:
-        cond_gender = True
-
-    count = sum((cond_sect, cond_hemi, cond_gender))
-    return count == 2
+    if not 1 <= house <= 12:
+        raise ValueError(f"house must be in 1–12, got {house!r}")
+    required = halb_required_hemisphere(
+        planet,
+        is_day_chart,
+        mercury_rises_before_sun,
+    )
+    actual = "above" if 7 <= house <= 12 else "below"
+    return required is not None and actual == required
 
 
 # -- Superior / inferior planet classification for oriental/occidental ------
@@ -636,8 +633,9 @@ class DignitiesService:
         Dependencies:
             - moira.constants.SIGNS for sign name lookup.
         Failure behavior:
-            - Missing planets in planet_positions are silently skipped.
-            - Malformed house_positions entries default to 0.0.
+            - An explicit Sun position is required for sect and solar truth.
+            - Other missing planets are skipped without fabricating phase truth.
+            - Malformed or incomplete house input raises instead of defaulting.
 
     Canon: William Lilly, Christian Astrology (1647), Book I;
            Vettius Valens, Anthology (hayz)
@@ -651,7 +649,7 @@ class DignitiesService:
         "state": {"mutable": false, "owners": []},
         "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
         "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
-        "failures": {"policy": "silent_default"},
+        "failures": {"policy": "raise"},
         "succession": {"stance": "terminal", "override_points": []},
         "agent": {"autofix": "allowed", "requires_human_for": ["api_change"]}
     }
@@ -705,7 +703,12 @@ class DignitiesService:
             planet_signs[name] = SIGNS[int(degree // 30) % 12]
             planet_retro[name] = retro
 
-        sun_lon = planet_lons.get("Sun", 0.0)
+        if "Sun" not in planet_lons:
+            raise ValueError(
+                "calculate_dignities requires an explicit Sun position to determine "
+                "sect and solar conditions."
+            )
+        sun_lon = planet_lons["Sun"]
         all_receptions_by_planet = self._find_receptions(
             planet_signs,
             bases=(ReceptionBasis.DOMICILE, ReceptionBasis.EXALTATION),
@@ -724,11 +727,15 @@ class DignitiesService:
         # Determine Mercury's phase: is it a morning star (rises before Sun)?
         # Use a simple heuristic: Mercury is a morning star when it is behind the Sun
         # (i.e., its longitude is less than the Sun's by up to 90°).
-        mercury_lon = planet_lons.get("Mercury", sun_lon)
-        mercury_rises_before_sun = self._mercury_rises_before_sun(
-            mercury_lon=mercury_lon,
-            sun_lon=sun_lon,
-            policy=policy,
+        mercury_lon = planet_lons.get("Mercury")
+        mercury_rises_before_sun = (
+            self._mercury_rises_before_sun(
+                mercury_lon=mercury_lon,
+                sun_lon=sun_lon,
+                policy=policy,
+            )
+            if mercury_lon is not None
+            else None
         )
 
         results: list[PlanetaryDignity] = []
@@ -1117,7 +1124,7 @@ class DignitiesService:
         receptions: list[PlanetaryReception],
         sign: str = "",
         is_day_chart: bool = True,
-        mercury_rises_before_sun: bool = True,
+        mercury_rises_before_sun: bool | None = None,
         policy: DignityComputationPolicy | None = None,
         chart_positions: dict[str, float] | None = None,
     ) -> tuple[list[str], int, AccidentalDignityTruth, SectTruth]:
@@ -1199,6 +1206,7 @@ class DignitiesService:
             house=house,
             is_day_chart=is_day_chart,
             mercury_rises_before_sun=mercury_rises_before_sun,
+            doctrine=policy.accidental.sect.doctrine,
         )
 
         hayz_condition: AccidentalDignityCondition | None = None
@@ -1212,10 +1220,7 @@ class DignitiesService:
         if (
             policy.accidental.sect.include_halb
             and hayz_condition is None
-            and sign
-            and is_in_halb(
-                planet, sign, house, is_day_chart, mercury_rises_before_sun
-            )
+            and sect_truth.in_halb
         ):
             halb_condition = AccidentalDignityCondition("sect", "halb", "In Halb", SCORE_HALB)
             dignities.append(halb_condition.label)
@@ -1290,31 +1295,51 @@ class DignitiesService:
         sign: str,
         house: int,
         is_day_chart: bool,
-        mercury_rises_before_sun: bool,
+        mercury_rises_before_sun: bool | None,
+        doctrine: HalbHayzDoctrine,
     ) -> SectTruth:
         actual_hemisphere = "above" if 7 <= house <= 12 else "below"
         actual_gender = "masculine" if sign in MASCULINE_SIGNS else "feminine"
-        preferred_hemisphere = PREFERRED_HEMISPHERE.get(planet)
+        preferred_hemisphere = halb_required_hemisphere(
+            planet,
+            is_day_chart,
+            mercury_rises_before_sun,
+        )
         preferred_gender = PREFERRED_GENDER.get(planet)
         planet_sect = SECT.get(planet)
         if planet_sect == "sect_light":
+            if mercury_rises_before_sun is None:
+                raise ValueError(
+                    "Mercury sect truth requires an explicit "
+                    "mercury_rises_before_sun phase."
+                )
             planet_sect = "diurnal" if mercury_rises_before_sun else "nocturnal"
 
-        hemisphere_matches = (
-            True if preferred_hemisphere is None else preferred_hemisphere == actual_hemisphere
-        )
+        hemisphere_matches = preferred_hemisphere == actual_hemisphere
         gender_matches = (
-            True if preferred_gender in (None, "either") else preferred_gender == actual_gender
+            preferred_gender == actual_gender
+            if preferred_gender in {"masculine", "feminine"}
+            else None
         )
         in_sect = is_in_sect(planet, is_day_chart, mercury_rises_before_sun)
-        in_hayz = sign != "" and is_in_hayz(planet, sign, house, is_day_chart, mercury_rises_before_sun)
+        in_halb = sign != "" and is_in_halb(
+            planet,
+            sign,
+            house,
+            is_day_chart,
+            mercury_rises_before_sun,
+        )
+        hayz_evaluable = gender_matches is not None
+        in_hayz = in_halb and bool(gender_matches)
 
         return SectTruth(
+            doctrine=doctrine,
             is_day_chart=is_day_chart,
             sect_light="Sun" if is_day_chart else "Moon",
             planet_sect=planet_sect,
             mercury_rises_before_sun=mercury_rises_before_sun,
             in_sect=in_sect,
+            in_halb=in_halb,
             in_hayz=in_hayz,
             preferred_hemisphere=preferred_hemisphere,
             actual_hemisphere=actual_hemisphere,
@@ -1322,6 +1347,7 @@ class DignitiesService:
             preferred_gender=preferred_gender,
             actual_gender=actual_gender,
             gender_matches=gender_matches,
+            hayz_evaluable=hayz_evaluable,
         )
 
     @staticmethod
@@ -1333,6 +1359,13 @@ class DignitiesService:
             raise ValueError(f"Unsupported essential dignity doctrine: {policy.essential.doctrine}")
         if policy.accidental.sect.mercury_sect_model is not MercurySectModel.LONGITUDE_HEURISTIC:
             raise ValueError(f"Unsupported Mercury sect model: {policy.accidental.sect.mercury_sect_model}")
+        if (
+            policy.accidental.sect.doctrine
+            is not HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007
+        ):
+            raise ValueError(
+                f"Unsupported Halb/Hayz doctrine: {policy.accidental.sect.doctrine}"
+            )
 
     @staticmethod
     def _mercury_rises_before_sun(
@@ -1416,11 +1449,18 @@ class DignitiesService:
     def _classify_sect_truth(truth: SectTruth) -> SectClassification:
         if truth.in_hayz:
             state = SectStateKind.IN_HAYZ
+        elif truth.in_halb:
+            state = SectStateKind.IN_HALB
         elif truth.in_sect:
             state = SectStateKind.IN_SECT
         else:
             state = SectStateKind.OUT_OF_SECT
-        return SectClassification(state=state, in_sect=truth.in_sect, in_hayz=truth.in_hayz)
+        return SectClassification(
+            state=state,
+            in_sect=truth.in_sect,
+            in_halb=truth.in_halb,
+            in_hayz=truth.in_hayz,
+        )
 
     @staticmethod
     def _classify_solar_truth(truth: SolarConditionTruth) -> SolarConditionClassification:

@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
+from moira.profections import LeapDayAnniversaryPolicy
+
 from .common import _StrictModel
 
 
@@ -37,6 +39,7 @@ class MonthlyProfectionRequest(_StrictModel):
 class ProfectionScheduleRequest(_StrictModel):
     natal: TimelordNativityRequest
     current_dt: datetime
+    leap_day_policy: LeapDayAnniversaryPolicy | None = None
 
 
 class ProfectionResultResponse(_StrictModel):
@@ -47,6 +50,8 @@ class ProfectionResultResponse(_StrictModel):
     lord_of_year: str
     activated_planets: list[str]
     monthly_lords: list[str]
+    age_basis: str
+    leap_day_policy: LeapDayAnniversaryPolicy | None
 
 
 class MonthlyProfectionResponse(_StrictModel):
@@ -240,6 +245,12 @@ class DecennialPeriodResponse(_StrictModel):
     years: float
     months: float
     days: float
+    time_basis: str
+    calendar_projection_basis: str
+    sequence_origin_jd: float
+    start_distribution_day: float
+    end_distribution_day: float
+    distribution_years: float
     start_date: str
     end_date: str
     major_planet: str | None
@@ -267,6 +278,9 @@ class DecennialSequenceResponse(_StrictModel):
     major_count: int
     sub_count: int
     levels_generated: int
+    time_basis: str
+    calendar_projection_basis: str
+    sequence_origin_jd: float
     deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
@@ -279,6 +293,9 @@ class DecennialGroupsResponse(_StrictModel):
 class DecennialCurrentResponse(_StrictModel):
     major: DecennialPeriodResponse
     sub: DecennialPeriodResponse
+    time_basis: str
+    calendar_projection_basis: str
+    sequence_origin_jd: float
     deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
 
@@ -304,6 +321,12 @@ class DecennialConditionProfileResponse(_StrictModel):
     months: float
     days: float
     month_basis_days: float
+    time_basis: str
+    calendar_projection_basis: str
+    sequence_origin_jd: float
+    start_distribution_day: float
+    end_distribution_day: float
+    distribution_years: float
 
 
 class DecennialSequenceProfileResponse(_StrictModel):
@@ -316,6 +339,9 @@ class DecennialSequenceProfileResponse(_StrictModel):
     total_major_months: float
     sequence_kind: str | None
     sect_light: str | None
+    time_basis: str
+    calendar_projection_basis: str
+    sequence_origin_jd: float
     deepest_level: int
     deep_subdivision_method: DecennialDeepSubdivisionMethod | None
 
@@ -391,6 +417,12 @@ class ZRProfileRequest(_StrictModel):
     natal: ZRNatalRequest
     levels: int = Field(default=4, ge=1, le=4)
     profile_level: int = Field(default=1, ge=1, le=4)
+
+    @model_validator(mode="after")
+    def _profile_level_is_generated(self) -> "ZRProfileRequest":
+        if self.profile_level > self.levels:
+            raise ValueError("profile_level must be less than or equal to levels")
+        return self
 
 
 class ZRLevelPairRequest(_StrictModel):

@@ -1,6 +1,13 @@
 # Year Semantics Audit
 
 Date: 2026-03-30
+Corrected: 2026-07-25
+
+> **Profection correction.** The earlier audit classified a fixed
+> `elapsed_days / 365.25` age as plausibly correct. That classification was
+> stale. `profection_schedule()` now advances completed age on the natal civil
+> anniversary in the natal timezone. February 29 nativities require an
+> explicit `february_28` or `march_1` anniversary policy.
 
 Purpose
 -------
@@ -17,13 +24,16 @@ Summary Verdict
 ---------------
 Most remaining `365.25` uses are correct and should remain.
 
-The codebase currently contains five distinct semantic classes:
+The codebase currently contains seven distinct semantic classes:
 
 1. `Julian year` by doctrine or convention: keep.
 2. `Tropical year` for seasonal/solar timing: use `TROPICAL_YEAR`.
 3. `Sidereal year` for orbital/stellar period timing: use `SIDEREAL_YEAR`.
 4. `Julian century` (`36525.0`) in standard astronomical polynomials: keep.
 5. `365.25` inside canonical calendar/JD conversion algorithms: keep.
+6. Delta-T annual-epoch integration: use actual source-epoch spacing.
+7. Civil-anniversary chronology for completed ages: do not replace with a
+   fixed-length astronomical year.
 
 After the latest correction pass, the main live upgrade targets that remain are
 small in number. The largest genuinely ambiguous site is the annual-resolution
@@ -43,10 +53,6 @@ historical astrological convention, or standard astronomical convention.
 - `moira/timelords.py`
   - `_JULIAN_YEAR = 365.25`
   - Correct. The module explicitly says JD arithmetic uses Julian years.
-- `moira/profections.py`
-  - `age_years = int(elapsed_days / 365.25)`
-  - Plausibly correct if the subsystem intends completed ages in fractional Julian years.
-  - This is doctrinal rather than physical astronomy. Keep unless the profection doctrine is intentionally revised.
 - `moira/primary_directions/keys.py`
   - `_NAIBOD_RATE = 360.0 / 365.25`
   - Correct. Naibod is a doctrinal key, not a generic solar-year approximation.
@@ -144,12 +150,28 @@ from the admitted public Delta-T mean. Their epoch-spacing helpers remain
 testable research infrastructure; they do not establish causal component
 truth merely by integrating a proxy.
 
+Class G: Civil-Anniversary Chronology
+-------------------------------------
+
+- `moira/profections.py`
+  - `profection_schedule()` accepts timezone-aware `natal_dt` and
+    `current_dt`.
+  - Completed age changes at the natal local date and time, after converting
+    the current instant into the natal timezone.
+  - A February 29 nativity requires an explicit
+    `LeapDayAnniversaryPolicy.FEBRUARY_28` or
+    `LeapDayAnniversaryPolicy.MARCH_1`.
+  - The result carries `age_basis="civil_anniversary"` and the selected
+    leap-day policy.
+
+This is a calendar rule, not a Julian-, tropical-, or sidereal-year constant.
+Using `int(elapsed_days / 365.25)` can advance the profection before the civil
+anniversary and is forbidden for the schedule API.
+
 Low-Priority Cosmetic Improvements
 ----------------------------------
 These are not correctness bugs, but could be made more explicit over time.
 
-- `moira/profections.py`
-  - could import `JULIAN_YEAR` instead of spelling `365.25`
 - `moira/stars.py`
   - could import `JULIAN_YEAR` instead of local `_DAYS_PER_YEAR = 365.25`
 - `moira/timelords.py`
@@ -161,7 +183,7 @@ These are semantic-clarity refactors, not accuracy fixes.
 
 Recommended Next Steps
 ----------------------
-1. Leave all Class A, C, D, and E sites untouched.
+1. Leave all admitted Class A-G semantics intact.
 2. Optionally normalize explicit Julian-year imports in Class A for consistency.
 3. Preserve the explicit source-epoch policy and quarantine status when Delta-T
    data artifacts are refreshed or re-derived.

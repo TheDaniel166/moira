@@ -151,6 +151,18 @@ def test_zr_profile_route_matches_engine(client_with_engine: TestClient) -> None
     assert body["profiles"][0]["sign"] == direct_profile.profiles[0].sign
 
 
+def test_zr_profile_route_rejects_profile_level_above_generated_depth(
+    client_with_engine: TestClient,
+) -> None:
+    resp = client_with_engine.post(
+        "/v1/timelords/zodiacal-releasing/profile",
+        json={**_BASE_PAYLOAD, "levels": 1, "profile_level": 2},
+    )
+
+    assert resp.status_code == 422
+    assert "profile_level must be less than or equal to levels" in resp.text
+
+
 def test_zr_profile_route_classifies_all_twelve_places_from_fortune(
     client_with_engine: TestClient,
 ) -> None:
