@@ -1,7 +1,7 @@
 # Asteroid Families And Subsets Backend Standard
 
-Version: 0.2
-Date: 2026-07-01
+Version: 0.3
+Date: 2026-07-24
 Status: admitted backend standard for Phase 11 REST transport
 
 ## Scope
@@ -23,11 +23,15 @@ admission.
 Named asteroid subsets are curated Moira identity groupings over bodies already
 present in `ASTEROID_NAIF`.
 
-The dynamical-family layer is a catalog lookup over MPC asteroid numbers from:
+The dynamical-family layer is a normalized catalog lookup over MPC asteroid
+numbers from:
 
-- Nesvorny, D. et al. 2015
-- NASA PDS `ast.nesvorny.families` V2.0
+- Nesvorny, D. et al. 2026 Proper25 for main-belt families
+- NASA PDS `ast.nesvorny.families` V2.0 (2015 tables) only for the Hilda and
+  Jupiter Trojan populations explicitly excluded by Proper25
 - bundled dataset: `moira/data/asteroid_families.csv`
+- source and normalization receipt:
+  `moira/data/asteroid_families.metadata.json`
 
 The two surfaces must not be collapsed:
 
@@ -43,15 +47,19 @@ Named subset surfaces govern stable curated identity sets:
 - centaurs: the named Moira centaur body set
 - TNOs: the named Moira trans-Neptunian body set
 
-Dynamical-family surfaces govern catalog membership:
+Dynamical-family surfaces govern catalog membership evidence:
 
-- one asteroid number to one family name, or no family
+- one asteroid number to zero or more nested/overlapping family memberships
+- one deterministic display-primary family for compatibility surfaces
 - one family name to bounded MPC-number membership
 - one supplied chart list to grouped family membership
 - one supplied chart asteroid set to a family-qualified aspect network
 
-Family membership is physical-origin catalog truth. It is not a zodiacal,
-aspectual, house, or interpretive grouping.
+Family membership is the admitted source's HCM classification under its named
+cutoff policy. It is not a zodiacal, aspectual, house, or interpretive grouping,
+and it is not independent proof that every listed body is genetically related.
+An absent membership means only that the body is absent from the admitted
+catalogs.
 
 ## Required Transport Invariants
 
@@ -63,7 +71,8 @@ REST transport must preserve:
 - asteroid name and NAIF ID for subset routes
 - loaded-kernel availability by NAIF ID when exposed
 - MPC catalog number semantics for family routes
-- Nesvorny/PDS provenance for family routes
+- Proper25/PDS source-boundary provenance for family routes
+- complete memberships alongside the compatibility display-primary family
 - bounded list/member output
 - chart resonance nodes, edges, and per-family network buckets when requested
 - explicit stage sequence
@@ -74,14 +83,16 @@ REST transport must not:
 - silently convert MPC numbers into NAIF IDs
 - treat family membership as a position computation
 - treat subset membership as proof of loaded-kernel availability
-- expose unbounded 143k-member catalog sweeps
+- expose unbounded whole-catalog sweeps
+- collapse overlapping membership to the display-primary family in grouping
+  or resonance computation
 - claim photometry, topocentric position, or rendered-map support
 
 ## Admitted Family Surfaces
 
 The backend supports three low-risk family catalog views:
 
-- lookup family by MPC number
+- lookup display-primary and complete families by MPC number
 - list members of a named family with offset/limit bounds
 - group a supplied list of MPC numbers by family
 
@@ -93,7 +104,7 @@ The backend also supports one bounded chart resonance-network view:
 - group them through `resonance_network(...)`
 
 This route must expose the resolved asteroid node identities, the full aspect
-admission vessel for each resonant edge, the shared Nesvorny family qualifier,
+admission vessel for each resonant edge, each shared Nesvorny family qualifier,
 and the per-family network buckets. It must not turn resonance into an
 interpretive score or family-wide catalog sweep.
 
@@ -127,8 +138,10 @@ Transport admission must verify:
   MPC catalog numbers
 - resonance-network aspect policy inputs are bounded to the admitted
   `find_aspects` tier/orb-factor surface
-- live catalog distinctions are preserved, including distinct Nesvorny family
-  names such as `Koronis`, `Koronis(2)`, and `Karin`
+- live catalog distinctions and overlaps are preserved, including the current
+  `Koronis`, `Koronis2`, and `Karin` names
+- legacy `Koronis(2)`, `RJ`, and `UV209` member lookups resolve through explicit
+  aliases rather than duplicate catalog rows
 
 ## Non-Goals
 
@@ -140,4 +153,4 @@ This standard does not admit:
 - photometry
 - topocentric or equatorial asteroid subset products
 - kernel build or manifest-management routes
-- edits to the bundled Nesvorny/PDS catalog
+- runtime or transport mutation of the bundled family catalog

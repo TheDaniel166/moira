@@ -17,6 +17,7 @@ from moira.aspects import find_aspects
 from moira.asteroids import ASTEROID_NAIF, AsteroidData, asteroid_at
 from moira.asteroid_families import (
     asteroid_family,
+    asteroid_families,
     families_in_chart,
     family_members,
     find_resonant_aspects,
@@ -455,6 +456,7 @@ def lookup_asteroid_family(number: int) -> AsteroidFamilyLookupResponse:
     return AsteroidFamilyLookupResponse(
         number=number,
         family_name=family,
+        family_names=asteroid_families(number),
         provenance=AsteroidFamilyLookupProvenanceResponse(
             requested_number=number,
             stage_sequence=["mpc_number_validation", "nesvorny_family_lookup"],
@@ -575,7 +577,8 @@ def compute_asteroid_family_resonance_network(
             raise ValueError(f"duplicate resolved asteroid body {data.name!r}")
 
         mpc_number = explicit_number if explicit_number is not None else _mpc_number_from_naif_id(data.naif_id)
-        family_name = asteroid_family(mpc_number) if mpc_number > 0 else None
+        family_names = asteroid_families(mpc_number) if mpc_number > 0 else []
+        family_name = family_names[0] if family_names else None
         loaded_kernel_available = data.naif_id in covered
 
         nodes.append(
@@ -585,6 +588,7 @@ def compute_asteroid_family_resonance_network(
                 naif_id=data.naif_id,
                 mpc_number=mpc_number,
                 family_name=family_name,
+                family_names=family_names,
                 longitude=data.longitude,
                 latitude=data.latitude,
                 speed=data.speed,

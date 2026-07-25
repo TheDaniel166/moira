@@ -465,7 +465,10 @@ def test_asteroid_family_by_number_route_returns_catalog_provenance(
     body = response.json()
     assert body["number"] == 4
     assert body["family_name"] == "Vesta"
-    assert body["provenance"]["catalog_source"] == "NASA_PDS_ast_nesvorny_families_v2_2015"
+    assert body["family_names"] == ["Vesta"]
+    assert body["provenance"]["catalog_source"] == (
+        "Proper25_2026_plus_NASA_PDS_2015_excluded_populations"
+    )
     assert body["provenance"]["number_system"] == "MPC_catalog_number"
 
 
@@ -507,9 +510,9 @@ def test_asteroid_families_in_chart_route_groups_mpc_numbers(
 
     assert response.status_code == 200
     body = response.json()
-    assert body["groups"]["Karin"] == [832]
-    assert body["groups"]["Koronis"] == [167, 243]
-    assert body["groups"]["Koronis(2)"] == [158]
+    assert body["groups"]["Karin"] == [158, 167, 832]
+    assert body["groups"]["Koronis"] == [158, 167, 243, 832]
+    assert body["groups"]["Koronis2"] == [158, 167, 832]
     assert body["groups"]["Vesta"] == [4]
     assert body["ungrouped_numbers"] == [1]
     assert body["provenance"]["number_system"] == "MPC_catalog_number"
@@ -590,6 +593,7 @@ def test_asteroid_family_resonance_network_route_returns_ui_ready_edges(
     nodes_by_name = {node["body"]: node for node in body["nodes"]}
     assert nodes_by_name["Vesta"]["mpc_number"] == 4
     assert nodes_by_name["Vesta"]["family_name"] == "Vesta"
+    assert nodes_by_name["Vesta"]["family_names"] == ["Vesta"]
     assert nodes_by_name["Vesta"]["is_sovereign"] is True
     assert nodes_by_name["Ausonia"]["mpc_number"] == 63
     assert nodes_by_name["Ausonia"]["family_name"] == "Vesta"

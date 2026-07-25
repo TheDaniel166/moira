@@ -41,6 +41,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from moira._spk_body_kernel import SmallBodyKernel
+from moira.asteroid_families import ASTEROID_FAMILY_CATALOG_SOURCE
 from moira.daf_writer import write_spk_type13
 
 HORIZONS_URL = "https://ssd.jpl.nasa.gov/api/horizons.api"
@@ -363,13 +364,19 @@ def main() -> None:
             try:
                 b = _fetch_body(num)
             except Exception as e:  # noqa: BLE001
-                failures.append({"number": num, "family": t.get("family"), "error": str(e)[:200]})
+                failures.append({
+                    "number": num,
+                    "family": t.get("family"),
+                    "families": t.get("families", []),
+                    "error": str(e)[:200],
+                })
                 print(f"  [SKIP] {num} ({t.get('family')}): {str(e)[:70]}", flush=True)
                 continue
             dt = time.perf_counter() - t0
             bodies.append(b)
             records.append({
-                "number": num, "naif_id": b["naif_id"], "name": b["name"], "family": t.get("family"),
+                "number": num, "naif_id": b["naif_id"], "name": b["name"],
+                "family": t.get("family"), "families": t.get("families", []),
                 "nodes": len(b["epochs_jd"]), "clamped": b["clamped"],
                 "start": b["start"], "stop": b["stop"], "fetch_s": round(dt, 1),
                 **({"coverage_policy": b["coverage_policy"],
@@ -396,6 +403,7 @@ def main() -> None:
         shard_meta = {
             "shard": sidx, "kernel": kpath.name, "kernel_bytes": kpath.stat().st_size,
             "window": WINDOW, "step_days": STEP_DAYS, "window_size": WINDOW_SIZE,
+            "family_catalog_source": ASTEROID_FAMILY_CATALOG_SOURCE,
             "records": records, "failures": failures,
             "naif_map": {r["name"]: r["naif_id"] for r in records},
         }
@@ -422,6 +430,7 @@ def main() -> None:
     master = {
         "requested": len(slice_targets), "built": len(m_records), "failed": len(m_failures),
         "window": WINDOW, "step_days": STEP_DAYS, "window_size": WINDOW_SIZE,
+        "family_catalog_source": ASTEROID_FAMILY_CATALOG_SOURCE,
         "completed_shards": completed_shards,
         "planned_shards": len(shards),
         "stopped_at_time_limit": stopped_at_time_limit,

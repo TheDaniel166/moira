@@ -517,89 +517,64 @@ def test_pbt_sky_position_agrees_with_planet_at(body, jd, lat, lon):
 
 
 # ---------------------------------------------------------------------------
-# 9.6 PBT — true_node matrix pipeline agrees with pre-refactor scalar result
-# Feature: physics-layer, Property 2: true_node matrix pipeline agrees with scalar offset
+# 9.6 PBT — true_node intersects planes expressed in one frame
+# Feature: physics-layer, Property 2: true_node common-frame geometry
 # Validates: Requirements 2.1, 2.4
 # ---------------------------------------------------------------------------
 
 from moira.nodes import true_node
 from moira._ephemeris_time import _ut1_to_ephemeris_tt
 from moira.coordinates import mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
-from moira.constants import DEG2RAD, RAD2DEG
+from moira.corrections import apply_frame_bias
+from moira.constants import DEG2RAD
 
 
 @pytest.mark.requires_ephemeris
 @given(jd=st.floats(min_value=2400000, max_value=2600000))
 @settings(max_examples=50, deadline=None)
-def test_pbt_true_node_matrix_vs_scalar(jd):
-    """
-    For any JD in 2400000–2600000, the matrix-pipeline true_node longitude must
-    agree with the old scalar-offset result to within 0.01 arcseconds.
-
-    The scalar reference computes the intersection vector in J2000 ICRF, then
-    applies general_precession_in_longitude + dpsi as a scalar longitude offset.
-    """
+def test_pbt_true_node_common_frame_intersection(jd):
+    """The returned node line lies in both true-of-date defining planes."""
     assume(_math.isfinite(jd))
 
     from moira.spk_reader import get_reader
-    from moira.planets import _earth_barycentric
     from moira.coordinates import vec_sub
-    from moira.nodes import _TRUE_NODE_STEP
 
     reader = get_reader()
     jd_tt = _ut1_to_ephemeris_tt(jd, reader)
-    dpsi_deg, deps_deg = nutation(jd_tt)
-    obliquity = mean_obliquity(jd_tt) + deps_deg
-    eps = obliquity * DEG2RAD
-
-    def moon_geo(t):
-        emb_moon = reader.position(3, 301, t)
-        emb_earth = reader.position(3, 399, t)
-        return vec_sub(emb_moon, emb_earth)
-
-    r1 = moon_geo(jd_tt - _TRUE_NODE_STEP)
-    r2 = moon_geo(jd_tt + _TRUE_NODE_STEP)
-
-    # Orbital plane normal = r1 × r2
-    nx = r1[1]*r2[2] - r1[2]*r2[1]
-    ny = r1[2]*r2[0] - r1[0]*r2[2]
-    nz = r1[0]*r2[1] - r1[1]*r2[0]
-
-    # Ecliptic plane normal in ICRF: (0, -sin ε, cos ε)
-    ex = 0.0
-    ey = -_math.sin(eps)
-    ez = _math.cos(eps)
-
-    # Ascending node intersection direction
-    ix = ey*nz - ez*ny
-    iy = ez*nx - ex*nz
-    iz = ex*ny - ey*nx
-
-    # --- Scalar reference (old formula) ---
-    # Convert J2000 ICRF intersection vector to ecliptic longitude using
-    # mean obliquity at J2000 (eps ≈ 23.4393°), then add scalar offsets.
-    eps_j2000 = obliquity * DEG2RAD  # same eps used to build the intersection
-    iye_j2000 = iy * _math.cos(eps_j2000) + iz * _math.sin(eps_j2000)
-    ixe_j2000 = ix
-    lon_j2000 = _math.atan2(iye_j2000, ixe_j2000) * RAD2DEG % 360.0
-    scalar_lon = (lon_j2000 + general_precession_in_longitude(jd_tt) + dpsi_deg) % 360.0
-
-    # --- Matrix result (current implementation) ---
-    matrix_result = true_node(jd)
-    matrix_lon = matrix_result.longitude
-
-    # Angular difference (handle 360° wrap)
-    diff_arcsec = abs(((matrix_lon - scalar_lon + 180.0) % 360.0 - 180.0) * 3600.0)
-
-    # The scalar reference is an approximation (uses same obliquity for both
-    # intersection geometry and ecliptic projection). Near J2000 the two agree
-    # to < 0.01"; at the extremes (JD 2400000 and JD 2600000) the divergence
-    # reaches ~47". The matrix pipeline is the correct implementation; we
-    # verify the two methods agree to within 60 arcseconds across the range.
-    assert diff_arcsec < 60.0, (
-        f"true_node matrix vs scalar at JD {jd}: diff = {diff_arcsec:.6f}\" "
-        f"(matrix={matrix_lon:.6f}°, scalar={scalar_lon:.6f}°)"
+    moon_pos, moon_vel = reader.position_and_velocity(3, 301, jd_tt)
+    earth_pos, earth_vel = reader.position_and_velocity(3, 399, jd_tt)
+    r = vec_sub(moon_pos, earth_pos)
+    v = vec_sub(moon_vel, earth_vel)
+    h_icrf = (
+        r[1] * v[2] - r[2] * v[1],
+        r[2] * v[0] - r[0] * v[2],
+        r[0] * v[1] - r[1] * v[0],
     )
+    h_true = mat_vec_mul(
+        nutation_matrix_equatorial(jd_tt),
+        mat_vec_mul(
+            precession_matrix_equatorial(jd_tt),
+            apply_frame_bias(h_icrf),
+        ),
+    )
+
+    deps_deg = nutation(jd_tt)[1]
+    eps = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD
+    lon = true_node(jd, reader=reader, jd_tt=jd_tt).longitude * DEG2RAD
+    node_line = (
+        _math.cos(lon),
+        _math.sin(lon) * _math.cos(eps),
+        _math.sin(lon) * _math.sin(eps),
+    )
+    ecliptic_pole = (0.0, -_math.sin(eps), _math.cos(eps))
+
+    def normalized_dot(a, b):
+        numerator = sum(x * y for x, y in zip(a, b))
+        denominator = _math.sqrt(sum(x * x for x in a) * sum(y * y for y in b))
+        return numerator / denominator
+
+    assert abs(normalized_dot(node_line, h_true)) < 1e-12
+    assert abs(normalized_dot(node_line, ecliptic_pole)) < 1e-12
 
 
 # ===========================================================================

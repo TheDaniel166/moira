@@ -12,6 +12,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from moira.asteroid_families import ASTEROID_FAMILY_CATALOG_SOURCE
+
 from .relationship import AspectDataResponse
 
 
@@ -261,7 +263,7 @@ class AsteroidSubsetPositionsResponse(_StrictModel):
 
 
 class AsteroidFamilyLookupProvenanceResponse(_StrictModel):
-    catalog_source: str = "NASA_PDS_ast_nesvorny_families_v2_2015"
+    catalog_source: str = ASTEROID_FAMILY_CATALOG_SOURCE
     number_system: str = "MPC_catalog_number"
     lookup_source_module: str = "moira.asteroid_families"
     requested_number: int
@@ -271,11 +273,12 @@ class AsteroidFamilyLookupProvenanceResponse(_StrictModel):
 class AsteroidFamilyLookupResponse(_StrictModel):
     number: int
     family_name: str | None
+    family_names: list[str]
     provenance: AsteroidFamilyLookupProvenanceResponse
 
 
 class AsteroidFamilyMembersProvenanceResponse(_StrictModel):
-    catalog_source: str = "NASA_PDS_ast_nesvorny_families_v2_2015"
+    catalog_source: str = ASTEROID_FAMILY_CATALOG_SOURCE
     number_system: str = "MPC_catalog_number"
     lookup_source_module: str = "moira.asteroid_families"
     requested_family_name: str
@@ -310,7 +313,7 @@ class AsteroidFamiliesInChartRequest(_StrictModel):
 
 
 class AsteroidFamiliesInChartProvenanceResponse(_StrictModel):
-    catalog_source: str = "NASA_PDS_ast_nesvorny_families_v2_2015"
+    catalog_source: str = ASTEROID_FAMILY_CATALOG_SOURCE
     number_system: str = "MPC_catalog_number"
     lookup_source_module: str = "moira.asteroid_families"
     requested_count: int
@@ -413,6 +416,7 @@ class AsteroidFamilyResonanceNodeResponse(_StrictModel):
     naif_id: int
     mpc_number: int
     family_name: str | None
+    family_names: list[str]
     longitude: float
     latitude: float
     speed: float
@@ -430,7 +434,7 @@ class AsteroidFamilyResonanceEdgeResponse(_StrictModel):
 
 
 class AsteroidFamilyResonanceNetworkProvenanceResponse(_StrictModel):
-    catalog_source: str = "NASA_PDS_ast_nesvorny_families_v2_2015"
+    catalog_source: str = ASTEROID_FAMILY_CATALOG_SOURCE
     number_system: str = "MPC_catalog_number"
     lookup_source_module: str = "moira.asteroid_families"
     aspect_source_module: str = "moira.aspects"

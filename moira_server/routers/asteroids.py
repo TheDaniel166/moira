@@ -113,7 +113,7 @@ def asteroid_subset_positions(
 def asteroid_family_by_number(
     number: int = Path(..., ge=1),
 ) -> AsteroidFamilyLookupResponse:
-    """Lookup the Nesvorny dynamical family for an MPC asteroid number."""
+    """Lookup display-primary and complete families for an MPC asteroid number."""
     return lookup_asteroid_family(number)
 
 
@@ -131,7 +131,7 @@ def asteroid_family_members(
 def asteroid_families_in_chart(
     request: AsteroidFamiliesInChartRequest,
 ) -> AsteroidFamiliesInChartResponse:
-    """Group supplied MPC asteroid numbers by shared Nesvorny family."""
+    """Group MPC asteroid numbers across all admitted family memberships."""
     return group_asteroid_families_in_chart(request)
 
 

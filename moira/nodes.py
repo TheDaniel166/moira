@@ -39,9 +39,9 @@ from dataclasses import dataclass, field
 from .constants import DEG2RAD, RAD2DEG, sign_of
 from .julian import centuries_from_j2000, ut_to_tt
 from ._ephemeris_time import _ut1_to_ephemeris_tt
-from .coordinates import Vec3, vec_sub, icrf_to_ecliptic, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
+from .coordinates import vec_sub, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
+from .corrections import apply_frame_bias
 from .obliquity import mean_obliquity, nutation
-from .planets import _earth_barycentric
 from .spk_reader import get_active_reader, KernelReader, SpkReader, MissingKernelError
 
 
@@ -163,9 +163,6 @@ def mean_node(jd_ut: float) -> NodeData:
 # True Node — computed geometrically from DE441
 # ---------------------------------------------------------------------------
 
-_TRUE_NODE_STEP = 0.01   # days; ~14 minutes, enough to track node direction
-
-
 def true_node(
     jd_ut: float,
     reader: KernelReader | None = None,
@@ -175,11 +172,12 @@ def true_node(
     Governs computation of the true (geometric) ascending node of the Moon's
     orbit using DE441 barycentric state vectors.
 
-    Method: samples the Moon's geocentric ICRF position at t − step and
-    t + step (step = 0.01 days ≈ 14 minutes), forms the orbital plane normal
-    via the cross product, then intersects that plane with the ecliptic to
-    obtain the ascending node direction. The result is rotated through the
-    precession and nutation matrices to yield a tropical ecliptic longitude.
+    Method: derives the Moon's geocentric osculating orbital-plane normal
+    ``h = r × v`` from the DE441 state at the requested instant. The normal is
+    rotated through ICRF frame bias, precession, and nutation into the true
+    equator-of-date frame. It is then intersected with the ecliptic plane
+    defined in that same frame to obtain the ascending-node direction and its
+    tropical longitude.
 
     Args:
         jd_ut: Julian Day in Universal Time (UT1).
@@ -222,35 +220,35 @@ def true_node(
     obliquity = mean_obliquity(jd_tt) + deps_deg
     eps = obliquity * DEG2RAD
 
-    def moon_geo(jd: float) -> Vec3:
-        earth = _earth_barycentric(jd, reader)
-        emb_moon  = reader.position(3, 301, jd)
-        emb_earth = reader.position(3, 399, jd)
-        return vec_sub(emb_moon, emb_earth)
+    moon_pos, moon_vel = reader.position_and_velocity(3, 301, jd_tt)
+    earth_pos, earth_vel = reader.position_and_velocity(3, 399, jd_tt)
+    r = vec_sub(moon_pos, earth_pos)
+    v = vec_sub(moon_vel, earth_vel)
 
-    r1 = moon_geo(jd_tt - _TRUE_NODE_STEP)
-    r2 = moon_geo(jd_tt + _TRUE_NODE_STEP)
+    # Osculating orbital-plane normal h = r × v, initially in ICRF.
+    n_icrf = (
+        r[1] * v[2] - r[2] * v[1],
+        r[2] * v[0] - r[0] * v[2],
+        r[0] * v[1] - r[1] * v[0],
+    )
 
-    # Orbital plane normal = r1 × r2
-    nx = r1[1]*r2[2] - r1[2]*r2[1]
-    ny = r1[2]*r2[0] - r1[0]*r2[2]
-    nz = r1[0]*r2[1] - r1[1]*r2[0]
-
-    # Ecliptic plane normal in ICRF: (0, −sin ε, cos ε)
-    # Ascending node = ecliptic_normal × n_orbit  (e × n gives ascending direction)
-    ex = 0.0;  ey = -math.sin(eps);  ez = math.cos(eps)
-
-    # intersection direction (ascending node)
-    ix = ey*nz - ez*ny
-    iy = ez*nx - ex*nz
-    iz = ex*ny - ey*nx
-
-    # Rotate intersection vector through P then N (J2000 ICRF → true equator of date)
+    # Bring the plane normal into the same true-equator-of-date frame in which
+    # the ecliptic pole below is defined. Intersecting planes expressed in
+    # different frames displaced the node increasingly far from J2000.
     P = precession_matrix_equatorial(jd_tt)
     N = nutation_matrix_equatorial(jd_tt)
-    i_vec = (ix, iy, iz)
-    i_prec = mat_vec_mul(P, i_vec)
-    i_true = mat_vec_mul(N, i_prec)
+    n_j2000 = apply_frame_bias(n_icrf)
+    n_true = mat_vec_mul(N, mat_vec_mul(P, n_j2000))
+
+    # True ecliptic pole in the true-equator-of-date frame.
+    ecliptic_pole = (0.0, -math.sin(eps), math.cos(eps))
+
+    # Ascending node = ecliptic_pole × orbital_normal.
+    i_true = (
+        ecliptic_pole[1] * n_true[2] - ecliptic_pole[2] * n_true[1],
+        ecliptic_pole[2] * n_true[0] - ecliptic_pole[0] * n_true[2],
+        ecliptic_pole[0] * n_true[1] - ecliptic_pole[1] * n_true[0],
+    )
 
     # Extract ecliptic longitude from true-equator-of-date vector
     eps = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD

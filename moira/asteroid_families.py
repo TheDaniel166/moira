@@ -6,11 +6,13 @@ Archetype: Oracle
 
 Purpose
 -------
-Governs lookup of Hirayama asteroid family membership from the
-Nesvorný et al. (2015) dynamical family catalog, and detects family
-resonance across admitted aspects.  Provides seven public surfaces:
+Governs lookup of Hirayama asteroid family membership from the current
+Proper25 main-belt catalog plus the explicitly retained NASA PDS 2015 Hilda
+and Jupiter Trojan populations, and detects family resonance across admitted
+aspects.
 
-- ``asteroid_family``        — family name for a single numbered asteroid
+- ``asteroid_family``        — compatibility display family for one asteroid
+- ``asteroid_families``      — every catalog membership for one asteroid
 - ``family_members``         — all catalog numbers belonging to a named family
 - ``families_in_chart``      — group a set of asteroid numbers by shared origin
 - ``find_resonant_aspects``  — tag aspects whose both bodies share a family origin
@@ -25,11 +27,16 @@ Delegates: nothing.  No ephemeris access, no network, no SPK reads.
 
 Data source
 -----------
-Nesvorný, D. (2015). "Identification and Dynamical Properties of
-Asteroid Families."  Astronomical Journal 150, 48.
-Catalog: NASA PDS ``ast.nesvorny.families`` V2.0, families_2015 dataset.
+Nesvorný, D. et al. (2026). "A Census Before Rubin: A Comprehensive
+Asteroid Family Classification from 1.25 Million Objects."  Proper25
+machine-readable membership distribution.
 
-    143,711 numbered asteroids assigned to 119 dynamical families.
+Proper25 excludes Hilda and Jupiter Trojan families.  Eight such families are
+retained from NASA PDS ``ast.nesvorny.families`` V2.0, families_2015.
+
+Membership is many-to-many.  Nested and overlapping HCM families are preserved
+rather than collapsed.  ``asteroid_family`` remains a deterministic
+compatibility display choice; it is not exclusive physical-origin truth.
 
 Astrological significance
 -------------------------
@@ -56,6 +63,7 @@ cached for the process lifetime.
 from __future__ import annotations
 
 import csv
+import json
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -65,7 +73,9 @@ if TYPE_CHECKING:
     from .aspects import AspectData
 
 __all__ = [
+    "ASTEROID_FAMILY_CATALOG_SOURCE",
     "asteroid_family",
+    "asteroid_families",
     "family_members",
     "families_in_chart",
     "find_resonant_aspects",
@@ -75,41 +85,75 @@ __all__ = [
 ]
 
 _DATA_FILE = Path(__file__).resolve().parent / "data" / "asteroid_families.csv"
+_METADATA_FILE = (
+    Path(__file__).resolve().parent / "data" / "asteroid_families.metadata.json"
+)
+
+ASTEROID_FAMILY_CATALOG_SOURCE = (
+    "Proper25_2026_plus_NASA_PDS_2015_excluded_populations"
+)
+
+
+@dataclass(frozen=True, slots=True)
+class _FamilyCatalog:
+    primary_by_number: dict[int, str]
+    all_by_number: dict[int, tuple[str, ...]]
+    by_family: dict[str, tuple[int, ...]]
+    aliases: dict[str, str]
 
 
 @lru_cache(maxsize=1)
-def _load() -> tuple[dict[int, str], dict[str, list[int]]]:
-    """Build and cache both lookup directions from the bundled CSV.
+def _load() -> _FamilyCatalog:
+    """Build and cache complete and display lookup directions."""
+    primary_by_number: dict[int, str] = {}
+    all_by_number: dict[int, list[str]] = {}
+    by_family: dict[str, set[int]] = {}
 
-    Returns
-    -------
-    (by_number, by_family)
-        by_number  : asteroid_number → family_name
-        by_family  : family_name     → sorted list of asteroid numbers
-    """
-    by_number: dict[int, str] = {}
-    by_family: dict[str, list[int]] = {}
-
-    with open(_DATA_FILE, newline="") as f:
+    with open(_DATA_FILE, encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
             number = int(row["asteroid_number"])
             family = row["family_name"]
-            by_number[number] = family
-            by_family.setdefault(family, []).append(number)
+            all_by_number.setdefault(number, []).append(family)
+            by_family.setdefault(family, set()).add(number)
+            if row["is_primary"] == "true":
+                if number in primary_by_number:
+                    raise ValueError(
+                        f"multiple primary asteroid families for MPC number {number}"
+                    )
+                primary_by_number[number] = family
 
-    for members in by_family.values():
-        members.sort()
+    missing_primary = set(all_by_number) - set(primary_by_number)
+    if missing_primary:
+        first = min(missing_primary)
+        raise ValueError(f"missing primary asteroid family for MPC number {first}")
 
-    return by_number, by_family
+    metadata = json.loads(_METADATA_FILE.read_text(encoding="utf-8"))
+    aliases = {
+        str(alias): str(canonical)
+        for alias, canonical in metadata.get("family_aliases", {}).items()
+    }
+    return _FamilyCatalog(
+        primary_by_number=primary_by_number,
+        all_by_number={
+            number: tuple(families) for number, families in all_by_number.items()
+        },
+        by_family={
+            family: tuple(sorted(members)) for family, members in by_family.items()
+        },
+        aliases=aliases,
+    )
 
 
 def asteroid_family(number: int) -> str | None:
-    """Return the Nesvorný family name for a numbered asteroid, or None.
+    """Return the compatibility display family for a numbered asteroid.
+
+    This does not assert exclusive membership.  Use :func:`asteroid_families`
+    whenever complete nested and overlapping catalog membership is required.
 
     Parameters
     ----------
-    number : MPC catalog number of the asteroid (e.g. 158 → "Koronis")
+    number : MPC catalog number of the asteroid
 
     Returns
     -------
@@ -117,15 +161,32 @@ def asteroid_family(number: int) -> str | None:
 
     Examples
     --------
-    >>> asteroid_family(158)   # 158 Koronis — the family's namesake
-    'Koronis'
+    >>> asteroid_family(158)
+    'Koronis2'
     >>> asteroid_family(4)     # 4 Vesta
     'Vesta'
     >>> asteroid_family(1)     # 1 Ceres — not in any family
     None
     """
-    by_number, _ = _load()
-    return by_number.get(number)
+    return _load().primary_by_number.get(number)
+
+
+def asteroid_families(number: int) -> list[str]:
+    """Return every catalog family membership for a numbered asteroid.
+
+    The display-primary family is first, followed by other memberships in
+    stable source-specificity order.  An empty list means the asteroid has no
+    membership in the admitted catalog, not that its orbit was independently
+    proven to be non-familial.
+
+    Examples
+    --------
+    >>> asteroid_families(8)
+    ['Flora', 'Baptistina']
+    >>> asteroid_families(1)
+    []
+    """
+    return list(_load().all_by_number.get(number, ()))
 
 
 def family_members(family_name: str) -> list[int]:
@@ -149,8 +210,9 @@ def family_members(family_name: str) -> list[int]:
     >>> len(family_members("Koronis"))
     ...
     """
-    _, by_family = _load()
-    return list(by_family.get(family_name, []))
+    catalog = _load()
+    canonical_name = catalog.aliases.get(family_name, family_name)
+    return list(catalog.by_family.get(canonical_name, ()))
 
 
 def families_in_chart(numbers: list[int]) -> dict[str, list[int]]:
@@ -173,18 +235,17 @@ def families_in_chart(numbers: list[int]) -> dict[str, list[int]]:
 
     Example
     -------
-    Given a chart containing asteroids 158, 167, 243, 832 (all Koronis)
-    alongside 4 (Vesta) and 1 (Ceres, unfamilied):
+    Given a chart containing overlapping Koronis-region memberships alongside
+    4 (Vesta) and 1 (Ceres, uncatalogued):
 
     >>> families_in_chart([1, 4, 158, 167, 243, 832])
-    {'Koronis': [158, 167, 243, 832], 'Vesta': [4]}
+    {'Karin': [158, 167, 832], 'Koronis': [158, 167, 243, 832], 'Koronis2': [158, 167, 832], 'Vesta': [4]}
     """
-    by_number, _ = _load()
-    groups: dict[str, list[int]] = {}
+    catalog = _load()
+    groups: dict[str, set[int]] = {}
     for n in numbers:
-        family = by_number.get(n)
-        if family is not None:
-            groups.setdefault(family, []).append(n)
+        for family in catalog.all_by_number.get(n, ()):
+            groups.setdefault(family, set()).add(n)
     return {k: sorted(v) for k, v in sorted(groups.items())}
 
 
@@ -242,8 +303,9 @@ def find_resonant_aspects(
 ) -> list[ResonantAspect]:
     """Find aspects whose both bodies share a dynamical origin family.
 
-    Scans the admitted aspects and returns those where both body names
-    resolve to catalog numbers belonging to the same Nesvorný family.
+    Scans the admitted aspects and returns one qualified result for every
+    catalog family shared by both bodies.  Nested families therefore remain
+    visible instead of being collapsed to either body's display-primary family.
     Bodies absent from ``body_catalog_numbers`` or not in any family are
     silently skipped — the function never raises on missing data.
 
@@ -264,8 +326,7 @@ def find_resonant_aspects(
     List of ResonantAspect sorted by aspect orb (tightest first),
     preserving the same ordering convention as ``find_aspects``.
     """
-    from .aspects import AspectData as _AspectData  # local import avoids circular at runtime
-    by_number, _ = _load()
+    catalog = _load()
     results: list[ResonantAspect] = []
 
     for asp in aspects:
@@ -273,20 +334,21 @@ def find_resonant_aspects(
         n2 = body_catalog_numbers.get(asp.body2)
         if n1 is None or n2 is None:
             continue
-        f1 = by_number.get(n1)
-        f2 = by_number.get(n2)
-        if f1 is None or f2 is None or f1 != f2:
-            continue
-        results.append(ResonantAspect(
-            aspect=asp,
-            resonance=FamilyResonance(
-                family_name=f1,
-                body1_number=n1,
-                body2_number=n2,
-            ),
-        ))
+        families1 = catalog.all_by_number.get(n1, ())
+        families2 = set(catalog.all_by_number.get(n2, ()))
+        for family in families1:
+            if family not in families2:
+                continue
+            results.append(ResonantAspect(
+                aspect=asp,
+                resonance=FamilyResonance(
+                    family_name=family,
+                    body1_number=n1,
+                    body2_number=n2,
+                ),
+            ))
 
-    results.sort(key=lambda r: r.aspect.orb)
+    results.sort(key=lambda r: (r.aspect.orb, r.resonance.family_name))
     return results
 
 

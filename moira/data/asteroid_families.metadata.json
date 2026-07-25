@@ -1,0 +1,57 @@
+{
+  "catalog_id": "Moira_asteroid_families_Proper25_2026_plus_PDS_exclusions",
+  "counts": {
+    "family_count": 342,
+    "maximum_memberships_per_asteroid": 4,
+    "membership_row_count": 221095,
+    "multi_membership_asteroid_count": 18185,
+    "pds_legacy_membership_row_count": 1078,
+    "proper25_numbered_membership_row_count": 220017,
+    "unique_numbered_asteroid_count": 200726
+  },
+  "csv_sha256": "ded401f8c57d69d44009651bbd81bd0463975bc5503408fe4406648eb1d05234",
+  "family_aliases": {
+    "Koronis(2)": "Koronis2",
+    "RJ": "1996 RJ",
+    "UV209": "2001 UV209"
+  },
+  "membership_semantics": "Many-to-many HCM catalog membership; overlaps and nested families are preserved.",
+  "number_system": "MPC_catalog_number",
+  "primary_display_policy": {
+    "purpose": "Compatibility display selection, not exclusive physical membership",
+    "rules": [
+      "Prefer a family whose reference asteroid is the queried number.",
+      "Then prefer the smallest source-reported family membership.",
+      "Break ties by stable family identifier."
+    ]
+  },
+  "schema_version": 1,
+  "sources": {
+    "pds_legacy_excluded_populations": {
+      "archive_sha256": "4adf5a341eaea3f1fb209ccb4c875188f224a65b5f260d1d99e10be28f1b3145",
+      "bundle_urn": "urn:nasa:pds:ast.nesvorny.families::2.0",
+      "doi": "10.26033/5hyq-6k90",
+      "retained_family_count": 8,
+      "retention_scope": "Hilda and Jupiter Trojan populations excluded by Proper25",
+      "url": "https://sbn.psi.edu/pds/resource/nesvornyfam.html"
+    },
+    "proper25": {
+      "active_family_count": 334,
+      "active_membership_file_count": 334,
+      "active_membership_tree_sha256": "1b3f285d52dfbf771e55cbf72320fadc483208b6a8ef52302e6f7624a00fed35",
+      "excluded_orphan_file": "middle_2344_Xizang.fam3",
+      "ledger_sha256": "390e73a1248f053eb295b8c7d3754e7ac0ad478d466e2f73f4ad1c9850bad840",
+      "membership_file_count": 335,
+      "paper_url": "https://arxiv.org/abs/2602.20382",
+      "removed_fin": [
+        2003,
+        2027,
+        2028,
+        2031,
+        2036
+      ],
+      "retrieval_manifest_sha256": "2e937a73ed41ee3691f7d5f20415f99b92ef6dc2b996f8cc7201cb3761aa895e",
+      "url": "https://www2.boulder.swri.edu/~davidn/Proper25/"
+    }
+  }
+}
