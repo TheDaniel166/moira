@@ -397,11 +397,11 @@ This keeps the engine boundary clean:
 
 For reference, capabilities where Moira exceeds the standard Swiss Ephemeris distribution:
 
-- **IAU 2000A full nutation** (1365-term series) — SwissEph uses a truncated version in its default mode
+- **IAU 2000A full nutation** (1,358 luni-solar + 1,056 planetary terms) — SwissEph uses a truncated version in its default mode
 - **Hermetic decans** with all 36 Egyptian decan ruling stars and their computed positions
 - **Centaur SPK kernels** (Pholus, Chariklo, Asbolus, Hylonome) — SwissEph has fewer
 - **TNO kernel support** (Quaoar, Varuna, Ixion, Orcus) via SPK Type 13
-- **499 Arabic parts / Lots** — SwissEph ships far fewer
+- **512 Arabic part / Lot definitions** — SwissEph ships far fewer
 - **Primary directions** (Placidus semi-arc, mundane) — SwissEph requires the `swe_dirhut()` C function
 - **Hermetic / Ptolemaic 36-decan hour system** with sunrise/sunset computation
 - **Tertiary progressions** alongside secondary and solar arc

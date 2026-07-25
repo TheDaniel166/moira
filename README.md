@@ -74,7 +74,7 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 - **Aspect patterns** — 21 multi-body configurations: T-Square, Grand Trine, Grand Cross, Yod, Kite, Mystic Rectangle, Stellium, Grand Sextile, Thor's Hammer, Boomerang Yod, and more.
 - **Midpoints** — full midpoint matrix, midpoint trees, 90°/45°/22.5° dial projections, planetary pictures.
 - **Traditional dignities** — domicile, exaltation, triplicity (diurnal/nocturnal), Egyptian and Ptolemaic terms, face, sect, hayz, and Almuten Figuris.
-- **Arabic Parts** — 499 lots with dependency graphs and condition profiling.
+- **Arabic Parts** — 512 lot definitions with dependency graphs and condition profiling.
 - **Hermetic decans** — 36-decan system with computed positions for all ruling stars.
 - **Draconic charts** — node-anchored draconic frame (mean or true node) with longitude rotation, engine-backed chart derivation, and caller-supplied position support.
 
@@ -89,7 +89,7 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jataka, Saravali, Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras, and the named 1879 Agastya- and 2024 Bogamuni-attributed Pancha Pakshi witnesses) with per-rule citations; where classical sources disagree, the disagreement is an explicit policy switch or a recorded note — never a silent choice.
 
-- **Sidereal foundation** — 40+ ayanamsa systems including star-anchored "True" ayanamsas; 27-nakshatra system; Panchanga.
+- **Sidereal foundation** — 12 admitted ayanamsha systems including star-anchored "True" ayanamshas; 27-nakshatra system; Panchanga.
 - **Pancha Pakshi** — an explicitly named Agastya-attributed Madras 1879
   aksara/query-or-name-initial fixed-clock schedule and directed relationship
   profile, with exact rational timing, source locators, declared omissions,
@@ -419,7 +419,7 @@ graph TD
     G --> H[4 · IAU 2006 Frame Bias\nICRF → Mean Equator J2000]
     D --> H
     H --> I[5 · IAU 2006 Precession\nP03 polynomial series]
-    I --> J[6 · IAU 2000A Nutation\n1365 lunisolar + 687 planetary terms]
+    I --> J[6 · IAU 2000A Nutation\n1358 luni-solar + 1056 planetary terms]
     J --> K[True Equinox and Equator of Date]
     K --> L[7 · Topocentric Parallax\nWGS-84 · optional]
     K --> M[8 · Atmospheric Refraction\nSky positions only · optional]

@@ -71,10 +71,36 @@ FORBIDDEN_PATTERNS = (
         label="superseded asteroid-family count",
         pattern=re.compile(r"\b119\s+(?:recognized\s+)?(?:asteroid\s+)?famil(?:y|ies)\b", re.IGNORECASE),
     ),
+    ForbiddenPattern(
+        label="superseded current lot-definition count",
+        pattern=re.compile(r"\b499\s+(?:Arabic\s+Parts|lots?)\b", re.IGNORECASE),
+    ),
+    ForbiddenPattern(
+        label="superseded current ayanamsha count",
+        pattern=re.compile(r"\b40\+\s+ayanamsha", re.IGNORECASE),
+    ),
+    ForbiddenPattern(
+        label="superseded nutation table counts",
+        pattern=re.compile(r"\b1?365\s+lunisolar\s*\+\s*687\s+planetary", re.IGNORECASE),
+    ),
 )
 
 
 REQUIRED_PATTERNS: dict[Path, tuple[RequiredPattern, ...]] = {
+    Path("README.md"): (
+        RequiredPattern(
+            label="current lot-definition count",
+            pattern=re.compile(r"\b512 lot definitions\b"),
+        ),
+        RequiredPattern(
+            label="current ayanamsha count",
+            pattern=re.compile(r"\b12 admitted ayanamsha systems\b"),
+        ),
+        RequiredPattern(
+            label="current nutation table counts",
+            pattern=re.compile(r"1358 luni-solar \+ 1056 planetary terms"),
+        ),
+    ),
     Path("wiki/02_standards/API_REFERENCE.md"): (
         RequiredPattern(
             label="current engine baseline",

@@ -82,6 +82,38 @@
       "catalog_sha256": "ded401f8c57d69d44009651bbd81bd0463975bc5503408fe4406648eb1d05234"
     }
   },
+  "capability_metrics": {
+    "fixed_star_registry": {
+      "entry_count": 1809,
+      "source": "moira/data/star_registry.csv",
+      "source_sha256": "e717ad666b67e19272abba3b3eacd59df34bfce99e9c912140260d1c64c78fca"
+    },
+    "house_system_registry": {
+      "entry_count": 22,
+      "source": "moira/constants.py",
+      "source_sha256": "d0d930d0efacfdea6614ffeb35972ae385434b57e7c20b65b92b1dd0088dfdee"
+    },
+    "ecliptic_aspect_registry": {
+      "entry_count": 22,
+      "source": "moira/constants.py",
+      "source_sha256": "d0d930d0efacfdea6614ffeb35972ae385434b57e7c20b65b92b1dd0088dfdee"
+    },
+    "declination_aspect_registry": {
+      "entry_count": 2,
+      "source": "moira/declination_aspects.py",
+      "source_sha256": "5692a1e1b957cbc5fd4e5d8e05087cb7e26af1e83f1ff7aedfaa2df6560feaad"
+    },
+    "lot_definition_registry": {
+      "entry_count": 512,
+      "source": "moira/lots.py",
+      "source_sha256": "4197049db2f89414139c31ecf14a5c868b01735d39164a075caebbcb8431d8f9"
+    },
+    "ayanamsha_registry": {
+      "entry_count": 12,
+      "source": "moira/sidereal.py",
+      "source_sha256": "74d9852ef12c4221b89bbd21bc09ce8d174a71a5dd052634ae58a1ea5c211abe"
+    }
+  },
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -292,8 +324,8 @@
       "description": "A living engineering roadmap; planned and historical entries do not themselves define admitted public API or validation status.",
       "content_class": "editorial_historical",
       "schema_type": "TechArticle",
-      "source_sha256": "ec4fd5ac0381382a93d7feb1bf2c5567a651c054d898420cf3b21a7244e7b4db",
-      "source_bytes": 21746,
+      "source_sha256": "66b26882cc1c05d7362d64e6dd66af5666997723f5a26a6d1908ad659e2669e1",
+      "source_bytes": 21778,
       "last_verified": "2026-07-25",
       "prerender": true,
       "markdown": true,
@@ -784,5 +816,5 @@
       "compatibility_notes_sha256": "29444c2679369678e9c09056f68df67ff1be2d0ac069d01a425789fe5702af62"
     }
   ],
-  "manifest_sha256": "e3abbca7206692c600b1a48f20bc872e6e9364a8c1e0ab3f0321e6f4c14d79e4"
+  "manifest_sha256": "d73379d7847949d63d1468d806848cedc12190e4ea8531758759314d64ff01d3"
 }

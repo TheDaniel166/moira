@@ -10,6 +10,7 @@ documents into a second engine-owned tree.
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import re
@@ -376,6 +377,63 @@ def _catalog_metrics() -> dict[str, Any]:
     }
 
 
+def _capability_metrics() -> dict[str, Any]:
+    """Return current public-registry sizes from the implementation itself."""
+
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+
+    from moira.constants import ASPECT_TIERS, HOUSE_SYSTEM_NAMES
+    from moira.declination_aspects import DeclinationAspectKind
+    from moira.lots import PARTS_DEFINITIONS
+    from moira.sidereal import list_ayanamsa_systems
+
+    star_source = "moira/data/star_registry.csv"
+    with _repo_path(star_source).open(
+        "r",
+        encoding="utf-8",
+        newline="",
+    ) as stream:
+        fixed_star_count = sum(1 for _row in csv.DictReader(stream))
+
+    constants_source = "moira/constants.py"
+    declination_source = "moira/declination_aspects.py"
+    lots_source = "moira/lots.py"
+    sidereal_source = "moira/sidereal.py"
+    return {
+        "fixed_star_registry": {
+            "entry_count": fixed_star_count,
+            "source": star_source,
+            "source_sha256": _sha256_path(_repo_path(star_source)),
+        },
+        "house_system_registry": {
+            "entry_count": len(HOUSE_SYSTEM_NAMES),
+            "source": constants_source,
+            "source_sha256": _sha256_path(_repo_path(constants_source)),
+        },
+        "ecliptic_aspect_registry": {
+            "entry_count": len(ASPECT_TIERS[max(ASPECT_TIERS)]),
+            "source": constants_source,
+            "source_sha256": _sha256_path(_repo_path(constants_source)),
+        },
+        "declination_aspect_registry": {
+            "entry_count": len(DeclinationAspectKind),
+            "source": declination_source,
+            "source_sha256": _sha256_path(_repo_path(declination_source)),
+        },
+        "lot_definition_registry": {
+            "entry_count": len(PARTS_DEFINITIONS),
+            "source": lots_source,
+            "source_sha256": _sha256_path(_repo_path(lots_source)),
+        },
+        "ayanamsha_registry": {
+            "entry_count": len(list_ayanamsa_systems()),
+            "source": sidereal_source,
+            "source_sha256": _sha256_path(_repo_path(sidereal_source)),
+        },
+    }
+
+
 def _contract_sources() -> list[dict[str, str]]:
     return [
         {"id": identifier, "source": source, "source_sha256": _sha256_path(_repo_path(source))}
@@ -398,6 +456,7 @@ def build_manifest() -> dict[str, Any]:
         "engine_release": engine_release,
         "contract_sources": _contract_sources(),
         "catalog_metrics": _catalog_metrics(),
+        "capability_metrics": _capability_metrics(),
         "documents": _documents(config),
         "releases": _releases(config, engine_release["version"]),
     }
