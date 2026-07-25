@@ -1,7 +1,5 @@
 # Moira REST API Reference
 
-Version: 0.1.0 transport surface
-Date audited: 2026-07-21
 Source of truth: `moira_server.app.create_app()` route registry
 
 This document describes the HTTP transport surface currently registered by
@@ -16,11 +14,16 @@ transport contract documented for that family.
 
 ## Current Surface Summary
 
-- Total non-documentation routes: 435
-- Operational/meta routes: 4
-- Versioned `/v1` routes: 431
+<!-- BEGIN GENERATED REST SURFACE SUMMARY -->
+- Application: `Moira Server` `0.1.0`
+- Registered OpenAPI paths: 438
+- Registered OpenAPI operations: 438 (GET 36, POST 402)
+- Operational/meta paths: 4
+- Versioned `/v1` paths: 434
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
+- Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
+<!-- END GENERATED REST SURFACE SUMMARY -->
 
 ## Present Expansion State
 
@@ -110,6 +113,15 @@ Implemented:
 - post-phase gap closure P-GAP-06 admits bounded harmogram vector,
   Zero-Aries vector, intensity-spectrum, projection, and explicit-sample
   trace routes under `/v1/harmograms/*`
+- later Vedic transport admissions add Kakshya transit and Shodhya Pinda,
+  extended Jaimini Argala/Arudha/Chara Dasha/Karakamsa, Avastha and Yoga
+  evaluation, Upagraha Kala Velas and Sun-based points, Sade Sati status and
+  windows, personal Muhurta scoring, Vimshopaka Varga strength, and
+  chart-backed full Shadbala/Bhava Bala products
+- later Parans admissions add the named star canon, natal angular contacts,
+  and a website packet that composes those registered engine products
+- bounded Western electional admissions add single-moment judgement,
+  judgement-window scanning, and ranking under named non-advice policies
 - profile-bundle admission admits composition-only Western and Vedic
   convenience endpoints under `/v1/western/chart-profile` and
   `/v1/vedic/chart-profile`; these bundle existing route-equivalent strata
@@ -2630,6 +2642,453 @@ clients to admitted family-native route prefixes and doctrine documents, but it
 must not return catalog member records, perform cross-family search, compute
 positions, expose loaded-kernel coverage lists, join catalog identities, or run
 catalog-wide sweeps.
+
+<!-- BEGIN GENERATED REST ROUTE INVENTORY -->
+## Generated Registered Route Inventory
+
+This exact-path inventory is generated from the current FastAPI OpenAPI registry. Narrative sections above explain admission boundaries; this table is the completeness check for registered transport paths.
+
+| Method | Path | Tags | Operation ID |
+|---|---|---|---|
+| `GET` | `/health` | meta | `health_health_get` |
+| `GET` | `/meta/kernel` | meta | `kernel_meta_meta_kernel_get` |
+| `GET` | `/meta/version` | meta | `version_meta_version_get` |
+| `GET` | `/ready` | meta | `ready_ready_get` |
+| `POST` | `/v1/antiscia/contacts` | antiscia | `antiscia_contacts_route_v1_antiscia_contacts_post` |
+| `POST` | `/v1/antiscia/reflect` | antiscia | `antiscia_reflect_route_v1_antiscia_reflect_post` |
+| `POST` | `/v1/antiscia/to-point` | antiscia | `antiscia_to_point_route_v1_antiscia_to_point_post` |
+| `POST` | `/v1/ashtakavarga/chart/profile` | ashtakavarga | `ashtakavarga_chart_profile_route_v1_ashtakavarga_chart_profile_post` |
+| `POST` | `/v1/ashtakavarga/chart/result` | ashtakavarga | `ashtakavarga_chart_result_route_v1_ashtakavarga_chart_result_post` |
+| `POST` | `/v1/ashtakavarga/chart/sign-profile` | ashtakavarga | `ashtakavarga_chart_sign_profile_route_v1_ashtakavarga_chart_sign_profile_post` |
+| `POST` | `/v1/ashtakavarga/chart/transit-strength` | ashtakavarga | `ashtakavarga_chart_transit_strength_route_v1_ashtakavarga_chart_transit_strength_post` |
+| `POST` | `/v1/ashtakavarga/kakshya-transit` | ashtakavarga | `kakshya_transit_route_v1_ashtakavarga_kakshya_transit_post` |
+| `POST` | `/v1/ashtakavarga/profile` | ashtakavarga | `ashtakavarga_profile_route_v1_ashtakavarga_profile_post` |
+| `POST` | `/v1/ashtakavarga/result` | ashtakavarga | `ashtakavarga_result_route_v1_ashtakavarga_result_post` |
+| `POST` | `/v1/ashtakavarga/shodhya-pinda` | ashtakavarga | `shodhya_pinda_route_v1_ashtakavarga_shodhya_pinda_post` |
+| `POST` | `/v1/ashtakavarga/sign-profile` | ashtakavarga | `ashtakavarga_sign_profile_route_v1_ashtakavarga_sign_profile_post` |
+| `POST` | `/v1/ashtakavarga/transit-strength` | ashtakavarga | `ashtakavarga_transit_strength_route_v1_ashtakavarga_transit_strength_post` |
+| `POST` | `/v1/aspects/declination-motion-witness` | relationship | `declination_aspect_motion_witness_route_v1_aspects_declination_motion_witness_post` |
+| `POST` | `/v1/aspects/from-declinations` | relationship | `declination_aspects_from_declinations_route_v1_aspects_from_declinations_post` |
+| `POST` | `/v1/aspects/from-longitudes` | relationship | `aspects_from_longitudes_route_v1_aspects_from_longitudes_post` |
+| `POST` | `/v1/aspects/hellenistic/overcoming` | hellenistic-aspects | `overcoming_route_v1_aspects_hellenistic_overcoming_post` |
+| `POST` | `/v1/aspects/hellenistic/whole-sign` | hellenistic-aspects | `whole_sign_aspects_route_v1_aspects_hellenistic_whole_sign_post` |
+| `POST` | `/v1/aspects/moon-connection-flow` | relationship | `moon_connection_flow_route_v1_aspects_moon_connection_flow_post` |
+| `POST` | `/v1/aspects/motion-witness` | relationship | `aspect_motion_witness_route_v1_aspects_motion_witness_post` |
+| `POST` | `/v1/asteroids/bulk` | asteroids (fast small-body) | `asteroids_bulk_v1_asteroids_bulk_post` |
+| `GET` | `/v1/asteroids/families/by-number/{number}` | asteroids (fast small-body) | `asteroid_family_by_number_v1_asteroids_families_by_number__number__get` |
+| `POST` | `/v1/asteroids/families/chart` | asteroids (fast small-body) | `asteroid_families_in_chart_v1_asteroids_families_chart_post` |
+| `POST` | `/v1/asteroids/families/chart/resonance-network` | asteroids (fast small-body) | `asteroid_family_resonance_network_v1_asteroids_families_chart_resonance_network_post` |
+| `GET` | `/v1/asteroids/families/{family_name}/members` | asteroids (fast small-body) | `asteroid_family_members_v1_asteroids_families__family_name__members_get` |
+| `GET` | `/v1/asteroids/list` | asteroids (fast small-body) | `list_asteroids_v1_asteroids_list_get` |
+| `POST` | `/v1/asteroids/position` | asteroids (fast small-body) | `asteroid_position_v1_asteroids_position_post` |
+| `GET` | `/v1/asteroids/subsets` | asteroids (fast small-body) | `asteroid_subsets_v1_asteroids_subsets_get` |
+| `GET` | `/v1/asteroids/subsets/{subset}/list` | asteroids (fast small-body) | `asteroid_subset_list_v1_asteroids_subsets__subset__list_get` |
+| `POST` | `/v1/asteroids/subsets/{subset}/positions` | asteroids (fast small-body) | `asteroid_subset_positions_v1_asteroids_subsets__subset__positions_post` |
+| `POST` | `/v1/astrocartography/chart/lines` | astrocartography | `astrocartography_chart_lines_route_v1_astrocartography_chart_lines_post` |
+| `POST` | `/v1/astrocartography/chart/subjects/lines` | astrocartography | `astrocartography_subject_chart_lines_route_v1_astrocartography_chart_subjects_lines_post` |
+| `POST` | `/v1/astrocartography/chart/subjects/subplanetary` | astrocartography | `astrocartography_subject_chart_subplanetary_route_v1_astrocartography_chart_subjects_subplanetary_post` |
+| `POST` | `/v1/astrocartography/chart/subplanetary` | astrocartography | `astrocartography_chart_subplanetary_route_v1_astrocartography_chart_subplanetary_post` |
+| `POST` | `/v1/astrocartography/lines` | astrocartography | `astrocartography_lines_route_v1_astrocartography_lines_post` |
+| `POST` | `/v1/astrocartography/subplanetary` | astrocartography | `astrocartography_subplanetary_route_v1_astrocartography_subplanetary_post` |
+| `POST` | `/v1/astrodynes/chart` | astrodynes | `astrodynes_chart_route_v1_astrodynes_chart_post` |
+| `GET` | `/v1/astrodynes/doctrine` | astrodynes | `astrodynes_doctrine_route_v1_astrodynes_doctrine_get` |
+| `POST` | `/v1/astrodynes/geometry` | astrodynes | `astrodynes_geometry_route_v1_astrodynes_geometry_post` |
+| `POST` | `/v1/astrodynes/progressed/accessory-relation` | astrodynes | `progressed_astrodynes_accessory_relation_route_v1_astrodynes_progressed_accessory_relation_post` |
+| `POST` | `/v1/astrodynes/progressed/chart` | astrodynes | `progressed_astrodynes_chart_backed_route_v1_astrodynes_progressed_chart_post` |
+| `POST` | `/v1/astrodynes/progressed/compound-total-influence` | astrodynes | `progressed_astrodynes_compound_total_influence_route_v1_astrodynes_progressed_compound_total_influence_post` |
+| `POST` | `/v1/astrodynes/progressed/dated-aspect` | astrodynes | `progressed_astrodynes_dated_aspect_route_v1_astrodynes_progressed_dated_aspect_post` |
+| `GET` | `/v1/astrodynes/progressed/doctrine` | astrodynes | `progressed_astrodynes_doctrine_route_v1_astrodynes_progressed_doctrine_get` |
+| `POST` | `/v1/astrodynes/progressed/integrate` | astrodynes | `progressed_astrodynes_integrate_route_v1_astrodynes_progressed_integrate_post` |
+| `POST` | `/v1/astrodynes/progressed/major-relation` | astrodynes | `progressed_astrodynes_major_relation_route_v1_astrodynes_progressed_major_relation_post` |
+| `POST` | `/v1/astrodynes/progressed/normal` | astrodynes | `progressed_astrodynes_normal_route_v1_astrodynes_progressed_normal_post` |
+| `POST` | `/v1/astrodynes/progressed/practical` | astrodynes | `progressed_astrodynes_practical_route_v1_astrodynes_progressed_practical_post` |
+| `POST` | `/v1/astrodynes/progressed/reenforcement` | astrodynes | `progressed_astrodynes_reenforcement_route_v1_astrodynes_progressed_reenforcement_post` |
+| `POST` | `/v1/astrodynes/progressed/search` | astrodynes | `progressed_astrodynes_search_route_v1_astrodynes_progressed_search_post` |
+| `POST` | `/v1/astrodynes/progressed/total-influence` | astrodynes | `progressed_astrodynes_total_influence_route_v1_astrodynes_progressed_total_influence_post` |
+| `POST` | `/v1/avasthas/evaluate` | avasthas | `avasthas_route_v1_avasthas_evaluate_post` |
+| `POST` | `/v1/batch/charts` | batch | `batch_charts_route_v1_batch_charts_post` |
+| `POST` | `/v1/batch/charts/reduction` | batch | `batch_charts_reduction_route_v1_batch_charts_reduction_post` |
+| `POST` | `/v1/batch/events` | batch | `batch_events_route_v1_batch_events_post` |
+| `POST` | `/v1/batch/progressions` | batch | `batch_progressions_route_v1_batch_progressions_post` |
+| `POST` | `/v1/batch/progressions/reduction` | batch | `batch_progressions_reduction_route_v1_batch_progressions_reduction_post` |
+| `POST` | `/v1/batch/returns` | batch | `batch_returns_route_v1_batch_returns_post` |
+| `POST` | `/v1/batch/transits` | batch | `batch_transits_route_v1_batch_transits_post` |
+| `POST` | `/v1/chart` | chart | `chart_route_v1_chart_post` |
+| `POST` | `/v1/chart-shape/classify` | relationship | `chart_shape_route_v1_chart_shape_classify_post` |
+| `POST` | `/v1/chart/reduction` | chart | `chart_reduction_route_v1_chart_reduction_post` |
+| `POST` | `/v1/comets/bulk` | comets (fast small-body) | `comets_bulk_v1_comets_bulk_post` |
+| `GET` | `/v1/comets/list` | comets (fast small-body) | `list_comets_v1_comets_list_get` |
+| `POST` | `/v1/comets/position` | comets (fast small-body) | `comet_position_v1_comets_position_post` |
+| `POST` | `/v1/composite/chart` | relationship | `composite_chart_route_v1_composite_chart_post` |
+| `POST` | `/v1/dasha/alternate/ashtottari/chart/profile` | alternate-dashas | `ashtottari_chart_profile_route_v1_dasha_alternate_ashtottari_chart_profile_post` |
+| `POST` | `/v1/dasha/alternate/ashtottari/chart/sequence` | alternate-dashas | `ashtottari_chart_sequence_route_v1_dasha_alternate_ashtottari_chart_sequence_post` |
+| `POST` | `/v1/dasha/alternate/ashtottari/profile` | alternate-dashas | `ashtottari_profile_route_v1_dasha_alternate_ashtottari_profile_post` |
+| `POST` | `/v1/dasha/alternate/ashtottari/sequence` | alternate-dashas | `ashtottari_sequence_route_v1_dasha_alternate_ashtottari_sequence_post` |
+| `POST` | `/v1/dasha/alternate/period-profile` | alternate-dashas | `alternate_period_profile_route_v1_dasha_alternate_period_profile_post` |
+| `POST` | `/v1/dasha/alternate/yogini/chart/profile` | alternate-dashas | `yogini_chart_profile_route_v1_dasha_alternate_yogini_chart_profile_post` |
+| `POST` | `/v1/dasha/alternate/yogini/chart/sequence` | alternate-dashas | `yogini_chart_sequence_route_v1_dasha_alternate_yogini_chart_sequence_post` |
+| `POST` | `/v1/dasha/alternate/yogini/profile` | alternate-dashas | `yogini_profile_route_v1_dasha_alternate_yogini_profile_post` |
+| `POST` | `/v1/dasha/alternate/yogini/sequence` | alternate-dashas | `yogini_sequence_route_v1_dasha_alternate_yogini_sequence_post` |
+| `POST` | `/v1/dasha/vimshottari/balance` | dasha | `dasha_balance_route_v1_dasha_vimshottari_balance_post` |
+| `POST` | `/v1/dasha/vimshottari/current` | dasha | `dasha_current_route_v1_dasha_vimshottari_current_post` |
+| `POST` | `/v1/dasha/vimshottari/lord-pair` | dasha | `dasha_lord_pair_route_v1_dasha_vimshottari_lord_pair_post` |
+| `POST` | `/v1/dasha/vimshottari/profile` | dasha | `dasha_profile_route_v1_dasha_vimshottari_profile_post` |
+| `POST` | `/v1/dasha/vimshottari/sequence` | dasha | `dasha_sequence_route_v1_dasha_vimshottari_sequence_post` |
+| `POST` | `/v1/davison/chart` | relationship | `davison_chart_route_v1_davison_chart_post` |
+| `POST` | `/v1/decanates/chaldean-face` | decanates | `chaldean_face_route_v1_decanates_chaldean_face_post` |
+| `POST` | `/v1/decanates/chart/set` | decanates | `decanate_set_chart_route_v1_decanates_chart_set_post` |
+| `POST` | `/v1/decanates/chart/vedic-drekkana` | decanates | `vedic_drekkana_chart_route_v1_decanates_chart_vedic_drekkana_post` |
+| `POST` | `/v1/decanates/set` | decanates | `decanate_set_route_v1_decanates_set_post` |
+| `POST` | `/v1/decanates/triplicity` | decanates | `triplicity_decan_route_v1_decanates_triplicity_post` |
+| `POST` | `/v1/decanates/vedic-drekkana` | decanates | `vedic_drekkana_route_v1_decanates_vedic_drekkana_post` |
+| `POST` | `/v1/dignities/chart` | dignities | `dignities_chart_route_v1_dignities_chart_post` |
+| `POST` | `/v1/dignities/chart/condition` | dignities | `dignities_chart_condition_route_v1_dignities_chart_condition_post` |
+| `POST` | `/v1/dignities/chart/conditions` | dignities | `dignities_chart_conditions_route_v1_dignities_chart_conditions_post` |
+| `POST` | `/v1/dignities/chart/network` | dignities | `dignities_chart_network_route_v1_dignities_chart_network_post` |
+| `POST` | `/v1/dignities/chart/profile` | dignities | `dignities_chart_profile_route_v1_dignities_chart_profile_post` |
+| `POST` | `/v1/dignities/chart/receptions` | dignities | `dignities_chart_receptions_route_v1_dignities_chart_receptions_post` |
+| `POST` | `/v1/draconic/chart` | draconic | `draconic_chart_route_v1_draconic_chart_post` |
+| `POST` | `/v1/draconic/longitude` | draconic | `draconic_longitude_route_v1_draconic_longitude_post` |
+| `POST` | `/v1/draconic/positions` | draconic | `draconic_positions_route_v1_draconic_positions_post` |
+| `POST` | `/v1/eclipses/lunar/global-circumstances` | phenomena | `lunar_eclipse_global_circumstances_route_v1_eclipses_lunar_global_circumstances_post` |
+| `POST` | `/v1/eclipses/lunar/local` | phenomena | `lunar_eclipse_local_route_v1_eclipses_lunar_local_post` |
+| `POST` | `/v1/eclipses/lunar/next` | phenomena | `next_lunar_eclipse_route_v1_eclipses_lunar_next_post` |
+| `POST` | `/v1/eclipses/lunar/visibility` | phenomena | `lunar_eclipse_visibility_route_v1_eclipses_lunar_visibility_post` |
+| `POST` | `/v1/eclipses/solar/cartography` | phenomena | `solar_eclipse_cartography_route_v1_eclipses_solar_cartography_post` |
+| `POST` | `/v1/eclipses/solar/footprint` | phenomena | `solar_eclipse_footprint_route_v1_eclipses_solar_footprint_post` |
+| `POST` | `/v1/eclipses/solar/global-circumstances` | phenomena | `solar_eclipse_global_circumstances_route_v1_eclipses_solar_global_circumstances_post` |
+| `POST` | `/v1/eclipses/solar/local-visible` | phenomena | `next_visible_solar_eclipse_route_v1_eclipses_solar_local_visible_post` |
+| `POST` | `/v1/eclipses/solar/next` | phenomena | `next_solar_eclipse_route_v1_eclipses_solar_next_post` |
+| `POST` | `/v1/eclipses/solar/path` | phenomena | `solar_eclipse_path_route_v1_eclipses_solar_path_post` |
+| `POST` | `/v1/egyptian-bounds/aggregate` | egyptian-bounds | `egyptian_bounds_aggregate_route_v1_egyptian_bounds_aggregate_post` |
+| `POST` | `/v1/egyptian-bounds/bound` | egyptian-bounds | `egyptian_bound_route_v1_egyptian_bounds_bound_post` |
+| `POST` | `/v1/egyptian-bounds/classification` | egyptian-bounds | `egyptian_bound_classification_route_v1_egyptian_bounds_classification_post` |
+| `POST` | `/v1/egyptian-bounds/condition` | egyptian-bounds | `egyptian_bound_condition_route_v1_egyptian_bounds_condition_post` |
+| `POST` | `/v1/egyptian-bounds/network` | egyptian-bounds | `egyptian_bounds_network_route_v1_egyptian_bounds_network_post` |
+| `POST` | `/v1/egyptian-bounds/relation` | egyptian-bounds | `egyptian_bound_relation_route_v1_egyptian_bounds_relation_post` |
+| `GET` | `/v1/egyptian-bounds/table` | egyptian-bounds | `egyptian_bounds_table_route_v1_egyptian_bounds_table_get` |
+| `POST` | `/v1/electional/moments` | electional | `electional_moments_route_v1_electional_moments_post` |
+| `GET` | `/v1/electional/predicate-profiles` | electional | `electional_predicate_profiles_route_v1_electional_predicate_profiles_get` |
+| `POST` | `/v1/electional/scored` | electional | `electional_scored_route_v1_electional_scored_post` |
+| `GET` | `/v1/electional/scorer-profiles` | electional | `electional_scorer_profiles_route_v1_electional_scorer_profiles_get` |
+| `POST` | `/v1/electional/western/classical-perfection` | electional | `lilly_perfection_route_v1_electional_western_classical_perfection_post` |
+| `POST` | `/v1/electional/western/dorotheus-construction` | electional | `dorotheus_construction_route_v1_electional_western_dorotheus_construction_post` |
+| `POST` | `/v1/electional/western/dorotheus-matter-profile` | electional | `dorotheus_matter_profile_route_v1_electional_western_dorotheus_matter_profile_post` |
+| `POST` | `/v1/electional/western/dorotheus-moon-condition` | electional | `dorotheus_moon_condition_route_v1_electional_western_dorotheus_moon_condition_post` |
+| `POST` | `/v1/electional/western/dorotheus-rooted-context` | electional | `dorotheus_rooted_context_route_v1_electional_western_dorotheus_rooted_context_post` |
+| `POST` | `/v1/electional/western/judgement` | electional | `western_electional_judgement_route_v1_electional_western_judgement_post` |
+| `POST` | `/v1/electional/western/judgement-windows` | electional | `western_electional_judgement_windows_route_v1_electional_western_judgement_windows_post` |
+| `POST` | `/v1/electional/western/lunar-ecliptic-direction` | electional | `lunar_ecliptic_direction_route_v1_electional_western_lunar_ecliptic_direction_post` |
+| `POST` | `/v1/electional/western/profile-windows` | electional | `western_profile_windows_route_v1_electional_western_profile_windows_post` |
+| `POST` | `/v1/electional/western/ramesey-moon-condition` | electional | `ramesey_moon_condition_route_v1_electional_western_ramesey_moon_condition_post` |
+| `POST` | `/v1/electional/western/ranking` | electional | `western_electional_ranking_route_v1_electional_western_ranking_post` |
+| `POST` | `/v1/electional/western/sahl-matter-profile` | electional | `sahl_matter_profile_route_v1_electional_western_sahl_matter_profile_post` |
+| `POST` | `/v1/electional/western/sahl-moon-condition` | electional | `sahl_moon_condition_route_v1_electional_western_sahl_moon_condition_post` |
+| `POST` | `/v1/electional/windows` | electional | `electional_windows_route_v1_electional_windows_post` |
+| `POST` | `/v1/galactic-houses/chart/placements` | galactic-houses | `galactic_house_chart_placements_route_v1_galactic_houses_chart_placements_post` |
+| `POST` | `/v1/galactic-houses/cusps` | galactic-houses | `galactic_house_cusps_route_v1_galactic_houses_cusps_post` |
+| `POST` | `/v1/galactic-houses/placement` | galactic-houses | `galactic_house_placement_route_v1_galactic_houses_placement_post` |
+| `POST` | `/v1/galactic/chart/positions` | galactic | `galactic_chart_positions_route_v1_galactic_chart_positions_post` |
+| `POST` | `/v1/galactic/ecliptic-to-galactic` | galactic | `ecliptic_to_galactic_route_v1_galactic_ecliptic_to_galactic_post` |
+| `POST` | `/v1/galactic/equatorial-to-galactic` | galactic | `equatorial_to_galactic_route_v1_galactic_equatorial_to_galactic_post` |
+| `POST` | `/v1/galactic/galactic-to-ecliptic` | galactic | `galactic_to_ecliptic_route_v1_galactic_galactic_to_ecliptic_post` |
+| `POST` | `/v1/galactic/galactic-to-equatorial` | galactic | `galactic_to_equatorial_route_v1_galactic_galactic_to_equatorial_post` |
+| `POST` | `/v1/galactic/reference-points` | galactic | `galactic_reference_points_route_v1_galactic_reference_points_post` |
+| `POST` | `/v1/gauquelin/chart/sectors` | gauquelin | `gauquelin_chart_sectors_route_v1_gauquelin_chart_sectors_post` |
+| `POST` | `/v1/gauquelin/sector` | gauquelin | `gauquelin_sector_route_v1_gauquelin_sector_post` |
+| `POST` | `/v1/gauquelin/sectors` | gauquelin | `gauquelin_sectors_route_v1_gauquelin_sectors_post` |
+| `POST` | `/v1/geodetic/chart/equivalents` | geodetic | `geodetic_chart_equivalents_route_v1_geodetic_chart_equivalents_post` |
+| `POST` | `/v1/geodetic/chart/location-chart` | geodetic | `geodetic_chart_location_chart_route_v1_geodetic_chart_location_chart_post` |
+| `POST` | `/v1/geodetic/equivalents` | geodetic | `geodetic_equivalents_route_v1_geodetic_equivalents_post` |
+| `POST` | `/v1/geodetic/location-chart` | geodetic | `geodetic_location_chart_route_v1_geodetic_location_chart_post` |
+| `POST` | `/v1/harmograms/intensity-spectrum` | harmograms | `harmogram_intensity_spectrum_route_v1_harmograms_intensity_spectrum_post` |
+| `POST` | `/v1/harmograms/projection` | harmograms | `harmogram_projection_route_v1_harmograms_projection_post` |
+| `POST` | `/v1/harmograms/trace` | harmograms | `harmogram_trace_route_v1_harmograms_trace_post` |
+| `POST` | `/v1/harmograms/vector` | harmograms | `harmogram_vector_route_v1_harmograms_vector_post` |
+| `POST` | `/v1/harmograms/zero-aries-vector` | harmograms | `harmogram_zero_aries_vector_route_v1_harmograms_zero_aries_vector_post` |
+| `POST` | `/v1/harmonics/age-chart` | harmonics | `harmonic_age_chart_route_v1_harmonics_age_chart_post` |
+| `POST` | `/v1/harmonics/aspects` | harmonics | `harmonic_aspects_route_v1_harmonics_aspects_post` |
+| `POST` | `/v1/harmonics/chart` | harmonics | `harmonic_chart_route_v1_harmonics_chart_post` |
+| `POST` | `/v1/harmonics/composite` | harmonics | `harmonic_composite_route_v1_harmonics_composite_post` |
+| `POST` | `/v1/harmonics/conjunctions` | harmonics | `harmonic_conjunctions_route_v1_harmonics_conjunctions_post` |
+| `POST` | `/v1/harmonics/fingerprint` | harmonics | `harmonic_fingerprint_route_v1_harmonics_fingerprint_post` |
+| `POST` | `/v1/harmonics/pattern-score` | harmonics | `harmonic_pattern_score_route_v1_harmonics_pattern_score_post` |
+| `GET` | `/v1/harmonics/presets` | harmonics | `harmonic_presets_route_v1_harmonics_presets_get` |
+| `POST` | `/v1/harmonics/sweep` | harmonics | `harmonic_sweep_route_v1_harmonics_sweep_post` |
+| `POST` | `/v1/harmonics/transit-forecast` | harmonics | `harmonic_transit_forecast_route_v1_harmonics_transit_forecast_post` |
+| `POST` | `/v1/heliacal/planet` | phenomena | `planet_heliacal_event_route_v1_heliacal_planet_post` |
+| `POST` | `/v1/heliacal/visibility-event` | phenomena | `general_visibility_event_route_v1_heliacal_visibility_event_post` |
+| `GET` | `/v1/hermetic-decans/catalog` | hermetic-decans | `hermetic_decan_catalog_route_v1_hermetic_decans_catalog_get` |
+| `POST` | `/v1/hermetic-decans/longitude` | hermetic-decans | `hermetic_decan_longitude_route_v1_hermetic_decans_longitude_post` |
+| `POST` | `/v1/hermetic-decans/night-hours` | hermetic-decans | `hermetic_decan_night_hours_route_v1_hermetic_decans_night_hours_post` |
+| `POST` | `/v1/hermetic-decans/rising` | hermetic-decans | `hermetic_rising_decan_route_v1_hermetic_decans_rising_post` |
+| `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
+| `POST` | `/v1/houses/reduction` | chart | `houses_reduction_route_v1_houses_reduction_post` |
+| `POST` | `/v1/huber/age-point` | huber | `huber_age_point_route_v1_huber_age_point_post` |
+| `POST` | `/v1/huber/age-point-contacts` | huber | `huber_age_point_contacts_route_v1_huber_age_point_contacts_post` |
+| `POST` | `/v1/huber/chart-intensity-profile` | huber | `huber_chart_intensity_profile_route_v1_huber_chart_intensity_profile_post` |
+| `POST` | `/v1/huber/dynamic-intensity` | huber | `huber_dynamic_intensity_route_v1_huber_dynamic_intensity_post` |
+| `POST` | `/v1/huber/house-zones` | huber | `huber_house_zones_route_v1_huber_house_zones_post` |
+| `POST` | `/v1/huber/intensity-at` | huber | `huber_intensity_at_route_v1_huber_intensity_at_post` |
+| `POST` | `/v1/jaimini/chart/condition` | jaimini | `jaimini_chart_condition_route_v1_jaimini_chart_condition_post` |
+| `POST` | `/v1/jaimini/chart/karakas` | jaimini | `jaimini_chart_karakas_route_v1_jaimini_chart_karakas_post` |
+| `POST` | `/v1/jaimini/chart/pair` | jaimini | `jaimini_chart_pair_route_v1_jaimini_chart_pair_post` |
+| `POST` | `/v1/jaimini/chart/profile` | jaimini | `jaimini_chart_profile_route_v1_jaimini_chart_profile_post` |
+| `POST` | `/v1/jaimini/extended/argala` | jaimini | `argala_route_v1_jaimini_extended_argala_post` |
+| `POST` | `/v1/jaimini/extended/arudhas` | jaimini | `arudhas_route_v1_jaimini_extended_arudhas_post` |
+| `POST` | `/v1/jaimini/extended/chara-dasha` | jaimini | `chara_dasha_route_v1_jaimini_extended_chara_dasha_post` |
+| `POST` | `/v1/jaimini/extended/karakamsa` | jaimini | `karakamsa_route_v1_jaimini_extended_karakamsa_post` |
+| `POST` | `/v1/jaimini/karakas` | jaimini | `jaimini_karakas_route_v1_jaimini_karakas_post` |
+| `POST` | `/v1/jaimini/karakas/condition` | jaimini | `jaimini_karakas_condition_route_v1_jaimini_karakas_condition_post` |
+| `POST` | `/v1/jaimini/karakas/pair` | jaimini | `jaimini_karakas_pair_route_v1_jaimini_karakas_pair_post` |
+| `POST` | `/v1/jaimini/karakas/profile` | jaimini | `jaimini_karakas_profile_route_v1_jaimini_karakas_profile_post` |
+| `POST` | `/v1/local-space/chart/positions` | local-space | `local_space_chart_positions_route_v1_local_space_chart_positions_post` |
+| `POST` | `/v1/local-space/positions` | local-space | `local_space_positions_route_v1_local_space_positions_post` |
+| `GET` | `/v1/locations/search` | website-locations | `location_search_route_v1_locations_search_get` |
+| `POST` | `/v1/locations/timezone/validate` | website-locations | `timezone_validate_route_v1_locations_timezone_validate_post` |
+| `POST` | `/v1/lord-of-the-orb/current` | lord-of-the-orb | `lord_of_the_orb_current_route_v1_lord_of_the_orb_current_post` |
+| `POST` | `/v1/lord-of-the-orb/sequence` | lord-of-the-orb | `lord_of_the_orb_sequence_route_v1_lord_of_the_orb_sequence_post` |
+| `POST` | `/v1/lord-of-the-turn/profile` | lord-of-the-turn | `lord_of_the_turn_profile_route_v1_lord_of_the_turn_profile_post` |
+| `GET` | `/v1/lots/catalog` | lots | `lots_catalog_route_v1_lots_catalog_get` |
+| `POST` | `/v1/lots/chart` | lots | `lots_chart_route_v1_lots_chart_post` |
+| `POST` | `/v1/lots/chart/condition` | lots | `lots_chart_condition_route_v1_lots_chart_condition_post` |
+| `POST` | `/v1/lots/chart/conditions` | lots | `lots_chart_conditions_route_v1_lots_chart_conditions_post` |
+| `POST` | `/v1/lots/chart/dependencies` | lots | `lots_chart_dependencies_route_v1_lots_chart_dependencies_post` |
+| `POST` | `/v1/lots/chart/network` | lots | `lots_chart_network_route_v1_lots_chart_network_post` |
+| `POST` | `/v1/lots/chart/profile` | lots | `lots_chart_profile_route_v1_lots_chart_profile_post` |
+| `POST` | `/v1/lunar-phases` | predictive | `lunar_phase_route_v1_lunar_phases_post` |
+| `POST` | `/v1/manazil/bulk` | manazil | `manazil_bulk_route_v1_manazil_bulk_post` |
+| `GET` | `/v1/manazil/catalog` | manazil | `manazil_catalog_route_v1_manazil_catalog_get` |
+| `POST` | `/v1/manazil/position` | manazil | `manazil_position_route_v1_manazil_position_post` |
+| `GET` | `/v1/manazil/traditions/{tradition}/mansions/{mansion_index}` | manazil | `manazil_tradition_lookup_route_v1_manazil_traditions__tradition__mansions__mansion_index__get` |
+| `GET` | `/v1/meta/routes` | meta | `route_catalog_v1_meta_routes_get` |
+| `POST` | `/v1/midpoints/calculate` | relationship | `midpoints_route_v1_midpoints_calculate_post` |
+| `POST` | `/v1/midpoints/clusters` | relationship | `midpoint_clusters_route_v1_midpoints_clusters_post` |
+| `POST` | `/v1/midpoints/pictures` | relationship | `midpoint_pictures_route_v1_midpoints_pictures_post` |
+| `POST` | `/v1/midpoints/to-point` | relationship | `midpoints_to_point_route_v1_midpoints_to_point_post` |
+| `POST` | `/v1/midpoints/weighting` | relationship | `midpoint_weighting_route_v1_midpoints_weighting_post` |
+| `POST` | `/v1/muhurta/chart/classification` | muhurta | `muhurta_chart_classification_route_v1_muhurta_chart_classification_post` |
+| `POST` | `/v1/muhurta/chart/score` | muhurta | `muhurta_chart_score_route_v1_muhurta_chart_score_post` |
+| `POST` | `/v1/muhurta/direct/classification` | muhurta | `muhurta_direct_classification_route_v1_muhurta_direct_classification_post` |
+| `POST` | `/v1/muhurta/direct/score` | muhurta | `muhurta_direct_score_route_v1_muhurta_direct_score_post` |
+| `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |
+| `POST` | `/v1/nakshatra/bulk` | sidereal | `nakshatra_bulk_route_v1_nakshatra_bulk_post` |
+| `POST` | `/v1/nakshatra/position` | sidereal | `nakshatra_position_route_v1_nakshatra_position_post` |
+| `POST` | `/v1/nine-parts/abu-mashar` | nine-parts | `abu_mashar_nine_parts_route_v1_nine_parts_abu_mashar_post` |
+| `GET` | `/v1/nodes/catalog` | nodes | `node_catalog_route_v1_nodes_catalog_get` |
+| `POST` | `/v1/nodes/geometric` | nodes | `geometric_node_route_v1_nodes_geometric_post` |
+| `POST` | `/v1/nodes/planetary/mean` | nodes | `mean_planetary_node_route_v1_nodes_planetary_mean_post` |
+| `POST` | `/v1/nodes/planetary/mean/bulk` | nodes | `mean_planetary_nodes_bulk_route_v1_nodes_planetary_mean_bulk_post` |
+| `POST` | `/v1/occultations/all-lunar` | phenomena | `all_lunar_occultations_route_v1_occultations_all_lunar_post` |
+| `POST` | `/v1/occultations/close-approaches` | phenomena | `close_approaches_route_v1_occultations_close_approaches_post` |
+| `POST` | `/v1/occultations/lunar` | phenomena | `lunar_occultations_route_v1_occultations_lunar_post` |
+| `POST` | `/v1/occultations/lunar-path` | phenomena | `lunar_occultation_path_route_v1_occultations_lunar_path_post` |
+| `POST` | `/v1/occultations/lunar-path-at` | phenomena | `lunar_occultation_path_at_route_v1_occultations_lunar_path_at_post` |
+| `POST` | `/v1/occultations/lunar-path-topology` | phenomena | `lunar_occultation_path_topology_route_v1_occultations_lunar_path_topology_post` |
+| `POST` | `/v1/occultations/lunar-path-topology-at` | phenomena | `lunar_occultation_path_topology_at_route_v1_occultations_lunar_path_topology_at_post` |
+| `POST` | `/v1/occultations/lunar-star` | phenomena | `lunar_star_occultations_route_v1_occultations_lunar_star_post` |
+| `POST` | `/v1/occultations/lunar-star-path` | phenomena | `lunar_star_occultation_path_route_v1_occultations_lunar_star_path_post` |
+| `POST` | `/v1/occultations/lunar-star-path-at` | phenomena | `lunar_star_occultation_path_at_route_v1_occultations_lunar_star_path_at_post` |
+| `POST` | `/v1/occultations/lunar-star-path-topology` | phenomena | `lunar_star_occultation_path_topology_route_v1_occultations_lunar_star_path_topology_post` |
+| `POST` | `/v1/occultations/lunar-star-path-topology-at` | phenomena | `lunar_star_occultation_path_topology_at_route_v1_occultations_lunar_star_path_topology_at_post` |
+| `POST` | `/v1/orbits/distance-extremes` | orbits | `distance_extremes_route_v1_orbits_distance_extremes_post` |
+| `POST` | `/v1/orbits/elements` | orbits | `orbital_elements_route_v1_orbits_elements_post` |
+| `GET` | `/v1/pancha-pakshi/constitution/uromarisi` | pancha-pakshi | `pancha_pakshi_uromarisi_constitution_status_route_v1_pancha_pakshi_constitution_uromarisi_get` |
+| `POST` | `/v1/pancha-pakshi/context/astronomical-paksha` | pancha-pakshi | `pancha_pakshi_astronomical_paksha_route_v1_pancha_pakshi_context_astronomical_paksha_post` |
+| `POST` | `/v1/pancha-pakshi/context/local-solar` | pancha-pakshi | `pancha_pakshi_local_solar_context_route_v1_pancha_pakshi_context_local_solar_post` |
+| `POST` | `/v1/pancha-pakshi/identity/aksara` | pancha-pakshi | `pancha_pakshi_aksara_identity_route_v1_pancha_pakshi_identity_aksara_post` |
+| `POST` | `/v1/pancha-pakshi/identity/natal-moon` | pancha-pakshi | `pancha_pakshi_natal_moon_identity_route_v1_pancha_pakshi_identity_natal_moon_post` |
+| `POST` | `/v1/pancha-pakshi/mappings/nakshatra-bird` | pancha-pakshi | `pancha_pakshi_nakshatra_bird_mapping_route_v1_pancha_pakshi_mappings_nakshatra_bird_post` |
+| `GET` | `/v1/pancha-pakshi/profiles` | pancha-pakshi | `pancha_pakshi_profiles_route_v1_pancha_pakshi_profiles_get` |
+| `GET` | `/v1/pancha-pakshi/profiles/{profile_id}` | pancha-pakshi | `pancha_pakshi_profile_route_v1_pancha_pakshi_profiles__profile_id__get` |
+| `POST` | `/v1/pancha-pakshi/relationships/directed` | pancha-pakshi | `pancha_pakshi_directed_relationship_route_v1_pancha_pakshi_relationships_directed_post` |
+| `POST` | `/v1/pancha-pakshi/roles/padu` | pancha-pakshi | `pancha_pakshi_padu_bird_mapping_route_v1_pancha_pakshi_roles_padu_post` |
+| `POST` | `/v1/pancha-pakshi/schedule/first-eat-bird` | pancha-pakshi | `pancha_pakshi_first_eat_bird_mapping_route_v1_pancha_pakshi_schedule_first_eat_bird_post` |
+| `POST` | `/v1/pancha-pakshi/schedule/fixed-clock` | pancha-pakshi | `pancha_pakshi_fixed_clock_materialization_route_v1_pancha_pakshi_schedule_fixed_clock_post` |
+| `POST` | `/v1/pancha-pakshi/schedule/fixed-clock/current-cell` | pancha-pakshi | `pancha_pakshi_fixed_clock_current_cell_route_v1_pancha_pakshi_schedule_fixed_clock_current_cell_post` |
+| `POST` | `/v1/pancha-pakshi/schedule/nominal` | pancha-pakshi | `pancha_pakshi_nominal_schedule_route_v1_pancha_pakshi_schedule_nominal_post` |
+| `POST` | `/v1/pancha-pakshi/schedule/solar-proportional` | pancha-pakshi | `pancha_pakshi_solar_proportional_materialization_route_v1_pancha_pakshi_schedule_solar_proportional_post` |
+| `POST` | `/v1/pancha-pakshi/schedule/solar-proportional/current-cell` | pancha-pakshi | `pancha_pakshi_solar_proportional_current_cell_route_v1_pancha_pakshi_schedule_solar_proportional_current_cell_post` |
+| `POST` | `/v1/pancha-pakshi/sookshma/civil-time-select` | pancha-pakshi | `pancha_pakshi_civil_time_sookshma_selection_route_v1_pancha_pakshi_sookshma_civil_time_select_post` |
+| `POST` | `/v1/pancha-pakshi/sookshma/schedule-select` | pancha-pakshi | `pancha_pakshi_schedule_sookshma_temporal_selection_route_v1_pancha_pakshi_sookshma_schedule_select_post` |
+| `POST` | `/v1/pancha-pakshi/sookshma/select` | pancha-pakshi | `pancha_pakshi_sookshma_temporal_selection_route_v1_pancha_pakshi_sookshma_select_post` |
+| `POST` | `/v1/panchanga/chart` | panchanga | `panchanga_chart_route_v1_panchanga_chart_post` |
+| `POST` | `/v1/panchanga/chart/profile` | panchanga | `panchanga_chart_profile_route_v1_panchanga_chart_profile_post` |
+| `POST` | `/v1/panchanga/instant` | panchanga | `panchanga_instant_route_v1_panchanga_instant_post` |
+| `POST` | `/v1/panchanga/instant/profile` | panchanga | `panchanga_instant_profile_route_v1_panchanga_instant_profile_post` |
+| `POST` | `/v1/parans/field/analysis` | phenomena | `paran_field_analysis_route_v1_parans_field_analysis_post` |
+| `POST` | `/v1/parans/field/contours` | phenomena | `paran_field_contours_route_v1_parans_field_contours_post` |
+| `POST` | `/v1/parans/field/paths` | phenomena | `paran_field_paths_route_v1_parans_field_paths_post` |
+| `POST` | `/v1/parans/field/samples` | phenomena | `paran_field_samples_route_v1_parans_field_samples_post` |
+| `POST` | `/v1/parans/field/structure` | phenomena | `paran_field_structure_route_v1_parans_field_structure_post` |
+| `POST` | `/v1/parans/natal` | phenomena | `natal_paran_search_route_v1_parans_natal_post` |
+| `POST` | `/v1/parans/natal-angular-contacts` | phenomena | `natal_angular_contacts_route_v1_parans_natal_angular_contacts_post` |
+| `POST` | `/v1/parans/search` | phenomena | `paran_search_route_v1_parans_search_post` |
+| `POST` | `/v1/parans/site` | phenomena | `paran_site_route_v1_parans_site_post` |
+| `GET` | `/v1/parans/star-canon` | phenomena | `paran_star_canon_route_v1_parans_star_canon_get` |
+| `POST` | `/v1/patterns/chart-profile` | relationship | `pattern_chart_profile_route_v1_patterns_chart_profile_post` |
+| `POST` | `/v1/patterns/find` | relationship | `patterns_route_v1_patterns_find_post` |
+| `POST` | `/v1/patterns/network` | relationship | `pattern_network_route_v1_patterns_network_post` |
+| `POST` | `/v1/phase/angle` | phase | `phase_angle_route_v1_phase_angle_post` |
+| `POST` | `/v1/phase/angular-diameter` | phase | `angular_diameter_route_v1_phase_angular_diameter_post` |
+| `POST` | `/v1/phase/apparent-magnitude` | phase | `apparent_magnitude_route_v1_phase_apparent_magnitude_post` |
+| `POST` | `/v1/phase/elongation` | phase | `elongation_route_v1_phase_elongation_post` |
+| `POST` | `/v1/phase/illuminated-fraction` | phase | `illuminated_fraction_route_v1_phase_illuminated_fraction_post` |
+| `POST` | `/v1/phase/synodic` | phase | `synodic_phase_route_v1_phase_synodic_post` |
+| `POST` | `/v1/phenomena/orbital-events` | generic-phenomena | `orbital_phenomena_events_route_v1_phenomena_orbital_events_post` |
+| `POST` | `/v1/phenomena/planet` | generic-phenomena | `planet_phenomena_route_v1_phenomena_planet_post` |
+| `POST` | `/v1/phenomena/proximity` | generic-phenomena | `proximity_events_route_v1_phenomena_proximity_post` |
+| `POST` | `/v1/pipeline/chart` | website-pipeline | `pipeline_chart_route_v1_pipeline_chart_post` |
+| `POST` | `/v1/pipeline/positions/planet` | website-pipeline | `pipeline_planet_position_route_v1_pipeline_positions_planet_post` |
+| `POST` | `/v1/pipeline/positions/sky` | website-pipeline | `pipeline_sky_position_route_v1_pipeline_positions_sky_post` |
+| `POST` | `/v1/planetary-hours/hour-at` | planetary-hours | `planetary_hours_hour_at_route_v1_planetary_hours_hour_at_post` |
+| `POST` | `/v1/planetary-hours/schedule` | planetary-hours | `planetary_hours_schedule_route_v1_planetary_hours_schedule_post` |
+| `POST` | `/v1/positions/frame/heliocentric` | positions-frame | `frame_heliocentric_route_v1_positions_frame_heliocentric_post` |
+| `POST` | `/v1/positions/frame/planetocentric` | positions-frame | `frame_planetocentric_route_v1_positions_frame_planetocentric_post` |
+| `POST` | `/v1/positions/frame/received-light` | positions-frame | `frame_received_light_route_v1_positions_frame_received_light_post` |
+| `POST` | `/v1/positions/frame/ssb` | positions-frame | `frame_ssb_route_v1_positions_frame_ssb_post` |
+| `POST` | `/v1/positions/planet` | positions | `planet_position_route_v1_positions_planet_post` |
+| `POST` | `/v1/positions/planet/reduction` | positions | `planet_position_reduction_route_v1_positions_planet_reduction_post` |
+| `POST` | `/v1/positions/sky` | positions | `sky_position_route_v1_positions_sky_post` |
+| `POST` | `/v1/positions/sky/reduction` | positions | `sky_position_reduction_route_v1_positions_sky_reduction_post` |
+| `POST` | `/v1/primary-directions/arcs` | primary-directions | `primary_directions_arcs_route_v1_primary_directions_arcs_post` |
+| `POST` | `/v1/primary-directions/arcs/reduction` | primary-directions | `primary_directions_arcs_reduction_route_v1_primary_directions_arcs_reduction_post` |
+| `POST` | `/v1/primary-directions/network` | primary-directions | `primary_directions_network_route_v1_primary_directions_network_post` |
+| `POST` | `/v1/primary-directions/network/reduction` | primary-directions | `primary_directions_network_reduction_route_v1_primary_directions_network_reduction_post` |
+| `POST` | `/v1/primary-directions/profile` | primary-directions | `primary_directions_profile_route_v1_primary_directions_profile_post` |
+| `POST` | `/v1/primary-directions/profile/reduction` | primary-directions | `primary_directions_profile_reduction_route_v1_primary_directions_profile_reduction_post` |
+| `POST` | `/v1/primary-directions/relations` | primary-directions | `primary_directions_relations_route_v1_primary_directions_relations_post` |
+| `POST` | `/v1/primary-directions/speculum` | primary-directions | `primary_directions_speculum_route_v1_primary_directions_speculum_post` |
+| `POST` | `/v1/profections/annual` | timelords | `annual_profection_route_v1_profections_annual_post` |
+| `POST` | `/v1/profections/monthly` | timelords | `monthly_profection_route_v1_profections_monthly_post` |
+| `POST` | `/v1/profections/schedule` | timelords | `profection_schedule_route_v1_profections_schedule_post` |
+| `POST` | `/v1/progressions/arc` | progressions | `arc_progression_route_v1_progressions_arc_post` |
+| `POST` | `/v1/progressions/arc/reduction` | progressions | `arc_progression_reduction_route_v1_progressions_arc_reduction_post` |
+| `POST` | `/v1/progressions/house-frame` | progressions | `house_frame_route_v1_progressions_house_frame_post` |
+| `POST` | `/v1/progressions/house-frame/arc` | progressions | `house_frame_arc_route_v1_progressions_house_frame_arc_post` |
+| `POST` | `/v1/progressions/house-frame/arc/reduction` | progressions | `house_frame_arc_reduction_route_v1_progressions_house_frame_arc_reduction_post` |
+| `POST` | `/v1/progressions/house-frame/cusps` | progressions | `daily_houses_route_v1_progressions_house_frame_cusps_post` |
+| `POST` | `/v1/progressions/house-frame/reduction` | progressions | `house_frame_reduction_route_v1_progressions_house_frame_reduction_post` |
+| `POST` | `/v1/progressions/network` | progressions | `progression_network_route_v1_progressions_network_post` |
+| `POST` | `/v1/progressions/network/reduction` | progressions | `progression_network_reduction_route_v1_progressions_network_reduction_post` |
+| `POST` | `/v1/progressions/profile` | progressions | `progression_profile_route_v1_progressions_profile_post` |
+| `POST` | `/v1/progressions/profile/reduction` | progressions | `progression_profile_reduction_route_v1_progressions_profile_reduction_post` |
+| `POST` | `/v1/progressions/secondary` | progressions | `secondary_progression_route_v1_progressions_secondary_post` |
+| `POST` | `/v1/progressions/secondary-declination` | progressions | `secondary_declination_route_v1_progressions_secondary_declination_post` |
+| `POST` | `/v1/progressions/secondary-declination/reduction` | progressions | `secondary_declination_reduction_route_v1_progressions_secondary_declination_reduction_post` |
+| `POST` | `/v1/progressions/secondary/reduction` | progressions | `secondary_progression_reduction_route_v1_progressions_secondary_reduction_post` |
+| `POST` | `/v1/progressions/time-key` | progressions | `time_key_progression_route_v1_progressions_time_key_post` |
+| `POST` | `/v1/progressions/time-key/reduction` | progressions | `time_key_progression_reduction_route_v1_progressions_time_key_reduction_post` |
+| `POST` | `/v1/returns/lunar` | predictive | `lunar_return_route_v1_returns_lunar_post` |
+| `POST` | `/v1/returns/planet` | predictive | `planet_return_route_v1_returns_planet_post` |
+| `POST` | `/v1/returns/solar` | predictive | `solar_return_route_v1_returns_solar_post` |
+| `POST` | `/v1/rise-set/phenomena` | phenomena | `rise_set_phenomena_route_v1_rise_set_phenomena_post` |
+| `POST` | `/v1/rise-set/transit` | phenomena | `rise_set_transit_route_v1_rise_set_transit_post` |
+| `POST` | `/v1/rise-set/twilight` | phenomena | `twilight_times_route_v1_rise_set_twilight_post` |
+| `POST` | `/v1/sade-sati/status` | sade-sati | `sade_sati_status_route_v1_sade_sati_status_post` |
+| `POST` | `/v1/sade-sati/windows` | sade-sati | `sade_sati_windows_route_v1_sade_sati_windows_post` |
+| `POST` | `/v1/shadbala/chart` | shadbala | `shadbala_chart_route_v1_shadbala_chart_post` |
+| `POST` | `/v1/shadbala/chart/bhava` | shadbala | `bhava_bala_chart_route_v1_shadbala_chart_bhava_post` |
+| `POST` | `/v1/shadbala/chart/condition` | shadbala | `shadbala_chart_condition_route_v1_shadbala_chart_condition_post` |
+| `POST` | `/v1/shadbala/chart/full` | shadbala | `shadbala_full_route_v1_shadbala_chart_full_post` |
+| `POST` | `/v1/shadbala/chart/network` | shadbala | `shadbala_chart_network_route_v1_shadbala_chart_network_post` |
+| `POST` | `/v1/shadbala/chart/profile` | shadbala | `shadbala_chart_profile_route_v1_shadbala_chart_profile_post` |
+| `POST` | `/v1/sidereal/ayanamsa` | sidereal | `sidereal_ayanamsa_route_v1_sidereal_ayanamsa_post` |
+| `GET` | `/v1/sidereal/ayanamsa-systems` | sidereal | `sidereal_ayanamsa_systems_route_v1_sidereal_ayanamsa_systems_get` |
+| `POST` | `/v1/sidereal/convert` | sidereal | `sidereal_convert_route_v1_sidereal_convert_post` |
+| `POST` | `/v1/solar-condition/events` | generic-phenomena | `solar_condition_events_route_v1_solar_condition_events_post` |
+| `POST` | `/v1/solar-condition/instant` | generic-phenomena | `solar_condition_instant_route_v1_solar_condition_instant_post` |
+| `POST` | `/v1/stars/bulk` | stars (fixed stars) | `stars_bulk_v1_stars_bulk_post` |
+| `GET` | `/v1/stars/list` | stars (fixed stars) | `list_stars_v1_stars_list_get` |
+| `GET` | `/v1/stars/multiple/list` | stars (fixed stars) | `list_multiple_stars_route_v1_stars_multiple_list_get` |
+| `POST` | `/v1/stars/multiple/state` | stars (fixed stars) | `multiple_star_state_route_v1_stars_multiple_state_post` |
+| `GET` | `/v1/stars/multiple/{name}` | stars (fixed stars) | `multiple_star_catalog_route_v1_stars_multiple__name__get` |
+| `POST` | `/v1/stars/position` | stars (fixed stars) | `star_position_v1_stars_position_post` |
+| `POST` | `/v1/stars/variable/catalog-profile` | stars (fixed stars) | `variable_star_catalog_profile_route_v1_stars_variable_catalog_profile_post` |
+| `GET` | `/v1/stars/variable/list` | stars (fixed stars) | `list_variable_stars_route_v1_stars_variable_list_get` |
+| `POST` | `/v1/stars/variable/pair` | stars (fixed stars) | `variable_star_pair_route_v1_stars_variable_pair_post` |
+| `POST` | `/v1/stars/variable/range` | stars (fixed stars) | `variable_star_range_route_v1_stars_variable_range_post` |
+| `POST` | `/v1/stars/variable/state` | stars (fixed stars) | `variable_star_state_route_v1_stars_variable_state_post` |
+| `GET` | `/v1/stars/variable/{name}` | stars (fixed stars) | `variable_star_catalog_route_v1_stars_variable__name__get` |
+| `POST` | `/v1/stations/is-retrograde` | phenomena | `station_state_route_v1_stations_is_retrograde_post` |
+| `POST` | `/v1/stations/next` | phenomena | `next_station_route_v1_stations_next_post` |
+| `POST` | `/v1/stations/retrograde-periods` | phenomena | `retrograde_periods_route_v1_stations_retrograde_periods_post` |
+| `POST` | `/v1/stations/search` | phenomena | `station_search_route_v1_stations_search_post` |
+| `POST` | `/v1/synastry/aspects` | relationship | `synastry_aspects_route_v1_synastry_aspects_post` |
+| `POST` | `/v1/synastry/chart-condition` | relationship | `synastry_chart_condition_route_v1_synastry_chart_condition_post` |
+| `POST` | `/v1/synastry/condition-profiles` | relationship | `synastry_condition_profiles_route_v1_synastry_condition_profiles_post` |
+| `POST` | `/v1/synastry/contact-relations` | relationship | `synastry_contact_relations_route_v1_synastry_contact_relations_post` |
+| `POST` | `/v1/synastry/contacts` | relationship | `synastry_contacts_route_v1_synastry_contacts_post` |
+| `POST` | `/v1/synastry/network` | relationship | `synastry_network_route_v1_synastry_network_post` |
+| `POST` | `/v1/synastry/overlay` | relationship | `synastry_directional_overlay_route_v1_synastry_overlay_post` |
+| `POST` | `/v1/synastry/overlay-relations` | relationship | `synastry_overlay_relations_route_v1_synastry_overlay_relations_post` |
+| `POST` | `/v1/synastry/overlays` | relationship | `synastry_overlays_route_v1_synastry_overlays_post` |
+| `POST` | `/v1/timelords/decennials/active-pair` | timelords | `decennials_active_pair_route_v1_timelords_decennials_active_pair_post` |
+| `POST` | `/v1/timelords/decennials/active-path` | timelords | `decennials_active_path_route_v1_timelords_decennials_active_path_post` |
+| `POST` | `/v1/timelords/decennials/current` | timelords | `decennials_current_route_v1_timelords_decennials_current_post` |
+| `POST` | `/v1/timelords/decennials/groups` | timelords | `decennials_groups_route_v1_timelords_decennials_groups_post` |
+| `POST` | `/v1/timelords/decennials/profile` | timelords | `decennials_profile_route_v1_timelords_decennials_profile_post` |
+| `POST` | `/v1/timelords/decennials/sequence` | timelords | `decennials_sequence_route_v1_timelords_decennials_sequence_post` |
+| `POST` | `/v1/timelords/firdaria/active-pair` | timelords | `firdaria_active_pair_route_v1_timelords_firdaria_active_pair_post` |
+| `POST` | `/v1/timelords/firdaria/current` | timelords | `firdaria_current_route_v1_timelords_firdaria_current_post` |
+| `POST` | `/v1/timelords/firdaria/groups` | timelords | `firdaria_groups_route_v1_timelords_firdaria_groups_post` |
+| `POST` | `/v1/timelords/firdaria/profile` | timelords | `firdaria_profile_route_v1_timelords_firdaria_profile_post` |
+| `POST` | `/v1/timelords/firdaria/sequence` | timelords | `firdaria_sequence_route_v1_timelords_firdaria_sequence_post` |
+| `POST` | `/v1/timelords/zodiacal-releasing/current` | timelords | `zr_current_route_v1_timelords_zodiacal_releasing_current_post` |
+| `POST` | `/v1/timelords/zodiacal-releasing/groups` | timelords | `zr_groups_route_v1_timelords_zodiacal_releasing_groups_post` |
+| `POST` | `/v1/timelords/zodiacal-releasing/level-pair` | timelords | `zr_level_pair_route_v1_timelords_zodiacal_releasing_level_pair_post` |
+| `POST` | `/v1/timelords/zodiacal-releasing/profile` | timelords | `zr_profile_route_v1_timelords_zodiacal_releasing_profile_post` |
+| `POST` | `/v1/timelords/zodiacal-releasing/sequence` | timelords | `zr_sequence_route_v1_timelords_zodiacal_releasing_sequence_post` |
+| `POST` | `/v1/transits/ingresses` | predictive | `ingress_search_route_v1_transits_ingresses_post` |
+| `POST` | `/v1/transits/next-ingress` | predictive | `next_ingress_route_v1_transits_next_ingress_post` |
+| `POST` | `/v1/transits/search` | predictive | `transit_search_route_v1_transits_search_post` |
+| `POST` | `/v1/triplicity/assignment` | triplicity | `triplicity_assignment_route_v1_triplicity_assignment_post` |
+| `POST` | `/v1/triplicity/score` | triplicity | `triplicity_score_route_v1_triplicity_score_post` |
+| `GET` | `/v1/triplicity/table` | triplicity | `triplicity_table_route_v1_triplicity_table_get` |
+| `POST` | `/v1/upagrahas/kalavelas` | upagrahas | `kalavelas_route_v1_upagrahas_kalavelas_post` |
+| `POST` | `/v1/upagrahas/sun-based` | upagrahas | `sun_based_upagrahas_route_v1_upagrahas_sun_based_post` |
+| `POST` | `/v1/uranian/bulk` | uranian | `uranian_bulk_route_v1_uranian_bulk_post` |
+| `GET` | `/v1/uranian/catalog` | uranian | `uranian_catalog_route_v1_uranian_catalog_get` |
+| `POST` | `/v1/uranian/position` | uranian | `uranian_position_route_v1_uranian_position_post` |
+| `POST` | `/v1/varga/chart/named` | varga | `varga_chart_named_route_v1_varga_chart_named_post` |
+| `POST` | `/v1/varga/chart/shodashvarga` | varga | `varga_chart_shodashvarga_route_v1_varga_chart_shodashvarga_post` |
+| `POST` | `/v1/varga/chart/shodashvarga/batch` | varga | `varga_chart_shodashvarga_batch_route_v1_varga_chart_shodashvarga_batch_post` |
+| `POST` | `/v1/varga/generic` | varga | `varga_generic_route_v1_varga_generic_post` |
+| `POST` | `/v1/varga/named` | varga | `varga_named_route_v1_varga_named_post` |
+| `POST` | `/v1/varga/named/batch` | varga | `varga_named_batch_route_v1_varga_named_batch_post` |
+| `POST` | `/v1/varga/shodashvarga` | varga | `varga_shodashvarga_route_v1_varga_shodashvarga_post` |
+| `POST` | `/v1/varga/shodashvarga/batch` | varga | `varga_shodashvarga_batch_route_v1_varga_shodashvarga_batch_post` |
+| `POST` | `/v1/varga/vimshopaka` | varga | `vimshopaka_route_v1_varga_vimshopaka_post` |
+| `POST` | `/v1/varshaphal/chart` | varshaphal | `varshaphal_chart_route_v1_varshaphal_chart_post` |
+| `POST` | `/v1/varshaphal/judgement/profile` | varshaphal | `varshaphal_judgement_profile_route_v1_varshaphal_judgement_profile_post` |
+| `POST` | `/v1/varshaphal/judgement/year` | varshaphal | `varshaphal_year_judgement_route_v1_varshaphal_judgement_year_post` |
+| `POST` | `/v1/varshaphal/mudda/active` | varshaphal | `varshaphal_mudda_active_route_v1_varshaphal_mudda_active_post` |
+| `POST` | `/v1/varshaphal/mudda/judgement` | varshaphal | `varshaphal_mudda_judgement_route_v1_varshaphal_mudda_judgement_post` |
+| `POST` | `/v1/varshaphal/summary` | varshaphal | `varshaphal_year_summary_route_v1_varshaphal_summary_post` |
+| `POST` | `/v1/varshaphal/tasira/active` | varshaphal | `varshaphal_tasira_active_route_v1_varshaphal_tasira_active_post` |
+| `POST` | `/v1/varshaphal/topics` | varshaphal | `varshaphal_topics_route_v1_varshaphal_topics_post` |
+| `POST` | `/v1/varshaphal/topics/windows` | varshaphal | `varshaphal_topic_windows_route_v1_varshaphal_topics_windows_post` |
+| `POST` | `/v1/vedic-dignities/chart-profile` | vedic-dignities | `vedic_dignity_chart_profile_route_v1_vedic_dignities_chart_profile_post` |
+| `POST` | `/v1/vedic-dignities/chart/dignity` | vedic-dignities | `vedic_dignity_chart_backed_route_v1_vedic_dignities_chart_dignity_post` |
+| `POST` | `/v1/vedic-dignities/chart/profile` | vedic-dignities | `vedic_dignity_chart_backed_profile_route_v1_vedic_dignities_chart_profile_post` |
+| `POST` | `/v1/vedic-dignities/chart/relationships` | vedic-dignities | `vedic_dignity_chart_backed_relationships_route_v1_vedic_dignities_chart_relationships_post` |
+| `POST` | `/v1/vedic-dignities/condition` | vedic-dignities | `vedic_dignity_condition_route_v1_vedic_dignities_condition_post` |
+| `POST` | `/v1/vedic-dignities/dignity` | vedic-dignities | `vedic_dignity_route_v1_vedic_dignities_dignity_post` |
+| `POST` | `/v1/vedic-dignities/relationships` | vedic-dignities | `vedic_dignity_relationships_route_v1_vedic_dignities_relationships_post` |
+| `POST` | `/v1/vedic/chart-profile` | vedic-profile | `vedic_chart_profile_route_v1_vedic_chart_profile_post` |
+| `POST` | `/v1/visibility/assessment` | visibility | `visibility_assessment_route_v1_visibility_assessment_post` |
+| `POST` | `/v1/visibility/tonight` | visibility | `visibility_tonight_route_v1_visibility_tonight_post` |
+| `POST` | `/v1/void-of-course/is-active` | phenomena | `void_of_course_state_route_v1_void_of_course_is_active_post` |
+| `POST` | `/v1/void-of-course/next` | phenomena | `next_void_of_course_route_v1_void_of_course_next_post` |
+| `POST` | `/v1/void-of-course/range` | phenomena | `void_of_course_range_route_v1_void_of_course_range_post` |
+| `POST` | `/v1/void-of-course/window` | phenomena | `void_of_course_window_route_v1_void_of_course_window_post` |
+| `POST` | `/v1/website/chart-wheel/packet` | website-chart-wheel | `chart_wheel_packet_route_v1_website_chart_wheel_packet_post` |
+| `GET` | `/v1/website/chart-wheel/presets` | website-chart-wheel | `chart_wheel_presets_route_v1_website_chart_wheel_presets_get` |
+| `POST` | `/v1/website/chart-wheel/validate` | website-chart-wheel | `chart_wheel_validate_route_v1_website_chart_wheel_validate_post` |
+| `POST` | `/v1/website/parans/packet` | website-parans | `paran_packet_route_v1_website_parans_packet_post` |
+| `POST` | `/v1/western/chart-profile` | western-profile | `western_chart_profile_route_v1_western_chart_profile_post` |
+| `POST` | `/v1/yogas/evaluate` | yogas | `yogas_evaluate_route_v1_yogas_evaluate_post` |
+<!-- END GENERATED REST ROUTE INVENTORY -->
 
 ## Documentation Boundary
 

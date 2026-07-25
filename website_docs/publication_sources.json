@@ -124,6 +124,18 @@
       "schema_type": "TechArticle"
     },
     {
+      "id": "rest-api-reference",
+      "kind": "doc",
+      "route": "/docs/rest-api-reference",
+      "output": "client/src/docs-content/rest-api-reference.md",
+      "source": "wiki/02_services/REST_API_REFERENCE.md",
+      "title": "REST API Reference",
+      "nav_label": "REST API",
+      "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
+      "content_class": "generated_current_fact",
+      "schema_type": "TechArticle"
+    },
+    {
       "id": "beyond-swiss-ephemeris",
       "kind": "doc",
       "route": "/docs/beyond-swiss-ephemeris",

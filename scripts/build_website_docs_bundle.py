@@ -434,6 +434,40 @@ def _capability_metrics() -> dict[str, Any]:
     }
 
 
+def _python_exports() -> dict[str, Any]:
+    """Bind website import examples to the implementation's public surfaces."""
+
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+
+    import moira
+    from moira import classical, essentials, facade, predictive, vedic
+
+    modules = {
+        "root": (moira, "moira/__init__.py"),
+        "essentials": (essentials, "moira/essentials.py"),
+        "classical": (classical, "moira/classical.py"),
+        "predictive": (predictive, "moira/predictive.py"),
+        "facade": (facade, "moira/facade.py"),
+        "vedic": (vedic, "moira/vedic.py"),
+    }
+    rendered: dict[str, Any] = {}
+    for name, (module, source) in modules.items():
+        exports = getattr(module, "__all__", None)
+        if not isinstance(exports, list) or not all(
+            isinstance(symbol, str) and symbol for symbol in exports
+        ):
+            raise PublicationError(f"moira.{name} has no valid __all__ export list")
+        if len(exports) != len(set(exports)):
+            raise PublicationError(f"moira.{name} has duplicate public exports")
+        rendered[name] = {
+            "source": source,
+            "source_sha256": _sha256_path(_repo_path(source)),
+            "symbols": sorted(exports),
+        }
+    return rendered
+
+
 def _contract_sources() -> list[dict[str, str]]:
     return [
         {"id": identifier, "source": source, "source_sha256": _sha256_path(_repo_path(source))}
@@ -457,6 +491,7 @@ def build_manifest() -> dict[str, Any]:
         "contract_sources": _contract_sources(),
         "catalog_metrics": _catalog_metrics(),
         "capability_metrics": _capability_metrics(),
+        "python_exports": _python_exports(),
         "documents": _documents(config),
         "releases": _releases(config, engine_release["version"]),
     }

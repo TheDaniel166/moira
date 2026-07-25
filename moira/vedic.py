@@ -29,21 +29,18 @@ Usage
     )
 
     # Vedic dignities
-    dignities = {b: vedic_dignity(lon) for b, lon in chart.longitudes().items()}
+    dignities = {b: vedic_dignity(b, lon) for b, lon in chart.longitudes().items()}
 
     # Vimshottari dasha
-    periods = vimshottari(moon_lon=chart.longitudes()['Moon'], birth_jd=chart.jd_ut)
+    periods = vimshottari(chart.planets['Moon'].longitude, chart.jd_ut)
 
-    # Shadbala
-    strength = shadbala(
-        sidereal_longitudes=m.sidereal_chart(datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc)),
-        planet_speeds={b: p.speed for b, p in chart.planets.items()},
-        houses=m.houses(chart.jd_ut, latitude=28.6, longitude=77.2),
-        jd=chart.jd_ut,
-        tithi_number=pg.tithi.number,
-        vara_lord=pg.vara_lord,
-        is_day=chart.is_day,
+    # Shadbala convenience method
+    houses = m.houses(
+        datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc),
+        latitude=28.6,
+        longitude=77.2,
     )
+    strength = m.shadbala_for_chart(chart, houses)
 
 Next step
 ---------

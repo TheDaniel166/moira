@@ -29,12 +29,13 @@ jobs:
           python-version: "3.14"
 
       - name: Install package and test dependencies
-        run: python -m pip install -e ".[dev]"
+        run: python -m pip install -e ".[dev,server]"
 
       - name: Check release-facing doc consistency
         run: |
           python scripts/check_doc_consistency.py
           python scripts/check_release_identity.py
+          python scripts/sync_rest_api_reference.py --check
           python scripts/build_website_docs_bundle.py --check
           python scripts/sync_git_wiki.py --check
 

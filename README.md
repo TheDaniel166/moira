@@ -473,7 +473,14 @@ Each correction stage can be toggled independently via `planet_at()`. The table 
 
 ## Project Documentation
 
-The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git wiki mirror is generated from it by `python scripts/sync_git_wiki.py` and should not be edited by hand.
+The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git
+wiki mirror is generated from it by `python scripts/sync_git_wiki.py` and
+should not be edited by hand. Website-publishable documents are governed by
+`website_docs/publication_sources.json` and built with
+`python scripts/build_website_docs_bundle.py`. After changing server routes,
+run `python scripts/sync_rest_api_reference.py` in an environment with the
+`server` extra installed; CI checks its generated OpenAPI inventory, the Git
+wiki mirror, and the website publication manifest for drift.
 
 | Document | Contents |
 | :--- | :--- |

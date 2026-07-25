@@ -2040,11 +2040,13 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `vimshottari(moon_lon, jd_natal, levels=2, ayanamsa_system=Ayanamsa.LAHIRI)` | `list[DashaPeriod]` | Full Vimshottari sequence |
-| `current_dasha(moon_lon, jd_natal, jd_now, levels=2)` | `DashaPeriod` | Active Dasha at jd_now |
-| `dasha_balance(moon_lon, jd_natal)` | `float` | Remaining balance of natal Mahadasha (years) |
-| `dasha_active_line(moon_lon, jd_natal, jd_now)` | `DashaActiveLine` | Active period at all requested levels |
-| `dasha_lord_pair(moon_lon, jd_natal, jd_now)` | `DashaLordPair` | Mahadasha + Antardasha lords |
+| `vimshottari(moon_tropical_lon, natal_jd, levels=2, ayanamsa_system=None, *, year_basis=None, policy=None)` | `list[DashaPeriod]` | Full Vimshottari sequence |
+| `current_dasha(moon_tropical_lon, natal_jd, current_jd, ayanamsa_system=None, *, year_basis=None, levels=5, policy=None)` | `list[DashaPeriod]` | One active period per generated level |
+| `dasha_balance(moon_tropical_lon, natal_jd, ayanamsa_system=None, *, year_basis=None, policy=None)` | `tuple[str, float]` | Natal Mahadasha lord and remaining balance in Vimshottari years |
+| `dasha_active_line(active_periods)` | `DashaActiveLine` | Named active chain from the list returned by `current_dasha` |
+| `dasha_condition_profile(period)` | `DashaConditionProfile` | Condition profile for one generated period |
+| `dasha_sequence_profile(periods)` | `DashaSequenceProfile` | Aggregate profile for a generated sequence |
+| `dasha_lord_pair(line)` | `DashaLordPair` | Mahadasha + Antardasha lords from a `DashaActiveLine` |
 
 #### `DashaPeriod` fields
 
@@ -3771,8 +3773,24 @@ proj = project_harmogram_strength(source_vector, intensity_spectrum, policy=...)
 A time-domain trace of projected harmonic strength across a sequence of sky epochs.
 
 ```python
-trace = harmogram_trace(jd_sequence, natal_longitudes, harmonic, policy=...)
-# HarmogramTrace
+samples = [
+    {
+        "time": 2451545.0,
+        "positions": [
+            {"name": "Sun", "degree": 280.0},
+            {"name": "Moon", "degree": 223.0},
+        ],
+    },
+    {
+        "time": 2451546.0,
+        "positions": [
+            {"name": "Sun", "degree": 281.0},
+            {"name": "Moon", "degree": 236.0},
+        ],
+    },
+]
+trace = harmogram_trace(samples, harmonic_numbers=(1, 2, 3, 4, 5))
+# HarmogramTrace; each trace.series item exposes .harmonic_number and .strengths
 ```
 
 #### `HarmogramTraceSample` fields (one per epoch)
@@ -4846,15 +4864,20 @@ It does not include the Western classical surface (Arabic lots, Firdaria, Zodiac
 ```python
 from moira.vedic import *
 
-m     = Moira()
-chart = m.chart(datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc))
+moment = datetime(1985, 3, 21, 6, 0, tzinfo=timezone.utc)
+m      = Moira()
+chart  = m.chart(moment)
 
 # Sidereal and nakshatra positions
-ayan = ayanamsa(chart.jd, Ayanamsa.LAHIRI)
-naks = all_nakshatras_at(chart.longitudes(), chart.jd)
+ayan = ayanamsa(chart.jd_ut, Ayanamsa.LAHIRI)
+naks = all_nakshatras_at(chart.longitudes(), chart.jd_ut)
 
 # Panchanga
-pg   = panchanga_at(chart.longitudes()['Sun'], chart.longitudes()['Moon'], chart.jd)
+pg = panchanga_at(
+    chart.planets['Sun'].longitude,
+    chart.planets['Moon'].longitude,
+    chart.jd_ut,
+)
 
 # Source-scoped nominal Pancha Pakshi; no datetime, location, or default profile
 pp = pancha_pakshi_schedule(
@@ -4901,10 +4924,15 @@ pp_current = m.pancha_pakshi_fixed_clock_current_cell(
 d    = vedic_dignity('Mars', chart.longitudes()['Mars'])
 
 # Vimshottari dasha
-periods = vimshottari(moon_lon=chart.longitudes()['Moon'], birth_jd=chart.jd)
+periods = vimshottari(
+    chart.planets['Moon'].longitude,
+    chart.jd_ut,
+    levels=2,
+)
 
-# Shadbala
-strength = shadbala(chart, latitude=28.6, longitude=77.2)
+# Shadbala convenience method on the facade
+houses = m.houses(moment, latitude=28.6, longitude=77.2)
+strength = m.shadbala_for_chart(chart, houses)
 ```
 
 ---
@@ -5426,12 +5454,13 @@ from moira.vedic import (
 
 | Function | Signature | Description |
 |---|---|---|
-| `vimshottari(moon_lon, birth_jd, policy=None)` | `→ list[DashaPeriod]` | Full 120-year dasha sequence from birth |
-| `current_dasha(moon_lon, birth_jd, current_jd, policy=None)` | `→ DashaPeriod` | Active mahadasha at `current_jd` |
-| `dasha_balance(moon_lon, birth_jd, policy=None)` | `→ tuple[str, float]` | `(lord, years_remaining)` at birth |
-| `dasha_active_line(moon_lon, birth_jd, current_jd, levels=3)` | `→ DashaActiveLine` | Active maha / antara / pratyantar chain |
-| `dasha_condition_profile(moon_lon, birth_jd, current_jd)` | `→ DashaConditionProfile` | Dasha condition assessment |
-| `dasha_sequence_profile(moon_lon, birth_jd)` | `→ DashaSequenceProfile` | Full sequence profile with period summaries |
+| `vimshottari(moon_tropical_lon, natal_jd, levels=2, ayanamsa_system=None, *, year_basis=None, policy=None)` | `→ list[DashaPeriod]` | Full generated sequence from birth |
+| `current_dasha(moon_tropical_lon, natal_jd, current_jd, ayanamsa_system=None, *, year_basis=None, levels=5, policy=None)` | `→ list[DashaPeriod]` | Active period at each requested level |
+| `dasha_balance(moon_tropical_lon, natal_jd, ayanamsa_system=None, *, year_basis=None, policy=None)` | `→ tuple[str, float]` | `(lord, years_remaining)` at birth |
+| `dasha_active_line(active_periods)` | `→ DashaActiveLine` | Named active chain from `current_dasha(...)` output |
+| `dasha_condition_profile(period)` | `→ DashaConditionProfile` | Condition assessment for one `DashaPeriod` |
+| `dasha_sequence_profile(periods)` | `→ DashaSequenceProfile` | Aggregate profile for `vimshottari(...)` output |
+| `dasha_lord_pair(line)` | `→ DashaLordPair` | Mahadasha and Antardasha lords from an active line |
 
 `VIMSHOTTARI_YEARS` — dict of dasha lord → years in the 120-year cycle.
 `VIMSHOTTARI_SEQUENCE` — canonical lord sequence (Ketu, Venus, Sun, Moon, …).
@@ -5518,15 +5547,15 @@ from moira.vedic import (
 
 | Function | Signature | Description |
 |---|---|---|
-| `shadbala(chart, lat, lon, policy=None)` | `→ ShadbalaResult` | Full six-fold strength for all planets |
-| `sthana_bala(planet, longitude, ...)` | `→ float` | Positional (Sthana) strength |
-| `dig_bala(planet, house_number)` | `→ float` | Directional (Dig) strength |
-| `kala_bala(planet, jd_ut, ...)` | `→ KalaBala` | Temporal (Kala) strength components |
-| `chesta_bala(planet, jd_ut, reader=None)` | `→ float` | Motional (Chesta) strength |
-| `drig_bala(planet, chart_longitudes)` | `→ float` | Aspect (Drig) strength |
-| `hora_lord_at(jd_ut, lat, lon)` | `→ str` | Planetary hour ruler at epoch and location |
-| `shadbala_condition_profile(chart, lat, lon, policy=None)` | `→ ShadbalaConditionProfile` | Condition assessment with `ShadbalaTier` labels |
-| `shadbala_chart_profile(chart, lat, lon, policy=None)` | `→ ShadbalaChartProfile` | Full chart Shadbala profile |
+| `shadbala(sidereal_longitudes, planet_speeds, houses, jd, tithi_number, vara_lord, is_day, ayanamsa_system='Lahiri', hora_lord=None, planet_latitudes=None)` | `→ ShadbalaResult` | Full six-fold strength for the seven classical planets |
+| `sthana_bala(planet, sidereal_lon, houses, jd, ayanamsa_system='Lahiri')` | `→ SthanaBala` | Positional strength components |
+| `dig_bala(planet, sidereal_lon, houses, jd, ayanamsa_system='Lahiri')` | `→ float` | Directional strength |
+| `kala_bala(planet, sidereal_lon, sun_sidereal_lon, jd, tithi_number, is_day, vara_lord, planet_speeds, ...)` | `→ KalaBala` | Temporal strength components |
+| `chesta_bala(planet, speed, planet_sidereal_lon=None, mandoccha_sidereal_lon=None)` | `→ float` | Motional strength |
+| `drig_bala(planet, sidereal_longitudes)` | `→ float` | Aspectual strength |
+| `hora_lord_at(birth_jd, sunrise_jd)` | `→ str` | Planetary hour ruler from a caller-supplied sunrise |
+| `shadbala_condition_profile(planet_result)` | `→ ShadbalaConditionProfile` | Condition assessment for one `PlanetShadbala` |
+| `shadbala_chart_profile(result)` | `→ ShadbalaChartProfile` | Aggregate profile for one `ShadbalaResult` |
 
 `NAISARGIKA_BALA` — natural strength constants (Saturn lowest, Sun highest).
 `REQUIRED_RUPAS` — minimum Shadbala rupas required for each planet.
