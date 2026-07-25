@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.2] - 2026-07-25
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_5.2.2.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_5.2.2.md`.
+
+### Added
+- **Explicit mean-point equinox policy**: `mean_node(...)` and
+  `mean_lilith(...)` now accept `nutation=True|False`. The default expresses
+  the analytical mean orbital point in the true ecliptic and equinox of date;
+  `nutation=False` preserves the raw mean-equinox product.
+- **Proper25 asteroid-family corpus**: refreshed the bundled family catalog
+  from the 2026 Proper25 machine-readable distribution, retaining NASA PDS
+  Hilda and Jupiter Trojan families excluded from Proper25. The admitted
+  corpus contains 342 families, 200,726 unique numbered asteroids, and 221,095
+  many-to-many membership rows with source hashes and normalization metadata.
+- **Reproducible family-catalog tooling**: added source-normalizing build,
+  annotation-refresh, and resumable watcher scripts with metadata validation.
+
+### Fixed
+- **True lunar-node frame construction**: `true_node(...)` now forms the
+  instantaneous osculating plane from the DE state-vector cross product and
+  transforms its normal through ICRF frame bias, precession, and nutation
+  before intersecting it with the true ecliptic of date.
+- **Mean-node model and chart consistency**: the mean node now reuses Moira's
+  IERS 2003 lunar fundamental argument instead of carrying an older duplicate
+  polynomial, and both analytical mean points now share the chart's default
+  true-equinox frame.
+- **Asteroid-family overlap visibility**: family lookup, grouping, and REST
+  transport preserve complete nested and overlapping memberships while
+  retaining one deterministic display-primary family for compatibility.
+
+### Validation
+- Bound the raw mean node to ERFA's IERS 2003 `faom03` authority and verified
+  the true-frame conversion as exactly the mean longitude plus IAU 2000A
+  nutation in longitude.
+- Verified the true node through the northbound zero-latitude crossing
+  invariant and corroborated mean/true node results against the shipped Swiss
+  Ephemeris 2.10.02a fixture under explicit secondary-comparator tolerances.
+- Exercised family-catalog counts, aliases, overlapping memberships, metadata
+  hashes, bounded REST transport, and annotation-refresh behavior.
+
 ## [5.2.1] - 2026-07-23
 
 Detailed release and migration guidance is available in
