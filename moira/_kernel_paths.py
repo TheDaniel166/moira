@@ -26,6 +26,7 @@ Public surface:
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -37,6 +38,45 @@ SOVEREIGN_SMALL_BODY_MANIFEST_ENV = "MOIRA_SOVEREIGN_SMALL_BODY_MANIFEST"
 
 _PACKAGE_KERNELS_DIR = Path(__file__).parent / "kernels"
 _DEV_KERNELS_DIR = Path(__file__).parent.parent / "kernels"
+_PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _manifest_has_installed_shard(manifest_path: Path) -> bool:
+    """
+    Return whether an automatically discovered manifest has installed data.
+
+    Wheels retain small-body manifests as catalog/provenance metadata while
+    deliberately omitting their large BSP shards.  Such metadata-only
+    manifests are not installed ephemerides and must not be admitted to the
+    runtime reader pool.  Once any referenced shard is present, discovery
+    admits the manifest so the loader can enforce completeness and surface a
+    partial installation instead of hiding it.
+
+    Malformed manifests remain discoverable so their schema/read errors stay
+    visible.  Explicitly configured manifests bypass this predicate entirely.
+    """
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        shards = payload.get("shards", [])
+    except (AttributeError, json.JSONDecodeError, OSError):
+        return True
+
+    if not isinstance(shards, list) or not shards:
+        return True
+
+    for shard in shards:
+        if not isinstance(shard, dict) or "path" not in shard:
+            return True
+        raw_path = Path(str(shard["path"]))
+        if raw_path.is_absolute():
+            if raw_path.exists():
+                return True
+            continue
+        if (manifest_path.parent / raw_path).exists():
+            return True
+        if (_PACKAGE_ROOT / raw_path).exists():
+            return True
+    return False
 
 
 def user_kernels_dir() -> Path:
@@ -99,7 +139,7 @@ def find_sovereign_small_body_manifest() -> Path | None:
             root / "sb441_type13_manifest.json",         # legacy flat
             root / "sb441_type13" / "manifest.json",     # legacy nested
         ):
-            if candidate.exists():
+            if candidate.exists() and _manifest_has_installed_shard(candidate):
                 return candidate
     return None
 
@@ -124,8 +164,10 @@ def find_all_small_body_manifests() -> list[Path]:
     manifests: list[Path] = []
     seen: set[Path] = set()
 
-    def _add(candidate: Path) -> None:
+    def _add(candidate: Path, *, explicit: bool = False) -> None:
         if not candidate.exists():
+            return
+        if not explicit and not _manifest_has_installed_shard(candidate):
             return
         resolved = candidate.resolve()
         if resolved not in seen:
@@ -134,7 +176,7 @@ def find_all_small_body_manifests() -> list[Path]:
 
     env_path = os.environ.get(SOVEREIGN_SMALL_BODY_MANIFEST_ENV)
     if env_path:
-        _add(Path(env_path))
+        _add(Path(env_path), explicit=True)
 
     for root in kernel_search_dirs():
         _add(root / "sb441_type13_manifest.json")

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.3] - 2026-07-25
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_5.2.3.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_5.2.3.md`.
+
+### Fixed
+- **Installed small-body manifest discovery**: automatic kernel discovery now
+  distinguishes catalog/provenance manifests retained in the wheel from
+  installed asteroid and comet ephemerides. A metadata-only manifest no longer
+  produces a false missing-shard warning in engine readiness.
+- **Strict operator and partial-installation visibility**: explicitly
+  configured manifests remain fail-visible, while any automatically discovered
+  manifest with at least one installed shard is still admitted so the loader
+  can reject an incomplete shard set.
+
+### Validation
+- Exercised metadata-only, complete, partial, and explicitly configured
+  manifest discovery policies.
+- Verified focused facade readiness and server startup behavior, plus a
+  wheel-shaped installation with manifests present and BSP shards absent.
+
 ## [5.2.2] - 2026-07-25
 
 Detailed release and migration guidance is available in
