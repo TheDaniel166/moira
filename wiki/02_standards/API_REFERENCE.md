@@ -1741,10 +1741,13 @@ d3   = vedic_drekkana(longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI)
 
 ### Hermetic Decans — Research Quarantine
 
-The current `moira.hermetic_decans` catalog is not source-admitted and is not
-exported from `moira` or `moira.facade`. Its direct module import remains
-available only for source reconstruction and internal structural testing; it
-is not part of the supported Python API contract.
+The names, sign order, planetary faces, and source pages in
+`moira.hermetic_decans` are reconstructed from Gundel's 1936 edition of the
+Harley MS 3731 list. The module's tropical lookup, rising, and night-hour
+geometry is not admitted and the unsupported fixed-star table fails closed.
+Nothing from this module is exported from `moira` or `moira.facade`; direct
+import remains a research surface, not part of the supported Python API
+contract.
 
 ---
 

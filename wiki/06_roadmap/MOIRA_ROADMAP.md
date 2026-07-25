@@ -399,8 +399,8 @@ For reference, capabilities where Moira exceeds the standard Swiss Ephemeris dis
 
 - **IAU 2000A full nutation** (1,358 luni-solar + 1,056 planetary terms) — SwissEph uses a truncated version in its default mode
 - **Classical decanates** with admitted Chaldean face, triplicity-decan, and
-  Vedic drekkana computations; the disputed Hermetic name/star catalog is
-  research-only
+  Vedic drekkana computations; the source-reconstructed Gundel/Harley
+  Hermetic name-and-face catalog remains research-only
 - **Centaur SPK kernels** (Pholus, Chariklo, Asbolus, Hylonome) — SwissEph has fewer
 - **TNO kernel support** (Quaoar, Varuna, Ixion, Orcus) via SPK Type 13
 - **512 Arabic part / Lot definitions** — SwissEph ships far fewer

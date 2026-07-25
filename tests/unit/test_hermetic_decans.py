@@ -1,8 +1,8 @@
 """
 Unit tests for moira.hermetic_decans.
 
-All tests use unittest.mock.patch — no catalog file or ephemeris required.
-Follows the same patterns as tests/unit/test_fixed_stars_api.py.
+Catalog tests are source-locked to Gundel's Harley MS 3731 edition. Geometry
+tests remain quarantined structural checks rather than doctrine admission.
 """
 from __future__ import annotations
 
@@ -13,20 +13,20 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _dummy_star(name: str = "Sirius"):
-    """Return a minimal StarPosition-like mock."""
-    from moira.stars import StarPosition
-    return StarPosition(
-        name=name,
-        nomenclature="alCMa",
-        longitude=104.0,
-        latitude=-39.6,
-        magnitude=-1.46,
-    )
+_SOURCE_NAMES = (
+    "Aulathamas", "Sabaoth", "Disornafais",
+    "Jaus", "Sarnatas", "Erchumbris",
+    "Manuchos", "Samurois", "Asuel",
+    "Seneptois", "Somathalmais", "Charmine",
+    "Zaloias", "Zachor", "Frich",
+    "Zamendres", "Magois", "Michulais",
+    "Psineus", "Chusthisis", "Psannatois",
+    "Nebenos", "Churmantis", "Psermes",
+    "Clinothois", "Thursois", "Renethis",
+    "Renpsois", "Manethois", "Marxois",
+    "Ularis", "Luxois", "Crauxes",
+    "Fambrais", "Flugmois Mars", "Piathris",
+)
 
 
 def test_quarantined_catalog_is_not_curated_by_package_or_facade() -> None:
@@ -37,6 +37,8 @@ def test_quarantined_catalog_is_not_curated_by_package_or_facade() -> None:
         "DecanHour",
         "DecanHoursNight",
         "DECAN_NAMES",
+        "DECAN_PLANETARY_FACES",
+        "HERMETIC_DECAN_CATALOG",
         "DECAN_RULING_STARS",
         "list_decans",
         "available_decans",
@@ -68,10 +70,10 @@ def test_decan_at_uses_tt_obliquity() -> None:
     with patch.object(decans, "_lst_to_ramc", return_value=120.0), \
          patch.object(decans, "ut_to_tt", return_value=2451545.0008) as mock_tt, \
          patch.object(decans, "true_obliquity", return_value=23.4) as mock_obl, \
-         patch.object(decans, "decan_for_longitude", return_value="Horaios"):
+         patch.object(decans, "decan_for_longitude", return_value="Aulathamas"):
         result = decans.decan_at(2451545.0, 51.5, -0.1)
 
-    assert result == "Horaios"
+    assert result == "Aulathamas"
     mock_tt.assert_called_once_with(2451545.0)
     mock_obl.assert_called_once_with(2451545.0008)
 
@@ -138,17 +140,17 @@ def test_decan_hours_handles_next_sunrise_refinement_day_slip() -> None:
 # ===========================================================================
 
 class TestDecanConstants:
-    def test_horaios_constant(self):
-        from moira.hermetic_decans import HORAIOS
-        assert HORAIOS == "Horaios"
+    def test_aulathamas_constant(self):
+        from moira.hermetic_decans import AULATHAMAS
+        assert AULATHAMAS == "Aulathamas"
 
-    def test_aphruimis_iii_constant(self):
-        from moira.hermetic_decans import APHRUIMIS_III
-        assert APHRUIMIS_III == "Aphruimis III"
+    def test_piathris_constant(self):
+        from moira.hermetic_decans import PIATHRIS
+        assert PIATHRIS == "Piathris"
 
-    def test_sothis_constant(self):
-        from moira.hermetic_decans import SOTHIS
-        assert SOTHIS == "Sothis"
+    def test_flugmois_mars_transcription(self):
+        from moira.hermetic_decans import FLUGMOIS_MARS
+        assert FLUGMOIS_MARS == "Flugmois Mars"
 
 
 class TestDecanNamesDict:
@@ -156,13 +158,13 @@ class TestDecanNamesDict:
         from moira.hermetic_decans import DECAN_NAMES
         assert len(DECAN_NAMES) == 36
 
-    def test_horaios_entry(self):
+    def test_aulathamas_entry(self):
         from moira.hermetic_decans import DECAN_NAMES
-        assert DECAN_NAMES["Horaios"] == "Horaios"
+        assert DECAN_NAMES["Aulathamas"] == "Aulathamas"
 
-    def test_aphruimis_iii_entry(self):
+    def test_piathris_entry(self):
         from moira.hermetic_decans import DECAN_NAMES
-        assert DECAN_NAMES["Aphruimis III"] == "Aphruimis III"
+        assert DECAN_NAMES["Piathris"] == "Piathris"
 
     def test_all_values_are_strings(self):
         from moira.hermetic_decans import DECAN_NAMES
@@ -170,22 +172,40 @@ class TestDecanNamesDict:
             assert isinstance(v, str)
 
 
-class TestDecanRulingStarsDict:
-    def test_length(self):
-        from moira.hermetic_decans import DECAN_RULING_STARS
-        assert len(DECAN_RULING_STARS) == 36
+class TestSourceReconstructedCatalog:
+    def test_catalog_matches_gundel_harley_name_order(self):
+        from moira.hermetic_decans import HERMETIC_DECAN_CATALOG
 
-    def test_sothis_ruling_star(self):
-        from moira.hermetic_decans import DECAN_RULING_STARS
-        assert DECAN_RULING_STARS["Sothis"] == "Sirius"
+        assert tuple(entry.name for entry in HERMETIC_DECAN_CATALOG) == _SOURCE_NAMES
 
-    def test_horaios_ruling_star(self):
-        from moira.hermetic_decans import DECAN_RULING_STARS
-        assert DECAN_RULING_STARS["Horaios"] == "Hamal"
+    def test_catalog_source_and_page_receipts(self):
+        from moira.hermetic_decans import (
+            HERMETIC_CATALOG_SOURCE_ID,
+            HERMETIC_DECAN_CATALOG,
+        )
 
-    def test_aphruimis_iii_ruling_star(self):
+        assert len(HERMETIC_DECAN_CATALOG) == 36
+        assert {entry.source_id for entry in HERMETIC_DECAN_CATALOG} == {
+            HERMETIC_CATALOG_SOURCE_ID
+        }
+        assert {entry.edition_page for entry in HERMETIC_DECAN_CATALOG} == {
+            379, 380, 381, 382, 383
+        }
+
+    def test_planetary_faces_match_the_edited_harley_list(self):
+        from moira.hermetic_decans import DECAN_PLANETARY_FACES
+
+        assert DECAN_PLANETARY_FACES["Aulathamas"] == "Mars"
+        assert DECAN_PLANETARY_FACES["Sabaoth"] == "Sun"
+        assert DECAN_PLANETARY_FACES["Jaus"] == "Mercury"
+        assert DECAN_PLANETARY_FACES["Luxois"] == "Mercury"
+        assert DECAN_PLANETARY_FACES["Flugmois Mars"] == "Jupiter"
+        assert DECAN_PLANETARY_FACES["Piathris"] == "Mars"
+
+    def test_unsupported_fixed_star_table_is_empty(self):
         from moira.hermetic_decans import DECAN_RULING_STARS
-        assert DECAN_RULING_STARS["Aphruimis III"] == "Alpherg"
+
+        assert DECAN_RULING_STARS == {}
 
 
 # ===========================================================================
@@ -199,11 +219,11 @@ class TestListDecans:
 
     def test_first_value(self):
         from moira.hermetic_decans import list_decans
-        assert list_decans()[0] == "Horaios"
+        assert list_decans()[0] == "Aulathamas"
 
     def test_last_value(self):
         from moira.hermetic_decans import list_decans
-        assert list_decans()[35] == "Aphruimis III"
+        assert list_decans()[35] == "Piathris"
 
     def test_returns_list(self):
         from moira.hermetic_decans import list_decans
@@ -219,15 +239,15 @@ class TestListDecans:
 class TestDecanIndex:
     def test_index_of_first(self):
         from moira.hermetic_decans import decan_index
-        assert decan_index("Horaios") == 0
+        assert decan_index("Aulathamas") == 0
 
     def test_index_of_last(self):
         from moira.hermetic_decans import decan_index
-        assert decan_index("Aphruimis III") == 35
+        assert decan_index("Piathris") == 35
 
-    def test_index_of_sothis(self):
+    def test_index_of_manuchos(self):
         from moira.hermetic_decans import decan_index
-        assert decan_index("Sothis") == 6
+        assert decan_index("Manuchos") == 6
 
     def test_invalid_name_raises(self):
         from moira.hermetic_decans import decan_index
@@ -242,21 +262,21 @@ class TestDecanIndex:
 class TestDecanForLongitude:
     def test_zero_degrees(self):
         from moira.hermetic_decans import decan_for_longitude
-        assert decan_for_longitude(0.0) == "Horaios"
+        assert decan_for_longitude(0.0) == "Aulathamas"
 
     def test_359_9_degrees(self):
         from moira.hermetic_decans import decan_for_longitude
-        assert decan_for_longitude(359.9) == "Aphruimis III"
+        assert decan_for_longitude(359.9) == "Piathris"
 
     def test_normalization_370(self):
-        # 370 % 360 = 10 → Tomalos (index 1)
+        # 370 % 360 = 10 → Sabaoth (index 1)
         from moira.hermetic_decans import decan_for_longitude
-        assert decan_for_longitude(370.0) == "Tomalos"
+        assert decan_for_longitude(370.0) == "Sabaoth"
 
     def test_spot_check_60_degrees(self):
-        # 60° → index 6 → Sothis
+        # 60° → index 6 → Manuchos
         from moira.hermetic_decans import decan_for_longitude
-        assert decan_for_longitude(60.0) == "Sothis"
+        assert decan_for_longitude(60.0) == "Manuchos"
 
     def test_nan_raises_value_error(self):
         from moira.hermetic_decans import decan_for_longitude
@@ -281,52 +301,25 @@ class TestDecanForLongitude:
 
 
 # ===========================================================================
-# 7.4 — available_decans with mocked list_stars
+# 7.4 — source-admission boundaries
 # ===========================================================================
 
 class TestAvailableDecans:
-    def test_empty_catalog_returns_empty(self):
-        with patch("moira.hermetic_decans.list_stars", return_value=[]):
-            from moira.hermetic_decans import available_decans
-            assert available_decans() == []
+    def test_fixed_star_availability_fails_closed(self):
+        from moira.hermetic_decans import available_decans
 
-    def test_partial_catalog_returns_correct_subset(self):
-        # Sothis → Sirius, Horaios → Hamal; only Sirius in catalog
-        partial = ["Sirius", "Vega"]
-        with patch("moira.hermetic_decans.list_stars", return_value=partial):
-            from moira.hermetic_decans import available_decans
-            result = available_decans()
-            assert "Sothis" in result
-            assert "Horaios" not in result
-
-    def test_partial_catalog_subset_of_list_decans(self):
-        partial = ["Sirius", "Hamal", "Regulus"]
-        with patch("moira.hermetic_decans.list_stars", return_value=partial):
-            from moira.hermetic_decans import available_decans, list_decans
-            result = available_decans()
-            assert set(result) <= set(list_decans())
-
-    def test_all_ruling_stars_present_returns_all_36(self):
-        from moira.hermetic_decans import DECAN_RULING_STARS
-        all_stars = list(DECAN_RULING_STARS.values())
-        with patch("moira.hermetic_decans.list_stars", return_value=all_stars):
-            from moira.hermetic_decans import available_decans
-            result = available_decans()
-            assert len(result) == 36
+        assert available_decans() == []
 
 
 # ===========================================================================
-# 7.5 — decan_ruling_star and decan_star_at delegation
+# 7.5 — fixed-star access fails closed
 # ===========================================================================
 
 class TestDecanRulingStar:
-    def test_returns_correct_star_name(self):
+    def test_valid_decan_has_no_fabricated_star(self):
         from moira.hermetic_decans import decan_ruling_star
-        assert decan_ruling_star("Sothis") == "Sirius"
-
-    def test_returns_correct_star_for_horaios(self):
-        from moira.hermetic_decans import decan_ruling_star
-        assert decan_ruling_star("Horaios") == "Hamal"
+        with pytest.raises(LookupError, match="does not provide fixed-star"):
+            decan_ruling_star("Aulathamas")
 
     def test_unknown_decan_raises_key_error(self):
         from moira.hermetic_decans import decan_ruling_star
@@ -335,26 +328,20 @@ class TestDecanRulingStar:
 
 
 class TestDecanStarAt:
-    def test_delegates_to_star_at(self):
-        dummy = _dummy_star("Sirius")
-        with patch("moira.hermetic_decans.star_at", return_value=dummy) as mock_fsa:
-            from moira.hermetic_decans import decan_star_at
-            result = decan_star_at("Sothis", 2451545.0)
-            mock_fsa.assert_called_once_with("Sirius", 2451545.0)
-            assert result is dummy
+    def test_valid_decan_has_no_fabricated_star_position(self):
+        from moira.hermetic_decans import decan_star_at
+        with pytest.raises(LookupError, match="does not provide fixed-star"):
+            decan_star_at("Aulathamas", 2451545.0)
 
-    def test_delegates_with_correct_star_name(self):
-        dummy = _dummy_star("Hamal")
-        with patch("moira.hermetic_decans.star_at", return_value=dummy) as mock_fsa:
-            from moira.hermetic_decans import decan_star_at
-            decan_star_at("Horaios", 2451545.0)
-            mock_fsa.assert_called_once_with("Hamal", 2451545.0)
+    def test_non_finite_jd_is_rejected_before_non_admission(self):
+        from moira.hermetic_decans import decan_star_at
+        with pytest.raises(ValueError, match="jd must be finite"):
+            decan_star_at("Aulathamas", float("nan"))
 
-    def test_propagates_key_error_for_missing_star(self):
-        with patch("moira.hermetic_decans.star_at", side_effect=KeyError("Sirius")):
-            from moira.hermetic_decans import decan_star_at
-            with pytest.raises(KeyError):
-                decan_star_at("Sothis", 2451545.0)
+    def test_unknown_decan_raises_key_error(self):
+        from moira.hermetic_decans import decan_star_at
+        with pytest.raises(KeyError):
+            decan_star_at("NotADecan", 2451545.0)
 
 
 # ===========================================================================
@@ -366,52 +353,52 @@ class TestDecanHourDataclass:
         from moira.hermetic_decans import DecanHour
         h = DecanHour(
             hour_number=1,
-            decan="Sothis",
-            ruling_star="Sirius",
+            decan="Aulathamas",
+            planetary_face="Mars",
             jd_start=2451545.0,
             jd_end=2451545.5,
         )
         assert h.hour_number == 1
-        assert h.decan == "Sothis"
-        assert h.ruling_star == "Sirius"
+        assert h.decan == "Aulathamas"
+        assert h.planetary_face == "Mars"
         assert h.jd_start == 2451545.0
         assert h.jd_end == 2451545.5
 
     def test_hour_number_field(self):
         from moira.hermetic_decans import DecanHour
-        h = DecanHour(hour_number=12, decan="Horaios", ruling_star="Hamal",
+        h = DecanHour(hour_number=12, decan="Aulathamas", planetary_face="Mars",
                       jd_start=2451545.9, jd_end=2451546.0)
         assert h.hour_number == 12
 
     def test_invalid_hour_number_raises(self):
         from moira.hermetic_decans import DecanHour
         with pytest.raises(ValueError):
-            DecanHour(hour_number=0, decan="Horaios", ruling_star="Hamal",
+            DecanHour(hour_number=0, decan="Aulathamas", planetary_face="Mars",
                       jd_start=2451545.0, jd_end=2451545.1)
 
-    def test_invalid_ruling_star_raises(self):
+    def test_invalid_planetary_face_raises(self):
         from moira.hermetic_decans import DecanHour
         with pytest.raises(ValueError):
-            DecanHour(hour_number=1, decan="Horaios", ruling_star="Sirius",
+            DecanHour(hour_number=1, decan="Aulathamas", planetary_face="Sun",
                       jd_start=2451545.0, jd_end=2451545.1)
 
     def test_reversed_boundaries_raise(self):
         from moira.hermetic_decans import DecanHour
         with pytest.raises(ValueError):
-            DecanHour(hour_number=1, decan="Horaios", ruling_star="Hamal",
+            DecanHour(hour_number=1, decan="Aulathamas", planetary_face="Mars",
                       jd_start=2451545.1, jd_end=2451545.0)
 
     def test_is_frozen(self):
         from moira.hermetic_decans import DecanHour
-        h = DecanHour(hour_number=1, decan="Horaios", ruling_star="Hamal",
+        h = DecanHour(hour_number=1, decan="Aulathamas", planetary_face="Mars",
                       jd_start=2451545.0, jd_end=2451545.1)
         with pytest.raises(FrozenInstanceError):
-            h.decan = "Sothis"
+            h.decan = "Sabaoth"
 
 
 class TestDecanHoursNightDataclass:
     def _make_night(self):
-        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_RULING_STARS, list_decans
+        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_PLANETARY_FACES, list_decans
         sunset = 2451545.75
         sunrise = 2451546.25
         hour_len = (sunrise - sunset) / 12.0
@@ -420,7 +407,7 @@ class TestDecanHoursNightDataclass:
             DecanHour(
                 hour_number=i + 1,
                 decan=decans[i],
-                ruling_star=DECAN_RULING_STARS[decans[i]],
+                planetary_face=DECAN_PLANETARY_FACES[decans[i]],
                 jd_start=sunset + i * hour_len,
                 jd_end=sunset + (i + 1) * hour_len,
             )
@@ -468,8 +455,8 @@ class TestDecanHoursNightDataclass:
         from moira.hermetic_decans import DecanHour, DecanHoursNight
         hour = DecanHour(
             hour_number=1,
-            decan="Horaios",
-            ruling_star="Hamal",
+            decan="Aulathamas",
+            planetary_face="Mars",
             jd_start=2451545.75,
             jd_end=2451545.80,
         )
@@ -500,7 +487,7 @@ class TestDecanHoursNightDataclass:
 
 class TestHourAt:
     def _make_night(self):
-        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_RULING_STARS, list_decans
+        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_PLANETARY_FACES, list_decans
         sunset = 2451545.75
         sunrise = 2451546.25
         hour_len = (sunrise - sunset) / 12.0
@@ -509,7 +496,7 @@ class TestHourAt:
             DecanHour(
                 hour_number=i + 1,
                 decan=decans[i % 36],
-                ruling_star=DECAN_RULING_STARS[decans[i % 36]],
+                planetary_face=DECAN_PLANETARY_FACES[decans[i % 36]],
                 jd_start=sunset + i * hour_len,
                 jd_end=sunset + (i + 1) * hour_len,
             )
@@ -640,7 +627,7 @@ class TestHermeticDecanExternalGoldens:
 
 class TestDecanOfHour:
     def _make_night(self):
-        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_RULING_STARS, list_decans
+        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_PLANETARY_FACES, list_decans
         sunset = 2451545.75
         sunrise = 2451546.25
         hour_len = (sunrise - sunset) / 12.0
@@ -649,7 +636,7 @@ class TestDecanOfHour:
             DecanHour(
                 hour_number=i + 1,
                 decan=decans[i % 36],
-                ruling_star=DECAN_RULING_STARS[decans[i % 36]],
+                planetary_face=DECAN_PLANETARY_FACES[decans[i % 36]],
                 jd_start=sunset + i * hour_len,
                 jd_end=sunset + (i + 1) * hour_len,
             )
@@ -749,14 +736,7 @@ def test_prop4_decan_for_longitude_band_assignment(i, offset):
 
 
 @_skip_no_hypothesis
-@given(d=st.sampled_from(
-    ["Horaios", "Tomalos", "Athafra", "Senacher", "Thesogar", "Tepis",
-     "Sothis", "Tpau", "Aphruimis", "Tmoum", "Tathemis", "Serk",
-     "Chontare", "Phakare", "Tpa", "Thosolk", "Sothis II", "Tpau II",
-     "Chontachre", "Aphruimis II", "Tmoum II", "Tathemis II", "Serk II", "Chontare II",
-     "Phakare II", "Tpa II", "Thosolk II", "Horaios II", "Tomalos II", "Athafra II",
-     "Senacher II", "Thesogar II", "Tepis II", "Sothis III", "Tpau III", "Aphruimis III"]
-))
+@given(d=st.sampled_from(_SOURCE_NAMES))
 @settings(max_examples=100)
 def test_prop5_decan_index_range(d):
     """Property 5: decan_index(d) in [0, 35] for all valid decan names.
@@ -769,14 +749,7 @@ def test_prop5_decan_index_range(d):
 
 
 @_skip_no_hypothesis
-@given(d=st.sampled_from(
-    ["Horaios", "Tomalos", "Athafra", "Senacher", "Thesogar", "Tepis",
-     "Sothis", "Tpau", "Aphruimis", "Tmoum", "Tathemis", "Serk",
-     "Chontare", "Phakare", "Tpa", "Thosolk", "Sothis II", "Tpau II",
-     "Chontachre", "Aphruimis II", "Tmoum II", "Tathemis II", "Serk II", "Chontare II",
-     "Phakare II", "Tpa II", "Thosolk II", "Horaios II", "Tomalos II", "Athafra II",
-     "Senacher II", "Thesogar II", "Tepis II", "Sothis III", "Tpau III", "Aphruimis III"]
-))
+@given(d=st.sampled_from(_SOURCE_NAMES))
 @settings(max_examples=100)
 def test_prop6_name_index_longitude_name_roundtrip(d):
     """Property 6: name → index → longitude → name round-trip.
@@ -803,27 +776,20 @@ def test_prop7_index_name_index_roundtrip(i):
 
 
 @_skip_no_hypothesis
-@given(d=st.sampled_from(
-    ["Horaios", "Tomalos", "Athafra", "Senacher", "Thesogar", "Tepis",
-     "Sothis", "Tpau", "Aphruimis", "Tmoum", "Tathemis", "Serk",
-     "Chontare", "Phakare", "Tpa", "Thosolk", "Sothis II", "Tpau II",
-     "Chontachre", "Aphruimis II", "Tmoum II", "Tathemis II", "Serk II", "Chontare II",
-     "Phakare II", "Tpa II", "Thosolk II", "Horaios II", "Tomalos II", "Athafra II",
-     "Senacher II", "Thesogar II", "Tepis II", "Sothis III", "Tpau III", "Aphruimis III"]
-))
+@given(d=st.sampled_from(_SOURCE_NAMES))
 @settings(max_examples=100)
-def test_prop8_decan_ruling_star_consistency(d):
-    """Property 8: decan_ruling_star(d) == DECAN_RULING_STARS[d].
+def test_prop8_decan_planetary_face_consistency(d):
+    """Property 8: the catalog accessor agrees with the source face table.
 
     **Validates: Requirements 3.2**
     """
-    from moira.hermetic_decans import decan_ruling_star, DECAN_RULING_STARS
-    assert decan_ruling_star(d) == DECAN_RULING_STARS[d]
+    from moira.hermetic_decans import decan_planetary_face, DECAN_PLANETARY_FACES
+    assert decan_planetary_face(d) == DECAN_PLANETARY_FACES[d]
 
 
 def _build_decan_hours_night(sunset_jd: float, duration: float, start_idx: int):
     """Helper: construct a DecanHoursNight directly without calling decan_hours()."""
-    from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_RULING_STARS, list_decans
+    from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_PLANETARY_FACES, list_decans
     decans = list_decans()
     hour_len = duration / 12.0
     next_sunrise_jd = sunset_jd + duration
@@ -835,7 +801,7 @@ def _build_decan_hours_night(sunset_jd: float, duration: float, start_idx: int):
         hours.append(DecanHour(
             hour_number=i + 1,
             decan=decans[idx],
-            ruling_star=DECAN_RULING_STARS[decans[idx]],
+            planetary_face=DECAN_PLANETARY_FACES[decans[idx]],
             jd_start=jd_start,
             jd_end=jd_end,
         ))
@@ -948,8 +914,8 @@ _MEEUS_GMST        = 197.693195     # deg — Meeus Ex 12.a ground truth
 _MEEUS_OBL_TRUE    = 23.443559      # deg — true obliquity at that JD
 _MEEUS_MC_LON_0    = 199.173212     # deg — MC at geo_lon=0.0
 _MEEUS_MC_LON_25   = 225.158843     # deg — MC at geo_lon=25.0 (Athens)
-_MEEUS_MC_DECAN_0  = "Aphruimis II" # decan containing 199.17° (190–200°)
-_MEEUS_MC_DECAN_25 = "Serk II"      # decan containing 225.16° (220–230°)
+_MEEUS_MC_DECAN_0  = "Chusthisis"  # decan containing 199.17° (190–200°)
+_MEEUS_MC_DECAN_25 = "Churmantis"  # decan containing 225.16° (220–230°)
 
 
 class TestLstToRamcMeeusOracle:
@@ -1009,7 +975,7 @@ class TestMcFormulaOracleMeeus:
         assert abs(mc - _MEEUS_MC_LON_25) < 0.001
 
     def test_mc_decan_at_greenwich(self):
-        """Decan containing MC at geo_lon=0 must be 'Aphruimis II' (190–200°)."""
+        """Decan containing MC at geo_lon=0 must be Chusthisis (190–200°)."""
         import math
         from moira.hermetic_decans import _lst_to_ramc, decan_for_longitude
         from moira.obliquity import true_obliquity
@@ -1022,7 +988,7 @@ class TestMcFormulaOracleMeeus:
         assert decan_for_longitude(mc) == _MEEUS_MC_DECAN_0
 
     def test_mc_decan_at_athens(self):
-        """Decan containing MC at geo_lon=25 must be 'Serk II' (220–230°)."""
+        """Decan containing MC at geo_lon=25 must be Churmantis (220–230°)."""
         import math
         from moira.hermetic_decans import _lst_to_ramc, decan_for_longitude
         from moira.obliquity import true_obliquity

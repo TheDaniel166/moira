@@ -1,8 +1,13 @@
 """
 Moira — Lots Engine
-Governs computation of named Arabic Parts (Hermetic Lots) using the formula Lot = ASC + Add − Subtract (mod 360°) with catalogue-controlled day/night reversal.
+Governs computation of named Arabic Parts (Hermetic Lots) by projecting a
+catalogue-defined operand interval from a catalogue-defined reference point,
+with explicit day/night reversal and arc policy.
 
-Boundary: owns the comprehensive lots catalogue, the reference-key resolver, the day/night reversal logic, and the ArabicPart and PartDefinition result types. Delegates chart data access to moira.chart.ChartContext.
+Boundary: owns the comprehensive lots catalogue, reference-key resolver,
+projector and arc policies, day/night reversal logic, and the ArabicPart and
+PartDefinition result types. Delegates chart data access to
+moira.chart.ChartContext.
 
 Import-time side effects: None
 
@@ -14,7 +19,7 @@ External dependencies:
     - moira.chart for chart context access
 
 Public surface:
-    LotReferenceKind, LotReversalKind, LotDependencyRole, LotConditionState,
+    LotReferenceKind, LotReversalKind, LotArcPolicy, LotDependencyRole, LotConditionState,
     LotConditionNetworkEdgeMode, LotsReferenceFailureMode, LotsDerivedReferencePolicy,
     LotsExternalReferencePolicy, LotsComputationPolicy, LotReferenceTruth,
     ArabicPartComputationTruth, LotReferenceClassification, ArabicPartClassification,
@@ -37,7 +42,7 @@ from .chart import ChartContext
 
 __all__ = [
     # Enumerations
-    "LotReferenceKind", "LotReversalKind", "LotDependencyRole",
+    "LotReferenceKind", "LotReversalKind", "LotArcPolicy", "LotDependencyRole",
     "LotConditionState", "LotConditionNetworkEdgeMode", "LotsReferenceFailureMode",
     # Policy
     "LotsDerivedReferencePolicy", "LotsExternalReferencePolicy", "LotsComputationPolicy",
@@ -98,6 +103,13 @@ _FIXED_DEG: dict[str, float] = {
 # Part definition
 # ---------------------------------------------------------------------------
 
+class LotArcPolicy(StrEnum):
+    """How the operand interval is projected from a lot's projector."""
+
+    DIRECTED = "directed"
+    SHORTEST = "shortest"
+
+
 @dataclass(slots=True)
 class PartDefinition:
     """
@@ -105,9 +117,9 @@ class PartDefinition:
           encoding its name, day and night ingredients, reversal rule, and
           traditional category.
 
-    THEOREM: Immutable catalogue entry for one Arabic Part, storing the
-             day-formula operands, the night-reversal flag, the tradition
-             category, and an optional description.
+    THEOREM: Catalogue entry for one Arabic Part, storing the day-formula
+             operands, projector, arc policy, night-reversal flag, tradition
+             category, and an optional source description.
 
     RITE OF PURPOSE:
         PartDefinition is the atomic unit of the lots catalogue.  It separates
@@ -119,7 +131,7 @@ class PartDefinition:
     LAW OF OPERATION:
         Responsibilities:
             - Store name, day_add, day_sub, reverse_at_night, category,
-              and optional description.
+              optional description, projector, and arc policy.
         Non-responsibilities:
             - Does not compute the lot longitude; that is ArabicPartsService's role.
             - Does not validate that day_add and day_sub are resolvable keys.
@@ -128,6 +140,8 @@ class PartDefinition:
             - None beyond Python builtins.
         Structural invariants:
             - name is a non-empty string uniquely identifying the lot.
+            - projector is a non-empty reference key.
+            - arc_policy is a LotArcPolicy member.
             - reverse_at_night is True only for lots that swap Add/Sub in night charts.
 
     Canon: Paulus Alexandrinus, Introductory Matters (Hellenistic lots);
@@ -138,7 +152,7 @@ class PartDefinition:
         "scope": "class",
         "id": "moira.lots.PartDefinition",
         "risk": "low",
-        "api": {"frozen": ["name", "day_add", "day_sub", "reverse_at_night", "category", "description"], "internal": []},
+        "api": {"frozen": ["name", "day_add", "day_sub", "reverse_at_night", "category", "description", "projector", "arc_policy"], "internal": []},
         "state": {"mutable": false, "owners": []},
         "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
         "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -154,6 +168,16 @@ class PartDefinition:
     reverse_at_night: bool
     category:         str
     description:      str = ""
+    projector:        str = "Asc"
+    arc_policy:       LotArcPolicy = LotArcPolicy.DIRECTED
+
+    def __post_init__(self) -> None:
+        if not self.name.strip():
+            raise ValueError("PartDefinition.name must be non-empty")
+        if not self.projector.strip():
+            raise ValueError("PartDefinition.projector must be non-empty")
+        if not isinstance(self.arc_policy, LotArcPolicy):
+            raise ValueError("PartDefinition.arc_policy must be a LotArcPolicy")
 
 
 # ---------------------------------------------------------------------------
@@ -195,7 +219,16 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     # --- B ---
     PartDefinition("Barley",                            "Jupiter",       "Moon",           True,  "medieval,commodity"),
     PartDefinition("Basis (Firmicus)",                  "Fortune",       "Spirit",         True,  "hellenistic"),
-    PartDefinition("Basis (Valens)",                    "Spirit",        "Fortune",        True,  "hellenistic,medieval"),
+    PartDefinition(
+        "Basis (Valens)",
+        "Spirit",
+        "Fortune",
+        True,
+        "hellenistic,medieval",
+        "Valens II.22; project the nearer interval between Fortune and Spirit",
+        "Asc",
+        LotArcPolicy.SHORTEST,
+    ),
     PartDefinition("Basis 2",                           "Mercury",       "Venus",          True,  "hellenistic"),
     PartDefinition("Battle",                            "Moon",          "Mars",           False, "medieval,mundane"),
     PartDefinition("Beans",                             "Mars",          "Saturn",         True,  "medieval,commodity"),
@@ -272,8 +305,22 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("Death of Brothers",                 "MC",            "Sun",            True,  "medieval"),
     PartDefinition("Death of the Father",               "Jupiter",       "Saturn",         False, "medieval"),
     PartDefinition("Death Point (Emerson)",             "Saturn",        "MC",             False, "modern"),
-    PartDefinition("Debt",                              "Saturn",        "Mercury",        False, "hellenistic,medieval"),
-    PartDefinition("Debtor",                            "Mercury",       "Saturn",         True,  "hellenistic"),
+    PartDefinition(
+        "Debt (Valens)",
+        "Saturn",
+        "Mercury",
+        False,
+        "hellenistic",
+        "Valens II.23: Mercury to Saturn, projected from the Ascendant",
+    ),
+    PartDefinition(
+        "Debt (Abu Mashar via al-Biruni)",
+        "Mercury",
+        "Saturn",
+        True,
+        "medieval",
+        "Abu Mashar table reproduced by al-Biruni, section 476, row 12",
+    ),
     PartDefinition("Deceit",                            "Mars",          "Sun",            True,  "hellenistic"),
     PartDefinition("Deceit (Modern)",                   "Venus",         "Neptune",        False, "modern"),
     PartDefinition("Delusion",                          "Neptune",       "Moon",           False, "modern"),
@@ -431,7 +478,14 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("Killing",                           "Mars",          "Moon",           False, "medieval,horary"),
     PartDefinition("Kings, Rulers",                     "Moon",          "Mercury",        False, "modern"),
     PartDefinition("Kinship",                           "Jupiter",       "Mercury",        True,  "hellenistic"),
-    PartDefinition("Knowledge",                         "Jupiter",       "Moon",           True,  "medieval,mundane"),
+    PartDefinition(
+        "Knowledge, True or False (Abu Mashar via al-Biruni)",
+        "Moon",
+        "Jupiter",
+        False,
+        "medieval",
+        "Abu Mashar table reproduced by al-Biruni, section 476, row 61",
+    ),
     PartDefinition("Knowledge & Meditation",            "Jupiter",       "Saturn",         True,  "medieval"),
     PartDefinition("Knowledge & Meditation (al-Qabisi)","Jupiter",       "Saturn",         False, "medieval"),
 
@@ -665,7 +719,15 @@ PARTS_DEFINITIONS: list[PartDefinition] = [
     PartDefinition("The Month",                         "Cancer",        "Sun",            False, "medieval,mundane"),
     PartDefinition("The Praised & Commended",           "Venus",         "Jupiter",        True,  "medieval"),
     PartDefinition("Theft (Olympiodorus)",              "Mars",          "Mercury",        True,  "hellenistic"),
-    PartDefinition("Theft (Valens)",                    "Mars",          "Mercury",        True,  "hellenistic"),
+    PartDefinition(
+        "Theft (Valens)",
+        "Mars",
+        "Mercury",
+        True,
+        "hellenistic",
+        "Valens II.24: Mercury to Mars by day, reversed by night, projected from Saturn",
+        "Saturn",
+    ),
     PartDefinition("Those Honored & Known Among People","Sun",           "Mercury",        False, "medieval"),
     PartDefinition("Those Suddenly Elevated",           "Fortune",       "Saturn",         True,  "medieval"),
     PartDefinition("Time for Action",                   "Jupiter",       "Sun",            False, "medieval,horary"),
@@ -1230,26 +1292,59 @@ class ArabicPartComputationTruth:
     """
     Structured doctrinal/computational path for one computed lot.
 
-    This is Phase 1 truth preservation only. It records the operands actually
-    used to compute the returned longitude so later classification and policy
-    layers do not need to reconstruct hidden logic from the flattened `formula`
-    string.
+    Records the projector, arc policy, and operands actually used to compute
+    the returned longitude so later layers do not need to reconstruct hidden
+    logic from the flattened `formula` string.
     """
 
-    asc_longitude:      float
-    requested_add_key:  str
-    requested_sub_key:  str
-    effective_add_key:  str
-    effective_sub_key:  str
-    reversed_at_night:  bool
-    reversed_for_chart: bool
-    add_reference:      LotReferenceTruth
-    sub_reference:      LotReferenceTruth
-    formula:            str
+    asc_longitude:       float
+    projector_key:       str
+    projector_reference: LotReferenceTruth
+    arc_policy:          LotArcPolicy
+    requested_add_key:   str
+    requested_sub_key:   str
+    effective_add_key:   str
+    effective_sub_key:   str
+    reversed_at_night:   bool
+    reversed_for_chart:  bool
+    add_reference:       LotReferenceTruth
+    sub_reference:       LotReferenceTruth
+    formula:             str
 
     def __post_init__(self) -> None:
-        if self.formula != f"Asc + {self.effective_add_key} - {self.effective_sub_key}":
-            raise ValueError("ArabicPartComputationTruth invariant failed: formula must match effective operand keys")
+        if not isinstance(self.arc_policy, LotArcPolicy):
+            raise ValueError(
+                "ArabicPartComputationTruth invariant failed: "
+                "arc_policy must be a LotArcPolicy"
+            )
+        if self.arc_policy is LotArcPolicy.SHORTEST:
+            expected_formula = (
+                f"{self.projector_key} + "
+                f"shortest_arc({self.effective_add_key}, {self.effective_sub_key})"
+            )
+        else:
+            expected_formula = (
+                f"{self.projector_key} + "
+                f"{self.effective_add_key} - {self.effective_sub_key}"
+            )
+        if self.formula != expected_formula:
+            raise ValueError(
+                "ArabicPartComputationTruth invariant failed: "
+                "formula must match projector, arc policy, and effective operand keys"
+            )
+        if self.projector_reference.key != self.projector_key:
+            raise ValueError(
+                "ArabicPartComputationTruth invariant failed: "
+                "projector_reference.key must match projector_key"
+            )
+        if (
+            self.projector_key == "Asc"
+            and self.projector_reference.longitude != self.asc_longitude
+        ):
+            raise ValueError(
+                "ArabicPartComputationTruth invariant failed: "
+                "Asc projector longitude must match asc_longitude"
+            )
         if self.reversed_for_chart and not self.reversed_at_night:
             raise ValueError("ArabicPartComputationTruth invariant failed: reversed_for_chart requires reversed_at_night")
         if self.add_reference.key != self.effective_add_key:
@@ -1522,8 +1617,9 @@ class ArabicPartsService:
           in the catalogue for a given chart.
 
     THEOREM: Governs the computation of all Arabic Parts for a ChartContext
-             by resolving named ingredient keys to ecliptic longitudes and
-             applying the formula Lot = ASC + Add − Subtract (mod 360°).
+             by resolving named ingredient and projector keys to ecliptic
+             longitudes and applying each definition's directed- or
+             shortest-arc projection policy.
 
     RITE OF PURPOSE:
         ArabicPartsService is the computational heart of the Lots Engine.
@@ -1535,11 +1631,12 @@ class ArabicPartsService:
 
     LAW OF OPERATION:
         Responsibilities:
-            - Resolve ingredient keys (planets, angles, house cusps, rulers,
-              fixed degrees, pre-computed lots) to ecliptic longitudes.
+            - Resolve ingredient and projector keys (planets, angles, house
+              cusps, rulers, fixed degrees, pre-computed lots) to ecliptic
+              longitudes.
             - Apply day/night reversal for lots that require it.
-            - Compute Lot = ASC + Add − Subtract (mod 360°) for every entry
-              in PARTS_DEFINITIONS.
+            - Project the directed or shortest operand interval from the
+              definition's projector for every entry in PARTS_DEFINITIONS.
             - Return a list of ArabicPart results.
         Non-responsibilities:
             - Does not own the catalogue; PARTS_DEFINITIONS is module-level.
@@ -1551,13 +1648,14 @@ class ArabicPartsService:
               Ascendant, and MC.
             - moira.constants.sign_of for sign derivation in ArabicPart.
         Failure behavior:
-            - Unresolvable ingredient keys never fabricate a 0° longitude.
+            - Unresolvable ingredient or projector keys never fabricate a
+              0° longitude.
             - The default SKIP policy omits the affected lot; the RAISE policy
               raises ValueError naming the unresolved reference.
         Truth preservation:
             - Returned ArabicPart results preserve the resolved doctrinal path
-              through computation_truth, including operand reversal and
-              ingredient source kinds.
+              through computation_truth, including projector, arc policy,
+              operand reversal, and ingredient source kinds.
         Future layers:
             - Classification, inspectability, policy, and constitutional
               hardening should consume preserved truth rather than parse
@@ -1642,6 +1740,7 @@ class ArabicPartsService:
         for pdef in PARTS_DEFINITIONS:
             requested_add_key = pdef.day_add
             requested_sub_key = pdef.day_sub
+            projector_key = pdef.projector
             add_key = requested_add_key
             sub_key = requested_sub_key
             reversed_for_chart = pdef.reverse_at_night and not is_day_chart
@@ -1650,16 +1749,31 @@ class ArabicPartsService:
 
             add_val = refs.get(add_key)
             sub_val = refs.get(sub_key)
-            if add_val is None or sub_val is None:
+            projector_val = refs.get(projector_key)
+            if add_val is None or sub_val is None or projector_val is None:
                 if policy.unresolved_reference_mode is LotsReferenceFailureMode.RAISE:
-                    missing = add_key if add_val is None else sub_key
+                    if add_val is None:
+                        missing = add_key
+                    elif sub_val is None:
+                        missing = sub_key
+                    else:
+                        missing = projector_key
                     raise ValueError(f"Unresolved lot ingredient reference: {missing}")
                 continue   # ingredient unavailable — skip silently
 
-            lon     = (refs["Asc"] + add_val - sub_val) % 360.0
-            formula = f"Asc + {add_key} - {sub_key}"
+            directed_arc = (add_val - sub_val) % 360.0
+            if pdef.arc_policy is LotArcPolicy.SHORTEST:
+                projected_arc = min(directed_arc, (-directed_arc) % 360.0)
+                formula = f"{projector_key} + shortest_arc({add_key}, {sub_key})"
+            else:
+                projected_arc = directed_arc
+                formula = f"{projector_key} + {add_key} - {sub_key}"
+            lon = (projector_val + projected_arc) % 360.0
             computation_truth = ArabicPartComputationTruth(
                 asc_longitude=refs["Asc"],
+                projector_key=projector_key,
+                projector_reference=ref_truths[projector_key],
+                arc_policy=pdef.arc_policy,
                 requested_add_key=requested_add_key,
                 requested_sub_key=requested_sub_key,
                 effective_add_key=add_key,

@@ -49,9 +49,9 @@ Implemented:
   transit-strength routes, and alternate dasha direct and chart-backed
   Ashtottari/Yogini sequence/profile plus period-profile
   routes, Varga direct and chart-backed generic/named/Shodashvarga/batch routes,
-  and Decanates direct and chart-backed decanate-placement routes. The disputed
-  Hermetic catalog/longitude/rising/night-hour family is quarantined and absent
-  from the application registry
+  and Decanates direct and chart-backed decanate-placement routes. The
+  source-reconstructed Hermetic name-and-face catalog and its still-quarantined
+  longitude/rising/night-hour family are absent from the application registry
 - source-scoped Pancha Pakshi admission adds explicit-profile discovery,
   governance-only Uromarisi constitutional status, aksara and natal identity,
   a pure nakshatra-to-bird source-table lookup, exact nominal schedule,

@@ -56,6 +56,7 @@ from moira.lots import (
     ArabicPartClassification,
     ArabicPartComputationTruth,
     ArabicPartsService,
+    PARTS_DEFINITIONS,
     LotChartConditionProfile,
     LotConditionProfile,
     LotConditionNetworkEdge,
@@ -73,6 +74,7 @@ from moira.lots import (
     LotReferenceTruth,
     LotReferenceKind,
     LotReversalKind,
+    LotArcPolicy,
     calculate_all_lot_dependencies,
     calculate_lot_chart_condition_profile,
     calculate_lot_condition_network_profile,
@@ -1678,6 +1680,9 @@ def test_lots_preserve_computation_truth_without_changing_formula_semantics() ->
     assert day_fortune.computation_truth is not None
     assert day_fortune.computation_truth.requested_add_key == "Moon"
     assert day_fortune.computation_truth.requested_sub_key == "Sun"
+    assert day_fortune.computation_truth.projector_key == "Asc"
+    assert day_fortune.computation_truth.projector_reference.key == "Asc"
+    assert day_fortune.computation_truth.arc_policy is LotArcPolicy.DIRECTED
     assert day_fortune.computation_truth.effective_add_key == "Moon"
     assert day_fortune.computation_truth.effective_sub_key == "Sun"
     assert day_fortune.computation_truth.reversed_at_night is True
@@ -1891,6 +1896,131 @@ def test_source_verified_dorothean_lots_reverse_at_night() -> None:
     assert night["Siblings (Number)"].computation_truth.reversed_for_chart is True
     assert night["Time of Children"].computation_truth is not None
     assert night["Time of Children"].computation_truth.reversed_for_chart is True
+
+
+def test_valens_theft_uses_saturn_as_projector_and_reverses_at_night() -> None:
+    """Valens, Anthologies II.24 (Riley annotated PDF p. 176)."""
+
+    positions = {
+        "Sun": 100.0,
+        "Moon": 0.0,
+        "Mercury": 20.0,
+        "Venus": 40.0,
+        "Mars": 80.0,
+        "Jupiter": 140.0,
+        "Saturn": 250.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    day = _part_by_name(
+        calculate_lots(positions, house_cusps, True),
+        "Theft (Valens)",
+    )
+    night = _part_by_name(
+        calculate_lots(positions, house_cusps, False),
+        "Theft (Valens)",
+    )
+
+    assert day.longitude == pytest.approx(310.0)
+    assert day.formula == "Saturn + Mars - Mercury"
+    assert day.computation_truth is not None
+    assert day.computation_truth.projector_key == "Saturn"
+    assert day.computation_truth.projector_reference.longitude == pytest.approx(250.0)
+    assert day.computation_truth.arc_policy is LotArcPolicy.DIRECTED
+
+    assert night.longitude == pytest.approx(190.0)
+    assert night.formula == "Saturn + Mercury - Mars"
+    assert night.computation_truth is not None
+    assert night.computation_truth.reversed_for_chart is True
+
+
+def test_valens_theft_missing_saturn_projector_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira.lots as lots_module
+
+    theft = next(
+        definition
+        for definition in PARTS_DEFINITIONS
+        if definition.name == "Theft (Valens)"
+    )
+    monkeypatch.setattr(lots_module, "PARTS_DEFINITIONS", [theft])
+
+    positions = {
+        "Sun": 100.0,
+        "Moon": 0.0,
+        "Mercury": 20.0,
+        "Mars": 80.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    assert calculate_lots(positions, house_cusps, True) == []
+    with pytest.raises(ValueError, match="Unresolved lot ingredient reference: Saturn"):
+        calculate_lots(
+            positions,
+            house_cusps,
+            True,
+            policy=LotsComputationPolicy(
+                unresolved_reference_mode=LotsReferenceFailureMode.RAISE,
+            ),
+        )
+
+
+def test_valens_basis_projects_the_shorter_fortune_spirit_interval() -> None:
+    """Valens, Anthologies II.22 (Riley annotated PDF p. 171)."""
+
+    positions = {
+        "Sun": 100.0,
+        "Moon": 0.0,
+        "Mercury": 20.0,
+        "Venus": 40.0,
+        "Mars": 80.0,
+        "Jupiter": 140.0,
+        "Saturn": 250.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    day = _part_by_name(
+        calculate_lots(positions, house_cusps, True),
+        "Basis (Valens)",
+    )
+    night = _part_by_name(
+        calculate_lots(positions, house_cusps, False),
+        "Basis (Valens)",
+    )
+
+    assert day.longitude == pytest.approx(160.0)
+    assert night.longitude == pytest.approx(160.0)
+    assert day.formula == "Asc + shortest_arc(Spirit, Fortune)"
+    assert night.formula == "Asc + shortest_arc(Fortune, Spirit)"
+    assert day.computation_truth is not None
+    assert day.computation_truth.arc_policy is LotArcPolicy.SHORTEST
+    assert night.computation_truth is not None
+    assert night.computation_truth.reversed_for_chart is True
+
+
+def test_source_specific_debt_and_knowledge_entries_do_not_collapse_traditions() -> None:
+    """Valens II.23 and al-Biruni section 476, rows 12 and 61."""
+
+    definitions = {definition.name: definition for definition in PARTS_DEFINITIONS}
+
+    assert "Debt" not in definitions
+    assert "Debtor" not in definitions
+    assert "Knowledge" not in definitions
+
+    valens_debt = definitions["Debt (Valens)"]
+    abu_mashar_debt = definitions["Debt (Abu Mashar via al-Biruni)"]
+    knowledge = definitions["Knowledge, True or False (Abu Mashar via al-Biruni)"]
+
+    assert (valens_debt.day_add, valens_debt.day_sub) == ("Saturn", "Mercury")
+    assert valens_debt.reverse_at_night is False
+    assert valens_debt.category == "hellenistic"
+    assert (abu_mashar_debt.day_add, abu_mashar_debt.day_sub) == ("Mercury", "Saturn")
+    assert abu_mashar_debt.reverse_at_night is True
+    assert abu_mashar_debt.category == "medieval"
+    assert (knowledge.day_add, knowledge.day_sub) == ("Moon", "Jupiter")
+    assert knowledge.reverse_at_night is False
+    assert knowledge.category == "medieval"
 
 
 def test_lots_narrow_policy_explicitly_disables_selected_reference_doctrine() -> None:
@@ -2567,8 +2697,12 @@ def test_lots_policy_validation_fails_deterministically_on_unsupported_values() 
 def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
     add_truth = LotReferenceTruth("Moon", 220.0, "planet", "Moon")
     sub_truth = LotReferenceTruth("Sun", 100.0, "planet", "Sun")
+    projector_truth = LotReferenceTruth("Asc", 0.0, "angle", "house_cusp_1")
     computation_truth = ArabicPartComputationTruth(
         asc_longitude=0.0,
+        projector_key="Asc",
+        projector_reference=projector_truth,
+        arc_policy=LotArcPolicy.DIRECTED,
         requested_add_key="Moon",
         requested_sub_key="Sun",
         effective_add_key="Moon",
@@ -2595,9 +2729,12 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
             category="hellenistic,medieval",
         )
 
-    with pytest.raises(ValueError, match="formula must match effective operand keys"):
+    with pytest.raises(ValueError, match="formula must match projector, arc policy"):
         ArabicPartComputationTruth(
             asc_longitude=0.0,
+            projector_key="Asc",
+            projector_reference=projector_truth,
+            arc_policy=LotArcPolicy.DIRECTED,
             requested_add_key="Moon",
             requested_sub_key="Sun",
             effective_add_key="Moon",

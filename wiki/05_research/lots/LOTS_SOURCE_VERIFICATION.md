@@ -18,6 +18,8 @@ Verification follows the Moira authority hierarchy:
    PDF acquired 2026-04-19. Full formula survey complete; 16 entries verified, 2 corrections applied (Session 2).
 4. **Dorotheus** — *Carmen Astrologicum* (Pingree trans., 1976; Skyscript/Houlding OCR reproductions)  
    PDFs acquired 2026-04-21. Three volumes: Book I (dorotheus1.pdf, 21 pp.), Book II (dorotheus2.pdf, 22 pp.), Book III (dorotheus3.pdf, 7 pp.). Books IV–V (electional, interrogations) not yet acquired. Full lot survey of available text complete; 7 formulas confirmed correct. D9–D10 were resolved in the 2026-07-25 containment pass.
+5. **Abū Maʿshar via al-Bīrūnī** — §476 of al-Bīrūnī's *Kitāb al-Tafhīm* (Wright trans., 1934)
+   Used as an identified transmission of Abū Maʿshar's 97-lot table. Its formulas remain source-specific and are not silently substituted for Valens formulas with similar names.
 
 ---
 
@@ -47,9 +49,9 @@ All formulas confirmed against direct PDF extraction of the Riley/Valens primary
 |--------------------|-----------------|---------------|------|
 | Fortune (inline) | Asc + Moon − Sun (day) | Book II.3: "distance from s to d, from Ascendant" | 119 |
 | Spirit/Daimon (inline) | Asc + Sun − Moon (day) | Book II.22: "distance from d to s (day), from Ascendant" | 170 |
-| Basis (Valens) | Asc + Spirit − Fortune (day), reversed | Book II.22: "distance from Fortune to Daimon (day), from Ascendant" | 171 |
+| Basis (Valens) | Asc + shorter interval between Fortune and Spirit | Book II.22: nearest-lot / no-more-than-seven-signs rule | 171 |
 | Deceit | Asc + Mars − Sun (day), reversed | Book II.25: "distance from s to h, from Ascendant; night: opposite" | 177 |
-| Debt | Asc + Saturn − Mercury | Book II.23: "distance from f to S, from Ascendant" | 175 |
+| Debt (Valens) | Asc + Saturn − Mercury, no reversal | Book II.23: "distance from f to S, from Ascendant" | 175 |
 | Siblings | Asc + Jupiter − Saturn (day), reversed | Book II.40: "distance from S to j (day), from Ascendant" | 240 |
 | Being in a Foreign Land | Asc + Mars − Saturn | Book II.29: "distance from S to h, from Ascendant" | 187 |
 | Father | Asc + Saturn − Sun (day) | Book II.30: "distance from s to S, from Ascendant" | 197 |
@@ -67,7 +69,7 @@ All formulas confirmed against direct PDF extraction of the Riley/Valens primary
 
 ### Corrections Made
 
-#### 1. Debt — operand swap (FIXED 2026-04-19)
+#### 1. Debt (Valens) — operand swap and source-specific naming (FIXED 2026-04-19; NAMED 2026-07-25)
 
 **Valens II.23 (p. 175):** "The Lot of Debt is calculated by determining the distance from f [Mercury] to S [Saturn] then counting that same distance from the Ascendant."
 
@@ -80,7 +82,10 @@ All formulas confirmed against direct PDF extraction of the Riley/Valens primary
 
 **Valens delineation:** Badly situated or ruler in opposition/square with malefics = native becomes a debtor. If related to Fortune, Accomplishment, or Daimon = livelihood from crime, deceit, force, or theft.
 
-**Debtor (line 280)** carries the same operand pair (`Mercury`, `Saturn`) with `reverse_at_night=True`. Its source has not yet been verified against primary text; it was left untouched pending a dedicated check.
+The former generic `Debtor` entry is now
+`Debt (Abu Mashar via al-Biruni)`: Asc + Mercury − Saturn by day, reversed
+at night, from §476 row 12. The two formulas are retained under distinct
+source-qualified names rather than treated as one disputed formula.
 
 ---
 
@@ -148,41 +153,48 @@ PartDefinition("Necessity (Paulus)", "Mercury", "Fortune", False, "hellenistic")
 
 ---
 
-### Deferred Issues (not corrected — structural or unresolved)
+### Resolved Structural Issues
 
-#### D1. Theft (Valens) — wrong projector (DEFERRED)
+#### D1. Theft (Valens) — Saturn projector (RESOLVED 2026-07-25)
 
 **Valens II.24 (p. 176):** "For day births, the position of the Lot is calculated by determining the distance from f [Mercury] to h [Mars], then counting the same distance from **S [Saturn]**; for night births, measure from h to f, then from S."
 
-The projector is **Saturn**, not the Ascendant. The current `PartDefinition` engine expresses all lots as `Asc + Add − Sub`. There is no field for an alternate projector. The formula as Valens gives it cannot be correctly implemented without an engine extension.
+The projector is **Saturn**, not the Ascendant. The source direction is
+Mercury→Mars by day and Mars→Mercury by night.
 
-**Current lots.py entry:**  
+**Current `lots.py` entry:**
 ```python
-PartDefinition("Theft (Valens)", "Mars", "Mercury", True, "hellenistic")
-# Computes: Asc + Mars - Mercury (day)
-# Should be: Saturn + Mercury - Mars (day), Saturn + Mars - Mercury (night)
+PartDefinition(
+    "Theft (Valens)",
+    "Mars",
+    "Mercury",
+    True,
+    "hellenistic",
+    projector="Saturn",
+)
 ```
 
-**What is wrong:** Both the projector (Asc vs. Saturn) and the operand direction are incorrect for the day formula.
+This computes:
 
-**Theft (Olympiodorus)** (line 669) holds an identical formula `("Mars", "Mercury", True)`. If Olympiodorus uses Ascendant as projector and Valens uses Saturn, these are genuinely distinct lots sharing a formula incorrectly. Source for Olympiodorus not yet verified.
+- day: Saturn + Mars − Mercury
+- night: Saturn + Mercury − Mars
 
-**Resolution path:**  
-1. Verify Olympiodorus formula in PAG.  
-2. Decide whether to add a `projector` field to `PartDefinition` or handle Theft (Valens) as a special-cased lot in the computation engine.  
-3. Until resolved, both entries are flagged as formula-incorrect for the Valens variant.
+`PartDefinition.projector` and the computation receipt's projector truth now
+carry this distinction directly. `Theft (Olympiodorus)` remains a separate,
+Ascendant-projected entry pending its own source check.
 
 ---
 
-#### D2. Basis (Valens) — shortest-arc rule not implemented (DEFERRED)
+#### D2. Basis (Valens) — shortest-arc rule (RESOLVED 2026-07-25)
 
 **Valens II.22 (p. 171):** "The distance will not exceed the number 7 [≤7 signs] for night or day births but it is necessary to take the distance from the nearest Lot to the other Lot."
 
 Riley footnote: "Take the shortest distance between the two lots. This results in the Lot of Basis always falling below the horizon."
 
-lots.py computes `Asc + Spirit − Fortune` using standard directional arc arithmetic. The shortest-arc constraint is not implemented. The formula is correct; the distance modulation is not captured.
-
-**Resolution path:** Requires either a per-lot post-computation clamp, or a new flag on `PartDefinition` for shortest-arc semantics.
+`PartDefinition.arc_policy = LotArcPolicy.SHORTEST` now projects the unsigned
+shorter interval between Fortune and Spirit from the Ascendant. Reversing the
+source operands at night preserves the same unsigned interval, and the
+computation receipt records the selected arc policy.
 
 ---
 
@@ -490,53 +502,60 @@ Additional house-lot matches:
 
 ---
 
-### Deferred Issues Raised
+### Issues Raised and Resolved in the 2026-07-25 Doctrine Pass
 
-**D11 — Debt naming / operand direction disagreement:**  
-al-Bīrūnī #12 "Debt": ♄ → ☿ = Asc + Mercury − Saturn, change (rev=True).  
-This formula matches lots.py **`Debtor`** (Mercury-Saturn, rev=True). It does **not** match lots.py **`Debt`** (Saturn-Mercury, rev=False), which Session 1 set per Valens II.23.  
-Conversely, al-Bīrūnī #97 "Rectitude": ☿ → ♄ = Asc + Saturn − Mercury, change — the same operand direction as lots.py `Debt` but with change (rev=True), not rev=False.  
-**Consequence:** Either (a) Valens II.23 and al-Bīrūnī agree on the formula but use different lot names, or (b) the Session 1 operand swap was an error. Cannot resolve without re-reading Valens II.23 directly. Pending Valens re-examination.
+**D11 — Debt naming / operand direction (RESOLVED):**
+The apparent contradiction came from collapsing two authorities. Valens II.23
+gives Mercury→Saturn from the Ascendant without reversal. Abū Maʿshar's table,
+transmitted by al-Bīrūnī at §476 row 12, gives Saturn→Mercury and changes at
+night. The catalog now preserves both as `Debt (Valens)` and
+`Debt (Abu Mashar via al-Biruni)`.
 
-**D12 — Illness (Ancients) sub-operand:**  
-al-Bīrūnī #31 "Disease a/o to some of the ancients": ♀ → ♂ = Asc + Mars − Venus, same (rev=False).  
-lots.py `Illness (Ancients)`: add=Mars, sub=**Mercury** = Asc + Mars − Mercury, rev=False.  
-Operands agree on direction (Mars as day_add, no reversal) but the day_sub differs: Venus (al-Bīrūnī) vs Mercury (lots.py). If al-Bīrūnī is the source for this entry, the sub should be Venus. Pending source identification for the lots.py attribution "Ancients."
+**D12 — Illness (Ancients) sub-operand (RESOLVED):**
+The §476 row 31 glyph is Mercury, not Venus. The row gives Mercury→Mars and
+“same,” matching `Illness (Ancients)` as Asc + Mars − Mercury with no night
+reversal. No engine change was required.
 
-**D13 — Marriage (Men, Valens) reversal:**  
-al-Bīrūnī #35 "Marriage a/o Wallis [Vettius Valens]": ☉ → ♀ = Asc + Venus − Sun, **change** (rev=True).  
-lots.py `Marriage (Men, Valens)`: Venus-Sun, rev=**False**. Operands match; reversal disagrees.  
-Valens outranks al-Bīrūnī; pending Valens re-examination before correcting.
+**D13 — Marriage (Men, Valens) reversal (RESOLVED):**
+Valens II.38 gives Sun→Venus for men without a night reversal. In the §476
+table, the continuation mark was misread as “change”; it carries the preceding
+“same” instruction. `Marriage (Men, Valens)` remains Asc + Venus − Sun,
+`reverse_at_night=False`.
 
-**D14 — Marriage (Women, Valens) reversal:**  
-al-Bīrūnī #39 "Marriage of women (Valens)": ☽ → ♂ = Asc + Mars − Moon, **change** (rev=True).  
-lots.py `Marriage (Women, Valens)`: Mars-Moon, rev=**False**. Operands match; reversal disagrees.  
-Valens outranks al-Bīrūnī; pending Valens re-examination.
+**D14 — Marriage (Women, Valens) reversal (RESOLVED):**
+Valens II.38 gives Moon→Mars for women without a night reversal. The §476
+continuation mark likewise means “same.” `Marriage (Women, Valens)` remains
+Asc + Mars − Moon, `reverse_at_night=False`.
 
-**D15 — Knowledge direction and reversal:**  
-al-Bīrūnī #61 "Knowledge whether true or false": ♃ → ☽ = Asc + Moon − Jupiter, **same** (rev=False).  
-lots.py `Knowledge`: add=Jupiter, sub=Moon = Asc + Jupiter − Moon, rev=**True**.  
-Both operand direction and reversal flag differ. Category in lots.py is "medieval,mundane," which may indicate a different tradition (mundane astrology) rather than nativity use; the al-Bīrūnī entry is in the 9th house section (nativity context). Pending source identification.
-
----
-
-### Engine Limitation Notes (not correctable without engine extension)
-
-Several al-Bīrūnī lots use house cusps or derived points as operands — outside the current `PartDefinition` planet-only model:
-- #11 Property: Lord of II, Cusp of II
-- #16 Death of brothers: ☉ → 10° of III (fixed house degree)
-- #32 Captivity: Lord of time + Lord of VI (compound)
-- #50 Death: ☽ → Cusp VIII, cast from degree of ♄ (non-Ascendant projector)
-- #55 Journeys: Lord IX → Cusp IX
-- #62 Noble births: Lord of time → degree of exaltation (conditional)
-- #86 Enmity (Hermes): Lord XII → Cusp XII
-- #91 Boldness: Lord Asc → ☽
-
-These are noted for future engine extension work, not this session.
+**D15 — Knowledge direction and reversal (RESOLVED):**
+The unsupported generic `Knowledge` label was replaced with the exact
+source-specific `Knowledge, True or False (Abu Mashar via al-Biruni)`.
+Section 476 row 61 gives Jupiter→Moon and “same”: Asc + Moon − Jupiter,
+without reversal.
 
 ---
 
-**Result: No lots.py entries changed this session.** 14 lots confirmed correct; 5 new deferred issues raised (D11–D15).
+### Remaining Catalogue-Model Boundaries
+
+Alternate projectors and shortest-arc projection are now first-class engine
+policies. Ordinary house cusps and their rulers are also already resolvable, so
+rows 11, 50, 55, 86, and 91 are catalog-admission questions rather than proof
+of an engine limitation.
+
+Three §476 patterns still need separately typed operand semantics before
+admission:
+
+- #16 Death of brothers: Sun→10° of the third house
+- #32 Captivity: lord of the time combined with lord of the sixth
+- #62 Noble births: conditional lord-of-time→exaltation-degree logic
+
+These patterns remain outside this doctrine-decision pass.
+
+---
+
+**2026-07-25 result:** D11–D15 are closed with source-specific naming or
+corrected table reading. The Valens Theft projector and Basis shortest-arc
+rules are implemented with explicit computation receipts.
 
 ---
 
@@ -551,7 +570,7 @@ Sources not yet directly checked against primary text:
 - [ ] Olympiodorus entries — PAG (Greenbaum)
 - [ ] Bonatti entries — *Liber Astronomiae* (**wrong PDF acquired; see Session 4 note**)
 - [x] al-Biruni entries — *Kitāb al-Tafhīm* (Wright 1934, §476 table) — **surveyed 2026-04-19; see Session 5 above**
-- [ ] `Debtor` formula source
+- [x] Former `Debtor` formula — identified as Abū Maʿshar §476 row 12 and renamed `Debt (Abu Mashar via al-Biruni)` (D11)
 - [ ] `Necessity (Hermetic)` operand direction vs. Paulus
 - [ ] Theft (Olympiodorus) formula per PAG
 - [ ] Accusation / Crisis alternate tradition ("from Mercury") per Riley footnote, Valens p. 409
@@ -562,9 +581,11 @@ Sources not yet directly checked against primary text:
 - [ ] Glory (Firmicus §56: day Jupiter→Venus, night Venus→Jupiter) — name/attribution before adding (D8)
 - [x] Siblings (Number) `False` → `True` — resolved from Dorotheus I.21 and corrected 2026-07-25 (D9)
 - [x] Time of Children `False` → `True` — resolved from Dorotheus II.11 and corrected 2026-07-25 (D10)
+- [x] Theft (Valens) alternate projector — Saturn projector implemented and receipt-backed (D1)
+- [x] Basis (Valens) nearest-lot rule — shortest-arc policy implemented and receipt-backed (D2)
 - [ ] Marriage (Women, Dorotheus) reversal source — II.3 gives no qualifier; cross-check Paulus/Valens
-- [ ] Debt naming & operand direction — Valens II.23 vs al-Bīrūnī #12; `Debtor` formula matches al-Bīrūnī Debt; `Debt` formula matches al-Bīrūnī Rectitude — needs Valens II.23 re-read (D11)
-- [ ] Illness (Ancients) sub: Mercury (lots.py) vs Venus (al-Bīrūnī #31) — needs source identification for lots.py attribution (D12)
-- [ ] Marriage (Men, Valens) rev=False vs al-Bīrūnī #35 change — Valens re-verification before correcting (D13)
-- [ ] Marriage (Women, Valens) rev=False vs al-Bīrūnī #39 change — Valens re-verification before correcting (D14)
-- [ ] Knowledge direction: lots.py Jupiter-Moon vs al-Bīrūnī #61 Moon-Jupiter; also reversal differs — source identification needed (D15)
+- [x] Debt naming & operand direction — traditions separated as Valens and Abū Maʿshar (D11)
+- [x] Illness (Ancients) — Mercury glyph confirmed; existing formula retained (D12)
+- [x] Marriage (Men, Valens) — no reversal confirmed (D13)
+- [x] Marriage (Women, Valens) — no reversal confirmed (D14)
+- [x] Knowledge, True or False — source-specific Moon−Jupiter formula admitted without reversal (D15)

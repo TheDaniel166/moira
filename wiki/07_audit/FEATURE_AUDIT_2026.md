@@ -8,8 +8,9 @@
 > **Current-state correction (2026-07-25).** This is a point-in-time comparison,
 > not a current capability ledger. The admitted Decennials surface now ends at
 > L2; the named Valens and Hephaistio deep-subdivision candidates fail closed.
-> The disputed Hermetic name/star catalog is retained only for source research
-> and is absent from the package root, facade, and registered REST application.
+> The Gundel/Harley Hermetic names and planetary faces are reconstructed for
+> source research; lookup/rising/night geometry remains quarantined and absent
+> from the package root, facade, and registered REST application.
 > Current standards and registered runtime surfaces supersede contrary cells or
 > post-audit notes below.
 
@@ -208,9 +209,9 @@ chains. `wiki/02_standards/DIGNITIES_BACKEND_STANDARD.md` is authoritative.
 
 **Gap notes:**  
 
-¹ Moira retains an internal research catalog, but no Hermetic decan result is
-currently source-admitted or exposed through the package root, facade, or
-registered REST application.
+¹ Moira retains a source-reconstructed internal name-and-face catalog, but no
+Hermetic longitude, rising, night-hour, or fixed-star result is admitted or
+exposed through the package root, facade, or registered REST application.
 No gaps identified in this domain. All features are fully implemented in `dignities.py`
 and supporting modules.
 

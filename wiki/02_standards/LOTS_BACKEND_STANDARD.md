@@ -11,6 +11,12 @@ This document reflects current implementation truth as of Lots Phase 11. It
 describes the subsystem that actually exists in `moira/lots.py`; it does not
 describe aspirational future capabilities.
 
+> **Hellenistic doctrine correction — 2026-07-25.** Projector and arc policy
+> are now explicit computation truth. Valens Theft uses Saturn as projector;
+> Valens Basis uses the shorter Fortune/Spirit interval. Conflicted Debt and
+> Knowledge formulas are preserved under source-specific names rather than
+> collapsed into generic labels.
+
 ---
 
 ## Part I - Architecture Standard
@@ -22,12 +28,14 @@ describe aspirational future capabilities.
 An **Arabic Part** in Moira is:
 
 > The authoritative result of `ArabicPartsService.calculate_parts`, computed
-> from the doctrinal formula `Asc + Add - Subtract (mod 360)` after reference
-> resolution and day/night reversal where the catalogue definition requires it.
+> by projecting a catalogue-defined directed or shortest operand interval from
+> a catalogue-defined reference point after reference resolution and
+> day/night reversal.
 
 The computational core remains the authority for:
 
 - lot longitude
+- effective projector and arc policy
 - effective formula operands
 - day/night reversal behavior
 - reference resolution
@@ -41,8 +49,8 @@ They may not recompute lot doctrine independently.
 A **part definition** in Moira is:
 
 > One immutable doctrinal catalogue entry represented by `PartDefinition`,
-> declaring the lot name, day operands, reversal rule, category string, and
-> optional description.
+> declaring the lot name, day operands, projector, arc policy, reversal rule,
+> category string, and optional source description.
 
 `PARTS_DEFINITIONS` is the authoritative lot catalogue.
 
@@ -51,8 +59,9 @@ A **part definition** in Moira is:
 An **Arabic part computation truth** in Moira is:
 
 > The preserved doctrinal and computational path that records which operand
-> keys were requested, which keys actually resolved, whether reversal applied,
-> and which structured references were used for the returned longitude.
+> keys and projector were requested, which keys actually resolved, which arc
+> policy applied, whether reversal applied, and which structured references
+> were used for the returned longitude.
 
 This truth is carried by `ArabicPart.computation_truth`. It is descriptive
 only. It does not change the formula or result.
@@ -75,6 +84,11 @@ The dependency layer distinguishes:
 | `external_dependencies` | admitted dependencies whose reference kind is `EXTERNAL` |
 
 Under the current default policy, `dependencies == all_dependencies`.
+
+The dependency vessels currently formalize only add and subtract operands.
+Projector dependency composition is intentionally deferred to the typed-truth
+gate; consumers must read projector truth from `computation_truth` until that
+gate is complete.
 
 #### 1.5 Lot condition profile
 
@@ -214,7 +228,27 @@ Day/night reversal doctrine is embodied directly by each `PartDefinition`’s
 The source-verified Dorothean entries `Siblings (Number)` (I.21) and
 `Time of Children` (II.11) reverse at night.
 
-#### 4.4 Policy doctrine
+#### 4.4 Projector and arc doctrine
+
+Every definition names a `projector`, defaulting to `Asc`, and an
+`arc_policy`, defaulting to `LotArcPolicy.DIRECTED`.
+
+| Policy | Computation |
+|---|---|
+| `DIRECTED` | `projector + effective_add - effective_sub (mod 360)` |
+| `SHORTEST` | `projector + unsigned shorter arc between the effective operands (mod 360)` |
+
+Source-locked exceptions include:
+
+- `Theft (Valens)`: Saturn is the projector; the Mercury/Mars operands reverse
+  at night.
+- `Basis (Valens)`: the Ascendant is the projector and the Fortune/Spirit
+  interval uses `SHORTEST`.
+
+An unresolved projector follows the same `SKIP` or `RAISE` doctrine as an
+unresolved operand. It never falls back to the Ascendant or 0°.
+
+#### 4.5 Policy doctrine
 
 `LotsComputationPolicy` makes current doctrine explicit without changing the
 default result.
@@ -347,7 +381,8 @@ The following invariants are normative.
 
 #### 9.1 `ArabicPartComputationTruth`
 
-- `formula` must match the effective operand keys
+- `formula` must match the projector, arc policy, and effective operand keys
+- `projector_reference.key` must match `projector_key`
 - `reversed_for_chart` requires `reversed_at_night`
 - `add_reference.key` must match `effective_add_key`
 - `sub_reference.key` must match `effective_sub_key`
@@ -429,6 +464,7 @@ The stable lots backend surface is the combination of:
 - enums:
   - `LotReferenceKind`
   - `LotReversalKind`
+  - `LotArcPolicy`
   - `LotDependencyRole`
   - `LotConditionState`
   - `LotConditionNetworkEdgeMode`
@@ -456,7 +492,7 @@ Internal helpers remain implementation detail unless explicitly exported later.
 
 Any substantive change to `moira/lots.py` must, at minimum, preserve:
 
-1. lot formula and longitude semantics
+1. lot formula, projector, arc-policy, and longitude semantics
 2. structured truth consistency
 3. classification consistency
 4. dependency consistency
@@ -468,9 +504,9 @@ Any substantive change to `moira/lots.py` must, at minimum, preserve:
 Minimum validation commands:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_dignities_and_lots.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_moira_dignities_and_lots.py -q
 .\.venv\Scripts\python.exe -m pytest tests\unit\test_rule_engine_validation.py -q -k lots
-.\.venv\Scripts\python.exe -m py_compile moira\lots.py tests\unit\test_dignities_and_lots.py
+.\.venv\Scripts\python.exe -m py_compile moira\lots.py tests\unit\test_moira_dignities_and_lots.py
 ```
 
 If the public package surface changes later, the matching API-freeze test must

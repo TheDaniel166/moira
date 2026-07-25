@@ -76,8 +76,9 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 - **Traditional dignities** — domicile, exaltation, triplicity (diurnal/nocturnal), Egyptian and Ptolemaic terms, face, sect, hayz, and Almuten Figuris.
 - **Arabic Parts** — 512 lot definitions with dependency graphs and condition profiling.
 - **Classical decanates** — Chaldean faces, triplicity decans, and Vedic
-  drekkana; the disputed Hermetic name/star catalog is retained only for
-  source-led research and is excluded from the public and REST surfaces.
+  drekkana; the Gundel/Harley Hermetic name-and-face catalog is reconstructed
+  for research, while its geometry remains excluded from public and REST
+  surfaces and unsupported fixed-star assignments fail closed.
 - **Draconic charts** — node-anchored draconic frame (mean or true node) with longitude rotation, engine-backed chart derivation, and caller-supplied position support.
 
 ### Predictive Techniques

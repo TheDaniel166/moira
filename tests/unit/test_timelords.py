@@ -1,6 +1,20 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
+
+
+_VALENS_IV4_FIXTURE = (
+    Path(__file__).parents[1]
+    / "fixtures"
+    / "hellenistic_zr_valens_iv4.json"
+)
+
+
+def _valens_iv4_fixture() -> dict:
+    return json.loads(_VALENS_IV4_FIXTURE.read_text(encoding="utf-8"))
 
 
 def test_firdaria_standard_day_nodes_are_terminal_without_subperiods() -> None:
@@ -488,27 +502,49 @@ def test_decennial_profile_rejects_tampered_time_basis_receipt() -> None:
 def test_zodiacal_releasing_uses_same_sign_spirit_adjustment() -> None:
     from moira.timelords import zodiacal_releasing
 
+    case = _valens_iv4_fixture()["same_sign_spirit_fortune"]
     periods = zodiacal_releasing(
-        10.0,
+        case["lot_longitude"],
         2451545.0,
         levels=1,
-        lot_name="Spirit",
-        fortune_longitude=15.0,
+        lot_name=case["lot_name"],
+        fortune_longitude=case["fortune_longitude"],
     )
 
-    assert periods[0].sign == "Taurus"
+    assert periods[0].sign == case["expected_first_sign"]
 
 
 def test_zodiacal_releasing_marks_loosing_of_bond_for_long_signs() -> None:
     from moira.timelords import zodiacal_releasing
 
+    case = _valens_iv4_fixture()["gemini_loosing_of_bond"]
     periods = [
-        p for p in zodiacal_releasing(275.0, 2451545.0, levels=2)
-        if p.level == 2
+        p
+        for p in zodiacal_releasing(
+            case["lot_longitude"],
+            case["natal_jd"],
+            levels=case["level"],
+            lot_name=case["lot_name"],
+        )
+        if p.level == case["level"]
     ]
 
     first_lb = next(p for p in periods if p.is_loosing_of_bond)
-    assert first_lb.sign == "Cancer"
+    first_lb_index = periods.index(first_lb)
+    final_period = periods[first_lb_index + 1]
+    month_days = 30.0
+
+    assert first_lb.sign == case["receiving_sign"]
+    assert first_lb.start_jd == pytest.approx(
+        case["natal_jd"] + case["complete_circuit_months"] * month_days
+    )
+    assert first_lb.end_jd - first_lb.start_jd == pytest.approx(
+        case["receiving_months"] * month_days
+    )
+    assert final_period.sign == case["final_sign"]
+    assert final_period.end_jd - final_period.start_jd == pytest.approx(
+        case["final_clamped_months"] * month_days
+    )
 
 
 def test_zodiacal_releasing_marks_peak_periods_relative_to_fortune() -> None:

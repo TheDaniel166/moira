@@ -6,48 +6,39 @@ Archetype: Engine
 
 Status
 ------
-**Research quarantine.** The preserved 36-name and ruling-star catalog does
-not match the currently inspected Liber Hermetis witness and therefore is not
-an admitted Moira doctrine. This module remains directly importable only so
-the catalog and its geometry can be audited and reconstructed. It is excluded
-from the package root, facade, and REST application.
+**Research quarantine.** The 36 names and planetary faces have been
+reconstructed from Gundel's 1936 edition of British Library Harley MS 3731,
+ff. 1r-50r. The catalog has not yet passed the later public-admission gates,
+and the lookup/night geometry has not been established by this reconstruction.
+The module remains excluded from the package root, facade, and REST application.
 
 Purpose
 -------
-Preserves the quarantined catalog, tropical lookup geometry, rising-decan
-calculation, and 12-part night division for source comparison. Its outputs
-must not be presented as source-verified Hermetic decan doctrine.
+Preserves the source-identified catalog, quarantined tropical lookup geometry,
+rising-decan calculation, and 12-part night division for source comparison.
+Only each catalog entry's name, sign order, planetary face, and edition page
+are source-reconstructed here.
 
 Tradition and frame of reference
 ---------------------------------
-This module implements the **tropical Hellenistic-Hermetic** tradition, not
-the original sidereal Egyptian one.
+The edited Harley text orders three decans under each of the twelve signs and
+assigns each a planetary face. Moira's equal tropical 10° lookup is retained
+only as quarantined research geometry; this source pass does not claim that a
+modern equinox-fixed longitude realizes the manuscript's complete doctrine.
 
-The original Egyptian decan system (~2100 BCE) was purely sidereal: 36 star
-groups whose heliacal risings divided the year into 10-day periods.  When
-Hellenistic astrology synthesised that lore with the Babylonian zodiac
-(~300–100 BCE), the decans were re-mapped onto three equal 10° spans per
-tropical sign — a frame fixed to the equinoxes, not the stars.
-
-The current decan names and ruling-star assignments were previously attributed
-to the **Liber Hermetis**. Direct comparison has contradicted that attribution,
-so the catalog requires a fresh source ledger before any public readmission.
-
-Ruling stars as magical rulerships
-------------------------------------
-The stars in ``DECAN_RULING_STARS`` are *astrological/magical rulerships*,
-not positional markers.  They are not expected to reside within the tropical
-10° span they rule.  Due to ~24° of precession since the Hellenistic era, the
-stars have drifted approximately 2–3 decan widths relative to the tropical
-zodiac — this is expected and does not represent an error.
+Fixed-star non-admission
+------------------------
+The former one-fixed-star-per-decan table has no support in the identified
+edition. ``DECAN_RULING_STARS`` is therefore empty, and fixed-star accessors
+fail closed. Planetary faces are stored separately in
+``DECAN_PLANETARY_FACES``.
 
 Boundary declaration
 --------------------
-Owns: the 36-decan name constants, ruling-star table, decan-order list,
+Owns: the 36-decan source catalog, planetary-face table, decan-order list,
       decan-for-longitude mapping, rising-decan computation, night-hour
       division, and the ``DecanHour`` / ``DecanHoursNight`` result vessels.
-Delegates: fixed star positions to ``moira.stars``,
-           true obliquity to ``moira.obliquity``,
+Delegates: true obliquity to ``moira.obliquity``,
            SpkReader access to ``moira.spk_reader``.
 
 Import-time side effects: None
@@ -62,9 +53,11 @@ Research surface
 ``DecanHour``          — vessel for a single decan night hour.
 ``DecanHoursNight``    — vessel for all 12 decan hours of a night.
 ``DECAN_NAMES``        — dict of decan constant to name string (36 entries).
-``DECAN_RULING_STARS`` — dict of decan name to ruling star name (36 entries).
+``DECAN_PLANETARY_FACES`` — source-reconstructed planetary faces.
+``HERMETIC_DECAN_CATALOG`` — typed records with source pages.
+``DECAN_RULING_STARS`` — empty compatibility marker; no admitted assignments.
 ``list_decans``        — return all 36 decan names in ecliptic order.
-``available_decans``   — return decans whose ruling star is in the catalog.
+``available_decans``   — return no star-backed decans (fail-closed).
 ``decan_for_longitude``— map a longitude to its decan name.
 ``decan_at``           — return the decan containing the Ascendant at a given JD and location.
 ``decan_hours``        — compute the 12 decan night hours for a given night.
@@ -75,7 +68,6 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from .stars import star_at, StarPosition, list_stars
 from .julian import ut_to_tt
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .obliquity import true_obliquity
@@ -83,151 +75,153 @@ from .spk_reader import get_reader, SpkReader
 from ._solar import _sunrise_sunset, _refine_sunrise
 
 # ---------------------------------------------------------------------------
-# 36 decan name constants
+# Source-reconstructed Harley MS 3731 catalog
 #
-# Provenance disputed: the prior Liber Hermetis attribution is contradicted by
-# the currently inspected witness. Preserve these labels for reconstruction;
-# do not treat their order or repeated-name scheme as source-verified.
+# Authority: Wilhelm Gundel, Dekane und Dekansternbilder (1936), pp. 379-383,
+# section "Die lateinische Dekanliste des Hermes Trismegistos", transcribing
+# British Library Harley MS 3731, ff. 1r-50r. The edition supplies names and
+# planetary faces. It does not supply the fixed-star assignments previously
+# stored here; those assignments are therefore removed and fail closed.
 # ---------------------------------------------------------------------------
 
-HORAIOS        = "Horaios"
-TOMALOS        = "Tomalos"
-ATHAFRA        = "Athafra"
-SENACHER       = "Senacher"
-THESOGAR       = "Thesogar"
-TEPIS          = "Tepis"
-SOTHIS         = "Sothis"
-TPAU           = "Tpau"
-APHRUIMIS      = "Aphruimis"
-TMOUM          = "Tmoum"
-TATHEMIS       = "Tathemis"
-SERK           = "Serk"
-CHONTARE       = "Chontare"
-PHAKARE        = "Phakare"
-TPA            = "Tpa"
-THOSOLK        = "Thosolk"
-SOTHIS_II      = "Sothis II"
-TPAU_II        = "Tpau II"
-CHONTACHRE     = "Chontachre"
-APHRUIMIS_II   = "Aphruimis II"
-TMOUM_II       = "Tmoum II"
-TATHEMIS_II    = "Tathemis II"
-SERK_II        = "Serk II"
-CHONTARE_II    = "Chontare II"
-PHAKARE_II     = "Phakare II"
-TPA_II         = "Tpa II"
-THOSOLK_II     = "Thosolk II"
-HORAIOS_II     = "Horaios II"
-TOMALOS_II     = "Tomalos II"
-ATHAFRA_II     = "Athafra II"
-SENACHER_II    = "Senacher II"
-THESOGAR_II    = "Thesogar II"
-TEPIS_II       = "Tepis II"
-SOTHIS_III     = "Sothis III"
-TPAU_III       = "Tpau III"
-APHRUIMIS_III  = "Aphruimis III"
+HERMETIC_CATALOG_SOURCE_ID = "gundel_1936_harley_ms_3731"
+HERMETIC_CATALOG_WITNESS = "British Library Harley MS 3731, ff. 1r-50r"
+HERMETIC_CATALOG_EDITION = (
+    "Wilhelm Gundel, Dekane und Dekansternbilder (1936), pp. 379-383"
+)
 
-# ---------------------------------------------------------------------------
-# DECAN_NAMES: constant → string value (36 entries)
-# ---------------------------------------------------------------------------
+AULATHAMAS     = "Aulathamas"
+SABAOTH        = "Sabaoth"
+DISORNAFAIS    = "Disornafais"
+JAUS           = "Jaus"
+SARNATAS       = "Sarnatas"
+ERCHUMBRIS     = "Erchumbris"
+MANUCHOS       = "Manuchos"
+SAMUROIS       = "Samurois"
+ASUEL          = "Asuel"
+SENEPTOIS      = "Seneptois"
+SOMATHALMAIS   = "Somathalmais"
+CHARMINE       = "Charmine"
+ZALOIAS        = "Zaloias"
+ZACHOR         = "Zachor"
+FRICH          = "Frich"
+ZAMENDRES      = "Zamendres"
+MAGOIS         = "Magois"
+MICHULAIS      = "Michulais"
+PSINEUS        = "Psineus"
+CHUSTHISIS     = "Chusthisis"
+PSANNATOIS     = "Psannatois"
+NEBENOS        = "Nebenos"
+CHURMANTIS     = "Churmantis"
+PSERMES        = "Psermes"
+CLINOTHOIS     = "Clinothois"
+THURSOIS       = "Thursois"
+RENETHIS       = "Renethis"
+RENPSOIS       = "Renpsois"
+MANETHOIS      = "Manethois"
+MARXOIS        = "Marxois"
+ULARIS         = "Ularis"
+LUXOIS         = "Luxois"
+CRAUXES        = "Crauxes"
+FAMBRAIS       = "Fambrais"
+FLUGMOIS_MARS  = "Flugmois Mars"
+PIATHRIS       = "Piathris"
 
+_CATALOG_SIGNS = (
+    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+)
+_FACE_PLANETS = frozenset(
+    {"Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"}
+)
+
+
+@dataclass(slots=True, frozen=True)
+class HermeticDecanCatalogEntry:
+    """One name and planetary face transcribed from Gundel's Harley edition."""
+
+    index: int
+    sign: str
+    decan_number: int
+    name: str
+    planetary_face: str
+    edition_page: int
+    source_id: str = HERMETIC_CATALOG_SOURCE_ID
+
+    def __post_init__(self) -> None:
+        if self.sign not in _CATALOG_SIGNS:
+            raise ValueError(f"Unsupported catalog sign: {self.sign!r}")
+        if not 1 <= self.decan_number <= 3:
+            raise ValueError("decan_number must be in [1, 3]")
+        expected_index = _CATALOG_SIGNS.index(self.sign) * 3 + self.decan_number - 1
+        if self.index != expected_index:
+            raise ValueError("catalog index must match sign and decan_number")
+        if not self.name:
+            raise ValueError("catalog name must be non-empty")
+        if self.planetary_face not in _FACE_PLANETS:
+            raise ValueError(f"Unsupported planetary face: {self.planetary_face!r}")
+        if self.edition_page not in {379, 380, 381, 382, 383}:
+            raise ValueError("edition_page must be within Gundel's Harley catalog")
+        if self.source_id != HERMETIC_CATALOG_SOURCE_ID:
+            raise ValueError("source_id must identify the reconstruction source")
+
+
+HERMETIC_DECAN_CATALOG: tuple[HermeticDecanCatalogEntry, ...] = (
+    HermeticDecanCatalogEntry(0, "Aries", 1, AULATHAMAS, "Mars", 379),
+    HermeticDecanCatalogEntry(1, "Aries", 2, SABAOTH, "Sun", 379),
+    HermeticDecanCatalogEntry(2, "Aries", 3, DISORNAFAIS, "Venus", 379),
+    HermeticDecanCatalogEntry(3, "Taurus", 1, JAUS, "Mercury", 379),
+    HermeticDecanCatalogEntry(4, "Taurus", 2, SARNATAS, "Moon", 380),
+    HermeticDecanCatalogEntry(5, "Taurus", 3, ERCHUMBRIS, "Saturn", 380),
+    HermeticDecanCatalogEntry(6, "Gemini", 1, MANUCHOS, "Jupiter", 380),
+    HermeticDecanCatalogEntry(7, "Gemini", 2, SAMUROIS, "Mars", 380),
+    HermeticDecanCatalogEntry(8, "Gemini", 3, ASUEL, "Sun", 380),
+    HermeticDecanCatalogEntry(9, "Cancer", 1, SENEPTOIS, "Venus", 380),
+    HermeticDecanCatalogEntry(10, "Cancer", 2, SOMATHALMAIS, "Mercury", 380),
+    HermeticDecanCatalogEntry(11, "Cancer", 3, CHARMINE, "Moon", 380),
+    HermeticDecanCatalogEntry(12, "Leo", 1, ZALOIAS, "Saturn", 381),
+    HermeticDecanCatalogEntry(13, "Leo", 2, ZACHOR, "Jupiter", 381),
+    HermeticDecanCatalogEntry(14, "Leo", 3, FRICH, "Mars", 381),
+    HermeticDecanCatalogEntry(15, "Virgo", 1, ZAMENDRES, "Sun", 381),
+    HermeticDecanCatalogEntry(16, "Virgo", 2, MAGOIS, "Venus", 381),
+    HermeticDecanCatalogEntry(17, "Virgo", 3, MICHULAIS, "Mercury", 381),
+    HermeticDecanCatalogEntry(18, "Libra", 1, PSINEUS, "Moon", 381),
+    HermeticDecanCatalogEntry(19, "Libra", 2, CHUSTHISIS, "Saturn", 381),
+    HermeticDecanCatalogEntry(20, "Libra", 3, PSANNATOIS, "Jupiter", 381),
+    HermeticDecanCatalogEntry(21, "Scorpio", 1, NEBENOS, "Mars", 382),
+    HermeticDecanCatalogEntry(22, "Scorpio", 2, CHURMANTIS, "Sun", 382),
+    HermeticDecanCatalogEntry(23, "Scorpio", 3, PSERMES, "Venus", 382),
+    HermeticDecanCatalogEntry(24, "Sagittarius", 1, CLINOTHOIS, "Mercury", 382),
+    HermeticDecanCatalogEntry(25, "Sagittarius", 2, THURSOIS, "Moon", 382),
+    HermeticDecanCatalogEntry(26, "Sagittarius", 3, RENETHIS, "Saturn", 382),
+    HermeticDecanCatalogEntry(27, "Capricorn", 1, RENPSOIS, "Jupiter", 382),
+    HermeticDecanCatalogEntry(28, "Capricorn", 2, MANETHOIS, "Mars", 382),
+    HermeticDecanCatalogEntry(29, "Capricorn", 3, MARXOIS, "Sun", 382),
+    HermeticDecanCatalogEntry(30, "Aquarius", 1, ULARIS, "Venus", 382),
+    HermeticDecanCatalogEntry(31, "Aquarius", 2, LUXOIS, "Mercury", 382),
+    HermeticDecanCatalogEntry(32, "Aquarius", 3, CRAUXES, "Moon", 383),
+    HermeticDecanCatalogEntry(33, "Pisces", 1, FAMBRAIS, "Saturn", 383),
+    HermeticDecanCatalogEntry(34, "Pisces", 2, FLUGMOIS_MARS, "Jupiter", 383),
+    HermeticDecanCatalogEntry(35, "Pisces", 3, PIATHRIS, "Mars", 383),
+)
+
+_CATALOG_BY_NAME = {entry.name: entry for entry in HERMETIC_DECAN_CATALOG}
 DECAN_NAMES: dict[str, str] = {
-    HORAIOS:       "Horaios",
-    TOMALOS:       "Tomalos",
-    ATHAFRA:       "Athafra",
-    SENACHER:      "Senacher",
-    THESOGAR:      "Thesogar",
-    TEPIS:         "Tepis",
-    SOTHIS:        "Sothis",
-    TPAU:          "Tpau",
-    APHRUIMIS:     "Aphruimis",
-    TMOUM:         "Tmoum",
-    TATHEMIS:      "Tathemis",
-    SERK:          "Serk",
-    CHONTARE:      "Chontare",
-    PHAKARE:       "Phakare",
-    TPA:           "Tpa",
-    THOSOLK:       "Thosolk",
-    SOTHIS_II:     "Sothis II",
-    TPAU_II:       "Tpau II",
-    CHONTACHRE:    "Chontachre",
-    APHRUIMIS_II:  "Aphruimis II",
-    TMOUM_II:      "Tmoum II",
-    TATHEMIS_II:   "Tathemis II",
-    SERK_II:       "Serk II",
-    CHONTARE_II:   "Chontare II",
-    PHAKARE_II:    "Phakare II",
-    TPA_II:        "Tpa II",
-    THOSOLK_II:    "Thosolk II",
-    HORAIOS_II:    "Horaios II",
-    TOMALOS_II:    "Tomalos II",
-    ATHAFRA_II:    "Athafra II",
-    SENACHER_II:   "Senacher II",
-    THESOGAR_II:   "Thesogar II",
-    TEPIS_II:      "Tepis II",
-    SOTHIS_III:    "Sothis III",
-    TPAU_III:      "Tpau III",
-    APHRUIMIS_III: "Aphruimis III",
+    entry.name: entry.name for entry in HERMETIC_DECAN_CATALOG
+}
+DECAN_PLANETARY_FACES: dict[str, str] = {
+    entry.name: entry.planetary_face for entry in HERMETIC_DECAN_CATALOG
+}
+DECAN_SOURCE_PAGES: dict[str, int] = {
+    entry.name: entry.edition_page for entry in HERMETIC_DECAN_CATALOG
 }
 
-# ---------------------------------------------------------------------------
-# DECAN_RULING_STARS: decan name → ruling star name (36 entries)
-#
-# Provenance disputed: these assignments require a source ledger before
-# readmission. Their internal use as catalog labels does not establish a
-# historical rulership doctrine or positional relation.
-# ---------------------------------------------------------------------------
-
-DECAN_RULING_STARS: dict[str, str] = {
-    HORAIOS:       "Hamal",
-    TOMALOS:       "Sheratan",
-    ATHAFRA:       "Mesarthim",
-    SENACHER:      "Alcyone",
-    THESOGAR:      "Aldebaran",
-    TEPIS:         "Rigel",
-    SOTHIS:        "Sirius",
-    TPAU:          "Castor",
-    APHRUIMIS:     "Pollux",
-    TMOUM:         "Procyon",
-    TATHEMIS:      "Asellus Australis",
-    SERK:          "Acubens",
-    CHONTARE:      "Regulus",
-    PHAKARE:       "Zosma",
-    TPA:           "Denebola",
-    THOSOLK:       "Vindemiatrix",
-    SOTHIS_II:     "Spica",
-    TPAU_II:       "Arcturus",
-    CHONTACHRE:    "Zubenelgenubi",
-    APHRUIMIS_II:  "Zubeneschamali",
-    TMOUM_II:      "Unukalhai",
-    TATHEMIS_II:   "Antares",
-    SERK_II:       "Graffias",
-    CHONTARE_II:   "Lesath",
-    PHAKARE_II:    "Vega",
-    TPA_II:        "Nunki",
-    THOSOLK_II:    "Altair",
-    HORAIOS_II:    "Deneb Algedi",
-    TOMALOS_II:    "Sadalsuud",
-    ATHAFRA_II:    "Sadalmelik",
-    SENACHER_II:   "Fomalhaut",
-    THESOGAR_II:   "Skat",
-    TEPIS_II:      "Markab",
-    SOTHIS_III:    "Algenib",
-    TPAU_III:      "Mirach",
-    APHRUIMIS_III: "Alpherg",
-}
-
-# ---------------------------------------------------------------------------
-# _DECAN_ORDER: 36 decan names in tropical ecliptic order (index 0 = 0°)
-# ---------------------------------------------------------------------------
+# Compatibility marker only. The identified edition supplies no fixed-star
+# rulership table, so valid assignments are intentionally empty.
+DECAN_RULING_STARS: dict[str, str] = {}
 
 _DECAN_ORDER: list[str] = [
-    HORAIOS,      TOMALOS,      ATHAFRA,      SENACHER,    THESOGAR,    TEPIS,
-    SOTHIS,       TPAU,         APHRUIMIS,    TMOUM,       TATHEMIS,    SERK,
-    CHONTARE,     PHAKARE,      TPA,          THOSOLK,     SOTHIS_II,   TPAU_II,
-    CHONTACHRE,   APHRUIMIS_II, TMOUM_II,     TATHEMIS_II, SERK_II,     CHONTARE_II,
-    PHAKARE_II,   TPA_II,       THOSOLK_II,   HORAIOS_II,  TOMALOS_II,  ATHAFRA_II,
-    SENACHER_II,  THESOGAR_II,  TEPIS_II,     SOTHIS_III,  TPAU_III,    APHRUIMIS_III,
+    entry.name for entry in HERMETIC_DECAN_CATALOG
 ]
 
 
@@ -240,18 +234,40 @@ def list_decans() -> list[str]:
     return list(_DECAN_ORDER)
 
 
+def list_decan_catalog() -> list[HermeticDecanCatalogEntry]:
+    """Return the source-reconstructed Harley catalog in zodiacal order."""
+
+    return list(HERMETIC_DECAN_CATALOG)
+
+
+def decan_catalog_entry(name: str) -> HermeticDecanCatalogEntry:
+    """Return the source record for one decan name."""
+
+    return _CATALOG_BY_NAME[name]
+
+
+def decan_planetary_face(name: str) -> str:
+    """Return the planetary face printed for one decan in Gundel's edition."""
+
+    return DECAN_PLANETARY_FACES[name]
+
+
 def available_decans() -> list[str]:
-    """Return decan names whose ruling star is present in the fixed star catalog."""
-    catalog = set(list_stars())
-    return [d for d in _DECAN_ORDER if DECAN_RULING_STARS[d] in catalog]
+    """Return decans with source-admitted fixed-star rulers.
+
+    Gundel's Harley catalog supplies no such table, so this compatibility
+    query fails closed with an empty result.
+    """
+
+    return []
 
 
 def decan_for_longitude(lon: float) -> str:
     """Map a tropical ecliptic longitude to its Hermetic decan name.
 
-    Uses the tropical frame (equinox-fixed): 0° = vernal equinox, three
-    10° decans per sign.  This is the frame of the Liber Hermetis and the
-    broader Hellenistic-Hermetic tradition.
+    Applies Moira's quarantined equal 10° tropical lookup geometry. The
+    source reconstruction establishes name order within the twelve signs;
+    it does not by itself admit this modern lookup frame as public doctrine.
 
     Normalizes the longitude modulo 360 before computing the decan.
     Raises ValueError for NaN or infinite inputs.
@@ -272,24 +288,29 @@ def decan_index(name: str) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Ruling star access functions
+# Fixed-star compatibility functions
 # ---------------------------------------------------------------------------
 
 def decan_ruling_star(name: str) -> str:
-    """Return the ruling star name for a decan.
+    """Fail closed because the identified edition supplies no star ruler."""
 
-    Raises KeyError for unknown decan names.
-    """
-    return DECAN_RULING_STARS[name]
+    if name not in _CATALOG_BY_NAME:
+        raise KeyError(name)
+    raise LookupError(
+        "The Gundel/Harley 3731 catalog does not provide fixed-star rulerships"
+    )
 
 
-def decan_star_at(name: str, jd: float) -> StarPosition:
-    """Return the StarPosition of a decan's ruling star at the given JD.
+def decan_star_at(name: str, jd: float) -> None:
+    """Fail closed because no source-admitted decan star can be positioned."""
 
-    Delegates to star_at with the decan's ruling star name.
-    Propagates KeyError if the ruling star is absent from the catalog.
-    """
-    return star_at(DECAN_RULING_STARS[name], jd)
+    if name not in _CATALOG_BY_NAME:
+        raise KeyError(name)
+    if not math.isfinite(jd):
+        raise ValueError("jd must be finite")
+    raise LookupError(
+        "The Gundel/Harley 3731 catalog does not provide fixed-star rulerships"
+    )
 
 
 def _refine_solar_event_near(
@@ -377,9 +398,9 @@ def decan_at(
 @dataclass(slots=True, frozen=True)
 class DecanHour:
     """
-    RITE: The Hour Vessel — a single decan night hour and its ruling star.
+    RITE: The Hour Vessel — a single decan night hour and its planetary face.
 
-    THEOREM: Holds the hour number, decan name, ruling star name, and start/end
+    THEOREM: Holds the hour number, decan name, planetary face, and start/end
     Julian Days for one of the 12 decan night hours.
 
     RITE OF PURPOSE:
@@ -390,7 +411,7 @@ class DecanHour:
 
     LAW OF OPERATION:
         Responsibilities:
-            - Store hour number (1-12), decan name, ruling star name, and
+            - Store hour number (1-12), decan name, planetary face, and
               the JD boundaries of the hour.
         Non-responsibilities:
             - Does not compute hour boundaries (delegated to ``decan_hours``).
@@ -412,12 +433,12 @@ class DecanHour:
         "api": {
             "public_methods": [],
             "public_attributes": [
-                "hour_number", "decan", "ruling_star", "jd_start", "jd_end"
+                "hour_number", "decan", "planetary_face", "jd_start", "jd_end"
             ]
         },
         "state": {
             "mutable": false,
-            "fields": ["hour_number", "decan", "ruling_star", "jd_start", "jd_end"]
+            "fields": ["hour_number", "decan", "planetary_face", "jd_start", "jd_end"]
         },
         "effects": {
             "io": [],
@@ -440,23 +461,24 @@ class DecanHour:
     }
     [/MACHINE_CONTRACT]
     """
-    hour_number: int    # 1–12
-    decan:       str
-    ruling_star: str
-    jd_start:    float
-    jd_end:      float
+    hour_number:    int    # 1–12
+    decan:          str
+    planetary_face: str
+    jd_start:       float
+    jd_end:         float
 
     def __post_init__(self) -> None:
         if not (1 <= self.hour_number <= 12):
             raise ValueError(
                 f"DecanHour.hour_number must be in [1, 12], got {self.hour_number}"
             )
-        if self.decan not in DECAN_RULING_STARS:
+        if self.decan not in DECAN_PLANETARY_FACES:
             raise ValueError(f"DecanHour.decan must be a valid decan name, got {self.decan!r}")
-        if self.ruling_star != DECAN_RULING_STARS[self.decan]:
+        if self.planetary_face != DECAN_PLANETARY_FACES[self.decan]:
             raise ValueError(
-                "DecanHour.ruling_star must match the decan's ruling star: "
-                f"{self.decan!r} -> {DECAN_RULING_STARS[self.decan]!r}, got {self.ruling_star!r}"
+                "DecanHour.planetary_face must match the catalog face: "
+                f"{self.decan!r} -> {DECAN_PLANETARY_FACES[self.decan]!r}, "
+                f"got {self.planetary_face!r}"
             )
         if not math.isfinite(self.jd_start) or not math.isfinite(self.jd_end):
             raise ValueError("DecanHour.jd_start and .jd_end must be finite")
@@ -679,7 +701,7 @@ def decan_hours(
         hours.append(DecanHour(
             hour_number=i + 1,
             decan=decan_name,
-            ruling_star=DECAN_RULING_STARS[decan_name],
+            planetary_face=DECAN_PLANETARY_FACES[decan_name],
             jd_start=jd_start,
             jd_end=jd_end,
         ))

@@ -18,6 +18,12 @@
 > instant. Annual profection schedule ages are civil-anniversary ages.
 > Zodiacal Releasing profile requests must ask for a level that was generated.
 
+> **Phase-2 ZR source lock — 2026-07-25.** Valens IV.4 now owns the
+> Spirit/Fortune same-sign start shift and the exact 211-month
+> Loosing-of-the-Bond boundary. These rules are covered by a source-locked
+> fixture; the inconsistent intervening numerical table is not treated as an
+> oracle against the source prose.
+
 ---
 
 ## Part I — Architecture Standard
@@ -153,11 +159,25 @@ the module. It assigns years-per-sign based on planetary minor years under the
 Hellenistic system. This mapping is the foundational arithmetic of the technique and
 is not configurable at call time.
 
-**Loosing of the Bond:** After a complete twelve-sign subcycle that began in one
-of the long-period signs, the admitted generator transfers the next period to the
-opposite sign and marks that receiving period as a Loosing of the Bond.
+**Valens IV.4 start shift:** When Spirit and Fortune occupy the same sign and
+releasing is requested from Spirit, bodily matters remain with that sign while
+the activity sequence begins from the following sign. The engine therefore
+advances the starting sign by one only for this explicitly supplied
+Spirit/Fortune same-sign case.
+
+**Loosing of the Bond:** Valens' complete circuit is 17 years 7 months, or 211
+symbolic months. After a complete twelve-sign subcycle that began in a sign
+whose allotment exceeds that circuit, the admitted generator transfers the
+next period to the opposite sign and marks that receiving period as a Loosing
+of the Bond.
 `ReleasingPeriod.is_loosing_of_bond` preserves this generative event; it is not
 inferred from an upper/lower-level sign match after the fact.
+
+The source-locked Gemini fixture is exact: inside a 20-year Gemini major, Level
+2 reaches its 211-month circuit boundary, transfers to Sagittarius for 12
+months, and then uses the final 17 months in Capricorn. The prose and
+explanatory note govern this fixture; the internally inconsistent numerical
+table on the intervening annotated-PDF page is not used.
 
 **Angularity from Fortune:** Each sign's relationship to the natal Lot of Fortune
 determines its angularity class. Angular signs (1, 4, 7, 10 from Fortune) carry the
@@ -189,6 +209,9 @@ apparently valid aggregate.
 **Full-circuit boundary:** The twelve `MINOR_YEARS` values sum to 211 symbolic
 years. `current_releasing()` accepts instants inside that half-open interval
 and rejects an instant exactly at, or later than, its endpoint.
+
+Source receipt: `tests/fixtures/hellenistic_zr_valens_iv4.json`, backed by
+Valens, *Anthologies* IV.4 (Riley annotated PDF pp. 329, 331, and 333).
 
 ---
 
@@ -655,6 +678,8 @@ python -m pytest tests/unit/test_timelords.py -v
 
 All tests in `test_timelords.py` must pass. The test suite validates:
 - `firdaria()`, `decennials()`, and `zodiacal_releasing()` correctness
+- Valens IV.4 same-sign Spirit/Fortune start shift and the exact 211-month
+  Gemini Loosing-of-the-Bond fixture
 - `FirdarMajorGroup` grouping and `group_firdaria()` fidelity
 - `DecennialMajorGroup` and `DecennialPeriodGroup` grouping and `group_decennials()` fidelity
 - `ZRPeriodGroup` nesting and `group_releasing()` fidelity
@@ -688,6 +713,8 @@ Any validation suite for this subsystem must demonstrate the following:
 - A `DecennialPeriod` carries one consistent `time_basis`,
   `calendar_projection_basis`, `sequence_origin_jd`, and distribution-day
   interval without forcing consumers to infer them from JD arithmetic.
+- The Valens IV.4 fixture preserves its source receipt separately from the
+  expected same-sign start shift and exact Loosing-of-the-Bond boundaries.
 
 **Relational integrity:**
 - All sub-periods in a `FirdarMajorGroup` have `major_planet` matching the group's

@@ -1,0 +1,27 @@
+{
+  "authority": {
+    "work": "Vettius Valens, Anthologies",
+    "edition": "Mark T. Riley translation, reformatted annotated PDF",
+    "section": "Book IV, chapter 4",
+    "source_pages": [329, 331, 333],
+    "semantics": "symbolic 360-day years and 30-day months",
+    "note": "The prose and explanatory note govern the 211-month circuit and opposite-sign transfer; the inconsistent numerical table on annotated PDF page 332 is not used."
+  },
+  "same_sign_spirit_fortune": {
+    "lot_longitude": 10.0,
+    "fortune_longitude": 15.0,
+    "lot_name": "Spirit",
+    "expected_first_sign": "Taurus"
+  },
+  "gemini_loosing_of_bond": {
+    "lot_longitude": 65.0,
+    "lot_name": "Fortune",
+    "natal_jd": 2451545.0,
+    "level": 2,
+    "complete_circuit_months": 211,
+    "receiving_sign": "Sagittarius",
+    "receiving_months": 12,
+    "final_sign": "Capricorn",
+    "final_clamped_months": 17
+  }
+}

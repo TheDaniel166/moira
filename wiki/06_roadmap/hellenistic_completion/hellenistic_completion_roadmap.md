@@ -1,11 +1,16 @@
 # Hellenistic Astrology Completion Roadmap
 
+> **Current roadmap.** Active work now follows the six engine gates in
+> [HELLENISTIC_ENGINE_GATES_2026-07.md](HELLENISTIC_ENGINE_GATES_2026-07.md).
+> Its Phase 2 is the doctrine-decision gate and is not the historical
+> “Bounds Expansion and Halb” phase retained below.
+
 > **Phase-1 correction (2026-07-25).** The roadmap body remains historical.
 > Whole-sign direction and overcoming are now implemented and tested. The
-> Decennials public computation boundary ends at L2, and the disputed Hermetic
-> decan catalog is quarantined from package-root, facade, and registered REST
-> surfaces. See the current backend standards rather than the old status tables
-> below.
+> Decennials public computation boundary ends at L2. The source-reconstructed
+> Gundel/Harley Hermetic name-and-face catalog remains quarantined from
+> package-root, facade, and registered REST surfaces. See the current backend
+> standards rather than the old status tables below.
 
 > **Phase-2 doctrine correction (2026-07-25).** The former
 > “exact-two-of-three” Halb plan was rejected after a source pass.
@@ -13,7 +18,12 @@
 > rule; Hayz adds the planet's own sign gender. Mars is feminine and Mercury is
 > neutral. Missing Sun or Mercury phase truth is no longer fabricated. Annual
 > profection schedules use completed civil anniversaries, and Decennials
-> transport preserves its dual time-basis receipt.
+> transport preserves its dual time-basis receipt. Valens IV.4 now source-locks
+> the Spirit/Fortune same-sign start shift and exact 211-month
+> Loosing-of-the-Bond behavior. The conflicted lots have source-specific names
+> and explicit projector/arc policies. The Harley MS 3731 Hermetic names and
+> planetary faces are reconstructed from Gundel's identified edition, while
+> their unsupported fixed-star assignments fail closed.
 
 **Note (2026-05-29 code verification):** A documentation + code verification pass against this roadmap (cross-referenced with [WESTERN_HELLENISTIC_GAP_TRACKER.md](WESTERN_HELLENISTIC_GAP_TRACKER.md) and [FEATURE_AUDIT_2026.md](../../07_audit/FEATURE_AUDIT_2026.md)) found that many items listed as "Partial" or "Absent" below are now implemented in the live codebase (e.g., first-class triplicity/bound/face in EssentialDignityKind, PLANETARY_JOYS + is_in_joy, PTOLEMAIC/CHALDEAN bounds tables + doctrine support, is_in_halb + SCORE_HALB, oriental_occidental(), is_besieged(), AspectDomain.WHOLE_SIGN + find_whole_sign_aspects()). The roadmap text below is retained for historical reference but is partially outdated.
 
@@ -59,7 +69,7 @@ Companion documents:
 | Firdaria (diurnal, nocturnal, Bonatti) | `moira/timelords.py` |
 | Antiscia + contra-antiscia | `moira/antiscia.py` |
 | Aspects (Ptolemaic five, applying/separating, patterns) | `moira/aspects.py` |
-| Fixed stars (Behenian, Royal, parans, heliacal, Hermetic decans) | multiple modules |
+| Fixed stars (Behenian, Royal, parans, heliacal) | multiple modules |
 | Solar condition (cazimi, combust, under the beams) | `moira/dignities.py` |
 | Mutual reception (domicile + exaltation) | `moira/dignities.py` |
 

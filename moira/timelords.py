@@ -1675,7 +1675,15 @@ _ZR_LEVEL_DAYS: dict[int, float] = {
 }
 _ZR_MAX_LEVEL = 4
 _ZR_CAP_DAYS = _TOTAL_MINOR_YEARS * _ZR_YEAR_DAYS
-_ZR_LONG_SIGNS = {sign for sign, years in MINOR_YEARS.items() if years > 17}
+# Valens IV.4 defines the complete circuit as 17 years 7 months, or
+# 211 symbolic months. A starting sign whose allotment exceeds that circuit
+# transfers the remaining time to its opposite after the circuit completes.
+_ZR_COMPLETE_CIRCUIT_MONTHS = 211
+_ZR_LONG_SIGNS = {
+    sign
+    for sign, years in MINOR_YEARS.items()
+    if years * 12 > _ZR_COMPLETE_CIRCUIT_MONTHS
+}
 
 
 # ---------------------------------------------------------------------------
