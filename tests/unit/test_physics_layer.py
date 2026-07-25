@@ -21,7 +21,7 @@ from moira.sidereal import (
     sidereal_to_tropical,
     tropical_to_sidereal,
 )
-from moira.julian import centuries_from_j2000
+from moira.julian import centuries_from_j2000, tt_to_ut
 from moira.precession import general_precession_in_longitude
 from moira.nodes import mean_node
 
@@ -296,19 +296,19 @@ def test_conversion_functions_forward_mode(jd_j2000):
 
 
 # ---------------------------------------------------------------------------
-# 8.12 — mean_node is unchanged by the refactor
+# 8.12 — mean_node raw IERS argument at J2000
 # Requirements: 2.5
 # ---------------------------------------------------------------------------
 
 def test_mean_node_j2000_reference(jd_j2000):
     """
-    mean_node(2451545.0).longitude must be within 0.001° of the Meeus formula
-    reference value (~125.044°).
+    The explicit mean-equinox mode must reproduce the IERS 2003 Ω argument
+    at J2000.0 rather than silently depending on the chart's true frame.
     """
-    node = mean_node(jd_j2000)
+    node = mean_node(tt_to_ut(jd_j2000), nutation=False)
 
-    assert abs(node.longitude - 125.044) < 0.001, (
-        f"mean_node at J2000.0 = {node.longitude:.6f}°, expected ≈ 125.044°"
+    assert abs(node.longitude - 125.04455501) < 1.0e-8, (
+        f"mean_node at J2000.0 = {node.longitude:.9f}°, expected 125.04455501°"
     )
 
 

@@ -41,7 +41,8 @@ from .julian import centuries_from_j2000, ut_to_tt
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .coordinates import vec_sub, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
 from .corrections import apply_frame_bias
-from .obliquity import mean_obliquity, nutation
+from .nutation_2000a import _fundamental_args
+from .obliquity import mean_obliquity, nutation as _nutation
 from .spk_reader import get_active_reader, KernelReader, SpkReader, MissingKernelError
 
 
@@ -120,23 +121,35 @@ class NodeData:
 
 
 # ---------------------------------------------------------------------------
-# Mean Node — Meeus analytical formula (Ch.25)
+# Mean Node — IERS 2003 lunar fundamental argument
 # ---------------------------------------------------------------------------
 
-def mean_node(jd_ut: float) -> NodeData:
+def mean_node(jd_ut: float, *, nutation: bool = True) -> NodeData:
     """
-    Governs computation of the mean ascending node of the Moon using the
-    Meeus analytical formula (Astronomical Algorithms, Ch. 25).
+    Compute the mean ascending node of the Moon from the IERS 2003
+    fundamental argument Ω.
 
-    Converts UT to TT internally; no external kernel is required. The result
-    is accurate to approximately 10 arcminutes over several centuries.
+    ``mean`` describes the averaged lunar orbital solution, independently of
+    the output frame. By default, nutation in longitude is applied so the
+    result is expressed in the true ecliptic and equinox of date, matching
+    Moira's default planetary and chart longitudes. Set ``nutation=False`` to
+    obtain the raw IERS mean-ecliptic and mean-equinox-of-date longitude.
+
+    The IERS expression is already the governing lunar-node argument in
+    Moira's IAU 2000A nutation implementation. TT is used in place of TDB as
+    permitted by IERS Conventions (2003), section 5.7.2.
 
     Args:
         jd_ut: Julian Day in Universal Time (UT1).
+        nutation: If ``True`` (default), add IAU 2000A nutation in longitude
+            to express the mean orbital node in the true equinox of date.
+            If ``False``, return the raw mean-equinox-of-date argument.
 
     Returns:
         NodeData vessel with name="Mean Node", tropical longitude in degrees
-        [0, 360), and speed ≈ −0.05295°/day (retrograde).
+        [0, 360), and the mean IERS polynomial rate in degrees/day
+        (retrograde). The speed excludes the short-period derivative of
+        nutation even when ``nutation=True``.
 
     Raises:
         No exceptions under normal operation; propagates any exception raised
@@ -145,18 +158,28 @@ def mean_node(jd_ut: float) -> NodeData:
     Side effects:
         None.
     """
-    jd_tt    = ut_to_tt(jd_ut)
+    jd_tt = ut_to_tt(jd_ut)
     T = centuries_from_j2000(jd_tt)
 
-    lon = (125.04452
-           - 1934.136261 * T
-           + 0.0020708   * T**2
-           + T**3 / 450000.0) % 360.0
+    # IERS Conventions (2003), Eq. 5.43 / SOFA-ERFA faom03. Reuse Moira's
+    # admitted IAU 2000A fundamental-argument implementation rather than
+    # maintaining a second polynomial with independent coefficients.
+    lon = normalize_degrees(_fundamental_args(T)[4] * RAD2DEG)
+    if nutation:
+        dpsi_deg, _ = _nutation(jd_tt)
+        lon = normalize_degrees(lon + dpsi_deg)
 
-    # Speed: derivative ≈ −1934.136261 / 36525 ≈ −0.05295°/day
-    speed = -1934.136261 / 36525.0
+    # Derivative of the IERS Ω polynomial. This is the mean orbital rate; the
+    # short-period derivative of Δψ is intentionally not folded into NodeData.
+    omega_rate_arcsec_per_century = (
+        -6962890.5431
+        + 2.0 * 7.4722 * T
+        + 3.0 * 0.007702 * T**2
+        - 4.0 * 0.00005939 * T**3
+    )
+    speed = omega_rate_arcsec_per_century / (3600.0 * 36525.0)
 
-    return NodeData(name="Mean Node", longitude=lon % 360.0, speed=speed)
+    return NodeData(name="Mean Node", longitude=lon, speed=speed)
 
 
 # ---------------------------------------------------------------------------
@@ -216,7 +239,7 @@ def true_node(
 
     if jd_tt is None:
         jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
-    dpsi_deg, deps_deg = nutation(jd_tt)
+    dpsi_deg, deps_deg = _nutation(jd_tt)
     obliquity = mean_obliquity(jd_tt) + deps_deg
     eps = obliquity * DEG2RAD
 
@@ -266,18 +289,24 @@ def true_node(
 # Mean Black Moon Lilith (Mean Apogee)
 # ---------------------------------------------------------------------------
 
-def mean_lilith(jd_ut: float) -> NodeData:
+def mean_lilith(jd_ut: float, *, nutation: bool = True) -> NodeData:
     """
     Governs computation of Mean Black Moon Lilith — the mean longitude of the
-    Moon's apogee — using the Meeus analytical formula (Ch. 25, perigee
-    formula §22.3 offset by 180°).
+    Moon's apogee — using the Meeus Chapter 47 mean lunar-perigee argument
+    offset by 180°.
 
-    Converts UT to TT internally; no external kernel is required. The result
-    tracks the smoothed apogee and is accurate to within a few degrees
-    compared to the osculating (true) apogee.
+    Converts UT to TT internally; no external kernel is required. ``mean``
+    describes the averaged apogee solution, independently of the output
+    frame. By default, nutation in longitude is applied so the result is
+    expressed in the true ecliptic and equinox of date, matching Moira's
+    default planetary and chart longitudes. Set ``nutation=False`` for the
+    raw mean-ecliptic and mean-equinox-of-date longitude.
 
     Args:
         jd_ut: Julian Day in Universal Time (UT1).
+        nutation: If ``True`` (default), add IAU 2000A nutation in longitude
+            to express the mean apogee in the true equinox of date. If
+            ``False``, return the raw mean-equinox-of-date longitude.
 
     Returns:
         NodeData vessel with name="Lilith", tropical longitude in degrees
@@ -302,6 +331,9 @@ def mean_lilith(jd_ut: float) -> NodeData:
 
     # Apogee = perigee + 180°
     apogee = (perigee + 180.0) % 360.0
+    if nutation:
+        dpsi_deg, _ = _nutation(jd_tt)
+        apogee = normalize_degrees(apogee + dpsi_deg)
 
     # Speed ≈ derivative of perigee formula / Julian century * century/day
     speed = 4069.0137287 / 36525.0   # degrees/day
@@ -362,7 +394,7 @@ def true_lilith(
     jd_tt    = _ut1_to_ephemeris_tt(jd_ut, reader)
     
     # Nutation and Obliquity for tropical conversion
-    dpsi_deg, deps_deg = nutation(jd_tt)
+    dpsi_deg, deps_deg = _nutation(jd_tt)
     obliquity = mean_obliquity(jd_tt) + deps_deg
     eps = obliquity * DEG2RAD
 
@@ -468,7 +500,7 @@ def next_moon_node_crossing(
         earth_bary = reader.position(3, 399, jd_tt)
         moon_geo = vec_sub(moon_bary, earth_bary)
 
-        deps_deg = nutation(jd_tt)[1]
+        deps_deg = _nutation(jd_tt)[1]
         P = precession_matrix_equatorial(jd_tt)
         N = nutation_matrix_equatorial(jd_tt)
         moon_true_eq = mat_vec_mul(N, mat_vec_mul(P, moon_geo))

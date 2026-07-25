@@ -115,6 +115,8 @@ def serialize_chart_with_reduction(
                 name: ChartNodeReductionSummaryResponse(
                     source_vessel=summary.source_vessel,
                     source_surface=summary.source_surface,
+                    nutation=summary.nutation,
+                    frame=summary.frame,
                     stage_sequence=summary.stage_sequence,
                 )
                 for name, summary in reduction.node_reductions.items()

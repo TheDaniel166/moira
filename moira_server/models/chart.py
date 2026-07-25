@@ -72,6 +72,8 @@ class ChartPlanetReductionSummaryResponse(_StrictModel):
 class ChartNodeReductionSummaryResponse(_StrictModel):
     source_vessel: str
     source_surface: str
+    nutation: bool
+    frame: str
     stage_sequence: list[str]
 
 

@@ -780,8 +780,8 @@ chart_dict = all_planets_at(jd, reader=reader)
 | Function | Returns | Description |
 |---|---|---|
 | `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) lunar node |
-| `mean_node(jd_ut)` | `NodeData` | Mean lunar node |
-| `mean_lilith(jd_ut)` | `NodeData` | Mean Black Moon Lilith |
+| `mean_node(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar node; true equinox of date by default, raw mean equinox with `nutation=False` |
+| `mean_lilith(jd_ut, *, nutation=True)` | `NodeData` | Mean Black Moon Lilith; true equinox of date by default, raw mean equinox with `nutation=False` |
 
 ### Nodes & apsides bundle
 
@@ -4449,9 +4449,9 @@ from moira.sky.bodies import (
 | `all_ssb_positions_at(jd_ut, reader=None)` | `dict[str, SSBPosition]` | All `SSB_BODIES` from SSB |
 | `planetocentric_at(observer_body, target_body, jd_ut)` | `PlanetocentricData` | Geometric target position measured from the center of observer body |
 | `all_planetocentric_at(observer_body, jd_ut)` | `dict[str, PlanetocentricData]` | All targets from observer body |
-| `mean_node(jd_ut)` | `NodeData` | Mean lunar ascending node |
+| `mean_node(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar ascending node; true equinox of date by default |
 | `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) ascending node |
-| `mean_lilith(jd_ut)` | `NodeData` | Mean Black Moon Lilith (mean apogee) |
+| `mean_lilith(jd_ut, *, nutation=True)` | `NodeData` | Mean Black Moon Lilith (mean apogee); true equinox of date by default |
 | `true_lilith(jd_ut)` | `NodeData` | True Lilith (osculating apogee) |
 | `next_moon_node_crossing(jd_start, reader=None, ascending=True)` | `float` | Next Moon ecliptic crossing (JD UT) |
 | `nodes_and_apsides_at(jd_ut)` | `NodesAndApsides` | Combined node/apsides vessel (mean/true node, Lilith, perigee, apogee) |

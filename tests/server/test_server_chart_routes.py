@@ -106,6 +106,19 @@ def test_chart_reduction_route_exposes_pipeline_truth(
     assert body["reduction"]["planet_reductions"]["Moon"]["topocentric_applied"] is True
     assert body["reduction"]["planet_reductions"]["Sun"]["center"] == "geocentric"
     assert body["reduction"]["node_reductions"]["True Node"]["source_surface"] == "moira.true_node"
+    assert body["reduction"]["node_reductions"]["Mean Node"]["nutation"] is True
+    assert (
+        body["reduction"]["node_reductions"]["Mean Node"]["frame"]
+        == "true_ecliptic_and_equinox_of_date"
+    )
+    assert (
+        "iers_2003_mean_node_solution"
+        in body["reduction"]["node_reductions"]["Mean Node"]["stage_sequence"]
+    )
+    assert (
+        "iau_2000a_nutation_in_longitude"
+        in body["reduction"]["node_reductions"]["Lilith"]["stage_sequence"]
+    )
 
 
 @pytest.mark.requires_ephemeris

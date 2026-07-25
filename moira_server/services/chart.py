@@ -30,7 +30,9 @@ _CHART_STAGE_SEQUENCE = [
 _MEAN_NODE_STAGE_SEQUENCE = [
     "datetime_to_jd",
     "ut_to_tt",
-    "analytical_node_solution",
+    "iers_2003_mean_node_solution",
+    "iau_2000a_nutation_in_longitude",
+    "true_equinox_of_date_longitude",
     "node_vessel_materialization",
 ]
 _TRUE_NODE_STAGE_SEQUENCE = [
@@ -45,6 +47,8 @@ _MEAN_LILITH_STAGE_SEQUENCE = [
     "datetime_to_jd",
     "ut_to_tt",
     "analytical_apogee_solution",
+    "iau_2000a_nutation_in_longitude",
+    "true_equinox_of_date_longitude",
     "lilith_vessel_materialization",
 ]
 _TRUE_LILITH_STAGE_SEQUENCE = [
@@ -75,6 +79,8 @@ class ChartPlanetReductionSummary:
 class ChartNodeReductionSummary:
     source_vessel: str
     source_surface: str
+    nutation: bool
+    frame: str
     stage_sequence: list[str]
 
 
@@ -109,6 +115,8 @@ def _node_reduction_summary(name: str) -> ChartNodeReductionSummary:
     return ChartNodeReductionSummary(
         source_vessel="NodeData",
         source_surface=source_surface,
+        nutation=True,
+        frame="true_ecliptic_and_equinox_of_date",
         stage_sequence=list(stage_sequence),
     )
 
