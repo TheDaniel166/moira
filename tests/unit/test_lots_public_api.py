@@ -15,6 +15,7 @@ _CURATED_PUBLIC_NAMES = [
     "LotReferenceKind",
     "LotReversalKind",
     "LotDependencyRole",
+    "LotEvaluationStatus",
     "LotConditionState",
     "LotConditionNetworkEdgeMode",
     "LotsReferenceFailureMode",
@@ -27,6 +28,10 @@ _CURATED_PUBLIC_NAMES = [
     "ArabicPartComputationTruth",
     "LotReferenceClassification",
     "ArabicPartClassification",
+    "LotDependencyCompletenessTruth",
+    "LotAstrologicalConditionTruth",
+    "LotNotEvaluable",
+    "LotsEvaluation",
     # Relational / aggregate vessels
     "LotDependency",
     "LotConditionProfile",
@@ -37,6 +42,7 @@ _CURATED_PUBLIC_NAMES = [
     # Result vessels / entry points
     "ArabicPart",
     "calculate_lots",
+    "evaluate_lots",
     "calculate_lot_dependencies",
     "calculate_all_lot_dependencies",
     "calculate_lot_condition_profiles",
@@ -91,5 +97,5 @@ class TestModuleAgreement:
                 f"ArabicPartsService.{name} disappeared; helper should remain internal"
             )
 
-    def test_curated_count_is_28(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 28
+    def test_curated_count_is_34(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 34

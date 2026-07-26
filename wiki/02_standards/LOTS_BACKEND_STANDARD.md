@@ -39,7 +39,7 @@ The computational core remains the authority for:
 - effective formula operands
 - day/night reversal behavior
 - reference resolution
-- lot admission or omission under the current policy
+- typed computed or `not_evaluable` catalogue evaluation under the current policy
 
 Later layers may preserve, classify, inspect, aggregate, or network this truth.
 They may not recompute lot doctrine independently.
@@ -70,9 +70,9 @@ only. It does not change the formula or result.
 
 A **lot dependency** in Moira is:
 
-> One formal operand relation derived from preserved computation truth,
-> expressing whether a lot depends on a given add or subtract operand and how
-> that operand was resolved.
+> One formal formula-input relation derived from preserved computation truth,
+> expressing whether a lot depends on its projector, add operand, or subtract
+> operand and how that reference was resolved.
 
 The dependency layer distinguishes:
 
@@ -85,21 +85,21 @@ The dependency layer distinguishes:
 
 Under the current default policy, `dependencies == all_dependencies`.
 
-The dependency vessels currently formalize only add and subtract operands.
-Projector dependency composition is intentionally deferred to the typed-truth
-gate; consumers must read projector truth from `computation_truth` until that
-gate is complete.
+Every computed lot has exactly one `PROJECTOR`, one `ADD_OPERAND`, and one
+`SUB_OPERAND` dependency. `LotDependencyCompletenessTruth` proves that all
+three roles resolved.
 
 #### 1.5 Lot condition profile
 
-A **lot condition profile** in Moira is:
+A historical **lot condition profile** in Moira is:
 
 > A backend-only integrated structural summary derived from one `ArabicPart`,
 > combining lot category, reversal state, and dependency composition into a
-> single per-lot condition vessel.
+> single per-lot structural dependency-composition vessel.
 
-`LotConditionProfile` is derived only from lower-layer truth. It is not a
-second lot engine.
+Despite its historical name, `LotConditionProfile` is not astrological
+condition or favorability. `LotAstrologicalConditionTruth` is a separate typed
+boundary and remains `not_evaluable` until an independent doctrine is admitted.
 
 #### 1.6 Chart condition profile
 
@@ -274,6 +274,7 @@ The normative default is:
 - deterministic category tags
 - deterministic primary category
 - reversal state
+- projector-reference kind
 - add-reference kind
 - sub-reference kind
 
@@ -340,8 +341,12 @@ Unresolved doctrinal references are governed by policy:
 
 | Mode | Behavior |
 |---|---|
-| `SKIP` | omit the lot silently from the returned result set |
+| `SKIP` | `evaluate_lots` preserves a `LotNotEvaluable` receipt; legacy `calculate_lots` projects only computed parts |
 | `RAISE` | raise `ValueError("Unresolved lot ingredient reference: ...")` |
+
+`LotsEvaluation` is the authoritative non-erasing aggregate. Its status is
+`evaluated`, `partial`, or `not_evaluable` according to the contained computed
+parts and unresolved catalogue receipts.
 
 This doctrine applies only after input validation and policy validation have
 already succeeded.
@@ -359,7 +364,7 @@ Silent internal drift is prohibited.
 
 For identical validated inputs and policy, the subsystem guarantees:
 
-- deterministic lot inclusion / omission
+- deterministic computed / `not_evaluable` catalogue partition
 - deterministic lot ordering
 - deterministic category parsing
 - deterministic dependency ordering
@@ -395,6 +400,7 @@ The following invariants are normative.
 #### 9.3 `LotDependency`
 
 - each dependency must have a non-empty `effective_key`
+- every computed lot has one projector, one add, and one sub dependency
 - `source_part` and `target_part` are not permitted to collapse into a self-edge later in the network layer
 
 #### 9.4 `LotConditionProfile`
@@ -410,6 +416,9 @@ The following invariants are normative.
 - `formula` must match `computation_truth.formula` when truth is present
 - classification must agree with category ordering and reversal truth
 - dependencies must agree with preserved computation truth
+- dependency-completeness roles must match the dependency list
+- computed lots require complete dependency truth
+- astrological condition remains separate from dependency composition
 - `dependencies` must be a subset of `all_dependencies`
 - `condition_profile` must agree with lot classification and dependencies
 
@@ -456,6 +465,10 @@ The stable lots backend surface is the combination of:
   - `LotReferenceClassification`
   - `ArabicPartClassification`
   - `LotDependency`
+  - `LotDependencyCompletenessTruth`
+  - `LotAstrologicalConditionTruth`
+  - `LotNotEvaluable`
+  - `LotsEvaluation`
   - `LotConditionProfile`
   - `LotChartConditionProfile`
   - `LotConditionNetworkNode`
@@ -466,6 +479,7 @@ The stable lots backend surface is the combination of:
   - `LotReversalKind`
   - `LotArcPolicy`
   - `LotDependencyRole`
+  - `LotEvaluationStatus`
   - `LotConditionState`
   - `LotConditionNetworkEdgeMode`
   - `LotsReferenceFailureMode`
@@ -477,6 +491,7 @@ The stable lots backend surface is the combination of:
   - `ArabicPartsService`
 - module entrypoints:
   - `calculate_lots`
+  - `evaluate_lots`
   - `calculate_lot_dependencies`
   - `calculate_all_lot_dependencies`
   - `calculate_lot_condition_profiles`

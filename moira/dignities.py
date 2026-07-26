@@ -49,6 +49,7 @@ from __future__ import annotations
 import math
 
 from .constants import SIGNS
+from .decanates import chaldean_face
 from .dignities_types import (
     CLASSIC_7,
     MODERN_OUTER_3,
@@ -57,6 +58,7 @@ from .dignities_types import (
     _normalize_dispositorship_subject_name,
 )
 from .dignities_types import *  # noqa: F401, F403 — re-export full public surface
+from .egyptian_bounds import bound_ruler
 from .triplicity import triplicity_assignment_for, ParticipatingRulerPolicy as _ParticipatingRulerPolicy
 
 __all__ = [
@@ -65,6 +67,10 @@ __all__ = [
     "SECT", "PREFERRED_HEMISPHERE", "PREFERRED_GENDER",
     "PLANETARY_JOYS",
     # Enums
+    "TruthEvaluationStatus",
+    "HorizonHemisphere",
+    "HorizonComputationMethod",
+    "SectComponentKind",
     "ConditionPolarity",
     "EssentialDignityKind",
     "AccidentalConditionKind",
@@ -89,6 +95,7 @@ __all__ = [
     "SectHayzPolicy",
     "AccidentalDignityPolicy",
     "DignityComputationPolicy",
+    "DignityHorizonFrame",
     "DispositorshipSubjectPolicy",
     "DispositorshipRulershipPolicy",
     "DispositorshipTerminationPolicy",
@@ -120,6 +127,10 @@ __all__ = [
     "SectClassification",
     "SolarConditionClassification",
     "ReceptionClassification",
+    "EssentialDignityComponentTruth",
+    "MercuryPhaseTruth",
+    "HorizonTruth",
+    "SectComponentTruth",
     "EssentialDignityTruth",
     "AccidentalDignityCondition",
     "SolarConditionTruth",
@@ -661,6 +672,8 @@ class DignitiesService:
         planet_positions: list[dict],
         house_positions: list[dict],
         policy: DignityComputationPolicy | None = None,
+        *,
+        horizon_frame: DignityHorizonFrame | None = None,
     ) -> list[PlanetaryDignity]:
         """
         Calculate dignities for all planets admitted by the active doctrine.
@@ -674,6 +687,11 @@ class DignitiesService:
         house_positions : list of dicts with keys:
             - number: int (1–12)
             - degree: float (cusp longitude)
+        horizon_frame : optional exact Ascendant/Midheaven frame
+            When supplied, chart sect and per-body horizon truth are derived
+            from the actual angles and are independent of the selected house
+            system. The legacy house-number fallback remains available only
+            for callers that have not yet migrated.
 
         Returns
         -------
@@ -720,22 +738,32 @@ class DignitiesService:
             policy=policy,
         )
 
-        # Determine if this is a day chart: Sun above horizon = houses 7–12
-        sun_house = self._get_house(sun_lon, house_cusps) if house_cusps else 1
-        is_day_chart = sun_house >= 7
+        if horizon_frame is not None:
+            sun_horizon_truth = self._build_horizon_truth(sun_lon, horizon_frame)
+            if sun_horizon_truth.status is TruthEvaluationStatus.NOT_EVALUABLE:
+                raise ValueError(
+                    "Chart sect is not evaluable because the Sun is on the "
+                    "Ascendant/Descendant horizon boundary."
+                )
+            is_day_chart = sun_horizon_truth.hemisphere is HorizonHemisphere.ABOVE
+        else:
+            # Compatibility path for raw callers that only supply numbered
+            # cusps. Facade and REST chart calls provide an exact horizon frame.
+            sun_house = self._get_house(sun_lon, house_cusps) if house_cusps else 1
+            is_day_chart = sun_house >= 7
 
-        # Determine Mercury's phase: is it a morning star (rises before Sun)?
-        # Use a simple heuristic: Mercury is a morning star when it is behind the Sun
-        # (i.e., its longitude is less than the Sun's by up to 90°).
         mercury_lon = planet_lons.get("Mercury")
-        mercury_rises_before_sun = (
-            self._mercury_rises_before_sun(
+        mercury_phase_truth = (
+            self._build_mercury_phase_truth(
                 mercury_lon=mercury_lon,
                 sun_lon=sun_lon,
                 policy=policy,
             )
             if mercury_lon is not None
             else None
+        )
+        mercury_rises_before_sun = (
+            None if mercury_phase_truth is None else mercury_phase_truth.rises_before_sun
         )
 
         results: list[PlanetaryDignity] = []
@@ -748,8 +776,19 @@ class DignitiesService:
             sign   = planet_signs[planet]
             retro  = planet_retro.get(planet, False)
             house  = self._get_house(degree, house_cusps)
+            horizon_truth = (
+                self._build_horizon_truth(degree, horizon_frame)
+                if horizon_frame is not None
+                else None
+            )
 
-            essential_truth = self._get_essential_dignity_truth(planet, sign, policy, is_day_chart)
+            essential_truth = self._get_essential_dignity_truth(
+                planet,
+                sign,
+                policy,
+                is_day_chart,
+                longitude=degree,
+            )
 
             acc_list, acc_score, accidental_truth, sect_truth = self._get_accidental_dignities(
                 planet=planet,
@@ -761,6 +800,8 @@ class DignitiesService:
                 sign=sign,
                 is_day_chart=is_day_chart,
                 mercury_rises_before_sun=mercury_rises_before_sun,
+                mercury_phase_truth=mercury_phase_truth,
+                horizon_truth=horizon_truth,
                 policy=policy,
                 chart_positions=planet_lons,
             )
@@ -1024,6 +1065,8 @@ class DignitiesService:
         planet_positions: list[dict],
         house_positions: list[dict],
         policy: DignityComputationPolicy | None = None,
+        *,
+        horizon_frame: DignityHorizonFrame | None = None,
     ) -> list[PlanetaryConditionProfile]:
         """Calculate integrated per-planet condition profiles."""
 
@@ -1031,6 +1074,7 @@ class DignitiesService:
             planet_positions,
             house_positions,
             policy=policy,
+            horizon_frame=horizon_frame,
         )
         return [dignity.condition_profile for dignity in dignities if dignity.condition_profile is not None]
 
@@ -1039,6 +1083,8 @@ class DignitiesService:
         planet_positions: list[dict],
         house_positions: list[dict],
         policy: DignityComputationPolicy | None = None,
+        *,
+        horizon_frame: DignityHorizonFrame | None = None,
     ) -> ChartConditionProfile:
         """Calculate the chart-wide condition profile derived from planet profiles."""
 
@@ -1046,6 +1092,7 @@ class DignitiesService:
             planet_positions,
             house_positions,
             policy=policy,
+            horizon_frame=horizon_frame,
         )
         return self._build_chart_condition_profile(profiles)
 
@@ -1054,6 +1101,8 @@ class DignitiesService:
         planet_positions: list[dict],
         house_positions: list[dict],
         policy: DignityComputationPolicy | None = None,
+        *,
+        horizon_frame: DignityHorizonFrame | None = None,
     ) -> ConditionNetworkProfile:
         """Calculate the reception / condition network profile."""
 
@@ -1061,6 +1110,7 @@ class DignitiesService:
             planet_positions,
             house_positions,
             policy=policy,
+            horizon_frame=horizon_frame,
         )
         return self._build_condition_network_profile(chart_profile)
 
@@ -1092,22 +1142,161 @@ class DignitiesService:
         sign: str,
         policy: DignityComputationPolicy,
         is_day_chart: bool = True,
+        *,
+        longitude: float | None = None,
     ) -> EssentialDignityTruth:
         DignitiesService._validate_policy(policy)
         domicile = DignitiesService._domicile_table(policy)
         detriment = DignitiesService._detriment_table(policy)
-        if sign in domicile.get(planet, []):
-            return EssentialDignityTruth("essential", "Domicile", SCORE_DOMICILE, sign, tuple(domicile.get(planet, ())))
-        if sign in EXALTATION.get(planet, []):
-            return EssentialDignityTruth("essential", "Exaltation", SCORE_EXALTATION, sign, tuple(EXALTATION.get(planet, ())))
         assignment = triplicity_assignment_for(sign, is_day_chart=is_day_chart)
-        if planet == assignment.active_ruler:
-            return EssentialDignityTruth("essential", "Triplicity", SCORE_TRIPLICITY, sign, assignment.signs)
-        if sign in detriment.get(planet, []):
-            return EssentialDignityTruth("essential", "Detriment", SCORE_DETRIMENT, sign, tuple(detriment.get(planet, ())))
-        if sign in FALL.get(planet, []):
-            return EssentialDignityTruth("essential", "Fall", SCORE_FALL, sign, tuple(FALL.get(planet, ())))
-        return EssentialDignityTruth("essential", "Peregrine", SCORE_PEREGRINE, sign, ())
+        domicile_signs = tuple(domicile.get(planet, ()))
+        exaltation_signs = tuple(EXALTATION.get(planet, ()))
+        detriment_signs = tuple(detriment.get(planet, ()))
+        fall_signs = tuple(FALL.get(planet, ()))
+
+        components: list[EssentialDignityComponentTruth] = [
+            EssentialDignityComponentTruth(
+                kind=EssentialDignityKind.DOMICILE,
+                status=TruthEvaluationStatus.EVALUATED,
+                matched=sign in domicile_signs,
+                matching_signs=domicile_signs,
+            ),
+            EssentialDignityComponentTruth(
+                kind=EssentialDignityKind.EXALTATION,
+                status=TruthEvaluationStatus.EVALUATED,
+                matched=sign in exaltation_signs,
+                matching_signs=exaltation_signs,
+            ),
+            EssentialDignityComponentTruth(
+                kind=EssentialDignityKind.TRIPLICITY,
+                status=TruthEvaluationStatus.EVALUATED,
+                matched=planet == assignment.active_ruler,
+                matching_signs=assignment.signs,
+                ruler=assignment.active_ruler,
+            ),
+        ]
+
+        if longitude is None:
+            components.extend(
+                [
+                    EssentialDignityComponentTruth(
+                        kind=EssentialDignityKind.BOUND,
+                        status=TruthEvaluationStatus.NOT_EVALUABLE,
+                        matched=None,
+                        reason="longitude_required_for_bound",
+                    ),
+                    EssentialDignityComponentTruth(
+                        kind=EssentialDignityKind.FACE,
+                        status=TruthEvaluationStatus.NOT_EVALUABLE,
+                        matched=None,
+                        reason="longitude_required_for_face",
+                    ),
+                ]
+            )
+        else:
+            bound_host = bound_ruler(longitude)
+            face_host = chaldean_face(longitude).ruling_planet
+            components.extend(
+                [
+                    EssentialDignityComponentTruth(
+                        kind=EssentialDignityKind.BOUND,
+                        status=TruthEvaluationStatus.EVALUATED,
+                        matched=planet == bound_host,
+                        ruler=bound_host,
+                    ),
+                    EssentialDignityComponentTruth(
+                        kind=EssentialDignityKind.FACE,
+                        status=TruthEvaluationStatus.EVALUATED,
+                        matched=planet == face_host,
+                        ruler=face_host,
+                    ),
+                ]
+            )
+
+        components.extend(
+            [
+                EssentialDignityComponentTruth(
+                    kind=EssentialDignityKind.DETRIMENT,
+                    status=TruthEvaluationStatus.EVALUATED,
+                    matched=sign in detriment_signs,
+                    matching_signs=detriment_signs,
+                ),
+                EssentialDignityComponentTruth(
+                    kind=EssentialDignityKind.FALL,
+                    status=TruthEvaluationStatus.EVALUATED,
+                    matched=sign in fall_signs,
+                    matching_signs=fall_signs,
+                ),
+            ]
+        )
+
+        positive_kinds = {
+            EssentialDignityKind.DOMICILE,
+            EssentialDignityKind.EXALTATION,
+            EssentialDignityKind.TRIPLICITY,
+            EssentialDignityKind.BOUND,
+            EssentialDignityKind.FACE,
+        }
+        positive_components = [
+            component for component in components if component.kind in positive_kinds
+        ]
+        if any(component.matched is True for component in positive_components):
+            peregrine = EssentialDignityComponentTruth(
+                kind=EssentialDignityKind.PEREGRINE,
+                status=TruthEvaluationStatus.EVALUATED,
+                matched=False,
+            )
+        elif any(
+            component.status is TruthEvaluationStatus.NOT_EVALUABLE
+            for component in positive_components
+        ):
+            peregrine = EssentialDignityComponentTruth(
+                kind=EssentialDignityKind.PEREGRINE,
+                status=TruthEvaluationStatus.NOT_EVALUABLE,
+                matched=None,
+                reason="one_or_more_positive_dignity_components_not_evaluable",
+            )
+        else:
+            peregrine = EssentialDignityComponentTruth(
+                kind=EssentialDignityKind.PEREGRINE,
+                status=TruthEvaluationStatus.EVALUATED,
+                matched=True,
+            )
+        components.append(peregrine)
+
+        score_by_kind = {
+            EssentialDignityKind.DOMICILE: SCORE_DOMICILE,
+            EssentialDignityKind.EXALTATION: SCORE_EXALTATION,
+            EssentialDignityKind.TRIPLICITY: SCORE_TRIPLICITY,
+            EssentialDignityKind.BOUND: SCORE_BOUND,
+            EssentialDignityKind.FACE: SCORE_FACE,
+            EssentialDignityKind.DETRIMENT: SCORE_DETRIMENT,
+            EssentialDignityKind.FALL: SCORE_FALL,
+            EssentialDignityKind.PEREGRINE: SCORE_PEREGRINE,
+        }
+        label_by_kind = {
+            EssentialDignityKind.DOMICILE: "Domicile",
+            EssentialDignityKind.EXALTATION: "Exaltation",
+            EssentialDignityKind.TRIPLICITY: "Triplicity",
+            EssentialDignityKind.BOUND: "Bound",
+            EssentialDignityKind.FACE: "Face",
+            EssentialDignityKind.DETRIMENT: "Detriment",
+            EssentialDignityKind.FALL: "Fall",
+            EssentialDignityKind.PEREGRINE: "Peregrine",
+        }
+        primary = next(
+            (component for component in components if component.matched is True),
+            peregrine,
+        )
+        return EssentialDignityTruth(
+            category="essential",
+            label=label_by_kind[primary.kind],
+            score=score_by_kind[primary.kind],
+            sign=sign,
+            matching_signs=primary.matching_signs,
+            matched=primary.matched is True,
+            components=tuple(components),
+        )
 
     @staticmethod
     def _get_essential_dignity(planet: str, sign: str) -> tuple[str, int]:
@@ -1125,6 +1314,8 @@ class DignitiesService:
         sign: str = "",
         is_day_chart: bool = True,
         mercury_rises_before_sun: bool | None = None,
+        mercury_phase_truth: MercuryPhaseTruth | None = None,
+        horizon_truth: HorizonTruth | None = None,
         policy: DignityComputationPolicy | None = None,
         chart_positions: dict[str, float] | None = None,
     ) -> tuple[list[str], int, AccidentalDignityTruth, SectTruth]:
@@ -1204,8 +1395,11 @@ class DignitiesService:
             planet=planet,
             sign=sign,
             house=house,
+            planet_lon=planet_lon,
             is_day_chart=is_day_chart,
             mercury_rises_before_sun=mercury_rises_before_sun,
+            mercury_phase_truth=mercury_phase_truth,
+            horizon_truth=horizon_truth,
             doctrine=policy.accidental.sect.doctrine,
         )
 
@@ -1294,43 +1488,142 @@ class DignitiesService:
         planet: str,
         sign: str,
         house: int,
+        planet_lon: float,
         is_day_chart: bool,
         mercury_rises_before_sun: bool | None,
+        mercury_phase_truth: MercuryPhaseTruth | None,
+        horizon_truth: HorizonTruth | None,
         doctrine: HalbHayzDoctrine,
     ) -> SectTruth:
-        actual_hemisphere = "above" if 7 <= house <= 12 else "below"
+        if horizon_truth is None:
+            actual_hemisphere = "above" if 7 <= house <= 12 else "below"
+            horizon_truth = HorizonTruth(
+                status=TruthEvaluationStatus.EVALUATED,
+                method=HorizonComputationMethod.LEGACY_HOUSE_NUMBER,
+                longitude=planet_lon % 360.0,
+                hemisphere=HorizonHemisphere(actual_hemisphere),
+            )
+        else:
+            actual_hemisphere = (
+                None
+                if horizon_truth.hemisphere is None
+                else horizon_truth.hemisphere.value
+            )
         actual_gender = "masculine" if sign in MASCULINE_SIGNS else "feminine"
-        preferred_hemisphere = halb_required_hemisphere(
-            planet,
-            is_day_chart,
-            mercury_rises_before_sun,
-        )
         preferred_gender = PREFERRED_GENDER.get(planet)
         planet_sect = SECT.get(planet)
         if planet_sect == "sect_light":
             if mercury_rises_before_sun is None:
-                raise ValueError(
-                    "Mercury sect truth requires an explicit "
-                    "mercury_rises_before_sun phase."
+                planet_sect = None
+                preferred_hemisphere = None
+                in_sect = None
+                sect_component = SectComponentTruth(
+                    kind=SectComponentKind.SECT_MEMBERSHIP,
+                    status=TruthEvaluationStatus.NOT_EVALUABLE,
+                    matched=None,
+                    reason="mercury_phase_not_evaluable",
                 )
-            planet_sect = "diurnal" if mercury_rises_before_sun else "nocturnal"
+            else:
+                planet_sect = "diurnal" if mercury_rises_before_sun else "nocturnal"
+                preferred_hemisphere = halb_required_hemisphere(
+                    planet,
+                    is_day_chart,
+                    mercury_rises_before_sun,
+                )
+                in_sect = is_in_sect(
+                    planet,
+                    is_day_chart,
+                    mercury_rises_before_sun,
+                )
+                sect_component = SectComponentTruth(
+                    kind=SectComponentKind.SECT_MEMBERSHIP,
+                    status=TruthEvaluationStatus.EVALUATED,
+                    matched=in_sect,
+                )
+        else:
+            preferred_hemisphere = halb_required_hemisphere(
+                planet,
+                is_day_chart,
+                mercury_rises_before_sun,
+            )
+            in_sect = is_in_sect(
+                planet,
+                is_day_chart,
+                mercury_rises_before_sun,
+            )
+            sect_component = SectComponentTruth(
+                kind=SectComponentKind.SECT_MEMBERSHIP,
+                status=TruthEvaluationStatus.EVALUATED,
+                matched=in_sect,
+            )
 
-        hemisphere_matches = preferred_hemisphere == actual_hemisphere
+        hemisphere_matches = (
+            None
+            if preferred_hemisphere is None or actual_hemisphere is None
+            else preferred_hemisphere == actual_hemisphere
+        )
         gender_matches = (
             preferred_gender == actual_gender
             if preferred_gender in {"masculine", "feminine"}
             else None
         )
-        in_sect = is_in_sect(planet, is_day_chart, mercury_rises_before_sun)
-        in_halb = sign != "" and is_in_halb(
-            planet,
-            sign,
-            house,
-            is_day_chart,
-            mercury_rises_before_sun,
-        )
-        hayz_evaluable = gender_matches is not None
-        in_hayz = in_halb and bool(gender_matches)
+
+        if in_sect is None:
+            in_halb = None
+            halb_component = SectComponentTruth(
+                kind=SectComponentKind.HALB,
+                status=TruthEvaluationStatus.NOT_EVALUABLE,
+                matched=None,
+                reason="sect_membership_not_evaluable",
+            )
+        elif horizon_truth.status is TruthEvaluationStatus.NOT_EVALUABLE:
+            in_halb = None
+            halb_component = SectComponentTruth(
+                kind=SectComponentKind.HALB,
+                status=TruthEvaluationStatus.NOT_EVALUABLE,
+                matched=None,
+                reason="body_on_horizon",
+            )
+        else:
+            # Halb is the sect-relative hemisphere judgment itself. It does
+            # not additionally require the planet to agree with chart sect;
+            # the required hemisphere already changes with chart sect.
+            in_halb = bool(hemisphere_matches)
+            halb_component = SectComponentTruth(
+                kind=SectComponentKind.HALB,
+                status=TruthEvaluationStatus.EVALUATED,
+                matched=in_halb,
+            )
+
+        if in_halb is None:
+            in_hayz = None
+            hayz_reason = (
+                "halb_not_evaluable"
+                if gender_matches is not None
+                else "halb_and_gender_not_evaluable"
+            )
+            hayz_component = SectComponentTruth(
+                kind=SectComponentKind.HAYZ,
+                status=TruthEvaluationStatus.NOT_EVALUABLE,
+                matched=None,
+                reason=hayz_reason,
+            )
+        elif gender_matches is None:
+            in_hayz = None
+            hayz_component = SectComponentTruth(
+                kind=SectComponentKind.HAYZ,
+                status=TruthEvaluationStatus.NOT_EVALUABLE,
+                matched=None,
+                reason="planetary_gender_preference_not_defined",
+            )
+        else:
+            in_hayz = bool(in_halb and gender_matches)
+            hayz_component = SectComponentTruth(
+                kind=SectComponentKind.HAYZ,
+                status=TruthEvaluationStatus.EVALUATED,
+                matched=in_hayz,
+            )
+        hayz_evaluable = hayz_component.status is TruthEvaluationStatus.EVALUATED
 
         return SectTruth(
             doctrine=doctrine,
@@ -1348,6 +1641,57 @@ class DignitiesService:
             actual_gender=actual_gender,
             gender_matches=gender_matches,
             hayz_evaluable=hayz_evaluable,
+            mercury_phase_truth=mercury_phase_truth,
+            horizon_truth=horizon_truth,
+            components=(sect_component, halb_component, hayz_component),
+        )
+
+    @staticmethod
+    def _build_horizon_truth(
+        longitude: float,
+        frame: DignityHorizonFrame,
+    ) -> HorizonTruth:
+        """Classify one longitude using exact Asc/MC horizon geometry."""
+
+        lon = longitude % 360.0
+        asc = frame.asc_longitude
+        dsc = (asc + 180.0) % 360.0
+
+        def circular_distance(left: float, right: float) -> float:
+            delta = abs((left - right) % 360.0)
+            return min(delta, 360.0 - delta)
+
+        boundary_distance = min(
+            circular_distance(lon, asc),
+            circular_distance(lon, dsc),
+        )
+        if boundary_distance <= frame.boundary_tolerance_deg:
+            return HorizonTruth(
+                status=TruthEvaluationStatus.NOT_EVALUABLE,
+                method=HorizonComputationMethod.ZODIACAL_ANGLES,
+                longitude=lon,
+                hemisphere=None,
+                asc_longitude=asc,
+                mc_longitude=frame.mc_longitude,
+                boundary_distance_deg=boundary_distance,
+                reason="body_on_ascendant_or_descendant",
+            )
+
+        mc_on_asc_arc = 0.0 < (frame.mc_longitude - asc) % 360.0 < 180.0
+        body_on_asc_arc = 0.0 < (lon - asc) % 360.0 < 180.0
+        hemisphere = (
+            HorizonHemisphere.ABOVE
+            if body_on_asc_arc == mc_on_asc_arc
+            else HorizonHemisphere.BELOW
+        )
+        return HorizonTruth(
+            status=TruthEvaluationStatus.EVALUATED,
+            method=HorizonComputationMethod.ZODIACAL_ANGLES,
+            longitude=lon,
+            hemisphere=hemisphere,
+            asc_longitude=asc,
+            mc_longitude=frame.mc_longitude,
+            boundary_distance_deg=boundary_distance,
         )
 
     @staticmethod
@@ -1372,11 +1716,38 @@ class DignitiesService:
         mercury_lon: float,
         sun_lon: float,
         policy: DignityComputationPolicy,
-    ) -> bool:
+    ) -> bool | None:
+        """Compatibility projection of the typed Mercury phase truth."""
+
+        return DignitiesService._build_mercury_phase_truth(
+            mercury_lon=mercury_lon,
+            sun_lon=sun_lon,
+            policy=policy,
+        ).rises_before_sun
+
+    @staticmethod
+    def _build_mercury_phase_truth(
+        mercury_lon: float,
+        sun_lon: float,
+        policy: DignityComputationPolicy,
+    ) -> MercuryPhaseTruth:
         if policy.accidental.sect.mercury_sect_model is not MercurySectModel.LONGITUDE_HEURISTIC:
             raise ValueError(f"Unsupported Mercury sect model: {policy.accidental.sect.mercury_sect_model}")
         mercury_diff = (mercury_lon - sun_lon + 360.0) % 360.0
-        return mercury_diff > 180.0
+        if min(mercury_diff, 360.0 - mercury_diff) <= 1e-7:
+            return MercuryPhaseTruth(
+                model=policy.accidental.sect.mercury_sect_model,
+                status=TruthEvaluationStatus.NOT_EVALUABLE,
+                rises_before_sun=None,
+                longitudinal_separation_deg=mercury_diff,
+                reason="mercury_conjunct_sun",
+            )
+        return MercuryPhaseTruth(
+            model=policy.accidental.sect.mercury_sect_model,
+            status=TruthEvaluationStatus.EVALUATED,
+            rises_before_sun=mercury_diff > 180.0,
+            longitudinal_separation_deg=mercury_diff,
+        )
 
     @staticmethod
     def _score_polarity(score: int) -> ConditionPolarity:
@@ -1392,6 +1763,8 @@ class DignitiesService:
             "Domicile": EssentialDignityKind.DOMICILE,
             "Exaltation": EssentialDignityKind.EXALTATION,
             "Triplicity": EssentialDignityKind.TRIPLICITY,
+            "Bound": EssentialDignityKind.BOUND,
+            "Face": EssentialDignityKind.FACE,
             "Detriment": EssentialDignityKind.DETRIMENT,
             "Fall": EssentialDignityKind.FALL,
             "Peregrine": EssentialDignityKind.PEREGRINE,
@@ -1447,12 +1820,14 @@ class DignitiesService:
 
     @staticmethod
     def _classify_sect_truth(truth: SectTruth) -> SectClassification:
-        if truth.in_hayz:
+        if truth.in_hayz is True:
             state = SectStateKind.IN_HAYZ
-        elif truth.in_halb:
+        elif truth.in_halb is True:
             state = SectStateKind.IN_HALB
-        elif truth.in_sect:
+        elif truth.in_sect is True:
             state = SectStateKind.IN_SECT
+        elif truth.in_sect is None:
+            state = SectStateKind.NOT_EVALUABLE
         else:
             state = SectStateKind.OUT_OF_SECT
         return SectClassification(
@@ -1460,6 +1835,7 @@ class DignitiesService:
             in_sect=truth.in_sect,
             in_halb=truth.in_halb,
             in_hayz=truth.in_hayz,
+            components=truth.components,
         )
 
     @staticmethod
@@ -2191,6 +2567,8 @@ def calculate_dignities(
     planet_positions: list[dict],
     house_positions: list[dict],
     policy: DignityComputationPolicy | None = None,
+    *,
+    horizon_frame: DignityHorizonFrame | None = None,
 ) -> list[PlanetaryDignity]:
     """
     Calculate essential and accidental dignities.
@@ -2200,9 +2578,13 @@ def calculate_dignities(
     planet_positions : list of {'name': str, 'degree': float, 'is_retrograde': bool}
     house_positions  : list of {'number': int, 'degree': float}
     policy           : optional DignityComputationPolicy
+    horizon_frame    : optional exact Ascendant/Midheaven geometry
     """
     return _service.calculate_dignities(
-        planet_positions, house_positions, policy=policy,
+        planet_positions,
+        house_positions,
+        policy=policy,
+        horizon_frame=horizon_frame,
     )
 
 
@@ -2273,30 +2655,51 @@ def calculate_condition_profiles(
     planet_positions: list[dict],
     house_positions: list[dict],
     policy: DignityComputationPolicy | None = None,
+    *,
+    horizon_frame: DignityHorizonFrame | None = None,
 ) -> list[PlanetaryConditionProfile]:
     """Calculate integrated per-planet condition profiles."""
 
-    return _service.calculate_condition_profiles(planet_positions, house_positions, policy=policy)
+    return _service.calculate_condition_profiles(
+        planet_positions,
+        house_positions,
+        policy=policy,
+        horizon_frame=horizon_frame,
+    )
 
 
 def calculate_chart_condition_profile(
     planet_positions: list[dict],
     house_positions: list[dict],
     policy: DignityComputationPolicy | None = None,
+    *,
+    horizon_frame: DignityHorizonFrame | None = None,
 ) -> ChartConditionProfile:
     """Calculate the chart-wide condition profile."""
 
-    return _service.calculate_chart_condition_profile(planet_positions, house_positions, policy=policy)
+    return _service.calculate_chart_condition_profile(
+        planet_positions,
+        house_positions,
+        policy=policy,
+        horizon_frame=horizon_frame,
+    )
 
 
 def calculate_condition_network_profile(
     planet_positions: list[dict],
     house_positions: list[dict],
     policy: DignityComputationPolicy | None = None,
+    *,
+    horizon_frame: DignityHorizonFrame | None = None,
 ) -> ConditionNetworkProfile:
     """Calculate the reception / condition network profile."""
 
-    return _service.calculate_condition_network_profile(planet_positions, house_positions, policy=policy)
+    return _service.calculate_condition_network_profile(
+        planet_positions,
+        house_positions,
+        policy=policy,
+        horizon_frame=horizon_frame,
+    )
 
 
 # ---------------------------------------------------------------------------

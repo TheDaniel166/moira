@@ -99,6 +99,8 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
 
     def dignities(self, chart, houses, *, policy=None):
         """Compute essential and accidental dignities for chart planets."""
+        from .dignities import DignityHorizonFrame
+
         facade = _facade_module()
         planet_dicts = [
             {
@@ -112,7 +114,15 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             {"number": i + 1, "degree": cusp}
             for i, cusp in enumerate(houses.cusps)
         ]
-        return facade.calculate_dignities(planet_dicts, house_dicts, policy=policy)
+        return facade.calculate_dignities(
+            planet_dicts,
+            house_dicts,
+            policy=policy,
+            horizon_frame=DignityHorizonFrame(
+                asc_longitude=houses.asc,
+                mc_longitude=houses.mc,
+            ),
+        )
 
     def mutual_receptions(self, chart, by_exaltation: bool = False):
         """Find mutual receptions between planets."""

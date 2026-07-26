@@ -10,6 +10,7 @@ from moira.dignities import (
     AccidentalDignityPolicy,
     ConditionPolarity,
     DignityComputationPolicy,
+    DignityHorizonFrame,
     DispositorshipComputationPolicy,
     DispositorshipConditionState,
     DispositorshipOrderingPolicy,
@@ -21,6 +22,8 @@ from moira.dignities import (
     EssentialDignityPolicy,
     HalbHayzDoctrine,
     MercurySectModel,
+    HorizonComputationMethod,
+    HorizonHemisphere,
     MODERN_DETRIMENT,
     MODERN_DOMICILE,
     PlanetaryConditionState,
@@ -31,9 +34,11 @@ from moira.dignities import (
     ReceptionKind,
     ReceptionMode,
     SectHayzPolicy,
+    SectComponentKind,
     SectStateKind,
     SolarConditionPolicy,
     SolarConditionKind,
+    TruthEvaluationStatus,
     calculate_chart_condition_profile,
     calculate_condition_profiles,
     calculate_dignities,
@@ -64,8 +69,10 @@ from moira.lots import (
     LotConditionNetworkProfile,
     LotConditionNetworkNode,
     LotDependency,
+    LotDependencyCompletenessTruth,
     LotConditionState,
     LotDependencyRole,
+    LotEvaluationStatus,
     LotsComputationPolicy,
     LotsDerivedReferencePolicy,
     LotsExternalReferencePolicy,
@@ -81,6 +88,7 @@ from moira.lots import (
     calculate_lot_condition_profiles,
     calculate_lot_dependencies,
     calculate_lots,
+    evaluate_lots,
     list_parts,
 )
 
@@ -94,6 +102,121 @@ def _part_by_name(parts, name: str):
         if part.name == name:
             return part
     raise AssertionError(f"Part not found: {name}")
+
+
+def test_essential_dignity_truth_preserves_all_atomic_components() -> None:
+    by_name = {
+        result.planet: result
+        for result in calculate_dignities(
+            [
+                {"name": "Sun", "degree": 200.0},
+                {"name": "Jupiter", "degree": 0.0},
+                {"name": "Mars", "degree": 0.0},
+            ],
+            _equal_houses(0.0),
+        )
+    }
+
+    jupiter = by_name["Jupiter"]
+    assert jupiter.essential_dignity == "Bound"
+    assert jupiter.essential_score == 2
+    assert (
+        jupiter.essential_truth.component(EssentialDignityKind.BOUND).ruler
+        == "Jupiter"
+    )
+    assert (
+        jupiter.essential_truth.component(EssentialDignityKind.BOUND).matched
+        is True
+    )
+    assert (
+        jupiter.essential_truth.component(EssentialDignityKind.PEREGRINE).matched
+        is False
+    )
+
+    mars = by_name["Mars"]
+    matched_kinds = {
+        component.kind for component in mars.essential_truth.matched_components
+    }
+    assert EssentialDignityKind.DOMICILE in matched_kinds
+    assert EssentialDignityKind.FACE in matched_kinds
+    assert mars.essential_dignity == "Domicile"
+
+
+def test_exact_horizon_truth_is_house_system_independent_and_fails_closed() -> None:
+    frame = DignityHorizonFrame(asc_longitude=0.0, mc_longitude=270.0)
+    planets = [
+        {"name": "Sun", "degree": 240.0},
+        {"name": "Venus", "degree": 210.0},
+        {"name": "Mars", "degree": 0.0},
+    ]
+
+    first = {
+        result.planet: result
+        for result in calculate_dignities(
+            planets,
+            _equal_houses(0.0),
+            horizon_frame=frame,
+        )
+    }
+    second = {
+        result.planet: result
+        for result in calculate_dignities(
+            planets,
+            _equal_houses(180.0),
+            horizon_frame=frame,
+        )
+    }
+
+    for planet in ("Sun", "Venus", "Mars"):
+        assert first[planet].sect_truth.is_day_chart is True
+        assert second[planet].sect_truth.is_day_chart is True
+        assert (
+            first[planet].sect_truth.actual_hemisphere
+            == second[planet].sect_truth.actual_hemisphere
+        )
+        assert (
+            first[planet].sect_truth.horizon_truth.method
+            is HorizonComputationMethod.ZODIACAL_ANGLES
+        )
+
+    assert first["Venus"].sect_truth.horizon_truth.hemisphere is HorizonHemisphere.ABOVE
+    assert first["Mars"].sect_truth.horizon_truth.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert first["Mars"].sect_truth.in_halb is None
+    assert (
+        first["Mars"].sect_truth.component(SectComponentKind.HALB).status
+        is TruthEvaluationStatus.NOT_EVALUABLE
+    )
+
+    with pytest.raises(ValueError, match="Chart sect is not evaluable"):
+        calculate_dignities(
+            [{"name": "Sun", "degree": 0.0}],
+            _equal_houses(0.0),
+            horizon_frame=frame,
+        )
+
+
+def test_exact_mercury_conjunction_is_typed_not_evaluable() -> None:
+    mercury = {
+        result.planet: result
+        for result in calculate_dignities(
+            [
+                {"name": "Sun", "degree": 240.0},
+                {"name": "Mercury", "degree": 240.0},
+            ],
+            _equal_houses(0.0),
+            horizon_frame=DignityHorizonFrame(
+                asc_longitude=0.0,
+                mc_longitude=270.0,
+            ),
+        )
+    }["Mercury"]
+
+    assert mercury.sect_truth.mercury_phase_truth.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert mercury.sect_truth.mercury_phase_truth.reason == "mercury_conjunct_sun"
+    assert mercury.sect_truth.in_sect is None
+    assert mercury.sect_classification.state is SectStateKind.NOT_EVALUABLE
+    assert "In Halb" not in mercury.accidental_dignities
+    assert "In Hayz" not in mercury.accidental_dignities
 
 
 def test_dignities_identify_essential_dignity_mutual_reception_and_hayz() -> None:
@@ -164,7 +287,13 @@ def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
         by_name["Venus"].essential_dignity,
         by_name["Venus"].accidental_dignities,
         by_name["Venus"].accidental_score,
-    ) == ("Detriment", ["Cadent (H3)", "Direct", "Mutual Reception (Mars)"], 5)
+        ) == ("Bound", ["Cadent (H3)", "Direct", "Mutual Reception (Mars)"], 5)
+    assert (
+        by_name["Venus"].essential_truth.component(
+            EssentialDignityKind.DETRIMENT
+        ).matched
+        is True
+    )
     assert (
         by_name["Mars"].essential_dignity,
         by_name["Mars"].accidental_dignities,
@@ -202,8 +331,8 @@ def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
     assert [mr.reception_type for mr in venus.mutual_reception_truth] == ["domicile"]
     assert [c.label for c in venus.accidental_truth.conditions] == venus.accidental_dignities
     assert venus.essential_classification is not None
-    assert venus.essential_classification.kind is EssentialDignityKind.DETRIMENT
-    assert venus.essential_classification.polarity is ConditionPolarity.WEAKENING
+    assert venus.essential_classification.kind is EssentialDignityKind.BOUND
+    assert venus.essential_classification.polarity is ConditionPolarity.STRENGTHENING
     assert venus.sect_classification is not None
     assert venus.sect_classification.state is SectStateKind.IN_HALB
     assert venus.solar_classification.kind is SolarConditionKind.NONE
@@ -285,7 +414,11 @@ def test_dignities_expose_structured_solar_condition_truth() -> None:
     assert mercury.sect_truth is not None
     assert mercury.sect_truth.in_sect is True
     assert mercury.sect_truth.in_halb is False
-    assert mercury.sect_truth.in_hayz is False
+    assert mercury.sect_truth.in_hayz is None
+    assert (
+        mercury.sect_truth.component(SectComponentKind.HAYZ).status
+        is TruthEvaluationStatus.NOT_EVALUABLE
+    )
     assert mercury.sect_truth.hayz_evaluable is False
     assert [c.category for c in mercury.accidental_truth.conditions] == ["house", "motion", "solar"]
     assert mercury.solar_classification.kind is SolarConditionKind.COMBUST
@@ -2100,6 +2233,45 @@ def test_lots_policy_surface_is_deterministic_and_validated() -> None:
         )
 
 
+def test_lot_evaluation_preserves_computed_and_not_evaluable_catalogue_truth() -> None:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 220.0,
+        "Mercury": 80.0,
+        "Venus": 10.0,
+        "Mars": 35.0,
+        "Jupiter": 250.0,
+        "Saturn": 310.0,
+    }
+    house_cusps = {i + 1: i * 30.0 for i in range(12)}
+
+    evaluation = evaluate_lots(positions, house_cusps, False)
+
+    assert evaluation.status is LotEvaluationStatus.PARTIAL
+    assert evaluation.evaluated_count == len(evaluation.parts)
+    assert evaluation.not_evaluable_count == len(evaluation.not_evaluable)
+    assert evaluation.not_evaluable
+    assert all(item.missing_references for item in evaluation.not_evaluable)
+    assert calculate_lots(positions, house_cusps, False) == evaluation.parts
+
+    theft = _part_by_name(evaluation.parts, "Theft (Valens)")
+    assert isinstance(
+        theft.dependency_completeness,
+        LotDependencyCompletenessTruth,
+    )
+    assert theft.dependency_completeness.complete is True
+    assert theft.dependencies[0].role is LotDependencyRole.PROJECTOR
+    assert theft.dependencies[0].effective_key == "Saturn"
+    assert (
+        theft.astrological_condition_truth.status
+        is LotEvaluationStatus.NOT_EVALUABLE
+    )
+    assert (
+        theft.astrological_condition_truth.reason
+        == "no_admitted_lot_condition_doctrine"
+    )
+
+
 def test_lot_dependency_layer_is_deterministic_and_aligned_with_part_truth() -> None:
     positions = {
         "Sun": 100.0,
@@ -2122,17 +2294,21 @@ def test_lot_dependency_layer_is_deterministic_and_aligned_with_part_truth() -> 
     )
 
     fortune = parts["Fortune"]
-    assert len(fortune.dependencies) == 2
+    assert len(fortune.dependencies) == 3
     assert [dep.role for dep in fortune.dependencies] == [
+        LotDependencyRole.PROJECTOR,
         LotDependencyRole.ADD_OPERAND,
         LotDependencyRole.SUB_OPERAND,
     ]
-    assert fortune.dependencies[0].effective_key == fortune.computation_truth.effective_add_key
-    assert fortune.dependencies[1].effective_key == fortune.computation_truth.effective_sub_key
+    assert fortune.dependencies[0].effective_key == fortune.computation_truth.projector_key
+    assert fortune.dependencies[1].effective_key == fortune.computation_truth.effective_add_key
+    assert fortune.dependencies[2].effective_key == fortune.computation_truth.effective_sub_key
+    assert fortune.dependency_completeness.complete is True
+    assert fortune.astrological_condition_truth.status is LotEvaluationStatus.NOT_EVALUABLE
 
     rain = parts["Rain (Ibn Ezra)"]
-    assert rain.dependencies[0].reference_kind is LotReferenceKind.EXTERNAL
-    assert rain.dependencies[1].reference_kind is LotReferenceKind.PLANET
+    assert rain.dependencies[1].reference_kind is LotReferenceKind.EXTERNAL
+    assert rain.dependencies[2].reference_kind is LotReferenceKind.PLANET
 
 
 def test_lot_dependencies_make_inter_lot_relations_explicit() -> None:
@@ -2154,10 +2330,15 @@ def test_lot_dependencies_make_inter_lot_relations_explicit() -> None:
 
     basis = by_part["Basis (Firmicus)"]
     assert {(dep.role, dep.effective_key, dep.reference_kind) for dep in basis} == {
+        (LotDependencyRole.PROJECTOR, "Asc", LotReferenceKind.ANGLE),
         (LotDependencyRole.ADD_OPERAND, "Spirit", LotReferenceKind.DERIVED_LOT),
         (LotDependencyRole.SUB_OPERAND, "Fortune", LotReferenceKind.DERIVED_LOT),
     }
-    assert all(dep.is_inter_lot for dep in basis)
+    assert all(
+        dep.is_inter_lot
+        for dep in basis
+        if dep.role is not LotDependencyRole.PROJECTOR
+    )
 
     necessity = by_part["Necessity (Persian)"]
     assert any(
@@ -2231,14 +2412,14 @@ def test_lot_dependency_layer_exposes_all_vs_admitted_dependencies_and_helpers()
     }
 
     fortune = default_parts["Fortune"]
-    assert fortune.all_dependency_count == 2
-    assert fortune.dependency_count == 2
+    assert fortune.all_dependency_count == 3
+    assert fortune.dependency_count == 3
     assert fortune.inter_lot_dependencies == []
     assert fortune.external_dependencies == []
 
     basis = default_parts["Basis (Firmicus)"]
-    assert basis.dependency_count == 2
-    assert basis.all_dependency_count == 2
+    assert basis.dependency_count == 3
+    assert basis.all_dependency_count == 3
     assert len(basis.inter_lot_dependencies) == 2
     assert all(dep.is_inter_lot for dep in basis.inter_lot_dependencies)
 
@@ -2315,19 +2496,19 @@ def test_lot_condition_profiles_are_deterministic_and_align_with_part_truth() ->
     assert fortune_profile.reversal is fortune.reversal_kind
     assert fortune_profile.dependencies == fortune.dependencies
     assert fortune_profile.all_dependencies == fortune.all_dependencies
-    assert fortune_profile.direct_dependency_count == 2
+    assert fortune_profile.direct_dependency_count == 3
     assert fortune_profile.indirect_dependency_count == 0
     assert fortune_profile.state is LotConditionState.DIRECT
     assert fortune.condition_state is LotConditionState.DIRECT
 
     basis_profile = first["Basis (Firmicus)"]
-    assert basis_profile.direct_dependency_count == 0
+    assert basis_profile.direct_dependency_count == 1
     assert basis_profile.indirect_dependency_count == 2
     assert basis_profile.inter_lot_dependency_count == 2
-    assert basis_profile.state is LotConditionState.INDIRECT
+    assert basis_profile.state is LotConditionState.MIXED
 
     rain_profile = first["Rain (Ibn Ezra)"]
-    assert rain_profile.direct_dependency_count == 1
+    assert rain_profile.direct_dependency_count == 2
     assert rain_profile.indirect_dependency_count == 1
     assert rain_profile.external_dependency_count == 1
     assert rain_profile.state is LotConditionState.MIXED
@@ -2441,7 +2622,10 @@ def test_lot_chart_condition_profile_strongest_and_weakest_are_derived_only() ->
         ]
     )
     assert all(profiles[name].state is LotConditionState.DIRECT for name in chart_profile.strongest_parts)
-    assert all(profiles[name].state is LotConditionState.INDIRECT for name in chart_profile.weakest_parts)
+    assert all(
+        profiles[name].state is weakest_profile.state
+        for name in chart_profile.weakest_parts
+    )
 
     with pytest.raises(ValueError, match="state counts must match profile states"):
         replace(chart_profile, direct_count=chart_profile.direct_count + 1)
@@ -2717,6 +2901,9 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
         primary_category="hellenistic",
         category_tags=("hellenistic", "medieval"),
         reversal=LotReversalKind.NIGHT_REVERSIBLE,
+        projector_reference=LotReferenceClassification(
+            LotReferenceKind.ANGLE, "Asc", "house_cusp_1"
+        ),
         add_reference=LotReferenceClassification(LotReferenceKind.PLANET, "Moon", "Moon"),
         sub_reference=LotReferenceClassification(LotReferenceKind.PLANET, "Sun", "Sun"),
     )
@@ -2751,6 +2938,9 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
             primary_category="modern",
             category_tags=("hellenistic", "medieval"),
             reversal=LotReversalKind.DIRECT,
+            projector_reference=LotReferenceClassification(
+                LotReferenceKind.ANGLE, "Asc"
+            ),
             add_reference=LotReferenceClassification(LotReferenceKind.PLANET, "Moon"),
             sub_reference=LotReferenceClassification(LotReferenceKind.PLANET, "Sun"),
         )
@@ -2778,7 +2968,10 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
             ),
         )
 
-    with pytest.raises(ValueError, match="dependencies must be empty or contain exactly two operand relations"):
+    with pytest.raises(
+        ValueError,
+        match="dependencies must be empty or contain projector, add, and sub relations",
+    ):
         ArabicPart(
             name="Fortune",
             longitude=120.0,
@@ -2809,6 +3002,14 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
             all_dependencies=[
                 LotDependency(
                     part_name="Fortune",
+                    role=LotDependencyRole.PROJECTOR,
+                    requested_key="Asc",
+                    effective_key="Asc",
+                    reference_kind=LotReferenceKind.ANGLE,
+                    reference_longitude=0.0,
+                ),
+                LotDependency(
+                    part_name="Fortune",
                     role=LotDependencyRole.ADD_OPERAND,
                     requested_key="Moon",
                     effective_key="Moon",
@@ -2825,6 +3026,14 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
                 ),
             ],
             dependencies=[
+                LotDependency(
+                    part_name="Fortune",
+                    role=LotDependencyRole.PROJECTOR,
+                    requested_key="Asc",
+                    effective_key="Asc",
+                    reference_kind=LotReferenceKind.ANGLE,
+                    reference_longitude=0.0,
+                ),
                 LotDependency(
                     part_name="Fortune",
                     role=LotDependencyRole.ADD_OPERAND,
@@ -2854,6 +3063,14 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
                 all_dependencies=[
                     LotDependency(
                         part_name="Fortune",
+                        role=LotDependencyRole.PROJECTOR,
+                        requested_key="Asc",
+                        effective_key="Asc",
+                        reference_kind=LotReferenceKind.ANGLE,
+                        reference_longitude=0.0,
+                    ),
+                    LotDependency(
+                        part_name="Fortune",
                         role=LotDependencyRole.ADD_OPERAND,
                         requested_key="Moon",
                         effective_key="Moon",
@@ -2872,6 +3089,14 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
                 dependencies=[
                     LotDependency(
                         part_name="Fortune",
+                        role=LotDependencyRole.PROJECTOR,
+                        requested_key="Asc",
+                        effective_key="Asc",
+                        reference_kind=LotReferenceKind.ANGLE,
+                        reference_longitude=0.0,
+                    ),
+                    LotDependency(
+                        part_name="Fortune",
                         role=LotDependencyRole.ADD_OPERAND,
                         requested_key="Moon",
                         effective_key="Moon",
@@ -2887,7 +3112,7 @@ def test_lot_vessel_invariants_fail_loudly_on_internal_drift() -> None:
                         reference_longitude=100.0,
                     ),
                 ],
-                direct_dependency_count=2,
+                direct_dependency_count=3,
                 indirect_dependency_count=0,
                 inter_lot_dependency_count=0,
                 external_dependency_count=0,

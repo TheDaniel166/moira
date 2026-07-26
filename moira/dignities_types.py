@@ -18,11 +18,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import StrEnum
+from math import isfinite
 
 from .constants import SIGNS
 
 __all__ = [
     # Enums
+    "TruthEvaluationStatus",
+    "HorizonHemisphere",
+    "HorizonComputationMethod",
+    "SectComponentKind",
     "ConditionPolarity",
     "EssentialDignityKind",
     "AccidentalConditionKind",
@@ -47,6 +52,7 @@ __all__ = [
     "SectHayzPolicy",
     "AccidentalDignityPolicy",
     "DignityComputationPolicy",
+    "DignityHorizonFrame",
     "DispositorshipSubjectPolicy",
     "DispositorshipRulershipPolicy",
     "DispositorshipTerminationPolicy",
@@ -78,6 +84,10 @@ __all__ = [
     "SectClassification",
     "SolarConditionClassification",
     "ReceptionClassification",
+    "EssentialDignityComponentTruth",
+    "MercuryPhaseTruth",
+    "HorizonTruth",
+    "SectComponentTruth",
     "EssentialDignityTruth",
     "AccidentalDignityCondition",
     "SolarConditionTruth",
@@ -107,6 +117,35 @@ def _normalize_dispositorship_subject_name(subject: str) -> str:
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
+
+class TruthEvaluationStatus(StrEnum):
+    """Whether one typed truth component was actually evaluable."""
+
+    EVALUATED = "evaluated"
+    NOT_EVALUABLE = "not_evaluable"
+
+
+class HorizonHemisphere(StrEnum):
+    """A body's ecliptic hemisphere relative to the local horizon."""
+
+    ABOVE = "above"
+    BELOW = "below"
+
+
+class HorizonComputationMethod(StrEnum):
+    """Geometry used to determine the horizon hemisphere."""
+
+    ZODIACAL_ANGLES = "zodiacal_angles"
+    LEGACY_HOUSE_NUMBER = "legacy_house_number"
+
+
+class SectComponentKind(StrEnum):
+    """Atomic judgments that compose a planet's sect truth."""
+
+    SECT_MEMBERSHIP = "sect_membership"
+    HALB = "halb"
+    HAYZ = "hayz"
+
 
 class ConditionPolarity(StrEnum):
     """Classification polarity derived from existing scoring and labels."""
@@ -159,6 +198,7 @@ class SectStateKind(StrEnum):
     IN_HALB = "in_halb"
     IN_SECT = "in_sect"
     OUT_OF_SECT = "out_of_sect"
+    NOT_EVALUABLE = "not_evaluable"
 
 
 class SolarConditionKind(StrEnum):
@@ -345,6 +385,44 @@ class DignityComputationPolicy:
         """Return True when this policy matches the current default doctrine."""
 
         return self == DignityComputationPolicy()
+
+
+@dataclass(frozen=True, slots=True)
+class DignityHorizonFrame:
+    """
+    Exact chart angles used for house-system-independent horizon truth.
+
+    The Ascendant/Descendant are the ecliptic intersections with the local
+    horizon. The Midheaven identifies which of the two open semicircles is
+    above the horizon. A body on either horizon intersection is deliberately
+    not assigned to a hemisphere.
+    """
+
+    asc_longitude: float
+    mc_longitude: float
+    boundary_tolerance_deg: float = 1e-7
+
+    def __post_init__(self) -> None:
+        if not isfinite(self.asc_longitude) or not isfinite(self.mc_longitude):
+            raise ValueError("DignityHorizonFrame longitudes must be finite")
+        if (
+            not isfinite(self.boundary_tolerance_deg)
+            or self.boundary_tolerance_deg < 0.0
+            or self.boundary_tolerance_deg >= 1.0
+        ):
+            raise ValueError(
+                "DignityHorizonFrame boundary_tolerance_deg must be finite and in [0, 1)"
+            )
+        object.__setattr__(self, "asc_longitude", self.asc_longitude % 360.0)
+        object.__setattr__(self, "mc_longitude", self.mc_longitude % 360.0)
+        asc = self.asc_longitude
+        dsc = (asc + 180.0) % 360.0
+        mc_to_asc = abs((self.mc_longitude - asc + 180.0) % 360.0 - 180.0)
+        mc_to_dsc = abs((self.mc_longitude - dsc + 180.0) % 360.0 - 180.0)
+        if min(mc_to_asc, mc_to_dsc) <= self.boundary_tolerance_deg:
+            raise ValueError(
+                "DignityHorizonFrame MC cannot lie on the Ascendant/Descendant horizon"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1303,9 +1381,10 @@ class SectClassification:
     """Lean typed sect-state classification for already-computed sect truth."""
 
     state: SectStateKind
-    in_sect: bool
-    in_halb: bool
-    in_hayz: bool
+    in_sect: bool | None
+    in_halb: bool | None
+    in_hayz: bool | None
+    components: tuple["SectComponentTruth", ...] = ()
 
 
 @dataclass(slots=True)
@@ -1327,6 +1406,113 @@ class ReceptionClassification:
     label: str
     score: int
 
+
+@dataclass(frozen=True, slots=True)
+class EssentialDignityComponentTruth:
+    """One independently evaluated essential-dignity component."""
+
+    kind: EssentialDignityKind
+    status: TruthEvaluationStatus
+    matched: bool | None
+    matching_signs: tuple[str, ...] = ()
+    ruler: str | None = None
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if self.matched is None:
+                raise ValueError(
+                    "EssentialDignityComponentTruth evaluated components require matched"
+                )
+            if self.reason is not None:
+                raise ValueError(
+                    "EssentialDignityComponentTruth evaluated components cannot carry a reason"
+                )
+        else:
+            if self.matched is not None:
+                raise ValueError(
+                    "EssentialDignityComponentTruth not_evaluable components require matched=None"
+                )
+            if not self.reason:
+                raise ValueError(
+                    "EssentialDignityComponentTruth not_evaluable components require a reason"
+                )
+
+
+@dataclass(frozen=True, slots=True)
+class MercuryPhaseTruth:
+    """Typed result of the admitted Mercury longitude-phase heuristic."""
+
+    model: MercurySectModel
+    status: TruthEvaluationStatus
+    rises_before_sun: bool | None
+    longitudinal_separation_deg: float
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isfinite(self.longitudinal_separation_deg):
+            raise ValueError("MercuryPhaseTruth separation must be finite")
+        if not (0.0 <= self.longitudinal_separation_deg < 360.0):
+            raise ValueError("MercuryPhaseTruth separation must be in [0, 360)")
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if self.rises_before_sun is None or self.reason is not None:
+                raise ValueError(
+                    "MercuryPhaseTruth evaluated results require a boolean and no reason"
+                )
+        elif self.rises_before_sun is not None or not self.reason:
+            raise ValueError(
+                "MercuryPhaseTruth not_evaluable results require no boolean and an explicit reason"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class HorizonTruth:
+    """Typed horizon-hemisphere result for one ecliptic longitude."""
+
+    status: TruthEvaluationStatus
+    method: HorizonComputationMethod
+    longitude: float
+    hemisphere: HorizonHemisphere | None
+    asc_longitude: float | None = None
+    mc_longitude: float | None = None
+    boundary_distance_deg: float | None = None
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isfinite(self.longitude):
+            raise ValueError("HorizonTruth longitude must be finite")
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if self.hemisphere is None or self.reason is not None:
+                raise ValueError(
+                    "HorizonTruth evaluated results require a hemisphere and no reason"
+                )
+        elif self.hemisphere is not None or not self.reason:
+            raise ValueError(
+                "HorizonTruth not_evaluable results require no hemisphere and an explicit reason"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class SectComponentTruth:
+    """One independently evaluated sect, Halb, or Hayz component."""
+
+    kind: SectComponentKind
+    status: TruthEvaluationStatus
+    matched: bool | None
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if self.matched is None or self.reason is not None:
+                raise ValueError(
+                    "SectComponentTruth evaluated components require a boolean and no reason"
+                )
+        elif self.matched is not None or not self.reason:
+            raise ValueError(
+                "SectComponentTruth not_evaluable components require no boolean and a reason"
+            )
+
+
 @dataclass(slots=True)
 class EssentialDignityTruth:
     """
@@ -1342,6 +1528,28 @@ class EssentialDignityTruth:
     sign: str
     matching_signs: tuple[str, ...]
     matched: bool = True
+    components: tuple[EssentialDignityComponentTruth, ...] = ()
+
+    def __post_init__(self) -> None:
+        kinds = [component.kind for component in self.components]
+        if len(kinds) != len(set(kinds)):
+            raise ValueError(
+                "EssentialDignityTruth components must contain each kind at most once"
+            )
+
+    @property
+    def matched_components(self) -> tuple[EssentialDignityComponentTruth, ...]:
+        """Return all evaluated components that matched, without collapsing them."""
+
+        return tuple(component for component in self.components if component.matched is True)
+
+    def component(
+        self,
+        kind: EssentialDignityKind,
+    ) -> EssentialDignityComponentTruth | None:
+        """Return one named component when present."""
+
+        return next((component for component in self.components if component.kind is kind), None)
 
 
 @dataclass(slots=True)
@@ -1389,16 +1597,24 @@ class SectTruth:
     sect_light: str
     planet_sect: str | None
     mercury_rises_before_sun: bool | None
-    in_sect: bool
-    in_halb: bool
-    in_hayz: bool
+    in_sect: bool | None
+    in_halb: bool | None
+    in_hayz: bool | None
     preferred_hemisphere: str | None
-    actual_hemisphere: str
-    hemisphere_matches: bool
+    actual_hemisphere: str | None
+    hemisphere_matches: bool | None
     preferred_gender: str | None
     actual_gender: str
     gender_matches: bool | None
     hayz_evaluable: bool
+    mercury_phase_truth: MercuryPhaseTruth | None = None
+    horizon_truth: HorizonTruth | None = None
+    components: tuple[SectComponentTruth, ...] = ()
+
+    def component(self, kind: SectComponentKind) -> SectComponentTruth | None:
+        """Return one atomic sect component when present."""
+
+        return next((component for component in self.components if component.kind is kind), None)
 
 
 @dataclass(slots=True)
@@ -1465,8 +1681,8 @@ class PlanetaryDignity:
             - None beyond Python builtins.
         Structural invariants:
             - total_score == essential_score + accidental_score.
-            - essential_dignity is one of: Domicile, Exaltation, Detriment,
-              Fall, Peregrine.
+            - essential_dignity is one of: Domicile, Exaltation, Triplicity,
+              Bound, Face, Detriment, Fall, Peregrine.
 
     Canon: William Lilly, Christian Astrology (1647), Book I
 

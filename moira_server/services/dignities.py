@@ -11,6 +11,7 @@ from moira.dignities_types import (
     ChartConditionProfile,
     ConditionNetworkProfile,
     DignityComputationPolicy,
+    DignityHorizonFrame,
     EssentialDignityDoctrine,
     EssentialDignityPolicy,
     MutualReceptionPolicy,
@@ -50,6 +51,7 @@ _MODERN_DIGNITY_PLANETS: tuple[str, ...] = (
 class _DignitySupportTruth:
     planet_positions: list[dict]
     house_positions: list[dict]
+    horizon_frame: DignityHorizonFrame
     policy: DignityComputationPolicy | None
 
 
@@ -137,6 +139,10 @@ def _derive_dignity_support_truth(
     return _DignitySupportTruth(
         planet_positions=planet_positions,
         house_positions=house_positions,
+        horizon_frame=DignityHorizonFrame(
+            asc_longitude=houses.asc,
+            mc_longitude=houses.mc,
+        ),
         policy=policy,
     )
 
@@ -150,6 +156,7 @@ def compute_dignities_chart(
         support.planet_positions,
         support.house_positions,
         policy=support.policy,
+        horizon_frame=support.horizon_frame,
     )
 
 
@@ -173,6 +180,7 @@ def compute_dignities_chart_conditions(
         support.planet_positions,
         support.house_positions,
         policy=support.policy,
+        horizon_frame=support.horizon_frame,
     )
 
 
@@ -196,6 +204,7 @@ def compute_dignities_chart_profile(
         support.planet_positions,
         support.house_positions,
         policy=support.policy,
+        horizon_frame=support.horizon_frame,
     )
 
 
@@ -208,6 +217,7 @@ def compute_dignities_chart_network(
         support.planet_positions,
         support.house_positions,
         policy=support.policy,
+        horizon_frame=support.horizon_frame,
     )
 
 

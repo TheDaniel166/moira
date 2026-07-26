@@ -15,6 +15,10 @@ import moira.dignities as _dignities_module
 
 _CURATED_PUBLIC_NAMES = [
     # Classification enums
+    "TruthEvaluationStatus",
+    "HorizonHemisphere",
+    "HorizonComputationMethod",
+    "SectComponentKind",
     "ConditionPolarity",
     "EssentialDignityKind",
     "AccidentalConditionKind",
@@ -39,6 +43,7 @@ _CURATED_PUBLIC_NAMES = [
     "SectHayzPolicy",
     "AccidentalDignityPolicy",
     "DignityComputationPolicy",
+    "DignityHorizonFrame",
     "DispositorshipSubjectPolicy",
     "DispositorshipRulershipPolicy",
     "DispositorshipTerminationPolicy",
@@ -52,6 +57,10 @@ _CURATED_PUBLIC_NAMES = [
     "SectClassification",
     "SolarConditionClassification",
     "ReceptionClassification",
+    "EssentialDignityComponentTruth",
+    "MercuryPhaseTruth",
+    "HorizonTruth",
+    "SectComponentTruth",
     "EssentialDignityTruth",
     "AccidentalDignityCondition",
     "SolarConditionTruth",
@@ -164,8 +173,8 @@ class TestModuleAgreement:
                 f"DignitiesService.{name} disappeared; helper should remain internal"
             )
 
-    def test_curated_count_is_95(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 95
+    def test_curated_count_is_104(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 104
 
     def test_unadmitted_valens_score_hook_is_absent(self):
         assert "valens_distribution_scores" not in signature(

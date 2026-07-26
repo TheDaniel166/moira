@@ -15,7 +15,7 @@ particular, “Phase 2” here means doctrine decisions, not the historical
 |---|---|---|---|
 | 1 | False-output containment | Complete | Incorrect or unadmitted Hellenistic outputs fail closed; Decennial L3/L4 and Hermetic public surfaces remain quarantined. |
 | 2 | Doctrine decisions | Complete | The disputed profection, Decennial, Halb/Hayz, ZR, lot, and Hermetic-catalog rules have explicit source or policy decisions. |
-| 3 | Typed truth composition | Pending | Replace collapsed labels/defaults with typed component and `not_evaluable` truth. |
+| 3 | Typed truth composition | In progress | Initial dignity, sect/horizon, Mercury-phase, and lot-dependency composition is implemented; remaining atomic families still require migration. |
 | 4 | Contract parity | Pending | Audit effective policy and provenance parity across exports, facade, serializers, REST models, and OpenAPI. Existing partial transport is not a parity receipt. |
 | 5 | Unified Hellenistic profile | Pending | Compose a non-interpretive chart profile only from atomic admitted receipts. |
 | 6 | Validation and documentation regeneration | Pending | Add independent source-owned goldens, regenerate inventories/matrices, archive stale completion claims, and only then update website documentation. |
@@ -105,4 +105,41 @@ Phase 2 is closed only because:
 5. no Phase 3 composition, Phase 4 parity claim, Phase 5 profile, or website
    admission is implied.
 
-The next authorized gate is Phase 3, typed truth composition.
+## Phase 3 Start Receipt
+
+The first Phase 3 slice establishes the composition contract without claiming
+the gate complete:
+
+- essential dignity truth preserves independent domicile, exaltation,
+  triplicity, Egyptian-bound, Chaldean-face, detriment, fall, and peregrine
+  components; the scalar label is only a compatibility projection;
+- `DignityHorizonFrame` makes chart sect and body hemisphere independent of
+  selected house-system cusp numbering;
+- exact Ascendant/Descendant placement and exact Mercury/Sun conjunction no
+  longer become fabricated booleans;
+- lot dependencies now include the projector alongside both operands and carry
+  an explicit completeness receipt;
+- `evaluate_lots` returns typed receipts for unresolved catalogue entries
+  instead of silently erasing them;
+- lot dependency composition is explicitly separated from astrological
+  condition, which remains `not_evaluable` without admitted doctrine.
+
+Phase 3 remains open for the remaining collapsed/default-bearing Hellenistic
+families and for a final atomic-truth gate audit. Phase 4 parity, Phase 5
+profile composition, and website work are not implied by this start receipt.
+
+### Resting point for the next work session
+
+Resume inside Phase 3; do not advance the gate status yet.
+
+1. inventory the remaining Hellenistic result vessels for collapsed labels,
+   fabricated defaults, silent omission, and score-only truth;
+2. select the next smallest atomic family and define its governing object,
+   ambiguity policy, and assembly doctrine before implementation;
+3. keep root/classical export parity, full REST/OpenAPI parity, the unified
+   profile, and website documentation at their named later gates;
+4. rerun the focused dignity/lots/facade/REST gate and documentation
+   consistency check after the next slice.
+
+Resting-point validation: 263 focused tests passed, Python compilation passed,
+documentation consistency passed, and `git diff --check` passed.

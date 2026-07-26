@@ -19,13 +19,16 @@ External dependencies:
     - moira.chart for chart context access
 
 Public surface:
-    LotReferenceKind, LotReversalKind, LotArcPolicy, LotDependencyRole, LotConditionState,
+    LotReferenceKind, LotReversalKind, LotArcPolicy, LotDependencyRole,
+    LotEvaluationStatus, LotConditionState,
     LotConditionNetworkEdgeMode, LotsReferenceFailureMode, LotsDerivedReferencePolicy,
     LotsExternalReferencePolicy, LotsComputationPolicy, LotReferenceTruth,
     ArabicPartComputationTruth, LotReferenceClassification, ArabicPartClassification,
-    LotDependency, LotConditionProfile, LotChartConditionProfile,
+    LotDependency, LotDependencyCompletenessTruth, LotAstrologicalConditionTruth,
+    LotNotEvaluable, LotsEvaluation, LotConditionProfile, LotChartConditionProfile,
     LotConditionNetworkNode, LotConditionNetworkEdge, LotConditionNetworkProfile,
-    ArabicPart, calculate_lots, calculate_lot_dependencies, calculate_all_lot_dependencies,
+    ArabicPart, calculate_lots, evaluate_lots, calculate_lot_dependencies,
+    calculate_all_lot_dependencies,
     calculate_lot_condition_profiles, calculate_lot_chart_condition_profile,
     calculate_lot_condition_network_profile, ArabicPartsService, list_parts
 """
@@ -43,6 +46,7 @@ from .chart import ChartContext
 __all__ = [
     # Enumerations
     "LotReferenceKind", "LotReversalKind", "LotArcPolicy", "LotDependencyRole",
+    "LotEvaluationStatus",
     "LotConditionState", "LotConditionNetworkEdgeMode", "LotsReferenceFailureMode",
     # Policy
     "LotsDerivedReferencePolicy", "LotsExternalReferencePolicy", "LotsComputationPolicy",
@@ -50,13 +54,14 @@ __all__ = [
     "LotReferenceTruth", "ArabicPartComputationTruth",
     "LotReferenceClassification", "ArabicPartClassification",
     # Condition vessels
-    "LotDependency",
+    "LotDependency", "LotDependencyCompletenessTruth",
+    "LotAstrologicalConditionTruth", "LotNotEvaluable", "LotsEvaluation",
     "LotConditionProfile", "LotChartConditionProfile",
     "LotConditionNetworkNode", "LotConditionNetworkEdge", "LotConditionNetworkProfile",
     # Core vessels
     "ArabicPart", "PartDefinition",
     # Functions
-    "calculate_lots",
+    "calculate_lots", "evaluate_lots",
     "calculate_lot_dependencies", "calculate_all_lot_dependencies",
     "calculate_lot_condition_profiles", "calculate_lot_chart_condition_profile",
     "calculate_lot_condition_network_profile",
@@ -825,8 +830,17 @@ class LotsReferenceFailureMode(StrEnum):
 class LotDependencyRole(StrEnum):
     """Typed role of a dependency within a lot formula."""
 
+    PROJECTOR = "projector"
     ADD_OPERAND = "add_operand"
     SUB_OPERAND = "sub_operand"
+
+
+class LotEvaluationStatus(StrEnum):
+    """Evaluation state for typed lot truth and aggregate results."""
+
+    EVALUATED = "evaluated"
+    PARTIAL = "partial"
+    NOT_EVALUABLE = "not_evaluable"
 
 
 class LotConditionState(StrEnum):
@@ -1157,6 +1171,7 @@ class ArabicPartClassification:
     primary_category: str
     category_tags: tuple[str, ...]
     reversal: LotReversalKind
+    projector_reference: LotReferenceClassification
     add_reference: LotReferenceClassification
     sub_reference: LotReferenceClassification
 
@@ -1176,7 +1191,7 @@ class ArabicPartClassification:
 @dataclass(slots=True)
 class LotDependency:
     """
-    Formal dependency relation for one lot operand.
+    Formal dependency relation for one lot formula input.
 
     This is a backend-only relational layer. It is derived from preserved lot
     computation truth and does not independently recompute lot doctrine.
@@ -1191,10 +1206,10 @@ class LotDependency:
     detail: str = ""
 
     def __post_init__(self) -> None:
-        if self.role is LotDependencyRole.ADD_OPERAND and not self.effective_key:
-            raise ValueError("LotDependency invariant failed: add dependency must have an effective_key")
-        if self.role is LotDependencyRole.SUB_OPERAND and not self.effective_key:
-            raise ValueError("LotDependency invariant failed: sub dependency must have an effective_key")
+        if not self.effective_key:
+            raise ValueError(
+                "LotDependency invariant failed: every dependency must have an effective_key"
+            )
 
     @property
     def is_inter_lot(self) -> bool:
@@ -1215,14 +1230,144 @@ class LotDependency:
         return self.is_inter_lot or self.is_external
 
 
+@dataclass(frozen=True, slots=True)
+class LotDependencyCompletenessTruth:
+    """Typed completeness receipt for the three inputs to a computed lot."""
+
+    status: LotEvaluationStatus
+    expected_roles: tuple[LotDependencyRole, ...]
+    resolved_roles: tuple[LotDependencyRole, ...]
+    missing_references: tuple[str, ...] = ()
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        canonical_roles = (
+            LotDependencyRole.PROJECTOR,
+            LotDependencyRole.ADD_OPERAND,
+            LotDependencyRole.SUB_OPERAND,
+        )
+        if self.expected_roles != canonical_roles:
+            raise ValueError(
+                "LotDependencyCompletenessTruth expected_roles must contain "
+                "projector, add operand, and sub operand in canonical order"
+            )
+        if len(self.resolved_roles) != len(set(self.resolved_roles)):
+            raise ValueError(
+                "LotDependencyCompletenessTruth resolved_roles must be unique"
+            )
+        if any(role not in self.expected_roles for role in self.resolved_roles):
+            raise ValueError(
+                "LotDependencyCompletenessTruth resolved_roles must be expected roles"
+            )
+        if self.status is LotEvaluationStatus.EVALUATED:
+            if self.resolved_roles != self.expected_roles:
+                raise ValueError(
+                    "Evaluated lot dependency truth requires all expected roles"
+                )
+            if self.missing_references or self.reason is not None:
+                raise ValueError(
+                    "Evaluated lot dependency truth cannot carry missing references or a reason"
+                )
+        elif self.status is LotEvaluationStatus.NOT_EVALUABLE:
+            if not self.missing_references or not self.reason:
+                raise ValueError(
+                    "Not-evaluable lot dependency truth requires missing references and a reason"
+                )
+        else:
+            raise ValueError(
+                "LotDependencyCompletenessTruth does not admit partial computed-lot truth"
+            )
+
+    @property
+    def complete(self) -> bool:
+        """Return True only when every formula-input role was resolved."""
+
+        return self.status is LotEvaluationStatus.EVALUATED
+
+
+@dataclass(frozen=True, slots=True)
+class LotAstrologicalConditionTruth:
+    """
+    Explicit astrological-condition boundary for a lot.
+
+    Dependency composition is computational provenance, not a judgment that a
+    lot is strong, weak, favorable, or unfavorable. Until an independently
+    admitted condition doctrine exists, the astrological condition must remain
+    typed ``not_evaluable``.
+    """
+
+    status: LotEvaluationStatus = LotEvaluationStatus.NOT_EVALUABLE
+    condition: str | None = None
+    reason: str = "no_admitted_lot_condition_doctrine"
+
+    def __post_init__(self) -> None:
+        if self.status is not LotEvaluationStatus.NOT_EVALUABLE:
+            raise ValueError(
+                "LotAstrologicalConditionTruth currently admits only not_evaluable"
+            )
+        if self.condition is not None or not self.reason:
+            raise ValueError(
+                "LotAstrologicalConditionTruth requires no condition and an explicit reason"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class LotNotEvaluable:
+    """One catalogue lot that could not be computed from supplied references."""
+
+    name: str
+    category: str
+    projector_key: str
+    requested_add_key: str
+    requested_sub_key: str
+    effective_add_key: str
+    effective_sub_key: str
+    missing_references: tuple[str, ...]
+    status: LotEvaluationStatus = LotEvaluationStatus.NOT_EVALUABLE
+    reason: str = "unresolved_lot_ingredient_reference"
+
+    def __post_init__(self) -> None:
+        if self.status is not LotEvaluationStatus.NOT_EVALUABLE:
+            raise ValueError("LotNotEvaluable status must be not_evaluable")
+        if not self.missing_references:
+            raise ValueError("LotNotEvaluable requires at least one missing reference")
+        if not self.reason:
+            raise ValueError("LotNotEvaluable requires an explicit reason")
+
+
+@dataclass(slots=True)
+class LotsEvaluation:
+    """Typed aggregate containing both computed and not-evaluable catalogue lots."""
+
+    parts: list["ArabicPart"] = field(default_factory=list)
+    not_evaluable: list[LotNotEvaluable] = field(default_factory=list)
+
+    @property
+    def status(self) -> LotEvaluationStatus:
+        """Return evaluated, partial, or not_evaluable for this catalogue run."""
+
+        if self.parts and self.not_evaluable:
+            return LotEvaluationStatus.PARTIAL
+        if self.parts:
+            return LotEvaluationStatus.EVALUATED
+        return LotEvaluationStatus.NOT_EVALUABLE
+
+    @property
+    def evaluated_count(self) -> int:
+        return len(self.parts)
+
+    @property
+    def not_evaluable_count(self) -> int:
+        return len(self.not_evaluable)
+
+
 @dataclass(slots=True)
 class LotConditionProfile:
     """
-    Integrated per-part condition profile derived from existing lot truth.
+    Legacy structural dependency-composition profile derived from lot truth.
 
-    This is a backend synthesis layer only. It consumes preserved lot truth,
-    classification, and dependency relations and does not independently
-    recompute lot doctrine.
+    Despite its historical name, this is not an astrological condition
+    judgment. ``LotAstrologicalConditionTruth`` carries that separate boundary.
     """
 
     part_name: str
@@ -1416,6 +1561,10 @@ class ArabicPart:
     classification: ArabicPartClassification | None = None
     all_dependencies: list[LotDependency] = field(default_factory=list)
     dependencies: list[LotDependency] = field(default_factory=list)
+    dependency_completeness: LotDependencyCompletenessTruth | None = None
+    astrological_condition_truth: LotAstrologicalConditionTruth = field(
+        default_factory=LotAstrologicalConditionTruth
+    )
     condition_profile: LotConditionProfile | None = None
     sign:        str     = field(init=False)
     sign_symbol: str     = field(init=False)
@@ -1428,10 +1577,16 @@ class ArabicPart:
         if self.computation_truth is not None:
             if self.formula != self.computation_truth.formula:
                 raise ValueError("ArabicPart invariant failed: formula must match computation_truth.formula")
-            if self.all_dependencies and len(self.all_dependencies) != 2:
-                raise ValueError("ArabicPart invariant failed: all_dependencies must contain exactly two operand relations when present")
-            if len(self.dependencies) not in (0, 2):
-                raise ValueError("ArabicPart invariant failed: dependencies must be empty or contain exactly two operand relations")
+            if self.all_dependencies and len(self.all_dependencies) != 3:
+                raise ValueError(
+                    "ArabicPart invariant failed: all_dependencies must contain "
+                    "projector, add, and sub relations when present"
+                )
+            if len(self.dependencies) not in (0, 3):
+                raise ValueError(
+                    "ArabicPart invariant failed: dependencies must be empty or "
+                    "contain projector, add, and sub relations"
+                )
         if self.classification is not None:
             expected_tags = ArabicPartsService._parse_category_tags(self.category)
             if self.classification.category_tags != expected_tags:
@@ -1453,17 +1608,41 @@ class ArabicPart:
             )
             if self.classification.reversal is not expected_reversal:
                 raise ValueError("ArabicPart invariant failed: classification reversal must match computation truth")
+            if (
+                self.classification.projector_reference.kind.value
+                != self.computation_truth.projector_reference.source_kind
+            ):
+                raise ValueError(
+                    "ArabicPart invariant failed: projector-reference classification "
+                    "must match computation truth"
+                )
             if self.classification.add_reference.kind.value != self.computation_truth.add_reference.source_kind:
                 raise ValueError("ArabicPart invariant failed: add-reference classification must match computation truth")
             if self.classification.sub_reference.kind.value != self.computation_truth.sub_reference.source_kind:
                 raise ValueError("ArabicPart invariant failed: sub-reference classification must match computation truth")
         if self.computation_truth is not None and self.dependencies:
+            projector_dependencies = [
+                dep for dep in self.dependencies
+                if dep.role is LotDependencyRole.PROJECTOR
+            ]
             add_dependencies = [dep for dep in self.dependencies if dep.role is LotDependencyRole.ADD_OPERAND]
             sub_dependencies = [dep for dep in self.dependencies if dep.role is LotDependencyRole.SUB_OPERAND]
-            if len(add_dependencies) != 1 or len(sub_dependencies) != 1:
-                raise ValueError("ArabicPart invariant failed: dependencies must contain one add and one sub relation")
+            if (
+                len(projector_dependencies) != 1
+                or len(add_dependencies) != 1
+                or len(sub_dependencies) != 1
+            ):
+                raise ValueError(
+                    "ArabicPart invariant failed: dependencies must contain one "
+                    "projector, one add, and one sub relation"
+                )
+            projector_dependency = projector_dependencies[0]
             add_dependency = add_dependencies[0]
             sub_dependency = sub_dependencies[0]
+            if projector_dependency.effective_key != self.computation_truth.projector_key:
+                raise ValueError(
+                    "ArabicPart invariant failed: projector dependency must match computation truth"
+                )
             if add_dependency.effective_key != self.computation_truth.effective_add_key:
                 raise ValueError("ArabicPart invariant failed: add dependency must match computation truth")
             if sub_dependency.effective_key != self.computation_truth.effective_sub_key:
@@ -1472,6 +1651,24 @@ class ArabicPart:
                 raise ValueError("ArabicPart invariant failed: add dependency kind must match computation truth")
             if sub_dependency.reference_kind.value != self.computation_truth.sub_reference.source_kind:
                 raise ValueError("ArabicPart invariant failed: sub dependency kind must match computation truth")
+            if (
+                projector_dependency.reference_kind.value
+                != self.computation_truth.projector_reference.source_kind
+            ):
+                raise ValueError(
+                    "ArabicPart invariant failed: projector dependency kind must match computation truth"
+                )
+        if self.dependency_completeness is not None:
+            resolved_roles = tuple(dependency.role for dependency in self.dependencies)
+            if self.dependency_completeness.resolved_roles != resolved_roles:
+                raise ValueError(
+                    "ArabicPart invariant failed: dependency completeness roles "
+                    "must match dependencies"
+                )
+            if not self.dependency_completeness.complete:
+                raise ValueError(
+                    "ArabicPart invariant failed: a computed lot requires complete dependencies"
+                )
         if self.all_dependencies:
             for dependency in self.dependencies:
                 if dependency not in self.all_dependencies:
@@ -1712,7 +1909,7 @@ class ArabicPartsService:
             is_day_chart=chart.is_day,
         )
             
-    def calculate_parts(
+    def evaluate_parts(
         self,
         planet_longitudes: dict[str, float],
         house_cusps: dict[int, float] | list[float],
@@ -1723,9 +1920,12 @@ class ArabicPartsService:
         prenatal_new_moon: float | None = None,
         prenatal_full_moon: float | None = None,
         lord_of_hour: float | None = None,
-    ) -> list[ArabicPart]:
+    ) -> LotsEvaluation:
         """
-        Calculate all Arabic Parts for raw longitude data.
+        Evaluate the catalogue without silently erasing unresolved definitions.
+
+        Computable entries are returned as ``parts``. Every skipped catalogue
+        definition is returned as a typed ``LotNotEvaluable`` receipt.
         """
         policy = self._validate_policy(policy)
         planet_longitudes = self._validate_planet_longitudes(planet_longitudes)
@@ -1737,6 +1937,7 @@ class ArabicPartsService:
         )
 
         results: list[ArabicPart] = []
+        not_evaluable: list[LotNotEvaluable] = []
         for pdef in PARTS_DEFINITIONS:
             requested_add_key = pdef.day_add
             requested_sub_key = pdef.day_sub
@@ -1751,15 +1952,35 @@ class ArabicPartsService:
             sub_val = refs.get(sub_key)
             projector_val = refs.get(projector_key)
             if add_val is None or sub_val is None or projector_val is None:
+                missing_references = tuple(
+                    dict.fromkeys(
+                        key
+                        for key, value in (
+                            (projector_key, projector_val),
+                            (add_key, add_val),
+                            (sub_key, sub_val),
+                        )
+                        if value is None
+                    )
+                )
                 if policy.unresolved_reference_mode is LotsReferenceFailureMode.RAISE:
-                    if add_val is None:
-                        missing = add_key
-                    elif sub_val is None:
-                        missing = sub_key
-                    else:
-                        missing = projector_key
-                    raise ValueError(f"Unresolved lot ingredient reference: {missing}")
-                continue   # ingredient unavailable — skip silently
+                    raise ValueError(
+                        "Unresolved lot ingredient reference: "
+                        f"{missing_references[0]}"
+                    )
+                not_evaluable.append(
+                    LotNotEvaluable(
+                        name=pdef.name,
+                        category=pdef.category,
+                        projector_key=projector_key,
+                        requested_add_key=requested_add_key,
+                        requested_sub_key=requested_sub_key,
+                        effective_add_key=add_key,
+                        effective_sub_key=sub_key,
+                        missing_references=missing_references,
+                    )
+                )
+                continue
 
             directed_arc = (add_val - sub_val) % 360.0
             if pdef.arc_policy is LotArcPolicy.SHORTEST:
@@ -1788,6 +2009,25 @@ class ArabicPartsService:
                 part_name=pdef.name,
                 computation_truth=computation_truth,
             )
+            classification = self._classify_part(
+                category=pdef.category,
+                reversed_at_night=pdef.reverse_at_night,
+                reversed_for_chart=reversed_for_chart,
+                projector_reference=ref_truths[projector_key],
+                add_reference=ref_truths[add_key],
+                sub_reference=ref_truths[sub_key],
+            )
+            dependency_completeness = LotDependencyCompletenessTruth(
+                status=LotEvaluationStatus.EVALUATED,
+                expected_roles=(
+                    LotDependencyRole.PROJECTOR,
+                    LotDependencyRole.ADD_OPERAND,
+                    LotDependencyRole.SUB_OPERAND,
+                ),
+                resolved_roles=tuple(
+                    dependency.role for dependency in all_dependencies
+                ),
+            )
 
             results.append(ArabicPart(
                 name=pdef.name,
@@ -1796,24 +2036,14 @@ class ArabicPartsService:
                 category=pdef.category,
                 description=pdef.description,
                 computation_truth=computation_truth,
-                classification=self._classify_part(
-                    category=pdef.category,
-                    reversed_at_night=pdef.reverse_at_night,
-                    reversed_for_chart=reversed_for_chart,
-                    add_reference=ref_truths[add_key],
-                    sub_reference=ref_truths[sub_key],
-                ),
+                classification=classification,
                 all_dependencies=all_dependencies,
                 dependencies=list(all_dependencies),
+                dependency_completeness=dependency_completeness,
+                astrological_condition_truth=LotAstrologicalConditionTruth(),
                 condition_profile=self._build_condition_profile(
                     part_name=pdef.name,
-                    classification=self._classify_part(
-                        category=pdef.category,
-                        reversed_at_night=pdef.reverse_at_night,
-                        reversed_for_chart=reversed_for_chart,
-                        add_reference=ref_truths[add_key],
-                        sub_reference=ref_truths[sub_key],
-                    ),
+                    classification=classification,
                     all_dependencies=all_dependencies,
                     dependencies=list(all_dependencies),
                 ),
@@ -1823,7 +2053,33 @@ class ArabicPartsService:
             (_CATEGORY_ORDER.get(x.strip(), 99) for x in c.split(",")), default=99
         )
         results.sort(key=lambda p: (first_cat(p.category), p.name))
-        return results
+        not_evaluable.sort(key=lambda item: (first_cat(item.category), item.name))
+        return LotsEvaluation(parts=results, not_evaluable=not_evaluable)
+
+    def calculate_parts(
+        self,
+        planet_longitudes: dict[str, float],
+        house_cusps: dict[int, float] | list[float],
+        is_day_chart: bool,
+        policy: LotsComputationPolicy | None = None,
+        *,
+        syzygy: float | None = None,
+        prenatal_new_moon: float | None = None,
+        prenatal_full_moon: float | None = None,
+        lord_of_hour: float | None = None,
+    ) -> list[ArabicPart]:
+        """Compatibility projection returning only computed lots."""
+
+        return self.evaluate_parts(
+            planet_longitudes,
+            house_cusps,
+            is_day_chart,
+            policy=policy,
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+        ).parts
 
     def calculate_dependencies(
         self,
@@ -2243,6 +2499,7 @@ class ArabicPartsService:
         category: str,
         reversed_at_night: bool,
         reversed_for_chart: bool,
+        projector_reference: LotReferenceTruth,
         add_reference: LotReferenceTruth,
         sub_reference: LotReferenceTruth,
     ) -> ArabicPartClassification:
@@ -2264,6 +2521,9 @@ class ArabicPartsService:
             primary_category=primary_category,
             category_tags=category_tags,
             reversal=reversal,
+            projector_reference=ArabicPartsService._classify_reference_truth(
+                projector_reference
+            ),
             add_reference=ArabicPartsService._classify_reference_truth(add_reference),
             sub_reference=ArabicPartsService._classify_reference_truth(sub_reference),
         )
@@ -2274,9 +2534,20 @@ class ArabicPartsService:
         part_name: str,
         computation_truth: ArabicPartComputationTruth,
     ) -> list[LotDependency]:
-        """Build the two formal operand dependencies for one computed lot."""
+        """Build projector, add-operand, and sub-operand dependencies."""
 
         return [
+            LotDependency(
+                part_name=part_name,
+                role=LotDependencyRole.PROJECTOR,
+                requested_key=computation_truth.projector_key,
+                effective_key=computation_truth.projector_key,
+                reference_kind=LotReferenceKind(
+                    computation_truth.projector_reference.source_kind
+                ),
+                reference_longitude=computation_truth.projector_reference.longitude,
+                detail=computation_truth.projector_reference.detail,
+            ),
             LotDependency(
                 part_name=part_name,
                 role=LotDependencyRole.ADD_OPERAND,
@@ -2420,6 +2691,31 @@ def calculate_lots(
     """Compute all Arabic Parts."""
     return _service.calculate_parts(
         positions, house_cusps, is_day_chart, policy=policy,
+        syzygy=syzygy,
+        prenatal_new_moon=prenatal_new_moon,
+        prenatal_full_moon=prenatal_full_moon,
+        lord_of_hour=lord_of_hour,
+    )
+
+
+def evaluate_lots(
+    positions: dict[str, float],
+    house_cusps: dict[int, float],
+    is_day_chart: bool,
+    policy: LotsComputationPolicy | None = None,
+    *,
+    syzygy: float | None = None,
+    prenatal_new_moon: float | None = None,
+    prenatal_full_moon: float | None = None,
+    lord_of_hour: float | None = None,
+) -> LotsEvaluation:
+    """Evaluate all catalogue lots and preserve unresolved entries explicitly."""
+
+    return _service.evaluate_parts(
+        positions,
+        house_cusps,
+        is_day_chart,
+        policy=policy,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,

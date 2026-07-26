@@ -42,21 +42,21 @@ not recompute the doctrine independently.
 
 An **essential dignity** in Moira is:
 
-> The first matching essential condition under the current essential doctrine
-> tables, evaluated in this fixed priority order: domicile, exaltation,
-> triplicity, detriment, fall, peregrine.
+> A typed composition of independently evaluated domicile, exaltation,
+> triplicity, bound, face, detriment, fall, and peregrine components.
 
 | Element | Definition |
 |---|---|
-| doctrine tables | `DOMICILE`, `MODERN_DOMICILE`, `EXALTATION`, `DETRIMENT`, `MODERN_DETRIMENT`, `FALL` |
+| doctrine tables | `DOMICILE`, `MODERN_DOMICILE`, `EXALTATION`, Egyptian bounds, Chaldean faces, `DETRIMENT`, `MODERN_DETRIMENT`, `FALL` |
 | subject set | Classic 7 by default; Classic 7 plus Uranus, Neptune, Pluto under `MODERN_CO_RULERS` |
-| sign source | sign derived from planet longitude |
-| priority | domicile > exaltation > triplicity > detriment > fall > peregrine |
-| score source | `SCORE_DOMICILE`, `SCORE_EXALTATION`, `SCORE_TRIPLICITY`, `SCORE_DETRIMENT`, `SCORE_FALL`, `SCORE_PEREGRINE` |
+| component source | sign, chart sect, exact longitude, Egyptian-bound ruler, and Chaldean-face ruler |
+| compatibility priority | domicile > exaltation > triplicity > bound > face > detriment > fall > peregrine |
+| compatibility score source | `SCORE_DOMICILE`, `SCORE_EXALTATION`, `SCORE_TRIPLICITY`, `SCORE_BOUND`, `SCORE_FACE`, `SCORE_DETRIMENT`, `SCORE_FALL`, `SCORE_PEREGRINE` |
 
 The returned `essential_dignity` string and `essential_score` integer remain the
-legacy public surface. `essential_truth` and `essential_classification` are
-descriptive preservation layers over that same result.
+legacy single-label compatibility projection. `essential_truth.components` is
+the authoritative non-erasing receipt and may preserve simultaneous positive
+and negative facts that the compatibility label cannot express.
 
 #### 1.3 Accidental dignity
 
@@ -282,8 +282,18 @@ Mercury sect is phase-dependent. Standalone Mercury sect/Halb calls require an
 explicit `mercury_rises_before_sun` value. Chart-level dignity computation
 derives that phase only when both Sun and Mercury are present. It never
 substitutes a conjunction or another synthetic value for a missing Mercury.
+Exact Mercury/Sun conjunction returns typed `not_evaluable` phase, sect, Halb,
+and Hayz components rather than a false nocturnal default.
 An explicit Sun is mandatory because chart sect and solar conditions cannot be
 computed truthfully without it.
+
+`DignityHorizonFrame` carries the actual Ascendant and Midheaven. When present,
+the engine identifies the open ecliptic semicircle containing the Midheaven as
+above the horizon, independently of house-system cusp numbering. Bodies on the
+Ascendant or Descendant receive typed `not_evaluable` Halb/Hayz truth; a Sun on
+that boundary fails chart-sect computation closed. Raw legacy callers that do
+not yet supply a horizon frame remain explicitly identified by
+`HorizonComputationMethod.LEGACY_HOUSE_NUMBER`.
 
 This truth is preserved and classified explicitly even where it does not affect
 the current additive score.
@@ -327,6 +337,9 @@ The following public backend entry points are authoritative:
 | `ConditionNetworkEdge` | canonical directed network edge |
 | `ConditionNetworkProfile` | canonical network aggregation |
 | `DignityComputationPolicy` | canonical explicit doctrine/policy surface |
+| `DignityHorizonFrame` | actual Asc/MC zodiacal geometry for house-system-independent sect truth |
+| `EssentialDignityComponentTruth` | one atomic essential-dignity receipt |
+| `HorizonTruth` / `MercuryPhaseTruth` / `SectComponentTruth` | typed component receipts with explicit evaluation status |
 | `DignitiesService.calculate_dignities` | authoritative core computation |
 | `DignitiesService.calculate_receptions` | authoritative formal reception projection |
 | `DignitiesService.calculate_condition_profiles` | authoritative per-planet condition integration |
@@ -451,9 +464,9 @@ This register is the normative source of truth for subsystem invariants.
 | Code | Invariant |
 |---|---|
 | D-1 | `total_score == essential_score + accidental_score` for every `PlanetaryDignity` |
-| D-2 | `essential_dignity` and `essential_score` are preserved unchanged by truth or classification layers |
+| D-2 | `essential_dignity` and `essential_score` are the deterministic compatibility projection of component truth |
 | D-3 | `accidental_dignities` labels and `accidental_score` remain the authority for current accidental scoring semantics |
-| D-4 | default-policy results are semantically identical to the historical subsystem behavior |
+| D-4 | component truth may correct historical collapse or omission while the compatibility projection remains deterministic |
 
 #### INV-TRUTH - Truth preservation invariants
 
@@ -462,7 +475,7 @@ This register is the normative source of truth for subsystem invariants.
 | T-1 | `essential_truth.label == essential_dignity` when `essential_truth` is present |
 | T-2 | `essential_truth.score == essential_score` when `essential_truth` is present |
 | T-3 | accidental truth labels preserve the same condition labels exposed in `accidental_dignities` |
-| T-4 | sect, hayz, solar, and mutual-reception truth preserve already-computed logic rather than reconstructing it later |
+| T-4 | sect, Halb, Hayz, horizon, Mercury phase, solar, and reception truth preserve atomic evaluation status rather than fabricating defaults |
 
 #### INV-CLASS - Classification invariants
 

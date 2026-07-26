@@ -524,7 +524,11 @@ def test_moira_lots_and_dignities_forward_full_policy_inputs(monkeypatch) -> Non
         },
         longitudes=longitudes,
     )
-    houses = SimpleNamespace(asc=100.0, cusps=tuple(float(i * 30) for i in range(12)))
+    houses = SimpleNamespace(
+        asc=100.0,
+        mc=10.0,
+        cusps=tuple(float(i * 30) for i in range(12)),
+    )
     engine = facade.Moira()
 
     assert engine.lots(
@@ -547,7 +551,10 @@ def test_moira_lots_and_dignities_forward_full_policy_inputs(monkeypatch) -> Non
         "prenatal_full_moon": 44.0,
         "lord_of_hour": 55.0,
     }
-    assert dignities_seen["kwargs"] == {"policy": dignities_policy}
+    assert dignities_seen["kwargs"]["policy"] is dignities_policy
+    horizon_frame = dignities_seen["kwargs"]["horizon_frame"]
+    assert horizon_frame.asc_longitude == 100.0
+    assert horizon_frame.mc_longitude == 10.0
 
 
 def test_moira_zodiacal_releasing_forwards_full_doctrine(monkeypatch) -> None:
