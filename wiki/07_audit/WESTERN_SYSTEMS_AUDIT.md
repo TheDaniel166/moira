@@ -62,7 +62,9 @@ Moira has exceptionally strong Western coverage in core natal construction (hous
 3. Full exposure/interpretation for deep primary directions variants.
 4. Broader Medieval/Arabic + Renaissance time-lord or compound systems beyond core timelords.
 5. Modern Western psychological/ Uranian advanced interpretive layers.
-6. Hellenistic distributions/delineations — quarantined until source-complete and unscored; Progressed Synastry and Subplanetary Zenith/Nadir points remain resolved/reduced.
+6. Valens distribution interpretation/delineation — quarantined until
+   source-complete and unscored; this does not qualify the completed
+   non-interpretive Hellenistic chart profile.
 
 See detailed sections + references for full lists.
 

@@ -14,11 +14,13 @@ jobs:
     env:
       MOIRA_NO_DOWNLOAD: "1"
       MOIRA_TEST_MODE: "1"
+      MOIRA_STRICT_KNOWN_ISSUES: "1"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           submodules: recursive
 
       - name: Set up Python
@@ -35,9 +37,30 @@ jobs:
         run: |
           python scripts/check_doc_consistency.py
           python scripts/check_release_identity.py
+          python scripts/generate_hellenistic_inventory.py --check
           python scripts/sync_rest_api_reference.py --check
-          python scripts/build_website_docs_bundle.py --check
           python scripts/sync_git_wiki.py --check
+
+      - name: Check tagged website publication bundle
+        run: |
+          VERSION="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+            python scripts/build_website_docs_bundle.py --check
+          else
+            echo "v${VERSION} is an untagged release candidate; the version-pinned publication bundle is generated after the immutable release tag exists."
+          fi
+
+      - name: Run Hellenistic release gates
+        run: |
+          python -m pytest \
+            tests/unit/test_hellenistic_source_goldens.py \
+            tests/unit/test_hellenistic_inventory_generation.py \
+            tests/unit/test_hellenistic_contract_parity.py \
+            tests/unit/test_hellenistic_profile.py \
+            tests/server/test_hellenistic_contract_openapi.py \
+            -q
+          python -m pytest tests/server/test_server_decans_routes.py \
+            -q -k "decan_routes_are_registered or quarantined_hermetic_decan_routes_return_not_found"
 
       - name: Run public surface and release hardening suites
         run: |

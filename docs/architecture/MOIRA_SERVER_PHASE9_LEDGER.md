@@ -81,7 +81,7 @@ them.
 | P9-09 | Ashtakavarga | `admitted` | Four direct-sync and four chart-backed REST routes are live and tested against the backend standard, BAV/SAV result, shodhana policy, sign-strength, transit-strength, chart-profile, and Lagna derivation provenance surfaces. |
 | P9-10 | Alternate dasha systems | `admitted` | Five direct-compute and four chart-backed REST routes are live and tested against the backend standard, Ashtottari/Yogini sequence/profile surfaces, period-profile projection, natal Moon derivation, and eligibility-limit truth. |
 | P9-11 | Varga | `admitted` | Five direct-sync and three chart-backed REST routes are live and tested against the backend standard, generic/named VargaPoint surfaces, Shodashvarga set, and batch projections. |
-| P9-12 | Decans / decanates | `admitted` | Eight direct-sync and two chart-backed REST routes are live and tested against the backend standard, decanate placement truth, body-backed Vedic drekkana/decanate set derivation, Hermetic catalog/longitude/rising lookup, and night-hour vessel serialization. |
+| P9-12 | Decans / decanates | `admitted` | Four direct-sync and two chart-backed Decanates REST routes are live and tested against the backend standard and body-backed Vedic drekkana/decanate-set derivation. All Hermetic transport has been removed. |
 | P9-U1 | `moira.vedic` umbrella | `exclude_from_rest` | Import aggregation surface; expose named Vedic doctrine families instead. |
 | P9-U2 | `moira.classical` umbrella | `exclude_from_rest` | Import aggregation surface; expose named classical doctrine families instead. |
 
@@ -602,29 +602,27 @@ Status: `admitted`
 
 Governing object:
 
-- Decan/decanate placement and related decan-hour/ruling-star surfaces.
+- Admitted Decanates placement, with the separate Hermetic research module
+  contained outside the REST contract.
 
 Evidence:
 
 - Backend standard: `wiki/02_standards/DECANS_BACKEND_STANDARD.md`
 - Transport design: `docs/architecture/P9-12_DECANS_TRANSPORT_DESIGN.md`
 - Engine modules: `moira/decanates.py` and `moira/hermetic_decans.py`
-- Public exports are present through `moira`, `moira.classical`, and
-  `moira.facade`.
+- Decanates public exports are present through `moira`, `moira.classical`, and
+  `moira.facade`; Hermetic symbols are not.
 - Unit tests exist for decanates and Hermetic decans.
 
 REST admission notes:
 
-- Decanate placement and Hermetic decan-hour computation are distinct route
-  families and must not be flattened into one generic decan product.
 - First admission is direct-sync. Decanate routes consume caller-supplied
   longitude; Vedic drekkana additionally consumes JD and ayanamsa policy.
-- Hermetic routes expose catalog, tropical longitude lookup, rising decan, and
-  night-hour products.
 - Chart-backed Decanates routes are live after the post-Phase-9 shared adapter
   owns body longitude derivation, sidereal reduction provenance, and chart
-  policy truth. Hermetic routes remain direct because they are location/JD
-  observational products rather than body-backed sidereal chart conveniences.
+  policy truth.
+- Hermetic catalog/longitude/rising/night-hour transport models, services,
+  serializers, and routes were removed on 2026-07-26.
 - Live routes:
   - `POST /v1/decanates/chaldean-face`
   - `POST /v1/decanates/triplicity`
@@ -632,10 +630,6 @@ REST admission notes:
   - `POST /v1/decanates/set`
   - `POST /v1/decanates/chart/vedic-drekkana`
   - `POST /v1/decanates/chart/set`
-  - `GET /v1/hermetic-decans/catalog`
-  - `POST /v1/hermetic-decans/longitude`
-  - `POST /v1/hermetic-decans/rising`
-  - `POST /v1/hermetic-decans/night-hours`
 - Verification:
   - `tests/server/test_server_decans_routes.py`
   - `tests/server/test_server_startup.py`
@@ -643,7 +637,7 @@ REST admission notes:
 
 Next action:
 
-- P9-12 is admitted.
+- Any Hermetic transport admission requires a separate source/policy gate.
 
 ### P9-U1 Vedic Umbrella
 

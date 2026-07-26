@@ -6,6 +6,13 @@ Status: code-truth comparison updated through P-GAP-F1D utility parity cleanup
 Scope: live FastAPI route registry compared against `Moira` facade methods and
 root `moira.__all__` exports
 
+> **Historical snapshot.** The counts below were captured on 2026-06-15 and
+> are not a current route inventory. In particular, the
+> `hermetic-decans | 4` row counted dormant candidate-router definitions that
+> were never registered by `create_app()`; those definitions were removed on
+> 2026-07-26. Use the generated REST reference and Hellenistic API inventory
+> for current runtime truth.
+
 This ledger is a code-truth audit. It compares runtime surfaces, not the REST
 reference prose:
 

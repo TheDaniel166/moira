@@ -1,12 +1,12 @@
 """
 Unit tests for moira.hermetic_decans.
 
-Catalog tests are source-locked to Gundel's Harley MS 3731 edition. Geometry
-tests remain quarantined structural checks rather than doctrine admission.
+Catalog and equal-segmentation tests are source-locked to Gundel's Harley
+MS 3731 edition. Rising-composition tests remain quarantined structural checks
+rather than doctrine admission.
 """
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError
 from datetime import datetime, timezone
 from unittest.mock import patch, MagicMock
 
@@ -32,10 +32,9 @@ _SOURCE_NAMES = (
 def test_quarantined_catalog_is_not_curated_by_package_or_facade() -> None:
     import moira
     import moira.facade as facade
+    import moira.hermetic_decans as decans
 
     quarantined_symbols = {
-        "DecanHour",
-        "DecanHoursNight",
         "DECAN_NAMES",
         "DECAN_PLANETARY_FACES",
         "HERMETIC_DECAN_CATALOG",
@@ -44,10 +43,12 @@ def test_quarantined_catalog_is_not_curated_by_package_or_facade() -> None:
         "available_decans",
         "decan_for_longitude",
         "decan_at",
-        "decan_hours",
     }
+    removed_symbols = {"DecanHour", "DecanHoursNight", "decan_hours"}
+
     assert quarantined_symbols.isdisjoint(moira.__all__)
     assert all(not hasattr(facade, name) for name in quarantined_symbols)
+    assert all(not hasattr(decans, name) for name in removed_symbols)
 
 
 def test_solar_declination_ra_uses_tt_obliquity() -> None:
@@ -92,47 +93,6 @@ def test_decan_at_matches_house_engine_ascendant_for_representative_cases() -> N
         jd = jd_from_datetime(dt)
         houses = calculate_houses(jd, lat, lon)
         assert decan_at(jd, lat, lon) == decan_for_longitude(houses.asc)
-
-
-def test_decan_hours_start_matches_mc_decan_at_sunset() -> None:
-    import math
-
-    from moira.hermetic_decans import _lst_to_ramc, decan_for_longitude, decan_hours
-    from moira.julian import jd_from_datetime
-    from moira.obliquity import true_obliquity
-
-    jd = jd_from_datetime(datetime(2000, 1, 1, 12, tzinfo=timezone.utc))
-    lat = 51.5
-    lon = -0.1
-    night = decan_hours(jd, lat, lon)
-    ramc = _lst_to_ramc(night.sunset_jd, lon)
-    obliquity = true_obliquity(night.sunset_jd)
-    mc = math.degrees(math.atan2(
-        math.sin(math.radians(ramc)),
-        math.cos(math.radians(ramc)) * math.cos(math.radians(obliquity)),
-    )) % 360.0
-    assert night.hours[0].decan == decan_for_longitude(mc)
-
-
-def test_decan_hours_handles_next_sunrise_refinement_day_slip() -> None:
-    import moira.hermetic_decans as decans
-
-    with patch.object(decans, "get_reader", return_value=MagicMock()), \
-         patch.object(decans, "_sunrise_sunset", side_effect=[
-             (2460665.2797947964, 2460665.8801496485),
-             (2460666.279805984, 2460666.880138461),
-         ]), \
-         patch.object(decans, "_refine_sunrise", side_effect=[
-             2460665.2797947964,
-             2460665.8801496485,
-             2460661.27991509,
-         ]), \
-         patch.object(decans, "_lst_to_ramc", return_value=120.0), \
-         patch.object(decans, "true_obliquity", return_value=23.4):
-        night = decans.decan_hours(2460665.5, -33.87, 151.21)
-
-    assert night.sunset_jd == pytest.approx(2460665.8801496485)
-    assert night.next_sunrise_jd == pytest.approx(2460666.27991509)
 
 
 # ===========================================================================
@@ -345,337 +305,6 @@ class TestDecanStarAt:
 
 
 # ===========================================================================
-# 7.6 — DecanHour and DecanHoursNight dataclass field presence
-# ===========================================================================
-
-class TestDecanHourDataclass:
-    def test_field_presence(self):
-        from moira.hermetic_decans import DecanHour
-        h = DecanHour(
-            hour_number=1,
-            decan="Aulathamas",
-            planetary_face="Mars",
-            jd_start=2451545.0,
-            jd_end=2451545.5,
-        )
-        assert h.hour_number == 1
-        assert h.decan == "Aulathamas"
-        assert h.planetary_face == "Mars"
-        assert h.jd_start == 2451545.0
-        assert h.jd_end == 2451545.5
-
-    def test_hour_number_field(self):
-        from moira.hermetic_decans import DecanHour
-        h = DecanHour(hour_number=12, decan="Aulathamas", planetary_face="Mars",
-                      jd_start=2451545.9, jd_end=2451546.0)
-        assert h.hour_number == 12
-
-    def test_invalid_hour_number_raises(self):
-        from moira.hermetic_decans import DecanHour
-        with pytest.raises(ValueError):
-            DecanHour(hour_number=0, decan="Aulathamas", planetary_face="Mars",
-                      jd_start=2451545.0, jd_end=2451545.1)
-
-    def test_invalid_planetary_face_raises(self):
-        from moira.hermetic_decans import DecanHour
-        with pytest.raises(ValueError):
-            DecanHour(hour_number=1, decan="Aulathamas", planetary_face="Sun",
-                      jd_start=2451545.0, jd_end=2451545.1)
-
-    def test_reversed_boundaries_raise(self):
-        from moira.hermetic_decans import DecanHour
-        with pytest.raises(ValueError):
-            DecanHour(hour_number=1, decan="Aulathamas", planetary_face="Mars",
-                      jd_start=2451545.1, jd_end=2451545.0)
-
-    def test_is_frozen(self):
-        from moira.hermetic_decans import DecanHour
-        h = DecanHour(hour_number=1, decan="Aulathamas", planetary_face="Mars",
-                      jd_start=2451545.0, jd_end=2451545.1)
-        with pytest.raises(FrozenInstanceError):
-            h.decan = "Sabaoth"
-
-
-class TestDecanHoursNightDataclass:
-    def _make_night(self):
-        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_PLANETARY_FACES, list_decans
-        sunset = 2451545.75
-        sunrise = 2451546.25
-        hour_len = (sunrise - sunset) / 12.0
-        decans = list_decans()
-        hours = [
-            DecanHour(
-                hour_number=i + 1,
-                decan=decans[i],
-                planetary_face=DECAN_PLANETARY_FACES[decans[i]],
-                jd_start=sunset + i * hour_len,
-                jd_end=sunset + (i + 1) * hour_len,
-            )
-            for i in range(12)
-        ]
-        return DecanHoursNight(
-            date_jd=2451545.5,
-            latitude=51.5,
-            longitude=-0.1,
-            sunset_jd=sunset,
-            next_sunrise_jd=sunrise,
-            hours=hours,
-        )
-
-    def test_field_presence(self):
-        night = self._make_night()
-        assert night.date_jd == 2451545.5
-        assert night.latitude == 51.5
-        assert night.longitude == -0.1
-        assert night.sunset_jd == 2451545.75
-        assert night.next_sunrise_jd == 2451546.25
-        assert len(night.hours) == 12
-
-    def test_hours_list_length(self):
-        night = self._make_night()
-        assert len(night.hours) == 12
-
-    def test_hours_are_stored_as_tuple(self):
-        night = self._make_night()
-        assert isinstance(night.hours, tuple)
-
-    def test_reversed_night_boundaries_raise(self):
-        from moira.hermetic_decans import DecanHoursNight
-        with pytest.raises(ValueError):
-            DecanHoursNight(
-                date_jd=2451545.5,
-                latitude=51.5,
-                longitude=-0.1,
-                sunset_jd=2451546.25,
-                next_sunrise_jd=2451545.75,
-                hours=(),
-            )
-
-    def test_requires_exactly_twelve_hours(self):
-        from moira.hermetic_decans import DecanHour, DecanHoursNight
-        hour = DecanHour(
-            hour_number=1,
-            decan="Aulathamas",
-            planetary_face="Mars",
-            jd_start=2451545.75,
-            jd_end=2451545.80,
-        )
-        with pytest.raises(ValueError):
-            DecanHoursNight(
-                date_jd=2451545.5,
-                latitude=51.5,
-                longitude=-0.1,
-                sunset_jd=2451545.75,
-                next_sunrise_jd=2451546.25,
-                hours=(hour,),
-            )
-
-    def test_is_frozen(self):
-        night = self._make_night()
-        with pytest.raises(FrozenInstanceError):
-            night.latitude = 0.0
-
-    def test_hours_tuple_cannot_be_mutated(self):
-        night = self._make_night()
-        with pytest.raises(TypeError):
-            night.hours[0] = night.hours[0]
-
-
-# ===========================================================================
-# 7.7 — hour_at and decan_of_hour boundary behaviour
-# ===========================================================================
-
-class TestHourAt:
-    def _make_night(self):
-        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_PLANETARY_FACES, list_decans
-        sunset = 2451545.75
-        sunrise = 2451546.25
-        hour_len = (sunrise - sunset) / 12.0
-        decans = list_decans()
-        hours = [
-            DecanHour(
-                hour_number=i + 1,
-                decan=decans[i % 36],
-                planetary_face=DECAN_PLANETARY_FACES[decans[i % 36]],
-                jd_start=sunset + i * hour_len,
-                jd_end=sunset + (i + 1) * hour_len,
-            )
-            for i in range(12)
-        ]
-        return DecanHoursNight(
-            date_jd=2451545.5,
-            latitude=51.5,
-            longitude=-0.1,
-            sunset_jd=sunset,
-            next_sunrise_jd=sunrise,
-            hours=hours,
-        )
-
-    def test_jd_before_sunset_returns_none(self):
-        night = self._make_night()
-        result = night.hour_at(night.sunset_jd - 0.001)
-        assert result is None
-
-    def test_jd_after_sunrise_returns_none(self):
-        night = self._make_night()
-        result = night.hour_at(night.next_sunrise_jd + 0.001)
-        assert result is None
-
-    def test_jd_at_exact_sunrise_returns_none(self):
-        # jd_end of last hour == next_sunrise_jd; interval is [start, end)
-        night = self._make_night()
-        result = night.hour_at(night.next_sunrise_jd)
-        assert result is None
-
-    def test_jd_inside_first_hour(self):
-        night = self._make_night()
-        jd_inside = night.hours[0].jd_start + 0.001
-        result = night.hour_at(jd_inside)
-        assert result is not None
-        assert result.hour_number == 1
-
-    def test_jd_inside_last_hour(self):
-        night = self._make_night()
-        jd_inside = night.hours[11].jd_start + 0.001
-        result = night.hour_at(jd_inside)
-        assert result is not None
-        assert result.hour_number == 12
-
-    def test_jd_at_sunset_returns_first_hour(self):
-        night = self._make_night()
-        result = night.hour_at(night.sunset_jd)
-        assert result is not None
-        assert result.hour_number == 1
-
-
-class TestDecanHoursComputation:
-    def test_invalid_night_geometry_raises(self):
-        import moira.hermetic_decans as decans
-
-        with patch.object(decans, "get_reader", return_value=MagicMock()), \
-             patch.object(decans, "_sunrise_sunset", side_effect=[
-                 (2451545.2, 2451545.8),
-                 (2451546.2, 2451545.7),
-             ]), \
-             patch.object(decans, "_refine_sunrise", side_effect=[2451545.2, 2451545.8, 2451545.7]):
-            with pytest.raises(ValueError, match="valid night"):
-                decans.decan_hours(2451545.5, 51.5, -0.1)
-
-
-class TestHermeticDecanExternalGoldens:
-    """Minute-resolution external goldens anchored to USNO one-day rise/set data.
-
-    Source checked on 2026-04-09 against https://aa.usno.navy.mil/api/rstt/oneday .
-    The API returns minute-resolution sunrise/sunset data, so these checks use a
-    3.5 minute tolerance rather than overclaiming sub-minute external precision.
-    """
-
-    @pytest.mark.parametrize(
-        ("dt", "lat", "lon", "expected_sunset", "expected_next_sunrise"),
-        [
-            (
-                datetime(2000, 1, 1, 0, tzinfo=timezone.utc),
-                51.5,
-                -0.1,
-                datetime(1999, 12, 31, 16, 0, tzinfo=timezone.utc),
-                datetime(2000, 1, 1, 8, 6, tzinfo=timezone.utc),
-            ),
-            (
-                datetime(1987, 4, 10, 0, tzinfo=timezone.utc),
-                37.98,
-                23.72,
-                datetime(1987, 4, 9, 16, 55, tzinfo=timezone.utc),
-                datetime(1987, 4, 10, 3, 58, tzinfo=timezone.utc),
-            ),
-            (
-                datetime(2024, 6, 21, 0, tzinfo=timezone.utc),
-                0.0,
-                0.0,
-                datetime(2024, 6, 20, 18, 5, tzinfo=timezone.utc),
-                datetime(2024, 6, 21, 5, 58, tzinfo=timezone.utc),
-            ),
-            (
-                datetime(2024, 12, 21, 0, tzinfo=timezone.utc),
-                -33.87,
-                151.21,
-                datetime(2024, 12, 21, 9, 6, tzinfo=timezone.utc),
-                datetime(2024, 12, 21, 18, 41, tzinfo=timezone.utc),
-            ),
-        ],
-    )
-    def test_usno_one_day_boundary_agreement(
-        self,
-        dt: datetime,
-        lat: float,
-        lon: float,
-        expected_sunset: datetime,
-        expected_next_sunrise: datetime,
-    ) -> None:
-        from moira.hermetic_decans import decan_hours
-        from moira.julian import datetime_from_jd, jd_from_datetime
-
-        night = decan_hours(jd_from_datetime(dt), lat, lon)
-        sunset_dt = datetime_from_jd(night.sunset_jd)
-        sunrise_dt = datetime_from_jd(night.next_sunrise_jd)
-
-        sunset_delta_minutes = abs((sunset_dt - expected_sunset).total_seconds()) / 60.0
-        sunrise_delta_minutes = abs((sunrise_dt - expected_next_sunrise).total_seconds()) / 60.0
-
-        assert sunset_delta_minutes <= 3.5
-        assert sunrise_delta_minutes <= 3.5
-
-
-class TestDecanOfHour:
-    def _make_night(self):
-        from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_PLANETARY_FACES, list_decans
-        sunset = 2451545.75
-        sunrise = 2451546.25
-        hour_len = (sunrise - sunset) / 12.0
-        decans = list_decans()
-        hours = [
-            DecanHour(
-                hour_number=i + 1,
-                decan=decans[i % 36],
-                planetary_face=DECAN_PLANETARY_FACES[decans[i % 36]],
-                jd_start=sunset + i * hour_len,
-                jd_end=sunset + (i + 1) * hour_len,
-            )
-            for i in range(12)
-        ]
-        return DecanHoursNight(
-            date_jd=2451545.5,
-            latitude=51.5,
-            longitude=-0.1,
-            sunset_jd=sunset,
-            next_sunrise_jd=sunrise,
-            hours=hours,
-        )
-
-    def test_outside_night_returns_none(self):
-        night = self._make_night()
-        assert night.decan_of_hour(night.sunset_jd - 0.001) is None
-        assert night.decan_of_hour(night.next_sunrise_jd + 0.001) is None
-
-    def test_inside_night_returns_decan_string(self):
-        night = self._make_night()
-        jd_inside = night.hours[0].jd_start + 0.001
-        result = night.decan_of_hour(jd_inside)
-        assert isinstance(result, str)
-
-    def test_consistency_with_hour_at(self):
-        night = self._make_night()
-        for h in night.hours:
-            jd_mid = (h.jd_start + h.jd_end) / 2.0
-            assert night.decan_of_hour(jd_mid) == night.hour_at(jd_mid).decan
-
-    def test_decan_of_hour_matches_hour_at_decan(self):
-        night = self._make_night()
-        jd_inside = night.hours[5].jd_start + 0.001
-        hour = night.hour_at(jd_inside)
-        assert night.decan_of_hour(jd_inside) == hour.decan
-
-
-# ===========================================================================
 # 9.x — Property-based tests (Hypothesis, no ephemeris required)
 # ===========================================================================
 
@@ -787,118 +416,8 @@ def test_prop8_decan_planetary_face_consistency(d):
     assert decan_planetary_face(d) == DECAN_PLANETARY_FACES[d]
 
 
-def _build_decan_hours_night(sunset_jd: float, duration: float, start_idx: int):
-    """Helper: construct a DecanHoursNight directly without calling decan_hours()."""
-    from moira.hermetic_decans import DecanHour, DecanHoursNight, DECAN_PLANETARY_FACES, list_decans
-    decans = list_decans()
-    hour_len = duration / 12.0
-    next_sunrise_jd = sunset_jd + duration
-    hours = []
-    for i in range(12):
-        idx = (start_idx + i) % 36
-        jd_start = sunset_jd + i * hour_len
-        jd_end = jd_start + hour_len
-        hours.append(DecanHour(
-            hour_number=i + 1,
-            decan=decans[idx],
-            planetary_face=DECAN_PLANETARY_FACES[decans[idx]],
-            jd_start=jd_start,
-            jd_end=jd_end,
-        ))
-    return DecanHoursNight(
-        date_jd=sunset_jd,
-        latitude=51.5,
-        longitude=-0.1,
-        sunset_jd=sunset_jd,
-        next_sunrise_jd=next_sunrise_jd,
-        hours=hours,
-    )
-
-
-@_skip_no_hypothesis
-@given(
-    sunset_jd=st.floats(min_value=2451545.0, max_value=2451546.0),
-    duration=st.floats(min_value=0.1, max_value=0.6),
-    start_idx=st.integers(min_value=0, max_value=35),
-)
-@settings(max_examples=100)
-def test_prop12_hour_structure_invariant(sunset_jd, duration, start_idx):
-    """Property 12: hour structure invariant — 12 equal hours, no gaps, correct boundaries.
-
-    **Validates: Requirements 5.4, 5.9, 5.10, 5.11**
-    """
-    night = _build_decan_hours_night(sunset_jd, duration, start_idx)
-
-    # Exactly 12 hours
-    assert len(night.hours) == 12
-
-    # First hour starts at sunset
-    assert night.hours[0].jd_start == night.sunset_jd
-
-    # Last hour ends at next sunrise
-    assert night.hours[11].jd_end == pytest.approx(night.next_sunrise_jd, rel=1e-9)
-
-    # No gaps between consecutive hours
-    for i in range(11):
-        assert night.hours[i].jd_end == pytest.approx(night.hours[i + 1].jd_start, rel=1e-9)
-
-    # All hours have equal duration (use absolute tolerance for float arithmetic)
-    hour_len = duration / 12.0
-    for h in night.hours:
-        assert (h.jd_end - h.jd_start) == pytest.approx(hour_len, abs=1e-9)
-
-
-@_skip_no_hypothesis
-@given(
-    sunset_jd=st.floats(min_value=2451545.0, max_value=2451546.0),
-    duration=st.floats(min_value=0.1, max_value=0.6),
-    start_idx=st.integers(min_value=0, max_value=35),
-)
-@settings(max_examples=100)
-def test_prop13_sequential_ecliptic_order(sunset_jd, duration, start_idx):
-    """Property 13: consecutive hours have consecutive decan indices (mod 36).
-
-    **Validates: Requirements 5.5**
-    """
-    from moira.hermetic_decans import decan_index
-    night = _build_decan_hours_night(sunset_jd, duration, start_idx)
-
-    for i in range(11):
-        idx_i = decan_index(night.hours[i].decan)
-        idx_next = decan_index(night.hours[i + 1].decan)
-        assert (idx_i + 1) % 36 == idx_next
-
-
-@_skip_no_hypothesis
-@given(
-    sunset_jd=st.floats(min_value=2451545.0, max_value=2451546.0),
-    duration=st.floats(min_value=0.1, max_value=0.6),
-    start_idx=st.integers(min_value=0, max_value=35),
-    frac=st.floats(min_value=0.0, max_value=1.0, exclude_max=True),
-)
-@settings(max_examples=100)
-def test_prop14_hour_at_decan_of_hour_consistency(sunset_jd, duration, start_idx, frac):
-    """Property 14: hour_at(jd).decan == decan_of_hour(jd) for any JD inside the night.
-
-    **Validates: Requirements 5.7, 5.8**
-    """
-    night = _build_decan_hours_night(sunset_jd, duration, start_idx)
-
-    # Pick a JD strictly inside the night
-    jd = sunset_jd + frac * duration
-
-    hour = night.hour_at(jd)
-    decan_name = night.decan_of_hour(jd)
-
-    # Both should agree
-    if hour is not None:
-        assert decan_name == hour.decan
-    else:
-        assert decan_name is None
-
-
 # ===========================================================================
-# Meeus oracle tests — Chapter 12 (GMST) and Chapter 24 (Houses / MC)
+# Meeus oracle tests — Chapter 12 (GMST)
 #
 # Reference: Jean Meeus, "Astronomical Algorithms" 2nd ed.
 #   Example 12.a  — April 10, 1987, 0h UT (JD 2446895.5)
@@ -911,11 +430,6 @@ def test_prop14_hour_at_decan_of_hour_consistency(sunset_jd, duration, start_idx
 # Oracle constants — do not edit without re-running the verification script.
 _MEEUS_JD          = 2446895.5      # April 10 1987, 0h UT
 _MEEUS_GMST        = 197.693195     # deg — Meeus Ex 12.a ground truth
-_MEEUS_OBL_TRUE    = 23.443559      # deg — true obliquity at that JD
-_MEEUS_MC_LON_0    = 199.173212     # deg — MC at geo_lon=0.0
-_MEEUS_MC_LON_25   = 225.158843     # deg — MC at geo_lon=25.0 (Athens)
-_MEEUS_MC_DECAN_0  = "Chusthisis"  # decan containing 199.17° (190–200°)
-_MEEUS_MC_DECAN_25 = "Churmantis"  # decan containing 225.16° (220–230°)
 
 
 class TestLstToRamcMeeusOracle:
@@ -936,66 +450,3 @@ class TestLstToRamcMeeusOracle:
         gmst  = _lst_to_ramc(_MEEUS_JD, 0.0)
         lst25 = _lst_to_ramc(_MEEUS_JD, 25.0)
         assert abs((lst25 - gmst) % 360.0 - 25.0) < 0.001
-
-
-class TestMcFormulaOracleMeeus:
-    """MC longitude formula verified against the Meeus Chapter 12 anchor point.
-
-    The MC formula (tan MC = sin RAMC / (cos RAMC × cos ε)) is stated in
-    Meeus Chapter 24.  These tests confirm the implementation is correct by
-    chaining from the verified GMST value.
-    """
-
-    def test_mc_longitude_at_greenwich(self):
-        """MC at geo_lon=0 must match oracle 199.173212° within 0.001°."""
-        import math
-        from moira.hermetic_decans import _lst_to_ramc
-        from moira.obliquity import true_obliquity
-        ramc  = _lst_to_ramc(_MEEUS_JD, 0.0)
-        obl   = true_obliquity(_MEEUS_JD)
-        mc    = math.degrees(math.atan2(
-            math.sin(math.radians(ramc)),
-            math.cos(math.radians(ramc)) * math.cos(math.radians(obl)),
-        )) % 360.0
-        assert abs(mc - _MEEUS_MC_LON_0) < 0.001, (
-            f"MC {mc:.6f}° differs from oracle {_MEEUS_MC_LON_0}°"
-        )
-
-    def test_mc_longitude_at_athens(self):
-        """MC at geo_lon=25 must match oracle 225.158843° within 0.001°."""
-        import math
-        from moira.hermetic_decans import _lst_to_ramc
-        from moira.obliquity import true_obliquity
-        ramc  = _lst_to_ramc(_MEEUS_JD, 25.0)
-        obl   = true_obliquity(_MEEUS_JD)
-        mc    = math.degrees(math.atan2(
-            math.sin(math.radians(ramc)),
-            math.cos(math.radians(ramc)) * math.cos(math.radians(obl)),
-        )) % 360.0
-        assert abs(mc - _MEEUS_MC_LON_25) < 0.001
-
-    def test_mc_decan_at_greenwich(self):
-        """Decan containing MC at geo_lon=0 must be Chusthisis (190–200°)."""
-        import math
-        from moira.hermetic_decans import _lst_to_ramc, decan_for_longitude
-        from moira.obliquity import true_obliquity
-        ramc = _lst_to_ramc(_MEEUS_JD, 0.0)
-        obl  = true_obliquity(_MEEUS_JD)
-        mc   = math.degrees(math.atan2(
-            math.sin(math.radians(ramc)),
-            math.cos(math.radians(ramc)) * math.cos(math.radians(obl)),
-        )) % 360.0
-        assert decan_for_longitude(mc) == _MEEUS_MC_DECAN_0
-
-    def test_mc_decan_at_athens(self):
-        """Decan containing MC at geo_lon=25 must be Churmantis (220–230°)."""
-        import math
-        from moira.hermetic_decans import _lst_to_ramc, decan_for_longitude
-        from moira.obliquity import true_obliquity
-        ramc = _lst_to_ramc(_MEEUS_JD, 25.0)
-        obl  = true_obliquity(_MEEUS_JD)
-        mc   = math.degrees(math.atan2(
-            math.sin(math.radians(ramc)),
-            math.cos(math.radians(ramc)) * math.cos(math.radians(obl)),
-        )) % 360.0
-        assert decan_for_longitude(mc) == _MEEUS_MC_DECAN_25

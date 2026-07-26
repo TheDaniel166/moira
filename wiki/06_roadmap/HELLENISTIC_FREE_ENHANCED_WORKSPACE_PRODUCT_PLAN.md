@@ -1,7 +1,8 @@
 # Hellenistic Free, Enhanced, and Workspace Product Plan
 
-**Status:** Research-backed proposal for the next additive package and hosted
-product work. It is not an admission receipt for deferred doctrine.
+**Status:** Archived pre-implementation product proposal. The six engine gates
+are complete; all website-tier inventories and promises below require a fresh
+audit of the active website checkout before implementation.
 
 > **Engine correction (2026-07-25).** This proposal does not override the
 > admitted engine boundary. Decennials currently ends at L2 and now preserves
@@ -11,9 +12,10 @@ product work. It is not an admission receipt for deferred doctrine.
 > geometry remains source-quarantined and unavailable to product tiers until
 > separately admitted.
 
-**Release posture:** The current package is `moira-astro 5.0.0`. Assign the
-Hellenistic release number only when its final scope is frozen. Package and REST
-closure must precede website entitlement work.
+**Release posture:** The completed engine contract is being released as
+`moira-astro 6.0.0`. Package and REST closure are recorded in
+`hellenistic_completion/HELLENISTIC_ENGINE_GATES_2026-07.md`; hosted website
+entitlement work remains separate.
 
 ## Product constitution
 
@@ -132,7 +134,7 @@ The engine already has broad Hellenistic computation. Registered REST includes:
 - Seven lots routes.
 - Three triplicity routes.
 - Seven bounds routes.
-- Chaldean-face, triplicity-decan, and four Hermetic-decan routes.
+- Four admitted direct Decanates routes; no Hermetic-decan route is exposed.
 - Three profection, six Decennials, and five Zodiacal Releasing routes.
 - Four source-scoped Dorotheus electional routes.
 - Eight mixed-lineage primary-directions routes.
@@ -190,8 +192,8 @@ second practitioner application.
 | Triplicity/bounds/faces | Complete | Current assignments under named website defaults | Full evidence and admitted selectors for personal study | Side-by-side policy inspection and reusable research profiles |
 | Lots | Complete catalog | Fortune, Spirit, Eros, and Necessity with formulas/reversal truth | Existing curated ten-lot set, saved comparisons | Full catalog, filters, dependencies, conditions, and networks |
 | Annual profection | Complete | Current year, lord, activated house, and source-visible derivation | Full annual/monthly schedule, arbitrary-date lookup, saved timeline | Batch generation and case comparison |
-| Zodiacal Releasing | Complete | Current Fortune or Spirit L1/L2 and next transition | Full L1-L4 personal timelines, Fortune/Spirit comparison, saved history and alerts | Multi-lot case comparison, batch work, overlays, and policy audit |
-| Decennials | L1/L2 core with explicit distribution/projection receipt | Deferred until later contract/profile/validation gates | Deferred until the same later gates | Research comparison only after separate admission |
+| Zodiacal Releasing | Complete | Current Fortune or Spirit L1/L2 and next transition | Full admitted timelines, Fortune/Spirit comparison, saved history and alerts; no L3/L4 promise without a separate gate | Multi-lot case comparison, batch work, overlays, and policy audit |
+| Decennials | L1/L2 core with explicit distribution/projection receipt | Current L1/L2 periods | L1/L2 personal timelines and saved history | L1/L2 case comparison; deeper levels require separate admission |
 | Hermetic decans | Source-reconstructed catalog in research quarantine | Unavailable | Unavailable | Catalog inspection only until geometry and contract are separately admitted |
 | Persian/Medieval Firdaria | Complete, separately labelled | Not in Hellenistic page | Optional personal Traditional-timing lane | Full Traditional research lane; never called Hellenistic |
 | Dorothean moment inspection | Complete | One user-supplied moment summary | Finite user-supplied candidate comparison | Bounded constraint scans and saved window sets |
@@ -240,7 +242,7 @@ Enhanced adds continuity around one person's charts:
 - The existing ten curated lots and saved comparisons.
 - Full profection schedules and arbitrary-date lookup.
 - Full personal ZR timelines, Fortune/Spirit comparison, and transitions.
-- Admitted Decennials timelines once transport is repaired.
+- Admitted Decennials L1/L2 timelines.
 - An adjacent, correctly labelled Firdaria lane.
 - Personal multi-lane timelines, exports, and user-authored reminders.
 - Chart-aware explanations that cite the exact evidence they summarize.
@@ -270,27 +272,13 @@ decisions, not launch requirements for a $19 tier.
 Do not add entitlements to `moira` or `moira_server`. Hosted commercial gates
 belong in the website tRPC/gateway and Workspace proxy.
 
-### Package/REST closure
+### Package/REST closure — complete
 
-1. Expose whole-sign aspect direction and overcoming through a tested atomic
-   facade/REST surface.
-2. Add a typed, non-interpretive Hellenistic chart-profile composition, or prove
-   that one website composition can losslessly call the atomic routes. Prefer a
-   package/REST profile because every self-hosted caller then receives the same
-   robust bundle.
-3. Extend Decennials REST requests with an explicit admitted deep-subdivision
-   policy; reject unsupported levels rather than allowing levels 3-4 to fail
-   under the default L1/L2 policy.
-4. Preserve `deep_subdivision_method` and all admitted timing truth through
-   response models and serializers.
-5. Remove, reject, or correctly wire the inert dignity
-   `include_timelord_distributions` flag.
-6. Keep the Valens distribution layer out of all hosted tiers until its duplicate
-   declarations, mutable ambient policy, broad exception suppression, incomplete
-   distributor/receiver semantics, REST omissions, standard drift, and missing
-   tests are resolved.
-7. Correct stale triplicity, lots-count, facade-exposure, and timelord-standard
-   claims against runtime truth.
+The six-gate engine roadmap now owns this receipt. Whole-sign
+direction/overcoming, the typed non-interpretive chart profile, exact atomic
+receipts, serializers, REST models, and OpenAPI schemas are complete.
+Decennials fails closed above L2, no deep-subdivision selector is exposed, and
+Valens distribution interpretation remains outside every Hellenistic profile.
 
 The aggregate response should not create new doctrine. It should compose exact
 atomic receipts and preserve at least:
@@ -356,14 +344,13 @@ Composition rules:
   literals.
 - Freeze the tier matrix and capability names in one shared product contract.
 
-### 1. Close package and atomic REST gaps
+### 1. Close package and atomic REST gaps — complete
 
-- Add whole-sign aspect/overcoming exposure.
-- Add the typed Hellenistic profile composition.
-- Repair Decennials deep-policy request/response transport.
-- Resolve the inert dignity timelord-distribution option.
-- Add receipt metadata and OpenAPI contract assertions.
-- Update minimum package, REST, standards, release, and compatibility docs.
+- Whole-sign aspect/overcoming and the typed Hellenistic profile are exposed.
+- Decennials L1/L2 policy fails closed for unsupported deeper levels.
+- Receipt metadata and OpenAPI contract assertions are present.
+- Package, REST, standards, validation, release, and compatibility records are
+  release-gated.
 
 The Valens distribution interpretation layer is a separate admission project.
 It does not block Free/Enhanced launch if it remains absent from their schemas.

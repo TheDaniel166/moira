@@ -96,6 +96,8 @@ ASTEROID_FAMILY_CATALOG_SOURCE = (
 
 @dataclass(frozen=True, slots=True)
 class _FamilyCatalog:
+    """Immutable indexes for the admitted asteroid-family catalog."""
+
     primary_by_number: dict[int, str]
     all_by_number: dict[int, tuple[str, ...]]
     by_family: dict[str, tuple[int, ...]]

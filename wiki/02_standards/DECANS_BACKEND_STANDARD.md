@@ -1,15 +1,17 @@
 # Moira Decans Backend Standard
 
-Version: 1.2
-Date: 2026-07-25
+Version: 1.4
+Date: 2026-07-26
 Status: Classical decanates admitted; source-reconstructed Hermetic catalog in research quarantine
 
 > **Doctrine-pass correction.** The 36 names, zodiacal order, planetary faces,
 > and edition pages in `moira.hermetic_decans` have been reconstructed from
 > Wilhelm Gundel's 1936 transcription of British Library Harley MS 3731,
 > ff. 1r-50r. The former fixed-star assignments are not present in that
-> identified edition and now fail closed. Reconstruction does not itself admit
-> the catalog's modern lookup or night geometry to public product surfaces.
+> identified edition and now fail closed. The complete edited text supports
+> Aries-starting 10-degree segmentation. The modern tropical-frame and rising
+> composition remain explicit research projections, while the unsupported
+> sunset/MC night-hour experiment has been removed from executable code.
 
 ## Governing Principle
 
@@ -18,7 +20,8 @@ Moira has one admitted decan subsystem and one quarantined research module:
 - `moira.decanates` owns classical Chaldean faces, triplicity decans, and
   Vedic drekkana placement.
 - `moira.hermetic_decans` preserves a source-identified 36-name/planetary-face
-  catalog and still-quarantined lookup geometry for research only.
+  catalog plus still-quarantined longitude/rising projections for research
+  only.
 
 These surfaces must not be collapsed into one vague "decan" product. Only
 `moira.decanates` may be presented as admitted doctrine. The quarantined module
@@ -61,22 +64,26 @@ A `HermeticDecanCatalogEntry` is:
 The record's name/order/face/page receipt is reconstructed from Gundel,
 *Dekane und Dekansternbilder* (1936), pp. 379-383, section “Die lateinische
 Dekanliste des Hermes Trismegistos,” which identifies the Harley witness.
-The equal tropical 10-degree lookup and astronomical night-hour use remain
-research geometry and are not admitted by the catalog reconstruction.
+The complete edition's opening text also begins the decans from Aries and
+assigns ten degrees to each. That supports equal segmentation but does not
+silently settle Moira's modern equinox-fixed tropical frame or the
+Ascendant-composition policy.
 
 The identified edition supplies no one-fixed-star-per-decan table.
 `DECAN_RULING_STARS` is therefore an empty compatibility marker;
 `decan_ruling_star()` and `decan_star_at()` fail closed.
 
-#### 1.3 Quarantined catalog night partition
+#### 1.3 Removed night-hour experiment
 
-A **DecanHoursNight** is:
+The former `decan_hours()` experiment selected the zodiacal decan culminating
+at sunset and assigned twelve consecutive catalog entries to twelve equal
+sunset-to-sunrise intervals. No identified passage in the Gundel/Harley edition
+establishes that composition. The function and its result vessels were removed
+on 2026-07-26 rather than retained as misleading executable research.
 
-> A structural 12-part sunset-to-sunrise partition labeled from the
-> quarantined catalog.
-
-Its hour vessels preserve hour number, decan name, planetary face, and exact JD
-boundaries.
+Any future Egyptian decanal-clock product must be a separate stellar model
+with an identified table family, epoch, observer location, rising-versus-
+transit event semantics, visibility policy, and source-owned validation.
 
 ---
 
@@ -89,10 +96,8 @@ P1 - Decanate truth               (DecanatePosition)
 P2 - Source catalog data          (HermeticDecanCatalogEntry, names, faces, pages)
 P3 - Research lookup geometry     (decan_for_longitude, decan_index)
 P4 - Research rising lookup       (decan_at)
-P5 - Research night vessels       (DecanHour, DecanHoursNight)
-P6 - Research night partition     (decan_hours)
-P7 - Fixed-star fail-closed gate  (empty table; accessors reject)
-P8 - Public containment           (excluded from root/facade/REST)
+P5 - Fixed-star fail-closed gate  (empty table; accessors reject)
+P6 - Public containment           (excluded from root/facade/REST)
 ```
 
 Layer boundary rules:
@@ -100,8 +105,12 @@ Layer boundary rules:
 - Decanate routes must expose the producing doctrine.
 - Tropical Chaldean and triplicity routes must not imply sidereal reduction.
 - Vedic drekkana routes must expose JD and ayanamsa policy input.
-- No Hermetic catalog, rising, or night-hour routes may be registered while
-  the catalog remains quarantined.
+- No Hermetic catalog, longitude, rising, or night-hour transport model,
+  serializer, service, router, or route may exist while those surfaces remain
+  quarantined.
+- Any future Hermetic transport requires a new source-admission decision and
+  must be implemented from that admitted contract rather than dormant
+  scaffolding.
 
 ---
 
@@ -123,8 +132,6 @@ testing. They are not part of `moira`, `moira.facade`, or the REST contract.
 
 | Name | Meaning |
 |---|---|
-| `DecanHour` | Frozen vessel for one night hour |
-| `DecanHoursNight` | Frozen vessel for a complete night |
 | `HermeticDecanCatalogEntry` | Frozen source record for one catalog entry |
 | `HERMETIC_DECAN_CATALOG` | 36 source records in zodiacal order |
 | `HERMETIC_CATALOG_SOURCE_ID` | Stable reconstruction-source identifier |
@@ -139,7 +146,6 @@ testing. They are not part of `moira`, `moira.facade`, or the REST contract.
 | `available_decans()` | Empty because no star-backed decans are source-admitted |
 | `decan_for_longitude(lon)` | Tropical longitude to Hermetic decan name |
 | `decan_at(jd, lat, lon)` | Ascendant decan for a time/location |
-| `decan_hours(jd, lat, lon)` | Twelve night hours for the containing night |
 
 ---
 
@@ -155,10 +161,9 @@ testing. They are not part of `moira`, `moira.facade`, or the REST contract.
   own sign, fifth sign, ninth sign.
 - The source catalog preserves three ordered entries beneath each sign exactly
   as transcribed in the identified edition.
-- The quarantined lookup code maps that order onto fixed tropical 10-degree
-  spans; the source reconstruction does not publicly admit this geometry.
-- Its night algorithm partitions the computed sunset-to-sunrise interval into
-  twelve contiguous equal temporal hours; this validates geometry only.
+- The quarantined lookup maps the source-supported 10-degree order through an
+  explicit tropical-frame projection; the source receipt does not by itself
+  publicly admit that projection.
 
 #### 4.2 Failure doctrine
 
@@ -166,14 +171,13 @@ Current admitted and quarantined structural behavior:
 
 - `chaldean_face`, `triplicity_decan`, `vedic_drekkana`, and
   `decan_for_longitude` reject non-finite longitudes.
-- `HermeticDecanCatalogEntry`, `DecanatePosition`, `DecanHour`, and
-  `DecanHoursNight` validate structural invariants at construction.
+- `HermeticDecanCatalogEntry` and `DecanatePosition` validate structural
+  invariants at construction.
 - Fixed-star compatibility queries return no availability, and attempts to
   obtain or position a star ruler raise `LookupError`.
-- `decan_hours` fails if finite sunset/sunrise boundaries cannot be found.
 
 REST transport must additionally reject non-finite JD/location inputs before
-calling rising-decan or night-hour computations.
+calling any future admitted rising-decan computation.
 
 ---
 
@@ -203,9 +207,11 @@ The following admitted claims are currently verified:
    Gundel/Harley reconstruction.
 6. Fixed-star access fails closed because the identified edition does not
    provide those assignments.
-7. Lookup, rising, and night-partition tests establish only internal geometry
-   and vessel consistency; they do not turn those research algorithms into
-   admitted Hermetic doctrine.
+7. Lookup and rising tests establish segmentation and composition behavior;
+   they do not turn the tropical-frame/rising projections into admitted
+   Hermetic doctrine.
+8. Regression guards prove that the unsupported night-hour function, vessels,
+   server plumbing, and route definition remain absent.
 
 ### 7. Validation Commands
 
@@ -213,7 +219,7 @@ The minimum verification slice for this standard is:
 
 ```powershell
 .\.venv\Scripts\python.exe -m py_compile moira\decanates.py moira\hermetic_decans.py tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py tests\unit\test_hellenistic_source_goldens.py tests\server\test_server_decans_routes.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py tests\unit\test_hellenistic_source_goldens.py tests\unit\test_hellenistic_contract_parity.py tests\server\test_server_decans_routes.py -q
 ```
 
 ---
@@ -224,10 +230,12 @@ The admitted REST shape is:
 
 - direct-sync decanate routes for Chaldean face, triplicity decan, and Vedic
   drekkana
+- chart-backed Vedic drekkana and complete decanate-set routes
 
 Deferred:
 
-- chart-backed routes that derive planetary longitudes from a natal/event chart
 - interpretive decan meanings
-- every Hermetic catalog/longitude/rising/night-hour route until the catalog
-  and each geometry are separately admitted through the later engine gates
+- every Hermetic catalog/longitude/rising route until the catalog and each
+  projection are separately admitted through the later engine gates
+- any stellar decanal-clock implementation until a separately identified
+  source model and validation contract are approved

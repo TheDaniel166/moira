@@ -87,8 +87,10 @@ MS 3731, ff. 1r-50r.
 
 The engine preserves each entry's sign, ordinal, name, planetary face, edition
 page, and source identifier. The identified edition does not supply the former
-fixed-star assignments, so those accessors fail closed. Modern lookup, rising,
-and night-hour geometry remain research-quarantined pending later gates.
+fixed-star assignments, so those accessors fail closed. The full text supports
+Aries-starting 10-degree segmentation, while the tropical-frame and rising
+projections remain research-quarantined pending later gates. The unsupported
+night-hour experiment has been removed from executable code.
 
 Engine receipt: `moira/hermetic_decans.py`.
 Standard: `wiki/02_standards/DECANS_BACKEND_STANDARD.md`.
@@ -255,8 +257,8 @@ profile:
    angularity, and Hellenistic superiority survive engine-to-JSON round trips;
 6. OpenAPI points those fields at concrete receipt schemas, and adversarial
    tests freeze both compatibility projections and the raw source of truth;
-7. Decennial L3/L4 and Hermetic lookup/rising/night-hour geometry remain
-   quarantined.
+7. Decennial L3/L4 and Hermetic tropical-frame/rising projections remain
+   quarantined; the unsupported Hermetic night-hour experiment is absent.
 
 This receipt does not admit Firdaria into a Hellenistic profile, reinterpret a
 typed result, add a synthetic score, regenerate the Phase 6 capability matrix,
@@ -374,3 +376,26 @@ This closes the six engine gates. It does not update or publish website
 documentation, deploy a server, or admit interpretive Hellenistic product
 claims. Any website implementation is a separate release scope built from
 these engine-owned artifacts.
+
+## 6.0.0 Release Closeout
+
+The post-gate release hardening pass on 2026-07-26:
+
+1. removed the unsupported Hermetic night-hour implementation and all dormant
+   Hermetic transport models, services, serializers, and router definitions;
+2. retained the source catalog and qualified geometry only inside the
+   explicitly quarantined direct module;
+3. added strict Hellenistic source-golden, generated-inventory,
+   contract-parity, profile, server, and OpenAPI gates to release CI;
+4. passed all 944 collected focused Hellenistic engine/transport tests;
+5. passed all 11,703 collected deterministic non-network repository tests,
+   with 13 declared optional-resource/oracle skips and no failures;
+6. passed release identity, documentation consistency, inventory generation,
+   REST-reference synchronization, wiki synchronization, workflow parsing,
+   Python compilation, and `git diff --check`; and
+7. froze the breaking curated-import removals and typed migration guidance in
+   the 6.0.0 release and compatibility notes.
+
+This closeout does not admit Hermetic star attribution or geometry, Decennial
+L3/L4, Triacontaeteris, Valens distribution interpretation, synthetic scoring,
+or website product composition.

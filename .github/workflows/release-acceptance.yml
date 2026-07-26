@@ -16,6 +16,7 @@ jobs:
       # kernels/ is git-ignored; DE441 (3.1 GB) is not in the repository.
       MOIRA_NO_DOWNLOAD: "1"
       MOIRA_TEST_MODE: "1"
+      MOIRA_STRICT_KNOWN_ISSUES: "1"
 
     steps:
       - name: Checkout repository
@@ -35,12 +36,8 @@ jobs:
       # Kernel-free unit acceptance slices
       # -----------------------------------------------------------------------
 
-      - name: Hermetic decans acceptance (kernel-free subset)
-        # Exclude kernel-dependent sunrise/sunset goldens from CI.
-        # Those cases require an installed planetary kernel and are validated locally.
-        run: |
-          python -m pytest tests/unit/test_hermetic_decans.py -q \
-            -k "not decan_hours_start_matches_mc_decan_at_sunset and not usno_one_day_boundary_agreement"
+      - name: Hermetic research-boundary acceptance
+        run: python -m pytest tests/unit/test_hermetic_decans.py -q
 
       - name: Classical decanates acceptance (71 cases)
         run: python -m pytest tests/unit/test_decanates.py -q

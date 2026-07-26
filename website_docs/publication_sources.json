@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "release_history_floor": "5.0.0",
-  "last_verified": "2026-07-25",
+  "last_verified": "2026-07-26",
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 5.2.3.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.0.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -293,6 +293,27 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.0.0",
+      "date": "2026-07-26",
+      "title": "Hellenistic Engine Completion",
+      "added": [
+        "A score-free typed Hellenistic chart profile composes exact admitted planetary, aspect, lot, profection, Decennial L1/L2, and Zodiacal Releasing receipts.",
+        "Source-owned goldens and generated capability/API inventories make the Hellenistic contract drift-detectable."
+      ],
+      "changed": [
+        "Hellenistic compatibility labels, booleans, and lists are projections of typed component truth rather than fabricated defaults.",
+        "Profection, Decennial, lot, solar-condition, besieging, Zodiacal Releasing, and whole-sign superiority semantics now preserve explicit policy and not-evaluable states."
+      ],
+      "fixed": [
+        "Dorothean water triplicity, verified lot reversals, Halb/Hayz, solar boundaries, besieging completeness, and Zodiacal Releasing boundary behavior were corrected."
+      ],
+      "validation": [
+        "Strict source-golden, contract-parity, unified-profile, OpenAPI, generated-inventory, Hermetic-containment, documentation, and release-identity gates cover the release."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.0.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.0.0.md"
+    },
     {
       "version": "5.2.3",
       "date": "2026-07-25",

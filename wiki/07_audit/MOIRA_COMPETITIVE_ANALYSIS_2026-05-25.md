@@ -75,7 +75,9 @@ Moira is **astronomically comprehensive**, **computationally transparent**, and 
 - **Full midpoint matrix** with 90°/45°/22.5° dial projections
 - **Traditional dignities** (domicile, exaltation, triplicity, terms, face, sect, hayz, Almuten Figuris)
 - **499 Arabic Parts** with dependency graphs
-- **36-decan system** with ruling stars and Hermetic decan hours
+- **36-decan research catalog** with source-reconstructed names and planetary
+  faces; the former ruling-star assignments fail closed and the unsupported
+  Hermetic night-hour experiment was removed on 2026-07-26
 - **Galactic house system** with boundary profiles
 
 ### Predictive Techniques

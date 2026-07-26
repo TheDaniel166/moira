@@ -88,9 +88,6 @@ from .decans import (
     serialize_decanate_chart_set,
     serialize_decanate_position,
     serialize_decanate_set,
-    serialize_hermetic_decan_catalog,
-    serialize_hermetic_decan_lookup,
-    serialize_hermetic_decan_night_hours,
 )
 from .dignities import (
     serialize_chart_condition_profile,
@@ -443,9 +440,6 @@ __all__ = [
     "serialize_decanate_chart_set",
     "serialize_decanate_position",
     "serialize_decanate_set",
-    "serialize_hermetic_decan_catalog",
-    "serialize_hermetic_decan_lookup",
-    "serialize_hermetic_decan_night_hours",
     "serialize_chart_condition_profile",
     "serialize_condition_network_edge",
     "serialize_condition_network_node",

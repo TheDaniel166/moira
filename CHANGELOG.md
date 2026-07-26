@@ -7,6 +7,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.0] - 2026-07-26
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.0.0.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.0.0.md`.
+
+### Added
+- **Unified Hellenistic chart profile**: added the score-free
+  `HellenisticChartProfile`, its typed policy/provenance/component vessels,
+  `hellenistic_chart_profile(...)`, `Moira.hellenistic_chart_profile(...)`,
+  and `POST /v1/hellenistic/chart-profile`.
+- **Typed Hellenistic truth receipts**: added explicit component truth for
+  dignity, solar phase and proximity, besieging completeness, lot dependency
+  and condition status, profection activation, Decennial sequence assembly,
+  Zodiacal Releasing Fortune angularity, and whole-sign superiority.
+- **Contract-complete transport**: added identity-preserving root,
+  `moira.classical`, facade, serializer, REST-model, and OpenAPI exposure for
+  the admitted Hellenistic policy and receipt surface.
+- **Source-owned validation**: added independent triplicity, joys, bounds,
+  face, lot, Decennial, and Valens IV.4 goldens plus generated Hellenistic
+  capability and API inventories.
+- **Version-pinned documentation publication**: added generated website
+  publication manifests and drift checks for release-facing API and validation
+  material.
+
+### Changed
+- **Civil profection semantics**: annual schedules use completed civil
+  anniversaries in the natal timezone with an explicit February 29 policy.
+- **Decennial truth**: L1/L2 results preserve both the 360-day distribution
+  coordinate and elapsed-Julian-day projection; sequence assembly is typed and
+  ambiguous non-sect-light ties fail closed.
+- **Hellenistic condition composition**: compatibility labels, booleans, and
+  lists are projections of typed component truth rather than the governing
+  result.
+- **Lots**: computation preserves projector, directed-versus-shortest arc
+  policy, dependency completeness, astrological-condition status, and typed
+  `not_evaluable` results instead of silently omitting unresolved entries.
+- **Zodiacal Releasing**: current-period ownership is half-open, same-sign
+  Fortune/Spirit start shift and the exact 211-month circuit boundary follow
+  the admitted Valens IV.4 fixtures, and missing Fortune no longer fabricates a
+  negative peak result.
+- **Whole-sign aspects**: direction and overcoming share a typed,
+  score-free Hellenistic superiority receipt.
+
+### Fixed
+- Corrected Dorothean water-triplicity ordering and fail-closed handling when
+  required luminaries are absent.
+- Corrected the two verified lot reversals and retained conflicted source
+  formulas as separately named policies rather than merging them.
+- Corrected Halb/Hayz sect-relative hemisphere and sign-gender composition.
+- Corrected solar-phase conjunction/opposition boundaries, exclusive solar
+  proximity bands, and besieging dependency/ambiguity handling.
+- Corrected Zodiacal Releasing angularity and exact-cap behavior.
+
+### Removed
+- **Unsupported Hermetic public surface**: removed `DecanHour`,
+  `DecanHoursNight`, `DECAN_NAMES`, `DECAN_RULING_STARS`, `list_decans`,
+  `available_decans`, `decan_for_longitude`, `decan_at`, and `decan_hours`
+  from curated root, classical, and facade exports.
+- **Unsupported Hermetic night hours**: removed the executable
+  sunset-Midheaven plus twelve-equal-hour experiment because the identified
+  Gundel/Harley witness does not establish that algorithm.
+- **Dormant Hermetic transport**: removed the unregistered catalog, longitude,
+  rising, and night-hour models, services, serializers, and router definitions.
+  The direct Hermetic catalog/geometry module remains research-quarantined and
+  excluded from the public product contract.
+- **Unadmitted depth**: Decennial L3/L4 and named deep-subdivision selectors
+  remain unavailable rather than emitting speculative output.
+
+### Validation
+- Added strict release-CI gates for source goldens, generated inventory drift,
+  contract parity, unified-profile behavior, Hermetic transport absence, and
+  OpenAPI truth.
+- Regenerated the REST reference, website documentation publication bundle,
+  capability matrix, API inventory, and mirrored wiki from runtime truth.
+- Archived superseded Hellenistic roadmaps and narrowed remaining research
+  boundaries to Valens interpretation, Hermetic geometry/star attribution,
+  Decennial L3/L4, and Triacontaeteris.
+
 ## [5.2.3] - 2026-07-25
 
 Detailed release and migration guidance is available in

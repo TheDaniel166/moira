@@ -1,7 +1,7 @@
 ﻿# Moira API Reference
 
 **Document revision:** 2.0.0
-**Engine baseline:** 5.2.3
+**Engine baseline:** 6.0.0
 **Last verified:** 2026-07-26
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
@@ -1862,11 +1862,12 @@ d3   = vedic_drekkana(longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI)
 
 The names, sign order, planetary faces, and source pages in
 `moira.hermetic_decans` are reconstructed from Gundel's 1936 edition of the
-Harley MS 3731 list. The module's tropical lookup, rising, and night-hour
-geometry is not admitted and the unsupported fixed-star table fails closed.
-Nothing from this module is exported from `moira` or `moira.facade`; direct
-import remains a research surface, not part of the supported Python API
-contract.
+Harley MS 3731 list. The source supports Aries-starting 10-degree segmentation;
+the module's modern tropical-frame and rising projections remain unadmitted,
+and the unsupported fixed-star table fails closed. The former `decan_hours()`
+experiment and its result vessels have been removed. Nothing from this module
+is exported from `moira` or `moira.facade`; direct import remains a research
+surface, not part of the supported Python API contract.
 
 ---
 

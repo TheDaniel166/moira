@@ -177,7 +177,7 @@
     "ruler_cycle_from_aries_zero": ["Mars", "Sun", "Venus", "Mercury", "Moon", "Saturn", "Jupiter"],
     "face_width_degrees": 10,
     "face_count": 36,
-    "caveat": "This witness validates the ordinary ruler cycle. It does not establish the date of origin and does not admit Hermetic name, star, rising, or night-hour geometry."
+    "caveat": "This witness validates the ordinary ruler cycle. It does not establish the date of origin or admit Hermetic name, star, or rising products, and it does not support the removed night-hour algorithm."
   },
   "profile_lots": {
     "authority": {

@@ -8,23 +8,33 @@ Status
 ------
 **Research quarantine.** The 36 names and planetary faces have been
 reconstructed from Gundel's 1936 edition of British Library Harley MS 3731,
-ff. 1r-50r. The catalog has not yet passed the later public-admission gates,
-and the lookup/night geometry has not been established by this reconstruction.
-The module remains excluded from the package root, facade, and REST application.
+ff. 1r-50r. The complete edited text explicitly assigns ten degrees to each
+decan beginning from Aries, but the catalog and modern tropical/rising
+projection have not yet passed the later public-admission gates. The module
+remains excluded from the package root, facade, and REST application.
 
 Purpose
 -------
-Preserves the source-identified catalog, quarantined tropical lookup geometry,
-rising-decan calculation, and 12-part night division for source comparison.
-Only each catalog entry's name, sign order, planetary face, and edition page
-are source-reconstructed here.
+Preserves the source-identified catalog, equal 10-degree lookup, and
+rising-decan composition for source comparison. Each catalog entry's name,
+sign order, planetary face, and edition page are source-reconstructed here.
 
 Tradition and frame of reference
 ---------------------------------
 The edited Harley text orders three decans under each of the twelve signs and
-assigns each a planetary face. Moira's equal tropical 10° lookup is retained
-only as quarantined research geometry; this source pass does not claim that a
-modern equinox-fixed longitude realizes the manuscript's complete doctrine.
+assigns each a planetary face. It also begins from Aries and counts 10° for
+each decan. Moira's modern equinox-fixed tropical realization and
+Ascendant-based composition remain explicit research projection policies
+rather than silently claimed manuscript doctrine.
+
+Night-hour non-admission
+------------------------
+The removed ``decan_hours`` experiment divided sunset-to-sunrise into twelve
+equal intervals beginning with the zodiacal decan on the Midheaven at sunset.
+No identified passage in the Gundel/Harley edition establishes that algorithm.
+Ancient Egyptian stellar decanal tables are a separate, source- and
+epoch-dependent astronomical product; executable night-hour code must not be
+reintroduced without its own admitted authority and validation contract.
 
 Fixed-star non-admission
 ------------------------
@@ -36,22 +46,17 @@ fail closed. Planetary faces are stored separately in
 Boundary declaration
 --------------------
 Owns: the 36-decan source catalog, planetary-face table, decan-order list,
-      decan-for-longitude mapping, rising-decan computation, night-hour
-      division, and the ``DecanHour`` / ``DecanHoursNight`` result vessels.
-Delegates: true obliquity to ``moira.obliquity``,
-           SpkReader access to ``moira.spk_reader``.
+      decan-for-longitude mapping, and rising-decan composition.
+Delegates: true obliquity to ``moira.obliquity``.
 
 Import-time side effects: None
 
 External dependency assumptions
 --------------------------------
-No Qt main thread required. No database access. Rising-decan and night-hour
-computations require a valid ``SpkReader`` (or the module singleton).
+No Qt main thread required. No database access or planetary kernel required.
 
 Research surface
 ----------------
-``DecanHour``          — vessel for a single decan night hour.
-``DecanHoursNight``    — vessel for all 12 decan hours of a night.
 ``DECAN_NAMES``        — dict of decan constant to name string (36 entries).
 ``DECAN_PLANETARY_FACES`` — source-reconstructed planetary faces.
 ``HERMETIC_DECAN_CATALOG`` — typed records with source pages.
@@ -60,7 +65,6 @@ Research surface
 ``available_decans``   — return no star-backed decans (fail-closed).
 ``decan_for_longitude``— map a longitude to its decan name.
 ``decan_at``           — return the decan containing the Ascendant at a given JD and location.
-``decan_hours``        — compute the 12 decan night hours for a given night.
 """
 
 from __future__ import annotations
@@ -69,19 +73,18 @@ import math
 from dataclasses import dataclass
 
 from .julian import ut_to_tt
-from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .obliquity import true_obliquity
-from .spk_reader import get_reader, SpkReader
-from ._solar import _sunrise_sunset, _refine_sunrise
 
 # ---------------------------------------------------------------------------
 # Source-reconstructed Harley MS 3731 catalog
 #
 # Authority: Wilhelm Gundel, Dekane und Dekansternbilder (1936), pp. 379-383,
 # section "Die lateinische Dekanliste des Hermes Trismegistos", transcribing
-# British Library Harley MS 3731, ff. 1r-50r. The edition supplies names and
-# planetary faces. It does not supply the fixed-star assignments previously
-# stored here; those assignments are therefore removed and fail closed.
+# British Library Harley MS 3731, ff. 1r-50r. The opening edited text (p. 33)
+# supplies Aries-starting 10-degree segmentation; pp. 379-383 supply the names
+# and planetary faces used below. The edition does not supply the fixed-star
+# assignments previously stored here; those assignments are removed and fail
+# closed.
 # ---------------------------------------------------------------------------
 
 HERMETIC_CATALOG_SOURCE_ID = "gundel_1936_harley_ms_3731"
@@ -265,9 +268,10 @@ def available_decans() -> list[str]:
 def decan_for_longitude(lon: float) -> str:
     """Map a tropical ecliptic longitude to its Hermetic decan name.
 
-    Applies Moira's quarantined equal 10° tropical lookup geometry. The
-    source reconstruction establishes name order within the twelve signs;
-    it does not by itself admit this modern lookup frame as public doctrine.
+    Applies the source-supported equal 10° segmentation beginning at Aries
+    through Moira's explicit tropical-frame research projection. Source
+    support for the segmentation does not by itself admit that modern frame
+    projection as public doctrine.
 
     Normalizes the longitude modulo 360 before computing the decan.
     Raises ValueError for NaN or infinite inputs.
@@ -311,24 +315,6 @@ def decan_star_at(name: str, jd: float) -> None:
     raise LookupError(
         "The Gundel/Harley 3731 catalog does not provide fixed-star rulerships"
     )
-
-
-def _refine_solar_event_near(
-    jd_guess: float,
-    lat: float,
-    lon: float,
-    reader: SpkReader,
-    *,
-    is_rise: bool,
-) -> float:
-    """Refine a sunrise/sunset approximation while preserving day locality."""
-    jd_event = _refine_sunrise(jd_guess, lat, lon, reader, is_rise=is_rise)
-    if not math.isfinite(jd_event):
-        raise ValueError("solar event refinement returned a non-finite JD")
-    day_shift = round(jd_guess - jd_event)
-    if abs(jd_guess - jd_event) > 0.75:
-        jd_event += day_shift
-    return jd_event
 
 
 # ---------------------------------------------------------------------------
@@ -389,328 +375,3 @@ def decan_at(
     )) % 360.0
 
     return decan_for_longitude(asc_lon)
-
-
-# ---------------------------------------------------------------------------
-# Decan night hours
-# ---------------------------------------------------------------------------
-
-@dataclass(slots=True, frozen=True)
-class DecanHour:
-    """
-    RITE: The Hour Vessel — a single decan night hour and its planetary face.
-
-    THEOREM: Holds the hour number, decan name, planetary face, and start/end
-    Julian Days for one of the 12 decan night hours.
-
-    RITE OF PURPOSE:
-        Serves the Hermetic Decan Engine as the atomic unit of night-hour
-        division. Without this vessel, ``DecanHoursNight`` would have no
-        structured per-hour representation, making hour-at-JD lookup and
-        decan-of-hour queries impossible.
-
-    LAW OF OPERATION:
-        Responsibilities:
-            - Store hour number (1-12), decan name, planetary face, and
-              the JD boundaries of the hour.
-        Non-responsibilities:
-            - Does not compute hour boundaries (delegated to ``decan_hours``).
-            - Does not validate that ``hour_number`` is in [1, 12].
-        Dependencies:
-            - Populated exclusively by ``decan_hours()``.
-        Structural invariants:
-            - ``jd_start < jd_end`` always holds.
-            - ``hour_number`` is always in [1, 12].
-        Succession stance: terminal — not designed for subclassing.
-
-    Canon: Liber Hermetis (~200 AD); Firmicus Maternus, "Mathesis" (~334 AD).
-
-    [MACHINE_CONTRACT v1]
-    {
-        "scope": "class",
-        "id": "moira.hermetic_decans.DecanHour",
-        "risk": "low",
-        "api": {
-            "public_methods": [],
-            "public_attributes": [
-                "hour_number", "decan", "planetary_face", "jd_start", "jd_end"
-            ]
-        },
-        "state": {
-            "mutable": false,
-            "fields": ["hour_number", "decan", "planetary_face", "jd_start", "jd_end"]
-        },
-        "effects": {
-            "io": [],
-            "signals_emitted": [],
-            "db_writes": []
-        },
-        "concurrency": {
-            "thread": "pure_computation",
-            "cross_thread_calls": "safe_read_only"
-        },
-        "failures": {
-            "raises": [],
-            "policy": "caller ensures valid JD boundaries before construction"
-        },
-        "succession": {
-            "stance": "terminal",
-            "override_points": []
-        },
-        "agent": "kiro"
-    }
-    [/MACHINE_CONTRACT]
-    """
-    hour_number:    int    # 1–12
-    decan:          str
-    planetary_face: str
-    jd_start:       float
-    jd_end:         float
-
-    def __post_init__(self) -> None:
-        if not (1 <= self.hour_number <= 12):
-            raise ValueError(
-                f"DecanHour.hour_number must be in [1, 12], got {self.hour_number}"
-            )
-        if self.decan not in DECAN_PLANETARY_FACES:
-            raise ValueError(f"DecanHour.decan must be a valid decan name, got {self.decan!r}")
-        if self.planetary_face != DECAN_PLANETARY_FACES[self.decan]:
-            raise ValueError(
-                "DecanHour.planetary_face must match the catalog face: "
-                f"{self.decan!r} -> {DECAN_PLANETARY_FACES[self.decan]!r}, "
-                f"got {self.planetary_face!r}"
-            )
-        if not math.isfinite(self.jd_start) or not math.isfinite(self.jd_end):
-            raise ValueError("DecanHour.jd_start and .jd_end must be finite")
-        if not self.jd_start < self.jd_end:
-            raise ValueError(
-                f"DecanHour must satisfy jd_start < jd_end, got {self.jd_start} >= {self.jd_end}"
-            )
-
-
-@dataclass(slots=True, frozen=True)
-class DecanHoursNight:
-    """
-    RITE: The Night Vessel — all 12 decan hours of a single night.
-
-    THEOREM: Holds the sunset and next-sunrise Julian Days, observer location,
-    and the ordered list of 12 ``DecanHour`` instances dividing the night.
-
-    RITE OF PURPOSE:
-        Serves the Hermetic Decan Engine as the top-level result vessel for
-        nightly decan hour computation. Without this vessel, callers would
-        receive a bare list of hours with no night-boundary context, making
-        ``hour_at`` and ``decan_of_hour`` queries structurally impossible.
-
-    LAW OF OPERATION:
-        Responsibilities:
-            - Store the reference JD, observer latitude/longitude, sunset JD,
-              next-sunrise JD, and the 12 ``DecanHour`` instances.
-            - Expose ``hour_at(jd)`` to return the hour containing a given JD.
-            - Expose ``decan_of_hour(jd)`` to return the decan name for a JD.
-        Non-responsibilities:
-            - Does not compute night boundaries (delegated to ``decan_hours``).
-            - Does not validate that ``hours`` contains exactly 12 entries.
-        Dependencies:
-            - Populated exclusively by ``decan_hours()``.
-            - ``hours`` contains ``DecanHour`` instances from this module.
-        Structural invariants:
-            - ``sunset_jd < next_sunrise_jd`` always holds.
-            - ``hours`` always contains exactly 12 entries.
-        Succession stance: terminal — not designed for subclassing.
-
-    Canon: Liber Hermetis (~200 AD); Firmicus Maternus, "Mathesis" (~334 AD).
-
-    [MACHINE_CONTRACT v1]
-    {
-        "scope": "class",
-        "id": "moira.hermetic_decans.DecanHoursNight",
-        "risk": "medium",
-        "api": {
-            "public_methods": ["hour_at", "decan_of_hour"],
-            "public_attributes": [
-                "date_jd", "latitude", "longitude",
-                "sunset_jd", "next_sunrise_jd", "hours"
-            ]
-        },
-        "state": {
-            "mutable": false,
-            "fields": [
-                "date_jd", "latitude", "longitude",
-                "sunset_jd", "next_sunrise_jd", "hours"
-            ]
-        },
-        "effects": {
-            "io": [],
-            "signals_emitted": [],
-            "db_writes": []
-        },
-        "concurrency": {
-            "thread": "pure_computation",
-            "cross_thread_calls": "safe_read_only"
-        },
-        "failures": {
-            "raises": [],
-            "policy": "caller ensures valid night boundaries before construction"
-        },
-        "succession": {
-            "stance": "terminal",
-            "override_points": []
-        },
-        "agent": "kiro"
-    }
-    [/MACHINE_CONTRACT]
-    """
-    date_jd:         float
-    latitude:        float
-    longitude:       float
-    sunset_jd:       float
-    next_sunrise_jd: float
-    hours:           tuple[DecanHour, ...]
-
-    def __post_init__(self) -> None:
-        tol = 1e-12
-        object.__setattr__(self, "hours", tuple(self.hours))
-        if not math.isfinite(self.date_jd):
-            raise ValueError(f"DecanHoursNight.date_jd must be finite, got {self.date_jd!r}")
-        if not math.isfinite(self.latitude) or not math.isfinite(self.longitude):
-            raise ValueError("DecanHoursNight.latitude and .longitude must be finite")
-        if not math.isfinite(self.sunset_jd) or not math.isfinite(self.next_sunrise_jd):
-            raise ValueError("DecanHoursNight.sunset_jd and .next_sunrise_jd must be finite")
-        if not self.sunset_jd < self.next_sunrise_jd:
-            raise ValueError(
-                "DecanHoursNight must satisfy sunset_jd < next_sunrise_jd, "
-                f"got {self.sunset_jd} >= {self.next_sunrise_jd}"
-            )
-        if len(self.hours) != 12:
-            raise ValueError(
-                f"DecanHoursNight.hours must contain exactly 12 entries, got {len(self.hours)}"
-            )
-        for idx, hour in enumerate(self.hours, start=1):
-            if not isinstance(hour, DecanHour):
-                raise TypeError(
-                    f"DecanHoursNight.hours[{idx - 1}] must be a DecanHour, got {type(hour).__name__}"
-                )
-            if hour.hour_number != idx:
-                raise ValueError(
-                    "DecanHoursNight.hours must be sequentially numbered from 1 to 12, "
-                    f"got hour_number={hour.hour_number} at position {idx}"
-                )
-        if not math.isclose(self.hours[0].jd_start, self.sunset_jd, abs_tol=tol):
-            raise ValueError("DecanHoursNight first hour must begin at sunset_jd")
-        if not math.isclose(self.hours[-1].jd_end, self.next_sunrise_jd, abs_tol=tol):
-            raise ValueError("DecanHoursNight last hour must end at next_sunrise_jd")
-        for earlier, later in zip(self.hours, self.hours[1:]):
-            if not math.isclose(earlier.jd_end, later.jd_start, abs_tol=tol):
-                raise ValueError("DecanHoursNight.hours must form a gap-free partition of the night")
-
-    def hour_at(self, jd: float) -> DecanHour | None:
-        """Return the DecanHour containing the given JD, or None if outside the night."""
-        for h in self.hours:
-            if h.jd_start <= jd < h.jd_end:
-                return h
-        return None
-
-    def decan_of_hour(self, jd: float) -> str | None:
-        """Return the decan name for the hour containing jd, or None if outside the night."""
-        h = self.hour_at(jd)
-        return h.decan if h else None
-
-
-def decan_hours(
-    jd: float,
-    lat: float,
-    lon: float,
-    reader: SpkReader | None = None,
-) -> DecanHoursNight:
-    """Compute the 12 decan night hours for the night containing jd.
-
-    Parameters
-    ----------
-    jd     : Julian Day (UT) — any time during the target day/night
-    lat    : geographic latitude in degrees (positive north)
-    lon    : geographic longitude in degrees (positive east)
-    reader : SpkReader instance (falls back to get_reader() if None)
-
-    Returns
-    -------
-    DecanHoursNight with 12 DecanHour instances covering sunset to next sunrise.
-    """
-    if reader is None:
-        reader = get_reader()
-
-    # Approximate local-civil day anchors from the UT date containing jd.
-    jd_noon = math.floor(jd - 0.5) + 1.0
-
-    # Current day's sunrise and sunset.
-    jd_sr_approx, jd_ss_approx = _sunrise_sunset(jd_noon, lat, lon, reader)
-    jd_sunrise_today = _refine_solar_event_near(
-        jd_sr_approx, lat, lon, reader, is_rise=True
-    )
-    jd_sunset_today = _refine_solar_event_near(
-        jd_ss_approx, lat, lon, reader, is_rise=False
-    )
-
-    if jd < jd_sunrise_today:
-        jd_prev_noon = jd_noon - 1.0
-        _, jd_prev_ss_approx = _sunrise_sunset(jd_prev_noon, lat, lon, reader)
-        jd_sunset = _refine_solar_event_near(
-            jd_prev_ss_approx, lat, lon, reader, is_rise=False
-        )
-        jd_next_sunrise = jd_sunrise_today
-    else:
-        jd_next_noon = jd_noon + 1.0
-        jd_nr_approx, _ = _sunrise_sunset(jd_next_noon, lat, lon, reader)
-        jd_sunset = jd_sunset_today
-        jd_next_sunrise = _refine_solar_event_near(
-            jd_nr_approx, lat, lon, reader, is_rise=True
-        )
-
-    if not math.isfinite(jd_sunset) or not math.isfinite(jd_next_sunrise):
-        raise ValueError("decan_hours could not determine a finite sunset/sunrise boundary")
-    if not jd_sunset < jd_next_sunrise:
-        raise ValueError(
-            "decan_hours requires a valid night with sunset before next sunrise; "
-            f"got sunset={jd_sunset}, next_sunrise={jd_next_sunrise}"
-        )
-
-    # Decan culminating on the MC at sunset → starting index
-    # (Liber Hermetis: the first hour of the night is ruled by the decan
-    # on the Midheaven at sunset, not the decan rising on the Ascendant.)
-    ramc_sunset = _lst_to_ramc(jd_sunset, lon)
-    obl_sunset = true_obliquity(
-        _ut1_to_ephemeris_tt(jd_sunset, reader)
-    )
-    mc_lon = math.degrees(math.atan2(
-        math.sin(math.radians(ramc_sunset)),
-        math.cos(math.radians(ramc_sunset)) * math.cos(math.radians(obl_sunset)),
-    )) % 360.0
-    start_decan_name = decan_for_longitude(mc_lon)
-    start_decan_idx = decan_index(start_decan_name)
-
-    # Divide night into 12 equal hours
-    night_duration = jd_next_sunrise - jd_sunset
-    hour_len = night_duration / 12.0
-
-    hours: list[DecanHour] = []
-    for i in range(12):
-        idx = (start_decan_idx + i) % 36
-        decan_name = _DECAN_ORDER[idx]
-        jd_start = jd_sunset + i * hour_len
-        jd_end   = jd_start + hour_len
-        hours.append(DecanHour(
-            hour_number=i + 1,
-            decan=decan_name,
-            planetary_face=DECAN_PLANETARY_FACES[decan_name],
-            jd_start=jd_start,
-            jd_end=jd_end,
-        ))
-
-    return DecanHoursNight(
-        date_jd=jd,
-        latitude=lat,
-        longitude=lon,
-        sunset_jd=jd_sunset,
-        next_sunrise_jd=jd_next_sunrise,
-        hours=hours,
-    )

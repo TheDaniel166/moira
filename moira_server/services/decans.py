@@ -11,22 +11,10 @@ from moira.decanates import (
     triplicity_decan,
     vedic_drekkana,
 )
-from moira.hermetic_decans import (
-    DECAN_RULING_STARS,
-    DecanHoursNight,
-    decan_at,
-    decan_for_longitude,
-    decan_hours,
-    decan_index,
-    list_decans,
-)
-
 from ..models.decans import (
     DecanateChartBodyRequest,
     DecanateLongitudeRequest,
     DecanateSetRequest,
-    HermeticLocationRequest,
-    HermeticLongitudeRequest,
     VedicDrekkanaRequest,
 )
 from .sidereal_context import (
@@ -128,44 +116,13 @@ def _derive_decanate_context(
     )
 
 
-def list_hermetic_decan_catalog() -> list[tuple[int, str, str]]:
-    return [
-        (index, name, DECAN_RULING_STARS[name])
-        for index, name in enumerate(list_decans())
-    ]
-
-
-def compute_hermetic_decan_longitude(
-    request: HermeticLongitudeRequest,
-) -> tuple[str, int, str]:
-    name = decan_for_longitude(request.longitude)
-    return name, decan_index(name), DECAN_RULING_STARS[name]
-
-
-def compute_hermetic_rising_decan(
-    request: HermeticLocationRequest,
-) -> tuple[str, int, str]:
-    name = decan_at(request.jd, request.latitude, request.longitude)
-    return name, decan_index(name), DECAN_RULING_STARS[name]
-
-
-def compute_hermetic_decan_night_hours(
-    request: HermeticLocationRequest,
-) -> DecanHoursNight:
-    return decan_hours(request.jd, request.latitude, request.longitude)
-
-
 __all__ = [
     "DecanateChartPositionResult",
     "DecanateChartSetResult",
     "compute_chaldean_face",
     "compute_decanate_set",
     "compute_decanate_set_chart",
-    "compute_hermetic_decan_longitude",
-    "compute_hermetic_decan_night_hours",
-    "compute_hermetic_rising_decan",
     "compute_triplicity_decan",
     "compute_vedic_drekkana_chart",
     "compute_vedic_drekkana",
-    "list_hermetic_decan_catalog",
 ]

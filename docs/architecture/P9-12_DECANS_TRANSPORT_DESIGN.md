@@ -1,12 +1,12 @@
 # P9-12 Decans / Decanates Transport Design
 
-Version: 0.1
-Date: 2026-06-11
-Status: P9-12 admitted; eight direct-sync and two chart-backed decans/decanates routes live and tested
+Version: 0.3
+Date: 2026-07-26
+Status: P9-12 Decanates routes admitted; all Hermetic transport removed
 Scope: Phase 9 decans/decanates REST admission design
 
-This document declares the REST route shapes admitted for `moira.decanates`
-and `moira.hermetic_decans`.
+This document records the admitted REST route shapes for `moira.decanates` and
+the containment boundary for the research-only `moira.hermetic_decans`.
 
 It is downstream of:
 
@@ -23,14 +23,12 @@ Decanate router prefix:
 
 - `/v1/decanates`
 
-Hermetic decan router prefix:
-
-- `/v1/hermetic-decans`
-
 Reason:
 
-- Decanate placement and Hermetic decan-hour computation are related but not
-  the same computational product.
+- Decanate placement and the source-reconstructed Hermetic catalog are distinct
+  products with different admission states.
+- No `/v1/hermetic-decans` router, transport model, service, or serializer is
+  retained while the direct engine module remains in research quarantine.
 - A generic `/v1/classical` endpoint is not admitted.
 
 ---
@@ -46,18 +44,10 @@ Decanate routes consume:
 - caller-supplied longitude
 - optional JD and ayanamsa policy for Vedic drekkana
 
-Hermetic routes consume:
-
-- tropical longitude for catalog/longitude lookup
-- explicit JD/location for rising decan and night hours
-
 Transport must reject:
 
 - non-finite longitudes
 - non-finite Julian dates
-- non-finite observer coordinates
-- invalid latitude ranges for location-backed routes
-- unknown Hermetic decan names where a name is supplied
 
 ---
 
@@ -141,85 +131,26 @@ Response:
 - `triplicity`
 - `vedic_drekkana`
 
-### 3.5 Hermetic Catalog
+### 3.5 Hermetic Transport Non-Admission
 
-Route:
+The former candidate routes were removed on 2026-07-26:
 
 - `GET /v1/hermetic-decans/catalog`
-
-Purpose:
-
-- Return the 36 Hermetic decan names in ecliptic order and their ruling-star
-  assignments.
-
-Response:
-
-- ordered entries with `index`, `name`, and `ruling_star`
-
-### 3.6 Hermetic Longitude Lookup
-
-Route:
-
 - `POST /v1/hermetic-decans/longitude`
-
-Purpose:
-
-- Resolve the Hermetic decan containing a tropical longitude.
-
-Input:
-
-- `longitude`
-
-Response:
-
-- `longitude`
-- `normalized_longitude`
-- `index`
-- `name`
-- `ruling_star`
-
-### 3.7 Hermetic Rising Decan
-
-Route:
-
 - `POST /v1/hermetic-decans/rising`
-
-Purpose:
-
-- Resolve the Hermetic decan containing the Ascendant at an instant/location.
-
-Input:
-
-- `jd`
-- `latitude`
-- `longitude`
-
-Response:
-
-- input echo plus decan lookup fields
-
-### 3.8 Hermetic Night Hours
-
-Route:
-
 - `POST /v1/hermetic-decans/night-hours`
 
-Purpose:
+The catalog and projection policies remain direct-module research material,
+not a public REST contract. The fixed-star assignments required by the former
+response models are not present in the identified Gundel/Harley witness. The
+night-hour experiment likewise lacked an identified authority for its
+sunset-Midheaven plus twelve equal temporal-hour composition.
 
-- Resolve the twelve Hermetic decan hours for the night containing the given
-  JD at the observer location.
+Any future stellar decanal-clock proposal is a new product requiring its own
+table family, epoch, observer, rising-versus-transit semantics, visibility
+policy, and validation contract.
 
-Input:
-
-- `jd`
-- `latitude`
-- `longitude`
-
-Response:
-
-- night boundary fields plus twelve `DecanHour` entries
-
-### 3.9 Chart-Backed Vedic Drekkana
+### 3.6 Chart-Backed Vedic Drekkana
 
 Route:
 
@@ -244,7 +175,7 @@ Response:
 - derived `jd`
 - sidereal chart provenance
 
-### 3.10 Chart-Backed Decanate Set
+### 3.7 Chart-Backed Decanate Set
 
 Route:
 
@@ -284,26 +215,15 @@ Response:
 - `degree_in_decan`
 - `longitude_used`
 
-Hermetic decan lookup responses preserve:
-
-- source longitude when applicable
-- normalized tropical longitude
-- decan index
-- decan name
-- ruling-star assignment
-
-Night-hour responses preserve exact JD boundaries; they do not convert JD
-intervals into civil times.
-
----
-
 ## 5. Explicit Non-Goals
 
 P9-12 does not expose:
 
+- any Hermetic catalog, longitude, rising, or night-hour transport
 - interpretive decan meanings
 - fixed-star position lookup for ruling stars
 - sidereal Egyptian decan star-clock reconstruction
+- zodiacal catalog labels projected onto equal sunset-to-sunrise intervals
 - generic `/v1/classical` umbrella routes
 
 ---
@@ -314,13 +234,10 @@ Implementation must verify:
 
 - each decanate route matches the engine function result
 - decanate set preserves all three doctrine keys
-- Hermetic catalog returns 36 ordered entries
-- Hermetic longitude lookup matches `decan_for_longitude(...)`
-- Hermetic rising route matches `decan_at(...)`
-- Hermetic night-hour route serializes `DecanHoursNight` without flattening
-  hour boundaries
-- non-finite longitude/JD/location inputs are rejected
-- invalid latitudes are rejected
+- every `/v1/hermetic-decans` path is absent from the application and OpenAPI
+- Hermetic transport models, services, serializers, and routers remain absent
+- unsupported night-hour engine symbols remain absent
+- non-finite longitude and JD inputs are rejected
 - route registration appears in startup route inventory
 
 Verification files to add:
@@ -336,7 +253,9 @@ Existing engine verification slice:
 
 ## 7. Admission State
 
-P9-12 is admitted.
+P9-12 Decanates transport is admitted. Hermetic catalog, longitude, rising,
+and night-hour transport code is absent; `create_app()` and OpenAPI expose no
+`/v1/hermetic-decans` path.
 
 Implemented files:
 
@@ -344,7 +263,7 @@ Implemented files:
 - `moira_server/serializers/decans.py`
 - `moira_server/services/decans.py`
 - `moira_server/routers/decans.py`
-- route registration in `moira_server/app.py`
-- package `__init__.py` exports for models, serializers, services, and routers
+- Decanates-only route registration in `moira_server/app.py`
+- package `__init__.py` exports for the admitted Decanates transport
 - `tests/server/test_server_decans_routes.py`
 - `wiki/02_services/REST_API_REFERENCE.md` route inventory updates

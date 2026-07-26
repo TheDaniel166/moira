@@ -550,6 +550,8 @@ def test_moira_lots_and_dignities_forward_full_policy_inputs(monkeypatch) -> Non
         "prenatal_new_moon": 33.0,
         "prenatal_full_moon": 44.0,
         "lord_of_hour": 55.0,
+        "asc_longitude": 100.0,
+        "mc_longitude": 10.0,
     }
     assert dignities_seen["kwargs"]["policy"] is dignities_policy
     horizon_frame = dignities_seen["kwargs"]["horizon_frame"]

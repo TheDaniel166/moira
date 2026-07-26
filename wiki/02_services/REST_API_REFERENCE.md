@@ -56,7 +56,9 @@ Implemented:
   routes, Varga direct and chart-backed generic/named/Shodashvarga/batch routes,
   and Decanates direct and chart-backed decanate-placement routes. The
   source-reconstructed Hermetic name-and-face catalog and its still-quarantined
-  longitude/rising/night-hour family are absent from the application registry
+  longitude/rising projections are absent from the application registry. The
+  unsupported Hermetic night-hour implementation and transport scaffolding
+  have been removed rather than retained behind an unregistered router
 - source-scoped Pancha Pakshi admission adds explicit-profile discovery,
   governance-only Uromarisi constitutional status, aksara and natal identity,
   a pure nakshatra-to-bird source-table lookup, exact nominal schedule,

@@ -110,7 +110,7 @@ def test_openapi_preserves_typed_phase_3_receipts() -> None:
         )
 
 
-def test_openapi_keeps_decennial_depth_and_hermetic_geometry_quarantined() -> None:
+def test_openapi_keeps_decennial_depth_and_unadmitted_hermetic_routes_absent() -> None:
     openapi = create_app(ServerConfig(docs_enabled=False)).openapi()
     levels = openapi["components"]["schemas"]["DecennialNatalRequest"][
         "properties"

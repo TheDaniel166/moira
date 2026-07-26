@@ -109,7 +109,7 @@ The source-owned datum is the repeating ruler cycle beginning at Aries zero:
 The witness is Renaissance, so the capability matrix labels this
 `admitted_qualified`. It validates Moira's ordinary 36-face ruler cycle but
 does not prove a Hellenistic date of origin and does not admit the separate
-Hermetic name/star/rising/night-hour family.
+Hermetic name/star/rising family.
 
 Online witness:
 [University of Michigan EEBO transcription](https://quod.lib.umich.edu/e/eebo/A26565.0001.001/1:16.37).
@@ -173,9 +173,21 @@ The 36 names, planetary faces, edition pages, and source identifier remain
 source-locked to Wilhelm Gundel, *Dekane und Dekansternbilder* (1936),
 pages 379-383, transcribing British Library Harley MS 3731.
 
-The identified edition does not supply the former fixed-star assignments or
-the modern equal-degree/rising/night-hour geometry. Those branches remain
-direct-module research only and have no curated import or REST path.
+The complete edited text's opening passage begins from Aries and counts ten
+degrees for each decan. Equal segmentation is therefore source-supported; the
+modern equinox-fixed tropical realization and Ascendant composition remain
+explicit projection policies pending admission and validation.
+
+The identified edition does not supply the former fixed-star assignments, and
+no located passage supports the removed sunset-MC/equal-night-hour algorithm.
+Fixed-star access therefore fails closed. The night-hour function, vessels,
+tests, server plumbing, and route definition were removed on 2026-07-26.
+Any future Egyptian stellar decanal-clock work requires a separate table,
+epoch, observer, event-semantics, visibility, and validation contract.
+
+Official witnesses:
+[Bavarian Academy Gundel edition](https://publikationen.badw.de/de/012511822)
+and [British Library Harley MS 3731 catalogue](https://searcharchives.bl.uk/catalog/040-002049563).
 
 ## Policy and qualification findings
 

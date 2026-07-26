@@ -109,6 +109,8 @@ def test_decan_routes_reject_invalid_inputs(
 
 
 def test_decan_routes_are_registered() -> None:
+    import moira_server.routers.decans as decan_routes
+
     app = create_app(ServerConfig(docs_enabled=False))
     paths = {route.path for route in app.routes}
 
@@ -119,11 +121,33 @@ def test_decan_routes_are_registered() -> None:
     assert "/v1/decanates/chart/vedic-drekkana" in paths
     assert "/v1/decanates/chart/set" in paths
     assert not any(path.startswith("/v1/hermetic-decans") for path in paths)
+    assert not hasattr(decan_routes, "hermetic_decans_router")
 
 
-def test_quarantined_hermetic_decan_routes_return_not_found() -> None:
+@pytest.mark.parametrize(
+    ("method", "path", "payload"),
+    [
+        ("GET", "/v1/hermetic-decans/catalog", None),
+        ("POST", "/v1/hermetic-decans/longitude", {"longitude": 10.0}),
+        (
+            "POST",
+            "/v1/hermetic-decans/rising",
+            {"jd": 2451545.0, "latitude": 0.0, "longitude": 0.0},
+        ),
+        (
+            "POST",
+            "/v1/hermetic-decans/night-hours",
+            {"jd": 2451545.0, "latitude": 0.0, "longitude": 0.0},
+        ),
+    ],
+)
+def test_quarantined_hermetic_decan_routes_return_not_found(
+    method: str,
+    path: str,
+    payload: dict[str, object] | None,
+) -> None:
     with _client() as client:
-        response = client.get("/v1/hermetic-decans/catalog")
+        response = client.request(method, path, json=payload)
 
     assert response.status_code == 404
 

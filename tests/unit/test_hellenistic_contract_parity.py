@@ -10,17 +10,22 @@ import moira.aspects as aspects
 import moira.classical as classical
 import moira.dignities as dignities
 import moira.facade as facade
+import moira.hermetic_decans as hermetic_decans
 import moira.lots as lots
 import moira.profections as profections
 import moira.timelords as timelords
 import moira_server.models as server_models
+import moira_server.models.decans as decan_models
 import moira_server.models.dignities as dignity_models
 import moira_server.models.hellenistic_aspects as aspect_models
 import moira_server.models.lots as lot_models
 import moira_server.models.timelords as timelord_models
+import moira_server.routers.decans as decan_routers
 import moira_server.serializers as server_serializers
+import moira_server.serializers.decans as decan_serializers
 import moira_server.serializers.lots as lot_serializers
 import moira_server.services as server_services
+import moira_server.services.decans as decan_services
 import moira_server.services.lots as lot_services
 
 
@@ -309,13 +314,68 @@ def test_server_package_aggregators_preserve_typed_contract_identity() -> None:
     assert "compute_lots_chart_evaluation" in server_services.__all__
 
 
-def test_phase_4_does_not_reopen_quarantined_hermetic_geometry() -> None:
+def test_phase_4_keeps_unadmitted_hermetic_geometry_contained() -> None:
     quarantined = {
         "decan_at",
         "decan_for_longitude",
-        "decan_hours",
         "rising_decan",
     }
     for surface in (moira, classical, facade):
         assert quarantined.isdisjoint(surface.__all__)
         assert all(not hasattr(surface, name) for name in quarantined)
+
+
+def test_unsupported_hermetic_transport_and_night_hours_are_removed() -> None:
+    removed_by_owner = {
+        hermetic_decans: ("DecanHour", "DecanHoursNight", "decan_hours"),
+        decan_models: (
+            "HermeticDecanCatalogResponse",
+            "HermeticDecanEntryResponse",
+            "HermeticDecanHourResponse",
+            "HermeticDecanLookupResponse",
+            "HermeticDecanNightHoursResponse",
+            "HermeticLocationRequest",
+            "HermeticLongitudeRequest",
+        ),
+        decan_services: (
+            "compute_hermetic_decan_longitude",
+            "compute_hermetic_decan_night_hours",
+            "compute_hermetic_rising_decan",
+            "list_hermetic_decan_catalog",
+        ),
+        decan_serializers: (
+            "serialize_hermetic_decan_catalog",
+            "serialize_hermetic_decan_lookup",
+            "serialize_hermetic_decan_night_hours",
+        ),
+        decan_routers: (
+            "hermetic_decans_router",
+            "hermetic_decan_catalog_route",
+            "hermetic_decan_longitude_route",
+            "hermetic_rising_decan_route",
+        ),
+        server_models: (
+            "HermeticDecanCatalogResponse",
+            "HermeticDecanEntryResponse",
+            "HermeticDecanHourResponse",
+            "HermeticDecanLookupResponse",
+            "HermeticDecanNightHoursResponse",
+            "HermeticLocationRequest",
+            "HermeticLongitudeRequest",
+        ),
+        server_services: (
+            "compute_hermetic_decan_longitude",
+            "compute_hermetic_decan_night_hours",
+            "compute_hermetic_rising_decan",
+            "list_hermetic_decan_catalog",
+        ),
+        server_serializers: (
+            "serialize_hermetic_decan_catalog",
+            "serialize_hermetic_decan_lookup",
+            "serialize_hermetic_decan_night_hours",
+        ),
+    }
+    for owner, names in removed_by_owner.items():
+        assert all(not hasattr(owner, name) for name in names)
+        exported = getattr(owner, "__all__", ())
+        assert set(names).isdisjoint(exported)

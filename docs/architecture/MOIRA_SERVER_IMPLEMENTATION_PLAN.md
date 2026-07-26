@@ -36,7 +36,8 @@ Current implementation state:
   result/profile/sign-profile/transit-strength routes, and alternate dasha
   Ashtottari/Yogini sequence/profile plus period-profile routes, Varga
   generic/named/Shodashvarga/batch routes, and Decans/Decanates
-  decanate-placement plus Hermetic catalog/longitude/rising/night-hour routes
+  decanate-placement routes; all Hermetic catalog/longitude/rising/night-hour
+  transport has been removed
 - phase 10 is implemented as a bounded first admission: Astrocartography line
   and subplanetary routes, Local Space direct/chart-backed horizon routes,
   Geodetic direct/chart-backed location-chart and equivalent routes, Galactic

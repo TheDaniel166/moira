@@ -210,8 +210,10 @@ chains. `wiki/02_standards/DIGNITIES_BACKEND_STANDARD.md` is authoritative.
 **Gap notes:**  
 
 ¹ Moira retains a source-reconstructed internal name-and-face catalog, but no
-Hermetic longitude, rising, night-hour, or fixed-star result is admitted or
-exposed through the package root, facade, or registered REST application.
+Hermetic longitude, rising, or fixed-star result is admitted or exposed through
+the package root, facade, or registered REST application. The formerly
+implemented Hermetic night-hour experiment was removed on 2026-07-26 because
+its exact algorithm lacked an identified source.
 No gaps identified in this domain. All features are fully implemented in `dignities.py`
 and supporting modules.
 

@@ -279,14 +279,14 @@ CAPABILITIES: tuple[Capability, ...] = (
     ),
     Capability(
         "hermetic_geometry",
-        "Hermetic longitude, rising, and night-hour geometry",
+        "Hermetic longitude and rising geometry",
         "quarantined",
         "excluded",
         "moira.hermetic_decans",
-        ("decan_for_longitude", "decan_at", "decan_hours"),
-        "internal structural tests only",
-        "no identified edition admitting the modern geometry",
-        "Structural consistency is not doctrine admission; no curated import or REST route is allowed.",
+        ("decan_for_longitude", "decan_at"),
+        "source-locked 10-degree segmentation and internal rising-composition tests",
+        "Gundel 1936 supports Aries-starting 10-degree decans; tropical-frame and rising projection remain policy-qualified",
+        "The unsupported night-hour experiment and all dormant Hermetic transport were removed; no curated import or REST route is allowed.",
         require_absent_from_curated=True,
     ),
     Capability(
@@ -679,7 +679,8 @@ def render_capability_matrix(app: Any | None = None) -> str:
             "- `tests/golden/hellenistic_zr_valens_iv4.json` owns the Valens "
             "same-sign start-shift and 211-month circuit cases.",
             "- Hermetic catalog identity remains source-locked in "
-            "`tests/unit/test_hermetic_decans.py`; its geometry is still quarantined.",
+            "`tests/unit/test_hermetic_decans.py`; its geometry is still quarantined "
+            "and every Hermetic transport layer is absent.",
             "- Mixed supporting routes expose broader classical catalogs or policies. "
             "Only `/v1/hellenistic/chart-profile` freezes the unified profile contract.",
             "- The heterogeneous lots catalog is not promoted to a single Hellenistic "

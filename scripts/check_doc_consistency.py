@@ -16,11 +16,15 @@ from __future__ import annotations
 
 import re
 import sys
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+with (REPO_ROOT / "pyproject.toml").open("rb") as _project_stream:
+    PROJECT_VERSION = tomllib.load(_project_stream)["project"]["version"]
+PROJECT_VERSION_PATTERN = re.escape(PROJECT_VERSION)
 
 PRIMARY_DOCS = (
     Path("README.md"),
@@ -104,7 +108,9 @@ REQUIRED_PATTERNS: dict[Path, tuple[RequiredPattern, ...]] = {
     Path("wiki/02_standards/API_REFERENCE.md"): (
         RequiredPattern(
             label="current engine baseline",
-            pattern=re.compile(r"\*\*Engine baseline:\*\* 5\.2\.3"),
+            pattern=re.compile(
+                rf"\*\*Engine baseline:\*\* {PROJECT_VERSION_PATTERN}"
+            ),
         ),
         RequiredPattern(
             label="naive datetime rejection contract",
@@ -195,7 +201,9 @@ REQUIRED_PATTERNS: dict[Path, tuple[RequiredPattern, ...]] = {
     Path("moira.wiki/API_REFERENCE.md"): (
         RequiredPattern(
             label="current engine baseline",
-            pattern=re.compile(r"\*\*Engine baseline:\*\* 5\.2\.3"),
+            pattern=re.compile(
+                rf"\*\*Engine baseline:\*\* {PROJECT_VERSION_PATTERN}"
+            ),
         ),
         RequiredPattern(
             label="naive datetime rejection contract",

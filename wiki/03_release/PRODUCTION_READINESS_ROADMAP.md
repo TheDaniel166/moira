@@ -46,7 +46,9 @@ Behavior changes recorded:
 - invalid policy or invariant violations now raise concrete runtime errors
 - `classify_house_system()` now raises on unknown codes
 - Hermetic `decan_at()` no longer accepts `reader`
-- Hermetic decan night-hour computation now rejects invalid night geometry
+- Hermetic decan night-hour computation rejected invalid night geometry in
+  2.0.0; the unsupported capability was subsequently removed from executable
+  code on 2026-07-26
 
 Exit criteria met:
 - release note drafted

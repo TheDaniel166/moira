@@ -1,6 +1,6 @@
 # Moira Engine — Feature Roadmap & Mathematical Accuracy Register
 
-**Engine baseline**: 5.2.3
+**Engine baseline**: 6.0.0
 **Last reviewed**: 2026-07-25
 **Status**: Living engineering roadmap. Individual validation claims are
 controlled by `wiki/03_validation/` and release notes, not by roadmap status.

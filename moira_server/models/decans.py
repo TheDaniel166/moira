@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-from pydantic import Field, field_validator
+from pydantic import field_validator
 
 from .common import _StrictModel
 from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
@@ -88,68 +88,6 @@ class DecanateChartSetResponse(_StrictModel):
     provenance: SiderealChartProvenanceResponse
 
 
-class HermeticLongitudeRequest(_StrictModel):
-    longitude: float
-
-    @field_validator("longitude")
-    @classmethod
-    def _finite_longitude(cls, value: float) -> float:
-        if not math.isfinite(value):
-            raise ValueError("longitude must be finite")
-        return value
-
-
-class HermeticLocationRequest(_StrictModel):
-    jd: float
-    latitude: float = Field(gt=-90.0, lt=90.0)
-    longitude: float = Field(ge=-180.0, le=180.0)
-
-    @field_validator("jd", "latitude", "longitude")
-    @classmethod
-    def _finite_values(cls, value: float) -> float:
-        if not math.isfinite(value):
-            raise ValueError("jd, latitude, and longitude must be finite")
-        return value
-
-
-class HermeticDecanEntryResponse(_StrictModel):
-    index: int
-    name: str
-    ruling_star: str
-
-
-class HermeticDecanCatalogResponse(_StrictModel):
-    decans: list[HermeticDecanEntryResponse]
-
-
-class HermeticDecanLookupResponse(_StrictModel):
-    longitude: float | None = None
-    normalized_longitude: float | None = None
-    jd: float | None = None
-    latitude: float | None = None
-    observer_longitude: float | None = None
-    index: int
-    name: str
-    ruling_star: str
-
-
-class HermeticDecanHourResponse(_StrictModel):
-    hour_number: int
-    decan: str
-    ruling_star: str
-    jd_start: float
-    jd_end: float
-
-
-class HermeticDecanNightHoursResponse(_StrictModel):
-    date_jd: float
-    latitude: float
-    longitude: float
-    sunset_jd: float
-    next_sunrise_jd: float
-    hours: list[HermeticDecanHourResponse]
-
-
 __all__ = [
     "DecanateChartBodyRequest",
     "DecanateChartPositionResponse",
@@ -158,12 +96,5 @@ __all__ = [
     "DecanatePositionResponse",
     "DecanateSetRequest",
     "DecanateSetResponse",
-    "HermeticDecanCatalogResponse",
-    "HermeticDecanEntryResponse",
-    "HermeticDecanHourResponse",
-    "HermeticDecanLookupResponse",
-    "HermeticDecanNightHoursResponse",
-    "HermeticLocationRequest",
-    "HermeticLongitudeRequest",
     "VedicDrekkanaRequest",
 ]
