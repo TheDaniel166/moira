@@ -57,6 +57,23 @@ def test_schedule_compares_the_anniversary_in_the_natal_timezone() -> None:
     assert result.age_years == 0
 
 
+def test_schedule_preserves_the_requested_activation_orb() -> None:
+    natal = datetime(2000, 7, 1, 12, 0, tzinfo=timezone.utc)
+    current = datetime(2000, 7, 1, 12, 0, tzinfo=timezone.utc)
+
+    result = profection_schedule(
+        0.0,
+        natal,
+        current,
+        natal_positions={"Sun": 0.5, "Moon": 1.5},
+        activation_orb=0.75,
+    )
+
+    assert result.activation_truth is not None
+    assert result.activation_truth.activation_orb_deg == 0.75
+    assert result.activated_planets == ["Sun"]
+
+
 def test_schedule_rejects_naive_or_prebirth_chronology() -> None:
     aware_natal = datetime(2000, 1, 1, tzinfo=timezone.utc)
 

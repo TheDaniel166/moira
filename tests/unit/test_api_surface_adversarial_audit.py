@@ -855,6 +855,53 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "pancha_pakshi_uromarisi_constitution_status",
 })
 
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "BesiegingDependencyCompletenessTruth",
+    "BesiegingTruth",
+    "DecennialSequenceAssemblyTruth",
+    "DecennialSequenceBodyTruth",
+    "DignityHorizonFrame",
+    "EssentialDignityComponentTruth",
+    "HellenisticAspectEvaluationStatus",
+    "HellenisticDirectionTruth",
+    "HellenisticOvercomingRelation",
+    "HellenisticOvercomingTruth",
+    "HellenisticSuperiorityTruth",
+    "HorizonComputationMethod",
+    "HorizonHemisphere",
+    "HorizonTruth",
+    "LotArcPolicy",
+    "LotAstrologicalConditionTruth",
+    "LotDependencyCompletenessTruth",
+    "LotEvaluationStatus",
+    "LotNotEvaluable",
+    "LotsEvaluation",
+    "MercuryPhaseTruth",
+    "PartDefinition",
+    "PlanetarySolarPhaseKind",
+    "PlanetarySolarPhaseTruth",
+    "ProfectionActivationBodyTruth",
+    "ProfectionActivationStatus",
+    "ProfectionActivationTruth",
+    "SectComponentKind",
+    "SectComponentTruth",
+    "SolarProximityBand",
+    "SolarProximityTruth",
+    "TimelordEvaluationStatus",
+    "TruthEvaluationStatus",
+    "ZRFortuneAngularityTruth",
+    "besieging_truth",
+    "decennial_sequence_truth",
+    "evaluate_lots",
+    "find_whole_sign_aspects",
+    "hellenistic_superiority_truth",
+    "overcoming",
+    "planetary_solar_phase_truth",
+    "profection_activation_truth",
+    "solar_proximity_truth",
+    "zr_fortune_angularity_truth",
+})
+
 _EXPECTED_ROOT_ONLY_NAMES = {
     "ASHTOTTARI_NAKSHATRA_LORD",
     "ASHTOTTARI_SEQUENCE",
@@ -1286,6 +1333,17 @@ _EXPECTED_MOIRA_METHODS.update({
     'varga',
     'varga_for_chart',
     'varga_named',
+})
+
+_EXPECTED_MOIRA_METHODS.update({
+    "besieging_truth",
+    "decennial_sequence_truth",
+    "evaluate_lots",
+    "hellenistic_superiority_truth",
+    "planetary_solar_phase_truth",
+    "profection_activation_truth",
+    "solar_proximity_truth",
+    "zr_fortune_angularity_truth",
 })
 
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)

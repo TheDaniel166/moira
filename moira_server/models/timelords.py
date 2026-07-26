@@ -7,7 +7,11 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from moira.profections import LeapDayAnniversaryPolicy
+from moira.profections import (
+    LeapDayAnniversaryPolicy,
+    ProfectionActivationStatus,
+)
+from moira.timelords import TimelordEvaluationStatus
 
 from .common import _StrictModel
 
@@ -42,6 +46,21 @@ class ProfectionScheduleRequest(_StrictModel):
     leap_day_policy: LeapDayAnniversaryPolicy | None = None
 
 
+class ProfectionActivationBodyTruthResponse(_StrictModel):
+    body: str
+    natal_longitude: float
+    distance_from_profected_asc_deg: float
+    activated: bool
+
+
+class ProfectionActivationTruthResponse(_StrictModel):
+    status: ProfectionActivationStatus
+    profected_asc_lon: float
+    activation_orb_deg: float
+    body_truths: tuple[ProfectionActivationBodyTruthResponse, ...]
+    reason: str | None
+
+
 class ProfectionResultResponse(_StrictModel):
     age_years: int
     profected_house: int
@@ -52,6 +71,7 @@ class ProfectionResultResponse(_StrictModel):
     monthly_lords: list[str]
     age_basis: str
     leap_day_policy: LeapDayAnniversaryPolicy | None
+    activation_truth: ProfectionActivationTruthResponse
 
 
 class MonthlyProfectionResponse(_StrictModel):
@@ -236,6 +256,25 @@ class DecennialActivePairRequest(_StrictModel):
 # P8-08 Decennials response models
 # ---------------------------------------------------------------------------
 
+class DecennialSequenceBodyTruthResponse(_StrictModel):
+    planet: str
+    longitude: float
+    forward_arc_from_sect_light_deg: float
+    is_sect_light: bool
+
+
+class DecennialSequenceAssemblyTruthResponse(_StrictModel):
+    status: TimelordEvaluationStatus
+    is_day_chart: bool
+    sect_light: str
+    sequence_kind: str
+    sect_light_longitude: float
+    body_truths: tuple[DecennialSequenceBodyTruthResponse, ...]
+    sequence: tuple[str, ...] | None
+    ambiguous_groups: tuple[tuple[str, ...], ...]
+    reason: str | None
+
+
 class DecennialPeriodResponse(_StrictModel):
     level: int
     level_name: str
@@ -264,6 +303,7 @@ class DecennialPeriodResponse(_StrictModel):
     ancestor_planets: list[str]
     sequence_position: int
     deep_subdivision_method: DecennialDeepSubdivisionMethod | None
+    sequence_truth: DecennialSequenceAssemblyTruthResponse
 
 
 class DecennialMajorGroupResponse(_StrictModel):
@@ -438,6 +478,16 @@ class ZRLevelPairRequest(_StrictModel):
 # P8-09 Zodiacal Releasing response models
 # ---------------------------------------------------------------------------
 
+class ZRFortuneAngularityTruthResponse(_StrictModel):
+    status: TimelordEvaluationStatus
+    period_sign: str
+    fortune_sign: str | None
+    angularity_from_fortune: int | None
+    angularity_class: str | None
+    is_peak_period: bool | None
+    reason: str | None
+
+
 class ZRReleasingPeriodResponse(_StrictModel):
     level: int
     level_name: str
@@ -455,6 +505,7 @@ class ZRReleasingPeriodResponse(_StrictModel):
     angularity_from_fortune: int | None
     angularity_class: str | None
     use_loosing_of_bond: bool
+    fortune_angularity_truth: ZRFortuneAngularityTruthResponse
 
 
 class ZRPeriodGroupResponse(_StrictModel):
@@ -540,6 +591,8 @@ __all__ = [
     "DecennialMajorGroupResponse",
     "DecennialNatalRequest",
     "DecennialPeriodResponse",
+    "DecennialSequenceAssemblyTruthResponse",
+    "DecennialSequenceBodyTruthResponse",
     "DecennialSequenceProfileResponse",
     "DecennialSequenceResponse",
     "FirdarActivePairOptionalResponse",
@@ -557,6 +610,8 @@ __all__ = [
     "FirdarSequenceResponse",
     "MonthlyProfectionRequest",
     "MonthlyProfectionResponse",
+    "ProfectionActivationBodyTruthResponse",
+    "ProfectionActivationTruthResponse",
     "ProfectionResultResponse",
     "ProfectionScheduleRequest",
     "TimelordNativityRequest",
@@ -571,6 +626,7 @@ __all__ = [
     "ZRPeriodGroupResponse",
     "ZRProfileRequest",
     "ZRReleasingPeriodResponse",
+    "ZRFortuneAngularityTruthResponse",
     "ZRSequenceProfileResponse",
     "ZRSequenceResponse",
 ]

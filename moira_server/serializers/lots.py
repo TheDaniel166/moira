@@ -2,54 +2,46 @@
 
 from __future__ import annotations
 
-from dataclasses import fields, is_dataclass
-from enum import Enum
-from typing import Any
-
 from moira.lots import (
     ArabicPart,
+    ArabicPartClassification,
+    ArabicPartComputationTruth,
     LotChartConditionProfile,
+    LotAstrologicalConditionTruth,
     LotConditionNetworkEdge,
     LotConditionNetworkNode,
     LotConditionNetworkProfile,
     LotConditionProfile,
     LotDependency,
+    LotDependencyCompletenessTruth,
+    LotNotEvaluable,
+    LotReferenceClassification,
+    LotReferenceTruth,
+    LotsEvaluation,
     PartDefinition,
 )
 
 from ..models.lots import (
+    ArabicPartClassificationResponse,
+    ArabicPartComputationTruthResponse,
     ArabicPartResponse,
+    LotAstrologicalConditionTruthResponse,
     LotChartConditionProfileResponse,
     LotConditionNetworkEdgeResponse,
     LotConditionNetworkNodeResponse,
     LotConditionNetworkProfileResponse,
     LotConditionProfileResponse,
+    LotDependencyCompletenessTruthResponse,
     LotDependencyResponse,
+    LotNotEvaluableResponse,
+    LotReferenceClassificationResponse,
+    LotReferenceTruthResponse,
     LotsCatalogResponse,
     LotsConditionsResponse,
     LotsDependenciesResponse,
     LotsResultResponse,
     PartDefinitionResponse,
 )
-
-
-def _transport_value(value: Any) -> Any:
-    if isinstance(value, Enum):
-        return value.value
-    if is_dataclass(value):
-        return {
-            field.name: _transport_value(getattr(value, field.name))
-            for field in fields(value)
-            if field.init
-        }
-    if isinstance(value, dict):
-        return {
-            _transport_value(key): _transport_value(item)
-            for key, item in value.items()
-        }
-    if isinstance(value, (list, tuple, set, frozenset)):
-        return [_transport_value(item) for item in value]
-    return value
 
 
 def serialize_part_definition(part: PartDefinition) -> PartDefinitionResponse:
@@ -60,12 +52,76 @@ def serialize_part_definition(part: PartDefinition) -> PartDefinitionResponse:
         reverse_at_night=part.reverse_at_night,
         category=part.category,
         description=part.description,
+        projector=part.projector,
+        arc_policy=part.arc_policy,
     )
 
 
 def serialize_lots_catalog(parts: list[PartDefinition]) -> LotsCatalogResponse:
     return LotsCatalogResponse(
         parts=tuple(serialize_part_definition(part) for part in parts)
+    )
+
+
+def serialize_lot_reference_truth(
+    truth: LotReferenceTruth,
+) -> LotReferenceTruthResponse:
+    return LotReferenceTruthResponse(
+        key=truth.key,
+        longitude=truth.longitude,
+        source_kind=truth.source_kind,
+        detail=truth.detail,
+    )
+
+
+def serialize_arabic_part_computation_truth(
+    truth: ArabicPartComputationTruth,
+) -> ArabicPartComputationTruthResponse:
+    return ArabicPartComputationTruthResponse(
+        asc_longitude=truth.asc_longitude,
+        projector_key=truth.projector_key,
+        projector_reference=serialize_lot_reference_truth(
+            truth.projector_reference
+        ),
+        arc_policy=truth.arc_policy,
+        requested_add_key=truth.requested_add_key,
+        requested_sub_key=truth.requested_sub_key,
+        effective_add_key=truth.effective_add_key,
+        effective_sub_key=truth.effective_sub_key,
+        reversed_at_night=truth.reversed_at_night,
+        reversed_for_chart=truth.reversed_for_chart,
+        add_reference=serialize_lot_reference_truth(truth.add_reference),
+        sub_reference=serialize_lot_reference_truth(truth.sub_reference),
+        formula=truth.formula,
+    )
+
+
+def serialize_lot_reference_classification(
+    classification: LotReferenceClassification,
+) -> LotReferenceClassificationResponse:
+    return LotReferenceClassificationResponse(
+        kind=classification.kind,
+        key=classification.key,
+        detail=classification.detail,
+    )
+
+
+def serialize_arabic_part_classification(
+    classification: ArabicPartClassification,
+) -> ArabicPartClassificationResponse:
+    return ArabicPartClassificationResponse(
+        primary_category=classification.primary_category,
+        category_tags=classification.category_tags,
+        reversal=classification.reversal,
+        projector_reference=serialize_lot_reference_classification(
+            classification.projector_reference
+        ),
+        add_reference=serialize_lot_reference_classification(
+            classification.add_reference
+        ),
+        sub_reference=serialize_lot_reference_classification(
+            classification.sub_reference
+        ),
     )
 
 
@@ -81,6 +137,28 @@ def serialize_lot_dependency(dependency: LotDependency) -> LotDependencyResponse
         is_inter_lot=dependency.is_inter_lot,
         is_external=dependency.is_external,
         is_indirect=dependency.is_indirect,
+    )
+
+
+def serialize_lot_dependency_completeness(
+    truth: LotDependencyCompletenessTruth,
+) -> LotDependencyCompletenessTruthResponse:
+    return LotDependencyCompletenessTruthResponse(
+        status=truth.status,
+        expected_roles=truth.expected_roles,
+        resolved_roles=truth.resolved_roles,
+        missing_references=truth.missing_references,
+        reason=truth.reason,
+    )
+
+
+def serialize_lot_astrological_condition_truth(
+    truth: LotAstrologicalConditionTruth,
+) -> LotAstrologicalConditionTruthResponse:
+    return LotAstrologicalConditionTruthResponse(
+        status=truth.status,
+        condition=truth.condition,
+        reason=truth.reason,
     )
 
 
@@ -111,14 +189,24 @@ def serialize_lot_condition_profile(
 
 
 def serialize_arabic_part(part: ArabicPart) -> ArabicPartResponse:
+    if part.computation_truth is None:
+        raise ValueError("ArabicPart must preserve computation_truth")
+    if part.classification is None:
+        raise ValueError("ArabicPart must preserve classification")
+    if part.dependency_completeness is None:
+        raise ValueError("ArabicPart must preserve dependency_completeness")
     return ArabicPartResponse(
         name=part.name,
         longitude=part.longitude,
         formula=part.formula,
         category=part.category,
         description=part.description,
-        computation_truth=_transport_value(part.computation_truth),
-        classification=_transport_value(part.classification),
+        computation_truth=serialize_arabic_part_computation_truth(
+            part.computation_truth
+        ),
+        classification=serialize_arabic_part_classification(
+            part.classification
+        ),
         all_dependencies=tuple(
             serialize_lot_dependency(dependency)
             for dependency in part.all_dependencies
@@ -126,6 +214,12 @@ def serialize_arabic_part(part: ArabicPart) -> ArabicPartResponse:
         dependencies=tuple(
             serialize_lot_dependency(dependency)
             for dependency in part.dependencies
+        ),
+        dependency_completeness=serialize_lot_dependency_completeness(
+            part.dependency_completeness
+        ),
+        astrological_condition_truth=serialize_lot_astrological_condition_truth(
+            part.astrological_condition_truth
         ),
         condition_profile=None
         if part.condition_profile is None
@@ -158,9 +252,36 @@ def serialize_arabic_part(part: ArabicPart) -> ArabicPartResponse:
     )
 
 
-def serialize_lots_result(parts: list[ArabicPart]) -> LotsResultResponse:
+def serialize_lot_not_evaluable(
+    result: LotNotEvaluable,
+) -> LotNotEvaluableResponse:
+    return LotNotEvaluableResponse(
+        name=result.name,
+        category=result.category,
+        projector_key=result.projector_key,
+        requested_add_key=result.requested_add_key,
+        requested_sub_key=result.requested_sub_key,
+        effective_add_key=result.effective_add_key,
+        effective_sub_key=result.effective_sub_key,
+        missing_references=result.missing_references,
+        status=result.status,
+        reason=result.reason,
+    )
+
+
+def serialize_lots_result(evaluation: LotsEvaluation) -> LotsResultResponse:
     return LotsResultResponse(
-        parts=tuple(serialize_arabic_part(part) for part in parts)
+        parts=tuple(
+            serialize_arabic_part(part)
+            for part in evaluation.parts
+        ),
+        not_evaluable=tuple(
+            serialize_lot_not_evaluable(result)
+            for result in evaluation.not_evaluable
+        ),
+        status=evaluation.status,
+        evaluated_count=evaluation.evaluated_count,
+        not_evaluable_count=evaluation.not_evaluable_count,
     )
 
 
@@ -250,11 +371,18 @@ def serialize_lot_condition_network_profile(
 
 
 __all__ = [
+    "serialize_arabic_part_classification",
+    "serialize_arabic_part_computation_truth",
     "serialize_arabic_part",
     "serialize_lot_chart_condition_profile",
     "serialize_lot_condition_network_profile",
     "serialize_lot_condition_profile",
     "serialize_lot_dependency",
+    "serialize_lot_dependency_completeness",
+    "serialize_lot_astrological_condition_truth",
+    "serialize_lot_not_evaluable",
+    "serialize_lot_reference_classification",
+    "serialize_lot_reference_truth",
     "serialize_lot_network_edge",
     "serialize_lot_network_node",
     "serialize_lots_catalog",

@@ -17,6 +17,7 @@ from moira.dignities_types import (
 )
 
 from ..models.dignities import (
+    AccidentalDignityTruthResponse,
     ChartConditionProfileResponse,
     ConditionNetworkEdgeResponse,
     ConditionNetworkNodeResponse,
@@ -24,9 +25,13 @@ from ..models.dignities import (
     DignitiesConditionsResponse,
     DignitiesReceptionsResponse,
     DignitiesResultResponse,
+    EssentialDignityTruthResponse,
     PlanetaryConditionProfileResponse,
     PlanetaryDignityResponse,
     PlanetaryReceptionResponse,
+    SectTruthResponse,
+    SolarConditionTruthResponse,
+    MutualReceptionTruthResponse,
 )
 
 
@@ -46,6 +51,12 @@ def _transport_value(value: Any) -> Any:
     if isinstance(value, (list, tuple, set, frozenset)):
         return [_transport_value(item) for item in value]
     return value
+
+
+def _typed_truth(value: Any, response_type):
+    if value is None:
+        return None
+    return response_type.model_validate(_transport_value(value))
 
 
 def serialize_planetary_reception(
@@ -68,13 +79,22 @@ def serialize_planetary_condition_profile(
 ) -> PlanetaryConditionProfileResponse:
     return PlanetaryConditionProfileResponse(
         planet=profile.planet,
-        essential_truth=_transport_value(profile.essential_truth),
+        essential_truth=_typed_truth(
+            profile.essential_truth,
+            EssentialDignityTruthResponse,
+        ),
         essential_classification=_transport_value(profile.essential_classification),
-        accidental_truth=_transport_value(profile.accidental_truth),
+        accidental_truth=_typed_truth(
+            profile.accidental_truth,
+            AccidentalDignityTruthResponse,
+        ),
         accidental_classification=_transport_value(profile.accidental_classification),
-        sect_truth=_transport_value(profile.sect_truth),
+        sect_truth=_typed_truth(profile.sect_truth, SectTruthResponse),
         sect_classification=_transport_value(profile.sect_classification),
-        solar_truth=_transport_value(profile.solar_truth),
+        solar_truth=_typed_truth(
+            profile.solar_truth,
+            SolarConditionTruthResponse,
+        ),
         solar_classification=_transport_value(profile.solar_classification),
         all_receptions=tuple(
             serialize_planetary_reception(reception)
@@ -89,7 +109,7 @@ def serialize_planetary_condition_profile(
             for reception in profile.scored_receptions
         ),
         mutual_reception_truth=tuple(
-            _transport_value(truth)
+            _typed_truth(truth, MutualReceptionTruthResponse)
             for truth in profile.mutual_reception_truth
         ),
         reception_classification=tuple(
@@ -117,10 +137,19 @@ def serialize_planetary_dignity(
         accidental_score=dignity.accidental_score,
         total_score=dignity.total_score,
         is_retrograde=dignity.is_retrograde,
-        essential_truth=_transport_value(dignity.essential_truth),
-        accidental_truth=_transport_value(dignity.accidental_truth),
-        sect_truth=_transport_value(dignity.sect_truth),
-        solar_truth=_transport_value(dignity.solar_truth),
+        essential_truth=_typed_truth(
+            dignity.essential_truth,
+            EssentialDignityTruthResponse,
+        ),
+        accidental_truth=_typed_truth(
+            dignity.accidental_truth,
+            AccidentalDignityTruthResponse,
+        ),
+        sect_truth=_typed_truth(dignity.sect_truth, SectTruthResponse),
+        solar_truth=_typed_truth(
+            dignity.solar_truth,
+            SolarConditionTruthResponse,
+        ),
         all_receptions=tuple(
             serialize_planetary_reception(reception)
             for reception in dignity.all_receptions
@@ -134,7 +163,7 @@ def serialize_planetary_dignity(
             for reception in dignity.scored_receptions
         ),
         mutual_reception_truth=tuple(
-            _transport_value(truth)
+            _typed_truth(truth, MutualReceptionTruthResponse)
             for truth in dignity.mutual_reception_truth
         ),
         essential_classification=_transport_value(dignity.essential_classification),

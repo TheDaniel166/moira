@@ -181,6 +181,7 @@ from .jaimini import (
 )
 from .lots import (
     compute_lots_chart,
+    compute_lots_chart_evaluation,
     compute_lots_chart_condition,
     compute_lots_chart_conditions,
     compute_lots_chart_dependencies,
@@ -468,6 +469,7 @@ __all__ = [
     "compute_jaimini_direct_pair",
     "compute_jaimini_direct_profile",
     "compute_lots_chart",
+    "compute_lots_chart_evaluation",
     "compute_lots_chart_condition",
     "compute_lots_chart_conditions",
     "compute_lots_chart_dependencies",

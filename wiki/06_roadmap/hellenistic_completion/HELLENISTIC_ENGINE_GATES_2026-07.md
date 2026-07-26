@@ -1,6 +1,6 @@
 # Hellenistic Engine Gate Roadmap
 
-Date: 2026-07-25
+Date: 2026-07-26
 Scope: `moira/` engine truth first; transport, product composition, and website
 work only at their named later gates.
 
@@ -16,7 +16,7 @@ particular, “Phase 2” here means doctrine decisions, not the historical
 | 1 | False-output containment | Complete | Incorrect or unadmitted Hellenistic outputs fail closed; Decennial L3/L4 and Hermetic public surfaces remain quarantined. |
 | 2 | Doctrine decisions | Complete | The disputed profection, Decennial, Halb/Hayz, ZR, lot, and Hermetic-catalog rules have explicit source or policy decisions. |
 | 3 | Typed truth composition | Complete | Every admitted atomic family in the Phase 3 inventory now has a governing raw receipt or remains explicitly quarantined; compatibility labels and booleans are projections, not the source of truth. |
-| 4 | Contract parity | Pending | Audit effective policy and provenance parity across exports, facade, serializers, REST models, and OpenAPI. Existing partial transport is not a parity receipt. |
+| 4 | Contract parity | Complete | Phase 3 policy and raw receipts now have identity-preserving engine exports, full facade forwarding, explicit serializers, typed REST models, and OpenAPI schemas. |
 | 5 | Unified Hellenistic profile | Pending | Compose a non-interpretive chart profile only from atomic admitted receipts. |
 | 6 | Validation and documentation regeneration | Pending | Add independent source-owned goldens, regenerate inventories/matrices, archive stale completion claims, and only then update website documentation. |
 
@@ -230,20 +230,42 @@ Phase 3 is complete because:
    known-issues mode; Python compilation, documentation consistency, and
    `git diff --check` also passed.
 
-This closure is engine truth composition only. The new Phase 3 names are
-currently direct module surfaces; it does not claim root/classical/facade,
-serializer, REST-model, OpenAPI, or website parity.
+At the Phase 3 checkpoint this closure covered engine truth composition only:
+the new names were direct module surfaces and did not yet claim
+root/classical/facade, serializer, REST-model, OpenAPI, or website parity.
+Phase 4 below closes the first five of those contract gaps; website parity
+remains outside this engine roadmap gate.
+
+## Phase 4 Closure Receipt
+
+Phase 4 closes the contract gap without composing a chart-wide Hellenistic
+profile:
+
+1. the 44 newly curated Phase 3 symbols resolve to the same owning-module
+   objects through `moira`, `moira.classical`, and `moira.facade`;
+2. `Moira` exposes the admitted raw helpers, `evaluate_lots()`, and complete
+   aspect/profection policy forwarding instead of narrowing caller policy;
+3. REST dignity, lot, profection, Decennial, ZR, and whole-sign aspect
+   responses use explicit typed receipt models rather than
+   `dict[str, Any]`;
+4. `/v1/lots/chart` transports the full `LotsEvaluation`, including
+   `not_evaluable` entries and aggregate counts, instead of silently dropping
+   unresolved catalogue entries;
+5. profection activation orb, Decennial sequence assembly, ZR Fortune
+   angularity, and Hellenistic superiority survive engine-to-JSON round trips;
+6. OpenAPI points those fields at concrete receipt schemas, and adversarial
+   tests freeze both compatibility projections and the raw source of truth;
+7. Decennial L3/L4 and Hermetic lookup/rising/night-hour geometry remain
+   quarantined.
+
+This receipt does not admit Firdaria into a Hellenistic profile, reinterpret a
+typed result, add a synthetic score, regenerate the Phase 6 capability matrix,
+or authorize website work.
 
 ### Resting point for the next work session
 
-Phase 4, Contract parity, is next:
-
-1. inventory each effective Phase 3 policy and receipt across module exports,
-   root exports, `moira.classical`, facade functions, `Moira` methods, and
-   serializers;
-2. align REST models and OpenAPI transport only after the engine-to-facade
-   contract is explicit;
-3. prove parity with adversarial round-trip tests rather than inferring it from
-   existing partial transport;
-4. keep the unified Hellenistic profile, validation/documentation
-   regeneration, and website work at Phases 5 and 6.
+Phase 5, Unified Hellenistic profile, is next. It may compose only admitted
+atomic receipts after their Phase 4 transport contracts, and must remain
+non-interpretive. Firdaria, medieval almutens, later electional rules,
+unscoped primary-direction branches, Decennial L3/L4, and quarantined Hermetic
+geometry remain outside that profile.

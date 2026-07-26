@@ -4,12 +4,19 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
-from typing import Any
 
 from pydantic import Field, field_validator
 
 from moira.constants import HouseSystem
-from moira.lots import LotsReferenceFailureMode
+from moira.lots import (
+    LotArcPolicy,
+    LotConditionState,
+    LotDependencyRole,
+    LotEvaluationStatus,
+    LotReferenceKind,
+    LotReversalKind,
+    LotsReferenceFailureMode,
+)
 
 from .common import _StrictModel
 
@@ -96,19 +103,73 @@ class PartDefinitionResponse(_StrictModel):
     reverse_at_night: bool
     category: str
     description: str
+    projector: str
+    arc_policy: LotArcPolicy
+
+
+class LotReferenceTruthResponse(_StrictModel):
+    key: str
+    longitude: float
+    source_kind: LotReferenceKind
+    detail: str
+
+
+class ArabicPartComputationTruthResponse(_StrictModel):
+    asc_longitude: float
+    projector_key: str
+    projector_reference: LotReferenceTruthResponse
+    arc_policy: LotArcPolicy
+    requested_add_key: str
+    requested_sub_key: str
+    effective_add_key: str
+    effective_sub_key: str
+    reversed_at_night: bool
+    reversed_for_chart: bool
+    add_reference: LotReferenceTruthResponse
+    sub_reference: LotReferenceTruthResponse
+    formula: str
+
+
+class LotReferenceClassificationResponse(_StrictModel):
+    kind: LotReferenceKind
+    key: str
+    detail: str
+
+
+class ArabicPartClassificationResponse(_StrictModel):
+    primary_category: str
+    category_tags: tuple[str, ...]
+    reversal: LotReversalKind
+    projector_reference: LotReferenceClassificationResponse
+    add_reference: LotReferenceClassificationResponse
+    sub_reference: LotReferenceClassificationResponse
 
 
 class LotDependencyResponse(_StrictModel):
     part_name: str
-    role: str
+    role: LotDependencyRole
     requested_key: str
     effective_key: str
-    reference_kind: str
+    reference_kind: LotReferenceKind
     reference_longitude: float
     detail: str
     is_inter_lot: bool
     is_external: bool
     is_indirect: bool
+
+
+class LotDependencyCompletenessTruthResponse(_StrictModel):
+    status: LotEvaluationStatus
+    expected_roles: tuple[LotDependencyRole, ...]
+    resolved_roles: tuple[LotDependencyRole, ...]
+    missing_references: tuple[str, ...]
+    reason: str | None
+
+
+class LotAstrologicalConditionTruthResponse(_StrictModel):
+    status: LotEvaluationStatus
+    condition: str | None
+    reason: str
 
 
 class LotConditionProfileResponse(_StrictModel):
@@ -133,10 +194,12 @@ class ArabicPartResponse(_StrictModel):
     formula: str
     category: str
     description: str
-    computation_truth: dict[str, Any] | None
-    classification: dict[str, Any] | None
+    computation_truth: ArabicPartComputationTruthResponse
+    classification: ArabicPartClassificationResponse
     all_dependencies: tuple[LotDependencyResponse, ...]
     dependencies: tuple[LotDependencyResponse, ...]
+    dependency_completeness: LotDependencyCompletenessTruthResponse
+    astrological_condition_truth: LotAstrologicalConditionTruthResponse
     condition_profile: LotConditionProfileResponse | None
     sign: str
     sign_symbol: str
@@ -144,15 +207,28 @@ class ArabicPartResponse(_StrictModel):
     longitude_dms: tuple[int, int, float]
     category_tags: tuple[str, ...]
     primary_category: str
-    reversal_kind: str
+    reversal_kind: LotReversalKind
     is_reversed: bool
-    add_reference_kind: str | None
-    sub_reference_kind: str | None
+    add_reference_kind: LotReferenceKind | None
+    sub_reference_kind: LotReferenceKind | None
     dependency_count: int
     all_dependency_count: int
     inter_lot_dependencies: tuple[LotDependencyResponse, ...]
     external_dependencies: tuple[LotDependencyResponse, ...]
-    condition_state: str
+    condition_state: LotConditionState
+
+
+class LotNotEvaluableResponse(_StrictModel):
+    name: str
+    category: str
+    projector_key: str
+    requested_add_key: str
+    requested_sub_key: str
+    effective_add_key: str
+    effective_sub_key: str
+    missing_references: tuple[str, ...]
+    status: LotEvaluationStatus
+    reason: str
 
 
 class LotChartConditionProfileResponse(_StrictModel):
@@ -205,6 +281,10 @@ class LotsCatalogResponse(_StrictModel):
 
 class LotsResultResponse(_StrictModel):
     parts: tuple[ArabicPartResponse, ...]
+    not_evaluable: tuple[LotNotEvaluableResponse, ...]
+    status: LotEvaluationStatus
+    evaluated_count: int
+    not_evaluable_count: int
 
 
 class LotsDependenciesResponse(_StrictModel):
@@ -216,13 +296,20 @@ class LotsConditionsResponse(_StrictModel):
 
 
 __all__ = [
+    "ArabicPartClassificationResponse",
+    "ArabicPartComputationTruthResponse",
     "ArabicPartResponse",
+    "LotAstrologicalConditionTruthResponse",
     "LotChartConditionProfileResponse",
     "LotConditionNetworkEdgeResponse",
     "LotConditionNetworkNodeResponse",
     "LotConditionNetworkProfileResponse",
     "LotConditionProfileResponse",
     "LotDependencyResponse",
+    "LotDependencyCompletenessTruthResponse",
+    "LotNotEvaluableResponse",
+    "LotReferenceClassificationResponse",
+    "LotReferenceTruthResponse",
     "LotsCatalogResponse",
     "LotsChartRequest",
     "LotsComputationPolicyRequest",

@@ -1212,9 +1212,14 @@ not a Muhurta product or a search route.
 All six routes accept the shared optional dignity policy. Its accidental
 branch exposes `include_oriental_occidental` (default `true`), while
 `accidental.sect` exposes independent `include_hayz` and `include_halb`
-controls (both default `true`). Disabling a condition removes its label,
-structured truth vessel, and score contribution. These fields are explicit
-selection policy; they do not change the underlying phase or sect geometry.
+controls (both default `true`). Disabling a condition removes the assembled
+label and score contribution, but preserves available raw phase, proximity,
+besieging, horizon, Mercury-phase, and sect-component truth. These fields are
+explicit selection policy; they do not rewrite the underlying geometry.
+
+The response models use concrete nested receipt schemas for essential
+components, accidental truth, solar truth, sect truth, and mutual reception.
+They are not open-ended dictionaries in OpenAPI.
 
 The REST dignity policy does not admit
 `include_timelord_distributions`. Valens distribution scoring is quarantined;
@@ -1230,10 +1235,13 @@ supplying that former option is a `422 validation_error`, not an inert no-op.
 Both routes accept caller-supplied tropical ecliptic longitudes in degrees and
 perform no ephemeris or chart-motion calculation. The whole-sign route returns
 the admitted aspect relation, aspect direction, sign degrees, typed
-classification, and both directed overcoming predicates for every relation.
-The direct overcoming route returns both predicates and the winning body, or
-`null` when neither body is in the tenth-sign overcoming relation. Longitudes
-are normalized modulo 360; names are trimmed, longitudes must be finite, and a
+classification, both compatibility overcoming predicates, and the complete
+`hellenistic_superiority_truth` receipt for every relation. The direct
+overcoming route returns that same aggregate plus both predicates and the
+winning body, or `null` when neither body is in the tenth-sign overcoming
+relation. Direction is explicitly `not_evaluable` when no aspect angle is
+supplied or at a conjunction/opposition boundary. Longitudes are normalized
+modulo 360; names are trimmed, longitudes must be finite, and a
 whole-sign request is bounded to 2–64 uniquely named bodies.
 
 ## Church of Light Astrodynes Routes
@@ -1321,6 +1329,14 @@ is not caller-selectable or blended with conventional dignity tables.
 | POST | `/v1/lots/chart/condition` | `lots_chart_condition_route` |
 | POST | `/v1/lots/chart/profile` | `lots_chart_profile_route` |
 | POST | `/v1/lots/chart/network` | `lots_chart_network_route` |
+
+`POST /v1/lots/chart` returns a `LotsEvaluation` transport aggregate:
+`parts`, `not_evaluable`, aggregate `status`, `evaluated_count`, and
+`not_evaluable_count`. Each computed part carries typed computation,
+classification, dependency-completeness, and astrological-condition receipts.
+Missing optional references therefore produce named `not_evaluable` entries
+instead of disappearing from the response. Dependency completeness is not an
+astrological condition judgment.
 
 ## Triplicity Routes
 
@@ -1544,7 +1560,10 @@ direction.
 datetimes. It computes completed age at the natal civil anniversary in the
 natal timezone, rejects pre-birth instants, and requires
 `leap_day_policy="february_28"` or `"march_1"` for a February 29 nativity.
-The response includes `age_basis` and `leap_day_policy`.
+The natal request's `activation_orb` applies to both annual and schedule
+routes. Their responses include `age_basis`, `leap_day_policy`, and a typed
+`activation_truth` with per-body distances; `activated_planets` is its
+compatibility projection.
 
 | POST | `/v1/timelords/firdaria/sequence` | `firdaria_sequence_route` |
 | POST | `/v1/timelords/firdaria/groups` | `firdaria_groups_route` |
@@ -1576,9 +1595,17 @@ Decennials period responses preserve
 basis and origin at top level. ISO dates and JDs are projections from elapsed
 lived days, not civil-month anniversary claims.
 
+Every transported Decennial period also preserves its typed
+`sequence_truth`, including sect light, each Classic 7 forward arc, the
+assembled sequence, any ambiguity groups, and evaluation reason.
+
 For `/v1/timelords/zodiacal-releasing/profile`, `profile_level` must be less
 than or equal to the request's generated `levels`. Empty or unavailable-level
 profiles fail validation instead of returning an empty aggregate.
+
+Every transported ZR period carries `fortune_angularity_truth`. When Fortune
+is omitted its raw status is `not_evaluable` and raw peak truth is `null`,
+while the legacy `is_peak_period` compatibility field remains `false`.
 
 | POST | `/v1/dasha/vimshottari/sequence` | `dasha_sequence_route` |
 | POST | `/v1/dasha/vimshottari/balance` | `dasha_balance_route` |

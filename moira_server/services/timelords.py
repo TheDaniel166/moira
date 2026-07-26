@@ -115,6 +115,7 @@ def compute_profection_schedule(engine: Moira, request: ProfectionScheduleReques
         current_dt=request.current_dt,
         natal_positions=_natal_positions(chart, request.natal.include_nodes),
         leap_day_policy=request.leap_day_policy,
+        activation_orb=request.natal.activation_orb,
     )
 
 

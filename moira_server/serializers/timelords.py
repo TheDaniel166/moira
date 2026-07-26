@@ -32,6 +32,8 @@ from ..models.timelords import (
     DecennialGroupsResponse,
     DecennialMajorGroupResponse,
     DecennialPeriodResponse,
+    DecennialSequenceAssemblyTruthResponse,
+    DecennialSequenceBodyTruthResponse,
     DecennialSequenceProfileResponse,
     DecennialSequenceResponse,
     FirdarActivePairOptionalResponse,
@@ -44,6 +46,8 @@ from ..models.timelords import (
     FirdarSequenceProfileResponse,
     FirdarSequenceResponse,
     MonthlyProfectionResponse,
+    ProfectionActivationBodyTruthResponse,
+    ProfectionActivationTruthResponse,
     ProfectionResultResponse,
     ZRConditionProfileResponse,
     ZRCurrentResponse,
@@ -51,9 +55,31 @@ from ..models.timelords import (
     ZRLevelPairResponse,
     ZRPeriodGroupResponse,
     ZRReleasingPeriodResponse,
+    ZRFortuneAngularityTruthResponse,
     ZRSequenceProfileResponse,
     ZRSequenceResponse,
 )
+
+
+def _serialize_profection_activation_truth(result: ProfectionResult) -> ProfectionActivationTruthResponse:
+    truth = result.activation_truth
+    if truth is None:
+        raise ValueError("ProfectionResult must preserve activation_truth")
+    return ProfectionActivationTruthResponse(
+        status=truth.status,
+        profected_asc_lon=truth.profected_asc_lon,
+        activation_orb_deg=truth.activation_orb_deg,
+        body_truths=tuple(
+            ProfectionActivationBodyTruthResponse(
+                body=item.body,
+                natal_longitude=item.natal_longitude,
+                distance_from_profected_asc_deg=item.distance_from_profected_asc_deg,
+                activated=item.activated,
+            )
+            for item in truth.body_truths
+        ),
+        reason=truth.reason,
+    )
 
 
 def serialize_profection_result(result: ProfectionResult) -> ProfectionResultResponse:
@@ -67,6 +93,7 @@ def serialize_profection_result(result: ProfectionResult) -> ProfectionResultRes
         monthly_lords=list(result.monthly_lords),
         age_basis=result.age_basis,
         leap_day_policy=result.leap_day_policy,
+        activation_truth=_serialize_profection_activation_truth(result),
     )
 
 
@@ -189,6 +216,33 @@ def serialize_firdar_active_pair_optional(pair: FirdarActivePair | None) -> Fird
 # P8-08 Decennial serializers
 # ---------------------------------------------------------------------------
 
+def _serialize_decennial_sequence_truth(
+    period: DecennialPeriod,
+) -> DecennialSequenceAssemblyTruthResponse:
+    truth = period.sequence_truth
+    if truth is None:
+        raise ValueError("DecennialPeriod must preserve sequence_truth")
+    return DecennialSequenceAssemblyTruthResponse(
+        status=truth.status,
+        is_day_chart=truth.is_day_chart,
+        sect_light=truth.sect_light,
+        sequence_kind=truth.sequence_kind,
+        sect_light_longitude=truth.sect_light_longitude,
+        body_truths=tuple(
+            DecennialSequenceBodyTruthResponse(
+                planet=item.planet,
+                longitude=item.longitude,
+                forward_arc_from_sect_light_deg=item.forward_arc_from_sect_light_deg,
+                is_sect_light=item.is_sect_light,
+            )
+            for item in truth.body_truths
+        ),
+        sequence=truth.sequence,
+        ambiguous_groups=truth.ambiguous_groups,
+        reason=truth.reason,
+    )
+
+
 def _serialize_decennial_period(period: DecennialPeriod) -> DecennialPeriodResponse:
     return DecennialPeriodResponse(
         level=period.level,
@@ -218,6 +272,7 @@ def _serialize_decennial_period(period: DecennialPeriod) -> DecennialPeriodRespo
         ancestor_planets=list(period.ancestor_planets),
         sequence_position=period.sequence_position,
         deep_subdivision_method=period.deep_subdivision_method,
+        sequence_truth=_serialize_decennial_sequence_truth(period),
     )
 
 
@@ -388,6 +443,23 @@ def serialize_decennial_active_path_optional(
 # P8-09 Zodiacal Releasing serializers
 # ---------------------------------------------------------------------------
 
+def _serialize_zr_fortune_angularity_truth(
+    period: ReleasingPeriod,
+) -> ZRFortuneAngularityTruthResponse:
+    truth = period.fortune_angularity_truth
+    if truth is None:
+        raise ValueError("ReleasingPeriod must preserve fortune_angularity_truth")
+    return ZRFortuneAngularityTruthResponse(
+        status=truth.status,
+        period_sign=truth.period_sign,
+        fortune_sign=truth.fortune_sign,
+        angularity_from_fortune=truth.angularity_from_fortune,
+        angularity_class=truth.angularity_class,
+        is_peak_period=truth.is_peak_period,
+        reason=truth.reason,
+    )
+
+
 def _serialize_releasing_period(period: ReleasingPeriod) -> ZRReleasingPeriodResponse:
     return ZRReleasingPeriodResponse(
         level=period.level,
@@ -406,6 +478,7 @@ def _serialize_releasing_period(period: ReleasingPeriod) -> ZRReleasingPeriodRes
         angularity_from_fortune=period.angularity_from_fortune,
         angularity_class=period.angularity_class,
         use_loosing_of_bond=period.use_loosing_of_bond,
+        fortune_angularity_truth=_serialize_zr_fortune_angularity_truth(period),
     )
 
 

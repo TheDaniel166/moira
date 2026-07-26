@@ -6,6 +6,12 @@ import math
 
 from pydantic import Field, field_validator
 
+from moira.aspects import (
+    AspectDirection,
+    HellenisticAspectEvaluationStatus,
+    HellenisticOvercomingRelation,
+)
+
 from .common import _StrictModel
 
 
@@ -76,6 +82,33 @@ class HellenisticAspectClassificationResponse(_StrictModel):
     family: str
 
 
+class HellenisticDirectionTruthResponse(_StrictModel):
+    status: HellenisticAspectEvaluationStatus
+    aspect_angle_deg: float | None
+    forward_arc_body1_to_body2_deg: float
+    direction: AspectDirection | None
+    reason: str | None
+
+
+class HellenisticOvercomingTruthResponse(_StrictModel):
+    status: HellenisticAspectEvaluationStatus
+    body1_sign_index: int
+    body2_sign_index: int
+    body1_place_from_body2: int
+    body2_place_from_body1: int
+    relation: HellenisticOvercomingRelation
+    reason: str | None
+
+
+class HellenisticSuperiorityTruthResponse(_StrictModel):
+    body1: str
+    body2: str
+    longitude1: float
+    longitude2: float
+    direction_truth: HellenisticDirectionTruthResponse
+    overcoming_truth: HellenisticOvercomingTruthResponse
+
+
 class WholeSignAspectResponse(_StrictModel):
     body1: str
     body2: str
@@ -88,6 +121,7 @@ class WholeSignAspectResponse(_StrictModel):
     sign_degree2: int
     body1_overcomes_body2: bool
     body2_overcomes_body1: bool
+    hellenistic_superiority_truth: HellenisticSuperiorityTruthResponse
     classification: HellenisticAspectClassificationResponse
 
 
@@ -116,4 +150,21 @@ class OvercomingResponse(_StrictModel):
     body1_overcomes_body2: bool
     body2_overcomes_body1: bool
     overcoming_body: str | None
+    hellenistic_superiority_truth: HellenisticSuperiorityTruthResponse
     provenance: HellenisticAspectProvenanceResponse
+
+
+__all__ = [
+    "HELLENISTIC_ASPECT_MAX_NAME_LENGTH",
+    "HELLENISTIC_ASPECT_MAX_POSITIONS",
+    "HellenisticAspectClassificationResponse",
+    "HellenisticAspectProvenanceResponse",
+    "HellenisticDirectionTruthResponse",
+    "HellenisticOvercomingTruthResponse",
+    "HellenisticSuperiorityTruthResponse",
+    "OvercomingRequest",
+    "OvercomingResponse",
+    "WholeSignAspectResponse",
+    "WholeSignAspectsRequest",
+    "WholeSignAspectsResponse",
+]

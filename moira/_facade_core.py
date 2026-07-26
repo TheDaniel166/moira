@@ -40,7 +40,7 @@ LAW OF OPERATION:
         - Assemble Chart vessels from ``all_planets_at``, node
           functions, obliquity, and delta-T.
         - Delegate house calculation to ``calculate_houses``.
-        - Delegate sky-position, aspect, and Julian-day helpers to
+        - Delegate sky-position, aspect, Hellenistic superiority, and Julian-day helpers to
           their owning modules via the facade module reference.
     Non-responsibilities:
         - Does not own any astronomical math.
@@ -58,7 +58,7 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
     "scope": "class",
     "id": "moira._facade_core.CoreFacadeMixin",
     "risk": "high",
-    "api": {"frozen": ["chart", "houses", "sky_position", "aspects", "aspect_motion_witness", "declination_aspect_motion_witness", "aspects_from_longitudes", "jd_from_datetime", "sidereal_time"], "internal": []},
+    "api": {"frozen": ["chart", "houses", "sky_position", "aspects", "hellenistic_superiority_truth", "aspect_motion_witness", "declination_aspect_motion_witness", "aspects_from_longitudes", "jd_from_datetime", "sidereal_time"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -185,8 +185,12 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
         chart,
         orbs: dict[float, float] | None = None,
         include_minor: bool = True,
+        *,
+        tier: int | None = None,
+        orb_factor: float = 1.0,
+        policy=None,
     ):
-        """Find all aspects in a chart."""
+        """Find all aspects in a chart under the complete aspect policy surface."""
         facade = _facade_module()
         speed_getter = getattr(chart, "speeds", None)
         speeds = speed_getter() if callable(speed_getter) else None
@@ -195,6 +199,9 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             orbs=orbs,
             include_minor=include_minor,
             speeds=speeds,
+            tier=tier,
+            orb_factor=orb_factor,
+            policy=policy,
         )
 
     def aspects_from_longitudes(
@@ -212,6 +219,25 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             tier=tier,
             orb_factor=orb_factor,
             include_nodes=include_nodes,
+        )
+
+    def hellenistic_superiority_truth(
+        self,
+        longitude1: float,
+        longitude2: float,
+        aspect_angle: float | None = None,
+        *,
+        body1: str = "body1",
+        body2: str = "body2",
+    ):
+        """Return raw Hellenistic direction and overcoming truth for one pair."""
+
+        return _facade_module().hellenistic_superiority_truth(
+            longitude1,
+            longitude2,
+            aspect_angle,
+            body1=body1,
+            body2=body2,
         )
 
     def declination_aspects_from_declinations(

@@ -87,6 +87,26 @@ def test_decennials_sequence_route_matches_engine(
     assert first["end_distribution_day"] == pytest.approx(3870.0)
     assert first["distribution_years"] == pytest.approx(10.75)
     assert first["deep_subdivision_method"] is None
+    direct_truth = direct[0].sequence_truth
+    assert direct_truth is not None
+    transported_truth = first["sequence_truth"]
+    assert transported_truth["status"] == direct_truth.status.value
+    assert transported_truth["sect_light"] == direct_truth.sect_light
+    assert transported_truth["sequence"] == list(direct_truth.sequence)
+    assert transported_truth["ambiguous_groups"] == [
+        list(group) for group in direct_truth.ambiguous_groups
+    ]
+    assert transported_truth["body_truths"] == [
+        {
+            "planet": item.planet,
+            "longitude": item.longitude,
+            "forward_arc_from_sect_light_deg": (
+                item.forward_arc_from_sect_light_deg
+            ),
+            "is_sect_light": item.is_sect_light,
+        }
+        for item in direct_truth.body_truths
+    ]
 
 
 # ---------------------------------------------------------------------------

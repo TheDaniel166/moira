@@ -28,7 +28,7 @@ from ..serializers.lots import (
     serialize_lots_result,
 )
 from ..services.lots import (
-    compute_lots_chart,
+    compute_lots_chart_evaluation,
     compute_lots_chart_condition,
     compute_lots_chart_conditions,
     compute_lots_chart_dependencies,
@@ -51,7 +51,9 @@ def lots_chart_route(
     request: LotsChartRequest,
     engine: Moira = Depends(get_engine),
 ) -> LotsResultResponse:
-    return serialize_lots_result(compute_lots_chart(engine, request))
+    return serialize_lots_result(
+        compute_lots_chart_evaluation(engine, request)
+    )
 
 
 @router.post("/chart/dependencies", response_model=LotsDependenciesResponse)

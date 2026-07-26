@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from moira.aspects import find_whole_sign_aspects, overcoming
+from moira.aspects import find_whole_sign_aspects, hellenistic_superiority_truth
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
@@ -54,12 +54,28 @@ def test_whole_sign_route_preserves_direction_classification_and_overcoming(
         item["classification"]["domain"] == "whole_sign"
         for item in body["aspects"]
     )
-    for item in body["aspects"]:
-        assert item["body1_overcomes_body2"] is overcoming(
-            positions[item["body1"]], positions[item["body2"]]
+    for item, direct_item in zip(body["aspects"], direct, strict=True):
+        direct_truth = direct_item.hellenistic_superiority_truth
+        assert direct_truth is not None
+        truth = item["hellenistic_superiority_truth"]
+        assert truth["body1"] == direct_truth.body1
+        assert truth["body2"] == direct_truth.body2
+        assert (
+            truth["direction_truth"]["status"]
+            == direct_truth.direction_truth.status.value
         )
-        assert item["body2_overcomes_body1"] is overcoming(
-            positions[item["body2"]], positions[item["body1"]]
+        assert truth["direction_truth"]["reason"] == direct_truth.direction_truth.reason
+        assert (
+            truth["overcoming_truth"]["relation"]
+            == direct_truth.overcoming_truth.relation.value
+        )
+        assert (
+            item["body1_overcomes_body2"]
+            is direct_truth.body1_overcomes_body2
+        )
+        assert (
+            item["body2_overcomes_body1"]
+            is direct_truth.body2_overcomes_body1
         )
     assert body["provenance"]["ephemeris"] == "not_used"
     assert body["provenance"]["chart_motion"] == "not_computed"
@@ -85,6 +101,19 @@ def test_overcoming_route_is_bidirectional_and_normalizes_longitudes(
     assert body["body1_overcomes_body2"] is True
     assert body["body2_overcomes_body1"] is False
     assert body["overcoming_body"] == "Mars"
+    direct = hellenistic_superiority_truth(
+        275.0,
+        5.0,
+        body1="Mars",
+        body2="Saturn",
+    )
+    truth = body["hellenistic_superiority_truth"]
+    assert truth["direction_truth"]["status"] == "not_evaluable"
+    assert truth["direction_truth"]["reason"] == "aspect_angle_not_supplied"
+    assert (
+        truth["overcoming_truth"]["relation"]
+        == direct.overcoming_truth.relation.value
+    )
     assert body["provenance"]["doctrine"] == "tenth_sign_overcoming"
 
 
@@ -106,6 +135,10 @@ def test_overcoming_route_returns_no_winner_outside_tenth_sign_relation(
     assert body["body1_overcomes_body2"] is False
     assert body["body2_overcomes_body1"] is False
     assert body["overcoming_body"] is None
+    assert (
+        body["hellenistic_superiority_truth"]["overcoming_truth"]["relation"]
+        == "neither"
+    )
 
 
 def test_whole_sign_routes_reject_ambiguous_or_non_finite_inputs(

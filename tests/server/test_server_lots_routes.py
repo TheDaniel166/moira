@@ -12,6 +12,7 @@ from moira_server.config import ServerConfig
 from moira_server.models.lots import LotsChartRequest, LotsConditionChartRequest
 from moira_server.services.lots import (
     compute_lots_chart,
+    compute_lots_chart_evaluation,
     compute_lots_chart_condition,
     compute_lots_chart_conditions,
     compute_lots_chart_dependencies,
@@ -76,6 +77,8 @@ def test_lots_catalog_route_matches_engine_catalog(client_with_engine: TestClien
     assert body["parts"][0]["day_add"] == direct[0].day_add
     assert body["parts"][0]["day_sub"] == direct[0].day_sub
     assert body["parts"][0]["reverse_at_night"] is direct[0].reverse_at_night
+    assert body["parts"][0]["projector"] == direct[0].projector
+    assert body["parts"][0]["arc_policy"] == direct[0].arc_policy.value
 
 
 @pytest.mark.requires_ephemeris
@@ -83,18 +86,38 @@ def test_lots_chart_route_matches_service(
     client_with_engine: TestClient,
     moira_engine,
 ) -> None:
-    direct = compute_lots_chart(moira_engine, _request())
+    direct = compute_lots_chart_evaluation(moira_engine, _request())
 
     response = client_with_engine.post("/v1/lots/chart", json=_PAYLOAD)
 
     assert response.status_code == 200
     body = response.json()
-    assert len(body["parts"]) == len(direct)
+    assert len(body["parts"]) == direct.evaluated_count
+    assert len(body["not_evaluable"]) == direct.not_evaluable_count
+    assert body["evaluated_count"] == direct.evaluated_count
+    assert body["not_evaluable_count"] == direct.not_evaluable_count
+    assert body["status"] == direct.status.value
+    assert {
+        item["name"]: item["missing_references"]
+        for item in body["not_evaluable"]
+    } == {
+        item.name: list(item.missing_references)
+        for item in direct.not_evaluable
+    }
     first = body["parts"][0]
-    assert first["name"] == direct[0].name
-    assert first["longitude"] == pytest.approx(direct[0].longitude)
-    assert first["formula"] == direct[0].formula
+    assert first["name"] == direct.parts[0].name
+    assert first["longitude"] == pytest.approx(direct.parts[0].longitude)
+    assert first["formula"] == direct.parts[0].formula
     assert first["formula"] == first["computation_truth"]["formula"]
+    assert (
+        first["dependency_completeness"]["status"]
+        == direct.parts[0].dependency_completeness.status.value
+    )
+    assert (
+        first["astrological_condition_truth"]["status"]
+        == direct.parts[0].astrological_condition_truth.status.value
+    )
+    assert first["astrological_condition_truth"]["condition"] is None
     assert first["dependency_count"] == len(first["dependencies"])
     assert first["all_dependency_count"] == len(first["all_dependencies"])
     dependency_keys = {

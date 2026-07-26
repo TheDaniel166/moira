@@ -27,6 +27,7 @@ def _natal_payload() -> dict[str, object]:
         "latitude": 40.7128,
         "longitude": -74.0060,
         "include_nodes": False,
+        "activation_orb": 0.25,
     }
 
 
@@ -39,13 +40,19 @@ def test_profection_routes_match_engine_truth(client_with_engine: TestClient, mo
     houses = moira_engine.houses(natal_dt, natal["latitude"], natal["longitude"])  # type: ignore[index]
     natal_positions = chart.longitudes(include_nodes=False)
 
-    direct_annual = annual_profection(houses.asc, 24, natal_positions=natal_positions)
+    direct_annual = annual_profection(
+        houses.asc,
+        24,
+        natal_positions=natal_positions,
+        activation_orb=0.25,
+    )
     direct_monthly = monthly_profection(houses.asc, 24, 3)
     direct_schedule = profection_schedule(
         houses.asc,
         natal_dt,
         current_dt,
         natal_positions=natal_positions,
+        activation_orb=0.25,
     )
 
     annual_response = client_with_engine.post("/v1/profections/annual", json={"natal": natal, "age_years": 24})
@@ -62,6 +69,12 @@ def test_profection_routes_match_engine_truth(client_with_engine: TestClient, mo
     assert annual_response.json()["profected_house"] == direct_annual.profected_house
     assert annual_response.json()["lord_of_year"] == direct_annual.lord_of_year
     assert annual_response.json()["activated_planets"] == direct_annual.activated_planets
+    annual_truth = annual_response.json()["activation_truth"]
+    assert annual_truth["activation_orb_deg"] == 0.25
+    assert annual_truth["status"] == direct_annual.activation_truth.status.value
+    assert [item["body"] for item in annual_truth["body_truths"]] == [
+        item.body for item in direct_annual.activation_truth.body_truths
+    ]
 
     assert monthly_response.status_code == 200
     assert monthly_response.json()["profected_longitude"] == pytest.approx(direct_monthly[0])
@@ -72,6 +85,12 @@ def test_profection_routes_match_engine_truth(client_with_engine: TestClient, mo
     assert schedule_response.json()["age_basis"] == "civil_anniversary"
     assert schedule_response.json()["profected_house"] == direct_schedule.profected_house
     assert schedule_response.json()["lord_of_year"] == direct_schedule.lord_of_year
+    schedule_truth = schedule_response.json()["activation_truth"]
+    assert schedule_truth["activation_orb_deg"] == 0.25
+    assert schedule_truth["status"] == direct_schedule.activation_truth.status.value
+    assert schedule_response.json()["activated_planets"] == list(
+        direct_schedule.activation_truth.activated_planets
+    )
 
 
 def test_profection_routes_reject_invalid_inputs(client_with_engine: TestClient) -> None:

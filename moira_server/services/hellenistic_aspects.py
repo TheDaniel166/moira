@@ -2,11 +2,18 @@
 
 from __future__ import annotations
 
-from moira.aspects import find_whole_sign_aspects, overcoming
+from moira.aspects import (
+    HellenisticSuperiorityTruth,
+    find_whole_sign_aspects,
+    hellenistic_superiority_truth,
+)
 
 from ..models.hellenistic_aspects import (
     HellenisticAspectClassificationResponse,
+    HellenisticDirectionTruthResponse,
+    HellenisticOvercomingTruthResponse,
     HellenisticAspectProvenanceResponse,
+    HellenisticSuperiorityTruthResponse,
     OvercomingRequest,
     OvercomingResponse,
     WholeSignAspectResponse,
@@ -21,6 +28,35 @@ _SOURCE_REFS = [
 ]
 
 
+def _serialize_superiority_truth(
+    truth: HellenisticSuperiorityTruth,
+) -> HellenisticSuperiorityTruthResponse:
+    return HellenisticSuperiorityTruthResponse(
+        body1=truth.body1,
+        body2=truth.body2,
+        longitude1=truth.longitude1,
+        longitude2=truth.longitude2,
+        direction_truth=HellenisticDirectionTruthResponse(
+            status=truth.direction_truth.status,
+            aspect_angle_deg=truth.direction_truth.aspect_angle_deg,
+            forward_arc_body1_to_body2_deg=(
+                truth.direction_truth.forward_arc_body1_to_body2_deg
+            ),
+            direction=truth.direction_truth.direction,
+            reason=truth.direction_truth.reason,
+        ),
+        overcoming_truth=HellenisticOvercomingTruthResponse(
+            status=truth.overcoming_truth.status,
+            body1_sign_index=truth.overcoming_truth.body1_sign_index,
+            body2_sign_index=truth.overcoming_truth.body2_sign_index,
+            body1_place_from_body2=truth.overcoming_truth.body1_place_from_body2,
+            body2_place_from_body1=truth.overcoming_truth.body2_place_from_body1,
+            relation=truth.overcoming_truth.relation,
+            reason=truth.overcoming_truth.reason,
+        ),
+    )
+
+
 def compute_whole_sign_aspects(
     request: WholeSignAspectsRequest,
 ) -> WholeSignAspectsResponse:
@@ -33,6 +69,9 @@ def compute_whole_sign_aspects(
             raise ValueError("whole-sign aspect must preserve its classification")
         if aspect.sign_degree1 is None or aspect.sign_degree2 is None:
             raise ValueError("whole-sign aspect must preserve both sign degrees")
+        superiority_truth = aspect.hellenistic_superiority_truth
+        if superiority_truth is None:
+            raise ValueError("whole-sign aspect must preserve superiority truth")
         serialized.append(
             WholeSignAspectResponse(
                 body1=aspect.body1,
@@ -44,11 +83,10 @@ def compute_whole_sign_aspects(
                 direction=aspect.direction.value if aspect.direction is not None else None,
                 sign_degree1=aspect.sign_degree1,
                 sign_degree2=aspect.sign_degree2,
-                body1_overcomes_body2=overcoming(
-                    request.positions[aspect.body1], request.positions[aspect.body2]
-                ),
-                body2_overcomes_body1=overcoming(
-                    request.positions[aspect.body2], request.positions[aspect.body1]
+                body1_overcomes_body2=superiority_truth.body1_overcomes_body2,
+                body2_overcomes_body1=superiority_truth.body2_overcomes_body1,
+                hellenistic_superiority_truth=_serialize_superiority_truth(
+                    superiority_truth
                 ),
                 classification=HellenisticAspectClassificationResponse(
                     domain=classification.domain.value,
@@ -62,7 +100,7 @@ def compute_whole_sign_aspects(
         aspects=serialized,
         count=len(serialized),
         provenance=HellenisticAspectProvenanceResponse(
-            engine_entrypoint="find_whole_sign_aspects+overcoming",
+            engine_entrypoint="find_whole_sign_aspects",
             doctrine="whole_sign_ptolemaic_aspects_with_direction_and_overcoming",
             source_refs=_SOURCE_REFS,
             stage_sequence=[
@@ -77,25 +115,23 @@ def compute_whole_sign_aspects(
 
 
 def compute_overcoming(request: OvercomingRequest) -> OvercomingResponse:
-    body1_overcomes = overcoming(request.longitude1, request.longitude2)
-    body2_overcomes = overcoming(request.longitude2, request.longitude1)
-    overcoming_body = (
-        request.body1
-        if body1_overcomes
-        else request.body2
-        if body2_overcomes
-        else None
+    truth = hellenistic_superiority_truth(
+        request.longitude1,
+        request.longitude2,
+        body1=request.body1,
+        body2=request.body2,
     )
     return OvercomingResponse(
-        body1=request.body1,
-        longitude1=request.longitude1 % 360.0,
-        body2=request.body2,
-        longitude2=request.longitude2 % 360.0,
-        body1_overcomes_body2=body1_overcomes,
-        body2_overcomes_body1=body2_overcomes,
-        overcoming_body=overcoming_body,
+        body1=truth.body1,
+        longitude1=truth.longitude1,
+        body2=truth.body2,
+        longitude2=truth.longitude2,
+        body1_overcomes_body2=truth.body1_overcomes_body2,
+        body2_overcomes_body1=truth.body2_overcomes_body1,
+        overcoming_body=truth.overcoming_body,
+        hellenistic_superiority_truth=_serialize_superiority_truth(truth),
         provenance=HellenisticAspectProvenanceResponse(
-            engine_entrypoint="overcoming",
+            engine_entrypoint="hellenistic_superiority_truth",
             doctrine="tenth_sign_overcoming",
             source_refs=_SOURCE_REFS,
             stage_sequence=[
@@ -105,3 +141,9 @@ def compute_overcoming(request: OvercomingRequest) -> OvercomingResponse:
             ],
         ),
     )
+
+
+__all__ = [
+    "compute_overcoming",
+    "compute_whole_sign_aspects",
+]

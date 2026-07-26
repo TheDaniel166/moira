@@ -486,6 +486,7 @@ def profection_schedule(
     natal_positions: dict[str, float] | None = None,
     *,
     leap_day_policy: LeapDayAnniversaryPolicy | str | None = None,
+    activation_orb: float = 5.0,
 ) -> ProfectionResult:
     """
     Compute the current profection from civil anniversary chronology.
@@ -505,6 +506,8 @@ def profection_schedule(
         Timezone-aware instant to evaluate.
     natal_positions : dict[str, float] or None
         Natal planet positions for activated-planet detection.
+    activation_orb : float
+        Orb in degrees for activated-planet detection (default 5.0°).
 
     Returns
     -------
@@ -553,7 +556,12 @@ def profection_schedule(
             )
     age_years = candidate_age - int(current_local < anniversary)
 
-    result = annual_profection(natal_asc, age_years, natal_positions)
+    result = annual_profection(
+        natal_asc,
+        age_years,
+        natal_positions,
+        activation_orb=activation_orb,
+    )
     result.age_basis = "civil_anniversary"
     result.leap_day_policy = resolved_policy
     return result

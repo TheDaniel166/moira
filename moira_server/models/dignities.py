@@ -11,8 +11,15 @@ from pydantic import Field, field_validator, model_validator
 from moira.constants import HouseSystem
 from moira.dignities_types import (
     EssentialDignityDoctrine,
+    EssentialDignityKind,
     HalbHayzDoctrine,
+    HorizonComputationMethod,
+    HorizonHemisphere,
     MercurySectModel,
+    PlanetarySolarPhaseKind,
+    SectComponentKind,
+    SolarProximityBand,
+    TruthEvaluationStatus,
 )
 
 from .common import _StrictModel
@@ -118,6 +125,147 @@ class DignitiesConditionChartRequest(DignitiesChartRequest):
         return self
 
 
+class EssentialDignityComponentTruthResponse(_StrictModel):
+    kind: EssentialDignityKind
+    status: TruthEvaluationStatus
+    matched: bool | None
+    matching_signs: tuple[str, ...]
+    ruler: str | None
+    reason: str | None
+
+
+class EssentialDignityTruthResponse(_StrictModel):
+    category: str
+    label: str
+    score: int
+    sign: str
+    matching_signs: tuple[str, ...]
+    matched: bool
+    components: tuple[EssentialDignityComponentTruthResponse, ...]
+
+
+class PlanetarySolarPhaseTruthResponse(_StrictModel):
+    status: TruthEvaluationStatus
+    phase: PlanetarySolarPhaseKind | None
+    forward_distance_to_sun_deg: float | None
+    reason: str | None
+
+
+class SolarProximityTruthResponse(_StrictModel):
+    status: TruthEvaluationStatus
+    band: SolarProximityBand | None
+    distance_from_sun_deg: float | None
+    reason: str | None
+
+
+class BesiegingDependencyCompletenessTruthResponse(_StrictModel):
+    status: TruthEvaluationStatus
+    required_bodies: tuple[str, ...]
+    supplied_bodies: tuple[str, ...]
+    missing_bodies: tuple[str, ...]
+    reason: str | None
+
+
+class BesiegingTruthResponse(_StrictModel):
+    status: TruthEvaluationStatus
+    dependency_truth: BesiegingDependencyCompletenessTruthResponse
+    target_planet: str | None
+    target_longitude: float
+    orb_deg: float
+    besieged: bool | None
+    backward_neighbor: str | None
+    forward_neighbor: str | None
+    backward_distance_deg: float | None
+    forward_distance_deg: float | None
+    ambiguous_bodies: tuple[str, ...]
+    reason: str | None
+
+
+class MercuryPhaseTruthResponse(_StrictModel):
+    model: MercurySectModel
+    status: TruthEvaluationStatus
+    rises_before_sun: bool | None
+    longitudinal_separation_deg: float
+    reason: str | None
+
+
+class HorizonTruthResponse(_StrictModel):
+    status: TruthEvaluationStatus
+    method: HorizonComputationMethod
+    longitude: float
+    hemisphere: HorizonHemisphere | None
+    asc_longitude: float | None
+    mc_longitude: float | None
+    boundary_distance_deg: float | None
+    reason: str | None
+
+
+class SectComponentTruthResponse(_StrictModel):
+    kind: SectComponentKind
+    status: TruthEvaluationStatus
+    matched: bool | None
+    reason: str | None
+
+
+class SectTruthResponse(_StrictModel):
+    doctrine: HalbHayzDoctrine
+    is_day_chart: bool
+    sect_light: str
+    planet_sect: str | None
+    mercury_rises_before_sun: bool | None
+    in_sect: bool | None
+    in_halb: bool | None
+    in_hayz: bool | None
+    preferred_hemisphere: str | None
+    actual_hemisphere: str | None
+    hemisphere_matches: bool | None
+    preferred_gender: str | None
+    actual_gender: str
+    gender_matches: bool | None
+    hayz_evaluable: bool
+    mercury_phase_truth: MercuryPhaseTruthResponse | None
+    horizon_truth: HorizonTruthResponse | None
+    components: tuple[SectComponentTruthResponse, ...]
+
+
+class AccidentalDignityConditionResponse(_StrictModel):
+    category: str
+    code: str
+    label: str
+    score: int
+
+
+class SolarConditionTruthResponse(_StrictModel):
+    present: bool
+    condition: str | None
+    label: str | None
+    score: int
+    distance_from_sun: float | None
+
+
+class MutualReceptionTruthResponse(_StrictModel):
+    other_planet: str
+    reception_type: str
+    label: str
+    score: int
+
+
+class AccidentalDignityTruthResponse(_StrictModel):
+    conditions: tuple[AccidentalDignityConditionResponse, ...]
+    house_condition: AccidentalDignityConditionResponse | None
+    motion_condition: AccidentalDignityConditionResponse | None
+    solar_condition: SolarConditionTruthResponse
+    solar_proximity_truth: SolarProximityTruthResponse
+    besieging_truth: BesiegingTruthResponse
+    mutual_receptions: tuple[MutualReceptionTruthResponse, ...]
+    hayz_condition: AccidentalDignityConditionResponse | None
+    halb_condition: AccidentalDignityConditionResponse | None
+    joy_condition: AccidentalDignityConditionResponse | None
+    planetary_solar_phase_truth: PlanetarySolarPhaseTruthResponse
+    oriental_condition: AccidentalDignityConditionResponse | None
+    besieged_condition: AccidentalDignityConditionResponse | None
+
+
 class PlanetaryReceptionResponse(_StrictModel):
     receiving_planet: str
     host_planet: str
@@ -131,18 +279,18 @@ class PlanetaryReceptionResponse(_StrictModel):
 
 class PlanetaryConditionProfileResponse(_StrictModel):
     planet: str
-    essential_truth: dict[str, Any] | None
+    essential_truth: EssentialDignityTruthResponse | None
     essential_classification: dict[str, Any] | None
-    accidental_truth: dict[str, Any]
+    accidental_truth: AccidentalDignityTruthResponse
     accidental_classification: dict[str, Any]
-    sect_truth: dict[str, Any] | None
+    sect_truth: SectTruthResponse | None
     sect_classification: dict[str, Any] | None
-    solar_truth: dict[str, Any]
+    solar_truth: SolarConditionTruthResponse
     solar_classification: dict[str, Any]
     all_receptions: tuple[PlanetaryReceptionResponse, ...]
     admitted_receptions: tuple[PlanetaryReceptionResponse, ...]
     scored_receptions: tuple[PlanetaryReceptionResponse, ...]
-    mutual_reception_truth: tuple[dict[str, Any], ...]
+    mutual_reception_truth: tuple[MutualReceptionTruthResponse, ...]
     reception_classification: tuple[dict[str, Any], ...]
     strengthening_count: int
     weakening_count: int
@@ -161,14 +309,14 @@ class PlanetaryDignityResponse(_StrictModel):
     accidental_score: int
     total_score: int
     is_retrograde: bool
-    essential_truth: dict[str, Any] | None
-    accidental_truth: dict[str, Any]
-    sect_truth: dict[str, Any] | None
-    solar_truth: dict[str, Any]
+    essential_truth: EssentialDignityTruthResponse | None
+    accidental_truth: AccidentalDignityTruthResponse
+    sect_truth: SectTruthResponse | None
+    solar_truth: SolarConditionTruthResponse
     all_receptions: tuple[PlanetaryReceptionResponse, ...]
     admitted_receptions: tuple[PlanetaryReceptionResponse, ...]
     scored_receptions: tuple[PlanetaryReceptionResponse, ...]
-    mutual_reception_truth: tuple[dict[str, Any], ...]
+    mutual_reception_truth: tuple[MutualReceptionTruthResponse, ...]
     essential_classification: dict[str, Any] | None
     accidental_classification: dict[str, Any]
     sect_classification: dict[str, Any] | None
@@ -238,7 +386,11 @@ class DignitiesConditionsResponse(_StrictModel):
 
 
 __all__ = [
+    "AccidentalDignityConditionResponse",
     "AccidentalDignityPolicyRequest",
+    "AccidentalDignityTruthResponse",
+    "BesiegingDependencyCompletenessTruthResponse",
+    "BesiegingTruthResponse",
     "ChartConditionProfileResponse",
     "ConditionNetworkEdgeResponse",
     "ConditionNetworkNodeResponse",
@@ -249,11 +401,21 @@ __all__ = [
     "DignitiesReceptionsResponse",
     "DignitiesResultResponse",
     "DignityComputationPolicyRequest",
+    "EssentialDignityComponentTruthResponse",
     "EssentialDignityPolicyRequest",
+    "EssentialDignityTruthResponse",
+    "HorizonTruthResponse",
+    "MercuryPhaseTruthResponse",
+    "MutualReceptionTruthResponse",
     "MutualReceptionPolicyRequest",
+    "PlanetarySolarPhaseTruthResponse",
     "PlanetaryConditionProfileResponse",
     "PlanetaryDignityResponse",
     "PlanetaryReceptionResponse",
     "SectHayzPolicyRequest",
+    "SectComponentTruthResponse",
+    "SectTruthResponse",
+    "SolarConditionTruthResponse",
     "SolarConditionPolicyRequest",
+    "SolarProximityTruthResponse",
 ]

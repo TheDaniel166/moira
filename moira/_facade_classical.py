@@ -40,7 +40,8 @@ RITE OF PURPOSE:
 LAW OF OPERATION:
     Responsibilities:
         - Delegate lots, dignities, Astrodynes, midpoints, harmonics, profections,
-          and time-lord computations to their owning modules.
+          time-lord computations, and admitted raw truth helpers to their
+          owning modules.
     Non-responsibilities:
         - Does not implement any astrological calculation itself.
         - Does not own kernel lifecycle or reader management.
@@ -57,7 +58,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
     "scope": "class",
     "id": "moira._facade_classical.ClassicalFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["lots", "dignities", "mutual_receptions", "astrodynes", "astrodynes_from_geometry", "normal_progressed_astrodynes", "practical_progressed_astrodynes", "progressed_astrodynes_geometry", "progressed_astrodynes_chart", "progressed_astrodyne_dated_aspect", "progressed_astrodyne_major_relation", "progressed_astrodyne_accessory_relation", "progressed_astrodyne_reenforcement", "progressed_astrodyne_total_influence", "progressed_astrodyne_compound_total_influence", "midpoints", "midpoints_to_point", "harmonic", "harmonic_transit_forecast", "profection", "firdaria", "decennials", "current_decennials", "zodiacal_releasing", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
+    "api": {"frozen": ["lots", "evaluate_lots", "dignities", "solar_proximity_truth", "planetary_solar_phase_truth", "besieging_truth", "mutual_receptions", "astrodynes", "astrodynes_from_geometry", "normal_progressed_astrodynes", "practical_progressed_astrodynes", "progressed_astrodynes_geometry", "progressed_astrodynes_chart", "progressed_astrodyne_dated_aspect", "progressed_astrodyne_major_relation", "progressed_astrodyne_accessory_relation", "progressed_astrodyne_reenforcement", "progressed_astrodyne_total_influence", "progressed_astrodyne_compound_total_influence", "midpoints", "midpoints_to_point", "harmonic", "harmonic_transit_forecast", "profection", "profection_activation_truth", "firdaria", "decennials", "decennial_sequence_truth", "current_decennials", "zodiacal_releasing", "zr_fortune_angularity_truth", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -97,6 +98,36 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             lord_of_hour=lord_of_hour,
         )
 
+    def evaluate_lots(
+        self,
+        chart,
+        houses,
+        *,
+        policy=None,
+        syzygy=None,
+        prenatal_new_moon=None,
+        prenatal_full_moon=None,
+        lord_of_hour=None,
+    ):
+        """Evaluate catalogued lots without erasing unresolved entries."""
+
+        facade = _facade_module()
+        longitudes = chart.longitudes(include_nodes=True)
+        if "Sun" not in longitudes:
+            raise ValueError("Sun not found in chart - include it when calling chart()")
+        cusps = {index + 1: cusp for index, cusp in enumerate(houses.cusps)}
+        is_day = facade.is_day_chart(longitudes["Sun"], houses.asc)
+        return facade.evaluate_lots(
+            longitudes,
+            cusps,
+            is_day,
+            policy=policy,
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+        )
+
     def dignities(self, chart, houses, *, policy=None):
         """Compute essential and accidental dignities for chart planets."""
         from .dignities import DignityHorizonFrame
@@ -122,6 +153,50 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
                 asc_longitude=houses.asc,
                 mc_longitude=houses.mc,
             ),
+        )
+
+    def solar_proximity_truth(
+        self,
+        planet: str,
+        planet_longitude: float,
+        sun_longitude: float,
+    ):
+        """Return raw solar-proximity band truth."""
+
+        return _facade_module().solar_proximity_truth(
+            planet,
+            planet_longitude,
+            sun_longitude,
+        )
+
+    def planetary_solar_phase_truth(
+        self,
+        planet: str,
+        planet_longitude: float,
+        sun_longitude: float,
+    ):
+        """Return raw oriental/occidental longitude-phase truth."""
+
+        return _facade_module().planetary_solar_phase_truth(
+            planet,
+            planet_longitude,
+            sun_longitude,
+        )
+
+    def besieging_truth(
+        self,
+        planet_longitude: float,
+        chart_positions: dict[str, float],
+        planet_name: str | None = None,
+        orb: float = 12.0,
+    ):
+        """Return raw nearest-neighbour besieging truth."""
+
+        return _facade_module().besieging_truth(
+            planet_longitude,
+            chart_positions,
+            planet_name=planet_name,
+            orb=orb,
         )
 
     def mutual_receptions(self, chart, by_exaltation: bool = False):
@@ -370,6 +445,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         natal_positions: dict[str, float] | None = None,
         *,
         leap_day_policy=None,
+        activation_orb: float = 5.0,
     ):
         """Compute the current annual profection."""
         facade = _facade_module()
@@ -379,6 +455,21 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             current_dt,
             natal_positions,
             leap_day_policy=leap_day_policy,
+            activation_orb=activation_orb,
+        )
+
+    def profection_activation_truth(
+        self,
+        profected_asc_longitude: float,
+        natal_positions: dict[str, float] | None,
+        activation_orb: float = 5.0,
+    ):
+        """Return raw natal-body activation truth for a profected Ascendant."""
+
+        return _facade_module().profection_activation_truth(
+            profected_asc_longitude,
+            natal_positions,
+            activation_orb,
         )
 
     def firdaria(self, natal_dt: datetime, natal_chart, natal_houses=None):
@@ -420,6 +511,18 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             day,
             levels=levels,
             policy=policy,
+        )
+
+    def decennial_sequence_truth(
+        self,
+        natal_positions: dict[str, float],
+        is_day_chart: bool,
+    ):
+        """Return raw sect-light Decennial sequence assembly truth."""
+
+        return _facade_module().decennial_sequence_truth(
+            natal_positions,
+            is_day_chart,
         )
 
     def current_decennials(
@@ -475,6 +578,18 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             fortune_longitude=fortune_longitude,
             use_loosing_of_bond=use_loosing_of_bond,
             policy=policy,
+        )
+
+    def zr_fortune_angularity_truth(
+        self,
+        period_sign: str,
+        fortune_sign: str | None,
+    ):
+        """Return raw Fortune-relative angularity truth for one ZR sign."""
+
+        return _facade_module().zr_fortune_angularity_truth(
+            period_sign,
+            fortune_sign,
         )
 
     def vimshottari_dasha(

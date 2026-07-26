@@ -2,7 +2,7 @@
 
 **Document revision:** 2.0.0
 **Engine baseline:** 5.2.3
-**Last verified:** 2026-07-25
+**Last verified:** 2026-07-26
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
 
@@ -167,9 +167,9 @@ Adds the full classical and traditional toolkit:
 | Added domain | Key symbols |
 |---|---|
 | Houses (full) | `HouseSystemFamily`, `HouseSystemCuspBasis`, `classify_house_system`, `HousePlacement`, `HouseBoundaryProfile`, `HouseAngularity`, `compare_systems`, `compare_placements`, `distribute_points`, `Quadrant`, `quadrant_emphasis`, `DiurnalQuadrant`, `diurnal_emphasis` |
-| Aspects (full) | `AspectDefinition`, `ASPECT_TIERS`, `CANONICAL_ASPECTS`, `AspectDomain`, `AspectFamily`, `AspectTier`, `MotionState`, `AspectClassification`, `aspect_strength`, `aspect_motion_state`, `find_declination_aspects`, `declination_aspects_from_declinations`, `declination_aspect_motion_witness`, `find_patterns`, `DeclinationAspect`, `DeclinationAspectAnalysis`, `DeclinationAspectMotionWitness`, `DeclinationAspectPolicy` |
-| Dignities | `calculate_dignities`, `calculate_receptions`, `EssentialDignityKind`, `AccidentalConditionKind`, `PlanetaryDignity`, `sect_light`, `is_day_chart`, `almuten_figuris`, `mutual_receptions` |
-| Arabic Parts | `calculate_lots`, `ArabicPart`, `ArabicPartsService`, `list_parts` |
+| Aspects (full) | `AspectDefinition`, `ASPECT_TIERS`, `CANONICAL_ASPECTS`, `AspectDomain`, `AspectFamily`, `AspectTier`, `MotionState`, `AspectClassification`, `HellenisticSuperiorityTruth`, `hellenistic_superiority_truth`, `find_whole_sign_aspects`, `aspect_strength`, `aspect_motion_state`, `find_declination_aspects`, `declination_aspects_from_declinations`, `declination_aspect_motion_witness`, `find_patterns` |
+| Dignities | `calculate_dignities`, `calculate_receptions`, `EssentialDignityKind`, `PlanetaryDignity`, `DignityHorizonFrame`, `PlanetarySolarPhaseTruth`, `SolarProximityTruth`, `BesiegingTruth`, `planetary_solar_phase_truth`, `solar_proximity_truth`, `besieging_truth` |
+| Arabic Parts | `calculate_lots`, `evaluate_lots`, `ArabicPart`, `LotsEvaluation`, `LotNotEvaluable`, `ArabicPartsService`, `list_parts` |
 | Midpoints | `calculate_midpoints`, `Midpoint`, `MidpointsService`, `midpoint_tree`, `planetary_pictures` |
 | Antiscia | `find_antiscia`, `AntisciaAspect`, `antiscion`, `contra_antiscion` |
 | Fixed stars | `star_at`, `all_stars_at`, `FixedStar`, `list_stars`, `find_stars`, `star_magnitude` |
@@ -460,7 +460,8 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `aspects(chart, orbs=None, include_minor=True)` | `list[AspectData]` | All natal aspects |
+| `aspects(chart, orbs=None, include_minor=True, *, tier=None, orb_factor=1.0, policy=None)` | `list[AspectData]` | All natal aspects with the complete owning-module policy surface forwarded |
+| `hellenistic_superiority_truth(longitude1, longitude2, aspect_angle=None, *, body1="body1", body2="body2")` | `HellenisticSuperiorityTruth` | Raw direction applicability plus tenth-sign overcoming for one ordered pair |
 | `patterns(chart, orb_factor=1.0, dominant_only=False)` | `list[AspectPattern]` | Named aspect patterns built from the chart's positions and aspects, with optional maximal-structure filtering |
 | `midpoints(chart, planet_set="classic")` | `list[Midpoint]` | Planetary midpoints for the requested body set |
 | `midpoints_to_point(chart, longitude, orb=1.5)` | `list[tuple[Midpoint, float]]` | Midpoints falling at a given longitude, paired with absolute orb |
@@ -474,6 +475,8 @@ message.
 |---|---|---|
 | `dignities(chart, houses, *, policy=None)` | `list[PlanetaryDignity]` | Essential and accidental dignities with lossless policy forwarding |
 | `lots(chart, houses, *, policy=None, syzygy=None, prenatal_new_moon=None, prenatal_full_moon=None, lord_of_hour=None)` | `list[ArabicPart]` | Arabic Parts / Hermetic Lots with nodes and optional external references preserved |
+| `evaluate_lots(chart, houses, *, policy=None, syzygy=None, prenatal_new_moon=None, prenatal_full_moon=None, lord_of_hour=None)` | `LotsEvaluation` | Lossless lot catalogue evaluation including typed unresolved entries |
+| `solar_proximity_truth(...)`, `planetary_solar_phase_truth(...)`, `besieging_truth(...)` | typed raw receipts | Raw dignity geometry before compatibility labels or score assembly |
 | `mutual_receptions(chart, by_exaltation=False)` | `list[tuple]` | `(planet_a, planet_b, type)` mutual reception triples |
 | `astrodynes(body_inputs, cusp_signs, intercepted_signs_by_house=None, policy=None)` | `AstrodyneChartResult` | Kernel-free Church of Light natal Astrodynes from explicit chart geometry |
 
@@ -481,7 +484,7 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `profection(natal_asc, natal_dt, current_dt, natal_positions=None, *, leap_day_policy=None)` | `ProfectionResult` | Annual profection from completed civil age in the natal timezone |
+| `profection(natal_asc, natal_dt, current_dt, natal_positions=None, *, leap_day_policy=None, activation_orb=5.0)` | `ProfectionResult` | Annual profection from completed civil age with the requested activation orb preserved |
 | `nakshatras(chart, ayanamsa_system=Ayanamsa.LAHIRI)` | `dict[str, NakshatraPosition]` | Nakshatra for each planet |
 | `planetary_hours(dt, latitude, longitude)` | `PlanetaryHoursDay` | Day and night planetary hour rulers |
 
@@ -1196,13 +1199,15 @@ from moira.facade import (
 | `sign_degree1` | `int \| None` | Integer degree number within `body1`'s sign, used for strict partile truth |
 | `sign_degree2` | `int \| None` | Integer degree number within `body2`'s sign, used for strict partile truth |
 
-Phase 3 exposes `HellenisticAspectEvaluationStatus`,
+Phase 3 introduced `HellenisticAspectEvaluationStatus`,
 `HellenisticOvercomingRelation`, `HellenisticDirectionTruth`,
 `HellenisticOvercomingTruth`, `HellenisticSuperiorityTruth`, and
-`hellenistic_superiority_truth()` directly from `moira.aspects`.
+`hellenistic_superiority_truth()` in `moira.aspects`.
 `AspectData.direction` and `overcoming()` remain compatibility projections;
 the aggregate receipt is the source of raw truth and carries no synthetic
-score. Root/classical/facade parity for these new names belongs to Phase 4.
+score. Phase 4 forwards these exact objects through the root, classical, and
+facade exports; `Moira.hellenistic_superiority_truth()` delegates without
+recomputing or flattening the receipt.
 
 #### `AspectData` convenience properties
 
@@ -1516,6 +1521,13 @@ network = calculate_condition_network_profile(chart_lons, house_cusps, is_day)
 # ConditionNetworkProfile — graph of planetary condition relationships
 ```
 
+Phase 4 forwards the typed essential-component, solar-phase,
+solar-proximity, besieging, horizon, Mercury-phase, and sect receipts through
+the root, classical, facade, and `Moira` surfaces. REST serializers preserve
+the same components with concrete OpenAPI models; policy suppression may
+remove an assembled label or score contribution but does not erase available
+raw geometry.
+
 ### Church of Light Natal Astrodynes
 
 Astrodynes use a distinct Hermetic dignity table and must not be mixed with the
@@ -1581,17 +1593,19 @@ doctrine, constitutional layers, invariants, and validation boundary.
 
 ```python
 from moira.facade import (
-    calculate_lots, calculate_lot_dependencies, calculate_all_lot_dependencies,
+    calculate_lots, evaluate_lots,
+    calculate_lot_dependencies, calculate_all_lot_dependencies,
     calculate_lot_condition_profiles, calculate_lot_chart_condition_profile,
     calculate_lot_condition_network_profile,
-    ArabicPart, ArabicPartsService, list_parts,
-    LotReversalKind,
+    ArabicPart, LotsEvaluation, LotNotEvaluable,
+    ArabicPartsService, list_parts, LotReversalKind,
 )
 ```
 
 | Function | Returns | Description |
 |---|---|---|
 | `calculate_lots(lons, cusps, is_day)` | `list[ArabicPart]` | All classical Arabic Parts |
+| `evaluate_lots(lons, cusps, is_day)` | `LotsEvaluation` | Computed parts plus typed `not_evaluable` catalogue entries |
 | `list_parts()` | `list[str]` | Names of all available parts |
 
 #### `ArabicPart` fields
@@ -1607,6 +1621,8 @@ from moira.facade import (
 | `classification` | `ArabicPartClassification` | Classification metadata |
 | `all_dependencies` | `list[LotDependency]` | Full dependency graph slice for the part |
 | `dependencies` | `list[LotDependency]` | Direct dependencies used by the part |
+| `dependency_completeness` | `LotDependencyCompletenessTruth` | Separate dependency-resolution receipt |
+| `astrological_condition_truth` | `LotAstrologicalConditionTruth` | Separate condition boundary; currently `not_evaluable` without admitted doctrine |
 | `condition_profile` | `LotConditionProfile` | Computed condition profile |
 | `sign` | `str` | Sign occupied by the part |
 | `sign_symbol` | `str` | Sign glyph/symbol |
@@ -1621,6 +1637,12 @@ spirit  = svc.spirit()
 exalt   = svc.exaltation()
 ```
 
+Phase 4 makes `evaluate_lots` and its aggregate/status vessels identical
+objects across root, classical, and facade imports, with
+`Moira.evaluate_lots()` as the chart-backed delegate. The REST chart route
+uses this lossless aggregate and never treats an unresolved entry as an
+evaluated absence.
+
 ### Profections
 
 ```python
@@ -1633,6 +1655,7 @@ result = profection_schedule(
     natal_asc_lon,
     natal_dt,
     current_dt,
+    activation_orb=0.75,
     leap_day_policy=LeapDayAnniversaryPolicy.FEBRUARY_28,
 )
 # result.age_years, result.profected_house, result.lord_of_year
@@ -1642,22 +1665,24 @@ result = profection_schedule(
 |---|---|---|
 | `annual_profection(natal_asc, age_years, natal_positions=None, activation_orb=5.0)` | `ProfectionResult` | Whole-sign annual profection for an explicit completed age |
 | `monthly_profection(natal_asc, age_years, month_index)` | `tuple[float, str, str]` | Monthly subdivision for an explicit age and month index |
-| `profection_schedule(natal_asc, natal_dt, current_dt, natal_positions=None, *, leap_day_policy=None)` | `ProfectionResult` | Civil-anniversary age plus activated-planet detection |
+| `profection_schedule(natal_asc, natal_dt, current_dt, natal_positions=None, *, leap_day_policy=None, activation_orb=5.0)` | `ProfectionResult` | Civil-anniversary age plus activated-planet detection under the requested orb |
 
 `profection_schedule()` requires timezone-aware datetimes, compares the current
 instant in the natal timezone, and rejects pre-birth instants. February 29
 nativities require an explicit `february_28` or `march_1` policy. The result
 preserves `age_basis="civil_anniversary"` and the selected policy.
 
-Phase 3 exposes `ProfectionActivationStatus`,
+Phase 3 introduced `ProfectionActivationStatus`,
 `ProfectionActivationBodyTruth`, `ProfectionActivationTruth`, and
-`profection_activation_truth()` directly from `moira.profections`.
+`profection_activation_truth()` in `moira.profections`.
 `ProfectionResult.activation_truth` distinguishes absent natal positions
 (`not_evaluable`, `reason="natal_positions_not_supplied"`) from an explicitly
 supplied empty mapping and from an evaluated chart with no activations. The
 legacy `activated_planets` list is derived from evaluated raw truth and remains
-empty in all three cases. Root/classical/facade parity for these new names
-belongs to Phase 4.
+empty in all three cases. Phase 4 forwards those names through root,
+classical, and facade, adds the raw `Moira` helper, and preserves
+`activation_orb` through `Moira.profection()`, schedule service composition,
+REST serialization, and OpenAPI.
 
 ### Nakshatras (Vedic lunar mansions)
 
@@ -1996,13 +2021,14 @@ from moira.facade import (
 | `group_decennials(periods)` | `list[DecennialMajorGroup]` | Major periods with their L2 children |
 | `decennial_active_path(periods, jd)` | `DecennialActivePath \| None` | Active admitted L1/L2 lineage |
 
-Phase 3 exposes `TimelordEvaluationStatus`,
+Phase 3 introduced `TimelordEvaluationStatus`,
 `DecennialSequenceBodyTruth`, `DecennialSequenceAssemblyTruth`, and
-`decennial_sequence_truth()` directly from `moira.timelords`. The assembly
+`decennial_sequence_truth()` in `moira.timelords`. The assembly
 receipt preserves the Classic 7 dependency geometry and fails closed on a
 non-sect-light longitude tie instead of using private planet order. Every
-generated period carries the same evaluated `sequence_truth`. Forwarding these
-new names through root/classical/facade surfaces belongs to Phase 4.
+generated period carries the same evaluated `sequence_truth`. Phase 4 forwards
+the exact raw types/function through root, classical, facade, and `Moira`, and
+serializes the receipt on every REST period with a concrete OpenAPI schema.
 
 The public engine accepts only levels 1–2. Any L3/L4 request or non-`None`
 `DecennialPolicy.deep_subdivision_method` fails closed; the named Valens and
@@ -2059,8 +2085,9 @@ level absent from the generated period list. REST callers must keep
 `zr_fortune_angularity_truth()` and `ZRFortuneAngularityTruth` are direct
 `moira.timelords` Phase 3 surfaces. With no Fortune, raw status is
 `not_evaluable` and raw peak truth is `None`; the legacy
-`ReleasingPeriod.is_peak_period` projection remains `False`. Their
-root/classical/facade forwarding belongs to Phase 4.
+`ReleasingPeriod.is_peak_period` projection remains `False`. Phase 4 forwards
+the raw helper/type through root, classical, facade, and `Moira`; every REST
+period now carries the typed Fortune-angularity receipt.
 
 ### Vimshottari Dasha
 

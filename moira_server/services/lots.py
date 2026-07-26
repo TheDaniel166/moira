@@ -14,6 +14,7 @@ from moira.lots import (
     LotDependency,
     LotsComputationPolicy,
     LotsDerivedReferencePolicy,
+    LotsEvaluation,
     LotsExternalReferencePolicy,
     PARTS_DEFINITIONS,
     PartDefinition,
@@ -137,6 +138,25 @@ def compute_lots_chart(
     )
 
 
+def compute_lots_chart_evaluation(
+    engine: Moira,
+    request: LotsChartRequest,
+) -> LotsEvaluation:
+    """Evaluate the whole lot catalog and retain typed unresolved receipts."""
+
+    support = _derive_lots_support_truth(engine, request)
+    return _SERVICE.evaluate_parts(
+        support.planet_longitudes,
+        support.house_cusps,
+        support.is_day_chart,
+        policy=support.policy,
+        syzygy=request.syzygy,
+        prenatal_new_moon=request.prenatal_new_moon,
+        prenatal_full_moon=request.prenatal_full_moon,
+        lord_of_hour=request.lord_of_hour,
+    )
+
+
 def compute_lots_chart_dependencies(
     engine: Moira,
     request: LotsChartRequest,
@@ -218,6 +238,7 @@ def compute_lots_chart_network(
 
 __all__ = [
     "compute_lots_chart",
+    "compute_lots_chart_evaluation",
     "compute_lots_chart_condition",
     "compute_lots_chart_conditions",
     "compute_lots_chart_dependencies",

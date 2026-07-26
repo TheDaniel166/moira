@@ -82,6 +82,17 @@ def test_zr_sequence_route_matches_engine(client_with_engine: TestClient) -> Non
     assert first["ruler"] == direct[0].ruler
     assert first["lot_name"] == direct[0].lot_name
     assert first["years"] == pytest.approx(direct[0].years, rel=1e-6)
+    direct_truth = direct[0].fortune_angularity_truth
+    assert direct_truth is not None
+    truth = first["fortune_angularity_truth"]
+    assert truth["status"] == "not_evaluable"
+    assert truth["period_sign"] == direct_truth.period_sign
+    assert truth["fortune_sign"] is None
+    assert truth["angularity_from_fortune"] is None
+    assert truth["angularity_class"] is None
+    assert truth["is_peak_period"] is None
+    assert truth["reason"] == "fortune_not_supplied"
+    assert first["is_peak_period"] is False
 
 
 # ---------------------------------------------------------------------------
@@ -242,6 +253,15 @@ def test_zr_sequence_with_fortune_longitude(client_with_engine: TestClient) -> N
     # Some periods may be peak periods when fortune_longitude is provided
     peak_count = sum(1 for p in body["periods"] if p["is_peak_period"])
     assert isinstance(peak_count, int)  # can be 0 or positive depending on chart
+    assert all(
+        period["fortune_angularity_truth"]["status"] == "evaluated"
+        for period in body["periods"]
+    )
+    assert all(
+        period["fortune_angularity_truth"]["is_peak_period"]
+        is period["is_peak_period"]
+        for period in body["periods"]
+    )
 
 
 # ---------------------------------------------------------------------------
