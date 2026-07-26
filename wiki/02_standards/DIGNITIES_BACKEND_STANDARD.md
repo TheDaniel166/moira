@@ -475,7 +475,8 @@ The dignity backend does not, in this frozen phase:
 |---|---|
 | authoritative runtime | project `.venv` |
 | test runner | `.venv\Scripts\python.exe -m pytest` |
-| primary test file | `tests/unit/test_dignities_and_lots.py` |
+| primary test file | `tests/unit/test_moira_dignities_and_lots.py` |
+| source-owned Hellenistic golden | `tests/unit/test_hellenistic_source_goldens.py` |
 | dignity regression seam | `tests/unit/test_rule_engine_validation.py -k dignity` |
 | focused baseline | 34 dignity/lots tests + 1 dignity rule-engine regression |
 | acceptable result | 0 failures, 0 errors |
@@ -491,6 +492,7 @@ is treated as an implementation defect unless the test itself is proven wrong.
 |---|---|---|
 | `tests/unit/test_moira_dignities_and_lots.py` | subsystem-focused | legacy score preservation, truth/classification consistency, policy, reception, condition, chart-wide aggregation, network, malformed input, deterministic failure behavior |
 | `tests/unit/test_rule_engine_validation.py -k dignity` | cross-subsystem regression seam | dignity result compatibility with the rule-engine validation surface |
+| `tests/unit/test_hellenistic_source_goldens.py` | independent source evidence | Egyptian/Ptolemaic/Chaldaean bounds and planetary joys; policy-derived accidental conditions remain outside that source claim |
 
 ---
 
@@ -661,14 +663,15 @@ reason must remain stable.
 The minimum validation commands for this subsystem freeze are:
 
 ```powershell
-.venv\Scripts\python.exe -m pytest tests\unit\test_dignities_and_lots.py -q
+.venv\Scripts\python.exe -m pytest tests\unit\test_moira_dignities_and_lots.py -q
 .venv\Scripts\python.exe -m pytest tests\unit\test_rule_engine_validation.py -q -k dignity
+.venv\Scripts\python.exe -m pytest tests\unit\test_hellenistic_source_goldens.py -q -k "bound or planetary_joy"
 ```
 
 When implementation files change, syntax validation may also be run:
 
 ```powershell
-python -m py_compile moira\dignities.py tests\unit\test_dignities_and_lots.py
+.venv\Scripts\python.exe -m py_compile moira\dignities.py tests\unit\test_moira_dignities_and_lots.py tests\unit\test_hellenistic_source_goldens.py
 ```
 
 ---

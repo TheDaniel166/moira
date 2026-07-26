@@ -192,7 +192,10 @@ separately through:
 The following admitted claims are currently verified:
 
 1. `DecanatePosition` is frozen and enforces system/range invariants.
-2. Chaldean faces preserve the declared Mars-starting planetary cycle.
+2. Chaldean faces preserve the declared Mars-starting planetary cycle across
+   all 36 faces against an independent Agrippa golden. Agrippa is a later
+   witness for this ordinary face cycle, not evidence for the quarantined
+   Hermetic image geometry.
 3. Triplicity decans preserve same-element ruling-sign doctrine.
 4. Vedic drekkana performs sidereal reduction and preserves traditional rulers.
 5. Source-locked catalog tests verify all 36 names, signs, ordinals, planetary
@@ -210,7 +213,7 @@ The minimum verification slice for this standard is:
 
 ```powershell
 .\.venv\Scripts\python.exe -m py_compile moira\decanates.py moira\hermetic_decans.py tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py tests\server\test_server_decans_routes.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_decanates.py tests\unit\test_hermetic_decans.py tests\unit\test_hellenistic_source_goldens.py tests\server\test_server_decans_routes.py -q
 ```
 
 ---

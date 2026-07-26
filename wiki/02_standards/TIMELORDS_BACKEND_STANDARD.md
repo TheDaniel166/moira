@@ -229,7 +229,7 @@ apparently valid aggregate.
 years. `current_releasing()` accepts instants inside that half-open interval
 and rejects an instant exactly at, or later than, its endpoint.
 
-Source receipt: `tests/fixtures/hellenistic_zr_valens_iv4.json`, backed by
+Source receipt: `tests/golden/hellenistic_zr_valens_iv4.json`, backed by
 Valens, *Anthologies* IV.4 (Riley annotated PDF pp. 329, 331, and 333).
 
 ---
@@ -717,14 +717,16 @@ active admitted levels. They must not be conflated.
 The following commands must pass without error on any constitutionally correct
 installation of this subsystem:
 
-```
-python -m pytest tests/unit/test_timelords.py -v
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_timelords.py tests\unit\test_hellenistic_source_goldens.py -q
 ```
 
 All tests in `test_timelords.py` must pass. The test suite validates:
 - `firdaria()`, `decennials()`, and `zodiacal_releasing()` correctness
 - Valens IV.4 same-sign Spirit/Fortune start shift and the exact 211-month
   Gemini Loosing-of-the-Bond fixture
+- source-owned Decennial 129-unit circuit, minor-period allotments, and admitted
+  L1/L2 arithmetic
 - `FirdarMajorGroup` grouping and `group_firdaria()` fidelity
 - `DecennialMajorGroup` and `DecennialPeriodGroup` grouping and `group_decennials()` fidelity
 - `ZRPeriodGroup` nesting and `group_releasing()` fidelity

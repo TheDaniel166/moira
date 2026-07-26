@@ -530,14 +530,21 @@ Any substantive change to `moira/lots.py` must, at minimum, preserve:
 6. chart-profile consistency
 7. network consistency
 8. deterministic failure behavior
+9. source-owned formula and day/night output agreement for the four lots
+   admitted by the unified Hellenistic profile
 
 Minimum validation commands:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests\unit\test_moira_dignities_and_lots.py -q
 .\.venv\Scripts\python.exe -m pytest tests\unit\test_rule_engine_validation.py -q -k lots
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_hellenistic_source_goldens.py -q -k profile_lots
 .\.venv\Scripts\python.exe -m py_compile moira\lots.py tests\unit\test_moira_dignities_and_lots.py
 ```
+
+The source-owned golden covers Fortune, Spirit, Eros, and Necessity as admitted
+by `HellenisticChartProfile`. It does not promote the broader heterogeneous lot
+catalog into a uniformly source-validated corpus.
 
 If the public package surface changes later, the matching API-freeze test must
 also be included in the minimum validation set.

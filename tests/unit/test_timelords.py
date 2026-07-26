@@ -9,7 +9,7 @@ import pytest
 
 _VALENS_IV4_FIXTURE = (
     Path(__file__).parents[1]
-    / "fixtures"
+    / "golden"
     / "hellenistic_zr_valens_iv4.json"
 )
 

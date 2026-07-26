@@ -9,6 +9,13 @@
 This is the Python engine/import reference. The HTTP transport surface is
 documented separately in `wiki/02_services/REST_API_REFERENCE.md`.
 
+For the Hellenistic surface, use the generated
+[capability matrix](../03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md)
+for current export-tier receipts and the
+[source validation audit](../03_validation/HELLENISTIC_SOURCE_VALIDATION_2026-07.md)
+for evidence qualifications. Those artifacts distinguish admitted engine truth
+from quarantined, deferred, and non-Hellenistic branches.
+
 ---
 
 ## Table of Contents

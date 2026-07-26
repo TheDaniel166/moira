@@ -103,6 +103,7 @@ citation.
 $env:MOIRA_TEST_MODE = "1"
 $env:MOIRA_STRICT_KNOWN_ISSUES = "1"
 .\.venv\Scripts\python.exe -m pytest tests\unit\test_egyptian_bounds.py tests\unit\test_egyptian_bounds_public_api.py tests\server\test_server_egyptian_bounds_routes.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_hellenistic_source_goldens.py -q -k bound
 ```
 
 The targeted slice validates:
@@ -116,3 +117,9 @@ The targeted slice validates:
 - REST table and lookup serialization;
 - source-citation visibility;
 - rejection of the ambiguous legacy doctrine value.
+
+Phase 6 added the independent hand-authored corpus at
+`tests/golden/hellenistic_source_tables.json`. It owns the complete Egyptian
+and Ptolemaic tables plus the Chaldaean construction rules and totals; tests
+exercise every segment start and midpoint for all four admitted doctrines.
+The runtime is never used to generate this source authority.

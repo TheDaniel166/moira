@@ -29,9 +29,14 @@ The engine is composed of sovereign, constitutionalized subsystems:
 ---
 
 ### ✅ Validation & Evidence
-Every calculation is benchmarked against physical oracles:
+Each claim uses evidence appropriate to its domain: physical oracles where
+available, named source editions for doctrine tables, and explicit policy or
+invariant tests where no external software can be authoritative.
 - **[Astronomical Validation](03_validation/VALIDATION_ASTRONOMY.md)**
 - **[Astrological Invariants](03_validation/VALIDATION_ASTROLOGY.md)**
+- **[Hellenistic Source Validation](03_validation/HELLENISTIC_SOURCE_VALIDATION_2026-07.md)**
+- **[Generated Hellenistic Capability Matrix](03_validation/HELLENISTIC_CAPABILITY_MATRIX.generated.md)**
+- **[Generated Hellenistic API Inventory](03_validation/HELLENISTIC_API_INVENTORY.generated.md)**
 - **[Experimental Validation](03_validation/VALIDATION_EXPERIMENTAL.md)**
 - **[Killer Validation Index](03_validation/KILLER_VALIDATION_INDEX.md)**
 - **[Polar House External Reference](03_validation/POLAR_HOUSE_EXTERNAL_REFERENCE.md)**

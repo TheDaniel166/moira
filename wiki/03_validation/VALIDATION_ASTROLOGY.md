@@ -1,7 +1,7 @@
 # Moira Validation Report - Astrology
 
-**Version:** 1.5
-**Date:** 2026-07-25
+**Version:** 1.6
+**Date:** 2026-07-26
 **Runtime target:** Python 3.14
 **Validation philosophy:** external astrology software where stable and meaningful;
 canonical formulas and doctrine tables where no stable oracle exists; Moira as
@@ -11,6 +11,13 @@ regression baseline once behavior is validated
 > dignity policy controls, Gauquelin g5 corpus, spatial house-boundary
 > geometry, and node/family evidence added in Moira 5.1-5.2 is indexed in the
 > [5.1-5.2 release validation ledger](RELEASE_VALIDATION_5_1_TO_5_2.md).
+>
+> **Hellenistic engine gate evidence.** Current source ownership, admission
+> qualifications, and exclusions are recorded in the
+> [Hellenistic source validation audit](HELLENISTIC_SOURCE_VALIDATION_2026-07.md).
+> The [capability matrix](HELLENISTIC_CAPABILITY_MATRIX.generated.md) and
+> [API inventory](HELLENISTIC_API_INVENTORY.generated.md) are generated from
+> the current runtime and fail their test gate when they drift.
 
 ---
 
@@ -72,10 +79,10 @@ the paper.
 | Aspects (major, tight-orb) | Horizons-validated position substrate + angular-distance geometry | `pytest` | Validated (unit + integration; 1 expected fixture skip at J1900) |
 | Antiscia / contra-antiscia | Formula derivation + invariants (Valens, Lilly) | `pytest` | Validated |
 | Midpoints | Formula derivation + invariants (Ebertin, Witte) | `pytest` | Validated |
-| Lots / Arabic Parts | Formula derivation, day/night reversal (Paulus, Valens) | `pytest` | Validated |
-| Dignities | Essential table lookups, accidental scoring (Lilly, Ptolemy) | `pytest` | Validated |
+| Lots / Arabic Parts | Source-owned formula/output goldens for the four unified-profile lots; typed dependency tests for the broader catalog | `pytest` | Profile subset validated; heterogeneous catalog qualified |
+| Dignities | Source-owned bounds and planetary-joy tables; typed component truth; explicit policy tests | `pytest` | Validated with named source/policy qualifications |
 | Harmonics | Formula derivation + round-trip invariant (Addey) | `pytest` | Validated |
-| Profections | Annual/monthly arithmetic, 12-year cycle (Brennan, Valens) | `pytest` | Validated |
+| Profections | Annual/monthly arithmetic, 12-year cycle, and explicit completed-civil-anniversary projection policy | `pytest` | Validated, policy-qualified |
 | Planetary hours | Chaldean sequence + day-ruler derivation (Porphyry, Hephaestio) | `pytest` | Validated |
 | Secondary progressions | Offline Swiss `swetest` fixture at progressed dates + doctrine validation | `pytest` | Validated |
 | Solar arc directions | Offline Swiss `swetest` fixture for arc and directed longitudes + doctrine validation | `pytest` | Validated |
@@ -84,12 +91,20 @@ the paper.
 | Parans | Horizons-derived offline paran fixture + validated event substrate + paran logic tests | `pytest` | Validated |
 | Gauquelin sectors | Canonical diurnal-arc formula + plus-zone invariants (Gauquelin) | `pytest` | Validated |
 | Manazil / lunar mansions | Equal-station arithmetic + canonical boundary assignments (al-Biruni) | `pytest` | Validated |
-| Timelords (Firdaria / Zodiacal Releasing) | Canonical tables, structural invariants, and doctrine validation | `pytest` | Validated |
+| Decennials L1/L2 | Valens VI.6-8 source-owned units and arithmetic; typed sequence invariants | `pytest` | Validated; L3/L4 quarantined |
+| Zodiacal Releasing | Valens IV.4 same-sign start-shift and 211-month source cases; typed angularity invariants | `pytest` | Validated, qualified; interpretation excluded |
+| Firdaria | Separate medieval sequence tables and structural invariants | `pytest` | Validated outside the Hellenistic profile |
+| Unified Hellenistic profile | Exact composition receipts, curated-export identity, serializers, REST models, and OpenAPI | `pytest` + generated inventory check | Validated non-interpretive contract |
 
 Status language in this table is intentional:
 
 - `Validated` means there is a finished validation story appropriate to the
   technique as currently implemented.
+- `Validated, policy-qualified` means the implementation is covered, while a
+  named modern projection or threshold remains policy rather than ancient
+  source data.
+- `Profile subset validated` does not extend one source claim across a broader
+  heterogeneous catalog.
 - `Internally validated` means the subsystem has substantial doctrinal,
   structural, and invariant coverage but the project is still intentionally
   reserving a stronger validation label for a later external comparison.
@@ -427,7 +442,12 @@ Valens, *Anthology*, Book IV
 **Formula:** profected ASC = `(natal_asc + age * 30) mod 360`; house =
 `(age mod 12) + 1`  
 **Validation:** hand-derived table across ages 0-30, house-range guard,
-monthly-lord length and first-lord invariants, and 12-year cycle identity
+monthly-lord length and first-lord invariants, 12-year cycle identity, exact
+anniversary boundaries, and February 29 handling
+
+The sign-cycle doctrine and the civil projection are separate claims.
+Completed civil anniversaries and leap-day handling are explicit Moira policy,
+not a reconstructed ancient civil-calendar rule.
 
 ### 6.4 Planetary Hours
 
@@ -449,16 +469,27 @@ sorting, and harmonic-number clamping
 *Anthology* Books II-IV  
 **Formula:** `ASC + Add - Sub` modulo 360, with night reversal where doctrine
 requires it  
-**Validation:** Fortune and Spirit day/night formulas, range guards, and the
-Fortune/Spirit complement invariant
+**Validation:** source-owned day/night formulas and concrete outputs for
+Fortune, Spirit, Valens Eros, and Valens Necessity; dependency completeness,
+range guards, and the Fortune/Spirit complement invariant
+
+This source claim is limited to the four lots admitted by
+`HellenisticChartProfile`. The wider catalog has mixed Hellenistic, medieval,
+and modern authorities and remains source-qualified item by item.
 
 ### 6.7 Dignities
 
 **Canon:** William Lilly, *Christian Astrology* Book I; Ptolemy,
 *Tetrabiblos* I.17-22  
-**Validation:** essential dignity cases, accidental scoring bands, retrograde
-penalties, cazimi / combust boundaries, mutual reception, total-score
-invariant, traditional sort order, sect-light logic, and hayz conditions
+**Validation:** complete source-owned Egyptian/Ptolemaic bounds and
+sect-explicit Chaldaean construction rules; source-owned planetary-joy houses;
+typed essential, sect, solar phase/proximity, besieging, and reception truth;
+legacy-score projection invariants; mutual reception; deterministic ordering;
+and fail-closed dependency behavior
+
+Solar proximity thresholds and the besieging enclosure orb remain named
+policies. Halb/Hayz is admitted from a medieval al-Qabisi/Bonatti lineage and
+is not relabeled as ancient Hellenistic doctrine.
 
 ---
 
@@ -613,20 +644,45 @@ Validated as canonical equal-station arithmetic:
 This is a real validation pass for the current doctrine. A future comparison to
 published mansion tables would be supplemental, not the first validation.
 
-### 7.7 Timelords (Firdaria and Zodiacal Releasing)
+### 7.7 Hellenistic Time Lords and Separately Scoped Firdaria
 
 **Current validation surface:** `tests/unit/test_timelords.py` and
-`moira/docs/VALIDATION_EXPERIMENTAL.md`
+`tests/unit/test_hellenistic_source_goldens.py`
 
 What is already validated:
-- diurnal / nocturnal Firdaria tables and Bonatti variant behavior
-- node handling, sub-period structure, and sequence totals
-- Zodiacal Releasing minor-year table integrity and level scaling
-- current-period helpers, grouping helpers, active-pair helpers, condition
-  profiles, sequence profiles, and validation guards
+- Decennial L1/L2 129-unit circuit, minor-period allotments, 30-day symbolic
+  months, admitted sequence arithmetic, grouping, and active-path truth
+- Zodiacal Releasing same-sign Fortune/Spirit start shift, exact 211-month
+  circuit behavior, minor-year table integrity, level scaling, typed
+  angularity, grouping, and active-pair truth
+- diurnal/nocturnal Firdaria tables, Bonatti variant behavior, node handling,
+  sub-period structure, and sequence totals on its separate medieval surface
 
-**Status:** validated against doctrine and invariants. External software
-comparison may still be useful as supplemental cross-checking.
+Decennial L3/L4 are quarantined. Zodiacal Releasing interpretation is excluded.
+Firdaria is live and separately tested but is structurally excluded from
+`HellenisticChartProfile`.
+
+**Status:** admitted Hellenistic arithmetic is validated against named Valens
+evidence plus invariants; Firdaria is validated separately. External software
+comparison may still be useful as a supplemental cross-check.
+
+### 7.8 Unified Hellenistic Profile
+
+**Current validation surface:** `tests/unit/test_hellenistic_profile.py`,
+`tests/unit/test_hellenistic_contract_parity.py`,
+`tests/server/test_server_hellenistic_profile.py`, and the generated capability
+and OpenAPI inventory checks.
+
+The profile composes exact score-free atomic receipts for Whole Sign framing
+and aspects, dignity components and planetary condition, triplicity, bounds,
+ordinary faces, four source-locked lots, annual profection, Decennials L1/L2,
+and Zodiacal Releasing. Curated imports, facade methods, serializers, REST
+models, and OpenAPI schemas preserve the same policy and provenance.
+
+Firdaria, medieval almutens, later electional rules, unscoped primary
+directions, Decennial L3/L4, Hermetic geometry, and Valens distribution
+interpretation are typed exclusions. No chart-wide score, recommendation, or
+interpretive narrative is admitted.
 
 ---
 
@@ -724,4 +780,5 @@ What to validate:
 | Aspects integration fixture | **Closed, re-verified 2026-05-21.** `aspects_reference.json` remains anchored to Horizons-validated positions across four epochs. The current integration file collects 10 cases: 9 pass and the J1900 no-tight-orb case remains the one expected skip. | Horizons-validated substrate | Closed |
 | Vimshottari integration fixture | **Closed, re-verified 2026-05-21.** The manual-oracle corpus still contains the three declared Lahiri plus Julian-year reference cases, and the current integration file still collects 4 passing cases. Doctrine validation remains the primary proof surface because no single Swiss-like external authority exists for Vimshottari without first fixing settings. | Doctrinal self-consistency | Closed |
 | Python versus native route semantics | **Partially closed, re-verified 2026-05-21.** Astrology validation claims in this paper remain anchored to the Python public/reference route, and native C++ is still not treated as a second astrology-doctrine authority. However, the specific native `calendar_from_jd()` parity defect on historical/proleptic Gregorian cases has been corrected, and `tests/test_native_parity.py` now passes on the previously failing boundary samples. Broader route-authority separation remains intentional doctrine, not an unresolved bug. | Python public route plus native parity audit | Intentional |
+| Hellenistic source ownership and public-contract inventory | **Closed 2026-07-26.** Independent goldens now own the admitted source tables and disputed time-lord cases; generated capability and OpenAPI inventories track current runtime truth and prohibited public paths. Qualifications and exclusions remain explicit rather than being counted as completion. | Named editions, hand-authored goldens, runtime/OpenAPI generation | Closed engine gate |
 

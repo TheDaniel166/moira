@@ -12,6 +12,11 @@ presence here means the endpoint is registered by the live FastAPI application;
 it does not imply that the corresponding engine family is complete beyond the
 transport contract documented for that family.
 
+The exact Hellenistic and supporting route/schema subset is regenerated in the
+[Hellenistic API inventory](../03_validation/HELLENISTIC_API_INVENTORY.generated.md).
+It also asserts that Hermetic geometry, Triacontaeteris, and Decennial L3/L4
+have no registered route.
+
 ## Current Surface Summary
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->

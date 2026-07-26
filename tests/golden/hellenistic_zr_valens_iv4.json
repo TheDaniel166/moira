@@ -4,7 +4,11 @@
     "edition": "Mark T. Riley translation, reformatted annotated PDF",
     "section": "Book IV, chapter 4",
     "source_pages": [329, 331, 333],
+    "online_witness": "https://www.skyscript.co.uk/pdf/pubs/texts/valens/griscti/docs/Valens-Anthologies.pdf",
+    "evidence_grade": "identified_edition_direct_example_and_editorial_note",
     "semantics": "symbolic 360-day years and 30-day months",
+    "absolute_tolerance": 1e-09,
+    "ownership": "Hand-transcribed source fixture; never regenerate from Moira runtime output.",
     "note": "The prose and explanatory note govern the 211-month circuit and opposite-sign transfer; the inconsistent numerical table on annotated PDF page 332 is not used."
   },
   "same_sign_spirit_fortune": {

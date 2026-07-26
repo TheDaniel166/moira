@@ -352,6 +352,8 @@ modifications to the test file.
 |---|---|---|---|
 | `tests/unit/test_triplicity.py` | 1–4, 10 | 75 | Full public surface contract |
 
+| `tests/unit/test_hellenistic_source_goldens.py` | Phase 6 | source-owned | Full Dorothean ruler table against the hand-authored source corpus |
+
 **Test class breakdown:**
 
 | Class | Count | Coverage |
@@ -371,10 +373,12 @@ modifications to the test file.
 
 ### 12. Validation Doctrine
 
-#### 12.1 Hand-verified spot checks (DOROTHEAN_PINGREE_1976)
+#### 12.1 Source-owned checks (DOROTHEAN_PINGREE_1976)
 
-These values are hand-checked against Pingree 1976 and must not change
-without a doctrine revision.
+These values are transcribed into
+`tests/golden/hellenistic_source_tables.json` from Dorotheus, *Carmen
+Astrologicum* I.1 (Pingree 1976). The golden is hand-authored source evidence,
+not runtime output, and must not change without a doctrine revision.
 
 | Sign | is_day_chart | active_ruler | inactive_ruler | participating_ruler | element |
 |---|---|---|---|---|---|
@@ -432,4 +436,4 @@ is False for all 24 combinations.
 | No chart-position awareness | This module receives `is_day_chart` as a caller-declared parameter; it does not compute sect from planetary positions. |
 | `signs` tuple order is insertion-order | The tuple order reflects `_TRIPLICITY_RULERS_DOROTHEAN_PINGREE_1976` insertion order, not any canonical doctrinal ordering of signs within a triplicity group. |
 | Relational intelligence belongs in dignity layer | Whether a planet's triplicity rulership contributes to its total essential dignity score is governed by `moira.dignities`, not this module. |
-| No validation against external oracle | No machine-readable external authority for Dorothean triplicity tables has been identified; spot checks in §12.1 are hand-verified against Pingree 1976 directly. |
+| No independent software oracle | The complete Dorothean table is enforced by a hand-authored, source-owned golden; no external software is treated as doctrine authority. |

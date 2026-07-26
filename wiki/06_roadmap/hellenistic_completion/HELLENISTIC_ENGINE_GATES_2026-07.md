@@ -18,7 +18,7 @@ particular, “Phase 2” here means doctrine decisions, not the historical
 | 3 | Typed truth composition | Complete | Every admitted atomic family in the Phase 3 inventory now has a governing raw receipt or remains explicitly quarantined; compatibility labels and booleans are projections, not the source of truth. |
 | 4 | Contract parity | Complete | Phase 3 policy and raw receipts now have identity-preserving engine exports, full facade forwarding, explicit serializers, typed REST models, and OpenAPI schemas. |
 | 5 | Unified Hellenistic profile | Complete | `HellenisticChartProfile` composes a score-free chart profile from exact admitted atomic receipts and names every excluded branch. |
-| 6 | Validation and documentation regeneration | Pending | Add independent source-owned goldens, regenerate inventories/matrices, archive stale completion claims, and only then update website documentation. |
+| 6 | Validation and documentation regeneration | Complete | Independent source-owned goldens, generated capability/API inventories, canonical validation docs, and archived historical claims now form the engine gate. Website implementation remains separate. |
 
 ## Phase 2 Closure Receipt
 
@@ -57,7 +57,7 @@ The Gemini fixture reaches Sagittarius after 211 months, remains there for 12
 months, and uses the final 17 months in Capricorn. The source prose and
 explanatory note govern; the inconsistent intervening numerical table does not.
 
-Engine receipt: `tests/fixtures/hellenistic_zr_valens_iv4.json`.
+Engine receipt: `tests/golden/hellenistic_zr_valens_iv4.json`.
 
 ### Conflicted lots
 
@@ -324,10 +324,53 @@ passed 80 tests and reproduced only the pre-existing `_FamilyCatalog`
 docstring violation in unchanged `moira/asteroid_families.py`; that unrelated
 baseline issue is not part of the Phase 5 changeset.
 
-### Resting point for the next work session
+## Phase 6 Closure Receipt
 
-Phase 6, Validation and documentation regeneration, is next. It must begin
-with a deep source-owned research and validation pass, add independent
-goldens, regenerate the capability matrix and API inventory from current
-runtime truth, and archive stale completion claims before any website
-documentation implementation. Phase 5 does not authorize website work.
+Phase 6 is complete at the engine and transport documentation boundary:
+
+1. `tests/golden/hellenistic_source_tables.json` is a hand-authored,
+   runtime-independent corpus for the full Dorothean triplicity table,
+   planetary joys, all four admitted bounds doctrines, the ordinary 36-face
+   cycle, the four unified-profile lots, and Decennial L1/L2 source arithmetic;
+2. the Valens IV.4 same-sign start-shift and 211-month circuit fixture now
+   lives under `tests/golden/`, records its source ownership explicitly, and is
+   not generated from engine output;
+3. `tests/unit/test_hellenistic_source_goldens.py` checks every source table,
+   every bounds segment start and midpoint, all 36 faces, concrete day/night
+   lot outputs, and Decennial L1/L2 arithmetic;
+4. `scripts/generate_hellenistic_inventory.py` verifies runtime anchors,
+   curated export identities, registered OpenAPI operations, request/response
+   schemas, and prohibited public paths;
+5. the generated capability matrix distinguishes admitted, qualified,
+   supporting, quarantined, excluded, non-Hellenistic, and deferred surfaces;
+6. the generated API inventory records 49 Hellenistic, supporting, or
+   explicitly adjacent operations from the 435-operation application and
+   confirms zero Hermetic-geometry, Triacontaeteris, or Decennial L3/L4 paths;
+7. the former additive roadmap and session tracker are archived behind stable
+   link stubs instead of being maintained as current capability claims;
+8. the astrology validation report, backend standards, Python API reference,
+   REST reference, bounds validation note, and wiki home now point readers to
+   the source audit and generated runtime artifacts.
+
+The source audit preserves the hard qualifications: ordinary faces currently
+use a later Agrippa witness; joy houses use a modern synthesis with identified
+ancient locations; civil profection projection and proximity/enclosure
+thresholds are policies; Halb/Hayz is medieval; only four profile lots are
+source-goldened; Hermetic geometry and Decennial L3/L4 remain quarantined;
+Triacontaeteris remains deferred; and interpretation remains excluded.
+
+Validation on 2026-07-26 passed:
+
+- 1,060 focused Hellenistic engine, composition, export, serializer, REST, and
+  OpenAPI tests under `MOIRA_TEST_MODE=1` and
+  `MOIRA_STRICT_KNOWN_ISSUES=1`;
+- fresh-versus-committed Hellenistic inventory generation;
+- REST API reference synchronization;
+- documentation consistency;
+- Python compilation for the new generator and tests;
+- `git diff --check`.
+
+This closes the six engine gates. It does not update or publish website
+documentation, deploy a server, or admit interpretive Hellenistic product
+claims. Any website implementation is a separate release scope built from
+these engine-owned artifacts.

@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "fixture_id": "hellenistic_source_tables_v1",
+  "governance": {
+    "ownership": "Hand-transcribed from the named editions and witnesses. This fixture must never be regenerated from Moira runtime output.",
+    "numeric_units": {
+      "longitude": "tropical ecliptic degrees",
+      "bound_width": "degrees within one 30-degree zodiac sign",
+      "timelord_month": "symbolic 30-day month",
+      "timelord_year": "symbolic 360-day year"
+    },
+    "absolute_tolerance": 1e-12,
+    "interval_semantics": "left_closed_right_open"
+  },
+  "dorothean_triplicity": {
+    "authority": {
+      "work": "Dorotheus of Sidon, Carmen Astrologicum",
+      "edition": "David Pingree edition and translation, Teubner, Leipzig, 1976",
+      "location": "Book I, chapter 1",
+      "online_witness": "https://krasiancientastrology.com/wp-content/uploads/2016/11/dorotheus1.pdf",
+      "evidence_grade": "identified_edition_direct_table"
+    },
+    "doctrine": "dorothean_pingree_1976",
+    "groups": [
+      {
+        "element": "fire",
+        "signs": ["Aries", "Leo", "Sagittarius"],
+        "day_ruler": "Sun",
+        "night_ruler": "Jupiter",
+        "participating_ruler": "Saturn"
+      },
+      {
+        "element": "earth",
+        "signs": ["Taurus", "Virgo", "Capricorn"],
+        "day_ruler": "Venus",
+        "night_ruler": "Moon",
+        "participating_ruler": "Mars"
+      },
+      {
+        "element": "air",
+        "signs": ["Gemini", "Libra", "Aquarius"],
+        "day_ruler": "Saturn",
+        "night_ruler": "Mercury",
+        "participating_ruler": "Jupiter"
+      },
+      {
+        "element": "water",
+        "signs": ["Cancer", "Scorpio", "Pisces"],
+        "day_ruler": "Venus",
+        "night_ruler": "Mars",
+        "participating_ruler": "Moon"
+      }
+    ]
+  },
+  "planetary_joys": {
+    "authority": {
+      "work": "The Planetary Joys and the Origins of the Significations of the Houses and Triplicities",
+      "author": "Chris Brennan",
+      "edition": "2013 article with citations to Paulus, Olympiodorus, Firmicus, and Rhetorius",
+      "location": "diagram 1 and primary-source note 2",
+      "online_witness": "https://library.keplercollege.org/wp-content/uploads/2022/01/the-planetary-joys.pdf",
+      "evidence_grade": "secondary_synthesis_with_identified_primary_locations"
+    },
+    "assignments": {
+      "Mercury": 1,
+      "Moon": 3,
+      "Venus": 5,
+      "Mars": 6,
+      "Sun": 9,
+      "Jupiter": 11,
+      "Saturn": 12
+    },
+    "caveat": "This locks the assignment table only. It does not validate an interpretive strength score."
+  },
+  "bounds": {
+    "authority": {
+      "work": "Claudius Ptolemy, Tetrabiblos",
+      "edition": "F. E. Robbins translation, Loeb Classical Library 435, 1940",
+      "location": {
+        "egyptian": "Book I.20/I.21, pages 96-97",
+        "chaldean": "Book I.20/I.21, pages 100-103",
+        "ptolemaic": "Book I.20/I.21, pages 108-109"
+      },
+      "online_transcription": "https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Ptolemy/Tetrabiblos/1B*.html",
+      "online_scan": "https://en.wikisource.org/wiki/File:Loeb_435_-_Ptolemy_-_Tetrabiblos_by_Robbins_(1940).pdf",
+      "evidence_grade": "identified_edition_direct_tables"
+    },
+    "egyptian": {
+      "segments": {
+        "Aries": [["Jupiter", 0, 6], ["Venus", 6, 12], ["Mercury", 12, 20], ["Mars", 20, 25], ["Saturn", 25, 30]],
+        "Taurus": [["Venus", 0, 8], ["Mercury", 8, 14], ["Jupiter", 14, 22], ["Saturn", 22, 27], ["Mars", 27, 30]],
+        "Gemini": [["Mercury", 0, 6], ["Jupiter", 6, 12], ["Venus", 12, 17], ["Mars", 17, 24], ["Saturn", 24, 30]],
+        "Cancer": [["Mars", 0, 7], ["Venus", 7, 13], ["Mercury", 13, 19], ["Jupiter", 19, 26], ["Saturn", 26, 30]],
+        "Leo": [["Jupiter", 0, 6], ["Venus", 6, 11], ["Saturn", 11, 18], ["Mercury", 18, 24], ["Mars", 24, 30]],
+        "Virgo": [["Mercury", 0, 7], ["Venus", 7, 17], ["Jupiter", 17, 21], ["Mars", 21, 28], ["Saturn", 28, 30]],
+        "Libra": [["Saturn", 0, 6], ["Mercury", 6, 14], ["Jupiter", 14, 21], ["Venus", 21, 28], ["Mars", 28, 30]],
+        "Scorpio": [["Mars", 0, 7], ["Venus", 7, 11], ["Mercury", 11, 19], ["Jupiter", 19, 24], ["Saturn", 24, 30]],
+        "Sagittarius": [["Jupiter", 0, 12], ["Venus", 12, 17], ["Mercury", 17, 21], ["Saturn", 21, 26], ["Mars", 26, 30]],
+        "Capricorn": [["Mercury", 0, 7], ["Jupiter", 7, 14], ["Venus", 14, 22], ["Saturn", 22, 26], ["Mars", 26, 30]],
+        "Aquarius": [["Mercury", 0, 7], ["Venus", 7, 13], ["Jupiter", 13, 20], ["Mars", 20, 25], ["Saturn", 25, 30]],
+        "Pisces": [["Venus", 0, 12], ["Jupiter", 12, 16], ["Mercury", 16, 19], ["Mars", 19, 28], ["Saturn", 28, 30]]
+      },
+      "planetary_totals": {
+        "Saturn": 57,
+        "Jupiter": 79,
+        "Mars": 66,
+        "Venus": 82,
+        "Mercury": 76
+      }
+    },
+    "ptolemaic": {
+      "segments": {
+        "Aries": [["Jupiter", 0, 6], ["Venus", 6, 14], ["Mercury", 14, 21], ["Mars", 21, 26], ["Saturn", 26, 30]],
+        "Taurus": [["Venus", 0, 8], ["Mercury", 8, 15], ["Jupiter", 15, 22], ["Saturn", 22, 24], ["Mars", 24, 30]],
+        "Gemini": [["Mercury", 0, 7], ["Jupiter", 7, 13], ["Venus", 13, 20], ["Mars", 20, 26], ["Saturn", 26, 30]],
+        "Cancer": [["Mars", 0, 6], ["Jupiter", 6, 13], ["Mercury", 13, 20], ["Venus", 20, 27], ["Saturn", 27, 30]],
+        "Leo": [["Jupiter", 0, 6], ["Mercury", 6, 13], ["Saturn", 13, 19], ["Venus", 19, 25], ["Mars", 25, 30]],
+        "Virgo": [["Mercury", 0, 7], ["Venus", 7, 13], ["Jupiter", 13, 18], ["Saturn", 18, 24], ["Mars", 24, 30]],
+        "Libra": [["Saturn", 0, 6], ["Venus", 6, 11], ["Mercury", 11, 16], ["Jupiter", 16, 24], ["Mars", 24, 30]],
+        "Scorpio": [["Mars", 0, 6], ["Venus", 6, 13], ["Jupiter", 13, 21], ["Mercury", 21, 27], ["Saturn", 27, 30]],
+        "Sagittarius": [["Jupiter", 0, 8], ["Venus", 8, 14], ["Mercury", 14, 19], ["Saturn", 19, 25], ["Mars", 25, 30]],
+        "Capricorn": [["Venus", 0, 6], ["Mercury", 6, 12], ["Jupiter", 12, 19], ["Saturn", 19, 25], ["Mars", 25, 30]],
+        "Aquarius": [["Saturn", 0, 6], ["Mercury", 6, 12], ["Venus", 12, 20], ["Jupiter", 20, 25], ["Mars", 25, 30]],
+        "Pisces": [["Venus", 0, 8], ["Jupiter", 8, 14], ["Mercury", 14, 20], ["Mars", 20, 25], ["Saturn", 25, 30]]
+      },
+      "planetary_totals": {
+        "Saturn": 57,
+        "Jupiter": 79,
+        "Mars": 66,
+        "Venus": 82,
+        "Mercury": 76
+      },
+      "transmission_decision": "The final Libra segment is Mars. This is the reading consistent with the source-stated Saturn 57 and Mars 66 global totals."
+    },
+    "chaldean_day": {
+      "segment_widths": [8, 7, 6, 5, 4],
+      "triplicity_orders": [
+        {"signs": ["Aries", "Leo", "Sagittarius"], "rulers": ["Jupiter", "Venus", "Saturn", "Mercury", "Mars"]},
+        {"signs": ["Taurus", "Virgo", "Capricorn"], "rulers": ["Venus", "Saturn", "Mercury", "Mars", "Jupiter"]},
+        {"signs": ["Gemini", "Libra", "Aquarius"], "rulers": ["Saturn", "Mercury", "Mars", "Jupiter", "Venus"]},
+        {"signs": ["Cancer", "Scorpio", "Pisces"], "rulers": ["Mars", "Jupiter", "Venus", "Saturn", "Mercury"]}
+      ],
+      "planetary_totals": {
+        "Saturn": 78,
+        "Jupiter": 72,
+        "Mars": 69,
+        "Venus": 75,
+        "Mercury": 66
+      }
+    },
+    "chaldean_night": {
+      "segment_widths": [8, 7, 6, 5, 4],
+      "triplicity_orders": [
+        {"signs": ["Aries", "Leo", "Sagittarius"], "rulers": ["Jupiter", "Venus", "Mercury", "Saturn", "Mars"]},
+        {"signs": ["Taurus", "Virgo", "Capricorn"], "rulers": ["Venus", "Mercury", "Saturn", "Mars", "Jupiter"]},
+        {"signs": ["Gemini", "Libra", "Aquarius"], "rulers": ["Mercury", "Saturn", "Mars", "Jupiter", "Venus"]},
+        {"signs": ["Cancer", "Scorpio", "Pisces"], "rulers": ["Mars", "Jupiter", "Venus", "Mercury", "Saturn"]}
+      ],
+      "planetary_totals": {
+        "Saturn": 66,
+        "Jupiter": 72,
+        "Mars": 69,
+        "Venus": 75,
+        "Mercury": 78
+      }
+    }
+  },
+  "chaldean_faces": {
+    "authority": {
+      "work": "Three Books of Occult Philosophy",
+      "author": "Heinrich Cornelius Agrippa",
+      "edition": "J. F. English translation, London, 1651",
+      "location": "Book II, chapter 37",
+      "online_witness": "https://quod.lib.umich.edu/e/eebo/A26565.0001.001/1:16.37",
+      "evidence_grade": "identified_later_witness"
+    },
+    "ruler_cycle_from_aries_zero": ["Mars", "Sun", "Venus", "Mercury", "Moon", "Saturn", "Jupiter"],
+    "face_width_degrees": 10,
+    "face_count": 36,
+    "caveat": "This witness validates the ordinary ruler cycle. It does not establish the date of origin and does not admit Hermetic name, star, rising, or night-hour geometry."
+  },
+  "profile_lots": {
+    "authority": {
+      "work": "Vettius Valens, Anthologies",
+      "edition": "Mark T. Riley translation, reformatted annotated PDF",
+      "location": {
+        "Fortune": "Book II.3, annotated PDF page 119",
+        "Spirit": "Book II.22, annotated PDF page 170",
+        "Eros (Valens)": "Book IV.25 marginal note, annotated PDF page 396",
+        "Necessity (Valens)": "Book IV.25 marginal note, annotated PDF pages 396-397"
+      },
+      "online_witness": "https://www.skyscript.co.uk/pdf/pubs/texts/valens/griscti/docs/Valens-Anthologies.pdf",
+      "evidence_grade": "identified_edition_direct_formulas"
+    },
+    "formula_semantics": "project the directed add-minus-sub interval from the actual Ascendant; swap add and sub for night charts",
+    "formulas": {
+      "Fortune": {"projector": "Asc", "day_add": "Moon", "day_sub": "Sun", "reverse_at_night": true},
+      "Spirit": {"projector": "Asc", "day_add": "Sun", "day_sub": "Moon", "reverse_at_night": true},
+      "Eros (Valens)": {"projector": "Asc", "day_add": "Spirit", "day_sub": "Fortune", "reverse_at_night": true},
+      "Necessity (Valens)": {"projector": "Asc", "day_add": "Fortune", "day_sub": "Spirit", "reverse_at_night": true}
+    },
+    "case": {
+      "asc_longitude": 10,
+      "mc_longitude": 280,
+      "planet_longitudes": {
+        "Sun": 20,
+        "Moon": 80,
+        "Mercury": 100,
+        "Venus": 140,
+        "Mars": 190,
+        "Jupiter": 250,
+        "Saturn": 310
+      },
+      "day_expected": {
+        "Fortune": 70,
+        "Spirit": 310,
+        "Eros (Valens)": 250,
+        "Necessity (Valens)": 130
+      },
+      "night_expected": {
+        "Fortune": 310,
+        "Spirit": 70,
+        "Eros (Valens)": 250,
+        "Necessity (Valens)": 130
+      }
+    },
+    "catalog_caveat": "Only the four lots admitted to HellenisticChartProfile are locked here. This is not a validation claim for the heterogeneous full lots catalog."
+  },
+  "decennials": {
+    "authority": {
+      "work": "Vettius Valens, Anthologies",
+      "edition": "Mark T. Riley translation, reformatted annotated PDF",
+      "location": "Book VI, chapters 6-8, annotated PDF pages 494-502",
+      "online_witness": "https://www.skyscript.co.uk/pdf/pubs/texts/valens/griscti/docs/Valens-Anthologies.pdf",
+      "evidence_grade": "identified_edition_direct_example_and_arithmetic"
+    },
+    "minor_period_months": {
+      "Saturn": 30,
+      "Jupiter": 12,
+      "Mars": 15,
+      "Sun": 19,
+      "Venus": 8,
+      "Mercury": 20,
+      "Moon": 25
+    },
+    "major_period_months": 129,
+    "major_period_years": 10.75,
+    "month_basis_days": 30,
+    "sequence_rule": "begin with the admitted apheta and continue in increasing zodiacal longitude",
+    "synthetic_geometry_case": {
+      "natal_jd": 2451545,
+      "is_day_chart": true,
+      "natal_positions": {
+        "Sun": 10,
+        "Mercury": 20,
+        "Venus": 50,
+        "Mars": 110,
+        "Moon": 200,
+        "Jupiter": 250,
+        "Saturn": 300
+      },
+      "expected_sequence": ["Sun", "Mercury", "Venus", "Mars", "Moon", "Jupiter", "Saturn"]
+    },
+    "quarantine": "The golden covers admitted L1/L2 arithmetic only. Decennial L3/L4 remain unavailable."
+  }
+}
