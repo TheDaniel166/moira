@@ -15,7 +15,7 @@ particular, “Phase 2” here means doctrine decisions, not the historical
 |---|---|---|---|
 | 1 | False-output containment | Complete | Incorrect or unadmitted Hellenistic outputs fail closed; Decennial L3/L4 and Hermetic public surfaces remain quarantined. |
 | 2 | Doctrine decisions | Complete | The disputed profection, Decennial, Halb/Hayz, ZR, lot, and Hermetic-catalog rules have explicit source or policy decisions. |
-| 3 | Typed truth composition | In progress | Dignity, sect/horizon, Mercury phase, solar phase/proximity, besieging, and lot-dependency composition is implemented; remaining atomic families still require migration. |
+| 3 | Typed truth composition | Complete | Every admitted atomic family in the Phase 3 inventory now has a governing raw receipt or remains explicitly quarantined; compatibility labels and booleans are projections, not the source of truth. |
 | 4 | Contract parity | Pending | Audit effective policy and provenance parity across exports, facade, serializers, REST models, and OpenAPI. Existing partial transport is not a parity receipt. |
 | 5 | Unified Hellenistic profile | Pending | Compose a non-interpretive chart profile only from atomic admitted receipts. |
 | 6 | Validation and documentation regeneration | Pending | Add independent source-owned goldens, regenerate inventories/matrices, archive stale completion claims, and only then update website documentation. |
@@ -124,9 +124,10 @@ the gate complete:
 - lot dependency composition is explicitly separated from astrological
   condition, which remains `not_evaluable` without admitted doctrine.
 
-Phase 3 remains open for the remaining collapsed/default-bearing Hellenistic
-families and for a final atomic-truth gate audit. Phase 4 parity, Phase 5
-profile composition, and website work are not implied by this start receipt.
+At this start checkpoint, Phase 3 remained open for the collapsed/default-
+bearing Hellenistic families and a final atomic-truth gate audit. Phase 4
+parity, Phase 5 profile composition, and website work were not implied by this
+start receipt.
 
 ### Phase 3 atomic-vessel inventory
 
@@ -138,10 +139,10 @@ This is an implementation inventory, not a capability or correctness claim:
 | Oriental/Occidental phase | The compatibility helper returned `str | None`, exact conjunction and opposition were forced into `oriental`, and policy suppression erased the available geometry. | Closed in the second Phase 3 slice with `PlanetarySolarPhaseTruth`; boundaries are typed `not_evaluable`, and only evaluated truth may assemble a condition or score. |
 | Solar proximity | `SolarConditionTruth.present=False` conflated an evaluated clear band, a non-applicable Sun, a default-suppressed Moon, and policy-suppressed conditions. | Closed in the third Phase 3 slice with exclusive `SolarProximityTruth`; raw geometry is preserved separately from policy assembly, and the Sun fails closed as non-applicable. |
 | Besieging | `tuple | None` conflated evaluated absence, incomplete chart dependencies, same-degree neighbour ambiguity, and missing chart context. | Closed in the third Phase 3 slice with `BesiegingDependencyCompletenessTruth` and `BesiegingTruth`; incomplete or ambiguous geometry cannot score. |
-| Profection activation | `activated_planets=[]` means either no conjunctions or no natal positions were supplied. | Open; preserve an explicit activation evaluation receipt without changing profected sign or lord truth. |
-| Decennial sequence | The final ordered tuple carries no atomic starting/ordering receipt, and equal non-sect-light longitudes fall through to private planet order. | Open; define exact-tie ambiguity and sequence-assembly truth before changing generation. |
-| ZR Fortune angularity | Missing Fortune leaves `angularity_class=None` but projects `is_peak_period=False`, collapsing “not evaluable” into “not peak.” | Open; separate Fortune dependency/evaluation truth from the compatibility peak flag. |
-| Aspect direction and overcoming | Direction uses enum-or-`None` applicability and overcoming uses a scalar boolean without a shared typed Hellenistic superiority receipt. | Open after the default-bearing families; do not invent an additive dignity score. |
+| Profection activation | `activated_planets=[]` means either no conjunctions or no natal positions were supplied. | Closed in the fourth Phase 3 slice with `ProfectionActivationTruth`; absent dependencies are typed `not_evaluable`, while an explicit empty mapping and evaluated absence remain evaluated results. |
+| Decennial sequence | The final ordered tuple carries no atomic starting/ordering receipt, and equal non-sect-light longitudes fall through to private planet order. | Closed in the fourth Phase 3 slice with `DecennialSequenceAssemblyTruth`; every Classic 7 arc is preserved and non-sect-light longitude ties fail closed instead of using private order. |
+| ZR Fortune angularity | Missing Fortune leaves `angularity_class=None` but projects `is_peak_period=False`, collapsing “not evaluable” into “not peak.” | Closed in the fourth Phase 3 slice with `ZRFortuneAngularityTruth`; raw missing-Fortune peak truth is `None`, while the legacy field remains a compatibility `False`. |
+| Aspect direction and overcoming | Direction uses enum-or-`None` applicability and overcoming uses a scalar boolean without a shared typed Hellenistic superiority receipt. | Closed in the fourth Phase 3 slice with `HellenisticSuperiorityTruth`; typed direction applicability and winner-or-neither overcoming share one ordered-pair receipt and introduce no score. |
 | Hermetic decans and Decennial L3/L4 | These surfaces are quarantined rather than composition-ready. | Keep quarantined; Phase 3 does not reopen source admission. |
 
 Triplicity assignment, admitted bounds, ordinary decanate position, essential
@@ -163,7 +164,7 @@ planetary phase classifications. Its assembly doctrine is:
 
 `oriental_occidental()` remains a compatibility projection. It returns
 `None` for non-evaluable truth rather than fabricating one side of a boundary.
-Phase 3 remains in progress.
+At that checkpoint, Phase 3 remained in progress.
 
 ### Phase 3 third-slice receipt
 
@@ -184,20 +185,65 @@ projection.
 The engine vessels, public dignity exports, chart assembly, compatibility
 helpers, and existing REST serialization path are regression-covered for this
 slice. That serialization evidence is not the Phase 4 parity receipt. Phase 3
-remains in progress.
+remained in progress at that checkpoint.
+
+### Phase 3 fourth-slice receipt
+
+`profection_activation_truth()` now preserves each supplied body's normalized
+longitude, minimum distance from the profected Ascendant, activation orb, and
+activation boolean. Missing natal positions are typed `not_evaluable`;
+explicitly supplied empty dependencies and evaluated charts with no activated
+bodies remain distinct evaluated receipts. `activated_planets` is a
+compatibility projection.
+
+`decennial_sequence_truth()` preserves the Classic 7 dependency geometry from
+the sect light and makes the final ordering inspectable. The sect light remains
+the starting lord; equal non-sect-light longitudes are typed
+`not_evaluable`, and generation fails closed instead of falling through to a
+private planet order. Every generated L1/L2 period preserves the same
+evaluated receipt. The L3/L4 quarantine is unchanged.
+
+`zr_fortune_angularity_truth()` preserves Fortune dependency completeness,
+inclusive place, angularity class, and raw peak truth. Missing Fortune carries
+raw `is_peak_period=None`; the legacy period field remains `False` only as a
+compatibility projection.
+
+`hellenistic_superiority_truth()` composes two independent components for one
+ordered body pair. Direction preserves sinister/dexter applicability and typed
+boundary reasons. Overcoming preserves both inclusive sign places and an
+evaluated `body1`, `body2`, or `neither` relation. No additive dignity or
+superiority score was introduced.
+
+## Phase 3 Closure Receipt
+
+Phase 3 is complete because:
+
+1. every admitted atomic family in the recorded inventory now exposes a
+   governing component receipt;
+2. missing dependencies and boundary ambiguity are typed `not_evaluable`
+   rather than collapsed into false, empty, or a private ordering default;
+3. compatibility strings, lists, and booleans are derived from raw truth and
+   cannot contradict it in admitted engine output;
+4. synthetic scoring remains outside the Hellenistic product contract;
+5. Hermetic decan geometry and Decennial L3/L4 remain quarantined;
+6. the 18-file atomic gate passed all 907 collected tests under strict
+   known-issues mode; Python compilation, documentation consistency, and
+   `git diff --check` also passed.
+
+This closure is engine truth composition only. The new Phase 3 names are
+currently direct module surfaces; it does not claim root/classical/facade,
+serializer, REST-model, OpenAPI, or website parity.
 
 ### Resting point for the next work session
 
-Resume inside Phase 3; do not advance the gate status yet.
+Phase 4, Contract parity, is next:
 
-1. take profection activation truth next, distinguishing an evaluated empty
-   activation set from absent natal-position dependencies;
-2. continue through Decennial sequence assembly, ZR Fortune angularity, and
-   aspect direction/overcoming receipts in the recorded inventory order;
-3. keep root/classical export parity, full REST/OpenAPI parity, the unified
-   profile, and website documentation at their named later gates;
-4. rerun the focused dignity/lots/facade/REST gate and documentation
-   consistency check after the next slice.
-
-Current-slice validation: 237 focused tests passed, Python compilation passed,
-documentation consistency passed, and `git diff --check` passed.
+1. inventory each effective Phase 3 policy and receipt across module exports,
+   root exports, `moira.classical`, facade functions, `Moira` methods, and
+   serializers;
+2. align REST models and OpenAPI transport only after the engine-to-facade
+   contract is explicit;
+3. prove parity with adversarial round-trip tests rather than inferring it from
+   existing partial transport;
+4. keep the unified Hellenistic profile, validation/documentation
+   regeneration, and website work at Phases 5 and 6.

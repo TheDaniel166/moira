@@ -150,6 +150,12 @@ Public surface
 --------------
 ``AspectDomain``             — enum: ZODIACAL, DECLINATION, or WHOLE_SIGN.
 ``AspectDirection``          — enum: SINISTER or DEXTER (Hellenistic).
+``HellenisticAspectEvaluationStatus`` — evaluated/not-evaluable component status.
+``HellenisticOvercomingRelation`` — body1/body2/neither overcoming relation.
+``HellenisticDirectionTruth`` — typed direction applicability and arc receipt.
+``HellenisticOvercomingTruth`` — typed inclusive-place overcoming receipt.
+``HellenisticSuperiorityTruth`` — shared ordered-pair direction/overcoming receipt.
+``hellenistic_superiority_truth`` — build the shared Hellenistic receipt.
 ``AspectTier``               — enum: MAJOR, COMMON_MINOR, EXTENDED_MINOR.
 ``AspectFamily``             — enum: harmonic family (conjunction, trine, …).
 ``AspectClassification``     — frozen dataclass bundling domain + tier + family.
@@ -208,7 +214,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, StrEnum
 from itertools import combinations, permutations
 import math
 from types import MappingProxyType
@@ -245,6 +251,8 @@ __all__ = [
     "TRADITIONAL_MOIETY_ORBS",
     # Enums
     "AspectDirection",
+    "HellenisticAspectEvaluationStatus",
+    "HellenisticOvercomingRelation",
     "AspectDomain",
     "AspectFamily",
     "AspectMotionBranch",
@@ -261,6 +269,9 @@ __all__ = [
     # Dataclasses
     "AspectClassification",
     "AspectData",
+    "HellenisticDirectionTruth",
+    "HellenisticOvercomingTruth",
+    "HellenisticSuperiorityTruth",
     "DeclinationAspectAnalysis",
     "AspectFamilyProfile",
     "AspectGraph",
@@ -290,6 +301,7 @@ __all__ = [
     "find_out_of_bounds",
     "find_patterns",
     "find_whole_sign_aspects",
+    "hellenistic_superiority_truth",
     "OutOfBoundsBody",
     "overcoming",
 ]
@@ -313,6 +325,296 @@ class AspectDirection(str, Enum):
     """
     SINISTER = "sinister"
     DEXTER   = "dexter"
+
+
+class HellenisticAspectEvaluationStatus(StrEnum):
+    """Whether one Hellenistic relational component was evaluable."""
+
+    EVALUATED = "evaluated"
+    NOT_EVALUABLE = "not_evaluable"
+
+
+class HellenisticOvercomingRelation(StrEnum):
+    """Typed winner-or-neither relation for tenth-sign overcoming."""
+
+    BODY1_OVERCOMES_BODY2 = "body1_overcomes_body2"
+    BODY2_OVERCOMES_BODY1 = "body2_overcomes_body1"
+    NEITHER = "neither"
+
+
+@dataclass(frozen=True, slots=True)
+class HellenisticDirectionTruth:
+    """Typed sinister/dexter applicability and direction receipt."""
+
+    status: HellenisticAspectEvaluationStatus
+    aspect_angle_deg: float | None
+    forward_arc_body1_to_body2_deg: float
+    direction: AspectDirection | None
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.status,
+            HellenisticAspectEvaluationStatus,
+        ):
+            raise ValueError(
+                "HellenisticDirectionTruth status must be a "
+                "HellenisticAspectEvaluationStatus"
+            )
+        if self.aspect_angle_deg is not None and (
+            not math.isfinite(self.aspect_angle_deg)
+            or not (0.0 <= self.aspect_angle_deg <= 180.0)
+        ):
+            raise ValueError(
+                "HellenisticDirectionTruth aspect angle must be in [0, 180]"
+            )
+        if not math.isfinite(self.forward_arc_body1_to_body2_deg) or not (
+            0.0 <= self.forward_arc_body1_to_body2_deg < 360.0
+        ):
+            raise ValueError(
+                "HellenisticDirectionTruth forward arc must be in [0, 360)"
+            )
+        if self.direction is not None and not isinstance(
+            self.direction,
+            AspectDirection,
+        ):
+            raise ValueError(
+                "HellenisticDirectionTruth direction must be an "
+                "AspectDirection or None"
+            )
+        if self.status is HellenisticAspectEvaluationStatus.EVALUATED:
+            if (
+                self.aspect_angle_deg is None
+                or self.direction is None
+                or self.reason is not None
+            ):
+                raise ValueError(
+                    "HellenisticDirectionTruth evaluated results require "
+                    "an angle, direction, and no reason"
+                )
+            if (
+                math.isclose(
+                    self.aspect_angle_deg,
+                    0.0,
+                    rel_tol=0.0,
+                    abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+                )
+                or math.isclose(
+                    self.aspect_angle_deg,
+                    180.0,
+                    rel_tol=0.0,
+                    abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+                )
+                or _is_hellenistic_direction_boundary(
+                    self.forward_arc_body1_to_body2_deg
+                )
+            ):
+                raise ValueError(
+                    "HellenisticDirectionTruth evaluated direction cannot "
+                    "occupy a conjunction or opposition boundary"
+                )
+            expected = (
+                AspectDirection.SINISTER
+                if self.forward_arc_body1_to_body2_deg < 180.0
+                else AspectDirection.DEXTER
+            )
+            if self.direction is not expected:
+                raise ValueError(
+                    "HellenisticDirectionTruth direction must match "
+                    "the directed zodiacal arc"
+                )
+        else:
+            if self.direction is not None or not self.reason:
+                raise ValueError(
+                    "HellenisticDirectionTruth not_evaluable results require "
+                    "no direction and an explicit reason"
+                )
+            if self.aspect_angle_deg is None:
+                expected_reason = "aspect_angle_not_supplied"
+            elif (
+                math.isclose(
+                    self.aspect_angle_deg,
+                    0.0,
+                    rel_tol=0.0,
+                    abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+                )
+                or math.isclose(
+                    self.aspect_angle_deg,
+                    180.0,
+                    rel_tol=0.0,
+                    abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+                )
+            ):
+                expected_reason = (
+                    "direction_not_applicable_to_conjunction_or_opposition"
+                )
+            elif _is_hellenistic_direction_boundary(
+                self.forward_arc_body1_to_body2_deg
+            ):
+                expected_reason = "directed_arc_boundary_ambiguous"
+            else:
+                raise ValueError(
+                    "HellenisticDirectionTruth cannot suppress an evaluable "
+                    "direction"
+                )
+            if self.reason != expected_reason:
+                raise ValueError(
+                    "HellenisticDirectionTruth reason must match its "
+                    "non-evaluable geometry"
+                )
+
+
+@dataclass(frozen=True, slots=True)
+class HellenisticOvercomingTruth:
+    """Typed tenth-sign superiority relation for one ordered body pair."""
+
+    status: HellenisticAspectEvaluationStatus
+    body1_sign_index: int
+    body2_sign_index: int
+    body1_place_from_body2: int
+    body2_place_from_body1: int
+    relation: HellenisticOvercomingRelation
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.status is not HellenisticAspectEvaluationStatus.EVALUATED:
+            raise ValueError(
+                "HellenisticOvercomingTruth admits only evaluated finite geometry"
+            )
+        if self.body1_sign_index not in range(12) or (
+            self.body2_sign_index not in range(12)
+        ):
+            raise ValueError(
+                "HellenisticOvercomingTruth sign indices must be in [0, 11]"
+            )
+        expected_body1_place = (
+            (self.body1_sign_index - self.body2_sign_index) % 12
+        ) + 1
+        expected_body2_place = (
+            (self.body2_sign_index - self.body1_sign_index) % 12
+        ) + 1
+        if (
+            self.body1_place_from_body2 != expected_body1_place
+            or self.body2_place_from_body1 != expected_body2_place
+        ):
+            raise ValueError(
+                "HellenisticOvercomingTruth places must match sign geometry"
+            )
+        if self.reason is not None:
+            raise ValueError(
+                "HellenisticOvercomingTruth evaluated results cannot carry a reason"
+            )
+        if self.body1_place_from_body2 == 10:
+            expected_relation = (
+                HellenisticOvercomingRelation.BODY1_OVERCOMES_BODY2
+            )
+        elif self.body2_place_from_body1 == 10:
+            expected_relation = (
+                HellenisticOvercomingRelation.BODY2_OVERCOMES_BODY1
+            )
+        else:
+            expected_relation = HellenisticOvercomingRelation.NEITHER
+        if self.relation is not expected_relation:
+            raise ValueError(
+                "HellenisticOvercomingTruth relation must match tenth-sign geometry"
+            )
+
+    @property
+    def body1_overcomes_body2(self) -> bool:
+        return (
+            self.relation
+            is HellenisticOvercomingRelation.BODY1_OVERCOMES_BODY2
+        )
+
+    @property
+    def body2_overcomes_body1(self) -> bool:
+        return (
+            self.relation
+            is HellenisticOvercomingRelation.BODY2_OVERCOMES_BODY1
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class HellenisticSuperiorityTruth:
+    """Shared direction and overcoming truth for one ordered body pair."""
+
+    body1: str
+    body2: str
+    longitude1: float
+    longitude2: float
+    direction_truth: HellenisticDirectionTruth
+    overcoming_truth: HellenisticOvercomingTruth
+
+    def __post_init__(self) -> None:
+        for label, body in (("body1", self.body1), ("body2", self.body2)):
+            if (
+                not isinstance(body, str)
+                or not body
+                or body != body.strip()
+            ):
+                raise ValueError(
+                    f"HellenisticSuperiorityTruth {label} must be a "
+                    "non-empty trimmed string"
+                )
+        for label, longitude in (
+            ("longitude1", self.longitude1),
+            ("longitude2", self.longitude2),
+        ):
+            if not math.isfinite(longitude) or not (
+                0.0 <= longitude < 360.0
+            ):
+                raise ValueError(
+                    f"HellenisticSuperiorityTruth {label} must be in [0, 360)"
+                )
+        if not isinstance(self.direction_truth, HellenisticDirectionTruth):
+            raise ValueError(
+                "HellenisticSuperiorityTruth direction_truth must be a "
+                "HellenisticDirectionTruth"
+            )
+        if not isinstance(self.overcoming_truth, HellenisticOvercomingTruth):
+            raise ValueError(
+                "HellenisticSuperiorityTruth overcoming_truth must be a "
+                "HellenisticOvercomingTruth"
+            )
+        expected_arc = (self.longitude2 - self.longitude1) % 360.0
+        if not math.isclose(
+            self.direction_truth.forward_arc_body1_to_body2_deg,
+            expected_arc,
+            rel_tol=0.0,
+            abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+        ):
+            raise ValueError(
+                "HellenisticSuperiorityTruth direction arc must match longitudes"
+            )
+        if (
+            self.overcoming_truth.body1_sign_index
+            != _whole_sign_index(self.longitude1)
+            or self.overcoming_truth.body2_sign_index
+            != _whole_sign_index(self.longitude2)
+        ):
+            raise ValueError(
+                "HellenisticSuperiorityTruth overcoming signs must match longitudes"
+            )
+
+    @property
+    def direction(self) -> AspectDirection | None:
+        return self.direction_truth.direction
+
+    @property
+    def body1_overcomes_body2(self) -> bool:
+        return self.overcoming_truth.body1_overcomes_body2
+
+    @property
+    def body2_overcomes_body1(self) -> bool:
+        return self.overcoming_truth.body2_overcomes_body1
+
+    @property
+    def overcoming_body(self) -> str | None:
+        if self.body1_overcomes_body2:
+            return self.body1
+        if self.body2_overcomes_body1:
+            return self.body2
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -380,6 +682,145 @@ def _finite_number(name: str, value: object) -> float:
     if not math.isfinite(parsed):
         raise ValueError(f"{name} must be a finite number")
     return parsed
+
+
+_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG = 1e-12
+_WHOLE_SIGN_BOUNDARY_TOLERANCE_DEG = 1e-11
+
+
+def _whole_sign_index(longitude: float) -> int:
+    """Return one normalized sign index with the existing arithmetic snap."""
+
+    return int(
+        (
+            longitude % 360.0
+            + _WHOLE_SIGN_BOUNDARY_TOLERANCE_DEG
+        )
+        // 30.0
+    ) % 12
+
+
+def _is_hellenistic_direction_boundary(forward_arc: float) -> bool:
+    """Whether a directed arc occupies conjunction/opposition ambiguity."""
+
+    return (
+        math.isclose(
+            forward_arc,
+            0.0,
+            rel_tol=0.0,
+            abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+        )
+        or math.isclose(
+            forward_arc,
+            180.0,
+            rel_tol=0.0,
+            abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+        )
+        or math.isclose(
+            forward_arc,
+            360.0,
+            rel_tol=0.0,
+            abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+        )
+    )
+
+
+def hellenistic_superiority_truth(
+    lon1: float,
+    lon2: float,
+    aspect_angle: float | None = None,
+    *,
+    body1: str = "body1",
+    body2: str = "body2",
+) -> HellenisticSuperiorityTruth:
+    """Compose typed direction applicability and tenth-sign overcoming."""
+
+    longitude1 = _finite_number("lon1", lon1) % 360.0
+    longitude2 = _finite_number("lon2", lon2) % 360.0
+    resolved_angle: float | None
+    if aspect_angle is None:
+        resolved_angle = None
+    else:
+        resolved_angle = _finite_number("aspect_angle", aspect_angle)
+        if not 0.0 <= resolved_angle <= 180.0:
+            raise ValueError("aspect_angle must be in [0, 180]")
+
+    forward_arc = (longitude2 - longitude1) % 360.0
+    if resolved_angle is None:
+        direction_truth = HellenisticDirectionTruth(
+            status=HellenisticAspectEvaluationStatus.NOT_EVALUABLE,
+            aspect_angle_deg=None,
+            forward_arc_body1_to_body2_deg=forward_arc,
+            direction=None,
+            reason="aspect_angle_not_supplied",
+        )
+    elif (
+        math.isclose(
+            resolved_angle,
+            0.0,
+            rel_tol=0.0,
+            abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+        )
+        or math.isclose(
+            resolved_angle,
+            180.0,
+            rel_tol=0.0,
+            abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+        )
+    ):
+        direction_truth = HellenisticDirectionTruth(
+            status=HellenisticAspectEvaluationStatus.NOT_EVALUABLE,
+            aspect_angle_deg=resolved_angle,
+            forward_arc_body1_to_body2_deg=forward_arc,
+            direction=None,
+            reason="direction_not_applicable_to_conjunction_or_opposition",
+        )
+    elif _is_hellenistic_direction_boundary(forward_arc):
+        direction_truth = HellenisticDirectionTruth(
+            status=HellenisticAspectEvaluationStatus.NOT_EVALUABLE,
+            aspect_angle_deg=resolved_angle,
+            forward_arc_body1_to_body2_deg=forward_arc,
+            direction=None,
+            reason="directed_arc_boundary_ambiguous",
+        )
+    else:
+        direction_truth = HellenisticDirectionTruth(
+            status=HellenisticAspectEvaluationStatus.EVALUATED,
+            aspect_angle_deg=resolved_angle,
+            forward_arc_body1_to_body2_deg=forward_arc,
+            direction=(
+                AspectDirection.SINISTER
+                if forward_arc < 180.0
+                else AspectDirection.DEXTER
+            ),
+        )
+
+    sign1 = _whole_sign_index(longitude1)
+    sign2 = _whole_sign_index(longitude2)
+    body1_place = ((sign1 - sign2) % 12) + 1
+    body2_place = ((sign2 - sign1) % 12) + 1
+    if body1_place == 10:
+        relation = HellenisticOvercomingRelation.BODY1_OVERCOMES_BODY2
+    elif body2_place == 10:
+        relation = HellenisticOvercomingRelation.BODY2_OVERCOMES_BODY1
+    else:
+        relation = HellenisticOvercomingRelation.NEITHER
+    overcoming_truth = HellenisticOvercomingTruth(
+        status=HellenisticAspectEvaluationStatus.EVALUATED,
+        body1_sign_index=sign1,
+        body2_sign_index=sign2,
+        body1_place_from_body2=body1_place,
+        body2_place_from_body1=body2_place,
+        relation=relation,
+    )
+    return HellenisticSuperiorityTruth(
+        body1=body1,
+        body2=body2,
+        longitude1=longitude1,
+        longitude2=longitude2,
+        direction_truth=direction_truth,
+        overcoming_truth=overcoming_truth,
+    )
 
 
 def _normalized_named_values(
@@ -1876,6 +2317,8 @@ class AspectData:
               is stationary, speeds are unavailable, or the result is categorical.
             - ``stationary`` is ``True`` when either body's speed is below
               0.01 deg/day.
+            - When present, ``hellenistic_superiority_truth`` matches body
+              names, target angle, separation, sign degrees, and direction.
             - ``is_applying`` and ``is_separating`` are mutually exclusive
               and both are ``False`` when ``applying`` is ``None``.
         Succession stance: terminal — not designed for subclassing.
@@ -1899,7 +2342,8 @@ class AspectData:
                 "body1", "body2", "aspect", "symbol",
                 "angle", "separation", "orb", "allowed_orb",
                 "applying", "stationary", "classification",
-                "direction", "sign_degree1", "sign_degree2"
+                "direction", "sign_degree1", "sign_degree2",
+                "hellenistic_superiority_truth"
             ],
             "public_properties": [
                 "is_major", "is_minor", "is_zodiacal",
@@ -1913,7 +2357,8 @@ class AspectData:
                 "body1", "body2", "aspect", "symbol",
                 "angle", "separation", "orb", "allowed_orb",
                 "applying", "stationary", "classification",
-                "direction", "sign_degree1", "sign_degree2"
+                "direction", "sign_degree1", "sign_degree2",
+                "hellenistic_superiority_truth"
             ]
         },
         "effects": {
@@ -1926,7 +2371,7 @@ class AspectData:
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
-            "raises": [],
+            "raises": ["ValueError"],
             "policy": "caller ensures valid positions before construction"
         },
         "succession": {
@@ -1951,6 +2396,60 @@ class AspectData:
     direction:      AspectDirection | None = None  # sinister/dexter from body1's perspective
     sign_degree1:   int | None = None    # 0-29 degree number within body1's sign
     sign_degree2:   int | None = None    # 0-29 degree number within body2's sign
+    hellenistic_superiority_truth: HellenisticSuperiorityTruth | None = None
+
+    def __post_init__(self) -> None:
+        truth = self.hellenistic_superiority_truth
+        if truth is None:
+            return
+        if truth.body1 != self.body1 or truth.body2 != self.body2:
+            raise ValueError(
+                "AspectData Hellenistic superiority body names must match "
+                "the aspect pair"
+            )
+        if (
+            truth.direction_truth.aspect_angle_deg is None
+            or not math.isclose(
+                truth.direction_truth.aspect_angle_deg,
+                self.angle,
+                rel_tol=0.0,
+                abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+            )
+        ):
+            raise ValueError(
+                "AspectData Hellenistic direction angle must match aspect angle"
+            )
+        expected_separation = angular_distance(
+            truth.longitude1,
+            truth.longitude2,
+        )
+        if not math.isclose(
+            expected_separation,
+            self.separation,
+            rel_tol=0.0,
+            abs_tol=_HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG,
+        ):
+            raise ValueError(
+                "AspectData separation must match Hellenistic superiority "
+                "longitudes"
+            )
+        for label, sign_degree, longitude in (
+            ("sign_degree1", self.sign_degree1, truth.longitude1),
+            ("sign_degree2", self.sign_degree2, truth.longitude2),
+        ):
+            if (
+                sign_degree is not None
+                and sign_degree != _sign_degree_number(longitude)
+            ):
+                raise ValueError(
+                    f"AspectData {label} must match Hellenistic superiority "
+                    "longitude"
+                )
+        if self.direction is not truth.direction:
+            raise ValueError(
+                "AspectData direction must be the compatibility projection "
+                "of Hellenistic superiority truth"
+            )
 
     # ------------------------------------------------------------------
     # Inspectability — read-only, derived-only convenience properties
@@ -2521,12 +3020,11 @@ def _aspect_direction(lon1: float, lon2: float, angle: float) -> AspectDirection
     A dexter aspect is cast backward (body2 is behind body1).
     Conjunctions and oppositions have no directional polarity; return None.
     """
-    if angle == 0.0 or angle == 180.0:
-        return None
-    forward = (lon2 - lon1) % 360.0
-    if forward <= 180.0:
-        return AspectDirection.SINISTER
-    return AspectDirection.DEXTER
+    return hellenistic_superiority_truth(
+        lon1,
+        lon2,
+        angle,
+    ).direction
 
 
 def overcoming(lon1: float, lon2: float) -> bool:
@@ -2539,12 +3037,10 @@ def overcoming(lon1: float, lon2: float) -> bool:
 
     Canon: Vettius Valens; Brennan, Hellenistic Astrology, Ch. 11.
     """
-    sign1 = int((lon1 % 360.0 + 1e-11) // 30) % 12
-    sign2 = int((lon2 % 360.0 + 1e-11) // 30) % 12
-    # Count zodiacally forward from body2. Its tenth sign is nine sign-steps
-    # away because body2's own sign is counted as the first place.
-    diff = (sign1 - sign2) % 12
-    return diff == 9
+    return hellenistic_superiority_truth(
+        lon1,
+        lon2,
+    ).body1_overcomes_body2
 
 
 # ---------------------------------------------------------------------------
@@ -2655,6 +3151,13 @@ def find_aspects(
                 if orb <= allowed:
                     app = _applying(b1, lon1, b2, lon2, speeds, adef.angle) if speeds else None
                     sta = _is_stationary(b1, b2, speeds) if speeds else False
+                    superiority_truth = hellenistic_superiority_truth(
+                        lon1,
+                        lon2,
+                        adef.angle,
+                        body1=b1,
+                        body2=b2,
+                    )
                     results.append(AspectData(
                         body1=b1, body2=b2,
                         aspect=adef.name, symbol=adef.symbol,
@@ -2665,9 +3168,10 @@ def find_aspects(
                         applying=app,
                         stationary=sta,
                         classification=_ASPECT_CLASSIFICATION[adef.name],
-                        direction=_aspect_direction(lon1, lon2, adef.angle),
+                        direction=superiority_truth.direction,
                         sign_degree1=_sign_degree_number(lon1),
                         sign_degree2=_sign_degree_number(lon2),
+                        hellenistic_superiority_truth=superiority_truth,
                     ))
 
     results.sort(key=lambda a: a.orb)
@@ -2858,6 +3362,13 @@ def aspects_between(
         if orb <= allowed:
             app = _applying(body_a, lon_a, body_b, lon_b, speeds, adef.angle) if speeds else None
             sta = _is_stationary(body_a, body_b, speeds) if speeds else False
+            superiority_truth = hellenistic_superiority_truth(
+                lon_a,
+                lon_b,
+                adef.angle,
+                body1=body_a,
+                body2=body_b,
+            )
             results.append(AspectData(
                 body1=body_a, body2=body_b,
                 aspect=adef.name, symbol=adef.symbol,
@@ -2868,9 +3379,10 @@ def aspects_between(
                 applying=app,
                 stationary=sta,
                 classification=_ASPECT_CLASSIFICATION[adef.name],
-                direction=_aspect_direction(lon_a, lon_b, adef.angle),
+                direction=superiority_truth.direction,
                 sign_degree1=_sign_degree_number(lon_a),
                 sign_degree2=_sign_degree_number(lon_b),
+                hellenistic_superiority_truth=superiority_truth,
             ))
 
     results.sort(key=lambda a: a.orb)
@@ -2981,6 +3493,13 @@ def aspects_to_point(
                 allowed = adef.default_orb * orb_factor
             orb = abs(sep - adef.angle)
             if orb <= allowed:
+                superiority_truth = hellenistic_superiority_truth(
+                    lon,
+                    point_longitude,
+                    adef.angle,
+                    body1=body,
+                    body2=point_name,
+                )
                 results.append(AspectData(
                     body1=body, body2=point_name,
                     aspect=adef.name, symbol=adef.symbol,
@@ -2990,9 +3509,10 @@ def aspects_to_point(
                     allowed_orb=allowed,
                     applying=None,
                     classification=_ASPECT_CLASSIFICATION[adef.name],
-                    direction=_aspect_direction(lon, point_longitude, adef.angle),
+                    direction=superiority_truth.direction,
                     sign_degree1=_sign_degree_number(lon),
                     sign_degree2=_sign_degree_number(point_longitude),
+                    hellenistic_superiority_truth=superiority_truth,
                 ))
 
     results.sort(key=lambda a: a.orb)
@@ -3167,8 +3687,8 @@ def find_whole_sign_aspects(
             b1, b2 = bodies[i], bodies[j]
             lon1, lon2 = positions[b1], positions[b2]
 
-            sign1 = int((lon1 % 360.0 + 1e-11) // 30) % 12
-            sign2 = int((lon2 % 360.0 + 1e-11) // 30) % 12
+            sign1 = _whole_sign_index(lon1)
+            sign2 = _whole_sign_index(lon2)
             sign_diff = (sign1 - sign2) % 12
 
             mapping = _WHOLE_SIGN_MAP.get(sign_diff)
@@ -3177,6 +3697,13 @@ def find_whole_sign_aspects(
 
             aspect_name, symbol, angle = mapping
             sep = angular_distance(lon1, lon2)
+            superiority_truth = hellenistic_superiority_truth(
+                lon1,
+                lon2,
+                angle,
+                body1=b1,
+                body2=b2,
+            )
 
             results.append(AspectData(
                 body1=b1,
@@ -3189,9 +3716,10 @@ def find_whole_sign_aspects(
                 allowed_orb=0.0,
                 applying=None,
                 classification=_WHOLE_SIGN_CLASSIFICATION[aspect_name],
-                direction=_aspect_direction(lon1, lon2, angle),
+                direction=superiority_truth.direction,
                 sign_degree1=_sign_degree_number(lon1),
                 sign_degree2=_sign_degree_number(lon2),
+                hellenistic_superiority_truth=superiority_truth,
             ))
 
     return results

@@ -102,6 +102,20 @@ The following fields make that distinction inspectable:
 | `DIURNAL_SOLAR` | Day chart: Sun-led sequence |
 | `NOCTURNAL_LUNAR` | Night chart: Moon-led sequence |
 
+**Sequence assembly truth:** `decennial_sequence_truth()` evaluates the
+Classic 7 dependencies before any period is generated. Its
+`DecennialSequenceAssemblyTruth` preserves chart sect, sect light, sequence
+kind, normalized sect-light longitude, one `DecennialSequenceBodyTruth` per
+classical planet, the final sequence when evaluable, and any ambiguous
+non-sect-light groups.
+
+The sect light is always the first lord. One non-sect-light planet may share
+its longitude because the starting-lord rule resolves that ordering. Two or
+more non-sect-light planets at the same longitude are not ordered by a private
+planet list: the assembly is typed `not_evaluable` with
+`reason="non_sect_longitude_tie"`, and `decennials()` fails closed. Every
+generated L1/L2 period carries the same evaluated assembly receipt.
+
 **Admitted levels and deep doctrine:**
 
 | Doctrine | Admitted levels |
@@ -185,10 +199,15 @@ determines its angularity class. Angular signs (1, 4, 7, 10 from Fortune) carry 
 `CADENT`. This classification is preserved as an integer (1-based distance) and a
 typed `ZRAngularityClass` on each period.
 
-When Fortune is supplied, every period receives one of the twelve integer
-places and one of the three classes. `is_peak_period` is true only for the four
-angular places. When Fortune is omitted, the place and class are both `None`
-and `is_peak_period` is false.
+When Fortune is supplied, every period receives an evaluated
+`ZRFortuneAngularityTruth` with one of the twelve integer places, one of the
+three classes, and a peak boolean that is true only for the four angular
+places. When Fortune is omitted, the raw receipt is typed `not_evaluable` with
+`reason="fortune_not_supplied"`; its Fortune sign, place, class, and peak truth
+are all `None`. The legacy `ReleasingPeriod.is_peak_period` field remains
+`False` as a compatibility projection, so callers must use
+`fortune_angularity_truth` when they need to distinguish unevaluated from an
+evaluated non-peak period.
 
 | `ZRAngularityClass` Value | Meaning |
 |---|---|
@@ -310,9 +329,19 @@ The following are the constitutional public vessels of the timelords subsystem.
 
 **Enumerations:**
 - `FirdarSequenceKind` — discriminates the Firdaria sequence variant
+- `TimelordEvaluationStatus` — discriminates evaluated from not-evaluable
+  atomic timelord truth
 - `DecennialSequenceKind` — discriminates the Decennials sequence variant
 - `DecennialTimeBasis` — names the admitted distribution and projection bases
 - `ZRAngularityClass` — discriminates the angularity of a releasing period from Fortune
+
+**Atomic truth vessels:**
+- `DecennialSequenceBodyTruth` — one classical planet's normalized longitude
+  and forward arc from the sect light
+- `DecennialSequenceAssemblyTruth` — complete sect-light dependency,
+  ordering, ambiguity, and final-sequence receipt
+- `ZRFortuneAngularityTruth` — Fortune dependency, place, class, and raw peak
+  truth for one releasing sign
 
 **Truth-preservation vessels:**
 - `FirdarPeriod` — a single Firdaria period at any level
@@ -343,7 +372,11 @@ The following are the constitutional public vessels of the timelords subsystem.
 
 **Computational functions:**
 - `firdaria(natal_jd, is_day_chart, ...)` — core Firdaria engine
+- `decennial_sequence_truth(natal_positions, is_day_chart)` — typed
+  sect-light sequence-assembly receipt
 - `decennials(natal_jd, natal_positions, is_day_chart, ...)` — core Decennials engine
+- `zr_fortune_angularity_truth(period_sign, fortune_sign)` — typed Fortune
+  dependency and angular-place receipt
 - `zodiacal_releasing(lot_longitude, natal_jd, ...)` — core Zodiacal Releasing engine
 - `group_firdaria(periods)` — relational grouping for Firdaria
 - `group_decennials(periods)` — relational grouping for Decennials
@@ -454,6 +487,10 @@ active admitted levels. They must not be conflated.
 - `start_jd < end_jd`
 - `angularity_from_fortune`, if set, is an integer in the range [1, 12]
 - `angularity_class`, if set, is a valid `ZRAngularityClass` value
+- engine-generated periods carry `fortune_angularity_truth`; evaluated raw
+  truth exactly matches all compatibility fields
+- a missing Fortune produces raw `is_peak_period=None` while the compatibility
+  field remains `False`
 
 **`DecennialPeriod`:**
 - admitted engine output has `level` 1 or 2; the vessel can still deserialize
@@ -463,6 +500,8 @@ active admitted levels. They must not be conflated.
 - `level=1` periods preserve no `major_planet`, `parent_planet`, or `ancestor_planets`
 - `level>=2` periods preserve `major_planet`, `parent_planet`, `parent_level`, and `ancestor_planets`
 - every admitted period has `deep_subdivision_method is None`
+- engine-generated periods carry the same evaluated `sequence_truth`; its
+  sequence, sect, sect light, and sequence kind match period metadata
 
 **`FirdarMajorGroup`:**
 - `subs` contains only `FirdarPeriod` records with `major_planet == self.period.planet`
@@ -516,9 +555,15 @@ active admitted levels. They must not be conflated.
   30-day-month / 360-day-year distribution basis.
 - All periods in one Decennials sequence preserve the same time-basis and
   sequence-origin receipt.
+- All periods in one Decennials sequence preserve one identical evaluated
+  `DecennialSequenceAssemblyTruth`; a non-sect-light longitude tie prevents
+  period generation.
 - `DecennialPeriod.sequence_kind` is preserved across all admitted Decennials levels.
 - `DecennialPeriod.deep_subdivision_method` is `None` for every admitted
   runtime output; L3/L4 output validation fails closed.
+- Every engine-generated `ReleasingPeriod` preserves one
+  `ZRFortuneAngularityTruth` matching its sign and compatibility projection.
+  Missing Fortune is raw `not_evaluable`, not an evaluated non-peak result.
 
 ---
 

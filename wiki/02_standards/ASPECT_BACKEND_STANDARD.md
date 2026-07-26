@@ -78,12 +78,27 @@ relationships.
 
 #### 1.2.2 Whole-sign direction and overcoming
 
-`moira.aspects` also owns Hellenistic whole-sign direction and the directed
-`overcoming(lon1, lon2)` predicate. Sign counting is inclusive: the first
-body overcomes the second only when the first occupies the tenth sign from the
-second, which is nine zero-based sign steps forward. Reversing the operands
-reverses the question. A third-sign/fourth-sign confusion must not be accepted
-as overcoming merely because the bodies form an undirected square.
+`moira.aspects` also owns Hellenistic aspect direction and whole-sign
+overcoming. `hellenistic_superiority_truth()` is the governing atomic receipt
+for one ordered body pair: `HellenisticDirectionTruth` preserves directed-arc
+geometry and sinister/dexter applicability, while
+`HellenisticOvercomingTruth` preserves both inclusive sign places and the
+typed winner-or-neither relation.
+
+Direction is `not_evaluable` when no aspect angle is supplied, for conjunction
+or opposition, or at an exact directed conjunction/opposition boundary. The
+reason is preserved and an evaluable direction cannot be suppressed.
+Overcoming remains evaluated for finite pair geometry. Sign counting is
+inclusive: the first body overcomes the second only when the first occupies
+the tenth sign from the second, which is nine zero-based sign steps forward.
+Reversing the operands reverses the question. A third-sign/fourth-sign
+confusion must not be accepted merely because the bodies form an undirected
+square.
+
+`AspectData.direction` and `overcoming(lon1, lon2)` are compatibility
+projections from that shared raw truth. Detector-produced `AspectData` also
+carries the aggregate `hellenistic_superiority_truth` receipt. No additive
+dignity or superiority score is admitted by this composition layer.
 
 #### 1.3 Admitted aspect
 
@@ -496,6 +511,9 @@ Each invariant is identified by a short code for traceable reference.
 | T-7 | `dec1` and `dec2` are in `[-90, +90]` |
 | T-8 | Parallel and Contra-Parallel hemisphere predicates are mutually exclusive |
 | T-9 | `overcoming(lon1, lon2)` is true exactly when `(sign1 - sign2) mod 12 == 9` |
+| T-10 | `HellenisticDirectionTruth` is evaluated only for a supplied non-conjunction/non-opposition angle away from directed 0°/180° boundaries |
+| T-11 | `HellenisticOvercomingTruth.relation` exactly matches the two inclusive sign places and admits an evaluated `neither` result |
+| T-12 | Detector-produced `AspectData.direction` is the compatibility projection of its `hellenistic_superiority_truth.direction_truth` |
 
 #### INV-CLASS — Classification
 
@@ -693,12 +711,17 @@ Complete public surface of `moira.aspects` as of Phase 12:
 | `MotionState` | `APPLYING`, `EXACT`, `SEPARATING`, `STATIONARY`, `INDETERMINATE`, `NONE` |
 | `DeclinationMotionState` | `APPLYING`, `EXACT`, `SEPARATING`, `STATIONARY`, `INDETERMINATE` |
 | `AspectPatternKind` | `STELLIUM`, `T_SQUARE`, `GRAND_TRINE`, `GRAND_CROSS`, `YOD` |
+| `HellenisticAspectEvaluationStatus` | `EVALUATED`, `NOT_EVALUABLE` |
+| `HellenisticOvercomingRelation` | `BODY1_OVERCOMES_BODY2`, `BODY2_OVERCOMES_BODY1`, `NEITHER` |
 
 #### Frozen dataclasses
 
 | Name | Fields |
 |---|---|
 | `AspectClassification` | `domain`, `tier`, `family` |
+| `HellenisticDirectionTruth` | evaluation status, aspect angle, directed arc, direction, reason |
+| `HellenisticOvercomingTruth` | evaluation status, sign indices, inclusive places, relation, reason |
+| `HellenisticSuperiorityTruth` | ordered body names and longitudes plus direction and overcoming components |
 | `AspectPolicy` | `tier`, `include_minor`, `orbs`, `orb_factor`, `declination_orb` |
 | `AspectStrength` | `orb`, `allowed_orb`, `surplus`, `exactness` |
 | `AspectPattern` | `kind`, `bodies`, `aspects` |
@@ -735,6 +758,7 @@ structural invariants explicitly in their class docstrings.
 | `find_aspects` | `(positions, *, include_minor, tier, orbs, orb_factor, policy)` | `list[AspectData]` |
 | `aspects_between` | `(body1, lon1, speed1, body2, lon2, speed2, ...)` | `list[AspectData]` |
 | `aspects_to_point` | `(positions, point_name, point_lon, ...)` | `list[AspectData]` |
+| `hellenistic_superiority_truth` | `(lon1, lon2, aspect_angle=None, *, body1="body1", body2="body2")` | `HellenisticSuperiorityTruth` |
 | `find_declination_aspects` | `(declinations, *, orb, policy)` | `list[DeclinationAspect]` |
 | `declination_aspects_from_declinations` | `(declinations, *, reference_frame, timescale, orb, policy)` | `DeclinationAspectAnalysis` |
 | `declination_aspect_motion_witness` | `(body1, dec1, body2, dec2, aspect, *, speeds, orb, tolerances, reference_frame, timescale, policy)` | `DeclinationAspectMotionWitness` |

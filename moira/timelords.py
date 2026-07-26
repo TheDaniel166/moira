@@ -22,16 +22,19 @@ External dependencies:
 
 Public surface:
     FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, FIRDARIA_NOCTURNAL_BONATTI,
-    CHALDEAN_ORDER, MINOR_YEARS, FirdarSequenceKind, DecennialSequenceKind,
-    DecennialTimeBasis,
-    ZRAngularityClass, FirdarYearPolicy, DecennialPolicy, ZRYearPolicy, TimelordComputationPolicy,
+    CHALDEAN_ORDER, MINOR_YEARS, FirdarSequenceKind,
+    TimelordEvaluationStatus, DecennialSequenceKind, DecennialTimeBasis,
+    DecennialSequenceBodyTruth, DecennialSequenceAssemblyTruth,
+    ZRAngularityClass, ZRFortuneAngularityTruth,
+    FirdarYearPolicy, DecennialPolicy, ZRYearPolicy, TimelordComputationPolicy,
     DEFAULT_TIMELORD_POLICY, FirdarPeriod, DecennialPeriod, ReleasingPeriod,
     FirdarMajorGroup, DecennialMajorGroup, DecennialPeriodGroup, ZRPeriodGroup,
     FirdarConditionProfile, DecennialConditionProfile, ZRConditionProfile,
     FirdarSequenceProfile, DecennialSequenceProfile, ZRSequenceProfile,
     FirdarActivePair, DecennialActivePair, DecennialActivePath, ZRLevelPair,
-    firdaria, current_firdaria, decennials, current_decennials,
-    zodiacal_releasing, current_releasing, group_firdaria, group_decennials, group_releasing,
+    firdaria, current_firdaria, decennial_sequence_truth, decennials,
+    current_decennials, zr_fortune_angularity_truth, zodiacal_releasing,
+    current_releasing, group_firdaria, group_decennials, group_releasing,
     firdar_condition_profile, decennial_condition_profile, zr_condition_profile,
     firdar_sequence_profile, decennial_sequence_profile, zr_sequence_profile,
     firdar_active_pair, decennial_active_pair, decennial_active_path, zr_level_pair,
@@ -43,6 +46,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import StrEnum
 import math
 
 from .constants import SIGNS, sign_of
@@ -62,9 +66,13 @@ __all__ = [
     "MINOR_YEARS",
     # Classification namespaces
     "FirdarSequenceKind",
+    "TimelordEvaluationStatus",
     "DecennialSequenceKind",
     "DecennialTimeBasis",
+    "DecennialSequenceBodyTruth",
+    "DecennialSequenceAssemblyTruth",
     "ZRAngularityClass",
+    "ZRFortuneAngularityTruth",
     # Policy surfaces
     "FirdarYearPolicy",
     "DecennialPolicy",
@@ -97,8 +105,10 @@ __all__ = [
     "firdaria",
     "current_firdaria",
     "decennials",
+    "decennial_sequence_truth",
     "current_decennials",
     "zodiacal_releasing",
+    "zr_fortune_angularity_truth",
     "current_releasing",
     "group_firdaria",
     "group_decennials",
@@ -170,6 +180,13 @@ class FirdarSequenceKind:
     DIURNAL            = "diurnal"
     NOCTURNAL_STANDARD = "nocturnal_standard"
     NOCTURNAL_BONATTI  = "nocturnal_bonatti"
+
+
+class TimelordEvaluationStatus(StrEnum):
+    """Whether one atomic timelord truth was evaluable."""
+
+    EVALUATED = "evaluated"
+    NOT_EVALUABLE = "not_evaluable"
 
 
 class DecennialSequenceKind:
@@ -256,6 +273,115 @@ def _zr_angularity_class(angularity: int | None) -> str | None:
     if angularity in _SUCCEDENT_HOUSES:
         return ZRAngularityClass.SUCCEDENT
     return ZRAngularityClass.CADENT
+
+
+@dataclass(frozen=True, slots=True)
+class ZRFortuneAngularityTruth:
+    """Typed Fortune dependency and angular-place receipt for one ZR sign."""
+
+    status: TimelordEvaluationStatus
+    period_sign: str
+    fortune_sign: str | None
+    angularity_from_fortune: int | None
+    angularity_class: str | None
+    is_peak_period: bool | None
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, TimelordEvaluationStatus):
+            raise ValueError(
+                "ZRFortuneAngularityTruth status must be a "
+                "TimelordEvaluationStatus"
+            )
+        if self.period_sign not in SIGNS:
+            raise ValueError(
+                "ZRFortuneAngularityTruth period_sign must be a zodiac sign"
+            )
+        if self.status is TimelordEvaluationStatus.EVALUATED:
+            if self.fortune_sign not in SIGNS:
+                raise ValueError(
+                    "ZRFortuneAngularityTruth evaluated results require "
+                    "a Fortune sign"
+                )
+            expected_angularity = (
+                (
+                    _sign_index(self.period_sign)
+                    - _sign_index(self.fortune_sign)
+                )
+                % 12
+            ) + 1
+            if (
+                self.angularity_from_fortune not in range(1, 13)
+                or self.angularity_from_fortune != expected_angularity
+                or self.angularity_class
+                != _zr_angularity_class(self.angularity_from_fortune)
+                or not isinstance(self.is_peak_period, bool)
+                or self.reason is not None
+            ):
+                raise ValueError(
+                    "ZRFortuneAngularityTruth evaluated results require "
+                    "Fortune sign, place, class, peak boolean, and no reason"
+                )
+            expected_peak = (
+                self.angularity_from_fortune in _ANGULAR_HOUSES
+            )
+            if self.is_peak_period is not expected_peak:
+                raise ValueError(
+                    "ZRFortuneAngularityTruth peak truth must match the "
+                    "Fortune-relative angular place"
+                )
+        elif (
+            self.fortune_sign is not None
+            or self.angularity_from_fortune is not None
+            or self.angularity_class is not None
+            or self.is_peak_period is not None
+            or self.reason != "fortune_not_supplied"
+        ):
+            raise ValueError(
+                "ZRFortuneAngularityTruth not_evaluable results require "
+                "no fabricated Fortune fields and reason='fortune_not_supplied'"
+            )
+
+
+def zr_fortune_angularity_truth(
+    period_sign: str,
+    fortune_sign: str | None,
+) -> ZRFortuneAngularityTruth:
+    """Evaluate one ZR sign's place from Fortune without false defaults."""
+
+    if period_sign not in SIGNS:
+        raise ValueError("period_sign must be a zodiac sign")
+    if fortune_sign is None:
+        return ZRFortuneAngularityTruth(
+            status=TimelordEvaluationStatus.NOT_EVALUABLE,
+            period_sign=period_sign,
+            fortune_sign=None,
+            angularity_from_fortune=None,
+            angularity_class=None,
+            is_peak_period=None,
+            reason="fortune_not_supplied",
+        )
+    if fortune_sign not in SIGNS:
+        raise ValueError("fortune_sign must be a zodiac sign or None")
+
+    angularity = _fortune_angularity(period_sign, fortune_sign)
+    if angularity is None:
+        raise ValueError(
+            "supplied Fortune sign must produce an angularity place"
+        )
+    angularity_class = _zr_angularity_class(angularity)
+    if angularity_class is None:
+        raise ValueError(
+            "evaluated Fortune angularity must produce a class"
+        )
+    return ZRFortuneAngularityTruth(
+        status=TimelordEvaluationStatus.EVALUATED,
+        period_sign=period_sign,
+        fortune_sign=fortune_sign,
+        angularity_from_fortune=angularity,
+        angularity_class=angularity_class,
+        is_peak_period=angularity in _ANGULAR_HOUSES,
+    )
 
 
 def _firdar_sequence_kind(is_day_chart: bool, variant: str) -> str:
@@ -858,6 +984,227 @@ _DECENNIAL_LUMINARIES: frozenset[str] = frozenset({"Sun", "Moon"})
 _DECENNIAL_PLANETARIES: frozenset[str] = frozenset({"Mercury", "Venus", "Mars", "Jupiter", "Saturn"})
 _DECENNIAL_MAX_LEVEL = 2
 _DECENNIAL_DEEP_METHODS: frozenset[str] = frozenset({"valens", "hephaistio"})
+_DECENNIAL_SEQUENCE_BOUNDARY_TOLERANCE_DEG = 1e-12
+
+
+def _decennial_ambiguous_groups(
+    body_truths: tuple["DecennialSequenceBodyTruth", ...],
+) -> tuple[tuple[str, ...], ...]:
+    """Return every tied non-sect arc group in deterministic order."""
+
+    non_sect = sorted(
+        (item for item in body_truths if not item.is_sect_light),
+        key=lambda item: item.forward_arc_from_sect_light_deg,
+    )
+    groups: list[tuple[str, ...]] = []
+    index = 0
+    while index < len(non_sect):
+        anchor = non_sect[index]
+        group = [anchor.planet]
+        cursor = index + 1
+        while cursor < len(non_sect) and math.isclose(
+            non_sect[cursor].forward_arc_from_sect_light_deg,
+            anchor.forward_arc_from_sect_light_deg,
+            rel_tol=0.0,
+            abs_tol=_DECENNIAL_SEQUENCE_BOUNDARY_TOLERANCE_DEG,
+        ):
+            group.append(non_sect[cursor].planet)
+            cursor += 1
+        if len(group) > 1:
+            groups.append(tuple(group))
+        index = cursor
+    return tuple(groups)
+
+
+@dataclass(frozen=True, slots=True)
+class DecennialSequenceBodyTruth:
+    """One classical body's zodiacal arc from the sect light."""
+
+    planet: str
+    longitude: float
+    forward_arc_from_sect_light_deg: float
+    is_sect_light: bool
+
+    def __post_init__(self) -> None:
+        if self.planet not in _DECENNIAL_PLANETS:
+            raise ValueError(
+                "DecennialSequenceBodyTruth planet must be classical"
+            )
+        if not math.isfinite(self.longitude) or not (
+            0.0 <= self.longitude < 360.0
+        ):
+            raise ValueError(
+                "DecennialSequenceBodyTruth longitude must be in [0, 360)"
+            )
+        if not math.isfinite(self.forward_arc_from_sect_light_deg) or not (
+            0.0 <= self.forward_arc_from_sect_light_deg < 360.0
+        ):
+            raise ValueError(
+                "DecennialSequenceBodyTruth forward arc must be in [0, 360)"
+            )
+        if not isinstance(self.is_sect_light, bool):
+            raise ValueError(
+                "DecennialSequenceBodyTruth is_sect_light must be a boolean"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class DecennialSequenceAssemblyTruth:
+    """Typed sect-light origin and zodiacal ordering receipt."""
+
+    status: TimelordEvaluationStatus
+    is_day_chart: bool
+    sect_light: str
+    sequence_kind: str
+    sect_light_longitude: float
+    body_truths: tuple[DecennialSequenceBodyTruth, ...]
+    sequence: tuple[str, ...] | None
+    ambiguous_groups: tuple[tuple[str, ...], ...] = ()
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, TimelordEvaluationStatus):
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth status must be a "
+                "TimelordEvaluationStatus"
+            )
+        if not isinstance(self.is_day_chart, bool):
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth is_day_chart must be a boolean"
+            )
+        expected_light = "Sun" if self.is_day_chart else "Moon"
+        expected_kind = _decennial_sequence_kind(self.is_day_chart)
+        if self.sect_light != expected_light:
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth sect_light must match chart sect"
+            )
+        if self.sequence_kind != expected_kind:
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth sequence_kind must match chart sect"
+            )
+        if not math.isfinite(self.sect_light_longitude) or not (
+            0.0 <= self.sect_light_longitude < 360.0
+        ):
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth sect-light longitude must "
+                "be in [0, 360)"
+            )
+        if any(
+            not isinstance(item, DecennialSequenceBodyTruth)
+            for item in self.body_truths
+        ):
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth body_truths must contain "
+                "DecennialSequenceBodyTruth values"
+            )
+        if tuple(item.planet for item in self.body_truths) != _DECENNIAL_PLANETS:
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth body_truths must contain the "
+                "Classic 7 in canonical dependency order"
+            )
+        for item in self.body_truths:
+            expected_arc = (
+                item.longitude - self.sect_light_longitude
+            ) % 360.0
+            if not math.isclose(
+                item.forward_arc_from_sect_light_deg,
+                expected_arc,
+                rel_tol=0.0,
+                abs_tol=_DECENNIAL_SEQUENCE_BOUNDARY_TOLERANCE_DEG,
+            ):
+                raise ValueError(
+                    "DecennialSequenceAssemblyTruth body arcs must be measured "
+                    "from the sect light"
+                )
+            if item.is_sect_light is not (item.planet == self.sect_light):
+                raise ValueError(
+                    "DecennialSequenceAssemblyTruth sect-light marker must "
+                    "identify only the sect light"
+                )
+        if len(self.ambiguous_groups) != len(set(self.ambiguous_groups)):
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth ambiguous groups must be unique"
+            )
+        body_by_name = {item.planet: item for item in self.body_truths}
+        seen_ambiguous: set[str] = set()
+        for group in self.ambiguous_groups:
+            if len(group) < 2 or len(group) != len(set(group)):
+                raise ValueError(
+                    "DecennialSequenceAssemblyTruth ambiguous groups require "
+                    "at least two unique planets"
+                )
+            if self.sect_light in group or any(
+                planet not in body_by_name for planet in group
+            ):
+                raise ValueError(
+                    "DecennialSequenceAssemblyTruth ambiguity applies only "
+                    "to known non-sect bodies"
+                )
+            if seen_ambiguous.intersection(group):
+                raise ValueError(
+                    "DecennialSequenceAssemblyTruth ambiguous groups cannot overlap"
+                )
+            seen_ambiguous.update(group)
+            anchor_arc = body_by_name[group[0]].forward_arc_from_sect_light_deg
+            if any(
+                not math.isclose(
+                    body_by_name[planet].forward_arc_from_sect_light_deg,
+                    anchor_arc,
+                    rel_tol=0.0,
+                    abs_tol=_DECENNIAL_SEQUENCE_BOUNDARY_TOLERANCE_DEG,
+                )
+                for planet in group[1:]
+            ):
+                raise ValueError(
+                    "DecennialSequenceAssemblyTruth ambiguous groups must "
+                    "share one zodiacal arc"
+                )
+        expected_ambiguous_groups = _decennial_ambiguous_groups(
+            self.body_truths
+        )
+        if self.ambiguous_groups != expected_ambiguous_groups:
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth ambiguous groups must "
+                "exhaustively match tied non-sect arcs"
+            )
+        if self.status is TimelordEvaluationStatus.EVALUATED:
+            if (
+                self.sequence is None
+                or len(self.sequence) != len(_DECENNIAL_PLANETS)
+                or set(self.sequence) != set(_DECENNIAL_PLANETS)
+                or self.sequence[0] != self.sect_light
+                or self.ambiguous_groups
+                or self.reason is not None
+            ):
+                raise ValueError(
+                    "DecennialSequenceAssemblyTruth evaluated results require "
+                    "one unambiguous sect-light-led sequence"
+                )
+            expected_sequence = tuple(
+                item.planet
+                for item in sorted(
+                    self.body_truths,
+                    key=lambda item: (
+                        item.forward_arc_from_sect_light_deg,
+                        0 if item.is_sect_light else 1,
+                    ),
+                )
+            )
+            if self.sequence != expected_sequence:
+                raise ValueError(
+                    "DecennialSequenceAssemblyTruth sequence must follow "
+                    "zodiacal arcs from the sect light"
+                )
+        elif (
+            self.sequence is not None
+            or not self.ambiguous_groups
+            or self.reason != "non_sect_longitude_tie"
+        ):
+            raise ValueError(
+                "DecennialSequenceAssemblyTruth not_evaluable results require "
+                "ambiguity groups, no sequence, and "
+                "reason='non_sect_longitude_tie'"
+            )
 
 
 @dataclass(slots=True)
@@ -886,6 +1233,7 @@ class DecennialPeriod:
     sub_index: int | None = None
     major_month_total: float = float(_DECENNIAL_MAJOR_MONTHS)
     month_basis_days: float = _DECENNIAL_MONTH_DAYS
+    sequence_truth: DecennialSequenceAssemblyTruth | None = None
 
     def __post_init__(self) -> None:
         if self.level not in (1, 2, 3, 4):
@@ -996,6 +1344,22 @@ class DecennialPeriod:
                     raise ValueError("DecennialPeriod sub planet must match rotated sequence at sub_index")
                 if self.major_planet != self.sequence[self.major_index]:
                     raise ValueError("DecennialPeriod level-2 major_planet must match preserved major sequence planet")
+        if self.sequence_truth is not None:
+            truth = self.sequence_truth
+            if truth.status is not TimelordEvaluationStatus.EVALUATED:
+                raise ValueError(
+                    "DecennialPeriod cannot assemble from not_evaluable "
+                    "sequence truth"
+                )
+            if (
+                truth.sequence != self.sequence
+                or truth.is_day_chart is not self.is_day_chart
+                or truth.sect_light != self.sect_light
+                or truth.sequence_kind != self.sequence_kind
+            ):
+                raise ValueError(
+                    "DecennialPeriod sequence fields must match sequence_truth"
+                )
 
     @property
     def is_major(self) -> bool:
@@ -1275,6 +1639,26 @@ def _require_admitted_decennial_periods(
                 f"{caller}: Decennial periods must preserve one time-basis "
                 "and sequence-origin receipt"
             )
+        sequence_truths = [
+            period.sequence_truth
+            for period in periods
+            if period.sequence_truth is not None
+        ]
+        if sequence_truths:
+            first_truth = sequence_truths[0]
+            if (
+                len(sequence_truths) != len(periods)
+                or first_truth.status
+                is not TimelordEvaluationStatus.EVALUATED
+                or any(
+                    truth != first_truth
+                    for truth in sequence_truths[1:]
+                )
+            ):
+                raise ValueError(
+                    f"{caller}: Decennial periods must preserve one "
+                    "evaluated sequence-assembly truth"
+                )
 
 
 def _validate_decennial_positions(natal_positions: dict[str, float]) -> None:
@@ -1289,17 +1673,63 @@ def _validate_decennial_positions(natal_positions: dict[str, float]) -> None:
             raise ValueError(f"decennials: natal_positions[{planet!r}] must be finite")
 
 
-def _decennial_sequence(natal_positions: dict[str, float], is_day_chart: bool) -> list[str]:
+def decennial_sequence_truth(
+    natal_positions: dict[str, float],
+    is_day_chart: bool,
+) -> DecennialSequenceAssemblyTruth:
+    """Return typed sect-light sequence truth without private tie-breaking."""
+
+    if not isinstance(is_day_chart, bool):
+        raise ValueError("is_day_chart must be a boolean")
+    _validate_decennial_positions(natal_positions)
     sect_light = "Sun" if is_day_chart else "Moon"
     start_lon = _normalize_lon(natal_positions[sect_light])
-    base_order = {planet: index for index, planet in enumerate(_DECENNIAL_PLANETS)}
-    return sorted(
-        _DECENNIAL_PLANETS,
-        key=lambda planet: (
-            (_normalize_lon(natal_positions[planet]) - start_lon) % 360.0,
-            0 if planet == sect_light else 1,
-            base_order[planet],
-        ),
+    body_truths = tuple(
+        DecennialSequenceBodyTruth(
+            planet=planet,
+            longitude=_normalize_lon(natal_positions[planet]),
+            forward_arc_from_sect_light_deg=(
+                _normalize_lon(natal_positions[planet]) - start_lon
+            )
+            % 360.0,
+            is_sect_light=planet == sect_light,
+        )
+        for planet in _DECENNIAL_PLANETS
+    )
+    ambiguous_groups = _decennial_ambiguous_groups(body_truths)
+
+    sequence_kind = _decennial_sequence_kind(is_day_chart)
+    if ambiguous_groups:
+        return DecennialSequenceAssemblyTruth(
+            status=TimelordEvaluationStatus.NOT_EVALUABLE,
+            is_day_chart=is_day_chart,
+            sect_light=sect_light,
+            sequence_kind=sequence_kind,
+            sect_light_longitude=start_lon,
+            body_truths=body_truths,
+            sequence=None,
+            ambiguous_groups=ambiguous_groups,
+            reason="non_sect_longitude_tie",
+        )
+
+    sequence = tuple(
+        item.planet
+        for item in sorted(
+            body_truths,
+            key=lambda item: (
+                item.forward_arc_from_sect_light_deg,
+                0 if item.is_sect_light else 1,
+            ),
+        )
+    )
+    return DecennialSequenceAssemblyTruth(
+        status=TimelordEvaluationStatus.EVALUATED,
+        is_day_chart=is_day_chart,
+        sect_light=sect_light,
+        sequence_kind=sequence_kind,
+        sect_light_longitude=start_lon,
+        body_truths=body_truths,
+        sequence=sequence,
     )
 
 
@@ -1358,6 +1788,7 @@ def _append_decennial_children(
             sub_index=child_index,
             major_month_total=parent.major_month_total,
             month_basis_days=parent.month_basis_days,
+            sequence_truth=parent.sequence_truth,
         )
         periods.append(child)
         _append_decennial_children(
@@ -1398,7 +1829,24 @@ def decennials(
     _validate_decennial_positions(natal_positions)
     pol = _resolve_timelord_policy(policy)
 
-    sequence = _decennial_sequence(natal_positions, is_day_chart)
+    sequence_truth = decennial_sequence_truth(
+        natal_positions,
+        is_day_chart,
+    )
+    if (
+        sequence_truth.status
+        is not TimelordEvaluationStatus.EVALUATED
+        or sequence_truth.sequence is None
+    ):
+        groups = ", ".join(
+            "/".join(group)
+            for group in sequence_truth.ambiguous_groups
+        )
+        raise ValueError(
+            "decennials: sequence is not evaluable because non-sect "
+            f"longitudes are tied ({groups})"
+        )
+    sequence = list(sequence_truth.sequence)
     sect_light = "Sun" if is_day_chart else "Moon"
     sequence_kind = _decennial_sequence_kind(is_day_chart)
     major_months = float(pol.decennials.major_months)
@@ -1429,6 +1877,7 @@ def decennials(
                 major_index=major_index,
                 major_month_total=major_months,
                 month_basis_days=month_basis_days,
+                sequence_truth=sequence_truth,
             )
         )
 
@@ -1838,6 +2287,7 @@ class ReleasingPeriod:
     LAW OF OPERATION:
         Responsibilities:
             - Store a single Zodiacal Releasing period as named, typed fields
+            - Preserve Fortune angularity raw truth and its compatibility fields
             - Expose UTC datetime and CalendarDateTime views via read-only properties
             - Serve as the return type of zodiacal_releasing() and current_releasing()
         Non-responsibilities:
@@ -1851,6 +2301,8 @@ class ReleasingPeriod:
             - level is in [1, 4]
             - sign is a valid member of SIGNS
             - end_jd > start_jd
+            - Fortune compatibility fields agree with fortune_angularity_truth
+              when raw truth is present
         Behavioral invariants:
             - All consumers treat ReleasingPeriod fields as read-only after construction
 
@@ -1862,7 +2314,7 @@ class ReleasingPeriod:
       "id": "moira.timelords.ReleasingPeriod",
       "risk": "high",
       "api": {
-        "frozen": ["level", "sign", "ruler", "start_jd", "end_jd", "years"],
+        "frozen": ["level", "sign", "ruler", "start_jd", "end_jd", "years", "lot_name", "is_loosing_of_bond", "is_peak_period", "angularity_from_fortune", "use_loosing_of_bond", "angularity_class", "fortune_angularity_truth"],
         "internal": ["start_dt", "start_calendar", "end_dt", "end_calendar"]
       },
       "state": {"mutable": true, "owners": ["_generate_releasing"]},
@@ -1891,6 +2343,7 @@ class ReleasingPeriod:
     use_loosing_of_bond: bool = True  # whether LB doctrine was active during generation
     # Phase 2: typed classification
     angularity_class: str | None = None  # ZRAngularityClass constant, or None when Fortune is unavailable
+    fortune_angularity_truth: ZRFortuneAngularityTruth | None = None
 
     def __post_init__(self) -> None:
         if self.level not in (1, 2, 3, 4):
@@ -1920,6 +2373,32 @@ class ReleasingPeriod:
             raise ValueError(
                 "ReleasingPeriod Fortune angularity fields require angularity_from_fortune"
             )
+        if self.fortune_angularity_truth is not None:
+            truth = self.fortune_angularity_truth
+            if truth.period_sign != self.sign:
+                raise ValueError(
+                    "ReleasingPeriod Fortune truth must describe its period sign"
+                )
+            if truth.status is TimelordEvaluationStatus.EVALUATED:
+                if (
+                    truth.angularity_from_fortune
+                    != self.angularity_from_fortune
+                    or truth.angularity_class != self.angularity_class
+                    or truth.is_peak_period is not self.is_peak_period
+                ):
+                    raise ValueError(
+                        "ReleasingPeriod compatibility angularity fields must "
+                        "match evaluated Fortune truth"
+                    )
+            elif (
+                self.angularity_from_fortune is not None
+                or self.angularity_class is not None
+                or self.is_peak_period
+            ):
+                raise ValueError(
+                    "ReleasingPeriod not_evaluable Fortune truth cannot "
+                    "assemble angularity or peak compatibility fields"
+                )
     # --- Phase 3: inspectability ---
 
     @property
@@ -3252,6 +3731,66 @@ def validate_releasing_output(periods: list[ReleasingPeriod]) -> None:
         On the first invariant violation found. Passes silently when all
         invariants hold.
     """
+    fortune_truths = [
+        period.fortune_angularity_truth
+        for period in periods
+        if period.fortune_angularity_truth is not None
+    ]
+    if fortune_truths:
+        if len(fortune_truths) != len(periods):
+            raise ValueError(
+                "validate_releasing_output: all periods must preserve "
+                "Fortune angularity truth when any period does"
+            )
+        first_dependency = (
+            fortune_truths[0].status,
+            fortune_truths[0].fortune_sign,
+            fortune_truths[0].reason,
+        )
+        if any(
+            (
+                truth.status,
+                truth.fortune_sign,
+                truth.reason,
+            )
+            != first_dependency
+            for truth in fortune_truths[1:]
+        ):
+            raise ValueError(
+                "validate_releasing_output: periods must preserve one "
+                "Fortune dependency context"
+            )
+
+    for period in periods:
+        truth = period.fortune_angularity_truth
+        if truth is None:
+            continue
+        if truth.period_sign != period.sign:
+            raise ValueError(
+                "validate_releasing_output: Fortune angularity truth must "
+                "match its releasing sign"
+            )
+        if truth.status is TimelordEvaluationStatus.EVALUATED:
+            if (
+                truth.angularity_from_fortune
+                != period.angularity_from_fortune
+                or truth.angularity_class != period.angularity_class
+                or truth.is_peak_period is not period.is_peak_period
+            ):
+                raise ValueError(
+                    "validate_releasing_output: compatibility Fortune fields "
+                    "must match evaluated truth"
+                )
+        elif (
+            period.angularity_from_fortune is not None
+            or period.angularity_class is not None
+            or period.is_peak_period
+        ):
+            raise ValueError(
+                "validate_releasing_output: not_evaluable Fortune truth "
+                "cannot assemble compatibility fields"
+            )
+
     # Cross-layer invariant 1: chronological ordering and no overlap at each level
     for level in range(1, 5):
         this_level = [p for p in periods if p.level == level]
@@ -3376,7 +3915,10 @@ def _generate_releasing(
 
         # Compute the actual duration for this (possibly clamped) period
         effective_years = (effective_end - cursor_jd) / year_days
-        angularity_from_fortune = _fortune_angularity(current_sign, fortune_sign)
+        fortune_angularity_truth = zr_fortune_angularity_truth(
+            current_sign,
+            fortune_sign,
+        )
 
         rp = ReleasingPeriod(
             level=level,
@@ -3387,10 +3929,13 @@ def _generate_releasing(
             years=effective_years,
             lot_name=lot_name,
             is_loosing_of_bond=next_is_loosing_of_bond,
-            is_peak_period=angularity_from_fortune in _ANGULAR_HOUSES,
-            angularity_from_fortune=angularity_from_fortune,
+            is_peak_period=fortune_angularity_truth.is_peak_period is True,
+            angularity_from_fortune=(
+                fortune_angularity_truth.angularity_from_fortune
+            ),
             use_loosing_of_bond=use_loosing_of_bond,
-            angularity_class=_zr_angularity_class(angularity_from_fortune),
+            angularity_class=fortune_angularity_truth.angularity_class,
+            fortune_angularity_truth=fortune_angularity_truth,
         )
         results.append(rp)
         next_is_loosing_of_bond = False

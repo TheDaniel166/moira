@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import json
 from pathlib import Path
 
@@ -102,6 +103,134 @@ def test_decennials_night_sequence_starts_from_moon_in_zodiacal_order() -> None:
     assert all(period.sequence_kind == DecennialSequenceKind.NOCTURNAL_LUNAR for period in periods)
 
 
+def test_decennial_sequence_truth_preserves_sect_origin_arcs_and_period_receipt() -> None:
+    from moira.timelords import (
+        TimelordEvaluationStatus,
+        decennial_sequence_truth,
+        decennials,
+    )
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    truth = decennial_sequence_truth(natal_positions, True)
+
+    assert truth.status is TimelordEvaluationStatus.EVALUATED
+    assert truth.sect_light == "Sun"
+    assert truth.sect_light_longitude == pytest.approx(10.0)
+    assert truth.sequence == (
+        "Sun",
+        "Mercury",
+        "Venus",
+        "Mars",
+        "Moon",
+        "Jupiter",
+        "Saturn",
+    )
+    assert {
+        item.planet: item.forward_arc_from_sect_light_deg
+        for item in truth.body_truths
+    } == pytest.approx(
+        {
+            "Sun": 0.0,
+            "Moon": 190.0,
+            "Mercury": 10.0,
+            "Venus": 40.0,
+            "Mars": 100.0,
+            "Jupiter": 240.0,
+            "Saturn": 290.0,
+        }
+    )
+
+    periods = decennials(2451545.0, natal_positions, True)
+    assert all(period.sequence_truth == truth for period in periods)
+
+
+def test_decennial_sequence_truth_fails_closed_on_non_sect_ties() -> None:
+    from moira.timelords import (
+        TimelordEvaluationStatus,
+        decennial_sequence_truth,
+        decennials,
+    )
+
+    tied_positions = {
+        "Sun": 10.0,
+        "Mercury": 50.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    truth = decennial_sequence_truth(tied_positions, True)
+
+    assert truth.status is TimelordEvaluationStatus.NOT_EVALUABLE
+    assert truth.sequence is None
+    assert truth.ambiguous_groups == (("Mercury", "Venus"),)
+    assert truth.reason == "non_sect_longitude_tie"
+    with pytest.raises(ValueError, match="not evaluable.*Mercury/Venus"):
+        decennials(2451545.0, tied_positions, True)
+    with pytest.raises(ValueError, match="exhaustively match"):
+        replace(
+            truth,
+            status=TimelordEvaluationStatus.EVALUATED,
+            sequence=(
+                "Sun",
+                "Mercury",
+                "Venus",
+                "Mars",
+                "Moon",
+                "Jupiter",
+                "Saturn",
+            ),
+            ambiguous_groups=(),
+            reason=None,
+        )
+    with pytest.raises(ValueError, match="non_sect_longitude_tie"):
+        replace(truth, reason="unknown")
+
+
+def test_decennial_sequence_sect_light_priority_resolves_only_its_own_tie() -> None:
+    from moira.timelords import (
+        TimelordEvaluationStatus,
+        decennial_sequence_truth,
+    )
+
+    positions = {
+        "Sun": 10.0,
+        "Mercury": 10.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    truth = decennial_sequence_truth(positions, True)
+
+    assert truth.status is TimelordEvaluationStatus.EVALUATED
+    assert truth.sequence is not None
+    assert truth.sequence[:2] == ("Sun", "Mercury")
+    with pytest.raises(ValueError, match="must follow zodiacal arcs"):
+        replace(
+            truth,
+            sequence=(
+                "Sun",
+                "Venus",
+                "Mercury",
+                "Mars",
+                "Moon",
+                "Jupiter",
+                "Saturn",
+            ),
+        )
+
+
 def test_decennials_major_periods_have_expected_lengths_and_cycle() -> None:
     from moira.timelords import decennials, DecennialSequenceKind
 
@@ -172,6 +301,25 @@ def test_decennials_subperiods_rotate_major_sequence_and_preserve_months() -> No
     assert all(period.effective_major_planet == "Sun" for period in subs)
     assert all(period.rotated_sequence == first_major.sequence for period in subs)
     assert [period.months for period in subs] == pytest.approx([19.0, 20.0, 8.0, 15.0, 25.0, 12.0, 30.0], abs=1e-12)
+
+
+def test_validate_decennials_output_rejects_lost_sequence_truth() -> None:
+    from moira.timelords import decennials, validate_decennials_output
+
+    natal_positions = {
+        "Sun": 10.0,
+        "Mercury": 20.0,
+        "Venus": 50.0,
+        "Mars": 110.0,
+        "Moon": 200.0,
+        "Jupiter": 250.0,
+        "Saturn": 300.0,
+    }
+    periods = decennials(2451545.0, natal_positions, True)
+    periods[1].sequence_truth = None
+
+    with pytest.raises(ValueError, match="sequence-assembly truth"):
+        validate_decennials_output(periods)
 
 
 def test_decennials_phase3_helpers_expose_major_relative_truth() -> None:
@@ -563,6 +711,136 @@ def test_zodiacal_releasing_marks_peak_periods_relative_to_fortune() -> None:
 
     peak_signs = {p.sign for p in periods if p.is_peak_period}
     assert {"Cancer", "Libra", "Capricorn"} <= peak_signs
+
+
+def test_zr_fortune_angularity_truth_separates_missing_from_evaluated_false() -> None:
+    from moira.timelords import (
+        TimelordEvaluationStatus,
+        zodiacal_releasing,
+    )
+
+    without_fortune = zodiacal_releasing(
+        65.0,
+        2451545.0,
+        levels=1,
+        lot_name="Spirit",
+    )
+    assert all(period.is_peak_period is False for period in without_fortune)
+    assert all(
+        period.fortune_angularity_truth is not None
+        and period.fortune_angularity_truth.status
+        is TimelordEvaluationStatus.NOT_EVALUABLE
+        and period.fortune_angularity_truth.is_peak_period is None
+        and period.fortune_angularity_truth.reason == "fortune_not_supplied"
+        for period in without_fortune
+    )
+
+    with_fortune = zodiacal_releasing(
+        65.0,
+        2451545.0,
+        levels=1,
+        lot_name="Spirit",
+        fortune_longitude=10.0,
+    )
+    non_peak = next(period for period in with_fortune if not period.is_peak_period)
+    assert non_peak.fortune_angularity_truth is not None
+    assert (
+        non_peak.fortune_angularity_truth.status
+        is TimelordEvaluationStatus.EVALUATED
+    )
+    assert non_peak.fortune_angularity_truth.is_peak_period is False
+    assert non_peak.angularity_from_fortune is not None
+
+
+def test_zr_fortune_angularity_truth_rejects_false_defaults_and_bad_assembly() -> None:
+    from moira.timelords import (
+        ReleasingPeriod,
+        TimelordEvaluationStatus,
+        ZRFortuneAngularityTruth,
+        zr_fortune_angularity_truth,
+    )
+
+    with pytest.raises(ValueError, match="no fabricated Fortune fields"):
+        ZRFortuneAngularityTruth(
+            status=TimelordEvaluationStatus.NOT_EVALUABLE,
+            period_sign="Aries",
+            fortune_sign=None,
+            angularity_from_fortune=None,
+            angularity_class=None,
+            is_peak_period=False,
+            reason="fortune_not_supplied",
+        )
+    missing = zr_fortune_angularity_truth("Aries", None)
+    with pytest.raises(ValueError, match="fortune_not_supplied"):
+        replace(missing, reason="unknown")
+
+    evaluated = zr_fortune_angularity_truth("Aries", "Aries")
+    assert evaluated.is_peak_period is True
+    with pytest.raises(ValueError, match="must match evaluated Fortune truth"):
+        ReleasingPeriod(
+            level=1,
+            sign="Aries",
+            ruler="Mars",
+            start_jd=2451545.0,
+            end_jd=2451546.0,
+            years=1.0,
+            fortune_angularity_truth=evaluated,
+        )
+    with pytest.raises(ValueError, match="place, class"):
+        replace(
+            evaluated,
+            angularity_from_fortune=2,
+            angularity_class="succedent",
+            is_peak_period=False,
+        )
+
+
+def test_validate_releasing_output_rechecks_fortune_truth_after_mutation() -> None:
+    from moira.timelords import (
+        validate_releasing_output,
+        zr_fortune_angularity_truth,
+        zodiacal_releasing,
+    )
+
+    periods = zodiacal_releasing(
+        65.0,
+        2451545.0,
+        levels=1,
+        lot_name="Spirit",
+        fortune_longitude=10.0,
+    )
+    peak = next(period for period in periods if period.is_peak_period)
+    peak.is_peak_period = False
+
+    with pytest.raises(ValueError, match="must match evaluated truth"):
+        validate_releasing_output(periods)
+
+    periods = zodiacal_releasing(
+        65.0,
+        2451545.0,
+        levels=1,
+        lot_name="Spirit",
+        fortune_longitude=10.0,
+    )
+    periods[1].fortune_angularity_truth = None
+    with pytest.raises(ValueError, match="all periods must preserve"):
+        validate_releasing_output(periods)
+
+    periods = zodiacal_releasing(
+        65.0,
+        2451545.0,
+        levels=1,
+        lot_name="Spirit",
+        fortune_longitude=10.0,
+    )
+    period = periods[1]
+    mixed_truth = zr_fortune_angularity_truth(period.sign, "Taurus")
+    period.fortune_angularity_truth = mixed_truth
+    period.angularity_from_fortune = mixed_truth.angularity_from_fortune
+    period.angularity_class = mixed_truth.angularity_class
+    period.is_peak_period = mixed_truth.is_peak_period is True
+    with pytest.raises(ValueError, match="one Fortune dependency context"):
+        validate_releasing_output(periods)
 
 
 def test_zodiacal_releasing_level_scaling_uses_symbolic_units() -> None:

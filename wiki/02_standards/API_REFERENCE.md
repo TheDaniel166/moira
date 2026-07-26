@@ -1192,8 +1192,17 @@ from moira.facade import (
 | `stationary` | `bool` | True if a stationary motion state affects the aspect |
 | `classification` | `AspectClassification` | Domain, family, tier, motion state, and strength metadata |
 | `direction` | `AspectDirection \| None` | Sinister/dexter casting direction from `body1`'s perspective when defined |
+| `hellenistic_superiority_truth` | `HellenisticSuperiorityTruth \| None` | Raw direction-applicability and whole-sign overcoming receipt for the ordered body pair |
 | `sign_degree1` | `int \| None` | Integer degree number within `body1`'s sign, used for strict partile truth |
 | `sign_degree2` | `int \| None` | Integer degree number within `body2`'s sign, used for strict partile truth |
+
+Phase 3 exposes `HellenisticAspectEvaluationStatus`,
+`HellenisticOvercomingRelation`, `HellenisticDirectionTruth`,
+`HellenisticOvercomingTruth`, `HellenisticSuperiorityTruth`, and
+`hellenistic_superiority_truth()` directly from `moira.aspects`.
+`AspectData.direction` and `overcoming()` remain compatibility projections;
+the aggregate receipt is the source of raw truth and carries no synthetic
+score. Root/classical/facade parity for these new names belongs to Phase 4.
 
 #### `AspectData` convenience properties
 
@@ -1640,6 +1649,16 @@ instant in the natal timezone, and rejects pre-birth instants. February 29
 nativities require an explicit `february_28` or `march_1` policy. The result
 preserves `age_basis="civil_anniversary"` and the selected policy.
 
+Phase 3 exposes `ProfectionActivationStatus`,
+`ProfectionActivationBodyTruth`, `ProfectionActivationTruth`, and
+`profection_activation_truth()` directly from `moira.profections`.
+`ProfectionResult.activation_truth` distinguishes absent natal positions
+(`not_evaluable`, `reason="natal_positions_not_supplied"`) from an explicitly
+supplied empty mapping and from an evaluated chart with no activations. The
+legacy `activated_planets` list is derived from evaluated raw truth and remains
+empty in all three cases. Root/classical/facade parity for these new names
+belongs to Phase 4.
+
 ### Nakshatras (Vedic lunar mansions)
 
 ```python
@@ -1977,6 +1996,14 @@ from moira.facade import (
 | `group_decennials(periods)` | `list[DecennialMajorGroup]` | Major periods with their L2 children |
 | `decennial_active_path(periods, jd)` | `DecennialActivePath \| None` | Active admitted L1/L2 lineage |
 
+Phase 3 exposes `TimelordEvaluationStatus`,
+`DecennialSequenceBodyTruth`, `DecennialSequenceAssemblyTruth`, and
+`decennial_sequence_truth()` directly from `moira.timelords`. The assembly
+receipt preserves the Classic 7 dependency geometry and fails closed on a
+non-sect-light longitude tie instead of using private planet order. Every
+generated period carries the same evaluated `sequence_truth`. Forwarding these
+new names through root/classical/facade surfaces belongs to Phase 4.
+
 The public engine accepts only levels 1–2. Any L3/L4 request or non-`None`
 `DecennialPolicy.deep_subdivision_method` fails closed; the named Valens and
 Hephaistio deep policies are research candidates, not admitted API behavior.
@@ -2027,6 +2054,13 @@ level absent from the generated period list. REST callers must keep
 | `angularity_from_fortune` | `int \| None` | Inclusive place 1–12 from Fortune; `None` when Fortune is omitted |
 | `use_loosing_of_bond` | `bool` | Whether Loosing of the Bond is enabled |
 | `angularity_class` | `ZRAngularityClass \| None` | Angular / succedent / cadent class; `None` only when Fortune is omitted |
+| `fortune_angularity_truth` | `ZRFortuneAngularityTruth \| None` | Raw Fortune dependency, place, class, and peak receipt |
+
+`zr_fortune_angularity_truth()` and `ZRFortuneAngularityTruth` are direct
+`moira.timelords` Phase 3 surfaces. With no Fortune, raw status is
+`not_evaluable` and raw peak truth is `None`; the legacy
+`ReleasingPeriod.is_peak_period` projection remains `False`. Their
+root/classical/facade forwarding belongs to Phase 4.
 
 ### Vimshottari Dasha
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError
+from dataclasses import FrozenInstanceError, replace
 import math
 
 import pytest
@@ -11,12 +11,18 @@ from moira.aspects import (
     CANONICAL_ASPECTS,
     AspectClassification,
     AspectData,
+    AspectDirection,
     AspectDomain,
     AspectFamily,
     AspectFamilyProfile,
     AspectGraph,
     AspectGraphNode,
     AspectHarmonicProfile,
+    HellenisticAspectEvaluationStatus,
+    HellenisticDirectionTruth,
+    HellenisticOvercomingRelation,
+    HellenisticOvercomingTruth,
+    HellenisticSuperiorityTruth,
     DeclinationAspectAnalysis,
     LongitudeAspectAnalysis,
     AspectPattern,
@@ -41,6 +47,7 @@ from moira.aspects import (
     find_out_of_bounds,
     find_patterns,
     find_whole_sign_aspects,
+    hellenistic_superiority_truth,
     overcoming,
 )
 
@@ -81,6 +88,93 @@ def test_overcoming_is_the_directed_tenth_sign_relation(
 def test_overcoming_requires_a_whole_sign_square() -> None:
     assert overcoming(0.0, 89.999) is False
     assert overcoming(0.0, 120.0) is False
+
+
+def test_hellenistic_superiority_truth_unifies_direction_and_overcoming() -> None:
+    truth = hellenistic_superiority_truth(
+        275.0,
+        5.0,
+        90.0,
+        body1="Mars",
+        body2="Saturn",
+    )
+
+    assert (
+        truth.direction_truth.status
+        is HellenisticAspectEvaluationStatus.EVALUATED
+    )
+    assert truth.direction is AspectDirection.SINISTER
+    assert truth.direction_truth.forward_arc_body1_to_body2_deg == pytest.approx(
+        90.0
+    )
+    assert (
+        truth.overcoming_truth.relation
+        is HellenisticOvercomingRelation.BODY1_OVERCOMES_BODY2
+    )
+    assert truth.overcoming_truth.body1_place_from_body2 == 10
+    assert truth.overcoming_truth.body2_place_from_body1 == 4
+    assert truth.body1_overcomes_body2 is True
+    assert truth.body2_overcomes_body1 is False
+    assert truth.overcoming_body == "Mars"
+    assert overcoming(275.0, 5.0) is truth.body1_overcomes_body2
+
+
+def test_hellenistic_direction_boundaries_are_typed_not_evaluable() -> None:
+    conjunction = hellenistic_superiority_truth(10.0, 10.0, 0.0)
+    opposition = hellenistic_superiority_truth(10.0, 190.0, 180.0)
+    admitted_angle_on_boundary = hellenistic_superiority_truth(
+        10.0,
+        190.0,
+        90.0,
+    )
+    overcoming_only = hellenistic_superiority_truth(0.0, 120.0)
+
+    assert (
+        conjunction.direction_truth.status
+        is HellenisticAspectEvaluationStatus.NOT_EVALUABLE
+    )
+    assert (
+        conjunction.direction_truth.reason
+        == "direction_not_applicable_to_conjunction_or_opposition"
+    )
+    assert opposition.direction is None
+    assert (
+        admitted_angle_on_boundary.direction_truth.reason
+        == "directed_arc_boundary_ambiguous"
+    )
+    assert (
+        overcoming_only.direction_truth.reason
+        == "aspect_angle_not_supplied"
+    )
+    assert (
+        overcoming_only.overcoming_truth.status
+        is HellenisticAspectEvaluationStatus.EVALUATED
+    )
+    assert (
+        overcoming_only.overcoming_truth.relation
+        is HellenisticOvercomingRelation.NEITHER
+    )
+
+
+def test_hellenistic_superiority_vessels_reject_contradictory_truth() -> None:
+    truth = hellenistic_superiority_truth(0.0, 60.0, 60.0)
+    conjunction = hellenistic_superiority_truth(0.0, 0.0, 0.0)
+
+    with pytest.raises(ValueError, match="must match the directed zodiacal arc"):
+        replace(
+            truth.direction_truth,
+            direction=AspectDirection.DEXTER,
+        )
+    with pytest.raises(ValueError, match="relation must match"):
+        replace(
+            truth.overcoming_truth,
+            relation=HellenisticOvercomingRelation.BODY1_OVERCOMES_BODY2,
+        )
+    with pytest.raises(ValueError, match="reason must match"):
+        replace(
+            conjunction.direction_truth,
+            reason="unknown",
+        )
 
 
 def test_aspects_from_longitudes_wrap_boundary_is_inclusive() -> None:
@@ -3554,6 +3648,40 @@ def test_whole_sign_aspect_has_domain_aware_strength_and_inspectability() -> Non
     assert strength.surplus == 0.0
     assert strength.exactness == 1.0
     assert aspect_motion_state(aspect) is MotionState.NONE
+    assert aspect.hellenistic_superiority_truth is not None
+    assert (
+        aspect.direction
+        is aspect.hellenistic_superiority_truth.direction
+    )
+    assert (
+        aspect.hellenistic_superiority_truth.body1_overcomes_body2
+        is overcoming(1.0, 125.0)
+    )
+
+    with pytest.raises(ValueError, match="compatibility projection"):
+        replace(
+            aspect,
+            direction=(
+                AspectDirection.DEXTER
+                if aspect.direction is AspectDirection.SINISTER
+                else AspectDirection.SINISTER
+            ),
+        )
+    mismatched_geometry = hellenistic_superiority_truth(
+        1.0,
+        135.0,
+        aspect.angle,
+        body1=aspect.body1,
+        body2=aspect.body2,
+    )
+    with pytest.raises(ValueError, match="separation must match"):
+        replace(
+            aspect,
+            direction=mismatched_geometry.direction,
+            hellenistic_superiority_truth=mismatched_geometry,
+        )
+    with pytest.raises(ValueError, match="sign_degree1 must match"):
+        replace(aspect, sign_degree1=(aspect.sign_degree1 + 1) % 30)
 
 
 def test_manual_aspect_without_sign_degree_context_is_not_partile() -> None:
@@ -3689,6 +3817,8 @@ _EXPECTED_PUBLIC = {
     "CANONICAL_ASPECTS",
     "DEFAULT_POLICY",
     "AspectDirection",
+    "HellenisticAspectEvaluationStatus",
+    "HellenisticOvercomingRelation",
     "AspectDomain",
     "AspectFamily",
     "AspectMotionBranch",
@@ -3705,6 +3835,9 @@ _EXPECTED_PUBLIC = {
     "AspectGraph",
     "AspectGraphNode",
     "AspectHarmonicProfile",
+    "HellenisticDirectionTruth",
+    "HellenisticOvercomingTruth",
+    "HellenisticSuperiorityTruth",
     "DeclinationAspectAnalysis",
     "DeclinationAspectKind",
     "DeclinationEquatorPolicy",
@@ -3730,6 +3863,7 @@ _EXPECTED_PUBLIC = {
     "find_aspects",
     "find_declination_aspects",
     "find_patterns",
+    "hellenistic_superiority_truth",
 }
 
 _EXPECTED_INTERNAL = {
@@ -3807,7 +3941,7 @@ def test_positions_in_aspect_surface_is_admitted_at_root() -> None:
 
 
 def test_aspects_dunder_all_length() -> None:
-    assert len(_aspects_module.__all__) == 49
+    assert len(_aspects_module.__all__) == 55
 
 
 def test_aspects_dunder_all_no_duplicates() -> None:

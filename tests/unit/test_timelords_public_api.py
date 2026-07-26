@@ -22,9 +22,13 @@ _CURATED_PUBLIC_NAMES = [
     "CHALDEAN_ORDER",
     "MINOR_YEARS",
     "FirdarSequenceKind",
+    "TimelordEvaluationStatus",
     "DecennialSequenceKind",
     "DecennialTimeBasis",
+    "DecennialSequenceBodyTruth",
+    "DecennialSequenceAssemblyTruth",
     "ZRAngularityClass",
+    "ZRFortuneAngularityTruth",
     "FirdarYearPolicy",
     "DecennialPolicy",
     "ZRYearPolicy",
@@ -50,8 +54,10 @@ _CURATED_PUBLIC_NAMES = [
     "firdaria",
     "current_firdaria",
     "decennials",
+    "decennial_sequence_truth",
     "current_decennials",
     "zodiacal_releasing",
+    "zr_fortune_angularity_truth",
     "current_releasing",
     "group_firdaria",
     "group_decennials",
@@ -135,11 +141,11 @@ class TestTimelordsModuleLevelResolution:
 
 
 class TestTimelordsCounts:
-    def test_curated_count_is_53(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 53
+    def test_curated_count_is_59(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 59
 
-    def test_timelords_all_count_is_53(self):
-        assert len(_timelords_module.__all__) == 53
+    def test_timelords_all_count_is_59(self):
+        assert len(_timelords_module.__all__) == 59
 
 
 class TestTimelordsInternalsRemainInternal:

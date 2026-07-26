@@ -9,8 +9,10 @@ derivation to constants. Does NOT own natal chart construction or ephemeris
 state.
 
 Public surface:
-    DOMICILE_RULERS, LeapDayAnniversaryPolicy, ProfectionResult,
-    annual_profection, monthly_profection, profection_schedule
+    DOMICILE_RULERS, LeapDayAnniversaryPolicy, ProfectionActivationStatus,
+    ProfectionActivationBodyTruth, ProfectionActivationTruth, ProfectionResult,
+    profection_activation_truth, annual_profection, monthly_profection,
+    profection_schedule
 
 Import-time side effects: None
 
@@ -23,13 +25,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
+import math
 
 from .constants import sign_of
 
 __all__ = [
     "DOMICILE_RULERS",
     "LeapDayAnniversaryPolicy",
+    "ProfectionActivationStatus",
+    "ProfectionActivationBodyTruth",
+    "ProfectionActivationTruth",
     "ProfectionResult",
+    "profection_activation_truth",
     "annual_profection",
     "monthly_profection",
     "profection_schedule",
@@ -41,6 +48,13 @@ class LeapDayAnniversaryPolicy(StrEnum):
 
     FEBRUARY_28 = "february_28"
     MARCH_1 = "march_1"
+
+
+class ProfectionActivationStatus(StrEnum):
+    """Whether natal-position activation was actually evaluated."""
+
+    EVALUATED = "evaluated"
+    NOT_EVALUABLE = "not_evaluable"
 
 
 # ---------------------------------------------------------------------------
@@ -65,8 +79,141 @@ DOMICILE_RULERS: dict[str, str] = {
 
 
 # ---------------------------------------------------------------------------
-# Result dataclass
+# Result dataclasses
 # ---------------------------------------------------------------------------
+
+@dataclass(frozen=True, slots=True)
+class ProfectionActivationBodyTruth:
+    """One supplied natal body's distance from the profected Ascendant."""
+
+    body: str
+    natal_longitude: float
+    distance_from_profected_asc_deg: float
+    activated: bool
+
+    def __post_init__(self) -> None:
+        if (
+            not isinstance(self.body, str)
+            or not self.body
+            or self.body != self.body.strip()
+        ):
+            raise ValueError(
+                "ProfectionActivationBodyTruth body must be a "
+                "non-empty trimmed string"
+            )
+        if not math.isfinite(self.natal_longitude) or not (
+            0.0 <= self.natal_longitude < 360.0
+        ):
+            raise ValueError(
+                "ProfectionActivationBodyTruth natal_longitude must be in [0, 360)"
+            )
+        if not math.isfinite(self.distance_from_profected_asc_deg) or not (
+            0.0 <= self.distance_from_profected_asc_deg <= 180.0
+        ):
+            raise ValueError(
+                "ProfectionActivationBodyTruth distance must be in [0, 180]"
+            )
+        if not isinstance(self.activated, bool):
+            raise ValueError(
+                "ProfectionActivationBodyTruth activated must be a boolean"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class ProfectionActivationTruth:
+    """Typed natal-body activation receipt for one annual profection."""
+
+    status: ProfectionActivationStatus
+    profected_asc_lon: float
+    activation_orb_deg: float
+    body_truths: tuple[ProfectionActivationBodyTruth, ...] = ()
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, ProfectionActivationStatus):
+            raise ValueError(
+                "ProfectionActivationTruth status must be a "
+                "ProfectionActivationStatus"
+            )
+        if not math.isfinite(self.profected_asc_lon) or not (
+            0.0 <= self.profected_asc_lon < 360.0
+        ):
+            raise ValueError(
+                "ProfectionActivationTruth profected_asc_lon must be in [0, 360)"
+            )
+        if not math.isfinite(self.activation_orb_deg) or (
+            self.activation_orb_deg < 0.0
+        ):
+            raise ValueError(
+                "ProfectionActivationTruth activation_orb_deg must be "
+                "finite and non-negative"
+            )
+        if any(
+            not isinstance(item, ProfectionActivationBodyTruth)
+            for item in self.body_truths
+        ):
+            raise ValueError(
+                "ProfectionActivationTruth body_truths must contain "
+                "ProfectionActivationBodyTruth values"
+            )
+        body_names = tuple(item.body for item in self.body_truths)
+        if len(body_names) != len(set(body_names)):
+            raise ValueError(
+                "ProfectionActivationTruth body names must be unique"
+            )
+        for item in self.body_truths:
+            expected_distance = _angular_distance(
+                self.profected_asc_lon,
+                item.natal_longitude,
+            )
+            if not math.isclose(
+                item.distance_from_profected_asc_deg,
+                expected_distance,
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ):
+                raise ValueError(
+                    "ProfectionActivationTruth body distance must match "
+                    "the profected and natal longitudes"
+                )
+            expected = (
+                item.distance_from_profected_asc_deg
+                <= self.activation_orb_deg
+            )
+            if item.activated is not expected:
+                raise ValueError(
+                    "ProfectionActivationTruth body activation must match "
+                    "distance and orb"
+                )
+        if self.status is ProfectionActivationStatus.EVALUATED:
+            if self.reason is not None:
+                raise ValueError(
+                    "ProfectionActivationTruth evaluated results cannot "
+                    "carry a reason"
+                )
+        elif (
+            self.body_truths
+            or self.reason != "natal_positions_not_supplied"
+        ):
+            raise ValueError(
+                "ProfectionActivationTruth not_evaluable results require "
+                "no body truth and reason='natal_positions_not_supplied'"
+            )
+
+    @property
+    def supplied_bodies(self) -> tuple[str, ...]:
+        """Body names in caller-supplied mapping order."""
+
+        return tuple(item.body for item in self.body_truths)
+
+    @property
+    def activated_planets(self) -> tuple[str, ...]:
+        """Compatibility activation list derived from evaluated body truth."""
+
+        if self.status is not ProfectionActivationStatus.EVALUATED:
+            return ()
+        return tuple(item.body for item in self.body_truths if item.activated)
+
 
 @dataclass(slots=True)
 class ProfectionResult:
@@ -100,6 +247,8 @@ class ProfectionResult:
             - profected_house is in [1, 12]
             - profected_asc_lon is in [0, 360)
             - monthly_lords has exactly 12 entries
+            - activated_planets is the compatibility projection of
+              activation_truth when raw truth is present
         Behavioral invariants:
             - All consumers treat ProfectionResult fields as read-only after construction
 
@@ -111,7 +260,7 @@ class ProfectionResult:
       "id": "moira.profections.ProfectionResult",
       "risk": "high",
       "api": {
-        "frozen": ["age_years", "profected_house", "profected_asc_lon", "profected_sign", "lord_of_year", "activated_planets", "monthly_lords", "age_basis", "leap_day_policy"],
+        "frozen": ["age_years", "profected_house", "profected_asc_lon", "profected_sign", "lord_of_year", "activated_planets", "monthly_lords", "age_basis", "leap_day_policy", "activation_truth"],
         "internal": []
       },
       "state": {"mutable": true, "owners": ["annual_profection", "profection_schedule"]},
@@ -135,6 +284,21 @@ class ProfectionResult:
     monthly_lords:     list[str]  # lord of each of the 12 profected months (12 items)
     age_basis:          str = "explicit_completed_age"
     leap_day_policy:    LeapDayAnniversaryPolicy | None = None
+    activation_truth:   ProfectionActivationTruth | None = None
+
+    def __post_init__(self) -> None:
+        if self.activation_truth is None:
+            return
+        if self.activation_truth.profected_asc_lon != self.profected_asc_lon:
+            raise ValueError(
+                "ProfectionResult activation_truth longitude must match "
+                "profected_asc_lon"
+            )
+        if list(self.activation_truth.activated_planets) != self.activated_planets:
+            raise ValueError(
+                "ProfectionResult activated_planets must be the compatibility "
+                "projection of activation_truth"
+            )
 
     def __repr__(self) -> str:
         acts = ", ".join(self.activated_planets) if self.activated_planets else "—"
@@ -166,6 +330,63 @@ def _monthly_lord_list(profected_asc_lon: float) -> list[str]:
         sign, _, _ = sign_of(lon)
         lords.append(DOMICILE_RULERS[sign])
     return lords
+
+
+def profection_activation_truth(
+    profected_asc_lon: float,
+    natal_positions: dict[str, float] | None,
+    activation_orb: float = 5.0,
+) -> ProfectionActivationTruth:
+    """Evaluate natal-body conjunctions without collapsing missing inputs."""
+
+    if not math.isfinite(profected_asc_lon):
+        raise ValueError("profected_asc_lon must be finite")
+    if not math.isfinite(activation_orb) or activation_orb < 0.0:
+        raise ValueError("activation_orb must be finite and non-negative")
+
+    target = profected_asc_lon % 360.0
+    if natal_positions is None:
+        return ProfectionActivationTruth(
+            status=ProfectionActivationStatus.NOT_EVALUABLE,
+            profected_asc_lon=target,
+            activation_orb_deg=activation_orb,
+            reason="natal_positions_not_supplied",
+        )
+    if not isinstance(natal_positions, dict):
+        raise TypeError(
+            "natal_positions must be a dict of body longitudes or None"
+        )
+
+    body_truths: list[ProfectionActivationBodyTruth] = []
+    for name, longitude in natal_positions.items():
+        if (
+            not isinstance(name, str)
+            or not name
+            or name != name.strip()
+        ):
+            raise ValueError(
+                "natal_positions body names must be non-empty trimmed strings"
+            )
+        if not math.isfinite(longitude):
+            raise ValueError(
+                f"natal_positions[{name!r}] must be finite"
+            )
+        normalized = longitude % 360.0
+        distance = _angular_distance(target, normalized)
+        body_truths.append(
+            ProfectionActivationBodyTruth(
+                body=name,
+                natal_longitude=normalized,
+                distance_from_profected_asc_deg=distance,
+                activated=distance <= activation_orb,
+            )
+        )
+    return ProfectionActivationTruth(
+        status=ProfectionActivationStatus.EVALUATED,
+        profected_asc_lon=target,
+        activation_orb_deg=activation_orb,
+        body_truths=tuple(body_truths),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -205,12 +426,12 @@ def annual_profection(
     lord_of_year = DOMICILE_RULERS[profected_sign]
     profected_house = (age_years % 12) + 1
 
-    # Activated planets: natal bodies conjunct the profected Ascendant
-    activated: list[str] = []
-    if natal_positions:
-        for name, lon in natal_positions.items():
-            if _angular_distance(profected_asc_lon, lon) <= activation_orb:
-                activated.append(name)
+    activation_truth = profection_activation_truth(
+        profected_asc_lon,
+        natal_positions,
+        activation_orb,
+    )
+    activated = list(activation_truth.activated_planets)
 
     monthly_lords = _monthly_lord_list(profected_asc_lon)
 
@@ -222,6 +443,7 @@ def annual_profection(
         lord_of_year=lord_of_year,
         activated_planets=activated,
         monthly_lords=monthly_lords,
+        activation_truth=activation_truth,
     )
 
 
