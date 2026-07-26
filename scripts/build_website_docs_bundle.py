@@ -117,8 +117,19 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _canonical_text_bytes(path: Path) -> bytes:
+    """Return UTF-8 text with universal newlines normalized to LF.
+
+    Git may materialize tracked text as CRLF on Windows and LF on Linux.
+    Publication receipts bind the repository text, so hashes and byte counts
+    must not depend on the checkout platform's line-ending policy.
+    """
+
+    return path.read_text(encoding="utf-8").encode("utf-8")
+
+
 def _sha256_path(path: Path) -> str:
-    return _sha256_bytes(path.read_bytes())
+    return _sha256_bytes(_canonical_text_bytes(path))
 
 
 def _json_bytes(value: Any, *, pretty: bool) -> bytes:
@@ -266,10 +277,11 @@ def _documents(config: dict[str, Any]) -> list[dict[str, Any]]:
 
         source_path = _repo_path(source)
         body = source_path.read_text(encoding="utf-8")
+        canonical_source = _canonical_text_bytes(source_path)
         public_entry = {
             **entry,
-            "source_sha256": _sha256_path(source_path),
-            "source_bytes": source_path.stat().st_size,
+            "source_sha256": _sha256_bytes(canonical_source),
+            "source_bytes": len(canonical_source),
             "last_verified": config["last_verified"],
             "prerender": True,
             "markdown": True,
@@ -512,7 +524,7 @@ def main() -> int:
         if not OUTPUT_PATH.is_file():
             print(f"Missing generated manifest: {OUTPUT_PATH.relative_to(REPO_ROOT)}", file=sys.stderr)
             return 1
-        existing = OUTPUT_PATH.read_bytes()
+        existing = _canonical_text_bytes(OUTPUT_PATH)
         if existing != rendered:
             print(
                 "Website documentation manifest is stale; run "
