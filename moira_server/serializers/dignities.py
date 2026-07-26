@@ -7,17 +7,23 @@ from enum import Enum
 from typing import Any
 
 from moira.dignities_types import (
+    BesiegingTruth,
     ChartConditionProfile,
     ConditionNetworkEdge,
     ConditionNetworkNode,
     ConditionNetworkProfile,
+    EssentialDignityComponentTruth,
+    PlanetarySolarPhaseTruth,
     PlanetaryConditionProfile,
     PlanetaryDignity,
     PlanetaryReception,
+    SectTruth,
+    SolarProximityTruth,
 )
 
 from ..models.dignities import (
     AccidentalDignityTruthResponse,
+    BesiegingTruthResponse,
     ChartConditionProfileResponse,
     ConditionNetworkEdgeResponse,
     ConditionNetworkNodeResponse,
@@ -25,11 +31,14 @@ from ..models.dignities import (
     DignitiesConditionsResponse,
     DignitiesReceptionsResponse,
     DignitiesResultResponse,
+    EssentialDignityComponentTruthResponse,
     EssentialDignityTruthResponse,
     PlanetaryConditionProfileResponse,
     PlanetaryDignityResponse,
     PlanetaryReceptionResponse,
+    PlanetarySolarPhaseTruthResponse,
     SectTruthResponse,
+    SolarProximityTruthResponse,
     SolarConditionTruthResponse,
     MutualReceptionTruthResponse,
 )
@@ -72,6 +81,38 @@ def serialize_planetary_reception(
         host_matching_signs=tuple(reception.host_matching_signs),
         is_mutual=reception.is_mutual,
     )
+
+
+def serialize_essential_dignity_component_truth(
+    truth: EssentialDignityComponentTruth,
+) -> EssentialDignityComponentTruthResponse:
+    return EssentialDignityComponentTruthResponse.model_validate(
+        _transport_value(truth)
+    )
+
+
+def serialize_sect_truth(truth: SectTruth) -> SectTruthResponse:
+    return SectTruthResponse.model_validate(_transport_value(truth))
+
+
+def serialize_solar_proximity_truth(
+    truth: SolarProximityTruth,
+) -> SolarProximityTruthResponse:
+    return SolarProximityTruthResponse.model_validate(_transport_value(truth))
+
+
+def serialize_planetary_solar_phase_truth(
+    truth: PlanetarySolarPhaseTruth,
+) -> PlanetarySolarPhaseTruthResponse:
+    return PlanetarySolarPhaseTruthResponse.model_validate(
+        _transport_value(truth)
+    )
+
+
+def serialize_besieging_truth(
+    truth: BesiegingTruth,
+) -> BesiegingTruthResponse:
+    return BesiegingTruthResponse.model_validate(_transport_value(truth))
 
 
 def serialize_planetary_condition_profile(
@@ -278,6 +319,7 @@ def serialize_condition_network_profile(
 
 
 __all__ = [
+    "serialize_besieging_truth",
     "serialize_chart_condition_profile",
     "serialize_condition_network_edge",
     "serialize_condition_network_node",
@@ -285,7 +327,11 @@ __all__ = [
     "serialize_dignities_conditions",
     "serialize_dignities_receptions",
     "serialize_dignities_result",
+    "serialize_essential_dignity_component_truth",
     "serialize_planetary_condition_profile",
     "serialize_planetary_dignity",
     "serialize_planetary_reception",
+    "serialize_planetary_solar_phase_truth",
+    "serialize_sect_truth",
+    "serialize_solar_proximity_truth",
 ]

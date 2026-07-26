@@ -902,6 +902,26 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "zr_fortune_angularity_truth",
 })
 
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "HELLENISTIC_CLASSICAL_PLANETS",
+    "HELLENISTIC_PROFILE_LOTS",
+    "HellenisticAspectProfile",
+    "HellenisticChartProfile",
+    "HellenisticDecennialSnapshot",
+    "HellenisticLotProfile",
+    "HellenisticObserverContext",
+    "HellenisticPlanetProfile",
+    "HellenisticPlanetaryJoyTruth",
+    "HellenisticProfileComponent",
+    "HellenisticProfileExclusion",
+    "HellenisticProfileNotEvaluable",
+    "HellenisticProfilePolicy",
+    "HellenisticProfileProvenance",
+    "HellenisticProfileStatus",
+    "HellenisticZodiacalReleasingSnapshot",
+    "hellenistic_chart_profile",
+})
+
 _EXPECTED_ROOT_ONLY_NAMES = {
     "ASHTOTTARI_NAKSHATRA_LORD",
     "ASHTOTTARI_SEQUENCE",
@@ -1344,6 +1364,7 @@ _EXPECTED_MOIRA_METHODS.update({
     "profection_activation_truth",
     "solar_proximity_truth",
     "zr_fortune_angularity_truth",
+    "hellenistic_chart_profile",
 })
 
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)

@@ -69,6 +69,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "profile-bundles",
     },
     {
+        "name": "hellenistic-profile",
+        "x-displayName": "Hellenistic Profile",
+        "description": "Score-free composition of admitted Hellenistic atomic receipts with explicit exclusions.",
+        "x-family": "profile-bundles",
+    },
+    {
         "name": "vedic-profile",
         "x-displayName": "Vedic Profile Bundles",
         "description": "Composed Vedic chart profile bundles for frontend and workspace callers.",

@@ -46,6 +46,8 @@ _LOT_BODIES: tuple[str, ...] = (
 class _LotsSupportTruth:
     planet_longitudes: dict[str, float]
     house_cusps: dict[int, float]
+    asc_longitude: float
+    mc_longitude: float
     is_day_chart: bool
     policy: LotsComputationPolicy | None
 
@@ -112,6 +114,8 @@ def _derive_lots_support_truth(
     return _LotsSupportTruth(
         planet_longitudes=planet_longitudes,
         house_cusps=house_cusps,
+        asc_longitude=houses.asc,
+        mc_longitude=houses.mc,
         is_day_chart=_SERVICE.is_day_chart(planet_longitudes["Sun"], houses.asc),
         policy=_policy_from_request(request.policy),
     )
@@ -131,6 +135,8 @@ def compute_lots_chart(
         support.house_cusps,
         support.is_day_chart,
         policy=support.policy,
+        asc_longitude=support.asc_longitude,
+        mc_longitude=support.mc_longitude,
         syzygy=request.syzygy,
         prenatal_new_moon=request.prenatal_new_moon,
         prenatal_full_moon=request.prenatal_full_moon,
@@ -150,6 +156,8 @@ def compute_lots_chart_evaluation(
         support.house_cusps,
         support.is_day_chart,
         policy=support.policy,
+        asc_longitude=support.asc_longitude,
+        mc_longitude=support.mc_longitude,
         syzygy=request.syzygy,
         prenatal_new_moon=request.prenatal_new_moon,
         prenatal_full_moon=request.prenatal_full_moon,
@@ -167,6 +175,8 @@ def compute_lots_chart_dependencies(
         support.house_cusps,
         support.is_day_chart,
         policy=support.policy,
+        asc_longitude=support.asc_longitude,
+        mc_longitude=support.mc_longitude,
         syzygy=request.syzygy,
         prenatal_new_moon=request.prenatal_new_moon,
         prenatal_full_moon=request.prenatal_full_moon,
@@ -184,6 +194,8 @@ def compute_lots_chart_conditions(
         support.house_cusps,
         support.is_day_chart,
         policy=support.policy,
+        asc_longitude=support.asc_longitude,
+        mc_longitude=support.mc_longitude,
         syzygy=request.syzygy,
         prenatal_new_moon=request.prenatal_new_moon,
         prenatal_full_moon=request.prenatal_full_moon,
@@ -212,6 +224,8 @@ def compute_lots_chart_profile(
         support.house_cusps,
         support.is_day_chart,
         policy=support.policy,
+        asc_longitude=support.asc_longitude,
+        mc_longitude=support.mc_longitude,
         syzygy=request.syzygy,
         prenatal_new_moon=request.prenatal_new_moon,
         prenatal_full_moon=request.prenatal_full_moon,
@@ -229,6 +243,8 @@ def compute_lots_chart_network(
         support.house_cusps,
         support.is_day_chart,
         policy=support.policy,
+        asc_longitude=support.asc_longitude,
+        mc_longitude=support.mc_longitude,
         syzygy=request.syzygy,
         prenatal_new_moon=request.prenatal_new_moon,
         prenatal_full_moon=request.prenatal_full_moon,

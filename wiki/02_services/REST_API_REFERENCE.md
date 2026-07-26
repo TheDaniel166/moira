@@ -16,10 +16,10 @@ transport contract documented for that family.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 434
-- Registered OpenAPI operations: 434 (GET 35, POST 399)
+- Registered OpenAPI paths: 435
+- Registered OpenAPI operations: 435 (GET 35, POST 400)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 430
+- Versioned `/v1` paths: 431
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -1225,6 +1225,43 @@ The REST dignity policy does not admit
 `include_timelord_distributions`. Valens distribution scoring is quarantined;
 supplying that former option is a `422 validation_error`, not an inert no-op.
 
+## Unified Hellenistic Profile Route
+
+| Method | Path | Handler | Kernel |
+|---|---|---|---|
+| POST | `/v1/hellenistic/chart-profile` | `hellenistic_chart_profile_route` | Yes |
+
+The request requires timezone-aware natal and current datetimes plus observer
+latitude, longitude, and optional elevation. The server always derives a
+strict, no-fallback Whole Sign figure and the seven classical planets; callers
+cannot select another house system. Optional syzygy, prenatal lunation, and
+lord-of-hour longitudes support catalogued lot dependencies.
+
+The seven planetary positions and longitude rates use the default apparent
+geocentric, true-ecliptic-of-date product. Observer coordinates are applied to
+the Whole Sign house figure and exact Ascendant/Midheaven, not silently to the
+planetary position frame. The response records that separation in provenance.
+
+The policy surface keeps Classic-7 dignity doctrine, Dorothean triplicity,
+typed skip-and-report lot failure behavior, and Decennial L1/L2 fixed.
+Zodiacal Releasing supports Fortune, Spirit, Eros, or Necessity and one to four
+levels. No Decennial deep-subdivision selector is present.
+
+`HellenisticChartProfileResponse` transports explicit typed models for:
+
+- score-free planet component receipts;
+- Whole Sign aspects and Hellenistic superiority;
+- Fortune, Spirit, Valens Eros, and Valens Necessity;
+- profection activation;
+- current Decennial L1/L2 and Zodiacal Releasing periods;
+- observer, policy, included/excluded component, kernel, source, timescale,
+  position-frame, warning, and `not_evaluable` provenance.
+
+The reachable OpenAPI response graph contains no synthetic score field. The
+response explicitly excludes Firdaria, medieval almutens, later electional
+rules, unscoped primary directions, Decennial L3/L4, Hermetic-decan geometry,
+and Valens distribution interpretation.
+
 ## Hellenistic Whole-Sign Aspect Routes
 
 | Method | Path | Handler | Kernel |
@@ -1336,7 +1373,9 @@ is not caller-selectable or blended with conventional dignity tables.
 classification, dependency-completeness, and astrological-condition receipts.
 Missing optional references therefore produce named `not_evaluable` entries
 instead of disappearing from the response. Dependency completeness is not an
-astrological condition judgment.
+astrological condition judgment. Chart-backed routes pass the actual
+Ascendant and Midheaven separately from house cusp 1/10; Whole Sign sign
+boundaries do not silently replace those angles.
 
 ## Triplicity Routes
 
@@ -2858,6 +2897,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/harmonics/transit-forecast` | harmonics | `harmonic_transit_forecast_route_v1_harmonics_transit_forecast_post` |
 | `POST` | `/v1/heliacal/planet` | phenomena | `planet_heliacal_event_route_v1_heliacal_planet_post` |
 | `POST` | `/v1/heliacal/visibility-event` | phenomena | `general_visibility_event_route_v1_heliacal_visibility_event_post` |
+| `POST` | `/v1/hellenistic/chart-profile` | hellenistic-profile | `hellenistic_chart_profile_route_v1_hellenistic_chart_profile_post` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
 | `POST` | `/v1/houses/reduction` | chart | `houses_reduction_route_v1_houses_reduction_post` |
 | `POST` | `/v1/huber/age-point` | huber | `huber_age_point_route_v1_huber_age_point_post` |

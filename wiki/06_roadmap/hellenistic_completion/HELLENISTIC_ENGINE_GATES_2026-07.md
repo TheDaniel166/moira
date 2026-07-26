@@ -17,7 +17,7 @@ particular, “Phase 2” here means doctrine decisions, not the historical
 | 2 | Doctrine decisions | Complete | The disputed profection, Decennial, Halb/Hayz, ZR, lot, and Hermetic-catalog rules have explicit source or policy decisions. |
 | 3 | Typed truth composition | Complete | Every admitted atomic family in the Phase 3 inventory now has a governing raw receipt or remains explicitly quarantined; compatibility labels and booleans are projections, not the source of truth. |
 | 4 | Contract parity | Complete | Phase 3 policy and raw receipts now have identity-preserving engine exports, full facade forwarding, explicit serializers, typed REST models, and OpenAPI schemas. |
-| 5 | Unified Hellenistic profile | Pending | Compose a non-interpretive chart profile only from atomic admitted receipts. |
+| 5 | Unified Hellenistic profile | Complete | `HellenisticChartProfile` composes a score-free chart profile from exact admitted atomic receipts and names every excluded branch. |
 | 6 | Validation and documentation regeneration | Pending | Add independent source-owned goldens, regenerate inventories/matrices, archive stale completion claims, and only then update website documentation. |
 
 ## Phase 2 Closure Receipt
@@ -262,10 +262,72 @@ This receipt does not admit Firdaria into a Hellenistic profile, reinterpret a
 typed result, add a synthetic score, regenerate the Phase 6 capability matrix,
 or authorize website work.
 
+## Phase 5 Closure Receipt
+
+Phase 5 is complete through the new `moira.hellenistic` composition boundary:
+
+1. `hellenistic_chart_profile()` requires all seven classical planets, one
+   finite speed per planet, exact zodiac-boundary Whole Sign cusps, the actual
+   Ascendant and Midheaven, and timezone-aware natal/current datetimes;
+2. exact Ascendant/Midheaven horizon truth is the single sect source used by
+   planetary receipts, triplicity, lots, Decennials, and Zodiacal Releasing;
+3. the profile includes score-free planetary component truth, Whole Sign
+   aspects and superiority, Fortune/Spirit/Valens Eros/Valens Necessity,
+   annual profection activation, current Decennial L1/L2 periods, and current
+   Zodiacal Releasing periods;
+4. atomic `not_evaluable` results remain visible in their owning receipt and
+   in profile provenance; the composer does not replace them with false,
+   empty, or inferred defaults;
+5. `HellenisticProfilePolicy` freezes Classic-7 dignity doctrine, Dorothean
+   triplicity, skip-and-report lot failure behavior, and the admitted
+   Decennial L1/L2 policy while preserving admitted bounds, ZR, profection,
+   and component selectors; Decennial L3/L4 remains unselectable;
+6. `HellenisticProfileProvenance` records method, lineage, sources, input
+   semantics, the chart position frame, calendar/timescale, engine and kernel
+   identity/coverage when available, warnings, and non-evaluable receipts;
+7. the exact engine objects are exported through `moira`,
+   `moira.classical`, and `moira.facade`; `Moira.hellenistic_chart_profile()`
+   derives a no-fallback Whole Sign chart profile without recomputing doctrine;
+8. `POST /v1/hellenistic/chart-profile` uses explicit request, response,
+   serializer, service, route, and OpenAPI types. Its reachable response graph
+   contains no score field and exposes no selectable Decennial deep method.
+
+The implementation pass also closed four composition hazards found during the
+gate:
+
+- Lots now accept explicit Ascendant and Midheaven longitudes. Whole Sign cusp
+  1 and cusp 10 remain house-sign boundaries rather than silently replacing
+  the actual angles. Legacy raw callers that omit the angles retain a labelled
+  compatibility fallback.
+- Whole Sign geometry validation requires cusp 1 to be the exact zodiac-sign
+  boundary containing the Ascendant, so equal-house geometry cannot
+  masquerade as a Hellenistic Whole Sign input.
+- The chart-backed REST service uses the apparent-geocentric,
+  true-ecliptic-of-date planetary position/rate product and applies observer
+  coordinates independently to the Whole Sign angles. The composer no longer
+  infers or mislabels a planetary frame from observer coordinates alone.
+- Active Zodiacal Releasing lookup uses half-open period ownership and returns
+  typed `not_evaluable` outside the generated circuit. It never reuses the
+  final expired period as current truth.
+
+The profile explicitly excludes Firdaria, medieval almutens, later electional
+rules, unscoped primary directions, Decennial L3/L4, Hermetic-decan geometry,
+and Valens distribution interpretation. It contains no chart-wide score,
+ranking, recommendation, or interpretive narrative.
+
+Validation on 2026-07-26 passed the 950-test Hellenistic dependency and
+transport gate under strict known-issues mode, Python compilation, REST
+inventory synchronization, documentation consistency, and `git diff --check`.
+The literal configured repository suite exceeded a ten-minute local command
+window without a terminal result. A bounded release/governance follow-up
+passed 80 tests and reproduced only the pre-existing `_FamilyCatalog`
+docstring violation in unchanged `moira/asteroid_families.py`; that unrelated
+baseline issue is not part of the Phase 5 changeset.
+
 ### Resting point for the next work session
 
-Phase 5, Unified Hellenistic profile, is next. It may compose only admitted
-atomic receipts after their Phase 4 transport contracts, and must remain
-non-interpretive. Firdaria, medieval almutens, later electional rules,
-unscoped primary-direction branches, Decennial L3/L4, and quarantined Hermetic
-geometry remain outside that profile.
+Phase 6, Validation and documentation regeneration, is next. It must begin
+with a deep source-owned research and validation pass, add independent
+goldens, regenerate the capability matrix and API inventory from current
+runtime truth, and archive stale completion claims before any website
+documentation implementation. Phase 5 does not authorize website work.

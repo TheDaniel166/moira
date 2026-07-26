@@ -17,6 +17,13 @@ describe aspirational future capabilities.
 > Knowledge formulas are preserved under source-specific names rather than
 > collapsed into generic labels.
 
+> **Angle-identity correction — 2026-07-26.** Lot entrypoints accept explicit
+> `asc_longitude` and `mc_longitude`. Facade and REST chart calls always pass
+> the actual angles. House cusp 1/10 remain their house-system boundaries and
+> never replace the angles merely because Whole Sign houses are selected. Raw
+> compatibility callers that omit explicit angles still fall back to cusp
+> 1/10, and the reference receipt labels that fallback.
+
 ---
 
 ## Part I - Architecture Standard
@@ -65,6 +72,11 @@ An **Arabic part computation truth** in Moira is:
 
 This truth is carried by `ArabicPart.computation_truth`. It is descriptive
 only. It does not change the formula or result.
+
+`Asc`, `Dsc`, `MC`, and `IC` references resolve from explicit actual angles
+when supplied. `H1` through `H12` always resolve from the supplied house-cusp
+mapping. These identities are separate even when a quadrant system happens to
+place cusp 1/10 on the angles.
 
 #### 1.4 Dependency
 
@@ -334,6 +346,7 @@ Current explicit failures include:
 - unsupported policy enum values
 - malformed nested policy objects
 - non-boolean nested policy flags
+- non-finite explicit Ascendant or Midheaven longitudes
 
 #### 7.2 Unresolved reference behavior
 
@@ -388,6 +401,8 @@ The following invariants are normative.
 
 - `formula` must match the projector, arc policy, and effective operand keys
 - `projector_reference.key` must match `projector_key`
+- explicit `Asc`/`MC` references must preserve actual angle longitudes while
+  `H1`/`H10` references preserve house-cusp longitudes
 - `reversed_for_chart` requires `reversed_at_night`
 - `add_reference.key` must match `effective_add_key`
 - `sub_reference.key` must match `effective_sub_key`
@@ -490,8 +505,8 @@ The stable lots backend surface is the combination of:
 - service:
   - `ArabicPartsService`
 - module entrypoints:
-  - `calculate_lots`
-  - `evaluate_lots`
+  - `calculate_lots(..., asc_longitude=None, mc_longitude=None, ...)`
+  - `evaluate_lots(..., asc_longitude=None, mc_longitude=None, ...)`
   - `calculate_lot_dependencies`
   - `calculate_all_lot_dependencies`
   - `calculate_lot_condition_profiles`

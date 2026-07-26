@@ -1907,6 +1907,8 @@ class ArabicPartsService:
             planet_longitudes=planet_lons,
             house_cusps=chart.houses.cusps if chart.houses else [],
             is_day_chart=chart.is_day,
+            asc_longitude=chart.houses.asc if chart.houses else None,
+            mc_longitude=chart.houses.mc if chart.houses else None,
         )
             
     def evaluate_parts(
@@ -1916,6 +1918,8 @@ class ArabicPartsService:
         is_day_chart: bool,
         policy: LotsComputationPolicy | None = None,
         *,
+        asc_longitude: float | None = None,
+        mc_longitude: float | None = None,
         syzygy: float | None = None,
         prenatal_new_moon: float | None = None,
         prenatal_full_moon: float | None = None,
@@ -1933,6 +1937,8 @@ class ArabicPartsService:
         refs, ref_truths = self._build_refs(
             planet_longitudes, house_cusps, is_day_chart,
             syzygy, prenatal_new_moon, prenatal_full_moon, lord_of_hour,
+            asc_longitude=asc_longitude,
+            mc_longitude=mc_longitude,
             policy=policy,
         )
 
@@ -2063,6 +2069,8 @@ class ArabicPartsService:
         is_day_chart: bool,
         policy: LotsComputationPolicy | None = None,
         *,
+        asc_longitude: float | None = None,
+        mc_longitude: float | None = None,
         syzygy: float | None = None,
         prenatal_new_moon: float | None = None,
         prenatal_full_moon: float | None = None,
@@ -2075,6 +2083,8 @@ class ArabicPartsService:
             house_cusps,
             is_day_chart,
             policy=policy,
+            asc_longitude=asc_longitude,
+            mc_longitude=mc_longitude,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
@@ -2088,6 +2098,8 @@ class ArabicPartsService:
         is_day_chart: bool,
         policy: LotsComputationPolicy | None = None,
         *,
+        asc_longitude: float | None = None,
+        mc_longitude: float | None = None,
         syzygy: float | None = None,
         prenatal_new_moon: float | None = None,
         prenatal_full_moon: float | None = None,
@@ -2100,6 +2112,8 @@ class ArabicPartsService:
             house_cusps,
             is_day_chart,
             policy=policy,
+            asc_longitude=asc_longitude,
+            mc_longitude=mc_longitude,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
@@ -2115,6 +2129,8 @@ class ArabicPartsService:
         house_cusps: dict[int, float] | list[float],
         is_day_chart: bool,
         *,
+        asc_longitude: float | None = None,
+        mc_longitude: float | None = None,
         syzygy: float | None = None,
         prenatal_new_moon: float | None = None,
         prenatal_full_moon: float | None = None,
@@ -2127,6 +2143,8 @@ class ArabicPartsService:
             house_cusps,
             is_day_chart,
             policy=LotsComputationPolicy(),
+            asc_longitude=asc_longitude,
+            mc_longitude=mc_longitude,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
@@ -2143,6 +2161,8 @@ class ArabicPartsService:
         is_day_chart: bool,
         policy: LotsComputationPolicy | None = None,
         *,
+        asc_longitude: float | None = None,
+        mc_longitude: float | None = None,
         syzygy: float | None = None,
         prenatal_new_moon: float | None = None,
         prenatal_full_moon: float | None = None,
@@ -2155,6 +2175,8 @@ class ArabicPartsService:
             house_cusps,
             is_day_chart,
             policy=policy,
+            asc_longitude=asc_longitude,
+            mc_longitude=mc_longitude,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
@@ -2171,6 +2193,8 @@ class ArabicPartsService:
         is_day_chart: bool,
         policy: LotsComputationPolicy | None = None,
         *,
+        asc_longitude: float | None = None,
+        mc_longitude: float | None = None,
         syzygy: float | None = None,
         prenatal_new_moon: float | None = None,
         prenatal_full_moon: float | None = None,
@@ -2183,6 +2207,8 @@ class ArabicPartsService:
             house_cusps,
             is_day_chart,
             policy=policy,
+            asc_longitude=asc_longitude,
+            mc_longitude=mc_longitude,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
@@ -2251,6 +2277,8 @@ class ArabicPartsService:
         is_day_chart: bool,
         policy: LotsComputationPolicy | None = None,
         *,
+        asc_longitude: float | None = None,
+        mc_longitude: float | None = None,
         syzygy: float | None = None,
         prenatal_new_moon: float | None = None,
         prenatal_full_moon: float | None = None,
@@ -2263,6 +2291,8 @@ class ArabicPartsService:
             house_cusps,
             is_day_chart,
             policy=policy,
+            asc_longitude=asc_longitude,
+            mc_longitude=mc_longitude,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
@@ -2337,6 +2367,8 @@ class ArabicPartsService:
         prenatal_fm: float | None,
         lord_of_hour: float | None,
         *,
+        asc_longitude: float | None = None,
+        mc_longitude: float | None = None,
         policy: LotsComputationPolicy,
     ) -> tuple[dict[str, float], dict[str, LotReferenceTruth]]:
         # Normalise planet names to title case
@@ -2363,8 +2395,20 @@ class ArabicPartsService:
         if isinstance(house_cusps, list):
             house_cusps = {i + 1: v for i, v in enumerate(house_cusps)}
 
-        asc = house_cusps.get(1, 0.0)
-        mc  = house_cusps.get(10, 0.0)
+        if asc_longitude is not None and not isfinite(asc_longitude):
+            raise ValueError("Lot asc_longitude must be finite when supplied")
+        if mc_longitude is not None and not isfinite(mc_longitude):
+            raise ValueError("Lot mc_longitude must be finite when supplied")
+        asc = (
+            house_cusps.get(1, 0.0)
+            if asc_longitude is None
+            else asc_longitude % 360.0
+        )
+        mc = (
+            house_cusps.get(10, 0.0)
+            if mc_longitude is None
+            else mc_longitude % 360.0
+        )
         dsc = (asc + 180.0) % 360.0
         ic  = (mc  + 180.0) % 360.0
 
@@ -2372,9 +2416,27 @@ class ArabicPartsService:
             **norm,
             "Asc": asc, "Dsc": dsc, "MC": mc, "IC": ic,
         }
-        store_ref("Asc", asc, "angle", "house_cusp_1")
+        store_ref(
+            "Asc",
+            asc,
+            "angle",
+            (
+                "house_cusp_1_compatibility_fallback"
+                if asc_longitude is None
+                else "explicit_ascendant"
+            ),
+        )
         store_ref("Dsc", dsc, "angle", "derived_from_asc")
-        store_ref("MC", mc, "angle", "house_cusp_10")
+        store_ref(
+            "MC",
+            mc,
+            "angle",
+            (
+                "house_cusp_10_compatibility_fallback"
+                if mc_longitude is None
+                else "explicit_midheaven"
+            ),
+        )
         store_ref("IC", ic, "angle", "derived_from_mc")
 
         # House cusps H1–H12
@@ -2683,6 +2745,8 @@ def calculate_lots(
     is_day_chart: bool,
     policy: LotsComputationPolicy | None = None,
     *,
+    asc_longitude: float | None = None,
+    mc_longitude: float | None = None,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
@@ -2691,6 +2755,8 @@ def calculate_lots(
     """Compute all Arabic Parts."""
     return _service.calculate_parts(
         positions, house_cusps, is_day_chart, policy=policy,
+        asc_longitude=asc_longitude,
+        mc_longitude=mc_longitude,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,
@@ -2704,6 +2770,8 @@ def evaluate_lots(
     is_day_chart: bool,
     policy: LotsComputationPolicy | None = None,
     *,
+    asc_longitude: float | None = None,
+    mc_longitude: float | None = None,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
@@ -2716,6 +2784,8 @@ def evaluate_lots(
         house_cusps,
         is_day_chart,
         policy=policy,
+        asc_longitude=asc_longitude,
+        mc_longitude=mc_longitude,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,
@@ -2729,6 +2799,8 @@ def calculate_lot_dependencies(
     is_day_chart: bool,
     policy: LotsComputationPolicy | None = None,
     *,
+    asc_longitude: float | None = None,
+    mc_longitude: float | None = None,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
@@ -2741,6 +2813,8 @@ def calculate_lot_dependencies(
         house_cusps,
         is_day_chart,
         policy=policy,
+        asc_longitude=asc_longitude,
+        mc_longitude=mc_longitude,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,
@@ -2753,6 +2827,8 @@ def calculate_all_lot_dependencies(
     house_cusps: dict[int, float],
     is_day_chart: bool,
     *,
+    asc_longitude: float | None = None,
+    mc_longitude: float | None = None,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
@@ -2764,6 +2840,8 @@ def calculate_all_lot_dependencies(
         positions,
         house_cusps,
         is_day_chart,
+        asc_longitude=asc_longitude,
+        mc_longitude=mc_longitude,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,
@@ -2777,6 +2855,8 @@ def calculate_lot_condition_profiles(
     is_day_chart: bool,
     policy: LotsComputationPolicy | None = None,
     *,
+    asc_longitude: float | None = None,
+    mc_longitude: float | None = None,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
@@ -2789,6 +2869,8 @@ def calculate_lot_condition_profiles(
         house_cusps,
         is_day_chart,
         policy=policy,
+        asc_longitude=asc_longitude,
+        mc_longitude=mc_longitude,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,
@@ -2802,6 +2884,8 @@ def calculate_lot_chart_condition_profile(
     is_day_chart: bool,
     policy: LotsComputationPolicy | None = None,
     *,
+    asc_longitude: float | None = None,
+    mc_longitude: float | None = None,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
@@ -2814,6 +2898,8 @@ def calculate_lot_chart_condition_profile(
         house_cusps,
         is_day_chart,
         policy=policy,
+        asc_longitude=asc_longitude,
+        mc_longitude=mc_longitude,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,
@@ -2827,6 +2913,8 @@ def calculate_lot_condition_network_profile(
     is_day_chart: bool,
     policy: LotsComputationPolicy | None = None,
     *,
+    asc_longitude: float | None = None,
+    mc_longitude: float | None = None,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
     prenatal_full_moon: float | None = None,
@@ -2839,6 +2927,8 @@ def calculate_lot_condition_network_profile(
         house_cusps,
         is_day_chart,
         policy=policy,
+        asc_longitude=asc_longitude,
+        mc_longitude=mc_longitude,
         syzygy=syzygy,
         prenatal_new_moon=prenatal_new_moon,
         prenatal_full_moon=prenatal_full_moon,

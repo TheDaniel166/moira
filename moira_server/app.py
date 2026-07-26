@@ -40,6 +40,7 @@ from .routers import (
     geodetic_router,
     harmonics_router,
     hellenistic_aspects_router,
+    hellenistic_profile_router,
     health_router,
     huber_router,
     jaimini_router,
@@ -167,6 +168,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(progressions_router)
     app.include_router(relationship_router)
     app.include_router(hellenistic_aspects_router)  # Whole-sign direction and overcoming truth
+    app.include_router(hellenistic_profile_router)  # Unified non-interpretive Hellenistic profile
     app.include_router(timelords_router)
     app.include_router(varshaphal_router)
     app.include_router(primary_directions_router)

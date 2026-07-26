@@ -170,6 +170,7 @@ Adds the full classical and traditional toolkit:
 | Aspects (full) | `AspectDefinition`, `ASPECT_TIERS`, `CANONICAL_ASPECTS`, `AspectDomain`, `AspectFamily`, `AspectTier`, `MotionState`, `AspectClassification`, `HellenisticSuperiorityTruth`, `hellenistic_superiority_truth`, `find_whole_sign_aspects`, `aspect_strength`, `aspect_motion_state`, `find_declination_aspects`, `declination_aspects_from_declinations`, `declination_aspect_motion_witness`, `find_patterns` |
 | Dignities | `calculate_dignities`, `calculate_receptions`, `EssentialDignityKind`, `PlanetaryDignity`, `DignityHorizonFrame`, `PlanetarySolarPhaseTruth`, `SolarProximityTruth`, `BesiegingTruth`, `planetary_solar_phase_truth`, `solar_proximity_truth`, `besieging_truth` |
 | Arabic Parts | `calculate_lots`, `evaluate_lots`, `ArabicPart`, `LotsEvaluation`, `LotNotEvaluable`, `ArabicPartsService`, `list_parts` |
+| Unified Hellenistic profile | `hellenistic_chart_profile`, `HellenisticChartProfile`, `HellenisticProfilePolicy`, `HellenisticProfileProvenance` |
 | Midpoints | `calculate_midpoints`, `Midpoint`, `MidpointsService`, `midpoint_tree`, `planetary_pictures` |
 | Antiscia | `find_antiscia`, `AntisciaAspect`, `antiscion`, `contra_antiscion` |
 | Fixed stars | `star_at`, `all_stars_at`, `FixedStar`, `list_stars`, `find_stars`, `star_magnitude` |
@@ -476,6 +477,7 @@ message.
 | `dignities(chart, houses, *, policy=None)` | `list[PlanetaryDignity]` | Essential and accidental dignities with lossless policy forwarding |
 | `lots(chart, houses, *, policy=None, syzygy=None, prenatal_new_moon=None, prenatal_full_moon=None, lord_of_hour=None)` | `list[ArabicPart]` | Arabic Parts / Hermetic Lots with nodes and optional external references preserved |
 | `evaluate_lots(chart, houses, *, policy=None, syzygy=None, prenatal_new_moon=None, prenatal_full_moon=None, lord_of_hour=None)` | `LotsEvaluation` | Lossless lot catalogue evaluation including typed unresolved entries |
+| `hellenistic_chart_profile(chart, houses, natal_dt, current_dt, *, policy=None, ...)` | `HellenisticChartProfile` | Score-free composition of admitted Hellenistic atomic receipts from an explicit no-fallback Whole Sign chart |
 | `solar_proximity_truth(...)`, `planetary_solar_phase_truth(...)`, `besieging_truth(...)` | typed raw receipts | Raw dignity geometry before compatibility labels or score assembly |
 | `mutual_receptions(chart, by_exaltation=False)` | `list[tuple]` | `(planet_a, planet_b, type)` mutual reception triples |
 | `astrodynes(body_inputs, cusp_signs, intercepted_signs_by_house=None, policy=None)` | `AstrodyneChartResult` | Kernel-free Church of Light natal Astrodynes from explicit chart geometry |
@@ -1528,6 +1530,72 @@ the same components with concrete OpenAPI models; policy suppression may
 remove an assembled label or score contribution but does not erase available
 raw geometry.
 
+### Unified Hellenistic chart profile
+
+`moira.hellenistic` owns the Phase 5 non-interpretive composition surface.
+The public function is also exported unchanged through `moira`,
+`moira.classical`, and `moira.facade`.
+
+```python
+from moira import HellenisticProfilePolicy, hellenistic_chart_profile
+
+profile = hellenistic_chart_profile(
+    natal_positions,
+    natal_speeds,
+    whole_sign_cusps,
+    asc_longitude,
+    mc_longitude,
+    natal_dt,
+    current_dt,
+    policy=HellenisticProfilePolicy(),
+    observer_latitude=latitude,
+    observer_longitude=longitude,
+    observer_elevation_m=elevation_m,
+    position_frame=(
+        "apparent_geocentric_true_ecliptic_of_date_"
+        "positions_and_longitude_rates"
+    ),
+)
+```
+
+The raw function requires:
+
+- all seven classical planets and one finite speed for each;
+- twelve exact zodiac-boundary Whole Sign cusps;
+- the actual Ascendant and Midheaven, distinct from Whole Sign cusp 1/10;
+- timezone-aware natal and current datetimes, with current not before natal.
+
+`HellenisticChartProfile` contains:
+
+- score-free planetary essential components, sect, joy, solar proximity,
+  solar phase, besieging, receptions, Dorothean triplicity, admitted bound,
+  and Chaldean-face receipts;
+- Whole Sign aspect classification and `HellenisticSuperiorityTruth`;
+- Fortune, Spirit, Valens Eros, and Valens Necessity computation,
+  dependency-completeness, and astrological-condition truth;
+- annual profection plus typed activation truth;
+- current Decennial L1/L2 periods with sequence-assembly truth;
+- current Zodiacal Releasing periods for the selected foundational lot;
+- included/excluded component registries and complete composition provenance.
+
+The composer never infers a frame from observer coordinates alone. A raw or
+facade caller must label its supplied position/rate frame; otherwise provenance
+marks that frame unverified. The REST composition service constructs the seven
+classical planets through the default apparent-geocentric,
+true-ecliptic-of-date position and longitude-rate product. Observer coordinates
+are used independently for the strict Whole Sign house figure and exact angles.
+
+There is no chart-wide score, ranking, recommendation, or interpretation.
+Atomic non-evaluable states survive composition. The explicit exclusions are
+Firdaria, medieval almutens, later electional rules, unscoped primary
+directions, Decennial L3/L4, Hermetic-decan geometry, and Valens distribution
+interpretation.
+
+`Moira.hellenistic_chart_profile()` accepts a previously constructed `Chart`
+and `HouseCusps`. It requires requested and effective Whole Sign systems with
+no fallback, forwards exact angles, derives engine/kernel provenance when
+available, and delegates to the owning function without recomputing doctrine.
+
 ### Church of Light Natal Astrodynes
 
 Astrodynes use a distinct Hermetic dignity table and must not be mixed with the
@@ -1604,8 +1672,8 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `calculate_lots(lons, cusps, is_day)` | `list[ArabicPart]` | All classical Arabic Parts |
-| `evaluate_lots(lons, cusps, is_day)` | `LotsEvaluation` | Computed parts plus typed `not_evaluable` catalogue entries |
+| `calculate_lots(lons, cusps, is_day, *, asc_longitude=None, mc_longitude=None, ...)` | `list[ArabicPart]` | All classical Arabic Parts; explicit angles are authoritative when supplied |
+| `evaluate_lots(lons, cusps, is_day, *, asc_longitude=None, mc_longitude=None, ...)` | `LotsEvaluation` | Computed parts plus typed `not_evaluable` catalogue entries; explicit angles remain distinct from house cusps |
 | `list_parts()` | `list[str]` | Names of all available parts |
 
 #### `ArabicPart` fields

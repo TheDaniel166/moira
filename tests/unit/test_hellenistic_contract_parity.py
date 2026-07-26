@@ -176,6 +176,7 @@ def test_moira_evaluate_lots_preserves_full_policy_and_optional_inputs(
     )
     houses = SimpleNamespace(
         asc=100.0,
+        mc=10.0,
         cusps=tuple(float(index * 30) for index in range(12)),
     )
 
@@ -205,6 +206,8 @@ def test_moira_evaluate_lots_preserves_full_policy_and_optional_inputs(
     )
     assert seen["kwargs"] == {
         "policy": policy,
+        "asc_longitude": 100.0,
+        "mc_longitude": 10.0,
         "syzygy": 22.0,
         "prenatal_new_moon": 33.0,
         "prenatal_full_moon": 44.0,

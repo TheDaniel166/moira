@@ -127,6 +127,19 @@ from .lots import (
     ArabicPartsService, list_parts,
 )
 
+# ── Unified Hellenistic profile ─────────────────────────────────────────
+from .hellenistic import (
+    HELLENISTIC_CLASSICAL_PLANETS, HELLENISTIC_PROFILE_LOTS,
+    HellenisticProfileStatus, HellenisticProfileComponent,
+    HellenisticProfileExclusion, HellenisticProfilePolicy,
+    HellenisticPlanetaryJoyTruth, HellenisticPlanetProfile,
+    HellenisticAspectProfile, HellenisticLotProfile,
+    HellenisticDecennialSnapshot, HellenisticZodiacalReleasingSnapshot,
+    HellenisticObserverContext, HellenisticProfileNotEvaluable,
+    HellenisticProfileProvenance,
+    HellenisticChartProfile, hellenistic_chart_profile,
+)
+
 # ── Midpoints ────────────────────────────────────────────────────────────
 from .midpoints import (
     Midpoint, PlanetaryPicture, MidpointWeight, MidpointCluster,
@@ -346,6 +359,16 @@ _CLASSICAL_OWN: list[str] = [
     "calculate_lot_condition_profiles", "calculate_lot_chart_condition_profile",
     "calculate_lot_condition_network_profile",
     "ArabicPartsService", "list_parts",
+    # Unified Hellenistic profile
+    "HELLENISTIC_CLASSICAL_PLANETS", "HELLENISTIC_PROFILE_LOTS",
+    "HellenisticProfileStatus", "HellenisticProfileComponent",
+    "HellenisticProfileExclusion", "HellenisticProfilePolicy",
+    "HellenisticPlanetaryJoyTruth", "HellenisticPlanetProfile",
+    "HellenisticAspectProfile", "HellenisticLotProfile",
+    "HellenisticDecennialSnapshot", "HellenisticZodiacalReleasingSnapshot",
+    "HellenisticObserverContext", "HellenisticProfileNotEvaluable",
+    "HellenisticProfileProvenance",
+    "HellenisticChartProfile", "hellenistic_chart_profile",
     # Midpoints
     "Midpoint", "PlanetaryPicture", "MidpointWeight", "MidpointCluster",
     "MidpointsService", "CLASSIC_7", "MODERN_3", "MODERN_10", "EXTENDED",

@@ -39,9 +39,9 @@ RITE OF PURPOSE:
 
 LAW OF OPERATION:
     Responsibilities:
-        - Delegate lots, dignities, Astrodynes, midpoints, harmonics, profections,
-          time-lord computations, and admitted raw truth helpers to their
-          owning modules.
+        - Delegate lots, dignities, unified Hellenistic profiles, Astrodynes,
+          midpoints, harmonics, profections, time-lord computations, and
+          admitted raw truth helpers to their owning modules.
     Non-responsibilities:
         - Does not implement any astrological calculation itself.
         - Does not own kernel lifecycle or reader management.
@@ -58,7 +58,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
     "scope": "class",
     "id": "moira._facade_classical.ClassicalFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["lots", "evaluate_lots", "dignities", "solar_proximity_truth", "planetary_solar_phase_truth", "besieging_truth", "mutual_receptions", "astrodynes", "astrodynes_from_geometry", "normal_progressed_astrodynes", "practical_progressed_astrodynes", "progressed_astrodynes_geometry", "progressed_astrodynes_chart", "progressed_astrodyne_dated_aspect", "progressed_astrodyne_major_relation", "progressed_astrodyne_accessory_relation", "progressed_astrodyne_reenforcement", "progressed_astrodyne_total_influence", "progressed_astrodyne_compound_total_influence", "midpoints", "midpoints_to_point", "harmonic", "harmonic_transit_forecast", "profection", "profection_activation_truth", "firdaria", "decennials", "decennial_sequence_truth", "current_decennials", "zodiacal_releasing", "zr_fortune_angularity_truth", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
+    "api": {"frozen": ["lots", "evaluate_lots", "hellenistic_chart_profile", "dignities", "solar_proximity_truth", "planetary_solar_phase_truth", "besieging_truth", "mutual_receptions", "astrodynes", "astrodynes_from_geometry", "normal_progressed_astrodynes", "practical_progressed_astrodynes", "progressed_astrodynes_geometry", "progressed_astrodynes_chart", "progressed_astrodyne_dated_aspect", "progressed_astrodyne_major_relation", "progressed_astrodyne_accessory_relation", "progressed_astrodyne_reenforcement", "progressed_astrodyne_total_influence", "progressed_astrodyne_compound_total_influence", "midpoints", "midpoints_to_point", "harmonic", "harmonic_transit_forecast", "profection", "profection_activation_truth", "firdaria", "decennials", "decennial_sequence_truth", "current_decennials", "zodiacal_releasing", "zr_fortune_angularity_truth", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -92,6 +92,8 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             cusps_map,
             day,
             policy=policy,
+            asc_longitude=houses.asc,
+            mc_longitude=houses.mc,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
@@ -122,10 +124,113 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             cusps,
             is_day,
             policy=policy,
+            asc_longitude=houses.asc,
+            mc_longitude=houses.mc,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
             prenatal_full_moon=prenatal_full_moon,
             lord_of_hour=lord_of_hour,
+        )
+
+    def hellenistic_chart_profile(
+        self,
+        chart,
+        houses,
+        natal_dt: datetime,
+        current_dt: datetime,
+        *,
+        policy=None,
+        syzygy=None,
+        prenatal_new_moon=None,
+        prenatal_full_moon=None,
+        lord_of_hour=None,
+        observer_latitude=None,
+        observer_longitude=None,
+        observer_elevation_m=None,
+        position_frame=None,
+        kernel_id=None,
+        kernel_coverage=None,
+    ):
+        """Compose the admitted, score-free Hellenistic chart profile."""
+
+        facade = _facade_module()
+        if (
+            houses.system != facade.HouseSystem.WHOLE_SIGN
+            or houses.effective_system != facade.HouseSystem.WHOLE_SIGN
+            or houses.fallback
+        ):
+            raise ValueError(
+                "hellenistic_chart_profile requires an explicit Whole Sign "
+                "house result with no fallback"
+            )
+
+        positions = chart.longitudes(include_nodes=False)
+        speeds = chart.speeds()
+        cusps = {
+            index + 1: cusp
+            for index, cusp in enumerate(houses.cusps)
+        }
+
+        if kernel_id is None or kernel_coverage is None:
+            reader = self._reader
+            identity = getattr(reader, "_kernel_identity", None)
+            if kernel_id is None and identity is not None:
+                kernel_id = (
+                    getattr(identity, "planetary_ephemeris", None)
+                    or getattr(identity, "summary_label", None)
+                )
+            if kernel_id is None:
+                primary_reader_getter = getattr(
+                    reader,
+                    "_primary_planetary_reader",
+                    None,
+                )
+                primary_reader = (
+                    primary_reader_getter()
+                    if callable(primary_reader_getter)
+                    else reader
+                )
+                path = getattr(primary_reader, "path", None)
+                if path is not None:
+                    kernel_id = f"SPK:{getattr(path, 'name', path)}"
+            if kernel_coverage is None:
+                coverage = reader.coverage()
+                canonical_ranges = [
+                    coverage[pair]
+                    for pair in ((0, 3), (3, 399), (3, 301), (0, 10))
+                    if pair in coverage
+                ]
+                if canonical_ranges:
+                    start_jd = max(item[0] for item in canonical_ranges)
+                    end_jd = min(item[1] for item in canonical_ranges)
+                    if start_jd <= end_jd:
+                        kernel_coverage = (
+                            f"canonical_planetary_clock_routes:"
+                            f"JD_TT[{start_jd:.6f},{end_jd:.6f}]"
+                        )
+        if position_frame is None:
+            position_frame = "chart_supplied_position_frame_not_reconstructed"
+
+        return facade.hellenistic_chart_profile(
+            positions,
+            speeds,
+            cusps,
+            houses.asc,
+            houses.mc,
+            natal_dt,
+            current_dt,
+            policy=policy,
+            syzygy=syzygy,
+            prenatal_new_moon=prenatal_new_moon,
+            prenatal_full_moon=prenatal_full_moon,
+            lord_of_hour=lord_of_hour,
+            observer_latitude=observer_latitude,
+            observer_longitude=observer_longitude,
+            observer_elevation_m=observer_elevation_m,
+            position_frame=position_frame,
+            engine_version=facade.__version__,
+            kernel_id=kernel_id,
+            kernel_coverage=kernel_coverage,
         )
 
     def dignities(self, chart, houses, *, policy=None):

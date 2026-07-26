@@ -9,6 +9,7 @@ from moira.timelords import (
     DecennialConditionProfile,
     DecennialMajorGroup,
     DecennialPeriod,
+    DecennialSequenceAssemblyTruth,
     DecennialSequenceProfile,
     FirdarActivePair,
     FirdarConditionProfile,
@@ -216,12 +217,9 @@ def serialize_firdar_active_pair_optional(pair: FirdarActivePair | None) -> Fird
 # P8-08 Decennial serializers
 # ---------------------------------------------------------------------------
 
-def _serialize_decennial_sequence_truth(
-    period: DecennialPeriod,
+def serialize_decennial_sequence_truth(
+    truth: DecennialSequenceAssemblyTruth,
 ) -> DecennialSequenceAssemblyTruthResponse:
-    truth = period.sequence_truth
-    if truth is None:
-        raise ValueError("DecennialPeriod must preserve sequence_truth")
     return DecennialSequenceAssemblyTruthResponse(
         status=truth.status,
         is_day_chart=truth.is_day_chart,
@@ -241,6 +239,15 @@ def _serialize_decennial_sequence_truth(
         ambiguous_groups=truth.ambiguous_groups,
         reason=truth.reason,
     )
+
+
+def _serialize_decennial_sequence_truth(
+    period: DecennialPeriod,
+) -> DecennialSequenceAssemblyTruthResponse:
+    truth = period.sequence_truth
+    if truth is None:
+        raise ValueError("DecennialPeriod must preserve sequence_truth")
+    return serialize_decennial_sequence_truth(truth)
 
 
 def _serialize_decennial_period(period: DecennialPeriod) -> DecennialPeriodResponse:
@@ -460,6 +467,12 @@ def _serialize_zr_fortune_angularity_truth(
     )
 
 
+def serialize_decennial_period(
+    period: DecennialPeriod,
+) -> DecennialPeriodResponse:
+    return _serialize_decennial_period(period)
+
+
 def _serialize_releasing_period(period: ReleasingPeriod) -> ZRReleasingPeriodResponse:
     return ZRReleasingPeriodResponse(
         level=period.level,
@@ -480,6 +493,12 @@ def _serialize_releasing_period(period: ReleasingPeriod) -> ZRReleasingPeriodRes
         use_loosing_of_bond=period.use_loosing_of_bond,
         fortune_angularity_truth=_serialize_zr_fortune_angularity_truth(period),
     )
+
+
+def serialize_releasing_period(
+    period: ReleasingPeriod,
+) -> ZRReleasingPeriodResponse:
+    return _serialize_releasing_period(period)
 
 
 def _serialize_zr_condition_profile(profile: ZRConditionProfile) -> ZRConditionProfileResponse:
@@ -573,6 +592,8 @@ __all__ = [
     "serialize_current_firdaria",
     "serialize_decennial_active_pair_optional",
     "serialize_decennial_active_path_optional",
+    "serialize_decennial_period",
+    "serialize_decennial_sequence_truth",
     "serialize_decennial_sequence_profile",
     "serialize_decennials_groups",
     "serialize_decennials_sequence",
@@ -582,6 +603,7 @@ __all__ = [
     "serialize_firdaria_sequence",
     "serialize_monthly_profection",
     "serialize_profection_result",
+    "serialize_releasing_period",
     "serialize_zr_current",
     "serialize_zr_groups",
     "serialize_zr_level_pair",

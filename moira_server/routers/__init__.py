@@ -23,6 +23,7 @@ from .gauquelin import router as gauquelin_router
 from .harmograms import router as harmograms_router
 from .harmonics import router as harmonics_router
 from .hellenistic_aspects import router as hellenistic_aspects_router
+from .hellenistic_profile import router as hellenistic_profile_router
 from .health import router as health_router
 from .huber import router as huber_router
 from .jaimini import router as jaimini_router
@@ -100,6 +101,7 @@ __all__ = [
     "harmograms_router",
     "harmonics_router",
     "hellenistic_aspects_router",
+    "hellenistic_profile_router",
     "health_router",
     "huber_router",
     "jaimini_router",
