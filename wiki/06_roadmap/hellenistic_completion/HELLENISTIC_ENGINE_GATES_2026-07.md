@@ -128,18 +128,56 @@ Phase 3 remains open for the remaining collapsed/default-bearing Hellenistic
 families and for a final atomic-truth gate audit. Phase 4 parity, Phase 5
 profile composition, and website work are not implied by this start receipt.
 
+### Phase 3 atomic-vessel inventory
+
+The 2026-07-26 engine pass found the following remaining composition work.
+This is an implementation inventory, not a capability or correctness claim:
+
+| Atomic family | Current collapse or default | Phase 3 disposition |
+|---|---|---|
+| Oriental/Occidental phase | The compatibility helper returned `str | None`, exact conjunction and opposition were forced into `oriental`, and policy suppression erased the available geometry. | Closed in the second Phase 3 slice with `PlanetarySolarPhaseTruth`; boundaries are typed `not_evaluable`, and only evaluated truth may assemble a condition or score. |
+| Solar proximity | `SolarConditionTruth.present=False` still conflates an evaluated absence, a non-applicable luminary, and policy-suppressed bands. | Open; separate raw distance/band truth from policy-admitted condition assembly. |
+| Besieging | `tuple | None` conflates evaluated absence, incomplete chart dependencies, same-degree neighbour ambiguity, and missing chart context. | Open; add dependency completeness and typed enclosure truth before scoring. |
+| Profection activation | `activated_planets=[]` means either no conjunctions or no natal positions were supplied. | Open; preserve an explicit activation evaluation receipt without changing profected sign or lord truth. |
+| Decennial sequence | The final ordered tuple carries no atomic starting/ordering receipt, and equal non-sect-light longitudes fall through to private planet order. | Open; define exact-tie ambiguity and sequence-assembly truth before changing generation. |
+| ZR Fortune angularity | Missing Fortune leaves `angularity_class=None` but projects `is_peak_period=False`, collapsing “not evaluable” into “not peak.” | Open; separate Fortune dependency/evaluation truth from the compatibility peak flag. |
+| Aspect direction and overcoming | Direction uses enum-or-`None` applicability and overcoming uses a scalar boolean without a shared typed Hellenistic superiority receipt. | Open after the default-bearing families; do not invent an additive dignity score. |
+| Hermetic decans and Decennial L3/L4 | These surfaces are quarantined rather than composition-ready. | Keep quarantined; Phase 3 does not reopen source admission. |
+
+Triplicity assignment, admitted bounds, ordinary decanate position, essential
+dignity components, horizon/sect/Mercury phase, and lot dependency evaluation
+already expose sufficient atomic witnesses for this gate's current inventory.
+Their legacy scalar helpers remain compatibility projections and must not
+become the source of later composition.
+
+### Phase 3 second-slice receipt
+
+`planetary_solar_phase_truth()` now governs the five admitted non-luminary
+planetary phase classifications. Its assembly doctrine is:
+
+1. preserve the forward longitude arc from the planet to the Sun;
+2. return typed `not_evaluable` at exact conjunction, exact opposition, or for
+   a body outside the admitted set;
+3. preserve evaluated phase truth even when policy suppresses the condition;
+4. assemble an Oriental/Occidental label and score only from evaluated truth.
+
+`oriental_occidental()` remains a compatibility projection. It returns
+`None` for non-evaluable truth rather than fabricating one side of a boundary.
+Phase 3 remains in progress.
+
 ### Resting point for the next work session
 
 Resume inside Phase 3; do not advance the gate status yet.
 
-1. inventory the remaining Hellenistic result vessels for collapsed labels,
-   fabricated defaults, silent omission, and score-only truth;
-2. select the next smallest atomic family and define its governing object,
-   ambiguity policy, and assembly doctrine before implementation;
+1. take solar-proximity truth next, separating evaluated band absence,
+   non-applicability, and policy suppression before changing any score;
+2. follow with besieging dependency completeness and exact-neighbour ambiguity,
+   then continue through profection, Decennial, ZR, and aspect receipts in the
+   recorded inventory order;
 3. keep root/classical export parity, full REST/OpenAPI parity, the unified
    profile, and website documentation at their named later gates;
 4. rerun the focused dignity/lots/facade/REST gate and documentation
    consistency check after the next slice.
 
-Resting-point validation: 263 focused tests passed, Python compilation passed,
+Current-slice validation: 222 focused tests passed, Python compilation passed,
 documentation consistency passed, and `git diff --check` passed.

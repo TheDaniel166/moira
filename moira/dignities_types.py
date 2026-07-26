@@ -29,6 +29,7 @@ __all__ = [
     "HorizonComputationMethod",
     "SectComponentKind",
     "ConditionPolarity",
+    "PlanetarySolarPhaseKind",
     "EssentialDignityKind",
     "AccidentalConditionKind",
     "SectStateKind",
@@ -85,6 +86,7 @@ __all__ = [
     "SolarConditionClassification",
     "ReceptionClassification",
     "EssentialDignityComponentTruth",
+    "PlanetarySolarPhaseTruth",
     "MercuryPhaseTruth",
     "HorizonTruth",
     "SectComponentTruth",
@@ -153,6 +155,13 @@ class ConditionPolarity(StrEnum):
     STRENGTHENING = "strengthening"
     WEAKENING = "weakening"
     NEUTRAL = "neutral"
+
+
+class PlanetarySolarPhaseKind(StrEnum):
+    """A planet's admitted oriental/occidental relation to the Sun."""
+
+    ORIENTAL = "oriental"
+    OCCIDENTAL = "occidental"
 
 
 class EssentialDignityKind(StrEnum):
@@ -1440,6 +1449,51 @@ class EssentialDignityComponentTruth:
 
 
 @dataclass(frozen=True, slots=True)
+class PlanetarySolarPhaseTruth:
+    """Typed oriental/occidental longitude-phase result for one planet."""
+
+    status: TruthEvaluationStatus
+    phase: PlanetarySolarPhaseKind | None
+    forward_distance_to_sun_deg: float | None
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, TruthEvaluationStatus):
+            raise ValueError(
+                "PlanetarySolarPhaseTruth status must be a TruthEvaluationStatus"
+            )
+        if self.phase is not None and not isinstance(
+            self.phase,
+            PlanetarySolarPhaseKind,
+        ):
+            raise ValueError(
+                "PlanetarySolarPhaseTruth phase must be a PlanetarySolarPhaseKind "
+                "or None"
+            )
+        distance = self.forward_distance_to_sun_deg
+        if distance is not None:
+            if not isfinite(distance):
+                raise ValueError(
+                    "PlanetarySolarPhaseTruth distance must be finite when present"
+                )
+            if not (0.0 <= distance < 360.0):
+                raise ValueError(
+                    "PlanetarySolarPhaseTruth distance must be in [0, 360)"
+                )
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if self.phase is None or distance is None or self.reason is not None:
+                raise ValueError(
+                    "PlanetarySolarPhaseTruth evaluated results require a phase, "
+                    "distance, and no reason"
+                )
+        elif self.phase is not None or not self.reason:
+            raise ValueError(
+                "PlanetarySolarPhaseTruth not_evaluable results require no phase "
+                "and an explicit reason"
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class MercuryPhaseTruth:
     """Typed result of the admitted Mercury longitude-phase heuristic."""
 
@@ -1629,8 +1683,39 @@ class AccidentalDignityTruth:
     hayz_condition: AccidentalDignityCondition | None = None
     halb_condition: AccidentalDignityCondition | None = None
     joy_condition: AccidentalDignityCondition | None = None
+    planetary_solar_phase_truth: PlanetarySolarPhaseTruth = field(
+        default_factory=lambda: PlanetarySolarPhaseTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            phase=None,
+            forward_distance_to_sun_deg=None,
+            reason="not_computed",
+        )
+    )
     oriental_condition: AccidentalDignityCondition | None = None
     besieged_condition: AccidentalDignityCondition | None = None
+
+    def __post_init__(self) -> None:
+        phase_truth = self.planetary_solar_phase_truth
+        condition = self.oriental_condition
+        if condition is None:
+            return
+        if (
+            phase_truth.status is not TruthEvaluationStatus.EVALUATED
+            or phase_truth.phase is None
+        ):
+            raise ValueError(
+                "AccidentalDignityTruth cannot assemble an oriental/occidental "
+                "condition from not_evaluable phase truth"
+            )
+        if condition.category != "phase" or condition.code != phase_truth.phase.value:
+            raise ValueError(
+                "AccidentalDignityTruth oriental_condition must match its "
+                "planetary_solar_phase_truth"
+            )
+        if condition not in self.conditions:
+            raise ValueError(
+                "AccidentalDignityTruth oriental_condition must be present in conditions"
+            )
 
 
 @dataclass(slots=True)

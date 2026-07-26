@@ -72,6 +72,7 @@ __all__ = [
     "HorizonComputationMethod",
     "SectComponentKind",
     "ConditionPolarity",
+    "PlanetarySolarPhaseKind",
     "EssentialDignityKind",
     "AccidentalConditionKind",
     "SectStateKind",
@@ -128,6 +129,7 @@ __all__ = [
     "SolarConditionClassification",
     "ReceptionClassification",
     "EssentialDignityComponentTruth",
+    "PlanetarySolarPhaseTruth",
     "MercuryPhaseTruth",
     "HorizonTruth",
     "SectComponentTruth",
@@ -146,6 +148,7 @@ __all__ = [
     "is_in_hayz",
     "is_in_halb",
     "is_in_joy",
+    "planetary_solar_phase_truth",
     "oriental_occidental",
     "is_besieged",
     "calculate_dignities",
@@ -458,6 +461,63 @@ def is_in_halb(
 
 _SUPERIOR_PLANETS = {"Mars", "Jupiter", "Saturn"}
 _INFERIOR_PLANETS = {"Mercury", "Venus"}
+_PLANETARY_SOLAR_PHASE_BODIES = _SUPERIOR_PLANETS | _INFERIOR_PLANETS
+_PLANETARY_SOLAR_PHASE_BOUNDARY_TOLERANCE_DEG = 1e-12
+
+
+def planetary_solar_phase_truth(
+    planet: str,
+    planet_lon: float,
+    sun_lon: float,
+) -> PlanetarySolarPhaseTruth:
+    """Return typed oriental/occidental truth without forcing boundary cases."""
+
+    if not math.isfinite(planet_lon) or not math.isfinite(sun_lon):
+        raise ValueError("planet_lon and sun_lon must be finite")
+
+    forward_to_sun = (sun_lon - planet_lon) % 360.0
+    if planet not in _PLANETARY_SOLAR_PHASE_BODIES:
+        return PlanetarySolarPhaseTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            phase=None,
+            forward_distance_to_sun_deg=forward_to_sun,
+            reason="planetary_solar_phase_not_admitted_for_body",
+        )
+    if math.isclose(
+        forward_to_sun,
+        0.0,
+        rel_tol=0.0,
+        abs_tol=_PLANETARY_SOLAR_PHASE_BOUNDARY_TOLERANCE_DEG,
+    ):
+        return PlanetarySolarPhaseTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            phase=None,
+            forward_distance_to_sun_deg=forward_to_sun,
+            reason="planet_conjunct_sun",
+        )
+    if math.isclose(
+        forward_to_sun,
+        180.0,
+        rel_tol=0.0,
+        abs_tol=_PLANETARY_SOLAR_PHASE_BOUNDARY_TOLERANCE_DEG,
+    ):
+        return PlanetarySolarPhaseTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            phase=None,
+            forward_distance_to_sun_deg=forward_to_sun,
+            reason="planet_opposite_sun",
+        )
+
+    phase = (
+        PlanetarySolarPhaseKind.ORIENTAL
+        if forward_to_sun < 180.0
+        else PlanetarySolarPhaseKind.OCCIDENTAL
+    )
+    return PlanetarySolarPhaseTruth(
+        status=TruthEvaluationStatus.EVALUATED,
+        phase=phase,
+        forward_distance_to_sun_deg=forward_to_sun,
+    )
 
 
 def oriental_occidental(
@@ -493,29 +553,11 @@ def oriental_occidental(
 
     Returns
     -------
-    ``"oriental"``, ``"occidental"``, or ``None`` (for luminaries).
+    ``"oriental"``, ``"occidental"``, or ``None`` when the classification is
+    not applicable or lies exactly on the conjunction/opposition boundary.
     """
-    if planet in ("Sun", "Moon"):
-        return None
-
-    # Forward distance from planet to Sun in zodiacal order
-    forward_to_sun = (sun_lon - planet_lon) % 360.0
-
-    if planet in _SUPERIOR_PLANETS:
-        # Superior: oriental when west of Sun (forward_to_sun < 180),
-        # occidental when east of Sun (forward_to_sun > 180)
-        if forward_to_sun <= 180.0:
-            return "oriental"
-        return "occidental"
-
-    if planet in _INFERIOR_PLANETS:
-        # Inferior: oriental when morning star (west of Sun, forward < 180),
-        # occidental when evening star (east of Sun, forward > 180)
-        if forward_to_sun <= 180.0:
-            return "oriental"
-        return "occidental"
-
-    return None
+    truth = planetary_solar_phase_truth(planet, planet_lon, sun_lon)
+    return None if truth.phase is None else truth.phase.value
 
 
 def is_besieged(
@@ -1433,14 +1475,22 @@ class DignitiesService:
         # occidental is debilitating (-2).  For inferior planets (Mercury/Venus):
         # the reverse — occidental is beneficial, oriental is debilitating.
         oriental_condition: AccidentalDignityCondition | None = None
+        planetary_phase_truth = planetary_solar_phase_truth(
+            planet,
+            planet_lon,
+            sun_lon,
+        )
         phase = (
-            oriental_occidental(planet, planet_lon, sun_lon)
-            if policy.accidental.include_oriental_occidental
+            planetary_phase_truth.phase
+            if (
+                policy.accidental.include_oriental_occidental
+                and planetary_phase_truth.status is TruthEvaluationStatus.EVALUATED
+            )
             else None
         )
         if phase is not None:
             is_superior = planet in _SUPERIOR_PLANETS
-            if phase == "oriental":
+            if phase is PlanetarySolarPhaseKind.ORIENTAL:
                 phase_score = SCORE_ORIENTAL if is_superior else SCORE_OCCIDENTAL
                 oriental_condition = AccidentalDignityCondition(
                     "phase", "oriental", "Oriental", phase_score,
@@ -1477,6 +1527,7 @@ class DignitiesService:
             hayz_condition=hayz_condition,
             halb_condition=halb_condition,
             joy_condition=joy_condition,
+            planetary_solar_phase_truth=planetary_phase_truth,
             oriental_condition=oriental_condition,
             besieged_condition=besieged_condition,
         )

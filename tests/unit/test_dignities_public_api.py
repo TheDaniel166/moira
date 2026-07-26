@@ -20,6 +20,7 @@ _CURATED_PUBLIC_NAMES = [
     "HorizonComputationMethod",
     "SectComponentKind",
     "ConditionPolarity",
+    "PlanetarySolarPhaseKind",
     "EssentialDignityKind",
     "AccidentalConditionKind",
     "SectStateKind",
@@ -58,6 +59,7 @@ _CURATED_PUBLIC_NAMES = [
     "SolarConditionClassification",
     "ReceptionClassification",
     "EssentialDignityComponentTruth",
+    "PlanetarySolarPhaseTruth",
     "MercuryPhaseTruth",
     "HorizonTruth",
     "SectComponentTruth",
@@ -111,6 +113,7 @@ _CURATED_PUBLIC_NAMES = [
     "is_in_hayz",
     "is_in_halb",
     "is_in_joy",
+    "planetary_solar_phase_truth",
     "oriental_occidental",
     "is_besieged",
     # Tables
@@ -173,8 +176,8 @@ class TestModuleAgreement:
                 f"DignitiesService.{name} disappeared; helper should remain internal"
             )
 
-    def test_curated_count_is_104(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 104
+    def test_curated_count_is_107(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 107
 
     def test_unadmitted_valens_score_hook_is_absent(self):
         assert "valens_distribution_scores" not in signature(

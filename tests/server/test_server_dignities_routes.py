@@ -90,6 +90,19 @@ def test_dignities_chart_route_matches_service(
     assert sun["total_score"] == sun["essential_score"] + sun["accidental_score"]
     assert sun["essential_truth"]["label"] == direct_sun.essential_truth.label
     assert sun["condition_profile"]["state"] == direct_sun.condition_profile.state.value
+    for transported, direct_dignity in zip(body["dignities"], direct, strict=True):
+        phase = transported["accidental_truth"]["planetary_solar_phase_truth"]
+        direct_phase = (
+            direct_dignity.accidental_truth.planetary_solar_phase_truth
+        )
+        assert phase["status"] == direct_phase.status.value
+        assert phase["phase"] == (
+            None if direct_phase.phase is None else direct_phase.phase.value
+        )
+        assert phase["forward_distance_to_sun_deg"] == pytest.approx(
+            direct_phase.forward_distance_to_sun_deg
+        )
+        assert phase["reason"] == direct_phase.reason
 
 
 @pytest.mark.requires_ephemeris

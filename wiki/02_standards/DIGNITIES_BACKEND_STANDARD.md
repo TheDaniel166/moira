@@ -73,11 +73,14 @@ The currently embodied accidental dimensions are:
 - solar condition
 - admitted mutual reception
 - sect / hayz truth
+- planetary joy
+- oriental / occidental solar-relative phase
+- malefic besieging
 
-Only house strength, motion, solar condition, and admitted mutual reception
-contribute to `accidental_score` under the current engine behavior. Sect and
-hayz are preserved and classified truth, not independent additive scoring
-components.
+Every condition admitted by the active accidental policy is assembled as an
+explicit `AccidentalDignityCondition` before it contributes to
+`accidental_score`. The underlying `PlanetarySolarPhaseTruth` is preserved
+independently of whether policy admits its compatibility condition.
 
 #### 1.4 Reception
 
@@ -247,11 +250,13 @@ The accidental inclusion controls include:
 | `SectHayzPolicy.include_hayz` | `True` | Full-Hayz condition and score contribution |
 | `SectHayzPolicy.include_halb` | `True` | Sect-relative hemisphere condition and score contribution |
 
-Setting one of these fields to `False` removes that condition from labels,
-structured accidental truth, and additive scoring without changing the
-underlying sign, sect, house, or longitude inputs. Hayz and Halb are separately
-selectable; when both are enabled, full Hayz takes precedence in the additive
-label/score while the underlying `in_halb` truth remains preserved.
+Setting one of these fields to `False` removes that admitted condition from
+labels, the condition list, and additive scoring without changing the
+underlying sign, sect, house, or longitude inputs. Atomic truth remains
+preserved when it can be evaluated independently of policy. Hayz and Halb are
+separately selectable; when both are enabled, full Hayz takes precedence in
+the additive label/score while the underlying `in_halb` truth remains
+preserved.
 
 #### 4.3 Sect, hayz, and halb doctrine
 
@@ -298,7 +303,26 @@ not yet supply a horizon frame remain explicitly identified by
 This truth is preserved and classified explicitly even where it does not affect
 the current additive score.
 
-#### 4.4 Solar-condition doctrine
+#### 4.4 Oriental / occidental phase doctrine
+
+`planetary_solar_phase_truth()` is the governing object for the admitted
+longitude-only phase model. It applies to Mercury, Venus, Mars, Jupiter, and
+Saturn and preserves the forward zodiacal arc from the planet to the Sun.
+
+- an arc strictly between 0 and 180 degrees is `oriental`;
+- an arc strictly between 180 and 360 degrees is `occidental`;
+- exact conjunction and exact opposition are direction boundaries and return
+  typed `not_evaluable` truth;
+- luminaries and bodies outside the admitted five-body set return typed
+  `not_evaluable` truth rather than a fabricated phase.
+
+`oriental_occidental()` remains the compatibility projection and returns
+`None` for every non-evaluable receipt. An Oriental/Occidental condition and
+score may be assembled only from an evaluated receipt and only when
+`include_oriental_occidental=True`. Disabling that policy suppresses the
+condition and score but does not erase evaluated geometric truth.
+
+#### 4.5 Solar-condition doctrine
 
 Solar condition doctrine is embodied by the current distance bands:
 
@@ -311,7 +335,7 @@ Solar condition doctrine is embodied by the current distance bands:
 The default policy governs whether each band is admitted. The band arithmetic
 itself remains the authority of the computational core.
 
-#### 4.5 Reception doctrine
+#### 4.6 Reception doctrine
 
 The formal reception basis currently supported is limited to what the engine
 already computes cleanly:
@@ -339,6 +363,7 @@ The following public backend entry points are authoritative:
 | `DignityComputationPolicy` | canonical explicit doctrine/policy surface |
 | `DignityHorizonFrame` | actual Asc/MC zodiacal geometry for house-system-independent sect truth |
 | `EssentialDignityComponentTruth` | one atomic essential-dignity receipt |
+| `PlanetarySolarPhaseTruth` / `planetary_solar_phase_truth()` | typed oriental/occidental geometry and its governing computation |
 | `HorizonTruth` / `MercuryPhaseTruth` / `SectComponentTruth` | typed component receipts with explicit evaluation status |
 | `DignitiesService.calculate_dignities` | authoritative core computation |
 | `DignitiesService.calculate_receptions` | authoritative formal reception projection |
@@ -475,7 +500,8 @@ This register is the normative source of truth for subsystem invariants.
 | T-1 | `essential_truth.label == essential_dignity` when `essential_truth` is present |
 | T-2 | `essential_truth.score == essential_score` when `essential_truth` is present |
 | T-3 | accidental truth labels preserve the same condition labels exposed in `accidental_dignities` |
-| T-4 | sect, Halb, Hayz, horizon, Mercury phase, solar, and reception truth preserve atomic evaluation status rather than fabricating defaults |
+| T-4 | sect, Halb, Hayz, horizon, Mercury phase, planetary solar phase, solar condition, and reception truth preserve atomic evaluation status rather than fabricating defaults |
+| T-5 | an Oriental/Occidental condition exists only when its `PlanetarySolarPhaseTruth` is evaluated and names the same phase |
 
 #### INV-CLASS - Classification invariants
 

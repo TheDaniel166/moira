@@ -7,7 +7,9 @@ import pytest
 from moira import Moira
 from moira.dignities import (
     AccidentalConditionKind,
+    AccidentalDignityCondition,
     AccidentalDignityPolicy,
+    AccidentalDignityTruth,
     ConditionPolarity,
     DignityComputationPolicy,
     DignityHorizonFrame,
@@ -27,6 +29,8 @@ from moira.dignities import (
     MODERN_DETRIMENT,
     MODERN_DOMICILE,
     PlanetaryConditionState,
+    PlanetarySolarPhaseKind,
+    PlanetarySolarPhaseTruth,
     calculate_condition_network_profile,
     PlanetaryReception,
     ReceptionBasis,
@@ -54,6 +58,8 @@ from moira.dignities import (
     is_in_hayz,
     is_in_sect,
     mutual_receptions,
+    oriental_occidental,
+    planetary_solar_phase_truth,
     sect_light,
 )
 from moira.lots import (
@@ -217,6 +223,96 @@ def test_exact_mercury_conjunction_is_typed_not_evaluable() -> None:
     assert mercury.sect_classification.state is SectStateKind.NOT_EVALUABLE
     assert "In Halb" not in mercury.accidental_dignities
     assert "In Hayz" not in mercury.accidental_dignities
+
+
+def test_planetary_solar_phase_truth_fails_closed_at_both_boundaries() -> None:
+    oriental = planetary_solar_phase_truth("Mars", 10.0, 130.0)
+    assert oriental.status is TruthEvaluationStatus.EVALUATED
+    assert oriental.phase is PlanetarySolarPhaseKind.ORIENTAL
+    assert oriental.forward_distance_to_sun_deg == pytest.approx(120.0)
+    assert oriental_occidental("Mars", 10.0, 130.0) == "oriental"
+
+    conjunct = planetary_solar_phase_truth("Mars", 130.0, 130.0)
+    assert conjunct.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert conjunct.phase is None
+    assert conjunct.reason == "planet_conjunct_sun"
+    assert oriental_occidental("Mars", 130.0, 130.0) is None
+
+    opposite = planetary_solar_phase_truth("Venus", 310.0, 130.0)
+    assert opposite.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert opposite.phase is None
+    assert opposite.reason == "planet_opposite_sun"
+    assert oriental_occidental("Venus", 310.0, 130.0) is None
+
+    with pytest.raises(ValueError, match="evaluated results require"):
+        PlanetarySolarPhaseTruth(
+            status=TruthEvaluationStatus.EVALUATED,
+            phase=None,
+            forward_distance_to_sun_deg=120.0,
+        )
+    phase_condition = AccidentalDignityCondition(
+        "phase",
+        "oriental",
+        "Oriental",
+        2,
+    )
+    with pytest.raises(ValueError, match="not_evaluable phase truth"):
+        AccidentalDignityTruth(
+            conditions=[phase_condition],
+            planetary_solar_phase_truth=conjunct,
+            oriental_condition=phase_condition,
+        )
+
+
+def test_planetary_solar_phase_truth_is_preserved_when_policy_suppresses_condition() -> None:
+    planets = [
+        {"name": "Sun", "degree": 130.0},
+        {"name": "Venus", "degree": 10.0},
+    ]
+    disabled_policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+        )
+    )
+    venus = {
+        result.planet: result
+        for result in calculate_dignities(
+            planets,
+            _equal_houses(300.0),
+            policy=disabled_policy,
+        )
+    }["Venus"]
+
+    assert (
+        venus.accidental_truth.planetary_solar_phase_truth.status
+        is TruthEvaluationStatus.EVALUATED
+    )
+    assert (
+        venus.accidental_truth.planetary_solar_phase_truth.phase
+        is PlanetarySolarPhaseKind.ORIENTAL
+    )
+    assert venus.accidental_truth.oriental_condition is None
+    assert "Oriental" not in venus.accidental_dignities
+
+
+def test_planetary_solar_phase_boundary_never_assembles_a_label_or_score() -> None:
+    mars = {
+        result.planet: result
+        for result in calculate_dignities(
+            [
+                {"name": "Sun", "degree": 130.0},
+                {"name": "Mars", "degree": 130.0},
+            ],
+            _equal_houses(300.0),
+        )
+    }["Mars"]
+
+    phase_truth = mars.accidental_truth.planetary_solar_phase_truth
+    assert phase_truth.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert phase_truth.reason == "planet_conjunct_sun"
+    assert mars.accidental_truth.oriental_condition is None
+    assert "Oriental" not in mars.accidental_dignities
+    assert "Occidental" not in mars.accidental_dignities
 
 
 def test_dignities_identify_essential_dignity_mutual_reception_and_hayz() -> None:
