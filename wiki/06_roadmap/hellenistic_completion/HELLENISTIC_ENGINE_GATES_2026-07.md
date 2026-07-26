@@ -15,7 +15,7 @@ particular, “Phase 2” here means doctrine decisions, not the historical
 |---|---|---|---|
 | 1 | False-output containment | Complete | Incorrect or unadmitted Hellenistic outputs fail closed; Decennial L3/L4 and Hermetic public surfaces remain quarantined. |
 | 2 | Doctrine decisions | Complete | The disputed profection, Decennial, Halb/Hayz, ZR, lot, and Hermetic-catalog rules have explicit source or policy decisions. |
-| 3 | Typed truth composition | In progress | Initial dignity, sect/horizon, Mercury-phase, and lot-dependency composition is implemented; remaining atomic families still require migration. |
+| 3 | Typed truth composition | In progress | Dignity, sect/horizon, Mercury phase, solar phase/proximity, besieging, and lot-dependency composition is implemented; remaining atomic families still require migration. |
 | 4 | Contract parity | Pending | Audit effective policy and provenance parity across exports, facade, serializers, REST models, and OpenAPI. Existing partial transport is not a parity receipt. |
 | 5 | Unified Hellenistic profile | Pending | Compose a non-interpretive chart profile only from atomic admitted receipts. |
 | 6 | Validation and documentation regeneration | Pending | Add independent source-owned goldens, regenerate inventories/matrices, archive stale completion claims, and only then update website documentation. |
@@ -136,8 +136,8 @@ This is an implementation inventory, not a capability or correctness claim:
 | Atomic family | Current collapse or default | Phase 3 disposition |
 |---|---|---|
 | Oriental/Occidental phase | The compatibility helper returned `str | None`, exact conjunction and opposition were forced into `oriental`, and policy suppression erased the available geometry. | Closed in the second Phase 3 slice with `PlanetarySolarPhaseTruth`; boundaries are typed `not_evaluable`, and only evaluated truth may assemble a condition or score. |
-| Solar proximity | `SolarConditionTruth.present=False` still conflates an evaluated absence, a non-applicable luminary, and policy-suppressed bands. | Open; separate raw distance/band truth from policy-admitted condition assembly. |
-| Besieging | `tuple | None` conflates evaluated absence, incomplete chart dependencies, same-degree neighbour ambiguity, and missing chart context. | Open; add dependency completeness and typed enclosure truth before scoring. |
+| Solar proximity | `SolarConditionTruth.present=False` conflated an evaluated clear band, a non-applicable Sun, a default-suppressed Moon, and policy-suppressed conditions. | Closed in the third Phase 3 slice with exclusive `SolarProximityTruth`; raw geometry is preserved separately from policy assembly, and the Sun fails closed as non-applicable. |
+| Besieging | `tuple | None` conflated evaluated absence, incomplete chart dependencies, same-degree neighbour ambiguity, and missing chart context. | Closed in the third Phase 3 slice with `BesiegingDependencyCompletenessTruth` and `BesiegingTruth`; incomplete or ambiguous geometry cannot score. |
 | Profection activation | `activated_planets=[]` means either no conjunctions or no natal positions were supplied. | Open; preserve an explicit activation evaluation receipt without changing profected sign or lord truth. |
 | Decennial sequence | The final ordered tuple carries no atomic starting/ordering receipt, and equal non-sect-light longitudes fall through to private planet order. | Open; define exact-tie ambiguity and sequence-assembly truth before changing generation. |
 | ZR Fortune angularity | Missing Fortune leaves `angularity_class=None` but projects `is_peak_period=False`, collapsing “not evaluable” into “not peak.” | Open; separate Fortune dependency/evaluation truth from the compatibility peak flag. |
@@ -165,19 +165,39 @@ planetary phase classifications. Its assembly doctrine is:
 `None` for non-evaluable truth rather than fabricating one side of a boundary.
 Phase 3 remains in progress.
 
+### Phase 3 third-slice receipt
+
+`solar_proximity_truth()` now preserves one exclusive Cazimi, Combust, Under
+Sunbeams, or Clear band before accidental policy assembly. The Sun is typed
+`not_evaluable`; Moon geometry remains available even when the default
+luminary policy suppresses its condition. Policy fall-through remains a
+compatibility behavior and cannot rewrite the raw band.
+
+`besieging_truth()` now requires complete classical chart dependencies and
+preserves the target, nearest backward and forward neighbours, directed
+distances, and configured orb. Missing bodies, unresolved target identity,
+same-degree neighbours, directional ties, and side-boundary ambiguity fail
+closed. Only an evaluated Mars/Saturn enclosure within orb can assemble the
+legacy condition and score. `is_besieged()` remains a flattened compatibility
+projection.
+
+The engine vessels, public dignity exports, chart assembly, compatibility
+helpers, and existing REST serialization path are regression-covered for this
+slice. That serialization evidence is not the Phase 4 parity receipt. Phase 3
+remains in progress.
+
 ### Resting point for the next work session
 
 Resume inside Phase 3; do not advance the gate status yet.
 
-1. take solar-proximity truth next, separating evaluated band absence,
-   non-applicability, and policy suppression before changing any score;
-2. follow with besieging dependency completeness and exact-neighbour ambiguity,
-   then continue through profection, Decennial, ZR, and aspect receipts in the
-   recorded inventory order;
+1. take profection activation truth next, distinguishing an evaluated empty
+   activation set from absent natal-position dependencies;
+2. continue through Decennial sequence assembly, ZR Fortune angularity, and
+   aspect direction/overcoming receipts in the recorded inventory order;
 3. keep root/classical export parity, full REST/OpenAPI parity, the unified
    profile, and website documentation at their named later gates;
 4. rerun the focused dignity/lots/facade/REST gate and documentation
    consistency check after the next slice.
 
-Current-slice validation: 222 focused tests passed, Python compilation passed,
+Current-slice validation: 237 focused tests passed, Python compilation passed,
 documentation consistency passed, and `git diff --check` passed.

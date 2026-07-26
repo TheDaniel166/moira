@@ -34,6 +34,7 @@ __all__ = [
     "AccidentalConditionKind",
     "SectStateKind",
     "SolarConditionKind",
+    "SolarProximityBand",
     "ReceptionKind",
     "ReceptionBasis",
     "ReceptionMode",
@@ -87,6 +88,9 @@ __all__ = [
     "ReceptionClassification",
     "EssentialDignityComponentTruth",
     "PlanetarySolarPhaseTruth",
+    "SolarProximityTruth",
+    "BesiegingDependencyCompletenessTruth",
+    "BesiegingTruth",
     "MercuryPhaseTruth",
     "HorizonTruth",
     "SectComponentTruth",
@@ -217,6 +221,15 @@ class SolarConditionKind(StrEnum):
     CAZIMI = "cazimi"
     COMBUST = "combust"
     UNDER_SUNBEAMS = "under_sunbeams"
+
+
+class SolarProximityBand(StrEnum):
+    """Exclusive raw angular-distance band relative to the Sun."""
+
+    CAZIMI = "cazimi"
+    COMBUST = "combust"
+    UNDER_SUNBEAMS = "under_sunbeams"
+    CLEAR = "clear"
 
 
 class ReceptionKind(StrEnum):
@@ -1494,6 +1507,271 @@ class PlanetarySolarPhaseTruth:
 
 
 @dataclass(frozen=True, slots=True)
+class SolarProximityTruth:
+    """Typed raw solar-distance band before accidental policy assembly."""
+
+    status: TruthEvaluationStatus
+    band: SolarProximityBand | None
+    distance_from_sun_deg: float | None
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, TruthEvaluationStatus):
+            raise ValueError(
+                "SolarProximityTruth status must be a TruthEvaluationStatus"
+            )
+        if self.band is not None and not isinstance(self.band, SolarProximityBand):
+            raise ValueError(
+                "SolarProximityTruth band must be a SolarProximityBand or None"
+            )
+        distance = self.distance_from_sun_deg
+        if distance is not None:
+            if not isfinite(distance):
+                raise ValueError(
+                    "SolarProximityTruth distance must be finite when present"
+                )
+            if not (0.0 <= distance <= 180.0):
+                raise ValueError(
+                    "SolarProximityTruth distance must be in [0, 180]"
+                )
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if self.band is None or distance is None or self.reason is not None:
+                raise ValueError(
+                    "SolarProximityTruth evaluated results require a band, "
+                    "distance, and no reason"
+                )
+        elif self.band is not None or not self.reason:
+            raise ValueError(
+                "SolarProximityTruth not_evaluable results require no band "
+                "and an explicit reason"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class BesiegingDependencyCompletenessTruth:
+    """Required chart-body receipt for nearest-neighbor besieging."""
+
+    status: TruthEvaluationStatus
+    required_bodies: tuple[str, ...]
+    supplied_bodies: tuple[str, ...]
+    missing_bodies: tuple[str, ...]
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, TruthEvaluationStatus):
+            raise ValueError(
+                "BesiegingDependencyCompletenessTruth status must be a "
+                "TruthEvaluationStatus"
+            )
+        for label, bodies in (
+            ("required_bodies", self.required_bodies),
+            ("supplied_bodies", self.supplied_bodies),
+            ("missing_bodies", self.missing_bodies),
+        ):
+            if any(not isinstance(body, str) or not body for body in bodies):
+                raise ValueError(
+                    "BesiegingDependencyCompletenessTruth "
+                    f"{label} must contain non-empty body names"
+                )
+            if len(bodies) != len(set(bodies)):
+                raise ValueError(
+                    f"BesiegingDependencyCompletenessTruth {label} must be unique"
+                )
+        canonical_supplied = tuple(
+            body for body in self.required_bodies if body in self.supplied_bodies
+        )
+        if self.supplied_bodies != canonical_supplied:
+            raise ValueError(
+                "BesiegingDependencyCompletenessTruth supplied_bodies must "
+                "follow required_bodies order"
+            )
+        expected_missing = tuple(
+            body for body in self.required_bodies if body not in self.supplied_bodies
+        )
+        if self.missing_bodies != expected_missing:
+            raise ValueError(
+                "BesiegingDependencyCompletenessTruth missing_bodies must match "
+                "required minus supplied bodies"
+            )
+        if any(
+            body not in self.required_bodies for body in self.supplied_bodies
+        ):
+            raise ValueError(
+                "BesiegingDependencyCompletenessTruth supplied bodies must be required"
+            )
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if self.missing_bodies or self.reason is not None:
+                raise ValueError(
+                    "BesiegingDependencyCompletenessTruth evaluated results "
+                    "require complete dependencies and no reason"
+                )
+        elif not self.reason:
+            raise ValueError(
+                "BesiegingDependencyCompletenessTruth not_evaluable results "
+                "require an explicit reason"
+            )
+
+    @property
+    def complete(self) -> bool:
+        """Whether every required body and target identity is available."""
+
+        return self.status is TruthEvaluationStatus.EVALUATED
+
+
+@dataclass(frozen=True, slots=True)
+class BesiegingTruth:
+    """Typed nearest-neighbor malefic enclosure result."""
+
+    status: TruthEvaluationStatus
+    dependency_truth: BesiegingDependencyCompletenessTruth
+    target_planet: str | None
+    target_longitude: float
+    orb_deg: float
+    besieged: bool | None
+    backward_neighbor: str | None = None
+    forward_neighbor: str | None = None
+    backward_distance_deg: float | None = None
+    forward_distance_deg: float | None = None
+    ambiguous_bodies: tuple[str, ...] = ()
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, TruthEvaluationStatus):
+            raise ValueError(
+                "BesiegingTruth status must be a TruthEvaluationStatus"
+            )
+        if not isinstance(
+            self.dependency_truth,
+            BesiegingDependencyCompletenessTruth,
+        ):
+            raise ValueError(
+                "BesiegingTruth dependency_truth must be a "
+                "BesiegingDependencyCompletenessTruth"
+            )
+        if self.target_planet is not None and (
+            not isinstance(self.target_planet, str) or not self.target_planet
+        ):
+            raise ValueError(
+                "BesiegingTruth target_planet must be a non-empty string or None"
+            )
+        if not isfinite(self.target_longitude) or not (
+            0.0 <= self.target_longitude < 360.0
+        ):
+            raise ValueError(
+                "BesiegingTruth target_longitude must be finite and in [0, 360)"
+            )
+        if not isfinite(self.orb_deg) or not (0.0 < self.orb_deg <= 180.0):
+            raise ValueError("BesiegingTruth orb_deg must be in (0, 180]")
+        for label, body in (
+            ("backward_neighbor", self.backward_neighbor),
+            ("forward_neighbor", self.forward_neighbor),
+        ):
+            if body is not None and (
+                not isinstance(body, str) or not body
+            ):
+                raise ValueError(
+                    f"BesiegingTruth {label} must be a non-empty string or None"
+                )
+        if any(
+            not isinstance(body, str) or not body
+            for body in self.ambiguous_bodies
+        ):
+            raise ValueError(
+                "BesiegingTruth ambiguous_bodies must contain non-empty names"
+            )
+        if len(self.ambiguous_bodies) != len(set(self.ambiguous_bodies)):
+            raise ValueError("BesiegingTruth ambiguous_bodies must be unique")
+        for distance in (
+            self.backward_distance_deg,
+            self.forward_distance_deg,
+        ):
+            if distance is not None and (
+                not isfinite(distance) or not (0.0 < distance < 360.0)
+            ):
+                raise ValueError(
+                    "BesiegingTruth neighbor distances must be in (0, 360)"
+                )
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if not self.dependency_truth.complete:
+                raise ValueError(
+                    "BesiegingTruth evaluated results require complete dependencies"
+                )
+            if not CLASSIC_7.issubset(
+                self.dependency_truth.required_bodies
+            ):
+                raise ValueError(
+                    "BesiegingTruth evaluated results require every Classic 7 "
+                    "dependency"
+                )
+            if (
+                self.target_planet is None
+                or self.target_planet
+                not in self.dependency_truth.required_bodies
+                or self.besieged is None
+                or self.backward_neighbor is None
+                or self.forward_neighbor is None
+                or self.backward_distance_deg is None
+                or self.forward_distance_deg is None
+                or self.reason is not None
+                or self.ambiguous_bodies
+            ):
+                raise ValueError(
+                    "BesiegingTruth evaluated results require two unambiguous "
+                    "neighbors, distances, a boolean, and no reason"
+                )
+            if self.backward_neighbor == self.forward_neighbor:
+                raise ValueError(
+                    "BesiegingTruth evaluated neighbors must be distinct"
+                )
+            if (
+                self.backward_neighbor not in CLASSIC_7
+                or self.forward_neighbor not in CLASSIC_7
+                or self.target_planet
+                in {self.backward_neighbor, self.forward_neighbor}
+            ):
+                raise ValueError(
+                    "BesiegingTruth evaluated neighbors must be distinct "
+                    "Classic 7 bodies other than the target"
+                )
+            expected_besieged = (
+                {
+                    self.backward_neighbor,
+                    self.forward_neighbor,
+                }
+                == {"Mars", "Saturn"}
+                and self.backward_distance_deg <= self.orb_deg
+                and self.forward_distance_deg <= self.orb_deg
+            )
+            if self.besieged is not expected_besieged:
+                raise ValueError(
+                    "BesiegingTruth besieged must match the Mars/Saturn "
+                    "neighbor and orb truth"
+                )
+        elif (
+            self.besieged is not None
+            or self.backward_neighbor is not None
+            or self.forward_neighbor is not None
+            or self.backward_distance_deg is not None
+            or self.forward_distance_deg is not None
+            or not self.reason
+        ):
+            raise ValueError(
+                "BesiegingTruth not_evaluable results require no resolved "
+                "neighbors or boolean and an explicit reason"
+            )
+
+    @property
+    def pair(self) -> tuple[str, str] | None:
+        """Compatibility pair in backward, then forward zodiacal order."""
+
+        if not self.besieged:
+            return None
+        if self.backward_neighbor is None or self.forward_neighbor is None:
+            return None
+        return self.backward_neighbor, self.forward_neighbor
+
+
+@dataclass(frozen=True, slots=True)
 class MercuryPhaseTruth:
     """Typed result of the admitted Mercury longitude-phase heuristic."""
 
@@ -1679,6 +1957,31 @@ class AccidentalDignityTruth:
     house_condition: AccidentalDignityCondition | None = None
     motion_condition: AccidentalDignityCondition | None = None
     solar_condition: SolarConditionTruth = field(default_factory=lambda: SolarConditionTruth(False))
+    solar_proximity_truth: SolarProximityTruth = field(
+        default_factory=lambda: SolarProximityTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            band=None,
+            distance_from_sun_deg=None,
+            reason="not_computed",
+        )
+    )
+    besieging_truth: BesiegingTruth = field(
+        default_factory=lambda: BesiegingTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            dependency_truth=BesiegingDependencyCompletenessTruth(
+                status=TruthEvaluationStatus.NOT_EVALUABLE,
+                required_bodies=(),
+                supplied_bodies=(),
+                missing_bodies=(),
+                reason="not_computed",
+            ),
+            target_planet=None,
+            target_longitude=0.0,
+            orb_deg=12.0,
+            besieged=None,
+            reason="not_computed",
+        )
+    )
     mutual_receptions: list[MutualReceptionTruth] = field(default_factory=list)
     hayz_condition: AccidentalDignityCondition | None = None
     halb_condition: AccidentalDignityCondition | None = None
@@ -1695,26 +1998,85 @@ class AccidentalDignityTruth:
     besieged_condition: AccidentalDignityCondition | None = None
 
     def __post_init__(self) -> None:
-        phase_truth = self.planetary_solar_phase_truth
-        condition = self.oriental_condition
-        if condition is None:
-            return
-        if (
-            phase_truth.status is not TruthEvaluationStatus.EVALUATED
-            or phase_truth.phase is None
+        proximity_truth = self.solar_proximity_truth
+        solar_condition = self.solar_condition
+        if solar_condition.present:
+            if proximity_truth.status is not TruthEvaluationStatus.EVALUATED:
+                raise ValueError(
+                    "AccidentalDignityTruth cannot assemble a solar condition "
+                    "from not_evaluable proximity truth"
+                )
+            if (
+                solar_condition.condition is None
+                or solar_condition.label is None
+                or solar_condition.distance_from_sun is None
+            ):
+                raise ValueError(
+                    "AccidentalDignityTruth present solar conditions require "
+                    "condition, label, and distance"
+                )
+            if solar_condition.distance_from_sun != proximity_truth.distance_from_sun_deg:
+                raise ValueError(
+                    "AccidentalDignityTruth solar condition distance must match "
+                    "solar_proximity_truth"
+                )
+        elif (
+            solar_condition.distance_from_sun is not None
+            and proximity_truth.distance_from_sun_deg is not None
+            and solar_condition.distance_from_sun
+            != proximity_truth.distance_from_sun_deg
         ):
             raise ValueError(
-                "AccidentalDignityTruth cannot assemble an oriental/occidental "
-                "condition from not_evaluable phase truth"
-            )
-        if condition.category != "phase" or condition.code != phase_truth.phase.value:
+                "AccidentalDignityTruth absent solar condition distance must "
+                "match solar_proximity_truth when both are present"
+        )
+        phase_truth = self.planetary_solar_phase_truth
+        condition = self.oriental_condition
+        if condition is not None:
+            if (
+                phase_truth.status is not TruthEvaluationStatus.EVALUATED
+                or phase_truth.phase is None
+            ):
+                raise ValueError(
+                    "AccidentalDignityTruth cannot assemble an "
+                    "oriental/occidental condition from not_evaluable phase truth"
+                )
+            if (
+                condition.category != "phase"
+                or condition.code != phase_truth.phase.value
+            ):
+                raise ValueError(
+                    "AccidentalDignityTruth oriental_condition must match its "
+                    "planetary_solar_phase_truth"
+                )
+            if condition not in self.conditions:
+                raise ValueError(
+                    "AccidentalDignityTruth oriental_condition must be present "
+                    "in conditions"
+                )
+        besieging_truth = self.besieging_truth
+        besieged_condition = self.besieged_condition
+        if besieged_condition is None:
+            return
+        if (
+            besieging_truth.status is not TruthEvaluationStatus.EVALUATED
+            or besieging_truth.besieged is not True
+        ):
             raise ValueError(
-                "AccidentalDignityTruth oriental_condition must match its "
-                "planetary_solar_phase_truth"
+                "AccidentalDignityTruth cannot assemble a besieged condition "
+                "from absent or not_evaluable besieging truth"
             )
-        if condition not in self.conditions:
+        if (
+            besieged_condition.category != "besieging"
+            or besieged_condition.code != "besieged"
+        ):
             raise ValueError(
-                "AccidentalDignityTruth oriental_condition must be present in conditions"
+                "AccidentalDignityTruth besieged_condition must use the "
+                "besieging/besieged identity"
+            )
+        if besieged_condition not in self.conditions:
+            raise ValueError(
+                "AccidentalDignityTruth besieged_condition must be present in conditions"
             )
 
 

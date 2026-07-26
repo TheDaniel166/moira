@@ -77,6 +77,7 @@ __all__ = [
     "AccidentalConditionKind",
     "SectStateKind",
     "SolarConditionKind",
+    "SolarProximityBand",
     "ReceptionKind",
     "ReceptionBasis",
     "ReceptionMode",
@@ -130,6 +131,9 @@ __all__ = [
     "ReceptionClassification",
     "EssentialDignityComponentTruth",
     "PlanetarySolarPhaseTruth",
+    "SolarProximityTruth",
+    "BesiegingDependencyCompletenessTruth",
+    "BesiegingTruth",
     "MercuryPhaseTruth",
     "HorizonTruth",
     "SectComponentTruth",
@@ -148,8 +152,10 @@ __all__ = [
     "is_in_hayz",
     "is_in_halb",
     "is_in_joy",
+    "solar_proximity_truth",
     "planetary_solar_phase_truth",
     "oriental_occidental",
+    "besieging_truth",
     "is_besieged",
     "calculate_dignities",
     "calculate_receptions",
@@ -463,6 +469,56 @@ _SUPERIOR_PLANETS = {"Mars", "Jupiter", "Saturn"}
 _INFERIOR_PLANETS = {"Mercury", "Venus"}
 _PLANETARY_SOLAR_PHASE_BODIES = _SUPERIOR_PLANETS | _INFERIOR_PLANETS
 _PLANETARY_SOLAR_PHASE_BOUNDARY_TOLERANCE_DEG = 1e-12
+_SOLAR_CAZIMI_LIMIT_DEG = 0.283
+_SOLAR_COMBUST_LIMIT_DEG = 8.0
+_SOLAR_BEAMS_LIMIT_DEG = 17.0
+_SOLAR_BAND_BOUNDARY_TOLERANCE_DEG = 1e-12
+
+
+def _within_solar_band_limit(distance: float, limit: float) -> bool:
+    """Apply one inclusive solar-band boundary with arithmetic tolerance."""
+
+    return distance < limit or math.isclose(
+        distance,
+        limit,
+        rel_tol=0.0,
+        abs_tol=_SOLAR_BAND_BOUNDARY_TOLERANCE_DEG,
+    )
+
+
+def solar_proximity_truth(
+    planet: str,
+    planet_lon: float,
+    sun_lon: float,
+) -> SolarProximityTruth:
+    """Return the raw exclusive solar-distance band before policy assembly."""
+
+    if not math.isfinite(planet_lon) or not math.isfinite(sun_lon):
+        raise ValueError("planet_lon and sun_lon must be finite")
+
+    separation = abs((planet_lon % 360.0) - (sun_lon % 360.0))
+    distance = min(separation, 360.0 - separation)
+    if planet == "Sun":
+        return SolarProximityTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            band=None,
+            distance_from_sun_deg=distance,
+            reason="solar_proximity_not_applicable_to_sun",
+        )
+
+    if _within_solar_band_limit(distance, _SOLAR_CAZIMI_LIMIT_DEG):
+        band = SolarProximityBand.CAZIMI
+    elif _within_solar_band_limit(distance, _SOLAR_COMBUST_LIMIT_DEG):
+        band = SolarProximityBand.COMBUST
+    elif _within_solar_band_limit(distance, _SOLAR_BEAMS_LIMIT_DEG):
+        band = SolarProximityBand.UNDER_SUNBEAMS
+    else:
+        band = SolarProximityBand.CLEAR
+    return SolarProximityTruth(
+        status=TruthEvaluationStatus.EVALUATED,
+        band=band,
+        distance_from_sun_deg=distance,
+    )
 
 
 def planetary_solar_phase_truth(
@@ -560,6 +616,240 @@ def oriental_occidental(
     return None if truth.phase is None else truth.phase.value
 
 
+_BESIEGING_GEOMETRY_TOLERANCE_DEG = 1e-12
+
+
+def besieging_truth(
+    planet_lon: float,
+    chart_positions: dict[str, float],
+    planet_name: str | None = None,
+    orb: float = 12.0,
+) -> BesiegingTruth:
+    """Return typed nearest-neighbor malefic enclosure truth."""
+
+    if not math.isfinite(planet_lon):
+        raise ValueError("planet_lon must be finite")
+    if not math.isfinite(orb) or not (0.0 < orb <= 180.0):
+        raise ValueError("orb must be finite and in (0, 180]")
+    if not isinstance(chart_positions, dict):
+        raise TypeError("chart_positions must be a dict of body longitudes")
+
+    target = planet_lon % 360.0
+
+    def circular_distance(left: float, right: float) -> float:
+        separation = abs((left % 360.0) - (right % 360.0))
+        return min(separation, 360.0 - separation)
+
+    relevant_names = tuple(
+        dict.fromkeys(
+            (
+                *_PLANET_ORDER,
+                *(() if not planet_name else (planet_name,)),
+            )
+        )
+    )
+    for name in relevant_names:
+        if name not in chart_positions:
+            continue
+        longitude = chart_positions[name]
+        if not math.isfinite(longitude):
+            raise ValueError(
+                f"chart_positions[{name!r}] must be finite"
+            )
+
+    resolved_target = planet_name if planet_name else None
+    target_reason: str | None = None
+    target_candidates: tuple[str, ...] = ()
+    if resolved_target is None:
+        target_candidates = tuple(
+            name
+            for name in _PLANET_ORDER
+            if (
+                name in chart_positions
+                and circular_distance(chart_positions[name], target)
+                <= _BESIEGING_GEOMETRY_TOLERANCE_DEG
+            )
+        )
+        if len(target_candidates) == 1:
+            resolved_target = target_candidates[0]
+        elif target_candidates:
+            target_reason = "target_identity_ambiguous"
+        else:
+            target_reason = "target_identity_not_supplied"
+
+    required_bodies = tuple(
+        dict.fromkeys(
+            (
+                *_PLANET_ORDER,
+                *(() if resolved_target is None else (resolved_target,)),
+            )
+        )
+    )
+    supplied_bodies = tuple(
+        name for name in required_bodies if name in chart_positions
+    )
+    missing_bodies = tuple(
+        name for name in required_bodies if name not in supplied_bodies
+    )
+
+    if target_reason is not None:
+        dependency_truth = BesiegingDependencyCompletenessTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            required_bodies=required_bodies,
+            supplied_bodies=supplied_bodies,
+            missing_bodies=missing_bodies,
+            reason=target_reason,
+        )
+        return BesiegingTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            dependency_truth=dependency_truth,
+            target_planet=None,
+            target_longitude=target,
+            orb_deg=orb,
+            besieged=None,
+            ambiguous_bodies=target_candidates,
+            reason=target_reason,
+        )
+
+    if missing_bodies:
+        dependency_truth = BesiegingDependencyCompletenessTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            required_bodies=required_bodies,
+            supplied_bodies=supplied_bodies,
+            missing_bodies=missing_bodies,
+            reason="missing_required_chart_bodies",
+        )
+        return BesiegingTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            dependency_truth=dependency_truth,
+            target_planet=resolved_target,
+            target_longitude=target,
+            orb_deg=orb,
+            besieged=None,
+            reason="missing_required_chart_bodies",
+        )
+
+    dependency_truth = BesiegingDependencyCompletenessTruth(
+        status=TruthEvaluationStatus.EVALUATED,
+        required_bodies=required_bodies,
+        supplied_bodies=supplied_bodies,
+        missing_bodies=(),
+    )
+    if circular_distance(chart_positions[resolved_target], target) > (
+        _BESIEGING_GEOMETRY_TOLERANCE_DEG
+    ):
+        raise ValueError(
+            "planet_lon must match chart_positions[planet_name]"
+        )
+
+    candidates = tuple(
+        (name, chart_positions[name] % 360.0)
+        for name in _PLANET_ORDER
+        if name != resolved_target
+    )
+    conjunct_bodies = tuple(
+        name
+        for name, longitude in candidates
+        if circular_distance(longitude, target)
+        <= _BESIEGING_GEOMETRY_TOLERANCE_DEG
+    )
+    if conjunct_bodies:
+        return BesiegingTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            dependency_truth=dependency_truth,
+            target_planet=resolved_target,
+            target_longitude=target,
+            orb_deg=orb,
+            besieged=None,
+            ambiguous_bodies=conjunct_bodies,
+            reason="one_or_more_bodies_conjunct_target",
+        )
+
+    directional = tuple(
+        (
+            name,
+            (longitude - target) % 360.0,
+            (target - longitude) % 360.0,
+        )
+        for name, longitude in candidates
+    )
+    minimum_forward = min(item[1] for item in directional)
+    minimum_backward = min(item[2] for item in directional)
+    forward_ties = tuple(
+        name
+        for name, distance, _ in directional
+        if math.isclose(
+            distance,
+            minimum_forward,
+            rel_tol=0.0,
+            abs_tol=_BESIEGING_GEOMETRY_TOLERANCE_DEG,
+        )
+    )
+    backward_ties = tuple(
+        name
+        for name, _, distance in directional
+        if math.isclose(
+            distance,
+            minimum_backward,
+            rel_tol=0.0,
+            abs_tol=_BESIEGING_GEOMETRY_TOLERANCE_DEG,
+        )
+    )
+    if len(forward_ties) != 1 or len(backward_ties) != 1:
+        ambiguous_candidates = {
+            *(() if len(forward_ties) == 1 else forward_ties),
+            *(() if len(backward_ties) == 1 else backward_ties),
+        }
+        tied_bodies = tuple(
+            name
+            for name in _PLANET_ORDER
+            if name in ambiguous_candidates
+        )
+        return BesiegingTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            dependency_truth=dependency_truth,
+            target_planet=resolved_target,
+            target_longitude=target,
+            orb_deg=orb,
+            besieged=None,
+            ambiguous_bodies=tied_bodies,
+            reason="nearest_neighbor_tie",
+        )
+
+    forward_name = forward_ties[0]
+    backward_name = backward_ties[0]
+    if forward_name == backward_name:
+        return BesiegingTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            dependency_truth=dependency_truth,
+            target_planet=resolved_target,
+            target_longitude=target,
+            orb_deg=orb,
+            besieged=None,
+            ambiguous_bodies=(forward_name,),
+            reason="nearest_neighbor_side_boundary",
+        )
+
+    malefics = {"Mars", "Saturn"}
+    besieged = (
+        {backward_name, forward_name} == malefics
+        and minimum_backward <= orb
+        and minimum_forward <= orb
+    )
+    return BesiegingTruth(
+        status=TruthEvaluationStatus.EVALUATED,
+        dependency_truth=dependency_truth,
+        target_planet=resolved_target,
+        target_longitude=target,
+        orb_deg=orb,
+        besieged=besieged,
+        backward_neighbor=backward_name,
+        forward_neighbor=forward_name,
+        backward_distance_deg=minimum_backward,
+        forward_distance_deg=minimum_forward,
+    )
+
+
 def is_besieged(
     planet_lon: float,
     chart_positions: dict[str, float],
@@ -567,7 +857,7 @@ def is_besieged(
     orb: float = 12.0,
 ) -> tuple[str, str] | None:
     """
-    Determine if a planet is besieged (enclosed) between two malefics.
+    Compatibility projection of typed nearest-neighbor besieging truth.
 
     A planet is besieged when its nearest ecliptic neighbours on *both*
     sides are malefics (Mars and Saturn) within the specified orb.
@@ -581,47 +871,16 @@ def is_besieged(
 
     Returns
     -------
-    Tuple of (left_malefic, right_malefic) names if besieged, else None.
+    Tuple of (backward_malefic, forward_malefic) names when evaluated and
+    besieged, otherwise None. Use :func:`besieging_truth` to distinguish an
+    evaluated absence from missing dependencies or ambiguous geometry.
     """
-    _MALEFICS = {"Mars", "Saturn"}
-
-    # Build list of (longitude, name) for all chart bodies except the target
-    bodies = []
-    for name, lon in chart_positions.items():
-        if name == planet_name:
-            continue
-        if name in ("Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"):
-            bodies.append((lon % 360.0, name))
-
-    if len(bodies) < 2:
-        return None
-
-    target = planet_lon % 360.0
-
-    # Find nearest body on each side (forward and backward in zodiacal order)
-    nearest_forward: tuple[float, str] | None = None
-    nearest_backward: tuple[float, str] | None = None
-
-    for lon, name in bodies:
-        fwd_dist = (lon - target) % 360.0
-        bwd_dist = (target - lon) % 360.0
-
-        if fwd_dist > 0 and (nearest_forward is None or fwd_dist < nearest_forward[0]):
-            nearest_forward = (fwd_dist, name)
-        if bwd_dist > 0 and (nearest_backward is None or bwd_dist < nearest_backward[0]):
-            nearest_backward = (bwd_dist, name)
-
-    if nearest_forward is None or nearest_backward is None:
-        return None
-
-    fwd_dist, fwd_name = nearest_forward
-    bwd_dist, bwd_name = nearest_backward
-
-    if fwd_name in _MALEFICS and bwd_name in _MALEFICS:
-        if fwd_dist <= orb and bwd_dist <= orb:
-            return (bwd_name, fwd_name)
-
-    return None
+    return besieging_truth(
+        planet_lon,
+        chart_positions,
+        planet_name=planet_name,
+        orb=orb,
+    ).pair
 
 
 # ---------------------------------------------------------------------------
@@ -1390,16 +1649,40 @@ class DignitiesService:
             conditions.append(motion_condition)
             score += motion_condition.score
 
+        proximity_truth = solar_proximity_truth(
+            planet,
+            planet_lon,
+            sun_lon,
+        )
         solar_truth = SolarConditionTruth(False)
         solar_policy = policy.accidental.solar
-        if solar_policy.include_for_luminaries or planet not in ("Sun", "Moon"):
-            dist = abs((planet_lon % 360) - (sun_lon % 360))
-            dist = min(dist, 360 - dist)
-            if solar_policy.include_cazimi and dist <= 0.283:
+        solar_applicable = (
+            proximity_truth.status is TruthEvaluationStatus.EVALUATED
+            and (
+                solar_policy.include_for_luminaries
+                or planet not in ("Sun", "Moon")
+            )
+        )
+        if solar_applicable:
+            dist = proximity_truth.distance_from_sun_deg
+            if dist is None:
+                raise ValueError(
+                    "evaluated solar proximity truth requires a distance"
+                )
+            if (
+                solar_policy.include_cazimi
+                and _within_solar_band_limit(dist, _SOLAR_CAZIMI_LIMIT_DEG)
+            ):
                 solar_truth = SolarConditionTruth(True, "cazimi", "Cazimi", SCORE_CAZIMI, dist)
-            elif solar_policy.include_combust and dist <= 8.0:
+            elif (
+                solar_policy.include_combust
+                and _within_solar_band_limit(dist, _SOLAR_COMBUST_LIMIT_DEG)
+            ):
                 solar_truth = SolarConditionTruth(True, "combust", "Combust", SCORE_COMBUST, dist)
-            elif solar_policy.include_under_sunbeams and dist <= 17.0:
+            elif (
+                solar_policy.include_under_sunbeams
+                and _within_solar_band_limit(dist, _SOLAR_BEAMS_LIMIT_DEG)
+            ):
                 solar_truth = SolarConditionTruth(True, "under_sunbeams", "Under Sunbeams", SCORE_SUNBEAMS, dist)
             else:
                 solar_truth = SolarConditionTruth(False, None, None, 0, dist)
@@ -1506,23 +1789,36 @@ class DignitiesService:
 
         # -- Besieging --
         besieged_condition: AccidentalDignityCondition | None = None
-        if chart_positions is not None:
-            besieged = is_besieged(planet_lon, chart_positions, planet_name=planet)
-            if besieged is not None:
-                left, right = besieged
-                besieged_condition = AccidentalDignityCondition(
-                    "besieging", "besieged",
-                    f"Besieged ({left}/{right})", SCORE_BESIEGED,
+        enclosure_truth = besieging_truth(
+            planet_lon,
+            {} if chart_positions is None else chart_positions,
+            planet_name=planet,
+        )
+        if (
+            enclosure_truth.status is TruthEvaluationStatus.EVALUATED
+            and enclosure_truth.besieged
+        ):
+            pair = enclosure_truth.pair
+            if pair is None:
+                raise ValueError(
+                    "evaluated besieging truth requires an enclosing pair"
                 )
-                dignities.append(besieged_condition.label)
-                conditions.append(besieged_condition)
-                score += besieged_condition.score
+            left, right = pair
+            besieged_condition = AccidentalDignityCondition(
+                "besieging", "besieged",
+                f"Besieged ({left}/{right})", SCORE_BESIEGED,
+            )
+            dignities.append(besieged_condition.label)
+            conditions.append(besieged_condition)
+            score += besieged_condition.score
 
         accidental_truth = AccidentalDignityTruth(
             conditions=conditions,
             house_condition=house_condition,
             motion_condition=motion_condition,
             solar_condition=solar_truth,
+            solar_proximity_truth=proximity_truth,
+            besieging_truth=enclosure_truth,
             mutual_receptions=reception_truth,
             hayz_condition=hayz_condition,
             halb_condition=halb_condition,

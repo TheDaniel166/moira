@@ -10,6 +10,8 @@ from moira.dignities import (
     AccidentalDignityCondition,
     AccidentalDignityPolicy,
     AccidentalDignityTruth,
+    BesiegingDependencyCompletenessTruth,
+    BesiegingTruth,
     ConditionPolarity,
     DignityComputationPolicy,
     DignityHorizonFrame,
@@ -42,6 +44,8 @@ from moira.dignities import (
     SectStateKind,
     SolarConditionPolicy,
     SolarConditionKind,
+    SolarProximityBand,
+    SolarProximityTruth,
     TruthEvaluationStatus,
     calculate_chart_condition_profile,
     calculate_condition_profiles,
@@ -53,13 +57,16 @@ from moira.dignities import (
     calculate_dispositorship_subsystem_profile,
     compare_dispositorship,
     calculate_receptions,
+    besieging_truth,
     halb_required_hemisphere,
     is_in_halb,
     is_in_hayz,
     is_in_sect,
+    is_besieged,
     mutual_receptions,
     oriental_occidental,
     planetary_solar_phase_truth,
+    solar_proximity_truth,
     sect_light,
 )
 from moira.lots import (
@@ -101,6 +108,20 @@ from moira.lots import (
 
 def _equal_houses(start: float = 0.0) -> list[dict]:
     return [{"number": i + 1, "degree": (start + i * 30.0) % 360.0} for i in range(12)]
+
+
+def _complete_besieging_chart(**overrides: float) -> dict[str, float]:
+    positions = {
+        "Sun": 100.0,
+        "Moon": 15.0,
+        "Mercury": 150.0,
+        "Venus": 200.0,
+        "Mars": 10.0,
+        "Jupiter": 250.0,
+        "Saturn": 20.0,
+    }
+    positions.update(overrides)
+    return positions
 
 
 def _part_by_name(parts, name: str):
@@ -474,6 +495,369 @@ def test_dignities_solar_proximity_bands_are_classified_correctly(
     assert expected_marker in mercury.accidental_dignities
 
 
+@pytest.mark.parametrize(
+    ("planet_lon", "expected_band"),
+    [
+        (100.0, SolarProximityBand.CAZIMI),
+        (100.283, SolarProximityBand.CAZIMI),
+        (100.284, SolarProximityBand.COMBUST),
+        (108.0, SolarProximityBand.COMBUST),
+        (108.001, SolarProximityBand.UNDER_SUNBEAMS),
+        (117.0, SolarProximityBand.UNDER_SUNBEAMS),
+        (117.001, SolarProximityBand.CLEAR),
+    ],
+)
+def test_solar_proximity_truth_preserves_exclusive_raw_bands(
+    planet_lon: float,
+    expected_band: SolarProximityBand,
+) -> None:
+    truth = solar_proximity_truth("Mercury", planet_lon, 100.0)
+
+    assert truth.status is TruthEvaluationStatus.EVALUATED
+    assert truth.band is expected_band
+    assert truth.distance_from_sun_deg == pytest.approx(
+        abs(planet_lon - 100.0),
+        abs=1e-12,
+    )
+    assert truth.reason is None
+
+
+def test_solar_proximity_truth_separates_non_applicability_and_policy_suppression() -> None:
+    sun_truth = solar_proximity_truth("Sun", 100.0, 100.0)
+    assert sun_truth.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert sun_truth.band is None
+    assert sun_truth.distance_from_sun_deg == 0.0
+    assert sun_truth.reason == "solar_proximity_not_applicable_to_sun"
+
+    with pytest.raises(ValueError, match="evaluated results require"):
+        SolarProximityTruth(
+            status=TruthEvaluationStatus.EVALUATED,
+            band=None,
+            distance_from_sun_deg=5.0,
+        )
+
+    planets = [
+        {"name": "Sun", "degree": 100.0},
+        {"name": "Moon", "degree": 105.0},
+        {"name": "Mercury", "degree": 105.0},
+    ]
+    policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+            solar=SolarConditionPolicy(
+                include_cazimi=False,
+                include_combust=False,
+                include_under_sunbeams=False,
+            ),
+        )
+    )
+    by_name = {
+        result.planet: result
+        for result in calculate_dignities(
+            planets,
+            _equal_houses(0.0),
+            policy=policy,
+        )
+    }
+
+    assert (
+        by_name["Mercury"].accidental_truth.solar_proximity_truth.band
+        is SolarProximityBand.COMBUST
+    )
+    assert by_name["Mercury"].solar_truth.present is False
+    assert by_name["Mercury"].solar_truth.distance_from_sun == pytest.approx(5.0)
+    assert (
+        by_name["Moon"].accidental_truth.solar_proximity_truth.band
+        is SolarProximityBand.COMBUST
+    )
+    assert by_name["Moon"].solar_truth.present is False
+    assert by_name["Moon"].solar_truth.distance_from_sun is None
+    assert (
+        by_name["Sun"].accidental_truth.solar_proximity_truth.status
+        is TruthEvaluationStatus.NOT_EVALUABLE
+    )
+
+
+def test_solar_proximity_policy_assembly_preserves_existing_band_fallthrough() -> None:
+    planets = [
+        {"name": "Sun", "degree": 100.0},
+        {"name": "Moon", "degree": 220.0},
+        {"name": "Mercury", "degree": 100.2},
+    ]
+    policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+            solar=SolarConditionPolicy(
+                include_cazimi=False,
+                include_combust=True,
+                include_under_sunbeams=True,
+            ),
+        )
+    )
+    mercury = {
+        result.planet: result
+        for result in calculate_dignities(
+            planets,
+            _equal_houses(0.0),
+            policy=policy,
+        )
+    }["Mercury"]
+
+    assert (
+        mercury.accidental_truth.solar_proximity_truth.band
+        is SolarProximityBand.CAZIMI
+    )
+    assert mercury.solar_truth.condition == "combust"
+    assert mercury.solar_truth.label == "Combust"
+    assert mercury.solar_truth.score == -5
+
+
+def test_solar_proximity_luminary_policy_can_admit_moon_but_never_sun_itself() -> None:
+    policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+            solar=SolarConditionPolicy(include_for_luminaries=True),
+        )
+    )
+    by_name = {
+        result.planet: result
+        for result in calculate_dignities(
+            [
+                {"name": "Sun", "degree": 100.0},
+                {"name": "Moon", "degree": 105.0},
+            ],
+            _equal_houses(0.0),
+            policy=policy,
+        )
+    }
+
+    assert by_name["Moon"].solar_truth.condition == "combust"
+    assert by_name["Sun"].solar_truth.present is False
+    assert (
+        by_name["Sun"].accidental_truth.solar_proximity_truth.status
+        is TruthEvaluationStatus.NOT_EVALUABLE
+    )
+
+
+def test_besieging_truth_requires_complete_dependencies_and_preserves_neighbors() -> None:
+    positions = _complete_besieging_chart()
+    truth = besieging_truth(
+        positions["Moon"],
+        positions,
+        planet_name="Moon",
+    )
+
+    assert truth.status is TruthEvaluationStatus.EVALUATED
+    assert truth.dependency_truth.complete is True
+    assert truth.dependency_truth.missing_bodies == ()
+    assert truth.besieged is True
+    assert truth.backward_neighbor == "Mars"
+    assert truth.forward_neighbor == "Saturn"
+    assert truth.backward_distance_deg == pytest.approx(5.0)
+    assert truth.forward_distance_deg == pytest.approx(5.0)
+    assert truth.pair == ("Mars", "Saturn")
+    assert is_besieged(
+        positions["Moon"],
+        positions,
+        planet_name="Moon",
+    ) == ("Mars", "Saturn")
+    assert is_besieged(positions["Moon"], positions) == ("Mars", "Saturn")
+
+
+def test_besieging_truth_distinguishes_evaluated_absence_from_missing_bodies() -> None:
+    outside_orb = _complete_besieging_chart(Saturn=40.0)
+    evaluated = besieging_truth(
+        outside_orb["Moon"],
+        outside_orb,
+        planet_name="Moon",
+    )
+    assert evaluated.status is TruthEvaluationStatus.EVALUATED
+    assert evaluated.besieged is False
+    assert evaluated.pair is None
+    assert evaluated.forward_neighbor == "Saturn"
+    assert evaluated.forward_distance_deg == pytest.approx(25.0)
+
+    incomplete = {
+        "Moon": 15.0,
+        "Mars": 10.0,
+        "Saturn": 20.0,
+    }
+    missing = besieging_truth(
+        incomplete["Moon"],
+        incomplete,
+        planet_name="Moon",
+    )
+    assert missing.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert missing.besieged is None
+    assert missing.reason == "missing_required_chart_bodies"
+    assert missing.dependency_truth.complete is False
+    assert missing.dependency_truth.missing_bodies == (
+        "Sun",
+        "Mercury",
+        "Venus",
+        "Jupiter",
+    )
+    assert is_besieged(
+        incomplete["Moon"],
+        incomplete,
+        planet_name="Moon",
+    ) is None
+
+    long_directed_arc = {
+        "Sun": 10.0,
+        "Moon": 0.0,
+        "Mercury": 20.0,
+        "Venus": 30.0,
+        "Mars": 40.0,
+        "Jupiter": 50.0,
+        "Saturn": 170.0,
+    }
+    long_arc_truth = besieging_truth(
+        long_directed_arc["Moon"],
+        long_directed_arc,
+        planet_name="Moon",
+    )
+    assert long_arc_truth.status is TruthEvaluationStatus.EVALUATED
+    assert long_arc_truth.besieged is False
+    assert long_arc_truth.backward_neighbor == "Saturn"
+    assert long_arc_truth.backward_distance_deg == pytest.approx(190.0)
+
+
+def test_besieging_truth_fails_closed_on_conjunctions_and_neighbor_ties() -> None:
+    conjunct = _complete_besieging_chart(Venus=15.0)
+    conjunct_truth = besieging_truth(
+        conjunct["Moon"],
+        conjunct,
+        planet_name="Moon",
+    )
+    assert conjunct_truth.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert conjunct_truth.reason == "one_or_more_bodies_conjunct_target"
+    assert conjunct_truth.ambiguous_bodies == ("Venus",)
+
+    tied = _complete_besieging_chart(
+        Sun=20.0,
+        Mars=10.0,
+        Saturn=10.0,
+    )
+    tied_truth = besieging_truth(
+        tied["Moon"],
+        tied,
+        planet_name="Moon",
+    )
+    assert tied_truth.status is TruthEvaluationStatus.NOT_EVALUABLE
+    assert tied_truth.reason == "nearest_neighbor_tie"
+    assert tied_truth.ambiguous_bodies == ("Mars", "Saturn")
+    assert tied_truth.pair is None
+
+
+def test_besieging_truth_rejects_malformed_dependency_and_condition_assembly() -> None:
+    with pytest.raises(ValueError, match="status must be"):
+        BesiegingDependencyCompletenessTruth(
+            status="evaluated",  # type: ignore[arg-type]
+            required_bodies=(),
+            supplied_bodies=(),
+            missing_bodies=(),
+        )
+
+    with pytest.raises(ValueError, match="missing_bodies must match"):
+        BesiegingDependencyCompletenessTruth(
+            status=TruthEvaluationStatus.NOT_EVALUABLE,
+            required_bodies=("Sun", "Moon"),
+            supplied_bodies=("Sun",),
+            missing_bodies=(),
+            reason="missing_required_chart_bodies",
+        )
+
+    incomplete = besieging_truth(
+        15.0,
+        {"Moon": 15.0, "Mars": 10.0, "Saturn": 20.0},
+        planet_name="Moon",
+    )
+    condition = AccidentalDignityCondition(
+        "besieging",
+        "besieged",
+        "Besieged (Mars/Saturn)",
+        -5,
+    )
+    with pytest.raises(ValueError, match="not_evaluable besieging truth"):
+        AccidentalDignityTruth(
+            conditions=[condition],
+            besieging_truth=incomplete,
+            besieged_condition=condition,
+        )
+    complete_dependencies = BesiegingDependencyCompletenessTruth(
+        status=TruthEvaluationStatus.EVALUATED,
+        required_bodies=tuple(_complete_besieging_chart()),
+        supplied_bodies=tuple(_complete_besieging_chart()),
+        missing_bodies=(),
+    )
+    with pytest.raises(ValueError, match="besieged must match"):
+        BesiegingTruth(
+            status=TruthEvaluationStatus.EVALUATED,
+            dependency_truth=complete_dependencies,
+            target_planet="Moon",
+            target_longitude=15.0,
+            orb_deg=12.0,
+            besieged=True,
+            backward_neighbor="Venus",
+            forward_neighbor="Saturn",
+            backward_distance_deg=5.0,
+            forward_distance_deg=5.0,
+        )
+    with pytest.raises(ValueError, match="besieged must match"):
+        BesiegingTruth(
+            status=TruthEvaluationStatus.EVALUATED,
+            dependency_truth=complete_dependencies,
+            target_planet="Moon",
+            target_longitude=15.0,
+            orb_deg=12.0,
+            besieged=False,
+            backward_neighbor="Mars",
+            forward_neighbor="Saturn",
+            backward_distance_deg=5.0,
+            forward_distance_deg=5.0,
+        )
+
+
+def test_dignity_assembly_never_scores_incomplete_besieging_dependencies() -> None:
+    incomplete_planets = [
+        {"name": "Sun", "degree": 100.0},
+        {"name": "Moon", "degree": 15.0},
+        {"name": "Mars", "degree": 10.0},
+        {"name": "Saturn", "degree": 20.0},
+    ]
+    moon = {
+        result.planet: result
+        for result in calculate_dignities(
+            incomplete_planets,
+            _equal_houses(0.0),
+        )
+    }["Moon"]
+    assert (
+        moon.accidental_truth.besieging_truth.status
+        is TruthEvaluationStatus.NOT_EVALUABLE
+    )
+    assert moon.accidental_truth.besieged_condition is None
+    assert not any(
+        label.startswith("Besieged") for label in moon.accidental_dignities
+    )
+
+    complete_planets = [
+        {"name": name, "degree": longitude}
+        for name, longitude in _complete_besieging_chart().items()
+    ]
+    complete_moon = {
+        result.planet: result
+        for result in calculate_dignities(
+            complete_planets,
+            _equal_houses(0.0),
+        )
+    }["Moon"]
+    assert complete_moon.accidental_truth.besieging_truth.besieged is True
+    assert complete_moon.accidental_truth.besieged_condition is not None
+    assert "Besieged (Mars/Saturn)" in complete_moon.accidental_dignities
+
+
 def test_dignities_expose_structured_solar_condition_truth() -> None:
     house_positions = _equal_houses(0.0)
     planet_positions = [
@@ -507,6 +891,10 @@ def test_dignities_expose_structured_solar_condition_truth() -> None:
     assert mercury.solar_truth.score == -5
     assert mercury.solar_truth.distance_from_sun == pytest.approx(5.0, abs=1e-12)
     assert mercury.accidental_truth.solar_condition.label == "Combust"
+    assert (
+        mercury.accidental_truth.solar_proximity_truth.band
+        is SolarProximityBand.COMBUST
+    )
     assert mercury.sect_truth is not None
     assert mercury.sect_truth.in_sect is True
     assert mercury.sect_truth.in_halb is False

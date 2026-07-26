@@ -79,8 +79,10 @@ The currently embodied accidental dimensions are:
 
 Every condition admitted by the active accidental policy is assembled as an
 explicit `AccidentalDignityCondition` before it contributes to
-`accidental_score`. The underlying `PlanetarySolarPhaseTruth` is preserved
-independently of whether policy admits its compatibility condition.
+`accidental_score`. The underlying `PlanetarySolarPhaseTruth`,
+`SolarProximityTruth`, and `BesiegingTruth` are preserved independently of
+whether policy admits a compatibility condition or the required chart
+dependencies are complete.
 
 #### 1.4 Reception
 
@@ -324,18 +326,54 @@ condition and score but does not erase evaluated geometric truth.
 
 #### 4.5 Solar-condition doctrine
 
-Solar condition doctrine is embodied by the current distance bands:
+`solar_proximity_truth()` is the governing raw geometric object. It computes
+the minimum angular distance from the body to the Sun and assigns exactly one
+exclusive band:
 
-| Condition | Current band | Score |
+| Raw band | Exclusive angular-distance interval | Compatibility score when admitted |
 |---|---|---|
-| Cazimi | within 17 arcminutes of the Sun | `SCORE_CAZIMI` |
-| Combust | within 8 degrees of the Sun | `SCORE_COMBUST` |
-| Under Sunbeams | greater than 8 and within 17 degrees | `SCORE_SUNBEAMS` |
+| `cazimi` | 0 through 0.283 degrees, inclusive | `SCORE_CAZIMI` |
+| `combust` | greater than 0.283 through 8 degrees, inclusive | `SCORE_COMBUST` |
+| `under_sunbeams` | greater than 8 through 17 degrees, inclusive | `SCORE_SUNBEAMS` |
+| `clear` | greater than 17 degrees | no solar-condition score |
 
-The default policy governs whether each band is admitted. The band arithmetic
-itself remains the authority of the computational core.
+The raw truth is independent of policy admission. The Sun returns typed
+`not_evaluable` because solar proximity is not applicable to the Sun itself.
+The Moon receives raw geometric truth, but the default accidental policy does
+not assemble a solar condition for either luminary. Explicit
+`include_for_luminaries=True` may admit a Moon condition; it never turns the
+Sun into its own Cazimi condition.
 
-#### 4.6 Reception doctrine
+Compatibility assembly retains the historical policy fall-through: if a
+narrower condition is disabled, the same distance may be admitted by an
+enabled wider condition. This does not alter the exclusive raw band preserved
+in `SolarProximityTruth`. Inclusive boundary comparisons use a
+`1e-12`-degree arithmetic tolerance solely to contain floating-point
+subtraction error; it is not an observational or doctrinal orb.
+
+#### 4.6 Besieging doctrine
+
+`besieging_truth()` is the governing enclosure object. It requires the complete
+Classic 7 longitude set plus an explicit or uniquely inferable target identity.
+It then preserves the nearest distinct classical body in each directed
+zodiacal direction.
+
+- missing required bodies or target identity return typed `not_evaluable`;
+- a body conjunct the target, a tied nearest neighbour, or an unresolved
+  direction boundary returns typed `not_evaluable`;
+- an evaluated result is besieged only when the two directional neighbours are
+  Mars and Saturn and each is within the configured orb;
+- directed neighbour distances occupy `(0, 360)` degrees; the independently
+  configured eligibility orb remains limited to `(0, 180]` degrees;
+- an evaluated `False` remains distinct from incomplete dependencies or
+  ambiguous geometry;
+- only evaluated `True` truth may assemble the `besieged` condition and score.
+
+`is_besieged()` remains the flattened compatibility projection and therefore
+returns `None` for both evaluated absence and non-evaluable truth. Consumers
+that need to distinguish those states must use `besieging_truth()`.
+
+#### 4.7 Reception doctrine
 
 The formal reception basis currently supported is limited to what the engine
 already computes cleanly:
@@ -364,6 +402,9 @@ The following public backend entry points are authoritative:
 | `DignityHorizonFrame` | actual Asc/MC zodiacal geometry for house-system-independent sect truth |
 | `EssentialDignityComponentTruth` | one atomic essential-dignity receipt |
 | `PlanetarySolarPhaseTruth` / `planetary_solar_phase_truth()` | typed oriental/occidental geometry and its governing computation |
+| `SolarProximityTruth` / `solar_proximity_truth()` | typed exclusive solar-distance band before policy assembly |
+| `BesiegingDependencyCompletenessTruth` | typed required, supplied, and missing chart-body dependencies for enclosure evaluation |
+| `BesiegingTruth` / `besieging_truth()` | typed directional-neighbour enclosure truth and its governing computation |
 | `HorizonTruth` / `MercuryPhaseTruth` / `SectComponentTruth` | typed component receipts with explicit evaluation status |
 | `DignitiesService.calculate_dignities` | authoritative core computation |
 | `DignitiesService.calculate_receptions` | authoritative formal reception projection |
@@ -448,7 +489,7 @@ is treated as an implementation defect unless the test itself is proven wrong.
 
 | File | Scope | Focus |
 |---|---|---|
-| `tests/unit/test_dignities_and_lots.py` | subsystem-focused | legacy score preservation, truth/classification consistency, policy, reception, condition, chart-wide aggregation, network, malformed input, deterministic failure behavior |
+| `tests/unit/test_moira_dignities_and_lots.py` | subsystem-focused | legacy score preservation, truth/classification consistency, policy, reception, condition, chart-wide aggregation, network, malformed input, deterministic failure behavior |
 | `tests/unit/test_rule_engine_validation.py -k dignity` | cross-subsystem regression seam | dignity result compatibility with the rule-engine validation surface |
 
 ---
@@ -460,7 +501,7 @@ is treated as an implementation defect unless the test itself is proven wrong.
 | Layer | Must test |
 |---|---|
 | core dignity computation | `total_score == essential_score + accidental_score`; legacy labels and scores remain unchanged under default policy |
-| truth preservation | essential, accidental, sect, solar, and mutual-reception truth align with the legacy result fields they preserve |
+| truth preservation | essential, accidental, sect, solar phase/proximity, besieging, and mutual-reception truth align with the compatibility result fields they preserve |
 | classification | every classification field aligns with its source truth and remains deterministic |
 | inspectability | convenience properties are derived only and add no new doctrine or scoring |
 | policy | default policy preserves historical behavior exactly; narrower policy changes only its explicit admission surface |
@@ -500,8 +541,10 @@ This register is the normative source of truth for subsystem invariants.
 | T-1 | `essential_truth.label == essential_dignity` when `essential_truth` is present |
 | T-2 | `essential_truth.score == essential_score` when `essential_truth` is present |
 | T-3 | accidental truth labels preserve the same condition labels exposed in `accidental_dignities` |
-| T-4 | sect, Halb, Hayz, horizon, Mercury phase, planetary solar phase, solar condition, and reception truth preserve atomic evaluation status rather than fabricating defaults |
+| T-4 | sect, Halb, Hayz, horizon, Mercury phase, planetary solar phase, solar proximity, besieging, solar condition, and reception truth preserve atomic evaluation status rather than fabricating defaults |
 | T-5 | an Oriental/Occidental condition exists only when its `PlanetarySolarPhaseTruth` is evaluated and names the same phase |
+| T-6 | a solar condition can be assembled only from evaluated `SolarProximityTruth`; policy suppression never erases or changes the exclusive raw band |
+| T-7 | a besieged condition exists only when `BesiegingTruth` is evaluated `True` with complete dependencies and Mars/Saturn as the two directional neighbours |
 
 #### INV-CLASS - Classification invariants
 

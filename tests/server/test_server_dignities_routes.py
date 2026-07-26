@@ -103,6 +103,29 @@ def test_dignities_chart_route_matches_service(
             direct_phase.forward_distance_to_sun_deg
         )
         assert phase["reason"] == direct_phase.reason
+        proximity = transported["accidental_truth"]["solar_proximity_truth"]
+        direct_proximity = (
+            direct_dignity.accidental_truth.solar_proximity_truth
+        )
+        assert proximity["status"] == direct_proximity.status.value
+        assert proximity["band"] == (
+            None
+            if direct_proximity.band is None
+            else direct_proximity.band.value
+        )
+        assert proximity["distance_from_sun_deg"] == pytest.approx(
+            direct_proximity.distance_from_sun_deg
+        )
+        assert proximity["reason"] == direct_proximity.reason
+        enclosure = transported["accidental_truth"]["besieging_truth"]
+        direct_enclosure = direct_dignity.accidental_truth.besieging_truth
+        assert enclosure["status"] == direct_enclosure.status.value
+        assert enclosure["besieged"] is direct_enclosure.besieged
+        assert (
+            enclosure["dependency_truth"]["missing_bodies"]
+            == list(direct_enclosure.dependency_truth.missing_bodies)
+        )
+        assert enclosure["reason"] == direct_enclosure.reason
 
 
 @pytest.mark.requires_ephemeris
