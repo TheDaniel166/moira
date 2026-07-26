@@ -11,9 +11,9 @@ It is not the contract itself.
 It is not the audit ledger.
 
 Those roles remain owned by:
-- [ENGINE_VS_SERVICE_BOUNDARY.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/00_foundations/ENGINE_VS_SERVICE_BOUNDARY.md)
-- [SERVICE_LAYER_GUIDE.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/02_services/SERVICE_LAYER_GUIDE.md)
-- [REST_REDUCTION_VISIBILITY_AUDIT.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/02_services/REST_REDUCTION_VISIBILITY_AUDIT.md)
+- [ENGINE_VS_SERVICE_BOUNDARY.md](../00_foundations/ENGINE_VS_SERVICE_BOUNDARY.md)
+- [SERVICE_LAYER_GUIDE.md](./SERVICE_LAYER_GUIDE.md)
+- [REST_REDUCTION_VISIBILITY_AUDIT.md](./REST_REDUCTION_VISIBILITY_AUDIT.md)
 
 This plan governs rollout order, transport shape decisions, verification
 obligations, and deferral discipline.
@@ -70,7 +70,7 @@ As of 2026-06-04:
   how directly they expose reduction truth
 
 This baseline is tracked in the live audit:
-- [REST_REDUCTION_VISIBILITY_AUDIT.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/02_services/REST_REDUCTION_VISIBILITY_AUDIT.md)
+- [REST_REDUCTION_VISIBILITY_AUDIT.md](./REST_REDUCTION_VISIBILITY_AUDIT.md)
 
 ---
 

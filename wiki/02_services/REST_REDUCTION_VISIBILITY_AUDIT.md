@@ -11,9 +11,9 @@ Purpose:
 - define the next implementation wave
 
 Related governing documents:
-- [ENGINE_VS_SERVICE_BOUNDARY.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/00_foundations/ENGINE_VS_SERVICE_BOUNDARY.md)
-- [SERVICE_LAYER_GUIDE.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/02_services/SERVICE_LAYER_GUIDE.md)
-- [REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/02_services/REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md)
+- [ENGINE_VS_SERVICE_BOUNDARY.md](../00_foundations/ENGINE_VS_SERVICE_BOUNDARY.md)
+- [SERVICE_LAYER_GUIDE.md](./SERVICE_LAYER_GUIDE.md)
+- [REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md](./REST_REDUCTION_VISIBILITY_IMPLEMENTATION_PLAN.md)
 
 ---
 
@@ -55,9 +55,9 @@ This audit is about transport truth, not numerical correctness.
 ### 3.1 `chart` and `houses`
 
 Files:
-- [moira_server/routers/chart.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/routers/chart.py)
-- [moira_server/serializers/chart.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/serializers/chart.py)
-- [moira_server/models/chart.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/models/chart.py)
+- [moira_server/routers/chart.py](../../moira_server/routers/chart.py)
+- [moira_server/serializers/chart.py](../../moira_server/serializers/chart.py)
+- [moira_server/models/chart.py](../../moira_server/models/chart.py)
 
 Current truth preserved:
 - `houses` keeps:
@@ -82,9 +82,9 @@ Judgment:
 ### 3.2 `positions`
 
 Files:
-- [moira_server/routers/positions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/routers/positions.py)
-- [moira_server/serializers/positions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/serializers/positions.py)
-- [moira_server/models/positions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/models/positions.py)
+- [moira_server/routers/positions.py](../../moira_server/routers/positions.py)
+- [moira_server/serializers/positions.py](../../moira_server/serializers/positions.py)
+- [moira_server/models/positions.py](../../moira_server/models/positions.py)
 
 Current truth preserved:
 - final body position
@@ -106,9 +106,9 @@ Judgment:
 ### 3.3 `primary-directions`
 
 Files:
-- [moira_server/models/primary_directions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/models/primary_directions.py)
-- [moira_server/routers/primary_directions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/routers/primary_directions.py)
-- [moira_server/serializers/primary_directions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/serializers/primary_directions.py)
+- [moira_server/models/primary_directions.py](../../moira_server/models/primary_directions.py)
+- [moira_server/routers/primary_directions.py](../../moira_server/routers/primary_directions.py)
+- [moira_server/serializers/primary_directions.py](../../moira_server/serializers/primary_directions.py)
 
 Current truth preserved:
 - compact routes preserve:
@@ -143,9 +143,9 @@ Judgment:
 ### 3.4 `progressions`
 
 Files:
-- [moira_server/models/progressions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/models/progressions.py)
-- [moira_server/routers/progressions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/routers/progressions.py)
-- [moira_server/serializers/progressions.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/serializers/progressions.py)
+- [moira_server/models/progressions.py](../../moira_server/models/progressions.py)
+- [moira_server/routers/progressions.py](../../moira_server/routers/progressions.py)
+- [moira_server/serializers/progressions.py](../../moira_server/serializers/progressions.py)
 
 Current truth preserved:
 - compact routes preserve:
@@ -180,8 +180,8 @@ Judgment:
 ### 3.5 `transits`
 
 Files:
-- [moira_server/models/transits.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/models/transits.py)
-- [moira_server/serializers/transits.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/serializers/transits.py)
+- [moira_server/models/transits.py](../../moira_server/models/transits.py)
+- [moira_server/serializers/transits.py](../../moira_server/serializers/transits.py)
 
 Current truth preserved:
 - computation truth
@@ -197,8 +197,8 @@ Judgment:
 ### 3.6 `relationship`
 
 Files:
-- [moira_server/models/relationship.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/models/relationship.py)
-- [moira_server/serializers/relationship.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/serializers/relationship.py)
+- [moira_server/models/relationship.py](../../moira_server/models/relationship.py)
+- [moira_server/serializers/relationship.py](../../moira_server/serializers/relationship.py)
 
 Current truth preserved:
 - classification
@@ -213,10 +213,10 @@ Judgment:
 ### 3.7 `batch`
 
 Files:
-- [moira_server/models/batch.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/models/batch.py)
-- [moira_server/routers/batch.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/routers/batch.py)
-- [moira_server/serializers/batch.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/serializers/batch.py)
-- [moira_server/services/batch.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira_server/services/batch.py)
+- [moira_server/models/batch.py](../../moira_server/models/batch.py)
+- [moira_server/routers/batch.py](../../moira_server/routers/batch.py)
+- [moira_server/serializers/batch.py](../../moira_server/serializers/batch.py)
+- [moira_server/services/batch.py](../../moira_server/services/batch.py)
 
 Current truth preserved:
 - compact batch routes still preserve:

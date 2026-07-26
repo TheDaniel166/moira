@@ -33,7 +33,7 @@ More specifically:
 ## What Was Recovered
 
 The current source packet is documented in:
-- [savard_a_source_packet.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/01_doctrines/houses/savard_a_source_packet.md)
+- [savard_a_source_packet.md](./savard_a_source_packet.md)
 
 That packet establishes:
 - `Savard-A` is a distinct modern software-recognized system
@@ -151,7 +151,7 @@ with `constants.py` or `houses.py`.
 
 ## Sources
 
-- [savard_a_source_packet.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/01_doctrines/houses/savard_a_source_packet.md)
+- [savard_a_source_packet.md](./savard_a_source_packet.md)
 - John Savard exposition:
   - http://www.quadibloc.com/other/as01.htm
 - Astrolog 7.30 change log:

@@ -39,7 +39,7 @@ design has failed even before implementation begins.
 ### New `HouseSystem` codes
 
 This design assumes two new canonical codes will eventually be added in
-[moira/constants.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/constants.py):
+[moira/constants.py](../../../moira/constants.py):
 
 - `HouseSystem.PULLEN_SD`
 - `HouseSystem.PULLEN_SR`
@@ -77,7 +77,7 @@ Topocentric / Campanus.
 ## Existing Runtime Anchors To Reuse
 
 The present extension seam in
-[moira/houses.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/houses.py)
+[moira/houses.py](../../../moira/houses.py)
 already computes:
 
 - `mc = _mc_from_armc(armc, obliquity, lat)`
@@ -107,17 +107,17 @@ assembly helpers, not near Placidus/Koch/Regio families.
 
 ### Files to change at implementation time
 
-1. [moira/constants.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/constants.py)
+1. [moira/constants.py](../../../moira/constants.py)
    - add the two `HouseSystem` codes
    - add display names to `HOUSE_SYSTEM_NAMES`
 
-2. [moira/houses.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/moira/houses.py)
+2. [moira/houses.py](../../../moira/houses.py)
    - add `_CLASSIFICATIONS` entries
    - add `_KNOWN_SYSTEMS` entries
    - add two private computation helpers
    - add dispatch branches inside `houses_from_armc(...)`
 
-3. [tests/unit/test_house_classification.py](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/tests/unit/test_house_classification.py)
+3. [tests/unit/test_house_classification.py](../../../tests/unit/test_house_classification.py)
    - family, basis, latitude-sensitive, polar-capable assertions
 
 4. new focused house tests
@@ -125,7 +125,7 @@ assembly helpers, not near Placidus/Koch/Regio families.
    - degeneracy tests
    - ordered-figure / invariant tests
 
-5. [wiki/02_standards/HOUSES_BACKEND_STANDARD.md](c:/Users/nilad/OneDrive/Desktop/Moira%20C++/wiki/02_standards/HOUSES_BACKEND_STANDARD.md)
+5. [wiki/02_standards/HOUSES_BACKEND_STANDARD.md](../../02_standards/HOUSES_BACKEND_STANDARD.md)
    - only after runtime admission is real
 
 ---

@@ -69,7 +69,10 @@ def _split_anchor(target: str) -> tuple[str, str]:
 def _path_from_local_target(source_path: Path, target_path: str) -> Path | None:
     normalized = target_path.replace("\\", "/")
     if re.match(r"^[A-Za-z]:/", normalized):
-        return Path(normalized)
+        # A Windows drive-qualified link is machine-local.  Leaving it
+        # untouched on every platform is deterministic; canonical wiki links
+        # that should be published must instead be repository-relative.
+        return None
     if normalized.startswith("/"):
         return Path(normalized)
     if normalized.startswith("wiki/") or normalized.startswith("moira/") or normalized.startswith("tests/"):
