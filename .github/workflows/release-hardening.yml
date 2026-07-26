@@ -61,6 +61,7 @@ jobs:
             -q
           python -m pytest tests/server/test_server_decans_routes.py \
             -q -k "decan_routes_are_registered or quarantined_hermetic_decan_routes_return_not_found"
+          python -m pytest tests/server/test_server_route_discoverability.py -q
 
       - name: Run public surface and release hardening suites
         run: |

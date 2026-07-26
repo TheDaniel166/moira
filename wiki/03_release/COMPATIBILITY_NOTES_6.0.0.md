@@ -132,6 +132,13 @@ In particular:
 Compatibility scalar fields remain projections, but new code should use the
 typed receipts as the governing truth.
 
+Moira 6.0.0 constrains the optional server stack to `FastAPI>=0.115,<0.137`
+and `Starlette>=0.46,<1.3`. Later FastAPI releases changed route-table
+internals, while Starlette 1.3 changed the test-client transport contract,
+after the 6.0.0 validation baseline. Those new framework contracts are not
+admitted by this release. Install `moira-astro[server]==6.0.0` rather than
+overriding the declared constraints.
+
 ## Recommended Migration Sequence
 
 1. Remove imports of the nine removed Hermetic curated symbols.

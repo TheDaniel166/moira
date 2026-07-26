@@ -80,6 +80,9 @@ Detailed release and migration guidance is available in
 - Added strict release-CI gates for source goldens, generated inventory drift,
   contract parity, unified-profile behavior, Hermetic transport absence, and
   OpenAPI truth.
+- Constrained the server extra to the admitted pre-lazy-router FastAPI route
+  table and Starlette test-client contract, and declared the test transport
+  dependency so clean server environments match the validated contract.
 - Regenerated the REST reference, website documentation publication bundle,
   capability matrix, API inventory, and mirrored wiki from runtime truth.
 - Archived superseded Hellenistic roadmaps and narrowed remaining research
