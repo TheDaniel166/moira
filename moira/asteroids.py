@@ -502,13 +502,15 @@ ASTEROID_NAIF: dict[str, int] = {
     "Gonggong":     2225088,
 }
 
-# Data-driven unified catalog: merge the full Moira asteroid catalog built by
-# scripts/build_unified_asteroid_catalog.py (name -> NAIF id, ~1382 bodies).
+# Data-driven sovereign identity catalog: merge the canonical names admitted by
+# scripts/build_asteroid_identity_catalog.py from the finalized public asteroid
+# release (name -> NAIF id, 9,974 bodies in release 2026.07.27.1).
 # Kept in a data file rather than inline so the entries do not bloat this module;
 # loaded here (before the reverse map) so name and NAIF lookups both see them.
 # `setdefault` keeps the curated names above for the core bodies while the data
-# file supplies the rest. Best-effort: a missing/malformed data file leaves the
-# curated core catalog intact.
+# file supplies the rest. The companion metadata file records the exact release
+# manifest and source-ledger hashes. Best-effort: a missing/malformed data file
+# leaves the curated core catalog intact.
 try:  # pragma: no cover - data-file merge
     import json as _json
     from pathlib import Path as _Path
