@@ -1,13 +1,14 @@
 # Timelords Backend Standard
 
-**Subsystem:** `moira/timelords.py`
-**Computational Domains:** Firdaria, Decennials, Zodiacal Releasing
+**Subsystem:** `moira/profections.py`, `moira/timelords.py`
+**Computational Domains:** Profections, Firdaria, Decennials, Zodiacal Releasing
 **Constitutional Phase:** 11 — Architecture Freeze and Validation Codex
 **Status:** Constitutional
 
-> **Phase-1 containment correction — 2026-07-25.** Decennials Levels 3–4
-> and both named deep-subdivision policies are quarantined. The admitted
-> runtime and REST surface ends at L2. Zodiacal Releasing now classifies all
+> **Closed Decennial boundary — 2026-07-27.** The complete admitted
+> Decennials contract is L1/L2. Levels 3–4 and named deep-subdivision methods
+> are closed exclusions, not unfinished engine work. The runtime and REST
+> request surface ends at L2. Zodiacal Releasing classifies all
 > twelve places from Fortune, identifies only angular places as peaks, and
 > rejects queries at or beyond the exact full-circuit endpoint.
 
@@ -24,11 +25,45 @@
 > fixture; the inconsistent intervening numerical table is not treated as an
 > oracle against the source prose.
 
+> **Dated monthly profection contract — 2026-07-27.** The admitted twelve-sign
+> monthly sequence now has an explicit dated projection. Moira partitions the
+> exact elapsed duration between consecutive civil anniversaries into twelve
+> equal-microsecond, half-open intervals in an explicit IANA timezone. The
+> receipt identifies this as a computational projection, not as Valens IV.28's
+> separate luminary-distance method.
+
 ---
 
 ## Part I — Architecture Standard
 
 ### §1. Computational Definitions
+
+#### §1.0 Annual and Monthly Profections
+
+`annual_profection()` advances the natal Ascendant by one whole sign for each
+completed year. `monthly_profection()` advances the resulting longitude by
+one whole sign for each month index in `0..11`.
+
+`profection_schedule()` owns civil-anniversary age resolution and attaches a
+query-specific `ProfectionChronology`. REST callers normalized to UTC supply
+`civil_timezone`; explicit IANA zones resolve through the standard-library
+`zoneinfo` interface. The request fails closed if the host lacks the requested
+IANA entry, and the result does not claim an unavailable database version.
+
+The sole admitted dated interval policy is
+`equal_twelfths_of_civil_anniversary_year`. It divides elapsed UTC time between
+the exact local civil anniversary and the following anniversary into twelve
+integer-microsecond partitions. Boundaries are start-inclusive and
+end-exclusive. No fixed 30-day, 365.25-day, or civil-calendar-month
+approximation is admitted.
+
+The chronology method is classified as `computational_projection`. Valens
+IV.28's day-Sun/night-Moon distance method is a distinct technique outside
+this contract; the equal-twelfths policy does not claim historical
+equivalence.
+
+Authoritative doctrine and boundary details:
+`wiki/01_doctrines/timelords/monthly_profection_chronology_doctrine.md`.
 
 #### §1.1 Firdaria
 
@@ -125,11 +160,11 @@ generated L1/L2 period carries the same evaluated assembly receipt.
 | `deep_subdivision_method="valens"` | Not admitted |
 | `deep_subdivision_method="hephaistio"` | Not admitted |
 
-Any request for L3/L4 or either named deep method fails closed. Readmission
-requires a source-backed rule for projecting the deeper historical periods
-onto the engine's explicit time bases.
+Any request for L3/L4 or either named deep method fails closed. This is the
+finished contract boundary. A future proposal would be a separate
+source-admission project, not completion work for this engine release.
 
-#### §1.4 Valens Distributions (Quarantined Candidate Layer)
+#### §1.4 Valens Distributions (Closed Interpretive Exclusion)
 
 The Valens distributions/transmissions delineation layer is **not admitted**.
 The earlier implementation did not preserve the receiver relation needed to
@@ -137,17 +172,18 @@ select a source item, duplicated incomplete tables, attached effects
 automatically, and inferred benefic/malefic scores from English keywords. Those
 behaviours are not source-owned doctrine and have been removed.
 
-This quarantine is separate from the Decennial deep-chronology quarantine.
+This exclusion is separate from the Decennial L1/L2 depth boundary.
 Neither `DecennialPolicy.deep_subdivision_method="valens"` nor
-`"hephaistio"` is selectable in the admitted runtime. Neither quarantine
+`"hephaistio"` is selectable in the admitted runtime. Neither exclusion
 enables delineations, effects, polarities, or dignity scores.
 
-While quarantined, the interpretive layer has no public export, period/profile
-field, automatic attachment, REST option, score, aggregate, or dignity bridge.
-Admission requires an item-complete source transcription; explicit distributor,
-receiver, sect, operative-place, aspect, and Lot policies; typed unscored result
-semantics; and source-owned fixtures proving each admitted relation. Generic
-good/bad labels and numerical scores are outside the admitted design.
+The interpretive layer has no public export, period/profile field, automatic
+attachment, REST option, score, aggregate, or dignity bridge. It is not a
+missing part of the admitted Hellenistic profile. Any future proposal would
+require its own item-complete source transcription, explicit distributor and
+receiver semantics, typed unscored result design, and source-owned fixtures.
+Generic good/bad labels and numerical scores remain outside the admitted
+design.
 
 The internal arithmetic is doctrinal rather than astronomical:
 
@@ -254,8 +290,9 @@ according to the constitutional dependency graph.
 | 9 | Network Intelligence | `FirdarActivePair`, `firdar_active_pair()` | `DecennialActivePair`, `DecennialActivePath`, `decennial_active_pair()`, `decennial_active_path()` | `ZRLevelPair`, `zr_level_pair()` |
 | 10 | Hardening | `validate_firdaria_output()` | `validate_decennials_output()` | `validate_releasing_output()` |
 
-**Valens Distributions:** quarantined under §1.4. They are not an additional
-layer on the admitted Decennials or Zodiacal Releasing architecture.
+**Valens Distributions:** closed exclusion under §1.4. They are not an
+additional layer on the admitted Decennials or Zodiacal Releasing
+architecture, and they are not release backlog.
 
 ---
 
@@ -293,6 +330,18 @@ supplying correct values.
 
 The doctrinal choices made by the timelords subsystem are explicit and located.
 
+**Profection doctrine and projection policy:**
+
+| Choice | Location | Default |
+|---|---|---|
+| Completed-age basis | `profection_schedule()` | exact civil anniversary |
+| Explicit transport timezone | `civil_timezone` | caller's `natal_dt.tzinfo` compatibility path |
+| Monthly interval projection | `MonthlyProfectionIntervalPolicy` | `equal_twelfths_of_civil_anniversary_year` |
+| Repeated local anniversary | `ProfectionAmbiguousTimePolicy` | explicit `earlier_occurrence` or `later_occurrence`; no guessed fold |
+| Boundary membership | `ProfectionIntervalBoundarySemantics` | `start_inclusive_end_exclusive` |
+| Method classification | `ProfectionChronologyMethod` | `computational_projection` |
+| February 29 anniversary | `LeapDayAnniversaryPolicy` | explicit selection required |
+
 **Firdaria doctrine:**
 
 | Choice | Location | Default |
@@ -329,6 +378,13 @@ The doctrinal choices made by the timelords subsystem are explicit and located.
 The following are the constitutional public vessels of the timelords subsystem.
 
 **Enumerations:**
+- `MonthlyProfectionIntervalPolicy` — identifies the admitted dated monthly
+  projection
+- `ProfectionAmbiguousTimePolicy` — explicitly resolves a repeated local
+  anniversary when one occurs
+- `ProfectionChronologyMethod` — distinguishes computational projection from
+  historical-method claims
+- `ProfectionIntervalBoundarySemantics` — freezes half-open membership
 - `FirdarSequenceKind` — discriminates the Firdaria sequence variant
 - `TimelordEvaluationStatus` — discriminates evaluated from not-evaluable
   atomic timelord truth
@@ -345,6 +401,10 @@ The following are the constitutional public vessels of the timelords subsystem.
   truth for one releasing sign
 
 **Truth-preservation vessels:**
+- `MonthlyProfectionInterval` — one dated sign/lord step with exact UTC and
+  Julian boundaries
+- `ProfectionChronology` — annual anchors, timezone provenance, query, active
+  month, and the complete twelve-interval receipt
 - `FirdarPeriod` — a single Firdaria period at any level
 - `DecennialPeriod` — a single Decennials period at any admitted level
 - `ReleasingPeriod` — a single Zodiacal Releasing period at any level
@@ -372,6 +432,8 @@ The following are the constitutional public vessels of the timelords subsystem.
 - `ZRLevelPair` — structural edge between two adjacent releasing levels
 
 **Computational functions:**
+- `profection_chronology(...)` — typed dated monthly projection for one query
+- `profection_schedule(...)` — current annual profection plus its chronology
 - `firdaria(natal_jd, is_day_chart, ...)` — core Firdaria engine
 - `decennial_sequence_truth(natal_positions, is_day_chart)` — typed
   sect-light sequence-assembly receipt
@@ -419,7 +481,7 @@ used loosely.
 | **sect light** | The luminary of sect that leads the admitted Decennials sequence: `Sun` by day, `Moon` by night |
 | **distribution day** | An elapsed lived-day coordinate interpreted inside the 360-day Decennials distribution model |
 | **calendar projection** | A JD/date obtained by adding the distribution-day offset to `sequence_origin_jd`; not a civil-month anniversary claim |
-| **deep subdivision method** | A quarantined Decennials policy field; `valens` and `hephaistio` are named research candidates but neither is admitted |
+| **deep subdivision method** | A compatibility sentinel fixed to `None`; no selector is admitted and the complete public depth is L1/L2 |
 | **condition profile** | A flat doctrinal summary of a single period, integrating all layers from truth preservation through relational hardening |
 | **sequence profile** | A chart-wide or sequence-wide aggregate derived from a full list of condition profiles |
 | **active pair** | The simultaneous major/sub lord combination at a point in time; a network node in Firdaria |
@@ -494,8 +556,8 @@ active admitted levels. They must not be conflated.
   field remains `False`
 
 **`DecennialPeriod`:**
-- admitted engine output has `level` 1 or 2; the vessel can still deserialize
-  legacy L3/L4 records, but those records fail admitted-output validation
+- construction and admitted engine output allow only `level` 1 or 2; legacy
+  L3/L4 records are rejected rather than deserialized as valid vessels
 - `start_jd < end_jd`
 - `planet` is one of the seven classical planets
 - `level=1` periods preserve no `major_planet`, `parent_planet`, or `ancestor_planets`
@@ -835,12 +897,14 @@ The following are explicitly outside the scope of this subsystem as constitution
 - **Primary Directions.** This subsystem covers Firdaria, Decennials, and Zodiacal Releasing only.
   Primary Directions are a separate technique and a separate subsystem.
 
-- **Triacontaeteris.** This adjacent 30-year chronocrator family is not admitted by
-  this standard and remains constitutionally deferred pending source recovery.
+- **Triacontaeteris.** This adjacent 30-year chronocrator family is outside
+  this standard and is not a release blocker or an incomplete part of the
+  admitted Hellenistic contract.
 
 - **Decennial L3/L4.** Both Valens and Hephaistio deep-subdivision lineages are
-  quarantined pending a source-backed projection doctrine. No named deep
-  method is selectable in the admitted engine or REST surface.
+  closed exclusions. No named deep method is selectable in the admitted
+  engine or REST request surface. A future expansion would require a new
+  admission project.
 
 - **Transit and progression overlay.** Correlating time-lord periods with transit or
   progression charts is a cross-subsystem concern and is not part of this standard.

@@ -1,8 +1,8 @@
 ﻿# Moira API Reference
 
-**Document revision:** 2.0.0
-**Engine baseline:** 6.0.0
-**Last verified:** 2026-07-26
+**Document revision:** 2.1.0
+**Engine baseline:** 6.1.0
+**Last verified:** 2026-07-27
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
 
@@ -14,7 +14,8 @@ For the Hellenistic surface, use the generated
 for current export-tier receipts and the
 [source validation audit](../03_validation/HELLENISTIC_SOURCE_VALIDATION_2026-07.md)
 for evidence qualifications. Those artifacts distinguish admitted engine truth
-from quarantined, deferred, and non-Hellenistic branches.
+from research-only, closed-exclusion, out-of-contract, and non-Hellenistic
+branches.
 
 ---
 
@@ -484,7 +485,7 @@ message.
 | `dignities(chart, houses, *, policy=None)` | `list[PlanetaryDignity]` | Essential and accidental dignities with lossless policy forwarding |
 | `lots(chart, houses, *, policy=None, syzygy=None, prenatal_new_moon=None, prenatal_full_moon=None, lord_of_hour=None)` | `list[ArabicPart]` | Arabic Parts / Hermetic Lots with nodes and optional external references preserved |
 | `evaluate_lots(chart, houses, *, policy=None, syzygy=None, prenatal_new_moon=None, prenatal_full_moon=None, lord_of_hour=None)` | `LotsEvaluation` | Lossless lot catalogue evaluation including typed unresolved entries |
-| `hellenistic_chart_profile(chart, houses, natal_dt, current_dt, *, policy=None, ...)` | `HellenisticChartProfile` | Score-free composition of admitted Hellenistic atomic receipts from an explicit no-fallback Whole Sign chart |
+| `hellenistic_chart_profile(chart, houses, natal_dt, current_dt, *, civil_timezone=None, policy=None, ...)` | `HellenisticChartProfile` | Score-free composition of admitted Hellenistic atomic receipts from an explicit no-fallback Whole Sign chart |
 | `solar_proximity_truth(...)`, `planetary_solar_phase_truth(...)`, `besieging_truth(...)` | typed raw receipts | Raw dignity geometry before compatibility labels or score assembly |
 | `mutual_receptions(chart, by_exaltation=False)` | `list[tuple]` | `(planet_a, planet_b, type)` mutual reception triples |
 | `astrodynes(body_inputs, cusp_signs, intercepted_signs_by_house=None, policy=None)` | `AstrodyneChartResult` | Kernel-free Church of Light natal Astrodynes from explicit chart geometry |
@@ -493,7 +494,8 @@ message.
 
 | Method | Returns | Description |
 |---|---|---|
-| `profection(natal_asc, natal_dt, current_dt, natal_positions=None, *, leap_day_policy=None, activation_orb=5.0)` | `ProfectionResult` | Annual profection from completed civil age with the requested activation orb preserved |
+| `profection(natal_asc, natal_dt, current_dt, natal_positions=None, *, civil_timezone=None, leap_day_policy=None, ambiguous_time_policy=None, interval_policy=..., activation_orb=5.0)` | `ProfectionResult` | Annual profection plus the exact dated monthly chronology |
+| `profection_chronology(natal_asc, natal_dt, current_dt, *, civil_timezone=None, leap_day_policy=None, ambiguous_time_policy=None, interval_policy=...)` | `ProfectionChronology` | Raw dated monthly profection receipt |
 | `nakshatras(chart, ayanamsa_system=Ayanamsa.LAHIRI)` | `dict[str, NakshatraPosition]` | Nakshatra for each planet |
 | `planetary_hours(dt, latitude, longitude)` | `PlanetaryHoursDay` | Day and night planetary hour rulers |
 
@@ -1595,8 +1597,9 @@ are used independently for the strict Whole Sign house figure and exact angles.
 There is no chart-wide score, ranking, recommendation, or interpretation.
 Atomic non-evaluable states survive composition. The explicit exclusions are
 Firdaria, medieval almutens, later electional rules, unscoped primary
-directions, Decennial L3/L4, Hermetic-decan geometry, and Valens distribution
-interpretation.
+directions, Decennial L3/L4, Hermetic-decan geometry, Valens distribution
+interpretation, and Triacontaeteris. These are closed/out-of-contract
+boundaries rather than incomplete profile fields.
 
 `Moira.hellenistic_chart_profile()` accepts a previously constructed `Chart`
 and `HouseCusps`. It requires requested and effective Whole Sign systems with
@@ -1722,14 +1725,17 @@ evaluated absence.
 
 ```python
 from moira.facade import (
-    annual_profection, monthly_profection, profection_schedule,
-    LeapDayAnniversaryPolicy, ProfectionResult,
+    annual_profection, monthly_profection, profection_chronology,
+    profection_schedule, LeapDayAnniversaryPolicy,
+    MonthlyProfectionIntervalPolicy, ProfectionAmbiguousTimePolicy,
+    ProfectionResult,
 )
 
 result = profection_schedule(
     natal_asc_lon,
     natal_dt,
     current_dt,
+    civil_timezone="America/New_York",
     activation_orb=0.75,
     leap_day_policy=LeapDayAnniversaryPolicy.FEBRUARY_28,
 )
@@ -1740,12 +1746,23 @@ result = profection_schedule(
 |---|---|---|
 | `annual_profection(natal_asc, age_years, natal_positions=None, activation_orb=5.0)` | `ProfectionResult` | Whole-sign annual profection for an explicit completed age |
 | `monthly_profection(natal_asc, age_years, month_index)` | `tuple[float, str, str]` | Monthly subdivision for an explicit age and month index |
-| `profection_schedule(natal_asc, natal_dt, current_dt, natal_positions=None, *, leap_day_policy=None, activation_orb=5.0)` | `ProfectionResult` | Civil-anniversary age plus activated-planet detection under the requested orb |
+| `profection_chronology(natal_asc, natal_dt, current_dt, *, civil_timezone=None, leap_day_policy=None, ambiguous_time_policy=None, interval_policy=...)` | `ProfectionChronology` | Exact civil-anniversary anchors and twelve engine-owned dated monthly intervals |
+| `profection_schedule(natal_asc, natal_dt, current_dt, natal_positions=None, *, civil_timezone=None, leap_day_policy=None, ambiguous_time_policy=None, interval_policy=..., activation_orb=5.0)` | `ProfectionResult` | Civil-anniversary age, activation truth, and query-specific monthly chronology |
 
-`profection_schedule()` requires timezone-aware datetimes, compares the current
-instant in the natal timezone, and rejects pre-birth instants. February 29
-nativities require an explicit `february_28` or `march_1` policy. The result
-preserves `age_basis="civil_anniversary"` and the selected policy.
+Both chronology functions require timezone-aware datetimes and reject
+pre-birth instants. REST-normalized UTC callers should supply an authoritative
+IANA `civil_timezone`; the exact timezone-data source and version are preserved
+in the receipt. February 29 nativities require an explicit `february_28` or
+`march_1` policy. A repeated local anniversary requires explicit
+`earlier_occurrence` or `later_occurrence`; no fold is guessed.
+
+The admitted interval policy divides the exact elapsed UTC duration between
+consecutive local civil anniversaries into twelve contiguous, half-open
+intervals whose lengths differ by at most one microsecond. The method is
+explicitly classified as a computational projection. It is not fixed 30-day
+arithmetic, a 365.25-day quotient, civil-calendar months, or Valens IV.28's
+separate luminary-distance method. `annual_profection()` has no query
+chronology and returns `chronology=None`.
 
 Phase 3 introduced `ProfectionActivationStatus`,
 `ProfectionActivationBodyTruth`, `ProfectionActivationTruth`, and
@@ -1858,7 +1875,7 @@ d3   = vedic_drekkana(longitude, jd, ayanamsa_system=Ayanamsa.LAHIRI)
 | `degree_in_decan` | `float` | Degrees elapsed within the 10° decan span |
 | `longitude_used` | `float` | Longitude actually classified after any required normalization |
 
-### Hermetic Decans — Research Quarantine
+### Hermetic Decans — Research-Only Closed Product Exclusion
 
 The names, sign order, planetary faces, and source pages in
 `moira.hermetic_decans` are reconstructed from Gundel's 1936 edition of the
@@ -1868,6 +1885,8 @@ and the unsupported fixed-star table fails closed. The former `decan_hours()`
 experiment and its result vessels have been removed. Nothing from this module
 is exported from `moira` or `moira.facade`; direct import remains a research
 surface, not part of the supported Python API contract.
+
+This is a completed boundary, not unfinished Hellenistic engine work.
 
 ---
 
@@ -2108,7 +2127,8 @@ serializes the receipt on every REST period with a concrete OpenAPI schema.
 
 The public engine accepts only levels 1–2. Any L3/L4 request or non-`None`
 `DecennialPolicy.deep_subdivision_method` fails closed; the named Valens and
-Hephaistio deep policies are research candidates, not admitted API behavior.
+Hephaistio deep policies are closed exclusions, not admitted API behavior or
+release backlog. The REST request schema exposes no deep-method selector.
 
 Every period preserves `time_basis`, `calendar_projection_basis`,
 `sequence_origin_jd`, `start_distribution_day`, `end_distribution_day`, and

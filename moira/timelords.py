@@ -983,7 +983,6 @@ _DECENNIAL_MONTH_DAYS = 30.0
 _DECENNIAL_LUMINARIES: frozenset[str] = frozenset({"Sun", "Moon"})
 _DECENNIAL_PLANETARIES: frozenset[str] = frozenset({"Mercury", "Venus", "Mars", "Jupiter", "Saturn"})
 _DECENNIAL_MAX_LEVEL = 2
-_DECENNIAL_DEEP_METHODS: frozenset[str] = frozenset({"valens", "hephaistio"})
 _DECENNIAL_SEQUENCE_BOUNDARY_TOLERANCE_DEG = 1e-12
 
 
@@ -1226,7 +1225,7 @@ class DecennialPeriod:
     is_day_chart: bool | None = None
     sect_light: str | None = None
     sequence_kind: str | None = None
-    deep_subdivision_method: str | None = None
+    deep_subdivision_method: None = None
     sequence: tuple[str, ...] = field(default_factory=tuple)
     ancestor_planets: tuple[str, ...] = field(default_factory=tuple)
     major_index: int = 0
@@ -1236,8 +1235,11 @@ class DecennialPeriod:
     sequence_truth: DecennialSequenceAssemblyTruth | None = None
 
     def __post_init__(self) -> None:
-        if self.level not in (1, 2, 3, 4):
-            raise ValueError(f"DecennialPeriod.level must be 1, 2, 3, or 4, got {self.level}")
+        if self.level not in (1, 2):
+            raise ValueError(
+                "DecennialPeriod.level must be 1 or 2; deeper levels are "
+                f"not admitted, got {self.level}"
+            )
         if self.planet not in _DECENNIAL_PLANETS:
             raise ValueError(f"DecennialPeriod.planet must be a classical planet, got {self.planet!r}")
         if not math.isfinite(self.start_jd) or not math.isfinite(self.end_jd):
@@ -1279,10 +1281,14 @@ class DecennialPeriod:
             raise ValueError("DecennialPeriod sequence_kind must be a supported DecennialSequenceKind")
         if self.parent_planet is not None and self.parent_planet not in _DECENNIAL_PLANETS:
             raise ValueError("DecennialPeriod parent_planet must be a classical planet or None")
-        if self.parent_level is not None and self.parent_level not in (1, 2, 3):
-            raise ValueError("DecennialPeriod parent_level must be 1, 2, 3, or None")
-        if self.deep_subdivision_method is not None and self.deep_subdivision_method not in _DECENNIAL_DEEP_METHODS:
-            raise ValueError("DecennialPeriod deep_subdivision_method must be 'valens', 'hephaistio', or None")
+        if self.parent_level is not None and self.parent_level != 1:
+            raise ValueError(
+                "DecennialPeriod parent_level must be 1 or None"
+            )
+        if self.deep_subdivision_method is not None:
+            raise ValueError(
+                "DecennialPeriod deep_subdivision_method is not admitted"
+            )
         if self.sequence and set(self.sequence) != set(_DECENNIAL_PLANETS):
             raise ValueError("DecennialPeriod sequence must contain the seven classical planets exactly once")
         if self.major_index < 0:
@@ -1321,10 +1327,6 @@ class DecennialPeriod:
             raise ValueError("DecennialPeriod ancestor_planets must begin with major_planet")
         if self.level >= 2 and self.ancestor_planets[-1] != self.parent_planet:
             raise ValueError("DecennialPeriod ancestor_planets must end with parent_planet")
-        if self.level <= 2 and self.deep_subdivision_method is not None:
-            raise ValueError("DecennialPeriod deep_subdivision_method applies only to levels 3 and 4")
-        if self.level == 4 and self.deep_subdivision_method != "valens":
-            raise ValueError("Legacy DecennialPeriod level-4 vessels require deep_subdivision_method='valens'")
         if self.sequence:
             if self.major_index >= len(self.sequence):
                 raise ValueError("DecennialPeriod major_index must lie inside preserved sequence")
@@ -1373,11 +1375,7 @@ class DecennialPeriod:
     def level_name(self) -> str:
         if self.level == 1:
             return "Major"
-        if self.level == 2:
-            return "Sub-period"
-        if self.level == 3:
-            return "Day sub-period"
-        return "Hour sub-period"
+        return "Sub-period"
 
     @property
     def is_diurnal_solar(self) -> bool:
@@ -1474,22 +1472,16 @@ class DecennialPeriodGroup:
     sub_groups: list["DecennialPeriodGroup"]
 
     def __post_init__(self) -> None:
-        if self.period.level < 2:
+        if self.period.level != 2:
             raise ValueError(
-                f"DecennialPeriodGroup.period must be level 2 or deeper, got level {self.period.level}"
+                "DecennialPeriodGroup.period must be an admitted level-2 "
+                f"period, got level {self.period.level}"
             )
-        for sub_group in self.sub_groups:
-            if sub_group.period.level != self.period.level + 1:
-                raise ValueError(
-                    "DecennialPeriodGroup.sub_groups must be exactly one level deeper than their parent period"
-                )
-            if sub_group.period.start_jd < self.period.start_jd - 1e-9:
-                raise ValueError("DecennialPeriodGroup child starts before parent period")
-            if sub_group.period.end_jd > self.period.end_jd + 1e-9:
-                raise ValueError("DecennialPeriodGroup child ends after parent period")
-        for index in range(len(self.sub_groups) - 1):
-            if self.sub_groups[index].period.start_jd >= self.sub_groups[index + 1].period.start_jd:
-                raise ValueError("DecennialPeriodGroup.sub_groups must be in chronological order")
+        if self.sub_groups:
+            raise ValueError(
+                "DecennialPeriodGroup level-2 groups must be leaves; "
+                "Decennial L3/L4 is not admitted"
+            )
 
     @property
     def level(self) -> int:
@@ -1738,13 +1730,11 @@ def _append_decennial_children(
     *,
     sequence: tuple[str, ...],
     target_level: int,
-    deep_subdivision_method: str | None,
     periods: list[DecennialPeriod],
 ) -> None:
-    if target_level > _DECENNIAL_MAX_LEVEL or deep_subdivision_method is not None:
+    if target_level > _DECENNIAL_MAX_LEVEL:
         raise ValueError(
-            "_append_decennial_children: Decennial levels 3–4 and deep "
-            "subdivision methods are not admitted"
+            "_append_decennial_children: Decennial levels 3–4 are not admitted"
         )
     if parent.level >= target_level:
         return
@@ -1781,7 +1771,7 @@ def _append_decennial_children(
             is_day_chart=parent.is_day_chart,
             sect_light=parent.sect_light,
             sequence_kind=parent.sequence_kind,
-            deep_subdivision_method=deep_subdivision_method if next_level >= 3 else None,
+            deep_subdivision_method=None,
             sequence=sequence,
             ancestor_planets=parent.ancestor_planets + (parent.planet,),
             major_index=parent.major_index,
@@ -1795,7 +1785,6 @@ def _append_decennial_children(
             child,
             sequence=sequence,
             target_level=target_level,
-            deep_subdivision_method=deep_subdivision_method,
             periods=periods,
         )
         child_cursor = child_end
@@ -1819,8 +1808,8 @@ def decennials(
     Its 30-day months are schematic distribution units. ``start_jd`` and
     ``end_jd`` project the resulting elapsed-day offsets from ``natal_jd``;
     they are not civil-calendar month arithmetic.
-    Levels 3–4 remain quarantined pending source-backed subdivision doctrine
-    and independent validation.
+    Levels 3–4 are outside the closed admitted contract. A future expansion
+    would require a new source-admission project and independent validation.
     """
     if not math.isfinite(natal_jd):
         raise ValueError(f"decennials: natal_jd must be finite, got {natal_jd!r}")
@@ -1886,7 +1875,6 @@ def decennials(
                 periods[-1],
                 sequence=tuple(sequence),
                 target_level=levels,
-                deep_subdivision_method=pol.decennials.deep_subdivision_method,
                 periods=periods,
             )
 
@@ -2151,6 +2139,12 @@ class FirdarYearPolicy:
     """
     year_days: float = _JULIAN_YEAR
 
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.year_days) or self.year_days <= 0.0:
+            raise ValueError(
+                "FirdarYearPolicy.year_days must be finite and positive"
+            )
+
 
 @dataclass(frozen=True, slots=True)
 class DecennialPolicy:
@@ -2159,8 +2153,8 @@ class DecennialPolicy:
 
     This policy freezes the currently admitted doctrine explicitly, including
     the Valens lived-day/360-day distribution basis and its elapsed-JD
-    projection. Deferred historical variants remain unselectable until
-    separately admitted.
+    projection. Historical variants are outside this fixed contract and are
+    not selectable.
     """
 
     start_lord_basis: str = "sect_light"
@@ -2170,7 +2164,70 @@ class DecennialPolicy:
     month_basis_days: float = _DECENNIAL_MONTH_DAYS
     time_basis: str = DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION
     calendar_projection_basis: str = DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD
-    deep_subdivision_method: str | None = None
+    deep_subdivision_method: None = None
+
+    def __post_init__(self) -> None:
+        if self.start_lord_basis != "sect_light":
+            raise ValueError(
+                "DecennialPolicy.start_lord_basis must remain 'sect_light'"
+            )
+        if self.sequence_mode != "zodiacal_from_sect_light":
+            raise ValueError(
+                "DecennialPolicy.sequence_mode must remain "
+                "'zodiacal_from_sect_light'"
+            )
+        if self.subperiod_mode != "rotated_minor_months":
+            raise ValueError(
+                "DecennialPolicy.subperiod_mode must remain "
+                "'rotated_minor_months'"
+            )
+        if (
+            not math.isfinite(self.major_months)
+            or not math.isclose(
+                self.major_months,
+                float(_DECENNIAL_MAJOR_MONTHS),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            )
+        ):
+            raise ValueError(
+                "DecennialPolicy.major_months must preserve the admitted "
+                f"{_DECENNIAL_MAJOR_MONTHS}-month major period"
+            )
+        if (
+            not math.isfinite(self.month_basis_days)
+            or not math.isclose(
+                self.month_basis_days,
+                _DECENNIAL_MONTH_DAYS,
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            )
+        ):
+            raise ValueError(
+                "DecennialPolicy.month_basis_days must preserve the admitted "
+                f"{_DECENNIAL_MONTH_DAYS}-day symbolic month"
+            )
+        if (
+            self.time_basis
+            != DecennialTimeBasis.VALENS_LIVED_DAYS_TO_360_DAY_DISTRIBUTION
+        ):
+            raise ValueError(
+                "DecennialPolicy.time_basis must preserve the admitted "
+                "Valens lived-day distribution"
+            )
+        if (
+            self.calendar_projection_basis
+            != DecennialTimeBasis.ELAPSED_JULIAN_DAYS_FROM_NATAL_JD
+        ):
+            raise ValueError(
+                "DecennialPolicy.calendar_projection_basis must preserve "
+                "elapsed Julian days from natal_jd"
+            )
+        if self.deep_subdivision_method is not None:
+            raise ValueError(
+                "DecennialPolicy deep_subdivision_method is not admitted; "
+                "the public contract ends at L2"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -2185,6 +2242,12 @@ class ZRYearPolicy:
     altering sign sequence, LB doctrine, or peak detection.
     """
     year_days: float = _ZR_YEAR_DAYS
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.year_days) or self.year_days <= 0.0:
+            raise ValueError(
+                "ZRYearPolicy.year_days must be finite and positive"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -2248,7 +2311,7 @@ def _validate_timelord_policy(
     if policy.decennials.deep_subdivision_method is not None:
         raise ValueError(
             "policy.decennials.deep_subdivision_method is not admitted; "
-            "Valens and Hephaistio deep methods remain deferred"
+            "the closed Decennial contract supports L1/L2 only"
         )
     if policy.zr_year.year_days <= 0:
         raise ValueError("policy.zr_year.year_days must be positive")
@@ -2684,7 +2747,7 @@ class DecennialConditionProfile:
     major_index:           int
     sub_index:             int | None
     sequence_position:     int
-    deep_subdivision_method: str | None
+    deep_subdivision_method: None
     years:                 float
     months:                float
     days:                  float
@@ -2695,6 +2758,48 @@ class DecennialConditionProfile:
     start_distribution_day: float
     end_distribution_day:  float
     distribution_years:    float
+
+    def __post_init__(self) -> None:
+        if self.level not in (1, 2):
+            raise ValueError(
+                "DecennialConditionProfile level must be 1 or 2"
+            )
+        if self.is_major is not (self.level == 1):
+            raise ValueError(
+                "DecennialConditionProfile is_major must match level"
+            )
+        expected_name = "Major" if self.level == 1 else "Sub-period"
+        if self.level_name != expected_name:
+            raise ValueError(
+                "DecennialConditionProfile level_name must match level"
+            )
+        if self.deep_subdivision_method is not None:
+            raise ValueError(
+                "DecennialConditionProfile deep_subdivision_method is not "
+                "admitted"
+            )
+        if self.level == 1 and (
+            self.major_planet is not None
+            or self.parent_planet is not None
+            or self.parent_level is not None
+            or self.sub_index is not None
+            or self.ancestor_planets
+        ):
+            raise ValueError(
+                "DecennialConditionProfile major periods cannot carry "
+                "sub-period lineage"
+            )
+        if self.level == 2 and (
+            self.major_planet is None
+            or self.parent_planet is None
+            or self.parent_level != 1
+            or self.sub_index is None
+            or len(self.ancestor_planets) != 1
+        ):
+            raise ValueError(
+                "DecennialConditionProfile level-2 periods must preserve "
+                "their major-period lineage"
+            )
 
 def decennial_condition_profile(period: DecennialPeriod) -> DecennialConditionProfile:
     """Build a DecennialConditionProfile from a DecennialPeriod.
@@ -3006,7 +3111,7 @@ class DecennialSequenceProfile:
     sequence_origin_jd: float
     level_count_map: dict[int, int] = field(default_factory=dict)
     deepest_level: int = 1
-    deep_subdivision_method: str | None = None
+    deep_subdivision_method: None = None
 
     def __post_init__(self) -> None:
         if self.deepest_level > _DECENNIAL_MAX_LEVEL:
@@ -3085,12 +3190,9 @@ def decennial_sequence_profile(periods: list[DecennialPeriod]) -> DecennialSeque
     sect_light = major_profiles[0].sect_light if major_profiles else None
     level_count_map: dict[int, int] = {}
     deepest_level = 1
-    deep_method: str | None = None
     for profile in profiles:
         level_count_map[profile.level] = level_count_map.get(profile.level, 0) + 1
         deepest_level = max(deepest_level, profile.level)
-        if profile.deep_subdivision_method is not None:
-            deep_method = profile.deep_subdivision_method
 
     return DecennialSequenceProfile(
         profiles=profiles,
@@ -3106,7 +3208,7 @@ def decennial_sequence_profile(periods: list[DecennialPeriod]) -> DecennialSeque
         sequence_origin_jd=periods[0].sequence_origin_jd,
         level_count_map=level_count_map,
         deepest_level=deepest_level,
-        deep_subdivision_method=deep_method,
+        deep_subdivision_method=None,
     )
 
 
@@ -3467,6 +3569,14 @@ class DecennialActivePath:
             raise ValueError("DecennialActivePath.profiles must not be empty")
         if self.profiles[0].level != 1:
             raise ValueError("DecennialActivePath must begin with a level-1 profile")
+        if any(
+            profile.level not in (1, 2)
+            or profile.deep_subdivision_method is not None
+            for profile in self.profiles
+        ):
+            raise ValueError(
+                "DecennialActivePath supports admitted L1/L2 profiles only"
+            )
         for index in range(len(self.profiles) - 1):
             if self.profiles[index + 1].level != self.profiles[index].level + 1:
                 raise ValueError("DecennialActivePath profiles must advance one level at a time")
@@ -3485,7 +3595,7 @@ class DecennialActivePath:
 
     @property
     def has_deep_subdivision(self) -> bool:
-        return self.deepest_level >= 3
+        return False
 
 
 def decennial_active_pair(

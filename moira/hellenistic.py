@@ -52,7 +52,13 @@ from .lots import (
     LotsReferenceFailureMode,
     evaluate_lots,
 )
-from .profections import LeapDayAnniversaryPolicy, ProfectionResult, profection_schedule
+from .profections import (
+    LeapDayAnniversaryPolicy,
+    MonthlyProfectionIntervalPolicy,
+    ProfectionAmbiguousTimePolicy,
+    ProfectionResult,
+    profection_schedule,
+)
 from .timelords import (
     DecennialPeriod,
     DecennialPolicy,
@@ -131,6 +137,7 @@ class HellenisticProfileExclusion(StrEnum):
     DECENNIALS_L3_L4 = "decennials_l3_l4"
     HERMETIC_DECAN_GEOMETRY = "hermetic_decan_geometry"
     VALENS_DISTRIBUTION_INTERPRETATION = "valens_distribution_interpretation"
+    TRIACONTAETERIS = "triacontaeteris"
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,6 +156,13 @@ class HellenisticProfilePolicy:
     zr_year: ZRYearPolicy = field(default_factory=ZRYearPolicy)
     activation_orb_deg: float = 5.0
     leap_day_policy: LeapDayAnniversaryPolicy | None = None
+    monthly_profection_interval_policy: MonthlyProfectionIntervalPolicy = (
+        MonthlyProfectionIntervalPolicy
+        .EQUAL_TWELFTHS_OF_CIVIL_ANNIVERSARY_YEAR
+    )
+    profection_ambiguous_time_policy: (
+        ProfectionAmbiguousTimePolicy | None
+    ) = None
     zr_lot_name: str = "Spirit"
     zr_levels: int = 2
     use_loosing_of_bond: bool = True
@@ -210,7 +224,8 @@ class HellenisticProfilePolicy:
             )
         if self.decennials.deep_subdivision_method is not None:
             raise ValueError(
-                "Hellenistic profiles keep Decennial L3/L4 doctrine quarantined"
+                "Hellenistic profiles exclude Decennial L3/L4 from the "
+                "closed L1/L2 contract"
             )
         if self.decennials != DecennialPolicy():
             raise ValueError(
@@ -240,6 +255,26 @@ class HellenisticProfilePolicy:
             raise TypeError(
                 "Hellenistic profile leap_day_policy must be a "
                 "LeapDayAnniversaryPolicy or None"
+            )
+        if (
+            self.monthly_profection_interval_policy
+            is not MonthlyProfectionIntervalPolicy
+            .EQUAL_TWELFTHS_OF_CIVIL_ANNIVERSARY_YEAR
+        ):
+            raise ValueError(
+                "Hellenistic profiles require the admitted equal-twelfths "
+                "monthly profection interval policy"
+            )
+        if (
+            self.profection_ambiguous_time_policy is not None
+            and not isinstance(
+                self.profection_ambiguous_time_policy,
+                ProfectionAmbiguousTimePolicy,
+            )
+        ):
+            raise TypeError(
+                "Hellenistic profile profection_ambiguous_time_policy must "
+                "be a ProfectionAmbiguousTimePolicy or None"
             )
         if self.zr_lot_name not in _ZR_LOT_TO_PROFILE_LOT:
             raise ValueError(
@@ -326,6 +361,54 @@ class HellenisticDecennialSnapshot:
     active_periods: tuple[DecennialPeriod, ...] = ()
     reason: str | None = None
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, HellenisticProfileStatus):
+            raise TypeError(
+                "HellenisticDecennialSnapshot status must be a "
+                "HellenisticProfileStatus"
+            )
+        if not isinstance(
+            self.sequence_truth,
+            DecennialSequenceAssemblyTruth,
+        ):
+            raise TypeError(
+                "HellenisticDecennialSnapshot sequence_truth must be a "
+                "DecennialSequenceAssemblyTruth"
+            )
+        if any(
+            not isinstance(period, DecennialPeriod)
+            for period in self.active_periods
+        ):
+            raise TypeError(
+                "HellenisticDecennialSnapshot active_periods must contain "
+                "DecennialPeriod values"
+            )
+        if self.status is HellenisticProfileStatus.EVALUATED:
+            if (
+                self.sequence_truth.status
+                is not TimelordEvaluationStatus.EVALUATED
+                or tuple(period.level for period in self.active_periods)
+                != (1, 2)
+                or self.reason is not None
+            ):
+                raise ValueError(
+                    "Evaluated Hellenistic Decennials require one active L1 "
+                    "and L2 period, evaluated sequence truth, and no reason"
+                )
+            if any(
+                period.sequence_truth != self.sequence_truth
+                for period in self.active_periods
+            ):
+                raise ValueError(
+                    "Hellenistic Decennial periods must preserve the snapshot "
+                    "sequence truth"
+                )
+        elif self.active_periods or not self.reason:
+            raise ValueError(
+                "Not-evaluable Hellenistic Decennials require no active "
+                "periods and an explicit reason"
+            )
+
 
 @dataclass(frozen=True, slots=True)
 class HellenisticZodiacalReleasingSnapshot:
@@ -341,6 +424,78 @@ class HellenisticZodiacalReleasingSnapshot:
     active_periods: tuple[ReleasingPeriod, ...] = ()
     reason: str | None = None
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.status, HellenisticProfileStatus):
+            raise TypeError(
+                "HellenisticZodiacalReleasingSnapshot status must be a "
+                "HellenisticProfileStatus"
+            )
+        if self.lot_name not in _ZR_LOT_TO_PROFILE_LOT:
+            raise ValueError(
+                "Hellenistic Zodiacal Releasing lot_name is not admitted"
+            )
+        if self.source_lot_name != _ZR_LOT_TO_PROFILE_LOT[self.lot_name]:
+            raise ValueError(
+                "Hellenistic Zodiacal Releasing source_lot_name must match "
+                "lot_name"
+            )
+        for field_name, longitude in (
+            ("lot_longitude", self.lot_longitude),
+            ("fortune_longitude", self.fortune_longitude),
+        ):
+            if longitude is not None and (
+                not isfinite(longitude) or not 0.0 <= longitude < 360.0
+            ):
+                raise ValueError(
+                    f"Hellenistic Zodiacal Releasing {field_name} must be "
+                    "in [0, 360) or None"
+                )
+        if type(self.levels) is not int or not 1 <= self.levels <= 4:
+            raise ValueError(
+                "Hellenistic Zodiacal Releasing levels must be in 1..4"
+            )
+        if not isinstance(self.use_loosing_of_bond, bool):
+            raise TypeError(
+                "Hellenistic Zodiacal Releasing use_loosing_of_bond must "
+                "be bool"
+            )
+        if any(
+            not isinstance(period, ReleasingPeriod)
+            for period in self.active_periods
+        ):
+            raise TypeError(
+                "Hellenistic Zodiacal Releasing active_periods must contain "
+                "ReleasingPeriod values"
+            )
+        if self.status is HellenisticProfileStatus.EVALUATED:
+            if (
+                self.lot_longitude is None
+                or self.fortune_longitude is None
+                or tuple(period.level for period in self.active_periods)
+                != tuple(range(1, self.levels + 1))
+                or self.reason is not None
+            ):
+                raise ValueError(
+                    "Evaluated Hellenistic Zodiacal Releasing requires "
+                    "source and Fortune longitudes, one active period per "
+                    "requested level, and no reason"
+                )
+            if any(
+                period.lot_name != self.lot_name
+                or period.use_loosing_of_bond
+                is not self.use_loosing_of_bond
+                for period in self.active_periods
+            ):
+                raise ValueError(
+                    "Hellenistic Zodiacal Releasing periods must preserve "
+                    "the snapshot policy"
+                )
+        elif self.active_periods or not self.reason:
+            raise ValueError(
+                "Not-evaluable Hellenistic Zodiacal Releasing requires no "
+                "active periods and an explicit reason"
+            )
+
 
 @dataclass(frozen=True, slots=True)
 class HellenisticProfileNotEvaluable:
@@ -349,6 +504,22 @@ class HellenisticProfileNotEvaluable:
     component: str
     subject: str
     reason: str
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("component", self.component),
+            ("subject", self.subject),
+            ("reason", self.reason),
+        ):
+            if (
+                not isinstance(value, str)
+                or not value
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"HellenisticProfileNotEvaluable {name} must be a "
+                    "non-empty trimmed string"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -359,6 +530,37 @@ class HellenisticObserverContext:
     longitude: float | None
     elevation_m: float | None
     source: str
+
+    def __post_init__(self) -> None:
+        if self.source == "not_supplied_explicit_geometry":
+            if (
+                self.latitude is not None
+                or self.longitude is not None
+                or self.elevation_m is not None
+            ):
+                raise ValueError(
+                    "An unsupplied Hellenistic observer cannot carry "
+                    "coordinates"
+                )
+            return
+        if self.source != "supplied_geographic_observer":
+            raise ValueError(
+                "Hellenistic observer source is not an admitted value"
+            )
+        if (
+            self.latitude is None
+            or self.longitude is None
+            or self.elevation_m is None
+            or not isfinite(self.latitude)
+            or not -90.0 <= self.latitude <= 90.0
+            or not isfinite(self.longitude)
+            or not -180.0 <= self.longitude <= 180.0
+            or not isfinite(self.elevation_m)
+        ):
+            raise ValueError(
+                "A supplied Hellenistic observer requires finite geographic "
+                "coordinates"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -377,6 +579,74 @@ class HellenisticProfileProvenance:
     derivation_or_evidence: str
     warnings: tuple[str, ...]
     not_evaluable: tuple[HellenisticProfileNotEvaluable, ...]
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("method_id", self.method_id),
+            ("lineage", self.lineage),
+            ("input_semantics", self.input_semantics),
+            ("position_frame", self.position_frame),
+            ("calendar_and_timescale", self.calendar_and_timescale),
+            ("derivation_or_evidence", self.derivation_or_evidence),
+        ):
+            if (
+                not isinstance(value, str)
+                or not value
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"HellenisticProfileProvenance {name} must be a "
+                    "non-empty trimmed string"
+                )
+        if (
+            not self.source_refs
+            or len(self.source_refs) != len(set(self.source_refs))
+            or any(
+                not isinstance(value, str)
+                or not value
+                or value != value.strip()
+                for value in self.source_refs
+            )
+        ):
+            raise ValueError(
+                "HellenisticProfileProvenance source_refs must contain "
+                "unique non-empty trimmed strings"
+            )
+        for name, value in (
+            ("engine_version", self.engine_version),
+            ("kernel_id", self.kernel_id),
+            ("kernel_coverage", self.kernel_coverage),
+        ):
+            if value is not None and (
+                not isinstance(value, str)
+                or not value
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"HellenisticProfileProvenance {name} must be a "
+                    "non-empty trimmed string or None"
+                )
+        if (
+            len(self.warnings) != len(set(self.warnings))
+            or any(
+                not isinstance(value, str)
+                or not value
+                or value != value.strip()
+                for value in self.warnings
+            )
+        ):
+            raise ValueError(
+                "HellenisticProfileProvenance warnings must be unique "
+                "non-empty trimmed strings"
+            )
+        if any(
+            not isinstance(item, HellenisticProfileNotEvaluable)
+            for item in self.not_evaluable
+        ):
+            raise TypeError(
+                "HellenisticProfileProvenance not_evaluable must contain "
+                "HellenisticProfileNotEvaluable values"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -404,6 +674,164 @@ class HellenisticChartProfile:
     included_components: tuple[HellenisticProfileComponent, ...]
     excluded_components: tuple[HellenisticProfileExclusion, ...]
     provenance: HellenisticProfileProvenance
+
+    def __post_init__(self) -> None:
+        _aware_datetime("HellenisticChartProfile.natal_dt", self.natal_dt)
+        _aware_datetime("HellenisticChartProfile.current_dt", self.current_dt)
+        if self.current_dt < self.natal_dt:
+            raise ValueError(
+                "HellenisticChartProfile current_dt must not precede natal_dt"
+            )
+        if (
+            not isfinite(self.natal_jd)
+            or not isfinite(self.current_jd)
+            or self.current_jd < self.natal_jd
+            or abs(self.natal_jd - jd_from_datetime(self.natal_dt)) > 1e-9
+            or abs(self.current_jd - jd_from_datetime(self.current_dt)) > 1e-9
+        ):
+            raise ValueError(
+                "HellenisticChartProfile Julian dates must be finite, "
+                "ordered, and match their datetimes"
+            )
+        if self.house_system != HouseSystem.WHOLE_SIGN:
+            raise ValueError(
+                "HellenisticChartProfile house_system must be Whole Sign"
+            )
+        for name, value in (
+            ("asc_longitude", self.asc_longitude),
+            ("mc_longitude", self.mc_longitude),
+        ):
+            if not isfinite(value) or not 0.0 <= value < 360.0:
+                raise ValueError(
+                    f"HellenisticChartProfile {name} must be in [0, 360)"
+                )
+        if not isinstance(self.observer, HellenisticObserverContext):
+            raise TypeError(
+                "HellenisticChartProfile observer must be a "
+                "HellenisticObserverContext"
+            )
+        if not isinstance(self.is_day_chart, bool):
+            raise TypeError(
+                "HellenisticChartProfile is_day_chart must be bool"
+            )
+        expected_light = "Sun" if self.is_day_chart else "Moon"
+        if self.sect_light != expected_light:
+            raise ValueError(
+                "HellenisticChartProfile sect_light must match chart sect"
+            )
+        if not isinstance(self.policy, HellenisticProfilePolicy):
+            raise TypeError(
+                "HellenisticChartProfile policy must be a "
+                "HellenisticProfilePolicy"
+            )
+        if tuple(planet.planet for planet in self.planets) != (
+            HELLENISTIC_CLASSICAL_PLANETS
+        ):
+            raise ValueError(
+                "HellenisticChartProfile planets must contain the Classic 7 "
+                "in canonical order"
+            )
+        if any(
+            planet.sect_truth.is_day_chart is not self.is_day_chart
+            or planet.sect_truth.sect_light != self.sect_light
+            or planet.joy_truth.planet != planet.planet
+            for planet in self.planets
+        ):
+            raise ValueError(
+                "HellenisticChartProfile planetary receipts must preserve "
+                "the profile sect and body identity"
+            )
+        if any(
+            aspect.body1 not in HELLENISTIC_CLASSICAL_PLANETS
+            or aspect.body2 not in HELLENISTIC_CLASSICAL_PLANETS
+            or aspect.body1 == aspect.body2
+            for aspect in self.aspects
+        ):
+            raise ValueError(
+                "HellenisticChartProfile aspects must relate distinct "
+                "classical planets"
+            )
+        evaluated_lot_names = tuple(lot.name for lot in self.lots)
+        unresolved_lot_names = tuple(
+            lot.name for lot in self.lots_not_evaluable
+        )
+        if (
+            len(evaluated_lot_names) != len(set(evaluated_lot_names))
+            or len(unresolved_lot_names) != len(set(unresolved_lot_names))
+            or set(evaluated_lot_names).intersection(unresolved_lot_names)
+            or set(evaluated_lot_names).union(unresolved_lot_names)
+            != set(HELLENISTIC_PROFILE_LOTS)
+        ):
+            raise ValueError(
+                "HellenisticChartProfile lots must partition the exact "
+                "foundational profile-lot set"
+            )
+        if self.profection.chronology is None:
+            raise ValueError(
+                "HellenisticChartProfile profection must carry dated "
+                "chronology"
+            )
+        if (
+            self.profection.chronology.interval_policy
+            is not self.policy.monthly_profection_interval_policy
+            or self.profection.chronology.ambiguous_time_policy
+            is not self.policy.profection_ambiguous_time_policy
+        ):
+            raise ValueError(
+                "HellenisticChartProfile profection chronology must preserve "
+                "the profile policy"
+            )
+        if (
+            self.decennials.sequence_truth.is_day_chart
+            is not self.is_day_chart
+            or self.decennials.sequence_truth.sect_light != self.sect_light
+        ):
+            raise ValueError(
+                "HellenisticChartProfile Decennial sequence must preserve "
+                "the profile sect"
+            )
+        if (
+            self.zodiacal_releasing.lot_name != self.policy.zr_lot_name
+            or self.zodiacal_releasing.levels != self.policy.zr_levels
+            or self.zodiacal_releasing.use_loosing_of_bond
+            is not self.policy.use_loosing_of_bond
+        ):
+            raise ValueError(
+                "HellenisticChartProfile Zodiacal Releasing must preserve "
+                "the profile policy"
+            )
+        if self.included_components != _INCLUDED_COMPONENTS:
+            raise ValueError(
+                "HellenisticChartProfile included_components must match the "
+                "closed admitted component contract"
+            )
+        if self.excluded_components != _EXCLUDED_COMPONENTS:
+            raise ValueError(
+                "HellenisticChartProfile excluded_components must match the "
+                "closed exclusion contract"
+            )
+        if not isinstance(self.provenance, HellenisticProfileProvenance):
+            raise TypeError(
+                "HellenisticChartProfile provenance must be a "
+                "HellenisticProfileProvenance"
+            )
+        if (
+            self.provenance.method_id
+            != "moira.hellenistic_chart_profile.v2"
+            or self.provenance.source_refs != _PROFILE_SOURCE_REFS
+            or self.provenance.not_evaluable
+            != _profile_issues(
+                self.planets,
+                self.aspects,
+                self.lots_not_evaluable,
+                self.decennials,
+                self.zodiacal_releasing,
+            )
+        ):
+            raise ValueError(
+                "HellenisticChartProfile provenance must match the v2 "
+                "composition receipt"
+            )
 
 
 _INCLUDED_COMPONENTS: tuple[HellenisticProfileComponent, ...] = tuple(
@@ -976,6 +1404,7 @@ def hellenistic_chart_profile(
     natal_dt: datetime,
     current_dt: datetime,
     *,
+    civil_timezone: str | None = None,
     policy: HellenisticProfilePolicy | None = None,
     syzygy: float | None = None,
     prenatal_new_moon: float | None = None,
@@ -1052,7 +1481,14 @@ def hellenistic_chart_profile(
             planet: positions[planet]
             for planet in HELLENISTIC_CLASSICAL_PLANETS
         },
+        civil_timezone=civil_timezone,
         leap_day_policy=resolved_policy.leap_day_policy,
+        ambiguous_time_policy=(
+            resolved_policy.profection_ambiguous_time_policy
+        ),
+        interval_policy=(
+            resolved_policy.monthly_profection_interval_policy
+        ),
         activation_orb=resolved_policy.activation_orb_deg,
     )
     decennials = _decennial_snapshot(
@@ -1105,7 +1541,7 @@ def hellenistic_chart_profile(
         included_components=_INCLUDED_COMPONENTS,
         excluded_components=_EXCLUDED_COMPONENTS,
         provenance=HellenisticProfileProvenance(
-            method_id="moira.hellenistic_chart_profile.v1",
+            method_id="moira.hellenistic_chart_profile.v2",
             lineage="hellenistic_with_explicit_component_boundaries",
             source_refs=_PROFILE_SOURCE_REFS,
             input_semantics=(

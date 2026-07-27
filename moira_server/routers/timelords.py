@@ -188,7 +188,6 @@ def decennials_sequence_route(
     return serialize_decennials_sequence(
         periods,
         levels_generated=request.natal.levels,
-        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 
@@ -199,7 +198,6 @@ def decennials_groups_route(
 ) -> DecennialGroupsResponse:
     return serialize_decennials_groups(
         compute_decennials_groups(engine, request),
-        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 
@@ -212,7 +210,6 @@ def decennials_current_route(
     return serialize_current_decennials(
         major,
         sub,
-        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 
@@ -223,7 +220,6 @@ def decennials_profile_route(
 ) -> DecennialSequenceProfileResponse:
     return serialize_decennial_sequence_profile(
         compute_decennial_sequence_profile_service(engine, request),
-        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 
@@ -234,7 +230,6 @@ def decennials_active_pair_route(
 ) -> DecennialActivePairOptionalResponse:
     return serialize_decennial_active_pair_optional(
         compute_decennial_active_pair_service(engine, request),
-        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 
@@ -245,7 +240,6 @@ def decennials_active_path_route(
 ) -> DecennialActivePathOptionalResponse:
     return serialize_decennial_active_path_optional(
         compute_decennial_active_path_service(engine, request),
-        deep_subdivision_method=request.natal.deep_subdivision_method,
     )
 
 

@@ -46,9 +46,11 @@ from ..models.timelords import (
     FirdarPeriodResponse,
     FirdarSequenceProfileResponse,
     FirdarSequenceResponse,
+    MonthlyProfectionIntervalResponse,
     MonthlyProfectionResponse,
     ProfectionActivationBodyTruthResponse,
     ProfectionActivationTruthResponse,
+    ProfectionChronologyResponse,
     ProfectionResultResponse,
     ZRConditionProfileResponse,
     ZRCurrentResponse,
@@ -83,6 +85,49 @@ def _serialize_profection_activation_truth(result: ProfectionResult) -> Profecti
     )
 
 
+def _serialize_profection_chronology(
+    result: ProfectionResult,
+) -> ProfectionChronologyResponse | None:
+    chronology = result.chronology
+    if chronology is None:
+        return None
+    return ProfectionChronologyResponse(
+        age_years=chronology.age_years,
+        civil_timezone=chronology.civil_timezone,
+        timezone_data_source=chronology.timezone_data_source,
+        timezone_data_version=chronology.timezone_data_version,
+        interval_policy=chronology.interval_policy,
+        ambiguous_time_policy=chronology.ambiguous_time_policy,
+        ambiguous_time_resolution_applied=(
+            chronology.ambiguous_time_resolution_applied
+        ),
+        method=chronology.method,
+        boundary_semantics=chronology.boundary_semantics,
+        leap_day_policy=chronology.leap_day_policy,
+        query_utc=chronology.query_utc,
+        query_jd=chronology.query_jd,
+        annual_start_utc=chronology.annual_start_utc,
+        annual_end_utc=chronology.annual_end_utc,
+        annual_start_jd=chronology.annual_start_jd,
+        annual_end_jd=chronology.annual_end_jd,
+        active_month_index=chronology.active_month_index,
+        intervals=tuple(
+            MonthlyProfectionIntervalResponse(
+                month_index=item.month_index,
+                profected_longitude=item.profected_longitude,
+                sign=item.sign,
+                lord_of_month=item.lord_of_month,
+                start_utc=item.start_utc,
+                end_utc=item.end_utc,
+                start_jd=item.start_jd,
+                end_jd=item.end_jd,
+                active=item.active,
+            )
+            for item in chronology.intervals
+        ),
+    )
+
+
 def serialize_profection_result(result: ProfectionResult) -> ProfectionResultResponse:
     return ProfectionResultResponse(
         age_years=result.age_years,
@@ -95,6 +140,7 @@ def serialize_profection_result(result: ProfectionResult) -> ProfectionResultRes
         age_basis=result.age_basis,
         leap_day_policy=result.leap_day_policy,
         activation_truth=_serialize_profection_activation_truth(result),
+        chronology=_serialize_profection_chronology(result),
     )
 
 
@@ -320,7 +366,6 @@ def _serialize_decennial_condition_profile(
 def serialize_decennials_sequence(
     periods: list[DecennialPeriod],
     levels_generated: int,
-    deep_subdivision_method: str | None = None,
 ) -> DecennialSequenceResponse:
     if not periods:
         raise ValueError("serialize_decennials_sequence: periods must not be empty")
@@ -335,13 +380,12 @@ def serialize_decennials_sequence(
         time_basis=periods[0].time_basis,
         calendar_projection_basis=periods[0].calendar_projection_basis,
         sequence_origin_jd=periods[0].sequence_origin_jd,
-        deep_subdivision_method=deep_subdivision_method,
+        deep_subdivision_method=None,
     )
 
 
 def serialize_decennials_groups(
     groups: list[DecennialMajorGroup],
-    deep_subdivision_method: str | None = None,
 ) -> DecennialGroupsResponse:
     serialized = [
         DecennialMajorGroupResponse(
@@ -354,14 +398,13 @@ def serialize_decennials_groups(
     return DecennialGroupsResponse(
         groups=serialized,
         major_count=len(groups),
-        deep_subdivision_method=deep_subdivision_method,
+        deep_subdivision_method=None,
     )
 
 
 def serialize_current_decennials(
     major: DecennialPeriod,
     sub: DecennialPeriod,
-    deep_subdivision_method: str | None = None,
 ) -> DecennialCurrentResponse:
     return DecennialCurrentResponse(
         major=_serialize_decennial_period(major),
@@ -369,13 +412,12 @@ def serialize_current_decennials(
         time_basis=major.time_basis,
         calendar_projection_basis=major.calendar_projection_basis,
         sequence_origin_jd=major.sequence_origin_jd,
-        deep_subdivision_method=deep_subdivision_method,
+        deep_subdivision_method=None,
     )
 
 
 def serialize_decennial_sequence_profile(
     profile: DecennialSequenceProfile,
-    deep_subdivision_method: str | None = None,
 ) -> DecennialSequenceProfileResponse:
     return DecennialSequenceProfileResponse(
         profiles=[_serialize_decennial_condition_profile(p) for p in profile.profiles],
@@ -391,19 +433,18 @@ def serialize_decennial_sequence_profile(
         calendar_projection_basis=profile.calendar_projection_basis,
         sequence_origin_jd=profile.sequence_origin_jd,
         deepest_level=profile.deepest_level,
-        deep_subdivision_method=deep_subdivision_method,
+        deep_subdivision_method=None,
     )
 
 
 def serialize_decennial_active_pair_optional(
     pair: DecennialActivePair | None,
-    deep_subdivision_method: str | None = None,
 ) -> DecennialActivePairOptionalResponse:
     if pair is None:
         return DecennialActivePairOptionalResponse(
             active=False,
             pair=None,
-            deep_subdivision_method=deep_subdivision_method,
+            deep_subdivision_method=None,
         )
     serialized = DecennialActivePairResponse(
         major_profile=_serialize_decennial_condition_profile(pair.major_profile),
@@ -420,19 +461,18 @@ def serialize_decennial_active_pair_optional(
     return DecennialActivePairOptionalResponse(
         active=True,
         pair=serialized,
-        deep_subdivision_method=deep_subdivision_method,
+        deep_subdivision_method=None,
     )
 
 
 def serialize_decennial_active_path_optional(
     path: DecennialActivePath | None,
-    deep_subdivision_method: str | None = None,
 ) -> DecennialActivePathOptionalResponse:
     if path is None:
         return DecennialActivePathOptionalResponse(
             active=False,
             path=None,
-            deep_subdivision_method=deep_subdivision_method,
+            deep_subdivision_method=None,
         )
     serialized = DecennialActivePathResponse(
         profiles=[_serialize_decennial_condition_profile(p) for p in path.profiles],
@@ -442,7 +482,7 @@ def serialize_decennial_active_path_optional(
     return DecennialActivePathOptionalResponse(
         active=True,
         path=serialized,
-        deep_subdivision_method=deep_subdivision_method,
+        deep_subdivision_method=None,
     )
 
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
@@ -30,7 +30,11 @@ from moira.lots import (
     LotsReferenceFailureMode,
     evaluate_lots,
 )
-from moira.profections import profection_schedule
+from moira.profections import (
+    MonthlyProfectionIntervalPolicy,
+    ProfectionAmbiguousTimePolicy,
+    profection_schedule,
+)
 from moira.timelords import DecennialPolicy, ZRYearPolicy
 
 
@@ -133,6 +137,14 @@ def test_profile_preserves_atomic_receipts_and_exact_angle_lots() -> None:
         CURRENT_DT,
         POSITIONS,
         activation_orb=5.0,
+    )
+    assert profile.profection.chronology is not None
+    assert (
+        profile.profection.chronology.interval_policy
+        is profile.policy.monthly_profection_interval_policy
+    )
+    assert profile.provenance.method_id == (
+        "moira.hellenistic_chart_profile.v2"
     )
     assert tuple(planet.planet for planet in profile.planets) == (
         HELLENISTIC_CLASSICAL_PLANETS
@@ -239,6 +251,34 @@ def test_raw_profile_marks_unspecified_position_frame() -> None:
     assert "position_frame_unverified" in profile.provenance.warnings
 
 
+def test_profile_preserves_explicit_profection_chronology_policies() -> None:
+    policy = HellenisticProfilePolicy(
+        monthly_profection_interval_policy=(
+            MonthlyProfectionIntervalPolicy
+            .EQUAL_TWELFTHS_OF_CIVIL_ANNIVERSARY_YEAR
+        ),
+        profection_ambiguous_time_policy=(
+            ProfectionAmbiguousTimePolicy.EARLIER_OCCURRENCE
+        ),
+    )
+    profile = _profile(
+        natal_dt=datetime(2000, 11, 5, 6, 30, tzinfo=timezone.utc),
+        current_dt=datetime(2023, 11, 5, 12, 0, tzinfo=timezone.utc),
+        civil_timezone="America/New_York",
+        policy=policy,
+    )
+
+    assert profile.profection.chronology is not None
+    assert (
+        profile.profection.chronology.ambiguous_time_policy
+        is ProfectionAmbiguousTimePolicy.EARLIER_OCCURRENCE
+    )
+    assert (
+        profile.profection.chronology.ambiguous_time_resolution_applied
+        is True
+    )
+
+
 def test_profile_rejects_non_admitted_policy_and_geometry() -> None:
     modern = DignityComputationPolicy(
         essential=EssentialDignityPolicy(
@@ -248,20 +288,24 @@ def test_profile_rejects_non_admitted_policy_and_geometry() -> None:
     with pytest.raises(ValueError, match="traditional Classic 7"):
         HellenisticProfilePolicy(dignity=modern)
 
-    with pytest.raises(ValueError, match="L3/L4"):
-        HellenisticProfilePolicy(
-            decennials=DecennialPolicy(
-                deep_subdivision_method="valens"
-            )
-        )
+    with pytest.raises(ValueError, match="public contract ends at L2"):
+        DecennialPolicy(deep_subdivision_method="valens")
 
-    with pytest.raises(ValueError, match="fixed Decennial L1/L2"):
-        HellenisticProfilePolicy(
-            decennials=DecennialPolicy(start_lord_basis="ascendant")
-        )
+    with pytest.raises(ValueError, match="start_lord_basis must remain"):
+        DecennialPolicy(start_lord_basis="ascendant")
 
     with pytest.raises(ValueError, match="finite and positive"):
         HellenisticProfilePolicy(zr_year=ZRYearPolicy(year_days=float("nan")))
+
+    with pytest.raises(ValueError, match="equal-twelfths"):
+        HellenisticProfilePolicy(
+            monthly_profection_interval_policy="fixed_30_day_months"  # type: ignore[arg-type]
+        )
+
+    with pytest.raises(TypeError, match="ambiguous_time_policy"):
+        HellenisticProfilePolicy(
+            profection_ambiguous_time_policy="guess"  # type: ignore[arg-type]
+        )
 
     with pytest.raises(ValueError, match="typed skipped-lot"):
         HellenisticProfilePolicy(
@@ -282,6 +326,50 @@ def test_profile_rejects_non_admitted_policy_and_geometry() -> None:
 
     with pytest.raises(ValueError, match="earlier"):
         _profile(current_dt=datetime(1999, 1, 1, tzinfo=timezone.utc))
+
+
+def test_profile_vessel_rejects_cross_receipt_contradictions() -> None:
+    """Direct construction cannot bypass the unified composition contract."""
+    profile = _profile()
+
+    with pytest.raises(ValueError, match="house_system must be Whole Sign"):
+        replace(profile, house_system=HouseSystem.PLACIDUS)
+
+    with pytest.raises(ValueError, match="Classic 7 in canonical order"):
+        replace(profile, planets=tuple(reversed(profile.planets)))
+
+    with pytest.raises(ValueError, match="closed admitted component contract"):
+        replace(
+            profile,
+            included_components=profile.included_components[:-1],
+        )
+
+    with pytest.raises(ValueError, match="one active L1 and L2"):
+        replace(
+            profile.decennials,
+            active_periods=profile.decennials.active_periods[:1],
+        )
+
+    chronology = profile.profection.chronology
+    assert chronology is not None
+    contradictory_profection = replace(
+        profile.profection,
+        chronology=replace(
+            chronology,
+            ambiguous_time_policy=(
+                ProfectionAmbiguousTimePolicy.EARLIER_OCCURRENCE
+            ),
+        ),
+    )
+    with pytest.raises(ValueError, match="chronology must preserve"):
+        replace(profile, profection=contradictory_profection)
+
+    contradictory_provenance = replace(
+        profile.provenance,
+        method_id="moira.hellenistic_chart_profile.v1",
+    )
+    with pytest.raises(ValueError, match="v2 composition receipt"):
+        replace(profile, provenance=contradictory_provenance)
 
 
 def test_moira_profile_wrapper_forwards_exact_geometry_and_provenance(
@@ -314,6 +402,7 @@ def test_moira_profile_wrapper_forwards_exact_geometry_and_provenance(
         houses,
         NATAL_DT,
         CURRENT_DT,
+        civil_timezone="America/New_York",
         policy=policy,
         syzygy=1.0,
         prenatal_new_moon=2.0,
@@ -338,6 +427,7 @@ def test_moira_profile_wrapper_forwards_exact_geometry_and_provenance(
         CURRENT_DT,
     )
     assert seen["kwargs"] == {
+        "civil_timezone": "America/New_York",
         "policy": policy,
         "syzygy": 1.0,
         "prenatal_new_moon": 2.0,

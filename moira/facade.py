@@ -685,11 +685,18 @@ from .sidereal import NakshatraPosition, nakshatra_of, all_nakshatras_at
 from .antiscia import AntisciaAspect, find_antiscia, antiscia_to_point
 from .profections import (
     LeapDayAnniversaryPolicy,
+    MonthlyProfectionIntervalPolicy,
+    ProfectionAmbiguousTimePolicy,
+    ProfectionChronologyMethod,
+    ProfectionIntervalBoundarySemantics,
     ProfectionActivationStatus,
     ProfectionActivationBodyTruth,
     ProfectionActivationTruth,
+    MonthlyProfectionInterval,
+    ProfectionChronology,
     ProfectionResult,
     profection_activation_truth,
+    profection_chronology,
     annual_profection,
     monthly_profection,
     profection_schedule,
@@ -2000,9 +2007,13 @@ __all__ = [
     # Antiscia
     "AntisciaAspect", "find_antiscia", "antiscia_to_point",
     # Profections
-    "LeapDayAnniversaryPolicy", "ProfectionActivationStatus",
+    "LeapDayAnniversaryPolicy", "MonthlyProfectionIntervalPolicy",
+    "ProfectionAmbiguousTimePolicy",
+    "ProfectionChronologyMethod", "ProfectionIntervalBoundarySemantics",
+    "ProfectionActivationStatus",
     "ProfectionActivationBodyTruth", "ProfectionActivationTruth",
-    "ProfectionResult", "profection_activation_truth",
+    "MonthlyProfectionInterval", "ProfectionChronology", "ProfectionResult",
+    "profection_activation_truth", "profection_chronology",
     "annual_profection", "monthly_profection", "profection_schedule",
     # Time lords — Firdaria
     "FIRDARIA_DIURNAL", "FIRDARIA_NOCTURNAL", "FIRDARIA_NOCTURNAL_BONATTI",
@@ -2548,7 +2559,7 @@ __all__ += [
 ]
 
 
-__version__ = "6.0.0"
+__version__ = "6.1.0"
 __author__  = "Moira contributors"
 
 

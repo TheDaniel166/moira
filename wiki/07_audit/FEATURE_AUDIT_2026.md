@@ -9,10 +9,12 @@
 > not a current capability ledger. The admitted Decennials surface now ends at
 > L2; the named Valens and Hephaistio deep-subdivision candidates fail closed.
 > The Gundel/Harley Hermetic names and planetary faces are reconstructed for
-> source research; lookup/rising/night geometry remains quarantined and absent
+> source research; lookup/rising/night geometry is a closed product exclusion
+> and remains absent
 > from the package root, facade, and registered REST application.
 > Current standards and registered runtime surfaces supersede contrary cells or
-> post-audit notes below.
+> post-audit notes below. Decennial L3/L4, Hermetic product geometry, and
+> Valens distribution interpretation are not current gaps or release backlog.
 
 **Post-audit implementation update (2026-05-15, historical):** Relocated chart generation has since been implemented in the live codebase via `moira.chart.relocated_chart()` and `Moira.relocated_chart()`. Converse transit search has also since been implemented across the live transit surfaces: `find_transits()` / `next_transit()` in `transits.py`, `find_aspect_transits()` in `transits_aspects.py`, `find_declination_transits()` in `transits_equatorial.py`, and `find_house_ingresses()` in `transits_houses.py`, all via an explicit reverse-time search mode. The traditional solar-sign frame has likewise been implemented in the live house engine as an explicit `HouseSystem.SOLAR_SIGN`, distinct from Sunshine. East Point / Equatorial Ascendant has now also been implemented in the live house engine as `HouseCusps.east_point`, computed from the Morinus-style equatorial projection of `ARMC + 90°`. A thin `solar_return_chart()` wrapper has now also been added on top of the existing return-time and chart-assembly substrate.
 
@@ -389,8 +391,8 @@ coverage through Phase 12. The admitted implementation boundary is:
 - `Valens`: `L3 + L4`
 - `Hephaistio`: `L3`
 
-`Hephaistio L4` remains explicitly deferred, but the Decennials feature itself is now
-present and this audit gap is closed.
+`Hephaistio L4` is a closed exclusion from the admitted L1/L2 contract. The
+Decennials feature itself is present and this historical audit gap is closed.
 
 **Triacontaeteris absent — Type A, D=1, C=1, T=3 → score 5 → P2.** The 30-year
 Hellenistic period system is absent. Only Sirius fully supports it; Janus offers partial

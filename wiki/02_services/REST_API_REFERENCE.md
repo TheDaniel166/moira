@@ -55,7 +55,7 @@ Implemented:
   Ashtottari/Yogini sequence/profile plus period-profile
   routes, Varga direct and chart-backed generic/named/Shodashvarga/batch routes,
   and Decanates direct and chart-backed decanate-placement routes. The
-  source-reconstructed Hermetic name-and-face catalog and its still-quarantined
+  source-reconstructed Hermetic name-and-face catalog and its research-only
   longitude/rising projections are absent from the application registry. The
   unsupported Hermetic night-hour implementation and transport scaffolding
   have been removed rather than retained behind an unregistered router
@@ -1229,8 +1229,9 @@ components, accidental truth, solar truth, sect truth, and mutual reception.
 They are not open-ended dictionaries in OpenAPI.
 
 The REST dignity policy does not admit
-`include_timelord_distributions`. Valens distribution scoring is quarantined;
-supplying that former option is a `422 validation_error`, not an inert no-op.
+`include_timelord_distributions`. Valens distribution scoring is a closed
+exclusion from the public contract; supplying that former option is a `422
+validation_error`, not an inert no-op or pending feature.
 
 ## Unified Hellenistic Profile Route
 
@@ -1267,7 +1268,7 @@ levels. No Decennial deep-subdivision selector is present.
 The reachable OpenAPI response graph contains no synthetic score field. The
 response explicitly excludes Firdaria, medieval almutens, later electional
 rules, unscoped primary directions, Decennial L3/L4, Hermetic-decan geometry,
-and Valens distribution interpretation.
+Valens distribution interpretation, and Triacontaeteris.
 
 ## Hellenistic Whole-Sign Aspect Routes
 
@@ -1606,6 +1607,10 @@ direction.
 datetimes. It computes completed age at the natal civil anniversary in the
 natal timezone, rejects pre-birth instants, and requires
 `leap_day_policy="february_28"` or `"march_1"` for a February 29 nativity.
+An anniversary in a repeated local wall time requires
+`ambiguous_time_policy="earlier_occurrence"` or `"later_occurrence"`; the
+engine does not guess a fold. An anniversary in a daylight-saving gap fails
+closed.
 The natal request's `activation_orb` applies to both annual and schedule
 routes. Their responses include `age_basis`, `leap_day_policy`, and a typed
 `activation_truth` with per-body distances; `activated_planets` is its
@@ -1629,9 +1634,10 @@ compatibility projection.
 | POST | `/v1/timelords/zodiacal-releasing/level-pair` | `zr_level_pair_route` |
 
 Every Decennials request is limited to `levels` 1–2.
-`deep_subdivision_method` remains a compatibility field but every non-null
-value is rejected. Valens and Hephaistio L3/L4 chronology is quarantined
-separately from the already quarantined Valens delineation layer.
+The request schema exposes no `deep_subdivision_method` selector. Response
+receipts retain a fixed `deep_subdivision_method=null` compatibility sentinel.
+Valens and Hephaistio L3/L4 chronology and Valens delineation are closed
+exclusions, not incomplete REST work.
 
 Decennials period responses preserve
 `time_basis="valens_lived_days_to_360_day_distribution"`,

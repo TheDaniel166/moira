@@ -2,7 +2,7 @@
 Unit tests for moira.hermetic_decans.
 
 Catalog and equal-segmentation tests are source-locked to Gundel's Harley
-MS 3731 edition. Rising-composition tests remain quarantined structural checks
+MS 3731 edition. Rising-composition tests remain direct-import structural checks
 rather than doctrine admission.
 """
 from __future__ import annotations
@@ -29,12 +29,12 @@ _SOURCE_NAMES = (
 )
 
 
-def test_quarantined_catalog_is_not_curated_by_package_or_facade() -> None:
+def test_research_only_catalog_is_not_curated_by_package_or_facade() -> None:
     import moira
     import moira.facade as facade
     import moira.hermetic_decans as decans
 
-    quarantined_symbols = {
+    excluded_symbols = {
         "DECAN_NAMES",
         "DECAN_PLANETARY_FACES",
         "HERMETIC_DECAN_CATALOG",
@@ -46,8 +46,8 @@ def test_quarantined_catalog_is_not_curated_by_package_or_facade() -> None:
     }
     removed_symbols = {"DecanHour", "DecanHoursNight", "decan_hours"}
 
-    assert quarantined_symbols.isdisjoint(moira.__all__)
-    assert all(not hasattr(facade, name) for name in quarantined_symbols)
+    assert excluded_symbols.isdisjoint(moira.__all__)
+    assert all(not hasattr(facade, name) for name in excluded_symbols)
     assert all(not hasattr(decans, name) for name in removed_symbols)
 
 

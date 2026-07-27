@@ -15,7 +15,11 @@ from moira.hellenistic import (
     HellenisticProfileStatus,
 )
 from moira.lots import LotsReferenceFailureMode
-from moira.profections import LeapDayAnniversaryPolicy
+from moira.profections import (
+    LeapDayAnniversaryPolicy,
+    MonthlyProfectionIntervalPolicy,
+    ProfectionAmbiguousTimePolicy,
+)
 from moira.timelords import DecennialPolicy
 from moira.triplicity import TriplicityDoctrine
 
@@ -125,6 +129,13 @@ class HellenisticProfilePolicyRequest(_StrictModel):
     )
     activation_orb_deg: float = Field(default=5.0, ge=0.0)
     leap_day_policy: LeapDayAnniversaryPolicy | None = None
+    monthly_profection_interval_policy: MonthlyProfectionIntervalPolicy = (
+        MonthlyProfectionIntervalPolicy
+        .EQUAL_TWELFTHS_OF_CIVIL_ANNIVERSARY_YEAR
+    )
+    profection_ambiguous_time_policy: (
+        ProfectionAmbiguousTimePolicy | None
+    ) = None
     zr_lot_name: Literal["Fortune", "Spirit", "Eros", "Necessity"] = "Spirit"
     zr_levels: int = Field(default=2, ge=1, le=4)
     use_loosing_of_bond: bool = True
@@ -175,6 +186,11 @@ class HellenisticChartProfileRequest(_StrictModel):
 
     natal_dt: datetime
     current_dt: datetime
+    civil_timezone: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255,
+    )
     observer_lat: float = Field(ge=-90.0, le=90.0)
     observer_lon: float = Field(ge=-180.0, le=180.0)
     observer_elev_m: float = 0.0
@@ -191,6 +207,13 @@ class HellenisticChartProfileRequest(_StrictModel):
     def _aware_datetimes(cls, value: datetime) -> datetime:
         if value.tzinfo is None or value.utcoffset() is None:
             raise ValueError("profile datetimes must be timezone-aware")
+        return value
+
+    @field_validator("civil_timezone")
+    @classmethod
+    def _trimmed_civil_timezone(cls, value: str | None) -> str | None:
+        if value is not None and value != value.strip():
+            raise ValueError("civil_timezone must be trimmed")
         return value
 
     @field_validator("observer_lat", "observer_lon", "observer_elev_m")

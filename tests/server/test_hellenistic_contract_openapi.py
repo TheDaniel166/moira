@@ -81,6 +81,16 @@ def test_openapi_preserves_typed_phase_3_receipts() -> None:
             "ProfectionActivationTruthResponse",
         ),
         (
+            "ProfectionResultResponse",
+            "chronology",
+            "ProfectionChronologyResponse",
+        ),
+        (
+            "ProfectionChronologyResponse",
+            "intervals",
+            "MonthlyProfectionIntervalResponse",
+        ),
+        (
             "DecennialPeriodResponse",
             "sequence_truth",
             "DecennialSequenceAssemblyTruthResponse",
@@ -109,15 +119,56 @@ def test_openapi_preserves_typed_phase_3_receipts() -> None:
             expected_component,
         )
 
+    chronology = schemas["ProfectionChronologyResponse"]
+    assert chronology["additionalProperties"] is False
+    assert chronology["properties"]["interval_policy"]["$ref"].endswith(
+        "/MonthlyProfectionIntervalPolicy"
+    )
+    assert chronology["properties"]["method"]["$ref"].endswith(
+        "/ProfectionChronologyMethod"
+    )
+    ambiguous_policy = chronology["properties"]["ambiguous_time_policy"]
+    ambiguous_refs = {
+        choice.get("$ref", "")
+        for choice in ambiguous_policy["anyOf"]
+    }
+    assert any(
+        reference.endswith("/ProfectionAmbiguousTimePolicy")
+        for reference in ambiguous_refs
+    )
+    assert chronology["properties"]["boundary_semantics"]["$ref"].endswith(
+        "/ProfectionIntervalBoundarySemantics"
+    )
+
 
 def test_openapi_keeps_decennial_depth_and_unadmitted_hermetic_routes_absent() -> None:
     openapi = create_app(ServerConfig(docs_enabled=False)).openapi()
-    levels = openapi["components"]["schemas"]["DecennialNatalRequest"][
-        "properties"
-    ]["levels"]
+    request_properties = openapi["components"]["schemas"][
+        "DecennialNatalRequest"
+    ]["properties"]
+    levels = request_properties["levels"]
 
     assert levels["minimum"] == 1
     assert levels["maximum"] == 2
+    assert "deep_subdivision_method" not in request_properties
+    schemas = openapi["components"]["schemas"]
+    assert "DecennialDeepSubdivisionMethod" not in schemas
+    for schema_name in (
+        "DecennialPeriodResponse",
+        "DecennialSequenceResponse",
+        "DecennialGroupsResponse",
+        "DecennialCurrentResponse",
+        "DecennialConditionProfileResponse",
+        "DecennialSequenceProfileResponse",
+        "DecennialActivePairOptionalResponse",
+        "DecennialActivePathOptionalResponse",
+    ):
+        assert (
+            schemas[schema_name]["properties"]["deep_subdivision_method"][
+                "type"
+            ]
+            == "null"
+        )
     assert not any(
         path.startswith("/v1/hermetic-decans")
         for path in openapi["paths"]

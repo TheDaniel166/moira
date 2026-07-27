@@ -292,7 +292,7 @@ def test_decennials_sequence_rejects_levels_out_of_range(client_with_engine: Tes
     ("method", "levels"),
     [("valens", 4), ("hephaistio", 3)],
 )
-def test_decennials_sequence_route_quarantines_named_deep_policies(
+def test_decennials_sequence_route_rejects_removed_deep_selectors(
     client_with_engine: TestClient,
     method: str,
     levels: int,

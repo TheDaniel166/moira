@@ -52,6 +52,8 @@ def test_profection_routes_match_engine_truth(client_with_engine: TestClient, mo
         natal_dt,
         current_dt,
         natal_positions=natal_positions,
+        civil_timezone="America/New_York",
+        ambiguous_time_policy="earlier_occurrence",
         activation_orb=0.25,
     )
 
@@ -62,13 +64,20 @@ def test_profection_routes_match_engine_truth(client_with_engine: TestClient, mo
     )
     schedule_response = client_with_engine.post(
         "/v1/profections/schedule",
-        json={"natal": natal, "current_dt": current_dt.isoformat().replace("+00:00", "Z")},
+        json={
+            "natal": natal,
+            "current_dt": current_dt.isoformat().replace("+00:00", "Z"),
+            "civil_timezone": "America/New_York",
+            "ambiguous_time_policy": "earlier_occurrence",
+            "interval_policy": "equal_twelfths_of_civil_anniversary_year",
+        },
     )
 
     assert annual_response.status_code == 200
     assert annual_response.json()["profected_house"] == direct_annual.profected_house
     assert annual_response.json()["lord_of_year"] == direct_annual.lord_of_year
     assert annual_response.json()["activated_planets"] == direct_annual.activated_planets
+    assert annual_response.json()["chronology"] is None
     annual_truth = annual_response.json()["activation_truth"]
     assert annual_truth["activation_orb_deg"] == 0.25
     assert annual_truth["status"] == direct_annual.activation_truth.status.value
@@ -91,6 +100,31 @@ def test_profection_routes_match_engine_truth(client_with_engine: TestClient, mo
     assert schedule_response.json()["activated_planets"] == list(
         direct_schedule.activation_truth.activated_planets
     )
+    chronology = schedule_response.json()["chronology"]
+    assert chronology["civil_timezone"] == "America/New_York"
+    assert chronology["timezone_data_source"] == "stdlib_zoneinfo"
+    assert chronology["timezone_data_version"] is None
+    assert chronology["method"] == "computational_projection"
+    assert chronology["ambiguous_time_policy"] == "earlier_occurrence"
+    assert chronology["ambiguous_time_resolution_applied"] is False
+    assert chronology["interval_policy"] == (
+        "equal_twelfths_of_civil_anniversary_year"
+    )
+    assert chronology["boundary_semantics"] == (
+        "start_inclusive_end_exclusive"
+    )
+    assert len(chronology["intervals"]) == 12
+    assert sum(item["active"] for item in chronology["intervals"]) == 1
+    assert datetime.fromisoformat(
+        chronology["intervals"][0]["start_utc"].replace("Z", "+00:00")
+    ) == (
+        direct_schedule.chronology.intervals[0].start_utc
+    )
+    assert datetime.fromisoformat(
+        chronology["intervals"][-1]["end_utc"].replace("Z", "+00:00")
+    ) == (
+        direct_schedule.chronology.intervals[-1].end_utc
+    )
 
 
 def test_profection_routes_reject_invalid_inputs(client_with_engine: TestClient) -> None:
@@ -105,7 +139,16 @@ def test_profection_routes_reject_invalid_inputs(client_with_engine: TestClient)
         "/v1/profections/annual",
         json={"natal": {**natal, "bodies": ["Pluto", "Bogus"]}, "age_years": 24},
     )
+    untrimmed_timezone = client_with_engine.post(
+        "/v1/profections/schedule",
+        json={
+            "natal": natal,
+            "current_dt": "2024-06-01T00:00:00Z",
+            "civil_timezone": " America/New_York",
+        },
+    )
 
     assert negative_age.status_code == 422
     assert invalid_month.status_code == 422
     assert invalid_body.status_code == 422
+    assert untrimmed_timezone.status_code == 422

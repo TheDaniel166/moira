@@ -34,6 +34,7 @@ CURRENT_DT = datetime(2024, 6, 1, 12, 0, tzinfo=timezone.utc)
 PAYLOAD = {
     "natal_dt": "2000-01-01T12:00:00Z",
     "current_dt": "2024-06-01T12:00:00Z",
+    "civil_timezone": "America/New_York",
     "observer_lat": 40.7128,
     "observer_lon": -74.0060,
     "observer_elev_m": 10.0,
@@ -58,6 +59,7 @@ def _request() -> HellenisticChartProfileRequest:
     return HellenisticChartProfileRequest(
         natal_dt=NATAL_DT,
         current_dt=CURRENT_DT,
+        civil_timezone="America/New_York",
         observer_lat=40.7128,
         observer_lon=-74.0060,
         observer_elev_m=10.0,
@@ -104,6 +106,7 @@ def test_service_separates_planetary_and_observer_geometry() -> None:
         "apparent_geocentric_true_ecliptic_of_date_"
         "positions_and_longitude_rates"
     )
+    assert calls["profile"][1]["civil_timezone"] == "America/New_York"
 
 
 def _paths_with_named_keys(
@@ -166,6 +169,16 @@ def test_route_matches_engine_service_and_preserves_profile_boundaries(
         "apparent_geocentric_true_ecliptic_of_date_"
         "positions_and_longitude_rates"
     )
+    assert body["profection"]["chronology"]["civil_timezone"] == (
+        "America/New_York"
+    )
+    assert body["policy"]["monthly_profection_interval_policy"] == (
+        "equal_twelfths_of_civil_anniversary_year"
+    )
+    assert body["policy"]["profection_ambiguous_time_policy"] is None
+    assert body["provenance"]["method_id"] == (
+        "moira.hellenistic_chart_profile.v2"
+    )
     assert not _paths_with_named_keys(body, ("score",))
     assert not _paths_with_named_keys(
         body,
@@ -180,7 +193,7 @@ def test_route_matches_engine_service_and_preserves_profile_boundaries(
     )
 
 
-def test_request_validation_rejects_ambiguous_or_quarantined_inputs() -> None:
+def test_request_validation_rejects_ambiguous_or_closed_exclusion_inputs() -> None:
     app = create_app(ServerConfig(docs_enabled=False))
     with TestClient(app) as client:
         invalid_payloads = (
@@ -208,6 +221,12 @@ def test_request_validation_rejects_ambiguous_or_quarantined_inputs() -> None:
                 **PAYLOAD,
                 "policy": {
                     "lots": {"unresolved_reference_mode": "raise"}
+                },
+            },
+            {
+                **PAYLOAD,
+                "policy": {
+                    "profection_ambiguous_time_policy": "guess"
                 },
             },
             {
@@ -258,7 +277,7 @@ def _reachable_schemas(
     return reachable
 
 
-def test_openapi_profile_graph_is_typed_score_free_and_quarantined() -> None:
+def test_openapi_profile_graph_is_typed_score_free_with_closed_exclusions() -> None:
     openapi = create_app(ServerConfig(docs_enabled=False)).openapi()
     operation = openapi["paths"]["/v1/hellenistic/chart-profile"]["post"]
     schemas = openapi["components"]["schemas"]
@@ -298,6 +317,7 @@ def test_openapi_profile_graph_is_typed_score_free_and_quarantined() -> None:
     assert levels["minimum"] == 1
     assert levels["maximum"] == 2
     assert "HellenisticProfileExclusion" in schemas
+    assert "triacontaeteris" in schemas["HellenisticProfileExclusion"]["enum"]
 
 
 def test_server_aggregators_export_the_profile_contract_by_identity() -> None:

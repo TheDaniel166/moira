@@ -561,7 +561,7 @@ def test_decennials_rejects_missing_or_nonfinite_longitudes() -> None:
 
 
 @pytest.mark.parametrize("levels", [3, 4])
-def test_decennials_quarantines_levels_three_and_four(levels: int) -> None:
+def test_decennials_rejects_levels_three_and_four(levels: int) -> None:
     from moira.timelords import decennials
 
     natal_positions = {
@@ -579,27 +579,16 @@ def test_decennials_quarantines_levels_three_and_four(levels: int) -> None:
 
 
 @pytest.mark.parametrize("method", ["valens", "hephaistio"])
-def test_decennials_quarantines_deep_subdivision_policies(method: str) -> None:
-    from moira.timelords import decennials, DecennialPolicy, TimelordComputationPolicy
-
-    natal_positions = {
-        "Sun": 10.0,
-        "Mercury": 20.0,
-        "Venus": 50.0,
-        "Mars": 110.0,
-        "Moon": 200.0,
-        "Jupiter": 250.0,
-        "Saturn": 300.0,
-    }
-    policy = TimelordComputationPolicy(
-        decennials=DecennialPolicy(deep_subdivision_method=method)
-    )
+def test_decennial_policy_rejects_deep_subdivision_selectors(
+    method: str,
+) -> None:
+    from moira.timelords import DecennialPolicy
 
     with pytest.raises(ValueError, match="deep_subdivision_method is not admitted"):
-        decennials(2451545.0, natal_positions, True, levels=2, policy=policy)
+        DecennialPolicy(deep_subdivision_method=method)
 
 
-def test_validate_decennials_output_rejects_quarantined_deep_period() -> None:
+def test_validate_decennials_output_rejects_tampered_deep_period() -> None:
     """The output validator fails closed on legacy or tampered L3/L4 vessels."""
     import dataclasses
 
@@ -1357,70 +1346,44 @@ def test_zr_policy_year_days_scales_period_boundaries() -> None:
     assert span_365 / span_360 == pytest.approx(365.25 / 360.0, rel=1e-6)
 
 
-def test_timelord_policy_rejects_non_positive_year_days() -> None:
-    """_validate_timelord_policy raises ValueError for non-positive year_days."""
-    from moira.timelords import FirdarYearPolicy, ZRYearPolicy, TimelordComputationPolicy, _validate_timelord_policy
+def test_timelord_year_policies_reject_non_positive_values() -> None:
+    """Year policies fail closed when their typed value is constructed."""
+    from moira.timelords import FirdarYearPolicy, ZRYearPolicy
 
-    with pytest.raises(ValueError, match="firdaria_year.year_days must be positive"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(firdaria_year=FirdarYearPolicy(year_days=0.0))
-        )
+    with pytest.raises(ValueError, match="finite and positive"):
+        FirdarYearPolicy(year_days=0.0)
 
-    with pytest.raises(ValueError, match="zr_year.year_days must be positive"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(zr_year=ZRYearPolicy(year_days=-1.0))
-        )
+    with pytest.raises(ValueError, match="finite and positive"):
+        ZRYearPolicy(year_days=-1.0)
 
 
-def test_timelord_policy_rejects_unadmitted_decennials_variants() -> None:
-    """Phase 4 keeps deferred Decennials variants unselectable."""
-    from moira.timelords import DecennialPolicy, TimelordComputationPolicy, _validate_timelord_policy
+def test_decennial_policy_rejects_unadmitted_variants_at_construction() -> None:
+    """The sole admitted L1/L2 policy cannot carry alternate doctrine."""
+    from moira.timelords import DecennialPolicy
 
     with pytest.raises(ValueError, match="start_lord_basis must remain 'sect_light'"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(decennials=DecennialPolicy(start_lord_basis="ascendant"))
-        )
+        DecennialPolicy(start_lord_basis="ascendant")
 
     with pytest.raises(ValueError, match="sequence_mode must remain 'zodiacal_from_sect_light'"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(decennials=DecennialPolicy(sequence_mode="calendar_order"))
-        )
+        DecennialPolicy(sequence_mode="calendar_order")
 
     with pytest.raises(ValueError, match="subperiod_mode must remain 'rotated_minor_months'"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(decennials=DecennialPolicy(subperiod_mode="equal_months"))
-        )
+        DecennialPolicy(subperiod_mode="equal_months")
 
-    with pytest.raises(ValueError, match="major_months must remain 129"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(decennials=DecennialPolicy(major_months=120.0))
-        )
+    with pytest.raises(ValueError, match="major_months must preserve"):
+        DecennialPolicy(major_months=120.0)
 
-    with pytest.raises(ValueError, match="month_basis_days must remain 30.0"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(decennials=DecennialPolicy(month_basis_days=29.5))
-        )
+    with pytest.raises(ValueError, match="month_basis_days must preserve"):
+        DecennialPolicy(month_basis_days=29.5)
 
     with pytest.raises(ValueError, match="time_basis must preserve"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(
-                decennials=DecennialPolicy(time_basis="civil_years")
-            )
-        )
+        DecennialPolicy(time_basis="civil_years")
 
     with pytest.raises(ValueError, match="calendar_projection_basis must preserve"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(
-                decennials=DecennialPolicy(
-                    calendar_projection_basis="add_civil_years"
-                )
-            )
-        )
+        DecennialPolicy(calendar_projection_basis="add_civil_years")
 
     with pytest.raises(ValueError, match="deep_subdivision_method is not admitted"):
-        _validate_timelord_policy(
-            TimelordComputationPolicy(decennials=DecennialPolicy(deep_subdivision_method="firmicus"))
-        )
+        DecennialPolicy(deep_subdivision_method="firmicus")
 
 
 # ---------------------------------------------------------------------------
@@ -1868,10 +1831,9 @@ def test_decennial_major_group_active_sub_group_at_returns_level_two_node() -> N
     assert result.is_leaf
 
 
-def test_decennial_period_group_rejects_invalid_child_level_or_containment() -> None:
-    """DecennialPeriodGroup hardens one-level nesting and parent containment."""
+def test_decennial_period_group_is_a_closed_level_two_leaf() -> None:
+    """The admitted Decennial group contract cannot represent L3/L4."""
     from moira.timelords import decennials, group_decennials, DecennialPeriodGroup
-    import dataclasses
 
     natal_positions = {
         "Sun": 10.0,
@@ -1885,17 +1847,8 @@ def test_decennial_period_group_rejects_invalid_child_level_or_containment() -> 
     first_group = group_decennials(decennials(2451545.0, natal_positions, True))[0]
     l2_group = first_group.sub_groups[0]
 
-    with pytest.raises(ValueError, match="exactly one level deeper"):
+    with pytest.raises(ValueError, match="must be leaves"):
         DecennialPeriodGroup(period=l2_group.period, sub_groups=[l2_group])
-
-    shifted = dataclasses.replace(l2_group.period)
-    object.__setattr__(shifted, "level", 3)
-    object.__setattr__(shifted, "start_jd", l2_group.period.start_jd - 1.0)
-    with pytest.raises(ValueError, match="starts before parent period"):
-        DecennialPeriodGroup(
-            period=l2_group.period,
-            sub_groups=[DecennialPeriodGroup(period=shifted, sub_groups=[])]
-        )
 
 
 # -- ZRPeriodGroup hardening and inspectability --
@@ -2700,8 +2653,8 @@ def test_decennial_active_path_returns_none_outside_sequence() -> None:
     assert decennial_active_path(periods, _P8_JD_BIRTH - 1.0) is None
 
 
-def test_decennial_active_path_rejects_non_contiguous_levels() -> None:
-    """DecennialActivePath rejects profile tuples that skip a level."""
+def test_decennial_active_path_rejects_tampered_level_three_profile() -> None:
+    """DecennialActivePath cannot carry a fabricated L3 profile."""
     import dataclasses
 
     from moira.timelords import (
@@ -2727,7 +2680,7 @@ def test_decennial_active_path_rejects_non_contiguous_levels() -> None:
     )
     object.__setattr__(level3, "level", 3)
 
-    with pytest.raises(ValueError, match="advance one level at a time"):
+    with pytest.raises(ValueError, match="admitted L1/L2 profiles only"):
         DecennialActivePath(profiles=(level1, level3))
 
 

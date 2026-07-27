@@ -107,11 +107,16 @@ def _policy_from_request(
             calendar_projection_basis=(
                 request.decennials.calendar_projection_basis
             ),
-            deep_subdivision_method=None,
         ),
         zr_year=ZRYearPolicy(year_days=request.zr_year.year_days),
         activation_orb_deg=request.activation_orb_deg,
         leap_day_policy=request.leap_day_policy,
+        monthly_profection_interval_policy=(
+            request.monthly_profection_interval_policy
+        ),
+        profection_ambiguous_time_policy=(
+            request.profection_ambiguous_time_policy
+        ),
         zr_lot_name=request.zr_lot_name,
         zr_levels=request.zr_levels,
         use_loosing_of_bond=request.use_loosing_of_bond,
@@ -143,6 +148,7 @@ def compute_hellenistic_chart_profile(
         houses,
         request.natal_dt,
         request.current_dt,
+        civil_timezone=request.civil_timezone,
         policy=_policy_from_request(request.policy),
         syzygy=request.syzygy,
         prenatal_new_moon=request.prenatal_new_moon,

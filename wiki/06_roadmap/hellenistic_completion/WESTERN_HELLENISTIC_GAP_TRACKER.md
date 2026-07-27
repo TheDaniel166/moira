@@ -16,7 +16,8 @@ Current sources of truth:
 Historical research log:
 [pre-engine-gates gap tracker](archive/WESTERN_HELLENISTIC_GAP_TRACKER_PRE_ENGINE_GATES.md).
 
-Triacontaeteris remains deferred, Hermetic geometry and Decennial L3/L4 remain
-quarantined, and the broad lots catalog remains source-qualified. Those
-boundaries are governed by the generated capability matrix, not by historical
-status prose.
+Triacontaeteris, Hermetic product geometry, Decennial L3/L4, and Valens
+distribution interpretation are outside the completed Hellenistic contract.
+They are not current gaps, release blockers, or version-bump work. The broad
+lots catalog remains source-qualified. Those boundaries are governed by the
+generated capability matrix, not by historical status prose.

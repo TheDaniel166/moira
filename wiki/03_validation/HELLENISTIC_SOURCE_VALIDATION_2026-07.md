@@ -17,7 +17,8 @@ claims:
   identities, route registrations, request schemas, and response schemas;
 - supporting classical endpoints are explicitly distinguished from the
   dedicated score-free Hellenistic profile;
-- Hermetic geometry, Decennial L3/L4, and interpretation remain quarantined;
+- Hermetic geometry, Decennial L3/L4, and interpretation are closed
+  exclusions, not incomplete engine work;
 - a capability being implemented does not by itself become a source-correctness
   or empirical-effect claim.
 
@@ -206,8 +207,8 @@ table goldens:
   profile lots;
 - planetary joy evidence is currently a source-cited modern synthesis rather
   than a new direct transcription of every ancient witness;
-- Triacontaeteris remains deferred because prior research did not recover a
-  sufficient first-principles algorithm;
+- Triacontaeteris remains outside this completed contract because prior
+  research did not recover a sufficient first-principles algorithm;
 - Valens distribution interpretation remains excluded; no generic
   distributor/receiver effects are fabricated.
 

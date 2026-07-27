@@ -214,14 +214,18 @@ CAPABILITIES: tuple[Capability, ...] = (
     ),
     Capability(
         "profections",
-        "Annual/monthly profections and activation truth",
+        "Annual/monthly profections, activation truth, and dated chronology",
         "admitted_qualified",
         "annual profile component included",
         "moira.profections",
-        ("ProfectionActivationTruth", "profection_schedule"),
-        "cycle, dependency, civil-anniversary, and leap-day policy tests",
-        "ancient sign-cycle doctrine plus explicit modern civil policy",
-        "Completed civil anniversaries are a declared projection policy, not an ancient civil-calendar reconstruction.",
+        (
+            "ProfectionActivationTruth",
+            "ProfectionChronology",
+            "profection_schedule",
+        ),
+        "cycle, dependency, IANA/DST, interval-boundary, civil-anniversary, and leap-day policy tests",
+        "ancient sign-cycle doctrine; Valens IV.28 luminary-distance evidence; explicit modern civil interval policy",
+        "Equal elapsed twelfths are labelled as a computational projection, not Valens' luminary-distance method or an ancient civil-calendar reconstruction.",
         ("Profections",),
     ),
     Capability(
@@ -268,37 +272,37 @@ CAPABILITIES: tuple[Capability, ...] = (
     Capability(
         "hermetic_catalog",
         "Hermetic 36-name catalog identity",
-        "source_catalog_quarantined",
+        "research_only_closed_exclusion",
         "excluded",
         "moira.hermetic_decans",
         ("HERMETIC_DECAN_CATALOG", "HERMETIC_CATALOG_SOURCE_ID"),
         "source-locked literal catalog tests",
         "Gundel 1936, pages 379-383; Harley MS 3731",
-        "Names, faces, and edition pages are reconstructed, but the module remains outside curated imports and REST.",
+        "Names, faces, and edition pages are reconstructed for source research. Product admission is closed: the module remains outside curated imports and REST and is not release backlog.",
         require_absent_from_curated=True,
     ),
     Capability(
         "hermetic_geometry",
         "Hermetic longitude and rising geometry",
-        "quarantined",
+        "closed_exclusion",
         "excluded",
         "moira.hermetic_decans",
         ("decan_for_longitude", "decan_at"),
         "source-locked 10-degree segmentation and internal rising-composition tests",
         "Gundel 1936 supports Aries-starting 10-degree decans; tropical-frame and rising projection remain policy-qualified",
-        "The unsupported night-hour experiment and all dormant Hermetic transport were removed; no curated import or REST route is allowed.",
+        "The unsupported night-hour experiment and all dormant Hermetic transport were removed. This is a closed exclusion, not unfinished release work.",
         require_absent_from_curated=True,
     ),
     Capability(
         "decennials_l3_l4",
         "Decennials L3/L4",
-        "quarantined",
+        "closed_exclusion",
         "excluded",
         "moira.timelords",
         (),
         "rejection tests",
         "conflicted Valens/Hephaistio deep-subdivision candidates",
-        "The admitted engine rejects levels above 2 and exposes no selectable deep method.",
+        "The admitted engine rejects levels above 2 and exposes no selectable deep method. L3/L4 are outside the closed contract, not 6.1 backlog.",
     ),
     Capability(
         "firdaria",
@@ -348,24 +352,24 @@ CAPABILITIES: tuple[Capability, ...] = (
     Capability(
         "valens_distribution_interpretation",
         "Valens distribution interpretation",
-        "excluded_unadmitted",
+        "closed_exclusion",
         "excluded",
         "none",
         (),
         "absence from profile and curated contract",
         "source research remains incomplete/conflicted",
-        "No interpretive effect vessel is admitted by the unified profile.",
+        "No interpretive effect vessel is admitted by the unified profile. Its absence is a closed product decision, not an incomplete engine component.",
     ),
     Capability(
         "triacontaeteris",
         "Triacontaeteris",
-        "deferred",
-        "absent",
+        "out_of_contract",
+        "excluded",
         "none",
         (),
-        "research deferral record",
+        "research boundary record",
         "no sufficient first-principles algorithm recovered",
-        "No implementation or public capability claim is made.",
+        "No implementation or public capability claim is made. It is outside the completed Hellenistic contract, not release backlog.",
     ),
 )
 
@@ -539,10 +543,70 @@ def _operations(app: Any) -> list[dict[str, str]]:
     ]
     if prohibited:
         raise ValueError(
-            "Quarantined Hellenistic paths appeared in OpenAPI: "
+            "Closed-exclusion Hellenistic paths appeared in OpenAPI: "
             f"{sorted(prohibited)}"
         )
     return sorted(operations, key=lambda item: (item["family"], item["path"]))
+
+
+def _verify_closed_decennial_contract(app: Any) -> None:
+    """Fail generation if the L1/L2-only REST contract becomes selectable."""
+
+    schemas = (
+        app.openapi()
+        .get("components", {})
+        .get("schemas", {})
+    )
+    request = schemas.get("DecennialNatalRequest")
+    if not isinstance(request, dict):
+        raise ValueError(
+            "Closed Decennial contract requires DecennialNatalRequest"
+        )
+    properties = request.get("properties", {})
+    if not isinstance(properties, dict):
+        raise ValueError(
+            "Closed Decennial contract requires request properties"
+        )
+    levels = properties.get("levels")
+    if (
+        not isinstance(levels, dict)
+        or levels.get("minimum") != 1
+        or levels.get("maximum") != 2
+    ):
+        raise ValueError(
+            "Closed Decennial contract requires REST levels in 1..2"
+        )
+    if "deep_subdivision_method" in properties:
+        raise ValueError(
+            "Closed Decennial contract cannot expose a deep-subdivision "
+            "request selector"
+        )
+    if "DecennialDeepSubdivisionMethod" in schemas:
+        raise ValueError(
+            "Closed Decennial contract cannot advertise a selectable "
+            "deep-subdivision enum"
+        )
+    for schema_name in (
+        "DecennialPeriodResponse",
+        "DecennialSequenceResponse",
+        "DecennialGroupsResponse",
+        "DecennialCurrentResponse",
+        "DecennialConditionProfileResponse",
+        "DecennialSequenceProfileResponse",
+        "DecennialActivePairOptionalResponse",
+        "DecennialActivePathOptionalResponse",
+    ):
+        schema = schemas.get(schema_name)
+        receipt = (
+            schema.get("properties", {}).get("deep_subdivision_method")
+            if isinstance(schema, dict)
+            else None
+        )
+        if not isinstance(receipt, dict) or receipt.get("type") != "null":
+            raise ValueError(
+                f"{schema_name} must expose deep_subdivision_method only as "
+                "a fixed null compatibility receipt"
+            )
 
 
 def _anchor_receipt(capability: Capability) -> str:
@@ -570,7 +634,7 @@ def _anchor_receipt(capability: Capability) -> str:
     }
     if capability.require_absent_from_curated and any(counts.values()):
         raise ValueError(
-            f"{capability.capability_id}: quarantined anchors leaked into "
+            f"{capability.capability_id}: closed-exclusion anchors leaked into "
             f"curated surfaces: {counts}"
         )
     return (
@@ -609,6 +673,7 @@ def render_capability_matrix(app: Any | None = None) -> str:
         app = create_app()
 
     _verify_profile_exports()
+    _verify_closed_decennial_contract(app)
     operations = _operations(app)
     route_counts: dict[str, int] = {}
     for operation in operations:
@@ -669,8 +734,9 @@ def render_capability_matrix(app: Any | None = None) -> str:
             f"- Default triplicity doctrine: `{policy.triplicity_doctrine.value}`",
             f"- Default bounds doctrine: `{policy.bounds.doctrine.value}`",
             f"- Default Zodiacal Releasing depth: `{policy.zr_levels}`",
-            "- Decennial deep-subdivision selector: "
-            f"`{policy.decennials.deep_subdivision_method}`",
+            "- Decennial compatibility receipt: "
+            f"`deep_subdivision_method={policy.decennials.deep_subdivision_method}` "
+            "(fixed non-selectable sentinel; L1/L2 is the complete admitted contract)",
             "",
             "## Evidence boundaries",
             "",
@@ -678,9 +744,11 @@ def render_capability_matrix(app: Any | None = None) -> str:
             "triplicity, joys, bounds, ordinary-face, profile-lot, and Decennial data.",
             "- `tests/golden/hellenistic_zr_valens_iv4.json` owns the Valens "
             "same-sign start-shift and 211-month circuit cases.",
-            "- Hermetic catalog identity remains source-locked in "
-            "`tests/unit/test_hermetic_decans.py`; its geometry is still quarantined "
+            "- Hermetic catalog identity remains source-locked research in "
+            "`tests/unit/test_hermetic_decans.py`; product admission is closed "
             "and every Hermetic transport layer is absent.",
+            "- Hermetic geometry, Decennial L3/L4, and Valens distribution "
+            "interpretation are closed exclusions, not unfinished roadmap items.",
             "- Mixed supporting routes expose broader classical catalogs or policies. "
             "Only `/v1/hellenistic/chart-profile` freezes the unified profile contract.",
             "- The heterogeneous lots catalog is not promoted to a single Hellenistic "
@@ -707,6 +775,7 @@ def render_api_inventory(app: Any | None = None) -> str:
         from moira_server.app import create_app
 
         app = create_app()
+    _verify_closed_decennial_contract(app)
     operations = _operations(app)
     openapi = app.openapi()
     all_operation_count = sum(
@@ -732,7 +801,7 @@ def render_api_inventory(app: Any | None = None) -> str:
         f"- Application: `{app.title}` `{app.version}`",
         f"- Complete registered OpenAPI operations: {all_operation_count}",
         f"- Hellenistic, supporting, and explicitly adjacent operations inventoried here: {len(operations)}",
-        "- Quarantined Hermetic geometry, Triacontaeteris, and Decennial L3/L4 paths: 0",
+        "- Closed-exclusion Hermetic geometry and Decennial L3/L4 paths: 0",
         "",
         "## Family counts",
         "",

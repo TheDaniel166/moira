@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.0] - 2026-07-27
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.1.0.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.1.0.md`.
+
+### Added
+- **Dated monthly-profection chronology**: added typed, query-specific monthly
+  intervals between exact consecutive civil anniversaries, preserving UTC and
+  Julian Day boundaries, the active month, policy, source, and provenance.
+- **Civil-time truth**: added explicit IANA timezone selection, February 29
+  policy, and earlier/later occurrence policy for repeated local anniversary
+  times.
+
+### Changed
+- **Unified Hellenistic profile**: composes the dated profection chronology and
+  enforces cross-component, policy, provenance, ordering, and completeness
+  invariants.
+- **Decennial contract**: fixes the admitted surface at L1/L2. Requests no
+  longer expose a deep-subdivision selector; retained response receipts are
+  compatibility fields fixed to `null`.
+- **Closed-exclusion governance**: Hermetic star attribution/geometry,
+  Decennial L3/L4, Triacontaeteris, and Valens distribution interpretation are
+  classified as completed exclusions rather than release backlog.
+
+### Fixed
+- Civil anniversaries that fall in daylight-saving gaps now fail closed.
+- Repeated civil anniversary times require an explicit earlier/later policy
+  instead of silently selecting a fold.
+- Removed stale roadmap, validation, test, and error-language classifications
+  that could incorrectly reintroduce closed Hellenistic exclusions as work.
+
+### Validation
+- Expanded release hardening across source goldens, generated inventories,
+  engine/facade/REST parity, OpenAPI depth rejection, unified-profile
+  invariants, dated chronology boundaries, and active documentation status.
+- Preserved the empty base dependency set; named IANA resolution uses the
+  standard-library `zoneinfo` interface and fails closed when the host lacks
+  the requested entry.
+
 ## [6.0.0] - 2026-07-26
 
 Detailed release and migration guidance is available in

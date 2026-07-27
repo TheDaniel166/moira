@@ -141,7 +141,7 @@ def test_decan_routes_are_registered() -> None:
         ),
     ],
 )
-def test_quarantined_hermetic_decan_routes_return_not_found(
+def test_closed_exclusion_hermetic_decan_routes_return_not_found(
     method: str,
     path: str,
     payload: dict[str, object] | None,

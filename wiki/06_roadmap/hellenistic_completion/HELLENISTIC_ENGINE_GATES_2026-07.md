@@ -1,6 +1,6 @@
 # Hellenistic Engine Gate Roadmap
 
-Date: 2026-07-26
+Date: 2026-07-27
 Scope: `moira/` engine truth first; transport, product composition, and website
 work only at their named later gates.
 
@@ -9,13 +9,25 @@ numbering in the older additive completion roadmap for current work. In
 particular, “Phase 2” here means doctrine decisions, not the historical
 “Bounds Expansion and Halb” phase.
 
+## Reading Rule: Closed Exclusions Are Not Backlog
+
+All six engine gates are complete. Hermetic star attribution/geometry,
+Decennial L3/L4, and Valens distribution interpretation are closed exclusions
+from that completed contract. They must not be copied into a gap list, version
+plan, or release blocker. The Hermetic catalog may remain available by direct
+research import, but no Hermetic product transport is admitted.
+
+The only post-6.0 engine delta recorded here is the dated monthly-profection
+contract below. Any future proposal to expand a closed exclusion is a new
+research-and-admission project, not unfinished Hellenistic completion work.
+
 ## Gate Status
 
 | Phase | Gate | Status | Boundary |
 |---|---|---|---|
-| 1 | False-output containment | Complete | Incorrect or unadmitted Hellenistic outputs fail closed; Decennial L3/L4 and Hermetic public surfaces remain quarantined. |
+| 1 | False-output containment | Complete | Incorrect or unadmitted Hellenistic outputs fail closed; Decennial L3/L4 and Hermetic public surfaces are closed exclusions. |
 | 2 | Doctrine decisions | Complete | The disputed profection, Decennial, Halb/Hayz, ZR, lot, and Hermetic-catalog rules have explicit source or policy decisions. |
-| 3 | Typed truth composition | Complete | Every admitted atomic family in the Phase 3 inventory now has a governing raw receipt or remains explicitly quarantined; compatibility labels and booleans are projections, not the source of truth. |
+| 3 | Typed truth composition | Complete | Every admitted atomic family has a governing raw receipt; excluded families are structurally absent. Compatibility labels and booleans are projections, not the source of truth. |
 | 4 | Contract parity | Complete | Phase 3 policy and raw receipts now have identity-preserving engine exports, full facade forwarding, explicit serializers, typed REST models, and OpenAPI schemas. |
 | 5 | Unified Hellenistic profile | Complete | `HellenisticChartProfile` composes a score-free chart profile from exact admitted atomic receipts and names every excluded branch. |
 | 6 | Validation and documentation regeneration | Complete | Independent source-owned goldens, generated capability/API inventories, canonical validation docs, and archived historical claims now form the engine gate. Website implementation remains separate. |
@@ -36,7 +48,7 @@ Decennials preserves two coordinates instead of collapsing them:
 - an elapsed-Julian-day projection from `sequence_origin_jd`
 
 Projected JDs are not represented as civil-month anniversaries. L3/L4 and both
-named deep-subdivision candidates remain quarantined.
+named deep-subdivision candidates are outside the closed admitted contract.
 
 ### Halb and Hayz
 
@@ -88,9 +100,10 @@ MS 3731, ff. 1r-50r.
 The engine preserves each entry's sign, ordinal, name, planetary face, edition
 page, and source identifier. The identified edition does not supply the former
 fixed-star assignments, so those accessors fail closed. The full text supports
-Aries-starting 10-degree segmentation, while the tropical-frame and rising
-projections remain research-quarantined pending later gates. The unsupported
-night-hour experiment has been removed from executable code.
+Aries-starting 10-degree segmentation. The tropical-frame and rising
+projections remain direct-import research only and are closed product
+exclusions. The unsupported night-hour experiment has been removed from
+executable code.
 
 Engine receipt: `moira/hermetic_decans.py`.
 Standard: `wiki/02_standards/DECANS_BACKEND_STANDARD.md`.
@@ -103,7 +116,8 @@ Phase 2 is closed only because:
    decision;
 2. the engine no longer fabricates the disputed result;
 3. focused tests and the ZR source-locked fixture cover the corrected behavior;
-4. quarantined material remains unavailable through curated public surfaces;
+4. closed-exclusion material remains unavailable through curated public
+   surfaces;
 5. no Phase 3 composition, Phase 4 parity claim, Phase 5 profile, or website
    admission is implied.
 
@@ -145,7 +159,7 @@ This is an implementation inventory, not a capability or correctness claim:
 | Decennial sequence | The final ordered tuple carries no atomic starting/ordering receipt, and equal non-sect-light longitudes fall through to private planet order. | Closed in the fourth Phase 3 slice with `DecennialSequenceAssemblyTruth`; every Classic 7 arc is preserved and non-sect-light longitude ties fail closed instead of using private order. |
 | ZR Fortune angularity | Missing Fortune leaves `angularity_class=None` but projects `is_peak_period=False`, collapsing “not evaluable” into “not peak.” | Closed in the fourth Phase 3 slice with `ZRFortuneAngularityTruth`; raw missing-Fortune peak truth is `None`, while the legacy field remains a compatibility `False`. |
 | Aspect direction and overcoming | Direction uses enum-or-`None` applicability and overcoming uses a scalar boolean without a shared typed Hellenistic superiority receipt. | Closed in the fourth Phase 3 slice with `HellenisticSuperiorityTruth`; typed direction applicability and winner-or-neither overcoming share one ordered-pair receipt and introduce no score. |
-| Hermetic decans and Decennial L3/L4 | These surfaces are quarantined rather than composition-ready. | Keep quarantined; Phase 3 does not reopen source admission. |
+| Hermetic decans and Decennial L3/L4 | These surfaces are closed exclusions rather than composition-ready. | Keep excluded; Phase 3 does not reopen source admission. |
 
 Triplicity assignment, admitted bounds, ordinary decanate position, essential
 dignity components, horizon/sect/Mercury phase, and lot dependency evaluation
@@ -203,7 +217,7 @@ the sect light and makes the final ordering inspectable. The sect light remains
 the starting lord; equal non-sect-light longitudes are typed
 `not_evaluable`, and generation fails closed instead of falling through to a
 private planet order. Every generated L1/L2 period preserves the same
-evaluated receipt. The L3/L4 quarantine is unchanged.
+evaluated receipt. The closed L1/L2 depth boundary is unchanged.
 
 `zr_fortune_angularity_truth()` preserves Fortune dependency completeness,
 inclusive place, angularity class, and raw peak truth. Missing Fortune carries
@@ -227,7 +241,7 @@ Phase 3 is complete because:
 3. compatibility strings, lists, and booleans are derived from raw truth and
    cannot contradict it in admitted engine output;
 4. synthetic scoring remains outside the Hellenistic product contract;
-5. Hermetic decan geometry and Decennial L3/L4 remain quarantined;
+5. Hermetic decan geometry and Decennial L3/L4 remain closed exclusions;
 6. the 18-file atomic gate passed all 907 collected tests under strict
    known-issues mode; Python compilation, documentation consistency, and
    `git diff --check` also passed.
@@ -258,7 +272,7 @@ profile:
 6. OpenAPI points those fields at concrete receipt schemas, and adversarial
    tests freeze both compatibility projections and the raw source of truth;
 7. Decennial L3/L4 and Hermetic tropical-frame/rising projections remain
-   quarantined; the unsupported Hermetic night-hour experiment is absent.
+   closed exclusions; the unsupported Hermetic night-hour experiment is absent.
 
 This receipt does not admit Firdaria into a Hellenistic profile, reinterpret a
 typed result, add a synthetic score, regenerate the Phase 6 capability matrix,
@@ -344,7 +358,8 @@ Phase 6 is complete at the engine and transport documentation boundary:
    curated export identities, registered OpenAPI operations, request/response
    schemas, and prohibited public paths;
 5. the generated capability matrix distinguishes admitted, qualified,
-   supporting, quarantined, excluded, non-Hellenistic, and deferred surfaces;
+   supporting, research-only, closed-exclusion, non-Hellenistic, and
+   out-of-contract surfaces;
 6. the generated API inventory records 49 Hellenistic, supporting, or
    explicitly adjacent operations from the 435-operation application and
    confirms zero Hermetic-geometry, Triacontaeteris, or Decennial L3/L4 paths;
@@ -358,8 +373,8 @@ The source audit preserves the hard qualifications: ordinary faces currently
 use a later Agrippa witness; joy houses use a modern synthesis with identified
 ancient locations; civil profection projection and proximity/enclosure
 thresholds are policies; Halb/Hayz is medieval; only four profile lots are
-source-goldened; Hermetic geometry and Decennial L3/L4 remain quarantined;
-Triacontaeteris remains deferred; and interpretation remains excluded.
+source-goldened; Hermetic geometry, Decennial L3/L4, Triacontaeteris, and
+interpretation remain outside the completed contract.
 
 Validation on 2026-07-26 passed:
 
@@ -384,7 +399,7 @@ The post-gate release hardening pass on 2026-07-26:
 1. removed the unsupported Hermetic night-hour implementation and all dormant
    Hermetic transport models, services, serializers, and router definitions;
 2. retained the source catalog and qualified geometry only inside the
-   explicitly quarantined direct module;
+   explicitly research-only direct module;
 3. added strict Hellenistic source-golden, generated-inventory,
    contract-parity, profile, server, and OpenAPI gates to release CI;
 4. passed all 944 collected focused Hellenistic engine/transport tests;
@@ -398,4 +413,43 @@ The post-gate release hardening pass on 2026-07-26:
 
 This closeout does not admit Hermetic star attribution or geometry, Decennial
 L3/L4, Triacontaeteris, Valens distribution interpretation, synthetic scoring,
-or website product composition.
+or website product composition. Those exclusions are not unfinished engine
+work.
+
+## Post-6.0 Source Checkpoint: Dated Monthly Profections
+
+The website Phase 3 continuity audit exposed one contract gap after the 6.0.0
+engine gates: Moira supplied the ordered twelve monthly lords but no
+authoritative dated product intervals.
+
+The source checkpoint now closes that implementation gap:
+
+1. `profection_chronology()` resolves exact consecutive civil anniversaries in
+   an explicit IANA timezone and emits twelve contiguous half-open intervals;
+2. `MonthlyProfectionIntervalPolicy` freezes the sole admitted projection as
+   `equal_twelfths_of_civil_anniversary_year`;
+3. `ProfectionChronologyMethod` labels the result
+   `computational_projection`, explicitly excluding any claim that it is
+   Valens IV.28's separate day-Sun/night-Moon distance method;
+4. explicit IANA resolution uses the standard-library `zoneinfo` interface,
+   fails closed if the host lacks the requested entry, and records its source
+   without claiming an unavailable database version;
+5. invalid IANA keys and civil anniversaries falling in DST gaps fail closed,
+   while repeated local times require an explicit earlier/later occurrence
+   policy that is preserved in the receipt;
+6. `ProfectionResult`, root/classical/facade exports, `Moira`, serializers,
+   REST models, the unified Hellenistic profile, and OpenAPI preserve the same
+   effective policy and exact boundaries; and
+7. vessel, unit, parity, route, and OpenAPI tests cover sign-sequence
+   continuity, equal-duration policy, UTC/Julian agreement, active-boundary
+   ownership, leap policy, DST, timezone transport, and strict schemas.
+
+Doctrine:
+`wiki/01_doctrines/timelords/monthly_profection_chronology_doctrine.md`.
+
+This is a source checkpoint, not a publication claim. The hosted Phase 3 gate
+closes only after a new Moira release containing this contract is built,
+published, installed in staging, promoted as the exact tested artifact, and
+verified through the live website timeline. The immutable `v6.0.0`
+documentation bundle must not be regenerated from this post-release source;
+the chronology contract requires a new release identity.

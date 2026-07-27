@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
-
 from pydantic import Field, model_validator
 
 from moira.profections import (
     LeapDayAnniversaryPolicy,
+    MonthlyProfectionIntervalPolicy,
+    ProfectionAmbiguousTimePolicy,
     ProfectionActivationStatus,
+    ProfectionChronologyMethod,
+    ProfectionIntervalBoundarySemantics,
 )
 from moira.timelords import TimelordEvaluationStatus
 
@@ -43,7 +45,26 @@ class MonthlyProfectionRequest(_StrictModel):
 class ProfectionScheduleRequest(_StrictModel):
     natal: TimelordNativityRequest
     current_dt: datetime
+    civil_timezone: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255,
+    )
     leap_day_policy: LeapDayAnniversaryPolicy | None = None
+    ambiguous_time_policy: ProfectionAmbiguousTimePolicy | None = None
+    interval_policy: MonthlyProfectionIntervalPolicy = (
+        MonthlyProfectionIntervalPolicy
+        .EQUAL_TWELFTHS_OF_CIVIL_ANNIVERSARY_YEAR
+    )
+
+    @model_validator(mode="after")
+    def _trimmed_civil_timezone(self) -> "ProfectionScheduleRequest":
+        if (
+            self.civil_timezone is not None
+            and self.civil_timezone != self.civil_timezone.strip()
+        ):
+            raise ValueError("civil_timezone must be trimmed")
+        return self
 
 
 class ProfectionActivationBodyTruthResponse(_StrictModel):
@@ -61,6 +82,39 @@ class ProfectionActivationTruthResponse(_StrictModel):
     reason: str | None
 
 
+class MonthlyProfectionIntervalResponse(_StrictModel):
+    month_index: int = Field(ge=0, le=11)
+    profected_longitude: float
+    sign: str
+    lord_of_month: str
+    start_utc: datetime
+    end_utc: datetime
+    start_jd: float
+    end_jd: float
+    active: bool
+
+
+class ProfectionChronologyResponse(_StrictModel):
+    age_years: int = Field(ge=0)
+    civil_timezone: str
+    timezone_data_source: str
+    timezone_data_version: str | None
+    interval_policy: MonthlyProfectionIntervalPolicy
+    ambiguous_time_policy: ProfectionAmbiguousTimePolicy | None
+    ambiguous_time_resolution_applied: bool
+    method: ProfectionChronologyMethod
+    boundary_semantics: ProfectionIntervalBoundarySemantics
+    leap_day_policy: LeapDayAnniversaryPolicy | None
+    query_utc: datetime
+    query_jd: float
+    annual_start_utc: datetime
+    annual_end_utc: datetime
+    annual_start_jd: float
+    annual_end_jd: float
+    active_month_index: int = Field(ge=0, le=11)
+    intervals: tuple[MonthlyProfectionIntervalResponse, ...]
+
+
 class ProfectionResultResponse(_StrictModel):
     age_years: int
     profected_house: int
@@ -72,6 +126,7 @@ class ProfectionResultResponse(_StrictModel):
     age_basis: str
     leap_day_policy: LeapDayAnniversaryPolicy | None
     activation_truth: ProfectionActivationTruthResponse
+    chronology: ProfectionChronologyResponse | None
 
 
 class MonthlyProfectionResponse(_StrictModel):
@@ -213,9 +268,6 @@ class FirdarActivePairOptionalResponse(_StrictModel):
 # P8-08 Decennials request models
 # ---------------------------------------------------------------------------
 
-DecennialDeepSubdivisionMethod = Literal["valens", "hephaistio"]
-
-
 class DecennialNatalRequest(_StrictModel):
     """Natal basis for Decennials computations.
 
@@ -227,15 +279,6 @@ class DecennialNatalRequest(_StrictModel):
     dt: datetime
     is_day_chart: bool
     levels: int = Field(default=2, ge=1, le=2)
-    deep_subdivision_method: DecennialDeepSubdivisionMethod | None = None
-
-    @model_validator(mode="after")
-    def _valid_deep_subdivision(self) -> "DecennialNatalRequest":
-        if self.deep_subdivision_method is not None:
-            raise ValueError(
-                "Decennial levels 3-4 and deep_subdivision_method are not admitted"
-            )
-        return self
 
 
 class DecennialBaseRequest(_StrictModel):
@@ -302,7 +345,7 @@ class DecennialPeriodResponse(_StrictModel):
     sub_index: int | None
     ancestor_planets: list[str]
     sequence_position: int
-    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
+    deep_subdivision_method: None = None
     sequence_truth: DecennialSequenceAssemblyTruthResponse
 
 
@@ -321,13 +364,13 @@ class DecennialSequenceResponse(_StrictModel):
     time_basis: str
     calendar_projection_basis: str
     sequence_origin_jd: float
-    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
+    deep_subdivision_method: None = None
 
 
 class DecennialGroupsResponse(_StrictModel):
     groups: list[DecennialMajorGroupResponse]
     major_count: int
-    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
+    deep_subdivision_method: None = None
 
 
 class DecennialCurrentResponse(_StrictModel):
@@ -336,7 +379,7 @@ class DecennialCurrentResponse(_StrictModel):
     time_basis: str
     calendar_projection_basis: str
     sequence_origin_jd: float
-    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
+    deep_subdivision_method: None = None
 
 
 class DecennialConditionProfileResponse(_StrictModel):
@@ -356,7 +399,7 @@ class DecennialConditionProfileResponse(_StrictModel):
     major_index: int
     sub_index: int | None
     sequence_position: int
-    deep_subdivision_method: str | None
+    deep_subdivision_method: None = None
     years: float
     months: float
     days: float
@@ -383,7 +426,7 @@ class DecennialSequenceProfileResponse(_StrictModel):
     calendar_projection_basis: str
     sequence_origin_jd: float
     deepest_level: int
-    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
+    deep_subdivision_method: None = None
 
 
 class DecennialActivePairResponse(_StrictModel):
@@ -400,7 +443,7 @@ class DecennialActivePairOptionalResponse(_StrictModel):
 
     active: bool
     pair: DecennialActivePairResponse | None
-    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
+    deep_subdivision_method: None = None
 
 
 class DecennialActivePathResponse(_StrictModel):
@@ -414,7 +457,7 @@ class DecennialActivePathOptionalResponse(_StrictModel):
 
     active: bool
     path: DecennialActivePathResponse | None
-    deep_subdivision_method: DecennialDeepSubdivisionMethod | None
+    deep_subdivision_method: None = None
 
 
 # ---------------------------------------------------------------------------

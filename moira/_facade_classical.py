@@ -139,6 +139,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         natal_dt: datetime,
         current_dt: datetime,
         *,
+        civil_timezone=None,
         policy=None,
         syzygy=None,
         prenatal_new_moon=None,
@@ -219,6 +220,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             houses.mc,
             natal_dt,
             current_dt,
+            civil_timezone=civil_timezone,
             policy=policy,
             syzygy=syzygy,
             prenatal_new_moon=prenatal_new_moon,
@@ -549,18 +551,47 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         current_dt: datetime,
         natal_positions: dict[str, float] | None = None,
         *,
+        civil_timezone: str | None = None,
         leap_day_policy=None,
+        ambiguous_time_policy=None,
+        interval_policy="equal_twelfths_of_civil_anniversary_year",
         activation_orb: float = 5.0,
     ):
-        """Compute the current annual profection."""
+        """Compute the current annual profection and dated month chronology."""
         facade = _facade_module()
         return facade.profection_schedule(
             natal_asc,
             natal_dt,
             current_dt,
             natal_positions,
+            civil_timezone=civil_timezone,
             leap_day_policy=leap_day_policy,
+            ambiguous_time_policy=ambiguous_time_policy,
+            interval_policy=interval_policy,
             activation_orb=activation_orb,
+        )
+
+    def profection_chronology(
+        self,
+        natal_asc: float,
+        natal_dt: datetime,
+        current_dt: datetime,
+        *,
+        civil_timezone: str | None = None,
+        leap_day_policy=None,
+        ambiguous_time_policy=None,
+        interval_policy="equal_twelfths_of_civil_anniversary_year",
+    ):
+        """Return the engine-owned dated monthly profection receipt."""
+
+        return _facade_module().profection_chronology(
+            natal_asc,
+            natal_dt,
+            current_dt,
+            civil_timezone=civil_timezone,
+            leap_day_policy=leap_day_policy,
+            ambiguous_time_policy=ambiguous_time_policy,
+            interval_policy=interval_policy,
         )
 
     def profection_activation_truth(

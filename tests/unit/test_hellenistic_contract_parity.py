@@ -72,10 +72,17 @@ _PHASE_3_EXPORTS = {
         "evaluate_lots",
     ),
     profections: (
+        "MonthlyProfectionIntervalPolicy",
+        "ProfectionAmbiguousTimePolicy",
+        "ProfectionChronologyMethod",
+        "ProfectionIntervalBoundarySemantics",
         "ProfectionActivationStatus",
         "ProfectionActivationBodyTruth",
         "ProfectionActivationTruth",
+        "MonthlyProfectionInterval",
+        "ProfectionChronology",
         "profection_activation_truth",
+        "profection_chronology",
     ),
     timelords: (
         "TimelordEvaluationStatus",
@@ -154,14 +161,30 @@ def test_moira_profection_forwards_activation_orb(monkeypatch) -> None:
         natal_dt,
         current_dt,
         positions,
+        civil_timezone="America/New_York",
         leap_day_policy=profections.LeapDayAnniversaryPolicy.FEBRUARY_28,
+        ambiguous_time_policy=(
+            profections.ProfectionAmbiguousTimePolicy.EARLIER_OCCURRENCE
+        ),
+        interval_policy=(
+            profections.MonthlyProfectionIntervalPolicy
+            .EQUAL_TWELFTHS_OF_CIVIL_ANNIVERSARY_YEAR
+        ),
         activation_orb=0.25,
     )
 
     assert result is sentinel
     assert seen["args"] == (0.0, natal_dt, current_dt, positions)
     assert seen["kwargs"] == {
+        "civil_timezone": "America/New_York",
         "leap_day_policy": profections.LeapDayAnniversaryPolicy.FEBRUARY_28,
+        "ambiguous_time_policy": (
+            profections.ProfectionAmbiguousTimePolicy.EARLIER_OCCURRENCE
+        ),
+        "interval_policy": (
+            profections.MonthlyProfectionIntervalPolicy
+            .EQUAL_TWELFTHS_OF_CIVIL_ANNIVERSARY_YEAR
+        ),
         "activation_orb": 0.25,
     }
 
@@ -248,6 +271,19 @@ def test_moira_raw_truth_helpers_match_their_owning_modules() -> None:
     ) == profections.profection_activation_truth(
         0.0, {"Sun": 0.25}, 0.5
     )
+    natal_dt = datetime(2000, 1, 1, tzinfo=timezone.utc)
+    current_dt = datetime(2024, 6, 1, tzinfo=timezone.utc)
+    assert engine.profection_chronology(
+        0.0,
+        natal_dt,
+        current_dt,
+        civil_timezone="America/New_York",
+    ) == profections.profection_chronology(
+        0.0,
+        natal_dt,
+        current_dt,
+        civil_timezone="America/New_York",
+    )
     assert engine.decennial_sequence_truth(
         positions, True
     ) == timelords.decennial_sequence_truth(positions, True)
@@ -287,6 +323,8 @@ def test_server_package_aggregators_preserve_typed_contract_identity() -> None:
         ),
         timelord_models: (
             "ProfectionActivationTruthResponse",
+            "MonthlyProfectionIntervalResponse",
+            "ProfectionChronologyResponse",
             "DecennialSequenceAssemblyTruthResponse",
             "ZRFortuneAngularityTruthResponse",
         ),
@@ -315,14 +353,14 @@ def test_server_package_aggregators_preserve_typed_contract_identity() -> None:
 
 
 def test_phase_4_keeps_unadmitted_hermetic_geometry_contained() -> None:
-    quarantined = {
+    excluded = {
         "decan_at",
         "decan_for_longitude",
         "rising_decan",
     }
     for surface in (moira, classical, facade):
-        assert quarantined.isdisjoint(surface.__all__)
-        assert all(not hasattr(surface, name) for name in quarantined)
+        assert excluded.isdisjoint(surface.__all__)
+        assert all(not hasattr(surface, name) for name in excluded)
 
 
 def test_unsupported_hermetic_transport_and_night_hours_are_removed() -> None:

@@ -86,7 +86,7 @@ _INTERNAL_NAMES = [
     "_TOTAL_MINOR_YEARS",
 ]
 
-_QUARANTINED_VALENS_NAMES = [
+_CLOSED_EXCLUSION_VALENS_NAMES = [
     "ValensDistributionEffect",
     "VALENS_DISTRIBUTIONS_POLICY",
     "formalize_valens_distributions_for_chronocrator",
@@ -159,9 +159,9 @@ class TestTimelordsInternalsRemainInternal:
             )
 
 
-class TestValensInterpretiveLayerIsQuarantined:
+class TestValensInterpretiveLayerIsAClosedExclusion:
     def test_candidate_names_are_not_engine_or_forwarded_surfaces(self):
-        for name in _QUARANTINED_VALENS_NAMES:
+        for name in _CLOSED_EXCLUSION_VALENS_NAMES:
             assert not hasattr(_timelords_module, name)
             assert not hasattr(_classical_module, name)
             assert not hasattr(_facade_module, name)

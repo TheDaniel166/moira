@@ -192,9 +192,13 @@ from .sidereal import NakshatraPosition, nakshatra_of, all_nakshatras_at
 
 # ── Profections ──────────────────────────────────────────────────────────
 from .profections import (
-    LeapDayAnniversaryPolicy, ProfectionActivationStatus,
+    LeapDayAnniversaryPolicy, MonthlyProfectionIntervalPolicy,
+    ProfectionAmbiguousTimePolicy,
+    ProfectionChronologyMethod, ProfectionIntervalBoundarySemantics,
+    ProfectionActivationStatus,
     ProfectionActivationBodyTruth, ProfectionActivationTruth,
-    ProfectionResult, profection_activation_truth,
+    MonthlyProfectionInterval, ProfectionChronology, ProfectionResult,
+    profection_activation_truth, profection_chronology,
     annual_profection, monthly_profection, profection_schedule,
 )
 
@@ -408,9 +412,13 @@ _CLASSICAL_OWN: list[str] = [
     # Nakshatras
     "NakshatraPosition", "nakshatra_of", "all_nakshatras_at",
     # Profections
-    "LeapDayAnniversaryPolicy", "ProfectionActivationStatus",
+    "LeapDayAnniversaryPolicy", "MonthlyProfectionIntervalPolicy",
+    "ProfectionAmbiguousTimePolicy",
+    "ProfectionChronologyMethod", "ProfectionIntervalBoundarySemantics",
+    "ProfectionActivationStatus",
     "ProfectionActivationBodyTruth", "ProfectionActivationTruth",
-    "ProfectionResult", "profection_activation_truth",
+    "MonthlyProfectionInterval", "ProfectionChronology", "ProfectionResult",
+    "profection_activation_truth", "profection_chronology",
     "annual_profection", "monthly_profection", "profection_schedule",
     # Planetary hours
     "PlanetaryHourClassical", "PlanetaryHoursDay", "planetary_hours",

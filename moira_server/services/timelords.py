@@ -114,7 +114,10 @@ def compute_profection_schedule(engine: Moira, request: ProfectionScheduleReques
         natal_dt=request.natal.dt,
         current_dt=request.current_dt,
         natal_positions=_natal_positions(chart, request.natal.include_nodes),
+        civil_timezone=request.civil_timezone,
         leap_day_policy=request.leap_day_policy,
+        ambiguous_time_policy=request.ambiguous_time_policy,
+        interval_policy=request.interval_policy,
         activation_orb=request.natal.activation_orb,
     )
 
@@ -199,14 +202,11 @@ def _natal_positions_and_jd(engine: Moira, natal_request: DecennialNatalRequest)
 
 
 def _decennial_policy(
-    natal_request: DecennialNatalRequest,
+    _natal_request: DecennialNatalRequest,
 ) -> TimelordComputationPolicy:
-    """Materialize the caller's explicit admitted deep-subdivision doctrine."""
-    return TimelordComputationPolicy(
-        decennials=DecennialPolicy(
-            deep_subdivision_method=natal_request.deep_subdivision_method,
-        )
-    )
+    """Return the sole admitted L1/L2 Decennial computation policy."""
+
+    return TimelordComputationPolicy(decennials=DecennialPolicy())
 
 
 def _decennial_periods(engine: Moira, request: DecennialBaseRequest) -> list[DecennialPeriod]:

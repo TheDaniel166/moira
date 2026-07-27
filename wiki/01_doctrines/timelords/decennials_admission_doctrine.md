@@ -1,13 +1,20 @@
-# Decennials Admission Doctrine
+# Decennials Admission Doctrine — Historical Research Record
+
+> **Current contract rule — 2026-07-27.** The admitted Decennials engine is
+> complete at L1/L2. L3/L4 and Valens distribution interpretation are closed
+> exclusions, not backlog. Research packets, historical phase claims, and
+> implementation recommendations later in this file are retained only as an
+> audit trail and must not be used to generate current roadmap work. Runtime
+> truth and the constitutional
+> `wiki/02_standards/TIMELORDS_BACKEND_STANDARD.md` supersede them.
 
 > **Corrective admission status — 2026-07-25.** Only the shared Decennials
 > L1/L2 chronology is admitted. The `valens` and `hephaistio` L3/L4 policies
-> are quarantined because the current recursive implementation lacks a
-> source-backed rule for projecting those deeper periods onto Moira's explicit
-> time bases. The separate Valens distributions/transmissions *interpretive*
-> layer also remains quarantined. Later historical completion declarations in
-> this research record are superseded by this notice. Re-admission requires
-> source-complete, unscored doctrine and validation passes for each boundary.
+> and the separate Valens distributions/transmissions *interpretive* layer are
+> closed exclusions. Later historical completion declarations in this
+> research record are superseded by this notice. Any future expansion would
+> require a new source-complete, unscored admission project and validation
+> passes for each boundary.
 
 > **Phase-2 implementation receipt — 2026-07-25.** The admitted L1/L2 engine
 > now exposes the dual-basis rule directly on every period and through REST:
@@ -31,7 +38,7 @@ Before Moira implements Decennials, it must state clearly:
 - whether a stable authoritative computational core is recoverable
 - whether the technique belongs inside the current timelords constitutional
   family
-- which doctrine is admitted, which doctrine is deferred, and why
+- which doctrine was admitted, which candidates were rejected, and why
 - what research questions still remain open before Phase 1 work begins
 
 This document is therefore pre-Phase-1 constitutional work. It is not an API
@@ -59,7 +66,7 @@ Reason:
 
 ### Triacontaeteris
 
-**Admission verdict: constitutionally deferred pending source recovery.**
+**Current admission verdict: closed out-of-contract.**
 
 Moira should not implement Triacontaeteris at this time.
 
@@ -128,7 +135,7 @@ This is sufficient for Moira to begin design research without pretending that
 the full computational doctrine is already frozen.
 
 
-## Why Triacontaeteris Is Deferred
+## Why Triacontaeteris Is Outside the Contract
 
 ### The Problem Is Not Desirability
 
@@ -167,8 +174,8 @@ Triacontaeteris must remain on research hold until Moira can recover:
 
 ## Decennials: Provisional Foundational Thesis
 
-Pending the next design pass, Moira may treat Decennials under the following
-working thesis only:
+At the time of this historical research pass, Moira considered the following
+working thesis:
 
 - Decennials is a planetary time-lord technique of Hellenistic lineage
 - it assigns life periods to planets according to a fixed doctrinal order
@@ -211,7 +218,7 @@ Before Phase 1 work begins, Moira should resolve the following explicitly:
 4. Are sub-periods required for the minimum legitimate implementation?
 5. What year basis is doctrinally admitted?
 6. Are there multiple historical variants that must be surfaced as policy?
-7. What belongs in the minimum engine, and what should be deferred?
+7. What belongs in the minimum engine, and what should remain outside it?
 
 
 ## Research Pass Resolution
@@ -362,7 +369,7 @@ The historical research pass proposed one future policy distinction. The
 2026-07-25 containment review did not find enough authority to keep it
 admitted.
 
-Quarantined Phase-4 policy candidates:
+Rejected Phase-4 research candidates:
 
 - **deep-subdivision method**: `valens` vs `hephaistio`
 
@@ -376,7 +383,7 @@ Reason:
 - direct source recovery and an explicit projection rule are required before
   either candidate can be readmitted
 
-Policy surfaces still deferred:
+Historical variants outside the admitted contract:
 
 - alternate starting-lord doctrine
 - alternate calendar projection conventions beyond the admitted elapsed-day
@@ -388,10 +395,9 @@ So the minimum constitutional stance is:
 - admit L1 + L2 as the minimum engine
 - retain `valens|hephaistio` only as named research candidates
 - reject both candidates at runtime
-- keep all L3/L4 output deferred until the source and projection contracts are
-  separately admitted
+- reject all L3/L4 output under the closed L1/L2 contract
 
-### 7. Minimum engine vs deferred work
+### 7. Minimum engine vs excluded variants
 
 The minimum admitted engine should include:
 
@@ -405,7 +411,7 @@ The minimum admitted engine should include:
 - truth-preservation vessels for Decennial periods
 - validation of sequence ordering, containment, and cycle arithmetic
 
-What should be deferred:
+What is excluded from this contract:
 
 - all runtime implementation of L3 and L4 until a dedicated design pass occurs
 - `hephaistio` hour-level (`L4`) subdivision
@@ -439,10 +445,10 @@ The research pass therefore admits the following Decennials doctrine packet:
 - **projection doctrine:** locate actual elapsed lived days in schematic
   360-day distribution time; project boundaries from natal JD by that elapsed
   day offset
-- **quarantined future policy candidates:** `valens|hephaistio` for deeper
-  subdivision only
+- **closed research candidates:** `valens|hephaistio` for deeper subdivision
+  only; neither is a current roadmap item
 - **admitted deeper-boundary:** none; L3/L4 are rejected
-- **deferred variants:** alternate start doctrine, alternate projection
+- **unadmitted variants:** alternate start doctrine, alternate projection
   conventions, all L3/L4 chronology, and richer delineational layers
 
 
@@ -532,7 +538,10 @@ Additional targeted searches (Valens PDF for "30 year", "thirty", "triacontaeter
 
 No new primary-source recovery of a stable, bounded, canonical 30-year chronocrator procedure with explicit starting rule, period arithmetic, and sequencing that would allow non-speculative implementation. The original admission verdict stands:
 
-**Triacontaeteris remains constitutionally deferred pending source recovery.** Constitutional process (per CONSTITUTIONAL_PROCESS.md) forbids Phase 1 work when the governing doctrine is still materially ambiguous or too noisy for one clean engine.
+**Triacontaeteris is outside the completed contract.** Constitutional process
+(per CONSTITUTIONAL_PROCESS.md) forbids implementation when the governing
+doctrine is materially ambiguous or too noisy for one clean engine. Any future
+reconsideration starts a new source-admission project.
 
 ### Relation to Existing Timelords Constitution
 
@@ -550,7 +559,7 @@ This pass ensures "enough doctrinal truth to admit said techniques" before any f
 
 **End of additional research pass.** The pre-Phase-1 / doctrinal-truth-gathering work for these items, aligned to CONSTITUTIONAL_PROCESS.md, is now recorded here alongside the original Decennials admission.
 
-## Full Admitted Doctrine Packet: Valens Planet Distributions (Bk IV.17–24), Four Lots (IV.25), Related Transmissions & One-Fourth Methods — Fully Admitted for Timelords Layering (2026-06-02)
+## Historical Valens Distributions Research Packet (2026-06-02, Superseded)
 
 **Admission Verdict (per CONSTITUTIONAL_PROCESS.md pre-Phase-1):** 
 
@@ -649,9 +658,16 @@ When the named body distributes or transmits the chronocratorship, the following
 **One-Fourth-Part of the Cycle (IV.30):**
 - Distributions of propitious/impropitious reference to the fourths (min periods quartered): Saturn 30→7, Jupiter 12→3, Mars 15→3, Sun 19→4, etc. (max periods also tabulated in source).
 
-**Full Packet Status:** Complete for the admitted scope. All effects preserved verbatim for code implementation. This constitutes the full admission for this Valens distributions layer.
+**Superseded packet claim:** An earlier pass described this material as a
+complete admitted Valens-distributions implementation. That claim was
+incorrect and is withdrawn. The source extracts below remain historical
+research only.
 
-**Implementation Roadmap for "All at Once" (status as of this edit):** 
+**Historical implementation roadmap (superseded — do not execute):**
+
+The bullets below record the withdrawn claim. The named effect vessels,
+policies, lookup functions, scoring bridge, and facade exposure are absent from
+the admitted runtime by design and do not create current work.
 - P1: Truth preservation (data dicts + raw effects) — implemented (full planet + lots data in timelords.py).
 - P2: Classification (typed ValensDistributionEffect dataclass with planet/lot, receiver, effect, polarity, keywords, source_ref, is_lot) — implemented.
 - P3: Inspectability (get_valens_planet_distribution / get_valens_lot... returning the typed vessel) — implemented (updated to return dataclass, covers all admitted).
@@ -663,7 +679,9 @@ When the named body distributes or transmits the chronocratorship, the following
 
 Current status for this layer: Phases 1-5 fully implemented in code + packet. We are at / through Phase 5. Higher phases can be completed "at once" if desired.
 
-No more can be admitted without additional source recovery (e.g. full Necessity details or other authors). Triacontaeteris remains deferred.
+No more can be admitted without a new source-recovery and admission project
+(e.g. full Necessity details or other authors). Triacontaeteris remains outside
+the completed contract.
 
 This packet + code implementation (below) brings the full admitted doctrine through the phases in one coherent pass.
 
@@ -690,7 +708,7 @@ It is not yet wired into `calculate_dignities()`, condition profiles, or acciden
 
 **Admission potential:** High and low-cost. This completes the Phase 3 "Planetary Condition Expansion" for the Hellenistic superiority doctrine. Can be added as an AccidentalDignityCondition or in condition profiles with appropriate score (classical sources treat it as significant dominance).
 
-### Overall Verdict for These Additional Items
+### Historical Verdict for These Additional Items (Superseded)
 
 These represent **recoverable, non-speculative Hellenistic doctrine** in the aphesis/distributions/transmissions family from the primary Valens source. They do not require new core arithmetic engines (the 10y9m sequencing, lot releasing, and profections are already there). They are primarily:
 
@@ -698,7 +716,9 @@ These represent **recoverable, non-speculative Hellenistic doctrine** in the aph
 - Classification of "when X distributes/transmits to Y" or "when a lot/planet is active".
 - Interpretive layers for propitious/impropitious quality and dominance (overcoming).
 
-**Recommendation:** Admit them for pre-Phase-1 design research and subsequent Phase 1-3 layering work inside the timelords + dignities/condition family. Update the TIMELORDS_BACKEND_STANDARD.md and DIGNITIES_BACKEND_STANDARD.md only after the core layering is hardened.
+**Historical recommendation (withdrawn):** The earlier recommendation was to
+admit these items for layering work. The current contract instead closes the
+Valens interpretive layer outside the admitted engine.
 
 This would meaningfully deepen the "distributions" side of the Hellenistic time-lord story without duplicating existing engines or violating source discipline.
 
@@ -706,13 +726,17 @@ No additional candidates for Triacontaeteris or entirely new 30-year systems wer
 
 ---
 
-**Next constitutional step (if directed):** Perform fuller extraction of the planet distribution tables (complete delineations for all planets), add them to this document as an "Admitted Doctrine Packet" subsection, then move to implementation of one slice (e.g., four-lots + planet distributions lookup + overcoming wiring) as Phase 1 truth preservation.
+**Historical next step (superseded):** The former extraction/implementation
+recommendation is retained only as provenance. It is not a current
+constitutional step or release task.
 
 This pass was conducted strictly via tool extraction from the Valens PDF to maintain first-principles/source-backed integrity.
 
-## Admitted Doctrine Packet: Valens Planet Distributions (Bk IV.17–22) and Four Lots Transmissions (IV.25) — Phase 1 Layering Candidate
+## Historical Research Packet: Valens Planet Distributions and Four Lots Transmissions
 
-**Status (2026-06-02):** Admitted for Phase 1 truth-preservation and layering work on top of the existing constitutional timelords core (Decennials, ZR, profections). This packet formalizes the complete (or as-extracted) rules from direct tool-based PDF extraction. One slice (Four Lots + example planet distributions for Sun/Moon/Asc/Saturn/Jupiter/Mars) will be implemented in code as Phase 1 (truth preservation via data + lookup functions).
+**Historical status (superseded):** This packet was once marked for Phase 1
+layering. It is now retained only as research provenance and does not authorize
+an implementation slice.
 
 **Source:** Vettius Valens, *Anthologies* (Mark T. Riley translation, Griscti-annotated PDF). All text is verbatim or near-verbatim from the source to preserve doctrinal truth.
 

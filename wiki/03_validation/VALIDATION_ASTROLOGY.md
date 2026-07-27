@@ -91,7 +91,7 @@ the paper.
 | Parans | Horizons-derived offline paran fixture + validated event substrate + paran logic tests | `pytest` | Validated |
 | Gauquelin sectors | Canonical diurnal-arc formula + plus-zone invariants (Gauquelin) | `pytest` | Validated |
 | Manazil / lunar mansions | Equal-station arithmetic + canonical boundary assignments (al-Biruni) | `pytest` | Validated |
-| Decennials L1/L2 | Valens VI.6-8 source-owned units and arithmetic; typed sequence invariants | `pytest` | Validated; L3/L4 quarantined |
+| Decennials L1/L2 | Valens VI.6-8 source-owned units and arithmetic; typed sequence invariants | `pytest` | Validated; L3/L4 are a closed exclusion |
 | Zodiacal Releasing | Valens IV.4 same-sign start-shift and 211-month source cases; typed angularity invariants | `pytest` | Validated, qualified; interpretation excluded |
 | Firdaria | Separate medieval sequence tables and structural invariants | `pytest` | Validated outside the Hellenistic profile |
 | Unified Hellenistic profile | Exact composition receipts, curated-export identity, serializers, REST models, and OpenAPI | `pytest` + generated inventory check | Validated non-interpretive contract |
@@ -658,7 +658,8 @@ What is already validated:
 - diurnal/nocturnal Firdaria tables, Bonatti variant behavior, node handling,
   sub-period structure, and sequence totals on its separate medieval surface
 
-Decennial L3/L4 are quarantined. Zodiacal Releasing interpretation is excluded.
+Decennial L3/L4 are outside the closed L1/L2 contract. Zodiacal Releasing
+interpretation is excluded.
 Firdaria is live and separately tested but is structurally excluded from
 `HellenisticChartProfile`.
 

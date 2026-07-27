@@ -1,8 +1,8 @@
 # Moira Decans Backend Standard
 
-Version: 1.4
-Date: 2026-07-26
-Status: Classical decanates admitted; source-reconstructed Hermetic catalog in research quarantine
+Version: 1.5
+Date: 2026-07-27
+Status: Classical decanates admitted; Hermetic material is a research-only closed product exclusion
 
 > **Doctrine-pass correction.** The 36 names, zodiacal order, planetary faces,
 > and edition pages in `moira.hermetic_decans` have been reconstructed from
@@ -15,17 +15,18 @@ Status: Classical decanates admitted; source-reconstructed Hermetic catalog in r
 
 ## Governing Principle
 
-Moira has one admitted decan subsystem and one quarantined research module:
+Moira has one admitted decan subsystem and one direct-import research module
+outside the product contract:
 
 - `moira.decanates` owns classical Chaldean faces, triplicity decans, and
   Vedic drekkana placement.
 - `moira.hermetic_decans` preserves a source-identified 36-name/planetary-face
-  catalog plus still-quarantined longitude/rising projections for research
-  only.
+  catalog plus explicitly research-only longitude/rising projections.
 
 These surfaces must not be collapsed into one vague "decan" product. Only
-`moira.decanates` may be presented as admitted doctrine. The quarantined module
+`moira.decanates` may be presented as admitted doctrine. The Hermetic module
 must not appear in the REST route registry or curated Python import surfaces.
+That exclusion is complete and is not unfinished release work.
 
 ---
 
@@ -106,11 +107,9 @@ Layer boundary rules:
 - Tropical Chaldean and triplicity routes must not imply sidereal reduction.
 - Vedic drekkana routes must expose JD and ayanamsa policy input.
 - No Hermetic catalog, longitude, rising, or night-hour transport model,
-  serializer, service, router, or route may exist while those surfaces remain
-  quarantined.
-- Any future Hermetic transport requires a new source-admission decision and
-  must be implemented from that admitted contract rather than dormant
-  scaffolding.
+  serializer, service, router, or route is admitted.
+- Any future Hermetic transport would be a new source-admission project and
+  must be implemented from that new contract rather than dormant scaffolding.
 
 ---
 
@@ -161,13 +160,13 @@ testing. They are not part of `moira`, `moira.facade`, or the REST contract.
   own sign, fifth sign, ninth sign.
 - The source catalog preserves three ordered entries beneath each sign exactly
   as transcribed in the identified edition.
-- The quarantined lookup maps the source-supported 10-degree order through an
+- The research-only lookup maps the source-supported 10-degree order through an
   explicit tropical-frame projection; the source receipt does not by itself
   publicly admit that projection.
 
 #### 4.2 Failure doctrine
 
-Current admitted and quarantined structural behavior:
+Current admitted and research-only structural behavior:
 
 - `chaldean_face`, `triplicity_decan`, `vedic_drekkana`, and
   `decan_for_longitude` reject non-finite longitudes.
@@ -185,7 +184,7 @@ calling any future admitted rising-decan computation.
 
 ### 5. Validation Scope
 
-The admitted decanate backend and quarantined research module are tested
+The admitted decanate backend and direct-import research module are tested
 separately through:
 
 - `tests/unit/test_decanates.py`
@@ -198,7 +197,7 @@ The following admitted claims are currently verified:
 1. `DecanatePosition` is frozen and enforces system/range invariants.
 2. Chaldean faces preserve the declared Mars-starting planetary cycle across
    all 36 faces against an independent Agrippa golden. Agrippa is a later
-   witness for this ordinary face cycle, not evidence for the quarantined
+   witness for this ordinary face cycle, not evidence for the research-only
    Hermetic image geometry.
 3. Triplicity decans preserve same-element ruling-sign doctrine.
 4. Vedic drekkana performs sidereal reduction and preserves traditional rulers.
@@ -232,10 +231,11 @@ The admitted REST shape is:
   drekkana
 - chart-backed Vedic drekkana and complete decanate-set routes
 
-Deferred:
+Closed product exclusions:
 
 - interpretive decan meanings
-- every Hermetic catalog/longitude/rising route until the catalog and each
-  projection are separately admitted through the later engine gates
-- any stellar decanal-clock implementation until a separately identified
-  source model and validation contract are approved
+- every Hermetic catalog/longitude/rising route
+- any stellar decanal-clock implementation
+
+These are not incomplete 6.1 engine tasks. A future proposal would require a
+new source model, validation contract, and admission decision.

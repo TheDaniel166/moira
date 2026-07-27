@@ -116,6 +116,12 @@ def _serialize_policy(
         ),
         activation_orb_deg=policy.activation_orb_deg,
         leap_day_policy=policy.leap_day_policy,
+        monthly_profection_interval_policy=(
+            policy.monthly_profection_interval_policy
+        ),
+        profection_ambiguous_time_policy=(
+            policy.profection_ambiguous_time_policy
+        ),
         zr_lot_name=policy.zr_lot_name,
         zr_levels=policy.zr_levels,
         use_loosing_of_bond=policy.use_loosing_of_bond,

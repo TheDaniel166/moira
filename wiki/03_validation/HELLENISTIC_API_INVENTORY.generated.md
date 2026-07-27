@@ -5,7 +5,7 @@
 - Application: `Moira Server` `0.1.0`
 - Complete registered OpenAPI operations: 435
 - Hellenistic, supporting, and explicitly adjacent operations inventoried here: 49
-- Quarantined Hermetic geometry, Triacontaeteris, and Decennial L3/L4 paths: 0
+- Closed-exclusion Hermetic geometry and Decennial L3/L4 paths: 0
 
 ## Family counts
 

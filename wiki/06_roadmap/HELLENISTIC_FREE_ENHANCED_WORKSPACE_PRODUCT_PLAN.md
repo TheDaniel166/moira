@@ -9,11 +9,12 @@ audit of the active website checkout before implementation.
 > an explicit 360-day distribution coordinate plus elapsed-Julian-day
 > projection receipt; it does not claim civil-month anniversaries. The
 > Gundel/Harley Hermetic name-and-face catalog is reconstructed, but its lookup
-> geometry remains source-quarantined and unavailable to product tiers until
-> separately admitted.
+> geometry and all Hermetic product transport are closed exclusions. They are
+> not work items in this product plan.
 
-**Release posture:** The completed engine contract is being released as
-`moira-astro 6.0.0`. Package and REST closure are recorded in
+**Release posture:** The six-gate engine contract shipped in
+`moira-astro 6.0.0`; the additive dated monthly-profection contract is the
+`6.1.0` release-candidate delta. Package and REST closure are recorded in
 `hellenistic_completion/HELLENISTIC_ENGINE_GATES_2026-07.md`; hosted website
 entitlement work remains separate.
 
@@ -194,7 +195,7 @@ second practitioner application.
 | Annual profection | Complete | Current year, lord, activated house, and source-visible derivation | Full annual/monthly schedule, arbitrary-date lookup, saved timeline | Batch generation and case comparison |
 | Zodiacal Releasing | Complete | Current Fortune or Spirit L1/L2 and next transition | Full admitted timelines, Fortune/Spirit comparison, saved history and alerts; no L3/L4 promise without a separate gate | Multi-lot case comparison, batch work, overlays, and policy audit |
 | Decennials | L1/L2 core with explicit distribution/projection receipt | Current L1/L2 periods | L1/L2 personal timelines and saved history | L1/L2 case comparison; deeper levels require separate admission |
-| Hermetic decans | Source-reconstructed catalog in research quarantine | Unavailable | Unavailable | Catalog inspection only until geometry and contract are separately admitted |
+| Hermetic decans | Source-reconstructed direct-import research catalog; closed product exclusion | Unavailable | Unavailable | No current product work; any future proposal is a new source-admission project |
 | Persian/Medieval Firdaria | Complete, separately labelled | Not in Hellenistic page | Optional personal Traditional-timing lane | Full Traditional research lane; never called Hellenistic |
 | Dorothean moment inspection | Complete | One user-supplied moment summary | Finite user-supplied candidate comparison | Bounded constraint scans and saved window sets |
 | Primary directions | Complete mixed-lineage subsystem | No practitioner workbench | Current/next named Ptolemaic result only after scoped validation | Full existing workbench with every method's lineage shown |

@@ -6,7 +6,8 @@ Archetype: Engine
 
 Status
 ------
-**Research quarantine.** The 36 names and planetary faces have been
+**Research-only closed product exclusion.** The 36 names and planetary faces
+have been
 reconstructed from Gundel's 1936 edition of British Library Harley MS 3731,
 ff. 1r-50r. The complete edited text explicitly assigns ten degrees to each
 decan beginning from Aries, but the catalog and modern tropical/rising

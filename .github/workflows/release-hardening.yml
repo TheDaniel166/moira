@@ -57,10 +57,27 @@ jobs:
             tests/unit/test_hellenistic_inventory_generation.py \
             tests/unit/test_hellenistic_contract_parity.py \
             tests/unit/test_hellenistic_profile.py \
+            tests/unit/test_profections.py \
+            tests/unit/test_timelords_public_api.py \
+            tests/unit/test_dignities_public_api.py \
+            tests/unit/test_lots_public_api.py \
+            tests/unit/test_triplicity.py \
+            tests/unit/test_egyptian_bounds.py \
+            tests/unit/test_egyptian_bounds_public_api.py \
+            tests/unit/test_decanates.py \
+            tests/unit/test_hermetic_decans.py \
             tests/server/test_hellenistic_contract_openapi.py \
+            tests/server/test_server_hellenistic_profile.py \
+            tests/server/test_server_hellenistic_aspects_routes.py \
+            tests/server/test_server_dignities_routes.py \
+            tests/server/test_server_lots_routes.py \
+            tests/server/test_server_triplicity_routes.py \
+            tests/server/test_server_egyptian_bounds_routes.py \
+            tests/server/test_server_decans_routes.py \
+            tests/server/test_server_timelord_routes.py \
+            tests/server/test_server_phase8_timelord_routes.py \
+            tests/server/test_server_phase8_decennial_routes.py \
             -q
-          python -m pytest tests/server/test_server_decans_routes.py \
-            -q -k "decan_routes_are_registered or quarantined_hermetic_decan_routes_return_not_found"
           python -m pytest tests/server/test_server_route_discoverability.py -q
 
       - name: Run public surface and release hardening suites

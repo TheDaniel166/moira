@@ -8,8 +8,9 @@
 > **Archived current-state correction (2026-07-25).** The narrative below records an
 > earlier documentation-led research pass and is not a present runtime receipt.
 > Phase-1 containment now admits Decennials only through L2, rejects the named
-> Valens/Hephaistio deep-subdivision candidates, quarantines the Hermetic decan
-> catalog from public and REST surfaces, and corrects whole-sign overcoming.
+> Valens/Hephaistio deep-subdivision candidates, treats the Hermetic decan
+> catalog as a research-only closed product exclusion, and corrects whole-sign
+> overcoming.
 > `TIMELORDS_BACKEND_STANDARD.md`, `DECANS_BACKEND_STANDARD.md`, and
 > `ASPECT_BACKEND_STANDARD.md` govern those current boundaries.
 

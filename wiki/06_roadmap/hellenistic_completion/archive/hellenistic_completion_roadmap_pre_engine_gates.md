@@ -8,9 +8,10 @@
 > **Phase-1 correction (2026-07-25).** The roadmap body remains historical.
 > Whole-sign direction and overcoming are now implemented and tested. The
 > Decennials public computation boundary ends at L2. The source-reconstructed
-> Gundel/Harley Hermetic name-and-face catalog remains quarantined from
-> package-root, facade, and registered REST surfaces. See the current backend
-> standards rather than the old status tables below.
+> Gundel/Harley Hermetic name-and-face catalog is a research-only closed product
+> exclusion from package-root, facade, and registered REST surfaces. See the
+> current backend standards rather than the old status tables below. Status
+> language in the archived body is historical and must not create roadmap work.
 
 > **Phase-2 doctrine correction (2026-07-25).** The former
 > “exact-two-of-three” Halb plan was rejected after a source pass.
