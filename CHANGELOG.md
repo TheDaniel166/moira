@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.0.1] - 2026-07-27
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.0.1.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.0.1.md`.
+
+### Added
+- Added a reproducible, release-bound canonical asteroid identity artifact and
+  provenance receipt generated from the finalized `2026.07.27.1` small-body
+  release.
+
+### Changed
+- Expanded the bundled canonical asteroid name-to-NAIF registry from 1,382 to
+  9,974 unique identities so Python lookup, REST search, and downstream catalog
+  consumers can address every body in the matching external ephemeris release.
+- Corrected the former numeric placeholder `Asteroid20395` to the released
+  canonical identity `Jacquet` while preserving NAIF ID `2020395`.
+
+### Validation
+- Verified exact agreement among the admitted target ledger, unified build
+  ledger, release shards, canonical registry, and reverse lookup.
+- Added focused catalog provenance, uniqueness, canonicalization, REST search,
+  and high-number identity tests.
+
 ## [6.0.0] - 2026-07-26
 
 Detailed release and migration guidance is available in

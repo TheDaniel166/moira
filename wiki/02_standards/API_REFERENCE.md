@@ -1,8 +1,8 @@
 ﻿# Moira API Reference
 
 **Document revision:** 2.0.0
-**Engine baseline:** 6.0.0
-**Last verified:** 2026-07-26
+**Engine baseline:** 6.0.1
+**Last verified:** 2026-07-27
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
 
@@ -832,11 +832,16 @@ from moira.facade import load_asteroid_kernel   # for non-DE441 bodies
 |---|---|---|
 | `asteroid_at(name_or_id, jd_ut, reader=None)` | `AsteroidData` | Single asteroid geocentric ecliptic position |
 | `all_asteroids_at(jd_ut, reader=None)` | `dict[str, AsteroidData]` | All loaded asteroids |
-| `list_asteroids()` | `list[str]` | Names of currently loaded asteroids |
+| `list_asteroids()` | `list[str]` | Canonical asteroid names known to Moira |
 | `available_in_kernel(kernel_path)` | `list[str]` | Asteroid names available in a kernel |
 | `load_asteroid_kernel(path)` | — | Load a supplementary SPK kernel |
 | `load_secondary_kernel(path)` | — | Load second SPK kernel |
 | `load_tertiary_kernel(path)` | — | Load third SPK kernel |
+
+Moira 6.0.1 contains 9,974 unique canonical asteroid identities bound to
+external ephemeris release `2026.07.27.1`. Catalog identity and position
+capability remain distinct: use `available_in_kernel(...)` or the loaded
+manifest/readiness surfaces before promising a position for a named body.
 
 ### Planetary nodes (apsides)
 

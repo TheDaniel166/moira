@@ -51,12 +51,13 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 - **Planets and luminaries** — geocentric and topocentric reduction with iterative light-time, annual aberration, multi-body relativistic deflection (Sun, Jupiter, Saturn, Earth), IAU 2006 frame bias, and WGS-84 topocentric parallax.
 - **Fixed stars** — sovereign registry of 1,809 named stars with proper motion, parallax, epoch propagation, and Stellar Quality classification. Audited anchor residual against SOFA/ERFA: 0.00048 arcseconds (J1000–J3000).
 - **Position-capable asteroid ephemeris** — an optional external catalog of
-  1,382 selected asteroids, including the classical four (Ceres, Pallas, Juno,
+  9,974 selected asteroids, including the classical four (Ceres, Pallas, Juno,
   Vesta), Centaurs (Chiron, Pholus, Chariklo, Asbolus, Hylonome), and
-  Trans-Neptunians (Ixion, Quaoar, Varuna, Orcus). It is built from JPL
-  Horizons as 56 Type-13 SPK shards covering 1600–2500 CE at
-  sub-milliarcsecond interpolation fidelity and is discovered by manifest
-  under any kernel search root. This positional product is distinct from the
+  Trans-Neptunians (Ixion, Quaoar, Varuna, Orcus). Release `2026.07.27.1` is
+  built from JPL Horizons as 399 Type-13 SPK shards with manifest-declared
+  coverage and sampling policy and is discovered by manifest under any kernel
+  search root. The wheel contains the matching canonical identity registry,
+  not the external BSP shards. This positional product is distinct from the
   bundled Proper25/PDS family-membership catalog (342 families, 200,726 unique
   numbered asteroids, 221,095 membership rows). User-supplied `.bsp` kernels
   remain supported through `daf_writer` for numbered minor planets available
@@ -354,7 +355,7 @@ print(m.available_kernels)
 
 ### Small-Body Catalogs (Asteroids and Comets)
 
-The unified asteroid catalog (1,382 bodies as 56 Type-13 shards) and the numbered periodic comet catalog (497 comets as 20 shards) are too large to ship inside the wheel and are distributed as separate downloads. Install a catalog by placing its shard directory — `asteroids/` or `comets/`, each containing its shards and `manifest.json` — under any kernel search root (`kernels/` at the repository root or `~/.moira/kernels/`). The engine discovers every manifest under every search root automatically; no configuration call is required.
+The unified asteroid catalog (9,974 bodies as 399 Type-13 shards in release `2026.07.27.1`) and the numbered periodic comet catalog (497 comets as 20 shards) are too large to ship inside the wheel and are distributed as separate downloads. Install a catalog by placing its shard directory — `asteroids/` or `comets/`, each containing its shards and `manifest.json` — under any kernel search root (`kernels/` at the repository root or `~/.moira/kernels/`). The engine discovers every manifest under every search root automatically; no configuration call is required. A bundled canonical name does not by itself imply position capability: the matching external manifest and BSP shard must be installed.
 
 Note for pre-4.0.0 installs: the single-file supplemental kernels (`comets.bsp`, `centaurs.bsp`, `minor_bodies.bsp`) no longer auto-load. All small bodies now resolve through the sharded manifests.
 
@@ -367,7 +368,7 @@ Note for pre-4.0.0 installs: the single-file supplemental kernels (`comets.bsp`,
 | IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; native C++ (`_moira_native`) |
 | DE-series planetary kernel | JPL | No | de430 (~128 MB), de440 (~114 MB), or de441 (~3.1 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
-| Position-capable asteroid ephemeris | JPL Horizons | No | 1,382 selected asteroids; 56 Type-13 shards, 1600–2500 CE; separate download, manifest-discovered |
+| Position-capable asteroid ephemeris | JPL Horizons | No | 9,974 selected asteroids; 399 Type-13 shards in release `2026.07.27.1`; separate download, manifest-discovered |
 | Asteroid-family membership catalog | Proper25 + retained NASA PDS exclusions | Yes | 342 families; 200,726 unique numbered asteroids; 221,095 many-to-many membership rows; no positional ephemeris implied |
 | Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards, 1600–2500 CE; separate download, manifest-discovered |
 

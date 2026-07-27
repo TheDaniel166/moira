@@ -1,7 +1,7 @@
 # Planetary Reduction Pipeline
 
-**Engine baseline:** Moira 6.0.0
-**Last verified:** 2026-07-25
+**Engine baseline:** Moira 6.0.1
+**Last verified:** 2026-07-27
 **Primary implementation:** `moira/planets.py`, `moira/corrections.py`,
 `moira/coordinates.py`, `moira/precession.py`, and `moira/obliquity.py`
 

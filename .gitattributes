@@ -1,2 +1,4 @@
 moira/kernels/*.bsp filter=lfs diff=lfs merge=lfs -text
 moira/kernels/sb441_type13/*.bsp filter=lfs diff=lfs merge=lfs -text
+moira/data/asteroid_catalog_naif.json text eol=lf
+moira/data/asteroid_catalog_naif.metadata.json text eol=lf
