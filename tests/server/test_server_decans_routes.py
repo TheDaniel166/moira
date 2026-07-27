@@ -152,6 +152,7 @@ def test_closed_exclusion_hermetic_decan_routes_return_not_found(
     assert response.status_code == 404
 
 
+@pytest.mark.requires_ephemeris
 def test_vedic_drekkana_chart_route_matches_direct_route() -> None:
     payload = {
         "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
@@ -184,6 +185,7 @@ def test_vedic_drekkana_chart_route_matches_direct_route() -> None:
     assert chart_body["provenance"]["requested_bodies"] == ["Sun"]
 
 
+@pytest.mark.requires_ephemeris
 def test_decanate_set_chart_route_matches_direct_route() -> None:
     payload = {
         "dt": datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
