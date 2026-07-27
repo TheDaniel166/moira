@@ -4432,8 +4432,8 @@
       "description": "Firdaria, decennials, Zodiacal Releasing, time-boundary ownership, and immutable timelord result contracts.",
       "content_class": "evergreen_doctrine",
       "schema_type": "TechArticle",
-      "source_sha256": "6148a73b4666377819b38427ee91709fd1f4c01269c075bb4c749a824c8a96bf",
-      "source_bytes": 43176,
+      "source_sha256": "78a3bbc7df68c371b63c7d6df682383aa567b363edd8334a992d5294c7422e1e",
+      "source_bytes": 43280,
       "last_verified": "2026-07-26",
       "prerender": true,
       "markdown": true,
@@ -5056,5 +5056,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "56e591cb106a485e8669f7dad8de9dd942a1f51a0f6487ee5770f1e11c0827af"
+  "manifest_sha256": "6de57b19e2ea5a72f3ff17213070c95b4f483f97ba6cc24fc0b73b4d50c76be1"
 }

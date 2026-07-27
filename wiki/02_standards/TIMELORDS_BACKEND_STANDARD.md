@@ -32,9 +32,10 @@
 
 #### §1.1 Firdaria
 
-Firdaria is a Hellenistic time-lord technique assigning rulership of life-periods to
-the seven classical planets and the lunar nodes in a fixed Chaldean-order sequence.
-The complete cycle spans 75 years.
+Firdaria is a Persian/Medieval time-lord technique assigning rulership of
+life-periods to the seven classical planets and the lunar nodes in a fixed
+Chaldean-order sequence. It is exposed and validated separately, but it is not
+part of Moira's admitted Hellenistic profile. The complete cycle spans 75 years.
 
 The authoritative engine is `firdaria(natal_jd, is_day_chart)`. It accepts a Julian
 Day number and a sect indicator and returns a list of `FirdarPeriod` records covering
@@ -850,4 +851,3 @@ The following are explicitly outside the scope of this subsystem as constitution
 
 Any future extension that crosses these boundaries requires a new constitutional phase or a
 separate subsystem constitutionalization, not an in-place amendment to this standard.
-
