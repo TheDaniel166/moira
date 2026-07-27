@@ -45,6 +45,49 @@ def client_with_small_body_reader(monkeypatch: pytest.MonkeyPatch) -> TestClient
         yield client
 
 
+@pytest.fixture
+def client_with_expanded_asteroid_reader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> TestClient:
+    covered_ids = {
+        ASTEROID_NAIF["Limburgia"],
+        ASTEROID_NAIF["Mani"],
+    }
+    monkeypatch.setattr(
+        "moira_server.app.create_engine",
+        lambda config: _FakeEngine(covered_ids),
+    )
+    app = create_app(ServerConfig(docs_enabled=False))
+    with TestClient(app) as client:
+        yield client
+
+
+def test_asteroid_list_route_exposes_published_expansion_names(
+    client_with_expanded_asteroid_reader: TestClient,
+) -> None:
+    all_loaded = client_with_expanded_asteroid_reader.get("/v1/asteroids/list")
+    by_name = client_with_expanded_asteroid_reader.get(
+        "/v1/asteroids/list?q=limburgia"
+    )
+    by_naif = client_with_expanded_asteroid_reader.get(
+        f"/v1/asteroids/list?q={ASTEROID_NAIF['Mani']}"
+    )
+
+    assert all_loaded.status_code == 200
+    assert all_loaded.json()["bodies"] == [
+        {"name": "Limburgia", "naif_id": 2_001_383},
+        {"name": "Mani", "naif_id": 2_307_261},
+    ]
+    assert by_name.status_code == 200
+    assert by_name.json()["bodies"] == [
+        {"name": "Limburgia", "naif_id": 2_001_383}
+    ]
+    assert by_naif.status_code == 200
+    assert by_naif.json()["bodies"] == [
+        {"name": "Mani", "naif_id": 2_307_261}
+    ]
+
+
 def test_asteroid_list_route_returns_structured_records_for_loaded_bodies(
     client_with_small_body_reader: TestClient,
 ) -> None:
