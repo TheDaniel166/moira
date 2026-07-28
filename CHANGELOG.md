@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [6.1.0] - 2026-07-27
+## [6.1.0] - 2026-07-28
 
 Detailed release and migration guidance is available in
 `wiki/03_release/RELEASE_NOTES_6.1.0.md` and
@@ -20,22 +20,47 @@ Detailed release and migration guidance is available in
 - **Civil-time truth**: added explicit IANA timezone selection, February 29
   policy, and earlier/later occurrence policy for repeated local anniversary
   times.
+- **Aspect motion truth**: added typed applying, exact, separating, stationary,
+  and indeterminate motion state to the engine and REST response contract.
+- **Small-body release receipts**: added immutable asteroid and comet release
+  preparation, verification, archive verification, provenance notices,
+  per-file checksums, and fail-closed loader admission.
+- **Cross-family small-body identity**: added qualified asteroid/comet
+  resolution and a deterministic collision inventory for shared names.
 
 ### Changed
 - **Unified Hellenistic profile**: composes the dated profection chronology and
   enforces cross-component, policy, provenance, ordering, and completeness
   invariants.
-- **Decennial contract**: fixes the admitted surface at L1/L2. Requests no
-  longer expose a deep-subdivision selector; retained response receipts are
-  compatibility fields fixed to `null`.
+- **Decennial contract**: fixes the admitted surface at L1/L2. The deprecated
+  request selector accepts only omission or explicit `null`; named methods
+  remain rejected, and response receipts remain fixed to `null`.
 - **Closed-exclusion governance**: Hermetic star attribution/geometry,
   Decennial L3/L4, Triacontaeteris, and Valens distribution interpretation are
   classified as completed exclusions rather than release backlog.
+- **Catalog provenance**: derives canonical comet designations and scoped
+  aliases from a verified release and pins generated catalog identity bytes to
+  LF across platforms.
+- **Publication integrity**: website documentation synchronization reads
+  tracked Git sources rather than ignored or uncommitted research files.
+- **Python compatibility**: optional-server enums use Moira's Python
+  3.10-compatible `StrEnum` boundary.
 
 ### Fixed
 - Civil anniversaries that fall in daylight-saving gaps now fail closed.
 - Repeated civil anniversary times require an explicit earlier/later policy
   instead of silently selecting a fold.
+- Normalized zodiacal and whole-sign boundary behavior at the `0`/`360` seam,
+  including IEEE-754-scale boundary cases.
+- Made duplicate aspect-edge selection deterministic, repaired complete Grand
+  Sextile geometry, and exposed immutable `AspectGraphNode.aspect_counts`
+  without removing legacy `family_counts`.
+- Unified position, chart, progression, void-of-course, and astrocartography
+  paths now reject ambiguous bare `Halley` and `Encke` rather than silently
+  selecting an asteroid or comet.
+- Replaced stale metadata-only asteroid and comet manifests retained in the
+  wheel with the exact immutable release manifests named by their identity
+  receipts. Automatic discovery still requires an installed BSP shard.
 - Removed stale roadmap, validation, test, and error-language classifications
   that could incorrectly reintroduce closed Hellenistic exclusions as work.
 
@@ -43,11 +68,15 @@ Detailed release and migration guidance is available in
 - Expanded release hardening across source goldens, generated inventories,
   engine/facade/REST parity, OpenAPI depth rejection, unified-profile
   invariants, dated chronology boundaries, and active documentation status.
+- Added focused aspect/pattern, catalog identity/release, loader, collision,
+  serializer, and REST coverage.
+- Added an optional-server import, request-model, and OpenAPI smoke gate on
+  Python 3.10, the declared minimum supported interpreter.
 - Preserved the empty base dependency set; named IANA resolution uses the
   standard-library `zoneinfo` interface and fails closed when the host lacks
   the requested entry.
 
-  [6.0.1] - 2026-07-27
+## [6.0.1] - 2026-07-28
 
 Detailed release and migration guidance is available in
 `wiki/03_release/RELEASE_NOTES_6.0.1.md` and

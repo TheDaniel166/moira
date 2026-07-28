@@ -1,130 +1,209 @@
-# Moira 6.1.0 - Hellenistic Contract Stabilization
+# Moira 6.1.0 - Contract and Release Integrity
 
-**Release date:** 2026-07-27
+**Release date:** 2026-07-28
 
-**Public upgrade path:** 6.0.0 to 6.1.0
+**Public upgrade path:** 6.0.1 to 6.1.0
 
-Moira 6.1.0 adds the dated monthly-profection contract needed by timeline
-consumers and hardens the completed Hellenistic boundary established in 6.0.0.
-It does not reopen Hermetic star attribution or geometry, Decennial L3/L4,
-Triacontaeteris, or Valens distribution interpretation.
+Moira 6.1.0 adds authoritative dated monthly profections and strengthens the
+engine's public-contract, aspect-pattern, Python-compatibility, and small-body
+release boundaries. It is a minor release because it adds typed capability
+while preserving admitted computations and valid 6.0.1 requests.
 
-## Why This Is A Minor Release
+The 9,974-name asteroid identity expansion shipped in 6.0.1. Version 6.1.0
+inherits that registry and adds the release-integrity and collision policies
+needed to consume it safely.
 
-The release adds typed chronology and transport fields while preserving the
-admitted 6.0 Hellenistic computations. It also removes an unadmitted Decennial
-request selector and tightens invariant enforcement. The result is a new
-backward-compatible capability for callers using valid 6.0 contracts, with
-fail-closed rejection for callers that were sending the former speculative
-deep-method option.
+## Highlights
+
+- Twelve exact dated monthly-profection intervals between consecutive civil
+  anniversaries.
+- A chronology-aware Hellenistic chart profile with stricter cross-component
+  truth and provenance invariants.
+- Explicit aspect motion state, stable whole-sign seam behavior, deterministic
+  pattern edges, and repaired Grand Sextile detection.
+- Immutable asteroid and comet release receipts with complete checksum,
+  provenance, and loader-admission policy.
+- Fail-closed cross-family small-body identity resolution.
+- A Python 3.10-compatible optional server surface and preserved acceptance of
+  the deprecated Decennial `deep_subdivision_method: null` request field.
 
 ## Dated Monthly Profections
 
-`profection_chronology(...)` now constructs twelve contiguous, half-open
-monthly intervals between exact consecutive civil anniversaries. The sole
-admitted interval policy is:
+`profection_chronology(...)` constructs twelve contiguous, half-open intervals
+between exact consecutive civil anniversaries. The admitted interval policy is:
 
 `equal_twelfths_of_civil_anniversary_year`
 
-Each receipt preserves:
+Each result records:
 
-- the civil timezone;
-- the timezone-data source and any available version;
-- the interval and ambiguity policies;
-- the exact query, annual-start, and annual-end UTC instants;
+- civil timezone and available timezone-data provenance;
+- interval, leap-day, and repeated-time policies;
+- exact query, annual-start, and annual-end UTC instants;
 - matching Julian Day values;
 - twelve ordered interval boundaries;
-- the active month index;
-- each month’s profected longitude, sign, and domicile lord; and
-- whether an explicit repeated-time resolution was actually applied.
+- the active month index; and
+- each month's profected longitude, sign, and domicile lord.
 
-The method is identified as `computational_projection`. It is not represented
-as Valens IV.28’s separate day-Sun/night-Moon distance method, twelve fixed
-30-day periods, a 365.25-day quotient, or twelve civil-calendar months.
+The chronology is identified as a `computational_projection`. It is not
+presented as Valens IV.28's separate day-Sun/night-Moon distance method, twelve
+fixed 30-day periods, a 365.25-day quotient, or twelve civil-calendar months.
 
-## Civil-Time Failure Semantics
-
-REST callers may supply an explicit IANA `civil_timezone` after normalizing
-their datetime values to UTC. Direct Python callers may instead retain the
-timezone attached to the natal datetime.
+### Civil-time failure semantics
 
 Civil anniversaries preserve the natal local wall clock:
 
-- a February 29 nativity requires `february_28` or `march_1`;
-- a wall time that falls in a daylight-saving gap fails closed;
+- a February 29 nativity requires the explicit `february_28` or `march_1`
+  policy;
+- a wall time inside a daylight-saving gap fails closed;
 - a repeated wall time requires `earlier_occurrence` or `later_occurrence`;
-- Moira never silently moves a nonexistent time or guesses a fold; and
+- Moira never silently moves a nonexistent local time or guesses a fold; and
 - the exact natal instant remains the age-zero anchor.
 
-Named IANA lookup uses Python’s standard-library `zoneinfo` interface. Moira
+Named IANA lookup uses Python's standard-library `zoneinfo` interface. Moira
 does not download timezone data or claim a database version the host does not
-expose. A host without the requested IANA entry receives an explicit error.
+expose.
 
-## Unified Profile Hardening
+## Unified Hellenistic Profile
 
-`HellenisticChartProfile` now composes the chronology receipt and rejects
-cross-component contradictions, including:
+`HellenisticChartProfile` advances to the chronology-aware v2 method and
+rejects cross-component contradictions involving:
 
-- datetime and Julian Day disagreement;
-- non-Whole-Sign composition;
-- invalid angles or sect contradictions;
-- reordered or incomplete Classic Seven bodies;
-- aspect identity errors;
-- overlapping foundational-lot evaluated/unresolved partitions;
-- missing or policy-inconsistent chronology;
-- Decennial sect mismatch;
-- Zodiacal Releasing policy mismatch; and
-- inclusion, exclusion, method, source, or provenance disagreement.
+- datetime and Julian Day identity;
+- Whole Sign house composition;
+- angles, sect, and the ordered classical seven;
+- aspect identity and overcoming policy;
+- foundational-lot evaluated and unresolved partitions;
+- profection chronology and activation;
+- Decennial sect and L1/L2 assembly;
+- Zodiacal Releasing policy and Fortune angularity; and
+- method, source, inclusion, exclusion, and provenance receipts.
 
-The profile method identifier advances to the chronology-aware v2 contract.
+The profile remains non-interpretive and score-free.
 
-## Decennial L1/L2 Boundary
+### Closed Hellenistic exclusions
 
-The admitted Decennial engine remains complete at L1/L2:
+The following are settled exclusions, not unfinished 6.1 work:
 
-- request models accept levels 1 and 2 only;
-- no deep-subdivision request selector or OpenAPI enum is exposed;
-- direct engine construction rejects non-`None` deep methods;
-- aggregate and profile vessels cannot contain L3/L4 periods; and
-- response `deep_subdivision_method` receipts remain present only as
-  compatibility fields fixed to `null`.
-
-Sending the former request field is a validation error, not an inert option.
-
-## Closed Exclusions
-
-The following are settled exclusions from this release and are not unfinished
-6.1 work:
-
-- Hermetic fixed-star attribution;
-- Hermetic tropical/rising projection as a product capability;
-- the removed `decan_hours()` night-hour experiment;
+- Hermetic fixed-star attribution and product geometry;
+- the removed `decan_hours()` experiment;
 - Decennial L3/L4 and named Valens/Hephaistio deep methods;
 - Triacontaeteris;
-- Valens distribution scoring or interpretation; and
+- Valens distribution interpretation; and
 - synthetic Hellenistic condition scores.
 
 The source-reconstructed Gundel/Harley names and planetary faces remain
-available only through the direct research module. They are absent from
-curated root, classical, facade, REST, and OpenAPI product surfaces.
+research data. They are absent from curated root, classical, facade, REST, and
+OpenAPI product surfaces.
 
-## Validation
+## Aspect and Pattern Contracts
 
-Release hardening covers:
+Aspect and pattern calculation now preserves stable observable semantics at
+the public boundary:
 
-- source-owned Hellenistic goldens;
-- generated capability and API inventories;
-- engine, root, classical, facade, serializer, REST, and OpenAPI parity;
-- Decennial request-depth and response-sentinel enforcement;
-- Hermetic public-route absence;
-- chronology continuity, UTC/JD agreement, DST gaps and repeats, leap policy,
-  active-boundary ownership, and timezone transport;
-- unified-profile adversarial invariants;
-- public API and doctrine drift; and
-- active-document terminology regression.
+- longitudes normalize consistently at the `0`/`360` seam, including
+  IEEE-754-scale whole-sign boundary cases;
+- `AspectData.motion_state` explicitly distinguishes applying, exact,
+  separating, stationary, and indeterminate results;
+- stationary truth is body-relative rather than inferred from one absolute
+  speed threshold;
+- duplicate aspect edges resolve deterministically;
+- `AspectGraphNode.aspect_counts` exposes an immutable compatibility-safe view
+  while legacy `family_counts` remains available; and
+- Grand Sextile detection requires and reports the complete closed geometry.
 
-The base runtime remains standard-library plus the required native extension;
-`[project.dependencies]` remains empty.
+These changes repair edge behavior without removing existing aspect names or
+legacy facade entry points.
+
+## Small-Body Release and Identity Integrity
+
+### Immutable catalog releases
+
+Asteroid and comet distributions now have the same release-grade identity
+model:
+
+- immutable catalog ID and version;
+- exact manifest SHA-256;
+- per-file byte length and SHA-256;
+- `SHA256SUMS`;
+- archive checksum;
+- provenance notice and source revision; and
+- a loader gate that rejects incomplete, mismatched, or zero-byte shards.
+
+Generated identity files are byte-stable across Windows and POSIX checkouts,
+and website publication consumes only tracked Git sources. The metadata-only
+manifests retained in the wheel are now byte-identical to the immutable
+manifests named by those identity receipts. They remain metadata until at
+least one referenced BSP shard is installed; automatic discovery does not
+mistake a manifest-only wheel for a position-capable catalog.
+
+The authoritative asteroid release remains:
+
+| Field | Receipt |
+|---|---|
+| Catalog | `moira-asteroids` |
+| Version | `2026.07.27.1` |
+| Bodies | 9,974 |
+| Shards | 399 |
+| Sampling | 10-day step, 7-node window |
+| Manifest SHA-256 | `0560302f877a46cebc550376ae70665fefab84801078181cf3c4199ce86d49d0` |
+
+The authoritative comet release is:
+
+| Field | Receipt |
+|---|---|
+| Catalog | `moira-comets` |
+| Version | `2026.07.28.1` |
+| Bodies | 497 |
+| Shards | 20 |
+| Sampling | 30-day step, 5-node window |
+| Manifest SHA-256 | `31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1` |
+
+### Cross-family name collisions
+
+Asteroid and comet catalogs currently share the normalized names `Halley` and
+`Encke`. Unified position, chart, progression, void-of-course, and
+astrocartography paths no longer guess which family the caller intended.
+
+- `asteroid:Halley` selects asteroid Halley.
+- `comet:Halley` and `1P/Halley` select the comet.
+- `asteroid:Encke` selects asteroid Encke.
+- `comet:Encke` and `2P/Encke` select the comet.
+- An unqualified colliding name fails with typed ambiguity evidence.
+
+Dedicated asteroid or comet routes remain family-scoped and retain their
+existing convenient aliases.
+
+## Python and REST Compatibility
+
+Moira continues to support Python 3.10 through 3.14. Every optional-server enum
+uses Moira's `StrEnum` compatibility boundary, and the release workflow imports
+and constructs the server on the minimum supported Python.
+
+The Decennial request boundary remains L1/L2 only:
+
+- `levels` accepts 1 or 2;
+- omission of `deep_subdivision_method` is valid;
+- explicit `deep_subdivision_method: null` remains valid for 6.0/6.0.1 client
+  compatibility;
+- every named deep method remains invalid; and
+- response compatibility receipts remain present and fixed to `null`.
+
+## Validation Boundary
+
+The release gate covers:
+
+- Hellenistic source goldens, generated inventories, profile invariants, REST,
+  serializer, and OpenAPI parity;
+- civil-anniversary continuity, UTC/JD agreement, leap-day, gap, repeat, and
+  active-boundary behavior;
+- aspect seam, motion-state, deterministic pattern, and Grand Sextile cases;
+- asteroid/comet identity, release receipt, loader, and collision policies;
+- Python 3.10 optional-server import and OpenAPI construction;
+- public API, documentation, and generated-publication drift; and
+- source, wheel, and installed-artifact release identity.
+
+No new broad numerical ephemeris-parity claim is made for the separately
+distributed small-body kernels.
 
 ## Installation
 
@@ -132,11 +211,11 @@ The base runtime remains standard-library plus the required native extension;
 moira-astro==6.1.0
 ```
 
-For the optional FastAPI server:
+For the optional server:
 
 ```text
 moira-astro[server]==6.1.0
 ```
 
-Read `COMPATIBILITY_NOTES_6.1.0.md` before upgrading a typed REST client or a
-consumer that persists rendered chart responses.
+Read `COMPATIBILITY_NOTES_6.1.0.md` before regenerating typed clients or
+upgrading an application that caches computed chart responses.

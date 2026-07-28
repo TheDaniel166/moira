@@ -278,8 +278,9 @@ belong in the website tRPC/gateway and Workspace proxy.
 The six-gate engine roadmap now owns this receipt. Whole-sign
 direction/overcoming, the typed non-interpretive chart profile, exact atomic
 receipts, serializers, REST models, and OpenAPI schemas are complete.
-Decennials fails closed above L2, no deep-subdivision selector is exposed, and
-Valens distribution interpretation remains outside every Hellenistic profile.
+Decennials fails closed above L2; its deprecated request compatibility field
+accepts only omission or `null`, exposes no named selector, and Valens
+distribution interpretation remains outside every Hellenistic profile.
 
 The aggregate response should not create new doctrine. It should compose exact
 atomic receipts and preserve at least:

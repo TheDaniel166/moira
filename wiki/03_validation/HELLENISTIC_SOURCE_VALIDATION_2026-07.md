@@ -176,8 +176,9 @@ pages 379-383, transcribing British Library Harley MS 3731.
 
 The complete edited text's opening passage begins from Aries and counts ten
 degrees for each decan. Equal segmentation is therefore source-supported; the
-modern equinox-fixed tropical realization and Ascendant composition remain
-explicit projection policies pending admission and validation.
+modern equinox-fixed tropical realization and Ascendant composition are not
+admitted product policies. They remain closed research exclusions rather than
+pending engine capability.
 
 The identified edition does not supply the former fixed-star assignments, and
 no located passage supports the removed sunset-MC/equal-night-hour algorithm.

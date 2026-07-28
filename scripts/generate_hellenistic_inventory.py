@@ -576,10 +576,17 @@ def _verify_closed_decennial_contract(app: Any) -> None:
         raise ValueError(
             "Closed Decennial contract requires REST levels in 1..2"
         )
-    if "deep_subdivision_method" in properties:
+    deep_method = properties.get("deep_subdivision_method")
+    required = request.get("required", [])
+    if (
+        not isinstance(deep_method, dict)
+        or deep_method.get("type") != "null"
+        or deep_method.get("deprecated") is not True
+        or "deep_subdivision_method" in required
+    ):
         raise ValueError(
-            "Closed Decennial contract cannot expose a deep-subdivision "
-            "request selector"
+            "Closed Decennial contract requires an optional, deprecated, "
+            "null-only deep-subdivision compatibility field"
         )
     if "DecennialDeepSubdivisionMethod" in schemas:
         raise ValueError(

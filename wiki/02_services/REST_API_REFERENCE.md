@@ -1263,7 +1263,8 @@ planetary position frame. The response records that separation in provenance.
 The policy surface keeps Classic-7 dignity doctrine, Dorothean triplicity,
 typed skip-and-report lot failure behavior, and Decennial L1/L2 fixed.
 Zodiacal Releasing supports Fortune, Spirit, Eros, or Necessity and one to four
-levels. No Decennial deep-subdivision selector is present.
+levels. The deprecated Decennial `deep_subdivision_method` request field is
+optional and null-only; no named deep-method selector is present.
 
 `HellenisticChartProfileResponse` transports explicit typed models for:
 
@@ -1644,7 +1645,8 @@ compatibility projection.
 | POST | `/v1/timelords/zodiacal-releasing/level-pair` | `zr_level_pair_route` |
 
 Every Decennials request is limited to `levels` 1–2.
-The request schema exposes no `deep_subdivision_method` selector. Response
+The deprecated request `deep_subdivision_method` field accepts only omission
+or `null`; the schema advertises no selectable deep-method enum. Response
 receipts retain a fixed `deep_subdivision_method=null` compatibility sentinel.
 Valens and Hephaistio L3/L4 chronology and Valens delineation are closed
 exclusions, not incomplete REST work.

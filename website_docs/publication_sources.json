@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "release_history_floor": "5.0.0",
-  "last_verified": "2026-07-26",
+  "last_verified": "2026-07-28",
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.0.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.1.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -293,6 +293,47 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.1.0",
+      "date": "2026-07-28",
+      "title": "Contract and Release Integrity",
+      "added": [
+        "Exact dated monthly-profection chronology preserves civil-time policy, UTC and Julian boundaries, active-month ownership, and timezone provenance.",
+        "Aspect responses expose typed motion state, and small-body releases expose immutable manifests, checksums, notices, and loader receipts."
+      ],
+      "changed": [
+        "The chronology-aware Hellenistic profile enforces stricter cross-component method, completeness, ordering, and provenance invariants.",
+        "Unified small-body resolution requires family qualification when asteroid and comet names collide, while dedicated family routes retain scoped aliases.",
+        "Optional-server enums use Moira's Python 3.10-compatible StrEnum boundary, and deprecated Decennial request selectors accept only omission or explicit null."
+      ],
+      "fixed": [
+        "Longitude seam, relative stationary-state, duplicate pattern-edge, and complete Grand Sextile behavior are deterministic.",
+        "Generated publication consumes tracked Git sources, and catalog identity bytes remain stable across Windows and POSIX checkouts.",
+        "Metadata-only asteroid and comet manifests retained in the wheel now match the exact immutable release receipts without advertising absent shards as installed."
+      ],
+      "validation": [
+        "Hellenistic goldens and contract parity, aspect and pattern adversarial cases, small-body release and collision gates, Python 3.10 server smoke, and installed-artifact identity cover the release."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.1.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.1.0.md"
+    },
+    {
+      "version": "6.0.1",
+      "date": "2026-07-28",
+      "title": "Complete Asteroid Identity Catalog",
+      "added": [
+        "A release-bound canonical asteroid identity artifact makes every body in external release 2026.07.27.1 addressable by its released name."
+      ],
+      "changed": [
+        "The bundled canonical asteroid registry expands from 1,382 to 9,974 unique identities and corrects the former Asteroid20395 placeholder to Jacquet."
+      ],
+      "fixed": [],
+      "validation": [
+        "Target, unified-ledger, shard, registry, reverse-lookup, REST search, and installed-wheel evidence agree on the exact release identity."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.0.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.0.1.md"
+    },
     {
       "version": "6.0.0",
       "date": "2026-07-26",
