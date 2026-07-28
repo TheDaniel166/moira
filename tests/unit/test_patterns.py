@@ -1,8 +1,9 @@
 from dataclasses import replace
+from itertools import permutations
 
 import pytest
 
-from moira.aspects import AspectData
+from moira.aspects import AspectData, find_aspects
 from moira.patterns import (
     AspectPattern,
     PatternAspectContribution,
@@ -31,6 +32,7 @@ from moira.patterns import (
     pattern_contributions,
     find_cradles,
     find_grand_crosses,
+    find_grand_sextiles,
     find_grand_trines,
     find_minor_grand_trines,
     find_mystic_rectangles,
@@ -724,6 +726,98 @@ def test_grand_trine_condition_is_independent_of_motion_and_exactness() -> None:
         assert profile.state is PatternConditionState.REINFORCED
         assert profile.structured_contribution_count == 3
         assert profile.generic_contribution_count == 0
+
+
+def test_grand_sextile_accepts_ring_and_preserves_complete_geometry() -> None:
+    positions = {f"P{index}": index * 60.0 for index in range(6)}
+    aspects = find_aspects(positions, tier=0)
+
+    patterns = find_grand_sextiles(aspects)
+    dominant = find_all_patterns(
+        positions,
+        aspects=aspects,
+        dominant_only=True,
+    )
+
+    assert len(patterns) == 1
+    pattern = patterns[0]
+    assert pattern.bodies == tuple(sorted(positions))
+    assert len(pattern.aspects) == 15
+    assert {
+        name: sum(aspect.aspect == name for aspect in pattern.aspects)
+        for name in ("Sextile", "Trine", "Opposition")
+    } == {
+        "Sextile": 6,
+        "Trine": 6,
+        "Opposition": 3,
+    }
+    assert pattern.detection_truth is not None
+    assert {
+        role.role for role in pattern.detection_truth.body_roles
+    } == {"cycle_member"}
+    assert [(item.name, item.bodies) for item in dominant] == [
+        ("Grand Sextile", tuple(sorted(positions)))
+    ]
+
+
+def test_grand_sextile_ring_does_not_require_every_derived_diagonal() -> None:
+    positions = {
+        "P0": 0.0,
+        "P1": 63.0,
+        "P2": 126.0,
+        "P3": 189.0,
+        "P4": 246.0,
+        "P5": 303.0,
+    }
+    aspects = find_aspects(positions, tier=0)
+
+    patterns = find_grand_sextiles(aspects)
+
+    assert len(patterns) == 1
+    pattern = patterns[0]
+    assert sum(aspect.aspect == "Sextile" for aspect in pattern.aspects) == 6
+    assert sum(aspect.aspect == "Opposition" for aspect in pattern.aspects) == 2
+    assert len(pattern.aspects) == 14
+
+
+def test_grand_sextile_rejects_a_broken_sextile_ring() -> None:
+    positions = {f"P{index}": index * 60.0 for index in range(6)}
+    aspects = [
+        aspect
+        for aspect in find_aspects(positions, tier=0)
+        if not (
+            aspect.aspect == "Sextile"
+            and frozenset((aspect.body1, aspect.body2))
+            == frozenset(("P0", "P1"))
+        )
+    ]
+
+    assert find_grand_sextiles(aspects) == []
+
+
+def test_modern_pattern_matching_selects_duplicate_edges_deterministically() -> None:
+    wide = replace(_trine("A", "B"), separation=125.0, orb=5.0)
+    tight = replace(_trine("A", "B"), separation=121.0, orb=1.0)
+    aspects = [
+        wide,
+        tight,
+        _trine("A", "C"),
+        _trine("B", "C"),
+    ]
+
+    signatures = set()
+    selected_orbs = set()
+    for permutation in permutations(aspects):
+        pattern = find_grand_trines(list(permutation))[0]
+        signatures.add(tuple(_aspect_signature(item) for item in pattern.aspects))
+        selected_orbs.add(next(
+            item.orb
+            for item in pattern.aspects
+            if frozenset((item.body1, item.body2)) == frozenset(("A", "B"))
+        ))
+
+    assert len(signatures) == 1
+    assert selected_orbs == {1.0}
 
 
 def test_dominant_only_retains_only_maximal_structural_patterns() -> None:

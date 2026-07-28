@@ -62,6 +62,14 @@ class AspectDataResponse(_StrictModel):
     direction: str | None = None
     sign_degree1: float | None = None
     sign_degree2: float | None = None
+    motion_state: Literal[
+        "applying",
+        "exact",
+        "separating",
+        "stationary",
+        "indeterminate",
+        "none",
+    ]
 
 
 class AspectsFromLongitudesRequest(_StrictModel):

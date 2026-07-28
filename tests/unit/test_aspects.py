@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError, replace
+from itertools import permutations
 import math
 
 import pytest
 
+import moira as _moira_package
+import moira.aspects as _aspects_module
 import moira.facade as _facade_module
 
 from moira.aspects import (
     CANONICAL_ASPECTS,
-    AspectClassification,
     AspectData,
     AspectDirection,
     AspectDomain,
@@ -19,22 +21,18 @@ from moira.aspects import (
     AspectGraphNode,
     AspectHarmonicProfile,
     HellenisticAspectEvaluationStatus,
-    HellenisticDirectionTruth,
     HellenisticOvercomingRelation,
-    HellenisticOvercomingTruth,
-    HellenisticSuperiorityTruth,
     DeclinationAspectAnalysis,
     LongitudeAspectAnalysis,
-    AspectPattern,
     AspectPatternKind,
     AspectPolicy,
-    AspectStrength,
     AspectTier,
     DEFAULT_POLICY,
     DeclinationAspect,
     OutOfBoundsBody,
     MotionState,
     aspect_harmonic_profile,
+    aspect_motion_witness,
     aspect_motion_state,
     aspect_strength,
     aspects_between,
@@ -67,6 +65,71 @@ def test_find_aspects_detects_wraparound_conjunction() -> None:
     assert aspect.body1 == "Sun"
     assert aspect.body2 == "Moon"
     assert aspect.orb == 2.0
+
+
+def test_tiny_negative_longitudes_normalize_without_emitting_360() -> None:
+    """Every public longitude path accepts the IEEE-754 negative-epsilon edge."""
+
+    epsilon = -1e-16
+
+    superiority = hellenistic_superiority_truth(
+        epsilon,
+        60.0,
+        60.0,
+        body1="A",
+        body2="B",
+    )
+    direct = find_aspects({"A": epsilon, "B": 60.0}, tier=0)
+    between = aspects_between("A", epsilon, "B", 60.0, tier=0)
+    to_point = aspects_to_point(
+        epsilon,
+        {"B": 60.0},
+        point_name="A",
+        include_minor=False,
+    )
+    whole_sign = find_whole_sign_aspects({"A": epsilon, "B": 60.0})
+    analysis = aspects_from_longitudes({"A": epsilon, "B": 60.0}, tier=0)
+    witness = aspect_motion_witness(
+        "A",
+        epsilon,
+        "B",
+        60.0,
+        "Sextile",
+        reference_frame="caller_supplied_ecliptic",
+        timescale="caller_supplied",
+    )
+
+    assert superiority.longitude1 == 0.0
+    assert direct[0].hellenistic_superiority_truth.longitude1 == 0.0
+    assert between[0].hellenistic_superiority_truth.longitude1 == 0.0
+    assert to_point[0].hellenistic_superiority_truth.longitude2 == 0.0
+    assert whole_sign[0].hellenistic_superiority_truth.longitude1 == 0.0
+    assert analysis.longitudes["A"] == 0.0
+    assert witness.longitude1_deg == 0.0
+    assert all(longitude != 360.0 for longitude in analysis.longitudes.values())
+
+
+def test_tiny_negative_forward_arc_normalizes_to_zero() -> None:
+    truth = hellenistic_superiority_truth(1e-16, 0.0, 0.0)
+
+    assert truth.direction_truth.forward_arc_body1_to_body2_deg == 0.0
+
+
+def test_whole_sign_boundary_snap_drives_sign_and_degree_truth_together() -> None:
+    """One shared snap must prevent sign-index and degree-of-sign disagreement."""
+
+    from moira.aspects import _WHOLE_SIGN_BOUNDARY_TOLERANCE_DEG
+
+    longitude1 = 30.0 - _WHOLE_SIGN_BOUNDARY_TOLERANCE_DEG
+    longitude2 = 90.0 - _WHOLE_SIGN_BOUNDARY_TOLERANCE_DEG
+    aspect = aspects_between("A", longitude1, "B", longitude2, tier=0)[0]
+    truth = aspect.hellenistic_superiority_truth
+
+    assert truth is not None
+    assert truth.overcoming_truth.body1_sign_index == 1
+    assert truth.overcoming_truth.body2_sign_index == 3
+    assert aspect.sign_degree1 == 0
+    assert aspect.sign_degree2 == 0
 
 
 @pytest.mark.parametrize(
@@ -1410,10 +1473,29 @@ def test_motion_state_indeterminate_when_partial_speeds() -> None:
     )
     assert results
     assert results[0].applying is None
+    assert results[0].stationary is False
     assert aspect_motion_state(results[0]) is MotionState.INDETERMINATE
 
 
-def test_motion_state_none_for_declination_aspect() -> None:
+def test_equal_rates_are_stationary_not_fabricated_applying_truth() -> None:
+    results = aspects_between(
+        "A",
+        0.0,
+        "B",
+        59.0,
+        tier=0,
+        speed_a=1.0,
+        speed_b=1.0,
+    )
+
+    assert results
+    assert results[0].applying is None
+    assert results[0].stationary is True
+    assert results[0].motion_state is MotionState.STATIONARY
+    assert aspect_motion_state(results[0]) is MotionState.STATIONARY
+
+
+def test_motion_state_none_for_all_detected_declination_aspects() -> None:
     """MotionState.NONE for DeclinationAspect — no motion data available."""
     results = find_declination_aspects({"Sun": 10.0, "Moon": 10.4}, orb=1.0)
     assert results
@@ -2030,6 +2112,58 @@ def test_aspect_pattern_kind_enum_values() -> None:
     }
 
 
+def test_aspect_pattern_enum_and_template_catalog_are_aligned() -> None:
+    from moira.aspects import _PATTERN_TEMPLATES
+
+    template_kinds = [template.kind for template in _PATTERN_TEMPLATES]
+
+    assert len(template_kinds) == len(set(template_kinds))
+    assert set(template_kinds) == set(AspectPatternKind) - {
+        AspectPatternKind.STELLIUM
+    }
+
+
+def test_legacy_pattern_matching_selects_duplicate_edges_deterministically() -> None:
+    wide_square = replace(
+        _sq("Sun", "Mars"),
+        separation=92.0,
+        orb=2.0,
+    )
+    tight_square = replace(
+        _sq("Sun", "Mars"),
+        separation=91.0,
+        orb=1.0,
+    )
+    aspects = [
+        _opp("Sun", "Moon"),
+        wide_square,
+        tight_square,
+        _sq("Moon", "Mars"),
+    ]
+
+    signatures = set()
+    selected_orbs = set()
+    for permutation in permutations(aspects):
+        pattern = next(
+            item
+            for item in find_patterns(list(permutation))
+            if item.kind is AspectPatternKind.T_SQUARE
+        )
+        signatures.add(tuple(
+            (item.body1, item.body2, item.aspect, item.orb)
+            for item in pattern.aspects
+        ))
+        selected_orbs.add(next(
+            item.orb
+            for item in pattern.aspects
+            if frozenset((item.body1, item.body2))
+            == frozenset(("Sun", "Mars"))
+        ))
+
+    assert len(signatures) == 1
+    assert selected_orbs == {1.0}
+
+
 def test_aspect_pattern_all_bodies_appear_in_contributing_aspects() -> None:
     """Every body name in bodies must appear in at least one contributing aspect."""
     aspects = [_trine("Sun", "Moon"), _trine("Moon", "Mars"), _trine("Sun", "Mars")]
@@ -2641,6 +2775,25 @@ def test_build_aspect_graph_family_counts_content() -> None:
     sun = next(n for n in g.nodes if n.name == "Sun")
     assert sun.family_counts.get("Trine", 0) == 2
     assert sun.family_counts.get("Square", 0) == 1
+
+
+def test_aspect_counts_is_an_immutable_alias_for_legacy_family_counts() -> None:
+    graph = build_aspect_graph([
+        _trine("Sun", "Moon"),
+        _trine("Sun", "Mars"),
+        _sq("Sun", "Venus"),
+    ])
+    sun = next(node for node in graph.nodes if node.name == "Sun")
+    counts = sun.aspect_counts
+
+    assert dict(counts) == sun.family_counts
+    with pytest.raises(TypeError):
+        counts["Trine"] = 99  # type: ignore[index]
+
+    # The historical field remains mutable for compatibility; the alias is a
+    # live, read-only view rather than a second source of truth.
+    sun.family_counts["Trine"] = 3
+    assert counts["Trine"] == 3
 
 
 def test_build_aspect_graph_node_edges_contain_only_incident_aspects() -> None:
@@ -3808,10 +3961,6 @@ def test_aspect_direction_sinister_dexter() -> None:
 # ===========================================================================
 # Phase 14 — Public API exposure and surface curation
 # ===========================================================================
-
-import moira.aspects as _aspects_module
-import moira as _moira_package
-
 
 _EXPECTED_PUBLIC = {
     "CANONICAL_ASPECTS",

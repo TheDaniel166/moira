@@ -74,7 +74,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from enum import StrEnum
+from ._strenum import StrEnum
 from itertools import combinations, permutations
 
 from .aspects import AspectData, find_aspects
@@ -796,17 +796,26 @@ class AspectPattern:
 
 def _build_aspect_map(
     aspects: list[AspectData],
-) -> dict[tuple[str, str], AspectData]:
-    """Build a bidirectional lookup: (b1, b2) and (b2, b1) -> AspectData."""
-    mapping: dict[tuple[str, str], AspectData] = {}
+) -> dict[tuple[str, str], tuple[AspectData, ...]]:
+    """Build a deterministic bidirectional pair-to-aspects lookup."""
+
+    buckets: dict[tuple[str, str], list[AspectData]] = {}
     for asp in aspects:
-        mapping[(asp.body1, asp.body2)] = asp
-        mapping[(asp.body2, asp.body1)] = asp
-    return mapping
+        buckets.setdefault((asp.body1, asp.body2), []).append(asp)
+        buckets.setdefault((asp.body2, asp.body1), []).append(asp)
+    return {
+        pair: tuple(
+            sorted(
+                candidates,
+                key=lambda item: (_aspect_signature(item), repr(item)),
+            )
+        )
+        for pair, candidates in buckets.items()
+    }
 
 
 def _get_aspect(
-    aspect_map: dict[tuple[str, str], AspectData],
+    aspect_map: dict[tuple[str, str], tuple[AspectData, ...]],
     b1: str,
     b2: str,
     target_angle: float,
@@ -821,10 +830,18 @@ def _get_aspect(
     that admitted the pair, so it is only meaningful after checking that the
     admitted aspect is the same angle this pattern edge requested.
     """
-    asp = aspect_map.get((b1, b2))
-    if asp is not None and abs(float(asp.angle) - float(target_angle)) <= 1e-6 and asp.orb <= orb:
-        return asp
-    return None
+    admitted = [
+        aspect
+        for aspect in aspect_map.get((b1, b2), ())
+        if abs(float(aspect.angle) - float(target_angle)) <= 1e-6
+        and aspect.orb <= orb
+    ]
+    if not admitted:
+        return None
+    return min(
+        admitted,
+        key=lambda item: (_aspect_signature(item), repr(item)),
+    )
 
 
 def _dedup_patterns(patterns: list[AspectPattern]) -> list[AspectPattern]:
@@ -1499,8 +1516,9 @@ def find_grand_sextiles(
     orb_factor: float = 1.0,
 ) -> list[AspectPattern]:
     """
-    Grand Sextile (Star of David): six planets all in mutual sextile (60°),
-    forming two interlocking Grand Trines.
+    Grand Sextile (Star of David): six planets forming a closed ring of six
+    Sextiles. Admitted Trines and Oppositions implied by the ideal geometry are
+    preserved as contributing evidence but are not extra admission gates.
 
     Orb: 3° * orb_factor.
     """
@@ -1510,22 +1528,68 @@ def find_grand_sextiles(
     results: list[AspectPattern] = []
 
     for group in combinations(bodies, 6):
-        group_aspects: list[AspectData] = []
-        valid = True
-        for b1, b2 in combinations(group, 2):
-            asp = _get_aspect(aspect_map, b1, b2, 60.0, sext_orb)
-            if asp is None:
-                valid = False
-                break
-            group_aspects.append(asp)
-        if valid:
-            results.append(_make_pattern(
-                name="Grand Sextile",
-                bodies=tuple(sorted(group)),
-                aspects=tuple(group_aspects),
-                detector="find_grand_sextiles",
-                orb_factor=orb_factor,
-            ))
+        anchor = group[0]
+        matched_cycles: list[
+            tuple[tuple[str, ...], tuple[AspectData, ...]]
+        ] = []
+        for tail in permutations(group[1:]):
+            cycle = (anchor, *tail)
+            if cycle[1] > cycle[-1]:
+                continue
+            ring: list[AspectData] = []
+            for index, body in enumerate(cycle):
+                neighbor = cycle[(index + 1) % len(cycle)]
+                aspect = _get_aspect(
+                    aspect_map,
+                    body,
+                    neighbor,
+                    60.0,
+                    sext_orb,
+                )
+                if aspect is None:
+                    break
+                ring.append(aspect)
+            else:
+                matched_cycles.append((cycle, tuple(ring)))
+
+        if not matched_cycles:
+            continue
+
+        cycle, ring = min(matched_cycles, key=lambda item: item[0])
+        contributing: list[AspectData] = list(ring)
+        seen_endpoints = {
+            _aspect_endpoint_signature(aspect)
+            for aspect in contributing
+        }
+        for step, target_angle, allowed_orb, count in (
+            (2, 120.0, 7.0 * orb_factor, 6),
+            (3, 180.0, 8.0 * orb_factor, 3),
+        ):
+            for index in range(count):
+                body = cycle[index]
+                neighbor = cycle[(index + step) % len(cycle)]
+                aspect = _get_aspect(
+                    aspect_map,
+                    body,
+                    neighbor,
+                    target_angle,
+                    allowed_orb,
+                )
+                if (
+                    aspect is not None
+                    and _aspect_endpoint_signature(aspect) not in seen_endpoints
+                ):
+                    contributing.append(aspect)
+                    seen_endpoints.add(_aspect_endpoint_signature(aspect))
+
+        results.append(_make_pattern(
+            name="Grand Sextile",
+            bodies=tuple(sorted(group)),
+            aspects=tuple(sorted(contributing, key=_aspect_signature)),
+            detector="find_grand_sextiles",
+            orb_factor=orb_factor,
+            role_overrides={body: "cycle_member" for body in group},
+        ))
 
     return _dedup_patterns(results)
 

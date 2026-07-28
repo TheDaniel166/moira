@@ -78,29 +78,6 @@ def _format_violations(violations: list[Violation]) -> str:
 # Extracted checker helpers (importable, testable with tmp_path)
 # ---------------------------------------------------------------------------
 
-def check_module_docstrings(path: Path) -> list[Violation]:
-    """Check that a single .py file has a non-empty module-level docstring."""
-    violations: list[Violation] = []
-    try:
-        source = path.read_text(encoding="utf-8-sig")
-    except OSError as exc:
-        violations.append(Violation(
-            file=str(path),
-            entity="<module>",
-            rule="IO-001",
-            detail=f"Could not read file: {exc}",
-        ))
-        return violations
-    try:
-        tree = ast.parse(source, filename=str(path))
-    except SyntaxError as exc:
-        violations.append(Violation(
-            file=str(path),
-            entity="<module>",
-            rule="PARSE-001",
-            detail=f"AST parse error: {exc}",
-        ))
-        return violations
 def _get_flexible_docstring(node: ast.AST) -> str | None:
     """
     Retrieve a docstring from a node even if it's not the first statement.
@@ -157,29 +134,6 @@ def check_module_docstrings(path: Path) -> list[Violation]:
     return violations
 
 
-def check_class_docstrings(path: Path) -> list[Violation]:
-    """Check that every class in a .py file has all required structural markers."""
-    violations: list[Violation] = []
-    try:
-        source = path.read_text(encoding="utf-8-sig")
-    except OSError as exc:
-        violations.append(Violation(
-            file=str(path),
-            entity="<module>",
-            rule="IO-001",
-            detail=f"Could not read file: {exc}",
-        ))
-        return violations
-    try:
-        tree = ast.parse(source, filename=str(path))
-    except SyntaxError as exc:
-        violations.append(Violation(
-            file=str(path),
-            entity="<module>",
-            rule="PARSE-001",
-            detail=f"AST parse error: {exc}",
-        ))
-        return violations
 def _is_vessel_class(node: ast.ClassDef) -> bool:
     """
     Determine if a class is a passive 'Vessel' (data only) rather than an 'Actor'.
@@ -215,6 +169,20 @@ def _is_vessel_class(node: ast.ClassDef) -> bool:
     return False
 
 
+def _has_split_class_docstring(node: ast.ClassDef) -> bool:
+    """Return whether a class begins with two independent string expressions."""
+
+    if len(node.body) < 2:
+        return False
+
+    return all(
+        isinstance(item, ast.Expr)
+        and isinstance(item.value, ast.Constant)
+        and isinstance(item.value.value, str)
+        for item in node.body[:2]
+    )
+
+
 def check_class_docstrings(path: Path) -> list[Violation]:
     """Check that core logic classes have required structural markers."""
     violations: list[Violation] = []
@@ -245,6 +213,17 @@ def check_class_docstrings(path: Path) -> list[Violation]:
         docstring = ast.get_docstring(node) or _get_flexible_docstring(node) or ""
         is_vessel = _is_vessel_class(node)
         has_mc = "[MACHINE_CONTRACT" in docstring
+
+        if _has_split_class_docstring(node):
+            violations.append(Violation(
+                file=str(path),
+                entity=node.name,
+                rule="CLS-003",
+                detail=(
+                    "Class begins with consecutive string literals; only the first "
+                    "is the runtime docstring. Merge them into one docstring."
+                ),
+            ))
         
         # Policy: Mandatory high-ceremony markers for:
         # 1. Classes explicitly declaring a MACHINE_CONTRACT
@@ -484,6 +463,23 @@ def test_checker_protocol_with_basic_contract_docstring_passes(tmp_path: Path) -
     )
     path = _write_tmp(tmp_path, source)
     assert check_class_docstrings(path) == []
+
+
+def test_checker_split_class_docstring_produces_cls003(tmp_path: Path) -> None:
+    """Consecutive class string literals cannot hide governance content."""
+
+    source = (
+        '"""Module docstring."""\n\n'
+        "class SplitVessel:\n"
+        '    """Short runtime summary."""\n'
+        '    """Documentation accidentally split from the runtime docstring."""\n'
+    )
+    path = _write_tmp(tmp_path, source)
+
+    violations = check_class_docstrings(path)
+
+    assert [violation.rule for violation in violations] == ["CLS-003"]
+    assert violations[0].entity == "SplitVessel"
 
 
 def test_checker_missing_rite_produces_cls001(tmp_path: Path) -> None:

@@ -142,6 +142,7 @@ def serialize_aspect(aspect: AspectData) -> AspectDataResponse:
         direction=aspect.direction,
         sign_degree1=aspect.sign_degree1,
         sign_degree2=aspect.sign_degree2,
+        motion_state=aspect.motion_state.value,
     )
 
 

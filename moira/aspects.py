@@ -202,6 +202,7 @@ Convenience properties (read-only, derived only)
 ``AspectData.is_zodiacal``       — True when domain is ZODIACAL.
 ``AspectData.is_applying``       — True when applying is True (not None or False).
 ``AspectData.is_separating``     — True when applying is False (not None or True).
+``AspectData.motion_state``      — explicit applying/exact/separating/stationary/indeterminate state.
 ``AspectData.orb_surplus``       — allowed_orb minus orb (remaining headroom).
 ``AspectData.is_partile``        — True when a major aspect has both bodies at the same degree-of-sign; False for non-major.
 ``AspectData.is_platic``         — True when a major aspect is admitted but not partile; False for non-major.
@@ -212,22 +213,21 @@ Convenience properties (read-only, derived only)
 
 from __future__ import annotations
 
-from collections import defaultdict
-from dataclasses import dataclass, field
-from enum import Enum, StrEnum
-from itertools import combinations, permutations
+from dataclasses import dataclass
+from enum import Enum
 import math
 from types import MappingProxyType
 from typing import Collection, Callable, Mapping
 
+from ._strenum import StrEnum
 from ._aspect_types import (
     AspectClassification,
     AspectDomain,
     AspectFamily,
     AspectTier,
 )
-from .constants import Aspect, AspectDefinition, ASPECT_TIERS, DEFAULT_ORBS, TRADITIONAL_MOIETY_ORBS, Body
-from .coordinates import angular_distance
+from .constants import Aspect, AspectDefinition, ASPECT_TIERS, TRADITIONAL_MOIETY_ORBS, Body
+from .coordinates import angular_distance, normalize_degrees
 from .declination_aspects import (
     DeclinationAspect,
     DeclinationAspectAnalysis,
@@ -237,8 +237,6 @@ from .declination_aspects import (
     DeclinationEquatorPolicy,
     DeclinationHemispherePolicy,
     DeclinationMotionState,
-    _CONTRA_PARALLEL_CLASSIFICATION,
-    _PARALLEL_CLASSIFICATION,
     declination_aspect_motion_witness,
     declination_aspects_from_declinations as _declination_analysis,
     find_declination_aspects as _find_declination_aspects,
@@ -312,8 +310,8 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 class AspectDirection(str, Enum):
-    """Vessel: Registry of zodiacal aspect directions."""
-    """
+    """Vessel: Registry of zodiacal aspect directions.
+
     Zodiacal casting direction of an aspect ray.
 
     SINISTER — the aspect ray goes forward in zodiacal order (e.g. from
@@ -576,7 +574,7 @@ class HellenisticSuperiorityTruth:
                 "HellenisticSuperiorityTruth overcoming_truth must be a "
                 "HellenisticOvercomingTruth"
             )
-        expected_arc = (self.longitude2 - self.longitude1) % 360.0
+        expected_arc = normalize_degrees(self.longitude2 - self.longitude1)
         if not math.isclose(
             self.direction_truth.forward_arc_body1_to_body2_deg,
             expected_arc,
@@ -686,18 +684,28 @@ def _finite_number(name: str, value: object) -> float:
 
 _HELLENISTIC_DIRECTION_BOUNDARY_TOLERANCE_DEG = 1e-12
 _WHOLE_SIGN_BOUNDARY_TOLERANCE_DEG = 1e-11
+_ASPECT_RELATIVE_RATE_TOLERANCE_DEG_PER_DAY = 1e-12
+
+
+def _snapped_whole_sign_longitude(longitude: float) -> float:
+    """Normalize a longitude and apply the shared whole-sign boundary snap."""
+
+    normalized = normalize_degrees(longitude)
+    within_sign = normalized % 30.0
+    distance_to_next_sign = 30.0 - within_sign
+    boundary_slack = math.ulp(360.0)
+    if (
+        distance_to_next_sign
+        <= _WHOLE_SIGN_BOUNDARY_TOLERANCE_DEG + boundary_slack
+    ):
+        return normalize_degrees(normalized + (30.0 - within_sign))
+    return normalized
 
 
 def _whole_sign_index(longitude: float) -> int:
     """Return one normalized sign index with the existing arithmetic snap."""
 
-    return int(
-        (
-            longitude % 360.0
-            + _WHOLE_SIGN_BOUNDARY_TOLERANCE_DEG
-        )
-        // 30.0
-    ) % 12
+    return int(_snapped_whole_sign_longitude(longitude) // 30.0) % 12
 
 
 def _is_hellenistic_direction_boundary(forward_arc: float) -> bool:
@@ -735,8 +743,8 @@ def hellenistic_superiority_truth(
 ) -> HellenisticSuperiorityTruth:
     """Compose typed direction applicability and tenth-sign overcoming."""
 
-    longitude1 = _finite_number("lon1", lon1) % 360.0
-    longitude2 = _finite_number("lon2", lon2) % 360.0
+    longitude1 = normalize_degrees(_finite_number("lon1", lon1))
+    longitude2 = normalize_degrees(_finite_number("lon2", lon2))
     resolved_angle: float | None
     if aspect_angle is None:
         resolved_angle = None
@@ -745,7 +753,7 @@ def hellenistic_superiority_truth(
         if not 0.0 <= resolved_angle <= 180.0:
             raise ValueError("aspect_angle must be in [0, 180]")
 
-    forward_arc = (longitude2 - longitude1) % 360.0
+    forward_arc = normalize_degrees(longitude2 - longitude1)
     if resolved_angle is None:
         direction_truth = HellenisticDirectionTruth(
             status=HellenisticAspectEvaluationStatus.NOT_EVALUABLE,
@@ -856,8 +864,8 @@ def _normalized_named_values(
 
 @dataclass(frozen=True, slots=True)
 class AspectPolicy:
-    """Vessel: Policy definition for aspect detection doctrine."""
-    """
+    """Vessel: Policy definition for aspect detection doctrine.
+
     Doctrine inputs for aspect detection, bundled into a single immutable value.
 
     Encapsulates all caller-supplied policy knobs so that detection functions
@@ -1020,8 +1028,8 @@ DEFAULT_POLICY: AspectPolicy = AspectPolicy()
 
 @dataclass(frozen=True, slots=True)
 class AspectStrength:
-    """Vessel: Geometric strength of an admitted aspect."""
-    """
+    """Vessel: Geometric strength of an admitted aspect.
+
     Pure geometric strength of an admitted aspect, derived entirely from
     the admission context already stored on the result vessel.
 
@@ -1147,8 +1155,8 @@ def aspect_strength(aspect: AspectData | DeclinationAspect) -> AspectStrength:
 # ---------------------------------------------------------------------------
 
 class MotionState(str, Enum):
-    """Vessel: Registry of temporal motion states for aspects."""
-    """
+    """Vessel: Registry of temporal motion states for aspects.
+
     Explicit temporal-motion state of an admitted aspect, derived from the
     ``applying`` and ``stationary`` fields already preserved on the vessel.
 
@@ -1317,8 +1325,8 @@ This tuple is declaration-only; it carries no detection logic.
 # ---------------------------------------------------------------------------
 
 class AspectPatternKind(str, Enum):
-    """Vessel: Registry of multi-body aspect pattern kinds."""
-    """
+    """Vessel: Registry of multi-body aspect pattern kinds.
+
     Kind of multi-body aspect pattern.
 
     Implemented (detectable by ``find_patterns``)
@@ -1371,8 +1379,8 @@ class AspectPatternKind(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class AspectPattern:
-    """Vessel: Result vessel for a detected multi-body aspect pattern."""
-    """
+    """Vessel: Result vessel for a detected multi-body aspect pattern.
+
     A detected multi-body aspect pattern, derived entirely from
     already-admitted pairwise ``AspectData`` results.
 
@@ -1390,12 +1398,10 @@ class AspectPattern:
 
     Structural invariants
     ---------------------
-    - ``len(bodies) >= 3`` for all implemented patterns
-      (STELLIUM may have 3+; T_SQUARE, GRAND_TRINE, YOD have exactly 3;
-       GRAND_CROSS has exactly 4).
-    - ``len(aspects) >= 3`` for all implemented patterns
-      (STELLIUM: 3 for 3-body, 6 for 4-body; T_SQUARE: 3;
-       GRAND_TRINE: 3; GRAND_CROSS: 6; YOD: 3).
+    - ``len(bodies) >= 3`` for every legacy pattern kind; fixed-size kinds
+      follow their corresponding ``_PATTERN_TEMPLATES`` declaration.
+    - ``len(aspects) >= 3`` and each template edge contributes one admitted
+      aspect.
     - Every body named in ``bodies`` appears in at least one aspect in
       ``aspects``.
     - ``aspects`` is sorted by ``(body1, body2, aspect)``; this ordering
@@ -1768,7 +1774,21 @@ def _match_pattern_template(
             for u, v, allowed in template.edges:
                 b_u, b_v = bodies_tuple[u], bodies_tuple[v]
                 aspect_candidates = adjacency[b_u][b_v]
-                match_aspects.append(next(a for a in aspect_candidates if a.aspect in allowed))
+                admitted = [
+                    aspect
+                    for aspect in aspect_candidates
+                    if aspect.aspect in allowed
+                ]
+                match_aspects.append(min(
+                    admitted,
+                    key=lambda aspect: (
+                        aspect.orb,
+                        aspect.aspect,
+                        aspect.body1,
+                        aspect.body2,
+                        repr(aspect),
+                    ),
+                ))
 
             if template.filter_fn is not None:
                 if not template.filter_fn(bodies_tuple, match_aspects):
@@ -1812,7 +1832,11 @@ def _match_pattern_template(
 
 def find_patterns(aspects: list[AspectData]) -> list[AspectPattern]:
     """
-    Detect multi-body aspect patterns from a list of admitted pairwise aspects.
+    Detect legacy multi-body patterns from admitted pairwise aspects.
+
+    This compatibility surface is retained for existing callers. New work
+    should use :func:`moira.patterns.find_all_patterns`, whose result vessel
+    preserves apex, role, contribution, and optional dominant-selection truth.
 
     Pattern detection operates entirely on the supplied ``AspectData`` list.
     No positions, speeds, or external inputs are used.  Pairwise detection
@@ -1830,7 +1854,8 @@ def find_patterns(aspects: list[AspectData]) -> list[AspectPattern]:
     CRADLE           — 4 bodies: one Opposition + three Sextiles + two Trines.
     WEDGE            — 3 bodies: one Opposition + one Trine + one Sextile.
     BUTTERFLY        — 4 bodies: two Wedges sharing an Opposition axis.
-    GRAND_SEXTILE    — 6 bodies: six consecutive Sextiles forming a loop.
+    GRAND_SEXTILE    — 6 bodies: six Sextiles, six Trines, and three
+                       Oppositions forming a fully coherent hexagram.
     GOLDEN_YOD       — 3 bodies: two Biquintiles + one Quintile.
     THORS_HAMMER     — 3 bodies: two Sesquiquadrates + one Square.
     FINGER_OF_WORLD  — 3 bodies: two Semisquares + one Square.
@@ -1878,12 +1903,14 @@ def find_patterns(aspects: list[AspectData]) -> list[AspectPattern]:
 
     results = []
     # 1. Stellia
-    results.extend(_find_stellia(aspects, idx))
+    stellia = _find_stellia(aspects, idx)
+    stellia.sort(key=lambda pattern: tuple(sorted(pattern.bodies)))
+    results.extend(stellia)
 
     # 2. Declarative patterns
     for template in _PATTERN_TEMPLATES:
         matched = _match_pattern_template(template, adjacency, all_bodies)
-        matched.sort(key=lambda p: sorted(p.bodies))
+        matched.sort(key=lambda pattern: tuple(sorted(pattern.bodies)))
         results.extend(matched)
 
     return results
@@ -1895,8 +1922,8 @@ def find_patterns(aspects: list[AspectData]) -> list[AspectPattern]:
 
 @dataclass(frozen=True, slots=True)
 class AspectGraphNode:
-    """Vessel: Node in a relational aspect graph representing a body."""
-    """
+    """Vessel: Node in a relational aspect graph representing a body.
+
     A node in the aspect graph, representing one celestial body.
 
     Fields
@@ -1909,11 +1936,14 @@ class AspectGraphNode:
                    that name incident to this node.  Keys are ``AspectData.aspect``
                    strings (e.g. ``"Trine"``, ``"Conjunction"``).  Empty dict
                    when ``degree == 0``.
+    aspect_counts: immutable, accurately named view of ``family_counts``.
+                   This additive alias leaves the historical field intact.
 
     Invariants
     ----------
     - ``degree == len(edges)``
     - ``sum(family_counts.values()) == degree``
+    - ``aspect_counts == family_counts`` and cannot be mutated.
     - Every entry in ``edges`` has ``body1 == name`` or ``body2 == name``.
     - ``edges`` is sorted by ``(body1, body2, aspect)`` — deterministic and
       independent of input list ordering.
@@ -1923,11 +1953,17 @@ class AspectGraphNode:
     edges:         tuple[AspectData, ...]
     family_counts: dict[str, int]
 
+    @property
+    def aspect_counts(self) -> Mapping[str, int]:
+        """Return an immutable, accurately named view of aspect-name counts."""
+
+        return MappingProxyType(self.family_counts)
+
 
 @dataclass(frozen=True, slots=True)
 class AspectGraph:
-    """Vessel: Relational graph of admitted pairwise aspects."""
-    """
+    """Vessel: Relational graph of admitted pairwise aspects.
+
     A relational graph built from a list of admitted pairwise ``AspectData``
     results, exposing the chart as a deterministic aspect network.
 
@@ -2097,8 +2133,8 @@ def _connected_components(
 
 @dataclass(frozen=True, slots=True)
 class AspectFamilyProfile:
-    """Vessel: Statistical profile of aspect harmonic families."""
-    """
+    """Vessel: Statistical profile of aspect harmonic families.
+
     Family-level distribution for a set of admitted aspects.
 
     A single instance covers either the full chart (all admitted aspects)
@@ -2135,8 +2171,8 @@ class AspectFamilyProfile:
 
 @dataclass(frozen=True, slots=True)
 class AspectHarmonicProfile:
-    """Vessel: Comprehensive profile of harmonic distributions."""
-    """
+    """Vessel: Comprehensive profile of harmonic distributions.
+
     Chart-level harmonic analysis derived from all admitted aspects.
 
     Built by ``aspect_harmonic_profile``; consumes a ``list[AspectData]``
@@ -2268,8 +2304,8 @@ def aspect_harmonic_profile(aspects: list[AspectData]) -> AspectHarmonicProfile:
 
 @dataclass(frozen=True, slots=True)
 class AspectData:
-    """Vessel: Result vessel for a detected longitude or whole-sign aspect."""
-    """
+    """Vessel: Result vessel for a detected longitude or whole-sign aspect.
+
     RITE: The Aspect Vessel — a detected angular relationship between two bodies.
 
     THEOREM: Holds the two body names, aspect name and symbol, target angle,
@@ -2315,8 +2351,10 @@ class AspectData:
               ``AspectDomain.WHOLE_SIGN`` for detector-produced vessels.
             - ``applying`` is ``None`` when the aspect is exact, either body
               is stationary, speeds are unavailable, or the result is categorical.
-            - ``stationary`` is ``True`` when either body's speed is below
-              0.01 deg/day.
+            - ``stationary`` is ``True`` when either known body speed is below
+              its body-specific threshold or the known relative rate is stalled.
+              Missing rates remain visible through ``motion_state`` as
+              ``INDETERMINATE`` rather than being fabricated.
             - When present, ``hellenistic_superiority_truth`` matches body
               names, target angle, separation, sign degrees, and direction.
             - ``is_applying`` and ``is_separating`` are mutually exclusive
@@ -2347,8 +2385,8 @@ class AspectData:
             ],
             "public_properties": [
                 "is_major", "is_minor", "is_zodiacal",
-                "is_applying", "is_separating", "orb_surplus", "is_partile",
-                "is_platic"
+                "is_applying", "is_separating", "motion_state", "orb_surplus",
+                "is_partile", "is_platic"
             ]
         },
         "state": {
@@ -2391,7 +2429,7 @@ class AspectData:
     orb:            float                # |separation - angle| (always non-negative)
     allowed_orb:    float                # orb ceiling used for admission (post orb_factor / custom-orbs)
     applying:       bool | None = None   # True=applying, False=separating, None=unknown/stationary
-    stationary:     bool        = False  # True when either body's speed is < 0.01°/day
+    stationary:     bool        = False  # True for known body or relative-motion stationarity
     classification: AspectClassification | None = None  # explicit type description
     direction:      AspectDirection | None = None  # sinister/dexter from body1's perspective
     sign_degree1:   int | None = None    # 0-29 degree number within body1's sign
@@ -2476,6 +2514,12 @@ class AspectData:
             self.classification is None
             or self.classification.domain is AspectDomain.ZODIACAL
         )
+
+    @property
+    def motion_state(self) -> MotionState:
+        """Return explicit motion truth without changing legacy stored fields."""
+
+        return aspect_motion_state(self)
 
     @property
     def is_applying(self) -> bool:
@@ -2771,10 +2815,7 @@ def _sign_degree_number(longitude: float) -> int:
     degree 0 of the following sign to absorb floating-point rounding noise
     from upstream ephemeris calculations.
     """
-    within_sign = longitude % 30.0
-    if within_sign > 30.0 - 1e-11:
-        return 0
-    return int(within_sign)
+    return int(_snapped_whole_sign_longitude(longitude) % 30.0)
 
 
 _STATIONARY_THRESHOLDS: dict[str, float] = {
@@ -2790,11 +2831,20 @@ _STATIONARY_THRESHOLDS: dict[str, float] = {
 
 
 def _is_stationary(b1: str, b2: str, speeds: dict[str, float]) -> bool:
-    """Return True when either body's speed is below its specific stationary threshold."""
+    """Return True when known body or relative motion is stationary."""
+
     t1 = _STATIONARY_THRESHOLDS.get(b1, 0.005)
     t2 = _STATIONARY_THRESHOLDS.get(b2, 0.005)
-    return (abs(speeds.get(b1, 1.0)) < t1
-            or abs(speeds.get(b2, 1.0)) < t2)
+    if b1 in speeds and abs(speeds[b1]) < t1:
+        return True
+    if b2 in speeds and abs(speeds[b2]) < t2:
+        return True
+    return (
+        b1 in speeds
+        and b2 in speeds
+        and abs(speeds[b2] - speeds[b1])
+        <= _ASPECT_RELATIVE_RATE_TOLERANCE_DEG_PER_DAY
+    )
 
 
 def _applying(
@@ -2806,10 +2856,11 @@ def _applying(
     """
     True = applying, False = separating, None = unknown or stationary.
 
-    Returns None when the aspect is exact within 1e-9 degrees or either body's
-    daily speed is below its specific stationary threshold.  Exactness takes
-    precedence because the absolute orb has a cusp at perfection; applying
-    versus separating requires a side-of-event statement there.
+    Returns None when the aspect is exact within 1e-9 degrees, either body's
+    daily speed is below its specific stationary threshold, relative motion is
+    stalled, or either speed is unavailable. Exactness takes precedence because
+    the absolute orb has a cusp at perfection; applying versus separating
+    requires a side-of-event statement there.
 
     The signed shortest-arc difference ``diff = (lon2 - lon1 + 180) % 360 - 180``
     gives the rate of change of the angular separation:
@@ -2884,8 +2935,12 @@ def aspect_motion_witness(
             raise ValueError(f"{name} must be finite")
         return parsed
 
-    longitude1 = finite_number("longitude1_deg", longitude1_deg) % 360.0
-    longitude2 = finite_number("longitude2_deg", longitude2_deg) % 360.0
+    longitude1 = normalize_degrees(
+        finite_number("longitude1_deg", longitude1_deg)
+    )
+    longitude2 = normalize_degrees(
+        finite_number("longitude2_deg", longitude2_deg)
+    )
     speed1 = (
         None
         if speed1_deg_per_day is None
@@ -3230,7 +3285,7 @@ def aspects_from_longitudes(
         if not include_nodes and name in _DERIVED_CHART_NODE_NAMES:
             excluded.append(name)
             continue
-        normalized[name] = longitude % 360.0
+        normalized[name] = normalize_degrees(longitude)
 
     if len(normalized) < 2:
         raise ValueError("at least two included longitude points are required")
