@@ -918,9 +918,17 @@ def _resolve_manifest_shard_path(manifest_path: Path, raw_path: str) -> Path:
 def small_body_readers_from_manifest(manifest_path: str | Path) -> list[SmallBodyKernel]:
     """
     Build ordered ``SmallBodyKernel`` readers from a sovereign shard manifest.
+
+    A release-finalized manifest is verified against its complete SHA-256
+    receipt before any kernel is opened. Build-time and legacy manifests do not
+    carry a ``release`` identity and retain their existing loading behavior.
     """
     manifest = Path(manifest_path)
     payload = json.loads(manifest.read_text(encoding="utf-8"))
+    if "release" in payload:
+        from .small_body_catalog_release import verify_release
+
+        verify_release(manifest.parent)
     readers: list[SmallBodyKernel] = []
     seen: set[Path] = set()
     for shard in payload.get("shards", []):

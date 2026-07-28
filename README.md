@@ -356,6 +356,28 @@ print(m.available_kernels)
 
 The unified asteroid catalog (1,382 bodies as 56 Type-13 shards) and the numbered periodic comet catalog (497 comets as 20 shards) are too large to ship inside the wheel and are distributed as separate downloads. Install a catalog by placing its shard directory — `asteroids/` or `comets/`, each containing its shards and `manifest.json` — under any kernel search root (`kernels/` at the repository root or `~/.moira/kernels/`). The engine discovers every manifest under every search root automatically; no configuration call is required.
 
+Official catalog downloads are immutable and versioned. Each extracted release
+contains `SHA256SUMS`; its `manifest.json` also records the byte length and
+SHA-256 of every Moira-generated Type-13 kernel and its per-shard build
+evidence. Verify an extracted release with:
+
+```powershell
+.\.venv\Scripts\python.exe -m moira.small_body_catalog_release verify C:\path\to\catalog-release
+```
+
+The downloadable ZIP has an adjacent `.zip.sha256` receipt and can be verified
+before extraction:
+
+```powershell
+.\.venv\Scripts\python.exe -m moira.small_body_catalog_release verify-archive C:\path\to\catalog-release.zip
+```
+
+Release maintainers finalize an already-built catalog without recalculating its
+ephemeris using the `prepare` command documented by
+`python -m moira.small_body_catalog_release --help`. A changed file, membership
+set, sampling policy, or coverage rule always receives a new catalog version;
+published bytes are never replaced beneath an existing version.
+
 Note for pre-4.0.0 installs: the single-file supplemental kernels (`comets.bsp`, `centaurs.bsp`, `minor_bodies.bsp`) no longer auto-load. All small bodies now resolve through the sharded manifests.
 
 ---

@@ -1,0 +1,79 @@
+{
+  "aliases": {
+    "alias_count": 5,
+    "path": "moira/data/comet_catalog_aliases.json",
+    "records": [
+      {
+        "alias": "Halley",
+        "alias_kind": "legacy_short_name",
+        "canonical_name": "1P/Halley"
+      },
+      {
+        "alias": "Encke",
+        "alias_kind": "legacy_short_name",
+        "canonical_name": "2P/Encke"
+      },
+      {
+        "alias": "Tempel1",
+        "alias_kind": "legacy_compact_name",
+        "canonical_name": "9P/Tempel 1"
+      },
+      {
+        "alias": "Churyumov-Gerasimenko",
+        "alias_kind": "legacy_short_name",
+        "canonical_name": "67P/Churyumov-Gerasimenko"
+      },
+      {
+        "alias": "Swift-Tuttle",
+        "alias_kind": "legacy_short_name",
+        "canonical_name": "109P/Swift-Tuttle"
+      }
+    ],
+    "sha256": "f613e2301d891b7baf6ad734bdfa6cb29dcc2d0e9f76ddb7e9651bace828fa9b",
+    "unique_target_count": 5
+  },
+  "artifact": {
+    "canonical_name_count": 497,
+    "path": "moira/data/comet_catalog_naif.json",
+    "sha256": "77651edfa286678f487214902a7538c411c5fdfd00c26c7959e887b3ccd83a35",
+    "unique_naif_id_count": 497
+  },
+  "catalog_id": "moira-comets",
+  "catalog_version": "2026.07.28.1",
+  "identity_policy": {
+    "alias_scope": "comet_family_only",
+    "alias_source": "release-bound Moira compatibility alias catalog",
+    "canonical_name_source": "JPL Horizons target identity captured by the Moira release build",
+    "canonicalization": "exact released numbered designation; NFC; unique under NFKC casefold",
+    "global_collision_policy": "aliases make no cross-family uniqueness claim; unified callers must provide family identity or reject ambiguous names",
+    "naif_convention": "1000000_plus_periodic_comet_number",
+    "number_source": "numbered periodic-comet designation"
+  },
+  "identity_product": "canonical_numbered_periodic_comet_name_to_naif_id",
+  "schema_version": 1,
+  "source": {
+    "alias_catalog_release_path": "identity/comet_catalog_aliases.json",
+    "alias_catalog_sha256": "f613e2301d891b7baf6ad734bdfa6cb29dcc2d0e9f76ddb7e9651bace828fa9b",
+    "comet_master": "comet_master.json",
+    "comet_master_sha256": "78dc12291bf8b3e1a7eab844666632ccffd98b3f362c2d2a1442e9a8714d33f6",
+    "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "query_policy": {
+      "center": "500@10",
+      "command_template": "DES={number}P;NOFRAG;CAP",
+      "csv_format": true,
+      "ephemeris_type": "VECTORS",
+      "object_data": false,
+      "output_units": "KM-S",
+      "reference_plane": "FRAME",
+      "time_digits": "FRACSEC",
+      "timescale": "JDTDB",
+      "vector_table": 2
+    },
+    "release_manifest": "manifest.json",
+    "release_manifest_sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+    "release_source": "MOIRA NUMBERED PERIODIC COMET CATALOG (JPL Horizons)",
+    "release_source_revision": "49e7b2b42a4d80a68ccbe1f2f07d64c5dc80ba50",
+    "released_utc": "2026-07-28T12:47:17Z",
+    "trajectory_source": "JPL Horizons VECTORS"
+  }
+}

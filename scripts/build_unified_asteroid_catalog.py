@@ -489,7 +489,19 @@ def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
         )
 
     manifest = {
+        "manifest_schema": "moira.small-body-catalog/v1",
+        "catalog_id": "moira-asteroids",
         "source": "MOIRA UNIFIED ASTEROID CATALOG (JPL Horizons)",
+        "provenance": {
+            "artifact_author": "Moira",
+            "artifact_format": "DAF/SPK Type 13",
+            "trajectory_source": "JPL Horizons VECTORS",
+            "horizons_api": HORIZONS_URL,
+            "center": "Sun (500@10)",
+            "reference_plane": "FRAME",
+            "units": "km and km/s",
+            "timescale": "JDTDB",
+        },
         "coverage": {
             "start_date": WINDOW[0],
             "end_date": WINDOW[1],

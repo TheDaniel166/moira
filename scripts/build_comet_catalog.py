@@ -58,6 +58,46 @@ _FLOOR_RE = re.compile(r"prior to A\.D\.\s*([0-9]{3,4})-([A-Za-z]{3})-([0-9]{2})
 _CEIL_RE = re.compile(r"after A\.D\.\s*([0-9]{3,4})-([A-Za-z]{3})-([0-9]{2})")
 
 
+def _catalog_provenance() -> dict[str, object]:
+    """Return the explicit authority and query policy for this catalog."""
+    return {
+        "artifact_author": "Moira",
+        "artifact_format": "DAF/SPK Type 13",
+        "trajectory_authority": "NASA/JPL Horizons",
+        "trajectory_source": "JPL Horizons VECTORS",
+        "horizons_api": HORIZONS_URL,
+        "query_policy": {
+            "command_template": "DES={number}P;NOFRAG;CAP",
+            "object_data": False,
+            "ephemeris_type": "VECTORS",
+            "center": "500@10",
+            "reference_plane": "FRAME",
+            "output_units": "KM-S",
+            "vector_table": 2,
+            "csv_format": True,
+            "time_digits": "FRACSEC",
+            "timescale": "JDTDB",
+        },
+        "identity_source": (
+            "Horizons target body name returned for each numbered "
+            "periodic-comet query"
+        ),
+        "naif_convention": "1000000_plus_periodic_comet_number",
+        "center": "Sun (500@10)",
+        "reference_plane": "FRAME",
+        "units": "km and km/s",
+        "timescale": "JDTDB",
+        "capture_limits": {
+            "raw_horizons_responses_retained": False,
+            "per_query_retrieval_timestamps_retained": False,
+            "statement": (
+                "The original build retained parsed state vectors and build "
+                "evidence, not raw Horizons response bodies or query timestamps."
+            ),
+        },
+    }
+
+
 def _fetch_raw(command: str, start: str, stop: str) -> str:
     params = {
         "format": "text", "COMMAND": command, "OBJ_DATA": "NO", "MAKE_EPHEM": "YES",
@@ -282,7 +322,10 @@ def _write_manifest(outdir: Path) -> None:
         })
     shard_entries.sort(key=lambda s: s["index"])
     manifest = {
+        "manifest_schema": "moira.small-body-catalog/v1",
+        "catalog_id": "moira-comets",
         "source": "MOIRA NUMBERED PERIODIC COMET CATALOG (JPL Horizons)",
+        "provenance": _catalog_provenance(),
         "coverage": {
             "start_date": WINDOW[0], "end_date": WINDOW[1],
             "note": "requested DE441 span; per-comet coverage clamped to Horizons validity",

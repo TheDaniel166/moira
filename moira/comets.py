@@ -67,24 +67,25 @@ Usage
     print(pos.longitude, pos.sign, pos.retrograde)
 """
 
-from dataclasses import dataclass, field
+import hashlib
+import json
+from dataclasses import dataclass
 from pathlib import Path
 
 from .constants import sign_of
 from .coordinates import (
-    Vec3, vec_add, vec_sub, vec_norm, icrf_to_ecliptic, mat_vec_mul,
+    Vec3, vec_add, vec_sub, icrf_to_ecliptic, mat_vec_mul,
     precession_matrix_equatorial, nutation_matrix_equatorial,
 )
-from .obliquity import mean_obliquity, true_obliquity, nutation
-from .precession import general_precession_in_longitude
+from .obliquity import mean_obliquity, nutation
 from ._ephemeris_time import _ut1_to_ephemeris_tt
-from .planets import _earth_barycentric, _barycentric as _planet_barycentric
+from .planets import _earth_barycentric
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
     SCHWARZSCHILD_RADII,
 )
 from ._spk_body_kernel import SmallBodyKernel  # also registers _Type13Segment
-from .spk_reader import KernelReader
+from .spk_reader import MissingKernelError
 
 
 __all__ = [
@@ -101,36 +102,94 @@ __all__ = [
 # Comet NAIF IDs
 # ---------------------------------------------------------------------------
 # Convention: periodic comet P/N → NAIF ID = 1_000_000 + N
-# Verify each against JPL Horizons with a comet search such as
-# COMMAND='DES=1P;NOFRAG;CAP' before kernel generation.
+# Canonical numbered designations and compatibility aliases are separate
+# release-bound artifacts. The combined public mapping remains backward
+# compatible, but no longer falls back to a small hard-coded catalog when
+# packaged identity data is missing or malformed.
+_DATA_DIR = Path(__file__).resolve().parent / "data"
+_CANONICAL_CATALOG_PATH = _DATA_DIR / "comet_catalog_naif.json"
+_CATALOG_METADATA_PATH = _DATA_DIR / "comet_catalog_naif.metadata.json"
+_ALIAS_CATALOG_PATH = _DATA_DIR / "comet_catalog_aliases.json"
 
-COMET_NAIF: dict[str, int] = {
-    "Halley":               1000001,   # 1P/Halley
-    "Encke":                1000002,   # 2P/Encke
-    "Tempel1":              1000009,   # 9P/Tempel 1
-    "Churyumov-Gerasimenko": 1000067,  # 67P/C-G
-    "Swift-Tuttle":         1000109,   # 109P/Swift-Tuttle
-}
 
-# Merge the full numbered-periodic-comet catalog (standard designations such as
-# "1P/Halley", "12P/Pons-Brooks") built from JPL Horizons. The curated short
-# aliases above are preserved by setdefault, so both "Halley" and "1P/Halley"
-# resolve to NAIF 1000001. Names are full designations because bare discoverer
-# names (PANSTARRS, LINEAR, ...) are shared across dozens of comets and are not
-# unique; the number is the sovereign identity.
-try:  # pragma: no cover - data-file merge
-    import json as _json
-    from pathlib import Path as _Path
-    _comet_catalog_naif_path = (
-        _Path(__file__).resolve().parent / "data" / "comet_catalog_naif.json"
-    )
-    if _comet_catalog_naif_path.exists():
-        for _name, _naif in _json.loads(
-            _comet_catalog_naif_path.read_text(encoding="utf-8")
-        ).items():
-            COMET_NAIF.setdefault(str(_name), int(_naif))
-except Exception:  # noqa: BLE001
-    pass
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _load_identity_registry() -> tuple[
+    dict[str, int],
+    dict[str, str],
+    dict[str, int],
+]:
+    """Load and verify the release-bound canonical and alias registries."""
+    try:
+        canonical_bytes = _CANONICAL_CATALOG_PATH.read_bytes()
+        metadata = json.loads(
+            _CATALOG_METADATA_PATH.read_text(encoding="utf-8")
+        )
+        alias_bytes = _ALIAS_CATALOG_PATH.read_bytes()
+        aliases_payload = json.loads(alias_bytes.decode("utf-8"))
+        canonical_raw = json.loads(canonical_bytes.decode("utf-8"))
+
+        artifact = metadata["artifact"]
+        if artifact["path"] != "moira/data/comet_catalog_naif.json":
+            raise ValueError("canonical catalog path receipt is invalid")
+        if _sha256_bytes(canonical_bytes) != artifact["sha256"]:
+            raise ValueError("canonical comet identity SHA-256 mismatch")
+        if not isinstance(canonical_raw, dict):
+            raise ValueError("canonical comet identity catalog must be an object")
+        canonical = {
+            str(name): int(naif_id)
+            for name, naif_id in canonical_raw.items()
+        }
+        if len(canonical) != int(artifact["canonical_name_count"]):
+            raise ValueError("canonical comet identity count mismatch")
+        if len(set(canonical.values())) != int(artifact["unique_naif_id_count"]):
+            raise ValueError("canonical comet NAIF identity count mismatch")
+
+        alias_receipt = metadata["aliases"]
+        if alias_receipt["path"] != "moira/data/comet_catalog_aliases.json":
+            raise ValueError("comet alias catalog path receipt is invalid")
+        if _sha256_bytes(alias_bytes) != alias_receipt["sha256"]:
+            raise ValueError("comet alias catalog SHA-256 mismatch")
+        alias_records = aliases_payload["aliases"]
+        if alias_records != alias_receipt["records"]:
+            raise ValueError("comet alias records disagree with their release receipt")
+        if len(alias_records) != int(alias_receipt["alias_count"]):
+            raise ValueError("comet alias count mismatch")
+
+        aliases: dict[str, str] = {}
+        for record in alias_records:
+            alias = str(record["alias"])
+            canonical_name = str(record["canonical_name"])
+            if canonical_name not in canonical:
+                raise ValueError(
+                    f"comet alias {alias!r} has unknown target {canonical_name!r}"
+                )
+            if alias in canonical or alias in aliases:
+                raise ValueError(f"duplicate comet identity label: {alias!r}")
+            aliases[alias] = canonical_name
+
+        combined = dict(canonical)
+        combined.update(
+            {
+                alias: canonical[canonical_name]
+                for alias, canonical_name in aliases.items()
+            }
+        )
+        return canonical, aliases, combined
+    except (
+        OSError,
+        UnicodeError,
+        json.JSONDecodeError,
+        KeyError,
+        TypeError,
+        ValueError,
+    ) as exc:
+        raise RuntimeError(f"Invalid packaged comet identity catalog: {exc}") from exc
+
+
+_CANONICAL_COMET_NAIF, _COMET_ALIASES, COMET_NAIF = _load_identity_registry()
 
 
 _SPEED_STEP = 0.5   # days, for numerical longitude differentiation
@@ -243,7 +302,6 @@ def _comet_geocentric_ecliptic(
     # Precession + nutation → apparent equatorial of date
     eps   = mean_obliquity(jd_tt)
     _, deps_deg = nutation(jd_tt)
-    gp    = general_precession_in_longitude(jd_tt)
     P     = precession_matrix_equatorial(jd_tt)
     N     = nutation_matrix_equatorial(jd_tt)
     geo   = mat_vec_mul(N, mat_vec_mul(P, geo))
@@ -323,7 +381,7 @@ def comet_at(name: str, jd_ut: float, reader=None) -> CometData:
     FileNotFoundError : if comets.bsp is not present.
     KeyError          : if the kernel has no segment covering *name* at *jd_ut*.
     """
-    from .spk_reader import get_active_reader, MissingKernelError
+    from .spk_reader import get_active_reader
     
     if reader is None:
         reader = get_active_reader()

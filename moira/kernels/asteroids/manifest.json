@@ -1,5 +1,17 @@
 {
+  "manifest_schema": "moira.small-body-catalog/v1",
+  "catalog_id": "moira-asteroids",
   "source": "MOIRA UNIFIED ASTEROID CATALOG (JPL Horizons)",
+  "provenance": {
+    "artifact_author": "Moira",
+    "artifact_format": "DAF/SPK Type 13",
+    "trajectory_source": "JPL Horizons VECTORS",
+    "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "center": "Sun (500@10)",
+    "reference_plane": "FRAME",
+    "units": "km and km/s",
+    "timescale": "JDTDB"
+  },
   "coverage": {
     "start_date": "1600-01-01",
     "end_date": "2500-01-01",

@@ -1,0 +1,40 @@
+{
+  "aliases": [
+    {
+      "alias": "Halley",
+      "alias_kind": "legacy_short_name",
+      "canonical_name": "1P/Halley"
+    },
+    {
+      "alias": "Encke",
+      "alias_kind": "legacy_short_name",
+      "canonical_name": "2P/Encke"
+    },
+    {
+      "alias": "Tempel1",
+      "alias_kind": "legacy_compact_name",
+      "canonical_name": "9P/Tempel 1"
+    },
+    {
+      "alias": "Churyumov-Gerasimenko",
+      "alias_kind": "legacy_short_name",
+      "canonical_name": "67P/Churyumov-Gerasimenko"
+    },
+    {
+      "alias": "Swift-Tuttle",
+      "alias_kind": "legacy_short_name",
+      "canonical_name": "109P/Swift-Tuttle"
+    }
+  ],
+  "catalog_id": "moira-comets",
+  "compatibility_origin": {
+    "git_revision": "49e7b2b42a4d80a68ccbe1f2f07d64c5dc80ba50",
+    "surface": "moira.comets.COMET_NAIF"
+  },
+  "policy": {
+    "canonical_identity": "numbered periodic-comet designation",
+    "global_namespace": "aliases are comet-family scoped and make no cross-family uniqueness claim",
+    "resolution": "an alias resolves only to its declared canonical comet identity"
+  },
+  "schema_version": 1
+}

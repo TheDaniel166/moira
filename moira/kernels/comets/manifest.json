@@ -1,5 +1,37 @@
 {
+  "manifest_schema": "moira.small-body-catalog/v1",
+  "catalog_id": "moira-comets",
   "source": "MOIRA NUMBERED PERIODIC COMET CATALOG (JPL Horizons)",
+  "provenance": {
+    "artifact_author": "Moira",
+    "artifact_format": "DAF/SPK Type 13",
+    "trajectory_authority": "NASA/JPL Horizons",
+    "trajectory_source": "JPL Horizons VECTORS",
+    "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "query_policy": {
+      "command_template": "DES={number}P;NOFRAG;CAP",
+      "object_data": false,
+      "ephemeris_type": "VECTORS",
+      "center": "500@10",
+      "reference_plane": "FRAME",
+      "output_units": "KM-S",
+      "vector_table": 2,
+      "csv_format": true,
+      "time_digits": "FRACSEC",
+      "timescale": "JDTDB"
+    },
+    "identity_source": "Horizons target body name returned for each numbered periodic-comet query",
+    "naif_convention": "1000000_plus_periodic_comet_number",
+    "center": "Sun (500@10)",
+    "reference_plane": "FRAME",
+    "units": "km and km/s",
+    "timescale": "JDTDB",
+    "capture_limits": {
+      "raw_horizons_responses_retained": false,
+      "per_query_retrieval_timestamps_retained": false,
+      "statement": "The original build retained parsed state vectors and build evidence, not raw Horizons response bodies or query timestamps."
+    }
+  },
   "coverage": {
     "start_date": "1600-01-01",
     "end_date": "2500-01-01",
