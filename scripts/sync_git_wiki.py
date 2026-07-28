@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 from pathlib import Path
 
 
@@ -44,7 +45,24 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _canonical_files() -> list[Path]:
-    files = sorted(WIKI_ROOT.rglob("*.md"))
+    tracked = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(REPO_ROOT),
+            "ls-files",
+            "-z",
+            "--",
+            "wiki",
+        ],
+        check=True,
+        capture_output=True,
+    ).stdout
+    files = sorted(
+        REPO_ROOT / relative_path.decode("utf-8")
+        for relative_path in tracked.split(b"\0")
+        if relative_path.lower().endswith(b".md")
+    )
     basenames: dict[str, Path] = {}
     duplicates: list[str] = []
     for path in files:
