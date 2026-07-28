@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from time import perf_counter
 
 from moira import MissingEphemerisKernelError, Moira
-from moira.spk_reader import KernelPool, set_kernel_path
+from moira.spk_reader import set_kernel_path
 from moira._spk_body_kernel import small_body_readers_from_manifest
 
 from .config import ServerConfig

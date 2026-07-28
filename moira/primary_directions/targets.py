@@ -11,7 +11,7 @@ of entities currently admitted as primary-direction promissors and significators
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
+from .._strenum import StrEnum
 import math
 from numbers import Real
 from typing import Iterable

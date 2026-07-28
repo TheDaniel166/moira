@@ -47,7 +47,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 
 from .constants import Body, HouseSystem, HOUSE_SYSTEM_NAMES, TROPICAL_YEAR, sign_of
 from .coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
@@ -58,7 +58,6 @@ from .julian import (
     calendar_datetime_from_jd,
     datetime_from_jd,
     jd_from_datetime,
-    delta_t,
     utc_to_ut1,
 )
 from ._ephemeris_time import _ut1_to_ephemeris_tt

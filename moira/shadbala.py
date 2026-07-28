@@ -1035,11 +1035,7 @@ def sthana_bala(
     -------
     SthanaBala
     """
-    from .vedic_dignities import vedic_dignity, VedicDignityRank
-    from .varga import (
-        hora, chaturthamsha, saptamsa, navamsa,
-        dwadashamsa, trimshamsa,
-    )
+    from .vedic_dignities import vedic_dignity
     from .sidereal import tropical_to_sidereal
 
     lon = sidereal_lon % 360.0
@@ -1052,15 +1048,6 @@ def sthana_bala(
     # For each of 7 vargas, compute the planet's dignity in that varga sign.
     # D1: sidereal sign (already known)
     # D2–D30: use varga wrappers (accept sidereal longitude)
-    varga_fns = {
-        1:  lambda l: int(l % 360.0 // 30),   # D1 sign index directly
-        2:  lambda l: hora(l).varga_number,    # will use sign_index below
-        3:  lambda l: None,
-        7:  lambda l: None,
-        9:  lambda l: None,
-        12: lambda l: None,
-        30: lambda l: None,
-    }
     # Use the actual varga wrappers to get sign indices
     from .varga import hora as _hora, saptamsa as _saptamsa, navamsa as _navamsa
     from .varga import dwadashamsa as _dwad, trimshamsa as _trim

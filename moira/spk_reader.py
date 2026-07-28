@@ -75,7 +75,6 @@ try:
 except ImportError:  # pragma: no cover
     _moira_native = None
 
-from ._kernel_paths import find_kernel, find_planetary_kernel, find_sovereign_small_body_manifest
 from .coordinates import vec_add
 
 Vec3 = tuple[float, float, float]

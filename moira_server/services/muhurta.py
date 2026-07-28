@@ -13,6 +13,7 @@ from ..models.muhurta import (
     MuhurtaDirectRequest,
     MuhurtaPolicyRequest,
     MuhurtaPolicyResponse,
+    MuhurtaPersonalScoreResponse,
     MuhurtaProvenanceResponse,
     MuhurtaRequestEchoResponse,
     MuhurtaScoreEnvelopeResponse,
@@ -244,14 +245,13 @@ def compute_muhurta_chart_score(engine: Moira, request: MuhurtaChartRequest) -> 
     )
 
 
-def compute_muhurta_personal_score(request) -> "MuhurtaPersonalScoreResponse":
+def compute_muhurta_personal_score(request) -> MuhurtaPersonalScoreResponse:
     """Natal-personalized Muhurta score: generic score + Tara/Chandra Bala."""
     from moira.muhurta import personal_muhurta_score
     from moira.sidereal import tropical_to_sidereal
 
     from ..models.muhurta import (
         ChandraBalaResponse,
-        MuhurtaPersonalScoreResponse,
         TaraBalaResponse,
     )
 

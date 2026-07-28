@@ -15,7 +15,6 @@ from ..models.chart import (
     HouseBoundaryCurvePointResponse,
     HouseBoundaryGeometryResponse,
     HouseBoundaryGeometrySetResponse,
-    HousePolicyRequest,
     HousePolicyResponse,
     HousesReductionResponse,
     HousesReductionTruthResponse,

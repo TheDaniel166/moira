@@ -21,7 +21,6 @@ Usage:
     --offline   skip download; use only cached copy
 """
 
-import math
 import re
 import sys
 import os
@@ -31,7 +30,7 @@ from typing import Any
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from moira.houses import HouseCusps, calculate_houses, houses_from_armc
-from moira.julian import julian_day, ut_to_tt
+from moira.julian import ut_to_tt
 from moira.obliquity import true_obliquity
 
 # ---------------------------------------------------------------------------

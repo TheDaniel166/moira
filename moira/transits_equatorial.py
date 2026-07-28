@@ -6,9 +6,7 @@ and out-of-bounds (OOB) crossings.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import Literal
 
 from .spk_reader import SpkReader, get_reader
 from .transits import _auto_step, _require_non_empty_body, _validate_transit_range, _validate_search_motion, _require_positive, TransitComputationPolicy, _validate_policy
@@ -17,7 +15,6 @@ from .asteroids import asteroid_at, ASTEROID_NAIF
 from .stars import star_at
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .constants import Body
-from .coordinates import equatorial_to_horizontal, true_ecliptic_latitude, icrf_to_equatorial
 from .planets import _npe_body_route_segment_specs
 try:
     from . import moira_native as mn

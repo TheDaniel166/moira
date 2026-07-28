@@ -269,8 +269,7 @@ def _relationship(
 ) -> str:
     """Relationship of *planet* toward *other*: friend/neutral/enemy tiers."""
     from .vedic_dignities import (
-        NATURAL_FRIENDS, NATURAL_NEUTRALS, NATURAL_ENEMIES,
-        planetary_relationships,
+        NATURAL_FRIENDS, NATURAL_NEUTRALS, planetary_relationships,
     )
 
     if policy.relationship_scheme == 'natural':

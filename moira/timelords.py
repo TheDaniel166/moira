@@ -46,7 +46,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import StrEnum
+from ._strenum import StrEnum
 import math
 
 from .constants import SIGNS, sign_of

@@ -70,7 +70,7 @@ Public surface
 from __future__ import annotations
 
 from dataclasses import dataclass
-from .constants import sign_of, SIGNS, SIGN_SYMBOLS
+from .constants import SIGNS, SIGN_SYMBOLS
 
 __all__ = [
     # Core

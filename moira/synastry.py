@@ -45,7 +45,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Mapping
 
@@ -63,10 +63,9 @@ from .houses import (
     HousePolicy,
     assign_house,
     calculate_houses,
-    classify_house_system,
     houses_from_armc,
 )
-from .constants import HouseSystem, sign_of
+from .constants import HouseSystem
 from .spk_reader import get_reader, SpkReader
 
 if TYPE_CHECKING:

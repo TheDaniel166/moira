@@ -20,9 +20,8 @@ Public surface:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import StrEnum
-from enum import StrEnum
+from dataclasses import dataclass
+from ._strenum import StrEnum
 
 
 # ---------------------------------------------------------------------------

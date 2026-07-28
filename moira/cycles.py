@@ -56,7 +56,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from .constants import Body, sign_of
-from .spk_reader import KernelReader, SpkReader, get_reader
+from .spk_reader import KernelReader, get_reader
 
 
 # ===========================================================================

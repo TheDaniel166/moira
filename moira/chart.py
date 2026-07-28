@@ -30,7 +30,7 @@ from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import all_planets_at, PlanetData
 from .houses import calculate_houses, HouseCusps, HousePolicy
 from .nodes import true_node, mean_node, mean_lilith, true_lilith, NodeData
-from .spk_reader import KernelReader, SpkReader
+from .spk_reader import SpkReader
 
 @dataclass(slots=True, frozen=True)
 class ChartContext:

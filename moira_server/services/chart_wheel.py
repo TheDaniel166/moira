@@ -17,7 +17,6 @@ from ..models.chart_wheel import (
     ChartWheelConfigValidationResponse,
     ChartWheelConfigWarningResponse,
     ChartWheelCoordinateResponse,
-    ChartWheelHousesRequest,
     ChartWheelHouseCuspPrimitiveResponse,
     ChartWheelHouseSectorPrimitiveResponse,
     ChartWheelPacketRequest,

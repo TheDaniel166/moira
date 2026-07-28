@@ -9,7 +9,6 @@ from moira.transits import (
     next_transit,
     _return_window_days,
     _auto_step,
-    _validate_policy,
     solar_return as module_solar_return,
     lunar_return as module_lunar_return,
     planet_return as module_planet_return,

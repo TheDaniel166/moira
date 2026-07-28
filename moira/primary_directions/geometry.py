@@ -15,9 +15,9 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from enum import StrEnum
+from .._strenum import StrEnum
 from numbers import Real
-from typing import TYPE_CHECKING, Protocol
+from typing import Protocol
 
 from ..constants import DEG2RAD
 from .latitudes import PrimaryDirectionLatitudeDoctrine
@@ -27,9 +27,6 @@ from .methods import (
     primary_direction_method_truth,
 )
 from .spaces import PrimaryDirectionSpace
-
-if TYPE_CHECKING:
-    from . import SpeculumEntry
 
 __all__ = [
     "PrimaryDirectionGeometryLaw",

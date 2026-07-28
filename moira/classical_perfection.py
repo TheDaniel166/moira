@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from enum import StrEnum
+from ._strenum import StrEnum
 from itertools import combinations
 
 from .constants import Body, SIGNS, TRADITIONAL_MOIETY_ORBS, sign_of

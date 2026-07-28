@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from types import MappingProxyType
 from typing import Any, Callable
 
-from moira.constants import HOUSE_SYSTEM_NAMES
 from moira.electional import (
     ElectionalPolicy,
     ElectionalScoredWindow,
@@ -17,7 +15,6 @@ from moira.electional import (
 from moira.houses import house_of
 
 from ..models.electional import (
-    ELECTIONAL_SUBJECTS,
     ElectionalBoundsResponse,
     ElectionalMomentPolicyResponse,
     ElectionalMomentsListResponse,

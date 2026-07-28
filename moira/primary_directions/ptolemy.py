@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from enum import StrEnum
+from .._strenum import StrEnum
 from numbers import Real
 
 from .targets import PrimaryDirectionTargetClass, primary_direction_target_truth

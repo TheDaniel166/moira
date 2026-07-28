@@ -9,7 +9,6 @@ from moira import Body, Moira
 from ..dependencies import get_engine
 from ..models.batch import (
     ChartBatchItemResponse,
-    ChartBatchReductionItemResponse,
     ChartsBatchRequest,
     ChartsBatchReductionResponse,
     ChartsBatchResponse,
@@ -17,7 +16,6 @@ from ..models.batch import (
     EventsBatchRequest,
     EventsBatchResponse,
     ProgressionBatchItemResponse,
-    ProgressionBatchReductionItemResponse,
     ProgressionsBatchRequest,
     ProgressionsBatchReductionResponse,
     ProgressionsBatchResponse,

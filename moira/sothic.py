@@ -46,12 +46,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 
 from .julian import (
     julian_day,
     calendar_from_jd,
-    calendar_datetime_from_jd,
     safe_datetime_from_jd,
 )
 from .stars import heliacal_rising as _heliacal_rising

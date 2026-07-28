@@ -11,7 +11,7 @@ relation classes that may count as primary-direction perfections.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
+from .._strenum import StrEnum
 from typing import Iterable
 
 from ._ordered_network import validate_ordered_transition_counts

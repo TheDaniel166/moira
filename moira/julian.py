@@ -38,7 +38,7 @@ from __future__ import annotations
 import math
 import bisect
 from dataclasses import dataclass
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 from .dispatch import accelerate
 from .constants import J2000, JULIAN_CENTURY, TAI_TT_OFFSET

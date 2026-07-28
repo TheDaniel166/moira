@@ -60,7 +60,7 @@ Public surface
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from .constants import DEG2RAD, RAD2DEG
 from .geoutils import wrap_longitude_deg

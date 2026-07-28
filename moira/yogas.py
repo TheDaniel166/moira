@@ -59,8 +59,7 @@ Delegates: dignity ranks to ``moira.vedic_dignities``; nothing else.
 Import-time side effects: None
 """
 
-import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 __all__ = [
     "YogaPolicy",
@@ -1467,7 +1466,6 @@ def raja_yogas(
     II.6 retrograde clause; omitted, that clause reads unevaluated-false.
     """
     from .vedic_dignities import vedic_dignity
-    from .constants import SIGNS
 
     policy = policy or YogaPolicy()
     lagna_sign = _sign(lagna_sidereal_lon)
@@ -1715,7 +1713,7 @@ def raja_yogas(
         ))
 
     # --- Neecha Bhanga Raja (PD 7.26-30) ------------------------------------
-    from .vedic_dignities import EXALTATION_SIGN, DEBILITATION_SIGN
+    from .vedic_dignities import EXALTATION_SIGN
 
     moon_sign = (
         _sign(sidereal_longitudes['Moon'])

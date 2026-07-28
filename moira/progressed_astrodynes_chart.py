@@ -33,7 +33,6 @@ from .progressed_astrodynes import (
     ProgressedAstrodyneTerminal,
     ProgressedBaselineValue,
     ProgressedBodyPlacement,
-    ProgressedDatedAspectTruth,
     ProgressedMajorAspectRelation,
     ProgressedMutualReceptionAllocation,
     ProgressedNatalBodyValue,

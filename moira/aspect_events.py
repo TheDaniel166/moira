@@ -24,7 +24,6 @@ from .spk_reader import SpkReader, get_reader
 from .void_of_course import (
     LastAspect,
     _ASPECT_TARGETS,
-    _BISECT_TOL,
     _MODERN_BODIES,
     _TRADITIONAL_BODIES,
     _aspect_signal,

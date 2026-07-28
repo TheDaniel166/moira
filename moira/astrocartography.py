@@ -40,7 +40,7 @@ import inspect
 import math
 from dataclasses import dataclass, field
 
-from .constants import DEG2RAD, RAD2DEG, Body
+from .constants import DEG2RAD, Body
 
 # WGS-84 first eccentricity squared: e^2 = 1 - (b/a)^2 ~= 0.006694379990
 # Used to convert geodetic latitude -> geocentric latitude for the horizon

@@ -87,7 +87,7 @@ Public surface / exports:
 from __future__ import annotations
 
 import math
-from .constants import DEG2RAD, RAD2DEG, ARCSEC2RAD, C_KM_PER_DAY, EARTH_RADIUS_KM
+from .constants import DEG2RAD, ARCSEC2RAD, C_KM_PER_DAY, EARTH_RADIUS_KM
 from .polar_motion import PolarMotionRegistry, polar_motion_matrix
 
 try:
@@ -95,7 +95,7 @@ try:
 except ImportError:
     _moira_native = None
 from .coordinates import (
-    Vec3, Mat3, vec_sub, vec_norm, vec_scale, vec_add, mat_vec_mul, mat_mul,
+    Vec3, Mat3, vec_sub, vec_norm, mat_vec_mul, mat_mul,
     precession_matrix_equatorial, nutation_matrix_equatorial,
     atmospheric_refraction as _atmospheric_refraction,
     atmospheric_refraction_extended as _atmospheric_refraction_extended,

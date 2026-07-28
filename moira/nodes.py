@@ -43,7 +43,7 @@ from .coordinates import vec_sub, normalize_degrees, mat_vec_mul, precession_mat
 from .corrections import apply_frame_bias
 from .nutation_2000a import _fundamental_args
 from .obliquity import mean_obliquity, nutation as _nutation
-from .spk_reader import get_active_reader, KernelReader, SpkReader, MissingKernelError
+from .spk_reader import get_active_reader, KernelReader, MissingKernelError
 
 
 @dataclass(slots=True, frozen=True)

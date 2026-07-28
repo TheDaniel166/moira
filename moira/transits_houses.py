@@ -5,15 +5,11 @@ The Predictive Geographic Engine: governs topocentric house ingresses.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import Literal
 
 from .spk_reader import SpkReader, get_reader
-from .transits import _auto_step, _require_non_empty_body, _validate_transit_range, _validate_search_motion, _require_positive, TransitComputationPolicy, _validate_policy, _resolve_longitude
-from .houses import calculate_houses, classify_house_system
-from .constants import Body
-from .julian import ut_to_tt
+from .transits import _require_non_empty_body, _validate_transit_range, _validate_search_motion, _require_positive, TransitComputationPolicy, _validate_policy, _resolve_longitude
+from .houses import calculate_houses
 
 __all__ = ["HouseIngressEvent", "find_house_ingresses"]
 

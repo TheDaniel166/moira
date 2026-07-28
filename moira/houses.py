@@ -195,7 +195,7 @@ from enum import Enum
 
 from .constants import DEG2RAD, RAD2DEG, HOUSE_SYSTEM_NAMES, HouseSystem, sign_of
 from .coordinates import normalize_degrees
-from .julian import local_sidereal_time, ut_to_tt, greenwich_mean_sidereal_time
+from .julian import local_sidereal_time, ut_to_tt
 from .obliquity import true_obliquity, nutation
 from ._solar import _solar_longitude
 from ._house_quality import strictly_ordered_cusp_cycle

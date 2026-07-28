@@ -1,6 +1,5 @@
 import csv
 import json
-import time
 from astroquery.simbad import Simbad
 from astroquery.vizier import Vizier
 from astropy.coordinates import SkyCoord

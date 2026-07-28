@@ -37,9 +37,8 @@ ModuleParser class and ParsedModule dataclass.
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from moira._export_governance.models import SymbolInfo, SymbolType
 

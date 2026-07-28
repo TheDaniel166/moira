@@ -49,7 +49,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from .constants import J2000, JULIAN_CENTURY
 from .julian import centuries_from_j2000, ut_to_tt
 from .precession import general_precession_in_longitude
 from .obliquity import nutation

@@ -60,7 +60,6 @@ from dataclasses import dataclass, field
 from .constants import Body, NAIF_ROUTES, KM_PER_AU, sign_of
 from .coordinates import (
     icrf_to_ecliptic,
-    vec_norm,
 )
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 

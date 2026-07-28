@@ -9,9 +9,7 @@ bodies. Delegates position resolution to the core transit engine.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import Literal
 
 from .spk_reader import SpkReader, get_reader
 from .transits import (
@@ -101,7 +99,6 @@ def _find_candidate_windows_native(
     reader: SpkReader,
 ) -> list[tuple[float, float]]:
     """Use native batch processing to find windows where an aspect might occur."""
-    from .planets import _NPE_BODY_ROUTE_PAIRS
     
     # 1. Resolve the content-identified planetary reader without trusting a
     # filename. Supplemental small-body shards do not own this evaluator path.

@@ -44,7 +44,6 @@ from typing import Any
 
 from moira._export_governance.models import (
     PolicyViolation,
-    ModuleCategory,
     Severity,
     SymbolInfo,
     SymbolType,

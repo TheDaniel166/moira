@@ -65,7 +65,6 @@ from .eclipse_geometry import (
 )
 from .eclipse_search import (
     refine_minimum as _refine_minimum,
-    refine_lunar_greatest_eclipse as _refine_lunar_maximum,
     refine_solar_greatest_eclipse as _refine_solar_maximum,
 )
 from .julian import (
@@ -94,7 +93,6 @@ from .planets import (
     _barycentric,
     _earth_barycentric,
     _geocentric,
-    planet_at,
     sky_position_at,
 )
 from .nodes import true_node

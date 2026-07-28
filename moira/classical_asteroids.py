@@ -36,12 +36,7 @@ Classical Asteroids are calculated using high-precision JPL kernels
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from .asteroids import asteroid_at, AsteroidData, available_in_kernel
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 # NAIF IDs for the four classical main-belt asteroids
 CERES  = 2000001

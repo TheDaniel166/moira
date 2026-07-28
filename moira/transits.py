@@ -25,8 +25,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import StrEnum
+from datetime import datetime
+from ._strenum import StrEnum
 
 from .constants import Body, HouseSystem, SIGNS, TROPICAL_YEAR
 from .julian import (
@@ -34,7 +34,6 @@ from .julian import (
     calendar_datetime_from_jd,
     datetime_from_jd,
     format_jd_utc,
-    jd_from_datetime,
     julian_day,
 )
 from ._ephemeris_time import _ut1_to_ephemeris_tt

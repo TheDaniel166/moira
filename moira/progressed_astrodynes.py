@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
-from enum import StrEnum
+from ._strenum import StrEnum
 from math import isfinite
 
 from .astrodynes import (

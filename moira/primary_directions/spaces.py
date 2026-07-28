@@ -12,7 +12,7 @@ orthogonal to geometry method and time-key conversion.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
+from .._strenum import StrEnum
 from typing import Iterable
 
 __all__ = [

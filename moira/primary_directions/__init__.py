@@ -23,13 +23,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from enum import StrEnum
+from .._strenum import StrEnum
 from numbers import Real
 from typing import TYPE_CHECKING, Iterable
 
 from ..constants import Body, DEG2RAD
-from ..julian import ut_to_tt as _ut_to_tt, decimal_year as _decimal_year
-from ..planets import approx_year as _pd_approx_year
 from .converse import (
     SIGNED_PRIMARY_MOTION_TOLERANCE_DEG,
     PrimaryDirectionConverseDoctrine,
@@ -1046,15 +1044,21 @@ class SpeculumEntry:
 
         eps = obliquity * DEG2RAD
         phi = geo_lat * DEG2RAD
-        l = lon * DEG2RAD
-        b = lat * DEG2RAD
+        lon_rad = lon * DEG2RAD
+        lat_rad = lat * DEG2RAD
 
-        sin_dec = math.sin(b) * math.cos(eps) + math.cos(b) * math.sin(eps) * math.sin(l)
+        sin_dec = (
+            math.sin(lat_rad) * math.cos(eps)
+            + math.cos(lat_rad) * math.sin(eps) * math.sin(lon_rad)
+        )
         sin_dec = max(-1.0, min(1.0, sin_dec))
         dec_r = math.asin(sin_dec)
 
-        y = math.sin(l) * math.cos(eps) - math.tan(b) * math.sin(eps)
-        ra = math.degrees(math.atan2(y, math.cos(l))) % 360.0
+        y = (
+            math.sin(lon_rad) * math.cos(eps)
+            - math.tan(lat_rad) * math.sin(eps)
+        )
+        ra = math.degrees(math.atan2(y, math.cos(lon_rad))) % 360.0
         dec = math.degrees(dec_r)
 
         ha = (armc - ra + 180.0) % 360.0 - 180.0

@@ -22,7 +22,7 @@ Doctrinal notes
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
+from ._strenum import StrEnum
 
 from .constants import SIGNS
 

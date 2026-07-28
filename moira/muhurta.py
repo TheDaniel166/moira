@@ -43,7 +43,6 @@ from typing import Literal
 
 from .panchanga import (
     PanchangaResult,
-    YogaClass,
     _ASHUBHA_YOGA_INDICES,
 )
 
@@ -781,8 +780,6 @@ def muhurta_scorer(
 # ------------------------------------------------------------------
 
 from .electional import (
-    find_electional_windows,
-    find_electional_moments,
     ElectionalPolicy,
     ElectionalWindow,
 )

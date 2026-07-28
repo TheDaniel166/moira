@@ -36,7 +36,7 @@ Public surface:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
+from ._strenum import StrEnum
 from math import isfinite
 
 from .constants import sign_of, SIGNS

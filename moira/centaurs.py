@@ -37,12 +37,7 @@ Centaurs are calculated using high-precision JPL Horizons kernels
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from .asteroids import asteroid_at, AsteroidData, available_in_kernel
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 # NAIF IDs for major centaurs
 CHIRON   = 2002060

@@ -76,6 +76,7 @@ dev = [
     "pytest>=9.0",
     "pytest-cov>=6.0",
     "pytest-xdist>=3.5",
+    "ruff==0.16.0",
     "pyyaml>=6.0",
     "hypothesis>=6.100",
     "httpx>=0.27,<0.29",
@@ -120,3 +121,23 @@ markers = [
     "serial:          must run serially (global state / file locks)",
     "ui:              tests that require a Qt application instance (PySide6)",
 ]
+
+[tool.ruff]
+target-version = "py310"
+extend-exclude = [
+    "scratch",
+    "scripts/archive",
+    "tmp",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+"moira/classical.py" = ["F401"]
+"moira/facade.py" = ["F401"]
+"moira/harmograms/__init__.py" = ["F401"]
+"moira/predictive.py" = ["F401"]
+"moira/vedic.py" = ["F401"]
+"moira_server/models/__init__.py" = ["F401"]
+"moira_server/services/__init__.py" = ["F401"]

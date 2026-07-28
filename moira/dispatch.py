@@ -10,7 +10,6 @@ import os
 import functools
 from enum import Enum
 from collections.abc import Callable
-from typing import Any
 
 class MoiraBackend(Enum):
     """Vessel: Enumerates the supported execution backends for Moira dispatch."""

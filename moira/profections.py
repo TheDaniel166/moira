@@ -31,7 +31,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone, tzinfo
-from enum import StrEnum
+from ._strenum import StrEnum
 from functools import lru_cache
 import math
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError

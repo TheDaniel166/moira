@@ -45,7 +45,6 @@ from moira._export_governance.models import (
     AuditLogEntry,
     AuditStatus,
     AuditDecision,
-    ModuleCategory,
 )
 
 

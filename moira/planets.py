@@ -56,8 +56,7 @@ except ImportError:
     _moira_native = None
 
 from .constants import (
-    Body, NAIF, NAIF_ROUTES, EARTH_ROUTE,
-    DEG2RAD, RAD2DEG, sign_of, KM_PER_AU,
+    Body, NAIF_ROUTES, DEG2RAD, RAD2DEG, sign_of, KM_PER_AU,
 )
 from .coordinates import (
     Vec3, vec_add, vec_sub, vec_norm, mat_vec_mul, mat_mul,
@@ -66,7 +65,7 @@ from .coordinates import (
     icrf_to_true_ecliptic, nutation_matrix_from_terms,
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
-from .julian import centuries_from_j2000, local_sidereal_time, DeltaTPolicy
+from .julian import local_sidereal_time, DeltaTPolicy
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .spk_reader import (
     get_active_reader, get_reader, KernelReader, SpkReader,
@@ -77,7 +76,6 @@ from .corrections import (
     apply_refraction, SCHWARZSCHILD_RADII,
     topocentric_correction, apply_diurnal_aberration, C_KM_PER_DAY,
 )
-from .precession import general_precession_in_longitude
 
 
 # PlanetData.speed is the time derivative of the canonical geocentric

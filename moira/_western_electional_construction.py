@@ -18,7 +18,6 @@ from ._western_electional_context import (
     DorotheusMatter,
     DorotheusRootedContextEvaluation,
     DorotheusRootOutcomePattern,
-    DorotheusStrengthState,
     WesternElectionClass,
     evaluate_dorotheus_rooted_context,
 )
