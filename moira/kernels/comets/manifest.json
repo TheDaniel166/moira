@@ -75,7 +75,14 @@
         1000028,
         1000029,
         1000030
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "b5385ac89e110e0c26975010cf6f193697916ee4f7c2f99e33eb2ab43d4f77b9",
+      "metadata": {
+        "path": "comet_shard_000.metadata.json",
+        "bytes": 8839,
+        "sha256": "919b0ec305f6b63b2f8bfc1514c250ccb7be07fffe572ad92b3c307db6165980"
+      }
     },
     {
       "index": 1,
@@ -107,7 +114,14 @@
         1000054,
         1000055,
         1000056
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "49c4840f8eaedb9ab5efc7abbec84bb7a028193a15d5f952953987006b194039",
+      "metadata": {
+        "path": "comet_shard_001.metadata.json",
+        "bytes": 9100,
+        "sha256": "6a38878828acb4e1e055bd7ce3ab224268572067fa5e22ab406f7d6d9cff204f"
+      }
     },
     {
       "index": 2,
@@ -139,7 +153,14 @@
         1000080,
         1000081,
         1000082
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "4e6fda19f09d0889166ea4f6369a9cea3383546e06cc3dbb5d0b6daf56f75370",
+      "metadata": {
+        "path": "comet_shard_002.metadata.json",
+        "bytes": 9065,
+        "sha256": "afefc0cca32a20118fe4d26da0f7fdb6fe60ce1289f2a864ea0ea840944e9524"
+      }
     },
     {
       "index": 3,
@@ -171,7 +192,14 @@
         1000109,
         1000110,
         1000111
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "8522fccdc782b0c29c0c394897bd0c9694f890d5cb6b3ae692b07b702c75a595",
+      "metadata": {
+        "path": "comet_shard_003.metadata.json",
+        "bytes": 8900,
+        "sha256": "e3972e2575232ec71df6fef615fa9179386b6178efdb9623aa73146f8f8b1fd6"
+      }
     },
     {
       "index": 4,
@@ -203,7 +231,14 @@
         1000135,
         1000136,
         1000137
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "be3503c8e8ac5f707e9352607c26945b2ed1e6ade8245c2fd647a2ab0d972612",
+      "metadata": {
+        "path": "comet_shard_004.metadata.json",
+        "bytes": 9154,
+        "sha256": "a011a245df0304d3fbeaea80cad34c2483e98d282d371687307428c18711d1d8"
+      }
     },
     {
       "index": 5,
@@ -235,7 +270,14 @@
         1000160,
         1000161,
         1000162
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "7609436e634a41fcdb43306eb7a1019cdf9d48f9290f88c9dceca8f2a31ff4a4",
+      "metadata": {
+        "path": "comet_shard_005.metadata.json",
+        "bytes": 9094,
+        "sha256": "a3ad81e31de416fe50fb8dbb392864aa79daa3b4bd8e27774063186bd94ade1e"
+      }
     },
     {
       "index": 6,
@@ -267,7 +309,14 @@
         1000187,
         1000188,
         1000189
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "1ac2ca02a7a5666e6fef3a55a8854938614de7679c31c25aa2724d221ece328f",
+      "metadata": {
+        "path": "comet_shard_006.metadata.json",
+        "bytes": 8850,
+        "sha256": "eb40c8f597ee7157805c9c0a407f1666de1133219d30272ac8c3d92c7a75edf5"
+      }
     },
     {
       "index": 7,
@@ -299,7 +348,14 @@
         1000212,
         1000213,
         1000214
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "6f00c7ef95219c111bc71a4b9a3988ada48a432d05d976b30aef048e3f2fe545",
+      "metadata": {
+        "path": "comet_shard_007.metadata.json",
+        "bytes": 8832,
+        "sha256": "e6f2deeff43f7d0744857ebbc959f05e2243f9824cf5829586a8f190fdfec2e6"
+      }
     },
     {
       "index": 8,
@@ -331,7 +387,14 @@
         1000237,
         1000238,
         1000239
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "6e655c1872171478d2a60f7607ea24f1ee0d4565a5ed68107cf0e787f0683721",
+      "metadata": {
+        "path": "comet_shard_008.metadata.json",
+        "bytes": 8807,
+        "sha256": "01f46b5752d63fae19b3027e53d2d08bc46fb2e2c542355ad5beb93cb4826986"
+      }
     },
     {
       "index": 9,
@@ -363,7 +426,14 @@
         1000262,
         1000263,
         1000264
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "8a834baa700e448cf6f36500c343d94e3bd84c6e5e34245cd260d80c032603b4",
+      "metadata": {
+        "path": "comet_shard_009.metadata.json",
+        "bytes": 8742,
+        "sha256": "8fa43ac99b77565a4baf58144388391e4772740fede8c6e7d5ea08ed3ef739d6"
+      }
     },
     {
       "index": 10,
@@ -395,7 +465,14 @@
         1000289,
         1000290,
         1000291
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "952104c3f2e86222401459d1d75628c315e14e1e407a200cb2da420ef54b7fed",
+      "metadata": {
+        "path": "comet_shard_010.metadata.json",
+        "bytes": 8880,
+        "sha256": "6993a447db57315c17765e9aaa124de89ab9c801bd0ab9d5464e5e4ecd545c41"
+      }
     },
     {
       "index": 11,
@@ -427,7 +504,14 @@
         1000314,
         1000315,
         1000316
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "85f0dbc4deff6b3072322bf349dd11d70b3f8dc3e3def2ffb645ff0f3d74e1c6",
+      "metadata": {
+        "path": "comet_shard_011.metadata.json",
+        "bytes": 8879,
+        "sha256": "966c4b9204a1b866f17dcb6ce8775d12865e580dc4d5880c455776b4a61f75fc"
+      }
     },
     {
       "index": 12,
@@ -459,7 +543,14 @@
         1000339,
         1000340,
         1000341
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "7966b5dd6d91b13803878bb3c5d94abb83652a1b210d13e88420043dd5b788c0",
+      "metadata": {
+        "path": "comet_shard_012.metadata.json",
+        "bytes": 8839,
+        "sha256": "9d3abc87883c42966f453516655d49cede424de8104e3b569160248d698f1f1c"
+      }
     },
     {
       "index": 13,
@@ -491,7 +582,14 @@
         1000365,
         1000366,
         1000367
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "4ce1332b77d0d289f827783fa701045a85a1a8c17aff6761eb79f04f44c7d6e4",
+      "metadata": {
+        "path": "comet_shard_013.metadata.json",
+        "bytes": 8840,
+        "sha256": "cf7811c5eadb7dad06b5ebbf989443a3df582aab4bbbb3020aec1306d3810f09"
+      }
     },
     {
       "index": 14,
@@ -523,7 +621,14 @@
         1000390,
         1000391,
         1000392
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "8a943c5a7f1f9eceb263129892b3799d5da360250983bf2910555110884cb88a",
+      "metadata": {
+        "path": "comet_shard_014.metadata.json",
+        "bytes": 8828,
+        "sha256": "4ea9ac82463157a93e22d6684e2ab4ab3f15ef902992424808a2f3c3e3aa838d"
+      }
     },
     {
       "index": 15,
@@ -555,7 +660,14 @@
         1000415,
         1000416,
         1000417
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "bba6ac07af4dbcb3500f98c2c6ee72b65f1a0317cebe1731fefc50fe37e1b8b3",
+      "metadata": {
+        "path": "comet_shard_015.metadata.json",
+        "bytes": 8908,
+        "sha256": "1c82b2f07e4cceddab64e3ac532755bc4ae214815deb8e588f3bf9a1f2c8366e"
+      }
     },
     {
       "index": 16,
@@ -587,7 +699,14 @@
         1000441,
         1000442,
         1000443
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "03f93a5c2220436e454b1ce28d762049b852c71d061bbd5dc67bc3e6affe360d",
+      "metadata": {
+        "path": "comet_shard_016.metadata.json",
+        "bytes": 8909,
+        "sha256": "3900ba4270b4d398e6b5d720af45bd3861954fb9969ffa2fe18f1130ba102c80"
+      }
     },
     {
       "index": 17,
@@ -619,7 +738,14 @@
         1000466,
         1000467,
         1000468
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "174a29c80fb855eb8dcf0f66f4c0167b0088cdc858e3c107145d88db101d74d2",
+      "metadata": {
+        "path": "comet_shard_017.metadata.json",
+        "bytes": 9017,
+        "sha256": "144a53c8b31d097c90b1115c2fa8288f94f3088dae0880fa5b9957a1c8db9a73"
+      }
     },
     {
       "index": 18,
@@ -651,7 +777,14 @@
         1000492,
         1000493,
         1000494
-      ]
+      ],
+      "bytes": 15367168,
+      "sha256": "299da838ba4fad8b1ed66f090add8fa9f5d90ff9ae550b1f2aa191601f2aedac",
+      "metadata": {
+        "path": "comet_shard_018.metadata.json",
+        "bytes": 8994,
+        "sha256": "6c149c0c5e04b58643ab7d1014b2595ece8aabd0592aa8d7aca55712a3c28ac3"
+      }
     },
     {
       "index": 19,
@@ -680,7 +813,51 @@
         1000514,
         1000515,
         1000516
-      ]
+      ],
+      "bytes": 13522944,
+      "sha256": "5cc92a4ca6b8ea5ab7aba17358a66faa6ce2fb0c15e30747b6b392ed35f8a3ad",
+      "metadata": {
+        "path": "comet_shard_019.metadata.json",
+        "bytes": 7903,
+        "sha256": "e2de89ec6fb376c973d1da4e6995ce7e6f3f6f9dc3871362acc1c639dfee20eb"
+      }
     }
-  ]
+  ],
+  "catalog_version": "2026.07.28.1",
+  "release": {
+    "released_utc": "2026-07-28T12:47:17Z",
+    "source_manifest_sha256": "bc8208f6de004915a9baac061d57db3b847ffa186d09ca7a15a8ec237ab6e73d",
+    "integrity": {
+      "algorithm": "sha256",
+      "receipt": "SHA256SUMS",
+      "receipt_scope": "manifest, kernels, per-shard metadata, and included support files; the receipt itself is excluded"
+    },
+    "files": [
+      {
+        "path": "LICENSE",
+        "role": "license",
+        "bytes": 1069,
+        "sha256": "05ffdf01b23096d01fd00bda33d34b85dda365e8119eb8eb054678ada7523c0f"
+      },
+      {
+        "path": "NOTICE.md",
+        "role": "provenance_notice",
+        "bytes": 1101,
+        "sha256": "fe151bbd893e792b120d7b95eddcd73fd6d0b3a53f1a0d364f3f11f7c8e62eb1"
+      },
+      {
+        "path": "comet_master.json",
+        "role": "catalog_build_evidence",
+        "bytes": 172865,
+        "sha256": "78dc12291bf8b3e1a7eab844666632ccffd98b3f362c2d2a1442e9a8714d33f6"
+      },
+      {
+        "path": "identity/comet_catalog_aliases.json",
+        "role": "identity_alias_policy",
+        "bytes": 1107,
+        "sha256": "f613e2301d891b7baf6ad734bdfa6cb29dcc2d0e9f76ddb7e9651bace828fa9b"
+      }
+    ],
+    "source_revision": "49e7b2b42a4d80a68ccbe1f2f07d64c5dc80ba50"
+  }
 }

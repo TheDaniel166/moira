@@ -8,3 +8,5 @@ moira/data/asteroid_catalog_naif.metadata.json text eol=lf
 moira/data/comet_catalog_naif.json text eol=lf
 moira/data/comet_catalog_aliases.json text eol=lf
 moira/data/comet_catalog_naif.metadata.json text eol=lf
+moira/kernels/asteroids/manifest.json text eol=lf
+moira/kernels/comets/manifest.json text eol=lf

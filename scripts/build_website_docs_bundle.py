@@ -359,24 +359,56 @@ def _releases(config: dict[str, Any], current_version: str) -> list[dict[str, An
     return sorted(rendered, key=lambda item: _semver(item["version"]), reverse=True)
 
 
+def _position_catalog_metrics(
+    *,
+    manifest_source: str,
+    identity_source: str,
+) -> dict[str, Any]:
+    manifest_path = _repo_path(manifest_source)
+    identity_path = _repo_path(identity_source)
+    manifest = _load_json(manifest_path)
+    identity = _load_json(identity_path)
+    manifest_sha256 = _sha256_path(manifest_path)
+    expected_sha256 = identity["source"]["release_manifest_sha256"]
+
+    if manifest_sha256 != expected_sha256:
+        raise PublicationError(
+            f"{manifest_source}: SHA-256 does not match {identity_source}"
+        )
+    if manifest["catalog_id"] != identity["catalog_id"]:
+        raise PublicationError(
+            f"{manifest_source}: catalog_id does not match {identity_source}"
+        )
+    if manifest["catalog_version"] != identity["catalog_version"]:
+        raise PublicationError(
+            f"{manifest_source}: catalog_version does not match {identity_source}"
+        )
+
+    return {
+        "catalog_id": manifest["catalog_id"],
+        "catalog_version": manifest["catalog_version"],
+        "body_count": manifest["body_count"],
+        "shard_count": manifest["shard_count"],
+        "sampling": manifest["sampling"],
+        "manifest_sha256": manifest_sha256,
+        "availability": "external_install_required",
+        "source": manifest_source,
+        "identity_receipt": identity_source,
+    }
+
+
 def _catalog_metrics() -> dict[str, Any]:
-    asteroid_manifest = _load_json(_repo_path("moira/kernels/asteroids/manifest.json"))
-    comet_manifest = _load_json(_repo_path("moira/kernels/comets/manifest.json"))
     family_metadata = _load_json(_repo_path("moira/data/asteroid_families.metadata.json"))
     counts = family_metadata["counts"]
     return {
-        "position_capable_asteroid_ephemeris": {
-            "body_count": asteroid_manifest["body_count"],
-            "shard_count": asteroid_manifest["shard_count"],
-            "availability": "external_install_required",
-            "source": "moira/kernels/asteroids/manifest.json",
-        },
-        "position_capable_periodic_comet_ephemeris": {
-            "body_count": comet_manifest["body_count"],
-            "shard_count": comet_manifest["shard_count"],
-            "availability": "external_install_required",
-            "source": "moira/kernels/comets/manifest.json",
-        },
+        "position_capable_asteroid_ephemeris": _position_catalog_metrics(
+            manifest_source="moira/kernels/asteroids/manifest.json",
+            identity_source="moira/data/asteroid_catalog_naif.metadata.json",
+        ),
+        "position_capable_periodic_comet_ephemeris": _position_catalog_metrics(
+            manifest_source="moira/kernels/comets/manifest.json",
+            identity_source="moira/data/comet_catalog_naif.metadata.json",
+        ),
         "asteroid_family_membership_catalog": {
             "family_count": counts["family_count"],
             "unique_numbered_asteroid_count": counts["unique_numbered_asteroid_count"],

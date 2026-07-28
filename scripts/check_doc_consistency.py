@@ -14,6 +14,7 @@ documentation linter.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 import tomllib
@@ -25,9 +26,44 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 with (REPO_ROOT / "pyproject.toml").open("rb") as _project_stream:
     PROJECT_VERSION = tomllib.load(_project_stream)["project"]["version"]
 PROJECT_VERSION_PATTERN = re.escape(PROJECT_VERSION)
+ASTEROID_MANIFEST = json.loads(
+    (REPO_ROOT / "moira/kernels/asteroids/manifest.json").read_text(
+        encoding="utf-8"
+    )
+)
+COMET_MANIFEST = json.loads(
+    (REPO_ROOT / "moira/kernels/comets/manifest.json").read_text(
+        encoding="utf-8"
+    )
+)
+ASTEROID_IDENTITY = json.loads(
+    (REPO_ROOT / "moira/data/asteroid_catalog_naif.metadata.json").read_text(
+        encoding="utf-8"
+    )
+)
+COMET_IDENTITY = json.loads(
+    (REPO_ROOT / "moira/data/comet_catalog_naif.metadata.json").read_text(
+        encoding="utf-8"
+    )
+)
+ASTEROID_COUNT = f"{ASTEROID_MANIFEST['body_count']:,}"
+ASTEROID_SHARDS = f"{ASTEROID_MANIFEST['shard_count']:,}"
+ASTEROID_VERSION_PATTERN = re.escape(ASTEROID_MANIFEST["catalog_version"])
+ASTEROID_MANIFEST_SHA_PATTERN = re.escape(
+    ASTEROID_IDENTITY["source"]["release_manifest_sha256"]
+)
+COMET_COUNT = f"{COMET_MANIFEST['body_count']:,}"
+COMET_SHARDS = f"{COMET_MANIFEST['shard_count']:,}"
+COMET_VERSION_PATTERN = re.escape(COMET_MANIFEST["catalog_version"])
+COMET_MANIFEST_SHA_PATTERN = re.escape(
+    COMET_IDENTITY["source"]["release_manifest_sha256"]
+)
 
 PRIMARY_DOCS = (
     Path("README.md"),
+    Path("PROVENANCE.md"),
+    Path("llms.txt"),
+    Path("llms-full.txt"),
     Path("wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md"),
     Path("wiki/02_services/SERVICE_LAYER_GUIDE.md"),
     Path("wiki/02_standards/API_REFERENCE.md"),
@@ -103,6 +139,73 @@ REQUIRED_PATTERNS: dict[Path, tuple[RequiredPattern, ...]] = {
         RequiredPattern(
             label="current nutation table counts",
             pattern=re.compile(r"1358 luni-solar \+ 1056 planetary terms"),
+        ),
+        RequiredPattern(
+            label="current asteroid release identity",
+            pattern=re.compile(
+                rf"{re.escape(ASTEROID_COUNT)} selected asteroids[\s\S]*?"
+                rf"{ASTEROID_VERSION_PATTERN}"
+            ),
+        ),
+        RequiredPattern(
+            label="current comet release identity",
+            pattern=re.compile(
+                rf"{re.escape(COMET_COUNT)} comets[\s\S]*?"
+                rf"{COMET_VERSION_PATTERN}"
+            ),
+        ),
+    ),
+    Path("PROVENANCE.md"): (
+        RequiredPattern(
+            label="current asteroid manifest receipt",
+            pattern=re.compile(
+                rf"{ASTEROID_VERSION_PATTERN}[\s\S]*?"
+                rf"{ASTEROID_MANIFEST['body_count']:,} canonical names[\s\S]*?"
+                rf"{ASTEROID_MANIFEST_SHA_PATTERN}"
+            ),
+        ),
+        RequiredPattern(
+            label="current comet manifest receipt",
+            pattern=re.compile(
+                rf"{COMET_VERSION_PATTERN}[\s\S]*?"
+                rf"{COMET_COUNT} comets in {COMET_SHARDS} shards[\s\S]*?"
+                rf"{COMET_MANIFEST_SHA_PATTERN}"
+            ),
+        ),
+    ),
+    Path("llms.txt"): (
+        RequiredPattern(
+            label="current release version",
+            pattern=re.compile(rf"current: {PROJECT_VERSION_PATTERN}"),
+        ),
+        RequiredPattern(
+            label="current asteroid catalog summary",
+            pattern=re.compile(
+                rf"{re.escape(ASTEROID_COUNT)} asteroids[\s\S]*?"
+                rf"{ASTEROID_VERSION_PATTERN}"
+            ),
+        ),
+    ),
+    Path("llms-full.txt"): (
+        RequiredPattern(
+            label="current lot-definition count",
+            pattern=re.compile(r"\b512 lots\b"),
+        ),
+        RequiredPattern(
+            label="current asteroid catalog summary",
+            pattern=re.compile(
+                rf"{re.escape(ASTEROID_COUNT)} asteroids as "
+                rf"{re.escape(ASTEROID_SHARDS)} Type-13 shards[\s\S]*?"
+                rf"{ASTEROID_VERSION_PATTERN}"
+            ),
+        ),
+        RequiredPattern(
+            label="current comet catalog summary",
+            pattern=re.compile(
+                rf"{re.escape(COMET_COUNT)} numbered periodic comets[\s\S]*?"
+                rf"{re.escape(COMET_SHARDS)} Type-13 shards[\s\S]*?"
+                rf"{COMET_VERSION_PATTERN}"
+            ),
         ),
     ),
     Path("wiki/02_standards/API_REFERENCE.md"): (

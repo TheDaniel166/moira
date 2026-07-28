@@ -165,3 +165,31 @@ jobs:
           python -m pytest tests/unit/test_dasha.py -q
           python -m pytest tests/unit/test_timelords.py -q
           python -m pytest tests/unit/test_cycles.py -q
+
+      - name: Run 6.1 contract and catalog gates
+        run: |
+          python -m pytest \
+            tests/unit/test_aspects.py \
+            tests/unit/test_patterns.py \
+            tests/unit/test_api_surface_adversarial_audit.py \
+            tests/unit/test_docstring_governance.py \
+            tests/unit/test_asteroid_identity_catalog.py \
+            tests/unit/test_comet_identity_catalog.py \
+            tests/unit/test_comets.py \
+            tests/unit/test_small_body_catalog_builder_manifests.py \
+            tests/unit/test_small_body_catalog_release.py \
+            tests/unit/test_small_body_release_loader_gate.py \
+            tests/unit/test_small_body_identity_resolution.py \
+            tests/unit/test_small_body_packaged_manifest_receipts.py \
+            tests/unit/test_planet_position_switches.py \
+            tests/unit/test_moira_progressions.py \
+            tests/unit/test_void_of_course.py \
+            tests/server/test_server_small_body_list_routes.py \
+            tests/server/test_server_chart_routes.py \
+            tests/server/test_server_astrocartography_routes.py \
+            tests/server/test_server_aspects_from_longitudes.py \
+            tests/server/test_server_patterns_policy.py \
+            -q
+
+      - name: Reject real unused imports in source
+        run: ruff check moira moira_server scripts --select F401 --no-fix
