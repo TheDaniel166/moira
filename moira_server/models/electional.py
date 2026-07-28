@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
 from math import floor, isfinite
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from moira._strenum import StrEnum
 from moira.constants import HOUSE_SYSTEM_NAMES, HouseSystem
 from moira.sidereal import Ayanamsa
 

@@ -8,10 +8,10 @@ These are designed for high-performance website use:
 from __future__ import annotations
 
 from datetime import datetime
-from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from moira._strenum import StrEnum
 from moira.asteroid_families import ASTEROID_FAMILY_CATALOG_SOURCE
 
 from .relationship import AspectDataResponse

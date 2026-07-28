@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import math
-from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from moira._strenum import StrEnum
 
 
 MEAN_PLANETARY_NODE_MAX_ITEMS = 8

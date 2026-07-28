@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
 from math import isfinite
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from moira._strenum import StrEnum
 
 
 CLASSICAL_PLANETS = ("Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon")

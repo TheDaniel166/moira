@@ -7,6 +7,83 @@ on:
       - main
 
 jobs:
+  python-310-server-compatibility:
+    name: Python 3.10 Server Compatibility Gate
+    runs-on: ubuntu-latest
+
+    env:
+      MOIRA_NO_DOWNLOAD: "1"
+      MOIRA_TEST_MODE: "1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up minimum supported Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install optional server
+        run: python -m pip install -e ".[server]"
+
+      - name: Smoke Python 3.10 server contracts
+        run: |
+          python - <<'PY'
+          from pydantic import ValidationError
+
+          from moira_server import create_app
+          from moira_server.models.asteroids import AsteroidSubsetSlug
+          from moira_server.models.electional import ElectionalPredicateProfileId
+          from moira_server.models.lord_of_the_orb import LordOfTheOrbCycleKindRequest
+          from moira_server.models.lord_of_the_turn import LordOfTheTurnMethodRequest
+          from moira_server.models.manazil import MansionComputationMode
+          from moira_server.models.nodes import NodeComputationMethod
+          from moira_server.models.timelords import DecennialNatalRequest
+
+          enum_types = (
+              AsteroidSubsetSlug,
+              ElectionalPredicateProfileId,
+              LordOfTheOrbCycleKindRequest,
+              LordOfTheTurnMethodRequest,
+              MansionComputationMode,
+              NodeComputationMethod,
+          )
+          assert all(issubclass(enum_type, str) for enum_type in enum_types)
+          assert all(list(enum_type) for enum_type in enum_types)
+
+          accepted = DecennialNatalRequest.model_validate(
+              {
+                  "dt": "2000-01-01T12:00:00Z",
+                  "is_day_chart": True,
+                  "deep_subdivision_method": None,
+              }
+          )
+          assert accepted.deep_subdivision_method is None
+          try:
+              DecennialNatalRequest.model_validate(
+                  {
+                      "dt": "2000-01-01T12:00:00Z",
+                      "is_day_chart": True,
+                      "deep_subdivision_method": "valens",
+                  }
+              )
+          except ValidationError:
+              pass
+          else:
+              raise AssertionError("named Decennial deep methods must remain rejected")
+
+          schemas = create_app().openapi()["components"]["schemas"]
+          request_schema = schemas["DecennialNatalRequest"]
+          deep_method = request_schema["properties"]["deep_subdivision_method"]
+          assert deep_method["type"] == "null"
+          assert deep_method["deprecated"] is True
+          assert "deep_subdivision_method" not in request_schema["required"]
+          assert "DecennialDeepSubdivisionMethod" not in schemas
+          PY
+
   release-hardening:
     name: Release Hardening Gate
     runs-on: ubuntu-latest

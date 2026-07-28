@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
-
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from moira._strenum import StrEnum
 
 
 LORD_OF_THE_ORB_MAX_YEARS = 252

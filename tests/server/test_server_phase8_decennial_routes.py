@@ -288,6 +288,24 @@ def test_decennials_sequence_rejects_levels_out_of_range(client_with_engine: Tes
     assert resp.status_code == 422
 
 
+def test_decennials_sequence_accepts_deprecated_null_deep_selector(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/timelords/decennials/sequence",
+        json={
+            "natal": {
+                **_NATAL_PAYLOAD,
+                "levels": 2,
+                "deep_subdivision_method": None,
+            }
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["deep_subdivision_method"] is None
+
+
 @pytest.mark.parametrize(
     ("method", "levels"),
     [("valens", 4), ("hephaistio", 3)],

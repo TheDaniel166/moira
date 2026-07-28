@@ -143,14 +143,16 @@ def test_openapi_preserves_typed_phase_3_receipts() -> None:
 
 def test_openapi_keeps_decennial_depth_and_unadmitted_hermetic_routes_absent() -> None:
     openapi = create_app(ServerConfig(docs_enabled=False)).openapi()
-    request_properties = openapi["components"]["schemas"][
-        "DecennialNatalRequest"
-    ]["properties"]
+    request_schema = openapi["components"]["schemas"]["DecennialNatalRequest"]
+    request_properties = request_schema["properties"]
     levels = request_properties["levels"]
 
     assert levels["minimum"] == 1
     assert levels["maximum"] == 2
-    assert "deep_subdivision_method" not in request_properties
+    deep_method = request_properties["deep_subdivision_method"]
+    assert deep_method["type"] == "null"
+    assert deep_method["deprecated"] is True
+    assert "deep_subdivision_method" not in request_schema["required"]
     schemas = openapi["components"]["schemas"]
     assert "DecennialDeepSubdivisionMethod" not in schemas
     for schema_name in (

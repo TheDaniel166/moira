@@ -279,6 +279,14 @@ class DecennialNatalRequest(_StrictModel):
     dt: datetime
     is_day_chart: bool
     levels: int = Field(default=2, ge=1, le=2)
+    deep_subdivision_method: None = Field(
+        default=None,
+        deprecated=True,
+        description=(
+            "Deprecated compatibility field. Omit it or send null; "
+            "Decennial levels 3-4 and named deep methods remain unadmitted."
+        ),
+    )
 
 
 class DecennialBaseRequest(_StrictModel):
