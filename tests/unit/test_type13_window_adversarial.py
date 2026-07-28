@@ -12,7 +12,7 @@ import pytest
 from pathlib import Path
 
 import moira.moira_native as mn
-from moira._spk_body_kernel import _hermite_eval_3d, _hermite_eval_3d_with_derivative, SmallBodyKernel, small_body_readers_from_manifest
+from moira._spk_body_kernel import _hermite_eval_3d, _hermite_eval_3d_with_derivative, small_body_readers_from_manifest
 from moira._kernel_paths import find_sovereign_small_body_manifest
 
 T0 = 2451545.0
@@ -239,7 +239,7 @@ class TestType13WindowAdversarial:
 # ------------------------------------------------------------------
 
 try:
-    from moira._spk_body_kernel import SmallBodyKernel, small_body_readers_from_manifest
+    from moira._spk_body_kernel import small_body_readers_from_manifest
     from moira._kernel_paths import find_sovereign_small_body_manifest
     _HAS_REAL_KERNEL_SUPPORT = True
 except Exception:
@@ -248,13 +248,23 @@ except Exception:
 
 def _load_type13_data_from_segment(seg):
     """Force load and return (epochs_jd, states, window_size) from a _Type13Segment."""
-    # Access the lazy _data property to populate it
-    data = seg._data
-    epochs_jd, states, window_size = data  # Note: our _data stores (states, epochs, ws) wait — check order
-    # From the code: self.__data = (states, epochs_jd, int(payload["window_size"]))
-    # So actually: states, epochs_jd, ws
-    states_list, epochs_list, ws = data
+    states_list, epochs_list, ws = seg._data
     return epochs_list, states_list, ws
+
+
+def _representative_kernel_sample(kernels):
+    """Return a catalog-size-independent first/middle/last kernel sample."""
+    if len(kernels) <= 3:
+        return list(kernels)
+    indices = (0, (len(kernels) - 1) // 2, len(kernels) - 1)
+    return [kernels[index] for index in indices]
+
+
+def test_representative_kernel_sample_is_catalog_size_bounded():
+    kernels = list(range(399))
+
+    assert _representative_kernel_sample(kernels) == [0, 199, 398]
+    assert _representative_kernel_sample(kernels[:2]) == [0, 1]
 
 
 @pytest.mark.skipif(not _HAS_REAL_KERNEL_SUPPORT, reason="SmallBodyKernel not importable")
@@ -278,6 +288,7 @@ class TestType13RealKernelBoundaryAdversarial:
         if manifest is None or not manifest.exists():
             pytest.skip("No sovereign Type 13 manifest found for real kernel testing")
 
+        kernels = []
         try:
             kernels = small_body_readers_from_manifest(manifest)
             type13_kernels = []
@@ -290,9 +301,12 @@ class TestType13RealKernelBoundaryAdversarial:
                     type13_kernels.append(k)
             if not type13_kernels:
                 pytest.skip("No Type 13 segments found in available sovereign kernels")
-            return type13_kernels
+            yield _representative_kernel_sample(type13_kernels)
         except Exception as e:
             pytest.skip(f"Could not load sovereign Type 13 kernels: {e}")
+        finally:
+            for kernel in kernels:
+                kernel.close()
 
     def test_real_data_near_segment_right_edge(self, real_kernels):
         """Attack the right boundary of real Type 13 segments with tiny offsets."""
