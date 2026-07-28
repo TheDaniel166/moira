@@ -6,10 +6,10 @@ Archetype: Substrate Anchor (Phenomena Engine)
 
 Purpose
 -------
-Provides the complete heliacal and generalized visibility doctrine surface for Moira. 
-This includes typed doctrine surfaces for heliacal phenomena, generalized 
-visibility policy, and specialized models for moonlight-aware limiting-magnitude 
-penalties (Krisciunas & Schaefer 1991).
+Provides Moira's public heliacal and admitted generalized visibility doctrine.
+This includes typed doctrine surfaces for heliacal phenomena, explicit
+visibility policy, direct atmospheric extinction, directional cloudless-sky
+twilight brightness, point-source thresholds, and moonlight sky brightness.
 
 Boundary
 --------
@@ -17,7 +17,8 @@ Owns:
     - HeliacalEventKind exhaustive event-kind enum.
     - Generalized visibility event surface for planets, fixed stars, and the Moon.
     - Observer-environment policy and Bortle-class light-pollution derivation.
-    - Moonlight-aware limiting-magnitude penalty models.
+    - Direct-beam extinction and directional sky-brightness models.
+    - Naked-eye point-source threshold and moonlight models.
 Delegates:
     - moira.stars      — fixed-star heliacal event search.
     - moira.planets    — planetary apparent positions and magnitudes.
@@ -26,6 +27,9 @@ Delegates:
 Data source
 -----------
 Krisciunas, K. & Schaefer, B.E. (1991), PASP 103, 1033–1039 (Moonlight).
+Kasten, F. & Young, A.T. (1989), Applied Optics 28, 4735–4738 (Air mass).
+Schaefer, B.E. (1993), Vistas in Astronomy 36, 311–361 (Visibility).
+Crumey, A. (2014), MNRAS 442, 2600–2619 (Point-source threshold).
 Bortle, J.E. (2001), Sky & Telescope 101(2), 126–129 (Light Pollution).
 Yallop, B.D. (1997), NAO Technical Note No. 69 (Lunar Crescent).
 
@@ -40,7 +44,7 @@ External dependency assumptions
 
 Public surface
 --------------
-See __all__ below. All 27 names are stable public API.
+See ``__all__`` below for the stable public surface.
 """
 
 from __future__ import annotations
@@ -64,6 +68,9 @@ __all__ = [
     "ExtinctionCoefficient",
     "MoonlightPolicy",
     "VisibilityCriterionFamily",
+    "AtmosphericExtinctionAssessment",
+    "TwilightSkyBrightnessAssessment",
+    "PointSourceVisibilityThreshold",
     "LunarCrescentVisibilityClass",
     "LunarCrescentDetails",
     "ObserverVisibilityEnvironment",
@@ -74,6 +81,10 @@ __all__ = [
     "HeliacalPolicy",
     "GeneralVisibilityEvent",
     "PlanetHeliacalEvent",
+    "relative_optical_airmass",
+    "atmospheric_extinction",
+    "directional_twilight_sky_brightness",
+    "point_source_visibility_threshold",
     "visibility_assessment",
     "visual_limiting_magnitude",
     "visibility_event",
@@ -457,20 +468,17 @@ class VisibilityCriterionFamily(str, Enum):
     RITE: The Criterion Gate — the doctrinal selection between admitted visibility
     criterion families.
 
-    THEOREM: Str-enum naming the two currently admitted visibility criterion
+    THEOREM: Str-enum naming the currently admitted visibility criterion
     families that govern observability decisions.
 
     RITE OF PURPOSE:
-        Separates the limiting-magnitude threshold family (used for planets and
-        fixed stars) from the Yallop lunar crescent family (used for the Moon),
-        ensuring that each dispatch path within visibility_assessment() and
-        visibility_event() applies the correct observability test.  Explicit
-        family selection prevents silent application of a planetary threshold
-        to a crescent-moon event.
+        Separates the legacy limiting-magnitude threshold, the physical Crumey
+        point-source threshold, and the Yallop lunar crescent family so each
+        dispatch path applies the criterion that the caller declared.
 
     LAW OF OPERATION:
         Responsibilities:
-            - Enumerate the two admitted criterion families.
+            - Enumerate the admitted criterion families.
             - Serve as the routing key in visibility_assessment() and
               visibility_event().
         Non-responsibilities:
@@ -491,7 +499,11 @@ class VisibilityCriterionFamily(str, Enum):
         "id": "moira.heliacal.VisibilityCriterionFamily",
         "risk": "low",
         "api": {
-            "members": ["LIMITING_MAGNITUDE_THRESHOLD", "YALLOP_LUNAR_CRESCENT"]
+            "members": [
+                "LIMITING_MAGNITUDE_THRESHOLD",
+                "CRUMEY_2014_POINT_SOURCE",
+                "YALLOP_LUNAR_CRESCENT"
+            ]
         },
         "state": {
             "mutable": false
@@ -519,6 +531,7 @@ class VisibilityCriterionFamily(str, Enum):
     """
 
     LIMITING_MAGNITUDE_THRESHOLD = "limiting_magnitude_threshold"
+    CRUMEY_2014_POINT_SOURCE = "crumey_2014_point_source"
     YALLOP_LUNAR_CRESCENT = "yallop_lunar_crescent"
 
 
@@ -692,15 +705,14 @@ class VisibilityExtinctionModel(str, Enum):
     """
     RITE: The Extinction Slot — the admitted extinction treatment declaration.
 
-    THEOREM: Str-enum naming the admitted extinction treatment applied when
-    computing visibility under the LIMITING_MAGNITUDE_THRESHOLD criterion.
+    THEOREM: Str-enum naming the admitted legacy or physical extinction
+    treatment declared by a visibility policy.
 
     RITE OF PURPOSE:
-        Holds the named extinction treatment slot so that policy objects can
-        declare which extinction model governs their arcus-visionis derivation.
-        Currently a single member (LEGACY_ARCUS_VISIONIS), preserving the slot
-        for future admission of more rigorous airmass-based extinction models
-        without requiring a breaking policy-field change.
+        Holds the named extinction treatment so policy objects distinguish the
+        legacy arcus-visionis convention, a measured broadband coefficient
+        evaluated with Kasten--Young (1989) air mass, and Schaefer's (1993)
+        component estimate.
 
     LAW OF OPERATION:
         Responsibilities:
@@ -708,7 +720,7 @@ class VisibilityExtinctionModel(str, Enum):
             - Serve as the extinction_model field of VisibilityPolicy.
         Non-responsibilities:
             - Does not implement extinction computation (handled by
-              _arcus_visionis()).
+              atmospheric_extinction() or the legacy _arcus_visionis()).
             - Does not govern K&S 1991 moonlight extinction (controlled by
               VisibilityPolicy.extinction_coefficient_k).
         Dependencies:
@@ -723,7 +735,11 @@ class VisibilityExtinctionModel(str, Enum):
         "id": "moira.heliacal.VisibilityExtinctionModel",
         "risk": "low",
         "api": {
-            "members": ["LEGACY_ARCUS_VISIONIS"]
+            "members": [
+                "LEGACY_ARCUS_VISIONIS",
+                "KASTEN_YOUNG_1989_BROADBAND",
+                "SCHAEFER_1993_COMPONENTS"
+            ]
         },
         "state": {
             "mutable": false
@@ -751,30 +767,30 @@ class VisibilityExtinctionModel(str, Enum):
     """
 
     LEGACY_ARCUS_VISIONIS = "legacy_arcus_visionis"
+    KASTEN_YOUNG_1989_BROADBAND = "kasten_young_1989_broadband"
+    SCHAEFER_1993_COMPONENTS = "schaefer_1993_components"
 
 
 class VisibilityTwilightModel(str, Enum):
     """
     RITE: The Twilight Slot — the admitted twilight treatment declaration.
 
-    THEOREM: Str-enum naming the admitted twilight treatment used to determine
-    the visibility-threshold solar depression moment.
+    THEOREM: Str-enum naming either the legacy solar-depression event
+    convention or the admitted directional twilight-brightness model.
 
     RITE OF PURPOSE:
         Holds the named twilight treatment so that policy objects can declare
-        which solar-depression model governs when the visibility-threshold
-        twilight moment is found.  Currently a single member
-        (ARCUS_VISIONIS_SOLAR_DEPRESSION), preserving the slot for future
-        admission of alternative twilight definitions without a breaking
-        policy-field change.
+        which twilight model governs the calculation: the legacy
+        solar-depression threshold or Schaefer's (1993) directional
+        cloudless-sky brightness model.
 
     LAW OF OPERATION:
         Responsibilities:
             - Enumerate the admitted twilight treatments.
             - Serve as the twilight_model field of VisibilityPolicy.
         Non-responsibilities:
-            - Does not implement the twilight search (handled by
-              _find_sun_at_alt()).
+            - Does not implement twilight computation (handled by
+              directional_twilight_sky_brightness() or legacy event search).
             - Does not govern astronomical or civil twilight separately.
         Dependencies:
             - None.  Pure enum.
@@ -788,7 +804,10 @@ class VisibilityTwilightModel(str, Enum):
         "id": "moira.heliacal.VisibilityTwilightModel",
         "risk": "low",
         "api": {
-            "members": ["ARCUS_VISIONIS_SOLAR_DEPRESSION"]
+            "members": [
+                "ARCUS_VISIONIS_SOLAR_DEPRESSION",
+                "SCHAEFER_1993_DIRECTIONAL"
+            ]
         },
         "state": {
             "mutable": false
@@ -816,6 +835,7 @@ class VisibilityTwilightModel(str, Enum):
     """
 
     ARCUS_VISIONIS_SOLAR_DEPRESSION = "arcus_visionis_solar_depression"
+    SCHAEFER_1993_DIRECTIONAL = "schaefer_1993_directional"
 
 
 class ExtinctionCoefficient:
@@ -967,6 +987,81 @@ class MoonlightPolicy(str, Enum):
 
 
 @dataclass(frozen=True, slots=True)
+class AtmosphericExtinctionAssessment:
+    """Auditable direct-beam extinction for one apparent line of sight.
+
+    Component fields are populated only for
+    :attr:`VisibilityExtinctionModel.SCHAEFER_1993_COMPONENTS`.  The
+    Kasten--Young broadband path instead populates ``broadband_airmass`` and
+    applies the caller-declared measured coefficient without inventing a
+    spectral decomposition.  For Schaefer's component path,
+    ``total_zenith_extinction_coefficient`` is the scotopic coefficient used
+    for direct target extinction, while
+    ``sky_brightness_extinction_coefficient`` retains the visual-band
+    coefficient required by the paper's nanolambert sky-brightness equations.
+    """
+
+    model: VisibilityExtinctionModel
+    apparent_altitude_deg: float
+    zenith_distance_deg: float
+    broadband_airmass: float | None
+    rayleigh_airmass: float | None
+    aerosol_airmass: float | None
+    ozone_airmass: float | None
+    rayleigh_coefficient_mag_per_airmass: float | None
+    aerosol_coefficient_mag_per_airmass: float | None
+    ozone_coefficient_mag_per_airmass: float | None
+    total_zenith_extinction_coefficient: float
+    sky_brightness_extinction_coefficient: float
+    extinction_magnitude: float
+    transmission_fraction: float
+
+
+@dataclass(frozen=True, slots=True)
+class TwilightSkyBrightnessAssessment:
+    """Directional cloudless-sky twilight contribution from Schaefer (1993).
+
+    ``formula_applied`` is false after astronomical twilight, where the
+    contribution is explicitly zero, and while the Sun is above the horizon,
+    where the admitted twilight formula is not valid and ``sky_nanolamberts``
+    is ``None``.
+    """
+
+    model: VisibilityTwilightModel
+    target_altitude_deg: float
+    sun_altitude_deg: float
+    sun_target_separation_deg: float
+    sky_airmass: float
+    extinction_coefficient: float
+    formula_applied: bool
+    valid: bool
+    reason: str | None
+    sky_nanolamberts: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class PointSourceVisibilityThreshold:
+    """Crumey (2014) scotopic naked-eye point-source threshold.
+
+    A result outside Crumey's published background-luminance interval remains
+    inspectable but is marked invalid and carries no limiting magnitude.  Moira
+    does not silently extrapolate that fit.  ``field_factor`` is Crumey's
+    overall ``F``: it may include target spectrum, observing medium,
+    laboratory scaling, detection practice, and observer physiology.
+    """
+
+    criterion_family: VisibilityCriterionFamily
+    background_nanolamberts: float
+    background_luminance_cd_m2: float
+    field_factor: float
+    valid_background_min_cd_m2: float
+    valid_background_max_cd_m2: float
+    valid: bool
+    reason: str | None
+    limiting_magnitude: float | None
+
+
+@dataclass(frozen=True, slots=True)
 class ObserverVisibilityEnvironment:
     """
     RITE: The Observer Environment Vessel — the complete typed environment declaration
@@ -985,8 +1080,9 @@ class ObserverVisibilityEnvironment:
 
     LAW OF OPERATION:
         Responsibilities:
-            - Carry site darkness class, explicit limiting magnitude override,
-              local horizon altitude, atmospheric parameters, and observing aid.
+            - Carry site darkness class, an explicit limiting magnitude or
+              measured sky-surface brightness, local horizon altitude,
+              atmospheric parameters, and observing aid.
             - Validate relative_humidity, pressure_mbar, and
               observer_altitude_m on construction.
             - Serve as the environment field of VisibilityPolicy.
@@ -1015,6 +1111,7 @@ class ObserverVisibilityEnvironment:
         "api": {
             "public_attributes": [
                 "light_pollution_class", "limiting_magnitude",
+                "sky_surface_brightness_mag_arcsec2",
                 "local_horizon_altitude_deg", "temperature_c",
                 "pressure_mbar", "relative_humidity",
                 "observer_altitude_m", "observing_aid"
@@ -1047,6 +1144,7 @@ class ObserverVisibilityEnvironment:
 
     light_pollution_class: LightPollutionClass | None = LightPollutionClass.BORTLE_3
     limiting_magnitude: float | None = None
+    sky_surface_brightness_mag_arcsec2: float | None = None
     local_horizon_altitude_deg: float = 0.0
     temperature_c: float = 10.0
     pressure_mbar: float = 1013.25
@@ -1057,14 +1155,39 @@ class ObserverVisibilityEnvironment:
     def __post_init__(self) -> None:
         if self.limiting_magnitude is not None and not math.isfinite(self.limiting_magnitude):
             raise ValueError("limiting_magnitude must be finite when provided")
-        if not math.isfinite(self.local_horizon_altitude_deg):
-            raise ValueError("local_horizon_altitude_deg must be finite")
-        if not 0.0 <= self.relative_humidity <= 1.0:
-            raise ValueError("relative_humidity must be in [0, 1]")
-        if self.pressure_mbar < 0.0:
-            raise ValueError("pressure_mbar must be >= 0")
-        if self.observer_altitude_m < -1000.0:
-            raise ValueError("observer_altitude_m is implausibly low")
+        if (
+            self.sky_surface_brightness_mag_arcsec2 is not None
+            and (
+                not math.isfinite(self.sky_surface_brightness_mag_arcsec2)
+                or self.sky_surface_brightness_mag_arcsec2 <= 0.0
+            )
+        ):
+            raise ValueError(
+                "sky_surface_brightness_mag_arcsec2 must be finite and > 0 when provided"
+            )
+        if (
+            not math.isfinite(self.local_horizon_altitude_deg)
+            or not -90.0 <= self.local_horizon_altitude_deg <= 90.0
+        ):
+            raise ValueError(
+                "local_horizon_altitude_deg must be finite and in [-90, 90]"
+            )
+        if not math.isfinite(self.temperature_c):
+            raise ValueError("temperature_c must be finite")
+        if (
+            not math.isfinite(self.relative_humidity)
+            or not 0.0 <= self.relative_humidity <= 1.0
+        ):
+            raise ValueError("relative_humidity must be finite and in [0, 1]")
+        if not math.isfinite(self.pressure_mbar) or self.pressure_mbar < 0.0:
+            raise ValueError("pressure_mbar must be finite and >= 0")
+        if (
+            not math.isfinite(self.observer_altitude_m)
+            or self.observer_altitude_m < -1000.0
+        ):
+            raise ValueError(
+                "observer_altitude_m must be finite and >= -1000"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1119,7 +1242,8 @@ class VisibilityPolicy:
                 "criterion_family", "environment",
                 "light_pollution_derivation_mode", "extinction_model",
                 "twilight_model", "use_refraction", "moonlight_policy",
-                "extinction_coefficient_k"
+                "extinction_coefficient_k", "crumey_field_factor",
+                "crumey_field_factor_includes_atmosphere"
             ]
         },
         "state": {
@@ -1135,8 +1259,8 @@ class VisibilityPolicy:
             "cross_thread_calls": "safe_read_only"
         },
         "failures": {
-            "raises": ["ValueError for YALLOP_LUNAR_CRESCENT with incompatible twilight_model"],
-            "policy": "__post_init__ enforces criterion/twilight compatibility"
+            "raises": ["ValueError for incompatible criterion/model/environment combinations"],
+            "policy": "__post_init__ enforces coherent declared model combinations"
         },
         "succession": {
             "stance": "terminal",
@@ -1155,30 +1279,127 @@ class VisibilityPolicy:
     use_refraction: bool = True
     moonlight_policy: MoonlightPolicy = MoonlightPolicy.IGNORE
     extinction_coefficient_k: float = 0.20
-    """Broadband extinction coefficient (mag/airmass) used by the
-    Krisciunas & Schaefer (1991) moonlight model.
+    """Broadband extinction coefficient (mag/airmass).
 
-    Use the :class:`ExtinctionCoefficient` named holders for the
-    four admitted reference site classes:
+    This is used by the Kasten--Young direct-extinction path, Schaefer
+    directional twilight path, and Krisciunas & Schaefer moonlight path.
+    The Schaefer component-extinction path derives its own coefficient.
+    Use the :class:`ExtinctionCoefficient` named holders for the four
+    admitted reference site classes:
 
     - ``ExtinctionCoefficient.MAUNA_KEA``       = 0.172  (exceptional high-altitude site)
     - ``ExtinctionCoefficient.GOOD_DARK_SITE``  = 0.20   (recommended default)
     - ``ExtinctionCoefficient.TYPICAL``         = 0.25   (typical clear site)
     - ``ExtinctionCoefficient.HAZY``            = 0.30   (hazy or coastal conditions)
 
-    This field has no effect when ``moonlight_policy`` is ``IGNORE``.
+    The declared model combination determines whether this field is consumed.
+    """
+    crumey_field_factor: float = 2.0
+    """Observer/field factor ``F`` in Crumey (2014), Eq. 53.
+
+    ``2.0`` reproduces Crumey's representative naked-eye example.  The
+    physical point-source criterion requires naked-eye observing and applies
+    this factor exactly as declared; it is never inferred from an aid class.
+    By Crumey's definition it is an overall factor that may include target
+    spectrum, medium, laboratory scaling, detection practice, and observer.
+    """
+    crumey_field_factor_includes_atmosphere: bool = True
+    """Whether Crumey's field factor already contains atmospheric target loss.
+
+    Crumey defines ``F`` as including target, medium, laboratory-scaling, and
+    observer factors, so ``True`` is the source-faithful default.  Set this to
+    ``False`` only when ``crumey_field_factor`` was calibrated without
+    atmospheric transmission; Moira will then apply the separately calculated
+    direct extinction to the target magnitude used by the criterion.
     """
 
     def __post_init__(self) -> None:
         if self.environment is None:
             object.__setattr__(self, "environment", ObserverVisibilityEnvironment())
+        if not isinstance(self.crumey_field_factor_includes_atmosphere, bool):
+            raise ValueError(
+                "crumey_field_factor_includes_atmosphere must be bool"
+            )
+        if not math.isfinite(self.extinction_coefficient_k) or self.extinction_coefficient_k < 0.0:
+            raise ValueError("extinction_coefficient_k must be finite and >= 0")
+        if not math.isfinite(self.crumey_field_factor) or self.crumey_field_factor <= 0.0:
+            raise ValueError("crumey_field_factor must be finite and > 0")
         if (
             self.criterion_family is VisibilityCriterionFamily.YALLOP_LUNAR_CRESCENT
-            and self.twilight_model is not VisibilityTwilightModel.ARCUS_VISIONIS_SOLAR_DEPRESSION
+            and (
+                self.extinction_model is not VisibilityExtinctionModel.LEGACY_ARCUS_VISIONIS
+                or self.twilight_model
+                is not VisibilityTwilightModel.ARCUS_VISIONIS_SOLAR_DEPRESSION
+            )
         ):
             raise ValueError(
-                "YALLOP_LUNAR_CRESCENT currently requires the standard twilight model slot"
+                "YALLOP_LUNAR_CRESCENT requires the legacy extinction and twilight slots"
             )
+        if self.criterion_family is VisibilityCriterionFamily.LIMITING_MAGNITUDE_THRESHOLD:
+            if (
+                self.extinction_model is not VisibilityExtinctionModel.LEGACY_ARCUS_VISIONIS
+                or self.twilight_model
+                is not VisibilityTwilightModel.ARCUS_VISIONIS_SOLAR_DEPRESSION
+            ):
+                raise ValueError(
+                    "LIMITING_MAGNITUDE_THRESHOLD requires the legacy extinction "
+                    "and twilight slots; use CRUMEY_2014_POINT_SOURCE for the "
+                    "physical atmospheric path"
+                )
+        if self.criterion_family is VisibilityCriterionFamily.CRUMEY_2014_POINT_SOURCE:
+            if self.extinction_model not in {
+                VisibilityExtinctionModel.KASTEN_YOUNG_1989_BROADBAND,
+                VisibilityExtinctionModel.SCHAEFER_1993_COMPONENTS,
+            }:
+                raise ValueError(
+                    "CRUMEY_2014_POINT_SOURCE requires an admitted physical "
+                    "extinction model"
+                )
+            if self.twilight_model is not VisibilityTwilightModel.SCHAEFER_1993_DIRECTIONAL:
+                raise ValueError(
+                    "CRUMEY_2014_POINT_SOURCE requires SCHAEFER_1993_DIRECTIONAL twilight"
+                )
+            environment = self.environment
+            assert environment is not None
+            if environment.limiting_magnitude is not None:
+                raise ValueError(
+                    "CRUMEY_2014_POINT_SOURCE derives its own limiting magnitude; "
+                    "use sky_surface_brightness_mag_arcsec2, not limiting_magnitude"
+                )
+            if (
+                environment.sky_surface_brightness_mag_arcsec2 is None
+                and environment.light_pollution_class is None
+            ):
+                raise ValueError(
+                    "CRUMEY_2014_POINT_SOURCE requires measured sky surface "
+                    "brightness or a declared Bortle class"
+                )
+            if (
+                environment.sky_surface_brightness_mag_arcsec2 is None
+                and self.light_pollution_derivation_mode
+                is not LightPollutionDerivationMode.BORTLE_TABLE
+            ):
+                raise ValueError(
+                    "CRUMEY_2014_POINT_SOURCE Bortle fallback requires "
+                    "light_pollution_derivation_mode=BORTLE_TABLE"
+                )
+            if environment.observing_aid is not ObserverAid.NAKED_EYE:
+                raise ValueError(
+                    "CRUMEY_2014_POINT_SOURCE is admitted only for naked-eye observation"
+                )
+            if not self.use_refraction:
+                raise ValueError(
+                    "CRUMEY_2014_POINT_SOURCE requires apparent altitude "
+                    "(use_refraction=True)"
+                )
+            if (
+                self.extinction_model is VisibilityExtinctionModel.SCHAEFER_1993_COMPONENTS
+                and environment.relative_humidity >= 1.0
+            ):
+                raise ValueError(
+                    "SCHAEFER_1993_COMPONENTS requires relative_humidity < 1 "
+                    "for the clear-air aerosol model"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1687,15 +1908,335 @@ def _effective_limiting_magnitude(policy: VisibilityPolicy) -> float:
 
 
 # ---------------------------------------------------------------------------
+# Physical atmospheric visibility models
+# ---------------------------------------------------------------------------
+
+_CRUMEY_BACKGROUND_MIN_CD_M2 = 1.0e-5
+_CRUMEY_BACKGROUND_MAX_CD_M2 = 3.426e-2
+_NANOLAMBERT_TO_CD_M2 = 1.0e-5 / math.pi
+
+
+def _validate_apparent_altitude(altitude_deg: float) -> None:
+    if not math.isfinite(altitude_deg) or not 0.0 <= altitude_deg <= 90.0:
+        raise ValueError("apparent altitude must be finite and in [0, 90] degrees")
+
+
+def relative_optical_airmass(apparent_altitude_deg: float) -> float:
+    """Return Kasten--Young (1989) relative optical air mass.
+
+    The input is apparent altitude in degrees.  The approximation is admitted
+    from the horizon through the zenith; below-horizon sight lines are rejected
+    rather than clamped into a fictitious atmospheric path.
+    """
+
+    _validate_apparent_altitude(apparent_altitude_deg)
+    h = apparent_altitude_deg
+    return 1.0 / (
+        math.sin(math.radians(h))
+        + 0.50572 * (h + 6.07995) ** -1.6364
+    )
+
+
+def _rozenberg_airmass(apparent_altitude_deg: float) -> float:
+    """Whole-atmosphere air mass from Rozenberg (1966), Schaefer Eq. 2b."""
+
+    _validate_apparent_altitude(apparent_altitude_deg)
+    cos_z = math.sin(math.radians(apparent_altitude_deg))
+    return 1.0 / (cos_z + 0.025 * math.exp(-11.0 * cos_z))
+
+
+def _schaefer_exponential_airmass(
+    apparent_altitude_deg: float,
+    scale_height_km: float,
+) -> float:
+    """Schaefer (1993), Eq. 3a, for an exponential atmospheric component."""
+
+    _validate_apparent_altitude(apparent_altitude_deg)
+    cos_z = math.sin(math.radians(apparent_altitude_deg))
+    root_height = math.sqrt(scale_height_km)
+    return 1.0 / (
+        cos_z
+        + 0.01
+        * root_height
+        * math.exp(-30.0 * cos_z / root_height)
+    )
+
+
+def _schaefer_layer_airmass(
+    apparent_altitude_deg: float,
+    layer_height_km: float,
+) -> float:
+    """Schaefer (1993), Eq. 3b, for a thin layer above the observer."""
+
+    _validate_apparent_altitude(apparent_altitude_deg)
+    sin_z = math.cos(math.radians(apparent_altitude_deg))
+    earth_equatorial_radius_km = 6378.0
+    denominator = 1.0 + layer_height_km / earth_equatorial_radius_km
+    return (1.0 - (sin_z / denominator) ** 2) ** -0.5
+
+
+def atmospheric_extinction(
+    apparent_altitude_deg: float,
+    *,
+    model: VisibilityExtinctionModel,
+    extinction_coefficient_k: float = ExtinctionCoefficient.GOOD_DARK_SITE,
+    observer_altitude_m: float = 0.0,
+    relative_humidity: float = 0.5,
+    observer_latitude_deg: float = 0.0,
+    sun_right_ascension_deg: float = 0.0,
+) -> AtmosphericExtinctionAssessment:
+    """Compute direct-beam extinction for one sight line.
+
+    ``KASTEN_YOUNG_1989_BROADBAND`` applies a caller-declared, preferably
+    measured, broadband coefficient to the Kasten--Young relative optical air
+    mass.  ``SCHAEFER_1993_COMPONENTS`` estimates Rayleigh, aerosol, and ozone
+    terms using Schaefer's Eqs. 3--6 and his stated night-vision multipliers
+    for the direct target.  It also returns the unmodified visual-band sum
+    separately for Schaefer/Krisciunas sky-brightness equations.
+    The legacy arcus-visionis slot is intentionally not accepted here because
+    it is an event-threshold convention, not a direct extinction model.
+    """
+
+    _validate_apparent_altitude(apparent_altitude_deg)
+    if not math.isfinite(extinction_coefficient_k) or extinction_coefficient_k < 0.0:
+        raise ValueError("extinction_coefficient_k must be finite and >= 0")
+    if not math.isfinite(observer_altitude_m) or observer_altitude_m < -1000.0:
+        raise ValueError("observer_altitude_m must be finite and >= -1000")
+    if not math.isfinite(relative_humidity) or not 0.0 <= relative_humidity <= 1.0:
+        raise ValueError("relative_humidity must be finite and in [0, 1]")
+    if not math.isfinite(observer_latitude_deg) or not -90.0 <= observer_latitude_deg <= 90.0:
+        raise ValueError("observer_latitude_deg must be finite and in [-90, 90]")
+    if not math.isfinite(sun_right_ascension_deg):
+        raise ValueError("sun_right_ascension_deg must be finite")
+
+    zenith_distance = 90.0 - apparent_altitude_deg
+    if model is VisibilityExtinctionModel.KASTEN_YOUNG_1989_BROADBAND:
+        broadband_airmass = relative_optical_airmass(apparent_altitude_deg)
+        extinction_magnitude = extinction_coefficient_k * broadband_airmass
+        return AtmosphericExtinctionAssessment(
+            model=model,
+            apparent_altitude_deg=apparent_altitude_deg,
+            zenith_distance_deg=zenith_distance,
+            broadband_airmass=broadband_airmass,
+            rayleigh_airmass=None,
+            aerosol_airmass=None,
+            ozone_airmass=None,
+            rayleigh_coefficient_mag_per_airmass=None,
+            aerosol_coefficient_mag_per_airmass=None,
+            ozone_coefficient_mag_per_airmass=None,
+            total_zenith_extinction_coefficient=extinction_coefficient_k,
+            sky_brightness_extinction_coefficient=extinction_coefficient_k,
+            extinction_magnitude=extinction_magnitude,
+            transmission_fraction=10.0 ** (-0.4 * extinction_magnitude),
+        )
+    if model is not VisibilityExtinctionModel.SCHAEFER_1993_COMPONENTS:
+        raise ValueError(
+            "atmospheric_extinction requires KASTEN_YOUNG_1989_BROADBAND "
+            "or SCHAEFER_1993_COMPONENTS"
+        )
+    if relative_humidity >= 1.0:
+        raise ValueError(
+            "SCHAEFER_1993_COMPONENTS requires relative_humidity < 1 "
+            "for the clear-air aerosol model"
+        )
+
+    height_km = observer_altitude_m / 1000.0
+    rayleigh_airmass = _schaefer_exponential_airmass(apparent_altitude_deg, 8.2)
+    aerosol_airmass = _schaefer_exponential_airmass(apparent_altitude_deg, 1.5)
+    ozone_airmass = _schaefer_layer_airmass(apparent_altitude_deg, 20.0)
+
+    # Schaefer (1993), Eqs. 4b, 5, and 6 first define visual-band
+    # coefficients.  The paper later gives separate night-vision factors for
+    # direct faint-target extinction: Rayleigh 1.35, ozone 0.30, aerosol 1.10.
+    rayleigh_visual_k = 0.1066 * math.exp(-height_km / 8.2)
+    latitude_rad = math.radians(observer_latitude_deg)
+    sun_ra_rad = math.radians(sun_right_ascension_deg % 360.0)
+    ozone_column_mm = 3.0 + 0.4 * (
+        latitude_rad * math.cos(sun_ra_rad) - math.cos(3.0 * latitude_rad)
+    )
+    ozone_visual_k = 0.031 * ozone_column_mm / 3.0
+
+    if relative_humidity == 0.0:
+        humidity_factor = 1.0
+    else:
+        humidity_factor = (
+            1.0 - 0.32 / math.log(relative_humidity)
+        ) ** (4.0 / 3.0)
+    aerosol_visual_k = (
+        0.12
+        * math.exp(-height_km / 1.5)
+        * humidity_factor
+        * (1.0 + 0.33 * math.sin(sun_ra_rad))
+    )
+    rayleigh_k = 1.35 * rayleigh_visual_k
+    ozone_k = 0.30 * ozone_visual_k
+    aerosol_k = 1.10 * aerosol_visual_k
+    extinction_magnitude = (
+        rayleigh_k * rayleigh_airmass
+        + aerosol_k * aerosol_airmass
+        + ozone_k * ozone_airmass
+    )
+    total_k = rayleigh_k + aerosol_k + ozone_k
+    sky_brightness_k = (
+        rayleigh_visual_k + aerosol_visual_k + ozone_visual_k
+    )
+    return AtmosphericExtinctionAssessment(
+        model=model,
+        apparent_altitude_deg=apparent_altitude_deg,
+        zenith_distance_deg=zenith_distance,
+        broadband_airmass=None,
+        rayleigh_airmass=rayleigh_airmass,
+        aerosol_airmass=aerosol_airmass,
+        ozone_airmass=ozone_airmass,
+        rayleigh_coefficient_mag_per_airmass=rayleigh_k,
+        aerosol_coefficient_mag_per_airmass=aerosol_k,
+        ozone_coefficient_mag_per_airmass=ozone_k,
+        total_zenith_extinction_coefficient=total_k,
+        sky_brightness_extinction_coefficient=sky_brightness_k,
+        extinction_magnitude=extinction_magnitude,
+        transmission_fraction=10.0 ** (-0.4 * extinction_magnitude),
+    )
+
+
+def directional_twilight_sky_brightness(
+    target_altitude_deg: float,
+    sun_altitude_deg: float,
+    sun_target_separation_deg: float,
+    *,
+    extinction_coefficient_k: float,
+) -> TwilightSkyBrightnessAssessment:
+    """Return Schaefer's directional cloudless-sky twilight contribution.
+
+    Schaefer (1993), Eq. 15c, is evaluated only for solar altitudes from
+    -18 through 0 degrees.  Below -18 degrees the admitted twilight
+    contribution is zero.  Above the horizon the result is explicitly invalid
+    because this is not a daylight-sky model.
+    """
+
+    _validate_apparent_altitude(target_altitude_deg)
+    if not math.isfinite(sun_altitude_deg):
+        raise ValueError("sun_altitude_deg must be finite")
+    if (
+        not math.isfinite(sun_target_separation_deg)
+        or not 0.0 <= sun_target_separation_deg <= 180.0
+    ):
+        raise ValueError("sun_target_separation_deg must be finite and in [0, 180]")
+    if not math.isfinite(extinction_coefficient_k) or extinction_coefficient_k < 0.0:
+        raise ValueError("extinction_coefficient_k must be finite and >= 0")
+
+    sky_airmass = _rozenberg_airmass(target_altitude_deg)
+    if sun_altitude_deg < -18.0:
+        return TwilightSkyBrightnessAssessment(
+            model=VisibilityTwilightModel.SCHAEFER_1993_DIRECTIONAL,
+            target_altitude_deg=target_altitude_deg,
+            sun_altitude_deg=sun_altitude_deg,
+            sun_target_separation_deg=sun_target_separation_deg,
+            sky_airmass=sky_airmass,
+            extinction_coefficient=extinction_coefficient_k,
+            formula_applied=False,
+            valid=True,
+            reason="sun_below_astronomical_twilight",
+            sky_nanolamberts=0.0,
+        )
+    if sun_altitude_deg > 0.0:
+        return TwilightSkyBrightnessAssessment(
+            model=VisibilityTwilightModel.SCHAEFER_1993_DIRECTIONAL,
+            target_altitude_deg=target_altitude_deg,
+            sun_altitude_deg=sun_altitude_deg,
+            sun_target_separation_deg=sun_target_separation_deg,
+            sky_airmass=sky_airmass,
+            extinction_coefficient=extinction_coefficient_k,
+            formula_applied=False,
+            valid=False,
+            reason="sun_above_twilight_model_range",
+            sky_nanolamberts=None,
+        )
+
+    directional_factor = max(
+        1.0,
+        10.0 ** (sun_target_separation_deg / 90.0 - 1.1),
+    )
+    brightness = (
+        directional_factor
+        * 10.0 ** (8.45 + 0.4 * sun_altitude_deg)
+        * (1.0 - 10.0 ** (-0.4 * extinction_coefficient_k * sky_airmass))
+    )
+    return TwilightSkyBrightnessAssessment(
+        model=VisibilityTwilightModel.SCHAEFER_1993_DIRECTIONAL,
+        target_altitude_deg=target_altitude_deg,
+        sun_altitude_deg=sun_altitude_deg,
+        sun_target_separation_deg=sun_target_separation_deg,
+        sky_airmass=sky_airmass,
+        extinction_coefficient=extinction_coefficient_k,
+        formula_applied=True,
+        valid=True,
+        reason=None,
+        sky_nanolamberts=max(0.0, brightness),
+    )
+
+
+def point_source_visibility_threshold(
+    background_nanolamberts: float,
+    *,
+    field_factor: float = 2.0,
+) -> PointSourceVisibilityThreshold:
+    """Return Crumey's scotopic naked-eye point-source limiting magnitude.
+
+    Implements Crumey (2014), Eq. 53, with the paper's V-band illuminance zero
+    point.  ``field_factor`` retains the paper's overall target/medium/
+    laboratory/observer semantics.  Values outside the published background
+    interval are returned as invalid rather than extrapolated.
+    """
+
+    if not math.isfinite(background_nanolamberts) or background_nanolamberts <= 0.0:
+        raise ValueError("background_nanolamberts must be finite and > 0")
+    if not math.isfinite(field_factor) or field_factor <= 0.0:
+        raise ValueError("field_factor must be finite and > 0")
+
+    background_cd_m2 = background_nanolamberts * _NANOLAMBERT_TO_CD_M2
+    if not _CRUMEY_BACKGROUND_MIN_CD_M2 <= background_cd_m2 <= _CRUMEY_BACKGROUND_MAX_CD_M2:
+        return PointSourceVisibilityThreshold(
+            criterion_family=VisibilityCriterionFamily.CRUMEY_2014_POINT_SOURCE,
+            background_nanolamberts=background_nanolamberts,
+            background_luminance_cd_m2=background_cd_m2,
+            field_factor=field_factor,
+            valid_background_min_cd_m2=_CRUMEY_BACKGROUND_MIN_CD_M2,
+            valid_background_max_cd_m2=_CRUMEY_BACKGROUND_MAX_CD_M2,
+            valid=False,
+            reason="background_outside_crumey_2014_range",
+            limiting_magnitude=None,
+        )
+
+    threshold_illuminance_lux = field_factor * (
+        6.505e-4 * background_cd_m2 ** 0.25
+        - 8.461e-4 * background_cd_m2 ** 0.5
+    ) ** 2
+    limiting_magnitude = -2.5 * math.log10(
+        threshold_illuminance_lux / 2.54e-6
+    )
+    return PointSourceVisibilityThreshold(
+        criterion_family=VisibilityCriterionFamily.CRUMEY_2014_POINT_SOURCE,
+        background_nanolamberts=background_nanolamberts,
+        background_luminance_cd_m2=background_cd_m2,
+        field_factor=field_factor,
+        valid_background_min_cd_m2=_CRUMEY_BACKGROUND_MIN_CD_M2,
+        valid_background_max_cd_m2=_CRUMEY_BACKGROUND_MAX_CD_M2,
+        valid=True,
+        reason=None,
+        limiting_magnitude=limiting_magnitude,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Krisciunas & Schaefer (1991) moonlight sky-brightness model
 # ---------------------------------------------------------------------------
 # Authority: Krisciunas, K. & Schaefer, B.E. (1991), PASP 103, 1033-1039.
 # "A model for the brightness of moonlight."
 # The formulas below implement the paper's admitted derivation chain:
-#   Eq. 9  → lunar apparent magnitude as function of phase angle
-#   Eq. 3  → scattering function f(rho)
-#   Eq. 20 → top-of-atmosphere lunar illuminance I*(alpha)
-#   Eq. 21 → moonlight sky brightness B_moon in nanolamberts
+#   Eq. 9      - lunar apparent magnitude as a function of phase angle
+#   Eqs. 17-19 - Rayleigh and piecewise Mie scattering functions
+#   Eq. 20     - top-of-atmosphere lunar illuminance I*(alpha)
+#   Eq. 15     - moonlight sky brightness B_moon in nanolamberts
 # The limiting-magnitude penalty uses the linear sky-brightness / limiting-magnitude
 # relation derived from the Bortle SQM column, under the approximation that
 # mL varies as -2.5 * log10(B_sky) (sky background as the dominant noise source).
@@ -1730,16 +2271,25 @@ def _ks1991_scattering_function(rho_deg: float) -> float:
     """
     Atmospheric scattering function f(rho) for moonlit sky brightness.
 
-    Krisciunas & Schaefer (1991), Eq. 3.
+    Krisciunas & Schaefer (1991), Eqs. 17-19 and 21.
     rho_deg: angular separation (degrees) between Moon and target sky point.
-    Clamped to >= 10 degrees: the model is not valid for very small separations.
+    The empirical Mie term follows Eq. 18 from 10 through 180 degrees and
+    switches to the Eq. 19 aureole law below 10 degrees. The point-source
+    model is singular at zero separation, so zero is rejected rather than
+    silently clamped.
     """
-    rho = max(rho_deg, 10.0)
+    if not math.isfinite(rho_deg) or not 0.0 < rho_deg <= 180.0:
+        raise ValueError("rho_deg must be finite and in (0, 180]")
+
+    rho = rho_deg
     rho_r = math.radians(rho)
-    return (
-        10.0**5.36 * (1.06 + math.cos(rho_r)**2)
-        + 10.0**(6.15 - rho / 40.0)
+    rayleigh = 10.0**5.36 * (1.06 + math.cos(rho_r) ** 2)
+    mie = (
+        6.2e7 * rho**-2.0
+        if rho < 10.0
+        else 10.0 ** (6.15 - rho / 40.0)
     )
+    return rayleigh + mie
 
 
 def _ks1991_moonlight_nanolamberts(
@@ -1758,7 +2308,8 @@ def _ks1991_moonlight_nanolamberts(
     Parameters
     ----------
     rho_deg:
-        Angular separation between Moon and target (degrees). Clamped to >= 10 deg.
+        Angular separation between Moon and target in ``(0, 180]`` degrees.
+        Separations below 10 degrees use the source-defined aureole law.
     alt_moon_deg:
         Altitude of the Moon above the horizon (degrees).
     phase_angle_deg:
@@ -1776,14 +2327,17 @@ def _ks1991_moonlight_nanolamberts(
     v_moon = _ks1991_moon_magnitude(phase_angle_deg)
     i_star = 10.0**(-0.4 * (v_moon + 16.57))
 
-    # Eq. 3: scattering function
+    # Eqs. 17-19 and 21: Rayleigh plus piecewise Mie scattering.
     f_rho = _ks1991_scattering_function(rho_deg)
 
-    # Plane-parallel airmass (clamped to avoid divergence at horizon)
-    x_moon = min(1.0 / math.sin(math.radians(alt_moon_deg)), 40.0)
-    x_target = min(1.0 / math.sin(math.radians(alt_target_deg)), 40.0)
+    # The attenuated lunar beam and the scattering path toward the sky point
+    # are distinct geometrical objects in K&S 1991.
+    x_moon = _rozenberg_airmass(alt_moon_deg)
+    x_target = (
+        1.0 - 0.96 * math.cos(math.radians(alt_target_deg)) ** 2
+    ) ** -0.5
 
-    # Eq. 21: moonlight sky brightness in nanolamberts
+    # Eq. 15: moonlight sky brightness in nanolamberts.
     b_moon = (
         f_rho
         * i_star
@@ -1796,13 +2350,156 @@ def _ks1991_moonlight_nanolamberts(
 def _ks1991_dark_sky_nanolamberts(policy: VisibilityPolicy) -> float:
     """
     Dark-sky surface brightness in nanolamberts derived from the Bortle light-pollution
-    policy. Conversion: B_nL = 34.08 * 10^((21.572 - mu_SQM) / 2.5).
+    policy or an explicit measured V/SQM surface brightness.
+
+    Krisciunas & Schaefer (1991), Eq. 1:
+    ``B_nL = 34.08 exp(20.7233 - 0.92104 V)``.
     """
     environment = policy.environment
     assert environment is not None
-    lpc = environment.light_pollution_class
-    sqm = _BORTLE_SKY_SQM_TABLE.get(lpc, _BORTLE_SKY_SQM_TABLE[LightPollutionClass.BORTLE_3])
-    return 34.08 * 10.0**((21.572 - sqm) / 2.5)
+    if environment.sky_surface_brightness_mag_arcsec2 is not None:
+        sqm = environment.sky_surface_brightness_mag_arcsec2
+    else:
+        lpc = environment.light_pollution_class
+        sqm = _BORTLE_SKY_SQM_TABLE.get(
+            lpc,
+            _BORTLE_SKY_SQM_TABLE[LightPollutionClass.BORTLE_3],
+        )
+    return 34.08 * math.exp(20.7233 - 0.92104 * sqm)
+
+
+def _directional_dark_sky_nanolamberts(
+    zenith_sky_nanolamberts: float,
+    apparent_altitude_deg: float,
+    extinction_k: float,
+) -> float:
+    """Project an observed zenith sky brightness to one direction.
+
+    This is the zenith-normalized form of Krisciunas & Schaefer (1991),
+    Eq. 2.  The supplied observed zenith value is recovered at 90 degrees.
+    """
+
+    _validate_apparent_altitude(apparent_altitude_deg)
+    x_direct = _rozenberg_airmass(apparent_altitude_deg)
+    scattering = (
+        0.4
+        + 0.6
+        / math.sqrt(
+            1.0 - 0.96 * math.cos(math.radians(apparent_altitude_deg)) ** 2
+        )
+    )
+    return (
+        zenith_sky_nanolamberts
+        * scattering
+        * 10.0 ** (-0.4 * extinction_k * (x_direct - 1.0))
+    )
+
+
+def _ks1991_moonlight_for_target(
+    policy: VisibilityPolicy,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    body: str,
+    *,
+    extinction_k: float | None = None,
+) -> float:
+    """Return the K&S moonlight contribution for the target direction."""
+
+    target_azimuth_deg, target_altitude_deg = _true_horizontal(
+        body,
+        jd_ut,
+        lat,
+        lon,
+    )
+    return _ks1991_moonlight_for_horizontal_direction(
+        policy,
+        jd_ut,
+        lat,
+        lon,
+        target_azimuth_deg,
+        target_altitude_deg,
+        extinction_k=extinction_k,
+    )
+
+
+def _ks1991_moonlight_for_horizontal_direction(
+    policy: VisibilityPolicy,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    target_azimuth_deg: float,
+    target_true_altitude_deg: float,
+    *,
+    extinction_k: float | None = None,
+) -> float:
+    """Return K&S moonlight for one declared true horizontal direction."""
+
+    from .phase import phase_angle as _phase_angle
+
+    moon_az, moon_alt = _true_horizontal(Body.MOON, jd_ut, lat, lon)
+    environment = policy.environment
+    assert environment is not None
+    if policy.use_refraction:
+        moon_alt = apply_refraction(
+            moon_alt,
+            pressure_mbar=environment.pressure_mbar,
+            temperature_c=environment.temperature_c,
+            relative_humidity=environment.relative_humidity,
+        )
+    if moon_alt <= 0.0:
+        return 0.0
+
+    tgt_az = target_azimuth_deg
+    tgt_alt = target_true_altitude_deg
+    if policy.use_refraction:
+        tgt_alt = apply_refraction(
+            tgt_alt,
+            pressure_mbar=environment.pressure_mbar,
+            temperature_c=environment.temperature_c,
+            relative_humidity=environment.relative_humidity,
+        )
+    if tgt_alt <= 0.0:
+        return 0.0
+
+    moon_phase = _phase_angle(Body.MOON, jd_ut)
+    cos_rho = (
+        math.sin(math.radians(moon_alt)) * math.sin(math.radians(tgt_alt))
+        + math.cos(math.radians(moon_alt))
+        * math.cos(math.radians(tgt_alt))
+        * math.cos(math.radians(moon_az - tgt_az))
+    )
+    rho_deg = math.degrees(math.acos(max(-1.0, min(1.0, cos_rho))))
+    k = policy.extinction_coefficient_k if extinction_k is None else extinction_k
+    return _ks1991_moonlight_nanolamberts(
+        rho_deg,
+        moon_alt,
+        moon_phase,
+        k,
+        tgt_alt,
+    )
+
+
+def _ks1991_zenith_limiting_magnitude_penalty(
+    policy: VisibilityPolicy,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+) -> float:
+    """Return the K&S moonlight penalty for the zenith reference direction."""
+
+    b_moon = _ks1991_moonlight_for_horizontal_direction(
+        policy,
+        jd_ut,
+        lat,
+        lon,
+        0.0,
+        90.0,
+    )
+    if b_moon <= 0.0:
+        return 0.0
+    b_dark = _ks1991_dark_sky_nanolamberts(policy)
+    return -2.5 * math.log10(1.0 + b_moon / b_dark)
 
 
 def _ks1991_limiting_magnitude_penalty(
@@ -1823,48 +2520,32 @@ def _ks1991_limiting_magnitude_penalty(
     The K&S 1991 paper's own examples use 0.172 (Mauna Kea); the policy default
     is 0.20, which is more representative of a typical clear dark-sky site.
     """
-    from .phase import phase_angle as _phase_angle
-
-    moon_az, moon_alt = _true_horizontal(Body.MOON, jd_ut, lat, lon)
-    environment = policy.environment
-    assert environment is not None
-    if policy.use_refraction:
-        moon_alt = apply_refraction(
-            moon_alt,
-            pressure_mbar=environment.pressure_mbar,
-            temperature_c=environment.temperature_c,
-            relative_humidity=environment.relative_humidity,
-        )
-    if moon_alt <= 0.0:
-        return 0.0
-
-    tgt_az, tgt_alt = _true_horizontal(body, jd_ut, lat, lon)
-    if policy.use_refraction:
-        tgt_alt = apply_refraction(
-            tgt_alt,
-            pressure_mbar=environment.pressure_mbar,
-            temperature_c=environment.temperature_c,
-            relative_humidity=environment.relative_humidity,
-        )
-    if tgt_alt <= 0.0:
-        return 0.0
-
-    moon_phase = _phase_angle(Body.MOON, jd_ut)
-
-    # Angular separation Moon–target via spherical dot product
-    cos_rho = (
-        math.sin(math.radians(moon_alt)) * math.sin(math.radians(tgt_alt))
-        + math.cos(math.radians(moon_alt)) * math.cos(math.radians(tgt_alt))
-        * math.cos(math.radians(moon_az - tgt_az))
+    b_moon = _ks1991_moonlight_for_target(
+        policy,
+        jd_ut,
+        lat,
+        lon,
+        body,
     )
-    rho_deg = math.degrees(math.acos(max(-1.0, min(1.0, cos_rho))))
 
-    _EXTINCTION_K = policy.extinction_coefficient_k
-    b_moon = _ks1991_moonlight_nanolamberts(rho_deg, moon_alt, moon_phase, _EXTINCTION_K, tgt_alt)
     if b_moon <= 0.0:
         return 0.0
 
-    b_dark = _ks1991_dark_sky_nanolamberts(policy)
+    environment = policy.environment
+    assert environment is not None
+    _, target_altitude = _true_horizontal(body, jd_ut, lat, lon)
+    if policy.use_refraction:
+        target_altitude = apply_refraction(
+            target_altitude,
+            pressure_mbar=environment.pressure_mbar,
+            temperature_c=environment.temperature_c,
+            relative_humidity=environment.relative_humidity,
+        )
+    b_dark = _directional_dark_sky_nanolamberts(
+        _ks1991_dark_sky_nanolamberts(policy),
+        target_altitude,
+        policy.extinction_coefficient_k,
+    )
     return -2.5 * math.log10(1.0 + b_moon / b_dark)
 
 
@@ -1941,6 +2622,26 @@ def _true_horizontal(body: str, jd_ut: float, lat: float, lon: float) -> tuple[f
     ra, dec = _body_ra_dec(jd_ut, body)
     lst = _lst(jd_ut, lon)
     return equatorial_to_horizontal(ra, dec, lst, lat)
+
+
+def _horizontal_separation_deg(
+    azimuth_a_deg: float,
+    altitude_a_deg: float,
+    azimuth_b_deg: float,
+    altitude_b_deg: float,
+) -> float:
+    """Angular separation of two horizontal directions on the celestial sphere."""
+
+    cos_separation = (
+        math.sin(math.radians(altitude_a_deg))
+        * math.sin(math.radians(altitude_b_deg))
+        + math.cos(math.radians(altitude_a_deg))
+        * math.cos(math.radians(altitude_b_deg))
+        * math.cos(math.radians(azimuth_a_deg - azimuth_b_deg))
+    )
+    return math.degrees(
+        math.acos(max(-1.0, min(1.0, cos_separation)))
+    )
 
 
 def _target_apparent_magnitude(body: str, jd_ut: float) -> float:
@@ -2650,17 +3351,15 @@ class VisibilityAssessment:
     assessment for a body under the currently admitted criterion families.
 
     RITE OF PURPOSE:
-        Provides a fully auditable visibility result: the raw intermediate values
-        (true and apparent altitude, effective limiting magnitude, solar
-        elongation, moonlight contribution) alongside the final observable boolean,
-        so that callers can inspect every step of the observability decision rather
-        than receiving only a boolean answer.  Without this vessel, diagnosing
-        threshold boundary cases would require re-running subcomputations manually.
+        Provides a fully auditable visibility result: geometry, raw and
+        extinction-adjusted target magnitude, directional sky contributions,
+        criterion validity, limiting threshold, margin, and final verdict.
 
     LAW OF OPERATION:
         Responsibilities:
             - Carry all intermediate and final values from a single call to
-              visibility_assessment().
+              visibility_assessment(), including physical-model validity and
+              the named component result vessels.
             - Include lunar_crescent_details when criterion_family is
               YALLOP_LUNAR_CRESCENT.
             - Include moonlight_sky_nanolamberts when K&S 1991 moonlight model
@@ -2674,8 +3373,8 @@ class VisibilityAssessment:
         Structural invariants:
             - lunar_crescent_details is non-None iff criterion_family is
               YALLOP_LUNAR_CRESCENT.
-            - moonlight_sky_nanolamberts is non-None iff K&S 1991 moonlight
-              penalty was applied.
+            - criterion_applicable is false whenever an admitted physical
+              formula refuses an out-of-domain evaluation.
 
     Canon: None (No applicable canon; aggregation result vessel).
 
@@ -2691,7 +3390,14 @@ class VisibilityAssessment:
                 "true_altitude_deg", "apparent_altitude_deg",
                 "local_horizon_altitude_deg", "solar_elongation_deg",
                 "is_geometrically_visible", "is_bright_enough", "observable",
-                "lunar_crescent_details", "moonlight_sky_nanolamberts"
+                "lunar_crescent_details", "moonlight_sky_nanolamberts",
+                "extinction_adjusted_magnitude", "visibility_margin_magnitude",
+                "criterion_target_magnitude",
+                "target_extinction_applied_separately",
+                "criterion_applicable", "criterion_reason",
+                "atmospheric_extinction", "twilight_sky_brightness",
+                "point_source_threshold", "dark_sky_nanolamberts",
+                "total_sky_nanolamberts"
             ]
         },
         "state": {
@@ -2722,7 +3428,7 @@ class VisibilityAssessment:
     body: str
     jd_ut: float
     criterion_family: VisibilityCriterionFamily
-    effective_limiting_magnitude: float
+    effective_limiting_magnitude: float | None
     apparent_magnitude: float
     true_altitude_deg: float
     apparent_altitude_deg: float
@@ -2733,6 +3439,17 @@ class VisibilityAssessment:
     observable: bool
     lunar_crescent_details: LunarCrescentDetails | None = None
     moonlight_sky_nanolamberts: float | None = None
+    extinction_adjusted_magnitude: float | None = None
+    visibility_margin_magnitude: float | None = None
+    criterion_target_magnitude: float | None = None
+    target_extinction_applied_separately: bool = False
+    criterion_applicable: bool = True
+    criterion_reason: str | None = None
+    atmospheric_extinction: AtmosphericExtinctionAssessment | None = None
+    twilight_sky_brightness: TwilightSkyBrightnessAssessment | None = None
+    point_source_threshold: PointSourceVisibilityThreshold | None = None
+    dark_sky_nanolamberts: float | None = None
+    total_sky_nanolamberts: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -2928,11 +3645,10 @@ class PlanetHeliacalEvent:
 # Public computation layer
 # ---------------------------------------------------------------------------
 
-# V0 note:
-# The functions below are real, admitted planetary event surfaces. They are
-# not the full generalized visibility subsystem, which remains deferred until
-# observer-environment policy and a broader validation corpus are
-# constitutionalized across more doctrine families.
+# The public layer below preserves the legacy event path while admitting an
+# opt-in, validity-bounded physical point-source assessment.  The physical
+# criterion is intentionally not used by legacy event search until event-level
+# doctrine and validation are admitted separately.
 
 def visibility_assessment(
     body: str,
@@ -2945,9 +3661,9 @@ def visibility_assessment(
     """
     Assess direct observability of a body at a single instant.
 
-    This is the standalone public surface for the currently admitted criterion
-    families: LIMITING_MAGNITUDE_THRESHOLD for planets and fixed stars, and
-    YALLOP_LUNAR_CRESCENT for the Moon.
+    This is the standalone public surface for the legacy limiting-magnitude
+    criterion, the opt-in CRUMEY_2014_POINT_SOURCE physical path for unresolved
+    planets and stars, and YALLOP_LUNAR_CRESCENT for the Moon.
 
     Parameters
     ----------
@@ -2996,13 +3712,6 @@ def visibility_assessment(
     ):
         raise ValueError("YALLOP_LUNAR_CRESCENT is currently defined only for the Moon")
 
-    effective_limiting_magnitude = _effective_limiting_magnitude(resolved_policy)
-    moonlight_sky_nl: float | None = None
-    if resolved_policy.moonlight_policy is MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991:
-        delta = _ks1991_limiting_magnitude_penalty(resolved_policy, jd_ut, lat, lon, body)
-        if delta < 0.0:
-            moonlight_sky_nl = _ks1991_dark_sky_nanolamberts(resolved_policy)
-            effective_limiting_magnitude += delta
     true_altitude_deg = _true_altitude(body, jd_ut, lat, lon)
     if resolved_policy.use_refraction:
         apparent_altitude_deg = _planet_alt(
@@ -3021,7 +3730,23 @@ def visibility_assessment(
     is_geometrically_visible = apparent_altitude_deg >= environment.local_horizon_altitude_deg
     solar_elongation_deg = _target_signed_elongation(body, jd_ut)
 
+    effective_limiting_magnitude: float | None = _effective_limiting_magnitude(
+        resolved_policy
+    )
+    moonlight_sky_nl: float | None = None
     lunar_crescent_details = None
+    extinction_adjusted_magnitude: float | None = None
+    visibility_margin_magnitude: float | None = None
+    criterion_target_magnitude: float | None = None
+    target_extinction_applied_separately = False
+    criterion_applicable = True
+    criterion_reason: str | None = None
+    extinction_details: AtmosphericExtinctionAssessment | None = None
+    twilight_details: TwilightSkyBrightnessAssessment | None = None
+    point_threshold: PointSourceVisibilityThreshold | None = None
+    dark_sky_nl: float | None = None
+    total_sky_nl: float | None = None
+
     if (
         body == Body.MOON
         and resolved_policy.criterion_family is VisibilityCriterionFamily.YALLOP_LUNAR_CRESCENT
@@ -3031,7 +3756,150 @@ def visibility_assessment(
             lunar_crescent_details.visibility_class,
             environment.observing_aid,
         )
+    elif (
+        resolved_policy.criterion_family
+        is VisibilityCriterionFamily.CRUMEY_2014_POINT_SOURCE
+    ):
+        if body in {Body.SUN, Body.MOON}:
+            raise ValueError(
+                "CRUMEY_2014_POINT_SOURCE is admitted for unresolved point "
+                "sources, not the Sun or Moon"
+            )
+        effective_limiting_magnitude = None
+        is_bright_enough = False
+        if apparent_altitude_deg < 0.0:
+            criterion_applicable = False
+            criterion_reason = "target_below_atmospheric_horizon"
+        else:
+            atmospheric_altitude = min(90.0, apparent_altitude_deg)
+            from .rise_set import _body_ra_dec
+
+            sun_right_ascension_deg, _ = _body_ra_dec(jd_ut, Body.SUN)
+            extinction_details = atmospheric_extinction(
+                atmospheric_altitude,
+                model=resolved_policy.extinction_model,
+                extinction_coefficient_k=resolved_policy.extinction_coefficient_k,
+                observer_altitude_m=environment.observer_altitude_m,
+                relative_humidity=environment.relative_humidity,
+                observer_latitude_deg=lat,
+                sun_right_ascension_deg=sun_right_ascension_deg,
+            )
+            extinction_adjusted_magnitude = (
+                apparent_mag + extinction_details.extinction_magnitude
+            )
+            extinction_k = (
+                extinction_details.sky_brightness_extinction_coefficient
+            )
+
+            target_azimuth_deg, target_true_altitude_deg = _true_horizontal(
+                body,
+                jd_ut,
+                lat,
+                lon,
+            )
+            sun_azimuth_deg, sun_true_altitude_deg = _true_horizontal(
+                Body.SUN,
+                jd_ut,
+                lat,
+                lon,
+            )
+            sun_target_separation_deg = _horizontal_separation_deg(
+                target_azimuth_deg,
+                target_true_altitude_deg,
+                sun_azimuth_deg,
+                sun_true_altitude_deg,
+            )
+            twilight_details = directional_twilight_sky_brightness(
+                atmospheric_altitude,
+                sun_true_altitude_deg,
+                sun_target_separation_deg,
+                extinction_coefficient_k=extinction_k,
+            )
+            if not twilight_details.valid:
+                criterion_applicable = False
+                criterion_reason = twilight_details.reason
+            else:
+                zenith_sky_nl = _ks1991_dark_sky_nanolamberts(
+                    resolved_policy
+                )
+                dark_sky_nl = _directional_dark_sky_nanolamberts(
+                    zenith_sky_nl,
+                    atmospheric_altitude,
+                    extinction_k,
+                )
+                if (
+                    resolved_policy.moonlight_policy
+                    is MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991
+                ):
+                    moonlight_sky_nl = _ks1991_moonlight_for_target(
+                        resolved_policy,
+                        jd_ut,
+                        lat,
+                        lon,
+                        body,
+                        extinction_k=extinction_k,
+                    )
+                twilight_nl = twilight_details.sky_nanolamberts
+                assert twilight_nl is not None
+                total_sky_nl = (
+                    dark_sky_nl
+                    + twilight_nl
+                    + (moonlight_sky_nl or 0.0)
+                )
+                point_threshold = point_source_visibility_threshold(
+                    total_sky_nl,
+                    field_factor=resolved_policy.crumey_field_factor,
+                )
+                criterion_applicable = point_threshold.valid
+                criterion_reason = point_threshold.reason
+                effective_limiting_magnitude = (
+                    point_threshold.limiting_magnitude
+                )
+                if point_threshold.valid:
+                    assert effective_limiting_magnitude is not None
+                    assert extinction_adjusted_magnitude is not None
+                    target_extinction_applied_separately = (
+                        not resolved_policy.crumey_field_factor_includes_atmosphere
+                    )
+                    criterion_target_magnitude = (
+                        extinction_adjusted_magnitude
+                        if target_extinction_applied_separately
+                        else apparent_mag
+                    )
+                    visibility_margin_magnitude = (
+                        effective_limiting_magnitude
+                        - criterion_target_magnitude
+                    )
+                    is_bright_enough = visibility_margin_magnitude >= 0.0
     else:
+        if (
+            resolved_policy.moonlight_policy
+            is MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991
+        ):
+            computed_moonlight_sky_nl = _ks1991_moonlight_for_target(
+                resolved_policy,
+                jd_ut,
+                lat,
+                lon,
+                body,
+            )
+            moonlight_sky_nl = (
+                computed_moonlight_sky_nl
+                if computed_moonlight_sky_nl > 0.0
+                else None
+            )
+            delta = _ks1991_limiting_magnitude_penalty(
+                resolved_policy,
+                jd_ut,
+                lat,
+                lon,
+                body,
+            )
+            if delta < 0.0:
+                assert effective_limiting_magnitude is not None
+                effective_limiting_magnitude += delta
+        assert effective_limiting_magnitude is not None
+        criterion_target_magnitude = apparent_mag
         is_bright_enough = apparent_mag <= effective_limiting_magnitude
 
     return VisibilityAssessment(
@@ -3046,9 +3914,26 @@ def visibility_assessment(
         solar_elongation_deg=solar_elongation_deg,
         is_geometrically_visible=is_geometrically_visible,
         is_bright_enough=is_bright_enough,
-        observable=is_geometrically_visible and is_bright_enough,
+        observable=(
+            criterion_applicable
+            and is_geometrically_visible
+            and is_bright_enough
+        ),
         lunar_crescent_details=lunar_crescent_details,
         moonlight_sky_nanolamberts=moonlight_sky_nl,
+        extinction_adjusted_magnitude=extinction_adjusted_magnitude,
+        visibility_margin_magnitude=visibility_margin_magnitude,
+        criterion_target_magnitude=criterion_target_magnitude,
+        target_extinction_applied_separately=(
+            target_extinction_applied_separately
+        ),
+        criterion_applicable=criterion_applicable,
+        criterion_reason=criterion_reason,
+        atmospheric_extinction=extinction_details,
+        twilight_sky_brightness=twilight_details,
+        point_source_threshold=point_threshold,
+        dark_sky_nanolamberts=dark_sky_nl,
+        total_sky_nanolamberts=total_sky_nl,
     )
 
 
@@ -3100,10 +3985,21 @@ def visual_limiting_magnitude(
         raise ValueError(f"lon must be in [-180, 180], got {lon}")
 
     resolved_policy = policy if policy is not None else VisibilityPolicy()
+    if (
+        resolved_policy.criterion_family
+        is VisibilityCriterionFamily.CRUMEY_2014_POINT_SOURCE
+    ):
+        raise ValueError(
+            "CRUMEY_2014_POINT_SOURCE is directional; use "
+            "visibility_assessment(body, ...) to obtain its limiting magnitude"
+        )
     magnitude = _effective_limiting_magnitude(resolved_policy)
     if resolved_policy.moonlight_policy is MoonlightPolicy.KRISCIUNAS_SCHAEFER_1991:
-        delta = _ks1991_limiting_magnitude_penalty(
-            resolved_policy, jd_ut, lat, lon, Body.MOON
+        delta = _ks1991_zenith_limiting_magnitude_penalty(
+            resolved_policy,
+            jd_ut,
+            lat,
+            lon,
         )
         if delta < 0.0:
             magnitude += delta
@@ -3221,6 +4117,16 @@ def visibility_event(
         if visibility_policy is not None
         else resolved_heliacal_policy.visibility_policy
     )
+    if (
+        resolved_visibility_policy is not None
+        and resolved_visibility_policy.criterion_family
+        is VisibilityCriterionFamily.CRUMEY_2014_POINT_SOURCE
+    ):
+        raise ValueError(
+            "CRUMEY_2014_POINT_SOURCE is admitted for single-epoch "
+            "visibility_assessment only; physical event-search doctrine "
+            "has not been admitted"
+        )
     resolved_search_policy = search_policy if search_policy is not None else VisibilitySearchPolicy()
     search_uses_refraction = (
         resolved_visibility_policy.use_refraction

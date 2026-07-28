@@ -929,6 +929,16 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "hellenistic_chart_profile",
 })
 
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "AtmosphericExtinctionAssessment",
+    "PointSourceVisibilityThreshold",
+    "TwilightSkyBrightnessAssessment",
+    "atmospheric_extinction",
+    "directional_twilight_sky_brightness",
+    "point_source_visibility_threshold",
+    "relative_optical_airmass",
+})
+
 _EXPECTED_ROOT_ONLY_NAMES = {
     "ASHTOTTARI_NAKSHATRA_LORD",
     "ASHTOTTARI_SEQUENCE",

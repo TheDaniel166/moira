@@ -1,86 +1,30 @@
-"""
-moira.sky.visibility — Observational Visibility Doctrine
-=========================================================
-Strict astronomy API for heliacal visibility, lunar crescent prediction,
-atmospheric extinction, moonlight modeling, and arcus visionis.
+"""Observational visibility doctrine.
 
-This subsystem implements Moira's full visibility doctrine.  All models
-are explicitly named and policy-controlled; there are no hidden defaults.
+The default policy preserves Moira's established arcus-visionis limiting-
+magnitude behavior and Yallop lunar-crescent path.  A separate opt-in physical
+point-source path keeps three products visible:
 
-Visibility framework
---------------------
-VisibilityPolicy
-    Observer environment: sky darkness, extinction, twilight model,
-    light pollution class, observer aids (naked eye / binocular / telescope).
+* auditable direct target extinction, using either a declared measured
+  coefficient with Kasten--Young (1989) air mass or Schaefer's (1993)
+  Rayleigh/aerosol/ozone component estimate;
+* directional cloudless-sky twilight brightness from Schaefer (1993), with
+  Krisciunas & Schaefer (1991) dark-sky and optional moonlight contributions;
+* the scotopic naked-eye point-source threshold from Crumey (2014), evaluated
+  only inside the paper's published background-luminance interval.
 
-HeliacalPolicy
-    Combines VisibilityPolicy with the target body, search direction, and
-    criterion family (arcus visionis vs Yallop crescent vs general).
-
-VisibilitySearchPolicy
-    Search window, time step, and convergence tolerance parameters.
-
-VisibilityModel
-    Resolved values: effective limiting magnitude, extinction coefficient,
-    sky darkness in nanolamberts.  Read-only output of policy resolution.
-
-ExtinctionCoefficient
-    Explicit extinction model: Rayleigh + aerosol + ozone components.
-
-Observer environment
---------------------
-ObserverVisibilityEnvironment  sky darkness, elevation, horizon
-LightPollutionClass            Bortle-derived classification
-ObserverAid                    NakedEye / Binocular / Telescope
-
-Moonlight model
----------------
-MoonlightPolicy   KS1991 (Khalid-Sultana) vs simplified approximation
-
-Lunar crescent (Yallop 1997)
-----------------------------
-LunarCrescentDetails
-    Full crescent geometry: q-value, arc of light, ARCV, DAZ, crescent
-    width, best time, Yallop visibility class.
-
-LunarCrescentVisibilityClass
-    A — Easily visible
-    B — Visible under perfect conditions
-    C — May need optical aid
-    D — Only with optical aid
-    E — Not visible with optical aid
-    F — Below the horizon
-
-Heliacal events
----------------
-visibility_assessment       single-epoch check — body visible at this moment?
-visibility_tonight         practitioner alias for single-epoch check
-is_visible_tonight         boolean verdict alias over visibility_tonight
-visual_limiting_magnitude   effective limiting magnitude at epoch
-visibility_event            search for next first/last heliacal event
-planet_heliacal_rising      morning first visibility (planet)
-planet_heliacal_setting     evening last visibility (planet)
-planet_acronychal_rising    evening first visibility (planet)
-planet_acronychal_setting   morning last visibility (planet)
-
-Result vessels
---------------
-VisibilityAssessment    single-epoch result with altitude, elongation, verdict
-GeneralVisibilityEvent  body + date + kind + assessment for any body
-PlanetHeliacalEvent     planet-specific event with elongation and phase data
-
-Enumerations
-------------
-HeliacalEventKind         MorningFirst / EveningLast / EveningFirst / MorningLast
-VisibilityTargetKind      Star / Planet / Moon
-VisibilityCriterionFamily ArucusVisionis / YallopCrescent / General
-VisibilityExtinctionModel Schaefer / Fixed / Custom
-VisibilityTwilightModel   Civil / Nautical / Astronomical / SolarDepression
+The physical path is explicitly policy-selected.  It is not a daylight model,
+does not extrapolate Crumey's fit, does not treat the Sun or Moon as unresolved
+point sources, and does not replace the legacy heliacal event-search doctrine.
+Crumey's overall field factor includes the observing medium by default, so the
+separately reported target extinction is not counted twice.
+Schaefer's component path also keeps its scotopic target coefficient separate
+from the visual-band coefficient consumed by the sky-brightness equations.
 """
 
 from __future__ import annotations
 
 from moira.heliacal import (
+    AtmosphericExtinctionAssessment,
     ExtinctionCoefficient,
     GeneralVisibilityEvent,
     HeliacalEventKind,
@@ -93,6 +37,8 @@ from moira.heliacal import (
     ObserverAid,
     ObserverVisibilityEnvironment,
     PlanetHeliacalEvent,
+    PointSourceVisibilityThreshold,
+    TwilightSkyBrightnessAssessment,
     VisibilityAssessment,
     VisibilityCriterionFamily,
     VisibilityExtinctionModel,
@@ -101,19 +47,22 @@ from moira.heliacal import (
     VisibilitySearchPolicy,
     VisibilityTargetKind,
     VisibilityTwilightModel,
+    atmospheric_extinction,
+    directional_twilight_sky_brightness,
+    is_visible_tonight,
     planet_acronychal_rising,
     planet_acronychal_setting,
     planet_heliacal_rising,
     planet_heliacal_setting,
+    point_source_visibility_threshold,
+    relative_optical_airmass,
     visibility_assessment,
     visibility_event,
     visibility_tonight,
-    is_visible_tonight,
     visual_limiting_magnitude,
 )
 
 __all__ = [
-    # Enumerations
     "HeliacalEventKind",
     "VisibilityTargetKind",
     "LightPollutionClass",
@@ -124,19 +73,23 @@ __all__ = [
     "VisibilityExtinctionModel",
     "VisibilityTwilightModel",
     "MoonlightPolicy",
-    # Policy objects
     "ExtinctionCoefficient",
     "ObserverVisibilityEnvironment",
     "VisibilityPolicy",
     "VisibilitySearchPolicy",
     "VisibilityModel",
     "HeliacalPolicy",
-    # Result vessels
+    "AtmosphericExtinctionAssessment",
+    "TwilightSkyBrightnessAssessment",
+    "PointSourceVisibilityThreshold",
     "LunarCrescentDetails",
     "VisibilityAssessment",
     "GeneralVisibilityEvent",
     "PlanetHeliacalEvent",
-    # Functions
+    "relative_optical_airmass",
+    "atmospheric_extinction",
+    "directional_twilight_sky_brightness",
+    "point_source_visibility_threshold",
     "visibility_assessment",
     "visual_limiting_magnitude",
     "visibility_event",

@@ -3435,22 +3435,67 @@ from moira.facade import (
     ObserverAid, ObserverVisibilityEnvironment,
     VisibilityCriterionFamily, VisibilityExtinctionModel, VisibilityTwilightModel,
     ExtinctionCoefficient, MoonlightPolicy,
+    AtmosphericExtinctionAssessment, TwilightSkyBrightnessAssessment,
+    PointSourceVisibilityThreshold,
     VisibilityPolicy, VisibilitySearchPolicy,
     LunarCrescentVisibilityClass, LunarCrescentDetails,
     VisibilityAssessment, GeneralVisibilityEvent,
+    relative_optical_airmass, atmospheric_extinction,
+    directional_twilight_sky_brightness, point_source_visibility_threshold,
     visibility_assessment, visual_limiting_magnitude, visibility_event,
 )
 ```
 
 | Function | Returns | Description |
 |---|---|---|
+| `relative_optical_airmass(apparent_altitude_deg)` | `float` | Kasten–Young (1989) relative optical air mass for an apparent above-horizon direction |
+| `atmospheric_extinction(apparent_altitude_deg, *, model, ...)` | `AtmosphericExtinctionAssessment` | Auditable direct extinction from a measured broadband coefficient or Schaefer (1993) clear-air components, with target and sky-model coefficients kept distinct |
+| `directional_twilight_sky_brightness(target_altitude_deg, sun_altitude_deg, sun_target_separation_deg, *, extinction_coefficient_k)` | `TwilightSkyBrightnessAssessment` | Schaefer (1993) directional cloudless twilight contribution with an explicit validity verdict |
+| `point_source_visibility_threshold(background_nanolamberts, *, field_factor=2.0)` | `PointSourceVisibilityThreshold` | Crumey (2014) scotopic naked-eye point-source limit without out-of-range extrapolation |
 | `visibility_assessment(body, jd_ut, lat, lon, *, policy=None)` | `VisibilityAssessment` | Criterion-based visibility judgment at one observing moment |
 | `visual_limiting_magnitude(jd_ut, lat, lon, *, policy=None)` | `float` | Estimated naked-eye limiting magnitude at the site and time |
 | `visibility_event(body, event_kind, jd_start, lat, lon, *, heliacal_policy=None, visibility_policy=None, search_policy=None)` | `GeneralVisibilityEvent \| None` | Search for the next generalized visibility event matching the requested kind |
 
 Key policy and vessel types: `VisibilityPolicy`, `VisibilitySearchPolicy`,
 `VisibilityAssessment`, `GeneralVisibilityEvent`, `ObserverVisibilityEnvironment`,
-`LunarCrescentDetails`.
+`AtmosphericExtinctionAssessment`, `TwilightSkyBrightnessAssessment`,
+`PointSourceVisibilityThreshold`, `LunarCrescentDetails`.
+
+The default policy remains the legacy limiting-magnitude/arcus-visionis path.
+The physical point-source path is opt-in and requires the coherent combination
+`CRUMEY_2014_POINT_SOURCE`, either physical extinction model, and
+`SCHAEFER_1993_DIRECTIONAL`. It is admitted only for naked-eye unresolved
+planets and stars. It reports, rather than extrapolates through, daylight,
+below-horizon targets, and background luminance outside Crumey's published
+scotopic range. The physical criterion is currently a single-epoch assessment
+surface; `visibility_event()` rejects it rather than silently using the legacy
+event-search threshold. `visual_limiting_magnitude()` remains a scalar
+zenith-reference product when its optional moonlight model is enabled.
+Crumey's published field factor includes the observing medium, so the default
+does not apply direct target extinction a second time. A caller with a field
+factor calibrated without atmospheric loss may set
+`crumey_field_factor_includes_atmosphere=False`; the assessment then exposes
+that separate extinction in both its criterion magnitude and response flag.
+When no measured sky surface brightness is supplied, the physical policy
+requires the explicit `BORTLE_TABLE` derivation mode; it never repurposes the
+legacy Bortle-to-limiting-magnitude interpolation as a luminance model.
+For Schaefer's component path,
+`total_zenith_extinction_coefficient` is the scotopic direct-target value,
+while `sky_brightness_extinction_coefficient` preserves the visual-band value
+consumed by the twilight, dark-sky, and K&S moonlight equations.
+
+```python
+physical = VisibilityPolicy(
+    criterion_family=VisibilityCriterionFamily.CRUMEY_2014_POINT_SOURCE,
+    light_pollution_derivation_mode=LightPollutionDerivationMode.BORTLE_TABLE,
+    extinction_model=VisibilityExtinctionModel.KASTEN_YOUNG_1989_BROADBAND,
+    twilight_model=VisibilityTwilightModel.SCHAEFER_1993_DIRECTIONAL,
+    environment=ObserverVisibilityEnvironment(
+        sky_surface_brightness_mag_arcsec2=21.25,
+    ),
+)
+result = visibility_assessment("Venus", jd_ut, lat, lon, policy=physical)
+```
 
 ### Variable Stars
 
@@ -5001,9 +5046,13 @@ from moira.sky.visibility import (
     LunarCrescentVisibilityClass, VisibilityExtinctionModel, VisibilityTwilightModel,
     MoonlightPolicy,
     ExtinctionCoefficient, ObserverVisibilityEnvironment,
+    AtmosphericExtinctionAssessment, TwilightSkyBrightnessAssessment,
+    PointSourceVisibilityThreshold,
     VisibilityPolicy, VisibilitySearchPolicy, VisibilityModel, HeliacalPolicy,
     LunarCrescentDetails, VisibilityAssessment,
     GeneralVisibilityEvent, PlanetHeliacalEvent,
+    relative_optical_airmass, atmospheric_extinction,
+    directional_twilight_sky_brightness, point_source_visibility_threshold,
     visibility_assessment, visual_limiting_magnitude, visibility_event,
     planet_heliacal_rising, planet_heliacal_setting,
     planet_acronychal_rising, planet_acronychal_setting,
@@ -5012,6 +5061,10 @@ from moira.sky.visibility import (
 
 | Function | Signature | Description |
 |---|---|---|
+| `relative_optical_airmass(apparent_altitude_deg)` | `→ float` | Kasten–Young (1989) relative optical air mass |
+| `atmospheric_extinction(apparent_altitude_deg, *, model, ...)` | `→ AtmosphericExtinctionAssessment` | Direct-beam extinction and transmission with explicit target/sky spectral coefficients |
+| `directional_twilight_sky_brightness(target_altitude_deg, sun_altitude_deg, separation_deg, *, extinction_coefficient_k)` | `→ TwilightSkyBrightnessAssessment` | Directional cloudless twilight contribution and validity state |
+| `point_source_visibility_threshold(background_nanolamberts, *, field_factor=2.0)` | `→ PointSourceVisibilityThreshold` | Crumey (2014) scotopic naked-eye threshold |
 | `visibility_assessment(body, jd_ut, lat, lon, *, policy=None)` | `→ VisibilityAssessment` | Single-epoch observability check |
 | `visual_limiting_magnitude(jd_ut, lat, lon, *, policy=None)` | `→ float` | Effective limiting magnitude for the observer/epoch |
 | `visibility_event(body, event_kind, jd_start, lat, lon, *, heliacal_policy=None, ...)` | `→ GeneralVisibilityEvent \| None` | Search for next heliacal event |
@@ -5023,6 +5076,13 @@ from moira.sky.visibility import (
 `LunarCrescentVisibilityClass` values: **A** (easily visible), **B** (visible under perfect conditions), **C** (may need optical aid), **D** (only with optical aid), **E** (not with optical aid), **F** (below the horizon).
 
 `HeliacalEventKind`: `MorningFirst`, `EveningLast`, `EveningFirst`, `MorningLast`.
+
+The physical point-source criterion exposes the full derivation on
+`VisibilityAssessment`: target extinction, directional dark/twilight/moon
+backgrounds, total sky brightness, point-source threshold, extinction-adjusted
+target magnitude, visibility margin, and an explicit criterion validity/reason.
+It does not turn these equations into a cloud, daylight, telescope, extended
+object, Sun/Moon, or physical event-search model.
 
 ---
 

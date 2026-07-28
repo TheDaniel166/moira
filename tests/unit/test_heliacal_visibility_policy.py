@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from types import SimpleNamespace
 
 import pytest
@@ -704,13 +705,37 @@ def test_ks1991_moon_magnitude_monotone_full_to_new() -> None:
     assert all(m1 <= m2 for m1, m2 in zip(mags, mags[1:]))
 
 
-def test_ks1991_scattering_function_is_clamped_below_10_deg() -> None:
-    # rho < 10 should be clamped to 10
+def test_ks1991_scattering_function_uses_aureole_law_below_10_deg() -> None:
+    # K&S Eq. 19 replaces, rather than clamps, the Mie term below 10 degrees.
     at_10 = _ks1991_scattering_function(10.0)
     at_5 = _ks1991_scattering_function(5.0)
-    at_0 = _ks1991_scattering_function(0.0)
-    assert at_5 == pytest.approx(at_10)
-    assert at_0 == pytest.approx(at_10)
+    rayleigh_at_5 = 10**5.36 * (
+        1.06 + math.cos(math.radians(5.0)) ** 2
+    )
+    expected_at_5 = rayleigh_at_5 + 6.2e7 * 5.0**-2.0
+
+    assert at_5 == pytest.approx(expected_at_5, rel=1e-12)
+    assert at_5 > at_10
+
+
+def test_ks1991_scattering_function_uses_eq18_at_10_deg_boundary() -> None:
+    rayleigh_at_10 = 10**5.36 * (
+        1.06 + math.cos(math.radians(10.0)) ** 2
+    )
+    expected = rayleigh_at_10 + 10**(6.15 - 10.0 / 40.0)
+
+    assert _ks1991_scattering_function(10.0) == pytest.approx(
+        expected,
+        rel=1e-12,
+    )
+
+
+@pytest.mark.parametrize("rho_deg", [0.0, -0.01, 180.01, math.nan])
+def test_ks1991_scattering_function_rejects_undefined_separations(
+    rho_deg: float,
+) -> None:
+    with pytest.raises(ValueError, match="rho_deg"):
+        _ks1991_scattering_function(rho_deg)
 
 
 def test_ks1991_scattering_function_has_minimum_near_90_degrees() -> None:
@@ -775,6 +800,35 @@ def test_ks1991_moonlight_greater_near_moon_than_far() -> None:
     assert b_near > b_far
 
 
+@pytest.mark.parametrize(
+    ("rho_deg", "target_altitude_deg", "published_nanolamberts"),
+    [
+        (5.0, 35.0, 7216.0),
+        (30.0, 60.0, 1160.0),
+        (60.0, 90.0, 530.0),
+        (90.0, 60.0, 437.0),
+        (120.0, 30.0, 818.0),
+    ],
+)
+def test_ks1991_moonlight_reproduces_table_2_phase_30_sequence(
+    rho_deg: float,
+    target_altitude_deg: float,
+    published_nanolamberts: float,
+) -> None:
+    # K&S 1991 Table 2: lunar zenith distance 60 degrees, phase angle
+    # 30 degrees, k=0.172, and target points along the Moon-zenith circle.
+    calculated = _ks1991_moonlight_nanolamberts(
+        rho_deg=rho_deg,
+        alt_moon_deg=30.0,
+        phase_angle_deg=30.0,
+        extinction_k=0.172,
+        alt_target_deg=target_altitude_deg,
+    )
+
+    # The paper tabulates inputs as whole degrees and outputs as integers.
+    assert calculated == pytest.approx(published_nanolamberts, rel=0.03)
+
+
 def test_ks1991_dark_sky_nanolamberts_bortle1_darker_than_bortle9() -> None:
     policy_dark = VisibilityPolicy(
         environment=ObserverVisibilityEnvironment(light_pollution_class=LightPollutionClass.BORTLE_1),
@@ -792,7 +846,7 @@ def test_ks1991_dark_sky_nanolamberts_bortle3_reference() -> None:
     # Bortle 3: SQM = 21.25 mag/arcsec²
     # B_nL = 34.08 * 10^((21.572 - 21.25) / 2.5) = 34.08 * 10^0.1288
     import math as _math
-    expected = 34.08 * 10.0**((21.572 - 21.25) / 2.5)
+    expected = 34.08 * _math.exp(20.7233 - 0.92104 * 21.25)
     policy = VisibilityPolicy(
         environment=ObserverVisibilityEnvironment(light_pollution_class=LightPollutionClass.BORTLE_3),
     )

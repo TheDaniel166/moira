@@ -409,17 +409,25 @@ Endpoints:
 
 - `POST /v1/visibility/assessment`
 - `POST /v1/visibility/tonight`
+- `POST /v1/visibility/atmospheric-extinction`
+- `POST /v1/visibility/twilight-sky-brightness`
+- `POST /v1/visibility/point-source-threshold`
 
 Engine surfaces:
 
 - `visibility_assessment(...)`
 - `visibility_tonight(...)`
 - `is_visible_tonight(...)`
+- `atmospheric_extinction(...)`
+- `directional_twilight_sky_brightness(...)`
+- `point_source_visibility_threshold(...)`
 
 Acceptance:
 
 - observer-environment inputs remain explicit
 - visibility criterion family remains visible
+- every physical submodel returns its declared model, intermediate quantities,
+  and validity state rather than silently extrapolating
 
 ---
 

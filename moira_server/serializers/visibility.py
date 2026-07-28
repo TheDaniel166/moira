@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
-from moira.heliacal import LunarCrescentDetails, VisibilityAssessment
+from moira.heliacal import (
+    AtmosphericExtinctionAssessment,
+    LunarCrescentDetails,
+    PointSourceVisibilityThreshold,
+    TwilightSkyBrightnessAssessment,
+    VisibilityAssessment,
+)
 
 from ..models.visibility import (
+    AtmosphericExtinctionResponse,
     LunarCrescentDetailsResponse,
+    PointSourceVisibilityThresholdResponse,
+    TwilightSkyBrightnessResponse,
     VisibilityAssessmentResponse,
 )
 
@@ -27,6 +36,70 @@ def serialize_lunar_crescent_details(
         topocentric_crescent_width_arcmin=details.topocentric_crescent_width_arcmin,
         q=details.q,
         visibility_class=details.visibility_class.value,
+    )
+
+
+def serialize_atmospheric_extinction(
+    assessment: AtmosphericExtinctionAssessment,
+) -> AtmosphericExtinctionResponse:
+    return AtmosphericExtinctionResponse(
+        model=assessment.model.value,
+        apparent_altitude_deg=assessment.apparent_altitude_deg,
+        zenith_distance_deg=assessment.zenith_distance_deg,
+        broadband_airmass=assessment.broadband_airmass,
+        rayleigh_airmass=assessment.rayleigh_airmass,
+        aerosol_airmass=assessment.aerosol_airmass,
+        ozone_airmass=assessment.ozone_airmass,
+        rayleigh_coefficient_mag_per_airmass=(
+            assessment.rayleigh_coefficient_mag_per_airmass
+        ),
+        aerosol_coefficient_mag_per_airmass=(
+            assessment.aerosol_coefficient_mag_per_airmass
+        ),
+        ozone_coefficient_mag_per_airmass=(
+            assessment.ozone_coefficient_mag_per_airmass
+        ),
+        total_zenith_extinction_coefficient=(
+            assessment.total_zenith_extinction_coefficient
+        ),
+        sky_brightness_extinction_coefficient=(
+            assessment.sky_brightness_extinction_coefficient
+        ),
+        extinction_magnitude=assessment.extinction_magnitude,
+        transmission_fraction=assessment.transmission_fraction,
+    )
+
+
+def serialize_twilight_sky_brightness(
+    assessment: TwilightSkyBrightnessAssessment,
+) -> TwilightSkyBrightnessResponse:
+    return TwilightSkyBrightnessResponse(
+        model=assessment.model.value,
+        target_altitude_deg=assessment.target_altitude_deg,
+        sun_altitude_deg=assessment.sun_altitude_deg,
+        sun_target_separation_deg=assessment.sun_target_separation_deg,
+        sky_airmass=assessment.sky_airmass,
+        extinction_coefficient=assessment.extinction_coefficient,
+        formula_applied=assessment.formula_applied,
+        valid=assessment.valid,
+        reason=assessment.reason,
+        sky_nanolamberts=assessment.sky_nanolamberts,
+    )
+
+
+def serialize_point_source_visibility_threshold(
+    threshold: PointSourceVisibilityThreshold,
+) -> PointSourceVisibilityThresholdResponse:
+    return PointSourceVisibilityThresholdResponse(
+        criterion_family=threshold.criterion_family.value,
+        background_nanolamberts=threshold.background_nanolamberts,
+        background_luminance_cd_m2=threshold.background_luminance_cd_m2,
+        field_factor=threshold.field_factor,
+        valid_background_min_cd_m2=threshold.valid_background_min_cd_m2,
+        valid_background_max_cd_m2=threshold.valid_background_max_cd_m2,
+        valid=threshold.valid,
+        reason=threshold.reason,
+        limiting_magnitude=threshold.limiting_magnitude,
     )
 
 
@@ -52,10 +125,42 @@ def serialize_visibility_assessment(
             else None
         ),
         moonlight_sky_nanolamberts=assessment.moonlight_sky_nanolamberts,
+        extinction_adjusted_magnitude=assessment.extinction_adjusted_magnitude,
+        visibility_margin_magnitude=assessment.visibility_margin_magnitude,
+        criterion_target_magnitude=assessment.criterion_target_magnitude,
+        target_extinction_applied_separately=(
+            assessment.target_extinction_applied_separately
+        ),
+        criterion_applicable=assessment.criterion_applicable,
+        criterion_reason=assessment.criterion_reason,
+        atmospheric_extinction=(
+            serialize_atmospheric_extinction(assessment.atmospheric_extinction)
+            if assessment.atmospheric_extinction is not None
+            else None
+        ),
+        twilight_sky_brightness=(
+            serialize_twilight_sky_brightness(
+                assessment.twilight_sky_brightness
+            )
+            if assessment.twilight_sky_brightness is not None
+            else None
+        ),
+        point_source_threshold=(
+            serialize_point_source_visibility_threshold(
+                assessment.point_source_threshold
+            )
+            if assessment.point_source_threshold is not None
+            else None
+        ),
+        dark_sky_nanolamberts=assessment.dark_sky_nanolamberts,
+        total_sky_nanolamberts=assessment.total_sky_nanolamberts,
     )
 
 
 __all__ = [
     "serialize_lunar_crescent_details",
+    "serialize_atmospheric_extinction",
+    "serialize_twilight_sky_brightness",
+    "serialize_point_source_visibility_threshold",
     "serialize_visibility_assessment",
 ]

@@ -24,8 +24,9 @@ moira.sky.frames
 
 moira.sky.visibility
     Observational visibility doctrine: Yallop 1997 lunar crescent,
-    Khalid-Sultana 1991 moonlight, arcus visionis, heliacal event search
-    for planets, Moon, and stars.
+    Krisciunas & Schaefer 1991 moonlight, physical atmospheric extinction,
+    directional twilight, naked-eye point-source thresholds, arcus visionis,
+    and heliacal event search for planets, Moon, and stars.
 
 moira.sky.bodies        [stub]
     Planetary positions, Moon, Sun, asteroids, lunar nodes / apsides.

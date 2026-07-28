@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 435
-- Registered OpenAPI operations: 435 (GET 35, POST 400)
+- Registered OpenAPI paths: 438
+- Registered OpenAPI operations: 438 (GET 35, POST 403)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 431
+- Versioned `/v1` paths: 434
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -373,8 +373,17 @@ Admitted products:
 | POST | `/v1/batch/events` | `batch_events_route` |
 | POST | `/v1/batch/progressions` | `batch_progressions_route` |
 | POST | `/v1/batch/progressions/reduction` | `batch_progressions_reduction_route` |
+| POST | `/v1/visibility/atmospheric-extinction` | `atmospheric_extinction_route` |
 | POST | `/v1/visibility/assessment` | `visibility_assessment_route` |
+| POST | `/v1/visibility/point-source-threshold` | `point_source_visibility_threshold_route` |
 | POST | `/v1/visibility/tonight` | `visibility_tonight_route` |
+| POST | `/v1/visibility/twilight-sky-brightness` | `twilight_sky_brightness_route` |
+
+The three standalone physical-model routes are engine-owned computation
+surfaces transported without hidden defaults. Their responses retain the
+declared model, intermediate quantities, units, and validity/reason fields.
+The assessment and tonight routes accept the same nested visibility policy as
+the Python surface; the legacy criterion remains their default.
 
 ## Phenomena Routes
 
@@ -3178,7 +3187,10 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/vedic-dignities/relationships` | vedic-dignities | `vedic_dignity_relationships_route_v1_vedic_dignities_relationships_post` |
 | `POST` | `/v1/vedic/chart-profile` | vedic-profile | `vedic_chart_profile_route_v1_vedic_chart_profile_post` |
 | `POST` | `/v1/visibility/assessment` | visibility | `visibility_assessment_route_v1_visibility_assessment_post` |
+| `POST` | `/v1/visibility/atmospheric-extinction` | visibility | `atmospheric_extinction_route_v1_visibility_atmospheric_extinction_post` |
+| `POST` | `/v1/visibility/point-source-threshold` | visibility | `point_source_visibility_threshold_route_v1_visibility_point_source_threshold_post` |
 | `POST` | `/v1/visibility/tonight` | visibility | `visibility_tonight_route_v1_visibility_tonight_post` |
+| `POST` | `/v1/visibility/twilight-sky-brightness` | visibility | `twilight_sky_brightness_route_v1_visibility_twilight_sky_brightness_post` |
 | `POST` | `/v1/void-of-course/is-active` | phenomena | `void_of_course_state_route_v1_void_of_course_is_active_post` |
 | `POST` | `/v1/void-of-course/next` | phenomena | `next_void_of_course_route_v1_void_of_course_next_post` |
 | `POST` | `/v1/void-of-course/range` | phenomena | `void_of_course_range_route_v1_void_of_course_range_post` |

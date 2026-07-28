@@ -20,6 +20,65 @@ Note on resemblance: house geometry is mathematically forced — there is one co
 
 ## Astronomical data sources
 
+### Atmospheric visibility model provenance
+
+Moira's opt-in physical point-source visibility path is independently
+implemented from the published equations and keeps each computational object
+separate:
+
+- relative optical air mass uses Kasten and Young, *Applied Optics* 28
+  (1989), 4735-4738, DOI `10.1364/AO.28.004735`;
+- clear-air Rayleigh, aerosol, and ozone extinction air masses and
+  coefficients, plus directional cloudless-sky twilight brightness, use
+  Schaefer, *Vistas in Astronomy* 36 (1993), 311-361,
+  DOI `10.1016/0083-6656(93)90113-X`;
+- moonlight and directional dark-sky brightness use Krisciunas and Schaefer,
+  *PASP* 103 (1991), 1033-1039, DOI `10.1086/132921`;
+- the scotopic naked-eye point-source threshold uses Crumey, *MNRAS* 442
+  (2014), 2600-2619, DOI `10.1093/mnras/stu992`.
+
+The implementation was derived from those papers and their tabulated or
+equation-level reference points. No executable code from LibEphemeris or any
+other AGPL implementation was copied or adapted. The
+Krisciunas-Schaefer scattering function preserves the paper's piecewise aerosol
+doctrine: its exponential Mie term applies from 10 through 180 degrees, while
+the source-defined inverse-square aureole term applies below 10 degrees. Exact
+zero separation is singular in that point-source model and is rejected rather
+than silently clamped.
+
+These models are not represented as universal atmosphere or vision truth.
+Kasten-Young is evaluated only for apparent directions from the horizon
+through the zenith. Schaefer's twilight term is treated as an approximate
+cloudless-sky contribution from solar altitude 0 through -18 degrees; Moira
+does not extrapolate it into daylight. Schaefer's component model keeps its
+scotopic direct-target coefficient distinct from the visual-band coefficient
+used by the nanolambert sky-brightness equations; the public result exposes
+both rather than silently applying one spectral regime to both objects.
+Crumey's point-source relation is
+admitted only for naked-eye scotopic backgrounds from `1e-5` through
+`3.426e-2 cd/m2`; it is not used for the Sun, Moon, extended objects, optical
+aids, or out-of-range backgrounds. The Krisciunas-Schaefer moonlight term is
+an optional V-band empirical model, not an all-site spectral radiative-transfer
+solution. A measured zenith sky surface brightness and measured broadband
+extinction coefficient are preferred when available; Bortle-derived darkness
+remains an explicit approximate fallback and requires the table derivation
+mode rather than reusing a limiting-magnitude interpolation as luminance.
+
+The existing limiting-magnitude/arcus-visionis criterion remains the default
+for compatibility. The physical chain must be requested explicitly and returns
+its direct extinction, component air masses, sky contributions, threshold,
+margin, and validity reason so downstream software can distinguish a negative
+visibility result from an out-of-domain calculation. The physical criterion is
+currently admitted only for a single-epoch assessment. Event search rejects it
+until a separately validated physical crossing doctrine is admitted, rather
+than selecting events with a legacy threshold and labeling them physical.
+Crumey's published field factor explicitly includes the target, medium,
+laboratory scaling, and observer. Moira therefore does not apply its separately
+reported target extinction again by default. A caller may opt into separate
+target extinction only by declaring that its supplied field factor was
+calibrated without atmospheric transmission; the response records which
+magnitude actually governed the verdict.
+
 The unified numbered-asteroid catalog is generated from JPL Horizons
 heliocentric `VECTORS` states and materialized as Moira Type-13 shards. Moira
 writes the resulting DAF/SPK bytes through its own Type-13 writer, interpolation
