@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "source_repository": "https://github.com/TheDaniel166/moira",
-  "last_verified": "2026-07-26",
+  "last_verified": "2026-07-28",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.0.0",
-    "tag": "v6.0.0",
-    "commit": "3ca28225172714c7a4d519f55d9100374cadee18",
-    "release_date": "2026-07-26",
+    "version": "6.1.0",
+    "tag": "v6.1.0",
+    "commit": "1b15a2b44e3c3e84be705a11e67968461e23e9a3",
+    "release_date": "2026-07-28",
     "requires_python": ">=3.10",
     "supported_python": [
       "3.10",
@@ -31,22 +31,22 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "43d68d5191ea18e89dd1ac5de369d266db0ee61e855195f8c1ed7d190d613fa0"
+      "source_sha256": "bb033f7fd04e77d2fb82d431f2ad4664d5409a43e9311f711b7c06cbfdaa5d36"
     },
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "42289841bc18bfde316703ef71ee3a176a6014a1edad94cc2e6dbed5f072bdbb"
+      "source_sha256": "68777e6adf59dab07d50272f91192b9ce00b65b21a7632db08204e6d113b30f6"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "20d1ff719ab2eeb2ab8118bdf68d004851126122c4fe943f896b3d8e39cb3b86"
+      "source_sha256": "8b8ba5989056c8e21ec576e51036f9e99534f2f2b8b16f31fabc0d9b93c81821"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "97d01f7f103a57af848476d523ee537ac034b0b6fba6de2522d898baf52ed547"
+      "source_sha256": "0ad23adb10c4838f6c5ba66463c4eeaa8499be29a01a6006bcebb916bd926587"
     },
     {
       "id": "rest_router_registration",
@@ -61,16 +61,32 @@
   ],
   "catalog_metrics": {
     "position_capable_asteroid_ephemeris": {
-      "body_count": 1382,
-      "shard_count": 56,
+      "catalog_id": "moira-asteroids",
+      "catalog_version": "2026.07.27.1",
+      "body_count": 9974,
+      "shard_count": 399,
+      "sampling": {
+        "step_days": 10,
+        "window_size": 7
+      },
+      "manifest_sha256": "0560302f877a46cebc550376ae70665fefab84801078181cf3c4199ce86d49d0",
       "availability": "external_install_required",
-      "source": "moira/kernels/asteroids/manifest.json"
+      "source": "moira/kernels/asteroids/manifest.json",
+      "identity_receipt": "moira/data/asteroid_catalog_naif.metadata.json"
     },
     "position_capable_periodic_comet_ephemeris": {
+      "catalog_id": "moira-comets",
+      "catalog_version": "2026.07.28.1",
       "body_count": 497,
       "shard_count": 20,
+      "sampling": {
+        "step_days": 30,
+        "window_size": 5
+      },
+      "manifest_sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
       "availability": "external_install_required",
-      "source": "moira/kernels/comets/manifest.json"
+      "source": "moira/kernels/comets/manifest.json",
+      "identity_receipt": "moira/data/comet_catalog_naif.metadata.json"
     },
     "asteroid_family_membership_catalog": {
       "family_count": 342,
@@ -106,18 +122,18 @@
     "lot_definition_registry": {
       "entry_count": 512,
       "source": "moira/lots.py",
-      "source_sha256": "4a7a073eb418586d7fd5451f59982cfd33e338ec9191d9373ae1e7830f529e51"
+      "source_sha256": "0974b56b4b21a6d11401426684333d8f0b2fb1839d92fb7aaf96a0086804c766"
     },
     "ayanamsha_registry": {
       "entry_count": 12,
       "source": "moira/sidereal.py",
-      "source_sha256": "0c3521a20c6e7360c3246e42c992903e3eeab2baf67a33b75f6d8d9885492564"
+      "source_sha256": "903ce00202e3bb314313b1a39c6c8925a8fbd4d09d1b8aaa6932267eb0a044d7"
     }
   },
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "42289841bc18bfde316703ef71ee3a176a6014a1edad94cc2e6dbed5f072bdbb",
+      "source_sha256": "68777e6adf59dab07d50272f91192b9ce00b65b21a7632db08204e6d113b30f6",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -438,6 +454,8 @@
         "MercurySectModel",
         "MissingEphemerisKernelError",
         "Moira",
+        "MonthlyProfectionInterval",
+        "MonthlyProfectionIntervalPolicy",
         "MoonAspectEvent",
         "MoonConnection",
         "MoonConnectionFlow",
@@ -553,6 +571,10 @@
         "ProfectionActivationBodyTruth",
         "ProfectionActivationStatus",
         "ProfectionActivationTruth",
+        "ProfectionAmbiguousTimePolicy",
+        "ProfectionChronology",
+        "ProfectionChronologyMethod",
+        "ProfectionIntervalBoundarySemantics",
         "ProgressedAccessoryAspectRelation",
         "ProgressedAstrodynePolicy",
         "ProgressedAstrodyneTerminal",
@@ -943,6 +965,7 @@
         "point_set_harmonic_vector",
         "practical_progressed_horoscope",
         "profection_activation_truth",
+        "profection_chronology",
         "progressed_compound_total_influence",
         "progressed_dated_aspect",
         "progressed_total_influence",
@@ -1051,7 +1074,7 @@
     },
     "classical": {
       "source": "moira/classical.py",
-      "source_sha256": "2dced15a14adcbc21df46fe486dce3194145f5a2b8ca92ac85fb4a083cea8346",
+      "source_sha256": "5ce27315c8c171559df7981f23c50b40fc9f0c8d04026640baac62c4accff3d5",
       "symbols": [
         "ASPECT_TIERS",
         "AccidentalConditionClassification",
@@ -1206,6 +1229,7 @@
         "HouseZoneProfile",
         "HylegResult",
         "LeapDayAnniversaryPolicy",
+        "LegacyAspectPattern",
         "LotArcPolicy",
         "LotAstrologicalConditionTruth",
         "LotChartConditionProfile",
@@ -1245,6 +1269,8 @@
         "MidpointsService",
         "MissingEphemerisKernelError",
         "Moira",
+        "MonthlyProfectionInterval",
+        "MonthlyProfectionIntervalPolicy",
         "MotionState",
         "MutationPeriod",
         "MutualReceptionPolicy",
@@ -1272,6 +1298,10 @@
         "ProfectionActivationBodyTruth",
         "ProfectionActivationStatus",
         "ProfectionActivationTruth",
+        "ProfectionAmbiguousTimePolicy",
+        "ProfectionChronology",
+        "ProfectionChronologyMethod",
+        "ProfectionIntervalBoundarySemantics",
         "ProfectionResult",
         "Quadrant",
         "QuadrantEmphasisProfile",
@@ -1463,6 +1493,7 @@
         "planetary_pictures",
         "planetary_solar_phase_truth",
         "profection_activation_truth",
+        "profection_chronology",
         "profection_schedule",
         "quadrant_emphasis",
         "quadrant_of",
@@ -1692,6 +1723,7 @@
         "KeplerianElements",
         "LastAspect",
         "LeapDayAnniversaryPolicy",
+        "LegacyAspectPattern",
         "LocalContactCircumstances",
         "LongitudeResolutionClassification",
         "LongitudeResolutionTruth",
@@ -1737,6 +1769,8 @@
         "MidpointsService",
         "MissingEphemerisKernelError",
         "Moira",
+        "MonthlyProfectionInterval",
+        "MonthlyProfectionIntervalPolicy",
         "MotionState",
         "MuddaDasha",
         "MuddaDashaActivation",
@@ -1778,6 +1812,10 @@
         "ProfectionActivationBodyTruth",
         "ProfectionActivationStatus",
         "ProfectionActivationTruth",
+        "ProfectionAmbiguousTimePolicy",
+        "ProfectionChronology",
+        "ProfectionChronologyMethod",
+        "ProfectionIntervalBoundarySemantics",
         "ProfectionResult",
         "ProgressedChart",
         "ProgressedHouseFrame",
@@ -2143,6 +2181,7 @@
         "prenatal_syzygy",
         "previous_nasa_lunar_eclipse",
         "profection_activation_truth",
+        "profection_chronology",
         "profection_schedule",
         "progression_chart_condition_profile",
         "progression_condition_network_profile",
@@ -2228,7 +2267,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "20d1ff719ab2eeb2ab8118bdf68d004851126122c4fe943f896b3d8e39cb3b86",
+      "source_sha256": "8b8ba5989056c8e21ec576e51036f9e99534f2f2b8b16f31fabc0d9b93c81821",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -2677,6 +2716,7 @@
         "LajjitadiState",
         "LastAspect",
         "LeapDayAnniversaryPolicy",
+        "LegacyAspectPattern",
         "LightPollutionClass",
         "LightPollutionDerivationMode",
         "LillyPerfectionKind",
@@ -2753,6 +2793,8 @@
         "MixedOriginHarmonicTransitForecastPolicy",
         "MixedOriginHarmonicTransitMode",
         "Moira",
+        "MonthlyProfectionInterval",
+        "MonthlyProfectionIntervalPolicy",
         "MoonAspectEvent",
         "MoonConnection",
         "MoonConnectionFlow",
@@ -2949,6 +2991,10 @@
         "ProfectionActivationBodyTruth",
         "ProfectionActivationStatus",
         "ProfectionActivationTruth",
+        "ProfectionAmbiguousTimePolicy",
+        "ProfectionChronology",
+        "ProfectionChronologyMethod",
+        "ProfectionIntervalBoundarySemantics",
         "ProfectionResult",
         "ProgressedAccessoryAspectRelation",
         "ProgressedAstrodynePolicy",
@@ -3823,6 +3869,7 @@
         "prenatal_syzygy",
         "previous_nasa_lunar_eclipse",
         "profection_activation_truth",
+        "profection_chronology",
         "profection_schedule",
         "progressed_compound_total_influence",
         "progressed_dated_aspect",
@@ -4326,7 +4373,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "81c38982373efbfda1ed605ed9cdf02af4fb31b285245df969045f5a0d30dc1a",
       "source_bytes": 14298,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4339,12 +4386,12 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.0.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.1.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "43d68d5191ea18e89dd1ac5de369d266db0ee61e855195f8c1ed7d190d613fa0",
-      "source_bytes": 292067,
-      "last_verified": "2026-07-26",
+      "source_sha256": "bb033f7fd04e77d2fb82d431f2ad4664d5409a43e9311f711b7c06cbfdaa5d36",
+      "source_bytes": 294272,
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4362,7 +4409,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "f5c1db44cc43c11327dbb0eb1c4238a6d6b8d7f8899b15326ff117506372da5c",
       "source_bytes": 5415,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4380,7 +4427,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "11a4ed6948235e6d974c9f1caf5e7e0ed4819c75d30dfcde5804f2f87ac16fd9",
       "source_bytes": 33871,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4398,7 +4445,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "bf7e27e7b6719ecf4ef1366b68c55d5b9e7782f11c58f59c582b47829a9d4b03",
       "source_bytes": 30025,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4416,7 +4463,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "26237b26a6e6e5ac1dffec0e5001a07474640ca03808f1c1ba5f21f428057188",
       "source_bytes": 29604,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4432,9 +4479,9 @@
       "description": "Firdaria, decennials, Zodiacal Releasing, time-boundary ownership, and immutable timelord result contracts.",
       "content_class": "evergreen_doctrine",
       "schema_type": "TechArticle",
-      "source_sha256": "78a3bbc7df68c371b63c7d6df682383aa567b363edd8334a992d5294c7422e1e",
-      "source_bytes": 43280,
-      "last_verified": "2026-07-26",
+      "source_sha256": "ddefd92cf26aa6c521ec4b5bb348a9826128639fe6fbf7fb7ddbd085f8669796",
+      "source_bytes": 46781,
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4452,7 +4499,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3e1719778cf0c98b861990e311707ca6912e0555ce4344008e20996332797909",
       "source_bytes": 20555,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4470,7 +4517,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "4ba8e96bac8203127331af7cb964fcb35522b816a83e0fcf250936625fe0f458",
       "source_bytes": 13241,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4488,7 +4535,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ed13c72ea49ff53a1e113e132f20d244e3aed278767dce3f35465dc9d07ab366",
       "source_bytes": 47201,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4504,9 +4551,9 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "97d01f7f103a57af848476d523ee537ac034b0b6fba6de2522d898baf52ed547",
-      "source_bytes": 202410,
-      "last_verified": "2026-07-26",
+      "source_sha256": "0ad23adb10c4838f6c5ba66463c4eeaa8499be29a01a6006bcebb916bd926587",
+      "source_bytes": 203516,
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4524,7 +4571,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "4029867ad600a00836b2c2c8ff6aa75d56b0a31953f5016b50961d144434b0d8",
       "source_bytes": 19762,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4540,9 +4587,9 @@
       "description": "A living engineering roadmap; planned and historical entries do not themselves define admitted public API or validation status.",
       "content_class": "editorial_historical",
       "schema_type": "TechArticle",
-      "source_sha256": "bb6ad211040bf68b1460eba6c4b880a9f5e9b1740f3b778121414998d8d2751f",
+      "source_sha256": "41724731c329390c024b778fda5aa11fa927bfe4e3abf78dd92671edf0a1f4d7",
       "source_bytes": 21451,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4560,7 +4607,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "bd355a00ab36fc9bbffb368eb34c36eb7fabd35adf634b1cda1d2da8a8db42a2",
       "source_bytes": 59472,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4592,9 +4639,9 @@
       "description": "Bounded external comparisons, doctrine checks, invariants, and explicit non-oracle cases for astrological convention layers.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "cb9f4bd1d56fa43af3fd005c8bc7921b98d4478be2937eafd1bdfeafd7f56e1e",
-      "source_bytes": 39021,
-      "last_verified": "2026-07-26",
+      "source_sha256": "ee5e96f520fbcbb1f0a7fbe630eafb55d12b68717dc56d5ec5b98569bab41fbc",
+      "source_bytes": 39054,
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4627,7 +4674,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "05e4c3279bad63c54b896a18f687adf1605e80a3e6d8bb8ac4a46accdaba767a",
       "source_bytes": 21213,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4661,7 +4708,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "f77bc0837be29b481c2fd9f8fcf84f13564105d5c007db2095e0a91b2c65dcf6",
       "source_bytes": 3584,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4689,7 +4736,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "fc6e7ac8b5393acfecc7289ac2f69caad9d9bc4be6d53835a473406f14fe0b9f",
       "source_bytes": 15117,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4718,7 +4765,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3d7d8fdcb3c6dba9d2576e44f24809416b39dbcf2f1bd5a703cdbff7ee7142db",
       "source_bytes": 8684,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4748,7 +4795,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "9ab274475f75e6f3d22ab3fb746ec6c91cf15c5725bfe234aeb0baaae3f69315",
       "source_bytes": 2028,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4776,7 +4823,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "29f406d74fbeca960fd77af90d95a61139403926e496adb5c548a3e0e9635353",
       "source_bytes": 3329,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4804,7 +4851,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "60ae0879fffb9c318e622e9348ce0786fcd724b4f392804e66c0d5dae7c68e8d",
       "source_bytes": 15256,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4836,7 +4883,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "af6763ffe85b4a1900c83471a681674151e00a47fee9dee3220229cd90b0ad41",
       "source_bytes": 7470,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4865,7 +4912,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "e2598028b574254a5307f85c322668ae0d653f2905810ed2032bf71924f698b0",
       "source_bytes": 5697,
-      "last_verified": "2026-07-26",
+      "last_verified": "2026-07-28",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4883,6 +4930,54 @@
     }
   ],
   "releases": [
+    {
+      "version": "6.1.0",
+      "date": "2026-07-28",
+      "title": "Contract and Release Integrity",
+      "added": [
+        "Exact dated monthly-profection chronology preserves civil-time policy, UTC and Julian boundaries, active-month ownership, and timezone provenance.",
+        "Aspect responses expose typed motion state, and small-body releases expose immutable manifests, checksums, notices, and loader receipts."
+      ],
+      "changed": [
+        "The chronology-aware Hellenistic profile enforces stricter cross-component method, completeness, ordering, and provenance invariants.",
+        "Unified small-body resolution requires family qualification when asteroid and comet names collide, while dedicated family routes retain scoped aliases.",
+        "Optional-server enums use Moira's Python 3.10-compatible StrEnum boundary, and deprecated Decennial request selectors accept only omission or explicit null."
+      ],
+      "fixed": [
+        "Longitude seam, relative stationary-state, duplicate pattern-edge, and complete Grand Sextile behavior are deterministic.",
+        "Generated publication consumes tracked Git sources, and catalog identity bytes remain stable across Windows and POSIX checkouts.",
+        "Metadata-only asteroid and comet manifests retained in the wheel now match the exact immutable release receipts without advertising absent shards as installed.",
+        "Malformed progression requests validate policy, datetime, body, and house-frame inputs before implicit kernel resolution."
+      ],
+      "validation": [
+        "Hellenistic goldens and contract parity, aspect and pattern adversarial cases, small-body release and collision gates, Python 3.10 server smoke, and installed-artifact identity cover the release."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.1.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.1.0.md",
+      "tag": "v6.1.0",
+      "release_notes_sha256": "d317fd0c6a7d377c1dbd33e930e04ce0f50f144bb6601ec881226c1075908897",
+      "compatibility_notes_sha256": "e7753e6c602729716cf40973b20994f21827b682961bd776c63794db91cb40a6"
+    },
+    {
+      "version": "6.0.1",
+      "date": "2026-07-28",
+      "title": "Complete Asteroid Identity Catalog",
+      "added": [
+        "A release-bound canonical asteroid identity artifact makes every body in external release 2026.07.27.1 addressable by its released name."
+      ],
+      "changed": [
+        "The bundled canonical asteroid registry expands from 1,382 to 9,974 unique identities and corrects the former Asteroid20395 placeholder to Jacquet."
+      ],
+      "fixed": [],
+      "validation": [
+        "Target, unified-ledger, shard, registry, reverse-lookup, REST search, and installed-wheel evidence agree on the exact release identity."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.0.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.0.1.md",
+      "tag": "v6.0.1",
+      "release_notes_sha256": "b81bc24e915896741cb7a6f70193b4328f676e3e60696b398cd239e5c3e66e9f",
+      "compatibility_notes_sha256": "826e006661181331dc41880c3d95c092dc90746d79b6356e1c1e30d5945c2398"
+    },
     {
       "version": "6.0.0",
       "date": "2026-07-26",
@@ -5056,5 +5151,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "6de57b19e2ea5a72f3ff17213070c95b4f483f97ba6cc24fc0b73b4d50c76be1"
+  "manifest_sha256": "ed8ecbbd5b62c3d5b235453cb411f515755627f1995db7f87141abfd6d413ee6"
 }
