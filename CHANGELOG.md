@@ -61,6 +61,9 @@ Detailed release and migration guidance is available in
 - Replaced stale metadata-only asteroid and comet manifests retained in the
   wheel with the exact immutable release manifests named by their identity
   receipts. Automatic discovery still requires an installed BSP shard.
+- Progression policy, datetime, body, and house-frame validation now runs
+  before implicit planetary-reader resolution, so malformed requests return
+  their declared contract errors even on kernel-free hosts.
 - Removed stale roadmap, validation, test, and error-language classifications
   that could incorrectly reintroduce closed Hellenistic exclusions as work.
 

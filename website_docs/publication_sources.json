@@ -309,7 +309,8 @@
       "fixed": [
         "Longitude seam, relative stationary-state, duplicate pattern-edge, and complete Grand Sextile behavior are deterministic.",
         "Generated publication consumes tracked Git sources, and catalog identity bytes remain stable across Windows and POSIX checkouts.",
-        "Metadata-only asteroid and comet manifests retained in the wheel now match the exact immutable release receipts without advertising absent shards as installed."
+        "Metadata-only asteroid and comet manifests retained in the wheel now match the exact immutable release receipts without advertising absent shards as installed.",
+        "Malformed progression requests validate policy, datetime, body, and house-frame inputs before implicit kernel resolution."
       ],
       "validation": [
         "Hellenistic goldens and contract parity, aspect and pattern adversarial cases, small-body release and collision gates, Python 3.10 server smoke, and installed-artifact identity cover the release."

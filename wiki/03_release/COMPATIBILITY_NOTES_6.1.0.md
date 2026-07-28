@@ -121,6 +121,11 @@ Moira's compatibility `StrEnum` boundary rather than importing the Python
 Deployment acceptance should import `moira_server`, construct the application,
 and generate OpenAPI in the actual minimum-version environment.
 
+Malformed progression requests now fail at their policy, datetime, body, or
+house-frame validator before implicit kernel resolution. This changes only
+error ordering on kernel-free hosts; valid progression calculations still
+require an installed planetary ephemeris.
+
 ## Recommended Migration Sequence
 
 1. Install `moira-astro==6.1.0` in a disposable or staging environment.

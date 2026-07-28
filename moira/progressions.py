@@ -1639,8 +1639,6 @@ def secondary_progression(
     -------
     ProgressedChart with chart_type="Secondary Progression"
     """
-    if reader is None:
-        reader = get_reader()
     resolved_policy = _resolve_policy(policy)
 
     # Age in tropical years at target_date
@@ -1648,9 +1646,10 @@ def secondary_progression(
 
     # Progressed JD = natal + age as days
     prog_jd = natal_jd_ut + age_years
+    resolved_bodies = _default_bodies(bodies)
 
-    if bodies is None:
-        bodies = list(Body.ALL_PLANETS)
+    if reader is None:
+        reader = get_reader()
 
     return _time_key_chart(
         chart_type="Secondary Progression",
@@ -1658,7 +1657,7 @@ def secondary_progression(
         target_date=target_date,
         progressed_jd_ut=prog_jd,
         age_years=age_years,
-        bodies=bodies,
+        bodies=resolved_bodies,
         reader=reader,
         life_unit="tropical_year",
         ephemeris_unit="day_after_birth",
@@ -2468,17 +2467,16 @@ def converse_secondary_progression(
     bodies      : list of Body.* constants (defaults to all planets)
     reader      : SpkReader instance
     """
-    if reader is None:
-        reader = get_reader()
     resolved_policy = _resolve_policy(policy)
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
 
     # Converse: go BACKWARD from natal by age_years (as days)
     prog_jd = natal_jd_ut - age_years
+    resolved_bodies = _default_bodies(bodies)
 
-    if bodies is None:
-        bodies = list(Body.ALL_PLANETS)
+    if reader is None:
+        reader = get_reader()
 
     return _time_key_chart(
         chart_type="Converse Secondary Progression",
@@ -2486,7 +2484,7 @@ def converse_secondary_progression(
         target_date=target_date,
         progressed_jd_ut=prog_jd,
         age_years=age_years,
-        bodies=bodies,
+        bodies=resolved_bodies,
         reader=reader,
         life_unit="tropical_year",
         ephemeris_unit="day_after_birth",
@@ -2573,13 +2571,12 @@ def ascendant_arc(
         - application: uniform to all bodies
         - coordinate system: ecliptic longitude
     """
-    if reader is None:
-        reader = get_reader()
     resolved_policy = _resolve_policy(policy)
     _validate_house_frame_inputs(latitude, longitude, system)
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
+    resolved_bodies = _default_bodies(bodies)
     resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
     house_policy = resolved_policy.house_frame.house_policy
     natal_houses = calculate_houses(
@@ -2589,13 +2586,15 @@ def ascendant_arc(
         prog_jd, latitude, longitude, system=resolved_system, policy=house_policy
     )
     arc = (progressed_houses.asc - natal_houses.asc) % 360.0
+    if reader is None:
+        reader = get_reader()
     return _uniform_longitude_direction(
         chart_type="Ascendant Arc Direction",
         natal_jd_ut=natal_jd_ut,
         target_date=target_date,
         arc_deg=arc,
         age_years=age_years,
-        bodies=bodies,
+        bodies=resolved_bodies,
         reader=reader,
         progressed_jd_ut=prog_jd,
         rate_mode="variable",
@@ -2623,13 +2622,12 @@ def converse_ascendant_arc(
         - application: uniform to all bodies (converse — arc subtracted)
         - coordinate system: ecliptic longitude
     """
-    if reader is None:
-        reader = get_reader()
     resolved_policy = _resolve_policy(policy)
     _validate_house_frame_inputs(latitude, longitude, system)
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
+    resolved_bodies = _default_bodies(bodies)
     resolved_system = resolved_policy.house_frame.default_house_system if system is None else system
     house_policy = resolved_policy.house_frame.house_policy
     natal_houses = calculate_houses(
@@ -2639,13 +2637,15 @@ def converse_ascendant_arc(
         prog_jd, latitude, longitude, system=resolved_system, policy=house_policy
     )
     forward_arc = (progressed_houses.asc - natal_houses.asc) % 360.0
+    if reader is None:
+        reader = get_reader()
     return _uniform_longitude_direction(
         chart_type="Converse Ascendant Arc Direction",
         natal_jd_ut=natal_jd_ut,
         target_date=target_date,
         arc_deg=(-forward_arc) % 360.0,
         age_years=age_years,
-        bodies=bodies,
+        bodies=resolved_bodies,
         reader=reader,
         progressed_jd_ut=prog_jd,
         rate_mode="variable",
@@ -3291,20 +3291,19 @@ def planetary_arc(
     -------
     ProgressedChart with chart_type="Planetary Arc Direction (<arc_body>)"
     """
-    if reader is None:
-        reader = get_reader()
     resolved_policy = _resolve_policy(policy)
-
+    _validate_natal_jd_ut(natal_jd_ut)
+    _validate_target_date(target_date)
     if not _is_supported_progression_body(arc_body):
         raise ValueError(f"arc_body must be a recognised supported body name, got {arc_body!r}")
-
-    if bodies is None:
-        bodies = list(Body.ALL_PLANETS)
-
-    natal_ref = planet_at(arc_body, natal_jd_ut, reader=reader).longitude
+    resolved_bodies = _default_bodies(bodies)
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
+
+    if reader is None:
+        reader = get_reader()
+    natal_ref = planet_at(arc_body, natal_jd_ut, reader=reader).longitude
     prog_ref = planet_at(arc_body, prog_jd, reader=reader).longitude
 
     arc = (prog_ref - natal_ref) % 360.0
@@ -3315,7 +3314,7 @@ def planetary_arc(
         target_date=target_date,
         arc_deg=arc,
         age_years=age_years,
-        bodies=bodies,
+        bodies=resolved_bodies,
         reader=reader,
         progressed_jd_ut=prog_jd,
         rate_mode="variable",
@@ -3352,20 +3351,19 @@ def converse_planetary_arc(
     -------
     ProgressedChart with chart_type="Converse Planetary Arc Direction (<arc_body>)"
     """
-    if reader is None:
-        reader = get_reader()
     resolved_policy = _resolve_policy(policy)
-
+    _validate_natal_jd_ut(natal_jd_ut)
+    _validate_target_date(target_date)
     if not _is_supported_progression_body(arc_body):
         raise ValueError(f"arc_body must be a recognised supported body name, got {arc_body!r}")
-
-    if bodies is None:
-        bodies = list(Body.ALL_PLANETS)
-
-    natal_ref = planet_at(arc_body, natal_jd_ut, reader=reader).longitude
+    resolved_bodies = _default_bodies(bodies)
 
     age_years = _age_years(natal_jd_ut, target_date, resolved_policy.time_key.tropical_year_days)
     prog_jd = natal_jd_ut + age_years
+
+    if reader is None:
+        reader = get_reader()
+    natal_ref = planet_at(arc_body, natal_jd_ut, reader=reader).longitude
     prog_ref = planet_at(arc_body, prog_jd, reader=reader).longitude
 
     forward_arc = (prog_ref - natal_ref) % 360.0
@@ -3377,7 +3375,7 @@ def converse_planetary_arc(
         target_date=target_date,
         arc_deg=arc,
         age_years=age_years,
-        bodies=bodies,
+        bodies=resolved_bodies,
         reader=reader,
         progressed_jd_ut=prog_jd,
         rate_mode="variable",

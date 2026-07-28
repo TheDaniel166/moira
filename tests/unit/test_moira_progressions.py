@@ -106,6 +106,18 @@ def _assert_position_matches_raw(progressed, raw) -> None:
         assert pos.sign_degree == pytest.approx(sign_degree, abs=1e-12)
 
 
+@pytest.fixture
+def forbid_progression_reader_resolution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Prove invalid progression requests fail before kernel resolution."""
+
+    def fail_reader_resolution():
+        raise AssertionError("invalid progression input reached kernel resolution")
+
+    monkeypatch.setattr(progressions_module, "get_reader", fail_reader_resolution)
+
+
 @pytest.mark.requires_ephemeris
 def test_secondary_progression_maps_age_years_to_age_days_and_casts_that_chart() -> None:
     natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
@@ -733,7 +745,9 @@ def test_explicit_policy_can_change_rate_and_house_frame_doctrine() -> None:
     assert house_frame.houses.mc == pytest.approx(expected_houses.mc, abs=1e-12)
 
 
-def test_invalid_progression_policy_fails_clearly() -> None:
+def test_invalid_progression_policy_fails_clearly(
+    forbid_progression_reader_resolution: None,
+) -> None:
     bad_policy = ProgressionComputationPolicy(
         time_key=ProgressionTimeKeyPolicy(tropical_year_days=0.0),
     )
@@ -742,14 +756,18 @@ def test_invalid_progression_policy_fails_clearly() -> None:
         secondary_progression(2451545.0, datetime(2001, 1, 1, tzinfo=timezone.utc), policy=bad_policy)
 
 
-def test_invalid_progression_policy_types_fail_clearly() -> None:
+def test_invalid_progression_policy_types_fail_clearly(
+    forbid_progression_reader_resolution: None,
+) -> None:
     bad_policy = ProgressionComputationPolicy(house_frame="P")  # type: ignore[arg-type]
 
     with pytest.raises(TypeError, match="policy.house_frame must be ProgressionHouseFramePolicy"):
         secondary_progression(2451545.0, datetime(2001, 1, 1, tzinfo=timezone.utc), policy=bad_policy)
 
 
-def test_malformed_progression_inputs_fail_deterministically() -> None:
+def test_malformed_progression_inputs_fail_deterministically(
+    forbid_progression_reader_resolution: None,
+) -> None:
     target_dt = datetime(2001, 1, 1, tzinfo=timezone.utc)
 
     with pytest.raises(ValueError, match="natal_jd_ut must be finite"):
@@ -780,13 +798,16 @@ def test_secondary_progression_admits_small_body_names(monkeypatch: pytest.Monke
         2451545.0,
         target_dt,
         bodies=["Ceres", "1P/Halley"],
+        reader=SimpleNamespace(),
     )
 
     assert seen["bodies"] == ["Ceres", "1P/Halley"]
     assert list(chart.positions) == ["Ceres", "1P/Halley"]
 
 
-def test_invalid_house_frame_inputs_fail_clearly() -> None:
+def test_invalid_house_frame_inputs_fail_clearly(
+    forbid_progression_reader_resolution: None,
+) -> None:
     target_dt = datetime(2001, 1, 1, tzinfo=timezone.utc)
 
     with pytest.raises(ValueError, match="latitude must be finite and within \\[-90, 90\\]"):
@@ -1530,8 +1551,9 @@ def test_planetary_arc_matches_solar_arc_when_body_is_sun() -> None:
         )
 
 
-@pytest.mark.requires_ephemeris
-def test_planetary_arc_rejects_invalid_body_name() -> None:
+def test_planetary_arc_rejects_invalid_body_name(
+    forbid_progression_reader_resolution: None,
+) -> None:
     natal_dt = datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc)
     natal_jd = jd_from_datetime(natal_dt)
     target_dt = datetime(2020, 1, 1, 6, 0, tzinfo=timezone.utc)
@@ -1567,6 +1589,7 @@ def test_planetary_arc_admits_comet_arc_body(monkeypatch: pytest.MonkeyPatch) ->
         target_dt,
         arc_body="1P/Halley",
         bodies=["Sun", "1P/Halley"],
+        reader=SimpleNamespace(),
     )
 
     assert calls[0][0] == "1P/Halley"
@@ -1579,7 +1602,9 @@ def test_planetary_arc_admits_comet_arc_body(monkeypatch: pytest.MonkeyPatch) ->
 # MC Policy Validation
 # ---------------------------------------------------------------------------
 
-def test_mc_policy_validation_rejects_unknown_mc_method() -> None:
+def test_mc_policy_validation_rejects_unknown_mc_method(
+    forbid_progression_reader_resolution: None,
+) -> None:
     bad_policy = ProgressionComputationPolicy(
         house_frame=ProgressionHouseFramePolicy(mc_method="wynn_key")
     )
@@ -1590,7 +1615,9 @@ def test_mc_policy_validation_rejects_unknown_mc_method() -> None:
         secondary_progression(natal_jd, target_dt, policy=bad_policy)
 
 
-def test_progressions_reject_naive_target_dates_at_solver_boundary() -> None:
+def test_progressions_reject_naive_target_dates_at_solver_boundary(
+    forbid_progression_reader_resolution: None,
+) -> None:
     natal_jd = jd_from_datetime(datetime(1990, 1, 1, 6, 0, tzinfo=timezone.utc))
     naive_target = datetime(2020, 1, 1, 6, 0)
 

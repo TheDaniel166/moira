@@ -188,6 +188,12 @@ The Decennial request boundary remains L1/L2 only:
 - every named deep method remains invalid; and
 - response compatibility receipts remain present and fixed to `null`.
 
+Progression entry points now validate policy types and values, aware target
+datetimes, supported bodies, and house-frame inputs before resolving an
+implicit planetary reader. Malformed requests therefore return the same
+declared `TypeError` or `ValueError` on kernel-free and kernel-installed hosts.
+Valid computations still require the appropriate installed ephemeris.
+
 ## Validation Boundary
 
 The release gate covers:
@@ -198,6 +204,7 @@ The release gate covers:
   active-boundary behavior;
 - aspect seam, motion-state, deterministic pattern, and Grand Sextile cases;
 - asteroid/comet identity, release receipt, loader, and collision policies;
+- kernel-free progression validation ordering and explicit-reader unit mocks;
 - Python 3.10 optional-server import and OpenAPI construction;
 - public API, documentation, and generated-publication drift; and
 - source, wheel, and installed-artifact release identity.
