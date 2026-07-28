@@ -13,6 +13,7 @@ from moira_server.models.astrocartography import (
     AstrocartographyChartSubplanetaryRequest,
     AstrocartographySubjectChartLinesRequest,
     AstrocartographySubjectChartSubplanetaryRequest,
+    AstrocartographySubjectRequest,
 )
 from moira_server.serializers.astrocartography import (
     serialize_astrocartography_lines,
@@ -23,6 +24,7 @@ from moira_server.services.astrocartography import (
     compute_astrocartography_chart_subplanetary,
     compute_astrocartography_subject_chart_lines,
     compute_astrocartography_subject_chart_subplanetary,
+    _physical_subject_identity,
 )
 
 
@@ -80,6 +82,18 @@ def _subject_map(provenance: dict) -> dict[str, dict]:
         subject["returned_label"]: subject
         for subject in provenance["subjects"]
     }
+
+
+def test_explicit_subject_family_disambiguates_halley_identity() -> None:
+    asteroid = _physical_subject_identity(
+        AstrocartographySubjectRequest(kind="asteroid", name="Halley")
+    )
+    comet = _physical_subject_identity(
+        AstrocartographySubjectRequest(kind="comet", name="Halley")
+    )
+
+    assert asteroid == ("asteroid", "Halley", 2_002_688)
+    assert comet == ("comet", "1P/Halley", 1_000_001)
 
 
 def test_astrocartography_direct_lines_route_matches_engine_truth(
@@ -312,7 +326,7 @@ def test_astrocartography_chart_lines_defer_comet_topocentric_ra_dec_path(
         "/v1/astrocartography/chart/lines",
         json={
             "dt": _DT_ISO,
-            "bodies": ["Halley"],
+            "bodies": ["1P/Halley"],
             "observer_lat": 40.7128,
             "observer_lon": -74.0060,
             "lat_step": 10.0,
@@ -330,7 +344,7 @@ def test_astrocartography_chart_lines_defer_comet_topocentric_ra_dec_path(
     ("body", "subject_class", "canonical_name", "naif_id"),
     [
         ("Ceres", "asteroid", "Ceres", 2000001),
-        ("Halley", "comet", "Halley", 1000001),
+        ("1P/Halley", "comet", "1P/Halley", 1000001),
     ],
 )
 def test_astrocartography_chart_subplanetary_preserves_selected_minor_body_provenance(
@@ -422,6 +436,7 @@ def test_astrocartography_subject_chart_lines_accepts_mixed_subjects(
     assert subjects["Ceres"]["subject_class"] == "asteroid"
     assert subjects["Ceres"]["naif_id"] == 2000001
     assert subjects["Halley"]["subject_class"] == "comet"
+    assert subjects["Halley"]["canonical_name"] == "1P/Halley"
     assert subjects["Halley"]["naif_id"] == 1000001
     assert subjects["Halley"]["position_source"] == "moira.planets.planet_at:comet:ecliptic_to_equatorial"
     assert subjects["Sirius"]["subject_class"] == "fixed_star"
@@ -430,6 +445,23 @@ def test_astrocartography_subject_chart_lines_accepts_mixed_subjects(
     assert subjects["Fortune"]["position_source"] == "moira.lots.calculate_parts:ecliptic_point_to_equatorial"
     assert subjects["Custom Ecliptic"]["subject_class"] == "ecliptic_point"
     assert subjects["Manual RA/Dec"]["subject_class"] == "ra_dec_point"
+
+
+def test_astrocartography_chart_rejects_ambiguous_unqualified_small_body(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/astrocartography/chart/subplanetary",
+        json={"dt": _DT_ISO, "bodies": ["Halley"]},
+    )
+
+    _assert_validation_envelope(
+        response,
+        message_fragment="small-body name 'Halley' is ambiguous across families",
+    )
+    message = response.json()["message"]
+    assert "asteroid:Halley" in message
+    assert "comet:Halley" in message
 
 
 @pytest.mark.requires_ephemeris

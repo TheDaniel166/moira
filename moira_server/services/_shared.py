@@ -6,7 +6,7 @@ from moira import Body, Moira
 from moira.constants import HOUSE_SYSTEM_NAMES
 from moira.houses import HouseSystem, calculate_houses, HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.julian import jd_from_datetime, utc_to_ut1
-from moira.planets import _resolve_small_body_name
+from moira.small_body_identity import resolve_small_body_identity
 
 from ..models.chart import ChartRequest, HousesRequest
 
@@ -43,13 +43,16 @@ def _body_is_supported(body: str, *, allow_small_bodies: bool) -> bool:
         return True
     if not allow_small_bodies:
         return False
-    return _resolve_small_body_name(body) is not None
+    return resolve_small_body_identity(body) is not None
 
 
 def _supported_body_message(*, allow_small_bodies: bool) -> str:
     supported = ", ".join(sorted(_VALID_CHART_BODIES))
     if allow_small_bodies:
-        return f"{supported}, plus admitted asteroid/comet names"
+        return (
+            f"{supported}, plus globally unique or family-qualified "
+            "asteroid/comet names"
+        )
     return supported
 
 

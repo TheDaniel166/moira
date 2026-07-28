@@ -61,7 +61,8 @@ from .julian import (
     utc_to_ut1,
 )
 from ._ephemeris_time import _ut1_to_ephemeris_tt
-from .planets import planet_at, all_planets_at, _resolve_small_body_name
+from .planets import planet_at, all_planets_at
+from .small_body_identity import resolve_small_body_identity
 from .obliquity import true_obliquity
 from .spk_reader import get_reader, SpkReader
 
@@ -1186,7 +1187,7 @@ def _validate_bodies(bodies: list[str] | None) -> None:
 def _is_supported_progression_body(body: str) -> bool:
     if body in Body.ALL_PLANETS:
         return True
-    return _resolve_small_body_name(body) is not None
+    return resolve_small_body_identity(body) is not None
 
 
 def _validate_house_frame_inputs(latitude: float, longitude: float, system: str | None) -> None:

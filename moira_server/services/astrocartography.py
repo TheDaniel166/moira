@@ -15,7 +15,7 @@ from moira.coordinates import ecliptic_to_equatorial
 from moira.julian import apparent_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import planet_at, sky_position_at
-from moira.planets import _resolve_small_body_name
+from moira.small_body_identity import resolve_small_body_identity
 from moira.stars import star_at
 
 from ..models.astrocartography import (
@@ -430,11 +430,14 @@ def _build_subject_chart(engine: Moira, request):
 
 
 def _subject_chart_bodies(subjects: list[AstrocartographySubjectRequest]) -> list[str]:
-    bodies = [
-        subject.name
-        for subject in subjects
-        if subject.kind in {"planet", "asteroid"} and subject.name is not None
-    ]
+    bodies = []
+    for subject in subjects:
+        if subject.name is None:
+            continue
+        if subject.kind == "planet":
+            bodies.append(subject.name)
+        elif subject.kind == "asteroid":
+            bodies.append(f"asteroid:{subject.name}")
     return bodies or [Body.SUN]
 
 
@@ -595,10 +598,15 @@ def _resolve_physical_subject(
 ) -> ResolvedAstrocartographySubject:
     name = subject.name or ""
     family, canonical_name, naif_id = _physical_subject_identity(subject)
+    engine_body = (
+        name
+        if family == "planet"
+        else f"{family}:{canonical_name}"
+    )
     label = _subject_label(subject, fallback=canonical_name)
     if line_mode and family in {"planet", "asteroid"}:
         right_ascension, declination = _sky_ra_dec(
-            body=name,
+            body=engine_body,
             jd_ut=jd_ut,
             observer=observer,
             reader=reader,
@@ -606,7 +614,7 @@ def _resolve_physical_subject(
         )
         position_source = f"moira.planets.sky_position_at:{family}"
     else:
-        position = planet_at(name, jd_ut, reader=reader)
+        position = planet_at(engine_body, jd_ut, reader=reader)
         right_ascension, declination = ecliptic_to_equatorial(
             position.longitude,
             position.latitude,
@@ -630,17 +638,14 @@ def _resolve_physical_subject(
 
 def _physical_subject_identity(subject: AstrocartographySubjectRequest) -> tuple[SubjectClass, str, int | None]:
     name = subject.name or ""
-    small_body = _resolve_small_body_name(name)
     if subject.kind == "planet":
         if name not in Body.ALL_PLANETS:
             raise ValueError(f"planet subject {name!r} is not an admitted planet")
         return "planet", name, None
-    if small_body is None:
+    identity = resolve_small_body_identity(name, family=subject.kind)
+    if identity is None:
         raise ValueError(f"{subject.kind} subject {name!r} is not an admitted small body")
-    family, canonical_name = small_body
-    if family != subject.kind:
-        raise ValueError(f"{name!r} resolved as {family}, not {subject.kind}")
-    return family, canonical_name, _small_body_naif_id(family, canonical_name)
+    return identity.family, identity.canonical_name, identity.naif_id
 
 
 def _resolve_fixed_star_subject(
@@ -886,17 +891,18 @@ def _chart_subject_for_body(
     body: str,
     coordinate_source: CoordinateSource,
 ) -> AstrocartographySubjectProvenance:
-    small_body = _resolve_small_body_name(body)
-    if small_body is not None:
-        family, canonical_name = small_body
-        naif_id = _small_body_naif_id(family, canonical_name)
+    identity = resolve_small_body_identity(body)
+    if identity is not None:
         return AstrocartographySubjectProvenance(
             requested_label=body,
             returned_label=body,
-            subject_class=family,
-            canonical_name=canonical_name,
-            naif_id=naif_id,
-            position_source=_chart_position_source(family, coordinate_source),
+            subject_class=identity.family,
+            canonical_name=identity.canonical_name,
+            naif_id=identity.naif_id,
+            position_source=_chart_position_source(
+                identity.family,
+                coordinate_source,
+            ),
         )
     if body in Body.ALL_PLANETS:
         return AstrocartographySubjectProvenance(
@@ -915,19 +921,6 @@ def _chart_subject_for_body(
         naif_id=None,
         position_source=_chart_position_source("unknown", coordinate_source),
     )
-
-
-def _small_body_naif_id(family: str, canonical_name: str) -> int | None:
-    if family == "asteroid":
-        from moira.asteroids import ASTEROID_NAIF
-
-        return ASTEROID_NAIF.get(canonical_name)
-    if family == "comet":
-        from moira.comets import COMET_NAIF
-
-        return COMET_NAIF.get(canonical_name)
-    return None
-
 
 def _chart_position_source(family: str, coordinate_source: CoordinateSource) -> str:
     if coordinate_source == "chart_apparent_topocentric_ra_dec":

@@ -288,6 +288,16 @@ request is the ordinary `PlanetPositionRequest`: `dt`, `body`, optional
 `observer_lat`, `observer_lon`, `observer_elev_m`, and the correction flags
 `apparent`, `aberration`, `grav_deflection`, and `nutation`.
 
+Generic position, chart, progression-backed, and chart-backed
+Astrocartography body fields share one small-body identity rule. Globally
+unique names and canonical comet designations resolve directly. A
+cross-family collision must use a qualifier such as `"asteroid:Halley"` or
+`"comet:Halley"`; an unqualified collision returns the standard HTTP 422
+validation envelope with both catalog candidates. Structured
+Astrocartography subjects may instead declare `kind: "asteroid"` or
+`kind: "comet"`. Dedicated `/v1/asteroids/*` and `/v1/comets/*` routes remain
+family-scoped and retain their existing name/alias contracts.
+
 The response preserves `result` and the existing `reduction.stage_sequence`.
 For ordinary planets and admitted asteroids, `reduction` also includes:
 

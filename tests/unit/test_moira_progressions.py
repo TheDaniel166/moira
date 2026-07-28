@@ -776,10 +776,14 @@ def test_secondary_progression_admits_small_body_names(monkeypatch: pytest.Monke
 
     monkeypatch.setattr(progressions_module, "all_planets_at", fake_all_planets_at)
 
-    chart = secondary_progression(2451545.0, target_dt, bodies=["Ceres", "Halley"])
+    chart = secondary_progression(
+        2451545.0,
+        target_dt,
+        bodies=["Ceres", "1P/Halley"],
+    )
 
-    assert seen["bodies"] == ["Ceres", "Halley"]
-    assert list(chart.positions) == ["Ceres", "Halley"]
+    assert seen["bodies"] == ["Ceres", "1P/Halley"]
+    assert list(chart.positions) == ["Ceres", "1P/Halley"]
 
 
 def test_invalid_house_frame_inputs_fail_clearly() -> None:
@@ -1558,12 +1562,17 @@ def test_planetary_arc_admits_comet_arc_body(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setattr(progressions_module, "planet_at", fake_planet_at)
     monkeypatch.setattr(progressions_module, "_uniform_longitude_direction", fake_uniform_longitude_direction)
 
-    chart = planetary_arc(natal_jd, target_dt, arc_body="Halley", bodies=["Sun", "Halley"])
+    chart = planetary_arc(
+        natal_jd,
+        target_dt,
+        arc_body="1P/Halley",
+        bodies=["Sun", "1P/Halley"],
+    )
 
-    assert calls[0][0] == "Halley"
-    assert calls[1][0] == "Halley"
-    assert chart.chart_type == "Planetary Arc Direction (Halley)"
-    assert list(chart.positions) == ["Sun", "Halley"]
+    assert calls[0][0] == "1P/Halley"
+    assert calls[1][0] == "1P/Halley"
+    assert chart.chart_type == "Planetary Arc Direction (1P/Halley)"
+    assert list(chart.positions) == ["Sun", "1P/Halley"]
 
 
 # ---------------------------------------------------------------------------

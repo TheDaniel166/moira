@@ -61,7 +61,7 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
   numbered asteroids, 221,095 membership rows). User-supplied `.bsp` kernels
   remain supported through `daf_writer` for numbered minor planets available
   from the selected source.
-- **Numbered periodic comets** — 497 comets (1P/Halley through 516P) from JPL Horizons as sharded Type-13 kernels (1600–2500 CE), with canonical numbered designations (`"1P/Halley"`) and curated short aliases accepted as inputs.
+- **Numbered periodic comets** — 497 comets (1P/Halley through 516P) from JPL Horizons as sharded Type-13 kernels (1600–2500 CE), with canonical numbered designations (`"1P/Halley"`) and curated family-scoped short aliases. Dedicated comet surfaces accept those aliases directly; unified position/chart surfaces require a canonical designation or an explicit `comet:` qualifier when an alias also names an asteroid.
 - **Uranian / Hamburg School bodies** — 8 hypothetical transneptunian planets (Cupido through Poseidon) plus Transpluto.
 - **Lunar nodes and apsides** — True Node, Mean Node, Mean Lilith, True Lilith, and orbital nodes/apsides for all planetary bodies.
 - **Variable stars** — phase and magnitude engine for eclipsing binaries and intrinsic variables; dedicated Algol API.

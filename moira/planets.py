@@ -71,6 +71,7 @@ from .spk_reader import (
     get_active_reader, get_reader, KernelReader, SpkReader,
     MissingKernelError, OutOfRangeError,
 )
+from .small_body_identity import SmallBodyFamily, resolve_small_body_identity
 from .corrections import (
     apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
     apply_refraction, SCHWARZSCHILD_RADII,
@@ -1497,31 +1498,27 @@ def _planet_data_from_comet_result(comet) -> PlanetData:
     )
 
 
-def _resolve_small_body_name(body: str) -> tuple[str, str] | None:
+def _resolve_small_body_name(
+    body: str,
+    *,
+    family: SmallBodyFamily | None = None,
+) -> tuple[SmallBodyFamily, str] | None:
     """
-    Resolve a public body name to an admitted small-body family and canonical name.
+    Resolve a unified body name to an admitted family and canonical name.
+
+    Globally unique names resolve directly. Cross-family collisions require an
+    explicit ``asteroid:`` or ``comet:`` qualifier and otherwise raise
+    ``AmbiguousSmallBodyNameError``.
 
     Returns:
         ("asteroid" | "comet", canonical_name) when the body belongs to a
         small-body family admitted through the planetary front door, otherwise
         ``None``.
     """
-    from .asteroids import ASTEROID_NAIF
-    from .comets import COMET_NAIF
-
-    if body in ASTEROID_NAIF:
-        return "asteroid", body
-    if body in COMET_NAIF:
-        return "comet", body
-
-    lowered = body.lower()
-    for name in ASTEROID_NAIF:
-        if name.lower() == lowered:
-            return "asteroid", name
-    for name in COMET_NAIF:
-        if name.lower() == lowered:
-            return "comet", name
-    return None
+    identity = resolve_small_body_identity(body, family=family)
+    if identity is None:
+        return None
+    return identity.family, identity.canonical_name
 
 
 def _small_body_mode_is_supported(
@@ -2149,6 +2146,7 @@ def planet_reduction_breakdown_at(
         observer_lon,
         lst_deg,
     )
+    small_body = _resolve_small_body_name(body)
 
     if reader is None:
         reader = get_active_reader()
@@ -2161,7 +2159,6 @@ def planet_reduction_breakdown_at(
     target_id = body
     canonical_body = body
     vector_cache: _VectorCache = {}
-    small_body = _resolve_small_body_name(body)
     if small_body is not None:
         family, canonical_name = small_body
         canonical_body = canonical_name
@@ -2443,8 +2440,9 @@ def planet_at(
     both physical modes.
 
     Args:
-        body: One of the ``Body.*`` string constants identifying the target
-            body (e.g. ``Body.MARS``).
+        body: A ``Body.*`` string constant or an admitted small-body name.
+            Cross-family collisions require an ``asteroid:`` or ``comet:``
+            qualifier (for example, ``"comet:Halley"``).
         jd_ut: Julian Day Number in Universal Time (UT1).
         reader: Active ``KernelReader``. If ``None``, planets.py requires an
             active contextual reader from the facade or a manual
@@ -2499,6 +2497,8 @@ def planet_at(
         ValueError: If ``center`` or ``frame`` is not a recognised string.
         ValueError: If ``observer_lat`` or ``observer_lon`` is provided without
             ``lst_deg`` — topocentric correction requires all three.
+        AmbiguousSmallBodyNameError: If an unqualified small-body name occurs
+            in both the asteroid and comet catalogs.
 
     Side effects:
         None beyond reading from the active kernel context.
@@ -2508,6 +2508,7 @@ def planet_at(
     if frame not in ('ecliptic', 'cartesian'):
         raise ValueError(f"frame must be 'ecliptic' or 'cartesian', got {frame!r}")
     _validate_observer_arguments("planet_at", observer_lat, observer_lon, lst_deg)
+    small_body = _resolve_small_body_name(body)
 
     if reader is None:
         reader = get_active_reader()
@@ -2517,7 +2518,6 @@ def planet_at(
                 "Pass a reader explicitly or use the Moira facade."
             )
 
-    small_body = _resolve_small_body_name(body)
     if small_body is not None:
         family, canonical_name = small_body
         # Topocentric asteroid pipeline: delegate to sky_position_at() which
@@ -2738,7 +2738,9 @@ def _sky_position_at_impl(
     deflection", and "no nutation" flag families respectively.
 
     Args:
-        body: One of the ``Body.*`` string constants identifying the target body.
+        body: A ``Body.*`` string constant or an admitted small-body name.
+            Cross-family collisions require an ``asteroid:`` or ``comet:``
+            qualifier.
         jd_ut: Julian Day Number in Universal Time (UT1).
         observer_lat: Geographic latitude of the observer in degrees.
         observer_lon: Geographic longitude of the observer in degrees.
@@ -2773,10 +2775,14 @@ def _sky_position_at_impl(
             context exists.
         KeyError: If the active kernel set contains no segment for the
             requested body.
+        AmbiguousSmallBodyNameError: If an unqualified small-body name occurs
+            in both the asteroid and comet catalogs.
 
     Side effects:
         None beyond reading from the active kernel context.
     """
+    small_body = _resolve_small_body_name(body)
+
     if reader is None:
         reader = get_active_reader()
         if reader is None:
@@ -2804,7 +2810,6 @@ def _sky_position_at_impl(
     earth_vel = context.earth_vel
     rot_mat = context.rot_mat
 
-    small_body = _resolve_small_body_name(body)
     if small_body is not None:
         family, canonical_name = small_body
         if family == "asteroid":
@@ -3052,8 +3057,9 @@ def all_planets_at(
 
     Args:
         jd_ut: Julian Day Number in Universal Time (UT1).
-        bodies: List of ``Body.*`` string constants to compute. Defaults to
-            ``Body.ALL_PLANETS`` when ``None``.
+        bodies: List of ``Body.*`` constants or admitted small-body names.
+            Cross-family collisions require ``asteroid:`` or ``comet:``
+            qualifiers. Defaults to ``Body.ALL_PLANETS`` when ``None``.
         reader: Active ``KernelReader``. If ``None``, planets.py requires an
             active contextual reader from the facade or a manual
             ``use_reader_override(...)`` scope.
@@ -3078,6 +3084,8 @@ def all_planets_at(
         MissingKernelError: If ``reader`` is ``None`` and no active reader
             context exists.
         KeyError: If the active kernel set contains no segment for a requested body.
+        AmbiguousSmallBodyNameError: If an unqualified small-body name occurs
+            in both the asteroid and comet catalogs.
 
     Side effects:
         None beyond reading from the active kernel context.
@@ -3087,6 +3095,10 @@ def all_planets_at(
     _validate_observer_arguments("all_planets_at", observer_lat, observer_lon, lst_deg)
     if bodies is None:
         bodies = Body.ALL_PLANETS
+    small_body_resolutions = {
+        body: _resolve_small_body_name(body)
+        for body in bodies
+    }
     if reader is None:
         reader = get_active_reader()
         if reader is None:
@@ -3136,7 +3148,7 @@ def all_planets_at(
     )
     results: dict[str, PlanetData] = {}
     for body in bodies:
-        if _resolve_small_body_name(body) is not None:
+        if small_body_resolutions[body] is not None:
             small_body_result = planet_at(
                 body,
                 jd_ut,
@@ -3154,7 +3166,7 @@ def all_planets_at(
                 delta_t_policy=delta_t_policy,
             )
             assert isinstance(small_body_result, PlanetData)
-            results[small_body_result.name] = small_body_result
+            results[body] = small_body_result
             continue
         results[body] = _planet_at_core(  # type: ignore[assignment]
             body, jd_ut, reader=reader, obliquity=None,

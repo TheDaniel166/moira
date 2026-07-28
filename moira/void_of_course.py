@@ -183,8 +183,9 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from .asteroids import ASTEROID_NAIF, asteroid_at
-from .comets import COMET_NAIF, comet_at
+from .asteroids import asteroid_at
+from .comets import comet_at
+from .small_body_identity import resolve_small_body_identity
 from .constants import Body, SIGNS, sign_of
 from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
@@ -426,19 +427,13 @@ def _body_longitude(body: str, jd: float, reader: SpkReader) -> float:
     if canonical_planet is not None:
         return planet_at(canonical_planet, jd, reader=reader).longitude % 360.0
 
-    asteroid_match = next(
-        (candidate for candidate in ASTEROID_NAIF if candidate.lower() == body.lower()),
-        None,
-    )
-    if asteroid_match is not None:
-        return asteroid_at(asteroid_match, jd, reader=reader).longitude % 360.0
-
-    comet_match = next(
-        (candidate for candidate in COMET_NAIF if candidate.lower() == body.lower()),
-        None,
-    )
-    if comet_match is not None:
-        return comet_at(comet_match, jd, reader=reader).longitude % 360.0
+    identity = resolve_small_body_identity(body)
+    if identity is not None:
+        if identity.family == "asteroid":
+            position = asteroid_at(identity.canonical_name, jd, reader=reader)
+        else:
+            position = comet_at(identity.canonical_name, jd, reader=reader)
+        return position.longitude % 360.0
 
     raise ValueError(f"_body_longitude: unsupported body {body!r}")
 

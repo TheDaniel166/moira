@@ -10,11 +10,11 @@ from moira.julian import datetime_from_jd, jd_from_datetime, local_sidereal_time
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import (
     PlanetReductionBreakdown,
-    _resolve_small_body_name,
     planet_at,
     planet_reduction_breakdown_at,
     sky_position_at,
 )
+from moira.small_body_identity import resolve_small_body_identity
 
 from ..models.positions import PlanetPositionRequest, SkyPositionRequest
 
@@ -110,11 +110,12 @@ def _require_aware_datetime(value) -> None:
 def _require_supported_planet_body(body: str) -> None:
     if body in _VALID_PLANET_BODIES:
         return
-    if _resolve_small_body_name(body) is not None:
+    if resolve_small_body_identity(body) is not None:
         return
     supported = ", ".join(sorted(_VALID_PLANET_BODIES))
     raise ValueError(
-        f"unsupported planet body {body!r}; supported bodies: {supported}, plus admitted asteroid/comet names"
+        f"unsupported planet body {body!r}; supported bodies: {supported}, "
+        "plus globally unique or family-qualified asteroid/comet names"
     )
 
 

@@ -785,6 +785,15 @@ chart_dict = all_planets_at(jd, reader=reader)
 # dict[str, PlanetData] for all ten classical planets
 ```
 
+The unified `planet_at`, `all_planets_at`, and `sky_position_at` body namespace
+also admits cataloged asteroids and comets. A globally unique name resolves
+directly. A name present in both families must be qualified, for example
+`"asteroid:Halley"` or `"comet:Halley"`; an unqualified collision raises
+`AmbiguousSmallBodyNameError` instead of selecting a family by lookup order.
+Canonical comet designations such as `"1P/Halley"` remain globally
+unambiguous. Dedicated `asteroid_at` and `comet_at` calls retain their
+family-local name rules.
+
 | Function | Returns | Description |
 |---|---|---|
 | `planet_at(body, jd_ut, reader=None, observer_lat=None, observer_lon=None, observer_elev_m=0.0)` | `PlanetData` | Single planet geocentric ecliptic position |

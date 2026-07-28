@@ -91,7 +91,7 @@ def test_planet_at_named_comet_uses_small_body_provider(monkeypatch: pytest.Monk
         pass
 
     class _CometResult:
-        name = "Halley"
+        name = "1P/Halley"
         longitude = 42.0
         latitude = -3.0
         distance = 2.0
@@ -109,14 +109,14 @@ def test_planet_at_named_comet_uses_small_body_provider(monkeypatch: pytest.Monk
     monkeypatch.setattr(comets_module, "comet_at", _fake_comet_at)
 
     reader = _DummyReader()
-    result = planet_at("Halley", _JD_J2000, reader=reader)
+    result = planet_at("comet:Halley", _JD_J2000, reader=reader)
 
     assert isinstance(result, PlanetData)
-    assert result.name == "Halley"
+    assert result.name == "1P/Halley"
     assert result.longitude == 42.0
     assert result.distance == pytest.approx(2.0 * planets_module.KM_PER_AU)
     assert result.retrograde is False
-    assert calls == [("Halley", _JD_J2000, reader)]
+    assert calls == [("1P/Halley", _JD_J2000, reader)]
 
 
 def test_planet_at_small_body_rejects_unsupported_modes(monkeypatch: pytest.MonkeyPatch):
@@ -128,7 +128,7 @@ def test_planet_at_small_body_rejects_unsupported_modes(monkeypatch: pytest.Monk
         planet_at("Ceres", _JD_J2000, reader=reader, center="barycentric")
 
     with pytest.raises(ValueError, match="comet bodies currently support only the default apparent geocentric ecliptic path"):
-        planet_at("Halley", _JD_J2000, reader=reader, frame="cartesian")
+        planet_at("1P/Halley", _JD_J2000, reader=reader, frame="cartesian")
 
 
 def test_all_planets_at_admits_small_bodies_on_unified_surface(monkeypatch: pytest.MonkeyPatch):
@@ -166,9 +166,18 @@ def test_all_planets_at_admits_small_bodies_on_unified_surface(monkeypatch: pyte
                 speed=0.2,
                 retrograde=False,
             )
-        if body == "Halley":
+        if body == "asteroid:Halley":
             return PlanetData(
                 name="Halley",
+                longitude=25.0,
+                latitude=1.5,
+                distance=2.5,
+                speed=0.25,
+                retrograde=False,
+            )
+        if body == "comet:Halley":
+            return PlanetData(
+                name="1P/Halley",
                 longitude=30.0,
                 latitude=2.0,
                 distance=3.0,
@@ -180,11 +189,28 @@ def test_all_planets_at_admits_small_bodies_on_unified_surface(monkeypatch: pyte
     monkeypatch.setattr(planets_module, "_planet_at_core", _fake_core)
     monkeypatch.setattr(planets_module, "planet_at", _fake_planet_at)
 
-    result = all_planets_at(_JD_J2000, bodies=[Body.SUN, "Ceres", "Halley"], reader=_DummyReader())
+    result = all_planets_at(
+        _JD_J2000,
+        bodies=[
+            Body.SUN,
+            "Ceres",
+            "asteroid:Halley",
+            "comet:Halley",
+        ],
+        reader=_DummyReader(),
+    )
 
-    assert list(result) == [Body.SUN, "Ceres", "Halley"]
+    assert list(result) == [
+        Body.SUN,
+        "Ceres",
+        "asteroid:Halley",
+        "comet:Halley",
+    ]
     assert result["Ceres"].longitude == 20.0
-    assert result["Halley"].retrograde is True
+    assert result["asteroid:Halley"].name == "Halley"
+    assert result["asteroid:Halley"].longitude == 25.0
+    assert result["comet:Halley"].name == "1P/Halley"
+    assert result["comet:Halley"].retrograde is True
 
 
 def test_cartesian_position_repr():

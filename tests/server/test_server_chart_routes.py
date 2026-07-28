@@ -723,3 +723,23 @@ def test_planet_position_route_rejects_invalid_body_with_validation_envelope(
     assert body["error_code"] == "validation_error"
     assert body["category"] == "input_validation"
     assert "NotAPlanet" in body["message"]
+
+
+def test_planet_position_route_rejects_ambiguous_small_body_identity(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/positions/planet",
+        json={
+            "dt": "2000-01-01T12:00:00+00:00",
+            "body": "Halley",
+        },
+    )
+
+    assert response.status_code == 422
+    body = response.json()
+    assert body["error_code"] == "validation_error"
+    assert body["category"] == "input_validation"
+    assert "small-body name 'Halley' is ambiguous across families" in body["message"]
+    assert "asteroid:Halley" in body["message"]
+    assert "comet:Halley" in body["message"]
