@@ -1,2 +1,10 @@
 moira/kernels/*.bsp filter=lfs diff=lfs merge=lfs -text
 moira/kernels/sb441_type13/*.bsp filter=lfs diff=lfs merge=lfs -text
+
+# Identity catalogs are byte-hashed at import time. Keep their packaged bytes
+# identical on Windows and POSIX checkouts.
+moira/data/asteroid_catalog_naif.json text eol=lf
+moira/data/asteroid_catalog_naif.metadata.json text eol=lf
+moira/data/comet_catalog_naif.json text eol=lf
+moira/data/comet_catalog_aliases.json text eol=lf
+moira/data/comet_catalog_naif.metadata.json text eol=lf
