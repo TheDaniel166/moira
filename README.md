@@ -12,7 +12,7 @@
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19152528-blue.svg)](https://doi.org/10.5281/zenodo.19152528)
 <a href="https://tools.launchllama.co?utm_source=badge&utm_medium=referral" target="_blank" rel="noopener noreferrer"><img src="https://speaktechenglish.com/wp-content/uploads/2026/04/Screenshot_2026-04-09_at_17.40.44-removebg-preview.png" alt="Featured on Launch Llama" width="200" height="50" /></a>
 
-Moira is an astronomy-first astrology engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable. Performance-critical computations — nutation, SPK kernel reading, apparent planetary evaluation (via `NativePlanetaryEvaluator`), coordinate transforms, light-time iteration, harmogram analysis, and event searching — are executed by a native C++17 extension (`_moira_native`) compiled with pybind11.
+Moira is an astronomy-first astrology engine built for transparent astrology calculations, reproducible chart computation, and an inspectable calculation chain from astronomical inputs to astrological outputs. It is an auditable astrology engine with explicit computational policy, deterministic behavior, and readable reduction stages grounded in modern standards and references including JPL DE441, IAU 2000A/2006, ERFA/SOFA-aligned practices, and Gaia DR3-linked star data where applicable. A required C++17 extension (`_moira_native`, compiled with pybind11) accelerates admitted numerical substrates including nutation, SPK/DAF access, apparent-place evaluation, coordinate transforms, harmogram computation, and selected event-search primitives. Python remains the governing layer for public semantics, doctrine, policy, and orchestration.
 
 ## Why Moira Exists
 
@@ -48,7 +48,7 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 ### Positions and Bodies
 
-- **Planets and luminaries** — geocentric and topocentric reduction with iterative light-time, annual aberration, multi-body relativistic deflection (Sun, Jupiter, Saturn, Earth), IAU 2006 frame bias, and WGS-84 topocentric parallax.
+- **Planets and luminaries** — geocentric and topocentric reduction with iterative light-time, annual aberration, multi-body relativistic deflection (Sun, Jupiter, and Saturn, excluding the target body), IAU 2006 frame bias, and WGS-84 topocentric parallax.
 - **Fixed stars** — sovereign registry of 1,809 named stars with proper motion, parallax, epoch propagation, and Stellar Quality classification. Audited anchor residual against SOFA/ERFA: 0.00048 arcseconds (J1000–J3000).
 - **Position-capable asteroid ephemeris** — an optional external catalog of
   9,974 selected asteroids, including the classical four (Ceres, Pallas, Juno,
@@ -86,18 +86,40 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
   drekkana; the Gundel/Harley Hermetic name-and-face catalog is reconstructed
   for research, while its geometry remains excluded from public and REST
   surfaces and unsupported fixed-star assignments fail closed.
+- **Unified Hellenistic profile** — a non-interpretive, score-free Whole Sign
+  composition of typed receipts for essential dignity components, sect, joy,
+  solar proximity and phase, besieging, receptions, lots, annual and dated
+  monthly profections, Decennials L1/L2, and Zodiacal Releasing. Dependency
+  gaps return explicit `not_evaluable` truth; medieval Firdaria and almutens,
+  Hermetic geometry/star attribution, Decennial L3/L4, and unscoped
+  interpretive branches remain outside this product contract.
 - **Draconic charts** — node-anchored draconic frame (mean or true node) with longitude rotation, engine-backed chart derivation, and caller-supplied position support.
 
 ### Predictive Techniques
 
 - **Progressions** — secondary, tertiary, minor, solar arc (longitude and right ascension), Naibod, ascendant arc; direct and converse variants for all methods.
-- **Primary directions** — Placidus semi-arc/mundane, Regiomontanus, and Morinus method families with mundane and zodiacal variants; direct and converse directions (converse computed by true role exchange, not arc negation); speculum computation; fixed-star targets; seven conventional time-key presets.
+- **Primary directions** — eight admitted geometry methods across in-mundo and
+  in-zodiaco policies (Placidus mundane, Ptolemy semi-arc, Placidian classic,
+  meridian, Morinus, Regiomontanus, Campanus, and topocentric), exposed through
+  25 named presets; direct and converse directions with explicit converse
+  doctrine; speculum computation; fixed-star targets; and Ptolemy, Naibod,
+  Cardan, and caller-supplied solar time keys.
 - **Returns** — solar and lunar returns; planet returns.
-- **Time lords** — annual and monthly profections; Firdaria (diurnal and nocturnal sequences, including Bonatti variant); Zodiacal Releasing (Vettius Valens method); Hyleg and Alcocoden.
+- **Time lords** — annual profections with exact, civil-anniversary-bounded
+  monthly intervals; Zodiacal Releasing (Vettius Valens method); admitted
+  Decennials L1/L2; Firdaria (diurnal and nocturnal sequences, including the
+  Bonatti variant, explicitly outside the Hellenistic profile).
+- **Vitality doctrine** — Hyleg and Alcocoden calculations, kept distinct from
+  time-lord chronology.
 
 ### Vedic / Jyotish Suite
 
-Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jataka, Saravali, Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras, and the named 1879 Agastya- and 2024 Bogamuni-attributed Pancha Pakshi witnesses) with per-rule citations; where classical sources disagree, the disagreement is an explicit policy switch or a recorded note — never a silent choice.
+Admitted Vedic surfaces name their governing classical source, modern lineage,
+or source-scoped witness (including BPHS, Brihat Jataka, Saravali,
+Phaladeepika, Uttara Kalamrita, Jataka Parijata, Jaimini Upadesa Sutras, and
+the named 1879 Agastya- and 2024 Bogamuni-attributed Pancha Pakshi witnesses).
+Where sources disagree or a modern composition is required, Moira exposes the
+policy or qualification instead of presenting one silent universal rule.
 
 - **Sidereal foundation** — 12 admitted ayanamsha systems including star-anchored "True" ayanamshas; 27-nakshatra system; Panchanga.
 - **Pancha Pakshi** — an explicitly named Agastya-attributed Madras 1879
@@ -158,9 +180,10 @@ Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jat
   alias nor product is admitted. The Padu profile performs no natal identity,
   astronomical routing, schedule/current-cell selection, condition scoring,
   or forecast.
-- **Dashas** — Vimshottari with nakshatra balance; Chara Dasha (K.N. Rao's named lineage); Varshaphal (annual charts).
+- **Dashas** — Vimshottari with nakshatra balance; Chara Dasha (K.N. Rao's named lineage).
+- **Varshaphal** — annual chart calculation.
 - **Vargas** — divisional charts (navamsa, dashamansa, dwadashamsa, saptamsa, trimshamsa, and more); Vimshopaka Bala (BPHS 20-point varga-dignity strength over all four classical groups) with vargottama detection.
-- **Yogas** — 60 classical yogas across six families (Pancha Mahapurusha, Chandra, Surya, all 32 Nabhasa, Raja core, Dhana core), each returned as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, and per-yoga primary-source citations.
+- **Yogas** — 61 classical yogas across six families (Pancha Mahapurusha, Chandra, Surya, all 32 Nabhasa, Raja core, Dhana core), each returned as a proof object: formation conditions with observed evidence, cancellation (bhanga) clauses evaluated first-class, and per-yoga primary-source citations.
 - **Shadbala** — the complete six-fold strength system plus Bhava Bala (house strength), inline Ishta/Kashta Phala on every planet, and Graha Yuddha transfer disclosure.
 - **Ashtakavarga** — bindu tables plus kakshya-level transit evaluation (Saturn-first lord order) and Shodhya Pinda, validated to the digit against BPHS Ch. 69's own worked example.
 - **Upagrahas** — the five kalavelas (Gulika, Kala, Mrityu, Ardhaprahara, Yamaghantaka) with portion-point, Mandi-mode, and lord-sequence lineage policies, plus the five Sun-derived upagrahas.
@@ -172,7 +195,13 @@ Every Vedic engine is implemented from primary-source research (BPHS, Brihat Jat
 ### Advanced Astronomy
 
 - **Eclipses** — NASA-canon contact solver for solar and lunar eclipses; Saros series classification with heptagonal vertex labelling; local circumstance computation.
-- **Heliacal phenomena** — heliacal rising and setting; acronychal rising and setting; planetary elongation extremes.
+- **Visibility and heliacal phenomena** — heliacal and acronychal rising and
+  setting, planetary elongation extremes, and an opt-in physical point-source
+  assessment path exposing Kasten–Young relative air mass, measured or
+  Schaefer clear-air extinction, directional twilight brightness, Crumey
+  naked-eye threshold, moonlight policy, and Yallop lunar-crescent
+  classification. Out-of-domain physical inputs fail closed rather than being
+  extrapolated.
 - **Parans** — paranatellonta field analysis with contour extraction and stability metrics.
 - **Occultations** — lunar occultation of stars and planets; close-approach detection.
 - **Stations** — retrograde stations with precise stationary-point search.
@@ -230,7 +259,7 @@ print(f"Sun is in house: {sun_house}")
 The engine ships with an optional FastAPI transport layer (`moira_server`) that exposes the admitted engine surface as typed, versioned REST routes.
 
 ```bash
-pip install moira-astro[server]
+pip install "moira-astro[server]"
 uvicorn --factory moira_server:create_app
 ```
 
@@ -246,28 +275,42 @@ With prewarm enabled, `/ready` returns HTTP 503 until the kernel-backed warmup
 succeeds; `/health` remains available for liveness diagnostics. Prewarm is
 disabled by default because each worker pays its own native memory cost.
 
-- **60+ route families under `/v1`** — charts, positions, houses, per-stage pipeline visibility, progressions (the full dispatched method menu advertised as OpenAPI enums), primary directions, returns, transits, dashas and time lords, the complete Vedic suite (yogas, shadbala, ashtakavarga, upagrahas, avasthas, Jaimini, muhurta, sade sati), draconic charts, astrocartography, asteroids and comets, fixed stars, harmonics, harmograms, electional scoring, synastry and relationship products, and more.
-- **Typed transport** — every route family has dedicated Pydantic request/response models, serializers, and services; doctrine stays in the engine, the server is transport and orchestration only.
+- **Broad versioned surface under `/v1`** — hundreds of typed operations across
+  charts, positions, houses, per-stage pipeline visibility, physical
+  visibility models, progressions, primary directions, returns, transits,
+  time lords, the Vedic suite, Hellenistic receipts, draconic charts,
+  astrocartography, small bodies, fixed stars, harmonics, harmograms,
+  electional scoring, synastry, and relationship products.
+- **Typed transport** — admitted route families use typed Pydantic boundaries
+  and dedicated serializer/service layers where appropriate; doctrine stays in
+  the engine, while the server remains transport and orchestration only.
 - **OpenAPI discovery** — tagged schema with installed discovery metadata for machine consumers.
 
 ---
 
 ## Requirements and Installation
 
-- Python 3.10 or later
-- A C++ compiler, `cmake >= 3.24`, and `pybind11 >= 2.12` (required at build time for the native extension)
+- Python `>=3.10`; consult the PyPI file list for a wheel matching the intended
+  interpreter and platform
+- A published wheel for the current interpreter/platform, or a C++ compiler,
+  `cmake >= 3.24`, and `pybind11 >= 2.12` when building the native extension
+  from source
 - A JPL DE-series planetary kernel (de430, de440, or de441 — not bundled; see below)
 
 ```bash
-# Standard install (builds the native C++ extension)
+# Standard install (uses a published wheel when available)
 pip install moira-astro
 
-# With the FastAPI REST server (fastapi, uvicorn, pydantic)
-pip install moira-astro[server]
+# With the FastAPI REST server (FastAPI, Starlette, Uvicorn, Pydantic)
+pip install "moira-astro[server]"
 
 # With Lunar Graze support (spiceypy, laspy, requests)
-pip install moira-astro[lunar-graze]
+pip install "moira-astro[lunar-graze]"
 ```
+
+This README documents the current `main` branch. The PyPI badge identifies the
+latest packaged release; features merged after that release require a source
+checkout until the next version is published.
 
 ---
 
@@ -277,17 +320,31 @@ Moira requires a JPL DE-series SPK planetary kernel for all planetary computatio
 
 All kernel reading is performed by Moira's own native C++ SPK/DAF reader. As of 4.0.0 there is no `jplephem` runtime fallback: segment types outside the native reader's support raise an explicit error rather than silently routing through a third-party library.
 
-**Supported kernels:**
+Ordinary chart and ephemeris calculations read local resources and do not make
+outbound requests. Network access belongs to acquisition paths such as the
+kernel downloader, the Horizons/SBDB-backed DAF writer, and uncached optional
+research resources.
+
+**Recommended, release-documented kernels:**
 
 | Kernel | File | Size | Date range | Notes |
 | :--- | :--- | :--- | :--- | :--- |
 | DE441 | `de441.bsp` | ~3.1 GB | ~13 200 BCE – ~17 200 CE | Original design target; maximum date coverage |
-| DE440 | `de440.bsp` | ~114 MB | 1550 BCE – 2650 CE | Current JPL standard; recommended for most users |
-| DE430 | `de430.bsp` | ~128 MB | 1550 BCE – 2650 CE | Widely deployed predecessor to DE440 |
+| DE440 | `de440.bsp` | ~114 MiB | 1550 BCE – 2650 CE | Moira's recommended modern-range kernel for most users |
+| DE430 | `de430.bsp` | ~114 MiB | 1550 BCE – 2650 CE | Widely deployed predecessor to DE440 |
+
+Automatic discovery also recognizes DE431 and DE432 for compatibility. That
+does not make every readable Type-2/3 SPK an admitted release kernel. Kernels
+outside the release-documented set may be manually readable, but must not be
+presented as release-validated without a versioned admission record.
 
 ### Kernel Manager (GUI)
 
-The easiest way to download and configure a kernel is the built-in Tkinter interface. It requires no extra dependencies — Tkinter ships with CPython on all platforms.
+The easiest way to download and configure a kernel is the built-in Tkinter
+interface. Tkinter is included with official Python installers but is an
+optional CPython module on some distributions; run
+`python -m tkinter` in the intended environment to confirm it is available, or
+install the Tcl/Tk package supplied by the Python distributor.
 
 ```bash
 moira-kernel-manager
@@ -300,8 +357,15 @@ What the GUI provides:
 - **Kernel list** — planetary (de430, de440, de441) and supplemental (asteroids, small bodies) sections with size, date range, and status per row.
 - **Detail panel** — selecting a row shows a full description of that kernel's coverage, accuracy, and when to prefer it over the alternatives.
 - **Download with progress** — streams the selected kernel in the background; a progress bar tracks bytes received. A Cancel button interrupts the transfer and removes the partial file.
-- **Use selected** — activates an installed kernel for the current session via `set_kernel_path()`.
-- **Browse…** — open any `.bsp` file already on disk and set it as the active kernel immediately.
+- **Use selected** — activates an installed planetary kernel for the current session via `set_kernel_path()`.
+- **Browse…** — select a planetary `.bsp` already on disk and set it as the active kernel immediately.
+
+The GUI and `moira-download-kernels` supplemental entries are the generic JPL
+`asteroids.bsp` and `sb441-n373s.bsp` resources. They are separate from the
+immutable 9,974-asteroid and 497-comet Moira releases described below. They
+remain caller-managed compatibility inputs for explicit small-body workflows;
+downloading them does not install or substitute for either manifest-governed
+catalog.
 
 ### CLI
 
@@ -353,11 +417,11 @@ print(m.get_kernel_status())
 print(m.available_kernels)
 ```
 
-**Direct download links (JPL SSD):**
+**Direct download links (JPL):**
 
 - DE441: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de441.bsp)
 - DE440: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp)
-- DE430: [https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp](https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de430.bsp)
+- DE430: [https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp](https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de430.bsp)
 
 ### Small-Body Catalogs (Asteroids and Comets)
 
@@ -365,13 +429,26 @@ The unified asteroid catalog (9,974 bodies as 399 Type-13 shards in release
 `2026.07.27.1`) and the numbered periodic comet catalog (497 comets as 20
 shards in release `2026.07.28.1`) are too large to ship inside the wheel and
 are distributed separately.
-Install a catalog by placing its shard directory — `asteroids/` or `comets/`,
-each containing its shards and `manifest.json` — under any kernel search root
-(`kernels/` at the repository root or `~/.moira/kernels/`). The engine
-discovers every manifest under every search root automatically; no
-configuration call is required. A bundled canonical name does not by itself
-imply position capability: the matching external manifest and BSP shard must
-be installed.
+
+Search by name, designation, catalog number, or NAIF ID and download the exact
+published files from the
+[Moira Small-Body Ephemerides archive](https://moira-astro.com/ephemerides).
+The archive maps each body to its shared multi-body shard and provides direct
+BSP and metadata links, release manifests, coverage/provenance, and SHA-256
+receipts. A body search therefore returns the shard *containing* that body, not
+a one-body BSP.
+
+For automatic catalog admission, place the **complete** release in
+`asteroids/` or `comets/` under a kernel search root (`kernels/` at the
+repository root or `~/.moira/kernels/`), with `manifest.json`, `SHA256SUMS`,
+all declared shards, per-shard metadata, and support files together in that
+directory. Do not retain an additional catalog-version directory between
+`asteroids/` or `comets/` and `manifest.json`. The engine discovers these
+manifests automatically; no configuration call is required. Release-finalized
+manifests are verified as complete before any shard is opened, so a lone shard
+is suitable for independent inspection but is not a complete automatic
+catalog installation. A bundled canonical name does not by itself imply
+position capability.
 
 Distributed catalog releases are immutable and versioned. Each extracted release
 contains `SHA256SUMS`; its `manifest.json` also records the byte length and
@@ -382,8 +459,9 @@ evidence. Verify an extracted release with:
 .\.venv\Scripts\python.exe -m moira.small_body_catalog_release verify C:\path\to\catalog-release
 ```
 
-The downloadable ZIP has an adjacent `.zip.sha256` receipt and can be verified
-before extraction:
+Verify individually downloaded files against the manifest and SHA-256
+receipts. If a release maintainer or mirror supplies a ZIP produced by Moira's
+release tooling, verify that archive before extraction with:
 
 ```powershell
 .\.venv\Scripts\python.exe -m moira.small_body_catalog_release verify-archive C:\path\to\catalog-release.zip
@@ -395,7 +473,11 @@ ephemeris using the `prepare` command documented by
 set, sampling policy, or coverage rule always receives a new catalog version;
 published bytes are never replaced beneath an existing version.
 
-Note for pre-4.0.0 installs: the single-file supplemental kernels (`comets.bsp`, `centaurs.bsp`, `minor_bodies.bsp`) no longer auto-load. All small bodies now resolve through the sharded manifests.
+Note for pre-4.0.0 installs: standalone supplemental kernels such as
+`comets.bsp`, `centaurs.bsp`, and `minor_bodies.bsp` no longer auto-load into
+the main facade. Automatic catalog discovery is manifest-based; compatible
+standalone SPKs remain available only through explicit caller-managed loading
+where the relevant API admits it.
 
 ---
 
@@ -404,19 +486,30 @@ Note for pre-4.0.0 installs: the single-file supplemental kernels (`comets.bsp`,
 | Layer | Source | Bundled | Note |
 | :--- | :--- | :--- | :--- |
 | IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; native C++ (`_moira_native`) |
-| DE-series planetary kernel | JPL | No | de430 (~128 MB), de440 (~114 MB), or de441 (~3.1 GB); download separately |
+| DE-series planetary kernel | JPL | No | de430 (~114 MiB), de440 (~114 MiB), or de441 (~3.1 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
-| Position-capable asteroid ephemeris | JPL Horizons | No | 9,974 selected asteroids; 399 Type-13 shards in release `2026.07.27.1`; separate distribution, manifest-discovered |
+| Canonical small-body identity registries | Moira release catalogs with JPL identity lineage | Yes | 9,974 asteroid and 497 comet identities; names and disambiguation only, with no positional vectors implied |
+| Position-capable asteroid ephemeris | JPL Horizons | No | 9,974 selected asteroids; 399 Type-13 shards in release `2026.07.27.1`; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
 | Asteroid-family membership catalog | Proper25 + retained NASA PDS exclusions | Yes | 342 families; 200,726 unique numbered asteroids; 221,095 many-to-many membership rows; no positional ephemeris implied |
-| Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards in release `2026.07.28.1`; separate distribution, manifest-discovered |
+| Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards in release `2026.07.28.1`; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
 
 ---
 
 ## Native C++ Performance
 
-Moira's computational core (`_moira_native`) is implemented in C++17 and compiled as a pybind11 extension at install time. Performance-critical paths — IAU 2000A nutation evaluation, SPK/DAF kernel reading, apparent planetary evaluation (via `NativePlanetaryEvaluator`), coordinate transforms, light-time iteration, harmogram computation, precession, and event searching — execute natively without Python overhead.
+Moira's required numerical extension (`_moira_native`) is implemented in
+C++17 with pybind11. Published wheels install the compiled extension directly;
+source distributions build it during installation. Admitted native paths
+include IAU 2000A nutation, SPK/DAF access and segment evaluation, apparent
+planetary evaluation through `NativePlanetaryEvaluator`, selected coordinate
+transforms, light-time primitives, harmogram computation, precession, and
+selected event-search kernels.
 
-This matters most in phenomenon-searching loops (retrograde periods, eclipse searches, heliacal events, conjunction sweeps) where core transforms are evaluated thousands of times. The native extension is a required component and is built automatically during `pip install`.
+Python remains responsible for public policy, result semantics, orchestration,
+and event-search branches that have not been explicitly admitted to the native
+substrate. This selective boundary matters most in phenomenon searches where
+Python-owned doctrine can reuse native numerical primitives thousands of
+times without pretending the entire technique is native-owned.
 
 ---
 
@@ -427,8 +520,11 @@ Moira is validated as a three-layer corpus. Each layer has its own correct evide
 **Astronomy layer** — authoritative physical oracles first, enforced regression thereafter.
 References: IAU ERFA/SOFA, JPL Horizons, NASA catalogs, IERS.
 
-**Astrology layer** — external chart software where stable and meaningful; doctrine-grounded invariants where no universal oracle exists.
-References: Swiss Ephemeris, Astro.com, canonical doctrine tables, structural invariants.
+**Astrology layer** — named primary texts, source-owned fixtures, and
+doctrine-grounded invariants; bounded external chart-software comparison where
+its settings and mathematical product are actually commensurate. Swiss
+Ephemeris and Astro.com are secondary comparators, not Moira's governing
+runtime or universal authority.
 
 **Experimental layer** — subsystem-specific surfaces for sovereign or modern domains.
 Domains: sovereign fixed stars, variable stars, multiple star systems, galactic transforms, eclipse Saros classification.
@@ -437,15 +533,26 @@ Every validated claim must pass three gates:
 
 1. **Gate of Source** — inputs and reference data are tied to an independent authority.
 2. **Gate of Flow** — the computational path is explicit and inspectable.
-3. **Gate of Oracle** — outputs are benchmarked against an external reference appropriate to the domain.
+3. **Gate of Validation** — outputs meet a product-appropriate external
+   authority, source-owned golden, independent invariant, or explicitly
+   bounded secondary comparison.
 
-When residuals remain, Moira documents them as model-basis differences rather than mislabeling them as engine defects. Two systems may be internally correct while answering different mathematical questions because of differing assumptions — for example, Delta-T branch, retarded-versus-geometric Moon treatment, or event-definition objective.
+When residuals remain, Moira isolates the discrepancy by identity, time scale,
+frame, correction regime, and product semantics before classifying it as a
+defect, a model-basis difference, or unresolved evidence. Agreement between
+two internally consistent systems is not assumed when they answer different
+mathematical questions.
+
+The reports below are dated evidence ledgers, not self-updating assertions.
+Release-specific changes and validation boundaries are recorded in the
+[changelog](CHANGELOG.md) and the
+[6.1.0 release notes](wiki/03_release/RELEASE_NOTES_6.1.0.md).
 
 | Report | Verification Source |
 | :--- | :--- |
-| [`VALIDATION_ASTRONOMY.md`](wiki/03_validation/VALIDATION_ASTRONOMY.md) | IAU ERFA/SOFA, JPL Horizons, NASA. Geocentric residual: 0.576 arcseconds (documented Delta-T divergence). |
-| [`VALIDATION_ASTROLOGY.md`](wiki/03_validation/VALIDATION_ASTROLOGY.md) | Swiss Ephemeris, Astro.com, canonical doctrine tables. Houses, ayanamshas, predictive cycles. |
-| [`VALIDATION_EXPERIMENTAL.md`](wiki/03_validation/VALIDATION_EXPERIMENTAL.md) | SOFA/ERFA, Swiss swetest, AAVSO, GCVS, binary orbit ephemerides. Sovereign stars, variable stars, multiple systems. |
+| [`VALIDATION_ASTRONOMY.md`](wiki/03_validation/VALIDATION_ASTRONOMY.md) | Product-specific IAU ERFA/SOFA, JPL Horizons, NASA, IERS, and invariant evidence with named tolerances and qualifications. |
+| [`VALIDATION_ASTROLOGY.md`](wiki/03_validation/VALIDATION_ASTROLOGY.md) | Primary texts, source-owned goldens, doctrine tables, invariants, and bounded Swiss/Astro.com corroboration where applicable. |
+| [`VALIDATION_EXPERIMENTAL.md`](wiki/03_validation/VALIDATION_EXPERIMENTAL.md) | Dated subsystem evidence and explicit partial-status boundaries for sovereign and modern products. |
 
 ---
 
@@ -456,7 +563,7 @@ graph TD
     A[JPL Planetary Kernel\nChebyshev state vectors] --> B[SSB Barycentric Position\nkm · ICRF]
     C[Sovereign Star Registry\n1809 named stars] --> D[Stellar Astrometric Position\nproper motion · parallax]
     B --> E[1 · Light-Time Iteration\nbody at t − τ  where τ = d/c]
-    E --> F[2 · Gravitational Deflection\nSun · Jupiter · Saturn · Earth]
+    E --> F[2 · Gravitational Deflection\nSun · Jupiter · Saturn]
     F --> G[3 · Annual Aberration\nrelativistic · IAU SOFA]
     G --> H[4 · IAU 2006 Frame Bias\nICRF → Mean Equator J2000]
     D --> H
@@ -464,51 +571,61 @@ graph TD
     I --> J[6 · IAU 2000A Nutation\n1358 luni-solar + 1056 planetary terms]
     J --> K[True Equinox and Equator of Date]
     K --> L[7 · Topocentric Parallax\nWGS-84 · optional]
-    K --> M[8 · Atmospheric Refraction\nSky positions only · optional]
+    L --> R[8 · Diurnal Aberration\nobserver rotation · optional]
+    R --> M[Atmospheric Refraction\nsky altitude only · optional]
     K --> N[Ecliptic Projection\nTrue obliquity of date]
     N --> O[Zodiacal Longitude · Latitude · Distance]
     K --> P[Sidereal Frame · Ayanamsa\noptional]
     K --> Q[House Cusps · 22 Systems\nrequires lat/lon]
 ```
 
-### Worked Example: Mars at J2000.0
+### Worked Example: Mars at 2000-01-01 12:00 UT1
 
-The following traces every pipeline stage for Mars on 2000 January 1, 12:00 TT, using live DE441 kernel data. All numbers are from the running engine.
+This snapshot is reproduced by `planet_reduction_breakdown_at("Mars",
+2451545.0, reader)` with the admitted DE441 kernel. The input is
+`JD_UT1 2451545.0`; it is about 63.829 seconds after the exact J2000.0 TT
+epoch and is therefore not labelled as exact J2000.0.
 
-**Time:** JD_UT 2451545.000000 → JD_TT 2451545.000739 &nbsp;(ΔT = +63.807 s)
+**Time:** JD_UT1 2451545.000000 → JD_TT 2451545.000739
+&nbsp;(ΔT = +63.829 s)
 
-| Step | Operation | Vector / Value | Shift from Previous |
-| :---: | :--- | :--- | :--- |
-| 0 | **DE441 kernel read** — SSB → Mars | (206,980,508.6, −184,891.6, −5,666,529.8) km | — |
-| 0 | **DE441 kernel read** — SSB → Earth | (−27,568,641.0, 132,361,060.2, 57,418,514.1) km | — |
-| 0 | **Geometric geocentric** — Mars − Earth | distance: 276,697,408.2 km = 1.849608 AU | — |
-| 1 | **Light-time iteration** — Mars at t − τ | τ = 0.010683 days = **15.383 min** | **15.761 arcsec** |
-| 2 | **Gravitational deflection** — Sun + Jupiter + Saturn | sub-arcsecond bending of light path | **0.006 arcsec** |
-| 3 | **Annual aberration** — Earth velocity 29.786 km/s | relativistic displacement toward apex | **14.070 arcsec** |
-| 4 | **IAU 2006 frame bias** — ξ₀ = −16.617 mas, dε₀ = −6.819 mas | fixed ICRF → mean equinox J2000 rotation | **0.023 arcsec** |
-| 5 | **IAU 2006 precession** — P03 polynomial series | negligible at J2000 (reference epoch) | **0.016 arcsec** |
-| 6 | **IAU 2000A nutation** — Δψ = −13.932″, Δε = −5.769″ | true equator and equinox of date | **14.351 arcsec** |
-| 7 | **Ecliptic projection** — true obliquity ε = 23.437677° | λ = **327.963300°** · β = −1.067779° · d = 1.849688 AU | — |
+| Stage | Operation | Engine receipt | Longitude contribution |
+| :---: | :--- | :--- | ---: |
+| 0 | **Geometric geocentric** | SSB-to-Mars minus SSB-to-Earth; λ = 327.975456°; distance = 276,697,408.4 km | reference |
+| 1 | **Light-time iteration** | τ = 0.010683 days = 15.383 min | −15.762371″ |
+| 2 | **Gravitational deflection** | Sun, Jupiter, and Saturn | −0.003057″ |
+| 3 | **Annual aberration** | Earth barycentric velocity; relativistic | −14.069158″ |
+| 4 | **IAU 2006 frame bias** | ICRF to dynamical mean J2000 | +0.000300″ |
+| 5 | **IAU 2006 precession** | P03; mean equator/ecliptic of date | +0.006571″ |
+| 6 | **IAU 2000A nutation** | Δψ = −13.932004″; Δε = −5.769413″ | −13.932004″ |
+| 7–8 | **Topocentric parallax and diurnal aberration** | disabled for this geocentric example | 0 |
 
-**Final position: Aquarius 27° 57′ 48″** &nbsp;·&nbsp; distance 1.8497 AU &nbsp;·&nbsp; speed +0.7757°/day (direct)
+**Final position: Aquarius 27° 57′ 48″** &nbsp;·&nbsp;
+λ = 327.963300° &nbsp;·&nbsp; β = −1.067779° &nbsp;·&nbsp;
+distance = 1.849688 AU &nbsp;·&nbsp; speed = +0.775674°/day
 
-**Total pipeline correction from geometric to apparent: −43.760 arcsec**
+**Total visible reduction from the geometric J2000-ecliptic reference to the
+final true-of-date ecliptic longitude: −43.759719 arcseconds.**
 
-The largest contributors are nutation (−13.932″), annual aberration (−14.070″), and the combined light-time displacement (−15.761″). Gravitational deflection (0.006″) and frame bias (0.023″) are sub-arcsecond but non-negligible at sub-arcsecond accuracy targets.
+The stage contributions above come from the typed reduction receipt. They
+should not be reconstructed by subtracting unrelated coordinate frames or by
+treating `apparent=False` as “no frame transformation.”
 
 ### Pipeline Controls
 
-Each correction stage can be toggled independently via `planet_at()`. The table below shows the measurable effect of disabling each stage on the Mars J2000.0 result.
+Selected correction policies can be toggled via `planet_at()`. The table below
+shows the measurable effect of disabling each exposed policy in this
+`JD_UT1 = 2451545.0` Mars snapshot.
 
-| Parameter | Default | Effect on Mars J2000.0 longitude | Function |
+| Parameter | Default | Effect on snapshot longitude | Function |
 | :--- | :--- | :--- | :--- |
 | `apparent=True` | `True` | Full pipeline active | `planet_at()` |
-| `apparent=False` | — | Geometric position; all corrections skipped. Δ = **+43.760 arcsec** | `planet_at()` |
+| `apparent=False` | — | Omits light-time, deflection, and aberration while retaining the declared ecliptic-of-date frame and nutation policy. Δ = **+29.835 arcsec** | `planet_at()` |
 | `aberration=False` | — | Aberration stage skipped. Δ = **+14.069 arcsec** | `planet_at()` |
 | `grav_deflection=False` | — | Deflection stage skipped. Δ = **+0.003 arcsec** | `planet_at()` |
 | `nutation=False` | — | Nutation skipped; mean equinox used. Δ = **+13.932 arcsec** | `planet_at()` |
-| `observer_lat/lon` | `None` | When supplied, adds topocentric parallax (WGS-84). Effect: ~1° for Moon, <0.01″ beyond Jupiter | `planet_at()` |
-| `refraction=True` | `True` | Atmospheric refraction applied to altitude. Effect: ~0.57° at horizon | `sky_position_at()` |
+| `observer_lat/lon` | `None` | When supplied together, adds WGS-84 topocentric parallax and observer-rotation diurnal aberration; the effect is body-, location-, and epoch-dependent. | `planet_at()` |
+| `refraction=True` | `True` | Applies the declared pressure, temperature, and humidity model to geometric sky altitude. | `sky_position_at()` |
 | `delta_t_policy` | `None` | Controls UT → TT conversion branch (IERS tables, polynomial, hybrid physical) | both |
 
 ---
@@ -516,21 +633,26 @@ Each correction stage can be toggled independently via `planet_at()`. The table 
 ## Project Documentation
 
 The canonical documentation tree lives in `wiki/`. The flat `moira.wiki/` Git
-wiki mirror is generated from it by `python scripts/sync_git_wiki.py` and
-should not be edited by hand. Website-publishable documents are governed by
+wiki mirror is generated from it by
+`.\.venv\Scripts\python.exe scripts\sync_git_wiki.py` and should not be edited
+by hand. Website-publishable documents are governed by
 `website_docs/publication_sources.json` and built with
-`python scripts/build_website_docs_bundle.py`. After changing server routes,
-run `python scripts/sync_rest_api_reference.py` in an environment with the
-`server` extra installed; CI checks its generated OpenAPI inventory, the Git
-wiki mirror, and the website publication manifest for drift.
+`.\.venv\Scripts\python.exe scripts\build_website_docs_bundle.py`. After
+changing server routes, run
+`.\.venv\Scripts\python.exe scripts\sync_rest_api_reference.py` in an
+environment with the `server` extra installed; CI checks its generated OpenAPI
+inventory, the Git wiki mirror, and the website publication manifest for
+drift.
 
 | Document | Contents |
 | :--- | :--- |
+| [`CHANGELOG.md`](CHANGELOG.md) | Versioned release history and current unreleased boundary. |
+| [`RELEASE_NOTES_6.1.0.md`](wiki/03_release/RELEASE_NOTES_6.1.0.md) | Published 6.1.0 release notes, validation summary, and explicit exclusions. |
 | [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | Transparency and derivation as design constraints. |
 | [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) | Capabilities enabled by sovereign catalogs, explicit policy, and modern Python. |
 | [`HOUSE_SYSTEM_DIVERGENCE.md`](wiki/01_doctrines/houses/HOUSE_SYSTEM_DIVERGENCE.md) | House-system derivation and discretionary divergence from conventional Swiss-facing behavior. |
 | [`CONSTITUTIONAL_PROCESS.md`](wiki/00_foundations/CONSTITUTIONAL_PROCESS.md) | The Subsystem Constitutional Process — the development and governance protocol. |
-| [`MOIRA_ROADMAP.md`](wiki/06_roadmap/MOIRA_ROADMAP.md) | Feature implementation status and mathematical accuracy register. |
+| [`MOIRA_ROADMAP.md`](wiki/06_roadmap/MOIRA_ROADMAP.md) | Living implementation roadmap and improvement register; validation claims remain owned by the validation ledgers and release notes. |
 
 ---
 
