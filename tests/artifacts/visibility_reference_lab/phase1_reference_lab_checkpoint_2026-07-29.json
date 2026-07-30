@@ -1,0 +1,254 @@
+{
+  "schema": "moira.visibility-reference-lab-checkpoint/v1",
+  "checkpoint_id": "physical-heliacal-phase1-reference-lab-2026-07-29",
+  "status": "research_checkpoint_not_runtime_data_pack",
+  "phase1_complete": false,
+  "model_id": "libradtran_2_0_6_mystic_spherical_v1",
+  "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+  "specification": {
+    "path": "scripts/visibility_reference_lab/phase1_lab_spec.json",
+    "sha256": "c1341c6c9a668472e94c520495792b5294c93b2950e7a94fb544860a3de9febd"
+  },
+  "tooling": {
+    "builder": {
+      "path": "scripts/build_visibility_radiance_lut.py",
+      "sha256": "d19344218140e143bb2011e50cea1cada1f4ed310c276281398d60bd3ab4d6a1"
+    },
+    "validator": {
+      "path": "scripts/validate_visibility_radiance_lut.py",
+      "sha256": "0de24440de3792abdf935a0c2d621493afbc0da719a850cd63a3b1f4bd0e8980"
+    }
+  },
+  "source": {
+    "name": "libRadtran",
+    "version": "2.0.6",
+    "archive_bytes": 154147176,
+    "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+    "uvspec_version": "uvspec, version 2.0.6-MYSTIC",
+    "uvspec_sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a"
+  },
+  "upstream_validation": {
+    "make_check": {
+      "result": "passed",
+      "uvspec_call_failures": 0,
+      "difference_check_failures": 0,
+      "elapsed_seconds": 49.5431890487671,
+      "log_sha256": "e269d560d3c5a7dccc47e1b1ac7203219e83fb7757bff555e66a1504ee34bfdb"
+    },
+    "run_unittests": {
+      "result": "passed",
+      "assertion_count": 458067,
+      "test_case_count": 17,
+      "log_sha256": "cfbf3a3fa0019ca19a481c6044b634ab1bcd2b7fd58dbf3de285c24442813583"
+    }
+  },
+  "artifacts": {
+    "convergence": {
+      "profile": "convergence",
+      "case_count": 21,
+      "file_count": 274,
+      "artifact_bytes": 96837,
+      "manifest_sha256": "f5246c0b54b7f1e1cb126a275df5a6c425cf71759d7afcf704dff14d991c2487",
+      "wavelength_nm": 550.0,
+      "fixed_seed_repeat_byte_identical": true,
+      "seed_count_per_photon_level": 5,
+      "photon_levels": [
+        {
+          "photon_count": 20000,
+          "mean_radiance_mw_m2_nm_sr": 0.014740458000000001,
+          "between_seed_sample_standard_deviation_mw_m2_nm_sr": 0.0033759507724965424,
+          "between_seed_relative_standard_deviation": 0.22902617900315866,
+          "mean_reported_relative_standard_deviation": 0.33096828792853933
+        },
+        {
+          "photon_count": 100000,
+          "mean_radiance_mw_m2_nm_sr": 0.01324012,
+          "between_seed_sample_standard_deviation_mw_m2_nm_sr": 0.0010413233849290049,
+          "between_seed_relative_standard_deviation": 0.07864908965545667,
+          "mean_reported_relative_standard_deviation": 0.15129686191756136
+        },
+        {
+          "photon_count": 500000,
+          "mean_radiance_mw_m2_nm_sr": 0.01315326,
+          "between_seed_sample_standard_deviation_mw_m2_nm_sr": 0.0006360464550644084,
+          "between_seed_relative_standard_deviation": 0.04835656370089304,
+          "mean_reported_relative_standard_deviation": 0.0743047705748097
+        },
+        {
+          "photon_count": 2000000,
+          "mean_radiance_mw_m2_nm_sr": 0.01322216,
+          "between_seed_sample_standard_deviation_mw_m2_nm_sr": 0.00030713329028289995,
+          "between_seed_relative_standard_deviation": 0.023228677484079752,
+          "mean_reported_relative_standard_deviation": 0.03718189404254426
+        }
+      ]
+    },
+    "geometry_smoke": {
+      "profile": "geometry_smoke",
+      "case_count": 6,
+      "file_count": 79,
+      "artifact_bytes": 30883,
+      "manifest_sha256": "736cb97e0f5e4218bb386f0290454cc15140438126ca1ded70b3b54f49a9d10a",
+      "wavelength_nm": 550.0,
+      "photon_count": 500000,
+      "random_seed": 32452843,
+      "cases": [
+        {
+          "case_id": "geometry_civil_near_sun",
+          "solar_center_altitude_deg": -6.0,
+          "target_true_altitude_deg": 5.0,
+          "relative_solar_azimuth_deg": 0.0,
+          "radiance_mw_m2_nm_sr": 0.463911,
+          "reported_relative_standard_deviation": 0.028761551245820857
+        },
+        {
+          "case_id": "geometry_civil_quadrature",
+          "solar_center_altitude_deg": -6.0,
+          "target_true_altitude_deg": 5.0,
+          "relative_solar_azimuth_deg": 90.0,
+          "radiance_mw_m2_nm_sr": 0.0231493,
+          "reported_relative_standard_deviation": 0.059490783738601165
+        },
+        {
+          "case_id": "geometry_civil_antisolar",
+          "solar_center_altitude_deg": -6.0,
+          "target_true_altitude_deg": 5.0,
+          "relative_solar_azimuth_deg": 180.0,
+          "radiance_mw_m2_nm_sr": 0.0140619,
+          "reported_relative_standard_deviation": 0.06967195044766354
+        },
+        {
+          "case_id": "geometry_nautical_near_horizon",
+          "solar_center_altitude_deg": -12.0,
+          "target_true_altitude_deg": 1.0,
+          "relative_solar_azimuth_deg": 90.0,
+          "radiance_mw_m2_nm_sr": 0.000040657,
+          "reported_relative_standard_deviation": 0.6753892318665913
+        },
+        {
+          "case_id": "geometry_astronomical_near_horizon",
+          "solar_center_altitude_deg": -18.0,
+          "target_true_altitude_deg": 0.25,
+          "relative_solar_azimuth_deg": 90.0,
+          "radiance_mw_m2_nm_sr": 0.0,
+          "reported_relative_standard_deviation": null
+        },
+        {
+          "case_id": "geometry_sunset_high_target",
+          "solar_center_altitude_deg": 0.0,
+          "target_true_altitude_deg": 20.0,
+          "relative_solar_azimuth_deg": 90.0,
+          "radiance_mw_m2_nm_sr": 4.62224,
+          "reported_relative_standard_deviation": 0.004369699539617155
+        }
+      ]
+    },
+    "direct_transmission_smoke": {
+      "profile": "direct_transmission_smoke",
+      "model_id": "libradtran_2_0_6_disort_pseudospherical_direct_v1",
+      "case_count": 13,
+      "unique_case_count": 12,
+      "file_count": 92,
+      "artifact_bytes": 43528,
+      "manifest_sha256": "5eaac5edd15081836ef1a57c62e360421a5bd73f71276095cb0cd6ea78b80aa1",
+      "exact_repeat_byte_identical": true,
+      "solver": "double_precision_disort",
+      "geometry": "pseudospherical",
+      "normalization": "direct_transmission_equals_edir_divided_by_sin_target_true_altitude",
+      "altitude_sweep_550nm": [
+        {
+          "target_true_altitude_deg": 0.25,
+          "direct_spectral_transmission": 0.00037241549795257774,
+          "extinction_magnitude": 8.572430635719515
+        },
+        {
+          "target_true_altitude_deg": 0.5,
+          "direct_spectral_transmission": 0.0008554776407419717,
+          "extinction_magnitude": 7.669478342365296
+        },
+        {
+          "target_true_altitude_deg": 1.0,
+          "direct_spectral_transmission": 0.002979219524072293,
+          "extinction_magnitude": 6.314743736439851
+        },
+        {
+          "target_true_altitude_deg": 2.0,
+          "direct_spectral_transmission": 0.014183645804970222,
+          "extinction_magnitude": 4.620530306262418
+        },
+        {
+          "target_true_altitude_deg": 5.0,
+          "direct_spectral_transmission": 0.10320765696465475,
+          "extinction_magnitude": 2.4657202031349077
+        },
+        {
+          "target_true_altitude_deg": 10.0,
+          "direct_spectral_transmission": 0.2895282903367583,
+          "extinction_magnitude": 1.3457724853952002
+        },
+        {
+          "target_true_altitude_deg": 20.0,
+          "direct_spectral_transmission": 0.5237992659087771,
+          "extinction_magnitude": 0.7020877864073155
+        },
+        {
+          "target_true_altitude_deg": 45.0,
+          "direct_spectral_transmission": 0.7295975851543919,
+          "extinction_magnitude": 0.342291530297846
+        }
+      ],
+      "wavelength_sweep_at_5deg": [
+        {
+          "wavelength_nm": 380.0,
+          "direct_spectral_transmission": 0.0017691995402579846,
+          "extinction_magnitude": 6.8805579553941225
+        },
+        {
+          "wavelength_nm": 450.0,
+          "direct_spectral_transmission": 0.025475016677081304,
+          "extinction_magnitude": 3.984713807532298
+        },
+        {
+          "wavelength_nm": 550.0,
+          "direct_spectral_transmission": 0.10320765696465475,
+          "extinction_magnitude": 2.4657202031349077
+        },
+        {
+          "wavelength_nm": 650.0,
+          "direct_spectral_transmission": 0.21847040022513745,
+          "extinction_magnitude": 1.6515184892932733
+        },
+        {
+          "wavelength_nm": 780.0,
+          "direct_spectral_transmission": 0.39217599348516147,
+          "extinction_magnitude": 1.0162974864871415
+        }
+      ]
+    }
+  },
+  "package_boundary_audit": {
+    "status": "local_unreleased_wheel_audit",
+    "package_version": "6.1.0",
+    "wheel_tag": "cp314-cp314-win_amd64",
+    "wheel_entry_count": 632,
+    "forbidden_visibility_or_cie_or_libradtran_entry_count": 0,
+    "engine_dependency_changed": false
+  },
+  "findings": {
+    "fixed_photon_budget_admissible_for_production": false,
+    "two_million_photons_admissible_as_production_precision": false,
+    "zero_sampled_radiance_is_physical_zero_evidence": false,
+    "direct_transmission_smoke_admitted_as_runtime_table": false,
+    "full_cartesian_candidate_domain_authorized": false
+  },
+  "open_gates": [
+    "admit a source-justified nonzero-observer-altitude construction",
+    "expand direct transmission beyond the smoke profile and quantify near-horizon solver-model error",
+    "select an adaptive sparse design and solver-uncertainty stopping law",
+    "generate the admitted spectral products",
+    "reserve and run untouched off-grid validation cases",
+    "measure storage and interpolation error",
+    "propagate table error into limiting magnitude and event time",
+    "build and license the separate immutable visibility data pack"
+  ]
+}

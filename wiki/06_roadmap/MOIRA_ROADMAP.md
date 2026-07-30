@@ -1,7 +1,7 @@
 # Moira Engine — Feature Roadmap & Mathematical Accuracy Register
 
 **Engine baseline**: 6.1.0
-**Last reviewed**: 2026-07-27
+**Last reviewed**: 2026-07-29
 **Status**: Living engineering roadmap. Individual validation claims are
 controlled by `wiki/03_validation/` and release notes, not by roadmap status.
 **Purpose**: Record implemented areas, remaining gaps, and mathematical
@@ -136,6 +136,44 @@ and tested in `tests/unit/test_public_surface_gaps.py`.
 `varga.py` (`navamsa`, `calculate_varga`, `dashamansa`, `dwadashamsa`,
 `saptamsa`, `trimshamsa`, `VargaPoint`) wired into `moira.__init__` and
 `moira.__all__`; tested in `tests/unit/test_public_surface_gaps.py`.
+
+---
+
+### Physical heliacal visibility modernization  `PHASE 1 IN PROGRESS`
+
+The original heliacal public-surface gap above is closed. A separate additive
+project is introducing a versioned, opt-in clear-sky naked-eye point-source
+assessment and physical visibility-event model without changing existing
+defaults or legacy outputs.
+
+The governing checklist, source boundaries, compatibility rules, phase gates,
+quarantines, and completion-receipt format are recorded in
+[PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md](heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md).
+
+Phase 0 closed on 2026-07-29 with the four-phase event doctrine, physical
+validity and input boundaries, immutable external data-pack decision, exact
+source identities, licensing dispositions, additive contract sketch, and
+typed failure law.
+
+Phase 1 checkpoints 1-4 now provide the offline, checksum-bound libRadtran
+laboratory, complete artifact validators, repeated MYSTIC convergence and
+geometry evidence, deterministic pseudo-spherical direct-transmission
+evidence, package-boundary audit, and a source-equivalent elevated-site
+construction at 0-5,000 m with named-profile-derived pressure. The
+elevated-site oracle closed an O4 interpolation/recomputation mismatch without
+relaxing its tolerance. Checkpoint 3 source-traces the selected surface
+midpoint-Chapman direct-beam law and independently bounds controlled geometry
+from 0.25-45 degrees; the 290-level candidate reaches about 0.035% maximum
+relative error versus about 10.14% on the coarse source-grid control.
+Checkpoint 4 binds the official external REPTRAN module, validates all six
+AFGL clear molecular profiles, bounds the 290-level candidate against 579-
+and 1,157-level controls, and admits REPTRAN fine as the 380-780 nm research
+reference. The exact 54-run artifact passes independent validation on WSL and
+Windows. One fixed photon budget remains inadmissible across the twilight
+domain. The adaptive sparse table design, production altitude/pressure and
+aerosol/environment dimensions, CIE/target-spectrum response integration,
+spectral products, off-grid validation, error propagation, and separate data
+pack remain open. Phase 2 has not begun.
 
 ---
 

@@ -1,7 +1,19 @@
 # Heliacal / Visibility Implementation Roadmap
 
 Status:
-- roadmap
+- historical roadmap
+- superseded for current work by
+  [PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md](../../06_roadmap/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md)
+
+Archive note (2026-07-29):
+- this document governed the earlier generalized visibility-policy work
+- its proposed environment, criterion, assessment, and generalized-event
+  surfaces now exist in the engine
+- its phase labels and "Immediate Next Move" are retained as design history,
+  not as a current implementation checklist
+- the additive physical-event modernization, including its legacy boundary,
+  source ledger, data-pack decision, and validation gates, is controlled only
+  by the successor plan linked above
 
 Purpose:
 - define the implementation sequence for Moira's generalized heliacal and

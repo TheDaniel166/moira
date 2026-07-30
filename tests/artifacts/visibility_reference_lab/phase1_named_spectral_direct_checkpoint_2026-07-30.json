@@ -1,0 +1,215 @@
+{
+  "schema": "moira.visibility-named-spectral-direct-checkpoint/v1",
+  "checkpoint_id": "physical-heliacal-phase1-named-spectral-direct-2026-07-30",
+  "artifact_status": "phase1_named_spectral_direct_evidence_not_runtime_data_pack",
+  "phase1_complete": false,
+  "named_atmosphere_full_spectral_direct_gate": "passed_for_clear_molecular_AFGL_profiles_and_surface_observer",
+  "specification": {
+    "path": "scripts/visibility_reference_lab/phase1_named_spectral_direct_probe_spec.json",
+    "bytes": 11509,
+    "sha256": "30822b4a90fe24c63872a904de8078770b2450c15798a6c24450fd6ecc0548ee"
+  },
+  "builder": {
+    "path": "scripts/build_visibility_named_spectral_direct_probe.py",
+    "bytes": 68914,
+    "sha256": "0fc0809d2c95ba572e8aab9754783936d64933c7c381b324d4ee522f965cd7d2"
+  },
+  "validator": {
+    "path": "scripts/validate_visibility_named_spectral_direct_probe.py",
+    "bytes": 46191,
+    "sha256": "0fe3b0abc46277ddf4230b3da15328a966e251e4bab1277ac61c056bb4258d99"
+  },
+  "predecessor_identity": {
+    "preserved": true,
+    "checkpoint_id": "physical-heliacal-phase1-direct-geometry-2026-07-29",
+    "specification": {
+      "path": "scripts/visibility_reference_lab/phase1_direct_geometry_probe_spec.json",
+      "bytes": 7753,
+      "sha256": "5f2052236632764a67325951a55b8262f21dc51e630149194ff87baf5ff2a316"
+    },
+    "builder": {
+      "path": "scripts/build_visibility_direct_geometry_probe.py",
+      "bytes": 63892,
+      "sha256": "957f196ed69ab3fa071119f7110f6d4cbbaf4555a45cd394b94ff829e9d3f74e"
+    },
+    "validator": {
+      "path": "scripts/validate_visibility_direct_geometry_probe.py",
+      "bytes": 54163,
+      "sha256": "af0221277c9ac63156c85ec39b7ffad1adc621c3ed477ea30f79cfe75f079878"
+    },
+    "checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase1_direct_geometry_checkpoint_2026-07-29.json",
+      "bytes": 6909,
+      "sha256": "99a19ddabef6f41fe914be01ef0214356f6b1d74a5e4fe703c424e10ca5d0391"
+    }
+  },
+  "source": {
+    "libRadtran": {
+      "version": "2.0.6",
+      "archive_bytes": 154147176,
+      "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+      "uvspec_version": "uvspec, version 2.0.6-MYSTIC",
+      "uvspec_sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a"
+    },
+    "REPTRAN_module": {
+      "module_id": "libradtran_reptran_2024_all",
+      "archive_bytes": 698709957,
+      "archive_sha256": "55893c80bcc999651bac3bf014ee64aaf602653ba640eb5bebe787a5d8eacce7",
+      "archive_regular_file_count": 292,
+      "overlap_with_libradtran_source_tree": 260,
+      "overlap_sha256_mismatch_count": 0,
+      "embedded_notice_or_license_file_count": 0,
+      "redistributed_by_moira": false
+    },
+    "merged_external_data_root": {
+      "regular_file_count": 1478,
+      "regular_file_bytes": 873635625,
+      "canonical_file_receipts_bytes": 204827,
+      "canonical_file_receipts_sha256": "68f1817782e424ef617dab03ad985a3fbcb91fa2ed0239a8c2de1e8cb6855b59"
+    }
+  },
+  "external_artifact": {
+    "manifest_sha256": "b2bac79b30a3458fe17f8446b3da40f61deba1d7320b679724ebd60a65a539e8",
+    "manifest_bytes": 198494,
+    "generation_fingerprint": "f9b370bdbd97e9a48976b07771fb048e84c452aff2c5aa8e4f3cd68fe9d2e608",
+    "bound_file_count": 379,
+    "bound_file_bytes": 11203625,
+    "run_count": 54,
+    "twostr_bulk_run_count": 50,
+    "DISORT_anchor_run_count": 4,
+    "named_profile_count": 6,
+    "all_files_bound": true,
+    "external_data_root_bound": true,
+    "vertical_grid_comparisons_recomputed": true,
+    "spectral_resolution_comparisons_recomputed": true,
+    "DISORT_parity_byte_identical": true,
+    "fixed_input_repeat_byte_identical": true,
+    "validated_on_WSL_python": true,
+    "validated_on_windows_python_3_14_3": true,
+    "network_dependency": false,
+    "runtime_dependency": false
+  },
+  "controlled_design": {
+    "named_profiles": [
+      "tropical",
+      "midlatitude_summer",
+      "midlatitude_winter",
+      "subarctic_summer",
+      "subarctic_winter",
+      "us_standard"
+    ],
+    "vertical_stress_true_altitude_deg": 0.25,
+    "us_standard_altitude_sweep_deg": [
+      0.5,
+      1.0,
+      2.0,
+      5.0,
+      10.0,
+      20.0,
+      45.0
+    ],
+    "source_grid_level_count": 50,
+    "refined_candidate_level_count": 290,
+    "reference_grid_level_count": 579,
+    "convergence_grid_level_count": 1157,
+    "wavelength_start_nm": 380.0,
+    "wavelength_stop_nm": 780.0,
+    "output_grid_step_nm": 0.05,
+    "spectral_row_count": 8001,
+    "REPTRAN_medium_band_width_cm_minus_1": 5.0,
+    "REPTRAN_fine_band_width_cm_minus_1": 1.0,
+    "admitted_full_spectral_reference": "REPTRAN_fine",
+    "observer_altitude_m": 0.0,
+    "aerosol_included": false,
+    "CIE_response_included": false,
+    "refraction": "disabled_true_geometric_line_of_sight"
+  },
+  "acceptance": {
+    "candidate_vs_reference_max_magnitude_difference_by_bin_nm": {
+      "1": 0.003,
+      "5": 0.0025,
+      "20": 0.002
+    },
+    "reference_vs_convergence_max_magnitude_difference_by_bin_nm": {
+      "1": 0.001,
+      "5": 0.0008,
+      "20": 0.0007
+    },
+    "combined_candidate_grid_error_bound_by_bin_nm": {
+      "1": 0.003,
+      "5": 0.0025,
+      "20": 0.002
+    },
+    "fine_candidate_vs_reference_max_magnitude_difference_by_bin_nm": {
+      "1": 0.003,
+      "5": 0.0025,
+      "20": 0.002
+    },
+    "DISORT_parity_differing_stdout_line_count": 0,
+    "repeat_byte_identity_required": true
+  },
+  "numerical_summary": {
+    "candidate_vs_reference_by_bin_nm": {
+      "1": 0.0021747648486831893,
+      "5": 0.0014793362143320915,
+      "20": 0.0009251996429829469
+    },
+    "reference_vs_convergence_by_bin_nm": {
+      "1": 0.0005383102314783803,
+      "5": 0.000428510572537017,
+      "20": 0.0003788155571649315
+    },
+    "combined_candidate_grid_error_bound_by_bin_nm": {
+      "1": 0.0027130750801615698,
+      "5": 0.0019078467868691084,
+      "20": 0.0013040152001478783
+    },
+    "fine_candidate_vs_reference_by_bin_nm": {
+      "1": 0.0009911761883017317,
+      "5": 0.0008148543346673419,
+      "20": 0.0007187127901082604
+    },
+    "source_vs_reference_by_bin_nm": {
+      "1": 0.18968620808949826,
+      "5": 0.09127626084604672,
+      "20": 0.08058758441655986
+    },
+    "medium_vs_fine_characterization_by_bin_nm": {
+      "1": 2.5079702399353927,
+      "5": 0.43181699588608113,
+      "20": 0.2718747355689283
+    }
+  },
+  "findings": {
+    "named_AFGL_clear_molecular_profiles_validated": true,
+    "refined_290_level_candidate_passed": true,
+    "native_50_level_source_grid_failed_refined_tolerance": true,
+    "REPTRAN_fine_reference_admitted": true,
+    "REPTRAN_medium_rejected_as_full_spectral_truth": true,
+    "twostr_bulk_outputs_match_governing_DISORT_anchors": true,
+    "aerosol_or_pressure_override_policy_admitted": false,
+    "response_integrated_runtime_products_generated": false,
+    "runtime_data_pack_authorized": false,
+    "phase2_authorized": false
+  },
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "engine_dependency_allowed": false,
+    "engine_runtime_invocation_allowed": false,
+    "REPTRAN_archive_redistribution_allowed": false,
+    "generated_numerical_products_only": true
+  },
+  "open_phase1_gates": [
+    "freeze the production observer-altitude and pressure policy",
+    "define and validate aerosol AOD550 Angstrom ozone and albedo dimensions",
+    "freeze the adaptive sparse radiance design and solver-uncertainty stopping law",
+    "resolve the deep-twilight solar-only tail against the natural-background boundary",
+    "bind versioned CIE response and target spectral inputs",
+    "generate response-integrated spectral products",
+    "reserve and run untouched off-grid validation cases",
+    "measure storage and interpolation error",
+    "propagate source solver storage and interpolation error into limiting magnitude and event time",
+    "build checksum license and validate the separate immutable visibility data pack"
+  ]
+}

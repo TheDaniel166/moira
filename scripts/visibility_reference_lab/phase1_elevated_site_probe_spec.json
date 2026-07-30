@@ -1,0 +1,132 @@
+{
+  "schema": "moira.visibility-elevated-site-probe-spec/v1",
+  "spec_id": "physical-heliacal-phase1-elevated-site-probe-2026-07-29",
+  "status": "research_probe_not_runtime_data_pack",
+  "base_lab": {
+    "spec_path": "scripts/visibility_reference_lab/phase1_lab_spec.json",
+    "spec_bytes": 10319,
+    "spec_sha256": "c1341c6c9a668472e94c520495792b5294c93b2950e7a94fb544860a3de9febd",
+    "builder_path": "scripts/build_visibility_radiance_lut.py",
+    "builder_bytes": 54764,
+    "builder_sha256": "d19344218140e143bb2011e50cea1cada1f4ed310c276281398d60bd3ab4d6a1",
+    "validator_path": "scripts/validate_visibility_radiance_lut.py",
+    "validator_bytes": 23955,
+    "validator_sha256": "0de24440de3792abdf935a0c2d621493afbc0da719a850cd63a3b1f4bd0e8980"
+  },
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "engine_dependency_allowed": false,
+    "engine_runtime_invocation_allowed": false,
+    "generated_numerical_products_only": true
+  },
+  "libradtran_source_semantics": {
+    "altitude_option": "supported_for_1D_deterministic_solvers_and_rejected_for_montecarlo",
+    "mc_elevation_file": "rejected_with_mystic_spherical_geometry",
+    "surface_without_altitude_option": "bottom_level_of_atmosphere_file",
+    "source_files": [
+      {
+        "path": "src/atmosphere.c",
+        "bytes": 341735,
+        "sha256": "b900ade7e603260a47fec3efa305577ab6806bbf539021ec028a0c1360099cf8"
+      },
+      {
+        "path": "src/uvspec_lex.l",
+        "bytes": 581415,
+        "sha256": "174755190e50ecc3099c80a29cb71627c0a33a5e2009d1869c23140095658d89"
+      },
+      {
+        "path": "src/ancillary.c",
+        "bytes": 565994,
+        "sha256": "97dc576d1cb8f54c40d733cea3d5a56b49a0e7f8f39aa812e55ba7fbe1a7665f"
+      },
+      {
+        "path": "libsrc_c/mystic.c",
+        "bytes": 1015599,
+        "sha256": "d1d981e0dd2e961f7f8991368b92e2179c382bab81c8ae72ed17cd31dbcab87b"
+      }
+    ]
+  },
+  "atmosphere_construction": {
+    "source_profile": "us_standard",
+    "source_path": "data/atmmod/afglus.dat",
+    "source_columns": [
+      "altitude_km",
+      "pressure_hpa",
+      "temperature_k",
+      "air_number_density_cm-3",
+      "o3_number_density_cm-3",
+      "o2_number_density_cm-3",
+      "h2o_number_density_cm-3",
+      "co2_number_density_cm-3",
+      "no2_number_density_cm-3"
+    ],
+    "level_order": "strictly_descending_top_to_surface",
+    "interpolation_policy": {
+      "name": "libradtran_2_0_6_default_z_interpolate_linmix",
+      "pressure_hpa": "logarithmic",
+      "temperature_k": "linear",
+      "air_number_density_cm-3": "logarithmic",
+      "trace_gas_number_density_cm-3": "linear_mixing_ratio_against_interpolated_air",
+      "numeric_staging": "binary32_at_libradtran_assignment_boundaries",
+      "decimal_serialization": "nine_significant_digits_binary32_round_trip"
+    },
+    "site_altitudes_m": [
+      0.0,
+      500.0,
+      1500.0,
+      3000.0,
+      5000.0
+    ],
+    "pressure_policy": "named_profile_derived_no_explicit_override_in_probe",
+    "exact_existing_level_policy": "copy_level_without_interpolation",
+    "derived_o4_closure": {
+      "source_level_formula": "binary32((binary32(o2_number_density_cm-3) * 1e-23)^2)",
+      "inserted_level_interpolation": "linear_mixing_ratio_against_interpolated_air",
+      "transport": "mol_file_O4_cm_3_companion_to_truncated_atmosphere",
+      "reason": "preserve_libradtran_preinterpolation_o4_semantics_not_square_of_interpolated_o2"
+    }
+  },
+  "shared_atmosphere": {
+    "ozone_du": 300.0,
+    "aod550": 0.1,
+    "angstrom_exponent": 1.3,
+    "ground_albedo": 0.2,
+    "aerosol_profile": "rural_summer",
+    "solar_distance_normalization": "1_AU_no_day_of_year_correction",
+    "refraction": "disabled_true_geometric_line_of_sight"
+  },
+  "direct_oracle_profile": {
+    "model_id": "libradtran_2_0_6_disort_altitude_vs_truncated_profile_v1",
+    "rte_solver": "disort",
+    "geometry": "pseudospherical",
+    "number_of_streams": 16,
+    "target_true_altitude_deg": [
+      0.5,
+      5.0,
+      20.0
+    ],
+    "wavelength_nm": [
+      380.0,
+      550.0,
+      780.0
+    ],
+    "random_seed": 49979687,
+    "comparison": {
+      "normalized_direct_irradiance_abs_tolerance": 5e-8,
+      "direct_spectral_transmission_abs_tolerance": 5e-8,
+      "extinction_magnitude_abs_tolerance": 5e-6
+    }
+  },
+  "mystic_elevated_smoke_profile": {
+    "model_id": "libradtran_2_0_6_mystic_spherical_truncated_atmosphere_v1",
+    "solar_center_altitude_deg": -6.0,
+    "target_true_altitude_deg": 5.0,
+    "relative_solar_azimuth_deg": 180.0,
+    "wavelength_nm": 550.0,
+    "photon_count": 100000,
+    "random_seed": 32452843,
+    "exact_repeat_site_altitude_m": 1500.0,
+    "sea_level_source_profile_control": true
+  }
+}

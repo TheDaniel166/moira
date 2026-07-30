@@ -1,0 +1,363 @@
+{
+  "schema": "moira.visibility-named-spectral-direct-probe-spec/v1",
+  "spec_id": "physical-heliacal-phase1-named-spectral-direct-probe-2026-07-30",
+  "status": "research_probe_not_runtime_data_pack",
+  "base_labs": {
+    "direct_geometry_checkpoint": {
+      "spec_path": "scripts/visibility_reference_lab/phase1_direct_geometry_probe_spec.json",
+      "spec_bytes": 7753,
+      "spec_sha256": "5f2052236632764a67325951a55b8262f21dc51e630149194ff87baf5ff2a316",
+      "builder_path": "scripts/build_visibility_direct_geometry_probe.py",
+      "builder_bytes": 63892,
+      "builder_sha256": "957f196ed69ab3fa071119f7110f6d4cbbaf4555a45cd394b94ff829e9d3f74e",
+      "validator_path": "scripts/validate_visibility_direct_geometry_probe.py",
+      "validator_bytes": 54163,
+      "validator_sha256": "af0221277c9ac63156c85ec39b7ffad1adc621c3ed477ea30f79cfe75f079878",
+      "checkpoint_path": "tests/artifacts/visibility_reference_lab/phase1_direct_geometry_checkpoint_2026-07-29.json",
+      "checkpoint_bytes": 6909,
+      "checkpoint_sha256": "99a19ddabef6f41fe914be01ef0214356f6b1d74a5e4fe703c424e10ca5d0391"
+    }
+  },
+  "source": {
+    "libRadtran": {
+      "name": "libRadtran",
+      "version": "2.0.6",
+      "archive_url": "https://www.libradtran.org/download/libRadtran-2.0.6.tar.gz",
+      "archive_bytes": 154147176,
+      "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+      "uvspec_version": "uvspec, version 2.0.6-MYSTIC",
+      "uvspec_sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a",
+      "license": "GPL",
+      "role": "external_reference_generator_only"
+    },
+    "REPTRAN_module": {
+      "module_id": "libradtran_reptran_2024_all",
+      "download_page_url": "https://www.libradtran.org/doku.php?id=download",
+      "archive_url": "https://www.libradtran.org/lib/exe/fetch.php?media=download%3Areptran_2024_all.tar.gz",
+      "access_date": "2026-07-30",
+      "archive_bytes": 698709957,
+      "archive_sha256": "55893c80bcc999651bac3bf014ee64aaf602653ba640eb5bebe787a5d8eacce7",
+      "archive_member_count": 292,
+      "archive_regular_file_count": 292,
+      "archive_prefix": "data/correlated_k/reptran/",
+      "existing_source_tree_overlap_file_count": 260,
+      "existing_source_tree_overlap_sha256_mismatch_count": 0,
+      "embedded_notice_or_license_file_count": 0,
+      "redistribution_policy": "external_research_input_only_not_redistributed_by_moira"
+    },
+    "merged_data_root": {
+      "construction": "byte_copy_of_bound_libradtran_2_0_6_data_then_overlay_of_bound_REPTRAN_archive",
+      "regular_file_count": 1478,
+      "regular_file_bytes": 873635625,
+      "canonical_file_receipts_bytes": 204827,
+      "canonical_file_receipts_sha256": "68f1817782e424ef617dab03ad985a3fbcb91fa2ed0239a8c2de1e8cb6855b59",
+      "canonicalization": "utf8_json_compact_sort_keys_ensure_ascii_true_plus_lf"
+    },
+    "governing_files": [
+      {
+        "path": "src/uvspec_lex.l",
+        "bytes": 581415,
+        "sha256": "174755190e50ecc3099c80a29cb71627c0a33a5e2009d1869c23140095658d89"
+      },
+      {
+        "path": "src/ancillary.c",
+        "bytes": 565994,
+        "sha256": "97dc576d1cb8f54c40d733cea3d5a56b49a0e7f8f39aa812e55ba7fbe1a7665f"
+      },
+      {
+        "path": "src/atmosphere.c",
+        "bytes": 341735,
+        "sha256": "b900ade7e603260a47fec3efa305577ab6806bbf539021ec028a0c1360099cf8"
+      },
+      {
+        "path": "src/molecular.c",
+        "bytes": 124030,
+        "sha256": "61f1ce8bd85f6502648cb4417541ff26bcd6fa22b01900c52d54767ec95085f8"
+      },
+      {
+        "path": "src/solve_rte.c",
+        "bytes": 304484,
+        "sha256": "c90ed56c331758c71f89397c714cf1cab476dac9e5500ba1ebed0b60b6ad7475"
+      },
+      {
+        "path": "doc/radiative_transfer.tex",
+        "bytes": 72398,
+        "sha256": "03797b5153531ea9611c4823caef6662a96c7a8ec0e35484b8a22854a7b0eefe"
+      }
+    ]
+  },
+  "runtime_boundary": {
+    "engine_changes_authorized": false,
+    "public_api_changes_authorized": false,
+    "runtime_table_authorized": false,
+    "runtime_dependency_on_libRadtran": false,
+    "runtime_dependency_on_REPTRAN": false,
+    "network_dependency": false,
+    "artifact_role": "external_phase1_validation_evidence_only"
+  },
+  "scientific_boundary": {
+    "model_id": "libradtran_2_0_6_reptran_named_atmosphere_direct_v1",
+    "quantity": "clear_molecular_atmosphere_direct_spectral_transmission",
+    "included": [
+      "named_AFGL_pressure_temperature_and_molecular_profiles",
+      "molecular_absorption_from_REPTRAN",
+      "molecular_Rayleigh_extinction",
+      "pseudo_spherical_direct_beam_geometry"
+    ],
+    "excluded": [
+      "aerosol",
+      "cloud",
+      "ground_albedo_effects",
+      "diffuse_sky_radiance",
+      "CIE_response_integration",
+      "target_spectral_energy_distribution",
+      "refraction",
+      "observer_altitude_above_profile_surface",
+      "runtime_interpolation",
+      "limiting_magnitude",
+      "event_time"
+    ],
+    "ambiguity_policy": "fail_closed_and_keep_unadmitted_dimensions_open"
+  },
+  "profiles": {
+    "tropical": {
+      "code": "trp",
+      "path": "atmmod/afglt.dat"
+    },
+    "midlatitude_summer": {
+      "code": "mls",
+      "path": "atmmod/afglms.dat"
+    },
+    "midlatitude_winter": {
+      "code": "mlw",
+      "path": "atmmod/afglmw.dat"
+    },
+    "subarctic_summer": {
+      "code": "sas",
+      "path": "atmmod/afglss.dat"
+    },
+    "subarctic_winter": {
+      "code": "saw",
+      "path": "atmmod/afglsw.dat"
+    },
+    "us_standard": {
+      "code": "uss",
+      "path": "atmmod/afglus.dat"
+    }
+  },
+  "vertical_grids": {
+    "source_native": {
+      "code": "g050",
+      "status": "diagnostic_control",
+      "atm_z_grid_emitted": false,
+      "expected_level_count": 50
+    },
+    "near_horizon_piecewise_refined_v1": {
+      "code": "g290",
+      "status": "candidate",
+      "atm_z_grid_emitted": true,
+      "step_divisor": 1,
+      "expected_level_count": 290
+    },
+    "near_horizon_piecewise_reference_v1": {
+      "code": "g579",
+      "status": "grid_error_reference",
+      "atm_z_grid_emitted": true,
+      "step_divisor": 2,
+      "expected_level_count": 579
+    },
+    "near_horizon_piecewise_convergence_v1": {
+      "code": "g1157",
+      "status": "reference_convergence_diagnostic",
+      "atm_z_grid_emitted": true,
+      "step_divisor": 4,
+      "expected_level_count": 1157
+    },
+    "base_segments_km": [
+      {
+        "start": 0.0,
+        "stop": 2.0,
+        "step": 0.025
+      },
+      {
+        "start": 2.0,
+        "stop": 5.0,
+        "step": 0.05
+      },
+      {
+        "start": 5.0,
+        "stop": 10.0,
+        "step": 0.1
+      },
+      {
+        "start": 10.0,
+        "stop": 25.0,
+        "step": 0.25
+      },
+      {
+        "start": 25.0,
+        "stop": 50.0,
+        "step": 1.0
+      },
+      {
+        "start": 50.0,
+        "stop": 120.0,
+        "step": 5.0
+      }
+    ]
+  },
+  "spectral_design": {
+    "wavelength_start_nm": 380.0,
+    "wavelength_stop_nm": 780.0,
+    "output_grid_step_nm": 0.05,
+    "expected_output_row_count": 8001,
+    "solar_source_path": "solar_flux/atlas_plus_modtran",
+    "REPTRAN_resolutions": {
+      "medium": {
+        "band_width_cm_minus_1": 5.0,
+        "role": "vertical_grid_characterization"
+      },
+      "fine": {
+        "band_width_cm_minus_1": 1.0,
+        "role": "admitted_full_spectral_reference"
+      }
+    },
+    "diagnostic_bin_width_nm": [
+      1.0,
+      5.0,
+      20.0
+    ],
+    "binning_law": "unweighted_arithmetic_mean_of_equal_0_05_nm_direct_transmission_samples_half_open_bins_terminal_780_nm_excluded",
+    "response_integration_status": "not_admitted_until_versioned_CIE_and_target_spectrum_inputs_are_bound"
+  },
+  "solver": {
+    "governing_solver": "disort",
+    "governing_geometry": "pseudospherical",
+    "governing_number_of_streams": 16,
+    "bulk_direct_beam_accelerator": "twostr",
+    "accelerator_admission": "only_with_byte_identical_DISORT_stdout_parity_anchors",
+    "output_quantity": "transmittance",
+    "output_columns": [
+      "lambda",
+      "edir"
+    ],
+    "normalization": "direct_transmission_equals_edir_divided_by_sin_target_true_altitude",
+    "random_seed": 49979687,
+    "random_seed_role": "fixed_nonoperative_uvspec_output_control",
+    "serial_execution_required": true
+  },
+  "probe_matrix": {
+    "vertical_profile_stress_altitude_deg": 0.25,
+    "vertical_altitude_sweep": {
+      "profile": "us_standard",
+      "target_true_altitude_deg": [
+        0.5,
+        1.0,
+        2.0,
+        5.0,
+        10.0,
+        20.0,
+        45.0
+      ]
+    },
+    "vertical_resolution": "medium",
+    "vertical_grid_ids": [
+      "source_native",
+      "near_horizon_piecewise_refined_v1",
+      "near_horizon_piecewise_reference_v1"
+    ],
+    "reference_convergence_case": {
+      "profile": "us_standard",
+      "target_true_altitude_deg": 0.25,
+      "resolution": "medium",
+      "grid_id": "near_horizon_piecewise_convergence_v1"
+    },
+    "fine_vertical_transfer_case": {
+      "profile": "us_standard",
+      "target_true_altitude_deg": 0.25,
+      "resolution": "fine",
+      "grid_ids": [
+        "near_horizon_piecewise_refined_v1",
+        "near_horizon_piecewise_reference_v1"
+      ]
+    },
+    "spectral_resolution_cases": {
+      "all_profiles_target_true_altitude_deg": 0.25,
+      "us_standard_additional_target_true_altitude_deg": [
+        5.0,
+        45.0
+      ],
+      "grid_id": "near_horizon_piecewise_refined_v1",
+      "resolutions": [
+        "medium",
+        "fine"
+      ]
+    },
+    "DISORT_parity_cases": [
+      {
+        "profile": "us_standard",
+        "target_true_altitude_deg": 0.25,
+        "grid_id": "near_horizon_piecewise_refined_v1",
+        "resolution": "fine"
+      },
+      {
+        "profile": "us_standard",
+        "target_true_altitude_deg": 0.25,
+        "grid_id": "near_horizon_piecewise_reference_v1",
+        "resolution": "medium"
+      },
+      {
+        "profile": "tropical",
+        "target_true_altitude_deg": 0.25,
+        "grid_id": "near_horizon_piecewise_refined_v1",
+        "resolution": "medium"
+      },
+      {
+        "profile": "us_standard",
+        "target_true_altitude_deg": 45.0,
+        "grid_id": "near_horizon_piecewise_refined_v1",
+        "resolution": "medium"
+      }
+    ],
+    "repeat_control": {
+      "profile": "us_standard",
+      "target_true_altitude_deg": 5.0,
+      "grid_id": "near_horizon_piecewise_refined_v1",
+      "resolution": "medium",
+      "solver": "twostr"
+    }
+  },
+  "acceptance": {
+    "spectrum_wavelength_abs_tolerance_nm": 0.000001,
+    "direct_transmission_upper_tolerance": 0.0000001,
+    "opaque_bin_direct_transmission_floor": 1e-15,
+    "candidate_vs_reference_max_magnitude_difference_by_bin_nm": {
+      "1": 0.003,
+      "5": 0.0025,
+      "20": 0.002
+    },
+    "reference_vs_convergence_max_magnitude_difference_by_bin_nm": {
+      "1": 0.001,
+      "5": 0.0008,
+      "20": 0.0007
+    },
+    "combined_candidate_grid_error_bound_by_bin_nm": {
+      "1": 0.003,
+      "5": 0.0025,
+      "20": 0.002
+    },
+    "fine_candidate_vs_reference_max_magnitude_difference_by_bin_nm": {
+      "1": 0.003,
+      "5": 0.0025,
+      "20": 0.002
+    },
+    "medium_vs_fine_characterization_sanity_cap_by_bin_nm": {
+      "1": 3.0,
+      "5": 0.5,
+      "20": 0.3
+    },
+    "maximum_opacity_classification_mismatches": 0,
+    "DISORT_parity_differing_stdout_line_count": 0,
+    "repeat_byte_identity_required": true
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "schema": "moira.visibility-direct-geometry-checkpoint/v1",
+  "checkpoint_id": "physical-heliacal-phase1-direct-geometry-2026-07-29",
+  "artifact_status": "phase1_direct_geometry_evidence_not_runtime_data_pack",
+  "phase1_complete": false,
+  "near_horizon_geometry_gate": "passed_for_controlled_exponential_atmospheres_and_refined_candidate_grid",
+  "specification": {
+    "path": "scripts/visibility_reference_lab/phase1_direct_geometry_probe_spec.json",
+    "bytes": 7753,
+    "sha256": "5f2052236632764a67325951a55b8262f21dc51e630149194ff87baf5ff2a316"
+  },
+  "builder": {
+    "path": "scripts/build_visibility_direct_geometry_probe.py",
+    "bytes": 63892,
+    "sha256": "957f196ed69ab3fa071119f7110f6d4cbbaf4555a45cd394b94ff829e9d3f74e"
+  },
+  "validator": {
+    "path": "scripts/validate_visibility_direct_geometry_probe.py",
+    "bytes": 54163,
+    "sha256": "af0221277c9ac63156c85ec39b7ffad1adc621c3ed477ea30f79cfe75f079878"
+  },
+  "predecessor_identities": {
+    "preserved": true,
+    "checkpoint1": {
+      "specification": {
+        "path": "scripts/visibility_reference_lab/phase1_lab_spec.json",
+        "bytes": 10319,
+        "sha256": "c1341c6c9a668472e94c520495792b5294c93b2950e7a94fb544860a3de9febd"
+      },
+      "builder": {
+        "path": "scripts/build_visibility_radiance_lut.py",
+        "bytes": 54764,
+        "sha256": "d19344218140e143bb2011e50cea1cada1f4ed310c276281398d60bd3ab4d6a1"
+      },
+      "validator": {
+        "path": "scripts/validate_visibility_radiance_lut.py",
+        "bytes": 23955,
+        "sha256": "0de24440de3792abdf935a0c2d621493afbc0da719a850cd63a3b1f4bd0e8980"
+      }
+    },
+    "elevated_site_checkpoint": {
+      "specification": {
+        "path": "scripts/visibility_reference_lab/phase1_elevated_site_probe_spec.json",
+        "bytes": 4772,
+        "sha256": "62c02a606572a3c5907890a90762089ad4c46395a668dbbad2f209bbf04f122b"
+      },
+      "builder": {
+        "path": "scripts/build_visibility_elevated_site_probe.py",
+        "bytes": 59862,
+        "sha256": "f2d46347ec27360f3b1280f754497ba9a26dde8d97081024dbb17e434118e4f9"
+      },
+      "validator": {
+        "path": "scripts/validate_visibility_elevated_site_probe.py",
+        "bytes": 37915,
+        "sha256": "a8882cfbcc0bcd554c2be59a2f4efa6884608d48e75d4b9e23ecf539f328814f"
+      }
+    }
+  },
+  "source": {
+    "name": "libRadtran",
+    "version": "2.0.6",
+    "archive_bytes": 154147176,
+    "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+    "uvspec_version": "uvspec, version 2.0.6-MYSTIC",
+    "uvspec_sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a",
+    "governing_source_file_count": 6,
+    "surface_reconstruction": "bottom_layer_midpoint_chapman_factor_applied_to_full_surface_vertical_optical_depth"
+  },
+  "external_artifact": {
+    "manifest_sha256": "b69b377bd465b4740ef0dacd802c03d9fb6ee9eaf809a41356d60126dd23cd92",
+    "manifest_bytes": 521126,
+    "generation_fingerprint": "138ee8e4f516aaacd0538f95f188b89aabb68c1ee1e591a0dc13b8d7bdd185b5",
+    "bound_file_count": 1305,
+    "bound_file_bytes": 2564019,
+    "case_count": 145,
+    "nonrepeat_case_count": 144,
+    "uvspec_run_count": 145,
+    "all_files_bound": true,
+    "independent_continuous_oracle_recomputed": true,
+    "same_layer_shell_oracle_recomputed": true,
+    "midpoint_chapman_reconstruction_recomputed": true,
+    "fixed_input_repeat_byte_identical": true,
+    "network_dependency": false,
+    "runtime_dependency": false
+  },
+  "controlled_design": {
+    "wavelength_nm": 550.0,
+    "vertical_optical_depth": 0.1,
+    "scale_height_km": [
+      0.25,
+      0.5,
+      1.0,
+      1.5,
+      8.0,
+      20.0
+    ],
+    "diagnostic_true_altitude_deg": [
+      0.0,
+      0.05,
+      0.1
+    ],
+    "admitted_true_altitude_deg": [
+      0.25,
+      0.5,
+      1.0,
+      2.0,
+      5.0,
+      10.0,
+      20.0,
+      45.0
+    ],
+    "vertical_control_true_altitude_deg": 90.0,
+    "source_grid_level_count": 50,
+    "refined_candidate_level_count": 290,
+    "refraction": "disabled_true_geometric_line_of_sight"
+  },
+  "acceptance": {
+    "admitted_libRadtran_vs_midpoint_chapman_reconstruction_slant_optical_depth_abs_tolerance": 0.00002,
+    "admitted_positive_altitude_extraction_relative_tolerance": 0.00005,
+    "refined_midpoint_vs_continuous_admitted_relative_slant_optical_depth_tolerance": 0.001,
+    "vertical_control_slant_optical_depth_abs_tolerance": 0.00002,
+    "diagnostic_subdomain_has_no_admission_tolerance": true
+  },
+  "numerical_summary": {
+    "maximum_admitted_libradtran_vs_midpoint_chapman_reconstruction_slant_optical_depth_abs": 5.353239300731616e-7,
+    "maximum_admitted_positive_altitude_extraction_relative_difference": 5.973554226944694e-7,
+    "maximum_refined_grid_admitted_midpoint_vs_continuous_relative_error": 0.0003497406476989963,
+    "maximum_refined_grid_admitted_same_layer_shell_vs_continuous_relative_error": 0.0007030175882411937,
+    "maximum_source_grid_admitted_midpoint_vs_continuous_relative_error": 0.10138558685013145,
+    "maximum_diagnostic_midpoint_vs_continuous_relative_error": 0.22033666592546197,
+    "maximum_diagnostic_libradtran_vs_midpoint_chapman_reconstruction_slant_optical_depth_abs": 0.00017624090504142487,
+    "maximum_vertical_control_slant_optical_depth_abs_difference": 1.99328181738068e-8,
+    "maximum_plane_parallel_admitted_relative_error": 9.857026256012775
+  },
+  "exact_horizon_admitted": false,
+  "runtime_data_pack_authorized": false,
+  "findings": {
+    "libRadtran_direct_surface_rule_source_traced": true,
+    "independent_midpoint_chapman_reconstruction_validated": true,
+    "refined_candidate_controlled_geometry_tolerance_passed": true,
+    "source_grid_control_failed_refined_tolerance": true,
+    "positive_altitude_direct_extraction_validated_in_admitted_domain": true,
+    "exact_horizon_remains_diagnostic_only": true,
+    "actual_named_atmosphere_grid_admitted": false,
+    "spectral_products_generated": false,
+    "phase2_authorized": false
+  },
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "engine_dependency_allowed": false,
+    "engine_runtime_invocation_allowed": false,
+    "generated_numerical_products_only": true
+  },
+  "open_phase1_gates": [
+    "validate the refined vertical grid with the named atmosphere and full spectral direct-transmission design",
+    "freeze the adaptive sparse design and solver-uncertainty stopping law",
+    "resolve the deep-twilight solar-only tail against the natural-background boundary",
+    "generate the admitted spectral products",
+    "reserve and run untouched off-grid validation cases",
+    "measure storage and interpolation error",
+    "propagate source solver storage and interpolation error into limiting magnitude and event time",
+    "build checksum license and validate the separate immutable visibility data pack"
+  ]
+}
