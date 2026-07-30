@@ -21,8 +21,12 @@ from tools.horizons import observer_ecliptic_position, signed_arcminutes
     [(body, case) for body, cases in STRICT_POSITION_PLANET_CASES.items() for case in cases],
     ids=[f"{body}-{case.label}" for body, cases in STRICT_POSITION_PLANET_CASES.items() for case in cases],
 )
-def test_planet_positions_match_horizons(body: str, case: PositionCase) -> None:
-    moira = planet_at(body, case.jd_ut)
+def test_planet_positions_match_horizons(
+    body: str,
+    case: PositionCase,
+    planetary_reader,
+) -> None:
+    moira = planet_at(body, case.jd_ut, reader=planetary_reader)
     ref = observer_ecliptic_position(case.command, case.jd_ut)
 
     lon_error = signed_arcminutes(moira.longitude, ref.longitude)
@@ -47,8 +51,16 @@ def test_planet_positions_match_horizons(body: str, case: PositionCase) -> None:
     [(name, case) for name, cases in STRICT_POSITION_ASTEROID_CASES.items() for case in cases],
     ids=[f"{name}-{case.label}" for name, cases in STRICT_POSITION_ASTEROID_CASES.items() for case in cases],
 )
-def test_asteroid_positions_match_horizons(name: str, case: PositionCase) -> None:
-    moira = asteroid_at(name, case.jd_ut)
+def test_asteroid_positions_match_horizons(
+    name: str,
+    case: PositionCase,
+    small_body_reader_pool,
+) -> None:
+    moira = asteroid_at(
+        name,
+        case.jd_ut,
+        reader=small_body_reader_pool,
+    )
     ref = observer_ecliptic_position(case.command, case.jd_ut)
 
     lon_error = signed_arcminutes(moira.longitude, ref.longitude)

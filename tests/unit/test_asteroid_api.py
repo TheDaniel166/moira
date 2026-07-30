@@ -4,7 +4,8 @@ Unit tests for the three new asteroid API modules:
   - moira.tno
   - moira.main_belt
 
-No kernel is required for any of these tests.
+Catalog and mock-delegation tests are kernel-free.  Computational properties
+and availability checks explicitly require the sovereign small-body pool.
 """
 from __future__ import annotations
 
@@ -268,7 +269,7 @@ class TestCrossGroupDelegation:
 # Property-based tests (Hypothesis) — require ephemeris kernels
 # ---------------------------------------------------------------------------
 
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from moira.classical_asteroids import classical_asteroid_at, ceres_at, pallas_at, juno_at, vesta_at
@@ -282,13 +283,19 @@ from moira.asteroids import asteroid_at
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
-@settings(deadline=None)
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_classical_asteroid_at_delegation_round_trip(jd):
+def test_classical_asteroid_at_delegation_round_trip(
+    small_body_reader_context,
+    jd,
+):
     """**Validates: Requirements 1.3, 1.8**"""
     for name in list_classical_asteroids():
         r1 = classical_asteroid_at(name, jd)
-        r2 = asteroid_at(name, jd)
+        r2 = asteroid_at(name, jd, reader=small_body_reader_context)
         assert r1.longitude == r2.longitude
         assert r1.latitude  == r2.latitude
         assert r1.distance  == r2.distance
@@ -303,14 +310,20 @@ def test_classical_asteroid_at_delegation_round_trip(jd):
 _MAIN_BELT_SAMPLE = ["Astraea", "Hebe", "Psyche", "Fortuna", "Lutetia"]
 
 @pytest.mark.requires_ephemeris
-@settings(deadline=None)
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_main_belt_at_delegation_round_trip(jd):
+def test_main_belt_at_delegation_round_trip(
+    small_body_reader_context,
+    jd,
+):
     """**Validates: Requirements 2.3, 2.7**"""
     from moira.main_belt import main_belt_at
     for name in _MAIN_BELT_SAMPLE:
         r1 = main_belt_at(name, jd)
-        r2 = asteroid_at(name, jd)
+        r2 = asteroid_at(name, jd, reader=small_body_reader_context)
         assert r1.longitude == r2.longitude
         assert r1.latitude  == r2.latitude
         assert r1.distance  == r2.distance
@@ -323,13 +336,19 @@ def test_main_belt_at_delegation_round_trip(jd):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
-@settings(deadline=None)
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_tno_at_delegation_round_trip(jd):
+def test_tno_at_delegation_round_trip(
+    small_body_reader_context,
+    jd,
+):
     """**Validates: Requirements 3.3, 3.8**"""
     for name in list_tnos():
         r1 = tno_at(name, jd)
-        r2 = asteroid_at(name, jd)
+        r2 = asteroid_at(name, jd, reader=small_body_reader_context)
         assert r1.longitude == r2.longitude
         assert r1.latitude  == r2.latitude
         assert r1.distance  == r2.distance
@@ -342,11 +361,19 @@ def test_tno_at_delegation_round_trip(jd):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_ceres_at_identity(jd):
+def test_ceres_at_identity(small_body_reader_context, jd):
     """**Validates: Requirements 1.4, 1.7**"""
     result = ceres_at(jd)
-    direct = asteroid_at(CERES, jd)
+    direct = asteroid_at(
+        CERES,
+        jd,
+        reader=small_body_reader_context,
+    )
     assert result.name      == "Ceres"
     assert result.naif_id   == CERES
     assert result.longitude == direct.longitude
@@ -356,11 +383,19 @@ def test_ceres_at_identity(jd):
 
 
 @pytest.mark.requires_ephemeris
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_pallas_at_identity(jd):
+def test_pallas_at_identity(small_body_reader_context, jd):
     """**Validates: Requirements 1.4, 1.7**"""
     result = pallas_at(jd)
-    direct = asteroid_at(PALLAS, jd)
+    direct = asteroid_at(
+        PALLAS,
+        jd,
+        reader=small_body_reader_context,
+    )
     assert result.name      == "Pallas"
     assert result.naif_id   == PALLAS
     assert result.longitude == direct.longitude
@@ -370,11 +405,19 @@ def test_pallas_at_identity(jd):
 
 
 @pytest.mark.requires_ephemeris
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_juno_at_identity(jd):
+def test_juno_at_identity(small_body_reader_context, jd):
     """**Validates: Requirements 1.4, 1.7**"""
     result = juno_at(jd)
-    direct = asteroid_at(JUNO, jd)
+    direct = asteroid_at(
+        JUNO,
+        jd,
+        reader=small_body_reader_context,
+    )
     assert result.name      == "Juno"
     assert result.naif_id   == JUNO
     assert result.longitude == direct.longitude
@@ -384,11 +427,19 @@ def test_juno_at_identity(jd):
 
 
 @pytest.mark.requires_ephemeris
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_vesta_at_identity(jd):
+def test_vesta_at_identity(small_body_reader_context, jd):
     """**Validates: Requirements 1.4, 1.7**"""
     result = vesta_at(jd)
-    direct = asteroid_at(VESTA, jd)
+    direct = asteroid_at(
+        VESTA,
+        jd,
+        reader=small_body_reader_context,
+    )
     assert result.name      == "Vesta"
     assert result.naif_id   == VESTA
     assert result.longitude == direct.longitude
@@ -403,11 +454,19 @@ def test_vesta_at_identity(jd):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_ixion_at_identity(jd):
+def test_ixion_at_identity(small_body_reader_context, jd):
     """**Validates: Requirements 3.4, 3.7**"""
     result = ixion_at(jd)
-    direct = asteroid_at(IXION, jd)
+    direct = asteroid_at(
+        IXION,
+        jd,
+        reader=small_body_reader_context,
+    )
     assert result.name      == "Ixion"
     assert result.naif_id   == IXION
     assert result.longitude == direct.longitude
@@ -417,11 +476,19 @@ def test_ixion_at_identity(jd):
 
 
 @pytest.mark.requires_ephemeris
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_quaoar_at_identity(jd):
+def test_quaoar_at_identity(small_body_reader_context, jd):
     """**Validates: Requirements 3.4, 3.7**"""
     result = quaoar_at(jd)
-    direct = asteroid_at(QUAOAR, jd)
+    direct = asteroid_at(
+        QUAOAR,
+        jd,
+        reader=small_body_reader_context,
+    )
     assert result.name      == "Quaoar"
     assert result.naif_id   == QUAOAR
     assert result.longitude == direct.longitude
@@ -431,11 +498,19 @@ def test_quaoar_at_identity(jd):
 
 
 @pytest.mark.requires_ephemeris
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_varuna_at_identity(jd):
+def test_varuna_at_identity(small_body_reader_context, jd):
     """**Validates: Requirements 3.4, 3.7**"""
     result = varuna_at(jd)
-    direct = asteroid_at(VARUNA, jd)
+    direct = asteroid_at(
+        VARUNA,
+        jd,
+        reader=small_body_reader_context,
+    )
     assert result.name      == "Varuna"
     assert result.naif_id   == VARUNA
     assert result.longitude == direct.longitude
@@ -445,11 +520,19 @@ def test_varuna_at_identity(jd):
 
 
 @pytest.mark.requires_ephemeris
+@settings(
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(jd=st.floats(min_value=2415020.5, max_value=2488069.5, allow_nan=False, allow_infinity=False))
-def test_orcus_at_identity(jd):
+def test_orcus_at_identity(small_body_reader_context, jd):
     """**Validates: Requirements 3.4, 3.7**"""
     result = orcus_at(jd)
-    direct = asteroid_at(ORCUS, jd)
+    direct = asteroid_at(
+        ORCUS,
+        jd,
+        reader=small_body_reader_context,
+    )
     assert result.name      == "Orcus"
     assert result.naif_id   == ORCUS
     assert result.longitude == direct.longitude
@@ -464,19 +547,25 @@ def test_orcus_at_identity(jd):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
-def test_available_classical_is_subset_of_list():
+def test_available_classical_is_subset_of_list(small_body_reader_context):
     """**Validates: Requirements 1.6, 4.5**"""
-    assert set(available_classical_asteroids()) <= set(list_classical_asteroids())
+    available = set(available_classical_asteroids())
+    assert set(CLASSICAL_NAMES.values()) <= available
+    assert available <= set(list_classical_asteroids())
 
 
 @pytest.mark.requires_ephemeris
-def test_available_main_belt_is_subset_of_list():
+def test_available_main_belt_is_subset_of_list(small_body_reader_context):
     """**Validates: Requirements 2.6, 4.5**"""
     from moira.main_belt import available_main_belt, list_main_belt
-    assert set(available_main_belt()) <= set(list_main_belt())
+    available = set(available_main_belt())
+    assert set(_MAIN_BELT_SAMPLE) <= available
+    assert available <= set(list_main_belt())
 
 
 @pytest.mark.requires_ephemeris
-def test_available_tnos_is_subset_of_list():
+def test_available_tnos_is_subset_of_list(small_body_reader_context):
     """**Validates: Requirements 3.6, 4.5**"""
-    assert set(available_tnos()) <= set(list_tnos())
+    available = set(available_tnos())
+    assert set(TNO_NAMES.values()) <= available
+    assert available <= set(list_tnos())

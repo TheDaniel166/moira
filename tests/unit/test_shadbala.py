@@ -33,6 +33,7 @@ import math
 import pytest
 
 from moira.panchanga import sankranti_at
+from moira.spk_reader import use_reader_override
 from moira.shadbala import (
     MEAN_DAILY_MOTION,
     NAISARGIKA_BALA,
@@ -66,6 +67,17 @@ from moira.shadbala import (
 
 _J2000 = 2451545.0
 _PLANETS = ('Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn')
+
+
+@pytest.fixture(scope="session")
+def shadbala_with_reader(planetary_reader):
+    """Compute Shadbala only inside an explicitly admitted reader context."""
+
+    def _compute(**kwargs) -> ShadbalaResult:
+        with use_reader_override(planetary_reader):
+            return shadbala(**kwargs)
+
+    return _compute
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +263,7 @@ class TestDrigBala:
 # 6. kala_bala()
 # ===========================================================================
 
+@pytest.mark.usefixtures("planetary_reader")
 class TestKalaBala:
 
     def _call(self, planet, is_day=True, tithi=1, vara_lord='Sun'):
@@ -395,8 +408,8 @@ class TestDigBala:
 class TestShadbalaIntegration:
 
     @pytest.fixture(scope='class')
-    def result(self) -> ShadbalaResult:
-        return shadbala(
+    def result(self, shadbala_with_reader) -> ShadbalaResult:
+        return shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),
@@ -460,8 +473,9 @@ class TestShadbalaIntegration:
 
 class TestVesselInvariants:
 
-    def _planet_shadbala(self) -> PlanetShadbala:
-        result = shadbala(
+    @pytest.fixture
+    def planet_shadbala(self, shadbala_with_reader) -> PlanetShadbala:
+        result = shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),
@@ -472,23 +486,23 @@ class TestVesselInvariants:
         )
         return result.planets['Sun']
 
-    def test_sthana_bala_is_frozen(self):
-        ps = self._planet_shadbala()
+    def test_sthana_bala_is_frozen(self, planet_shadbala):
+        ps = planet_shadbala
         with pytest.raises((AttributeError, TypeError)):
             ps.sthana_bala.uchcha = 999.0  # type: ignore[misc]
 
-    def test_kala_bala_is_frozen(self):
-        ps = self._planet_shadbala()
+    def test_kala_bala_is_frozen(self, planet_shadbala):
+        ps = planet_shadbala
         with pytest.raises((AttributeError, TypeError)):
             ps.kala_bala.paksha = 999.0  # type: ignore[misc]
 
-    def test_planet_shadbala_is_frozen(self):
-        ps = self._planet_shadbala()
+    def test_planet_shadbala_is_frozen(self, planet_shadbala):
+        ps = planet_shadbala
         with pytest.raises((AttributeError, TypeError)):
             ps.planet = "mutated"  # type: ignore[misc]
 
-    def test_shadbala_result_is_frozen(self):
-        result = shadbala(
+    def test_shadbala_result_is_frozen(self, shadbala_with_reader):
+        result = shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),
@@ -500,12 +514,12 @@ class TestVesselInvariants:
         with pytest.raises((AttributeError, TypeError)):
             result.jd = 0.0  # type: ignore[misc]
 
-    def test_sthana_bala_has_slots(self):
-        ps = self._planet_shadbala()
+    def test_sthana_bala_has_slots(self, planet_shadbala):
+        ps = planet_shadbala
         assert "__dict__" not in type(ps.sthana_bala).__slots__
 
-    def test_planet_shadbala_has_slots(self):
-        ps = self._planet_shadbala()
+    def test_planet_shadbala_has_slots(self, planet_shadbala):
+        ps = planet_shadbala
         assert "__dict__" not in type(ps).__slots__
 
 
@@ -548,7 +562,7 @@ class TestHoraLordAt:
             lord = hora_lord_at(self._SUNRISE + h / 24, self._SUNRISE)
             assert lord in valid
 
-    def test_uses_hora_lord_in_kala_bala(self):
+    def test_uses_hora_lord_in_kala_bala(self, planetary_reader):
         # Passing hora_lord='Sun' to kala_bala for planet='Sun' adds 60 Sha.
         r_no_hora = kala_bala('Sun', 0.0, 0.0, _J2000, 1, True, 'Sun', _SPEEDS)
         r_with_hora = kala_bala('Sun', 0.0, 0.0, _J2000, 1, True, 'Sun', _SPEEDS,
@@ -631,8 +645,8 @@ class TestShadbalaPolicy:
 class TestStrengthRatio:
 
     @pytest.fixture(scope='class')
-    def result(self) -> ShadbalaResult:
-        return shadbala(
+    def result(self, shadbala_with_reader) -> ShadbalaResult:
+        return shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),
@@ -732,8 +746,8 @@ class TestPlanetShadbalaGuards:
 class TestShadbalaConditionProfile:
 
     @pytest.fixture(scope='class')
-    def planet_result(self) -> PlanetShadbala:
-        r = shadbala(
+    def planet_result(self, shadbala_with_reader) -> PlanetShadbala:
+        r = shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),
@@ -776,8 +790,8 @@ class TestShadbalaConditionProfile:
 class TestShadbalaChartProfile:
 
     @pytest.fixture(scope='class')
-    def result(self) -> ShadbalaResult:
-        return shadbala(
+    def result(self, shadbala_with_reader) -> ShadbalaResult:
+        return shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),
@@ -826,8 +840,8 @@ class TestShadbalaChartProfile:
 class TestValidateShadbalaOutput:
 
     @pytest.fixture(scope='class')
-    def result(self) -> ShadbalaResult:
-        return shadbala(
+    def result(self, shadbala_with_reader) -> ShadbalaResult:
+        return shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),
@@ -895,8 +909,11 @@ class TestIshtaKashtaPhala:
         ps = self._planet(uchcha=45.0, chesta=0.0)
         assert ps.ishta_phala == pytest.approx(0.0)
 
-    def test_both_in_zero_sixty_for_all_planets_in_full_chart(self):
-        result = shadbala(
+    def test_both_in_zero_sixty_for_all_planets_in_full_chart(
+        self,
+        shadbala_with_reader,
+    ):
+        result = shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),
@@ -1084,8 +1101,8 @@ class TestBhavaDrishtiBala:
 class TestBhavaBalaIntegration:
 
     @pytest.fixture(scope='class')
-    def graha_result(self) -> ShadbalaResult:
-        return shadbala(
+    def graha_result(self, shadbala_with_reader) -> ShadbalaResult:
+        return shadbala_with_reader(
             sidereal_longitudes=_LONS,
             planet_speeds=_SPEEDS,
             houses=_MockHouses(),

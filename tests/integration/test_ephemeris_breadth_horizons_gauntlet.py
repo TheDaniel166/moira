@@ -5,7 +5,6 @@ import pytest
 from moira.constants import Body
 from moira.julian import DeltaTPolicy, tt_to_ut
 from moira.planets import sky_position_at
-from moira.spk_reader import get_reader
 from tools.horizons import observer_sky_position
 
 _CASES = (
@@ -43,8 +42,8 @@ def test_direct_topocentric_positions_match_horizons_across_breadth_gauntlet(
     jd_tt: float,
     latitude_deg: float,
     longitude_deg: float,
+    planetary_reader,
 ) -> None:
-    reader = get_reader()
     jd_ut = tt_to_ut(jd_tt)
     delta_t_seconds = (jd_tt - jd_ut) * 86400.0
     policy = DeltaTPolicy(model="fixed", fixed_delta_t=delta_t_seconds)
@@ -55,7 +54,7 @@ def test_direct_topocentric_positions_match_horizons_across_breadth_gauntlet(
         observer_lat=latitude_deg,
         observer_lon=longitude_deg,
         observer_elev_m=0.0,
-        reader=reader,
+        reader=planetary_reader,
         delta_t_policy=policy,
     )
     ref = observer_sky_position(

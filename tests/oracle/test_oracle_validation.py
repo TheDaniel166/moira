@@ -28,7 +28,6 @@ from moira.eclipse import EclipseCalculator
 from moira.planets import planet_relative_to, next_heliocentric_transit, planet_at
 from moira.phenomena import planet_phenomena_at
 from moira.constants import Body
-from moira.spk_reader import get_reader
 from moira.julian import ut_to_tt, decimal_year_from_jd
 
 
@@ -41,8 +40,8 @@ class TestOracleCoordinates:
     """
     
     @pytest.fixture(scope="module")
-    def reader(self):
-        return get_reader()
+    def reader(self, planetary_reader):
+        return planetary_reader
     
     def test_horizontal_to_equatorial_bounds(self, reader):
         """
@@ -124,8 +123,8 @@ class TestOracleNodes:
     """
     
     @pytest.fixture(scope="module")
-    def reader(self):
-        return get_reader()
+    def reader(self, planetary_reader):
+        return planetary_reader
     
     def test_next_moon_node_crossing_latitude_sign_change(self, reader):
         """
@@ -162,12 +161,12 @@ class TestOracleNodes:
         assert lat_before < 0 < lat_after or lat_before > 0 > lat_after, \
             f"No sign change: before={lat_before}°, after={lat_after}°"
     
-    def test_nodes_and_apsides_at_moon_returns_four_longitudes(self):
+    def test_nodes_and_apsides_at_moon_returns_four_longitudes(self, reader):
         """
         Validate nodes_and_apsides_at returns exactly 4 values for Moon.
         """
         jd_ut = 2451545.0
-        result = nodes_and_apsides_at("Moon", jd_ut)
+        result = nodes_and_apsides_at("Moon", jd_ut, reader=reader)
         
         asc_lon = result.ascending_node_lon
         desc_lon = result.descending_node_lon
@@ -227,8 +226,8 @@ class TestOraclePlanets:
     """
     
     @pytest.fixture(scope="module")
-    def reader(self):
-        return get_reader()
+    def reader(self, planetary_reader):
+        return planetary_reader
     
     def test_planet_relative_to_sun_vs_planet_at(self, reader):
         """
@@ -277,7 +276,7 @@ class TestOraclePhenomena:
     Strategy: validate magnitudes and phase angles via independent calculation.
     """
     
-    def test_planet_phenomena_at_phase_angle_bounds(self):
+    def test_planet_phenomena_at_phase_angle_bounds(self, planetary_reader):
         """
         Validate that phase_angle is in [0, 180] degrees.
         """
@@ -289,7 +288,7 @@ class TestOraclePhenomena:
         assert 0 <= phen.phase_angle_deg <= 180, \
             f"Phase angle out of bounds: {phen.phase_angle_deg}°"
     
-    def test_planet_phenomena_at_illumination_bounds(self):
+    def test_planet_phenomena_at_illumination_bounds(self, planetary_reader):
         """
         Validate that illuminated_fraction is in [0, 1].
         """
@@ -301,7 +300,7 @@ class TestOraclePhenomena:
             assert 0.0 <= phen.illuminated_fraction <= 1.0, \
                 f"{body_name}: illumination out of bounds: {phen.illuminated_fraction}"
     
-    def test_planet_phenomena_at_elongation_bounds(self):
+    def test_planet_phenomena_at_elongation_bounds(self, planetary_reader):
         """
         Validate that elongation is in [0, 180] degrees.
         """
@@ -339,8 +338,8 @@ class TestOracleHorizonsIntegration:
         return HorizonsOracle()
 
     @pytest.fixture(scope="class")
-    def reader(self):
-        return get_reader()
+    def reader(self, planetary_reader):
+        return planetary_reader
 
     @pytest.mark.external_network
     @pytest.mark.requires_ephemeris
@@ -403,7 +402,11 @@ class TestOracleHorizonsIntegration:
         )
 
     @pytest.mark.external_network
-    def test_venus_phase_vs_horizons_illumination(self, oracle):
+    def test_venus_phase_vs_horizons_illumination(
+        self,
+        oracle,
+        planetary_reader,
+    ):
         """
         Compare Venus illumination fraction and phase angle against JPL Horizons.
 

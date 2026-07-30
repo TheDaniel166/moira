@@ -20,8 +20,6 @@ Verification strategy:
 
 from __future__ import annotations
 
-import math
-
 import pytest
 
 from moira.constants import Body
@@ -96,39 +94,57 @@ class TestValidation:
 # ---------------------------------------------------------------------------
 
 class TestPlanetocentricDataVessel:
-    def _make(self, observer=Body.MARS, target=Body.JUPITER) -> PlanetocentricData:
-        return planetocentric_at(observer, target, JD_J2000)
+    def _make(
+        self,
+        reader,
+        observer=Body.MARS,
+        target=Body.JUPITER,
+    ) -> PlanetocentricData:
+        return planetocentric_at(
+            observer,
+            target,
+            JD_J2000,
+            reader=reader,
+        )
 
-    def test_observer_field_set_correctly(self) -> None:
-        pd = self._make(Body.MARS, Body.JUPITER)
+    def test_observer_field_set_correctly(self, planetary_reader) -> None:
+        pd = self._make(
+            planetary_reader,
+            Body.MARS,
+            Body.JUPITER,
+        )
         assert pd.observer == Body.MARS
 
-    def test_name_field_set_to_target(self) -> None:
-        pd = self._make(Body.MARS, Body.JUPITER)
+    def test_name_field_set_to_target(self, planetary_reader) -> None:
+        pd = self._make(
+            planetary_reader,
+            Body.MARS,
+            Body.JUPITER,
+        )
         assert pd.name == Body.JUPITER
 
-    def test_longitude_in_0_360(self) -> None:
-        pd = self._make()
+    def test_longitude_in_0_360(self, planetary_reader) -> None:
+        pd = self._make(planetary_reader)
         assert 0.0 <= pd.longitude < 360.0
 
-    def test_latitude_in_range(self) -> None:
-        pd = self._make()
+    def test_latitude_in_range(self, planetary_reader) -> None:
+        pd = self._make(planetary_reader)
         assert -90.0 <= pd.latitude <= 90.0
 
-    def test_distance_positive(self) -> None:
-        pd = self._make()
+    def test_distance_positive(self, planetary_reader) -> None:
+        pd = self._make(planetary_reader)
         assert pd.distance > 0.0
 
-    def test_distance_au_consistent(self) -> None:
-        pd = self._make()
+    def test_distance_au_consistent(self, planetary_reader) -> None:
+        pd = self._make(planetary_reader)
         assert pd.distance_au == pytest.approx(pd.distance / 149_597_870.700)
 
-    def test_retrograde_consistent_with_speed(self) -> None:
-        pd = self._make()
+    def test_retrograde_consistent_with_speed(self, planetary_reader) -> None:
+        pd = self._make(planetary_reader)
         assert pd.retrograde == (pd.speed < 0.0)
 
-    def test_sign_consistent_with_longitude(self) -> None:
-        pd = self._make()
+    def test_sign_consistent_with_longitude(self, planetary_reader) -> None:
+        pd = self._make(planetary_reader)
         expected_sign_index = int(pd.longitude // 30)
         signs = [
             "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -136,12 +152,16 @@ class TestPlanetocentricDataVessel:
         ]
         assert pd.sign == signs[expected_sign_index]
 
-    def test_sign_degree_in_range(self) -> None:
-        pd = self._make()
+    def test_sign_degree_in_range(self, planetary_reader) -> None:
+        pd = self._make(planetary_reader)
         assert 0.0 <= pd.sign_degree < 30.0
 
-    def test_repr_contains_observer_and_target(self) -> None:
-        pd = self._make(Body.MARS, Body.SATURN)
+    def test_repr_contains_observer_and_target(self, planetary_reader) -> None:
+        pd = self._make(
+            planetary_reader,
+            Body.MARS,
+            Body.SATURN,
+        )
         r = repr(pd)
         assert "Mars" in r
         assert "Saturn" in r
@@ -153,17 +173,31 @@ class TestPlanetocentricDataVessel:
 # ---------------------------------------------------------------------------
 
 class TestGeometricInvariants:
-    def test_longitude_always_in_range_across_bodies(self) -> None:
-        results = all_planetocentric_at(Body.MARS, JD_J2000)
+    def test_longitude_always_in_range_across_bodies(
+        self,
+        planetary_reader,
+    ) -> None:
+        results = all_planetocentric_at(
+            Body.MARS,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         for name, pd in results.items():
             assert 0.0 <= pd.longitude < 360.0, f"{name}: lon={pd.longitude}"
 
-    def test_distance_always_positive_across_bodies(self) -> None:
-        results = all_planetocentric_at(Body.MARS, JD_J2000)
+    def test_distance_always_positive_across_bodies(
+        self,
+        planetary_reader,
+    ) -> None:
+        results = all_planetocentric_at(
+            Body.MARS,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         for name, pd in results.items():
             assert pd.distance > 0.0, f"{name}: dist={pd.distance}"
 
-    def test_direction_antisymmetry(self) -> None:
+    def test_direction_antisymmetry(self, planetary_reader) -> None:
         # If B appears at longitude λ from A, then A appears at (λ + 180°) % 360° from B.
         # This is exact to floating-point precision for the same frame / epoch.
         pairs = [
@@ -172,8 +206,18 @@ class TestGeometricInvariants:
             (Body.MERCURY, Body.NEPTUNE),
         ]
         for obs, tgt in pairs:
-            fwd = planetocentric_at(obs, tgt, JD_J2000)
-            rev = planetocentric_at(tgt, obs, JD_J2000)
+            fwd = planetocentric_at(
+                obs,
+                tgt,
+                JD_J2000,
+                reader=planetary_reader,
+            )
+            rev = planetocentric_at(
+                tgt,
+                obs,
+                JD_J2000,
+                reader=planetary_reader,
+            )
             expected_rev_lon = (fwd.longitude + 180.0) % 360.0
             diff = abs(_angular_diff(rev.longitude, expected_rev_lon))
             assert diff < 0.01, (
@@ -183,22 +227,55 @@ class TestGeometricInvariants:
                 f"got_rev={rev.longitude:.4f}°"
             )
 
-    def test_distance_symmetry(self) -> None:
+    def test_distance_symmetry(self, planetary_reader) -> None:
         # Distance A→B must equal distance B→A.
-        fwd = planetocentric_at(Body.MARS, Body.JUPITER, JD_J2000)
-        rev = planetocentric_at(Body.JUPITER, Body.MARS, JD_J2000)
+        fwd = planetocentric_at(
+            Body.MARS,
+            Body.JUPITER,
+            JD_J2000,
+            reader=planetary_reader,
+        )
+        rev = planetocentric_at(
+            Body.JUPITER,
+            Body.MARS,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert fwd.distance == pytest.approx(rev.distance, rel=1e-9)
 
-    def test_inner_planet_closer_than_outer_from_earth(self) -> None:
+    def test_inner_planet_closer_than_outer_from_earth(
+        self,
+        planetary_reader,
+    ) -> None:
         # From Earth, Venus should be closer than Neptune at J2000.
-        venus   = planetocentric_at(Body.EARTH, Body.VENUS,   JD_J2000)
-        neptune = planetocentric_at(Body.EARTH, Body.NEPTUNE, JD_J2000)
+        venus = planetocentric_at(
+            Body.EARTH,
+            Body.VENUS,
+            JD_J2000,
+            reader=planetary_reader,
+        )
+        neptune = planetocentric_at(
+            Body.EARTH,
+            Body.NEPTUNE,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert venus.distance < neptune.distance
 
-    def test_sun_is_closest_from_inner_planet(self) -> None:
+    def test_sun_is_closest_from_inner_planet(self, planetary_reader) -> None:
         # From Mercury, the Sun should be closer than any outer planet.
-        sun     = planetocentric_at(Body.MERCURY, Body.SUN,     JD_J2000)
-        saturn  = planetocentric_at(Body.MERCURY, Body.SATURN,  JD_J2000)
+        sun = planetocentric_at(
+            Body.MERCURY,
+            Body.SUN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
+        saturn = planetocentric_at(
+            Body.MERCURY,
+            Body.SATURN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert sun.distance < saturn.distance
 
 
@@ -207,14 +284,26 @@ class TestGeometricInvariants:
 # ---------------------------------------------------------------------------
 
 class TestFrameConsistency:
-    def test_agrees_with_heliocentric_for_sun_observer(self) -> None:
+    def test_agrees_with_heliocentric_for_sun_observer(
+        self,
+        planetary_reader,
+    ) -> None:
         # planetocentric_at(Body.SUN, target) must produce the same ecliptic
         # longitude and latitude as moira.planets.heliocentric_planet_at(target).
         from moira.planets import heliocentric_planet_at
 
         for target in (Body.MARS, Body.JUPITER, Body.SATURN):
-            pc  = planetocentric_at(Body.SUN, target, JD_J2000)
-            hc  = heliocentric_planet_at(target, JD_J2000)
+            pc = planetocentric_at(
+                Body.SUN,
+                target,
+                JD_J2000,
+                reader=planetary_reader,
+            )
+            hc = heliocentric_planet_at(
+                target,
+                JD_J2000,
+                reader=planetary_reader,
+            )
             lon_diff = abs(_angular_diff(pc.longitude, hc.longitude))
             lat_diff = abs(pc.latitude - hc.latitude)
             assert lon_diff < 0.001, (
@@ -226,7 +315,10 @@ class TestFrameConsistency:
                 f"pc={pc.latitude:.4f}°, hc={hc.latitude:.4f}°"
             )
 
-    def test_agrees_with_geocentric_for_earth_observer(self) -> None:
+    def test_agrees_with_geocentric_for_earth_observer(
+        self,
+        planetary_reader,
+    ) -> None:
         # planetocentric_at(Body.EARTH, target) must closely match
         # moira.planets.planet_at(target) geocentric ecliptic longitude/latitude.
         # Slight differences are expected for apparent vs geometric positions
@@ -234,8 +326,17 @@ class TestFrameConsistency:
         from moira.planets import planet_at
 
         for target in (Body.MARS, Body.JUPITER):
-            pc  = planetocentric_at(Body.EARTH, target, JD_J2000)
-            gc  = planet_at(target, JD_J2000)
+            pc = planetocentric_at(
+                Body.EARTH,
+                target,
+                JD_J2000,
+                reader=planetary_reader,
+            )
+            gc = planet_at(
+                target,
+                JD_J2000,
+                reader=planetary_reader,
+            )
             lon_diff = abs(_angular_diff(pc.longitude, gc.longitude))
             assert lon_diff < 0.1, (
                 f"Geocentric longitude mismatch for {target}: "
@@ -248,26 +349,53 @@ class TestFrameConsistency:
 # ---------------------------------------------------------------------------
 
 class TestAllPlanetocentricAt:
-    def test_excludes_observer_from_results(self) -> None:
-        results = all_planetocentric_at(Body.MARS, JD_J2000)
+    def test_excludes_observer_from_results(self, planetary_reader) -> None:
+        results = all_planetocentric_at(
+            Body.MARS,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert Body.MARS not in results
 
-    def test_includes_earth_when_observing_from_mars(self) -> None:
-        results = all_planetocentric_at(Body.MARS, JD_J2000)
+    def test_includes_earth_when_observing_from_mars(
+        self,
+        planetary_reader,
+    ) -> None:
+        results = all_planetocentric_at(
+            Body.MARS,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert Body.EARTH in results
 
-    def test_includes_sun_in_results(self) -> None:
-        results = all_planetocentric_at(Body.JUPITER, JD_J2000)
+    def test_includes_sun_in_results(self, planetary_reader) -> None:
+        results = all_planetocentric_at(
+            Body.JUPITER,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert Body.SUN in results
 
-    def test_custom_body_list_respected(self) -> None:
+    def test_custom_body_list_respected(self, planetary_reader) -> None:
         bodies  = [Body.SUN, Body.EARTH]
-        results = all_planetocentric_at(Body.MARS, JD_J2000, bodies=bodies)
+        results = all_planetocentric_at(
+            Body.MARS,
+            JD_J2000,
+            bodies=bodies,
+            reader=planetary_reader,
+        )
         assert set(results.keys()) == {Body.SUN, Body.EARTH}
 
-    def test_all_results_are_planetocentric_data(self) -> None:
-        results = all_planetocentric_at(Body.SATURN, JD_J2000,
-                                         bodies=[Body.SUN, Body.EARTH, Body.MARS])
+    def test_all_results_are_planetocentric_data(
+        self,
+        planetary_reader,
+    ) -> None:
+        results = all_planetocentric_at(
+            Body.SATURN,
+            JD_J2000,
+            bodies=[Body.SUN, Body.EARTH, Body.MARS],
+            reader=planetary_reader,
+        )
         for name, pd in results.items():
             assert isinstance(pd, PlanetocentricData)
             assert pd.observer == Body.SATURN

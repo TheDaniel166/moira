@@ -113,7 +113,7 @@ markers = [
     "external_network: external access; requires --run-external-network in an isolated external-only process",
     "network:         forbidden legacy marker; collection fails until reclassified",
     "slow:            tests that take more than ~5 seconds",
-    "requires_ephemeris: tests that need de441.bsp to be present",
+    "requires_ephemeris: typed planetary-kernel capability; the plain form requires content-derived DE441, generic=True is identity-independent, and optional keyword fields constrain product, identity, interval, bodies, target/center routes, frame, segment types, and native support",
     "property:        property-based tests (Hypothesis)",
     "lola:            tests for the LOLA lunar-topography substrate",
     "numpy_free_lunar_limb: tests for the native/stdlib lunar-limb path",

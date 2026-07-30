@@ -413,7 +413,6 @@ def test_signed_topocentric_search_route_matches_direct_de441_engine(
     assert resolved["latitude_source"] == "assigned_zero"
     assert resolved["perfection_kind"] == "zodiacal_projected_perfection"
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_speculum_route_matches_engine(client_with_engine: TestClient, moira_engine) -> None:
     chart, houses = _direct_chart_and_houses(moira_engine)
     direct = engine_speculum(chart, houses, _OBSERVER_LAT)
@@ -431,7 +430,6 @@ def test_primary_directions_speculum_route_matches_engine(client_with_engine: Te
         assert body["entries"][0]["ra"] == pytest.approx(direct[0].ra, rel=1e-6)
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_arcs_route_matches_engine(client_with_engine: TestClient, moira_engine) -> None:
     chart, houses = _direct_chart_and_houses(moira_engine)
     direct_arcs = find_primary_arcs(chart, houses, _OBSERVER_LAT, max_arc=60.0)
@@ -451,7 +449,6 @@ def test_primary_directions_arcs_route_matches_engine(client_with_engine: TestCl
         assert body["arcs"][0]["arc"] == pytest.approx(direct_arcs[0].arc, rel=1e-5)
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_arcs_reduction_route_exposes_policy_truth(
     client_with_engine: TestClient,
 ) -> None:
@@ -481,7 +478,6 @@ def test_primary_directions_arcs_reduction_route_exposes_policy_truth(
     assert "primary_arc_search" in body["reduction"]["stage_sequence"]
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_reduction_route_rejects_small_body_targets(
     client_with_engine: TestClient,
 ) -> None:
@@ -498,7 +494,6 @@ def test_primary_directions_reduction_route_rejects_small_body_targets(
     assert "Ceres" in body["message"]
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_route_matches_engine(client_with_engine: TestClient, moira_engine) -> None:
     chart, houses = _direct_chart_and_houses(moira_engine)
     direct_arcs = find_primary_arcs(chart, houses, _OBSERVER_LAT, max_arc=60.0)
@@ -519,7 +514,6 @@ def test_primary_directions_profile_route_matches_engine(client_with_engine: Tes
         assert "significator" in body["aggregate"]["profiles"][0]
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_reduction_route_exposes_policy_truth(
     client_with_engine: TestClient,
 ) -> None:
@@ -544,7 +538,6 @@ def test_primary_directions_profile_reduction_route_exposes_policy_truth(
     assert body["reduction"]["house_context"]["requested_system"] == "PLACIDUS"
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_with_include_relations(client_with_engine: TestClient) -> None:
     """Phase 2: Verify include_relations flag returns full admitted/scored relations."""
     payload = {**_PD_SEARCH_PAYLOAD, "max_arc": 60.0, "include_relations": True}
@@ -563,7 +556,6 @@ def test_primary_directions_profile_with_include_relations(client_with_engine: T
             assert isinstance(rel["admitted_relations"], list)
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_with_submitted_arcs(client_with_engine: TestClient, moira_engine) -> None:
     """Phase 2: Basic re-evaluation support using submitted_arcs + policy + include_relations."""
     chart, houses = _direct_chart_and_houses(moira_engine)
@@ -606,7 +598,6 @@ def test_primary_directions_profile_with_submitted_arcs(client_with_engine: Test
     # Should have run evaluation on the submitted arcs without doing a new search
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_relations_endpoint(client_with_engine: TestClient, moira_engine) -> None:
     """Phase 2: Dedicated lightweight /relations endpoint for rich re-evaluation."""
     chart, houses = _direct_chart_and_houses(moira_engine)
@@ -641,7 +632,6 @@ def test_primary_directions_relations_endpoint(client_with_engine: TestClient, m
         assert "admitted_relations" in body[0]
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_with_include_condition(client_with_engine: TestClient) -> None:
     """Extreme hardening: include_condition must return valid condition data structure when requested."""
     payload = {
@@ -675,7 +665,6 @@ def test_primary_directions_profile_with_include_condition(client_with_engine: T
     # (lenient: some runs may have zero if max_arc tiny, but with 50° it should)
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_condition_parity_with_engine(client_with_engine: TestClient, moira_engine) -> None:
     """Extreme hardening (Testing Liturgy): direct parity between route include_condition
     and engine evaluate_primary_direction_condition on the same arcs (per-significator).
@@ -732,7 +721,6 @@ def test_primary_directions_condition_parity_with_engine(client_with_engine: Tes
     assert matched, f"Expected condition profile for significator {target_sig} under include_condition flag"
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_network_route_matches_engine(client_with_engine: TestClient, moira_engine) -> None:
     chart, houses = _direct_chart_and_houses(moira_engine)
     direct_arcs = find_primary_arcs(chart, houses, _OBSERVER_LAT, max_arc=60.0)
@@ -750,7 +738,6 @@ def test_primary_directions_network_route_matches_engine(client_with_engine: Tes
     assert len(body["network"]["edges"]) >= 0
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_network_reduction_route_exposes_policy_truth(
     client_with_engine: TestClient,
 ) -> None:
@@ -794,7 +781,6 @@ def test_primary_directions_speculum_rejects_naive_dt(client_with_engine: TestCl
 # Boundary test: no kernel lifecycle mutation
 # ---------------------------------------------------------------------------
 
-@pytest.mark.requires_ephemeris
 def test_p8_14_routes_do_not_mutate_kernel_lifecycle(client_with_engine: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     calls = {"set_kernel_path": 0, "swap_reader": 0, "reset_singleton": 0}
 
@@ -870,7 +856,6 @@ def test_primary_directions_profile_with_very_large_max_arc(client_with_engine: 
 # Deeper Structural Validation inside Parity Tests
 # ---------------------------------------------------------------------------
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_arcs_preserves_doctrinal_fields(client_with_engine: TestClient, moira_engine) -> None:
     """Extreme hardening: verify core doctrinal fields survive transport."""
     chart, houses = _direct_chart_and_houses(moira_engine)
@@ -902,7 +887,6 @@ def test_primary_directions_arcs_preserves_doctrinal_fields(client_with_engine: 
         assert resp_arc["arc"] > 0
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_counts_are_consistent(client_with_engine: TestClient, moira_engine) -> None:
     """Extreme hardening: direct + converse counts must sum correctly."""
     chart, houses = _direct_chart_and_houses(moira_engine)
@@ -925,7 +909,6 @@ def test_primary_directions_profile_counts_are_consistent(client_with_engine: Te
     assert body["direct_count"] + body["converse_count"] == body["total_arcs"]
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_network_graph_is_valid(client_with_engine: TestClient, moira_engine) -> None:
     """Extreme hardening: network must have no dangling edges and consistent nodes."""
     chart, houses = _direct_chart_and_houses(moira_engine)
@@ -956,7 +939,6 @@ def test_primary_directions_network_graph_is_valid(client_with_engine: TestClien
 # Additional Empty Result + Policy Edge Hardening
 # ---------------------------------------------------------------------------
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_handles_very_small_max_arc_gracefully(client_with_engine: TestClient) -> None:
     """Extreme hardening: tiny max_arc should produce empty but valid profile."""
     payload = {**_PD_SEARCH_PAYLOAD, "max_arc": 0.001}
@@ -968,7 +950,6 @@ def test_primary_directions_profile_handles_very_small_max_arc_gracefully(client
     assert body["profiles"] == []
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_network_handles_empty_gracefully(client_with_engine: TestClient) -> None:
     payload = {**_PD_SEARCH_PAYLOAD, "max_arc": 0.001}
     resp = client_with_engine.post("/v1/primary-directions/network", json=payload)
@@ -979,7 +960,6 @@ def test_primary_directions_network_handles_empty_gracefully(client_with_engine:
     assert net["edges"] == []
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_arcs_with_time_key(client_with_engine: TestClient) -> None:
     """Phase 2 policy growth: explicit time key selection on arcs."""
     payload = {
@@ -1003,7 +983,6 @@ def test_primary_directions_arcs_with_time_key(client_with_engine: TestClient) -
 # Reinforced Boundary Test with Different Payloads
 # ---------------------------------------------------------------------------
 
-@pytest.mark.requires_ephemeris
 def test_p8_14_all_routes_boundary_with_varied_payloads(client_with_engine: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     """Extreme hardening: repeat mutation check with multiple different payloads."""
     calls = {"set_kernel_path": 0, "swap_reader": 0, "reset_singleton": 0}
@@ -1057,7 +1036,6 @@ def test_primary_directions_rejects_unknown_preset(client_with_engine: TestClien
     assert resp.status_code == 422  # Current expected behavior for unknown preset
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_profile_with_condition_and_relations_together(client_with_engine: TestClient) -> None:
     """Extreme hardening: include_condition + include_relations together must not crash."""
     payload = {
@@ -1174,7 +1152,6 @@ def test_primary_directions_network_does_not_mask_evaluation_failure(
     assert "network evaluation failure witness" in resp.json()["message"]
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_submitted_arcs_with_preset_and_condition(client_with_engine: TestClient, moira_engine) -> None:
     """Extreme hardening: re-evaluation + preset + include_condition must work together."""
     chart, houses = _direct_chart_and_houses(moira_engine)
@@ -1248,7 +1225,6 @@ def test_primary_directions_rejects_unknown_key_with_valid_preset(client_with_en
     assert resp.status_code in (200, 422)
 
 
-@pytest.mark.requires_ephemeris
 def test_primary_directions_conventional_key_for_new_presets(client_with_engine: TestClient) -> None:
     """Best-effort witness for the ergonomic key polish added in this increment.
     The router now supplies conventional keys for regiomontanus/campanus (and the others).

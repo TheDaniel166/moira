@@ -43,6 +43,7 @@ from __future__ import annotations
 import math
 import pytest
 
+from moira.spk_reader import use_reader_override
 from moira.heliacal import (
     HeliacalEventKind,
     HeliacalPolicy,
@@ -84,38 +85,51 @@ _SATURN_CONJ_2023 = 2459992.5
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(scope="module")
-def venus_heliacal_rising():
-    return planet_heliacal_rising(
-        Body.VENUS, _VENUS_INFERIOR_CONJ_2020, _LAT, _LON
-    )
+def venus_heliacal_rising(planetary_reader):
+    with use_reader_override(planetary_reader):
+        return planet_heliacal_rising(
+            Body.VENUS, _VENUS_INFERIOR_CONJ_2020, _LAT, _LON
+        )
 
 
 @pytest.fixture(scope="module")
-def jupiter_heliacal_rising():
-    return planet_heliacal_rising(
-        Body.JUPITER, _JUPITER_CONJ_2023, _LAT, _LON
-    )
+def jupiter_heliacal_rising(planetary_reader):
+    with use_reader_override(planetary_reader):
+        return planet_heliacal_rising(
+            Body.JUPITER, _JUPITER_CONJ_2023, _LAT, _LON
+        )
 
 
 @pytest.fixture(scope="module")
-def venus_acronychal_rising():
-    return planet_acronychal_rising(
-        Body.VENUS, _VENUS_SUPERIOR_CONJ_2021, _LAT, _LON
-    )
+def venus_acronychal_rising(planetary_reader):
+    with use_reader_override(planetary_reader):
+        return planet_acronychal_rising(
+            Body.VENUS, _VENUS_SUPERIOR_CONJ_2021, _LAT, _LON
+        )
 
 
 @pytest.fixture(scope="module")
-def venus_heliacal_setting():
-    return planet_heliacal_setting(
-        Body.VENUS, _VENUS_MORNING_2020, _LAT, _LON, search_days=300
-    )
+def venus_heliacal_setting(planetary_reader):
+    with use_reader_override(planetary_reader):
+        return planet_heliacal_setting(
+            Body.VENUS,
+            _VENUS_MORNING_2020,
+            _LAT,
+            _LON,
+            search_days=300,
+        )
 
 
 @pytest.fixture(scope="module")
-def saturn_acronychal_setting():
-    return planet_acronychal_setting(
-        Body.SATURN, _SATURN_CONJ_2023 - 170, _LAT, _LON, search_days=200
-    )
+def saturn_acronychal_setting(planetary_reader):
+    with use_reader_override(planetary_reader):
+        return planet_acronychal_setting(
+            Body.SATURN,
+            _SATURN_CONJ_2023 - 170,
+            _LAT,
+            _LON,
+            search_days=200,
+        )
 
 
 # ---------------------------------------------------------------------------

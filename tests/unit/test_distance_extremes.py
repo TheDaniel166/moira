@@ -21,7 +21,6 @@ import math
 import pytest
 
 from moira.orbits import DistanceExtremes, distance_extremes_at
-from moira.spk_reader import get_reader
 from moira.constants import Body
 
 
@@ -34,8 +33,8 @@ _START_JD = 2451513.5
 
 
 @pytest.fixture(scope="module")
-def reader():
-    return get_reader()
+def reader(planetary_reader):
+    return planetary_reader
 
 
 @pytest.fixture(scope="module")

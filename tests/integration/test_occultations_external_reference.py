@@ -50,7 +50,9 @@ def _parse_lunar_occultation_local_reference() -> list[dict[str, float | str]]:
     return rows
 
 
-def test_lunar_occultations_match_offline_swiss_local_reference() -> None:
+def test_lunar_occultations_match_offline_swiss_local_reference(
+    planetary_reader,
+) -> None:
     rows = _parse_lunar_occultation_local_reference()
     failures: list[str] = []
     max_error_seconds = 180.0
@@ -75,6 +77,7 @@ def test_lunar_occultations_match_offline_swiss_local_reference() -> None:
                 observer_lat=lat,
                 observer_lon=lon,
                 observer_elev_m=elev,
+                reader=planetary_reader,
             )
             label = name
         else:
@@ -86,6 +89,7 @@ def test_lunar_occultations_match_offline_swiss_local_reference() -> None:
                 observer_lat=lat,
                 observer_lon=lon,
                 observer_elev_m=elev,
+                reader=planetary_reader,
             )
             label = target
 

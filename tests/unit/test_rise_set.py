@@ -24,7 +24,9 @@ def _unwrap_monotonic(values: list[float]) -> list[float]:
 
 
 @pytest.mark.slow
-def test_twilight_times_are_chronologically_ordered_for_mid_latitude_day() -> None:
+def test_twilight_times_are_chronologically_ordered_for_mid_latitude_day(
+    planetary_reader,
+) -> None:
     jd_day = 2460409.5  # 2024-04-08 00:00 UT
     twilight = twilight_times(jd_day, 40.7128, -74.0060)
 
@@ -53,7 +55,9 @@ def test_twilight_times_are_chronologically_ordered_for_mid_latitude_day() -> No
 
 
 @pytest.mark.slow
-def test_twilight_sunrise_and_sunset_match_find_phenomena() -> None:
+def test_twilight_sunrise_and_sunset_match_find_phenomena(
+    planetary_reader,
+) -> None:
     jd_day = 2460409.5
     lat = 40.7128
     lon = -74.0060
@@ -85,7 +89,9 @@ def test_find_phenomena_omits_meridian_event_absent_from_window(
 
 
 @pytest.mark.slow
-def test_twilight_handles_polar_day_or_night_without_raising() -> None:
+def test_twilight_handles_polar_day_or_night_without_raising(
+    planetary_reader,
+) -> None:
     jd_day = 2460481.5  # near northern summer solstice
     twilight = twilight_times(jd_day, 69.6492, 18.9553)
 
@@ -215,7 +221,17 @@ def test_get_transit_falls_back_when_newton_does_not_verify(
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("body", [*Body.ALL_PLANETS, "Regulus", "Acrux"])
+@pytest.mark.parametrize(
+    "body",
+    [
+        *(
+            pytest.param(body, marks=pytest.mark.requires_ephemeris)
+            for body in Body.ALL_PLANETS
+        ),
+        "Regulus",
+        "Acrux",
+    ],
+)
 @pytest.mark.parametrize("lat", [-66.0, -30.0, 0.0, 30.0, 66.0])
 @pytest.mark.parametrize("upper", [True, False])
 def test_newton_first_transit_matches_scan_truth(
@@ -334,7 +350,11 @@ def test_fixed_star_grazing_geometry_preserves_scan_event_semantics() -> None:
 @pytest.mark.slow
 @pytest.mark.parametrize("body", Body.ALL_PLANETS)
 @pytest.mark.parametrize("lat", [-66.0, 0.0, 66.0])
-def test_planet_horizon_estimates_refine_to_scan_truth(body: str, lat: float) -> None:
+def test_planet_horizon_estimates_refine_to_scan_truth(
+    body: str,
+    lat: float,
+    planetary_reader,
+) -> None:
     jd_day = 2451544.5
     altitude = -0.5667
     fast = rise_set._planet_horizon_events(

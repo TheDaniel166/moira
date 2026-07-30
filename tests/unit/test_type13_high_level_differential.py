@@ -11,58 +11,36 @@ adversarial test (which uses spk_type13_record directly) might miss.
 Uses the MOIRA_FORCE_PYTHON_TYPE13 hook added in Phase 3.
 """
 
-import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import pytest
-from pathlib import Path
 
 from moira._spk_body_kernel import (
     SmallBodyKernel,
-    small_body_readers_from_manifest,
     _FORCE_PYTHON_TYPE13_FALLBACK,
 )
-from moira._kernel_paths import find_sovereign_small_body_manifest
+from moira.daf_writer import write_spk_type13
 
 
-def _find_any_type13_kernels():
-    """Return list of SmallBodyKernel objects that contain at least one Type 13 segment."""
+def _type13_kernels_from_pool(pool) -> list[SmallBodyKernel]:
+    """Borrow Type 13 readers from the fixture-owned supplemental pool."""
+
     kernels = []
-
-    # 1. In-tree development shards (often present)
-    in_tree_dir = Path(__file__).resolve().parents[2] / "moira" / "kernels" / "sb441_type13"
-    if in_tree_dir.exists():
-        for bsp in sorted(in_tree_dir.glob("*.bsp"))[:2]:
-            try:
-                k = SmallBodyKernel(bsp)
-                if any(getattr(s, "data_type", None) == 13 for s in k._kernel.segments):
-                    kernels.append(k)
-            except Exception:
-                pass
-
-    # 2. Artifact sovereign manifests (may have path issues, handled gracefully)
-    manifest = find_sovereign_small_body_manifest()
-    candidates = []
-    if manifest:
-        candidates.append(manifest)
-    artifact_base = Path(__file__).resolve().parents[2] / "artifacts" / "kernels"
-    for name in ["sb441_type13_smoke", "sb441_type13_random20"]:
-        m = artifact_base / name / "manifest.json"
-        if m.exists():
-            candidates.append(m)
-
-    for mpath in candidates:
-        try:
-            readers = small_body_readers_from_manifest(mpath)
-            for r in readers:
-                if any(getattr(s, "data_type", None) == 13 for s in r._kernel.segments):
-                    kernels.append(r)
-                    if len(kernels) >= 3:
-                        break
-        except Exception:
-            continue
-        if len(kernels) >= 3:
-            break
-
+    for reader in pool._readers:
+        segments = getattr(getattr(reader, "_kernel", None), "segments", ())
+        if any(getattr(segment, "data_type", None) == 13 for segment in segments):
+            kernels.append(reader)
     return kernels
+
+
+@pytest.fixture(scope="module")
+def installed_type13_kernels(small_body_reader_pool):
+    """Return borrowed installed readers; the session pool owns their lifecycle."""
+
+    kernels = _type13_kernels_from_pool(small_body_reader_pool)
+    if not kernels:
+        pytest.skip("No Type 13 readers are present in the admitted small-body pool")
+    return kernels[:3]
 
 
 def _generate_query_points(epochs, n_interior=20, include_split=True):
@@ -102,32 +80,14 @@ def _generate_query_points(epochs, n_interior=20, include_split=True):
     return points
 
 
-def _compare_position(kernel, naif, jd_or_split, tol_pos=1e-9, tol_vel=1e-8):
-    """Return (pos_err, vel_err) for one query."""
-    center = kernel.segment_center(naif)
-
-    if isinstance(jd_or_split, tuple):
-        tdb, tdb2 = jd_or_split
-    else:
-        tdb, tdb2 = jd_or_split, 0.0
-
-    try:
-        pos1, vel1 = kernel.position_and_velocity(center, naif, tdb)  # note: this always uses tdb only in current API
-        # The high-level API on SmallBodyKernel does not expose tdb2 directly.
-        # We test split JD through the segment's compute_and_differentiate instead.
-        pos2 = kernel.position(center, naif, tdb)
-        return 0.0, 0.0  # placeholder - we do deeper checks below
-    except Exception as e:
-        return None, str(e)
-
-
-@pytest.mark.skipif(not _find_any_type13_kernels(), reason="No Type 13 kernels available for differential testing")
 class TestType13HighLevelDifferential:
     """Compare native-wired path vs forced Python fallback through the real SmallBodyKernel surface."""
 
-    def test_high_level_native_vs_forced_python_many_cases(self):
-        kernels = _find_any_type13_kernels()
-        assert kernels, "No Type 13 kernels loaded"
+    def test_high_level_native_vs_forced_python_many_cases(
+        self,
+        installed_type13_kernels,
+    ):
+        kernels = installed_type13_kernels
 
         all_diffs = []
 
@@ -218,13 +178,9 @@ class TestType13HighLevelDifferential:
         assert len(all_diffs) == 0, f"Found {len(all_diffs)} divergences between native and forced-Python high-level path"
 
 
-def test_force_flag_affects_next_evaluation():
+def test_force_flag_affects_next_evaluation(installed_type13_kernels):
     """Sanity check that toggling the force flag actually changes which path is taken."""
-    kernels = _find_any_type13_kernels()
-    if not kernels:
-        pytest.skip("No Type 13 data")
-
-    kernel = kernels[0]
+    kernel = installed_type13_kernels[0]
     seg = next((s for s in kernel._kernel.segments if getattr(s, "data_type", None) == 13), None)
     if seg is None:
         pytest.skip("No Type 13 segment")
@@ -254,12 +210,6 @@ def test_force_flag_affects_next_evaluation():
 # ------------------------------------------------------------------
 # Additional Torture Cases (added during fine-tooth-comb review)
 # ------------------------------------------------------------------
-
-import tempfile
-import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-from moira.daf_writer import write_spk_type13
 
 
 def _make_minimal_type13_kernel(tmp_path, window_size=3, n_epochs=3):
@@ -328,12 +278,14 @@ class TestType13TortureCases:
         """Smallest valid (odd window_size=3 with 3 epochs) for Hermite torture."""
         kernel_path = _make_minimal_type13_kernel(tmp_path, window_size=3, n_epochs=3)
         k = SmallBodyKernel(kernel_path)
+        import moira._spk_body_kernel as m
+
+        original_force = m._FORCE_PYTHON_TYPE13_FALLBACK
         try:
             seg = k._kernel.segments[0]
             assert seg.data_type == 13
 
             for mode in [False, True]:  # native then forced Python
-                import moira._spk_body_kernel as m
                 m._FORCE_PYTHON_TYPE13_FALLBACK = mode
                 if hasattr(seg, "_native_evaluator"):
                     seg._native_evaluator = None
@@ -347,17 +299,18 @@ class TestType13TortureCases:
                     assert len(p) == 3 and len(pv) == 3 and len(vv) == 3
         finally:
             k.close()
-            import moira._spk_body_kernel as m
-            m._FORCE_PYTHON_TYPE13_FALLBACK = False
+            m._FORCE_PYTHON_TYPE13_FALLBACK = original_force
 
     def test_huge_window_segments(self, tmp_path):
         """Large window sizes (stress divided-difference table construction)."""
         kernel_path = _make_huge_window_type13_kernel(tmp_path, n_epochs=40, window_size=30)
         k = SmallBodyKernel(kernel_path)
+        import moira._spk_body_kernel as m
+
+        original_force = m._FORCE_PYTHON_TYPE13_FALLBACK
         try:
             seg = k._kernel.segments[0]
             for mode in [False, True]:
-                import moira._spk_body_kernel as m
                 m._FORCE_PYTHON_TYPE13_FALLBACK = mode
                 if hasattr(seg, "_native_evaluator"):
                     seg._native_evaluator = None
@@ -369,28 +322,28 @@ class TestType13TortureCases:
                 assert all(isinstance(x, float) for x in p + v)
         finally:
             k.close()
-            import moira._spk_body_kernel as m
-            m._FORCE_PYTHON_TYPE13_FALLBACK = False
+            m._FORCE_PYTHON_TYPE13_FALLBACK = original_force
 
     def test_post_close_behavior(self, tmp_path):
         """Ensure clean behavior after close() (no crashes or silent stale data)."""
         kernel_path = _make_minimal_type13_kernel(tmp_path, window_size=3, n_epochs=3)
         k = SmallBodyKernel(kernel_path)
-        seg = k._kernel.segments[0]
-        mid = (seg.start_jd + seg.end_jd) / 2
-
-        # Warm up caches in both modes
-        for mode in [False, True]:
-            import moira._spk_body_kernel as m
-            m._FORCE_PYTHON_TYPE13_FALLBACK = mode
-            if hasattr(seg, "_native_evaluator"):
-                seg._native_evaluator = None
-            _ = seg.compute(mid)
-
-        k.close()
-
         import moira._spk_body_kernel as m
-        m._FORCE_PYTHON_TYPE13_FALLBACK = False
+
+        original_force = m._FORCE_PYTHON_TYPE13_FALLBACK
+        try:
+            seg = k._kernel.segments[0]
+            mid = (seg.start_jd + seg.end_jd) / 2
+
+            # Warm up caches in both modes
+            for mode in [False, True]:
+                m._FORCE_PYTHON_TYPE13_FALLBACK = mode
+                if hasattr(seg, "_native_evaluator"):
+                    seg._native_evaluator = None
+                _ = seg.compute(mid)
+        finally:
+            k.close()
+            m._FORCE_PYTHON_TYPE13_FALLBACK = original_force
 
         # After close the segment may raise or may have been released — either is acceptable
         # as long as we don't get silent wrong answers or segfaults.
@@ -413,38 +366,42 @@ class TestType13TortureCases:
         """Hammer the same segment from multiple threads while toggling force mode."""
         kernel_path = _make_huge_window_type13_kernel(tmp_path, n_epochs=30, window_size=15)
         k = SmallBodyKernel(kernel_path)
-        seg = k._kernel.segments[0]
-        mid = (seg.start_jd + seg.end_jd) / 2
+        import moira._spk_body_kernel as m
 
-        errors = []
-        results = []
+        original_force = m._FORCE_PYTHON_TYPE13_FALLBACK
+        try:
+            seg = k._kernel.segments[0]
+            mid = (seg.start_jd + seg.end_jd) / 2
 
-        def worker(mode: bool, iterations: int):
-            try:
-                import moira._spk_body_kernel as m
-                m._FORCE_PYTHON_TYPE13_FALLBACK = mode
-                for i in range(iterations):
-                    if i % 3 == 0 and hasattr(seg, "_native_evaluator"):
-                        seg._native_evaluator = None
-                    p, v = seg.compute_and_differentiate(mid + i * 0.001)
-                    results.append((mode, p[0]))
-            except Exception as e:
-                errors.append((mode, str(e)))
+            errors = []
+            results = []
 
-        # Launch mixed native + Python threads
-        with ThreadPoolExecutor(max_workers=6) as ex:
-            futures = []
-            for mode in [False, True, False, True]:
-                futures.append(ex.submit(worker, mode, 25))
-            for f in as_completed(futures):
-                f.result()
+            def worker(mode: bool, iterations: int):
+                try:
+                    m._FORCE_PYTHON_TYPE13_FALLBACK = mode
+                    for i in range(iterations):
+                        if i % 3 == 0 and hasattr(seg, "_native_evaluator"):
+                            seg._native_evaluator = None
+                        p, v = seg.compute_and_differentiate(mid + i * 0.001)
+                        results.append((mode, p[0]))
+                except Exception as e:
+                    errors.append((mode, str(e)))
 
-        k.close()
+            # Launch mixed native + Python threads
+            with ThreadPoolExecutor(max_workers=6) as ex:
+                futures = []
+                for mode in [False, True, False, True]:
+                    futures.append(ex.submit(worker, mode, 25))
+                for f in as_completed(futures):
+                    f.result()
 
-        assert len(errors) == 0, f"Concurrent errors: {errors}"
-        # We don't assert exact numerical values across modes here (they should be close),
-        # but the fact that nothing crashed or deadlocked under load is the torture win.
-        assert len(results) > 50
+            assert len(errors) == 0, f"Concurrent errors: {errors}"
+            # We don't assert exact numerical values across modes here (they should be close),
+            # but the fact that nothing crashed or deadlocked under load is the torture win.
+            assert len(results) > 50
+        finally:
+            k.close()
+            m._FORCE_PYTHON_TYPE13_FALLBACK = original_force
 
     def test_force_flag_toggle_during_lifetime(self, tmp_path):
         """Rapidly toggle the force flag on a live segment (tests cache invalidation we fixed)."""
@@ -455,6 +412,7 @@ class TestType13TortureCases:
 
         import moira._spk_body_kernel as m
 
+        original_force = m._FORCE_PYTHON_TYPE13_FALLBACK
         try:
             for i in range(10):
                 mode = bool(i % 2)
@@ -469,7 +427,7 @@ class TestType13TortureCases:
                 assert isinstance(p[0], float)
         finally:
             k.close()
-            m._FORCE_PYTHON_TYPE13_FALLBACK = False
+            m._FORCE_PYTHON_TYPE13_FALLBACK = original_force
 
 
 # ------------------------------------------------------------------

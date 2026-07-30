@@ -25,8 +25,6 @@ Verification strategy
 
 from __future__ import annotations
 
-import math
-
 import pytest
 
 from moira.constants import Body
@@ -82,7 +80,11 @@ class TestValidation:
 
     def test_all_ssb_unknown_body_raises(self) -> None:
         with pytest.raises(ValueError, match="SSB_BODIES"):
-            all_ssb_positions_at(JD_J2000, bodies=["Asteroid_X"])
+            all_ssb_positions_at(
+                JD_J2000,
+                bodies=["Asteroid_X"],
+                reader=object(),
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -90,31 +92,35 @@ class TestValidation:
 # ---------------------------------------------------------------------------
 
 class TestSSBPositionVessel:
-    def _make(self, body=Body.JUPITER) -> SSBPosition:
-        return ssb_position_at(body, JD_J2000)
+    def _make(self, reader, body=Body.JUPITER) -> SSBPosition:
+        return ssb_position_at(body, JD_J2000, reader=reader)
 
-    def test_name_field_matches_body(self) -> None:
-        pos = ssb_position_at(Body.SATURN, JD_J2000)
+    def test_name_field_matches_body(self, planetary_reader) -> None:
+        pos = ssb_position_at(
+            Body.SATURN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert pos.name == Body.SATURN
 
-    def test_longitude_in_0_360(self) -> None:
-        pos = self._make()
+    def test_longitude_in_0_360(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert 0.0 <= pos.longitude < 360.0
 
-    def test_latitude_in_range(self) -> None:
-        pos = self._make()
+    def test_latitude_in_range(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert -90.0 <= pos.latitude <= 90.0
 
-    def test_distance_non_negative(self) -> None:
-        pos = self._make()
+    def test_distance_non_negative(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.distance >= 0.0
 
-    def test_retrograde_consistent_with_speed(self) -> None:
-        pos = self._make()
+    def test_retrograde_consistent_with_speed(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.retrograde == (pos.speed < 0.0)
 
-    def test_sign_consistent_with_longitude(self) -> None:
-        pos = self._make()
+    def test_sign_consistent_with_longitude(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         expected_sign_index = int(pos.longitude // 30)
         signs = [
             "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -122,16 +128,20 @@ class TestSSBPositionVessel:
         ]
         assert pos.sign == signs[expected_sign_index]
 
-    def test_sign_degree_in_range(self) -> None:
-        pos = self._make()
+    def test_sign_degree_in_range(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert 0.0 <= pos.sign_degree < 30.0
 
-    def test_distance_au_consistent(self) -> None:
-        pos = self._make()
+    def test_distance_au_consistent(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.distance_au == pytest.approx(pos.distance / 149_597_870.700)
 
-    def test_repr_contains_name_and_coords(self) -> None:
-        pos = ssb_position_at(Body.MARS, JD_J2000)
+    def test_repr_contains_name_and_coords(self, planetary_reader) -> None:
+        pos = ssb_position_at(
+            Body.MARS,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         r = repr(pos)
         assert "Mars" in r
         assert "lon=" in r
@@ -143,55 +153,103 @@ class TestSSBPositionVessel:
 # ---------------------------------------------------------------------------
 
 class TestGeometricInvariants:
-    def test_sun_is_not_at_ssb_origin(self) -> None:
+    def test_sun_is_not_at_ssb_origin(self, planetary_reader) -> None:
         # The Sun wanders up to ~0.010 AU from the SSB.
         # It must not be at distance zero.
-        sun = ssb_position_at(Body.SUN, JD_J2000)
+        sun = ssb_position_at(
+            Body.SUN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert sun.distance > 0.0
 
-    def test_sun_ssb_distance_bounded(self) -> None:
+    def test_sun_ssb_distance_bounded(self, planetary_reader) -> None:
         # Sun–SSB separation is always ≤ ~0.012 AU (Jupiter dominates the offset).
-        sun = ssb_position_at(Body.SUN, JD_J2000)
+        sun = ssb_position_at(
+            Body.SUN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert sun.distance_au < 0.015
 
-    def test_earth_distance_near_1_au(self) -> None:
+    def test_earth_distance_near_1_au(self, planetary_reader) -> None:
         # Earth is in a ~1 AU orbit; its SSB distance at J2000 must be roughly 1 AU.
-        earth = ssb_position_at(Body.EARTH, JD_J2000)
+        earth = ssb_position_at(
+            Body.EARTH,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert 0.98 < earth.distance_au < 1.02
 
-    def test_jupiter_distance_near_5_au(self) -> None:
+    def test_jupiter_distance_near_5_au(self, planetary_reader) -> None:
         # Jupiter's semi-major axis is ~5.2 AU.
-        jup = ssb_position_at(Body.JUPITER, JD_J2000)
+        jup = ssb_position_at(
+            Body.JUPITER,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert 4.8 < jup.distance_au < 5.6
 
-    def test_saturn_distance_near_9_au(self) -> None:
-        saturn = ssb_position_at(Body.SATURN, JD_J2000)
+    def test_saturn_distance_near_9_au(self, planetary_reader) -> None:
+        saturn = ssb_position_at(
+            Body.SATURN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert 9.0 < saturn.distance_au < 10.1
 
-    def test_all_longitudes_in_range_across_bodies(self) -> None:
-        results = all_ssb_positions_at(JD_J2000)
+    def test_all_longitudes_in_range_across_bodies(
+        self,
+        planetary_reader,
+    ) -> None:
+        results = all_ssb_positions_at(
+            JD_J2000,
+            reader=planetary_reader,
+        )
         for name, pos in results.items():
             assert 0.0 <= pos.longitude < 360.0, f"{name}: lon={pos.longitude}"
 
-    def test_all_distances_positive_across_bodies(self) -> None:
-        results = all_ssb_positions_at(JD_J2000)
+    def test_all_distances_positive_across_bodies(
+        self,
+        planetary_reader,
+    ) -> None:
+        results = all_ssb_positions_at(
+            JD_J2000,
+            reader=planetary_reader,
+        )
         for name, pos in results.items():
             if name == Body.SUN:
                 continue  # Sun is extremely close but non-zero
             assert pos.distance > 0.0, f"{name}: dist={pos.distance}"
 
-    def test_moon_distance_near_earth(self) -> None:
+    def test_moon_distance_near_earth(self, planetary_reader) -> None:
         # Moon is ~1 AU from SSB (it orbits Earth which orbits near SSB).
-        moon = ssb_position_at(Body.MOON, JD_J2000)
-        earth = ssb_position_at(Body.EARTH, JD_J2000)
+        moon = ssb_position_at(
+            Body.MOON,
+            JD_J2000,
+            reader=planetary_reader,
+        )
+        earth = ssb_position_at(
+            Body.EARTH,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         # Moon–Earth distance is ~384400 km ≈ 0.00257 AU.
         # SSB distances must differ by at most ~0.01 AU.
         delta_au = abs(moon.distance_au - earth.distance_au)
         assert delta_au < 0.01
 
-    def test_outer_planets_farther_than_inner(self) -> None:
-        mercury = ssb_position_at(Body.MERCURY, JD_J2000)
-        neptune = ssb_position_at(Body.NEPTUNE, JD_J2000)
+    def test_outer_planets_farther_than_inner(self, planetary_reader) -> None:
+        mercury = ssb_position_at(
+            Body.MERCURY,
+            JD_J2000,
+            reader=planetary_reader,
+        )
+        neptune = ssb_position_at(
+            Body.NEPTUNE,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert mercury.distance_au < neptune.distance_au
 
 
@@ -200,27 +258,42 @@ class TestGeometricInvariants:
 # ---------------------------------------------------------------------------
 
 class TestAllSSBPositionsAt:
-    def test_returns_all_bodies_by_default(self) -> None:
-        results = all_ssb_positions_at(JD_J2000)
+    def test_returns_all_bodies_by_default(self, planetary_reader) -> None:
+        results = all_ssb_positions_at(
+            JD_J2000,
+            reader=planetary_reader,
+        )
         # Default = all SSB_BODIES
         assert set(results.keys()) == SSB_BODIES
 
-    def test_custom_body_list_respected(self) -> None:
+    def test_custom_body_list_respected(self, planetary_reader) -> None:
         bodies = [Body.SUN, Body.EARTH, Body.JUPITER]
-        results = all_ssb_positions_at(JD_J2000, bodies=bodies)
+        results = all_ssb_positions_at(
+            JD_J2000,
+            bodies=bodies,
+            reader=planetary_reader,
+        )
         assert set(results.keys()) == set(bodies)
 
-    def test_all_results_are_ssb_position_instances(self) -> None:
+    def test_all_results_are_ssb_position_instances(
+        self,
+        planetary_reader,
+    ) -> None:
         results = all_ssb_positions_at(
             JD_J2000,
             bodies=[Body.SUN, Body.EARTH, Body.MARS],
+            reader=planetary_reader,
         )
         for name, pos in results.items():
             assert isinstance(pos, SSBPosition)
             assert pos.name == name
 
-    def test_single_body_list(self) -> None:
-        results = all_ssb_positions_at(JD_J2000, bodies=[Body.SATURN])
+    def test_single_body_list(self, planetary_reader) -> None:
+        results = all_ssb_positions_at(
+            JD_J2000,
+            bodies=[Body.SATURN],
+            reader=planetary_reader,
+        )
         assert Body.SATURN in results
         assert len(results) == 1
 
@@ -230,15 +303,26 @@ class TestAllSSBPositionsAt:
 # ---------------------------------------------------------------------------
 
 class TestFrameConsistency:
-    def test_outer_planet_ssb_and_heliocentric_longitudes_close(self) -> None:
+    def test_outer_planet_ssb_and_heliocentric_longitudes_close(
+        self,
+        planetary_reader,
+    ) -> None:
         # For outer planets, the SSB–heliocentric longitude difference is small
         # because the Sun is only ~0.01 AU from the SSB.  At Jupiter's distance
         # (~5 AU) this angular offset ≤ arctan(0.01/5) ≈ 0.1°.
         from moira.planets import heliocentric_planet_at
 
         for target in (Body.JUPITER, Body.SATURN, Body.NEPTUNE):
-            ssb_pos = ssb_position_at(target, JD_J2000)
-            hc_pos  = heliocentric_planet_at(target, JD_J2000)
+            ssb_pos = ssb_position_at(
+                target,
+                JD_J2000,
+                reader=planetary_reader,
+            )
+            hc_pos = heliocentric_planet_at(
+                target,
+                JD_J2000,
+                reader=planetary_reader,
+            )
             diff = abs((ssb_pos.longitude - hc_pos.longitude + 180.0) % 360.0 - 180.0)
             assert diff < 0.15, (
                 f"SSB vs heliocentric longitude divergence for {target}: "

@@ -916,7 +916,7 @@ misreport the expected no-tests exit as a conventional green pytest run.
 
 #### Task 5.1 — Resource contracts
 
-- [ ] Introduce a typed kernel requirement with optional:
+- [x] Introduce a typed kernel requirement with optional:
   - product;
   - content identity;
   - interval;
@@ -925,32 +925,32 @@ misreport the expected no-tests exit as a conventional green pytest run.
   - frame;
   - segment types;
   - native capability.
-- [ ] Preserve a generic "any admitted planetary kernel" requirement only for
+- [x] Preserve a generic "any admitted planetary kernel" requirement only for
   genuinely identity-independent invariants.
-- [ ] Resolve resource capability once per process.
-- [ ] Build identity from opened kernel/catalog content, never filename.
-- [ ] Record a resource receipt for run, skip, and failure paths.
+- [x] Resolve resource capability once per process.
+- [x] Build identity from opened kernel/catalog content, never filename.
+- [x] Record a resource receipt for run, skip, and failure paths.
 
 #### Task 5.2 — Explicit reader fixtures
 
-- [ ] Remove the session-autouse kernel singleton bootstrap.
-- [ ] Provide explicit fixtures:
+- [x] Remove the session-autouse kernel singleton bootstrap.
+- [x] Provide explicit fixtures:
   - `planetary_kernel_path`;
   - `planetary_kernel_receipt`;
   - `planetary_reader`;
   - `configured_global_reader` only for legacy singleton-specific tests;
   - `moira_engine` with explicit ownership and teardown.
-- [ ] Use `yield` and close/reset every fixture-owned reader.
-- [ ] Do not hot-swap global reader state during concurrent tests.
-- [ ] Inventory direct `get_reader()` callers before removing ambient setup.
+- [x] Use `yield` and close/reset every fixture-owned reader.
+- [x] Do not hot-swap global reader state during concurrent tests.
+- [x] Inventory direct `get_reader()` callers before removing ambient setup.
 
 #### Task 5.3 — Resource selection integrity
 
-- [ ] A required mismatched identity fails or skips with a named capability
+- [x] A required mismatched identity fails or skips with a named capability
   receipt according to the lane's policy.
-- [ ] A corrupt resource never becomes "available" through an existence check.
-- [ ] Kernel-free tests prove that no planetary reader is opened.
-- [ ] Cache capability checks without caching a stale reader across lawful
+- [x] A corrupt resource never becomes "available" through an existence check.
+- [x] Kernel-free tests prove that no planetary reader is opened.
+- [x] Cache capability checks without caching a stale reader across lawful
   reset boundaries.
 
 **Gates:**
@@ -963,6 +963,98 @@ misreport the expected no-tests exit as a conventional green pytest run.
 
 The JD-only setup must no longer acquire the planetary kernel. Record before
 and after timing as performance evidence only.
+
+#### Phase 5 completion checkpoint — 2026-07-30
+
+- Added immutable typed planetary contracts in
+  `tests/support/resource_policy.py` for product, opened-content identity,
+  interval, bodies, target/center routes, frame, segment types, and native
+  capability. The ordinary `requires_ephemeris` marker now means an admitted,
+  content-identified DE441 resource; only an explicit `generic=True` request
+  is identity-independent. Invalid or contradictory requirements fail during
+  collection.
+- Resource discovery is lazy and process-local. A thread-safe resolver opens
+  one probe reader, derives capability from the opened SPK catalog, verifies
+  stable file identity before and after probing, closes the probe, and caches
+  immutable capability rather than a live reader. Fixture readers are checked
+  against the receipt and current fingerprint before use.
+- Removed the session-autouse global-reader bootstrap. Marked consumers now
+  receive typed admission plus explicit `planetary_kernel_receipt`,
+  `planetary_kernel_path`, `planetary_reader`, compatibility `reader`,
+  primary-only `configured_global_reader`, and owned `moira_engine` fixtures.
+  Fixture-owned readers are yielded and closed; owned singleton state is reset
+  on teardown. The legacy-global fixture refuses to replace foreign
+  pre-existing state instead of hot-swapping it.
+- Added RUN, SKIP, and FAILURE receipts for discovery, admission, live use,
+  and teardown, including xdist serialization and merge. Skipped and xfailed
+  items are decided before acquisition, corrupt files cannot pass an existence
+  check, and stateful `skipif` expressions are not evaluated twice.
+- Added a separate release-bound supplemental-resource contract in
+  `tests/support/small_body_resource_policy.py`. It accepts only released
+  manifests that pass production `verify_release()` SHA-256 integrity,
+  validates catalog/version/source-revision identity and exact body, interval,
+  segment, and native capability, opens shards one at a time, and records a
+  terminal lifecycle receipt.
+- Migrated reader-capable planetary and small-body tests to pass admitted
+  handles directly. APIs without a reader parameter use the narrow
+  per-test ContextVar bridge. The final direct `get_reader()` inventory is
+  limited to harness fakes, the intentional singleton-routing contract in
+  `test_sovereign_small_body_manifest_routing.py`, and lifecycle tests in
+  `test_spk_reader.py`; the standalone stress audit now requires an explicit
+  kernel path.
+- Verification receipts, all with project `.venv` Python 3.14.3,
+  `MOIRA_TEST_MODE=1`, `MOIRA_NO_DOWNLOAD=1`, and
+  `MOIRA_STRICT_KNOWN_ISSUES=1`:
+  - `78 passed` — typed planetary policy plus SPK content-identity gate.
+  - `32 passed` — supplemental manifest admission, cleanup, receipt, and xdist
+    policy.
+  - `2 passed` — JD/network kernel-free smoke; zero resource receipts or
+    probes. The audited pre-phase JD setup was approximately 15.78 seconds;
+    final per-test setup was 0.001 and 0.000 seconds, with all reported
+    durations below 0.005 seconds. These are performance observations only.
+  - `8 passed` — full conftest smoke; six planetary RUN receipts, one DE441
+    content probe, and no skip or failure receipt.
+  - `21 passed` — Chiron and Type-13 focused slices; one terminal supplemental
+    RUN receipt admitted two released manifests, 419 shards, and 10,471 unique
+    bodies.
+  - `544 passed, 1 skipped` — broad rise/set, parans, Shadbala, server-service,
+    occultation, magnitude, and void-of-course regression slice. The one
+    RULE-06 skip reports that the fixed 30-day corpus contained no no-aspect
+    window.
+  - Full strict/no-download collection passed with 14,063 items. It acquired no
+    planetary or supplemental resource; all 378 external-network items remained
+    held in deny mode.
+- The admitted supplemental release identities were
+  `moira-asteroids@2026.07.27.1:0560302f877a46cebc550376ae70665fefab84801078181cf3c4199ce86d49d0`
+  and
+  `moira-comets@2026.07.28.1:31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1`.
+- Adversarial coverage exercised malformed and contradictory markers, filename
+  spoofing, identity and capability mismatch, corrupt resources, continuous
+  route coverage, concurrent exactly-once probing, skip/xfail ordering,
+  acquisition and teardown failures, foreign singleton state, xdist report
+  merging, released-manifest integrity, path escape, partial construction, and
+  supplemental cleanup. An independent final review returned APPROVE with high
+  confidence and no remaining actionable Phase 5 finding.
+- Every Phase 5 Python file compiled. Ruff passed on the harness and both policy
+  modules and their meta-suites; the full migrated-file comparison introduced
+  zero new Ruff diagnostics relative to HEAD. The broader touched-file run
+  still reports 69 inherited repository-baseline diagnostics. Scoped
+  `git diff --check` passed, apart from line-ending conversion warnings.
+- The boundary remains explicit. Full collection found 1,063 typed
+  `requires_ephemeris` items whose legacy APIs still receive the admitted
+  reader through a function-scoped ContextVar; this phase does not claim
+  repository-wide direct handle propagation. All direct `Moira()`
+  construction was not rewritten. Live external comparisons, the complete
+  numerical suite, and the deferred Task 4.3 nested-runner firewall were not
+  run or implemented.
+- `SmallBodyKernel.close()` suppresses its own internal close errors, so the
+  harness proves invocation but cannot surface an error hidden by that
+  implementation. A constructor that allocates and raises before returning
+  must still clean itself, and manifest verification followed by shard opening
+  is not a hostile-filesystem lock against post-verification mutation.
+- Phase 6 has not started. No production/native computation, scientific
+  baseline, `.github/` workflow, generated `moira.wiki/`, or unrelated
+  visibility-reference work was changed.
 
 ---
 

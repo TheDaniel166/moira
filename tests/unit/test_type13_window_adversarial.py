@@ -9,11 +9,12 @@ Focus: Differences in window clamping behavior near the right edge of the data.
 """
 
 import pytest
-from pathlib import Path
 
 import moira.moira_native as mn
-from moira._spk_body_kernel import _hermite_eval_3d, _hermite_eval_3d_with_derivative, small_body_readers_from_manifest
-from moira._kernel_paths import find_sovereign_small_body_manifest
+from moira._spk_body_kernel import (
+    _hermite_eval_3d,
+    _hermite_eval_3d_with_derivative,
+)
 
 T0 = 2451545.0
 S_PER_DAY = 86400.0
@@ -69,52 +70,6 @@ def _native_type13_eval(epochs_jd, states, window_size, jd):
     return pos, vel
 
 
-def _load_real_type13_segments(max_kernels=2, max_segments_per_kernel=3):
-    """
-    Load real Type 13 data from sovereign manifests.
-    Yields tuples of (epochs_jd, states, window_size, body_name, segment_info)
-    Falls back to empty if no real data is available.
-    """
-    candidates = []
-    manifest = find_sovereign_small_body_manifest()
-    if manifest:
-        candidates.append(manifest)
-
-    # Common test artifact locations
-    artifact_base = Path(__file__).resolve().parents[2] / "artifacts" / "kernels"
-    for name in ["sb441_type13_smoke", "sb441_type13_random20", "sb441_type13_full_2020_2030"]:
-        m = artifact_base / name / "manifest.json"
-        if m.exists():
-            candidates.append(m)
-
-    for manifest_path in candidates:
-        try:
-            kernels = small_body_readers_from_manifest(manifest_path)
-            for kernel in kernels[:max_kernels]:
-                count = 0
-                for seg in getattr(kernel, "_kernel", type("x", (), {"segments": []})()).segments:
-                    if getattr(seg, "data_type", None) != 13:
-                        continue
-                    try:
-                        epochs, states, ws = _load_type13_data_from_segment(seg)
-                        if len(epochs) >= 5:
-                            body_name = getattr(seg, "target", "unknown")
-                            yield (epochs, states, ws, str(body_name), str(manifest_path))
-                            count += 1
-                            if count >= max_segments_per_kernel:
-                                break
-                    except Exception:
-                        continue
-                if count > 0:
-                    break  # Only use first successful manifest for speed
-        except Exception:
-            continue
-
-    # No real data found
-    return
-    yield  # make it a generator
-
-
 def _generate_adversarial_data(n_points=20, window_size=5, seed=42):
     """Generate synthetic Type 13 data with clustered points near the end (adversarial for window logic)."""
     import random
@@ -148,15 +103,12 @@ def _generate_adversarial_data(n_points=20, window_size=5, seed=42):
 @pytest.mark.skipif(not hasattr(mn, "spk_type13_record"), reason="Native Type 13 support not available")
 class TestType13WindowAdversarial:
     def test_window_clamping_near_right_edge(self):
-        """Adversarial test on real Type 13 data when available, synthetic as fallback."""
-        real_data = list(_load_real_type13_segments(max_kernels=1, max_segments_per_kernel=2))
-
-        if real_data:
-            data_sources = real_data
-            print(f"[INFO] Using {len(data_sources)} real Type 13 segments for boundary testing")
-        else:
-            data_sources = [(_generate_adversarial_data(n_points=25, window_size=7)[:2] + (7, "synthetic", "synthetic"))]
-            print("[INFO] No real Type 13 data found — falling back to synthetic")
+        """Attack right-edge window selection with deterministic synthetic data."""
+        epochs, states = _generate_adversarial_data(
+            n_points=25,
+            window_size=7,
+        )
+        data_sources = [(epochs, states, 7, "synthetic", "synthetic")]
 
         failures = []
 
@@ -199,7 +151,10 @@ class TestType13WindowAdversarial:
                             "error": str(e)
                         })
 
-        assert not failures, f"Found divergences near boundaries on real/synthetic Type 13 data:\n{failures[:5]}"
+        assert not failures, (
+            "Found divergences near boundaries on synthetic Type 13 data:\n"
+            f"{failures[:5]}"
+        )
 
     def test_very_small_windows_at_boundary(self):
         """Test the most dangerous cases: window_size=2 or 3 right at the end."""
@@ -238,14 +193,6 @@ class TestType13WindowAdversarial:
 # Real Kernel Adversarial Extension
 # ------------------------------------------------------------------
 
-try:
-    from moira._spk_body_kernel import small_body_readers_from_manifest
-    from moira._kernel_paths import find_sovereign_small_body_manifest
-    _HAS_REAL_KERNEL_SUPPORT = True
-except Exception:
-    _HAS_REAL_KERNEL_SUPPORT = False
-
-
 def _load_type13_data_from_segment(seg):
     """Force load and return (epochs_jd, states, window_size) from a _Type13Segment."""
     states_list, epochs_list, ws = seg._data
@@ -260,6 +207,17 @@ def _representative_kernel_sample(kernels):
     return [kernels[index] for index in indices]
 
 
+def _type13_kernels_from_pool(pool):
+    """Borrow Type 13 readers from the fixture-owned supplemental pool."""
+
+    kernels = []
+    for reader in pool._readers:
+        segments = getattr(getattr(reader, "_kernel", None), "segments", ())
+        if any(getattr(segment, "data_type", None) == 13 for segment in segments):
+            kernels.append(reader)
+    return kernels
+
+
 def test_representative_kernel_sample_is_catalog_size_bounded():
     kernels = list(range(399))
 
@@ -267,46 +225,21 @@ def test_representative_kernel_sample_is_catalog_size_bounded():
     assert _representative_kernel_sample(kernels[:2]) == [0, 1]
 
 
-@pytest.mark.skipif(not _HAS_REAL_KERNEL_SUPPORT, reason="SmallBodyKernel not importable")
+@pytest.mark.skipif(
+    not hasattr(mn, "spk_type13_record"),
+    reason="Native Type 13 support not available",
+)
 class TestType13RealKernelBoundaryAdversarial:
     """Adversarial tests on real sovereign Type 13 shards."""
 
     @pytest.fixture(scope="class")
-    def real_kernels(self):
-        manifest = find_sovereign_small_body_manifest()
-        if manifest is None:
-            # Try common artifact locations
-            candidates = [
-                Path(__file__).parents[2] / "artifacts/kernels/sb441_type13_smoke/manifest.json",
-                Path(__file__).parents[2] / "artifacts/kernels/sb441_type13_random20/manifest.json",
-            ]
-            for c in candidates:
-                if c.exists():
-                    manifest = c
-                    break
-
-        if manifest is None or not manifest.exists():
-            pytest.skip("No sovereign Type 13 manifest found for real kernel testing")
-
-        kernels = []
-        try:
-            kernels = small_body_readers_from_manifest(manifest)
-            type13_kernels = []
-            for k in kernels:
-                has_type13 = any(
-                    hasattr(seg, "data_type") and getattr(seg, "data_type", None) == 13
-                    for seg in getattr(k, "_kernel", type("obj", (object,), {"segments": []})()).segments
-                )
-                if has_type13:
-                    type13_kernels.append(k)
-            if not type13_kernels:
-                pytest.skip("No Type 13 segments found in available sovereign kernels")
-            yield _representative_kernel_sample(type13_kernels)
-        except Exception as e:
-            pytest.skip(f"Could not load sovereign Type 13 kernels: {e}")
-        finally:
-            for kernel in kernels:
-                kernel.close()
+    def real_kernels(self, small_body_reader_pool):
+        kernels = _type13_kernels_from_pool(small_body_reader_pool)
+        if not kernels:
+            pytest.skip(
+                "No Type 13 readers are present in the admitted small-body pool"
+            )
+        return _representative_kernel_sample(kernels)
 
     def test_real_data_near_segment_right_edge(self, real_kernels):
         """Attack the right boundary of real Type 13 segments with tiny offsets."""

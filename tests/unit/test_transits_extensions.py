@@ -5,7 +5,11 @@ from moira.transits_equatorial import find_declination_transits
 from moira.transits_houses import find_house_ingresses
 from moira.constants import Body
 
-def test_aspect_transits_comprehensive_and_audit(moira_engine, jd_j2000, ritual):
+def test_aspect_transits_comprehensive_and_audit(
+    planetary_reader,
+    jd_j2000,
+    ritual,
+):
     """Verify aspect transit searches and audit their performance."""
     jd_start = jd_j2000
     jd_end = jd_start + 365.25 * 5  # 5 years
@@ -13,7 +17,15 @@ def test_aspect_transits_comprehensive_and_audit(moira_engine, jd_j2000, ritual)
     # SUMMON
     start_time = time.perf_counter()
     # Find Jupiter square Saturn over 5 years (a very common predictive query)
-    events = find_aspect_transits(Body.JUPITER, Body.SATURN, 90.0, 1.0, jd_start, jd_end)
+    events = find_aspect_transits(
+        Body.JUPITER,
+        Body.SATURN,
+        90.0,
+        1.0,
+        jd_start,
+        jd_end,
+        reader=planetary_reader,
+    )
     elapsed = time.perf_counter() - start_time
     
     print(f"\n[Audit] Aspect Transits (Jupiter Square Saturn, 1 degree orb, 5 years scan): {elapsed:.4f} seconds")
@@ -38,7 +50,11 @@ def test_aspect_transits_comprehensive_and_audit(moira_engine, jd_j2000, ritual)
         assert ev.jd_entering <= ev.jd_exact <= ev.jd_leaving
         assert ev.search_motion == "forward"
 
-def test_equatorial_transits_comprehensive_and_audit(moira_engine, jd_j2000, ritual):
+def test_equatorial_transits_comprehensive_and_audit(
+    planetary_reader,
+    jd_j2000,
+    ritual,
+):
     """Verify equatorial (declination parallel) transits and audit performance."""
     jd_start = jd_j2000
     jd_end = jd_start + 365.25  # 1 year scan
@@ -46,7 +62,14 @@ def test_equatorial_transits_comprehensive_and_audit(moira_engine, jd_j2000, rit
     # SUMMON
     start_time = time.perf_counter()
     # Mars parallel Venus
-    events = find_declination_transits(Body.MARS, Body.VENUS, jd_start, jd_end, is_contra_parallel=False)
+    events = find_declination_transits(
+        Body.MARS,
+        Body.VENUS,
+        jd_start,
+        jd_end,
+        is_contra_parallel=False,
+        reader=planetary_reader,
+    )
     elapsed = time.perf_counter() - start_time
     
     print(f"\n[Audit] Equatorial Parallels (Mars // Venus, 1 year scan): {elapsed:.4f} seconds")
@@ -65,7 +88,11 @@ def test_equatorial_transits_comprehensive_and_audit(moira_engine, jd_j2000, rit
         assert ev.is_contra_parallel is False
         assert ev.search_motion == "forward"
 
-def test_house_ingresses_comprehensive_and_audit(moira_engine, jd_j2000, ritual):
+def test_house_ingresses_comprehensive_and_audit(
+    planetary_reader,
+    jd_j2000,
+    ritual,
+):
     """Verify topocentric house ingresses and audit performance."""
     jd_start = jd_j2000
     jd_end = jd_start + 30.0  # 1 month scan
@@ -75,7 +102,15 @@ def test_house_ingresses_comprehensive_and_audit(moira_engine, jd_j2000, ritual)
     # SUMMON
     start_time = time.perf_counter()
     # Moon crossing house cusps for a month
-    events = find_house_ingresses(Body.MOON, lat, lon, jd_start, jd_end, system="placidus")
+    events = find_house_ingresses(
+        Body.MOON,
+        lat,
+        lon,
+        jd_start,
+        jd_end,
+        system="placidus",
+        reader=planetary_reader,
+    )
     elapsed = time.perf_counter() - start_time
     
     print(f"\n[Audit] House Ingresses (Moon in NY, Placidus, 1 month scan): {elapsed:.4f} seconds")
@@ -97,11 +132,22 @@ def test_house_ingresses_comprehensive_and_audit(moira_engine, jd_j2000, ritual)
         assert ev.search_motion == "forward"
 
 
-def test_aspect_transits_support_backward_search_motion(jd_j2000):
+def test_aspect_transits_support_backward_search_motion(
+    planetary_reader,
+    jd_j2000,
+):
     jd_start = jd_j2000
     jd_end = jd_start + 365.25 * 5
 
-    forward_events = find_aspect_transits(Body.JUPITER, Body.SATURN, 90.0, 1.0, jd_start, jd_end)
+    forward_events = find_aspect_transits(
+        Body.JUPITER,
+        Body.SATURN,
+        90.0,
+        1.0,
+        jd_start,
+        jd_end,
+        reader=planetary_reader,
+    )
     backward_events = find_aspect_transits(
         Body.JUPITER,
         Body.SATURN,
@@ -109,6 +155,7 @@ def test_aspect_transits_support_backward_search_motion(jd_j2000):
         1.0,
         jd_start,
         jd_end,
+        reader=planetary_reader,
         search_motion="backward",
     )
 
@@ -119,17 +166,28 @@ def test_aspect_transits_support_backward_search_motion(jd_j2000):
     assert all(event.search_motion == "backward" for event in backward_events)
 
 
-def test_equatorial_transits_support_backward_search_motion(jd_j2000):
+def test_equatorial_transits_support_backward_search_motion(
+    planetary_reader,
+    jd_j2000,
+):
     jd_start = jd_j2000
     jd_end = jd_start + 365.25
 
-    forward_events = find_declination_transits(Body.MARS, Body.VENUS, jd_start, jd_end, is_contra_parallel=False)
+    forward_events = find_declination_transits(
+        Body.MARS,
+        Body.VENUS,
+        jd_start,
+        jd_end,
+        is_contra_parallel=False,
+        reader=planetary_reader,
+    )
     backward_events = find_declination_transits(
         Body.MARS,
         Body.VENUS,
         jd_start,
         jd_end,
         is_contra_parallel=False,
+        reader=planetary_reader,
         search_motion="backward",
     )
 
@@ -140,12 +198,23 @@ def test_equatorial_transits_support_backward_search_motion(jd_j2000):
     assert all(event.search_motion == "backward" for event in backward_events)
 
 
-def test_house_ingresses_support_backward_search_motion(jd_j2000):
+def test_house_ingresses_support_backward_search_motion(
+    planetary_reader,
+    jd_j2000,
+):
     jd_start = jd_j2000
     jd_end = jd_start + 30.0
     lat, lon = 40.7128, -74.0060
 
-    forward_events = find_house_ingresses(Body.MOON, lat, lon, jd_start, jd_end, system="placidus")
+    forward_events = find_house_ingresses(
+        Body.MOON,
+        lat,
+        lon,
+        jd_start,
+        jd_end,
+        system="placidus",
+        reader=planetary_reader,
+    )
     backward_events = find_house_ingresses(
         Body.MOON,
         lat,
@@ -153,6 +222,7 @@ def test_house_ingresses_support_backward_search_motion(jd_j2000):
         jd_start,
         jd_end,
         system="placidus",
+        reader=planetary_reader,
         search_motion="backward",
     )
 

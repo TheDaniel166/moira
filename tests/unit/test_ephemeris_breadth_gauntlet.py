@@ -7,7 +7,6 @@ from moira.coordinates import ecliptic_to_equatorial, equatorial_to_ecliptic
 from moira.julian import DeltaTPolicy, local_sidereal_time, tt_to_ut
 from moira.obliquity import mean_obliquity, nutation
 from moira.planets import planet_at, sky_position_at
-from moira.spk_reader import get_reader
 
 _EPOCHS_TT = {
     "1000_bce": 1355818.0,
@@ -55,9 +54,7 @@ def _tt_pinned_epoch(jd_tt: float, longitude_deg: float) -> tuple[float, DeltaTP
 
 
 @pytest.mark.requires_ephemeris
-def test_topocentric_route_agreement_holds_across_breadth_matrix() -> None:
-    reader = get_reader()
-
+def test_topocentric_route_agreement_holds_across_breadth_matrix(planetary_reader) -> None:
     for epoch_name, jd_tt in _EPOCHS_TT.items():
         for observer_name, (latitude_deg, longitude_deg) in _OBSERVERS.items():
             jd_ut, policy, obliquity_deg, lst_deg = _tt_pinned_epoch(jd_tt, longitude_deg)
@@ -68,13 +65,13 @@ def test_topocentric_route_agreement_holds_across_breadth_matrix() -> None:
                     jd_ut,
                     latitude_deg,
                     longitude_deg,
-                    reader=reader,
+                    reader=planetary_reader,
                     delta_t_policy=policy,
                 )
                 routed = planet_at(
                     body,
                     jd_ut,
-                    reader=reader,
+                    reader=planetary_reader,
                     observer_lat=latitude_deg,
                     observer_lon=longitude_deg,
                     lst_deg=lst_deg,
@@ -99,9 +96,7 @@ def test_topocentric_route_agreement_holds_across_breadth_matrix() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_topocentric_coordinate_round_trip_holds_across_breadth_matrix() -> None:
-    reader = get_reader()
-
+def test_topocentric_coordinate_round_trip_holds_across_breadth_matrix(planetary_reader) -> None:
     for epoch_name, jd_tt in _EPOCHS_TT.items():
         for observer_name, (latitude_deg, longitude_deg) in _OBSERVERS.items():
             jd_ut, policy, obliquity_deg, _lst_deg = _tt_pinned_epoch(jd_tt, longitude_deg)
@@ -112,7 +107,7 @@ def test_topocentric_coordinate_round_trip_holds_across_breadth_matrix() -> None
                     jd_ut,
                     latitude_deg,
                     longitude_deg,
-                    reader=reader,
+                    reader=planetary_reader,
                     delta_t_policy=policy,
                 )
                 lon_deg, lat_deg = equatorial_to_ecliptic(
@@ -139,9 +134,7 @@ def test_topocentric_coordinate_round_trip_holds_across_breadth_matrix() -> None
 
 
 @pytest.mark.requires_ephemeris
-def test_topocentric_sky_motion_remains_smooth_across_breadth_matrix() -> None:
-    reader = get_reader()
-
+def test_topocentric_sky_motion_remains_smooth_across_breadth_matrix(planetary_reader) -> None:
     for epoch_name, jd_tt in _EPOCHS_TT.items():
         for observer_name, (latitude_deg, longitude_deg) in _OBSERVERS.items():
             for body in _PUBLIC_BODIES:
@@ -155,7 +148,7 @@ def test_topocentric_sky_motion_remains_smooth_across_breadth_matrix() -> None:
                             sample_ut,
                             latitude_deg,
                             longitude_deg,
-                            reader=reader,
+                            reader=planetary_reader,
                             delta_t_policy=sample_policy,
                         )
                     )

@@ -8,7 +8,6 @@ from moira.constants import Body
 from moira.corrections import C_KM_PER_DAY, apply_aberration, apply_light_time
 from moira.julian import ut_to_tt
 from moira.planets import _barycentric, _earth_barycentric
-from moira.spk_reader import get_reader
 from tools.horizons import vector_state_corrected
 
 
@@ -101,6 +100,7 @@ def test_apply_light_time_matches_horizons_lt_vectors(
     body: str,
     command: str,
     jd_ut: float,
+    planetary_reader,
 ) -> None:
     """
     The light-time correction stage must agree with Horizons VECTORS LT output.
@@ -108,10 +108,15 @@ def test_apply_light_time_matches_horizons_lt_vectors(
     This isolates the Newtonian receive light-time step from aberration,
     deflection, and frame rotations.
     """
-    reader = get_reader()
     jd_tt = ut_to_tt(jd_ut)
-    earth_ssb = _earth_barycentric(jd_tt, reader)
-    moira_xyz, light_time_days = apply_light_time(body, jd_tt, reader, earth_ssb, _barycentric)
+    earth_ssb = _earth_barycentric(jd_tt, planetary_reader)
+    moira_xyz, light_time_days = apply_light_time(
+        body,
+        jd_tt,
+        planetary_reader,
+        earth_ssb,
+        _barycentric,
+    )
 
     ref_lt = vector_state_corrected(command, jd_ut, center="500@399", vec_corr="LT")
     ref_none = vector_state_corrected(command, jd_ut, center="500@399", vec_corr="NONE")

@@ -30,7 +30,6 @@ import pytest
 
 from moira.orbits import KeplerianElements, orbital_elements_at
 from moira import orbits as _orbits_module
-from moira.spk_reader import get_reader
 from moira.constants import Body
 
 
@@ -42,8 +41,8 @@ _J2000 = 2451545.0   # 2000-Jan-01 12:00 UT ≈ TT
 
 
 @pytest.fixture(scope="module")
-def reader():
-    return get_reader()
+def reader(planetary_reader):
+    return planetary_reader
 
 
 # ---------------------------------------------------------------------------

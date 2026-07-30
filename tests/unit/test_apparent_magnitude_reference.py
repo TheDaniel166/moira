@@ -214,6 +214,7 @@ def test_mars_reference_formula_matches_published_samples(
 def test_mars_apparent_magnitude_matches_published_kernel_samples(
     jd_ut: float,
     expected_mag: float,
+    planetary_reader,
 ) -> None:
     mag = phase.apparent_magnitude(Body.MARS, jd_ut)
 
@@ -269,6 +270,7 @@ def test_apparent_magnitude_documented_fallbacks_are_stable(
     delta_au: float,
     beta_deg: float,
     expected_mag: float,
+    planetary_reader,
 ) -> None:
     mag = phase.apparent_magnitude(body_name, jd_ut)
 

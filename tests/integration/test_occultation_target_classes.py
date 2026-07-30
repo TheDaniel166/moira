@@ -15,7 +15,7 @@ from tests.integration.test_eclipse_occultation_where_reference import (
 
 
 @pytest.mark.external_network
-def test_target_class_nominal_elnath_worst_row() -> None:
+def test_target_class_nominal_elnath_worst_row(planetary_reader) -> None:
     row = _parse_iota_graze_rows_for_date(
         "https://occultations.org/publications/rasc/2025/20250307ElNath.txt",
         2025,
@@ -31,13 +31,14 @@ def test_target_class_nominal_elnath_worst_row() -> None:
         float(row["lat"]),
         semantics="nominal",
         observer_elev_m=float(row["observer_elev_m"]),
+        reader=planetary_reader,
         refraction_adjusted=True,
     )
     assert abs(graze_lat - float(row["lat"])) <= 0.003
 
 
 @pytest.mark.external_network
-def test_target_class_nominal_spica_south_worst_row() -> None:
+def test_target_class_nominal_spica_south_worst_row(planetary_reader) -> None:
     row = _parse_iota_graze_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaSlimit.txt",
         2024,
@@ -53,6 +54,7 @@ def test_target_class_nominal_spica_south_worst_row() -> None:
         float(row["lat"]),
         semantics="nominal",
         observer_elev_m=float(row["observer_elev_m"]),
+        reader=planetary_reader,
         refraction_adjusted=True,
     )
     assert abs(graze_lat - float(row["lat"])) <= 0.0015
@@ -60,7 +62,7 @@ def test_target_class_nominal_spica_south_worst_row() -> None:
 
 @pytest.mark.external_network
 @pytest.mark.slow
-def test_target_class_profile_alcyone_leading_row() -> None:
+def test_target_class_profile_alcyone_leading_row(planetary_reader) -> None:
     row = _parse_iota_annual_graze_section(
         "https://occultations.org/publications/rasc/2025/nam25grz.txt",
         "Alcyone",
@@ -74,6 +76,7 @@ def test_target_class_profile_alcyone_leading_row() -> None:
         float(row["lat"]),
         semantics="practical",
         observer_elev_m=float(row["observer_elev_m"]),
+        reader=planetary_reader,
         limb_profile_provider=official_lunar_limb_profile_adjustment,
     )
     assert abs(practical_lat - float(row["lat"])) <= 0.003
@@ -81,7 +84,7 @@ def test_target_class_profile_alcyone_leading_row() -> None:
 
 @pytest.mark.external_network
 @pytest.mark.slow
-def test_target_class_profile_merope_leading_row() -> None:
+def test_target_class_profile_merope_leading_row(planetary_reader) -> None:
     row = _parse_iota_annual_graze_section(
         "https://occultations.org/publications/rasc/2025/nam25grz.txt",
         "Merope",
@@ -95,6 +98,7 @@ def test_target_class_profile_merope_leading_row() -> None:
         float(row["lat"]),
         semantics="practical",
         observer_elev_m=float(row["observer_elev_m"]),
+        reader=planetary_reader,
         limb_profile_provider=official_lunar_limb_profile_adjustment,
     )
     assert abs(practical_lat - float(row["lat"])) <= 0.002

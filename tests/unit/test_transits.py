@@ -198,7 +198,7 @@ def test_varshaphal_refines_sidereal_return_from_tropical_seed(
     monkeypatch.setattr(transits_module, "planet_at", _fake_planet_at)
     monkeypatch.setattr(transits_module, "tropical_to_sidereal", _fake_tropical_to_sidereal)
 
-    result = varshaphal(birth_jd, 2026)
+    result = varshaphal(birth_jd, 2026, reader=object())
 
     assert result == pytest.approx(jd_seed + 0.5, abs=1e-6)
 

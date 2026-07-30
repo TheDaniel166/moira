@@ -153,7 +153,9 @@ def test_shadbala_serializer_preserves_component_strengths(moira_engine) -> None
     assert body.strength_ratio == pytest.approx(sun.strength_ratio)
 
 
-def test_shadbala_network_serializer_preserves_war_vessel_shape() -> None:
+def test_shadbala_network_serializer_preserves_war_vessel_shape(
+    planetary_reader,
+) -> None:
     result = shadbala(
         sidereal_longitudes={
             "Sun": 0.0,

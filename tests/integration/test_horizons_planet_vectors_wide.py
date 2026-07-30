@@ -7,7 +7,6 @@ import pytest
 from moira.constants import Body
 from moira.julian import julian_day, ut_to_tt
 from moira.planets import _geocentric
-from moira.spk_reader import get_reader
 from tools.horizons import VectorState, vector_state
 
 
@@ -65,9 +64,9 @@ def test_planet_geocentric_vectors_match_horizons_across_wide_de441_range(
     command: str,
     label: str,
     jd_ut: float,
+    planetary_reader,
 ) -> None:
-    reader = get_reader()
-    moira_xyz = _geocentric(body, ut_to_tt(jd_ut), reader)
+    moira_xyz = _geocentric(body, ut_to_tt(jd_ut), planetary_reader)
     ref = vector_state(command, jd_ut)
     diff_km, error_arcsec = _vector_diff(moira_xyz, ref)
 

@@ -1,13 +1,17 @@
-import threading
+import argparse
 import random
+import threading
 import time
 import tracemalloc
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+
 from moira.planets import planet_at
 from moira.constants import Body
-from moira.spk_reader import get_reader, SpkReader
+from moira.spk_reader import SpkReader
 
-def stress_test_resource_binding():
+
+def stress_test_resource_binding(reader: SpkReader) -> bool:
     print("Starting Resource Binding Stress Test (10,000 queries)...")
     
     # 1. Setup
@@ -15,8 +19,6 @@ def stress_test_resource_binding():
     bodies = [Body.SUN, Body.MOON, Body.MERCURY, Body.VENUS, Body.MARS, 
               Body.JUPITER, Body.SATURN, Body.URANUS, Body.NEPTUNE, Body.PLUTO]
     
-    # Ensure reader is initialized
-    reader = get_reader()
     print(f"Active Reader: {reader}")
     
     num_queries = 10000
@@ -99,9 +101,30 @@ def stress_test_resource_binding():
     tracemalloc.stop()
     return True
 
+def _parse_manual_kernel_path() -> Path:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Run the identity-independent manual resource-binding stress "
+            "audit. This standalone boundary does not use pytest discovery "
+            "or emit a pytest capability receipt; the caller must select "
+            "the kernel explicitly."
+        )
+    )
+    parser.add_argument(
+        "kernel_path",
+        type=Path,
+        help="explicit planetary SPK to open and stress",
+    )
+    return parser.parse_args().kernel_path.resolve(strict=True)
+
+
 if __name__ == "__main__":
-    if stress_test_resource_binding():
+    kernel_path = _parse_manual_kernel_path()
+    with SpkReader(kernel_path) as explicit_reader:
+        succeeded = stress_test_resource_binding(explicit_reader)
+
+    if succeeded:
         print("\nRESOURCE BINDING AUDIT: SUCCESSFUL")
     else:
         print("\nRESOURCE BINDING AUDIT: FAILED")
-        exit(1)
+        raise SystemExit(1)

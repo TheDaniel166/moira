@@ -82,6 +82,13 @@ class _KnownIssue:
 _HARNESS_CONFIG_KEY: pytest.StashKey[_HarnessConfig] = pytest.StashKey()
 _KNOWN_ISSUES_KEY: pytest.StashKey[tuple[_KnownIssue, ...]] = pytest.StashKey()
 _EXTERNAL_NETWORK_SELECTED_KEY: pytest.StashKey[int] = pytest.StashKey()
+_RESOURCE_RESOLVER_KEY: pytest.StashKey[object] = pytest.StashKey()
+_RESOURCE_RECEIPTS_KEY: pytest.StashKey[dict[str, object]] = pytest.StashKey()
+_RESOURCE_ITEM_REQUIREMENT_KEY: pytest.StashKey[object] = pytest.StashKey()
+_RESOURCE_ITEM_RECEIPT_KEY: pytest.StashKey[object] = pytest.StashKey()
+_SMALL_BODY_RESOURCE_RECEIPTS_KEY: pytest.StashKey[
+    dict[str, object]
+] = pytest.StashKey()
 
 _KNOWN_ISSUE_FIELDS = {"id", "path", "reason", "owner", "expires"}
 _MAX_TEST_SEED = (1 << 64) - 1
@@ -691,12 +698,176 @@ def _load_known_issues(path: Path) -> tuple[_KnownIssue, ...]:
 
 
 # ---------------------------------------------------------------------------
-# Ephemeris detection
+# Planetary-resource policy
 # ---------------------------------------------------------------------------
 
-def _has_ephemeris() -> bool:
-    from moira._kernel_paths import find_planetary_kernel
-    return find_planetary_kernel() is not None
+def _resource_policy_module():
+    """Import the tests-only resource policy only for selected consumers."""
+
+    return importlib.import_module("support.resource_policy")
+
+
+def _small_body_resource_policy_module():
+    """Import supplemental admission policy only for its explicit fixture."""
+
+    return importlib.import_module("support.small_body_resource_policy")
+
+
+def _planetary_resource_resolver(config):
+    resolver = config.stash.get(_RESOURCE_RESOLVER_KEY, None)
+    if resolver is not None:
+        return resolver
+    policy = _resource_policy_module()
+    try:
+        candidate = policy.discover_planetary_kernel_candidate()
+    except Exception as exc:
+        resolver = policy.PlanetaryResourceResolver(
+            None,
+            discovery_failure=(
+                type(exc).__name__,
+                f"planetary-kernel discovery failed: {exc}",
+            ),
+        )
+    else:
+        resolver = policy.PlanetaryResourceResolver(candidate)
+    config.stash[_RESOURCE_RESOLVER_KEY] = resolver
+    return resolver
+
+
+def _planetary_requirement_for_item(item):
+    cached = item.stash.get(_RESOURCE_ITEM_REQUIREMENT_KEY, None)
+    if cached is not None:
+        return cached
+
+    markers = tuple(item.iter_markers(name="requires_ephemeris"))
+    if not markers:
+        return None
+
+    policy = _resource_policy_module()
+    requirements = []
+    for marker in markers:
+        if marker.args:
+            raise pytest.UsageError(
+                f"{item.nodeid}: requires_ephemeris accepts keyword "
+                "capability fields only"
+            )
+        try:
+            requirement = policy.PlanetaryKernelRequirement.from_mapping(
+                marker.kwargs
+            )
+        except policy.ResourceContractError as exc:
+            raise pytest.UsageError(
+                f"{item.nodeid}: invalid requires_ephemeris contract: {exc}"
+            ) from exc
+        requirements.append(requirement)
+
+    if len(markers) != 1:
+        rendered = ", ".join(
+            requirement.render()
+            for requirement in requirements
+        )
+        raise pytest.UsageError(
+            f"{item.nodeid}: duplicate or conflicting "
+            "requires_ephemeris contracts: "
+            + rendered
+        )
+
+    requirement = requirements[0]
+    item.stash[_RESOURCE_ITEM_REQUIREMENT_KEY] = requirement
+    return requirement
+
+
+def _record_planetary_resource_receipt(config, nodeid: str, receipt) -> None:
+    receipts = config.stash.get(_RESOURCE_RECEIPTS_KEY, None)
+    if receipts is None:
+        receipts = {}
+        config.stash[_RESOURCE_RECEIPTS_KEY] = receipts
+    receipts[nodeid] = receipt
+
+
+def _record_planetary_live_failure(
+    config,
+    *,
+    nodeid: str,
+    stage: str,
+    admitted_receipt,
+    exc: Exception,
+):
+    """Record post-probe acquisition/teardown failure before propagating it."""
+
+    policy = _resource_policy_module()
+    failure = policy.PlanetaryKernelReceipt(
+        name="planetary-kernel-live",
+        disposition=policy.ResourceDisposition.FAILURE,
+        requirement=admitted_receipt.requirement,
+        candidate=admitted_receipt.candidate,
+        capability=admitted_receipt.capability,
+        reason=f"{stage} failed after capability admission: {exc}",
+        failure_type=type(exc).__name__,
+    )
+    _record_planetary_resource_receipt(
+        config,
+        f"{nodeid}::{stage}",
+        failure,
+    )
+    return failure
+
+
+def _planetary_receipt_for_item(item):
+    cached = item.stash.get(_RESOURCE_ITEM_RECEIPT_KEY, None)
+    if cached is not None:
+        return cached
+
+    requirement = _planetary_requirement_for_item(item)
+    if requirement is None:
+        raise pytest.UsageError(
+            f"{item.nodeid}: planetary resource requested without a "
+            "requires_ephemeris contract"
+        )
+    receipt = _planetary_resource_resolver(item.config).resolve(requirement)
+    item.stash[_RESOURCE_ITEM_RECEIPT_KEY] = receipt
+    _record_planetary_resource_receipt(
+        item.config,
+        item.nodeid,
+        receipt,
+    )
+    return receipt
+
+
+def _enforce_planetary_resource_receipt(receipt) -> None:
+    policy = _resource_policy_module()
+    if receipt.disposition is policy.ResourceDisposition.RUN:
+        return
+    if receipt.disposition is policy.ResourceDisposition.SKIP:
+        pytest.skip(receipt.render())
+    pytest.fail(receipt.render(), pytrace=False)
+
+
+def _record_small_body_resource_receipt(
+    config,
+    nodeid: str,
+    receipt,
+) -> None:
+    receipts = config.stash.get(_SMALL_BODY_RESOURCE_RECEIPTS_KEY, None)
+    if receipts is None:
+        receipts = {}
+        config.stash[_SMALL_BODY_RESOURCE_RECEIPTS_KEY] = receipts
+    receipts[nodeid] = receipt
+
+
+def _enforce_small_body_resource_receipt(receipt) -> None:
+    policy = _small_body_resource_policy_module()
+    if (
+        receipt.disposition
+        is policy.SmallBodyResourceDisposition.RUN
+    ):
+        return
+    if (
+        receipt.disposition
+        is policy.SmallBodyResourceDisposition.SKIP
+    ):
+        pytest.skip(receipt.render())
+    pytest.fail(receipt.render(), pytrace=False)
 
 
 def _legacy_network_marker_locations(tests_root: Path) -> tuple[str, ...]:
@@ -897,8 +1068,21 @@ collect_ignore = ["legacy"]
 # pytest_collection_modifyitems — auto-markers
 # ---------------------------------------------------------------------------
 
-# Fixtures that imply ephemeris access — auto-apply requires_ephemeris
-_EPHEMERIS_FIXTURES = {"moira_engine", "natal_chart", "natal_houses"}
+# Fixtures that imply planetary-resource access auto-apply the historical
+# content-derived DE441 contract unless the test declares a narrower one.
+_EPHEMERIS_FIXTURES = {
+    "configured_global_reader",
+    "eclipse_calculator",
+    "moira_engine",
+    "natal_chart",
+    "natal_houses",
+    "planetary_kernel_path",
+    "planetary_kernel_receipt",
+    "planetary_reader",
+    "reader",
+    "small_body_reader_context",
+    "small_body_reader_pool",
+}
 
 
 def _validate_network_marker_law(items) -> None:
@@ -950,13 +1134,18 @@ def pytest_collection_modifyitems(config, items):
         # Auto-apply requires_ephemeris when engine fixtures are used
         if not item.get_closest_marker("requires_ephemeris"):
             if _EPHEMERIS_FIXTURES & set(item.fixturenames):
-                item.add_marker(pytest.mark.requires_ephemeris)
+                item.add_marker(
+                    pytest.mark.requires_ephemeris(
+                        content_identity="DE441"
+                    )
+                )
 
-        # requires_ephemeris → skip when de441.bsp is absent and downloads disabled
-        if item.get_closest_marker("requires_ephemeris"):
-            no_dl = policy.no_download or policy.test_mode
-            if no_dl and not _has_ephemeris():
-                item.add_marker(pytest.mark.skip(reason="no planetary kernel installed and downloads disabled"))
+        if "configured_global_reader" in item.fixturenames:
+            item.add_marker(pytest.mark.serial)
+
+        # Parse and freeze contracts during collection, but do not discover or
+        # open any kernel until a selected test reaches fixture setup.
+        _planetary_requirement_for_item(item)
 
         # slow → skip when MOIRA_SKIP_SLOW=1
         if item.get_closest_marker("slow"):
@@ -1059,6 +1248,24 @@ def pytest_runtest_protocol(item):
         reset_network_mode()
 
 
+@pytest.hookimpl
+def pytest_runtest_setup(item):
+    """Enforce resource policy after skip admission and before fixtures.
+
+    Pytest's skipping plugin is a ``tryfirst`` implementation, so it owns the
+    single evaluation of dynamic skip/xfail conditions.  This ordinary
+    conftest hook then runs before pytest's earlier-registered fixture-setup
+    implementation.  Do not pre-evaluate marks here: stateful string
+    conditions must retain pytest's exactly-once setup semantics.
+    """
+
+    requirement = _planetary_requirement_for_item(item)
+    if requirement is None:
+        return
+    receipt = _planetary_receipt_for_item(item)
+    _enforce_planetary_resource_receipt(receipt)
+
+
 # ---------------------------------------------------------------------------
 # Determinism
 # ---------------------------------------------------------------------------
@@ -1070,26 +1277,383 @@ def _seed_test_random(request):
 
 
 # ---------------------------------------------------------------------------
-# Kernel singleton bootstrap
+# Explicit planetary-resource fixtures
 # ---------------------------------------------------------------------------
 
-@pytest.fixture(scope="session", autouse=True)
-def _bootstrap_kernel_singleton() -> None:
-    """Configure the global SpkReader singleton once per test session.
+def _session_planetary_receipt(request, *, nodeid: str):
+    policy = _resource_policy_module()
+    receipt = _planetary_resource_resolver(request.config).resolve(
+        policy.PlanetaryKernelRequirement()
+    )
+    _record_planetary_resource_receipt(
+        request.config,
+        nodeid,
+        receipt,
+    )
+    _enforce_planetary_resource_receipt(receipt)
+    return receipt
 
-    When a planetary kernel is available, calling set_kernel_path() here ensures
-    that module-level functions (phase.apparent_magnitude, etc.) which call
-    get_reader() directly can reuse the same initialized singleton without each
-    test needing to go through the Moira facade.
 
-    No-ops when no kernel is installed; requires_ephemeris tests skip naturally.
+@pytest.fixture(autouse=True)
+def _activate_declared_planetary_resource(request):
+    """Admit and context-route only explicitly resource-marked test items."""
+
+    requirement = _planetary_requirement_for_item(request.node)
+    if requirement is None:
+        yield
+        return
+
+    receipt = _planetary_receipt_for_item(request.node)
+    _enforce_planetary_resource_receipt(receipt)
+
+    # This fixture is the sole admitted global-state boundary.  Its consumer
+    # must observe the real global fallback rather than a ContextVar override.
+    if "configured_global_reader" in request.fixturenames:
+        yield
+        return
+
+    handle = request.getfixturevalue("_planetary_reader_handle")
+    from moira.spk_reader import use_reader_override
+
+    with use_reader_override(handle):
+        yield
+
+
+@pytest.fixture
+def planetary_kernel_receipt(request):
+    """Return the selected item's immutable run receipt."""
+
+    receipt = _planetary_receipt_for_item(request.node)
+    _enforce_planetary_resource_receipt(receipt)
+    return receipt
+
+
+@pytest.fixture(scope="session")
+def planetary_kernel_path(request) -> Path:
+    """Return a path only after its opened content has been admitted."""
+
+    receipt = _session_planetary_receipt(
+        request,
+        nodeid="<session:planetary-kernel-path>",
+    )
+    if receipt.candidate is None:
+        raise AssertionError("admitted planetary receipt has no candidate")
+    return receipt.candidate.path
+
+
+@pytest.fixture(scope="session")
+def _planetary_reader_handle(request, planetary_kernel_path):
+    """Own the stable session reader without installing ambient global state."""
+
+    policy = _resource_policy_module()
+    receipt = _session_planetary_receipt(
+        request,
+        nodeid="<session:planetary-reader>",
+    )
+    from moira.spk_reader import SpkReader
+
+    handle = None
+    try:
+        handle = SpkReader(planetary_kernel_path)
+        policy.verify_reader_matches_receipt(handle, receipt)
+    except Exception as exc:
+        if handle is not None:
+            try:
+                handle.close()
+            except Exception as close_exc:
+                _record_planetary_live_failure(
+                    request.config,
+                    nodeid="<session:planetary-reader>",
+                    stage="failed-acquisition-close",
+                    admitted_receipt=receipt,
+                    exc=close_exc,
+                )
+        _record_planetary_live_failure(
+            request.config,
+            nodeid="<session:planetary-reader>",
+            stage="acquisition",
+            admitted_receipt=receipt,
+            exc=exc,
+        )
+        raise
+    try:
+        yield handle
+    finally:
+        try:
+            handle.close()
+        except Exception as exc:
+            _record_planetary_live_failure(
+                request.config,
+                nodeid="<session:planetary-reader>",
+                stage="teardown",
+                admitted_receipt=receipt,
+                exc=exc,
+            )
+            raise
+
+
+@pytest.fixture(scope="session")
+def planetary_reader(_planetary_reader_handle):
+    """Session-owned reader for explicit argument passing."""
+
+    return _planetary_reader_handle
+
+
+@pytest.fixture(scope="session")
+def reader(planetary_reader):
+    """Compatibility alias for the explicit planetary reader."""
+
+    return planetary_reader
+
+
+@pytest.fixture(scope="session")
+def small_body_reader_pool(request, planetary_kernel_path):
+    """Own the explicit planetary-plus-sovereign-small-body reader pool.
+
+    The planetary path has already passed the planetary resource receipt.
+    Supplemental manifests are a separate product admission boundary: this
+    fixture discovers them in repository-defined order, opens every listed
+    reader, and skips when no sovereign small-body reader is installed.  It
+    does not widen the planetary receipt into a supplemental-content claim.
     """
-    from moira._kernel_paths import find_planetary_kernel
-    from moira.spk_reader import set_kernel_path
 
-    kernel = find_planetary_kernel()
-    if kernel is not None:
-        set_kernel_path(str(kernel))
+    from moira._kernel_paths import find_all_small_body_manifests
+    from moira import _spk_body_kernel
+    from moira.small_body_catalog_release import verify_release
+    from moira.spk_reader import KernelPool, SpkReader
+
+    planetary_policy = _resource_policy_module()
+    supplemental_policy = _small_body_resource_policy_module()
+    planetary_receipt = _session_planetary_receipt(
+        request,
+        nodeid="<session:small-body-reader-pool-primary>",
+    )
+    receipt_nodeid = "<session:small-body-reader-pool>"
+    primary_reader = None
+    supplemental_admission = None
+    supplemental_readers = ()
+    pool = None
+    primary_close_failure = None
+    supplemental_close_failures = ()
+    supplemental_pool_failure = None
+    try:
+        try:
+            primary_reader = SpkReader(planetary_kernel_path)
+            planetary_policy.verify_reader_matches_receipt(
+                primary_reader,
+                planetary_receipt,
+            )
+        except Exception as exc:
+            _record_planetary_live_failure(
+                request.config,
+                nodeid="<session:small-body-reader-pool-primary>",
+                stage="acquisition",
+                admitted_receipt=planetary_receipt,
+                exc=exc,
+            )
+            raise
+        try:
+            manifest_paths = find_all_small_body_manifests()
+        except Exception as exc:
+            failure = supplemental_policy.SmallBodyResourceReceipt(
+                name="supplemental-small-body-pool",
+                disposition=(
+                    supplemental_policy.SmallBodyResourceDisposition.FAILURE
+                ),
+                requirement=(
+                    supplemental_policy.SmallBodyManifestRequirement()
+                ),
+                capabilities=(),
+                reason=f"ambient manifest discovery failed: {exc}",
+                failure_type=type(exc).__name__,
+                terminal=True,
+            )
+            _record_small_body_resource_receipt(
+                request.config,
+                receipt_nodeid,
+                failure,
+            )
+            _enforce_small_body_resource_receipt(failure)
+
+        native_segment_types = set()
+        if _spk_body_kernel._HAS_NATIVE_SEGMENTS:
+            native_segment_types.update((2, 3))
+        if _spk_body_kernel._HAS_NATIVE_TYPE13:
+            native_segment_types.add(13)
+        supplemental_admission = (
+            supplemental_policy.admit_small_body_manifests(
+                manifest_paths,
+                verify_release=verify_release,
+                reader_factory=_spk_body_kernel.SmallBodyKernel,
+                native_catalog_available=bool(
+                    _spk_body_kernel._HAS_NATIVE_DAF
+                ),
+                native_segment_types=native_segment_types,
+            )
+        )
+        _record_small_body_resource_receipt(
+            request.config,
+            receipt_nodeid,
+            supplemental_admission.receipt,
+        )
+        _enforce_small_body_resource_receipt(
+            supplemental_admission.receipt
+        )
+        supplemental_readers = supplemental_admission.readers
+        try:
+            pool = KernelPool(
+                (primary_reader, *supplemental_readers)
+            )
+        except Exception as exc:
+            supplemental_pool_failure = exc
+            raise
+        yield pool
+    finally:
+        if supplemental_readers:
+            supplemental_close_failures = (
+                supplemental_policy.close_small_body_readers(
+                    supplemental_readers
+                )
+            )
+        if (
+            supplemental_admission is not None
+            and supplemental_admission.receipt.disposition
+            is supplemental_policy.SmallBodyResourceDisposition.RUN
+            and not supplemental_admission.receipt.terminal
+        ):
+            if supplemental_pool_failure is not None:
+                terminal_receipt = (
+                    supplemental_policy.fail_small_body_live_receipt(
+                        supplemental_admission.receipt,
+                        stage="KernelPool construction",
+                        exc=supplemental_pool_failure,
+                        close_failures=supplemental_close_failures,
+                    )
+                )
+            else:
+                terminal_receipt = (
+                    supplemental_policy.terminalize_small_body_receipt(
+                        supplemental_admission.receipt,
+                        close_failures=supplemental_close_failures,
+                    )
+                )
+            _record_small_body_resource_receipt(
+                request.config,
+                receipt_nodeid,
+                terminal_receipt,
+            )
+        if primary_reader is not None:
+            try:
+                primary_reader.close()
+            except Exception as exc:
+                primary_close_failure = (
+                    f"{type(exc).__name__}: {exc}"
+                )
+                _record_planetary_live_failure(
+                    request.config,
+                    nodeid="<session:small-body-reader-pool-primary>",
+                    stage="teardown",
+                    admitted_receipt=planetary_receipt,
+                    exc=exc,
+                )
+        teardown_failures = [
+            *supplemental_close_failures,
+            *(
+                [f"primary reader {primary_close_failure}"]
+                if primary_close_failure is not None
+                else []
+            ),
+        ]
+        if teardown_failures:
+            raise RuntimeError(
+                "small_body_reader_pool teardown failed: "
+                + "; ".join(teardown_failures)
+            )
+
+
+@pytest.fixture
+def small_body_reader_context(small_body_reader_pool):
+    """Context-route the separately admitted small-body pool for one test."""
+
+    from moira.spk_reader import use_reader_override
+
+    with use_reader_override(small_body_reader_pool):
+        yield small_body_reader_pool
+
+
+@pytest.fixture
+def configured_global_reader(request, planetary_kernel_path):
+    """Configure and erase the legacy singleton for its explicit consumer."""
+
+    from unittest.mock import patch
+
+    from moira import spk_reader
+
+    policy = _resource_policy_module()
+    receipt = _session_planetary_receipt(
+        request,
+        nodeid="<fixture:configured-global-reader>",
+    )
+    nodeid = getattr(request.node, "nodeid", "<configured-global-reader>")
+    owns_global_reader = False
+    try:
+        if spk_reader._reader is not None or spk_reader._reader_path is not None:
+            raise policy.ResourceContractError(
+                "configured_global_reader refuses to hot-swap pre-existing "
+                "global reader state"
+            )
+        # This fixture is deliberately primary-only. Supplemental manifests
+        # have their own explicit pool fixture and must never be admitted
+        # through set_kernel_path()'s best-effort discovery side channel.
+        with patch(
+            "moira._kernel_paths.find_all_small_body_manifests",
+            return_value=(),
+            create=True,
+        ):
+            spk_reader.set_kernel_path(planetary_kernel_path)
+        owns_global_reader = (
+            spk_reader._reader is not None
+            or spk_reader._reader_path is not None
+        )
+        if spk_reader._reader is None:
+            raise policy.ResourceContractError(
+                "configured_global_reader did not establish global state"
+            )
+        policy.verify_reader_matches_receipt(spk_reader._reader, receipt)
+    except Exception as exc:
+        _record_planetary_live_failure(
+            request.config,
+            nodeid=nodeid,
+            stage="configured-global-reader-acquisition",
+            admitted_receipt=receipt,
+            exc=exc,
+        )
+        if owns_global_reader:
+            try:
+                spk_reader.reset_singleton()
+            except Exception as close_exc:
+                _record_planetary_live_failure(
+                    request.config,
+                    nodeid=nodeid,
+                    stage="configured-global-reader-failed-acquisition-close",
+                    admitted_receipt=receipt,
+                    exc=close_exc,
+                )
+        raise
+    try:
+        yield spk_reader._reader
+    finally:
+        try:
+            spk_reader.reset_singleton()
+        except Exception as exc:
+            _record_planetary_live_failure(
+                request.config,
+                nodeid=nodeid,
+                stage="configured-global-reader-teardown",
+                admitted_receipt=receipt,
+                exc=exc,
+            )
+            raise
 
 
 # ---------------------------------------------------------------------------
@@ -1097,30 +1661,94 @@ def _bootstrap_kernel_singleton() -> None:
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(scope="session")
-def moira_engine():
-    """
-    Session-scoped Moira engine (loads planetary kernel once for the whole run).
+def moira_engine(request, planetary_kernel_path):
+    """Session-owned Moira facade with explicit reader teardown."""
 
-    Skips gracefully when no planetary kernel is present rather than crashing.
-    Mark tests that use this fixture with @pytest.mark.requires_ephemeris,
-    or rely on the auto-marker in pytest_collection_modifyitems.
-    """
-    if not _has_ephemeris():
-        pytest.skip("no planetary kernel found — skipping ephemeris-dependent test")
+    from unittest.mock import patch
+
+    policy = _resource_policy_module()
+    receipt = _session_planetary_receipt(
+        request,
+        nodeid="<session:moira-engine>",
+    )
     from moira import Moira
-    return Moira()
 
-
-@pytest.fixture(scope="session")
-def reader(moira_engine):
-    """Session-scoped SpkReader instance from the Moira engine."""
-    return moira_engine._reader
+    engine = None
+    try:
+        # Keep the ordinary engine fixture primary-only. Supplemental kernels
+        # are admitted through small_body_reader_pool, never hidden facade
+        # discovery that can silently swallow malformed-manifest failures.
+        with patch(
+            "moira._kernel_paths.find_all_small_body_manifests",
+            return_value=(),
+            create=True,
+        ):
+            engine = Moira(kernel_path=str(planetary_kernel_path))
+        if engine._supplemental_kernel_init_error is not None:
+            raise engine._supplemental_kernel_init_error
+        owned_reader = engine._reader_obj
+        if owned_reader is None:
+            raise policy.ResourceContractError(
+                "moira_engine could not open its admitted planetary resource"
+            )
+        primary_reader_getter = getattr(
+            owned_reader,
+            "_primary_planetary_reader",
+            None,
+        )
+        primary_reader = (
+            primary_reader_getter()
+            if callable(primary_reader_getter)
+            else owned_reader
+        )
+        policy.verify_reader_matches_receipt(primary_reader, receipt)
+    except Exception as exc:
+        _record_planetary_live_failure(
+            request.config,
+            nodeid="<session:moira-engine>",
+            stage="acquisition",
+            admitted_receipt=receipt,
+            exc=exc,
+        )
+        if engine is not None and engine._reader_obj is not None:
+            try:
+                engine._reader_obj.close()
+            except Exception as close_exc:
+                _record_planetary_live_failure(
+                    request.config,
+                    nodeid="<session:moira-engine>",
+                    stage="failed-acquisition-close",
+                    admitted_receipt=receipt,
+                    exc=close_exc,
+                )
+            finally:
+                engine._reader_obj = None
+        raise
+    try:
+        yield engine
+    finally:
+        if engine._reader_obj is not None:
+            try:
+                engine._reader_obj.close()
+            except Exception as exc:
+                _record_planetary_live_failure(
+                    request.config,
+                    nodeid="<session:moira-engine>",
+                    stage="teardown",
+                    admitted_receipt=receipt,
+                    exc=exc,
+                )
+                raise
+            finally:
+                engine._reader_obj = None
 
 
 @pytest.fixture(scope="session")
 def eclipse_calculator(reader):
-    """Session-scoped EclipseCalculator instance."""
+    """Session-scoped EclipseCalculator with an explicit reader."""
+
     from moira.eclipse import EclipseCalculator
+
     return EclipseCalculator(reader=reader)
 
 
@@ -1320,6 +1948,221 @@ def assert_longitude():
 # Pytest hooks: per-test budget, artifacts, terminal summary
 # ---------------------------------------------------------------------------
 
+_XDIST_PLANETARY_RESOURCE_REPORT_KEY = (
+    "moira_planetary_resource_report_v1"
+)
+_XDIST_PLANETARY_RESOURCE_REPORT_ATTR = (
+    "_moira_xdist_planetary_resource_report"
+)
+_XDIST_SMALL_BODY_RESOURCE_REPORT_KEY = (
+    "moira_small_body_resource_report_v1"
+)
+_XDIST_SMALL_BODY_RESOURCE_REPORT_ATTR = (
+    "_moira_xdist_small_body_resource_report"
+)
+
+
+def _planetary_resource_summary(details):
+    disposition_counts = {
+        "run": 0,
+        "skip": 0,
+        "failure": 0,
+    }
+    identities: set[str] = set()
+    for detail in details.values():
+        disposition = detail["disposition"]
+        disposition_counts[disposition] += 1
+        identity = detail["identity"]
+        if identity is not None:
+            identities.add(identity)
+    return {
+        "receipts": len(details),
+        **disposition_counts,
+        "identities": sorted(identities),
+    }
+
+
+def _serialize_planetary_resource_report(config):
+    receipts = config.stash.get(_RESOURCE_RECEIPTS_KEY, {})
+    details = {}
+    for nodeid, receipt in sorted(receipts.items()):
+        identity = (
+            receipt.capability.content_identity
+            if receipt.capability is not None
+            else None
+        )
+        details[nodeid] = {
+            "disposition": receipt.disposition.value,
+            "identity": identity,
+            "rendered": receipt.render(),
+        }
+
+    resolver = config.stash.get(_RESOURCE_RESOLVER_KEY, None)
+    probe_count = (
+        getattr(resolver, "probe_count", 0)
+        if resolver is not None
+        else 0
+    )
+    return {
+        "version": 1,
+        "summary": _planetary_resource_summary(details),
+        "details": details,
+        "probe_count": probe_count,
+    }
+
+
+def _empty_planetary_resource_report():
+    details = {}
+    return {
+        "version": 1,
+        "summary": _planetary_resource_summary(details),
+        "details": details,
+        "probe_count": 0,
+    }
+
+
+def _merge_planetary_resource_report(target, incoming, *, source: str):
+    if (
+        not isinstance(incoming, dict)
+        or incoming.get("version") != 1
+        or not isinstance(incoming.get("details"), dict)
+        or not isinstance(incoming.get("summary"), dict)
+        or type(incoming.get("probe_count")) is not int
+        or incoming["probe_count"] < 0
+    ):
+        raise pytest.UsageError(
+            f"{source} returned an invalid planetary-resource report"
+        )
+
+    incoming_details = incoming["details"]
+    normalized_details = {}
+    for nodeid, detail in incoming_details.items():
+        if (
+            type(nodeid) is not str
+            or not isinstance(detail, dict)
+            or detail.get("disposition")
+            not in {"run", "skip", "failure"}
+            or (
+                detail.get("identity") is not None
+                and type(detail.get("identity")) is not str
+            )
+            or type(detail.get("rendered")) is not str
+        ):
+            raise pytest.UsageError(
+                f"{source} returned an invalid planetary-resource detail"
+            )
+        normalized_details[nodeid] = {
+            "disposition": detail["disposition"],
+            "identity": detail["identity"],
+            "rendered": detail["rendered"],
+        }
+
+    if incoming["summary"] != _planetary_resource_summary(
+        normalized_details
+    ):
+        raise pytest.UsageError(
+            f"{source} returned a contradictory planetary-resource summary"
+        )
+
+    target_details = target["details"]
+    for nodeid, detail in normalized_details.items():
+        existing = target_details.get(nodeid)
+        if existing is None or existing == detail:
+            target_details[nodeid] = detail
+            continue
+
+        qualified_nodeid = f"{nodeid} [{source}]"
+        suffix = 2
+        while qualified_nodeid in target_details:
+            qualified_nodeid = f"{nodeid} [{source}#{suffix}]"
+            suffix += 1
+        target_details[qualified_nodeid] = detail
+
+    target["probe_count"] += incoming["probe_count"]
+    target["summary"] = _planetary_resource_summary(target_details)
+    return target
+
+
+def _combined_planetary_resource_report(config):
+    combined = _empty_planetary_resource_report()
+    worker_report = getattr(
+        config,
+        _XDIST_PLANETARY_RESOURCE_REPORT_ATTR,
+        None,
+    )
+    if worker_report is not None:
+        _merge_planetary_resource_report(
+            combined,
+            worker_report,
+            source="xdist workers",
+        )
+    _merge_planetary_resource_report(
+        combined,
+        _serialize_planetary_resource_report(config),
+        source="controller",
+    )
+    return combined
+
+
+def _serialize_small_body_resource_report(config):
+    receipts = config.stash.get(_SMALL_BODY_RESOURCE_RECEIPTS_KEY, {})
+    if not receipts:
+        return _empty_small_body_resource_report()
+    policy = _small_body_resource_policy_module()
+    return policy.small_body_report_from_receipts(receipts)
+
+
+def _empty_small_body_resource_report():
+    return {
+        "version": 1,
+        "summary": {
+            "receipts": 0,
+            "run": 0,
+            "skip": 0,
+            "failure": 0,
+            "terminal": 0,
+            "identities": [],
+            "manifests": 0,
+            "shards": 0,
+            "bodies": 0,
+        },
+        "details": {},
+    }
+
+
+def _merge_small_body_resource_report(target, incoming, *, source: str):
+    policy = _small_body_resource_policy_module()
+    try:
+        return policy.merge_small_body_report(
+            target,
+            incoming,
+            source=source,
+        )
+    except policy.SmallBodyResourceContractError as exc:
+        raise pytest.UsageError(str(exc)) from exc
+
+
+def _combined_small_body_resource_report(config):
+    combined = _empty_small_body_resource_report()
+    worker_report = getattr(
+        config,
+        _XDIST_SMALL_BODY_RESOURCE_REPORT_ATTR,
+        None,
+    )
+    if worker_report is not None:
+        _merge_small_body_resource_report(
+            combined,
+            worker_report,
+            source="xdist workers",
+        )
+    _merge_small_body_resource_report(
+        combined,
+        _serialize_small_body_resource_report(config),
+        source="controller",
+    )
+    return combined
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
@@ -1361,6 +2204,19 @@ def pytest_runtest_makereport(item, call):
 def pytest_sessionfinish(session, exitstatus):
     reset_network_mode(nodeid="<session-finish>")
     _finalize_session_coverage(session.config)
+
+    workeroutput = getattr(session.config, "workeroutput", None)
+    if isinstance(workeroutput, dict):
+        workeroutput[_XDIST_PLANETARY_RESOURCE_REPORT_KEY] = (
+            _serialize_planetary_resource_report(session.config)
+        )
+        if session.config.stash.get(
+            _SMALL_BODY_RESOURCE_RECEIPTS_KEY,
+            {},
+        ):
+            workeroutput[_XDIST_SMALL_BODY_RESOURCE_REPORT_KEY] = (
+                _serialize_small_body_resource_report(session.config)
+            )
 
     # Total budget check
     budget_total = session.config.stash[_HARNESS_CONFIG_KEY].budget_total_s
@@ -1489,6 +2345,72 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 "external_network-only process"
             )
 
+        resource_report = _combined_planetary_resource_report(config)
+        resource_summary = resource_report["summary"]
+        if resource_summary["receipts"]:
+            identities = resource_summary["identities"]
+            terminalreporter.write_line(
+                "  Planetary resource: "
+                f"receipts={resource_summary['receipts']}, "
+                f"run={resource_summary['run']}, "
+                f"skip={resource_summary['skip']}, "
+                f"failure={resource_summary['failure']}, "
+                f"content_probes={resource_report['probe_count']}, "
+                "identities="
+                + (
+                    ",".join(identities)
+                    if identities
+                    else "<none>"
+                )
+            )
+            exceptional = [
+                (nodeid, detail)
+                for nodeid, detail in sorted(
+                    resource_report["details"].items()
+                )
+                if detail["disposition"] != "run"
+            ]
+            for nodeid, detail in exceptional[:5]:
+                terminalreporter.write_line(
+                    f"    {nodeid}: {detail['rendered']}"
+                )
+
+        small_body_report = _combined_small_body_resource_report(config)
+        small_body_summary = small_body_report["summary"]
+        if small_body_summary["receipts"]:
+            identities = small_body_summary["identities"]
+            terminalreporter.write_line(
+                "  Supplemental small-body resource: "
+                f"receipts={small_body_summary['receipts']}, "
+                f"run={small_body_summary['run']}, "
+                f"skip={small_body_summary['skip']}, "
+                f"failure={small_body_summary['failure']}, "
+                f"terminal={small_body_summary['terminal']}, "
+                f"manifests={small_body_summary['manifests']}, "
+                f"shards={small_body_summary['shards']}, "
+                f"bodies={small_body_summary['bodies']}, "
+                "identities="
+                + (
+                    ",".join(identities)
+                    if identities
+                    else "<none>"
+                )
+            )
+            exceptional = [
+                (nodeid, detail)
+                for nodeid, detail in sorted(
+                    small_body_report["details"].items()
+                )
+                if (
+                    detail["disposition"] != "run"
+                    or not detail["terminal"]
+                )
+            ]
+            for nodeid, detail in exceptional[:5]:
+                terminalreporter.write_line(
+                    f"    {nodeid}: {detail['rendered']}"
+                )
+
     durations = getattr(config, "_moira_durations", None)
     if durations:
         n_slow     = 5
@@ -1545,6 +2467,59 @@ try:
         node.workerinput["moira_test_seed"] = str(policy.seed)
         node.workerinput["moira_test_mode"] = "1" if policy.test_mode else "0"
         node.workerinput["workerid"] = node.workerinput.get("workerid", "gw0")
+
+    @pytest.hookimpl(optionalhook=True)
+    def pytest_testnodedown(node, error):
+        workeroutput = getattr(node, "workeroutput", {})
+        planetary_worker_report = workeroutput.get(
+            _XDIST_PLANETARY_RESOURCE_REPORT_KEY
+        )
+
+        config = node.config
+        worker_id = node.workerinput.get(
+            "workerid",
+            getattr(getattr(node, "gateway", None), "id", "worker"),
+        )
+        if planetary_worker_report is not None:
+            merged = getattr(
+                config,
+                _XDIST_PLANETARY_RESOURCE_REPORT_ATTR,
+                None,
+            )
+            if merged is None:
+                merged = _empty_planetary_resource_report()
+                setattr(
+                    config,
+                    _XDIST_PLANETARY_RESOURCE_REPORT_ATTR,
+                    merged,
+                )
+            _merge_planetary_resource_report(
+                merged,
+                planetary_worker_report,
+                source=f"xdist worker {worker_id}",
+            )
+
+        small_body_worker_report = workeroutput.get(
+            _XDIST_SMALL_BODY_RESOURCE_REPORT_KEY
+        )
+        if small_body_worker_report is not None:
+            merged = getattr(
+                config,
+                _XDIST_SMALL_BODY_RESOURCE_REPORT_ATTR,
+                None,
+            )
+            if merged is None:
+                merged = _empty_small_body_resource_report()
+                setattr(
+                    config,
+                    _XDIST_SMALL_BODY_RESOURCE_REPORT_ATTR,
+                    merged,
+                )
+            _merge_small_body_resource_report(
+                merged,
+                small_body_worker_report,
+                source=f"xdist worker {worker_id}",
+            )
 
 except ImportError:
     pass

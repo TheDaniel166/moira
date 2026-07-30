@@ -5,7 +5,6 @@ import pytest
 from moira.constants import Body
 from moira.julian import DeltaTPolicy, tt_to_ut
 from moira.planets import sky_position_at
-from moira.spk_reader import get_reader
 from tools.horizons import observer_sky_position
 
 _JD_TT = 2459205.25
@@ -18,7 +17,7 @@ def _signed_angle_delta(start_deg: float, end_deg: float) -> float:
     return ((end_deg - start_deg + 180.0) % 360.0) - 180.0
 
 
-def _direct_topocentric_sky_position(body: str):
+def _direct_topocentric_sky_position(body: str, reader):
     jd_ut = tt_to_ut(_JD_TT)
     delta_t_seconds = (_JD_TT - jd_ut) * 86400.0
     policy = DeltaTPolicy(model="fixed", fixed_delta_t=delta_t_seconds)
@@ -28,7 +27,7 @@ def _direct_topocentric_sky_position(body: str):
         observer_lat=_OBSERVER_LAT,
         observer_lon=_OBSERVER_LON,
         observer_elev_m=0.0,
-        reader=get_reader(),
+        reader=reader,
         delta_t_policy=policy,
     )
 
@@ -37,11 +36,13 @@ def _direct_topocentric_sky_position(body: str):
 @pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-def test_jupiter_saturn_topocentric_direct_path_matches_horizons_tt_anchor() -> None:
+def test_jupiter_saturn_topocentric_direct_path_matches_horizons_tt_anchor(
+    planetary_reader,
+) -> None:
     offsets: list[tuple[str, float, float]] = []
 
     for body, command in ((Body.JUPITER, "599"), (Body.SATURN, "699")):
-        moira = _direct_topocentric_sky_position(body)
+        moira = _direct_topocentric_sky_position(body, planetary_reader)
         ref = observer_sky_position(
             command,
             _JD_TT,

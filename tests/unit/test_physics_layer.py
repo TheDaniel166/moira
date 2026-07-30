@@ -534,17 +534,15 @@ from moira.constants import DEG2RAD
 @pytest.mark.requires_ephemeris
 @given(jd=st.floats(min_value=2400000, max_value=2600000))
 @settings(max_examples=50, deadline=None)
-def test_pbt_true_node_common_frame_intersection(jd):
+def test_pbt_true_node_common_frame_intersection(planetary_reader, jd):
     """The returned node line lies in both true-of-date defining planes."""
     assume(_math.isfinite(jd))
 
-    from moira.spk_reader import get_reader
     from moira.coordinates import vec_sub
 
-    reader = get_reader()
-    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
-    moon_pos, moon_vel = reader.position_and_velocity(3, 301, jd_tt)
-    earth_pos, earth_vel = reader.position_and_velocity(3, 399, jd_tt)
+    jd_tt = _ut1_to_ephemeris_tt(jd, planetary_reader)
+    moon_pos, moon_vel = planetary_reader.position_and_velocity(3, 301, jd_tt)
+    earth_pos, earth_vel = planetary_reader.position_and_velocity(3, 399, jd_tt)
     r = vec_sub(moon_pos, earth_pos)
     v = vec_sub(moon_vel, earth_vel)
     h_icrf = (
@@ -562,7 +560,7 @@ def test_pbt_true_node_common_frame_intersection(jd):
 
     deps_deg = nutation(jd_tt)[1]
     eps = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD
-    lon = true_node(jd, reader=reader, jd_tt=jd_tt).longitude * DEG2RAD
+    lon = true_node(jd, reader=planetary_reader, jd_tt=jd_tt).longitude * DEG2RAD
     node_line = (
         _math.cos(lon),
         _math.sin(lon) * _math.cos(eps),

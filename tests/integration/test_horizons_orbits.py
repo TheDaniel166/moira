@@ -6,7 +6,6 @@ import pytest
 
 from moira.constants import Body
 from moira.orbits import distance_extremes_at, orbital_elements_at
-from moira.spk_reader import get_reader
 from tools.horizons import orbital_elements, vector_series, vector_state
 
 
@@ -157,9 +156,9 @@ def test_orbital_elements_match_horizons(
     command: str,
     label: str,
     jd_ut: float,
+    planetary_reader,
 ) -> None:
-    reader = get_reader()
-    moira = orbital_elements_at(body, jd_ut, reader)
+    moira = orbital_elements_at(body, jd_ut, planetary_reader)
     ref = orbital_elements(command, jd_ut)
 
     assert abs(moira.semi_major_axis_au - ref.semi_major_axis_au) <= 1e-5, (
@@ -210,9 +209,9 @@ def test_inner_distance_extremes_match_horizons_vector_extrema(
     body: str,
     command: str,
     start_jd_ut: float,
+    planetary_reader,
 ) -> None:
-    reader = get_reader()
-    moira = distance_extremes_at(body, start_jd_ut, reader)
+    moira = distance_extremes_at(body, start_jd_ut, planetary_reader)
 
     peri_left, _, peri_right = _first_local_extremum_bracket(command, start_jd_ut, maximise=False)
     aphe_left, _, aphe_right = _first_local_extremum_bracket(command, start_jd_ut, maximise=True)
@@ -257,9 +256,9 @@ def test_outer_distance_extremes_match_horizons_vector_extrema(
     body: str,
     command: str,
     start_jd_ut: float,
+    planetary_reader,
 ) -> None:
-    reader = get_reader()
-    moira = distance_extremes_at(body, start_jd_ut, reader)
+    moira = distance_extremes_at(body, start_jd_ut, planetary_reader)
 
     peri_left, _, peri_right = _first_local_extremum_bracket(command, start_jd_ut, maximise=False)
     aphe_left, _, aphe_right = _first_local_extremum_bracket(command, start_jd_ut, maximise=True)

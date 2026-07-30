@@ -8,7 +8,6 @@ from moira.asteroids import ASTEROID_NAIF
 from moira.corrections import apply_light_time
 from moira.julian import ut_to_tt
 from moira.planets import _earth_barycentric_state, _geocentric
-from moira.spk_reader import get_reader
 from tools.benchmark_matrix import (
     VECTOR_ASTEROID_CASES,
     VECTOR_PLANET_CASES,
@@ -42,9 +41,12 @@ def _angular_error_arcsec(moira_xyz: tuple[float, float, float], ref: VectorStat
     [(body, case) for body, cases in VECTOR_PLANET_CASES.items() for case in cases],
     ids=[f"{body}-{case.label}" for body, cases in VECTOR_PLANET_CASES.items() for case in cases],
 )
-def test_planet_geocentric_vectors_match_horizons(body: str, case: VectorCase) -> None:
-    reader = get_reader()
-    moira_xyz = _geocentric(body, ut_to_tt(case.jd_ut), reader)
+def test_planet_geocentric_vectors_match_horizons(
+    body: str,
+    case: VectorCase,
+    planetary_reader,
+) -> None:
+    moira_xyz = _geocentric(body, ut_to_tt(case.jd_ut), planetary_reader)
     ref = vector_state(case.command, case.jd_ut)
     error_arcsec = _angular_error_arcsec(moira_xyz, ref)
 
@@ -63,13 +65,21 @@ def test_planet_geocentric_vectors_match_horizons(body: str, case: VectorCase) -
     [(name, case) for name, cases in VECTOR_ASTEROID_CASES.items() for case in cases],
     ids=[f"{name}-{case.label}" for name, cases in VECTOR_ASTEROID_CASES.items() for case in cases],
 )
-def test_asteroid_geocentric_vectors_match_horizons(name: str, case: VectorCase) -> None:
-    reader = get_reader()
+def test_asteroid_geocentric_vectors_match_horizons(
+    name: str,
+    case: VectorCase,
+    small_body_reader_pool,
+) -> None:
     naif_id = ASTEROID_NAIF[name]
     jd_tt = ut_to_tt(case.jd_ut)
-    earth_ssb, _ = _earth_barycentric_state(jd_tt, reader)
-    moira_xyz, _ = apply_light_time(naif_id, jd_tt, reader, earth_ssb,
-                                    lambda b, t, r: r.position(0, b, t))
+    earth_ssb, _ = _earth_barycentric_state(jd_tt, small_body_reader_pool)
+    moira_xyz, _ = apply_light_time(
+        naif_id,
+        jd_tt,
+        small_body_reader_pool,
+        earth_ssb,
+        lambda b, t, r: r.position(0, b, t),
+    )
     ref = vector_state_corrected(case.command, case.jd_ut, vec_corr="LT")
     error_arcsec = _angular_error_arcsec(moira_xyz, ref)
 

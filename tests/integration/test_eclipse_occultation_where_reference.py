@@ -248,7 +248,9 @@ def test_solar_eclipse_path_matches_offline_swiss_where_reference(eclipse_calcul
     assert path.eclipse_data.is_solar_eclipse
 
 
-def test_lunar_star_occultation_path_matches_offline_swiss_where_reference() -> None:
+def test_lunar_star_occultation_path_matches_offline_swiss_where_reference(
+    planetary_reader,
+) -> None:
     row = _parse_where_rows("swe_lun_occult_where")[0]
     star_name = str(row["star"])
     star = star_at(star_name, ut_to_tt(float(row["jd"])))
@@ -259,6 +261,7 @@ def test_lunar_star_occultation_path_matches_offline_swiss_where_reference() -> 
         star_name,
         float(row["jd"]),
         sample_count=1,
+        reader=planetary_reader,
     )
 
     assert abs(path.jd_greatest_ut - float(row["jd"])) <= 0.05
@@ -271,7 +274,9 @@ def test_lunar_star_occultation_path_matches_offline_swiss_where_reference() -> 
 
 
 @pytest.mark.external_network
-def test_lunar_star_occultation_graze_path_matches_iota_text_reference() -> None:
+def test_lunar_star_occultation_graze_path_matches_iota_text_reference(
+    planetary_reader,
+) -> None:
     rows = _parse_iota_graze_rows(
         "https://occultations.org/publications/rasc/2025/20250307ElNath.txt"
     )
@@ -286,12 +291,15 @@ def test_lunar_star_occultation_graze_path_matches_iota_text_reference() -> None
             float(row["lon"]),
             float(row["lat"]),
             observer_elev_m=float(row["observer_elev_m"]),
+            reader=planetary_reader,
         )
         assert abs(graze_lat - float(row["lat"])) <= 0.18
 
 
 @pytest.mark.external_network
-def test_lunar_star_occultation_graze_limits_match_iota_spica_text_references() -> None:
+def test_lunar_star_occultation_graze_limits_match_iota_spica_text_references(
+    planetary_reader,
+) -> None:
     north_rows = _parse_iota_graze_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt",
         2024,
@@ -316,12 +324,15 @@ def test_lunar_star_occultation_graze_limits_match_iota_spica_text_references() 
             float(row["lon"]),
             float(row["lat"]),
             observer_elev_m=float(row["observer_elev_m"]),
+            reader=planetary_reader,
         )
         assert abs(graze_lat - float(row["lat"])) <= 0.18
 
 
 @pytest.mark.external_network
-def test_lunar_star_graze_circumstances_match_iota_spica_table_columns() -> None:
+def test_lunar_star_graze_circumstances_match_iota_spica_table_columns(
+    planetary_reader,
+) -> None:
     north_rows = _parse_iota_graze_circumstance_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt"
     )
@@ -343,6 +354,7 @@ def test_lunar_star_graze_circumstances_match_iota_spica_table_columns() -> None
             float(row["jd"]),
             float(row["lat"]),
             float(row["lon"]),
+            reader=planetary_reader,
         )
         assert abs(circumstances.tan_z - float(row["tanz"])) <= 1.6
         assert abs(circumstances.position_angle_deg - float(row["pa"])) <= 1.2
@@ -352,7 +364,9 @@ def test_lunar_star_graze_circumstances_match_iota_spica_table_columns() -> None
 
 
 @pytest.mark.external_network
-def test_lunar_star_graze_table_matches_iota_spica_sample_rows() -> None:
+def test_lunar_star_graze_table_matches_iota_spica_sample_rows(
+    planetary_reader,
+) -> None:
     rows = _parse_iota_graze_circumstance_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt"
     )
@@ -365,6 +379,7 @@ def test_lunar_star_graze_table_matches_iota_spica_sample_rows() -> None:
         [float(row["jd"]) for row in sample_rows],
         [float(row["lon"]) for row in sample_rows],
         [float(row["lat"]) for row in sample_rows],
+        reader=planetary_reader,
     )
 
     for built, row in zip(table, sample_rows):
@@ -377,7 +392,9 @@ def test_lunar_star_graze_table_matches_iota_spica_sample_rows() -> None:
 
 
 @pytest.mark.external_network
-def test_lunar_star_graze_product_nominal_limit_matches_iota_spica_row() -> None:
+def test_lunar_star_graze_product_nominal_limit_matches_iota_spica_row(
+    planetary_reader,
+) -> None:
     rows = _parse_iota_graze_circumstance_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt"
     )
@@ -389,6 +406,7 @@ def test_lunar_star_graze_product_nominal_limit_matches_iota_spica_row() -> None
         float(row["jd"]),
         float(row["lon"]),
         float(row["lat"]),
+        reader=planetary_reader,
     )
 
     assert product.product_kind == "nominal_limit"
@@ -397,7 +415,9 @@ def test_lunar_star_graze_product_nominal_limit_matches_iota_spica_row() -> None
 
 
 @pytest.mark.external_network
-def test_lunar_star_graze_product_track_nominal_limit_matches_iota_spica_rows() -> None:
+def test_lunar_star_graze_product_track_nominal_limit_matches_iota_spica_rows(
+    planetary_reader,
+) -> None:
     rows = _parse_iota_graze_circumstance_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt"
     )
@@ -409,6 +429,7 @@ def test_lunar_star_graze_product_track_nominal_limit_matches_iota_spica_rows() 
         [float(row["jd"]) for row in sample_rows],
         [float(row["lon"]) for row in sample_rows],
         [float(row["lat"]) for row in sample_rows],
+        reader=planetary_reader,
     )
 
     assert track.product_kind == "nominal_limit"
@@ -420,7 +441,9 @@ def test_lunar_star_graze_product_track_nominal_limit_matches_iota_spica_rows() 
 
 
 @pytest.mark.external_network
-def test_lunar_star_occultation_path_matches_iota_epsilon_ari_text_reference() -> None:
+def test_lunar_star_occultation_path_matches_iota_epsilon_ari_text_reference(
+    planetary_reader,
+) -> None:
     rows = _parse_iota_graze_rows_for_date(
         "https://occultations.org/publications/rasc/2025/20250401epsAriPath.txt",
         2025,
@@ -438,6 +461,7 @@ def test_lunar_star_occultation_path_matches_iota_epsilon_ari_text_reference() -
             float(row["lon"]),
             float(row["lat"]),
             observer_elev_m=float(row["observer_elev_m"]),
+            reader=planetary_reader,
         )
         assert abs(graze_lat - float(row["lat"])) <= 0.18
 
@@ -455,6 +479,7 @@ def test_lunar_star_occultation_path_matches_iota_epsilon_ari_text_reference() -
 def test_lunar_star_occultation_path_matches_iota_annual_graze_sections(
     star_label: str,
     registry_name: str,
+    planetary_reader,
 ) -> None:
     rows = _parse_iota_annual_graze_section(
         "https://occultations.org/publications/rasc/2025/nam25grz.txt",
@@ -471,6 +496,7 @@ def test_lunar_star_occultation_path_matches_iota_annual_graze_sections(
             float(row["lon"]),
             float(row["lat"]),
             observer_elev_m=float(row["observer_elev_m"]),
+            reader=planetary_reader,
         )
         assert abs(graze_lat - float(row["lat"])) <= 0.18
 
@@ -487,6 +513,7 @@ def test_lunar_star_occultation_path_matches_iota_annual_graze_sections(
 def test_lunar_star_practical_graze_line_matches_profile_sensitive_iota_sections(
     star_label: str,
     registry_name: str,
+    planetary_reader,
 ) -> None:
     rows = _parse_iota_annual_graze_section(
         "https://occultations.org/publications/rasc/2025/nam25grz.txt",
@@ -502,6 +529,7 @@ def test_lunar_star_practical_graze_line_matches_profile_sensitive_iota_sections
         float(row["lon"]),
         float(row["lat"]),
         observer_elev_m=float(row["observer_elev_m"]),
+        reader=planetary_reader,
     )
     practical_lat = lunar_star_practical_graze_latitude(
         star.longitude,
@@ -510,6 +538,7 @@ def test_lunar_star_practical_graze_line_matches_profile_sensitive_iota_sections
         float(row["lon"]),
         float(row["lat"]),
         observer_elev_m=float(row["observer_elev_m"]),
+        reader=planetary_reader,
         limb_profile_provider=official_lunar_limb_profile_adjustment,
     )
 

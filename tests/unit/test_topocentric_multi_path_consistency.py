@@ -28,7 +28,6 @@ from moira.planets import (
     planet_at,
     sky_position_at,
 )
-from moira.spk_reader import get_reader
 
 _JD_TT = 2459205.25
 _ONE_SECOND_JD = 1.0 / 86400.0
@@ -161,13 +160,11 @@ def _topocentric_longitude(body: str, jd_tt: float, reader) -> float:
 
 
 @pytest.mark.requires_ephemeris
-def test_topocentric_ra_dec_agree_across_direct_chain_and_route() -> None:
-    reader = get_reader()
-
+def test_topocentric_ra_dec_agree_across_direct_chain_and_route(planetary_reader) -> None:
     for body in _BODIES:
-        direct_ra_deg, direct_dec_deg = _direct_topocentric_ra_dec(body, _JD_TT, reader)
-        chain_ra_deg, chain_dec_deg = _manual_chain_topocentric_ra_dec(body, _JD_TT, reader)
-        route_ra_deg, route_dec_deg = _route_topocentric_ra_dec(body, _JD_TT, reader)
+        direct_ra_deg, direct_dec_deg = _direct_topocentric_ra_dec(body, _JD_TT, planetary_reader)
+        chain_ra_deg, chain_dec_deg = _manual_chain_topocentric_ra_dec(body, _JD_TT, planetary_reader)
+        route_ra_deg, route_dec_deg = _route_topocentric_ra_dec(body, _JD_TT, planetary_reader)
 
         assert abs(_signed_angle_delta(direct_ra_deg, chain_ra_deg)) < _INTERNAL_PATH_TOLERANCE_DEG, body
         assert abs(chain_dec_deg - direct_dec_deg) < _INTERNAL_PATH_TOLERANCE_DEG, body
@@ -180,12 +177,11 @@ def test_topocentric_ra_dec_agree_across_direct_chain_and_route() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_topocentric_ra_dec_round_trip_is_stable_at_machine_scale() -> None:
-    reader = get_reader()
+def test_topocentric_ra_dec_round_trip_is_stable_at_machine_scale(planetary_reader) -> None:
     _jd_ut, _policy, obliquity_deg, _lst_deg = _tt_pinned_epoch(_JD_TT)
 
     for body in _BODIES:
-        direct_ra_deg, direct_dec_deg = _direct_topocentric_ra_dec(body, _JD_TT, reader)
+        direct_ra_deg, direct_dec_deg = _direct_topocentric_ra_dec(body, _JD_TT, planetary_reader)
         lon_deg, lat_deg = equatorial_to_ecliptic(direct_ra_deg, direct_dec_deg, obliquity_deg)
         round_trip_ra_deg, round_trip_dec_deg = ecliptic_to_equatorial(lon_deg, lat_deg, obliquity_deg)
 
@@ -194,20 +190,18 @@ def test_topocentric_ra_dec_round_trip_is_stable_at_machine_scale() -> None:
 
 
 @pytest.mark.requires_ephemeris
-def test_jupiter_saturn_topocentric_longitude_progression_is_smooth_across_one_second_tt() -> None:
-    reader = get_reader()
-
+def test_jupiter_saturn_topocentric_longitude_progression_is_smooth_across_one_second_tt(planetary_reader) -> None:
     separation_minus_deg = _signed_angle_delta(
-        _topocentric_longitude(Body.SATURN, _JD_TT - _ONE_SECOND_JD, reader),
-        _topocentric_longitude(Body.JUPITER, _JD_TT - _ONE_SECOND_JD, reader),
+        _topocentric_longitude(Body.SATURN, _JD_TT - _ONE_SECOND_JD, planetary_reader),
+        _topocentric_longitude(Body.JUPITER, _JD_TT - _ONE_SECOND_JD, planetary_reader),
     )
     separation_deg = _signed_angle_delta(
-        _topocentric_longitude(Body.SATURN, _JD_TT, reader),
-        _topocentric_longitude(Body.JUPITER, _JD_TT, reader),
+        _topocentric_longitude(Body.SATURN, _JD_TT, planetary_reader),
+        _topocentric_longitude(Body.JUPITER, _JD_TT, planetary_reader),
     )
     separation_plus_deg = _signed_angle_delta(
-        _topocentric_longitude(Body.SATURN, _JD_TT + _ONE_SECOND_JD, reader),
-        _topocentric_longitude(Body.JUPITER, _JD_TT + _ONE_SECOND_JD, reader),
+        _topocentric_longitude(Body.SATURN, _JD_TT + _ONE_SECOND_JD, planetary_reader),
+        _topocentric_longitude(Body.JUPITER, _JD_TT + _ONE_SECOND_JD, planetary_reader),
     )
 
     step_before_deg = separation_deg - separation_minus_deg

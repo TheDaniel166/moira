@@ -1,13 +1,19 @@
-import os
 from pathlib import Path
 
 import pytest
 
-from moira._kernel_paths import find_planetary_kernel, SOVEREIGN_SMALL_BODY_MANIFEST_ENV
+from moira._kernel_paths import SOVEREIGN_SMALL_BODY_MANIFEST_ENV
 from moira._spk_body_kernel import small_body_readers_from_manifest
 from moira.asteroids import asteroid_at
 from moira.julian import julian_day
-from moira.spk_reader import KernelPool, SpkReader, get_reader, reset_singleton, set_kernel_path
+from moira.spk_reader import (
+    KernelPool,
+    MissingKernelError,
+    SpkReader,
+    get_reader,
+    reset_singleton,
+    set_kernel_path,
+)
 
 
 _MANIFEST = (
@@ -25,23 +31,23 @@ def _angle_diff_arcsec(a: float, b: float) -> float:
 
 @pytest.mark.integration
 @pytest.mark.requires_ephemeris
-def test_public_asteroid_route_prefers_sovereign_manifest_when_configured(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_public_asteroid_route_prefers_sovereign_manifest_when_configured(
+    monkeypatch: pytest.MonkeyPatch,
+    configured_global_reader,
+    planetary_kernel_path,
+) -> None:
     if not _MANIFEST.exists():
         pytest.skip("Sovereign small-body manifest artifact is not present")
 
-    planetary_path = find_planetary_kernel()
-    if planetary_path is None:
-        pytest.skip("No planetary kernel is installed")
-
-    original_manifest = os.environ.get(SOVEREIGN_SMALL_BODY_MANIFEST_ENV)
+    assert get_reader() is configured_global_reader
     monkeypatch.setenv(SOVEREIGN_SMALL_BODY_MANIFEST_ENV, str(_MANIFEST))
     reset_singleton()
 
-    explicit_readers = [SpkReader(planetary_path)]
+    explicit_readers = [SpkReader(planetary_kernel_path)]
     explicit_readers.extend(small_body_readers_from_manifest(_MANIFEST))
     explicit_pool = KernelPool(explicit_readers)
     try:
-        set_kernel_path(planetary_path)
+        set_kernel_path(planetary_kernel_path)
         routed_reader = get_reader()
 
         jd_ut = julian_day(2026, 5, 9, 0.0)
@@ -54,8 +60,6 @@ def test_public_asteroid_route_prefers_sovereign_manifest_when_configured(monkey
     finally:
         explicit_pool.close()
         reset_singleton()
-        if original_manifest is None:
-            monkeypatch.delenv(SOVEREIGN_SMALL_BODY_MANIFEST_ENV, raising=False)
-        else:
-            monkeypatch.setenv(SOVEREIGN_SMALL_BODY_MANIFEST_ENV, original_manifest)
-        set_kernel_path(planetary_path)
+
+    with pytest.raises(MissingKernelError, match="outside an active reader context"):
+        get_reader()

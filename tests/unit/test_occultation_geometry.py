@@ -20,7 +20,9 @@ from moira.occultations import (
 )
 
 
-def test_limb_profile_provider_adjusts_occultation_margin() -> None:
+def test_limb_profile_provider_adjusts_occultation_margin(
+    planetary_reader,
+) -> None:
     jd = 2460641.97
     lat = 61.17638888888889
     lon = -76.25
@@ -33,7 +35,7 @@ def test_limb_profile_provider_adjusts_occultation_margin() -> None:
         jd,
         lat,
         lon,
-        None,
+        planetary_reader,
     )
     _, raised_margin, _, _ = _star_topocentric_target_geometry(
         star_lon,
@@ -41,7 +43,7 @@ def test_limb_profile_provider_adjusts_occultation_margin() -> None:
         jd,
         lat,
         lon,
-        None,
+        planetary_reader,
         0.0,
         lambda _jd, _lat, _lon, _elev, _pa, _dist: 0.01,
     )
@@ -49,7 +51,9 @@ def test_limb_profile_provider_adjusts_occultation_margin() -> None:
     assert abs((raised_margin - base_margin) - 0.01) < 1e-12
 
 
-def test_lunar_star_graze_circumstances_are_self_consistent() -> None:
+def test_lunar_star_graze_circumstances_are_self_consistent(
+    planetary_reader,
+) -> None:
     jd = 2460641.97
     lat = 61.17638888888889
     lon = -76.25
@@ -62,6 +66,7 @@ def test_lunar_star_graze_circumstances_are_self_consistent() -> None:
         jd,
         lat,
         lon,
+        reader=planetary_reader,
     )
 
     separation, margin, _, _ = _star_topocentric_target_geometry(
@@ -70,7 +75,7 @@ def test_lunar_star_graze_circumstances_are_self_consistent() -> None:
         jd,
         lat,
         lon,
-        None,
+        planetary_reader,
     )
 
     assert math.isfinite(circumstances.tan_z)
@@ -83,7 +88,9 @@ def test_lunar_star_graze_circumstances_are_self_consistent() -> None:
     assert abs(circumstances.zenith_distance_deg - (90.0 - circumstances.moon_altitude_deg)) < 1e-12
 
 
-def test_lunar_star_graze_product_at_defaults_to_nominal_limit() -> None:
+def test_lunar_star_graze_product_at_defaults_to_nominal_limit(
+    planetary_reader,
+) -> None:
     jd = 2460641.97
     lat = 61.17638888888889
     lon = -76.25
@@ -96,6 +103,7 @@ def test_lunar_star_graze_product_at_defaults_to_nominal_limit() -> None:
         jd,
         lon,
         lat,
+        reader=planetary_reader,
     )
 
     assert product.product_kind == "nominal_limit"
@@ -105,7 +113,9 @@ def test_lunar_star_graze_product_at_defaults_to_nominal_limit() -> None:
     assert product.profile_band_north_latitude_deg is None
 
 
-def test_lunar_star_graze_product_track_defaults_to_nominal_limit() -> None:
+def test_lunar_star_graze_product_track_defaults_to_nominal_limit(
+    planetary_reader,
+) -> None:
     jd = 2460641.97
     star_lon = 204.20859797536738
     star_lat = -2.0564660315538075
@@ -115,6 +125,7 @@ def test_lunar_star_graze_product_track_defaults_to_nominal_limit() -> None:
         [jd, jd],
         [-76.25, -63.0],
         [61.17638888888889, 54.40641666666667],
+        reader=planetary_reader,
     )
 
     assert track.product_kind == "nominal_limit"

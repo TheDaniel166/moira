@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import pytest
 
-import moira
 import moira.void_of_course as _voc_mod
 from moira.constants import SIGNS
 from moira.void_of_course import (
@@ -43,9 +42,13 @@ _SCAN_END_WIDE = 2451575.0    # +30 days
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(scope="session")
-def voc_scan_windows(moira_engine):
+def voc_scan_windows(planetary_reader):
     """All VOC windows in the 14-day J2000 scan range (computed once per session)."""
-    return void_periods_in_range(_SCAN_START, _SCAN_END)
+    return void_periods_in_range(
+        _SCAN_START,
+        _SCAN_END,
+        reader=planetary_reader,
+    )
 
 
 # ============================================================================
@@ -207,20 +210,23 @@ def test_aspect_signal_real_conjunction_passes_guard():
 # Phase 2 — Result vessel structure (ephemeris required)
 # ============================================================================
 
-def test_window_returns_vocwindow_type(moira_engine, jd_j2000):
+def test_window_returns_vocwindow_type(planetary_reader, jd_j2000):
     """RULE-01: void_of_course_window always returns a VoidOfCourseWindow instance."""
-    result = void_of_course_window(jd_j2000)
+    result = void_of_course_window(jd_j2000, reader=planetary_reader)
     assert isinstance(result, VoidOfCourseWindow)
 
 
-def test_window_never_raises_for_valid_jd(moira_engine, jd_j2000):
+def test_window_never_raises_for_valid_jd(planetary_reader, jd_j2000):
     """RULE-01: does not raise for a standard finite JD."""
-    void_of_course_window(jd_j2000)   # must not raise
+    void_of_course_window(jd_j2000, reader=planetary_reader)  # must not raise
 
 
-def test_window_vessel_fields_typed(moira_engine, jd_j2000, ritual):
+def test_window_vessel_fields_typed(planetary_reader, jd_j2000, ritual):
     """RULE-01: every field of the result vessel has the correct type."""
-    window = ritual.witness("voc_window_j2000", void_of_course_window(jd_j2000))
+    window = ritual.witness(
+        "voc_window_j2000",
+        void_of_course_window(jd_j2000, reader=planetary_reader),
+    )
     assert isinstance(window.moon_sign,      str)
     assert isinstance(window.moon_sign_next, str)
     assert isinstance(window.jd_voc_start,   float)
@@ -229,7 +235,7 @@ def test_window_vessel_fields_typed(moira_engine, jd_j2000, ritual):
     assert window.last_aspect is None or isinstance(window.last_aspect, LastAspect)
 
 
-def test_last_aspect_fields_when_present(moira_engine, voc_scan_windows):
+def test_last_aspect_fields_when_present(voc_scan_windows):
     """RULE-01: when last_aspect is not None its fields are correctly typed."""
     windows_with_aspect = [w for w in voc_scan_windows if w.last_aspect is not None]
     if not windows_with_aspect:
@@ -243,20 +249,20 @@ def test_last_aspect_fields_when_present(moira_engine, voc_scan_windows):
     assert la.aspect_name in _voc_mod._ASPECT_NAMES.values()
 
 
-def test_window_ordering_j2000(moira_engine, jd_j2000):
+def test_window_ordering_j2000(planetary_reader, jd_j2000):
     """RULE-03: jd_voc_start ≤ jd_voc_end for the J2000 window."""
-    window = void_of_course_window(jd_j2000)
+    window = void_of_course_window(jd_j2000, reader=planetary_reader)
     assert window.jd_voc_start <= window.jd_voc_end
 
 
-def test_duration_is_derived_j2000(moira_engine, jd_j2000):
+def test_duration_is_derived_j2000(planetary_reader, jd_j2000):
     """RULE-04: duration_hours == (jd_voc_end − jd_voc_start) × 24 within 1e-9."""
-    window   = void_of_course_window(jd_j2000)
+    window = void_of_course_window(jd_j2000, reader=planetary_reader)
     expected = (window.jd_voc_end - window.jd_voc_start) * 24.0
     assert abs(window.duration_hours - expected) < 1e-9
 
 
-def test_is_long_true_when_duration_exceeds_12(moira_engine, voc_scan_windows):
+def test_is_long_true_when_duration_exceeds_12(voc_scan_windows):
     """RULE-05: is_long is True for every window whose duration_hours > 12.0."""
     long_windows = [w for w in voc_scan_windows if w.duration_hours > 12.0]
     if not long_windows:
@@ -265,7 +271,7 @@ def test_is_long_true_when_duration_exceeds_12(moira_engine, voc_scan_windows):
         assert w.is_long, f"Expected is_long=True for duration {w.duration_hours:.4f}h"
 
 
-def test_is_long_false_when_duration_at_most_12(moira_engine, voc_scan_windows):
+def test_is_long_false_when_duration_at_most_12(voc_scan_windows):
     """RULE-05: is_long is False for every window whose duration_hours ≤ 12.0."""
     short_windows = [w for w in voc_scan_windows if w.duration_hours <= 12.0]
     if not short_windows:
@@ -278,43 +284,46 @@ def test_is_long_false_when_duration_at_most_12(moira_engine, voc_scan_windows):
 # Phase 3 — API behaviour and sign name validity
 # ============================================================================
 
-def test_is_voc_at_j2000_agrees_with_window(moira_engine, jd_j2000):
+def test_is_voc_at_j2000_agrees_with_window(planetary_reader, jd_j2000):
     """RULE-02: is_void_of_course at J2000 matches window bound check."""
-    window     = void_of_course_window(jd_j2000)
-    in_window  = window.jd_voc_start <= jd_j2000 <= window.jd_voc_end
-    assert is_void_of_course(jd_j2000) == in_window
+    window = void_of_course_window(jd_j2000, reader=planetary_reader)
+    in_window = window.jd_voc_start <= jd_j2000 <= window.jd_voc_end
+    assert is_void_of_course(jd_j2000, reader=planetary_reader) == in_window
 
 
-def test_is_voc_true_at_window_midpoint(moira_engine, voc_scan_windows):
+def test_is_voc_true_at_window_midpoint(
+    planetary_reader,
+    voc_scan_windows,
+):
     """RULE-02: is_void_of_course returns True at the midpoint of each window."""
     for window in voc_scan_windows:
         jd_mid = (window.jd_voc_start + window.jd_voc_end) / 2.0
-        assert is_void_of_course(jd_mid) is True, (
+        assert is_void_of_course(jd_mid, reader=planetary_reader) is True, (
             f"is_voc returned False at midpoint of {window!r}"
         )
 
 
-def test_sign_names_valid_j2000(moira_engine, jd_j2000):
+def test_sign_names_valid_j2000(planetary_reader, jd_j2000):
     """RULE-09: moon_sign and moon_sign_next are members of moira.constants.SIGNS."""
-    window = void_of_course_window(jd_j2000)
+    window = void_of_course_window(jd_j2000, reader=planetary_reader)
     assert window.moon_sign      in SIGNS, f"{window.moon_sign!r} not in SIGNS"
     assert window.moon_sign_next in SIGNS, f"{window.moon_sign_next!r} not in SIGNS"
 
 
-def test_next_voc_is_strictly_future(moira_engine, jd_j2000):
+def test_next_voc_is_strictly_future(planetary_reader, jd_j2000):
     """RULE-10: next_void_of_course(jd).jd_voc_start > jd."""
-    result = next_void_of_course(jd_j2000)
+    result = next_void_of_course(jd_j2000, reader=planetary_reader)
     assert result is not None, "next_void_of_course returned None within 60 days of J2000"
     assert result.jd_voc_start > jd_j2000
 
 
-def test_range_is_chronologically_sorted(moira_engine, voc_scan_windows):
+def test_range_is_chronologically_sorted(voc_scan_windows):
     """RULE-11: void_periods_in_range returns windows sorted by jd_voc_start."""
     starts = [w.jd_voc_start for w in voc_scan_windows]
     assert starts == sorted(starts), "VOC windows are not in chronological order"
 
 
-def test_range_contains_multiple_windows(moira_engine, voc_scan_windows):
+def test_range_contains_multiple_windows(voc_scan_windows):
     """Smoke: 14-day range contains at least 2 complete VOC windows."""
     assert len(voc_scan_windows) >= 2, (
         f"Expected ≥2 VOC windows in 14-day scan, got {len(voc_scan_windows)}"
@@ -325,7 +334,7 @@ def test_range_contains_multiple_windows(moira_engine, voc_scan_windows):
 # Phase 4 — Contradiction sweeps (ritual.sweep_taboo)
 # ============================================================================
 
-def test_sweep_no_inverted_ordering(moira_engine, voc_scan_windows, ritual):
+def test_sweep_no_inverted_ordering(voc_scan_windows, ritual):
     """RULE-03 (sweep): jd_voc_start ≤ jd_voc_end for every window in 14-day range."""
     ritual.sweep_taboo(
         "inverted_voc_window",
@@ -336,7 +345,7 @@ def test_sweep_no_inverted_ordering(moira_engine, voc_scan_windows, ritual):
     )
 
 
-def test_sweep_duration_is_derived(moira_engine, voc_scan_windows, ritual):
+def test_sweep_duration_is_derived(voc_scan_windows, ritual):
     """RULE-04 (sweep): duration_hours == (end − start) × 24 for every window."""
     ritual.sweep_taboo(
         "duration_not_derived",
@@ -352,7 +361,7 @@ def test_sweep_duration_is_derived(moira_engine, voc_scan_windows, ritual):
     )
 
 
-def test_sweep_is_long_threshold_consistent(moira_engine, voc_scan_windows, ritual):
+def test_sweep_is_long_threshold_consistent(voc_scan_windows, ritual):
     """RULE-05 (sweep): is_long == (duration_hours > 12.0) for every window."""
     ritual.sweep_taboo(
         "is_long_threshold_broken",
@@ -363,7 +372,7 @@ def test_sweep_is_long_threshold_consistent(moira_engine, voc_scan_windows, ritu
     )
 
 
-def test_sweep_sign_names_valid(moira_engine, voc_scan_windows, ritual):
+def test_sweep_sign_names_valid(voc_scan_windows, ritual):
     """RULE-09 (sweep): both moon_sign and moon_sign_next are in SIGNS for every window."""
     ritual.sweep_taboo(
         "invalid_sign_name",
@@ -376,20 +385,25 @@ def test_sweep_sign_names_valid(moira_engine, voc_scan_windows, ritual):
     )
 
 
-def test_sweep_is_voc_agrees_with_window(moira_engine, voc_scan_windows, ritual):
+def test_sweep_is_voc_agrees_with_window(
+    planetary_reader,
+    voc_scan_windows,
+    ritual,
+):
     """RULE-02 (sweep): is_void_of_course is True at the midpoint of every window."""
     ritual.sweep_taboo(
         "is_voc_disagrees_with_window_midpoint",
         items=voc_scan_windows,
         forbidden=lambda w: not is_void_of_course(
-            (w.jd_voc_start + w.jd_voc_end) / 2.0
+            (w.jd_voc_start + w.jd_voc_end) / 2.0,
+            reader=planetary_reader,
         ),
         context=lambda w: repr(w),
         unpack=False,
     )
 
 
-def test_sweep_no_negative_duration(moira_engine, voc_scan_windows, ritual):
+def test_sweep_no_negative_duration(voc_scan_windows, ritual):
     """Invariant (sweep): duration_hours is never negative."""
     ritual.sweep_taboo(
         "negative_voc_duration",
@@ -404,14 +418,26 @@ def test_sweep_no_negative_duration(moira_engine, voc_scan_windows, ritual):
 # Phase 5 — Oracle tests
 # ============================================================================
 
-def test_modern_voc_starts_no_earlier_than_traditional(moira_engine, jd_j2000, ritual):
+def test_modern_voc_starts_no_earlier_than_traditional(
+    planetary_reader,
+    jd_j2000,
+    ritual,
+):
     """RULE-07 oracle: adding outer planets can only delay or preserve the VOC start.
 
     More bodies → more potential aspect perfections → the last one can only
     be equal or later in time.  Both modes share the same sign exit (jd_voc_end).
     """
-    trad   = void_of_course_window(jd_j2000, modern=False)
-    modern = void_of_course_window(jd_j2000, modern=True)
+    trad = void_of_course_window(
+        jd_j2000,
+        reader=planetary_reader,
+        modern=False,
+    )
+    modern = void_of_course_window(
+        jd_j2000,
+        reader=planetary_reader,
+        modern=True,
+    )
 
     ritual.witness("voc_traditional_j2000", trad)
     ritual.witness("voc_modern_j2000", modern)
@@ -427,16 +453,26 @@ def test_modern_voc_starts_no_earlier_than_traditional(moira_engine, jd_j2000, r
     )
 
 
-def test_window_stable_within_same_sign_transit(moira_engine, jd_j2000, ritual):
+def test_window_stable_within_same_sign_transit(
+    planetary_reader,
+    jd_j2000,
+    ritual,
+):
     """Oracle: any JD in the same Moon sign transit returns the identical window.
 
     void_of_course_window is keyed to the Moon's sign, not to the query time.
     Querying at J2000 and at the midpoint of its window must yield the same
     jd_voc_start, jd_voc_end, moon_sign, and moon_sign_next.
     """
-    window_ref = void_of_course_window(jd_j2000)
+    window_ref = void_of_course_window(
+        jd_j2000,
+        reader=planetary_reader,
+    )
     jd_mid     = (window_ref.jd_voc_start + window_ref.jd_voc_end) / 2.0
-    window_mid = void_of_course_window(jd_mid)
+    window_mid = void_of_course_window(
+        jd_mid,
+        reader=planetary_reader,
+    )
 
     ritual.cross_witness(
         window_ref, window_mid,
@@ -446,9 +482,9 @@ def test_window_stable_within_same_sign_transit(moira_engine, jd_j2000, ritual):
     )
 
 
-def test_next_voc_is_a_vocwindow(moira_engine, jd_j2000):
+def test_next_voc_is_a_vocwindow(planetary_reader, jd_j2000):
     """RULE-10: next_void_of_course returns a proper VoidOfCourseWindow."""
-    result = next_void_of_course(jd_j2000)
+    result = next_void_of_course(jd_j2000, reader=planetary_reader)
     assert result is not None
     assert isinstance(result, VoidOfCourseWindow)
     # And the window itself satisfies the structural invariants
@@ -458,7 +494,7 @@ def test_next_voc_is_a_vocwindow(moira_engine, jd_j2000):
     assert result.moon_sign_next in SIGNS
 
 
-def test_range_windows_ordered_temporal_covenant(moira_engine, voc_scan_windows, ritual):
+def test_range_windows_ordered_temporal_covenant(voc_scan_windows, ritual):
     """RULE-11 temporal: consecutive windows in range are chronologically ordered."""
     starts = [w.jd_voc_start for w in voc_scan_windows]
     ritual.temporal_covenant(
@@ -472,14 +508,18 @@ def test_range_windows_ordered_temporal_covenant(moira_engine, voc_scan_windows,
 # Phase 6 — No-aspect VOC (RULE-06)
 # ============================================================================
 
-def test_no_aspect_voc_last_aspect_is_none(moira_engine):
+def test_no_aspect_voc_last_aspect_is_none(planetary_reader):
     """RULE-06: when Moon enters sign already VOC, last_aspect is None.
 
     Scans 30 days for a no-aspect window.  If found, verifies the structural
     invariant: querying at jd_voc_start + epsilon returns the same jd_voc_start,
     proving it is the sign-entry time, not an aspect perfection time.
     """
-    windows = void_periods_in_range(_SCAN_START, _SCAN_END_WIDE)
+    windows = void_periods_in_range(
+        _SCAN_START,
+        _SCAN_END_WIDE,
+        reader=planetary_reader,
+    )
     no_aspect = [w for w in windows if w.last_aspect is None]
 
     if not no_aspect:
@@ -488,7 +528,10 @@ def test_no_aspect_voc_last_aspect_is_none(moira_engine):
     for w in no_aspect:
         # Probe just inside the window: the window must be stable
         jd_probe    = w.jd_voc_start + 0.001
-        window_probe = void_of_course_window(jd_probe)
+        window_probe = void_of_course_window(
+            jd_probe,
+            reader=planetary_reader,
+        )
         assert abs(window_probe.jd_voc_start - w.jd_voc_start) < 1e-5, (
             f"RULE-06: no-aspect VOC start is unstable at jd_voc_start+0.001\n"
             f"  original={w.jd_voc_start:.6f}, probed={window_probe.jd_voc_start:.6f}"

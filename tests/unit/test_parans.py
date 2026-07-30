@@ -158,7 +158,9 @@ def _segment(
 
 
 @pytest.mark.slow
-def test_crossing_times_match_rise_set_engine() -> None:
+def test_crossing_times_match_rise_set_engine(planetary_reader) -> None:
+    # These rise/set and paran helpers do not expose a reader seam; the
+    # explicit fixture supplies their narrowly scoped ContextVar boundary.
     jd_day = 2451544.5
     lat = 51.5
     lon = -0.1
@@ -379,7 +381,9 @@ def test_crossing_inventory_reports_solver_failure_for_missing_crossable_event(
 
 
 @pytest.mark.slow
-def test_find_parans_returns_sorted_unique_body_pairs() -> None:
+def test_find_parans_returns_sorted_unique_body_pairs(
+    planetary_reader,
+) -> None:
     parans = find_parans([Body.SUN, Body.MOON, "Regulus"], 2451544.5, 51.5, -0.1, orb_minutes=30.0)
 
     assert parans == sorted(parans, key=lambda p: p.orb_min)

@@ -27,8 +27,6 @@ Verification strategy
 
 from __future__ import annotations
 
-import math
-
 import pytest
 
 from moira.constants import Body
@@ -94,43 +92,53 @@ class TestValidation:
 # ---------------------------------------------------------------------------
 
 class TestReceivedLightPositionVessel:
-    def _make(self, body=Body.JUPITER) -> ReceivedLightPosition:
-        return received_light_at(body, JD_J2000)
+    def _make(self, reader, body=Body.JUPITER) -> ReceivedLightPosition:
+        return received_light_at(body, JD_J2000, reader=reader)
 
-    def test_name_field_matches_body(self) -> None:
-        pos = received_light_at(Body.SATURN, JD_J2000)
+    def test_name_field_matches_body(self, planetary_reader) -> None:
+        pos = received_light_at(
+            Body.SATURN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert pos.name == Body.SATURN
 
-    def test_apparent_longitude_in_0_360(self) -> None:
-        pos = self._make()
+    def test_apparent_longitude_in_0_360(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert 0.0 <= pos.apparent_longitude < 360.0
 
-    def test_geometric_longitude_in_0_360(self) -> None:
-        pos = self._make()
+    def test_geometric_longitude_in_0_360(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert 0.0 <= pos.geometric_longitude < 360.0
 
-    def test_distance_km_positive(self) -> None:
-        pos = self._make()
+    def test_distance_km_positive(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.distance_km > 0.0
 
-    def test_light_travel_days_positive(self) -> None:
-        pos = self._make()
+    def test_light_travel_days_positive(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.light_travel_days > 0.0
 
-    def test_emission_jd_less_than_jd_ut(self) -> None:
-        pos = self._make()
+    def test_emission_jd_less_than_jd_ut(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.emission_jd < JD_J2000
 
-    def test_emission_jd_consistent_with_light_travel(self) -> None:
-        pos = self._make()
+    def test_emission_jd_consistent_with_light_travel(
+        self,
+        planetary_reader,
+    ) -> None:
+        pos = self._make(planetary_reader)
         assert pos.emission_jd == pytest.approx(JD_J2000 - pos.light_travel_days)
 
-    def test_retrograde_consistent_with_speed(self) -> None:
-        pos = self._make()
+    def test_retrograde_consistent_with_speed(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.retrograde == (pos.speed < 0.0)
 
-    def test_sign_consistent_with_apparent_longitude(self) -> None:
-        pos = self._make()
+    def test_sign_consistent_with_apparent_longitude(
+        self,
+        planetary_reader,
+    ) -> None:
+        pos = self._make(planetary_reader)
         expected_index = int(pos.apparent_longitude // 30)
         signs = [
             "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
@@ -138,25 +146,29 @@ class TestReceivedLightPositionVessel:
         ]
         assert pos.sign == signs[expected_index]
 
-    def test_sign_degree_in_range(self) -> None:
-        pos = self._make()
+    def test_sign_degree_in_range(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert 0.0 <= pos.sign_degree < 30.0
 
-    def test_light_travel_minutes_consistent(self) -> None:
-        pos = self._make()
+    def test_light_travel_minutes_consistent(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.light_travel_minutes == pytest.approx(pos.light_travel_days * 1440.0)
 
-    def test_distance_au_consistent(self) -> None:
-        pos = self._make()
+    def test_distance_au_consistent(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         assert pos.distance_au == pytest.approx(pos.distance_km / 149_597_870.700)
 
-    def test_longitude_displacement_in_range(self) -> None:
-        pos = self._make()
+    def test_longitude_displacement_in_range(self, planetary_reader) -> None:
+        pos = self._make(planetary_reader)
         d = pos.longitude_displacement
         assert -180.0 < d <= 180.0
 
-    def test_repr_contains_name_and_key_fields(self) -> None:
-        pos = received_light_at(Body.MARS, JD_J2000)
+    def test_repr_contains_name_and_key_fields(self, planetary_reader) -> None:
+        pos = received_light_at(
+            Body.MARS,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         r = repr(pos)
         assert "Mars" in r
         assert "apparent=" in r
@@ -169,31 +181,59 @@ class TestReceivedLightPositionVessel:
 # ---------------------------------------------------------------------------
 
 class TestLightTravelTimePhysics:
-    def test_moon_light_travel_under_2_seconds(self) -> None:
+    def test_moon_light_travel_under_2_seconds(self, planetary_reader) -> None:
         # Moon is ~384,400 km away → τ ≈ 1.28 s ≈ 0.0000148 days.
-        moon = received_light_at(Body.MOON, JD_J2000)
+        moon = received_light_at(
+            Body.MOON,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert moon.light_travel_days < 2.0 / 86400.0  # < 2 seconds
 
-    def test_sun_light_travel_around_8_minutes(self) -> None:
+    def test_sun_light_travel_around_8_minutes(self, planetary_reader) -> None:
         # Sun is ~1 AU ≈ 149.6 million km → τ ≈ 8.317 min ≈ 0.00578 days.
-        sun = received_light_at(Body.SUN, JD_J2000)
+        sun = received_light_at(
+            Body.SUN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert 0.005 < sun.light_travel_days < 0.007
 
-    def test_jupiter_light_travel_exceeds_sun(self) -> None:
+    def test_jupiter_light_travel_exceeds_sun(self, planetary_reader) -> None:
         # Jupiter is ~5 AU away → τ > 5 × 8.3 min ≈ 41 min.
-        jup = received_light_at(Body.JUPITER, JD_J2000)
-        sun = received_light_at(Body.SUN, JD_J2000)
+        jup = received_light_at(
+            Body.JUPITER,
+            JD_J2000,
+            reader=planetary_reader,
+        )
+        sun = received_light_at(
+            Body.SUN,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert jup.light_travel_days > sun.light_travel_days * 4.0
 
-    def test_neptune_light_travel_exceeds_jupiter(self) -> None:
-        nep = received_light_at(Body.NEPTUNE, JD_J2000)
-        jup = received_light_at(Body.JUPITER, JD_J2000)
+    def test_neptune_light_travel_exceeds_jupiter(self, planetary_reader) -> None:
+        nep = received_light_at(
+            Body.NEPTUNE,
+            JD_J2000,
+            reader=planetary_reader,
+        )
+        jup = received_light_at(
+            Body.JUPITER,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert nep.light_travel_days > jup.light_travel_days
 
-    def test_light_travel_consistent_with_distance(self) -> None:
+    def test_light_travel_consistent_with_distance(self, planetary_reader) -> None:
         # τ = distance / C should match the stored light_travel_days.
         for body in (Body.SUN, Body.MARS, Body.SATURN):
-            pos = received_light_at(body, JD_J2000)
+            pos = received_light_at(
+                body,
+                JD_J2000,
+                reader=planetary_reader,
+            )
             expected_lt = pos.distance_km / _C_KM_PER_DAY
             assert pos.light_travel_days == pytest.approx(expected_lt, rel=1e-9)
 
@@ -203,54 +243,87 @@ class TestLightTravelTimePhysics:
 # ---------------------------------------------------------------------------
 
 class TestApparentVsGeometric:
-    def test_moon_displacement_very_small(self) -> None:
+    def test_moon_displacement_very_small(self, planetary_reader) -> None:
         # Moon LTT ≈ 1.3 s.  The longitude_displacement includes LTT plus the
         # other apparent-position corrections (aberration, frame bias, etc.)
         # which the apparent pipeline applies.  For the Moon the total is
         # a few thousandths of a degree — well below 0.01°.
-        moon = received_light_at(Body.MOON, JD_J2000)
+        moon = received_light_at(
+            Body.MOON,
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert abs(moon.longitude_displacement) < 0.01
 
-    def test_apparent_matches_planet_at_apparent(self) -> None:
+    def test_apparent_matches_planet_at_apparent(self, planetary_reader) -> None:
         # apparent_longitude must match planet_at(apparent=True).
         from moira.planets import planet_at
 
         for body in (Body.MARS, Body.JUPITER, Body.SATURN):
-            rl  = received_light_at(body, JD_J2000)
-            geo = planet_at(body, JD_J2000, apparent=True)
+            rl = received_light_at(
+                body,
+                JD_J2000,
+                reader=planetary_reader,
+            )
+            geo = planet_at(
+                body,
+                JD_J2000,
+                reader=planetary_reader,
+                apparent=True,
+            )
             diff = abs((rl.apparent_longitude - geo.longitude + 180.0) % 360.0 - 180.0)
             assert diff < 1e-6, (
                 f"apparent_longitude mismatch for {body}: "
                 f"rl={rl.apparent_longitude:.6f}°, planet_at={geo.longitude:.6f}°"
             )
 
-    def test_geometric_matches_planet_at_geometric(self) -> None:
+    def test_geometric_matches_planet_at_geometric(
+        self,
+        planetary_reader,
+    ) -> None:
         # geometric_longitude must match planet_at(apparent=False).
         from moira.planets import planet_at
 
         for body in (Body.MARS, Body.JUPITER):
-            rl  = received_light_at(body, JD_J2000)
-            geo = planet_at(body, JD_J2000, apparent=False)
+            rl = received_light_at(
+                body,
+                JD_J2000,
+                reader=planetary_reader,
+            )
+            geo = planet_at(
+                body,
+                JD_J2000,
+                reader=planetary_reader,
+                apparent=False,
+            )
             diff = abs((rl.geometric_longitude - geo.longitude + 180.0) % 360.0 - 180.0)
             assert diff < 1e-6, (
                 f"geometric_longitude mismatch for {body}: "
                 f"rl={rl.geometric_longitude:.6f}°, planet_at={geo.longitude:.6f}°"
             )
 
-    def test_outer_planet_displacement_bounded(self) -> None:
+    def test_outer_planet_displacement_bounded(self, planetary_reader) -> None:
         # At ~30 AU, Pluto moves ~1.4°/year ≈ 0.0038°/day.
         # Light takes ~5.3 h ≈ 0.22 days → expected displacement ≈ 0.001°.
         # Allow up to 0.5° for any body.
         for body in (Body.JUPITER, Body.SATURN, Body.NEPTUNE, Body.PLUTO):
-            pos = received_light_at(body, JD_J2000)
+            pos = received_light_at(
+                body,
+                JD_J2000,
+                reader=planetary_reader,
+            )
             assert abs(pos.longitude_displacement) < 0.5, (
                 f"Unexpectedly large displacement for {body}: "
                 f"{pos.longitude_displacement:.4f}°"
             )
 
-    def test_emission_jd_before_birth_jd(self) -> None:
+    def test_emission_jd_before_birth_jd(self, planetary_reader) -> None:
         for body in Body.ALL_PLANETS:
-            pos = received_light_at(body, JD_J2000)
+            pos = received_light_at(
+                body,
+                JD_J2000,
+                reader=planetary_reader,
+            )
             assert pos.emission_jd < JD_J2000, (
                 f"emission_jd not before birth for {body}"
             )
@@ -261,25 +334,43 @@ class TestApparentVsGeometric:
 # ---------------------------------------------------------------------------
 
 class TestAllReceivedLightAt:
-    def test_default_returns_all_received_light_bodies(self) -> None:
-        results = all_received_light_at(JD_J2000)
+    def test_default_returns_all_received_light_bodies(
+        self,
+        planetary_reader,
+    ) -> None:
+        results = all_received_light_at(
+            JD_J2000,
+            reader=planetary_reader,
+        )
         assert set(results.keys()) == RECEIVED_LIGHT_BODIES
 
-    def test_custom_body_list_respected(self) -> None:
+    def test_custom_body_list_respected(self, planetary_reader) -> None:
         bodies = [Body.SUN, Body.MARS, Body.SATURN]
-        results = all_received_light_at(JD_J2000, bodies=bodies)
+        results = all_received_light_at(
+            JD_J2000,
+            bodies=bodies,
+            reader=planetary_reader,
+        )
         assert set(results.keys()) == set(bodies)
 
-    def test_all_results_are_received_light_position_instances(self) -> None:
+    def test_all_results_are_received_light_position_instances(
+        self,
+        planetary_reader,
+    ) -> None:
         results = all_received_light_at(
             JD_J2000,
             bodies=[Body.SUN, Body.MOON, Body.JUPITER],
+            reader=planetary_reader,
         )
         for name, pos in results.items():
             assert isinstance(pos, ReceivedLightPosition)
             assert pos.name == name
 
-    def test_single_body_list(self) -> None:
-        results = all_received_light_at(JD_J2000, bodies=[Body.NEPTUNE])
+    def test_single_body_list(self, planetary_reader) -> None:
+        results = all_received_light_at(
+            JD_J2000,
+            bodies=[Body.NEPTUNE],
+            reader=planetary_reader,
+        )
         assert Body.NEPTUNE in results
         assert len(results) == 1

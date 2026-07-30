@@ -57,7 +57,6 @@ Markers
 """
 
 import json
-import math
 from pathlib import Path
 
 import pytest
@@ -110,7 +109,10 @@ _CASE_IDS = [f"{c['body']}-{c['label']}" for c in _CASES]
     "tracked horizons_asteroid_reference.json fixture is missing"
 ))
 @pytest.mark.parametrize("case", _CASES, ids=_CASE_IDS)
-def test_asteroid_at_matches_horizons_ecliptic(case: dict) -> None:
+def test_asteroid_at_matches_horizons_ecliptic(
+    case: dict,
+    small_body_reader_pool,
+) -> None:
     """
     moira.asteroid_at() ecliptic longitude and latitude must agree with the
     Horizons reference to within the per-body threshold defined in
@@ -126,7 +128,11 @@ def test_asteroid_at_matches_horizons_ecliptic(case: dict) -> None:
     ref_lat   = case["ecl_lat_deg"]
     threshold = _threshold_for(case)
 
-    result = asteroid_at(body, jd_ut)
+    result = asteroid_at(
+        body,
+        jd_ut,
+        reader=small_body_reader_pool,
+    )
 
     lon_err_arcsec = _angle_diff_arcsec(result.longitude, ref_lon)
     lat_err_arcsec = (result.latitude - ref_lat) * 3600.0
