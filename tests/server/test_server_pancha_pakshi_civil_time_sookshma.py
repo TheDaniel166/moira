@@ -145,7 +145,7 @@ def test_service_passes_every_explicit_axis_and_serializer_preserves_result(
     assert response.composition is not None
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_route_returns_the_full_explicit_stage2o_contract(routed_client) -> None:
     client, engine = routed_client
     response = client.post(_ROUTE, json=_payload())
@@ -179,7 +179,7 @@ def test_serializer_preserves_fixed_tail_without_composition(
     assert response.composition is None
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 @pytest.mark.parametrize("removed", tuple(_payload()))
 def test_route_has_no_default_for_any_stage2o_axis(
     routed_client,
@@ -193,7 +193,7 @@ def test_route_has_no_default_for_any_stage2o_axis(
     assert response.json()["error_code"] == "validation_error"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_openapi_names_both_policy_sets_and_excludes_outcome_inputs(
     routed_client,
 ) -> None:

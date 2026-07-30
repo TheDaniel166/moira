@@ -19,6 +19,25 @@ from moira.houses import (
     _project_ra_with_pole,
     _ra_pole_plane_normal,
 )
+from support.numeric_assertions import (
+    NumericSemantics,
+    ToleranceContract,
+    Unit,
+    assert_canonical_longitude_degrees,
+    assert_circular_degrees,
+)
+
+
+_EQUATORIAL_ECLIPTIC_ROUND_TRIP = ToleranceContract(
+    name="house_equatorial_ecliptic_round_trip",
+    semantics=NumericSemantics.CIRCULAR,
+    unit=Unit.DEGREES,
+    absolute=1e-12,
+    basis=(
+        "Binary64 forward/inverse rotation of normalized unit directions; "
+        "the tolerance bounds accumulated trigonometric round-off."
+    ),
+)
 
 
 @pytest.mark.parametrize(
@@ -84,11 +103,13 @@ def test_projected_direction_lies_on_both_governing_planes(
 def test_equatorial_ecliptic_round_trip(
     obliquity_deg: float,
     longitude_deg: float,
-    moira_approx,
-    assert_longitude,
 ) -> None:
     direction = _equatorial_ecliptic_direction(longitude_deg, obliquity_deg)
     recovered = _ecliptic_longitude_from_equatorial_vector(direction, obliquity_deg)
 
-    assert_longitude(recovered, label="recovered longitude")
-    assert recovered == moira_approx(longitude_deg % 360.0, kind="longitude")
+    assert_canonical_longitude_degrees(recovered, label="recovered longitude")
+    assert_circular_degrees(
+        recovered,
+        longitude_deg,
+        tolerance=_EQUATORIAL_ECLIPTIC_ROUND_TRIP,
+    )

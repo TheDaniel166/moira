@@ -14,7 +14,7 @@ from moira_server.config import ServerConfig
 from moira_server.models.relationship import AspectMotionNameValue
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 class _FakeEngine:

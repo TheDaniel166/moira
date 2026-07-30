@@ -92,7 +92,7 @@ LIGHT_TIME_CASES: list[tuple[str, str, str, float]] = [
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize("label,body,command,jd_ut", LIGHT_TIME_CASES, ids=[case[0] for case in LIGHT_TIME_CASES])

@@ -390,8 +390,9 @@ Test stance:
 
 - Prefer service-level audit tests first, because local kernel availability may
   vary.
-- Mark kernel-dependent tests with the existing ephemeris/network markers used
-  by the route test suite.
+- Mark kernel-dependent tests with `requires_ephemeris`; add `loopback` only
+  when local route or event-loop IPC is exercised, and reserve
+  `external_network` for explicit live acquisition.
 - If deterministic kernels are not available in normal CI, add explicit tests
   proving validation behavior and document the runtime dependency gap.
 

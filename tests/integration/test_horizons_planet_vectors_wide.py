@@ -55,7 +55,7 @@ def _vector_diff(moira_xyz: tuple[float, float, float], ref: VectorState) -> tup
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(("body", "command"), BODIES, ids=[body for body, _ in BODIES])

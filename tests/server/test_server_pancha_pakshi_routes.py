@@ -19,7 +19,7 @@ from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 _PROFILE_ID = "agastya_madras_1879_akshara_fixed_clock"
 

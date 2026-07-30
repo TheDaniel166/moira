@@ -28,7 +28,7 @@ from moira_server.services.astrocartography import (
 )
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture

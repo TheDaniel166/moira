@@ -19,7 +19,7 @@ from moira_server.config import ServerConfig
 from moira_server.models.sidereal import SIDEREAL_NAKSHATRA_MAX_BULK_POSITIONS
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 class _FakeEngine:

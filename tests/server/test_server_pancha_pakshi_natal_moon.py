@@ -34,7 +34,7 @@ from moira_server.serializers.pancha_pakshi import (
 from moira_server.services.pancha_pakshi import compute_natal_moon_identity
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 _PROFILE_ID = "bogamuni_chennai_2024_nakshatra_natal_identity"
 _POLICY_ID = "bogamuni_2024_apparent_lahiri_natal_moon_identity_v1"

@@ -74,7 +74,7 @@ def test_service_and_serializer_preserve_both_profiles_and_exact_input() -> None
     )
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 @pytest.mark.parametrize("selector_policy_id", (_WEIGHTED, _EQUAL))
 def test_route_requires_and_echoes_both_profile_and_policy_choices(
     client: TestClient,
@@ -114,7 +114,7 @@ def test_route_requires_and_echoes_both_profile_and_policy_choices(
     )
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 @pytest.mark.parametrize(
     "removed_field",
     (
@@ -150,7 +150,7 @@ def test_route_has_no_default_for_any_composition_axis(
     assert response.json()["error_code"] == "validation_error"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_openapi_is_strict_and_exposes_no_clock_or_outcome_inputs(
     client: TestClient,
 ) -> None:

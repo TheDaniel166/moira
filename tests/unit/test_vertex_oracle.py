@@ -3,7 +3,8 @@ Oracle Tests — Vertex and Anti-Vertex Positions  (SCP P1 / P3)
 
 Verified invariants
 -------------------
-- Vertex and Anti-Vertex match externally-validated golden references at J2000.0, London.
+- Vertex and Anti-Vertex agree with a documented secondary comparator at numeric
+  JD 2451545.0, London.
 - Vertex is identical across every house system for the same JD and geographic coordinates
   (it is computed solely from ARMC, obliquity, and latitude — not from the cusp algorithm).
 - Vertex ∈ [0°, 360°) and Anti-Vertex = (Vertex + 180°) % 360° at every reference epoch.
@@ -16,13 +17,11 @@ Formula (Meeus §24)
     Vertex      = Ascendant(ARMC + 90°, obliquity, −latitude)
     Anti-Vertex = (Vertex + 180°) % 360°
 
-Seeding golden files
---------------------
-    MOIRA_GOLDEN_UPDATE=1 pytest tests/unit/test_vertex_oracle.py -k golden
-
-After seeding, verify the values in tests/golden/ against an external reference
-(Astro.com or Swiss Ephemeris) for 2000-01-01 12:00 UT, 51°30′N 0°00′E, before
-committing the golden file.
+Baseline governance
+-------------------
+Ordinary pytest reads the approved files in tests/golden/ but cannot rewrite
+them. Any separately generated candidate requires explicit provenance review
+against the documented comparator before protected evidence is promoted.
 """
 from __future__ import annotations
 
@@ -34,6 +33,7 @@ from moira.constants import HouseSystem
 from moira.houses import calculate_houses, houses_from_armc
 from moira.julian import ut_to_tt
 from moira.obliquity import true_obliquity
+from support.reference_epochs import REFERENCE_EPOCHS, ReferenceEpoch
 
 # Stable test anchor: London-ish at moderate latitude (well inside polar threshold).
 _LAT = 51.5
@@ -52,13 +52,13 @@ _ALL_SYSTEMS = [
 ]
 
 # ---------------------------------------------------------------------------
-# Oracle — externally-validated golden reference values
+# Cross-engine corroboration — documented secondary comparator values
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
-def test_vertex_golden_j2000_london(jd_j2000, golden, moira_approx):
+def test_vertex_golden_j2000_london(jd_j2000, golden):
     """
-    Oracle: Vertex at J2000.0 (2000-01-01 12:00 UT), 51.5°N 0.0°E, Placidus.
+    Corroboration at numeric JD 2451545.0, 51.5°N 0.0°E, Placidus.
 
     External reference — Astro-Seek (Swiss Ephemeris engine):
         Vertex  = Libra 8°27'  = 188.45°  (at 51°29'N, 0°01'W, 12:00 GMT)
@@ -72,8 +72,8 @@ def test_vertex_golden_j2000_london(jd_j2000, golden, moira_approx):
         intersection: y = -cos(ARMC),  x = sin(ARMC)*cos(eps) - cot(lat)*sin(eps)
         Vertex = atan2(y, x) [western branch] % 360
 
-    Golden file (tests/golden/vertex_j2000_london.json) contains the EXTERNAL value 188.471.
-    Do NOT re-seed with MOIRA_GOLDEN_UPDATE=1 unless the external reference changes.
+    The adjacent provenance records Astro-Seek/Swiss Ephemeris as a secondary
+    comparator. The golden file stores 188.471; storage alone confers no authority.
     """
     h = calculate_houses(jd_j2000, _LAT, _LON, HouseSystem.PLACIDUS)
 
@@ -157,12 +157,20 @@ def test_vertex_dual_path_full_pipeline_vs_armc(jd_j2000, ritual):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.requires_ephemeris
-def test_vertex_range_never_out_of_bounds(reference_epoch, ritual):
+@pytest.mark.parametrize(
+    "reference_epoch",
+    REFERENCE_EPOCHS,
+    ids=lambda anchor: anchor.key,
+)
+def test_vertex_range_never_out_of_bounds(
+    reference_epoch: ReferenceEpoch,
+    ritual,
+):
     """
     Vertex and Anti-Vertex must lie in [0°, 360°) at every reference epoch
     and at a range of moderate latitudes.
     """
-    jd, label = reference_epoch
+    jd, label = reference_epoch.jd, reference_epoch.label
     lats = [0.0, 30.0, _LAT, -33.9]
 
     ritual.sweep_taboo(
@@ -184,13 +192,21 @@ def test_vertex_range_never_out_of_bounds(reference_epoch, ritual):
 
 
 @pytest.mark.requires_ephemeris
-def test_anti_vertex_always_opposite_vertex(reference_epoch, ritual):
+@pytest.mark.parametrize(
+    "reference_epoch",
+    REFERENCE_EPOCHS,
+    ids=lambda anchor: anchor.key,
+)
+def test_anti_vertex_always_opposite_vertex(
+    reference_epoch: ReferenceEpoch,
+    ritual,
+):
     """
     Anti-Vertex = (Vertex + 180°) % 360° at every epoch and latitude.
     Violations here mean the complement derivation has drifted from the
     vertex computation, or that normalisation has been applied inconsistently.
     """
-    jd, label = reference_epoch
+    jd, label = reference_epoch.jd, reference_epoch.label
     lats = [0.0, 30.0, _LAT, -33.9]
 
     def _not_opposite(jd_: float, lat: float) -> bool:

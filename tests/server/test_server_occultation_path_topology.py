@@ -27,7 +27,7 @@ from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 _WGS84_FLATTENING = 1.0 / 298.257223563
 _MIN_TOPOLOGY_OBSERVER_ELEV_M = (

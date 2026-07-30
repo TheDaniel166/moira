@@ -13,7 +13,7 @@ from tools.horizons import observer_ecliptic_position, signed_arcminutes
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(
@@ -39,7 +39,7 @@ def test_planet_positions_match_horizons(body: str, case: PositionCase) -> None:
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(

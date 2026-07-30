@@ -2,13 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
-
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
-
-
-pytestmark = pytest.mark.network
 
 
 def _schema_refs(value: object) -> set[str]:

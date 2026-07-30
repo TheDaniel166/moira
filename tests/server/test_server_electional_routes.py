@@ -12,7 +12,7 @@ from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 class _FakeEngine:
@@ -690,10 +690,17 @@ def test_electional_routes_are_registered(client: TestClient) -> None:
         "/v1/electional/moments",
         "/v1/electional/scored",
         "/v1/electional/windows",
+        "/v1/electional/western/lunar-ecliptic-direction",
         "/v1/electional/western/ramesey-moon-condition",
         "/v1/electional/western/sahl-moon-condition",
+        "/v1/electional/western/sahl-matter-profile",
         "/v1/electional/western/dorotheus-moon-condition",
+        "/v1/electional/western/dorotheus-matter-profile",
         "/v1/electional/western/dorotheus-rooted-context",
         "/v1/electional/western/dorotheus-construction",
         "/v1/electional/western/profile-windows",
+        "/v1/electional/western/classical-perfection",
+        "/v1/electional/western/judgement",
+        "/v1/electional/western/ranking",
+        "/v1/electional/western/judgement-windows",
     }

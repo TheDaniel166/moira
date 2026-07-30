@@ -120,7 +120,7 @@ def test_service_and_serializer_preserve_the_pure_source_table_vessel() -> None:
     assert response.provenance.astronomical_routing_status == "not_performed"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_padu_route_is_registered_strict_and_has_no_temporal_policy_inputs(
     client: TestClient,
 ) -> None:
@@ -163,7 +163,7 @@ def test_padu_route_is_registered_strict_and_has_no_temporal_policy_inputs(
     assert forbidden.json()["error_code"] == "validation_error"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_padu_profile_advertises_only_its_admitted_capability(
     client: TestClient,
 ) -> None:
@@ -181,7 +181,7 @@ def test_padu_profile_advertises_only_its_admitted_capability(
     assert descriptor["default_selection_allowed"] is False
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_padu_openapi_contract_is_exact_and_publicly_exported(
     client: TestClient,
 ) -> None:

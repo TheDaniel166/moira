@@ -167,8 +167,10 @@ def test_nutation_deps_bounded(jd):
 
 def test_nutation_dpsi_2024_golden(golden):
     """
-    nutation_2000a(2460310.5) Δψ should match the stored golden value.
-    Create the golden file on first run with ISOPGEM_GOLDEN_UPDATE=1.
+    nutation_2000a(2460310.5) Δψ must match approved golden storage.
+
+    The storage record is read-only under ordinary pytest; authority requires
+    its adjacent provenance rather than the filename alone.
     """
     dpsi_deg, _deps_deg = nutation_2000a(2460310.5)
     dpsi_arcsec = dpsi_deg * 3600.0
@@ -315,7 +317,7 @@ def test_mean_node_j2000_reference(jd_j2000):
 # ===========================================================================
 # Tasks 9.1–9.6 — Property-Based Tests
 # ===========================================================================
-# Uses the `configure_hypothesis` session fixture from conftest.py (auto-applied).
+# The harness activates the selected Hypothesis profile during pytest configuration.
 # Hypothesis tests are auto-marked @pytest.mark.property by conftest.
 # ===========================================================================
 
@@ -591,8 +593,7 @@ from moira.stars import star_at, all_stars_at
 
 def test_algol_golden(golden):
     """
-    Create/verify a golden baseline for Algol's tropical longitude at J2000.0.
-    Run with ISOPGEM_GOLDEN_UPDATE=1 to create the baseline file.
+    Compare Algol's tropical longitude with approved read-only golden storage.
     """
     pos = star_at("Algol", 2451545.0)
     golden("algol_j2000_longitude", round(pos.longitude, 6))
@@ -608,10 +609,11 @@ def test_bright_star_golden(golden, star_name):
     """
     For each of 5 bright catalog stars, verify the tropical longitude at J2000.0
     is within 1 arcsecond of the stored golden value.
-    Run with ISOPGEM_GOLDEN_UPDATE=1 to create/update the baseline files.
+
+    Ordinary pytest cannot create or update the protected storage files.
     """
     pos = star_at(star_name, 2451545.0)
-    stored = golden(f"star_{star_name.lower()}_j2000_longitude", round(pos.longitude, 6))
+    golden(f"star_{star_name.lower()}_j2000_longitude", round(pos.longitude, 6))
 
 
 # ---------------------------------------------------------------------------
@@ -621,9 +623,10 @@ def test_bright_star_golden(golden, star_name):
 
 def test_all_stars_snapshot(snapshot):
     """
-    Store the full catalog longitude/latitude dict as a JSON snapshot.
-    Run with ISOPGEM_SNAPSHOT_UPDATE=1 to create/update the baseline.
-    Catches any future regression across the entire catalog.
+    Compare the full catalog longitude/latitude dict with its regression witness.
+
+    The snapshot is read-only under ordinary pytest and detects catalog drift;
+    it does not by itself establish external correctness.
     """
     result = all_stars_at(2451545.0)
     star_dict = {

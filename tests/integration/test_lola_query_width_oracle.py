@@ -18,7 +18,7 @@ _ORACLE_TOLERANCE_DEG = 1e-6
 
 @pytest.mark.integration
 @pytest.mark.slow
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.serial
 def test_lola_query_width_policy_preserves_oracle_parity():
     if not _BASELINE_PATH.exists():

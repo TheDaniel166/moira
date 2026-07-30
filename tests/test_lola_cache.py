@@ -12,7 +12,7 @@ try:
 except ImportError:
     NATIVE_AVAILABLE = False
 
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.skipif(not NATIVE_AVAILABLE, reason="Native backend not available")
 def test_lola_tile_cache_integrity():
     """

@@ -91,7 +91,7 @@ class _FakeFacade:
 
 
 @pytest.mark.slow
-@pytest.mark.network
+@pytest.mark.loopback
 def test_lunar_global_route_delegates_and_serializes_model_metadata(
     eclipse_calculator,
     monkeypatch: pytest.MonkeyPatch,

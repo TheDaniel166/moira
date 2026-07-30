@@ -118,7 +118,7 @@ def test_custom_toutatis_type13_kernel_round_trips_through_public_asteroid_api()
 
 @pytest.mark.integration
 @pytest.mark.requires_ephemeris
-@pytest.mark.network
+@pytest.mark.external_network
 def test_custom_toutatis_type13_kernel_matches_live_horizons_observer_product() -> None:
     if not _META.exists():
         pytest.skip("toutatis type13 metadata artifact is missing")

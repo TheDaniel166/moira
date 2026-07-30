@@ -10,7 +10,7 @@ from moira_server.config import ServerConfig
 from moira.spk_reader import MissingKernelError
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture

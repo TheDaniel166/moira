@@ -77,7 +77,7 @@ class _FakeFacade:
 
 
 @pytest.mark.slow
-@pytest.mark.network
+@pytest.mark.loopback
 def test_solar_product_routes_preserve_engine_semantics(
     eclipse_calculator,
     monkeypatch: pytest.MonkeyPatch,

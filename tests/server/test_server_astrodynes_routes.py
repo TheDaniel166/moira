@@ -20,7 +20,7 @@ from moira_server.models.progressed_astrodynes import (
 from moira_server.services.astrodynes import compute_astrodynes_chart
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 _DT = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)

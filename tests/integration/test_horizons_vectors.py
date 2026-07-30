@@ -34,7 +34,7 @@ def _angular_error_arcsec(moira_xyz: tuple[float, float, float], ref: VectorStat
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(
@@ -55,7 +55,7 @@ def test_planet_geocentric_vectors_match_horizons(body: str, case: VectorCase) -
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(

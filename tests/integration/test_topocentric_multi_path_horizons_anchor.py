@@ -34,7 +34,7 @@ def _direct_topocentric_sky_position(body: str):
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 def test_jupiter_saturn_topocentric_direct_path_matches_horizons_tt_anchor() -> None:

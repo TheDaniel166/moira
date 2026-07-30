@@ -81,7 +81,7 @@ def _load_case(case_key: str) -> tuple[str, dict[str, float]]:
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize("case_key", CASES)

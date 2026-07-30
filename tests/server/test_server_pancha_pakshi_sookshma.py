@@ -126,7 +126,7 @@ def test_service_and_serializer_preserve_exact_policy_and_boundaries() -> None:
     assert response.provenance.astronomical_routing_status == "not_performed"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 @pytest.mark.parametrize("policy_id", (_WEIGHTED, _EQUAL))
 def test_route_requires_and_echoes_each_explicit_policy(
     client: TestClient,
@@ -158,7 +158,7 @@ def test_route_requires_and_echoes_each_explicit_policy(
         assert [cell["activity"] for cell in body["intervals"]] == [None] * 5
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 @pytest.mark.parametrize(
     "payload",
     (
@@ -205,7 +205,7 @@ def test_route_rejects_defaults_inexact_inputs_and_hidden_composition(
     assert response.json()["error_code"] == "validation_error"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_profile_and_openapi_expose_no_default_or_temporal_composition(
     client: TestClient,
 ) -> None:

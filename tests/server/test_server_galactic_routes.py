@@ -19,7 +19,7 @@ from moira_server.serializers.galactic import serialize_galactic_positions
 from moira_server.services.galactic import compute_galactic_chart_positions
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture

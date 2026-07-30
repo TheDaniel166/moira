@@ -95,7 +95,7 @@ def test_house_serializer_reports_cusp_only_effective_fallback() -> None:
 
 
 @pytest.mark.requires_ephemeris
-@pytest.mark.network
+@pytest.mark.loopback
 def test_houses_route_admits_boundary_geometry_only_when_requested(
     client_with_engine: TestClient,
 ) -> None:

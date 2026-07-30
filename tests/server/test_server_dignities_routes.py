@@ -23,7 +23,7 @@ from moira_server.services.dignities import (
 )
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture

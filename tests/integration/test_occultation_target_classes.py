@@ -14,7 +14,7 @@ from tests.integration.test_eclipse_occultation_where_reference import (
 )
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_target_class_nominal_elnath_worst_row() -> None:
     row = _parse_iota_graze_rows_for_date(
         "https://occultations.org/publications/rasc/2025/20250307ElNath.txt",
@@ -36,7 +36,7 @@ def test_target_class_nominal_elnath_worst_row() -> None:
     assert abs(graze_lat - float(row["lat"])) <= 0.003
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_target_class_nominal_spica_south_worst_row() -> None:
     row = _parse_iota_graze_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaSlimit.txt",
@@ -58,7 +58,7 @@ def test_target_class_nominal_spica_south_worst_row() -> None:
     assert abs(graze_lat - float(row["lat"])) <= 0.0015
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.slow
 def test_target_class_profile_alcyone_leading_row() -> None:
     row = _parse_iota_annual_graze_section(
@@ -79,7 +79,7 @@ def test_target_class_profile_alcyone_leading_row() -> None:
     assert abs(practical_lat - float(row["lat"])) <= 0.003
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.slow
 def test_target_class_profile_merope_leading_row() -> None:
     row = _parse_iota_annual_graze_section(

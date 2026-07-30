@@ -13,7 +13,7 @@ from moira_server.cache import ChartLRUCache
 from moira_server.config import ServerConfig
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 # ---------------------------------------------------------------------------

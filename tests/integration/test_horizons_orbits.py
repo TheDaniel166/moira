@@ -147,7 +147,7 @@ OUTER_EXTREME_CASES: list[tuple[str, str, float]] = [
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(("body", "command"), ORBIT_BODY_COMMANDS, ids=[body for body, _ in ORBIT_BODY_COMMANDS])
@@ -202,7 +202,7 @@ def test_orbital_elements_match_horizons(
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(("body", "command", "start_jd_ut"), EXTREME_CASES, ids=[body for body, _, _ in EXTREME_CASES])
@@ -249,7 +249,7 @@ def test_inner_distance_extremes_match_horizons_vector_extrema(
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(("body", "command", "start_jd_ut"), OUTER_EXTREME_CASES, ids=[body for body, _, _ in OUTER_EXTREME_CASES])

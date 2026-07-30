@@ -44,7 +44,7 @@ import moira_server.services as public_services
 import moira_server.services.phenomena as phenomena_services
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 _P1_JD = 2_451_544.80

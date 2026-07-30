@@ -26,7 +26,7 @@ from moira_server.config import ServerConfig
 from moira_server.models.progressions import HOUSE_FRAME_ARC_METHODS as _HOUSE_FRAME_ARC_METHODS
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture

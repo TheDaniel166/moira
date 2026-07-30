@@ -34,7 +34,7 @@ from moira_server.models.progressions import (
 )
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture

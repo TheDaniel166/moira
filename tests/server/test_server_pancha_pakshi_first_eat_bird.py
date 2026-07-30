@@ -79,7 +79,7 @@ def test_service_and_serializer_preserve_the_first_eat_source_vessel() -> None:
     assert response.provenance.astronomical_routing_status == "not_performed"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_first_eat_route_is_strict_and_routes_no_temporal_inference(
     client: TestClient,
 ) -> None:
@@ -123,7 +123,7 @@ def test_first_eat_route_is_strict_and_routes_no_temporal_inference(
     assert forbidden.json()["error_code"] == "validation_error"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_first_eat_openapi_contract_is_exact_and_publicly_exported(
     client: TestClient,
 ) -> None:

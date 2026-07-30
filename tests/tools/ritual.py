@@ -4,12 +4,13 @@ Generative Ritual — three-phase test object for Moira's test suite.
 A Ritual separates three concerns that most tests collapse together:
 
     Summon   — call the engine without presupposing what it will produce.
-    Witness  — record the revealed truth as a snapshot or golden baseline.
-    Covenant — assert structural and relational invariants on that truth.
+    Witness  — compare output with approved snapshot or golden storage.
+    Covenant — assert structural and relational invariants on the output.
 
-This makes it possible to write tests that discover and freeze engine behavior
-rather than tests that merely confirm already-known values. The ritual reveals;
-the covenant judges what was revealed.
+Snapshots are implementation-regression witnesses. A golden is a storage
+channel whose authority comes only from adjacent provenance and declared
+product semantics. Neither witnessing nor cross-path agreement alone
+establishes external truth.
 
 Do not instantiate Ritual directly. Use the ``ritual`` pytest fixture defined
 in conftest.py, which wires snapshot and golden automatically.
@@ -44,7 +45,7 @@ class Ritual:
 
     def witness(self, name: str, value: Any, *, as_golden: bool = False) -> Any:
         """
-        Record the summoned value as canonical witnessed truth.
+        Compare the summoned value with approved read-only storage.
 
         Returns ``value`` unchanged so the call can be inlined inside
         the summon expression::
@@ -52,10 +53,10 @@ class Ritual:
             chart = ritual.witness("chart_j2000", engine.chart(jd))
 
         Args:
-            name:      Snapshot / golden file key (must be unique per test session).
-            value:     The summoned engine output to record.
-            as_golden: If True, record as a golden file (externally validated truth
-                       from Horizons, ERFA, or SWE) rather than a snapshot baseline.
+            name:      Safe snapshot / golden storage key.
+            value:     The summoned engine output to compare.
+            as_golden: Select golden storage rather than a regression snapshot.
+                       Authority still requires adjacent provenance.
 
         Returns:
             value, unchanged.
@@ -261,7 +262,7 @@ class Ritual:
             )
 
     # ------------------------------------------------------------------
-    # Oracle — round-trip purity
+    # Invariant — round-trip purity
     # ------------------------------------------------------------------
 
     def round_trip(
@@ -335,7 +336,7 @@ class Ritual:
         return intermediate
 
     # ------------------------------------------------------------------
-    # Oracle — dual-path equivalence
+    # Invariant — dual-path equivalence
     # ------------------------------------------------------------------
 
     def dual_path(
@@ -350,9 +351,9 @@ class Ritual:
         """
         Assert that two callables computing the same quantity agree.
 
-        Neither path is assumed to be ground truth — the covenant is pure
-        agreement. This is how compilers test themselves: run two backends
-        on the same input and assert their outputs match::
+        Neither path is assumed to be ground truth: this is parity or invariant
+        evidence only. Two backends may share the same defect. Use this to run
+        two paths on the same input and assert their outputs match::
 
             ritual.dual_path(
                 lambda: engine.planet(jd, "Sun", sidereal=True).longitude,

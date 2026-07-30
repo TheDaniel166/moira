@@ -4,6 +4,8 @@ Verifies fixtures, markers, and network-blocking all work.
 """
 from __future__ import annotations
 
+import json
+
 import pytest
 
 
@@ -41,30 +43,31 @@ def test_jd_j2000_fixture(jd_j2000):
 # ---------------------------------------------------------------------------
 
 def test_snapshot_roundtrip(snapshot, tmp_path, monkeypatch):
-    """snapshot fixture writes and reads back correctly."""
-    import os
+    """snapshot fixture reads an approved temporary witness without mutation."""
     from tools import snapshots as snap_mod
 
-    # Point snapshot dir at a temp location
     monkeypatch.setattr(snap_mod, "SNAPSHOT_DIR", tmp_path)
-    monkeypatch.setenv("MOIRA_SNAPSHOT_UPDATE", "1")
+    path = tmp_path / "test_value.json"
+    path.write_text(json.dumps({"value": 42}), encoding="utf-8")
+    before = path.read_bytes()
 
-    snap_mod.assert_snapshot("test_value", 42)
+    snapshot("test_value", 42)
 
-    monkeypatch.setenv("MOIRA_SNAPSHOT_UPDATE", "0")
-    snap_mod.assert_snapshot("test_value", 42)   # should pass
+    assert path.read_bytes() == before
 
 
-def test_golden_roundtrip(tmp_path, monkeypatch):
-    """golden fixture writes and reads back correctly."""
+def test_golden_roundtrip(golden, tmp_path, monkeypatch):
+    """golden fixture reads approved temporary storage without mutation."""
     from tools import golden as gold_mod
 
     monkeypatch.setattr(gold_mod, "GOLDEN_DIR", tmp_path)
-    monkeypatch.setenv("MOIRA_GOLDEN_UPDATE", "1")
-    gold_mod.assert_golden("test_gold", {"a": 1})
+    path = tmp_path / "test_gold.json"
+    path.write_text(json.dumps({"value": {"a": 1}}), encoding="utf-8")
+    before = path.read_bytes()
 
-    monkeypatch.setenv("MOIRA_GOLDEN_UPDATE", "0")
-    gold_mod.assert_golden("test_gold", {"a": 1})
+    golden("test_gold", {"a": 1})
+
+    assert path.read_bytes() == before
 
 
 # ---------------------------------------------------------------------------
@@ -72,15 +75,16 @@ def test_golden_roundtrip(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 
 def test_network_blocked_by_default():
-    """Network calls should raise RuntimeError without @pytest.mark.network."""
+    """Destination operations fail without an explicit network capability."""
     import socket
-    with pytest.raises(RuntimeError, match="Network access is disabled"):
-        socket.socket()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as stream:
+        with pytest.raises(RuntimeError, match="Moira test network policy"):
+            stream.bind(("0.0.0.0", 0))
 
 
-@pytest.mark.network
-def test_network_allowed_when_marked():
-    """@pytest.mark.network allows real socket creation."""
+@pytest.mark.loopback
+def test_loopback_allowed_when_marked():
+    """@pytest.mark.loopback admits local IPC without external access."""
     import socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.close()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as stream:
+        stream.bind(("127.0.0.1", 0))

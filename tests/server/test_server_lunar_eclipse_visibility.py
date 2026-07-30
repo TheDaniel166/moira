@@ -95,7 +95,7 @@ class _FakeFacade:
 
 
 @pytest.mark.slow
-@pytest.mark.network
+@pytest.mark.loopback
 def test_lunar_visibility_route_delegates_and_serializes_map(
     eclipse_calculator,
     monkeypatch: pytest.MonkeyPatch,

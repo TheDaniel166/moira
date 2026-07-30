@@ -220,7 +220,8 @@ evidence for the observed 2024-11-27 Spica chronology at the Dunham1 and
 Dunham2 sites. It preserves the published disappearance/reappearance order,
 GPS-referenced UTC realization, site and height provenance, source timing-error
 semantics, and identities of the IOTA reduction PDF and event page. The
-network-marked check verifies that those authority documents still match their
+`external_network`-marked check verifies that those authority documents still
+match their
 frozen lengths and SHA-256 digests. These are observed IOTA events, not Moira
 predictions; the source timing errors are not model tolerances.
 
@@ -230,7 +231,8 @@ predicted-versus-observed slice. Its model uses content-identified DE441/LE441,
 the sovereign Spica ICRS record with catalog parallax, a maximum `15 s`
 profile cadence, `0.002 degree` half-open PA bins with no missing-bin
 interpolation, and sixteen official USGS LOLA RDR COPC assets admitted by exact
-URL, byte length, and SHA-256. The network-marked executable test refreshes
+URL, byte length, and SHA-256. The `external_network`-marked executable test
+refreshes
 the official STAC mapping before the pinned COPC bytes are decoded.
 
 All ten Dunham1 contacts and all eight Dunham2 contacts have a unique optimum

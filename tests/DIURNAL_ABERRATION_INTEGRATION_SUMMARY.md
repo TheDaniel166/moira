@@ -45,7 +45,8 @@ This file contains 184 test cases organized into the following categories:
 - Tests 2 epochs (subset for performance, network tests are slow)
 - Fetches reference topocentric apparent positions from JPL Horizons API
 - Validates correction magnitude is within physical bounds
-- Marked with @pytest.mark.network and @pytest.mark.requires_ephemeris
+- Marked with `@pytest.mark.external_network` and
+  `@pytest.mark.requires_ephemeris`
 
 **Requirements validated: 4.1, 4.2, 4.3**
 
@@ -172,9 +173,9 @@ The integration tests validate against:
 
 ### Running the Tests
 
-#### Run all non-network integration tests:
+#### Run all non-external integration tests:
 ```bash
-pytest tests/integration/test_diurnal_aberration_integration.py -v -k "not network and not requires_ephemeris"
+pytest tests/integration/test_diurnal_aberration_integration.py -v -m "not external_network and not requires_ephemeris"
 ```
 
 #### Run only edge case tests:

@@ -267,7 +267,8 @@ reported 95-percent timing errors, document URLs, byte lengths, and SHA-256
 digests. It is authority evidence for the observed chronology. The source
 errors remain observational reduction errors, not Moira model tolerances, and
 the fixture does not assert that the published list resolves every possible
-short topographic microcontact or any unreported tangency. The network-marked
+short topographic microcontact or any unreported tangency. The
+`external_network`-marked
 test verifies source-document identity and fails closed on byte drift; it does
 not silently regenerate the fixture.
 
@@ -325,7 +326,7 @@ That envelope is not an IOTA uncertainty, an absolute accuracy tolerance, or
 evidence of GRAZPREP/LUNLIMB equivalence. Dunham1 has no model-only contacts.
 Dunham2 retains a leading model-only disappearance/reappearance pair about
 `1.529 ms` wide; it is required because it exceeds the declared `1 ms` scan
-feature guarantee. The network-marked comparison refreshes the
+feature guarantee. The `external_network`-marked comparison refreshes the
 official STAC cell mapping and admits all sixteen COPC resources by exact URL,
 byte length, and SHA-256 before decode.
 

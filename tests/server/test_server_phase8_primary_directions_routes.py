@@ -33,7 +33,7 @@ from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
 
-pytestmark = [pytest.mark.network, pytest.mark.requires_ephemeris]
+pytestmark = [pytest.mark.loopback, pytest.mark.requires_ephemeris]
 
 
 @pytest.fixture

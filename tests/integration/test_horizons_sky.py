@@ -12,7 +12,7 @@ def _signed_arcsec(a_deg: float, b_deg: float) -> float:
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(

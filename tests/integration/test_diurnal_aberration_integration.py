@@ -298,7 +298,7 @@ def test_sofa_erfa_validation_bright_stars(
 # ============================================================================
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(

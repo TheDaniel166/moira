@@ -10,7 +10,7 @@ from moira_server.app import create_app
 from moira_server.config import ServerConfig
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture
@@ -77,7 +77,7 @@ def test_website_pipeline_planet_route_matches_existing_reduction_surface(
 
     reduction = website.json()["reduction"]
     stages = reduction["stages"]
-    assert [stage["num"] for stage in stages] == list(range(8))
+    assert [stage["num"] for stage in stages] == list(range(9))
     assert [stage["name"] for stage in stages] == [
         "Geometric geocentric",
         "Light-time iteration",
@@ -87,6 +87,7 @@ def test_website_pipeline_planet_route_matches_existing_reduction_surface(
         "IAU 2006 precession",
         "IAU 2000A nutation",
         "Topocentric parallax",
+        "Topocentric diurnal aberration",
     ]
     assert stages[0]["delta"] is None
     assert stages[0]["ref_pos"] is not None
@@ -96,6 +97,7 @@ def test_website_pipeline_planet_route_matches_existing_reduction_surface(
     dpsi_deg, _deps_deg = nutation(reduction["jd_tt"])
     assert stages[6]["delta"] == pytest.approx(round(dpsi_deg * 3600.0, 6))
     assert stages[7]["enabled"] is True
+    assert stages[8]["enabled"] is True
 
     enabled_total = round(
         sum(

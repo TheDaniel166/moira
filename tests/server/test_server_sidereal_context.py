@@ -21,10 +21,6 @@ from moira_server.services.sidereal_context import (
     derive_sidereal_chart_context,
 )
 
-
-pytestmark = pytest.mark.network
-
-
 def _engine() -> Moira:
     return Moira()
 

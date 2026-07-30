@@ -137,7 +137,7 @@ def test_constitution_service_and_serializer_return_only_public_status() -> None
     assert response.medical_use_status == "forbidden"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_missing_nakshatra_mapping_route_is_now_strictly_admitted(
     client: TestClient,
 ) -> None:
@@ -175,7 +175,7 @@ def test_missing_nakshatra_mapping_route_is_now_strictly_admitted(
     assert forbidden.json()["error_code"] == "validation_error"
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_constitution_route_exposes_status_but_no_private_research(
     client: TestClient,
 ) -> None:
@@ -216,7 +216,7 @@ def test_constitution_route_exposes_status_but_no_private_research(
     )
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_all_advertised_profile_capabilities_have_registered_routes(
     client: TestClient,
 ) -> None:
@@ -239,7 +239,7 @@ def test_all_advertised_profile_capabilities_have_registered_routes(
     }.isdisjoint(advertised)
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_every_public_facade_operation_has_one_registered_route(
     client: TestClient,
 ) -> None:
@@ -261,7 +261,7 @@ def test_every_public_facade_operation_has_one_registered_route(
     assert set(_PUBLIC_FACADE_METHOD_ROUTES.values()) == registered
 
 
-@pytest.mark.network
+@pytest.mark.loopback
 def test_new_openapi_contracts_are_exact_and_publicly_exported(
     client: TestClient,
 ) -> None:

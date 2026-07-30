@@ -76,8 +76,8 @@ class HorizonsOracle:
     JPL HORIZONS oracle client backed by astroquery.jplhorizons.
 
     All methods require live network access. Mark calling tests with
-    @pytest.mark.network so the conftest network-block fixture allows
-    socket connections.
+    @pytest.mark.external_network so the conftest policy admits socket
+    connections only with ``--run-external-network``.
     """
 
     def _horizons(self, body: str, jd_ut: float, location: str):

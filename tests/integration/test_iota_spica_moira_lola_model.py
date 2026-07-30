@@ -207,7 +207,7 @@ def test_iota_spica_moira_model_fixture_keeps_evidence_classes_separate() -> Non
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.lola
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow

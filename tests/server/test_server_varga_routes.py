@@ -16,7 +16,7 @@ from moira_server.config import ServerConfig
 from moira_server.services.varga import VARGA_FUNCTIONS
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 def _client() -> TestClient:

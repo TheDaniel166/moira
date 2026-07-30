@@ -28,7 +28,7 @@ def _signed_angle_delta(start_deg: float, end_deg: float) -> float:
 
 
 @pytest.mark.integration
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(

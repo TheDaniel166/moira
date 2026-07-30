@@ -643,8 +643,9 @@ magnitude from obscuration. It should serialize contour components directly or
 through a formally declared GeoJSON adapter; it must not make GeoJSON the
 engine's governing object.
 
-Starlette `TestClient` tests require the repository's network marker because
-the test socket blocker treats loopback as network activity.
+Starlette `TestClient` tests require the repository's `loopback` marker because
+their AnyIO/event-loop plumbing may use local sockets. That marker admits only
+numeric loopback or local IPC and does not authorize external egress.
 
 Website consumption is a later bounded integration. The same engine components
 must render on both flat map and globe without recomputation or projection-
@@ -755,7 +756,7 @@ environment policy as appropriate.
    ```powershell
    $env:MOIRA_TEST_MODE = "1"
    $env:MOIRA_STRICT_KNOWN_ISSUES = "1"
-   .\.venv\Scripts\python.exe -m pytest -m "not network"
+   .\.venv\Scripts\python.exe -m pytest -m "not external_network"
    .\.venv\Scripts\python.exe scripts\check_doc_consistency.py
    ```
 

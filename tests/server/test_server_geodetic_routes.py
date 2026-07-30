@@ -22,7 +22,7 @@ from moira_server.services.geodetic import (
 )
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture

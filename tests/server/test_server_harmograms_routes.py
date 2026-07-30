@@ -23,7 +23,7 @@ from moira_server.config import ServerConfig
 from moira_server.models.harmograms import HARMOGRAMS_MAX_TRACE_SAMPLES
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 class _FakeEngine:

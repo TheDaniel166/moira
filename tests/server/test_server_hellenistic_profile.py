@@ -26,7 +26,7 @@ from moira_server.services.hellenistic_profile import (
 )
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 NATAL_DT = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)

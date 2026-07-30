@@ -2,13 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
-
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
-
-
-pytestmark = pytest.mark.network
 
 
 def test_vedic_umbrella_route_is_not_registered() -> None:

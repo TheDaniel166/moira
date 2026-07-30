@@ -12,7 +12,7 @@ Usage:
   pytest tests/oracle/test_oracle_validation.py -v
 
   # Run full JPL Horizons validation (requires network):
-  pytest tests/oracle/test_oracle_validation.py::TestOracleHorizonsIntegration -v --network
+  pytest tests/oracle/test_oracle_validation.py::TestOracleHorizonsIntegration -v --run-external-network
 
 Authority chain:
   1. JPL HORIZONS API (primary ephemeris)

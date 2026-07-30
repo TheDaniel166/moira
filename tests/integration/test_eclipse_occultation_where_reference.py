@@ -270,7 +270,7 @@ def test_lunar_star_occultation_path_matches_offline_swiss_where_reference() -> 
     assert path.duration_at_greatest_s > 0.0
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_lunar_star_occultation_graze_path_matches_iota_text_reference() -> None:
     rows = _parse_iota_graze_rows(
         "https://occultations.org/publications/rasc/2025/20250307ElNath.txt"
@@ -290,7 +290,7 @@ def test_lunar_star_occultation_graze_path_matches_iota_text_reference() -> None
         assert abs(graze_lat - float(row["lat"])) <= 0.18
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_lunar_star_occultation_graze_limits_match_iota_spica_text_references() -> None:
     north_rows = _parse_iota_graze_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt",
@@ -320,7 +320,7 @@ def test_lunar_star_occultation_graze_limits_match_iota_spica_text_references() 
         assert abs(graze_lat - float(row["lat"])) <= 0.18
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_lunar_star_graze_circumstances_match_iota_spica_table_columns() -> None:
     north_rows = _parse_iota_graze_circumstance_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt"
@@ -351,7 +351,7 @@ def test_lunar_star_graze_circumstances_match_iota_spica_table_columns() -> None
         assert circumstances.cusp_pole == str(row["cusp_pole"])
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_lunar_star_graze_table_matches_iota_spica_sample_rows() -> None:
     rows = _parse_iota_graze_circumstance_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt"
@@ -376,7 +376,7 @@ def test_lunar_star_graze_table_matches_iota_spica_sample_rows() -> None:
         assert built.cusp_pole == str(row["cusp_pole"])
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_lunar_star_graze_product_nominal_limit_matches_iota_spica_row() -> None:
     rows = _parse_iota_graze_circumstance_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt"
@@ -396,7 +396,7 @@ def test_lunar_star_graze_product_nominal_limit_matches_iota_spica_row() -> None
     assert abs(product.nominal_limit_latitude_deg - float(row["lat"])) <= 0.18
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_lunar_star_graze_product_track_nominal_limit_matches_iota_spica_rows() -> None:
     rows = _parse_iota_graze_circumstance_rows_for_date(
         "https://occultations.org/publications/rasc/2024/20241127SpicaNlimit.txt"
@@ -419,7 +419,7 @@ def test_lunar_star_graze_product_track_nominal_limit_matches_iota_spica_rows() 
         assert abs(built_lat - float(row["lat"])) <= 0.18
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 def test_lunar_star_occultation_path_matches_iota_epsilon_ari_text_reference() -> None:
     rows = _parse_iota_graze_rows_for_date(
         "https://occultations.org/publications/rasc/2025/20250401epsAriPath.txt",
@@ -442,7 +442,7 @@ def test_lunar_star_occultation_path_matches_iota_epsilon_ari_text_reference() -
         assert abs(graze_lat - float(row["lat"])) <= 0.18
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.parametrize(
     ("star_label", "registry_name"),
     [
@@ -475,7 +475,7 @@ def test_lunar_star_occultation_path_matches_iota_annual_graze_sections(
         assert abs(graze_lat - float(row["lat"])) <= 0.18
 
 
-@pytest.mark.network
+@pytest.mark.external_network
 @pytest.mark.slow
 @pytest.mark.parametrize(
     ("star_label", "registry_name"),

@@ -20,7 +20,7 @@ from moira_server.services.shadbala import (
 )
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture

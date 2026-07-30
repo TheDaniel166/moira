@@ -3,8 +3,12 @@ import sys
 from pathlib import Path
 
 
+pytest_plugins = ("pytester",)
+
+
 ROOT_DIR = Path(__file__).resolve().parent
 TESTS_DIR = ROOT_DIR / "tests"
+_REPO_OWNED_IMPORT_PREFIXES = ("tests", "moira", "tools", "support")
 
 
 def _repo_owns_module(module) -> bool:
@@ -36,13 +40,16 @@ def _ensure_local_path(entry: Path, index: int) -> None:
 
 def _sanitize_import_state() -> None:
     # Keep this repo's root and tests package ahead of any sibling checkout on
-    # sys.path. This prevents pytest from importing a same-named `tests` or
-    # `moira` module from another repo during collection.
+    # sys.path. This prevents pytest from reusing same-named engine or
+    # test-support modules from another checkout during collection.
     _ensure_local_path(ROOT_DIR, 0)
     _ensure_local_path(TESTS_DIR, 1)
 
     for name, module in list(sys.modules.items()):
-        if not (name == "tests" or name.startswith("tests.") or name == "moira" or name.startswith("moira.") or name == "tools" or name.startswith("tools.")):
+        if not any(
+            name == prefix or name.startswith(f"{prefix}.")
+            for prefix in _REPO_OWNED_IMPORT_PREFIXES
+        ):
             continue
         if _repo_owns_module(module):
             continue
@@ -52,3 +59,7 @@ def _sanitize_import_state() -> None:
 
 
 _sanitize_import_state()
+
+_network_policy = importlib.import_module("support.network_policy")
+_network_policy.install_network_audit_hook()
+_network_policy.reset_network_mode(nodeid="<root-conftest>")

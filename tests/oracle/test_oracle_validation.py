@@ -323,14 +323,15 @@ class TestOracleHorizonsIntegration:
     Full JPL Horizons validation suite.
 
     Requires live internet access to the JPL Horizons API (via astroquery).
-    Each test is marked @pytest.mark.network so the conftest network-block
-    fixture allows real socket connections.
+    Each test is marked @pytest.mark.external_network. Execution also requires
+    --run-external-network in an isolated external-only pytest process.
 
     Authority: JPL Solar System Dynamics Group.
     Tolerances: see oracle_policy.py tolerance matrices.
 
     Run:
-        pytest tests/oracle/test_oracle_validation.py::TestOracleHorizonsIntegration -v
+        pytest tests/oracle/test_oracle_validation.py::TestOracleHorizonsIntegration \
+            -v -m external_network --run-external-network
     """
 
     @pytest.fixture(scope="class")
@@ -341,7 +342,7 @@ class TestOracleHorizonsIntegration:
     def reader(self):
         return get_reader()
 
-    @pytest.mark.network
+    @pytest.mark.external_network
     @pytest.mark.requires_ephemeris
     def test_mars_heliocentric_position_vs_horizons(self, oracle, reader):
         """
@@ -373,7 +374,7 @@ class TestOracleHorizonsIntegration:
             f"Mars helio distance diff {dist_diff:.6f} AU exceeds 0.0001 AU tolerance"
         )
 
-    @pytest.mark.network
+    @pytest.mark.external_network
     @pytest.mark.requires_ephemeris
     def test_moon_geocentric_position_vs_horizons(self, oracle, reader):
         """
@@ -401,7 +402,7 @@ class TestOracleHorizonsIntegration:
             f"Moon geocentric lon diff {lon_diff * 3600:.1f} arcsec exceeds 120 arcsec tolerance"
         )
 
-    @pytest.mark.network
+    @pytest.mark.external_network
     def test_venus_phase_vs_horizons_illumination(self, oracle):
         """
         Compare Venus illumination fraction and phase angle against JPL Horizons.

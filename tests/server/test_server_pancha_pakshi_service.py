@@ -5,8 +5,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from fractions import Fraction
 
-import pytest
-
 import moira_server.models as public_models
 from moira.pancha_pakshi import (
     PanchaPakshiBird,
@@ -60,8 +58,6 @@ from moira_server.services.pancha_pakshi import (
     pancha_pakshi_profile,
 )
 
-
-pytestmark = pytest.mark.network
 
 _PROFILE_ID = "agastya_madras_1879_akshara_fixed_clock"
 

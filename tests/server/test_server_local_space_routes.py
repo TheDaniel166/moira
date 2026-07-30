@@ -13,7 +13,7 @@ from moira_server.serializers.local_space import serialize_local_space_positions
 from moira_server.services.local_space import compute_local_space_chart_positions
 
 
-pytestmark = pytest.mark.network
+pytestmark = pytest.mark.loopback
 
 
 @pytest.fixture
