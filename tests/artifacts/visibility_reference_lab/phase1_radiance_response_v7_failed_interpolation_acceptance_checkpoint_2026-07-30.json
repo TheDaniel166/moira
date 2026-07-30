@@ -1,0 +1,111 @@
+{
+  "schema": "moira.visibility-radiance-response-failed-checkpoint/v1",
+  "status": "failed_interpolation_acceptance_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "spec_id": "physical-heliacal-phase1-radiance-response-v7-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-radiance-response-2026-07-30-v7",
+    "file_count": 5019,
+    "bytes": 293048635,
+    "completed_run_count": 562,
+    "temporary_directory_count": 0,
+    "byte_verified_reused_run_count": 522,
+    "new_run_count": 40,
+    "manifest_emitted": false,
+    "summary_emitted": false
+  },
+  "acceptance": {
+    "artifact_accepted": false,
+    "failures": [
+      "monochromatic_holdout_error",
+      "direct_holdout_error"
+    ],
+    "monochromatic_reference": {
+      "role_in_v7": "intermediate_reference_surface_gate",
+      "sample_count": 27,
+      "maximum_error_mag": 0.5441787827141054,
+      "p95_error_mag": 0.4235505888539045,
+      "mean_error_mag": 0.17942726818548063,
+      "maximum_allowed_error_mag": 0.5,
+      "p95_allowed_error_mag": 0.3,
+      "passed": false
+    },
+    "photopic_response": {
+      "sample_count": 9,
+      "maximum_error_mag": 0.354270166272975,
+      "p95_error_mag": 0.2877153352014283,
+      "mean_error_mag": 0.18708575395053878,
+      "maximum_allowed_error_mag": 0.5,
+      "p95_allowed_error_mag": 0.3,
+      "passed": true
+    },
+    "scotopic_response": {
+      "sample_count": 9,
+      "maximum_error_mag": 0.25296630532828035,
+      "p95_error_mag": 0.24481663788617505,
+      "mean_error_mag": 0.15635343629198065,
+      "maximum_allowed_error_mag": 0.5,
+      "p95_allowed_error_mag": 0.3,
+      "passed": true
+    },
+    "direct_extinction_1nm": {
+      "sample_count": 2400,
+      "maximum_error_mag": 0.29998927729891633,
+      "p95_error_mag": 0.17657100436798956,
+      "mean_error_mag": 0.06581059451110809,
+      "maximum_allowed_error_mag": 0.05,
+      "p95_allowed_error_mag": 0.02,
+      "passed": false,
+      "worst_case_target_true_altitude_deg": 0.5,
+      "worst_case_spectral_bin_start_nm": 380.0
+    }
+  },
+  "passed_gates": {
+    "response_holdout_selection_independent": true,
+    "response_holdout_grid_or_threshold_changed_after_execution": false,
+    "photopic_response_interpolation": true,
+    "scotopic_response_interpolation": true,
+    "float32_maximum_error_mag": 9.487461198887104e-7,
+    "quantized_maximum_error_mag": 0.0001249253697452879,
+    "float32_storage_passed": true,
+    "quantized_storage_passed": true,
+    "deep_twilight_fail_closed_law_passed": true
+  },
+  "tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+      "bytes": 13840,
+      "sha256": "ec542df3dd3e4f17f2bbe4279fc35fec4d571286069e2aacf8485b11a9236aa5"
+    },
+    {
+      "path": "scripts/build_visibility_radiance_response_probe.py",
+      "bytes": 80494,
+      "sha256": "2095f7ba7dc8632503cd85bd0a9b373b4af237d91479ecfd82c8b3399b87481f"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 57068,
+      "sha256": "a36c3b7bd6989b28be3d3a5ea04bdbea4de809af01b6976fed5f5a583f9fe84f"
+    }
+  ],
+  "successor_design": {
+    "response_surface_changed": false,
+    "response_holdout_results_may_be_byte_reused": true,
+    "response_accuracy_thresholds_relaxed": false,
+    "monochromatic_reference_surface_shipped_in_data_pack": false,
+    "monochromatic_reference_surface_used_by_runtime_interpolation": false,
+    "monochromatic_reference_error_role": "reported_intermediate_diagnostic_not_artifact_admission_gate",
+    "direct_exposed_holdouts_become_development_nodes": true,
+    "direct_training_grid_design": "piecewise_dense_near_horizon_grid_selected_from_exposed_curvature_with_a_stricter_spacing_margin",
+    "direct_replacement_holdout_design": "midpoints_between_each_adjacent_dense_training_node",
+    "direct_replacement_holdouts_executed_in_v7": false,
+    "direct_accuracy_thresholds_relaxed": false,
+    "radiance_grid_nodes_changed": false
+  },
+  "disposition": {
+    "artifact_admitted": false,
+    "production_data_pack_authorized": false,
+    "failed_artifact_is_immutable": true,
+    "byte_verified_unchanged_radiance_cache_reuse_is_allowed_for_the_successor_build": true
+  }
+}

@@ -1,0 +1,326 @@
+{
+  "schema": "moira.visibility-altitude-pressure-interpolation-probe-spec/v1",
+  "spec_id": "physical-heliacal-phase1-altitude-pressure-interpolation-v5-2026-07-30",
+  "status": "research_probe_not_runtime_data_pack",
+  "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+  "predecessor": {
+    "spec_path": "scripts/visibility_reference_lab/phase1_environment_contract_probe_spec.json",
+    "spec_bytes": 13602,
+    "spec_sha256": "265e7495b16201ed31d23d84814e240e5f23c1cdaae2e9bd928e960c88c14242",
+    "builder_path": "scripts/build_visibility_environment_contract_probe.py",
+    "builder_bytes": 48742,
+    "builder_sha256": "26f9e0ba85345a0a0513bd8a021bddf652f4381f2876b18db80110048cd26d12",
+    "validator_path": "scripts/validate_visibility_environment_contract_probe.py",
+    "validator_bytes": 33225,
+    "validator_sha256": "f6d8bfbe9e4af9aacc68aaa0168eb8c6589108ec5644e8b333d1cc9fc636ebe2",
+    "checkpoint_path": "tests/artifacts/visibility_reference_lab/phase1_environment_contract_checkpoint_2026-07-30.json",
+    "checkpoint_bytes": 4358,
+    "checkpoint_sha256": "c2815fc01e503a2cce0075d010ffaff6035590c2dafc702523e2dde888e5e8db"
+  },
+  "construction_dependency": {
+    "path": "scripts/build_visibility_elevated_site_probe.py",
+    "bytes": 59862,
+    "sha256": "f2d46347ec27360f3b1280f754497ba9a26dde8d97081024dbb17e434118e4f9",
+    "functions": [
+      "construct_truncated_atmosphere",
+      "construct_truncated_o4_profile"
+    ]
+  },
+  "vertical_grid_predecessor": {
+    "path": "scripts/visibility_reference_lab/phase1_named_spectral_direct_probe_spec.json",
+    "bytes": 11509,
+    "sha256": "30822b4a90fe24c63872a904de8078770b2450c15798a6c24450fd6ecc0548ee",
+    "source_grid_id": "near_horizon_piecewise_refined_v1",
+    "source_grid_expected_level_count": 290
+  },
+  "refinement_from_failed_designs": [
+    {
+      "receipt_path": "tests/artifacts/visibility_reference_lab/phase1_altitude_pressure_interpolation_v1_failed_checkpoint_2026-07-30.json",
+      "receipt_bytes": 3107,
+      "receipt_sha256": "561b3893fa181ddba4b5c27ed166d7f9031c56ebc43b8ca168593c8118567386",
+      "law": "v1_promote_failed_altitude_holdouts_without_relaxing_thresholds",
+      "thresholds_relaxed": false
+    },
+    {
+      "receipt_path": "tests/artifacts/visibility_reference_lab/phase1_altitude_pressure_interpolation_v2_failed_checkpoint_2026-07-30.json",
+      "receipt_bytes": 4233,
+      "receipt_sha256": "07e78573c4d1d898382e05650bc12ff5c2a4fa04967ee8fa5eeb84c29a7812ec",
+      "law": "v2_reject_native_vertical_grid_after_source_bound_aerosol_discretization_diagnosis_and_use_new_holdouts",
+      "thresholds_relaxed": false
+    },
+    {
+      "receipt_path": "tests/artifacts/visibility_reference_lab/phase1_altitude_pressure_interpolation_v3_failed_validation_checkpoint_2026-07-30.json",
+      "receipt_bytes": 3025,
+      "receipt_sha256": "5ca6b5eeeb8b3f1434a9354818d47c4d7c960381c33af099bd2d85d747477bc4",
+      "law": "v3_retain_scientific_design_and_repair_binary32_round_trip_validation_without_reusing_the_failed_manifest",
+      "thresholds_relaxed": false
+    },
+    {
+      "receipt_path": "tests/artifacts/visibility_reference_lab/phase1_altitude_pressure_interpolation_v4_failed_cross_platform_checkpoint_2026-07-30.json",
+      "receipt_bytes": 3196,
+      "receipt_sha256": "3a8c3a3d571ab2f9719b736bb5394a3d7f74057fbe59b3f47ca4045dafd92e00",
+      "law": "v4_retain_scientific_design_and_replace_cross_platform_transcendental_byte_equality_with_checksum_bound_numeric_validation",
+      "thresholds_relaxed": false
+    }
+  ],
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "engine_dependency_allowed": false,
+    "engine_runtime_invocation_allowed": false,
+    "generated_numerical_products_only": true,
+    "production_data_pack_authorized": false,
+    "engine_changes_authorized": false
+  },
+  "libradtran_source": {
+    "name": "libRadtran",
+    "version": "2.0.6",
+    "archive_bytes": 154147176,
+    "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+    "uvspec_version": "uvspec, version 2.0.6-MYSTIC",
+    "uvspec_sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a",
+    "source_files": [
+      {
+        "path": "src/atmosphere.c",
+        "bytes": 341735,
+        "sha256": "b900ade7e603260a47fec3efa305577ab6806bbf539021ec028a0c1360099cf8",
+        "role": "altitude_interpolation_pressure_scaling_and_preinterpolation_o4_order"
+      },
+      {
+        "path": "src/uvspec_lex.l",
+        "bytes": 581415,
+        "sha256": "174755190e50ecc3099c80a29cb71627c0a33a5e2009d1869c23140095658d89",
+        "role": "pressure_wavelength_and_solver_option_contract"
+      },
+      {
+        "path": "src/molecular.c",
+        "bytes": 124030,
+        "sha256": "61f1ce8bd85f6502648cb4417541ff26bcd6fa22b01900c52d54767ec95085f8",
+        "role": "molecular_optical_depth_from_bound_profiles"
+      },
+      {
+        "path": "src/aerosol.c",
+        "bytes": 107914,
+        "sha256": "14843b11440764608ac655226fbe49496da820d76151f9a543a910a445cb5c40",
+        "role": "surface_relative_Shettle_profile_and_common_vertical_grid_construction"
+      }
+    ]
+  },
+  "atmosphere_profiles": {
+    "tropical": {
+      "path": "data/atmmod/afglt.dat",
+      "bytes": 5889,
+      "sha256": "1721b46ecad0341b1f641372859792f056b4755a751d0a001c355cc15c981efe",
+      "aerosol_season": 1
+    },
+    "midlatitude_summer": {
+      "path": "data/atmmod/afglms.dat",
+      "bytes": 5899,
+      "sha256": "875ada621ca86fb24ed49bbca44e540e9bfe81e2a2af7760a8ce7de991652b14",
+      "aerosol_season": 1
+    },
+    "midlatitude_winter": {
+      "path": "data/atmmod/afglmw.dat",
+      "bytes": 5899,
+      "sha256": "4425063a390b9c19f286abb051fcc98fda5cdc014c9e701a6be226e9932e816c",
+      "aerosol_season": 2
+    },
+    "subarctic_summer": {
+      "path": "data/atmmod/afglss.dat",
+      "bytes": 5897,
+      "sha256": "44ac8f4ac680c5e3a644cc5fb3c2b8604023d14f9aed1b8d8583895ceb865199",
+      "aerosol_season": 1
+    },
+    "subarctic_winter": {
+      "path": "data/atmmod/afglsw.dat",
+      "bytes": 5897,
+      "sha256": "fbc7d7aa56fc182e686c50bd68a99ce80ba09d8f8a7204194f5e40e84681ac6f",
+      "aerosol_season": 2
+    },
+    "us_standard": {
+      "path": "data/atmmod/afglus.dat",
+      "bytes": 5910,
+      "sha256": "dab26290ed81c762ed0c607e5dc2d53393c1462a0c3a528bc5e3f5935191cfb5",
+      "aerosol_season": 1
+    }
+  },
+  "axes": {
+    "observer_altitude_m": {
+      "training_nodes": [
+        0.0,
+        500.0,
+        1000.0,
+        1500.0,
+        2250.0,
+        3000.0,
+        4000.0,
+        5000.0
+      ],
+      "reserved_holdouts": [
+        125.0,
+        375.0,
+        625.0,
+        875.0,
+        1125.0,
+        1375.0,
+        1688.0,
+        2062.0,
+        2438.0,
+        2812.0,
+        3250.0,
+        3750.0,
+        4250.0,
+        4750.0
+      ]
+    },
+    "pressure_ratio": {
+      "training_nodes": [
+        0.85,
+        0.925,
+        1.0,
+        1.04,
+        1.08
+      ],
+      "reserved_holdouts": [
+        0.8688,
+        0.9063,
+        0.9438,
+        0.9813,
+        1.01,
+        1.03,
+        1.05,
+        1.07
+      ],
+      "absolute_pressure_hard_bounds_hpa": [
+        500.0,
+        1100.0
+      ],
+      "ratio_hard_bounds": [
+        0.85,
+        1.08
+      ],
+      "admission_law": "absolute_and_ratio_bounds_must_both_pass"
+    },
+    "target_true_altitude_deg": [
+      0.25,
+      5.0,
+      20.0
+    ],
+    "wavelength_nm": [
+      400.0,
+      550.0,
+      780.0
+    ]
+  },
+  "fixed_environment": {
+    "ozone_du": 300.0,
+    "aod550": 0.1,
+    "angstrom_exponent": 1.3,
+    "ground_albedo": 0.0,
+    "aerosol_vulcan": 1,
+    "aerosol_haze": 1,
+    "aerosol_scattering_override": "aerosol_modify ssa set 0",
+    "temperature_and_humidity": "named_profile_derived",
+    "solar_distance_normalization": "1_AU_no_day_of_year_correction",
+    "refraction": "disabled_true_geometric_line_of_sight"
+  },
+  "pressure_o4_closure": {
+    "libRadtran_order": "o4_pseudodensity_is_constructed_before_pressure_scales_well_mixed_o2",
+    "physical_override": "source_equivalent_truncated_o4_profile_times_pressure_ratio_squared",
+    "reason": "o4_absorption_density_is_proportional_to_o2_number_density_squared",
+    "ratio_one_control_required": true
+  },
+  "site_relative_vertical_grid": {
+    "grid_id": "site_relative_near_horizon_piecewise_refined_v1",
+    "coordinate": "kilometers_above_observer_surface_translated_to_absolute_profile_altitude",
+    "source_grid_id": "near_horizon_piecewise_refined_v1",
+    "source_sea_level_level_count": 290,
+    "top_of_atmosphere_km": 120.0,
+    "base_segments_km_above_surface": [
+      {
+        "start": 0.0,
+        "stop": 2.0,
+        "step": 0.025
+      },
+      {
+        "start": 2.0,
+        "stop": 5.0,
+        "step": 0.05
+      },
+      {
+        "start": 5.0,
+        "stop": 10.0,
+        "step": 0.1
+      },
+      {
+        "start": 10.0,
+        "stop": 25.0,
+        "step": 0.25
+      },
+      {
+        "start": 25.0,
+        "stop": 50.0,
+        "step": 1.0
+      },
+      {
+        "start": 50.0,
+        "stop": 120.0,
+        "step": 5.0
+      }
+    ],
+    "construction": "truncate_relative_grid_at_120km_minus_site_translate_by_site_and_append_exact_120km",
+    "reason": "keep_the_surface_relative_Shettle_aerosol_discretization_stable_across_observer_altitude"
+  },
+  "direct_solver": {
+    "model_id": "libradtran_2_0_6_disort_pseudospherical_altitude_pressure_v1",
+    "rte_solver": "disort",
+    "geometry": "pseudospherical",
+    "number_of_streams": 16,
+    "molecular_absorption": "crs",
+    "cross_sections": {
+      "rayleigh": "Bodhaine",
+      "O3": "Molina",
+      "NO2": "Burrows",
+      "O4": "Greenblatt"
+    },
+    "solar_source_path": "data/solar_flux/atlas_plus_modtran",
+    "earth_radius_km": 6370.0,
+    "output_quantity": "transmittance",
+    "output_columns": [
+      "lambda",
+      "edir"
+    ],
+    "normalization": "direct_transmission_equals_edir_divided_by_sin_target_true_altitude",
+    "random_seed": 49979687,
+    "serial_execution_required": true
+  },
+  "interpolation_candidates": [
+    "bilinear_direct_transmission",
+    "bilinear_optical_depth",
+    "bilinear_extinction_magnitude"
+  ],
+  "interpolation_admission": {
+    "required_method": "bilinear_extinction_magnitude",
+    "training_only": true,
+    "no_extrapolation": true,
+    "query_requires_valid_bracketing_cell": true,
+    "node_values_are_not_refit_to_holdouts": true,
+    "reserved_holdouts_previously_unseen": true,
+    "primary_error_quantity": "extinction_magnitude",
+    "maximum_absolute_extinction_error_mag": 0.025,
+    "p95_absolute_extinction_error_mag": 0.01,
+    "maximum_relative_transmission_error": 0.025
+  },
+  "artifact": {
+    "schema": "moira.visibility-altitude-pressure-interpolation-artifact/v1",
+    "run_schema": "moira.visibility-altitude-pressure-interpolation-run/v1",
+    "manifest_filename": "manifest.json",
+    "summary_filename": "summary.json",
+    "profiles_directory": "profiles",
+    "runs_directory": "runs",
+    "file_inventory_policy": "exact_no_unbound_files",
+    "symlink_policy": "none_in_final_artifact",
+    "atomic_case_writes": true,
+    "immutable_output_directory": true
+  }
+}

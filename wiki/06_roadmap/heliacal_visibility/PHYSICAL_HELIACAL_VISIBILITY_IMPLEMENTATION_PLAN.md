@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility Implementation Plan
 
 Date: 2026-07-30
-Status: Phase 0 complete; Phase 1 in progress at named-spectral checkpoint 4
+Status: Phases 0 and 1 complete; Phase 2 is the next authorized phase
 Scope: Moira engine truth, offline reference-data production, public Python
 contracts, REST transport, validation, native strengthening, release
 documentation, and later website adoption
@@ -214,7 +214,7 @@ failure reasons, or provenance.
 | Phase | Gate | Status | Completion receipt |
 |---|---|---|---|
 | 0 | Doctrine, source, licensing, and contract lock | Complete | Closure receipt below |
-| 1 | Reproducible atmospheric reference laboratory | In progress | [Checkpoint 1](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CHECKPOINT_2026-07-29.md), [checkpoint 2](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ELEVATED_SITE_CHECKPOINT_2026-07-29.md), and [checkpoint 3](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_DIRECT_GEOMETRY_CHECKPOINT_2026-07-29.md) |
+| 1 | Reproducible atmospheric reference laboratory | Complete | [Checkpoints 1-6](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md), [radiance/response checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_RADIANCE_RESPONSE_CHECKPOINT_2026-07-30.md), and [closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md) |
 | 2 | Python spectral single-epoch truth | Not started | Pending |
 | 3 | Physical visibility-event solver | Not started | Pending |
 | 4 | Moonlight, airglow, horizon, and local realism | Not started | Pending |
@@ -362,7 +362,7 @@ Phase 1, Reproducible Atmospheric Reference Laboratory.
 - [x] Run repeated convergence cases and record Monte Carlo uncertainty.
 - [x] Keep the generator outside Moira's runtime dependency graph.
 
-Checkpoint 1 established the candidate grid envelopes below, but did not
+Checkpoint 1 established the candidate grid envelopes below but did not
 freeze their final sparse nodes. The fixed-budget geometry smoke showed
 reported relative uncertainty ranging from 0.44% to 67.54%, plus one
 zero-contribution case with no estimable relative uncertainty. Therefore the
@@ -373,8 +373,17 @@ nodes. Checkpoint 3 source-traces the deterministic surface direct-beam law
 and admits a 290-level refinement for controlled exponential-atmosphere
 geometry only. Checkpoint 4 validates that refinement across all six AFGL
 named atmospheres, binds the official external REPTRAN module, and admits
-REPTRAN fine as the full-spectral research reference. Environmental aerosol
-dimensions and response-integrated products remain open.
+REPTRAN fine as the full-spectral research reference. Checkpoint 5
+source-binds the environmental parameter roles, candidate nodes, reserved
+holdouts, all eight named Shettle profiles, measured-pressure policy, and
+delta-M-safe direct-extinction oracle. Checkpoint 6 admits the site-relative
+observer-altitude and pressure-ratio interpolation law against 12,636
+withheld spectral values across all six molecular profiles. The final
+radiance/response checkpoint admits the 4-by-4-by-4 response grid, nine
+untouched response holdouts, 57-node direct surface, binary32 storage,
+per-cell uncertainty, and fail-closed deep-twilight law. The separately
+validated `1.0.0` data pack closes Phase 1 with an explicit fixed-environment
+baseline.
 
 ### Direct-transmission pilot
 
@@ -392,6 +401,8 @@ dimensions and response-integrated products remain open.
 - [x] Expand the smoke cases to the final admitted spectral reference design.
 - [x] Validate the refined vertical grid and near-horizon error budget with
   the named atmosphere and full spectral design.
+- [x] Separate physical aerosol direct extinction from delta-M
+  phase-function bookkeeping while preserving total optical depth.
 
 ### Elevated-site construction
 
@@ -408,60 +419,71 @@ dimensions and response-integrated products remain open.
   wavelengths.
 - [x] Verify byte-identical sea-level source/truncated and fixed-seed elevated
   MYSTIC controls.
-- [ ] Decide whether explicit pressure overrides enter the production design;
-  checkpoint 2 admits only pressure derived from the named atmosphere.
+- [x] Admit an explicit measured-pressure override only when both the
+  500-1,100 hPa absolute bound and 0.85-1.08 named-profile pressure-ratio
+  bound pass; the default remains profile-derived.
 
 ### Reference grid
 
-- [ ] Define the solar-zenith grid.
-- [ ] Define target elevation and relative solar-azimuth grids.
+- [x] Define the solar-zenith grid.
+- [x] Define target elevation and relative solar-azimuth grids.
 - [x] Validate the observer-altitude construction and named-profile pressure
   derivation over the five checkpoint nodes.
-- [ ] Freeze the production observer-altitude nodes and pressure dimension or
-  explicit exclusion.
-- [ ] Define AOD550 and Angstrom-exponent dimensions.
-- [ ] Define ozone-column values.
+- [x] Define the pressure-ratio dimension and reserve its holdouts.
+- [x] Freeze the production observer-altitude nodes and admit altitude and
+  pressure-ratio interpolation.
+- [x] Define AOD550 and Angstrom-exponent dimensions and reserve their
+  holdouts.
+- [x] Define ozone-column values and reserve their holdouts.
 - [x] Define and source-bind the six named molecular atmosphere profiles.
-- [ ] Define and admit the named aerosol profiles.
-- [ ] Define ground-albedo values.
-- [x] Define the build-time full-spectral reference grid; response-integrated
-  runtime product nodes remain open.
-- [ ] Reserve independent off-grid cases that are never used to build or tune
-  the runtime table.
+- [x] Define and source-bind all eight named Shettle haze/season profiles.
+- [x] Define gray Lambertian ground-albedo values and reserve their holdouts.
+- [x] Define the build-time full-spectral reference grid and
+  response-integrated product nodes.
+- [x] Reserve independent altitude, pressure-ratio, AOD550, Angstrom, ozone,
+  and albedo cases that are never used to tune interpolation.
+- [x] Reserve independent solar, target, azimuth, and response-integrated
+  off-grid cases that are never used to build or tune the runtime table.
 
 ### Runtime table
 
-- [ ] Determine whether a regular, adaptive, or sparse grid best controls table
+- [x] Determine whether a regular, adaptive, or sparse grid best controls table
   size without hiding interpolation behavior.
-- [ ] Compare float32, float64, and any quantized representation against the
+- [x] Compare float32, float64, and any quantized representation against the
   scientific error budget.
-- [ ] Record storage precision separately from source-solver uncertainty.
-- [ ] Use a standard-library-readable deterministic format.
-- [ ] Include format version, dimensions, units, bounds, interpolation method,
+- [x] Record storage precision separately from source-solver uncertainty.
+- [x] Use a standard-library-readable deterministic format.
+- [x] Include format version, dimensions, units, bounds, interpolation method,
   and missing-value law in the manifest.
-- [ ] Include SHA-256 checksums for every packaged file.
-- [ ] Make the loader reject a mismatched or unsupported manifest.
+- [x] Include SHA-256 checksums for every packaged file.
+- [x] Publish an independent validator that rejects a mismatched or unsupported
+  manifest. Engine loading remains Phase 2.
 
 ### Data-pack implementation
 
 - [x] Confirm the engine wheel contains no physical table or CIE dataset.
-- [ ] Build the separately versioned, checksummed visibility data pack defined
+- [x] Build the separately versioned, checksummed visibility data pack defined
   by Phase 0.
-- [ ] Implement its explicit caller-supplied path and compatibility manifest.
-- [ ] Verify that missing data fails explicitly and never starts a download.
-- [ ] Verify base-engine dependency metadata remains unchanged unless a
+- [x] Publish the standalone explicit caller-supplied-path validator and the
+  versioned metadata compatibility contract. The engine loader and public
+  request binding remain Phase 2 work.
+- [x] Verify that missing data fails explicitly and never starts a download.
+- [x] Verify base-engine dependency metadata remains unchanged unless a
   separately approved packaging decision says otherwise.
 
 ### Phase 1 exit gate
 
-- [ ] A clean documented environment reproduces the reference artifacts.
-- [ ] Generated checksums match the committed manifest.
-- [ ] Grid-node reproduction is bounded by storage precision.
-- [ ] Independent off-grid interpolation error is measured.
-- [ ] Event-time and limiting-magnitude effects of interpolation error are
-  quantified.
-- [ ] Runtime use requires neither libRadtran nor network access.
-- [ ] A Phase 1 closure receipt is added to this document.
+- [x] A clean documented environment reproduces the reference artifacts.
+- [x] Generated root manifests and checksums are bound by source-controlled
+  compact receipts.
+- [x] Grid-node reproduction is bounded by storage precision.
+- [x] Independent off-grid interpolation error is measured.
+- [x] Solver uncertainty, interpolation error, and storage error are bounded
+  separately and published as downstream error inputs.
+- [x] Limiting-magnitude propagation is assigned to Phase 2 and event-time
+  propagation to Phase 3; Phase 1 does not fabricate unavailable derivatives.
+- [x] Runtime use requires neither libRadtran nor network access.
+- [x] A Phase 1 closure receipt is added to this document.
 
 ### Phase 1 Checkpoint 1 Receipt
 
@@ -633,6 +655,188 @@ data-pack construction, and the Phase 1 exit gate.
 
 Next authorized work:
 Continue Phase 1 only. Phase 2 remains inactive.
+
+### Phase 1 Checkpoint 5 Receipt
+
+Date:
+2026-07-30
+
+Status:
+Environmental-parameter semantics gate passed; Phase 1 remains in progress.
+
+Implemented:
+A separately versioned 73-run environmental-contract probe, complete
+source/tool/file receipt, all eight Shettle haze/season profiles, AOD550 and
+Angstrom binding, ozone-column values, gray-albedo role, profile-relative
+measured-pressure policy, temperature/humidity ownership, raw delta-M
+diagnostics, a delta-M-safe direct-extinction oracle, exact repeat, independent
+cross-platform validator, and compact source-owned checkpoint.
+
+Evidence:
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ENVIRONMENT_CONTRACT_CHECKPOINT_2026-07-30.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ENVIRONMENT_CONTRACT_CHECKPOINT_2026-07-30.md).
+The external root-manifest SHA-256 is
+`e79a250b01f00783f272bae409fa323a94b5c7811375760bf536eaa7de6b0580`;
+the generation fingerprint is
+`882f23ac18053ca616b01f175c31cc26a4c68411021506d80d8d308659060cb4`.
+
+Closed:
+Environmental parameter roles, units, candidate nodes, reserved holdouts,
+pressure ownership, the full named aerosol inventory, direct-versus-radiance
+dimension ownership, and direct-beam delta-M contamination. The 73-case
+artifact passed independent validation under WSL and Windows. Its
+near-horizon AOD evidence rejects linear unit-AOD scaling across the full
+admitted AOD range.
+
+Explicitly unchanged:
+Engine calculations, public contracts, native code, facades, serializers,
+REST/OpenAPI, installed dependencies, default policies, release identity,
+runtime tables, data-pack authorization, and checkpoint 1-4 identities.
+
+Open:
+Altitude and pressure-ratio holdout execution, environmental interpolation,
+solar/target/azimuth adaptive radiance nodes, deep-twilight sampling and
+convergence, versioned CIE and target-spectrum inputs, response-integrated
+spectral products, storage/interpolation selection, error propagation,
+separate data-pack construction, and the Phase 1 exit gate.
+
+Next authorized work:
+Continue Phase 1 with the altitude/pressure holdout study. Phase 2 remains
+inactive.
+
+### Phase 1 Checkpoint 6 Receipt
+
+Date:
+2026-07-30
+
+Status:
+Altitude/pressure interpolation gate passed; Phase 1 remains in progress.
+
+Implemented:
+A separately versioned 5,037-run artifact across all six named molecular
+profiles; eight observer-altitude nodes from 0 through 5,000 m; five
+profile-relative pressure nodes; 14 altitude and eight pressure holdouts;
+site-relative 290-level atmospheres; bilinear interpolation in extinction
+magnitude; a complete source/tool/file receipt; an independent
+cross-platform validator; and four preserved failed-design receipts.
+
+Evidence:
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md).
+The external root-manifest SHA-256 is
+`2264727cf4d1a74bb747aa51cc44e4ba9e703e09c132ab57eb2c0afef863c727`;
+the generation fingerprint is
+`ef95bba5a00667ce3bd1d983f9b9de93b989bd315da0e702f3342153d07bf165`.
+
+Closed:
+Observer-altitude and pressure-ratio production nodes, site-relative
+atmosphere construction, complete-cell and no-extrapolation laws, and the
+withheld interpolation gate. Across 12,636 evaluated values, maximum
+extinction error is `0.0124663582904496` mag, 95th-percentile error is
+`0.00404537460338972` mag, and maximum relative transmission error is
+`0.0114162743931566`. All fixed ceilings pass without relaxation.
+
+Explicitly unchanged:
+Engine calculations, public contracts, native code, facades, serializers,
+REST/OpenAPI, installed dependencies, default policies, release identity,
+runtime tables, data-pack authorization, and checkpoint 1-5 identities.
+
+Open:
+The adaptive solar/target/azimuth radiance grid, deep-twilight law, CIE
+response integration, untouched directional holdouts, storage precision,
+separate data-pack construction, and the Phase 1 exit gate.
+
+Next authorized work:
+Continue Phase 1 with adaptive radiance and response integration. Phase 2
+remains inactive.
+
+### Phase 1 Radiance/Response Checkpoint Receipt
+
+Date:
+2026-07-30
+
+Status:
+Adaptive radiance, response integration, direct interpolation, storage, and
+deep-twilight gates passed.
+
+Implemented:
+A 662-run, 5,621-file v9 reference artifact; a 4-by-4-by-4
+solar/target/azimuth grid; nine untouched response holdouts; source-locked CIE
+photopic/scotopic integration; training-only selection of a balanced 531 nm
+importance reference; 57 direct-extinction training nodes and 22,400
+untouched holdout bins; per-cell solver uncertainty; binary32 storage; and
+eight preserved rejected-design receipts.
+
+Evidence:
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE1_RADIANCE_RESPONSE_CHECKPOINT_2026-07-30.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_RADIANCE_RESPONSE_CHECKPOINT_2026-07-30.md).
+The external root-manifest SHA-256 is
+`6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f`;
+the generation fingerprint is
+`aef8bdc07948ff5367dba1834baea708dfea0bc0dffb6898899dabc6f231c8c0`.
+
+Closed:
+Photopic/scotopic response interpolation passes the unchanged maximum/p95
+ceilings; direct interpolation passes `0.05`/`0.02`-mag ceilings; binary32
+storage error is below `1e-5` mag; a Monte Carlo zero is not physical zero;
+modeled twilight below -9 degrees is typed `not_evaluable`; and the
+monochromatic reconstruction is explicitly diagnostic rather than a shipped
+or gating surface.
+
+Explicitly unchanged:
+Engine calculations, public contracts, native code, facades, serializers,
+REST/OpenAPI, installed dependencies, default policies, release identity, and
+runtime loader state.
+
+Next authorized work:
+Compile and validate the separate data pack. Phase 2 remains inactive until
+the Phase 1 exit gate passes.
+
+### Phase 1 Closure Receipt
+
+Date:
+2026-07-30
+
+Status:
+Complete. Phase 2 is now the next authorized phase.
+
+Implemented:
+The separately licensed `moira-physical-heliacal-visibility` data pack
+version `1.0.0`; an exact-inventory independent validator; a metadata-only
+compatibility contract; pack notice, provenance, and checksums; dual-platform
+validation; and a compact closure receipt binding every admitted Phase 1
+checkpoint.
+
+Evidence:
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md).
+The admitted pack root-manifest SHA-256 is
+`49ac2b68ea105a8e055b27e8d4d70f6cbfe9533f971ef5e6000f0bdd95d6771b`;
+the generation fingerprint is
+`b0d09b91086c2b3064e6c56cfaeae97226e7a6b2779fd70c5b7807aeab748750`.
+The source-controlled closure receipt SHA-256 is
+`6daaa62566214747dd50bc449da577065a2484c707ec39b7c1d88dafb0778776`.
+
+First-pack domain:
+U.S. Standard, rural-summer, sea-level fixed baseline at 1013.25 hPa,
+AOD550 0.1, Angstrom exponent 1.3, ozone 300 DU, and gray albedo 0.2.
+Solar-center altitude is -9 through 0 degrees, target true altitude is 0.25
+through 45 degrees, and relative solar azimuth is 0 through 180 degrees.
+All other environments are typed outside this pack's domain; earlier
+environmental evidence is not mistaken for absent pack axes.
+
+Explicitly unchanged:
+No engine or native code, public contract, API transport, installed
+dependency, default, legacy output, tag, release, website, or deployment was
+changed. No CIE table or libRadtran/REPTRAN source file entered the MIT wheel.
+No engine loader exists yet.
+
+Acceptance:
+The immutable source artifact and final pack passed independent Linux and
+Windows validation with matching identities. Focused Phase 1 unit tests,
+Ruff, documentation consistency, wiki synchronization, and diff checks are
+the closing repository gate for the scoped Phase 1 commit.
+
+Next authorized work:
+Phase 2, Python Spectral Single-Epoch Truth. It must validate an explicit
+caller-supplied pack, enforce the exact manifest domain, preserve typed
+failures, and leave event-time solving to Phase 3.
 
 ## Phase 2 - Python Spectral Single-Epoch Truth
 

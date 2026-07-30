@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility Source Ledger
 
 Date: 2026-07-30
-Status: Phase 0 source disposition plus Phase 1 checkpoint 4 REPTRAN receipt
+Status: Phase 0 source disposition and Phase 1 laboratory/data-pack closure
 Doctrine:
 [PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md](../../01_doctrines/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md)
 
@@ -35,6 +35,7 @@ stated. The REPTRAN module was accessed on 2026-07-30.
 | CIE photopic spectral luminous efficiency | Dataset DOI [10.25039/CIE.DS.dktna2s3](https://doi.org/10.25039/CIE.DS.dktna2s3), `CIE_sle_photopic.csv` | `V(lambda)` response data | 360–830 nm at 1 nm, linear interpolation, zero extrapolation; the composite uses only the 380–780 nm overlap with the scotopic table | Dataset CC BY-SA 4.0; permitted only in the separately licensed data pack with attribution/share-alike notice |
 | CIE scotopic spectral luminous efficiency | Dataset DOI [10.25039/CIE.DS.gr6w4b5g](https://doi.org/10.25039/CIE.DS.gr6w4b5g), `CIE_sle_scotopic.csv` | `V'(lambda)` response data | Metadata column domain 380–780 nm at 1 nm, linear interpolation, zero extrapolation | Dataset CC BY-SA 4.0; permitted only in the separately licensed data pack with attribution/share-alike notice |
 | libRadtran | Version 2.0.6, released 2024-12-24, [official download](https://www.libradtran.org/doku.php?id=download), [manual](https://www.libradtran.org/doc/libRadtran.pdf) | Offline reference generator for spectral direct transmission and directional twilight radiance | MYSTIC fully spherical reference cases for low Sun and near-horizon lines of sight; runtime use is prohibited | GPL; external build tool only, with no source, binary, binding, or runtime dependency copied into Moira |
+| Shettle aerosol model family | E. P. Shettle, “Models of aerosols, clouds and precipitation for atmospheric propagation studies,” AGARD Conference Proceedings 454 (1989), as implemented by the pinned libRadtran 2.0.6 source and data | Named rural, maritime, urban, and tropospheric aerosol profiles in summer and winter | Checkpoint 5 binds all eight supported haze/season optical-depth files and fixes vulcan code 1; the direct-extinction oracle and directional-radiance uses remain distinct | Source/data remain inside the external GPL research laboratory; no libRadtran profile file enters Moira or the future data pack |
 | libRadtran REPTRAN module | `reptran_2024_all.tar.gz`, accessed 2026-07-30 from the [official download page](https://www.libradtran.org/doku.php?id=download) | Full-spectral molecular-absorption research input for libRadtran 2.0.6 | REPTRAN fine is the admitted 380-780 nm reference; medium is characterization only | External operator-supplied research data; the archive has no embedded notice or license file and is not redistributed by Moira |
 | ESO Advanced Cerro Paranal Sky Model | [ESO project page](https://www.eso.org/sci/software/pipelines/skytools/skymodel) | Component comparison and validation reference | Explicitly developed for Cerro Paranal; adapting it to other sites is not straightforward | Code GPLv2; no copying or runtime integration; reference-only |
 | Jones et al., “An advanced scattered moonlight model for Cerro Paranal” | A&A 560 (2013), A91, DOI [10.1051/0004-6361/201322433](https://doi.org/10.1051/0004-6361/201322433) | Candidate later moonlight model | Site and model assumptions must remain explicit; not part of the clear-sky twilight baseline | Paper-derived new component only after a separate equation and licensing audit |
@@ -112,7 +113,59 @@ Phase 1 checkpoint 4 binds the official external REPTRAN module and validates
 the 290-level candidate against 579- and 1,157-level controls across all six
 AFGL named atmospheres. REPTRAN fine is admitted as the clear molecular
 full-spectral research reference. The result is surface-only and does not
-admit aerosol, pressure overrides, response integration, or a runtime table.
+itself admit environmental interpolation, response integration, or a runtime
+table.
+
+Phase 1 checkpoint 5 binds the libRadtran aerosol, pressure, ozone, humidity,
+Beer-Lambert/Chapman, and delta-M implementation surfaces plus all eight
+Shettle haze/season optical-depth files. AOD is authoritative at 550 nm with
+`beta = AOD550 * 0.55 ** alpha`; aerosol visibility is not a second public
+control. Default pressure is named-profile-derived, while a measured override
+is admitted only inside both the 500-1,100 hPa absolute range and a 0.85-1.08
+ratio to the profile pressure at observer altitude. Gray ground albedo is
+radiance-only. Temperature and relative humidity remain profile-derived.
+
+The direct-extinction oracle preserves total aerosol optical depth and uses
+`aerosol_modify ssa set 0` only to prevent delta-M phase-function bookkeeping
+from contaminating the physical Beer-Lambert line-of-sight extinction
+quantity. Directional-radiance runs retain physical aerosol scattering. The
+73-run evidence also rejects linear unit-AOD scaling over the entire
+near-horizon domain. These decisions freeze parameter roles and candidate
+nodes, not interpolation accuracy or a runtime table.
+
+Phase 1 checkpoint 6 closes the observer-altitude and pressure-ratio
+interpolation study for direct extinction. It uses site-relative 290-level
+atmospheres, eight altitude nodes from 0 through 5,000 m, five
+profile-relative pressure nodes, all six named molecular profiles, and
+bilinear interpolation in extinction magnitude. Across 12,636 withheld
+spectral values, maximum extinction error is `0.0124663582904496` mag and
+95th-percentile error is `0.00404537460338972` mag. The law does not
+extrapolate and requires all four training corners to pass the existing
+absolute-pressure and pressure-ratio bounds.
+
+The final Phase 1 radiance artifact uses REPTRAN-fine ALIS over 380-780 nm and
+the exact CIE photopic and scotopic datasets. A training-only diagnostic
+selected 531 nm as the common spectral-importance, normalization, and
+independent-anchor wavelength without executing any holdout. The admitted
+64-node response grid has nine untouched off-grid response cases.
+Photopic/scotopic maximum interpolation errors are `0.354270166272975` and
+`0.25296630532828035` mag; their 95th-percentile errors remain below the
+unchanged `0.3`-mag ceiling.
+
+The separately licensed `moira-physical-heliacal-visibility` data pack
+version `1.0.0` contains only generated response-integrated products,
+per-cell solver uncertainty, direct-extinction values, error receipts,
+provenance, and notices. Its root-manifest SHA-256 is
+`49ac2b68ea105a8e055b27e8d4d70f6cbfe9533f971ef5e6000f0bdd95d6771b`.
+The same immutable pack passed independent Linux and Windows validation.
+It contains no CIE source table or libRadtran/REPTRAN source, profile, data
+file, binary, or engine dependency.
+
+The first pack is explicitly a fixed U.S. Standard, rural-summer, sea-level
+baseline. Earlier environmental and altitude/pressure evidence does not
+silently create absent pack axes. Requests outside the pack's exact manifest
+domain must be typed `not_evaluable`; broader environmental coverage requires
+new versioned data-pack evidence.
 
 The initial baseline excludes moonlight and site-specific airglow. Jones, the
 ESO model, and PALACE remain named comparison or later-component sources.
@@ -192,6 +245,22 @@ source-derived atmosphere with the site as its bottom level and a separately
 bound O4 companion profile. The resulting construction matched all 45
 supported deterministic-altitude oracle cases at emitted precision.
 
+Checkpoint 5 additionally binds ten governing libRadtran manual/source files,
+all eight Shettle `tau550` profile files, and the exact `uvspec` executable
+used by the 73-run environmental artifact. The admitted root-manifest
+SHA-256 is
+`e79a250b01f00783f272bae409fa323a94b5c7811375760bf536eaa7de6b0580`;
+the source-owned parameter and holdout contract is recorded in
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ENVIRONMENT_CONTRACT_CHECKPOINT_2026-07-30.md](PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ENVIRONMENT_CONTRACT_CHECKPOINT_2026-07-30.md).
+
+Checkpoint 6 binds 5,037 libRadtran runs, 50,768 files, and four preserved
+failed-design receipts. Its admitted root-manifest SHA-256 is
+`2264727cf4d1a74bb747aa51cc44e4ba9e703e09c132ab57eb2c0afef863c727`.
+The same immutable bytes passed the independent validator under Linux and
+Windows; the latter used an immutable tar transport to local NTFS to avoid
+the WSL UNC per-file traversal penalty. The compact receipt is recorded in
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md](PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md).
+
 ### CIE photopic table
 
 ```text
@@ -254,14 +323,14 @@ Network during calculation:
   prohibited
 ```
 
-The data pack must attribute the CIE datasets, preserve their DOI, include the
-share-alike notice, and identify any generated libRadtran numerical products
-and exact generator configuration.
+The admitted pack attributes the CIE datasets, preserves their DOI, includes
+the share-alike notice, and identifies the generated libRadtran numerical
+products and exact generator configuration.
 
-The engine may ship a metadata-only compatibility manifest, but not the CIE
-tables or the physical LUT. A future release review must inspect the completed
-artifact and notices before distribution. This is an engineering disposition,
-not legal advice.
+The repository now contains a metadata-only compatibility contract and
+independent validator, but not the CIE tables or physical LUT. A future
+release review must still inspect the completed external artifact and notices
+before distribution. This is an engineering disposition, not legal advice.
 
 ## Formula Admission Inventory
 
@@ -271,9 +340,9 @@ No formula is admitted merely by appearing in this ledger.
 |---|---|---|---|
 | Blackwell/Crumey point-source threshold | Crumey 2014 with Blackwell 1946 lineage | Phase 2 | Source identified; not transcribed here |
 | MES2 spectral response | CIE 191:2010 and CIE TN 004:2016, equation 2 | Phase 2 | Source and data identities fixed |
-| Spectral radiance to named photometric quantity | CIE TN 004:2016 | Phase 1/2 | Weighting identity fixed; official tables independently acquired and verified outside the repository; implementation pending |
-| Direct transmission | libRadtran 2.0.6 DISORT pseudo-spherical configuration with external REPTRAN fine data | Phase 1 | Deterministic smoke and exact repeat reproduced; elevated-site construction matched 45 oracle cases; the surface midpoint-Chapman implementation is source-traced; the 290-level clear molecular grid is bounded across all six AFGL profiles; REPTRAN fine is the full-spectral research reference; aerosol and response integration remain pending |
-| Directional twilight radiance | libRadtran 2.0.6 MYSTIC configuration | Phase 1 | Sea-level 550 nm convergence and geometry pilot plus 0-5,000 m construction smoke reproduced; adaptive spectral production configuration pending |
+| Spectral radiance to named photometric quantity | CIE TN 004:2016 | Phase 1/2 | Phase 1 source-locks the official CIE tables and admits response-integrated photopic/scotopic data-pack products; Phase 2 owns single-epoch composition and limiting-magnitude propagation |
+| Direct transmission | libRadtran 2.0.6 DISORT pseudo-spherical configuration with external REPTRAN fine data | Phase 1 | Deterministic smoke and exact repeat reproduced; elevated-site construction matched 45 oracle cases; the surface midpoint-Chapman implementation is source-traced; the 290-level clear molecular grid is bounded across all six AFGL profiles; REPTRAN fine is the full-spectral research reference; Checkpoint 5 source-binds AOD550, Angstrom, ozone, pressure, albedo, and all eight Shettle profiles and admits a delta-M-safe aerosol direct-extinction oracle; Checkpoint 6 admits site-relative altitude/pressure interpolation against 12,636 withheld spectral values; the first pack admits a 57-node, 400-bin direct surface with 22,400 untouched holdout bins |
+| Directional twilight radiance | libRadtran 2.0.6 MYSTIC configuration | Phase 1 | The final v9 artifact admits adaptive 531 nm anchored REPTRAN-fine response products over a 4-by-4-by-4 grid, nine untouched response holdouts, per-cell uncertainty, and a typed boundary below -9 degrees |
 | Physical event root | Moira-defined margin law and admission doctrine | Phase 3 | Semantic law fixed; numerical solver pending |
 | Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Excluded from baseline |
 | Airglow | measured local background; ESO/PALACE comparison | Phase 4 | Excluded from baseline |
@@ -307,5 +376,6 @@ Every candidate source now has one of four explicit roles:
 
 No GPL code enters the engine, no site-specific model becomes a global
 default, no CIE data enters the MIT wheel, and no unidentified coefficient is
-approved. The source gate is closed for Phase 0; implementation evidence
-begins in Phase 1.
+approved. The source gate is closed for Phase 0. Phase 1 implementation
+evidence and the separate fixed-domain data pack are complete; Phase 2 owns
+engine-side single-epoch truth.

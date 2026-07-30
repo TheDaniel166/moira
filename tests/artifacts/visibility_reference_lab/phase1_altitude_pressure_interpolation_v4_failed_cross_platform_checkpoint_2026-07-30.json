@@ -1,0 +1,67 @@
+{
+  "schema": "moira.visibility-altitude-pressure-interpolation-failed-checkpoint/v1",
+  "status": "failed_cross_platform_validation_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "artifact": {
+    "external_directory_name": "phase1-altitude-pressure-interpolation-2026-07-30-v4",
+    "manifest_emitted": true,
+    "manifest_sha256": "774a08e1490c5a160ff32d0f4e6204cead459ed80d6a99fe24ce1836af403f01",
+    "summary_sha256": "68648160b2d2b0f172fcc37715f1148e614f65f4f0a8e20a1bbfb1b8a4a04ab5",
+    "generation_fingerprint": "890c3083d76dd3a50fb8df29df1621a97d1c6df75de8fbcf4075f6bc9d6b0666",
+    "completed_run_count": 5037,
+    "file_count": 50768,
+    "artifact_bytes": 69923644,
+    "canonical_file_inventory_sha256": "1375eba1487687bc190b908e7341ac0e466586c59b0887e0890626b923e7b485"
+  },
+  "tooling_at_failure": {
+    "spec": {
+      "path": "scripts/visibility_reference_lab/phase1_altitude_pressure_interpolation_probe_spec.json",
+      "bytes": 10831,
+      "sha256": "66c238945dd890e55ff4dd7e690a948a003a4f5687af5680592d2009e74cca28",
+      "spec_id": "physical-heliacal-phase1-altitude-pressure-interpolation-v4-2026-07-30"
+    },
+    "builder": {
+      "path": "scripts/build_visibility_altitude_pressure_interpolation_probe.py",
+      "bytes": 69860,
+      "sha256": "fa58d2f1c8bb224cf2b47252cb03b00ed6387d7f23a7dcd331c4d6c01c619056"
+    },
+    "validator": {
+      "path": "scripts/validate_visibility_altitude_pressure_interpolation_probe.py",
+      "bytes": 49073,
+      "sha256": "b8e687a1a745c75aa194fd05a3e037f658a9b9ce85c7ffac8a6ae83ee70adf63"
+    }
+  },
+  "scientific_summary": {
+    "wsl_independent_validation_passed": true,
+    "windows_independent_validation_passed": false,
+    "run_count": 5037,
+    "evaluated_holdout_value_count": 12636,
+    "excluded_holdout_value_count": 396,
+    "required_method": "bilinear_extinction_magnitude",
+    "maximum_absolute_extinction_error_mag": 0.0124663582904496,
+    "mean_absolute_extinction_error_mag": 0.000870721378771911,
+    "p95_absolute_extinction_error_mag": 0.00404537460338972,
+    "maximum_relative_transmission_error": 0.0114162743931566,
+    "scientific_thresholds_passed": true,
+    "scientific_thresholds_relaxed": false
+  },
+  "cross_platform_failure": {
+    "message": "run result payload differs: tropical__z0000__p010300__h2000",
+    "field": "result[1].extinction_magnitude",
+    "linux_value": 0.712521194033361,
+    "windows_value": 0.71252119403336,
+    "absolute_difference": 9.992007221626409e-16,
+    "root_cause": "the_validator_required_byte_identity_after_recomputing_transcendental_derived_values_on_a_second_platform",
+    "required_repair": "require_canonical_self_serialization_and_checksum_identity_then_compare_independently_recomputed_numeric_fields_with_a_fixed_cross_platform_tolerance",
+    "raw_uvspec_output_changed": false,
+    "scientific_interpolation_law_changed": false,
+    "holdout_inventory_changed": false
+  },
+  "decision": {
+    "admitted": false,
+    "artifact_mutated_after_manifest": false,
+    "same_scientific_design_may_be_regenerated_under_new_tool_identity": true,
+    "production_data_pack_authorized": false,
+    "engine_changes_authorized": false
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "moira.visibility-radiance-response-failed-checkpoint/v1",
+  "status": "failed_research_sampling_design_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "spec_id": "physical-heliacal-phase1-radiance-response-v2-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-radiance-response-2026-07-30-v2",
+    "file_count": 2817,
+    "bytes": 6245392,
+    "completed_run_count": 313,
+    "completed_training_anchor_run_count": 223,
+    "completed_monochromatic_holdout_anchor_run_count": 86,
+    "completed_training_shape_run_count": 4,
+    "manifest_emitted": false,
+    "summary_emitted": false
+  },
+  "failure": {
+    "stage": "training_spectral_shape_adaptive_convergence",
+    "point_id": "s09p0_h00p25_a000p0",
+    "solar_center_altitude_deg": -9.0,
+    "target_true_altitude_deg": 0.25,
+    "relative_solar_azimuth_deg": 0.0,
+    "photon_count_per_seed": 10000,
+    "seed_count": 4,
+    "total_photon_count": 40000,
+    "maximum_relative_standard_error": 0.12,
+    "photopic_shape_mean_nm": 94.19319125610981,
+    "photopic_shape_relative_standard_error": 0.022827425628794865,
+    "scotopic_shape_mean_nm": 110.12442917714951,
+    "scotopic_shape_relative_standard_error": 0.1310439837635542,
+    "reason": "spectral_shape_seed_budget_exhausted_before_frozen_scotopic_uncertainty_threshold"
+  },
+  "holdout_boundary": {
+    "monochromatic_anchor_holdouts_executed": true,
+    "response_integrated_holdouts_executed": false,
+    "direct_extinction_holdouts_executed": false,
+    "grid_nodes_changed_after_holdout_execution": false,
+    "acceptance_thresholds_changed_after_holdout_execution": false,
+    "repair_uses_training_failure_only": true
+  },
+  "failed_tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+      "bytes": 11464,
+      "sha256": "8befe83f62edadd8520311c5e8d0df55c80e14177608f69ac66a7013ec927d37"
+    },
+    {
+      "path": "scripts/build_visibility_radiance_response_probe.py",
+      "bytes": 73382,
+      "sha256": "46ddf87b240fda7ce8c6f3c5429a50ad24ef93bd4fe2fb4cdc66813e7ffec81b"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 51252,
+      "sha256": "0bf9242361060f4c9eb5d05480bb86424f3e21e255cd6a9764a628cae76b7fad"
+    }
+  ],
+  "disposition": {
+    "artifact_admitted": false,
+    "production_data_pack_authorized": false,
+    "accuracy_thresholds_relaxed": false,
+    "grid_nodes_changed": false,
+    "repair": "increase_only_the_predeclared_spectral_shape_seed_inventory_from_four_to_eight",
+    "failed_artifact_is_immutable": true,
+    "byte_verified_run_cache_reuse_is_allowed_for_the_successor_build": true
+  }
+}

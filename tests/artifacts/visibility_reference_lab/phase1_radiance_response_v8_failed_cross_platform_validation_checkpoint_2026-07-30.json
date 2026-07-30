@@ -1,0 +1,74 @@
+{
+  "schema": "moira.visibility-radiance-response-failed-checkpoint/v1",
+  "status": "complete_scientific_artifact_failed_cross_platform_tooling_validation_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "spec_id": "physical-heliacal-phase1-radiance-response-v8-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-radiance-response-2026-07-30-v8",
+    "file_count": 5621,
+    "bytes": 317168353,
+    "run_count": 662,
+    "manifest_bytes": 418279,
+    "manifest_sha256": "a06191414fcc318e97f53c51aa33772cc752c1833d181361ad5bdb1e57d437ea",
+    "summary_bytes": 1292971,
+    "summary_sha256": "baa394653a84f65f288a9d3041856901701e57e8900f17b0876089bd4184c0da",
+    "generation_fingerprint": "7c78deda5789e3611068ef9096d2fb126b06cc308b02e74d5e40a07791fc99e5"
+  },
+  "scientific_acceptance": {
+    "linux_independent_validation_passed": true,
+    "windows_independent_validation_passed": false,
+    "photopic_response_maximum_error_mag": 0.354270166272975,
+    "photopic_response_p95_error_mag": 0.2877153352014283,
+    "scotopic_response_maximum_error_mag": 0.25296630532828035,
+    "scotopic_response_p95_error_mag": 0.24481663788617505,
+    "direct_extinction_maximum_error_mag": 0.021295445115406153,
+    "direct_extinction_p95_error_mag": 0.0027914851891885917,
+    "float32_maximum_error_mag": 9.487461198887104e-7,
+    "quantized_maximum_error_mag": 0.0001249875926188082,
+    "scientific_threshold_failure_count": 0
+  },
+  "cross_platform_failure": {
+    "stage": "independent_input_reconstruction",
+    "run_id": "direct__training__h45p00",
+    "field": "umu",
+    "artifact_text": "-0.707106781186547",
+    "windows_reconstruction_text": "-0.707106781186548",
+    "absolute_numeric_difference": 1e-15,
+    "cause": "platform_libm_last_digit_difference_in_sine_serialization",
+    "scientific_input_drift": false,
+    "raw_uvspec_output_changed": false,
+    "scientific_summary_changed": false
+  },
+  "tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+      "bytes": 16456,
+      "sha256": "b71f27f908e67607dd07eb6b2c11f14be0f5af1b6effe773fc738d502acb289d"
+    },
+    {
+      "path": "scripts/build_visibility_radiance_response_probe.py",
+      "bytes": 84173,
+      "sha256": "790654cd88d5a2064c895e301313f9a7c415b7baa0cf8a21d21f63390bbe9004"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 60876,
+      "sha256": "df147bb8cd6f4ac385f4ff73661494d37678a7744ef7cfd4a30d6ac09c46d60d"
+    }
+  ],
+  "successor_design": {
+    "scientific_specification_changed": false,
+    "run_inputs_or_outputs_regenerated": false,
+    "validator_compares_the_single_platform_derived_umu_token_numerically": true,
+    "all_non_umu_input_lines_remain_byte_exact": true,
+    "umu_numeric_relative_tolerance": 5e-15,
+    "umu_numeric_absolute_tolerance": 5e-16,
+    "complete_run_cache_may_be_byte_reused": true
+  },
+  "disposition": {
+    "artifact_admitted": false,
+    "production_data_pack_authorized": false,
+    "v8_artifact_is_immutable": true,
+    "successor_requires_linux_and_windows_independent_validation": true
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "moira.visibility-radiance-response-failed-checkpoint/v1",
+  "status": "failed_research_sampling_design_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "spec_id": "physical-heliacal-phase1-radiance-response-v1-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-radiance-response-2026-07-30-v1",
+    "file_count": 126,
+    "bytes": 52650,
+    "completed_run_count": 14,
+    "manifest_emitted": false,
+    "summary_emitted": false
+  },
+  "failure": {
+    "stage": "training_anchor_adaptive_convergence",
+    "point_id": "s09p0_h00p25_a120p0",
+    "solar_center_altitude_deg": -9.0,
+    "target_true_altitude_deg": 0.25,
+    "relative_solar_azimuth_deg": 120.0,
+    "photon_count_per_seed": 250000,
+    "seed_count": 8,
+    "total_photon_count": 2000000,
+    "mean_radiance_550_mw_m2_nm_sr": 0.00061639225,
+    "between_seed_relative_standard_error": 0.24201523253720336,
+    "reported_aggregate_relative_standard_error": 0.17556237544454165,
+    "governing_relative_standard_error": 0.24201523253720336,
+    "maximum_relative_standard_error": 0.2,
+    "reason": "anchor_seed_budget_exhausted_before_frozen_uncertainty_threshold"
+  },
+  "holdout_boundary": {
+    "holdout_runs_executed": false,
+    "acceptance_thresholds_changed_after_holdout_execution": false
+  },
+  "failed_tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+      "bytes": 11223,
+      "sha256": "e87b77203a8cf735c77772aa19594d22f281d6a2773b0ce8873d70037401ffd3"
+    },
+    {
+      "path": "scripts/build_visibility_radiance_response_probe.py",
+      "bytes": 73379,
+      "sha256": "c6728a2c7f3b1f16e8d9e4a4edd025b4764967b30a8f962005f3d5c99652e99f"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 50286,
+      "sha256": "98ab0f66395b1878d1434a01a2078827009fdcd190f29fbe5f93fc5edddd0c2e"
+    }
+  ],
+  "disposition": {
+    "artifact_admitted": false,
+    "production_data_pack_authorized": false,
+    "accuracy_thresholds_relaxed": false,
+    "repair": "increase_the_predeclared_anchor_seed_inventory_while_preserving_photons_per_seed_and_all_frozen_accuracy_thresholds",
+    "failed_artifact_is_immutable": true
+  }
+}

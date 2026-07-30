@@ -1,0 +1,100 @@
+{
+  "schema": "moira.visibility-spectral-reference-training-diagnostic-spec/v1",
+  "diagnostic_id": "physical-heliacal-phase1-spectral-reference-training-diagnostic-v1-2026-07-30",
+  "status": "training_only_research_diagnostic_not_runtime_data_pack",
+  "radiance_spec": {
+    "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+    "spec_id": "physical-heliacal-phase1-radiance-response-v9-2026-07-30",
+    "bytes": 16766,
+    "sha256": "17b7024446bc98a3a324ceee5f998f88f91d699d8faf967f307cd9aa022e447f"
+  },
+  "governing_failed_checkpoint": {
+    "path": "tests/artifacts/visibility_reference_lab/phase1_radiance_response_v5_failed_response_balance_checkpoint_2026-07-30.json",
+    "bytes": 2847,
+    "sha256": "1a43cea636e4cea20d035e7485c5af40e57297e9e0a15ba074d80d0d1b7283b5"
+  },
+  "training_point": {
+    "point_id": "s09p0_h00p25_a180p0",
+    "solar_center_altitude_deg": -9.0,
+    "target_true_altitude_deg": 0.25,
+    "relative_solar_azimuth_deg": 180.0,
+    "selection_basis": "first_governing_training_point_where_explicit_550nm_reference_exhausted_the_frozen_shape_seed_limit"
+  },
+  "candidate_reference_wavelengths_nm": [
+    507.0,
+    519.0,
+    531.0,
+    543.0,
+    550.0,
+    555.0
+  ],
+  "candidate_basis": {
+    "scotopic_peak_nm": 507.0,
+    "photopic_peak_nm": 555.0,
+    "interior_spacing_nm": 12.0,
+    "prior_explicit_reference_control_nm": 550.0
+  },
+  "monte_carlo": {
+    "photons_per_seed": 100000,
+    "random_seeds": [
+      1048583,
+      1114129,
+      1179661,
+      1245199,
+      2800001,
+      2865557,
+      2931101,
+      2996663
+    ],
+    "fixed_seed_count": 8,
+    "adaptive_stopping_allowed": false
+  },
+  "response_integration": {
+    "spectral_range_nm": [
+      380.0,
+      780.0
+    ],
+    "spectral_output_step_nm": 0.05,
+    "expected_spectral_row_count": 8001,
+    "normalization": "response_integral_divided_by_same_seed_candidate_reference_radiance",
+    "quadrature": "trapezoidal_on_libradtran_output_grid",
+    "responses": [
+      "photopic",
+      "scotopic"
+    ]
+  },
+  "selection": {
+    "maximum_response_shape_relative_standard_error": 0.12,
+    "primary_score": "maximum_of_photopic_and_scotopic_relative_standard_error",
+    "secondary_score": "sum_of_photopic_and_scotopic_relative_standard_error",
+    "tie_breaker": "lowest_candidate_reference_wavelength_nm",
+    "thresholds_may_not_change": true,
+    "candidate_inventory_may_not_change_after_execution": true
+  },
+  "holdout_boundary": {
+    "training_point_only": true,
+    "response_holdouts_must_not_execute": true,
+    "direct_extinction_holdouts_must_not_execute": true,
+    "grid_nodes_may_not_change": true,
+    "acceptance_thresholds_may_not_change": true
+  },
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "engine_dependency_allowed": false,
+    "engine_runtime_invocation_allowed": false,
+    "generated_numerical_products_only": true,
+    "engine_changes_authorized": false
+  },
+  "artifact": {
+    "schema": "moira.visibility-spectral-reference-training-diagnostic/v1",
+    "run_schema": "moira.visibility-spectral-reference-training-diagnostic-run/v1",
+    "manifest_filename": "artifact-manifest.json",
+    "summary_filename": "summary.json",
+    "runs_directory": "runs",
+    "atomic_case_writes": true,
+    "immutable_output_directory": true,
+    "file_inventory_policy": "exact_no_unbound_files",
+    "symlink_policy": "none_in_final_artifact"
+  }
+}

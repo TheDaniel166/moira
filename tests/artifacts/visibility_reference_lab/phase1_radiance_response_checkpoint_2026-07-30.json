@@ -1,0 +1,104 @@
+{
+  "schema": "moira.visibility-radiance-response-checkpoint/v1",
+  "status": "phase1_complete_reference_artifact_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "spec_id": "physical-heliacal-phase1-radiance-response-v9-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-radiance-response-2026-07-30-v9",
+    "file_count": 5621,
+    "bytes": 317168353,
+    "run_count": 662,
+    "manifest_bytes": 418279,
+    "manifest_sha256": "6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f",
+    "summary_bytes": 1292971,
+    "summary_sha256": "829774108d1c1337399784c20254c1d6cc5fc071d532450f4afb74431d870104",
+    "generation_fingerprint": "aef8bdc07948ff5367dba1834baea708dfea0bc0dffb6898899dabc6f231c8c0",
+    "linux_independent_validation_passed": true,
+    "windows_independent_validation_passed": true
+  },
+  "spectral_response": {
+    "spectral_importance_reference_wavelength_nm": 531.0,
+    "shape_normalization_wavelength_nm": 531.0,
+    "absolute_anchor_wavelength_nm": 531.0,
+    "reference_selection_checkpoint": "tests/artifacts/visibility_reference_lab/phase1_spectral_reference_training_diagnostic_checkpoint_2026-07-30.json",
+    "photopic_response_holdout_count": 9,
+    "photopic_response_maximum_error_mag": 0.354270166272975,
+    "photopic_response_p95_error_mag": 0.2877153352014283,
+    "scotopic_response_holdout_count": 9,
+    "scotopic_response_maximum_error_mag": 0.25296630532828035,
+    "scotopic_response_p95_error_mag": 0.24481663788617505,
+    "maximum_allowed_error_mag": 0.5,
+    "p95_allowed_error_mag": 0.3,
+    "thresholds_relaxed": false
+  },
+  "monte_carlo": {
+    "anchor_aggregate_count": 91,
+    "shape_aggregate_count": 73,
+    "maximum_anchor_relative_standard_error": 0.1987640494431891,
+    "maximum_photopic_response_relative_standard_error": 0.20942994094231226,
+    "maximum_scotopic_response_relative_standard_error": 0.23213844417866286,
+    "per_cell_solver_uncertainty_required_in_data_pack": true
+  },
+  "direct_extinction": {
+    "training_node_count": 57,
+    "independent_holdout_count": 56,
+    "evaluated_holdout_bin_count": 22400,
+    "maximum_error_mag": 0.021295445115406153,
+    "p95_error_mag": 0.0027914851891885917,
+    "mean_error_mag": 0.0008813657159145013,
+    "maximum_allowed_error_mag": 0.05,
+    "p95_allowed_error_mag": 0.02,
+    "thresholds_relaxed": false
+  },
+  "intermediate_diagnostic": {
+    "surface": "monochromatic_531nm_reference",
+    "shipped_in_data_pack": false,
+    "used_by_runtime_interpolation": false,
+    "admission_gate": false,
+    "maximum_error_mag": 0.5441787827141054,
+    "p95_error_mag": 0.4235505888539045,
+    "retained_in_error_envelope": true
+  },
+  "storage": {
+    "selected_representation": "little_endian_ieee754_binary32",
+    "stored_value_count": 22928,
+    "float32_maximum_error_mag": 9.487461198887104e-7,
+    "float32_maximum_allowed_error_mag": 0.00001,
+    "quantized_candidate_maximum_error_mag": 0.0001249875926188082,
+    "quantized_candidate_maximum_allowed_error_mag": 0.0002,
+    "quantized_candidate_selected": false
+  },
+  "deep_twilight_law": {
+    "minimum_solar_center_altitude_deg": -9.0,
+    "below_minimum_status": "not_evaluable",
+    "below_minimum_reason": "solar_twilight_below_data_pack_domain",
+    "monte_carlo_non_detection_is_zero": false,
+    "measured_background_routes_unaffected": true
+  },
+  "tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+      "bytes": 16766,
+      "sha256": "17b7024446bc98a3a324ceee5f998f88f91d699d8faf967f307cd9aa022e447f"
+    },
+    {
+      "path": "scripts/build_visibility_radiance_response_probe.py",
+      "bytes": 84173,
+      "sha256": "790654cd88d5a2064c895e301313f9a7c415b7baa0cf8a21d21f63390bbe9004"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 62597,
+      "sha256": "e4497ce28799b89182bc0ca8551a0a6fac352b272a9ecc9343de3eded0eb2300"
+    }
+  ],
+  "runtime_boundary": {
+    "engine_runtime_invocation_allowed": false,
+    "engine_dependency_allowed": false,
+    "automatic_download_allowed": false,
+    "network_allowed": false,
+    "libRadtran_or_REPTRAN_redistribution_allowed": false,
+    "separate_data_pack_compilation_authorized": true,
+    "engine_loader_implementation_owner": "phase2_single_epoch_truth"
+  }
+}

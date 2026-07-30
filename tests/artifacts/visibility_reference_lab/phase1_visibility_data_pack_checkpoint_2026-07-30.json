@@ -1,0 +1,122 @@
+{
+  "schema": "moira.physical-heliacal-visibility-data-pack-checkpoint/v1",
+  "status": "phase1_complete_immutable_data_pack_not_engine_runtime",
+  "date": "2026-07-30",
+  "pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.0.0",
+    "compatibility_id": "moira-physical-heliacal-visibility-data-pack-v1",
+    "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+    "table_format_id": "regular-grid-ieee754-binary32-le-v1",
+    "license": "CC-BY-SA-4.0"
+  },
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/data-packs/moira-physical-heliacal-visibility-1.0.0-v2",
+    "file_count": 12,
+    "bytes": 110481,
+    "payload_file_count": 11,
+    "manifest_bytes": 6024,
+    "manifest_sha256": "49ac2b68ea105a8e055b27e8d4d70f6cbfe9533f971ef5e6000f0bdd95d6771b",
+    "generation_fingerprint": "b0d09b91086c2b3064e6c56cfaeae97226e7a6b2779fd70c5b7807aeab748750"
+  },
+  "source_artifact": {
+    "spec_id": "physical-heliacal-phase1-radiance-response-v9-2026-07-30",
+    "manifest_sha256": "6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f",
+    "summary_sha256": "829774108d1c1337399784c20254c1d6cc5fc071d532450f4afb74431d870104",
+    "generation_fingerprint": "aef8bdc07948ff5367dba1834baea708dfea0bc0dffb6898899dabc6f231c8c0",
+    "independent_validation_required_before_pack_build": true
+  },
+  "validation": {
+    "linux_independent_validation_passed": true,
+    "windows_independent_validation_passed": true,
+    "linux_and_windows_manifest_identity_matched": true,
+    "linux_and_windows_generation_fingerprint_matched": true,
+    "network_accessed": false,
+    "exact_file_inventory_enforced": true,
+    "payload_checksums_enforced": true,
+    "missing_or_corrupt_pack_fails_explicitly": true,
+    "unsupported_major_version_fails_explicitly": true,
+    "unexpected_file_or_symlink_fails_explicitly": true
+  },
+  "tables": {
+    "radiance_axis_shape": [
+      4,
+      4,
+      4
+    ],
+    "radiance_value_count_per_response": 64,
+    "radiance_response_count": 4,
+    "direct_extinction_training_node_count": 57,
+    "direct_extinction_spectral_bin_count": 400,
+    "direct_extinction_value_count": 22800,
+    "stored_numeric_value_count": 23056,
+    "binary_representation": "little_endian_ieee754_binary32"
+  },
+  "accepted_error_envelope": {
+    "photopic_response_maximum_error_mag": 0.354270166272975,
+    "photopic_response_p95_error_mag": 0.2877153352014283,
+    "scotopic_response_maximum_error_mag": 0.25296630532828035,
+    "scotopic_response_p95_error_mag": 0.24481663788617505,
+    "direct_extinction_maximum_error_mag": 0.021295445115406153,
+    "direct_extinction_p95_error_mag": 0.0027914851891885917,
+    "float32_maximum_error_mag": 9.487461198887104e-7,
+    "per_cell_solver_uncertainty_shipped": true
+  },
+  "diagnostic_boundary": {
+    "monochromatic_531nm_reference_reported_in_error_envelope": true,
+    "monochromatic_531nm_reference_shipped_as_runtime_table": false,
+    "monochromatic_531nm_reference_used_by_runtime_interpolation": false,
+    "monochromatic_531nm_reference_is_admission_gate": false
+  },
+  "deep_twilight_law": {
+    "minimum_solar_center_altitude_deg": -9.0,
+    "below_minimum_status": "not_evaluable",
+    "below_minimum_reason": "solar_twilight_below_data_pack_domain",
+    "measured_background_routes_unaffected": true
+  },
+  "failed_predecessor": {
+    "checkpoint_path": "tests/artifacts/visibility_reference_lab/phase1_visibility_data_pack_v1_failed_notice_checkpoint_2026-07-30.json",
+    "failed_artifact_path": "/home/nilad/.cache/moira/visibility-reference-lab/data-packs/moira-physical-heliacal-visibility-1.0.0",
+    "failed_artifact_preserved_immutable": true,
+    "failure_was_packaging_notice_only": true,
+    "failed_artifact_admitted": false
+  },
+  "tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_visibility_data_pack_spec.json",
+      "bytes": 3300,
+      "sha256": "ce38b614c3de42e386e94b2e7a2e366de965d6791e00cff7b198254eb9d8b852"
+    },
+    {
+      "path": "scripts/visibility_reference_lab/physical_heliacal_visibility_data_pack_compatibility_v1.json",
+      "bytes": 2410,
+      "sha256": "f50b199a211b75f7e6701f69c86020918f01df4940cfd1d3b86c6d6036659e37"
+    },
+    {
+      "path": "scripts/build_visibility_data_pack.py",
+      "bytes": 29699,
+      "sha256": "e5429e13742472d57f9f7acd9dbea139c9b7e3bbdc1c542655c39b24f36b0108"
+    },
+    {
+      "path": "scripts/validate_visibility_data_pack.py",
+      "bytes": 23725,
+      "sha256": "85903d573574a21401be020e9e4e6265c7c1997a3e6ea8dcba4a5a88df0a1c16"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 62597,
+      "sha256": "e4497ce28799b89182bc0ca8551a0a6fac352b272a9ecc9343de3eded0eb2300"
+    }
+  ],
+  "runtime_boundary": {
+    "engine_runtime_invocation_allowed": false,
+    "engine_loader_implemented": false,
+    "automatic_download_allowed": false,
+    "network_allowed": false,
+    "caller_supplied_directory_path_required": true,
+    "source_libRadtran_or_REPTRAN_files_included": false,
+    "source_CIE_tables_included": false,
+    "generated_numerical_products_only": true,
+    "engine_loader_implementation_owner": "phase2_single_epoch_truth"
+  }
+}

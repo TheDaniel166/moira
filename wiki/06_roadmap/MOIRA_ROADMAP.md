@@ -1,7 +1,7 @@
 # Moira Engine — Feature Roadmap & Mathematical Accuracy Register
 
 **Engine baseline**: 6.1.0
-**Last reviewed**: 2026-07-29
+**Last reviewed**: 2026-07-30
 **Status**: Living engineering roadmap. Individual validation claims are
 controlled by `wiki/03_validation/` and release notes, not by roadmap status.
 **Purpose**: Record implemented areas, remaining gaps, and mathematical
@@ -139,7 +139,7 @@ and tested in `tests/unit/test_public_surface_gaps.py`.
 
 ---
 
-### Physical heliacal visibility modernization  `PHASE 1 IN PROGRESS`
+### Physical heliacal visibility modernization  `PHASE 1 COMPLETE`
 
 The original heliacal public-surface gap above is closed. A separate additive
 project is introducing a versioned, opt-in clear-sky naked-eye point-source
@@ -155,7 +155,7 @@ validity and input boundaries, immutable external data-pack decision, exact
 source identities, licensing dispositions, additive contract sketch, and
 typed failure law.
 
-Phase 1 checkpoints 1-4 now provide the offline, checksum-bound libRadtran
+Phase 1 checkpoints 1-6 provide the offline, checksum-bound libRadtran
 laboratory, complete artifact validators, repeated MYSTIC convergence and
 geometry evidence, deterministic pseudo-spherical direct-transmission
 evidence, package-boundary audit, and a source-equivalent elevated-site
@@ -169,11 +169,42 @@ Checkpoint 4 binds the official external REPTRAN module, validates all six
 AFGL clear molecular profiles, bounds the 290-level candidate against 579-
 and 1,157-level controls, and admits REPTRAN fine as the 380-780 nm research
 reference. The exact 54-run artifact passes independent validation on WSL and
-Windows. One fixed photon budget remains inadmissible across the twilight
-domain. The adaptive sparse table design, production altitude/pressure and
-aerosol/environment dimensions, CIE/target-spectrum response integration,
-spectral products, off-grid validation, error propagation, and separate data
-pack remain open. Phase 2 has not begun.
+Windows. Checkpoint 5 adds a separately validated 73-run environmental
+contract: all eight named Shettle haze/season profiles, AOD550 and Angstrom
+binding, ozone and gray-albedo roles, profile-relative measured-pressure
+policy, profile-derived temperature/humidity, and a delta-M-safe aerosol
+direct-extinction oracle. Its near-horizon evidence rejects simple unit-AOD
+linear scaling over the full range. Checkpoint 6 executes the altitude and
+pressure-ratio holdouts across all six profiles: 12,636 withheld spectral
+values pass with `0.0124664` mag maximum extinction error, `0.00404537` mag
+95th-percentile error, and `0.0114163` maximum relative transmission error.
+The admitted interpolation uses complete cells, does not extrapolate, and
+fails closed when a pressure-domain corner is invalid.
+
+The final v9 radiance artifact closes the remaining reference-table gates. It
+uses a training-only six-wavelength diagnostic to select a balanced 531 nm
+importance reference, then admits REPTRAN-fine 380-780 nm photopic/scotopic
+products over a 4-by-4-by-4 solar/target/azimuth grid. Nine untouched response
+holdouts pass the unchanged `0.5`-mag maximum and `0.3`-mag p95 ceilings.
+The 57-node direct surface passes 22,400 untouched spectral holdout bins with
+`0.0212954` mag maximum and `0.00279149` mag p95 error. Solver,
+interpolation, and binary32 storage errors are separately receipted; modeled
+twilight below -9 degrees is typed `not_evaluable`.
+
+Phase 1 closes with the separate CC BY-SA 4.0
+`moira-physical-heliacal-visibility` data pack version `1.0.0`. Its
+root-manifest SHA-256 is
+`49ac2b68ea105a8e055b27e8d4d70f6cbfe9533f971ef5e6000f0bdd95d6771b`,
+and the same immutable pack passes independent Linux and Windows validation.
+It contains generated numerical products, checksums, provenance, and notices,
+but no CIE source table, libRadtran/REPTRAN file, engine code, or automatic
+download path.
+
+The first pack is deliberately a fixed U.S. Standard, rural-summer, sea-level
+baseline. Earlier environmental and altitude/pressure evidence does not
+silently add absent pack axes; Phase 2 must fail closed outside the exact
+manifest domain. No engine loader or public API was implemented in Phase 1.
+Phase 2, Python spectral single-epoch truth, is now the next authorized work.
 
 ---
 

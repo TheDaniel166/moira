@@ -1,0 +1,111 @@
+{
+  "schema": "moira.visibility-environment-contract-checkpoint/v1",
+  "status": "phase1_environment_contract_gate_passed_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "artifact": {
+    "external_directory_name": "phase1-environment-contract-2026-07-30-v2",
+    "manifest_sha256": "e79a250b01f00783f272bae409fa323a94b5c7811375760bf536eaa7de6b0580",
+    "generation_fingerprint": "882f23ac18053ca616b01f175c31cc26a4c68411021506d80d8d308659060cb4",
+    "run_count": 73,
+    "linux_validation_passed": true,
+    "windows_validation_passed": true
+  },
+  "tooling": {
+    "spec": {
+      "path": "scripts/visibility_reference_lab/phase1_environment_contract_probe_spec.json",
+      "bytes": 13602,
+      "sha256": "265e7495b16201ed31d23d84814e240e5f23c1cdaae2e9bd928e960c88c14242"
+    },
+    "builder": {
+      "path": "scripts/build_visibility_environment_contract_probe.py",
+      "bytes": 48742,
+      "sha256": "26f9e0ba85345a0a0513bd8a021bddf652f4381f2876b18db80110048cd26d12"
+    },
+    "validator": {
+      "path": "scripts/validate_visibility_environment_contract_probe.py",
+      "bytes": 33225,
+      "sha256": "f6d8bfbe9e4af9aacc68aaa0168eb8c6589108ec5644e8b333d1cc9fc636ebe2"
+    }
+  },
+  "predecessor": {
+    "checkpoint_path": "tests/artifacts/visibility_reference_lab/phase1_named_spectral_direct_checkpoint_2026-07-30.json",
+    "checkpoint_bytes": 8016,
+    "checkpoint_sha256": "271637295bff3ae21e140bcb0b2ec7f74e8057c9bde92ba8d7c41ff071f33899"
+  },
+  "source": {
+    "libradtran_version": "2.0.6",
+    "archive_bytes": 154147176,
+    "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+    "uvspec_bytes": 3722664,
+    "uvspec_sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a",
+    "governing_source_file_count": 10,
+    "shettle_tau550_file_count": 8
+  },
+  "decisions": {
+    "observer_altitude_construction": "source_equivalent_truncated_atmosphere_checkpoint_2",
+    "observer_altitude_candidate_node_count": 5,
+    "observer_altitude_reserved_holdout_count": 4,
+    "observer_altitude_interpolation_admitted": false,
+    "pressure_table_coordinate": "ratio_to_named_profile_surface_pressure_at_observer_altitude",
+    "pressure_absolute_hard_bounds_hpa": [
+      500.0,
+      1100.0
+    ],
+    "pressure_ratio_hard_bounds": [
+      0.85,
+      1.08
+    ],
+    "pressure_admission_law": "absolute_and_ratio_bounds_must_both_pass",
+    "explicit_pressure_override_allowed": true,
+    "temperature_override_admitted": false,
+    "relative_humidity_override_admitted": false,
+    "aerosol_visibility_input_exposed": false,
+    "named_aerosol_profile_count": 8,
+    "aerosol_vulcan_code": 1,
+    "direct_aerosol_dimensions": [
+      "season",
+      "aod550",
+      "angstrom_exponent"
+    ],
+    "radiance_aerosol_dimensions": [
+      "haze",
+      "season",
+      "aod550",
+      "angstrom_exponent"
+    ],
+    "ground_albedo_direct_role": "excluded",
+    "ground_albedo_radiance_role": "included",
+    "direct_extinction_aerosol_override": "aerosol_modify ssa set 0",
+    "production_data_pack_authorized": false,
+    "engine_changes_authorized": false
+  },
+  "evidence": {
+    "albedo_direct_stdout_hash_count": 1,
+    "summer_haze_direct_stdout_hash_count": 1,
+    "winter_haze_direct_stdout_hash_count": 1,
+    "raw_delta_m_haze_distinct_stdout_count": 3,
+    "aod_transmission_strictly_decreasing": true,
+    "near_horizon_tau_per_aod_ratio_spread": 2.36273098116443,
+    "five_degree_tau_per_aod_ratio_spread": 1.08487839009281,
+    "twenty_degree_tau_per_aod_ratio_spread": 1.00578580135771,
+    "angstrom_550_stdout_hash_count": 1,
+    "angstrom_400_transmission_strictly_decreasing": true,
+    "angstrom_780_transmission_strictly_increasing": true,
+    "ozone_600_transmission_strictly_decreasing": true,
+    "pressure_550_transmission_strictly_decreasing": true,
+    "aerosol_season_direct_output_differs": true,
+    "exact_repeat_byte_identical": true
+  },
+  "open": [
+    "observer_altitude_holdout_interpolation_error",
+    "pressure_ratio_holdout_interpolation_error",
+    "adaptive_directional_radiance_design",
+    "deep_twilight_law",
+    "versioned_CIE_and_target_spectrum_inputs",
+    "response_integrated_spectral_products",
+    "storage_and_interpolation_selection",
+    "error_propagation",
+    "separate_visibility_data_pack",
+    "phase1_exit_gate"
+  ]
+}

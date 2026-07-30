@@ -1,0 +1,119 @@
+{
+  "schema": "moira.visibility-altitude-pressure-interpolation-checkpoint/v1",
+  "status": "phase1_altitude_pressure_interpolation_gate_passed_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "artifact": {
+    "external_directory_name": "phase1-altitude-pressure-interpolation-2026-07-30-v5",
+    "manifest_bytes": 16539245,
+    "manifest_sha256": "2264727cf4d1a74bb747aa51cc44e4ba9e703e09c132ab57eb2c0afef863c727",
+    "summary_bytes": 5554,
+    "summary_sha256": "68648160b2d2b0f172fcc37715f1148e614f65f4f0a8e20a1bbfb1b8a4a04ab5",
+    "generation_fingerprint": "ef95bba5a00667ce3bd1d983f9b9de93b989bd315da0e702f3342153d07bf165",
+    "run_count": 5037,
+    "spectral_value_count": 15111,
+    "file_count": 50768,
+    "artifact_bytes": 69923910,
+    "linux_validation_passed": true,
+    "windows_validation_passed": true,
+    "windows_validation_transport": "immutable_tar_copy_to_local_ntfs"
+  },
+  "tooling": {
+    "spec": {
+      "path": "scripts/visibility_reference_lab/phase1_altitude_pressure_interpolation_probe_spec.json",
+      "bytes": 11295,
+      "sha256": "711c2744dce708d24ed9c6286bc843744d7c49bf95f4e2b9ce13ec63c948da66",
+      "spec_id": "physical-heliacal-phase1-altitude-pressure-interpolation-v5-2026-07-30"
+    },
+    "builder": {
+      "path": "scripts/build_visibility_altitude_pressure_interpolation_probe.py",
+      "bytes": 70048,
+      "sha256": "4423f492f46b911b0045b6e1553d62c0776dab8578b6b37a3873ffaf195f3587"
+    },
+    "validator": {
+      "path": "scripts/validate_visibility_altitude_pressure_interpolation_probe.py",
+      "bytes": 51927,
+      "sha256": "b909875116d7d9213dbda7e1784c2a3b633075ef80a2db955c25b8d3dbf63a62"
+    }
+  },
+  "predecessor": {
+    "checkpoint_path": "tests/artifacts/visibility_reference_lab/phase1_environment_contract_checkpoint_2026-07-30.json",
+    "checkpoint_bytes": 4358,
+    "checkpoint_sha256": "c2815fc01e503a2cce0075d010ffaff6035590c2dafc702523e2dde888e5e8db"
+  },
+  "design": {
+    "atmosphere_profile_count": 6,
+    "observer_altitude_training_nodes_m": [
+      0.0,
+      500.0,
+      1000.0,
+      1500.0,
+      2250.0,
+      3000.0,
+      4000.0,
+      5000.0
+    ],
+    "observer_altitude_reserved_holdout_count": 14,
+    "pressure_ratio_training_nodes": [
+      0.85,
+      0.925,
+      1.0,
+      1.04,
+      1.08
+    ],
+    "pressure_ratio_reserved_holdout_count": 8,
+    "target_true_altitude_deg": [
+      0.25,
+      5.0,
+      20.0
+    ],
+    "wavelength_nm": [
+      400.0,
+      550.0,
+      780.0
+    ],
+    "vertical_grid_id": "site_relative_near_horizon_piecewise_refined_v1",
+    "interpolation_method": "bilinear_extinction_magnitude",
+    "no_extrapolation": true,
+    "query_requires_complete_valid_training_cell": true
+  },
+  "validation": {
+    "evaluated_holdout_value_count": 12636,
+    "excluded_holdout_value_count": 396,
+    "excluded_law": "hard_pressure_bounds_remove_one_or_more_required_training_corners",
+    "maximum_absolute_extinction_error_mag": 0.0124663582904496,
+    "maximum_allowed_absolute_extinction_error_mag": 0.025,
+    "p95_absolute_extinction_error_mag": 0.00404537460338972,
+    "maximum_allowed_p95_absolute_extinction_error_mag": 0.01,
+    "maximum_relative_transmission_error": 0.0114162743931566,
+    "maximum_allowed_relative_transmission_error": 0.025,
+    "thresholds_relaxed": false
+  },
+  "failed_design_evidence": {
+    "bound_failed_receipt_count": 4,
+    "native_afgl_vertical_grid_rejected": true,
+    "site_relative_grid_scientifically_admitted": true,
+    "binary32_profile_round_trip_validator_repaired": true,
+    "cross_platform_transcendental_byte_equality_replaced": true,
+    "raw_uvspec_output_checksum_identity_required": true,
+    "independently_recomputed_numeric_fields_use_fixed_cross_platform_tolerance": true
+  },
+  "decisions": {
+    "observer_altitude_nodes_frozen": true,
+    "pressure_ratio_nodes_frozen": true,
+    "altitude_pressure_interpolation_admitted": true,
+    "artifact_is_runtime_table": false,
+    "production_data_pack_authorized": false,
+    "engine_changes_authorized": false
+  },
+  "open": [
+    "solar_target_azimuth_adaptive_radiance_grid",
+    "deep_twilight_law",
+    "versioned_CIE_response_inputs",
+    "response_integrated_spectral_products",
+    "radiance_off_grid_holdouts",
+    "storage_and_interpolation_selection",
+    "limiting_magnitude_and_event_time_error_propagation",
+    "separate_visibility_data_pack",
+    "phase1_exit_gate"
+  ]
+}

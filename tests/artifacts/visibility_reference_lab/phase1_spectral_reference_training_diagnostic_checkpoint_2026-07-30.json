@@ -1,0 +1,109 @@
+{
+  "schema": "moira.visibility-spectral-reference-training-diagnostic-checkpoint/v1",
+  "status": "phase1_training_diagnostic_passed_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "diagnostic_id": "physical-heliacal-phase1-spectral-reference-training-diagnostic-v1-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-spectral-reference-training-diagnostic-2026-07-30-v1",
+    "file_count": 434,
+    "bytes": 61144365,
+    "run_count": 48,
+    "manifest_bytes": 16972,
+    "manifest_sha256": "479a2806c4daaedbdd9443d6edaaf44ed512405b51532b0fd311c61345d765da",
+    "summary_bytes": 3980,
+    "summary_sha256": "881def83fca803c4594ea0690e4567041e4a25194b67de949bb777db80230f1f",
+    "generation_fingerprint": "73cc32e199c5e8d2f483bb04b2d86739c1ddcf8a4c616e69cdadf7e9b7d850b3"
+  },
+  "training_point": {
+    "point_id": "s09p0_h00p25_a180p0",
+    "solar_center_altitude_deg": -9.0,
+    "target_true_altitude_deg": 0.25,
+    "relative_solar_azimuth_deg": 180.0,
+    "selection_basis": "first_governing_training_point_where_explicit_550nm_reference_exhausted_the_frozen_shape_seed_limit"
+  },
+  "monte_carlo": {
+    "photon_count_per_seed": 100000,
+    "seed_count_per_candidate": 8,
+    "candidate_count": 6,
+    "run_count": 48,
+    "adaptive_stopping_used": false
+  },
+  "candidate_results": [
+    {
+      "candidate_reference_wavelength_nm": 507.0,
+      "photopic_relative_standard_error": 0.18017483814036475,
+      "scotopic_relative_standard_error": 0.03984265577189939,
+      "primary_score": 0.18017483814036475,
+      "passes_frozen_training_threshold": false
+    },
+    {
+      "candidate_reference_wavelength_nm": 519.0,
+      "photopic_relative_standard_error": 0.037411487795826794,
+      "scotopic_relative_standard_error": 0.07176939212327112,
+      "primary_score": 0.07176939212327112,
+      "passes_frozen_training_threshold": true
+    },
+    {
+      "candidate_reference_wavelength_nm": 531.0,
+      "photopic_relative_standard_error": 0.01850317639765824,
+      "scotopic_relative_standard_error": 0.07105701420847337,
+      "primary_score": 0.07105701420847337,
+      "passes_frozen_training_threshold": true
+    },
+    {
+      "candidate_reference_wavelength_nm": 543.0,
+      "photopic_relative_standard_error": 0.020648882860146017,
+      "scotopic_relative_standard_error": 0.08804762873660998,
+      "primary_score": 0.08804762873660998,
+      "passes_frozen_training_threshold": true
+    },
+    {
+      "candidate_reference_wavelength_nm": 550.0,
+      "photopic_relative_standard_error": 0.043908863967546265,
+      "scotopic_relative_standard_error": 0.15762049669999476,
+      "primary_score": 0.15762049669999476,
+      "passes_frozen_training_threshold": false
+    },
+    {
+      "candidate_reference_wavelength_nm": 555.0,
+      "photopic_relative_standard_error": 0.0384349155913908,
+      "scotopic_relative_standard_error": 0.13706710872301073,
+      "primary_score": 0.13706710872301073,
+      "passes_frozen_training_threshold": false
+    }
+  ],
+  "selection": {
+    "maximum_response_shape_relative_standard_error": 0.12,
+    "selected_candidate_reference_wavelength_nm": 531.0,
+    "primary_score": 0.07105701420847337,
+    "secondary_score": 0.0895601906061316,
+    "selection_law": "lowest_maximum_response_RSE_then_lowest_sum_RSE_then_lowest_wavelength",
+    "threshold_relaxed": false,
+    "candidate_inventory_changed_after_execution": false
+  },
+  "holdout_boundary": {
+    "response_holdouts_executed": false,
+    "direct_extinction_holdouts_executed": false,
+    "grid_nodes_changed": false,
+    "acceptance_thresholds_changed": false
+  },
+  "tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_spectral_reference_training_diagnostic_spec.json",
+      "bytes": 3475,
+      "sha256": "bc5c752a7be8e6617e0d65f88c74f3bc95e45bdfacacddfee39eb1d1a12f809a"
+    },
+    {
+      "path": "scripts/diagnose_visibility_spectral_reference.py",
+      "bytes": 29771,
+      "sha256": "8f4a70e4e7c27b38a6112e219f43bad058b504a745c30ecb6b0fcdbee2844125"
+    }
+  ],
+  "disposition": {
+    "diagnostic_admitted_as_training_evidence": true,
+    "diagnostic_artifact_is_runtime_data_pack": false,
+    "production_data_pack_authorized": false,
+    "successor_estimator": "single_531nm_ALIS_reference_with_same_seed_531nm_shape_normalization_and_independent_531nm_absolute_anchor",
+    "response_specific_duplicate_estimators_required": false
+  }
+}

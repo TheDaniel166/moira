@@ -1,7 +1,7 @@
 # Physical Visibility Reference Lab
 
-Status: Phase 1 research tooling; not an engine runtime dependency and not a
-visibility data pack.
+Status: Phase 1 complete research and data-pack tooling; not an engine runtime
+dependency. The admitted pack remains a separate external artifact.
 
 ## Boundary
 
@@ -13,7 +13,8 @@ libRadtran reference laboratory. The generator:
 - performs no network access;
 - runs only the explicitly authorized `convergence`, `geometry_smoke`, and
   `direct_transmission_smoke` profiles, plus the separately versioned
-  elevated-site, direct-geometry, and named-spectral direct probes;
+  elevated-site, direct-geometry, named-spectral direct, environmental, and
+  altitude/pressure interpolation probes;
 - writes each case atomically and binds every output file by SHA-256;
 - rejects partial, unowned, stale, or tampered artifacts; and
 - never enters the `moira` package or its installed dependency graph.
@@ -24,8 +25,17 @@ with profile-derived pressure. Checkpoint 3 bounds low-altitude spherical
 direct-beam geometry for a controlled exponential atmosphere. Checkpoint 4
 admits a 380-780 nm REPTRAN-fine reference surface for all six AFGL named
 atmospheres and validates the 290-level candidate against 579- and 1,157-level
-controls. Directional radiance remains monochromatic at 550 nm. None of these
-specifications authorizes a production LUT or visibility data pack.
+controls. Checkpoint 5 source-binds the environmental-parameter contract,
+including all eight Shettle haze/season profiles, AOD550 and Angstrom
+semantics, ozone, pressure ownership, gray albedo, and the direct-beam
+delta-M boundary. Checkpoint 6 admits site-relative altitude/pressure
+interpolation against withheld values across all six molecular profiles.
+The final radiance checkpoint admits 380-780 nm response-integrated photopic
+and scotopic products, untouched off-grid holdouts, a 57-node direct
+extinction surface, binary32 storage, and a fail-closed deep-twilight law. The
+final compiler produces a separately licensed, checksummed data pack from
+that admitted artifact. None of these specifications installs a table or
+loader into the engine.
 
 ## Verified Build Environment
 
@@ -247,6 +257,123 @@ DISORT configuration and require byte-identical 8,001-row stdout. REPTRAN fine
 a vertical-grid characterization surface because water and oxygen bands can
 differ materially near the horizon.
 
+## Generate the Environmental-Contract Probe
+
+Inspect and build the separately versioned Checkpoint 5 probe:
+
+```bash
+python scripts/build_visibility_environment_contract_probe.py --inspect-spec
+
+python scripts/build_visibility_environment_contract_probe.py \
+  --source-archive /absolute/source/libRadtran-2.0.6.tar.gz \
+  --libradtran-root /absolute/work/libRadtran-2.0.6 \
+  --output /absolute/artifacts/phase1_environment_contract
+```
+
+The probe runs 73 deterministic cases covering direct-transmission invariance
+to gray ground albedo, all eight named aerosol profiles, raw delta-M haze
+diagnostics, AOD550, Angstrom exponent, ozone, pressure ratio, and an exact
+repeat.
+
+The direct-extinction oracle uses `aerosol_modify ssa set 0`. This preserves
+total aerosol optical depth while excluding delta-M phase-function
+bookkeeping from the physical line-of-sight extinction quantity. Directional
+radiance keeps the physical aerosol single-scattering albedo and does not use
+this override.
+
+The environment contract admits measured surface-pressure overrides only
+when both 500-1,100 hPa and a 0.85-1.08 ratio to the selected named profile at
+observer altitude pass. Temperature and relative humidity remain
+named-profile-derived because surface scalars do not define their vertical
+profiles.
+
+## Generate the Altitude/Pressure Interpolation Probe
+
+Inspect and build the separately versioned Checkpoint 6 probe:
+
+```bash
+python scripts/build_visibility_altitude_pressure_interpolation_probe.py \
+  --inspect-spec
+
+python scripts/build_visibility_altitude_pressure_interpolation_probe.py \
+  --source-archive /absolute/source/libRadtran-2.0.6.tar.gz \
+  --libradtran-root /absolute/work/libRadtran-2.0.6 \
+  --output /absolute/artifacts/phase1_altitude_pressure
+```
+
+The v5 design uses eight observer-altitude nodes from 0 through 5,000 m,
+five pressure-ratio nodes from 0.85 through 1.08, fourteen altitude
+holdouts, eight pressure holdouts, three target altitudes, three
+wavelengths, and all six named molecular profiles. Its site-relative
+290-level construction avoids the native-grid aerosol discretization defect
+exposed by the rejected designs.
+
+Interpolation is bilinear in extinction magnitude. It does not extrapolate
+and rejects a query unless all four corners pass the 500-1,100 hPa absolute
+bound and the 0.85-1.08 profile-relative pressure bound.
+
+## Generate the Adaptive Radiance/Response Artifact
+
+Inspect and build the final Phase 1 radiance artifact:
+
+```bash
+python scripts/build_visibility_radiance_response_probe.py --inspect-spec
+
+python scripts/build_visibility_radiance_response_probe.py \
+  --source-archive /absolute/source/libRadtran-2.0.6.tar.gz \
+  --reptran-archive /absolute/source/reptran_2024_all.tar.gz \
+  --libradtran-root /absolute/work/libRadtran-2.0.6 \
+  --data-root /absolute/work/libRadtran-2.0.6-reptran-2024/data \
+  --cie-root /absolute/source/cie \
+  --named-direct-artifact /absolute/artifacts/phase1_named_spectral_direct \
+  --output /absolute/artifacts/phase1_radiance_response
+```
+
+The 4-by-4-by-4 training grid spans solar-center altitude −9° through 0°,
+target true altitude 0.25° through 45°, and relative solar azimuth 0° through
+180°. Twenty-seven monochromatic midpoint combinations and nine separately
+selected response-integrated combinations remain holdouts.
+
+The 531 nm anchors use adaptive independent seeds. Full spectra use
+REPTRAN-fine ALIS over 380-780 nm with an explicit
+`mc_spectral_is 531` reference matching the shape normalizer. A separate
+training-only six-wavelength diagnostic selected 531 nm by minimizing the
+larger of the photopic and scotopic relative standard errors without
+executing a holdout. The spectral photon schedule is fixed by solar node, and
+the photopic/scotopic response
+integrals use the exact CIE source identities bound by the specification.
+Every seed, photon count, input byte, output file, convergence stop, and
+source receipt is independently reconstructed by the validator.
+
+The modeled solar-twilight table stops at −9°. A request below that bound is
+not evaluable with reason `solar_twilight_below_data_pack_domain`; a Monte
+Carlo zero is never converted into physical zero. Measured total or
+directional background routes remain separate and unaffected.
+
+## Build and Validate the Separate Data Pack
+
+The final data pack is a separate CC BY-SA 4.0 artifact, not part of the MIT
+engine wheel:
+
+```bash
+python scripts/build_visibility_data_pack.py --inspect-spec
+
+python scripts/build_visibility_data_pack.py \
+  --radiance-spec scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json \
+  --source-artifact /absolute/artifacts/phase1_radiance_response \
+  --cie-root /absolute/source/cie \
+  --output /absolute/data-packs/moira-physical-heliacal-visibility-1.0.0
+
+python scripts/validate_visibility_data_pack.py \
+  /absolute/data-packs/moira-physical-heliacal-visibility-1.0.0
+```
+
+The compiler copies only response-integrated binary32 tables, direct
+extinction, per-cell uncertainty, error envelopes, provenance, and notice
+material. It includes no CIE source table, libRadtran/REPTRAN file, source,
+or executable. The validator accepts only an explicit caller-supplied
+directory and never searches for or downloads a replacement.
+
 ## Validate an Artifact
 
 Pin the root-manifest hash in the consuming checkpoint:
@@ -263,6 +390,16 @@ python scripts/validate_visibility_elevated_site_probe.py \
 python scripts/validate_visibility_named_spectral_direct_probe.py \
   /absolute/artifacts/phase1_named_spectral_direct \
   --expected-manifest-sha256 EXPECTED_SHA256
+
+python scripts/validate_visibility_environment_contract_probe.py \
+  /absolute/artifacts/phase1_environment_contract
+
+python scripts/validate_visibility_altitude_pressure_interpolation_probe.py \
+  /absolute/artifacts/phase1_altitude_pressure
+
+python scripts/validate_visibility_radiance_response_probe.py \
+  /absolute/artifacts/phase1_radiance_response \
+  --cie-root /absolute/source/cie
 ```
 
 Validation checks:
@@ -287,24 +424,40 @@ comparison, verifies the external REPTRAN data-root receipt, and checks all
 DISORT parity anchors. The checkpoint artifact was validated under both WSL
 Python and the repository's Windows Python 3.14.3 environment.
 
+The environmental-contract validator reconstructs the exact 73-case
+inventory and environmental semantics, reparses every emitted value, checks
+all source/tool/file receipts, and enforces the direct-albedo and admitted
+same-season haze invariants, AOD/Angstrom/ozone/pressure trends, and the exact
+repeat. Its admitted artifact also passed under WSL and Windows Python.
+
+The altitude/pressure validator reconstructs the full 5,037-run inventory,
+reparses all 15,111 spectral values, independently repeats bilinear
+interpolation at 12,636 withheld values, enforces 396 explicit
+complete-cell exclusions, and checks the unchanged maximum, p95, and
+relative-transmission ceilings. Its admitted immutable bytes passed under
+Linux and Windows.
+
 ## Current Scientific Limits
 
-- The named-profile, profile-derived-pressure construction is validated only
-  at 0, 500, 1,500, 3,000, and 5,000 m. It does not admit arbitrary pressure
-  overrides or a production altitude grid.
+- The first `1.0.0` pack is a fixed-environment U.S. Standard, rural-summer,
+  sea-level baseline at 1013.25 hPa, AOD550 0.1, Angstrom exponent 1.3,
+  ozone 300 DU, and gray albedo 0.2. The environmental roles and the separate
+  altitude/pressure evidence are admitted, but those dimensions are not
+  silently present in this pack.
 - Exact geometric horizon viewing is excluded because libRadtran forbids
-  `umu=0`; the pilot begins at 0.25 degrees true altitude.
-- Directional radiance still samples only 550 nm. Clear molecular direct
-  transmission now has a 380-780 nm, 0.05 nm-output REPTRAN-fine reference for
-  all six AFGL profiles at 0.25 degrees plus U.S. Standard controls at 5 and
-  45 degrees.
-- The named-spectral checkpoint is surface-only and deliberately excludes
-  aerosol, cloud, albedo effects, CIE response integration, target spectra,
-  arbitrary pressure overrides, and production observer-altitude nodes.
-- A fixed photon count is not an admissible production strategy. Monte Carlo
-  uncertainty changes by orders of magnitude across the twilight domain.
-- A zero-contribution Monte Carlo result is not evidence of zero physical
+  `umu=0`; the pack begins at 0.25 degrees true altitude.
+- Modeled twilight is admitted only from -9 through 0 degrees solar-center
+  altitude. Below -9 degrees it is typed `not_evaluable`; measured background
+  routes remain separate.
+- The response-integrated products cover 380-780 nm. The 531 nm
+  monochromatic reconstruction is retained only as an intermediate diagnostic
+  and is neither shipped nor interpolated at runtime.
+- Clouds, moonlight, site-specific airglow, spectral target models, and
+  environment domains beyond the fixed baseline require later separately
+  sourced and validated work.
+- Monte Carlo uncertainty varies across the twilight domain and is retained
+  per cell. A zero-contribution result is never evidence of zero physical
   radiance.
-- Aerosol/environment dimension admission, sparse-grid selection, off-grid
-  interpolation, response integration, the separate data pack, and propagated
-  limiting-magnitude/event-time errors remain open Phase 1 gates.
+- Phase 1 does not implement an engine loader or single-epoch limiting
+  magnitude. Those belong to Phase 2; event-time error propagation belongs to
+  Phase 3.

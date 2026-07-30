@@ -1,0 +1,125 @@
+{
+  "schema": "moira.physical-heliacal-visibility-data-pack-spec/v1",
+  "spec_id": "physical-heliacal-visibility-data-pack-1.0.0-2026-07-30",
+  "status": "phase1_data_pack_build_not_engine_runtime",
+  "build_date": "2026-07-30",
+  "pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.0.0",
+    "manifest_schema": "moira.physical-heliacal-visibility-data-pack-manifest/v1",
+    "table_format_id": "regular-grid-ieee754-binary32-le-v1",
+    "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+    "license": "CC-BY-SA-4.0"
+  },
+  "source_artifact": {
+    "spec_id": "physical-heliacal-phase1-radiance-response-v9-2026-07-30",
+    "manifest": {
+      "bytes": 418279,
+      "sha256": "6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f"
+    },
+    "summary": {
+      "bytes": 1292971,
+      "sha256": "829774108d1c1337399784c20254c1d6cc5fc071d532450f4afb74431d870104"
+    },
+    "checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase1_radiance_response_checkpoint_2026-07-30.json",
+      "bytes": 4390,
+      "sha256": "05802b505be9a69b894983cdc7f7aeaca854e8c969db833a44bb13d15c541f1f"
+    }
+  },
+  "failed_predecessors": {
+    "notice_checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase1_visibility_data_pack_v1_failed_notice_checkpoint_2026-07-30.json",
+      "bytes": 2432,
+      "sha256": "8b1ecd6733af7e0dc122a1a1c7070e74899c4afed8d94e8a4b93d5b877d05da8"
+    }
+  },
+  "direct_table": {
+    "target_true_altitude_deg": [
+      0.25,
+      0.375,
+      0.5,
+      0.625,
+      0.75,
+      0.875,
+      1.0,
+      1.125,
+      1.25,
+      1.375,
+      1.5,
+      1.625,
+      1.75,
+      1.875,
+      2.0,
+      2.25,
+      2.5,
+      2.75,
+      3.0,
+      3.25,
+      3.5,
+      3.75,
+      4.0,
+      4.25,
+      4.5,
+      4.75,
+      5.0,
+      5.5,
+      6.0,
+      6.5,
+      7.0,
+      7.5,
+      8.0,
+      8.5,
+      9.0,
+      9.5,
+      10.0,
+      11.0,
+      12.0,
+      13.0,
+      14.0,
+      15.0,
+      16.0,
+      17.0,
+      18.0,
+      19.0,
+      20.0,
+      22.0,
+      24.0,
+      26.0,
+      28.0,
+      30.0,
+      33.0,
+      36.0,
+      39.0,
+      42.0,
+      45.0
+    ],
+    "spectral_bin_start_nm": 380.0,
+    "spectral_bin_width_nm": 1.0,
+    "spectral_bin_count": 400
+  },
+  "files": {
+    "axes": "axes.json",
+    "photopic_luminance": "solar-twilight-photopic-luminance.f32le",
+    "scotopic_luminance": "solar-twilight-scotopic-luminance.f32le",
+    "photopic_relative_standard_error": "solar-twilight-photopic-rse.f32le",
+    "scotopic_relative_standard_error": "solar-twilight-scotopic-rse.f32le",
+    "direct_extinction": "direct-extinction-1nm.f32le",
+    "error_envelope": "error-envelope.json",
+    "provenance": "provenance.json",
+    "notice": "NOTICE.md",
+    "readme": "README.md",
+    "checksums": "SHA256SUMS"
+  },
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "engine_package_mutation_allowed": false,
+    "engine_loader_in_scope": false,
+    "caller_supplied_output_path_required": true,
+    "source_artifact_must_validate_independently": true,
+    "libRadtran_or_REPTRAN_files_may_be_copied": false,
+    "CIE_source_tables_may_be_copied": false,
+    "generated_numerical_products_only": true
+  }
+}

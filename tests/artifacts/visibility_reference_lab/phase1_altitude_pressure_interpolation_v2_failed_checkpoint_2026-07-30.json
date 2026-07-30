@@ -1,0 +1,115 @@
+{
+  "schema": "moira.visibility-altitude-pressure-interpolation-failed-checkpoint/v1",
+  "status": "failed_research_design_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "artifact": {
+    "external_directory_name": "phase1-altitude-pressure-interpolation-2026-07-30-v2",
+    "manifest_emitted": false,
+    "completed_run_count": 2367,
+    "file_count": 23940,
+    "artifact_bytes": 21196959,
+    "canonical_file_inventory_sha256": "3f6ad9bfc1a165e56c5a110daaa50732d052899565cf3a19c991f689cccd0d32"
+  },
+  "tooling_at_failure": {
+    "spec": {
+      "path": "scripts/visibility_reference_lab/phase1_altitude_pressure_interpolation_probe_spec.json",
+      "bytes": 8083,
+      "sha256": "8af1db01663acee05150491b5eff176878846f5fb66e86990ddd1e59e77bd63c",
+      "spec_id": "physical-heliacal-phase1-altitude-pressure-interpolation-v2-2026-07-30"
+    },
+    "builder": {
+      "path": "scripts/build_visibility_altitude_pressure_interpolation_probe.py",
+      "bytes": 61769,
+      "sha256": "d2461c72460a1acd9174b85b40fac812b39b3330b9abd1c8475c581fecf76e52"
+    },
+    "validator": {
+      "path": "scripts/validate_visibility_altitude_pressure_interpolation_probe.py",
+      "bytes": 43664,
+      "sha256": "6a8d039422264b237ed8a0edf4433c1b1970dfb77025b75d1fc156af297f166e"
+    }
+  },
+  "frozen_design": {
+    "observer_altitude_training_nodes_m": [
+      0.0,
+      500.0,
+      1000.0,
+      1500.0,
+      2250.0,
+      3000.0,
+      4000.0,
+      5000.0
+    ],
+    "observer_altitude_holdouts_m": [
+      250.0,
+      750.0,
+      1250.0,
+      1875.0,
+      2625.0,
+      3500.0,
+      4500.0
+    ],
+    "pressure_ratio_training_nodes": [
+      0.85,
+      0.925,
+      1.0,
+      1.04,
+      1.08
+    ],
+    "pressure_ratio_holdouts": [
+      0.8875,
+      0.9625,
+      1.02,
+      1.06
+    ],
+    "required_method": "bilinear_extinction_magnitude",
+    "maximum_absolute_extinction_error_mag": 0.025,
+    "p95_absolute_extinction_error_mag": 0.01,
+    "maximum_relative_transmission_error": 0.025
+  },
+  "evidence": {
+    "partition_run_counts": {
+      "training": 693,
+      "altitude_holdout": 618,
+      "pressure_holdout": 555,
+      "joint_holdout": 501
+    },
+    "holdout_spectral_value_count": 5022,
+    "evaluated_holdout_value_count": 4887,
+    "excluded_holdout_value_count": 135,
+    "required_method_maximum_absolute_extinction_error_mag": 0.0556300412804021,
+    "required_method_mean_absolute_extinction_error_mag": 0.00366336884585118,
+    "required_method_p95_absolute_extinction_error_mag": 0.0260377659336068,
+    "required_method_maximum_relative_transmission_error": 0.0499466722695612,
+    "maximum_pressure_only_holdout_error_mag": 0.000100277040701258,
+    "maximum_altitude_holdout_error_mag": 0.0556300412804021,
+    "worst_case": {
+      "profile": "subarctic_winter",
+      "observer_altitude_m": 3500.0,
+      "pressure_ratio": 1.08,
+      "target_true_altitude_deg": 0.25,
+      "wavelength_nm": 400.0
+    }
+  },
+  "root_cause_probe": {
+    "scope": "temporary_external_diagnostic_not_an_admitted_artifact",
+    "finding": "the_native_named_atmosphere_grid_changes_the_surface_relative_Shettle_aerosol_layer_discretization_as_the_truncated_profile_bottom_crosses_native_levels",
+    "molecular_only_midpoint_error_mag_at_tropical_3500m_0p25deg_550nm": 0.003552264572313,
+    "native_grid_total_midpoint_error_mag_at_tropical_3500m_0p25deg_550nm": 0.043946975973815,
+    "site_relative_refined_grid_total_midpoint_error_mag_at_tropical_3500m_0p25deg_550nm": 0.002513422591198,
+    "governing_source_path": "src/aerosol.c",
+    "governing_source_bytes": 107914,
+    "governing_source_sha256": "14843b11440764608ac655226fbe49496da820d76151f9a543a910a445cb5c40"
+  },
+  "decision": {
+    "admitted": false,
+    "thresholds_relaxed": false,
+    "altitude_nodes_retained": true,
+    "pressure_ratio_nodes_retained": true,
+    "interpolation_method_retained": true,
+    "native_vertical_grid_rejected_for_environment_interpolation": true,
+    "next_design_uses_site_relative_near_horizon_piecewise_refined_grid": true,
+    "next_design_uses_previously_unseen_altitude_and_pressure_holdouts": true,
+    "production_data_pack_authorized": false,
+    "engine_changes_authorized": false
+  }
+}

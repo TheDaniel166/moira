@@ -1,0 +1,102 @@
+{
+  "schema": "moira.visibility-radiance-response-failed-checkpoint/v1",
+  "status": "failed_exposed_response_holdout_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "spec_id": "physical-heliacal-phase1-radiance-response-v6-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-radiance-response-2026-07-30-v6",
+    "file_count_including_failed_temporary_run": 4766,
+    "bytes_including_failed_temporary_run": 267552369,
+    "completed_run_count": 528,
+    "temporary_failed_run_count": 1,
+    "failed_temporary_run_file_count": 14,
+    "manifest_emitted": false,
+    "summary_emitted": false
+  },
+  "completed_inventory": {
+    "anchor_run_count": 319,
+    "training_shape_run_count": 203,
+    "exposed_holdout_shape_run_count": 6,
+    "direct_run_count": 0,
+    "training_shape_point_count": 64,
+    "training_shape_layers": {
+      "solar_center_altitude_minus_9_deg_seed_count": 59,
+      "solar_center_altitude_minus_6_deg_seed_count": 48,
+      "solar_center_altitude_minus_3_deg_seed_count": 48,
+      "solar_center_altitude_0_deg_seed_count": 48
+    }
+  },
+  "failure": {
+    "stage": "response_holdout_spectral_shape_parse",
+    "point_id": "s07p5_h30p00_a150p0",
+    "solar_center_altitude_deg": -7.5,
+    "target_true_altitude_deg": 30.0,
+    "relative_solar_azimuth_deg": 150.0,
+    "seed_index": 1,
+    "random_seed": 1310731,
+    "photon_count": 30000,
+    "spectral_importance_reference_wavelength_nm": 531.0,
+    "normalization_wavelength_nm": 531.0,
+    "normalization_radiance_mw_m2_nm_sr": 0.0,
+    "reason": "stochastic_zero_reference_sample_cannot_define_a_response_shape_and_is_not_physical_zero"
+  },
+  "exposure_boundary": {
+    "original_response_holdout_point_count": 9,
+    "completed_response_holdout_points": [
+      [-7.5, 2.0, 30.0],
+      [-7.5, 10.0, 90.0]
+    ],
+    "partially_executed_response_holdout_point": [-7.5, 30.0, 150.0],
+    "original_response_holdout_selection_remains_independent": false,
+    "original_response_holdout_selection_quarantined": true,
+    "direct_extinction_holdouts_executed": false,
+    "grid_nodes_changed": false,
+    "acceptance_thresholds_changed": false
+  },
+  "failed_tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+      "bytes": 13285,
+      "sha256": "08f927f5ffe4d9ab87b52472df1c954553e3674eeea0d2174282c23e9096f695"
+    },
+    {
+      "path": "scripts/build_visibility_radiance_response_probe.py",
+      "bytes": 80069,
+      "sha256": "be2a3e6cfe8f2e3b9ca4efd5533ba510c92806807f052cdaad30a00e69aea03d"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 56643,
+      "sha256": "c4486abaa6555be309483ef6c5a51cb8d6b425b46e97554f894b82e92c187b1c"
+    }
+  ],
+  "successor_design": {
+    "exposed_response_holdout_points_become_development_evidence": true,
+    "old_unexecuted_response_holdout_points_are_not_reused_for_validation": true,
+    "replacement_response_holdout_source": "nine_untouched_midpoint_combinations_from_the_eighteen_originally_unselected_combinations",
+    "replacement_selection_rule": "complementary_latin_square_target_azimuth_pairing_across_the_three_reserved_solar_altitudes",
+    "replacement_response_holdouts": [
+      [-7.5, 2.0, 90.0],
+      [-7.5, 10.0, 150.0],
+      [-7.5, 30.0, 30.0],
+      [-4.5, 2.0, 150.0],
+      [-4.5, 10.0, 30.0],
+      [-4.5, 30.0, 90.0],
+      [-1.5, 2.0, 30.0],
+      [-1.5, 10.0, 90.0],
+      [-1.5, 30.0, 150.0]
+    ],
+    "minus_7_5_deg_shape_photons_per_seed": 100000,
+    "other_shape_photon_counts_changed": false,
+    "accuracy_thresholds_relaxed": false,
+    "seed_limits_changed": false,
+    "radiance_grid_nodes_changed": false
+  },
+  "disposition": {
+    "artifact_admitted": false,
+    "production_data_pack_authorized": false,
+    "zero_interpreted_as_physical_radiance": false,
+    "failed_artifact_is_immutable": true,
+    "byte_verified_unchanged_anchor_and_training_shape_cache_reuse_is_allowed_for_the_successor_build": true
+  }
+}

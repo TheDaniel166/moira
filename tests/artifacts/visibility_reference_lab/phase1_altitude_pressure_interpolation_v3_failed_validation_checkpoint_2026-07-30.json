@@ -1,0 +1,68 @@
+{
+  "schema": "moira.visibility-altitude-pressure-interpolation-failed-checkpoint/v1",
+  "status": "failed_independent_validation_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "artifact": {
+    "external_directory_name": "phase1-altitude-pressure-interpolation-2026-07-30-v3",
+    "manifest_emitted": true,
+    "manifest_sha256": "648386cba7bff42d0356e0697bac3aedf9902236d69a982275051d56e5f7472a",
+    "summary_sha256": "68648160b2d2b0f172fcc37715f1148e614f65f4f0a8e20a1bbfb1b8a4a04ab5",
+    "completed_run_count": 5037,
+    "file_count": 50768,
+    "artifact_bytes": 69923382,
+    "canonical_file_inventory_sha256": "002d9fb623ac7406d9c510a0320cad2f856bf2220b26e6e4c1dca0554867b8ad"
+  },
+  "tooling_at_failure": {
+    "spec": {
+      "path": "scripts/visibility_reference_lab/phase1_altitude_pressure_interpolation_probe_spec.json",
+      "bytes": 10388,
+      "sha256": "c98fb7a817c948730c6f2df273b5f4fab34134262afd1053f9eaacca6928e34d",
+      "spec_id": "physical-heliacal-phase1-altitude-pressure-interpolation-v3-2026-07-30"
+    },
+    "builder": {
+      "path": "scripts/build_visibility_altitude_pressure_interpolation_probe.py",
+      "bytes": 69613,
+      "sha256": "1befc2ca462fb0d654acc94018d19129de2eb1532d3bb1ff706fb1accb75aeef"
+    },
+    "validator": {
+      "path": "scripts/validate_visibility_altitude_pressure_interpolation_probe.py",
+      "bytes": 49248,
+      "sha256": "72996e8bf4d2495f7b4c83ee16af7723d8ffe1bd43d9e583f0097c3406f919c8"
+    }
+  },
+  "unadmitted_summary": {
+    "run_count": 5037,
+    "evaluated_holdout_value_count": 12636,
+    "excluded_holdout_value_count": 396,
+    "required_method": "bilinear_extinction_magnitude",
+    "maximum_absolute_extinction_error_mag": 0.0124663582904496,
+    "mean_absolute_extinction_error_mag": 0.000870721378771911,
+    "p95_absolute_extinction_error_mag": 0.00404537460338972,
+    "maximum_relative_transmission_error": 0.0114162743931566,
+    "thresholds_passed_before_independent_validation": true,
+    "scientific_thresholds_relaxed": false,
+    "worst_case": {
+      "profile": "subarctic_winter",
+      "observer_altitude_m": 3250.0,
+      "pressure_ratio": 1.08,
+      "target_true_altitude_deg": 0.25,
+      "wavelength_nm": 400.0
+    }
+  },
+  "validation_failure": {
+    "message": "profile surface values differ: ('midlatitude_winter', 125.0)",
+    "root_cause": "the_validator_compared_a_round_trip_binary32_pressure_serialization_as_binary64_with_an_absolute_5e-7_tolerance",
+    "example_metadata_pressure_hpa": 1002.06640625,
+    "example_serialized_pressure_hpa": 1002.06641,
+    "required_repair": "restage_both_values_as_IEEE_754_binary32_and_require_exact_equality",
+    "scientific_interpolation_law_changed": false,
+    "holdout_inventory_changed": false
+  },
+  "decision": {
+    "admitted": false,
+    "artifact_mutated_after_manifest": false,
+    "same_scientific_design_may_be_regenerated_under_new_tool_identity": true,
+    "production_data_pack_authorized": false,
+    "engine_changes_authorized": false
+  }
+}

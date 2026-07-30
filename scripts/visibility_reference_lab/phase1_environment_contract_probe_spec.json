@@ -1,0 +1,473 @@
+{
+  "schema": "moira.visibility-environment-contract-probe-spec/v1",
+  "spec_id": "physical-heliacal-phase1-environment-contract-probe-2026-07-30",
+  "status": "research_probe_not_runtime_data_pack",
+  "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+  "predecessor": {
+    "spec_path": "scripts/visibility_reference_lab/phase1_named_spectral_direct_probe_spec.json",
+    "spec_bytes": 11509,
+    "spec_sha256": "30822b4a90fe24c63872a904de8078770b2450c15798a6c24450fd6ecc0548ee",
+    "builder_path": "scripts/build_visibility_named_spectral_direct_probe.py",
+    "builder_bytes": 68914,
+    "builder_sha256": "0fc0809d2c95ba572e8aab9754783936d64933c7c381b324d4ee522f965cd7d2",
+    "validator_path": "scripts/validate_visibility_named_spectral_direct_probe.py",
+    "validator_bytes": 46191,
+    "validator_sha256": "0fe3b0abc46277ddf4230b3da15328a966e251e4bab1277ac61c056bb4258d99",
+    "checkpoint_path": "tests/artifacts/visibility_reference_lab/phase1_named_spectral_direct_checkpoint_2026-07-30.json",
+    "checkpoint_bytes": 8016,
+    "checkpoint_sha256": "271637295bff3ae21e140bcb0b2ec7f74e8057c9bde92ba8d7c41ff071f33899"
+  },
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "engine_dependency_allowed": false,
+    "engine_runtime_invocation_allowed": false,
+    "generated_numerical_products_only": true,
+    "production_data_pack_authorized": false,
+    "engine_changes_authorized": false
+  },
+  "libradtran_source": {
+    "name": "libRadtran",
+    "version": "2.0.6",
+    "archive_bytes": 154147176,
+    "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+    "uvspec_version": "uvspec, version 2.0.6-MYSTIC",
+    "uvspec_sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a",
+    "source_files": [
+      {
+        "path": "doc/radiative_transfer.tex",
+        "bytes": 72398,
+        "sha256": "03797b5153531ea9611c4823caef6662a96c7a8ec0e35484b8a22854a7b0eefe",
+        "role": "aerosol_hierarchy_surface_and_output_semantics"
+      },
+      {
+        "path": "doc/radiative_transfer_theory.tex",
+        "bytes": 29422,
+        "sha256": "58feefa284d1a8fd02f30d794f9b83af7d26b24ed64dd3daf50c42f7e6995b6b",
+        "role": "beer_lambert_and_pseudospherical_chapman_law"
+      },
+      {
+        "path": "src/aerosol.c",
+        "bytes": 107914,
+        "sha256": "14843b11440764608ac655226fbe49496da820d76151f9a543a910a445cb5c40",
+        "role": "aod_visibility_profile_and_relative_humidity_semantics"
+      },
+      {
+        "path": "src/atmosphere.c",
+        "bytes": 341735,
+        "sha256": "b900ade7e603260a47fec3efa305577ab6806bbf539021ec028a0c1360099cf8",
+        "role": "surface_pressure_scaling_and_gas_column_order"
+      },
+      {
+        "path": "src/uvspec_lex.l",
+        "bytes": 581415,
+        "sha256": "174755190e50ecc3099c80a29cb71627c0a33a5e2009d1869c23140095658d89",
+        "role": "option_parser_defaults_and_delta_m_policy"
+      },
+      {
+        "path": "src_py/aerosol_options.py",
+        "bytes": 20432,
+        "sha256": "f6822cc5121ec21b45d74a24986c4d3978f85eb5662e038cdae85ea008f28bd4",
+        "role": "aerosol_option_contract"
+      },
+      {
+        "path": "src_py/molecular_options.py",
+        "bytes": 44983,
+        "sha256": "e941f49690ff80871432b3842c2b1da7618d45346c68c418c6476b7e664ddb71",
+        "role": "pressure_ozone_and_relative_humidity_option_contract"
+      },
+      {
+        "path": "src_py/general_atmosphere_options.py",
+        "bytes": 14898,
+        "sha256": "575ffb3c8aa5cba69beac913d6ddbf46e7bb0ad5c4d1efa9f099fb4415037e96",
+        "role": "scattering_switch_semantics"
+      },
+      {
+        "path": "libsrc_c/cdisort.h",
+        "bytes": 46183,
+        "sha256": "c09207f20eeac2c5c797c0378f2c331c5c7f33b61ec1c4a3726808bedda4ffb6",
+        "role": "unscaled_direct_beam_output_contract"
+      },
+      {
+        "path": "libsrc_c/cdisort.c",
+        "bytes": 400115,
+        "sha256": "952c11494efa72ebc53adf2a5e2ab34a9af5a0f241983e38a101f54a5dc03b93",
+        "role": "delta_m_direct_beam_implementation"
+      }
+    ],
+    "shettle_tau550_files": [
+      {
+        "path": "data/aerosol/shettle/tau550.1.1",
+        "bytes": 2527,
+        "sha256": "69c8928e88a7cd58551ff8f00c670a1daa81dddf36d1273b99bd9c4882922b6c"
+      },
+      {
+        "path": "data/aerosol/shettle/tau550.1.2",
+        "bytes": 2527,
+        "sha256": "db4a9219d9d103ebfa0d33ac08274f88bcaf7d4b4ca8e395237c88802674a8f4"
+      },
+      {
+        "path": "data/aerosol/shettle/tau550.2.1",
+        "bytes": 2527,
+        "sha256": "b46ead4635b12f803e76efb557e4249ac7f630296e6005bde41eb71abdb863c4"
+      },
+      {
+        "path": "data/aerosol/shettle/tau550.2.2",
+        "bytes": 2527,
+        "sha256": "7dbd797fc56750f662f2bb31e5ac43fa045ebf807157549a6770d824787bf434"
+      },
+      {
+        "path": "data/aerosol/shettle/tau550.3.1",
+        "bytes": 2527,
+        "sha256": "b2b8ab4ac0d269f9b6748c9265a39bbcb2a5467c9929e2ecad8eb4787d17a498"
+      },
+      {
+        "path": "data/aerosol/shettle/tau550.3.2",
+        "bytes": 2527,
+        "sha256": "fb43ccd12c961acf70933002004b832ea4831692ccf6de87a3956b24737ee4cd"
+      },
+      {
+        "path": "data/aerosol/shettle/tau550.4.1",
+        "bytes": 2527,
+        "sha256": "e35117113fa76b324de97cbc1a83e2ca73cd547dd174023a14b188e7121ff257"
+      },
+      {
+        "path": "data/aerosol/shettle/tau550.4.2",
+        "bytes": 2527,
+        "sha256": "532c90931a5586581e385b2150ee330dd261231ba731df51f8fba4ce5bb64c5a"
+      }
+    ]
+  },
+  "environment_contract": {
+    "molecular_atmosphere": {
+      "profiles": [
+        "tropical",
+        "midlatitude_summer",
+        "midlatitude_winter",
+        "subarctic_summer",
+        "subarctic_winter",
+        "us_standard"
+      ],
+      "policy": "explicit_named_profile_required",
+      "temperature_policy": "profile_derived_no_independent_override_in_first_pack",
+      "water_vapor_and_relative_humidity_policy": "profile_derived_no_independent_override_in_first_pack"
+    },
+    "observer_altitude": {
+      "unit": "m_above_mean_sea_level",
+      "construction": "source_equivalent_truncated_atmosphere_checkpoint_2",
+      "candidate_nodes": [
+        0.0,
+        500.0,
+        1500.0,
+        3000.0,
+        5000.0
+      ],
+      "reserved_holdouts": [
+        250.0,
+        1000.0,
+        2250.0,
+        4000.0
+      ],
+      "interpolation": "not_admitted_until_holdout_error_is_measured"
+    },
+    "surface_pressure": {
+      "public_unit": "hPa",
+      "table_coordinate": "ratio_to_named_profile_surface_pressure_at_observer_altitude",
+      "default_ratio": 1.0,
+      "candidate_ratio_nodes": [
+        0.85,
+        0.925,
+        1.0,
+        1.04,
+        1.08
+      ],
+      "reserved_ratio_holdouts": [
+        0.8875,
+        0.9625,
+        1.02,
+        1.06
+      ],
+      "absolute_hard_bounds_hpa": [
+        500.0,
+        1100.0
+      ],
+      "ratio_hard_bounds": [
+        0.85,
+        1.08
+      ],
+      "admission_law": "absolute_and_ratio_bounds_must_both_pass",
+      "override_policy": "explicit_measured_override_allowed_and_receipted"
+    },
+    "ozone": {
+      "unit": "DU_above_observer_altitude",
+      "candidate_nodes": [
+        200.0,
+        250.0,
+        300.0,
+        350.0,
+        400.0,
+        500.0
+      ],
+      "reserved_holdouts": [
+        225.0,
+        275.0,
+        325.0,
+        375.0,
+        450.0
+      ],
+      "libradtran_control": "mol_modify O3 value DU"
+    },
+    "aerosol": {
+      "model": "Shettle_1989_as_implemented_by_libRadtran_2_0_6",
+      "stratospheric_background": {
+        "libradtran_vulcan_code": 1,
+        "policy": "fixed_background_only_in_first_pack"
+      },
+      "named_profiles": {
+        "rural_summer": {
+          "haze": 1,
+          "season": 1
+        },
+        "rural_winter": {
+          "haze": 1,
+          "season": 2
+        },
+        "maritime_summer": {
+          "haze": 4,
+          "season": 1
+        },
+        "maritime_winter": {
+          "haze": 4,
+          "season": 2
+        },
+        "urban_summer": {
+          "haze": 5,
+          "season": 1
+        },
+        "urban_winter": {
+          "haze": 5,
+          "season": 2
+        },
+        "tropospheric_summer": {
+          "haze": 6,
+          "season": 1
+        },
+        "tropospheric_winter": {
+          "haze": 6,
+          "season": 2
+        }
+      },
+      "aod550": {
+        "candidate_nodes": [
+          0.0,
+          0.02,
+          0.05,
+          0.1,
+          0.2,
+          0.4,
+          0.7,
+          1.0
+        ],
+        "reserved_holdouts": [
+          0.01,
+          0.035,
+          0.075,
+          0.15,
+          0.3,
+          0.55,
+          0.85
+        ],
+        "libradtran_binding": "angstrom_beta_equals_aod550_times_0_55_to_alpha"
+      },
+      "angstrom_exponent": {
+        "candidate_nodes": [
+          0.0,
+          0.5,
+          1.0,
+          1.3,
+          1.8,
+          2.5
+        ],
+        "reserved_holdouts": [
+          0.25,
+          0.75,
+          1.15,
+          1.55,
+          2.15
+        ]
+      },
+      "visibility_input_policy": "not_exposed_because_aod550_is_authoritative",
+      "direct_table_dimensions": [
+        "season",
+        "aod550",
+        "angstrom_exponent"
+      ],
+      "radiance_table_dimensions": [
+        "haze",
+        "season",
+        "aod550",
+        "angstrom_exponent"
+      ]
+    },
+    "ground_albedo": {
+      "surface_law": "gray_Lambertian_first_pack",
+      "candidate_nodes": [
+        0.0,
+        0.02,
+        0.1,
+        0.2,
+        0.5,
+        0.8,
+        1.0
+      ],
+      "reserved_holdouts": [
+        0.01,
+        0.05,
+        0.15,
+        0.35,
+        0.65,
+        0.9
+      ],
+      "direct_table_role": "excluded",
+      "radiance_table_role": "included"
+    }
+  },
+  "direct_extinction_oracle": {
+    "model_id": "libradtran_2_0_6_disort_pseudospherical_total_extinction_v1",
+    "rte_solver": "disort",
+    "geometry": "pseudospherical",
+    "number_of_streams": 16,
+    "molecular_absorption": "crs",
+    "aerosol_scattering_override": "aerosol_modify ssa set 0",
+    "override_reason": "preserve_total_aerosol_extinction_while_preventing_delta_M_phase_function_from_contaminating_direct_attenuation",
+    "delta_m_option": "off",
+    "delta_m_caveat": "disort_hardcodes_delta_M_but_zero_aerosol_ssa_removes_the_aerosol_delta_M_term",
+    "output_quantity": "transmittance",
+    "output_columns": [
+      "lambda",
+      "edir"
+    ],
+    "normalization": "direct_transmission_equals_edir_divided_by_sin_target_true_altitude",
+    "random_seed": 49979687,
+    "refraction": "disabled_true_geometric_line_of_sight",
+    "input_assets": {
+      "atmosphere_path": "atmmod/afglus.dat",
+      "solar_source_path": "solar_flux/atlas_plus_modtran",
+      "cross_sections": {
+        "rayleigh": "Bodhaine",
+        "O3": "Molina",
+        "NO2": "Burrows",
+        "O4": "Greenblatt"
+      },
+      "earth_radius_km": 6370.0
+    }
+  },
+  "probe_matrix": {
+    "baseline": {
+      "atmosphere_profile": "us_standard",
+      "observer_altitude_m": 0.0,
+      "profile_surface_pressure_hpa": 1013.0,
+      "pressure_ratio": 1.0,
+      "ozone_du": 300.0,
+      "aerosol_profile": "rural_summer",
+      "aod550": 0.1,
+      "angstrom_exponent": 1.3,
+      "ground_albedo": 0.2,
+      "target_true_altitude_deg": 20.0,
+      "wavelength_nm": 550.0
+    },
+    "albedo_invariance_values": [
+      0.0,
+      0.02,
+      0.1,
+      0.2,
+      0.5,
+      0.8,
+      1.0
+    ],
+    "named_aerosol_profile_cases": "all_eight",
+    "delta_m_haze_diagnostic_codes": [
+      1,
+      4,
+      5,
+      6
+    ],
+    "aod_sweep": {
+      "target_true_altitude_deg": [
+        0.25,
+        5.0,
+        20.0
+      ],
+      "aod550": [
+        0.0,
+        0.02,
+        0.05,
+        0.1,
+        0.2,
+        0.4,
+        0.7,
+        1.0
+      ],
+      "wavelength_nm": 550.0
+    },
+    "angstrom_sweep": {
+      "angstrom_exponent": [
+        0.0,
+        0.5,
+        1.0,
+        1.3,
+        1.8,
+        2.5
+      ],
+      "wavelength_nm": [
+        400.0,
+        550.0,
+        780.0
+      ],
+      "target_true_altitude_deg": 20.0,
+      "aod550": 0.1
+    },
+    "ozone_sweep": {
+      "ozone_du": [
+        200.0,
+        250.0,
+        300.0,
+        350.0,
+        400.0,
+        500.0
+      ],
+      "wavelength_nm": 600.0,
+      "target_true_altitude_deg": 20.0,
+      "aod550": 0.0
+    },
+    "pressure_sweep": {
+      "pressure_ratio": [
+        0.85,
+        0.925,
+        1.0,
+        1.04,
+        1.08
+      ],
+      "wavelength_nm": 550.0,
+      "target_true_altitude_deg": 20.0,
+      "aod550": 0.0
+    },
+    "exact_repeat_of": "aod_alt_20p00_aod_0p100"
+  },
+  "acceptance": {
+    "expected_run_count": 73,
+    "direct_transmission_upper_tolerance": 1e-10,
+    "exact_repeat_byte_identity_required": true,
+    "albedo_direct_stdout_identity_required": true,
+    "same_season_haze_direct_stdout_identity_required": true,
+    "raw_delta_m_haze_distinct_output_required": true,
+    "aod_transmission_strictly_decreasing_required": true,
+    "near_horizon_aod_tau_per_aod_ratio_spread_minimum": 1.5,
+    "angstrom_550_stdout_identity_required": true,
+    "angstrom_400_transmission_strictly_decreasing_required": true,
+    "angstrom_780_transmission_strictly_increasing_required": true,
+    "ozone_600_transmission_strictly_decreasing_required": true,
+    "pressure_550_transmission_strictly_decreasing_required": true,
+    "season_direct_output_difference_required": true
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "schema": "moira.visibility-radiance-response-failed-checkpoint/v1",
+  "status": "failed_research_sampling_design_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "spec_id": "physical-heliacal-phase1-radiance-response-v3-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-radiance-response-2026-07-30-v3",
+    "file_count_including_failed_temporary_run": 2849,
+    "bytes_including_failed_temporary_run": 12519724,
+    "completed_run_count": 315,
+    "temporary_failed_run_count": 1,
+    "reused_completed_run_count": 313,
+    "new_completed_run_count": 2,
+    "manifest_emitted": false,
+    "summary_emitted": false
+  },
+  "failure": {
+    "stage": "training_spectral_shape_parse",
+    "point_id": "s09p0_h00p25_a060p0",
+    "solar_center_altitude_deg": -9.0,
+    "target_true_altitude_deg": 0.25,
+    "relative_solar_azimuth_deg": 60.0,
+    "seed_index": 2,
+    "random_seed": 1114129,
+    "photon_count": 10000,
+    "normalization_wavelength_nm": 550.0,
+    "normalization_radiance_mw_m2_nm_sr": 0.0,
+    "reason": "monte_carlo_zero_sample_cannot_define_a_response_shape_and_is_not_physical_zero"
+  },
+  "holdout_boundary": {
+    "monochromatic_anchor_holdouts_reused": true,
+    "response_integrated_holdouts_executed": false,
+    "direct_extinction_holdouts_executed": false,
+    "grid_nodes_changed_after_holdout_execution": false,
+    "acceptance_thresholds_changed_after_holdout_execution": false,
+    "repair_uses_training_failure_only": true
+  },
+  "failed_tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+      "bytes": 11584,
+      "sha256": "263115bc62c5fc2bd285ffd29e5a6963e26171391b6ee00b1a2f27186709960b"
+    },
+    {
+      "path": "scripts/build_visibility_radiance_response_probe.py",
+      "bytes": 74833,
+      "sha256": "d7239adf149836bf2cd30ba56b7460bf62d0888e5348d5b8f11a50f216d71d1d"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 51321,
+      "sha256": "f77f183932ad80abd8852f29f3848d18ed2e613ac95e252c40ea970bf95eb362"
+    }
+  ],
+  "disposition": {
+    "artifact_admitted": false,
+    "production_data_pack_authorized": false,
+    "zero_interpreted_as_physical_radiance": false,
+    "accuracy_thresholds_relaxed": false,
+    "grid_nodes_changed": false,
+    "repair": "replace_the_fixed_shape_photon_budget_with_a_predeclared_solar_node_specific_budget",
+    "failed_artifact_is_immutable": true,
+    "byte_verified_anchor_cache_reuse_is_allowed_for_the_successor_build": true
+  }
+}

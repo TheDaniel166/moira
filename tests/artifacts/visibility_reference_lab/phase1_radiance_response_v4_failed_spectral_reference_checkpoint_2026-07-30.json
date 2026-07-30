@@ -1,0 +1,84 @@
+{
+  "schema": "moira.visibility-radiance-response-failed-checkpoint/v1",
+  "status": "failed_research_estimator_design_not_admitted_not_runtime_data_pack",
+  "date": "2026-07-30",
+  "spec_id": "physical-heliacal-phase1-radiance-response-v4-2026-07-30",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/artifacts/phase1-radiance-response-2026-07-30-v4",
+    "file_count": 2907,
+    "bytes": 18959588,
+    "completed_run_count": 323,
+    "manifest_emitted": false,
+    "summary_emitted": false
+  },
+  "failure": {
+    "stage": "training_spectral_shape_adaptive_convergence",
+    "point_id": "s09p0_h00p25_a120p0",
+    "solar_center_altitude_deg": -9.0,
+    "target_true_altitude_deg": 0.25,
+    "relative_solar_azimuth_deg": 120.0,
+    "photon_count_per_seed": 100000,
+    "seed_count": 8,
+    "total_photon_count": 800000,
+    "maximum_relative_standard_error": 0.12,
+    "photopic_shape_mean_nm": 100.82949998484459,
+    "photopic_shape_relative_standard_error": 0.029197768067347644,
+    "scotopic_shape_mean_nm": 129.8587412757579,
+    "scotopic_shape_relative_standard_error": 0.19591332220010962,
+    "reason": "the_default_ALIS_reference_wavelength_was_580nm_while_the_shape_normalizer_was_550nm"
+  },
+  "source_trace": {
+    "manual_semantics": "mc_spectral_is_without_an_argument_uses_the_center_of_the_selected_spectral_interval",
+    "selected_interval_nm": [
+      380.0,
+      780.0
+    ],
+    "implicit_reference_wavelength_nm": 580.0,
+    "shape_normalization_wavelength_nm": 550.0,
+    "governing_files": [
+      {
+        "path": "src/uvspec_lex.l",
+        "bytes": 581415,
+        "sha256": "174755190e50ecc3099c80a29cb71627c0a33a5e2009d1869c23140095658d89"
+      },
+      {
+        "path": "src/solve_rte.c",
+        "bytes": 304484,
+        "sha256": "c90ed56c331758c71f89397c714cf1cab476dac9e5500ba1ebed0b60b6ad7475"
+      }
+    ]
+  },
+  "holdout_boundary": {
+    "response_integrated_holdouts_executed": false,
+    "direct_extinction_holdouts_executed": false,
+    "grid_nodes_changed_after_holdout_execution": false,
+    "acceptance_thresholds_changed_after_holdout_execution": false,
+    "repair_uses_training_failure_and_source_trace_only": true
+  },
+  "failed_tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_radiance_response_probe_spec.json",
+      "bytes": 12375,
+      "sha256": "76de29def2819ba00b4677b14af8ec80df37c9e669fabdbef813fb81fe0158be"
+    },
+    {
+      "path": "scripts/build_visibility_radiance_response_probe.py",
+      "bytes": 76359,
+      "sha256": "ec7373165d2bf040d2acbba4228bbc198ef5f84bb2dd41340f684664b3b52ac0"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 54499,
+      "sha256": "8f630fb35f8247a89832fba4b64ca8c0903c7e50a49453f016dbd9037bedf96a"
+    }
+  ],
+  "disposition": {
+    "artifact_admitted": false,
+    "production_data_pack_authorized": false,
+    "accuracy_thresholds_relaxed": false,
+    "grid_nodes_changed": false,
+    "repair": "set_mc_spectral_is_reference_explicitly_to_the_550nm_shape_normalization_wavelength",
+    "failed_artifact_is_immutable": true,
+    "byte_verified_anchor_cache_reuse_is_allowed_for_the_successor_build": true
+  }
+}

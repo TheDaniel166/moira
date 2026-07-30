@@ -1,0 +1,63 @@
+{
+  "schema": "moira.physical-heliacal-visibility-data-pack-failed-checkpoint/v1",
+  "status": "failed_packaging_notice_not_admitted_not_engine_runtime",
+  "date": "2026-07-30",
+  "pack_id": "moira-physical-heliacal-visibility",
+  "version": "1.0.0",
+  "external_artifact": {
+    "path": "/home/nilad/.cache/moira/visibility-reference-lab/data-packs/moira-physical-heliacal-visibility-1.0.0",
+    "file_count": 12,
+    "bytes": 110481,
+    "manifest_bytes": 6024,
+    "manifest_sha256": "edd28d9c5e42bf0964594da33342fa212907ba84780e70a53e48574f2e867bf0",
+    "generation_fingerprint": "486ae4ac82dabeb78394d8babbc6272a01aaa8b8d94500dee5528499146308b9"
+  },
+  "validation": {
+    "linux_validation_passed": false,
+    "windows_validation_passed": false,
+    "failure": "licensing notice is incomplete",
+    "missing_exact_fragments": [
+      "libRadtran 2.0.6",
+      "No libRadtran source"
+    ],
+    "cause": "required_phrases_were_split_by_markdown_line_breaks",
+    "numerical_table_validation_reached_and_passed": true,
+    "checksum_validation_reached_and_passed": true,
+    "provenance_validation_reached_and_passed": true
+  },
+  "tooling": [
+    {
+      "path": "scripts/visibility_reference_lab/phase1_visibility_data_pack_spec.json",
+      "bytes": 3001,
+      "sha256": "7d6288d0011ad98e59bab87047a404b4f8cb554ff1c69d064b59632fbdd1604f"
+    },
+    {
+      "path": "scripts/visibility_reference_lab/physical_heliacal_visibility_data_pack_compatibility_v1.json",
+      "bytes": 2410,
+      "sha256": "f50b199a211b75f7e6701f69c86020918f01df4940cfd1d3b86c6d6036659e37"
+    },
+    {
+      "path": "scripts/build_visibility_data_pack.py",
+      "bytes": 29007,
+      "sha256": "baed4731d947a45de5fcb4db241cb904ffc0167bca87939fe2e624653dc98c9d"
+    },
+    {
+      "path": "scripts/validate_visibility_data_pack.py",
+      "bytes": 23725,
+      "sha256": "85903d573574a21401be020e9e4e6265c7c1997a3e6ea8dcba4a5a88df0a1c16"
+    },
+    {
+      "path": "scripts/validate_visibility_radiance_response_probe.py",
+      "bytes": 62597,
+      "sha256": "e4497ce28799b89182bc0ca8551a0a6fac352b272a9ecc9343de3eded0eb2300"
+    }
+  ],
+  "disposition": {
+    "artifact_admitted": false,
+    "engine_loader_authorized": false,
+    "pack_version_released": false,
+    "failed_artifact_is_immutable": true,
+    "repair_changes_notice_text_only": true,
+    "numerical_payloads_may_be_recompiled_from_the_same_admitted_source_artifact": true
+  }
+}
