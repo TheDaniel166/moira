@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility Source Ledger
 
 Date: 2026-07-30
-Status: Phase 0 source disposition and Phase 1 laboratory/data-pack closure
+Status: Phase 0 source disposition and Phases 1-2 closed
 Doctrine:
 [PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md](../../01_doctrines/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md)
 
@@ -338,8 +338,8 @@ No formula is admitted merely by appearing in this ledger.
 
 | Planned calculation | Governing source | Phase that must capture exact equation/section | Current state |
 |---|---|---|---|
-| Blackwell/Crumey point-source threshold | Crumey 2014 with Blackwell 1946 lineage | Phase 2 | Source identified; not transcribed here |
-| MES2 spectral response | CIE 191:2010 and CIE TN 004:2016, equation 2 | Phase 2 | Source and data identities fixed |
+| Blackwell/Crumey point-source threshold | Crumey 2014 with Blackwell 1946 lineage | Phase 2 | Implemented from Crumey equations 28 and 34 with fixed `F=2`; independently checked against all eight public Tousey-Koomen Table I rows |
+| MES2 spectral response | CIE 191:2010, CIE TN 004:2016, and CIE TN 007:2017 | Phase 2 | Implemented with fixed-point solution and same-equation bracketed fallback; both official TN 007 worked examples pass |
 | Spectral radiance to named photometric quantity | CIE TN 004:2016 | Phase 1/2 | Phase 1 source-locks the official CIE tables and admits response-integrated photopic/scotopic data-pack products; Phase 2 owns single-epoch composition and limiting-magnitude propagation |
 | Direct transmission | libRadtran 2.0.6 DISORT pseudo-spherical configuration with external REPTRAN fine data | Phase 1 | Deterministic smoke and exact repeat reproduced; elevated-site construction matched 45 oracle cases; the surface midpoint-Chapman implementation is source-traced; the 290-level clear molecular grid is bounded across all six AFGL profiles; REPTRAN fine is the full-spectral research reference; Checkpoint 5 source-binds AOD550, Angstrom, ozone, pressure, albedo, and all eight Shettle profiles and admits a delta-M-safe aerosol direct-extinction oracle; Checkpoint 6 admits site-relative altitude/pressure interpolation against 12,636 withheld spectral values; the first pack admits a 57-node, 400-bin direct surface with 22,400 untouched holdout bins |
 | Directional twilight radiance | libRadtran 2.0.6 MYSTIC configuration | Phase 1 | The final v9 artifact admits adaptive 531 nm anchored REPTRAN-fine response products over a 4-by-4-by-4 grid, nine untouched response holdouts, per-cell uncertainty, and a typed boundary below -9 degrees |
@@ -351,9 +351,39 @@ Phase implementation documents must quote no more source text than needed,
 name exact equation or section identifiers, and attach independent numerical
 fixtures.
 
-## Target-Data Admission Work
+## Phase 2 Exact Equation Admission - 2026-07-30
 
-Before a planet or star is admitted, Phase 2 must audit:
+The Phase 2 implementation binds the following exact source artifacts:
+
+| Artifact | Engine use | Local source receipt |
+|---|---|---|
+| [Crumey 2014](https://arxiv.org/abs/1405.4209) | Full-range point-source threshold from equations 28 and 34; equation-28 coefficients `a1=5.949e-8`, `a2=-2.389e-7`, `a3=2.459e-7`, `a4=4.120e-4`, `a5=-4.225e-4`; fixed field factor `F=2` | PDF SHA-256 `fa6ef183f9402be4d321bff5fa2c112510f89ca683b534e33c63fdb6538e50a4` |
+| [CIE TN 004:2016](https://files.cie.co.at/841_CIE_TN_004-2016.pdf) | MES2 governing equations and photopic/scotopic quantity definitions | PDF SHA-256 `a549fcf5f98ae5fdd959b331dbb91eae99f5fd397bd288ad6b59c43723a4494f` |
+| [CIE TN 007:2017](https://files.cie.co.at/934_CIE_TN_007-2017.pdf) | Two official MES2 calculation examples and the task-applicability restriction in clause 6 | PDF SHA-256 `efdd11f4bdf7d77ab3b1fb8e6b94ac89599521eba7425e474bbc82cf34c7877a` |
+| [Tousey and Koomen 1953](https://opg.optica.org/josa/abstract.cfm?uri=josa-43-3-177) | Independent eight-row threshold validation, not coefficient fitting | Public HTML SHA-256 `4e50f748c6c0de310ceeadcbbcd0a6626a3fccd74fe1063f9cc91640ad3212ef` |
+
+CIE TN 007 restricts MES2 use to peripheral visual tasks. The admitted
+observer protocol is therefore
+`known_location_directed_averted_observation_v1`: the target position is known
+and attention is deliberate, but fixation is averted/peripheral after
+adaptation to the immediate directional field. The engine does not claim
+foveal equivalence.
+
+[CIE 257:2026](https://www.cie.co.at/publications/recommendations-practical-application-cie-system-mesopic-photometry-outdoor-lighting)
+is recorded as a current follow-on publication. Its full report was not
+inspected for this admission, so it is not an equation or coefficient
+authority for Phase 2.
+
+The source-owned numerical fixture is
+`tests/fixtures/physical_visibility_phase2_equations_v1.json`. The Crumey
+implementation reproduces the public Tousey-Koomen Table I threshold values
+with a maximum absolute residual of `0.03572` in log10 illuminance
+(`0.0893` magnitude), within the declared fixture acceptance bound.
+
+## Phase 2 Planetary Target-Data Admission
+
+The first-candidate planetary audit is complete for Mercury, Venus, Mars,
+Jupiter, and Saturn:
 
 - the source and effective band of apparent visual magnitude;
 - phase-angle and distance dependence for planets;
@@ -362,8 +392,61 @@ Before a planet or star is admitted, Phase 2 must audit:
 - treatment of missing or ambiguous photometry; and
 - serialization of the target receipt.
 
+The separately distributed physical-visibility pack version 1.1 binds:
+
+| Source | Admitted role | Exact identity |
+|---|---|---|
+| [Payne et al. planetary spectra](https://zenodo.org/records/17470005) | Full-phase geometric-albedo spectra used with the locked extraterrestrial solar spectrum to derive each planet's base photopic and scotopic response integrands | Versioned record `10.5281/zenodo.17470005`, publication `10.3847/PSJ/ae2feb`, CC BY 4.0; five per-file SHA-256 receipts are recorded in the Phase 2 checkpoint artifact |
+| [Mallama et al. 2017](https://arxiv.org/abs/1609.05048) | Source-domain UBVRI phase/color laws; Mercury remains gray, Venus/Mars/Jupiter use phase-polynomial color, and Saturn uses phase plus effective ring sub-latitude | PDF SHA-256 `7feb8edb372502cee5dc9c6a7656205e3279353bb38f9a98cbecbe8e8d733f91`; DOI `10.1016/j.icarus.2016.09.023` |
+| CIE photopic and scotopic datasets | Response integration and S/P ratio | Dataset DOIs `10.25039/CIE.DS.dktna2s3` and `10.25039/CIE.DS.gr6w4b5g`; exact CSV receipts remain source-locked |
+| libRadtran 2.0.6 `atlas_plus_modtran` | Extraterrestrial solar spectral shape used only during offline pack derivation | SHA-256 `432600ef415706c401a4c0e17c6b733a631f1556a78c3da32e936830288b414b` |
+
+The 400-bin response weights remain external pack products; no planetary
+source spectrum or CIE table enters the MIT engine wheel. The engine resolves
+phase angle and Saturn ring geometry from the same ephemeris context as
+apparent magnitude. It refuses profile extrapolation beyond the source-owned
+domains and does not accept caller-supplied planetary response weights.
+
+The exact profile specification is
+`scripts/visibility_reference_lab/phase2_planetary_target_profile_pack_spec.json`.
+The compact source-controlled receipt is
+`tests/artifacts/visibility_reference_lab/phase2_planetary_target_profiles_checkpoint_2026-07-30.json`.
+The admitted 1.1 manifest SHA-256 is
+`f594fd12058cc7f5c7bc9de7f2b06652bef3c0604ef7b0a05a069e54e4026c87`.
+
 The current fixed-star field named `color_index` is not sufficient evidence of
-a particular color system. No implementation may silently interpret it.
+a particular color system. Fixed-star admission remains outside Phase 2; no
+implementation may silently interpret that field.
+
+## Phase 2 Numerical-Error Propagation Receipt
+
+Phase 1 assigns limiting-magnitude propagation to Phase 2. The admitted
+single-epoch implementation now consumes the exact downstream error contract
+from `error-envelope.json`:
+
+- per-cell solver relative standard error is bounded by the maximum
+  contributing interpolation corner and must remain below one;
+- photopic and scotopic maximum interpolation errors are applied in
+  surface-brightness magnitude;
+- direct-extinction maximum interpolation error is applied in magnitude;
+- binary32 storage error is combined separately with both paths; and
+- P95 values are retained as diagnostics and may not exceed their declared
+  maxima.
+
+For modeled twilight, the numerical bounds perturb the twilight response while
+holding the source-identified dark-sky anchor nominal. CIE MES2 adaptation and
+the Crumey threshold are evaluated across all four photopic/scotopic bound
+corners. The resulting limiting-magnitude extrema are combined conservatively
+with the direct-extinction target-magnitude bound to produce the final margin
+envelope.
+
+The method receipt is
+`phase2_data_pack_declared_numerical_error_envelope_v1`. The solver term is
+propagated at exactly plus or minus one reported relative standard error; it
+is not relabeled as a hard maximum. The method is explicitly not a
+scientific-confidence interval. Input-measurement, target photometry and
+spectral-source, observer-population, model-form, and actual-atmosphere
+uncertainties remain named but unquantified.
 
 ## Phase 0 Source Disposition
 
@@ -377,5 +460,5 @@ Every candidate source now has one of four explicit roles:
 No GPL code enters the engine, no site-specific model becomes a global
 default, no CIE data enters the MIT wheel, and no unidentified coefficient is
 approved. The source gate is closed for Phase 0. Phase 1 implementation
-evidence and the separate fixed-domain data pack are complete; Phase 2 owns
-engine-side single-epoch truth.
+evidence, the external fixed-domain data packs, and Phase 2 engine-side
+single-epoch truth are complete. Phase 3 owns physical event-time solving.

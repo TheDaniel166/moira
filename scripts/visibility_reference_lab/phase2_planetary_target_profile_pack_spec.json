@@ -1,0 +1,290 @@
+{
+  "schema": "moira.physical-heliacal-visibility-phase2-pack-spec/v1",
+  "spec_id": "physical-heliacal-visibility-phase2-target-profiles-1.1.0-2026-07-30",
+  "status": "phase2_offline_pack_extension",
+  "build_date": "2026-07-30",
+  "pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.1.0",
+    "manifest_schema": "moira.physical-heliacal-visibility-data-pack-manifest/v1",
+    "compatibility_id": "moira-physical-heliacal-visibility-data-pack-v1.1",
+    "table_format_id": "regular-grid-ieee754-binary32-le-v1",
+    "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+    "license": "CC-BY-SA-4.0"
+  },
+  "base_pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.0.0",
+    "manifest_sha256": "49ac2b68ea105a8e055b27e8d4d70f6cbfe9533f971ef5e6000f0bdd95d6771b",
+    "immutable_payload_roles": [
+      "axes",
+      "direct_extinction",
+      "error_envelope",
+      "photopic_luminance",
+      "photopic_relative_standard_error",
+      "scotopic_luminance",
+      "scotopic_relative_standard_error"
+    ]
+  },
+  "spectral_bins": {
+    "coordinate": "bin_start_vacuum_nm",
+    "start_nm": 380.0,
+    "width_nm": 1.0,
+    "count": 400
+  },
+  "source_inputs": {
+    "payne_planetary_spectra": {
+      "record_doi": "10.5281/zenodo.17470005",
+      "concept_doi": "10.5281/zenodo.17470004",
+      "publication_doi": "10.3847/PSJ/ae2feb",
+      "license": "CC-BY-4.0",
+      "files": {
+        "Jupiter": {
+          "filename": "jupiter_albedo.csv",
+          "bytes": 32395,
+          "sha256": "839484ad8a416fd8ffe4fba293309a8f7943408e086d38d973fc619e64a1822b"
+        },
+        "Mars": {
+          "filename": "mars_albedo.csv",
+          "bytes": 30117,
+          "sha256": "4bfdf7e77c94c0ed5f1f0cf20a6a62c3225436f20376c7f65828e31ed64c5fc4"
+        },
+        "Mercury": {
+          "filename": "mercury_albedo.csv",
+          "bytes": 4747,
+          "sha256": "ff7b907ac58088b4fecaf0cc8514d039bedc82e9911239f1552c01313d008a0c"
+        },
+        "Saturn": {
+          "filename": "saturn_albedo.csv",
+          "bytes": 62058,
+          "sha256": "4a8b3fe964db0e2442e1e602e57ad605b319d7b16be94c694e48fd08aacc6e37"
+        },
+        "Venus": {
+          "filename": "venus_albedo.csv",
+          "bytes": 11596,
+          "sha256": "408e7bc644657f9479ac97ae1a13cdffefb3d060c14fd0e3902d2d13e8e85246"
+        }
+      }
+    },
+    "mallama_planetary_photometry": {
+      "publication_doi": "10.1016/j.icarus.2016.09.023",
+      "arxiv_id": "1609.05048",
+      "filename": "1609.05048.pdf",
+      "bytes": 915468,
+      "sha256": "7feb8edb372502cee5dc9c6a7656205e3279353bb38f9a98cbecbe8e8d733f91"
+    },
+    "cie_photopic": {
+      "dataset_doi": "10.25039/CIE.DS.dktna2s3",
+      "license": "CC-BY-SA-4.0",
+      "filename": "CIE_sle_photopic.csv",
+      "bytes": 9891,
+      "sha256": "ee5d5d17922ae645d4af52cacf6a50bdb9385749f9d2181ca312eb2b08febac2",
+      "luminous_efficacy_lm_per_w": 683.0
+    },
+    "cie_scotopic": {
+      "dataset_doi": "10.25039/CIE.DS.gr6w4b5g",
+      "license": "CC-BY-SA-4.0",
+      "filename": "CIE_sle_scotopic.csv",
+      "bytes": 7218,
+      "sha256": "6a75d3fdbcbf5e9e9a07478511933eefeda953f3e2cc14b74459e5a099ec3759",
+      "luminous_efficacy_lm_per_w": 1700.0
+    },
+    "solar_spectrum": {
+      "source_id": "libRadtran:2.0.6:data/solar_flux/atlas_plus_modtran",
+      "filename": "atlas_plus_modtran",
+      "bytes": 195715,
+      "sha256": "432600ef415706c401a4c0e17c6b733a631f1556a78c3da32e936830288b414b",
+      "quantity": "extraterrestrial_spectral_irradiance_mW_m-2_nm-1"
+    }
+  },
+  "derivation": {
+    "base_spectrum": "linear_interpolation_of_geometric_albedo_times_extraterrestrial_solar_spectral_irradiance",
+    "planetary_source_selection": "finite_nonnegative_full_file_then_strictly_ordered_positive_0.30_to_1.00_micron_subset",
+    "photopic_weights": "normalize(base_spectrum_times_CIE_photopic_response)",
+    "scotopic_weights": "normalize(base_spectrum_times_CIE_scotopic_response)",
+    "scotopic_to_photopic_ratio": "1700_times_scotopic_integral_divided_by_683_times_photopic_integral",
+    "color_warp_method": "johnson_cousins_piecewise_linear_differential_magnitude_v1",
+    "johnson_cousins_effective_wavelength_nm": [
+      360.0,
+      436.0,
+      549.0,
+      700.0,
+      900.0
+    ],
+    "visual_band_index": 2,
+    "outside_domain": "typed_not_evaluable",
+    "profile_float_representation": "canonical_json_binary64"
+  },
+  "color_models": {
+    "Mercury": {
+      "model_id": "mallama_2017_gray_phase_shape_v1",
+      "kind": "constant_color",
+      "phase_angle_domain_deg": [
+        2.0,
+        170.0
+      ],
+      "source_note": "V-band phase law is applied at all wavelengths because Mercury is treated as gray and airless."
+    },
+    "Venus": {
+      "model_id": "mallama_2017_ubvri_phase_color_v1",
+      "kind": "phase_polynomial",
+      "phase_angle_domain_deg": [
+        2.0,
+        165.0
+      ],
+      "coefficients_by_band": [
+        [
+          0.00565,
+          0.0002438,
+          -0.000002001,
+          0.000000006952
+        ],
+        [
+          0.00565,
+          0.0002438,
+          -0.000002001,
+          0.000000006952
+        ],
+        [
+          -0.001044,
+          0.0003687,
+          -0.000002814,
+          0.000000008938
+        ],
+        [
+          0.005853,
+          0.0001475,
+          -0.0000004645,
+          0.00000000122
+        ],
+        [
+          -0.007863,
+          0.0004571,
+          -0.000003024,
+          0.000000007766
+        ]
+      ]
+    },
+    "Mars": {
+      "model_id": "mallama_2017_ubvri_illumination_color_v1",
+      "kind": "phase_polynomial",
+      "phase_angle_domain_deg": [
+        0.0,
+        50.0
+      ],
+      "coefficients_by_band": [
+        [
+          0.0168,
+          0.0000228
+        ],
+        [
+          0.02445,
+          -0.0001131
+        ],
+        [
+          0.02267,
+          -0.0001302
+        ],
+        [
+          0.01906,
+          -0.0000956
+        ],
+        [
+          0.02205,
+          -0.0001931
+        ]
+      ],
+      "limitations": [
+        "representative_disk_spectrum",
+        "rotation_color_term_not_resolved",
+        "orbital_longitude_color_term_not_resolved",
+        "dust_storm_color_term_not_resolved"
+      ]
+    },
+    "Jupiter": {
+      "model_id": "mallama_2017_ubvri_geocentric_phase_color_v1",
+      "kind": "phase_polynomial",
+      "phase_angle_domain_deg": [
+        0.0,
+        12.0
+      ],
+      "coefficients_by_band": [
+        [
+          0.0016,
+          0.001263
+        ],
+        [
+          -0.00096,
+          0.000685
+        ],
+        [
+          -0.00037,
+          0.000616
+        ],
+        [
+          -0.00086,
+          0.000483
+        ],
+        [
+          -0.00002,
+          0.000361
+        ]
+      ],
+      "limitations": [
+        "short_term_atmospheric_color_variability_not_resolved"
+      ]
+    },
+    "Saturn": {
+      "model_id": "mallama_2017_ubvri_ring_phase_color_v1",
+      "kind": "saturn_ring_phase",
+      "phase_angle_domain_deg": [
+        0.0,
+        6.0
+      ],
+      "ring_sub_latitude_domain_deg": [
+        0.0,
+        27.0
+      ],
+      "coefficients_by_band": [
+        [
+          -2.596,
+          0.02,
+          0.97,
+          -1.39
+        ],
+        [
+          -2.002,
+          0.034,
+          0.525,
+          -2.33
+        ],
+        [
+          -1.825,
+          0.026,
+          0.378,
+          -2.25
+        ],
+        [
+          -1.865,
+          0.032,
+          0.293,
+          -3.07
+        ],
+        [
+          -2.367,
+          0.032,
+          0.393,
+          -3.11
+        ]
+      ]
+    }
+  },
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "source_files_may_be_copied_to_pack": false,
+    "generated_response_products_only": true,
+    "base_pack_may_be_mutated": false,
+    "caller_supplied_paths_required": true
+  }
+}

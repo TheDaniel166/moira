@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility Admission Doctrine
 
 Date: 2026-07-29
-Status: Phase 0 doctrine lock; implementation not yet admitted
+Status: Phase 0 doctrine lock; Phases 1-2 implemented and closed
 Governing roadmap:
 [PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md](../../06_roadmap/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md)
 
@@ -193,12 +193,14 @@ equipment.
 The observer protocol identifier is:
 
 ```text
-known_location_directed_observation_v1
+known_location_directed_averted_observation_v1
 ```
 
-It assumes a continuous non-flickering target, natural pupils, and foveal or
-near-foveal attention after adaptation to the modeled directional field.
-Casual discovery, wide-field search, peripheral detection, flicker, and a
+It assumes a continuous non-flickering target, natural pupils, a known target
+position, deliberate directed attention, and averted/peripheral fixation after
+adaptation to the immediate directional field. This is the task admitted by
+the CIE MES2 component; it is not a claim about central/foveal detection.
+Casual discovery, wide-field search, central fixation, flicker, and a
 population probability are different experiments and are not silently
 represented by an experience or confidence slider.
 
@@ -210,6 +212,12 @@ The first planetary candidates are Mercury, Venus, Mars, Jupiter, and Saturn.
 A planet enters the public model only after its dynamic visual magnitude and
 target spectral treatment carry source receipts and pass independent
 validation.
+
+Those five candidates have passed the Phase 2 engine gate through external
+data-pack version 1.1. Their planetary response profiles are pack-owned and
+cannot be replaced by caller-supplied weights. Phase angle and, for Saturn,
+effective ring sub-latitude must remain inside the source-owned profile domain
+or the assessment fails closed.
 
 A fixed star enters only when its identity, visual photometry, and spectral or
 color transformation are source-identified and complete. An ambiguous catalog
@@ -338,7 +346,42 @@ The engine wheel may include only a metadata-only compatibility manifest. The
 runtime accepts an explicit caller-supplied data-pack path. Normal calculation
 never downloads or updates the pack.
 
+Pack version 1.0 remains loadable for its Phase 1 atmospheric tables but
+contains no admitted planetary target profiles. Pack version 1.1 adds the
+source-locked Mercury-through-Saturn profiles required by the Phase 2 public
+assessment. A caller may pin the exact 1.1 root manifest SHA-256 in both
+runtime configuration and policy.
+
 Missing, incompatible, or corrupt data is a typed non-evaluable outcome.
+
+## Numerical Error and Scientific-Uncertainty Boundary
+
+An evaluated Phase 2 result carries both the nominal visibility margin and a
+separate declared data-pack numerical-error envelope. The envelope includes:
+
+- plus or minus one maximum-contributing per-cell solver relative standard
+  error for modeled twilight;
+- the admitted maximum photopic and scotopic interpolation errors;
+- the admitted direct-extinction maximum interpolation error; and
+- the separately recorded binary32 storage error.
+
+For modeled twilight, only the modeled twilight term is perturbed; the
+caller-supplied dark-sky anchor is held at its supplied value and its
+measurement uncertainty remains explicitly unquantified. For a measured-total
+background, Moira does not invent a background-error bound. It propagates only
+the pack-owned direct-extinction error and names the measurement uncertainty
+as unquantified.
+
+The receipt reports limiting-magnitude and visibility-margin envelope limits
+and one
+classification within the pack numerical envelope: `visible`, `not_visible`,
+or `indeterminate`. The ordinary `visible` field remains the nominal model
+result. P95 interpolation diagnostics are not promoted into maximum bounds.
+The reported solver term is not a hard maximum. This envelope is not a
+probability, population model, or scientific confidence interval. Planetary
+photometry, spectral-source, CIE/threshold model, observer-population,
+real-atmosphere, and input-measurement uncertainty remain separate named
+limitations.
 
 libRadtran remains an external GPL reference generator. No libRadtran source,
 binary, Python binding, or runtime invocation enters the engine or data pack.
@@ -375,8 +418,11 @@ The assessment request carries:
 - target identity;
 - `jd_ut`, latitude, and east-positive longitude;
 - the full `PhysicalVisibilityPolicy`; and
-- an optional source-identified target photometry vessel where the admitted
-  target contract allows caller-supplied photometry.
+- no caller-supplied planetary photometry or spectral-profile override for the
+  first Phase 2 planetary contract.
+
+A future additive fixed-star or other target contract may define a
+source-identified caller vessel only after its separate target-admission gate.
 
 The event request additionally carries:
 
@@ -453,9 +499,14 @@ The following identifiers are reserved:
 - `visibility_data_pack_missing`
 - `visibility_data_pack_incompatible`
 - `visibility_data_pack_checksum_mismatch`
+- `ephemeris_dependency_missing`
 - `target_not_admitted`
 - `target_spectral_profile_missing`
+- `target_spectral_profile_context_missing`
+- `target_spectral_profile_out_of_domain`
 - `target_photometry_missing`
+- `target_below_local_horizon`
+- `solar_twilight_below_data_pack_domain`
 - `solar_altitude_out_of_domain`
 - `target_altitude_out_of_domain`
 - `observer_altitude_out_of_domain`

@@ -82,6 +82,10 @@ def test_heliacal_rising_returns_none_when_not_found(monkeypatch: pytest.MonkeyP
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=2.0))
     monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(100.5))
     monkeypatch.setattr(stars, "_star_altitude", lambda name, jd_ut, lat, lon, **_: -30.0)
+    monkeypatch.setattr(
+        "moira.heliacal._find_sun_at_alt",
+        lambda jd_midnight, *args, **kwargs: jd_midnight + 0.25,
+    )
 
     assert stars.heliacal_rising("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=10.0, search_days=5) is None
 

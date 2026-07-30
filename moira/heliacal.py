@@ -50,9 +50,34 @@ See ``__all__`` below for the stable public surface.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 
+from ._visibility_lut import (
+    VisibilityDataPackConfig,
+    VisibilityDataPackDomain,
+    VisibilityDataPackDomainError,
+    VisibilityDataPackLoadError,
+    VisibilityDataPackReceipt,
+    load_visibility_data_pack,
+)
+from ._visibility_spectral import (
+    ConditionedTarget,
+    DirectionalLuminance as _DirectionalLuminance,
+    FullRangePointSourceThreshold as _FullRangePointSourceThreshold,
+    PhysicalVisibilityCompositionError,
+    SpectralComponentReceipt,
+    SpectralSingleEpochTruth,
+    TargetSpectralProfile as _TargetSpectralProfile,
+    VisibilityMarginErrorBudget as _VisibilityMarginErrorBudget,
+    spectral_single_epoch_truth,
+    sqm_directional_luminance,
+)
+from ._visibility_targets import (
+    ResolvedVisibilityTargetProfile,
+    VisibilityTargetContext,
+    VisibilityTargetProfileError,
+)
 from .constants import Body
 from .corrections import apply_refraction
 
@@ -68,9 +93,28 @@ __all__ = [
     "ExtinctionCoefficient",
     "MoonlightPolicy",
     "VisibilityCriterionFamily",
+    "PhysicalVisibilityStatus",
+    "PhysicalVisibilityEvidenceState",
+    "PhysicalBackgroundScope",
     "AtmosphericExtinctionAssessment",
     "TwilightSkyBrightnessAssessment",
     "PointSourceVisibilityThreshold",
+    "PhysicalAtmosphereInput",
+    "PhysicalDirectionalBackground",
+    "PhysicalSqmBackground",
+    "PhysicalBortleBackground",
+    "PhysicalVisibilityPolicy",
+    "VisibilityComponentReceipt",
+    "PhysicalAtmosphereReceipt",
+    "PhysicalValidityDomainReceipt",
+    "PhysicalObserverProtocolReceipt",
+    "PhysicalBackgroundReceipt",
+    "PhysicalTargetReceipt",
+    "PhysicalThresholdReceipt",
+    "PhysicalVisibilityErrorBudgetReceipt",
+    "PhysicalVisibilityAssessment",
+    "VisibilityDataPackConfig",
+    "VisibilityDataPackReceipt",
     "LunarCrescentVisibilityClass",
     "LunarCrescentDetails",
     "ObserverVisibilityEnvironment",
@@ -85,6 +129,7 @@ __all__ = [
     "atmospheric_extinction",
     "directional_twilight_sky_brightness",
     "point_source_visibility_threshold",
+    "physical_visibility_assessment",
     "visibility_assessment",
     "visual_limiting_magnitude",
     "visibility_event",
@@ -533,6 +578,29 @@ class VisibilityCriterionFamily(str, Enum):
     LIMITING_MAGNITUDE_THRESHOLD = "limiting_magnitude_threshold"
     CRUMEY_2014_POINT_SOURCE = "crumey_2014_point_source"
     YALLOP_LUNAR_CRESCENT = "yallop_lunar_crescent"
+
+
+class PhysicalVisibilityStatus(str, Enum):
+    """Evaluation status for the additive physical assessment."""
+
+    EVALUATED = "evaluated"
+    NOT_EVALUABLE = "not_evaluable"
+
+
+class PhysicalVisibilityEvidenceState(str, Enum):
+    """Why a physical assessment did or did not produce truth."""
+
+    EVALUATED_CLEAR_SKY = "evaluated_clear_sky"
+    NOT_APPLICABLE = "not_applicable"
+    MISSING_DEPENDENCY = "missing_dependency"
+    OUT_OF_DOMAIN = "out_of_domain"
+
+
+class PhysicalBackgroundScope(str, Enum):
+    """Whether a background input is total or one dark-sky component."""
+
+    TOTAL_BACKGROUND = "total_background"
+    DARK_SKY_ANCHOR = "dark_sky_anchor"
 
 
 class LunarCrescentVisibilityClass(str, Enum):
@@ -1059,6 +1127,401 @@ class PointSourceVisibilityThreshold:
     valid: bool
     reason: str | None
     limiting_magnitude: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalAtmosphereInput:
+    """Complete named atmosphere requested from the first physical pack."""
+
+    atmosphere_profile: str = "us_standard"
+    aerosol_profile: str = "rural_summer"
+    observer_altitude_m: float = 0.0
+    surface_pressure_hpa: float = 1013.25
+    aod550: float = 0.1
+    angstrom_exponent: float = 1.3
+    ozone_du: float = 300.0
+    ground_albedo: float = 0.2
+
+    def __post_init__(self) -> None:
+        if not self.atmosphere_profile or not self.aerosol_profile:
+            raise ValueError(
+                "atmosphere_profile and aerosol_profile must not be empty"
+            )
+        for name in (
+            "observer_altitude_m",
+            "surface_pressure_hpa",
+            "aod550",
+            "angstrom_exponent",
+            "ozone_du",
+            "ground_albedo",
+        ):
+            value = getattr(self, name)
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+            ):
+                raise ValueError(f"{name} must be finite")
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalDirectionalBackground:
+    """Source-identified response-integrated directional luminance."""
+
+    photopic_luminance_cd_m2: float
+    scotopic_luminance_cd_m2: float
+    scope: PhysicalBackgroundScope
+    component_ids: tuple[str, ...]
+    source_id: str
+    source_receipt_sha256: str
+    method_id: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.scope, PhysicalBackgroundScope):
+            object.__setattr__(
+                self,
+                "scope",
+                PhysicalBackgroundScope(self.scope),
+            )
+        _DirectionalLuminance(
+            photopic_luminance_cd_m2=self.photopic_luminance_cd_m2,
+            scotopic_luminance_cd_m2=self.scotopic_luminance_cd_m2,
+            scope=self.scope.value,
+            component_ids=self.component_ids,
+            source_id=self.source_id,
+            source_receipt_sha256=self.source_receipt_sha256,
+            method_id=self.method_id,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalSqmBackground:
+    """Fully qualified SQM/V-equivalent directional background input."""
+
+    sqm_mag_arcsec2: float
+    scotopic_to_photopic_ratio: float
+    scope: PhysicalBackgroundScope
+    component_ids: tuple[str, ...]
+    measurement_source_id: str
+    measurement_receipt_sha256: str
+    device_bandpass_id: str
+    pointing_receipt_id: str
+    temporal_applicability_id: str
+    spectral_ratio_source_id: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.scope, PhysicalBackgroundScope):
+            object.__setattr__(
+                self,
+                "scope",
+                PhysicalBackgroundScope(self.scope),
+            )
+        sqm_directional_luminance(
+            self.sqm_mag_arcsec2,
+            scotopic_to_photopic_ratio=(
+                self.scotopic_to_photopic_ratio
+            ),
+            scope=self.scope.value,
+            component_ids=self.component_ids,
+            measurement_source_id=self.measurement_source_id,
+            measurement_receipt_sha256=(
+                self.measurement_receipt_sha256
+            ),
+            device_bandpass_id=self.device_bandpass_id,
+            pointing_receipt_id=self.pointing_receipt_id,
+            temporal_applicability_id=self.temporal_applicability_id,
+            spectral_ratio_source_id=self.spectral_ratio_source_id,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalBortleBackground:
+    """Explicit coarse Bortle dark-sky anchor with an S/P assumption."""
+
+    light_pollution_class: LightPollutionClass
+    scotopic_to_photopic_ratio: float
+    spectral_ratio_source_id: str
+    source_receipt_sha256: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.light_pollution_class,
+            LightPollutionClass,
+        ):
+            object.__setattr__(
+                self,
+                "light_pollution_class",
+                LightPollutionClass(self.light_pollution_class),
+            )
+        if (
+            not math.isfinite(self.scotopic_to_photopic_ratio)
+            or self.scotopic_to_photopic_ratio <= 0.0
+        ):
+            raise ValueError(
+                "scotopic_to_photopic_ratio must be finite and > 0"
+            )
+        if not self.spectral_ratio_source_id:
+            raise ValueError(
+                "spectral_ratio_source_id must not be empty"
+            )
+        _validate_physical_sha256(
+            self.source_receipt_sha256,
+            "source_receipt_sha256",
+        )
+
+
+PhysicalBackgroundInput = (
+    PhysicalDirectionalBackground
+    | PhysicalSqmBackground
+    | PhysicalBortleBackground
+)
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalVisibilityPolicy:
+    """Versioned additive policy for physical single-epoch truth."""
+
+    background: PhysicalBackgroundInput | None = None
+    atmosphere: PhysicalAtmosphereInput = field(
+        default_factory=PhysicalAtmosphereInput
+    )
+    composite_model_id: str = (
+        "clear_sky_naked_eye_point_source_v1"
+    )
+    expected_data_pack_id: str = (
+        "moira-physical-heliacal-visibility"
+    )
+    expected_manifest_sha256: str | None = None
+    observer_protocol_id: str = (
+        "known_location_directed_averted_observation_v1"
+    )
+    local_horizon_altitude_deg: float = 0.0
+    refraction_model_id: str = "bennett_extended_v1"
+    refraction_pressure_hpa: float = 1013.25
+    refraction_temperature_c: float = 15.0
+    refraction_relative_humidity: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.background is not None and not isinstance(
+            self.background,
+            (
+                PhysicalDirectionalBackground,
+                PhysicalSqmBackground,
+                PhysicalBortleBackground,
+            ),
+        ):
+            raise TypeError("unsupported physical background input")
+        if (
+            self.composite_model_id
+            != "clear_sky_naked_eye_point_source_v1"
+        ):
+            raise ValueError("unsupported physical composite_model_id")
+        if (
+            self.expected_data_pack_id
+            != "moira-physical-heliacal-visibility"
+        ):
+            raise ValueError("unsupported expected_data_pack_id")
+        if (
+            self.observer_protocol_id
+            != "known_location_directed_averted_observation_v1"
+        ):
+            raise ValueError("unsupported observer_protocol_id")
+        if self.refraction_model_id != "bennett_extended_v1":
+            raise ValueError("unsupported refraction_model_id")
+        if self.expected_manifest_sha256 is not None:
+            _validate_physical_sha256(
+                self.expected_manifest_sha256,
+                "expected_manifest_sha256",
+            )
+        if (
+            not math.isfinite(self.local_horizon_altitude_deg)
+            or not -5.0 <= self.local_horizon_altitude_deg <= 90.0
+        ):
+            raise ValueError(
+                "local_horizon_altitude_deg must be in [-5, 90]"
+            )
+        if (
+            not math.isfinite(self.refraction_pressure_hpa)
+            or self.refraction_pressure_hpa <= 0.0
+        ):
+            raise ValueError(
+                "refraction_pressure_hpa must be finite and > 0"
+            )
+        if not math.isfinite(self.refraction_temperature_c):
+            raise ValueError(
+                "refraction_temperature_c must be finite"
+            )
+        if (
+            not math.isfinite(self.refraction_relative_humidity)
+            or not 0.0 <= self.refraction_relative_humidity <= 1.0
+        ):
+            raise ValueError(
+                "refraction_relative_humidity must be in [0, 1]"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class VisibilityComponentReceipt:
+    """Public receipt for one effective physical-model component."""
+
+    role: str
+    component_id: str
+    source_ids: tuple[str, ...]
+    details: tuple[tuple[str, str], ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalAtmosphereReceipt:
+    """Resolved atmosphere completeness and pack-domain truth."""
+
+    complete: bool
+    within_data_pack_domain: bool | None
+    atmosphere_profile: str
+    aerosol_profile: str
+    observer_altitude_m: float
+    surface_pressure_hpa: float
+    aod550: float
+    angstrom_exponent: float
+    ozone_du: float
+    ground_albedo: float
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalValidityDomainReceipt:
+    """Exact data-pack axes and queried geometry."""
+
+    no_extrapolation: bool
+    solar_center_altitude_domain_deg: tuple[float, float]
+    target_true_altitude_domain_deg: tuple[float, float]
+    relative_solar_azimuth_domain_deg: tuple[float, float]
+    queried_solar_center_altitude_deg: float | None
+    queried_target_true_altitude_deg: float | None
+    queried_relative_solar_azimuth_deg: float | None
+    within_domain: bool | None
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalObserverProtocolReceipt:
+    """Fixed task, adaptation-field, horizon, and refraction receipt."""
+
+    protocol_id: str
+    task: str
+    optical_aid: str
+    adaptation_field: str
+    local_horizon_altitude_deg: float
+    refraction_model_id: str
+    refraction_pressure_hpa: float
+    refraction_temperature_c: float
+    refraction_relative_humidity: float
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalBackgroundReceipt:
+    """Effective background and CIE adaptation receipt."""
+
+    authority_id: str
+    component_ids: tuple[str, ...]
+    source_ids: tuple[str, ...]
+    photopic_luminance_cd_m2: float
+    scotopic_luminance_cd_m2: float
+    mesopic_luminance_cd_m2: float
+    scotopic_to_photopic_ratio: float
+    adaptation_coefficient: float
+    weighting_state: str
+    adaptation_solver_method: str
+    photopic_solver_relative_standard_error_bound: float | None
+    scotopic_solver_relative_standard_error_bound: float | None
+    solver_uncertainty_bound_method: str | None
+    photopic_interpolation_maximum_error_mag: float | None
+    photopic_interpolation_p95_error_mag: float | None
+    scotopic_interpolation_maximum_error_mag: float | None
+    scotopic_interpolation_p95_error_mag: float | None
+    storage_maximum_error_mag: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalTargetReceipt:
+    """Dynamic photometry, spectrum, and atmospheric conditioning receipt."""
+
+    target_id: str
+    photometry_model_id: str
+    photometry_source_ids: tuple[str, ...]
+    spectral_profile_id: str
+    spectral_source_ids: tuple[str, ...]
+    spectral_source_receipt_sha256: str
+    spectral_model_details: tuple[tuple[str, str], ...]
+    top_of_atmosphere_visual_magnitude: float
+    scotopic_to_photopic_ratio: float
+    photopic_transmission: float
+    scotopic_transmission: float
+    conditioned_target_magnitude: float
+    direct_interpolation_maximum_error_mag: float
+    direct_interpolation_p95_error_mag: float
+    storage_maximum_error_mag: float
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalThresholdReceipt:
+    """Full-range point-source threshold and its fixed field factor."""
+
+    model_id: str
+    background_luminance_cd_m2: float
+    field_factor: float
+    threshold_illuminance_lux: float
+    limiting_magnitude: float
+    valid_background_min_cd_m2: float
+    valid_background_max_cd_m2: float
+    equation_receipt: str
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalVisibilityErrorBudgetReceipt:
+    """Declared pack-numerical envelope, not scientific confidence."""
+
+    method_id: str
+    background_error_authority: str
+    solver_relative_standard_error_multiplier: float | None
+    background_mesopic_luminance_envelope_lower_cd_m2: float
+    background_mesopic_luminance_envelope_upper_cd_m2: float
+    limiting_magnitude_envelope_lower: float
+    limiting_magnitude_envelope_upper: float
+    conditioned_target_magnitude_maximum_pack_error: float
+    visibility_margin_envelope_lower_magnitude: float
+    visibility_margin_envelope_upper_magnitude: float
+    visibility_margin_envelope_maximum_deviation_magnitude: float
+    visibility_classification_within_data_pack_envelope: str
+    included_error_sources: tuple[str, ...]
+    unquantified_error_sources: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalVisibilityAssessment:
+    """Additive typed result for one physical single-epoch assessment."""
+
+    body: str
+    jd_ut: float
+    latitude_deg: float
+    longitude_deg: float
+    status: PhysicalVisibilityStatus
+    evidence_state: PhysicalVisibilityEvidenceState
+    reason: str | None
+    true_target_altitude_deg: float | None
+    apparent_target_altitude_deg: float | None
+    true_solar_center_altitude_deg: float | None
+    relative_solar_azimuth_deg: float | None
+    geometrically_visible: bool | None
+    visible: bool | None
+    observable: bool | None
+    visibility_margin_magnitude: float | None
+    data_pack_receipt: VisibilityDataPackReceipt | None
+    atmosphere_receipt: PhysicalAtmosphereReceipt
+    validity_domain_receipt: PhysicalValidityDomainReceipt | None
+    observer_protocol_receipt: PhysicalObserverProtocolReceipt
+    background_receipt: PhysicalBackgroundReceipt | None
+    target_receipt: PhysicalTargetReceipt | None
+    threshold_receipt: PhysicalThresholdReceipt | None
+    error_budget_receipt: PhysicalVisibilityErrorBudgetReceipt | None
+    components: tuple[VisibilityComponentReceipt, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -1758,6 +2221,20 @@ _HELIACAL_PLANETS: frozenset[str] = frozenset({
     Body.MERCURY, Body.VENUS, Body.MARS,
     Body.JUPITER, Body.SATURN, Body.URANUS, Body.NEPTUNE,
 })
+_PHYSICAL_VISIBILITY_PLANETS: frozenset[str] = frozenset({
+    Body.MERCURY,
+    Body.VENUS,
+    Body.MARS,
+    Body.JUPITER,
+    Body.SATURN,
+})
+_PHYSICAL_PLANET_PHOTOMETRY_MODEL_ID = (
+    "mallama_hilton_2018_moira_planetary_v1"
+)
+_PHYSICAL_PLANET_PHOTOMETRY_SOURCE_IDS = (
+    "Mallama_Hilton:2018",
+    "Astronomical_Almanac:planetary_magnitude_models",
+)
 
 # Minimum elongation (°) from the Sun before bothering to test visibility.
 # Below this the planet is lost in the solar glare regardless of magnitude.
@@ -2641,6 +3118,35 @@ def _horizontal_separation_deg(
     )
     return math.degrees(
         math.acos(max(-1.0, min(1.0, cos_separation)))
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class _PhysicalTargetPhotometryContext:
+    """Engine-owned photometry and spectral-profile geometry."""
+
+    apparent_magnitude: float
+    phase_angle_deg: float
+    saturn_effective_ring_sub_latitude_deg: float | None
+    geometry_valid: bool
+
+
+def _physical_target_photometry_context(
+    body: str,
+    jd_ut: float,
+) -> _PhysicalTargetPhotometryContext:
+    """Resolve one internally consistent planetary photometry context."""
+
+    from .phase import _apparent_magnitude_context
+
+    context = _apparent_magnitude_context(body, jd_ut)
+    return _PhysicalTargetPhotometryContext(
+        apparent_magnitude=context.apparent_magnitude,
+        phase_angle_deg=context.phase_angle_deg,
+        saturn_effective_ring_sub_latitude_deg=(
+            context.saturn_effective_ring_sub_latitude_deg
+        ),
+        geometry_valid=context.geometry_valid,
     )
 
 
@@ -3649,6 +4155,979 @@ class PlanetHeliacalEvent:
 # opt-in, validity-bounded physical point-source assessment.  The physical
 # criterion is intentionally not used by legacy event search until event-level
 # doctrine and validation are admitted separately.
+
+def physical_visibility_assessment(
+    body: str,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    *,
+    data_pack_config: VisibilityDataPackConfig,
+    policy: PhysicalVisibilityPolicy | None = None,
+) -> PhysicalVisibilityAssessment:
+    """Evaluate the additive physical point-source criterion at one instant.
+
+    The calculation uses only an explicit caller-supplied data-pack path.  It
+    never searches for, downloads, or generates a data pack.  The legacy
+    :func:`visibility_assessment` path is not consulted or changed.
+    """
+
+    if not isinstance(body, str) or not body:
+        raise ValueError("body must be a nonempty string")
+    _validate_physical_request_coordinate(jd_ut, "jd_ut")
+    _validate_physical_request_coordinate(lat, "lat")
+    _validate_physical_request_coordinate(lon, "lon")
+    if not -90.0 <= lat <= 90.0:
+        raise ValueError(f"lat must be in [-90, 90], got {lat}")
+    if not -180.0 <= lon <= 180.0:
+        raise ValueError(f"lon must be in [-180, 180], got {lon}")
+    if not isinstance(data_pack_config, VisibilityDataPackConfig):
+        raise TypeError(
+            "data_pack_config must be a VisibilityDataPackConfig"
+        )
+
+    resolved_policy = (
+        policy if policy is not None else PhysicalVisibilityPolicy()
+    )
+    if not isinstance(resolved_policy, PhysicalVisibilityPolicy):
+        raise TypeError("policy must be a PhysicalVisibilityPolicy")
+
+    atmosphere_receipt = _physical_atmosphere_receipt(
+        resolved_policy.atmosphere,
+        within_data_pack_domain=None,
+    )
+    observer_receipt = _physical_observer_receipt(resolved_policy)
+
+    if body not in _PHYSICAL_VISIBILITY_PLANETS:
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.NOT_APPLICABLE,
+            "target_not_admitted",
+            atmosphere_receipt=atmosphere_receipt,
+            observer_receipt=observer_receipt,
+        )
+    if resolved_policy.background is None:
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+            "background_input_incomplete",
+            atmosphere_receipt=atmosphere_receipt,
+            observer_receipt=observer_receipt,
+        )
+    if (
+        data_pack_config.expected_pack_id
+        != resolved_policy.expected_data_pack_id
+        or data_pack_config.expected_composite_model_id
+        != resolved_policy.composite_model_id
+        or (
+            data_pack_config.expected_manifest_sha256 is not None
+            and resolved_policy.expected_manifest_sha256 is not None
+            and data_pack_config.expected_manifest_sha256
+            != resolved_policy.expected_manifest_sha256
+        )
+    ):
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+            "visibility_data_pack_incompatible",
+            atmosphere_receipt=atmosphere_receipt,
+            observer_receipt=observer_receipt,
+        )
+
+    try:
+        pack = load_visibility_data_pack(data_pack_config)
+    except VisibilityDataPackLoadError as exc:
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+            exc.reason,
+            atmosphere_receipt=atmosphere_receipt,
+            observer_receipt=observer_receipt,
+        )
+
+    if (
+        resolved_policy.expected_manifest_sha256 is not None
+        and pack.receipt.manifest_sha256
+        != resolved_policy.expected_manifest_sha256
+    ):
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+            "visibility_data_pack_checksum_mismatch",
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            observer_receipt=observer_receipt,
+        )
+
+    atmosphere_matches = _physical_atmosphere_matches(
+        resolved_policy.atmosphere,
+        pack.domain,
+    )
+    atmosphere_receipt = _physical_atmosphere_receipt(
+        resolved_policy.atmosphere,
+        within_data_pack_domain=atmosphere_matches,
+    )
+    if not atmosphere_matches:
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.OUT_OF_DOMAIN,
+            "atmosphere_input_out_of_domain",
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            validity_domain_receipt=_physical_domain_receipt(pack.domain),
+            observer_receipt=observer_receipt,
+        )
+
+    from .spk_reader import MissingKernelError
+
+    try:
+        target_azimuth_deg, target_true_altitude_deg = (
+            _true_horizontal(body, jd_ut, lat, lon)
+        )
+        solar_azimuth_deg, solar_true_altitude_deg = _true_horizontal(
+            Body.SUN,
+            jd_ut,
+            lat,
+            lon,
+        )
+    except MissingKernelError:
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+            "ephemeris_dependency_missing",
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            validity_domain_receipt=_physical_domain_receipt(pack.domain),
+            observer_receipt=observer_receipt,
+        )
+
+    relative_solar_azimuth_deg = abs(
+        (
+            target_azimuth_deg
+            - solar_azimuth_deg
+            + 180.0
+        )
+        % 360.0
+        - 180.0
+    )
+    apparent_target_altitude_deg = apply_refraction(
+        target_true_altitude_deg,
+        pressure_mbar=resolved_policy.refraction_pressure_hpa,
+        temperature_c=resolved_policy.refraction_temperature_c,
+        relative_humidity=(
+            resolved_policy.refraction_relative_humidity
+        ),
+    )
+    geometrically_visible = (
+        apparent_target_altitude_deg
+        >= resolved_policy.local_horizon_altitude_deg
+    )
+
+    if not geometrically_visible:
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.NOT_APPLICABLE,
+            "target_below_local_horizon",
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            validity_domain_receipt=_physical_domain_receipt(
+                pack.domain,
+                target_true_altitude_deg=target_true_altitude_deg,
+            ),
+            observer_receipt=observer_receipt,
+            true_target_altitude_deg=target_true_altitude_deg,
+            apparent_target_altitude_deg=(
+                apparent_target_altitude_deg
+            ),
+            true_solar_center_altitude_deg=solar_true_altitude_deg,
+            relative_solar_azimuth_deg=(
+                relative_solar_azimuth_deg
+            ),
+            geometrically_visible=False,
+            observable=False,
+        )
+
+    try:
+        photometry_context = _physical_target_photometry_context(
+            body,
+            jd_ut,
+        )
+    except (MissingKernelError, ValueError):
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+            "target_photometry_missing",
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            validity_domain_receipt=_physical_domain_receipt(
+                pack.domain,
+                target_true_altitude_deg=target_true_altitude_deg,
+            ),
+            observer_receipt=observer_receipt,
+            true_target_altitude_deg=target_true_altitude_deg,
+            apparent_target_altitude_deg=(
+                apparent_target_altitude_deg
+            ),
+            true_solar_center_altitude_deg=solar_true_altitude_deg,
+            relative_solar_azimuth_deg=(
+                relative_solar_azimuth_deg
+            ),
+            geometrically_visible=True,
+        )
+    target_magnitude = photometry_context.apparent_magnitude
+    phase_angle_deg = photometry_context.phase_angle_deg
+    saturn_ring_latitude_deg = (
+        photometry_context.saturn_effective_ring_sub_latitude_deg
+    )
+    if (
+        photometry_context.geometry_valid is not True
+        or isinstance(target_magnitude, bool)
+        or not isinstance(target_magnitude, (int, float))
+        or not math.isfinite(target_magnitude)
+        or isinstance(phase_angle_deg, bool)
+        or not isinstance(phase_angle_deg, (int, float))
+        or not math.isfinite(phase_angle_deg)
+        or (
+            saturn_ring_latitude_deg is not None
+            and (
+                isinstance(saturn_ring_latitude_deg, bool)
+                or not isinstance(
+                    saturn_ring_latitude_deg,
+                    (int, float),
+                )
+                or not math.isfinite(saturn_ring_latitude_deg)
+            )
+        )
+    ):
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+            "target_photometry_missing",
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            validity_domain_receipt=_physical_domain_receipt(
+                pack.domain,
+                target_true_altitude_deg=target_true_altitude_deg,
+            ),
+            observer_receipt=observer_receipt,
+            true_target_altitude_deg=target_true_altitude_deg,
+            apparent_target_altitude_deg=(
+                apparent_target_altitude_deg
+            ),
+            true_solar_center_altitude_deg=solar_true_altitude_deg,
+            relative_solar_azimuth_deg=(
+                relative_solar_azimuth_deg
+            ),
+            geometrically_visible=True,
+        )
+
+    try:
+        target_profile = pack.resolve_target_profile(
+            body,
+            VisibilityTargetContext(
+                phase_angle_deg=phase_angle_deg,
+                saturn_effective_ring_sub_latitude_deg=(
+                    saturn_ring_latitude_deg
+                ),
+            ),
+        )
+    except VisibilityTargetProfileError as exc:
+        evidence_state = (
+            PhysicalVisibilityEvidenceState.OUT_OF_DOMAIN
+            if exc.reason == "target_spectral_profile_out_of_domain"
+            else PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY
+        )
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            evidence_state,
+            exc.reason,
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            validity_domain_receipt=_physical_domain_receipt(
+                pack.domain,
+                target_true_altitude_deg=target_true_altitude_deg,
+            ),
+            observer_receipt=observer_receipt,
+            true_target_altitude_deg=target_true_altitude_deg,
+            apparent_target_altitude_deg=(
+                apparent_target_altitude_deg
+            ),
+            true_solar_center_altitude_deg=solar_true_altitude_deg,
+            relative_solar_azimuth_deg=(
+                relative_solar_azimuth_deg
+            ),
+            geometrically_visible=True,
+        )
+
+    internal_profile = _TargetSpectralProfile(
+        target_id=target_profile.target_id,
+        top_of_atmosphere_visual_magnitude=target_magnitude,
+        scotopic_to_photopic_ratio=(
+            target_profile.scotopic_to_photopic_ratio
+        ),
+        photopic_extinction_weights=(
+            target_profile.photopic_extinction_weights
+        ),
+        scotopic_extinction_weights=(
+            target_profile.scotopic_extinction_weights
+        ),
+        photometry_model_id=_PHYSICAL_PLANET_PHOTOMETRY_MODEL_ID,
+        photometry_source_ids=(
+            _PHYSICAL_PLANET_PHOTOMETRY_SOURCE_IDS
+        ),
+        spectral_profile_id=target_profile.spectral_profile_id,
+        spectral_source_ids=target_profile.spectral_source_ids,
+        spectral_source_receipt_sha256=(
+            target_profile.spectral_source_receipt_sha256
+        ),
+        spectral_model_details=(
+            target_profile.spectral_model_details
+        ),
+    )
+    internal_background = _resolve_physical_background(
+        resolved_policy.background
+    )
+    modeled_twilight = (
+        internal_background.scope == "dark_sky_anchor"
+    )
+    domain_receipt = _physical_domain_receipt(
+        pack.domain,
+        solar_center_altitude_deg=(
+            solar_true_altitude_deg if modeled_twilight else None
+        ),
+        target_true_altitude_deg=target_true_altitude_deg,
+        relative_solar_azimuth_deg=(
+            relative_solar_azimuth_deg if modeled_twilight else None
+        ),
+    )
+
+    try:
+        if modeled_twilight:
+            truth = spectral_single_epoch_truth(
+                pack,
+                internal_profile,
+                target_true_altitude_deg=target_true_altitude_deg,
+                solar_center_altitude_deg=solar_true_altitude_deg,
+                relative_solar_azimuth_deg=(
+                    relative_solar_azimuth_deg
+                ),
+                dark_sky_anchor=internal_background,
+            )
+        else:
+            truth = spectral_single_epoch_truth(
+                pack,
+                internal_profile,
+                target_true_altitude_deg=target_true_altitude_deg,
+                measured_total_background=internal_background,
+            )
+    except VisibilityDataPackDomainError as exc:
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            PhysicalVisibilityEvidenceState.OUT_OF_DOMAIN,
+            exc.reason,
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            validity_domain_receipt=domain_receipt,
+            observer_receipt=observer_receipt,
+            true_target_altitude_deg=target_true_altitude_deg,
+            apparent_target_altitude_deg=(
+                apparent_target_altitude_deg
+            ),
+            true_solar_center_altitude_deg=solar_true_altitude_deg,
+            relative_solar_azimuth_deg=(
+                relative_solar_azimuth_deg
+            ),
+            geometrically_visible=True,
+        )
+    except PhysicalVisibilityCompositionError as exc:
+        evidence_state = (
+            PhysicalVisibilityEvidenceState.OUT_OF_DOMAIN
+            if exc.reason == "criterion_out_of_domain"
+            else PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY
+        )
+        return _physical_not_evaluable(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            resolved_policy,
+            evidence_state,
+            exc.reason,
+            data_pack_receipt=pack.receipt,
+            atmosphere_receipt=atmosphere_receipt,
+            validity_domain_receipt=domain_receipt,
+            observer_receipt=observer_receipt,
+            true_target_altitude_deg=target_true_altitude_deg,
+            apparent_target_altitude_deg=(
+                apparent_target_altitude_deg
+            ),
+            true_solar_center_altitude_deg=solar_true_altitude_deg,
+            relative_solar_azimuth_deg=(
+                relative_solar_azimuth_deg
+            ),
+            geometrically_visible=True,
+        )
+
+    return PhysicalVisibilityAssessment(
+        body=body,
+        jd_ut=jd_ut,
+        latitude_deg=lat,
+        longitude_deg=lon,
+        status=PhysicalVisibilityStatus.EVALUATED,
+        evidence_state=(
+            PhysicalVisibilityEvidenceState.EVALUATED_CLEAR_SKY
+        ),
+        reason=None,
+        true_target_altitude_deg=target_true_altitude_deg,
+        apparent_target_altitude_deg=apparent_target_altitude_deg,
+        true_solar_center_altitude_deg=solar_true_altitude_deg,
+        relative_solar_azimuth_deg=relative_solar_azimuth_deg,
+        geometrically_visible=True,
+        visible=truth.visible,
+        observable=truth.visible,
+        visibility_margin_magnitude=(
+            truth.visibility_margin_magnitude
+        ),
+        data_pack_receipt=truth.data_pack_receipt,
+        atmosphere_receipt=atmosphere_receipt,
+        validity_domain_receipt=domain_receipt,
+        observer_protocol_receipt=observer_receipt,
+        background_receipt=_physical_background_receipt(truth),
+        target_receipt=_physical_target_receipt(
+            truth.target,
+            target_profile,
+        ),
+        threshold_receipt=_physical_threshold_receipt(
+            truth.threshold
+        ),
+        error_budget_receipt=_physical_error_budget_receipt(
+            truth.error_budget
+        ),
+        components=_physical_component_receipts(truth.components),
+    )
+
+
+def _resolve_physical_background(
+    background: PhysicalBackgroundInput,
+) -> _DirectionalLuminance:
+    """Convert one validated public background vessel to the compositor."""
+
+    if isinstance(background, PhysicalDirectionalBackground):
+        return _DirectionalLuminance(
+            photopic_luminance_cd_m2=(
+                background.photopic_luminance_cd_m2
+            ),
+            scotopic_luminance_cd_m2=(
+                background.scotopic_luminance_cd_m2
+            ),
+            scope=background.scope.value,
+            component_ids=background.component_ids,
+            source_id=background.source_id,
+            source_receipt_sha256=(
+                background.source_receipt_sha256
+            ),
+            method_id=background.method_id,
+        )
+    if isinstance(background, PhysicalSqmBackground):
+        return sqm_directional_luminance(
+            background.sqm_mag_arcsec2,
+            scotopic_to_photopic_ratio=(
+                background.scotopic_to_photopic_ratio
+            ),
+            scope=background.scope.value,
+            component_ids=background.component_ids,
+            measurement_source_id=background.measurement_source_id,
+            measurement_receipt_sha256=(
+                background.measurement_receipt_sha256
+            ),
+            device_bandpass_id=background.device_bandpass_id,
+            pointing_receipt_id=background.pointing_receipt_id,
+            temporal_applicability_id=(
+                background.temporal_applicability_id
+            ),
+            spectral_ratio_source_id=(
+                background.spectral_ratio_source_id
+            ),
+        )
+    if isinstance(background, PhysicalBortleBackground):
+        sqm = _BORTLE_SKY_SQM_TABLE[
+            background.light_pollution_class
+        ]
+        return sqm_directional_luminance(
+            sqm,
+            scotopic_to_photopic_ratio=(
+                background.scotopic_to_photopic_ratio
+            ),
+            scope=PhysicalBackgroundScope.DARK_SKY_ANCHOR.value,
+            component_ids=("coarse_night_sky_background",),
+            measurement_source_id=(
+                f"Bortle:2001:class_"
+                f"{background.light_pollution_class.value}"
+            ),
+            measurement_receipt_sha256=(
+                background.source_receipt_sha256
+            ),
+            device_bandpass_id=(
+                "bortle_visual_sky_brightness_mapping_v1"
+            ),
+            pointing_receipt_id="coarse_zenith_reference",
+            temporal_applicability_id="coarse_reference_not_time_bound",
+            spectral_ratio_source_id=(
+                background.spectral_ratio_source_id
+            ),
+        )
+    raise TypeError("unsupported physical background input")
+
+
+def _physical_not_evaluable(
+    body: str,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    policy: PhysicalVisibilityPolicy,
+    evidence_state: PhysicalVisibilityEvidenceState,
+    reason: str,
+    *,
+    atmosphere_receipt: PhysicalAtmosphereReceipt,
+    observer_receipt: PhysicalObserverProtocolReceipt,
+    data_pack_receipt: VisibilityDataPackReceipt | None = None,
+    validity_domain_receipt: (
+        PhysicalValidityDomainReceipt | None
+    ) = None,
+    true_target_altitude_deg: float | None = None,
+    apparent_target_altitude_deg: float | None = None,
+    true_solar_center_altitude_deg: float | None = None,
+    relative_solar_azimuth_deg: float | None = None,
+    geometrically_visible: bool | None = None,
+    observable: bool | None = None,
+) -> PhysicalVisibilityAssessment:
+    """Build one typed fail-closed assessment without fabricated truth."""
+
+    return PhysicalVisibilityAssessment(
+        body=body,
+        jd_ut=jd_ut,
+        latitude_deg=lat,
+        longitude_deg=lon,
+        status=PhysicalVisibilityStatus.NOT_EVALUABLE,
+        evidence_state=evidence_state,
+        reason=reason,
+        true_target_altitude_deg=true_target_altitude_deg,
+        apparent_target_altitude_deg=apparent_target_altitude_deg,
+        true_solar_center_altitude_deg=(
+            true_solar_center_altitude_deg
+        ),
+        relative_solar_azimuth_deg=relative_solar_azimuth_deg,
+        geometrically_visible=geometrically_visible,
+        visible=None,
+        observable=observable,
+        visibility_margin_magnitude=None,
+        data_pack_receipt=data_pack_receipt,
+        atmosphere_receipt=atmosphere_receipt,
+        validity_domain_receipt=validity_domain_receipt,
+        observer_protocol_receipt=observer_receipt,
+        background_receipt=None,
+        target_receipt=None,
+        threshold_receipt=None,
+        error_budget_receipt=None,
+        components=_physical_partial_components(
+            policy,
+            data_pack_receipt,
+        ),
+    )
+
+
+def _physical_partial_components(
+    policy: PhysicalVisibilityPolicy,
+    data_pack_receipt: VisibilityDataPackReceipt | None,
+) -> tuple[VisibilityComponentReceipt, ...]:
+    components = [
+        VisibilityComponentReceipt(
+            role="observer_protocol",
+            component_id=policy.observer_protocol_id,
+            source_ids=("CIE:TN007:2017:clause_6", "Blackwell:1946"),
+            details=(
+                ("task", "known_target_directed_averted_detection"),
+                ("optical_aid", "none"),
+            ),
+        ),
+        VisibilityComponentReceipt(
+            role="atmosphere_request",
+            component_id=(
+                f"{policy.atmosphere.atmosphere_profile}:"
+                f"{policy.atmosphere.aerosol_profile}"
+            ),
+            source_ids=(),
+        ),
+    ]
+    if data_pack_receipt is not None:
+        components.append(
+            VisibilityComponentReceipt(
+                role="visibility_data_pack",
+                component_id=(
+                    f"{data_pack_receipt.pack_id}:"
+                    f"{data_pack_receipt.version}"
+                ),
+                source_ids=data_pack_receipt.source_dataset_ids,
+                details=(
+                    (
+                        "manifest_sha256",
+                        data_pack_receipt.manifest_sha256,
+                    ),
+                ),
+            )
+        )
+    return tuple(components)
+
+
+def _physical_atmosphere_matches(
+    atmosphere: PhysicalAtmosphereInput,
+    domain: VisibilityDataPackDomain,
+) -> bool:
+    return (
+        atmosphere.atmosphere_profile == domain.atmosphere_profile
+        and atmosphere.aerosol_profile == domain.aerosol_profile
+        and atmosphere.observer_altitude_m == domain.observer_altitude_m
+        and atmosphere.surface_pressure_hpa == domain.surface_pressure_hpa
+        and atmosphere.aod550 == domain.aod550
+        and atmosphere.angstrom_exponent == domain.angstrom_exponent
+        and atmosphere.ozone_du == domain.ozone_du
+        and atmosphere.ground_albedo == domain.ground_albedo
+    )
+
+
+def _physical_atmosphere_receipt(
+    atmosphere: PhysicalAtmosphereInput,
+    *,
+    within_data_pack_domain: bool | None,
+) -> PhysicalAtmosphereReceipt:
+    return PhysicalAtmosphereReceipt(
+        complete=True,
+        within_data_pack_domain=within_data_pack_domain,
+        atmosphere_profile=atmosphere.atmosphere_profile,
+        aerosol_profile=atmosphere.aerosol_profile,
+        observer_altitude_m=atmosphere.observer_altitude_m,
+        surface_pressure_hpa=atmosphere.surface_pressure_hpa,
+        aod550=atmosphere.aod550,
+        angstrom_exponent=atmosphere.angstrom_exponent,
+        ozone_du=atmosphere.ozone_du,
+        ground_albedo=atmosphere.ground_albedo,
+    )
+
+
+def _physical_observer_receipt(
+    policy: PhysicalVisibilityPolicy,
+) -> PhysicalObserverProtocolReceipt:
+    return PhysicalObserverProtocolReceipt(
+        protocol_id=policy.observer_protocol_id,
+        task="known_target_directed_averted_detection",
+        optical_aid="none",
+        adaptation_field="immediate_directional_peripheral_field",
+        local_horizon_altitude_deg=(
+            policy.local_horizon_altitude_deg
+        ),
+        refraction_model_id=policy.refraction_model_id,
+        refraction_pressure_hpa=policy.refraction_pressure_hpa,
+        refraction_temperature_c=policy.refraction_temperature_c,
+        refraction_relative_humidity=(
+            policy.refraction_relative_humidity
+        ),
+    )
+
+
+def _physical_domain_receipt(
+    domain: VisibilityDataPackDomain,
+    *,
+    solar_center_altitude_deg: float | None = None,
+    target_true_altitude_deg: float | None = None,
+    relative_solar_azimuth_deg: float | None = None,
+) -> PhysicalValidityDomainReceipt:
+    queries = (
+        solar_center_altitude_deg,
+        target_true_altitude_deg,
+        relative_solar_azimuth_deg,
+    )
+    within_domain: bool | None
+    if all(value is None for value in queries):
+        within_domain = None
+    else:
+        within_domain = True
+        if solar_center_altitude_deg is not None:
+            within_domain = within_domain and _within_closed_interval(
+                solar_center_altitude_deg,
+                domain.solar_center_altitude_deg,
+            )
+        if target_true_altitude_deg is not None:
+            within_domain = within_domain and _within_closed_interval(
+                target_true_altitude_deg,
+                domain.target_true_altitude_deg,
+            )
+        if relative_solar_azimuth_deg is not None:
+            within_domain = within_domain and _within_closed_interval(
+                relative_solar_azimuth_deg,
+                domain.relative_solar_azimuth_deg,
+            )
+    return PhysicalValidityDomainReceipt(
+        no_extrapolation=domain.no_extrapolation,
+        solar_center_altitude_domain_deg=(
+            domain.solar_center_altitude_deg
+        ),
+        target_true_altitude_domain_deg=(
+            domain.target_true_altitude_deg
+        ),
+        relative_solar_azimuth_domain_deg=(
+            domain.relative_solar_azimuth_deg
+        ),
+        queried_solar_center_altitude_deg=(
+            solar_center_altitude_deg
+        ),
+        queried_target_true_altitude_deg=target_true_altitude_deg,
+        queried_relative_solar_azimuth_deg=(
+            relative_solar_azimuth_deg
+        ),
+        within_domain=within_domain,
+    )
+
+
+def _within_closed_interval(
+    value: float,
+    interval: tuple[float, float],
+) -> bool:
+    return interval[0] <= value <= interval[1]
+
+
+def _physical_background_receipt(
+    truth: SpectralSingleEpochTruth,
+) -> PhysicalBackgroundReceipt:
+    background = truth.background
+    adaptation = truth.adaptation
+    return PhysicalBackgroundReceipt(
+        authority_id=background.authority_id,
+        component_ids=background.component_ids,
+        source_ids=background.source_ids,
+        photopic_luminance_cd_m2=(
+            background.photopic_luminance_cd_m2
+        ),
+        scotopic_luminance_cd_m2=(
+            background.scotopic_luminance_cd_m2
+        ),
+        mesopic_luminance_cd_m2=adaptation.mesopic_luminance_cd_m2,
+        scotopic_to_photopic_ratio=(
+            adaptation.scotopic_to_photopic_ratio
+        ),
+        adaptation_coefficient=adaptation.adaptation_coefficient,
+        weighting_state=adaptation.weighting_state,
+        adaptation_solver_method=adaptation.solver_method,
+        photopic_solver_relative_standard_error_bound=(
+            background.photopic_solver_relative_standard_error_bound
+        ),
+        scotopic_solver_relative_standard_error_bound=(
+            background.scotopic_solver_relative_standard_error_bound
+        ),
+        solver_uncertainty_bound_method=(
+            background.solver_uncertainty_bound_method
+        ),
+        photopic_interpolation_maximum_error_mag=(
+            background.photopic_interpolation_maximum_error_mag
+        ),
+        photopic_interpolation_p95_error_mag=(
+            background.photopic_interpolation_p95_error_mag
+        ),
+        scotopic_interpolation_maximum_error_mag=(
+            background.scotopic_interpolation_maximum_error_mag
+        ),
+        scotopic_interpolation_p95_error_mag=(
+            background.scotopic_interpolation_p95_error_mag
+        ),
+        storage_maximum_error_mag=(
+            background.storage_maximum_error_mag
+        ),
+    )
+
+
+def _physical_target_receipt(
+    target: ConditionedTarget,
+    profile: ResolvedVisibilityTargetProfile,
+) -> PhysicalTargetReceipt:
+    return PhysicalTargetReceipt(
+        target_id=target.target_id,
+        photometry_model_id=_PHYSICAL_PLANET_PHOTOMETRY_MODEL_ID,
+        photometry_source_ids=(
+            _PHYSICAL_PLANET_PHOTOMETRY_SOURCE_IDS
+        ),
+        spectral_profile_id=profile.spectral_profile_id,
+        spectral_source_ids=profile.spectral_source_ids,
+        spectral_source_receipt_sha256=(
+            profile.spectral_source_receipt_sha256
+        ),
+        spectral_model_details=profile.spectral_model_details,
+        top_of_atmosphere_visual_magnitude=(
+            target.top_of_atmosphere_visual_magnitude
+        ),
+        scotopic_to_photopic_ratio=(
+            profile.scotopic_to_photopic_ratio
+        ),
+        photopic_transmission=target.photopic_transmission,
+        scotopic_transmission=target.scotopic_transmission,
+        conditioned_target_magnitude=(
+            target.conditioned_target_magnitude
+        ),
+        direct_interpolation_maximum_error_mag=(
+            target.direct_interpolation_maximum_error_mag
+        ),
+        direct_interpolation_p95_error_mag=(
+            target.direct_interpolation_p95_error_mag
+        ),
+        storage_maximum_error_mag=target.storage_maximum_error_mag,
+    )
+
+
+def _physical_threshold_receipt(
+    threshold: _FullRangePointSourceThreshold,
+) -> PhysicalThresholdReceipt:
+    return PhysicalThresholdReceipt(
+        model_id=threshold.model_id,
+        background_luminance_cd_m2=(
+            threshold.background_luminance_cd_m2
+        ),
+        field_factor=threshold.field_factor,
+        threshold_illuminance_lux=threshold.threshold_illuminance_lux,
+        limiting_magnitude=threshold.limiting_magnitude,
+        valid_background_min_cd_m2=(
+            threshold.valid_background_min_cd_m2
+        ),
+        valid_background_max_cd_m2=(
+            threshold.valid_background_max_cd_m2
+        ),
+        equation_receipt=threshold.equation_receipt,
+    )
+
+
+def _physical_error_budget_receipt(
+    budget: _VisibilityMarginErrorBudget,
+) -> PhysicalVisibilityErrorBudgetReceipt:
+    return PhysicalVisibilityErrorBudgetReceipt(
+        method_id=budget.method_id,
+        background_error_authority=budget.background_error_authority,
+        solver_relative_standard_error_multiplier=(
+            budget.solver_relative_standard_error_multiplier
+        ),
+        background_mesopic_luminance_envelope_lower_cd_m2=(
+            budget.background_mesopic_luminance_envelope_lower_cd_m2
+        ),
+        background_mesopic_luminance_envelope_upper_cd_m2=(
+            budget.background_mesopic_luminance_envelope_upper_cd_m2
+        ),
+        limiting_magnitude_envelope_lower=(
+            budget.limiting_magnitude_envelope_lower
+        ),
+        limiting_magnitude_envelope_upper=(
+            budget.limiting_magnitude_envelope_upper
+        ),
+        conditioned_target_magnitude_maximum_pack_error=(
+            budget.conditioned_target_magnitude_maximum_pack_error
+        ),
+        visibility_margin_envelope_lower_magnitude=(
+            budget.visibility_margin_envelope_lower_magnitude
+        ),
+        visibility_margin_envelope_upper_magnitude=(
+            budget.visibility_margin_envelope_upper_magnitude
+        ),
+        visibility_margin_envelope_maximum_deviation_magnitude=(
+            budget.visibility_margin_envelope_maximum_deviation_magnitude
+        ),
+        visibility_classification_within_data_pack_envelope=(
+            budget.visibility_classification_within_data_pack_envelope
+        ),
+        included_error_sources=budget.included_error_sources,
+        unquantified_error_sources=budget.unquantified_error_sources,
+    )
+
+
+def _physical_component_receipts(
+    components: tuple[SpectralComponentReceipt, ...],
+) -> tuple[VisibilityComponentReceipt, ...]:
+    return tuple(
+        VisibilityComponentReceipt(
+            role=component.role,
+            component_id=component.component_id,
+            source_ids=component.source_ids,
+            details=component.details,
+        )
+        for component in components
+    )
+
+
+def _validate_physical_request_coordinate(
+    value: float,
+    name: str,
+) -> None:
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+    ):
+        raise ValueError(f"{name} must be finite")
+
+
+def _validate_physical_sha256(value: str, name: str) -> None:
+    if (
+        not isinstance(value, str)
+        or len(value) != 64
+        or value != value.lower()
+        or any(character not in "0123456789abcdef" for character in value)
+    ):
+        raise ValueError(
+            f"{name} must be a lowercase 64-character SHA-256"
+        )
+
 
 def visibility_assessment(
     body: str,

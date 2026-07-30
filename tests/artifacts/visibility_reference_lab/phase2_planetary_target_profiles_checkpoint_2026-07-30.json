@@ -1,0 +1,156 @@
+{
+  "schema": "moira.visibility-phase2-target-profile-checkpoint/v1",
+  "status": "phase2_planetary_profiles_accepted",
+  "date": "2026-07-30",
+  "pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.1.0",
+    "external_path": "/home/nilad/.cache/moira/visibility-reference-lab/data-packs/moira-physical-heliacal-visibility-1.1.0-v3",
+    "reproducibility_repeat_path": "/home/nilad/.cache/moira/visibility-reference-lab/data-packs/moira-physical-heliacal-visibility-1.1.0-v4",
+    "manifest_sha256": "f594fd12058cc7f5c7bc9de7f2b06652bef3c0604ef7b0a05a069e54e4026c87",
+    "target_profile_sha256": "40f4362aca22e329ad25916efa8476fee7a86eb1a6b0dfc1cf1b6c88f64531a0",
+    "generation_fingerprint": "281b3fdaa1910d81ebf9ec616cbed0784eed5a33f05bbdc682baee34b4db8848",
+    "payload_file_count": 12,
+    "base_pack_manifest_sha256": "49ac2b68ea105a8e055b27e8d4d70f6cbfe9533f971ef5e6000f0bdd95d6771b",
+    "base_payload_roles_verified_byte_identical": [
+      "axes",
+      "direct_extinction",
+      "error_envelope",
+      "photopic_luminance",
+      "photopic_relative_standard_error",
+      "scotopic_luminance",
+      "scotopic_relative_standard_error"
+    ]
+  },
+  "target_profiles": {
+    "catalog_id": "payne_2026_mallama_2017_cie_target_profiles_v1",
+    "target_ids": [
+      "Mercury",
+      "Venus",
+      "Mars",
+      "Jupiter",
+      "Saturn"
+    ],
+    "spectral_bins": {
+      "coordinate": "bin_start_vacuum_nm",
+      "start_nm": 380.0,
+      "width_nm": 1.0,
+      "count": 400
+    },
+    "color_warp_method": "johnson_cousins_piecewise_linear_differential_magnitude_v1",
+    "outside_source_domain": "typed_not_evaluable",
+    "base_scotopic_to_photopic_ratio": {
+      "Mercury": 2.0976735350544486,
+      "Venus": 2.2598826913086527,
+      "Mars": 1.3339401988223003,
+      "Jupiter": 2.2241839527013836,
+      "Saturn": 2.0326496883443084
+    },
+    "independent_runtime_resolution_smoke": {
+      "Mercury": {
+        "phase_angle_deg": 86.0,
+        "scotopic_to_photopic_ratio": 2.0976735350544486
+      },
+      "Venus": {
+        "phase_angle_deg": 83.5,
+        "scotopic_to_photopic_ratio": 2.2259646980423518
+      },
+      "Mars": {
+        "phase_angle_deg": 25.0,
+        "scotopic_to_photopic_ratio": 1.3024788657946853
+      },
+      "Jupiter": {
+        "phase_angle_deg": 6.0,
+        "scotopic_to_photopic_ratio": 2.2224963777718068
+      },
+      "Saturn": {
+        "phase_angle_deg": 3.0,
+        "effective_ring_sub_latitude_deg": 10.0,
+        "scotopic_to_photopic_ratio": 2.040209061232855
+      }
+    },
+    "all_resolved_photopic_weight_sums": 1.0,
+    "all_resolved_scotopic_weight_sums": 1.0
+  },
+  "end_to_end_engine_smoke": {
+    "body": "Venus",
+    "jd_ut": 2451545.7291666665,
+    "latitude_deg": 0.0,
+    "longitude_deg": 0.0,
+    "target_true_altitude_deg": 30.953318182797634,
+    "solar_center_true_altitude_deg": -7.73651006224335,
+    "phase_angle_deg": 58.618037322862044,
+    "status": "evaluated",
+    "evidence_state": "evaluated_clear_sky",
+    "reason": null,
+    "visibility_margin_magnitude": 7.126526684691916,
+    "visibility_margin_data_pack_error_budget": {
+      "method_id": "phase2_data_pack_declared_numerical_error_envelope_v1",
+      "solver_relative_standard_error_multiplier": 1.0,
+      "envelope_lower_magnitude": 6.810345248615479,
+      "envelope_upper_magnitude": 7.455362567961965,
+      "envelope_maximum_deviation_magnitude": 0.32883588327004887,
+      "classification_within_data_pack_envelope": "visible",
+      "scientific_confidence_interval_claimed": false
+    },
+    "component_receipt_count": 8,
+    "spectral_profile_id": "payne_2026_venus_cie_response_v1",
+    "color_model_id": "mallama_2017_ubvri_phase_color_v1",
+    "manifest_sha256_pinned_by_policy_and_config": true
+  },
+  "source_identity": {
+    "planetary_spectral_library_record_doi": "10.5281/zenodo.17470005",
+    "planetary_spectral_library_publication_doi": "10.3847/PSJ/ae2feb",
+    "planetary_spectral_library_license": "CC-BY-4.0",
+    "planetary_photometry_publication_doi": "10.1016/j.icarus.2016.09.023",
+    "planetary_photometry_pdf_sha256": "7feb8edb372502cee5dc9c6a7656205e3279353bb38f9a98cbecbe8e8d733f91",
+    "solar_spectrum_sha256": "432600ef415706c401a4c0e17c6b733a631f1556a78c3da32e936830288b414b",
+    "cie_photopic_sha256": "ee5d5d17922ae645d4af52cacf6a50bdb9385749f9d2181ca312eb2b08febac2",
+    "cie_scotopic_sha256": "6a75d3fdbcbf5e9e9a07478511933eefeda953f3e2cc14b74459e5a099ec3759"
+  },
+  "validation": {
+    "independent_validator_imports_builder": false,
+    "independent_validator_imports_engine": false,
+    "independent_source_rederivation_passed": true,
+    "deterministic_repeat_file_count": 13,
+    "deterministic_repeat_difference_count": 0,
+    "windows_validation_passed": true,
+    "network_used": false,
+    "source_files_redistributed": false,
+    "base_pack_mutated": false
+  },
+  "tooling": [
+    {
+      "path": "scripts/build_visibility_phase2_data_pack.py",
+      "bytes": 29864,
+      "sha256": "f03601a065809724430779c8f090510e1ea6f3fe4a18a3958e922074285870bf"
+    },
+    {
+      "path": "scripts/validate_visibility_phase2_data_pack.py",
+      "bytes": 23524,
+      "sha256": "f07dae5715052411e5d8e8a86e9ecbe5c31a5abda0206618df5b4279b1406a90"
+    },
+    {
+      "path": "scripts/visibility_reference_lab/phase2_planetary_target_profile_pack_spec.json",
+      "bytes": 7949,
+      "sha256": "09a2b32a07bb281017eac6fa0be1dd8c8444f71bb74ed8650daaa3e6cdd1660b"
+    },
+    {
+      "path": "scripts/visibility_reference_lab/physical_heliacal_visibility_data_pack_compatibility_v1_1.json",
+      "bytes": 3048,
+      "sha256": "7ba04e30cd5f0b48f39aadd8264d862fde010e4700bf0248bc6c3f840d70969c"
+    }
+  ],
+  "rejected_artifacts": [
+    {
+      "path": "/home/nilad/.cache/moira/visibility-reference-lab/data-packs/moira-physical-heliacal-visibility-1.1.0-v1",
+      "reason": "source-spectrum admission design did not yet exclude nonpositive ultraviolet stitch rows",
+      "admitted": false
+    },
+    {
+      "path": "/home/nilad/.cache/moira/visibility-reference-lab/data-packs/moira-physical-heliacal-visibility-1.1.0-v2",
+      "reason": "color-model payload omitted explicit empty limitations lists required by the strict schema",
+      "admitted": false
+    }
+  ]
+}

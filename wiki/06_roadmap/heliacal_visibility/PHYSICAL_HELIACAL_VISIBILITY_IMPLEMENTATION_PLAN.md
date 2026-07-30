@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility Implementation Plan
 
 Date: 2026-07-30
-Status: Phases 0 and 1 complete; Phase 2 is the next authorized phase
+Status: Phases 0 through 2 complete; Phase 3 is the next authorized phase
 Scope: Moira engine truth, offline reference-data production, public Python
 contracts, REST transport, validation, native strengthening, release
 documentation, and later website adoption
@@ -215,7 +215,7 @@ failure reasons, or provenance.
 |---|---|---|---|
 | 0 | Doctrine, source, licensing, and contract lock | Complete | Closure receipt below |
 | 1 | Reproducible atmospheric reference laboratory | Complete | [Checkpoints 1-6](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md), [radiance/response checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_RADIANCE_RESPONSE_CHECKPOINT_2026-07-30.md), and [closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md) |
-| 2 | Python spectral single-epoch truth | Not started | Pending |
+| 2 | Python spectral single-epoch truth | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CLOSURE_2026-07-30.md) |
 | 3 | Physical visibility-event solver | Not started | Pending |
 | 4 | Moonlight, airglow, horizon, and local realism | Not started | Pending |
 | 5 | Public contract parity | Not started | Pending |
@@ -842,58 +842,114 @@ failures, and leave event-time solving to Phase 3.
 
 ### Policy and vessels
 
-- [ ] Add only additive, versioned policy values.
-- [ ] Preserve the meanings of all existing policy values.
-- [ ] Add a composite model receipt listing every resolved component.
-- [ ] Add atmosphere-input completeness truth.
-- [ ] Add table identity and checksum receipt.
-- [ ] Add explicit validity-domain receipt.
-- [ ] Add the fixed observer-protocol and adaptation-state receipts.
-- [ ] Keep evaluated-clear, not-applicable, missing-dependency, and
+- [x] Add only additive, versioned policy values.
+- [x] Preserve the meanings of all existing policy values.
+- [x] Add a composite model receipt listing every resolved component.
+- [x] Add atmosphere-input completeness truth.
+- [x] Add table identity and checksum receipt.
+- [x] Add explicit validity-domain receipt.
+- [x] Add the fixed observer-protocol and adaptation-state receipts.
+- [x] Keep evaluated-clear, not-applicable, missing-dependency, and
   out-of-domain states distinct.
 
 ### Physical calculation
 
-- [ ] Load and validate the declared runtime table.
-- [ ] Interpolate target transmission.
-- [ ] Interpolate directional twilight radiance.
-- [ ] Compose admitted background components without double counting measured
+- [x] Load and validate the declared runtime table.
+- [x] Interpolate target transmission.
+- [x] Interpolate directional twilight radiance.
+- [x] Compose admitted background components without double counting measured
   background.
-- [ ] Apply the versioned CIE MES2 spectral-response component.
-- [ ] Apply the separately named
+- [x] Apply the versioned CIE MES2 spectral-response component.
+- [x] Apply the separately named
   `blackwell_crumey_full_range_point_source_v1` threshold.
-- [ ] Condition target magnitude through the admitted atmospheric path.
-- [ ] Return visibility margin and evaluated visible/not-visible truth.
-- [ ] Return component receipts with units and provenance.
+- [x] Condition target magnitude through the admitted atmospheric path.
+- [x] Return visibility margin and evaluated visible/not-visible truth.
+- [x] Propagate the Phase 1 solver, maximum interpolation, and storage-error
+  inputs into limiting-magnitude and visibility-margin bounds without
+  presenting them as scientific confidence.
+- [x] Return component receipts with units and provenance.
 
 ### Background precedence
 
-- [ ] Implement measured directional or spectral background first.
-- [ ] Implement measured SQM anchoring with disclosed transformation.
-- [ ] Implement named source-identified reference atmospheres.
-- [ ] Retain Bortle as a visibly coarse compatibility fallback.
-- [ ] Reject incompatible or double-counted background combinations.
+- [x] Implement measured directional or spectral background first.
+- [x] Implement measured SQM anchoring with disclosed transformation.
+- [x] Implement named source-identified reference atmospheres.
+- [x] Retain Bortle as a visibly coarse compatibility fallback.
+- [x] Reject incompatible or double-counted background combinations.
 
 ### Verification
 
-- [ ] Add primary-source equation fixtures.
-- [ ] Add manifest and checksum failure tests.
-- [ ] Add grid-node and independent off-grid cases.
-- [ ] Add boundary and invalid-domain tests.
-- [ ] Add monotonicity tests only where the physical relationship is
+- [x] Add primary-source equation fixtures.
+- [x] Add manifest and checksum failure tests.
+- [x] Add grid-node and independent off-grid cases.
+- [x] Add boundary and invalid-domain tests.
+- [x] Add monotonicity tests only where the physical relationship is
   legitimately monotonic.
-- [ ] Add component-composition and no-double-counting tests.
-- [ ] Add serialization round trips.
-- [ ] Prove all existing default assessments are unchanged.
+- [x] Add component-composition and no-double-counting tests.
+- [x] Add JSON-safe serialization round trips without activating Phase 5
+  facade or REST transport.
+- [x] Prove all existing default assessments are unchanged.
+
+### Phase 2 closure receipt - 2026-07-30
+
+The engine now has a no-search/no-download loader for explicit local pack
+versions 1.0 and 1.1, exact identity and checksum validation, bounded
+interpolation, CIE MES2 adaptation, the Crumey full-range point-source
+threshold, non-overlapping background composition, response-weighted target
+extinction, typed single-epoch truth, a declared data-pack numerical-error
+envelope, and additive owning-module vessels.
+
+Pack version 1.1 adds pack-owned, source-locked physical spectral profiles for
+Mercury, Venus, Mars, Jupiter, and Saturn. The public assessment no longer
+accepts caller-supplied planetary response weights. Moira resolves apparent
+V-band magnitude, phase angle, and Saturn ring geometry from one engine-owned
+photometry context; source-domain violations return typed non-evaluable
+results rather than extrapolation.
+
+The admitted 1.1 root manifest SHA-256 is
+`f594fd12058cc7f5c7bc9de7f2b06652bef3c0604ef7b0a05a069e54e4026c87`;
+the target-profile payload SHA-256 is
+`40f4362aca22e329ad25916efa8476fee7a86eb1a6b0dfc1cf1b6c88f64531a0`.
+An independent read-only validator rederived the profiles from the locked
+Payne, Mallama, CIE, and solar-spectrum sources without importing either the
+builder or engine. A second immutable build reproduced all 13 files exactly.
+
+The three stale legacy fixture boundaries were completed at their mocked
+resource edges, including the Yallop event, fixed-star not-found, and KS1991
+assessment cases. The full focused legacy selection now passes 496 tests with
+one pre-existing empty optional enumeration skipped; no failure is deselected.
+The focused Phase 2 selection passes all 88 tests. The combined gate collects
+585 tests, passes 584, skips that same optional enumeration, and deselects
+nothing.
+JSON-safe and immutable pickle round trips pass without claiming Phase 5
+facade, REST, or OpenAPI parity.
+
+The Phase 2 error-budget receipt propagates plus or minus one
+maximum-contributing per-cell solver relative standard error, maximum
+background interpolation error, direct-extinction maximum
+interpolation error, and binary32 storage error. It reports lower and upper
+limiting-magnitude and visibility-margin envelope limits plus a
+`visible`/`not_visible`/`indeterminate` classification limited to those pack
+numerical terms. The solver term is not relabeled as a hard maximum. P95
+interpolation values remain diagnostics rather than bounds. Measurement,
+planetary-source/model, observer-population, and actual
+atmospheric uncertainty are named separately and are not fabricated into an
+aggregate confidence interval.
+
+Detailed evidence is recorded in
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CLOSURE_2026-07-30.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CLOSURE_2026-07-30.md).
+The earlier implementation state remains in
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CHECKPOINT_2026-07-30.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CHECKPOINT_2026-07-30.md).
 
 ### Phase 2 exit gate
 
-- [ ] Every result names its effective component models and data identity.
-- [ ] Every unsupported or incomplete case fails closed.
-- [ ] Independent reference cases pass the Phase 1 error budget.
-- [ ] Existing Schaefer, Kasten-Young, Krisciunas-Schaefer, Crumey, Yallop,
+- [x] Every result names its effective component models and data identity.
+- [x] Every unsupported or incomplete case fails closed.
+- [x] Independent reference cases pass the Phase 1 error budget, and its
+  downstream numerical inputs are propagated through the single-epoch margin.
+- [x] Existing Schaefer, Kasten-Young, Krisciunas-Schaefer, Crumey, Yallop,
   and legacy defaults retain their frozen behavior.
-- [ ] A Phase 2 closure receipt is added to this document.
+- [x] A Phase 2 closure receipt is added to this document.
 
 ## Phase 3 - Physical Visibility-Event Solver
 

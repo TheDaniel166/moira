@@ -1,0 +1,141 @@
+{
+  "schema": "moira.physical-visibility-phase2-equation-fixtures/v1",
+  "status": "source_owned_phase2_admission_fixture",
+  "access_date": "2026-07-30",
+  "observer_protocol": {
+    "id": "known_location_directed_averted_observation_v1",
+    "task": "known-target directed detection using a peripheral or averted-vision task after adaptation to the immediate directional field",
+    "reason": "CIE TN 007:2017 clause 6 excludes foveal tasks from MES2; the not-yet-public Phase 0 wording was corrected before implementation"
+  },
+  "sources": {
+    "crumey_2014": {
+      "title": "Human Contrast Threshold and Astronomical Visibility",
+      "arxiv": "1405.4209v1",
+      "url": "https://arxiv.org/pdf/1405.4209",
+      "bytes": 1348165,
+      "sha256": "fa6ef183f9402be4d321bff5fa2c112510f89ca683b534e33c63fdb6538e50a4",
+      "equations": [
+        28,
+        34
+      ]
+    },
+    "cie_tn_004_2016": {
+      "title": "The Use of Terms and Units in Photometry - Implementation of the CIE System for Mesopic Photometry",
+      "url": "https://files.cie.co.at/841_CIE_TN_004-2016.pdf",
+      "bytes": 486386,
+      "sha256": "a549fcf5f98ae5fdd959b331dbb91eae99f5fd397bd288ad6b59c43723a4494f",
+      "equation": 2
+    },
+    "cie_tn_007_2017": {
+      "title": "Interim Recommendation for Practical Application of the CIE System for Mesopic Photometry in Outdoor Lighting",
+      "url": "https://files.cie.co.at/934_CIE_TN_007-2017.pdf",
+      "bytes": 860567,
+      "sha256": "efdd11f4bdf7d77ab3b1fb8e6b94ac89599521eba7425e474bbc82cf34c7877a",
+      "sections": [
+        "5.1",
+        "6"
+      ]
+    },
+    "tousey_koomen_1953": {
+      "title": "The Visibility of Stars and Planets During Twilight",
+      "doi": "10.1364/JOSA.43.000177",
+      "url": "https://opg.optica.org/josa/abstract.cfm?uri=josa-43-3-177",
+      "public_page_bytes_at_access": 117522,
+      "public_page_sha256_at_access": "4e50f748c6c0de310ceeadcbbcd0a6626a3fccd74fe1063f9cc91640ad3212ef",
+      "fixture": "Table I"
+    },
+    "cie_257_2026": {
+      "title": "Recommendations for Practical Application of the CIE System for Mesopic Photometry in Outdoor Lighting",
+      "doi": "10.25039/TR.257.2026",
+      "url": "https://www.cie.co.at/publications/recommendations-practical-application-cie-system-mesopic-photometry-outdoor-lighting",
+      "role": "current follow-on identified; not used as an equation authority because the full report was not inspected"
+    }
+  },
+  "cie_mes2": {
+    "model_id": "cie_mes2_2010_v1",
+    "a": 0.767,
+    "b": 0.3334,
+    "initial_adaptation_coefficient": 0.5,
+    "v_prime_555": 0.40176470588235297,
+    "scotopic_upper_luminance_cd_m2": 0.005,
+    "photopic_lower_luminance_cd_m2": 5.0,
+    "official_tn_007_examples": [
+      {
+        "photopic_luminance_cd_m2": 0.3,
+        "scotopic_to_photopic_ratio": 1.8,
+        "expected_adaptation_coefficient_3dp": 0.614,
+        "expected_mesopic_luminance_cd_m2_3dp": 0.348
+      },
+      {
+        "photopic_luminance_cd_m2": 0.3,
+        "scotopic_to_photopic_ratio": 2.5,
+        "expected_adaptation_coefficient_3dp": 0.629,
+        "expected_mesopic_luminance_cd_m2_3dp": 0.386
+      }
+    ]
+  },
+  "blackwell_crumey_full_range": {
+    "model_id": "blackwell_crumey_full_range_point_source_v1",
+    "equation_28_coefficients": {
+      "a1": 5.949e-08,
+      "a2": -2.389e-07,
+      "a3": 2.459e-07,
+      "a4": 0.000412,
+      "a5": -0.0004225
+    },
+    "field_factor": 2.0,
+    "zero_point_lux": 2.54e-06,
+    "admitted_background_luminance_cd_m2": [
+      3.426e-05,
+      3426.0
+    ],
+    "tousey_koomen_table_i": {
+      "background_source_unit": "candela_per_square_foot",
+      "threshold_source_unit": "foot_candle",
+      "si_conversion_factor": 10.763910416709722,
+      "maximum_accepted_absolute_log10_threshold_residual": 0.04,
+      "cases": [
+        {
+          "log10_background_source_unit": 2.5,
+          "log10_threshold_source_unit": -5.21,
+          "reported_stellar_magnitude": -3.7
+        },
+        {
+          "log10_background_source_unit": 1.5,
+          "log10_threshold_source_unit": -6.07,
+          "reported_stellar_magnitude": -1.53
+        },
+        {
+          "log10_background_source_unit": 0.5,
+          "log10_threshold_source_unit": -6.88,
+          "reported_stellar_magnitude": 0.49
+        },
+        {
+          "log10_background_source_unit": -0.5,
+          "log10_threshold_source_unit": -7.63,
+          "reported_stellar_magnitude": 2.35
+        },
+        {
+          "log10_background_source_unit": -1.5,
+          "log10_threshold_source_unit": -8.22,
+          "reported_stellar_magnitude": 3.82
+        },
+        {
+          "log10_background_source_unit": -2.5,
+          "log10_threshold_source_unit": -8.58,
+          "reported_stellar_magnitude": 4.73
+        },
+        {
+          "log10_background_source_unit": -3.5,
+          "log10_threshold_source_unit": -8.65,
+          "reported_stellar_magnitude": 4.89
+        },
+        {
+          "log10_background_source_unit": -4.5,
+          "log10_threshold_source_unit": -9.01,
+          "reported_stellar_magnitude": 5.81
+        }
+      ]
+    }
+  }
+}

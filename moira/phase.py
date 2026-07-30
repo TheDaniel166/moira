@@ -37,6 +37,8 @@ Public surface / exports:
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
+
 from .constants import Body, J2000, KM_PER_AU, SUN_RADIUS_KM, MOON_RADIUS_KM
 from .planets import planet_at, _barycentric, _earth_barycentric
 from .spk_reader import get_reader
@@ -796,6 +798,16 @@ _BODY_MAG: dict[str, callable] = {
 }
 
 
+@dataclass(frozen=True, slots=True)
+class _ApparentMagnitudeContext:
+    """Shared engine photometry and spectral-profile geometry."""
+
+    apparent_magnitude: float
+    phase_angle_deg: float
+    saturn_effective_ring_sub_latitude_deg: float | None
+    geometry_valid: bool
+
+
 def apparent_magnitude(body_name: str, jd_ut: float) -> float:
     """
     Calculate apparent visual magnitude (V band).
@@ -836,6 +848,18 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
             engine; adding Pluto would imply a broader admission policy for
             dwarf planets and related minor bodies.
     """
+    return _apparent_magnitude_context(
+        body_name,
+        jd_ut,
+    ).apparent_magnitude
+
+
+def _apparent_magnitude_context(
+    body_name: str,
+    jd_ut: float,
+) -> _ApparentMagnitudeContext:
+    """Calculate one internally consistent photometry/geometry context."""
+
     if body_name not in _BODY_MAG:
         raise ValueError(
             f"apparent_magnitude: no modern magnitude model for body {body_name!r}"
@@ -863,7 +887,12 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
 
     # Non-positive distances are physically degenerate; skip silently.
     if r <= 0 or delta <= 0:
-        return 0.0
+        return _ApparentMagnitudeContext(
+            apparent_magnitude=0.0,
+            phase_angle_deg=0.0,
+            saturn_effective_ring_sub_latitude_deg=None,
+            geometry_valid=False,
+        )
 
     # Phase angle from already-fetched vectors to avoid a second SPK lookup.
     # cos(β) = (heliocentric · geocentric) / (|h| |g|)
@@ -876,7 +905,20 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
     saturn_sub_lat_geoc = None
     if body_name == Body.SATURN:
         saturn_sub_lat_geoc = _saturn_effective_sub_lat_geoc(p_bary, s_bary, e_bary, jd_tt)
-        return _BODY_MAG[body_name](r, delta, beta, jd_ut, saturn_sub_lat_geoc)
+        return _ApparentMagnitudeContext(
+            apparent_magnitude=_BODY_MAG[body_name](
+                r,
+                delta,
+                beta,
+                jd_ut,
+                saturn_sub_lat_geoc,
+            ),
+            phase_angle_deg=beta,
+            saturn_effective_ring_sub_latitude_deg=(
+                saturn_sub_lat_geoc
+            ),
+            geometry_valid=True,
+        )
 
     if body_name == Body.MARS:
         mars_eff_cm, mars_ls = _mars_magnitude_context(
@@ -885,10 +927,42 @@ def apparent_magnitude(body_name: str, jd_ut: float) -> float:
             (s_bary[0] - p_bary[0], s_bary[1] - p_bary[1], s_bary[2] - p_bary[2]),
             jd_tt,
         )
-        return _mag_mars(r, delta, beta, jd_ut, None, mars_eff_cm, mars_ls)
+        magnitude = _mag_mars(
+            r,
+            delta,
+            beta,
+            jd_ut,
+            None,
+            mars_eff_cm,
+            mars_ls,
+        )
+        return _ApparentMagnitudeContext(
+            apparent_magnitude=magnitude,
+            phase_angle_deg=beta,
+            saturn_effective_ring_sub_latitude_deg=None,
+            geometry_valid=True,
+        )
 
     if body_name == Body.URANUS:
         uranus_sub_lat_planetog = _uranus_effective_sub_lat_planetog(p_bary, s_bary, e_bary)
-        return _mag_uranus(r, delta, beta, jd_ut, None, uranus_sub_lat_planetog)
+        magnitude = _mag_uranus(
+            r,
+            delta,
+            beta,
+            jd_ut,
+            None,
+            uranus_sub_lat_planetog,
+        )
+        return _ApparentMagnitudeContext(
+            apparent_magnitude=magnitude,
+            phase_angle_deg=beta,
+            saturn_effective_ring_sub_latitude_deg=None,
+            geometry_valid=True,
+        )
 
-    return _BODY_MAG[body_name](r, delta, beta, jd_ut)
+    return _ApparentMagnitudeContext(
+        apparent_magnitude=_BODY_MAG[body_name](r, delta, beta, jd_ut),
+        phase_angle_deg=beta,
+        saturn_effective_ring_sub_latitude_deg=None,
+        geometry_valid=True,
+    )

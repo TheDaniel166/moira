@@ -154,25 +154,42 @@ def test_visibility_search_policy_rejects_non_positive_window() -> None:
 
 
 def test_visibility_event_returns_generalized_lunar_event_with_yallop(monkeypatch: pytest.MonkeyPatch) -> None:
+    details = LunarCrescentDetails(
+        best_time_jd_ut=2451545.25,
+        sunset_jd_ut=2451545.15,
+        moonset_jd_ut=2451545.35,
+        lag_minutes=144.0,
+        arcl_deg=12.0,
+        arcv_deg=8.0,
+        daz_deg=5.0,
+        moon_altitude_deg=7.5,
+        sun_altitude_deg=-4.0,
+        lunar_parallax_arcmin=57.0,
+        topocentric_crescent_width_arcmin=0.4,
+        q=0.3,
+        visibility_class=LunarCrescentVisibilityClass.A,
+    )
     monkeypatch.setattr(
         "moira.heliacal._lunar_crescent_details_for_evening",
-        lambda *args, **kwargs: LunarCrescentDetails(
-            best_time_jd_ut=2451545.25,
-            sunset_jd_ut=2451545.15,
-            moonset_jd_ut=2451545.35,
-            lag_minutes=144.0,
-            arcl_deg=12.0,
-            arcv_deg=8.0,
-            daz_deg=5.0,
-            moon_altitude_deg=7.5,
-            sun_altitude_deg=-4.0,
-            lunar_parallax_arcmin=57.0,
-            topocentric_crescent_width_arcmin=0.4,
-            q=0.3,
-            visibility_class=LunarCrescentVisibilityClass.A,
-        ),
+        lambda *args, **kwargs: details,
+    )
+    monkeypatch.setattr(
+        "moira.heliacal._lunar_crescent_details_at",
+        lambda *args, **kwargs: details,
     )
     monkeypatch.setattr("moira.heliacal._target_signed_elongation", lambda *args, **kwargs: 12.0)
+    monkeypatch.setattr(
+        "moira.heliacal._true_altitude",
+        lambda *args, **kwargs: details.moon_altitude_deg,
+    )
+    monkeypatch.setattr(
+        "moira.heliacal._planet_alt",
+        lambda *args, **kwargs: details.moon_altitude_deg,
+    )
+    monkeypatch.setattr(
+        "moira.heliacal._target_apparent_magnitude",
+        lambda *args, **kwargs: -8.0,
+    )
 
     event = visibility_event(
         Body.MOON,
@@ -881,8 +898,13 @@ def test_visibility_assessment_ks1991_reduces_limiting_magnitude_under_bright_mo
 
     monkeypatch.setattr("moira.heliacal._true_horizontal", _mock_true_horizontal)
     monkeypatch.setattr("moira.heliacal._true_altitude", _mock_true_altitude)
+    monkeypatch.setattr("moira.phase.phase_angle", _mock_phase_angle)
     monkeypatch.setattr("moira.heliacal._planet_alt", lambda *a, **kw: 40.0)
     monkeypatch.setattr("moira.heliacal._target_apparent_magnitude", lambda *a, **kw: 5.0)
+    monkeypatch.setattr(
+        "moira.heliacal._target_signed_elongation",
+        lambda *args, **kwargs: 20.0,
+    )
 
     import moira.heliacal as _h
     original_penalty = _h._ks1991_limiting_magnitude_penalty
@@ -942,6 +964,10 @@ def test_visibility_assessment_ks1991_no_penalty_when_moon_below_horizon(
     )
     monkeypatch.setattr("moira.heliacal._planet_alt", lambda *a, **kw: -10.0)
     monkeypatch.setattr("moira.heliacal._target_apparent_magnitude", lambda *a, **kw: 5.0)
+    monkeypatch.setattr(
+        "moira.heliacal._target_signed_elongation",
+        lambda *args, **kwargs: 20.0,
+    )
 
     policy_ignore = VisibilityPolicy(
         moonlight_policy=MoonlightPolicy.IGNORE,
