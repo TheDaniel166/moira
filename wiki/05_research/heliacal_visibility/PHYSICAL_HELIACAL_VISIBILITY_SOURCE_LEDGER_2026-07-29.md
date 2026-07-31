@@ -15,7 +15,8 @@ It prevents formulas, coefficients, event meanings, or data identities from
 being reconstructed from memory.
 
 Access date for every online source below: 2026-07-29 unless separately
-stated. The REPTRAN module was accessed on 2026-07-30.
+stated. The REPTRAN module was accessed on 2026-07-30. The Jones solar,
+ROLO, and Oxford EODG input authorities were accessed on 2026-07-31.
 
 ## Governing Sources
 
@@ -39,6 +40,9 @@ stated. The REPTRAN module was accessed on 2026-07-30.
 | libRadtran REPTRAN module | `reptran_2024_all.tar.gz`, accessed 2026-07-30 from the [official download page](https://www.libradtran.org/doku.php?id=download) | Full-spectral molecular-absorption research input for libRadtran 2.0.6 | REPTRAN fine is the admitted 380-780 nm reference; medium is characterization only | External operator-supplied research data; the archive has no embedded notice or license file and is not redistributed by Moira |
 | ESO Advanced Cerro Paranal Sky Model | [ESO project page](https://www.eso.org/sci/software/pipelines/skytools/skymodel) | Component comparison and validation reference | Explicitly developed for Cerro Paranal; adapting it to other sites is not straightforward | Code GPLv2; no copying or runtime integration; reference-only |
 | Jones et al., “An advanced scattered moonlight model for Cerro Paranal” | A&A 560 (2013), A91, DOI [10.1051/0004-6361/201322433](https://doi.org/10.1051/0004-6361/201322433) | Candidate separately versioned spectral moonlight component | Evaluated for 0.36–0.89 μm and conditioned on Cerro Paranal atmosphere/aerosols; not a scalar K&S replacement or global default | Independently derived data/model component only; ESO GPL code remains external and is not copied or linked at runtime |
+| Colina, Bohlin, and Castelli solar reference | AJ 112 (1996), 307, DOI [10.1086/118016](https://doi.org/10.1086/118016); [NMSU source page](https://atmos.nmsu.edu/planetary_datasets/solar_spectra.html); STScI CALSPEC `sun_reference_stis_002.fits` | Independent top-of-atmosphere solar-spectrum authority for the Jones candidate | The exact ESO/STIS comparison is bound over the STIS rows; first admission uses only the 380–780 nm response domain | External source files are checksum-locked research inputs and are not redistributed in the repository |
+| Kieffer and Stone ROLO lunar model | AJ 129 (2005), 2887–2901, DOI [10.1086/430185](https://doi.org/10.1086/430185); [USGS publication record](https://pubs.usgs.gov/publication/70029564); [USGS ROLO data](https://www.usgs.gov/media/files/rolo-lunar-model-and-database) | Independent lunar-reflectance coefficient authority for the Jones candidate | The 32 wavelength rows and four constants are bound directly; first admission is restricted to the 1.55–97 degree empirical phase domain and omits libration terms | US Government data are public domain; the external source receipt is retained without copying the ESO member |
+| Oxford EODG Mie routines | [Oxford EODG Mie page](https://eodg.atm.ox.ac.uk/MIE/index_nocol.html), `eodg_mie.tar.gz` | Falsification authority for reconstructing the Jones aerosol phase function from published particle parameters | The identified log-normal Mie procedure does not reproduce ESO `mie_m15s1.dat`; the undisclosed transform or smoothing may not be invented | Archive states no license; external inspection and experiment only, with no source redistribution or runtime dependency |
 | PALACE v1.0 | GMD 18 (2025), 4353–4389, DOI [10.5194/gmd-18-4353-2025](https://doi.org/10.5194/gmd-18-4353-2025), data/code DOI [10.5281/zenodo.14064022](https://doi.org/10.5281/zenodo.14064022) | Later airglow comparison and component-validation reference | Paranal model built from site-specific X-shooter/UVES evidence; not a global default | Data CC BY 4.0, code GPLv3; reference-only in the current project |
 
 ## Source Conclusions
@@ -73,7 +77,7 @@ The Phase 4 admission therefore uses these boundaries:
   engine dependency; and
 - implementation requires a separately versioned immutable spectral component
   artifact, source/generator receipts, lunar-geometry domain, and independent
-  source-owned numerical fixtures.
+  numerical fixtures with source-owned comparisons labelled separately.
 
 That component is not yet admitted. The paper does not provide a small
 machine-readable reference table sufficient to validate an independent engine
@@ -91,10 +95,23 @@ lineage evidence rather than an admission golden. An isolated in-domain
 SkyCalc 2.0.9 `flux_sml` capture is separately locked as an operational
 comparison, not an independent oracle.
 
-The source audit closes the source, license, candidate-domain, and artifact
-schema decisions. It does not admit a runtime model. Admission still requires
+The source audit closes the package, license, candidate-domain, and artifact
+schema decisions. The follow-on
+[input-authority checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_INPUT_AUTHORITY_CHECKPOINT_2026-07-31.md)
+separately classifies the governing inputs. The solar spectrum is
+independently matched to STIS inside the candidate response domain, and the
+32-row ROLO table is independently bound to Kieffer and Stone with its
+1.55–97 degree empirical phase limit.
+
+The published particle parameters and identified Oxford EODG Mie routine do
+not regenerate ESO's selected `mie_m15s1.dat` phase table. That table is now
+explicitly `source_owned_checksum_locked_not_reconstructable`. It may remain
+an exact external input to an independent radiative-transfer pilot, but it is
+not an independent aerosol oracle and no undocumented transform may be
+invented. Neither checkpoint admits a runtime model. Admission still requires
 an independently generated MYSTIC spectral artifact, measured numerical and
-interpolation thresholds, and independent in-domain geometry holdouts.
+interpolation thresholds, independent in-domain geometry holdouts, and a
+release/distribution disposition for any derived artifact.
 
 ### Phase 4 observer-factor disposition
 
@@ -350,6 +367,28 @@ and isolated-component signature SHA-256
 `8e15e62b5aa5cab32961f3be7ba300f46217d20614e91bdc131aa8ee8b2e1c29`.
 Only those receipts are committed; the FITS bytes are not redistributed.
 
+### Jones Phase 4 input authorities
+
+The input-authority checkpoint independently replays the first 1,467 ESO
+solar rows against STScI CALSPEC and locks the 325 samples inside the
+380–780 nm candidate domain. The external STIS file has SHA-256
+`20133cdf2a402655e3726de6b334bf09d05c9429ebd27ebf5492dc37fc89cfd8`;
+the candidate-domain ESO numeric signature is
+`fcdb33a16166f8ee3e9f894371f3d79e14efddb063753104d547897071be9024`.
+
+Kieffer and Stone's four constants and all 32 published wavelength rows match
+the locked ESO `moonalbedo.dat` numeric table. The Table 4 numeric signature
+is
+`620b1ca086edda0221a1db7461d69602479c5c584aa403843084786b5608278e`.
+
+The Oxford EODG archive used for the aerosol reconstruction falsification has
+SHA-256
+`a026c570b2d39988e597fb7ce5b7bc3e451f650a8d6013670e68af5343cf9561`.
+The identified public calculation gives `g = 0.595268389115` at 0.55
+micrometres, while the selected ESO table gives `g = 0.680602583549528` and a
+materially different phase curve. The repository records the failure and the
+external source receipt, not the source bytes or an invented correction.
+
 ### CIE photopic table
 
 ```text
@@ -434,7 +473,7 @@ No formula is admitted merely by appearing in this ledger.
 | Directional twilight radiance | libRadtran 2.0.6 MYSTIC configuration | Phase 1 | The final v9 artifact admits adaptive 531 nm anchored REPTRAN-fine response products over a 4-by-4-by-4 grid, nine untouched response holdouts, per-cell uncertainty, and a typed boundary below -9 degrees |
 | Physical event root | Moira-defined margin law and admission doctrine | Phase 3 | Implemented with certified zero enclosure, four typed phase semantics, exact-pack admission, and independent planetary/stellar validation |
 | Directional terrain horizon | Caller-supplied source-receipted apparent-altitude profile plus Phase 3 horizontal-rate certificate | Phase 4 | Implemented with circular-linear interpolation, 10-degree maximum segment, scalar compatibility, exact slope-derived event certificate, and no missing-direction fallback |
-| Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Legacy K&S identifier preserved; Jones source, license, domain, and independent-artifact contract are frozen, but the runtime model remains behind MYSTIC artifact and validation gates |
+| Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Legacy K&S identifier preserved; Jones source, license, domain, artifact contract, and solar/ROLO/aerosol authority classifications are frozen; the source-owned aerosol input is not mislabelled as independently reconstructable, and the runtime model remains behind MYSTIC artifact, release-disposition, and validation gates |
 | Airglow and other separable sky components | caller-supplied source-receipted directional output; ESO/PALACE comparison | Phase 4 | Typed composition and double-count prevention implemented; no built-in airglow, zodiacal, integrated-starlight, artificial-light, or Paranal-global model admitted |
 
 Phase implementation documents must quote no more source text than needed,

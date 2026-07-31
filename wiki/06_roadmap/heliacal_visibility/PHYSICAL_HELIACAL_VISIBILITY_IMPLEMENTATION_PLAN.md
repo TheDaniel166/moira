@@ -1062,6 +1062,9 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 - [x] Preserve Krisciunas-Schaefer under its existing identifier.
 - [x] Freeze the Jones paper, official ESO source-package receipts, first
   candidate domain, operational comparator, and independent artifact contract.
+- [x] Classify and checksum-lock the solar, ROLO, and aerosol inputs; preserve
+  the aerosol table as source-owned without claiming an unavailable public
+  reconstruction recipe.
 - [ ] Implement Jones 2013 only under a new versioned identifier.
 - [ ] Expose lunar phase, separation, lunar altitude, atmospheric, and
   scattering inputs in the component receipt.
@@ -1107,11 +1110,31 @@ in-domain operational comparison. It is source-owned evidence, not an
 independent oracle. The candidate remains `not_admitted`; no runtime, public
 API, data-pack, dependency, network, download, or legacy behavior changed.
 
-The next moonlight gate is an independent libRadtran 2.0.6 MYSTIC pilot over
-all six frozen axes. Pilot results must establish numerical and interpolation
-thresholds before a production artifact, engine implementation, or public
-surface can be admitted. See
+The source audit exposed a required input-authority gate before pilot
+generation. That gate is now closed by the checkpoint below. See
 [PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_SOURCE_AUDIT_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_SOURCE_AUDIT_CHECKPOINT_2026-07-31.md).
+
+### Phase 4 Jones input-authority checkpoint - 2026-07-31
+
+The solar and lunar inputs are now independently bound in the candidate
+domain. The audit compares 1,467 ESO solar rows to the STIS reference and
+locks the 32 published ROLO wavelength rows plus the 1.55-97 degree empirical
+phase boundary.
+
+The published Jones particle parameters and identified Oxford EODG Mie
+routine do not reproduce ESO's selected `mie_m15s1.dat` table. The table is
+therefore classified as an exact source-owned external input whose public
+reconstruction recipe is unavailable. It may be used by the independent
+radiative-transfer pilot with that limitation visible; it may not support an
+independent aerosol-microphysics claim, and its bytes may not enter the
+repository.
+
+The next moonlight gate is to freeze and generate the libRadtran 2.0.6 MYSTIC
+pilot matrix over all six candidate axes. Pilot results must establish
+numerical and interpolation thresholds before a production artifact, engine
+implementation, or public surface can be admitted. Any derived artifact also
+requires a separate release/distribution disposition. See
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_INPUT_AUTHORITY_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_INPUT_AUTHORITY_CHECKPOINT_2026-07-31.md).
 
 ### Phase 4 exit gate
 

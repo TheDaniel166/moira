@@ -1,0 +1,286 @@
+{
+  "schema": "moira.visibility-jones-input-authority-spec/v1",
+  "spec_id": "physical-heliacal-phase4-jones-input-authority-2026-07-31",
+  "status": "input_authority_audit_not_runtime_model",
+  "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
+  "candidate_spectral_domain_nm": [
+    380.0,
+    780.0
+  ],
+  "runtime_boundary": {
+    "engine_changes_authorized": false,
+    "public_api_changes_authorized": false,
+    "production_data_pack_authorized": false,
+    "external_source_bytes_redistributed": false,
+    "network_dependency": false,
+    "automatic_download_allowed": false
+  },
+  "eso_source_package": {
+    "name": "The Advanced Cerro Paranal Sky Model SM-01",
+    "release": "1.0.0",
+    "url": "https://ftp.eso.org/pub/dfs/pipelines/skytools/skymodel/SM-01.tar.gz",
+    "bytes": 431651392,
+    "sha256": "e09b1d62c8af212486f50097fe76d9dcbb242f4fbadf720a4a85be361cc9116b",
+    "license": "GPL-2.0-or-later",
+    "role": "external_source_owned_input_lineage_not_redistributed"
+  },
+  "solar_irradiance": {
+    "authority_status": "independently_reconstructable_in_candidate_domain",
+    "role": "top_of_atmosphere_solar_spectral_irradiance",
+    "primary_publication": {
+      "title": "Absolute Flux Calibrated Spectrum of the Sun from 0.12 to 2.5 microns",
+      "authors": [
+        "Luis Colina",
+        "Ralph C. Bohlin",
+        "Francisco Castelli"
+      ],
+      "publication": "The Astronomical Journal 112 (1996) 307",
+      "doi": "10.1086/118016"
+    },
+    "eso_member": {
+      "path": "SM-01/sm-01_mod2/data/solspec_ext.dat",
+      "bytes": 141021,
+      "sha256": "0f75353a72cfd7f1b314652f47aa9edff33434be5154bdfd590e2b5b2926933d",
+      "row_count": 1741,
+      "wavelength_domain_micrometre": [
+        0.1195,
+        30.0
+      ]
+    },
+    "independent_stis_reference": {
+      "filename": "sun_reference_stis_002.fits",
+      "url": "https://ssb.stsci.edu/trds/calspec/sun_reference_stis_002.fits",
+      "bytes": 37440,
+      "sha256": "20133cdf2a402655e3726de6b334bf09d05c9429ebd27ebf5492dc37fc89cfd8",
+      "row_count": 1467,
+      "wavelength_unit": "angstrom",
+      "flux_unit": "erg_s-1_cm-2_angstrom-1",
+      "wavelength_domain_angstrom": [
+        1195.0,
+        26957.3515625
+      ],
+      "redistribution_status": "external_research_input_not_redistributed"
+    },
+    "independent_nmsu_reference": {
+      "filename": "solarspectra.txt",
+      "landing_page": "https://atmos.nmsu.edu/planetary_datasets/solar_spectra.html",
+      "url": "https://atmos.nmsu.edu/planetary_datasets/solarspectra.txt",
+      "bytes": 20664,
+      "sha256": "6bff4ffd9ed70c887dc59de7d31371679e5f1e7e307c6c9e7a9fca2462e3fc66",
+      "populated_row_count": 840,
+      "role": "official_bibliographic_and_low_wavelength_crosscheck",
+      "exact_common_grid_row_count": 81,
+      "max_relative_flux_delta_on_common_grid": 1.65e-07,
+      "known_blank_flux_interval_angstrom": [
+        9620.0,
+        21680.0
+      ],
+      "redistribution_status": "external_research_input_not_redistributed"
+    },
+    "equivalence_contract": {
+      "eso_rows_compared_to_stis": 1467,
+      "unit_transform": {
+        "wavelength": "angstrom_divided_by_10000_to_micrometre",
+        "flux": "erg_s-1_cm-2_angstrom-1_times_10_to_W_m-2_micrometre-1"
+      },
+      "max_wavelength_delta_micrometre": 5.5e-06,
+      "max_absolute_flux_delta_W_m-2_micrometre-1": 0.0005,
+      "max_relative_flux_delta": 4.5e-06,
+      "candidate_domain_row_count": 325,
+      "candidate_domain_actual_micrometre": [
+        0.38061,
+        0.77921
+      ],
+      "candidate_domain_eso_numeric_sha256": "fcdb33a16166f8ee3e9f894371f3d79e14efddb063753104d547897071be9024"
+    },
+    "outside_independent_domain_policy": "not_admitted_without_separate_source_receipt"
+  },
+  "lunar_reflectance": {
+    "authority_status": "independently_reconstructable_with_empirical_phase_domain",
+    "role": "rolo_disk_equivalent_lunar_reflectance",
+    "primary_publication": {
+      "title": "The spectral irradiance of the Moon",
+      "authors": [
+        "Hugh H. Kieffer",
+        "Thomas C. Stone"
+      ],
+      "publication": "The Astronomical Journal 129 (2005) 2887-2901",
+      "doi": "10.1086/430185",
+      "usgs_record": "https://pubs.usgs.gov/publication/70029564"
+    },
+    "usgs_rolo_data": {
+      "landing_page": "https://www.usgs.gov/media/files/rolo-lunar-model-and-database",
+      "rights": "US_Government_public_domain",
+      "role": "primary_model_and_database_authority"
+    },
+    "eso_member": {
+      "path": "SM-01/sm-01_mod2/data/moonalbedo.dat",
+      "bytes": 3365,
+      "sha256": "86b9f9860fabb283de6659aabee8959186dc03e9d081aaa7c2761c2869ff16cc"
+    },
+    "published_table_contract": {
+      "constant_coefficients": [
+        4.06054,
+        12.8802,
+        -30.5858,
+        16.7498
+      ],
+      "constant_coefficients_numeric_sha256": "6eb466a6c1d8fb4bca3f0dda99c4865a58a5c54e0c25fb782fc8358a2fe54e65",
+      "wavelength_row_count": 32,
+      "coefficient_columns_per_row_including_wavelength": 11,
+      "wavelength_domain_nm": [
+        350.0,
+        2383.6
+      ],
+      "table4_numeric_sha256": "620b1ca086edda0221a1db7461d69602479c5c584aa403843084786b5608278e",
+      "table4_transcription_checked": true
+    },
+    "empirical_phase_domain_deg": [
+      1.55,
+      97.0
+    ],
+    "libration_terms_in_candidate": false,
+    "reported_neglected_libration_maximum_effect_percent": 7.0,
+    "outside_empirical_phase_domain_policy": "not_evaluable"
+  },
+  "aerosol_phase_function": {
+    "authority_status": "source_owned_checksum_locked_not_reconstructable",
+    "role": "wavelength_dependent_aerosol_scattering_phase_function",
+    "eso_member": {
+      "path": "SM-01/sm-01_mod2/data/mie_m15s1.dat",
+      "bytes": 78231,
+      "sha256": "dba01f9b49ddf9a547bccc7eaca013bec1e4b1d8e081ec5ec4dd284ea7ec425e",
+      "wavelength_count": 40,
+      "angle_count": 181,
+      "wavelength_domain_micrometre": [
+        0.3,
+        30.0
+      ],
+      "angle_domain_deg": [
+        0.0,
+        180.0
+      ],
+      "angle_step_deg": 1.0
+    },
+    "numeric_invariants_at_0_55_micrometre": {
+      "half_solid_angle_normalization": 1.0010108296057996,
+      "asymmetry_parameter": 0.680602583549528,
+      "absolute_tolerance": 1e-12,
+      "selected_phase_values": {
+        "0": 27.53286,
+        "1": 25.210732,
+        "2": 20.347184,
+        "5": 13.241623,
+        "10": 9.8952673,
+        "20": 6.1271161,
+        "30": 3.8977639,
+        "60": 0.91286762,
+        "90": 0.24307324,
+        "120": 0.11726178,
+        "150": 0.15969379,
+        "180": 0.31726814
+      }
+    },
+    "published_jones_2013_particle_parameters": {
+      "refractive_index_real": 1.5,
+      "components": [
+        {
+          "name": "nucleation",
+          "number_density_cm-3": 3200.0,
+          "median_radius_micrometre": 0.01,
+          "reported_log_s": 0.161,
+          "scale": 1.0
+        },
+        {
+          "name": "accumulation",
+          "number_density_cm-3": 2900.0,
+          "median_radius_micrometre": 0.058,
+          "reported_log_s": 0.217,
+          "scale": 0.45
+        },
+        {
+          "name": "coarse",
+          "number_density_cm-3": 0.3,
+          "median_radius_micrometre": 0.9,
+          "reported_log_s": 0.38,
+          "scale": 0.05
+        },
+        {
+          "name": "stratospheric",
+          "number_density_cm-3": 4.49,
+          "median_radius_micrometre": 0.217,
+          "reported_log_s": 0.248,
+          "scale": 1.0
+        }
+      ]
+    },
+    "identified_mie_authority": {
+      "name": "Oxford Earth Observation Data Group Mie routines",
+      "landing_page": "https://eodg.atm.ox.ac.uk/MIE/index_nocol.html",
+      "archive_url": "https://eodg.atm.ox.ac.uk/MIE/eodg_mie.tar.gz",
+      "bytes": 24542,
+      "sha256": "a026c570b2d39988e597fb7ce5b7bc3e451f650a8d6013670e68af5343cf9561",
+      "license_status": "not_stated_in_archive",
+      "duplicate_path_policy": "one_regular_member_plus_self_hardlink_duplicate_allowed",
+      "required_members": [
+        {
+          "path": "eodg_mie/mie_size_dist.pro",
+          "bytes": 12248,
+          "sha256": "b54f43b86d08979cda4da6f7cc72a749c2799c392a2eca5f5192dd72b59e294d"
+        },
+        {
+          "path": "eodg_mie/quadrature.pro",
+          "bytes": 4399,
+          "sha256": "5550f810eff8511aae92e9f513360eee3138ea2cfcdc1f35cab3048b1fcb1376"
+        },
+        {
+          "path": "eodg_mie/dlm-code/mie_dlm_single.c",
+          "bytes": 19374,
+          "sha256": "1f9b2b4a99d43aa105353743408a87ef8baaca6cec712f58fb6c780d106f3a1b"
+        }
+      ]
+    },
+    "reconstruction_falsification": {
+      "date": "2026-07-31",
+      "method": "published_particle_parameters_with_identified_eodg_trapezoidal_lognormal_mie_routine",
+      "wavelength_micrometre": 0.55,
+      "calculated_asymmetry_parameter": 0.595268389115,
+      "source_table_asymmetry_parameter": 0.680602583549528,
+      "selected_calculated_phase_values": {
+        "0": 103.904,
+        "1": 29.8857,
+        "2": 16.3267,
+        "5": 10.2521,
+        "10": 7.8517,
+        "20": 5.1657,
+        "30": 3.5053,
+        "60": 1.04177,
+        "90": 0.351147,
+        "120": 0.2024,
+        "150": 0.235181,
+        "180": 0.358379
+      },
+      "match": false,
+      "unresolved_transform": "undocumented_m15s1_transformation_or_smoothing",
+      "invented_transform_allowed": false
+    },
+    "pilot_use_policy": {
+      "allowed": true,
+      "role": "external_source_owned_input_not_independent_microphysics_oracle",
+      "exact_receipt_required": true,
+      "independent_radiative_transfer_claim_allowed": true,
+      "independent_aerosol_reconstruction_claim_allowed": false,
+      "bytes_may_be_committed_to_repository": false,
+      "generated_artifact_distribution_status": "unresolved_requires_release_disposition"
+    }
+  },
+  "gate_decision": {
+    "input_authority_gate_closed": true,
+    "independent_mystic_pilot_may_proceed": true,
+    "production_admission_allowed": false,
+    "acceptance_thresholds_may_be_frozen_before_pilot": false,
+    "aerosol_reconstruction_blocker_is_silently_ignored": false,
+    "aerosol_reconstruction_blocker_is_misreported_as_model_failure": false,
+    "next_gate": "freeze_and_generate_independent_mystic_pilot_matrix"
+  }
+}

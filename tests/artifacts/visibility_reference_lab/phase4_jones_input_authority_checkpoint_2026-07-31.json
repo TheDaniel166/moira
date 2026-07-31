@@ -1,0 +1,173 @@
+{
+  "aerosol_phase_function": {
+    "angle_count": 181,
+    "asymmetry_parameter_at_0_55_micrometre": 0.680602583549528,
+    "authority_status": "source_owned_checksum_locked_not_reconstructable",
+    "eso_member": {
+      "bytes": 78231,
+      "path": "SM-01/sm-01_mod2/data/mie_m15s1.dat",
+      "sha256": "dba01f9b49ddf9a547bccc7eaca013bec1e4b1d8e081ec5ec4dd284ea7ec425e"
+    },
+    "half_solid_angle_normalization_at_0_55_micrometre": 1.0010108296057996,
+    "pilot_use_policy": {
+      "allowed": true,
+      "bytes_may_be_committed_to_repository": false,
+      "exact_receipt_required": true,
+      "generated_artifact_distribution_status": "unresolved_requires_release_disposition",
+      "independent_aerosol_reconstruction_claim_allowed": false,
+      "independent_radiative_transfer_claim_allowed": true,
+      "role": "external_source_owned_input_not_independent_microphysics_oracle"
+    },
+    "reconstruction_falsification": {
+      "calculated_asymmetry_parameter": 0.595268389115,
+      "date": "2026-07-31",
+      "invented_transform_allowed": false,
+      "match": false,
+      "method": "published_particle_parameters_with_identified_eodg_trapezoidal_lognormal_mie_routine",
+      "selected_calculated_phase_values": {
+        "0": 103.904,
+        "1": 29.8857,
+        "10": 7.8517,
+        "120": 0.2024,
+        "150": 0.235181,
+        "180": 0.358379,
+        "2": 16.3267,
+        "20": 5.1657,
+        "30": 3.5053,
+        "5": 10.2521,
+        "60": 1.04177,
+        "90": 0.351147
+      },
+      "source_table_asymmetry_parameter": 0.680602583549528,
+      "unresolved_transform": "undocumented_m15s1_transformation_or_smoothing",
+      "wavelength_micrometre": 0.55
+    },
+    "selected_phase_values_at_0_55_micrometre": {
+      "0": 27.53286,
+      "1": 25.210732,
+      "10": 9.8952673,
+      "120": 0.11726178,
+      "150": 0.15969379,
+      "180": 0.31726814,
+      "2": 20.347184,
+      "20": 6.1271161,
+      "30": 3.8977639,
+      "5": 13.241623,
+      "60": 0.91286762,
+      "90": 0.24307324
+    },
+    "wavelength_count": 40
+  },
+  "auditor": {
+    "bytes": 34008,
+    "path": "scripts/audit_visibility_phase4_jones_inputs.py",
+    "sha256": "c9c588a2031aee454fddee8f3b9d501169dbc1bdf5e0cd03c9dd13fdfdf1049c"
+  },
+  "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
+  "checkpoint_id": "physical-heliacal-phase4-jones-input-authority-2026-07-31",
+  "eodg_mie_authority": {
+    "bytes": 24542,
+    "executed_by_auditor": false,
+    "redistributed": false,
+    "required_members": [
+      {
+        "bytes": 12248,
+        "path": "eodg_mie/mie_size_dist.pro",
+        "sha256": "b54f43b86d08979cda4da6f7cc72a749c2799c392a2eca5f5192dd72b59e294d"
+      },
+      {
+        "bytes": 4399,
+        "path": "eodg_mie/quadrature.pro",
+        "sha256": "5550f810eff8511aae92e9f513360eee3138ea2cfcdc1f35cab3048b1fcb1376"
+      },
+      {
+        "bytes": 19374,
+        "path": "eodg_mie/dlm-code/mie_dlm_single.c",
+        "sha256": "1f9b2b4a99d43aa105353743408a87ef8baaca6cec712f58fb6c780d106f3a1b"
+      }
+    ],
+    "sha256": "a026c570b2d39988e597fb7ce5b7bc3e451f650a8d6013670e68af5343cf9561"
+  },
+  "eso_source_package": {
+    "bytes": 431651392,
+    "license": "GPL-2.0-or-later",
+    "redistributed": false,
+    "release": "1.0.0",
+    "sha256": "e09b1d62c8af212486f50097fe76d9dcbb242f4fbadf720a4a85be361cc9116b",
+    "url": "https://ftp.eso.org/pub/dfs/pipelines/skytools/skymodel/SM-01.tar.gz"
+  },
+  "external_source_bytes_redistributed": false,
+  "gate_decision": {
+    "acceptance_thresholds_may_be_frozen_before_pilot": false,
+    "aerosol_reconstruction_blocker_is_misreported_as_model_failure": false,
+    "aerosol_reconstruction_blocker_is_silently_ignored": false,
+    "independent_mystic_pilot_may_proceed": true,
+    "input_authority_gate_closed": true,
+    "next_gate": "freeze_and_generate_independent_mystic_pilot_matrix",
+    "production_admission_allowed": false
+  },
+  "lunar_reflectance": {
+    "authority_status": "independently_reconstructable_with_empirical_phase_domain",
+    "constant_coefficients_numeric_sha256": "6eb466a6c1d8fb4bca3f0dda99c4865a58a5c54e0c25fb782fc8358a2fe54e65",
+    "empirical_phase_domain_deg": [
+      1.55,
+      97.0
+    ],
+    "eso_member": {
+      "bytes": 3365,
+      "path": "SM-01/sm-01_mod2/data/moonalbedo.dat",
+      "sha256": "86b9f9860fabb283de6659aabee8959186dc03e9d081aaa7c2761c2869ff16cc"
+    },
+    "outside_empirical_phase_domain_policy": "not_evaluable",
+    "role": "independent_phase_bounded_input_authority",
+    "table4_numeric_sha256": "620b1ca086edda0221a1db7461d69602479c5c584aa403843084786b5608278e",
+    "wavelength_domain_nm": [
+      350.0,
+      2383.6
+    ],
+    "wavelength_row_count": 32
+  },
+  "network_dependency": false,
+  "runtime_dependency": false,
+  "schema": "moira.visibility-jones-input-authority-checkpoint/v1",
+  "solar_irradiance": {
+    "authority_status": "independently_reconstructable_in_candidate_domain",
+    "candidate_domain_actual_micrometre": [
+      0.38061,
+      0.77921
+    ],
+    "candidate_domain_eso_numeric_sha256": "fcdb33a16166f8ee3e9f894371f3d79e14efddb063753104d547897071be9024",
+    "candidate_domain_row_count": 325,
+    "eso_member": {
+      "bytes": 141021,
+      "path": "SM-01/sm-01_mod2/data/solspec_ext.dat",
+      "sha256": "0f75353a72cfd7f1b314652f47aa9edff33434be5154bdfd590e2b5b2926933d"
+    },
+    "eso_rows_compared_to_stis": 1467,
+    "max_absolute_flux_delta_W_m-2_micrometre-1": 0.0004998779297125111,
+    "max_relative_flux_delta": 4.4698819115193814e-06,
+    "max_wavelength_delta_micrometre": 5.48828125002121e-06,
+    "nmsu_common_grid_row_count": 81,
+    "nmsu_reference": {
+      "bytes": 20664,
+      "filename": "solarspectra.txt",
+      "redistributed": false,
+      "sha256": "6bff4ffd9ed70c887dc59de7d31371679e5f1e7e307c6c9e7a9fca2462e3fc66",
+      "url": "https://atmos.nmsu.edu/planetary_datasets/solarspectra.txt"
+    },
+    "role": "independent_candidate_domain_input_authority",
+    "stis_reference": {
+      "bytes": 37440,
+      "filename": "sun_reference_stis_002.fits",
+      "redistributed": false,
+      "sha256": "20133cdf2a402655e3726de6b334bf09d05c9429ebd27ebf5492dc37fc89cfd8",
+      "url": "https://ssb.stsci.edu/trds/calspec/sun_reference_stis_002.fits"
+    }
+  },
+  "spec": {
+    "bytes": 10294,
+    "path": "scripts/visibility_reference_lab/phase4_jones_input_authority_spec.json",
+    "sha256": "74d093de748d655e2ea3388e915f5919380701eb337b18e913c530750859682f"
+  },
+  "status": "input_authority_audit_complete_runtime_model_not_admitted"
+}
