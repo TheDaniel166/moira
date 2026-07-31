@@ -24,9 +24,9 @@
     "required_method": "separate_immutable_admitted_scenario_packs"
   },
   "auditor": {
-    "bytes": 38785,
+    "bytes": 38923,
     "path": "scripts/audit_visibility_phase4_jones_source.py",
-    "sha256": "7353a09d1789a249d053be13a5bd62e842bf136528236db2f553dc16a659f297"
+    "sha256": "870c1d6b9acaacefc5ddc7611ece7bacb0ca70a26b50ad58d115ed361f6f3a35"
   },
   "checkpoint_id": "physical-heliacal-phase4-jones-source-audit-2026-07-31",
   "external_source_bytes_redistributed": false,
@@ -43,7 +43,7 @@
     "sha256": "12d7625e1ec1afc718928d873fdb0001d3fd800b19d33a6c5dc2ce135dbbc230",
     "skycalc_version": "2.0.9"
   },
-  "required_member_count": 17,
+  "required_member_count": 18,
   "required_members": [
     {
       "bytes": 2904,
@@ -86,6 +86,12 @@
       "path": "SM-01/sm-01_mod2/data/mie_paranal_ref.dat",
       "role": "external_paranal_mie_reference",
       "sha256": "16bb135bb7972be955c0bcae19f8fb6fd7781696137bb7d1e089ea5a5beb1954"
+    },
+    {
+      "bytes": 78231,
+      "path": "SM-01/sm-01_mod2/data/mie_m15s1.dat",
+      "role": "external_default_aerosol_phase_function",
+      "sha256": "dba01f9b49ddf9a547bccc7eaca013bec1e4b1d8e081ec5ec4dd284ea7ec425e"
     },
     {
       "bytes": 838,
@@ -166,9 +172,9 @@
     "regression_role": "official_implementation_lineage_only_not_admission_golden"
   },
   "spec": {
-    "bytes": 13263,
+    "bytes": 13503,
     "path": "scripts/visibility_reference_lab/phase4_jones_source_audit_spec.json",
-    "sha256": "d132c4c19062330b3826ef3aeffc30bf36b7f53069f94b1c60eb6781b46ae006"
+    "sha256": "997e9ccddea9cf469f1ba7c8e18b2e52951d4849eecb3611dc5b8dc9c2c3ae19"
   },
   "status": "source_audit_complete_runtime_model_not_admitted"
 }

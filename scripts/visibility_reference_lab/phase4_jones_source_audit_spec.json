@@ -105,6 +105,12 @@
         "role": "external_paranal_mie_reference"
       },
       {
+        "path": "SM-01/sm-01_mod2/data/mie_m15s1.dat",
+        "bytes": 78231,
+        "sha256": "dba01f9b49ddf9a547bccc7eaca013bec1e4b1d8e081ec5ec4dd284ea7ec425e",
+        "role": "external_default_aerosol_phase_function"
+      },
+      {
         "path": "SM-01/sm-01_mod2/data/dscatcor_m15s1.dat",
         "bytes": 838,
         "sha256": "09fc0a6f81cf630099d008a96b82a72df1296bbed12f00e633c98b8cd480efec",

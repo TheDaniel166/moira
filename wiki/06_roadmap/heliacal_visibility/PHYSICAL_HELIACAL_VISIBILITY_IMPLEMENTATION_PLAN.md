@@ -1094,8 +1094,10 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 ### Phase 4 Jones source-audit checkpoint - 2026-07-31
 
 The bounded source audit is complete. It checksum-locks the 431,651,392-byte
-official ESO SM-01 release and all 17 required source, data, parameter, and
-regression members without copying external GPL bytes into the repository.
+official ESO SM-01 release and all 18 required source, data, parameter, and
+regression members, including the default aerosol phase function selected by
+the package dependency map, without copying external GPL bytes into the
+repository.
 The official package fixture derives to a 102.1-degree lunar phase angle, so it
 is outside the first candidate's 1.55–97-degree empirical ROLO domain and is
 classified as official-lineage evidence rather than an admission golden.

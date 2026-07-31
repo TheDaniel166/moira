@@ -65,6 +65,10 @@ EXPECTED_MEMBER_SHA256 = {
         "16bb135bb7972be955c0bcae19f8fb6f"
         "d7781696137bb7d1e089ea5a5beb1954"
     ),
+    "SM-01/sm-01_mod2/data/mie_m15s1.dat": (
+        "dba01f9b49ddf9a547bccc7eaca013be"
+        "c1e4b1d8e081ec5ec4dd284ea7ec425e"
+    ),
     "SM-01/sm-01_mod2/data/dscatcor_m15s1.dat": (
         "09fc0a6f81cf630099d008a96b82a72d"
         "f1296bbed12f00e633c98b8cd480efec"

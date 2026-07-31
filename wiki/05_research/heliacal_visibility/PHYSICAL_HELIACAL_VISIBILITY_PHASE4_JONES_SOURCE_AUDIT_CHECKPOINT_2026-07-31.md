@@ -37,10 +37,12 @@ The official `SM-01.tar.gz` receipt is:
 - license: `GPL-2.0-or-later`; and
 - disposition: external lineage inspection and source-owned regression only.
 
-The audit independently locks all 17 required members, including the
-scattering and component source, ROLO coefficient data, Paranal aerosol and
-scattering tables, solar and ozone inputs, parameter files, and both official
-test FITS products. The complete member receipts are recorded in
+The audit independently locks all 18 required members, including the
+scattering and component source, ROLO coefficient data, the default
+`mie_m15s1.dat` aerosol phase function selected by `sm_filenames.dat`,
+Paranal aerosol and scattering tables, solar and ozone inputs, parameter
+files, and both official test FITS products. The complete member receipts are
+recorded in
 `phase4_jones_source_audit_spec.json` and the generated checkpoint artifact.
 
 ## Source-Owned Fixture Classification

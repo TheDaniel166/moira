@@ -81,8 +81,10 @@ implementation, so copying equations alone would not close the gate.
 
 The
 [Phase 4 Jones source-audit checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_SOURCE_AUDIT_CHECKPOINT_2026-07-31.md)
-now locks the official 431,651,392-byte SM-01 release and all 17 governing
-members without redistributing them. It also proves that the official package
+now locks the official 431,651,392-byte SM-01 release and all 18 governing
+members without redistributing them. The inventory includes the default
+`mie_m15s1.dat` aerosol phase function selected by the package dependency
+map. It also proves that the official package
 fixture has a 102.1-degree phase angle, outside the 1.55–97-degree empirical
 ROLO range chosen for the first Moira candidate domain. That fixture remains
 lineage evidence rather than an admission golden. An isolated in-domain
@@ -335,7 +337,7 @@ License:
   GPL-2.0-or-later
 ```
 
-The Phase 4 audit binds 17 individual package members and the official
+The Phase 4 audit binds 18 individual package members and the official
 `flux_sml` regression signature. The package remains external: it is not
 copied, linked, compiled, executed, or installed by Moira. Its test geometry
 is outside the first candidate phase domain and is used only to confirm

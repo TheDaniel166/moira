@@ -50,7 +50,7 @@ def test_jones_source_audit_spec_is_bounded_and_nonruntime() -> None:
             "jones_paranal_scattered_moonlight_2013_v1"
         ),
         "admission_status": "not_admitted",
-        "required_source_member_count": 17,
+        "required_source_member_count": 18,
         "first_admission_site_id": "cerro_paranal_jones_2013",
         "first_admission_phase_domain_deg": [1.55, 97.0],
         "source_fixture_inside_admission_domain": False,
@@ -147,6 +147,10 @@ def test_official_archive_and_governing_members_are_checksum_locked() -> None:
     assert receipts["SM-01/sm-01_mod2/data/moonalbedo.dat"] == (
         "86b9f9860fabb283de6659aabee895918"
         "6dc03e9d081aaa7c2761c2869ff16cc"
+    )
+    assert receipts["SM-01/sm-01_mod2/data/mie_m15s1.dat"] == (
+        "dba01f9b49ddf9a547bccc7eaca013be"
+        "c1e4b1d8e081ec5ec4dd284ea7ec425e"
     )
 
 
