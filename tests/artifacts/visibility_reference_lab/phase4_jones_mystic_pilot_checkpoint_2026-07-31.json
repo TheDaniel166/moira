@@ -1,0 +1,161 @@
+{
+  "acceptance_thresholds_frozen": false,
+  "aerosol_integrated_aod_to_profile_top": 0.029399984669588035,
+  "aerosol_representation": {
+    "max_absolute_table_angle_reconstruction_error": 0.20696522627938307,
+    "max_relative_table_angle_reconstruction_error": 0.007517026065558866,
+    "normalized_k0": 1.0,
+    "normalized_k1": 0.6804459978700056,
+    "raw_k0": 1.0006827256764927
+  },
+  "artifact_manifest": {
+    "bytes": 40507,
+    "path": "artifact-manifest.json",
+    "sha256": "6357f1618530fb8e504c3c3a41d90b887ab8c4fa32d506a951987dc42625d4e5"
+  },
+  "diagnostics": {
+    "fixed_seed_repeat": {
+      "anchor_case_id": "base_p300k_s49979687",
+      "byte_identical_files": {
+        "mc.rad.spc": true,
+        "mc.rad.std.spc": true,
+        "mc0.rad": true,
+        "mc0.rad.std": true,
+        "randomseed": true
+      },
+      "passed": true,
+      "repeat_case_id": "base_p300k_s49979687_repeat"
+    },
+    "multi_seed_spread": {
+      "acceptance_threshold_applied": false,
+      "case_ids": [
+        "base_p300k_s49979687",
+        "base_p300k_s67867967",
+        "base_p300k_s86028121"
+      ],
+      "mean_reported_standard_error_W_m-2_nm-1_sr-1": 9.531793333333333e-11,
+      "radiance_mean_W_m-2_nm-1_sr-1": 1.50133e-08,
+      "radiance_sample_relative_standard_deviation": 0.0036260242088224375,
+      "radiance_sample_standard_deviation_W_m-2_nm-1_sr-1": 5.44385892543139e-11
+    },
+    "photon_count_convergence": {
+      "acceptance_threshold_applied": false,
+      "measurements": [
+        {
+          "case_id": "base_p100k_s49979687",
+          "photon_count": 100000,
+          "radiance_W_m-2_nm-1_sr-1": 1.50558e-08,
+          "relative_standard_error": 0.011050027232030182,
+          "standard_error_W_m-2_nm-1_sr-1": 1.66367e-10,
+          "standard_error_times_sqrt_photons": 5.260986474892328e-08
+        },
+        {
+          "case_id": "base_p300k_s49979687",
+          "photon_count": 300000,
+          "radiance_W_m-2_nm-1_sr-1": 1.49643e-08,
+          "relative_standard_error": 0.006353508015744138,
+          "standard_error_W_m-2_nm-1_sr-1": 9.50758e-11,
+          "standard_error_times_sqrt_photons": 5.2075160332849676e-08
+        },
+        {
+          "case_id": "base_p1m_s49979687",
+          "photon_count": 1000000,
+          "radiance_W_m-2_nm-1_sr-1": 1.4978e-08,
+          "relative_standard_error": 0.0034754439845106158,
+          "standard_error_W_m-2_nm-1_sr-1": 5.20552e-11,
+          "standard_error_times_sqrt_photons": 5.20552e-08
+        }
+      ],
+      "standard_error_sqrt_photon_scaled_max_to_min_ratio": 1.0106553187563063
+    }
+  },
+  "directional_radiance_range_W_m-2_nm-1_sr-1": [
+    3.74627e-09,
+    8.68312e-08
+  ],
+  "executed_case_count": 15,
+  "external_source": {
+    "archive": {
+      "bytes": 431651392,
+      "path": "SM-01.tar.gz",
+      "sha256": "e09b1d62c8af212486f50097fe76d9dcbb242f4fbadf720a4a85be361cc9116b"
+    },
+    "member_count": 8,
+    "redistributed": false
+  },
+  "external_source_bytes_redistributed": false,
+  "fixed_seed_repeat_passed": true,
+  "generator": {
+    "data_root": {
+      "bytes": 204488282,
+      "excluded_names": [
+        "._*",
+        "Makefile",
+        "Makefile.in"
+      ],
+      "file_count": 1300,
+      "tree_hash_law": "sha256(relative_path_nul_bytes_nul_file_sha256_lf)",
+      "tree_sha256": "191e39b7d1d6554517227a21dfa0feea11ffc308889ffccbe938408ed0fbf207"
+    },
+    "libRadtran_source_archive": {
+      "bytes": 154147176,
+      "path": "libRadtran-2.0.6.tar.gz",
+      "sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840"
+    },
+    "uvspec": {
+      "build_files": [
+        {
+          "bytes": 8442,
+          "path": "Makeconf",
+          "sha256": "7aa373275be787109f9d6274994ec666235353667b53455ef58e5515168a78f8"
+        },
+        {
+          "bytes": 105869,
+          "path": "config.log",
+          "sha256": "36e3323e5d11b0118f95b7134c8f0911fe7f8f90b729760745d9154124b80c73"
+        },
+        {
+          "bytes": 45994,
+          "path": "config.status",
+          "sha256": "6c73aab472347ee2442cc1da4f801c8cd54edaa2426401d3de71c93d4405b6a6"
+        }
+      ],
+      "bytes": 3722664,
+      "path_name": "uvspec",
+      "sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a",
+      "version": "uvspec, version 2.0.6-MYSTIC"
+    }
+  },
+  "network_dependency": false,
+  "next_gate": "review_measured_pilot_and_freeze_falsifiable_admission_thresholds",
+  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+  "production_admission_allowed": false,
+  "relative_monte_carlo_standard_error_range": [
+    0.0034754439845106158,
+    0.011050054617714734
+  ],
+  "reserved_holdout_case_count": 3,
+  "runtime_dependency": false,
+  "schema": "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v1",
+  "spec_id": "physical-heliacal-phase4-jones-mystic-pilot-2026-07-31",
+  "spectral_grid_admitted": false,
+  "status": "pilot_generated_and_measured_thresholds_not_yet_frozen",
+  "tooling": {
+    "builder": {
+      "bytes": 55175,
+      "path": "scripts/build_visibility_phase4_jones_mystic_pilot.py",
+      "sha256": "09aa0cecc2f7419ff7e04a47b3eb556194760f443caec4acccceaa6b225e14cb"
+    },
+    "spec": {
+      "bytes": 17348,
+      "path": "scripts/visibility_reference_lab/phase4_jones_mystic_pilot_spec.json",
+      "sha256": "d986bf44120cd8e21d19e92576d40ee350637843054b13da17b1bf251bbfaf26"
+    },
+    "validator": {
+      "bytes": 48341,
+      "path": "scripts/validate_visibility_phase4_jones_mystic_pilot.py",
+      "sha256": "a5437b7c3024bb2b7c61056dac52716a322e47c00c2ff2b03b3d9edc4d607150"
+    }
+  },
+  "wavelength_nm": 550.0
+}

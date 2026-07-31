@@ -1,0 +1,496 @@
+{
+  "schema": "moira.visibility-phase4-jones-mystic-pilot-spec/v1",
+  "spec_id": "physical-heliacal-phase4-jones-mystic-pilot-2026-07-31",
+  "status": "frozen_external_pilot_matrix_not_runtime_data_pack",
+  "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
+  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+  "runtime_boundary": {
+    "engine_changes_authorized": false,
+    "public_api_changes_authorized": false,
+    "runtime_table_authorized": false,
+    "production_data_pack_authorized": false,
+    "runtime_dependency_on_libRadtran": false,
+    "runtime_dependency_on_eso_source_bytes": false,
+    "network_dependency": false,
+    "automatic_download_allowed": false,
+    "external_source_bytes_redistributed": false,
+    "generated_artifact_role": "external_phase4_validation_evidence_only"
+  },
+  "governing_checkpoints": [
+    {
+      "role": "source_boundary",
+      "path": "scripts/visibility_reference_lab/phase4_jones_source_audit_spec.json",
+      "bytes": 13503,
+      "sha256": "997e9ccddea9cf469f1ba7c8e18b2e52951d4849eecb3611dc5b8dc9c2c3ae19"
+    },
+    {
+      "role": "source_boundary_checkpoint",
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_source_audit_checkpoint_2026-07-31.json",
+      "bytes": 6907,
+      "sha256": "92a6ac2f10f2bf61b8bbf176d598c63c2d45722fabedc7aca1387b3196d1bfda"
+    },
+    {
+      "role": "input_authority",
+      "path": "scripts/visibility_reference_lab/phase4_jones_input_authority_spec.json",
+      "bytes": 10294,
+      "sha256": "74d093de748d655e2ea3388e915f5919380701eb337b18e913c530750859682f"
+    },
+    {
+      "role": "input_authority_checkpoint",
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_input_authority_checkpoint_2026-07-31.json",
+      "bytes": 6558,
+      "sha256": "b3e1c11fdf9d32f95eb5ed231e8191d7d72956255c46ca4647ef0348df649df2"
+    },
+    {
+      "role": "admitted_elevated_atmosphere_construction",
+      "path": "scripts/build_visibility_elevated_site_probe.py",
+      "bytes": 59862,
+      "sha256": "f2d46347ec27360f3b1280f754497ba9a26dde8d97081024dbb17e434118e4f9"
+    }
+  ],
+  "external_generators": {
+    "libRadtran": {
+      "name": "libRadtran",
+      "version": "2.0.6",
+      "solver": "MYSTIC",
+      "geometry": "spherical_one_dimensional_atmosphere",
+      "archive_url": "https://www.libradtran.org/download/libRadtran-2.0.6.tar.gz",
+      "archive_bytes": 154147176,
+      "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+      "uvspec_version": "uvspec, version 2.0.6-MYSTIC",
+      "uvspec_sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a",
+      "data_root_receipt": {
+        "file_count": 1300,
+        "bytes": 204488282,
+        "tree_sha256": "191e39b7d1d6554517227a21dfa0feea11ffc308889ffccbe938408ed0fbf207",
+        "tree_hash_law": "sha256(relative_path_nul_bytes_nul_file_sha256_lf)",
+        "excluded_names": [
+          "._*",
+          "Makefile",
+          "Makefile.in"
+        ]
+      },
+      "license": "GPL",
+      "role": "external_reference_generator_only"
+    }
+  },
+  "external_source": {
+    "name": "The Advanced Cerro Paranal Sky Model SM-01",
+    "release": "1.0.0",
+    "archive_url": "https://ftp.eso.org/pub/dfs/pipelines/skytools/skymodel/SM-01.tar.gz",
+    "archive_bytes": 431651392,
+    "archive_sha256": "e09b1d62c8af212486f50097fe76d9dcbb242f4fbadf720a4a85be361cc9116b",
+    "license": "GPL-2.0-or-later",
+    "redistribution_status": "external_source_owned_input_not_redistributed",
+    "required_members": [
+      {
+        "path": "SM-01/sm-01_mod2/data/solspec_ext.dat",
+        "bytes": 141021,
+        "sha256": "0f75353a72cfd7f1b314652f47aa9edff33434be5154bdfd590e2b5b2926933d",
+        "role": "top_of_atmosphere_solar_spectrum"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/moonalbedo.dat",
+        "bytes": 3365,
+        "sha256": "86b9f9860fabb283de6659aabee8959186dc03e9d081aaa7c2761c2869ff16cc",
+        "role": "rolo_disk_equivalent_lunar_reflectance"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/mie_paranal_ref.dat",
+        "bytes": 1410,
+        "sha256": "16bb135bb7972be955c0bcae19f8fb6fd7781696137bb7d1e089ea5a5beb1954",
+        "role": "paranal_aerosol_extinction"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/mie_m15s1.dat",
+        "bytes": 78231,
+        "sha256": "dba01f9b49ddf9a547bccc7eaca013bec1e4b1d8e081ec5ec4dd284ea7ec425e",
+        "role": "source_owned_aerosol_phase_function"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/src/sm_scatmoonlight.c",
+        "bytes": 115070,
+        "sha256": "686dcce3e4aadf41785b9b26bdeeee858c730030969c7dd4045748527985a5ea",
+        "role": "jones_scattering_constants_and_ground_reflectance_lineage"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/src/sm_scatmoonlight.h",
+        "bytes": 11480,
+        "sha256": "8ade158bee9638dd6bd1cfc0d44191f4d9dcd131b5bfb65c82c04ca875839ec6",
+        "role": "jones_scattering_contract"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/src/sm_skyemcomp.c",
+        "bytes": 140334,
+        "sha256": "eaa20b583c24f81cf15f7f63ac5612403fbfb939cbe933f43df24bb56573adc6",
+        "role": "lunar_source_assembly_lineage"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/src/sm_skyemcomp.h",
+        "bytes": 13515,
+        "sha256": "3f19ce3648aa06210407f7be8f4d541742c2008491d8a9a27ea8a31950c77264",
+        "role": "component_parameter_contract"
+      }
+    ]
+  },
+  "site_and_atmosphere": {
+    "site_id": "cerro_paranal_jones_2013",
+    "observer_altitude_m": 2640.0,
+    "surface_pressure_hpa": 744.0,
+    "earth_radius_km": 6371.0,
+    "ozone_column_du": 258.0,
+    "ground_albedo_550nm": 0.155819,
+    "ground_albedo_derivation": {
+      "wavelength_micrometre": [
+        0.535,
+        0.565
+      ],
+      "uncorrected_reflectance": [
+        0.124,
+        0.154
+      ],
+      "linear_interpolation_wavelength_micrometre": 0.55,
+      "sutter_to_omi_correction": 1.121
+    },
+    "atmosphere_source_path": "data/atmmod/afglus.dat",
+    "atmosphere_construction": "libRadtran_default_LINMIX_truncated_at_2640m_with_O4_companion",
+    "molecular_absorption": "crs",
+    "cross_sections": {
+      "rayleigh": "bodhaine",
+      "O3": "bass_and_paur",
+      "NO2": "bogumil",
+      "O4": "greenblatt"
+    },
+    "pilot_design_limitation": "ground_and_atmosphere_bottom_are_at_the_2640m_observer_instead_of_the_Jones_2000m_lower_model_boundary",
+    "full_jones_reproduction_claimed": false
+  },
+  "aerosol": {
+    "wavelength_nm": 550.0,
+    "aod550": 0.0294,
+    "single_scattering_albedo": 0.97,
+    "vertical_scale_height_km": 1.2,
+    "profile_bottom_km": 2.64,
+    "profile_top_km": 20.0,
+    "nominal_layer_thickness_km": 0.25,
+    "null_top_boundary_km": 120.0,
+    "phase_function_source_wavelength_micrometre": 0.55,
+    "phase_function_interpolation": "linear_in_scattering_angle_deg",
+    "legendre_moment_count": 512,
+    "gauss_legendre_quadrature_order": 2048,
+    "moment_normalization": "divide_all_half_integral_moments_by_raw_k0",
+    "explicit_file_wavelength_grid_nm": [
+      549.0,
+      550.0,
+      551.0
+    ],
+    "source_invariants": {
+      "half_solid_angle_normalization": 1.0010108296057996,
+      "asymmetry_parameter": 0.680602583549528,
+      "absolute_tolerance": 1e-12
+    },
+    "representation_error_status": "measure_and_report_without_prefrozen_acceptance_threshold",
+    "independent_aerosol_microphysics_reconstruction_claimed": false
+  },
+  "lunar_source": {
+    "wavelength_nm": 550.0,
+    "source_file_grid_nm": [
+      549.0,
+      550.0,
+      551.0
+    ],
+    "solar_irradiance_550nm_W_m-2_micrometre-1": 1888.45,
+    "source_interpolation_absolute_tolerance": 1e-11,
+    "rolo_interpolated_coefficients_550nm": [
+      -2.1111174468085103,
+      -1.6658931914893618,
+      0.4106738297872341,
+      -0.21763468085106386,
+      0.035660851063829775,
+      0.013671702127659583,
+      -0.004922978723404258,
+      0.36889063829787233,
+      -0.09993085106382978,
+      0.0006644680851063758
+    ],
+    "rolo_constant_coefficients": [
+      4.06054,
+      12.8802,
+      -30.5858,
+      16.7498
+    ],
+    "rolo_correction_divisor": 0.87,
+    "moon_solid_angle_sr": 0.000064177,
+    "libration_terms_included": false,
+    "empirical_phase_domain_deg": [
+      1.55,
+      97.0
+    ],
+    "base_case_flux_550nm_W_m-2_nm-1": 1.5386167277061658e-6,
+    "outside_empirical_phase_domain_policy": "not_evaluable"
+  },
+  "solver": {
+    "wavelength_nm": 550.0,
+    "source_units": "W_m-2_nm-1",
+    "output_quantity": "directional_spectral_radiance_W_m-2_nm-1_sr-1",
+    "rte_solver": "mystic",
+    "geometry": "mc_spherical_1D",
+    "escape_estimator": true,
+    "standard_deviation_output": true,
+    "vroom": true,
+    "zout_km": 0.0,
+    "execution_order": "serial",
+    "syntax_check_before_run": true,
+    "expected_directional_outputs": [
+      "mc.rad.spc",
+      "mc.rad.std.spc"
+    ],
+    "flux_output_finiteness_required": false,
+    "reason_flux_outputs_are_not_admission_quantities": "the_pilot_requests_one_directional_escape_estimator_and_libRadtran_may_emit_NaN_flux_diagnostics"
+  },
+  "pilot_cases": [
+    {
+      "case_id": "base_p100k_s49979687",
+      "class": "photon_convergence",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "base_p300k_s49979687",
+      "class": "photon_convergence_and_repeat_anchor",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 300000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "base_p1m_s49979687",
+      "class": "photon_convergence",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 1000000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "base_p300k_s67867967",
+      "class": "seed_spread",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 300000,
+      "random_seed": 67867967
+    },
+    {
+      "case_id": "base_p300k_s86028121",
+      "class": "seed_spread",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 300000,
+      "random_seed": 86028121
+    },
+    {
+      "case_id": "base_p300k_s49979687_repeat",
+      "class": "exact_fixed_seed_repeat",
+      "repeat_of": "base_p300k_s49979687",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 300000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "geometry_target_low",
+      "class": "target_altitude_axis",
+      "target_true_altitude_deg": 5.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 60.0,
+      "target_moon_separation_deg": 65.55393771608692,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "geometry_moon_low",
+      "class": "moon_altitude_axis",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 5.0,
+      "relative_moon_azimuth_deg": 60.0,
+      "target_moon_separation_deg": 71.06303295571729,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "geometry_near_moon",
+      "class": "relative_azimuth_axis",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 0.0,
+      "target_moon_separation_deg": 15.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "geometry_wide_separation",
+      "class": "relative_azimuth_axis",
+      "target_true_altitude_deg": 15.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 180.0,
+      "target_moon_separation_deg": 120.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "source_phase_min_waxing",
+      "class": "lunar_phase_axis",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 1.55,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "source_phase_max_waxing",
+      "class": "lunar_phase_axis",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 97.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "source_phase_mid_waning",
+      "class": "waxing_state_axis",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waning",
+      "moon_earth_distance_ratio": 1.0,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "source_distance_min",
+      "class": "moon_distance_axis",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 0.91,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    },
+    {
+      "case_id": "source_distance_max",
+      "class": "moon_distance_axis",
+      "target_true_altitude_deg": 60.0,
+      "moon_true_altitude_deg": 45.0,
+      "relative_moon_azimuth_deg": 108.53218095317945,
+      "target_moon_separation_deg": 60.0,
+      "lunar_phase_angle_deg": 50.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.08,
+      "photon_count": 100000,
+      "random_seed": 49979687
+    }
+  ],
+  "reserved_holdout_cases": [
+    {
+      "case_id": "holdout_horizon_combination",
+      "target_true_altitude_deg": 0.25,
+      "moon_true_altitude_deg": 0.0,
+      "relative_moon_azimuth_deg": 90.0,
+      "lunar_phase_angle_deg": 30.0,
+      "waxing_state": "waning",
+      "moon_earth_distance_ratio": 0.95
+    },
+    {
+      "case_id": "holdout_interior_combination",
+      "target_true_altitude_deg": 30.0,
+      "moon_true_altitude_deg": 10.0,
+      "relative_moon_azimuth_deg": 137.0,
+      "lunar_phase_angle_deg": 72.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 1.04
+    },
+    {
+      "case_id": "holdout_phase_boundary_waning",
+      "target_true_altitude_deg": 42.0,
+      "moon_true_altitude_deg": 22.0,
+      "relative_moon_azimuth_deg": 35.0,
+      "lunar_phase_angle_deg": 1.55,
+      "waxing_state": "waning",
+      "moon_earth_distance_ratio": 1.08
+    }
+  ],
+  "pilot_gate": {
+    "executed_case_count": 15,
+    "reserved_holdout_case_count": 3,
+    "required_coordinate_axes_covered": [
+      "target_true_altitude_deg",
+      "moon_true_altitude_deg",
+      "relative_moon_azimuth_deg",
+      "lunar_phase_angle_deg",
+      "waxing_state",
+      "moon_earth_distance_ratio"
+    ],
+    "fixed_seed_repeat_required": true,
+    "photon_count_convergence_required": true,
+    "multi_seed_spread_required": true,
+    "acceptance_thresholds_status": "pilot_results_required_before_freeze",
+    "spectral_grid_admitted": false,
+    "production_admission_allowed": false,
+    "next_gate": "generate_validate_and_measure_pilot_before_freezing_thresholds"
+  }
+}

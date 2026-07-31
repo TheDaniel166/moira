@@ -1,0 +1,104 @@
+{
+  "schema": "moira.visibility-phase4-jones-mystic-admission-thresholds/v1",
+  "threshold_id": "physical-heliacal-phase4-jones-mystic-thresholds-2026-07-31",
+  "status": "thresholds_frozen_after_pilot_before_holdout_execution",
+  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+  "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
+  "runtime_boundary": {
+    "engine_changes_authorized": false,
+    "public_api_changes_authorized": false,
+    "runtime_table_authorized": false,
+    "production_data_pack_authorized": false,
+    "spectral_grid_authorized": false,
+    "runtime_dependency": false,
+    "network_dependency": false,
+    "external_source_bytes_redistributed": false
+  },
+  "pilot_checkpoint": {
+    "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_pilot_checkpoint_2026-07-31.json",
+    "bytes": 5635,
+    "sha256": "fa57ea58663d5215d2f3cea3423a116fe0ad3aaf0a3f0a4b8cc235427941a458"
+  },
+  "source_audit": {
+    "spec_path": "scripts/visibility_reference_lab/phase4_jones_source_audit_spec.json",
+    "spec_bytes": 13503,
+    "spec_sha256": "997e9ccddea9cf469f1ba7c8e18b2e52951d4849eecb3611dc5b8dc9c2c3ae19",
+    "fits_parser_path": "scripts/audit_visibility_phase4_jones_source.py",
+    "fits_parser_bytes": 38923,
+    "fits_parser_sha256": "870c1d6b9acaacefc5ddc7611ece7bacb0ca70a26b50ad58d115ed361f6f3a35",
+    "operational_capture": {
+      "filename": "skycalc-jones-g50-waxing.fits",
+      "bytes": 80640,
+      "sha256": "12d7625e1ec1afc718928d873fdb0001d3fd800b19d33a6c5dc2ce135dbbc230",
+      "skycalc_version": "2.0.9",
+      "wavelength_nm": 550.0,
+      "component_column": "flux_sml",
+      "component_unit": "photon_per_second_per_square_metre_per_micrometre_per_square_arcsecond",
+      "comparison_role": "source_owned_operational_comparison_not_independent_oracle"
+    }
+  },
+  "thresholds": {
+    "fixed_seed_repeat": {
+      "required": true,
+      "required_byte_identical_files": [
+        "mc.rad.spc",
+        "mc.rad.std.spc",
+        "mc0.rad",
+        "mc0.rad.std",
+        "randomseed"
+      ]
+    },
+    "monte_carlo": {
+      "maximum_relative_standard_error_all_pilot_cases": 0.0125,
+      "maximum_relative_standard_error_base_1m": 0.004,
+      "maximum_standard_error_sqrt_photon_scaled_max_to_min_ratio": 1.05,
+      "maximum_300k_multiseed_sample_relative_standard_deviation": 0.01,
+      "maximum_multiseed_sample_rsd_to_mean_reported_relative_error_ratio": 1.0,
+      "rationale": "measured_after_pilot_with_margin_and_frozen_before_holdouts"
+    },
+    "aerosol_representation": {
+      "maximum_absolute_table_angle_reconstruction_error": 0.25,
+      "maximum_relative_table_angle_reconstruction_error": 0.01,
+      "maximum_absolute_raw_k0_minus_one": 0.001,
+      "maximum_unrepresented_aod_fraction_above_profile_top": 1e-6,
+      "rationale": "bounds_the_declared_512_moment_linear_angle_representation_not_the_source_microphysics"
+    },
+    "lunar_source_linearity": {
+      "case_ids": [
+        "base_p100k_s49979687",
+        "source_phase_min_waxing",
+        "source_phase_max_waxing",
+        "source_phase_mid_waning",
+        "source_distance_min",
+        "source_distance_max"
+      ],
+      "maximum_radiance_to_source_ratio_max_to_min": 1.00001,
+      "rationale": "same_geometry_seed_and_atmosphere_must_preserve_linear_source_scaling_within_serialized_output_precision"
+    },
+    "source_owned_operational_comparison": {
+      "mystic_case_id": "base_p1m_s49979687",
+      "maximum_absolute_magnitude_difference": 0.15,
+      "rationale": "Jones_2013_reports_approximately_0_15_magnitude_moon_model_uncertainty_under_study_conditions",
+      "independent_oracle_claimed": false
+    }
+  },
+  "sealed_holdout_protocol": {
+    "source": "reserved_holdout_cases_in_phase4_jones_mystic_pilot_spec",
+    "holdouts_used_to_select_thresholds": false,
+    "photon_count_per_case": 1000000,
+    "random_seed": 135791357,
+    "exact_repeat_case_id": "holdout_interior_combination",
+    "maximum_relative_standard_error_per_holdout": 0.005,
+    "all_directional_outputs_must_be_finite_and_positive": true,
+    "absolute_radiance_expectations_prefrozen": false,
+    "source_owned_comparison_used_as_holdout": false
+  },
+  "gate": {
+    "pilot_threshold_evaluation_required": true,
+    "sealed_holdout_execution_allowed_after_freeze": true,
+    "spectral_grid_admitted": false,
+    "production_admission_allowed": false,
+    "runtime_model_admitted": false,
+    "next_gate": "execute_sealed_holdouts_against_frozen_thresholds"
+  }
+}
