@@ -218,6 +218,14 @@ If the admitted threshold equations require a fixed field factor, the value
 and source equation are part of the component receipt. It is not a mutable
 proxy for observer skill.
 
+For `known_location_directed_averted_observation_v1`, the admitted contract is
+the fixed Crumey equation-53 notional value `F = 2`. Crumey's `F` can combine
+target, medium, laboratory-scaling, detection-practice, and personal effects;
+it is not a separable generic observer variable. The physical policy therefore
+exposes no experience or confidence slider. A different calibrated value
+requires a separately versioned observer protocol with its own experimental
+receipt and validity domain.
+
 The first planetary candidates are Mercury, Venus, Mars, Jupiter, and Saturn.
 A planet enters the public model only after its dynamic visual magnitude and
 target spectral treatment carry source receipts and pass independent
@@ -291,9 +299,11 @@ model identity survive in the receipt. Refraction is applied exactly once.
 
 ### Horizon
 
-The initial physical admission supports an explicit scalar apparent horizon
-altitude. A directional azimuth/elevation horizon profile enters only after
-Phase 4 closes.
+The scalar apparent-horizon altitude remains the compatibility path. Phase 4
+also admits an explicit caller-supplied circular azimuth/apparent-altitude
+terrain profile. The profile is never inferred from coordinates, downloaded,
+or substituted for a missing input. It must carry a profile identifier, source
+identifier, and lowercase SHA-256 source receipt.
 
 The exact pack begins at 0.25 degrees true target altitude. When its refracted
 apparent equivalent is above the caller's scalar horizon, that pack floor
@@ -301,14 +311,49 @@ narrows the event window and is reported as
 `target_data_pack_altitude_floor`. It is not mislabeled as a measured or
 visual horizon.
 
-For the later profile:
+For the directional profile:
 
 - azimuth is normalized to `[0, 360)`;
 - interpolation is linear between sorted samples;
 - the last-to-first segment wraps through 360 degrees;
-- duplicate azimuths, gaps beyond the admitted maximum, and missing coverage
-  fail validation; and
+- normalized duplicate azimuths fail validation;
+- every circular segment must be at most 10 degrees, so missing coverage fails
+  construction rather than falling back;
+- sample and interpolated altitudes are apparent degrees in `[-5, 90)`;
+- a nonzero scalar horizon and a directional profile are competing
+  authorities and cannot be supplied together; and
 - no missing direction falls back silently to zero altitude.
+
+The profile applies to both the target and the Sun. The exact-pack target
+floor remains a separate boundary and the effective target boundary is the
+maximum of the directional terrain altitude and the refracted pack floor.
+The event solver does not use `apparent altitude - H(azimuth)` as its
+certified signal because azimuth is undefined at the zenith. Instead it uses
+the local unit direction's vertical component `z`, horizontal magnitude `r`,
+and terrain altitude `H(theta)`:
+
+```text
+g = z - r * tan(H(theta))
+```
+
+For admitted altitudes, `g` has exactly the sign and zeros of
+`apparent altitude - H`; at the zenith `r = 0`, so the signal is independent
+of undefined azimuth. Let `S` be the profile's maximum absolute
+circular-linear slope, `T` the maximum `abs(tan(H))`, and `Q` the maximum
+`sec(H)^2`. The horizontal cone has Lipschitz factor
+`K = sqrt(T^2 + (Q*S)^2)`. With the conservative admitted local-direction
+angular-rate ceiling of 1024 degrees/day, the runtime certificate is:
+
+```text
+maximum absolute signal rate =
+    radians(1024) * (1 + K) signal units/day
+```
+
+Taking the maximum with the constant pack floor preserves the slope ceiling;
+the floor altitude is also included when computing `T` and `Q`. Profile
+identity, resolution, `S`, `K`, queried azimuths, effective boundaries, and
+certificate identity survive in the receipts. If the certificate cannot
+exclude an unresolved crossing, the event fails closed.
 
 ## Input Precedence and Completeness
 
@@ -325,6 +370,19 @@ Only one authority may supply the same physical component. A measured
 background that already contains airglow, zodiacal light, integrated
 starlight, or artificial light cannot be combined with modeled copies of
 those components.
+
+A separately modeled airglow, zodiacal-light, integrated-starlight, or
+artificial-light input is caller-supplied evidence, not an engine default. It
+must carry positive photopic/scotopic directional luminance, model and source
+identity, a source SHA-256, spatial/temporal/directional applicability,
+validity-domain identity, and uncertainty authority. Combining any such
+component with a dark-sky anchor requires the anchor to declare that its
+component inventory is complete. Duplicate component kinds, overlap with the
+anchor inventory, or combination with a measured total fail closed.
+
+The engine receipts each separately modeled component. It does not silently
+include that component's unadmitted scientific uncertainty in the data-pack
+numerical-error envelope.
 
 An SQM input must record:
 
@@ -553,6 +611,7 @@ The following identifiers are reserved:
 - `atmosphere_input_incomplete`
 - `atmosphere_input_out_of_domain`
 - `background_input_incomplete`
+- `background_component_inventory_incomplete`
 - `background_components_conflict`
 - `local_horizon_coverage_missing`
 - `solar_rise_missing`
@@ -590,7 +649,7 @@ The first physical admission excludes:
 - lunar-crescent visibility;
 - targets without admitted photometry and spectral treatment;
 - global airglow inferred from a single observatory;
-- a directional horizon profile before Phase 4;
+- inferred, downloaded, source-free, or under-resolved directional horizons;
 - observer-population probabilities;
 - a synthetic confidence score;
 - astrological interpretation; and

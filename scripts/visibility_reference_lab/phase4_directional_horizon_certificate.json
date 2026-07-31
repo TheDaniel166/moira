@@ -1,0 +1,67 @@
+{
+  "schema": "moira.physical-heliacal-visibility-directional-horizon-certificate/v1",
+  "certificate_id": "physical-heliacal-event-directional-horizon-lipschitz-v1",
+  "status": "admitted_runtime_profile_derivation",
+  "build_date": "2026-07-31",
+  "base_crossing_certificate": {
+    "certificate_id": "physical-heliacal-event-lipschitz-v1",
+    "source_receipt_sha256": "eacf8c373606c1628cebdd4caa611ece533d368c32c7f86674a13e04a4c13d3e",
+    "apparent_altitude_signal_rate_ceiling_deg_per_day": 1024.0,
+    "horizontal_azimuth_rate_ceiling_deg_per_day": 1024.0
+  },
+  "profile_contract": {
+    "azimuth_domain_deg": [
+      0.0,
+      360.0
+    ],
+    "azimuth_upper_bound_exclusive": true,
+    "apparent_altitude_domain_deg": [
+      -5.0,
+      90.0
+    ],
+    "apparent_altitude_upper_bound_exclusive": true,
+    "interpolation_method_id": "circular_linear_azimuth_v1",
+    "admitted_maximum_gap_deg": 10.0,
+    "duplicate_normalized_azimuths": "rejected",
+    "missing_circular_coverage": "rejected",
+    "profile_source_identity_required": true,
+    "profile_source_receipt_sha256_required": true
+  },
+  "rate_derivation": {
+    "horizontal_direction_object": "unit topocentric direction projected into the local horizontal plane",
+    "sidereal_rotation_ceiling_deg_per_day": 361.0,
+    "admitted_target_apparent_motion_allowance_deg_per_day": 16.0,
+    "solar_apparent_motion_allowance_deg_per_day": 2.0,
+    "pack_target_true_altitude_ceiling_deg": 45.0,
+    "pack_solar_center_altitude_domain_deg": [
+      -18.0,
+      0.0
+    ],
+    "admitted_binary_direction_angular_rate_ceiling_deg_per_day": 1024.0,
+    "directional_signal": "g = z - r*tan(H(theta))",
+    "signal_sign_law": "for apparent altitude and H in [-5,90), sign(g) equals sign(apparent_altitude-H)",
+    "zenith_law": "at r=0, g=z and is independent of undefined azimuth",
+    "profile_maximum_absolute_slope_symbol": "S",
+    "profile_slope_units": "apparent altitude degrees per azimuth degree",
+    "profile_maximum_absolute_tangent_symbol": "T",
+    "profile_maximum_secant_squared_symbol": "Q",
+    "horizontal_cone_lipschitz_factor_symbol": "K=sqrt(T^2+(Q*S)^2)",
+    "admitted_direction_angular_rate_rad_per_day": "radians(1024)",
+    "combined_signal_rate_ceiling_per_day": "radians(1024)*(1+K)",
+    "pack_floor_maximum_law": "H_eff=max(profile_horizon,constant_refracted_pack_floor); its slope is at most S and the constant altitude is included when bounding T and Q"
+  },
+  "solver_law": {
+    "profile_slope_source": "computed exactly from every admitted circular-linear segment",
+    "certificate_construction": "runtime certificate computes T,Q,S,K for the effective horizon and substitutes K into radians(1024)*(1+K)",
+    "unresolved_result": "crossing_completeness_not_certified",
+    "dense_sampling_alone_is_a_certificate": false
+  },
+  "scope_limits": [
+    "exact_phase3_event_pack_identity_required",
+    "phase3_admitted_event_targets_and_phases_only",
+    "caller_supplied_profile_only",
+    "apparent_altitude_profile_only",
+    "no_terrain_data_download_or_inference",
+    "no_claim_for_legacy_heliacal_dispatch"
+  ]
+}

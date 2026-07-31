@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility Source Ledger
 
-Date: 2026-07-30
-Status: Phase 0 source disposition and Phases 1-2 closed
+Date: 2026-07-31
+Status: Phase 0 source disposition, Phases 1-3 closed, and Phase 4 active
 Doctrine:
 [PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md](../../01_doctrines/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md)
 
@@ -38,7 +38,7 @@ stated. The REPTRAN module was accessed on 2026-07-30.
 | Shettle aerosol model family | E. P. Shettle, “Models of aerosols, clouds and precipitation for atmospheric propagation studies,” AGARD Conference Proceedings 454 (1989), as implemented by the pinned libRadtran 2.0.6 source and data | Named rural, maritime, urban, and tropospheric aerosol profiles in summer and winter | Checkpoint 5 binds all eight supported haze/season optical-depth files and fixes vulcan code 1; the direct-extinction oracle and directional-radiance uses remain distinct | Source/data remain inside the external GPL research laboratory; no libRadtran profile file enters Moira or the future data pack |
 | libRadtran REPTRAN module | `reptran_2024_all.tar.gz`, accessed 2026-07-30 from the [official download page](https://www.libradtran.org/doku.php?id=download) | Full-spectral molecular-absorption research input for libRadtran 2.0.6 | REPTRAN fine is the admitted 380-780 nm reference; medium is characterization only | External operator-supplied research data; the archive has no embedded notice or license file and is not redistributed by Moira |
 | ESO Advanced Cerro Paranal Sky Model | [ESO project page](https://www.eso.org/sci/software/pipelines/skytools/skymodel) | Component comparison and validation reference | Explicitly developed for Cerro Paranal; adapting it to other sites is not straightforward | Code GPLv2; no copying or runtime integration; reference-only |
-| Jones et al., “An advanced scattered moonlight model for Cerro Paranal” | A&A 560 (2013), A91, DOI [10.1051/0004-6361/201322433](https://doi.org/10.1051/0004-6361/201322433) | Candidate later moonlight model | Site and model assumptions must remain explicit; not part of the clear-sky twilight baseline | Paper-derived new component only after a separate equation and licensing audit |
+| Jones et al., “An advanced scattered moonlight model for Cerro Paranal” | A&A 560 (2013), A91, DOI [10.1051/0004-6361/201322433](https://doi.org/10.1051/0004-6361/201322433) | Candidate separately versioned spectral moonlight component | Evaluated for 0.36–0.89 μm and conditioned on Cerro Paranal atmosphere/aerosols; not a scalar K&S replacement or global default | Independently derived data/model component only; ESO GPL code remains external and is not copied or linked at runtime |
 | PALACE v1.0 | GMD 18 (2025), 4353–4389, DOI [10.5194/gmd-18-4353-2025](https://doi.org/10.5194/gmd-18-4353-2025), data/code DOI [10.5281/zenodo.14064022](https://doi.org/10.5281/zenodo.14064022) | Later airglow comparison and component-validation reference | Paranal model built from site-specific X-shooter/UVES evidence; not a global default | Data CC BY 4.0, code GPLv3; reference-only in the current project |
 
 ## Source Conclusions
@@ -50,6 +50,48 @@ existing named components only. Their formulas and outputs remain regression
 protected. They are not blended into
 `clear_sky_naked_eye_point_source_v1`, and newer evidence does not mutate
 their identifiers.
+
+### Phase 4 moonlight disposition
+
+Jones et al. 2013 is a spectral radiative-transfer model, not a replacement
+coefficient for the existing Krisciunas-Schaefer photometric option. Its
+governing object combines an observed solar spectrum, ROLO lunar albedo,
+molecular and aerosol scattering, absorption, and single-, double-, and
+approximated multiple-scattering terms. The paper evaluates the optical
+0.36–0.89 μm range and reports a moon-model uncertainty near 0.15 magnitude
+under its study conditions. Its aerosol decomposition and validation corpus
+are explicitly Cerro Paranal conditioned.
+
+The Phase 4 admission therefore uses these boundaries:
+
+- `krisciunas_schaefer_1991` remains the unchanged legacy model identifier;
+- the Jones path, when admitted, receives the separate identifier
+  `jones_paranal_scattered_moonlight_2013_v1`;
+- no Jones term is collapsed into a broadband scalar or silently applied
+  outside a declared site/atmosphere domain;
+- the ESO GPL implementation remains an external comparison tool, not an MIT
+  engine dependency; and
+- implementation requires a separately versioned immutable spectral component
+  artifact, source/generator receipts, lunar-geometry domain, and independent
+  source-owned numerical fixtures.
+
+That component is not yet admitted. The paper does not provide a small
+machine-readable reference table sufficient to validate an independent engine
+implementation, so copying equations alone would not close the gate.
+
+### Phase 4 observer-factor disposition
+
+Crumey's equation-53 field factor is an overall multiplier that may combine
+target, medium, laboratory scaling, detection practice, and the observer. The
+paper's contextual examples do not define a universal personal-factor domain,
+and its `F = 2` value is explicitly notional and illustrative.
+
+The physical observer protocol therefore keeps `F = 2` as a fixed,
+source-receipted singleton. It does not expose an experience, skill,
+probability, or confidence input. Any future calibrated alternative requires
+a new observer-protocol identifier, calibration receipt, and validity domain.
+This decision does not alter the separate legacy
+`VisibilityPolicy.crumey_field_factor` contract.
 
 ### Event doctrine
 
@@ -343,9 +385,10 @@ No formula is admitted merely by appearing in this ledger.
 | Spectral radiance to named photometric quantity | CIE TN 004:2016 | Phase 1/2 | Phase 1 source-locks the official CIE tables and admits response-integrated photopic/scotopic data-pack products; Phase 2 owns single-epoch composition and limiting-magnitude propagation |
 | Direct transmission | libRadtran 2.0.6 DISORT pseudo-spherical configuration with external REPTRAN fine data | Phase 1 | Deterministic smoke and exact repeat reproduced; elevated-site construction matched 45 oracle cases; the surface midpoint-Chapman implementation is source-traced; the 290-level clear molecular grid is bounded across all six AFGL profiles; REPTRAN fine is the full-spectral research reference; Checkpoint 5 source-binds AOD550, Angstrom, ozone, pressure, albedo, and all eight Shettle profiles and admits a delta-M-safe aerosol direct-extinction oracle; Checkpoint 6 admits site-relative altitude/pressure interpolation against 12,636 withheld spectral values; the first pack admits a 57-node, 400-bin direct surface with 22,400 untouched holdout bins |
 | Directional twilight radiance | libRadtran 2.0.6 MYSTIC configuration | Phase 1 | The final v9 artifact admits adaptive 531 nm anchored REPTRAN-fine response products over a 4-by-4-by-4 grid, nine untouched response holdouts, per-cell uncertainty, and a typed boundary below -9 degrees |
-| Physical event root | Moira-defined margin law and admission doctrine | Phase 3 | Semantic law fixed; numerical solver pending |
-| Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Excluded from baseline |
-| Airglow | measured local background; ESO/PALACE comparison | Phase 4 | Excluded from baseline |
+| Physical event root | Moira-defined margin law and admission doctrine | Phase 3 | Implemented with certified zero enclosure, four typed phase semantics, exact-pack admission, and independent planetary/stellar validation |
+| Directional terrain horizon | Caller-supplied source-receipted apparent-altitude profile plus Phase 3 horizontal-rate certificate | Phase 4 | Implemented with circular-linear interpolation, 10-degree maximum segment, scalar compatibility, exact slope-derived event certificate, and no missing-direction fallback |
+| Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Legacy K&S identifier preserved; Jones remains behind a separate spectral artifact and validation gate |
+| Airglow and other separable sky components | caller-supplied source-receipted directional output; ESO/PALACE comparison | Phase 4 | Typed composition and double-count prevention implemented; no built-in airglow, zodiacal, integrated-starlight, artificial-light, or Paranal-global model admitted |
 
 Phase implementation documents must quote no more source text than needed,
 name exact equation or section identifiers, and attach independent numerical

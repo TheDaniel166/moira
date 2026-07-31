@@ -50,6 +50,7 @@ See ``__all__`` below for the stable public surface.
 from __future__ import annotations
 
 import math
+from bisect import bisect_right
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
@@ -80,6 +81,7 @@ from ._visibility_spectral import (
     ConditionedTarget,
     DirectionalLuminance as _DirectionalLuminance,
     FullRangePointSourceThreshold as _FullRangePointSourceThreshold,
+    ModeledDirectionalBackgroundComponent,
     PhysicalVisibilityCompositionError,
     SpectralComponentReceipt,
     SpectralSingleEpochTruth,
@@ -117,13 +119,17 @@ __all__ = [
     "PhysicalVisibilityBoundarySource",
     "PhysicalEventTimeSemantics",
     "PhysicalBackgroundScope",
+    "PhysicalBackgroundComponentKind",
     "AtmosphericExtinctionAssessment",
     "TwilightSkyBrightnessAssessment",
     "PointSourceVisibilityThreshold",
     "PhysicalAtmosphereInput",
     "PhysicalDirectionalBackground",
+    "PhysicalModeledBackgroundComponent",
     "PhysicalSqmBackground",
     "PhysicalBortleBackground",
+    "PhysicalHorizonSample",
+    "PhysicalHorizonProfile",
     "PhysicalVisibilityPolicy",
     "VisibilityComponentReceipt",
     "PhysicalAtmosphereReceipt",
@@ -668,6 +674,15 @@ class PhysicalBackgroundScope(str, Enum):
 
     TOTAL_BACKGROUND = "total_background"
     DARK_SKY_ANCHOR = "dark_sky_anchor"
+
+
+class PhysicalBackgroundComponentKind(str, Enum):
+    """Separately modeled directional background component identity."""
+
+    AIRGLOW = "airglow"
+    ZODIACAL_LIGHT = "zodiacal_light"
+    INTEGRATED_STARLIGHT = "integrated_starlight"
+    ARTIFICIAL_LIGHT = "artificial_light"
 
 
 class LunarCrescentVisibilityClass(str, Enum):
@@ -1242,6 +1257,7 @@ class PhysicalDirectionalBackground:
     source_id: str
     source_receipt_sha256: str
     method_id: str
+    component_inventory_complete: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.scope, PhysicalBackgroundScope):
@@ -1258,6 +1274,61 @@ class PhysicalDirectionalBackground:
             source_id=self.source_id,
             source_receipt_sha256=self.source_receipt_sha256,
             method_id=self.method_id,
+            component_inventory_complete=(
+                self.component_inventory_complete
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalModeledBackgroundComponent:
+    """One caller-supplied directional output from a named sky model."""
+
+    component_kind: PhysicalBackgroundComponentKind
+    photopic_luminance_cd_m2: float
+    scotopic_luminance_cd_m2: float
+    model_id: str
+    source_ids: tuple[str, ...]
+    source_receipt_sha256: str
+    spatial_applicability_id: str
+    temporal_applicability_id: str
+    direction_receipt_id: str
+    validity_domain_id: str
+    uncertainty_authority_id: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.component_kind,
+            PhysicalBackgroundComponentKind,
+        ):
+            object.__setattr__(
+                self,
+                "component_kind",
+                PhysicalBackgroundComponentKind(self.component_kind),
+            )
+        try:
+            source_ids = tuple(self.source_ids)
+        except TypeError as exc:
+            raise TypeError(
+                "source_ids must be an iterable of strings"
+            ) from exc
+        object.__setattr__(self, "source_ids", source_ids)
+        ModeledDirectionalBackgroundComponent(
+            component_id=self.component_kind.value,
+            photopic_luminance_cd_m2=(
+                self.photopic_luminance_cd_m2
+            ),
+            scotopic_luminance_cd_m2=(
+                self.scotopic_luminance_cd_m2
+            ),
+            model_id=self.model_id,
+            source_ids=source_ids,
+            source_receipt_sha256=self.source_receipt_sha256,
+            spatial_applicability_id=self.spatial_applicability_id,
+            temporal_applicability_id=self.temporal_applicability_id,
+            direction_receipt_id=self.direction_receipt_id,
+            validity_domain_id=self.validity_domain_id,
+            uncertainty_authority_id=self.uncertainty_authority_id,
         )
 
 
@@ -1275,6 +1346,7 @@ class PhysicalSqmBackground:
     pointing_receipt_id: str
     temporal_applicability_id: str
     spectral_ratio_source_id: str
+    component_inventory_complete: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.scope, PhysicalBackgroundScope):
@@ -1298,6 +1370,9 @@ class PhysicalSqmBackground:
             pointing_receipt_id=self.pointing_receipt_id,
             temporal_applicability_id=self.temporal_applicability_id,
             spectral_ratio_source_id=self.spectral_ratio_source_id,
+            component_inventory_complete=(
+                self.component_inventory_complete
+            ),
         )
 
 
@@ -1337,6 +1412,214 @@ class PhysicalBortleBackground:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class PhysicalHorizonSample:
+    """One apparent-altitude obstruction sample on the local horizon."""
+
+    azimuth_deg: float
+    apparent_altitude_deg: float
+
+    def __post_init__(self) -> None:
+        for name in ("azimuth_deg", "apparent_altitude_deg"):
+            value = getattr(self, name)
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+            ):
+                raise ValueError(f"{name} must be finite")
+        normalized = float(self.azimuth_deg) % 360.0
+        if normalized >= 360.0:
+            normalized = 0.0
+        if normalized == 0.0:
+            normalized = 0.0
+        altitude = float(self.apparent_altitude_deg)
+        if not -5.0 <= altitude < 90.0:
+            raise ValueError(
+                "apparent_altitude_deg must be in [-5, 90)"
+            )
+        object.__setattr__(self, "azimuth_deg", normalized)
+        object.__setattr__(self, "apparent_altitude_deg", altitude)
+
+
+def _physical_horizon_cone_factor(
+    samples: tuple[PhysicalHorizonSample, ...],
+    maximum_absolute_slope_deg_per_deg: float,
+    *,
+    additional_constant_altitude_deg: float | None = None,
+) -> float:
+    altitudes = [
+        sample.apparent_altitude_deg for sample in samples
+    ]
+    if additional_constant_altitude_deg is not None:
+        altitudes.append(additional_constant_altitude_deg)
+    maximum_absolute_tangent = max(
+        abs(math.tan(math.radians(altitude)))
+        for altitude in altitudes
+    )
+    maximum_secant_squared = max(
+        1.0
+        / (math.cos(math.radians(altitude)) ** 2)
+        for altitude in altitudes
+    )
+    return math.hypot(
+        maximum_absolute_tangent,
+        maximum_secant_squared
+        * maximum_absolute_slope_deg_per_deg,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalHorizonProfile:
+    """Source-identified circular linear terrain-horizon profile."""
+
+    samples: tuple[PhysicalHorizonSample, ...]
+    profile_id: str
+    source_id: str
+    source_receipt_sha256: str
+    interpolation_method_id: str = field(
+        init=False,
+        default="circular_linear_azimuth_v1",
+    )
+    admitted_maximum_gap_deg: float = field(
+        init=False,
+        default=10.0,
+    )
+    actual_maximum_gap_deg: float = field(init=False)
+    maximum_absolute_slope_deg_per_deg: float = field(init=False)
+    cone_signal_lipschitz_factor: float = field(init=False)
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.profile_id, str) or not self.profile_id:
+            raise ValueError("profile_id must not be empty")
+        if not isinstance(self.source_id, str) or not self.source_id:
+            raise ValueError("source_id must not be empty")
+        _validate_physical_sha256(
+            self.source_receipt_sha256,
+            "source_receipt_sha256",
+        )
+        try:
+            samples = tuple(self.samples)
+        except TypeError as exc:
+            raise TypeError(
+                "samples must be an iterable of PhysicalHorizonSample"
+            ) from exc
+        if any(
+            not isinstance(sample, PhysicalHorizonSample)
+            for sample in samples
+        ):
+            raise TypeError(
+                "samples must contain only PhysicalHorizonSample values"
+            )
+        samples = tuple(
+            sorted(samples, key=lambda sample: sample.azimuth_deg)
+        )
+        if len(samples) < 2:
+            raise ValueError("horizon profile requires at least two samples")
+        azimuths = tuple(sample.azimuth_deg for sample in samples)
+        if len(set(azimuths)) != len(azimuths):
+            raise ValueError(
+                "horizon profile contains duplicate normalized azimuths"
+            )
+
+        gaps: list[float] = []
+        slopes: list[float] = []
+        for index, sample in enumerate(samples):
+            next_sample = samples[(index + 1) % len(samples)]
+            next_azimuth = next_sample.azimuth_deg
+            if index == len(samples) - 1:
+                next_azimuth += 360.0
+            gap = next_azimuth - sample.azimuth_deg
+            if gap <= 0.0:
+                raise ValueError(
+                    "horizon profile azimuths must advance circularly"
+                )
+            gaps.append(gap)
+            slope = abs(
+                (
+                    next_sample.apparent_altitude_deg
+                    - sample.apparent_altitude_deg
+                )
+                / gap
+            )
+            if not math.isfinite(slope):
+                raise ValueError(
+                    "horizon profile interpolation slope must be finite"
+                )
+            slopes.append(slope)
+
+        actual_maximum_gap = max(gaps)
+        if (
+            actual_maximum_gap
+            > self.admitted_maximum_gap_deg + 1.0e-12
+        ):
+            raise ValueError(
+                "horizon profile has an azimuth gap larger than "
+                f"{self.admitted_maximum_gap_deg:g} degrees"
+            )
+        object.__setattr__(self, "samples", samples)
+        object.__setattr__(
+            self,
+            "actual_maximum_gap_deg",
+            actual_maximum_gap,
+        )
+        object.__setattr__(
+            self,
+            "maximum_absolute_slope_deg_per_deg",
+            max(slopes),
+        )
+        cone_signal_lipschitz_factor = _physical_horizon_cone_factor(
+            samples,
+            max(slopes),
+        )
+        if not math.isfinite(cone_signal_lipschitz_factor):
+            raise ValueError(
+                "horizon profile cone-signal bound must be finite"
+            )
+        object.__setattr__(
+            self,
+            "cone_signal_lipschitz_factor",
+            cone_signal_lipschitz_factor,
+        )
+
+    def apparent_altitude_at(self, azimuth_deg: float) -> float:
+        """Interpolate the circular profile at one normalized azimuth."""
+
+        if (
+            isinstance(azimuth_deg, bool)
+            or not isinstance(azimuth_deg, (int, float))
+            or not math.isfinite(azimuth_deg)
+        ):
+            raise ValueError("azimuth_deg must be finite")
+        query = float(azimuth_deg) % 360.0
+        if query >= 360.0:
+            query = 0.0
+        azimuths = tuple(
+            sample.azimuth_deg for sample in self.samples
+        )
+        lower_index = bisect_right(azimuths, query) - 1
+        if lower_index < 0:
+            lower_index = len(self.samples) - 1
+        upper_index = (lower_index + 1) % len(self.samples)
+        lower = self.samples[lower_index]
+        upper = self.samples[upper_index]
+        lower_azimuth = lower.azimuth_deg
+        upper_azimuth = upper.azimuth_deg
+        adjusted_query = query
+        if upper_index == 0:
+            upper_azimuth += 360.0
+            if adjusted_query < lower_azimuth:
+                adjusted_query += 360.0
+        fraction = (
+            (adjusted_query - lower_azimuth)
+            / (upper_azimuth - lower_azimuth)
+        )
+        return lower.apparent_altitude_deg + fraction * (
+            upper.apparent_altitude_deg
+            - lower.apparent_altitude_deg
+        )
+
+
 PhysicalBackgroundInput = (
     PhysicalDirectionalBackground
     | PhysicalSqmBackground
@@ -1367,6 +1650,11 @@ class PhysicalVisibilityPolicy:
     refraction_pressure_hpa: float = 1013.25
     refraction_temperature_c: float = 15.0
     refraction_relative_humidity: float = 0.0
+    directional_horizon: PhysicalHorizonProfile | None = None
+    modeled_background_components: tuple[
+        PhysicalModeledBackgroundComponent,
+        ...,
+    ] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.atmosphere, PhysicalAtmosphereInput):
@@ -1399,6 +1687,41 @@ class PhysicalVisibilityPolicy:
             raise ValueError("unsupported observer_protocol_id")
         if self.refraction_model_id != "bennett_extended_v1":
             raise ValueError("unsupported refraction_model_id")
+        try:
+            modeled_components = tuple(
+                self.modeled_background_components
+            )
+        except TypeError as exc:
+            raise TypeError(
+                "modeled_background_components must be an iterable of "
+                "PhysicalModeledBackgroundComponent values"
+            ) from exc
+        if any(
+            not isinstance(
+                component,
+                PhysicalModeledBackgroundComponent,
+            )
+            for component in modeled_components
+        ):
+            raise TypeError(
+                "modeled_background_components must contain only "
+                "PhysicalModeledBackgroundComponent values"
+            )
+        object.__setattr__(
+            self,
+            "modeled_background_components",
+            modeled_components,
+        )
+        if (
+            self.directional_horizon is not None
+            and not isinstance(
+                self.directional_horizon,
+                PhysicalHorizonProfile,
+            )
+        ):
+            raise TypeError(
+                "directional_horizon must be a PhysicalHorizonProfile"
+            )
         if self.expected_manifest_sha256 is not None:
             _validate_physical_sha256(
                 self.expected_manifest_sha256,
@@ -1410,6 +1733,14 @@ class PhysicalVisibilityPolicy:
         ):
             raise ValueError(
                 "local_horizon_altitude_deg must be in [-5, 90]"
+            )
+        if (
+            self.directional_horizon is not None
+            and self.local_horizon_altitude_deg != 0.0
+        ):
+            raise ValueError(
+                "directional_horizon cannot be combined with a nonzero "
+                "scalar local_horizon_altitude_deg"
             )
         if (
             not math.isfinite(self.refraction_pressure_hpa)
@@ -1530,6 +1861,21 @@ class PhysicalObserverProtocolReceipt:
     refraction_pressure_hpa: float
     refraction_temperature_c: float
     refraction_relative_humidity: float
+    horizon_model_id: str = "scalar_apparent_horizon_v1"
+    directional_profile_applied: bool = False
+    directional_profile_id: str | None = None
+    directional_profile_source_id: str | None = None
+    directional_profile_source_receipt_sha256: str | None = None
+    detection_field_factor_model_id: str = (
+        "crumey_2014_equation_53_fixed_notional_f2_v1"
+    )
+    detection_field_factor_value: float = 2.0
+    detection_field_factor_mutable: bool = False
+    detection_field_factor_source_ids: tuple[str, ...] = (
+        "Crumey:2014:equation_53",
+        "Crumey:2014:notional_field_factor_F_2",
+    )
+    probabilistic_detection_claimed: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -1554,6 +1900,8 @@ class PhysicalBackgroundReceipt:
     scotopic_interpolation_maximum_error_mag: float | None
     scotopic_interpolation_p95_error_mag: float | None
     storage_maximum_error_mag: float | None
+    component_inventory_complete: bool = False
+    modeled_component_count: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -1639,6 +1987,7 @@ class PhysicalVisibilityAssessment:
     threshold_receipt: PhysicalThresholdReceipt | None
     error_budget_receipt: PhysicalVisibilityErrorBudgetReceipt | None
     components: tuple[VisibilityComponentReceipt, ...]
+    horizon_receipt: PhysicalHorizonReceipt | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -1709,10 +2058,10 @@ class PhysicalEventSensitivityReceipt:
 
 @dataclass(frozen=True, slots=True)
 class PhysicalHorizonReceipt:
-    """Scalar apparent-horizon and refraction boundary identity."""
+    """Apparent terrain-horizon and refraction boundary identity."""
 
     horizon_model_id: str
-    apparent_horizon_altitude_deg: float
+    apparent_horizon_altitude_deg: float | None
     directional_profile_applied: bool
     refraction_model_id: str
     refraction_pressure_hpa: float
@@ -1723,6 +2072,22 @@ class PhysicalHorizonReceipt:
     solar_apparent_horizon_altitude_deg: float | None = None
     data_pack_target_true_altitude_floor_deg: float | None = None
     target_boundary_narrowing_applied: bool = False
+    directional_profile_id: str | None = None
+    directional_profile_source_id: str | None = None
+    directional_profile_source_receipt_sha256: str | None = None
+    interpolation_method_id: str | None = None
+    profile_sample_count: int | None = None
+    admitted_maximum_gap_deg: float | None = None
+    actual_maximum_gap_deg: float | None = None
+    maximum_absolute_slope_deg_per_deg: float | None = None
+    cone_signal_lipschitz_factor: float | None = None
+    queried_target_azimuth_deg: float | None = None
+    queried_solar_azimuth_deg: float | None = None
+    target_local_horizon_altitude_deg: float | None = None
+    solar_local_horizon_altitude_deg: float | None = None
+    event_certificate_id: str | None = None
+    event_certificate_source_sha256: str | None = None
+    event_certificate_maximum_absolute_rate_per_day: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -2501,6 +2866,10 @@ _PHYSICAL_EVENT_PACK_MANIFEST_SHA256 = (
 _PHYSICAL_EVENT_CROSSING_CERTIFICATE_SHA256 = (
     "eacf8c373606c1628cebdd4caa611ece533d368c32c7f86674a13e04a4c13d3e"
 )
+_PHYSICAL_DIRECTIONAL_HORIZON_CERTIFICATE_SHA256 = (
+    "3baf162ffd5f3e659b1489d60502e409f76c3b20cf6e90ef004eabb06fa029d6"
+)
+_PHYSICAL_DIRECTIONAL_HORIZON_BASE_RATE_PER_DAY = 1024.0
 _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE = _ScalarLipschitzCertificate(
     certificate_id=(
         "physical-heliacal-event-lipschitz-v1:geometry"
@@ -4714,9 +5083,19 @@ def _physical_visibility_assessment_impl(
             resolved_policy.refraction_relative_humidity
         ),
     )
+    horizon_receipt = _physical_event_horizon_receipt(
+        resolved_policy,
+        pack.domain,
+        target_azimuth_deg=target_azimuth_deg,
+        solar_azimuth_deg=solar_azimuth_deg,
+    )
+    target_local_horizon_altitude_deg = (
+        horizon_receipt.target_local_horizon_altitude_deg
+    )
+    assert target_local_horizon_altitude_deg is not None
     geometrically_visible = (
         apparent_target_altitude_deg
-        >= resolved_policy.local_horizon_altitude_deg
+        >= target_local_horizon_altitude_deg
     )
 
     if not geometrically_visible:
@@ -4745,6 +5124,7 @@ def _physical_visibility_assessment_impl(
             ),
             geometrically_visible=False,
             observable=False,
+            horizon_receipt=horizon_receipt,
         )
 
     try:
@@ -4777,6 +5157,7 @@ def _physical_visibility_assessment_impl(
                 relative_solar_azimuth_deg
             ),
             geometrically_visible=True,
+            horizon_receipt=horizon_receipt,
         )
     target_magnitude = photometry_context.apparent_magnitude
     phase_angle_deg = photometry_context.phase_angle_deg
@@ -4847,6 +5228,7 @@ def _physical_visibility_assessment_impl(
                 relative_solar_azimuth_deg
             ),
             geometrically_visible=True,
+            horizon_receipt=horizon_receipt,
         )
 
     try:
@@ -4918,6 +5300,7 @@ def _physical_visibility_assessment_impl(
                 relative_solar_azimuth_deg
             ),
             geometrically_visible=True,
+            horizon_receipt=horizon_receipt,
         )
 
     internal_profile = _TargetSpectralProfile(
@@ -4946,6 +5329,11 @@ def _physical_visibility_assessment_impl(
     internal_background = _resolve_physical_background(
         resolved_policy.background
     )
+    internal_modeled_background_components = (
+        _resolve_modeled_background_components(
+            resolved_policy.modeled_background_components
+        )
+    )
     modeled_twilight = (
         internal_background.scope == "dark_sky_anchor"
     )
@@ -4971,6 +5359,9 @@ def _physical_visibility_assessment_impl(
                     relative_solar_azimuth_deg
                 ),
                 dark_sky_anchor=internal_background,
+                modeled_background_components=(
+                    internal_modeled_background_components
+                ),
             )
         else:
             truth = spectral_single_epoch_truth(
@@ -4978,6 +5369,9 @@ def _physical_visibility_assessment_impl(
                 internal_profile,
                 target_true_altitude_deg=target_true_altitude_deg,
                 measured_total_background=internal_background,
+                modeled_background_components=(
+                    internal_modeled_background_components
+                ),
             )
     except VisibilityDataPackDomainError as exc:
         return _physical_not_evaluable(
@@ -5001,6 +5395,7 @@ def _physical_visibility_assessment_impl(
                 relative_solar_azimuth_deg
             ),
             geometrically_visible=True,
+            horizon_receipt=horizon_receipt,
         )
     except PhysicalVisibilityCompositionError as exc:
         evidence_state = (
@@ -5029,6 +5424,7 @@ def _physical_visibility_assessment_impl(
                 relative_solar_azimuth_deg
             ),
             geometrically_visible=True,
+            horizon_receipt=horizon_receipt,
         )
 
     return PhysicalVisibilityAssessment(
@@ -5066,7 +5462,11 @@ def _physical_visibility_assessment_impl(
         error_budget_receipt=_physical_error_budget_receipt(
             truth.error_budget
         ),
-        components=_physical_component_receipts(truth.components),
+        components=(
+            *_physical_component_receipts(truth.components),
+            *_physical_horizon_component_receipts(resolved_policy),
+        ),
+        horizon_receipt=horizon_receipt,
     )
 
 
@@ -5096,9 +5496,30 @@ def _physical_phase_rule(
 def _physical_event_horizon_receipt(
     policy: PhysicalVisibilityPolicy,
     data_pack_domain: VisibilityDataPackDomain | None = None,
+    *,
+    target_azimuth_deg: float | None = None,
+    solar_azimuth_deg: float | None = None,
 ) -> PhysicalHorizonReceipt:
-    target_boundary = policy.local_horizon_altitude_deg
+    profile = policy.directional_horizon
+    target_local_horizon = (
+        _physical_local_horizon_altitude(
+            policy,
+            target_azimuth_deg,
+        )
+        if profile is None or target_azimuth_deg is not None
+        else None
+    )
+    solar_local_horizon = (
+        _physical_local_horizon_altitude(
+            policy,
+            solar_azimuth_deg,
+        )
+        if profile is None or solar_azimuth_deg is not None
+        else None
+    )
+    target_boundary = target_local_horizon
     target_true_floor: float | None = None
+    pack_floor_apparent: float | None = None
     narrowing_applied = False
     if data_pack_domain is not None:
         target_true_floor = (
@@ -5112,19 +5533,42 @@ def _physical_event_horizon_receipt(
                 policy.refraction_relative_humidity
             ),
         )
-        if pack_floor_apparent > target_boundary:
+        if (
+            target_boundary is not None
+            and pack_floor_apparent > target_boundary
+        ):
             target_boundary = pack_floor_apparent
             narrowing_applied = True
-    return PhysicalHorizonReceipt(
-        horizon_model_id=(
+    event_certificate = (
+        _physical_horizon_signal_certificate(
+            policy,
+            role="target" if data_pack_domain is not None else "profile",
+            additional_constant_altitude_deg=pack_floor_apparent,
+        )
+        if profile is not None
+        else None
+    )
+    if profile is not None:
+        horizon_model_id = (
+            "directional_circular_linear_apparent_horizon_"
+            "with_pack_floor_v1"
+            if data_pack_domain is not None
+            else "directional_circular_linear_apparent_horizon_v1"
+        )
+    else:
+        horizon_model_id = (
             "scalar_apparent_horizon_with_pack_floor_v2"
             if data_pack_domain is not None
             else "scalar_apparent_horizon_v1"
-        ),
+        )
+    return PhysicalHorizonReceipt(
+        horizon_model_id=horizon_model_id,
         apparent_horizon_altitude_deg=(
-            policy.local_horizon_altitude_deg
+            None
+            if profile is not None
+            else policy.local_horizon_altitude_deg
         ),
-        directional_profile_applied=False,
+        directional_profile_applied=profile is not None,
         refraction_model_id=policy.refraction_model_id,
         refraction_pressure_hpa=policy.refraction_pressure_hpa,
         refraction_temperature_c=policy.refraction_temperature_c,
@@ -5133,11 +5577,153 @@ def _physical_event_horizon_receipt(
         ),
         applied_to=("target", "Sun"),
         target_apparent_boundary_altitude_deg=target_boundary,
-        solar_apparent_horizon_altitude_deg=(
-            policy.local_horizon_altitude_deg
-        ),
+        solar_apparent_horizon_altitude_deg=solar_local_horizon,
         data_pack_target_true_altitude_floor_deg=target_true_floor,
         target_boundary_narrowing_applied=narrowing_applied,
+        directional_profile_id=(
+            profile.profile_id if profile is not None else None
+        ),
+        directional_profile_source_id=(
+            profile.source_id if profile is not None else None
+        ),
+        directional_profile_source_receipt_sha256=(
+            profile.source_receipt_sha256
+            if profile is not None
+            else None
+        ),
+        interpolation_method_id=(
+            profile.interpolation_method_id
+            if profile is not None
+            else None
+        ),
+        profile_sample_count=(
+            len(profile.samples) if profile is not None else None
+        ),
+        admitted_maximum_gap_deg=(
+            profile.admitted_maximum_gap_deg
+            if profile is not None
+            else None
+        ),
+        actual_maximum_gap_deg=(
+            profile.actual_maximum_gap_deg
+            if profile is not None
+            else None
+        ),
+        maximum_absolute_slope_deg_per_deg=(
+            profile.maximum_absolute_slope_deg_per_deg
+            if profile is not None
+            else None
+        ),
+        cone_signal_lipschitz_factor=(
+            _physical_horizon_cone_factor(
+                profile.samples,
+                profile.maximum_absolute_slope_deg_per_deg,
+                additional_constant_altitude_deg=(
+                    pack_floor_apparent
+                ),
+            )
+            if profile is not None
+            else None
+        ),
+        queried_target_azimuth_deg=target_azimuth_deg,
+        queried_solar_azimuth_deg=solar_azimuth_deg,
+        target_local_horizon_altitude_deg=target_local_horizon,
+        solar_local_horizon_altitude_deg=solar_local_horizon,
+        event_certificate_id=(
+            event_certificate.certificate_id
+            if event_certificate is not None
+            else _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE.certificate_id
+        ),
+        event_certificate_source_sha256=(
+            event_certificate.source_receipt_sha256
+            if event_certificate is not None
+            else (
+                _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+                .source_receipt_sha256
+            )
+        ),
+        event_certificate_maximum_absolute_rate_per_day=(
+            event_certificate.maximum_absolute_rate_per_day
+            if event_certificate is not None
+            else (
+                _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+                .maximum_absolute_rate_per_day
+            )
+        ),
+    )
+
+
+def _physical_local_horizon_altitude(
+    policy: PhysicalVisibilityPolicy,
+    azimuth_deg: float | None,
+) -> float:
+    profile = policy.directional_horizon
+    if profile is None:
+        return policy.local_horizon_altitude_deg
+    if azimuth_deg is None:
+        raise ValueError(
+            "directional horizon evaluation requires an azimuth"
+        )
+    return profile.apparent_altitude_at(azimuth_deg)
+
+
+def _physical_directional_horizon_signal(
+    apparent_altitude_deg: float,
+    boundary_altitude_deg: float,
+) -> float:
+    """Return a zenith-safe signal with the sign of altitude minus terrain."""
+
+    apparent_altitude_rad = math.radians(apparent_altitude_deg)
+    boundary_altitude_rad = math.radians(boundary_altitude_deg)
+    horizontal_projection = max(
+        0.0,
+        math.cos(apparent_altitude_rad),
+    )
+    return (
+        math.sin(apparent_altitude_rad)
+        - horizontal_projection * math.tan(boundary_altitude_rad)
+    )
+
+
+def _physical_horizon_signal_certificate(
+    policy: PhysicalVisibilityPolicy,
+    *,
+    role: str,
+    additional_constant_altitude_deg: float | None = None,
+) -> _ScalarLipschitzCertificate:
+    profile = policy.directional_horizon
+    if profile is None:
+        return _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+    cone_factor = _physical_horizon_cone_factor(
+        profile.samples,
+        profile.maximum_absolute_slope_deg_per_deg,
+        additional_constant_altitude_deg=(
+            additional_constant_altitude_deg
+        ),
+    )
+    maximum_rate = (
+        math.radians(
+            _PHYSICAL_DIRECTIONAL_HORIZON_BASE_RATE_PER_DAY
+        )
+        * (
+            1.0
+            + cone_factor
+        )
+    )
+    return _ScalarLipschitzCertificate(
+        certificate_id=(
+            "physical-heliacal-event-lipschitz-v1:"
+            f"directional-horizon:{role}:"
+            f"{profile.source_receipt_sha256}"
+        ),
+        maximum_absolute_rate_per_day=maximum_rate,
+        source_receipt_sha256=(
+            _PHYSICAL_DIRECTIONAL_HORIZON_CERTIFICATE_SHA256
+        ),
+        maximum_subdivision_depth=(
+            _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+            .maximum_subdivision_depth
+        ),
     )
 
 
@@ -5183,6 +5769,7 @@ def _physical_event_solver_receipt(
     search_policy: PhysicalVisibilitySearchPolicy,
     candidate_day_keys: tuple[int, ...],
     selection: _PhaseTransitionSelection | None,
+    policy: PhysicalVisibilityPolicy,
 ) -> PhysicalEventSolverReceipt:
     scans = _physical_event_scans(selection)
     classified = (
@@ -5302,7 +5889,11 @@ def _physical_event_solver_receipt(
         crossing_completeness_reason=completeness_reason,
         crossing_certificate_ids=certificate_ids,
         crossing_certificate_source_sha256=(
-            _PHYSICAL_EVENT_CROSSING_CERTIFICATE_SHA256
+            (
+                _PHYSICAL_DIRECTIONAL_HORIZON_CERTIFICATE_SHA256
+                if policy.directional_horizon is not None
+                else _PHYSICAL_EVENT_CROSSING_CERTIFICATE_SHA256
+            )
             if certificate_ids
             else None
         ),
@@ -5417,6 +6008,11 @@ def _physical_event_result(
             event_assessment = assessment_cache.get(
                 assessment_jd_ut
             )
+            if (
+                event_assessment is not None
+                and event_assessment.horizon_receipt is not None
+            ):
+                horizon_receipt = event_assessment.horizon_receipt
 
     derived_arcus_deg: float | None = None
     if event_jd_ut is not None and solar_true_altitude is not None:
@@ -5575,6 +6171,7 @@ def _physical_event_result(
             search_policy,
             candidate_day_keys,
             selection,
+            policy,
         ),
         sensitivity_receipt=_physical_event_sensitivity_receipt(
             data_pack_numerical_event_interval_jd_ut=(
@@ -5773,18 +6370,14 @@ def physical_visibility_event(
 
     from .spk_reader import MissingKernelError
 
-    horizon_receipt = _physical_event_horizon_receipt(
-        resolved_policy,
-        pack.domain,
+    target_pack_floor_apparent = apply_refraction(
+        pack.domain.target_true_altitude_deg[0],
+        pressure_mbar=resolved_policy.refraction_pressure_hpa,
+        temperature_c=resolved_policy.refraction_temperature_c,
+        relative_humidity=(
+            resolved_policy.refraction_relative_humidity
+        ),
     )
-    target_apparent_boundary = (
-        horizon_receipt.target_apparent_boundary_altitude_deg
-    )
-    assert target_apparent_boundary is not None
-    solar_apparent_boundary = (
-        horizon_receipt.solar_apparent_horizon_altitude_deg
-    )
-    assert solar_apparent_boundary is not None
 
     horizontal_cache: dict[
         tuple[str, float],
@@ -5827,7 +6420,8 @@ def physical_visibility_event(
     def apparent_horizon_signal(
         target: str,
         jd_ut: float,
-        boundary_altitude_deg: float,
+        *,
+        apply_target_pack_floor: bool,
     ) -> _ScalarEvaluation:
         result = horizontal(target, jd_ut)
         if isinstance(result, str):
@@ -5848,12 +6442,25 @@ def physical_visibility_event(
                 resolved_policy.refraction_relative_humidity
             ),
         )
+        boundary_altitude_deg = _physical_local_horizon_altitude(
+            resolved_policy,
+            result[0],
+        )
+        if apply_target_pack_floor:
+            boundary_altitude_deg = max(
+                boundary_altitude_deg,
+                target_pack_floor_apparent,
+            )
+        if resolved_policy.directional_horizon is not None:
+            signal = _physical_directional_horizon_signal(
+                apparent_altitude,
+                boundary_altitude_deg,
+            )
+        else:
+            signal = apparent_altitude - boundary_altitude_deg
         return _ScalarEvaluation(
             jd_ut=jd_ut,
-            value=(
-                apparent_altitude
-                - boundary_altitude_deg
-            ),
+            value=signal,
         )
 
     assessment_cache: dict[
@@ -5943,7 +6550,7 @@ def physical_visibility_event(
                     lambda jd_ut: apparent_horizon_signal(
                         body,
                         jd_ut,
-                        target_apparent_boundary,
+                        apply_target_pack_floor=True,
                     )
                 ),
                 target_true_altitude=(
@@ -5953,7 +6560,7 @@ def physical_visibility_event(
                     lambda jd_ut: apparent_horizon_signal(
                         Body.SUN,
                         jd_ut,
-                        solar_apparent_boundary,
+                        apply_target_pack_floor=False,
                     )
                 ),
                 solar_true_altitude=(
@@ -5967,13 +6574,22 @@ def physical_visibility_event(
                 ),
                 policy=scalar_policy,
                 target_horizon_certificate=(
-                    _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+                    _physical_horizon_signal_certificate(
+                        resolved_policy,
+                        role="target",
+                        additional_constant_altitude_deg=(
+                            target_pack_floor_apparent
+                        ),
+                    )
                 ),
                 target_altitude_certificate=(
                     _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
                 ),
                 solar_horizon_certificate=(
-                    _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+                    _physical_horizon_signal_certificate(
+                        resolved_policy,
+                        role="Sun",
+                    )
                 ),
                 solar_altitude_certificate=(
                     _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
@@ -6114,6 +6730,9 @@ def _resolve_physical_background(
                 background.source_receipt_sha256
             ),
             method_id=background.method_id,
+            component_inventory_complete=(
+                background.component_inventory_complete
+            ),
         )
     if isinstance(background, PhysicalSqmBackground):
         return sqm_directional_luminance(
@@ -6134,6 +6753,9 @@ def _resolve_physical_background(
             ),
             spectral_ratio_source_id=(
                 background.spectral_ratio_source_id
+            ),
+            component_inventory_complete=(
+                background.component_inventory_complete
             ),
         )
     if isinstance(background, PhysicalBortleBackground):
@@ -6162,8 +6784,42 @@ def _resolve_physical_background(
             spectral_ratio_source_id=(
                 background.spectral_ratio_source_id
             ),
+            component_inventory_complete=False,
         )
     raise TypeError("unsupported physical background input")
+
+
+def _resolve_modeled_background_components(
+    components: tuple[PhysicalModeledBackgroundComponent, ...],
+) -> tuple[ModeledDirectionalBackgroundComponent, ...]:
+    """Convert declared public model outputs to the internal compositor."""
+
+    return tuple(
+        ModeledDirectionalBackgroundComponent(
+            component_id=component.component_kind.value,
+            photopic_luminance_cd_m2=(
+                component.photopic_luminance_cd_m2
+            ),
+            scotopic_luminance_cd_m2=(
+                component.scotopic_luminance_cd_m2
+            ),
+            model_id=component.model_id,
+            source_ids=component.source_ids,
+            source_receipt_sha256=component.source_receipt_sha256,
+            spatial_applicability_id=(
+                component.spatial_applicability_id
+            ),
+            temporal_applicability_id=(
+                component.temporal_applicability_id
+            ),
+            direction_receipt_id=component.direction_receipt_id,
+            validity_domain_id=component.validity_domain_id,
+            uncertainty_authority_id=(
+                component.uncertainty_authority_id
+            ),
+        )
+        for component in components
+    )
 
 
 def _physical_not_evaluable(
@@ -6187,6 +6843,7 @@ def _physical_not_evaluable(
     relative_solar_azimuth_deg: float | None = None,
     geometrically_visible: bool | None = None,
     observable: bool | None = None,
+    horizon_receipt: PhysicalHorizonReceipt | None = None,
 ) -> PhysicalVisibilityAssessment:
     """Build one typed fail-closed assessment without fabricated truth."""
 
@@ -6220,6 +6877,11 @@ def _physical_not_evaluable(
             policy,
             data_pack_receipt,
         ),
+        horizon_receipt=(
+            horizon_receipt
+            if horizon_receipt is not None
+            else _physical_event_horizon_receipt(policy)
+        ),
     )
 
 
@@ -6235,6 +6897,13 @@ def _physical_partial_components(
             details=(
                 ("task", "known_target_directed_averted_detection"),
                 ("optical_aid", "none"),
+                (
+                    "detection_field_factor_model_id",
+                    "crumey_2014_equation_53_fixed_notional_f2_v1",
+                ),
+                ("detection_field_factor_value", "2"),
+                ("detection_field_factor_mutable", "false"),
+                ("probabilistic_detection_claimed", "false"),
             ),
         ),
         VisibilityComponentReceipt(
@@ -6245,6 +6914,8 @@ def _physical_partial_components(
             ),
             source_ids=(),
         ),
+        *_physical_modeled_background_component_receipts(policy),
+        *_physical_horizon_component_receipts(policy),
     ]
     if data_pack_receipt is not None:
         components.append(
@@ -6264,6 +6935,107 @@ def _physical_partial_components(
             )
         )
     return tuple(components)
+
+
+def _physical_modeled_background_component_receipts(
+    policy: PhysicalVisibilityPolicy,
+) -> tuple[VisibilityComponentReceipt, ...]:
+    return tuple(
+        VisibilityComponentReceipt(
+            role="modeled_background_component",
+            component_id=component.model_id,
+            source_ids=component.source_ids,
+            details=(
+                (
+                    "background_component_id",
+                    component.component_kind.value,
+                ),
+                (
+                    "photopic_luminance_cd_m2",
+                    format(
+                        component.photopic_luminance_cd_m2,
+                        ".17g",
+                    ),
+                ),
+                (
+                    "scotopic_luminance_cd_m2",
+                    format(
+                        component.scotopic_luminance_cd_m2,
+                        ".17g",
+                    ),
+                ),
+                (
+                    "source_receipt_sha256",
+                    component.source_receipt_sha256,
+                ),
+                (
+                    "spatial_applicability_id",
+                    component.spatial_applicability_id,
+                ),
+                (
+                    "temporal_applicability_id",
+                    component.temporal_applicability_id,
+                ),
+                (
+                    "direction_receipt_id",
+                    component.direction_receipt_id,
+                ),
+                (
+                    "validity_domain_id",
+                    component.validity_domain_id,
+                ),
+                (
+                    "uncertainty_authority_id",
+                    component.uncertainty_authority_id,
+                ),
+            ),
+        )
+        for component in sorted(
+            policy.modeled_background_components,
+            key=lambda value: value.component_kind.value,
+        )
+    )
+
+
+def _physical_horizon_component_receipts(
+    policy: PhysicalVisibilityPolicy,
+) -> tuple[VisibilityComponentReceipt, ...]:
+    profile = policy.directional_horizon
+    if profile is None:
+        return ()
+    return (
+        VisibilityComponentReceipt(
+            role="local_horizon",
+            component_id=profile.profile_id,
+            source_ids=(profile.source_id,),
+            details=(
+                (
+                    "interpolation_method_id",
+                    profile.interpolation_method_id,
+                ),
+                ("source_receipt_sha256", profile.source_receipt_sha256),
+                ("sample_count", str(len(profile.samples))),
+                (
+                    "admitted_maximum_gap_deg",
+                    f"{profile.admitted_maximum_gap_deg:.17g}",
+                ),
+                (
+                    "actual_maximum_gap_deg",
+                    f"{profile.actual_maximum_gap_deg:.17g}",
+                ),
+                (
+                    "maximum_absolute_slope_deg_per_deg",
+                    (
+                        f"{profile.maximum_absolute_slope_deg_per_deg:.17g}"
+                    ),
+                ),
+                (
+                    "cone_signal_lipschitz_factor",
+                    f"{profile.cone_signal_lipschitz_factor:.17g}",
+                ),
+            ),
+        ),
+    )
 
 
 def _physical_atmosphere_matches(
@@ -6304,6 +7076,7 @@ def _physical_atmosphere_receipt(
 def _physical_observer_receipt(
     policy: PhysicalVisibilityPolicy,
 ) -> PhysicalObserverProtocolReceipt:
+    profile = policy.directional_horizon
     return PhysicalObserverProtocolReceipt(
         protocol_id=policy.observer_protocol_id,
         task="known_target_directed_averted_detection",
@@ -6318,6 +7091,33 @@ def _physical_observer_receipt(
         refraction_relative_humidity=(
             policy.refraction_relative_humidity
         ),
+        horizon_model_id=(
+            "directional_circular_linear_apparent_horizon_v1"
+            if profile is not None
+            else "scalar_apparent_horizon_v1"
+        ),
+        directional_profile_applied=profile is not None,
+        directional_profile_id=(
+            profile.profile_id if profile is not None else None
+        ),
+        directional_profile_source_id=(
+            profile.source_id if profile is not None else None
+        ),
+        directional_profile_source_receipt_sha256=(
+            profile.source_receipt_sha256
+            if profile is not None
+            else None
+        ),
+        detection_field_factor_model_id=(
+            "crumey_2014_equation_53_fixed_notional_f2_v1"
+        ),
+        detection_field_factor_value=2.0,
+        detection_field_factor_mutable=False,
+        detection_field_factor_source_ids=(
+            "Crumey:2014:equation_53",
+            "Crumey:2014:notional_field_factor_F_2",
+        ),
+        probabilistic_detection_claimed=False,
     )
 
 
@@ -6428,6 +7228,10 @@ def _physical_background_receipt(
         storage_maximum_error_mag=(
             background.storage_maximum_error_mag
         ),
+        component_inventory_complete=(
+            background.component_inventory_complete
+        ),
+        modeled_component_count=len(background.modeled_components),
     )
 
 

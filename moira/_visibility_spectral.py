@@ -38,6 +38,9 @@ _OBSERVER_PROTOCOL_ID = (
 _MODELED_BACKGROUND_ID = (
     "modeled_twilight_plus_measured_dark_sky_v1"
 )
+_MODELED_COMPONENT_BACKGROUND_ID = (
+    "modeled_twilight_plus_declared_background_components_v1"
+)
 _MEASURED_BACKGROUND_ID = (
     "measured_directional_photopic_scotopic_v1"
 )
@@ -72,6 +75,12 @@ _CRUMEY_SQM_ZERO_POINT = 12.58
 
 _SPECTRAL_BIN_COUNT = 400
 _HEX_DIGITS = frozenset("0123456789abcdef")
+_SEPARATELY_MODELED_BACKGROUND_COMPONENT_IDS = frozenset({
+    "airglow",
+    "zodiacal_light",
+    "integrated_starlight",
+    "artificial_light",
+})
 
 
 class PhysicalVisibilityCompositionError(ValueError):
@@ -134,6 +143,7 @@ class DirectionalLuminance:
     source_id: str
     source_receipt_sha256: str
     method_id: str
+    component_inventory_complete: bool = False
 
     def __post_init__(self) -> None:
         _positive_finite(
@@ -164,6 +174,84 @@ class DirectionalLuminance:
         )
         if not self.method_id:
             raise ValueError("method_id must not be empty")
+        if not isinstance(self.component_inventory_complete, bool):
+            raise TypeError(
+                "component_inventory_complete must be a bool"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class ModeledDirectionalBackgroundComponent:
+    """One caller-supplied, source-receipted background-model output."""
+
+    component_id: str
+    photopic_luminance_cd_m2: float
+    scotopic_luminance_cd_m2: float
+    model_id: str
+    source_ids: tuple[str, ...]
+    source_receipt_sha256: str
+    spatial_applicability_id: str
+    temporal_applicability_id: str
+    direction_receipt_id: str
+    validity_domain_id: str
+    uncertainty_authority_id: str
+
+    def __post_init__(self) -> None:
+        if (
+            self.component_id
+            not in _SEPARATELY_MODELED_BACKGROUND_COMPONENT_IDS
+        ):
+            raise ValueError(
+                "component_id must identify airglow, zodiacal_light, "
+                "integrated_starlight, or artificial_light"
+            )
+        _positive_finite(
+            self.photopic_luminance_cd_m2,
+            "photopic_luminance_cd_m2",
+        )
+        _positive_finite(
+            self.scotopic_luminance_cd_m2,
+            "scotopic_luminance_cd_m2",
+        )
+        if not isinstance(self.model_id, str) or not self.model_id:
+            raise ValueError("model_id must not be empty")
+        try:
+            source_ids = tuple(self.source_ids)
+        except TypeError as exc:
+            raise TypeError(
+                "source_ids must be an iterable of strings"
+            ) from exc
+        if (
+            not source_ids
+            or any(
+                not isinstance(source_id, str) or not source_id
+                for source_id in source_ids
+            )
+            or len(set(source_ids)) != len(source_ids)
+        ):
+            raise ValueError(
+                "source_ids must be nonempty, unique strings"
+            )
+        object.__setattr__(self, "source_ids", source_ids)
+        _require_sha256(
+            self.source_receipt_sha256,
+            "source_receipt_sha256",
+        )
+        qualifiers = (
+            self.spatial_applicability_id,
+            self.temporal_applicability_id,
+            self.direction_receipt_id,
+            self.validity_domain_id,
+            self.uncertainty_authority_id,
+        )
+        if any(
+            not isinstance(value, str) or not value
+            for value in qualifiers
+        ):
+            raise ValueError(
+                "modeled background components require spatial, temporal, "
+                "directional, validity-domain, and uncertainty qualifiers"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,6 +272,11 @@ class BackgroundComposition:
     scotopic_interpolation_maximum_error_mag: float | None
     scotopic_interpolation_p95_error_mag: float | None
     storage_maximum_error_mag: float | None
+    component_inventory_complete: bool = False
+    modeled_components: tuple[
+        ModeledDirectionalBackgroundComponent,
+        ...,
+    ] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -522,6 +615,7 @@ def sqm_directional_luminance(
     pointing_receipt_id: str,
     temporal_applicability_id: str,
     spectral_ratio_source_id: str,
+    component_inventory_complete: bool = False,
 ) -> DirectionalLuminance:
     """Transform a fully qualified SQM/V-equivalent measurement.
 
@@ -560,6 +654,7 @@ def sqm_directional_luminance(
             f"{pointing_receipt_id}:{temporal_applicability_id}:"
             f"{spectral_ratio_source_id}"
         ),
+        component_inventory_complete=component_inventory_complete,
     )
 
 
@@ -568,11 +663,49 @@ def compose_directional_background(
     measured_total: DirectionalLuminance | None = None,
     modeled_twilight: VisibilityRadianceSample | None = None,
     dark_sky_anchor: DirectionalLuminance | None = None,
+    modeled_components: tuple[
+        ModeledDirectionalBackgroundComponent,
+        ...,
+    ] = (),
 ) -> BackgroundComposition:
     """Resolve exactly one background authority without double counting."""
 
+    try:
+        components = tuple(modeled_components)
+    except TypeError as exc:
+        raise TypeError(
+            "modeled_components must be an iterable of "
+            "ModeledDirectionalBackgroundComponent values"
+        ) from exc
+    if any(
+        not isinstance(
+            component,
+            ModeledDirectionalBackgroundComponent,
+        )
+        for component in components
+    ):
+        raise TypeError(
+            "modeled_components must contain only "
+            "ModeledDirectionalBackgroundComponent values"
+        )
+    components = tuple(
+        sorted(components, key=lambda component: component.component_id)
+    )
+    modeled_component_ids = tuple(
+        component.component_id for component in components
+    )
+    if len(set(modeled_component_ids)) != len(modeled_component_ids):
+        raise PhysicalVisibilityCompositionError(
+            "background_components_conflict",
+            "a modeled background component kind was supplied more than once",
+        )
+
     if measured_total is not None:
-        if modeled_twilight is not None or dark_sky_anchor is not None:
+        if (
+            modeled_twilight is not None
+            or dark_sky_anchor is not None
+            or components
+        ):
             raise PhysicalVisibilityCompositionError(
                 "background_components_conflict",
                 "measured total background cannot be combined with models",
@@ -601,6 +734,7 @@ def compose_directional_background(
             scotopic_interpolation_maximum_error_mag=None,
             scotopic_interpolation_p95_error_mag=None,
             storage_maximum_error_mag=None,
+            component_inventory_complete=True,
         )
 
     if modeled_twilight is None or dark_sky_anchor is None:
@@ -616,8 +750,19 @@ def compose_directional_background(
             "background_components_conflict",
             "modeled twilight requires dark_sky_anchor scope",
         )
-    twilight_components = {"solar_twilight"}
-    overlap = twilight_components.intersection(
+    if components and not dark_sky_anchor.component_inventory_complete:
+        raise PhysicalVisibilityCompositionError(
+            "background_component_inventory_incomplete",
+            (
+                "a dark-sky anchor combined with modeled components must "
+                "declare a complete component inventory"
+            ),
+        )
+    supplied_model_ids = {
+        "solar_twilight",
+        *modeled_component_ids,
+    }
+    overlap = supplied_model_ids.intersection(
         dark_sky_anchor.component_ids
     )
     if overlap:
@@ -625,21 +770,44 @@ def compose_directional_background(
             "background_components_conflict",
             f"background component supplied twice: {sorted(overlap)}",
         )
+    photopic_luminance = math.fsum((
+        modeled_twilight.photopic_luminance_cd_m2,
+        dark_sky_anchor.photopic_luminance_cd_m2,
+        *(
+            component.photopic_luminance_cd_m2
+            for component in components
+        ),
+    ))
+    scotopic_luminance = math.fsum((
+        modeled_twilight.scotopic_luminance_cd_m2,
+        dark_sky_anchor.scotopic_luminance_cd_m2,
+        *(
+            component.scotopic_luminance_cd_m2
+            for component in components
+        ),
+    ))
+    source_ids = tuple(dict.fromkeys((
+        dark_sky_anchor.source_id,
+        *(
+            source_id
+            for component in components
+            for source_id in component.source_ids
+        ),
+    )))
     return BackgroundComposition(
-        authority_id=_MODELED_BACKGROUND_ID,
-        photopic_luminance_cd_m2=(
-            modeled_twilight.photopic_luminance_cd_m2
-            + dark_sky_anchor.photopic_luminance_cd_m2
+        authority_id=(
+            _MODELED_COMPONENT_BACKGROUND_ID
+            if components
+            else _MODELED_BACKGROUND_ID
         ),
-        scotopic_luminance_cd_m2=(
-            modeled_twilight.scotopic_luminance_cd_m2
-            + dark_sky_anchor.scotopic_luminance_cd_m2
-        ),
+        photopic_luminance_cd_m2=photopic_luminance,
+        scotopic_luminance_cd_m2=scotopic_luminance,
         component_ids=(
             "solar_twilight",
             *dark_sky_anchor.component_ids,
+            *modeled_component_ids,
         ),
-        source_ids=(dark_sky_anchor.source_id,),
+        source_ids=source_ids,
         modeled_twilight=modeled_twilight,
         photopic_solver_relative_standard_error_bound=(
             modeled_twilight
@@ -667,6 +835,10 @@ def compose_directional_background(
         storage_maximum_error_mag=(
             modeled_twilight.storage_maximum_error_mag
         ),
+        component_inventory_complete=(
+            dark_sky_anchor.component_inventory_complete
+        ),
+        modeled_components=components,
     )
 
 
@@ -959,7 +1131,16 @@ def _background_luminance_error_bounds(
             "pack_twilight_interpolation_maximum_error",
             "pack_twilight_storage_maximum_error",
         ),
-        ("dark_sky_anchor_input_uncertainty",),
+        (
+            "dark_sky_anchor_input_uncertainty",
+            *(
+                (
+                    "modeled_background_component:"
+                    f"{component.component_id}:input_uncertainty"
+                )
+                for component in background.modeled_components
+            ),
+        ),
     )
 
 
@@ -1028,6 +1209,10 @@ def spectral_single_epoch_truth(
     solar_center_altitude_deg: float | None = None,
     relative_solar_azimuth_deg: float | None = None,
     dark_sky_anchor: DirectionalLuminance | None = None,
+    modeled_background_components: tuple[
+        ModeledDirectionalBackgroundComponent,
+        ...,
+    ] = (),
 ) -> SpectralSingleEpochTruth:
     """Evaluate the Phase 2 numerical truth without geometry or event search."""
 
@@ -1039,13 +1224,15 @@ def spectral_single_epoch_truth(
             solar_center_altitude_deg is not None
             or relative_solar_azimuth_deg is not None
             or dark_sky_anchor is not None
+            or modeled_background_components
         ):
             raise PhysicalVisibilityCompositionError(
                 "background_components_conflict",
                 "measured total background conflicts with modeled inputs",
             )
         background = compose_directional_background(
-            measured_total=measured_total_background
+            measured_total=measured_total_background,
+            modeled_components=modeled_background_components,
         )
     else:
         if (
@@ -1064,6 +1251,7 @@ def spectral_single_epoch_truth(
         background = compose_directional_background(
             modeled_twilight=twilight,
             dark_sky_anchor=dark_sky_anchor,
+            modeled_components=modeled_background_components,
         )
 
     adaptation = cie_mes2_adaptation(
@@ -1143,6 +1331,13 @@ def spectral_single_epoch_truth(
             details=(
                 ("task", "known_target_directed_averted_detection"),
                 ("optical_aid", "none"),
+                (
+                    "detection_field_factor_model_id",
+                    "crumey_2014_equation_53_fixed_notional_f2_v1",
+                ),
+                ("detection_field_factor_value", "2"),
+                ("detection_field_factor_mutable", "false"),
+                ("probabilistic_detection_claimed", "false"),
             ),
         ),
         SpectralComponentReceipt(
@@ -1154,6 +1349,55 @@ def spectral_single_epoch_truth(
                 for value in background.component_ids
             )
             + (("luminance_units", "cd_m-2"),),
+        ),
+        *(
+            SpectralComponentReceipt(
+                role="modeled_background_component",
+                component_id=component.model_id,
+                source_ids=component.source_ids,
+                details=(
+                    ("background_component_id", component.component_id),
+                    (
+                        "photopic_luminance_cd_m2",
+                        format(
+                            component.photopic_luminance_cd_m2,
+                            ".17g",
+                        ),
+                    ),
+                    (
+                        "scotopic_luminance_cd_m2",
+                        format(
+                            component.scotopic_luminance_cd_m2,
+                            ".17g",
+                        ),
+                    ),
+                    (
+                        "source_receipt_sha256",
+                        component.source_receipt_sha256,
+                    ),
+                    (
+                        "spatial_applicability_id",
+                        component.spatial_applicability_id,
+                    ),
+                    (
+                        "temporal_applicability_id",
+                        component.temporal_applicability_id,
+                    ),
+                    (
+                        "direction_receipt_id",
+                        component.direction_receipt_id,
+                    ),
+                    (
+                        "validity_domain_id",
+                        component.validity_domain_id,
+                    ),
+                    (
+                        "uncertainty_authority_id",
+                        component.uncertainty_authority_id,
+                    ),
+                ),
+            )
+            for component in background.modeled_components
         ),
         SpectralComponentReceipt(
             role="target_photometry",

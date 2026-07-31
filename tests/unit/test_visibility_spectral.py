@@ -21,6 +21,7 @@ from moira._visibility_lut import (
 )
 from moira._visibility_spectral import (
     DirectionalLuminance,
+    ModeledDirectionalBackgroundComponent,
     PhysicalVisibilityCompositionError,
     TargetSpectralProfile,
     blackwell_crumey_full_range_threshold,
@@ -35,9 +36,11 @@ from moira._visibility_targets import (
 )
 from moira.heliacal import (
     PhysicalAtmosphereInput,
+    PhysicalBackgroundComponentKind,
     PhysicalBackgroundScope,
     PhysicalBortleBackground,
     PhysicalDirectionalBackground,
+    PhysicalModeledBackgroundComponent,
     PhysicalVisibilityEvidenceState,
     PhysicalVisibilityPolicy,
     PhysicalVisibilityStatus,
@@ -382,6 +385,44 @@ def _measured_total() -> DirectionalLuminance:
     )
 
 
+def _modeled_component(
+    component_id: str = "airglow",
+) -> ModeledDirectionalBackgroundComponent:
+    return ModeledDirectionalBackgroundComponent(
+        component_id=component_id,
+        photopic_luminance_cd_m2=1.0e-5,
+        scotopic_luminance_cd_m2=1.8e-5,
+        model_id=f"test-{component_id}-model-v1",
+        source_ids=(f"test-{component_id}-source",),
+        source_receipt_sha256=_SOURCE_SHA256,
+        spatial_applicability_id="test-site",
+        temporal_applicability_id="test-epoch",
+        direction_receipt_id="test-direction",
+        validity_domain_id=f"test-{component_id}-domain-v1",
+        uncertainty_authority_id="test-uncertainty-not-propagated",
+    )
+
+
+def _public_modeled_component(
+    kind: PhysicalBackgroundComponentKind = (
+        PhysicalBackgroundComponentKind.AIRGLOW
+    ),
+) -> PhysicalModeledBackgroundComponent:
+    return PhysicalModeledBackgroundComponent(
+        component_kind=kind,
+        photopic_luminance_cd_m2=1.0e-5,
+        scotopic_luminance_cd_m2=1.8e-5,
+        model_id=f"test-{kind.value}-model-v1",
+        source_ids=(f"test-{kind.value}-source",),
+        source_receipt_sha256=_SOURCE_SHA256,
+        spatial_applicability_id="test-site",
+        temporal_applicability_id="test-epoch",
+        direction_receipt_id="test-direction",
+        validity_domain_id=f"test-{kind.value}-domain-v1",
+        uncertainty_authority_id="test-uncertainty-not-propagated",
+    )
+
+
 def test_equation_fixture_binds_protocol_and_exact_sources() -> None:
     fixture = _fixture()
 
@@ -635,6 +676,128 @@ def test_modeled_twilight_and_dark_anchor_compose_once() -> None:
         composition.photopic_solver_relative_standard_error_bound
         == 0.01
     )
+
+
+def test_separate_modeled_background_components_require_complete_inventory(
+) -> None:
+    twilight = _pack().interpolate_twilight_luminance(
+        solar_center_altitude_deg=-6.0,
+        target_true_altitude_deg=5.0,
+        relative_solar_azimuth_deg=90.0,
+    )
+    anchor = _dark_anchor(
+        component_ids=("zodiacal_light", "integrated_starlight")
+    )
+
+    with pytest.raises(PhysicalVisibilityCompositionError) as exc_info:
+        compose_directional_background(
+            modeled_twilight=twilight,
+            dark_sky_anchor=anchor,
+            modeled_components=(_modeled_component(),),
+        )
+
+    assert (
+        exc_info.value.reason
+        == "background_component_inventory_incomplete"
+    )
+
+
+def test_separate_modeled_background_component_cannot_overlap_anchor(
+) -> None:
+    twilight = _pack().interpolate_twilight_luminance(
+        solar_center_altitude_deg=-6.0,
+        target_true_altitude_deg=5.0,
+        relative_solar_azimuth_deg=90.0,
+    )
+    anchor = replace(
+        _dark_anchor(),
+        component_inventory_complete=True,
+    )
+
+    with pytest.raises(PhysicalVisibilityCompositionError) as exc_info:
+        compose_directional_background(
+            modeled_twilight=twilight,
+            dark_sky_anchor=anchor,
+            modeled_components=(_modeled_component(),),
+        )
+
+    assert exc_info.value.reason == "background_components_conflict"
+
+
+def test_separate_modeled_background_component_kind_cannot_repeat() -> None:
+    twilight = _pack().interpolate_twilight_luminance(
+        solar_center_altitude_deg=-6.0,
+        target_true_altitude_deg=5.0,
+        relative_solar_azimuth_deg=90.0,
+    )
+    anchor = replace(
+        _dark_anchor(component_ids=("residual_dark_sky",)),
+        component_inventory_complete=True,
+    )
+
+    with pytest.raises(PhysicalVisibilityCompositionError) as exc_info:
+        compose_directional_background(
+            modeled_twilight=twilight,
+            dark_sky_anchor=anchor,
+            modeled_components=(
+                _modeled_component(),
+                _modeled_component(),
+            ),
+        )
+
+    assert exc_info.value.reason == "background_components_conflict"
+
+
+def test_separate_modeled_components_are_sorted_summed_and_receipted(
+) -> None:
+    twilight = _pack().interpolate_twilight_luminance(
+        solar_center_altitude_deg=-6.0,
+        target_true_altitude_deg=5.0,
+        relative_solar_azimuth_deg=90.0,
+    )
+    anchor = replace(
+        _dark_anchor(component_ids=("residual_dark_sky",)),
+        component_inventory_complete=True,
+    )
+    airglow = _modeled_component("airglow")
+    zodiacal = _modeled_component("zodiacal_light")
+
+    composition = compose_directional_background(
+        modeled_twilight=twilight,
+        dark_sky_anchor=anchor,
+        modeled_components=(zodiacal, airglow),
+    )
+
+    assert composition.authority_id == (
+        "modeled_twilight_plus_declared_background_components_v1"
+    )
+    assert composition.photopic_luminance_cd_m2 == pytest.approx(
+        0.30022
+    )
+    assert composition.scotopic_luminance_cd_m2 == pytest.approx(
+        0.540396
+    )
+    assert composition.component_ids == (
+        "solar_twilight",
+        "residual_dark_sky",
+        "airglow",
+        "zodiacal_light",
+    )
+    assert tuple(
+        component.component_id
+        for component in composition.modeled_components
+    ) == ("airglow", "zodiacal_light")
+
+
+def test_measured_total_rejects_separate_modeled_background_component(
+) -> None:
+    with pytest.raises(PhysicalVisibilityCompositionError) as exc_info:
+        compose_directional_background(
+            measured_total=_measured_total(),
+            modeled_components=(_modeled_component(),),
+        )
+
+    assert exc_info.value.reason == "background_components_conflict"
 
 
 def test_target_profile_rejects_silent_weight_normalization() -> None:
@@ -1293,6 +1456,154 @@ def test_public_assessment_rejects_dark_anchor_twilight_double_count(
 
     assert result.reason == "background_components_conflict"
     assert result.status is PhysicalVisibilityStatus.NOT_EVALUABLE
+
+
+def test_public_assessment_rejects_modeled_component_with_measured_total(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_public_assessment_dependencies(monkeypatch)
+
+    result = physical_visibility_assessment(
+        Body.VENUS,
+        2451545.0,
+        0.0,
+        0.0,
+        data_pack_config=VisibilityDataPackConfig(directory="unused"),
+        policy=PhysicalVisibilityPolicy(
+            background=_public_measured_total(),
+            modeled_background_components=(
+                _public_modeled_component(),
+            ),
+        ),
+    )
+
+    assert result.reason == "background_components_conflict"
+    assert result.status is PhysicalVisibilityStatus.NOT_EVALUABLE
+    assert any(
+        receipt.role == "modeled_background_component"
+        for receipt in result.components
+    )
+
+
+def test_public_assessment_requires_complete_anchor_inventory_for_models(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_public_assessment_dependencies(monkeypatch)
+    anchor = replace(
+        _public_dark_anchor(),
+        component_ids=("zodiacal_light", "integrated_starlight"),
+    )
+
+    result = physical_visibility_assessment(
+        Body.VENUS,
+        2451545.0,
+        0.0,
+        0.0,
+        data_pack_config=VisibilityDataPackConfig(directory="unused"),
+        policy=PhysicalVisibilityPolicy(
+            background=anchor,
+            modeled_background_components=(
+                _public_modeled_component(),
+            ),
+        ),
+    )
+
+    assert result.reason == "background_component_inventory_incomplete"
+    assert result.status is PhysicalVisibilityStatus.NOT_EVALUABLE
+
+
+def test_public_assessment_receipts_separate_modeled_component(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_public_assessment_dependencies(monkeypatch)
+    anchor = replace(
+        _public_dark_anchor(),
+        component_ids=("zodiacal_light", "integrated_starlight"),
+        component_inventory_complete=True,
+    )
+    airglow = _public_modeled_component()
+
+    result = physical_visibility_assessment(
+        Body.VENUS,
+        2451545.0,
+        0.0,
+        0.0,
+        data_pack_config=VisibilityDataPackConfig(directory="unused"),
+        policy=PhysicalVisibilityPolicy(
+            background=anchor,
+            modeled_background_components=(airglow,),
+        ),
+    )
+
+    assert result.status is PhysicalVisibilityStatus.EVALUATED
+    assert result.background_receipt is not None
+    assert result.background_receipt.authority_id == (
+        "modeled_twilight_plus_declared_background_components_v1"
+    )
+    assert result.background_receipt.component_inventory_complete
+    assert result.background_receipt.modeled_component_count == 1
+    component_receipt = next(
+        receipt
+        for receipt in result.components
+        if receipt.role == "modeled_background_component"
+    )
+    details = dict(component_receipt.details)
+    assert component_receipt.component_id == airglow.model_id
+    assert details["background_component_id"] == "airglow"
+    assert details["spatial_applicability_id"] == "test-site"
+    assert (
+        details["uncertainty_authority_id"]
+        == "test-uncertainty-not-propagated"
+    )
+    assert (
+        "modeled_background_component:airglow:input_uncertainty"
+        in result.error_budget_receipt.unquantified_error_sources
+    )
+
+
+def test_physical_observer_field_factor_is_fixed_and_receipted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_public_assessment_dependencies(monkeypatch)
+
+    result = physical_visibility_assessment(
+        Body.VENUS,
+        2451545.0,
+        0.0,
+        0.0,
+        data_pack_config=VisibilityDataPackConfig(directory="unused"),
+        policy=_physical_policy(),
+    )
+
+    assert result.status is PhysicalVisibilityStatus.EVALUATED
+    observer = result.observer_protocol_receipt
+    assert observer.detection_field_factor_value == 2.0
+    assert not observer.detection_field_factor_mutable
+    assert not observer.probabilistic_detection_claimed
+    assert observer.detection_field_factor_source_ids == (
+        "Crumey:2014:equation_53",
+        "Crumey:2014:notional_field_factor_F_2",
+    )
+    assert result.threshold_receipt is not None
+    assert result.threshold_receipt.field_factor == 2.0
+    observer_component = next(
+        receipt
+        for receipt in result.components
+        if receipt.role == "observer_protocol"
+    )
+    assert dict(observer_component.details) == {
+        "task": "known_target_directed_averted_detection",
+        "optical_aid": "none",
+        "detection_field_factor_model_id": (
+            "crumey_2014_equation_53_fixed_notional_f2_v1"
+        ),
+        "detection_field_factor_value": "2",
+        "detection_field_factor_mutable": "false",
+        "probabilistic_detection_claimed": "false",
+    }
+    assert "detection_field_factor" not in {
+        field.name for field in fields(PhysicalVisibilityPolicy)
+    }
 
 
 def test_public_assessment_rejects_nonfinite_engine_photometry(

@@ -19,6 +19,8 @@ from moira.heliacal import (
     PhysicalAtmosphereInput,
     PhysicalDirectionalBackground,
     PhysicalEventTimeSemantics,
+    PhysicalHorizonProfile,
+    PhysicalHorizonSample,
     PhysicalVisibilityAssessment,
     PhysicalVisibilityBoundarySource,
     PhysicalVisibilityCrossingDirection,
@@ -923,4 +925,78 @@ def test_pack_floor_replaces_unsupported_visual_horizon_boundary(
         result.horizon_receipt
         .data_pack_target_true_altitude_floor_deg
         == 0.25
+    )
+
+
+def test_directional_horizon_controls_event_boundary_and_certificate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_synthetic_runtime(
+        monkeypatch,
+        geometry=_morning_geometry,
+        margin_for=(
+            lambda jd_ut: (
+                1.0 if _day_and_fraction(jd_ut)[0] == 100 else -1.0
+            )
+        ),
+        solar_domain=(-18.0, 0.0),
+        target_domain=(0.25, 45.0),
+    )
+    profile = PhysicalHorizonProfile(
+        samples=tuple(
+            PhysicalHorizonSample(float(azimuth), 5.0)
+            for azimuth in range(0, 360, 10)
+        ),
+        profile_id="synthetic-flat-five-degree-horizon-v1",
+        source_id="synthetic-survey",
+        source_receipt_sha256=_SHA,
+    )
+    result = physical_visibility_event(
+        Body.MARS,
+        PhysicalVisibilityPhase.MORNING_FIRST_RISING,
+        99.5,
+        0.0,
+        0.0,
+        data_pack_config=VisibilityDataPackConfig("unused"),
+        policy=replace(_policy(), directional_horizon=profile),
+        search_policy=_search_policy(),
+    )
+
+    expected_event_jd = (
+        99.5
+        + 0.15
+        + math.asin(5.0 / 30.0) / (2.0 * math.pi)
+    )
+    assert result.status is PhysicalVisibilityStatus.EVALUATED
+    assert result.reason is None
+    assert result.event_jd_ut == pytest.approx(
+        expected_event_jd,
+        abs=2.0e-6,
+    )
+    assert (
+        result.boundary_source
+        is PhysicalVisibilityBoundarySource.TARGET_HORIZON
+    )
+    assert (
+        result.event_time_semantics
+        is PhysicalEventTimeSemantics.APPARENT_TARGET_HORIZON
+    )
+    assert result.horizon_receipt.directional_profile_applied
+    assert (
+        result.horizon_receipt.directional_profile_id
+        == profile.profile_id
+    )
+    assert result.horizon_receipt.actual_maximum_gap_deg == 10.0
+    assert (
+        result.horizon_receipt.event_certificate_source_sha256
+        == heliacal._PHYSICAL_DIRECTIONAL_HORIZON_CERTIFICATE_SHA256
+    )
+    assert (
+        result.solver_receipt.crossing_certificate_source_sha256
+        == heliacal._PHYSICAL_DIRECTIONAL_HORIZON_CERTIFICATE_SHA256
+    )
+    assert any(
+        "directional-horizon:target" in certificate_id
+        for certificate_id
+        in result.solver_receipt.crossing_certificate_ids
     )

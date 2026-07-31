@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility Implementation Plan
 
 Date: 2026-07-30
-Status: Phases 0 through 3 complete; Phase 4 is the next inactive phase
+Status: Phases 0 through 3 complete; Phase 4 is in progress
 Scope: Moira engine truth, offline reference-data production, public Python
 contracts, REST transport, validation, native strengthening, release
 documentation, and later website adoption
@@ -219,7 +219,7 @@ failure reasons, or provenance.
 | 1 | Reproducible atmospheric reference laboratory | Complete | [Checkpoints 1-6](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md), [radiance/response checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_RADIANCE_RESPONSE_CHECKPOINT_2026-07-30.md), and [closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md) |
 | 2 | Python spectral single-epoch truth | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CLOSURE_2026-07-30.md) |
 | 3 | Physical visibility-event solver | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md) and [restart checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_RESTART_CHECKPOINT_2026-07-30.md) |
-| 4 | Moonlight, airglow, horizon, and local realism | Not started | Pending |
+| 4 | Moonlight, airglow, horizon, and local realism | In progress | [Directional-horizon checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_DIRECTIONAL_HORIZON_CHECKPOINT_2026-07-31.md); [background-composition checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_BACKGROUND_COMPOSITION_CHECKPOINT_2026-07-31.md); [observer-factor checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_OBSERVER_FACTOR_CHECKPOINT_2026-07-31.md) |
 | 5 | Public contract parity | Not started | Pending |
 | 6 | Optional native strengthening | Not started | Pending benchmark decision |
 | 7 | Validation, admission, release, and documentation | Not started | Pending |
@@ -1059,7 +1059,7 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 
 ### Moonlight
 
-- [ ] Preserve Krisciunas-Schaefer under its existing identifier.
+- [x] Preserve Krisciunas-Schaefer under its existing identifier.
 - [ ] Implement Jones 2013 only under a new versioned identifier.
 - [ ] Expose lunar phase, separation, lunar altitude, atmospheric, and
   scattering inputs in the component receipt.
@@ -1069,20 +1069,21 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 
 ### Airglow and natural background
 
-- [ ] Preserve measured local background as the preferred authority.
+- [x] Preserve measured local background as the preferred authority.
 - [ ] Use ESO and PALACE results as site-bound comparison/reference material.
-- [ ] Do not make a Paranal profile a global default.
-- [ ] Separate airglow, zodiacal light, integrated starlight, and artificial
+- [x] Do not make a Paranal profile a global default.
+- [x] Separate airglow, zodiacal light, integrated starlight, and artificial
   light whenever modeled components are supplied.
-- [ ] Prevent double counting when a measured background already contains
+- [x] Prevent double counting when a measured background already contains
   those components.
 
 ### Horizon and observer
 
-- [ ] Add a caller-supplied azimuth/elevation horizon profile.
-- [ ] Define profile interpolation, wraparound, resolution, and validation.
-- [ ] Preserve the scalar horizon input as a compatibility path.
-- [ ] Define the admitted observer-factor input and its valid range.
+- [x] Add a caller-supplied azimuth/elevation horizon profile.
+- [x] Define profile interpolation, wraparound, resolution, and validation.
+- [x] Preserve the scalar horizon input as a compatibility path.
+- [x] Resolve the observer-factor contract: keep the physical protocol at the
+  source-receipted singleton `F = 2`, with no generic skill/probability input.
 - [ ] Compute sensitivity envelopes from explicit parameter ranges.
 
 ### Phase 4 exit gate
