@@ -1,0 +1,85 @@
+{
+  "schema": "moira.physical-heliacal-visibility-event-crossing-certificate/v1",
+  "certificate_id": "physical-heliacal-event-lipschitz-v1",
+  "status": "admitted_exact_pack_crossing_certificate",
+  "build_date": "2026-07-30",
+  "exact_data_pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.2.0",
+    "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c"
+  },
+  "event_admission": {
+    "planetary_targets": [
+      "Mars",
+      "Jupiter",
+      "Saturn"
+    ],
+    "stellar_targets": [
+      "Sirius"
+    ],
+    "phases": [
+      "morning_first_rising",
+      "morning_first_setting",
+      "evening_last_rising",
+      "evening_last_setting"
+    ],
+    "explicitly_not_admitted": {
+      "Mercury": "event guards can leave the source-owned 2-to-170-degree phase domain",
+      "Venus": "event guards can leave the source-owned 2-to-165-degree phase domain"
+    }
+  },
+  "astronomical_absolute_rate_bounds_per_day": {
+    "solar_true_altitude_deg": 384.0,
+    "target_true_altitude_deg": 512.0,
+    "relative_solar_azimuth_deg": 1024.0,
+    "refracted_apparent_horizon_signal_deg": 1024.0
+  },
+  "astronomical_rate_bound_derivation": {
+    "sidereal_rotation_ceiling_deg_per_day": 361.0,
+    "solar_apparent_motion_allowance_deg_per_day": 2.0,
+    "admitted_target_apparent_motion_allowance_deg_per_day": 16.0,
+    "pack_maximum_target_true_altitude_deg": 45.0,
+    "pack_maximum_absolute_solar_altitude_deg": 9.0,
+    "refraction_derivative_amplification_ceiling": 2.0,
+    "derived_solar_true_altitude_rate_ceiling_deg_per_day": 363.0,
+    "derived_target_true_altitude_rate_ceiling_deg_per_day": 377.0,
+    "derived_relative_solar_azimuth_rate_ceiling_deg_per_day": 900.6833536757019,
+    "derived_refracted_apparent_horizon_rate_ceiling_deg_per_day": 754.0,
+    "coordinate_singularity_excluded_by_pack_target_altitude_ceiling": true
+  },
+  "exact_pack_maximum_piecewise_slopes": {
+    "direct_extinction_magnitude_per_target_altitude_deg": 12.59259154196714,
+    "photopic_surface_brightness_magnitude_per_solar_altitude_deg": 1.2913060331596116,
+    "photopic_surface_brightness_magnitude_per_target_altitude_deg": 0.4002657774655221,
+    "photopic_surface_brightness_magnitude_per_relative_azimuth_deg": 0.04255159129220745,
+    "scotopic_surface_brightness_magnitude_per_solar_altitude_deg": 1.2963087128546542,
+    "scotopic_surface_brightness_magnitude_per_target_altitude_deg": 0.4901040730364816,
+    "scotopic_surface_brightness_magnitude_per_relative_azimuth_deg": 0.040601411075189005
+  },
+  "visibility_margin_rate_derivation_magnitude_per_day": {
+    "direct_extinction_interpolant_ceiling": 6447.406869487176,
+    "twilight_surface_brightness_coordinate_ceiling": 792.2886606140862,
+    "cie_mes2_and_crumey_amplification_factor": 2.0,
+    "outer_planet_photometry_and_profile_allowance": 512.0,
+    "rounding_and_boundary_allowance": 256.0,
+    "derived_total_before_binary_ceiling": 8799.984190715348,
+    "admitted_binary_ceiling": 16384.0
+  },
+  "solver_law": {
+    "zero_exclusion": "one endpoint with absolute value greater than rate_bound_times_interval_width certifies a constant nonzero sign",
+    "opposite_sign_intervals": "recursively enclosed to the public root-time tolerance",
+    "same_sign_intervals_not_excluding_zero": "recursively subdivided to the public root-time tolerance; possible-zero leaves must merge into a bounded enclosure containing a witnessed crossing or tangent, otherwise the search fails closed",
+    "unresolved_result": "crossing_completeness_not_certified",
+    "dense_sampling_alone_is_a_certificate": false
+  },
+  "scope_limits": [
+    "exact_pack_identity_required",
+    "outer_planets_and_sirius_only",
+    "pack_true_altitude_and_solar_altitude_domains_only",
+    "caller_atmosphere_must_match_pack_domain",
+    "no_claim_for_mercury_or_venus_physical_events",
+    "no_claim_for_legacy_heliacal_dispatch",
+    "no_probabilistic_confidence_claim",
+    "direct_extinction_derivative_is_for_the_runtime_log10_altitude_coordinate"
+  ]
+}

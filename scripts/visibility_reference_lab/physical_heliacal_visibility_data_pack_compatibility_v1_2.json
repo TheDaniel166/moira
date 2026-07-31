@@ -1,0 +1,111 @@
+{
+  "schema": "moira.physical-heliacal-visibility-data-pack-compatibility/v1",
+  "compatibility_id": "moira-physical-heliacal-visibility-data-pack-v1.2",
+  "status": "phase3_engine_loader_contract",
+  "supported_manifest_schemas": [
+    "moira.physical-heliacal-visibility-data-pack-manifest/v1"
+  ],
+  "supported_pack_id": "moira-physical-heliacal-visibility",
+  "supported_pack_major_versions": [
+    1
+  ],
+  "supported_pack_minor_versions": [
+    2
+  ],
+  "supported_table_format_ids": [
+    "regular-grid-ieee754-binary32-le-v1"
+  ],
+  "supported_composite_model_ids": [
+    "clear_sky_naked_eye_point_source_v1"
+  ],
+  "required_capabilities": [
+    "direct_spectral_extinction_regular_grid",
+    "per_cell_solver_relative_standard_error",
+    "planetary_target_spectral_profiles",
+    "solar_twilight_photopic_luminance_regular_grid",
+    "solar_twilight_scotopic_luminance_regular_grid",
+    "stellar_target_spectral_profiles"
+  ],
+  "radiance_interpolation": {
+    "coordinate_order": [
+      "solar_center_altitude_deg",
+      "target_true_altitude_deg",
+      "relative_solar_azimuth_deg"
+    ],
+    "linearization_order": "row_major_last_axis_fastest",
+    "quantity": "log10_luminance",
+    "method": "trilinear",
+    "extrapolation": "prohibited"
+  },
+  "radiance_reference": {
+    "spectral_importance_reference_wavelength_nm": 531.0,
+    "shape_normalization_wavelength_nm": 531.0,
+    "absolute_anchor_wavelength_nm": 531.0,
+    "selection": "training_diagnostic_balanced_photopic_scotopic_relative_standard_error"
+  },
+  "direct_extinction_interpolation": {
+    "coordinate": "log10_target_true_altitude_plus_0_25_deg",
+    "quantity": "extinction_magnitude",
+    "method": "linear_per_spectral_bin",
+    "extrapolation": "prohibited"
+  },
+  "target_profiles": {
+    "schema": "moira.physical-heliacal-visibility-target-profiles/v1",
+    "file_role": "target_profiles",
+    "target_ids": [
+      "Mercury",
+      "Venus",
+      "Mars",
+      "Jupiter",
+      "Saturn"
+    ],
+    "spectral_bins": {
+      "coordinate": "bin_start_vacuum_nm",
+      "start_nm": 380.0,
+      "width_nm": 1.0,
+      "count": 400
+    },
+    "color_warp_method": "johnson_cousins_piecewise_linear_differential_magnitude_v1",
+    "outside_domain": "typed_not_evaluable"
+  },
+  "stellar_target_profiles": {
+    "schema": "moira.physical-heliacal-visibility-stellar-target-profiles/v1",
+    "file_role": "stellar_target_profiles",
+    "target_ids": [
+      "Sirius"
+    ],
+    "spectral_bins": {
+      "coordinate": "bin_start_vacuum_nm",
+      "start_nm": 380.0,
+      "width_nm": 1.0,
+      "count": 400
+    },
+    "visual_photometry_system_id": "johnson_v",
+    "catalog_identity_required": true,
+    "generic_color_index_allowed": false,
+    "outside_domain": "typed_not_evaluable"
+  },
+  "binary_representation": {
+    "byte_order": "little",
+    "floating_point": "IEEE_754_binary32",
+    "nonfinite_values_allowed": false,
+    "missing_value_sentinel": null
+  },
+  "deep_twilight_law": {
+    "minimum_solar_center_altitude_deg": -9.0,
+    "below_minimum_modeled_twilight_status": "not_evaluable",
+    "below_minimum_modeled_twilight_reason": "solar_twilight_below_data_pack_domain",
+    "monte_carlo_non_detection_is_zero": false
+  },
+  "runtime_boundary": {
+    "caller_supplied_path_required": true,
+    "automatic_download_allowed": false,
+    "network_allowed": false,
+    "libRadtran_required": false,
+    "REPTRAN_required": false,
+    "CIE_source_tables_required": false,
+    "planetary_source_spectra_required": false,
+    "stellar_source_spectra_required": false,
+    "engine_loader_implementation_owner": "phase3_physical_event_truth"
+  }
+}

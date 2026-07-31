@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility Implementation Plan
 
 Date: 2026-07-30
-Status: Phases 0 through 2 complete; Phase 3 is the next authorized phase
+Status: Phases 0 through 3 complete; Phase 4 is the next inactive phase
 Scope: Moira engine truth, offline reference-data production, public Python
 contracts, REST transport, validation, native strengthening, release
 documentation, and later website adoption
@@ -51,12 +51,14 @@ The existing Python implementation in `moira/heliacal.py` provides:
 - explicit physical-model validity checks; and
 - typed single-epoch visibility assessments.
 
-The current physical path is intentionally bounded:
+The admitted physical path is intentionally bounded:
 
 - it is opt-in;
-- it is single epoch;
+- single-epoch assessment admits Mercury through Saturn and Sirius;
+- event search admits Mars, Jupiter, Saturn, and Sirius;
 - it is naked-eye and point-source only;
-- it rejects unsupported event search rather than fabricating event times; and
+- Mercury, Venus, and other unsupported event targets fail closed rather than
+  fabricating event times; and
 - legacy behavior remains the default.
 
 The current native implementation in `src/native/include/visibility.hpp`
@@ -216,7 +218,7 @@ failure reasons, or provenance.
 | 0 | Doctrine, source, licensing, and contract lock | Complete | Closure receipt below |
 | 1 | Reproducible atmospheric reference laboratory | Complete | [Checkpoints 1-6](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md), [radiance/response checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_RADIANCE_RESPONSE_CHECKPOINT_2026-07-30.md), and [closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md) |
 | 2 | Python spectral single-epoch truth | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CLOSURE_2026-07-30.md) |
-| 3 | Physical visibility-event solver | Not started | Pending |
+| 3 | Physical visibility-event solver | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md) and [restart checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_RESTART_CHECKPOINT_2026-07-30.md) |
 | 4 | Moonlight, airglow, horizon, and local realism | Not started | Pending |
 | 5 | Public contract parity | Not started | Pending |
 | 6 | Optional native strengthening | Not started | Pending benchmark decision |
@@ -962,62 +964,96 @@ visibility_margin(t)
 
 ### Solver implementation
 
-- [ ] Construct the valid observation window from target-horizon and
+- [x] Construct the valid observation window from target-horizon and
   solar-geometry constraints.
-- [ ] Evaluate all required ephemeris and atmospheric state at each sample.
-- [ ] Adaptively sample the complete valid interval.
-- [ ] Detect all visibility-margin sign changes.
-- [ ] Refine each bracket with a deterministic root solver.
-- [ ] Detect tangencies or near-zero intervals that do not produce a simple
+- [x] Evaluate all required ephemeris and atmospheric state at each sample.
+- [x] Adaptively sample the complete valid interval.
+- [x] Detect all visibility-margin sign changes.
+- [x] Refine each witnessed bracket with a deterministic root solver.
+- [x] Detect tangencies or near-zero intervals that do not produce a simple
   sign change.
-- [ ] Select the crossing required by the Phase 0 event doctrine.
-- [ ] Classify each observing day.
-- [ ] Search for the first qualifying day for rising events.
-- [ ] Search for the last qualifying day for setting events.
-- [ ] Preserve an explicit no-event result.
+- [x] Select the crossing required by the Phase 0 event doctrine.
+- [x] Classify each observing day.
+- [x] Search for the first qualifying day for rising events.
+- [x] Search for the last qualifying day for setting events.
+- [x] Preserve an explicit no-event result.
 
 ### Event receipt
 
-- [ ] Return primary `jd_ut`.
-- [ ] Return typed event-time semantics.
-- [ ] Return observation-window start and end.
-- [ ] Return threshold-crossing direction.
-- [ ] Return the boundary source and an applicable-or-not-applicable final
+- [x] Return primary `jd_ut`.
+- [x] Return typed event-time semantics.
+- [x] Return observation-window start and end.
+- [x] Return threshold-crossing direction.
+- [x] Return the boundary source and an applicable-or-not-applicable final
   visibility-margin residual.
-- [ ] Return the derived arcus, defined from solar altitude at the threshold.
-- [ ] Return scan, bracket, and root tolerances.
-- [ ] Return atmosphere, table, observer, horizon, model, and ephemeris
+- [x] Return the derived arcus, defined from solar altitude at the threshold.
+- [x] Return scan, bracket, and root tolerances.
+- [x] Return atmosphere, table, observer, horizon, model, and ephemeris
   receipts.
-- [ ] Return an optional deterministic sensitivity interval.
-- [ ] Do not label a sensitivity interval as probabilistic confidence.
+- [x] Return an optional deterministic data-pack numerical sensitivity
+  interval.
+- [x] Do not label a sensitivity interval as probabilistic confidence.
 
 ### Body and dispatch behavior
 
-- [ ] Admit only the body/event combinations frozen in Phase 0.
-- [ ] Keep lunar crescent search on the lunar-specific model.
-- [ ] Ensure the new fixed-star path does not enter the legacy native arcus
+- [x] Admit only the currently source-complete body/event combinations frozen
+  in Phase 0.
+- [x] Keep lunar crescent search on the lunar-specific model.
+- [x] Ensure the new fixed-star path does not enter the legacy native arcus
   accelerator.
-- [ ] Preserve all legacy native dispatch behavior for legacy policies.
+- [x] Preserve all legacy native dispatch behavior for legacy policies.
 
 ### Verification
 
-- [ ] Test multiple-crossing intervals.
-- [ ] Test tangency and near-threshold cases.
-- [ ] Test scan-step convergence.
-- [ ] Test root-residual compliance.
-- [ ] Test first-day and last-day ownership.
-- [ ] Test circumpolar, polar-day, polar-night, no-rise, and no-set cases.
-- [ ] Test deterministic repeated execution.
-- [ ] Test sensitivity to the admitted atmospheric dimensions.
-- [ ] Prove legacy event dates remain unchanged when the new policy is absent.
+- [x] Test multiple-crossing intervals.
+- [x] Test tangency and near-threshold cases.
+- [x] Test scan-step convergence.
+- [x] Test root-residual compliance.
+- [x] Test first-day and last-day ownership.
+- [x] Test circumpolar, polar-day, polar-night, no-rise, and no-set cases.
+- [x] Test deterministic repeated execution.
+- [x] Test sensitivity to the admitted atmospheric dimensions.
+- [x] Prove legacy event dates remain unchanged when the new policy is absent.
+
+### Phase 3 closure receipt - 2026-07-30
+
+The additive Python event solver is closed for Mars, Jupiter, Saturn, and
+Sirius across all four physical phases. Mercury and Venus remain valid
+Phase 2 single-epoch targets but fail closed for event search because
+first/last guard days can leave their source-owned phase-angle domains.
+
+Exact data-pack version 1.2 preserves every admitted version 1.1 payload byte
+and adds the BSC5/CALSPEC/CIE Sirius profile. An independently implemented
+validator rederived that profile from checksum-locked local sources, and a
+second offline build reproduced all 14 files byte-for-byte.
+
+Crossing completeness is governed by source-controlled certificate
+`physical-heliacal-event-lipschitz-v1`. An independent validator recomputed
+the runtime log-altitude direct-extinction derivative, all table-coordinate
+slopes, astronomical coordinate bounds, and the 8,799.9842 magnitude/day
+derived margin ceiling below the admitted 16,384 ceiling. Same-sign intervals
+that cannot be excluded are recursively enclosed; an unwitnessed possible
+zero returns `crossing_completeness_not_certified`.
+
+Source-owned event goldens use JPL Horizons for Jupiter and the Sun, and
+Hipparcos plus the offline Astropy/ERFA/IERS transform for Sirius. The current
+engine event differs from those independent one-minute-grid interpolants by
+1.21 seconds for Jupiter and 2.56 seconds for Sirius, within the declared
+60-second oracle tolerance. Both independent guard-day evaluations remain
+non-qualifying.
+
+The detailed scope, receipts, commands, limitations, and next boundary are in
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md).
 
 ### Phase 3 exit gate
 
-- [ ] No valid interval crossing can be skipped by the search strategy.
-- [ ] Event-time semantics are inspectable from the result.
-- [ ] Solver precision and atmospheric sensitivity are reported separately.
-- [ ] Planetary and stellar physical events pass independent validation.
-- [ ] A Phase 3 closure receipt is added to this document.
+- [x] No valid interval crossing can be skipped by the admitted search
+  strategy; possible-zero intervals that cannot be proved or witnessed fail
+  closed.
+- [x] Event-time semantics are inspectable from the result.
+- [x] Solver precision and atmospheric sensitivity are reported separately.
+- [x] Planetary and stellar physical events pass independent validation.
+- [x] A Phase 3 closure receipt is added to this document.
 
 ## Phase 4 - Moonlight, Airglow, Horizon, and Local Realism
 

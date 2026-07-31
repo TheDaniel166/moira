@@ -437,6 +437,22 @@ def test_cie_mes2_closes_at_scotopic_and_photopic_limits() -> None:
     assert photopic.weighting_state == "photopic"
 
 
+@pytest.mark.parametrize(
+    "luminance",
+    (
+        math.nextafter(0.005, math.inf),
+        math.nextafter(5.0, -math.inf),
+    ),
+)
+def test_cie_mes2_contains_published_coefficient_rounding_at_limits(
+    luminance: float,
+) -> None:
+    state = cie_mes2_adaptation(luminance, luminance)
+
+    assert 0.0 <= state.adaptation_coefficient <= 1.0
+    assert state.mesopic_luminance_cd_m2 == pytest.approx(luminance)
+
+
 def test_full_range_threshold_matches_tousey_koomen_table_i() -> None:
     truth = _fixture()["blackwell_crumey_full_range"][
         "tousey_koomen_table_i"
@@ -1033,7 +1049,6 @@ def test_public_assessment_has_no_caller_profile_trust_surface() -> None:
     (
         (Body.MOON, "target_not_admitted"),
         (Body.URANUS, "target_not_admitted"),
-        ("Sirius", "target_not_admitted"),
     ),
 )
 def test_public_assessment_rejects_unadmitted_targets_without_pack_load(

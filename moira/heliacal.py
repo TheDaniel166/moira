@@ -50,16 +50,31 @@ See ``__all__`` below for the stable public surface.
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum
 
 from ._visibility_lut import (
+    VisibilityDataPack,
     VisibilityDataPackConfig,
     VisibilityDataPackDomain,
     VisibilityDataPackDomainError,
     VisibilityDataPackLoadError,
     VisibilityDataPackReceipt,
     load_visibility_data_pack,
+)
+from ._visibility_event_solver import (
+    ObservationDaySolution as _ObservationDaySolution,
+    ObservationPhaseRule as _ObservationPhaseRule,
+    ObservationWindowConstruction as _ObservationWindowConstruction,
+    PhaseTransitionSelection as _PhaseTransitionSelection,
+    ScalarEvaluation as _ScalarEvaluation,
+    ScalarIntervalScan as _ScalarIntervalScan,
+    ScalarLipschitzCertificate as _ScalarLipschitzCertificate,
+    ScalarSearchPolicy as _ScalarSearchPolicy,
+    classify_observation_day as _classify_observation_day,
+    construct_observation_windows as _construct_observation_windows,
+    select_owned_phase_transition as _select_owned_phase_transition,
 )
 from ._visibility_spectral import (
     ConditionedTarget,
@@ -73,8 +88,10 @@ from ._visibility_spectral import (
     spectral_single_epoch_truth,
     sqm_directional_luminance,
 )
+from ._visibility_stellar_targets import (
+    VisibilityStellarTargetProfileError,
+)
 from ._visibility_targets import (
-    ResolvedVisibilityTargetProfile,
     VisibilityTargetContext,
     VisibilityTargetProfileError,
 )
@@ -95,6 +112,10 @@ __all__ = [
     "VisibilityCriterionFamily",
     "PhysicalVisibilityStatus",
     "PhysicalVisibilityEvidenceState",
+    "PhysicalVisibilityPhase",
+    "PhysicalVisibilityCrossingDirection",
+    "PhysicalVisibilityBoundarySource",
+    "PhysicalEventTimeSemantics",
     "PhysicalBackgroundScope",
     "AtmosphericExtinctionAssessment",
     "TwilightSkyBrightnessAssessment",
@@ -113,6 +134,13 @@ __all__ = [
     "PhysicalThresholdReceipt",
     "PhysicalVisibilityErrorBudgetReceipt",
     "PhysicalVisibilityAssessment",
+    "PhysicalVisibilitySearchPolicy",
+    "PhysicalObservationWindowReceipt",
+    "PhysicalEventSolverReceipt",
+    "PhysicalEventSensitivityReceipt",
+    "PhysicalHorizonReceipt",
+    "PhysicalEphemerisReceipt",
+    "PhysicalVisibilityEventResult",
     "VisibilityDataPackConfig",
     "VisibilityDataPackReceipt",
     "LunarCrescentVisibilityClass",
@@ -130,6 +158,7 @@ __all__ = [
     "directional_twilight_sky_brightness",
     "point_source_visibility_threshold",
     "physical_visibility_assessment",
+    "physical_visibility_event",
     "visibility_assessment",
     "visual_limiting_magnitude",
     "visibility_event",
@@ -581,19 +610,57 @@ class VisibilityCriterionFamily(str, Enum):
 
 
 class PhysicalVisibilityStatus(str, Enum):
-    """Evaluation status for the additive physical assessment."""
+    """Evaluation status for additive physical assessment and event truth."""
 
     EVALUATED = "evaluated"
     NOT_EVALUABLE = "not_evaluable"
+    NOT_FOUND = "not_found"
 
 
 class PhysicalVisibilityEvidenceState(str, Enum):
-    """Why a physical assessment did or did not produce truth."""
+    """Why a physical assessment or event did or did not produce truth."""
 
     EVALUATED_CLEAR_SKY = "evaluated_clear_sky"
+    EVALUATED_NO_EVENT = "evaluated_no_event"
     NOT_APPLICABLE = "not_applicable"
     MISSING_DEPENDENCY = "missing_dependency"
     OUT_OF_DOMAIN = "out_of_domain"
+
+
+class PhysicalVisibilityPhase(str, Enum):
+    """Exact within-day and across-day physical event semantics."""
+
+    MORNING_FIRST_RISING = "morning_first_rising"
+    MORNING_FIRST_SETTING = "morning_first_setting"
+    EVENING_LAST_RISING = "evening_last_rising"
+    EVENING_LAST_SETTING = "evening_last_setting"
+
+
+class PhysicalVisibilityCrossingDirection(str, Enum):
+    """Direction of the physical visibility-state transition."""
+
+    NOT_VISIBLE_TO_VISIBLE = "not_visible_to_visible"
+    VISIBLE_TO_NOT_VISIBLE = "visible_to_not_visible"
+
+
+class PhysicalVisibilityBoundarySource(str, Enum):
+    """Astronomical boundary that owns the reported event instant."""
+
+    VISIBILITY_MARGIN = "visibility_margin"
+    TARGET_HORIZON = "target_horizon"
+    TARGET_DATA_PACK_ALTITUDE_FLOOR = (
+        "target_data_pack_altitude_floor"
+    )
+
+
+class PhysicalEventTimeSemantics(str, Enum):
+    """Typed meaning of the primary event Julian date."""
+
+    VISIBILITY_MARGIN_ZERO = "visibility_margin_zero"
+    APPARENT_TARGET_HORIZON = "apparent_target_horizon"
+    DATA_PACK_TARGET_ALTITUDE_FLOOR = (
+        "data_pack_target_altitude_floor"
+    )
 
 
 class PhysicalBackgroundScope(str, Enum):
@@ -1302,6 +1369,10 @@ class PhysicalVisibilityPolicy:
     refraction_relative_humidity: float = 0.0
 
     def __post_init__(self) -> None:
+        if not isinstance(self.atmosphere, PhysicalAtmosphereInput):
+            raise TypeError(
+                "atmosphere must be a PhysicalAtmosphereInput"
+            )
         if self.background is not None and not isinstance(
             self.background,
             (
@@ -1358,6 +1429,52 @@ class PhysicalVisibilityPolicy:
             raise ValueError(
                 "refraction_relative_humidity must be in [0, 1]"
             )
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalVisibilitySearchPolicy:
+    """Deterministic search and refinement policy for physical events."""
+
+    search_window_days: int = 400
+    scan_step_days: float = 5.0 / 1440.0
+    adaptive_minimum_step_days: float = 30.0 / 86400.0
+    root_time_tolerance_days: float = 0.25 / 86400.0
+    root_margin_tolerance_magnitude: float = 1.0e-5
+    near_zero_tolerance_magnitude: float = 2.5e-3
+    curvature_tolerance_magnitude: float = 5.0e-3
+    maximum_adaptive_depth: int = 12
+    maximum_root_iterations: int = 96
+
+    def __post_init__(self) -> None:
+        if (
+            isinstance(self.search_window_days, bool)
+            or not isinstance(self.search_window_days, int)
+            or self.search_window_days <= 0
+        ):
+            raise ValueError(
+                "search_window_days must be a positive integer"
+            )
+        self._scalar_policy()
+
+    def _scalar_policy(self) -> _ScalarSearchPolicy:
+        return _ScalarSearchPolicy(
+            scan_step_days=self.scan_step_days,
+            adaptive_minimum_step_days=(
+                self.adaptive_minimum_step_days
+            ),
+            root_time_tolerance_days=self.root_time_tolerance_days,
+            root_value_tolerance=(
+                self.root_margin_tolerance_magnitude
+            ),
+            near_zero_tolerance=(
+                self.near_zero_tolerance_magnitude
+            ),
+            curvature_tolerance=(
+                self.curvature_tolerance_magnitude
+            ),
+            maximum_adaptive_depth=self.maximum_adaptive_depth,
+            maximum_root_iterations=self.maximum_root_iterations,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -1521,6 +1638,141 @@ class PhysicalVisibilityAssessment:
     target_receipt: PhysicalTargetReceipt | None
     threshold_receipt: PhysicalThresholdReceipt | None
     error_budget_receipt: PhysicalVisibilityErrorBudgetReceipt | None
+    components: tuple[VisibilityComponentReceipt, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalObservationWindowReceipt:
+    """Exact target-horizon-connected interval used by an event search."""
+
+    observation_day_key: int
+    start_jd_ut: float
+    end_jd_ut: float
+    target_boundary_jd_ut: float
+    target_boundary_role: str
+    solar_side: str
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalEventSolverReceipt:
+    """Numerical search receipt, separate from scientific sensitivity."""
+
+    search_window_days: int
+    scan_step_days: float
+    bracket_tolerance_days: float
+    adaptive_minimum_step_days: float
+    root_time_tolerance_days: float
+    root_margin_tolerance_magnitude: float
+    near_zero_tolerance_magnitude: float
+    curvature_tolerance_magnitude: float
+    candidate_day_count: int
+    guard_day_count: int
+    classified_day_count: int
+    evaluable_day_count: int
+    observation_window_count: int
+    scalar_evaluation_count: int
+    sign_changing_root_count: int
+    tangent_root_count: int
+    near_zero_interval_count: int
+    non_evaluable_gap_count: int
+    maximum_sample_gap_days: float | None
+    classified_day_states: tuple[
+        tuple[int, str, str | None, str | None],
+        ...,
+    ]
+    non_evaluable_day_states: tuple[
+        tuple[int, str, str | None],
+        ...,
+    ]
+    crossing_completeness_state: str
+    crossing_completeness_reason: str | None
+    crossing_certificate_ids: tuple[str, ...] = ()
+    crossing_certificate_source_sha256: str | None = None
+    root_enclosure_count: int = 0
+    unresolved_certificate_interval_count: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalEventSensitivityReceipt:
+    """Deterministic sensitivity state, never probabilistic confidence."""
+
+    data_pack_numerical_event_interval_jd_ut: (
+        tuple[float, float] | None
+    )
+    data_pack_numerical_reason: str | None
+    atmospheric_scenario_event_interval_jd_ut: (
+        tuple[float, float] | None
+    )
+    atmospheric_scenario_reason: str | None
+    probabilistic_confidence_claimed: bool
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalHorizonReceipt:
+    """Scalar apparent-horizon and refraction boundary identity."""
+
+    horizon_model_id: str
+    apparent_horizon_altitude_deg: float
+    directional_profile_applied: bool
+    refraction_model_id: str
+    refraction_pressure_hpa: float
+    refraction_temperature_c: float
+    refraction_relative_humidity: float
+    applied_to: tuple[str, ...]
+    target_apparent_boundary_altitude_deg: float | None = None
+    solar_apparent_horizon_altitude_deg: float | None = None
+    data_pack_target_true_altitude_floor_deg: float | None = None
+    target_boundary_narrowing_applied: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalEphemerisReceipt:
+    """Ephemeris and horizontal-frame identity used by the event solver."""
+
+    provider_id: str
+    input_timescale: str
+    ephemeris_timescale: str
+    direction_frame: str
+    horizontal_frame: str
+    refraction_applied_separately: bool
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicalVisibilityEventResult:
+    """Additive typed result for one four-phase physical event search."""
+
+    body: str
+    phase: PhysicalVisibilityPhase
+    latitude_deg: float
+    longitude_deg: float
+    status: PhysicalVisibilityStatus
+    evidence_state: PhysicalVisibilityEvidenceState
+    reason: str | None
+    observation_day_key: int | None
+    comparison_observation_day_key: int | None
+    comparison_day_status: str | None
+    event_jd_ut: float | None
+    event_time_semantics: PhysicalEventTimeSemantics | None
+    target_horizon_jd_ut: float | None
+    peak_margin_jd_ut: float | None
+    peak_margin_magnitude: float | None
+    boundary_role: str | None
+    crossing_direction: PhysicalVisibilityCrossingDirection | None
+    boundary_source: PhysicalVisibilityBoundarySource | None
+    visibility_margin_residual_magnitude: float | None
+    visibility_margin_bracket_jd_ut: tuple[float, float] | None
+    root_iterations: int | None
+    derived_arcus_deg: float | None
+    assessment_jd_ut: float | None
+    observation_window: PhysicalObservationWindowReceipt | None
+    event_assessment: PhysicalVisibilityAssessment | None
+    data_pack_receipt: VisibilityDataPackReceipt | None
+    atmosphere_receipt: PhysicalAtmosphereReceipt
+    observer_protocol_receipt: PhysicalObserverProtocolReceipt
+    horizon_receipt: PhysicalHorizonReceipt
+    ephemeris_receipt: PhysicalEphemerisReceipt | None
+    solver_receipt: PhysicalEventSolverReceipt
+    sensitivity_receipt: PhysicalEventSensitivityReceipt
     components: tuple[VisibilityComponentReceipt, ...]
 
 
@@ -2228,6 +2480,45 @@ _PHYSICAL_VISIBILITY_PLANETS: frozenset[str] = frozenset({
     Body.JUPITER,
     Body.SATURN,
 })
+_PHYSICAL_VISIBILITY_STARS: frozenset[str] = frozenset({
+    "Sirius",
+})
+_PHYSICAL_VISIBILITY_TARGETS: frozenset[str] = (
+    _PHYSICAL_VISIBILITY_PLANETS | _PHYSICAL_VISIBILITY_STARS
+)
+_PHYSICAL_EVENT_PLANETS: frozenset[str] = frozenset({
+    Body.MARS,
+    Body.JUPITER,
+    Body.SATURN,
+})
+_PHYSICAL_EVENT_TARGETS: frozenset[str] = (
+    _PHYSICAL_EVENT_PLANETS | _PHYSICAL_VISIBILITY_STARS
+)
+_PHYSICAL_EVENT_PACK_VERSION = "1.2.0"
+_PHYSICAL_EVENT_PACK_MANIFEST_SHA256 = (
+    "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c"
+)
+_PHYSICAL_EVENT_CROSSING_CERTIFICATE_SHA256 = (
+    "eacf8c373606c1628cebdd4caa611ece533d368c32c7f86674a13e04a4c13d3e"
+)
+_PHYSICAL_EVENT_GEOMETRY_CERTIFICATE = _ScalarLipschitzCertificate(
+    certificate_id=(
+        "physical-heliacal-event-lipschitz-v1:geometry"
+    ),
+    maximum_absolute_rate_per_day=1024.0,
+    source_receipt_sha256=(
+        _PHYSICAL_EVENT_CROSSING_CERTIFICATE_SHA256
+    ),
+)
+_PHYSICAL_EVENT_MARGIN_CERTIFICATE = _ScalarLipschitzCertificate(
+    certificate_id=(
+        "physical-heliacal-event-lipschitz-v1:visibility-margin"
+    ),
+    maximum_absolute_rate_per_day=16384.0,
+    source_receipt_sha256=(
+        _PHYSICAL_EVENT_CROSSING_CERTIFICATE_SHA256
+    ),
+)
 _PHYSICAL_PLANET_PHOTOMETRY_MODEL_ID = (
     "mallama_hilton_2018_moira_planetary_v1"
 )
@@ -3126,27 +3417,51 @@ class _PhysicalTargetPhotometryContext:
     """Engine-owned photometry and spectral-profile geometry."""
 
     apparent_magnitude: float
-    phase_angle_deg: float
+    phase_angle_deg: float | None
     saturn_effective_ring_sub_latitude_deg: float | None
     geometry_valid: bool
+    catalog_name: str | None = None
+    catalog_nomenclature: str | None = None
 
 
 def _physical_target_photometry_context(
     body: str,
     jd_ut: float,
 ) -> _PhysicalTargetPhotometryContext:
-    """Resolve one internally consistent planetary photometry context."""
+    """Resolve one internally consistent planetary or stellar context."""
 
-    from .phase import _apparent_magnitude_context
+    if body in _PHYSICAL_VISIBILITY_PLANETS:
+        from .phase import _apparent_magnitude_context
 
-    context = _apparent_magnitude_context(body, jd_ut)
+        context = _apparent_magnitude_context(body, jd_ut)
+        return _PhysicalTargetPhotometryContext(
+            apparent_magnitude=context.apparent_magnitude,
+            phase_angle_deg=context.phase_angle_deg,
+            saturn_effective_ring_sub_latitude_deg=(
+                context.saturn_effective_ring_sub_latitude_deg
+            ),
+            geometry_valid=context.geometry_valid,
+        )
+
+    from ._ephemeris_time import _ut1_to_ephemeris_tt
+    from .julian import ut_to_tt
+    from .spk_reader import get_active_reader
+    from .stars import star_at
+
+    reader = get_active_reader()
+    jd_tt = (
+        ut_to_tt(jd_ut)
+        if reader is None
+        else _ut1_to_ephemeris_tt(jd_ut, reader)
+    )
+    star = star_at(body, jd_tt)
     return _PhysicalTargetPhotometryContext(
-        apparent_magnitude=context.apparent_magnitude,
-        phase_angle_deg=context.phase_angle_deg,
-        saturn_effective_ring_sub_latitude_deg=(
-            context.saturn_effective_ring_sub_latitude_deg
-        ),
-        geometry_valid=context.geometry_valid,
+        apparent_magnitude=star.magnitude,
+        phase_angle_deg=None,
+        saturn_effective_ring_sub_latitude_deg=None,
+        geometry_valid=True,
+        catalog_name=star.name,
+        catalog_nomenclature=star.nomenclature,
     )
 
 
@@ -4172,6 +4487,29 @@ def physical_visibility_assessment(
     :func:`visibility_assessment` path is not consulted or changed.
     """
 
+    return _physical_visibility_assessment_impl(
+        body,
+        jd_ut,
+        lat,
+        lon,
+        data_pack_config=data_pack_config,
+        policy=policy,
+        loaded_data_pack=None,
+    )
+
+
+def _physical_visibility_assessment_impl(
+    body: str,
+    jd_ut: float,
+    lat: float,
+    lon: float,
+    *,
+    data_pack_config: VisibilityDataPackConfig,
+    policy: PhysicalVisibilityPolicy | None,
+    loaded_data_pack: VisibilityDataPack | None,
+) -> PhysicalVisibilityAssessment:
+    """Evaluate one instant, optionally reusing one validated immutable pack."""
+
     if not isinstance(body, str) or not body:
         raise ValueError("body must be a nonempty string")
     _validate_physical_request_coordinate(jd_ut, "jd_ut")
@@ -4198,7 +4536,7 @@ def physical_visibility_assessment(
     )
     observer_receipt = _physical_observer_receipt(resolved_policy)
 
-    if body not in _PHYSICAL_VISIBILITY_PLANETS:
+    if body not in _PHYSICAL_VISIBILITY_TARGETS:
         return _physical_not_evaluable(
             body,
             jd_ut,
@@ -4246,20 +4584,50 @@ def physical_visibility_assessment(
             observer_receipt=observer_receipt,
         )
 
-    try:
-        pack = load_visibility_data_pack(data_pack_config)
-    except VisibilityDataPackLoadError as exc:
-        return _physical_not_evaluable(
-            body,
-            jd_ut,
-            lat,
-            lon,
-            resolved_policy,
-            PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
-            exc.reason,
-            atmosphere_receipt=atmosphere_receipt,
-            observer_receipt=observer_receipt,
-        )
+    if loaded_data_pack is None:
+        try:
+            pack = load_visibility_data_pack(data_pack_config)
+        except VisibilityDataPackLoadError as exc:
+            return _physical_not_evaluable(
+                body,
+                jd_ut,
+                lat,
+                lon,
+                resolved_policy,
+                PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+                exc.reason,
+                atmosphere_receipt=atmosphere_receipt,
+                observer_receipt=observer_receipt,
+            )
+    else:
+        if not isinstance(loaded_data_pack, VisibilityDataPack):
+            raise TypeError(
+                "loaded_data_pack must be a VisibilityDataPack"
+            )
+        pack = loaded_data_pack
+        if (
+            pack.receipt.pack_id
+            != data_pack_config.expected_pack_id
+            or pack.receipt.composite_model_id
+            != data_pack_config.expected_composite_model_id
+            or (
+                data_pack_config.expected_manifest_sha256 is not None
+                and pack.receipt.manifest_sha256
+                != data_pack_config.expected_manifest_sha256
+            )
+        ):
+            return _physical_not_evaluable(
+                body,
+                jd_ut,
+                lat,
+                lon,
+                resolved_policy,
+                PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY,
+                "visibility_data_pack_incompatible",
+                data_pack_receipt=pack.receipt,
+                atmosphere_receipt=atmosphere_receipt,
+                observer_receipt=observer_receipt,
+            )
 
     if (
         resolved_policy.expected_manifest_sha256 is not None
@@ -4384,7 +4752,7 @@ def physical_visibility_assessment(
             body,
             jd_ut,
         )
-    except (MissingKernelError, ValueError):
+    except (KeyError, MissingKernelError, ValueError):
         return _physical_not_evaluable(
             body,
             jd_ut,
@@ -4420,9 +4788,29 @@ def physical_visibility_assessment(
         or isinstance(target_magnitude, bool)
         or not isinstance(target_magnitude, (int, float))
         or not math.isfinite(target_magnitude)
-        or isinstance(phase_angle_deg, bool)
-        or not isinstance(phase_angle_deg, (int, float))
-        or not math.isfinite(phase_angle_deg)
+        or (
+            body in _PHYSICAL_VISIBILITY_PLANETS
+            and (
+                isinstance(phase_angle_deg, bool)
+                or not isinstance(phase_angle_deg, (int, float))
+                or not math.isfinite(phase_angle_deg)
+            )
+        )
+        or (
+            body in _PHYSICAL_VISIBILITY_STARS
+            and (
+                not isinstance(
+                    photometry_context.catalog_name,
+                    str,
+                )
+                or not photometry_context.catalog_name
+                or not isinstance(
+                    photometry_context.catalog_nomenclature,
+                    str,
+                )
+                or not photometry_context.catalog_nomenclature
+            )
+        )
         or (
             saturn_ring_latitude_deg is not None
             and (
@@ -4462,16 +4850,45 @@ def physical_visibility_assessment(
         )
 
     try:
-        target_profile = pack.resolve_target_profile(
-            body,
-            VisibilityTargetContext(
-                phase_angle_deg=phase_angle_deg,
-                saturn_effective_ring_sub_latitude_deg=(
-                    saturn_ring_latitude_deg
+        if body in _PHYSICAL_VISIBILITY_PLANETS:
+            assert isinstance(phase_angle_deg, (int, float))
+            target_profile = pack.resolve_target_profile(
+                body,
+                VisibilityTargetContext(
+                    phase_angle_deg=float(phase_angle_deg),
+                    saturn_effective_ring_sub_latitude_deg=(
+                        saturn_ring_latitude_deg
+                    ),
                 ),
-            ),
-        )
-    except VisibilityTargetProfileError as exc:
+            )
+            photometry_model_id = (
+                _PHYSICAL_PLANET_PHOTOMETRY_MODEL_ID
+            )
+            photometry_source_ids = (
+                _PHYSICAL_PLANET_PHOTOMETRY_SOURCE_IDS
+            )
+        else:
+            assert photometry_context.catalog_name is not None
+            assert (
+                photometry_context.catalog_nomenclature is not None
+            )
+            target_profile = pack.resolve_stellar_target_profile(
+                body,
+                catalog_name=photometry_context.catalog_name,
+                catalog_nomenclature=(
+                    photometry_context.catalog_nomenclature
+                ),
+                catalog_visual_magnitude=target_magnitude,
+            )
+            target_magnitude = target_profile.visual_magnitude
+            photometry_model_id = target_profile.photometry_model_id
+            photometry_source_ids = (
+                target_profile.photometry_source_ids
+            )
+    except (
+        VisibilityStellarTargetProfileError,
+        VisibilityTargetProfileError,
+    ) as exc:
         evidence_state = (
             PhysicalVisibilityEvidenceState.OUT_OF_DOMAIN
             if exc.reason == "target_spectral_profile_out_of_domain"
@@ -4515,10 +4932,8 @@ def physical_visibility_assessment(
         scotopic_extinction_weights=(
             target_profile.scotopic_extinction_weights
         ),
-        photometry_model_id=_PHYSICAL_PLANET_PHOTOMETRY_MODEL_ID,
-        photometry_source_ids=(
-            _PHYSICAL_PLANET_PHOTOMETRY_SOURCE_IDS
-        ),
+        photometry_model_id=photometry_model_id,
+        photometry_source_ids=photometry_source_ids,
         spectral_profile_id=target_profile.spectral_profile_id,
         spectral_source_ids=target_profile.spectral_source_ids,
         spectral_source_receipt_sha256=(
@@ -4643,7 +5058,7 @@ def physical_visibility_assessment(
         background_receipt=_physical_background_receipt(truth),
         target_receipt=_physical_target_receipt(
             truth.target,
-            target_profile,
+            internal_profile,
         ),
         threshold_receipt=_physical_threshold_receipt(
             truth.threshold
@@ -4652,6 +5067,1030 @@ def physical_visibility_assessment(
             truth.error_budget
         ),
         components=_physical_component_receipts(truth.components),
+    )
+
+
+def _physical_phase_rule(
+    phase: PhysicalVisibilityPhase,
+) -> _ObservationPhaseRule:
+    rising = phase in {
+        PhysicalVisibilityPhase.MORNING_FIRST_RISING,
+        PhysicalVisibilityPhase.EVENING_LAST_RISING,
+    }
+    morning = phase in {
+        PhysicalVisibilityPhase.MORNING_FIRST_RISING,
+        PhysicalVisibilityPhase.MORNING_FIRST_SETTING,
+    }
+    return _ObservationPhaseRule(
+        solar_side="morning" if morning else "evening",
+        target_boundary_role="rising" if rising else "setting",
+        crossing_direction=(
+            "negative_to_positive"
+            if rising
+            else "positive_to_negative"
+        ),
+        day_ownership="first" if morning else "last",
+    )
+
+
+def _physical_event_horizon_receipt(
+    policy: PhysicalVisibilityPolicy,
+    data_pack_domain: VisibilityDataPackDomain | None = None,
+) -> PhysicalHorizonReceipt:
+    target_boundary = policy.local_horizon_altitude_deg
+    target_true_floor: float | None = None
+    narrowing_applied = False
+    if data_pack_domain is not None:
+        target_true_floor = (
+            data_pack_domain.target_true_altitude_deg[0]
+        )
+        pack_floor_apparent = apply_refraction(
+            target_true_floor,
+            pressure_mbar=policy.refraction_pressure_hpa,
+            temperature_c=policy.refraction_temperature_c,
+            relative_humidity=(
+                policy.refraction_relative_humidity
+            ),
+        )
+        if pack_floor_apparent > target_boundary:
+            target_boundary = pack_floor_apparent
+            narrowing_applied = True
+    return PhysicalHorizonReceipt(
+        horizon_model_id=(
+            "scalar_apparent_horizon_with_pack_floor_v2"
+            if data_pack_domain is not None
+            else "scalar_apparent_horizon_v1"
+        ),
+        apparent_horizon_altitude_deg=(
+            policy.local_horizon_altitude_deg
+        ),
+        directional_profile_applied=False,
+        refraction_model_id=policy.refraction_model_id,
+        refraction_pressure_hpa=policy.refraction_pressure_hpa,
+        refraction_temperature_c=policy.refraction_temperature_c,
+        refraction_relative_humidity=(
+            policy.refraction_relative_humidity
+        ),
+        applied_to=("target", "Sun"),
+        target_apparent_boundary_altitude_deg=target_boundary,
+        solar_apparent_horizon_altitude_deg=(
+            policy.local_horizon_altitude_deg
+        ),
+        data_pack_target_true_altitude_floor_deg=target_true_floor,
+        target_boundary_narrowing_applied=narrowing_applied,
+    )
+
+
+def _physical_event_ephemeris_receipt(
+    body: str,
+) -> PhysicalEphemerisReceipt:
+    return PhysicalEphemerisReceipt(
+        provider_id=(
+            "moira_active_reader_and_sovereign_star_registry_v1"
+            if body in _PHYSICAL_VISIBILITY_STARS
+            else "moira_active_planetary_reader_v1"
+        ),
+        input_timescale="UT1 Julian day",
+        ephemeris_timescale="reader_resolved_TT",
+        direction_frame="apparent_geocentric_equatorial",
+        horizontal_frame="local_apparent_sidereal_horizon",
+        refraction_applied_separately=True,
+    )
+
+
+def _physical_event_scans(
+    selection: _PhaseTransitionSelection | None,
+) -> tuple[_ScalarIntervalScan, ...]:
+    if selection is None:
+        return ()
+    scans: list[_ScalarIntervalScan] = []
+    for day in selection.classified_days:
+        construction = day.construction
+        scans.append(construction.solar_horizon_scan)
+        if construction.solar_domain_scan is not None:
+            scans.append(construction.solar_domain_scan)
+        if construction.target_horizon_scan is not None:
+            scans.append(construction.target_horizon_scan)
+        if construction.target_domain_scan is not None:
+            scans.append(construction.target_domain_scan)
+        for window in day.window_solutions:
+            if window.margin_scan is not None:
+                scans.append(window.margin_scan)
+    return tuple(scans)
+
+
+def _physical_event_solver_receipt(
+    search_policy: PhysicalVisibilitySearchPolicy,
+    candidate_day_keys: tuple[int, ...],
+    selection: _PhaseTransitionSelection | None,
+) -> PhysicalEventSolverReceipt:
+    scans = _physical_event_scans(selection)
+    classified = (
+        selection.classified_days if selection is not None else ()
+    )
+    roots = tuple(root for scan in scans for root in scan.roots)
+    gaps = tuple(gap for scan in scans for gap in scan.gaps)
+    near_zero = tuple(
+        interval
+        for scan in scans
+        for interval in scan.near_zero_intervals
+    )
+    sample_gaps = tuple(
+        scan.maximum_sample_gap_days for scan in scans
+    )
+    candidate_set = set(candidate_day_keys)
+    guard_count = sum(
+        day.observation_day_key not in candidate_set
+        for day in classified
+    )
+    unresolved_certificate_intervals = tuple(
+        interval
+        for scan in scans
+        for interval in scan.unresolved_intervals
+    )
+    certificate_ids = tuple(
+        sorted(
+            {
+                scan.certificate_id
+                for scan in scans
+                if scan.certificate_id is not None
+            }
+        )
+    )
+    completeness_state = (
+        "not_evaluated"
+        if not scans
+        else "certified_lipschitz_zero_enclosure"
+        if all(
+            scan.crossing_completeness_state
+            == "certified_lipschitz_zero_enclosure"
+            for scan in scans
+        )
+        else "not_certified"
+    )
+    completeness_reason = (
+        "event_not_evaluated"
+        if not scans
+        else None
+        if completeness_state
+        == "certified_lipschitz_zero_enclosure"
+        else "certificate_left_unresolved_intervals"
+    )
+    return PhysicalEventSolverReceipt(
+        search_window_days=search_policy.search_window_days,
+        scan_step_days=search_policy.scan_step_days,
+        bracket_tolerance_days=(
+            search_policy.adaptive_minimum_step_days
+        ),
+        adaptive_minimum_step_days=(
+            search_policy.adaptive_minimum_step_days
+        ),
+        root_time_tolerance_days=(
+            search_policy.root_time_tolerance_days
+        ),
+        root_margin_tolerance_magnitude=(
+            search_policy.root_margin_tolerance_magnitude
+        ),
+        near_zero_tolerance_magnitude=(
+            search_policy.near_zero_tolerance_magnitude
+        ),
+        curvature_tolerance_magnitude=(
+            search_policy.curvature_tolerance_magnitude
+        ),
+        candidate_day_count=len(candidate_day_keys),
+        guard_day_count=guard_count,
+        classified_day_count=len(classified),
+        evaluable_day_count=sum(
+            day.status != "not_evaluable" for day in classified
+        ),
+        observation_window_count=sum(
+            len(day.construction.windows) for day in classified
+        ),
+        scalar_evaluation_count=sum(
+            scan.evaluation_count for scan in scans
+        ),
+        sign_changing_root_count=sum(
+            root.kind == "crossing" for root in roots
+        ),
+        tangent_root_count=sum(
+            root.kind == "tangent" for root in roots
+        ),
+        near_zero_interval_count=len(near_zero),
+        non_evaluable_gap_count=len(gaps),
+        maximum_sample_gap_days=(
+            max(sample_gaps) if sample_gaps else None
+        ),
+        classified_day_states=tuple(
+            (
+                day.observation_day_key,
+                day.status,
+                day.reason,
+                day.construction.geometry_state,
+            )
+            for day in classified
+        ),
+        non_evaluable_day_states=tuple(
+            (
+                day.observation_day_key,
+                day.reason or "solver_domain_disconnected",
+                day.construction.geometry_state,
+            )
+            for day in classified
+            if day.status == "not_evaluable"
+        ),
+        crossing_completeness_state=completeness_state,
+        crossing_completeness_reason=completeness_reason,
+        crossing_certificate_ids=certificate_ids,
+        crossing_certificate_source_sha256=(
+            _PHYSICAL_EVENT_CROSSING_CERTIFICATE_SHA256
+            if certificate_ids
+            else None
+        ),
+        root_enclosure_count=sum(
+            len(scan.root_enclosures) for scan in scans
+        ),
+        unresolved_certificate_interval_count=len(
+            unresolved_certificate_intervals
+        ),
+    )
+
+
+def _physical_event_sensitivity_receipt(
+    *,
+    data_pack_numerical_event_interval_jd_ut: (
+        tuple[float, float] | None
+    ),
+    data_pack_numerical_reason: str | None,
+) -> PhysicalEventSensitivityReceipt:
+    return PhysicalEventSensitivityReceipt(
+        data_pack_numerical_event_interval_jd_ut=(
+            data_pack_numerical_event_interval_jd_ut
+        ),
+        data_pack_numerical_reason=data_pack_numerical_reason,
+        atmospheric_scenario_event_interval_jd_ut=None,
+        atmospheric_scenario_reason=(
+            "explicit_admitted_atmospheric_scenario_bounds_required"
+        ),
+        probabilistic_confidence_claimed=False,
+    )
+
+
+def _physical_event_evidence_state(
+    status: PhysicalVisibilityStatus,
+    reason: str | None,
+) -> PhysicalVisibilityEvidenceState:
+    if status is PhysicalVisibilityStatus.EVALUATED:
+        return PhysicalVisibilityEvidenceState.EVALUATED_CLEAR_SKY
+    if status is PhysicalVisibilityStatus.NOT_FOUND:
+        return PhysicalVisibilityEvidenceState.EVALUATED_NO_EVENT
+    if reason in {
+        "target_not_admitted",
+        "body_phase_not_admitted",
+        "target_rise_missing",
+        "target_set_missing",
+        "solar_rise_missing",
+        "solar_set_missing",
+        "no_valid_observation_window",
+    }:
+        return PhysicalVisibilityEvidenceState.NOT_APPLICABLE
+    if reason in {
+        "solar_twilight_below_data_pack_domain",
+        "solar_altitude_out_of_domain",
+        "target_altitude_out_of_domain",
+        "atmosphere_input_out_of_domain",
+        "target_spectral_profile_out_of_domain",
+        "criterion_out_of_domain",
+    }:
+        return PhysicalVisibilityEvidenceState.OUT_OF_DOMAIN
+    return PhysicalVisibilityEvidenceState.MISSING_DEPENDENCY
+
+
+def _physical_event_result(
+    *,
+    body: str,
+    phase: PhysicalVisibilityPhase,
+    lat: float,
+    lon: float,
+    status: PhysicalVisibilityStatus,
+    reason: str | None,
+    policy: PhysicalVisibilityPolicy,
+    search_policy: PhysicalVisibilitySearchPolicy,
+    candidate_day_keys: tuple[int, ...],
+    selection: _PhaseTransitionSelection | None,
+    data_pack_receipt: VisibilityDataPackReceipt | None,
+    assessment_cache: dict[float, PhysicalVisibilityAssessment],
+    solar_true_altitude: Callable[[float], _ScalarEvaluation] | None,
+    ephemeris_attempted: bool,
+    data_pack_numerical_event_interval_jd_ut: (
+        tuple[float, float] | None
+    ),
+    data_pack_numerical_reason: str | None,
+    data_pack_domain: VisibilityDataPackDomain | None = None,
+) -> PhysicalVisibilityEventResult:
+    selected_day = (
+        selection.selected_day
+        if (
+            selection is not None
+            and selection.status == "evaluated"
+        )
+        else None
+    )
+    comparison_day = (
+        selection.comparison_day if selection is not None else None
+    )
+    selected_window = (
+        selected_day.selected_window
+        if selected_day is not None
+        else None
+    )
+    horizon_receipt = _physical_event_horizon_receipt(
+        policy,
+        data_pack_domain,
+    )
+    event_assessment: PhysicalVisibilityAssessment | None = None
+    event_jd_ut: float | None = None
+    assessment_jd_ut: float | None = None
+    if selected_window is not None:
+        event_jd_ut = selected_window.event_jd_ut
+        assessment_jd_ut = selected_window.assessment_jd_ut
+        if assessment_jd_ut is not None:
+            event_assessment = assessment_cache.get(
+                assessment_jd_ut
+            )
+
+    derived_arcus_deg: float | None = None
+    if event_jd_ut is not None and solar_true_altitude is not None:
+        solar_sample = solar_true_altitude(event_jd_ut)
+        if solar_sample.evaluable:
+            assert solar_sample.value is not None
+            derived_arcus_deg = -solar_sample.value
+
+    boundary_source: PhysicalVisibilityBoundarySource | None = None
+    event_semantics: PhysicalEventTimeSemantics | None = None
+    crossing_direction: (
+        PhysicalVisibilityCrossingDirection | None
+    ) = None
+    if selected_window is not None:
+        if selected_window.boundary_source == "target_horizon":
+            if horizon_receipt.target_boundary_narrowing_applied:
+                boundary_source = (
+                    PhysicalVisibilityBoundarySource
+                    .TARGET_DATA_PACK_ALTITUDE_FLOOR
+                )
+                event_semantics = (
+                    PhysicalEventTimeSemantics
+                    .DATA_PACK_TARGET_ALTITUDE_FLOOR
+                )
+            else:
+                boundary_source = (
+                    PhysicalVisibilityBoundarySource.TARGET_HORIZON
+                )
+                event_semantics = (
+                    PhysicalEventTimeSemantics.APPARENT_TARGET_HORIZON
+                )
+        elif selected_window.boundary_source == "visibility_margin":
+            boundary_source = (
+                PhysicalVisibilityBoundarySource.VISIBILITY_MARGIN
+            )
+            event_semantics = (
+                PhysicalEventTimeSemantics.VISIBILITY_MARGIN_ZERO
+            )
+        crossing_direction = (
+            PhysicalVisibilityCrossingDirection.NOT_VISIBLE_TO_VISIBLE
+            if (
+                selected_window.crossing_direction
+                == "negative_to_positive"
+            )
+            else PhysicalVisibilityCrossingDirection.VISIBLE_TO_NOT_VISIBLE
+        )
+
+    window_receipt = None
+    if selected_window is not None:
+        window = selected_window.window
+        window_receipt = PhysicalObservationWindowReceipt(
+            observation_day_key=window.observation_day_key,
+            start_jd_ut=window.start_jd_ut,
+            end_jd_ut=window.end_jd_ut,
+            target_boundary_jd_ut=window.target_boundary_jd_ut,
+            target_boundary_role=window.target_boundary_role,
+            solar_side=window.solar_side,
+        )
+
+    atmosphere_receipt = _physical_atmosphere_receipt(
+        policy.atmosphere,
+        within_data_pack_domain=(
+            event_assessment.atmosphere_receipt.within_data_pack_domain
+            if event_assessment is not None
+            else None
+        ),
+    )
+    observer_receipt = _physical_observer_receipt(policy)
+    return PhysicalVisibilityEventResult(
+        body=body,
+        phase=phase,
+        latitude_deg=lat,
+        longitude_deg=lon,
+        status=status,
+        evidence_state=_physical_event_evidence_state(
+            status,
+            reason,
+        ),
+        reason=reason,
+        observation_day_key=(
+            selected_day.observation_day_key
+            if selected_day is not None
+            else None
+        ),
+        comparison_observation_day_key=(
+            comparison_day.observation_day_key
+            if comparison_day is not None
+            else None
+        ),
+        comparison_day_status=(
+            comparison_day.status
+            if comparison_day is not None
+            else None
+        ),
+        event_jd_ut=event_jd_ut,
+        event_time_semantics=event_semantics,
+        target_horizon_jd_ut=(
+            selected_window.window.target_boundary_jd_ut
+            if selected_window is not None
+            else None
+        ),
+        peak_margin_jd_ut=(
+            selected_window.peak_margin_jd_ut
+            if selected_window is not None
+            else None
+        ),
+        peak_margin_magnitude=(
+            selected_window.peak_margin
+            if selected_window is not None
+            else None
+        ),
+        boundary_role=(
+            selected_window.window.target_boundary_role
+            if selected_window is not None
+            else None
+        ),
+        crossing_direction=crossing_direction,
+        boundary_source=boundary_source,
+        visibility_margin_residual_magnitude=(
+            selected_window.root_residual
+            if selected_window is not None
+            else None
+        ),
+        visibility_margin_bracket_jd_ut=(
+            (
+                selected_window.root_bracket_start_jd_ut,
+                selected_window.root_bracket_end_jd_ut,
+            )
+            if (
+                selected_window is not None
+                and selected_window.root_bracket_start_jd_ut
+                is not None
+                and selected_window.root_bracket_end_jd_ut is not None
+            )
+            else None
+        ),
+        root_iterations=(
+            selected_window.root_iterations
+            if selected_window is not None
+            else None
+        ),
+        derived_arcus_deg=derived_arcus_deg,
+        assessment_jd_ut=assessment_jd_ut,
+        observation_window=window_receipt,
+        event_assessment=event_assessment,
+        data_pack_receipt=data_pack_receipt,
+        atmosphere_receipt=atmosphere_receipt,
+        observer_protocol_receipt=observer_receipt,
+        horizon_receipt=horizon_receipt,
+        ephemeris_receipt=(
+            _physical_event_ephemeris_receipt(body)
+            if ephemeris_attempted
+            else None
+        ),
+        solver_receipt=_physical_event_solver_receipt(
+            search_policy,
+            candidate_day_keys,
+            selection,
+        ),
+        sensitivity_receipt=_physical_event_sensitivity_receipt(
+            data_pack_numerical_event_interval_jd_ut=(
+                data_pack_numerical_event_interval_jd_ut
+            ),
+            data_pack_numerical_reason=(
+                data_pack_numerical_reason
+            ),
+        ),
+        components=(
+            event_assessment.components
+            if event_assessment is not None
+            else ()
+        ),
+    )
+
+
+def physical_visibility_event(
+    body: str,
+    phase: PhysicalVisibilityPhase,
+    jd_start: float,
+    lat: float,
+    lon: float,
+    *,
+    data_pack_config: VisibilityDataPackConfig,
+    policy: PhysicalVisibilityPolicy | None = None,
+    search_policy: PhysicalVisibilitySearchPolicy | None = None,
+) -> PhysicalVisibilityEventResult:
+    """Search the opt-in four-phase physical point-source event contract.
+
+    ``jd_start`` selects the first local-mean-solar observation-day key.  The
+    complete selected day is classified, and one adjacent guard day is used
+    only to prove Phase 0 first-day or last-day ownership.
+    """
+
+    if not isinstance(body, str) or not body:
+        raise ValueError("body must be a nonempty string")
+    if not isinstance(phase, PhysicalVisibilityPhase):
+        try:
+            phase = PhysicalVisibilityPhase(phase)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("unsupported physical visibility phase") from exc
+    _validate_physical_request_coordinate(jd_start, "jd_start")
+    _validate_physical_request_coordinate(lat, "lat")
+    _validate_physical_request_coordinate(lon, "lon")
+    if not -90.0 <= lat <= 90.0:
+        raise ValueError(f"lat must be in [-90, 90], got {lat}")
+    if not -180.0 <= lon <= 180.0:
+        raise ValueError(f"lon must be in [-180, 180], got {lon}")
+    if not isinstance(data_pack_config, VisibilityDataPackConfig):
+        raise TypeError(
+            "data_pack_config must be a VisibilityDataPackConfig"
+        )
+    resolved_policy = (
+        policy if policy is not None else PhysicalVisibilityPolicy()
+    )
+    if not isinstance(resolved_policy, PhysicalVisibilityPolicy):
+        raise TypeError("policy must be a PhysicalVisibilityPolicy")
+    resolved_search = (
+        search_policy
+        if search_policy is not None
+        else PhysicalVisibilitySearchPolicy()
+    )
+    if not isinstance(
+        resolved_search,
+        PhysicalVisibilitySearchPolicy,
+    ):
+        raise TypeError(
+            "search_policy must be a PhysicalVisibilitySearchPolicy"
+        )
+    scalar_policy = resolved_search._scalar_policy()
+    start_day_key = math.floor(
+        jd_start + 0.5 + lon / 360.0
+    )
+    candidate_day_keys = tuple(
+        range(
+            start_day_key,
+            start_day_key + resolved_search.search_window_days,
+        )
+    )
+
+    def early_failure(reason: str) -> PhysicalVisibilityEventResult:
+        return _physical_event_result(
+            body=body,
+            phase=phase,
+            lat=lat,
+            lon=lon,
+            status=PhysicalVisibilityStatus.NOT_EVALUABLE,
+            reason=reason,
+            policy=resolved_policy,
+            search_policy=resolved_search,
+            candidate_day_keys=candidate_day_keys,
+            selection=None,
+            data_pack_receipt=None,
+            assessment_cache={},
+            solar_true_altitude=None,
+            ephemeris_attempted=False,
+            data_pack_numerical_event_interval_jd_ut=None,
+            data_pack_numerical_reason="event_not_evaluated",
+        )
+
+    if body not in _PHYSICAL_VISIBILITY_TARGETS:
+        return early_failure("target_not_admitted")
+    if body not in _PHYSICAL_EVENT_TARGETS:
+        return early_failure("body_phase_not_admitted")
+    if resolved_policy.background is None:
+        return early_failure("background_input_incomplete")
+    if (
+        data_pack_config.expected_pack_id
+        != resolved_policy.expected_data_pack_id
+        or data_pack_config.expected_composite_model_id
+        != resolved_policy.composite_model_id
+        or (
+            data_pack_config.expected_manifest_sha256 is not None
+            and resolved_policy.expected_manifest_sha256 is not None
+            and data_pack_config.expected_manifest_sha256
+            != resolved_policy.expected_manifest_sha256
+        )
+    ):
+        return early_failure("visibility_data_pack_incompatible")
+
+    try:
+        pack = load_visibility_data_pack(data_pack_config)
+    except VisibilityDataPackLoadError as exc:
+        return early_failure(exc.reason)
+    if (
+        pack.receipt.version != _PHYSICAL_EVENT_PACK_VERSION
+        or pack.receipt.manifest_sha256
+        != _PHYSICAL_EVENT_PACK_MANIFEST_SHA256
+    ):
+        return _physical_event_result(
+            body=body,
+            phase=phase,
+            lat=lat,
+            lon=lon,
+            status=PhysicalVisibilityStatus.NOT_EVALUABLE,
+            reason="visibility_event_data_pack_not_admitted",
+            policy=resolved_policy,
+            search_policy=resolved_search,
+            candidate_day_keys=candidate_day_keys,
+            selection=None,
+            data_pack_receipt=pack.receipt,
+            assessment_cache={},
+            solar_true_altitude=None,
+            ephemeris_attempted=False,
+            data_pack_numerical_event_interval_jd_ut=None,
+            data_pack_numerical_reason="event_not_evaluated",
+            data_pack_domain=pack.domain,
+        )
+    if (
+        resolved_policy.expected_manifest_sha256 is not None
+        and pack.receipt.manifest_sha256
+        != resolved_policy.expected_manifest_sha256
+    ):
+        return _physical_event_result(
+            body=body,
+            phase=phase,
+            lat=lat,
+            lon=lon,
+            status=PhysicalVisibilityStatus.NOT_EVALUABLE,
+            reason="visibility_data_pack_checksum_mismatch",
+            policy=resolved_policy,
+            search_policy=resolved_search,
+            candidate_day_keys=candidate_day_keys,
+            selection=None,
+            data_pack_receipt=pack.receipt,
+            assessment_cache={},
+            solar_true_altitude=None,
+            ephemeris_attempted=False,
+            data_pack_numerical_event_interval_jd_ut=None,
+            data_pack_numerical_reason="event_not_evaluated",
+        )
+    if not _physical_atmosphere_matches(
+        resolved_policy.atmosphere,
+        pack.domain,
+    ):
+        return _physical_event_result(
+            body=body,
+            phase=phase,
+            lat=lat,
+            lon=lon,
+            status=PhysicalVisibilityStatus.NOT_EVALUABLE,
+            reason="atmosphere_input_out_of_domain",
+            policy=resolved_policy,
+            search_policy=resolved_search,
+            candidate_day_keys=candidate_day_keys,
+            selection=None,
+            data_pack_receipt=pack.receipt,
+            assessment_cache={},
+            solar_true_altitude=None,
+            ephemeris_attempted=False,
+            data_pack_numerical_event_interval_jd_ut=None,
+            data_pack_numerical_reason="event_not_evaluated",
+            data_pack_domain=pack.domain,
+        )
+
+    from .spk_reader import MissingKernelError
+
+    horizon_receipt = _physical_event_horizon_receipt(
+        resolved_policy,
+        pack.domain,
+    )
+    target_apparent_boundary = (
+        horizon_receipt.target_apparent_boundary_altitude_deg
+    )
+    assert target_apparent_boundary is not None
+    solar_apparent_boundary = (
+        horizon_receipt.solar_apparent_horizon_altitude_deg
+    )
+    assert solar_apparent_boundary is not None
+
+    horizontal_cache: dict[
+        tuple[str, float],
+        tuple[float, float] | str,
+    ] = {}
+
+    def horizontal(
+        target: str,
+        jd_ut: float,
+    ) -> tuple[float, float] | str:
+        key = (target, jd_ut)
+        cached = horizontal_cache.get(key)
+        if cached is not None:
+            return cached
+        try:
+            result: tuple[float, float] | str = _true_horizontal(
+                target,
+                jd_ut,
+                lat,
+                lon,
+            )
+        except MissingKernelError:
+            result = "ephemeris_dependency_missing"
+        horizontal_cache[key] = result
+        return result
+
+    def true_altitude(
+        target: str,
+        jd_ut: float,
+    ) -> _ScalarEvaluation:
+        result = horizontal(target, jd_ut)
+        if isinstance(result, str):
+            return _ScalarEvaluation(
+                jd_ut=jd_ut,
+                value=None,
+                reason=result,
+            )
+        return _ScalarEvaluation(jd_ut=jd_ut, value=result[1])
+
+    def apparent_horizon_signal(
+        target: str,
+        jd_ut: float,
+        boundary_altitude_deg: float,
+    ) -> _ScalarEvaluation:
+        result = horizontal(target, jd_ut)
+        if isinstance(result, str):
+            return _ScalarEvaluation(
+                jd_ut=jd_ut,
+                value=None,
+                reason=result,
+            )
+        apparent_altitude = apply_refraction(
+            result[1],
+            pressure_mbar=(
+                resolved_policy.refraction_pressure_hpa
+            ),
+            temperature_c=(
+                resolved_policy.refraction_temperature_c
+            ),
+            relative_humidity=(
+                resolved_policy.refraction_relative_humidity
+            ),
+        )
+        return _ScalarEvaluation(
+            jd_ut=jd_ut,
+            value=(
+                apparent_altitude
+                - boundary_altitude_deg
+            ),
+        )
+
+    assessment_cache: dict[
+        float,
+        PhysicalVisibilityAssessment,
+    ] = {}
+
+    def assessment_at(
+        jd_ut: float,
+    ) -> PhysicalVisibilityAssessment:
+        assessment = assessment_cache.get(jd_ut)
+        if assessment is None:
+            assessment = _physical_visibility_assessment_impl(
+                body,
+                jd_ut,
+                lat,
+                lon,
+                data_pack_config=data_pack_config,
+                policy=resolved_policy,
+                loaded_data_pack=pack,
+            )
+            assessment_cache[jd_ut] = assessment
+        return assessment
+
+    def margin(
+        jd_ut: float,
+        *,
+        envelope: str | None = None,
+    ) -> _ScalarEvaluation:
+        assessment = assessment_at(jd_ut)
+        if (
+            assessment.status is not PhysicalVisibilityStatus.EVALUATED
+            or assessment.visibility_margin_magnitude is None
+        ):
+            return _ScalarEvaluation(
+                jd_ut=jd_ut,
+                value=None,
+                reason=(
+                    assessment.reason
+                    or "solver_domain_disconnected"
+                ),
+            )
+        if envelope is not None:
+            error_budget = assessment.error_budget_receipt
+            if error_budget is None:
+                return _ScalarEvaluation(
+                    jd_ut=jd_ut,
+                    value=None,
+                    reason=(
+                        "data_pack_numerical_error_envelope_missing"
+                    ),
+                )
+            if envelope == "lower":
+                value = (
+                    error_budget
+                    .visibility_margin_envelope_lower_magnitude
+                )
+            elif envelope == "upper":
+                value = (
+                    error_budget
+                    .visibility_margin_envelope_upper_magnitude
+                )
+            else:
+                raise ValueError("unsupported numerical envelope")
+            return _ScalarEvaluation(jd_ut=jd_ut, value=value)
+        return _ScalarEvaluation(
+            jd_ut=jd_ut,
+            value=assessment.visibility_margin_magnitude,
+        )
+
+    phase_rule = _physical_phase_rule(phase)
+    construction_cache: dict[
+        int,
+        _ObservationWindowConstruction,
+    ] = {}
+
+    def construction_for(
+        day_key: int,
+    ) -> _ObservationWindowConstruction:
+        construction = construction_cache.get(day_key)
+        if construction is None:
+            construction = _construct_observation_windows(
+                day_key,
+                lon,
+                phase_rule,
+                target_apparent_horizon_signal=(
+                    lambda jd_ut: apparent_horizon_signal(
+                        body,
+                        jd_ut,
+                        target_apparent_boundary,
+                    )
+                ),
+                target_true_altitude=(
+                    lambda jd_ut: true_altitude(body, jd_ut)
+                ),
+                solar_apparent_horizon_signal=(
+                    lambda jd_ut: apparent_horizon_signal(
+                        Body.SUN,
+                        jd_ut,
+                        solar_apparent_boundary,
+                    )
+                ),
+                solar_true_altitude=(
+                    lambda jd_ut: true_altitude(Body.SUN, jd_ut)
+                ),
+                solar_true_altitude_domain_deg=(
+                    pack.domain.solar_center_altitude_deg
+                ),
+                target_true_altitude_domain_deg=(
+                    pack.domain.target_true_altitude_deg
+                ),
+                policy=scalar_policy,
+                target_horizon_certificate=(
+                    _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+                ),
+                target_altitude_certificate=(
+                    _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+                ),
+                solar_horizon_certificate=(
+                    _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+                ),
+                solar_altitude_certificate=(
+                    _PHYSICAL_EVENT_GEOMETRY_CERTIFICATE
+                ),
+            )
+            construction_cache[day_key] = construction
+        return construction
+
+    def classify(
+        day_key: int,
+        *,
+        envelope: str | None = None,
+    ) -> _ObservationDaySolution:
+        return _classify_observation_day(
+            construction_for(day_key),
+            phase_rule,
+            (
+                lambda jd_ut: margin(
+                    jd_ut,
+                    envelope=envelope,
+                )
+            ),
+            policy=scalar_policy,
+            margin_certificate=(
+                _PHYSICAL_EVENT_MARGIN_CERTIFICATE
+            ),
+        )
+
+    selection = _select_owned_phase_transition(
+        candidate_day_keys,
+        phase_rule,
+        lambda day_key: classify(day_key),
+    )
+    data_pack_interval: tuple[float, float] | None = None
+    data_pack_reason: str | None = "event_not_evaluated"
+    if selection.status == "evaluated":
+        lower_selection = _select_owned_phase_transition(
+            candidate_day_keys,
+            phase_rule,
+            lambda day_key: classify(
+                day_key,
+                envelope="lower",
+            ),
+        )
+        upper_selection = _select_owned_phase_transition(
+            candidate_day_keys,
+            phase_rule,
+            lambda day_key: classify(
+                day_key,
+                envelope="upper",
+            ),
+        )
+
+        def selected_event_jd_ut(
+            candidate: _PhaseTransitionSelection,
+        ) -> float | None:
+            if (
+                candidate.status != "evaluated"
+                or candidate.selected_day is None
+                or candidate.selected_day.selected_window is None
+            ):
+                return None
+            return candidate.selected_day.selected_window.event_jd_ut
+
+        nominal_jd = selected_event_jd_ut(selection)
+        lower_jd = selected_event_jd_ut(lower_selection)
+        upper_jd = selected_event_jd_ut(upper_selection)
+        if (
+            nominal_jd is not None
+            and lower_jd is not None
+            and upper_jd is not None
+        ):
+            data_pack_interval = (
+                min(nominal_jd, lower_jd, upper_jd),
+                max(nominal_jd, lower_jd, upper_jd),
+            )
+            data_pack_reason = None
+        elif (
+            lower_selection.reason
+            == "data_pack_numerical_error_envelope_missing"
+            or upper_selection.reason
+            == "data_pack_numerical_error_envelope_missing"
+        ):
+            data_pack_reason = (
+                "data_pack_numerical_error_envelope_missing"
+            )
+        else:
+            data_pack_reason = (
+                "data_pack_numerical_event_interval_not_bounded"
+            )
+    result_status = {
+        "evaluated": PhysicalVisibilityStatus.EVALUATED,
+        "not_evaluable": PhysicalVisibilityStatus.NOT_EVALUABLE,
+        "not_found": PhysicalVisibilityStatus.NOT_FOUND,
+    }[selection.status]
+    return _physical_event_result(
+        body=body,
+        phase=phase,
+        lat=lat,
+        lon=lon,
+        status=result_status,
+        reason=selection.reason,
+        policy=resolved_policy,
+        search_policy=resolved_search,
+        candidate_day_keys=candidate_day_keys,
+        selection=selection,
+        data_pack_receipt=pack.receipt,
+        assessment_cache=assessment_cache,
+        solar_true_altitude=(
+            lambda jd_ut: true_altitude(Body.SUN, jd_ut)
+        ),
+        ephemeris_attempted=bool(horizontal_cache),
+        data_pack_numerical_event_interval_jd_ut=(
+            data_pack_interval
+        ),
+        data_pack_numerical_reason=data_pack_reason,
+        data_pack_domain=pack.domain,
     )
 
 
@@ -4994,14 +6433,12 @@ def _physical_background_receipt(
 
 def _physical_target_receipt(
     target: ConditionedTarget,
-    profile: ResolvedVisibilityTargetProfile,
+    profile: _TargetSpectralProfile,
 ) -> PhysicalTargetReceipt:
     return PhysicalTargetReceipt(
         target_id=target.target_id,
-        photometry_model_id=_PHYSICAL_PLANET_PHOTOMETRY_MODEL_ID,
-        photometry_source_ids=(
-            _PHYSICAL_PLANET_PHOTOMETRY_SOURCE_IDS
-        ),
+        photometry_model_id=profile.photometry_model_id,
+        photometry_source_ids=profile.photometry_source_ids,
         spectral_profile_id=profile.spectral_profile_id,
         spectral_source_ids=profile.spectral_source_ids,
         spectral_source_receipt_sha256=(

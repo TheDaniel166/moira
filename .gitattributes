@@ -1,3 +1,5 @@
+/.gitattributes text eol=lf
+
 moira/kernels/*.bsp filter=lfs diff=lfs merge=lfs -text
 moira/kernels/sb441_type13/*.bsp filter=lfs diff=lfs merge=lfs -text
 
@@ -14,9 +16,21 @@ moira/kernels/comets/manifest.json text eol=lf
 # Physical-visibility contracts and closure receipts are byte-hashed. The
 # Phase 2 checkpoint also binds its offline builder and validator by byte.
 moira/data/physical_heliacal_visibility_data_pack_compatibility_v*.json text eol=lf
+scripts/build_visibility_data_pack.py text eol=lf
 scripts/build_visibility_phase2_data_pack.py text eol=lf
+scripts/build_visibility_phase3_data_pack.py text eol=lf
+scripts/validate_visibility_data_pack.py text eol=lf
 scripts/validate_visibility_phase2_data_pack.py text eol=lf
+scripts/validate_visibility_phase3_data_pack.py text eol=lf
+scripts/validate_visibility_phase3_event_certificate.py text eol=lf
+scripts/validate_visibility_phase3_event_goldens.py text eol=lf
+scripts/validate_visibility_radiance_response_probe.py text eol=lf
+scripts/visibility_reference_lab/phase1_*.json text eol=lf
+scripts/visibility_reference_lab/phase3_event_crossing_certificate.json text eol=lf
+scripts/visibility_reference_lab/phase3_stellar_target_profile_pack_spec.json text eol=lf
 scripts/visibility_reference_lab/physical_heliacal_visibility_data_pack_compatibility_v*.json text eol=lf
 scripts/visibility_reference_lab/phase2_planetary_target_profile_pack_spec.json text eol=lf
+tests/artifacts/visibility_reference_lab/phase1_*.json text eol=lf
 tests/artifacts/visibility_reference_lab/phase2_planetary_target_profiles_checkpoint_2026-07-30.json text eol=lf
 tests/fixtures/physical_visibility_phase2_equations_v1.json text eol=lf
+tests/golden/physical_visibility_phase3_events.json text eol=lf

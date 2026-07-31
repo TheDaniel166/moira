@@ -1,6 +1,6 @@
 """Validated runtime access to the external physical-visibility data pack.
 
-This internal module owns only the Phase 2 table boundary:
+This internal module owns only the immutable physical-visibility pack boundary:
 
 * validate one explicit caller-supplied pack directory;
 * bind its exact manifest and payload identities;
@@ -22,6 +22,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ._visibility_stellar_targets import (
+    ResolvedVisibilityStellarTargetProfile,
+    VisibilityPackStellarTargetProfile,
+    VisibilityStellarTargetProfileError,
+    parse_visibility_stellar_target_profiles,
+    stellar_target_profile_by_id,
+)
 from ._visibility_targets import (
     ResolvedVisibilityTargetProfile,
     VisibilityPackTargetProfile,
@@ -47,6 +54,14 @@ _COMPATIBILITY_V1_1_PATH = (
 _COMPATIBILITY_V1_1_SHA256 = (
     "7ba04e30cd5f0b48f39aadd8264d862fde010e4700bf0248bc6c3f840d70969c"
 )
+_COMPATIBILITY_V1_2_PATH = (
+    Path(__file__).resolve().parent
+    / "data"
+    / "physical_heliacal_visibility_data_pack_compatibility_v1_2.json"
+)
+_COMPATIBILITY_V1_2_SHA256 = (
+    "aaa44f99cfdb85277a44778167abd5c0c721e4a580dfb6e000ef74957cdb9e37"
+)
 _MANIFEST_NAME = "manifest.json"
 _MANIFEST_SCHEMA = (
     "moira.physical-heliacal-visibility-data-pack-manifest/v1"
@@ -64,6 +79,9 @@ _COMPATIBILITY_V1_ID = (
 )
 _COMPATIBILITY_V1_1_ID = (
     "moira-physical-heliacal-visibility-data-pack-v1.1"
+)
+_COMPATIBILITY_V1_2_ID = (
+    "moira-physical-heliacal-visibility-data-pack-v1.2"
 )
 _COMPOSITE_MODEL_ID = "clear_sky_naked_eye_point_source_v1"
 _TABLE_FORMAT_ID = "regular-grid-ieee754-binary32-le-v1"
@@ -96,6 +114,12 @@ _V1_1_REQUIRED_CAPABILITIES = _V1_REQUIRED_CAPABILITIES | {
     "planetary_target_spectral_profiles"
 }
 _V1_1_FILE_ROLE_KEYS = _V1_FILE_ROLE_KEYS | {"target_profiles"}
+_V1_2_REQUIRED_CAPABILITIES = _V1_1_REQUIRED_CAPABILITIES | {
+    "stellar_target_spectral_profiles"
+}
+_V1_2_FILE_ROLE_KEYS = _V1_1_FILE_ROLE_KEYS | {
+    "stellar_target_profiles"
+}
 _HEX_DIGITS = frozenset("0123456789abcdef")
 
 
@@ -109,6 +133,7 @@ class _CompatibilityIdentity:
     required_capabilities: frozenset[str]
     file_role_keys: frozenset[str]
     root_manifest_receipt_owner: str
+    engine_loader_implementation_owner: str
 
 
 class VisibilityDataPackLoadError(ValueError):
@@ -265,6 +290,9 @@ class VisibilityDataPack:
     _direct_error_p95_mag: float
     _storage_error_max_mag: float
     _target_profiles: tuple[VisibilityPackTargetProfile, ...] = ()
+    _stellar_target_profiles: tuple[
+        VisibilityPackStellarTargetProfile, ...
+    ] = ()
 
     def interpolate_twilight_luminance(
         self,
@@ -427,6 +455,28 @@ class VisibilityDataPack:
         )
         return profile.resolve(context)
 
+    def resolve_stellar_target_profile(
+        self,
+        target_id: str,
+        *,
+        catalog_name: str,
+        catalog_nomenclature: str,
+        catalog_visual_magnitude: float,
+    ) -> ResolvedVisibilityStellarTargetProfile:
+        """Resolve one source-bound stellar spectrum against catalog truth."""
+
+        if not isinstance(target_id, str) or not target_id:
+            raise ValueError("target_id must be a nonempty string")
+        profile = stellar_target_profile_by_id(
+            self._stellar_target_profiles,
+            target_id,
+        )
+        return profile.resolve(
+            catalog_name=catalog_name,
+            catalog_nomenclature=catalog_nomenclature,
+            catalog_visual_magnitude=catalog_visual_magnitude,
+        )
+
 
 def load_visibility_data_pack(
     config: VisibilityDataPackConfig,
@@ -521,6 +571,23 @@ def load_visibility_data_pack(
             )
         except VisibilityTargetProfileError as exc:
             _load_failure(exc.reason, exc.detail)
+    stellar_target_profiles: tuple[
+        VisibilityPackStellarTargetProfile, ...
+    ] = ()
+    if "stellar_target_profiles" in file_roles:
+        stellar_payload = _read_json_dict(
+            directory / file_roles["stellar_target_profiles"],
+            "stellar target profiles",
+            "visibility_data_pack_incompatible",
+        )
+        try:
+            stellar_target_profiles = (
+                parse_visibility_stellar_target_profiles(
+                    stellar_payload
+                )
+            )
+        except VisibilityStellarTargetProfileError as exc:
+            _load_failure(exc.reason, exc.detail)
 
     radiance_count = (
         len(radiance_axes[0])
@@ -614,6 +681,7 @@ def load_visibility_data_pack(
         _direct_error_p95_mag=error_values["direct_p95"],
         _storage_error_max_mag=error_values["storage_max"],
         _target_profiles=target_profiles,
+        _stellar_target_profiles=stellar_target_profiles,
     )
 
 
@@ -633,6 +701,9 @@ def _load_compatibility_contract(
             root_manifest_receipt_owner=(
                 "source_controlled_phase1_closure_checkpoint"
             ),
+            engine_loader_implementation_owner=(
+                "phase2_single_epoch_truth"
+            ),
         ),
         (1, 1): _CompatibilityIdentity(
             path=_COMPATIBILITY_V1_1_PATH,
@@ -644,6 +715,24 @@ def _load_compatibility_contract(
             file_role_keys=_V1_1_FILE_ROLE_KEYS,
             root_manifest_receipt_owner=(
                 "source_controlled_phase2_closure_checkpoint"
+            ),
+            engine_loader_implementation_owner=(
+                "phase2_single_epoch_truth"
+            ),
+        ),
+        (1, 2): _CompatibilityIdentity(
+            path=_COMPATIBILITY_V1_2_PATH,
+            sha256=_COMPATIBILITY_V1_2_SHA256,
+            compatibility_id=_COMPATIBILITY_V1_2_ID,
+            pack_minor_version=2,
+            status="phase3_engine_loader_contract",
+            required_capabilities=_V1_2_REQUIRED_CAPABILITIES,
+            file_role_keys=_V1_2_FILE_ROLE_KEYS,
+            root_manifest_receipt_owner=(
+                "source_controlled_phase3_closure_receipt"
+            ),
+            engine_loader_implementation_owner=(
+                "phase3_physical_event_truth"
             ),
         ),
     }
@@ -688,7 +777,7 @@ def _load_compatibility_contract(
         or runtime.get("REPTRAN_required") is not False
         or runtime.get("CIE_source_tables_required") is not False
         or runtime.get("engine_loader_implementation_owner")
-        != "phase2_single_epoch_truth"
+        != identity.engine_loader_implementation_owner
     ):
         _load_failure(
             "visibility_data_pack_incompatible",
@@ -710,7 +799,8 @@ def _load_compatibility_contract(
             "target-profile compatibility contract",
         )
         if (
-            value.get("supported_pack_minor_versions") != [1]
+            value.get("supported_pack_minor_versions")
+            != [identity.pack_minor_version]
             or target_contract
             != {
                 "schema": (
@@ -742,8 +832,49 @@ def _load_compatibility_contract(
         ):
             _load_failure(
                 "visibility_data_pack_incompatible",
-                "Phase 2 target-profile compatibility fields differ",
+                "planetary target-profile compatibility fields differ",
             )
+        if identity.pack_minor_version == 1:
+            if (
+                "stellar_target_profiles" in value
+                or "stellar_source_spectra_required" in runtime
+            ):
+                _load_failure(
+                    "visibility_data_pack_incompatible",
+                    "Phase 2 compatibility unexpectedly admits stars",
+                )
+        else:
+            stellar_contract = _require_dict(
+                value.get("stellar_target_profiles"),
+                "stellar target-profile compatibility contract",
+            )
+            if (
+                stellar_contract
+                != {
+                    "schema": (
+                        "moira.physical-heliacal-visibility-"
+                        "stellar-target-profiles/v1"
+                    ),
+                    "file_role": "stellar_target_profiles",
+                    "target_ids": ["Sirius"],
+                    "spectral_bins": {
+                        "coordinate": "bin_start_vacuum_nm",
+                        "start_nm": 380.0,
+                        "width_nm": 1.0,
+                        "count": 400,
+                    },
+                    "visual_photometry_system_id": "johnson_v",
+                    "catalog_identity_required": True,
+                    "generic_color_index_allowed": False,
+                    "outside_domain": "typed_not_evaluable",
+                }
+                or runtime.get("stellar_source_spectra_required")
+                is not False
+            ):
+                _load_failure(
+                    "visibility_data_pack_incompatible",
+                    "Phase 3 stellar-profile compatibility fields differ",
+                )
     return value, identity
 
 
@@ -804,19 +935,37 @@ def _validate_manifest(
             "root manifest differs from the engine compatibility contract",
         )
     if compatibility_identity.pack_minor_version == 0:
-        if "target_profile_contract" in manifest:
+        if (
+            "target_profile_contract" in manifest
+            or "stellar_target_profile_contract" in manifest
+        ):
             _load_failure(
                 "visibility_data_pack_incompatible",
                 "Phase 1 manifest unexpectedly declares target profiles",
             )
-    elif (
-        manifest.get("target_profile_contract")
-        != compatibility["target_profiles"]
-    ):
-        _load_failure(
-            "visibility_data_pack_incompatible",
-            "target-profile manifest contract differs",
-        )
+    else:
+        if (
+            manifest.get("target_profile_contract")
+            != compatibility["target_profiles"]
+        ):
+            _load_failure(
+                "visibility_data_pack_incompatible",
+                "target-profile manifest contract differs",
+            )
+        if compatibility_identity.pack_minor_version == 1:
+            if "stellar_target_profile_contract" in manifest:
+                _load_failure(
+                    "visibility_data_pack_incompatible",
+                    "Phase 2 manifest unexpectedly declares stars",
+                )
+        elif (
+            manifest.get("stellar_target_profile_contract")
+            != compatibility["stellar_target_profiles"]
+        ):
+            _load_failure(
+                "visibility_data_pack_incompatible",
+                "stellar target-profile manifest contract differs",
+            )
     _require_sha256(
         manifest.get("generation_fingerprint"),
         "generation fingerprint",
@@ -898,7 +1047,7 @@ def _validate_manifest(
             "visibility_data_pack_incompatible",
             "payload receipts do not match file roles",
         )
-    if compatibility_identity.pack_minor_version == 1:
+    if compatibility_identity.pack_minor_version >= 1:
         target_artifact = _require_dict(
             manifest.get("target_profile_artifact"),
             "target-profile artifact",
@@ -911,6 +1060,43 @@ def _validate_manifest(
             _load_failure(
                 "visibility_data_pack_incompatible",
                 "target-profile artifact receipt differs",
+            )
+    if compatibility_identity.pack_minor_version == 2:
+        stellar_artifact = _require_dict(
+            manifest.get("stellar_target_profile_artifact"),
+            "stellar target-profile artifact",
+        )
+        stellar_filename = file_roles["stellar_target_profiles"]
+        if (
+            stellar_artifact.get(
+                "stellar_target_profile_sha256"
+            )
+            != payload_receipts[stellar_filename]["sha256"]
+            or stellar_artifact.get("spec_id")
+            != (
+                "physical-heliacal-visibility-phase3-"
+                "stellar-target-profiles-1.2.0-2026-07-30"
+            )
+        ):
+            _load_failure(
+                "visibility_data_pack_incompatible",
+                "stellar target-profile artifact receipt differs",
+            )
+        base_pack = _require_dict(
+            manifest.get("base_pack"),
+            "Phase 3 base-pack receipt",
+        )
+        if base_pack != {
+            "pack_id": _PACK_ID,
+            "version": "1.1.0",
+            "manifest_sha256": (
+                "f594fd12058cc7f5c7bc9de7f2b06652"
+                "bef3c0604ef7b0a05a069e54e4026c87"
+            ),
+        }:
+            _load_failure(
+                "visibility_data_pack_incompatible",
+                "Phase 3 base-pack receipt differs",
             )
     return file_roles, payload_receipts
 
@@ -1335,10 +1521,137 @@ def _validate_provenance(
             "visibility_data_pack_incompatible",
             "planetary target-profile provenance differs",
         )
-    return source_ids + (
+    planetary_source_ids = source_ids + (
         "Payne_planetary_spectra:10.5281/zenodo.17470005",
         "Mallama_planetary_photometry:10.1016/j.icarus.2016.09.023",
         "target_profile_solar_spectrum:libRadtran:2.0.6",
+    )
+    if compatibility_identity.pack_minor_version == 1:
+        return planetary_source_ids
+
+    calspec = _require_dict(
+        sources.get("CALSPEC_Sirius"),
+        "CALSPEC Sirius",
+    )
+    bsc5 = _require_dict(
+        sources.get("BSC5_Sirius_photometry"),
+        "BSC5 Sirius photometry",
+    )
+    stellar_artifact = _require_dict(
+        value.get("stellar_target_profile_artifact"),
+        "stellar target-profile artifact",
+    )
+    manifest_stellar_artifact = _require_dict(
+        manifest.get("stellar_target_profile_artifact"),
+        "manifest stellar target-profile artifact",
+    )
+    source_receipts = _require_dict(
+        stellar_artifact.get("source_input_receipts"),
+        "stellar source input receipts",
+    )
+    calspec_receipt = _require_dict(
+        source_receipts.get("calspec_sirius"),
+        "CALSPEC source receipt",
+    )
+    bsc5_receipt = _require_dict(
+        source_receipts.get("bsc5_sirius_query"),
+        "BSC5 source receipt",
+    )
+    bsc5_readme_receipt = _require_dict(
+        source_receipts.get("bsc5_readme"),
+        "BSC5 ReadMe receipt",
+    )
+    cie_receipts = _require_dict(
+        source_receipts.get("cie"),
+        "stellar CIE receipts",
+    )
+    stellar_sha256 = _require_sha256(
+        stellar_artifact.get("stellar_target_profile_sha256"),
+        "stellar target-profile SHA-256",
+    )
+    expected_spec_id = (
+        "physical-heliacal-visibility-phase3-"
+        "stellar-target-profiles-1.2.0-2026-07-30"
+    )
+    if (
+        not {
+            "CALSPEC_source_spectrum",
+            "BSC5_query_and_catalog_files",
+        }.issubset(excluded)
+        or calspec
+        != {
+            "spectrum_id": "sirius_stis_005",
+            "source_url": (
+                "https://ssb.stsci.edu/cdbs/calspec/"
+                "sirius_stis_005.fits"
+            ),
+            "publication_doi": "10.1088/0004-6256/147/6/127",
+            "systematic_fraction": 0.01,
+            "data_use_disposition": (
+                "public_domain_with_mission_and_stsci_"
+                "acknowledgment_expected"
+            ),
+        }
+        or bsc5
+        != {
+            "catalog_id": "V/50",
+            "hr_id": 2491,
+            "hd_id": 48915,
+            "visual_system_id": "johnson_v",
+            "visual_magnitude": -1.46,
+            "data_use_disposition": (
+                "single_attributed_scientific_fact_"
+                "no_source_table_redistribution"
+            ),
+        }
+        or stellar_artifact.get("spec_id") != expected_spec_id
+        or manifest_stellar_artifact.get("spec_id")
+        != expected_spec_id
+        or stellar_sha256
+        != manifest_stellar_artifact.get(
+            "stellar_target_profile_sha256"
+        )
+        or calspec_receipt
+        != {
+            "path": "sirius_stis_005.fits",
+            "bytes": 282240,
+            "sha256": (
+                "1349da7b8b59ad035aefea8d7948f552"
+                "b41b3897d07e5ad82ca162a53af97271"
+            ),
+            "source_url": (
+                "https://ssb.stsci.edu/cdbs/calspec/"
+                "sirius_stis_005.fits"
+            ),
+            "spectrum_id": "sirius_stis_005",
+        }
+        or bsc5_receipt.get("path") != "sirius-v50.tsv"
+        or bsc5_receipt.get("bytes") != 2171
+        or bsc5_receipt.get("sha256")
+        != (
+            "09556d03431f70c65b75a4a555742812"
+            "dd542d2e0a4ee40df4c11a876b5fcc3d"
+        )
+        or bsc5_receipt.get("catalog_id") != "V/50"
+        or bsc5_readme_receipt
+        != {
+            "path": "ReadMe",
+            "bytes": 11571,
+            "sha256": (
+                "44fd9c73e2eecad0beb47bdfa3f01c60"
+                "fd43f93d6964198e31fcd48732de5b33"
+            ),
+            "catalog_id": "V/50",
+        }
+        or set(cie_receipts) != {"cie_photopic", "cie_scotopic"}
+    ):
+        _load_failure(
+            "visibility_data_pack_incompatible",
+            "stellar target-profile provenance differs",
+        )
+    return planetary_source_ids + (
+        "CALSPEC_Sirius:sirius_stis_005",
+        "BSC5_Sirius_photometry:V/50:HR2491",
     )
 
 
@@ -1372,7 +1685,7 @@ def _validate_notice_and_readme(
             "visibility_data_pack_incompatible",
             "licensing notice is incomplete",
         )
-    if compatibility_identity.pack_minor_version == 1 and any(
+    if compatibility_identity.pack_minor_version >= 1 and any(
         fragment not in notice
         for fragment in (
             "10.5281/zenodo.17470005",
@@ -1385,6 +1698,21 @@ def _validate_notice_and_readme(
         _load_failure(
             "visibility_data_pack_incompatible",
             "planetary-profile licensing notice is incomplete",
+        )
+    if compatibility_identity.pack_minor_version == 2 and any(
+        fragment not in notice
+        for fragment in (
+            "sirius_stis_005.fits",
+            "10.1088/0004-6256/147/6/127",
+            "MAST and STScI",
+            "HR 2491/HD 48915",
+            "Bright Star Catalogue",
+            "No CALSPEC FITS file or BSC5 table",
+        )
+    ):
+        _load_failure(
+            "visibility_data_pack_incompatible",
+            "stellar-profile attribution notice is incomplete",
         )
     if (
         "explicit caller-supplied directory path" not in readme

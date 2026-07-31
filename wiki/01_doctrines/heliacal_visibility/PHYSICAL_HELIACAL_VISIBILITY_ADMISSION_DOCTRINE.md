@@ -1,7 +1,8 @@
 # Physical Heliacal Visibility Admission Doctrine
 
 Date: 2026-07-29
-Status: Phase 0 doctrine lock; Phases 1-2 implemented and closed
+Status: Phase 0 doctrine lock; Phases 1-3 closed at the additive Python
+direct-module engine boundary
 Governing roadmap:
 [PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md](../../06_roadmap/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md)
 
@@ -11,10 +12,11 @@ This document freezes the meanings, supported domain, failure law, data
 boundary, and additive public-contract shape for Moira's physical
 heliacal-visibility project.
 
-It is an implementation authority, not a claim that the physical event model
-already exists. The existing legacy search remains the admitted public
-behavior until the later implementation, validation, transport, and release
-gates close.
+It is the implementation authority for the admitted direct-module physical
+assessment and event model. The existing legacy search remains the default
+public/facade/REST behavior; Phase 3 did not change or silently reinterpret
+that compatibility surface. Transport and release admission remain later
+gates.
 
 ## Compatibility Boundary
 
@@ -55,7 +57,7 @@ This is a first-class immutable model family, not a moving alias for “best
 available.” A policy preset may select it, but the preset must resolve to this
 exact identifier and expose every component identity.
 
-The initial component identities are planned as:
+The initial component identities are:
 
 | Component | Frozen identifier | Role |
 |---|---|---|
@@ -64,12 +66,13 @@ The initial component identities are planned as:
 | Spectral response | `cie_mes2_2010_v1` | Declared photopic/scotopic interpolation, never an unnamed conversion |
 | Observational lineage | `tousey_koomen_twilight_1953_v1` | Independent twilight comparison cases |
 
-These identifiers are reserved by this doctrine. They do not become admitted
-API until their source, numerical, packaging, and public-contract gates pass.
+These identifiers have passed the Phase 1-3 direct-module engine gates. They
+do not become facade or REST defaults until those separate transport and
+release gates pass.
 
 ## Physical Phase Taxonomy
 
-The new public enum is planned as `PhysicalVisibilityPhase` with exactly these
+The additive direct-module enum is `PhysicalVisibilityPhase` with exactly these
 four strings:
 
 | Value | Within-day event | Across-day ownership |
@@ -157,6 +160,13 @@ The solver must find every candidate crossing and must separately detect a
 tangent or near-zero interval. Returning the first sampled visible time is
 not an event solution.
 
+The first event admission binds a source-controlled Lipschitz/zero-enclosure
+certificate to the exact version 1.2 data pack. Same-sign intervals are
+excluded only when the admitted rate bound proves they cannot contain zero;
+otherwise they are recursively enclosed. A possible-zero interval without a
+witness fails closed as `crossing_completeness_not_certified`. Dense sampling
+alone is not called a completeness certificate.
+
 ## First-Day and Last-Day Law
 
 A morning phase is returned only if:
@@ -213,8 +223,8 @@ A planet enters the public model only after its dynamic visual magnitude and
 target spectral treatment carry source receipts and pass independent
 validation.
 
-Those five candidates have passed the Phase 2 engine gate through external
-data-pack version 1.1. Their planetary response profiles are pack-owned and
+Those five candidates have passed the Phase 2 single-epoch engine gate. Their
+planetary response profiles are pack-owned and
 cannot be replaced by caller-supplied weights. Phase angle and, for Saturn,
 effective ring sub-latitude must remain inside the source-owned profile domain
 or the assessment fails closed.
@@ -222,6 +232,20 @@ or the assessment fails closed.
 A fixed star enters only when its identity, visual photometry, and spectral or
 color transformation are source-identified and complete. An ambiguous catalog
 `color_index` must not be guessed to be B-V, Gaia BP-RP, or another system.
+
+The first Phase 3 event admission is deliberately narrower:
+
+- Mars, Jupiter, and Saturn admit all four physical event phases;
+- Sirius admits all four phases through the sovereign star registry, BSC5
+  Johnson V photometry, and a CALSPEC/CIE spectral response;
+- Mercury and Venus remain admitted for Phase 2 single-epoch assessment but
+  return `body_phase_not_admitted` for physical event search because required
+  guard days can leave their source-owned phase-angle domains; and
+- every other fixed star remains `target_not_admitted`.
+
+Sirius never enters the legacy native arcus accelerator. Its exact catalog
+identity, visual magnitude, source receipts, and response weights must agree
+with the external pack or evaluation fails closed.
 
 Uranus, Neptune, minor planets, comets, novae, and other targets require
 separate target-admission evidence. They are not accepted merely because the
@@ -270,6 +294,12 @@ model identity survive in the receipt. Refraction is applied exactly once.
 The initial physical admission supports an explicit scalar apparent horizon
 altitude. A directional azimuth/elevation horizon profile enters only after
 Phase 4 closes.
+
+The exact pack begins at 0.25 degrees true target altitude. When its refracted
+apparent equivalent is above the caller's scalar horizon, that pack floor
+narrows the event window and is reported as
+`target_data_pack_altitude_floor`. It is not mislabeled as a measured or
+visual horizon.
 
 For the later profile:
 
@@ -349,8 +379,17 @@ never downloads or updates the pack.
 Pack version 1.0 remains loadable for its Phase 1 atmospheric tables but
 contains no admitted planetary target profiles. Pack version 1.1 adds the
 source-locked Mercury-through-Saturn profiles required by the Phase 2 public
-assessment. A caller may pin the exact 1.1 root manifest SHA-256 in both
-runtime configuration and policy.
+assessment. Pack version 1.2 preserves every version 1.1 numerical payload
+byte and adds the source-locked Sirius profile required by Phase 3. Physical
+event search admits only version 1.2 with root manifest:
+
+```text
+cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c
+```
+
+Single-epoch assessment remains compatible with the admitted 1.0, 1.1, and
+1.2 contracts according to their capabilities. Callers may pin the exact root
+manifest SHA-256 in both runtime configuration and policy.
 
 Missing, incompatible, or corrupt data is a typed non-evaluable outcome.
 
@@ -393,7 +432,7 @@ and artifact review remain mandatory before public distribution.
 
 ## Additive Public-Contract Sketch
 
-Planned Python types:
+Additive direct-module Python types:
 
 - `PhysicalVisibilityPhase`
 - `PhysicalVisibilityStatus`
@@ -403,7 +442,7 @@ Planned Python types:
 - `VisibilityDataPackReceipt`
 - `VisibilityComponentReceipt`
 
-Planned functions:
+Additive direct-module functions:
 
 ```text
 physical_visibility_assessment(...)
@@ -421,8 +460,9 @@ The assessment request carries:
 - no caller-supplied planetary photometry or spectral-profile override for the
   first Phase 2 planetary contract.
 
-A future additive fixed-star or other target contract may define a
-source-identified caller vessel only after its separate target-admission gate.
+The first fixed-star contract is Sirius and consumes only the pack-owned
+source-identified identity, Johnson V, and CALSPEC/CIE response. Other targets
+still require a separate admission gate.
 
 The event request additionally carries:
 
@@ -525,6 +565,9 @@ The following identifiers are reserved:
 - `observer_protocol_not_admitted`
 - `phase_ownership_not_evaluable`
 - `solver_domain_disconnected`
+- `body_phase_not_admitted`
+- `visibility_event_data_pack_not_admitted`
+- `crossing_completeness_not_certified`
 
 The stable `not_found` reason is:
 

@@ -1,0 +1,236 @@
+{
+  "schema": "moira.physical-heliacal-visibility-phase3-event-goldens/v1",
+  "status": "independent_planetary_and_stellar_event_validation",
+  "build_date": "2026-07-30",
+  "exact_data_pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.2.0",
+    "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c"
+  },
+  "policy": {
+    "background": {
+      "scope": "dark_sky_anchor",
+      "photopic_luminance_cd_m2": 0.0001,
+      "scotopic_luminance_cd_m2": 0.00015
+    },
+    "atmosphere": "exact_data_pack_fixed_domain",
+    "observer_protocol_id": "known_location_directed_averted_observation_v1",
+    "local_horizon_altitude_deg": 0.0,
+    "refraction_model_id": "bennett_extended_v1"
+  },
+  "external_sources": {
+    "jpl_horizons": {
+      "authority": "NASA/JPL Solar System Dynamics Horizons",
+      "api_documentation": "https://ssd-api.jpl.nasa.gov/doc/horizons.html",
+      "manual": "https://ssd.jpl.nasa.gov/horizons/manual.html",
+      "acquisition_date": "2026-07-30",
+      "common_contract": {
+        "EPHEM_TYPE": "OBSERVER",
+        "CENTER": "coord@399",
+        "COORD_TYPE": "GEODETIC",
+        "REF_SYSTEM": "ICRF",
+        "APPARENT": "AIRLESS",
+        "TIME_TYPE": "UT",
+        "STEP_SIZE": "1 min",
+        "CSV_FORMAT": "YES"
+      },
+      "files": {
+        "jupiter_candidate_target": {
+          "filename": "jupiter-2023-05-06-1min.json",
+          "bytes": 52633,
+          "sha256": "fe65868b5c1f46dea1ee8e9e61b92eb0f941c85a7ca08e376bb85d6edbbe5c36",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,43",
+          "SITE_COORD": "35,35,0",
+          "START_TIME": "2023-May-06 00:00",
+          "STOP_TIME": "2023-May-06 06:00"
+        },
+        "jupiter_candidate_sun": {
+          "filename": "sun-2023-05-06-1min.json",
+          "bytes": 33293,
+          "sha256": "c2c2dd74ac5b83fc5c047efc34d8ea5d005be2a16347d15deb5c490417d232c8",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "SITE_COORD": "35,35,0",
+          "START_TIME": "2023-May-06 00:00",
+          "STOP_TIME": "2023-May-06 06:00"
+        },
+        "jupiter_guard_target": {
+          "filename": "jupiter-2023-05-05-1min.json",
+          "bytes": 52633,
+          "sha256": "a2daccfdcde4c8d6a2a0848e14eb1a84ff0dc3c9cce5ba52b31dd592d5343bf8",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,43",
+          "SITE_COORD": "35,35,0",
+          "START_TIME": "2023-May-05 00:00",
+          "STOP_TIME": "2023-May-05 06:00"
+        },
+        "jupiter_guard_sun": {
+          "filename": "sun-2023-05-05-1min.json",
+          "bytes": 33293,
+          "sha256": "c83fef490e03c361b2247de56cf3df19e7eeb15019636205826437fe7b57064c",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "SITE_COORD": "35,35,0",
+          "START_TIME": "2023-May-05 00:00",
+          "STOP_TIME": "2023-May-05 06:00"
+        },
+        "sirius_candidate_sun": {
+          "filename": "sun-2026-08-03-1min.json",
+          "bytes": 17504,
+          "sha256": "69f70f0fc4756fc7e4b914b97a508cbf84817d8ea9e8bd0c16cf65537f590a67",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "SITE_COORD": "-90,30,0",
+          "START_TIME": "2026-Aug-03 09:30",
+          "STOP_TIME": "2026-Aug-03 12:00"
+        },
+        "sirius_guard_sun": {
+          "filename": "sun-2026-08-02-1min.json",
+          "bytes": 17504,
+          "sha256": "30533852032238b3b72e350deba593aaf29d9a452f4abd090469a32eccd22806",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "SITE_COORD": "-90,30,0",
+          "START_TIME": "2026-Aug-02 09:30",
+          "STOP_TIME": "2026-Aug-02 12:00"
+        }
+      }
+    },
+    "hipparcos": {
+      "authority": "ESA Hipparcos and Tycho Catalogues, VizieR I/239",
+      "catalog_page": "https://cdsarc.cds.unistra.fr/viz-bin/cat/I/239",
+      "query_url": "https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=I%2F239%2Fhip_main&HIP=32349&-out=HIP%2CRAhms%2CDEdms%2CPlx%2CpmRA%2CpmDE%2CVmag",
+      "query": {
+        "filename": "sirius-hip32349.tsv",
+        "bytes": 2204,
+        "sha256": "2f0f22577089a988b1448dfeb4d4bd26db09663185337b73ac61ccdb5a962538"
+      },
+      "readme": {
+        "filename": "ReadMe",
+        "bytes": 69008,
+        "sha256": "49a24be0c342a74e2357a048d2434a77cbb165690afe34b3c18989a4c24d0272"
+      },
+      "admitted_astrometry": {
+        "hipparcos_id": 32349,
+        "ra_icrs_j1991_25": "06 45 09.25",
+        "dec_icrs_j1991_25": "-16 42 47.3",
+        "parallax_mas": 379.21,
+        "pm_ra_cos_dec_mas_per_year": -546.01,
+        "pm_dec_mas_per_year": -1223.08,
+        "radial_velocity_assumption_km_per_s": 0.0,
+        "catalog_v_magnitude_not_used": true
+      }
+    },
+    "astropy_erfa": {
+      "role": "independent Sirius ICRS space-motion and airless AltAz transform",
+      "astropy_version": "7.2.0",
+      "pyerfa_version": "2.0.1.5",
+      "astropy_iers_data_version": "0.2026.3.23.0.51.38",
+      "automatic_download": false,
+      "iers_finals2000a": {
+        "bytes": 3731988,
+        "sha256": "539a609650439fc0c368494a9e2c59d9078cc4db65d171065b81e469b90ed627"
+      },
+      "iers_readme": {
+        "bytes": 3429,
+        "sha256": "7c6182cc0fd0cbece39711f648d15e48b49168925602e360a5709c5ccc8d5a12"
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "phase3-jupiter-2023-morning-first-rising",
+      "target": "Jupiter",
+      "phase": "morning_first_rising",
+      "jd_start": 2460050.5,
+      "search_window_days": 30,
+      "latitude_deg": 35.0,
+      "longitude_deg": 35.0,
+      "candidate_sources": [
+        "jupiter_candidate_target",
+        "jupiter_candidate_sun"
+      ],
+      "guard_sources": [
+        "jupiter_guard_target",
+        "jupiter_guard_sun"
+      ],
+      "independent_oracle": {
+        "algorithm_id": "jpl_horizons_airless_geometry_plus_independent_pack_equations_v1",
+        "guard_day_status": "does_not_qualify",
+        "crossing_bracket_jd_ut": [
+          2460070.590972222,
+          2460070.591666667
+        ],
+        "crossing_bracket_margin_magnitude": [
+          -0.06089819407948793,
+          0.04045540161826411
+        ],
+        "event_jd_ut": 2460070.591389478,
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "engine_result": {
+        "status": "evaluated",
+        "observation_day_key": 2460071,
+        "comparison_observation_day_key": 2460070,
+        "comparison_day_status": "does_not_qualify",
+        "event_time_semantics": "visibility_margin_zero",
+        "boundary_source": "visibility_margin",
+        "event_jd_ut": 2460070.591375516,
+        "crossing_completeness_state": "certified_lipschitz_zero_enclosure",
+        "crossing_certificate_source_sha256": "eacf8c373606c1628cebdd4caa611ece533d368c32c7f86674a13e04a4c13d3e",
+        "unresolved_certificate_interval_count": 0
+      },
+      "maximum_engine_oracle_difference_seconds": 60.0
+    },
+    {
+      "case_id": "phase3-sirius-2026-morning-first-rising",
+      "target": "Sirius",
+      "phase": "morning_first_rising",
+      "jd_start": 2461240.5,
+      "search_window_days": 20,
+      "latitude_deg": 30.0,
+      "longitude_deg": -90.0,
+      "candidate_sources": [
+        "sirius_candidate_sun"
+      ],
+      "guard_sources": [
+        "sirius_guard_sun"
+      ],
+      "independent_oracle": {
+        "algorithm_id": "hipparcos_astropy_erfa_airless_geometry_plus_jpl_sun_plus_independent_pack_equations_v1",
+        "guard_day_status": "does_not_qualify",
+        "crossing_bracket_jd_ut": [
+          2461255.95,
+          2461255.950694445
+        ],
+        "crossing_bracket_margin_magnitude": [
+          -0.04132915826110084,
+          0.05839496532112598
+        ],
+        "event_jd_ut": 2461255.9502878026,
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "engine_result": {
+        "status": "evaluated",
+        "observation_day_key": 2461256,
+        "comparison_observation_day_key": 2461255,
+        "comparison_day_status": "does_not_qualify",
+        "event_time_semantics": "visibility_margin_zero",
+        "boundary_source": "visibility_margin",
+        "event_jd_ut": 2461255.950317484,
+        "crossing_completeness_state": "certified_lipschitz_zero_enclosure",
+        "crossing_certificate_source_sha256": "eacf8c373606c1628cebdd4caa611ece533d368c32c7f86674a13e04a4c13d3e",
+        "unresolved_certificate_interval_count": 0
+      },
+      "maximum_engine_oracle_difference_seconds": 60.0
+    }
+  ],
+  "limitations": [
+    "one_outer_planet_and_one_fixed_star_first_admission",
+    "one_minute_external_ephemeris_sampling_with_linear_margin_root_interpolation",
+    "sirius_radial_velocity_is_zero_for_the_35_year_astrometric_propagation",
+    "subjective_observer_and_real_atmosphere_uncertainty_are_not_probabilistic_confidence",
+    "validation_does_not_admit_mercury_or_venus_physical_events"
+  ]
+}

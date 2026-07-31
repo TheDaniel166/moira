@@ -1271,11 +1271,16 @@ def _mes2_coefficient(mesopic_luminance: float) -> float:
         return 0.0
     if mesopic_luminance >= _CIE_PHOTOPIC_MIN_CD_M2:
         return 1.0
-    return _unit_interval(
+    coefficient = (
         _CIE_MES2_A
-        + _CIE_MES2_B * math.log10(mesopic_luminance),
-        "MES2 coefficient",
+        + _CIE_MES2_B * math.log10(mesopic_luminance)
     )
+    # CIE 191 publishes A and B at finite decimal precision.  Their rounded
+    # values evaluate slightly below zero immediately above 0.005 cd/m2 and
+    # slightly above one immediately below 5 cd/m2.  Preserve the declared
+    # piecewise boundary values instead of leaking that coefficient-rounding
+    # artifact as an invalid adaptation state.
+    return min(1.0, max(0.0, coefficient))
 
 
 def _mes2_bisection(

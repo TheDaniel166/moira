@@ -1,12 +1,15 @@
 # Physical Visibility Reference Lab
 
-Status: Phase 1 complete research and data-pack tooling; not an engine runtime
-dependency. The admitted pack remains a separate external artifact.
+Status: Phases 1 through 3 complete at the offline reference-lab, immutable
+data-pack, and additive Python direct-module boundaries. This directory is not
+an engine runtime dependency. Admitted packs remain separate external
+artifacts.
 
 ## Boundary
 
-This directory owns the repository specification for Moira's external
-libRadtran reference laboratory. The generator:
+This directory owns the repository specifications and offline tooling for
+Moira's external libRadtran reference laboratory, immutable physical-
+visibility data packs, and independent pack/event validators. The tooling:
 
 - accepts an already downloaded, checksum-pinned libRadtran archive;
 - accepts an already built libRadtran source tree;
@@ -16,8 +19,12 @@ libRadtran reference laboratory. The generator:
   elevated-site, direct-geometry, named-spectral direct, environmental, and
   altitude/pressure interpolation probes;
 - writes each case atomically and binds every output file by SHA-256;
-- rejects partial, unowned, stale, or tampered artifacts; and
-- never enters the `moira` package or its installed dependency graph.
+- rejects partial, unowned, stale, or tampered artifacts;
+- keeps independent validators outside the `moira` package and its installed
+  dependency graph;
+- extends immutable packs into new versioned directories rather than mutating
+  an admitted base pack; and
+- never downloads a missing source or data pack.
 
 Checkpoint 1 is deliberately a sea-level pilot. The elevated-site checkpoint
 adds a bounded 0-5,000 m construction for the named U.S. Standard atmosphere
@@ -33,9 +40,17 @@ interpolation against withheld values across all six molecular profiles.
 The final radiance checkpoint admits 380-780 nm response-integrated photopic
 and scotopic products, untouched off-grid holdouts, a 57-node direct
 extinction surface, binary32 storage, and a fail-closed deep-twilight law. The
-final compiler produces a separately licensed, checksummed data pack from
-that admitted artifact. None of these specifications installs a table or
-loader into the engine.
+Phase 1 compiler produces the separately licensed, checksummed version 1.0
+data pack from that admitted artifact.
+
+Phase 2 extends version 1.0 with source-locked Mercury-through-Saturn target
+profiles for the additive Python single-epoch assessment. Phase 3 extends
+version 1.1 with the first source-complete stellar profile, Sirius, and binds
+the physical event solver to an independently validated crossing certificate
+and external event goldens. The runtime consumes only generated products from
+an explicit caller-supplied pack path. It does not import this laboratory,
+libRadtran, REPTRAN, Astropy, CALSPEC, BSC5, CIE source tables, or a network
+client.
 
 ## Verified Build Environment
 
@@ -374,6 +389,109 @@ material. It includes no CIE source table, libRadtran/REPTRAN file, source,
 or executable. The validator accepts only an explicit caller-supplied
 directory and never searches for or downloads a replacement.
 
+## Immutable Data-Pack Lineage
+
+Each extension copies every inherited payload byte-for-byte and adds only the
+new generated role. A minor version therefore identifies a different exact
+runtime capability contract:
+
+| Version | Added capability | Admitted manifest SHA-256 |
+|---|---|---|
+| `1.0.0` | Phase 1 atmosphere, extinction, twilight, and numerical envelopes | `49ac2b68ea105a8e055b27e8d4d70f6cbfe9533f971ef5e6000f0bdd95d6771b` |
+| `1.1.0` | Phase 2 Mercury-through-Saturn target profiles | `f594fd12058cc7f5c7bc9de7f2b06652bef3c0604ef7b0a05a069e54e4026c87` |
+| `1.2.0` | Phase 3 source-locked Sirius stellar profile | `cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c` |
+
+The engine rejects a pack whose version, compatibility identifier,
+capabilities, inventory, or expected manifest hash does not match the
+requested physical contract.
+
+## Build and Validate the Phase 2 Pack
+
+The version 1.1 builder consumes the admitted version 1.0 pack, Payne et al.
+planetary spectra, the Mallama et al. photometry paper, the libRadtran
+extraterrestrial solar spectrum, and the exact CIE photopic/scotopic tables.
+All inputs must already exist locally:
+
+```bash
+python scripts/build_visibility_phase2_data_pack.py \
+  --base-pack /absolute/data-packs/moira-physical-heliacal-visibility-1.0.0 \
+  --planetary-spectra-dir /absolute/source/payne-planetary-spectra \
+  --cie-root /absolute/source/cie \
+  --solar-spectrum /absolute/libRadtran-2.0.6/data/solar_flux/atlas_plus_modtran \
+  --mallama-pdf /absolute/source/mallama/1609.05048.pdf \
+  --output /absolute/data-packs/moira-physical-heliacal-visibility-1.1.0
+
+python scripts/validate_visibility_phase2_data_pack.py \
+  --pack /absolute/data-packs/moira-physical-heliacal-visibility-1.1.0 \
+  --expected-manifest-sha256 f594fd12058cc7f5c7bc9de7f2b06652bef3c0604ef7b0a05a069e54e4026c87 \
+  --base-pack /absolute/data-packs/moira-physical-heliacal-visibility-1.0.0 \
+  --planetary-spectra-dir /absolute/source/payne-planetary-spectra \
+  --cie-root /absolute/source/cie \
+  --solar-spectrum /absolute/libRadtran-2.0.6/data/solar_flux/atlas_plus_modtran \
+  --mallama-pdf /absolute/source/mallama/1609.05048.pdf
+```
+
+The independent validator imports neither the builder nor Moira. It
+recomputes the generated target profiles from the explicit sources and
+verifies unchanged Phase 1 inheritance, complete inventory, attribution,
+provenance, and generation receipts.
+
+## Build and Validate the Phase 3 Pack
+
+Version 1.2 retains every version 1.1 payload byte and adds one generated
+stellar profile. Sirius is bound to BSC5 HR 2491/HD 48915 Johnson V `-1.46`
+and `sirius_stis_005.fits`; the generic catalog color index is not consumed.
+
+```bash
+python scripts/build_visibility_phase3_data_pack.py \
+  --base-pack /absolute/data-packs/moira-physical-heliacal-visibility-1.1.0 \
+  --calspec-spectrum /absolute/source/calspec/sirius_stis_005.fits \
+  --bsc5-query /absolute/source/bsc5/sirius-v50.tsv \
+  --bsc5-readme /absolute/source/bsc5/ReadMe \
+  --cie-root /absolute/source/cie \
+  --output /absolute/data-packs/moira-physical-heliacal-visibility-1.2.0
+
+python scripts/validate_visibility_phase3_data_pack.py \
+  --pack /absolute/data-packs/moira-physical-heliacal-visibility-1.2.0 \
+  --expected-manifest-sha256 cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c \
+  --base-pack /absolute/data-packs/moira-physical-heliacal-visibility-1.1.0 \
+  --calspec-spectrum /absolute/source/calspec/sirius_stis_005.fits \
+  --bsc5-query /absolute/source/bsc5/sirius-v50.tsv \
+  --bsc5-readme /absolute/source/bsc5/ReadMe \
+  --cie-root /absolute/source/cie
+```
+
+Astropy is a development-only FITS reader on this offline build surface. The
+installed Moira runtime neither imports Astropy nor parses CALSPEC or BSC5
+source files. The pack contains generated response products, not the source
+tables.
+
+## Validate the Phase 3 Event Evidence
+
+The event solver is admitted only with the source-controlled Lipschitz
+certificate and independent Jupiter/Sirius event goldens:
+
+```bash
+python scripts/validate_visibility_phase3_event_certificate.py \
+  --pack /absolute/data-packs/moira-physical-heliacal-visibility-1.2.0
+
+python scripts/validate_visibility_phase3_event_goldens.py \
+  --pack /absolute/data-packs/moira-physical-heliacal-visibility-1.2.0 \
+  --jpl-root /absolute/source/phase3-event-oracles/jpl-horizons \
+  --hipparcos-query /absolute/source/phase3-event-oracles/hipparcos/sirius-hip32349.tsv \
+  --hipparcos-readme /absolute/source/phase3-event-oracles/hipparcos/ReadMe
+```
+
+The certificate validator independently recomputes data-pack interpolant
+slopes, astronomical coordinate ceilings, and the full visibility-margin
+rate bound. The event validator imports neither Moira nor the event solver:
+Jupiter and solar geometry come from checksum-locked JPL Horizons tables;
+Sirius astrometry comes from checksum-locked Hipparcos I/239 data transformed
+with a pinned offline Astropy/ERFA/IERS toolchain.
+
+These event-oracle source tables are validation inputs only. They are not
+runtime dependencies or redistributed pack payloads.
+
 ## Validate an Artifact
 
 Pin the root-manifest hash in the consuming checkpoint:
@@ -439,11 +557,11 @@ Linux and Windows.
 
 ## Current Scientific Limits
 
-- The first `1.0.0` pack is a fixed-environment U.S. Standard, rural-summer,
-  sea-level baseline at 1013.25 hPa, AOD550 0.1, Angstrom exponent 1.3,
-  ozone 300 DU, and gray albedo 0.2. The environmental roles and the separate
-  altitude/pressure evidence are admitted, but those dimensions are not
-  silently present in this pack.
+- The `1.0.0`, `1.1.0`, and `1.2.0` lineage remains a fixed-environment U.S.
+  Standard, rural-summer, sea-level baseline at 1013.25 hPa, AOD550 0.1,
+  Angstrom exponent 1.3, ozone 300 DU, and gray albedo 0.2. The environmental
+  roles and separate altitude/pressure evidence are admitted, but those
+  dimensions are not silently present in these packs.
 - Exact geometric horizon viewing is excluded because libRadtran forbids
   `umu=0`; the pack begins at 0.25 degrees true altitude.
 - Modeled twilight is admitted only from -9 through 0 degrees solar-center
@@ -452,12 +570,21 @@ Linux and Windows.
 - The response-integrated products cover 380-780 nm. The 531 nm
   monochromatic reconstruction is retained only as an intermediate diagnostic
   and is neither shipped nor interpolated at runtime.
-- Clouds, moonlight, site-specific airglow, spectral target models, and
-  environment domains beyond the fixed baseline require later separately
-  sourced and validated work.
+- Version 1.1 supplies Mercury-through-Saturn spectral target models for
+  single-epoch physical assessment. Physical event search is admitted for
+  Mars, Jupiter, and Saturn; Mercury and Venus fail closed because the
+  required first/last guard days can leave their source-owned phase-angle
+  domains.
+- Version 1.2 admits Sirius as the first physical stellar target. Other fixed
+  stars require separately source-locked photometry, spectral profiles,
+  catalog identity, and independent validation.
+- Clouds, moonlight, site-specific airglow, directional terrain horizons, and
+  environment domains beyond the fixed baseline remain later, separately
+  sourced work.
 - Monte Carlo uncertainty varies across the twilight domain and is retained
   per cell. A zero-contribution result is never evidence of zero physical
   radiance.
-- Phase 1 does not implement an engine loader or single-epoch limiting
-  magnitude. Those belong to Phase 2; event-time error propagation belongs to
-  Phase 3.
+- Phase 2 implements the additive Python single-epoch loader and limiting-
+  magnitude truth. Phase 3 implements the additive physical event solver.
+  Facade, serializer, REST, OpenAPI, website adoption, and optional native
+  strengthening remain separate later phases.

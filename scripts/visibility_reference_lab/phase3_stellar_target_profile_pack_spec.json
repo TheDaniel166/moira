@@ -1,0 +1,126 @@
+{
+  "schema": "moira.physical-heliacal-visibility-phase3-pack-spec/v1",
+  "spec_id": "physical-heliacal-visibility-phase3-stellar-target-profiles-1.2.0-2026-07-30",
+  "status": "phase3_offline_pack_extension",
+  "build_date": "2026-07-30",
+  "pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.2.0",
+    "manifest_schema": "moira.physical-heliacal-visibility-data-pack-manifest/v1",
+    "compatibility_id": "moira-physical-heliacal-visibility-data-pack-v1.2",
+    "table_format_id": "regular-grid-ieee754-binary32-le-v1",
+    "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+    "license": "CC-BY-SA-4.0"
+  },
+  "base_pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.1.0",
+    "manifest_sha256": "f594fd12058cc7f5c7bc9de7f2b06652bef3c0604ef7b0a05a069e54e4026c87",
+    "immutable_payload_roles": [
+      "axes",
+      "direct_extinction",
+      "error_envelope",
+      "photopic_luminance",
+      "photopic_relative_standard_error",
+      "scotopic_luminance",
+      "scotopic_relative_standard_error",
+      "target_profiles"
+    ]
+  },
+  "spectral_bins": {
+    "coordinate": "bin_start_vacuum_nm",
+    "start_nm": 380.0,
+    "width_nm": 1.0,
+    "count": 400
+  },
+  "source_inputs": {
+    "calspec_sirius": {
+      "archive": "STScI_CALSPEC",
+      "source_url": "https://ssb.stsci.edu/cdbs/calspec/sirius_stis_005.fits",
+      "filename": "sirius_stis_005.fits",
+      "bytes": 282240,
+      "sha256": "1349da7b8b59ad035aefea8d7948f552b41b3897d07e5ad82ca162a53af97271",
+      "spectrum_id": "sirius_stis_005",
+      "wavelength_unit": "angstrom",
+      "flux_unit": "flam_erg_s-1_cm-2_angstrom-1",
+      "systematic_fraction": 0.01,
+      "data_use_disposition": "public_domain_with_mission_and_stsci_acknowledgment_expected"
+    },
+    "calspec_publication": {
+      "title": "HST CALSPEC Flux Standards: Sirius (and Vega)",
+      "author": "R. C. Bohlin",
+      "publication_doi": "10.1088/0004-6256/147/6/127",
+      "arxiv_id": "1403.6861"
+    },
+    "bsc5_sirius_photometry": {
+      "catalog_id": "V/50",
+      "catalog_title": "Bright Star Catalogue, 5th Revised Ed.",
+      "authors": "Hoffleit and Warren",
+      "query_url": "https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=V%2F50&HR=2491&-out=HR%2CName%2CHD%2CVmag%2Cn_Vmag%2CB-V",
+      "filename": "sirius-v50.tsv",
+      "bytes": 2171,
+      "sha256": "09556d03431f70c65b75a4a555742812dd542d2e0a4ee40df4c11a876b5fcc3d",
+      "readme_filename": "ReadMe",
+      "readme_bytes": 11571,
+      "readme_sha256": "44fd9c73e2eecad0beb47bdfa3f01c60fd43f93d6964198e31fcd48732de5b33",
+      "hr_id": 2491,
+      "hd_id": 48915,
+      "visual_system_id": "johnson_v",
+      "visual_magnitude": -1.46,
+      "color_index_used": false,
+      "data_use_disposition": "single_attributed_scientific_fact_no_source_table_redistribution"
+    },
+    "cie_photopic": {
+      "dataset_doi": "10.25039/CIE.DS.dktna2s3",
+      "license": "CC-BY-SA-4.0",
+      "filename": "CIE_sle_photopic.csv",
+      "bytes": 9891,
+      "sha256": "ee5d5d17922ae645d4af52cacf6a50bdb9385749f9d2181ca312eb2b08febac2",
+      "luminous_efficacy_lm_per_w": 683.0
+    },
+    "cie_scotopic": {
+      "dataset_doi": "10.25039/CIE.DS.gr6w4b5g",
+      "license": "CC-BY-SA-4.0",
+      "filename": "CIE_sle_scotopic.csv",
+      "bytes": 7218,
+      "sha256": "6a75d3fdbcbf5e9e9a07478511933eefeda953f3e2cc14b74459e5a099ec3759",
+      "luminous_efficacy_lm_per_w": 1700.0
+    }
+  },
+  "target": {
+    "target_id": "Sirius",
+    "catalog_identity": {
+      "traditional_name": "Sirius",
+      "nomenclature": "alf CMa",
+      "hipparcos_id": 32349,
+      "hr_id": 2491,
+      "hd_id": 48915
+    },
+    "photometry_model_id": "bsc5_johnson_v_catalog_photometry_v1",
+    "spectral_profile_id": "calspec_sirius_stis_005_cie_response_v1",
+    "limitations": [
+      "sirius_only_first_stellar_admission",
+      "unresolved_system_visual_photometry",
+      "calspec_source_systematic_fraction_0.01",
+      "no_generic_catalog_color_index"
+    ]
+  },
+  "derivation": {
+    "spectral_sampling": "linear_interpolation_of_positive_dataqual_calspec_flam_at_integer_nanometer_bin_starts",
+    "photopic_weights": "normalize(calspec_flam_times_CIE_photopic_response)",
+    "scotopic_weights": "normalize(calspec_flam_times_CIE_scotopic_response)",
+    "scotopic_to_photopic_ratio": "1700_times_scotopic_integral_divided_by_683_times_photopic_integral",
+    "visual_magnitude": "BSC5_HR_2491_Johnson_V",
+    "outside_domain": "typed_not_evaluable",
+    "profile_float_representation": "canonical_json_binary64"
+  },
+  "runtime_boundary": {
+    "network_allowed": false,
+    "automatic_download_allowed": false,
+    "source_files_may_be_copied_to_pack": false,
+    "generated_response_products_only": true,
+    "base_pack_may_be_mutated": false,
+    "caller_supplied_paths_required": true,
+    "legacy_native_arcus_dispatch_allowed": false
+  }
+}
