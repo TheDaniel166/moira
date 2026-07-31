@@ -1,0 +1,383 @@
+{
+  "schema": "moira.visibility-jones-source-audit-spec/v1",
+  "spec_id": "physical-heliacal-phase4-jones-source-audit-2026-07-31",
+  "status": "source_audit_and_artifact_contract_not_runtime_model",
+  "model_contract": {
+    "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
+    "admission_status": "not_admitted",
+    "computational_object": "spectral_directional_scattered_moonlight_radiance",
+    "implementation_method": "independent_offline_spectral_artifact",
+    "legacy_model_id_preserved": "krisciunas_schaefer_1991",
+    "silent_fallback_allowed": false
+  },
+  "runtime_boundary": {
+    "engine_changes_authorized": false,
+    "public_api_changes_authorized": false,
+    "production_data_pack_authorized": false,
+    "runtime_dependency_on_eso_code": false,
+    "runtime_dependency_on_libradtran": false,
+    "network_dependency": false,
+    "automatic_download_allowed": false,
+    "external_source_bytes_redistributed": false
+  },
+  "primary_authority": {
+    "title": "An advanced scattered moonlight model for Cerro Paranal",
+    "authors": [
+      "Amy Jones",
+      "Stefan Noll",
+      "Wolfgang Kausch",
+      "Cezary Szyszka",
+      "Stefan Kimeswenger"
+    ],
+    "publication": "Astronomy and Astrophysics 560 (2013) A91",
+    "doi": "10.1051/0004-6361/201322433",
+    "arxiv_id": "1310.7030",
+    "evaluated_wavelength_domain_nm": [
+      360.0,
+      890.0
+    ],
+    "reported_moon_model_uncertainty_mag": 0.15,
+    "reported_calibration_spectrum_count": 141,
+    "calibration_site_id": "cerro_paranal",
+    "calibration_year_range": [
+      1999,
+      2005
+    ],
+    "rolo_empirical_phase_domain_deg": [
+      1.55,
+      97.0
+    ],
+    "paper_extrapolates_rolo_to_deg": 180.0,
+    "first_moira_admission_extrapolates_rolo": false,
+    "neglected_libration_maximum_effect_percent": 7.0,
+    "polarization_modeled": false
+  },
+  "eso_source_package": {
+    "name": "The Advanced Cerro Paranal Sky Model SM-01",
+    "release": "1.0.0",
+    "release_date": "2018-08-30",
+    "url": "https://ftp.eso.org/pub/dfs/pipelines/skytools/skymodel/SM-01.tar.gz",
+    "archive_bytes": 431651392,
+    "archive_sha256": "e09b1d62c8af212486f50097fe76d9dcbb242f4fbadf720a4a85be361cc9116b",
+    "license": "GPL-2.0-or-later",
+    "role": "external_lineage_inspection_and_source_owned_regression_only",
+    "required_members": [
+      {
+        "path": "SM-01/README.txt",
+        "bytes": 2904,
+        "sha256": "66cd5f8b7c8b55a2b6f50507a55fdef175d7c9196797061c3ded03535dbd4b95",
+        "role": "release_license_and_site_disclaimer"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/src/sm_scatmoonlight.c",
+        "bytes": 115070,
+        "sha256": "686dcce3e4aadf41785b9b26bdeeee858c730030969c7dd4045748527985a5ea",
+        "role": "official_scattering_implementation"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/src/sm_scatmoonlight.h",
+        "bytes": 11480,
+        "sha256": "8ade158bee9638dd6bd1cfc0d44191f4d9dcd131b5bfb65c82c04ca875839ec6",
+        "role": "official_scattering_contract_and_constants"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/src/sm_skyemcomp.c",
+        "bytes": 140334,
+        "sha256": "eaa20b583c24f81cf15f7f63ac5612403fbfb939cbe933f43df24bb56573adc6",
+        "role": "official_lunar_spectrum_and_component_assembly"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/src/sm_skyemcomp.h",
+        "bytes": 13515,
+        "sha256": "3f19ce3648aa06210407f7be8f4d541742c2008491d8a9a27ea8a31950c77264",
+        "role": "official_component_parameter_contract"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/moonalbedo.dat",
+        "bytes": 3365,
+        "sha256": "86b9f9860fabb283de6659aabee8959186dc03e9d081aaa7c2761c2869ff16cc",
+        "role": "external_rolo_coefficient_table"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/mie_paranal_ref.dat",
+        "bytes": 1410,
+        "sha256": "16bb135bb7972be955c0bcae19f8fb6fd7781696137bb7d1e089ea5a5beb1954",
+        "role": "external_paranal_mie_reference"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/dscatcor_m15s1.dat",
+        "bytes": 838,
+        "sha256": "09fc0a6f81cf630099d008a96b82a72df1296bbed12f00e633c98b8cd480efec",
+        "role": "external_double_scattering_correction"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/sscatcor_m15s1.dat",
+        "bytes": 4313,
+        "sha256": "2bf48a71e007bc557bd088d53ede15e97163d9154f19b1e411b104c38c4a18b8",
+        "role": "external_single_scattering_correction"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/multiscat_m15s1.dat",
+        "bytes": 4100,
+        "sha256": "87534ff402b103197bba5e34742bd59723f04121866a224bcb34eed45d65cd38",
+        "role": "external_multiple_scattering_reference"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/solspec_ext.dat",
+        "bytes": 141021,
+        "sha256": "0f75353a72cfd7f1b314652f47aa9edff33434be5154bdfd590e2b5b2926933d",
+        "role": "external_colina_solar_spectrum"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/data/o3trans.dat",
+        "bytes": 292734,
+        "sha256": "cb06c173f393d6d55e3c39551665abb8f5d6c1a846cd0fd739a15d0155f94502",
+        "role": "external_ozone_transmission"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/test/test_skymodel_etc.par",
+        "bytes": 2073,
+        "sha256": "294ddff66df11b0406e61a82531e384a2641a4c2bafdc763887201b3e34c94cd",
+        "role": "source_owned_regression_input"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/test/test_instrument_etc.par",
+        "bytes": 633,
+        "sha256": "da6b60b60bf8679fae1aec3050453e7c326067513ade6de19ebfbf91b98299ce",
+        "role": "source_owned_regression_spectral_grid"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/test/sm_filenames.dat",
+        "bytes": 1368,
+        "sha256": "0cef2328ef50c5fb5fafc3d24c80441f836bdb330695056f8993756ae1ddfbd0",
+        "role": "source_owned_regression_dependency_map"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/test/test_radspec.fits",
+        "bytes": 976320,
+        "sha256": "70e7b4526c6162342fa13100fea51eabbb8c37119467a272dce88730cfd0b917",
+        "role": "source_owned_full_sky_regression_output"
+      },
+      {
+        "path": "SM-01/sm-01_mod2/test/test_transspec.fits",
+        "bytes": 711360,
+        "sha256": "d26dc93e0c69bb235c435daea5d98fe7c3fd79a8f0585b69576359ff7a6e5caf",
+        "role": "source_owned_transmission_regression_output"
+      }
+    ]
+  },
+  "source_owned_regression_fixture": {
+    "parameter_member": "SM-01/sm-01_mod2/test/test_skymodel_etc.par",
+    "radiance_member": "SM-01/sm-01_mod2/test/test_radspec.fits",
+    "expected_parameters": {
+      "alt": 85.1,
+      "alpha": 282.1,
+      "rho": 51.3,
+      "altmoon": 41.3,
+      "moondist": 0.967,
+      "pres": 744.0,
+      "ssa": 0.97,
+      "calcds": "N",
+      "o3column": 1.0,
+      "moonscal": 1.0
+    },
+    "derived_lunar_phase_angle_deg": 102.1,
+    "inside_first_moira_admission_domain": false,
+    "regression_role": "official_implementation_lineage_only_not_admission_golden",
+    "fits_row_count": 11001,
+    "fits_row_bytes": 88,
+    "wavelength_column": "lam",
+    "wavelength_unit": "micrometre",
+    "component_column": "flux_sml",
+    "component_unit": "photon_per_second_per_square_metre_per_micrometre_per_square_arcsecond",
+    "optical_signature_domain_micrometre": [
+      0.36,
+      0.89
+    ],
+    "optical_signature_row_count": 2651,
+    "optical_signature_prefix": "moira.eso-sm01.flux_sml.f64be/v1",
+    "optical_signature_sha256": "ba33c681486a24b4703120c2dc5ab0cb7df3ed8201b44707629fa88f5a1a0b52"
+  },
+  "operational_comparison_capture": {
+    "role": "versioned_source_owned_operational_comparison_not_independent_oracle",
+    "capture_date": "2026-07-31",
+    "api_url": "https://etimecalret-002.eso.org/observing/etc/api/skycalc",
+    "documentation_url": "https://www.eso.org/observing/etc/doc/skycalc/helpskycalccli.html",
+    "skycalc_version": "2.0.9",
+    "query": {
+      "airmass": 1.1547005383792517,
+      "pwv_mode": "pwv",
+      "season": 0,
+      "time": 0,
+      "pwv": 3.5,
+      "msolflux": 130.0,
+      "incl_moon": "Y",
+      "moon_sun_sep": 130.0,
+      "moon_target_sep": 60.0,
+      "moon_alt": 45.0,
+      "moon_earth_dist": 1.0,
+      "incl_starlight": "N",
+      "incl_zodiacal": "N",
+      "ecl_lon": 135.0,
+      "ecl_lat": 90.0,
+      "incl_loweratm": "N",
+      "incl_upperatm": "N",
+      "incl_airglow": "N",
+      "incl_therm": "N",
+      "therm_t1": 0.0,
+      "therm_e1": 0.0,
+      "therm_t2": 0.0,
+      "therm_e2": 0.0,
+      "therm_t3": 0.0,
+      "therm_e3": 0.0,
+      "vacair": "vac",
+      "wmin": 380.0,
+      "wmax": 780.0,
+      "wgrid_mode": "fixed_wavelength_step",
+      "wdelta": 1.0,
+      "wres": 20000,
+      "wgrid_user": [
+        500.0,
+        550.0,
+        600.0
+      ],
+      "lsf_type": "none",
+      "lsf_gauss_fwhm": 5.0,
+      "lsf_boxcar_fwhm": 5.0,
+      "observatory": "paranal",
+      "temp_flag": 0
+    },
+    "derived_target_altitude_deg": 60.0,
+    "derived_lunar_phase_angle_deg": 50.0,
+    "waxing_state": "waxing",
+    "fits_bytes": 80640,
+    "fits_sha256": "12d7625e1ec1afc718928d873fdb0001d3fd800b19d33a6c5dc2ce135dbbc230",
+    "row_count": 401,
+    "wavelength_domain_nm": [
+      380.0,
+      780.0
+    ],
+    "wavelength_step_nm": 1.0,
+    "component_column": "flux_sml",
+    "component_unit": "ph/s/m2/micron/arcsec2",
+    "component_signature_prefix": "moira.skycalc.flux_sml.f64be/v1",
+    "component_signature_sha256": "8e15e62b5aa5cab32961f3be7ba300f46217d20614e91bdc131aa8ee8b2e1c29",
+    "all_other_emission_components_zero": true,
+    "total_flux_equals_scattered_moonlight": true
+  },
+  "first_admission_domain": {
+    "site_id": "cerro_paranal_jones_2013",
+    "site_transfer_allowed": false,
+    "observer_altitude_m": 2640.0,
+    "surface_pressure_hpa": 744.0,
+    "aerosol_single_scattering_albedo": 0.97,
+    "lunar_phase_angle_deg": [
+      1.55,
+      97.0
+    ],
+    "moon_earth_distance_ratio": [
+      0.91,
+      1.08
+    ],
+    "target_true_altitude_deg": [
+      0.25,
+      90.0
+    ],
+    "moon_true_altitude_deg": [
+      0.0,
+      90.0
+    ],
+    "relative_moon_azimuth_deg": [
+      0.0,
+      180.0
+    ],
+    "spectral_wavelength_nm": [
+      380.0,
+      780.0
+    ],
+    "waxing_and_waning_are_distinct": true,
+    "geometry_consistency_required": true,
+    "outside_domain_policy": "not_evaluable",
+    "subhorizon_moon_policy": "not_evaluable_until_separately_admitted",
+    "phase_extrapolation_policy": "rejected",
+    "site_substitution_policy": "rejected"
+  },
+  "independent_artifact_contract": {
+    "artifact_schema": "moira.visibility-jones-spectral-moonlight-artifact/v1",
+    "artifact_status": "required_not_yet_generated",
+    "external_generator": {
+      "name": "libRadtran",
+      "version": "2.0.6",
+      "solver": "MYSTIC",
+      "geometry": "spherical_one_dimensional_atmosphere",
+      "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+      "runtime_dependency": false
+    },
+    "required_coordinate_axes": [
+      "target_true_altitude_deg",
+      "moon_true_altitude_deg",
+      "relative_moon_azimuth_deg",
+      "lunar_phase_angle_deg",
+      "waxing_state",
+      "moon_earth_distance_ratio"
+    ],
+    "fixed_environment_receipts": [
+      "site_identity",
+      "observer_altitude",
+      "pressure_profile",
+      "molecular_profile",
+      "aerosol_extinction",
+      "aerosol_phase_function",
+      "single_scattering_albedo",
+      "ozone_column",
+      "ground_reflectance"
+    ],
+    "required_spectral_inputs": [
+      "source_locked_solar_spectrum",
+      "source_locked_lunar_albedo_model",
+      "photopic_response",
+      "scotopic_response"
+    ],
+    "required_outputs": [
+      "spectral_radiance",
+      "photopic_luminance_cd_m2",
+      "scotopic_luminance_cd_m2",
+      "solver_numerical_error",
+      "interpolation_error",
+      "storage_error"
+    ],
+    "required_validation_classes": [
+      "fixed_seed_repeatability",
+      "photon_count_convergence",
+      "grid_convergence",
+      "source_owned_operational_comparison",
+      "independent_geometry_holdout",
+      "component_isolation",
+      "domain_rejection"
+    ],
+    "acceptance_thresholds_status": "pilot_results_required_before_freeze",
+    "official_eso_code_used_as_generator": false,
+    "official_eso_code_used_as_independent_oracle": false,
+    "production_admission_allowed": false
+  },
+  "atmospheric_sensitivity_contract": {
+    "current_runtime_pack_atmosphere_axes": [],
+    "current_runtime_pack_fixed_environment_fields": [
+      "atmosphere_profile",
+      "aerosol_profile",
+      "observer_altitude_m",
+      "surface_pressure_hpa",
+      "aod550",
+      "angstrom_exponent",
+      "ozone_du",
+      "ground_albedo"
+    ],
+    "current_pack_can_produce_atmospheric_sensitivity_envelope": false,
+    "required_method": "separate_immutable_admitted_scenario_packs",
+    "scenario_event_evaluation": "rerun_complete_event_search_per_pack",
+    "interval_composition": "hull_only_when_every_scenario_has_comparable_owned_event",
+    "missing_or_noncomparable_scenario_policy": "typed_not_bounded",
+    "interpolation_between_scenario_packs_allowed": false,
+    "probabilistic_confidence_claimed": false
+  }
+}

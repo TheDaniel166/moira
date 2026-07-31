@@ -1,0 +1,174 @@
+{
+  "admission_decision": {
+    "acceptance_thresholds_status": "pilot_results_required_before_freeze",
+    "admitted": false,
+    "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
+    "first_admission_phase_domain_deg": [
+      1.55,
+      97.0
+    ],
+    "first_admission_site_id": "cerro_paranal_jones_2013",
+    "independent_artifact_status": "required_not_yet_generated",
+    "phase_extrapolation_allowed": false
+  },
+  "archive": {
+    "bytes": 431651392,
+    "license": "GPL-2.0-or-later",
+    "release": "1.0.0",
+    "sha256": "e09b1d62c8af212486f50097fe76d9dcbb242f4fbadf720a4a85be361cc9116b",
+    "url": "https://ftp.eso.org/pub/dfs/pipelines/skytools/skymodel/SM-01.tar.gz"
+  },
+  "atmospheric_sensitivity": {
+    "available_from_current_pack": false,
+    "probabilistic_confidence_claimed": false,
+    "required_method": "separate_immutable_admitted_scenario_packs"
+  },
+  "auditor": {
+    "bytes": 38785,
+    "path": "scripts/audit_visibility_phase4_jones_source.py",
+    "sha256": "7353a09d1789a249d053be13a5bd62e842bf136528236db2f553dc16a659f297"
+  },
+  "checkpoint_id": "physical-heliacal-phase4-jones-source-audit-2026-07-31",
+  "external_source_bytes_redistributed": false,
+  "network_dependency": false,
+  "operational_comparison_capture": {
+    "bytes": 80640,
+    "capture_date": "2026-07-31",
+    "component_isolated": true,
+    "component_signature_sha256": "8e15e62b5aa5cab32961f3be7ba300f46217d20614e91bdc131aa8ee8b2e1c29",
+    "derived_lunar_phase_angle_deg": 50.0,
+    "inside_first_admission_domain": true,
+    "role": "versioned_source_owned_operational_comparison_not_independent_oracle",
+    "row_count": 401,
+    "sha256": "12d7625e1ec1afc718928d873fdb0001d3fd800b19d33a6c5dc2ce135dbbc230",
+    "skycalc_version": "2.0.9"
+  },
+  "required_member_count": 17,
+  "required_members": [
+    {
+      "bytes": 2904,
+      "path": "SM-01/README.txt",
+      "role": "release_license_and_site_disclaimer",
+      "sha256": "66cd5f8b7c8b55a2b6f50507a55fdef175d7c9196797061c3ded03535dbd4b95"
+    },
+    {
+      "bytes": 115070,
+      "path": "SM-01/sm-01_mod2/src/sm_scatmoonlight.c",
+      "role": "official_scattering_implementation",
+      "sha256": "686dcce3e4aadf41785b9b26bdeeee858c730030969c7dd4045748527985a5ea"
+    },
+    {
+      "bytes": 11480,
+      "path": "SM-01/sm-01_mod2/src/sm_scatmoonlight.h",
+      "role": "official_scattering_contract_and_constants",
+      "sha256": "8ade158bee9638dd6bd1cfc0d44191f4d9dcd131b5bfb65c82c04ca875839ec6"
+    },
+    {
+      "bytes": 140334,
+      "path": "SM-01/sm-01_mod2/src/sm_skyemcomp.c",
+      "role": "official_lunar_spectrum_and_component_assembly",
+      "sha256": "eaa20b583c24f81cf15f7f63ac5612403fbfb939cbe933f43df24bb56573adc6"
+    },
+    {
+      "bytes": 13515,
+      "path": "SM-01/sm-01_mod2/src/sm_skyemcomp.h",
+      "role": "official_component_parameter_contract",
+      "sha256": "3f19ce3648aa06210407f7be8f4d541742c2008491d8a9a27ea8a31950c77264"
+    },
+    {
+      "bytes": 3365,
+      "path": "SM-01/sm-01_mod2/data/moonalbedo.dat",
+      "role": "external_rolo_coefficient_table",
+      "sha256": "86b9f9860fabb283de6659aabee8959186dc03e9d081aaa7c2761c2869ff16cc"
+    },
+    {
+      "bytes": 1410,
+      "path": "SM-01/sm-01_mod2/data/mie_paranal_ref.dat",
+      "role": "external_paranal_mie_reference",
+      "sha256": "16bb135bb7972be955c0bcae19f8fb6fd7781696137bb7d1e089ea5a5beb1954"
+    },
+    {
+      "bytes": 838,
+      "path": "SM-01/sm-01_mod2/data/dscatcor_m15s1.dat",
+      "role": "external_double_scattering_correction",
+      "sha256": "09fc0a6f81cf630099d008a96b82a72df1296bbed12f00e633c98b8cd480efec"
+    },
+    {
+      "bytes": 4313,
+      "path": "SM-01/sm-01_mod2/data/sscatcor_m15s1.dat",
+      "role": "external_single_scattering_correction",
+      "sha256": "2bf48a71e007bc557bd088d53ede15e97163d9154f19b1e411b104c38c4a18b8"
+    },
+    {
+      "bytes": 4100,
+      "path": "SM-01/sm-01_mod2/data/multiscat_m15s1.dat",
+      "role": "external_multiple_scattering_reference",
+      "sha256": "87534ff402b103197bba5e34742bd59723f04121866a224bcb34eed45d65cd38"
+    },
+    {
+      "bytes": 141021,
+      "path": "SM-01/sm-01_mod2/data/solspec_ext.dat",
+      "role": "external_colina_solar_spectrum",
+      "sha256": "0f75353a72cfd7f1b314652f47aa9edff33434be5154bdfd590e2b5b2926933d"
+    },
+    {
+      "bytes": 292734,
+      "path": "SM-01/sm-01_mod2/data/o3trans.dat",
+      "role": "external_ozone_transmission",
+      "sha256": "cb06c173f393d6d55e3c39551665abb8f5d6c1a846cd0fd739a15d0155f94502"
+    },
+    {
+      "bytes": 2073,
+      "path": "SM-01/sm-01_mod2/test/test_skymodel_etc.par",
+      "role": "source_owned_regression_input",
+      "sha256": "294ddff66df11b0406e61a82531e384a2641a4c2bafdc763887201b3e34c94cd"
+    },
+    {
+      "bytes": 633,
+      "path": "SM-01/sm-01_mod2/test/test_instrument_etc.par",
+      "role": "source_owned_regression_spectral_grid",
+      "sha256": "da6b60b60bf8679fae1aec3050453e7c326067513ade6de19ebfbf91b98299ce"
+    },
+    {
+      "bytes": 1368,
+      "path": "SM-01/sm-01_mod2/test/sm_filenames.dat",
+      "role": "source_owned_regression_dependency_map",
+      "sha256": "0cef2328ef50c5fb5fafc3d24c80441f836bdb330695056f8993756ae1ddfbd0"
+    },
+    {
+      "bytes": 976320,
+      "path": "SM-01/sm-01_mod2/test/test_radspec.fits",
+      "role": "source_owned_full_sky_regression_output",
+      "sha256": "70e7b4526c6162342fa13100fea51eabbb8c37119467a272dce88730cfd0b917"
+    },
+    {
+      "bytes": 711360,
+      "path": "SM-01/sm-01_mod2/test/test_transspec.fits",
+      "role": "source_owned_transmission_regression_output",
+      "sha256": "d26dc93e0c69bb235c435daea5d98fe7c3fd79a8f0585b69576359ff7a6e5caf"
+    }
+  ],
+  "runtime_dependency": false,
+  "schema": "moira.visibility-jones-source-audit-checkpoint/v1",
+  "source_owned_regression_fixture": {
+    "derived_lunar_phase_angle_deg": 102.1,
+    "first_admission_phase_domain_deg": [
+      1.55,
+      97.0
+    ],
+    "fits_row_bytes": 88,
+    "fits_row_count": 11001,
+    "inside_first_admission_domain": false,
+    "optical_signature_row_count": 2651,
+    "optical_signature_sha256": "ba33c681486a24b4703120c2dc5ab0cb7df3ed8201b44707629fa88f5a1a0b52",
+    "parameter_member": "SM-01/sm-01_mod2/test/test_skymodel_etc.par",
+    "radiance_member": "SM-01/sm-01_mod2/test/test_radspec.fits",
+    "regression_role": "official_implementation_lineage_only_not_admission_golden"
+  },
+  "spec": {
+    "bytes": 13263,
+    "path": "scripts/visibility_reference_lab/phase4_jones_source_audit_spec.json",
+    "sha256": "d132c4c19062330b3826ef3aeffc30bf36b7f53069f94b1c60eb6781b46ae006"
+  },
+  "status": "source_audit_complete_runtime_model_not_admitted"
+}

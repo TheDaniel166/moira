@@ -79,6 +79,21 @@ That component is not yet admitted. The paper does not provide a small
 machine-readable reference table sufficient to validate an independent engine
 implementation, so copying equations alone would not close the gate.
 
+The
+[Phase 4 Jones source-audit checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_SOURCE_AUDIT_CHECKPOINT_2026-07-31.md)
+now locks the official 431,651,392-byte SM-01 release and all 17 governing
+members without redistributing them. It also proves that the official package
+fixture has a 102.1-degree phase angle, outside the 1.55–97-degree empirical
+ROLO range chosen for the first Moira candidate domain. That fixture remains
+lineage evidence rather than an admission golden. An isolated in-domain
+SkyCalc 2.0.9 `flux_sml` capture is separately locked as an operational
+comparison, not an independent oracle.
+
+The source audit closes the source, license, candidate-domain, and artifact
+schema decisions. It does not admit a runtime model. Admission still requires
+an independently generated MYSTIC spectral artifact, measured numerical and
+interpolation thresholds, and independent in-domain geometry holdouts.
+
 ### Phase 4 observer-factor disposition
 
 Crumey's equation-53 field factor is an overall multiplier that may combine
@@ -303,6 +318,36 @@ Windows; the latter used an immutable tar transport to local NTFS to avoid
 the WSL UNC per-file traversal penalty. The compact receipt is recorded in
 [PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md](PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md).
 
+### ESO SM-01 Jones moonlight source
+
+```text
+URL:
+  https://ftp.eso.org/pub/dfs/pipelines/skytools/skymodel/SM-01.tar.gz
+Release:
+  1.0.0
+Release date:
+  2018-08-30
+Retrieved bytes:
+  431651392
+SHA-256:
+  e09b1d62c8af212486f50097fe76d9dcbb242f4fbadf720a4a85be361cc9116b
+License:
+  GPL-2.0-or-later
+```
+
+The Phase 4 audit binds 17 individual package members and the official
+`flux_sml` regression signature. The package remains external: it is not
+copied, linked, compiled, executed, or installed by Moira. Its test geometry
+is outside the first candidate phase domain and is used only to confirm
+official-implementation lineage.
+
+The separately retained SkyCalc 2.0.9 operational comparison has FITS
+SHA-256
+`12d7625e1ec1afc718928d873fdb0001d3fd800b19d33a6c5dc2ce135dbbc230`
+and isolated-component signature SHA-256
+`8e15e62b5aa5cab32961f3be7ba300f46217d20614e91bdc131aa8ee8b2e1c29`.
+Only those receipts are committed; the FITS bytes are not redistributed.
+
 ### CIE photopic table
 
 ```text
@@ -387,7 +432,7 @@ No formula is admitted merely by appearing in this ledger.
 | Directional twilight radiance | libRadtran 2.0.6 MYSTIC configuration | Phase 1 | The final v9 artifact admits adaptive 531 nm anchored REPTRAN-fine response products over a 4-by-4-by-4 grid, nine untouched response holdouts, per-cell uncertainty, and a typed boundary below -9 degrees |
 | Physical event root | Moira-defined margin law and admission doctrine | Phase 3 | Implemented with certified zero enclosure, four typed phase semantics, exact-pack admission, and independent planetary/stellar validation |
 | Directional terrain horizon | Caller-supplied source-receipted apparent-altitude profile plus Phase 3 horizontal-rate certificate | Phase 4 | Implemented with circular-linear interpolation, 10-degree maximum segment, scalar compatibility, exact slope-derived event certificate, and no missing-direction fallback |
-| Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Legacy K&S identifier preserved; Jones remains behind a separate spectral artifact and validation gate |
+| Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Legacy K&S identifier preserved; Jones source, license, domain, and independent-artifact contract are frozen, but the runtime model remains behind MYSTIC artifact and validation gates |
 | Airglow and other separable sky components | caller-supplied source-receipted directional output; ESO/PALACE comparison | Phase 4 | Typed composition and double-count prevention implemented; no built-in airglow, zodiacal, integrated-starlight, artificial-light, or Paranal-global model admitted |
 
 Phase implementation documents must quote no more source text than needed,

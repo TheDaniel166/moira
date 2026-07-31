@@ -1,6 +1,6 @@
 # Physical Heliacal Visibility Implementation Plan
 
-Date: 2026-07-30
+Date: 2026-07-31
 Status: Phases 0 through 3 complete; Phase 4 is in progress
 Scope: Moira engine truth, offline reference-data production, public Python
 contracts, REST transport, validation, native strengthening, release
@@ -136,7 +136,7 @@ modernization sources.
 | [CIE photopic response](https://cie.co.at/datatable/cie-spectral-luminous-efficiency-photopic-vision) | Versioned `V(lambda)` response data | Kept in the separately licensed data pack |
 | [CIE scotopic response](https://www.cie.co.at/datatable/cie-spectral-luminous-efficiency-scotopic-vision) | Versioned `V'(lambda)` response data | Kept in the separately licensed data pack |
 | [Tousey and Koomen 1953](https://opg.optica.org/josa/abstract.cfm?uri=josa-43-3-177) | Source-owned twilight comparison observations | Validation evidence, not a universal coefficient table |
-| [Jones et al. 2013](https://doi.org/10.1051/0004-6361/201322433) | Candidate modern physical moonlight model | New named option; validate outside its source site |
+| [Jones et al. 2013](https://doi.org/10.1051/0004-6361/201322433) | Candidate modern physical moonlight model | New named Paranal-only option; validate independently inside its frozen domain before considering any later site transfer |
 | [ESO SkyCalc](https://www.eso.org/observing/etc/doc/skycalc/helpskycalccli.html) | Component comparison and validation reference | Never claim global authority from a site model |
 | [PALACE](https://gmd.copernicus.org/articles/18/4353/2025/) | Airglow research and component-validation reference | Site-bound unless independent evidence supports expansion |
 
@@ -1060,6 +1060,8 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 ### Moonlight
 
 - [x] Preserve Krisciunas-Schaefer under its existing identifier.
+- [x] Freeze the Jones paper, official ESO source-package receipts, first
+  candidate domain, operational comparator, and independent artifact contract.
 - [ ] Implement Jones 2013 only under a new versioned identifier.
 - [ ] Expose lunar phase, separation, lunar altitude, atmospheric, and
   scattering inputs in the component receipt.
@@ -1084,14 +1086,37 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 - [x] Preserve the scalar horizon input as a compatibility path.
 - [x] Resolve the observer-factor contract: keep the physical protocol at the
   source-receipted singleton `F = 2`, with no generic skill/probability input.
-- [ ] Compute sensitivity envelopes from explicit parameter ranges.
+- [x] Prove that the current fixed-environment pack cannot truthfully supply
+  atmospheric sensitivity and freeze the separate-scenario-pack architecture.
+- [ ] Generate and admit immutable atmospheric scenario packs, rerun the full
+  event search per pack, and form an interval only for comparable owned events.
+
+### Phase 4 Jones source-audit checkpoint - 2026-07-31
+
+The bounded source audit is complete. It checksum-locks the 431,651,392-byte
+official ESO SM-01 release and all 17 required source, data, parameter, and
+regression members without copying external GPL bytes into the repository.
+The official package fixture derives to a 102.1-degree lunar phase angle, so it
+is outside the first candidate's 1.55–97-degree empirical ROLO domain and is
+classified as official-lineage evidence rather than an admission golden.
+
+An isolated SkyCalc 2.0.9 `flux_sml` capture at 50 degrees is locked as an
+in-domain operational comparison. It is source-owned evidence, not an
+independent oracle. The candidate remains `not_admitted`; no runtime, public
+API, data-pack, dependency, network, download, or legacy behavior changed.
+
+The next moonlight gate is an independent libRadtran 2.0.6 MYSTIC pilot over
+all six frozen axes. Pilot results must establish numerical and interpolation
+thresholds before a production artifact, engine implementation, or public
+surface can be admitted. See
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_SOURCE_AUDIT_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_SOURCE_AUDIT_CHECKPOINT_2026-07-31.md).
 
 ### Phase 4 exit gate
 
 - [ ] Every environmental component has a named source and validity domain.
 - [ ] Site-bound sources remain visibly site bound.
-- [ ] Measured and modeled backgrounds cannot be accidentally combined twice.
-- [ ] Horizon and observer assumptions survive into the event receipt.
+- [x] Measured and modeled backgrounds cannot be accidentally combined twice.
+- [x] Horizon and observer assumptions survive into the event receipt.
 - [ ] A Phase 4 closure receipt is added to this document.
 
 ## Phase 5 - Public Contract Parity
