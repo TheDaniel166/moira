@@ -1,0 +1,138 @@
+{
+  "absolute_radiance_expectations_prefrozen": false,
+  "all_frozen_holdout_checks_passed": true,
+  "artifact_manifest": {
+    "bytes": 28947,
+    "path": "holdout-manifest.json",
+    "sha256": "8e009491741e11f5ea5491e627a93cb7f3db23da5495abb09181ed5290e82e77"
+  },
+  "checks": {
+    "all_directional_outputs_finite_positive": true,
+    "exact_fixed_seed_repeat": true,
+    "maximum_relative_standard_error_per_holdout": true
+  },
+  "executed_case_count_with_repeat": 4,
+  "external_source_bytes_redistributed": false,
+  "failed_checks": [],
+  "fixed_seed_repeat": {
+    "anchor_case_id": "holdout_interior_combination",
+    "byte_identical_files": {
+      "mc.rad.spc": true,
+      "mc.rad.std.spc": true,
+      "mc0.rad": true,
+      "mc0.rad.std": true,
+      "randomseed": true
+    },
+    "passed": true,
+    "repeat_case_id": "holdout_interior_combination_repeat"
+  },
+  "generator": {
+    "data_root": {
+      "bytes": 204488282,
+      "excluded_names": [
+        "._*",
+        "Makefile",
+        "Makefile.in"
+      ],
+      "file_count": 1300,
+      "tree_hash_law": "sha256(relative_path_nul_bytes_nul_file_sha256_lf)",
+      "tree_sha256": "191e39b7d1d6554517227a21dfa0feea11ffc308889ffccbe938408ed0fbf207"
+    },
+    "libRadtran_source_archive": {
+      "bytes": 154147176,
+      "path": "libRadtran-2.0.6.tar.gz",
+      "sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840"
+    },
+    "uvspec": {
+      "build_files": [
+        {
+          "bytes": 8442,
+          "path": "Makeconf",
+          "sha256": "7aa373275be787109f9d6274994ec666235353667b53455ef58e5515168a78f8"
+        },
+        {
+          "bytes": 105869,
+          "path": "config.log",
+          "sha256": "36e3323e5d11b0118f95b7134c8f0911fe7f8f90b729760745d9154124b80c73"
+        },
+        {
+          "bytes": 45994,
+          "path": "config.status",
+          "sha256": "6c73aab472347ee2442cc1da4f801c8cd54edaa2426401d3de71c93d4405b6a6"
+        }
+      ],
+      "bytes": 3722664,
+      "path_name": "uvspec",
+      "sha256": "d4e94259296a65f7700a0911f0dc7fc14aacde89985befac0266fe0a18531b7a",
+      "version": "uvspec, version 2.0.6-MYSTIC"
+    }
+  },
+  "holdouts_used_to_select_thresholds": false,
+  "maximum_allowed_relative_standard_error": 0.005,
+  "maximum_relative_standard_error": 0.002722074469470392,
+  "measurements": [
+    {
+      "case_id": "holdout_horizon_combination",
+      "directional_radiance_W_m-2_nm-1_sr-1": 7.85928e-09,
+      "directional_standard_error_W_m-2_nm-1_sr-1": 2.10308e-11,
+      "relative_monte_carlo_standard_error": 0.0026759194226443138
+    },
+    {
+      "case_id": "holdout_interior_combination",
+      "directional_radiance_W_m-2_nm-1_sr-1": 7.81629e-09,
+      "directional_standard_error_W_m-2_nm-1_sr-1": 2.05735e-11,
+      "relative_monte_carlo_standard_error": 0.0026321311005604964
+    },
+    {
+      "case_id": "holdout_phase_boundary_waning",
+      "directional_radiance_W_m-2_nm-1_sr-1": 9.59937e-08,
+      "directional_standard_error_W_m-2_nm-1_sr-1": 2.61302e-10,
+      "relative_monte_carlo_standard_error": 0.002722074469470392
+    }
+  ],
+  "network_dependency": false,
+  "next_gate": "resolve_lower_boundary_then_design_spectral_admission",
+  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+  "production_admission_allowed": false,
+  "runtime_dependency": false,
+  "runtime_model_admitted": false,
+  "schema": "moira.visibility-phase4-jones-mystic-holdout-checkpoint/v1",
+  "sealed_holdout_count": 3,
+  "spectral_grid_admitted": false,
+  "status": "sealed_holdouts_pass_frozen_thresholds",
+  "threshold_contract": {
+    "checkpoint": {
+      "bytes": 4449,
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_threshold_checkpoint_2026-07-31.json",
+      "sha256": "97f690b7004db2340a7598473c452a4f9e3247abedbab3f37786378dbbca999e"
+    },
+    "spec": {
+      "bytes": 4538,
+      "path": "scripts/visibility_reference_lab/phase4_jones_mystic_admission_thresholds.json",
+      "sha256": "aa636504612e7a2f022aa324dc4cc20f060d2284255df1298079f6330e458c85"
+    }
+  },
+  "thresholds_frozen_before_execution": true,
+  "tooling": {
+    "holdout_builder": {
+      "bytes": 25511,
+      "path": "scripts/build_visibility_phase4_jones_mystic_holdouts.py",
+      "sha256": "302dd4c502fe8153f99cc2a8bdfca6c0cb9782599d96ae52a2119475e5ff2eb2"
+    },
+    "holdout_validator": {
+      "bytes": 28542,
+      "path": "scripts/validate_visibility_phase4_jones_mystic_holdouts.py",
+      "sha256": "d7bb1739ac016f8f01f449cbc1782c8f9f7f002d73a3a43c4d4a71c35267d984"
+    },
+    "pilot_builder": {
+      "bytes": 55175,
+      "path": "scripts/build_visibility_phase4_jones_mystic_pilot.py",
+      "sha256": "09aa0cecc2f7419ff7e04a47b3eb556194760f443caec4acccceaa6b225e14cb"
+    },
+    "pilot_validator": {
+      "bytes": 48341,
+      "path": "scripts/validate_visibility_phase4_jones_mystic_pilot.py",
+      "sha256": "a5437b7c3024bb2b7c61056dac52716a322e47c00c2ff2b03b3d9edc4d607150"
+    }
+  }
+}

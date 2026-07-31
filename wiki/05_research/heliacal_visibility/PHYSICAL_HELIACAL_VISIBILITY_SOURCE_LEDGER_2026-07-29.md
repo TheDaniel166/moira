@@ -116,12 +116,15 @@ now closes the bounded 550 nm pilot and pre-holdout threshold gate. Fifteen
 cases passed independent reconstruction, exact fixed-seed repeat, Monte Carlo
 convergence, aerosol-representation, lunar-source-linearity, and bounded
 source-owned operational comparison checks. The thresholds were frozen only
-after pilot measurement and before the three reserved holdouts were used.
-Neither checkpoint admits a runtime or spectral model. Admission still
-requires the sealed geometry holdouts, resolution or explicit versioning of
-the atmosphere lower-boundary limitation, an independently generated spectral
-grid with interpolation thresholds and untouched spectral holdouts, and a
-release/distribution disposition for any derived artifact.
+after pilot measurement and before the three reserved holdouts were used. The
+[Phase 4 Jones MYSTIC holdout checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_HOLDOUT_CHECKPOINT_2026-07-31.md)
+then closes those three 550 nm geometry holdouts against the frozen `0.005`
+relative-error ceiling and independently verifies the exact repeat. None of
+these checkpoints admits a runtime or spectral model. Admission still
+requires resolution or explicit versioning of the atmosphere lower-boundary
+limitation, an independently generated spectral grid with interpolation
+thresholds and untouched spectral holdouts, and a release/distribution
+disposition for any derived artifact.
 
 ### Phase 4 observer-factor disposition
 
@@ -483,7 +486,7 @@ No formula is admitted merely by appearing in this ledger.
 | Directional twilight radiance | libRadtran 2.0.6 MYSTIC configuration | Phase 1 | The final v9 artifact admits adaptive 531 nm anchored REPTRAN-fine response products over a 4-by-4-by-4 grid, nine untouched response holdouts, per-cell uncertainty, and a typed boundary below -9 degrees |
 | Physical event root | Moira-defined margin law and admission doctrine | Phase 3 | Implemented with certified zero enclosure, four typed phase semantics, exact-pack admission, and independent planetary/stellar validation |
 | Directional terrain horizon | Caller-supplied source-receipted apparent-altitude profile plus Phase 3 horizontal-rate certificate | Phase 4 | Implemented with circular-linear interpolation, 10-degree maximum segment, scalar compatibility, exact slope-derived event certificate, and no missing-direction fallback |
-| Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Legacy K&S identifier preserved; Jones source, license, domain, artifact contract, and solar/ROLO/aerosol authority classifications are frozen; the external 550 nm MYSTIC pilot and pre-holdout thresholds pass, while sealed geometry holdouts, the lower-boundary disposition, a spectral grid with interpolation validation, release disposition, and runtime admission remain open |
+| Moonlight | Jones 2013 or existing named legacy option | Phase 4 | Legacy K&S identifier preserved; Jones source, license, domain, artifact contract, and solar/ROLO/aerosol authority classifications are frozen; the external 550 nm MYSTIC pilot, pre-holdout thresholds, and three sealed geometry holdouts pass, while the lower-boundary disposition, a spectral grid with interpolation validation, release disposition, and runtime admission remain open |
 | Airglow and other separable sky components | caller-supplied source-receipted directional output; ESO/PALACE comparison | Phase 4 | Typed composition and double-count prevention implemented; no built-in airglow, zodiacal, integrated-starlight, artificial-light, or Paranal-global model admitted |
 
 Phase implementation documents must quote no more source text than needed,
