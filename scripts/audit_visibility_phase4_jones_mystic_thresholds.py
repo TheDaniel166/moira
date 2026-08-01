@@ -20,9 +20,10 @@ DEFAULT_THRESHOLD_PATH = (
     / "visibility_reference_lab"
     / "phase4_jones_mystic_admission_thresholds.json"
 )
-THRESHOLD_SCHEMA = "moira.visibility-phase4-jones-mystic-admission-thresholds/v1"
-CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-threshold-checkpoint/v1"
-ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-artifact/v1"
+THRESHOLD_SCHEMA = "moira.visibility-phase4-jones-mystic-admission-thresholds/v2"
+CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-threshold-checkpoint/v2"
+ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-artifact/v2"
+PILOT_CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v2"
 
 
 class JonesMysticThresholdError(ValueError):
@@ -91,8 +92,28 @@ def _load_json(path: Path, label: str) -> dict[str, Any]:
 def validate_threshold_spec(spec: dict[str, Any]) -> None:
     if spec.get("schema") != THRESHOLD_SCHEMA:
         raise JonesMysticThresholdError("unsupported threshold schema")
-    if spec.get("status") != "thresholds_frozen_after_pilot_before_holdout_execution":
+    if spec.get("status") != (
+        "corrected_v2_thresholds_frozen_after_pilot_before_holdout_execution"
+    ):
         raise JonesMysticThresholdError("threshold freeze ordering changed")
+    correction = spec.get("correction_history")
+    if (
+        not isinstance(correction, dict)
+        or correction.get("supersedes_threshold_id")
+        != "physical-heliacal-phase4-jones-mystic-thresholds-2026-07-31"
+        or correction.get("reason")
+        != "v1_aerosol_layer_boundary_ownership_invalidated"
+    ):
+        raise JonesMysticThresholdError("threshold correction history is missing")
+    invalidation = correction.get("invalidation_checkpoint")
+    if not isinstance(invalidation, dict):
+        raise JonesMysticThresholdError("v1 invalidation receipt is missing")
+    _verify_repo_file(
+        path_value=invalidation.get("path"),
+        bytes_value=invalidation.get("bytes"),
+        sha_value=invalidation.get("sha256"),
+        label="v1 invalidation checkpoint",
+    )
     boundary = spec.get("runtime_boundary")
     if boundary != {
         "engine_changes_authorized": False,
@@ -196,7 +217,9 @@ def validate_threshold_spec(spec: dict[str, Any]) -> None:
         not isinstance(holdouts, dict)
         or holdouts.get("holdouts_used_to_select_thresholds") is not False
         or holdouts.get("photon_count_per_case") != 1_000_000
-        or holdouts.get("random_seed") != 135_791_357
+        or holdouts.get("random_seed") != 271_828_183
+        or holdouts.get("exact_repeat_case_id")
+        != "holdout_v2_interior_cross_axis"
         or holdouts.get("maximum_relative_standard_error_per_holdout") != 0.005
         or holdouts.get("absolute_radiance_expectations_prefrozen") is not False
     ):
@@ -207,7 +230,8 @@ def validate_threshold_spec(spec: dict[str, Any]) -> None:
         or gate.get("spectral_grid_admitted") is not False
         or gate.get("production_admission_allowed") is not False
         or gate.get("runtime_model_admitted") is not False
-        or gate.get("next_gate") != "execute_sealed_holdouts_against_frozen_thresholds"
+        or gate.get("next_gate")
+        != "execute_replacement_v2_sealed_holdouts_against_frozen_thresholds"
     ):
         raise JonesMysticThresholdError("threshold gate state changed")
 
@@ -319,9 +343,21 @@ def _load_bound_manifest(
     ):
         raise JonesMysticThresholdError("artifact manifest differs from the pilot lock")
     manifest = _load_json(manifest_path, "pilot artifact manifest")
+    pilot_correction = checkpoint.get("correction_history")
     if (
-        manifest.get("schema") != ARTIFACT_SCHEMA
+        checkpoint.get("schema") != PILOT_CHECKPOINT_SCHEMA
+        or checkpoint.get("status")
+        != "corrected_v2_pilot_generated_thresholds_not_yet_frozen"
+        or not isinstance(pilot_correction, dict)
+        or pilot_correction.get("reason")
+        != "correct_libradtran_explicit_aerosol_layer_boundary_ownership"
+        or pilot_correction.get("invalidation_checkpoint")
+        != threshold_spec["correction_history"]["invalidation_checkpoint"]
+        or checkpoint.get("aerosol_explicit_profile_layout")
+        != "top_marker_then_null_gap_then_layer_files_at_lower_boundaries"
+        or manifest.get("schema") != ARTIFACT_SCHEMA
         or manifest.get("pilot_model_id") != threshold_spec["pilot_model_id"]
+        or manifest.get("correction_history") != pilot_correction
         or manifest.get("acceptance_thresholds_frozen") is not False
         or manifest.get("production_admission_allowed") is not False
         or manifest.get("runtime_dependency") is not False
@@ -447,8 +483,9 @@ def evaluate_thresholds(
     result = {
         "schema": CHECKPOINT_SCHEMA,
         "threshold_id": spec["threshold_id"],
-        "status": "pilot_passes_frozen_threshold_gate_holdouts_not_executed",
+        "status": "corrected_v2_pilot_passes_threshold_gate_holdouts_not_executed",
         "pilot_model_id": spec["pilot_model_id"],
+        "correction_history": spec["correction_history"],
         "threshold_spec": file_receipt(threshold_path, relative_to=REPO_ROOT),
         "threshold_auditor": file_receipt(
             Path(__file__).resolve(), relative_to=REPO_ROOT
@@ -491,7 +528,7 @@ def evaluate_thresholds(
         "runtime_dependency": False,
         "network_dependency": False,
         "external_source_bytes_redistributed": False,
-        "next_gate": "execute_sealed_holdouts_against_frozen_thresholds",
+        "next_gate": "execute_replacement_v2_sealed_holdouts_against_frozen_thresholds",
     }
     if failed:
         raise JonesMysticThresholdError(

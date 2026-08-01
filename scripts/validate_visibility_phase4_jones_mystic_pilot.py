@@ -25,11 +25,11 @@ DEFAULT_SPEC_PATH = (
     / "phase4_jones_mystic_pilot_spec.json"
 )
 BUILDER_PATH = REPO_ROOT / "scripts" / "build_visibility_phase4_jones_mystic_pilot.py"
-SPEC_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-spec/v1"
-ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-artifact/v1"
-CASE_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-case/v1"
-CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v1"
-ARTIFACT_STATUS = "external_pilot_complete_not_runtime_data_pack"
+SPEC_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-spec/v2"
+ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-artifact/v2"
+CASE_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-case/v2"
+CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v2"
+ARTIFACT_STATUS = "corrected_external_pilot_complete_not_runtime_data_pack"
 MANIFEST_NAME = "artifact-manifest.json"
 CHECKPOINT_NAME = "pilot-checkpoint.json"
 EXPECTED_RUN_FILES = frozenset(
@@ -175,8 +175,36 @@ def _load_spec(path: Path) -> dict[str, Any]:
     spec = _read_json(path, "pilot specification")
     if spec.get("schema") != SPEC_SCHEMA:
         raise JonesMysticPilotValidationError("pilot spec schema differs")
-    if spec.get("status") != "frozen_external_pilot_matrix_not_runtime_data_pack":
+    if spec.get("status") != (
+        "frozen_corrected_external_pilot_matrix_not_runtime_data_pack"
+    ):
         raise JonesMysticPilotValidationError("pilot spec status differs")
+    if spec.get("pilot_model_id") != "jones_paranal_mystic_550nm_pilot_v2":
+        raise JonesMysticPilotValidationError("pilot model identity differs")
+    correction = spec.get("correction_history")
+    if (
+        not isinstance(correction, dict)
+        or correction.get("supersedes_pilot_model_id")
+        != "jones_paranal_mystic_550nm_pilot_v1"
+        or correction.get("reason")
+        != "correct_libradtran_explicit_aerosol_layer_boundary_ownership"
+    ):
+        raise JonesMysticPilotValidationError("pilot correction history differs")
+    _verify_receipt(
+        REPO_ROOT,
+        correction.get("invalidation_checkpoint"),
+        "v1 invalidation checkpoint",
+    )
+    aerosol = spec.get("aerosol")
+    if (
+        not isinstance(aerosol, dict)
+        or aerosol.get("explicit_profile_layout")
+        != "top_marker_then_null_gap_then_layer_files_at_lower_boundaries"
+        or aerosol.get("layer_file_ownership")
+        != "listed_altitude_inclusive_lower_boundary_to_next_higher_boundary"
+        or aerosol.get("uppermost_marker_properties_ignored") is not True
+    ):
+        raise JonesMysticPilotValidationError("aerosol profile contract differs")
     if spec.get("pilot_gate", {}).get("acceptance_thresholds_status") != (
         "pilot_results_required_before_freeze"
     ):
@@ -793,7 +821,8 @@ def _verify_shared(
         boundaries.append(round(boundaries[-1] + step, 12))
     boundaries.append(top)
     profile_lines = [
-        f"{float(aerosol['null_top_boundary_km']):.8f} ../../shared/null_layer.dat"
+        f"{float(aerosol['null_top_boundary_km']):.8f} ../../shared/null_layer.dat",
+        f"{top:.8f} ../../shared/null_layer.dat",
     ]
     layer_rows = []
     integrated = 0.0
@@ -820,9 +849,9 @@ def _verify_shared(
             raise JonesMysticPilotValidationError(
                 f"explicit aerosol layer differs: {filename}"
             )
-        layer_rows.append((high, filename))
-    for high, filename in reversed(layer_rows):
-        profile_lines.append(f"{high:.8f} ../../shared/{filename}")
+        layer_rows.append((low, filename))
+    for low, filename in reversed(layer_rows):
+        profile_lines.append(f"{low:.8f} ../../shared/{filename}")
     expected_profile = ("\n".join(profile_lines) + "\n").encode("ascii")
     if (shared / "aerosol_profile.dat").read_bytes() != expected_profile:
         raise JonesMysticPilotValidationError("explicit aerosol profile differs")
@@ -834,6 +863,12 @@ def _verify_shared(
         "integrated aerosol column",
         tolerance=1e-16,
     )
+    if declared["aerosol"].get("explicit_profile_layout") != aerosol.get(
+        "explicit_profile_layout"
+    ) or declared["aerosol"].get("layer_file_binding_count") != len(layer_rows):
+        raise JonesMysticPilotValidationError(
+            "explicit aerosol profile metadata differs"
+        )
 
 
 def _verify_cases(
@@ -1076,9 +1111,11 @@ def _verify_checkpoint(
     if checkpoint.get("schema") != CHECKPOINT_SCHEMA:
         raise JonesMysticPilotValidationError("checkpoint schema differs")
     if checkpoint.get("status") != (
-        "pilot_generated_and_measured_thresholds_not_yet_frozen"
+        "corrected_v2_pilot_generated_thresholds_not_yet_frozen"
     ):
         raise JonesMysticPilotValidationError("checkpoint status differs")
+    if checkpoint.get("correction_history") != manifest.get("correction_history"):
+        raise JonesMysticPilotValidationError("checkpoint correction lineage differs")
     receipt = checkpoint.get("artifact_manifest")
     _verify_receipt(artifact_root, receipt, "checkpoint artifact manifest")
     if receipt.get("path") != MANIFEST_NAME:
@@ -1139,6 +1176,7 @@ def validate_pilot(
         or manifest.get("status") != ARTIFACT_STATUS
         or manifest.get("spec_id") != spec["spec_id"]
         or manifest.get("pilot_model_id") != spec["pilot_model_id"]
+        or manifest.get("correction_history") != spec["correction_history"]
     ):
         raise JonesMysticPilotValidationError("artifact identity differs")
     for key in (

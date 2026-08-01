@@ -1,9 +1,18 @@
 {
-  "schema": "moira.visibility-phase4-jones-mystic-pilot-spec/v1",
-  "spec_id": "physical-heliacal-phase4-jones-mystic-pilot-2026-07-31",
-  "status": "frozen_external_pilot_matrix_not_runtime_data_pack",
+  "schema": "moira.visibility-phase4-jones-mystic-pilot-spec/v2",
+  "spec_id": "physical-heliacal-phase4-jones-mystic-pilot-v2-2026-07-31",
+  "status": "frozen_corrected_external_pilot_matrix_not_runtime_data_pack",
   "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
-  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v2",
+  "correction_history": {
+    "supersedes_pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+    "reason": "correct_libradtran_explicit_aerosol_layer_boundary_ownership",
+    "invalidation_checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_v1_invalidation_checkpoint_2026-07-31.json",
+      "bytes": 4085,
+      "sha256": "083a267b527ceaf129416784ea2a088bbbde4840006469d7f1c4710b30588b2b"
+    }
+  },
   "runtime_boundary": {
     "engine_changes_authorized": false,
     "public_api_changes_authorized": false,
@@ -173,6 +182,9 @@
     "profile_top_km": 20.0,
     "nominal_layer_thickness_km": 0.25,
     "null_top_boundary_km": 120.0,
+    "explicit_profile_layout": "top_marker_then_null_gap_then_layer_files_at_lower_boundaries",
+    "layer_file_ownership": "listed_altitude_inclusive_lower_boundary_to_next_higher_boundary",
+    "uppermost_marker_properties_ignored": true,
     "phase_function_source_wavelength_micrometre": 0.55,
     "phase_function_interpolation": "linear_in_scattering_angle_deg",
     "legendre_moment_count": 512,
@@ -447,31 +459,31 @@
   ],
   "reserved_holdout_cases": [
     {
-      "case_id": "holdout_horizon_combination",
-      "target_true_altitude_deg": 0.25,
-      "moon_true_altitude_deg": 0.0,
-      "relative_moon_azimuth_deg": 90.0,
-      "lunar_phase_angle_deg": 30.0,
+      "case_id": "holdout_v2_low_altitude_oblique",
+      "target_true_altitude_deg": 0.75,
+      "moon_true_altitude_deg": 3.5,
+      "relative_moon_azimuth_deg": 112.0,
+      "lunar_phase_angle_deg": 38.0,
       "waxing_state": "waning",
-      "moon_earth_distance_ratio": 0.95
+      "moon_earth_distance_ratio": 0.97
     },
     {
-      "case_id": "holdout_interior_combination",
-      "target_true_altitude_deg": 30.0,
-      "moon_true_altitude_deg": 10.0,
-      "relative_moon_azimuth_deg": 137.0,
-      "lunar_phase_angle_deg": 72.0,
+      "case_id": "holdout_v2_interior_cross_axis",
+      "target_true_altitude_deg": 27.0,
+      "moon_true_altitude_deg": 18.0,
+      "relative_moon_azimuth_deg": 143.0,
+      "lunar_phase_angle_deg": 81.0,
       "waxing_state": "waxing",
-      "moon_earth_distance_ratio": 1.04
+      "moon_earth_distance_ratio": 1.03
     },
     {
-      "case_id": "holdout_phase_boundary_waning",
-      "target_true_altitude_deg": 42.0,
-      "moon_true_altitude_deg": 22.0,
-      "relative_moon_azimuth_deg": 35.0,
-      "lunar_phase_angle_deg": 1.55,
-      "waxing_state": "waning",
-      "moon_earth_distance_ratio": 1.08
+      "case_id": "holdout_v2_phase_boundary_waxing",
+      "target_true_altitude_deg": 52.0,
+      "moon_true_altitude_deg": 31.0,
+      "relative_moon_azimuth_deg": 22.0,
+      "lunar_phase_angle_deg": 97.0,
+      "waxing_state": "waxing",
+      "moon_earth_distance_ratio": 0.92
     }
   ],
   "pilot_gate": {
@@ -491,6 +503,6 @@
     "acceptance_thresholds_status": "pilot_results_required_before_freeze",
     "spectral_grid_admitted": false,
     "production_admission_allowed": false,
-    "next_gate": "generate_validate_and_measure_pilot_before_freezing_thresholds"
+    "next_gate": "generate_validate_and_measure_corrected_v2_pilot_before_freezing_thresholds"
   }
 }

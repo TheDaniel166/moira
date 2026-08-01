@@ -112,19 +112,30 @@ invented.
 
 The
 [Phase 4 Jones MYSTIC pilot checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_PILOT_CHECKPOINT_2026-07-31.md)
-now closes the bounded 550 nm pilot and pre-holdout threshold gate. Fifteen
-cases passed independent reconstruction, exact fixed-seed repeat, Monte Carlo
+now closes the corrected-v2 bounded 550 nm pilot and pre-holdout threshold
+gate. The
+[v1 invalidation checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_V1_INVALIDATION_CHECKPOINT_2026-07-31.md)
+preserves the discovery that the original explicit-aerosol writer assigned
+physical files to upper rather than lower layer boundaries. Because the v1
+builder and validator shared that error, the v1 pilot, threshold, and holdout
+results are historical but inadmissible. No engine, public API, runtime model,
+or production data pack consumed them.
+
+The corrected v2 profile has a top marker, an explicit null gap, and physical
+files bound to their inclusive lower boundaries. Fifteen replacement cases
+passed independent reconstruction, exact fixed-seed repeat, Monte Carlo
 convergence, aerosol-representation, lunar-source-linearity, and bounded
-source-owned operational comparison checks. The thresholds were frozen only
-after pilot measurement and before the three reserved holdouts were used. The
+source-owned operational comparison checks. V2 thresholds were frozen only
+after pilot measurement and before any of the three fresh holdouts were used.
+The
 [Phase 4 Jones MYSTIC holdout checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_HOLDOUT_CHECKPOINT_2026-07-31.md)
-then closes those three 550 nm geometry holdouts against the frozen `0.005`
-relative-error ceiling and independently verifies the exact repeat. None of
-these checkpoints admits a runtime or spectral model. Admission still
-requires resolution or explicit versioning of the atmosphere lower-boundary
-limitation, an independently generated spectral grid with interpolation
-thresholds and untouched spectral holdouts, and a release/distribution
-disposition for any derived artifact.
+then closes the three replacement 550 nm geometry holdouts, using new seed
+`271828183`, against the frozen `0.005` relative-error ceiling and independently
+verifies the exact repeat. None of these checkpoints admits a runtime or
+spectral model. Admission still requires resolution or explicit versioning of
+the atmosphere lower-boundary limitation, an independently generated spectral
+grid with interpolation thresholds and untouched spectral holdouts, and a
+release/distribution disposition for any derived artifact.
 
 ### Phase 4 observer-factor disposition
 

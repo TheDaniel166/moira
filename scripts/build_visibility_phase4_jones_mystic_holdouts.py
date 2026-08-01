@@ -41,13 +41,17 @@ VALIDATOR_PATH = (
     REPO_ROOT / "scripts" / "validate_visibility_phase4_jones_mystic_holdouts.py"
 )
 
-ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-holdout-artifact/v1"
-CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-holdout-checkpoint/v1"
-CASE_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-case/v1"
+ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-holdout-artifact/v2"
+CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-holdout-checkpoint/v2"
+CASE_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-case/v2"
 MANIFEST_NAME = "holdout-manifest.json"
 CHECKPOINT_NAME = "holdout-checkpoint.json"
-HOLDOUT_STATUS_PASSED = "sealed_holdout_gate_passed_not_runtime_data_pack"
-HOLDOUT_STATUS_FAILED = "sealed_holdout_gate_failed_not_runtime_data_pack"
+HOLDOUT_STATUS_PASSED = (
+    "corrected_v2_sealed_holdout_gate_passed_not_runtime_data_pack"
+)
+HOLDOUT_STATUS_FAILED = (
+    "corrected_v2_sealed_holdout_gate_failed_not_runtime_data_pack"
+)
 
 
 class JonesMysticHoldoutError(ValueError):
@@ -132,9 +136,9 @@ def load_contracts(
     )
     if (
         threshold_checkpoint.get("schema")
-        != "moira.visibility-phase4-jones-mystic-threshold-checkpoint/v1"
+        != "moira.visibility-phase4-jones-mystic-threshold-checkpoint/v2"
         or threshold_checkpoint.get("status")
-        != "pilot_passes_frozen_threshold_gate_holdouts_not_executed"
+        != "corrected_v2_pilot_passes_threshold_gate_holdouts_not_executed"
         or threshold_checkpoint.get("all_frozen_thresholds_passed") is not True
         or threshold_checkpoint.get("failed_checks") != []
         or threshold_checkpoint.get("holdouts_used_to_select_thresholds") is not False
@@ -157,6 +161,10 @@ def load_contracts(
         threshold_auditor_path, "_moira_phase4_threshold_auditor_for_holdouts"
     )
     threshold_spec = threshold_auditor.load_threshold_spec(bound_threshold_path)
+    if threshold_checkpoint.get("correction_history") != threshold_spec.get(
+        "correction_history"
+    ):
+        raise JonesMysticHoldoutError("threshold correction lineage differs")
 
     pilot_checkpoint_path = _verify_repo_receipt(
         threshold_spec.get("pilot_checkpoint"), "pilot checkpoint"
@@ -168,7 +176,9 @@ def load_contracts(
     pilot_checkpoint = _read_json(pilot_checkpoint_path, "pilot checkpoint")
     if (
         pilot_checkpoint.get("schema")
-        != "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v1"
+        != "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v2"
+        or pilot_checkpoint.get("status")
+        != "corrected_v2_pilot_generated_thresholds_not_yet_frozen"
         or pilot_checkpoint.get("executed_case_count") != 15
         or pilot_checkpoint.get("reserved_holdout_case_count") != 3
         or pilot_checkpoint.get("fixed_seed_repeat_passed") is not True
@@ -191,6 +201,12 @@ def load_contracts(
         pilot_builder_path, "_moira_phase4_pilot_builder_for_holdouts"
     )
     pilot_spec = pilot_builder.load_spec(pilot_spec_path)
+    if pilot_checkpoint.get("correction_history") != pilot_spec.get(
+        "correction_history"
+    ) or pilot_checkpoint.get("aerosol_explicit_profile_layout") != pilot_spec.get(
+        "aerosol", {}
+    ).get("explicit_profile_layout"):
+        raise JonesMysticHoldoutError("pilot correction lineage is invalid")
 
     protocol = threshold_spec.get("sealed_holdout_protocol")
     if (
@@ -199,8 +215,8 @@ def load_contracts(
         != "reserved_holdout_cases_in_phase4_jones_mystic_pilot_spec"
         or protocol.get("holdouts_used_to_select_thresholds") is not False
         or protocol.get("photon_count_per_case") != 1_000_000
-        or protocol.get("random_seed") != 135_791_357
-        or protocol.get("exact_repeat_case_id") != "holdout_interior_combination"
+        or protocol.get("random_seed") != 271_828_183
+        or protocol.get("exact_repeat_case_id") != "holdout_v2_interior_cross_axis"
         or protocol.get("maximum_relative_standard_error_per_holdout") != 0.005
         or protocol.get("all_directional_outputs_must_be_finite_and_positive")
         is not True
@@ -266,7 +282,7 @@ def inspect_contract(
     cases = holdout_cases(contracts)
     protocol = contracts["threshold_spec"]["sealed_holdout_protocol"]
     return {
-        "status": "sealed_holdout_execution_authorized_not_yet_executed",
+        "status": "corrected_v2_sealed_holdout_execution_authorized_not_yet_executed",
         "pilot_model_id": contracts["pilot_spec"]["pilot_model_id"],
         "sealed_holdout_count": 3,
         "executed_case_count_with_repeat": len(cases),
@@ -503,6 +519,10 @@ def build_holdouts(
             "status": HOLDOUT_STATUS_PASSED if passed else HOLDOUT_STATUS_FAILED,
             "candidate_model_id": contracts["threshold_spec"]["candidate_model_id"],
             "pilot_model_id": spec["pilot_model_id"],
+            "correction_history": {
+                "pilot": spec["correction_history"],
+                "threshold": contracts["threshold_spec"]["correction_history"],
+            },
             "wavelength_nm": spec["solver"]["wavelength_nm"],
             "threshold_contract": {
                 "spec": file_receipt(
@@ -521,6 +541,9 @@ def build_holdouts(
             "external_source": source["external_source"],
             "source_derivations": source["source_derivations"],
             "shared_inputs": shared_inputs,
+            "aerosol_explicit_profile_layout": shared_inputs["aerosol"][
+                "explicit_profile_layout"
+            ],
             "cases": results,
             "diagnostics": diagnostics,
             "environment": {
@@ -545,11 +568,15 @@ def build_holdouts(
         checkpoint = {
             "schema": CHECKPOINT_SCHEMA,
             "status": (
-                "sealed_holdouts_pass_frozen_thresholds"
+                "corrected_v2_sealed_holdouts_pass_frozen_thresholds"
                 if passed
-                else "sealed_holdouts_fail_frozen_thresholds"
+                else "corrected_v2_sealed_holdouts_fail_frozen_thresholds"
             ),
             "pilot_model_id": spec["pilot_model_id"],
+            "correction_history": manifest["correction_history"],
+            "aerosol_explicit_profile_layout": manifest[
+                "aerosol_explicit_profile_layout"
+            ],
             "artifact_manifest": file_receipt(manifest_path),
             "threshold_contract": manifest["threshold_contract"],
             "tooling": manifest["tooling"],
@@ -577,7 +604,7 @@ def build_holdouts(
             "network_dependency": False,
             "external_source_bytes_redistributed": False,
             "next_gate": (
-                "resolve_lower_boundary_then_design_spectral_admission"
+                "resolve_lower_boundary_on_corrected_v2_then_design_spectral_admission"
                 if passed
                 else "stop_and_investigate_sealed_holdout_failure"
             ),

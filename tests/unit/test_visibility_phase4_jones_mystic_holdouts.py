@@ -44,12 +44,14 @@ def _receipt(path: Path) -> dict[str, object]:
 
 def test_holdout_contract_is_authorized_but_not_admitted() -> None:
     assert holdouts.inspect_contract() == {
-        "status": "sealed_holdout_execution_authorized_not_yet_executed",
-        "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+        "status": (
+            "corrected_v2_sealed_holdout_execution_authorized_not_yet_executed"
+        ),
+        "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v2",
         "sealed_holdout_count": 3,
         "executed_case_count_with_repeat": 4,
         "photon_count_per_case": 1_000_000,
-        "random_seed": 135_791_357,
+        "random_seed": 271_828_183,
         "holdouts_used_to_select_thresholds": False,
         "spectral_grid_admitted": False,
         "production_admission_allowed": False,
@@ -63,11 +65,11 @@ def test_execution_matrix_is_derived_only_from_reserved_holdouts() -> None:
     reserved = contracts["pilot_spec"]["reserved_holdout_cases"]
     reserved_ids = {case["case_id"] for case in reserved}
     assert {case["case_id"] for case in cases[:-1]} == reserved_ids
-    assert cases[-1]["case_id"] == "holdout_interior_combination_repeat"
-    assert cases[-1]["repeat_of"] == "holdout_interior_combination"
+    assert cases[-1]["case_id"] == "holdout_v2_interior_cross_axis_repeat"
+    assert cases[-1]["repeat_of"] == "holdout_v2_interior_cross_axis"
     assert all(case["class"] == "sealed_holdout" for case in cases)
     assert all(case["photon_count"] == 1_000_000 for case in cases)
-    assert all(case["random_seed"] == 135_791_357 for case in cases)
+    assert all(case["random_seed"] == 271_828_183 for case in cases)
     for case in cases:
         calculated = contracts["pilot_builder"].target_moon_separation_deg(
             case["target_true_altitude_deg"],
@@ -94,7 +96,17 @@ def test_committed_holdout_checkpoint_binds_exact_tooling_and_results() -> None:
         checkpoint
     )
     assert checkpoint["schema"] == holdouts.CHECKPOINT_SCHEMA
-    assert checkpoint["status"] == "sealed_holdouts_pass_frozen_thresholds"
+    assert checkpoint["status"] == (
+        "corrected_v2_sealed_holdouts_pass_frozen_thresholds"
+    )
+    assert checkpoint["aerosol_explicit_profile_layout"] == (
+        "top_marker_then_null_gap_then_layer_files_at_lower_boundaries"
+    )
+    assert set(checkpoint["correction_history"]) == {"pilot", "threshold"}
+    assert (
+        checkpoint["correction_history"]["pilot"]["invalidation_checkpoint"]
+        == checkpoint["correction_history"]["threshold"]["invalidation_checkpoint"]
+    )
     assert checkpoint["threshold_contract"] == {
         "spec": _receipt(THRESHOLD_PATH),
         "checkpoint": _receipt(THRESHOLD_CHECKPOINT_PATH),

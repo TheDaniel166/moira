@@ -32,9 +32,9 @@ HOLDOUT_BUILDER_PATH = (
     REPO_ROOT / "scripts" / "build_visibility_phase4_jones_mystic_holdouts.py"
 )
 
-ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-holdout-artifact/v1"
-CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-holdout-checkpoint/v1"
-CASE_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-case/v1"
+ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-holdout-artifact/v2"
+CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-holdout-checkpoint/v2"
+CASE_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-case/v2"
 MANIFEST_NAME = "holdout-manifest.json"
 CHECKPOINT_NAME = "holdout-checkpoint.json"
 EXPECTED_RUN_FILES = frozenset(
@@ -181,9 +181,9 @@ def _load_contracts(
     )
     if (
         threshold_checkpoint.get("schema")
-        != "moira.visibility-phase4-jones-mystic-threshold-checkpoint/v1"
+        != "moira.visibility-phase4-jones-mystic-threshold-checkpoint/v2"
         or threshold_checkpoint.get("status")
-        != "pilot_passes_frozen_threshold_gate_holdouts_not_executed"
+        != "corrected_v2_pilot_passes_threshold_gate_holdouts_not_executed"
         or threshold_checkpoint.get("all_frozen_thresholds_passed") is not True
         or threshold_checkpoint.get("failed_checks") != []
         or threshold_checkpoint.get("holdouts_used_to_select_thresholds") is not False
@@ -209,6 +209,12 @@ def _load_contracts(
         threshold_auditor_path, "_moira_phase4_threshold_auditor_for_validation"
     )
     threshold_spec = threshold_auditor.load_threshold_spec(bound_threshold_path)
+    if threshold_checkpoint.get("correction_history") != threshold_spec.get(
+        "correction_history"
+    ):
+        raise JonesMysticHoldoutValidationError(
+            "threshold correction lineage differs"
+        )
     pilot_checkpoint_path = _verify_repo_receipt(
         threshold_spec.get("pilot_checkpoint"), "pilot checkpoint"
     )
@@ -218,10 +224,12 @@ def _load_contracts(
         raise JonesMysticHoldoutValidationError("pilot checkpoint lineage differs")
     pilot_checkpoint = _read_json(pilot_checkpoint_path, "pilot checkpoint")
     tooling = pilot_checkpoint.get("tooling")
-    if pilot_checkpoint.get(
-        "schema"
-    ) != "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v1" or not isinstance(
-        tooling, dict
+    if (
+        pilot_checkpoint.get("schema")
+        != "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v2"
+        or pilot_checkpoint.get("status")
+        != "corrected_v2_pilot_generated_thresholds_not_yet_frozen"
+        or not isinstance(tooling, dict)
     ):
         raise JonesMysticHoldoutValidationError("pilot checkpoint lineage is invalid")
     pilot_spec_path = _verify_repo_receipt(tooling.get("spec"), "pilot specification")
@@ -233,13 +241,21 @@ def _load_contracts(
         pilot_validator_path, "_moira_phase4_pilot_validator_for_holdouts"
     )
     pilot_spec = pilot_validator._load_spec(pilot_spec_path)
+    if pilot_checkpoint.get("correction_history") != pilot_spec.get(
+        "correction_history"
+    ) or pilot_checkpoint.get("aerosol_explicit_profile_layout") != pilot_spec.get(
+        "aerosol", {}
+    ).get("explicit_profile_layout"):
+        raise JonesMysticHoldoutValidationError(
+            "pilot correction lineage is invalid"
+        )
     protocol = threshold_spec.get("sealed_holdout_protocol")
     if (
         not isinstance(protocol, dict)
         or protocol.get("holdouts_used_to_select_thresholds") is not False
         or protocol.get("photon_count_per_case") != 1_000_000
-        or protocol.get("random_seed") != 135_791_357
-        or protocol.get("exact_repeat_case_id") != "holdout_interior_combination"
+        or protocol.get("random_seed") != 271_828_183
+        or protocol.get("exact_repeat_case_id") != "holdout_v2_interior_cross_axis"
         or protocol.get("maximum_relative_standard_error_per_holdout") != 0.005
         or protocol.get("absolute_radiance_expectations_prefrozen") is not False
     ):
@@ -548,7 +564,8 @@ def validate_holdouts(
     manifest = _read_json(artifact_root / MANIFEST_NAME, "holdout manifest")
     if (
         manifest.get("schema") != ARTIFACT_SCHEMA
-        or manifest.get("status") != "sealed_holdout_gate_passed_not_runtime_data_pack"
+        or manifest.get("status")
+        != "corrected_v2_sealed_holdout_gate_passed_not_runtime_data_pack"
         or manifest.get("pilot_model_id") != contracts["pilot_spec"]["pilot_model_id"]
         or manifest.get("wavelength_nm") != 550.0
         or manifest.get("thresholds_frozen_before_execution") is not True
@@ -583,6 +600,12 @@ def validate_holdouts(
         "checkpoint": contracts["threshold_spec"]["pilot_checkpoint"],
     }:
         raise JonesMysticHoldoutValidationError("pilot lineage differs")
+    expected_correction_history = {
+        "pilot": contracts["pilot_spec"]["correction_history"],
+        "threshold": contracts["threshold_spec"]["correction_history"],
+    }
+    if manifest.get("correction_history") != expected_correction_history:
+        raise JonesMysticHoldoutValidationError("holdout correction lineage differs")
     _verify_tooling(manifest, contracts)
 
     validator = contracts["pilot_validator"]
@@ -626,6 +649,12 @@ def validate_holdouts(
     ):
         raise JonesMysticHoldoutValidationError("ROLO derivation differs")
     validator._verify_shared(artifact_root, manifest, spec, source, data_root)
+    if manifest.get("aerosol_explicit_profile_layout") != spec["aerosol"].get(
+        "explicit_profile_layout"
+    ):
+        raise JonesMysticHoldoutValidationError(
+            "explicit aerosol profile layout differs"
+        )
     cases = _verify_cases(artifact_root, manifest, contracts, source)
     diagnostics = _diagnostics(artifact_root, cases, contracts)
     if diagnostics != manifest.get("diagnostics"):
@@ -640,19 +669,23 @@ def validate_holdouts(
     checkpoint = _read_json(artifact_root / CHECKPOINT_NAME, "holdout checkpoint")
     if (
         checkpoint.get("schema") != CHECKPOINT_SCHEMA
-        or checkpoint.get("status") != "sealed_holdouts_pass_frozen_thresholds"
+        or checkpoint.get("status")
+        != "corrected_v2_sealed_holdouts_pass_frozen_thresholds"
         or checkpoint.get("artifact_manifest")
         != file_receipt(artifact_root / MANIFEST_NAME)
         or checkpoint.get("threshold_contract") != expected_threshold_contract
         or checkpoint.get("tooling") != manifest.get("tooling")
         or checkpoint.get("generator") != manifest.get("generator")
+        or checkpoint.get("correction_history") != expected_correction_history
+        or checkpoint.get("aerosol_explicit_profile_layout")
+        != spec["aerosol"].get("explicit_profile_layout")
         or checkpoint.get("measurements") != diagnostics["measurements"]
         or checkpoint.get("fixed_seed_repeat") != diagnostics["fixed_seed_repeat"]
         or checkpoint.get("checks") != diagnostics["checks"]
         or checkpoint.get("all_frozen_holdout_checks_passed") is not True
         or checkpoint.get("failed_checks") != []
         or checkpoint.get("next_gate")
-        != "resolve_lower_boundary_then_design_spectral_admission"
+        != "resolve_lower_boundary_on_corrected_v2_then_design_spectral_admission"
     ):
         raise JonesMysticHoldoutValidationError("holdout checkpoint differs")
     for key in (
@@ -670,7 +703,7 @@ def validate_holdouts(
                 f"holdout checkpoint boundary changed: {key}"
             )
     return {
-        "status": "valid",
+        "status": "valid_corrected_v2_holdout_evidence",
         "pilot_model_id": spec["pilot_model_id"],
         "sealed_holdout_count": 3,
         "executed_case_count_with_repeat": 4,
@@ -686,7 +719,9 @@ def validate_holdouts(
         "spectral_grid_admitted": False,
         "production_admission_allowed": False,
         "runtime_dependency": False,
-        "next_gate": "resolve_lower_boundary_then_design_spectral_admission",
+        "next_gate": (
+            "resolve_lower_boundary_on_corrected_v2_then_design_spectral_admission"
+        ),
     }
 
 

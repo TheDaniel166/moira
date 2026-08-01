@@ -1,9 +1,9 @@
 {
   "all_frozen_thresholds_passed": true,
   "artifact_manifest": {
-    "bytes": 40507,
+    "bytes": 41237,
     "path": "artifact-manifest.json",
-    "sha256": "6357f1618530fb8e504c3c3a41d90b887ab8c4fa32d506a951987dc42625d4e5"
+    "sha256": "f3a139617abe43ffc1098a6b2df5e90dc10a48a32b1219316a772e6d60245aa7"
   },
   "checks": {
     "aerosol_absolute_reconstruction_error": true,
@@ -20,11 +20,20 @@
     "source_owned_operational_comparison": true,
     "standard_error_sqrt_photon_scaling": true
   },
+  "correction_history": {
+    "invalidation_checkpoint": {
+      "bytes": 4085,
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_v1_invalidation_checkpoint_2026-07-31.json",
+      "sha256": "083a267b527ceaf129416784ea2a088bbbde4840006469d7f1c4710b30588b2b"
+    },
+    "reason": "v1_aerosol_layer_boundary_ownership_invalidated",
+    "supersedes_threshold_id": "physical-heliacal-phase4-jones-mystic-thresholds-2026-07-31"
+  },
   "external_source_bytes_redistributed": false,
   "failed_checks": [],
   "holdouts_used_to_select_thresholds": false,
   "network_dependency": false,
-  "next_gate": "execute_sealed_holdouts_against_frozen_thresholds",
+  "next_gate": "execute_replacement_v2_sealed_holdouts_against_frozen_thresholds",
   "observed": {
     "aerosol_representation": {
       "max_absolute_table_angle_reconstruction_error": 0.20696522627938307,
@@ -34,36 +43,36 @@
       "raw_k0": 1.0006827256764927
     },
     "lunar_source_radiance_ratios": {
-      "base_p100k_s49979687": 0.009785282929066951,
-      "source_distance_max": 0.009785266394734822,
-      "source_distance_min": 0.00978526272260524,
-      "source_phase_max_waxing": 0.00978528246877898,
-      "source_phase_mid_waning": 0.009785257856390039,
-      "source_phase_min_waxing": 0.009785273849353869
+      "base_p100k_s49979687": 0.009780343427329356,
+      "source_distance_max": 0.009780338851790905,
+      "source_distance_min": 0.00978031118408183,
+      "source_phase_max_waxing": 0.009780319655983671,
+      "source_phase_mid_waning": 0.009780351876187147,
+      "source_phase_min_waxing": 0.009780314978443398
     },
-    "lunar_source_ratio_max_to_min": 1.0000025622908748,
-    "maximum_relative_standard_error_all_pilot_cases": 0.011050054617714734,
-    "multiseed_mean_reported_relative_error": 0.0063488995313044656,
-    "multiseed_sample_relative_standard_deviation": 0.0036260242088224375,
-    "multiseed_sample_rsd_to_mean_reported_relative_error_ratio": 0.5711264118992009,
-    "relative_standard_error_base_1m": 0.0034754439845106158,
-    "standard_error_sqrt_photon_scaled_max_to_min_ratio": 1.0106553187563063,
+    "lunar_source_ratio_max_to_min": 1.0000041606145809,
+    "maximum_relative_standard_error_all_pilot_cases": 0.011047173175004263,
+    "multiseed_mean_reported_relative_error": 0.006353940187247637,
+    "multiseed_sample_relative_standard_deviation": 0.0039599940755855574,
+    "multiseed_sample_rsd_to_mean_reported_relative_error_ratio": 0.6232343961205786,
+    "relative_standard_error_base_1m": 0.003475817647844079,
+    "standard_error_sqrt_photon_scaled_max_to_min_ratio": 1.00949957647136,
     "unrepresented_aod_fraction_above_profile_top": 5.214425838160825e-07
   },
   "pilot_checkpoint": {
-    "bytes": 5635,
+    "bytes": 6196,
     "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_pilot_checkpoint_2026-07-31.json",
-    "sha256": "fa57ea58663d5215d2f3cea3423a116fe0ad3aaf0a3f0a4b8cc235427941a458"
+    "sha256": "b879558cd6af32a616da3ba1c2d7e3838b4b47ec860be9c0b26ab25f04065a8c"
   },
-  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v2",
   "production_admission_allowed": false,
   "runtime_dependency": false,
   "runtime_model_admitted": false,
-  "schema": "moira.visibility-phase4-jones-mystic-threshold-checkpoint/v1",
+  "schema": "moira.visibility-phase4-jones-mystic-threshold-checkpoint/v2",
   "sealed_holdout_execution_allowed": true,
   "sealed_holdouts_executed": false,
   "skycalc_operational_comparison": {
-    "absolute_magnitude_difference": 0.017725953294285827,
+    "absolute_magnitude_difference": 0.017436037083014836,
     "capture": {
       "bytes": 80640,
       "path": "skycalc-jones-g50-waxing.fits",
@@ -76,22 +85,22 @@
     "independent_oracle_claimed": false,
     "maximum_absolute_magnitude_difference": 0.15,
     "mystic_case_id": "base_p1m_s49979687",
-    "mystic_radiance_W_m-2_nm-1_sr-1": 1.4978e-08,
-    "mystic_to_skycalc_radiance_ratio": 0.9838063438531582,
-    "signed_magnitude_difference": 0.017725953294285827,
+    "mystic_radiance_W_m-2_nm-1_sr-1": 1.4982e-08,
+    "mystic_to_skycalc_radiance_ratio": 0.9840690775542809,
+    "signed_magnitude_difference": 0.017436037083014836,
     "wavelength_nm": 550.0
   },
   "spectral_grid_admitted": false,
-  "status": "pilot_passes_frozen_threshold_gate_holdouts_not_executed",
+  "status": "corrected_v2_pilot_passes_threshold_gate_holdouts_not_executed",
   "threshold_auditor": {
-    "bytes": 22252,
+    "bytes": 24093,
     "path": "scripts/audit_visibility_phase4_jones_mystic_thresholds.py",
-    "sha256": "f6314c2faf856e25fef4bc6ab8547471ea5e4a3ce95edba8b7031de3ea615862"
+    "sha256": "6e6fcba9b3b61ddb3df14a5cc0eabf8cf755317115946c973f27984671799661"
   },
-  "threshold_id": "physical-heliacal-phase4-jones-mystic-thresholds-2026-07-31",
+  "threshold_id": "physical-heliacal-phase4-jones-mystic-v2-thresholds-2026-07-31",
   "threshold_spec": {
-    "bytes": 4538,
+    "bytes": 5049,
     "path": "scripts/visibility_reference_lab/phase4_jones_mystic_admission_thresholds.json",
-    "sha256": "aa636504612e7a2f022aa324dc4cc20f060d2284255df1298079f6330e458c85"
+    "sha256": "3caa9c29e380c09745125461008a8e0a726e4850d53ff046c94e92b831777306"
   }
 }

@@ -1,9 +1,18 @@
 {
-  "schema": "moira.visibility-phase4-jones-mystic-admission-thresholds/v1",
-  "threshold_id": "physical-heliacal-phase4-jones-mystic-thresholds-2026-07-31",
-  "status": "thresholds_frozen_after_pilot_before_holdout_execution",
-  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+  "schema": "moira.visibility-phase4-jones-mystic-admission-thresholds/v2",
+  "threshold_id": "physical-heliacal-phase4-jones-mystic-v2-thresholds-2026-07-31",
+  "status": "corrected_v2_thresholds_frozen_after_pilot_before_holdout_execution",
+  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v2",
   "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
+  "correction_history": {
+    "supersedes_threshold_id": "physical-heliacal-phase4-jones-mystic-thresholds-2026-07-31",
+    "reason": "v1_aerosol_layer_boundary_ownership_invalidated",
+    "invalidation_checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_v1_invalidation_checkpoint_2026-07-31.json",
+      "bytes": 4085,
+      "sha256": "083a267b527ceaf129416784ea2a088bbbde4840006469d7f1c4710b30588b2b"
+    }
+  },
   "runtime_boundary": {
     "engine_changes_authorized": false,
     "public_api_changes_authorized": false,
@@ -16,8 +25,8 @@
   },
   "pilot_checkpoint": {
     "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_pilot_checkpoint_2026-07-31.json",
-    "bytes": 5635,
-    "sha256": "fa57ea58663d5215d2f3cea3423a116fe0ad3aaf0a3f0a4b8cc235427941a458"
+    "bytes": 6196,
+    "sha256": "b879558cd6af32a616da3ba1c2d7e3838b4b47ec860be9c0b26ab25f04065a8c"
   },
   "source_audit": {
     "spec_path": "scripts/visibility_reference_lab/phase4_jones_source_audit_spec.json",
@@ -54,7 +63,7 @@
       "maximum_standard_error_sqrt_photon_scaled_max_to_min_ratio": 1.05,
       "maximum_300k_multiseed_sample_relative_standard_deviation": 0.01,
       "maximum_multiseed_sample_rsd_to_mean_reported_relative_error_ratio": 1.0,
-      "rationale": "measured_after_pilot_with_margin_and_frozen_before_holdouts"
+      "rationale": "measured_from_corrected_v2_pilot_with_margin_and_frozen_before_replacement_holdouts"
     },
     "aerosol_representation": {
       "maximum_absolute_table_angle_reconstruction_error": 0.25,
@@ -86,8 +95,8 @@
     "source": "reserved_holdout_cases_in_phase4_jones_mystic_pilot_spec",
     "holdouts_used_to_select_thresholds": false,
     "photon_count_per_case": 1000000,
-    "random_seed": 135791357,
-    "exact_repeat_case_id": "holdout_interior_combination",
+    "random_seed": 271828183,
+    "exact_repeat_case_id": "holdout_v2_interior_cross_axis",
     "maximum_relative_standard_error_per_holdout": 0.005,
     "all_directional_outputs_must_be_finite_and_positive": true,
     "absolute_radiance_expectations_prefrozen": false,
@@ -99,6 +108,6 @@
     "spectral_grid_admitted": false,
     "production_admission_allowed": false,
     "runtime_model_admitted": false,
-    "next_gate": "execute_sealed_holdouts_against_frozen_thresholds"
+    "next_gate": "execute_replacement_v2_sealed_holdouts_against_frozen_thresholds"
   }
 }

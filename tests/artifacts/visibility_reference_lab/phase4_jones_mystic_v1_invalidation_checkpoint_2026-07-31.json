@@ -1,0 +1,84 @@
+{
+  "affected_evidence": {
+    "holdout": {
+      "checkpoint": {
+        "bytes": 4969,
+        "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_holdout_checkpoint_2026-07-31.json",
+        "sha256": "7cbe21b6b53969f68d2c95718f564f58ccf6932d7b83475252828fa17a491da0"
+      },
+      "external_manifest": {
+        "bytes": 28947,
+        "sha256": "8e009491741e11f5ea5491e627a93cb7f3db23da5495abb09181ed5290e82e77"
+      },
+      "git_commit": "7a05ff8a40c2a0cb6ea75eec80cf9b38f0f664f6"
+    },
+    "pilot": {
+      "builder": {
+        "bytes": 55175,
+        "path": "scripts/build_visibility_phase4_jones_mystic_pilot.py",
+        "sha256": "09aa0cecc2f7419ff7e04a47b3eb556194760f443caec4acccceaa6b225e14cb"
+      },
+      "checkpoint": {
+        "bytes": 5635,
+        "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_pilot_checkpoint_2026-07-31.json",
+        "sha256": "fa57ea58663d5215d2f3cea3423a116fe0ad3aaf0a3f0a4b8cc235427941a458"
+      },
+      "external_manifest": {
+        "bytes": 40507,
+        "sha256": "6357f1618530fb8e504c3c3a41d90b887ab8c4fa32d506a951987dc42625d4e5"
+      },
+      "git_commit": "a126ca9",
+      "specification": {
+        "bytes": 17348,
+        "path": "scripts/visibility_reference_lab/phase4_jones_mystic_pilot_spec.json",
+        "sha256": "d986bf44120cd8e21d19e92576d40ee350637843054b13da17b1bf251bbfaf26"
+      },
+      "validator": {
+        "bytes": 48341,
+        "path": "scripts/validate_visibility_phase4_jones_mystic_pilot.py",
+        "sha256": "a5437b7c3024bb2b7c61056dac52716a322e47c00c2ff2b03b3d9edc4d607150"
+      }
+    },
+    "threshold": {
+      "auditor": {
+        "bytes": 22252,
+        "path": "scripts/audit_visibility_phase4_jones_mystic_thresholds.py",
+        "sha256": "f6314c2faf856e25fef4bc6ab8547471ea5e4a3ce95edba8b7031de3ea615862"
+      },
+      "checkpoint": {
+        "bytes": 4449,
+        "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_threshold_checkpoint_2026-07-31.json",
+        "sha256": "97f690b7004db2340a7598473c452a4f9e3247abedbab3f37786378dbbca999e"
+      },
+      "specification": {
+        "bytes": 4538,
+        "path": "scripts/visibility_reference_lab/phase4_jones_mystic_admission_thresholds.json",
+        "sha256": "aa636504612e7a2f022aa324dc4cc20f060d2284255df1298079f6330e458c85"
+      }
+    }
+  },
+  "defect": {
+    "actual_v1_layout": "each optical-property file was listed at its layer upper boundary",
+    "consequence": "libRadtran applied every file to the next layer above, shifting the explicit aerosol profile and placing the final physical layer above the intended 20 km top",
+    "correct_layout": "top marker, explicit null layer from profile top to marker, then each physical file listed at its layer lower boundary",
+    "false_green_boundary": "the builder and independent validator reproduced the same incorrect serialization, so checksum, repeatability, convergence, and holdout gates could not detect the source-semantics error",
+    "source_rule": "an aerosol_file explicit property file defines the layer starting at the listed altitude; the uppermost line only marks the top and its properties are ignored"
+  },
+  "discovered_during": "Jones 2000 m lower-boundary versus 2640 m observer disposition probe",
+  "evidence": {
+    "libradtran_2_0_6": {
+      "archive_sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840",
+      "example_aero_files_sha256": "5b97de8f32828f44c0a568a4565bd94b9272dbe7524764b205a1e896309bb0ad",
+      "uvspec_lex_l_sha256": "174755190e50ecc3099c80a29cb71627c0a33a5e2009d1869c23140095658d89"
+    }
+  },
+  "runtime_boundary": {
+    "engine_or_public_api_affected": false,
+    "external_v1_artifacts_remain_reproducible": true,
+    "external_v1_artifacts_valid_for_scientific_admission": false,
+    "production_data_pack_affected": false,
+    "runtime_model_affected": false
+  },
+  "schema": "moira.visibility-phase4-jones-mystic-v1-invalidation-checkpoint/v1",
+  "status": "v1_pilot_threshold_and_holdout_evidence_invalidated_before_runtime_admission"
+}

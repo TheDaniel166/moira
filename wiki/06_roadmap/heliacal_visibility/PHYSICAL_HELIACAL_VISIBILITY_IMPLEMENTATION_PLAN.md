@@ -1065,6 +1065,12 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 - [x] Classify and checksum-lock the solar, ROLO, and aerosol inputs; preserve
   the aerosol table as source-owned without claiming an unavailable public
   reconstruction recipe.
+- [x] Invalidate the shifted v1 explicit-aerosol evidence and bind the corrected
+  lower-boundary ownership rule in independently checked v2 tooling.
+- [x] Complete the corrected 550 nm pilot, freeze thresholds before holdout
+  execution, and pass three fresh sealed holdouts plus an exact repeat.
+- [ ] Resolve the 2,000 m Jones lower model boundary versus the 2,640 m observer
+  altitude before designing the spectral admission grid.
 - [ ] Implement Jones 2013 only under a new versioned identifier.
 - [ ] Expose lunar phase, separation, lunar altitude, atmospheric, and
   scattering inputs in the component receipt.
@@ -1129,12 +1135,37 @@ radiative-transfer pilot with that limitation visible; it may not support an
 independent aerosol-microphysics claim, and its bytes may not enter the
 repository.
 
-The next moonlight gate is to freeze and generate the libRadtran 2.0.6 MYSTIC
-pilot matrix over all six candidate axes. Pilot results must establish
-numerical and interpolation thresholds before a production artifact, engine
-implementation, or public surface can be admitted. Any derived artifact also
-requires a separate release/distribution disposition. See
+The input-authority gate enabled the bounded libRadtran 2.0.6 MYSTIC pilot
+matrix. That pilot and its sealed geometry holdouts are now complete under the
+corrected-v2 receipts below. Any derived production artifact still requires a
+separate release/distribution disposition. See
 [PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_INPUT_AUTHORITY_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_INPUT_AUTHORITY_CHECKPOINT_2026-07-31.md).
+
+### Phase 4 Jones MYSTIC v1 invalidation and corrected-v2 gate - 2026-07-31
+
+The lower-boundary investigation found that the original explicit-aerosol
+writer listed each physical file at its upper boundary even though libRadtran
+applies it from the listed altitude upward. The v1 builder and validator
+mirrored the same error, so v1 pilot, threshold, and holdout checks
+false-greened. Their exact historical receipts remain reproducible but are not
+admissible. No runtime or production artifact was affected. See
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_V1_INVALIDATION_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_V1_INVALIDATION_CHECKPOINT_2026-07-31.md).
+
+The corrected v2 profile binds physical files to inclusive lower boundaries,
+with an explicit null gap between the 20 km physical profile top and the 120 km
+top marker. The rebuilt 15-case pilot passed all frozen numerical checks. Three
+fresh sealed holdouts and an exact repeat then passed with new seed
+`271828183`; the worst relative Monte Carlo error was `0.0029782157` against
+the frozen `0.005` ceiling. Both external artifacts passed independent
+validation. See
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_PILOT_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_PILOT_CHECKPOINT_2026-07-31.md)
+and
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_HOLDOUT_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_HOLDOUT_CHECKPOINT_2026-07-31.md).
+
+The active Moonlight gate is now the Jones 2,000 m lower model boundary versus
+the 2,640 m observer altitude. Spectral-grid design remains blocked until that
+construction is validated or the observer-bottom alternative is explicitly
+versioned.
 
 ### Phase 4 exit gate
 

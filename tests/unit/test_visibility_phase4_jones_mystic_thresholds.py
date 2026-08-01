@@ -36,9 +36,13 @@ def _receipt(path: Path) -> dict[str, object]:
 
 def test_threshold_spec_is_frozen_before_holdouts_and_not_admitted() -> None:
     assert thresholds.inspect_thresholds(SPEC_PATH) == {
-        "threshold_id": ("physical-heliacal-phase4-jones-mystic-thresholds-2026-07-31"),
-        "status": "thresholds_frozen_after_pilot_before_holdout_execution",
-        "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+        "threshold_id": (
+            "physical-heliacal-phase4-jones-mystic-v2-thresholds-2026-07-31"
+        ),
+        "status": (
+            "corrected_v2_thresholds_frozen_after_pilot_before_holdout_execution"
+        ),
+        "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v2",
         "holdouts_used_to_select_thresholds": False,
         "sealed_holdout_count": 3,
         "spectral_grid_admitted": False,
@@ -52,7 +56,7 @@ def test_threshold_checkpoint_binds_current_evaluator_and_freeze() -> None:
     assert CHECKPOINT_PATH.read_bytes() == thresholds.canonical_json_bytes(checkpoint)
     assert checkpoint["schema"] == thresholds.CHECKPOINT_SCHEMA
     assert checkpoint["status"] == (
-        "pilot_passes_frozen_threshold_gate_holdouts_not_executed"
+        "corrected_v2_pilot_passes_threshold_gate_holdouts_not_executed"
     )
     assert checkpoint["threshold_spec"] == _receipt(SPEC_PATH)
     assert checkpoint["threshold_auditor"] == _receipt(Path(thresholds.__file__))

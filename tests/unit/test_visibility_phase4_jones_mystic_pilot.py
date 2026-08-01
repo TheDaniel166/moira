@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
-import hashlib
 from pathlib import Path
 
 import pytest
@@ -25,13 +25,20 @@ CHECKPOINT_PATH = (
     / "visibility_reference_lab"
     / "phase4_jones_mystic_pilot_checkpoint_2026-07-31.json"
 )
+INVALIDATION_PATH = (
+    REPO_ROOT
+    / "tests"
+    / "artifacts"
+    / "visibility_reference_lab"
+    / "phase4_jones_mystic_v1_invalidation_checkpoint_2026-07-31.json"
+)
 
 
 def test_pilot_spec_is_bounded_external_and_not_admitted() -> None:
     assert builder.inspect_spec(SPEC_PATH) == {
-        "spec_id": "physical-heliacal-phase4-jones-mystic-pilot-2026-07-31",
-        "status": "frozen_external_pilot_matrix_not_runtime_data_pack",
-        "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v1",
+        "spec_id": "physical-heliacal-phase4-jones-mystic-pilot-v2-2026-07-31",
+        "status": "frozen_corrected_external_pilot_matrix_not_runtime_data_pack",
+        "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v2",
         "executed_case_count": 15,
         "reserved_holdout_case_count": 3,
         "wavelength_nm": 550.0,
@@ -44,12 +51,12 @@ def test_pilot_spec_is_bounded_external_and_not_admitted() -> None:
 def test_committed_checkpoint_binds_exact_generator_and_tooling() -> None:
     checkpoint = json.loads(CHECKPOINT_PATH.read_text(encoding="utf-8"))
     assert checkpoint["status"] == (
-        "pilot_generated_and_measured_thresholds_not_yet_frozen"
+        "corrected_v2_pilot_generated_thresholds_not_yet_frozen"
     )
     assert checkpoint["artifact_manifest"] == {
-        "bytes": 40507,
+        "bytes": 41237,
         "path": "artifact-manifest.json",
-        "sha256": "6357f1618530fb8e504c3c3a41d90b887ab8c4fa32d506a951987dc42625d4e5",
+        "sha256": "f3a139617abe43ffc1098a6b2df5e90dc10a48a32b1219316a772e6d60245aa7",
     }
     assert checkpoint["executed_case_count"] == 15
     assert checkpoint["reserved_holdout_case_count"] == 3
@@ -62,6 +69,35 @@ def test_committed_checkpoint_binds_exact_generator_and_tooling() -> None:
         payload = (REPO_ROOT / receipt["path"]).read_bytes()
         assert receipt["bytes"] == len(payload)
         assert receipt["sha256"] == hashlib.sha256(payload).hexdigest()
+
+
+def test_v1_invalidation_is_immutable_and_bound_by_v2() -> None:
+    invalidation = json.loads(INVALIDATION_PATH.read_text(encoding="utf-8"))
+    assert INVALIDATION_PATH.read_bytes() == builder.canonical_json_bytes(invalidation)
+    assert invalidation["status"] == (
+        "v1_pilot_threshold_and_holdout_evidence_invalidated_before_runtime_admission"
+    )
+    assert invalidation["defect"]["source_rule"] == (
+        "an aerosol_file explicit property file defines the layer starting at the "
+        "listed altitude; the uppermost line only marks the top and its properties "
+        "are ignored"
+    )
+    assert invalidation["runtime_boundary"] == {
+        "engine_or_public_api_affected": False,
+        "external_v1_artifacts_remain_reproducible": True,
+        "external_v1_artifacts_valid_for_scientific_admission": False,
+        "production_data_pack_affected": False,
+        "runtime_model_affected": False,
+    }
+    receipt = {
+        "path": INVALIDATION_PATH.relative_to(REPO_ROOT).as_posix(),
+        "bytes": INVALIDATION_PATH.stat().st_size,
+        "sha256": hashlib.sha256(INVALIDATION_PATH.read_bytes()).hexdigest(),
+    }
+    spec = builder.load_spec(SPEC_PATH)
+    checkpoint = json.loads(CHECKPOINT_PATH.read_text(encoding="utf-8"))
+    assert spec["correction_history"]["invalidation_checkpoint"] == receipt
+    assert checkpoint["correction_history"]["invalidation_checkpoint"] == receipt
 
 
 def test_pilot_matrix_covers_six_axes_and_keeps_holdouts_sealed() -> None:
@@ -148,6 +184,31 @@ def test_standard_library_legendre_projection_preserves_isotropic_phase() -> Non
     assert max(abs(value) for value in moments[1:]) < 2e-15
     assert diagnostics["raw_k0"] == pytest.approx(1.0, abs=2e-15)
     assert diagnostics["max_absolute_table_angle_reconstruction_error"] < 2e-12
+
+
+def test_explicit_aerosol_profile_binds_files_to_lower_boundaries() -> None:
+    layers = [
+        {
+            "low_km": 2.0,
+            "high_km": 2.25,
+            "filename": "aerosol_layer_000.dat",
+        },
+        {
+            "low_km": 2.25,
+            "high_km": 2.5,
+            "filename": "aerosol_layer_001.dat",
+        },
+    ]
+    assert builder.render_explicit_aerosol_profile(
+        layers,
+        profile_top_km=2.5,
+        null_top_boundary_km=120.0,
+    ) == (
+        b"120.00000000 ../../shared/null_layer.dat\n"
+        b"2.50000000 ../../shared/null_layer.dat\n"
+        b"2.25000000 ../../shared/aerosol_layer_001.dat\n"
+        b"2.00000000 ../../shared/aerosol_layer_000.dat\n"
+    )
 
 
 def test_builder_and_validator_independently_render_same_mystic_contract() -> None:

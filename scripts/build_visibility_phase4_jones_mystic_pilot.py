@@ -40,11 +40,11 @@ ELEVATED_BUILDER_PATH = (
     REPO_ROOT / "scripts" / "build_visibility_elevated_site_probe.py"
 )
 
-SPEC_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-spec/v1"
-ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-artifact/v1"
-CASE_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-case/v1"
-CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v1"
-ARTIFACT_STATUS = "external_pilot_complete_not_runtime_data_pack"
+SPEC_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-spec/v2"
+ARTIFACT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-artifact/v2"
+CASE_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-case/v2"
+CHECKPOINT_SCHEMA = "moira.visibility-phase4-jones-mystic-pilot-checkpoint/v2"
+ARTIFACT_STATUS = "corrected_external_pilot_complete_not_runtime_data_pack"
 DATA_LINK_NAME = "data"
 MANIFEST_NAME = "artifact-manifest.json"
 CHECKPOINT_NAME = "pilot-checkpoint.json"
@@ -266,10 +266,24 @@ def validate_case(case: dict[str, Any], *, runnable: bool) -> None:
 def validate_spec(spec: dict[str, Any]) -> None:
     if spec.get("schema") != SPEC_SCHEMA:
         raise JonesMysticPilotError("unsupported Jones/MYSTIC pilot schema")
-    if spec.get("status") != "frozen_external_pilot_matrix_not_runtime_data_pack":
+    if spec.get("status") != (
+        "frozen_corrected_external_pilot_matrix_not_runtime_data_pack"
+    ):
         raise JonesMysticPilotError("pilot must remain a frozen external matrix")
-    if spec.get("pilot_model_id") != "jones_paranal_mystic_550nm_pilot_v1":
+    if spec.get("pilot_model_id") != "jones_paranal_mystic_550nm_pilot_v2":
         raise JonesMysticPilotError("pilot model identity changed")
+    correction = spec.get("correction_history")
+    if (
+        not isinstance(correction, dict)
+        or correction.get("supersedes_pilot_model_id")
+        != "jones_paranal_mystic_550nm_pilot_v1"
+        or correction.get("reason")
+        != "correct_libradtran_explicit_aerosol_layer_boundary_ownership"
+    ):
+        raise JonesMysticPilotError("pilot correction history is missing")
+    _verify_repo_receipt(
+        correction.get("invalidation_checkpoint"), "v1 invalidation checkpoint"
+    )
     boundary = spec.get("runtime_boundary")
     if boundary != {
         "engine_changes_authorized": False,
@@ -364,6 +378,11 @@ def validate_spec(spec: dict[str, Any]) -> None:
     if (
         aerosol.get("legendre_moment_count") != 512
         or aerosol.get("gauss_legendre_quadrature_order") != 2048
+        or aerosol.get("explicit_profile_layout")
+        != "top_marker_then_null_gap_then_layer_files_at_lower_boundaries"
+        or aerosol.get("layer_file_ownership")
+        != "listed_altitude_inclusive_lower_boundary_to_next_higher_boundary"
+        or aerosol.get("uppermost_marker_properties_ignored") is not True
         or aerosol.get("independent_aerosol_microphysics_reconstruction_claimed")
         is not False
         or aerosol.get("representation_error_status")
@@ -750,6 +769,50 @@ def _load_elevated_builder() -> Any:
     return module
 
 
+def render_explicit_aerosol_profile(
+    layers: list[dict[str, float | str]],
+    *,
+    profile_top_km: float,
+    null_top_boundary_km: float,
+) -> bytes:
+    """Serialize libRadtran layer ownership without shifting the profile."""
+    if not layers:
+        raise JonesMysticPilotError("explicit aerosol profile requires layers")
+    if not null_top_boundary_km > profile_top_km:
+        raise JonesMysticPilotError("null aerosol boundary must exceed profile top")
+    for index, layer in enumerate(layers):
+        low = float(layer["low_km"])
+        high = float(layer["high_km"])
+        if not high > low:
+            raise JonesMysticPilotError("aerosol layer has non-positive thickness")
+        if index and not math.isclose(
+            low,
+            float(layers[index - 1]["high_km"]),
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise JonesMysticPilotError("aerosol layers are not contiguous")
+    if not math.isclose(
+        float(layers[-1]["high_km"]),
+        profile_top_km,
+        rel_tol=0.0,
+        abs_tol=1e-12,
+    ):
+        raise JonesMysticPilotError("aerosol layers do not reach profile top")
+
+    # libRadtran applies a file from the listed altitude upward to the next
+    # entry. The uppermost entry is only a marker and its file is ignored.
+    lines = [
+        f"{null_top_boundary_km:.8f} ../../shared/null_layer.dat",
+        f"{profile_top_km:.8f} ../../shared/null_layer.dat",
+    ]
+    for layer in reversed(layers):
+        lines.append(
+            f"{float(layer['low_km']):.8f} ../../shared/{layer['filename']}"
+        )
+    return ("\n".join(lines) + "\n").encode("ascii")
+
+
 def construct_shared_inputs(
     root: Path,
     *,
@@ -822,16 +885,12 @@ def construct_shared_inputs(
                 "filename": filename,
             }
         )
-    profile_lines = [
-        f"{float(aerosol['null_top_boundary_km']):.8f} ../../shared/null_layer.dat"
-    ]
-    for layer in reversed(layers):
-        profile_lines.append(
-            f"{float(layer['high_km']):.8f} ../../shared/{layer['filename']}"
-        )
-    (shared / "aerosol_profile.dat").write_bytes(
-        ("\n".join(profile_lines) + "\n").encode("ascii")
+    profile_bytes = render_explicit_aerosol_profile(
+        layers,
+        profile_top_km=top,
+        null_top_boundary_km=float(aerosol["null_top_boundary_km"]),
     )
+    (shared / "aerosol_profile.dat").write_bytes(profile_bytes)
     integrated_aod = sum(
         float(layer["extinction_km-1"])
         * (float(layer["high_km"]) - float(layer["low_km"]))
@@ -849,6 +908,11 @@ def construct_shared_inputs(
         "aerosol": {
             "layer_count": len(layers),
             "boundaries_km": boundaries,
+            "explicit_profile_layout": aerosol["explicit_profile_layout"],
+            "uppermost_marker_km": float(aerosol["null_top_boundary_km"]),
+            "null_gap_lower_boundary_km": top,
+            "lowest_physical_layer_boundary_km": bottom,
+            "layer_file_binding_count": len(layers),
             "integrated_aod_to_profile_top": integrated_aod,
             "unrepresented_aod_above_profile_top": float(aerosol["aod550"])
             - integrated_aod,
@@ -1164,8 +1228,9 @@ def _build_checkpoint(manifest: dict[str, Any], manifest_path: Path) -> dict[str
     return {
         "schema": CHECKPOINT_SCHEMA,
         "spec_id": manifest["spec_id"],
-        "status": "pilot_generated_and_measured_thresholds_not_yet_frozen",
+        "status": "corrected_v2_pilot_generated_thresholds_not_yet_frozen",
         "pilot_model_id": manifest["pilot_model_id"],
+        "correction_history": manifest["correction_history"],
         "artifact_manifest": file_receipt(manifest_path),
         "tooling": manifest["tooling"],
         "generator": manifest["generator"],
@@ -1182,6 +1247,9 @@ def _build_checkpoint(manifest: dict[str, Any], manifest_path: Path) -> dict[str
         ],
         "aerosol_integrated_aod_to_profile_top": manifest["shared_inputs"]["aerosol"][
             "integrated_aod_to_profile_top"
+        ],
+        "aerosol_explicit_profile_layout": manifest["shared_inputs"]["aerosol"][
+            "explicit_profile_layout"
         ],
         "relative_monte_carlo_standard_error_range": [
             min(relative_errors),
@@ -1201,7 +1269,9 @@ def _build_checkpoint(manifest: dict[str, Any], manifest_path: Path) -> dict[str
         "runtime_dependency": False,
         "network_dependency": False,
         "external_source_bytes_redistributed": False,
-        "next_gate": "review_measured_pilot_and_freeze_falsifiable_admission_thresholds",
+        "next_gate": (
+            "review_corrected_v2_pilot_and_freeze_falsifiable_admission_thresholds"
+        ),
     }
 
 
@@ -1336,6 +1406,7 @@ def build_pilot(
             "spec_id": spec["spec_id"],
             "status": ARTIFACT_STATUS,
             "pilot_model_id": spec["pilot_model_id"],
+            "correction_history": spec["correction_history"],
             "wavelength_nm": spec["solver"]["wavelength_nm"],
             "tooling": _tooling_receipts(spec_path),
             "generator": {
