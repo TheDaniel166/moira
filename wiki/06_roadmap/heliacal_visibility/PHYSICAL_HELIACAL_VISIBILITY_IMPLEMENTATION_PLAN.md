@@ -219,7 +219,7 @@ failure reasons, or provenance.
 | 1 | Reproducible atmospheric reference laboratory | Complete | [Checkpoints 1-6](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md), [radiance/response checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_RADIANCE_RESPONSE_CHECKPOINT_2026-07-30.md), and [closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md) |
 | 2 | Python spectral single-epoch truth | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CLOSURE_2026-07-30.md) |
 | 3 | Physical visibility-event solver | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md) and [restart checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_RESTART_CHECKPOINT_2026-07-30.md) |
-| 4 | Moonlight, airglow, horizon, and local realism | In progress | [Directional-horizon checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_DIRECTIONAL_HORIZON_CHECKPOINT_2026-07-31.md); [background-composition checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_BACKGROUND_COMPOSITION_CHECKPOINT_2026-07-31.md); [observer-factor checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_OBSERVER_FACTOR_CHECKPOINT_2026-07-31.md) |
+| 4 | Moonlight, airglow, horizon, and local realism | In progress | [Directional-horizon checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_DIRECTIONAL_HORIZON_CHECKPOINT_2026-07-31.md); [background-composition checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_BACKGROUND_COMPOSITION_CHECKPOINT_2026-07-31.md); [observer-factor checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_OBSERVER_FACTOR_CHECKPOINT_2026-07-31.md); [Jones lower-boundary checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md) |
 | 5 | Public contract parity | Not started | Pending |
 | 6 | Optional native strengthening | Not started | Pending benchmark decision |
 | 7 | Validation, admission, release, and documentation | Not started | Pending |
@@ -1069,7 +1069,7 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
   lower-boundary ownership rule in independently checked v2 tooling.
 - [x] Complete the corrected 550 nm pilot, freeze thresholds before holdout
   execution, and pass three fresh sealed holdouts plus an exact repeat.
-- [ ] Resolve the 2,000 m Jones lower model boundary versus the 2,640 m observer
+- [x] Resolve the 2,000 m Jones lower model boundary versus the 2,640 m observer
   altitude before designing the spectral admission grid.
 - [ ] Implement Jones 2013 only under a new versioned identifier.
 - [ ] Expose lunar phase, separation, lunar altitude, atmospheric, and
@@ -1162,10 +1162,21 @@ validation. See
 and
 [PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_HOLDOUT_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_HOLDOUT_CHECKPOINT_2026-07-31.md).
 
-The active Moonlight gate is now the Jones 2,000 m lower model boundary versus
-the 2,640 m observer altitude. Spectral-grid design remains blocked until that
-construction is validated or the observer-bottom alternative is explicitly
-versioned.
+### Phase 4 Jones MYSTIC lower-boundary checkpoint - 2026-08-02
+
+The lower-boundary gate is closed. The source-faithful research profile uses a
+2,000 m surface, an explicit 2,640 m observer level, `zout 0.64`, pressure
+scaled to retain 744 hPa at the observer, and the restored Jones aerosol
+column below the observer. It exactly reproduces the corrected-v2 control,
+passes all structural and Monte Carlo checks, and was independently validated.
+Two final artifact trees are byte-for-byte identical. See
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md).
+
+The active Moonlight gate is now design of the source-faithful 2,000 m Jones
+spectral admission matrix. The wavelength grid, interpolation thresholds, and
+untouched spectral holdouts must be frozen before execution. The lower-boundary
+checkpoint does not admit a spectral grid, runtime model, or production data
+pack.
 
 ### Phase 4 exit gate
 

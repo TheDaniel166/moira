@@ -1,9 +1,9 @@
 # Physical Visibility Reference Lab
 
 Status: Phases 1 through 3 complete at the offline reference-lab, immutable
-data-pack, and additive Python direct-module boundaries. This directory is not
-an engine runtime dependency. Admitted packs remain separate external
-artifacts.
+data-pack, and additive Python direct-module boundaries; the Phase 4 Jones
+550 nm lower-boundary research gate is complete. This directory is not an
+engine runtime dependency. Admitted packs remain separate external artifacts.
 
 ## Boundary
 
@@ -17,7 +17,8 @@ visibility data packs, and independent pack/event validators. The tooling:
 - runs only the explicitly authorized `convergence`, `geometry_smoke`, and
   `direct_transmission_smoke` profiles, plus the separately versioned
   elevated-site, direct-geometry, named-spectral direct, environmental, and
-  altitude/pressure interpolation probes;
+  altitude/pressure interpolation probes, plus the separately frozen Jones
+  MYSTIC pilot, holdout, and lower-boundary experiments;
 - writes each case atomically and binds every output file by SHA-256;
 - rejects partial, unowned, stale, or tampered artifacts;
 - keeps independent validators outside the `moira` package and its installed
@@ -492,6 +493,45 @@ with a pinned offline Astropy/ERFA/IERS toolchain.
 These event-oracle source tables are validation inputs only. They are not
 runtime dependencies or redistributed pack payloads.
 
+## Build and Validate the Jones Lower-Boundary Experiment
+
+The Phase 4 Jones experiment is research-only and requires the exact
+caller-supplied libRadtran 2.0.6 and ESO SM-01 archives bound by the
+specification. Inspect the frozen contract without running MYSTIC:
+
+```bash
+python scripts/build_visibility_phase4_jones_mystic_lower_boundary.py \
+  --uvspec ignored \
+  --lib-radtran-archive ignored \
+  --data-root ignored \
+  --eso-archive ignored \
+  --output-root ignored \
+  --inspect-contract
+```
+
+Build and independently validate an external artifact:
+
+```bash
+python scripts/build_visibility_phase4_jones_mystic_lower_boundary.py \
+  --uvspec /absolute/libRadtran-2.0.6/bin/uvspec \
+  --lib-radtran-archive /absolute/source/libRadtran-2.0.6.tar.gz \
+  --data-root /absolute/libRadtran-2.0.6/data \
+  --eso-archive /absolute/source/SM-01.tar.gz \
+  --output-root /absolute/artifacts/jones-lower-boundary
+
+python scripts/validate_visibility_phase4_jones_mystic_lower_boundary.py \
+  --artifact-root /absolute/artifacts/jones-lower-boundary \
+  --uvspec /absolute/libRadtran-2.0.6/bin/uvspec \
+  --lib-radtran-archive /absolute/source/libRadtran-2.0.6.tar.gz \
+  --data-root /absolute/libRadtran-2.0.6/data \
+  --eso-archive /absolute/source/SM-01.tar.gz
+```
+
+The source-faithful profile has a 2,000 m surface and an explicit 2,640 m
+observer. The final checkpoint is based on two byte-identical complete
+artifact trees. It authorizes spectral-admission design only; it does not
+admit a Jones spectral grid, runtime model, or production data pack.
+
 ## Validate an Artifact
 
 Pin the root-manifest hash in the consuming checkpoint:
@@ -578,9 +618,11 @@ Linux and Windows.
 - Version 1.2 admits Sirius as the first physical stellar target. Other fixed
   stars require separately source-locked photometry, spectral profiles,
   catalog identity, and independent validation.
-- Clouds, moonlight, site-specific airglow, directional terrain horizons, and
-  environment domains beyond the fixed baseline remain later, separately
-  sourced work.
+- Clouds, built-in moonlight, site-specific airglow, directional terrain
+  horizons, and environment domains beyond the fixed baseline remain later,
+  separately sourced work. The Jones 550 nm geometry and lower-boundary gates
+  are complete, but its spectral grid, interpolation validation, release
+  disposition, and runtime admission remain open.
 - Monte Carlo uncertainty varies across the twilight domain and is retained
   per cell. A zero-contribution result is never evidence of zero physical
   radiance.

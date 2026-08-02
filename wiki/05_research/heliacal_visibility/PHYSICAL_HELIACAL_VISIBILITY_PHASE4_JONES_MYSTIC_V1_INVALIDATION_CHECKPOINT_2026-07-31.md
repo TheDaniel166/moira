@@ -51,6 +51,8 @@ and the `AERO_FILES` example SHA-256
 
 The replacement pilot model is `jones_paranal_mystic_550nm_pilot_v2`. Its
 corrected pilot, frozen threshold evaluation, fresh sealed holdouts, and
-independent holdout validation all pass. The next unresolved gate remains the
-Jones 2,000 m lower model boundary versus the 2,640 m observer altitude. No
-spectral or runtime model is admitted by this correction.
+independent holdout validation all pass. At this checkpoint the next unresolved
+gate was the Jones 2,000 m lower model boundary versus the 2,640 m observer
+altitude. That gate was subsequently closed by the
+[Jones MYSTIC lower-boundary checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md).
+No spectral or runtime model is admitted by either correction receipt.

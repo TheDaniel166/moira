@@ -165,10 +165,14 @@ Closed:
 
 Still open:
 
-- the 2,000 m versus 2,640 m lower-boundary disposition;
 - an independently generated spectral grid and interpolation thresholds;
 - untouched spectral holdouts and response-integrated products;
 - release/distribution disposition for any derived data artifact;
 - engine implementation and typed component receipt;
 - public-surface parity; and
 - Phase 4 closure.
+
+The lower-boundary disposition listed by the original checkpoint was closed
+on 2026-08-02 by the
+[Jones MYSTIC lower-boundary checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md).
+This pilot remains the exact corrected-v2 observer-bottom control.

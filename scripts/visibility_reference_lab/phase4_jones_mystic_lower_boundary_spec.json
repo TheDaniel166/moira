@@ -1,0 +1,215 @@
+{
+  "schema": "moira.visibility-phase4-jones-mystic-lower-boundary-spec/v1",
+  "experiment_id": "physical-heliacal-phase4-jones-mystic-lower-boundary-2026-08-02",
+  "status": "refrozen_after_nondeterministic_profile_probe_receipt_exclusion_before_final_artifact",
+  "candidate_model_id": "jones_paranal_scattered_moonlight_2013_v1",
+  "pilot_model_id": "jones_paranal_mystic_550nm_pilot_v2",
+  "runtime_boundary": {
+    "engine_changes_authorized": false,
+    "public_api_changes_authorized": false,
+    "runtime_model_admitted": false,
+    "production_data_pack_authorized": false,
+    "spectral_grid_authorized": false,
+    "runtime_dependency": false,
+    "network_dependency": false,
+    "automatic_download_allowed": false,
+    "external_source_bytes_redistributed": false,
+    "generated_artifact_role": "external_phase4_lower_boundary_validation_evidence_only"
+  },
+  "lineage": {
+    "v1_invalidation_checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_v1_invalidation_checkpoint_2026-07-31.json",
+      "bytes": 4085,
+      "sha256": "083a267b527ceaf129416784ea2a088bbbde4840006469d7f1c4710b30588b2b"
+    },
+    "corrected_v2_pilot_checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_pilot_checkpoint_2026-07-31.json",
+      "bytes": 6196,
+      "sha256": "b879558cd6af32a616da3ba1c2d7e3838b4b47ec860be9c0b26ab25f04065a8c"
+    },
+    "corrected_v2_threshold_checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_threshold_checkpoint_2026-07-31.json",
+      "bytes": 4924,
+      "sha256": "ea54fb701fb23b5f36d150ece39abc083322bb90b4c09511bce44642ff3427ab"
+    },
+    "corrected_v2_holdout_checkpoint": {
+      "path": "tests/artifacts/visibility_reference_lab/phase4_jones_mystic_holdout_checkpoint_2026-07-31.json",
+      "bytes": 6058,
+      "sha256": "5038773b2a2ea05cf07887f0acd45abe5d2e3b8503f81523ff6f35de3421ba4b"
+    },
+    "corrected_v2_pilot_specification": {
+      "path": "scripts/visibility_reference_lab/phase4_jones_mystic_pilot_spec.json",
+      "bytes": 18070,
+      "sha256": "c23e8001846e8de627a2b11d7b0097dd1fb185720498302b42f0f1c1abbb52d6"
+    },
+    "elevated_atmosphere_constructor": {
+      "path": "scripts/build_visibility_elevated_site_probe.py",
+      "bytes": 59862,
+      "sha256": "f2d46347ec27360f3b1280f754497ba9a26dde8d97081024dbb17e434118e4f9"
+    }
+  },
+  "source_semantics": {
+    "eso_archive": {
+      "bytes": 431651392,
+      "sha256": "e09b1d62c8af212486f50097fe76d9dcbb242f4fbadf720a4a85be361cc9116b"
+    },
+    "eso_model_configuration": {
+      "path": "SM-01/sm-01_mod2/config/skymodel_etc.par",
+      "bytes": 2060,
+      "sha256": "490699a69e89f43c5137f663cb3a061dc89f7631f2834dbb74183795f4dbfa9a",
+      "required_assignments": {
+        "sm_h": 2.64,
+        "sm_hmin": 2.0,
+        "pres": 744.0,
+        "ssa": 0.97,
+        "o3column": 1.0
+      }
+    },
+    "libradtran_archive": {
+      "bytes": 154147176,
+      "sha256": "64930cc40b6e4a37aa220520974d330fc1563796f466a649b2238131f2d69840"
+    },
+    "libradtran_members": [
+      {
+        "path": "libRadtran-2.0.6/src/uvspec_lex.l",
+        "bytes": 581415,
+        "sha256": "174755190e50ecc3099c80a29cb71627c0a33a5e2009d1869c23140095658d89",
+        "role": "zout_above_surface_and_input_option_semantics"
+      },
+      {
+        "path": "libRadtran-2.0.6/examples/AERO_FILES",
+        "bytes": 926,
+        "sha256": "5b97de8f32828f44c0a568a4565bd94b9272dbe7524764b205a1e896309bb0ad",
+        "role": "explicit_aerosol_lower_boundary_ownership_example"
+      },
+      {
+        "path": "libRadtran-2.0.6/libsrc_c/mystic.c",
+        "bytes": 1015599,
+        "sha256": "d1d981e0dd2e961f7f8991368b92e2179c382bab81c8ae72ed17cd31dbcab87b",
+        "role": "mystic_altitude_radiance_filename_uses_internal_level_index_kc"
+      }
+    ],
+    "interpretation": {
+      "observer_height_km": 2.64,
+      "lower_model_boundary_km": 2.0,
+      "pressure_is_at_observer": true,
+      "numeric_zout_is_above_surface": true,
+      "explicit_aerosol_files_begin_at_listed_lower_boundary": true,
+      "uppermost_explicit_aerosol_row_is_marker_only": true,
+      "mystic_altitude_radiance_file_stem_is_internal_level_index": true
+    }
+  },
+  "profiles": {
+    "observer_bottom_control_v2": {
+      "role": "exact_corrected_v2_holdout_regression_control",
+      "surface_altitude_km": 2.64,
+      "observer_altitude_km": 2.64,
+      "zout_above_surface_km": 0.0,
+      "surface_pressure_hpa": 744.0,
+      "ozone_column_du_above_surface": 258.0,
+      "aerosol_profile_bottom_km": 2.64,
+      "aerosol_normalization_reference_km": 2.64,
+      "mystic_altitude_radiance_file_stem": "mc0"
+    },
+    "jones_2000m_ground_observer_2640m_v1": {
+      "role": "source_faithful_lower_boundary_candidate",
+      "surface_altitude_km": 2.0,
+      "observer_altitude_km": 2.64,
+      "zout_above_surface_km": 0.64,
+      "source_surface_pressure_hpa": 795.0,
+      "source_observer_pressure_hpa": 733.6196899414062,
+      "target_observer_pressure_hpa": 744.0,
+      "surface_pressure_hpa": 806.2488072631218,
+      "pressure_scaling_law": "surface_target_equals_observer_target_times_source_surface_over_source_observer",
+      "observer_level_must_be_explicit_in_atmosphere_and_o4_profiles": true,
+      "ozone_column_du_above_surface": 259.19991781804873,
+      "ozone_derivation": "prefrozen_to_match_the_control_258DU_observer_level_number_density_in_the_bound_libradtran_profile_probe",
+      "aerosol_profile_bottom_km": 2.0,
+      "aerosol_normalization_reference_km": 2.64,
+      "aerosol_profile_top_km": 20.0,
+      "aerosol_scale_height_km": 1.2,
+      "observer_to_infinite_top_aod550": 0.0294,
+      "observer_to_20km_aod550": 0.02939998466958803,
+      "surface_to_20km_aod550": 0.05011536771007698,
+      "below_observer_aod550": 0.020715383040488946,
+      "boundary_policy": "add_2000_2250_2500_2640m_levels_then_preserve_every_corrected_v2_boundary_above_observer",
+      "mystic_altitude_radiance_file_stem": "mc3"
+    }
+  },
+  "execution_protocol": {
+    "wavelength_nm": 550.0,
+    "case_source": "corrected_v2_reserved_holdout_cases",
+    "case_ids": [
+      "holdout_v2_low_altitude_oblique",
+      "holdout_v2_interior_cross_axis",
+      "holdout_v2_phase_boundary_waxing"
+    ],
+    "profiles_per_case": [
+      "observer_bottom_control_v2",
+      "jones_2000m_ground_observer_2640m_v1"
+    ],
+    "photon_count_per_run": 1000000,
+    "random_seed": 271828183,
+    "exact_repeat_profile_id": "jones_2000m_ground_observer_2640m_v1",
+    "exact_repeat_case_id": "holdout_v2_interior_cross_axis",
+    "maximum_relative_standard_error_per_run": 0.005,
+    "control_must_exactly_reproduce_corrected_v2_holdout_checkpoint": true,
+    "candidate_absolute_radiance_expectations_prefrozen": false,
+    "candidate_control_difference_threshold_prefrozen": false,
+    "source_authority_selects_profile_not_numerical_closeness": true
+  },
+  "pre_admission_execution_history": {
+    "successful_artifact_count_before_final_refreeze": 2,
+    "discarded_attempt_count_before_final_refreeze": 5,
+    "discarded_attempts": [
+      {
+        "stage": "profile_probe",
+        "completed_control_radiance_runs": 0,
+        "completed_candidate_radiance_runs": 0,
+        "reason": "profile_probe_source_declaration_rejected_before_radiance_execution",
+        "artifact_retained": false,
+        "artifact_authoritative": false
+      },
+      {
+        "stage": "candidate_run_inventory_gate",
+        "completed_control_radiance_runs": 3,
+        "completed_candidate_radiance_runs": 1,
+        "reason": "nonzero_zout_emitted_mc3_altitude_files_while_contract_expected_mc0",
+        "artifact_retained": false,
+        "artifact_authoritative": false
+      },
+      {
+        "stage": "candidate_run_inventory_diagnostic",
+        "completed_control_radiance_runs": 3,
+        "completed_candidate_radiance_runs": 1,
+        "reason": "confirmed_missing_mc0_and_profile_specific_mc3_outputs_before_refreeze",
+        "artifact_retained": false,
+        "artifact_authoritative": false
+      },
+      {
+        "stage": "post_execution_validator_hardening",
+        "completed_control_radiance_runs": 3,
+        "completed_candidate_radiance_runs": 4,
+        "reason": "successful_scientific_artifact_superseded_after_zero_byte_receipt_and_probe_inventory_hardening",
+        "artifact_retained": true,
+        "artifact_authoritative": false
+      },
+      {
+        "stage": "post_validation_reproducibility_audit",
+        "completed_control_radiance_runs": 3,
+        "completed_candidate_radiance_runs": 4,
+        "reason": "independently_validated_artifact_superseded_because_incidental_profile_probe_randomseed_receipts_were_time_varying",
+        "artifact_retained": true,
+        "artifact_authoritative": false
+      }
+    ]
+  },
+  "gate": {
+    "source_faithful_profile_if_all_structural_and_execution_checks_pass": "jones_2000m_ground_observer_2640m_v1",
+    "spectral_design_allowed_after_pass": true,
+    "spectral_grid_admitted": false,
+    "runtime_model_admitted": false,
+    "production_admission_allowed": false,
+    "next_gate_after_pass": "design_jones_2000m_ground_spectral_admission_matrix"
+  }
+}

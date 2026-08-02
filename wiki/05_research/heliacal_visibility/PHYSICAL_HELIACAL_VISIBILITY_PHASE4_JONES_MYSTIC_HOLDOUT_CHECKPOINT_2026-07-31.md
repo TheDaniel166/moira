@@ -2,9 +2,8 @@
 
 Date: 2026-07-31
 
-Status: corrected-v2 sealed 550 nm geometry holdout gate closed;
-lower-boundary decision required before spectral design; runtime model not
-admitted
+Status: corrected-v2 sealed 550 nm geometry holdout gate closed; lower-boundary
+decision subsequently closed on 2026-08-02; runtime model not admitted
 
 Candidate identifier: `jones_paranal_scattered_moonlight_2013_v1`
 
@@ -110,7 +109,7 @@ validator, parses MYSTIC outputs, recomputes all frozen checks, and validates
 the compact checkpoint. Its final status is
 `valid_corrected_v2_holdout_evidence`.
 
-## Explicit Remaining Limitation
+## Explicit Remaining Limitation at This Checkpoint
 
 The atmosphere and ground still begin at the 2,640 m observer altitude,
 whereas the Jones construction uses a 2,000 m lower model boundary beneath the
@@ -118,6 +117,12 @@ observer. The successful corrected-v2 pilot and holdouts do not erase this
 difference. The next gate must reconstruct and validate that lower layer or
 explicitly retain a separately versioned observer-bottom model before spectral
 admission is designed.
+
+That follow-on gate is now closed by the
+[Jones MYSTIC lower-boundary checkpoint](PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md),
+which selects and independently validates the source-faithful 2,000 m lower
+boundary with the observer retained at 2,640 m. This historical holdout receipt
+remains the exact observer-bottom regression control.
 
 ## Machine-Checkable Files
 
@@ -159,7 +164,6 @@ Closed:
 
 Still open:
 
-- the 2,000 m versus 2,640 m lower-atmosphere decision;
 - spectral wavelength/grid selection and interpolation thresholds;
 - untouched spectral holdouts and response-integrated products;
 - release/distribution disposition for any derived data artifact;
