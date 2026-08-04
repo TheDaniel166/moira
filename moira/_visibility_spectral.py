@@ -74,6 +74,9 @@ _CRUMEY_BACKGROUND_MAX_CD_M2 = 3426.0
 _CRUMEY_SQM_ZERO_POINT = 12.58
 
 _SPECTRAL_BIN_COUNT = 400
+_SPECTRAL_BIN_START_NM = tuple(
+    float(value) for value in range(380, 780)
+)
 _HEX_DIGITS = frozenset("0123456789abcdef")
 _SEPARATELY_MODELED_BACKGROUND_COMPONENT_IDS = frozenset({
     "airglow",
@@ -301,6 +304,18 @@ class TargetSpectralProfile:
     spectral_model_details: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
+        self._validate_scalar_identity()
+        _validate_response_weights(
+            self.photopic_extinction_weights,
+            "photopic_extinction_weights",
+        )
+        _validate_response_weights(
+            self.scotopic_extinction_weights,
+            "scotopic_extinction_weights",
+        )
+        self._validate_provenance()
+
+    def _validate_scalar_identity(self) -> None:
         if not self.target_id:
             raise ValueError("target_id must not be empty")
         _finite(
@@ -311,14 +326,8 @@ class TargetSpectralProfile:
             self.scotopic_to_photopic_ratio,
             "scotopic_to_photopic_ratio",
         )
-        _validate_response_weights(
-            self.photopic_extinction_weights,
-            "photopic_extinction_weights",
-        )
-        _validate_response_weights(
-            self.scotopic_extinction_weights,
-            "scotopic_extinction_weights",
-        )
+
+    def _validate_provenance(self) -> None:
         if not self.photometry_model_id:
             raise ValueError("photometry_model_id must not be empty")
         _validate_source_ids(
@@ -354,6 +363,21 @@ class TargetSpectralProfile:
             raise ValueError(
                 "spectral_model_details keys must be unique"
             )
+
+
+@dataclass(frozen=True, slots=True)
+class _PackResolvedTargetSpectralProfile(TargetSpectralProfile):
+    """Target profile whose response arrays came from a validated pack.
+
+    The immutable pack loader validates the base response arrays, and the
+    planetary resolver constructs normalized arrays from those validated
+    values. Rewalking all 800 values here would duplicate that trust boundary
+    for every event sample. Scalar identity and provenance remain checked.
+    """
+
+    def __post_init__(self) -> None:
+        self._validate_scalar_identity()
+        self._validate_provenance()
 
 
 @dataclass(frozen=True, slots=True)
@@ -853,9 +877,7 @@ def condition_target(
         adaptation_coefficient,
         "adaptation_coefficient",
     )
-    if direct.spectral_bin_start_nm != tuple(
-        float(value) for value in range(380, 780)
-    ):
+    if direct.spectral_bin_start_nm != _SPECTRAL_BIN_START_NM:
         raise PhysicalVisibilityCompositionError(
             "target_spectral_profile_missing",
             "direct-transmission spectral bins are not 380--780 nm",

@@ -1132,6 +1132,31 @@ def test_public_assessment_returns_evaluated_truth_and_receipts(
     assert _SOURCE_SHA256 not in target_photometry.source_ids
 
 
+def test_public_assessment_does_not_revalidate_pack_resolved_weights(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_public_assessment_dependencies(monkeypatch)
+
+    def reject_duplicate_validation(*_args: object) -> None:
+        raise AssertionError("pack-resolved response weights were revalidated")
+
+    monkeypatch.setattr(
+        "moira._visibility_spectral._validate_response_weights",
+        reject_duplicate_validation,
+    )
+
+    result = physical_visibility_assessment(
+        Body.VENUS,
+        2451545.0,
+        0.0,
+        0.0,
+        data_pack_config=VisibilityDataPackConfig(directory="unused"),
+        policy=_physical_policy(),
+    )
+
+    assert result.status is PhysicalVisibilityStatus.EVALUATED
+
+
 def test_public_assessment_measured_total_ignores_twilight_grid_geometry(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

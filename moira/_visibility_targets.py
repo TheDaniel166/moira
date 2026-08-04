@@ -28,6 +28,7 @@ _TARGET_IDS = ("Mercury", "Venus", "Mars", "Jupiter", "Saturn")
 _SPECTRAL_BIN_START_NM = tuple(float(value) for value in range(380, 780))
 _BAND_WAVELENGTH_NM = (360.0, 436.0, 549.0, 700.0, 900.0)
 _VISUAL_BAND_INDEX = 2
+_MAGNITUDE_TO_NATURAL_LOG = -0.4 * math.log(10.0)
 _HEX_DIGITS = frozenset("0123456789abcdef")
 _COLOR_MODEL_CONTRACTS = {
     "Mercury": (
@@ -201,8 +202,7 @@ class VisibilityPackTargetProfile:
             context
         )
         log_correction = tuple(
-            -0.4
-            * math.log(10.0)
+            _MAGNITUDE_TO_NATURAL_LOG
             * _piecewise_linear(
                 _BAND_WAVELENGTH_NM,
                 band_deltas,
