@@ -338,6 +338,8 @@ from .varshaphal import (
 from .visibility import (
     serialize_atmospheric_extinction,
     serialize_lunar_crescent_details,
+    serialize_physical_visibility_assessment,
+    serialize_physical_visibility_event,
     serialize_point_source_visibility_threshold,
     serialize_twilight_sky_brightness,
     serialize_visibility_assessment,
@@ -621,6 +623,8 @@ __all__ = [
     "serialize_varga_shodashvarga",
     "serialize_varga_shodashvarga_batch",
     "serialize_lunar_crescent_details",
+    "serialize_physical_visibility_assessment",
+    "serialize_physical_visibility_event",
     "serialize_atmospheric_extinction",
     "serialize_twilight_sky_brightness",
     "serialize_point_source_visibility_threshold",

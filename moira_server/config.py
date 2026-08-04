@@ -6,6 +6,10 @@ from dataclasses import dataclass
 import os
 
 
+class ServerConfigurationError(RuntimeError):
+    """Raised when an opt-in route lacks required server-owned resources."""
+
+
 @dataclass(slots=True)
 class ServerConfig:
     """Minimal phase-1 server configuration."""
@@ -15,6 +19,8 @@ class ServerConfig:
     log_level: str = "info"
     kernel_path: str | None = None
     small_body_manifest: str | None = None   # Path to sovereign small-body manifest.json for fast Type 13 native asteroids/comets
+    physical_visibility_data_pack_directory: str | None = None
+    physical_visibility_data_pack_manifest_sha256: str | None = None
     docs_enabled: bool = True
     require_kernel_ready: bool = False
     prewarm_enabled: bool = False
@@ -32,6 +38,18 @@ class ServerConfig:
             log_level=os.getenv("MOIRA_SERVER_LOG_LEVEL", "info"),
             kernel_path=os.getenv("MOIRA_SERVER_KERNEL_PATH") or None,
             small_body_manifest=os.getenv("MOIRA_SERVER_SMALL_BODY_MANIFEST") or None,
+            physical_visibility_data_pack_directory=(
+                os.getenv(
+                    "MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_DIRECTORY"
+                )
+                or None
+            ),
+            physical_visibility_data_pack_manifest_sha256=(
+                os.getenv(
+                    "MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_MANIFEST_SHA256"
+                )
+                or None
+            ),
             docs_enabled=docs_raw not in {"0", "false", "no", "off"},
             require_kernel_ready=require_raw in {"1", "true", "yes", "on"},
             prewarm_enabled=prewarm_raw in {"1", "true", "yes", "on"},

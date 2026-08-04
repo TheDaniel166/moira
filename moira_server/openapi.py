@@ -347,7 +347,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "visibility",
         "x-displayName": "Visibility",
-        "description": "Observer visibility assessment and tonight surfaces.",
+        "description": "Legacy observer visibility plus opt-in physical assessment and event surfaces with complete provenance receipts.",
         "x-family": "phenomena",
     },
     {

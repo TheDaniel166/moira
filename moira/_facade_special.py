@@ -11,7 +11,17 @@ from __future__ import annotations
 
 import sys
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .heliacal import (
+        PhysicalVisibilityAssessment,
+        PhysicalVisibilityEventResult,
+        PhysicalVisibilityPhase,
+        PhysicalVisibilityPolicy,
+        PhysicalVisibilitySearchPolicy,
+        VisibilityDataPackConfig,
+    )
 
 
 def _facade_module() -> Any:
@@ -344,6 +354,50 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         """Return only the boolean visibility verdict for one epoch."""
         return _facade_module().is_visible_tonight(
             body, jd_ut, lat, lon, policy=policy
+        )
+
+    def physical_visibility_assessment(
+        self,
+        body: str,
+        jd_ut: float,
+        lat: float,
+        lon: float,
+        *,
+        data_pack_config: VisibilityDataPackConfig,
+        policy: PhysicalVisibilityPolicy | None = None,
+    ) -> PhysicalVisibilityAssessment:
+        """Return the additive physical assessment with complete receipts."""
+        return _facade_module().physical_visibility_assessment(
+            body,
+            jd_ut,
+            lat,
+            lon,
+            data_pack_config=data_pack_config,
+            policy=policy,
+        )
+
+    def physical_visibility_event(
+        self,
+        body: str,
+        phase: PhysicalVisibilityPhase,
+        jd_start: float,
+        lat: float,
+        lon: float,
+        *,
+        data_pack_config: VisibilityDataPackConfig,
+        policy: PhysicalVisibilityPolicy | None = None,
+        search_policy: PhysicalVisibilitySearchPolicy | None = None,
+    ) -> PhysicalVisibilityEventResult:
+        """Return the additive four-phase physical event result."""
+        return _facade_module().physical_visibility_event(
+            body,
+            phase,
+            jd_start,
+            lat,
+            lon,
+            data_pack_config=data_pack_config,
+            policy=policy,
+            search_policy=search_policy,
         )
 
     def next_conjunction(

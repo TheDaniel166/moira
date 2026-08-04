@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 438
-- Registered OpenAPI operations: 438 (GET 35, POST 403)
+- Registered OpenAPI paths: 440
+- Registered OpenAPI operations: 440 (GET 35, POST 405)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 434
+- Versioned `/v1` paths: 436
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -375,6 +375,8 @@ Admitted products:
 | POST | `/v1/batch/progressions/reduction` | `batch_progressions_reduction_route` |
 | POST | `/v1/visibility/atmospheric-extinction` | `atmospheric_extinction_route` |
 | POST | `/v1/visibility/assessment` | `visibility_assessment_route` |
+| POST | `/v1/visibility/physical-assessment` | `physical_visibility_assessment_route` |
+| POST | `/v1/visibility/physical-event` | `physical_visibility_event_route` |
 | POST | `/v1/visibility/point-source-threshold` | `point_source_visibility_threshold_route` |
 | POST | `/v1/visibility/tonight` | `visibility_tonight_route` |
 | POST | `/v1/visibility/twilight-sky-brightness` | `twilight_sky_brightness_route` |
@@ -384,6 +386,16 @@ surfaces transported without hidden defaults. Their responses retain the
 declared model, intermediate quantities, units, and validity/reason fields.
 The assessment and tonight routes accept the same nested visibility policy as
 the Python surface; the legacy criterion remains their default.
+
+The two additive physical visibility routes transport the complete typed
+physical policy and receipt graph. They do not accept a client filesystem
+path. The server operator must configure the external pack with
+`MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_DIRECTORY`; an optional immutable
+manifest pin is read from
+`MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_MANIFEST_SHA256`. If the directory
+is not configured, only the physical routes return the standard HTTP 503
+`server_not_configured` envelope. The legacy assessment, tonight, and
+`/v1/heliacal/visibility-event` contracts are unchanged.
 
 ## Phenomena Routes
 
@@ -3188,6 +3200,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/vedic/chart-profile` | vedic-profile | `vedic_chart_profile_route_v1_vedic_chart_profile_post` |
 | `POST` | `/v1/visibility/assessment` | visibility | `visibility_assessment_route_v1_visibility_assessment_post` |
 | `POST` | `/v1/visibility/atmospheric-extinction` | visibility | `atmospheric_extinction_route_v1_visibility_atmospheric_extinction_post` |
+| `POST` | `/v1/visibility/physical-assessment` | visibility | `physical_visibility_assessment_route_v1_visibility_physical_assessment_post` |
+| `POST` | `/v1/visibility/physical-event` | visibility | `physical_visibility_event_route_v1_visibility_physical_event_post` |
 | `POST` | `/v1/visibility/point-source-threshold` | visibility | `point_source_visibility_threshold_route_v1_visibility_point_source_threshold_post` |
 | `POST` | `/v1/visibility/tonight` | visibility | `visibility_tonight_route_v1_visibility_tonight_post` |
 | `POST` | `/v1/visibility/twilight-sky-brightness` | visibility | `twilight_sky_brightness_route_v1_visibility_twilight_sky_brightness_post` |

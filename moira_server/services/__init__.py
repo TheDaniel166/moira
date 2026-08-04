@@ -342,10 +342,15 @@ from .varshaphal import (
 )
 from .visibility import (
     compute_atmospheric_extinction,
+    compute_physical_visibility_assessment,
+    compute_physical_visibility_event,
     compute_point_source_visibility_threshold,
     compute_twilight_sky_brightness,
     compute_visibility_assessment,
     compute_visibility_tonight,
+    physical_visibility_data_pack_config_from_server,
+    physical_visibility_policy_from_request,
+    physical_visibility_search_policy_from_request,
     visibility_policy_from_request,
 )
 
@@ -618,10 +623,15 @@ __all__ = [
     "compute_varga_shodashvarga",
     "compute_varga_shodashvarga_batch",
     "compute_visibility_assessment",
+    "compute_physical_visibility_assessment",
+    "compute_physical_visibility_event",
     "compute_atmospheric_extinction",
     "compute_twilight_sky_brightness",
     "compute_point_source_visibility_threshold",
     "visibility_policy_from_request",
+    "physical_visibility_data_pack_config_from_server",
+    "physical_visibility_policy_from_request",
+    "physical_visibility_search_policy_from_request",
     "compute_zr_groups",
     "compute_zr_level_pair_service",
     "compute_zr_sequence",

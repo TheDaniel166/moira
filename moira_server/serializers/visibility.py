@@ -5,6 +5,8 @@ from __future__ import annotations
 from moira.heliacal import (
     AtmosphericExtinctionAssessment,
     LunarCrescentDetails,
+    PhysicalVisibilityAssessment,
+    PhysicalVisibilityEventResult,
     PointSourceVisibilityThreshold,
     TwilightSkyBrightnessAssessment,
     VisibilityAssessment,
@@ -13,6 +15,8 @@ from moira.heliacal import (
 from ..models.visibility import (
     AtmosphericExtinctionResponse,
     LunarCrescentDetailsResponse,
+    PhysicalVisibilityAssessmentResponse,
+    PhysicalVisibilityEventResponse,
     PointSourceVisibilityThresholdResponse,
     TwilightSkyBrightnessResponse,
     VisibilityAssessmentResponse,
@@ -157,10 +161,24 @@ def serialize_visibility_assessment(
     )
 
 
+def serialize_physical_visibility_assessment(
+    assessment: PhysicalVisibilityAssessment,
+) -> PhysicalVisibilityAssessmentResponse:
+    return PhysicalVisibilityAssessmentResponse.model_validate(assessment)
+
+
+def serialize_physical_visibility_event(
+    event: PhysicalVisibilityEventResult,
+) -> PhysicalVisibilityEventResponse:
+    return PhysicalVisibilityEventResponse.model_validate(event)
+
+
 __all__ = [
     "serialize_lunar_crescent_details",
     "serialize_atmospheric_extinction",
     "serialize_twilight_sky_brightness",
     "serialize_point_source_visibility_threshold",
     "serialize_visibility_assessment",
+    "serialize_physical_visibility_assessment",
+    "serialize_physical_visibility_event",
 ]

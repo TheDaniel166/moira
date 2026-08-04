@@ -10,6 +10,8 @@ from fastapi.responses import JSONResponse
 
 from moira import MissingEphemerisKernelError
 
+from .config import ServerConfigurationError
+
 
 def _error_body(
     *,
@@ -65,6 +67,22 @@ def register_exception_handlers(app: FastAPI) -> None:
                 error_code="kernel_not_ready",
                 message=str(exc),
                 category="kernel_readiness",
+                request_id=request_id,
+            ),
+        )
+
+    @app.exception_handler(ServerConfigurationError)
+    async def handle_server_configuration_error(
+        request: Request,
+        exc: ServerConfigurationError,
+    ) -> JSONResponse:
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        return JSONResponse(
+            status_code=503,
+            content=_error_body(
+                error_code="server_not_configured",
+                message=str(exc),
+                category="server_configuration",
                 request_id=request_id,
             ),
         )
