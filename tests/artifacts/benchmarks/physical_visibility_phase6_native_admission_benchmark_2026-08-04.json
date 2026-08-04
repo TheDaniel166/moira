@@ -1,0 +1,275 @@
+{
+  "budgets": {
+    "all_executed_checks_pass": false,
+    "checks": {
+      "jupiter_30_day_event_median": false,
+      "process_first_assessment": true,
+      "sirius_20_day_event_median": false,
+      "warm_assessment_median": true
+    },
+    "kind": "phase6_reference_machine_development_gate_not_public_sla",
+    "seconds": {
+      "jupiter_30_day_event_median": 15.0,
+      "process_first_assessment": 3.0,
+      "sirius_20_day_event_median": 15.0,
+      "warm_assessment_median": 0.5
+    }
+  },
+  "engine": {
+    "branch": "codex/phase6-spectral-pilot",
+    "dirty": false,
+    "logical_cpu_count": 16,
+    "moira_version": "6.1.0",
+    "native": {
+      "backend_bytes": 892928,
+      "backend_file": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_moira_native.cp314-win_amd64.pyd",
+      "backend_modified_ns": 1785876710000000000,
+      "backend_sha256": "ef5fedf3fc0c98b4343af02f63d966e9e3cc94f9f46805f57d1b98a18e7ddd4a",
+      "build_input_manifest_sha256": null,
+      "build_provenance_marker": null
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "python": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]",
+    "python_executable": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\.venv\\Scripts\\python.exe",
+    "revision": "35c1f26b3fb5e44dd31bed168e1b30449ddc7a44",
+    "status_lines": []
+  },
+  "evidence_class": "performance_only_not_scientific_validation",
+  "generated_utc": "2026-08-04T20:55:45.773430+00:00",
+  "harness": {
+    "path": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\scripts\\benchmark_physical_visibility_phase6.py",
+    "sha256": "8aed386c4bedea3706030979545fa2df8a7e6164ed5e0057f7c2f4634d36df93"
+  },
+  "measurement_policy": {
+    "assessment_repeats": 5,
+    "event_repeats": 3,
+    "event_time_regression_tolerance_seconds": 0.5,
+    "garbage_collection_before_each_timed_repeat": true,
+    "network": "disabled_by_explicit_local_resources",
+    "pack_load_repeats": 3,
+    "timer": "time.perf_counter"
+  },
+  "native_admission": {
+    "admitted_kernels": [
+      "physical_visibility_response_weights_v1",
+      "physical_visibility_direct_extinction_v1"
+    ],
+    "decision": "admitted_by_exact_differential_receipt",
+    "native_work_admitted": true,
+    "python_owned_semantics_unchanged": true,
+    "python_reference_retained": true,
+    "receipt_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\tests\\artifacts\\benchmarks\\physical_visibility_phase6_native_validation_2026-08-04.json",
+    "receipt_sha256": "5ce3eb7a5100c15e8322e625da17624489a0ef874895f466e4cd749441c8e11e"
+  },
+  "resources": {
+    "kernel": {
+      "bytes": 3307878400,
+      "content_identity": {
+        "lunar_ephemeris": "LE441",
+        "lunar_tidal_acceleration_arcsec_per_cy2": -25.936,
+        "planetary_ephemeris": "DE441",
+        "summary_label": "DE-0441LE-0441"
+      },
+      "path": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp"
+    },
+    "visibility_data_pack": {
+      "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+      "path": "\\\\wsl.localhost\\Ubuntu\\home\\nilad\\.cache\\moira\\visibility-reference-lab\\data-packs\\moira-physical-heliacal-visibility-1.2.0-v3",
+      "receipt": {
+        "compatibility_id": "moira-physical-heliacal-visibility-data-pack-v1.2",
+        "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+        "engine_contract_id": "moira-physical-visibility-engine-contract-v1",
+        "engine_contract_version": 1,
+        "generation_fingerprint": "d2907be5084fdb9569457af3b0ac995e8888b2ba3d9317948ba7f1e89a477c0e",
+        "license": "CC-BY-SA-4.0",
+        "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+        "notice_sha256": "82d8a49f48a640f3063df1f6066ecfa6389c02a0759688c9752b3b045b43729e",
+        "pack_id": "moira-physical-heliacal-visibility",
+        "payload_sha256": [
+          [
+            "NOTICE.md",
+            "82d8a49f48a640f3063df1f6066ecfa6389c02a0759688c9752b3b045b43729e"
+          ],
+          [
+            "README.md",
+            "774ae4ddb0f3031b0d55c8405115c01186c5ec97a3ef85177a7cebe6ff43673d"
+          ],
+          [
+            "SHA256SUMS",
+            "03e6e4201673993ff1520168bbe0280d94687a84543efc1da9e5922e71fc60a8"
+          ],
+          [
+            "axes.json",
+            "55941008f49984da0dcbb085ff0606904355a42a24d1775422ac10897913eb87"
+          ],
+          [
+            "direct-extinction-1nm.f32le",
+            "dcf03d555db3cc5357b2a7a2d1ef40007dbccfdd631e3804ed1dc393eda6d6fb"
+          ],
+          [
+            "error-envelope.json",
+            "f6899e6c6c00532daa623475fd4426119550e5e7f2e435b442c6f2fdbfda201c"
+          ],
+          [
+            "planetary-target-profiles.json",
+            "40f4362aca22e329ad25916efa8476fee7a86eb1a6b0dfc1cf1b6c88f64531a0"
+          ],
+          [
+            "provenance.json",
+            "f6547ec730d506c958b47a0178b9effa434fcb275d792c4988c8cbd73cc2914c"
+          ],
+          [
+            "solar-twilight-photopic-luminance.f32le",
+            "45c7f9b236ba8e1a36ccdbb567122672f65585aa52fe7b7a624990f8a1cc2cda"
+          ],
+          [
+            "solar-twilight-photopic-rse.f32le",
+            "a0d92d1a40975ffa47516bee829df9c9eed4961012ef15cc51f3836f4824d3e5"
+          ],
+          [
+            "solar-twilight-scotopic-luminance.f32le",
+            "c4286bf8e4904b035c080c2019bf89014acdbcb8691f6607ff9243796dc69537"
+          ],
+          [
+            "solar-twilight-scotopic-rse.f32le",
+            "f3ff2c26124d54779b3063e109dd43293a75c5805ef6d623bb5eab56f28265ec"
+          ],
+          [
+            "stellar-target-profiles.json",
+            "de202599761a1a5b49d656fab1c3640d0cc73ca1319c9e5a7c6f44c0c13de22b"
+          ]
+        ],
+        "source_artifact_manifest_sha256": "6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f",
+        "source_artifact_spec_id": "physical-heliacal-phase1-radiance-response-v9-2026-07-30",
+        "source_dataset_ids": [
+          "CIE_photopic:10.25039/CIE.DS.dktna2s3",
+          "CIE_scotopic:10.25039/CIE.DS.gr6w4b5g",
+          "libRadtran:2.0.6",
+          "REPTRAN:libradtran_reptran_2024_all",
+          "Payne_planetary_spectra:10.5281/zenodo.17470005",
+          "Mallama_planetary_photometry:10.1016/j.icarus.2016.09.023",
+          "target_profile_solar_spectrum:libRadtran:2.0.6",
+          "CALSPEC_Sirius:sirius_stis_005",
+          "BSC5_Sirius_photometry:V/50:HR2491"
+        ],
+        "table_format_id": "regular-grid-ieee754-binary32-le-v1",
+        "version": "1.2.0"
+      }
+    }
+  },
+  "results": {
+    "data_pack_validation": {
+      "receipt_fingerprint_sha256": "6184436c5ef5cd093dc3b10c28b5496d20bddd9922713afac4807784b9d080ce",
+      "timing": {
+        "coefficient_of_variation": 0.06084026433111759,
+        "maximum_seconds": 0.35337809999327874,
+        "mean_seconds": 0.32647849999921164,
+        "median_seconds": 0.32003719999920577,
+        "minimum_seconds": 0.3060202000051504,
+        "p95_nearest_rank_seconds": 0.35337809999327874,
+        "population_standard_deviation_seconds": 0.01986303823837881,
+        "sample_count": 3,
+        "samples_seconds": [
+          0.35337809999327874,
+          0.3060202000051504,
+          0.32003719999920577
+        ]
+      }
+    },
+    "events": {
+      "jupiter_30_day_event": {
+        "crossing_completeness_state": "certified_lipschitz_zero_enclosure",
+        "event_jd_ut": 2460070.591375516,
+        "event_time_residual_seconds": 0.0,
+        "result_fingerprint_sha256": "2222fc44a89a23db2bf8f23fecdcd08e8bb07106b616c49ae6cf633463c8e863",
+        "scalar_evaluation_count": 28651,
+        "status": "evaluated",
+        "timing": {
+          "coefficient_of_variation": 0.0756285361205958,
+          "maximum_seconds": 32.77904989999661,
+          "mean_seconds": 29.613009100001364,
+          "median_seconds": 28.10597820000112,
+          "minimum_seconds": 27.953999200006365,
+          "p95_nearest_rank_seconds": 32.77904989999661,
+          "population_standard_deviation_seconds": 2.239588528358985,
+          "sample_count": 3,
+          "samples_seconds": [
+            32.77904989999661,
+            28.10597820000112,
+            27.953999200006365
+          ]
+        },
+        "workload": {
+          "body": "Jupiter",
+          "expected_event_jd_ut": 2460070.591375516,
+          "jd_start": 2460050.5,
+          "latitude_deg": 35.0,
+          "longitude_deg": 35.0,
+          "phase": "morning_first_rising",
+          "search_window_days": 30,
+          "workload_id": "jupiter_30_day_event"
+        }
+      },
+      "sirius_20_day_event": {
+        "crossing_completeness_state": "certified_lipschitz_zero_enclosure",
+        "event_jd_ut": 2461255.950317484,
+        "event_time_residual_seconds": 0.0,
+        "result_fingerprint_sha256": "8f584f41084943ccaf1068a02c37561eeb469c7219b053709d3c41b8fdb9639e",
+        "scalar_evaluation_count": 20341,
+        "status": "evaluated",
+        "timing": {
+          "coefficient_of_variation": 0.024778839361593717,
+          "maximum_seconds": 19.704419000001508,
+          "mean_seconds": 19.064587866666745,
+          "median_seconds": 18.91111269999965,
+          "minimum_seconds": 18.578231899999082,
+          "p95_nearest_rank_seconds": 19.704419000001508,
+          "population_standard_deviation_seconds": 0.4723983602431239,
+          "sample_count": 3,
+          "samples_seconds": [
+            18.91111269999965,
+            19.704419000001508,
+            18.578231899999082
+          ]
+        },
+        "workload": {
+          "body": "Sirius",
+          "expected_event_jd_ut": 2461255.950317484,
+          "jd_start": 2461240.5,
+          "latitude_deg": 30.0,
+          "longitude_deg": -90.0,
+          "phase": "morning_first_rising",
+          "search_window_days": 20,
+          "workload_id": "sirius_20_day_event"
+        }
+      }
+    },
+    "process_first_assessment": {
+      "result_fingerprint_sha256": "4a178d95defb5e26edc3408a2204a23b1b92c8730de7688d6883044435d3f3c4",
+      "seconds": 2.599431300004653,
+      "status": "evaluated"
+    },
+    "warm_assessment": {
+      "result_fingerprint_sha256": "4a178d95defb5e26edc3408a2204a23b1b92c8730de7688d6883044435d3f3c4",
+      "timing": {
+        "coefficient_of_variation": 0.02847279191379352,
+        "maximum_seconds": 0.32688010000129,
+        "mean_seconds": 0.3188484600017546,
+        "median_seconds": 0.3248156000045128,
+        "minimum_seconds": 0.3030670000007376,
+        "p95_nearest_rank_seconds": 0.32688010000129,
+        "population_standard_deviation_seconds": 0.009078505853663476,
+        "sample_count": 5,
+        "samples_seconds": [
+          0.3030670000007376,
+          0.32688010000129,
+          0.32527780000236817,
+          0.3142017999998643,
+          0.3248156000045128
+        ]
+      }
+    }
+  },
+  "schema": "moira.physical-visibility.phase6-benchmark/v1"
+}
