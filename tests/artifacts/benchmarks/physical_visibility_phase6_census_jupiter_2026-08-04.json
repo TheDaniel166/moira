@@ -1,0 +1,205 @@
+{
+  "engine": {
+    "branch": null,
+    "dirty": false,
+    "logical_cpu_count": 16,
+    "moira_version": "6.1.0",
+    "native": {
+      "backend_bytes": 878592,
+      "backend_file": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_moira_native.cp314-win_amd64.pyd",
+      "backend_modified_ns": 1785873901000000000,
+      "backend_sha256": "c160cf9cf85ec5c5612d530093786f3e76290d64e85e75598fcacb2c4c7da167",
+      "build_input_manifest_sha256": null,
+      "build_provenance_marker": null
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "python": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]",
+    "python_executable": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\.venv\\Scripts\\python.exe",
+    "revision": "d5f8630f4221d129733c6bab29077ea05b5b478e",
+    "status_lines": []
+  },
+  "evidence_class": "performance_call_census_only_not_validation",
+  "generated_utc": "2026-08-04T20:15:53.245512+00:00",
+  "harness": {
+    "benchmark_sha256": "204f7c450ef13aa4d1724d8988d4062e00981c768b1f2e570e4517d5fe8e9148",
+    "path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\scripts\\census_physical_visibility_phase6.py",
+    "sha256": "5df26a12d077af5fc1da3dbf86c4ba4cb9c6b4775408c627a6db175cc4d26925"
+  },
+  "measurement": {
+    "exact_input_reuse": {
+      "direct_extinction_spectrum": {
+        "calls": 16145,
+        "inputs_called_more_than_once": 0,
+        "maximum_calls_for_one_exact_input": 1,
+        "repeated_exact_input_calls": 0,
+        "unique_exact_inputs": 16145
+      },
+      "planetary_target_profile": {
+        "calls": 16145,
+        "inputs_called_more_than_once": 0,
+        "maximum_calls_for_one_exact_input": 1,
+        "repeated_exact_input_calls": 0,
+        "unique_exact_inputs": 16145
+      },
+      "response_weight_validation": {
+        "by_label": {
+          "photopic_extinction_weights": 16145,
+          "scotopic_extinction_weights": 16145
+        },
+        "calls": 32290
+      },
+      "stellar_target_profile": {
+        "calls": 0,
+        "inputs_called_more_than_once": 0,
+        "maximum_calls_for_one_exact_input": 0,
+        "repeated_exact_input_calls": 0,
+        "unique_exact_inputs": 0
+      },
+      "true_horizontal": {
+        "by_body": {
+          "Jupiter": {
+            "calls": 23220,
+            "inputs_called_more_than_once": 21,
+            "maximum_calls_for_one_exact_input": 2,
+            "repeated_exact_input_calls": 21,
+            "unique_exact_inputs": 23199
+          },
+          "Sun": {
+            "calls": 30666,
+            "inputs_called_more_than_once": 2,
+            "maximum_calls_for_one_exact_input": 2,
+            "repeated_exact_input_calls": 2,
+            "unique_exact_inputs": 30664
+          }
+        },
+        "calls": 53886,
+        "inputs_called_more_than_once": 23,
+        "maximum_calls_for_one_exact_input": 2,
+        "repeated_exact_input_calls": 23,
+        "unique_exact_inputs": 53863
+      }
+    },
+    "wall_seconds_with_counting_wrappers": 40.812216099999205,
+    "warning": "wrapper overhead makes wall time unsuitable for the unprofiled performance budget"
+  },
+  "native_admission": {
+    "decision": "pending_reuse_pilot_and_candidate_microbenchmarks",
+    "native_work_admitted": false
+  },
+  "resources": {
+    "kernel": {
+      "bytes": 3307878400,
+      "content_identity": {
+        "lunar_ephemeris": "LE441",
+        "lunar_tidal_acceleration_arcsec_per_cy2": -25.936,
+        "planetary_ephemeris": "DE441",
+        "summary_label": "DE-0441LE-0441"
+      },
+      "path": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp"
+    },
+    "visibility_data_pack": {
+      "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+      "path": "\\\\wsl.localhost\\Ubuntu\\home\\nilad\\.cache\\moira\\visibility-reference-lab\\data-packs\\moira-physical-heliacal-visibility-1.2.0-v3",
+      "receipt": {
+        "compatibility_id": "moira-physical-heliacal-visibility-data-pack-v1.2",
+        "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+        "engine_contract_id": "moira-physical-visibility-engine-contract-v1",
+        "engine_contract_version": 1,
+        "generation_fingerprint": "d2907be5084fdb9569457af3b0ac995e8888b2ba3d9317948ba7f1e89a477c0e",
+        "license": "CC-BY-SA-4.0",
+        "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+        "notice_sha256": "82d8a49f48a640f3063df1f6066ecfa6389c02a0759688c9752b3b045b43729e",
+        "pack_id": "moira-physical-heliacal-visibility",
+        "payload_sha256": [
+          [
+            "NOTICE.md",
+            "82d8a49f48a640f3063df1f6066ecfa6389c02a0759688c9752b3b045b43729e"
+          ],
+          [
+            "README.md",
+            "774ae4ddb0f3031b0d55c8405115c01186c5ec97a3ef85177a7cebe6ff43673d"
+          ],
+          [
+            "SHA256SUMS",
+            "03e6e4201673993ff1520168bbe0280d94687a84543efc1da9e5922e71fc60a8"
+          ],
+          [
+            "axes.json",
+            "55941008f49984da0dcbb085ff0606904355a42a24d1775422ac10897913eb87"
+          ],
+          [
+            "direct-extinction-1nm.f32le",
+            "dcf03d555db3cc5357b2a7a2d1ef40007dbccfdd631e3804ed1dc393eda6d6fb"
+          ],
+          [
+            "error-envelope.json",
+            "f6899e6c6c00532daa623475fd4426119550e5e7f2e435b442c6f2fdbfda201c"
+          ],
+          [
+            "planetary-target-profiles.json",
+            "40f4362aca22e329ad25916efa8476fee7a86eb1a6b0dfc1cf1b6c88f64531a0"
+          ],
+          [
+            "provenance.json",
+            "f6547ec730d506c958b47a0178b9effa434fcb275d792c4988c8cbd73cc2914c"
+          ],
+          [
+            "solar-twilight-photopic-luminance.f32le",
+            "45c7f9b236ba8e1a36ccdbb567122672f65585aa52fe7b7a624990f8a1cc2cda"
+          ],
+          [
+            "solar-twilight-photopic-rse.f32le",
+            "a0d92d1a40975ffa47516bee829df9c9eed4961012ef15cc51f3836f4824d3e5"
+          ],
+          [
+            "solar-twilight-scotopic-luminance.f32le",
+            "c4286bf8e4904b035c080c2019bf89014acdbcb8691f6607ff9243796dc69537"
+          ],
+          [
+            "solar-twilight-scotopic-rse.f32le",
+            "f3ff2c26124d54779b3063e109dd43293a75c5805ef6d623bb5eab56f28265ec"
+          ],
+          [
+            "stellar-target-profiles.json",
+            "de202599761a1a5b49d656fab1c3640d0cc73ca1319c9e5a7c6f44c0c13de22b"
+          ]
+        ],
+        "source_artifact_manifest_sha256": "6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f",
+        "source_artifact_spec_id": "physical-heliacal-phase1-radiance-response-v9-2026-07-30",
+        "source_dataset_ids": [
+          "CIE_photopic:10.25039/CIE.DS.dktna2s3",
+          "CIE_scotopic:10.25039/CIE.DS.gr6w4b5g",
+          "libRadtran:2.0.6",
+          "REPTRAN:libradtran_reptran_2024_all",
+          "Payne_planetary_spectra:10.5281/zenodo.17470005",
+          "Mallama_planetary_photometry:10.1016/j.icarus.2016.09.023",
+          "target_profile_solar_spectrum:libRadtran:2.0.6",
+          "CALSPEC_Sirius:sirius_stis_005",
+          "BSC5_Sirius_photometry:V/50:HR2491"
+        ],
+        "table_format_id": "regular-grid-ieee754-binary32-le-v1",
+        "version": "1.2.0"
+      }
+    }
+  },
+  "result": {
+    "crossing_completeness_state": "certified_lipschitz_zero_enclosure",
+    "event_jd_ut": 2460070.591375516,
+    "event_time_residual_seconds": 0.0,
+    "result_fingerprint_sha256": "2222fc44a89a23db2bf8f23fecdcd08e8bb07106b616c49ae6cf633463c8e863",
+    "scalar_evaluation_count": 28651,
+    "status": "evaluated"
+  },
+  "schema": "moira.physical-visibility.phase6-call-census/v1",
+  "workload": {
+    "body": "Jupiter",
+    "expected_event_jd_ut": 2460070.591375516,
+    "jd_start": 2460050.5,
+    "latitude_deg": 35.0,
+    "longitude_deg": 35.0,
+    "phase": "morning_first_rising",
+    "search_window_days": 30,
+    "workload_id": "jupiter_30_day_event"
+  }
+}

@@ -1,0 +1,1540 @@
+{
+  "engine": {
+    "branch": null,
+    "dirty": false,
+    "logical_cpu_count": 16,
+    "moira_version": "6.1.0",
+    "native": {
+      "backend_bytes": 878592,
+      "backend_file": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_moira_native.cp314-win_amd64.pyd",
+      "backend_modified_ns": 1785873901000000000,
+      "backend_sha256": "c160cf9cf85ec5c5612d530093786f3e76290d64e85e75598fcacb2c4c7da167",
+      "build_input_manifest_sha256": null,
+      "build_provenance_marker": null
+    },
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "python": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]",
+    "python_executable": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\.venv\\Scripts\\python.exe",
+    "revision": "d5f8630f4221d129733c6bab29077ea05b5b478e",
+    "status_lines": []
+  },
+  "evidence_class": "performance_attribution_only_not_validation",
+  "generated_utc": "2026-08-04T20:08:33.917735+00:00",
+  "harness": {
+    "benchmark_path": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\scripts\\benchmark_physical_visibility_phase6.py",
+    "benchmark_sha256": "204f7c450ef13aa4d1724d8988d4062e00981c768b1f2e570e4517d5fe8e9148",
+    "profile_path": "C:\\Users\\nilad\\OneDrive\\Desktop\\Moira C++\\scripts\\profile_physical_visibility_phase6.py",
+    "profile_sha256": "de31e19500104ed98daf9e5610d8806248a5ac0dd1bbd06cb6c718461ab00dc6"
+  },
+  "measurement": {
+    "profile": {
+      "clusters_by_internal_time": {
+        "astronomical_geometry": {
+          "internal_seconds": 19.138384100000007,
+          "share_of_profile_internal_time": 0.22698953445892026
+        },
+        "event_solver": {
+          "internal_seconds": 0.6558058,
+          "share_of_profile_internal_time": 0.007778141166968204
+        },
+        "native_substrate": {
+          "internal_seconds": 14.8134786,
+          "share_of_profile_internal_time": 0.1756942798076237
+        },
+        "other": {
+          "internal_seconds": 15.0751009,
+          "share_of_profile_internal_time": 0.1787972337336593
+        },
+        "physical_visibility_orchestration": {
+          "internal_seconds": 3.1139172999999998,
+          "share_of_profile_internal_time": 0.0369324094749764
+        },
+        "spectral_target_and_pack": {
+          "internal_seconds": 31.517262599999995,
+          "share_of_profile_internal_time": 0.3738084013578521
+        }
+      },
+      "interpretation": "internal-time clusters are non-overlapping attribution; cumulative function times overlap and must not be summed",
+      "primitive_calls": 231779756,
+      "profiler": "cProfile deterministic call profiler",
+      "top_by_cumulative_seconds": [
+        {
+          "cumulative_seconds": 87.3189468,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "physical_visibility_event",
+          "internal_seconds": 0.00023260000000000002,
+          "line": 6192,
+          "primitive_calls": 1,
+          "total_calls": 1
+        },
+        {
+          "cumulative_seconds": 86.9528523,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "select_owned_phase_transition",
+          "internal_seconds": 0.00022150000000000002,
+          "line": 2003,
+          "primitive_calls": 3,
+          "total_calls": 3
+        },
+        {
+          "cumulative_seconds": 86.95255300000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "resolve",
+          "internal_seconds": 0.00017470000000000002,
+          "line": 2028,
+          "primitive_calls": 126,
+          "total_calls": 126
+        },
+        {
+          "cumulative_seconds": 86.9522498,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "classify",
+          "internal_seconds": 0.00025560000000000003,
+          "line": 6601,
+          "primitive_calls": 66,
+          "total_calls": 66
+        },
+        {
+          "cumulative_seconds": 86.8322172,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "scan_scalar_interval",
+          "internal_seconds": 0.0728589,
+          "line": 824,
+          "primitive_calls": 152,
+          "total_calls": 152
+        },
+        {
+          "cumulative_seconds": 86.32651580000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "_evaluate",
+          "internal_seconds": 0.1100634,
+          "line": 382,
+          "primitive_calls": 50071,
+          "total_calls": 50071
+        },
+        {
+          "cumulative_seconds": 71.1482587,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "classify_observation_day",
+          "internal_seconds": 0.0005470000000000001,
+          "line": 1899,
+          "primitive_calls": 66,
+          "total_calls": 66
+        },
+        {
+          "cumulative_seconds": 71.147491,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.0001228,
+          "line": 1949,
+          "primitive_calls": 120,
+          "total_calls": 120
+        },
+        {
+          "cumulative_seconds": 71.1473682,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "_solve_visibility_window",
+          "internal_seconds": 0.0015316000000000001,
+          "line": 1651,
+          "primitive_calls": 60,
+          "total_calls": 60
+        },
+        {
+          "cumulative_seconds": 71.09917680000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "_certify_scalar_segment",
+          "internal_seconds": 0.15041670000000001,
+          "line": 702,
+          "primitive_calls": 6736,
+          "total_calls": 69380
+        },
+        {
+          "cumulative_seconds": 70.7398648,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "<lambda>",
+          "internal_seconds": 0.0258274,
+          "line": 6610,
+          "primitive_calls": 24827,
+          "total_calls": 24827
+        },
+        {
+          "cumulative_seconds": 70.71403740000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "margin",
+          "internal_seconds": 0.0841636,
+          "line": 6488,
+          "primitive_calls": 24827,
+          "total_calls": 24827
+        },
+        {
+          "cumulative_seconds": 70.5314738,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "assessment_at",
+          "internal_seconds": 0.2785085,
+          "line": 6471,
+          "primitive_calls": 24827,
+          "total_calls": 24827
+        },
+        {
+          "cumulative_seconds": 70.2424515,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "_physical_visibility_assessment_impl",
+          "internal_seconds": 1.0263623000000002,
+          "line": 4870,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 50.810487300000005,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "<lambda>",
+          "internal_seconds": 3.37e-05,
+          "line": 6624,
+          "primitive_calls": 22,
+          "total_calls": 22
+        },
+        {
+          "cumulative_seconds": 37.869945,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "_true_horizontal",
+          "internal_seconds": 0.3434103,
+          "line": 3743,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 31.4501282,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\rise_set.py",
+          "function": "_body_ra_dec",
+          "internal_seconds": 0.20057860000000002,
+          "line": 226,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 25.515990400000003,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "planet_at",
+          "internal_seconds": 0.3295579,
+          "line": 2402,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 20.059970500000002,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "<lambda>",
+          "internal_seconds": 3e-05,
+          "line": 6632,
+          "primitive_calls": 23,
+          "total_calls": 23
+        },
+        {
+          "cumulative_seconds": 19.1319601,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_planet_at_default_apparent_geocentric_ecliptic",
+          "internal_seconds": 0.297304,
+          "line": 1848,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 18.679959,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_lut.py",
+          "function": "resolve_target_profile",
+          "internal_seconds": 0.1889356,
+          "line": 439,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 18.472483800000003,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "resolve",
+          "internal_seconds": 3.2830761,
+          "line": 194,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 16.0818845,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "<lambda>",
+          "internal_seconds": 2.8800000000000002e-05,
+          "line": 6640,
+          "primitive_calls": 21,
+          "total_calls": 21
+        },
+        {
+          "cumulative_seconds": 15.8037355,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "construction_for",
+          "internal_seconds": 0.0002504,
+          "line": 6540,
+          "primitive_calls": 66,
+          "total_calls": 66
+        },
+        {
+          "cumulative_seconds": 15.803434800000002,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "construct_observation_windows",
+          "internal_seconds": 0.0011582,
+          "line": 1309,
+          "primitive_calls": 23,
+          "total_calls": 23
+        },
+        {
+          "cumulative_seconds": 15.2987657,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "horizontal",
+          "internal_seconds": 0.029763900000000003,
+          "line": 6387,
+          "primitive_calls": 21674,
+          "total_calls": 21674
+        },
+        {
+          "cumulative_seconds": 14.8415502,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_geocentric_longitude_rate",
+          "internal_seconds": 0.1687679,
+          "line": 1740,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 13.923338200000002,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "spectral_single_epoch_truth",
+          "internal_seconds": 0.4833582,
+          "line": 1203,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 12.3348095,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_build_apparent_context",
+          "internal_seconds": 0.40552170000000004,
+          "line": 1064,
+          "primitive_calls": 113184,
+          "total_calls": 113184
+        },
+        {
+          "cumulative_seconds": 12.331216900000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\obliquity.py",
+          "function": "nutation",
+          "internal_seconds": 0.0782635,
+          "line": 54,
+          "primitive_calls": 220956,
+          "total_calls": 220956
+        },
+        {
+          "cumulative_seconds": 12.2529534,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\nutation_2000a.py",
+          "function": "nutation_2000a",
+          "internal_seconds": 0.20442580000000002,
+          "line": 246,
+          "primitive_calls": 220956,
+          "total_calls": 220956
+        },
+        {
+          "cumulative_seconds": 11.9951024,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\moira_native.py",
+          "function": "call",
+          "internal_seconds": 0.15966960000000002,
+          "line": 64,
+          "primitive_calls": 220956,
+          "total_calls": 220956
+        },
+        {
+          "cumulative_seconds": 11.542720000000001,
+          "filename": "~",
+          "function": "<built-in method moira._moira_native.nutation_2000a>",
+          "internal_seconds": 11.542720000000001,
+          "line": 0,
+          "primitive_calls": 220956,
+          "total_calls": 220956
+        },
+        {
+          "cumulative_seconds": 10.9488342,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "apparent_horizon_signal",
+          "internal_seconds": 0.059034500000000004,
+          "line": 6420,
+          "primitive_calls": 15116,
+          "total_calls": 15116
+        },
+        {
+          "cumulative_seconds": 10.046947600000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "_adaptive_sample_segment",
+          "internal_seconds": 0.0181143,
+          "line": 448,
+          "primitive_calls": 6736,
+          "total_calls": 12206
+        },
+        {
+          "cumulative_seconds": 9.680835700000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "__post_init__",
+          "internal_seconds": 0.24799430000000003,
+          "line": 303,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 9.035925800000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "_validate_response_weights",
+          "internal_seconds": 1.0364995000000001,
+          "line": 1571,
+          "primitive_calls": 32290,
+          "total_calls": 32290
+        },
+        {
+          "cumulative_seconds": 8.420261400000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_longitude_rate_contexts",
+          "internal_seconds": 0.15738190000000002,
+          "line": 1636,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 7.797085,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "<genexpr>",
+          "internal_seconds": 4.872881100000001,
+          "line": 1577,
+          "primitive_calls": 12948290,
+          "total_calls": 12948290
+        },
+        {
+          "cumulative_seconds": 7.118434700000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "<genexpr>",
+          "internal_seconds": 2.5270376000000003,
+          "line": 203,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 6.5149432,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "<lambda>",
+          "internal_seconds": 0.0078628,
+          "line": 6560,
+          "primitive_calls": 9780,
+          "total_calls": 9780
+        },
+        {
+          "cumulative_seconds": 6.2296543,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_geocentric_ecliptic_longitude_for_rate",
+          "internal_seconds": 0.1929835,
+          "line": 1677,
+          "primitive_calls": 107772,
+          "total_calls": 107772
+        },
+        {
+          "cumulative_seconds": 6.2263272,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_apparent_geocentric_equatorial_vector",
+          "internal_seconds": 0.29460410000000004,
+          "line": 1614,
+          "primitive_calls": 161658,
+          "total_calls": 161658
+        },
+        {
+          "cumulative_seconds": 6.0586666000000005,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "position",
+          "internal_seconds": 0.4401255,
+          "line": 1324,
+          "primitive_calls": 760061,
+          "total_calls": 760061
+        },
+        {
+          "cumulative_seconds": 5.7005151000000005,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\rise_set.py",
+          "function": "_lst",
+          "internal_seconds": 0.0906832,
+          "line": 218,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 5.1513033,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.0064094,
+          "line": 854,
+          "primitive_calls": 7040,
+          "total_calls": 7040
+        },
+        {
+          "cumulative_seconds": 5.0057257,
+          "filename": "~",
+          "function": "<built-in method math.fsum>",
+          "internal_seconds": 2.6904820000000003,
+          "line": 0,
+          "primitive_calls": 242187,
+          "total_calls": 242187
+        },
+        {
+          "cumulative_seconds": 5.001519500000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\corrections.py",
+          "function": "apply_light_time",
+          "internal_seconds": 0.6426689,
+          "line": 148,
+          "primitive_calls": 161658,
+          "total_calls": 161658
+        },
+        {
+          "cumulative_seconds": 4.7768607,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "position",
+          "internal_seconds": 0.8350887,
+          "line": 1000,
+          "primitive_calls": 760061,
+          "total_calls": 760061
+        },
+        {
+          "cumulative_seconds": 4.662845600000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "_value_domain_intervals",
+          "internal_seconds": 0.0007945000000000001,
+          "line": 1223,
+          "primitive_calls": 46,
+          "total_calls": 46
+        },
+        {
+          "cumulative_seconds": 4.62207,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "condition_target",
+          "internal_seconds": 0.8033724000000001,
+          "line": 845,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 4.5464197,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "true_altitude",
+          "internal_seconds": 0.014512,
+          "line": 6407,
+          "primitive_calls": 6558,
+          "total_calls": 6558
+        },
+        {
+          "cumulative_seconds": 4.5137678,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "domain_signal",
+          "internal_seconds": 0.012660800000000002,
+          "line": 1240,
+          "primitive_calls": 6468,
+          "total_calls": 6468
+        },
+        {
+          "cumulative_seconds": 4.4524603,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_barycentric",
+          "internal_seconds": 0.47696010000000005,
+          "line": 1128,
+          "primitive_calls": 640400,
+          "total_calls": 640400
+        },
+        {
+          "cumulative_seconds": 4.4464484,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "<lambda>",
+          "internal_seconds": 0.0046946,
+          "line": 6550,
+          "primitive_calls": 5336,
+          "total_calls": 5336
+        },
+        {
+          "cumulative_seconds": 4.119361700000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_lut.py",
+          "function": "interpolate_direct_extinction_spectrum",
+          "internal_seconds": 1.4541797,
+          "line": 383,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 4.0077846,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_ephemeris_time.py",
+          "function": "_ut1_to_ephemeris_tt",
+          "internal_seconds": 0.08931220000000001,
+          "line": 139,
+          "primitive_calls": 123917,
+          "total_calls": 123917
+        },
+        {
+          "cumulative_seconds": 3.9279752,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "_piecewise_linear",
+          "internal_seconds": 2.8354039,
+          "line": 575,
+          "primitive_calls": 6458000,
+          "total_calls": 6458000
+        },
+        {
+          "cumulative_seconds": 3.9184724,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_ephemeris_time.py",
+          "function": "_ephemeris_delta_t",
+          "internal_seconds": 0.27397140000000003,
+          "line": 68,
+          "primitive_calls": 123917,
+          "total_calls": 123917
+        },
+        {
+          "cumulative_seconds": 3.7820666000000003,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\rise_set.py",
+          "function": "_jd_tt_for_active_reader",
+          "internal_seconds": 0.1305066,
+          "line": 209,
+          "primitive_calls": 107772,
+          "total_calls": 107772
+        },
+        {
+          "cumulative_seconds": 3.7481488,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "_evaluate",
+          "internal_seconds": 0.9791366,
+          "line": 531,
+          "primitive_calls": 986429,
+          "total_calls": 986429
+        },
+        {
+          "cumulative_seconds": 3.3875777,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\obliquity.py",
+          "function": "true_obliquity",
+          "internal_seconds": 0.0512253,
+          "line": 79,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 3.2110193000000002,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\julian.py",
+          "function": "_resolve_delta_t_for_ut1",
+          "internal_seconds": 0.23127250000000002,
+          "line": 1273,
+          "primitive_calls": 123917,
+          "total_calls": 123917
+        },
+        {
+          "cumulative_seconds": 3.2096132,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_event_solver.py",
+          "function": "_solar_domain_interval",
+          "internal_seconds": 0.00010070000000000001,
+          "line": 1197,
+          "primitive_calls": 23,
+          "total_calls": 23
+        },
+        {
+          "cumulative_seconds": 3.1302518000000004,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "<lambda>",
+          "internal_seconds": 0.0031441000000000004,
+          "line": 6567,
+          "primitive_calls": 4786,
+          "total_calls": 4786
+        },
+        {
+          "cumulative_seconds": 3.0770146,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "compute",
+          "internal_seconds": 0.38449900000000004,
+          "line": 489,
+          "primitive_calls": 760061,
+          "total_calls": 760061
+        },
+        {
+          "cumulative_seconds": 3.0607481,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_compose_rotation_matrix",
+          "internal_seconds": 0.1376558,
+          "line": 1421,
+          "primitive_calls": 113184,
+          "total_calls": 113184
+        },
+        {
+          "cumulative_seconds": 2.7916354,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_deflectors_for_body",
+          "internal_seconds": 0.12358000000000001,
+          "line": 1104,
+          "primitive_calls": 69660,
+          "total_calls": 69660
+        },
+        {
+          "cumulative_seconds": 2.6513694,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_geocentric",
+          "internal_seconds": 0.1948821,
+          "line": 1237,
+          "primitive_calls": 139242,
+          "total_calls": 139242
+        },
+        {
+          "cumulative_seconds": 2.6224796,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_apparent_geocentric_ecliptic",
+          "internal_seconds": 0.06674770000000001,
+          "line": 1567,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 2.6078535,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "_visibility_margin_error_budget",
+          "internal_seconds": 0.24293550000000003,
+          "line": 922,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 2.5893709,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_earth_barycentric_state",
+          "internal_seconds": 0.19065600000000002,
+          "line": 1217,
+          "primitive_calls": 113184,
+          "total_calls": 113184
+        },
+        {
+          "cumulative_seconds": 2.4591471,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "<lambda>",
+          "internal_seconds": 0.1228988,
+          "line": 1712,
+          "primitive_calls": 369756,
+          "total_calls": 369756
+        },
+        {
+          "cumulative_seconds": 2.4095917,
+          "filename": "~",
+          "function": "<built-in method builtins.isinstance>",
+          "internal_seconds": 2.4095917,
+          "line": 0,
+          "primitive_calls": 28954742,
+          "total_calls": 28954742
+        },
+        {
+          "cumulative_seconds": 2.3553004,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "position_and_velocity",
+          "internal_seconds": 0.18080490000000002,
+          "line": 1396,
+          "primitive_calls": 226368,
+          "total_calls": 226368
+        }
+      ],
+      "top_by_internal_seconds": [
+        {
+          "cumulative_seconds": 11.542720000000001,
+          "filename": "~",
+          "function": "<built-in method moira._moira_native.nutation_2000a>",
+          "internal_seconds": 11.542720000000001,
+          "line": 0,
+          "primitive_calls": 220956,
+          "total_calls": 220956
+        },
+        {
+          "cumulative_seconds": 7.797085,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "<genexpr>",
+          "internal_seconds": 4.872881100000001,
+          "line": 1577,
+          "primitive_calls": 12948290,
+          "total_calls": 12948290
+        },
+        {
+          "cumulative_seconds": 18.472483800000003,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "resolve",
+          "internal_seconds": 3.2830761,
+          "line": 194,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 3.9279752,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "_piecewise_linear",
+          "internal_seconds": 2.8354039,
+          "line": 575,
+          "primitive_calls": 6458000,
+          "total_calls": 6458000
+        },
+        {
+          "cumulative_seconds": 5.0057257,
+          "filename": "~",
+          "function": "<built-in method math.fsum>",
+          "internal_seconds": 2.6904820000000003,
+          "line": 0,
+          "primitive_calls": 242187,
+          "total_calls": 242187
+        },
+        {
+          "cumulative_seconds": 7.118434700000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "<genexpr>",
+          "internal_seconds": 2.5270376000000003,
+          "line": 203,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 2.4095917,
+          "filename": "~",
+          "function": "<built-in method builtins.isinstance>",
+          "internal_seconds": 2.4095917,
+          "line": 0,
+          "primitive_calls": 28954742,
+          "total_calls": 28954742
+        },
+        {
+          "cumulative_seconds": 1.8447514,
+          "filename": "~",
+          "function": "<built-in method moira._moira_native.segment_position>",
+          "internal_seconds": 1.8447514,
+          "line": 0,
+          "primitive_calls": 760061,
+          "total_calls": 760061
+        },
+        {
+          "cumulative_seconds": 1.521822,
+          "filename": "~",
+          "function": "<built-in method math.isfinite>",
+          "internal_seconds": 1.521822,
+          "line": 0,
+          "primitive_calls": 22006868,
+          "total_calls": 22006868
+        },
+        {
+          "cumulative_seconds": 4.119361700000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_lut.py",
+          "function": "interpolate_direct_extinction_spectrum",
+          "internal_seconds": 1.4541797,
+          "line": 383,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 1.2434265,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "<genexpr>",
+          "internal_seconds": 1.2434265,
+          "line": 856,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 1.2199698,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_lut.py",
+          "function": "<genexpr>",
+          "internal_seconds": 1.2199698,
+          "line": 417,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 9.035925800000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "_validate_response_weights",
+          "internal_seconds": 1.0364995000000001,
+          "line": 1571,
+          "primitive_calls": 32290,
+          "total_calls": 32290
+        },
+        {
+          "cumulative_seconds": 70.2424515,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "_physical_visibility_assessment_impl",
+          "internal_seconds": 1.0263623000000002,
+          "line": 4870,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 1.0261833,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "<genexpr>",
+          "internal_seconds": 1.0261833,
+          "line": 242,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 1.9188223000000002,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.9893849,
+          "line": 219,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 0.9820363000000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_lut.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.9820363000000001,
+          "line": 426,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 3.7481488,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "_evaluate",
+          "internal_seconds": 0.9791366,
+          "line": 531,
+          "primitive_calls": 986429,
+          "total_calls": 986429
+        },
+        {
+          "cumulative_seconds": 0.9661778000000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.9661778000000001,
+          "line": 249,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 0.9294374000000001,
+          "filename": "~",
+          "function": "<built-in method math.exp>",
+          "internal_seconds": 0.9294374000000001,
+          "line": 0,
+          "primitive_calls": 6458000,
+          "total_calls": 6458000
+        },
+        {
+          "cumulative_seconds": 1.3202856,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.9079761000000001,
+          "line": 213,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 4.7768607,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "position",
+          "internal_seconds": 0.8350887,
+          "line": 1000,
+          "primitive_calls": 760061,
+          "total_calls": 760061
+        },
+        {
+          "cumulative_seconds": 1.3103711,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "_segments_for_pair",
+          "internal_seconds": 0.8237875,
+          "line": 957,
+          "primitive_calls": 1972858,
+          "total_calls": 1972858
+        },
+        {
+          "cumulative_seconds": 4.62207,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "condition_target",
+          "internal_seconds": 0.8033724000000001,
+          "line": 845,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 0.7861495000000001,
+          "filename": "~",
+          "function": "<built-in method _bisect.bisect_right>",
+          "internal_seconds": 0.7861495000000001,
+          "line": 0,
+          "primitive_calls": 6953668,
+          "total_calls": 6953668
+        },
+        {
+          "cumulative_seconds": 0.7777517,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\coordinates.py",
+          "function": "mat_mul",
+          "internal_seconds": 0.7777517,
+          "line": 112,
+          "primitive_calls": 565920,
+          "total_calls": 565920
+        },
+        {
+          "cumulative_seconds": 0.7566624000000001,
+          "filename": "~",
+          "function": "<built-in method moira._moira_native.segment_position_and_velocity>",
+          "internal_seconds": 0.7566624000000001,
+          "line": 0,
+          "primitive_calls": 226368,
+          "total_calls": 226368
+        },
+        {
+          "cumulative_seconds": 0.6634219,
+          "filename": "~",
+          "function": "<built-in method math.log>",
+          "internal_seconds": 0.6634219,
+          "line": 0,
+          "primitive_calls": 6458000,
+          "total_calls": 6458000
+        },
+        {
+          "cumulative_seconds": 0.6521806,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.6521806,
+          "line": 863,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 5.001519500000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\corrections.py",
+          "function": "apply_light_time",
+          "internal_seconds": 0.6426689,
+          "line": 148,
+          "primitive_calls": 161658,
+          "total_calls": 161658
+        },
+        {
+          "cumulative_seconds": 0.6268272,
+          "filename": "~",
+          "function": "<method 'get' of 'dict' objects>",
+          "internal_seconds": 0.6268272,
+          "line": 0,
+          "primitive_calls": 2888926,
+          "total_calls": 2888926
+        },
+        {
+          "cumulative_seconds": 0.5781080000000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.5781080000000001,
+          "line": 870,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 0.5544158,
+          "filename": "~",
+          "function": "<built-in method builtins.len>",
+          "internal_seconds": 0.5544158,
+          "line": 0,
+          "primitive_calls": 7346957,
+          "total_calls": 7346957
+        },
+        {
+          "cumulative_seconds": 0.5317817,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.5317817,
+          "line": 223,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 0.4952879,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_targets.py",
+          "function": "<genexpr>",
+          "internal_seconds": 0.4952879,
+          "line": 230,
+          "primitive_calls": 6474145,
+          "total_calls": 6474145
+        },
+        {
+          "cumulative_seconds": 0.6785818,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_store_apparent_context",
+          "internal_seconds": 0.4920044,
+          "line": 656,
+          "primitive_calls": 113184,
+          "total_calls": 113184
+        },
+        {
+          "cumulative_seconds": 13.923338200000002,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "spectral_single_epoch_truth",
+          "internal_seconds": 0.4833582,
+          "line": 1203,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 4.4524603,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_barycentric",
+          "internal_seconds": 0.47696010000000005,
+          "line": 1128,
+          "primitive_calls": 640400,
+          "total_calls": 640400
+        },
+        {
+          "cumulative_seconds": 1.6806773000000002,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\julian.py",
+          "function": "_segment_bounds",
+          "internal_seconds": 0.46727430000000003,
+          "line": 1762,
+          "primitive_calls": 247834,
+          "total_calls": 247834
+        },
+        {
+          "cumulative_seconds": 0.5569657,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\coordinates.py",
+          "function": "vec_norm",
+          "internal_seconds": 0.4435625,
+          "line": 93,
+          "primitive_calls": 925272,
+          "total_calls": 925272
+        },
+        {
+          "cumulative_seconds": 1.1723182,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "has_segment_at",
+          "internal_seconds": 0.44245850000000003,
+          "line": 1075,
+          "primitive_calls": 986429,
+          "total_calls": 986429
+        },
+        {
+          "cumulative_seconds": 0.6856805,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "_finite",
+          "internal_seconds": 0.4408708,
+          "line": 1596,
+          "primitive_calls": 791105,
+          "total_calls": 791105
+        },
+        {
+          "cumulative_seconds": 6.0586666000000005,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "position",
+          "internal_seconds": 0.4401255,
+          "line": 1324,
+          "primitive_calls": 760061,
+          "total_calls": 760061
+        },
+        {
+          "cumulative_seconds": 0.8633000000000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\julian.py",
+          "function": "_require_representable_time_jd",
+          "internal_seconds": 0.4357878,
+          "line": 71,
+          "primitive_calls": 867419,
+          "total_calls": 867419
+        },
+        {
+          "cumulative_seconds": 1.0066271,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\julian.py",
+          "function": "tai_minus_utc",
+          "internal_seconds": 0.4241689,
+          "line": 1595,
+          "primitive_calls": 495668,
+          "total_calls": 495668
+        },
+        {
+          "cumulative_seconds": 12.3348095,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_build_apparent_context",
+          "internal_seconds": 0.40552170000000004,
+          "line": 1064,
+          "primitive_calls": 113184,
+          "total_calls": 113184
+        },
+        {
+          "cumulative_seconds": 0.6423687,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\coordinates.py",
+          "function": "icrf_to_ecliptic",
+          "internal_seconds": 0.4032025,
+          "line": 175,
+          "primitive_calls": 161658,
+          "total_calls": 161658
+        },
+        {
+          "cumulative_seconds": 3.0770146,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "compute",
+          "internal_seconds": 0.38449900000000004,
+          "line": 489,
+          "primitive_calls": 760061,
+          "total_calls": 760061
+        },
+        {
+          "cumulative_seconds": 1.2898539,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\precession.py",
+          "function": "_fw2m",
+          "internal_seconds": 0.3814775,
+          "line": 343,
+          "primitive_calls": 113184,
+          "total_calls": 113184
+        },
+        {
+          "cumulative_seconds": 1.8438577,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "position_and_velocity",
+          "internal_seconds": 0.36243840000000005,
+          "line": 1028,
+          "primitive_calls": 226368,
+          "total_calls": 226368
+        },
+        {
+          "cumulative_seconds": 1.2557365,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "cie_mes2_adaptation",
+          "internal_seconds": 0.35039760000000003,
+          "line": 497,
+          "primitive_calls": 80725,
+          "total_calls": 80725
+        },
+        {
+          "cumulative_seconds": 2.1929661,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\julian.py",
+          "function": "_delta_t_from_ut1",
+          "internal_seconds": 0.34710850000000004,
+          "line": 1833,
+          "primitive_calls": 123917,
+          "total_calls": 123917
+        },
+        {
+          "cumulative_seconds": 37.869945,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "_true_horizontal",
+          "internal_seconds": 0.3434103,
+          "line": 3743,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 0.9158861,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "_segment_for",
+          "internal_seconds": 0.3353747,
+          "line": 965,
+          "primitive_calls": 986429,
+          "total_calls": 986429
+        },
+        {
+          "cumulative_seconds": 25.515990400000003,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "planet_at",
+          "internal_seconds": 0.3295579,
+          "line": 2402,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 0.32631560000000004,
+          "filename": "~",
+          "function": "<built-in method builtins.hasattr>",
+          "internal_seconds": 0.32631560000000004,
+          "line": 0,
+          "primitive_calls": 1972858,
+          "total_calls": 1972858
+        },
+        {
+          "cumulative_seconds": 0.3962509,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\julian.py",
+          "function": "_require_finite",
+          "internal_seconds": 0.3026111,
+          "line": 48,
+          "primitive_calls": 991336,
+          "total_calls": 991336
+        },
+        {
+          "cumulative_seconds": 0.4873154,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "compose_directional_background",
+          "internal_seconds": 0.300719,
+          "line": 661,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 0.6726169000000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\julian.py",
+          "function": "_resolved_delta_t",
+          "internal_seconds": 0.29923930000000004,
+          "line": 969,
+          "primitive_calls": 123917,
+          "total_calls": 123917
+        },
+        {
+          "cumulative_seconds": 19.1319601,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_planet_at_default_apparent_geocentric_ecliptic",
+          "internal_seconds": 0.297304,
+          "line": 1848,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 6.2263272,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\planets.py",
+          "function": "_apparent_geocentric_equatorial_vector",
+          "internal_seconds": 0.29460410000000004,
+          "line": 1614,
+          "primitive_calls": 161658,
+          "total_calls": 161658
+        },
+        {
+          "cumulative_seconds": 70.5314738,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\heliacal.py",
+          "function": "assessment_at",
+          "internal_seconds": 0.2785085,
+          "line": 6471,
+          "primitive_calls": 24827,
+          "total_calls": 24827
+        },
+        {
+          "cumulative_seconds": 3.9184724,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_ephemeris_time.py",
+          "function": "_ephemeris_delta_t",
+          "internal_seconds": 0.27397140000000003,
+          "line": 68,
+          "primitive_calls": 123917,
+          "total_calls": 123917
+        },
+        {
+          "cumulative_seconds": 0.32598930000000004,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\precession.py",
+          "function": "mean_obliquity_p03",
+          "internal_seconds": 0.2694936,
+          "line": 282,
+          "primitive_calls": 334140,
+          "total_calls": 334140
+        },
+        {
+          "cumulative_seconds": 0.25698360000000003,
+          "filename": "~",
+          "function": "<built-in method math.log10>",
+          "internal_seconds": 0.25698360000000003,
+          "line": 0,
+          "primitive_calls": 1596480,
+          "total_calls": 1596480
+        },
+        {
+          "cumulative_seconds": 0.5768067,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\small_body_identity.py",
+          "function": "resolve_small_body_identity",
+          "internal_seconds": 0.25356650000000003,
+          "line": 175,
+          "primitive_calls": 53886,
+          "total_calls": 53886
+        },
+        {
+          "cumulative_seconds": 0.5232219,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "blackwell_crumey_full_range_threshold",
+          "internal_seconds": 0.2508693,
+          "line": 550,
+          "primitive_calls": 80725,
+          "total_calls": 80725
+        },
+        {
+          "cumulative_seconds": 2.1113114,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\coordinates.py",
+          "function": "precession_matrix_equatorial",
+          "internal_seconds": 0.2492069,
+          "line": 209,
+          "primitive_calls": 113184,
+          "total_calls": 113184
+        },
+        {
+          "cumulative_seconds": 9.680835700000001,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "__post_init__",
+          "internal_seconds": 0.24799430000000003,
+          "line": 303,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 2.6078535,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_spectral.py",
+          "function": "_visibility_margin_error_budget",
+          "internal_seconds": 0.24293550000000003,
+          "line": 922,
+          "primitive_calls": 16145,
+          "total_calls": 16145
+        },
+        {
+          "cumulative_seconds": 0.2362835,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\spk_reader.py",
+          "function": "_ensure_open",
+          "internal_seconds": 0.2362835,
+          "line": 948,
+          "primitive_calls": 2959287,
+          "total_calls": 2959287
+        },
+        {
+          "cumulative_seconds": 0.36367730000000004,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\_visibility_lut.py",
+          "function": "_trilinear_log10_with_rse_bound",
+          "internal_seconds": 0.2360092,
+          "line": 1759,
+          "primitive_calls": 32290,
+          "total_calls": 32290
+        },
+        {
+          "cumulative_seconds": 0.2348822,
+          "filename": "~",
+          "function": "<built-in method math.sin>",
+          "internal_seconds": 0.2348822,
+          "line": 0,
+          "primitive_calls": 1977780,
+          "total_calls": 1977780
+        },
+        {
+          "cumulative_seconds": 3.2110193000000002,
+          "filename": "C:\\Users\\nilad\\AppData\\Local\\Temp\\moira-phase6-profile-2e5319573c1d46b3a06e48c6f7b75185\\moira\\julian.py",
+          "function": "_resolve_delta_t_for_ut1",
+          "internal_seconds": 0.23127250000000002,
+          "line": 1273,
+          "primitive_calls": 123917,
+          "total_calls": 123917
+        },
+        {
+          "cumulative_seconds": 0.2299836,
+          "filename": "~",
+          "function": "<built-in method builtins.abs>",
+          "internal_seconds": 0.2299836,
+          "line": 0,
+          "primitive_calls": 2311581,
+          "total_calls": 2311581
+        }
+      ],
+      "total_calls": 231955642,
+      "total_internal_seconds": 84.31394930000003
+    },
+    "wall_seconds_under_profiler": 87.38672410000436,
+    "warning": "cProfile overhead makes wall time unsuitable for the unprofiled performance budget"
+  },
+  "native_admission": {
+    "decision": "pending_candidate_microbenchmarks",
+    "native_work_admitted": false
+  },
+  "resources": {
+    "kernel": {
+      "bytes": 3307878400,
+      "content_identity": {
+        "lunar_ephemeris": "LE441",
+        "lunar_tidal_acceleration_arcsec_per_cy2": -25.936,
+        "planetary_ephemeris": "DE441",
+        "summary_label": "DE-0441LE-0441"
+      },
+      "path": "C:\\Users\\nilad\\.moira\\kernels\\de441.bsp"
+    },
+    "visibility_data_pack": {
+      "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+      "path": "\\\\wsl.localhost\\Ubuntu\\home\\nilad\\.cache\\moira\\visibility-reference-lab\\data-packs\\moira-physical-heliacal-visibility-1.2.0-v3",
+      "receipt": {
+        "compatibility_id": "moira-physical-heliacal-visibility-data-pack-v1.2",
+        "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+        "engine_contract_id": "moira-physical-visibility-engine-contract-v1",
+        "engine_contract_version": 1,
+        "generation_fingerprint": "d2907be5084fdb9569457af3b0ac995e8888b2ba3d9317948ba7f1e89a477c0e",
+        "license": "CC-BY-SA-4.0",
+        "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+        "notice_sha256": "82d8a49f48a640f3063df1f6066ecfa6389c02a0759688c9752b3b045b43729e",
+        "pack_id": "moira-physical-heliacal-visibility",
+        "payload_sha256": [
+          [
+            "NOTICE.md",
+            "82d8a49f48a640f3063df1f6066ecfa6389c02a0759688c9752b3b045b43729e"
+          ],
+          [
+            "README.md",
+            "774ae4ddb0f3031b0d55c8405115c01186c5ec97a3ef85177a7cebe6ff43673d"
+          ],
+          [
+            "SHA256SUMS",
+            "03e6e4201673993ff1520168bbe0280d94687a84543efc1da9e5922e71fc60a8"
+          ],
+          [
+            "axes.json",
+            "55941008f49984da0dcbb085ff0606904355a42a24d1775422ac10897913eb87"
+          ],
+          [
+            "direct-extinction-1nm.f32le",
+            "dcf03d555db3cc5357b2a7a2d1ef40007dbccfdd631e3804ed1dc393eda6d6fb"
+          ],
+          [
+            "error-envelope.json",
+            "f6899e6c6c00532daa623475fd4426119550e5e7f2e435b442c6f2fdbfda201c"
+          ],
+          [
+            "planetary-target-profiles.json",
+            "40f4362aca22e329ad25916efa8476fee7a86eb1a6b0dfc1cf1b6c88f64531a0"
+          ],
+          [
+            "provenance.json",
+            "f6547ec730d506c958b47a0178b9effa434fcb275d792c4988c8cbd73cc2914c"
+          ],
+          [
+            "solar-twilight-photopic-luminance.f32le",
+            "45c7f9b236ba8e1a36ccdbb567122672f65585aa52fe7b7a624990f8a1cc2cda"
+          ],
+          [
+            "solar-twilight-photopic-rse.f32le",
+            "a0d92d1a40975ffa47516bee829df9c9eed4961012ef15cc51f3836f4824d3e5"
+          ],
+          [
+            "solar-twilight-scotopic-luminance.f32le",
+            "c4286bf8e4904b035c080c2019bf89014acdbcb8691f6607ff9243796dc69537"
+          ],
+          [
+            "solar-twilight-scotopic-rse.f32le",
+            "f3ff2c26124d54779b3063e109dd43293a75c5805ef6d623bb5eab56f28265ec"
+          ],
+          [
+            "stellar-target-profiles.json",
+            "de202599761a1a5b49d656fab1c3640d0cc73ca1319c9e5a7c6f44c0c13de22b"
+          ]
+        ],
+        "source_artifact_manifest_sha256": "6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f",
+        "source_artifact_spec_id": "physical-heliacal-phase1-radiance-response-v9-2026-07-30",
+        "source_dataset_ids": [
+          "CIE_photopic:10.25039/CIE.DS.dktna2s3",
+          "CIE_scotopic:10.25039/CIE.DS.gr6w4b5g",
+          "libRadtran:2.0.6",
+          "REPTRAN:libradtran_reptran_2024_all",
+          "Payne_planetary_spectra:10.5281/zenodo.17470005",
+          "Mallama_planetary_photometry:10.1016/j.icarus.2016.09.023",
+          "target_profile_solar_spectrum:libRadtran:2.0.6",
+          "CALSPEC_Sirius:sirius_stis_005",
+          "BSC5_Sirius_photometry:V/50:HR2491"
+        ],
+        "table_format_id": "regular-grid-ieee754-binary32-le-v1",
+        "version": "1.2.0"
+      }
+    }
+  },
+  "result": {
+    "crossing_completeness_state": "certified_lipschitz_zero_enclosure",
+    "event_jd_ut": 2460070.591375516,
+    "event_time_residual_seconds": 0.0,
+    "result_fingerprint_sha256": "2222fc44a89a23db2bf8f23fecdcd08e8bb07106b616c49ae6cf633463c8e863",
+    "scalar_evaluation_count": 28651,
+    "status": "evaluated"
+  },
+  "schema": "moira.physical-visibility.phase6-profile/v1",
+  "workload": {
+    "body": "Jupiter",
+    "expected_event_jd_ut": 2460070.591375516,
+    "jd_start": 2460050.5,
+    "latitude_deg": 35.0,
+    "longitude_deg": 35.0,
+    "phase": "morning_first_rising",
+    "search_window_days": 30,
+    "workload_id": "jupiter_30_day_event"
+  }
+}
