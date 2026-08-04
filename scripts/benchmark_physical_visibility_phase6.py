@@ -321,6 +321,14 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--pack-load-repeats", type=int, default=3)
     parser.add_argument("--event-repeats", type=int, default=1)
     parser.add_argument(
+        "--native-admission-receipt",
+        type=Path,
+        help=(
+            "exact passing Phase 6 native-validation receipt for the same "
+            "clean revision and binary"
+        ),
+    )
+    parser.add_argument(
         "--event-case",
         action="append",
         choices=tuple(item.workload_id for item in _EVENT_WORKLOADS),
@@ -462,6 +470,56 @@ def main() -> None:
             }
 
     reader_identity = getattr(get_reader(), "_kernel_identity", None)
+    native_receipt = _native_receipt()
+    native_admission: dict[str, Any] = {
+        "decision": "pending_profile_and_candidate_microbenchmarks",
+        "native_work_admitted": False,
+        "reason": (
+            "budget failure alone does not identify a stable numerical "
+            "kernel or justify moving Python-owned semantics"
+        ),
+    }
+    if args.native_admission_receipt is not None:
+        admission_path = args.native_admission_receipt.resolve()
+        admission = json.loads(admission_path.read_text(encoding="utf-8"))
+        if (
+            admission.get("schema")
+            != "moira.physical-visibility.phase6-native-validation/v1"
+            or admission.get("all_checks_pass") is not True
+            or admission.get("native_admission", {}).get(
+                "native_work_admitted"
+            )
+            is not True
+            or admission.get("engine", {}).get("revision")
+            != git_receipt["revision"]
+            or admission.get("engine", {}).get("native", {}).get(
+                "backend_sha256"
+            )
+            != native_receipt["backend_sha256"]
+            or admission.get("resources", {})
+            .get("visibility_data_pack", {})
+            .get("manifest_sha256")
+            != actual_manifest_sha256
+        ):
+            raise RuntimeError(
+                "native-admission receipt does not bind this clean revision, "
+                "binary, pack, and passing decision"
+            )
+        native_admission = {
+            "decision": "admitted_by_exact_differential_receipt",
+            "native_work_admitted": True,
+            "receipt_path": str(admission_path),
+            "receipt_sha256": _sha256_file(admission_path),
+            "admitted_kernels": admission["native_admission"][
+                "admitted_kernels"
+            ],
+            "python_reference_retained": admission[
+                "native_admission"
+            ]["python_reference_retained"],
+            "python_owned_semantics_unchanged": admission[
+                "native_admission"
+            ]["python_owned_semantics_unchanged"],
+        }
     checks = {
         "process_first_assessment": (
             first_seconds <= _BUDGETS_SECONDS["process_first_assessment"]
@@ -494,7 +552,7 @@ def main() -> None:
             "platform": platform.platform(),
             "processor": platform.processor(),
             "logical_cpu_count": os.cpu_count(),
-            "native": _native_receipt(),
+            "native": native_receipt,
         },
         "resources": {
             "kernel": {
@@ -543,14 +601,7 @@ def main() -> None:
             },
             "events": event_results,
         },
-        "native_admission": {
-            "decision": "pending_profile_and_candidate_microbenchmarks",
-            "native_work_admitted": False,
-            "reason": (
-                "budget failure alone does not identify a stable numerical "
-                "kernel or justify moving Python-owned semantics"
-            ),
-        },
+        "native_admission": native_admission,
     }
 
     if args.output is not None:
