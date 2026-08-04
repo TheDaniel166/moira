@@ -201,68 +201,14 @@ class VisibilityPackTargetProfile:
         band_deltas = self.color_model.band_differential_magnitudes(
             context
         )
-        log_correction = tuple(
-            _MAGNITUDE_TO_NATURAL_LOG
-            * _piecewise_linear(
-                _BAND_WAVELENGTH_NM,
-                band_deltas,
-                wavelength_nm,
-            )
-            for wavelength_nm in _SPECTRAL_BIN_START_NM
+        ratio, photopic, scotopic = _resolve_response_weights_native(
+            base_scotopic_to_photopic_ratio=(
+                self.base_scotopic_to_photopic_ratio
+            ),
+            base_photopic=self.base_photopic_extinction_weights,
+            base_scotopic=self.base_scotopic_extinction_weights,
+            band_deltas=band_deltas,
         )
-        if any(not math.isfinite(value) for value in log_correction):
-            raise VisibilityTargetProfileError(
-                "visibility_data_pack_incompatible",
-                "color warp produced a nonfinite logarithmic correction",
-            )
-        maximum_log_correction = max(log_correction)
-        correction = tuple(
-            math.exp(value - maximum_log_correction)
-            for value in log_correction
-        )
-        photopic_scale = math.fsum(
-            weight * factor
-            for weight, factor in zip(
-                self.base_photopic_extinction_weights,
-                correction,
-            )
-        )
-        scotopic_scale = math.fsum(
-            weight * factor
-            for weight, factor in zip(
-                self.base_scotopic_extinction_weights,
-                correction,
-            )
-        )
-        if photopic_scale <= 0.0 or scotopic_scale <= 0.0:
-            raise VisibilityTargetProfileError(
-                "target_spectral_profile_missing",
-                "resolved response integral is nonpositive",
-            )
-        photopic = tuple(
-            weight * factor / photopic_scale
-            for weight, factor in zip(
-                self.base_photopic_extinction_weights,
-                correction,
-            )
-        )
-        scotopic = tuple(
-            weight * factor / scotopic_scale
-            for weight, factor in zip(
-                self.base_scotopic_extinction_weights,
-                correction,
-            )
-        )
-        ratio = (
-            self.base_scotopic_to_photopic_ratio
-            * scotopic_scale
-            / photopic_scale
-        )
-        if not math.isfinite(ratio) or ratio <= 0.0:
-            raise VisibilityTargetProfileError(
-                "target_spectral_profile_missing",
-                "resolved S/P ratio is not positive and finite",
-            )
         details = [
             ("catalog_id", _CATALOG_ID),
             ("color_model_id", self.color_model.model_id),
@@ -590,6 +536,92 @@ def _piecewise_linear(
     return y_values[low] + fraction * (
         y_values[high] - y_values[low]
     )
+
+
+def _resolve_response_weights_python(
+    *,
+    base_scotopic_to_photopic_ratio: float,
+    base_photopic: tuple[float, ...],
+    base_scotopic: tuple[float, ...],
+    band_deltas: tuple[float, ...],
+) -> tuple[float, tuple[float, ...], tuple[float, ...]]:
+    """Python differential oracle for the admitted dense native kernel."""
+
+    log_correction = tuple(
+        _MAGNITUDE_TO_NATURAL_LOG
+        * _piecewise_linear(
+            _BAND_WAVELENGTH_NM,
+            band_deltas,
+            wavelength_nm,
+        )
+        for wavelength_nm in _SPECTRAL_BIN_START_NM
+    )
+    if any(not math.isfinite(value) for value in log_correction):
+        raise VisibilityTargetProfileError(
+            "visibility_data_pack_incompatible",
+            "color warp produced a nonfinite logarithmic correction",
+        )
+    maximum_log_correction = max(log_correction)
+    correction = tuple(
+        math.exp(value - maximum_log_correction)
+        for value in log_correction
+    )
+    photopic_scale = math.fsum(
+        weight * factor
+        for weight, factor in zip(base_photopic, correction)
+    )
+    scotopic_scale = math.fsum(
+        weight * factor
+        for weight, factor in zip(base_scotopic, correction)
+    )
+    if photopic_scale <= 0.0 or scotopic_scale <= 0.0:
+        raise VisibilityTargetProfileError(
+            "target_spectral_profile_missing",
+            "resolved response integral is nonpositive",
+        )
+    photopic = tuple(
+        weight * factor / photopic_scale
+        for weight, factor in zip(base_photopic, correction)
+    )
+    scotopic = tuple(
+        weight * factor / scotopic_scale
+        for weight, factor in zip(base_scotopic, correction)
+    )
+    ratio = (
+        base_scotopic_to_photopic_ratio
+        * scotopic_scale
+        / photopic_scale
+    )
+    if not math.isfinite(ratio) or ratio <= 0.0:
+        raise VisibilityTargetProfileError(
+            "target_spectral_profile_missing",
+            "resolved S/P ratio is not positive and finite",
+        )
+    return ratio, photopic, scotopic
+
+
+def _resolve_response_weights_native(
+    *,
+    base_scotopic_to_photopic_ratio: float,
+    base_photopic: tuple[float, ...],
+    base_scotopic: tuple[float, ...],
+    band_deltas: tuple[float, ...],
+) -> tuple[float, tuple[float, ...], tuple[float, ...]]:
+    """Run the admitted doctrine-free kernel with Python-owned inputs."""
+
+    from . import moira_native
+
+    ratio, photopic, scotopic = (
+        moira_native._physical_visibility_resolve_response_weights(
+            _BAND_WAVELENGTH_NM,
+            band_deltas,
+            _SPECTRAL_BIN_START_NM,
+            base_scotopic_to_photopic_ratio,
+            base_photopic,
+            base_scotopic,
+        )
+    )
+    return float(ratio), tuple(photopic), tuple(scotopic)
 
 
 def _require_dict(value: Any, label: str) -> dict[str, Any]:

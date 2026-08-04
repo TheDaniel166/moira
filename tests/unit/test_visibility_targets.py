@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import copy
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import math
@@ -13,6 +14,7 @@ import pytest
 from moira._visibility_targets import (
     VisibilityTargetContext,
     VisibilityTargetProfileError,
+    _resolve_response_weights_python,
     parse_visibility_target_profiles,
     target_profile_by_id,
 )
@@ -218,6 +220,82 @@ def test_target_catalog_parses_exact_inventory_and_source_domains() -> None:
         (0.0, 12.0),
         (0.0, 6.0),
     )
+
+
+def _phase6_differential_cases() -> list[tuple[Any, VisibilityTargetContext]]:
+    profiles = parse_visibility_target_profiles(_payload())
+    cases: list[tuple[Any, VisibilityTargetContext]] = []
+    for profile in profiles:
+        lower, upper = profile.color_model.phase_angle_domain_deg
+        ring_latitudes = (
+            (0.0, 13.5, 27.0)
+            if profile.target_id == Body.SATURN
+            else (None,)
+        )
+        for ring_latitude in ring_latitudes:
+            for index in range(101):
+                cases.append(
+                    (
+                        profile,
+                        VisibilityTargetContext(
+                            phase_angle_deg=(
+                                lower + (upper - lower) * index / 100.0
+                            ),
+                            saturn_effective_ring_sub_latitude_deg=(
+                                ring_latitude
+                            ),
+                        ),
+                    )
+                )
+    return cases
+
+
+def _assert_phase6_native_differential_case(
+    case: tuple[Any, VisibilityTargetContext],
+) -> tuple[float, tuple[float, ...], tuple[float, ...]]:
+    profile, context = case
+    band_deltas = profile.color_model.band_differential_magnitudes(
+        context
+    )
+    expected = _resolve_response_weights_python(
+        base_scotopic_to_photopic_ratio=(
+            profile.base_scotopic_to_photopic_ratio
+        ),
+        base_photopic=profile.base_photopic_extinction_weights,
+        base_scotopic=profile.base_scotopic_extinction_weights,
+        band_deltas=band_deltas,
+    )
+    actual_profile = profile.resolve(context)
+    actual = (
+        actual_profile.scotopic_to_photopic_ratio,
+        actual_profile.photopic_extinction_weights,
+        actual_profile.scotopic_extinction_weights,
+    )
+    assert actual[0] == pytest.approx(expected[0], rel=0.0, abs=5.0e-15)
+    assert actual[1] == pytest.approx(expected[1], rel=0.0, abs=5.0e-18)
+    assert actual[2] == pytest.approx(expected[2], rel=0.0, abs=5.0e-18)
+    assert math.fsum(actual[1]) == pytest.approx(1.0, rel=0.0, abs=2.0e-15)
+    assert math.fsum(actual[2]) == pytest.approx(1.0, rel=0.0, abs=2.0e-15)
+    return actual
+
+
+def test_phase6_native_response_kernel_matches_python_complete_domain() -> None:
+    for case in _phase6_differential_cases():
+        _assert_phase6_native_differential_case(case)
+
+
+def test_phase6_native_response_kernel_is_deterministic_under_threads() -> None:
+    cases = _phase6_differential_cases()
+    expected = [
+        _assert_phase6_native_differential_case(case) for case in cases
+    ]
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        concurrent = list(
+            executor.map(_assert_phase6_native_differential_case, cases)
+        )
+
+    assert concurrent == expected
 
 
 def test_mercury_gray_profile_is_constant_within_source_domain() -> None:

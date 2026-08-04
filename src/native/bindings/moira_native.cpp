@@ -26,6 +26,7 @@
 #include "precession.hpp"
 #include "harmograms.hpp"
 #include "planetary_evaluator.hpp"
+#include "physical_visibility_kernels.hpp"
 
 namespace py = pybind11;
 using namespace moira::native;
@@ -412,6 +413,56 @@ py::list vector_to_py_list(const std::vector<double>& values) {
     py::list out;
     for (double v : values) out.append(v);
     return out;
+}
+
+py::tuple vector_to_py_tuple(const std::vector<double>& values) {
+    py::tuple out(values.size());
+    for (std::size_t index = 0; index < values.size(); ++index) {
+        out[index] = values[index];
+    }
+    return out;
+}
+
+py::tuple physical_visibility_response_weights_py(
+    const py::handle& band_wavelength_nm,
+    const py::handle& band_differential_magnitude,
+    const py::handle& spectral_bin_start_nm,
+    double base_scotopic_to_photopic_ratio,
+    const py::handle& base_photopic,
+    const py::handle& base_scotopic
+) {
+    const std::vector<double> band_wavelengths = load_double_vector(
+        band_wavelength_nm, "Band wavelengths"
+    );
+    const std::vector<double> band_differentials = load_double_vector(
+        band_differential_magnitude, "Band differential magnitudes"
+    );
+    const std::vector<double> spectral_bins = load_double_vector(
+        spectral_bin_start_nm, "Spectral bins"
+    );
+    const std::vector<double> photopic = load_double_vector(
+        base_photopic, "Base photopic weights"
+    );
+    const std::vector<double> scotopic = load_double_vector(
+        base_scotopic, "Base scotopic weights"
+    );
+    PhysicalVisibilityResponseWeights result;
+    {
+        py::gil_scoped_release release;
+        result = resolve_physical_visibility_response_weights(
+            band_wavelengths,
+            band_differentials,
+            spectral_bins,
+            base_scotopic_to_photopic_ratio,
+            photopic,
+            scotopic
+        );
+    }
+    return py::make_tuple(
+        result.scotopic_to_photopic_ratio,
+        vector_to_py_tuple(result.photopic),
+        vector_to_py_tuple(result.scotopic)
+    );
 }
 
 void load_mat3(const py::sequence& src, double out[3][3]) {
@@ -1783,6 +1834,47 @@ PYBIND11_MODULE(_moira_native, m) {
         py::arg("hull"), py::arg("position_angle_deg"), py::arg("fallback_radius_km"));
 
     // --- Visibility ---
+    py::class_<PhysicalVisibilityDirectExtinctionKernel>(
+        m, "_PhysicalVisibilityDirectExtinctionKernel"
+    )
+        .def(
+            py::init<std::vector<double>, std::size_t>(),
+            py::arg("extinction_magnitude"),
+            py::arg("spectral_bin_count")
+        )
+        .def(
+            "interpolate",
+            [](const PhysicalVisibilityDirectExtinctionKernel& kernel,
+               std::size_t low,
+               std::size_t high,
+               double fraction) {
+                PhysicalVisibilityDirectExtinction result;
+                {
+                    py::gil_scoped_release release;
+                    result = kernel.interpolate(low, high, fraction);
+                }
+                return py::make_tuple(
+                    vector_to_py_tuple(result.extinction_magnitude),
+                    vector_to_py_tuple(result.transmission)
+                );
+            },
+            py::arg("low"),
+            py::arg("high"),
+            py::arg("fraction")
+        );
+
+    m.def(
+        "_physical_visibility_resolve_response_weights",
+        &physical_visibility_response_weights_py,
+        py::arg("band_wavelength_nm"),
+        py::arg("band_differential_magnitude"),
+        py::arg("spectral_bin_start_nm"),
+        py::arg("base_scotopic_to_photopic_ratio"),
+        py::arg("base_photopic"),
+        py::arg("base_scotopic"),
+        "Resolve one doctrine-free physical-visibility response-weight kernel."
+    );
+
     py::class_<HeliacalEvent>(m, "HeliacalEvent")
         .def_readonly("event_kind", &HeliacalEvent::event_kind)
         .def_readonly("jd_ut", &HeliacalEvent::jd_ut)

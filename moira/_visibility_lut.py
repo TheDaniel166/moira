@@ -18,7 +18,7 @@ import hashlib
 import json
 import math
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -293,6 +293,36 @@ class VisibilityDataPack:
     _stellar_target_profiles: tuple[
         VisibilityPackStellarTargetProfile, ...
     ] = ()
+    _direct_target_log_axis: tuple[float, ...] = field(
+        init=False,
+        repr=False,
+        compare=False,
+    )
+    _native_direct_extinction_kernel: Any = field(
+        init=False,
+        repr=False,
+        compare=False,
+    )
+
+    def __post_init__(self) -> None:
+        from . import moira_native
+
+        object.__setattr__(
+            self,
+            "_direct_target_log_axis",
+            tuple(
+                math.log10(value + 0.25)
+                for value in self._direct_target_axis
+            ),
+        )
+        object.__setattr__(
+            self,
+            "_native_direct_extinction_kernel",
+            moira_native._PhysicalVisibilityDirectExtinctionKernel(
+                self._direct_extinction,
+                len(self._spectral_bin_start_nm),
+            ),
+        )
 
     def interpolate_twilight_luminance(
         self,
@@ -387,24 +417,31 @@ class VisibilityDataPack:
     ) -> VisibilityDirectExtinctionSpectrum:
         """Interpolate every direct-extinction bin in the admitted coordinate."""
 
-        target = _finite_coordinate(
-            target_true_altitude_deg, "target_true_altitude_deg"
+        target, low, high, fraction = self._direct_extinction_bracket(
+            target_true_altitude_deg
         )
-        low, high, fraction = _axis_bracket(
-            tuple(
-                math.log10(value + 0.25)
-                for value in self._direct_target_axis
-            ),
-            math.log10(target + 0.25)
-            if target > -0.25
-            else float("-inf"),
-            "target_altitude_out_of_domain",
-            "target_true_altitude_deg",
-            displayed_domain=(
-                self._direct_target_axis[0],
-                self._direct_target_axis[-1],
-            ),
-            displayed_value=target,
+        extinction, transmission = (
+            self._native_direct_extinction_kernel.interpolate(
+                low,
+                high,
+                fraction,
+            )
+        )
+        return self._direct_extinction_result(
+            target,
+            tuple(extinction),
+            tuple(transmission),
+        )
+
+    def _interpolate_direct_extinction_spectrum_python(
+        self,
+        *,
+        target_true_altitude_deg: float,
+    ) -> VisibilityDirectExtinctionSpectrum:
+        """Python differential oracle for direct-extinction interpolation."""
+
+        target, low, high, fraction = self._direct_extinction_bracket(
+            target_true_altitude_deg
         )
         bin_count = len(self._spectral_bin_start_nm)
         low_offset = low * bin_count
@@ -426,10 +463,44 @@ class VisibilityDataPack:
         transmission = tuple(
             10.0 ** (-0.4 * magnitude) for magnitude in extinction
         )
+        return self._direct_extinction_result(
+            target,
+            tuple(extinction),
+            transmission,
+        )
+
+    def _direct_extinction_bracket(
+        self,
+        target_true_altitude_deg: float,
+    ) -> tuple[float, int, int, float]:
+        target = _finite_coordinate(
+            target_true_altitude_deg, "target_true_altitude_deg"
+        )
+        low, high, fraction = _axis_bracket(
+            self._direct_target_log_axis,
+            math.log10(target + 0.25)
+            if target > -0.25
+            else float("-inf"),
+            "target_altitude_out_of_domain",
+            "target_true_altitude_deg",
+            displayed_domain=(
+                self._direct_target_axis[0],
+                self._direct_target_axis[-1],
+            ),
+            displayed_value=target,
+        )
+        return target, low, high, fraction
+
+    def _direct_extinction_result(
+        self,
+        target: float,
+        extinction: tuple[float, ...],
+        transmission: tuple[float, ...],
+    ) -> VisibilityDirectExtinctionSpectrum:
         return VisibilityDirectExtinctionSpectrum(
             target_true_altitude_deg=target,
             spectral_bin_start_nm=self._spectral_bin_start_nm,
-            extinction_magnitude=tuple(extinction),
+            extinction_magnitude=extinction,
             transmission=transmission,
             interpolation_maximum_error_mag=self._direct_error_max_mag,
             interpolation_p95_error_mag=self._direct_error_p95_mag,

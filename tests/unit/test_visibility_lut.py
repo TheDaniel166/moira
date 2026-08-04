@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 import struct
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -545,6 +546,66 @@ def test_direct_extinction_uses_declared_log_altitude_coordinate(
     assert spectrum.transmission == pytest.approx(
         (10.0 ** (-0.8),) * 400
     )
+
+
+def test_phase6_native_direct_extinction_matches_python_complete_domain(
+    tmp_path: Path,
+) -> None:
+    pack = load_visibility_data_pack(
+        VisibilityDataPackConfig(directory=_synthetic_pack(tmp_path))
+    )
+    altitudes = tuple(
+        0.25 + (45.0 - 0.25) * index / 200.0
+        for index in range(201)
+    )
+
+    for altitude in altitudes:
+        expected = pack._interpolate_direct_extinction_spectrum_python(
+            target_true_altitude_deg=altitude
+        )
+        actual = pack.interpolate_direct_extinction_spectrum(
+            target_true_altitude_deg=altitude
+        )
+        assert actual.extinction_magnitude == pytest.approx(
+            expected.extinction_magnitude,
+            rel=0.0,
+            abs=2.0e-15,
+        )
+        assert actual.transmission == pytest.approx(
+            expected.transmission,
+            rel=0.0,
+            abs=2.0e-15,
+        )
+
+
+def test_phase6_native_direct_extinction_is_deterministic_under_threads(
+    tmp_path: Path,
+) -> None:
+    pack = load_visibility_data_pack(
+        VisibilityDataPackConfig(directory=_synthetic_pack(tmp_path))
+    )
+    altitudes = tuple(
+        0.25 + (45.0 - 0.25) * index / 200.0
+        for index in range(201)
+    )
+    expected = [
+        pack.interpolate_direct_extinction_spectrum(
+            target_true_altitude_deg=altitude
+        )
+        for altitude in altitudes
+    ]
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        concurrent = list(
+            executor.map(
+                lambda altitude: pack.interpolate_direct_extinction_spectrum(
+                    target_true_altitude_deg=altitude
+                ),
+                altitudes,
+            )
+        )
+
+    assert concurrent == expected
 
 
 @pytest.mark.parametrize(
