@@ -11,6 +11,7 @@ import math
 
 import pytest
 
+from evidence.contracts import HOUSE_ROUND_TRIP_COMPARISON
 from moira.houses import (
     _dot3,
     _ecliptic_longitude_from_equatorial_vector,
@@ -32,11 +33,8 @@ _EQUATORIAL_ECLIPTIC_ROUND_TRIP = ToleranceContract(
     name="house_equatorial_ecliptic_round_trip",
     semantics=NumericSemantics.CIRCULAR,
     unit=Unit.DEGREES,
-    absolute=1e-12,
-    basis=(
-        "Binary64 forward/inverse rotation of normalized unit directions; "
-        "the tolerance bounds accumulated trigonometric round-off."
-    ),
+    absolute=HOUSE_ROUND_TRIP_COMPARISON.absolute,
+    basis=HOUSE_ROUND_TRIP_COMPARISON.basis,
 )
 
 
@@ -100,6 +98,10 @@ def test_projected_direction_lies_on_both_governing_planes(
 
 @pytest.mark.parametrize("obliquity_deg", [22.0, 23.4392911, 24.5])
 @pytest.mark.parametrize("longitude_deg", [0.0, 17.5, 90.0, 183.25, 359.9])
+@pytest.mark.validation_contract(
+    "MOIRA-HOUSE-EQUATORIAL-ECLIPTIC-ROUNDTRIP-V1"
+)
+@pytest.mark.parallel(reason="isolated_resources")
 def test_equatorial_ecliptic_round_trip(
     obliquity_deg: float,
     longitude_deg: float,

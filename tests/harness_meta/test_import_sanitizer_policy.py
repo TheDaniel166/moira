@@ -10,16 +10,44 @@ from types import ModuleType
 import pytest
 
 
+pytestmark = pytest.mark.parallel(reason="worker_isolated")
+
+
 _ROOT_CONFTEST = Path(__file__).resolve().parents[2] / "conftest.py"
 
 
-def test_root_sanitizer_evicts_foreign_support_package(
+@pytest.mark.parametrize(
+    ("module_name", "is_package"),
+    (
+        ("support", True),
+        ("_pytest_plugins", True),
+        ("_pytest_plugins.configuration", False),
+    ),
+)
+def test_root_sanitizer_evicts_foreign_repo_owned_module(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    module_name: str,
+    is_package: bool,
 ) -> None:
-    foreign_support = ModuleType("support")
-    foreign_support.__file__ = str(tmp_path / "support" / "__init__.py")
-    monkeypatch.setitem(sys.modules, "support", foreign_support)
+    foreign_module = ModuleType(module_name)
+    foreign_path = tmp_path.joinpath(*module_name.split("."))
+    foreign_module.__file__ = str(
+        foreign_path / "__init__.py"
+        if is_package
+        else foreign_path.with_suffix(".py")
+    )
+    if is_package:
+        foreign_module.__path__ = [str(foreign_path)]
+    monkeypatch.setitem(sys.modules, module_name, foreign_module)
+    if "." in module_name:
+        package_name = module_name.split(".", 1)[0]
+        foreign_package = ModuleType(package_name)
+        foreign_package.__file__ = str(
+            tmp_path / package_name / "__init__.py"
+        )
+        foreign_package.__path__ = [str(tmp_path / package_name)]
+        monkeypatch.setitem(sys.modules, package_name, foreign_package)
     original_path = list(sys.path)
 
     spec = importlib.util.spec_from_file_location(
@@ -33,4 +61,4 @@ def test_root_sanitizer_evicts_foreign_support_package(
     finally:
         sys.path[:] = original_path
 
-    assert sys.modules.get("support") is not foreign_support
+    assert sys.modules.get(module_name) is not foreign_module

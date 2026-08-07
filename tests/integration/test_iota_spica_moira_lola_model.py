@@ -211,7 +211,7 @@ def test_iota_spica_moira_model_fixture_keeps_evidence_classes_separate() -> Non
 @pytest.mark.lola
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-@pytest.mark.serial
+@pytest.mark.serial(reason="shared_cache")
 @pytest.mark.parametrize("site_id", ("Dunham1", "Dunham2"))
 def test_iota_spica_moira_topology_regression(
     site_id: str,

@@ -9,11 +9,15 @@ import os
 from pathlib import Path
 import socket
 import subprocess
+import shutil
 import sys
 from textwrap import dedent
 from typing import Callable
 
 import pytest
+
+
+pytestmark = pytest.mark.parallel(reason="worker_isolated")
 
 
 _TESTS_DIR = Path(__file__).resolve().parents[1]
@@ -34,6 +38,8 @@ _POLICY_ENVIRONMENT = "MOIRA_TEST_NETWORK_POLICY"
 _PYTEST_CONFIG = """\
 [pytest]
 addopts = -ra
+strict_config = true
+strict_markers = true
 markers =
     loopback: local IPC only; external destinations remain forbidden
     external_network: live external access; requires --run-external-network
@@ -62,17 +68,10 @@ def _make_policy_project(
     mini_tests = pytester.path / "tests"
     mini_tests.mkdir()
     mini_support = mini_tests / "support"
-    mini_support.mkdir()
-    mini_support.joinpath("__init__.py").write_text("", encoding="utf-8")
-    mini_support.joinpath("network_policy.py").write_text(
-        _NETWORK_POLICY_PATH.read_text(encoding="utf-8"),
-        encoding="utf-8",
-    )
-    mini_bootstrap = mini_support / "network_bootstrap"
-    mini_bootstrap.mkdir()
-    mini_bootstrap.joinpath("sitecustomize.py").write_text(
-        _NETWORK_BOOTSTRAP_PATH.read_text(encoding="utf-8"),
-        encoding="utf-8",
+    shutil.copytree(_TESTS_DIR / "support", mini_support)
+    shutil.copytree(
+        _TESTS_DIR / "_pytest_plugins",
+        mini_tests / "_pytest_plugins",
     )
     mini_tests.joinpath("conftest.py").write_text(
         _HARNESS_PATH.read_text(encoding="utf-8") + _NO_KERNEL_BOOTSTRAP,
@@ -1267,6 +1266,8 @@ def test_network_policy_is_worker_local_under_xdist(
         import socket
         import pytest
         import support.network_policy as network_policy
+
+        pytestmark = pytest.mark.parallel(reason="worker_isolated")
 
 
         @pytest.mark.parametrize("index", range(4))

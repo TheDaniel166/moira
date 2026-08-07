@@ -359,6 +359,7 @@ def test_yallop_lunar_corpus_slice_matches_published_table4_cases(
 
 
 @pytest.mark.requires_ephemeris
+@pytest.mark.optional_enumeration(reason="no_admitted_q_outliers")
 @pytest.mark.parametrize(
     "row",
     _YALLOP_Q_OUTLIER_ROWS,

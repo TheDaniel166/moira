@@ -903,11 +903,20 @@ py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t sta
 // doctrine and topology remain in moira/eclipse.py; this boundary has no
 // NumPy or buffer-library dependency.
 
+constexpr char kNativeBuildProvenanceMarker[] =
+    "MOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256="
+    MOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256;
 
 } // namespace
 
 PYBIND11_MODULE(_moira_native, m) {
     m.doc() = "Moira Native Backend Forge";
+    m.def("_build_input_manifest_sha256", []() {
+        return std::string(MOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256);
+    });
+    m.def("_build_provenance_marker", []() {
+        return std::string(kNativeBuildProvenanceMarker);
+    });
 
     // --- Evaluators ---
     py::class_<IEvaluator, std::shared_ptr<IEvaluator>>(m, "IEvaluator")

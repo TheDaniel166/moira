@@ -1,14 +1,25 @@
 import importlib
+import os
 import sys
 from pathlib import Path
 
+import pytest
+
 
 pytest_plugins = ("pytester",)
+_MOIRA_ROOT_HARNESS_BOOTSTRAP = True
 
 
 ROOT_DIR = Path(__file__).resolve().parent
 TESTS_DIR = ROOT_DIR / "tests"
-_REPO_OWNED_IMPORT_PREFIXES = ("tests", "moira", "tools", "support")
+os.environ["_MOIRA_ROOT_HARNESS_BOOTSTRAP"] = str(ROOT_DIR)
+_REPO_OWNED_IMPORT_PREFIXES = (
+    "_pytest_plugins",
+    "tests",
+    "moira",
+    "tools",
+    "support",
+)
 
 
 def _repo_owns_module(module) -> bool:
@@ -63,3 +74,22 @@ _sanitize_import_state()
 _network_policy = importlib.import_module("support.network_policy")
 _network_policy.install_network_audit_hook()
 _network_policy.reset_network_mode(nodeid="<root-conftest>")
+
+
+def pytest_addoption(parser) -> None:
+    network_plugin = importlib.import_module(
+        "_pytest_plugins.network_policy"
+    )
+    network_plugin.register_options(parser)
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_configure(config) -> None:
+    bootstrap = importlib.import_module("_pytest_plugins")
+    bootstrap.register_required_plugins(config)
+    bootstrap.verify_required_plugins(config)
+
+
+def pytest_collection_finish(session) -> None:
+    bootstrap = importlib.import_module("_pytest_plugins")
+    bootstrap.verify_required_plugins(session.config)

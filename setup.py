@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import runpy
 import shutil
 import subprocess
 import sys
@@ -32,9 +33,23 @@ class CMakeBuild(build_ext):
             raise RuntimeError("pybind11 is required to build moira._moira_native") from exc
 
         ext_fullpath = Path(self.get_ext_fullpath(ext.name)).resolve()
+        source_root = Path(ext.sourcedir).resolve()
+        provenance_module = runpy.run_path(
+            str(source_root / "moira" / "_native_build_provenance.py")
+        )
+        build_manifest = provenance_module["native_build_input_manifest"](
+            source_root
+        )
         build_temp = Path(self.build_temp).resolve() / ext.name.replace(".", "_")
+        source_snapshot = build_temp.parent / f"{build_temp.name}_source_snapshot"
         shutil.rmtree(build_temp, ignore_errors=True)
+        shutil.rmtree(source_snapshot, ignore_errors=True)
         build_temp.mkdir(parents=True, exist_ok=True)
+        provenance_module["stage_native_build_snapshot"](
+            source_root,
+            source_snapshot,
+            build_manifest,
+        )
         build_lib = Path(self.build_lib).resolve()
         build_lib.mkdir(parents=True, exist_ok=True)
 
@@ -42,12 +57,14 @@ class CMakeBuild(build_ext):
         pybind11_dir = Path(pybind11.get_cmake_dir()).resolve()
 
         configure_args = [
-            f"-S{Path(ext.sourcedir).resolve()}",
+            f"-S{source_snapshot}",
             f"-B{build_temp}",
             f"-DCMAKE_BUILD_TYPE={config}",
             f"-DPython3_EXECUTABLE={sys.executable}",
             f"-Dpybind11_DIR={pybind11_dir}",
             f"-DMOIRA_EXTENSION_FULL_OUTPUT_PATH={ext_fullpath}",
+            "-DMOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256="
+            f"{build_manifest['sha256']}",
         ]
         build_args = ["--build", str(build_temp), "--config", config]
         install_args = ["--install", str(build_temp), "--config", config, "--prefix", str(build_lib)]
@@ -61,6 +78,13 @@ class CMakeBuild(build_ext):
         subprocess.run([cmake_exe, *configure_args], check=True)
         subprocess.run([cmake_exe, *build_args], check=True)
         subprocess.run([cmake_exe, *install_args], check=True)
+        final_snapshot_manifest = provenance_module[
+            "native_build_input_manifest"
+        ](source_snapshot)
+        if final_snapshot_manifest != build_manifest:
+            raise RuntimeError(
+                "native build snapshot changed while CMake was compiling it"
+            )
 
         package_dir = ext_fullpath.parent
         for pattern in ("_moira_native*.exp", "_moira_native*.lib"):

@@ -7,6 +7,7 @@ import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
+import shutil
 from textwrap import dedent
 from types import ModuleType
 from typing import Callable
@@ -15,6 +16,9 @@ import pytest
 
 from tools import golden as golden_module
 from tools import snapshots as snapshot_module
+
+
+pytestmark = pytest.mark.parallel(reason="isolated_resources")
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,6 +68,8 @@ _POLICY_ENVIRONMENT = (
 )
 _PYTEST_CONFIG = """\
 [pytest]
+strict_config = true
+strict_markers = true
 markers =
     loopback: local IPC only
     external_network: explicitly permitted external access
@@ -405,6 +411,10 @@ def test_directory_cannot_masquerade_as_baseline_file(
 def _make_policy_project(pytester: pytest.Pytester) -> None:
     mini_tests = pytester.path / "tests"
     mini_tests.mkdir()
+    shutil.copytree(
+        _TESTS_DIR / "_pytest_plugins",
+        mini_tests / "_pytest_plugins",
+    )
     mini_support = mini_tests / "support"
     mini_support.mkdir()
     mini_support.joinpath("__init__.py").write_text("", encoding="utf-8")

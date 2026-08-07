@@ -104,11 +104,20 @@ moira = [
 [tool.pytest.ini_options]
 testpaths    = ["tests"]
 pythonpath   = [".", "tests"] # repo-local code and test utilities only
-addopts      = "-ra -q --import-mode=importlib"
+addopts      = "-ra -q --import-mode=importlib --strict-markers --strict-config"
+strict_config = true
+strict_markers = true
 norecursedirs = [".git", ".venv", ".hypothesis", ".pytest_cache", "__pycache__", "dist", "tmp"]
 markers = [
-    "unit:            fast, isolated unit tests",
-    "integration:     tests that exercise multiple modules or use de441.bsp",
+    "legacy_root:     primary path class for legacy tests directly under tests/",
+    "governance:      primary class for export-governance tests",
+    "harness:         primary class for pytest-harness policy tests",
+    "integration:     primary class for multi-module or resource-bound tests",
+    "metamorphic:     primary class for reviewed invariant and relation tests",
+    "oracle:          primary class for external-authority comparison tests",
+    "server:          primary class for optional server-transport tests",
+    "stress:          primary class for explicitly bounded stress tests",
+    "unit:            primary class for isolated unit tests",
     "loopback:        tests permitted to use numeric loopback or AF_UNIX local IPC only",
     "external_network: external access; requires --run-external-network in an isolated external-only process",
     "network:         forbidden legacy marker; collection fails until reclassified",
@@ -119,8 +128,11 @@ markers = [
     "numpy_free_lunar_limb: tests for the native/stdlib lunar-limb path",
     "template:        template/boilerplate tests (opt-in via MOIRA_RUN_TEMPLATES=1)",
     "experimental:    experimental tests (opt-in via MOIRA_RUN_EXPERIMENTAL=1)",
-    "parallel:        safe to run in parallel with pytest-xdist",
-    "serial:          must run serially (global state / file locks)",
+    "required_enumeration: parametrized source must contain at least one case",
+    "optional_enumeration(reason=...): parametrized source may be empty for the stated reason",
+    "parallel(reason=...): explicitly admitted to pytest-xdist execution",
+    "serial(reason=...): must run in the local pytest -n 0 lane",
+    "validation_contract(claim_id): bind a selected validation test to one reviewed machine-checkable evidence contract",
     "ui:              tests that require a Qt application instance (PySide6)",
 ]
 

@@ -19,7 +19,7 @@ _ORACLE_TOLERANCE_DEG = 1e-6
 @pytest.mark.integration
 @pytest.mark.slow
 @pytest.mark.external_network
-@pytest.mark.serial
+@pytest.mark.serial(reason="shared_cache")
 def test_lola_query_width_policy_preserves_oracle_parity():
     if not _BASELINE_PATH.exists():
         pytest.skip("Oracle baseline not found. Run scripts/capture_lunar_limb_oracle.py first.")

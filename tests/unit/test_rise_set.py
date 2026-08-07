@@ -348,6 +348,7 @@ def test_fixed_star_grazing_geometry_preserves_scan_event_semantics() -> None:
 
 
 @pytest.mark.slow
+@pytest.mark.required_enumeration
 @pytest.mark.parametrize("body", Body.ALL_PLANETS)
 @pytest.mark.parametrize("lat", [-66.0, 0.0, 66.0])
 def test_planet_horizon_estimates_refine_to_scan_truth(

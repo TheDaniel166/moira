@@ -6,6 +6,10 @@ import sys
 
 import pytest
 
+from evidence.contracts import (
+    NUTATION_DEPS_PARITY_COMPARISON,
+    NUTATION_DPSI_PARITY_COMPARISON,
+)
 import moira.nutation_2000a as nut
 from moira import moira_native
 
@@ -19,9 +23,16 @@ from moira import moira_native
         2488069.5,
     ],
 )
+@pytest.mark.validation_contract(
+    "MOIRA-NUTATION-2000A-PY-NATIVE-PARITY-V1"
+)
+@pytest.mark.parallel(reason="worker_isolated")
 def test_native_nutation_2000a_matches_scalar_reference(jd_tt: float) -> None:
     if nut._moira_native is None:
-        pytest.skip("native module unavailable")
+        pytest.fail(
+            "admitted native-parity evidence requires the project native module",
+            pytrace=False,
+        )
 
     ls_terms, pl_terms = nut._ensure_tables_loaded()
     T = nut.centuries_from_j2000(jd_tt)
@@ -29,11 +40,23 @@ def test_native_nutation_2000a_matches_scalar_reference(jd_tt: float) -> None:
     expected_dpsi, expected_deps = nut._nutation_python(T, fa)
     actual_dpsi, actual_deps = nut.nutation_2000a(jd_tt)
 
-    assert actual_dpsi == pytest.approx(expected_dpsi, abs=1e-13)
-    assert actual_deps == pytest.approx(expected_deps, abs=1e-13)
+    dpsi_residual = abs(actual_dpsi - expected_dpsi)
+    deps_residual = abs(actual_deps - expected_deps)
+    assert dpsi_residual <= NUTATION_DPSI_PARITY_COMPARISON.absolute, (
+        f"delta psi residual {dpsi_residual!r} exceeds the absolute-only "
+        f"contract bound {NUTATION_DPSI_PARITY_COMPARISON.absolute!r} degrees"
+    )
+    assert deps_residual <= NUTATION_DEPS_PARITY_COMPARISON.absolute, (
+        f"delta epsilon residual {deps_residual!r} exceeds the absolute-only "
+        f"contract bound {NUTATION_DEPS_PARITY_COMPARISON.absolute!r} degrees"
+    )
 
-    assert ls_terms
-    assert pl_terms
+    assert len(ls_terms) == 1358
+    assert len(pl_terms) == 1056
+    assert nut._LS_J0_COUNT == 1320
+    assert nut._PL_J0_COUNT == 1037
+    assert all(len(term) == 16 for term in ls_terms)
+    assert all(len(term) == 16 for term in pl_terms)
 
 
 def test_native_nutation_series_rejects_invalid_replacement() -> None:

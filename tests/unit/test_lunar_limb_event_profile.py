@@ -721,7 +721,7 @@ def test_pinned_cached_resource_hash_mismatch_fails_before_use(tmp_path) -> None
 
 
 @pytest.mark.slow
-@pytest.mark.serial
+@pytest.mark.parallel(reason="isolated_resources")
 def test_long_download_collision_publishes_one_atomic_cache_file(tmp_path) -> None:
     """A second Windows worker must outwait the historical ten-second limit."""
 
@@ -790,7 +790,7 @@ def test_long_download_collision_publishes_one_atomic_cache_file(tmp_path) -> No
     assert tuple(tmp_path.glob("*.part")) == ()
 
 
-@pytest.mark.serial
+@pytest.mark.parallel(reason="isolated_resources")
 def test_interprocess_cache_lock_timeout_is_explicit(tmp_path) -> None:
     context = multiprocessing.get_context("spawn")
     lock_path = tmp_path / "held.lock"

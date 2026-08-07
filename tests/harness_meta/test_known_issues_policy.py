@@ -16,6 +16,9 @@ from typing import Any
 import pytest
 
 
+pytestmark = pytest.mark.parallel(reason="isolated_resources")
+
+
 _SOURCE_TESTS = Path(__file__).resolve().parents[1]
 _MISSING = object()
 
@@ -29,6 +32,8 @@ _VALID_FIELDS = {
 
 _PYTEST_CONFIG = """\
 [pytest]
+strict_config = true
+strict_markers = true
 markers =
     experimental: experimental tests
     integration: integration tests

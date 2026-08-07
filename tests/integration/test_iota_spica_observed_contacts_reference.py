@@ -203,7 +203,6 @@ def test_iota_spica_observed_contact_fixture_preserves_source_semantics() -> Non
 
 @pytest.mark.external_network
 @pytest.mark.slow
-@pytest.mark.serial
 def test_iota_spica_authority_documents_still_match_frozen_bytes() -> None:
     requests = pytest.importorskip("requests")
     documents = _fixture()["source"]["documents"]
@@ -236,7 +235,6 @@ def test_iota_spica_authority_documents_still_match_frozen_bytes() -> None:
 
 
 @pytest.mark.external_network
-@pytest.mark.serial
 def test_iota_spica_height_approximations_still_match_noaa_geoid18() -> None:
     """Refresh the geoid term without promoting Google Earth H to WGS84."""
 

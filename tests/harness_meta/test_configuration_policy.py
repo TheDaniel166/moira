@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
 from textwrap import dedent
 
 import pytest
+
+
+pytestmark = pytest.mark.parallel(reason="isolated_resources")
 
 
 _TESTS_DIR = Path(__file__).resolve().parents[1]
@@ -31,6 +35,8 @@ _POLICY_ENV_NAMES = (
 )
 _PYTEST_CONFIG = """\
 [pytest]
+strict_config = true
+strict_markers = true
 markers =
     parallel: tests admitted for parallel execution
     property: property-based tests
@@ -60,6 +66,10 @@ def _make_policy_project(pytester: pytest.Pytester) -> None:
     mini_bootstrap.joinpath("sitecustomize.py").write_text(
         _NETWORK_BOOTSTRAP_SOURCE,
         encoding="utf-8",
+    )
+    shutil.copytree(
+        _TESTS_DIR / "_pytest_plugins",
+        mini_tests / "_pytest_plugins",
     )
     mini_tests.joinpath("conftest.py").write_text(
         _HARNESS_SOURCE + _NO_KERNEL_BOOTSTRAP,

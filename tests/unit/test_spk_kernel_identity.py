@@ -60,6 +60,8 @@ def _open_reader(
         ("de441.bsp", "DE-0430LE-0430", "DE430", "LE430", -25.85),
     ),
 )
+@pytest.mark.validation_contract("MOIRA-SPK-CONTENT-IDENTITY-V1")
+@pytest.mark.parallel(reason="isolated_resources")
 def test_spk_reader_identity_comes_from_summary_content_not_filename(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -107,6 +109,8 @@ def test_unrecognized_coherent_summary_label_remains_unknown() -> None:
     assert identity.lunar_tidal_acceleration_arcsec_per_cy2 is None
 
 
+@pytest.mark.validation_contract("MOIRA-SPK-CONTENT-IDENTITY-V1")
+@pytest.mark.parallel(reason="isolated_resources")
 def test_mixed_summary_identities_fail_closed_and_release_kernel(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

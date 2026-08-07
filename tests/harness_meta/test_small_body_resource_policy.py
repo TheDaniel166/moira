@@ -6,6 +6,7 @@ from dataclasses import FrozenInstanceError
 import hashlib
 import json
 from pathlib import Path
+import shutil
 from textwrap import dedent
 from types import SimpleNamespace
 
@@ -26,6 +27,9 @@ from support.small_body_resource_policy import (
 )
 
 
+pytestmark = pytest.mark.parallel(reason="isolated_resources")
+
+
 _TESTS_DIR = Path(__file__).resolve().parents[1]
 _HARNESS_SOURCE = (_TESTS_DIR / "conftest.py").read_text(encoding="utf-8")
 _PLANETARY_POLICY_SOURCE = (
@@ -43,6 +47,8 @@ _NETWORK_BOOTSTRAP_SOURCE = (
 _PYTEST_CONFIG = """\
 [pytest]
 addopts = -ra
+strict_config = true
+strict_markers = true
 markers =
     requires_ephemeris: typed planetary-kernel capability
     loopback: local IPC only
@@ -635,6 +641,13 @@ def test_report_preserves_full_capability_and_rejects_contradiction(
     terminal = terminalize_small_body_receipt(admission.receipt)
     report = small_body_report_from_receipts({"worker-node": terminal})
     detail = report["details"]["worker-node"]
+    assert detail["requirement"] == {
+        "manifest_schema": "moira.small-body-catalog/v1",
+        "require_release_integrity": True,
+        "allowed_segment_types": [2, 3, 13],
+        "require_native_catalog": True,
+        "require_native_segments": True,
+    }
     capability = detail["capabilities"][0]
     assert capability["manifest_path"] == str(manifest.resolve())
     assert capability["bodies"] == [2_000_001]
@@ -867,6 +880,10 @@ def _make_harness_project(
     bootstrap.joinpath("sitecustomize.py").write_text(
         _NETWORK_BOOTSTRAP_SOURCE,
         encoding="utf-8",
+    )
+    shutil.copytree(
+        _TESTS_DIR / "_pytest_plugins",
+        mini_tests / "_pytest_plugins",
     )
     mini_tests.joinpath("conftest.py").write_text(
         _HARNESS_SOURCE,
@@ -1224,6 +1241,11 @@ def test_pytester_xdist_preserves_each_worker_terminal_receipt(
     planetary, log = _make_harness_project(
         pytester,
         """
+        import pytest
+
+        pytestmark = pytest.mark.parallel(reason="isolated_resources")
+
+
         def test_first(small_body_reader_pool):
             assert len(small_body_reader_pool._readers) == 2
 
@@ -1251,3 +1273,59 @@ def test_pytester_xdist_preserves_each_worker_terminal_receipt(
     line = _summary_line(result)
     assert "receipts=2, run=2, skip=0, failure=0, terminal=2" in line
     assert "manifests=1" in line
+
+
+def test_xdist_worker_cannot_spoof_absent_small_body_receipt(
+    pytester: pytest.Pytester,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _make_harness_project(
+        pytester,
+        """
+        import pytest
+
+        pytestmark = pytest.mark.parallel(reason="read_only")
+
+
+        def test_no_small_body_resource():
+            pass
+        """,
+    )
+    pytester.path.joinpath("small_body_spoofer.py").write_text(
+        dedent(
+            """
+            import pytest
+
+
+            @pytest.hookimpl(trylast=True)
+            def pytest_sessionfinish(session, exitstatus):
+                workeroutput = getattr(
+                    session.config,
+                    "workeroutput",
+                    None,
+                )
+                if isinstance(workeroutput, dict):
+                    workeroutput[
+                        "moira_small_body_resource_report_v1"
+                    ] = {"forged": "worker-controlled"}
+            """
+        ),
+        encoding="utf-8",
+    )
+    result = _run_harness(
+        pytester,
+        monkeypatch,
+        "-p",
+        "small_body_spoofer",
+        "-n",
+        "2",
+        "--dist=load",
+        "-m",
+        "parallel",
+        "-q",
+        environment={},
+    )
+    result.assert_outcomes(passed=1)
+    output = _combined_output(result)
+    assert "worker-controlled" not in output
+    assert "Supplemental small-body resource:" not in output

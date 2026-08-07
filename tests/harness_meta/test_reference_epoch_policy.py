@@ -15,6 +15,9 @@ from support.reference_epochs import (
 )
 
 
+pytestmark = pytest.mark.parallel(reason="read_only")
+
+
 def _erfa_reference_jd(anchor: ReferenceEpoch) -> float:
     if anchor.convention is EpochConvention.JULIAN:
         assert anchor.epoch_year is not None

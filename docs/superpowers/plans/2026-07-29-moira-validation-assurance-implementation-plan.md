@@ -1052,9 +1052,10 @@ and after timing as performance evidence only.
   implementation. A constructor that allocates and raises before returning
   must still clean itself, and manifest verification followed by shard opening
   is not a hostile-filesystem lock against post-verification mutation.
-- Phase 6 has not started. No production/native computation, scientific
-  baseline, `.github/` workflow, generated `moira.wiki/`, or unrelated
-  visibility-reference work was changed.
+- At the Phase 5 checkpoint, Phase 6 had not started. No production/native
+  computation, scientific baseline, `.github/` workflow, generated
+  `moira.wiki/`, or unrelated visibility-reference work was changed by
+  Phase 5.
 
 ---
 
@@ -1062,27 +1063,119 @@ and after timing as performance evidence only.
 
 **Purpose:** ensure selectors and concurrency labels have enforceable meaning.
 
-- [ ] Derive paths relative to `tests/`, never from absolute checkout parents.
-- [ ] Define one primary class per case and fail on contradiction.
-- [ ] Add strict marker and strict configuration enforcement.
-- [ ] Remove automatic `parallel`; absence of `serial` is not proof of
+- [x] Derive paths relative to `tests/`, never from absolute checkout parents.
+- [x] Define one primary class per case and fail on contradiction.
+- [x] Add strict marker and strict configuration enforcement.
+- [x] Remove automatic `parallel`; absence of `serial` is not proof of
   concurrency safety.
-- [ ] Inventory explicit global-state, singleton, filesystem-lock, shared-cache,
+- [x] Inventory explicit global-state, singleton, filesystem-lock, shared-cache,
   and resource-mutation tests.
-- [ ] Run non-serial tests under xdist and serial tests in a separate `-n 0`
-  lane.
-- [ ] Fail an xdist invocation that selects a `serial` test unless an admitted
-  scheduler actually enforces the contract.
-- [ ] Fail on empty parametrization for required base-engine enumerations.
-- [ ] Record collected, selected, deselected, skipped, and primary-class counts.
+- [x] Run explicitly admitted `parallel` tests under xdist and `serial` tests
+  in a separate `-n 0` lane; unclassified tests remain `local_only`.
+- [x] Fail an xdist invocation that selects a `serial` or `local_only` test
+  unless an admitted scheduler actually enforces the contract.
+- [x] Fail on empty parametrization for required base-engine enumerations.
+- [x] Record collected, selected, deselected, skipped, and primary-class counts.
 
 **Gates:**
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests\harness_meta\test_xdist_policy.py -q -p pytester
-.\.venv\Scripts\python.exe -m pytest tests\harness_meta -n 2 -q -p pytester -m "not serial"
+.\.venv\Scripts\python.exe -m pytest tests\harness_meta -n 2 --dist=load -q -p pytester -m "parallel"
 .\.venv\Scripts\python.exe -m pytest tests\harness_meta -n 0 -q -p pytester -m "serial"
 ```
+
+#### Phase 6 completion checkpoint — 2026-07-30
+
+- Execution classification is now an enforced collection contract, not a
+  descriptive tag. Every case receives exactly one path-derived primary class
+  from the resolved path relative to `tests/`: `legacy_root`, `governance`,
+  `harness`, `integration`, `oracle`, `server`, `stress`, or `unit`.
+  `legacy_root` deliberately names the location of the eight historical
+  root-level test modules; it does not claim to mean every engine test.
+  Unknown directories, path escapes, contradictory declarations, marker
+  arguments, duplicate node IDs, and late classification-marker mutation fail
+  closed.
+- Native pytest `strict_config` and `strict_markers` must be effectively true,
+  including under an alternate `-c` file; explicit `-o` weakening is rejected.
+  The harness also checks attached marker registrations itself. Synthetic
+  harness projects now opt into the same strict contract.
+- Concurrency has three disjoint meanings. Unmarked cases are `local_only`;
+  `parallel(reason=...)` is a narrow, reason-enumerated xdist admission; and
+  `serial(reason=...)` is a reason-enumerated local-process lane. There is no
+  automatic parallel marker. Xdist treats worker presence as authoritative,
+  admits only selected `parallel` cases, rejects `--dist=each`, freezes each
+  selected classification through collection finish and fixture setup, and
+  requires every worker to emit an identical SHA-256 manifest. Its scheduler
+  mode is frozen at admission and rechecked at scheduler construction; the
+  returned scheduler must have the exact xdist class admitted for that mode.
+  The scheduler-hook chain is closed to Moira's guard and xdist's own
+  `DSession` implementation, so a late direct or wrapper hook cannot substitute
+  duplicate-everything scheduling. The controller independently rejects any
+  receipt containing a selected `local_only` or `serial` case.
+- The current explicit serial inventory is seven collected cases: the local
+  harness canary; one LOLA tile-cache case; two IOTA/Spica topology parameters;
+  one LOLA query-width case; and two SPICE time-admission cases. The six
+  production cases are all `external_network` and remain held in deny mode.
+  Their live bodies were therefore not exercised in this phase; only their
+  classification, selection, skip, and receipt behavior was proved.
+- Parallel admission remains intentionally small: the harness meta-suite,
+  the worker-isolated supplemental-manifest routing test, and two
+  temporary-directory lunar-limb lock tests. The remaining non-serial
+  repository is `local_only` until an explicit concurrency proof is added.
+- Required enumerations now fail if pytest materializes an empty parameter set.
+  Intentionally empty families require
+  `optional_enumeration(reason=...)` and remain visible in the receipt. The
+  current optional family is the Yallop Q outlier corpus, whose source fixture
+  presently contains no admitted outlier rows.
+- The immutable semantic receipt records collected, selected, deselected,
+  primary-class, concurrency, optional-empty, and SHA-256 manifest data.
+  Terminal reporting counts unique collection- and runtime-phase skips.
+  Serial and two-worker executions of the same deterministic canary corpus
+  produce identical visible semantic receipts.
+- Removed three false-green collection paths. The scratch diurnal-aberration
+  script and resource-binding stress script were renamed outside pytest's
+  `test_*.py` discovery; both remain explicit manual tools. The diurnal probe
+  now raises on missing exceptions, uses a two-sided physical bound, is safe in
+  the canonical Windows console, and passed manually with checks still active
+  under Python optimization. The resource stress audit requires an explicit
+  kernel path, uses optimization-independent handle checks, and was not run.
+  The nested preservation-governance test that launched a broad pytest
+  subprocess,
+  ignored its status, and always passed was removed.
+- Adversarial subprocess coverage now includes checkout-parent name leakage,
+  unknown path classes, path escape, primary/concurrency/enumeration
+  contradictions, omitted or weakened strictness, implicit-parallel rejection,
+  `serial` and `local_only` xdist admission attempts, `--dist=each`, late
+  marker mutation, mutation plus deselection, collection-finish mutation,
+  mutable worker metadata, late scheduler-mode mutation, direct and wrapped
+  scheduler substitution in both inner and outer hook order, worker receipt
+  and reason disagreement, required and optional empty enumeration, and
+  collection-phase skip accounting.
+- Verification used project `.venv` Python 3.14.3 with
+  `MOIRA_TEST_MODE=1`, `MOIRA_NO_DOWNLOAD=1`, and
+  `MOIRA_STRICT_KNOWN_ISSUES=1`. The focused execution-policy suite passed
+  44 cases. The complete harness parallel lane collected 436 cases, selected
+  435, and exited successfully with `433 passed, 2 skipped`; both skips are
+  Windows `socket.sendmsg` capability absences. The serial lane selected seven
+  cases and reported `1 passed, 6 skipped`, with all six skips caused by
+  explicit external-network denial. Full strict/no-download collection of the
+  current whole worktree passed with 14,199 cases: 13,754 `local_only`, 438
+  `parallel`, and seven `serial`; that snapshot includes concurrent visibility
+  additions outside Phase 6. The 378 external-network cases remained held in
+  deny mode and no resource was acquired. The enumeration lane reported
+  `207 passed, 1 skipped`; the skip was the intentionally empty Yallop family.
+  Conftest smoke reported eight passes with six DE441 RUN receipts and one
+  content probe. The three admitted production parallel cases passed under two
+  workers. The existing diurnal-aberration unit file reported 24 passes, and
+  its repaired manual probe also exited successfully.
+- This checkpoint does not claim the literal full suite, live external
+  comparisons, production serial-body execution, or Phase 7 controller-owned
+  lifecycle/artifact/replay work. No production/native computation,
+  scientific baseline, `.github/` workflow, or generated `moira.wiki/` was
+  changed by Phase 6. Concurrent visibility implementation and data work was
+  preserved; Phase 6 touched only the optional-enumeration marker on its
+  existing Yallop outlier family.
 
 ---
 
@@ -1092,31 +1185,31 @@ and after timing as performance evidence only.
 
 #### Task 7.1 — Full lifecycle reports
 
-- [ ] Record setup, call, and teardown outcome/duration separately.
-- [ ] Aggregate full lifecycle duration by node.
-- [ ] Enforce a case budget only after the full lifecycle is known.
-- [ ] Preserve an existing failure and attach budget information as a report
+- [x] Record setup, call, and teardown outcome/duration separately.
+- [x] Aggregate full lifecycle duration by node.
+- [x] Enforce a case budget only after the full lifecycle is known.
+- [x] Preserve an existing failure and attach budget information as a report
   section.
-- [ ] Use `time.perf_counter()` for session duration.
-- [ ] Validate all budgets as finite and nonnegative.
-- [ ] Finalize evidence before applying a total-budget failure status.
-- [ ] Rename ordinary failure counts; reserve "flake" for observed fail-then-pass
+- [x] Use `time.perf_counter()` for session duration.
+- [x] Validate all budgets as finite and nonnegative.
+- [x] Finalize evidence before applying a total-budget failure status.
+- [x] Rename ordinary failure counts; reserve "flake" for observed fail-then-pass
   attempts under the same receipt.
 
 #### Task 7.2 — Safe ephemeral artifacts
 
-- [ ] Default to `.pytest_cache/moira-artifacts/<controller-uuid>/`.
-- [ ] Reject caller-supplied IDs outside a narrow single-component alphabet.
-- [ ] Create an `INCOMPLETE` sentinel before execution and replace it with
+- [x] Default to `.pytest_cache/moira-artifacts/<controller-uuid>/`.
+- [x] Reject caller-supplied IDs outside a narrow single-component alphabet.
+- [x] Create an `INCOMPLETE` sentinel before execution and replace it with
   `COMPLETE` only after successful finalization.
-- [ ] Use atomic temporary-write plus replace.
-- [ ] Apply per-record and per-run size limits.
-- [ ] Redact known secret-bearing environment names and request headers.
-- [ ] Never write transient diagnostics beneath `tests/artifacts/`.
+- [x] Use atomic temporary-write plus replace.
+- [x] Apply per-record and per-run size limits.
+- [x] Redact known secret-bearing environment names and request headers.
+- [x] Never write transient diagnostics beneath `tests/artifacts/`.
 
 #### Task 7.3 — Structured controller receipt
 
-- [ ] Emit:
+- [x] Emit:
   - `run.json`;
   - `collection.json`;
   - `resources.json`;
@@ -1124,32 +1217,99 @@ and after timing as performance evidence only.
   - `failures.json`;
   - `durations.json`;
   - `rerun-nodeids.json`.
-- [ ] Let the controller consume xdist log reports and worker shutdown status.
-- [ ] Eliminate worker competition over shared files.
-- [ ] Surface merge/finalization errors in exit status.
-- [ ] Remove the bespoke coverage controller and use `pytest-cov`.
+- [x] Let the controller consume xdist log reports and worker shutdown status.
+- [x] Eliminate worker competition over shared files.
+- [x] Surface merge/finalization errors in exit status.
+- [x] Remove the bespoke coverage controller and use `pytest-cov`.
 
 #### Task 7.4 — Replay
 
-- [ ] Replace generated executable PowerShell with checked-in
+- [x] Replace generated executable PowerShell with checked-in
   `scripts/replay_test_receipt.py`.
-- [ ] Require invocation through:
+- [x] Require invocation through:
 
   ```powershell
   .\.venv\Scripts\python.exe scripts\replay_test_receipt.py <path-to-run.json>
   ```
 
-- [ ] Load node IDs from JSON as data.
-- [ ] Verify repository root and `.venv` interpreter.
-- [ ] Refuse a receipt from a different repository unless explicitly permitted.
-- [ ] Report Git/native/resource mismatches before rerunning.
+- [x] Load node IDs from JSON as data.
+- [x] Verify repository root and `.venv` interpreter.
+- [x] Refuse a receipt from a different repository unless explicitly permitted.
+- [x] Report Git/native/resource mismatches before rerunning.
 
 **Gates:**
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests\harness_meta\test_lifecycle_policy.py tests\harness_meta\test_artifact_policy.py tests\harness_meta\test_xdist_policy.py -q -p pytester
+.\.venv\Scripts\python.exe -m pytest tests\harness_meta\test_lifecycle_policy.py tests\harness_meta\test_artifact_policy.py tests\harness_meta\test_xdist_policy.py tests\harness_meta\test_replay_receipt_policy.py -q -p pytester
 .\.venv\Scripts\python.exe scripts\replay_test_receipt.py <focused-failure-receipt>
 ```
+
+#### Phase 7 completion checkpoint — 2026-07-30
+
+- Lifecycle evidence now records setup, call, and teardown outcomes and
+  `perf_counter()` durations independently, aggregates complete attempts by
+  node ID, distinguishes non-running phases from skips, and applies finite,
+  nonnegative case budgets only after teardown. An existing test failure
+  remains primary while a budget overrun is attached as evidence. Total-budget
+  status is decided only after inner session finalizers and receipt
+  finalization.
+- Retry grouping is lifecycle-derived rather than phase-counter-derived.
+  A fail-then-pass attempt under the same receipt is the only condition called
+  a flake; fail-then-skip and ordinary failures remain failures. Collection
+  errors, teardown failures, worker crashes, and interrupted worker shutdowns
+  remain visible, and crash node IDs are admitted to the exact rerun set.
+- Ephemeral evidence is controller-owned beneath
+  `.pytest_cache/moira-artifacts/<run-id>/`. Run IDs are strict single path
+  components; collisions, symlinks/reparse points, and unsafe paths fail
+  closed. `INCOMPLETE` is created before execution and replaced by a
+  content-binding `COMPLETE` marker only after the exact fixed artifact set has
+  been written through exclusive temporary files, flushed, size-checked, and
+  atomically replaced. No transient receipt is written beneath
+  `tests/artifacts/`.
+- The fixed receipt comprises `run.json`, `collection.json`,
+  `resources.json`, `reports.jsonl`, `failures.json`, `durations.json`, and
+  `rerun-nodeids.json`. Per-record and per-run limits are enforced. Structured
+  redaction covers secret-bearing environment names, headers, cookies, bearer
+  credentials, URL credentials, assignment tokens, command-line secret
+  arguments, and fixture-scoped secrets across the complete lifecycle.
+- The controller consumes canonical xdist reports and worker terminal state.
+  Worker-provided classification, planetary-resource, and small-body-resource
+  evidence is resealed after inner session-finish hooks and independently
+  reconciled; a worker cannot spoof absent resource evidence. Workers never
+  compete over shared artifact files. The obsolete merge helper and bespoke
+  coverage controller were removed; coverage remains the responsibility of
+  `pytest-cov`.
+- Resource receipts carry structured requirements and capabilities.
+  Planetary artifacts are bound by stable metadata plus a streaming content
+  SHA-256 digest, and replay detects same-size content substitution even when
+  timestamps are restored. Repository state includes HEAD, binary diff, and
+  length-delimited stable untracked content; native identity includes resolved
+  path, locality, size, hash, and version. Ambient execution switches that can
+  select native or Python paths are recorded explicitly.
+- `scripts/replay_test_receipt.py` treats every receipt field as hostile data:
+  bounded strict JSON rejects duplicate keys, non-finite values, excess depth,
+  and oversized inputs; the exact completed file set and every sidecar digest
+  are verified; recorded commands and paths are never executed or
+  dereferenced. Exact node IDs are passed after `--` through a non-shell
+  subprocess. Repository, `.venv`, Git, native, execution-switch, and resource
+  identities must match unless their specific mismatch is acknowledged.
+  Resource state is resealed immediately before launch, and the child
+  environment is sanitized and rebuilt from the recorded policy.
+- Verification used project `.venv` Python 3.14.3 with
+  `MOIRA_TEST_MODE=1`, `MOIRA_NO_DOWNLOAD=1`, and
+  `MOIRA_STRICT_KNOWN_ISSUES=1`. The consolidated lifecycle, artifact, xdist,
+  and replay-policy gate passed 110 cases. The planetary and small-body
+  resource-policy gate passed 100 cases. The replay-policy lane passed all 33
+  cases under two workers, and the conftest smoke passed eight cases with six
+  DE441 RUN receipts. A deliberate one-node case-budget failure produced a
+  COMPLETE receipt, passed all replay preflight checks, and replayed the exact
+  node successfully after replay sanitized the deliberate budget.
+- This checkpoint does not claim the literal full suite, live external-network
+  comparison, authority/oracle validation, or new scientific precision.
+  Phase 7 changed test policy, harness-meta evidence, replay tooling, and this
+  checkpoint only. Engine computation, native substrate, protected scientific
+  baselines, release workflows, and unrelated concurrent work were left
+  untouched.
 
 ---
 
@@ -1172,18 +1332,197 @@ Extraction order:
 
 For each extraction:
 
-- [ ] run its harness-meta test before editing;
-- [ ] move only one policy;
-- [ ] register it from root `tests/conftest.py`;
-- [ ] use `pytest.StashKey`;
-- [ ] rerun its meta test and the existing smoke;
-- [ ] run `git diff --check`;
-- [ ] inspect the diff for accidental behavior changes;
-- [ ] record the checkpoint before continuing.
+- [x] run its harness-meta test before editing;
+- [x] move only one policy;
+- [x] register it from root `tests/conftest.py`;
+- [x] use `pytest.StashKey`;
+- [x] rerun its meta test and the existing smoke;
+- [x] run `git diff --check`;
+- [x] inspect the diff for accidental behavior changes;
+- [x] record the checkpoint before continuing.
 
 Do not set an arbitrary line-count target. The desired property is that
 `tests/conftest.py` becomes a legible registration and shared-fixture surface,
 not merely a shorter file.
+
+#### Phase 8 in-progress stopping checkpoint — 2026-07-30
+
+**Status:** deliberately paused after extraction step 7. Phase 8 is not
+complete.
+
+- Extraction steps 1 through 7 now have dedicated owners:
+  `configuration.py`, `known_issues.py`, `determinism.py`,
+  `network_policy.py`, `resources.py`, `classification.py`, `lifecycle.py`,
+  `artifacts.py`, and `xdist_coordination.py`. `_state.py` owns the shared
+  dataclasses and `pytest.StashKey` identities; `_common.py` owns the small
+  secure-filesystem primitive shared by resource and artifact policy.
+- Repository-root `conftest.py` now sanitizes the `_pytest_plugins` namespace,
+  bridges historic option registration, and fail-closed registers the exact
+  required plugin manifest. Blocking a required plugin with `-p no:...`,
+  loading it from a foreign origin, loading it under a second alias, or
+  unregistering it late is rejected.
+- Xdist controller and worker state no longer uses ad hoc attributes on
+  `pytest.Config`. Classification aggregation, violation buffers, expected and
+  reported workers, and merged planetary and small-body reports use canonical
+  typed stash keys. Wire dictionaries remain limited to the explicit
+  worker-input and worker-output transport boundary.
+- Lifecycle and artifact report wrappers have an explicit tested order:
+  lifecycle observes all inner report mutations and seals setup/call/teardown
+  and budget evidence; the later-registered artifact wrapper then creates the
+  redacted shadow. Artifact collection and finalization are controller-owned;
+  xdist owns the one explicit session-finish coordinator.
+- `tests/conftest.py` is now the standalone-registration guard, `collect_ignore`
+  declaration, tests-scoped resource/domain/evidence fixture export surface,
+  and terminal presentation surface. This is an ownership checkpoint, not a
+  line-count claim.
+- `evidence.py` is intentionally still a placeholder. Snapshot, golden,
+  ritual, numeric-domain fixtures, and terminal presentation have not yet been
+  assigned their final Phase 8 ownership. No fixture has been made globally
+  visible merely to shorten `tests/conftest.py`.
+
+**Verified stopping seam:**
+
+- `44 passed` — execution-classification and xdist scheduling, worker
+  resealing, controller reconciliation, and serial/parallel semantic receipts;
+- `24 passed` — controller-owned artifacts, redaction, limits, collision and
+  reparse refusal, worker crashes, and xdist artifact ownership;
+- `9 passed` — setup/call/teardown lifecycle and case/total-budget ordering;
+- `100 passed` — planetary and supplemental small-body resource admission,
+  reporting, and xdist aggregation after the stash-key migration;
+- `17 passed` — required-plugin suppression attacks, canonical-origin and
+  import-sanitizer attacks, and hostile determinism reset cases;
+- `33 passed` — exact receipt replay and hostile receipt parsing;
+- `98 passed` — immutable snapshot/golden baseline contracts, establishing the
+  pre-extraction evidence baseline for tomorrow;
+- `8 passed` — the existing conftest smoke, including six DE441 RUN receipts.
+
+The project `.venv` was Python 3.14.3. All stopping-seam runs used
+`MOIRA_TEST_MODE=1`, `MOIRA_NO_DOWNLOAD=1`, and
+`MOIRA_STRICT_KNOWN_ISSUES=1`. Focused Ruff returned clean, every current
+plugin and conftest compiled, all current plugin sources parsed with the Python
+3.10 grammar, and `git diff --check` passed. The earlier focused network
+extraction gate passed 66 cases with two expected platform skips where
+`socket.sendmsg` is unavailable.
+
+**Resume here:**
+
+1. Re-run `git status --short --branch`, confirm
+   `.\.venv\Scripts\python.exe --version`, and read
+   `tests\KNOWN_ISSUES.yml`.
+2. Re-run the 98-case baseline-policy gate before editing evidence ownership:
+
+   ```powershell
+   $env:MOIRA_TEST_MODE = "1"
+   $env:MOIRA_NO_DOWNLOAD = "1"
+   $env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+   .\.venv\Scripts\python.exe -m pytest tests\harness_meta\test_baseline_policy.py -q -p pytester
+   ```
+
+3. Extract evidence policy without widening fixture visibility. Add focused
+   registration contracts for `ritual`, `moira_approx`, `assert_longitude`,
+   and `eclipse_calculator` before moving or re-exporting them.
+4. Strengthen `test_plugin_architecture_policy.py` to prove hook flags and
+   unique hook/fixture ownership, absence of extracted duplicate hooks in
+   `tests/conftest.py`, and one canonical identity for every shared stash key.
+5. Prove real-checkout registration under no positional argument, `tests`,
+   `.`, an exact node ID, and alternate `-c` configuration.
+6. Run the final parallel and serial harness-meta gates, the conftest smoke,
+   focused Ruff/compile/Python-3.10 parsing, and `git diff --check`; only then
+   mark Phase 8 complete.
+
+This checkpoint does not claim the full harness-meta matrix, the literal full
+configured suite, live external-network execution, scientific oracle or
+authority validation, native parity, or Phase 8 completion. No commit, push,
+tag, pull request, release, or deployment was performed. Engine computation,
+native substrate, protected scientific baselines, and unrelated concurrent
+worktree changes were intentionally left untouched.
+
+#### Phase 8 completion checkpoint — 2026-07-31
+
+**Status:** complete.
+
+- `tests/_pytest_plugins/evidence.py` is the single owner of
+  `pytest_terminal_summary`. The hook retains ordinary, non-wrapper ordering
+  and presents harness configuration, network, execution classification,
+  resource, lifecycle, case-budget, duration, and regression evidence.
+  `tests/conftest.py` no longer contains a second terminal-summary hook or its
+  presentation-only imports.
+- Snapshot, golden, ritual, numeric-domain, eclipse, epoch, chart, and
+  resource fixtures intentionally remain in `tests/conftest.py`. This is the
+  final tests-scoped shared-fixture surface, not an unfinished extraction.
+  Moving fixture decorators into a root-registered plugin would widen their
+  visibility. Architecture contracts prove that `snapshot`, `golden`,
+  `ritual`, `moira_approx`, `assert_longitude`, and `eclipse_calculator` each
+  have exactly one owner beneath the `tests` base ID, with their original
+  function or session scope.
+- The architecture policy now admits an exact hook manifest for every required
+  plugin, including function identity, wrapper versus legacy hookwrapper
+  semantics, `tryfirst`/`trylast`, and optional-hook status. It rejects
+  uncontracted hooks, duplicate conftest policy hooks, fixture re-export,
+  wrapper-order drift, any `pytest.StashKey` construction outside `_state.py`,
+  duplicate stash identities, and noncanonical imported key objects. Static
+  source admission covers every module and auxiliary-object
+  `@pytest.hookimpl`, closing the optional-hook/no-HookCaller escape.
+- Controller report and lifecycle evidence is sealed and validated exactly
+  once during session finalization, before artifact policy branches on whether
+  output is enabled. Pre-existing collector-integrity errors, duplicate
+  phases, cross-worker cases, and contradictory duration or budget evidence
+  now elevate an otherwise successful session even when
+  `MOIRA_TEST_ARTIFACTS=0`; terminal presentation and artifact materialization
+  consume the same sealed payload. Hostile pre-seal-error and duplicate-call
+  probes prove this fail-closed behavior without creating an artifact
+  directory.
+- Real-checkout serial canaries prove required-plugin registration with no
+  positional path, `tests`, `.`, an exact node ID, and an alternate explicit
+  `-c` file. The children use the invoking interpreter, disable ambient plugin
+  autoload, scrub inherited pytest/xdist/policy switches plus `PYTEST_PLUGINS`
+  and `PYTHONPATH`, perform no downloads, and collect only the architecture
+  module. They require one explicit `PASSED` record for the exact manifest
+  probe and reject skip/xfail/xpass outcomes. This avoids both outcome
+  false-greens and a recursively self-running canary while still exercising
+  real conftest discovery.
+
+**Verification receipt:**
+
+- The pre-edit and post-extraction immutable-baseline gate each passed all
+  `98` cases.
+- The final plugin-architecture gate passed all `66` cases, including the
+  single-emission terminal receipt, exact hook flags and ownership, fixture
+  ownership, stash identity, static optional-hook closure, auxiliary collector
+  hooks, required-plugin suppression attacks, and local module identity.
+- The focused lifecycle, artifact, and xdist regression gate passed all `79`
+  cases, including artifact-disabled pre-seal and lifecycle-corruption
+  attacks.
+- The five direct invocation-shape canaries passed. In the final serial
+  harness-meta lane they ran alongside the serial-lane canary: `6` selected
+  and `6` passed.
+- The complete parallel harness-meta lane collected `581`, selected `575`
+  parallel cases, and completed with `573` passed plus two expected
+  platform skips because `socket.sendmsg` is unavailable. The complementary
+  serial lane selected the remaining `6`, so every collected harness-meta
+  case was admitted to exactly one lane.
+- The conftest smoke passed all `8` cases and recorded six successful DE441
+  planetary-resource receipts from one content probe.
+- Focused Ruff, bytecode compilation, Python 3.10 grammar parsing, and scoped
+  whitespace checks passed for the Phase 8 Python files. `git diff --check`
+  reported no whitespace error. The scoped run emitted an LF-to-CRLF warning
+  for `tests/conftest.py`; the repository-wide run likewise emitted only
+  line-ending normalization warnings across the existing dirty worktree.
+- One interim parallel rerun encountered a transient unmatched parenthesis in
+  unrelated concurrent `moira/heliacal.py` work during collection. Phase 8 did
+  not edit or restore that file. After the concurrent edit settled,
+  `py_compile` succeeded and the final exact-state parallel and serial lanes
+  passed with the matching `581`-item collection digest.
+
+All commands used the project `.venv` under Python 3.14.3 with
+`MOIRA_TEST_MODE=1`, `MOIRA_NO_DOWNLOAD=1`, and
+`MOIRA_STRICT_KNOWN_ISSUES=1`. This checkpoint does not claim the literal full
+configured suite, live external-network execution, scientific
+oracle/authority validation, native parity, or any new astronomical
+precision. No commit, push, tag, pull request, release, or deployment was
+performed. Engine computation, native substrate, approved scientific
+baselines, and unrelated concurrent worktree changes were intentionally left
+untouched.
 
 ---
 
@@ -1213,8 +1552,10 @@ For admitted validation tests, support:
 - expected refusal behavior.
 
 Not every ordinary unit test requires a full scientific contract. Require it
-for authority, oracle, protected golden, release-claim, and selected
-protected-zone validation surfaces.
+when newly admitting or deliberately migrating an authority, oracle, protected
+golden, release-claim, or selected protected-zone validation surface. Legacy
+surfaces outside the four Phase 9 exemplars remain explicit migration debt;
+their existence does not silently admit them into this matrix.
 
 #### Task 9.2 — Exemplar admission
 
@@ -1227,26 +1568,154 @@ Start with four exemplars:
 
 For each exemplar:
 
-- [ ] name what the test proves;
-- [ ] name what it does not prove;
-- [ ] validate the schema during collection;
-- [ ] emit the contract in the run receipt;
-- [ ] generate an assurance-matrix row.
+- [x] name what the test proves;
+- [x] name what it does not prove;
+- [x] validate the schema during collection;
+- [x] emit the contract in the run receipt;
+- [x] generate an assurance-matrix row.
 
 #### Task 9.3 — Evidence-aware coverage
 
-- [ ] Use pytest-cov/coverage contexts to associate executed code with test or
+- [x] Use pytest-cov/coverage contexts to associate executed code with test or
   evidence class.
-- [ ] Report protected code reached only by regression snapshots.
-- [ ] Do not turn line or branch coverage percentage into a scientific gate.
-- [ ] Gate missing required evidence cells, not an arbitrary global percentage.
+- [x] Implement and adversarially test reporting for reviewed protected targets
+  reached only by regression snapshots. No regression contract is among the
+  four currently admitted exemplars, so the current result is an empty list
+  scoped only to declared protected assurance targets.
+- [x] Do not turn line or branch coverage percentage into a scientific gate.
+- [x] Gate missing required evidence cells, not an arbitrary global percentage.
 
-**Gate:**
+**Static and broad policy gate:**
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest tests\harness_meta tests\unit\test_spk_kernel_identity.py <selected-exemplar-files> -q
-.\.venv\Scripts\python.exe scripts\build_test_assurance_matrix.py --check
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_NO_DOWNLOAD = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+$env:MOIRA_TEST_ARTIFACTS = "0"
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\python.exe scripts\build_test_assurance_matrix.py --check-static
+.\.venv\Scripts\python.exe -m pytest tests\harness_meta tests\unit\test_spk_kernel_identity.py tests\unit\test_house_projection_geometry.py tests\unit\test_hellenistic_source_goldens.py tests\unit\test_native_nutation_2000a.py -q
 ```
+
+**Serial assurance receipt:**
+
+```powershell
+$phase9Root = (Resolve-Path .).Path
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_NO_DOWNLOAD = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+$env:MOIRA_TEST_ARTIFACTS = "1"
+$env:MOIRA_TEST_RUN_ID = "phase9-assurance-serial-20260731-f"
+$env:COVERAGE_CORE = "ctrace"
+$env:COVERAGE_FILE = Join-Path $phase9Root ".pytest_cache\phase9-assurance-serial-20260731-f.coverage"
+$phase9Receipt = Join-Path $phase9Root ".pytest_cache\moira-artifacts\phase9-assurance-serial-20260731-f"
+.\.venv\Scripts\python.exe -m pytest --cov=moira --cov-config=pyproject.toml --cov-context=test --cov-report= tests\unit\test_spk_kernel_identity.py tests\unit\test_house_projection_geometry.py tests\unit\test_hellenistic_source_goldens.py tests\unit\test_native_nutation_2000a.py -q
+.\.venv\Scripts\python.exe scripts\build_test_assurance_matrix.py --check --receipt-dir $phase9Receipt --coverage-file $env:COVERAGE_FILE
+```
+
+**xdist assurance receipt:**
+
+```powershell
+$phase9Root = (Resolve-Path .).Path
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_NO_DOWNLOAD = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+$env:MOIRA_TEST_ARTIFACTS = "1"
+$env:MOIRA_TEST_RUN_ID = "phase9-assurance-xdist-20260731-f"
+$env:COVERAGE_CORE = "ctrace"
+$env:COVERAGE_FILE = Join-Path $phase9Root ".pytest_cache\phase9-assurance-xdist-20260731-f.coverage"
+$phase9Receipt = Join-Path $phase9Root ".pytest_cache\moira-artifacts\phase9-assurance-xdist-20260731-f"
+.\.venv\Scripts\python.exe -m pytest -n 2 --dist=load -m parallel --cov=moira --cov-config=pyproject.toml --cov-context=test --cov-report= tests\unit\test_spk_kernel_identity.py tests\unit\test_house_projection_geometry.py tests\unit\test_hellenistic_source_goldens.py tests\unit\test_native_nutation_2000a.py -q
+.\.venv\Scripts\python.exe scripts\build_test_assurance_matrix.py --check --receipt-dir $phase9Receipt --coverage-file $env:COVERAGE_FILE
+```
+
+#### Phase 9 completion record — 2026-07-31
+
+Phase 9 admits exactly four reviewed claims: SPK content identity, the
+equatorial/ecliptic house-helper round trip, the Pingree 1976 Dorothean
+triplicity table, and the packaged nutation Python/native parity boundary.
+This is an explicit exemplar admission boundary, not a claim that every legacy
+oracle, golden, or release-facing validation test has already migrated to a
+machine contract.
+
+The implemented contract layer now fails closed on missing markers for a
+reviewed node, unknown or duplicate claim IDs, nonexistent test callables,
+stale scoped executable-protocol digests, malformed fields, conflicting or
+duplicate report properties, post-collection marker mutation, missing
+selected-item reports, and worker receipts that contradict the controller's
+current registry. Executable protocols use a canonical, dependency-closed AST
+digest: line endings, comments, formatting, and unrelated functions do not
+change it; non-introspected function/class docstrings and unrelated rebound
+names are also excluded. Parametrization, decorators, runtime assertion text,
+assertions, referenced local helpers/constants, import bindings, and the house
+exemplar's shared numeric assertion implementation do change it. Selected or
+dependency-closed rebinding is rejected. Byte hashes remain authoritative for
+the actual golden and coefficient assets. Contract comparison objects are the
+executable tolerance source for the admitted house and native assertions; the
+native exemplar uses direct absolute residual comparisons rather than ambient
+`pytest.approx` relative semantics. The independently reviewed required cell
+also pins the complete contract digest.
+The native exemplar additionally checks exact parsed term counts, j=0
+boundaries, and term shape, while its contract expressly does not claim
+independent IERS/parser authenticity.
+
+The independent assurance requirements pin all 24 full parametrized node IDs,
+not base-node counts. A same-count parameter replacement therefore fails. The
+runtime join requires every passed node bound to a claim to reach every target
+declared by that claim under its own `|run` context. Coverage 7.13.5's default
+Python 3.14 SysMonitor core was adversarially demonstrated to lose repeated
+dynamic contexts, so the gate requires explicit `COVERAGE_CORE=ctrace`. It
+does not trust that request as proof: the receipt captures pytest-cov's active
+`Coverage` object before shutdown, requires the resolved tracer to be
+`CTracer`, and records one attestation from the controller and every xdist
+worker. The finalized xdist shutdown roster must exactly equal that worker
+attestation set; missing, duplicate, failed, or unfinalized workers fail the
+gate. Each contributor seals both start and finish run contexts, including its
+repository, interpreter, native backend, execution switches, and toolchain,
+and must equal the controller. This deliberately admits the local `-n` lane,
+not path-divergent remote workers. A `timid=true` canary proves that a requested
+`ctrace` can otherwise resolve to `PyTracer` and is rejected.
+
+The controller seals the exact coverage path, byte count, SHA-256, mtime,
+active tracer, effective coverage configuration, actual configuration-file
+path/hash, pytest-cov options, Python executable bytes/hash, toolchain versions,
+and controller/worker identities in `run.json`. The assurance command names
+`pyproject.toml` explicitly; ambient `COVERAGE_RCFILE`,
+`COVERAGE_FORCE_CONFIG`, and process-start configuration are forbidden. Runtime
+evaluation rejects a copied, rewritten, postdated, appended, or otherwise
+unsealed coverage database; source, git, interpreter, execution-switch,
+native-backend, config, or toolchain drift; non-project-venv execution;
+non-strict known issues; downloads; and external-network admission. Durable
+`reports.jsonl` identities are reconciled independently, and artifact redaction
+cannot change evidence or coverage identity. The receipt remains self-hashed
+cooperative evidence, not a cryptographic signature or security sandbox.
+
+Native identity is not inferred from extension freshness. A deterministic
+schema-v2 manifest covers `CMakeLists.txt`, `setup.py`, the manifest algorithm,
+the build-affecting `pyproject.toml` sections, and every admitted native
+source/header/build suffix beneath `src/native`. Its no-follow traversal rejects
+links, junctions, and reparse points before descent while ignoring unrelated
+native-tree files and pytest-only configuration. The editable build copies the
+exact manifested inputs into a private snapshot, verifies that snapshot, builds
+only from it, and checks the source manifest again after compilation. The
+extension embeds one tagged manifest SHA-256. Runtime identity requires the raw
+module, spec, `ExtensionFileLoader` filename/path, and extension file to agree;
+it scans the loader-owned binary and requires that disk marker to match the
+already-loaded built-in marker. The receipt records the binary identity and
+every current input path/byte count/hash, then independently recomputes and
+requires exact equality. A stale, foreign, path-forged, or source-raced `.pyd`
+therefore cannot fill the native-parity cell merely because it remains
+importable. This is still cooperative in-process attestation, not a defense
+against arbitrary hostile code that already controls the Python process.
+
+The final combined harness-meta and exemplar regression gate collected `699`
+cases: `697` passed and the two `socket.sendmsg` cases skipped because that API
+is unavailable on this platform. It selected all `24` reviewed evidence items
+under four contracts. The static assurance generator reported all four required
+cells present. The exact final serial and xdist receipt IDs, paths, and commands
+are fixed above; their coverage hashes live in the self-hashed `run.json` and
+runtime matrix output rather than being copied back into this mutable plan.
+No global line or branch percentage is used as scientific evidence.
 
 ---
 
@@ -1280,18 +1749,171 @@ Boundary atlas:
 - NaN, infinity, and extreme finite input rejection;
 - fallback-policy thresholds.
 
-For every relation:
+For every admitted relation:
 
-- [ ] name the mathematical/doctrinal object;
-- [ ] provide derivation or primary source;
-- [ ] define ambiguity and branch policy;
-- [ ] define conditioning domain and exclusions;
-- [ ] define units and tolerance;
-- [ ] prove the relation fails under at least one appropriate canary mutation.
+- [x] name the mathematical/doctrinal object;
+- [x] provide derivation or primary source;
+- [x] define ambiguity and branch policy;
+- [x] define conditioning domain and exclusions;
+- [x] define units and tolerance;
+- [x] prove the relation fails under at least one appropriate canary mutation.
 
 Use targeted Hypothesis metrics such as maximum residual, iteration count,
 condition number, or proximity to a declared boundary. Do not use unguided
 randomness as the sole boundary strategy.
+
+#### Phase 10 bounded admission and verification
+
+Phase 10 admits three kernel-free invariant claims. Candidate relations not
+listed here remain future migration work; the candidate catalogue was not
+silently converted into an assertion that every numerical surface is now
+metamorphically assured.
+
+1. `MOIRA-COORD-ECLIPTIC-EQUATORIAL-SPHERE-INVERSE-V1` governs a unit
+   direction acted on by the public ecliptic/equatorial x-axis obliquity
+   rotation and its inverse. Both transform directions are compared by stable
+   Cartesian vector angular separation, never scalar longitude at a pole. The
+   generated interior domain uses source latitudes and declinations in
+   `[-89, 89]` degrees, quotient angles in `[-1440, 1440]` degrees, and
+   obliquity in `[-30, 30]` degrees with an absolute `1e-10` degree vector
+   bound. A separate exact/`nextafter()` seam and polar atlas through
+   `+/-90` degrees uses the explicitly conditioned `2e-6` degree bound. A
+   finite one-degree recovered-latitude observation mutant must fail the same
+   typed maximum-vector-separation predicate used by production observations.
+2. `MOIRA-COORD-LONGITUDE-QUOTIENT-V1` governs the quotient circle
+   `S1 = R / 360Z` represented by `[0, 360)` degrees. It checks canonical
+   membership, exact idempotence, positive-zero ownership, and period shifts
+   from `-16` through `+16` over generated base angles `[-360, 360]`, plus
+   exact/`nextafter()` 0, 180, and 360 degree seams. The circular period-shift
+   limit is `1e-12` degrees. A zero-to-360 observation mutant must fail the
+   exact half-open-range predicate.
+3. `MOIRA-TIMESCALE-HYBRID-UT1-TT-INVERSE-V1` governs the clock graph
+   `F(u) = u + DeltaT(u) / 86400` from JD UT1 to JD TT and its inverse on the
+   same default hybrid source-selection surface. Omitted policy and explicit
+   `DeltaTPolicy(model="hybrid")` must be bit-identical in both directions;
+   recovered UT1 must be within two maximum coordinate ULPs. The admitted
+   interval is JD `[1355817.5, 3547272.5]`, proleptic years `-1000` through
+   `5000`, with exact and adjacent `nextafter()` probes at the named historical
+   and model seams. Both public clock transforms separately reject NaN,
+   infinities, and grossly unrepresentable finite JDs. A finite one-second
+   recovered-UT1 observation mutant must fail the same typed ULP predicate.
+
+Each claim binds the exact test protocol, its observation/assertion support,
+and the shared typed `MetamorphicViolation` primitive with dependency-closed
+canonical Python AST hashes. Numeric limits come from the reviewed evidence
+contracts rather than duplicate test-owned tolerances. Every canary mutates an
+immutable finite observation after the production calls return; none edits an
+engine file or compiled extension, and none is presented as Phase 11 source
+mutation. Contract-bound Hypothesis tests must inherit the receipted harness
+profile: collection now rejects an explicit test-level `@settings(...)`
+because the former receipt recorded only the global profile and could
+otherwise overstate the executed example count. `tests/metamorphic/` is a
+first-class primary execution class and every admitted item is explicitly
+parallel/read-only.
+
+The independent matrix now requires seven cells and 38 exact bound items: the
+four retained Phase 9 claims plus 14 Phase 10 items under these three new
+claims. The generated JSON/Markdown matrix remains percentage-free. Its
+admission scope is `phase9_and_phase10_reviewed_claims`.
+
+**Broad serial regression gate:**
+
+```powershell
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_NO_DOWNLOAD = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+$env:MOIRA_TEST_ARTIFACTS = "0"
+.\.venv\Scripts\python.exe -m pytest tests\harness_meta tests\metamorphic tests\unit\test_spk_kernel_identity.py tests\unit\test_house_projection_geometry.py tests\unit\test_hellenistic_source_goldens.py tests\unit\test_native_nutation_2000a.py tests\unit\test_julian_delta_t.py tests\unit\test_low_level_helpers.py tests\unit\test_conftest_smoke.py -q
+```
+
+This collected 880 cases: 878 passed and the two `socket.sendmsg` capability
+cases skipped because that API is unavailable on this platform. All 38
+reviewed items were selected under seven contracts. The scoped Ruff gate over
+all Phase 10 Python changes passed, the static matrix reported seven cells,
+and the loaded native schema-v2 build-input digest still exactly matched the
+current checkout (`7daa131c671611e82fc00c94aee65f8cde61d0f200a37c4a7138d675f2c4c735`),
+so pytest-only configuration did not require a native rebuild.
+
+**Serial assurance receipt:**
+
+```powershell
+$phase10Root = (Resolve-Path .).Path
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_NO_DOWNLOAD = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+$env:MOIRA_TEST_ARTIFACTS = "1"
+$env:MOIRA_TEST_RUN_ID = "phase10-assurance-serial-20260801-b"
+$env:COVERAGE_CORE = "ctrace"
+$env:COVERAGE_FILE = Join-Path $phase10Root ".pytest_cache\phase10-assurance-serial-20260801-b.coverage"
+$phase10Receipt = Join-Path $phase10Root ".pytest_cache\moira-artifacts\phase10-assurance-serial-20260801-b"
+.\.venv\Scripts\python.exe -m pytest --cov=moira --cov-config=pyproject.toml --cov-context=test --cov-report= tests\unit\test_spk_kernel_identity.py tests\unit\test_house_projection_geometry.py tests\unit\test_hellenistic_source_goldens.py tests\unit\test_native_nutation_2000a.py tests\metamorphic -q
+.\.venv\Scripts\python.exe scripts\build_test_assurance_matrix.py --check --receipt-dir $phase10Receipt --coverage-file $env:COVERAGE_FILE
+```
+
+All 66 selected-file tests passed, including the exact 38 contract-bound
+items. The runtime matrix filled all seven required cells with CTracer
+per-test contexts. The exact coverage SHA-256 remains sealed in the immutable
+receipt rather than being copied into this mutable plan; the 26 unattributed
+contexts are ordinary non-contract tests co-located in the four Phase 9
+exemplar files.
+
+**xdist assurance receipt:**
+
+```powershell
+$phase10Root = (Resolve-Path .).Path
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_NO_DOWNLOAD = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+$env:MOIRA_TEST_ARTIFACTS = "1"
+$env:MOIRA_TEST_RUN_ID = "phase10-assurance-xdist-20260801-b"
+$env:COVERAGE_CORE = "ctrace"
+$env:COVERAGE_FILE = Join-Path $phase10Root ".pytest_cache\phase10-assurance-xdist-20260801-b.coverage"
+$phase10Receipt = Join-Path $phase10Root ".pytest_cache\moira-artifacts\phase10-assurance-xdist-20260801-b"
+.\.venv\Scripts\python.exe -m pytest -n 2 --dist=load -m parallel --cov=moira --cov-config=pyproject.toml --cov-context=test --cov-report= tests\unit\test_spk_kernel_identity.py tests\unit\test_house_projection_geometry.py tests\unit\test_hellenistic_source_goldens.py tests\unit\test_native_nutation_2000a.py tests\metamorphic -q
+.\.venv\Scripts\python.exe scripts\build_test_assurance_matrix.py --check --receipt-dir $phase10Receipt --coverage-file $env:COVERAGE_FILE
+```
+
+The distributed lane collected 66, selected the exact 38 parallel reviewed
+items, deselected 28 ordinary/local items, and passed all 38. The reconciled
+runtime matrix again filled all seven cells. The exact coverage SHA-256 is
+sealed in that immutable receipt; one import-time coverage context was
+intentionally unattributed.
+
+#### Phase 10 adversarial findings and explicit deferrals — 2026-08-01
+
+The attempted equatorial/horizontal inverse relation discovered a real
+protected engine defect and was refused from admission. At observer latitude
+`40` degrees with `LST = RA = 100` degrees and input declination `+90`
+degrees, `equatorial_to_horizontal()` returns azimuth `0` and altitude `40`.
+`horizontal_to_equatorial(0, 40, 100, 40)` then takes the compatibility branch
+that calls this pair a legacy zenith surrogate and returns declination `40`
+instead of the north celestial pole at `+90`: a 50-degree direction error.
+True zenith has altitude `+90`; `(azimuth=0, altitude=observer latitude)` is the
+north celestial pole for a nonpolar observer. The existing low-level test
+encodes the false compatibility behavior, and the lineage tracker still marks
+this inverse as rewritten-pending-oracle. Neither engine code nor that test was
+changed under this testing-infrastructure phase. Repair requires a separate
+protected coordinate decision, correction, external-oracle review, and
+targeted regression admission.
+
+Calendar conversion refusal is also deferred. `julian_day()`,
+`calendar_from_jd()`, and their native counterparts currently declare no
+input-validation contract; raw invalid native calendar probes can reach
+unchecked floating-to-integer casts. Phase 10 did not invent rejection
+semantics or execute unsafe invalid-native cases. Server serialization remains
+deferred because the current assurance coverage source is exactly `moira`,
+while serialization lives in `moira_server` and the base development surface
+does not guarantee the server optional dependency. Center-chain, event-root,
+finite-difference, kernel-segment, default-house-policy, and extended
+Python/native candidates remain explicit later Phase 10 expansion work rather
+than unverified claims.
+
+This bounded Phase 10 admission changed only validation infrastructure,
+contracts, generated assurance policy, tests/support, and this plan. It did
+not change engine mathematics, public semantics, native code, scientific
+tables, oracle/golden baselines, or approved tolerances outside the three new
+contracts. No commit, push, tag, pull request, release, or deployment was
+performed, and unrelated dirty-worktree changes were preserved.
 
 ---
 
@@ -1330,10 +1952,605 @@ fault archetype
 Critical mutants must be killed by the intended evidence test, not by import
 failure or an unrelated assertion.
 
+`critical` and `supplemental` are assurance-admission tiers, not estimates of
+scientific, product, or user-impact severity. A critical admission must be
+killed by its exact contract-bound typed metamorphic witness. A supplemental
+admission may instead be killed by its exact named authority, invariant, or
+Python/native-parity vessel, but receives no weaker source, execution, or
+receipt scrutiny. Neither label ranks the underlying production fault.
+
 Run source mutations only in a disposable worktree, isolated copy, or admitted
 mutation tool environment. Never mutate the user's working tree in place.
 Evaluate any new mutation dependency as development tooling; do not add it to
 base runtime.
+
+#### Phase 11 bounded admission — 2026-08-01
+
+Phase 11 admits six reviewed Python-source mutants. It is an all-declared gate,
+not a mutation-score percentage and not a claim that every candidate archetype
+above is now covered. Three mutants are critical typed-metamorphic probes and
+three are supplemental authority, invariant, or Python/native-parity probes.
+Each mutant binds one exact source target, one exact leaf test, one evidence
+contract digest, one expected exception/witness, and explicit exclusions.
+
+| Mutant | Class | Production fault | Intended killer and evidence class |
+|---|---|---|---|
+| `P11-COORD-INVERSE-LATITUDE-CROSS-TERM-SIGN` | critical | reverse the obliquity cross-term sign in the ecliptic-latitude numerator of `equatorial_to_ecliptic()` | spherical boundary atlas; invariant |
+| `P11-DOROTHEAN-SECT-RULERS-SWAPPED` | supplemental | exchange day/night Dorothean rulers in `triplicity_assignment_for()` | named Pingree-table golden; authority |
+| `P11-LONGITUDE-ENDPOINT-EXCLUSION-LOST` | critical | change the `360` endpoint guard in `normalize_degrees()` from inclusive to exclusive | longitude quotient boundary atlas; invariant |
+| `P11-NUTATION-PY-DPSI-SIGN-REVERSED` | supplemental | reverse Python scalar `dpsi` in `_nutation_python()` | exact J2000 Python/native leaf; native parity |
+| `P11-SPK-FIRST-SUMMARY-WINS` | supplemental | replace mixed-content identity refusal with first-summary selection | mixed-summary refusal/release leaf; invariant |
+| `P11-TIMESCALE-DELTA-T-DOUBLE-FORWARD` | critical | apply Delta-T twice in `ut_to_tt()` | hybrid UT1/TT boundary atlas; invariant |
+
+The authoritative catalogue is `tests/mutations/catalogue.json`, schema 1,
+with SHA-256
+`831ca1c0b75dd7d8b8dd8a0cd2187360f62b5c88b7e1e6bb2f6bec49d55f32f0`.
+Its source-file identities use `utf8_lf_v1`: strict UTF-8 with CRLF and lone CR
+normalized to LF. The runtime separately records the exact raw snapshot hash,
+so the same reviewed mutant is portable to LF and CRLF checkouts without
+discarding proof of the bytes the interpreter actually loaded. Mutation
+fragments themselves must be canonical LF, must occur exactly once across the
+LF/CRLF representations, and are replaced atomically while retaining the
+snapshot's line-ending representation. Full canonical source, target AST,
+target `python_code_v1`, and patch digests must all match their declared pre-
+and postimages before execution can receive credit.
+
+#### Phase 11 isolation, execution, and adjudication contract
+
+`scripts/run_scientific_mutations.py` runs only under the project `.venv`. It
+freezes the current tracked and untracked test-relevant checkout state, named
+tracked deletions, and the exact already-loaded native backend. Native-parity
+credit additionally requires the backend's embedded build-input manifest to
+equal the manifest recomputed from the current declared C++/binding/build
+inputs. Each mutant receives a fresh plain-file copy; links, reparse points,
+hard links, case-colliding paths, missing/extra files, byte drift, and live
+checkout drift fail closed. The native extension is copied unchanged and is
+never rebuilt or mutated. No production source in the user's checkout is
+written.
+
+The parent rejects preloaded evidence/adjudication modules, disables bytecode
+writes, imports through an empty isolated bytecode-cache prefix, proves module
+`__file__` and spec origins, and receipts the exact runner, contracts,
+adjudicator, evidence-schema, and toolchain source identities. The parent and
+every child also bind the exact project interpreter and the active
+pytest/Hypothesis/PyYAML dependency closure: declared import trees, complete
+dist-info trees, versions, byte counts, per-distribution digests, entry-module
+bytes, and loaded source/extension loader origins. Unreviewed or duplicate
+dependencies, same-version byte edits, foreign shadows, unrecorded files,
+links, reparse points, hardlinks, case-colliding paths, and ambient bytecode
+state fail closed. The child proves that this toolchain is unchanged from
+session construction through report publication and exactly matches the
+parent admission.
+
+A child runs one exact leaf serially with `-P -B`, an execution-ID-specific
+absolute pycache prefix, plugin autoload disabled, the repository reporter
+loaded explicitly, role-separated deterministic execution IDs, a seed derived
+from the full mutant ID, downloads disabled, and cooperative network mode
+`deny`. The child reports exact source, module, and interpreter byte counts in
+addition to their digests. Stdout and stderr are drained concurrently with
+only 128 KiB per stream retained; full-stream SHA-256 continues across
+discarded bytes. Process-tree termination and pipe closure use bounded waits
+on every normal, timeout, setup-failure, and `BaseException` path. Windows
+children start suspended, enter a kill-on-close Job Object, and only then
+resume. Linux children run under a process-wide serialized subreaper that
+kills and reaps descendants which escape the original session; unsupported
+non-Linux POSIX hosts fail closed. Real noisy-child and descendant-escape
+canaries exercise these boundaries, while a real disposable pytest subprocess
+canary exercises reporter hooks, atomic publication, selection, three phases,
+target tracing, and baseline adjudication.
+
+An unmutated baseline must first select only the declared item, pass
+setup/call/teardown, execute the exact declared target code, and exit green.
+Mutation credit then requires all of the following:
+
+- the canonical postimage and exact raw snapshot postimage are proved;
+- the one intended node is the entire selected set;
+- collection and internal-error lists are empty;
+- setup and teardown pass without exceptions;
+- only call fails, with no xfail or rerun evidence;
+- parent return code and structured pytest exit status are both exactly
+  `TESTS_FAILED`;
+- the loaded target module, source file, traced frame, qualified code object,
+  and `python_code_v1` digest are the declared postimage;
+- the evidence claim ID and contract digest are present on every phase;
+- the call exception, message/longrepr fragments, and typed metamorphic witness
+  match the catalogue exactly; and
+- the outcome is `killed_intended`. Import, collection, setup, teardown,
+  timeout, truncation, foreign module, wrong assertion, survivor, xfail, rerun,
+  or contradictory passed-phase exception receives zero credit.
+
+Every baseline and mutant adjudication has an exact schema and its own
+`adjudication_sha256`. Sealing and later receipt verification independently
+replay the cross-field rules above; outcome labels cannot mint a green receipt.
+The process record retains the parsed but unadmitted child report for red-run
+forensics while `child_report` remains only the report that passed admission.
+
+The separate receipt contains exactly `baselines.json`, `catalogue.json`,
+`mutants.json`, `run.json`, `snapshot.json`, and `COMPLETE`. The COMPLETE
+manifest binds every data-file byte count and SHA-256; the snapshot manifest is
+recomputed; catalogue IDs, run summary, boundaries, interpreter, parent-module
+identities, test-toolchain closure, native build-input provenance,
+process/report digests, and adjudication records are revalidated. Canonical
+timestamps are rejected before any artifact directory is created. A complete
+candidate is written below an explicitly incomplete staging container, fully
+replayed while still staged, and atomically renamed to its final run ID only
+after that replay succeeds. Run and verify modes recompute the current
+snapshot, interpreter/toolchain, and native-build identities before and after
+their critical operation and reject drift. This is tamper evidence, not signed
+authenticity, and is stated as such in the receipt.
+
+#### Phase 11 adversarial findings closed
+
+The implementation was not accepted after its first apparent green result.
+Adversarial review found and closed these false-assurance paths:
+
+- the initial child allowlist omitted Windows home variables, so all six
+  baselines blocked in `Path.home()`; red receipt `phase11-20260801-a`
+  preserved the failure and granted zero kill credit;
+- a label-only mapping could previously seal and revalidate as green;
+- raw CRLF catalogue hashes and a CRLF mutation fragment made the catalogue
+  fail on canonical LF/Linux checkouts;
+- `communicate()` retained unbounded child output, and one failed Windows
+  tree-kill path could enter an unbounded pipe wait;
+- invalid parsed child reports were discarded instead of retained as explicitly
+  unadmitted diagnostics;
+- the standalone parent did not bind loaded adjudication/contract code or
+  exclude stale/preloaded modules;
+- reporter behavior had only manufactured-dictionary tests rather than a real
+  subprocess integration canary;
+- the declared `invalid_mutation` outcome was unreachable; mutation
+  materialization failures now abort without sealing rather than advertising a
+  dead result class; and
+- passed setup/teardown phases could carry contradictory exception payloads and
+  still allow live kill credit. Both live adjudication and offline receipt
+  replay now reject that state.
+
+A second adversarial pass then treated the first green receipt as hostile
+input and found additional ways it could overstate assurance:
+
+- setup failures and non-`Exception` interruptions after `Popen` could bypass
+  complete child-tree and pipe cleanup;
+- a POSIX descendant could leave the child's session, redirect its descriptors,
+  and survive a process-group kill, while a Windows child could execute before
+  Job Object assignment;
+- execution IDs, seeds, interpreter runtime fields, pycache location, and
+  reported file byte counts were not all independently derived and replayed;
+- the parent recorded its interpreter but not the exact installed pytest,
+  Hypothesis, PyYAML, and transitive dependency bytes or loaded import origins;
+- copied native bytes could be exact yet stale relative to their declared
+  native build inputs;
+- a candidate receipt could be published before its full semantic replay, and
+  run/verify mode did not bracket the operation with complete current-identity
+  recomputation; and
+- the coordinate mutant's old name overstated its production change: it
+  reverses one latitude-numerator cross-term, not the whole obliquity rotation.
+
+The execution, provenance, naming, staging, and replay contracts above close
+those paths. Cleanup failures remain failures; they can never be converted into
+mutation credit.
+
+An intermediate frozen run, `phase11-20260801-c`, killed the first five mutants
+but detected that `tests/harness_meta/test_mutation_runner_policy.py` changed
+while another adversarial test was being added. Materialization of the sixth
+snapshot failed closed with `snapshot input changed during materialization`;
+no receipt was sealed. This is retained as direct evidence that live-checkout
+drift cannot be hidden inside a nominally green pack.
+
+#### Phase 11 verification receipt
+
+The earlier `phase11-20260801-d` receipt proved the preceding contract, but is
+superseded and non-authoritative after the catalogue rename and receipt,
+runtime, toolchain, cleanup, and native-provenance schema hardening. Current
+verification must reject it as stale. A fresh schema-3 all-declared receipt is
+required before Phase 11 returns to complete status.
+
+The superseded run was:
+
+```powershell
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+.\.venv\Scripts\python.exe scripts\run_scientific_mutations.py --run-id phase11-20260801-d
+.\.venv\Scripts\python.exe scripts\run_scientific_mutations.py --verify-receipt .pytest_cache\moira-mutation-artifacts\phase11-20260801-d
+```
+
+All six baselines passed and all six mutants were `killed_intended` under that
+older contract. Its historical sealed receipt is
+`.pytest_cache/moira-mutation-artifacts/phase11-20260801-d`; its snapshot
+contains 1,424 exact files with manifest SHA-256
+`9d00dee51b8311449c22309c48aee22d199268da5632aa7427e0ebbbb6ab9984`.
+Independent receipt replay then returned `6/6 killed intended`; that historical
+result is not current proof after the hardening above.
+
+The adversarial harness gate passed 75 tests: 73 catalogue, isolation,
+mutation, adjudication, diagnostic, receipt, and tamper-policy tests plus two
+real runtime/reporter subprocess canaries. Nine green-record tamper classes are
+tested at both seal and later validation boundaries: selection, phase,
+passed-phase exception, source, code, exception witness, process, report digest,
+and adjudication digest. Label-only green records are rejected at both
+boundaries.
+
+The broad serial regression gate was:
+
+```powershell
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_NO_DOWNLOAD = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+$env:MOIRA_TEST_ARTIFACTS = "0"
+.\.venv\Scripts\python.exe -m pytest tests\harness_meta tests\metamorphic tests\unit\test_spk_kernel_identity.py tests\unit\test_house_projection_geometry.py tests\unit\test_hellenistic_source_goldens.py tests\unit\test_native_nutation_2000a.py tests\unit\test_julian_delta_t.py tests\unit\test_low_level_helpers.py tests\unit\test_conftest_smoke.py -q
+```
+
+It collected 955 tests: 953 passed and the two expected `socket.sendmsg`
+capability cases skipped because that API is unavailable. The selected set was
+724 harness, 14 metamorphic, and 217 unit cases; all 38 evidence items remained
+bound across seven contracts.
+
+The distributed canary ran both Phase 11 harness files plus the Phase 9/10
+evidence files under `-n 2 --dist=load -m parallel`. It collected 141, selected
+113 parallel items, deselected 28 ordinary/local items, and passed all 113.
+The selected set contained all 75 Phase 11 harness items and all 38 reviewed
+evidence items. The static assurance matrix still passed seven required cells;
+scoped Ruff passed; `git diff --check` passed for the Phase 11 files; and the
+project import smoke loaded Moira `6.1.0` from the checkout's
+`_moira_native.cp314-win_amd64.pyd`.
+
+#### Phase 11 pause checkpoint — 2026-08-02
+
+**Status: paused, adversarially red, and not admitted.** No current Phase 11
+receipt may be minted or presented as assurance evidence from this checkpoint.
+The reserved next run ID is `phase11-20260802-a`; it must remain unused until
+all restart gates below are green. `phase11-20260801-d` remains historical and
+non-authoritative. No commit, push, tag, release, or deployment was performed
+at this checkpoint.
+
+The present uncommitted implementation advances the receipt and toolchain
+contract to schema 3. It includes exact parent-owned intended-test source bytes,
+canonical Base64 and SHA-256, pytest assertion-rewrite policy, a deterministic
+`python_code_structural_v1` digest for the rewritten intended test, exact
+function/module/loader/code identities, exact traced frame globals, a frozen
+eight-file stage-one parent loader, and expanded byte/code/binding provenance
+for the active test-toolchain closure. Production target functions deliberately
+remain on `python_code_v1`; migrating those catalogue identities is a separate
+schema/catalogue/history migration, not an incidental checkpoint edit.
+
+The following checks are current at the pause boundary:
+
+- scoped `py_compile` passed for the runner, reporter, assurance/toolchain
+  support, and three Phase 11 harness modules;
+- scoped Ruff passed with `--no-fix` for the same seven files;
+- catalogue validation passed for all six mutants at SHA-256
+  `831ca1c0b75dd7d8b8dd8a0cd2187360f62b5c88b7e1e6bb2f6bec49d55f32f0`;
+- `tests/harness_meta/test_mutation_runner_policy.py` passed all 173 collected
+  tests, with zero deselections and zero skips;
+- the final, `.incomplete`, and `.revoked` artifact paths for reserved run ID
+  `phase11-20260802-a` were all confirmed absent; and
+- the current-toolchain identity smoke intentionally remains red. It fails at
+  `hypothesis.strategies._internal.core._maybe_nil_uuids` with `loaded source
+  callable binding changed` after the exact source-derived admission of all six
+  `Shrinker.derived_value` descriptors.
+
+Two additional P1 false-green paths were found by the final read-only review and
+are not yet closed:
+
+1. The reporter proves the captured intended-test and target module objects,
+   functions, code objects, paths, and globals, but does not yet prove that each
+   captured module is still the exact live `sys.modules[module_name]` binding.
+   Initial capture, stability checks, and final identity assembly must join to
+   the same module object for both roles.
+2. The reporter currently proves that the exact intended-test frame and exact
+   target frame both occurred during the pytest call phase, but not that the
+   target call descended from that intended-test frame. For the six synchronous
+   killers, target credit must require an `f_back` ancestry containing the exact
+   captured intended-test code object and module globals. A hook that calls the
+   target before or after the test must receive zero credit.
+
+One requested regression is also still absent: a focused
+`_Reporter._prepare_target` test must reject non-exact `FunctionType` targets and
+arbitrary `__wrapped__` proxies. The runner-policy source-receipt and POSIX
+lexical-versus-resolved-executable additions are now covered by the 173-test
+green run; the real POSIX behavior itself was not exercised on this Windows
+host.
+
+Restart in this order:
+
+1. Close the live-`sys.modules` coherence and causal-frame-ancestry findings in
+   the reporter, with direct adversarial regressions for detached module clones
+   and out-of-band pytest-hook target calls.
+2. Add the missing target-wrapper regression.
+3. Continue the toolchain binding audit from `_maybe_nil_uuids`, admitting only
+   transformations derived exactly from sealed source/decorator/closure
+   structure. Do not add a broad callable-proxy or wrapper escape. Repeat until
+   the current-toolchain identity smoke is green.
+4. Run the focused toolchain regressions, all 173 runner-policy tests, the real
+   reporter/runtime canaries, and then the combined three-file Phase 11 harness.
+5. Run the proportional broad serial and xdist evidence gates and re-run scoped
+   Ruff, `py_compile`, catalogue validation, and `git diff --check`.
+6. Only after all gates are green, confirm that the final, incomplete, and
+   revoked forms of `phase11-20260802-a` do not already exist; execute the six
+   baselines and mutants; independently replay the sealed receipt; inspect its
+   schema, counts, identities, digests, outcomes, skips, and boundaries; and
+   replace this red checkpoint with the exact fresh verification receipt.
+
+No engine mathematics, public semantics, native source, compiled-extension
+bytes, scientific table, oracle/golden baseline, tolerance, dependency, or
+packaging authority is admitted by this work-in-progress checkpoint. The large
+pre-existing dirty worktree remains unstaged and must be preserved during the
+restart.
+
+#### Phase 11 recovery checkpoint — 2026-08-04
+
+**Status: paused, adversarially red, and not admitted.** This checkpoint
+supersedes the previous toolchain restart frontier, but it does not authorize a
+Phase 11 receipt. The reserved run ID remains `phase11-20260802-a`; its final,
+`.incomplete`, `.revoked`, `.invalidated`, and root-claim paths were all
+confirmed absent after the host restart. No mutation campaign, commit, push,
+tag, release, or deployment was performed.
+
+The interrupted semantic-state repair now models 45 stable exact
+`functools._lru_cache_wrapper` objects plus one logical
+`importlib.metadata.FastPath.lookup` instance-cache family. The implementation
+binds the non-module `typing._caches` and `_cleanups` containers, four
+`ipaddress` property getters, two Hypothesis descriptor functions,
+`FastPath.__new__`, the original `FastPath.lookup` closure method, exact
+`CacheInfo` controls, and exact `collections._tuplegetter` reduction controls.
+Normalization is phased: validate every owner first, clear every admitted
+cache second, and perform a final non-mutating global pass so a destructor or
+weakref callback cannot repopulate an earlier cache and still receive a green
+receipt. Distribution discovery now enumerates exact immediate metadata
+directories directly rather than invoking `importlib.metadata`'s global
+`FastPath` cache. On this `.venv`, the direct enumeration and the former
+metadata enumerator both selected the same 118 `.dist-info` paths.
+
+A fresh standalone project-venv process imported and normalized this registry
+successfully. Its portable logical receipt contained 46 sorted providers with
+SHA-256
+`9d0c1e676f08dcbef18a8ce60a08c9846cfd413c0941ab55a3cc63b0b88678f9`.
+That result proves only the standalone registry; it is not the real-child
+completeness result.
+
+Checkpoint verification used the project `.venv` under Python 3.14.3 with
+`MOIRA_TEST_MODE=1`, `MOIRA_NO_DOWNLOAD=1`,
+`MOIRA_STRICT_KNOWN_ISSUES=1`, and `MOIRA_TEST_ARTIFACTS=0` where pytest or the
+ordered lifecycle was involved:
+
+- scoped `py_compile` passed for `mutation_toolchain.py`, its harness meta-test,
+  and `mutation_reporter.py`;
+- scoped Ruff passed for the same three files with `--no-fix`;
+- the focused LRU/FastPath slice collected 115 tests, selected nine, deselected
+  106, passed eight, and intentionally remained red on the isolated
+  garbage-collector completeness canary; and
+- the exact standalone order
+  `normalize -> project_test_toolchain_identity -> normalize ->
+  loaded_test_toolchain_attestation` remained red after 33.4 seconds at
+  `collections._tuplegetter provider changed`. The immediate cause is an
+  over-strict identity comparison against a newly returned class
+  `mappingproxy`; the verifier must compare the retained exact member sequence,
+  not require two `mappingproxy` view objects to be identical.
+
+The garbage-collector canary found one real-pytest-only exact LRU wrapper beyond
+the 45 stable objects after normalization:
+
+- `_pytest.config.PytestPluginManager._get_directory`, created per plugin-manager
+  instance by `lru_cache(256)(_get_directory)` in
+  `PytestPluginManager.__init__`.
+
+This is a genuine P1 completeness failure, not disposable test pollution. The
+current production normalizer cannot discover that instance family without
+`gc`, so the 46-provider design must not be called complete in a real mutation
+child. Production discovery must remain no-`gc`; the exact active plugin
+manager is available through pytest `Config` and must be passed across an
+explicit reviewed boundary. The eventual portable registry will require a
+second logical dynamic-family entry, but its label, provider count, and digest
+must be derived only after that design and its parent/child semantics are
+implemented.
+
+Restart in this order:
+
+1. Repair the exact `_tuplegetter` verifier so repeated `mappingproxy` views are
+   compared by retained exact members, and add a zero-callback tamper canary.
+2. Define the `PytestPluginManager._get_directory` governing object and explicit
+   caller contract. In a real child, bind the exact active plugin manager from
+   pytest `Config`, its exact class, original `_get_directory` function, owned
+   wrapper, cache controls, and lifecycle. The standalone parent must retain
+   the same logical family name without fabricating a physical instance.
+3. Add live identity-replacement canaries for copied `typing` containers,
+   property, staticmethod, classmethod, `FastPath.__new__`, plugin-manager
+   ownership, hostile `CacheInfo.__len__`, and a fresh-child pre/post physical
+   completeness audit. The existing path-label and endpoint canaries are not a
+   substitute for all of these live-path attacks.
+4. Re-run the focused LRU/FastPath/plugin-manager slice and require every
+   completeness canary green. Then re-run the exact ordered lifecycle and
+   require identical logical receipts with all admitted caches empty.
+5. Run
+   `test_real_reporter_child_emits_atomic_exact_trace_receipt`; the existing
+   ambient standalone-parent/plain-pytest bridge remains an import-order canary,
+   not frozen-runner or reporter admission evidence.
+6. Only then resume the combined runner/reporter/toolchain suites, proportional
+   broad serial and xdist gates, catalogue/static-matrix checks, and the reserved
+   six-mutant campaign.
+
+The focused red canary is the restart boundary. Do not delete, xfail, weaken,
+or list it in `KNOWN_ISSUES.yml`. No engine mathematics, public semantics,
+native source, compiled-extension bytes, scientific table, oracle/golden
+baseline, tolerance, dependency, or packaging authority changed in this
+recovery work.
+
+#### Phase 11 Hypothesis coverage checkpoint — 2026-08-05
+
+**Status: paused, adversarially red, and not admitted.** The reserved run ID
+remains `phase11-20260802-a`. No six-mutant campaign, receipt, commit, push,
+tag, release, or deployment was performed. This checkpoint supersedes the
+older `_tuplegetter` restart frontier for the current toolchain audit, but it
+does not claim that the latest coverage changes pass the canonical identity
+gate.
+
+The compatibility-alias tranche is green. Exact, callback-free source-record
+reading and provider verification now cover the inactive
+`hypothesis.internal.compat` aliases for `dataclass_asdict` and `batched`,
+including hostile metadata, verifier/dispatcher self-blessing, slot-descriptor
+replacement, and pre-import provider/module substitution. The focused
+compatibility slice passed 28 tests with 485 deselections and zero skips; the
+profile/provider regression slice passed 104 tests with 381 deselections and
+zero skips.
+
+The next source frontier was the exact disabled outcome in
+`hypothesis.internal.coverage`. The current work-in-progress now retains the
+14-part early bootstrap graph: coverage module and false flag, exact `os`
+provider, `getenv` and its code, `os.environ`, `check_function` and its code,
+the public context-manager `check` and its code, the raw wrapped `check` and its
+code, the exact public closure tuple/cell, and both loaded consumer aliases.
+The toolchain record also carries four function fingerprints and default-binds
+the source-byte/hash/AST and fingerprint verifiers so simple helper replacement
+cannot bless a changed outcome. This closes the structural mismatch that had
+left the dataclass newer than its constructor and old eight-slot anchor checks.
+
+Checkpoint-only verification under the project `.venv` and Python 3.14.3:
+
+- `python -m py_compile` passed for
+  `tests/_pytest_plugins/determinism.py`,
+  `tests/support/mutation_toolchain.py`, and
+  `tests/harness_meta/test_mutation_toolchain.py`;
+- a fresh standalone import with
+  `HYPOTHESIS_INTERNAL_COVERAGE` absent passed the builtin-only coverage
+  verifier and reported four function fingerprints; and
+- pytest's real loader collected all 513 tests in
+  `tests/harness_meta/test_mutation_toolchain.py` with zero skips. Collection
+  proves the real harness import/bootstrap shape only; those 513 tests were not
+  executed at this checkpoint.
+
+One manual smoke that imported `_pytest_plugins.determinism` outside pytest's
+normal plugin topology failed the pre-existing profile-owner topology guard.
+That invocation is not an admitted harness path and is not a product failure;
+the subsequent real pytest collection is the relevant bootstrap smoke.
+
+Restart in this order:
+
+1. Finish exact coverage source-policy topology validation for the four sealed
+   bindings (`check`, `check_block`, `check_function`, and `record_branch`).
+2. Default-bind and identity-check the guard dispatch chain
+   `_closed_source_expression_value -> _closed_source_reference`,
+   `_active_source_binding_candidate`, and `_verify_loaded_bindings`; validate
+   exact record/scalar types before any equality, hashing, or iteration.
+3. Add the focused coverage canaries for coordinated raw-wrapper/closure
+   substitution, in-place code replacement, enabled-only residue, consumer
+   drift, `getenv` clone/metadata changes, post-import environment changes,
+   record/verifier/dispatcher self-blessing, and hostile metadata with zero
+   callbacks. Include fresh-child pre-import enabled and environment-scrubbed
+   cases.
+4. Run only that focused coverage slice first. Then rerun the canonical compact
+   toolchain identity command. Before the latest hardening edit, the canonical
+   command had advanced beyond `IN_COVERAGE_TESTS` to the next reported frontier,
+   `hypothesis.internal.entropy.RandomLike`; this must be reconfirmed and is not
+   yet current proof.
+5. Continue one exact frontier at a time. Run the broader static/harness gates
+   only after the focused canaries are green. Keep the six-mutant campaign and
+   receipt last.
+
+The broad dirty worktree remains unstaged and must be preserved. This tranche
+touches validation-policy infrastructure only; it changes no engine
+mathematics, public semantics, native source, compiled extension, scientific
+table, oracle/golden baseline, tolerance, dependency, or packaging authority.
+
+#### Phase 11 iniconfig closure and packaging frontier checkpoint — 2026-08-07
+
+**Status: paused, adversarially red, and not admitted.** The reserved run ID
+remains `phase11-20260802-a`. No six-mutant campaign, receipt, coverage
+database, tag, release, or deployment was produced. This is a source
+checkpoint, not current evidence that Phase 11 passes its canonical closure
+gate.
+
+The exact Python 3.14 annotation-scope cell retained by
+`iniconfig._parse.ParsedLine.__annotate_func__` is now closed. The toolchain
+admits exactly two wrapped source class-dictionary cells: the existing
+`hypothesis.internal.filtering.ConstructivePredicate` cell and the new
+`iniconfig._parse.ParsedLine` cell. Selection is by retained cell identity,
+not by generic `NamedTuple` topology. The records retain the exact source
+module, class, `typing.NamedTupleMeta.__new__` factory, wrapper, hidden original
+annotation function, closure cells, hidden class dictionary, cell descriptor,
+and ordered identity-bearing dictionary entries.
+
+The admission also closes two false-green paths found during adversarial
+review. The immediate `CellType` dispatcher now default-binds and verifies the
+class-dictionary shape helper and its callable fingerprints before invocation,
+so replacing the mutable global cannot return a forged valid shape. Provenance
+lookups for `sys.modules`, source/provider module dictionaries, class mapping
+proxies, `CellType`, and hidden class-dictionary backreferences use exact item
+scans. Equal hostile `str` subclasses are rejected before equality, hashing,
+or representation callbacks. A post-shape verification sandwich rechecks the
+registry, closure graph, module routes, class namespaces, cell contents, and
+ordered dictionary identities without executing either deferred annotation
+function.
+
+Checkpoint verification used the project `.venv` under Python 3.14.3 with
+`MOIRA_TEST_MODE=1`, `MOIRA_NO_DOWNLOAD=1`,
+`MOIRA_STRICT_KNOWN_ISSUES=1`, and `MOIRA_TEST_ARTIFACTS=0`:
+
+- final `py_compile` and scoped Ruff checks passed for
+  `tests/support/mutation_toolchain.py` and
+  `tests/harness_meta/test_mutation_toolchain.py`;
+- the focused matrix passed 20 tests with zero skips, covering the existing
+  Hypothesis cell, the exact iniconfig cell, 15 identity attacks, an unrelated
+  `NamedTuple` rejection, the mutable-dispatcher bypass, and a hostile
+  `sys.modules` key with zero callbacks;
+- a separate fresh-process iniconfig reseal passed one test with zero skips;
+  and
+- an independent read-only review found no remaining actionable finding in
+  this exact tranche.
+
+The one permitted canonical closure run advanced past the prior iniconfig
+failure and then failed after selecting one harness test with zero skips:
+
+```text
+MutationToolchainError: inactive source binding is unexpectedly present:
+packaging.version._deprecated
+```
+
+The installed `packaging.version` source selects
+`from warnings import deprecated as _deprecated` when
+`sys.version_info >= (3, 13)`. Under Python 3.14.3 that branch is active, but
+the sealed source policy currently classifies `_deprecated` as inactive. This
+is the next exact frontier; it was checkpointed rather than implemented or
+silently admitted. The canonical test took 125.792 seconds and retained
+classification-manifest SHA-256
+`5c6459c715cac430653c5e19a2707b51badd49d427c2b0191e23164f7068859e`.
+
+Restart in this order:
+
+1. Map the sealed candidates and active-guard proof for
+   `packaging.version._deprecated`, including the `sys.version_info >= (3, 13)`
+   branch and exact `warnings.deprecated` provider binding.
+2. Define the branch and provider authority before changing admission logic;
+   do not weaken inactive-binding rejection globally.
+3. Add focused active/inactive branch, equal-distinct version information,
+   provider substitution, dispatcher self-blessing, and hostile-key canaries
+   that execute no decorator or warning callback.
+4. Run the focused packaging slice, a fresh clean reseal, static checks, and
+   then the canonical closure exactly once. If it exposes another frontier,
+   checkpoint that frontier rather than beginning a mutation campaign.
+5. Keep the six-mutant campaign and final receipt last. Phase 11 remains red
+   until the canonical closure, campaign, and receipt gates all pass.
+
+#### Phase 11 boundaries and future expansion
+
+This phase changes validation infrastructure only: the runner, reporter,
+catalogue, harness meta-tests, and this plan. It changes no engine mathematics,
+public semantics, native source, scientific table, oracle/golden baseline,
+tolerance, dependency, or packaging authority. The six mutations occur only
+inside disposable copies. No commit, push, tag, release, or deployment was
+performed.
+
+The admitted pack is intentionally Python-source-only and cannot prove
+completeness. It does not yet mutate native SPK coefficients/endian decoding,
+the distinct UT-for-TT substitution archetype, observer/target center chains,
+degrees/radians and unit conversions, correction stage omission,
+apparent/geometric or topocentric/geocentric policy, solver tolerances,
+requested/effective house policy, or native-dispatch cache state.
+Those remain candidate Phase 11 expansion work and require their own governing
+objects, exact intended killers, and isolation strategy. Python/native parity
+is corroboration of two paths, not external authority. Cooperative CPython
+network denial is accidental-egress containment, not a hostile security
+sandbox; native/ctypes/inherited-descriptor denial remains a runner-level
+boundary. Receipt SHA-256 detects accidental or uncoordinated tampering but is
+not a signature or independent trust anchor.
 
 ---
 

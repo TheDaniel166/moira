@@ -23,6 +23,7 @@ def _constellation_modules() -> list[object]:
 
 
 @pytest.mark.unit
+@pytest.mark.required_enumeration
 @pytest.mark.parametrize("module", _constellation_modules(), ids=lambda module: module.__name__.split(".")[-1])
 def test_constellation_star_mappings_resolve_sovereign_names(module: object) -> None:
     mapping = next(
@@ -40,6 +41,7 @@ def test_constellation_star_mappings_resolve_sovereign_names(module: object) -> 
 
 
 @pytest.mark.unit
+@pytest.mark.required_enumeration
 @pytest.mark.parametrize("module", _constellation_modules(), ids=lambda module: module.__name__.split(".")[-1])
 def test_constellation_available_helpers_match_resolver_truth(module: object) -> None:
     mapping = next(

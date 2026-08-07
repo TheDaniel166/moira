@@ -7,6 +7,7 @@ from dataclasses import FrozenInstanceError
 import math
 import os
 from pathlib import Path
+import shutil
 from threading import Condition
 from textwrap import dedent
 from types import SimpleNamespace
@@ -31,6 +32,9 @@ from support.resource_policy import (
 )
 
 
+pytestmark = pytest.mark.parallel(reason="isolated_resources")
+
+
 _TESTS_DIR = Path(__file__).resolve().parents[1]
 _HARNESS_SOURCE = (_TESTS_DIR / "conftest.py").read_text(encoding="utf-8")
 _RESOURCE_POLICY_SOURCE = (
@@ -45,6 +49,8 @@ _NETWORK_BOOTSTRAP_SOURCE = (
 _PYTEST_CONFIG = """\
 [pytest]
 addopts = -ra
+strict_config = true
+strict_markers = true
 markers =
     requires_ephemeris: typed planetary-kernel capability
     loopback: local IPC only
@@ -201,6 +207,10 @@ def _make_harness_project(
     bootstrap.joinpath("sitecustomize.py").write_text(
         _NETWORK_BOOTSTRAP_SOURCE,
         encoding="utf-8",
+    )
+    shutil.copytree(
+        _TESTS_DIR / "_pytest_plugins",
+        mini_tests / "_pytest_plugins",
     )
     mini_tests.joinpath("conftest.py").write_text(
         _HARNESS_SOURCE,
@@ -1195,7 +1205,6 @@ def test_discovered_identity_mismatch_skips_with_named_receipt(
         """
         import pytest
 
-
         @pytest.mark.requires_ephemeris(content_identity="DE441")
         def test_requires_de441():
             raise AssertionError("mismatched resource test body executed")
@@ -1237,7 +1246,6 @@ def test_mismatch_is_enforced_before_session_reader_fixture_opens(
         pytester,
         """
         import pytest
-
 
         @pytest.mark.requires_ephemeris(content_identity="DE441")
         def test_requires_de441(planetary_reader):
@@ -1888,6 +1896,8 @@ def test_xdist_planetary_receipt_summary_matches_serial_semantics(
         """
         import pytest
 
+        pytestmark = pytest.mark.parallel(reason="isolated_resources")
+
 
         @pytest.mark.requires_ephemeris(content_identity="DE441")
         def test_first():
@@ -1953,6 +1963,8 @@ def test_xdist_planetary_receipt_details_survive_worker_shutdown(
         pytester,
         """
         import pytest
+
+        pytestmark = pytest.mark.parallel(reason="isolated_resources")
 
 
         @pytest.mark.requires_ephemeris(content_identity="DE441")

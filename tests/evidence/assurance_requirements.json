@@ -1,0 +1,318 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "admission_scope": "phase9_and_phase10_reviewed_claims",
+    "coverage_branch": null,
+    "coverage_config": "pyproject.toml",
+    "coverage_context": "pytest-cov --cov-context=test",
+    "coverage_core": "ctrace",
+    "coverage_is_scientific_gate": false,
+    "coverage_phase_default": "run",
+    "coverage_source": ["moira"],
+    "coverage_runtime": {
+      "actual_core": "CTracer",
+      "config_files": ["pyproject.toml"],
+      "effective_config": {
+        "branch": false,
+        "concurrency": [],
+        "core": "ctrace",
+        "dynamic_context": null,
+        "parallel": true,
+        "plugins": [],
+        "relative_files": false,
+        "source": ["moira"],
+        "static_context": null,
+        "timid": false
+      }
+    },
+    "global_percentage_gate": null,
+    "required_cell_rule": "every exact reviewed case must pass and reach every exact target under its own CTracer test context",
+    "run_requirements": {
+      "external_network_enabled": false,
+      "git_identity": true,
+      "native_backend_under_repository": true,
+      "no_download": true,
+      "project_venv": true,
+      "strict_known_issues": true,
+      "test_mode": true
+    },
+    "runtime_versions": {
+      "python": {
+        "cache_tag": "cpython-314",
+        "implementation": "CPython",
+        "version": "3.14.3"
+      },
+      "toolchain_versions": {
+        "coverage": "7.13.5",
+        "pytest": "9.0.2",
+        "pytest_cov": "7.0.0",
+        "xdist": "3.8.0"
+      }
+    },
+    "security_boundary": "the self-hashed receipt and coverage contexts provide cooperative integrity and attribution, not a cryptographic signature or hostile-process sandbox"
+  },
+  "cells": [
+    {
+      "cell_id": "spk-content-identity-invariant",
+      "expected_contract_sha256": "00be4e43ae52e7e22390b8fd0faa8cac330fbed5447a2aed3d50b915229bd58e",
+      "product_surface": "SpkReader content-derived ephemeris identity",
+      "evidence_class": "invariant",
+      "required_claim_id": "MOIRA-SPK-CONTENT-IDENTITY-V1",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/unit/test_spk_kernel_identity.py::test_mixed_summary_identities_fail_closed_and_release_kernel",
+          "nodeids": [
+            "tests/unit/test_spk_kernel_identity.py::test_mixed_summary_identities_fail_closed_and_release_kernel"
+          ]
+        },
+        {
+          "base_nodeid": "tests/unit/test_spk_kernel_identity.py::test_spk_reader_identity_comes_from_summary_content_not_filename",
+          "nodeids": [
+            "tests/unit/test_spk_kernel_identity.py::test_spk_reader_identity_comes_from_summary_content_not_filename[de440.bsp-DE-0440LE-0440-DE440-LE440--25.936]",
+            "tests/unit/test_spk_kernel_identity.py::test_spk_reader_identity_comes_from_summary_content_not_filename[de441.bsp-DE-0430LE-0430-DE430-LE430--25.85]",
+            "tests/unit/test_spk_kernel_identity.py::test_spk_reader_identity_comes_from_summary_content_not_filename[renamed-kernel.bsp-DE-0441LE-0441-DE441-LE441--25.936]"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "moira/spk_reader.py",
+          "qualname": "SpkReader.__init__",
+          "phases": ["run"],
+          "protected": true
+        },
+        {
+          "path": "moira/spk_reader.py",
+          "qualname": "_ephemeris_kernel_identity_from_catalog",
+          "phases": ["run"],
+          "protected": true
+        }
+      ]
+    },
+    {
+      "cell_id": "house-coordinate-roundtrip-invariant",
+      "expected_contract_sha256": "be6c8e8bf55b919f382307a55d26b01f9edccc6b33da20938883fc1689c04fcf",
+      "product_surface": "house projection equatorial/ecliptic direction helpers",
+      "evidence_class": "invariant",
+      "required_claim_id": "MOIRA-HOUSE-EQUATORIAL-ECLIPTIC-ROUNDTRIP-V1",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip",
+          "nodeids": [
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[0.0-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[0.0-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[0.0-24.5]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[17.5-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[17.5-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[17.5-24.5]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[183.25-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[183.25-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[183.25-24.5]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[359.9-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[359.9-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[359.9-24.5]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[90.0-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[90.0-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[90.0-24.5]"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "moira/houses.py",
+          "qualname": "_equatorial_ecliptic_direction",
+          "phases": ["run"],
+          "protected": true
+        },
+        {
+          "path": "moira/houses.py",
+          "qualname": "_ecliptic_longitude_from_equatorial_vector",
+          "phases": ["run"],
+          "protected": true
+        }
+      ]
+    },
+    {
+      "cell_id": "dorothean-triplicity-authority",
+      "expected_contract_sha256": "4c54c5ae99025fa96bb8ee907e7de52ed8dd84c3ec876f2f748fb65ab7108fb9",
+      "product_surface": "Dorothean triplicity assignment doctrine",
+      "evidence_class": "authority",
+      "required_claim_id": "MOIRA-DOROTHEAN-TRIPLICITY-PINGREE1976-V1",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/unit/test_hellenistic_source_goldens.py::test_dorothean_triplicity_matches_the_named_pingree_table",
+          "nodeids": [
+            "tests/unit/test_hellenistic_source_goldens.py::test_dorothean_triplicity_matches_the_named_pingree_table"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "moira/triplicity.py",
+          "qualname": "triplicity_assignment_for",
+          "phases": ["run"],
+          "protected": true
+        }
+      ]
+    },
+    {
+      "cell_id": "nutation-2000a-native-parity",
+      "expected_contract_sha256": "62da6b6eedc68d2bf2bd1023ecc9bbc751e1fd6cd6d655e43431f6efe2267f27",
+      "product_surface": "packaged nutation scalar-series Python/native boundary",
+      "evidence_class": "native_parity",
+      "required_claim_id": "MOIRA-NUTATION-2000A-PY-NATIVE-PARITY-V1",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference",
+          "nodeids": [
+            "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2415020.5]",
+            "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2451545.0]",
+            "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2460310.5]",
+            "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2488069.5]"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "moira/nutation_2000a.py",
+          "qualname": "_nutation_python",
+          "phases": ["run"],
+          "protected": true
+        },
+        {
+          "path": "moira/nutation_2000a.py",
+          "qualname": "nutation_2000a",
+          "phases": ["run"],
+          "protected": true
+        }
+      ]
+    },
+    {
+      "cell_id": "public-coordinate-sphere-inverse-invariant",
+      "expected_contract_sha256": "32d2fb1705c7905e0cd48c2533ffac25f0f64fb22d42fe2b73d40aee4914471b",
+      "product_surface": "public ecliptic/equatorial spherical coordinate transforms",
+      "evidence_class": "invariant",
+      "required_claim_id": "MOIRA-COORD-ECLIPTIC-EQUATORIAL-SPHERE-INVERSE-V1",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_inverse_relation",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_inverse_relation"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_boundary_atlas",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_boundary_atlas"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_canary_detects_post_observation_bias",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_canary_detects_post_observation_bias"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "moira/coordinates.py",
+          "qualname": "ecliptic_to_equatorial",
+          "phases": ["run"],
+          "protected": true
+        },
+        {
+          "path": "moira/coordinates.py",
+          "qualname": "equatorial_to_ecliptic",
+          "phases": ["run"],
+          "protected": true
+        }
+      ]
+    },
+    {
+      "cell_id": "longitude-quotient-invariant",
+      "expected_contract_sha256": "12c44dc8913d6f6676ba496eab6536aaa0e54ec3608b5e3cca8b08fcce74c307",
+      "product_surface": "public longitude normalization quotient representative",
+      "evidence_class": "invariant",
+      "required_claim_id": "MOIRA-COORD-LONGITUDE-QUOTIENT-V1",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_relation",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_relation"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_boundary_atlas",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_boundary_atlas"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_canary_detects_noncanonical_zero",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_canary_detects_noncanonical_zero"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "moira/coordinates.py",
+          "qualname": "normalize_degrees",
+          "phases": ["run"],
+          "protected": true
+        }
+      ]
+    },
+    {
+      "cell_id": "hybrid-ut1-tt-inverse-invariant",
+      "expected_contract_sha256": "a35ec212f0c13063224029f00f88968e0e86e93f6cd174520f698424e0054828",
+      "product_surface": "public default hybrid UT1/TT clock transforms",
+      "evidence_class": "invariant",
+      "required_claim_id": "MOIRA-TIMESCALE-HYBRID-UT1-TT-INVERSE-V1",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_inverse_relation",
+          "nodeids": [
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_inverse_relation"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_boundary_atlas",
+          "nodeids": [
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_boundary_atlas"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs",
+          "nodeids": [
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[-1e+100]",
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[-inf]",
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[1e+100]",
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[inf]",
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[nan]"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_inverse_canary_detects_one_second_mutation",
+          "nodeids": [
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_inverse_canary_detects_one_second_mutation"
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "moira/julian.py",
+          "qualname": "ut_to_tt",
+          "phases": ["run"],
+          "protected": true
+        },
+        {
+          "path": "moira/julian.py",
+          "qualname": "tt_to_ut",
+          "phases": ["run"],
+          "protected": true
+        }
+      ]
+    }
+  ]
+}

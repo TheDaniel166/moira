@@ -14,7 +14,6 @@ star_at = stars.star_at
 list_named_stars = stars.list_named_stars
 FixedStar = stars.FixedStar
 
-@pytest.mark.unit
 def test_registry_coverage():
     """Verify that the registry contains our primary anchor stars."""
     names = list_named_stars()

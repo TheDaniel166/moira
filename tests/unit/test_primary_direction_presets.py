@@ -268,6 +268,7 @@ def test_primary_directions_policy_preset_builds_placidian_converse_rapt_paralle
     )
 
 
+@pytest.mark.required_enumeration
 @pytest.mark.parametrize("preset", tuple(PrimaryDirectionsPreset))
 def test_every_preset_composes_with_fixed_star_targets(preset: PrimaryDirectionsPreset) -> None:
     kwargs = {

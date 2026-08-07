@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "policy": {
+    "accepted_outcome": "killed_intended",
+    "aggregate_gate": "all_declared_mutants_no_percentage",
+    "isolation": "fresh_plain_file_snapshot_per_mutant",
+    "network_boundary": "cooperative_cpython_deny_not_security_sandbox",
+    "source_scope": "moira_python_only"
+  },
+  "mutants": [
+    {
+      "mutant_id": "P11-COORD-INVERSE-LATITUDE-CROSS-TERM-SIGN",
+      "criticality": "critical",
+      "fault_archetype": "inverse ecliptic-latitude obliquity cross-term sign reversal",
+      "operator": "replace_exact_utf8_v1",
+      "source_path": "moira/coordinates.py",
+      "source_hash_mode": "utf8_lf_v1",
+      "target_qualname": "equatorial_to_ecliptic",
+      "preimage": "               - math.cos(dec) * math.sin(eps) * math.sin(ra))",
+      "replacement": "               + math.cos(dec) * math.sin(eps) * math.sin(ra))",
+      "occurrence_count": 1,
+      "preimage_sha256": "20e57ac14201c055f0c82e7923d03b4b4f8df25b2afdd4593fd9d0267dcca653",
+      "postimage_sha256": "daf0d44c8da0ce4ad6e095e0a7f2669b699edc513b595c16a6e5d9b7e65a2c95",
+      "preimage_ast_sha256": "2822ee1cb36b6a57956fface2dd0986553666c0f900b54720a7c762bb14828ea",
+      "postimage_ast_sha256": "334d2f5880d5b5ae98937a202de3624bbab9a3b1cd00dedf32e33b32613b41f9",
+      "preimage_code_sha256": "d475af704b0d51a8570407aaa09a6de4ab37ac19dc80847fe272e8bf2bf5379a",
+      "postimage_code_sha256": "1bc0053fb55ed69030e57a1d39ee8f9a7c45b7f8421771d19daac39c6aa7ff7e",
+      "patch_sha256": "67f4e4f09c3a9b12786d76b5594ef4337a1dd5799b5910088b205ca5389cf447",
+      "intended_killer_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_boundary_atlas",
+      "expected_claim_id": "MOIRA-COORD-ECLIPTIC-EQUATORIAL-SPHERE-INVERSE-V1",
+      "expected_contract_sha256": "32d2fb1705c7905e0cd48c2533ffac25f0f64fb22d42fe2b73d40aee4914471b",
+      "evidence_class": "invariant",
+      "expected_failure": {
+        "exception_type": "support.metamorphic.MetamorphicViolation",
+        "message_contains": [
+          "MOIRA-COORD-ECLIPTIC-EQUATORIAL-SPHERE-INVERSE-V1",
+          "[unmutated-production-observation]",
+          "maximum unit-vector angular separation"
+        ],
+        "longrepr_contains": [
+          "support.metamorphic.MetamorphicViolation",
+          "maximum unit-vector angular separation"
+        ],
+        "metamorphic_witness": {
+          "relation_id": "MOIRA-COORD-ECLIPTIC-EQUATORIAL-SPHERE-INVERSE-V1",
+          "mutant_id": "unmutated-production-observation",
+          "metric": "maximum unit-vector angular separation"
+        }
+      },
+      "requires_native_backend": false,
+      "timeout_seconds": 60,
+      "exclusions": [
+        "The mutant reverses only the obliquity cross-term in the recovered ecliptic-latitude numerator; it is not a full inverse-rotation sign reversal.",
+        "The mutant changes only the inverse transform; a coordinated sign reversal in both directions could preserve inverse closure.",
+        "The claim establishes a bounded spherical inverse invariant, not external frame authority or astronomical obliquity truth.",
+        "The separately identified horizontal_to_equatorial compatibility-branch defect is outside this mutant."
+      ]
+    },
+    {
+      "mutant_id": "P11-DOROTHEAN-SECT-RULERS-SWAPPED",
+      "criticality": "supplemental",
+      "fault_archetype": "day and night doctrine mapping exchange",
+      "operator": "replace_exact_utf8_v1",
+      "source_path": "moira/triplicity.py",
+      "source_hash_mode": "utf8_lf_v1",
+      "target_qualname": "triplicity_assignment_for",
+      "preimage": "    day_ruler, night_ruler, participating_ruler = triple\n    active_ruler = day_ruler if is_day_chart else night_ruler\n    sign_groups = _SIGN_GROUPS[doctrine]",
+      "replacement": "    night_ruler, day_ruler, participating_ruler = triple\n    active_ruler = day_ruler if is_day_chart else night_ruler\n    sign_groups = _SIGN_GROUPS[doctrine]",
+      "occurrence_count": 1,
+      "preimage_sha256": "79d1764544832fcaf1bc7dd6aa763245c1d937dcb6bbd618a7f1a0b9d4ccde7d",
+      "postimage_sha256": "800c10c2e7859fc1abc0dd3796002b663a88129c9837eefa88956c28e4a10d91",
+      "preimage_ast_sha256": "2044700bd40ca7dc35ccc41d012a136648a3e4f5ed371d524f6e2194a64ee4b5",
+      "postimage_ast_sha256": "a89f9e936a6e1e61321a351f85ae54051641aca181770c8c4a111cb0de0201cc",
+      "preimage_code_sha256": "89956ea92531d5743baae8e0d5965720cd9bed8b4fc60405ba042ff862f5e540",
+      "postimage_code_sha256": "96da05688d4fbb8156c07669fe990b1ef578a1faa9083c98c83550daffd754cf",
+      "patch_sha256": "a42042fc54ebc54ba28f03010bc7d33d86fad6125f4b0b54b6f4fb89a67f4d1e",
+      "intended_killer_nodeid": "tests/unit/test_hellenistic_source_goldens.py::test_dorothean_triplicity_matches_the_named_pingree_table",
+      "expected_claim_id": "MOIRA-DOROTHEAN-TRIPLICITY-PINGREE1976-V1",
+      "expected_contract_sha256": "4c54c5ae99025fa96bb8ee907e7de52ed8dd84c3ec876f2f748fb65ab7108fb9",
+      "evidence_class": "authority",
+      "expected_failure": {
+        "exception_type": "builtins.AssertionError",
+        "message_contains": [],
+        "longrepr_contains": [
+          "assert 'Jupiter' == 'Sun'"
+        ],
+        "metamorphic_witness": null
+      },
+      "requires_native_backend": false,
+      "timeout_seconds": 60,
+      "exclusions": [
+        "Only production source is mutated; changing the SHA-bound golden in the same run would invalidate the authority evidence.",
+        "The claim binds the named Pingree 1976 table and does not establish manuscript unanimity or translation authenticity.",
+        "The mutant does not exercise dignity scoring or the participating-ruler scoring policy."
+      ]
+    },
+    {
+      "mutant_id": "P11-LONGITUDE-ENDPOINT-EXCLUSION-LOST",
+      "criticality": "critical",
+      "fault_archetype": "longitude normalization inclusive endpoint changed to exclusive",
+      "operator": "replace_exact_utf8_v1",
+      "source_path": "moira/coordinates.py",
+      "source_hash_mode": "utf8_lf_v1",
+      "target_qualname": "normalize_degrees",
+      "preimage": "    return 0.0 if result >= 360.0 else result",
+      "replacement": "    return 0.0 if result > 360.0 else result",
+      "occurrence_count": 1,
+      "preimage_sha256": "20e57ac14201c055f0c82e7923d03b4b4f8df25b2afdd4593fd9d0267dcca653",
+      "postimage_sha256": "1512a0501d78960506126653ed8aead135412151ea50c7876994811ffb396d15",
+      "preimage_ast_sha256": "0f13ea3e0eda6dedad9da20a8c644663cec009ee6a1c404f6a6db8f2f2e39144",
+      "postimage_ast_sha256": "d82721875f86398dbc1ab72d804e278fa81620ea4c3450c7e99f78798161d141",
+      "preimage_code_sha256": "2de9f61d22c34b6aba264da1b10f6bc6cf4cd39ca3a388a40801e498272300ad",
+      "postimage_code_sha256": "b317277bf73d2a9ebc969ccbcfc0f25cd7da9d171214e71dc997ce210c397ed5",
+      "patch_sha256": "7bb52babc90a6d8a9fa374ce2cd154b5cf01461f9bb70162ac9b56eee1de6d6e",
+      "intended_killer_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_boundary_atlas",
+      "expected_claim_id": "MOIRA-COORD-LONGITUDE-QUOTIENT-V1",
+      "expected_contract_sha256": "12c44dc8913d6f6676ba496eab6536aaa0e54ec3608b5e3cca8b08fcce74c307",
+      "evidence_class": "invariant",
+      "expected_failure": {
+        "exception_type": "support.metamorphic.MetamorphicViolation",
+        "message_contains": [
+          "MOIRA-COORD-LONGITUDE-QUOTIENT-V1",
+          "[unmutated-production-observation]",
+          "canonical longitude upper bound",
+          "observed=360"
+        ],
+        "longrepr_contains": [
+          "support.metamorphic.MetamorphicViolation",
+          "canonical longitude upper bound",
+          "observed=360"
+        ],
+        "metamorphic_witness": {
+          "relation_id": "MOIRA-COORD-LONGITUDE-QUOTIENT-V1",
+          "mutant_id": "unmutated-production-observation",
+          "metric": "canonical longitude upper bound"
+        }
+      },
+      "requires_native_backend": false,
+      "timeout_seconds": 60,
+      "exclusions": [
+        "The current quotient relation does not kill every wrong modulus; a modulo-180 collapse can preserve its present canonicality, idempotence, and 360-periodicity predicates.",
+        "The claim excludes nonfinite inputs and does not establish a public nonfinite-input refusal policy.",
+        "Only the declared longitude boundary-atlas node is admitted as the intended killer even if another coordinate test would also observe the defect."
+      ]
+    },
+    {
+      "mutant_id": "P11-NUTATION-PY-DPSI-SIGN-REVERSED",
+      "criticality": "supplemental",
+      "fault_archetype": "Python scalar nutation longitude sign reversal",
+      "operator": "replace_exact_utf8_v1",
+      "source_path": "moira/nutation_2000a.py",
+      "source_hash_mode": "utf8_lf_v1",
+      "target_qualname": "_nutation_python",
+      "preimage": "    return dpsi * uas2deg, deps * uas2deg",
+      "replacement": "    return -dpsi * uas2deg, deps * uas2deg",
+      "occurrence_count": 1,
+      "preimage_sha256": "ace64a16187feae0b7c57825ffc7b0e7d6fdf0b5c0eec1935b6f25a0bb22b49c",
+      "postimage_sha256": "ac80c5e89d5f776fd60eb1a10ecd800e04f9cd5e647e8714ece03eb65bf1ef9d",
+      "preimage_ast_sha256": "98e43ca7f32ffc61bcd8b49b79390c9464736da738288f98bf3b32afac403022",
+      "postimage_ast_sha256": "ccdf39c870a68e0e9564016dc371ca18345b4c4a7e16dc71a7ff45026f8f1747",
+      "preimage_code_sha256": "e0484cc46a988d9b55ba6bec7bc9e714f6bf9e8b4a306b48fb00afe4aed8ad21",
+      "postimage_code_sha256": "0e58bf9b42aceec70b3df776bb0a99bb40708fb2e1d6a5b02718907dab5357cb",
+      "patch_sha256": "c14c6ac949713cf2a5faa067d87cc874151c4aec3fa932359c14ed5168bd2253",
+      "intended_killer_nodeid": "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2451545.0]",
+      "expected_claim_id": "MOIRA-NUTATION-2000A-PY-NATIVE-PARITY-V1",
+      "expected_contract_sha256": "62da6b6eedc68d2bf2bd1023ecc9bbc751e1fd6cd6d655e43431f6efe2267f27",
+      "evidence_class": "native_parity",
+      "expected_failure": {
+        "exception_type": "builtins.AssertionError",
+        "message_contains": [
+          "delta psi residual",
+          "exceeds the absolute-only contract bound 1e-13 degrees"
+        ],
+        "longrepr_contains": [
+          "delta psi residual",
+          "exceeds the absolute-only contract bound 1e-13 degrees"
+        ],
+        "metamorphic_witness": null
+      },
+      "requires_native_backend": true,
+      "timeout_seconds": 60,
+      "exclusions": [
+        "The native extension must remain unchanged and must not be rebuilt; it is the independent side of this Python-only parity mutant.",
+        "Python/native agreement is not IERS, SOFA, or ERFA authority validation and cannot detect an identical defect in both paths.",
+        "The intended killer is only the exact J2000 parameter leaf and does not claim parity outside that epoch."
+      ]
+    },
+    {
+      "mutant_id": "P11-SPK-FIRST-SUMMARY-WINS",
+      "criticality": "supplemental",
+      "fault_archetype": "mixed SPK content identity refusal replaced by first-summary selection",
+      "operator": "replace_exact_utf8_v1",
+      "source_path": "moira/spk_reader.py",
+      "source_hash_mode": "utf8_lf_v1",
+      "target_qualname": "_ephemeris_kernel_identity_from_catalog",
+      "preimage": "    labels = {_summary_label_text(item[\"name\"]) for item in summaries}",
+      "replacement": "    labels = {_summary_label_text(item[\"name\"]) for item in summaries[:1]}",
+      "occurrence_count": 1,
+      "preimage_sha256": "706c6812ed2091a5e49e7673cf659313aefb389de623ece872ce7d4c051ee905",
+      "postimage_sha256": "de9fe87b3477dd60e40d044556d06c9d5a72ef4d400d63de2acb2581db62e46d",
+      "preimage_ast_sha256": "8b12eb5e854cdf2b3fda348d4f15d895692e2c3f54af8edc56c8b33e0646cd00",
+      "postimage_ast_sha256": "ad3078912e60bff83dea3d3c39b6d40427067b86c2bbeaaec812b52e62e869af",
+      "preimage_code_sha256": "7acdea13da9e96ec2cc157bd1ef4c852a977f5d27510a5d62bc4f5301c4236d6",
+      "postimage_code_sha256": "f91615af49cadff22fc870fee87eeef404e3a08e995c5f0ecc865d222960dd66",
+      "patch_sha256": "5bbc374c3d8caac0664983b3b0c2664a18d1ccd6362fde4f9d00e6b0185137d8",
+      "intended_killer_nodeid": "tests/unit/test_spk_kernel_identity.py::test_mixed_summary_identities_fail_closed_and_release_kernel",
+      "expected_claim_id": "MOIRA-SPK-CONTENT-IDENTITY-V1",
+      "expected_contract_sha256": "00be4e43ae52e7e22390b8fd0faa8cac330fbed5447a2aed3d50b915229bd58e",
+      "evidence_class": "invariant",
+      "expected_failure": {
+        "exception_type": "builtins.Failed",
+        "message_contains": [
+          "DID NOT RAISE <class 'ValueError'>"
+        ],
+        "longrepr_contains": [
+          "DID NOT RAISE <class 'ValueError'>"
+        ],
+        "metamorphic_witness": null
+      },
+      "requires_native_backend": false,
+      "timeout_seconds": 60,
+      "exclusions": [
+        "The intended test uses a synthetic catalog and does not parse or authenticate real BSP bytes.",
+        "The mutant says nothing about SPK coefficient, endian, segment coverage, frame, or trajectory correctness.",
+        "A collection, import, or setup failure is invalid execution and must not count as this refusal mutant's kill."
+      ]
+    },
+    {
+      "mutant_id": "P11-TIMESCALE-DELTA-T-DOUBLE-FORWARD",
+      "criticality": "critical",
+      "fault_archetype": "Delta-T applied twice in the forward UT1-to-TT transform",
+      "operator": "replace_exact_utf8_v1",
+      "source_path": "moira/julian.py",
+      "source_hash_mode": "utf8_lf_v1",
+      "target_qualname": "ut_to_tt",
+      "preimage": "    return jd_ut + resolved.seconds / 86400.0",
+      "replacement": "    return jd_ut + 2.0 * resolved.seconds / 86400.0",
+      "occurrence_count": 1,
+      "preimage_sha256": "db104d35615d0e7c05e9df1b06182c596b9c50bd14bd7f1ffeb2c0d2cb012fe8",
+      "postimage_sha256": "8183af63fac517a7947e10a2b9e0c1add58f7c89e4101d579f05bb387309c512",
+      "preimage_ast_sha256": "dc3c72e505231a275c614c7e42feaba2dd4c864b8721a97e413d38207578cecf",
+      "postimage_ast_sha256": "a218f02f4eda3c61d7ddedc98b0b2dbaeddb65f2f5d203f903544b143b1763b2",
+      "preimage_code_sha256": "4c4910f6b2da85a8c258f342e0051beaa0e3bf457c6e09b6cf6f8159d822881a",
+      "postimage_code_sha256": "0aa788e21748d5071eb4ffb844471bcd2976c3a30ad41415b0a5f0dfef6a054d",
+      "patch_sha256": "a29dd4d0d997f2819f95b5c3984a49af52c7238fd1ec8f621c2c82eaf4436fa0",
+      "intended_killer_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_boundary_atlas",
+      "expected_claim_id": "MOIRA-TIMESCALE-HYBRID-UT1-TT-INVERSE-V1",
+      "expected_contract_sha256": "a35ec212f0c13063224029f00f88968e0e86e93f6cd174520f698424e0054828",
+      "evidence_class": "invariant",
+      "expected_failure": {
+        "exception_type": "support.metamorphic.MetamorphicViolation",
+        "message_contains": [
+          "MOIRA-TIMESCALE-HYBRID-UT1-TT-INVERSE-V1",
+          "[unmutated-production-observation]",
+          "maximum hybrid UT1 round-trip residual"
+        ],
+        "longrepr_contains": [
+          "support.metamorphic.MetamorphicViolation",
+          "maximum hybrid UT1 round-trip residual"
+        ],
+        "metamorphic_witness": {
+          "relation_id": "MOIRA-TIMESCALE-HYBRID-UT1-TT-INVERSE-V1",
+          "mutant_id": "unmutated-production-observation",
+          "metric": "maximum hybrid UT1 round-trip residual"
+        }
+      },
+      "requires_native_backend": false,
+      "timeout_seconds": 60,
+      "exclusions": [
+        "Only the forward transform is mutated; a coordinated scale error in both directions could preserve inverse closure.",
+        "The relation establishes structural inversion and named-default equivalence, not historical or future Delta-T accuracy.",
+        "NASA-canon, fixed, physical, near-zero-JD, and out-of-domain policies are outside this mutant."
+      ]
+    }
+  ]
+}

@@ -21,6 +21,7 @@ _FACADE_METHODS = (
 )
 
 
+@pytest.mark.required_enumeration
 @pytest.mark.parametrize("name", pancha_pakshi.__all__)
 def test_public_pancha_pakshi_exports_share_identity(name: str) -> None:
     expected = getattr(pancha_pakshi, name)

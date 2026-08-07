@@ -1,3 +1,5 @@
 include CMakeLists.txt
-recursive-include src *.cpp *.h *.hpp
+include MANIFEST.in
+include moira/_native_build_provenance.py
+recursive-include src/native *.c *.cc *.cmake *.cpp *.cxx *.h *.hh *.hpp *.hxx *.in *.inc *.inl *.ipp *.ixx *.tpp
 recursive-exclude moira/kernels *.bsp

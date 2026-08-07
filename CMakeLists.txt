@@ -30,6 +30,19 @@ pybind11_add_module(_moira_native
     src/native/src/nutation.cpp
 )
 
+string(LENGTH "${MOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256}" MOIRA_BUILD_INPUT_DIGEST_LENGTH)
+if(
+    NOT MOIRA_BUILD_INPUT_DIGEST_LENGTH EQUAL 64
+    OR NOT MOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256 MATCHES "^[0-9a-f]+$"
+)
+    message(FATAL_ERROR "MOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256 must be a lowercase SHA-256")
+endif()
+target_compile_definitions(
+    _moira_native
+    PRIVATE
+    MOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256="${MOIRA_NATIVE_BUILD_INPUT_MANIFEST_SHA256}"
+)
+
 # Keep the extension baseline portable and compile the AVX2 kernel as one
 # separately dispatched translation unit.  This avoids making AVX2 a wheel-wide
 # CPU requirement while still admitting it on capable x86 hosts.

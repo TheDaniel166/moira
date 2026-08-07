@@ -30,7 +30,7 @@ _CURATED_EPOCHS_JD = (
 
 @pytest.mark.integration
 @pytest.mark.external_network
-@pytest.mark.serial
+@pytest.mark.serial(reason="resource_mutation")
 @pytest.mark.skipif(not NATIVE_AVAILABLE, reason="Native backend not available")
 def test_utc_and_ut1_time_admission_match_the_same_spice_instant():
     cache_root = _default_cache_root()
@@ -52,7 +52,7 @@ def test_utc_and_ut1_time_admission_match_the_same_spice_instant():
 
 @pytest.mark.integration
 @pytest.mark.external_network
-@pytest.mark.serial
+@pytest.mark.serial(reason="resource_mutation")
 @pytest.mark.skipif(not NATIVE_AVAILABLE, reason="Native backend not available")
 def test_pre1972_epochs_remain_on_spice_fallback():
     cache_root = _default_cache_root()

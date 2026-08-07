@@ -1,0 +1,439 @@
+{
+  "cells": [
+    {
+      "cell_id": "dorothean-triplicity-authority",
+      "claim_id": "MOIRA-DOROTHEAN-TRIPLICITY-PINGREE1976-V1",
+      "contract_sha256": "4c54c5ae99025fa96bb8ee907e7de52ed8dd84c3ec876f2f748fb65ab7108fb9",
+      "coverage_targets": [
+        {
+          "path": "moira/triplicity.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "triplicity_assignment_for"
+        }
+      ],
+      "does_not_prove": [
+        "translation authenticity, manuscript consensus, or superiority over another historical lineage",
+        "birth-chart sect determination, dignity scoring, interpretation, or any other Hellenistic doctrine",
+        "the correctness of source tables not named by this claim"
+      ],
+      "evidence_class": "authority",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/unit/test_hellenistic_source_goldens.py::test_dorothean_triplicity_matches_the_named_pingree_table",
+          "nodeids": [
+            "tests/unit/test_hellenistic_source_goldens.py::test_dorothean_triplicity_matches_the_named_pingree_table"
+          ]
+        }
+      ],
+      "product_surface": "Dorothean triplicity assignment doctrine",
+      "proves": [
+        "all twelve signs expose the source-owned element, day ruler, night ruler, and participating ruler",
+        "sect selects the named day or night ruler for every admitted sign"
+      ],
+      "required_status": "declared"
+    },
+    {
+      "cell_id": "house-coordinate-roundtrip-invariant",
+      "claim_id": "MOIRA-HOUSE-EQUATORIAL-ECLIPTIC-ROUNDTRIP-V1",
+      "contract_sha256": "be6c8e8bf55b919f382307a55d26b01f9edccc6b33da20938883fc1689c04fcf",
+      "coverage_targets": [
+        {
+          "path": "moira/houses.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "_equatorial_ecliptic_direction"
+        },
+        {
+          "path": "moira/houses.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "_ecliptic_longitude_from_equatorial_vector"
+        }
+      ],
+      "does_not_prove": [
+        "the public moira.coordinates API or latitude-bearing three-dimensional transforms",
+        "the astronomical truth of any obliquity model, epoch, house cusp, or frame realization",
+        "conditioning outside the five longitudes and three obliquities in the admitted grid"
+      ],
+      "evidence_class": "invariant",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip",
+          "nodeids": [
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[0.0-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[0.0-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[0.0-24.5]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[17.5-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[17.5-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[17.5-24.5]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[183.25-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[183.25-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[183.25-24.5]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[359.9-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[359.9-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[359.9-24.5]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[90.0-22.0]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[90.0-23.4392911]",
+            "tests/unit/test_house_projection_geometry.py::test_equatorial_ecliptic_round_trip[90.0-24.5]"
+          ]
+        }
+      ],
+      "product_surface": "house projection equatorial/ecliptic direction helpers",
+      "proves": [
+        "the two named house-geometry helpers are inverse within the declared circular tolerance for the admitted longitude/obliquity grid",
+        "recovered longitude remains in the canonical [0, 360) degree range"
+      ],
+      "required_status": "declared"
+    },
+    {
+      "cell_id": "hybrid-ut1-tt-inverse-invariant",
+      "claim_id": "MOIRA-TIMESCALE-HYBRID-UT1-TT-INVERSE-V1",
+      "contract_sha256": "a35ec212f0c13063224029f00f88968e0e86e93f6cd174520f698424e0054828",
+      "coverage_targets": [
+        {
+          "path": "moira/julian.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "ut_to_tt"
+        },
+        {
+          "path": "moira/julian.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "tt_to_ut"
+        }
+      ],
+      "does_not_prove": [
+        "historical or future Delta-T accuracy, EOP authenticity, or agreement with an external time authority",
+        "calendar/JD conversion bijection or calendar input-refusal semantics",
+        "NASA-canon, fixed, or physical Delta-T policy behavior",
+        "sub-ULP preservation near JD zero or correctness outside proleptic years -1000 through 5000"
+      ],
+      "evidence_class": "invariant",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_inverse_relation",
+          "nodeids": [
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_inverse_relation"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_boundary_atlas",
+          "nodeids": [
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_ut1_tt_boundary_atlas"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs",
+          "nodeids": [
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[-1e+100]",
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[-inf]",
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[1e+100]",
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[inf]",
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_clock_rejects_nonfinite_and_extreme_inputs[nan]"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_timescale_relations.py::test_hybrid_inverse_canary_detects_one_second_mutation",
+          "nodeids": [
+            "tests/metamorphic/test_timescale_relations.py::test_hybrid_inverse_canary_detects_one_second_mutation"
+          ]
+        }
+      ],
+      "product_surface": "public default hybrid UT1/TT clock transforms",
+      "proves": [
+        "default hybrid UT1 to TT to UT1 closes within two maximum binary64 coordinate ULPs over the admitted proleptic-year interval",
+        "omitted and explicit DeltaTPolicy(model='hybrid') spellings are bit-identical in both directions",
+        "the exact and nextafter calendar-policy boundary atlas retains the same inverse and default-equivalence properties",
+        "both public clock transforms reject nonfinite and grossly unrepresentable JD coordinates with ValueError",
+        "a finite one-second post-observation bias is rejected by the exact production predicate"
+      ],
+      "required_status": "declared"
+    },
+    {
+      "cell_id": "longitude-quotient-invariant",
+      "claim_id": "MOIRA-COORD-LONGITUDE-QUOTIENT-V1",
+      "contract_sha256": "12c44dc8913d6f6676ba496eab6536aaa0e54ec3608b5e3cca8b08fcce74c307",
+      "coverage_targets": [
+        {
+          "path": "moira/coordinates.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "normalize_degrees"
+        }
+      ],
+      "does_not_prove": [
+        "accuracy of any coordinate transform or astronomical longitude",
+        "bit-identical periodicity after arbitrary unbounded floating-point additions",
+        "public rejection semantics for NaN, infinity, or non-real arguments"
+      ],
+      "evidence_class": "invariant",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_relation",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_relation"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_boundary_atlas",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_boundary_atlas"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_canary_detects_noncanonical_zero",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_longitude_quotient_canary_detects_noncanonical_zero"
+          ]
+        }
+      ],
+      "product_surface": "public longitude normalization quotient representative",
+      "proves": [
+        "normalization returns a finite representative in [0, 360) and is idempotent over the admitted domain",
+        "adding an admitted integer multiple of 360 degrees preserves the represented longitude within the declared circular bound",
+        "a normalized zero owns the positive IEEE-754 zero sign",
+        "a finite zero-to-360 post-observation mutation is rejected by the exact half-open predicate"
+      ],
+      "required_status": "declared"
+    },
+    {
+      "cell_id": "nutation-2000a-native-parity",
+      "claim_id": "MOIRA-NUTATION-2000A-PY-NATIVE-PARITY-V1",
+      "contract_sha256": "62da6b6eedc68d2bf2bd1023ecc9bbc751e1fd6cd6d655e43431f6efe2267f27",
+      "coverage_targets": [
+        {
+          "path": "moira/nutation_2000a.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "_nutation_python"
+        },
+        {
+          "path": "moira/nutation_2000a.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "nutation_2000a"
+        }
+      ],
+      "does_not_prove": [
+        "IERS coefficient authenticity, completeness against the published tables, or ERFA/SOFA authority agreement",
+        "the parser's acceptance or rejection semantics, row-to-source transcription fidelity, or authenticity of the packaged files",
+        "accuracy outside the four epochs or universal Python/native parity",
+        "precession, Earth-orientation, frame, or downstream apparent-position correctness"
+      ],
+      "evidence_class": "native_parity",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference",
+          "nodeids": [
+            "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2415020.5]",
+            "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2451545.0]",
+            "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2460310.5]",
+            "tests/unit/test_native_nutation_2000a.py::test_native_nutation_2000a_matches_scalar_reference[2488069.5]"
+          ]
+        }
+      ],
+      "product_surface": "packaged nutation scalar-series Python/native boundary",
+      "proves": [
+        "native and governing Python series evaluations agree for delta psi and delta epsilon at four admitted TT epochs",
+        "the admitted parser output contains exactly 1,358 luni-solar terms and 1,056 planetary terms, every term has 16 fields, and the j=0 partitions end at 1,320 and 1,037 respectively",
+        "both evaluations consume those same admitted parsed sequences"
+      ],
+      "required_status": "declared"
+    },
+    {
+      "cell_id": "public-coordinate-sphere-inverse-invariant",
+      "claim_id": "MOIRA-COORD-ECLIPTIC-EQUATORIAL-SPHERE-INVERSE-V1",
+      "contract_sha256": "32d2fb1705c7905e0cd48c2533ffac25f0f64fb22d42fe2b73d40aee4914471b",
+      "coverage_targets": [
+        {
+          "path": "moira/coordinates.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "ecliptic_to_equatorial"
+        },
+        {
+          "path": "moira/coordinates.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "equatorial_to_ecliptic"
+        }
+      ],
+      "does_not_prove": [
+        "external frame authority, epoch-dependent obliquity accuracy, or any astronomical body position",
+        "correctness of a coordinated but mutually inverse wrong rotation",
+        "the equatorial/horizontal transforms, whose current inverse has a separately recorded counterexample",
+        "public rejection semantics for nonfinite or out-of-domain arguments"
+      ],
+      "evidence_class": "invariant",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_inverse_relation",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_inverse_relation"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_boundary_atlas",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_boundary_atlas"
+          ]
+        },
+        {
+          "base_nodeid": "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_canary_detects_post_observation_bias",
+          "nodeids": [
+            "tests/metamorphic/test_coordinate_relations.py::test_spherical_coordinate_canary_detects_post_observation_bias"
+          ]
+        }
+      ],
+      "product_surface": "public ecliptic/equatorial spherical coordinate transforms",
+      "proves": [
+        "both public transform directions close on the same unit-sphere direction over the admitted interior property domain",
+        "the explicit seam and polar atlas closes under the separately declared conditioning tolerance",
+        "returned right ascensions and longitudes are finite canonical representatives and returned latitudes remain finite spherical coordinates",
+        "a finite one-degree post-observation latitude bias is rejected by the exact production predicate"
+      ],
+      "required_status": "declared"
+    },
+    {
+      "cell_id": "spk-content-identity-invariant",
+      "claim_id": "MOIRA-SPK-CONTENT-IDENTITY-V1",
+      "contract_sha256": "00be4e43ae52e7e22390b8fd0faa8cac330fbed5447a2aed3d50b915229bd58e",
+      "coverage_targets": [
+        {
+          "path": "moira/spk_reader.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "SpkReader.__init__"
+        },
+        {
+          "path": "moira/spk_reader.py",
+          "phases": [
+            "run"
+          ],
+          "protected": true,
+          "qualname": "_ephemeris_kernel_identity_from_catalog"
+        }
+      ],
+      "does_not_prove": [
+        "real BSP byte parsing or file authenticity",
+        "JPL trajectory accuracy, segment coverage, frame correctness, or native support",
+        "identity semantics for unexamined summary-label families"
+      ],
+      "evidence_class": "invariant",
+      "expected_bindings": [
+        {
+          "base_nodeid": "tests/unit/test_spk_kernel_identity.py::test_mixed_summary_identities_fail_closed_and_release_kernel",
+          "nodeids": [
+            "tests/unit/test_spk_kernel_identity.py::test_mixed_summary_identities_fail_closed_and_release_kernel"
+          ]
+        },
+        {
+          "base_nodeid": "tests/unit/test_spk_kernel_identity.py::test_spk_reader_identity_comes_from_summary_content_not_filename",
+          "nodeids": [
+            "tests/unit/test_spk_kernel_identity.py::test_spk_reader_identity_comes_from_summary_content_not_filename[de440.bsp-DE-0440LE-0440-DE440-LE440--25.936]",
+            "tests/unit/test_spk_kernel_identity.py::test_spk_reader_identity_comes_from_summary_content_not_filename[de441.bsp-DE-0430LE-0430-DE430-LE430--25.85]",
+            "tests/unit/test_spk_kernel_identity.py::test_spk_reader_identity_comes_from_summary_content_not_filename[renamed-kernel.bsp-DE-0441LE-0441-DE441-LE441--25.936]"
+          ]
+        }
+      ],
+      "product_surface": "SpkReader content-derived ephemeris identity",
+      "proves": [
+        "recognized coherent DE/LE summary labels determine the published identity rather than the filename",
+        "the resulting identity vessel is immutable",
+        "mixed recognized identities fail closed and release the opened kernel"
+      ],
+      "required_status": "declared"
+    }
+  ],
+  "policy": {
+    "admission_scope": "phase9_and_phase10_reviewed_claims",
+    "coverage_branch": null,
+    "coverage_config": "pyproject.toml",
+    "coverage_context": "pytest-cov --cov-context=test",
+    "coverage_core": "ctrace",
+    "coverage_is_scientific_gate": false,
+    "coverage_phase_default": "run",
+    "coverage_runtime": {
+      "actual_core": "CTracer",
+      "config_files": [
+        "pyproject.toml"
+      ],
+      "effective_config": {
+        "branch": false,
+        "concurrency": [],
+        "core": "ctrace",
+        "dynamic_context": null,
+        "parallel": true,
+        "plugins": [],
+        "relative_files": false,
+        "source": [
+          "moira"
+        ],
+        "static_context": null,
+        "timid": false
+      }
+    },
+    "coverage_source": [
+      "moira"
+    ],
+    "global_percentage_gate": null,
+    "required_cell_rule": "every exact reviewed case must pass and reach every exact target under its own CTracer test context",
+    "run_requirements": {
+      "external_network_enabled": false,
+      "git_identity": true,
+      "native_backend_under_repository": true,
+      "no_download": true,
+      "project_venv": true,
+      "strict_known_issues": true,
+      "test_mode": true
+    },
+    "runtime_versions": {
+      "python": {
+        "cache_tag": "cpython-314",
+        "implementation": "CPython",
+        "version": "3.14.3"
+      },
+      "toolchain_versions": {
+        "coverage": "7.13.5",
+        "pytest": "9.0.2",
+        "pytest_cov": "7.0.0",
+        "xdist": "3.8.0"
+      }
+    },
+    "security_boundary": "the self-hashed receipt and coverage contexts provide cooperative integrity and attribution, not a cryptographic signature or hostile-process sandbox"
+  },
+  "schema_version": 1,
+  "summary": {
+    "evidence_classes": [
+      "authority",
+      "invariant",
+      "native_parity"
+    ],
+    "global_percentage_gate": null,
+    "required_cells": 7
+  }
+}

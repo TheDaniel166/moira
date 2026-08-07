@@ -26,7 +26,7 @@ Memory footprint was monitored using `tracemalloc` during the 10,000-query burst
 Moira's singleton management in `spk_reader.py` correctly serializes reader acquisition. The audit confirmed that the module-level `RLock` prevents race conditions during lazy initialization while allowing full concurrent read performance once the handle is bound.
 
 ## 3. Validation Summary
-*   **Test Suite**: `tests/stress/test_resource_binding_audit.py`
+*   **Manual Stress Audit**: `tests/stress/resource_binding_audit.py`
 *   **Outcome**: **PASSED**.
 *   **Conclusion**: Moira is a high-performance, thread-safe sovereign engine that does not bleed truth or resources under pressure.
 

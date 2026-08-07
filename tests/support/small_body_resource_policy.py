@@ -1085,6 +1085,21 @@ def _receipt_detail(receipt: SmallBodyResourceReceipt) -> dict[str, object]:
         "disposition": receipt.disposition.value,
         "terminal": receipt.terminal,
         "failure_type": receipt.failure_type,
+        "requirement": {
+            "manifest_schema": receipt.requirement.manifest_schema,
+            "require_release_integrity": (
+                receipt.requirement.require_release_integrity
+            ),
+            "allowed_segment_types": sorted(
+                receipt.requirement.allowed_segment_types
+            ),
+            "require_native_catalog": (
+                receipt.requirement.require_native_catalog
+            ),
+            "require_native_segments": (
+                receipt.requirement.require_native_segments
+            ),
+        },
         "identities": list(receipt.identities),
         "capabilities": capabilities,
         "rendered": receipt.render(),
@@ -1159,13 +1174,26 @@ def _normalize_report(
 
 
 def _normalize_detail(detail: object, *, source: str) -> dict[str, object]:
-    if not isinstance(detail, dict):
+    if (
+        not isinstance(detail, dict)
+        or set(detail)
+        != {
+            "disposition",
+            "terminal",
+            "failure_type",
+            "requirement",
+            "identities",
+            "capabilities",
+            "rendered",
+        }
+    ):
         raise SmallBodyResourceContractError(
             f"{source} returned an invalid small-body resource detail"
         )
     disposition = detail.get("disposition")
     terminal = detail.get("terminal")
     failure_type = detail.get("failure_type")
+    requirement = detail.get("requirement")
     identities = detail.get("identities")
     capabilities = detail.get("capabilities")
     rendered = detail.get("rendered")
@@ -1184,6 +1212,10 @@ def _normalize_detail(detail: object, *, source: str) -> dict[str, object]:
         raise SmallBodyResourceContractError(
             f"{source} returned an invalid small-body resource detail"
         )
+    normalized_requirement = _normalize_requirement(
+        requirement,
+        source=source,
+    )
     normalized_capabilities = [
         _normalize_capability(value, source=source)
         for value in capabilities
@@ -1216,9 +1248,65 @@ def _normalize_detail(detail: object, *, source: str) -> dict[str, object]:
         "disposition": disposition,
         "terminal": terminal,
         "failure_type": failure_type,
+        "requirement": normalized_requirement,
         "identities": list(identities),
         "capabilities": normalized_capabilities,
         "rendered": rendered,
+    }
+
+
+def _normalize_requirement(
+    requirement: object,
+    *,
+    source: str,
+) -> dict[str, object]:
+    fields = {
+        "manifest_schema",
+        "require_release_integrity",
+        "allowed_segment_types",
+        "require_native_catalog",
+        "require_native_segments",
+    }
+    if not isinstance(requirement, dict) or set(requirement) != fields:
+        raise SmallBodyResourceContractError(
+            f"{source} returned an invalid small-body requirement"
+        )
+    manifest_schema = requirement["manifest_schema"]
+    allowed_segment_types = requirement["allowed_segment_types"]
+    if (
+        type(manifest_schema) is not str
+        or not manifest_schema
+        or not isinstance(allowed_segment_types, list)
+        or any(
+            type(segment_type) is not int or segment_type < 1
+            for segment_type in allowed_segment_types
+        )
+        or allowed_segment_types
+        != sorted(set(allowed_segment_types))
+        or any(
+            type(requirement[name]) is not bool
+            for name in (
+                "require_release_integrity",
+                "require_native_catalog",
+                "require_native_segments",
+            )
+        )
+    ):
+        raise SmallBodyResourceContractError(
+            f"{source} returned an invalid small-body requirement"
+        )
+    return {
+        "manifest_schema": manifest_schema,
+        "require_release_integrity": requirement[
+            "require_release_integrity"
+        ],
+        "allowed_segment_types": list(allowed_segment_types),
+        "require_native_catalog": requirement[
+            "require_native_catalog"
+        ],
+        "require_native_segments": requirement[
+            "require_native_segments"
+        ],
     }
 
 

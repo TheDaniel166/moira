@@ -123,6 +123,7 @@ def test_sahl_matter_surface_is_public_at_every_library_layer() -> None:
     assert hasattr(moira.Moira, "sahl_matter_profile_at")
 
 
+@pytest.mark.required_enumeration
 @pytest.mark.parametrize("profile_id", tuple(western.SahlMatterProfileId))
 def test_every_profile_preserves_complete_source_order_and_explicit_indeterminacy(profile_id) -> None:
     result = _evaluate(profile_id)

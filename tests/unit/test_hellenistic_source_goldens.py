@@ -127,6 +127,10 @@ def test_source_goldens_carry_authority_semantics_units_and_tolerance(
     assert "never regenerate" in authority["ownership"]
 
 
+@pytest.mark.validation_contract(
+    "MOIRA-DOROTHEAN-TRIPLICITY-PINGREE1976-V1"
+)
+@pytest.mark.parallel(reason="read_only")
 def test_dorothean_triplicity_matches_the_named_pingree_table(
     source_tables: dict,
 ) -> None:

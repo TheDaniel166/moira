@@ -31,6 +31,7 @@ def _angle_diff_arcsec(a: float, b: float) -> float:
 
 @pytest.mark.integration
 @pytest.mark.requires_ephemeris
+@pytest.mark.parallel(reason="worker_isolated")
 def test_public_asteroid_route_prefers_sovereign_manifest_when_configured(
     monkeypatch: pytest.MonkeyPatch,
     configured_global_reader,
