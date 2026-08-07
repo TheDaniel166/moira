@@ -1,7 +1,9 @@
 # Physical Heliacal Visibility Implementation Plan
 
-Date: 2026-07-31
-Status: Phases 0 through 3 complete; Phase 4 is in progress
+Date: 2026-08-07
+Status: Phases 0 through 7 complete at the local engine-release boundary;
+site-specific moonlight experiment quarantined; publication and website work
+remain separate
 Scope: Moira engine truth, offline reference-data production, public Python
 contracts, REST transport, validation, native strengthening, release
 documentation, and later website adoption
@@ -28,6 +30,24 @@ stack with:
 
 The current model remains authoritative for its existing contract until every
 required admission gate in this document passes.
+
+## North-Star Scope Guard
+
+The product being completed is an opt-in, deterministic, offline physical
+heliacal-visibility assessment and event model. It needs enough source-backed
+sky-background truth to evaluate the naked-eye visibility margin; it is not a
+general-purpose atmospheric spectroscopy package and does not need to expose
+libRadtran or MYSTIC at runtime.
+
+Phases 0 through 3 own the doctrine, single-epoch calculation, and physical
+event search. Phase 4 owns the general background-composition, directional
+horizon, and observer-protocol contracts. Phase 5 public-contract parity and
+the bounded Phase 6 native admission are complete.
+
+Phase 7 is limited to evidence binding, exact `1.2.0` resource validation,
+offline packaging and clean-install checks, final documentation, and the
+release receipt. Site-specific Jones/Paranal work is quarantined research and
+cannot reopen or block this release without a separately authorized project.
 
 ## Reading Rule
 
@@ -136,7 +156,7 @@ modernization sources.
 | [CIE photopic response](https://cie.co.at/datatable/cie-spectral-luminous-efficiency-photopic-vision) | Versioned `V(lambda)` response data | Kept in the separately licensed data pack |
 | [CIE scotopic response](https://www.cie.co.at/datatable/cie-spectral-luminous-efficiency-scotopic-vision) | Versioned `V'(lambda)` response data | Kept in the separately licensed data pack |
 | [Tousey and Koomen 1953](https://opg.optica.org/josa/abstract.cfm?uri=josa-43-3-177) | Source-owned twilight comparison observations | Validation evidence, not a universal coefficient table |
-| [Jones et al. 2013](https://doi.org/10.1051/0004-6361/201322433) | Candidate modern physical moonlight model | New named Paranal-only option; validate independently inside its frozen domain before considering any later site transfer |
+| [Jones et al. 2013](https://doi.org/10.1051/0004-6361/201322433) | Historical site-specific moonlight research | Quarantined on 2026-08-07; no runtime, API, packaged resource, release gate, or active-roadmap dependency |
 | [ESO SkyCalc](https://www.eso.org/observing/etc/doc/skycalc/helpskycalccli.html) | Component comparison and validation reference | Never claim global authority from a site model |
 | [PALACE](https://gmd.copernicus.org/articles/18/4353/2025/) | Airglow research and component-validation reference | Site-bound unless independent evidence supports expansion |
 
@@ -219,10 +239,10 @@ failure reasons, or provenance.
 | 1 | Reproducible atmospheric reference laboratory | Complete | [Checkpoints 1-6](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_ALTITUDE_PRESSURE_INTERPOLATION_CHECKPOINT_2026-07-30.md), [radiance/response checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_RADIANCE_RESPONSE_CHECKPOINT_2026-07-30.md), and [closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md) |
 | 2 | Python spectral single-epoch truth | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE2_CLOSURE_2026-07-30.md) |
 | 3 | Physical visibility-event solver | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md) and [restart checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_RESTART_CHECKPOINT_2026-07-30.md) |
-| 4 | Moonlight, airglow, horizon, and local realism | In progress | [Directional-horizon checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_DIRECTIONAL_HORIZON_CHECKPOINT_2026-07-31.md); [background-composition checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_BACKGROUND_COMPOSITION_CHECKPOINT_2026-07-31.md); [observer-factor checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_OBSERVER_FACTOR_CHECKPOINT_2026-07-31.md); [Jones lower-boundary checkpoint](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md) |
-| 5 | Public contract parity | Not started | Pending |
-| 6 | Optional native strengthening | Not started | Pending benchmark decision |
-| 7 | Validation, admission, release, and documentation | Not started | Pending |
+| 4 | Background composition, horizon, observer protocol, and research disposition | Complete | [Background](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_BACKGROUND_COMPOSITION_CHECKPOINT_2026-07-31.md), [horizon](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_DIRECTIONAL_HORIZON_CHECKPOINT_2026-07-31.md), [observer](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_OBSERVER_FACTOR_CHECKPOINT_2026-07-31.md), and [quarantine decision](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_JONES_PARANAL_QUARANTINE_2026-08-07.md) |
+| 5 | Public contract parity | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE5_CLOSURE_2026-08-04.md) |
+| 6 | Optional native strengthening | Complete | [Closure receipt](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE6_CLOSURE_2026-08-04.md) |
+| 7 | Validation, admission, release, and documentation | Complete locally | [Validation authority](../../03_validation/PHYSICAL_HELIACAL_VISIBILITY_VALIDATION_2026-08-05.md) and closure receipt below |
 
 ## Phase 0 - Doctrine, Source, and Contract Lock
 
@@ -1060,28 +1080,16 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 ### Moonlight
 
 - [x] Preserve Krisciunas-Schaefer under its existing identifier.
-- [x] Freeze the Jones paper, official ESO source-package receipts, first
-  candidate domain, operational comparator, and independent artifact contract.
-- [x] Classify and checksum-lock the solar, ROLO, and aerosol inputs; preserve
-  the aerosol table as source-owned without claiming an unavailable public
-  reconstruction recipe.
-- [x] Invalidate the shifted v1 explicit-aerosol evidence and bind the corrected
-  lower-boundary ownership rule in independently checked v2 tooling.
-- [x] Complete the corrected 550 nm pilot, freeze thresholds before holdout
-  execution, and pass three fresh sealed holdouts plus an exact repeat.
-- [x] Resolve the 2,000 m Jones lower model boundary versus the 2,640 m observer
-  altitude before designing the spectral admission grid.
-- [ ] Implement Jones 2013 only under a new versioned identifier.
-- [ ] Expose lunar phase, separation, lunar altitude, atmospheric, and
-  scattering inputs in the component receipt.
-- [ ] Validate the implementation against source-owned examples and
-  independent conditions.
-- [ ] Reject unsupported lunar geometry instead of extrapolating silently.
+- [x] Preserve site-specific Jones/Paranal work as historical research without
+  promoting it into the general physical model.
+- [x] Quarantine that experiment outside the runtime, public API, compatibility
+  resources, release gate, and active roadmap.
 
 ### Airglow and natural background
 
 - [x] Preserve measured local background as the preferred authority.
-- [ ] Use ESO and PALACE results as site-bound comparison/reference material.
+- [x] Keep ESO and PALACE results visibly site-bound as comparison and research
+  references; do not infer a global airglow component from them.
 - [x] Do not make a Paranal profile a global default.
 - [x] Separate airglow, zodiacal light, integrated starlight, and artificial
   light whenever modeled components are supplied.
@@ -1095,124 +1103,56 @@ The detailed scope, receipts, commands, limitations, and next boundary are in
 - [x] Preserve the scalar horizon input as a compatibility path.
 - [x] Resolve the observer-factor contract: keep the physical protocol at the
   source-receipted singleton `F = 2`, with no generic skill/probability input.
-- [x] Prove that the current fixed-environment pack cannot truthfully supply
-  atmospheric sensitivity and freeze the separate-scenario-pack architecture.
-- [ ] Generate and admit immutable atmospheric scenario packs, rerun the full
-  event search per pack, and form an interval only for comparable owned events.
+- [x] Keep site-specific atmosphere experiments outside the admitted `1.2.0`
+  pack and general runtime contract.
 
-### Phase 4 Jones source-audit checkpoint - 2026-07-31
+### Phase 4 site-specific moonlight research disposition - 2026-08-07
 
-The bounded source audit is complete. It checksum-locks the 431,651,392-byte
-official ESO SM-01 release and all 18 required source, data, parameter, and
-regression members, including the default aerosol phase function selected by
-the package dependency map, without copying external GPL bytes into the
-repository.
-The official package fixture derives to a 102.1-degree lunar phase angle, so it
-is outside the first candidate's 1.55–97-degree empirical ROLO domain and is
-classified as official-lineage evidence rather than an admission golden.
+The Jones/Paranal investigations produced source-audit and falsification
+evidence, including failed and superseded numerical designs. They did not
+become part of the general physical-visibility product. The branch is now
+quarantined and is not a Phase 7 prerequisite.
 
-An isolated SkyCalc 2.0.9 `flux_sml` capture at 50 degrees is locked as an
-in-domain operational comparison. It is source-owned evidence, not an
-independent oracle. The candidate remains `not_admitted`; no runtime, public
-API, data-pack, dependency, network, download, or legacy behavior changed.
-
-The source audit exposed a required input-authority gate before pilot
-generation. That gate is now closed by the checkpoint below. See
-[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_SOURCE_AUDIT_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_SOURCE_AUDIT_CHECKPOINT_2026-07-31.md).
-
-### Phase 4 Jones input-authority checkpoint - 2026-07-31
-
-The solar and lunar inputs are now independently bound in the candidate
-domain. The audit compares 1,467 ESO solar rows to the STIS reference and
-locks the 32 published ROLO wavelength rows plus the 1.55-97 degree empirical
-phase boundary.
-
-The published Jones particle parameters and identified Oxford EODG Mie
-routine do not reproduce ESO's selected `mie_m15s1.dat` table. The table is
-therefore classified as an exact source-owned external input whose public
-reconstruction recipe is unavailable. It may be used by the independent
-radiative-transfer pilot with that limitation visible; it may not support an
-independent aerosol-microphysics claim, and its bytes may not enter the
-repository.
-
-The input-authority gate enabled the bounded libRadtran 2.0.6 MYSTIC pilot
-matrix. That pilot and its sealed geometry holdouts are now complete under the
-corrected-v2 receipts below. Any derived production artifact still requires a
-separate release/distribution disposition. See
-[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_INPUT_AUTHORITY_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_INPUT_AUTHORITY_CHECKPOINT_2026-07-31.md).
-
-### Phase 4 Jones MYSTIC v1 invalidation and corrected-v2 gate - 2026-07-31
-
-The lower-boundary investigation found that the original explicit-aerosol
-writer listed each physical file at its upper boundary even though libRadtran
-applies it from the listed altitude upward. The v1 builder and validator
-mirrored the same error, so v1 pilot, threshold, and holdout checks
-false-greened. Their exact historical receipts remain reproducible but are not
-admissible. No runtime or production artifact was affected. See
-[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_V1_INVALIDATION_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_V1_INVALIDATION_CHECKPOINT_2026-07-31.md).
-
-The corrected v2 profile binds physical files to inclusive lower boundaries,
-with an explicit null gap between the 20 km physical profile top and the 120 km
-top marker. The rebuilt 15-case pilot passed all frozen numerical checks. Three
-fresh sealed holdouts and an exact repeat then passed with new seed
-`271828183`; the worst relative Monte Carlo error was `0.0029782157` against
-the frozen `0.005` ceiling. Both external artifacts passed independent
-validation. See
-[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_PILOT_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_PILOT_CHECKPOINT_2026-07-31.md)
-and
-[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_HOLDOUT_CHECKPOINT_2026-07-31.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_HOLDOUT_CHECKPOINT_2026-07-31.md).
-
-### Phase 4 Jones MYSTIC lower-boundary checkpoint - 2026-08-02
-
-The lower-boundary gate is closed. The source-faithful research profile uses a
-2,000 m surface, an explicit 2,640 m observer level, `zout 0.64`, pressure
-scaled to retain 744 hPa at the observer, and the restored Jones aerosol
-column below the observer. It exactly reproduces the corrected-v2 control,
-passes all structural and Monte Carlo checks, and was independently validated.
-Two final artifact trees are byte-for-byte identical. See
-[PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE4_JONES_MYSTIC_LOWER_BOUNDARY_CHECKPOINT_2026-08-02.md).
-
-The active Moonlight gate is now design of the source-faithful 2,000 m Jones
-spectral admission matrix. The wavelength grid, interpolation thresholds, and
-untouched spectral holdouts must be frozen before execution. The lower-boundary
-checkpoint does not admit a spectral grid, runtime model, or production data
-pack.
+The detailed experiment state is preserved in historical research records and
+the external recovery archive. The governing product boundary and reopening
+rule are recorded in
+[PHYSICAL_HELIACAL_VISIBILITY_JONES_PARANAL_QUARANTINE_2026-08-07.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_JONES_PARANAL_QUARANTINE_2026-08-07.md).
 
 ### Phase 4 exit gate
 
-- [ ] Every environmental component has a named source and validity domain.
-- [ ] Site-bound sources remain visibly site bound.
+- [x] Every environmental component has a named source and validity domain.
+- [x] Site-bound sources remain visibly site bound.
 - [x] Measured and modeled backgrounds cannot be accidentally combined twice.
 - [x] Horizon and observer assumptions survive into the event receipt.
-- [ ] A Phase 4 closure receipt is added to this document.
+- [x] A Phase 4 closure receipt is added to this document.
 
 ## Phase 5 - Public Contract Parity
 
 ### Python surfaces
 
-- [ ] Export all admitted public types from their owning module.
-- [ ] Preserve curated root exports in `moira`.
-- [ ] Preserve `moira.sky` visibility re-exports.
-- [ ] Add `physical_visibility_assessment()` and
+- [x] Export all admitted public types from their owning module.
+- [x] Preserve curated root exports in `moira`.
+- [x] Preserve `moira.sky` visibility re-exports.
+- [x] Add `physical_visibility_assessment()` and
   `physical_visibility_event()` without changing legacy functions.
-- [ ] Add matching `Moira` methods for the two new physical surfaces.
-- [ ] Ensure facade functions forward the complete policy without narrowing it.
-- [ ] Add identity-preserving public-surface tests.
+- [x] Add matching `Moira` methods for the two new physical surfaces.
+- [x] Ensure facade functions forward the complete policy without narrowing it.
+- [x] Add identity-preserving public-surface tests.
 
 ### REST surfaces
 
-- [ ] Add dedicated `/v1/visibility/physical-assessment` and
+- [x] Add dedicated `/v1/visibility/physical-assessment` and
   `/v1/visibility/physical-event` routes.
-- [ ] Forward the full physical policy unchanged through router, service, and
+- [x] Forward the full physical policy unchanged through router, service, and
   engine.
-- [ ] Add typed physical assessment and event request/response models.
-- [ ] Bind the data-pack path through server configuration; never accept an
+- [x] Add typed physical assessment and event request/response models.
+- [x] Bind the data-pack path through server configuration; never accept an
   arbitrary client filesystem path.
-- [ ] Keep `/v1/visibility/assessment` and
+- [x] Keep `/v1/visibility/assessment` and
   `/v1/heliacal/visibility-event` exact.
-- [ ] Do not add physical-only fields to legacy responses.
-- [ ] Keep strict response models and validation envelopes.
-- [ ] Regenerate and verify OpenAPI.
+- [x] Do not add physical-only fields to legacy responses.
+- [x] Keep strict response models and validation envelopes.
+- [x] Regenerate and verify OpenAPI.
 
 ### Affected transport files
 
@@ -1228,96 +1168,161 @@ pack.
 The exact edit set must be re-established from the checkout at Phase 5 start.
 This list is an inventory, not permission to modify every file.
 
+### Phase 5 closure receipt - 2026-08-04
+
+The additive physical assessment/event functions and their admitted contract
+types now preserve object identity across `moira.heliacal`, the curated
+`moira` root, `moira.facade`, and `moira.sky.visibility`. Matching
+`Moira` methods forward the complete engine policy and search policy without
+introducing facade defaults.
+
+The REST surface exposes dedicated physical assessment and event routes under
+`/v1/visibility`. Requests are strict, fully typed, and contain no data-pack
+filesystem field. The external physical pack directory and optional manifest
+pin are server-owned through
+`MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_DIRECTORY` and
+`MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_MANIFEST_SHA256`. An unconfigured
+server fails with the existing typed error-envelope shape and HTTP 503.
+
+Every field in the 16 engine assessment, event, pack, and nested receipt
+dataclasses is matched by the corresponding response model. Runtime transport
+tests preserve dependency, atmosphere, observer, horizon, solver, sensitivity,
+and nested pack-identity receipts. The recorded legacy assessment and general
+visibility-event schemas remain exact, and no physical field was added to
+either legacy response.
+
+The generated REST inventory now records 440 paths and 440 operations. The
+final physical visibility, Phase 5, and legacy compatibility gate collected
+299 tests: 297 passed and the two exact external-pack goldens skipped because
+their opt-in pack environment variable was not set. The complete evidence,
+scope boundary, and restart point are recorded in
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE5_CLOSURE_2026-08-04.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE5_CLOSURE_2026-08-04.md).
+
 ### Phase 5 exit gate
 
-- [ ] Root, sky, facade, `Moira`, serializer, REST, and OpenAPI surfaces expose
+- [x] Root, sky, facade, `Moira`, serializer, REST, and OpenAPI surfaces expose
   the same effective models.
-- [ ] Every transport preserves table, model, validity, dependency, and solver
+- [x] Every transport preserves table, model, validity, dependency, and solver
   receipts.
-- [ ] Legacy request and response fixtures remain unchanged.
-- [ ] New request and response fixtures are fully typed.
-- [ ] A Phase 5 closure receipt is added to this document.
+- [x] Legacy request and response fixtures remain unchanged.
+- [x] New request and response fixtures are fully typed.
+- [x] A Phase 5 closure receipt is added to this document.
 
 ## Phase 6 - Optional Native Strengthening
 
 ### Admission decision
 
-- [ ] Benchmark the admitted Python implementation with representative
+- [x] Benchmark the admitted Python implementation with representative
   single-epoch and event workloads.
-- [ ] Record the performance budget and benchmark environment.
-- [ ] Decide whether native work is justified.
-- [ ] If native work is not justified, record that decision and close this
-  phase without a port.
+- [x] Record the performance budget and benchmark environment.
+- [x] Decide whether native work is justified.
+- [x] Resolve the no-port branch as not applicable because the benchmark
+  admitted exactly two proven hot kernels.
 
 ### Candidate native work
 
-- [ ] Port only proven hot numerical kernels.
-- [ ] Keep manifest, policy, domain, and provenance decisions in Python.
-- [ ] Preserve the Python implementation as the differential reference.
-- [ ] Validate the full environmental grid.
-- [ ] Validate event results and invalid-domain behavior.
-- [ ] Validate thread safety and deterministic concurrency.
-- [ ] Record numerical tolerances and performance evidence separately.
+- [x] Port only proven hot numerical kernels.
+- [x] Keep manifest, policy, domain, and provenance decisions in Python.
+- [x] Preserve the Python implementation as the differential reference.
+- [x] Validate the full environmental grid.
+- [x] Validate event results and invalid-domain behavior.
+- [x] Validate thread safety and deterministic concurrency.
+- [x] Record numerical tolerances and performance evidence separately.
 
 ### Phase 6 exit gate
 
-- [ ] The benchmark decision is recorded.
-- [ ] If native code is admitted, Python/native differential tests pass across
+- [x] The benchmark decision is recorded.
+- [x] If native code is admitted, Python/native differential tests pass across
   the complete admitted domain.
-- [ ] No public semantics moved into C++.
-- [ ] A Phase 6 closure or no-port receipt is added to this document.
+- [x] No public semantics moved into C++.
+- [x] A Phase 6 closure or no-port receipt is added to this document.
+
+Phase 6 closed on 2026-08-04 with exactly two private numerical kernels:
+response-weight resolution and bracketed direct-extinction interpolation. The
+benchmark decision, complete-domain Python/native differential, deterministic
+threaded replay, event-result replay, invalid-domain checks, and separated
+tolerances are recorded in
+[PHYSICAL_HELIACAL_VISIBILITY_PHASE6_CLOSURE_2026-08-04.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE6_CLOSURE_2026-08-04.md).
+Python continues to own resource admission, model and policy identity, domains,
+typed failures, event semantics, and result construction.
 
 ## Phase 7 - Validation, Admission, Release, and Documentation
 
+### Phase 7 closure receipt - 2026-08-07
+
+Phase 7 closed on the core `1.2.0` release boundary. The Jones/Paranal
+experiment is quarantined and was not required for closure.
+
+The release candidate has a core-only release identity and notice,
+deterministic external-pack archiver, evidence registry, generated capability
+matrix, and generated API inventory. Focused engine, public-contract, REST,
+spectral, event, release-identity, and strict-known-issues gates pass.
+
+The independent Jupiter and Sirius validators were accepted at 1.206 and 2.564
+seconds from the source-owned interpolants, inside the declared 60-second
+oracle tolerance. The independent crossing certificate recomputed an
+8,799.9842 magnitude/day ceiling below the admitted 16,384 ceiling.
+
+The full offline artifact validator built a clean wheel and sdist, rebuilt and
+clean-installed a wheel from the sdist, imported the native backend, loaded the
+exact external pack under a socket-deny guard, found no embedded external
+payload, and emitted
+`tests/artifacts/release/physical_visibility_phase7_release_validation_2026-08-07.json`.
+That receipt records a local release candidate only; no tag, publication,
+installation into a downstream product, deployment, or website update occurred.
+
 ### Evidence classes
 
-- [ ] Primary-source equation validation.
-- [ ] Independent libRadtran holdouts not used to build the LUT.
-- [ ] Modern observational comparison cases.
-- [ ] Historical event cases used only within their defensible uncertainty.
-- [ ] Property and invariant testing.
-- [ ] Legacy regression fixtures.
-- [ ] Public-contract and OpenAPI parity tests.
-- [ ] Wheel, sdist, manifest, and clean-install tests.
-- [ ] Native differential evidence if Phase 6 admits a port.
+- [x] Quarantine the site-specific experimental moonlight branch outside this
+  release and active roadmap.
+- [x] Primary-source equation validation.
+- [x] Independent libRadtran holdouts not used to build the LUT.
+- [x] Modern observational comparison cases.
+- [x] Historical event cases used only within their defensible uncertainty.
+- [x] Property and invariant testing.
+- [x] Legacy regression fixtures.
+- [x] Public-contract and OpenAPI parity tests.
+- [x] Wheel, sdist, manifest, and clean-install tests.
+- [x] Native differential evidence for the two admitted Phase 6 kernels.
 
 Agreement with another engine is corroboration, not primary authority.
 Snapshots are regression evidence, not scientific truth.
 
 ### Tolerance law
 
-- [ ] Derive interpolation tolerances from independent reference runs.
-- [ ] Record source-solver or Monte Carlo uncertainty.
-- [ ] Record storage and interpolation error.
-- [ ] Record root-solver residual and time tolerance.
-- [ ] Quantify how component error affects limiting magnitude and event time.
-- [ ] Do not invent one aggregate tolerance that hides these different errors.
+- [x] Derive interpolation tolerances from independent reference runs.
+- [x] Record source-solver or Monte Carlo uncertainty.
+- [x] Record storage and interpolation error.
+- [x] Record root-solver residual and time tolerance.
+- [x] Quantify how component error affects limiting magnitude and event time.
+- [x] Do not invent one aggregate tolerance that hides these different errors.
 
 ### Documentation and release
 
-- [ ] Generate a current capability matrix.
-- [ ] Generate or update the public API inventory.
-- [ ] Regenerate REST reference material.
-- [ ] Replace or archive stale heliacal closure claims.
-- [ ] Update the heliacal validation matrix.
-- [ ] Update package provenance and notices.
-- [ ] Document the new policy as opt-in.
-- [ ] Document its validity domain and typed unsupported cases.
-- [ ] Document runtime data-pack requirements, if any.
-- [ ] Verify normal execution remains offline.
-- [ ] Prepare compatibility and release notes.
-- [ ] Update website documentation only after the engine release gate passes.
+- [x] Generate a current capability matrix.
+- [x] Generate or update the public API inventory.
+- [x] Regenerate REST/OpenAPI reference material.
+- [x] Replace or archive stale heliacal closure claims.
+- [x] Update the heliacal validation matrix.
+- [x] Update package provenance and notices.
+- [x] Document the new policy as opt-in.
+- [x] Document its validity domain and typed unsupported cases.
+- [x] Document runtime data-pack requirements.
+- [x] Verify normal execution remains offline.
+- [x] Prepare compatibility and release notes.
+- [x] Keep website documentation outside this engine phase until the separate
+  publication and website-adoption gates are authorized.
 
 ### Phase 7 exit gate
 
-- [ ] Every admitted claim has a named evidence class.
-- [ ] The packaged artifact contains or resolves the exact admitted data
+- [x] Every admitted claim has a named evidence class.
+- [x] The packaged artifact contains or resolves the exact admitted data
   identity.
-- [ ] Clean-wheel and clean-sdist tests pass.
-- [ ] Strict known-issues validation passes.
-- [ ] Documentation describes current executable behavior without stale
+- [x] Clean-wheel and clean-sdist tests pass.
+- [x] Strict known-issues validation passes.
+- [x] Documentation describes current executable behavior without stale
   completion claims.
-- [ ] A final completion receipt is added to this document.
+- [x] A final completion receipt is added to this document.
 
 ## Cross-Phase Validation Inventory
 
@@ -1350,6 +1355,8 @@ The following are closed exclusions from this roadmap:
 - global satellite-derived artificial-light prediction;
 - runtime libRadtran execution;
 - automatic data downloads;
+- site-specific Jones/Paranal moonlight runtime, API, data-pack, or release
+  integration;
 - mesopic astronomical-detection claims without direct validation;
 - observer-population probability or confidence claims;
 - interpretive or astrological meaning derived from visibility; and

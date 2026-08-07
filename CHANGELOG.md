@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added the opt-in `clear_sky_naked_eye_point_source_v1` single-epoch
+  assessment and four-phase first/last event contract across curated Python,
+  `Moira`, facade, REST, and OpenAPI surfaces.
+- Added immutable release identity and a packaged resource notice for the
+  separately distributed CC BY-SA 4.0 physical-visibility data pack `1.2.0`.
+- Added generated physical-visibility capability and API inventories with
+  named evidence classes and byte-level drift fingerprints.
+
+### Changed
+
+- Admitted two private, doctrine-free native kernels for spectral response
+  weights and direct-extinction interpolation while retaining Python ownership
+  of policy, domain admission, typed failures, event semantics, and results.
+- Kept the physical model explicit and opt-in. Legacy visibility and heliacal
+  defaults, requests, responses, and event meanings remain unchanged.
+- Quarantined the Jones/Paranal moonlight experiment outside the runtime,
+  public API, compatibility resources, release gate, and active roadmap.
+
+### Validation
+
+- Bound primary-source equations, independent libRadtran holdouts,
+  Tousey-Koomen observational comparisons, property/invariant tests, legacy
+  regressions, OpenAPI parity, exact event goldens, separated numerical
+  tolerances, and Python/native differentials to a Phase 7 evidence registry.
+- Added deterministic external-pack archiving plus source-wheel, sdist rebuild,
+  clean-install, native-import, exact-pack-load, and active offline socket-guard
+  release gates. The external numerical payload remains absent from both Python
+  distributions.
+
 ## [6.1.0] - 2026-07-28
 
 Detailed release and migration guidance is available in

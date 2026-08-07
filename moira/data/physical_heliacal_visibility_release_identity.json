@@ -1,0 +1,47 @@
+{
+  "schema": "moira.physical-heliacal-visibility-release-identity/v1",
+  "status": "phase7_release_candidate_identity",
+  "composite_model_id": "clear_sky_naked_eye_point_source_v1",
+  "engine_contract_version": 1,
+  "external_data_pack": {
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.2.0",
+    "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+    "source_artifact_manifest_sha256": "6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f",
+    "license": "CC-BY-SA-4.0",
+    "archive": {
+      "filename": "moira-physical-heliacal-visibility-1.2.0.tar.gz",
+      "bytes": 143595,
+      "sha256": "0d2c98d0717c45416ad0f8f3e0b72ca28d3975f4f6c8080112ceb2bef8327d71",
+      "format": "deterministic_tar_gzip_v1"
+    }
+  },
+  "packaged_compatibility_contracts": [
+    {
+      "path": "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1.json",
+      "sha256": "f50b199a211b75f7e6701f69c86020918f01df4940cfd1d3b86c6d6036659e37"
+    },
+    {
+      "path": "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1_1.json",
+      "sha256": "7ba04e30cd5f0b48f39aadd8264d862fde010e4700bf0248bc6c3f840d70969c"
+    },
+    {
+      "path": "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1_2.json",
+      "sha256": "aaa44f99cfdb85277a44778167abd5c0c721e4a580dfb6e000ef74957cdb9e37"
+    }
+  ],
+  "runtime_boundary": {
+    "external_pack_embedded_in_python_distribution": false,
+    "automatic_download_allowed": false,
+    "assessment_requires_explicit_pack_directory": true,
+    "event_requires_exact_manifest_identity": true,
+    "server_directory_environment_variable": "MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_DIRECTORY",
+    "server_manifest_environment_variable": "MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_MANIFEST_SHA256"
+  },
+  "release_boundary": {
+    "legacy_visibility_default_changed": false,
+    "physical_policy_opt_in": true,
+    "experimental_site_specific_moonlight_in_release": false,
+    "quarantine_receipt": "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_JONES_PARANAL_QUARANTINE_2026-08-07.md"
+  }
+}

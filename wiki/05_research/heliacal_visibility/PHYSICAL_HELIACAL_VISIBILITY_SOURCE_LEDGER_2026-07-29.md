@@ -1,9 +1,15 @@
 # Physical Heliacal Visibility Source Ledger
 
 Date: 2026-07-31
-Status: Phase 0 source disposition, Phases 1-3 closed, and Phase 4 active
+Status: core source ledger; Phases 1-6 closed; site-specific moonlight branch
+quarantined
 Doctrine:
 [PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md](../../01_doctrines/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_ADMISSION_DOCTRINE.md)
+
+> **Supersession notice (2026-08-07):** Jones/Paranal entries below document
+> historical source research only. The experiment has no runtime, public API,
+> packaged resource, release gate, or active-roadmap dependency. See the
+> [quarantine decision](PHYSICAL_HELIACAL_VISIBILITY_JONES_PARANAL_QUARANTINE_2026-08-07.md).
 
 ## Purpose
 

@@ -1,0 +1,30 @@
+Moira physical heliacal-visibility resource notice
+=================================================
+
+The moira-astro Python distribution contains only the engine implementation,
+compatibility contracts, release identity, and this notice.  It does not
+contain the external physical heliacal-visibility data pack, libRadtran,
+REPTRAN data, CIE source tables, or an automatic downloader.
+
+The admitted external resource is:
+
+  pack: moira-physical-heliacal-visibility 1.2.0
+  manifest SHA-256:
+    cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c
+  license: CC BY-SA 4.0
+
+The separately distributed pack preserves its own README, NOTICE, provenance,
+per-file checksums, source-artifact receipts, validity domain, and solver,
+storage, and interpolation error records.  Users must acquire and configure
+that exact external artifact themselves.  Normal engine execution never
+downloads it and never invokes libRadtran.
+
+The physical model is opt-in.  The legacy heliacal and generalized visibility
+contracts remain unchanged.  The Jones/Paranal moonlight experiment is
+quarantined research: it is not composed into the admitted assessment or event
+model and no related runtime, compatibility contract, or data pack is included
+in this release boundary.
+
+Source and license details are recorded in PROVENANCE.md and in the physical
+heliacal-visibility source ledger and validation documents shipped with the
+source repository.

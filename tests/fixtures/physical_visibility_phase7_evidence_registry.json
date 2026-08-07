@@ -1,0 +1,130 @@
+{
+  "schema": "moira.physical-heliacal-visibility-phase7-evidence-registry/v1",
+  "model_id": "clear_sky_naked_eye_point_source_v1",
+  "evidence_classes": [
+    {
+      "id": "primary_source_equation_validation",
+      "role": "scientific_admission",
+      "paths": [
+        "tests/unit/test_visibility_physics.py",
+        "tests/unit/test_visibility_spectral.py",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_SOURCE_LEDGER_2026-07-29.md"
+      ],
+      "limitation": "Equation checks validate named components and source examples; they do not establish universal atmosphere or observer truth."
+    },
+    {
+      "id": "independent_libradtran_holdouts",
+      "role": "scientific_admission",
+      "paths": [
+        "tests/artifacts/visibility_reference_lab/phase1_radiance_response_checkpoint_2026-07-30.json",
+        "tests/artifacts/visibility_reference_lab/phase1_altitude_pressure_interpolation_checkpoint_2026-07-30.json",
+        "tests/artifacts/visibility_reference_lab/phase1_named_spectral_direct_checkpoint_2026-07-30.json",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md"
+      ],
+      "limitation": "Holdouts are independent of LUT fitting but remain within the frozen libRadtran scenario family."
+    },
+    {
+      "id": "modern_era_observational_comparison",
+      "role": "bounded_observational_validation",
+      "paths": [
+        "tests/unit/test_visibility_spectral.py",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_SOURCE_LEDGER_2026-07-29.md"
+      ],
+      "limitation": "The Tousey-Koomen 1953 Table I comparison is a source-bounded modern-era twilight observation, not a contemporary multi-site campaign."
+    },
+    {
+      "id": "historical_event_corroboration",
+      "role": "corroboration_only",
+      "paths": [
+        "tests/integration/test_visibility_validation.py",
+        "wiki/03_validation/PLANETARY_HELIACAL_VALIDATION_CORPUS_2026-04-09.md",
+        "wiki/03_validation/STELLAR_HELIACAL_VALIDATION_CORPUS_2026-04-09.md"
+      ],
+      "limitation": "Historical and published-window cases govern only legacy bounded-window claims; they are not exact physical-model event oracles."
+    },
+    {
+      "id": "property_and_invariant_testing",
+      "role": "computational_assurance",
+      "paths": [
+        "tests/unit/test_visibility_event_solver.py",
+        "tests/unit/test_physical_visibility_event.py",
+        "tests/unit/test_visibility_lut.py",
+        "tests/unit/test_visibility_targets.py"
+      ],
+      "limitation": "Invariants prove contract and numerical behavior, not observational accuracy."
+    },
+    {
+      "id": "legacy_regression_fixtures",
+      "role": "compatibility_assurance",
+      "paths": [
+        "tests/unit/test_heliacal_visibility_policy.py",
+        "tests/unit/test_planet_heliacal.py",
+        "tests/unit/test_stars_heliacal.py",
+        "tests/server/test_server_physical_visibility_contract.py"
+      ],
+      "limitation": "Regression fixtures freeze compatibility; snapshots are not scientific authority."
+    },
+    {
+      "id": "public_contract_and_openapi_parity",
+      "role": "transport_assurance",
+      "paths": [
+        "tests/unit/test_physical_visibility_public_contract.py",
+        "tests/server/test_server_physical_visibility_contract.py",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE5_CLOSURE_2026-08-04.md"
+      ],
+      "limitation": "Transport parity proves that typed engine truth survives projection; it does not validate the underlying science."
+    },
+    {
+      "id": "external_ephemeris_event_goldens",
+      "role": "astronomical_and_event_contract_validation",
+      "paths": [
+        "tests/golden/physical_visibility_phase3_events.json",
+        "tests/integration/test_physical_visibility_phase3_goldens.py",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md"
+      ],
+      "limitation": "The goldens bind geometry, event ownership, and exact pack identity; they are not observed first-visibility dates."
+    },
+    {
+      "id": "separated_numerical_tolerances",
+      "role": "numerical_admission",
+      "paths": [
+        "tests/unit/test_visibility_spectral.py",
+        "tests/unit/test_visibility_event_solver.py",
+        "tests/unit/test_physical_visibility_event.py",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE1_CLOSURE_2026-07-30.md",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md"
+      ],
+      "limitation": "Solver, storage, interpolation, root, and scenario sensitivity remain separate; there is no aggregate accuracy score."
+    },
+    {
+      "id": "native_python_differential",
+      "role": "implementation_admission",
+      "paths": [
+        "scripts/validate_physical_visibility_phase6_native.py",
+        "tests/artifacts/benchmarks/physical_visibility_phase6_native_validation_2026-08-04.json",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE6_CLOSURE_2026-08-04.md"
+      ],
+      "limitation": "Differential evidence admits two private numerical kernels only; it is not independent scientific validation."
+    },
+    {
+      "id": "release_artifact_and_offline_install",
+      "role": "release_assurance",
+      "paths": [
+        "scripts/package_physical_visibility_data_pack.py",
+        "scripts/validate_physical_visibility_phase7_release.py",
+        "moira/data/physical_heliacal_visibility_release_identity.json",
+        "moira/data/physical_heliacal_visibility_NOTICE.txt"
+      ],
+      "limitation": "A local clean-artifact receipt proves the tested artifacts; publication and downstream deployment are separate release operations."
+    },
+    {
+      "id": "experimental_site_specific_moonlight_quarantine",
+      "role": "quarantined_research_boundary",
+      "paths": [
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_JONES_PARANAL_QUARANTINE_2026-08-07.md",
+        "moira/data/physical_heliacal_visibility_release_identity.json"
+      ],
+      "limitation": "The Jones/Paranal experiment is archived research only. It has no runtime module, public API, compatibility contract, packaged resource, release gate, or active roadmap dependency."
+    }
+  ]
+}

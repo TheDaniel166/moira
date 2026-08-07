@@ -1,5 +1,11 @@
 # Stellar Heliacal Validation Corpus (2026-04-09)
 
+> **Archived legacy-corpus plan.** The Sirius/Sothic material below remains a
+> bounded historical/delegation witness for the legacy family. It is not the
+> physical event oracle. The admitted source-owned Sirius profile, exact pack,
+> independent geometry golden, and current target exclusions are documented in
+> [Physical Heliacal-Visibility Validation and Admission](PHYSICAL_HELIACAL_VISIBILITY_VALIDATION_2026-08-05.md).
+
 Purpose:
 - define the admitted stellar heliacal validation corpus shape beyond source discovery
 - preserve explicit event semantics and observer assumptions for stellar rows

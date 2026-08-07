@@ -1,5 +1,12 @@
 # Moonlight Visibility Integration Plan (2026-04-09)
 
+> **Archived legacy K&S plan.** Subsequent tests added live-ephemeris
+> Krisciunas-Schaefer slices, but this dated candidate plan is not the current
+> physical-model admission boundary. Jones/Paranal composition is quarantined
+> research and remains absent from the physical assessment/event model,
+> packaged resources, release gate, and active roadmap; see
+> [Physical Heliacal-Visibility Validation and Admission](PHYSICAL_HELIACAL_VISIBILITY_VALIDATION_2026-08-05.md).
+
 Purpose:
 - define the documentation-level plan for end-to-end validation of the admitted Krisciunas & Schaefer 1991 moonlight layer
 - separate formula validation from observational-event validation

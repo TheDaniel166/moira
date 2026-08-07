@@ -1,8 +1,8 @@
 # Physical Heliacal Visibility Admission Doctrine
 
-Date: 2026-07-29
-Status: Phase 0 doctrine lock; Phases 1-3 closed at the additive Python
-direct-module engine boundary
+Date: 2026-08-07
+Status: additive engine, facade, REST, data, validation, and local Phase 7
+artifact gates closed; publication and deployment remain separate
 Governing roadmap:
 [PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md](../../06_roadmap/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_IMPLEMENTATION_PLAN.md)
 
@@ -12,11 +12,12 @@ This document freezes the meanings, supported domain, failure law, data
 boundary, and additive public-contract shape for Moira's physical
 heliacal-visibility project.
 
-It is the implementation authority for the admitted direct-module physical
-assessment and event model. The existing legacy search remains the default
-public/facade/REST behavior; Phase 3 did not change or silently reinterpret
-that compatibility surface. Transport and release admission remain later
-gates.
+It is the implementation authority for the admitted opt-in physical assessment
+and event model. The existing legacy search remains the default
+public/facade/REST behavior; the additive physical contract does not silently
+reinterpret that compatibility surface. Phase 5 admitted the dedicated facade
+and REST transports, Phase 6 admitted two private numerical kernels, and Phase
+7 binds the evidence, external resource, packaging, and release boundary.
 
 ## Compatibility Boundary
 
@@ -66,9 +67,9 @@ The initial component identities are:
 | Spectral response | `cie_mes2_2010_v1` | Declared photopic/scotopic interpolation, never an unnamed conversion |
 | Observational lineage | `tousey_koomen_twilight_1953_v1` | Independent twilight comparison cases |
 
-These identifiers have passed the Phase 1-3 direct-module engine gates. They
-do not become facade or REST defaults until those separate transport and
-release gates pass.
+These identifiers have passed the Phase 1-3 engine gates, the Phase 5-6
+transport and native gates, and the local Phase 7 offline artifact gate. They
+stay opt-in and do not become facade or REST defaults.
 
 ## Physical Phase Taxonomy
 
@@ -488,9 +489,9 @@ provenance receipts may cross the build boundary.
 This is the project's packaging disposition, not legal advice. Release notice
 and artifact review remain mandatory before public distribution.
 
-## Additive Public-Contract Sketch
+## Additive Public Contract
 
-Additive direct-module Python types:
+Representative additive Python types:
 
 - `PhysicalVisibilityPhase`
 - `PhysicalVisibilityStatus`
@@ -500,7 +501,7 @@ Additive direct-module Python types:
 - `VisibilityDataPackReceipt`
 - `VisibilityComponentReceipt`
 
-Additive direct-module functions:
+Additive functions:
 
 ```text
 physical_visibility_assessment(...)
@@ -545,7 +546,7 @@ engine configuration. A REST client never supplies an arbitrary server path.
 The REST deployment binds its allowed pack path and clients may assert only
 the expected public pack identity/checksum.
 
-Planned dedicated REST routes:
+Admitted dedicated REST routes:
 
 ```text
 POST /v1/visibility/physical-assessment
@@ -670,7 +671,7 @@ The physical doctrine is frozen for implementation planning:
 - input precedence and no-double-counting law are explicit;
 - physical data is an offline caller-supplied data pack;
 - missing evidence is typed rather than fabricated; and
-- the later public work is additive.
+- public work remains additive and opt-in.
 
 Any implementation that contradicts this document must stop and amend Phase 0
 before continuing.

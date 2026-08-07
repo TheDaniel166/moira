@@ -1,5 +1,15 @@
 # Heliacal Validation Matrix (2026-04-09)
 
+> **Archived legacy snapshot.** This matrix predates the additive physical
+> assessment/event model and governs only the legacy generalized visibility,
+> Yallop, and Krisciunas-Schaefer families described below. Current physical
+> admission is governed by
+> [Physical Heliacal-Visibility Validation and Admission](PHYSICAL_HELIACAL_VISIBILITY_VALIDATION_2026-08-05.md)
+> and the generated
+> [physical capability matrix](PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md).
+> Do not use the open-gap language in this dated snapshot as the current
+> physical-model roadmap.
+
 Purpose:
 - state exactly what the current heliacal and generalized visibility subsystem validates
 - separate strong evidence from slice evidence and provisional claims
@@ -12,7 +22,8 @@ Primary sources:
 - `wiki/03_validation/VALIDATION_ASTRONOMY.md`
 - `tests/fixtures/yallop_table4_reference.json`
 
-This document is a validation matrix, not a feature roadmap.
+This document is a preserved legacy validation matrix, not the current physical
+feature roadmap.
 
 ## Claim Levels
 

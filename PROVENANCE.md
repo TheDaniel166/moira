@@ -22,9 +22,8 @@ Note on resemblance: house geometry is mathematically forced — there is one co
 
 ### Atmospheric visibility model provenance
 
-Moira's opt-in physical point-source visibility path is independently
-implemented from the published equations and keeps each computational object
-separate:
+Moira's legacy component visibility family is independently implemented from
+published equations and keeps each computational object separate:
 
 - relative optical air mass uses Kasten and Young, *Applied Optics* 28
   (1989), 4735-4738, DOI `10.1364/AO.28.004735`;
@@ -36,6 +35,15 @@ separate:
   *PASP* 103 (1991), 1033-1039, DOI `10.1086/132921`;
 - the scotopic naked-eye point-source threshold uses Crumey, *MNRAS* 442
   (2014), 2600-2619, DOI `10.1093/mnras/stu992`.
+
+The separately named opt-in composite model
+`clear_sky_naked_eye_point_source_v1` uses offline libRadtran 2.0.6/REPTRAN
+reference products for directional clear-sky transmission and twilight
+radiance, the CIE MES2 response system, the full-range Blackwell-Crumey
+point-source threshold, source-owned planetary or stellar photometry and
+spectral profiles, and the Tousey-Koomen 1953 Table I twilight observations as
+a bounded observational comparison. libRadtran is a reference generator, not
+a runtime dependency or hidden ephemeris/visibility backend.
 
 The implementation was derived from those papers and their tabulated or
 equation-level reference points. No executable code from LibEphemeris or any
@@ -65,19 +73,46 @@ remains an explicit approximate fallback and requires the table derivation
 mode rather than reusing a limiting-magnitude interpolation as luminance.
 
 The existing limiting-magnitude/arcus-visionis criterion remains the default
-for compatibility. The physical chain must be requested explicitly and returns
-its direct extinction, component air masses, sky contributions, threshold,
-margin, and validity reason so downstream software can distinguish a negative
-visibility result from an out-of-domain calculation. The physical criterion is
-currently admitted only for a single-epoch assessment. Event search rejects it
-until a separately validated physical crossing doctrine is admitted, rather
-than selecting events with a legacy threshold and labeling them physical.
+for compatibility. The physical chain must be requested explicitly. It now
+supports both a single-epoch assessment and a separately admitted four-phase
+first/last event search without routing either result through the legacy
+threshold and relabelling it physical. The complete assessment and event
+receipts expose direct extinction, atmosphere and background components,
+threshold, margin, horizon, ephemeris, event ownership, solver tolerances,
+validity, and typed failure reasons.
+
+The physical event contract admits Mars, Jupiter, Saturn, and Sirius for all
+four physical phases. Mercury and Venus remain single-epoch-only because a
+guard day can leave their source-owned phase-angle domains; unsupported event
+requests fail closed as `body_phase_not_admitted`. Other fixed stars and target
+families require separate photometric and spectral admission.
+
 Crumey's published field factor explicitly includes the target, medium,
 laboratory scaling, and observer. Moira therefore does not apply its separately
 reported target extinction again by default. A caller may opt into separate
 target extinction only by declaring that its supplied field factor was
 calibrated without atmospheric transmission; the response records which
-magnitude actually governed the verdict.
+magnitude governed the verdict. Source-solver/Monte Carlo uncertainty, binary
+storage error, interpolation error, root residual/time tolerance,
+limiting-magnitude envelopes, and deterministic event-time sensitivity remain
+separate; Moira does not collapse them into an aggregate accuracy or confidence
+score.
+
+The admitted runtime resource is the separately distributed CC BY-SA 4.0 pack
+`moira-physical-heliacal-visibility` `1.2.0`, manifest SHA-256
+`cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c`.
+The MIT wheel contains only compatibility contracts, the release identity, and
+the resource notice; it contains no libRadtran/REPTRAN/CIE source material or
+external numerical payload. A caller or server operator supplies the pack
+directory explicitly. Normal execution performs no download and requires no
+network access.
+
+Phase 6 admits two private, differential-tested native numerical kernels for
+response-weight resolution and direct-extinction interpolation. Python still
+owns the model identity, doctrine, domain and resource admission, typed errors,
+event semantics, and result construction. The Jones/Paranal moonlight
+experiment is quarantined research. It has no runtime module, public contract,
+packaged resource, release gate, or active-roadmap dependency.
 
 The unified numbered-asteroid catalog is generated from JPL Horizons
 heliocentric `VECTORS` states and materialized as Moira Type-13 shards. Moira

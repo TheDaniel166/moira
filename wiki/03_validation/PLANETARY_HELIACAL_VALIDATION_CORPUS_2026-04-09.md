@@ -1,5 +1,11 @@
 # Planetary Heliacal Validation Corpus (2026-04-09)
 
+> **Archived legacy-corpus plan.** The published-window rows below remain
+> bounded corroboration for the legacy visibility family; they are not the
+> oracle or backlog for `clear_sky_naked_eye_point_source_v1`. Current physical
+> target admission and exact-pack event evidence are documented in
+> [Physical Heliacal-Visibility Validation and Admission](PHYSICAL_HELIACAL_VISIBILITY_VALIDATION_2026-08-05.md).
+
 Purpose:
 - define the next-step corpus shape for planetary heliacal validation beyond the current published-window slice
 - preserve explicit event semantics and observer assumptions

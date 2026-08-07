@@ -1,5 +1,12 @@
 # Moonlight Visibility Case Ledger (2026-04-09)
 
+> **Archived legacy candidate ledger.** These rows belong to the optional
+> Krisciunas-Schaefer legacy policy and do not describe admitted
+> `clear_sky_naked_eye_point_source_v1` cases. The site-specific experimental
+> moonlight branch is quarantined and is not an active product or release
+> dependency; see
+> [Physical Heliacal-Visibility Validation and Admission](PHYSICAL_HELIACAL_VISIBILITY_VALIDATION_2026-08-05.md).
+
 Purpose:
 - provide the concrete case ledger for end-to-end moonlight-aware visibility validation
 - turn the moonlight integration plan into explicit future case families

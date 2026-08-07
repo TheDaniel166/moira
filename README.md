@@ -196,12 +196,14 @@ policy or qualification instead of presenting one silent universal rule.
 
 - **Eclipses** — NASA-canon contact solver for solar and lunar eclipses; Saros series classification with heptagonal vertex labelling; local circumstance computation.
 - **Visibility and heliacal phenomena** — heliacal and acronychal rising and
-  setting, planetary elongation extremes, and an opt-in physical point-source
-  assessment path exposing Kasten–Young relative air mass, measured or
-  Schaefer clear-air extinction, directional twilight brightness, Crumey
-  naked-eye threshold, moonlight policy, and Yallop lunar-crescent
-  classification. Out-of-domain physical inputs fail closed rather than being
-  extrapolated.
+  setting, planetary elongation extremes, and opt-in physical point-source
+  assessment and four-phase first/last event paths. The physical model exposes
+  its atmosphere, directional background, spectral response, threshold,
+  horizon, solver, error-budget, and data identities; out-of-domain or missing
+  evidence fails closed. It requires the separately distributed
+  `moira-physical-heliacal-visibility` `1.2.0` data pack and never downloads it.
+  The legacy criterion remains the default, and Yallop lunar-crescent
+  classification remains a separate policy family.
 - **Parans** — paranatellonta field analysis with contour extraction and stability metrics.
 - **Occultations** — lunar occultation of stars and planets; close-approach detection.
 - **Stations** — retrograde stations with precise stationary-point search.
@@ -651,6 +653,8 @@ drift.
 | [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | Transparency and derivation as design constraints. |
 | [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) | Capabilities enabled by sovereign catalogs, explicit policy, and modern Python. |
 | [`HOUSE_SYSTEM_DIVERGENCE.md`](wiki/01_doctrines/houses/HOUSE_SYSTEM_DIVERGENCE.md) | House-system derivation and discretionary divergence from conventional Swiss-facing behavior. |
+| [`PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md`](wiki/03_validation/PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md) | Current physical-visibility admission, evidence classes, tolerances, and closed exclusions. |
+| [`PHYSICAL_HELIACAL_VISIBILITY_API_INVENTORY.generated.md`](wiki/03_validation/PHYSICAL_HELIACAL_VISIBILITY_API_INVENTORY.generated.md) | Generated Python/facade/REST/OpenAPI inventory for the opt-in physical contract. |
 | [`CONSTITUTIONAL_PROCESS.md`](wiki/00_foundations/CONSTITUTIONAL_PROCESS.md) | The Subsystem Constitutional Process — the development and governance protocol. |
 | [`MOIRA_ROADMAP.md`](wiki/06_roadmap/MOIRA_ROADMAP.md) | Living implementation roadmap and improvement register; validation claims remain owned by the validation ledgers and release notes. |
 

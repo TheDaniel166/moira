@@ -1,0 +1,156 @@
+{
+  "claims": {
+    "experimental_site_specific_moonlight_quarantined": true,
+    "external_resource_identities_exact": true,
+    "external_resources_embedded": false,
+    "normal_execution_offline": true,
+    "release_or_deployment_performed": false,
+    "sdist_rebuild_and_clean_install": true,
+    "wheel_clean_install": true
+  },
+  "distributions": {
+    "sdist": {
+      "bytes": 4237722,
+      "filename": "moira_astro-6.1.0.tar.gz",
+      "inventory": {
+        "external_payload_embedded": false,
+        "member_count": 635,
+        "native_extensions": [],
+        "packaged_identity_and_notice_files": [
+          "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1.json",
+          "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1_1.json",
+          "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1_2.json",
+          "moira/data/physical_heliacal_visibility_release_identity.json",
+          "moira/data/physical_heliacal_visibility_NOTICE.txt"
+        ]
+      },
+      "rebuilt_wheel": {
+        "bytes": 4782459,
+        "clean_install": {
+          "assessment_callable": true,
+          "event_callable": true,
+          "installed_module": "site-packages/moira/__init__.py",
+          "native_backend_filename": "_moira_native.cp314-win_amd64.pyd",
+          "network_guard_active": true,
+          "resources": [
+            {
+              "label": "baseline_visibility",
+              "loader_kind": "visibility",
+              "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+              "model_id": "clear_sky_naked_eye_point_source_v1",
+              "pack_id": "moira-physical-heliacal-visibility",
+              "pack_version": "1.2.0"
+            }
+          ],
+          "version": "6.1.0"
+        },
+        "filename": "from-sdist-moira_astro-6.1.0-cp314-cp314-win_amd64.whl",
+        "inventory": {
+          "external_payload_embedded": false,
+          "member_count": 566,
+          "native_extensions": [
+            "moira/_moira_native.cp314-win_amd64.pyd"
+          ],
+          "packaged_identity_and_notice_files": [
+            "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1.json",
+            "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1_1.json",
+            "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1_2.json",
+            "moira/data/physical_heliacal_visibility_release_identity.json",
+            "moira/data/physical_heliacal_visibility_NOTICE.txt"
+          ]
+        },
+        "sha256": "25480cf000d9edd797547d3b3c04db3c521289dadd7abe7c38727b7dfe7b4f64"
+      },
+      "sha256": "ca33dd569d70b55f7187284ea134557d5c930b2546b24e13055bcfa770d239f9"
+    },
+    "wheel": {
+      "bytes": 4782483,
+      "clean_install": {
+        "assessment_callable": true,
+        "event_callable": true,
+        "installed_module": "site-packages/moira/__init__.py",
+        "native_backend_filename": "_moira_native.cp314-win_amd64.pyd",
+        "network_guard_active": true,
+        "resources": [
+          {
+            "label": "baseline_visibility",
+            "loader_kind": "visibility",
+            "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+            "model_id": "clear_sky_naked_eye_point_source_v1",
+            "pack_id": "moira-physical-heliacal-visibility",
+            "pack_version": "1.2.0"
+          }
+        ],
+        "version": "6.1.0"
+      },
+      "filename": "moira_astro-6.1.0-cp314-cp314-win_amd64.whl",
+      "inventory": {
+        "external_payload_embedded": false,
+        "member_count": 566,
+        "native_extensions": [
+          "moira/_moira_native.cp314-win_amd64.pyd"
+        ],
+        "packaged_identity_and_notice_files": [
+          "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1.json",
+          "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1_1.json",
+          "moira/data/physical_heliacal_visibility_data_pack_compatibility_v1_2.json",
+          "moira/data/physical_heliacal_visibility_release_identity.json",
+          "moira/data/physical_heliacal_visibility_NOTICE.txt"
+        ]
+      },
+      "sha256": "346beba8cc161a79ddd38497320356c052c8360b350d39eb56a554cee0cd59d7"
+    }
+  },
+  "environment": {
+    "implementation": "CPython",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.3"
+  },
+  "external_resources": {
+    "baseline_visibility": {
+      "archive": {
+        "bytes": 143595,
+        "file_count": 14,
+        "filename": "moira-physical-heliacal-visibility-1.2.0.tar.gz",
+        "normalization": {
+          "entry_order": "lexicographic_filename",
+          "file_mode": "0644",
+          "gid": 0,
+          "gzip_mtime": 0,
+          "tar_mtime": 0,
+          "uid": 0
+        },
+        "root_directory": "moira-physical-heliacal-visibility-1.2.0",
+        "sha256": "0d2c98d0717c45416ad0f8f3e0b72ca28d3975f4f6c8080112ceb2bef8327d71"
+      },
+      "pack": {
+        "license": "CC-BY-SA-4.0",
+        "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+        "pack_id": "moira-physical-heliacal-visibility",
+        "source_artifact_manifest_sha256": "6bb91212d1d54762af8276ea066b4c6d5f4df837d84a46057f57b35924bae12f",
+        "version": "1.2.0"
+      },
+      "runtime_boundary": {
+        "automatic_download_allowed": false,
+        "caller_or_server_supplied_directory_required": true,
+        "embedded_in_python_distribution": false
+      },
+      "schema": "moira.physical-visibility.data-pack-release-receipt/v1",
+      "status": "complete_deterministic_external_release_artifact"
+    }
+  },
+  "network_boundary": {
+    "build_isolation": false,
+    "moira_no_download": true,
+    "pip_no_dependencies": true,
+    "pip_no_index": true,
+    "socket_guard_during_installed_pack_load": true
+  },
+  "schema": "moira.physical-visibility.phase7-release-validation/v1",
+  "source": {
+    "git_revision": "c8cc2ac81cd693d1910a7d5c6b6813ea5bb10c54",
+    "source_file_count": 2128,
+    "source_fingerprint": "e79cc7c6a177dfcbef419d689dcbad3ee8f74842a8505661a2d9165a890a8f25"
+  },
+  "status": "all_phase7_release_artifact_gates_passed"
+}

@@ -1,5 +1,14 @@
 # Heliacal Closure Audit (2026-04-09)
 
+> **Archived pre-physical-model audit.** This Swiss-checklist snapshot remains
+> useful for the legacy subsystem history, but its frontier and completion
+> language is not current. Phase 7 physical truth is governed by
+> [Physical Heliacal-Visibility Validation and Admission](PHYSICAL_HELIACAL_VISIBILITY_VALIDATION_2026-08-05.md),
+> the generated
+> [capability matrix](PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md),
+> and the generated
+> [API inventory](PHYSICAL_HELIACAL_VISIBILITY_API_INVENTORY.generated.md).
+
 Purpose:
 - isolate the heliacal and generalized visibility frontier into its own audit
 - determine what is already covered by Moira's current heliacal subsystem

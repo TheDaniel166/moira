@@ -1,5 +1,10 @@
 # Physical Heliacal Visibility Phase 4 Jones MYSTIC Lower-Boundary Checkpoint
 
+> **Historical research only.** The proposed next gate in this checkpoint was
+> canceled by the 2026-08-07
+> [Jones/Paranal quarantine decision](PHYSICAL_HELIACAL_VISIBILITY_JONES_PARANAL_QUARANTINE_2026-08-07.md).
+> Nothing in this document is an active product or release dependency.
+
 Date: 2026-08-02
 Status: Jones 2,000 m lower-model-boundary gate closed; source-faithful profile
 selected for spectral research; spectral grid and runtime model not admitted

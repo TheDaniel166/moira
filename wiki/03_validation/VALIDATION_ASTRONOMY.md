@@ -62,6 +62,7 @@ several respects:
 | Topographic lunar-graze contact chronology | IOTA 2024 Spica reductions at two observing sites + official USGS LOLA RDR assets | Frozen fixtures + network source/STAC identity checks + DE441/LE441 solve | Externally characterized and regression-admitted (named two-site slice; no authority-supplied model tolerance) |
 | Sothic heliacal rising | Censorinus 139 AD historical record + latitude trend | `pytest` | Validated |
 | Generalized heliacal / visibility surfaces | Published modern planetary apparition windows; Censorinus 139 AD Sirius slice (delegated stellar corpus); Yallop 1997 lunar class law | `pytest` | Validated (implemented slice) |
+| Opt-in physical point-source assessment and event model | Primary equations; independent libRadtran holdouts; Tousey-Koomen comparison; exact DE441/pack event goldens; separated tolerances; native differential; clean offline wheel/sdist installs | `pytest` + Phase 7 artifact receipt | Validated inside the frozen clear-sky/data-pack/target domain at the local engine-release boundary |
 | Rise / set / transit times | JPL Horizons offline fixture; USNO published tables (supplemental) | `pytest` | Validated |
 | Delta T model divergence envelope | IERS measured table | Documented | Documented |
 
@@ -1005,6 +1006,40 @@ What Moira must not currently claim:
   validation
 
 **Status:** Validated (implemented slice)
+
+## 8.2 Opt-in Physical Point-Source Visibility
+
+**Surfaces:** `physical_visibility_assessment(...)`,
+`physical_visibility_event(...)`, and the two dedicated
+`/v1/visibility/physical-*` routes.
+
+This is a separately named model family, not an upgrade-in-place of the legacy
+section above. Its current admission, target/domain boundaries, evidence
+classes, tolerances, public inventory, external data-pack identity, and
+release-artifact gates are maintained in:
+
+- [Physical Heliacal-Visibility Validation and Admission](PHYSICAL_HELIACAL_VISIBILITY_VALIDATION_2026-08-05.md);
+- [generated physical capability matrix](PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md); and
+- [generated physical API inventory](PHYSICAL_HELIACAL_VISIBILITY_API_INVENTORY.generated.md).
+
+The exact external pack is version `1.2.0` with manifest SHA-256
+`cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c`.
+It is caller/server supplied, separately licensed, and never downloaded. The
+MIT Python artifacts contain only its compatibility contracts, release
+identity, and notice.
+
+The one-minute independent Jupiter/Sirius event oracles validate numerical
+geometry and event ownership within 60 seconds; they do not establish
+second-level human-observation truth. Source-solver, storage, interpolation,
+root, magnitude-envelope, and event-time sensitivity remain separate receipts.
+No aggregate accuracy or confidence score is claimed.
+
+The Jones/Paranal moonlight experiment is quarantined research. It is absent
+from the runtime, public contract, packaged resources, release gate, and active
+roadmap; its absence is not a hidden missing component.
+
+**Status:** Local Phase 7 engine-release gate closed inside the named domain;
+publication and deployment remain separate.
 
 ---
 
