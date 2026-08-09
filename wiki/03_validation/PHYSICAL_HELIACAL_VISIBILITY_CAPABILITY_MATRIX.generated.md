@@ -21,19 +21,19 @@
 
 ## Evidence registry
 
-Fingerprints bind each class to the exact current bytes of every listed source, test, fixture, artifact, or receipt. They are drift indicators, not accuracy scores.
+Fingerprints bind each class to the canonical LF-normalized UTF-8 content of every listed source, test, fixture, artifact, or receipt. They are drift indicators, not accuracy scores.
 
 | Evidence class | Role | Bound files | Fingerprint | Limitation |
 |---|---|---:|---|---|
-| `primary_source_equation_validation` | `scientific_admission` | 3 | `507ac0b873f58b9f` | Equation checks validate named components and source examples; they do not establish universal atmosphere or observer truth. |
-| `independent_libradtran_holdouts` | `scientific_admission` | 4 | `73e8923fa6c81d43` | Holdouts are independent of LUT fitting but remain within the frozen libRadtran scenario family. |
+| `primary_source_equation_validation` | `scientific_admission` | 3 | `11e022118455c163` | Equation checks validate named components and source examples; they do not establish universal atmosphere or observer truth. |
+| `independent_libradtran_holdouts` | `scientific_admission` | 4 | `af74b1da52bd1265` | Holdouts are independent of LUT fitting but remain within the frozen libRadtran scenario family. |
 | `modern_era_observational_comparison` | `bounded_observational_validation` | 2 | `8c110feaacdf67a6` | The Tousey-Koomen 1953 Table I comparison is a source-bounded modern-era twilight observation, not a contemporary multi-site campaign. |
-| `historical_event_corroboration` | `corroboration_only` | 3 | `6a2620b6d629d95e` | Historical and published-window cases govern only legacy bounded-window claims; they are not exact physical-model event oracles. |
-| `property_and_invariant_testing` | `computational_assurance` | 4 | `b3d323ab94a89890` | Invariants prove contract and numerical behavior, not observational accuracy. |
-| `legacy_regression_fixtures` | `compatibility_assurance` | 4 | `28ef4594a7ad0163` | Regression fixtures freeze compatibility; snapshots are not scientific authority. |
-| `public_contract_and_openapi_parity` | `transport_assurance` | 3 | `00fec94a720e2bf6` | Transport parity proves that typed engine truth survives projection; it does not validate the underlying science. |
-| `external_ephemeris_event_goldens` | `astronomical_and_event_contract_validation` | 3 | `4cd7079ebd2f1978` | The goldens bind geometry, event ownership, and exact pack identity; they are not observed first-visibility dates. |
-| `separated_numerical_tolerances` | `numerical_admission` | 5 | `6bd754a07dade187` | Solver, storage, interpolation, root, and scenario sensitivity remain separate; there is no aggregate accuracy score. |
+| `historical_event_corroboration` | `corroboration_only` | 3 | `27e95868627f7840` | Historical and published-window cases govern only legacy bounded-window claims; they are not exact physical-model event oracles. |
+| `property_and_invariant_testing` | `computational_assurance` | 4 | `c8134dd842e7066d` | Invariants prove contract and numerical behavior, not observational accuracy. |
+| `legacy_regression_fixtures` | `compatibility_assurance` | 4 | `5e4f9608022411d7` | Regression fixtures freeze compatibility; snapshots are not scientific authority. |
+| `public_contract_and_openapi_parity` | `transport_assurance` | 3 | `49886c5922b89944` | Transport parity proves that typed engine truth survives projection; it does not validate the underlying science. |
+| `external_ephemeris_event_goldens` | `astronomical_and_event_contract_validation` | 3 | `51807cff0e0c5bf5` | The goldens bind geometry, event ownership, and exact pack identity; they are not observed first-visibility dates. |
+| `separated_numerical_tolerances` | `numerical_admission` | 5 | `4cd707610d3eb87d` | Solver, storage, interpolation, root, and scenario sensitivity remain separate; there is no aggregate accuracy score. |
 | `native_python_differential` | `implementation_admission` | 3 | `748eaff30dec6e3c` | Differential evidence admits two private numerical kernels only; it is not independent scientific validation. |
 | `release_artifact_and_offline_install` | `release_assurance` | 4 | `87384a17e89ce9ca` | A local clean-artifact receipt proves the tested artifacts; publication and downstream deployment are separate release operations. |
 | `experimental_site_specific_moonlight_quarantine` | `quarantined_research_boundary` | 2 | `2c73e622ce949db8` | The Jones/Paranal experiment is archived research only. It has no runtime module, public API, compatibility contract, packaged resource, release gate, or active roadmap dependency. |

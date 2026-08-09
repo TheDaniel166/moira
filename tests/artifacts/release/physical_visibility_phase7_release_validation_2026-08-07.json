@@ -10,7 +10,7 @@
   },
   "distributions": {
     "sdist": {
-      "bytes": 4237722,
+      "bytes": 4237577,
       "filename": "moira_astro-6.1.0.tar.gz",
       "inventory": {
         "external_payload_embedded": false,
@@ -59,12 +59,12 @@
             "moira/data/physical_heliacal_visibility_NOTICE.txt"
           ]
         },
-        "sha256": "25480cf000d9edd797547d3b3c04db3c521289dadd7abe7c38727b7dfe7b4f64"
+        "sha256": "9e92e3eff5a16f57255eb1886385190322223e42517e86dab8e35469a73dc715"
       },
-      "sha256": "ca33dd569d70b55f7187284ea134557d5c930b2546b24e13055bcfa770d239f9"
+      "sha256": "c59cf85204522ae7ff15847145c1bce094e8c8fb7876223b1d9f6210d6733e45"
     },
     "wheel": {
-      "bytes": 4782483,
+      "bytes": 4782459,
       "clean_install": {
         "assessment_callable": true,
         "event_callable": true,
@@ -98,7 +98,7 @@
           "moira/data/physical_heliacal_visibility_NOTICE.txt"
         ]
       },
-      "sha256": "346beba8cc161a79ddd38497320356c052c8360b350d39eb56a554cee0cd59d7"
+      "sha256": "4a893204fbc6fc55ace0f4e7c09fcb9ef60369110d93c7da4e627eb86b6cd836"
     }
   },
   "environment": {
@@ -148,9 +148,9 @@
   },
   "schema": "moira.physical-visibility.phase7-release-validation/v1",
   "source": {
-    "git_revision": "c8cc2ac81cd693d1910a7d5c6b6813ea5bb10c54",
+    "git_revision": "29a33988bbcc0eba8f9f096663bb426743c11245",
     "source_file_count": 2128,
-    "source_fingerprint": "e79cc7c6a177dfcbef419d689dcbad3ee8f74842a8505661a2d9165a890a8f25"
+    "source_fingerprint": "d8b01e6856a6afb1d6ab281dbe53a8428ed5ea19ff68f21c3ae59c70f4056c56"
   },
   "status": "all_phase7_release_artifact_gates_passed"
 }

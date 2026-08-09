@@ -118,8 +118,18 @@ class RuntimeInventory:
     evidence: tuple[EvidenceClass, ...]
 
 
-def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _canonical_text_bytes(path: Path) -> bytes:
+    try:
+        text = path.read_bytes().decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise PhysicalVisibilityInventoryError(
+            f"evidence path is not UTF-8 text: {path}"
+        ) from exc
+    return text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
+def _canonical_text_sha256(path: Path) -> str:
+    return hashlib.sha256(_canonical_text_bytes(path)).hexdigest()
 
 
 def _combined_fingerprint(paths: Sequence[str]) -> str:
@@ -132,7 +142,7 @@ def _combined_fingerprint(paths: Sequence[str]) -> str:
             )
         digest.update(raw.encode("utf-8"))
         digest.update(b"\0")
-        digest.update(_sha256(path).encode("ascii"))
+        digest.update(_canonical_text_sha256(path).encode("ascii"))
         digest.update(b"\n")
     return digest.hexdigest()
 
@@ -426,9 +436,9 @@ def render_capability_matrix(inventory: RuntimeInventory) -> str:
             "",
             "## Evidence registry",
             "",
-            "Fingerprints bind each class to the exact current bytes of every "
-            "listed source, test, fixture, artifact, or receipt. They are drift "
-            "indicators, not accuracy scores.",
+            "Fingerprints bind each class to the canonical LF-normalized UTF-8 "
+            "content of every listed source, test, fixture, artifact, or receipt. "
+            "They are drift indicators, not accuracy scores.",
             "",
             *_evidence_table(inventory),
             "",
@@ -547,7 +557,7 @@ def _write_or_check(check: bool) -> int:
     for path, rendered in render_documents().items():
         expected = rendered.encode("utf-8")
         if check:
-            if not path.is_file() or path.read_bytes() != expected:
+            if not path.is_file() or _canonical_text_bytes(path) != expected:
                 failures.append(path.relative_to(REPO_ROOT).as_posix())
         else:
             path.parent.mkdir(parents=True, exist_ok=True)

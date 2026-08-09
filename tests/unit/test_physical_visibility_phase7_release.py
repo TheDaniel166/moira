@@ -90,7 +90,41 @@ def test_generated_phase7_inventories_match_runtime_truth() -> None:
     assert all(all(row[1:]) for row in runtime.public_surfaces)
 
 
-def test_every_phase7_evidence_class_binds_existing_current_bytes() -> None:
+def test_inventory_fingerprints_are_checkout_line_ending_stable(
+    tmp_path: Path,
+) -> None:
+    lf = tmp_path / "lf.txt"
+    crlf = tmp_path / "crlf.txt"
+    cr = tmp_path / "cr.txt"
+    lf.write_bytes(b"alpha\nbeta\n")
+    crlf.write_bytes(b"alpha\r\nbeta\r\n")
+    cr.write_bytes(b"alpha\rbeta\r")
+
+    expected = b"alpha\nbeta\n"
+    assert inventory._canonical_text_bytes(lf) == expected
+    assert inventory._canonical_text_bytes(crlf) == expected
+    assert inventory._canonical_text_bytes(cr) == expected
+    assert len(
+        {
+            inventory._canonical_text_sha256(lf),
+            inventory._canonical_text_sha256(crlf),
+            inventory._canonical_text_sha256(cr),
+        }
+    ) == 1
+
+
+def test_inventory_fingerprints_reject_non_utf8_evidence(tmp_path: Path) -> None:
+    path = tmp_path / "binary.dat"
+    path.write_bytes(b"\xff\x00")
+
+    with pytest.raises(
+        inventory.PhysicalVisibilityInventoryError,
+        match="not UTF-8 text",
+    ):
+        inventory._canonical_text_bytes(path)
+
+
+def test_every_phase7_evidence_class_binds_existing_canonical_content() -> None:
     runtime = inventory.collect_inventory()
     identifiers = {row.identifier for row in runtime.evidence}
     assert {
