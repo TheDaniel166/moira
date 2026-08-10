@@ -159,12 +159,14 @@ research, archived diagnostics, or validation tooling when the task justifies
 them; never admit them to published engine code or present them as primary
 authority.
 
-`requirements.txt` and `requirements-dev.txt` currently conflict with
-`pyproject.toml` and are not packaging authority. Do not use their contents to
-justify a runtime import. The conditional `jplephem` probe still present in
-`moira/spk_reader.py` exposes optional parity-test state, but `_open_kernel()`
-is native-only; the probe is existing governance debt, not permission to add
-the package, call it from runtime, or restore a fallback.
+`pyproject.toml` is the sole dependency authority. Do not introduce parallel
+`requirements*.txt` manifests that duplicate or redefine its dependency
+declarations. A reproducibility artifact requires an explicit generating tool,
+declared source, refresh policy, and clear constraints-versus-lock semantics;
+it does not become runtime authority. The conditional `jplephem` probe still
+present in `moira/spk_reader.py` exposes optional parity-test state, but
+`_open_kernel()` is native-only; the probe is existing governance debt, not
+permission to add the package, call it from runtime, or restore a fallback.
 
 No lockfile or constraints file governs this checkout. If a task appears to
 require a forbidden base-runtime dependency, stop and report the conflict. Do
