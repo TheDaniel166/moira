@@ -2,11 +2,15 @@
 
 **Document:** `wiki/07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md`
 **Audit date:** 2026-08-09
-**Last amended:** 2026-08-11 — Track A admission
+**Last amended:** 2026-08-11 — Track B bounded implementation checkpoint
 
 **Original repository baseline:** `c868fd082ceabda16793e1c3d6c26218ad8d83b6` (`origin/main` at the original audit)
 
 **Track A admission baseline:** `7090255e2d6cc41f7b4df15417512412f0ad5366`
+
+**Track B checkpoint:** branch `codex/track-b-western-research-20260811`
+from baseline `24e90f9fa4cdbe9692d6f70469df7863f4b15d36`; the admission commit
+containing this amendment is unreleased and undeployed
 
 **Scope:** Moira calculation engine, facade, registered server contracts, tests, standards, and doctrine records
 **Change type:** Capability assessment amended to record an admitted implementation; this document does not authorize another implementation, release, website work, or Workspace adoption
@@ -21,16 +25,18 @@ Hellenistic composition, Jyotish, relationship charts, spatial techniques,
 fixed stars, eclipses, harmonics, Uranian methods, and several historical
 specialties.
 
-The meaningful frontier is now concentrated in four areas:
+On the Track B checkpoint, the two previously largest Western gaps now have
+bounded, calculation-only contracts. The remaining strategic frontier is
+concentrated in:
 
-1. **Horary/interrogational astrology** as the largest coherent Western domain
-   that is not represented by a first-class engine.
-2. **Mundane astrology** as a new composition layer over Moira's existing
-   ingress, lunation, eclipse, great-conjunction, and cartographic truth.
-3. **Birth-time rectification evidence** as a candidate-comparison instrument,
+1. **Birth-time rectification evidence** as a candidate-comparison instrument,
    not an automatic claim that one time is astrologically true.
-4. **Western annual revolutions** as a source-locked medieval/Arabic tradition
+2. **Western annual revolutions** as a source-locked medieval/Arabic tradition
    distinct from generic return calculation and Jyotish Tajika/Varshaphal.
+3. **Separately sourced Horary follow-ons** beyond the admitted Lilly evidence
+   contract, without turning evidence into an answer oracle.
+4. **Separately sourced Mundane subjects or interpretations**, only where a
+   finite doctrine and credible validation method can be established.
 
 Track A has now admitted exact transits to composite and Davison charts,
 fixed-star astrocartography, relocated-return composition, and explicit-epoch
@@ -38,6 +44,15 @@ transiting astrocartography. Progressed or directed relationship charts,
 progressed or directed locational modes, cross-chart multi-body patterns, and
 chart-backed comet MC/IC/ASC/DSC lines remain bounded follow-on gaps rather than
 evidence that the admitted Track A contracts are incomplete.
+
+Track B now admits one Lilly 1647 Horary evidence profile and one neutral
+Mundane event-chart profile spanning cardinal ingresses, strictly preceding
+primary syzygies, explicitly named eclipse epochs, and complete
+Jupiter-Saturn ecliptic-longitude conjunction sequences. Both have curated
+root/facade parity, reader-bound `Moira` methods, and one strict REST route.
+Neither contract interprets, predicts, scores, advises, infers a topic or
+capital, or creates a shared judgement layer. This is an engine admission
+checkpoint, not a package release, website adoption, or deployment.
 
 KP astrology, selected deferred Jyotish branches, Chinese and Tibetan systems,
 and historical astrological magic remain possible longer-horizon programmes.
@@ -183,13 +198,13 @@ decision to reopen it. It must never happen through roadmap wording alone.
 
 ---
 
-## 5. Confirmed frontier gaps and bounded Track A closures
+## 5. Confirmed frontier gaps and bounded closures
 
 ### 5.1 Horary/interrogational astrology
 
-**Status:** Absent
-**Strategic value:** Highest coherent Western gap
-**Likely scope:** Large and doctrine-heavy
+**Status:** Bounded Track B evidence contract admitted at the branch checkpoint
+**Strategic value:** Follow-on only under a separately sourced finite policy
+**Likely scope:** Large and doctrine-heavy beyond the admitted Lilly profile
 
 **Existing substrate**
 
@@ -202,30 +217,44 @@ decision to reopen it. It must never happen through roadmap wording alone.
 - a source-conscious Western electional architecture that demonstrates how a
   named traditional policy can be kept separate from generic search.
 
-**What is missing**
+**Admitted Track B contract**
 
-- a dedicated `moira.horary` subsystem;
-- explicit chart-radicality and consideration policies;
-- question-topic and significator assignment;
-- querent/quesited identity, turned-house context, and dispositor chains owned
-  by the question;
-- collection, translation, prohibition, frustration, refranation, transfer,
-  and perfection composition under named source policies;
-- typed evidence that separates calculation from judgement;
-- source-owned validation fixtures and adversarial ambiguity cases.
+- `moira.horary` owns immutable question-time, house-policy, turned-house,
+  significator, planetary-hour, consideration, sect, perfection, and provenance
+  evidence;
+- the high-level adapter computes strict no-fallback houses, the traditional
+  seven positions, and planetary-hour truth on one explicit reader;
+- same-planet, Lilly day/night triplicity, and same-nature hour-agreement paths
+  are source-locked to the 1647 edition;
+- the existing six-form Lilly perfection engine is composed and semantically
+  revalidated instead of duplicated;
+- missing or incompatible dependencies remain typed `not_evaluable`;
+- five curated root/facade symbols, a reader-bound `Moira` method, and one
+  strict Horary REST route preserve the same evidence policy.
 
-**Admission gate**
+**Still outside the contract**
 
-Do not begin by coding a universal judgement engine. First identify a bounded
-lineage and edition, enumerate its rules, list contradictions, and decide which
-claims can be calculated without interpretive invention. A first public contract
-should expose significators and perfection evidence, not a yes/no oracle.
+- topic inference from free text, yes/no answers, outcome or timing prose,
+  scores, confidence, advice, and recommendations;
+- automatic rejection merely because one consideration or hour agreement does
+  not support radicality;
+- a universal cross-author Horary doctrine or generic shared judgement layer;
+- unsourced horary-tagged lots, descriptive person matching, and unresolved
+  historical clock/calendar reconstructions; and
+- medical, legal, financial, or other professional advice.
+
+**Follow-on gate**
+
+Any additional Horary doctrine requires its own identified lineage, edition,
+finite evidence contract, ambiguity ledger, and worked validation fixture. It
+must compose the admitted atomic truth without turning the engine into an
+answer oracle.
 
 ### 5.2 Mundane astrology
 
-**Status:** Partial substrate; no first-class mundane profile
-**Strategic value:** Highest-value new composition domain
-**Likely scope:** Medium for a neutral v1; large for historical judgement
+**Status:** Neutral Track B event-chart profile admitted at the branch checkpoint
+**Strategic value:** Follow-on only for separately sourced subjects or doctrine
+**Likely scope:** Large beyond neutral astronomical event/chart composition
 
 **Existing substrate**
 
@@ -237,23 +266,37 @@ should expose significators and perfection evidence, not a yes/no oracle.
 - eclipse-to-natal target matching that can be generalized only if the target
   identity remains explicit.
 
-**What is missing**
+**Admitted Track B contract**
 
-- named Aries/Libra/Cancer/Capricorn ingress chart objects;
-- lunation and eclipse chart composition for a specified capital or location;
-- typed mundane event subjects such as polity, organization, office, or event;
-- a source-owned policy for which chart, location, and preceding lunation govern
-  a requested period;
-- great-conjunction, ingress, lunation, and eclipse receipts in one neutral
-  `MundaneChartProfile`;
-- explicit separation between astronomical event truth and historical mundane
-  interpretation.
+- four cardinal-ingress roots and the separately named Ramesey 4/2/1 cadence;
+- both primary-syzygy candidates plus the nearest strictly preceding selector;
+- solar/lunar eclipse receipts that keep greatest eclipse, conjunctions, and
+  contacts separately named;
+- complete Jupiter-Saturn ecliptic-longitude conjunction sequences with every
+  root retained;
+- content-derived active-reader identity, coverage, explicit event clocks, and
+  fail-closed product/frame/search revalidation;
+- explicit caller-owned location role, source, validity interval, coordinates,
+  house system, and local projection state;
+- seven curated root/facade symbols, four reader-bound `Moira` methods, and one
+  strict four-way-discriminated Mundane REST route.
 
-**Admission gate**
+**Still outside the contract**
 
-A credible v1 should calculate and compose event charts only. Political,
-economic, disaster, weather, or conflict predictions must remain outside the
-engine unless separately admitted with evidence appropriate to those claims.
+- automatic capital or geopolitical subject selection;
+- polity, organization, office, national-nativity, country-sign, or mundane
+  subject identity doctrine;
+- political, economic, market, conflict, disaster, agricultural, fertility,
+  or weather interpretation and prediction;
+- conjunction cluster/mutation-cycle claims, automatic event ranking, and
+  synthetic scores; and
+- any shared Horary/Mundane judgement layer.
+
+**Follow-on gate**
+
+Any subject or interpretive branch requires a separately source-locked finite
+contract and evidence appropriate to the claim. The admitted neutral global
+event and local-chart receipts must remain independently visible.
 
 ### 5.3 Predictive relationship charts
 
@@ -507,13 +550,15 @@ authorized and independently validated follow-on.
 
 ### Track B — flagship new Western research
 
-1. Horary source and ambiguity dossier.
-2. Horary significator/perfection evidence contract.
-3. Mundane source and chart-selection dossier.
-4. Neutral mundane event-chart profile.
+1. Horary source and ambiguity dossier — admitted.
+2. Horary significator/perfection evidence contract — admitted.
+3. Mundane source and chart-selection dossier — admitted.
+4. Neutral mundane event-chart profile — admitted.
 
 Horary and mundane must not share a generic judgement layer merely because
-they reuse houses and aspects.
+they reuse houses and aspects. The Track B checkpoint preserves that boundary
+through separate modules, policies, receipts, facade methods, serializers, and
+REST routes.
 
 ### Track C — predictive research instruments
 
@@ -563,13 +608,16 @@ checked:
 ## 11. Recommended next decision
 
 Do not begin another broad multi-phase implementation from this document.
-Choose one of the following explicit objectives:
+After Track B receives a separately authorized durable commit/release decision,
+choose one of the following explicit objectives:
 
-- **largest missing Western domain:** horary research gate;
-- **most distinctive Moira-native domain:** neutral mundane chart composition;
 - **highest-value research instrument:** rectification evidence matrix;
+- **largest remaining Western doctrine gap:** source-locked Western annual
+  revolutions distinct from generic returns and Jyotish Varshaphal;
 - **bounded advanced-forecasting follow-on:** one separately scoped progressed,
   directed, cross-chart-pattern, or chart-backed comet-line contract;
+- **bounded Horary or Mundane follow-on:** one independently sourced evidence
+  policy without judgement, prediction, or automatic subject inference;
 - **largest greenfield tradition:** Chinese 28-Xiu feasibility before any full
   Chinese astrology programme.
 
@@ -584,6 +632,8 @@ condition. This audit remains a map, not permission to implement every row.
 |---|---|---|---|
 | Track A relationship forecasting | `7090255e2d6cc41f7b4df15417512412f0ad5366` | Exact transits to immutable composite and Davison planet, node, angle, and cusp targets | Progressed/directed relationship charts, orb windows, cross-chart multi-body patterns, interpretation |
 | Track A locational forecasting | `7090255e2d6cc41f7b4df15417512412f0ad5366` | Fixed-star lines and points, relocated returns, and explicit-epoch transiting astrocartography | Progressed/directed locational modes, chart-backed comet MC/IC/ASC/DSC lines, interpolation, rankings, interpretation |
+| Track B Horary evidence | Admission commit containing this amendment on `codex/track-b-western-research-20260811` | Lilly 1647 question/house/significator/hour/consideration/sect/perfection evidence; curated Python parity; one strict REST route | Topic inference, answer/outcome/timing prose, scores, advice, cross-author judgement, professional advice |
+| Track B neutral Mundane profile | Admission commit containing this amendment on `codex/track-b-western-research-20260811` | Cardinal ingress, preceding syzygy, named eclipse epoch, complete Jupiter-Saturn root, explicit-location local-chart evidence; curated Python parity; one strict REST route | Automatic capitals/subjects, country-sign doctrine, clustering, prediction, interpretation, scores, advice |
 
 The admission receipt identifies the bounded engine contract. This ledger does
 not claim a package publication, website or Workspace adoption, or deployment.

@@ -1068,6 +1068,22 @@ from .western_electional import (
     WesternElectionalProfileScan,
     scan_western_electional_profile,
 )
+from .horary import (
+    HoraryQuestionTimeBasis,
+    HorarySourceCalendar,
+    HoraryEvidenceProfile,
+    LILLY_1647_HORARY_V1,
+    horary_evidence_at,
+)
+from .mundane import (
+    MundaneEvaluationStatus,
+    MundaneEventType,
+    MundaneEventChartProfile,
+    MundaneProfileProvenance,
+    compose_mundane_event_chart_profile,
+    eclipse_receipt_from_event,
+    jupiter_saturn_sequence_from_series,
+)
 
 __all__ = [
     "__version__",
@@ -1932,6 +1948,18 @@ __all__ = [
     "LILLY_1647_PERFECTION_V1",
     "classify_lilly_perfection_events",
     "lilly_perfection_at",
+    "HoraryQuestionTimeBasis",
+    "HorarySourceCalendar",
+    "HoraryEvidenceProfile",
+    "LILLY_1647_HORARY_V1",
+    "horary_evidence_at",
+    "MundaneEvaluationStatus",
+    "MundaneEventType",
+    "MundaneEventChartProfile",
+    "MundaneProfileProvenance",
+    "compose_mundane_event_chart_profile",
+    "eclipse_receipt_from_event",
+    "jupiter_saturn_sequence_from_series",
     "WesternElectionalJudgementDoctrine",
     "WesternElectionalJudgementState",
     "WesternElectionalComponentState",

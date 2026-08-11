@@ -83,6 +83,8 @@ from .dasha import (
     serialize_dasha_sequence_profile,
 )
 from .hellenistic_profile import serialize_hellenistic_chart_profile
+from .horary import serialize_horary_evidence_profile
+from .mundane import serialize_mundane_event_chart_profile
 from .decans import (
     serialize_decanate_chart_position,
     serialize_decanate_chart_set,
@@ -549,6 +551,8 @@ __all__ = [
     "serialize_source_locator",
     "serialize_graha_yuddha",
     "serialize_hellenistic_chart_profile",
+    "serialize_horary_evidence_profile",
+    "serialize_mundane_event_chart_profile",
     "serialize_kala_bala",
     "serialize_planet_shadbala",
     "serialize_shadbala_chart_profile",

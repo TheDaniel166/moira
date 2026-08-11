@@ -31,27 +31,27 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "73b01b9880e3825ed60faa06de10a683da12116f93879352aa403ce95a56c438"
+      "source_sha256": "1784027d83b7b4d8f578dff3b5fa0653b7ec4d570fa21238ec7902ba13d6ac5e"
     },
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "2a6794dcbd14c86921c99f97b8a2a5850747827157d3d1ebc5c6ce5c6a4b72b5"
+      "source_sha256": "7d0aa4d87d980aff18f81188c3703b144ebacb8ee0f4140265bea7a42a5c3c21"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "fd6964e9ee33c25319f1147b779296ba66a3041345e2770307c92152ee3b3c59"
+      "source_sha256": "87e66db9b7e6138a67f8a996b3f5ca9632ceb7b5d0b9988c41834c3c7e9de782"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "40d48114fae329916221580eaf925d544952e92e9064bdba657be1e1ef7c73c8"
+      "source_sha256": "2cdc820048ebae9e25c9e2133b93a8d67148089fd0f9c361a927293156b9ea8f"
     },
     {
       "id": "rest_router_registration",
       "source": "moira_server/app.py",
-      "source_sha256": "9fa9787546cf29ae27e202ed1d850bf978d19e1dfdb5337b54640a257d6e7390"
+      "source_sha256": "9318eb64898961981a1ea4fc300f6b982eb03bd48f59edadb9463a24b15c5e73"
     },
     {
       "id": "planetary_reduction",
@@ -133,7 +133,7 @@
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "2a6794dcbd14c86921c99f97b8a2a5850747827157d3d1ebc5c6ce5c6a4b72b5",
+      "source_sha256": "7d0aa4d87d980aff18f81188c3703b144ebacb8ee0f4140265bea7a42a5c3c21",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -393,6 +393,9 @@
         "HellenisticProfileStatus",
         "HellenisticSuperiorityTruth",
         "HellenisticZodiacalReleasingSnapshot",
+        "HoraryEvidenceProfile",
+        "HoraryQuestionTimeBasis",
+        "HorarySourceCalendar",
         "HorizonComputationMethod",
         "HorizonHemisphere",
         "HorizonTruth",
@@ -424,6 +427,7 @@
         "Karakamsa",
         "KaranaType",
         "KeplerianElements",
+        "LILLY_1647_HORARY_V1",
         "LILLY_1647_PERFECTION_V1",
         "LUNAR_ECLIPTIC_DIRECTION_V1",
         "LajjitadiAvasthas",
@@ -478,6 +482,10 @@
         "MuhurtaClassification",
         "MuhurtaPolicy",
         "MuhurtaScore",
+        "MundaneEvaluationStatus",
+        "MundaneEventChartProfile",
+        "MundaneEventType",
+        "MundaneProfileProvenance",
         "MutualReceptionPolicy",
         "MutualReceptionTruth",
         "NAISARGIKA_BALA",
@@ -904,6 +912,7 @@
         "classify_muhurta",
         "comet_at",
         "compare_dispositorship",
+        "compose_mundane_event_chart_profile",
         "dated_aspect_from_major_relation",
         "datetime_from_jd",
         "decennial_sequence_truth",
@@ -924,6 +933,7 @@
         "dorotheus_moon_condition_at",
         "dorotheus_rooted_context_at",
         "drig_bala",
+        "eclipse_receipt_from_event",
         "evaluate_accessory_progressed_relation",
         "evaluate_avasthas",
         "evaluate_dorotheus_construction",
@@ -958,6 +968,7 @@
         "hellenistic_chart_profile",
         "hellenistic_superiority_truth",
         "hora_lord_at",
+        "horary_evidence_at",
         "integrate_progressed_influence",
         "intensity_function_spectrum",
         "is_besieged",
@@ -973,6 +984,7 @@
         "jaimini_karakas",
         "jd_from_datetime",
         "julian_day",
+        "jupiter_saturn_sequence_from_series",
         "kakshya_transit",
         "kala_bala",
         "kalavela_upagrahas",
@@ -2345,7 +2357,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "fd6964e9ee33c25319f1147b779296ba66a3041345e2770307c92152ee3b3c59",
+      "source_sha256": "87e66db9b7e6138a67f8a996b3f5ca9632ceb7b5d0b9988c41834c3c7e9de782",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -2748,6 +2760,9 @@
         "HellenisticProfileStatus",
         "HellenisticSuperiorityTruth",
         "HellenisticZodiacalReleasingSnapshot",
+        "HoraryEvidenceProfile",
+        "HoraryQuestionTimeBasis",
+        "HorarySourceCalendar",
         "HorizonComputationMethod",
         "HorizonCrossingAvailability",
         "HorizonCrossingState",
@@ -2800,6 +2815,7 @@
         "Karakamsa",
         "KaranaType",
         "KeplerianElements",
+        "LILLY_1647_HORARY_V1",
         "LILLY_1647_PERFECTION_V1",
         "LUNAR_ECLIPTIC_DIRECTION_V1",
         "LajjitadiAvasthas",
@@ -2903,6 +2919,10 @@
         "MuhurtaScore",
         "MultiType",
         "MultipleStarSystem",
+        "MundaneEvaluationStatus",
+        "MundaneEventChartProfile",
+        "MundaneEventType",
+        "MundaneProfileProvenance",
         "MunthaConditionProfile",
         "MutationPeriod",
         "MutualHouseOverlay",
@@ -3639,6 +3659,7 @@
         "compare_placements",
         "compare_systems",
         "components_at",
+        "compose_mundane_event_chart_profile",
         "composite_chart",
         "composite_chart_reference_place",
         "composite_harmonic",
@@ -3720,6 +3741,7 @@
         "duodenary_progression",
         "dwadashamsa",
         "dynamic_intensity",
+        "eclipse_receipt_from_event",
         "ecliptic_to_equatorial",
         "ecliptic_to_galactic",
         "egyptian_civil_date",
@@ -3835,6 +3857,7 @@
         "hellenistic_chart_profile",
         "hellenistic_superiority_truth",
         "hora_lord_at",
+        "horary_evidence_at",
         "horizon_crossing_availability",
         "horizontal_to_equatorial",
         "house_frame_condition_profile",
@@ -3866,6 +3889,7 @@
         "jaimini_karakas",
         "jd_from_datetime",
         "julian_day",
+        "jupiter_saturn_sequence_from_series",
         "kakshya_transit",
         "kala_bala",
         "kalavela_upagrahas",
@@ -4545,8 +4569,8 @@
       "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.1.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "73b01b9880e3825ed60faa06de10a683da12116f93879352aa403ce95a56c438",
-      "source_bytes": 308371,
+      "source_sha256": "1784027d83b7b4d8f578dff3b5fa0653b7ec4d570fa21238ec7902ba13d6ac5e",
+      "source_bytes": 313843,
       "last_verified": "2026-08-11",
       "prerender": true,
       "markdown": true,
@@ -4707,8 +4731,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "40d48114fae329916221580eaf925d544952e92e9064bdba657be1e1ef7c73c8",
-      "source_bytes": 209745,
+      "source_sha256": "2cdc820048ebae9e25c9e2133b93a8d67148089fd0f9c361a927293156b9ea8f",
+      "source_bytes": 213111,
       "last_verified": "2026-08-11",
       "prerender": true,
       "markdown": true,
@@ -5307,5 +5331,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "8efefe3df8c2c8424175b66ddc7c7e93c368c1763e441986ec5e3da1e09937ae"
+  "manifest_sha256": "638c80a6bca2d0fbf7f3542888bf2e4bdcb75443d59eacb86e328b849bd4ed2a"
 }

@@ -58,7 +58,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
     "scope": "class",
     "id": "moira._facade_classical.ClassicalFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["lots", "evaluate_lots", "hellenistic_chart_profile", "dignities", "solar_proximity_truth", "planetary_solar_phase_truth", "besieging_truth", "mutual_receptions", "astrodynes", "astrodynes_from_geometry", "normal_progressed_astrodynes", "practical_progressed_astrodynes", "progressed_astrodynes_geometry", "progressed_astrodynes_chart", "progressed_astrodyne_dated_aspect", "progressed_astrodyne_major_relation", "progressed_astrodyne_accessory_relation", "progressed_astrodyne_reenforcement", "progressed_astrodyne_total_influence", "progressed_astrodyne_compound_total_influence", "midpoints", "midpoints_to_point", "harmonic", "harmonic_transit_forecast", "profection", "profection_activation_truth", "firdaria", "decennials", "decennial_sequence_truth", "current_decennials", "zodiacal_releasing", "zr_fortune_angularity_truth", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
+    "api": {"frozen": ["lots", "evaluate_lots", "hellenistic_chart_profile", "horary_evidence_at", "dignities", "solar_proximity_truth", "planetary_solar_phase_truth", "besieging_truth", "mutual_receptions", "astrodynes", "astrodynes_from_geometry", "normal_progressed_astrodynes", "practical_progressed_astrodynes", "progressed_astrodynes_geometry", "progressed_astrodynes_chart", "progressed_astrodyne_dated_aspect", "progressed_astrodyne_major_relation", "progressed_astrodyne_accessory_relation", "progressed_astrodyne_reenforcement", "progressed_astrodyne_total_influence", "progressed_astrodyne_compound_total_influence", "midpoints", "midpoints_to_point", "harmonic", "harmonic_transit_forecast", "profection", "profection_activation_truth", "firdaria", "decennials", "decennial_sequence_truth", "current_decennials", "zodiacal_releasing", "zr_fortune_angularity_truth", "vimshottari_dasha", "almuten_of_degree", "almuten_figuris", "huber_house_zones", "huber_age_point", "huber_age_point_contacts", "huber_dynamic_intensity", "huber_intensity_at", "huber_chart_intensity_profile", "nine_parts"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -233,6 +233,22 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
             engine_version=facade.__version__,
             kernel_id=kernel_id,
             kernel_coverage=kernel_coverage,
+        )
+
+    def horary_evidence_at(
+        self,
+        question,
+        *,
+        house_policy,
+        perfection_jd_end=None,
+    ):
+        """Compute one source-bounded Horary evidence profile."""
+
+        return _facade_module().horary_evidence_at(
+            question,
+            house_policy=house_policy,
+            perfection_jd_end=perfection_jd_end,
+            reader=self._reader,
         )
 
     def dignities(self, chart, houses, *, policy=None):

@@ -63,7 +63,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
     "scope": "class",
     "id": "moira._facade_predictive.PredictiveFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["progression", "transits", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "mudda_dasha", "lunar_return", "station", "planetary_hours"], "internal": []},
+    "api": {"frozen": ["progression", "transits", "assess_transit_cardinal_ingress", "assess_transit_primary_syzygy", "eclipse_receipt_from_event", "jupiter_saturn_sequence_from_series", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "mudda_dasha", "lunar_return", "station", "planetary_hours"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -521,6 +521,40 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         """Find all sign ingresses for a body in a date range."""
         return _facade_module().find_ingresses(
             body, jd_start, jd_end, reader=self._reader
+        )
+
+    def assess_transit_cardinal_ingress(self, event):
+        """Revalidate one transit ingress as neutral Mundane event evidence."""
+
+        return _facade_module().assess_transit_cardinal_ingress(
+            event,
+            reader=self._reader,
+        )
+
+    def assess_transit_primary_syzygy(self, anchor_event, *, policy=None):
+        """Solve and bind the primary syzygy preceding one ingress receipt."""
+
+        return _facade_module().assess_transit_primary_syzygy(
+            anchor_event,
+            reader=self._reader,
+            policy=policy,
+        )
+
+    def eclipse_receipt_from_event(self, event, *, eclipse_id):
+        """Revalidate one eclipse event with an explicit public identity."""
+
+        return _facade_module().eclipse_receipt_from_event(
+            event,
+            eclipse_id=eclipse_id,
+            reader=self._reader,
+        )
+
+    def jupiter_saturn_sequence_from_series(self, series):
+        """Revalidate one Jupiter-Saturn series as neutral event receipts."""
+
+        return _facade_module().jupiter_saturn_sequence_from_series(
+            series,
+            reader=self._reader,
         )
 
     def next_ingress(

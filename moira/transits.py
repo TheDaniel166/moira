@@ -2325,14 +2325,19 @@ def _sun_moon_elongation(jd: float, reader: SpkReader) -> float:
     return _signed_diff(moon, sun)
 
 
-def _find_phase_crossing(
+def _find_phase_crossing_truth(
     target_elongation: float,
     jd_lo: float,
     jd_hi: float,
     reader: SpkReader,
+    *,
+    search_start_jd_ut: float,
+    search_end_jd_ut: float,
+    step_days: float,
     tol_days: float = 1e-6,
-) -> float:
-    """Bisect to find when Moon-Sun elongation equals target (0°=NM, 180°=FM)."""
+) -> tuple[float, CrossingSearchTruth]:
+    """Return one phase root with the complete scan and final-bracket truth."""
+
     def diff(jd: float) -> float:
         return _signed_diff(_sun_moon_elongation(jd, reader), target_elongation)
 
@@ -2347,7 +2352,164 @@ def _find_phase_crossing(
         else:
             jd_lo = jd_mid
             d_lo  = d_mid
-    return (jd_lo + jd_hi) / 2
+    crossing_jd = (jd_lo + jd_hi) / 2
+    return crossing_jd, CrossingSearchTruth(
+        search_start_jd_ut=search_start_jd_ut,
+        search_end_jd_ut=search_end_jd_ut,
+        step_days=step_days,
+        bracket_start_jd_ut=jd_lo,
+        bracket_end_jd_ut=jd_hi,
+        crossing_jd_ut=crossing_jd,
+        solver_tolerance_days=tol_days,
+    )
+
+
+def _exact_phase_crossing_truth(
+    crossing_jd_ut: float,
+    *,
+    search_end_jd_ut: float,
+    step_days: float,
+    solver_tolerance_days: float,
+) -> tuple[float, CrossingSearchTruth]:
+    """Preserve an exact phase root found at a backward-scan boundary."""
+
+    return crossing_jd_ut, CrossingSearchTruth(
+        search_start_jd_ut=crossing_jd_ut,
+        search_end_jd_ut=search_end_jd_ut,
+        step_days=step_days,
+        bracket_start_jd_ut=crossing_jd_ut,
+        bracket_end_jd_ut=crossing_jd_ut,
+        crossing_jd_ut=crossing_jd_ut,
+        solver_tolerance_days=solver_tolerance_days,
+    )
+
+
+def _last_new_moon_search_truth(
+    jd: float,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+) -> tuple[float, CrossingSearchTruth]:
+    """Find the strictly preceding New Moon and preserve its full search truth.
+
+    This private engine integration seam is intentionally suitable for typed
+    doctrine modules such as :mod:`moira.mundane`.  It is not a public export.
+    The returned Julian Day is always identical to
+    ``search_truth.crossing_jd_ut``.
+    """
+
+    _require_finite_jd(jd, "jd")
+    if reader is None:
+        reader = get_reader()
+    policy = _validate_policy(policy)
+
+    synodic_month_days = 29.53058868
+    jd_cur = jd
+    elong = _sun_moon_elongation(jd_cur, reader)
+
+    for _ in range(60):
+        if jd_cur < jd and elong == 0.0:
+            return _exact_phase_crossing_truth(
+                jd_cur,
+                search_end_jd_ut=jd,
+                step_days=policy.syzygy.scan_step_days,
+                solver_tolerance_days=policy.syzygy.solver_tolerance_days,
+            )
+
+        jd_prev = jd_cur - policy.syzygy.scan_step_days
+        elong_prev = _sun_moon_elongation(jd_prev, reader)
+
+        if elong_prev == 0.0:
+            return _exact_phase_crossing_truth(
+                jd_prev,
+                search_end_jd_ut=jd,
+                step_days=policy.syzygy.scan_step_days,
+                solver_tolerance_days=policy.syzygy.solver_tolerance_days,
+            )
+
+        if elong_prev * elong < 0 and abs(elong_prev) < 90.0 and abs(elong) < 90.0:
+            return _find_phase_crossing_truth(
+                0.0,
+                jd_prev,
+                jd_cur,
+                reader,
+                search_start_jd_ut=jd_prev,
+                search_end_jd_ut=jd,
+                step_days=policy.syzygy.scan_step_days,
+                tol_days=policy.syzygy.solver_tolerance_days,
+            )
+
+        jd_cur = jd_prev
+        elong = elong_prev
+
+        if jd - jd_cur > synodic_month_days * policy.syzygy.max_synodic_multiple:
+            break
+
+    raise RuntimeError("last_new_moon: no New Moon found in past synodic month")
+
+
+def _last_full_moon_search_truth(
+    jd: float,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+) -> tuple[float, CrossingSearchTruth]:
+    """Find the strictly preceding Full Moon and preserve its full search truth.
+
+    This private engine integration seam is intentionally suitable for typed
+    doctrine modules such as :mod:`moira.mundane`.  It is not a public export.
+    The returned Julian Day is always identical to
+    ``search_truth.crossing_jd_ut``.
+    """
+
+    _require_finite_jd(jd, "jd")
+    if reader is None:
+        reader = get_reader()
+    policy = _validate_policy(policy)
+
+    synodic_month_days = 29.53058868
+    jd_cur = jd
+    elong = _sun_moon_elongation(jd_cur, reader)
+
+    for _ in range(60):
+        diff_cur = _signed_diff(elong, 180.0)
+        if jd_cur < jd and diff_cur == 0.0:
+            return _exact_phase_crossing_truth(
+                jd_cur,
+                search_end_jd_ut=jd,
+                step_days=policy.syzygy.scan_step_days,
+                solver_tolerance_days=policy.syzygy.solver_tolerance_days,
+            )
+
+        jd_prev = jd_cur - policy.syzygy.scan_step_days
+        elong_prev = _sun_moon_elongation(jd_prev, reader)
+
+        diff_prev = _signed_diff(elong_prev, 180.0)
+        if diff_prev == 0.0:
+            return _exact_phase_crossing_truth(
+                jd_prev,
+                search_end_jd_ut=jd,
+                step_days=policy.syzygy.scan_step_days,
+                solver_tolerance_days=policy.syzygy.solver_tolerance_days,
+            )
+
+        if diff_prev * diff_cur < 0 and abs(diff_prev) < 90.0 and abs(diff_cur) < 90.0:
+            return _find_phase_crossing_truth(
+                180.0,
+                jd_prev,
+                jd_cur,
+                reader,
+                search_start_jd_ut=jd_prev,
+                search_end_jd_ut=jd,
+                step_days=policy.syzygy.scan_step_days,
+                tol_days=policy.syzygy.solver_tolerance_days,
+            )
+
+        jd_cur = jd_prev
+        elong = elong_prev
+
+        if jd - jd_cur > synodic_month_days * policy.syzygy.max_synodic_multiple:
+            break
+
+    raise RuntimeError("last_full_moon: no Full Moon found in past synodic month")
 
 
 def last_new_moon(
@@ -2362,41 +2524,8 @@ def last_new_moon(
     -------
     Julian Day (UT) of the New Moon.
     """
-    _require_finite_jd(jd, "jd")
-    if reader is None:
-        reader = get_reader()
-    policy = _validate_policy(policy)
-
-    _SYNODIC = 29.53058868
-
-    # Scan backwards in ~1-day steps; New Moon = elongation crosses 0
-    jd_cur  = jd
-    elong   = _sun_moon_elongation(jd_cur, reader)
-
-    # Walk back through the current lunation to find the bracket
-    for _ in range(60):
-        jd_prev = jd_cur - policy.syzygy.scan_step_days
-        elong_prev = _sun_moon_elongation(jd_prev, reader)
-
-        # New Moon: elongation crosses from negative to positive (or near 0)
-        if elong_prev * elong < 0 and abs(elong_prev) < 90.0 and abs(elong) < 90.0:
-            # The crossing might be a New Moon (0°) or Full Moon (±180°)
-            # New Moon: both values are near 0 (not near ±180)
-            return _find_phase_crossing(
-                0.0,
-                jd_prev,
-                jd_cur,
-                reader,
-                tol_days=policy.syzygy.solver_tolerance_days,
-            )
-
-        jd_cur = jd_prev
-        elong  = elong_prev
-
-        if jd - jd_cur > _SYNODIC * policy.syzygy.max_synodic_multiple:
-            break
-
-    raise RuntimeError("last_new_moon: no New Moon found in past synodic month")
+    crossing_jd, _ = _last_new_moon_search_truth(jd, reader, policy)
+    return crossing_jd
 
 
 def last_full_moon(
@@ -2411,40 +2540,8 @@ def last_full_moon(
     -------
     Julian Day (UT) of the Full Moon.
     """
-    _require_finite_jd(jd, "jd")
-    if reader is None:
-        reader = get_reader()
-    policy = _validate_policy(policy)
-
-    _SYNODIC = 29.53058868
-
-    jd_cur = jd
-    elong  = _sun_moon_elongation(jd_cur, reader)
-
-    for _ in range(60):
-        jd_prev = jd_cur - policy.syzygy.scan_step_days
-        elong_prev = _sun_moon_elongation(jd_prev, reader)
-
-        # Full Moon: elongation crosses ±180 boundary
-        # Rephrase: (elong - 180) changes sign while both values within 90° of ±180
-        diff_cur  = _signed_diff(elong,      180.0)
-        diff_prev = _signed_diff(elong_prev, 180.0)
-        if diff_prev * diff_cur < 0 and abs(diff_prev) < 90.0 and abs(diff_cur) < 90.0:
-            return _find_phase_crossing(
-                180.0,
-                jd_prev,
-                jd_cur,
-                reader,
-                tol_days=policy.syzygy.solver_tolerance_days,
-            )
-
-        jd_cur = jd_prev
-        elong  = elong_prev
-
-        if jd - jd_cur > _SYNODIC * policy.syzygy.max_synodic_multiple:
-            break
-
-    raise RuntimeError("last_full_moon: no Full Moon found in past synodic month")
+    crossing_jd, _ = _last_full_moon_search_truth(jd, reader, policy)
+    return crossing_jd
 
 
 def prenatal_syzygy(
@@ -2465,8 +2562,8 @@ def prenatal_syzygy(
         reader = get_reader()
     policy = _validate_policy(policy)
 
-    jd_nm = last_new_moon(jd, reader, policy=policy)
-    jd_fm = last_full_moon(jd, reader, policy=policy)
+    jd_nm, _ = _last_new_moon_search_truth(jd, reader, policy)
+    jd_fm, _ = _last_full_moon_search_truth(jd, reader, policy)
     if jd_nm >= jd_fm:
         return jd_nm, "New Moon"
     return jd_fm, "Full Moon"

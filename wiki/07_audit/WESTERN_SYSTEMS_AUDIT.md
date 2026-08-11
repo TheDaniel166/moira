@@ -14,8 +14,10 @@
 > [Astrology Coverage Frontier Gap Audit (2026-08)](ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md)
 > for gap selection. It preserves its original `c868fd0` baseline and is
 > amended through Track A admission commit
-> `7090255e2d6cc41f7b4df15417512412f0ad5366`. Retain this document as the
-> detailed Western point-in-time record.
+> `7090255e2d6cc41f7b4df15417512412f0ad5366` and the Track B Horary/Mundane
+> admission commit containing this notice. Retain this document as the
+> detailed Western point-in-time record; its Horary/Mundane gap claims are
+> historical.
 
 **Document:** `wiki/07_audit/WESTERN_SYSTEMS_AUDIT.md` (canonical broad Western audit)
 **Created:** 2026-06 (initial draft)

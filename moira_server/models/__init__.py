@@ -511,6 +511,14 @@ from .hellenistic_profile import (
     HellenisticZRYearPolicyRequest,
     HellenisticZodiacalReleasingSnapshotResponse,
 )
+from .horary import (
+    HoraryEvidenceProfileRequest,
+    HoraryEvidenceProfileResponse,
+)
+from .mundane import (
+    MundaneEventChartProfileRequest,
+    MundaneEventChartProfileResponse,
+)
 from .harmograms import (
     HARMOGRAMS_MAX_DOMAIN_WIDTH,
     HARMOGRAMS_MAX_HARMONIC,
@@ -1120,6 +1128,10 @@ __all__ = [
     "HellenisticProfileProvenanceResponse",
     "HellenisticZRYearPolicyRequest",
     "HellenisticZodiacalReleasingSnapshotResponse",
+    "HoraryEvidenceProfileRequest",
+    "HoraryEvidenceProfileResponse",
+    "MundaneEventChartProfileRequest",
+    "MundaneEventChartProfileResponse",
     "HARMOGRAMS_MAX_DOMAIN_WIDTH",
     "HARMOGRAMS_MAX_HARMONIC",
     "HARMOGRAMS_MAX_INTENSITY_SAMPLE_COUNT",

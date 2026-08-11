@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 445
-- Registered OpenAPI operations: 445 (GET 35, POST 410)
+- Registered OpenAPI paths: 447
+- Registered OpenAPI operations: 447 (GET 35, POST 412)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 441
+- Versioned `/v1` paths: 443
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -89,6 +89,11 @@ Implemented:
   Astrocartography displacement receipts, and relocated solar/lunar/planetary
   return composition. These are geometry and chronology contracts only; they
   add no ranking, recommendation, travel-advice, or interpretation surface
+- Track B adds one bounded Lilly 1647 Horary evidence route and one neutral
+  Mundane event-chart route. Both preserve typed engine receipts and explicit
+  missing-dependency states. Neither route infers a question topic or capital,
+  emits a judgement, prediction, score, outcome, or advice, or creates a shared
+  Horary/Mundane interpretation layer
 - website support: locations, chart-wheel packets, and reduction-pipeline inspection aliases
 - phase 12 opened with bounded Uranian/Hamburg School hypothetical-body
   catalog, single-position, and bulk-position routes, followed by bounded
@@ -174,6 +179,13 @@ Not yet broadly exposed as REST families:
 | `POST /v1/astrocartography/dynamic/transits` | `DynamicAstrocartographyRequest` | `DynamicAstrocartographyResponse` | `astrocartography` |
 | `POST /v1/returns/relocated` | `RelocatedReturnRequest` | `RelocatedReturnResponse` | `predictive`, `astrocartography` |
 
+### Track B transport models
+
+| Route | Request model | Response model | Tags | Discovery family |
+|---|---|---|---|---|
+| `POST /v1/horary/evidence-profile` | `HoraryEvidenceProfileRequest` | `HoraryEvidenceProfileResponse` | `horary` | `classical-vedic` |
+| `POST /v1/mundane/event-chart-profile` | `MundaneEventChartProfileRequest` | `MundaneEventChartProfileResponse` | `mundane` | `predictive` |
+
 ## Route Families
 
 | Family | Routes |
@@ -205,6 +217,7 @@ Not yet broadly exposed as REST families:
 | geodetic | 4 |
 | heliacal | 2 |
 | hellenistic-aspects | 2 |
+| horary | 1 |
 | harmograms | 5 |
 | harmonics | 10 |
 | houses | 2 |
@@ -219,6 +232,7 @@ Not yet broadly exposed as REST families:
 | manazil | 4 |
 | midpoints | 5 |
 | muhurta | 4 |
+| mundane | 1 |
 | nakshatra | 2 |
 | nodes | 4 |
 | nine-parts | 1 |
@@ -1344,6 +1358,49 @@ The reachable OpenAPI response graph contains no synthetic score field. The
 response explicitly excludes Firdaria, medieval almutens, later electional
 rules, unscoped primary directions, Decennial L3/L4, Hermetic-decan geometry,
 Valens distribution interpretation, and Triacontaeteris.
+
+## Horary Evidence Profile Route
+
+| Method | Path | Handler | Discovery family |
+|---|---|---|---|
+| POST | `/v1/horary/evidence-profile` | `horary_evidence_profile_route` | `classical-vedic` |
+
+The request requires a timezone-aware question instant, explicit question id,
+latitude, longitude, house system, turned-house perspective path, and terminal
+topic house. The supported public time basis is fixed to the caller's stated
+question-proposed/figure-erected event under the named Gregorian UTC-to-UT1
+conversion contract. An optional aware perfection end enables only the bounded
+Lilly search; absence remains typed `not_evaluable`.
+
+The service delegates once to `Moira.horary_evidence_at`. The response
+preserves typed question time, strict house geometry, chart policy, turned
+house, significators, planetary hour, chart sect, all three Lilly hour-agreement
+paths, finite considerations, optional perfection, provenance, and explicit
+exclusions. The request cannot supply internal evidence receipts or an
+arbitrary doctrine bag. The route does not infer a topic and returns no yes/no
+answer, outcome, timing prose, score, confidence, advice, or recommendation.
+
+## Neutral Mundane Event-Chart Profile Route
+
+| Method | Path | Handler | Discovery family |
+|---|---|---|---|
+| POST | `/v1/mundane/event-chart-profile` | `mundane_event_chart_profile_route` | `predictive` |
+
+The request is a closed four-way discriminated union for cardinal ingress,
+primary syzygy, solar/lunar eclipse, or Jupiter-Saturn ecliptic-longitude
+conjunction. Every branch requires an aware bounded search interval, explicit
+caller-owned location coordinates/role/source/validity, and an explicit house
+system. Family-specific selectors preserve all four cardinal roots, both
+syzygy candidates, a named eclipse chart epoch, or the complete Jupiter-Saturn
+root sequence with an explicit selected index.
+
+The service uses the engine's existing solvers and reader-bound Track B
+revalidation adapters before composing the profile. Global event and local
+projection states remain separate; invalid local evidence cannot rewrite an
+evaluated global event. The transport accepts no caller provenance bag, infers
+no capital or subject, collapses no eclipse epochs or conjunction roots, and
+returns no political, economic, conflict, disaster, weather, national-fate,
+judgement, prediction, score, outcome, advice, or recommendation fields.
 
 ## Hellenistic Whole-Sign Aspect Routes
 
@@ -3007,6 +3064,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/heliacal/planet` | phenomena | `planet_heliacal_event_route_v1_heliacal_planet_post` |
 | `POST` | `/v1/heliacal/visibility-event` | phenomena | `general_visibility_event_route_v1_heliacal_visibility_event_post` |
 | `POST` | `/v1/hellenistic/chart-profile` | hellenistic-profile | `hellenistic_chart_profile_route_v1_hellenistic_chart_profile_post` |
+| `POST` | `/v1/horary/evidence-profile` | horary | `horary_evidence_profile` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
 | `POST` | `/v1/houses/reduction` | chart | `houses_reduction_route_v1_houses_reduction_post` |
 | `POST` | `/v1/huber/age-point` | huber | `huber_age_point_route_v1_huber_age_point_post` |
@@ -3057,6 +3115,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/muhurta/direct/classification` | muhurta | `muhurta_direct_classification_route_v1_muhurta_direct_classification_post` |
 | `POST` | `/v1/muhurta/direct/score` | muhurta | `muhurta_direct_score_route_v1_muhurta_direct_score_post` |
 | `POST` | `/v1/muhurta/personal/score` | muhurta | `muhurta_personal_score_route_v1_muhurta_personal_score_post` |
+| `POST` | `/v1/mundane/event-chart-profile` | mundane | `mundane_event_chart_profile` |
 | `POST` | `/v1/nakshatra/bulk` | sidereal | `nakshatra_bulk_route_v1_nakshatra_bulk_post` |
 | `POST` | `/v1/nakshatra/position` | sidereal | `nakshatra_position_route_v1_nakshatra_position_post` |
 | `POST` | `/v1/nine-parts/abu-mashar` | nine-parts | `abu_mashar_nine_parts_route_v1_nine_parts_abu_mashar_post` |

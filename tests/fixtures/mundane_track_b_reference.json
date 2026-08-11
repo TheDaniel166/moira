@@ -1,0 +1,113 @@
+{
+  "schema": "moira.mundane.track_b.reference.v1",
+  "status": "source_owned_external_comparison_fixture",
+  "acquired_utc": "2026-08-11",
+  "scope": "Astronomical event identity and anti-conflation evidence only; no mundane interpretation.",
+  "cardinal_ingress": {
+    "event": "2025 March equinox",
+    "usno": {
+      "source": "https://aa.usno.navy.mil/calculated/seasons?dst=false&submit=Get+Data&tz=0&tz_label=true&tz_sign=1&year=2025",
+      "reported_utc_minute": "2025-03-20T09:01:00Z"
+    },
+    "jpl_horizons": {
+      "source": "https://ssd.jpl.nasa.gov/api/horizons.api",
+      "target": "Sun (10)",
+      "center": "500@399",
+      "ephemeris": "DE441",
+      "quantity": 31,
+      "query": {
+        "COMMAND": "10",
+        "EPHEM_TYPE": "OBSERVER",
+        "CENTER": "500@399",
+        "START_TIME": "2025-03-20 09:01:27",
+        "STOP_TIME": "2025-03-20 09:01:33",
+        "STEP_SIZE": "6",
+        "QUANTITIES": "31",
+        "CSV_FORMAT": "YES",
+        "REF_PLANE": "ECLIPTIC"
+      },
+      "product": "observer-centered IAU76/80 ecliptic-of-date apparent longitude",
+      "samples": [
+        {
+          "utc": "2025-03-20T09:01:30Z",
+          "longitude_deg": 359.9999993,
+          "latitude_deg": -0.0002007
+        },
+        {
+          "utc": "2025-03-20T09:01:31Z",
+          "longitude_deg": 0.0000108,
+          "latitude_deg": -0.0002007
+        }
+      ],
+      "linear_zero_crossing_utc": "2025-03-20T09:01:30.061Z",
+      "note": "The derived crossing is comparison evidence from adjacent one-second samples, not a JPL-issued event-time field."
+    }
+  },
+  "preceding_primary_syzygy": {
+    "event": "Full Moon preceding the 2025 March equinox",
+    "usno": {
+      "source": "https://aa.usno.navy.mil/api/moon/phases/year?year=2025",
+      "reported_utc_minute": "2025-03-14T06:55:00Z"
+    },
+    "jpl_horizons": {
+      "source": "https://ssd.jpl.nasa.gov/api/horizons.api",
+      "center": "500@399",
+      "ephemeris": "DE441",
+      "quantity": 31,
+      "queries": [
+        {
+          "COMMAND": "10",
+          "EPHEM_TYPE": "OBSERVER",
+          "CENTER": "500@399",
+          "START_TIME": "2025-03-14 06:54:35",
+          "STOP_TIME": "2025-03-14 06:54:45",
+          "STEP_SIZE": "10",
+          "QUANTITIES": "31",
+          "CSV_FORMAT": "YES",
+          "REF_PLANE": "ECLIPTIC"
+        },
+        {
+          "COMMAND": "301",
+          "EPHEM_TYPE": "OBSERVER",
+          "CENTER": "500@399",
+          "START_TIME": "2025-03-14 06:54:35",
+          "STOP_TIME": "2025-03-14 06:54:45",
+          "STEP_SIZE": "10",
+          "QUANTITIES": "31",
+          "CSV_FORMAT": "YES",
+          "REF_PLANE": "ECLIPTIC"
+        }
+      ],
+      "product": "observer-centered IAU76/80 ecliptic-of-date apparent longitude",
+      "samples": [
+        {
+          "utc": "2025-03-14T06:54:39Z",
+          "sun_longitude_deg": 353.9422910,
+          "moon_longitude_deg": 173.9422665
+        },
+        {
+          "utc": "2025-03-14T06:54:40Z",
+          "sun_longitude_deg": 353.9423025,
+          "moon_longitude_deg": 173.9424063
+        }
+      ],
+      "linear_opposition_crossing_utc": "2025-03-14T06:54:39.191Z",
+      "note": "The derived crossing is comparison evidence from paired Sun and Moon samples, not a JPL-issued phase-time field."
+    }
+  },
+  "eclipse_epoch_anti_conflation": {
+    "event": "2024-04-08 total solar eclipse",
+    "source": "https://eclipse.gsfc.nasa.gov/SEbeselm/SEbeselm2001/SE2024Apr08Tbeselm.html",
+    "model": "VSOP87/ELP2000-85 with source-declared Delta-T 70.6 seconds",
+    "greatest_eclipse_ut": "2024-04-08T18:17:18.3Z",
+    "ecliptic_conjunction_ut": "2024-04-08T18:20:49.7Z",
+    "equatorial_conjunction_ut": "2024-04-08T18:36:07.6Z"
+  },
+  "jupiter_saturn_event_anti_conflation": {
+    "event": "2020 Jupiter-Saturn conjunction",
+    "source": "https://lettre-info-lte.obspm.fr/archives/174",
+    "right_ascension_conjunction_utc": "2020-12-21T13:31:56Z",
+    "ecliptic_longitude_conjunction_utc": "2020-12-21T18:20:29Z",
+    "minimum_elongation_utc": "2020-12-21T18:22:30Z"
+  }
+}

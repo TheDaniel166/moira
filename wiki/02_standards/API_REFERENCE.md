@@ -1,6 +1,6 @@
 ﻿# Moira API Reference
 
-**Document revision:** 2.2.0
+**Document revision:** 2.3.0
 **Engine baseline:** 6.1.0
 **Last verified:** 2026-08-11
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
@@ -246,6 +246,19 @@ They are not `moira.predictive` exports.
 | `moira.relationship_forecasting` | `RelationshipChartKind`, `RelationshipTargetKind`, `RelationshipChartIdentity`, `RelationshipTransitTarget`, `RelationshipChartTargetSet`, `RelationshipTransitEvent`, `RelationshipTransitSearchTruth`, `RelationshipTransitSearchResult`, `relationship_chart_targets`, `find_relationship_transits`, `find_composite_transits`, `find_davison_transits` |
 | `moira.astrocartography` | `FixedStarAstrocartographySubject`, `FixedStarAstrocartographyTruth`, `FixedStarAstrocartographyResult`, `fixed_star_equatorial_subject`, `fixed_star_astrocartography`, `fixed_star_astrocartography_from_chart` |
 | `moira.locational_forecasting` | `ReturnKind`, `ReturnSearchPolicyTruth`, `ReturnMomentTruth`, `ReturnRelocationTruth`, `RelocatedReturnChart`, `DynamicAstrocartographyMode`, `DynamicAstrocartographyPosition`, `DynamicAstrocartographySnapshotTruth`, `DynamicAstrocartographySnapshot`, `AstrocartographyCurvePointShift`, `DynamicAstrocartographyLineTransition`, `DynamicAstrocartographySeriesTruth`, `DynamicAstrocartographySeries`, `relocated_solar_return`, `relocated_lunar_return`, `relocated_planetary_return`, `transiting_astrocartography` |
+
+Track B admits a deliberately smaller root/facade surface. Concrete input,
+search, clock, consideration, and event receipts remain available from their
+owning modules instead of being dumped into the curated tiers.
+
+| Owning module | Curated root/facade symbols |
+|---|---|
+| `moira.horary` | `HoraryQuestionTimeBasis`, `HorarySourceCalendar`, `HoraryEvidenceProfile`, `LILLY_1647_HORARY_V1`, `horary_evidence_at` |
+| `moira.mundane` | `MundaneEvaluationStatus`, `MundaneEventType`, `MundaneEventChartProfile`, `MundaneProfileProvenance`, `compose_mundane_event_chart_profile`, `eclipse_receipt_from_event`, `jupiter_saturn_sequence_from_series` |
+
+These Track B names have identical object identity through `moira`,
+`moira.facade`, and their owning modules. They are intentionally absent from
+the cumulative `moira.classical` and `moira.predictive` tiers.
 
 Topography-conditioned lunar contact chronology is a deliberate exception:
 it remains available only from `moira.lunar_occultation_contacts` and
@@ -516,6 +529,7 @@ message.
 | `profection_chronology(natal_asc, natal_dt, current_dt, *, civil_timezone=None, leap_day_policy=None, ambiguous_time_policy=None, interval_policy=...)` | `ProfectionChronology` | Raw dated monthly profection receipt |
 | `nakshatras(chart, ayanamsa_system=Ayanamsa.LAHIRI)` | `dict[str, NakshatraPosition]` | Nakshatra for each planet |
 | `planetary_hours(dt, latitude, longitude)` | `PlanetaryHoursDay` | Day and night planetary hour rulers |
+| `horary_evidence_at(question, *, house_policy, perfection_jd_end=None)` | `HoraryEvidenceProfile` | Reader-bound Lilly 1647 evidence composition with explicit question, house, and optional bounded perfection-search inputs; no judgement or inferred topic |
 
 ### Timing techniques
 
@@ -523,6 +537,8 @@ message.
 |---|---|---|
 | `transits(body, target_lon, jd_start, jd_end)` | `list[TransitEvent]` | All transits of a body to a natal point |
 | `ingresses(body, jd_start, jd_end)` | `list[IngressEvent]` | All sign ingresses in a date range |
+| `assess_transit_cardinal_ingress(event)` | `MundaneEventEvidence` | Revalidate one exact cardinal-ingress event against the facade reader and preserve neutral event truth |
+| `assess_transit_primary_syzygy(anchor_event, *, policy=None)` | `PrecedingSyzygyEvidence` | Solve and bind the strictly preceding primary syzygy to one admitted ingress receipt |
 | `next_ingress(body, jd_start, max_days=None)` | `IngressEvent \| None` | Next sign ingress of any kind |
 | `next_ingress_into(body, sign, jd_start, max_days=None)` | `IngressEvent \| None` | Next entry into a specific sign |
 | `solar_return(natal_sun_lon, year)` | `float` | JD UT of the Solar Return in a calendar year |
@@ -532,6 +548,8 @@ message.
 | `relocated_lunar_return(natal_moon_longitude, jd_start, source_latitude, source_longitude, relocated_latitude, relocated_longitude, **policy)` | `RelocatedReturnChart` | Canonical next lunar-return composition at two locations |
 | `relocated_planetary_return(body, natal_longitude, jd_start, source_latitude, source_longitude, relocated_latitude, relocated_longitude, **policy)` | `RelocatedReturnChart` | Canonical admitted planetary-return composition at two locations |
 | `syzygy(jd)` | `tuple[float, str]` | `(jd_ut, kind)` of prenatal syzygy |
+| `eclipse_receipt_from_event(event, *, eclipse_id)` | `EclipseEventReceipt` | Revalidate one engine eclipse while retaining explicit named epoch meanings and reader-derived identity |
+| `jupiter_saturn_sequence_from_series(series)` | `JupiterSaturnConjunctionSequenceReceipt` | Recompute and preserve every exact Jupiter-Saturn ecliptic-longitude root in the supplied interval |
 | `stations(body, jd_start, jd_end)` | `list[StationEvent]` | Retrograde and direct stations |
 | `retrograde_periods(body, jd_start, jd_end)` | `list[tuple[float, float]]` | List of `(jd_start, jd_end)` retrograde intervals |
 | `moon_void_of_course(dt, ...)` / `is_moon_void_of_course(dt, ...)` | — | See [Void of Course Moon](#void-of-course-moon) subsection below |
@@ -1492,6 +1510,73 @@ voc_periods = void_periods_in_range(jd_start, jd_end)
 ---
 
 ## 8. Classical Techniques
+
+### Horary evidence profile
+
+Track B admits one bounded, non-interpretive Lilly 1647 evidence surface. The
+high-level adapter owns the strict house calculation, traditional-seven
+positions, planetary-hour receipt, finite consideration inputs, and optional
+Lilly perfection search on one explicit reader.
+
+```python
+from moira import (
+    HoraryEvidenceProfile,
+    HoraryQuestionTimeBasis,
+    HorarySourceCalendar,
+    LILLY_1647_HORARY_V1,
+    horary_evidence_at,
+)
+```
+
+| Surface | Returns | Contract |
+|---|---|---|
+| `horary_evidence_at(question, *, house_policy, perfection_jd_end=None, reader)` | `HoraryEvidenceProfile` | Low-level reader-explicit composition from an evaluated `HoraryQuestionReceipt` and exact `HoraryHousePolicy` |
+| `Moira.horary_evidence_at(question, *, house_policy, perfection_jd_end=None)` | `HoraryEvidenceProfile` | Same composition bound to the facade's reader |
+| `POST /v1/horary/evidence-profile` | typed Horary profile response | Strict transport for an aware question instant, explicit location, house system, perspective path, topic house, and optional perfection end |
+
+`perfection_jd_end` is optional. When present, it is a UT1 endpoint constrained
+by Moira's explicit 31-day computational safety receipt; that cap is not
+historical doctrine. Missing or incompatible evidence remains typed
+`not_evaluable`. The profile does not infer the question topic and emits no
+yes/no answer, confidence, outcome, timing prose, advice, or score. Detailed
+question, geometry, hour, consideration, and perfection receipts remain
+module-owned under `moira.horary`.
+
+### Neutral Mundane event-chart profile
+
+Track B admits a neutral event-and-local-chart composition layer for four
+separate event families: cardinal ingresses, the strictly preceding primary
+syzygy, solar/lunar eclipses with explicitly named epochs, and exact
+Jupiter-Saturn ecliptic-longitude conjunction roots.
+
+```python
+from moira import (
+    MundaneEvaluationStatus,
+    MundaneEventChartProfile,
+    MundaneEventType,
+    MundaneProfileProvenance,
+    compose_mundane_event_chart_profile,
+    eclipse_receipt_from_event,
+    jupiter_saturn_sequence_from_series,
+)
+```
+
+| Surface | Returns | Contract |
+|---|---|---|
+| `compose_mundane_event_chart_profile(...)` | `MundaneEventChartProfile` | Pure composition of one tagged anchor, typed ingress/syzygy evidence, and strict local-projection evidence |
+| `eclipse_receipt_from_event(event, *, eclipse_id, reader)` | `EclipseEventReceipt` | Reader-explicit adapter that keeps greatest eclipse, conjunctions, and contacts distinct |
+| `jupiter_saturn_sequence_from_series(series, *, reader)` | `JupiterSaturnConjunctionSequenceReceipt` | Reader-explicit adapter that recomputes the complete interval and retains every root |
+| `POST /v1/mundane/event-chart-profile` | typed Mundane profile envelope | Strict four-way discriminated transport that also retains the complete event-selection context |
+
+The reader-bound facade methods are listed in the Timing section above. Global
+event truth and local projection have separate states: missing, invalid, or
+out-of-validity location evidence does not rewrite an evaluated global event.
+Coordinates, location role/source/validity, house system, ingress policy,
+eclipse chart epoch, and Jupiter-Saturn root selection are explicit. No capital
+is inferred, triple conjunctions are not collapsed, and the contract emits no
+political, economic, conflict, disaster, weather, national-fate, judgement,
+score, outcome, or advice surface. Concrete event, clock, search, and location
+receipts remain module-owned under `moira.mundane`.
 
 ### Dignities
 

@@ -11,6 +11,13 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    # A copied/multi-worktree venv may still point its editable install at a
+    # different checkout.  The generator must inventory the repository that
+    # owns this script, including under the documented ``python scripts/...``
+    # invocation.
+    sys.path.insert(0, str(REPO_ROOT))
+
 CAPABILITY_PATH = (
     REPO_ROOT
     / "wiki"

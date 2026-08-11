@@ -54,6 +54,8 @@ from .astrocartography import (
 )
 from .chart import compute_chart, compute_chart_with_reduction, compute_houses
 from .hellenistic_profile import compute_hellenistic_chart_profile
+from .horary import compute_horary_evidence_profile
+from .mundane import compute_mundane_event_chart_profile
 from .phenomena import (
     compute_all_lunar_occultations,
     compute_close_approaches,
@@ -558,6 +560,8 @@ __all__ = [
     "compute_next_solar_eclipse",
     "compute_next_station",
     "compute_hellenistic_chart_profile",
+    "compute_horary_evidence_profile",
+    "compute_mundane_event_chart_profile",
     "compute_next_visible_solar_eclipse",
     "compute_next_void_of_course",
     "compute_next_ingress",

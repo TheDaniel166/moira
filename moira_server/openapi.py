@@ -129,6 +129,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "predictive",
     },
     {
+        "name": "mundane",
+        "x-displayName": "Mundane Event Charts",
+        "description": "Revalidated global-event receipts, explicit selections, and strict local chart projections without prediction or judgement.",
+        "x-family": "predictive",
+    },
+    {
         "name": "relationship",
         "x-displayName": "Relationship",
         "description": "Synastry, composite, Davison, chart-shape, pattern, and midpoint surfaces.",
@@ -216,6 +222,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "name": "dignities",
         "x-displayName": "Dignities",
         "description": "Essential dignity, reception, condition, profile, and network surfaces.",
+        "x-family": "classical-vedic",
+    },
+    {
+        "name": "horary",
+        "x-displayName": "Horary Evidence",
+        "description": "Source-bounded Lilly 1647 question evidence with explicit inputs and no judgement, score, or advice.",
         "x-family": "classical-vedic",
     },
     {

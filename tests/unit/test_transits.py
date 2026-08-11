@@ -1223,12 +1223,288 @@ def test_mercury_return_uses_geocentric_search_window_not_orbital_period() -> No
     assert _angle_diff(planet_at(Body.MERCURY, jd_return).longitude, natal_lon) < 1e-3
 
 
+def test_last_new_moon_private_helper_preserves_complete_search_truth(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    anchor_jd = 100.0
+    expected_root = 98.25
+    policy = TransitComputationPolicy(
+        syzygy=SyzygySearchPolicy(
+            scan_step_days=1.0,
+            solver_tolerance_days=1e-5,
+        ),
+    )
+
+    monkeypatch.setattr(
+        transits_module,
+        "_sun_moon_elongation",
+        lambda jd, reader: jd - expected_root,
+    )
+
+    root, truth = transits_module._last_new_moon_search_truth(
+        anchor_jd,
+        reader=object(),
+        policy=policy,
+    )
+
+    assert root == truth.crossing_jd_ut
+    assert root == pytest.approx(expected_root, abs=policy.syzygy.solver_tolerance_days)
+    assert truth.search_start_jd_ut == 98.0
+    assert truth.search_end_jd_ut == anchor_jd
+    assert truth.step_days == policy.syzygy.scan_step_days
+    assert 98.0 <= truth.bracket_start_jd_ut <= root
+    assert root <= truth.bracket_end_jd_ut <= 99.0
+    assert (
+        truth.bracket_end_jd_ut - truth.bracket_start_jd_ut
+        < policy.syzygy.solver_tolerance_days
+    )
+    assert truth.solver_tolerance_days == policy.syzygy.solver_tolerance_days
+    assert root < anchor_jd
+
+
+def test_last_full_moon_private_helper_preserves_complete_search_truth(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    anchor_jd = 100.0
+    expected_root = 99.5
+    policy = TransitComputationPolicy(
+        syzygy=SyzygySearchPolicy(
+            scan_step_days=1.0,
+            solver_tolerance_days=1e-5,
+        ),
+    )
+
+    def _full_moon_elongation(jd: float, reader: object) -> float:
+        unwrapped = 181.0 + 2.0 * (jd - anchor_jd)
+        return (unwrapped + 180.0) % 360.0 - 180.0
+
+    monkeypatch.setattr(
+        transits_module,
+        "_sun_moon_elongation",
+        _full_moon_elongation,
+    )
+
+    root, truth = transits_module._last_full_moon_search_truth(
+        anchor_jd,
+        reader=object(),
+        policy=policy,
+    )
+
+    assert root == truth.crossing_jd_ut
+    assert root == pytest.approx(expected_root, abs=policy.syzygy.solver_tolerance_days)
+    assert truth.search_start_jd_ut == 99.0
+    assert truth.search_end_jd_ut == anchor_jd
+    assert truth.step_days == policy.syzygy.scan_step_days
+    assert 99.0 <= truth.bracket_start_jd_ut <= root
+    assert root <= truth.bracket_end_jd_ut <= 100.0
+    assert (
+        truth.bracket_end_jd_ut - truth.bracket_start_jd_ut
+        < policy.syzygy.solver_tolerance_days
+    )
+    assert truth.solver_tolerance_days == policy.syzygy.solver_tolerance_days
+    assert root < anchor_jd
+
+
+@pytest.mark.parametrize(
+    ("helper_name", "target_elongation"),
+    [
+        ("_last_new_moon_search_truth", 0.0),
+        ("_last_full_moon_search_truth", 180.0),
+    ],
+)
+def test_last_phase_private_helpers_accept_exact_interior_scan_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+    helper_name: str,
+    target_elongation: float,
+) -> None:
+    anchor_jd = 100.0
+    exact_root = 99.0
+    policy = TransitComputationPolicy(
+        syzygy=SyzygySearchPolicy(
+            scan_step_days=1.0,
+            solver_tolerance_days=1e-5,
+        ),
+    )
+
+    def _boundary_elongation(jd: float, reader: object) -> float:
+        offset = jd - exact_root
+        return (target_elongation + offset + 180.0) % 360.0 - 180.0
+
+    monkeypatch.setattr(
+        transits_module,
+        "_sun_moon_elongation",
+        _boundary_elongation,
+    )
+
+    helper = getattr(transits_module, helper_name)
+    root, truth = helper(anchor_jd, reader=object(), policy=policy)
+
+    assert root == exact_root
+    assert truth.search_start_jd_ut == exact_root
+    assert truth.search_end_jd_ut == anchor_jd
+    assert truth.bracket_start_jd_ut == exact_root
+    assert truth.bracket_end_jd_ut == exact_root
+    assert truth.crossing_jd_ut == exact_root
+    assert truth.step_days == policy.syzygy.scan_step_days
+    assert truth.solver_tolerance_days == policy.syzygy.solver_tolerance_days
+
+
+@pytest.mark.parametrize(
+    ("helper_name", "target_elongation"),
+    [
+        ("_last_new_moon_search_truth", 0.0),
+        ("_last_full_moon_search_truth", 180.0),
+    ],
+)
+def test_last_phase_private_helpers_exclude_exact_anchor_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+    helper_name: str,
+    target_elongation: float,
+) -> None:
+    anchor_jd = 100.0
+    preceding_root = 98.0
+    policy = TransitComputationPolicy(
+        syzygy=SyzygySearchPolicy(
+            scan_step_days=1.0,
+            solver_tolerance_days=1e-5,
+        ),
+    )
+
+    def _two_boundary_elongation(jd: float, reader: object) -> float:
+        offset = (jd - anchor_jd) * (jd - preceding_root)
+        return (target_elongation + offset + 180.0) % 360.0 - 180.0
+
+    monkeypatch.setattr(
+        transits_module,
+        "_sun_moon_elongation",
+        _two_boundary_elongation,
+    )
+
+    helper = getattr(transits_module, helper_name)
+    root, truth = helper(anchor_jd, reader=object(), policy=policy)
+
+    assert root == preceding_root
+    assert truth.crossing_jd_ut == preceding_root
+    assert truth.bracket_start_jd_ut == preceding_root
+    assert truth.bracket_end_jd_ut == preceding_root
+    assert root < anchor_jd
+
+
+def test_public_last_phase_functions_delegate_without_changing_return_shape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    policy = TransitComputationPolicy()
+    reader = object()
+    calls: list[tuple[str, float, object | None, object | None]] = []
+
+    def _truth(root: float) -> CrossingSearchTruth:
+        return CrossingSearchTruth(
+            search_start_jd_ut=90.0,
+            search_end_jd_ut=100.0,
+            step_days=1.0,
+            bracket_start_jd_ut=root - 1e-7,
+            bracket_end_jd_ut=root + 1e-7,
+            crossing_jd_ut=root,
+            solver_tolerance_days=1e-6,
+        )
+
+    def _new(
+        jd: float,
+        supplied_reader: object | None,
+        supplied_policy: object | None,
+    ) -> tuple[float, CrossingSearchTruth]:
+        calls.append(("new", jd, supplied_reader, supplied_policy))
+        return 95.0, _truth(95.0)
+
+    def _full(
+        jd: float,
+        supplied_reader: object | None,
+        supplied_policy: object | None,
+    ) -> tuple[float, CrossingSearchTruth]:
+        calls.append(("full", jd, supplied_reader, supplied_policy))
+        return 97.0, _truth(97.0)
+
+    monkeypatch.setattr(transits_module, "_last_new_moon_search_truth", _new)
+    monkeypatch.setattr(transits_module, "_last_full_moon_search_truth", _full)
+
+    new_root = last_new_moon(100.0, reader=reader, policy=policy)
+    full_root = last_full_moon(100.0, reader=reader, policy=policy)
+
+    assert new_root == 95.0
+    assert full_root == 97.0
+    assert isinstance(new_root, float)
+    assert isinstance(full_root, float)
+    assert calls == [
+        ("new", 100.0, reader, policy),
+        ("full", 100.0, reader, policy),
+    ]
+
+
+def test_prenatal_syzygy_delegates_to_both_truth_helpers_before_selection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    reader = object()
+    reader_calls = 0
+
+    def _reader() -> object:
+        nonlocal reader_calls
+        reader_calls += 1
+        return reader
+
+    def _truth(root: float) -> CrossingSearchTruth:
+        return CrossingSearchTruth(
+            search_start_jd_ut=90.0,
+            search_end_jd_ut=100.0,
+            step_days=1.0,
+            bracket_start_jd_ut=root - 1e-7,
+            bracket_end_jd_ut=root + 1e-7,
+            crossing_jd_ut=root,
+            solver_tolerance_days=1e-6,
+        )
+
+    def _new(
+        jd: float,
+        supplied_reader: object,
+        policy: object,
+    ) -> tuple[float, CrossingSearchTruth]:
+        calls.append("new")
+        assert jd == 100.0
+        assert supplied_reader is reader
+        assert isinstance(policy, TransitComputationPolicy)
+        return 95.0, _truth(95.0)
+
+    def _full(
+        jd: float,
+        supplied_reader: object,
+        policy: object,
+    ) -> tuple[float, CrossingSearchTruth]:
+        calls.append("full")
+        assert jd == 100.0
+        assert supplied_reader is reader
+        assert isinstance(policy, TransitComputationPolicy)
+        return 97.0, _truth(97.0)
+
+    monkeypatch.setattr(transits_module, "get_reader", _reader)
+    monkeypatch.setattr(transits_module, "_last_new_moon_search_truth", _new)
+    monkeypatch.setattr(transits_module, "_last_full_moon_search_truth", _full)
+
+    result = prenatal_syzygy(100.0, policy=TransitComputationPolicy())
+
+    assert result == (97.0, "Full Moon")
+    assert isinstance(result, tuple)
+    assert calls == ["new", "full"]
+    assert reader_calls == 1
+
+
 @pytest.mark.requires_ephemeris
 def test_last_new_moon_and_full_moon_hit_expected_syzygies() -> None:
     ref = jd_from_datetime(datetime(2024, 4, 20, 0, 0, tzinfo=timezone.utc))
 
     jd_nm = last_new_moon(ref)
     jd_fm = last_full_moon(ref)
+    jd_nm_truth, nm_truth = transits_module._last_new_moon_search_truth(ref)
+    jd_fm_truth, fm_truth = transits_module._last_full_moon_search_truth(ref)
 
     nm_sep = _angle_diff(
         planet_at(Body.MOON, jd_nm).longitude,
@@ -1241,6 +1517,20 @@ def test_last_new_moon_and_full_moon_hit_expected_syzygies() -> None:
 
     assert jd_nm < ref
     assert jd_fm < ref
+    assert jd_nm == jd_nm_truth == nm_truth.crossing_jd_ut
+    assert jd_fm == jd_fm_truth == fm_truth.crossing_jd_ut
+    assert nm_truth.search_start_jd_ut <= nm_truth.bracket_start_jd_ut
+    assert nm_truth.bracket_end_jd_ut <= nm_truth.search_end_jd_ut == ref
+    assert fm_truth.search_start_jd_ut <= fm_truth.bracket_start_jd_ut
+    assert fm_truth.bracket_end_jd_ut <= fm_truth.search_end_jd_ut == ref
+    assert (
+        nm_truth.bracket_end_jd_ut - nm_truth.bracket_start_jd_ut
+        < nm_truth.solver_tolerance_days
+    )
+    assert (
+        fm_truth.bracket_end_jd_ut - fm_truth.bracket_start_jd_ut
+        < fm_truth.solver_tolerance_days
+    )
     assert nm_sep < 1e-3
     assert fm_sep < 1e-3
 

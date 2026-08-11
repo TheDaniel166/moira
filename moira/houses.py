@@ -1269,6 +1269,39 @@ def derived_houses(house_cusps: HouseCusps, from_house: int) -> DerivedHouseCusp
 # ARMC and MC
 # ---------------------------------------------------------------------------
 
+@dataclass(frozen=True, slots=True)
+class _LocalAngles:
+    """Immutable local-angle reduction for one epoch and observer location.
+
+    The vessel owns only time/frame reduction and the three local angles.  It
+    deliberately has no house-system field and performs no cusp computation or
+    policy selection.
+    """
+
+    jd_ut: float
+    jd_tt: float
+    latitude: float
+    longitude: float
+    obliquity: float
+    dpsi: float
+    armc: float
+    mc: float
+    asc: float
+
+    def __post_init__(self) -> None:
+        _require_finite("jd_ut", self.jd_ut)
+        _require_finite("jd_tt", self.jd_tt)
+        _validate_latitude(self.latitude)
+        _require_finite("longitude", self.longitude)
+        _require(-180.0 <= self.longitude <= 180.0, "longitude must be in [-180, 180] degrees")
+        _require_finite("obliquity", self.obliquity)
+        _require(0.0 < self.obliquity < 90.0, "obliquity must be in (0, 90) degrees")
+        _require_finite("dpsi", self.dpsi)
+        for name, value in (("armc", self.armc), ("mc", self.mc), ("asc", self.asc)):
+            _require_finite(name, value)
+            _require(0.0 <= value < 360.0, f"{name} must be in [0, 360) degrees")
+
+
 def _armc(jd_ut: float, longitude: float, jd_tt: float, dpsi: float, obliquity: float) -> float:
     """Local Sidereal Time = ARMC (degrees)."""
     return local_sidereal_time(jd_ut, longitude, dpsi, obliquity)
@@ -1349,6 +1382,39 @@ def _asc_from_armc(armc: float, obliquity: float, lat: float) -> float:
         return d if d <= 180.0 else 360.0 - d
 
     return alt if _adist(alt, expected) < _adist(raw, expected) else raw
+
+
+def _local_angles_at(jd_ut: float, latitude: float, longitude: float) -> _LocalAngles:
+    """Reduce UT1 and a geographic location to local celestial angles.
+
+    This helper preserves the exact calculation formerly in
+    :func:`calculate_houses`: UT1-to-TT, true obliquity, nutation in longitude,
+    apparent local sidereal time (ARMC), MC, and Ascendant.  It validates only
+    the epoch and location and never selects or computes a house system.
+    """
+
+    _require_finite("jd_ut", jd_ut)
+    _validate_latitude(latitude)
+    _require_finite("longitude", longitude)
+    _require(-180.0 <= longitude <= 180.0, "longitude must be in [-180, 180] degrees")
+
+    jd_tt = ut_to_tt(jd_ut)
+    obliquity = true_obliquity(jd_tt)
+    dpsi, _ = nutation(jd_tt)
+    armc = _armc(jd_ut, longitude, jd_tt, dpsi, obliquity)
+    mc = _mc_from_armc(armc, obliquity, latitude)
+    asc = _asc_from_armc(armc, obliquity, latitude)
+    return _LocalAngles(
+        jd_ut=jd_ut,
+        jd_tt=jd_tt,
+        latitude=latitude,
+        longitude=longitude,
+        obliquity=obliquity,
+        dpsi=dpsi,
+        armc=armc,
+        mc=mc,
+        asc=asc,
+    )
 
 
 def _vertex_from_armc(armc: float, obliquity: float, lat: float) -> float:
@@ -3940,29 +4006,19 @@ def calculate_houses(
           if ``sun_longitude`` is not supplied explicitly.
     """
     active_policy = _normalize_house_policy(policy)
-    _require_finite("jd_ut", jd_ut)
-    _validate_latitude(latitude)
-    _require_finite("longitude", longitude)
-    _require(-180.0 <= longitude <= 180.0, "longitude must be in [-180, 180] degrees")
+    local_angles = _local_angles_at(jd_ut, latitude, longitude)
     if sun_longitude is not None:
         _require_finite("sun_longitude", sun_longitude)
     if ayanamsa_offset is not None:
         _require_finite("ayanamsa_offset", ayanamsa_offset)
-    jd_tt    = ut_to_tt(jd_ut)
-    obliquity = true_obliquity(jd_tt)
-    dpsi, _ = nutation(jd_tt)
-    
-    armc    = _armc(jd_ut, longitude, jd_tt, dpsi, obliquity)
-    mc      = _mc_from_armc(armc, obliquity, latitude)
-    asc     = _asc_from_armc(armc, obliquity, latitude)
 
     sun_lon = sun_longitude
     if sun_lon is None and system in {HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN}:
         sun_lon = _solar_house_anchor_longitude(jd_ut)
 
     return houses_from_armc(
-        armc,
-        obliquity,
+        local_angles.armc,
+        local_angles.obliquity,
         latitude,
         system,
         policy=active_policy,

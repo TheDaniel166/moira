@@ -1484,6 +1484,33 @@ _EXPECTED_MOIRA_METHODS.update({
     "transiting_astrocartography",
 })
 
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "HoraryQuestionTimeBasis",
+    "HorarySourceCalendar",
+    "HoraryEvidenceProfile",
+    "LILLY_1647_HORARY_V1",
+    "horary_evidence_at",
+})
+
+_EXPECTED_MOIRA_METHODS.add("horary_evidence_at")
+
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "MundaneEvaluationStatus",
+    "MundaneEventType",
+    "MundaneEventChartProfile",
+    "MundaneProfileProvenance",
+    "compose_mundane_event_chart_profile",
+    "eclipse_receipt_from_event",
+    "jupiter_saturn_sequence_from_series",
+})
+
+_EXPECTED_MOIRA_METHODS.update({
+    "assess_transit_cardinal_ingress",
+    "assess_transit_primary_syzygy",
+    "eclipse_receipt_from_event",
+    "jupiter_saturn_sequence_from_series",
+})
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)
