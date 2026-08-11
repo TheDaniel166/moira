@@ -77,7 +77,9 @@ claim. The release boundary includes:
 - property and event-ownership invariants;
 - legacy compatibility fixtures;
 - public-object identity, serializer, REST, and OpenAPI parity;
-- exact DE441/pack-bound event goldens;
+- a predeclared 16-cell DE441/pack-bound event matrix spanning every admitted
+  target and phase: 12 independently reconstructed event times and 4 explicit
+  typed no-event/domain regressions;
 - separate source-solver, storage, interpolation, root, magnitude-envelope,
   and event-time sensitivity receipts;
 - exact Python/native differentials for the two private Phase 6 kernels; and
@@ -87,6 +89,14 @@ claim. The release boundary includes:
 
 Historical apparition windows and the Sirius/Sothic case remain bounded legacy
 corroboration. They are not presented as exact physical-model event truth.
+
+The broad event oracle uses 40 checksum-bound one-minute NASA/JPL Horizons
+files, the pinned Hipparcos/Astropy Sirius path, and a validator that imports
+neither Moira nor its event solver. All 12 timed comparisons pass the fixed
+60-second external-grid limit; the worst absolute difference is 5.879 seconds.
+The four negative cells are not relabeled as event-time oracles. A separate
+live replay executes all 16 cells through the public engine, including the
+35-60 day no-transition/domain searches.
 
 ## Native boundary
 

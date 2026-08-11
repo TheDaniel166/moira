@@ -1,0 +1,1671 @@
+{
+  "admission_date": "2026-08-09",
+  "cases": [
+    {
+      "captured_engine_result": {
+        "case_id": "phase7-mars-greenwich-evening-last-setting",
+        "comparison_day_status": null,
+        "comparison_observation_day_key": null,
+        "event_jd_ut": null,
+        "observation_day_key": null,
+        "phase": "evening_last_setting",
+        "reason": "no_phase_transition_in_search_window",
+        "search_start_utc": "2023-09-15T00:00:00Z",
+        "search_window_days": 55,
+        "site_id": "greenwich",
+        "status": "not_found",
+        "target": "Mars"
+      },
+      "case_id": "phase7-mars-greenwich-evening-last-setting",
+      "independent_event_time_claimed": false,
+      "latitude_deg": 51.48,
+      "longitude_deg": 0.0,
+      "phase": "evening_last_setting",
+      "search_start_utc": "2023-09-15T00:00:00Z",
+      "search_window_days": 55,
+      "site_id": "greenwich",
+      "target": "Mars",
+      "validation_class": "typed_engine_negative_regression"
+    },
+    {
+      "captured_engine_result": {
+        "case_id": "phase7-mars-greenwich-morning-first-rising",
+        "comparison_day_status": null,
+        "comparison_observation_day_key": null,
+        "event_jd_ut": null,
+        "observation_day_key": null,
+        "phase": "morning_first_rising",
+        "reason": "no_phase_transition_in_search_window",
+        "search_start_utc": "2024-02-15T00:00:00Z",
+        "search_window_days": 60,
+        "site_id": "greenwich",
+        "status": "not_found",
+        "target": "Mars"
+      },
+      "case_id": "phase7-mars-greenwich-morning-first-rising",
+      "independent_event_time_claimed": false,
+      "latitude_deg": 51.48,
+      "longitude_deg": 0.0,
+      "phase": "morning_first_rising",
+      "search_start_utc": "2024-02-15T00:00:00Z",
+      "search_window_days": 60,
+      "site_id": "greenwich",
+      "target": "Mars",
+      "validation_class": "typed_engine_negative_regression"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 0.3523215651512146,
+      "candidate_sources": [
+        "phase7-mars-babylon-morning-first-setting:candidate:target",
+        "phase7-mars-babylon-morning-first-setting:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-mars-babylon-morning-first-setting",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2460695,
+        "event_jd_ut": 2460695.6573427916,
+        "observation_day_key": 2460696,
+        "phase": "morning_first_setting",
+        "reason": null,
+        "search_start_utc": "2025-01-10T00:00:00Z",
+        "search_window_days": 20,
+        "site_id": "babylon",
+        "status": "evaluated",
+        "target": "Mars"
+      },
+      "case_id": "phase7-mars-babylon-morning-first-setting",
+      "guard_sources": [
+        "phase7-mars-babylon-morning-first-setting:guard:target",
+        "phase7-mars-babylon-morning-first-setting:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2460695.66894049,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460695.6680438286,
+          "target_minus_solar_boundary_minutes": -1.2911926209926605
+        },
+        "crossing_bracket_jd_ut": [
+          2460695.656648345,
+          2460695.657342789
+        ],
+        "crossing_bracket_margin_magnitude": [
+          0.27096616643913274,
+          -0.0015995468850957817
+        ],
+        "crossing_direction": "positive_to_negative",
+        "event_jd_ut": 2460695.6573387138,
+        "guard_day_basis": "target_boundary_outside_requested_solar_side",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2460694.669172429,
+          "status": "does_not_qualify",
+          "target_boundary_jd_ut": 2460694.6717693764,
+          "target_minus_solar_boundary_minutes": 3.739604204893112
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 32.55,
+      "longitude_deg": 44.42,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "morning_first_setting",
+      "search_start_utc": "2025-01-10T00:00:00Z",
+      "search_window_days": 20,
+      "site_id": "babylon",
+      "target": "Mars",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 1.1957287788391113,
+      "candidate_sources": [
+        "phase7-mars-babylon-evening-last-rising:candidate:target",
+        "phase7-mars-babylon-evening-last-rising:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-mars-babylon-evening-last-rising",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2460690,
+        "event_jd_ut": 2460689.1079828246,
+        "observation_day_key": 2460689,
+        "phase": "evening_last_rising",
+        "reason": null,
+        "search_start_utc": "2025-01-03T00:00:00Z",
+        "search_window_days": 20,
+        "site_id": "babylon",
+        "status": "evaluated",
+        "target": "Mars"
+      },
+      "case_id": "phase7-mars-babylon-evening-last-rising",
+      "guard_sources": [
+        "phase7-mars-babylon-evening-last-rising:guard:target",
+        "phase7-mars-babylon-evening-last-rising:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2460689.095351969,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460689.0988033,
+          "target_minus_solar_boundary_minutes": 4.969916716217995
+        },
+        "crossing_bracket_jd_ut": [
+          2460689.107982824,
+          2460689.108677268
+        ],
+        "crossing_bracket_margin_magnitude": [
+          -0.005430673073453018,
+          0.2670597360303937
+        ],
+        "crossing_direction": "negative_to_positive",
+        "event_jd_ut": 2460689.107996664,
+        "guard_day_basis": "target_boundary_outside_requested_solar_side",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2460690.0959732365,
+          "status": "does_not_qualify",
+          "target_boundary_jd_ut": 2460690.0946817817,
+          "target_minus_solar_boundary_minutes": -1.8596948683261871
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 32.55,
+      "longitude_deg": 44.42,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "evening_last_rising",
+      "search_start_utc": "2025-01-03T00:00:00Z",
+      "search_window_days": 20,
+      "site_id": "babylon",
+      "target": "Mars",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 0.6795778870582581,
+      "candidate_sources": [
+        "phase7-jupiter-levant-evening-last-setting:candidate:target",
+        "phase7-jupiter-levant-evening-last-setting:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-jupiter-levant-evening-last-setting",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2460034,
+        "event_jd_ut": 2460033.188178167,
+        "observation_day_key": 2460033,
+        "phase": "evening_last_setting",
+        "reason": null,
+        "search_start_utc": "2023-03-20T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "levant",
+        "status": "evaluated",
+        "target": "Jupiter"
+      },
+      "case_id": "phase7-jupiter-levant-evening-last-setting",
+      "guard_sources": [
+        "phase7-jupiter-levant-evening-last-setting:guard:target",
+        "phase7-jupiter-levant-evening-last-setting:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2460033.165427432,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460033.1939683533,
+          "target_minus_solar_boundary_minutes": 41.098926812410355
+        },
+        "crossing_bracket_jd_ut": [
+          2460033.188178171,
+          2460033.188872616
+        ],
+        "crossing_bracket_margin_magnitude": [
+          0.0011427447886318554,
+          -0.09980007745094532
+        ],
+        "crossing_direction": "positive_to_negative",
+        "event_jd_ut": 2460033.1881860327,
+        "guard_day_basis": "visibility_margin_crossing_missing",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2460034.165981347,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460034.192035049,
+          "target_minus_solar_boundary_minutes": 37.51733087003231
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 35.0,
+      "longitude_deg": 35.0,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "evening_last_setting",
+      "search_start_utc": "2023-03-20T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "levant",
+      "target": "Jupiter",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 0.7590383291244507,
+      "candidate_sources": [
+        "phase7-jupiter-levant-morning-first-rising:candidate:target",
+        "phase7-jupiter-levant-morning-first-rising:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-jupiter-levant-morning-first-rising",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2460070,
+        "event_jd_ut": 2460070.591375516,
+        "observation_day_key": 2460071,
+        "phase": "morning_first_rising",
+        "reason": null,
+        "search_start_utc": "2023-04-25T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "levant",
+        "status": "evaluated",
+        "target": "Jupiter"
+      },
+      "case_id": "phase7-jupiter-levant-morning-first-rising",
+      "guard_sources": [
+        "phase7-jupiter-levant-morning-first-rising:guard:target",
+        "phase7-jupiter-levant-morning-first-rising:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2460070.614576039,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460070.5854956303,
+          "target_minus_solar_boundary_minutes": -41.87578842043877
+        },
+        "crossing_bracket_jd_ut": [
+          2460070.590681077,
+          2460070.591375521
+        ],
+        "crossing_bracket_margin_magnitude": [
+          -0.1119842879558548,
+          0.0014356712919210146
+        ],
+        "crossing_direction": "negative_to_positive",
+        "event_jd_ut": 2460070.5913667306,
+        "guard_day_basis": "visibility_margin_crossing_missing",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2460069.61525388,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460069.587777995,
+          "target_minus_solar_boundary_minutes": -39.56527456641197
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 35.0,
+      "longitude_deg": 35.0,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "morning_first_rising",
+      "search_start_utc": "2023-04-25T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "levant",
+      "target": "Jupiter",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 0.14463812112808228,
+      "candidate_sources": [
+        "phase7-jupiter-levant-morning-first-setting:candidate:target",
+        "phase7-jupiter-levant-morning-first-setting:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-jupiter-levant-morning-first-setting",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2460252,
+        "event_jd_ut": 2460252.6596124168,
+        "observation_day_key": 2460253,
+        "phase": "morning_first_setting",
+        "reason": null,
+        "search_start_utc": "2023-10-25T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "levant",
+        "status": "evaluated",
+        "target": "Jupiter"
+      },
+      "case_id": "phase7-jupiter-levant-morning-first-setting",
+      "guard_sources": [
+        "phase7-jupiter-levant-morning-first-setting:guard:target",
+        "phase7-jupiter-levant-morning-first-setting:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2460252.669223347,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460252.6658324595,
+          "target_minus_solar_boundary_minutes": -4.882878363132477
+        },
+        "crossing_bracket_jd_ut": [
+          2460252.659612419,
+          2460252.660306863
+        ],
+        "crossing_bracket_margin_magnitude": [
+          0.0009559905495348797,
+          -0.39615589196795886
+        ],
+        "crossing_direction": "positive_to_negative",
+        "event_jd_ut": 2460252.659614091,
+        "guard_day_basis": "target_boundary_outside_requested_solar_side",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2460251.668566888,
+          "status": "does_not_qualify",
+          "target_boundary_jd_ut": 2460251.669015977,
+          "target_minus_solar_boundary_minutes": 0.6466879695653915
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 35.0,
+      "longitude_deg": 35.0,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "morning_first_setting",
+      "search_start_utc": "2023-10-25T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "levant",
+      "target": "Jupiter",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 0.19404441118240356,
+      "candidate_sources": [
+        "phase7-jupiter-levant-evening-last-rising:candidate:target",
+        "phase7-jupiter-levant-evening-last-rising:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-jupiter-levant-evening-last-rising",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2460253,
+        "event_jd_ut": 2460252.1222031456,
+        "observation_day_key": 2460252,
+        "phase": "evening_last_rising",
+        "reason": null,
+        "search_start_utc": "2023-10-25T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "levant",
+        "status": "evaluated",
+        "target": "Jupiter"
+      },
+      "case_id": "phase7-jupiter-levant-evening-last-rising",
+      "guard_sources": [
+        "phase7-jupiter-levant-evening-last-rising:guard:target",
+        "phase7-jupiter-levant-evening-last-rising:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2460252.1138417474,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460252.1151190866,
+          "target_minus_solar_boundary_minutes": 1.8393684178590775
+        },
+        "crossing_bracket_jd_ut": [
+          2460252.121508704,
+          2460252.122203148
+        ],
+        "crossing_bracket_margin_magnitude": [
+          -0.36370130580446625,
+          0.0011812353453397595
+        ],
+        "crossing_direction": "negative_to_positive",
+        "event_jd_ut": 2460252.1222008998,
+        "guard_day_basis": "target_boundary_outside_requested_solar_side",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2460253.113193299,
+          "status": "does_not_qualify",
+          "target_boundary_jd_ut": 2460253.112105262,
+          "target_minus_solar_boundary_minutes": -1.5667735040187836
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 35.0,
+      "longitude_deg": 35.0,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "evening_last_rising",
+      "search_start_utc": "2023-10-25T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "levant",
+      "target": "Jupiter",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "captured_engine_result": {
+        "case_id": "phase7-saturn-greenwich-evening-last-setting",
+        "comparison_day_status": null,
+        "comparison_observation_day_key": null,
+        "event_jd_ut": null,
+        "observation_day_key": null,
+        "phase": "evening_last_setting",
+        "reason": "target_altitude_out_of_domain",
+        "search_start_utc": "2024-01-25T00:00:00Z",
+        "search_window_days": 35,
+        "site_id": "greenwich",
+        "status": "not_evaluable",
+        "target": "Saturn"
+      },
+      "case_id": "phase7-saturn-greenwich-evening-last-setting",
+      "independent_event_time_claimed": false,
+      "latitude_deg": 51.48,
+      "longitude_deg": 0.0,
+      "phase": "evening_last_setting",
+      "search_start_utc": "2024-01-25T00:00:00Z",
+      "search_window_days": 35,
+      "site_id": "greenwich",
+      "target": "Saturn",
+      "validation_class": "typed_engine_negative_regression"
+    },
+    {
+      "captured_engine_result": {
+        "case_id": "phase7-saturn-greenwich-morning-first-rising",
+        "comparison_day_status": null,
+        "comparison_observation_day_key": null,
+        "event_jd_ut": null,
+        "observation_day_key": null,
+        "phase": "morning_first_rising",
+        "reason": "no_phase_transition_in_search_window",
+        "search_start_utc": "2024-03-10T00:00:00Z",
+        "search_window_days": 55,
+        "site_id": "greenwich",
+        "status": "not_found",
+        "target": "Saturn"
+      },
+      "case_id": "phase7-saturn-greenwich-morning-first-rising",
+      "independent_event_time_claimed": false,
+      "latitude_deg": 51.48,
+      "longitude_deg": 0.0,
+      "phase": "morning_first_rising",
+      "search_start_utc": "2024-03-10T00:00:00Z",
+      "search_window_days": 55,
+      "site_id": "greenwich",
+      "target": "Saturn",
+      "validation_class": "typed_engine_negative_regression"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 0.23254752159118652,
+      "candidate_sources": [
+        "phase7-saturn-sydney-morning-first-setting:candidate:target",
+        "phase7-saturn-sydney-morning-first-setting:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-saturn-sydney-morning-first-setting",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2460566,
+        "event_jd_ut": 2460566.3150349883,
+        "observation_day_key": 2460567,
+        "phase": "morning_first_setting",
+        "reason": null,
+        "search_start_utc": "2024-09-02T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "sydney",
+        "status": "evaluated",
+        "target": "Saturn"
+      },
+      "case_id": "phase7-saturn-sydney-morning-first-setting",
+      "guard_sources": [
+        "phase7-saturn-sydney-morning-first-setting:guard:target",
+        "phase7-saturn-sydney-morning-first-setting:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2460566.331606468,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460566.330638554,
+          "target_minus_solar_boundary_minutes": -1.3937965035438538
+        },
+        "crossing_bracket_jd_ut": [
+          2460566.315034988,
+          2460566.315729433
+        ],
+        "crossing_bracket_margin_magnitude": [
+          0.0008331261019103309,
+          -0.21407639061544437
+        ],
+        "crossing_direction": "positive_to_negative",
+        "event_jd_ut": 2460566.31503768,
+        "guard_day_basis": "target_boundary_outside_requested_solar_side",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2460565.3325665286,
+          "status": "does_not_qualify",
+          "target_boundary_jd_ut": 2460565.3335069646,
+          "target_minus_solar_boundary_minutes": 1.3542278856039047
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": -33.87,
+      "longitude_deg": 151.21,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "morning_first_setting",
+      "search_start_utc": "2024-09-02T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "sydney",
+      "target": "Saturn",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 0.4250630736351013,
+      "candidate_sources": [
+        "phase7-saturn-sydney-evening-last-rising:candidate:target",
+        "phase7-saturn-sydney-evening-last-rising:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-saturn-sydney-evening-last-rising",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2460561,
+        "event_jd_ut": 2460559.8372024363,
+        "observation_day_key": 2460560,
+        "phase": "evening_last_rising",
+        "reason": null,
+        "search_start_utc": "2024-08-28T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "sydney",
+        "status": "evaluated",
+        "target": "Saturn"
+      },
+      "case_id": "phase7-saturn-sydney-evening-last-rising",
+      "guard_sources": [
+        "phase7-saturn-sydney-evening-last-rising:guard:target",
+        "phase7-saturn-sydney-evening-last-rising:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2460559.819705182,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2460559.822990622,
+          "target_minus_solar_boundary_minutes": 4.731033146381378
+        },
+        "crossing_bracket_jd_ut": [
+          2460559.836507997,
+          2460559.837202442
+        ],
+        "crossing_bracket_margin_magnitude": [
+          -0.22296030604297812,
+          0.001592684266798372
+        ],
+        "crossing_direction": "negative_to_positive",
+        "event_jd_ut": 2460559.8371975166,
+        "guard_day_basis": "target_boundary_outside_requested_solar_side",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2460560.8201736286,
+          "status": "does_not_qualify",
+          "target_boundary_jd_ut": 2460560.8200066495,
+          "target_minus_solar_boundary_minutes": -0.24044997990131378
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": -33.87,
+      "longitude_deg": 151.21,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "evening_last_rising",
+      "search_start_utc": "2024-08-28T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "sydney",
+      "target": "Saturn",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 5.8789461851119995,
+      "candidate_sources": [
+        "phase7-sirius-new-orleans-evening-last-setting:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-sirius-new-orleans-evening-last-setting",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2461191,
+        "event_jd_ut": 2461190.55732619,
+        "observation_day_key": 2461190,
+        "phase": "evening_last_setting",
+        "reason": null,
+        "search_start_utc": "2026-05-20T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "new_orleans",
+        "status": "evaluated",
+        "target": "Sirius"
+      },
+      "case_id": "phase7-sirius-new-orleans-evening-last-setting",
+      "guard_sources": [
+        "phase7-sirius-new-orleans-evening-last-setting:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2461190.5379638504,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2461190.565750021,
+          "target_minus_solar_boundary_minutes": 40.012085661292076
+        },
+        "crossing_bracket_jd_ut": [
+          2461190.556631748,
+          2461190.557326192
+        ],
+        "crossing_bracket_margin_magnitude": [
+          0.021460439353276684,
+          -0.0023312227202207936
+        ],
+        "crossing_direction": "positive_to_negative",
+        "event_jd_ut": 2461190.557258147,
+        "guard_day_basis": "visibility_margin_crossing_missing",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2461191.538345363,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2461191.5630195714,
+          "target_minus_solar_boundary_minutes": 35.53086005151272
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 30.0,
+      "longitude_deg": -90.0,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "evening_last_setting",
+      "search_start_utc": "2026-05-20T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "new_orleans",
+      "target": "Sirius",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 3.780989348888397,
+      "candidate_sources": [
+        "phase7-sirius-new-orleans-morning-first-rising:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-sirius-new-orleans-morning-first-rising",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2461255,
+        "event_jd_ut": 2461255.950317484,
+        "observation_day_key": 2461256,
+        "phase": "morning_first_rising",
+        "reason": null,
+        "search_start_utc": "2026-07-24T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "new_orleans",
+        "status": "evaluated",
+        "target": "Sirius"
+      },
+      "case_id": "phase7-sirius-new-orleans-morning-first-rising",
+      "guard_sources": [
+        "phase7-sirius-new-orleans-morning-first-rising:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2461255.9726806288,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2461255.9440566017,
+          "target_minus_solar_boundary_minutes": -41.21859893202782
+        },
+        "crossing_bracket_jd_ut": [
+          2461255.949623044,
+          2461255.950317489
+        ],
+        "crossing_bracket_margin_magnitude": [
+          -0.10772833506256374,
+          0.007246100257285448
+        ],
+        "crossing_direction": "negative_to_positive",
+        "event_jd_ut": 2461255.9502737224,
+        "guard_day_basis": "visibility_margin_crossing_missing",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2461254.972263652,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2461254.946786912,
+          "target_minus_solar_boundary_minutes": -36.68650522828102
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 30.0,
+      "longitude_deg": -90.0,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "morning_first_rising",
+      "search_start_utc": "2026-07-24T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "new_orleans",
+      "target": "Sirius",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 1.0195881128311157,
+      "candidate_sources": [
+        "phase7-sirius-new-orleans-morning-first-setting:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-sirius-new-orleans-morning-first-setting",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2461020,
+        "event_jd_ut": 2461021.019883834,
+        "observation_day_key": 2461021,
+        "phase": "morning_first_setting",
+        "reason": null,
+        "search_start_utc": "2025-12-01T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "new_orleans",
+        "status": "evaluated",
+        "target": "Sirius"
+      },
+      "case_id": "phase7-sirius-new-orleans-morning-first-setting",
+      "guard_sources": [
+        "phase7-sirius-new-orleans-morning-first-setting:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2461021.032110314,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2461021.0299446667,
+          "target_minus_solar_boundary_minutes": -3.1185320019721985
+        },
+        "crossing_bracket_jd_ut": [
+          2461021.019883831,
+          2461021.020578275
+        ],
+        "crossing_bracket_margin_magnitude": [
+          0.005153653678729775,
+          -0.2980517469180539
+        ],
+        "crossing_direction": "positive_to_negative",
+        "event_jd_ut": 2461021.0198956346,
+        "guard_day_basis": "target_boundary_outside_requested_solar_side",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2461020.0316335494,
+          "status": "does_not_qualify",
+          "target_boundary_jd_ut": 2461020.0326750143,
+          "target_minus_solar_boundary_minutes": 1.4997095614671707
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 30.0,
+      "longitude_deg": -90.0,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "morning_first_setting",
+      "search_start_utc": "2025-12-01T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "new_orleans",
+      "target": "Sirius",
+      "validation_class": "independent_timed_event_oracle"
+    },
+    {
+      "absolute_engine_oracle_difference_seconds": 0.41468292474746704,
+      "candidate_sources": [
+        "phase7-sirius-new-orleans-evening-last-rising:candidate:sun"
+      ],
+      "captured_engine_result": {
+        "case_id": "phase7-sirius-new-orleans-evening-last-rising",
+        "comparison_day_status": "does_not_qualify",
+        "comparison_observation_day_key": 2461061,
+        "event_jd_ut": 2461060.488668482,
+        "observation_day_key": 2461060,
+        "phase": "evening_last_rising",
+        "reason": null,
+        "search_start_utc": "2026-01-10T00:00:00Z",
+        "search_window_days": 15,
+        "site_id": "new_orleans",
+        "status": "evaluated",
+        "target": "Sirius"
+      },
+      "case_id": "phase7-sirius-new-orleans-evening-last-rising",
+      "guard_sources": [
+        "phase7-sirius-new-orleans-evening-last-rising:guard:sun"
+      ],
+      "independent_event_time_claimed": true,
+      "independent_oracle": {
+        "algorithm_id": "external_airless_geometry_photometry_plus_independent_pack_equations_and_phase_window_v1",
+        "candidate_window_geometry": {
+          "solar_horizon_jd_ut": 2461060.4761997443,
+          "status": "qualifies",
+          "target_boundary_jd_ut": 2461060.4792400734,
+          "target_minus_solar_boundary_minutes": 4.378073886036873
+        },
+        "crossing_bracket_jd_ut": [
+          2461060.488668484,
+          2461060.489362928
+        ],
+        "crossing_bracket_margin_magnitude": [
+          -0.0020124269108015014,
+          0.2892981438794897
+        ],
+        "crossing_direction": "negative_to_positive",
+        "event_jd_ut": 2461060.4886732814,
+        "guard_day_basis": "target_boundary_outside_requested_solar_side",
+        "guard_day_status": "does_not_qualify",
+        "guard_window_geometry": {
+          "solar_horizon_jd_ut": 2461061.476803846,
+          "status": "does_not_qualify",
+          "target_boundary_jd_ut": 2461061.476509698,
+          "target_minus_solar_boundary_minutes": -0.4235731065273285
+        },
+        "oracle_reproduction_tolerance_seconds": 0.01
+      },
+      "latitude_deg": 30.0,
+      "longitude_deg": -90.0,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "phase": "evening_last_rising",
+      "search_start_utc": "2026-01-10T00:00:00Z",
+      "search_window_days": 15,
+      "site_id": "new_orleans",
+      "target": "Sirius",
+      "validation_class": "independent_timed_event_oracle"
+    }
+  ],
+  "coverage": {
+    "external_source_file_count": 40,
+    "independent_timed_event_oracle_count": 12,
+    "matrix_cell_count": 16,
+    "normalized_captured_engine_results_sha256": "27697c760bb146a098c48668537e18cb738662aa27ce9e46e10d02b2b23e2981",
+    "required_phases": [
+      "morning_first_rising",
+      "morning_first_setting",
+      "evening_last_rising",
+      "evening_last_setting"
+    ],
+    "required_targets": [
+      "Mars",
+      "Jupiter",
+      "Saturn",
+      "Sirius"
+    ],
+    "typed_engine_negative_regression_count": 4
+  },
+  "exact_data_pack": {
+    "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+    "pack_id": "moira-physical-heliacal-visibility",
+    "version": "1.2.0"
+  },
+  "external_sources": {
+    "astropy_erfa": {
+      "astropy_iers_data_version": "0.2026.3.23.0.51.38",
+      "astropy_version": "7.2.0",
+      "automatic_download": false,
+      "iers_finals2000a": {
+        "bytes": 3731988,
+        "sha256": "539a609650439fc0c368494a9e2c59d9078cc4db65d171065b81e469b90ed627"
+      },
+      "iers_readme": {
+        "bytes": 3429,
+        "sha256": "7c6182cc0fd0cbece39711f648d15e48b49168925602e360a5709c5ccc8d5a12"
+      },
+      "pyerfa_version": "2.0.1.5",
+      "role": "independent Sirius ICRS space-motion and airless AltAz transform"
+    },
+    "hipparcos": {
+      "admitted_astrometry": {
+        "catalog_v_magnitude_not_used": true,
+        "dec_icrs_j1991_25": "-16 42 47.3",
+        "hipparcos_id": 32349,
+        "parallax_mas": 379.21,
+        "pm_dec_mas_per_year": -1223.08,
+        "pm_ra_cos_dec_mas_per_year": -546.01,
+        "ra_icrs_j1991_25": "06 45 09.25",
+        "radial_velocity_assumption_km_per_s": 0.0
+      },
+      "authority": "ESA Hipparcos and Tycho Catalogues, VizieR I/239",
+      "catalog_page": "https://cdsarc.cds.unistra.fr/viz-bin/cat/I/239",
+      "query": {
+        "bytes": 2204,
+        "filename": "sirius-hip32349.tsv",
+        "sha256": "2f0f22577089a988b1448dfeb4d4bd26db09663185337b73ac61ccdb5a962538"
+      },
+      "query_url": "https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=I%2F239%2Fhip_main&HIP=32349&-out=HIP%2CRAhms%2CDEdms%2CPlx%2CpmRA%2CpmDE%2CVmag",
+      "readme": {
+        "bytes": 69008,
+        "filename": "ReadMe",
+        "sha256": "49a24be0c342a74e2357a048d2434a77cbb165690afe34b3c18989a4c24d0272"
+      }
+    },
+    "jpl_horizons": {
+      "api_documentation": "https://ssd-api.jpl.nasa.gov/doc/horizons.html",
+      "authority": "NASA/JPL Horizons",
+      "files": {
+        "phase7-jupiter-levant-evening-last-rising:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460251.955536479130",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460252.288869812153",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-jupiter-levant-evening-last-rising--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "9dae934533fce6444db9ea1f58aeec49868c85b9a50c28e465cba40458a0ebe1"
+        },
+        "phase7-jupiter-levant-evening-last-rising:candidate:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460251.955536479130",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460252.288869812153",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100624,
+          "filename": "phase7-jupiter-levant-evening-last-rising--candidate--target--1min.json",
+          "row_count": 481,
+          "sha256": "d5f20a5b772b18279f24ab49388619e597c3de9b797721f90a9d17f20f4e022a"
+        },
+        "phase7-jupiter-levant-evening-last-rising:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460252.955536479130",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460253.288869812153",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-jupiter-levant-evening-last-rising--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "7329c3fccf736546ad382fc5c55ed534a5313e22392ae357f0bdfdd420042e9d"
+        },
+        "phase7-jupiter-levant-evening-last-rising:guard:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460252.955536479130",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460253.288869812153",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100624,
+          "filename": "phase7-jupiter-levant-evening-last-rising--guard--target--1min.json",
+          "row_count": 481,
+          "sha256": "c182919d130c9a2d01a46e8c1197e45d64d960d494a7eedb9737c06bcdf7479a"
+        },
+        "phase7-jupiter-levant-evening-last-setting:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460033.021511500701",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460033.354844833724",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-jupiter-levant-evening-last-setting--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "da3daf1b2284ef55496caf7c6e300024208f15e4d14e2b6532f53d8f610c08ec"
+        },
+        "phase7-jupiter-levant-evening-last-setting:candidate:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460033.021511500701",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460033.354844833724",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100624,
+          "filename": "phase7-jupiter-levant-evening-last-setting--candidate--target--1min.json",
+          "row_count": 481,
+          "sha256": "c39099f1be5941aa929903e0bf331c55dfbfb207251978bc134c34e1c5c5dadd"
+        },
+        "phase7-jupiter-levant-evening-last-setting:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460034.021511500701",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460034.354844833724",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-jupiter-levant-evening-last-setting--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "ca61c21615d1f23254c6e0a3cf6a4b8375d0c6265231fd901c4045276eeb8baa"
+        },
+        "phase7-jupiter-levant-evening-last-setting:guard:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460034.021511500701",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460034.354844833724",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100624,
+          "filename": "phase7-jupiter-levant-evening-last-setting--guard--target--1min.json",
+          "row_count": 481,
+          "sha256": "9038af7bfad90193688463f2092d6ac4c504b79a7621f78eba79447ef45391c1"
+        },
+        "phase7-jupiter-levant-morning-first-rising:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460070.424708849285",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460070.758042182308",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-jupiter-levant-morning-first-rising--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "5eddd2f0fa917da030e37fc8bea9925c436ef33b347416bfe42df242ab515a5c"
+        },
+        "phase7-jupiter-levant-morning-first-rising:candidate:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460070.424708849285",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460070.758042182308",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100624,
+          "filename": "phase7-jupiter-levant-morning-first-rising--candidate--target--1min.json",
+          "row_count": 481,
+          "sha256": "a79b32f5e7788a8a3add9a5fb633cacf3fef4cd9ec8e3267b4912d6bae23e17d"
+        },
+        "phase7-jupiter-levant-morning-first-rising:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460069.424708849285",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460069.758042182308",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-jupiter-levant-morning-first-rising--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "c92b3e6a436b9135096f6faac26ac075a5d14b1b07931ae2dfaac0a3f51ddf73"
+        },
+        "phase7-jupiter-levant-morning-first-rising:guard:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460069.424708849285",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460069.758042182308",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100624,
+          "filename": "phase7-jupiter-levant-morning-first-rising--guard--target--1min.json",
+          "row_count": 481,
+          "sha256": "becd2646b5926d9a1b1966cbff2090abd2f5ea83bbef0d2543b29f152f55dfe8"
+        },
+        "phase7-jupiter-levant-morning-first-setting:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460252.492945750244",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460252.826279083267",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-jupiter-levant-morning-first-setting--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "6d42f69797b696f64488c45c152b3190230098134c0cf863cb95a9957d36eeba"
+        },
+        "phase7-jupiter-levant-morning-first-setting:candidate:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460252.492945750244",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460252.826279083267",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100624,
+          "filename": "phase7-jupiter-levant-morning-first-setting--candidate--target--1min.json",
+          "row_count": 481,
+          "sha256": "75d3b7baf0ff05c71bd6583c59a2afd7cf34f4f7eee4d1b0f01eb3e048e22b8a"
+        },
+        "phase7-jupiter-levant-morning-first-setting:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460251.492945750244",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460251.826279083267",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-jupiter-levant-morning-first-setting--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "53bc1785c2cda22decae80a5cc7bc1ef44c62e0e256b279946f7a2b00b8e445c"
+        },
+        "phase7-jupiter-levant-morning-first-setting:guard:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "599",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "35.00000000,35.00000000,0.000000",
+          "START_TIME": "JD2460251.492945750244",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460251.826279083267",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100624,
+          "filename": "phase7-jupiter-levant-morning-first-setting--guard--target--1min.json",
+          "row_count": 481,
+          "sha256": "874e0677360e6922661dfcacbdcfd8e5e35a4b2ff2807378ae52e3c9af01d2d9"
+        },
+        "phase7-mars-babylon-evening-last-rising:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "44.42000000,32.55000000,0.000000",
+          "START_TIME": "JD2460688.941316158045",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460689.274649491068",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-mars-babylon-evening-last-rising--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "13e847615dce9f5140b23600d9b3c1ead5a44e46a528c65c8ec19659575c7c41"
+        },
+        "phase7-mars-babylon-evening-last-rising:candidate:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "499",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "44.42000000,32.55000000,0.000000",
+          "START_TIME": "JD2460688.941316158045",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460689.274649491068",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 99745,
+          "filename": "phase7-mars-babylon-evening-last-rising--candidate--target--1min.json",
+          "row_count": 481,
+          "sha256": "cdf8226d1bcd49f4cb65fe191321831f22b1f5419fed5a591406a48015dff2ab"
+        },
+        "phase7-mars-babylon-evening-last-rising:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "44.42000000,32.55000000,0.000000",
+          "START_TIME": "JD2460689.941316158045",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460690.274649491068",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-mars-babylon-evening-last-rising--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "3f3019422d063b114bef5bb41e55cbb8af33ea314ddba9b360efd322d92d691d"
+        },
+        "phase7-mars-babylon-evening-last-rising:guard:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "499",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "44.42000000,32.55000000,0.000000",
+          "START_TIME": "JD2460689.941316158045",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460690.274649491068",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 99745,
+          "filename": "phase7-mars-babylon-evening-last-rising--guard--target--1min.json",
+          "row_count": 481,
+          "sha256": "5cbe3df6f13c5f317876b969deaf2703d90c5a424bb5aa6c067fbfd2d7a6914f"
+        },
+        "phase7-mars-babylon-morning-first-setting:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "44.42000000,32.55000000,0.000000",
+          "START_TIME": "JD2460695.490676125046",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460695.824009458069",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-mars-babylon-morning-first-setting--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "bdb3f649a97c3ae08243db72b8ee115c21274c5315a7bafff3a76f253236356e"
+        },
+        "phase7-mars-babylon-morning-first-setting:candidate:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "499",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "44.42000000,32.55000000,0.000000",
+          "START_TIME": "JD2460695.490676125046",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460695.824009458069",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 99745,
+          "filename": "phase7-mars-babylon-morning-first-setting--candidate--target--1min.json",
+          "row_count": 481,
+          "sha256": "c9373ba4224908427a6cf813c5c75e6d9ce6e7e6bb341afdfcd98fe6146100a8"
+        },
+        "phase7-mars-babylon-morning-first-setting:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "44.42000000,32.55000000,0.000000",
+          "START_TIME": "JD2460694.490676125046",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460694.824009458069",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-mars-babylon-morning-first-setting--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "61680b32768f981e867bf333886f95deac54ba2a73cee2cc9ee9b10f2f18e22f"
+        },
+        "phase7-mars-babylon-morning-first-setting:guard:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "499",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "44.42000000,32.55000000,0.000000",
+          "START_TIME": "JD2460694.490676125046",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460694.824009458069",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 99745,
+          "filename": "phase7-mars-babylon-morning-first-setting--guard--target--1min.json",
+          "row_count": 481,
+          "sha256": "f68ae554053ba1081b49e789143a5327f6ac026160a0155f23321bd3de10f003"
+        },
+        "phase7-saturn-sydney-evening-last-rising:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "151.21000000,-33.87000000,0.000000",
+          "START_TIME": "JD2460559.670535769779",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460560.003869102802",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-saturn-sydney-evening-last-rising--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "4f085df7a91fc8f056689c346ea5410fc00658b1f4cb37864307a7fb0b8124d2"
+        },
+        "phase7-saturn-sydney-evening-last-rising:candidate:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "699",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "151.21000000,-33.87000000,0.000000",
+          "START_TIME": "JD2460559.670535769779",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460560.003869102802",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100664,
+          "filename": "phase7-saturn-sydney-evening-last-rising--candidate--target--1min.json",
+          "row_count": 481,
+          "sha256": "c9fcff45bf11c3e4da8f63982cf2606b7b2d0a77999ef5a7102d72f2b8682373"
+        },
+        "phase7-saturn-sydney-evening-last-rising:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "151.21000000,-33.87000000,0.000000",
+          "START_TIME": "JD2460560.670535769779",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460561.003869102802",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-saturn-sydney-evening-last-rising--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "32997691752db75f6ea09c4b1e09e5800219156039e7a900603c43a2a2798138"
+        },
+        "phase7-saturn-sydney-evening-last-rising:guard:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "699",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "151.21000000,-33.87000000,0.000000",
+          "START_TIME": "JD2460560.670535769779",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460561.003869102802",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100664,
+          "filename": "phase7-saturn-sydney-evening-last-rising--guard--target--1min.json",
+          "row_count": 481,
+          "sha256": "9e9fd51cc0a76f382d651d45c732cea53df91666bbc12327722cd564cd78ca7f"
+        },
+        "phase7-saturn-sydney-morning-first-setting:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "151.21000000,-33.87000000,0.000000",
+          "START_TIME": "JD2460566.148368321825",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460566.481701654848",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-saturn-sydney-morning-first-setting--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "8f25db91ca515125fd60c2149855558814de68eb866a64b9278c5478c384d6f5"
+        },
+        "phase7-saturn-sydney-morning-first-setting:candidate:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "699",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "151.21000000,-33.87000000,0.000000",
+          "START_TIME": "JD2460566.148368321825",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460566.481701654848",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100664,
+          "filename": "phase7-saturn-sydney-morning-first-setting--candidate--target--1min.json",
+          "row_count": 481,
+          "sha256": "0139fdd23fdbef56a298128eaf560285e411c128bf3f65d95a894b1b34498dfb"
+        },
+        "phase7-saturn-sydney-morning-first-setting:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "151.21000000,-33.87000000,0.000000",
+          "START_TIME": "JD2460565.148368321825",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460565.481701654848",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-saturn-sydney-morning-first-setting--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "1c22bedb86e70bbb3996694b13e7e92cb20521d32bb551baa33f621724c9462a"
+        },
+        "phase7-saturn-sydney-morning-first-setting:guard:target": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "699",
+          "QUANTITIES": "4,9,14,15,43",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "151.21000000,-33.87000000,0.000000",
+          "START_TIME": "JD2460565.148368321825",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2460565.481701654848",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 100664,
+          "filename": "phase7-saturn-sydney-morning-first-setting--guard--target--1min.json",
+          "row_count": 481,
+          "sha256": "ff4356943910ac65eadfae2bbc5f42ca8902bab56e523150a9d4fe43b6b66d6e"
+        },
+        "phase7-sirius-new-orleans-evening-last-rising:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "-90.00000000,30.00000000,0.000000",
+          "START_TIME": "JD2461060.322001815308",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2461060.655335148331",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-sirius-new-orleans-evening-last-rising--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "0513264764f1852b63366605cee6a5cc7d914807b75355f1d98957c8efa85882"
+        },
+        "phase7-sirius-new-orleans-evening-last-rising:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "-90.00000000,30.00000000,0.000000",
+          "START_TIME": "JD2461061.322001815308",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2461061.655335148331",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-sirius-new-orleans-evening-last-rising--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "e3daea5c086d8937fce60b663129b75b606f52e606e1bfc9f62ff494778f9f2e"
+        },
+        "phase7-sirius-new-orleans-evening-last-setting:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "-90.00000000,30.00000000,0.000000",
+          "START_TIME": "JD2461190.390659523662",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2461190.723992856685",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-sirius-new-orleans-evening-last-setting--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "69822cb5364cf1c59fa301b88d978368ee85adecb86e58f9d5d21f98489969ec"
+        },
+        "phase7-sirius-new-orleans-evening-last-setting:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "-90.00000000,30.00000000,0.000000",
+          "START_TIME": "JD2461191.390659523662",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2461191.723992856685",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-sirius-new-orleans-evening-last-setting--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "3e7606a4408f84e8f4bc1bc7fc4ee2e8c39d60215664d92e1156f0d07069c1ad"
+        },
+        "phase7-sirius-new-orleans-morning-first-rising:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "-90.00000000,30.00000000,0.000000",
+          "START_TIME": "JD2461255.783650817350",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2461256.116984150372",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-sirius-new-orleans-morning-first-rising--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "4d24ed4cd71a69d6519fe69f756e679b192fb90e3f3cb62b10682ccc1f53b9fc"
+        },
+        "phase7-sirius-new-orleans-morning-first-rising:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "-90.00000000,30.00000000,0.000000",
+          "START_TIME": "JD2461254.783650817350",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2461255.116984150372",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-sirius-new-orleans-morning-first-rising--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "f9f95a8020d6ae625c331f08247677568243ce4f27153c2e3058a2044078d829"
+        },
+        "phase7-sirius-new-orleans-morning-first-setting:candidate:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "-90.00000000,30.00000000,0.000000",
+          "START_TIME": "JD2461020.853217167314",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2461021.186550500337",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-sirius-new-orleans-morning-first-setting--candidate--sun--1min.json",
+          "row_count": 481,
+          "sha256": "96740108dea2e8aae1f0cb44ec3466b86cd7b182b971987e2fe36aed5be06215"
+        },
+        "phase7-sirius-new-orleans-morning-first-setting:guard:sun": {
+          "APPARENT": "AIRLESS",
+          "COMMAND": "10",
+          "QUANTITIES": "4",
+          "REF_SYSTEM": "ICRF",
+          "SITE_COORD": "-90.00000000,30.00000000,0.000000",
+          "START_TIME": "JD2461019.853217167314",
+          "STEP_SIZE": "1 min",
+          "STOP_TIME": "JD2461020.186550500337",
+          "TIME_TYPE": "UT",
+          "api_version": "1.2",
+          "authority": "NASA/JPL Horizons",
+          "bytes": 48313,
+          "filename": "phase7-sirius-new-orleans-morning-first-setting--guard--sun--1min.json",
+          "row_count": 481,
+          "sha256": "724452ab34a683e798dff61d8b889597d1ad8b38ee1ee5561265082c1507a696"
+        }
+      },
+      "manual": "https://ssd.jpl.nasa.gov/horizons/manual.html",
+      "source_acquisition_spec_sha256": "ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323",
+      "source_manifest_sha256": "23fd58f527f9cc2bc582e11396b992258e5af4ecac5d5f379ac82764d27edb48"
+    }
+  },
+  "limitations": [
+    "one_minute_external_ephemeris_sampling_with_linear_margin_root_interpolation",
+    "four_negative_matrix_cells_are_typed_engine_regressions_not_independent_event_time_oracles",
+    "jpl_planetary_apparent_magnitudes_are_rounded_source_fields",
+    "jpl_saturn_sub_latitudes_are_planetodetic_external_geometry",
+    "sirius_radial_velocity_is_zero_for_the_astrometric_propagation",
+    "subjective_observer_and_real_atmosphere_uncertainty_are_not_probabilistic_confidence",
+    "validation_does_not_admit_mercury_or_venus_physical_events"
+  ],
+  "matrix_spec": {
+    "schema": "moira.physical-heliacal-visibility-broad-oracle-matrix-spec/v1",
+    "sha256": "9237a3829ec97121845a51827fd7013b71f8802fee02005e1d26c4222aec0f9a"
+  },
+  "policy": {
+    "atmosphere": "exact_data_pack_fixed_domain",
+    "background": {
+      "photopic_luminance_cd_m2": 0.0001,
+      "scope": "dark_sky_anchor",
+      "scotopic_luminance_cd_m2": 0.00015
+    },
+    "exact_data_pack": {
+      "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c",
+      "pack_id": "moira-physical-heliacal-visibility",
+      "version": "1.2.0"
+    },
+    "local_horizon_altitude_deg": 0.0,
+    "observer_protocol_id": "known_location_directed_averted_observation_v1",
+    "public_search_policy": {
+      "adaptive_minimum_step_minutes": 0.5,
+      "root_time_tolerance_seconds": 0.25,
+      "scan_step_minutes": 5.0
+    },
+    "refraction_model_id": "bennett_extended_v1",
+    "refraction_pressure_hpa": 1013.25,
+    "refraction_relative_humidity": 0.0,
+    "refraction_temperature_c": 10.0,
+    "target_true_altitude_floor_deg": 0.25
+  },
+  "required_engine_contract": {
+    "boundary_source": "visibility_margin",
+    "crossing_certificate_source_sha256": "eacf8c373606c1628cebdd4caa611ece533d368c32c7f86674a13e04a4c13d3e",
+    "crossing_completeness_state": "certified_lipschitz_zero_enclosure",
+    "event_time_semantics": "visibility_margin_zero",
+    "unresolved_certificate_interval_count": 0
+  },
+  "schema": "moira.physical-heliacal-visibility-phase7-broad-oracle/v1",
+  "status": "independent_broad_event_and_typed_negative_validation"
+}

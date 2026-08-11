@@ -32,11 +32,11 @@ Fingerprints bind each class to the canonical LF-normalized UTF-8 content of eve
 | `property_and_invariant_testing` | `computational_assurance` | 4 | `c8134dd842e7066d` | Invariants prove contract and numerical behavior, not observational accuracy. |
 | `legacy_regression_fixtures` | `compatibility_assurance` | 4 | `5e4f9608022411d7` | Regression fixtures freeze compatibility; snapshots are not scientific authority. |
 | `public_contract_and_openapi_parity` | `transport_assurance` | 3 | `49886c5922b89944` | Transport parity proves that typed engine truth survives projection; it does not validate the underlying science. |
-| `external_ephemeris_event_goldens` | `astronomical_and_event_contract_validation` | 3 | `51807cff0e0c5bf5` | The goldens bind geometry, event ownership, and exact pack identity; they are not observed first-visibility dates. |
+| `external_ephemeris_event_goldens` | `astronomical_and_event_contract_validation` | 8 | `5741474dde7af643` | Twelve independently reconstructed event times cover every admitted target and phase, while four additional matrix cells are explicitly typed engine regressions rather than event-time oracles; none are observed first-visibility dates. |
 | `separated_numerical_tolerances` | `numerical_admission` | 5 | `4cd707610d3eb87d` | Solver, storage, interpolation, root, and scenario sensitivity remain separate; there is no aggregate accuracy score. |
 | `native_python_differential` | `implementation_admission` | 3 | `748eaff30dec6e3c` | Differential evidence admits two private numerical kernels only; it is not independent scientific validation. |
-| `release_artifact_and_offline_install` | `release_assurance` | 4 | `87384a17e89ce9ca` | A local clean-artifact receipt proves the tested artifacts; publication and downstream deployment are separate release operations. |
-| `experimental_site_specific_moonlight_quarantine` | `quarantined_research_boundary` | 2 | `2c73e622ce949db8` | The Jones/Paranal experiment is archived research only. It has no runtime module, public API, compatibility contract, packaged resource, release gate, or active roadmap dependency. |
+| `release_artifact_and_offline_install` | `release_assurance` | 4 | `4efce44519438e9b` | A local clean-artifact receipt proves the tested artifacts; publication and downstream deployment are separate release operations. |
+| `experimental_site_specific_moonlight_quarantine` | `quarantined_research_boundary` | 2 | `48e0d8714052b997` | The Jones/Paranal experiment is archived research only. It has no runtime module, public API, compatibility contract, packaged resource, release gate, or active roadmap dependency. |
 
 ## Tolerance law
 

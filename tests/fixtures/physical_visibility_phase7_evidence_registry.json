@@ -80,9 +80,14 @@
       "paths": [
         "tests/golden/physical_visibility_phase3_events.json",
         "tests/integration/test_physical_visibility_phase3_goldens.py",
-        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md"
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md",
+        "scripts/validate_visibility_phase7_broad_oracle.py",
+        "tests/golden/physical_visibility_phase7_broad_oracle.json",
+        "tests/unit/test_visibility_phase7_broad_oracle_governance.py",
+        "tests/integration/test_physical_visibility_phase7_broad_oracle.py",
+        "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_BROAD_ORACLE_2026-08-09.md"
       ],
-      "limitation": "The goldens bind geometry, event ownership, and exact pack identity; they are not observed first-visibility dates."
+      "limitation": "Twelve independently reconstructed event times cover every admitted target and phase, while four additional matrix cells are explicitly typed engine regressions rather than event-time oracles; none are observed first-visibility dates."
     },
     {
       "id": "separated_numerical_tolerances",

@@ -38,6 +38,22 @@
     "server_directory_environment_variable": "MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_DIRECTORY",
     "server_manifest_environment_variable": "MOIRA_SERVER_PHYSICAL_VISIBILITY_DATA_PACK_MANIFEST_SHA256"
   },
+  "validation_boundary": {
+    "phase3_event_golden": {
+      "path": "tests/golden/physical_visibility_phase3_events.json",
+      "sha256": "8111d662df77b1a8b3f53258fef02a1fcf5f3c21a980e3a48df9a7c5d5838518",
+      "independent_timed_event_oracle_count": 2
+    },
+    "phase7_broad_event_oracle": {
+      "path": "tests/golden/physical_visibility_phase7_broad_oracle.json",
+      "sha256": "29d96b8eb1187c013357039df8c224e6a41381d83bb81fd961e24057a563ede9",
+      "matrix_cell_count": 16,
+      "independent_timed_event_oracle_count": 12,
+      "typed_engine_negative_regression_count": 4,
+      "maximum_engine_oracle_difference_seconds": 60.0,
+      "observed_maximum_engine_oracle_difference_seconds": 5.8789461851119995
+    }
+  },
   "release_boundary": {
     "legacy_visibility_default_changed": false,
     "physical_policy_opt_in": true,

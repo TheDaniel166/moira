@@ -33,6 +33,12 @@ GOLDEN_PATH = (
     / "golden"
     / "physical_visibility_phase3_events.json"
 )
+BROAD_GOLDEN_PATH = (
+    REPO_ROOT
+    / "tests"
+    / "golden"
+    / "physical_visibility_phase7_broad_oracle.json"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -149,6 +155,9 @@ def test_every_phase7_evidence_class_binds_existing_canonical_content() -> None:
 def test_packaged_release_identity_binds_event_golden_and_contracts() -> None:
     identity = json.loads(IDENTITY_PATH.read_text(encoding="utf-8"))
     golden = json.loads(GOLDEN_PATH.read_text(encoding="utf-8"))
+    broad_golden = json.loads(
+        BROAD_GOLDEN_PATH.read_text(encoding="utf-8")
+    )
     pack = identity["external_data_pack"]
 
     assert identity["schema"] == (
@@ -167,6 +176,30 @@ def test_packaged_release_identity_binds_event_golden_and_contracts() -> None:
     assert pack["license"] == "CC-BY-SA-4.0"
     assert "jones_moonlight_component_pack" not in identity
     assert "paranal_scenario_data_pack" not in identity
+
+    validation = identity["validation_boundary"]
+    assert validation["phase3_event_golden"] == {
+        "path": "tests/golden/physical_visibility_phase3_events.json",
+        "sha256": _sha256(GOLDEN_PATH),
+        "independent_timed_event_oracle_count": 2,
+    }
+    assert validation["phase7_broad_event_oracle"] == {
+        "path": "tests/golden/physical_visibility_phase7_broad_oracle.json",
+        "sha256": _sha256(BROAD_GOLDEN_PATH),
+        "matrix_cell_count": broad_golden["coverage"]["matrix_cell_count"],
+        "independent_timed_event_oracle_count": broad_golden["coverage"][
+            "independent_timed_event_oracle_count"
+        ],
+        "typed_engine_negative_regression_count": broad_golden["coverage"][
+            "typed_engine_negative_regression_count"
+        ],
+        "maximum_engine_oracle_difference_seconds": 60.0,
+        "observed_maximum_engine_oracle_difference_seconds": max(
+            case["absolute_engine_oracle_difference_seconds"]
+            for case in broad_golden["cases"]
+            if case["independent_event_time_claimed"]
+        ),
+    }
 
     for contract in identity["packaged_compatibility_contracts"]:
         path = REPO_ROOT / contract["path"]

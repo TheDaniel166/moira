@@ -120,9 +120,12 @@ extended objects, optical aids, or live-weather/cloud conditions.
 5. Verify installed Moira version and native backend identity.
 6. Load the pack with downloads disabled and confirm manifest
    `cf93433a...17468c`.
-7. Exercise one evaluated assessment, one evaluated event, one typed unsupported
-   target/phase, and one unconfigured-server HTTP 503.
-8. Promote only the exact staged engine and data artifacts.
+7. Run the source-controlled 16-cell physical-event release matrix: 12
+   independent timed-event comparisons plus 4 typed no-event/domain
+   regressions. Do not treat the four negative cells as event-time oracles.
+8. Exercise one evaluated assessment, one typed unsupported target/phase, and
+   one unconfigured-server HTTP 503 through the installed transport surface.
+9. Promote only the exact staged engine and data artifacts.
 
 Website adoption remains a downstream operation after these engine and data
 release gates pass.
