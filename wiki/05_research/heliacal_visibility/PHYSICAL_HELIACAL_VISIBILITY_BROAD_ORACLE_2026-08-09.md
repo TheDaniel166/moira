@@ -46,9 +46,13 @@ The offline oracle then derives the event from:
 4. independently reconstructed target-boundary and solar-side ownership; and
 5. linear root interpolation on the fixed one-minute external grid.
 
-The builder and validator import neither Moira, the production event solver,
-NumPy, nor a network client. The acquisition script is the only networked
-step. The stored validator replay is offline and checksum locked.
+The builder and Phase 7 validator import neither Moira, the production event
+solver, nor a network client. They contain no direct NumPy import. The isolated
+Sirius authority-validation toolchain uses the declared development-only
+Astropy/ERFA stack and may load NumPy transitively; neither NumPy nor Astropy is
+part of the published engine, the live engine replay, or the base runtime. The
+acquisition script is the only networked step. The stored validator replay is
+offline and checksum locked.
 
 ## Timed-event results
 
@@ -90,6 +94,8 @@ be counted as four additional event-time oracles.
 
 ## Source-controlled evidence
 
+- Frozen acquisition specification:
+  `scripts/visibility_reference_lab/physical_visibility_phase7_source_acquisition_spec_v1.json`
 - Matrix specification:
   `scripts/visibility_reference_lab/physical_visibility_phase7_broad_oracle_matrix_v1.json`
 - Networked acquisition tool:
@@ -102,6 +108,8 @@ be counted as four additional event-time oracles.
   `scripts/validate_visibility_phase7_broad_oracle.py`
 - Immutable golden:
   `tests/golden/physical_visibility_phase7_broad_oracle.json`
+- External-source recovery receipt:
+  `tests/artifacts/release/physical_visibility_phase7_source_recovery_2026-08-11.json`
 - Governance:
   `tests/unit/test_visibility_phase7_broad_oracle_governance.py`
 - Live public-engine replay:
@@ -113,6 +121,31 @@ It records the exact source-file names, byte counts, SHA-256 checksums, query
 identities, pack identity, toolchain receipt, independent brackets, event
 roots, target/solar boundary roots, guard-day basis, captured engine results,
 and residuals.
+
+## Acquisition provenance recovery - 2026-08-11
+
+The external sources and the admitted matrix were frozen in two deliberate
+steps. The network acquisition used the 5,311-byte pre-admission specification
+now preserved at
+`scripts/visibility_reference_lab/physical_visibility_phase7_source_acquisition_spec_v1.json`.
+Its raw LF SHA-256 is
+`ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323`,
+which is the exact digest recorded by the archived NASA/JPL source manifest.
+
+The later admitted matrix adds the release gate and physical-policy receipt.
+Its raw LF SHA-256 is
+`9237a3829ec97121845a51827fd7013b71f8802fee02005e1d26c4222aec0f9a`.
+The acquisition-driving fields - schema, status, selection policy, five sites,
+and all 16 cases - are identical in both files. Governance tests bind the two
+files and reject drift. This separation removes the former self-reference in
+which the acquisition tool defaulted to the later file containing the earlier
+file's digest.
+
+The 47 external source files were also preserved in the verified 48-entry
+archive `physical-visibility-phase7-source-bundle-2026-08-11.zip`, SHA-256
+`ebad4060250702c2dff378c960a67de657dab9a5366856825907e93f88b4e103`.
+The archive remains external; its machine-independent identity and complete
+verification checks are recorded in the source-controlled recovery receipt.
 
 ## Limits of the claim
 

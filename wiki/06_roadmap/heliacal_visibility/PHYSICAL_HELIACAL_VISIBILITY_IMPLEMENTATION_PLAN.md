@@ -1298,6 +1298,33 @@ and records its local receipt at
 No release, installation, deployment, website, or Workspace action is part of
 this engine-only hardening.
 
+### Phase 7 integration and provenance hardening - 2026-08-11
+
+The broad-oracle checkpoint was admitted on the current integration branch
+without changing engine calculations. The exact 5,311-byte source-acquisition
+specification was recovered and preserved separately from the later admitted
+matrix. Its SHA-256,
+`ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323`,
+matches the archived NASA/JPL source manifest. Governance now proves that all
+acquisition-driving fields remain identical to the admitted matrix, and the
+acquisition tool rejects any different input.
+
+The 47 external source files are preserved in the verified external archive
+`physical-visibility-phase7-source-bundle-2026-08-11.zip`, SHA-256
+`ebad4060250702c2dff378c960a67de657dab9a5366856825907e93f88b4e103`.
+The source-controlled recovery receipt records its 48-entry inventory and
+verification checks. Git LF policy now covers every Phase 7 byte-bound text
+artifact, closing the Windows checkout failure without changing a release
+identity or external-source checksum.
+
+The current integrated engine replay passed all 16 matrix cells against
+content-admitted DE441 and the exact `1.2.0` pack, with no skip or resource
+failure. The project integration environment contained no NumPy. The isolated
+Astropy/ERFA Sirius authority-validation toolchain remains development-only
+and is not part of the engine replay or published runtime. No tag, package
+publication, downstream installation, deployment, website, or Workspace
+action was authorized by this admission.
+
 ### Evidence classes
 
 - [x] Quarantine the site-specific experimental moonlight branch outside this

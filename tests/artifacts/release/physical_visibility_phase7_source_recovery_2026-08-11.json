@@ -1,0 +1,46 @@
+{
+  "schema": "moira.physical-visibility.phase7-source-recovery/v1",
+  "status": "verified",
+  "verified_at_utc": "2026-08-11T11:37:14.1389556Z",
+  "bundle_id": "physical-visibility-phase7-2026-08-11",
+  "external_archive": {
+    "filename": "physical-visibility-phase7-source-bundle-2026-08-11.zip",
+    "bytes": 1879072,
+    "sha256": "ebad4060250702c2dff378c960a67de657dab9a5366856825907e93f88b4e103",
+    "embedded_entry_count": 48,
+    "source_file_count": 47,
+    "repository_embedded": false
+  },
+  "archive_contents_manifest": {
+    "filename": "physical-visibility-phase7-source-bundle-2026-08-11.manifest.json",
+    "bytes": 29885,
+    "sha256": "633bd6e2f0ed2807f508ba758998cd98758e6eeb165fdbffb6d958082df732e3"
+  },
+  "preserved_sources": {
+    "jpl_horizons_response_count": 40,
+    "jpl_horizons_manifest_count": 1,
+    "hipparcos_file_count": 2,
+    "iers_file_count": 2,
+    "engine_receipt_count": 2
+  },
+  "source_acquisition_spec": {
+    "path": "scripts/visibility_reference_lab/physical_visibility_phase7_source_acquisition_spec_v1.json",
+    "bytes": 5311,
+    "sha256": "ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323",
+    "driving_fields_match_admitted_matrix": true,
+    "repository_embedded": true,
+    "external_archive_embedded": false
+  },
+  "checks": {
+    "horizons_manifest_declares_40_files": true,
+    "horizons_manifest_hashes_match_sources": true,
+    "pinned_iers_hashes_match": true,
+    "copied_payload_hashes_match_sources": true,
+    "archive_entry_set_matches_manifest": true,
+    "expanded_archive_hashes_match_manifest": true,
+    "embedded_payload_manifest_parses": true,
+    "original_sources_unchanged_after_archive": true,
+    "external_archive_sha256_receipt_matches": true,
+    "acquisition_spec_hash_matches_source_manifest": true
+  }
+}

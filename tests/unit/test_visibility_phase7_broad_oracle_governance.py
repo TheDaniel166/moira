@@ -7,6 +7,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from scripts import acquire_visibility_phase7_oracle_sources as acquisition
+
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _SPEC_PATH = (
@@ -14,6 +16,12 @@ _SPEC_PATH = (
     / "scripts"
     / "visibility_reference_lab"
     / "physical_visibility_phase7_broad_oracle_matrix_v1.json"
+)
+_ACQUISITION_SPEC_PATH = (
+    _REPO_ROOT
+    / "scripts"
+    / "visibility_reference_lab"
+    / "physical_visibility_phase7_source_acquisition_spec_v1.json"
 )
 _GOLDEN_PATH = (
     _REPO_ROOT
@@ -33,6 +41,13 @@ _ACQUISITION_PATH = (
 _DISCOVERY_PATH = (
     _REPO_ROOT / "scripts" / "discover_visibility_phase7_oracle_windows.py"
 )
+_RECOVERY_RECEIPT_PATH = (
+    _REPO_ROOT
+    / "tests"
+    / "artifacts"
+    / "release"
+    / "physical_visibility_phase7_source_recovery_2026-08-11.json"
+)
 _GOLDEN_SHA256 = (
     "29d96b8eb1187c013357039df8c224e6a41381d83bb81fd961e24057a563ede9"
 )
@@ -41,6 +56,9 @@ _PACK_MANIFEST_SHA256 = (
 )
 _CERTIFICATE_SHA256 = (
     "eacf8c373606c1628cebdd4caa611ece533d368c32c7f86674a13e04a4c13d3e"
+)
+_ACQUISITION_SPEC_SHA256 = (
+    "ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323"
 )
 
 
@@ -93,6 +111,65 @@ def test_phase7_matrix_is_the_complete_target_phase_product() -> None:
         ),
         "negative_cells_are_not_event_time_oracles": True,
     }
+
+
+def test_phase7_source_acquisition_spec_is_exact_and_admitted() -> None:
+    spec = json.loads(_SPEC_PATH.read_text(encoding="utf-8"))
+    source_spec = json.loads(
+        _ACQUISITION_SPEC_PATH.read_text(encoding="utf-8")
+    )
+    acquisition_keys = (
+        "schema",
+        "status",
+        "selection_policy",
+        "sites",
+        "cases",
+    )
+
+    assert _sha256(_ACQUISITION_SPEC_PATH) == _ACQUISITION_SPEC_SHA256
+    assert tuple(source_spec) == acquisition_keys
+    assert source_spec == {key: spec[key] for key in acquisition_keys}
+    assert _golden()["external_sources"]["jpl_horizons"][
+        "source_acquisition_spec_sha256"
+    ] == _ACQUISITION_SPEC_SHA256
+    assert acquisition.DEFAULT_SPEC == _ACQUISITION_SPEC_PATH
+    assert acquisition.ACQUISITION_SPEC_SHA256 == _ACQUISITION_SPEC_SHA256
+    acquisition._validate_acquisition_spec(
+        _ACQUISITION_SPEC_PATH,
+        source_spec,
+    )
+
+
+def test_phase7_external_source_recovery_receipt_is_complete() -> None:
+    receipt = json.loads(_RECOVERY_RECEIPT_PATH.read_text(encoding="utf-8"))
+    archive = receipt["external_archive"]
+    preserved = receipt["preserved_sources"]
+    source_spec = receipt["source_acquisition_spec"]
+
+    assert receipt["schema"] == (
+        "moira.physical-visibility.phase7-source-recovery/v1"
+    )
+    assert receipt["status"] == "verified"
+    assert archive == {
+        "filename": (
+            "physical-visibility-phase7-source-bundle-2026-08-11.zip"
+        ),
+        "bytes": 1879072,
+        "sha256": (
+            "ebad4060250702c2dff378c960a67de657dab9a5366856825907e93f88b4e103"
+        ),
+        "embedded_entry_count": 48,
+        "source_file_count": 47,
+        "repository_embedded": False,
+    }
+    assert sum(preserved.values()) == archive["source_file_count"]
+    assert source_spec["path"] == str(
+        _ACQUISITION_SPEC_PATH.relative_to(_REPO_ROOT)
+    ).replace("\\", "/")
+    assert source_spec["bytes"] == _ACQUISITION_SPEC_PATH.stat().st_size
+    assert source_spec["sha256"] == _sha256(_ACQUISITION_SPEC_PATH)
+    assert source_spec["sha256"] == _ACQUISITION_SPEC_SHA256
+    assert all(receipt["checks"].values())
 
 
 def test_phase7_golden_is_immutable_and_bound_to_exact_inputs() -> None:

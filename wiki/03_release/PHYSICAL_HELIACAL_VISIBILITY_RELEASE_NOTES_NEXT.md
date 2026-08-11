@@ -98,6 +98,16 @@ The four negative cells are not relabeled as event-time oracles. A separate
 live replay executes all 16 cells through the public engine, including the
 35-60 day no-transition/domain searches.
 
+The exact 5,311-byte acquisition-time matrix is preserved separately from the
+later admitted release-policy matrix. Its SHA-256,
+`ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323`,
+matches the archived JPL source manifest, and governance rejects any drift in
+their shared acquisition-driving fields. A verified external recovery archive
+preserves all 47 source files under a source-controlled identity receipt. The
+engine replay and published runtime require neither NumPy nor Astropy; the
+pinned Astropy/ERFA Sirius reconstruction remains isolated development-only
+authority validation.
+
 ## Native boundary
 
 Phase 6 moved only two dense numerical operations to the required native

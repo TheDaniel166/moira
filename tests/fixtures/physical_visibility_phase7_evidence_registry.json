@@ -81,8 +81,11 @@
         "tests/golden/physical_visibility_phase3_events.json",
         "tests/integration/test_physical_visibility_phase3_goldens.py",
         "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_PHASE3_CLOSURE_2026-07-30.md",
+        "scripts/acquire_visibility_phase7_oracle_sources.py",
+        "scripts/visibility_reference_lab/physical_visibility_phase7_source_acquisition_spec_v1.json",
         "scripts/validate_visibility_phase7_broad_oracle.py",
         "tests/golden/physical_visibility_phase7_broad_oracle.json",
+        "tests/artifacts/release/physical_visibility_phase7_source_recovery_2026-08-11.json",
         "tests/unit/test_visibility_phase7_broad_oracle_governance.py",
         "tests/integration/test_physical_visibility_phase7_broad_oracle.py",
         "wiki/05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_BROAD_ORACLE_2026-08-09.md"

@@ -1,6 +1,6 @@
 # Physical Heliacal-Visibility Validation and Admission
 
-Date: 2026-08-07
+Date: 2026-08-11
 Status: local Phase 7 engine-release gate closed; no publication or deployment
 Model: `clear_sky_naked_eye_point_source_v1`
 
@@ -89,6 +89,30 @@ does not import Moira's event solver. The admitted residuals were:
 These cases validate ephemeris geometry, target identity, event ownership,
 crossing semantics, and exact pack use. They are not observed first-visibility
 dates and do not quantify weather or observer-population uncertainty.
+
+The later Phase 7 broad oracle is the complete release-readiness gate for the
+public four-target/four-phase product. It covers the full 16-cell matrix with
+12 independently reconstructed event times and four explicitly typed
+no-event/domain engine regressions. All 12 timed cells pass the fixed
+60-second external-grid limit; the largest absolute engine/oracle difference
+is `5.8789461851119995` seconds. The current integrated public-engine replay
+passes all 16 cells against content-admitted DE441 and the exact `1.2.0` pack.
+
+External acquisition is bound to the separately preserved 5,311-byte source
+specification
+`scripts/visibility_reference_lab/physical_visibility_phase7_source_acquisition_spec_v1.json`,
+SHA-256
+`ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323`.
+Its acquisition-driving fields are identical to the later admitted matrix.
+The 47 external source files are preserved in the verified external archive
+named by
+`tests/artifacts/release/physical_visibility_phase7_source_recovery_2026-08-11.json`.
+The archive is not embedded in the repository or Python distribution.
+
+The engine replay and published runtime require neither NumPy nor Astropy. The
+independent Sirius reconstruction uses the declared development-only
+Astropy/ERFA toolchain and may load NumPy transitively inside that isolated
+authority-validation environment.
 
 ### Historical cases
 
@@ -202,8 +226,8 @@ SHA-256:
   0d2c98d0717c45416ad0f8f3e0b72ca28d3975f4f6c8080112ceb2bef8327d71
 ```
 
-The final run is recorded in
-`tests/artifacts/release/physical_visibility_phase7_release_validation_2026-08-07.json`.
+The hardened final run is recorded in
+`tests/artifacts/release/physical_visibility_phase7_release_validation_2026-08-09.json`.
 That receipt proves only the exact local artifacts it names; it does not claim
 that they were uploaded, tagged, published, installed downstream, or deployed.
 

@@ -24,7 +24,16 @@ DEFAULT_SPEC = (
     REPO_ROOT
     / "scripts"
     / "visibility_reference_lab"
+    / "physical_visibility_phase7_source_acquisition_spec_v1.json"
+)
+ADMISSION_SPEC = (
+    REPO_ROOT
+    / "scripts"
+    / "visibility_reference_lab"
     / "physical_visibility_phase7_broad_oracle_matrix_v1.json"
+)
+ACQUISITION_SPEC_SHA256 = (
+    "ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323"
 )
 HORIZONS_API = "https://ssd.jpl.nasa.gov/api/horizons.api"
 TARGET_COMMANDS = {
@@ -51,6 +60,28 @@ def _json_object(path: Path, label: str) -> dict[str, Any]:
 
 def _sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
+
+
+def _validate_acquisition_spec(
+    spec_path: Path,
+    spec: dict[str, Any],
+) -> None:
+    if _sha256_bytes(spec_path.read_bytes()) != ACQUISITION_SPEC_SHA256:
+        raise AcquisitionError("source acquisition specification differs")
+    admitted = _json_object(ADMISSION_SPEC, "admitted oracle matrix")
+    acquisition_keys = (
+        "schema",
+        "status",
+        "selection_policy",
+        "sites",
+        "cases",
+    )
+    if tuple(spec) != acquisition_keys or any(
+        spec[key] != admitted.get(key) for key in acquisition_keys
+    ):
+        raise AcquisitionError(
+            "source acquisition specification and admitted matrix differ"
+        )
 
 
 def _quoted(value: str) -> str:
@@ -203,6 +234,7 @@ def main(argv: list[str] | None = None) -> int:
         != "moira.physical-heliacal-visibility-broad-oracle-matrix-spec/v1"
     ):
         raise AcquisitionError("oracle matrix specification identity differs")
+    _validate_acquisition_spec(spec_path, spec)
     engine_results = _load_engine_results(
         tuple(path.resolve() for path in arguments.engine_receipts)
     )
