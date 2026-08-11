@@ -33,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Tousey-Koomen observational comparisons, property/invariant tests, legacy
   regressions, OpenAPI parity, exact event goldens, separated numerical
   tolerances, and Python/native differentials to a Phase 7 evidence registry.
+- Expanded end-to-end physical-event validation from two initial cases to a
+  predeclared 16-cell target/phase matrix: 12 independently reconstructed
+  event times from checksum-bound external sources and 4 explicit typed
+  no-event/domain regressions. The worst timed engine/oracle residual is under
+  5.879 seconds against the fixed 60-second external-grid limit.
 - Added deterministic external-pack archiving plus source-wheel, sdist rebuild,
   clean-install, native-import, exact-pack-load, and active offline socket-guard
   release gates. The external numerical payload remains absent from both Python

@@ -1,12 +1,12 @@
-"""Validate Phase 3 event goldens against independent external geometry.
+"""Validate physical event goldens against independent external geometry.
 
-The validator imports neither Moira nor its event solver.  Jupiter geometry,
-phase, and apparent magnitude come from checksum-locked JPL Horizons observer
-tables.  Sirius astrometry comes from checksum-locked Hipparcos I/239 data and
-is transformed by a pinned offline Astropy/ERFA/IERS toolchain; its solar
-geometry comes from Horizons.  The exact external visibility pack is then
-evaluated through a separate implementation of its published interpolation,
-CIE MES2, and Crumey equations.
+The validator imports neither Moira nor its event solver.  Planetary geometry,
+phase, ring geometry where applicable, and apparent magnitude come from
+checksum-locked JPL Horizons observer tables.  Sirius astrometry comes from
+checksum-locked Hipparcos I/239 data and is transformed by a pinned offline
+Astropy/ERFA/IERS toolchain; its solar geometry comes from Horizons.  The exact
+external visibility pack is then evaluated through a separate implementation
+of its published interpolation, CIE MES2, and Crumey equations.
 """
 
 from __future__ import annotations
@@ -52,6 +52,8 @@ class ObserverRow:
     altitude_deg: float
     apparent_magnitude: float | None = None
     phase_angle_deg: float | None = None
+    observer_sub_latitude_deg: float | None = None
+    solar_sub_latitude_deg: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -348,6 +350,7 @@ class IndependentVisibilityPack:
         self,
         target: str,
         phase_angle_deg: float | None,
+        saturn_effective_ring_sub_latitude_deg: float | None,
     ) -> tuple[float, tuple[float, ...], tuple[float, ...]]:
         if target == "Sirius":
             profile = self.stellar_profiles[target]
@@ -356,20 +359,47 @@ class IndependentVisibilityPack:
                 tuple(profile["base_photopic_extinction_weights"]),
                 tuple(profile["base_scotopic_extinction_weights"]),
             )
-        if target != "Jupiter" or phase_angle_deg is None:
+        if target not in self.planetary_profiles or phase_angle_deg is None:
             raise ValidationError("unsupported independent target profile")
         profile = self.planetary_profiles[target]
         color = profile["color_model"]
         lower, upper = color["phase_angle_domain_deg"]
         if not lower <= phase_angle_deg <= upper:
-            raise ValidationError("Jupiter phase angle is out of domain")
-        band_values = tuple(
-            math.fsum(
-                coefficient * phase_angle_deg**power
-                for power, coefficient in enumerate(coefficients, start=1)
+            raise ValidationError(f"{target} phase angle is out of domain")
+        kind = color["kind"]
+        if kind == "constant_color":
+            band_values = (0.0,) * len(BAND_WAVELENGTHS_NM)
+        elif kind == "phase_polynomial":
+            band_values = tuple(
+                math.fsum(
+                    coefficient * phase_angle_deg**power
+                    for power, coefficient in enumerate(
+                        coefficients,
+                        start=1,
+                    )
+                )
+                for coefficients in color["coefficients_by_band"]
             )
-            for coefficients in color["coefficients_by_band"]
-        )
+        elif kind == "saturn_ring_phase":
+            ring_latitude = saturn_effective_ring_sub_latitude_deg
+            if ring_latitude is None:
+                raise ValidationError("Saturn ring sub-latitude is missing")
+            ring_lower, ring_upper = color[
+                "ring_sub_latitude_domain_deg"
+            ]
+            if not ring_lower <= ring_latitude <= ring_upper:
+                raise ValidationError(
+                    "Saturn ring sub-latitude is out of domain"
+                )
+            sin_ring = math.sin(math.radians(ring_latitude))
+            band_values = tuple(
+                c1 * sin_ring
+                + c2 * phase_angle_deg
+                - c3 * sin_ring * math.exp(c4 * phase_angle_deg)
+                for c1, c2, c3, c4 in color["coefficients_by_band"]
+            )
+        else:
+            raise ValidationError("unsupported independent color model")
         visual_value = band_values[2]
         differential = tuple(
             value - visual_value for value in band_values
@@ -403,7 +433,9 @@ class IndependentVisibilityPack:
             for weight, factor in zip(base_scotopic, correction)
         )
         if photopic_scale <= 0.0 or scotopic_scale <= 0.0:
-            raise ValidationError("Jupiter response integral is nonpositive")
+            raise ValidationError(
+                f"{target} response integral is nonpositive"
+            )
         return (
             float(profile["base_scotopic_to_photopic_ratio"])
             * scotopic_scale
@@ -428,6 +460,7 @@ class IndependentVisibilityPack:
         solar_altitude_deg: float,
         apparent_magnitude: float,
         phase_angle_deg: float | None,
+        saturn_effective_ring_sub_latitude_deg: float | None = None,
         dark_sky_photopic_cd_m2: float,
         dark_sky_scotopic_cd_m2: float,
     ) -> float:
@@ -468,6 +501,7 @@ class IndependentVisibilityPack:
         ratio, photopic_weights, scotopic_weights = self._target_profile(
             target,
             phase_angle_deg,
+            saturn_effective_ring_sub_latitude_deg,
         )
         transmission = self._direct_transmission(target_altitude_deg)
         photopic_transmission = math.fsum(
@@ -572,6 +606,7 @@ def _horizons_rows(
     path: Path,
     *,
     target_fields: bool,
+    quantities: str | None = None,
 ) -> tuple[ObserverRow, ...]:
     response = _json(path, "JPL Horizons response")
     result = response.get("result")
@@ -589,6 +624,20 @@ def _horizons_rows(
     rows: list[ObserverRow] = []
     for fields in csv.reader(lines[start:stop]):
         try:
+            observer_sub_latitude: float | None = None
+            solar_sub_latitude: float | None = None
+            phase_index = 8
+            if target_fields:
+                if quantities in {None, "4,9,43"}:
+                    phase_index = 8
+                elif quantities == "4,9,14,15,43":
+                    observer_sub_latitude = float(fields[9])
+                    solar_sub_latitude = float(fields[11])
+                    phase_index = 12
+                else:
+                    raise ValidationError(
+                        f"unsupported Horizons quantities in {path.name}"
+                    )
             rows.append(
                 ObserverRow(
                     jd_ut=float(fields[1]),
@@ -598,8 +647,12 @@ def _horizons_rows(
                         float(fields[6]) if target_fields else None
                     ),
                     phase_angle_deg=(
-                        float(fields[8]) if target_fields else None
+                        float(fields[phase_index])
+                        if target_fields
+                        else None
                     ),
+                    observer_sub_latitude_deg=observer_sub_latitude,
+                    solar_sub_latitude_deg=solar_sub_latitude,
                 )
             )
         except (IndexError, ValueError) as exc:
@@ -762,6 +815,18 @@ def _in_domain_margins(
             continue
         if target_row.apparent_magnitude is None:
             raise ValidationError("target magnitude is missing")
+        saturn_effective_ring_sub_latitude_deg: float | None = None
+        if target == "Saturn":
+            observer_latitude = target_row.observer_sub_latitude_deg
+            solar_latitude = target_row.solar_sub_latitude_deg
+            if observer_latitude is None or solar_latitude is None:
+                raise ValidationError(
+                    "Saturn sub-observer or sub-solar latitude is missing"
+                )
+            product = observer_latitude * solar_latitude
+            saturn_effective_ring_sub_latitude_deg = (
+                math.sqrt(product) if product > 0.0 else 0.0
+            )
         result.append(
             MarginRow(
                 jd_ut=target_row.jd_ut,
@@ -773,6 +838,9 @@ def _in_domain_margins(
                     solar_altitude_deg=solar_row.altitude_deg,
                     apparent_magnitude=target_row.apparent_magnitude,
                     phase_angle_deg=target_row.phase_angle_deg,
+                    saturn_effective_ring_sub_latitude_deg=(
+                        saturn_effective_ring_sub_latitude_deg
+                    ),
                     dark_sky_photopic_cd_m2=background[
                         "photopic_luminance_cd_m2"
                     ],
@@ -787,11 +855,25 @@ def _in_domain_margins(
     return tuple(result)
 
 
-def _opening_crossing(
+def _crossing(
     rows: tuple[MarginRow, ...],
+    *,
+    direction: str,
 ) -> tuple[MarginRow, MarginRow, float]:
+    if direction not in {
+        "negative_to_positive",
+        "positive_to_negative",
+    }:
+        raise ValidationError("unsupported crossing direction")
     for left, right in zip(rows, rows[1:]):
-        if left.margin_magnitude < 0.0 <= right.margin_magnitude:
+        opening = left.margin_magnitude < 0.0 <= right.margin_magnitude
+        closing = left.margin_magnitude >= 0.0 > right.margin_magnitude
+        if (
+            direction == "negative_to_positive"
+            and opening
+            or direction == "positive_to_negative"
+            and closing
+        ):
             fraction = (
                 -left.margin_magnitude
                 / (right.margin_magnitude - left.margin_magnitude)
@@ -800,7 +882,13 @@ def _opening_crossing(
                 right.jd_ut - left.jd_ut
             )
             return left, right, root
-    raise ValidationError("independent opening crossing is missing")
+    raise ValidationError(f"independent {direction} crossing is missing")
+
+
+def _opening_crossing(
+    rows: tuple[MarginRow, ...],
+) -> tuple[MarginRow, MarginRow, float]:
+    return _crossing(rows, direction="negative_to_positive")
 
 
 def _assert_seconds(

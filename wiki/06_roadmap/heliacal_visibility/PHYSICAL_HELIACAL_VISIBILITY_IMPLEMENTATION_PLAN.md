@@ -1258,10 +1258,13 @@ deterministic external-pack archiver, evidence registry, generated capability
 matrix, and generated API inventory. Focused engine, public-contract, REST,
 spectral, event, release-identity, and strict-known-issues gates pass.
 
-The independent Jupiter and Sirius validators were accepted at 1.206 and 2.564
-seconds from the source-owned interpolants, inside the declared 60-second
-oracle tolerance. The independent crossing certificate recomputed an
-8,799.9842 magnitude/day ceiling below the admitted 16,384 ceiling.
+The original closure recorded independent Jupiter and Sirius validators at
+1.206 and 2.564 seconds from the source-owned interpolants, inside the declared
+60-second oracle tolerance. Those two cases remain valid Phase 3 evidence, but
+they are no longer the complete Phase 7 release-readiness claim. The 2026-08-09
+broad-oracle hardening below supersedes that narrow interpretation. The
+independent crossing certificate still recomputes an 8,799.9842 magnitude/day
+ceiling below the admitted 16,384 ceiling.
 
 The full offline artifact validator built a clean wheel and sdist, rebuilt and
 clean-installed a wheel from the sdist, imported the native backend, loaded the
@@ -1270,6 +1273,30 @@ payload, and emitted
 `tests/artifacts/release/physical_visibility_phase7_release_validation_2026-08-07.json`.
 That receipt records a local release candidate only; no tag, publication,
 installation into a downstream product, deployment, or website update occurred.
+
+### Phase 7 broad-oracle hardening - 2026-08-09
+
+Before release, the public four-target/four-phase surface was re-audited as a
+complete 16-cell matrix. Twelve cells now have independently reconstructed
+event times from 40 checksum-bound JPL source files plus the pinned
+Hipparcos/Astropy Sirius path. Every timed cell is inside the fixed 60-second
+external-grid limit; the worst residual is 5.8789461851119995 seconds. The
+remaining four cells are explicitly labeled typed no-event/domain engine
+regressions and are not counted as event-time oracles.
+
+The independent reconstruction also checks the target boundary against the
+requested morning/evening solar side on both the selected and adjacent guard
+days. This closes the false-positive route where a raw visibility-margin zero
+exists on a day that does not own the requested rising/setting phase.
+
+The offline independent replay, immutable-golden governance, and live public
+engine replay all pass. The exact evidence and limitations are recorded in
+[PHYSICAL_HELIACAL_VISIBILITY_BROAD_ORACLE_2026-08-09.md](../../05_research/heliacal_visibility/PHYSICAL_HELIACAL_VISIBILITY_BROAD_ORACLE_2026-08-09.md).
+The release artifact validator is rerun against this hardened source snapshot
+and records its local receipt at
+`tests/artifacts/release/physical_visibility_phase7_release_validation_2026-08-09.json`.
+No release, installation, deployment, website, or Workspace action is part of
+this engine-only hardening.
 
 ### Evidence classes
 

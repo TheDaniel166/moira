@@ -1,0 +1,218 @@
+{
+  "schema": "moira.physical-heliacal-visibility-broad-oracle-matrix-spec/v1",
+  "status": "predeclared_complete_admitted_target_phase_matrix",
+  "admission_date": "2026-08-09",
+  "release_gate": {
+    "timed_event_oracle_case_count": 12,
+    "typed_negative_regression_case_count": 4,
+    "external_source_grid_step_seconds": 60.0,
+    "external_root_interpolation": "linear_visibility_margin",
+    "maximum_engine_oracle_difference_seconds": 60.0,
+    "oracle_reproduction_tolerance_seconds": 0.01,
+    "source_query_half_width_hours": 4.0,
+    "source_acquisition_spec_sha256": "ba061013c6e6258475baab4442b072c82c887aabc840cc19f5b0126542eb9323",
+    "negative_cells_are_not_event_time_oracles": true
+  },
+  "physical_policy": {
+    "exact_data_pack": {
+      "pack_id": "moira-physical-heliacal-visibility",
+      "version": "1.2.0",
+      "manifest_sha256": "cf93433a9f66a5ea92832271ce3c4b023fcc8693164803539a9f1be85b17468c"
+    },
+    "background": {
+      "scope": "dark_sky_anchor",
+      "photopic_luminance_cd_m2": 0.0001,
+      "scotopic_luminance_cd_m2": 0.00015
+    },
+    "atmosphere": "exact_data_pack_fixed_domain",
+    "observer_protocol_id": "known_location_directed_averted_observation_v1",
+    "local_horizon_altitude_deg": 0.0,
+    "target_true_altitude_floor_deg": 0.25,
+    "refraction_model_id": "bennett_extended_v1",
+    "refraction_pressure_hpa": 1013.25,
+    "refraction_temperature_c": 10.0,
+    "refraction_relative_humidity": 0.0,
+    "public_search_policy": {
+      "scan_step_minutes": 5.0,
+      "adaptive_minimum_step_minutes": 0.5,
+      "root_time_tolerance_seconds": 0.25
+    }
+  },
+  "selection_policy": {
+    "role": "bound_external_source_queries_only",
+    "expected_values_owner": "independent_external_oracle",
+    "engine_output_is_not_oracle_truth": true,
+    "required_targets": [
+      "Mars",
+      "Jupiter",
+      "Saturn",
+      "Sirius"
+    ],
+    "required_phases": [
+      "morning_first_rising",
+      "morning_first_setting",
+      "evening_last_rising",
+      "evening_last_setting"
+    ],
+    "required_matrix_cell_count": 16,
+    "discovery_scan_step_minutes": 30.0,
+    "discovery_adaptive_minimum_step_minutes": 2.0
+  },
+  "sites": {
+    "babylon": {
+      "latitude_deg": 32.55,
+      "longitude_deg": 44.42,
+      "elevation_m": 0.0
+    },
+    "levant": {
+      "latitude_deg": 35.0,
+      "longitude_deg": 35.0,
+      "elevation_m": 0.0
+    },
+    "greenwich": {
+      "latitude_deg": 51.48,
+      "longitude_deg": 0.0,
+      "elevation_m": 0.0
+    },
+    "sydney": {
+      "latitude_deg": -33.87,
+      "longitude_deg": 151.21,
+      "elevation_m": 0.0
+    },
+    "new_orleans": {
+      "latitude_deg": 30.0,
+      "longitude_deg": -90.0,
+      "elevation_m": 0.0
+    }
+  },
+  "cases": [
+    {
+      "case_id": "phase7-mars-greenwich-evening-last-setting",
+      "target": "Mars",
+      "phase": "evening_last_setting",
+      "site_id": "greenwich",
+      "search_start_utc": "2023-09-15T00:00:00Z",
+      "search_window_days": 55
+    },
+    {
+      "case_id": "phase7-mars-greenwich-morning-first-rising",
+      "target": "Mars",
+      "phase": "morning_first_rising",
+      "site_id": "greenwich",
+      "search_start_utc": "2024-02-15T00:00:00Z",
+      "search_window_days": 60
+    },
+    {
+      "case_id": "phase7-mars-babylon-morning-first-setting",
+      "target": "Mars",
+      "phase": "morning_first_setting",
+      "site_id": "babylon",
+      "search_start_utc": "2025-01-10T00:00:00Z",
+      "search_window_days": 20
+    },
+    {
+      "case_id": "phase7-mars-babylon-evening-last-rising",
+      "target": "Mars",
+      "phase": "evening_last_rising",
+      "site_id": "babylon",
+      "search_start_utc": "2025-01-03T00:00:00Z",
+      "search_window_days": 20
+    },
+    {
+      "case_id": "phase7-jupiter-levant-evening-last-setting",
+      "target": "Jupiter",
+      "phase": "evening_last_setting",
+      "site_id": "levant",
+      "search_start_utc": "2023-03-20T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-jupiter-levant-morning-first-rising",
+      "target": "Jupiter",
+      "phase": "morning_first_rising",
+      "site_id": "levant",
+      "search_start_utc": "2023-04-25T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-jupiter-levant-morning-first-setting",
+      "target": "Jupiter",
+      "phase": "morning_first_setting",
+      "site_id": "levant",
+      "search_start_utc": "2023-10-25T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-jupiter-levant-evening-last-rising",
+      "target": "Jupiter",
+      "phase": "evening_last_rising",
+      "site_id": "levant",
+      "search_start_utc": "2023-10-25T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-saturn-greenwich-evening-last-setting",
+      "target": "Saturn",
+      "phase": "evening_last_setting",
+      "site_id": "greenwich",
+      "search_start_utc": "2024-01-25T00:00:00Z",
+      "search_window_days": 35
+    },
+    {
+      "case_id": "phase7-saturn-greenwich-morning-first-rising",
+      "target": "Saturn",
+      "phase": "morning_first_rising",
+      "site_id": "greenwich",
+      "search_start_utc": "2024-03-10T00:00:00Z",
+      "search_window_days": 55
+    },
+    {
+      "case_id": "phase7-saturn-sydney-morning-first-setting",
+      "target": "Saturn",
+      "phase": "morning_first_setting",
+      "site_id": "sydney",
+      "search_start_utc": "2024-09-02T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-saturn-sydney-evening-last-rising",
+      "target": "Saturn",
+      "phase": "evening_last_rising",
+      "site_id": "sydney",
+      "search_start_utc": "2024-08-28T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-sirius-new-orleans-evening-last-setting",
+      "target": "Sirius",
+      "phase": "evening_last_setting",
+      "site_id": "new_orleans",
+      "search_start_utc": "2026-05-20T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-sirius-new-orleans-morning-first-rising",
+      "target": "Sirius",
+      "phase": "morning_first_rising",
+      "site_id": "new_orleans",
+      "search_start_utc": "2026-07-24T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-sirius-new-orleans-morning-first-setting",
+      "target": "Sirius",
+      "phase": "morning_first_setting",
+      "site_id": "new_orleans",
+      "search_start_utc": "2025-12-01T00:00:00Z",
+      "search_window_days": 15
+    },
+    {
+      "case_id": "phase7-sirius-new-orleans-evening-last-rising",
+      "target": "Sirius",
+      "phase": "evening_last_rising",
+      "site_id": "new_orleans",
+      "search_start_utc": "2026-01-10T00:00:00Z",
+      "search_window_days": 15
+    }
+  ]
+}
