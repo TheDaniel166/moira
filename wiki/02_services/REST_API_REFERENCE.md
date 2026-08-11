@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 440
-- Registered OpenAPI operations: 440 (GET 35, POST 405)
+- Registered OpenAPI paths: 445
+- Registered OpenAPI operations: 445 (GET 35, POST 410)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 436
+- Versioned `/v1` paths: 441
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -84,6 +84,11 @@ Implemented:
   tiles, contours, grids, projection products, geographic search, relocation
   synthesis, rendered galactic house charts, rendered Gauquelin wheels,
   statistical workflows, and catalog sweeps remain deferred
+- Track A adds exact composite/Davison transit-target searches,
+  source-resolved fixed-star Astrocartography, explicit-epoch transiting
+  Astrocartography displacement receipts, and relocated solar/lunar/planetary
+  return composition. These are geometry and chronology contracts only; they
+  add no ranking, recommendation, travel-advice, or interpretation surface
 - website support: locations, chart-wheel packets, and reduction-pipeline inspection aliases
 - phase 12 opened with bounded Uranian/Hamburg School hypothetical-body
   catalog, single-position, and bulk-position routes, followed by bounded
@@ -140,7 +145,11 @@ Not yet broadly exposed as REST families:
 - broad phase 9 umbrella aggregation modules: wider `/v1/vedic/*` and
   `/v1/classical/*` families remain deferred beyond admitted
   `/v1/vedic/chart-profile`
-- expanded phase 10 spatial and Earth-facing products: Astrocartography, Local Space, Geodetic, Galactic, Galactic Houses, and Gauquelin map/rendering/projection/statistical products remain deferred
+- expanded phase 10 spatial and Earth-facing products beyond the admitted
+  selected-subject and Track A contracts: dense Astrocartography, Local Space,
+  Geodetic, Galactic, Galactic Houses, and Gauquelin map/rendering/projection/
+  statistical products remain deferred; progressed/directed
+  cyclocartography and chart-backed comet MC/IC/ASC/DSC lines are also absent
 - remaining phase 12 specialist analytical families: `/v1/sothic/*` is
   deliberately deferred for specialist review and public heliacal-search
   failure semantics; `/v1/longevity/*` is deliberately deferred for doctrine,
@@ -155,6 +164,16 @@ Not yet broadly exposed as REST families:
   design, not cross-family search, member lookup, computation, or catalog
   sweeps
 
+### Track A transport models
+
+| Route | Request model | Response model | Tags |
+|---|---|---|---|
+| `POST /v1/composite/transits` | `CompositeTransitRequest` | `RelationshipTransitSearchResponse` | `relationship` |
+| `POST /v1/davison/transits` | `DavisonTransitRequest` | `RelationshipTransitSearchResponse` | `relationship` |
+| `POST /v1/astrocartography/fixed-stars` | `FixedStarAstrocartographyRequest` | `FixedStarAstrocartographyResponse` | `astrocartography` |
+| `POST /v1/astrocartography/dynamic/transits` | `DynamicAstrocartographyRequest` | `DynamicAstrocartographyResponse` | `astrocartography` |
+| `POST /v1/returns/relocated` | `RelocatedReturnRequest` | `RelocatedReturnResponse` | `predictive`, `astrocartography` |
+
 ## Route Families
 
 | Family | Routes |
@@ -163,7 +182,7 @@ Not yet broadly exposed as REST families:
 | ashtakavarga | 8 |
 | alternate-dashas | 9 |
 | antiscia | 3 |
-| astrocartography | 6 |
+| astrocartography | 8 |
 | astrodynes | 15 |
 | asteroids | 9 |
 | batch | 7 |
@@ -171,9 +190,9 @@ Not yet broadly exposed as REST families:
 | chart-shape | 1 |
 | comets | 3 |
 | aspects | 2 |
-| composite | 1 |
+| composite | 2 |
 | dasha | 5 |
-| davison | 1 |
+| davison | 2 |
 | decanates | 6 |
 | dignities | 6 |
 | draconic | 3 |
@@ -218,7 +237,7 @@ Not yet broadly exposed as REST families:
 | primary-directions | 8 |
 | profections | 3 |
 | progressions | 17 |
-| returns | 3 |
+| returns | 4 |
 | shadbala | 4 |
 | rise-set | 3 |
 | sidereal | 3 |
@@ -365,6 +384,7 @@ Admitted products:
 | POST | `/v1/returns/solar` | `solar_return_route` |
 | POST | `/v1/returns/lunar` | `lunar_return_route` |
 | POST | `/v1/returns/planet` | `planet_return_route` |
+| POST | `/v1/returns/relocated` | `relocated_return_route` |
 | POST | `/v1/lunar-phases` | `lunar_phase_route` |
 | POST | `/v1/batch/charts` | `batch_charts_route` |
 | POST | `/v1/batch/charts/reduction` | `batch_charts_reduction_route` |
@@ -396,6 +416,13 @@ manifest pin is read from
 is not configured, only the physical routes return the standard HTTP 503
 `server_not_configured` envelope. The legacy assessment, tonight, and
 `/v1/heliacal/visibility-event` contracts are unchanged.
+
+`POST /v1/returns/relocated` selects a solar, lunar, or admitted planetary
+return kind, delegates to the canonical return solver, and casts the same exact
+return sky into caller-supplied source and relocated house frames. The response
+preserves search-policy truth, return-moment truth, both chart contexts, and a
+relocation receipt proving that the epoch and celestial positions did not
+change. It adds no second return solver, place ranking, or interpretation.
 
 ## Phenomena Routes
 
@@ -692,7 +719,9 @@ topography, and duration contours are not inferred by transport.
 | POST | `/v1/synastry/chart-condition` | `synastry_chart_condition_route` |
 | POST | `/v1/synastry/network` | `synastry_network_route` |
 | POST | `/v1/composite/chart` | `composite_chart_route` |
+| POST | `/v1/composite/transits` | `composite_transits_route` |
 | POST | `/v1/davison/chart` | `davison_chart_route` |
+| POST | `/v1/davison/transits` | `davison_transits_route` |
 | POST | `/v1/chart-shape/classify` | `chart_shape_route` |
 | POST | `/v1/patterns/find` | `patterns_route` |
 | POST | `/v1/patterns/chart-profile` | `pattern_chart_profile_route` |
@@ -702,6 +731,20 @@ topography, and duration contours are not inferred by transport.
 | POST | `/v1/midpoints/pictures` | `midpoint_pictures_route` |
 | POST | `/v1/midpoints/weighting` | `midpoint_weighting_route` |
 | POST | `/v1/midpoints/clusters` | `midpoint_clusters_route` |
+
+### Exact Relationship-Chart Transit Boundary
+
+`POST /v1/composite/transits` and `POST /v1/davison/transits` build one
+immutable relationship-chart target set and search exact canonical transit
+perfections to selected planet, node, angle, or cusp targets. Responses retain
+the complete relationship-chart identity, construction truth, expanded target
+and aspect selection, transit policy, search count, and event receipts.
+
+The server bounds moving bodies, named targets, expanded searches, scan
+samples, and minimum caller step size; it does not replace the engine solver.
+Orb-entry/exit windows, progressed/directed relationship charts, cross-chart
+multi-body patterns, scores, and interpretation remain outside the route
+contract.
 
 ### Pattern Search And Dominance Policy
 
@@ -1501,6 +1544,8 @@ include the primary-source citation for the selected variant.
 | POST | `/v1/astrocartography/chart/subplanetary` | `astrocartography_chart_subplanetary_route` |
 | POST | `/v1/astrocartography/chart/subjects/lines` | `astrocartography_subject_chart_lines_route` |
 | POST | `/v1/astrocartography/chart/subjects/subplanetary` | `astrocartography_subject_chart_subplanetary_route` |
+| POST | `/v1/astrocartography/fixed-stars` | `fixed_star_astrocartography_route` |
+| POST | `/v1/astrocartography/dynamic/transits` | `dynamic_astrocartography_route` |
 
 Body-class truth:
 
@@ -1525,6 +1570,20 @@ Body-class truth:
   deferred; mixed-subject routes are explicit-selection surfaces.
 - Astrocartography provenance includes a `subjects` list carrying subject
   class, canonical name, NAIF ID when applicable, and position source.
+
+Track A adds two bounded routes:
+
+- `/v1/astrocartography/fixed-stars` resolves each requested star through the
+  sovereign star registry, rejects duplicate canonical identities, and returns
+  true-of-date RA/Dec, MC/IC/ASC/DSC lines, zenith/nadir points, and complete
+  source/frame receipts.
+- `/v1/astrocartography/dynamic/transits` accepts only strictly increasing,
+  explicit transit epochs and returns exact snapshots plus adjacent meridian
+  or matched-latitude curve displacement receipts.
+
+Neither route ranks stars or places. Catalog sweeps, interpolation,
+progressed/directed cyclocartography, destination scores, travel advice, and
+interpretation remain excluded.
 
 ## Local Space Routes
 
@@ -2813,6 +2872,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/astrocartography/chart/subjects/lines` | astrocartography | `astrocartography_subject_chart_lines_route_v1_astrocartography_chart_subjects_lines_post` |
 | `POST` | `/v1/astrocartography/chart/subjects/subplanetary` | astrocartography | `astrocartography_subject_chart_subplanetary_route_v1_astrocartography_chart_subjects_subplanetary_post` |
 | `POST` | `/v1/astrocartography/chart/subplanetary` | astrocartography | `astrocartography_chart_subplanetary_route_v1_astrocartography_chart_subplanetary_post` |
+| `POST` | `/v1/astrocartography/dynamic/transits` | astrocartography | `dynamic_astrocartography_route_v1_astrocartography_dynamic_transits_post` |
+| `POST` | `/v1/astrocartography/fixed-stars` | astrocartography | `fixed_star_astrocartography_route_v1_astrocartography_fixed_stars_post` |
 | `POST` | `/v1/astrocartography/lines` | astrocartography | `astrocartography_lines_route_v1_astrocartography_lines_post` |
 | `POST` | `/v1/astrocartography/subplanetary` | astrocartography | `astrocartography_subplanetary_route_v1_astrocartography_subplanetary_post` |
 | `POST` | `/v1/astrodynes/chart` | astrodynes | `astrodynes_chart_route_v1_astrodynes_chart_post` |
@@ -2845,6 +2906,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `GET` | `/v1/comets/list` | comets (fast small-body) | `list_comets_v1_comets_list_get` |
 | `POST` | `/v1/comets/position` | comets (fast small-body) | `comet_position_v1_comets_position_post` |
 | `POST` | `/v1/composite/chart` | relationship | `composite_chart_route_v1_composite_chart_post` |
+| `POST` | `/v1/composite/transits` | relationship | `composite_transits_route_v1_composite_transits_post` |
 | `POST` | `/v1/dasha/alternate/ashtottari/chart/profile` | alternate-dashas | `ashtottari_chart_profile_route_v1_dasha_alternate_ashtottari_chart_profile_post` |
 | `POST` | `/v1/dasha/alternate/ashtottari/chart/sequence` | alternate-dashas | `ashtottari_chart_sequence_route_v1_dasha_alternate_ashtottari_chart_sequence_post` |
 | `POST` | `/v1/dasha/alternate/ashtottari/profile` | alternate-dashas | `ashtottari_profile_route_v1_dasha_alternate_ashtottari_profile_post` |
@@ -2860,6 +2922,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/dasha/vimshottari/profile` | dasha | `dasha_profile_route_v1_dasha_vimshottari_profile_post` |
 | `POST` | `/v1/dasha/vimshottari/sequence` | dasha | `dasha_sequence_route_v1_dasha_vimshottari_sequence_post` |
 | `POST` | `/v1/davison/chart` | relationship | `davison_chart_route_v1_davison_chart_post` |
+| `POST` | `/v1/davison/transits` | relationship | `davison_transits_route_v1_davison_transits_post` |
 | `POST` | `/v1/decanates/chaldean-face` | decanates | `chaldean_face_route_v1_decanates_chaldean_face_post` |
 | `POST` | `/v1/decanates/chart/set` | decanates | `decanate_set_chart_route_v1_decanates_chart_set_post` |
 | `POST` | `/v1/decanates/chart/vedic-drekkana` | decanates | `vedic_drekkana_chart_route_v1_decanates_chart_vedic_drekkana_post` |
@@ -3103,6 +3166,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/progressions/time-key/reduction` | progressions | `time_key_progression_reduction_route_v1_progressions_time_key_reduction_post` |
 | `POST` | `/v1/returns/lunar` | predictive | `lunar_return_route_v1_returns_lunar_post` |
 | `POST` | `/v1/returns/planet` | predictive | `planet_return_route_v1_returns_planet_post` |
+| `POST` | `/v1/returns/relocated` | predictive, astrocartography | `relocated_return_route_v1_returns_relocated_post` |
 | `POST` | `/v1/returns/solar` | predictive | `solar_return_route_v1_returns_solar_post` |
 | `POST` | `/v1/rise-set/phenomena` | phenomena | `rise_set_phenomena_route_v1_rise_set_phenomena_post` |
 | `POST` | `/v1/rise-set/transit` | phenomena | `rise_set_transit_route_v1_rise_set_transit_post` |

@@ -1,8 +1,8 @@
 ﻿# Moira API Reference
 
-**Document revision:** 2.1.0
+**Document revision:** 2.2.0
 **Engine baseline:** 6.1.0
-**Last verified:** 2026-07-27
+**Last verified:** 2026-08-11
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
 
@@ -60,16 +60,17 @@ branches.
 ### Installation & Kernel
 
 Moira requires an installed JPL planetary kernel before kernel-dependent
-computations can run. `Moira()` auto-detects the first installed planetary
-kernel from the supported set `de430.bsp`, `de440.bsp`, `de441.bsp`,
-`de432.bsp`, `de431.bsp`, searched in this order of locations:
+computations can run. `Moira()` first honors `MOIRA_KERNEL_PATH` when it names
+an existing file, then auto-detects the first installed planetary kernel from
+the supported precedence `de441.bsp`, `de440.bsp`, `de432.bsp`, `de431.bsp`,
+`de430.bsp`, searched in this order of locations:
 
-1. `~/.moira/kernels/`
-2. `moira/kernels/` inside the installed package
-3. `kernels/` in a development checkout
+1. `MOIRA_KERNELS_DIR`, when configured
+2. `~/.moira/kernels/`
+3. `moira/kernels/` inside the installed package
+4. `kernels/` in a development checkout
 
-The package does not read a `MOIRA_KERNEL_PATH` environment variable. Large
-kernels such as `de441.bsp` still need to be present locally; use
+Large kernels such as `de441.bsp` still need to be present locally; use
 `moira-download-kernels` or `Moira.download_missing_kernels()` to install the
 missing files into the user kernel directory.
 
@@ -217,6 +218,13 @@ Adds the complete forecasting and relationship toolkit:
 
 > **Note:** `next_solar_eclipse_at_location` is available from `moira.facade` and `moira.eclipse` directly but is not re-exported through `moira.predictive`.
 
+Track A relationship transits, relocated returns, fixed-star
+Astrocartography, and explicit-epoch transiting Astrocartography are admitted
+through `moira`, `moira.facade`, their owning modules, and reader-bound
+`Moira` methods. They are intentionally not re-exported by
+`moira.predictive`; their exact contracts are documented in Sections 12 and
+13 below.
+
 ### `moira.facade` and `moira` — Admitted facade vs curated root
 
 ```python
@@ -228,6 +236,16 @@ from moira.facade import *   # complete admitted facade surface
 The top-level `moira` package does not mirror the entire facade export list; use
 it when you want the primary facade class plus the curated stable root, and use
 `moira.facade` when you want direct imports for the admitted low-level API.
+
+Track A admits the following 35 symbols through each owning module,
+`moira.facade`, and the curated `moira` root with identical object identity.
+They are not `moira.predictive` exports.
+
+| Owning module | Admitted symbols |
+|---|---|
+| `moira.relationship_forecasting` | `RelationshipChartKind`, `RelationshipTargetKind`, `RelationshipChartIdentity`, `RelationshipTransitTarget`, `RelationshipChartTargetSet`, `RelationshipTransitEvent`, `RelationshipTransitSearchTruth`, `RelationshipTransitSearchResult`, `relationship_chart_targets`, `find_relationship_transits`, `find_composite_transits`, `find_davison_transits` |
+| `moira.astrocartography` | `FixedStarAstrocartographySubject`, `FixedStarAstrocartographyTruth`, `FixedStarAstrocartographyResult`, `fixed_star_equatorial_subject`, `fixed_star_astrocartography`, `fixed_star_astrocartography_from_chart` |
+| `moira.locational_forecasting` | `ReturnKind`, `ReturnSearchPolicyTruth`, `ReturnMomentTruth`, `ReturnRelocationTruth`, `RelocatedReturnChart`, `DynamicAstrocartographyMode`, `DynamicAstrocartographyPosition`, `DynamicAstrocartographySnapshotTruth`, `DynamicAstrocartographySnapshot`, `AstrocartographyCurvePointShift`, `DynamicAstrocartographyLineTransition`, `DynamicAstrocartographySeriesTruth`, `DynamicAstrocartographySeries`, `relocated_solar_return`, `relocated_lunar_return`, `relocated_planetary_return`, `transiting_astrocartography` |
 
 Topography-conditioned lunar contact chronology is a deliberate exception:
 it remains available only from `moira.lunar_occultation_contacts` and
@@ -510,6 +528,9 @@ message.
 | `solar_return(natal_sun_lon, year)` | `float` | JD UT of the Solar Return in a calendar year |
 | `lunar_return(natal_moon_lon, jd_start)` | `float` | JD UT of the next Lunar Return |
 | `planet_return(body, natal_lon, jd_start, direction="direct")` | `float` | JD UT of the next planetary return |
+| `relocated_solar_return(natal_sun_longitude, year, source_latitude, source_longitude, relocated_latitude, relocated_longitude, **policy)` | `RelocatedReturnChart` | Solve one canonical solar return and recast its unchanged sky into two local house frames |
+| `relocated_lunar_return(natal_moon_longitude, jd_start, source_latitude, source_longitude, relocated_latitude, relocated_longitude, **policy)` | `RelocatedReturnChart` | Canonical next lunar-return composition at two locations |
+| `relocated_planetary_return(body, natal_longitude, jd_start, source_latitude, source_longitude, relocated_latitude, relocated_longitude, **policy)` | `RelocatedReturnChart` | Canonical admitted planetary-return composition at two locations |
 | `syzygy(jd)` | `tuple[float, str]` | `(jd_ut, kind)` of prenatal syzygy |
 | `stations(body, jd_start, jd_end)` | `list[StationEvent]` | Retrograde and direct stations |
 | `retrograde_periods(body, jd_start, jd_end)` | `list[tuple[float, float]]` | List of `(jd_start, jd_end)` retrograde intervals |
@@ -580,6 +601,10 @@ message.
 | `davison_chart_reference_place(dt_a, dt_b, ref_lat, ref_lon, house_system=...)` | `DavisonChart` | Davison with midpoint time and explicit place |
 | `davison_chart_spherical_midpoint(...)` | `DavisonChart` | Davison with midpoint time and spherical geographic midpoint |
 | `davison_chart_corrected(...)` | `DavisonChart` | Davison with midpoint location and corrected time |
+| `relationship_chart_targets(chart, *, include_nodes=True, include_angles=False, include_cusps=False, target_names=None)` | `RelationshipChartTargetSet` | Extract identity-bound static targets without requiring a reader |
+| `relationship_transits(chart, moving_bodies, jd_start, jd_end, **search_options)` | `RelationshipTransitSearchResult` | Exact canonical transit perfections to composite or Davison targets |
+| `composite_transits(chart, moving_bodies, jd_start, jd_end, **search_options)` | `RelationshipTransitSearchResult` | Composite-restricted exact transit search |
+| `davison_transits(chart, moving_bodies, jd_start, jd_end, **search_options)` | `RelationshipTransitSearchResult` | Davison-restricted exact transit search |
 
 The REST forms `POST /v1/composite/chart` and `POST /v1/davison/chart` include
 a required `aspects` analysis of the returned chart's own longitudes. The
@@ -592,6 +617,7 @@ motion semantics.
 | Method | Returns | Description |
 |---|---|---|
 | `astrocartography(chart, observer_lat=0.0, observer_lon=0.0, bodies=None, lat_step=2.0)` | `list[ACGLine]` | ACG lines (MC/IC/ASC/DSC) for all planets |
+| `transiting_astrocartography(epochs_jd_ut, bodies, **geometry_options)` | `DynamicAstrocartographySeries` | Reader-bound explicit-epoch snapshots and adjacent line-displacement receipts |
 | `local_space(chart, latitude, longitude, bodies=None)` | `list[LocalSpacePosition]` | Horizon azimuth and altitude for each planet |
 | `gauquelin_sectors(chart, latitude, longitude, bodies=None)` | `list[GauquelinPosition]` | Gauquelin sector placements for chart bodies at a location |
 
@@ -600,6 +626,7 @@ motion semantics.
 | Method | Returns | Description |
 |---|---|---|
 | `fixed_star(name, dt)` | `FixedStar` | Unified star position enriched with Gaia DR3 data |
+| `fixed_star_astrocartography(star_names, jd_ut, jd_tt, *, lat_step=2.0, refraction=False)` | `FixedStarAstrocartographyResult` | Source-resolved fixed-star lines and zenith/nadir points; facade convenience without reader injection |
 | `heliacal_rising(star_name, dt, latitude, longitude)` | `float \| None` | JD UT of the next heliacal rising |
 | `heliacal_setting(star_name, dt, latitude, longitude)` | `float \| None` | JD UT of the next heliacal setting |
 | `heliacal_rising_event(star_name, dt, latitude, longitude)` | `HeliacalEvent` | Full heliacal-rising event vessel with classification metadata |
@@ -3179,6 +3206,41 @@ Four variants differing in how the geographic and temporal midpoints are compute
 
 `DavisonChart`: `chart` (Chart), `info` (DavisonInfo — midpoint JD, lat, lon).
 
+### Exact relationship-chart transits
+
+Track A admits exact aspect perfections from moving bodies to an immutable
+composite or Davison target set. The implementation delegates every event
+search to the canonical transit solver; it does not introduce a second aspect
+or ephemeris authority.
+
+| Function | Returns | Description |
+|---|---|---|
+| `relationship_chart_targets(chart, *, include_nodes=True, include_angles=False, include_cusps=False, target_names=None)` | `RelationshipChartTargetSet` | Build the typed, identity-bound static target set for a composite or Davison chart |
+| `find_relationship_transits(chart, moving_bodies, jd_start, jd_end, *, tier=0, aspect_names=None, include_nodes=True, include_angles=False, include_cusps=False, target_names=None, direction="either", step_days=None, reader=None, policy=None, search_motion="forward")` | `RelationshipTransitSearchResult` | Search exact canonical aspect perfections against the selected static targets |
+| `find_composite_transits(...)` | `RelationshipTransitSearchResult` | Composite-chart type-restricted wrapper |
+| `find_davison_transits(...)` | `RelationshipTransitSearchResult` | Davison-chart type-restricted wrapper |
+
+Public vessels and enums are `RelationshipChartKind`,
+`RelationshipTargetKind`, `RelationshipChartIdentity`,
+`RelationshipTransitTarget`, `RelationshipChartTargetSet`,
+`RelationshipTransitEvent`, `RelationshipTransitSearchTruth`, and
+`RelationshipTransitSearchResult`. The result preserves chart identity,
+construction truth, target and aspect selection, transit policy, search count,
+and exact canonical `TransitEvent` receipts.
+
+The `Moira` facade exposes the same effective policies:
+
+| `Moira` method | Delegation |
+|---|---|
+| `relationship_chart_targets(...)` | Kernel-free target and identity composition |
+| `relationship_transits(...)` | Reader-bound generic relationship transit search |
+| `composite_transits(...)` | Reader-bound composite transit search |
+| `davison_transits(...)` | Reader-bound Davison transit search |
+
+Orb-entry/exit windows, progressed or directed
+relationship charts, cross-chart multi-body patterns, scoring, and
+interpretation are not part of this contract.
+
 ---
 
 ## 13. Geography
@@ -3208,6 +3270,54 @@ handles GAST extraction and calls `sky_position_at` for each body.
 
 MC/IC lines are meridians: `longitude` is set, `points` is empty.
 ASC/DSC lines are curves: `points` is set, `longitude` is `None`.
+
+### Fixed-star and explicit-epoch dynamic Astrocartography
+
+| Function | Returns | Description |
+|---|---|---|
+| `fixed_star_equatorial_subject(name, jd_tt, obliquity_deg)` | `FixedStarAstrocartographySubject` | Resolve one canonical fixed-star identity and its true-of-date equatorial geometry |
+| `fixed_star_astrocartography(star_names, jd_ut, jd_tt, *, lat_step=2.0, refraction=False)` | `FixedStarAstrocartographyResult` | Compute MC/IC/ASC/DSC lines and zenith/nadir points for explicit stars |
+| `fixed_star_astrocartography_from_chart(chart, star_names, *, lat_step=2.0, refraction=False)` | `FixedStarAstrocartographyResult` | Use a chart's admitted time truth while preserving the same star receipts |
+| `transiting_astrocartography(epochs_jd_ut, bodies, *, observer_latitude, observer_longitude, observer_elevation_m=0.0, lat_step=2.0, refraction=False, reader=None)` | `DynamicAstrocartographySeries` | Compute one to 128 strictly increasing caller-supplied transit snapshots and exact adjacent line shifts |
+
+Fixed-star vessels are `FixedStarAstrocartographySubject`,
+`FixedStarAstrocartographyTruth`, and `FixedStarAstrocartographyResult`.
+Dynamic vessels are `DynamicAstrocartographyMode`,
+`DynamicAstrocartographyPosition`, `DynamicAstrocartographySnapshotTruth`,
+`DynamicAstrocartographySnapshot`, `AstrocartographyCurvePointShift`,
+`DynamicAstrocartographyLineTransition`,
+`DynamicAstrocartographySeriesTruth`, and
+`DynamicAstrocartographySeries`.
+
+The facade supplies `Moira.fixed_star_astrocartography(...)` as the same
+kernel-free star/geometry convenience and
+`Moira.transiting_astrocartography(...)` as the reader-bound dynamic call.
+Star/place ranking, catalog sweeps, interpolation, progressed or
+directed cyclocartography, destination scores, travel advice, and
+interpretation are excluded.
+
+### Relocated returns
+
+| Function | Returns | Description |
+|---|---|---|
+| `relocated_solar_return(natal_sun_longitude, year, source_latitude, source_longitude, relocated_latitude, relocated_longitude, **policy)` | `RelocatedReturnChart` | Solve one canonical solar return and cast its unchanged sky in source and relocated house frames |
+| `relocated_lunar_return(natal_moon_longitude, jd_start, source_latitude, source_longitude, relocated_latitude, relocated_longitude, **policy)` | `RelocatedReturnChart` | Canonical lunar-return composition at two locations |
+| `relocated_planetary_return(body, natal_longitude, jd_start, source_latitude, source_longitude, relocated_latitude, relocated_longitude, **policy)` | `RelocatedReturnChart` | Canonical admitted planetary-return composition at two locations |
+
+`RelocatedReturnChart` contains source and relocated `ChartContext` values plus
+typed `ReturnMomentTruth` and `ReturnRelocationTruth`. Supporting public enums
+and truth vessels are `ReturnKind`, `ReturnSearchPolicyTruth`,
+`ReturnMomentTruth`, and `ReturnRelocationTruth`. Only the local house frame
+changes; the exact return epoch and celestial positions remain identical. The
+reader-bound facade exposes the three matching `relocated_*_return` methods.
+This contract does not add another return solver, relocation rankings, or
+interpretive claims.
+
+| `Moira` method | Delegation |
+|---|---|
+| `relocated_solar_return(...)` | Reader-bound canonical solar return composition |
+| `relocated_lunar_return(...)` | Reader-bound canonical lunar return composition |
+| `relocated_planetary_return(...)` | Reader-bound canonical planetary return composition |
 
 ```python
 from moira.facade import Moira, Body

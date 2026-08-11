@@ -8,7 +8,8 @@
 > **Current prioritization:** This historical comparison is superseded for
 > current gap selection by the
 > [Astrology Coverage Frontier Gap Audit (2026-08)](ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md),
-> which re-verifies the later engine state at commit `c868fd0`.
+> which preserves its original `c868fd0` baseline and is amended through Track
+> A admission commit `7090255e2d6cc41f7b4df15417512412f0ad5366`.
 
 > **Current-state correction (2026-07-25).** This is a point-in-time comparison,
 > not a current capability ledger. The admitted Decennials surface now ends at

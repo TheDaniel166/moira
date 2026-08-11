@@ -2,7 +2,8 @@
 
 Date: 2026-08-10  
 Scope: Moira engine and packaged `moira_server` only  
-Status: implementation complete; focused validation recorded below
+Status: admitted at `7090255e2d6cc41f7b4df15417512412f0ad5366`;
+focused validation recorded below
 
 ## Objective
 
@@ -96,21 +97,21 @@ suite. Track A is not a tag or publication decision.
 - [x] Explicit ephemeris-reader and refraction parity through ACG chart and
       lunar-refinement paths
 - [x] Existing astrocartography regression slice
-- [x] Ruff on Track A modules and transport files
+- [x] Ruff `F401` on Track A modules, transport files, and changed tests
 - [x] No `numpy` import in Track A source or tests
 
-The final focused gate completed with 86 passing tests. Four additional legacy
-small-body cases were separately observed to fail for the resource condition
-described below and were excluded from the green Track A slice.
+The final focused Track A gate completed with all 90 tests passing. A separate
+public-contract and registered-route gate completed with 41 tests passing.
 
-Four existing small-body astrocartography cases require local Ceres/Halley SPK
-shards and fail in this isolated worktree when those resources are absent.
-They are not Track A regressions and were not changed or waived. The planetary
-and fixed-star Track A gates do not depend on those optional shards.
+**Supplemental complete-release receipt:** `RUN` against two local manifests,
+the asteroid `2026.07.27.1` release and comet `2026.07.28.1` release, comprising
+419 shards and 10,471 bodies. The four Ceres/Halley route cases now use a
+separate, non-owning small-body engine fixture. The ordinary planetary-only
+fixture was not widened, so its resource boundary remains explicit.
 
 ## Release boundary
 
-This checkpoint does not authorize a commit, push, tag, package publication,
-or deployment. Before a future release, run the repository's selected release
-gates in the release worktree and assess any failures independently. Website or
-Workspace adoption is a separate, later scope.
+The admission commit is not a release authorization. It does not
+authorize a tag, package publication, website implementation, Workspace
+adoption, or deployment. Before a future release, run the repository's selected
+release gates in the release worktree and assess any failures independently.

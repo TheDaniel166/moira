@@ -1,10 +1,15 @@
 # Moira Astrology Coverage Frontier Gap Audit (2026-08)
 
-**Document:** `wiki/07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md`  
-**Audit date:** 2026-08-09  
-**Repository baseline:** `c868fd082ceabda16793e1c3d6c26218ad8d83b6` (`origin/main`)  
-**Scope:** Moira calculation engine, facade, registered server contracts, tests, standards, and doctrine records  
-**Change type:** Read-only capability assessment; this document does not authorize implementation, release, website work, or Workspace adoption
+**Document:** `wiki/07_audit/ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md`
+**Audit date:** 2026-08-09
+**Last amended:** 2026-08-11 — Track A admission
+
+**Original repository baseline:** `c868fd082ceabda16793e1c3d6c26218ad8d83b6` (`origin/main` at the original audit)
+
+**Track A admission baseline:** `7090255e2d6cc41f7b4df15417512412f0ad5366`
+
+**Scope:** Moira calculation engine, facade, registered server contracts, tests, standards, and doctrine records
+**Change type:** Capability assessment amended to record an admitted implementation; this document does not authorize another implementation, release, website work, or Workspace adoption
 
 ---
 
@@ -16,20 +21,23 @@ Hellenistic composition, Jyotish, relationship charts, spatial techniques,
 fixed stars, eclipses, harmonics, Uranian methods, and several historical
 specialties.
 
-The meaningful frontier is now concentrated in six areas:
+The meaningful frontier is now concentrated in four areas:
 
 1. **Horary/interrogational astrology** as the largest coherent Western domain
    that is not represented by a first-class engine.
 2. **Mundane astrology** as a new composition layer over Moira's existing
    ingress, lunation, eclipse, great-conjunction, and cartographic truth.
-3. **Predictive relationship charts** for transits and progressions to composite
-   and Davison charts.
-4. **Dynamic locational astrology** including fixed-star astrocartography,
-   cyclocartography, and relocated-return workflows.
-5. **Birth-time rectification evidence** as a candidate-comparison instrument,
+3. **Birth-time rectification evidence** as a candidate-comparison instrument,
    not an automatic claim that one time is astrologically true.
-6. **Western annual revolutions** as a source-locked medieval/Arabic tradition
+4. **Western annual revolutions** as a source-locked medieval/Arabic tradition
    distinct from generic return calculation and Jyotish Tajika/Varshaphal.
+
+Track A has now admitted exact transits to composite and Davison charts,
+fixed-star astrocartography, relocated-return composition, and explicit-epoch
+transiting astrocartography. Progressed or directed relationship charts,
+progressed or directed locational modes, cross-chart multi-body patterns, and
+chart-backed comet MC/IC/ASC/DSC lines remain bounded follow-on gaps rather than
+evidence that the admitted Track A contracts are incomplete.
 
 KP astrology, selected deferred Jyotish branches, Chinese and Tibetan systems,
 and historical astrological magic remain possible longer-horizon programmes.
@@ -59,8 +67,8 @@ Examples of superseded claims include:
 | The Vedic natal yoga catalog is absent | `moira/yogas.py` exposes a proof-bearing multi-family yoga engine. |
 | Kakshya transit and Shodhya Pinda are absent | Both are implemented in `moira/ashtakavarga.py`. |
 | Tajika/Varshaphal is absent | `moira/varshaphal.py` is a deep annual-return doctrine subsystem with server exposure. |
-| Progressed synastry is wholly absent | Existing progression outputs can be composed with synastry and are exercised by `tests/unit/test_progressed_synastry.py`; a dedicated predictive relationship product remains incomplete. |
-| ACG zenith/nadir points are absent | Typed zenith/nadir subplanetary points are implemented in `moira/astrocartography.py`; fixed-star ACG and time-dependent cartography remain separate gaps. |
+| Composite and Davison charts cannot act as transit targets | Exact transit searches against immutable composite and Davison targets are admitted through `moira.relationship_forecasting`, facade and `Moira` parity, and registered REST routes. Progressed or directed relationship charts and cross-chart multi-body patterns remain outside that contract. |
+| Fixed-star and time-dependent astrocartography are absent | Fixed-star MC/IC/ASC/DSC lines and zenith/nadir points, relocated returns, and explicit-epoch transiting astrocartography are admitted. Progressed or directed locational modes and chart-backed comet MC/IC/ASC/DSC lines remain outside the admitted contract. |
 | Triacontaeteris, Valens distributions, and deeper Decennials are unfinished Hellenistic work | The current Hellenistic contract treats these as closed exclusions or unsupported claims, not implementation backlog. |
 
 The correction rule is simple: current code, registered exports, tests,
@@ -83,8 +91,8 @@ This pass inspected:
 - official contemporary software documentation only as evidence that a workflow
   is used in practice, never as authority for historical doctrine.
 
-At the audited baseline the repository contains 273 Python files under
-`moira/`, 350 unit-test files, 85 integration-test files, 113 server-test files,
+At the amended baseline the repository contains 275 Python files under
+`moira/`, 353 unit-test files, 84 integration-test files, 114 server-test files,
 and 55 named backend standards. These counts establish scale only; they are not
 correctness scores.
 
@@ -137,10 +145,11 @@ extension:
 - the unified non-interpretive Hellenistic chart profile;
 - Western electional profiles, judgement receipts, rankings, and bounded
   window scanning;
-- synastry, overlays, midpoint composites, Davison variants, and relationship
-  condition networks;
-- astrocartography, local space, geodetic work, parans, relocated charts, and
-  subplanetary points;
+- synastry, overlays, midpoint composites, Davison variants, relationship
+  condition networks, and exact transits to composite and Davison targets;
+- astrocartography, local space, geodetic work, parans, relocated charts,
+  fixed-star astrocartography, relocated-return composition, explicit-epoch
+  transiting astrocartography, and subplanetary points;
 - fixed stars, variable and multiple stars, Behenian and Royal stars,
   heliacal phenomena, eclipses, and occultations;
 - harmonics, harmonic transits, Huber techniques, Uranian bodies and points,
@@ -174,12 +183,12 @@ decision to reopen it. It must never happen through roadmap wording alone.
 
 ---
 
-## 5. Confirmed frontier gaps
+## 5. Confirmed frontier gaps and bounded Track A closures
 
 ### 5.1 Horary/interrogational astrology
 
-**Status:** Absent  
-**Strategic value:** Highest coherent Western gap  
+**Status:** Absent
+**Strategic value:** Highest coherent Western gap
 **Likely scope:** Large and doctrine-heavy
 
 **Existing substrate**
@@ -214,8 +223,8 @@ should expose significators and perfection evidence, not a yes/no oracle.
 
 ### 5.2 Mundane astrology
 
-**Status:** Partial substrate; no first-class mundane profile  
-**Strategic value:** Highest-value new composition domain  
+**Status:** Partial substrate; no first-class mundane profile
+**Strategic value:** Highest-value new composition domain
 **Likely scope:** Medium for a neutral v1; large for historical judgement
 
 **Existing substrate**
@@ -248,67 +257,76 @@ engine unless separately admitted with evidence appropriate to those claims.
 
 ### 5.3 Predictive relationship charts
 
-**Status:** Partial  
-**Strategic value:** High and bounded  
-**Likely scope:** Small-to-medium
+**Status:** Bounded Track A contract admitted; deeper predictive modes remain partial
 
-**Existing substrate**
+**Strategic value:** Bounded follow-on only
+
+**Likely scope:** Small-to-medium per separately admitted mode
+
+**Admitted Track A contract**
 
 - synastry aspects and overlays;
 - midpoint composite construction;
 - multiple Davison constructions;
-- progression outputs that can already be supplied to synastry calculations;
-- generic transit and aspect-event search.
+- exact moving-body aspect perfections to immutable composite and Davison
+  planet, node, angle, and cusp targets;
+- stable derived-chart identity and complete search-policy provenance;
+- root, facade, reader-bound `Moira`, serializer, model, and registered REST
+  parity for the admitted transit surface.
 
-**What is missing**
+**What remains outside the admitted contract**
 
-- composite and Davison charts as explicit transit targets;
-- a stable derived-chart identity and provenance receipt;
-- progression and direction contracts that preserve which relationship chart
+- progressed or directed relationship-chart contracts that preserve which chart
   was advanced and by which policy;
 - cross-chart multi-body pattern detection;
-- focused public contracts and independent fixtures for these compositions.
+- orb entry/exit windows and interpretive relationship forecasting.
 
-**Admission gate**
+**Follow-on admission gate**
 
-Reuse canonical chart and transit truth. Do not create separate relationship
-aspect mathematics. The derived-chart identity, epoch, correction method, and
-target policy must be reproducible from the result.
+Any progression, direction, or pattern follow-on must reuse canonical chart and
+aspect truth, preserve the derived-chart identity and advancing policy, and
+receive its own independent fixtures. It must not widen the exact-transit v1
+contract by implication.
 
 ### 5.4 Dynamic locational astrology
 
-**Status:** Partial  
-**Strategic value:** High for Moira's geometry strengths  
-**Likely scope:** Medium
+**Status:** Bounded Track A contract admitted; deeper dynamic modes remain partial
 
-**Existing substrate**
+**Strategic value:** Bounded follow-on only
+
+**Likely scope:** Medium per separately admitted geometry family
+
+**Admitted Track A contract**
 
 - planetary MC/IC/ASC/DSC astrocartography;
-- zenith/nadir subplanetary points;
+- selected-asteroid MC/IC/ASC/DSC lines and asteroid/comet zenith/nadir
+  subplanetary points;
 - local-space, geodetic, paran, and relocated-chart calculations;
-- a large fixed-star catalog and star rise/set/paran machinery;
-- small-body positions through the admitted planet-compatible path.
+- source-resolved true-of-date fixed-star MC/IC/ASC/DSC lines and zenith/nadir
+  points using equatorial geometry;
+- solar, lunar, and planetary return charts recast into a relocated local house
+  frame without changing the return moment or celestial snapshot;
+- caller-supplied, explicit-epoch transiting astrocartography with adjacent line
+  displacement receipts.
 
-**What is missing**
+**What remains outside the admitted contract**
 
-- fixed-star parity across the ACG line family;
-- explicit asteroid/comet ACG policies rather than incidental compatibility;
-- cyclocartography: transiting, progressed, or directed angular geography over
-  time;
-- relocated solar/lunar/planetary-return composition;
-- geometry-owned comparison receipts for locations and epochs.
+- progressed or directed angular geography over time;
+- chart-backed comet MC/IC/ASC/DSC line generation;
+- interpolation, city or travel ranking, and interpretive location scoring.
 
-**Admission gate**
+**Follow-on admission gate**
 
 Every line or point must remain an engine geometry product. Interpretive city
-rankings and travel recommendations belong downstream. Fixed-star work must use
-equatorial geometry and star identity/provenance rather than treating stars as
-ordinary ecliptic points.
+rankings and travel recommendations belong downstream. Any new progressed,
+directed, or comet line family must identify its chart/epoch policy, preserve
+body and ephemeris provenance, and add independent geometry fixtures rather
+than relying on incidental planet-compatible behavior.
 
 ### 5.5 Birth-time rectification evidence
 
-**Status:** Absent as a subsystem; strong substrate  
-**Strategic value:** High practitioner utility, high epistemic risk  
+**Status:** Absent as a subsystem; strong substrate
+**Strategic value:** High practitioner utility, high epistemic risk
 **Likely scope:** Medium for evidence tooling; unacceptable as an automatic
 truth oracle
 
@@ -337,8 +355,8 @@ versioned, optional, and decomposable into its observed components.
 
 ### 5.6 Western annual revolutions
 
-**Status:** Partial substrate; doctrine family absent  
-**Strategic value:** Medium-high traditional expansion  
+**Status:** Partial substrate; doctrine family absent
+**Strategic value:** Medium-high traditional expansion
 **Likely scope:** Medium-to-large
 
 **Existing substrate**
@@ -461,7 +479,12 @@ frontier candidates are established workflows:
   workflows](https://astrologysoftware.co.uk/solar-fire/solar-fire-forecasting/).
 
 These sources establish contemporary workflow relevance only. They do not own
-Moira's doctrine, formulas, source policy, or validation standard.
+Moira's doctrine, formulas, source policy, or validation standard. The admitted
+Track A contracts cover only the exact composite/Davison transit, fixed-star
+astrocartography, relocated-return, and explicit-epoch transiting
+astrocartography calculations described above; practitioner software breadth
+does not imply parity for progressed, directed, interpretive, or ranking
+workflows.
 
 ---
 
@@ -469,12 +492,18 @@ Moira's doctrine, formulas, source policy, or validation standard.
 
 ### Track A — bounded closure work
 
-1. Predictive composite/Davison targets.
-2. Fixed-star astrocartography parity.
-3. Relocated-return and dynamic-locational composition.
+**Status:** Admitted at `7090255e2d6cc41f7b4df15417512412f0ad5366`.
 
-These reuse mature Moira geometry and have comparatively narrow doctrinal
-risk.
+1. Exact predictive composite/Davison targets — admitted.
+2. Fixed-star astrocartography parity — admitted.
+3. Relocated-return and explicit-epoch transiting-locational composition —
+   admitted.
+
+Track A remains calculation-only. It does not admit progressed or directed
+relationship charts, cross-chart multi-body patterns, progressed or directed
+cartography, chart-backed comet MC/IC/ASC/DSC lines, interpretation, rankings,
+website work, or Workspace adoption. Those boundaries require a separately
+authorized and independently validated follow-on.
 
 ### Track B — flagship new Western research
 
@@ -500,8 +529,9 @@ they reuse houses and aspects.
 3. Reassessment of the explicit Jyotish deferrals.
 4. Historical astrological-magic product-boundary review.
 
-No track should be expanded into implementation phases until its research gate
-has a finite proposed contract and a credible independent validation method.
+No unfinished track should be expanded into implementation phases until its
+research gate has a finite proposed contract and a credible independent
+validation method.
 
 ---
 
@@ -537,9 +567,9 @@ Choose one of the following explicit objectives:
 
 - **largest missing Western domain:** horary research gate;
 - **most distinctive Moira-native domain:** neutral mundane chart composition;
-- **fastest bounded user-value closure:** composite/Davison forecasting;
-- **strongest geometry expansion:** fixed-star/dynamic locational astrology;
 - **highest-value research instrument:** rectification evidence matrix;
+- **bounded advanced-forecasting follow-on:** one separately scoped progressed,
+  directed, cross-chart-pattern, or chart-backed comet-line contract;
 - **largest greenfield tradition:** Chinese 28-Xiu feasibility before any full
   Chinese astrology programme.
 
@@ -548,7 +578,19 @@ condition. This audit remains a map, not permission to implement every row.
 
 ---
 
-## 12. Maintenance rule
+## 12. Closure ledger
+
+| Area | Admission receipt | Admitted scope | Still outside the contract |
+|---|---|---|---|
+| Track A relationship forecasting | `7090255e2d6cc41f7b4df15417512412f0ad5366` | Exact transits to immutable composite and Davison planet, node, angle, and cusp targets | Progressed/directed relationship charts, orb windows, cross-chart multi-body patterns, interpretation |
+| Track A locational forecasting | `7090255e2d6cc41f7b4df15417512412f0ad5366` | Fixed-star lines and points, relocated returns, and explicit-epoch transiting astrocartography | Progressed/directed locational modes, chart-backed comet MC/IC/ASC/DSC lines, interpolation, rankings, interpretation |
+
+The admission receipt identifies the bounded engine contract. This ledger does
+not claim a package publication, website or Workspace adoption, or deployment.
+
+---
+
+## 13. Maintenance rule
 
 This is a point-in-time audit bound to the commit named at the top. When a gap
 changes state:

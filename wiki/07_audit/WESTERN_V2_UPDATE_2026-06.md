@@ -7,7 +7,9 @@
 > **Current prioritization:** Later implementation closed several gaps recorded
 > here. Use the
 > [Astrology Coverage Frontier Gap Audit (2026-08)](ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md)
-> for the current cross-tradition frontier map at commit `c868fd0`.
+> for the current cross-tradition frontier map. It preserves its original
+> `c868fd0` baseline and is amended through Track A admission commit
+> `7090255e2d6cc41f7b4df15417512412f0ad5366`.
 
 ---
 
