@@ -10,6 +10,11 @@
 > catalog is also research-only and absent from public and registered REST
 > surfaces. These are not current Hellenistic gaps or release backlog.
 
+> **Current prioritization:** Use the cross-tradition
+> [Astrology Coverage Frontier Gap Audit (2026-08)](ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md)
+> for gap selection at commit `c868fd0`; retain this document as the detailed
+> Western point-in-time record.
+
 **Document:** `wiki/07_audit/WESTERN_SYSTEMS_AUDIT.md` (canonical broad Western audit)
 **Created:** 2026-06 (initial draft)
 **Last updated:** 2026-07-25 (Phase-1 Decennials and Hermetic-decan containment correction)

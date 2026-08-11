@@ -5,6 +5,11 @@
 **Auditor:** TheDaniel166  
 **Method:** 12-domain coverage matrix. Moira assessed from code inspection; competitors from public documentation (manuals, feature pages, tutorials).
 
+> **Current prioritization:** This historical comparison is superseded for
+> current gap selection by the
+> [Astrology Coverage Frontier Gap Audit (2026-08)](ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md),
+> which re-verifies the later engine state at commit `c868fd0`.
+
 > **Current-state correction (2026-07-25).** This is a point-in-time comparison,
 > not a current capability ledger. The admitted Decennials surface now ends at
 > L2; the named Valens and Hephaistio deep-subdivision candidates fail closed.

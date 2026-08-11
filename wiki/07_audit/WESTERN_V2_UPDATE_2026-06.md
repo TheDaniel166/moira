@@ -4,6 +4,11 @@
 **Companion to:** [WESTERN_SYSTEMS_AUDIT.md](WESTERN_SYSTEMS_AUDIT.md)
 **Purpose:** Narrow corrective update to the broad Western master audit. This document identifies the highest-signal remaining Western gaps after recent houses, spatial, REST-reduction, and small-body work, then proposes a staged roadmap.
 
+> **Current prioritization:** Later implementation closed several gaps recorded
+> here. Use the
+> [Astrology Coverage Frontier Gap Audit (2026-08)](ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md)
+> for the current cross-tradition frontier map at commit `c868fd0`.
+
 ---
 
 ## 1. Scope of This Update
