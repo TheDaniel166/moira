@@ -135,6 +135,7 @@ def compute_planet_position(engine: Moira, request: PlanetPositionRequest) -> Pl
 
     _require_aware_datetime(request.dt)
     _require_supported_planet_body(request.body)
+    reader = engine._reader
     jd_utc = jd_from_datetime(request.dt)
     jd_ut = utc_to_ut1(jd_utc)
     lst_deg: float | None = None
@@ -143,7 +144,7 @@ def compute_planet_position(engine: Moira, request: PlanetPositionRequest) -> Pl
     return planet_at(
         request.body,
         jd_ut,
-        reader=None,  # use active reader (set by the Moira engine instance in server lifecycle)
+        reader=reader,
         apparent=request.apparent,
         aberration=request.aberration,
         grav_deflection=request.grav_deflection,
@@ -165,6 +166,7 @@ def compute_planet_position_with_reduction(
 
     _require_aware_datetime(request.dt)
     _require_supported_planet_body(request.body)
+    reader = engine._reader
     jd_utc = jd_from_datetime(request.dt)
     jd_ut = utc_to_ut1(jd_utc)
     lst_deg: float | None = None
@@ -173,7 +175,7 @@ def compute_planet_position_with_reduction(
     planet = planet_at(
         request.body,
         jd_ut,
-        reader=None,
+        reader=reader,
         apparent=request.apparent,
         aberration=request.aberration,
         grav_deflection=request.grav_deflection,
@@ -187,6 +189,7 @@ def compute_planet_position_with_reduction(
         breakdown = planet_reduction_breakdown_at(
             request.body,
             jd_ut,
+            reader=reader,
             apparent=request.apparent,
             aberration=request.aberration,
             grav_deflection=request.grav_deflection,
@@ -237,6 +240,7 @@ def compute_sky_position(engine: Moira, request: SkyPositionRequest) -> SkyPosit
     """
 
     _require_aware_datetime(request.dt)
+    reader = engine._reader
     jd_utc = jd_from_datetime(request.dt)
     jd_ut = utc_to_ut1(jd_utc)
     return sky_position_at(
@@ -245,7 +249,7 @@ def compute_sky_position(engine: Moira, request: SkyPositionRequest) -> SkyPosit
         request.latitude,
         request.longitude,
         observer_elev_m=request.elevation_m,
-        reader=None,
+        reader=reader,
         aberration=request.aberration,
         grav_deflection=request.grav_deflection,
         nutation=request.nutation,
@@ -265,6 +269,7 @@ def compute_sky_position_with_reduction(
     """
 
     _require_aware_datetime(request.dt)
+    reader = engine._reader
     jd_utc = jd_from_datetime(request.dt)
     jd_ut = utc_to_ut1(jd_utc)
     position = sky_position_at(
@@ -273,7 +278,7 @@ def compute_sky_position_with_reduction(
         request.latitude,
         request.longitude,
         observer_elev_m=request.elevation_m,
-        reader=None,
+        reader=reader,
         aberration=request.aberration,
         grav_deflection=request.grav_deflection,
         nutation=request.nutation,

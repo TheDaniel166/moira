@@ -805,9 +805,11 @@ def _npe_batch_barycentric_positions(
     body_jds: dict[str, float],
 ) -> dict[str, Vec3]:
     """Evaluate admitted per-body barycentric positions for varying JDs in one native batch."""
+    requested_bodies = tuple(body_jds)
     requests: list[tuple[int, int, int, float]] = []
     counts: dict[str, int] = {}
-    for body, specs in body_segment_specs.items():
+    for body in requested_bodies:
+        specs = body_segment_specs[body]
         jd = body_jds[body]
         counts[body] = len(specs)
         for start_i, end_i, data_type in specs:
@@ -816,7 +818,7 @@ def _npe_batch_barycentric_positions(
     raw = handle.batch_segment_position_requests(requests)
     cursor = 0
     results: dict[str, Vec3] = {}
-    for body in _NPE_ADMITTED_BODIES:
+    for body in requested_bodies:
         count = counts[body]
         x = y = z = 0.0
         for _ in range(count):

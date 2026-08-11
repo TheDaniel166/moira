@@ -432,6 +432,43 @@ def test_all_planets_at_falls_back_to_python_route_when_native_helper_declines(m
     assert calls == [Body.SUN, Body.MARS]
 
 
+def test_npe_batch_barycentric_positions_preserves_requested_subset_order():
+    class _RecordingHandle:
+        def __init__(self) -> None:
+            self.requests: list[tuple[int, int, int, float]] = []
+
+        def batch_segment_position_requests(self, requests):
+            self.requests = list(requests)
+            return [
+                (1.0, 2.0, 3.0),
+                (10.0, 20.0, 30.0),
+                (0.5, 1.5, 2.5),
+            ]
+
+    handle = _RecordingHandle()
+    segment_specs = {
+        Body.SUN: ((0, 10, 2), (10, 399, 2)),
+        Body.MERCURY: ((0, 1, 2),),
+        Body.MARS: ((0, 4, 2),),
+    }
+    body_jds = {Body.MARS: 2451544.9, Body.SUN: 2451544.8}
+
+    result = planets_module._npe_batch_barycentric_positions(
+        handle,
+        segment_specs,
+        body_jds,
+    )
+
+    assert handle.requests == [
+        (0, 4, 2, 2451544.9),
+        (0, 10, 2, 2451544.8),
+        (10, 399, 2, 2451544.8),
+    ]
+    assert list(result) == [Body.MARS, Body.SUN]
+    assert result[Body.MARS] == (1.0, 2.0, 3.0)
+    assert result[Body.SUN] == (10.5, 21.5, 32.5)
+
+
 @pytest.mark.requires_ephemeris
 def test_all_planets_at_native_evaluator_matches_python_fallback():
     if planets_module._moira_native is None or not hasattr(planets_module._moira_native, "NativePlanetaryEvaluator"):

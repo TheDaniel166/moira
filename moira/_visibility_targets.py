@@ -105,6 +105,8 @@ class ResolvedVisibilityTargetProfile:
 
 @dataclass(frozen=True, slots=True)
 class _TargetColorModel:
+    """Pack-owned color model used to resolve a visibility target profile."""
+
     model_id: str
     kind: str
     phase_angle_domain_deg: tuple[float, float]

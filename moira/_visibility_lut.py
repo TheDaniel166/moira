@@ -125,6 +125,8 @@ _HEX_DIGITS = frozenset("0123456789abcdef")
 
 @dataclass(frozen=True, slots=True)
 class _CompatibilityIdentity:
+    """Validated compatibility identity for one immutable visibility data pack."""
+
     path: Path
     sha256: str
     compatibility_id: str

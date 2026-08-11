@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 import pytest
 
+from moira import Moira
 from moira.planets import planet_at
 from moira.julian import jd_from_datetime, local_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
@@ -22,6 +23,40 @@ def client_with_engine(
     monkeypatch: pytest.MonkeyPatch,
 ) -> TestClient:
     monkeypatch.setattr("moira_server.app.create_engine", lambda config: moira_engine)
+    app = create_app(ServerConfig(docs_enabled=False))
+    with TestClient(app) as client:
+        yield client
+
+
+@pytest.fixture
+def borrowed_small_body_moira_engine(
+    monkeypatch: pytest.MonkeyPatch,
+    small_body_reader_pool,
+):
+    """Bind a non-owning facade to the separately admitted small-body pool."""
+
+    with monkeypatch.context() as constructor_patch:
+        constructor_patch.setattr(Moira, "_try_initialize_reader", lambda self: None)
+        engine = Moira()
+    engine._reader_obj = small_body_reader_pool
+    try:
+        yield engine
+    finally:
+        # The session fixture owns and closes the reader pool.
+        engine._reader_obj = None
+
+
+@pytest.fixture
+def client_with_small_body_engine(
+    borrowed_small_body_moira_engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> TestClient:
+    """Serve one test through the separately admitted small-body engine."""
+
+    monkeypatch.setattr(
+        "moira_server.app.create_engine",
+        lambda config: borrowed_small_body_moira_engine,
+    )
     app = create_app(ServerConfig(docs_enabled=False))
     with TestClient(app) as client:
         yield client
@@ -123,13 +158,17 @@ def test_chart_reduction_route_exposes_pipeline_truth(
 
 @pytest.mark.requires_ephemeris
 def test_chart_reduction_route_admits_small_bodies(
-    client_with_engine: TestClient,
-    moira_engine,
+    client_with_small_body_engine: TestClient,
+    borrowed_small_body_moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
-    direct = moira_engine.chart(dt, bodies=["Ceres"], include_nodes=False)
+    direct = borrowed_small_body_moira_engine.chart(
+        dt,
+        bodies=["Ceres"],
+        include_nodes=False,
+    )
 
-    response = client_with_engine.post(
+    response = client_with_small_body_engine.post(
         "/v1/chart/reduction",
         json={
             "dt": dt.isoformat(),
@@ -277,35 +316,46 @@ def test_planet_position_reduction_route_exposes_pipeline_truth(
 
 
 @pytest.mark.requires_ephemeris
-def test_planet_position_reduction_route_admits_small_bodies(
-    client_with_engine: TestClient,
-    moira_engine,
+def test_planet_position_routes_admit_small_bodies(
+    client_with_small_body_engine: TestClient,
+    small_body_reader_pool,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
     direct = planet_at(
         "Ceres",
-        jd_from_datetime(dt),
-        reader=None,
+        utc_to_ut1(jd_from_datetime(dt)),
+        reader=small_body_reader_pool,
         apparent=True,
         aberration=True,
         grav_deflection=True,
         nutation=True,
     )
 
-    response = client_with_engine.post(
+    request_body = {
+        "dt": dt.isoformat(),
+        "body": "Ceres",
+        "apparent": True,
+        "aberration": True,
+        "grav_deflection": True,
+        "nutation": True,
+    }
+    response = client_with_small_body_engine.post(
+        "/v1/positions/planet",
+        json=request_body,
+    )
+    reduction_response = client_with_small_body_engine.post(
         "/v1/positions/planet/reduction",
-        json={
-            "dt": dt.isoformat(),
-            "body": "Ceres",
-            "apparent": True,
-            "aberration": True,
-            "grav_deflection": True,
-            "nutation": True,
-        },
+        json=request_body,
     )
 
     assert response.status_code == 200
-    body = response.json()
+    assert reduction_response.status_code == 200
+
+    position_body = response.json()
+    body = reduction_response.json()
+    assert position_body["name"] == "Ceres"
+    assert position_body["longitude"] == pytest.approx(direct.longitude)
+    assert position_body["latitude"] == pytest.approx(direct.latitude)
     assert body["result"]["name"] == "Ceres"
     assert body["result"]["longitude"] == pytest.approx(direct.longitude)
     assert body["result"]["latitude"] == pytest.approx(direct.latitude)
@@ -388,13 +438,18 @@ def test_sky_position_reduction_route_exposes_pipeline_truth(
 
 @pytest.mark.requires_ephemeris
 def test_sky_position_routes_admit_small_bodies(
-    client_with_engine: TestClient,
-    moira_engine,
+    client_with_small_body_engine: TestClient,
+    borrowed_small_body_moira_engine,
 ) -> None:
     dt = datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc)
-    direct = moira_engine.sky_position(dt, "Ceres", 51.5, -0.1)
+    direct = borrowed_small_body_moira_engine.sky_position(
+        dt,
+        "Ceres",
+        51.5,
+        -0.1,
+    )
 
-    response = client_with_engine.post(
+    response = client_with_small_body_engine.post(
         "/v1/positions/sky",
         json={
             "dt": dt.isoformat(),
@@ -403,7 +458,7 @@ def test_sky_position_routes_admit_small_bodies(
             "longitude": -0.1,
         },
     )
-    reduction_response = client_with_engine.post(
+    reduction_response = client_with_small_body_engine.post(
         "/v1/positions/sky/reduction",
         json={
             "dt": dt.isoformat(),
