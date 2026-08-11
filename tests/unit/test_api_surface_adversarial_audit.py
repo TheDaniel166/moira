@@ -939,6 +939,88 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "relative_optical_airmass",
 })
 
+# Explicit physical-visibility admissions landed before this snapshot was
+# refreshed.  Keeping the complete literal set prevents either silent removal
+# or accidental expansion of the public contract.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "PhysicalAtmosphereInput",
+    "PhysicalAtmosphereReceipt",
+    "PhysicalBackgroundComponentKind",
+    "PhysicalBackgroundReceipt",
+    "PhysicalBackgroundScope",
+    "PhysicalBortleBackground",
+    "PhysicalDirectionalBackground",
+    "PhysicalEphemerisReceipt",
+    "PhysicalEventSensitivityReceipt",
+    "PhysicalEventSolverReceipt",
+    "PhysicalEventTimeSemantics",
+    "PhysicalHorizonProfile",
+    "PhysicalHorizonReceipt",
+    "PhysicalHorizonSample",
+    "PhysicalModeledBackgroundComponent",
+    "PhysicalObservationWindowReceipt",
+    "PhysicalObserverProtocolReceipt",
+    "PhysicalSqmBackground",
+    "PhysicalTargetReceipt",
+    "PhysicalThresholdReceipt",
+    "PhysicalValidityDomainReceipt",
+    "PhysicalVisibilityAssessment",
+    "PhysicalVisibilityBoundarySource",
+    "PhysicalVisibilityCrossingDirection",
+    "PhysicalVisibilityErrorBudgetReceipt",
+    "PhysicalVisibilityEventResult",
+    "PhysicalVisibilityEvidenceState",
+    "PhysicalVisibilityPhase",
+    "PhysicalVisibilityPolicy",
+    "PhysicalVisibilitySearchPolicy",
+    "PhysicalVisibilityStatus",
+    "VisibilityComponentReceipt",
+    "VisibilityDataPackConfig",
+    "VisibilityDataPackReceipt",
+    "physical_visibility_assessment",
+    "physical_visibility_event",
+})
+
+# Track A bounded-closure admissions: relationship transit targets, fixed-star
+# and dynamic astrocartography, and relocated return composition.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "AstrocartographyCurvePointShift",
+    "DynamicAstrocartographyLineTransition",
+    "DynamicAstrocartographyMode",
+    "DynamicAstrocartographyPosition",
+    "DynamicAstrocartographySeries",
+    "DynamicAstrocartographySeriesTruth",
+    "DynamicAstrocartographySnapshot",
+    "DynamicAstrocartographySnapshotTruth",
+    "FixedStarAstrocartographyResult",
+    "FixedStarAstrocartographySubject",
+    "FixedStarAstrocartographyTruth",
+    "RelationshipChartIdentity",
+    "RelationshipChartKind",
+    "RelationshipChartTargetSet",
+    "RelationshipTargetKind",
+    "RelationshipTransitEvent",
+    "RelationshipTransitSearchResult",
+    "RelationshipTransitSearchTruth",
+    "RelationshipTransitTarget",
+    "RelocatedReturnChart",
+    "ReturnKind",
+    "ReturnMomentTruth",
+    "ReturnRelocationTruth",
+    "ReturnSearchPolicyTruth",
+    "find_composite_transits",
+    "find_davison_transits",
+    "find_relationship_transits",
+    "fixed_star_astrocartography",
+    "fixed_star_astrocartography_from_chart",
+    "fixed_star_equatorial_subject",
+    "relationship_chart_targets",
+    "relocated_lunar_return",
+    "relocated_planetary_return",
+    "relocated_solar_return",
+    "transiting_astrocartography",
+})
+
 _EXPECTED_ROOT_ONLY_NAMES = {
     "ASHTOTTARI_NAKSHATRA_LORD",
     "ASHTOTTARI_SEQUENCE",
@@ -1383,6 +1465,23 @@ _EXPECTED_MOIRA_METHODS.update({
     "solar_proximity_truth",
     "zr_fortune_angularity_truth",
     "hellenistic_chart_profile",
+})
+
+_EXPECTED_MOIRA_METHODS.update({
+    "physical_visibility_assessment",
+    "physical_visibility_event",
+})
+
+_EXPECTED_MOIRA_METHODS.update({
+    "composite_transits",
+    "davison_transits",
+    "fixed_star_astrocartography",
+    "relationship_chart_targets",
+    "relationship_transits",
+    "relocated_lunar_return",
+    "relocated_planetary_return",
+    "relocated_solar_return",
+    "transiting_astrocartography",
 })
 
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)

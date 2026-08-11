@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
+from moira import Moira
 from moira.astrocartography import acg_lines, subplanetary_points
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -37,6 +38,40 @@ def client_with_engine(
     monkeypatch: pytest.MonkeyPatch,
 ) -> TestClient:
     monkeypatch.setattr("moira_server.app.create_engine", lambda config: moira_engine)
+    app = create_app(ServerConfig(docs_enabled=False))
+    with TestClient(app) as client:
+        yield client
+
+
+@pytest.fixture
+def borrowed_small_body_moira_engine(
+    monkeypatch: pytest.MonkeyPatch,
+    small_body_reader_pool,
+):
+    """Bind a non-owning facade to the separately admitted small-body pool."""
+
+    with monkeypatch.context() as constructor_patch:
+        constructor_patch.setattr(Moira, "_try_initialize_reader", lambda self: None)
+        engine = Moira()
+    engine._reader_obj = small_body_reader_pool
+    try:
+        yield engine
+    finally:
+        # The session fixture owns and closes the reader pool.
+        engine._reader_obj = None
+
+
+@pytest.fixture
+def client_with_small_body_engine(
+    borrowed_small_body_moira_engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> TestClient:
+    """Serve one test through the separately admitted small-body engine."""
+
+    monkeypatch.setattr(
+        "moira_server.app.create_engine",
+        lambda config: borrowed_small_body_moira_engine,
+    )
     app = create_app(ServerConfig(docs_enabled=False))
     with TestClient(app) as client:
         yield client
@@ -292,9 +327,9 @@ def test_astrocartography_chart_subplanetary_route_matches_service_truth(
 
 @pytest.mark.requires_ephemeris
 def test_astrocartography_chart_lines_preserves_selected_asteroid_provenance(
-    client_with_engine: TestClient,
+    client_with_small_body_engine: TestClient,
 ) -> None:
-    response = client_with_engine.post(
+    response = client_with_small_body_engine.post(
         "/v1/astrocartography/chart/lines",
         json={
             "dt": _DT_ISO,
@@ -348,13 +383,13 @@ def test_astrocartography_chart_lines_defer_comet_topocentric_ra_dec_path(
     ],
 )
 def test_astrocartography_chart_subplanetary_preserves_selected_minor_body_provenance(
-    client_with_engine: TestClient,
+    client_with_small_body_engine: TestClient,
     body: str,
     subject_class: str,
     canonical_name: str,
     naif_id: int,
 ) -> None:
-    response = client_with_engine.post(
+    response = client_with_small_body_engine.post(
         "/v1/astrocartography/chart/subplanetary",
         json={"dt": _DT_ISO, "bodies": [body]},
     )
@@ -374,8 +409,8 @@ def test_astrocartography_chart_subplanetary_preserves_selected_minor_body_prove
 
 @pytest.mark.requires_ephemeris
 def test_astrocartography_subject_chart_lines_accepts_mixed_subjects(
-    client_with_engine: TestClient,
-    moira_engine,
+    client_with_small_body_engine: TestClient,
+    borrowed_small_body_moira_engine,
 ) -> None:
     payload = {
         "dt": _DT_ISO,
@@ -404,12 +439,12 @@ def test_astrocartography_subject_chart_lines_accepts_mixed_subjects(
     }
     expected = serialize_astrocartography_lines(
         compute_astrocartography_subject_chart_lines(
-            moira_engine,
+            borrowed_small_body_moira_engine,
             AstrocartographySubjectChartLinesRequest.model_validate(payload),
         )
     ).model_dump(mode="json")
 
-    response = client_with_engine.post(
+    response = client_with_small_body_engine.post(
         "/v1/astrocartography/chart/subjects/lines",
         json=payload,
     )
