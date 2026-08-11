@@ -594,6 +594,20 @@ from .synastry import (
     synastry_condition_profiles, synastry_chart_condition_profile,
     synastry_condition_network_profile,
 )
+from .relationship_forecasting import (
+    RelationshipChartKind,
+    RelationshipTargetKind,
+    RelationshipChartIdentity,
+    RelationshipTransitTarget,
+    RelationshipChartTargetSet,
+    RelationshipTransitEvent,
+    RelationshipTransitSearchTruth,
+    RelationshipTransitSearchResult,
+    relationship_chart_targets,
+    find_relationship_transits,
+    find_composite_transits,
+    find_davison_transits,
+)
 from .transits import (
     TransitTargetKind,
     TransitSearchKind,
@@ -821,10 +835,35 @@ from .decanates import DecanatePosition, chaldean_face, triplicity_decan, vedic_
 from .astrocartography import (
     ACGLine,
     SubPlanetaryPoint,
+    FixedStarAstrocartographySubject,
+    FixedStarAstrocartographyTruth,
+    FixedStarAstrocartographyResult,
     acg_lines,
     acg_from_chart,
     subplanetary_points,
     subplanetary_from_chart,
+    fixed_star_equatorial_subject,
+    fixed_star_astrocartography,
+    fixed_star_astrocartography_from_chart,
+)
+from .locational_forecasting import (
+    ReturnKind,
+    ReturnSearchPolicyTruth,
+    ReturnMomentTruth,
+    ReturnRelocationTruth,
+    RelocatedReturnChart,
+    DynamicAstrocartographyMode,
+    DynamicAstrocartographyPosition,
+    DynamicAstrocartographySnapshotTruth,
+    DynamicAstrocartographySnapshot,
+    AstrocartographyCurvePointShift,
+    DynamicAstrocartographyLineTransition,
+    DynamicAstrocartographySeriesTruth,
+    DynamicAstrocartographySeries,
+    relocated_solar_return,
+    relocated_lunar_return,
+    relocated_planetary_return,
+    transiting_astrocartography,
 )
 from .geodetic import (
     GeodeticChart,
@@ -1963,6 +2002,13 @@ __all__ = [
     "synastry_contact_relations", "mutual_overlay_relations",
     "synastry_condition_profiles", "synastry_chart_condition_profile",
     "synastry_condition_network_profile",
+    # Relationship forecasting
+    "RelationshipChartKind", "RelationshipTargetKind",
+    "RelationshipChartIdentity", "RelationshipTransitTarget",
+    "RelationshipChartTargetSet", "RelationshipTransitEvent",
+    "RelationshipTransitSearchTruth", "RelationshipTransitSearchResult",
+    "relationship_chart_targets", "find_relationship_transits",
+    "find_composite_transits", "find_davison_transits",
     # Transits
     "TransitTargetKind", "TransitSearchKind", "TransitWrapperKind",
     "TransitRelationKind", "TransitRelationBasis", "TransitConditionState",
@@ -2147,8 +2193,20 @@ __all__ = [
     # Decanates
     "DecanatePosition", "chaldean_face", "triplicity_decan", "vedic_drekkana",
     # Astrocartography
-    "ACGLine", "SubPlanetaryPoint", "acg_lines", "acg_from_chart",
-    "subplanetary_points", "subplanetary_from_chart",
+    "ACGLine", "SubPlanetaryPoint",
+    "FixedStarAstrocartographySubject", "FixedStarAstrocartographyTruth",
+    "FixedStarAstrocartographyResult",
+    "acg_lines", "acg_from_chart", "subplanetary_points", "subplanetary_from_chart",
+    "fixed_star_equatorial_subject", "fixed_star_astrocartography",
+    "fixed_star_astrocartography_from_chart",
+    # Dynamic locational forecasting and relocated returns
+    "ReturnKind", "ReturnSearchPolicyTruth", "ReturnMomentTruth", "ReturnRelocationTruth", "RelocatedReturnChart",
+    "DynamicAstrocartographyMode", "DynamicAstrocartographyPosition",
+    "DynamicAstrocartographySnapshotTruth", "DynamicAstrocartographySnapshot",
+    "AstrocartographyCurvePointShift", "DynamicAstrocartographyLineTransition",
+    "DynamicAstrocartographySeriesTruth", "DynamicAstrocartographySeries",
+    "relocated_solar_return", "relocated_lunar_return", "relocated_planetary_return",
+    "transiting_astrocartography",
     # Geodetic
     "GeodeticChart",
     "geodetic_mc", "geodetic_asc", "geodetic_chart", "geodetic_chart_from_chart",

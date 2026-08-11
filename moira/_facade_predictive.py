@@ -687,6 +687,74 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             body, natal_lon, jd_start, direction=direction, reader=self._reader
         )
 
+    def relocated_solar_return(
+        self,
+        natal_sun_longitude: float,
+        year: int,
+        source_latitude: float,
+        source_longitude: float,
+        relocated_latitude: float,
+        relocated_longitude: float,
+        **kwargs,
+    ):
+        """Cast one exact solar return at source and relocated house frames."""
+        return _facade_module().relocated_solar_return(
+            natal_sun_longitude,
+            year,
+            source_latitude,
+            source_longitude,
+            relocated_latitude,
+            relocated_longitude,
+            reader=self._reader,
+            **kwargs,
+        )
+
+    def relocated_lunar_return(
+        self,
+        natal_moon_longitude: float,
+        jd_start: float,
+        source_latitude: float,
+        source_longitude: float,
+        relocated_latitude: float,
+        relocated_longitude: float,
+        **kwargs,
+    ):
+        """Cast the next lunar return at source and relocated house frames."""
+        return _facade_module().relocated_lunar_return(
+            natal_moon_longitude,
+            jd_start,
+            source_latitude,
+            source_longitude,
+            relocated_latitude,
+            relocated_longitude,
+            reader=self._reader,
+            **kwargs,
+        )
+
+    def relocated_planetary_return(
+        self,
+        body: str,
+        natal_longitude: float,
+        jd_start: float,
+        source_latitude: float,
+        source_longitude: float,
+        relocated_latitude: float,
+        relocated_longitude: float,
+        **kwargs,
+    ):
+        """Cast an admitted planetary return at source and relocated frames."""
+        return _facade_module().relocated_planetary_return(
+            body,
+            natal_longitude,
+            jd_start,
+            source_latitude,
+            source_longitude,
+            relocated_latitude,
+            relocated_longitude,
+            reader=self._reader,
+            **kwargs,
+        )
+
     def syzygy(self, jd: float) -> tuple[float, str]:
         """Find the prenatal syzygy."""
         return _facade_module().prenatal_syzygy(jd, reader=self._reader)

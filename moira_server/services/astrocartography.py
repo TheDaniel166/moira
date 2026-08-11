@@ -9,6 +9,7 @@ from moira.astrocartography import (
     ACGLine,
     SubPlanetaryPoint,
     acg_lines,
+    fixed_star_equatorial_subject,
     subplanetary_points,
 )
 from moira.coordinates import ecliptic_to_equatorial
@@ -16,7 +17,6 @@ from moira.julian import apparent_sidereal_time, utc_to_tt, utc_to_ut1
 from moira.obliquity import nutation, true_obliquity
 from moira.planets import planet_at, sky_position_at
 from moira.small_body_identity import resolve_small_body_identity
-from moira.stars import star_at
 
 from ..models.astrocartography import (
     ASTROCARTOGRAPHY_MAX_BODIES,
@@ -243,6 +243,7 @@ def compute_astrocartography_chart_lines(
         lat_step=request.lat_step,
         jd_ut=jd_ut,
         refraction=request.refraction,
+        reader=reader,
     )
     return AstrocartographyLinesResult(
         lines=lines,
@@ -325,12 +326,14 @@ def compute_astrocartography_subject_chart_lines(
         line_mode=True,
     )
     subject_ra_dec = _resolved_ra_dec_map(resolved)
+    reader = getattr(engine, "_reader", None)
     lines = acg_lines(
         subject_ra_dec,
         gmst_deg,
         lat_step=request.lat_step,
         jd_ut=jd_ut,
         refraction=request.refraction,
+        reader=reader,
     )
     return AstrocartographyLinesResult(
         lines=lines,
@@ -654,24 +657,19 @@ def _resolve_fixed_star_subject(
     obliquity: float,
     jd_tt: float,
 ) -> ResolvedAstrocartographySubject:
-    star = star_at(subject.name or "", jd_tt)
-    label = _subject_label(subject, fallback=star.name)
-    right_ascension, declination = ecliptic_to_equatorial(
-        star.longitude,
-        star.latitude,
-        obliquity,
-    )
+    star = fixed_star_equatorial_subject(subject.name or "", jd_tt, obliquity)
+    label = _subject_label(subject, fallback=star.canonical_name)
     return ResolvedAstrocartographySubject(
         label=label,
-        right_ascension=right_ascension,
-        declination=declination,
+        right_ascension=star.right_ascension,
+        declination=star.declination,
         provenance=AstrocartographySubjectProvenance(
             requested_label=_subject_label(subject, fallback=subject.name or ""),
             returned_label=label,
             subject_class="fixed_star",
-            canonical_name=star.name,
+            canonical_name=star.canonical_name,
             naif_id=None,
-            position_source="moira.stars.star_at:ecliptic_to_equatorial",
+            position_source=star.position_source,
         ),
     )
 

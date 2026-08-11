@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added exact canonical transits to provenance-bound composite and Davison
+  targets, including deterministic derived-chart identity receipts.
+- Added fixed-star astrocartography with source-resolved identity, true-of-date
+  equatorial geometry, complete MC/IC/ASC/DSC lines, and zenith/nadir points.
+- Added relocated solar, lunar, and planetary returns plus explicit-epoch,
+  geometry-only transiting astrocartography line-displacement receipts.
 - Added the opt-in `clear_sky_naked_eye_point_source_v1` single-epoch
   assessment and four-phase first/last event contract across curated Python,
   `Moira`, facade, REST, and OpenAPI surfaces.
@@ -19,6 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Added reader-bound `Moira`, root/facade, packaged REST, and OpenAPI parity for
+  the bounded Track A relationship and locational forecasting contracts.
+- Bound the explicit ephemeris reader and refraction choice through the
+  chart-based astrocartography wrapper and lunar curve-refinement path.
+- Kept progressed/directed relationship charts, progressed/directed
+  cyclocartography, interpretations, rankings, and travel recommendations out
+  of the admitted forecasting contract.
 - Admitted two private, doctrine-free native kernels for spectral response
   weights and direct-extinction interpolation while retaining Python ownership
   of policy, domain admission, typed failures, event semantics, and results.
@@ -29,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Validation
 
+- Added source-owned invariants for relationship target identity, symmetric
+  aspect branches, fixed-star alias collision handling, return relocation
+  snapshot equality, dynamic line shifts, public-surface parity, and bounded
+  server expansion.
 - Bound primary-source equations, independent libRadtran holdouts,
   Tousey-Koomen observational comparisons, property/invariant tests, legacy
   regressions, OpenAPI parity, exact event goldens, separated numerical

@@ -266,3 +266,75 @@ Canon: Moira Sovereign Facade Architecture; moira.synastry relationship
             reader=self._reader,
             policy=policy,
         )
+
+    def relationship_chart_targets(
+        self,
+        chart,
+        *,
+        include_nodes: bool = True,
+        include_angles: bool = False,
+        include_cusps: bool = False,
+        target_names=None,
+    ):
+        """Return immutable, provenance-bound targets for a relationship chart."""
+        return _facade_module().relationship_chart_targets(
+            chart,
+            include_nodes=include_nodes,
+            include_angles=include_angles,
+            include_cusps=include_cusps,
+            target_names=target_names,
+        )
+
+    def relationship_transits(
+        self,
+        chart,
+        moving_bodies,
+        jd_start: float,
+        jd_end: float,
+        **kwargs,
+    ):
+        """Find exact transiting aspects to composite or Davison targets."""
+        return _facade_module().find_relationship_transits(
+            chart,
+            moving_bodies,
+            jd_start,
+            jd_end,
+            reader=self._reader,
+            **kwargs,
+        )
+
+    def composite_transits(
+        self,
+        chart,
+        moving_bodies,
+        jd_start: float,
+        jd_end: float,
+        **kwargs,
+    ):
+        """Find exact transiting aspects to an authoritative CompositeChart."""
+        return _facade_module().find_composite_transits(
+            chart,
+            moving_bodies,
+            jd_start,
+            jd_end,
+            reader=self._reader,
+            **kwargs,
+        )
+
+    def davison_transits(
+        self,
+        chart,
+        moving_bodies,
+        jd_start: float,
+        jd_end: float,
+        **kwargs,
+    ):
+        """Find exact transiting aspects to an authoritative DavisonChart."""
+        return _facade_module().find_davison_transits(
+            chart,
+            moving_bodies,
+            jd_start,
+            jd_end,
+            reader=self._reader,
+            **kwargs,
+        )

@@ -50,6 +50,41 @@ def test_acg_lines_returns_four_lines_per_body_in_expected_shape() -> None:
         assert by_key[(body, "DSC")].points
 
 
+def test_acg_lines_binds_reader_and_refraction_to_lunar_refinement(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reader = object()
+    calls: list[tuple[str, float, float, float, object, bool]] = []
+
+    def fake_sky_position_at(
+        body: str,
+        jd_ut: float,
+        observer_lat: float,
+        observer_lon: float,
+        *,
+        reader,
+        refraction: bool,
+    ):
+        calls.append((body, jd_ut, observer_lat, observer_lon, reader, refraction))
+        return _FakePlanet(right_ascension=250.0, declination=-5.0)
+
+    monkeypatch.setattr("moira.planets.sky_position_at", fake_sky_position_at)
+
+    acg.acg_lines(
+        {"Moon": (250.0, -5.0)},
+        gmst_deg=20.0,
+        lat_step=178.0,
+        jd_ut=2451545.0,
+        reader=reader,
+        refraction=False,
+    )
+
+    assert calls == [
+        ("Moon", 2451545.0, -89.0, 230.0, reader, False),
+        ("Moon", 2451545.0, 89.0, 230.0, reader, False),
+    ]
+
+
 def test_mc_and_ic_are_antipodal_meridians() -> None:
     line_map = _lines_by_type(acg.acg_lines({"Sun": (100.0, 15.0)}, gmst_deg=20.0))
     mc = line_map[("Sun", "MC")]
@@ -215,32 +250,60 @@ def test_acg_from_chart_uses_apparent_sidereal_and_chart_planet_radec(monkeypatc
     monkeypatch.setattr("moira.obliquity.true_obliquity", lambda jd_tt: 23.4)
     monkeypatch.setattr("moira.julian.apparent_sidereal_time", lambda jd_ut, dpsi, obliq: 111.0)
 
-    def fake_sky_position_at(body: str, jd_ut: float, observer_lat: float, observer_lon: float):
-        calls.setdefault("sky", []).append((body, jd_ut, observer_lat, observer_lon))
+    def fake_sky_position_at(
+        body: str,
+        jd_ut: float,
+        observer_lat: float,
+        observer_lon: float,
+        *,
+        reader,
+        refraction: bool,
+    ):
+        calls.setdefault("sky", []).append(
+            (body, jd_ut, observer_lat, observer_lon, reader, refraction)
+        )
         return _FakePlanet(
             right_ascension={"Sun": 10.0, "Moon": 20.0}[body],
             declination={"Sun": 1.0, "Moon": -2.0}[body],
         )
 
-    def fake_acg_lines(planet_ra_dec: dict[str, tuple[float, float]], gmst_deg: float, lat_step: float = 2.0):
+    def fake_acg_lines(
+        planet_ra_dec: dict[str, tuple[float, float]],
+        gmst_deg: float,
+        lat_step: float = 2.0,
+        *,
+        refraction: bool,
+        reader,
+    ):
         calls["planet_ra_dec"] = planet_ra_dec
         calls["gmst_deg"] = gmst_deg
         calls["lat_step"] = lat_step
+        calls["refraction"] = refraction
+        calls["reader"] = reader
         return ["sentinel"]
 
     monkeypatch.setattr("moira.planets.sky_position_at", fake_sky_position_at)
     monkeypatch.setattr(acg, "acg_lines", fake_acg_lines)
 
-    result = acg.acg_from_chart(chart, bodies=["Sun", "Moon"], lat_step=5.0)
+    reader = object()
+    result = acg.acg_from_chart(
+        chart,
+        bodies=["Sun", "Moon"],
+        lat_step=5.0,
+        refraction=True,
+        reader=reader,
+    )
 
     assert result == ["sentinel"]
     assert calls["sky"] == [
-        ("Sun", chart.jd_ut, chart.latitude, chart.longitude),
-        ("Moon", chart.jd_ut, chart.latitude, chart.longitude),
+        ("Sun", chart.jd_ut, chart.latitude, chart.longitude, reader, True),
+        ("Moon", chart.jd_ut, chart.latitude, chart.longitude, reader, True),
     ]
     assert calls["planet_ra_dec"] == {"Sun": (10.0, 1.0), "Moon": (20.0, -2.0)}
     assert calls["gmst_deg"] == pytest.approx(111.0)
     assert calls["lat_step"] == pytest.approx(5.0)
+    assert calls["refraction"] is True
+    assert calls["reader"] is reader
 
 
 def test_subplanetary_from_chart_uses_geocentric_ecliptic_surface(monkeypatch: pytest.MonkeyPatch) -> None:

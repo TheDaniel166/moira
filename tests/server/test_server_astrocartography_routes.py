@@ -518,6 +518,8 @@ def test_astrocartography_routes_are_registered(client_with_engine: TestClient) 
         "/v1/astrocartography/chart/subplanetary",
         "/v1/astrocartography/chart/subjects/lines",
         "/v1/astrocartography/chart/subjects/subplanetary",
+        "/v1/astrocartography/fixed-stars",
+        "/v1/astrocartography/dynamic/transits",
     }
 
 

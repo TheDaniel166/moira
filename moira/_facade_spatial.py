@@ -101,6 +101,38 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
 
         return facade.acg_lines(planet_ra_dec, gmst_deg, lat_step=lat_step)
 
+    def fixed_star_astrocartography(
+        self,
+        star_names,
+        jd_ut: float,
+        jd_tt: float,
+        *,
+        lat_step: float = 2.0,
+        refraction: bool = False,
+    ):
+        """Compute source-resolved fixed-star ACG lines and zenith/nadir points."""
+        return _facade_module().fixed_star_astrocartography(
+            star_names,
+            jd_ut,
+            jd_tt,
+            lat_step=lat_step,
+            refraction=refraction,
+        )
+
+    def transiting_astrocartography(
+        self,
+        epochs_jd_ut,
+        bodies,
+        **kwargs,
+    ):
+        """Build an explicit-epoch transiting ACG series with line shifts."""
+        return _facade_module().transiting_astrocartography(
+            epochs_jd_ut,
+            bodies,
+            reader=self._reader,
+            **kwargs,
+        )
+
     def subplanetary_points(
         self,
         chart,

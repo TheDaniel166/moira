@@ -32,6 +32,7 @@ from .routers import (
     egyptian_bounds_router,
     electional_router,
     frame_positions_router,
+    forecasting_router,
     generic_phenomena_router,
     galactic_router,
     galactic_houses_router,
@@ -157,6 +158,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(chart_wheel_router)  # Website-only chart-wheel drawing primitives
     app.include_router(positions_router)
     app.include_router(frame_positions_router)  # Frame-specific position products
+    app.include_router(forecasting_router)  # Bounded relationship and locational composition
     app.include_router(transits_router)
     app.include_router(returns_router)
     app.include_router(batch_router)

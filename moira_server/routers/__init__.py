@@ -15,6 +15,7 @@ from .draconic import router as draconic_router
 from .egyptian_bounds import router as egyptian_bounds_router
 from .electional import router as electional_router
 from .frame_positions import router as frame_positions_router
+from .forecasting import router as forecasting_router
 from .generic_phenomena import router as generic_phenomena_router
 from .geodetic import router as geodetic_router
 from .galactic import router as galactic_router
@@ -93,6 +94,7 @@ __all__ = [
     "egyptian_bounds_router",
     "electional_router",
     "frame_positions_router",
+    "forecasting_router",
     "generic_phenomena_router",
     "geodetic_router",
     "galactic_router",
