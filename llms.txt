@@ -9,6 +9,7 @@ Moira is a sovereign computational engine designed for transparency, auditabilit
 - [CHANGELOG](CHANGELOG.md): Versioned release history (current: 6.1.0).
 - [AGENTS.md](AGENTS.md): Core persona (Urania) and operational doctrine for AI collaborators.
 - [Wiki Index](wiki/Home.md): Comprehensive guide to doctrines, foundations, and validation.
+- [Migrating from Swiss Ephemeris](wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md): Contract-first migration guide for flags, time, frames, units, houses, REST, and verification.
 - [Validation Astronomy](wiki/03_validation/VALIDATION_ASTRONOMY.md): Accuracy benchmarks against IAU ERFA/SOFA and JPL Horizons.
 
 ## Key Modules

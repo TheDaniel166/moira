@@ -652,6 +652,7 @@ drift.
 | [`RELEASE_NOTES_6.1.0.md`](wiki/03_release/RELEASE_NOTES_6.1.0.md) | Published 6.1.0 release notes, validation summary, and explicit exclusions. |
 | [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | Transparency and derivation as design constraints. |
 | [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) | Capabilities enabled by sovereign catalogs, explicit policy, and modern Python. |
+| [`MIGRATING_FROM_SWISS_EPHEMERIS.md`](wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md) | Contract-first porting guide for Swiss flags, bodies, time scales, units, houses, REST, and dual-run verification. |
 | [`HOUSE_SYSTEM_DIVERGENCE.md`](wiki/01_doctrines/houses/HOUSE_SYSTEM_DIVERGENCE.md) | House-system derivation and discretionary divergence from conventional Swiss-facing behavior. |
 | [`PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md`](wiki/03_validation/PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md) | Current physical-visibility admission, evidence classes, tolerances, and closed exclusions. |
 | [`PHYSICAL_HELIACAL_VISIBILITY_API_INVENTORY.generated.md`](wiki/03_validation/PHYSICAL_HELIACAL_VISIBILITY_API_INVENTORY.generated.md) | Generated Python/facade/REST/OpenAPI inventory for the opt-in physical contract. |

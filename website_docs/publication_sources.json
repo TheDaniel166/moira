@@ -28,6 +28,18 @@
       "schema_type": "TechArticle"
     },
     {
+      "id": "migrating-from-swiss-ephemeris",
+      "kind": "doc",
+      "route": "/docs/migrating-from-swiss-ephemeris",
+      "output": "client/src/docs-content/migrating-from-swiss-ephemeris.md",
+      "source": "wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md",
+      "title": "Migrating from Swiss Ephemeris to Moira",
+      "nav_label": "Swiss Migration Guide",
+      "description": "A contract-first migration manual for replacing Swiss Ephemeris flags and global state with Moira's explicit time, frame, observer, units, house, REST, and verification policies.",
+      "content_class": "evergreen_guide",
+      "schema_type": "TechArticle"
+    },
+    {
       "id": "planetary-reduction",
       "kind": "doc",
       "route": "/docs/planetary-reduction",
