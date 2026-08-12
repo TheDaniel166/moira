@@ -61,8 +61,15 @@
   ],
   "catalog_metrics": {
     "position_capable_asteroid_ephemeris": {
-      "body_count": 1382,
-      "shard_count": 56,
+      "catalog_id": "moira-asteroids",
+      "catalog_version": "2026.08.12.1",
+      "body_count": 10025,
+      "shard_count": 401,
+      "sampling": {
+        "step_days": 10,
+        "window_size": 7
+      },
+      "manifest_sha256": "c151348a9edd3620716da8849ceb239d0ab39688ead948ffecb592c13e068c64",
       "availability": "external_install_required",
       "source": "moira/kernels/asteroids/manifest.json"
     },
@@ -5056,5 +5063,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "6de57b19e2ea5a72f3ff17213070c95b4f483f97ba6cc24fc0b73b4d50c76be1"
+  "manifest_sha256": "e6faeb427c7bcb189f72bd6287e9fb3b72aeeb507894ec0c06b8517bd1a962b2"
 }

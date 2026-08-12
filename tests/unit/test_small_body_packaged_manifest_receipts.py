@@ -29,9 +29,9 @@ _ROOT = Path(__file__).resolve().parents[2]
             "moira/kernels/asteroids/manifest.json",
             "moira/data/asteroid_catalog_naif.metadata.json",
             "moira-asteroids",
-            "2026.07.27.1",
-            9_974,
-            399,
+            "2026.08.12.1",
+            10_025,
+            401,
             {"step_days": 10, "window_size": 7},
         ),
         (
@@ -100,12 +100,12 @@ def test_website_catalog_metrics_publish_release_identity() -> None:
     metrics = _catalog_metrics()
 
     asteroid = metrics["position_capable_asteroid_ephemeris"]
-    assert asteroid["catalog_version"] == "2026.07.27.1"
-    assert asteroid["body_count"] == 9_974
-    assert asteroid["shard_count"] == 399
+    assert asteroid["catalog_version"] == "2026.08.12.1"
+    assert asteroid["body_count"] == 10_025
+    assert asteroid["shard_count"] == 401
     assert asteroid["sampling"] == {"step_days": 10, "window_size": 7}
     assert asteroid["manifest_sha256"] == (
-        "0560302f877a46cebc550376ae70665fefab84801078181cf3c4199ce86d49d0"
+        "c151348a9edd3620716da8849ceb239d0ab39688ead948ffecb592c13e068c64"
     )
 
     comet = metrics["position_capable_periodic_comet_ephemeris"]

@@ -40,11 +40,11 @@ packaging plus a notice that preserves JPL Horizons provenance without implying
 NASA, JPL, or Caltech endorsement.
 
 The bundled asteroid identity registry is bound to catalog
-`moira-asteroids`, version `2026.07.27.1`, through
+`moira-asteroids`, version `2026.08.12.1`, through
 `moira/data/asteroid_catalog_naif.metadata.json`. That receipt identifies
-9,974 canonical names, the 399-shard 10-day/7-node external release, source
+10,025 canonical names, the 401-shard 10-day/7-node external release, source
 revision, admitted-target and unified-ledger hashes, and manifest SHA-256
-`0560302f877a46cebc550376ae70665fefab84801078181cf3c4199ce86d49d0`.
+`c151348a9edd3620716da8849ceb239d0ab39688ead948ffecb592c13e068c64`.
 The wheel contains this identity registry, receipt, and metadata-only manifest,
 not the external BSP shards; known identity therefore remains distinct from
 installed position capability.
