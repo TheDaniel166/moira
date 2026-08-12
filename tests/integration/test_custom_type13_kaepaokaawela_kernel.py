@@ -2,9 +2,6 @@ from __future__ import annotations
 
 import json
 import math
-import urllib.parse
-import urllib.request
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -12,63 +9,12 @@ import pytest
 from moira._kernel_paths import find_planetary_kernel
 from moira._spk_body_kernel import SmallBodyKernel
 from moira.asteroids import asteroid_at
-from moira.julian import calendar_datetime_from_jd, julian_day
+from moira.julian import julian_day
 from moira.spk_reader import KernelPool, SpkReader, use_reader_override
+from support.horizons_observer import angle_diff_arcsec, observer_ecliptic_horizons
 
 _ROOT = Path(__file__).resolve().parents[2]
 _META = _ROOT / "tests" / "artifacts" / "kernels" / "kaepaokaawela_type13_test.metadata.json"
-_HORIZONS_URL = "https://ssd.jpl.nasa.gov/api/horizons.api"
-
-
-def _observer_ecliptic_horizons(command: str, jd_ut: float) -> tuple[float, float]:
-    cdt = calendar_datetime_from_jd(jd_ut)
-    start_dt = datetime(cdt.year, cdt.month, cdt.day, 0, 0, tzinfo=timezone.utc)
-    stop_dt = start_dt + timedelta(days=1)
-    fmt = "%Y-%b-%d %H:%M"
-
-    params = {
-        "format": "text",
-        "COMMAND": f"'{command}'",
-        "OBJ_DATA": "NO",
-        "MAKE_EPHEM": "YES",
-        "EPHEM_TYPE": "OBSERVER",
-        "CENTER": "'500@399'",
-        "START_TIME": f"'{start_dt.strftime(fmt)}'",
-        "STOP_TIME": f"'{stop_dt.strftime(fmt)}'",
-        "STEP_SIZE": "'1 d'",
-        "QUANTITIES": "'31'",
-        "ANG_FORMAT": "DEG",
-    }
-    url = _HORIZONS_URL + "?" + urllib.parse.urlencode(params)
-    with urllib.request.urlopen(url, timeout=60) as resp:
-        text = resp.read().decode("utf-8")
-
-    in_data = False
-    for line in text.splitlines():
-        s = line.strip()
-        if s == "$$SOE":
-            in_data = True
-            continue
-        if s == "$$EOE":
-            break
-        if not in_data or not s:
-            continue
-        parts = s.split()
-        if len(parts) >= 4:
-            try:
-                return float(parts[2]), float(parts[3])
-            except ValueError:
-                pass
-
-    preview = "\n".join(text.splitlines()[:40])
-    raise RuntimeError(
-        "Could not parse Horizons observer ecliptic response for Kaepaokaawela.\n"
-        f"--- raw response (first 40 lines) ---\n{preview}"
-    )
-
-
-def _angle_diff_arcsec(a: float, b: float) -> float:
-    return ((a - b + 180.0) % 360.0 - 180.0) * 3600.0
 
 
 @pytest.mark.integration
@@ -148,11 +94,11 @@ def test_custom_kaepaokaawela_type13_kernel_matches_live_horizons_observer_produ
             julian_day(2025, 9, 1, 0.0),
             julian_day(2029, 6, 20, 0.0),
         ):
-            ref_lon, ref_lat = _observer_ecliptic_horizons(payload["target"]["command"], jd_ut)
+            ref_lon, ref_lat = observer_ecliptic_horizons(payload["target"]["command"], jd_ut)
             with use_reader_override(pool):
                 result = asteroid_at(payload["target"]["naif_id"], jd_ut, reader=pool)
 
-            lon_err_arcsec = _angle_diff_arcsec(result.longitude, ref_lon)
+            lon_err_arcsec = angle_diff_arcsec(result.longitude, ref_lon)
             lat_err_arcsec = (result.latitude - ref_lat) * 3600.0
 
             assert abs(lon_err_arcsec) < 0.1, (jd_ut, lon_err_arcsec)

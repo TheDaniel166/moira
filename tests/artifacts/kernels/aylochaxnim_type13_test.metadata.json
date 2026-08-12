@@ -28,6 +28,11 @@
   "verification": {
     "max_node_error_km": 7.450580596923828e-09,
     "midpoint_jd": 2460672.0,
-    "midpoint_radius_km": 91698307.90971087
+    "midpoint_radius_km": 91698307.90971087,
+    "off_node_check": {
+      "jd": 2460671.35,
+      "max_error_km": 0.0005587786436080933,
+      "note": "interpolated kernel position vs. an independently fetched Horizons vector at an epoch strictly between two written nodes"
+    }
   }
 }
