@@ -58,6 +58,45 @@ def test_regular_body_keeps_uniform_catalog_window(monkeypatch) -> None:
     assert "coverage_policy" not in body
 
 
+def test_regular_body_accumulates_sequential_horizons_range_limits(monkeypatch) -> None:
+    fetched: list[tuple[str, str, str]] = []
+    responses = {
+        catalog_builder.WINDOW: (
+            'No ephemeris for target "101955 Bennu (1999 RQ36)" '
+            "prior to A.D. 1900-JAN-02 00:00:00.0000 TDB"
+        ),
+        ("1901-01-01", "2500-01-01"): (
+            'No ephemeris for target "101955 Bennu (1999 RQ36)" '
+            "after A.D. 2135-SEP-30 00:00:00.0000 TDB"
+        ),
+        ("1901-01-01", "2134-01-01"): "vectors",
+    }
+
+    def _fetch_raw(command: str, start: str, stop: str) -> str:
+        fetched.append((command, start, stop))
+        return responses[(start, stop)]
+
+    def _parse_vectors(raw: str) -> tuple[list[float], list[list[float]]]:
+        if raw != "vectors":
+            raise RuntimeError("no $$SOE/$$EOE")
+        return _stub_parsed_vectors(raw)
+
+    monkeypatch.setattr(catalog_builder, "_fetch_raw", _fetch_raw)
+    monkeypatch.setattr(catalog_builder, "_parse_vectors", _parse_vectors)
+    monkeypatch.setattr(catalog_builder, "_parse_name", lambda raw, number: "Bennu")
+
+    body = catalog_builder._fetch_body(101955)
+
+    assert fetched == [
+        ("101955;", *catalog_builder.WINDOW),
+        ("101955;", "1901-01-01", "2500-01-01"),
+        ("101955;", "1901-01-01", "2134-01-01"),
+    ]
+    assert body["clamped"] is True
+    assert body["start"] == "1901-01-01"
+    assert body["stop"] == "2134-01-01"
+
+
 def test_tighter_catalog_sampling_policy_is_the_default() -> None:
     assert catalog_builder.STEP_DAYS == 10
     assert catalog_builder.WINDOW_SIZE == 7

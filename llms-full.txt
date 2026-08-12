@@ -41,7 +41,7 @@ This document provides a comprehensive index of the Moira engine for LLMs and de
 
 ## Specialized Catalogs
 - [Star Registry](moira/data/star_registry.csv): 1,809 named stars with Gaia DR3 mapping.
-- [Asteroid Catalog](moira/kernels/asteroids/manifest.json): 9,974 asteroids as 399 Type-13 shards in immutable external release `2026.07.27.1`, using 10-day/7-node sampling and manifest-declared coverage.
+- [Asteroid Catalog](moira/kernels/asteroids/manifest.json): 10,025 asteroids as 401 Type-13 shards in immutable external release `2026.08.12.1`, using 10-day/7-node sampling and manifest-declared coverage.
 - [Comet Catalog](moira/kernels/comets/manifest.json): 497 numbered periodic comets (1P-516P) as 20 Type-13 shards in immutable external release `2026.07.28.1`.
 
 ## REST API

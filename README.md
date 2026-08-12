@@ -51,10 +51,10 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 - **Planets and luminaries** — geocentric and topocentric reduction with iterative light-time, annual aberration, multi-body relativistic deflection (Sun, Jupiter, and Saturn, excluding the target body), IAU 2006 frame bias, and WGS-84 topocentric parallax.
 - **Fixed stars** — sovereign registry of 1,809 named stars with proper motion, parallax, epoch propagation, and Stellar Quality classification. Audited anchor residual against SOFA/ERFA: 0.00048 arcseconds (J1000–J3000).
 - **Position-capable asteroid ephemeris** — an optional external catalog of
-  9,974 selected asteroids, including the classical four (Ceres, Pallas, Juno,
+  10,025 selected asteroids, including the classical four (Ceres, Pallas, Juno,
   Vesta), Centaurs (Chiron, Pholus, Chariklo, Asbolus, Hylonome), and
-  Trans-Neptunians (Ixion, Quaoar, Varuna, Orcus). Release `2026.07.27.1` is
-  built from JPL Horizons as 399 Type-13 SPK shards with manifest-declared
+  Trans-Neptunians (Ixion, Quaoar, Varuna, Orcus). Release `2026.08.12.1` is
+  built from JPL Horizons as 401 Type-13 SPK shards with manifest-declared
   coverage and a 10-day, 7-node sampling policy. It is discovered by manifest
   under any kernel search root. The wheel contains the matching canonical
   identity registry, not the external BSP shards. This positional product is
@@ -364,7 +364,7 @@ What the GUI provides:
 
 The GUI and `moira-download-kernels` supplemental entries are the generic JPL
 `asteroids.bsp` and `sb441-n373s.bsp` resources. They are separate from the
-immutable 9,974-asteroid and 497-comet Moira releases described below. They
+immutable 10,025-asteroid and 497-comet Moira releases described below. They
 remain caller-managed compatibility inputs for explicit small-body workflows;
 downloading them does not install or substitute for either manifest-governed
 catalog.
@@ -427,8 +427,8 @@ print(m.available_kernels)
 
 ### Small-Body Catalogs (Asteroids and Comets)
 
-The unified asteroid catalog (9,974 bodies as 399 Type-13 shards in release
-`2026.07.27.1`) and the numbered periodic comet catalog (497 comets as 20
+The unified asteroid catalog (10,025 bodies as 401 Type-13 shards in release
+`2026.08.12.1`) and the numbered periodic comet catalog (497 comets as 20
 shards in release `2026.07.28.1`) are too large to ship inside the wheel and
 are distributed separately.
 
@@ -490,8 +490,8 @@ where the relevant API admits it.
 | IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; native C++ (`_moira_native`) |
 | DE-series planetary kernel | JPL | No | de430 (~114 MiB), de440 (~114 MiB), or de441 (~3.1 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
-| Canonical small-body identity registries | Moira release catalogs with JPL identity lineage | Yes | 9,974 asteroid and 497 comet identities; names and disambiguation only, with no positional vectors implied |
-| Position-capable asteroid ephemeris | JPL Horizons | No | 9,974 selected asteroids; 399 Type-13 shards in release `2026.07.27.1`; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
+| Canonical small-body identity registries | Moira release catalogs with JPL identity lineage | Yes | 10,025 asteroid and 497 comet identities; names and disambiguation only, with no positional vectors implied |
+| Position-capable asteroid ephemeris | JPL Horizons | No | 10,025 selected asteroids; 401 Type-13 shards in release `2026.08.12.1`; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
 | Asteroid-family membership catalog | Proper25 + retained NASA PDS exclusions | Yes | 342 families; 200,726 unique numbered asteroids; 221,095 many-to-many membership rows; no positional ephemeris implied |
 | Numbered periodic comet catalog | JPL Horizons | No | 497 comets (1P–516P); 20 Type-13 shards in release `2026.07.28.1`; [public archive](https://moira-astro.com/ephemerides), manifest-discovered |
 

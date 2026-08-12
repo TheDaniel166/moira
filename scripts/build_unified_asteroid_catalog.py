@@ -40,9 +40,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from moira._spk_body_kernel import SmallBodyKernel
-from moira.asteroid_families import ASTEROID_FAMILY_CATALOG_SOURCE
-from moira.daf_writer import write_spk_type13
+from moira._spk_body_kernel import SmallBodyKernel  # noqa: E402
+from moira.asteroid_families import ASTEROID_FAMILY_CATALOG_SOURCE  # noqa: E402
+from moira.daf_writer import write_spk_type13  # noqa: E402
 
 HORIZONS_URL = "https://ssd.jpl.nasa.gov/api/horizons.api"
 SBDB_URL = "https://ssd-api.jpl.nasa.gov/sbdb.api"
@@ -68,6 +68,7 @@ _MONTHS = {m: i for i, m in enumerate(
     ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"], start=1)}
 _TRANSIENT_HTTP_CODES = frozenset({429, 502, 503, 504})
 _MAX_REQUEST_ATTEMPTS = 4
+_MAX_RANGE_NARROWING_REQUESTS = 3
 
 
 def _read_url(url: str, *, timeout: int) -> str:
@@ -181,17 +182,30 @@ def _fetch_body(number: int) -> dict:
     else:
         start, stop, clamped = WINDOW[0], WINDOW[1], False
 
-    raw = _fetch_raw(command, start, stop)
-    try:
-        epochs, states = _parse_vectors(raw)
-    except RuntimeError:
-        win = _clamped_window(raw)
-        if win is None:
-            head = "\n".join(raw.splitlines()[:40])
-            raise RuntimeError(f"body {number}: no vectors and no parseable range:\n{head}")
-        start, stop, clamped = win[0], win[1], True
+    for _ in range(_MAX_RANGE_NARROWING_REQUESTS):
         raw = _fetch_raw(command, start, stop)
-        epochs, states = _parse_vectors(raw)
+        try:
+            epochs, states = _parse_vectors(raw)
+            break
+        except RuntimeError as exc:
+            win = _clamped_window(raw)
+            next_start = max(start, win[0]) if win is not None else start
+            next_stop = min(stop, win[1]) if win is not None else stop
+            if (
+                win is None
+                or next_stop <= next_start
+                or (next_start, next_stop) == (start, stop)
+            ):
+                head = "\n".join(raw.splitlines()[:40])
+                raise RuntimeError(
+                    f"body {number}: no vectors and no parseable range:\n{head}"
+                ) from exc
+            start, stop, clamped = next_start, next_stop, True
+    else:
+        head = "\n".join(raw.splitlines()[:40])
+        raise RuntimeError(
+            f"body {number}: Horizons range narrowing did not converge:\n{head}"
+        )
     result = {
         "number": number, "naif_id": 2000000 + number, "name": _parse_name(raw, number),
         "center": CENTER, "frame": FRAME, "states": states, "epochs_jd": epochs,
@@ -472,11 +486,9 @@ def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
 
     coverage_exceptions = []
     for record in records:
-        if "coverage_policy" not in record:
-            continue
-        provenance = record["coverage_provenance"]
-        coverage_exceptions.append(
-            {
+        if "coverage_policy" in record:
+            provenance = record["coverage_provenance"]
+            exception = {
                 "naif_id": record["naif_id"],
                 "name": record["name"],
                 "start_date": record["start"],
@@ -486,7 +498,22 @@ def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
                 "orbit_id": provenance["orbit_id"],
                 "solution_date": provenance["solution_date"],
             }
-        )
+        elif record.get("clamped"):
+            exception = {
+                "naif_id": record["naif_id"],
+                "name": record["name"],
+                "start_date": record["start"],
+                "end_date": record["stop"],
+                "policy": "jpl_horizons_ephemeris_availability",
+                "authority": "JPL Horizons API",
+                "note": (
+                    "conservative full-year bounds parsed from the Horizons "
+                    "ephemeris-availability response"
+                ),
+            }
+        else:
+            continue
+        coverage_exceptions.append(exception)
 
     manifest = {
         "manifest_schema": "moira.small-body-catalog/v1",

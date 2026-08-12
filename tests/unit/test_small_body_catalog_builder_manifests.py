@@ -43,6 +43,35 @@ def test_asteroid_builder_declares_moira_artifact_provenance(tmp_path: Path) -> 
     }
 
 
+def test_asteroid_builder_declares_horizons_range_clamps(tmp_path: Path) -> None:
+    record = {
+        "number": 101955,
+        "naif_id": 2_101_955,
+        "name": "Bennu",
+        "clamped": True,
+        "start": "1901-01-01",
+        "stop": "2134-01-01",
+    }
+
+    build_unified_asteroid_catalog._write_manifest(tmp_path, records=[record])
+
+    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["coverage_exceptions"] == [
+        {
+            "naif_id": 2_101_955,
+            "name": "Bennu",
+            "start_date": "1901-01-01",
+            "end_date": "2134-01-01",
+            "policy": "jpl_horizons_ephemeris_availability",
+            "authority": "JPL Horizons API",
+            "note": (
+                "conservative full-year bounds parsed from the Horizons "
+                "ephemeris-availability response"
+            ),
+        }
+    ]
+
+
 def test_comet_builder_declares_moira_artifact_provenance(tmp_path: Path) -> None:
     kernel_name = "comet_shard_000.bsp"
     (tmp_path / kernel_name).write_bytes(b"kernel")

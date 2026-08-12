@@ -37,14 +37,23 @@
       "authority": "JPL SBDB",
       "orbit_id": "578",
       "solution_date": "2026-04-16 05:49:08"
+    },
+    {
+      "naif_id": 2101955,
+      "name": "Bennu",
+      "start_date": "1901-01-01",
+      "end_date": "2134-01-01",
+      "policy": "jpl_horizons_ephemeris_availability",
+      "authority": "JPL Horizons API",
+      "note": "conservative full-year bounds parsed from the Horizons ephemeris-availability response"
     }
   ],
   "sampling": {
     "step_days": 10,
     "window_size": 7
   },
-  "body_count": 9974,
-  "shard_count": 399,
+  "body_count": 10025,
+  "shard_count": 401,
   "shards": [
     {
       "index": 0,
@@ -15571,7 +15580,7 @@
     {
       "index": 398,
       "path": "asteroid_shard_398.bsp",
-      "body_count": 24,
+      "body_count": 25,
       "bodies": [
         2291316,
         2291807,
@@ -15596,21 +15605,100 @@
         2392189,
         2455502,
         2523639,
-        2528381
+        2528381,
+        2099942
       ],
-      "bytes": 44247040,
-      "sha256": "2ff3bcdb226fc72d0975422155b414ee8431a153486ee2aaceaac6e3819afc4c",
+      "bytes": 46090240,
+      "sha256": "23ddd29982844db0225c0c10bba8a43ce36eaf85af7e42da55af00bd38e1768a",
       "metadata": {
         "path": "asteroid_shard_398.metadata.json",
-        "bytes": 9621,
-        "sha256": "dcb5924c1618189b25cc59d1c2d12346fcb597b163bcadfecb19789073483324"
+        "bytes": 9962,
+        "sha256": "6a7bd1a14cbace58e89230561e1b268f3a25f86035dd931c66eb9cea2bc885f2"
+      }
+    },
+    {
+      "index": 399,
+      "path": "asteroid_shard_399.bsp",
+      "body_count": 25,
+      "bodies": [
+        2594913,
+        2514107,
+        2469219,
+        2524522,
+        2163693,
+        2020461,
+        2054509,
+        2066391,
+        2367943,
+        2101955,
+        2162173,
+        2025143,
+        2065803,
+        2343158,
+        2069230,
+        2083982,
+        2049036,
+        2052872,
+        2052975,
+        2032532,
+        2031824,
+        2055576,
+        2054598,
+        2042355,
+        2065489
+      ],
+      "bytes": 44724224,
+      "sha256": "edb01b1e3b62120aa9bfadeb18ef506611d03a9c656d1aad9313f7ce9b04c4cf",
+      "metadata": {
+        "path": "asteroid_shard_399.metadata.json",
+        "bytes": 8931,
+        "sha256": "01dc8a54558adcf9e0b8bdb8a64214fb5c53abf86b9886794a32083fde310ba9"
+      }
+    },
+    {
+      "index": 400,
+      "path": "asteroid_shard_400.bsp",
+      "body_count": 25,
+      "bodies": [
+        2486958,
+        2152830,
+        2052246,
+        2015094,
+        2011351,
+        2021900,
+        2060558,
+        2015760,
+        2541132,
+        2474640,
+        2229762,
+        2385571,
+        2385695,
+        2471143,
+        2330836,
+        2420356,
+        2058534,
+        2066652,
+        2088611,
+        2079360,
+        2148780,
+        2341520,
+        2469705,
+        2047171,
+        2385446
+      ],
+      "bytes": 46090240,
+      "sha256": "ea1abde6b85401318364b1e80296e1bfdd838aef9e987faf93207140c0b61091",
+      "metadata": {
+        "path": "asteroid_shard_400.metadata.json",
+        "bytes": 8985,
+        "sha256": "a9ed473813d9c198681a260ec2f289038bc29fd8b60a817b7da0f3eef03fbd72"
       }
     }
   ],
-  "catalog_version": "2026.07.27.1",
+  "catalog_version": "2026.08.12.1",
   "release": {
-    "released_utc": "2026-07-27T19:26:11Z",
-    "source_manifest_sha256": "90ba54850d8c266f02e7cb5ffb22809107bb31d8fd14463afd4246a5f7f586d4",
+    "released_utc": "2026-08-12T20:44:09Z",
+    "source_manifest_sha256": "b7422c649b747474a7d0066f05db3d1f9f3b5f6b6c4ea59c913038622e39b558",
     "integrity": {
       "algorithm": "sha256",
       "receipt": "SHA256SUMS",
@@ -15620,40 +15708,34 @@
       {
         "path": "LICENSE",
         "role": "license",
-        "bytes": 1069,
-        "sha256": "05ffdf01b23096d01fd00bda33d34b85dda365e8119eb8eb054678ada7523c0f"
+        "bytes": 1090,
+        "sha256": "9af4c36525226936a5c8899634c2c609ee793828fe5edfb508fa635524e71570"
       },
       {
         "path": "NOTICE.md",
         "role": "provenance_notice",
-        "bytes": 1101,
-        "sha256": "fe151bbd893e792b120d7b95eddcd73fd6d0b3a53f1a0d364f3f11f7c8e62eb1"
+        "bytes": 1124,
+        "sha256": "b6e9c58d723f0d0443263c79159f15d129f5ec05540677cb7376c3f2c4afa10e"
+      },
+      {
+        "path": "moira_public_10025_expansion_receipt.json",
+        "role": "catalog_build_evidence",
+        "bytes": 9956,
+        "sha256": "82c34cdae9137e5e42a29df85577f7a343dcdb876b243efba8e5d2bb236a213f"
       },
       {
         "path": "moira_public_asteroid_targets.json",
         "role": "catalog_build_evidence",
-        "bytes": 495081,
-        "sha256": "1877e224431c62b2e3cf1dbdf3d13fccf45892a395616ca64b69ad5807f35b39"
-      },
-      {
-        "path": "moira_public_cutoff_receipt.json",
-        "role": "catalog_build_evidence",
-        "bytes": 1439,
-        "sha256": "244c31e079ffbca7100061f859dffcfc4bca6bf962a74dee3ecb9cead5669097"
-      },
-      {
-        "path": "moira_public_legacy_gap_targets.json",
-        "role": "catalog_build_evidence",
-        "bytes": 50707,
-        "sha256": "a656ee9de53d7ecbb9b9dacc46c4b6610368f76d46e9ccd5f56023c71f80421b"
+        "bytes": 787956,
+        "sha256": "08927dcb994388902bea186c70d286d7e85334f863309123b194aafc8915ad91"
       },
       {
         "path": "unified_master.json",
         "role": "catalog_build_evidence",
-        "bytes": 3573682,
-        "sha256": "348891dd2e371a919fd276f2edd41b75e9b56513b7edc2176079f84ec989eb96"
+        "bytes": 3591273,
+        "sha256": "72c0dd9a07ba2b2af610f8755b785d2f473a550b62d77aeaf4d45ac2d3ae185d"
       }
     ],
-    "source_revision": "464555b3-builder3b1434b1-targetec31e287"
+    "source_revision": "14d97782-builder8c103864-target08927dcb"
   }
 }
