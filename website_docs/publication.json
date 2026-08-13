@@ -4,10 +4,10 @@
   "last_verified": "2026-08-13",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.1.0",
-    "tag": "v6.1.0",
-    "commit": "1b15a2b44e3c3e84be705a11e67968461e23e9a3",
-    "release_date": "2026-07-28",
+    "version": "6.2.0",
+    "tag": "v6.2.0",
+    "commit": "055031861316d6a7ce46b9e2087ace5089d9c3b5",
+    "release_date": "2026-08-13",
     "requires_python": ">=3.10",
     "supported_python": [
       "3.10",
@@ -41,7 +41,7 @@
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "87e66db9b7e6138a67f8a996b3f5ca9632ceb7b5d0b9988c41834c3c7e9de782"
+      "source_sha256": "1676f24b57bb233ae4254f76c2b60433e617cd79fcca45b14ca361c912cef7d0"
     },
     {
       "id": "rest_api_reference",
@@ -2357,7 +2357,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "87e66db9b7e6138a67f8a996b3f5ca9632ceb7b5d0b9988c41834c3c7e9de782",
+      "source_sha256": "1676f24b57bb233ae4254f76c2b60433e617cd79fcca45b14ca361c912cef7d0",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -4566,7 +4566,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.1.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.2.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
       "source_sha256": "1784027d83b7b4d8f578dff3b5fa0653b7ec4d570fa21238ec7902ba13d6ac5e",
@@ -4785,7 +4785,7 @@
       "description": "A living engineering roadmap; planned and historical entries do not themselves define admitted public API or validation status.",
       "content_class": "editorial_historical",
       "schema_type": "TechArticle",
-      "source_sha256": "6ea8416202e004c80a8ffaedaf8f42e88ae10b60cb92d720571250fc0b29c4fa",
+      "source_sha256": "ab191318c94c6b69a9a6e7d4640a0eacd2b261cdd39d4aa7b6c5991f37e63742",
       "source_bytes": 25609,
       "last_verified": "2026-08-13",
       "prerender": true,
@@ -5129,6 +5129,48 @@
   ],
   "releases": [
     {
+      "version": "6.2.0",
+      "date": "2026-08-13",
+      "title": "Admitted Capability Baseline",
+      "added": [
+        "Track A relationship and locational forecasting contracts, Track B Horary and Mundane evidence profiles, and the opt-in physical visibility Phase 7 family.",
+        "The published 6.1.1 asteroid identity catalog 2026.08.12.1 remains the admitted 10,025-name registry."
+      ],
+      "changed": [
+        "Planetary reduction isolates reader, TT, mode, and thread cache ownership and keeps the five underscored workspace hooks only for this deprecation cycle.",
+        "Physical visibility stays opt-in; legacy visibility and heliacal defaults are unchanged. Jones/Paranal moonlight stays quarantined."
+      ],
+      "fixed": [
+        "Major-planet Horizons comparators now use the exact DE441 targets and matching epochs; the retired kilometer-scale residuals were comparator errors."
+      ],
+      "validation": [
+        "Track A and Track B public-contract gates, planetary reduction invariants, asteroid identity receipts, and the Phase 7 physical-visibility evidence registry cover the admitted surfaces."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.2.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md",
+      "tag": "v6.2.0",
+      "release_notes_sha256": "1941e069abf6ed8d1074640380a5b37b21c7b7a3e834460b499dced8b59fb80d",
+      "compatibility_notes_sha256": "41a0aa5765a48bf9f0e092218f2ce307cf56f7337e1a537a7af2387074c89b7f"
+    },
+    {
+      "version": "6.1.1",
+      "date": "2026-08-13",
+      "title": "10,025-Body Asteroid Identity Catalog",
+      "added": [
+        "The packaged asteroid identity registry binds to immutable catalog 2026.08.12.1: 10,025 names across 401 Type-13 shards."
+      ],
+      "changed": [],
+      "fixed": [],
+      "validation": [
+        "Identity, builder, and packaged-manifest receipts pin the 2026.08.12.1 manifest SHA-256."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.1.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.1.1.md",
+      "tag": "v6.1.1",
+      "release_notes_sha256": "ce703cb5a66eb08193ab9336c1fe0f0e674e6a533c7b49d8ff9aa73836c709ee",
+      "compatibility_notes_sha256": "401c335af8b35ab61bc84db61a7c4136f05047955e527ac3941c0f6173c38faa"
+    },
+    {
       "version": "6.1.0",
       "date": "2026-07-28",
       "title": "Contract and Release Integrity",
@@ -5349,5 +5391,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "cccb3ad8756f04e8f3b6ef8a692a6722df6db8aea4c34cf4fa9b24270815519a"
+  "manifest_sha256": "74e447eed43760baa88d3e3217e2623c450d510d62bae2eb860965cc30548907"
 }
