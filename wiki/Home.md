@@ -1,7 +1,10 @@
 # Welcome to the MOIRA Wiki
 ## The Digital Akaschic Record of the Light Box Engine
 
-Moira is a pure-Python astronomical engine designed for the inversion of the "Black Box" ephemeris standard. This Wiki serves as the canonical source of truth for its doctrines, standards, and mathematical validation.
+Moira is a Python-governed astronomy and astrology engine with a required
+C++17 numerical core, designed to replace black-box ephemeris behavior with
+explicit computational contracts. This Wiki is the canonical source of truth
+for its doctrines, standards, and mathematical validation.
 
 ---
 
@@ -14,7 +17,7 @@ Moira is a pure-Python astronomical engine designed for the inversion of the "Bl
 
 ### 📜 Backend Standards
 The engine is composed of sovereign, constitutionalized subsystems:
-- **[Planetary Reduction](02_standards/DELTA_T_HYBRID_MODEL.md)**
+- **[Planetary Reduction](02_standards/PLANETARY_REDUCTION_PIPELINE.md)**
 - **[Aspects & Orbs](02_standards/ASPECT_BACKEND_STANDARD.md)**
 - **[Houses & Cusps](02_standards/HOUSES_BACKEND_STANDARD.md)**
 - **[Dignities & Sect](02_standards/DIGNITIES_BACKEND_STANDARD.md)**

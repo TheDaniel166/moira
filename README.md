@@ -553,6 +553,7 @@ Release-specific changes and validation boundaries are recorded in the
 | Report | Verification Source |
 | :--- | :--- |
 | [`VALIDATION_ASTRONOMY.md`](wiki/03_validation/VALIDATION_ASTRONOMY.md) | Product-specific IAU ERFA/SOFA, JPL Horizons, NASA, IERS, and invariant evidence with named tolerances and qualifications. |
+| [`PLANETARY_REDUCTION_PIPELINE.md`](wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md) | Major-body route identity, reader-bound time and context ownership, reduction stages, compatibility boundary, and target/time/frame-matched Horizons contracts. |
 | [`VALIDATION_ASTROLOGY.md`](wiki/03_validation/VALIDATION_ASTROLOGY.md) | Primary texts, source-owned goldens, doctrine tables, invariants, and bounded Swiss/Astro.com corroboration where applicable. |
 | [`VALIDATION_EXPERIMENTAL.md`](wiki/03_validation/VALIDATION_EXPERIMENTAL.md) | Dated subsystem evidence and explicit partial-status boundaries for sovereign and modern products. |
 

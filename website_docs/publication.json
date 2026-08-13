@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source_repository": "https://github.com/TheDaniel166/moira",
-  "last_verified": "2026-08-11",
+  "last_verified": "2026-08-13",
   "engine_release": {
     "name": "moira-astro",
     "version": "6.1.0",
@@ -56,7 +56,7 @@
     {
       "id": "planetary_reduction",
       "source": "wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md",
-      "source_sha256": "f5c1db44cc43c11327dbb0eb1c4238a6d6b8d7f8899b15326ff117506372da5c"
+      "source_sha256": "7685dd2ac162b80ecea5f8db9fe3f11ce6a350937d46eab5f7356f50c7667ad1"
     }
   ],
   "catalog_metrics": {
@@ -4553,7 +4553,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "81c38982373efbfda1ed605ed9cdf02af4fb31b285245df969045f5a0d30dc1a",
       "source_bytes": 14298,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4571,7 +4571,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "1784027d83b7b4d8f578dff3b5fa0653b7ec4d570fa21238ec7902ba13d6ac5e",
       "source_bytes": 313843,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4589,7 +4589,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "bf50e3f81f687b5b2789c591a595cfbadb8a1b4732805b913ceb288e17c61c0c",
       "source_bytes": 29779,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4602,12 +4602,12 @@
       "source": "wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md",
       "title": "Planetary Reduction Pipeline",
       "nav_label": "Planetary Reduction",
-      "description": "The declared path from JPL SPK state vectors through light time, deflection, aberration, frame transforms, and optional topocentric correction.",
+      "description": "The declared path from route-identified JPL SPK targets through reader-bound time, light time, deflection, aberration, frame transforms, optional topocentric correction, and target/time/frame-matched Horizons validation.",
       "content_class": "evergreen_architecture",
       "schema_type": "TechArticle",
-      "source_sha256": "f5c1db44cc43c11327dbb0eb1c4238a6d6b8d7f8899b15326ff117506372da5c",
-      "source_bytes": 5415,
-      "last_verified": "2026-08-11",
+      "source_sha256": "7685dd2ac162b80ecea5f8db9fe3f11ce6a350937d46eab5f7356f50c7667ad1",
+      "source_bytes": 8442,
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4625,7 +4625,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "11a4ed6948235e6d974c9f1caf5e7e0ed4819c75d30dfcde5804f2f87ac16fd9",
       "source_bytes": 33871,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4643,7 +4643,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "bf7e27e7b6719ecf4ef1366b68c55d5b9e7782f11c58f59c582b47829a9d4b03",
       "source_bytes": 30025,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4661,7 +4661,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "26237b26a6e6e5ac1dffec0e5001a07474640ca03808f1c1ba5f21f428057188",
       "source_bytes": 29604,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4679,7 +4679,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ddefd92cf26aa6c521ec4b5bb348a9826128639fe6fbf7fb7ddbd085f8669796",
       "source_bytes": 46781,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4697,7 +4697,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3e1719778cf0c98b861990e311707ca6912e0555ce4344008e20996332797909",
       "source_bytes": 20555,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4715,7 +4715,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "4ba8e96bac8203127331af7cb964fcb35522b816a83e0fcf250936625fe0f458",
       "source_bytes": 13241,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4731,9 +4731,9 @@
       "description": "Facade orchestration, reader ownership, transport boundaries, and production integration patterns.",
       "content_class": "evergreen_architecture",
       "schema_type": "TechArticle",
-      "source_sha256": "ed13c72ea49ff53a1e113e132f20d244e3aed278767dce3f35465dc9d07ab366",
-      "source_bytes": 47201,
-      "last_verified": "2026-08-11",
+      "source_sha256": "c62f750d256029df22ead5a4b7b1e0623cb5d70def6aa77121b62e7703ed4dea",
+      "source_bytes": 47554,
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4751,7 +4751,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "2cdc820048ebae9e25c9e2133b93a8d67148089fd0f9c361a927293156b9ea8f",
       "source_bytes": 213111,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4769,7 +4769,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "4029867ad600a00836b2c2c8ff6aa75d56b0a31953f5016b50961d144434b0d8",
       "source_bytes": 19762,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4787,7 +4787,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "6ea8416202e004c80a8ffaedaf8f42e88ae10b60cb92d720571250fc0b29c4fa",
       "source_bytes": 25609,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4800,12 +4800,12 @@
       "source": "wiki/03_validation/VALIDATION_ASTRONOMY.md",
       "title": "Validation Report — Astronomy",
       "nav_label": "Astronomy Report",
-      "description": "External-reference evidence for Moira's IAU, JPL, time-scale, eclipse, occultation, and observational astronomy surfaces.",
+      "description": "External-reference evidence for Moira's IAU, JPL, time-scale, eclipse, occultation, and observational astronomy surfaces, including target/time/frame-matched planetary contracts and explicit qualifications.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "9dd76bf2fc18b8e5187c645c15bc49c8a39f71912dce64015de2cbbe8b61d530",
-      "source_bytes": 61658,
-      "last_verified": "2026-08-11",
+      "source_sha256": "92af1adc47db46881a32792a7db299e3b06595b257c66d7eee4bcfbae609d910",
+      "source_bytes": 62151,
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4822,8 +4822,8 @@
         "evidence_paths": [
           "wiki/03_validation/VALIDATION_ASTRONOMY.md"
         ],
-        "document_version": "1.4",
-        "receipt_date": "2026-07-25"
+        "document_version": "1.5",
+        "receipt_date": "2026-08-13"
       }
     },
     {
@@ -4839,7 +4839,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ee5e96f520fbcbb1f0a7fbe630eafb55d12b68717dc56d5ec5b98569bab41fbc",
       "source_bytes": 39054,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4872,7 +4872,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "05e4c3279bad63c54b896a18f687adf1605e80a3e6d8bb8ac4a46accdaba767a",
       "source_bytes": 21213,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4906,7 +4906,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "f77bc0837be29b481c2fd9f8fcf84f13564105d5c007db2095e0a91b2c65dcf6",
       "source_bytes": 3584,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4934,7 +4934,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "fc6e7ac8b5393acfecc7289ac2f69caad9d9bc4be6d53835a473406f14fe0b9f",
       "source_bytes": 15117,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4963,7 +4963,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3d7d8fdcb3c6dba9d2576e44f24809416b39dbcf2f1bd5a703cdbff7ee7142db",
       "source_bytes": 8684,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -4993,7 +4993,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "9ab274475f75e6f3d22ab3fb746ec6c91cf15c5725bfe234aeb0baaae3f69315",
       "source_bytes": 2028,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5021,7 +5021,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "29f406d74fbeca960fd77af90d95a61139403926e496adb5c548a3e0e9635353",
       "source_bytes": 3329,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5049,7 +5049,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "60ae0879fffb9c318e622e9348ce0786fcd724b4f392804e66c0d5dae7c68e8d",
       "source_bytes": 15256,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5081,7 +5081,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "af6763ffe85b4a1900c83471a681674151e00a47fee9dee3220229cd90b0ad41",
       "source_bytes": 7470,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5110,7 +5110,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "e2598028b574254a5307f85c322668ae0d653f2905810ed2032bf71924f698b0",
       "source_bytes": 5697,
-      "last_verified": "2026-08-11",
+      "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5349,5 +5349,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "e6faeb427c7bcb189f72bd6287e9fb3b72aeeb507894ec0c06b8517bd1a962b2"
+  "manifest_sha256": "b0e8f314532032a6bf098d9b70754623944f725ca6b411d96d0d705d8ce7e073"
 }

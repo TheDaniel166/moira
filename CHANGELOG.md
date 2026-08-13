@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Hardened the internal planetary reduction boundary with exact reader, TT
+  epoch, apparent-mode, and nutation-policy provenance; per-reader/per-thread
+  cache ownership; narrowed capability fallbacks; and one asteroid-owned
+  apparent-vector adapter. Existing REST routes and response schemas are
+  unchanged. The five legacy underscored Python workspace hooks remain
+  available for this compatibility cycle and now emit deprecation warnings.
 - Added reader-bound `Moira`, root/facade, packaged REST, and OpenAPI parity for
   the bounded Track A relationship and locational forecasting contracts.
 - Bound the explicit ephemeris reader and refraction choice through the
@@ -42,6 +48,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Validation
 
+- Corrected the major-planet JPL Horizons comparators to use the exact targets
+  exposed by Moira's DE441 routes and explicit matching ephemeris epochs. The
+  120-case apparent suite now records maxima of `0.277781"` and `0.066846 km`
+  under its declared cross-reduction-model contract; the 80-case geometric
+  ICRF suite records `0.000021829"` and `0.002937 km`. The retired kilometer-
+  scale figures were comparator identity/time errors, not DE441 accuracy.
 - Added source-owned invariants for relationship target identity, symmetric
   aspect branches, fixed-star alias collision handling, return relocation
   snapshot equality, dynamic line shifts, public-surface parity, and bounded

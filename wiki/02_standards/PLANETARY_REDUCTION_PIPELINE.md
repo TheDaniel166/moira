@@ -1,7 +1,7 @@
 # Planetary Reduction Pipeline
 
-**Engine baseline:** Moira 6.0.0
-**Last verified:** 2026-07-25
+**Engine baseline:** Moira 6.1.0
+**Last verified:** 2026-08-13
 **Primary implementation:** `moira/planets.py`, `moira/corrections.py`,
 `moira/coordinates.py`, `moira/precession.py`, and `moira/obliquity.py`
 
@@ -26,6 +26,44 @@ than inferred from a filename.
 
 The ordinary planetary path accepts admitted DE430, DE440, and DE441 readers.
 Coverage is determined by the loaded kernel, not by this document.
+
+### Major-body target identity
+
+The public body name does not always imply a planet-center SPK target. Moira
+returns the endpoint owned by the active reader's admitted NAIF route:
+
+| Public body | DE441 route endpoint | Comparison identity |
+|---|---:|---|
+| Sun | `10` | Sun center |
+| Moon | `301` | Moon center |
+| Mercury | `199` | Mercury center |
+| Venus | `299` | Venus center |
+| Mars | `4` | Mars system barycenter |
+| Jupiter | `5` | Jupiter system barycenter |
+| Saturn | `6` | Saturn system barycenter |
+| Uranus | `7` | Uranus system barycenter |
+| Neptune | `8` | Neptune system barycenter |
+| Pluto | `9` | Pluto system barycenter |
+
+External comparisons must use that exact endpoint. Comparing a Moira system
+barycenter with a Horizons planet center tests two different physical targets
+and cannot establish kernel or reduction accuracy.
+
+### Execution-context ownership
+
+`planet_at(...)` remains the public validation and routing wrapper. Its internal
+reduction path receives one opaque workspace that binds the reader, resolved TT
+epoch, apparent/geometric mode, nutation policy, derived Earth state, and the
+workspace-owned vector cache. Injected contexts are accepted only when those
+provenance fields match the active call. Reader-bound reusable contexts are
+bounded per reader and per thread, so a result computed for one explicit TT
+epoch or policy cannot poison another call.
+
+This is internal correctness hardening. No REST route, request model, response
+model, or final planetary-position meaning is added or removed. The five
+legacy underscored Python workspace hooks remain accepted for the current
+compatibility cycle, are validated against the opaque workspace contract, and
+emit `DeprecationWarning` when used.
 
 ## Apparent geocentric sequence
 
@@ -98,6 +136,23 @@ frame construction, apparent planetary positions, wide-range vectors, and
 topocentric positions. The public Mars J2000 reduction trace is a versioned
 historical receipt, not a claim that one example validates every body, epoch,
 kernel, observer, or policy combination.
+
+The current major-body Horizons contracts were refreshed on 2026-08-13:
+
+| Product | Matched contract | Enforced envelope | Recorded maximum |
+|---|---|---|---|
+| Apparent geocentric | Same route endpoint; reader-resolved ephemeris JD sent as discrete Horizons `TLIST` with `TIME_TYPE=TT` | `0.35"`; `0.1 km` | `0.277781"` (Saturn barycenter); `0.066846 km` (Mercury center) |
+| Geometric ICRF vector | Same route endpoint; same numeric ephemeris JD sent as discrete `TLIST` with `TIME_TYPE=TDB`; `VEC_CORR=NONE` | `0.001"`; `0.01 km` | `0.000021829"` (Moon center); `0.002937 km` (Mercury center) |
+
+The apparent angular result is a cross-reduction-model envelope, not a direct
+measure of DE441 interpolation error: Moira uses IAU 2006 precession and IAU
+2000A nutation, while Horizons apparent quantity 2 uses its documented
+EOP-corrected IAU 1976/1980 true-equator/equinox-of-date output. The geometric
+suite isolates target/vector geometry; because both services receive the same
+numeric ephemeris JD, it does not independently validate TT-to-TDB conversion.
+See the [Horizons manual](https://ssd.jpl.nasa.gov/horizons/manual.html), the
+[Horizons API documentation](https://ssd-api.jpl.nasa.gov/doc/horizons.html),
+and the astronomy validation report for the full qualification.
 
 Relevant executable surfaces include:
 

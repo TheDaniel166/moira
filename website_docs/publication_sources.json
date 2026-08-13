@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "release_history_floor": "5.0.0",
-  "last_verified": "2026-08-11",
+  "last_verified": "2026-08-13",
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -47,7 +47,7 @@
       "source": "wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md",
       "title": "Planetary Reduction Pipeline",
       "nav_label": "Planetary Reduction",
-      "description": "The declared path from JPL SPK state vectors through light time, deflection, aberration, frame transforms, and optional topocentric correction.",
+      "description": "The declared path from route-identified JPL SPK targets through reader-bound time, light time, deflection, aberration, frame transforms, optional topocentric correction, and target/time/frame-matched Horizons validation.",
       "content_class": "evergreen_architecture",
       "schema_type": "TechArticle"
     },
@@ -179,7 +179,7 @@
       "source": "wiki/03_validation/VALIDATION_ASTRONOMY.md",
       "title": "Validation Report — Astronomy",
       "nav_label": "Astronomy Report",
-      "description": "External-reference evidence for Moira's IAU, JPL, time-scale, eclipse, occultation, and observational astronomy surfaces.",
+      "description": "External-reference evidence for Moira's IAU, JPL, time-scale, eclipse, occultation, and observational astronomy surfaces, including target/time/frame-matched planetary contracts and explicit qualifications.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle"
     },

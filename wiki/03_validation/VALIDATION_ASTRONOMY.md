@@ -1,7 +1,7 @@
 # Moira Validation Report - Astronomy
 
-**Version:** 1.4
-**Date:** 2026-07-25
+**Version:** 1.5
+**Date:** 2026-08-13
 **Runtime target:** Python 3.14
 **Validation kernel:** JPL DE441 (engine is kernel-agnostic; see note below)
 **Validation philosophy:** external-reference first, regression-enforced second
@@ -395,46 +395,51 @@ Max error: **0.000938 arcsec** | Mean: 0.000195 arcsec | ALL PASS
 **Oracle:** JPL Horizons  
 **Bodies:** 10 major bodies  
 **Epochs:** 12 measured-era epochs, 1900-01-01 to 2025-09-01  
-**Thresholds:** angular separation <= 0.75", distance error <= 1750 km  
+**Thresholds:** angular separation <= 0.35", distance error <= 0.1 km<br>
 **Test file:** `tests/integration/test_horizons_planet_apparent.py` - **120 passed**
 
-Recorded envelope:
-- Worst angular error: **0.577850"** (Uranus, 1900-01-01)
-- Worst distance error: **1684.977 km** (Pluto, 1900-01-01)
+Recorded target- and time-matched envelope (2026-08-13):
+- Worst angular error: **0.277781"** (Saturn system barycenter, 1900-01-01)
+- Worst distance error: **0.066846 km** (Mercury center, 1933-03-15)
 
-These figures do not reflect a planetary kernel accuracy limit. The kernel itself is accurate
-to well under 1 milliarcsecond for the major planets in the measured era. The
-dominant contributor to the residual is **Delta T convention disagreement**
-between Moira and JPL Horizons. Moira uses the
-Stephenson-Morrison-Hohenkerk (2016) historical rotation model; Horizons uses
-its own internal Delta T. Even a 1-second difference in Delta T propagates to
-roughly 0.5" on fast-moving bodies such as the Moon or Mercury at historical
-epochs. The worst-case 0.577850" is consistent with this mechanism and is not
-evidence of a defect in the geometry or the reduction pipeline. If both
-systems were forced to use identical Delta T, the residual would collapse to
-well under 0.01".
+This fixture now makes both comparison identities explicit. Sun, Moon,
+Mercury, and Venus use target centers (`10`, `301`, `199`, `299`); Mars through
+Pluto use the system barycenters exposed by Moira's DE441 routes (`4` through
+`9`). Each Moira UT1 epoch is converted through the admitted reader's
+content-bound ephemeris clock, and that exact Julian Day is sent to Horizons as
+a discrete `TLIST` value with `TIME_TYPE=TT`.
+
+The remaining angular envelope is not a planetary-kernel accuracy statement.
+Moira reduces apparent places with its IAU 2006 precession / IAU 2000A
+nutation stack. The [JPL Horizons manual](https://ssd.jpl.nasa.gov/horizons/manual.html)
+documents Earth-based apparent RA/Dec quantity 2
+as EOP-corrected IAU 1976/1980 true equator and equinox of date. This is
+therefore a named cross-reduction-model comparison, while distance remains a
+same-target, same-epoch comparison. The previous `0.577850"` / `1684.977 km`
+record and its Delta-T attribution are retired: that fixture compared Moira
+system barycenters against Horizons planet centers and did not force the same
+TT epoch. It must not be used as evidence about Moira's planetary accuracy.
 
 ### 4.2 Wide-Range Vector Geometry (DE441 corpus)
 
 **Oracle:** JPL Horizons  
 **Bodies:** 10 major bodies  
 **Epochs:** 8 wider-span epochs, 1800-06-24 to 2150-01-01  
-**Thresholds:** angular vector error <= 1.0", vector difference <= 15000 km  
+**Thresholds:** angular vector error <= 0.001", vector difference <= 0.01 km<br>
 **Test file:** `tests/integration/test_horizons_planet_vectors_wide.py` - **80 passed**
 
-Recorded envelope:
-- Worst angular vector error: **0.762685"** (Uranus, 1800-06-24)
-- Worst absolute vector difference: **10201.934 km** (Uranus, 1800-06-24)
+Recorded target- and epoch-matched envelope (2026-08-13):
+- Worst angular vector error: **0.000021829"** (Moon center, 2000-01-01)
+- Worst absolute vector difference: **0.002937 km** (Mercury center, 2000-01-01)
 
-The wider epoch span (1800-2150) introduces Delta-T model-basis sensitivity in
-addition to geometric and reduction residuals. Before 1900, historical
-rotation uncertainty is significant; after 2026, Moira uses the explicit
-scenario in section 6 (`83.294360 s` at 2100 under the current boundary
-aggregate). A Horizons comparison is
-interpretable only when the fixture records the comparator's actual time-scale
-and Delta-T settings; this document no longer assumes that Horizons simply
-freezes Delta T. The recorded 0.762685" envelope is regression evidence for
-the named fixture, not a term-by-term attribution of its residual.
+This is the kernel-geometry comparison. Both sides use geometric, uncorrected
+ICRF vectors (`VEC_CORR=NONE`) for the same center or system-barycenter target.
+Horizons receives the same numeric ephemeris Julian Day as a discrete
+`TLIST`, explicitly tagged `TIME_TYPE=TDB`. This isolates target/vector
+geometry; it is not an independent validation of TT-to-TDB conversion. The
+previous `0.762685"` / `10201.934 km` figures are retired because the fixture
+compared Moira's Mars-through-Pluto system-barycenter routes against Horizons
+planet centers. They were comparator identity errors, not DE441 errors.
 
 ### 4.3 Topocentric Sky Positions
 

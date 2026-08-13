@@ -20,6 +20,26 @@ Note on resemblance: house geometry is mathematically forced — there is one co
 
 ## Astronomical data sources
 
+### Major-planet kernel and comparator identity
+
+Moira's public major-body names preserve the physical endpoint supplied by the
+active admitted DE-series route. Under DE441, the Sun (`10`), Moon (`301`),
+Mercury (`199`), and Venus (`299`) are center targets; Mars through Pluto are
+the system barycenters `4` through `9`. External validation must compare those
+same endpoints at the same declared ephemeris epoch. A planet-center Horizons
+query is not a valid oracle for a Moira system-barycenter result.
+
+The 2026-08-13 planetary validation refresh makes the target, time, frame, and
+correction contracts executable. Across 120 apparent cases it records maxima
+of `0.277781"` and `0.066846 km`; across 80 uncorrected geometric ICRF cases it
+records `0.000021829"` and `0.002937 km`. The apparent angular envelope is a
+qualified cross-reduction comparison because Moira uses IAU 2006/2000A while
+Horizons quantity 2 documents an EOP-corrected IAU 1976/1980 true-equator and
+equinox of date. The geometric test instead isolates same-target vector
+geometry and does not independently validate TT-to-TDB conversion. The full
+contracts, retired comparator errors, and test paths are recorded in
+[`VALIDATION_ASTRONOMY.md`](./wiki/03_validation/VALIDATION_ASTRONOMY.md).
+
 ### Atmospheric visibility model provenance
 
 Moira's legacy component visibility family is independently implemented from

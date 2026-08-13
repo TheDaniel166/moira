@@ -10,7 +10,8 @@ Moira is a sovereign computational engine designed for transparency, auditabilit
 - [AGENTS.md](AGENTS.md): Core persona (Urania) and operational doctrine for AI collaborators.
 - [Wiki Index](wiki/Home.md): Comprehensive guide to doctrines, foundations, and validation.
 - [Migrating from Swiss Ephemeris](wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md): Contract-first migration guide for flags, time, frames, units, houses, REST, and verification.
-- [Validation Astronomy](wiki/03_validation/VALIDATION_ASTRONOMY.md): Accuracy benchmarks against IAU ERFA/SOFA and JPL Horizons.
+- [Planetary Reduction](wiki/02_standards/PLANETARY_REDUCTION_PIPELINE.md): Route identity, reader-bound time, reduction stages, context ownership, and target/time/frame-matched Horizons contracts.
+- [Validation Astronomy](wiki/03_validation/VALIDATION_ASTRONOMY.md): Qualified accuracy benchmarks against IAU ERFA/SOFA and JPL Horizons, including explicit major-body target and epoch semantics.
 
 ## Key Modules
 - [moira/__init__.py](moira/__init__.py): Main entry point and `Moira` facade class.

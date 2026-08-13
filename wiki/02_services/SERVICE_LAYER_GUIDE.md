@@ -91,7 +91,11 @@ services, and routers.
 
 ### 2.1 The Kernel Gateway
 
-All positional truth in Moira originates from a single source: the **JPL DE441 Binary SPK Kernel** (`de441.bsp`). The `SpkReader` class in `spkreader.py` provides memory-mapped access to this 3.1 GB file, which encodes Chebyshev polynomial coefficients for every major solar system body from **13,200 BCE to 17,191 CE**.
+Planetary positional truth originates from the active admitted **JPL DE-series
+binary SPK reader**. DE441 (`de441.bsp`) is the flagship full-range reader; the
+ordinary planetary path also admits DE430 and DE440, with coverage determined
+by the loaded kernel. The `SpkReader` class in `spk_reader.py` provides native
+memory-mapped access to those Chebyshev state vectors.
 
 ```
 SpkReader
@@ -115,6 +119,11 @@ DE441 stores positions relative to various barycenters. To obtain a body's posit
 | Mars | `(0→4)` | SSB → Mars Barycenter |
 | Jupiter–Pluto | `(0→N)` | SSB → Planet Barycenter |
 | Earth | `(0→3), (3→399)` | SSB → EMB → Earth |
+
+The route endpoint is part of result identity. In particular, DE441 exposes
+Mars through Pluto on the ordinary Moira path as system barycenters (`4`
+through `9`), not planet centers. A Horizons validation query must use the same
+target command; otherwise the comparison measures two different objects.
 
 The geocentric position of any body is computed by:
 1. Summing the body's chain to get its SSB-relative position.
