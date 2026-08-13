@@ -6,7 +6,7 @@
     "name": "moira-astro",
     "version": "6.2.0",
     "tag": "v6.2.0",
-    "commit": "055031861316d6a7ce46b9e2087ace5089d9c3b5",
+    "commit": "b36189c368ea03887d9dfc343f351d1fd3debdc7",
     "release_date": "2026-08-13",
     "requires_python": ">=3.10",
     "supported_python": [
@@ -5391,5 +5391,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "74e447eed43760baa88d3e3217e2623c450d510d62bae2eb860965cc30548907"
+  "manifest_sha256": "248a334a98d76b37c4eb124b5f4458fd5be4e68078b63e9eca81822d699bb3f4"
 }
