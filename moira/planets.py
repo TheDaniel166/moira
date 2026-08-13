@@ -47,8 +47,11 @@ Substrate numerical boundary:
 from __future__ import annotations
 
 import math
+import threading
+import warnings
 from dataclasses import dataclass, field
 from collections import OrderedDict
+from enum import Enum
 
 try:
     from . import moira_native as _moira_native
@@ -394,9 +397,10 @@ class CartesianPosition:
 
     THEOREM: CartesianPosition is the read-only result vessel for a planetary
         position expressed as rectangular coordinates (km) rather than
-        ecliptic longitude/latitude.  The coordinate orientation depends on
-        the requested correction path: true equatorial of date when
-        ``apparent=True`` and geometric ICRF when ``apparent=False``.
+        ecliptic longitude/latitude.  Both apparent and geometric products are
+        returned in the requested mean or true equatorial frame of date; the
+        ``apparent`` switch governs physical light-path corrections, not the
+        output-frame epoch.
 
     RITE OF PURPOSE:
         CartesianPosition is returned by planet_at(..., frame='cartesian').
@@ -407,9 +411,9 @@ class CartesianPosition:
 
     LAW OF OPERATION:
         Responsibilities:
-            - Hold the rectangular X/Y/Z position in the true equatorial frame
-              of date (after the full apparent pipeline when apparent=True, or
-              in geometric ICRF when apparent=False).
+            - Hold the rectangular X/Y/Z position in the mean or true
+              equatorial frame of date after the selected physical correction
+              path and frame rotation.
             - Carry the center and frame labels so callers know the reference.
         Non-responsibilities:
             - Does not compute positions; it only stores them.
@@ -439,7 +443,7 @@ class CartesianPosition:
     """
 
     name:   str
-    x:      float   # km, true equatorial frame of date (apparent) or ICRF/J2000 (astrometric)
+    x:      float   # km, mean or true equatorial frame of date
     y:      float   # km
     z:      float   # km
     center: str     # 'geocentric' or 'barycentric'
@@ -501,9 +505,12 @@ _NPE_BODY_ROUTE_PAIRS = {
 
 @dataclass(slots=True)
 class _ApparentContext:
-    """Internal one-JD cache for shared apparent-path state."""
+    """Internal one-reader, one-JD workspace for shared apparent-path state."""
 
     jd_tt: float
+    reader: KernelReader = field(repr=False)
+    apparent: bool
+    nutation: bool
     dpsi_deg: float
     deps_deg: float
     obliquity: float
@@ -516,6 +523,71 @@ class _ApparentContext:
     saturn_geocentric: Vec3 | None = None
 
 
+@dataclass(slots=True)
+class _PlanetReductionWorkspace:
+    """Opaque internal workspace shared by one coherent planetary reduction."""
+
+    context: _ApparentContext
+    rate_contexts: tuple[
+        _ApparentContext | None,
+        _ApparentContext | None,
+    ] | None = None
+
+
+class _NativeAllPlanetsBackend(str, Enum):
+    """Internal execution routes for the all-planets public product."""
+
+    PYTHON = "python"
+    NATIVE_EVALUATOR = "native_evaluator"
+    NATIVE_BATCH = "native_batch"
+
+
+class _NativeAdmissionReason(str, Enum):
+    """Deterministic internal reasons for selecting or declining native work."""
+
+    UNSUPPORTED_BODY_SET = "unsupported_body_set"
+    NONDEFAULT_CORRECTION_POLICY = "nondefault_correction_policy"
+    NON_GEOCENTRIC_CENTER = "non_geocentric_center"
+    TOPOCENTRIC_REQUEST = "topocentric_request"
+    CUSTOM_DELTA_T_POLICY = "custom_delta_t_policy"
+    UNSUPPORTED_READER_TYPE = "unsupported_reader_type"
+    BATCH_CAPABILITY_UNAVAILABLE = "batch_capability_unavailable"
+    PUBLIC_ROUTE_UNAVAILABLE = "public_route_unavailable"
+    BODY_ROUTE_UNAVAILABLE = "body_route_unavailable"
+    RATE_ROUTE_UNAVAILABLE = "rate_route_unavailable"
+    ADMITTED_NATIVE_EVALUATOR = "admitted_native_evaluator"
+    ADMITTED_NATIVE_BATCH = "admitted_native_batch"
+
+
+@dataclass(slots=True, frozen=True)
+class _NativeAllPlanetsPlan:
+    """Prepared explanation of one bulk backend decision and its route inputs."""
+
+    backend: _NativeAllPlanetsBackend
+    reason: _NativeAdmissionReason
+    public_specs: tuple[tuple[int, int, int], ...] | None = field(
+        default=None,
+        repr=False,
+    )
+    body_specs: dict[str, tuple[tuple[int, int, int], ...]] | None = field(
+        default=None,
+        repr=False,
+    )
+    rate_specs: tuple[
+        tuple[
+            float,
+            tuple[tuple[int, int, int], ...],
+            dict[str, tuple[tuple[int, int, int], ...]],
+        ],
+        ...,
+    ] = field(default=(), repr=False)
+    evaluator: object | None = field(default=None, repr=False, compare=False)
+
+    @property
+    def admitted(self) -> bool:
+        return self.backend is not _NativeAllPlanetsBackend.PYTHON
+
+
 _HAS_NATIVE_ROTATION = (
     _moira_native is not None
     and hasattr(_moira_native, "rotation_matrix_multiply")
@@ -524,7 +596,38 @@ _HAS_NATIVE_ROTATION = (
 # Keep enough one-JD contexts to cover ordinary chart/batch slices without
 # evicting them before adjacent same-reader lookups can reuse the work.
 _APPARENT_CONTEXT_CACHE_LIMIT = 32
+_READER_CACHE_LOCAL_ATTR = "_planetary_context_cache_local"
+_READER_CACHE_INIT_LOCK = threading.RLock()
 _J2000_ECLIPTIC_OBLIQUITY_DEG = 23.439279444444
+
+
+@dataclass(slots=True)
+class _ReaderThreadCaches:
+    """One reader's bounded memoization state for the current Python thread."""
+
+    apparent_contexts: OrderedDict = field(default_factory=OrderedDict)
+    planet_calls: OrderedDict = field(default_factory=OrderedDict)
+
+
+def _reader_thread_caches(reader: KernelReader) -> _ReaderThreadCaches | None:
+    """Return reader-namespaced, thread-local caches when attributes are writable."""
+    local = getattr(reader, _READER_CACHE_LOCAL_ATTR, None)
+    if local is None:
+        try:
+            with _READER_CACHE_INIT_LOCK:
+                local = getattr(reader, _READER_CACHE_LOCAL_ATTR, None)
+                if local is None:
+                    local = threading.local()
+                    setattr(reader, _READER_CACHE_LOCAL_ATTR, local)
+        except (AttributeError, TypeError):
+            return None
+    if not isinstance(local, threading.local):
+        return None
+    caches = getattr(local, "caches", None)
+    if caches is None:
+        caches = _ReaderThreadCaches()
+        local.caches = caches
+    return caches
 
 
 @dataclass(slots=True, frozen=True)
@@ -550,29 +653,78 @@ class PlanetReductionBreakdown:
 
 
 def _reader_apparent_context_cache(reader: KernelReader):
-    """Return the per-reader apparent-context cache when the reader can own one."""
-    cache = getattr(reader, "_planetary_apparent_context_cache", None)
-    if cache is not None:
-        return cache
-    try:
-        cache = OrderedDict()
-        setattr(reader, "_planetary_apparent_context_cache", cache)
-        return cache
-    except Exception:
-        return None
+    """Return this thread's apparent-context cache for ``reader``."""
+    caches = _reader_thread_caches(reader)
+    return None if caches is None else caches.apparent_contexts
 
 
 def _reader_planet_call_cache(reader: KernelReader):
-    """Return the per-reader same-JD single-body cache when the reader can own one."""
-    cache = getattr(reader, "_planetary_planet_at_call_cache", None)
-    if cache is not None:
-        return cache
-    try:
-        cache = OrderedDict()
-        setattr(reader, "_planetary_planet_at_call_cache", cache)
-        return cache
-    except Exception:
-        return None
+    """Return this thread's same-JD single-body cache for ``reader``."""
+    caches = _reader_thread_caches(reader)
+    return None if caches is None else caches.planet_calls
+
+
+def _validate_apparent_context(
+    surface: str,
+    context: _ApparentContext,
+    *,
+    jd_tt: float,
+    reader: KernelReader,
+    apparent: bool,
+    nutation: bool,
+) -> None:
+    """Reject a private workspace whose provenance cannot serve this call."""
+    if not isinstance(context, _ApparentContext):
+        raise ValueError(f"{surface}: _context must be an internal _ApparentContext")
+    if context.reader is not reader:
+        raise ValueError(f"{surface}: _context was built for a different reader")
+    if context.jd_tt != jd_tt:
+        raise ValueError(
+            f"{surface}: _context epoch {context.jd_tt!r} does not match "
+            f"jd_tt {jd_tt!r}"
+        )
+    if context.apparent is not apparent:
+        raise ValueError(
+            f"{surface}: _context apparent={context.apparent!r} does not match "
+            f"apparent={apparent!r}"
+        )
+    if context.nutation is not nutation:
+        raise ValueError(
+            f"{surface}: _context nutation={context.nutation!r} does not match "
+            f"nutation={nutation!r}"
+        )
+
+
+def _validate_private_workspace_inputs(
+    surface: str,
+    context: _ApparentContext | None,
+    *,
+    vector_cache: _VectorCache | None,
+    dpsi_deg: float | None = None,
+    deps_deg: float | None = None,
+    rot_mat=None,
+) -> None:
+    """Govern retained compatibility hooks instead of accepting unproven state."""
+    supplied = (
+        vector_cache is not None
+        or dpsi_deg is not None
+        or deps_deg is not None
+        or rot_mat is not None
+    )
+    if not supplied:
+        return
+    if context is None:
+        raise ValueError(
+            f"{surface}: private reduction inputs require a matching _context"
+        )
+    if vector_cache is not None and vector_cache is not context.vector_cache:
+        raise ValueError(f"{surface}: _vector_cache does not belong to _context")
+    if dpsi_deg is not None and dpsi_deg != context.dpsi_deg:
+        raise ValueError(f"{surface}: _dpsi_deg does not match _context")
+    if deps_deg is not None and deps_deg != context.deps_deg:
+        raise ValueError(f"{surface}: _deps_deg does not match _context")
+    if rot_mat is not None and rot_mat != context.rot_mat:
+        raise ValueError(f"{surface}: _rot_mat does not match _context")
 
 
 def _cached_planet_call_context(
@@ -597,10 +749,7 @@ def _cached_planet_call_context(
     key = (jd_ut, apparent, nutation, delta_t_policy)
     state = cache.get(key)
     if state is not None:
-        try:
-            cache.move_to_end(key)
-        except KeyError:
-            pass  # key evicted by a concurrent writer between get() and move_to_end()
+        cache.move_to_end(key)
     return state
 
 
@@ -622,10 +771,7 @@ def _store_planet_call_context(
         return
     key = (jd_ut, apparent, nutation, delta_t_policy)
     cache[key] = (jd_tt, context)
-    try:
-        cache.move_to_end(key)
-    except KeyError:
-        pass  # key evicted by a concurrent reader between setitem and move_to_end()
+    cache.move_to_end(key)
     while len(cache) > _APPARENT_CONTEXT_CACHE_LIMIT:
         cache.popitem(last=False)
 
@@ -646,10 +792,7 @@ def _cached_apparent_context(
     key = (jd_tt, apparent, nutation)
     context = cache.get(key)
     if context is not None:
-        try:
-            cache.move_to_end(key)
-        except KeyError:
-            pass  # key evicted by a concurrent writer between get() and move_to_end()
+        cache.move_to_end(key)
     return context
 
 
@@ -669,12 +812,64 @@ def _store_apparent_context(
         return
     key = (jd_tt, apparent, nutation)
     cache[key] = context
-    try:
-        cache.move_to_end(key)
-    except KeyError:
-        pass  # key evicted by a concurrent reader between setitem and move_to_end()
+    cache.move_to_end(key)
     while len(cache) > _APPARENT_CONTEXT_CACHE_LIMIT:
         cache.popitem(last=False)
+
+
+def _native_python_plan(
+    reason: _NativeAdmissionReason,
+) -> _NativeAllPlanetsPlan:
+    """Return the canonical internal Python-fallback decision."""
+    return _NativeAllPlanetsPlan(
+        backend=_NativeAllPlanetsBackend.PYTHON,
+        reason=reason,
+    )
+
+
+def _npe_all_planets_mode_decision(
+    *,
+    bodies: list[str],
+    reader: KernelReader,
+    apparent: bool,
+    aberration: bool,
+    grav_deflection: bool,
+    nutation: bool,
+    center: str,
+    observer_lat: float | None,
+    observer_lon: float | None,
+    observer_elev_m: float,
+    lst_deg: float | None,
+    delta_t_policy: 'DeltaTPolicy | None',
+) -> _NativeAllPlanetsPlan:
+    """Explain whether the exact public mode admits a native bulk substrate."""
+    if not bodies or any(body not in _NPE_ADMITTED_BODIES for body in bodies):
+        return _native_python_plan(_NativeAdmissionReason.UNSUPPORTED_BODY_SET)
+    if not apparent or not aberration or not grav_deflection or not nutation:
+        return _native_python_plan(
+            _NativeAdmissionReason.NONDEFAULT_CORRECTION_POLICY
+        )
+    if center != 'geocentric':
+        return _native_python_plan(_NativeAdmissionReason.NON_GEOCENTRIC_CENTER)
+    if observer_lat is not None or observer_lon is not None or lst_deg is not None:
+        return _native_python_plan(_NativeAdmissionReason.TOPOCENTRIC_REQUEST)
+    # Elevation has no computational meaning without the complete observer
+    # vessel, so an otherwise default geocentric request remains admissible.
+    del observer_elev_m
+    if delta_t_policy is not None:
+        return _native_python_plan(_NativeAdmissionReason.CUSTOM_DELTA_T_POLICY)
+    if type(reader) is not SpkReader:
+        return _native_python_plan(_NativeAdmissionReason.UNSUPPORTED_READER_TYPE)
+    kernel = getattr(reader, "_kernel", None)
+    handle = getattr(kernel, "_handle", None)
+    if handle is None or not hasattr(handle, "batch_segment_position_and_velocity"):
+        return _native_python_plan(
+            _NativeAdmissionReason.BATCH_CAPABILITY_UNAVAILABLE
+        )
+    return _NativeAllPlanetsPlan(
+        backend=_NativeAllPlanetsBackend.NATIVE_BATCH,
+        reason=_NativeAdmissionReason.ADMITTED_NATIVE_BATCH,
+    )
 
 
 def _npe_all_planets_mode_is_admitted(
@@ -692,24 +887,21 @@ def _npe_all_planets_mode_is_admitted(
     lst_deg: float | None,
     delta_t_policy: 'DeltaTPolicy | None',
 ) -> bool:
-    """Return True only for the first admitted native public planetary surface."""
-    if not bodies or any(body not in _NPE_ADMITTED_BODIES for body in bodies):
-        return False
-    if not apparent or not aberration or not grav_deflection or not nutation:
-        return False
-    if center != 'geocentric':
-        return False
-    if observer_lat is not None or observer_lon is not None or lst_deg is not None:
-        return False
-    if observer_elev_m != 0.0:
-        return False
-    if delta_t_policy is not None:
-        return False
-    if type(reader) is not SpkReader:
-        return False
-    kernel = getattr(reader, "_kernel", None)
-    handle = getattr(kernel, "_handle", None)
-    return handle is not None and hasattr(handle, "batch_segment_position_and_velocity")
+    """Compatibility predicate over the structured native mode decision."""
+    return _npe_all_planets_mode_decision(
+        bodies=bodies,
+        reader=reader,
+        apparent=apparent,
+        aberration=aberration,
+        grav_deflection=grav_deflection,
+        nutation=nutation,
+        center=center,
+        observer_lat=observer_lat,
+        observer_lon=observer_lon,
+        observer_elev_m=observer_elev_m,
+        lst_deg=lst_deg,
+        delta_t_policy=delta_t_policy,
+    ).admitted
 
 
 def _npe_public_route_segment_specs(reader: SpkReader, jd_tt: float):
@@ -844,13 +1036,87 @@ def _get_native_planetary_evaluator(reader: SpkReader):
         return evaluator
     try:
         evaluator = _moira_native.NativePlanetaryEvaluator(handle)
-    except Exception:
+    except (RuntimeError, TypeError):
         return None
     try:
         setattr(kernel, "_planetary_evaluator", evaluator)
-    except Exception:
+    except (AttributeError, TypeError):
         pass
     return evaluator
+
+
+def _native_all_planets_plan(
+    bodies: list[str],
+    *,
+    reader: KernelReader,
+    jd_tt: float,
+    apparent: bool,
+    aberration: bool,
+    grav_deflection: bool,
+    nutation: bool,
+    center: str,
+    observer_lat: float | None,
+    observer_lon: float | None,
+    observer_elev_m: float,
+    lst_deg: float | None,
+    delta_t_policy: 'DeltaTPolicy | None',
+) -> _NativeAllPlanetsPlan:
+    """Prepare the exact internal backend decision for one bulk request."""
+    mode = _npe_all_planets_mode_decision(
+        bodies=bodies,
+        reader=reader,
+        apparent=apparent,
+        aberration=aberration,
+        grav_deflection=grav_deflection,
+        nutation=nutation,
+        center=center,
+        observer_lat=observer_lat,
+        observer_lon=observer_lon,
+        observer_elev_m=observer_elev_m,
+        lst_deg=lst_deg,
+        delta_t_policy=delta_t_policy,
+    )
+    if not mode.admitted:
+        return mode
+
+    assert isinstance(reader, SpkReader)
+    public_specs = _npe_public_route_segment_specs(reader, jd_tt)
+    if public_specs is None:
+        return _native_python_plan(_NativeAdmissionReason.PUBLIC_ROUTE_UNAVAILABLE)
+    body_specs = _npe_body_route_segment_specs(reader, jd_tt)
+    if body_specs is None:
+        return _native_python_plan(_NativeAdmissionReason.BODY_ROUTE_UNAVAILABLE)
+
+    evaluator = _get_native_planetary_evaluator(reader)
+    if evaluator is None:
+        return _NativeAllPlanetsPlan(
+            backend=_NativeAllPlanetsBackend.NATIVE_BATCH,
+            reason=_NativeAdmissionReason.ADMITTED_NATIVE_BATCH,
+            public_specs=tuple(public_specs),
+            body_specs=body_specs,
+        )
+
+    rate_specs = []
+    for rate_jd in (
+        jd_tt - _LONGITUDE_RATE_STEP_DAYS,
+        jd_tt + _LONGITUDE_RATE_STEP_DAYS,
+    ):
+        rate_public_specs = _npe_public_route_segment_specs(reader, rate_jd)
+        rate_body_specs = _npe_body_route_segment_specs(reader, rate_jd)
+        if rate_public_specs is None or rate_body_specs is None:
+            return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_UNAVAILABLE)
+        rate_specs.append(
+            (rate_jd, tuple(rate_public_specs), rate_body_specs)
+        )
+
+    return _NativeAllPlanetsPlan(
+        backend=_NativeAllPlanetsBackend.NATIVE_EVALUATOR,
+        reason=_NativeAdmissionReason.ADMITTED_NATIVE_EVALUATOR,
+        public_specs=tuple(public_specs),
+        body_specs=body_specs,
+        rate_specs=tuple(rate_specs),
+        evaluator=evaluator,
+    )
 
 
 def _native_all_planets_admitted(
@@ -871,9 +1137,10 @@ def _native_all_planets_admitted(
     delta_t_policy: 'DeltaTPolicy | None',
 ) -> dict[str, PlanetData] | None:
     """Execute the first admitted native public substrate when the exact mode matches."""
-    if not _npe_all_planets_mode_is_admitted(
+    plan = _native_all_planets_plan(
         bodies=bodies,
         reader=reader,
+        jd_tt=jd_tt,
         apparent=apparent,
         aberration=aberration,
         grav_deflection=grav_deflection,
@@ -884,15 +1151,14 @@ def _native_all_planets_admitted(
         observer_elev_m=observer_elev_m,
         lst_deg=lst_deg,
         delta_t_policy=delta_t_policy,
-    ):
+    )
+    if not plan.admitted:
         return None
 
-    specs = _npe_public_route_segment_specs(reader, jd_tt)
-    if specs is None:
-        return None
-    body_segment_specs = _npe_body_route_segment_specs(reader, jd_tt)
-    if body_segment_specs is None:
-        return None
+    assert plan.public_specs is not None
+    assert plan.body_specs is not None
+    specs = plan.public_specs
+    body_segment_specs = plan.body_specs
 
     mean_eps = mean_obliquity(jd_tt)
     dpsi_deg = deps_deg = 0.0
@@ -907,8 +1173,12 @@ def _native_all_planets_admitted(
         deps_deg=deps_deg,
     ) if apparent else None
 
-    evaluator = _get_native_planetary_evaluator(reader)
-    if evaluator is not None and rot_mat is not None:
+    evaluator = plan.evaluator
+    if (
+        plan.backend is _NativeAllPlanetsBackend.NATIVE_EVALUATOR
+        and evaluator is not None
+        and rot_mat is not None
+    ):
         payloads = evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(
             list(bodies),
             specs,
@@ -918,14 +1188,7 @@ def _native_all_planets_admitted(
             rot_mat,
         )
         rate_payloads: list[list[tuple]] = []
-        for rate_jd in (
-            jd_tt - _LONGITUDE_RATE_STEP_DAYS,
-            jd_tt + _LONGITUDE_RATE_STEP_DAYS,
-        ):
-            rate_specs = _npe_public_route_segment_specs(reader, rate_jd)
-            rate_body_specs = _npe_body_route_segment_specs(reader, rate_jd)
-            if rate_specs is None or rate_body_specs is None:
-                return None
+        for rate_jd, rate_specs, rate_body_specs in plan.rate_specs:
             rate_mean_eps = mean_obliquity(rate_jd)
             rate_dpsi, rate_deps = _nutation(rate_jd)
             rate_rot_mat = _compose_rotation_matrix(
@@ -975,6 +1238,9 @@ def _native_all_planets_admitted(
     _prefill_npe_public_vector_cache(jd_tt, vector_cache, pair_states)
     context = _ApparentContext(
         jd_tt=jd_tt,
+        reader=reader,
+        apparent=apparent,
+        nutation=nutation,
         dpsi_deg=dpsi_deg,
         deps_deg=deps_deg,
         obliquity=obliquity,
@@ -1093,6 +1359,9 @@ def _build_apparent_context(
 
     return _ApparentContext(
         jd_tt=jd_tt,
+        reader=reader,
+        apparent=apparent,
+        nutation=nutation,
         dpsi_deg=dpsi_deg,
         deps_deg=deps_deg,
         obliquity=obliquity,
@@ -2249,6 +2518,9 @@ def planet_reduction_breakdown_at(
         else:
             context = _ApparentContext(
                 jd_tt=jd_tt,
+                reader=reader,
+                apparent=apparent,
+                nutation=nutation,
                 dpsi_deg=dpsi_deg,
                 deps_deg=deps_deg,
                 obliquity=true_eps if nutation else mean_eps,
@@ -2401,7 +2673,7 @@ def planet_reduction_breakdown_at(
 # Public API: single body
 # ---------------------------------------------------------------------------
 
-def planet_at(
+def _planet_at_impl(
     body: str,
     jd_ut: float,
     reader: KernelReader | None = None,
@@ -2418,11 +2690,7 @@ def planet_at(
     lst_deg: float | None = None,
     jd_tt: float | None = None,
     delta_t_policy: 'DeltaTPolicy | None' = None,
-    _dpsi_deg: float | None = None,    # pre-computed nutation params (internal)
-    _deps_deg: float | None = None,
-    _rot_mat=None,                     # pre-composed rotation matrix — Mat3 tuple or native object (internal)
-    _vector_cache: _VectorCache | None = None,
-    _context: _ApparentContext | None = None,
+    _workspace: _PlanetReductionWorkspace | None = None,
 ) -> 'PlanetData | CartesianPosition':
     """
     Compute the ecliptic or cartesian position of one body on the admitted
@@ -2436,8 +2704,8 @@ def planet_at(
     declared ecliptic-of-date frame transformation.
 
     Individual correction stages can be disabled independently via the
-    ``aberration``, ``grav_deflection``, and ``nutation`` switches. These
-    The aberration and deflection switches only affect the pipeline when
+    ``aberration``, ``grav_deflection``, and ``nutation`` switches. The
+    aberration and deflection switches only affect the pipeline when
     ``apparent=True``. Nutation remains an explicit output-frame choice in
     both physical modes.
 
@@ -2484,7 +2752,14 @@ def planet_at(
         lst_deg: Local Sidereal Time in degrees. Required when topocentric
             correction is requested.
         jd_tt: Julian Day in Terrestrial Time (TT). Computed from ``jd_ut``
-            if ``None``.
+            if ``None``. An explicit override is isolated from the ordinary
+            UT1-derived same-call cache.
+
+        ``_workspace`` is an opaque internal reduction vessel. It is not a
+        supported public calculation option and is never exported. The public
+        wrapper temporarily retains compatibility-only internal reduction hooks
+        for one deprecation cycle; those hooks are validated and then collapsed
+        into this single workspace.
 
     Returns:
         A ``PlanetData`` vessel (default) or a ``CartesianPosition`` vessel
@@ -2503,7 +2778,9 @@ def planet_at(
             in both the asteroid and comet catalogs.
 
     Side effects:
-        None beyond reading from the active kernel context.
+        May attach bounded thread-local memoization state to a mutable reader.
+        No kernel content is changed and no external I/O is performed beyond
+        the reader's ordinary SPK reads.
     """
     if center not in ('geocentric', 'barycentric'):
         raise ValueError(f"center must be 'geocentric' or 'barycentric', got {center!r}")
@@ -2545,6 +2822,7 @@ def planet_at(
                 aberration=aberration,
                 grav_deflection=grav_deflection,
                 nutation=nutation,
+                refraction=False,
                 _lst_deg_override=lst_deg,
             )
             # Determine obliquity for the RA/Dec → ecliptic conversion.
@@ -2604,7 +2882,10 @@ def planet_at(
             comet_at(canonical_name, jd_ut, reader=reader)
         )
 
-    context = _context
+    context = None if _workspace is None else _workspace.context
+    rate_contexts = None if _workspace is None else _workspace.rate_contexts
+    injected_context = context is not None
+    explicit_jd_tt = jd_tt is not None
     if jd_tt is None and context is None and apparent:
         cached_state = _cached_planet_call_context(
             reader,
@@ -2623,6 +2904,15 @@ def planet_at(
             delta_t_policy=delta_t_policy,
         )
 
+    if injected_context:
+        _validate_apparent_context(
+            "planet_at",
+            context,
+            jd_tt=jd_tt,
+            reader=reader,
+            apparent=apparent,
+            nutation=nutation,
+        )
     built_context = False
     if context is None and apparent:
         context = _cached_apparent_context(
@@ -2637,10 +2927,8 @@ def planet_at(
             reader,
             apparent=apparent,
             nutation=nutation,
-            vector_cache=_vector_cache,
         )
         built_context = True
-        _vector_cache = context.vector_cache
         _store_apparent_context(
             reader,
             jd_tt=jd_tt,
@@ -2648,10 +2936,8 @@ def planet_at(
             nutation=nutation,
             context=context,
         )
-    elif context is not None:
-        _vector_cache = context.vector_cache
 
-    if built_context and context is not None:
+    if built_context and context is not None and not explicit_jd_tt:
         _store_planet_call_context(
             reader,
             jd_ut=jd_ut,
@@ -2681,7 +2967,13 @@ def planet_at(
             jd_tt=jd_tt,
             reader=reader,
             context=context,
+            rate_contexts=rate_contexts,
         )
+
+    dpsi_deg = None if context is None else context.dpsi_deg
+    deps_deg = None if context is None else context.deps_deg
+    rot_mat = None if context is None else context.rot_mat
+    vector_cache = None if context is None else context.vector_cache
 
     return _planet_at_core(
         body,
@@ -2699,12 +2991,91 @@ def planet_at(
         observer_elev_m=observer_elev_m,
         lst_deg=lst_deg,
         jd_tt=jd_tt,
-        _dpsi_deg=_dpsi_deg,
-        _deps_deg=_deps_deg,
-        _rot_mat=_rot_mat,
-        _vector_cache=_vector_cache,
+        _dpsi_deg=dpsi_deg,
+        _deps_deg=deps_deg,
+        _rot_mat=rot_mat,
+        _vector_cache=vector_cache,
         _context=context,
+        _rate_contexts=rate_contexts,
     )
+
+
+def planet_at(
+    body: str,
+    jd_ut: float,
+    reader: KernelReader | None = None,
+    obliquity: float | None = None,
+    apparent: bool = True,
+    aberration: bool = True,
+    grav_deflection: bool = True,
+    nutation: bool = True,
+    center: str = 'geocentric',
+    frame: str = 'ecliptic',
+    observer_lat: float | None = None,
+    observer_lon: float | None = None,
+    observer_elev_m: float = 0.0,
+    lst_deg: float | None = None,
+    jd_tt: float | None = None,
+    delta_t_policy: 'DeltaTPolicy | None' = None,
+    _dpsi_deg: float | None = None,
+    _deps_deg: float | None = None,
+    _rot_mat=None,
+    _vector_cache: _VectorCache | None = None,
+    _context: _ApparentContext | None = None,
+) -> 'PlanetData | CartesianPosition':
+    """Compatibility wrapper over the private planetary reduction entry point."""
+    private_inputs_supplied = (
+        _context is not None
+        or _vector_cache is not None
+        or _dpsi_deg is not None
+        or _deps_deg is not None
+        or _rot_mat is not None
+    )
+    if private_inputs_supplied:
+        warnings.warn(
+            "planet_at() private reduction hooks are deprecated and will be "
+            "removed after one compatibility release; use only documented "
+            "public calculation parameters",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+    _validate_private_workspace_inputs(
+        "planet_at",
+        _context,
+        vector_cache=_vector_cache,
+        dpsi_deg=_dpsi_deg,
+        deps_deg=_deps_deg,
+        rot_mat=_rot_mat,
+    )
+    workspace = (
+        None
+        if _context is None
+        else _PlanetReductionWorkspace(context=_context)
+    )
+    return _planet_at_impl(
+        body,
+        jd_ut,
+        reader=reader,
+        obliquity=obliquity,
+        apparent=apparent,
+        aberration=aberration,
+        grav_deflection=grav_deflection,
+        nutation=nutation,
+        center=center,
+        frame=frame,
+        observer_lat=observer_lat,
+        observer_lon=observer_lon,
+        observer_elev_m=observer_elev_m,
+        lst_deg=lst_deg,
+        jd_tt=jd_tt,
+        delta_t_policy=delta_t_policy,
+        _workspace=workspace,
+    )
+
+
+# Preserve the complete public API documentation on the compatibility wrapper
+# while keeping the large reduction implementation private.
+planet_at.__doc__ = _planet_at_impl.__doc__
 
 
 def _sky_position_at_impl(
@@ -2798,6 +3169,20 @@ def _sky_position_at_impl(
         reader,
         delta_t_policy=delta_t_policy,
     )
+    if _context is not None:
+        _validate_apparent_context(
+            "sky_position_at",
+            _context,
+            jd_tt=jd_tt,
+            reader=reader,
+            apparent=True,
+            nutation=nutation,
+        )
+    _validate_private_workspace_inputs(
+        "sky_position_at",
+        _context,
+        vector_cache=_vector_cache,
+    )
     context = _context or _build_apparent_context(
         jd_tt,
         reader,
@@ -2815,19 +3200,17 @@ def _sky_position_at_impl(
     if small_body is not None:
         family, canonical_name = small_body
         if family == "asteroid":
-            from .asteroids import ASTEROID_NAIF, _asteroid_deflectors
+            from .asteroids import _asteroid_apparent_equatorial_vector
 
-            body_id = ASTEROID_NAIF[canonical_name]
-            xyz = _apparent_geocentric_equatorial_vector(
-                body_id,
+            xyz = _asteroid_apparent_equatorial_vector(
+                canonical_name,
                 jd_tt,
                 reader,
-                barycentric_fn=lambda body_, jd_tt_, reader_: reader_.position(0, body_, jd_tt_),
-                deflectors=(_asteroid_deflectors(jd_tt, reader, earth_ssb) if grav_deflection else []),
                 earth_ssb=earth_ssb,
                 earth_vel=earth_vel,
                 rot_mat=rot_mat,
                 aberration=aberration,
+                grav_deflection=grav_deflection,
             )
         else:
             from .comets import COMET_NAIF, SmallBodyKernel, _sun_barycentric
@@ -3090,7 +3473,8 @@ def all_planets_at(
             in both the asteroid and comet catalogs.
 
     Side effects:
-        None beyond reading from the active kernel context.
+        The admitted native bulk route may cache one stateless evaluator on the
+        reader's kernel handle. Python fallback workspaces remain call-local.
     """
     if center not in ('geocentric', 'barycentric'):
         raise ValueError(f"center must be 'geocentric' or 'barycentric', got {center!r}")
@@ -3148,6 +3532,10 @@ def all_planets_at(
         apparent=apparent,
         nutation=nutation,
     )
+    workspace = _PlanetReductionWorkspace(
+        context=context,
+        rate_contexts=rate_contexts,
+    )
     results: dict[str, PlanetData] = {}
     for body in bodies:
         if small_body_resolutions[body] is not None:
@@ -3170,18 +3558,27 @@ def all_planets_at(
             assert isinstance(small_body_result, PlanetData)
             results[body] = small_body_result
             continue
-        results[body] = _planet_at_core(  # type: ignore[assignment]
-            body, jd_ut, reader=reader, obliquity=None,
-            apparent=apparent, aberration=aberration,
-            grav_deflection=grav_deflection, nutation=nutation,
-            center=center, frame='ecliptic',
-            observer_lat=observer_lat, observer_lon=observer_lon,
-            observer_elev_m=observer_elev_m, lst_deg=lst_deg,
+        result = _planet_at_impl(
+            body,
+            jd_ut,
+            reader=reader,
+            obliquity=None,
+            apparent=apparent,
+            aberration=aberration,
+            grav_deflection=grav_deflection,
+            nutation=nutation,
+            center=center,
+            frame='ecliptic',
+            observer_lat=observer_lat,
+            observer_lon=observer_lon,
+            observer_elev_m=observer_elev_m,
+            lst_deg=lst_deg,
             jd_tt=jd_tt,
-            _dpsi_deg=context.dpsi_deg, _deps_deg=context.deps_deg, _rot_mat=context.rot_mat,
-            _vector_cache=context.vector_cache, _context=context,
-            _rate_contexts=rate_contexts,
+            delta_t_policy=delta_t_policy,
+            _workspace=workspace,
         )
+        assert isinstance(result, PlanetData)
+        results[body] = result
     return results
 
 

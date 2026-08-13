@@ -788,17 +788,17 @@ class SpkReader:
     """
     RITE: The Gate to the Planetary Kernel
 
-    THEOREM: SpkReader governs exclusive read access to a JPL binary SPK
+    THEOREM: SpkReader governs read access to a JPL binary SPK
         kernel file, serving raw barycentric state vectors to all computation
         pillars.
 
     RITE OF PURPOSE:
         SpkReader is the single authorised gateway between Moira's pure-Python
         astronomy layer and a binary JPL SPK ephemeris file. Without it, no
-        planetary position can be computed. It exists to enforce the invariant
-        that exactly one file handle to the kernel is open at any time, and
-        that all segment-selection logic (including split multi-epoch layouts)
-        is encapsulated in one place rather than scattered across callers.
+        planetary position can be computed. It exists to keep one reader-owned
+        kernel handle for each live SpkReader instance and to ensure that all
+        segment-selection logic (including split multi-epoch layouts) is
+        encapsulated in one place rather than scattered across callers.
 
     LAW OF OPERATION:
         Responsibilities:
@@ -815,14 +815,16 @@ class SpkReader:
               topocentric). That is the responsibility of coordinates.py.
             - Does not convert time systems (TT → UTC, JD → calendar). That
               is the responsibility of julian.py.
-            - Does not cache computed positions. Callers own their own caches.
+            - Its position methods do not cache computed positions. Higher
+              calculation layers may attach namespaced memoization state to a
+              mutable reader; those callers own its lifecycle and concurrency.
             - Does not validate that NAIF body IDs are astronomically
               meaningful.
         Dependencies:
             - The kernel file at the given path must exist before __init__
               is called.
-            - jplephem is only required when the kernel cannot be served by
-              Moira's native planetary reader path.
+            - Moira's sovereign runtime requires its native planetary reader.
+              jplephem is an optional development-time parity oracle only.
         Structural invariants:
             - self._kernel is always a valid open kernel reader object while
               the instance is alive and close() has not been called.
@@ -1194,7 +1196,7 @@ class KernelPool:
     """
     RITE: The Unified Ephemeris Reservoir
 
-    THEOREM: KernelPool governs afallback-ordered chain of ephemeris 
+    THEOREM: KernelPool governs a fallback-ordered chain of ephemeris
         readers, synthesizing multiple discrete kernels into a single 
         coherent astronomical truth-source.
 
@@ -1210,7 +1212,7 @@ class KernelPool:
         Responsibilities:
             - Manage an ordered fallback chain of KernelReaders.
             - Dispatch queries to the first reader covering the epoch.
-            - Ensure atomic resource cleanup for the entire pool.
+            - Attempt resource cleanup for every reader in the pool.
         Non-responsibilities:
             - Does not own the files directly (delegates to managed readers).
             - Does not merge overlapping segment data (first-match-wins).

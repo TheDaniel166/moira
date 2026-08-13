@@ -134,14 +134,20 @@ def test_planet_at_small_body_rejects_unsupported_modes(monkeypatch: pytest.Monk
 def test_all_planets_at_admits_small_bodies_on_unified_surface(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(planets_module, "_native_all_planets_admitted", lambda *args, **kwargs: None)
 
-    class _DummyContext:
-        obliquity = 23.4
-        dpsi_deg = 0.0
-        deps_deg = 0.0
-        rot_mat = None
-        vector_cache = {}
+    def _fake_context(jd_tt, reader, *, apparent, nutation, **kwargs):
+        return planets_module._ApparentContext(
+            jd_tt=jd_tt,
+            reader=reader,
+            apparent=apparent,
+            nutation=nutation,
+            dpsi_deg=0.0,
+            deps_deg=0.0,
+            obliquity=23.4,
+            rot_mat=None,
+            vector_cache={},
+        )
 
-    monkeypatch.setattr(planets_module, "_build_apparent_context", lambda *args, **kwargs: _DummyContext())
+    monkeypatch.setattr(planets_module, "_build_apparent_context", _fake_context)
 
     class _DummyReader:
         pass
@@ -198,6 +204,7 @@ def test_all_planets_at_admits_small_bodies_on_unified_surface(monkeypatch: pyte
             "comet:Halley",
         ],
         reader=_DummyReader(),
+        aberration=False,
     )
 
     assert list(result) == [
@@ -342,7 +349,6 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
 
     dummy_native = type("DummyNative", (), {"NativePlanetaryEvaluator": _DummyEvaluator})()
     monkeypatch.setattr(planets_module, "_moira_native", dummy_native)
-    monkeypatch.setattr(planets_module, "_npe_all_planets_mode_is_admitted", lambda **kwargs: True)
     monkeypatch.setattr(planets_module, "_npe_public_route_segment_specs", lambda reader, jd_tt: [(1, 2, 3)])
     monkeypatch.setattr(
         planets_module,
@@ -361,17 +367,15 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
     )
 
     class _DummyHandle:
-        pass
+        def batch_segment_position_and_velocity(self, specs, jd_tt):
+            raise AssertionError("native evaluator path must not use batch fallback")
 
     class _DummyKernel:
         def __init__(self):
             self._handle = _DummyHandle()
 
-    class _DummyReader:
-        def __init__(self):
-            self._kernel = _DummyKernel()
-
-    reader = _DummyReader()
+    reader = object.__new__(planets_module.SpkReader)
+    reader._kernel = _DummyKernel()
     result = planets_module._native_all_planets_admitted(
         _JD_J2000,
         [Body.SUN, Body.MARS],
@@ -400,14 +404,20 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
 def test_all_planets_at_falls_back_to_python_route_when_native_helper_declines(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(planets_module, "_native_all_planets_admitted", lambda *args, **kwargs: None)
 
-    class _DummyContext:
-        obliquity = 23.4
-        dpsi_deg = 0.0
-        deps_deg = 0.0
-        rot_mat = None
-        vector_cache = {}
+    def _fake_context(jd_tt, reader, *, apparent, nutation, **kwargs):
+        return planets_module._ApparentContext(
+            jd_tt=jd_tt,
+            reader=reader,
+            apparent=apparent,
+            nutation=nutation,
+            dpsi_deg=0.0,
+            deps_deg=0.0,
+            obliquity=23.4,
+            rot_mat=None,
+            vector_cache={},
+        )
 
-    monkeypatch.setattr(planets_module, "_build_apparent_context", lambda *args, **kwargs: _DummyContext())
+    monkeypatch.setattr(planets_module, "_build_apparent_context", _fake_context)
 
     calls: list[str] = []
 
