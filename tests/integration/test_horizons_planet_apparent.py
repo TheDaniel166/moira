@@ -4,44 +4,44 @@ import math
 
 import pytest
 
-from moira.constants import Body
-from moira.coordinates import ecliptic_to_equatorial
+from moira._ephemeris_time import _ut1_to_ephemeris_tt
+from moira.constants import Body, NAIF_ROUTES
+from moira.coordinates import icrf_to_equatorial
 from moira.julian import julian_day
-from moira.obliquity import true_obliquity
-from moira.planets import planet_at
-from tools.horizons import observer_apparent_position
+from moira.planets import CartesianPosition, planet_at
+from tools.horizons import observer_apparent_position_tt
 
 
 AU_KM = 149_597_870.700
-ANGULAR_THRESHOLD_ARCSEC = 0.75
-DISTANCE_THRESHOLD_KM = 1750.0
+ANGULAR_THRESHOLD_ARCSEC = 0.35
+DISTANCE_THRESHOLD_KM = 0.1
 
-BODIES: list[tuple[str, str]] = [
-    (Body.SUN, "10"),
-    (Body.MOON, "301"),
-    (Body.MERCURY, "199"),
-    (Body.VENUS, "299"),
-    (Body.MARS, "499"),
-    (Body.JUPITER, "599"),
-    (Body.SATURN, "699"),
-    (Body.URANUS, "799"),
-    (Body.NEPTUNE, "899"),
-    (Body.PLUTO, "999"),
+HORIZONS_TARGETS: list[tuple[str, str, str]] = [
+    (Body.SUN, "10", "Sun center"),
+    (Body.MOON, "301", "Moon center"),
+    (Body.MERCURY, "199", "Mercury center"),
+    (Body.VENUS, "299", "Venus center"),
+    (Body.MARS, "4", "Mars system barycenter"),
+    (Body.JUPITER, "5", "Jupiter system barycenter"),
+    (Body.SATURN, "6", "Saturn system barycenter"),
+    (Body.URANUS, "7", "Uranus system barycenter"),
+    (Body.NEPTUNE, "8", "Neptune system barycenter"),
+    (Body.PLUTO, "9", "Pluto system barycenter"),
 ]
 
-EPOCHS: list[tuple[str, str, str, float]] = [
-    ("1900-01-01", "1900-Jan-01 12:00", "1900-Jan-01 13:00", julian_day(1900, 1, 1, 12)),
-    ("1918-11-11", "1918-Nov-11 11:00", "1918-Nov-11 12:00", julian_day(1918, 11, 11, 11)),
-    ("1933-03-15", "1933-Mar-15 12:00", "1933-Mar-15 13:00", julian_day(1933, 3, 15, 12)),
-    ("1950-06-15", "1950-Jun-15 12:00", "1950-Jun-15 13:00", julian_day(1950, 6, 15, 12)),
-    ("1969-07-20", "1969-Jul-20 20:00", "1969-Jul-20 21:00", julian_day(1969, 7, 20, 20)),
-    ("1987-09-23", "1987-Sep-23 00:00", "1987-Sep-23 01:00", julian_day(1987, 9, 23, 0)),
-    ("2000-01-01", "2000-Jan-01 12:00", "2000-Jan-01 13:00", julian_day(2000, 1, 1, 12)),
-    ("2010-07-01", "2010-Jul-01 12:00", "2010-Jul-01 13:00", julian_day(2010, 7, 1, 12)),
-    ("2017-08-21", "2017-Aug-21 18:00", "2017-Aug-21 19:00", julian_day(2017, 8, 21, 18)),
-    ("2020-01-01", "2020-Jan-01 12:00", "2020-Jan-01 13:00", julian_day(2020, 1, 1, 12)),
-    ("2024-04-08", "2024-Apr-08 18:00", "2024-Apr-08 19:00", julian_day(2024, 4, 8, 18)),
-    ("2025-09-01", "2025-Sep-01 12:00", "2025-Sep-01 13:00", julian_day(2025, 9, 1, 12)),
+EPOCHS: list[tuple[str, float]] = [
+    ("1900-01-01", julian_day(1900, 1, 1, 12)),
+    ("1918-11-11", julian_day(1918, 11, 11, 11)),
+    ("1933-03-15", julian_day(1933, 3, 15, 12)),
+    ("1950-06-15", julian_day(1950, 6, 15, 12)),
+    ("1969-07-20", julian_day(1969, 7, 20, 20)),
+    ("1987-09-23", julian_day(1987, 9, 23, 0)),
+    ("2000-01-01", julian_day(2000, 1, 1, 12)),
+    ("2010-07-01", julian_day(2010, 7, 1, 12)),
+    ("2017-08-21", julian_day(2017, 8, 21, 18)),
+    ("2020-01-01", julian_day(2020, 1, 1, 12)),
+    ("2024-04-08", julian_day(2024, 4, 8, 18)),
+    ("2025-09-01", julian_day(2025, 9, 1, 12)),
 ]
 
 
@@ -56,34 +56,55 @@ def _angular_sep_arcsec(ra1: float, dec1: float, ra2: float, dec2: float) -> flo
     return math.degrees(math.acos(cos_sep)) * 3600.0
 
 
+def test_horizons_targets_match_moira_route_identities() -> None:
+    """Keep every external oracle target identical to Moira's final SPK target."""
+    assert [body for body, _command, _identity in HORIZONS_TARGETS] == list(
+        Body.ALL_PLANETS
+    )
+    for body, command, identity in HORIZONS_TARGETS:
+        assert int(command) == NAIF_ROUTES[body][-1][1], (
+            f"{body}: Horizons target {command} ({identity}) does not match "
+            f"Moira's final SPK target {NAIF_ROUTES[body][-1][1]}"
+        )
+
+
 @pytest.mark.integration
 @pytest.mark.external_network
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    ("body", "command"),
-    BODIES,
-    ids=[body for body, _ in BODIES],
+    ("body", "command", "target_identity"),
+    HORIZONS_TARGETS,
+    ids=[body for body, _command, _identity in HORIZONS_TARGETS],
 )
 @pytest.mark.parametrize(
-    ("label", "start_utc", "stop_utc", "jd_ut"),
+    ("label", "jd_ut"),
     EPOCHS,
-    ids=[label for label, *_ in EPOCHS],
+    ids=[label for label, _jd_ut in EPOCHS],
 )
 def test_planet_at_apparent_positions_match_horizons(
     body: str,
     command: str,
+    target_identity: str,
     label: str,
-    start_utc: str,
-    stop_utc: str,
     jd_ut: float,
+    reader,
 ) -> None:
-    moira = planet_at(body, jd_ut)
-    eps = true_obliquity(jd_ut)
-    moira_ra, moira_dec = ecliptic_to_equatorial(moira.longitude, moira.latitude, eps)
-    moira_dist_au = moira.distance / AU_KM
+    """Compare the same target at the same TT epoch in each system.
 
-    ref = observer_apparent_position(command, start_utc, stop_utc)
+    The remaining angular envelope is a declared frame-model comparison:
+    Moira uses IAU 2006/2000A true-of-date while Horizons observer quantity 2
+    uses its EOP-corrected IAU 1976/1980 true equator and equinox of date.
+    """
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
+    moira = planet_at(body, jd_ut, reader=reader, frame="cartesian")
+    assert isinstance(moira, CartesianPosition)
+    moira_ra, moira_dec, moira_distance_km = icrf_to_equatorial(
+        (moira.x, moira.y, moira.z)
+    )
+    moira_dist_au = moira_distance_km / AU_KM
+
+    ref = observer_apparent_position_tt(command, jd_tt)
 
     angular_error_arcsec = _angular_sep_arcsec(
         moira_ra % 360.0,
@@ -94,10 +115,12 @@ def test_planet_at_apparent_positions_match_horizons(
     distance_error_km = abs(moira_dist_au - ref.distance_au) * AU_KM
 
     assert angular_error_arcsec <= ANGULAR_THRESHOLD_ARCSEC, (
-        f"{body} {label}: apparent angular error {angular_error_arcsec:.6f} arcsec "
+        f"{body} ({target_identity}) {label}: apparent angular error "
+        f"{angular_error_arcsec:.6f} arcsec "
         f"exceeds {ANGULAR_THRESHOLD_ARCSEC:.3f}"
     )
     assert distance_error_km <= DISTANCE_THRESHOLD_KM, (
-        f"{body} {label}: apparent distance error {distance_error_km:.6f} km "
+        f"{body} ({target_identity}) {label}: apparent distance error "
+        f"{distance_error_km:.6f} km "
         f"exceeds {DISTANCE_THRESHOLD_KM:.3f}"
     )

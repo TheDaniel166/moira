@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 import time
 import urllib.parse
 import urllib.request
@@ -193,7 +192,43 @@ def observer_apparent_position(command: str, start_utc: str, stop_utc: str) -> O
         "ANG_FORMAT": "DEG",
         "EXTRA_PREC": "YES",
     }
-    text = _request_text(params)
+    return _parse_observer_apparent_position(
+        command,
+        _request_text(params),
+    )
+
+
+@lru_cache(maxsize=256)
+def observer_apparent_position_tt(
+    command: str,
+    jd_tt: float,
+) -> ObserverApparentPosition:
+    """Fetch one apparent geocentric position at an exact TT Julian Day."""
+    params = {
+        "format": "json",
+        "COMMAND": f"'{command}'",
+        "EPHEM_TYPE": "OBSERVER",
+        "CENTER": "'500@399'",
+        "TLIST": f"'{jd_tt:.12f}'",
+        "TLIST_TYPE": "'JD'",
+        "TIME_TYPE": "'TT'",
+        "QUANTITIES": "'2,20'",
+        "MAKE_EPHEM": "YES",
+        "OBJ_DATA": "NO",
+        "ANG_FORMAT": "DEG",
+        "EXTRA_PREC": "YES",
+    }
+    return _parse_observer_apparent_position(
+        command,
+        _request_text(params),
+    )
+
+
+def _parse_observer_apparent_position(
+    command: str,
+    text: str,
+) -> ObserverApparentPosition:
+    """Parse one Horizons quantity 2/20 observer response."""
 
     try:
         import json
@@ -244,7 +279,39 @@ def vector_state(command: str, jd_ut: float, center: str = "500@399") -> VectorS
         "REF_SYSTEM": "ICRF",
         "REF_PLANE": "FRAME",
     }
-    text = _request_text(params)
+    return _parse_vector_state(command, _request_text(params))
+
+
+@lru_cache(maxsize=256)
+def vector_state_tdb(
+    command: str,
+    jd_tdb: float,
+    center: str = "500@399",
+) -> VectorState:
+    """Fetch one geometric ICRF vector at an exact TDB Julian Day."""
+    params = {
+        "format": "text",
+        "COMMAND": f"'{command}'",
+        "OBJ_DATA": "NO",
+        "MAKE_EPHEM": "YES",
+        "EPHEM_TYPE": "VECTORS",
+        "CENTER": f"'{center}'",
+        "TLIST": f"'{jd_tdb:.12f}'",
+        "TLIST_TYPE": "'JD'",
+        "TIME_TYPE": "'TDB'",
+        "OUT_UNITS": "KM-S",
+        "VEC_TABLE": "2",
+        "VEC_LABELS": "NO",
+        "CSV_FORMAT": "YES",
+        "REF_SYSTEM": "ICRF",
+        "REF_PLANE": "FRAME",
+        "VEC_CORR": "NONE",
+    }
+    return _parse_vector_state(command, _request_text(params))
+
+
+def _parse_vector_state(command: str, text: str) -> VectorState:
+    """Parse one Horizons VECTORS table-2 response."""
 
     in_data = False
     for line in text.splitlines():
