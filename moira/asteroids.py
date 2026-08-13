@@ -81,6 +81,7 @@ from .coordinates import Vec3, vec_sub, icrf_to_ecliptic
 from .obliquity import true_obliquity, mean_obliquity
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import (
+    _apparent_geocentric_equatorial_vector,
     _apparent_geocentric_ecliptic,
     _compose_rotation_matrix,
     _earth_barycentric_state,
@@ -656,6 +657,34 @@ def load_asteroid_kernel(path: str | Path | None = None) -> None:
 # Core position computation
 # ---------------------------------------------------------------------------
 
+def _resolve_asteroid_name_and_naif(
+    name_or_naif: str | int,
+) -> tuple[str, int]:
+    """Return one canonical display name and NAIF identity for a minor body."""
+    if isinstance(name_or_naif, str):
+        key = name_or_naif.strip()
+        if key in ASTEROID_NAIF:
+            return key, ASTEROID_NAIF[key]
+        lower = key.lower()
+        match = next(
+            (
+                (name, naif_id)
+                for name, naif_id in ASTEROID_NAIF.items()
+                if name.lower() == lower
+            ),
+            None,
+        )
+        if match is None:
+            raise KeyError(
+                f"Asteroid {name_or_naif!r} not in ASTEROID_NAIF. "
+                "Pass an integer NAIF ID directly, or use list_asteroids()."
+            )
+        return key, match[1]
+
+    naif_id = int(name_or_naif)
+    return _NAIF_TO_NAME.get(naif_id, f"NAIF-{naif_id}"), naif_id
+
+
 def _asteroid_deflectors(
     jd_tt: float,
     reader,
@@ -670,6 +699,40 @@ def _asteroid_deflectors(
         (jupiter_geo, SCHWARZSCHILD_RADII["Jupiter"]),
         (saturn_geo, SCHWARZSCHILD_RADII["Saturn"]),
     ]
+
+
+def _asteroid_apparent_equatorial_vector(
+    name_or_naif: str | int,
+    jd_tt: float,
+    reader: KernelReader,
+    *,
+    earth_ssb: Vec3,
+    earth_vel: Vec3,
+    rot_mat,
+    aberration: bool = True,
+    grav_deflection: bool = True,
+) -> Vec3:
+    """Assemble one asteroid through Moira's shared apparent-vector pipeline."""
+    _name, naif_id = _resolve_asteroid_name_and_naif(name_or_naif)
+    return _apparent_geocentric_equatorial_vector(
+        naif_id,
+        jd_tt,
+        reader,
+        barycentric_fn=lambda body, epoch, active_reader: active_reader.position(
+            0,
+            body,
+            epoch,
+        ),
+        deflectors=(
+            _asteroid_deflectors(jd_tt, reader, earth_ssb)
+            if grav_deflection
+            else []
+        ),
+        earth_ssb=earth_ssb,
+        earth_vel=earth_vel,
+        rot_mat=rot_mat,
+        aberration=aberration,
+    )
 
 
 def _asteroid_at_with_flags(
@@ -708,24 +771,7 @@ def _asteroid_at_with_flags(
 
     jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
-    # Resolve name → NAIF ID (mirrors asteroid_at resolution)
-    if isinstance(name_or_naif, str):
-        key = name_or_naif.strip()
-        if key not in ASTEROID_NAIF:
-            lower = key.lower()
-            match = next((v for k, v in ASTEROID_NAIF.items() if k.lower() == lower), None)
-            if match is None:
-                raise KeyError(
-                    f"Asteroid {name_or_naif!r} not in ASTEROID_NAIF. "
-                    "Pass an integer NAIF ID directly, or use list_asteroids()."
-                )
-            naif_id = match
-        else:
-            naif_id = ASTEROID_NAIF[key]
-        name = key
-    else:
-        naif_id = int(name_or_naif)
-        name = _NAIF_TO_NAME.get(naif_id, f"NAIF-{naif_id}")
+    name, naif_id = _resolve_asteroid_name_and_naif(name_or_naif)
 
     def _bary_fn(b, t, r):
         return r.position(0, b, t)
@@ -831,57 +877,34 @@ def asteroid_at(
 
     jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
 
-    # Resolve name → NAIF ID
-    if isinstance(name_or_naif, str):
-        key = name_or_naif.strip()
-        if key not in ASTEROID_NAIF:
-            lower = key.lower()
-            match = next((v for k, v in ASTEROID_NAIF.items() if k.lower() == lower), None)
-            if match is None:
-                raise KeyError(
-                    f"Asteroid {name_or_naif!r} not in ASTEROID_NAIF. "
-                    "Pass an integer NAIF ID directly, or use list_asteroids()."
-                )
-            naif_id = match
-        else:
-            naif_id = ASTEROID_NAIF[key]
-        name = key
-    else:
-        naif_id = int(name_or_naif)
-        name    = _NAIF_TO_NAME.get(naif_id, f"NAIF-{naif_id}")
+    name, naif_id = _resolve_asteroid_name_and_naif(name_or_naif)
 
     obliquity            = true_obliquity(jd_tt)
     earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
     rot_mat              = _compose_rotation_matrix(jd_tt)
-    deflectors           = _asteroid_deflectors(jd_tt, reader, earth_ssb)
-
-    def _bary_fn(b, t, r):
-        return r.position(0, b, t)
-
-    lon0, lat0, dist0 = _apparent_geocentric_ecliptic(
-        naif_id, jd_tt, reader,
-        barycentric_fn=_bary_fn,
-        deflectors=deflectors,
+    xyz = _asteroid_apparent_equatorial_vector(
+        naif_id,
+        jd_tt,
+        reader,
         earth_ssb=earth_ssb,
         earth_vel=earth_vel,
-        obliquity=obliquity,
         rot_mat=rot_mat,
     )
+    lon0, lat0, dist0 = icrf_to_ecliptic(xyz, obliquity)
 
     # Speed via central finite difference; obliquity is fixed at jd_tt.
     def _lon_at(jd: float) -> float:
         ssb, vel = _earth_barycentric_state(jd, reader)
         rm = _compose_rotation_matrix(jd)
-        dfl = _asteroid_deflectors(jd, reader, ssb)
-        lon, _, _ = _apparent_geocentric_ecliptic(
-            naif_id, jd, reader,
-            barycentric_fn=_bary_fn,
-            deflectors=dfl,
+        sample_xyz = _asteroid_apparent_equatorial_vector(
+            naif_id,
+            jd,
+            reader,
             earth_ssb=ssb,
             earth_vel=vel,
-            obliquity=obliquity,
             rot_mat=rm,
         )
+        lon, _, _ = icrf_to_ecliptic(sample_xyz, obliquity)
         return lon
 
     lon_m = _lon_at(jd_tt - _SPEED_STEP)
