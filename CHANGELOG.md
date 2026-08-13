@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.1.1] - 2026-08-13
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.1.1.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.1.1.md`.
+
+### Added
+- Bound the packaged asteroid identity registry and wheel manifest to
+  immutable catalog `2026.08.12.1`: 10,025 canonical names across 401
+  Type-13 shards. The 51-body expansion fills rebuilt shard 398 and adds
+  shards 399 and 400 while reusing shards 000-397 byte-for-byte.
+
+### Changed
+- `ASTEROID_NAIF` now admits the expanded catalog, including
+  `(594913) 'Aylo'chaxnim` (NAIF `2594913`) and
+  `(514107) Ka\`epaoka\`awela` (NAIF `2514107`).
+
+### Validation
+- Identity, builder, and packaged-manifest receipts now pin the
+  `2026.08.12.1` manifest SHA-256
+  `c151348a9edd3620716da8849ceb239d0ab39688ead948ffecb592c13e068c64`.
+
 ## [6.1.0] - 2026-07-28
 
 Detailed release and migration guidance is available in
