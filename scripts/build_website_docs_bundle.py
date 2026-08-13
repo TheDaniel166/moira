@@ -44,7 +44,7 @@ VALIDATION_METADATA: dict[str, dict[str, Any]] = {
     "astronomy": {
         "status": "partial",
         "oracles": ["IAU SOFA/ERFA", "JPL Horizons", "NASA/GSFC", "USNO", "IOTA"],
-        "scope": "Mixed astronomy validation report; each section owns its corpus, semantics, and tolerance.",
+        "scope": "Product-specific astronomy evidence; every result owns its authority or evidence class, corpus, target identity, frame, time scale, correction regime, tolerance, and exclusions.",
     },
     "astrology": {
         "status": "partial",

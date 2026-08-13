@@ -4798,13 +4798,13 @@
       "route": "/validation/astronomy",
       "output": "client/src/validation-reports/astronomy.md",
       "source": "wiki/03_validation/VALIDATION_ASTRONOMY.md",
-      "title": "Validation Report — Astronomy",
+      "title": "Astronomy Validation — Methods, Results, and Limits",
       "nav_label": "Astronomy Report",
-      "description": "External-reference evidence for Moira's IAU, JPL, time-scale, eclipse, occultation, and observational astronomy surfaces, including target/time/frame-matched planetary contracts and explicit qualifications.",
+      "description": "Product-specific astronomy validation against ERFA, JPL Horizons, NASA/GSFC, IOTA, USNO, and named visibility sources, with exact methods, results, evidence classes, and non-claims.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "92af1adc47db46881a32792a7db299e3b06595b257c66d7eee4bcfbae609d910",
-      "source_bytes": 62151,
+      "source_sha256": "bd1ca5497049d840cb5250c70af07b7c183da865931f5ce147af21e014e183ff",
+      "source_bytes": 29538,
       "last_verified": "2026-08-13",
       "prerender": true,
       "markdown": true,
@@ -4818,11 +4818,11 @@
           "USNO",
           "IOTA"
         ],
-        "scope": "Mixed astronomy validation report; each section owns its corpus, semantics, and tolerance.",
+        "scope": "Product-specific astronomy evidence; every result owns its authority or evidence class, corpus, target identity, frame, time scale, correction regime, tolerance, and exclusions.",
         "evidence_paths": [
           "wiki/03_validation/VALIDATION_ASTRONOMY.md"
         ],
-        "document_version": "1.5",
+        "document_version": "2.0",
         "receipt_date": "2026-08-13"
       }
     },
@@ -5349,5 +5349,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "b0e8f314532032a6bf098d9b70754623944f725ca6b411d96d0d705d8ce7e073"
+  "manifest_sha256": "cccb3ad8756f04e8f3b6ef8a692a6722df6db8aea4c34cf4fa9b24270815519a"
 }

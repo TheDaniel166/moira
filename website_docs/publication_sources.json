@@ -177,9 +177,9 @@
       "route": "/validation/astronomy",
       "output": "client/src/validation-reports/astronomy.md",
       "source": "wiki/03_validation/VALIDATION_ASTRONOMY.md",
-      "title": "Validation Report — Astronomy",
+      "title": "Astronomy Validation — Methods, Results, and Limits",
       "nav_label": "Astronomy Report",
-      "description": "External-reference evidence for Moira's IAU, JPL, time-scale, eclipse, occultation, and observational astronomy surfaces, including target/time/frame-matched planetary contracts and explicit qualifications.",
+      "description": "Product-specific astronomy validation against ERFA, JPL Horizons, NASA/GSFC, IOTA, USNO, and named visibility sources, with exact methods, results, evidence classes, and non-claims.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle"
     },

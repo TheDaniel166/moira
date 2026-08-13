@@ -25,15 +25,15 @@ Fixture
 
 Thresholds
 ----------
-  Asteroids route through the same apparent-place pipeline as planets
-  (light-time → deflection → aberration → frame-bias → rotation).
-  Thresholds mirror the planetary standard (0.75 arcsec) wherever
-  kernel accuracy allows it, with explicit exceptions only for bodies
-  whose orbital solutions are demonstrably kernel-accuracy limited.
+  Asteroids route through the same apparent-place stages used by the
+  planetary reducer (light-time → deflection → aberration → frame-bias →
+  rotation), but this fixture owns a separate small-body acceptance policy.
+  Its default 0.5-arcsecond gate must not be described as the current
+  0.35-arcsecond major-body apparent-position threshold.
 
-  0.5 arcseconds  — default for observer-referenced bodies.
-                    Matches the accuracy of the shared planetary pipeline;
-                    all main-belt asteroids and centaurs are sub-0.20".
+  0.5 arcseconds  — default for observer-referenced bodies under this
+                    asteroid fixture's policy. The current fixture assigns
+                    this default to 57 of its 61 bodies.
 
   1.5 arcseconds  — Varuna, Quaoar.
                     Mid-range TNOs in the manifest-backed Type-13 catalog;
@@ -47,7 +47,7 @@ Thresholds
                     accuracy floor, not a pipeline deficiency.
 
   New bodies added to the fixture without a named exception default to
-  0.5 arcseconds — the same demand applied to planets.
+  0.5 arcseconds under this asteroid product's policy.
 
 Markers
 -------
@@ -65,7 +65,7 @@ from moira.asteroids import asteroid_at
 
 _FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "horizons_asteroid_reference.json"
 
-# Default: same demand as planets — the shared pipeline should hold here.
+# Default owned by the asteroid fixture; do not borrow the planetary gate.
 _THRESHOLD_DEFAULT_ARCSEC = 0.5
 
 # Explicit per-body exceptions, each annotated with the reason.
@@ -119,8 +119,8 @@ def test_asteroid_at_matches_horizons_ecliptic(
     _BODY_THRESHOLD_ARCSEC (default 0.5").
 
     The threshold is kernel-accuracy limited only for four distant TNOs
-    (Orcus, Ixion, Varuna, Quaoar).  All other bodies — 55 of them — are
-    held to 0.5", matching the planetary pipeline standard.
+    (Orcus, Ixion, Varuna, Quaoar).  All other bodies — 57 of them — are
+    held to this fixture's 0.5" default.
     """
     body      = case["body"]
     jd_ut     = case["jd_ut"]
