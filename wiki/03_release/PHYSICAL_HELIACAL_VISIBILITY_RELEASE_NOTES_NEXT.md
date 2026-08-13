@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility - Next-Release Notes
 
-Status: Phase 7 engine release candidate; no version, tag, package publication,
-or deployment is assigned by this document.
+Status: superseded by `wiki/03_release/RELEASE_NOTES_6.2.0.md`. Phase 7 is
+included in Moira 6.2.0.
 
 ## Outcome
 

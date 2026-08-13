@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.0] - 2026-08-13
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.2.0.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md`.
+
 ### Added
 
+- Inherited the published 6.1.1 asteroid identity catalog `2026.08.12.1`
+  (10,025 names, 401 shards) as the admitted small-body registry.
 - Added exact canonical transits to provenance-bound composite and Davison
   targets, including deterministic derived-chart identity receipts.
 - Added fixed-star astrocartography with source-resolved identity, true-of-date
@@ -22,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   separately distributed CC BY-SA 4.0 physical-visibility data pack `1.2.0`.
 - Added generated physical-visibility capability and API inventories with
   named evidence classes and byte-level drift fingerprints.
+- Added a Lilly 1647 Horary evidence profile and a neutral Mundane event-chart
+  profile as calculation-only public surfaces. Neither emits answers, scores,
+  or advice.
 
 ### Changed
 
@@ -71,6 +82,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   clean-install, native-import, exact-pack-load, and active offline socket-guard
   release gates. The external numerical payload remains absent from both Python
   distributions.
+
+## [6.1.1] - 2026-08-13
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.1.1.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.1.1.md`.
+
+Identity-only patch. Binds the packaged asteroid registry to catalog
+`2026.08.12.1` (10,025 names / 401 shards). No planetary, visibility, or
+Western-track work.
 
 ## [6.1.0] - 2026-07-28
 

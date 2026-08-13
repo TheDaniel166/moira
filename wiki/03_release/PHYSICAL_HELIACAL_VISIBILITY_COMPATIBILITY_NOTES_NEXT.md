@@ -1,7 +1,7 @@
 # Physical Heliacal Visibility - Next-Release Compatibility Notes
 
-Status: Phase 7 compatibility boundary prepared; no release version is assigned
-and no package or deployment is performed by this document.
+Status: superseded by `wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md`. Phase 7
+compatibility is included in Moira 6.2.0.
 
 ## Existing callers
 

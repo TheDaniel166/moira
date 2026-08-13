@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.1.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.2.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -305,6 +305,42 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.2.0",
+      "date": "2026-08-13",
+      "title": "Admitted Capability Baseline",
+      "added": [
+        "Track A relationship and locational forecasting contracts, Track B Horary and Mundane evidence profiles, and the opt-in physical visibility Phase 7 family.",
+        "The published 6.1.1 asteroid identity catalog 2026.08.12.1 remains the admitted 10,025-name registry."
+      ],
+      "changed": [
+        "Planetary reduction isolates reader, TT, mode, and thread cache ownership and keeps the five underscored workspace hooks only for this deprecation cycle.",
+        "Physical visibility stays opt-in; legacy visibility and heliacal defaults are unchanged. Jones/Paranal moonlight stays quarantined."
+      ],
+      "fixed": [
+        "Major-planet Horizons comparators now use the exact DE441 targets and matching epochs; the retired kilometer-scale residuals were comparator errors."
+      ],
+      "validation": [
+        "Track A and Track B public-contract gates, planetary reduction invariants, asteroid identity receipts, and the Phase 7 physical-visibility evidence registry cover the admitted surfaces."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.2.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.2.0.md"
+    },
+    {
+      "version": "6.1.1",
+      "date": "2026-08-13",
+      "title": "10,025-Body Asteroid Identity Catalog",
+      "added": [
+        "The packaged asteroid identity registry binds to immutable catalog 2026.08.12.1: 10,025 names across 401 Type-13 shards."
+      ],
+      "changed": [],
+      "fixed": [],
+      "validation": [
+        "Identity, builder, and packaged-manifest receipts pin the 2026.08.12.1 manifest SHA-256."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.1.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.1.1.md"
+    },
     {
       "version": "6.1.0",
       "date": "2026-07-28",
