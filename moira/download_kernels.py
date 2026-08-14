@@ -9,8 +9,10 @@ Usage:
 
 Files are saved to ~/.moira/kernels/.
 
-Kernels that already ship inside the moira wheel (centaurs.bsp,
-minor_bodies.bsp) are skipped — they are always available after install.
+The moira-astro wheel ships the moira-asteroids-wheel small-body catalog
+(25 named bodies). JPL optional kernels listed here do not substitute for
+either Moira small-body catalog, and this tool does not download the
+10,025-body archive.
 """
 
 from __future__ import annotations
@@ -21,6 +23,8 @@ from urllib.request import urlopen
 from pathlib import Path
 
 from ._kernel_paths import find_kernel, user_kernels_dir
+from ._wheel_asteroid_catalog import CATALOG_DIR, CATALOG_ID, CATALOG_VERSION
+from .small_body_catalog_release import CatalogReleaseError, verify_release
 
 # ---------------------------------------------------------------------------
 # Registry of downloadable kernels
@@ -52,14 +56,20 @@ _REGISTRY: list[dict] = [
             "codes_300ast_20100725.bsp"
         ),
         "size_hint": "~59 MB",
-        "description": "300 classical asteroids (rename to asteroids.bsp after download)",
+        "description": (
+            "Generic JPL 300-asteroid kernel. Does not install Chiron and is "
+            "not a substitute for either Moira catalog."
+        ),
         "rename_from": "codes_300ast_20100725.bsp",
     },
     {
         "filename": "sb441-n373s.bsp",
         "url": "https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n373s.bsp",
         "size_hint": "~936 MB",
-        "description": "Small bodies / TNOs (Ixion, Quaoar, Varuna, Orcus, …)",
+        "description": (
+            "Optional JPL small-body kernel. Does not install Chiron and is "
+            "not a substitute for either Moira catalog."
+        ),
     },
 ]
 
@@ -187,7 +197,7 @@ def download_missing(interactive: bool = True) -> None:
 
 
 def list_kernels() -> None:
-    """Print the status of all kernels."""
+    """Print the status of all kernels and the wheel small-body catalog."""
     print(f"Kernel directory: {user_kernels_dir()}\n")
     print(f"{'Filename':<30}  {'Status':<12}  {'Location'}")
     print("-" * 80)
@@ -197,13 +207,15 @@ def list_kernels() -> None:
         loc = str(path) if path.exists() else "(not found)"
         print(f"  {k['filename']:<28}  {status:<12}  {loc}")
 
-    # Also show bundled kernels
-    bundled = ["centaurs.bsp", "minor_bodies.bsp"]
-    for name in bundled:
-        path = find_kernel(name)
-        status = "OK (bundled)" if path.exists() else "MISSING"
-        loc = str(path) if path.exists() else "(not found)"
-        print(f"  {name:<28}  {status:<12}  {loc}")
+    try:
+        verify_release(CATALOG_DIR)
+        status = "OK (wheel)"
+        loc = str(CATALOG_DIR)
+    except (CatalogReleaseError, OSError, ValueError):
+        status = "MISSING"
+        loc = str(CATALOG_DIR) if CATALOG_DIR.is_dir() else "(not found)"
+    label = f"{CATALOG_ID} {CATALOG_VERSION}"
+    print(f"  {label:<28}  {status:<12}  {loc}")
 
 
 # ---------------------------------------------------------------------------
