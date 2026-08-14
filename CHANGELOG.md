@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.1] - 2026-08-14
+
+### Added
+- Wheel catalog `moira-asteroids-wheel` `2026.08.14.1`: 25 named small bodies
+  (classicals, six centaurs including Chiron, named TNOs, Eris/Sedna/Haumea/Makemake)
+  as one Type-13 shard shipped in the `moira-astro` wheel.
+
+### Fixed
+- Clean `pip install` can compute Chiron without `centaurs.bsp`.
+- `moira-download-kernels` no longer lists `centaurs.bsp` and `minor_bodies.bsp`
+  as bundled wheel files.
+
+### Changed
+- Missing-segment errors for known asteroid identities name catalog
+  `2026.08.12.1` and https://moira-astro.com/ephemerides.
+
 ## [6.2.0] - 2026-08-13
 
 Detailed release and migration guidance is available in
