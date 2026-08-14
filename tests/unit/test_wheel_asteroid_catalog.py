@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from importlib.resources import files
 from pathlib import Path
 
 import pytest
@@ -125,3 +126,12 @@ def test_committed_wheel_catalog_verifies() -> None:
     assert verification.shard_count == 1
     assert verification.body_count == 25
     assert (CATALOG_DIR / "asteroid_shard_000.bsp").is_file()
+
+
+def test_package_data_exposes_wheel_catalog_bsp() -> None:
+    root = files("moira") / "kernels" / "asteroids_wheel"
+    assert (root / "asteroid_shard_000.bsp").is_file()
+    assert (root / "SHA256SUMS").is_file()
+    # verify_release requires pathlib.Path, not Traversable
+    verification = verify_release(Path(str(root)))
+    assert verification.catalog_id == CATALOG_ID

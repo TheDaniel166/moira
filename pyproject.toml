@@ -99,6 +99,11 @@ moira = [
     "data/*.csv",
     "data/*.json",
     "kernels/**/*.json",
+    "kernels/asteroids_wheel/*.json",
+    "kernels/asteroids_wheel/*.bsp",
+    "kernels/asteroids_wheel/SHA256SUMS",
+    "kernels/asteroids_wheel/LICENSE",
+    "kernels/asteroids_wheel/NOTICE.md",
 ]
 
 [tool.pytest.ini_options]
