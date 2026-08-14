@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import moira._kernel_paths as kernel_paths
 from moira._wheel_asteroid_catalog import (
     CATALOG_DIR,
     CATALOG_ID,
@@ -135,3 +136,15 @@ def test_package_data_exposes_wheel_catalog_bsp() -> None:
     # verify_release requires pathlib.Path, not Traversable
     verification = verify_release(Path(str(root)))
     assert verification.catalog_id == CATALOG_ID
+
+
+def test_package_search_root_admits_wheel_catalog_and_skips_metadata_only_10025(
+    monkeypatch,
+) -> None:
+    package_kernels = Path(__file__).resolve().parents[2] / "moira" / "kernels"
+    monkeypatch.setattr(kernel_paths, "kernel_search_dirs", lambda: (package_kernels,))
+    monkeypatch.delenv(kernel_paths.SOVEREIGN_SMALL_BODY_MANIFEST_ENV, raising=False)
+
+    found = kernel_paths.find_all_small_body_manifests()
+    assert CATALOG_DIR / "manifest.json" in found
+    assert package_kernels / "asteroids" / "manifest.json" not in found
