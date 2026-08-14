@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [6.2.1] - 2026-08-14
 
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.2.1.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.2.1.md`.
+
 ### Added
 - Wheel catalog `moira-asteroids-wheel` `2026.08.14.1`: 25 named small bodies
   (classicals, six centaurs including Chiron, named TNOs, Eris/Sedna/Haumea/Makemake)
