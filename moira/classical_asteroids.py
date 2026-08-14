@@ -20,8 +20,9 @@ Delegates:
 Import-time side effects: None.
 
 External dependency assumptions:
-    - asteroids.bsp (or sb441-n373s.bsp) must be present before any position
-      query is made; FileNotFoundError is raised otherwise.
+    - Positions come from any admitted small-body reader that carries the
+      body's NAIF ID (wheel catalog ``moira-asteroids-wheel`` is sufficient
+      for this named set; the full 10,025-body catalog also covers them).
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -30,8 +31,8 @@ Public surface / exports:
     classical_asteroid_at(), ceres_at(), pallas_at(), juno_at(), vesta_at()
     list_classical_asteroids(), available_classical_asteroids()
 
-Classical Asteroids are calculated using high-precision JPL kernels
-(asteroids.bsp) generated via numerical integration.
+Classical asteroid positions are resolved through ``asteroid_at`` from
+whatever admitted small-body kernel currently provides the NAIF ID.
 """
 
 from __future__ import annotations

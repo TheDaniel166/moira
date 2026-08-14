@@ -94,11 +94,10 @@ _KERNEL_DETAILS: dict[str, dict] = {
     "asteroids.bsp": {
         "title": "Asteroids — 300 classical bodies",
         "detail": (
-            "This kernel covers 300 numbered minor planets from the JPL asteroid catalog. "
-            "It is required by Moira's asteroids module for bodies beyond the four "
-            "classical asteroids (Ceres, Pallas, Juno, Vesta), which are embedded in "
-            "the planetary kernel itself. Approximately 59 MB. Optional unless your "
-            "work involves extended asteroid lists."
+            "Generic JPL 300-asteroid kernel. Does not install Chiron and is not "
+            "a substitute for either Moira catalog (wheel roster or the 10,025-body "
+            "archive). Approximately 59 MB. Optional caller-managed compatibility "
+            "input for explicit small-body workflows."
         ),
         "date_range": "—",
         "size": "~59 MB",
@@ -107,10 +106,10 @@ _KERNEL_DETAILS: dict[str, dict] = {
     "sb441-n373s.bsp": {
         "title": "Small bodies — TNOs and extended Centaurs",
         "detail": (
-            "Covers 373 small bodies including trans-Neptunian objects (Ixion, Quaoar, "
-            "Varuna, Orcus, Sedna, Eris, Makemake, Haumea) and Centaurs not included "
-            "in the bundled centaurs.bsp fleet. This is a large optional file (~936 MB) "
-            "for users who need full minor-body coverage beyond the bundled kernels."
+            "Optional JPL small-body kernel covering 373 bodies (TNOs, Centaurs, "
+            "and other minor planets). Does not install Chiron and is not a "
+            "substitute for either Moira catalog (wheel roster or the 10,025-body "
+            "archive). Approximately 936 MB."
         ),
         "date_range": "—",
         "size": "~936 MB",

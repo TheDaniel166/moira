@@ -309,7 +309,7 @@ Use `Body` constants at application boundaries:
 | `SE_TRUE_NODE` | `Body.TRUE_NODE` |
 | `SE_MEAN_APOG` | `Body.LILITH` |
 | `SE_OSCU_APOG` | `Body.TRUE_LILITH` |
-| `SE_CHIRON` | `Body.CHIRON` (supplemental kernel required) |
+| `SE_CHIRON` | `Body.CHIRON` (included in the wheel catalog) |
 
 `Body.ALL_PLANETS` is the ten-planet set and excludes Earth and the node
 points. `Body.ALL_POINTS` includes the node/Lilith point set. Make the desired

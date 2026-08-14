@@ -21,8 +21,9 @@ Delegates:
 Import-time side effects: None.
 
 External dependency assumptions:
-    - sb441-n373s.bsp must be present before any position query is made;
-      FileNotFoundError is raised otherwise.
+    - Positions come from any admitted small-body reader that carries the
+      body's NAIF ID (wheel catalog ``moira-asteroids-wheel`` is sufficient
+      for this named set; the full 10,025-body catalog also covers them).
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -31,7 +32,8 @@ Public surface / exports:
     tno_at(), ixion_at(), quaoar_at(), varuna_at(), orcus_at()
     list_tnos(), available_tnos()
 
-TNO bodies are calculated using the sb441-n373s.bsp kernel.
+TNO positions are resolved through ``asteroid_at`` from whatever
+admitted small-body kernel currently provides the NAIF ID.
 """
 
 from __future__ import annotations
@@ -52,10 +54,7 @@ TNO_NAMES = {
 }
 
 def tno_at(name_or_naif: str | int, jd_ut: float) -> AsteroidData:
-    """
-    Return the high-precision position of a TNO at jd_ut.
-    Requires sb441-n373s.bsp in the project root or kernels/ directory.
-    """
+    """Return the high-precision position of a TNO at jd_ut."""
     return asteroid_at(name_or_naif, jd_ut)
 
 def ixion_at(jd_ut: float) -> AsteroidData:

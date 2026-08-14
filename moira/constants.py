@@ -227,7 +227,7 @@ class Body:
     MEAN_NODE  = "Mean Node"
     LILITH     = "Lilith"          # Mean Black Moon Lilith
     TRUE_LILITH = "True Lilith"    # True Osculating Lilith
-    CHIRON     = "Chiron"          # requires separate kernel
+    CHIRON     = "Chiron"          # named centaur; wheel catalog or 2026.08.12.1
 
     ALL_PLANETS = [
         SUN, MOON, MERCURY, VENUS, MARS,
