@@ -12,6 +12,7 @@ from moira._wheel_asteroid_catalog import (
     TARGETS_PATH,
     load_targets,
 )
+from moira.small_body_catalog_release import verify_release
 
 LOCKED = [
     (1, "Ceres", 2000001),
@@ -115,3 +116,12 @@ def test_builder_refuses_to_write_when_a_body_fails(tmp_path: Path, monkeypatch)
         builder.build_pre_release(tmp_path)
     assert not (tmp_path / "asteroid_shard_000.bsp").exists()
     assert CATALOG_ID == "moira-asteroids-wheel"
+
+
+def test_committed_wheel_catalog_verifies() -> None:
+    verification = verify_release(CATALOG_DIR)
+    assert verification.catalog_id == CATALOG_ID
+    assert verification.catalog_version == CATALOG_VERSION
+    assert verification.shard_count == 1
+    assert verification.body_count == 25
+    assert (CATALOG_DIR / "asteroid_shard_000.bsp").is_file()

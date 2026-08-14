@@ -1,0 +1,98 @@
+{
+  "manifest_schema": "moira.small-body-catalog/v1",
+  "catalog_id": "moira-asteroids-wheel",
+  "source": "MOIRA WHEEL ASTEROID CATALOG (JPL Horizons)",
+  "provenance": {
+    "artifact_author": "Moira",
+    "artifact_format": "DAF/SPK Type 13",
+    "trajectory_source": "JPL Horizons VECTORS",
+    "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "center": "Sun (500@10)",
+    "reference_plane": "FRAME",
+    "units": "km and km/s",
+    "timescale": "JDTDB"
+  },
+  "coverage": {
+    "start_date": "1600-01-01",
+    "end_date": "2500-01-01",
+    "note": "default DE441 small-body span; see coverage_exceptions"
+  },
+  "coverage_exceptions": [],
+  "sampling": {
+    "step_days": 10,
+    "window_size": 7
+  },
+  "body_count": 25,
+  "shard_count": 1,
+  "shards": [
+    {
+      "index": 0,
+      "path": "asteroid_shard_000.bsp",
+      "body_count": 25,
+      "bodies": [
+        2000001,
+        2000002,
+        2000003,
+        2000004,
+        2000005,
+        2000007,
+        2000010,
+        2000016,
+        2000433,
+        2001181,
+        2001221,
+        2002060,
+        2005145,
+        2007066,
+        2008405,
+        2010199,
+        2010370,
+        2020000,
+        2028978,
+        2050000,
+        2090377,
+        2090482,
+        2136108,
+        2136199,
+        2136472
+      ],
+      "bytes": 46090240,
+      "sha256": "93323e79458487368b4cc55adad5ec954c75d39cebda3c69f6a565459117d822",
+      "metadata": {
+        "path": "asteroid_shard_000.metadata.json",
+        "bytes": 7584,
+        "sha256": "2953a70d907c444b3112462f1756e695bb7408b810c4562b20584d5867142daa"
+      }
+    }
+  ],
+  "catalog_version": "2026.08.14.1",
+  "release": {
+    "released_utc": "2026-08-14T21:27:01Z",
+    "source_manifest_sha256": "e64e1edb0f860833e0c9020d3136e4fa2d21bc4d1997b326550a8d0cc1a467e8",
+    "integrity": {
+      "algorithm": "sha256",
+      "receipt": "SHA256SUMS",
+      "receipt_scope": "manifest, kernels, per-shard metadata, and included support files; the receipt itself is excluded"
+    },
+    "files": [
+      {
+        "path": "LICENSE",
+        "role": "license",
+        "bytes": 1090,
+        "sha256": "9af4c36525226936a5c8899634c2c609ee793828fe5edfb508fa635524e71570"
+      },
+      {
+        "path": "NOTICE.md",
+        "role": "provenance_notice",
+        "bytes": 1124,
+        "sha256": "b6e9c58d723f0d0443263c79159f15d129f5ec05540677cb7376c3f2c4afa10e"
+      },
+      {
+        "path": "targets.json",
+        "role": "catalog_build_evidence",
+        "bytes": 1436,
+        "sha256": "535f75ee470c9a24c9f67a5b2b86e59f6ceb00d17176e0478a16585444bf7a7a"
+      }
+    ]
+  }
+}
