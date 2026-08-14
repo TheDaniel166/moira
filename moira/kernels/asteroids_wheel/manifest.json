@@ -67,7 +67,7 @@
   ],
   "catalog_version": "2026.08.14.1",
   "release": {
-    "released_utc": "2026-08-14T21:27:01Z",
+    "released_utc": "2026-08-14T21:53:17Z",
     "source_manifest_sha256": "e64e1edb0f860833e0c9020d3136e4fa2d21bc4d1997b326550a8d0cc1a467e8",
     "integrity": {
       "algorithm": "sha256",
@@ -93,6 +93,7 @@
         "bytes": 1436,
         "sha256": "535f75ee470c9a24c9f67a5b2b86e59f6ceb00d17176e0478a16585444bf7a7a"
       }
-    ]
+    ],
+    "source_revision": "e3638c8b64ef46b9c3aea21a517e101f6c263a11"
   }
 }
