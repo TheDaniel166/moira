@@ -882,14 +882,22 @@ def asteroid_at(
     obliquity            = true_obliquity(jd_tt)
     earth_ssb, earth_vel = _earth_barycentric_state(jd_tt, reader)
     rot_mat              = _compose_rotation_matrix(jd_tt)
-    xyz = _asteroid_apparent_equatorial_vector(
-        naif_id,
-        jd_tt,
-        reader,
-        earth_ssb=earth_ssb,
-        earth_vel=earth_vel,
-        rot_mat=rot_mat,
-    )
+    from ._wheel_asteroid_catalog import EPHEMERIDES_URL, FULL_CATALOG_VERSION
+
+    try:
+        xyz = _asteroid_apparent_equatorial_vector(
+            naif_id,
+            jd_tt,
+            reader,
+            earth_ssb=earth_ssb,
+            earth_vel=earth_vel,
+            rot_mat=rot_mat,
+        )
+    except KeyError as exc:
+        raise KeyError(
+            f"No loaded small-body kernel has {name} (NAIF {naif_id}). "
+            f"Install asteroid catalog {FULL_CATALOG_VERSION} from {EPHEMERIDES_URL}"
+        ) from exc
     lon0, lat0, dist0 = icrf_to_ecliptic(xyz, obliquity)
 
     # Speed via central finite difference; obliquity is fixed at jd_tt.
