@@ -55,6 +55,8 @@ ui/
 !moira/kernels/sb441_type13/
 !moira/kernels/sb441_type13/*.bsp
 !moira/kernels/sb441_type13/manifest.json
+!moira/kernels/asteroids_wheel/
+!moira/kernels/asteroids_wheel/*.bsp
 
 # Sophia / Persona Akaschic Record (Living Memory)
 anamnesis/

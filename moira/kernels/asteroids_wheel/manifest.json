@@ -60,8 +60,8 @@
       "sha256": "93323e79458487368b4cc55adad5ec954c75d39cebda3c69f6a565459117d822",
       "metadata": {
         "path": "asteroid_shard_000.metadata.json",
-        "bytes": 7584,
-        "sha256": "2953a70d907c444b3112462f1756e695bb7408b810c4562b20584d5867142daa"
+        "bytes": 7269,
+        "sha256": "328ef377f85dd6bd580cda9afc650058d7ac523e097a5a7de02c0da48d7425c1"
       }
     }
   ],
@@ -78,14 +78,14 @@
       {
         "path": "LICENSE",
         "role": "license",
-        "bytes": 1090,
-        "sha256": "9af4c36525226936a5c8899634c2c609ee793828fe5edfb508fa635524e71570"
+        "bytes": 1069,
+        "sha256": "05ffdf01b23096d01fd00bda33d34b85dda365e8119eb8eb054678ada7523c0f"
       },
       {
         "path": "NOTICE.md",
         "role": "provenance_notice",
-        "bytes": 1124,
-        "sha256": "b6e9c58d723f0d0443263c79159f15d129f5ec05540677cb7376c3f2c4afa10e"
+        "bytes": 1101,
+        "sha256": "fe151bbd893e792b120d7b95eddcd73fd6d0b3a53f1a0d364f3f11f7c8e62eb1"
       },
       {
         "path": "targets.json",

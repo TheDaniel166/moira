@@ -13,6 +13,10 @@ moira/data/comet_catalog_naif.metadata.json text eol=lf
 moira/kernels/asteroids/manifest.json text eol=lf
 moira/kernels/comets/manifest.json text eol=lf
 
+# Wheel-bundled asteroid catalog is byte-hashed at import/verify time.
+moira/kernels/asteroids_wheel/* text eol=lf
+moira/kernels/asteroids_wheel/*.bsp -text
+
 # Physical-visibility contracts and closure receipts are byte-hashed. The
 # Phase 2 checkpoint also binds its offline builder and validator by byte.
 moira/data/physical_heliacal_visibility_data_pack_compatibility_v*.json text eol=lf
