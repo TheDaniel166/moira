@@ -136,3 +136,47 @@ def test_mean_lilith_uses_the_same_explicit_equinox_policy(jd_ut: float) -> None
         )
     ) < 1.0e-8
     assert mean_lilith(jd_ut).longitude == true_longitude
+
+
+@pytest.mark.parametrize(
+    "jd_tt",
+    [
+        pytest.param(2314654.0, id="1625"),
+        pytest.param(2450333.25, id="1996"),
+        pytest.param(2451545.0, id="j2000"),
+        pytest.param(2461199.9375, id="2026"),
+    ],
+)
+def test_mean_lilith_mean_equinox_matches_iers_erfa(jd_tt: float) -> None:
+    """Authority validation against ERFA IERS 2003 F + Ω − l + 180°."""
+    jd_ut = tt_to_ut(jd_tt)
+    T = centuries_from_j2000(jd_tt)
+    expected = (
+        math.degrees(erfa.faf03(T) + erfa.faom03(T) - erfa.fal03(T)) + 180.0
+    ) % 360.0
+
+    actual = mean_lilith(jd_ut, nutation=False).longitude
+
+    assert abs(_angular_difference_arcsec(actual, expected)) < 1.0e-5
+
+
+@pytest.mark.parametrize(
+    "jd_ut",
+    [
+        pytest.param(2439528.1944444445, id="1967"),
+        pytest.param(2451545.0, id="j2000"),
+        pytest.param(2461199.9375, id="2026"),
+    ],
+)
+def test_mean_lilith_speed_matches_mean_equinox_polynomial_rate(jd_ut: float) -> None:
+    """The reported speed is the derivative of the governing mean argument."""
+    step_days = 0.01
+    before = mean_lilith(jd_ut - step_days, nutation=False).longitude
+    after = mean_lilith(jd_ut + step_days, nutation=False).longitude
+    finite_difference = (
+        ((after - before + 180.0) % 360.0 - 180.0) / (2.0 * step_days)
+    )
+
+    actual = mean_lilith(jd_ut, nutation=False)
+
+    assert actual.speed == pytest.approx(finite_difference, abs=2.0e-9)
