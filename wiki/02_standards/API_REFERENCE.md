@@ -851,7 +851,7 @@ family-local name rules.
 
 | Function | Returns | Description |
 |---|---|---|
-| `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) lunar node |
+| `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) lunar node; speed is the differentiated true-of-date longitude, not the mean-node rate |
 | `mean_node(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar node; true equinox of date by default, raw mean equinox with `nutation=False` |
 | `mean_lilith(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar apogee (F+Ω−l+180°); true equinox of date by default, raw mean equinox with `nutation=False` |
 
@@ -4881,9 +4881,9 @@ from moira.sky.bodies import (
 | `planetocentric_at(observer_body, target_body, jd_ut)` | `PlanetocentricData` | Geometric target position measured from the center of observer body |
 | `all_planetocentric_at(observer_body, jd_ut)` | `dict[str, PlanetocentricData]` | All targets from observer body |
 | `mean_node(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar ascending node; true equinox of date by default |
-| `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) ascending node |
+| `true_node(jd_ut, reader=None)` | `NodeData` | True (osculating) ascending node; speed is the differentiated true-of-date longitude, not the mean-node rate |
 | `mean_lilith(jd_ut, *, nutation=True)` | `NodeData` | IERS 2003 mean lunar apogee (F+Ω−l+180°); true equinox of date by default, raw mean equinox with `nutation=False` |
-| `true_lilith(jd_ut)` | `NodeData` | True Lilith (osculating apogee) |
+| `true_lilith(jd_ut)` | `NodeData` | True Lilith (osculating apogee); speed is the differentiated true-of-date longitude, not the mean-apogee rate |
 | `next_moon_node_crossing(jd_start, reader=None, ascending=True)` | `float` | Next Moon ecliptic crossing (JD UT) |
 | `nodes_and_apsides_at(jd_ut)` | `NodesAndApsides` | Combined node/apsides vessel (mean/true node, Lilith, perigee, apogee) |
 

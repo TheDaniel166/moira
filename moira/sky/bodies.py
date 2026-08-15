@@ -71,11 +71,13 @@ Lunar nodes and apsides  (moira.nodes)
 mean_node(jd_ut, *, nutation=True)
     NodeData for the mean ascending node in an explicit mean- or
     true-equinox-of-date frame.
-true_node(jd_ut)    NodeData for the true (osculating) ascending node.
+true_node(jd_ut)    NodeData for the true (osculating) ascending node;
+                    speed is dλ/dt of that longitude and can change sign.
 mean_lilith(jd_ut, *, nutation=True)
     NodeData for IERS 2003 mean lunar apogee (F+Ω−l+180°) in an
     explicit mean- or true-equinox-of-date frame.
-true_lilith(jd_ut)  NodeData for true Lilith (osculating apogee).
+true_lilith(jd_ut)  NodeData for true Lilith (osculating apogee);
+                    speed is dλ/dt of that longitude and can change sign.
 
 next_moon_node_crossing(jd_start)
     Next JD_UT at which the Moon crosses the ecliptic.

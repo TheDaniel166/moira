@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   longitudes move by less than 0.2″ versus the previous Meeus
   polynomial. The several-arcminute residual versus Swiss
   `SE_MEAN_APOG` is expected and is not a parity target.
+- `true_node()` and `true_lilith()` `NodeData.speed` is now the circular
+  finite-difference of the DE osculating true-of-date longitude (0.002-day
+  TT step, same span as planetary longitude rates). The previous mean-rate
+  proxies are removed. Speeds may be large or retrograde; that is the
+  geometry. Mean Node / Mean Lilith rates are unchanged.
 
 ## [6.2.1] - 2026-08-14
 
