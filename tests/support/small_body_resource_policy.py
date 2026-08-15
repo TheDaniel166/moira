@@ -993,7 +993,6 @@ def _validate_cross_manifest_capability(
     capabilities: Sequence[SmallBodyManifestCapability],
 ) -> None:
     seen_catalogs: set[tuple[str, str]] = set()
-    seen_bodies: set[int] = set()
     for capability in capabilities:
         identity = (capability.catalog_id, capability.catalog_version)
         if identity in seen_catalogs:
@@ -1001,13 +1000,10 @@ def _validate_cross_manifest_capability(
                 f"duplicate catalog release identity {identity!r}"
             )
         seen_catalogs.add(identity)
-        overlap = seen_bodies.intersection(capability.bodies)
-        if overlap:
-            raise SmallBodyCapabilityMismatch(
-                "body IDs overlap across admitted manifests: "
-                f"{sorted(overlap)[:5]}"
-            )
-        seen_bodies.update(capability.bodies)
+        # Distinct catalog identities may share NAIF IDs. Production admits
+        # the wheel catalog and a full 10,025-body catalog together;
+        # KernelPool first-match wins. Intra-catalog shard overlap is
+        # still rejected when a single manifest is verified.
 
 
 def _failure_admission(

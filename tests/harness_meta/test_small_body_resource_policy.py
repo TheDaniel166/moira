@@ -58,6 +58,7 @@ def _manifest_payload(
     shard_bodies: tuple[tuple[int, ...], ...] = ((2_000_001,),),
     *,
     released: bool = True,
+    catalog_id: str = "test-asteroids",
 ) -> dict[str, object]:
     shards = [
         {
@@ -77,7 +78,7 @@ def _manifest_payload(
     ]
     payload: dict[str, object] = {
         "manifest_schema": "moira.small-body-catalog/v1",
-        "catalog_id": "test-asteroids",
+        "catalog_id": catalog_id,
         "catalog_version": "2026.07.30.1",
         "shard_count": len(shards),
         "body_count": sum(len(bodies) for bodies in shard_bodies),
@@ -105,9 +106,14 @@ def _write_manifest(
     shard_bodies: tuple[tuple[int, ...], ...] = ((2_000_001,),),
     *,
     released: bool = True,
+    catalog_id: str = "test-asteroids",
 ) -> Path:
     root.mkdir(parents=True, exist_ok=True)
-    payload = _manifest_payload(shard_bodies, released=released)
+    payload = _manifest_payload(
+        shard_bodies,
+        released=released,
+        catalog_id=catalog_id,
+    )
     for shard in payload["shards"]:
         root.joinpath(shard["path"]).write_bytes(b"x")
         root.joinpath(shard["metadata"]["path"]).write_text(
@@ -429,6 +435,67 @@ def test_success_records_release_and_opened_descriptor_truth(
     assert capability.frames == frozenset({1})
     assert len(capability.coverage) == 3
     assert close_small_body_readers(admission.readers) == ()
+
+
+def _reader_factory_from_each_manifest():
+    def _open(path: Path):
+        payload = json.loads(
+            (path.parent / "manifest.json").read_text(encoding="utf-8")
+        )
+        by_name = {
+            shard["path"]: tuple(shard["bodies"])
+            for shard in payload["shards"]
+        }
+        return _FakeSmallBodyReader(path, by_name[path.name])
+
+    return _open
+
+
+def test_distinct_catalogs_may_share_body_ids(tmp_path: Path) -> None:
+    wheel = _write_manifest(
+        tmp_path / "wheel",
+        ((2_000_001, 2_000_060),),
+        catalog_id="moira-asteroids-wheel",
+    )
+    full = _write_manifest(
+        tmp_path / "full",
+        ((2_000_001, 2_000_060, 2_009_377),),
+        catalog_id="moira-asteroids",
+    )
+    admission = _admit(
+        [full, wheel],
+        reader_factory=_reader_factory_from_each_manifest(),
+    )
+    assert (
+        admission.receipt.disposition is SmallBodyResourceDisposition.RUN
+    )
+    assert len(admission.receipt.capabilities) == 2
+    assert admission.receipt.capabilities[0].catalog_id == "moira-asteroids"
+    assert (
+        admission.receipt.capabilities[1].catalog_id
+        == "moira-asteroids-wheel"
+    )
+    shared = set(admission.receipt.capabilities[0].bodies).intersection(
+        admission.receipt.capabilities[1].bodies
+    )
+    assert shared == {2_000_001, 2_000_060}
+    assert close_small_body_readers(admission.readers) == ()
+
+
+def test_duplicate_catalog_release_identity_is_still_rejected(
+    tmp_path: Path,
+) -> None:
+    first = _write_manifest(tmp_path / "a", ((2_000_001,),))
+    second = _write_manifest(tmp_path / "b", ((2_000_002,),))
+    admission = _admit(
+        [first, second],
+        reader_factory=_reader_factory_from_each_manifest(),
+    )
+    assert (
+        admission.receipt.disposition
+        is SmallBodyResourceDisposition.FAILURE
+    )
+    assert "duplicate catalog release identity" in admission.receipt.reason
 
 
 def test_opened_body_mismatch_closes_the_reader(
