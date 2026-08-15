@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import math
 
 import pytest
 
-from moira.julian import centuries_from_j2000, tt_to_ut, ut_to_tt
+from moira.julian import centuries_from_j2000, jd_from_datetime, tt_to_ut, ut_to_tt
 from moira.nodes import mean_lilith, mean_node
 from moira.obliquity import nutation
 
@@ -180,3 +181,37 @@ def test_mean_lilith_speed_matches_mean_equinox_polynomial_rate(jd_ut: float) ->
     actual = mean_lilith(jd_ut, nutation=False)
 
     assert actual.speed == pytest.approx(finite_difference, abs=2.0e-9)
+
+
+@pytest.mark.parametrize(
+    ("when", "swiss_mean_apog"),
+    [
+        pytest.param(
+            datetime(1995, 7, 4, 9, 5, tzinfo=timezone.utc),
+            80.3030,
+            id="issue-18-1995-07-04",
+        ),
+        pytest.param(
+            datetime(1955, 2, 8, 18, 45, tzinfo=timezone.utc),
+            236.7037,
+            id="issue-18-1955-02-08",
+        ),
+    ],
+)
+def test_mean_lilith_swiss_mean_apog_residual_is_a_series_difference(
+    when: datetime,
+    swiss_mean_apog: float,
+) -> None:
+    """Secondary corroboration, not a parity target.
+
+    Provenance: GitHub TheDaniel166/moira#18, pyswisseph 2.10.3.2
+    ``swe.calc_ut(..., swe.MEAN_APOG)`` on the reporter's UTC instants.
+    Swiss ``SE_MEAN_APOG`` keeps ELP periodic terms inside a quantity
+    still labelled mean. Moira's ``Body.LILITH`` is the IERS secular
+    mean. The ±10′ band admits that known series difference. Shrinking
+    the band toward Swiss digits is out of scope.
+    """
+    actual = mean_lilith(jd_from_datetime(when)).longitude
+    residual_arcmin = abs(_angular_difference_arcsec(actual, swiss_mean_apog)) / 60.0
+
+    assert residual_arcmin < 10.0
