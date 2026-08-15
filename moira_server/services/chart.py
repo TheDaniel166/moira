@@ -46,7 +46,7 @@ _TRUE_NODE_STAGE_SEQUENCE = [
 _MEAN_LILITH_STAGE_SEQUENCE = [
     "datetime_to_jd",
     "ut_to_tt",
-    "analytical_apogee_solution",
+    "iers_2003_mean_apogee_solution",
     "iau_2000a_nutation_in_longitude",
     "true_equinox_of_date_longitude",
     "lilith_vessel_materialization",

@@ -154,6 +154,17 @@ def test_chart_reduction_route_exposes_pipeline_truth(
         "iau_2000a_nutation_in_longitude"
         in body["reduction"]["node_reductions"]["Lilith"]["stage_sequence"]
     )
+    assert (
+        "iers_2003_mean_apogee_solution"
+        in body["reduction"]["node_reductions"]["Lilith"]["stage_sequence"]
+    )
+    assert (
+        "analytical_apogee_solution"
+        not in body["reduction"]["node_reductions"]["Lilith"]["stage_sequence"]
+    )
+    assert body["reduction"]["node_reductions"]["Lilith"]["source_surface"] == (
+        "moira.mean_lilith"
+    )
 
 
 @pytest.mark.requires_ephemeris
