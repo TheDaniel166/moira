@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.2.2] - 2026-08-15
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.2.2.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md`.
+
 ### Changed
 - `mean_lilith()` / `Body.LILITH` now uses the IERS 2003 mean apogee
   `F + Ω − l + 180°` from the same fundamental arguments as

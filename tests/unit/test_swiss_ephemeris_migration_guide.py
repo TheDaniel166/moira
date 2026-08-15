@@ -54,7 +54,7 @@ def test_guide_declares_version_scope_and_non_drop_in_boundary() -> None:
     text = _guide()
 
     assert f"**Verified against:** `moira-astro` {moira.__version__}" in text
-    assert "**Last verified:** 2026-08-11" in text
+    assert "**Last verified:** 2026-08-15" in text
     assert "not a drop-in reimplementation" in text
     assert "direct" in text
     assert "policy translation" in text
