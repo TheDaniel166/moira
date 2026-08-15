@@ -202,7 +202,7 @@ Truth-basis totals:
 | `MARS` | constant | mapped | `symbolic` | `Body.MARS` / `'Mars'` | body identifier |
 | `MAX_STNAME` | constant | unsupported | `none` | none | Swiss internal/module-size constant |
 | `MC` | constant | partial | `api_shape_same_math` | house result vessels / chart angles | same concept, different API shape |
-| `MEAN_APOG` | constant | mapped | `symbolic` | `Body.LILITH` | closest body identifier |
+| `MEAN_APOG` | constant | mapped | `symbolic` | `Body.LILITH` | intent only; IERS secular mean, not Swiss ELP hybrid; 4–7′ residual is expected |
 | `MEAN_NODE` | constant | mapped | `symbolic` | `Body.MEAN_NODE` | body identifier |
 | `MERCURY` | constant | mapped | `symbolic` | `Body.MERCURY` / `'Mercury'` | body identifier |
 | `MIXEDOPIC_FLAG` | constant | missing | `none` | none | no direct Swiss-style visibility option surface |

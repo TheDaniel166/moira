@@ -45,6 +45,24 @@ from .nutation_2000a import _fundamental_args
 from .obliquity import mean_obliquity, nutation as _nutation
 from .spk_reader import get_active_reader, KernelReader, MissingKernelError
 
+# Same half-span as moira.planets._LONGITUDE_RATE_STEP_DAYS. Do not import planets.
+_LONGITUDE_RATE_STEP_DAYS = 2.0e-3
+
+
+def _circular_longitude_rate(before: float, after: float, span_days: float) -> float:
+    return ((after - before + 180.0) % 360.0 - 180.0) / span_days
+
+
+def _require_reader(reader: KernelReader | None) -> KernelReader:
+    if reader is None:
+        reader = get_active_reader()
+    if reader is None:
+        raise MissingKernelError(
+            "No planetary kernel is provided and no active reader context was found. "
+            "Pass a reader explicitly or use the Moira facade."
+        )
+    return reader
+
 
 @dataclass(slots=True, frozen=True)
 class NodeData:
@@ -212,12 +230,9 @@ def true_node(
 
     Returns:
         NodeData vessel with name="True Node", tropical longitude in degrees
-        [0, 360), and speed set to the mean node constant −1934.136261/36525
-        ≈ −0.05295°/day.  This is a fixed approximation — the true node speed
-        is not derived from the geometric computation.  Callers consuming
-        ``speed`` for dynamic modelling (transit timing, direction rates) should
-        compute it independently via finite difference of successive
-        ``true_node()`` calls.
+        [0, 360), and speed equal to the circular finite-difference of that
+        true-of-date longitude over a 0.002-day TT span. The rate is the
+        geometry of the osculating node and can be large or retrograde.
 
     Raises:
         FileNotFoundError: if the DE441 kernel cannot be found and reader is
@@ -229,16 +244,20 @@ def true_node(
         None. The SpkReader kernel file is opened lazily on first call if
         reader is None, but that side effect belongs to get_reader().
     """
-    if reader is None:
-        reader = get_active_reader()
-        if reader is None:
-            raise MissingKernelError(
-                "No planetary kernel is provided and no active reader context was found. "
-                "Pass a reader explicitly or use the Moira facade."
-            )
-
+    reader = _require_reader(reader)
     if jd_tt is None:
         jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
+    lon = _true_node_longitude(reader, jd_tt)
+    step = _LONGITUDE_RATE_STEP_DAYS
+    speed = _circular_longitude_rate(
+        _true_node_longitude(reader, jd_tt - step),
+        _true_node_longitude(reader, jd_tt + step),
+        2.0 * step,
+    )
+    return NodeData(name="True Node", longitude=lon, speed=speed)
+
+
+def _true_node_longitude(reader: KernelReader, jd_tt: float) -> float:
     dpsi_deg, deps_deg = _nutation(jd_tt)
     obliquity = mean_obliquity(jd_tt) + deps_deg
     eps = obliquity * DEG2RAD
@@ -277,12 +296,7 @@ def true_node(
     eps = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD
     iye_true = i_true[1] * math.cos(eps) + i_true[2] * math.sin(eps)
     ixe_true = i_true[0]
-    node_lon = math.atan2(iye_true, ixe_true) * RAD2DEG % 360.0
-
-    # Speed via mean node as proxy (true node oscillates around mean)
-    speed = -1934.136261 / 36525.0
-
-    return NodeData(name="True Node", longitude=node_lon, speed=speed)
+    return math.atan2(iye_true, ixe_true) * RAD2DEG % 360.0
 
 
 # ---------------------------------------------------------------------------
@@ -291,54 +305,76 @@ def true_node(
 
 def mean_lilith(jd_ut: float, *, nutation: bool = True) -> NodeData:
     """
-    Governs computation of Mean Black Moon Lilith — the mean longitude of the
-    Moon's apogee — using the Meeus Chapter 47 mean lunar-perigee argument
-    offset by 180°.
+    Compute Mean Black Moon Lilith from the IERS 2003 mean lunar
+    apogee ``F + Ω − l + 180°``.
 
-    Converts UT to TT internally; no external kernel is required. ``mean``
-    describes the averaged apogee solution, independently of the output
-    frame. By default, nutation in longitude is applied so the result is
-    expressed in the true ecliptic and equinox of date, matching Moira's
-    default planetary and chart longitudes. Set ``nutation=False`` for the
-    raw mean-ecliptic and mean-equinox-of-date longitude.
+    ``mean`` describes the averaged apogee solution, independently of
+    the output frame. By default, nutation in longitude is applied so
+    the result is expressed in the true ecliptic and equinox of date,
+    matching Moira's default planetary and chart longitudes. Set
+    ``nutation=False`` to obtain the raw IERS mean-ecliptic and
+    mean-equinox-of-date longitude.
+
+    The expression reuses Moira's admitted IAU 2000A fundamental
+    arguments rather than a second Meeus polynomial. TT is used in
+    place of TDB as permitted by IERS Conventions (2003), section
+    5.7.2.
 
     Args:
         jd_ut: Julian Day in Universal Time (UT1).
-        nutation: If ``True`` (default), add IAU 2000A nutation in longitude
-            to express the mean apogee in the true equinox of date. If
-            ``False``, return the raw mean-equinox-of-date longitude.
+        nutation: If ``True`` (default), add IAU 2000A nutation in
+            longitude to express the mean apogee in the true equinox
+            of date. If ``False``, return the raw mean-equinox-of-date
+            longitude.
 
     Returns:
-        NodeData vessel with name="Lilith", tropical longitude in degrees
-        [0, 360), and speed ≈ +0.1114°/day (direct motion).
+        NodeData vessel with name="Lilith", tropical longitude in
+        degrees [0, 360), and the mean IERS polynomial rate in
+        degrees/day (direct). The speed excludes the short-period
+        derivative of nutation even when ``nutation=True``.
 
     Raises:
-        No exceptions under normal operation; propagates any exception raised
-        by ut_to_tt() or centuries_from_j2000() on invalid input.
+        No exceptions under normal operation; propagates any exception
+        raised by ut_to_tt() or centuries_from_j2000() on invalid
+        input.
 
     Side effects:
         None.
     """
-    jd_tt    = ut_to_tt(jd_ut)
+    jd_tt = ut_to_tt(jd_ut)
     T = centuries_from_j2000(jd_tt)
 
-    # Mean longitude of Moon's perigee (Meeus 22.3)
-    perigee = (83.3532465
-               + 4069.0137287 * T
-               - 0.0103200   * T**2
-               - T**3 / 80053.0
-               + T**4 / 18999000.0) % 360.0
-
-    # Apogee = perigee + 180°
-    apogee = (perigee + 180.0) % 360.0
+    l, _lp, F, _D, Om = _fundamental_args(T)[:5]
+    lon = normalize_degrees((F + Om - l) * RAD2DEG + 180.0)
     if nutation:
         dpsi_deg, _ = _nutation(jd_tt)
-        apogee = normalize_degrees(apogee + dpsi_deg)
+        lon = normalize_degrees(lon + dpsi_deg)
 
-    # Speed ≈ derivative of perigee formula / Julian century * century/day
-    speed = 4069.0137287 / 36525.0   # degrees/day
+    l_rate_arcsec_per_century = (
+        1717915923.2178
+        + 2.0 * 31.8792 * T
+        + 3.0 * 0.051635 * T**2
+        + 4.0 * (-0.00024470) * T**3
+    )
+    f_rate_arcsec_per_century = (
+        1739527262.8478
+        + 2.0 * (-12.7512) * T
+        + 3.0 * (-0.001037) * T**2
+        + 4.0 * 0.00000417 * T**3
+    )
+    omega_rate_arcsec_per_century = (
+        -6962890.5431
+        + 2.0 * 7.4722 * T
+        + 3.0 * 0.007702 * T**2
+        - 4.0 * 0.00005939 * T**3
+    )
+    speed = (
+        f_rate_arcsec_per_century
+        + omega_rate_arcsec_per_century
+        - l_rate_arcsec_per_century
+    ) / (3600.0 * 36525.0)
 
-    return NodeData(name="Lilith", longitude=apogee, speed=speed)
+    return NodeData(name="Lilith", longitude=lon, speed=speed)
 
 
 # ---------------------------------------------------------------------------
@@ -368,10 +404,11 @@ def true_lilith(
             call).
 
     Returns:
-        NodeData vessel with name="True Lilith", tropical longitude in degrees
-        [0, 360), and speed approximated from the mean apogee formula
-        (≈ +0.1114°/day). The true apogee oscillates significantly around
-        the mean; the speed field is an approximation only.
+        NodeData vessel with name="True Lilith", tropical longitude in
+        degrees [0, 360), and speed equal to the circular finite-difference
+        of that true-of-date longitude over a 0.002-day TT span. The rate
+        is the geometry of the osculating apogee and can be large or
+        retrograde.
 
     Raises:
         FileNotFoundError: if the DE441 kernel cannot be found and reader is
@@ -383,16 +420,19 @@ def true_lilith(
         None. The SpkReader kernel file is opened lazily on first call if
         reader is None, but that side effect belongs to get_reader().
     """
-    if reader is None:
-        reader = get_active_reader()
-        if reader is None:
-            raise MissingKernelError(
-                "No planetary kernel is provided and no active reader context was found. "
-                "Pass a reader explicitly or use the Moira facade."
-            )
+    reader = _require_reader(reader)
+    jd_tt = _ut1_to_ephemeris_tt(jd_ut, reader)
+    lon = _true_lilith_longitude(reader, jd_tt)
+    step = _LONGITUDE_RATE_STEP_DAYS
+    speed = _circular_longitude_rate(
+        _true_lilith_longitude(reader, jd_tt - step),
+        _true_lilith_longitude(reader, jd_tt + step),
+        2.0 * step,
+    )
+    return NodeData(name="True Lilith", longitude=lon, speed=speed)
 
-    jd_tt    = _ut1_to_ephemeris_tt(jd_ut, reader)
-    
+
+def _true_lilith_longitude(reader: KernelReader, jd_tt: float) -> float:
     # Nutation and Obliquity for tropical conversion
     dpsi_deg, deps_deg = _nutation(jd_tt)
     obliquity = mean_obliquity(jd_tt) + deps_deg
@@ -408,32 +448,32 @@ def true_lilith(
     # Pos(Moon) - Pos(Earth)
     m_pos, m_vel_d = reader.position_and_velocity(3, 301, jd_tt)
     e_pos, e_vel_d = reader.position_and_velocity(3, 399, jd_tt)
-    
+
     r = vec_sub(m_pos, e_pos)
     v_d = vec_sub(m_vel_d, e_vel_d)
     v = tuple(v_i / 86400.0 for v_i in v_d)
-    
+
     # Specific angular momentum h = r x v
     hx = r[1]*v[2] - r[2]*v[1]
     hy = r[2]*v[0] - r[0]*v[2]
     hz = r[0]*v[1] - r[1]*v[0]
-    
+
     # Eccentricity vector e = (v x h)/mu - r/|r|
     # v x h
     vhx = v[1]*hz - v[2]*hy
     vhy = v[2]*hx - v[0]*hz
     vhz = v[0]*hy - v[1]*hx
-    
+
     r_mag = math.sqrt(r[0]*r[0] + r[1]*r[1] + r[2]*r[2])
-    
+
     ex = vhx/mu - r[0]/r_mag
     ey = vhy/mu - r[1]/r_mag
     ez = vhz/mu - r[2]/r_mag
-    
+
     # The eccentricity vector points to PERIGEE.
     # True Lilith is the APOGEE, which is exactly opposite.
     ax, ay, az = -ex, -ey, -ez
-    
+
     # Rotate apogee vector through P then N (J2000 ICRF → true equator of date)
     P = precession_matrix_equatorial(jd_tt)
     N = nutation_matrix_equatorial(jd_tt)
@@ -445,12 +485,7 @@ def true_lilith(
     eps = (mean_obliquity(jd_tt) + deps_deg) * DEG2RAD
     aye_true = a_true[1] * math.cos(eps) + a_true[2] * math.sin(eps)
     axe_true = a_true[0]
-    lon_tropical = math.atan2(aye_true, axe_true) * RAD2DEG % 360.0
-    
-    # Speed (estimated via mean apogee speed as it oscillates wildly)
-    speed = 4069.0137287 / 36525.0
-
-    return NodeData(name="True Lilith", longitude=lon_tropical, speed=speed)
+    return math.atan2(aye_true, axe_true) * RAD2DEG % 360.0
 
 
 # ---------------------------------------------------------------------------

@@ -20,13 +20,52 @@ marks each mapping as one of:
 - **no direct equivalent** — do not invent parity in an adapter.
 
 It does **not** claim numerical identity between two engines configured with
-different ephemerides, time policies, frames, or reduction models. It also
+different ephemerides, time policies, frames, or reduction models. A shared
+astrological *name* is not a promise of a shared *series*. See
+[Why a Swiss number is not a Moira number](#why-a-swiss-number-is-not-a-moira-number).
+It also
 does not replace a legal review. The Swiss Ephemeris 2.10 programmer manual
 describes a GPL v2-or-later/Professional dual license, while the `pyswisseph`
 binding repository declares AGPL v3. Moira's source is MIT, while external
 kernels and catalogs retain their own notices. Confirm the exact components
 and versions your application distributes; see [`LICENSE`](../../LICENSE) and
 [`PROVENANCE.md`](../../PROVENANCE.md).
+
+## Why a Swiss number is not a Moira number
+
+People will compare Moira to Swiss Ephemeris. That comparison is useful
+only when both sides name the **same quantity**. Many Swiss flags and
+Moira `Body` constants share an astrological label and **do not** share
+an algorithm, an ephemeris, or a definition of “mean.”
+
+Moira does not treat Swiss digits as a target. JPL, IERS, IAU, and
+SOFA/ERFA outrank Swiss. When the two engines disagree and the strata
+audit does not show Swiss holding the higher authority, the divergence
+is **published and kept**. It is not “fixed” by moving Moira toward
+Swiss.
+
+Worked example — Black Moon Lilith, the comparison that shows up first:
+
+| Label | Engine | What the number actually is | Typical residual vs the other engine |
+| --- | --- | --- | --- |
+| Mean Node | Moira `Body.MEAN_NODE` and Swiss `SE_MEAN_NODE` | Same IERS/ELP secular node | ~0.0000° on modern dates |
+| Mean Lilith | Moira `Body.LILITH` | IERS 2003 **secular** mean apogee `F + Ω − l + 180°` | — |
+| Mean Lilith | Swiss `SE_MEAN_APOG` | ELP **hybrid**: a mean plus selected periodic terms still labelled “mean” | **4–7′**, sign flips with date |
+| True Lilith | Moira `Body.TRUE_LILITH` and Swiss `SE_OSCU_APOG` | Osculating DE apogee | ~1′ |
+
+The 4–7′ Mean Lilith gap is therefore **expected**. It is not a frame
+bug, not a nutation miss, and not a 6.2.x regression. 5.2.2 upgraded
+the Mean Lilith *frame* (true equinox of date). 6.2.2 binds the
+*series* to IERS. IERS versus the previous Meeus polynomial is
+sub-arcsecond on 1955–2010 dates. Neither step can cancel Swiss’s
+periodic terms, because those terms are not in Moira’s mean.
+
+`SE_MEAN_APOG` → `Body.LILITH` is a **policy translation**: same
+intent (mean apogee), different object. Adapters that assert
+arcsecond or arcminute parity against `swe.MEAN_APOG` are testing
+the wrong contract. Interpolated Swiss apogees (`INTP_APOG`,
+`INTP_PERG`) have no public Moira equivalent; do not invent one to
+close a Swiss table.
 
 ## 1. The shortest safe path
 
@@ -307,9 +346,15 @@ Use `Body` constants at application boundaries:
 | `SE_MERCURY` … `SE_PLUTO` | matching `Body` constant |
 | `SE_MEAN_NODE` | `Body.MEAN_NODE` |
 | `SE_TRUE_NODE` | `Body.TRUE_NODE` |
-| `SE_MEAN_APOG` | `Body.LILITH` |
-| `SE_OSCU_APOG` | `Body.TRUE_LILITH` |
+| `SE_MEAN_APOG` | `Body.LILITH` (intent only — IERS secular mean, not Swiss ELP hybrid; expect 4–7′) |
+| `SE_OSCU_APOG` | `Body.TRUE_LILITH` (osculating DE; the close numerical match) |
 | `SE_CHIRON` | `Body.CHIRON` (included in the wheel catalog) |
+
+`SE_MEAN_APOG` → `Body.LILITH` is the mean-apogee **intent**, not a
+digit-for-digit identity. The 4–7′ residual is the documented series
+difference in
+[Why a Swiss number is not a Moira number](#why-a-swiss-number-is-not-a-moira-number).
+Do not close it in an adapter.
 
 `Body.ALL_PLANETS` is the ten-planet set and excludes Earth and the node
 points. `Body.ALL_POINTS` includes the node/Lilith point set. Make the desired
