@@ -159,7 +159,7 @@ When Moira's output disagrees with Swiss Ephemeris, JPL Horizons, or another der
 5. **Model basis** — does the disagreement trace to a delta-T model choice, an EOP source, or a precession-nutation theory?
 6. **Published product semantics** — do the two tools define the output quantity the same way (e.g., apparent vs. astrometric position)?
 
-If Swiss Ephemeris disagrees with Moira and the strata audit cannot resolve it, the divergence is published — not suppressed. Moira does not correct toward Swiss Ephemeris unless Swiss Ephemeris can be shown to hold higher authority for that specific case. The default authority hierarchy remains: JPL / IERS / IAU / SOFA-ERFA above Swiss Ephemeris.
+If Swiss Ephemeris disagrees with Moira and the strata audit cannot resolve it, the divergence is published — not suppressed. Moira does not correct toward Swiss Ephemeris unless Swiss Ephemeris can be shown to hold higher authority for that specific case. The default authority hierarchy remains: JPL / IERS / IAU / SOFA-ERFA above Swiss Ephemeris. Same name is not the same quantity: Mean Lilith is the standing case (`Body.LILITH` is IERS secular mean apogee; Swiss `SE_MEAN_APOG` is an ELP hybrid; a 4–7′ residual is expected and is not a defect).
 
 ---
 

@@ -62,6 +62,17 @@ def test_guide_declares_version_scope_and_non_drop_in_boundary() -> None:
     assert "no direct equivalent" in text
 
 
+def test_guide_states_swiss_digits_are_not_a_target() -> None:
+    text = _guide()
+
+    assert "Why a Swiss number is not a Moira number" in text
+    assert "does not treat Swiss digits as a target" in text
+    assert "4–7′" in text
+    assert "IERS 2003 **secular** mean apogee" in text
+    assert "ELP **hybrid**" in text
+    assert "SE_MEAN_APOG` → `Body.LILITH` is a **policy translation**" in text
+
+
 def test_documented_facade_and_low_level_signatures_still_exist() -> None:
     assert list(inspect.signature(Moira).parameters) == ["kernel_path"]
     assert {

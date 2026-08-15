@@ -19,6 +19,13 @@ This document describes where Moira extends beyond the design envelope of Swiss 
 and where it makes different modern data and policy choices. It is not written to diminish
 Swiss Ephemeris, but to describe what Moira actually computes and why.
 
+A shared astrological name is not a shared number. Moira does not retarget
+toward Swiss digits. The standing worked example is Mean Lilith: Moira
+`Body.LILITH` is the IERS secular mean apogee; Swiss `SE_MEAN_APOG` is an
+ELP hybrid that keeps periodic terms inside a “mean” label. The 4–7′
+residual is expected. See
+[Migrating from Swiss Ephemeris — Why a Swiss number is not a Moira number](../02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md#why-a-swiss-number-is-not-a-moira-number).
+
 ---
 
 ## I. The Data That Did Not Exist
