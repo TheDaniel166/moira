@@ -99,3 +99,26 @@ def test_true_node_is_corroborated_by_shipped_swiss_fixture(
     actual = true_node(jd_tt, reader=reader, jd_tt=jd_tt).longitude
 
     assert abs(_angular_difference_arcsec(actual, swiss_true_node)) < 0.5
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    "jd_tt",
+    [
+        pytest.param(2451545.0, id="j2000"),
+        pytest.param(2461199.9375, id="2026"),
+    ],
+)
+def test_true_node_speed_matches_longitude_finite_difference(reader, jd_tt: float) -> None:
+    step = 0.002
+    before = true_node(jd_tt, reader=reader, jd_tt=jd_tt - step).longitude
+    after = true_node(jd_tt, reader=reader, jd_tt=jd_tt + step).longitude
+    expected = ((after - before + 180.0) % 360.0 - 180.0) / (2.0 * step)
+    actual = true_node(jd_tt, reader=reader, jd_tt=jd_tt)
+    assert actual.speed == pytest.approx(expected, abs=2.0e-9)
+
+
+@pytest.mark.requires_ephemeris
+def test_true_node_speed_is_not_the_mean_node_constant(reader) -> None:
+    actual = true_node(2461199.9375, reader=reader, jd_tt=2461199.9375).speed
+    assert actual != pytest.approx(-1934.136261 / 36525.0, abs=1.0e-6)
