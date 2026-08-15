@@ -73,8 +73,8 @@ mean_node(jd_ut, *, nutation=True)
     true-equinox-of-date frame.
 true_node(jd_ut)    NodeData for the true (osculating) ascending node.
 mean_lilith(jd_ut, *, nutation=True)
-    NodeData for mean Lilith (mean apogee) in an explicit mean- or
-    true-equinox-of-date frame.
+    NodeData for IERS 2003 mean lunar apogee (F+Ω−l+180°) in an
+    explicit mean- or true-equinox-of-date frame.
 true_lilith(jd_ut)  NodeData for true Lilith (osculating apogee).
 
 next_moon_node_crossing(jd_start)

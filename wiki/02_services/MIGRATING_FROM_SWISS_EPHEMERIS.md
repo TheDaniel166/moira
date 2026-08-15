@@ -311,6 +311,16 @@ Use `Body` constants at application boundaries:
 | `SE_OSCU_APOG` | `Body.TRUE_LILITH` |
 | `SE_CHIRON` | `Body.CHIRON` (included in the wheel catalog) |
 
+`SE_MEAN_APOG` maps to `Body.LILITH` as the mean-apogee intent, not
+as a numerical identity. Moira uses the IERS 2003 secular mean
+`F + Ω − l + 180°`. Swiss `SE_MEAN_APOG` is an ELP hybrid that
+keeps selected periodic terms inside a quantity still labelled
+mean. Expect a date-dependent residual of about 4–7′. That is a
+series difference, not a frame error. `SE_OSCU_APOG` →
+`Body.TRUE_LILITH` is the osculating DE product and is the close
+numerical match. Interpolated Swiss apogees (`INTP_APOG`,
+`INTP_PERG`) still have no public Moira equivalent.
+
 `Body.ALL_PLANETS` is the ten-planet set and excludes Earth and the node
 points. `Body.ALL_POINTS` includes the node/Lilith point set. Make the desired
 body list explicit rather than assuming the two engines have identical

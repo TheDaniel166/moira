@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `mean_lilith()` / `Body.LILITH` now uses the IERS 2003 mean apogee
+  `F + Ω − l + 180°` from the same fundamental arguments as
+  `mean_node()`. The 5.2.2 `nutation=` frame is unchanged. Modern
+  longitudes move by less than 0.2″ versus the previous Meeus
+  polynomial. The several-arcminute residual versus Swiss
+  `SE_MEAN_APOG` is expected and is not a parity target.
+
 ## [6.2.1] - 2026-08-14
 
 Detailed release and migration guidance is available in
