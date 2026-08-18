@@ -1,7 +1,7 @@
 # Hellenistic 6.3.0 Admission Program
 
-**Status:** in progress
-**Tree:** `C:\dev\moira` `main` after published `moira-astro==6.2.2`
+**Status:** complete (docs/version identity)
+**Tree:** `C:\dev\moira` `main` after `0f6b1fc` plus this release slice
 **Release identity:** `6.3.0`
 **Profile contract:** `moira.hellenistic_chart_profile.v2` (unchanged)
 

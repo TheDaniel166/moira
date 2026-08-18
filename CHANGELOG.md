@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.3.0] - 2026-08-18
+
+Detailed release and migration guidance is available in
+`wiki/03_release/RELEASE_NOTES_6.3.0.md` and
+`wiki/03_release/COMPATIBILITY_NOTES_6.3.0.md`.
+
+### Added
+- Natal twelfth-parts (`twelfth_part_of`) and
+  `POST /v1/hellenistic/twelfth-parts`.
+- Score-free assemble-condition (testimony, overcoming, enclosure,
+  adherence) and `POST /v1/hellenistic/condition`. Aktinobolia stays
+  `not_evaluable`.
+- Sect-selected Exaltation and Basis helpers outside the four-lot
+  profile partition.
+- Optional v2 profile overlays (`revival`, `overlays`), default off.
+- Circumambulations through Egyptian bounds,
+  `POST /v1/hellenistic/circumambulations`.
+- From→to transmission graph, `POST /v1/hellenistic/transmissions`.
+- Fail-closed office candidate hunt, `POST /v1/hellenistic/offices`.
+
+### Changed
+- Omitted Zodiacal Releasing `levels` default is 2 (L1/L2). Explicit 3
+  or 4 remains legal.
+
 ## [6.2.2] - 2026-08-15
 
 Detailed release and migration guidance is available in
