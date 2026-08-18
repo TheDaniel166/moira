@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 447
-- Registered OpenAPI operations: 447 (GET 35, POST 412)
+- Registered OpenAPI paths: 452
+- Registered OpenAPI operations: 452 (GET 35, POST 417)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 443
+- Versioned `/v1` paths: 448
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3064,6 +3064,11 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/heliacal/planet` | phenomena | `planet_heliacal_event_route_v1_heliacal_planet_post` |
 | `POST` | `/v1/heliacal/visibility-event` | phenomena | `general_visibility_event_route_v1_heliacal_visibility_event_post` |
 | `POST` | `/v1/hellenistic/chart-profile` | hellenistic-profile | `hellenistic_chart_profile_route_v1_hellenistic_chart_profile_post` |
+| `POST` | `/v1/hellenistic/circumambulations` | hellenistic-systems | `circumambulations_route_v1_hellenistic_circumambulations_post` |
+| `POST` | `/v1/hellenistic/condition` | hellenistic-atoms | `hellenistic_condition_route_v1_hellenistic_condition_post` |
+| `POST` | `/v1/hellenistic/offices` | hellenistic-systems | `offices_route_v1_hellenistic_offices_post` |
+| `POST` | `/v1/hellenistic/transmissions` | hellenistic-systems | `transmissions_route_v1_hellenistic_transmissions_post` |
+| `POST` | `/v1/hellenistic/twelfth-parts` | hellenistic-atoms | `twelfth_parts_route_v1_hellenistic_twelfth_parts_post` |
 | `POST` | `/v1/horary/evidence-profile` | horary | `horary_evidence_profile` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
 | `POST` | `/v1/houses/reduction` | chart | `houses_reduction_route_v1_houses_reduction_post` |
