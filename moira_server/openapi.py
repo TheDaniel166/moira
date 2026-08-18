@@ -153,6 +153,18 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "relationship",
     },
     {
+        "name": "hellenistic-atoms",
+        "x-displayName": "Hellenistic Atoms",
+        "description": "Natal twelfth-parts and score-free assemble-condition receipts outside the frozen profile contract.",
+        "x-family": "classical-vedic",
+    },
+    {
+        "name": "hellenistic-systems",
+        "x-displayName": "Hellenistic Systems",
+        "description": "Circumambulations through Egyptian bounds, from-to transmissions, and fail-closed office candidates.",
+        "x-family": "classical-vedic",
+    },
+    {
         "name": "draconic",
         "x-displayName": "Draconic",
         "description": "Node-anchored draconic longitude rotations and chart materialization.",

@@ -335,6 +335,7 @@ def compute_current_releasing_service(
         lot_name=params["lot_name"],
         fortune_longitude=params["fortune_longitude"],
         use_loosing_of_bond=params["use_loosing_of_bond"],
+        levels=request.levels,
     )
 
 

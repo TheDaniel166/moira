@@ -41,7 +41,9 @@ from .routers import (
     geodetic_router,
     harmonics_router,
     hellenistic_aspects_router,
+    hellenistic_atoms_router,
     hellenistic_profile_router,
+    hellenistic_systems_router,
     horary_router,
     mundane_router,
     health_router,
@@ -172,6 +174,8 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(progressions_router)
     app.include_router(relationship_router)
     app.include_router(hellenistic_aspects_router)  # Whole-sign direction and overcoming truth
+    app.include_router(hellenistic_atoms_router)  # Twelfth-parts and assemble-condition
+    app.include_router(hellenistic_systems_router)  # Circumambulations, transmissions, offices
     app.include_router(hellenistic_profile_router)  # Unified non-interpretive Hellenistic profile
     app.include_router(horary_router)  # Source-bounded Lilly evidence without judgement
     app.include_router(mundane_router)  # Neutral global-event and local-chart evidence

@@ -20,7 +20,7 @@ from moira.profections import (
     MonthlyProfectionIntervalPolicy,
     ProfectionAmbiguousTimePolicy,
 )
-from moira.timelords import DecennialPolicy
+from moira.timelords import DecennialPolicy, ZRPeakGrade
 from moira.triplicity import TriplicityDoctrine
 
 from .common import _StrictModel
@@ -41,6 +41,10 @@ from .egyptian_bounds import (
 from .hellenistic_aspects import (
     HellenisticAspectClassificationResponse,
     HellenisticSuperiorityTruthResponse,
+)
+from .hellenistic_atoms import (
+    HellenisticAssembleConditionResponse,
+    TwelfthPartResponse,
 )
 from .lots import (
     ArabicPartComputationTruthResponse,
@@ -93,6 +97,24 @@ class HellenisticDecennialPolicyRequest(_StrictModel):
         return self
 
 
+class HellenisticRevivalPolicyRequest(_StrictModel):
+    """Revival display flags. Defaults preserve the 6.2.2 profile shape."""
+
+    dual_zr: bool = False
+    zr_peak_grades: bool = False
+    zr_display_levels: int = Field(default=2, ge=1, le=4)
+    sign_per_month_profections: bool = False
+    label_overlays: bool = False
+
+
+class HellenisticProfileOverlaysRequest(_StrictModel):
+    """Optional additive atoms. Off keeps the four-lot v2 partition."""
+
+    supporting_lots: bool = False
+    assemble_condition: bool = False
+    twelfth_parts: bool = False
+
+
 class HellenisticZRYearPolicyRequest(_StrictModel):
     """Symbolic-year selector for Zodiacal Releasing."""
 
@@ -139,6 +161,12 @@ class HellenisticProfilePolicyRequest(_StrictModel):
     zr_lot_name: Literal["Fortune", "Spirit", "Eros", "Necessity"] = "Spirit"
     zr_levels: int = Field(default=2, ge=1, le=4)
     use_loosing_of_bond: bool = True
+    revival: HellenisticRevivalPolicyRequest = Field(
+        default_factory=HellenisticRevivalPolicyRequest
+    )
+    overlays: HellenisticProfileOverlaysRequest = Field(
+        default_factory=HellenisticProfileOverlaysRequest
+    )
 
     @field_validator("activation_orb_deg")
     @classmethod
@@ -267,6 +295,8 @@ class HellenisticPlanetProfileResponse(_StrictModel):
     triplicity_assignment: TriplicityAssignmentResponse
     bound_truth: EgyptianBoundTruthResponse
     face: DecanatePositionResponse
+    assemble_condition: HellenisticAssembleConditionResponse | None = None
+    twelfth_part: TwelfthPartResponse | None = None
 
 
 class HellenisticAspectProfileResponse(_StrictModel):
@@ -342,6 +372,24 @@ class HellenisticZodiacalReleasingSnapshotResponse(_StrictModel):
     use_loosing_of_bond: bool
     active_periods: tuple[ZRReleasingPeriodResponse, ...]
     reason: str | None
+    peak_grades: tuple[ZRPeakGrade, ...] | None = None
+
+
+class HellenisticSignPerMonthProfectionResponse(_StrictModel):
+    annual_sign: str
+    annual_house: int
+    lord_of_year: str
+    monthly_signs: tuple[str, ...]
+    monthly_lords: tuple[str, ...]
+    caveat: str
+
+
+class HellenisticOverlayLabelsResponse(_StrictModel):
+    detriment: str
+    hayz: str
+    activation_orb_deg: float
+    monthly_interval: str
+    caveats: tuple[str, ...]
 
 
 class HellenisticProfileNotEvaluableResponse(_StrictModel):
@@ -397,6 +445,14 @@ class HellenisticChartProfileResponse(_StrictModel):
     included_components: tuple[HellenisticProfileComponent, ...]
     excluded_components: tuple[HellenisticProfileExclusion, ...]
     provenance: HellenisticProfileProvenanceResponse
+    supporting_lots: tuple[HellenisticLotProfileResponse, ...] | None = None
+    supporting_lots_not_evaluable: tuple[LotNotEvaluableResponse, ...] | None = None
+    twelfth_parts: tuple[TwelfthPartResponse, ...] | None = None
+    zodiacal_releasing_fortune: (
+        HellenisticZodiacalReleasingSnapshotResponse | None
+    ) = None
+    sign_per_month_profection: HellenisticSignPerMonthProfectionResponse | None = None
+    label_overlays: HellenisticOverlayLabelsResponse | None = None
 
 
 __all__ = [
@@ -413,6 +469,10 @@ __all__ = [
     "HellenisticProfileNotEvaluableResponse",
     "HellenisticProfilePolicyRequest",
     "HellenisticProfileProvenanceResponse",
+    "HellenisticOverlayLabelsResponse",
+    "HellenisticProfileOverlaysRequest",
+    "HellenisticRevivalPolicyRequest",
+    "HellenisticSignPerMonthProfectionResponse",
     "HellenisticZRYearPolicyRequest",
     "HellenisticZodiacalReleasingSnapshotResponse",
 ]

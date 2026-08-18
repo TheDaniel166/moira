@@ -191,6 +191,52 @@ def test_route_matches_engine_service_and_preserves_profile_boundaries(
             "hermetic",
         ),
     )
+    assert body["supporting_lots"] is None
+    assert body["zodiacal_releasing_fortune"] is None
+    assert body["policy"]["revival"]["dual_zr"] is False
+    assert body["policy"]["overlays"]["supporting_lots"] is False
+    assert "offices" not in body
+
+
+def test_profile_route_can_enable_optional_overlays(
+    client_with_engine: TestClient,
+    moira_engine,
+) -> None:
+    payload = {
+        **PAYLOAD,
+        "policy": {
+            "revival": {
+                "dual_zr": True,
+                "zr_peak_grades": True,
+                "label_overlays": True,
+            },
+            "overlays": {
+                "supporting_lots": True,
+                "assemble_condition": True,
+                "twelfth_parts": True,
+            },
+        },
+    }
+    response = client_with_engine.post(
+        "/v1/hellenistic/chart-profile",
+        json=payload,
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["lots"]) == 4
+    assert body["supporting_lots"]
+    assert body["planets"][0]["assemble_condition"]["subject"] == "Sun"
+    assert body["planets"][0]["assemble_condition"]["ray"]["reason"] == (
+        "doctrine_not_admitted"
+    )
+    assert body["twelfth_parts"]
+    assert body["zodiacal_releasing"]["peak_grades"]
+    assert body["zodiacal_releasing_fortune"]["lot_name"] == "Fortune"
+    assert body["label_overlays"]["monthly_interval"] == "civil_twelfths"
+    assert "offices" not in body
+    assert body["provenance"]["method_id"] == (
+        "moira.hellenistic_chart_profile.v2"
+    )
 
 
 def test_request_validation_rejects_ambiguous_or_closed_exclusion_inputs() -> None:

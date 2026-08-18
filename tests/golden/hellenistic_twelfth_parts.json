@@ -1,0 +1,46 @@
+{
+  "authority": "Ptolemy Tetrabiblos I.22; ordinary 12× natal projection (sign start + 12 × degree in sign). Seams left-closed, right-open.",
+  "formula": "projected = (sign_start + 12 * degree_in_sign) mod 360",
+  "cases": [
+    {
+      "note": "Aries 0° projects to Aries 0°; first slice.",
+      "longitude": 0.0,
+      "occupied_sign": "Aries",
+      "slice_index": 0,
+      "twelfth_part_sign": "Aries",
+      "projected_longitude": 0.0
+    },
+    {
+      "note": "Aries 1° projects 12°.",
+      "longitude": 1.0,
+      "occupied_sign": "Aries",
+      "slice_index": 0,
+      "twelfth_part_sign": "Aries",
+      "projected_longitude": 12.0
+    },
+    {
+      "note": "Aries 2.5° is the first right-open seam: Taurus 0°.",
+      "longitude": 2.5,
+      "occupied_sign": "Aries",
+      "slice_index": 1,
+      "twelfth_part_sign": "Taurus",
+      "projected_longitude": 30.0
+    },
+    {
+      "note": "Capricorn 17° → Cancer 24° (standard textbook witness).",
+      "longitude": 287.0,
+      "occupied_sign": "Capricorn",
+      "slice_index": 6,
+      "twelfth_part_sign": "Cancer",
+      "projected_longitude": 114.0
+    },
+    {
+      "note": "Pisces last slice starts at 27.5°.",
+      "longitude": 357.5,
+      "occupied_sign": "Pisces",
+      "slice_index": 11,
+      "twelfth_part_sign": "Aquarius",
+      "projected_longitude": 300.0
+    }
+  ]
+}

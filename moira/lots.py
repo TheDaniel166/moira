@@ -66,6 +66,9 @@ __all__ = [
     "calculate_lot_condition_profiles", "calculate_lot_chart_condition_profile",
     "calculate_lot_condition_network_profile",
     "ArabicPartsService", "list_parts",
+    "HELLENISTIC_SUPPORTING_LOTS",
+    "exaltation_lot_name",
+    "select_supporting_hellenistic_lots",
 ]
 
 
@@ -2791,6 +2794,53 @@ def evaluate_lots(
         prenatal_full_moon=prenatal_full_moon,
         lord_of_hour=lord_of_hour,
     )
+
+
+HELLENISTIC_SUPPORTING_LOTS: tuple[str, ...] = (
+    "Exaltation (Day)",
+    "Exaltation (Night)",
+    "Basis (Valens)",
+)
+
+
+def exaltation_lot_name(*, is_day_chart: bool) -> str:
+    """Return the catalogue Exaltation name selected by horizon-frame sect."""
+
+    if not isinstance(is_day_chart, bool):
+        raise TypeError(
+            "exaltation_lot_name is_day_chart must be bool, "
+            f"got {type(is_day_chart).__name__}"
+        )
+    return "Exaltation (Day)" if is_day_chart else "Exaltation (Night)"
+
+
+def select_supporting_hellenistic_lots(
+    evaluation: LotsEvaluation,
+    *,
+    is_day_chart: bool,
+) -> tuple[list[ArabicPart], list[LotNotEvaluable]]:
+    """
+    Pick Basis (Valens) and the sect-selected Exaltation lot.
+
+    Does not alter the closed four-lot Hellenistic profile partition.
+    """
+
+    wanted = {
+        exaltation_lot_name(is_day_chart=is_day_chart),
+        "Basis (Valens)",
+    }
+    evaluated = [part for part in evaluation.parts if part.name in wanted]
+    unresolved = [
+        item for item in evaluation.not_evaluable if item.name in wanted
+    ]
+    found = {part.name for part in evaluated} | {item.name for item in unresolved}
+    missing = wanted - found
+    if missing:
+        raise ValueError(
+            "supporting Hellenistic lots missing from evaluation: "
+            + ", ".join(sorted(missing))
+        )
+    return evaluated, unresolved
 
 
 def calculate_lot_dependencies(

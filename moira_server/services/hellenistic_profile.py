@@ -16,7 +16,9 @@ from moira.egyptian_bounds import EgyptianBoundsPolicy
 from moira.hellenistic import (
     HELLENISTIC_CLASSICAL_PLANETS,
     HellenisticChartProfile,
+    HellenisticProfileOverlays,
     HellenisticProfilePolicy,
+    HellenisticRevivalPolicy,
 )
 from moira.houses import HousePolicy
 from moira.lots import (
@@ -120,6 +122,18 @@ def _policy_from_request(
         zr_lot_name=request.zr_lot_name,
         zr_levels=request.zr_levels,
         use_loosing_of_bond=request.use_loosing_of_bond,
+        revival=HellenisticRevivalPolicy(
+            dual_zr=request.revival.dual_zr,
+            zr_peak_grades=request.revival.zr_peak_grades,
+            zr_display_levels=request.revival.zr_display_levels,
+            sign_per_month_profections=request.revival.sign_per_month_profections,
+            label_overlays=request.revival.label_overlays,
+        ),
+        overlays=HellenisticProfileOverlays(
+            supporting_lots=request.overlays.supporting_lots,
+            assemble_condition=request.overlays.assemble_condition,
+            twelfth_parts=request.overlays.twelfth_parts,
+        ),
     )
 
 

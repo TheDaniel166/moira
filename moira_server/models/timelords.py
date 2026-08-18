@@ -492,7 +492,7 @@ class ZRBaseRequest(_StrictModel):
     """Request for the full Zodiacal Releasing sequence."""
 
     natal: ZRNatalRequest
-    levels: int = Field(default=4, ge=1, le=4)
+    levels: int = Field(default=2, ge=1, le=4)
 
 
 class ZRCurrentRequest(_StrictModel):
@@ -500,13 +500,14 @@ class ZRCurrentRequest(_StrictModel):
 
     natal: ZRNatalRequest
     current_dt: datetime
+    levels: int = Field(default=2, ge=1, le=4)
 
 
 class ZRProfileRequest(_StrictModel):
     """Request for the Zodiacal Releasing sequence profile at a chosen level."""
 
     natal: ZRNatalRequest
-    levels: int = Field(default=4, ge=1, le=4)
+    levels: int = Field(default=2, ge=1, le=4)
     profile_level: int = Field(default=1, ge=1, le=4)
 
     @model_validator(mode="after")

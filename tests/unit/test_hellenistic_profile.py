@@ -21,10 +21,15 @@ from moira.hellenistic import (
     HELLENISTIC_CLASSICAL_PLANETS,
     HELLENISTIC_PROFILE_LOTS,
     HellenisticProfileExclusion,
+    HellenisticProfileOverlays,
     HellenisticProfilePolicy,
     HellenisticProfileStatus,
+    HellenisticRevivalPolicy,
     hellenistic_chart_profile,
 )
+from moira.lots import exaltation_lot_name
+from moira.timelords import ZRPeakGrade
+from moira.twelfth_parts import twelfth_part_of
 from moira.lots import (
     LotsComputationPolicy,
     LotsReferenceFailureMode,
@@ -240,6 +245,73 @@ def test_profile_does_not_reuse_expired_zr_periods() -> None:
         issue.component == "zodiacal_releasing"
         for issue in profile.provenance.not_evaluable
     )
+
+
+def test_default_profile_omits_optional_overlays() -> None:
+    profile = _profile()
+
+    assert profile.supporting_lots is None
+    assert profile.supporting_lots_not_evaluable is None
+    assert profile.twelfth_parts is None
+    assert profile.zodiacal_releasing_fortune is None
+    assert profile.sign_per_month_profection is None
+    assert profile.label_overlays is None
+    assert profile.zodiacal_releasing.peak_grades is None
+    assert all(planet.assemble_condition is None for planet in profile.planets)
+    assert all(planet.twelfth_part is None for planet in profile.planets)
+    assert tuple(lot.name for lot in profile.lots) == HELLENISTIC_PROFILE_LOTS
+    assert not hasattr(profile, "offices")
+    assert profile.policy.revival.dual_zr is False
+    assert profile.policy.revival.zr_display_levels == 2
+    assert profile.policy.overlays.supporting_lots is False
+
+
+def test_optional_overlays_stay_outside_the_four_lot_partition() -> None:
+    policy = HellenisticProfilePolicy(
+        revival=HellenisticRevivalPolicy(
+            dual_zr=True,
+            zr_peak_grades=True,
+            sign_per_month_profections=True,
+            label_overlays=True,
+        ),
+        overlays=HellenisticProfileOverlays(
+            supporting_lots=True,
+            assemble_condition=True,
+            twelfth_parts=True,
+        ),
+    )
+    profile = _profile(policy=policy)
+    sun = profile.planets[0]
+
+    assert tuple(lot.name for lot in profile.lots) == HELLENISTIC_PROFILE_LOTS
+    assert profile.supporting_lots is not None
+    supporting_names = {lot.name for lot in profile.supporting_lots} | {
+        item.name for item in profile.supporting_lots_not_evaluable or ()
+    }
+    assert supporting_names == {
+        exaltation_lot_name(is_day_chart=profile.is_day_chart),
+        "Basis (Valens)",
+    }
+    assert sun.assemble_condition is not None
+    assert sun.assemble_condition.subject == "Sun"
+    assert sun.assemble_condition.ray.reason == "doctrine_not_admitted"
+    assert profile.twelfth_parts is not None
+    assert profile.twelfth_parts[0].twelfth_part == twelfth_part_of(POSITIONS["Sun"])
+    assert profile.zodiacal_releasing.peak_grades is not None
+    assert all(
+        isinstance(grade, ZRPeakGrade)
+        for grade in profile.zodiacal_releasing.peak_grades
+    )
+    assert profile.zodiacal_releasing_fortune is not None
+    assert profile.zodiacal_releasing_fortune.lot_name == "Fortune"
+    assert profile.sign_per_month_profection is not None
+    assert (
+        profile.sign_per_month_profection.annual_sign
+        == profile.profection.profected_sign
+    )
+    assert profile.label_overlays is not None
+    assert "hayz/halb is medieval" in profile.label_overlays.caveats[1]
+    assert not hasattr(profile, "offices")
 
 
 def test_raw_profile_marks_unspecified_position_frame() -> None:

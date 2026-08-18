@@ -72,7 +72,9 @@ __all__ = [
     "DecennialSequenceBodyTruth",
     "DecennialSequenceAssemblyTruth",
     "ZRAngularityClass",
+    "ZRPeakGrade",
     "ZRFortuneAngularityTruth",
+    "zr_peak_grade",
     # Policy surfaces
     "FirdarYearPolicy",
     "DecennialPolicy",
@@ -260,6 +262,15 @@ class ZRAngularityClass:
     CADENT    = "cadent"
 
 
+class ZRPeakGrade(StrEnum):
+    """Revival display projection of Fortune-relative angularity class."""
+
+    PEAK = "peak"
+    INTERMEDIATE = "intermediate"
+    LOW = "low"
+    NOT_EVALUABLE = "not_evaluable"
+
+
 _ANGULAR_HOUSES:   frozenset[int] = frozenset({1, 4, 7, 10})
 _SUCCEDENT_HOUSES: frozenset[int] = frozenset({2, 5, 8, 11})
 
@@ -381,6 +392,23 @@ def zr_fortune_angularity_truth(
         angularity_from_fortune=angularity,
         angularity_class=angularity_class,
         is_peak_period=angularity in _ANGULAR_HOUSES,
+    )
+
+
+def zr_peak_grade(angularity_class: str | None) -> ZRPeakGrade:
+    """Project Fortune-relative class to the revival three-grade overlay."""
+
+    if angularity_class is None:
+        return ZRPeakGrade.NOT_EVALUABLE
+    if angularity_class == ZRAngularityClass.ANGULAR:
+        return ZRPeakGrade.PEAK
+    if angularity_class == ZRAngularityClass.SUCCEDENT:
+        return ZRPeakGrade.INTERMEDIATE
+    if angularity_class == ZRAngularityClass.CADENT:
+        return ZRPeakGrade.LOW
+    raise ValueError(
+        "zr_peak_grade angularity_class must be a ZRAngularityClass value "
+        f"or None, got {angularity_class!r}"
     )
 
 
@@ -4089,7 +4117,7 @@ def _generate_releasing(
 def zodiacal_releasing(
     lot_longitude: float,
     natal_jd: float,
-    levels: int = 4,
+    levels: int = 2,
     *,
     lot_name: str = "Spirit",
     fortune_longitude: float | None = None,
@@ -4112,7 +4140,7 @@ def zodiacal_releasing(
     natal_jd : float
         Julian Day (UT) of birth.
     levels : int
-        Number of releasing levels to generate (1–4, default 4).
+        Number of releasing levels to generate (1–4, default 2).
     lot_name : str
         Name of the releasing Lot: ``"Spirit"``, ``"Fortune"``, ``"Eros"``, or
         ``"Necessity"``. Default ``"Spirit"``. Governs the Spirit/Fortune
@@ -4196,10 +4224,11 @@ def current_releasing(
     lot_name: str = "Spirit",
     fortune_longitude: float | None = None,
     use_loosing_of_bond: bool = True,
+    levels: int = 2,
     policy: "TimelordComputationPolicy | None" = None,
 ) -> list[ReleasingPeriod]:
     """
-    Find the four Zodiacal Releasing periods (one per level) active at a date.
+    Find the active Zodiacal Releasing periods (one per requested level).
 
     Parameters
     ----------
@@ -4224,7 +4253,7 @@ def current_releasing(
     Returns
     -------
     list[ReleasingPeriod]
-        List of up to 4 ReleasingPeriod objects (Levels 1–4) active at current_jd.
+        List of up to ``levels`` ReleasingPeriod objects active at current_jd.
         If a level cannot be determined, the last valid period for that level
         is returned.
 
@@ -4251,7 +4280,7 @@ def current_releasing(
     all_periods = zodiacal_releasing(
         lot_longitude,
         natal_jd,
-        levels=4,
+        levels=levels,
         lot_name=lot_name,
         fortune_longitude=fortune_longitude,
         use_loosing_of_bond=use_loosing_of_bond,
@@ -4259,7 +4288,7 @@ def current_releasing(
     )
 
     active: list[ReleasingPeriod] = []
-    for target_level in (1, 2, 3, 4):
+    for target_level in range(1, levels + 1):
         level_periods = [p for p in all_periods if p.level == target_level]
         found: ReleasingPeriod | None = None
         for p in level_periods:

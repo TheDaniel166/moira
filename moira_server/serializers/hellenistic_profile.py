@@ -15,6 +15,8 @@ from moira.hellenistic import (
     HellenisticProfilePolicy,
     HellenisticZodiacalReleasingSnapshot,
 )
+from moira.hellenistic_relations import HellenisticAssembleCondition
+from moira.twelfth_parts import TwelfthPartPosition
 from moira.timelords import DecennialPeriod
 
 from ..models.dignities import (
@@ -23,9 +25,19 @@ from ..models.dignities import (
 from ..models.egyptian_bounds import EgyptianBoundsPolicyRequest
 from ..models.hellenistic_aspects import (
     HellenisticAspectClassificationResponse,
+    HellenisticAspectProvenanceResponse,
     HellenisticDirectionTruthResponse,
     HellenisticOvercomingTruthResponse,
     HellenisticSuperiorityTruthResponse,
+)
+from ..models.hellenistic_atoms import (
+    HellenisticAdherenceTruthResponse,
+    HellenisticAssembleConditionResponse,
+    HellenisticPlanetOvercomingTruthResponse,
+    HellenisticRayTruthResponse,
+    HellenisticTestimonyTruthResponse,
+    HellenisticTestimonyWitnessResponse,
+    TwelfthPartResponse,
 )
 from ..models.hellenistic_profile import (
     HellenisticAspectProfileResponse,
@@ -35,11 +47,15 @@ from ..models.hellenistic_profile import (
     HellenisticDecennialSnapshotResponse,
     HellenisticLotProfileResponse,
     HellenisticObserverContextResponse,
+    HellenisticOverlayLabelsResponse,
     HellenisticPlanetProfileResponse,
     HellenisticPlanetaryJoyTruthResponse,
     HellenisticProfileNotEvaluableResponse,
+    HellenisticProfileOverlaysRequest,
     HellenisticProfilePolicyRequest,
     HellenisticProfileProvenanceResponse,
+    HellenisticRevivalPolicyRequest,
+    HellenisticSignPerMonthProfectionResponse,
     HellenisticZRYearPolicyRequest,
     HellenisticZodiacalReleasingSnapshotResponse,
 )
@@ -125,6 +141,18 @@ def _serialize_policy(
         zr_lot_name=policy.zr_lot_name,
         zr_levels=policy.zr_levels,
         use_loosing_of_bond=policy.use_loosing_of_bond,
+        revival=HellenisticRevivalPolicyRequest(
+            dual_zr=policy.revival.dual_zr,
+            zr_peak_grades=policy.revival.zr_peak_grades,
+            zr_display_levels=policy.revival.zr_display_levels,
+            sign_per_month_profections=policy.revival.sign_per_month_profections,
+            label_overlays=policy.revival.label_overlays,
+        ),
+        overlays=HellenisticProfileOverlaysRequest(
+            supporting_lots=policy.overlays.supporting_lots,
+            assemble_condition=policy.overlays.assemble_condition,
+            twelfth_parts=policy.overlays.twelfth_parts,
+        ),
     )
 
 
@@ -153,6 +181,84 @@ def _serialize_superiority_truth(
             body2_place_from_body1=truth.overcoming_truth.body2_place_from_body1,
             relation=truth.overcoming_truth.relation,
             reason=truth.overcoming_truth.reason,
+        ),
+    )
+
+
+def _serialize_twelfth_part(
+    body: str,
+    part: TwelfthPartPosition,
+) -> TwelfthPartResponse:
+    return TwelfthPartResponse(
+        body=body,
+        occupied_sign=part.occupied_sign,
+        occupied_sign_degree=part.occupied_sign_degree,
+        slice_index=part.slice_index,
+        twelfth_part_sign=part.twelfth_part_sign,
+        projected_longitude=part.projected_longitude,
+        source_longitude=part.source_longitude,
+    )
+
+
+def _serialize_assemble_condition(
+    condition: HellenisticAssembleCondition,
+) -> HellenisticAssembleConditionResponse:
+    return HellenisticAssembleConditionResponse(
+        subject=condition.subject,
+        testimony=HellenisticTestimonyTruthResponse(
+            status=condition.testimony.status,
+            subject=condition.testimony.subject,
+            witnesses=tuple(
+                HellenisticTestimonyWitnessResponse(
+                    body=item.body,
+                    aspect=item.aspect,
+                    angle_deg=item.angle_deg,
+                    superiority=_serialize_superiority_truth(item.superiority),
+                )
+                for item in condition.testimony.witnesses
+            ),
+            averse_bodies=condition.testimony.averse_bodies,
+            reason=condition.testimony.reason,
+        ),
+        overcoming=HellenisticPlanetOvercomingTruthResponse(
+            status=condition.overcoming.status,
+            subject=condition.overcoming.subject,
+            overcame_by=condition.overcoming.overcame_by,
+            overcomes=condition.overcoming.overcomes,
+            receipts=tuple(
+                _serialize_superiority_truth(item)
+                for item in condition.overcoming.receipts
+            ),
+            reason=condition.overcoming.reason,
+        ),
+        enclosure=serialize_besieging_truth(condition.enclosure),
+        adherence=HellenisticAdherenceTruthResponse(
+            status=condition.adherence.status,
+            subject=condition.adherence.subject,
+            orb_deg=condition.adherence.orb_deg,
+            adhered=condition.adherence.adhered,
+            partner=condition.adherence.partner,
+            distance_deg=condition.adherence.distance_deg,
+            motion_state=condition.adherence.motion_state,
+            reason=condition.adherence.reason,
+        ),
+        ray=HellenisticRayTruthResponse(
+            status=condition.ray.status,
+            subject=condition.ray.subject,
+            reason=condition.ray.reason,
+        ),
+        provenance=HellenisticAspectProvenanceResponse(
+            source_module="moira.hellenistic_relations",
+            engine_entrypoint="assemble_hellenistic_condition",
+            doctrine="score_free_assemble_condition",
+            source_refs=[
+                "Antiochus via Porphyry",
+                "Vettius Valens, Anthologies",
+            ],
+            stage_sequence=[
+                "profile_overlay",
+                "lossless_response_serialization",
+            ],
         ),
     )
 
@@ -195,6 +301,16 @@ def _serialize_planet(
         ),
         bound_truth=serialize_egyptian_bound_truth(profile.bound_truth),
         face=serialize_decanate_position(profile.face),
+        assemble_condition=(
+            _serialize_assemble_condition(profile.assemble_condition)
+            if profile.assemble_condition is not None
+            else None
+        ),
+        twelfth_part=(
+            _serialize_twelfth_part(profile.planet, profile.twelfth_part)
+            if profile.twelfth_part is not None
+            else None
+        ),
     )
 
 
@@ -314,6 +430,7 @@ def _serialize_zr(
             for period in snapshot.active_periods
         ),
         reason=snapshot.reason,
+        peak_grades=snapshot.peak_grades,
     )
 
 
@@ -351,6 +468,55 @@ def serialize_hellenistic_chart_profile(
         zodiacal_releasing=_serialize_zr(profile.zodiacal_releasing),
         included_components=profile.included_components,
         excluded_components=profile.excluded_components,
+        supporting_lots=(
+            None
+            if profile.supporting_lots is None
+            else tuple(_serialize_lot(lot) for lot in profile.supporting_lots)
+        ),
+        supporting_lots_not_evaluable=(
+            None
+            if profile.supporting_lots_not_evaluable is None
+            else tuple(
+                serialize_lot_not_evaluable(item)
+                for item in profile.supporting_lots_not_evaluable
+            )
+        ),
+        twelfth_parts=(
+            None
+            if profile.twelfth_parts is None
+            else tuple(
+                _serialize_twelfth_part(item.body, item.twelfth_part)
+                for item in profile.twelfth_parts
+            )
+        ),
+        zodiacal_releasing_fortune=(
+            None
+            if profile.zodiacal_releasing_fortune is None
+            else _serialize_zr(profile.zodiacal_releasing_fortune)
+        ),
+        sign_per_month_profection=(
+            None
+            if profile.sign_per_month_profection is None
+            else HellenisticSignPerMonthProfectionResponse(
+                annual_sign=profile.sign_per_month_profection.annual_sign,
+                annual_house=profile.sign_per_month_profection.annual_house,
+                lord_of_year=profile.sign_per_month_profection.lord_of_year,
+                monthly_signs=profile.sign_per_month_profection.monthly_signs,
+                monthly_lords=profile.sign_per_month_profection.monthly_lords,
+                caveat=profile.sign_per_month_profection.caveat,
+            )
+        ),
+        label_overlays=(
+            None
+            if profile.label_overlays is None
+            else HellenisticOverlayLabelsResponse(
+                detriment=profile.label_overlays.detriment,
+                hayz=profile.label_overlays.hayz,
+                activation_orb_deg=profile.label_overlays.activation_orb_deg,
+                monthly_interval=profile.label_overlays.monthly_interval,
+                caveats=profile.label_overlays.caveats,
+            )
+        ),
         provenance=HellenisticProfileProvenanceResponse(
             method_id=profile.provenance.method_id,
             lineage=profile.provenance.lineage,

@@ -24,7 +24,9 @@ from .gauquelin import router as gauquelin_router
 from .harmograms import router as harmograms_router
 from .harmonics import router as harmonics_router
 from .hellenistic_aspects import router as hellenistic_aspects_router
+from .hellenistic_atoms import router as hellenistic_atoms_router
 from .hellenistic_profile import router as hellenistic_profile_router
+from .hellenistic_systems import router as hellenistic_systems_router
 from .horary import router as horary_router
 from .mundane import router as mundane_router
 from .health import router as health_router
@@ -105,7 +107,9 @@ __all__ = [
     "harmograms_router",
     "harmonics_router",
     "hellenistic_aspects_router",
+    "hellenistic_atoms_router",
     "hellenistic_profile_router",
+    "hellenistic_systems_router",
     "horary_router",
     "mundane_router",
     "health_router",

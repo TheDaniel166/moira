@@ -6,6 +6,9 @@ The former session-by-session tracker mixed historical research notes,
 implementation snapshots, and completion claims. It is archived and must not
 be used as current capability truth.
 
+Post-6.2.2 admission program (not unfinished gates):
+[Hellenistic 6.3.0 Admission Program](HELLENISTIC_6_3_0_ADMISSION_PROGRAM.md).
+
 Current sources of truth:
 
 - [Hellenistic Engine Gate Roadmap](HELLENISTIC_ENGINE_GATES_2026-07.md)

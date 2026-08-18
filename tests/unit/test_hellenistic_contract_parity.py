@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from importlib import import_module
 from types import SimpleNamespace
 
 import moira
@@ -27,6 +28,48 @@ import moira_server.serializers.lots as lot_serializers
 import moira_server.services as server_services
 import moira_server.services.decans as decan_services
 import moira_server.services.lots as lot_services
+
+
+_HELLENISTIC_6_3_EXPORTS = {
+    "moira.twelfth_parts": (
+        "TwelfthPartPosition",
+        "twelfth_part_of",
+    ),
+    "moira.hellenistic_relations": (
+        "HellenisticAdherenceTruth",
+        "HellenisticAssembleCondition",
+        "HellenisticPlanetOvercomingTruth",
+        "HellenisticRayTruth",
+        "HellenisticTestimonyTruth",
+        "HellenisticTestimonyWitness",
+        "assemble_hellenistic_condition",
+    ),
+    "moira.hellenistic_labels": (
+        "HELLENISTIC_OVERLAY_CAVEATS",
+        "HellenisticOverlayLabels",
+    ),
+    "moira.lots": (
+        "HELLENISTIC_SUPPORTING_LOTS",
+        "exaltation_lot_name",
+        "select_supporting_hellenistic_lots",
+    ),
+    "moira.timelords": (
+        "ZRPeakGrade",
+        "zr_peak_grade",
+    ),
+    "moira.circumambulations": (
+        "CircumambulationResult",
+        "circumambulate",
+    ),
+    "moira.valens_transmissions": (
+        "TransmissionGraph",
+        "valens_transmission_graph",
+    ),
+    "moira.hellenistic_offices": (
+        "HellenisticOfficeHunt",
+        "hunt_hellenistic_offices",
+    ),
+}
 
 
 _PHASE_3_EXPORTS = {
@@ -99,6 +142,17 @@ def test_phase_3_exports_are_identical_across_curated_engine_surfaces() -> None:
     surfaces = (moira, classical, facade)
 
     for owner, names in _PHASE_3_EXPORTS.items():
+        for name in names:
+            direct = getattr(owner, name)
+            assert all(getattr(surface, name) is direct for surface in surfaces)
+            assert all(name in surface.__all__ for surface in surfaces)
+
+
+def test_hellenistic_6_3_exports_are_identical_across_curated_engine_surfaces() -> None:
+    surfaces = (moira, classical, facade)
+
+    for module_name, names in _HELLENISTIC_6_3_EXPORTS.items():
+        owner = import_module(module_name)
         for name in names:
             direct = getattr(owner, name)
             assert all(getattr(surface, name) is direct for surface in surfaces)

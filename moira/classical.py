@@ -126,6 +126,30 @@ from .lots import (
     calculate_lot_condition_profiles, calculate_lot_chart_condition_profile,
     calculate_lot_condition_network_profile,
     ArabicPartsService, list_parts,
+    HELLENISTIC_SUPPORTING_LOTS, exaltation_lot_name,
+    select_supporting_hellenistic_lots,
+)
+from .twelfth_parts import TwelfthPartPosition, twelfth_part_of
+from .hellenistic_relations import (
+    HellenisticAdherenceTruth, HellenisticAssembleCondition,
+    HellenisticPlanetOvercomingTruth, HellenisticRayTruth,
+    HellenisticTestimonyTruth, HellenisticTestimonyWitness,
+    assemble_hellenistic_condition,
+)
+from .hellenistic_labels import (
+    HELLENISTIC_OVERLAY_CAVEATS, HellenisticOverlayLabels,
+)
+from .circumambulations import (
+    CircumambulationPeriod, CircumambulationResult,
+    CircumambulationStatus, CircumambulationTimeKey, circumambulate,
+)
+from .valens_transmissions import (
+    TransmissionEdge, TransmissionEndpointKind, TransmissionGraph,
+    TransmissionKind, TransmissionStatus, valens_transmission_graph,
+)
+from .hellenistic_offices import (
+    HellenisticOfficeCandidate, HellenisticOfficeHunt,
+    HellenisticOfficeStatus, hunt_hellenistic_offices,
 )
 
 # ── Unified Hellenistic profile ─────────────────────────────────────────
@@ -137,7 +161,9 @@ from .hellenistic import (
     HellenisticAspectProfile, HellenisticLotProfile,
     HellenisticDecennialSnapshot, HellenisticZodiacalReleasingSnapshot,
     HellenisticObserverContext, HellenisticProfileNotEvaluable,
-    HellenisticProfileProvenance,
+    HellenisticProfileProvenance, HellenisticNamedTwelfthPart,
+    HellenisticProfileOverlays, HellenisticRevivalPolicy,
+    HellenisticSignPerMonthProfection,
     HellenisticChartProfile, hellenistic_chart_profile,
 )
 
@@ -217,7 +243,7 @@ from .timelords import (
     FirdarSequenceKind, TimelordEvaluationStatus,
     DecennialSequenceKind, DecennialTimeBasis,
     DecennialSequenceBodyTruth, DecennialSequenceAssemblyTruth,
-    ZRAngularityClass, ZRFortuneAngularityTruth,
+    ZRAngularityClass, ZRFortuneAngularityTruth, ZRPeakGrade,
     FirdarYearPolicy, DecennialPolicy, ZRYearPolicy,
     TimelordComputationPolicy, DEFAULT_TIMELORD_POLICY,
     FirdarPeriod as FirdarPeriodTL, DecennialPeriod, ReleasingPeriod,
@@ -227,7 +253,7 @@ from .timelords import (
     FirdarActivePair, DecennialActivePair, DecennialActivePath, ZRLevelPair,
     firdaria, current_firdaria,
     decennials, decennial_sequence_truth, current_decennials,
-    zodiacal_releasing, zr_fortune_angularity_truth, current_releasing,
+    zodiacal_releasing, zr_fortune_angularity_truth, zr_peak_grade, current_releasing,
     group_firdaria, group_decennials, group_releasing,
     firdar_condition_profile, decennial_condition_profile, zr_condition_profile,
     firdar_sequence_profile, decennial_sequence_profile, zr_sequence_profile,
@@ -364,6 +390,20 @@ _CLASSICAL_OWN: list[str] = [
     "calculate_lot_condition_profiles", "calculate_lot_chart_condition_profile",
     "calculate_lot_condition_network_profile",
     "ArabicPartsService", "list_parts",
+    "HELLENISTIC_SUPPORTING_LOTS", "exaltation_lot_name",
+    "select_supporting_hellenistic_lots",
+    "TwelfthPartPosition", "twelfth_part_of",
+    "HellenisticAdherenceTruth", "HellenisticAssembleCondition",
+    "HellenisticPlanetOvercomingTruth", "HellenisticRayTruth",
+    "HellenisticTestimonyTruth", "HellenisticTestimonyWitness",
+    "assemble_hellenistic_condition",
+    "HELLENISTIC_OVERLAY_CAVEATS", "HellenisticOverlayLabels",
+    "CircumambulationPeriod", "CircumambulationResult",
+    "CircumambulationStatus", "CircumambulationTimeKey", "circumambulate",
+    "TransmissionEdge", "TransmissionEndpointKind", "TransmissionGraph",
+    "TransmissionKind", "TransmissionStatus", "valens_transmission_graph",
+    "HellenisticOfficeCandidate", "HellenisticOfficeHunt",
+    "HellenisticOfficeStatus", "hunt_hellenistic_offices",
     # Unified Hellenistic profile
     "HELLENISTIC_CLASSICAL_PLANETS", "HELLENISTIC_PROFILE_LOTS",
     "HellenisticProfileStatus", "HellenisticProfileComponent",
@@ -372,7 +412,9 @@ _CLASSICAL_OWN: list[str] = [
     "HellenisticAspectProfile", "HellenisticLotProfile",
     "HellenisticDecennialSnapshot", "HellenisticZodiacalReleasingSnapshot",
     "HellenisticObserverContext", "HellenisticProfileNotEvaluable",
-    "HellenisticProfileProvenance",
+    "HellenisticProfileProvenance", "HellenisticNamedTwelfthPart",
+    "HellenisticProfileOverlays", "HellenisticRevivalPolicy",
+    "HellenisticSignPerMonthProfection",
     "HellenisticChartProfile", "hellenistic_chart_profile",
     # Midpoints
     "Midpoint", "PlanetaryPicture", "MidpointWeight", "MidpointCluster",
@@ -441,7 +483,8 @@ _CLASSICAL_OWN: list[str] = [
     "FirdarActivePair", "DecennialActivePair", "DecennialActivePath", "ZRLevelPair",
     "firdaria", "current_firdaria",
     "decennials", "decennial_sequence_truth", "current_decennials",
-    "zodiacal_releasing", "zr_fortune_angularity_truth", "current_releasing",
+    "zodiacal_releasing", "zr_fortune_angularity_truth", "zr_peak_grade",
+    "ZRPeakGrade", "current_releasing",
     "group_firdaria", "group_decennials", "group_releasing",
     "firdar_condition_profile", "decennial_condition_profile", "zr_condition_profile",
     "firdar_sequence_profile", "decennial_sequence_profile", "zr_sequence_profile",

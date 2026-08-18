@@ -10,7 +10,7 @@ as typed ``not_evaluable`` evidence.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from ._strenum import StrEnum
 from math import isfinite
@@ -21,7 +21,7 @@ from .aspects import (
     HellenisticSuperiorityTruth,
     find_whole_sign_aspects,
 )
-from .constants import HouseSystem
+from .constants import SIGNS, HouseSystem
 from .decanates import DecanatePosition, chaldean_face
 from .dignities import (
     DignityComputationPolicy,
@@ -43,16 +43,26 @@ from .egyptian_bounds import (
     egyptian_bound_of,
 )
 from .julian import jd_from_datetime
+from .hellenistic_labels import HellenisticOverlayLabels
+from .hellenistic_relations import (
+    HellenisticAssembleCondition,
+    assemble_hellenistic_condition,
+)
 from .lots import (
+    ArabicPart,
     ArabicPartComputationTruth,
     LotAstrologicalConditionTruth,
     LotDependencyCompletenessTruth,
     LotNotEvaluable,
     LotsComputationPolicy,
+    LotsEvaluation,
     LotsReferenceFailureMode,
     evaluate_lots,
+    exaltation_lot_name,
+    select_supporting_hellenistic_lots,
 )
 from .profections import (
+    DOMICILE_RULERS,
     LeapDayAnniversaryPolicy,
     MonthlyProfectionIntervalPolicy,
     ProfectionAmbiguousTimePolicy,
@@ -68,15 +78,18 @@ from .timelords import (
     TimelordComputationPolicy,
     TimelordEvaluationStatus,
     ZRYearPolicy,
+    ZRPeakGrade,
     current_decennials,
     decennial_sequence_truth,
     zodiacal_releasing,
+    zr_peak_grade,
 )
 from .triplicity import (
     TriplicityAssignment,
     TriplicityDoctrine,
     triplicity_assignment_for,
 )
+from .twelfth_parts import TwelfthPartPosition, twelfth_part_of
 
 
 HELLENISTIC_CLASSICAL_PLANETS: tuple[str, ...] = (
@@ -140,6 +153,134 @@ class HellenisticProfileExclusion(StrEnum):
     TRIACONTAETERIS = "triacontaeteris"
 
 
+_SIGN_PER_MONTH_CAVEAT = (
+    "sign-per-month is a revival display cycle; dated authority remains "
+    "civil equal-twelfths"
+)
+
+
+@dataclass(frozen=True, slots=True)
+class HellenisticRevivalPolicy:
+    """Named revival display flags. Defaults keep the 6.2.2 profile shape."""
+
+    dual_zr: bool = False
+    zr_peak_grades: bool = False
+    zr_display_levels: int = 2
+    sign_per_month_profections: bool = False
+    label_overlays: bool = False
+
+    def __post_init__(self) -> None:
+        for name in (
+            "dual_zr",
+            "zr_peak_grades",
+            "sign_per_month_profections",
+            "label_overlays",
+        ):
+            if not isinstance(getattr(self, name), bool):
+                raise TypeError(
+                    f"HellenisticRevivalPolicy.{name} must be bool"
+                )
+        if type(self.zr_display_levels) is not int or not (
+            1 <= self.zr_display_levels <= 4
+        ):
+            raise ValueError(
+                "HellenisticRevivalPolicy.zr_display_levels must be in 1..4"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class HellenisticProfileOverlays:
+    """Optional additive atoms. Off keeps the four-lot v2 partition."""
+
+    supporting_lots: bool = False
+    assemble_condition: bool = False
+    twelfth_parts: bool = False
+
+    def __post_init__(self) -> None:
+        for name in (
+            "supporting_lots",
+            "assemble_condition",
+            "twelfth_parts",
+        ):
+            if not isinstance(getattr(self, name), bool):
+                raise TypeError(
+                    f"HellenisticProfileOverlays.{name} must be bool"
+                )
+
+
+@dataclass(frozen=True, slots=True)
+class HellenisticNamedTwelfthPart:
+    """One natal twelfth-part attached to a named body."""
+
+    body: str
+    twelfth_part: TwelfthPartPosition
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.body, str) or not self.body.strip():
+            raise ValueError(
+                "HellenisticNamedTwelfthPart.body must be a non-empty string"
+            )
+        if not isinstance(self.twelfth_part, TwelfthPartPosition):
+            raise TypeError(
+                "HellenisticNamedTwelfthPart.twelfth_part must be a "
+                "TwelfthPartPosition"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class HellenisticSignPerMonthProfection:
+    """Revival sign-step month cycle. Civil twelfths stay dated authority."""
+
+    annual_sign: str
+    annual_house: int
+    lord_of_year: str
+    monthly_signs: tuple[str, ...]
+    monthly_lords: tuple[str, ...]
+    caveat: str = _SIGN_PER_MONTH_CAVEAT
+
+    def __post_init__(self) -> None:
+        if self.annual_sign not in SIGNS:
+            raise ValueError(
+                "HellenisticSignPerMonthProfection.annual_sign must be a "
+                "zodiac sign"
+            )
+        if type(self.annual_house) is not int or not (
+            1 <= self.annual_house <= 12
+        ):
+            raise ValueError(
+                "HellenisticSignPerMonthProfection.annual_house must be "
+                "in 1..12"
+            )
+        if len(self.monthly_signs) != 12 or len(self.monthly_lords) != 12:
+            raise ValueError(
+                "HellenisticSignPerMonthProfection monthly cycle must "
+                "contain twelve signs and lords"
+            )
+        start = SIGNS.index(self.annual_sign)
+        expected_signs = tuple(SIGNS[(start + index) % 12] for index in range(12))
+        if self.monthly_signs != expected_signs:
+            raise ValueError(
+                "HellenisticSignPerMonthProfection monthly signs must "
+                "advance one sign from the annual sign"
+            )
+        expected_lords = tuple(DOMICILE_RULERS[sign] for sign in expected_signs)
+        if self.monthly_lords != expected_lords:
+            raise ValueError(
+                "HellenisticSignPerMonthProfection monthly lords must match "
+                "classical domicile rulers"
+            )
+        if self.lord_of_year != DOMICILE_RULERS[self.annual_sign]:
+            raise ValueError(
+                "HellenisticSignPerMonthProfection.lord_of_year must match "
+                "the annual sign"
+            )
+        if self.caveat != _SIGN_PER_MONTH_CAVEAT:
+            raise ValueError(
+                "HellenisticSignPerMonthProfection caveat is a fixed "
+                "revival-display receipt"
+            )
+
+
 @dataclass(frozen=True, slots=True)
 class HellenisticProfilePolicy:
     """Explicit selectors governing profile composition."""
@@ -166,6 +307,12 @@ class HellenisticProfilePolicy:
     zr_lot_name: str = "Spirit"
     zr_levels: int = 2
     use_loosing_of_bond: bool = True
+    revival: HellenisticRevivalPolicy = field(
+        default_factory=HellenisticRevivalPolicy
+    )
+    overlays: HellenisticProfileOverlays = field(
+        default_factory=HellenisticProfileOverlays
+    )
 
     def __post_init__(self) -> None:
         if not isinstance(self.dignity, DignityComputationPolicy):
@@ -287,6 +434,16 @@ class HellenisticProfilePolicy:
             raise TypeError(
                 "Hellenistic profile use_loosing_of_bond must be bool"
             )
+        if not isinstance(self.revival, HellenisticRevivalPolicy):
+            raise TypeError(
+                "Hellenistic profile revival must be a "
+                "HellenisticRevivalPolicy"
+            )
+        if not isinstance(self.overlays, HellenisticProfileOverlays):
+            raise TypeError(
+                "Hellenistic profile overlays must be a "
+                "HellenisticProfileOverlays"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -320,6 +477,8 @@ class HellenisticPlanetProfile:
     triplicity_assignment: TriplicityAssignment
     bound_truth: EgyptianBoundTruth
     face: DecanatePosition
+    assemble_condition: HellenisticAssembleCondition | None = None
+    twelfth_part: TwelfthPartPosition | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -423,6 +582,7 @@ class HellenisticZodiacalReleasingSnapshot:
     use_loosing_of_bond: bool
     active_periods: tuple[ReleasingPeriod, ...] = ()
     reason: str | None = None
+    peak_grades: tuple[ZRPeakGrade, ...] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.status, HellenisticProfileStatus):
@@ -495,6 +655,28 @@ class HellenisticZodiacalReleasingSnapshot:
                 "Not-evaluable Hellenistic Zodiacal Releasing requires no "
                 "active periods and an explicit reason"
             )
+        if self.peak_grades is not None:
+            if (
+                self.status is not HellenisticProfileStatus.EVALUATED
+                or len(self.peak_grades) != len(self.active_periods)
+                or any(
+                    not isinstance(grade, ZRPeakGrade)
+                    for grade in self.peak_grades
+                )
+            ):
+                raise ValueError(
+                    "Hellenistic Zodiacal Releasing peak_grades must match "
+                    "evaluated active periods"
+                )
+            expected = tuple(
+                zr_peak_grade(period.angularity_class)
+                for period in self.active_periods
+            )
+            if self.peak_grades != expected:
+                raise ValueError(
+                    "Hellenistic Zodiacal Releasing peak_grades must project "
+                    "Fortune-relative angularity class"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -674,6 +856,12 @@ class HellenisticChartProfile:
     included_components: tuple[HellenisticProfileComponent, ...]
     excluded_components: tuple[HellenisticProfileExclusion, ...]
     provenance: HellenisticProfileProvenance
+    supporting_lots: tuple[HellenisticLotProfile, ...] | None = None
+    supporting_lots_not_evaluable: tuple[LotNotEvaluable, ...] | None = None
+    twelfth_parts: tuple[HellenisticNamedTwelfthPart, ...] | None = None
+    zodiacal_releasing_fortune: HellenisticZodiacalReleasingSnapshot | None = None
+    sign_per_month_profection: HellenisticSignPerMonthProfection | None = None
+    label_overlays: HellenisticOverlayLabels | None = None
 
     def __post_init__(self) -> None:
         _aware_datetime("HellenisticChartProfile.natal_dt", self.natal_dt)
@@ -832,6 +1020,7 @@ class HellenisticChartProfile:
                 "HellenisticChartProfile provenance must match the v2 "
                 "composition receipt"
             )
+        _validate_profile_overlays(self)
 
 
 _INCLUDED_COMPONENTS: tuple[HellenisticProfileComponent, ...] = tuple(
@@ -848,6 +1037,132 @@ _PROFILE_SOURCE_REFS: tuple[str, ...] = (
     "Agrippa, Three Books of Occult Philosophy II.37; Picatrix I.4 "
     "(admitted Chaldean-face table provenance)",
 )
+
+
+def _validate_profile_overlays(profile: "HellenisticChartProfile") -> None:
+    """Keep optional overlays aligned with the named policy flags."""
+
+    policy = profile.policy
+    if policy.overlays.supporting_lots:
+        if (
+            profile.supporting_lots is None
+            or profile.supporting_lots_not_evaluable is None
+        ):
+            raise ValueError(
+                "supporting-lots overlay requires explicit evaluated and "
+                "unresolved receipts"
+            )
+        wanted = {
+            exaltation_lot_name(is_day_chart=profile.is_day_chart),
+            "Basis (Valens)",
+        }
+        present = {lot.name for lot in profile.supporting_lots} | {
+            item.name for item in profile.supporting_lots_not_evaluable
+        }
+        if present != wanted:
+            raise ValueError(
+                "supporting-lots overlay must be the sect-selected "
+                "Exaltation lot and Basis (Valens)"
+            )
+    elif (
+        profile.supporting_lots is not None
+        or profile.supporting_lots_not_evaluable is not None
+    ):
+        raise ValueError("supporting lots must be absent when the overlay is off")
+
+    if policy.overlays.twelfth_parts:
+        if (
+            profile.twelfth_parts is None
+            or tuple(item.body for item in profile.twelfth_parts)
+            != HELLENISTIC_CLASSICAL_PLANETS
+        ):
+            raise ValueError(
+                "twelfth-parts overlay must name the Classic 7 in order"
+            )
+        if any(
+            planet.twelfth_part != item.twelfth_part
+            or item.body != planet.planet
+            for planet, item in zip(
+                profile.planets,
+                profile.twelfth_parts,
+                strict=True,
+            )
+        ):
+            raise ValueError(
+                "planet twelfth-parts must match the profile twelfth_parts overlay"
+            )
+    elif profile.twelfth_parts is not None or any(
+        planet.twelfth_part is not None for planet in profile.planets
+    ):
+        raise ValueError("twelfth-parts must be absent when the overlay is off")
+
+    if policy.overlays.assemble_condition:
+        if any(
+            planet.assemble_condition is None
+            or planet.assemble_condition.subject != planet.planet
+            for planet in profile.planets
+        ):
+            raise ValueError(
+                "assemble-condition overlay requires one receipt per planet"
+            )
+    elif any(planet.assemble_condition is not None for planet in profile.planets):
+        raise ValueError(
+            "assemble-condition must be absent when the overlay is off"
+        )
+
+    if policy.revival.dual_zr:
+        companion = profile.zodiacal_releasing_fortune
+        if companion is None:
+            raise ValueError("dual ZR requires a Fortune companion snapshot")
+        if policy.zr_lot_name == "Fortune":
+            if (
+                companion.status is not HellenisticProfileStatus.NOT_EVALUABLE
+                or companion.reason != "selected_releasing_lot_already_fortune"
+            ):
+                raise ValueError(
+                    "Fortune companion is not_evaluable when Spirit/ZR "
+                    "selection is already Fortune"
+                )
+        elif companion.lot_name != "Fortune":
+            raise ValueError("dual ZR companion must be Fortune")
+    elif profile.zodiacal_releasing_fortune is not None:
+        raise ValueError("Fortune ZR companion must be absent when dual ZR is off")
+
+    if policy.revival.zr_peak_grades:
+        if (
+            profile.zodiacal_releasing.status
+            is HellenisticProfileStatus.EVALUATED
+            and profile.zodiacal_releasing.peak_grades is None
+        ):
+            raise ValueError(
+                "evaluated ZR peak-grade overlay requires peak_grades"
+            )
+    elif profile.zodiacal_releasing.peak_grades is not None or (
+        profile.zodiacal_releasing_fortune is not None
+        and profile.zodiacal_releasing_fortune.peak_grades is not None
+    ):
+        raise ValueError("peak_grades must be absent when the overlay is off")
+
+    if policy.revival.sign_per_month_profections:
+        if profile.sign_per_month_profection is None:
+            raise ValueError("sign-per-month overlay requires a sibling receipt")
+        if (
+            profile.sign_per_month_profection.annual_sign
+            != profile.profection.profected_sign
+            or profile.sign_per_month_profection.annual_house
+            != profile.profection.profected_house
+        ):
+            raise ValueError(
+                "sign-per-month overlay must start from the annual profection"
+            )
+    elif profile.sign_per_month_profection is not None:
+        raise ValueError("sign-per-month overlay must be absent when off")
+
+    if policy.revival.label_overlays:
+        if profile.label_overlays is None:
+            raise ValueError("label overlay requires HellenisticOverlayLabels")
+    elif profile.label_overlays is not None:
+        raise ValueError("label overlays must be absent when the flag is off")
 
 
 def _aware_datetime(name: str, value: datetime) -> None:
@@ -1104,6 +1419,25 @@ def _aspect_profiles(
     return tuple(profiles)
 
 
+def _lot_profile_from_part(part: ArabicPart) -> HellenisticLotProfile:
+    if part.computation_truth is None:
+        raise ValueError(f"profile lot {part.name!r} lacks computation truth")
+    if part.dependency_completeness is None:
+        raise ValueError(
+            f"profile lot {part.name!r} lacks dependency-completeness truth"
+        )
+    return HellenisticLotProfile(
+        name=part.name,
+        longitude=part.longitude,
+        formula=part.formula,
+        category=part.category,
+        description=part.description,
+        computation_truth=part.computation_truth,
+        dependency_completeness=part.dependency_completeness,
+        astrological_condition_truth=part.astrological_condition_truth,
+    )
+
+
 def _lot_profiles(
     positions: dict[str, float],
     cusps: dict[int, float],
@@ -1119,6 +1453,7 @@ def _lot_profiles(
 ) -> tuple[
     tuple[HellenisticLotProfile, ...],
     tuple[LotNotEvaluable, ...],
+    LotsEvaluation,
 ]:
     evaluation = evaluate_lots(
         positions,
@@ -1148,25 +1483,8 @@ def _lot_profiles(
                 )
             selected_unresolved.append(not_evaluable)
             continue
-        if part.computation_truth is None:
-            raise ValueError(f"profile lot {name!r} lacks computation truth")
-        if part.dependency_completeness is None:
-            raise ValueError(
-                f"profile lot {name!r} lacks dependency-completeness truth"
-            )
-        profiles.append(
-            HellenisticLotProfile(
-                name=part.name,
-                longitude=part.longitude,
-                formula=part.formula,
-                category=part.category,
-                description=part.description,
-                computation_truth=part.computation_truth,
-                dependency_completeness=part.dependency_completeness,
-                astrological_condition_truth=part.astrological_condition_truth,
-            )
-        )
-    return tuple(profiles), tuple(selected_unresolved)
+        profiles.append(_lot_profile_from_part(part))
+    return tuple(profiles), tuple(selected_unresolved), evaluation
 
 
 def _timelord_policy(
@@ -1316,6 +1634,67 @@ def _zr_snapshot(
     )
 
 
+def _zr_peak_grades_overlay(
+    snapshot: HellenisticZodiacalReleasingSnapshot,
+    enabled: bool,
+) -> HellenisticZodiacalReleasingSnapshot:
+    if (
+        not enabled
+        or snapshot.status is not HellenisticProfileStatus.EVALUATED
+    ):
+        return snapshot
+    return replace(
+        snapshot,
+        peak_grades=tuple(
+            zr_peak_grade(period.angularity_class)
+            for period in snapshot.active_periods
+        ),
+    )
+
+
+def _fortune_zr_companion(
+    natal_jd: float,
+    current_jd: float,
+    lots: tuple[HellenisticLotProfile, ...],
+    policy: HellenisticProfilePolicy,
+) -> HellenisticZodiacalReleasingSnapshot:
+    if policy.zr_lot_name == "Fortune":
+        fortune = next((lot for lot in lots if lot.name == "Fortune"), None)
+        return HellenisticZodiacalReleasingSnapshot(
+            status=HellenisticProfileStatus.NOT_EVALUABLE,
+            lot_name="Fortune",
+            source_lot_name="Fortune",
+            lot_longitude=None if fortune is None else fortune.longitude,
+            fortune_longitude=None if fortune is None else fortune.longitude,
+            levels=policy.zr_levels,
+            use_loosing_of_bond=policy.use_loosing_of_bond,
+            reason="selected_releasing_lot_already_fortune",
+        )
+    return _zr_peak_grades_overlay(
+        _zr_snapshot(
+            natal_jd,
+            current_jd,
+            lots,
+            replace(policy, zr_lot_name="Fortune"),
+        ),
+        policy.revival.zr_peak_grades,
+    )
+
+
+def _sign_per_month_overlay(
+    profection: ProfectionResult,
+) -> HellenisticSignPerMonthProfection:
+    start = SIGNS.index(profection.profected_sign)
+    monthly_signs = tuple(SIGNS[(start + index) % 12] for index in range(12))
+    return HellenisticSignPerMonthProfection(
+        annual_sign=profection.profected_sign,
+        annual_house=profection.profected_house,
+        lord_of_year=profection.lord_of_year,
+        monthly_signs=monthly_signs,
+        monthly_lords=tuple(DOMICILE_RULERS[sign] for sign in monthly_signs),
+    )
+
+
 def _profile_issues(
     planets: tuple[HellenisticPlanetProfile, ...],
     aspects: tuple[HellenisticAspectProfile, ...],
@@ -1461,7 +1840,7 @@ def hellenistic_chart_profile(
         policy=resolved_policy,
     )
     aspects = _aspect_profiles(positions)
-    lots, lots_not_evaluable = _lot_profiles(
+    lots, lots_not_evaluable, lots_evaluation = _lot_profiles(
         positions,
         cusps,
         asc_longitude=asc,
@@ -1498,7 +1877,79 @@ def hellenistic_chart_profile(
         day_chart,
         resolved_policy,
     )
-    zr = _zr_snapshot(natal_jd, current_jd, lots, resolved_policy)
+    zr = _zr_peak_grades_overlay(
+        _zr_snapshot(natal_jd, current_jd, lots, resolved_policy),
+        resolved_policy.revival.zr_peak_grades,
+    )
+    if resolved_policy.overlays.assemble_condition or (
+        resolved_policy.overlays.twelfth_parts
+    ):
+        planets = tuple(
+            replace(
+                planet,
+                assemble_condition=(
+                    assemble_hellenistic_condition(
+                        planet.planet,
+                        positions,
+                        speeds,
+                    )
+                    if resolved_policy.overlays.assemble_condition
+                    else None
+                ),
+                twelfth_part=(
+                    twelfth_part_of(planet.longitude)
+                    if resolved_policy.overlays.twelfth_parts
+                    else None
+                ),
+            )
+            for planet in planets
+        )
+    supporting_lots = None
+    supporting_lots_not_evaluable = None
+    if resolved_policy.overlays.supporting_lots:
+        evaluated, unresolved = select_supporting_hellenistic_lots(
+            lots_evaluation,
+            is_day_chart=day_chart,
+        )
+        supporting_lots = tuple(
+            _lot_profile_from_part(part) for part in evaluated
+        )
+        supporting_lots_not_evaluable = tuple(unresolved)
+    named_twelfth_parts = None
+    if resolved_policy.overlays.twelfth_parts:
+        named: list[HellenisticNamedTwelfthPart] = []
+        for planet in planets:
+            if planet.twelfth_part is None:
+                raise ValueError(
+                    "twelfth-parts overlay missing a planet receipt"
+                )
+            named.append(
+                HellenisticNamedTwelfthPart(
+                    body=planet.planet,
+                    twelfth_part=planet.twelfth_part,
+                )
+            )
+        named_twelfth_parts = tuple(named)
+    zr_fortune = (
+        _fortune_zr_companion(
+            natal_jd,
+            current_jd,
+            lots,
+            resolved_policy,
+        )
+        if resolved_policy.revival.dual_zr
+        else None
+    )
+    sign_per_month = (
+        _sign_per_month_overlay(profection)
+        if resolved_policy.revival.sign_per_month_profections
+        else None
+    )
+    labels = (
+        HellenisticOverlayLabels()
+        if resolved_policy.revival.label_overlays
+        else None
+    )
     issues = _profile_issues(
         planets,
         aspects,
@@ -1540,6 +1991,12 @@ def hellenistic_chart_profile(
         zodiacal_releasing=zr,
         included_components=_INCLUDED_COMPONENTS,
         excluded_components=_EXCLUDED_COMPONENTS,
+        supporting_lots=supporting_lots,
+        supporting_lots_not_evaluable=supporting_lots_not_evaluable,
+        twelfth_parts=named_twelfth_parts,
+        zodiacal_releasing_fortune=zr_fortune,
+        sign_per_month_profection=sign_per_month,
+        label_overlays=labels,
         provenance=HellenisticProfileProvenance(
             method_id="moira.hellenistic_chart_profile.v2",
             lineage="hellenistic_with_explicit_component_boundaries",
@@ -1578,9 +2035,13 @@ __all__ = [
     "HellenisticProfileComponent",
     "HellenisticProfileExclusion",
     "HellenisticProfileNotEvaluable",
+    "HellenisticNamedTwelfthPart",
+    "HellenisticProfileOverlays",
     "HellenisticProfilePolicy",
     "HellenisticProfileProvenance",
     "HellenisticProfileStatus",
+    "HellenisticRevivalPolicy",
+    "HellenisticSignPerMonthProfection",
     "HellenisticZodiacalReleasingSnapshot",
     "hellenistic_chart_profile",
 ]

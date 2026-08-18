@@ -713,7 +713,7 @@ Canon: Moira Sovereign Facade Architecture; Hellenistic and medieval
         self,
         lot_longitude: float,
         natal_dt: datetime,
-        levels: int = 4,
+        levels: int = 2,
         *,
         lot_name: str = "Spirit",
         fortune_longitude: float | None = None,
