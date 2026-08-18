@@ -28,7 +28,9 @@ _CURATED_PUBLIC_NAMES = [
     "DecennialSequenceBodyTruth",
     "DecennialSequenceAssemblyTruth",
     "ZRAngularityClass",
+    "ZRPeakGrade",
     "ZRFortuneAngularityTruth",
+    "zr_peak_grade",
     "FirdarYearPolicy",
     "DecennialPolicy",
     "ZRYearPolicy",
@@ -141,11 +143,11 @@ class TestTimelordsModuleLevelResolution:
 
 
 class TestTimelordsCounts:
-    def test_curated_count_is_59(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 59
+    def test_curated_count_is_61(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 61
 
-    def test_timelords_all_count_is_59(self):
-        assert len(_timelords_module.__all__) == 59
+    def test_timelords_all_count_is_61(self):
+        assert len(_timelords_module.__all__) == 61
 
 
 class TestTimelordsInternalsRemainInternal:
