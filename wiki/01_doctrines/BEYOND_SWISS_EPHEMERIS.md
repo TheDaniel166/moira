@@ -26,6 +26,10 @@ ELP hybrid that keeps periodic terms inside a “mean” label. The 4–7′
 residual is expected. See
 [Migrating from Swiss Ephemeris — Why a Swiss number is not a Moira number](../02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md#why-a-swiss-number-is-not-a-moira-number).
 
+Moira also does not ship a second Chebyshev pack of DExx. The published
+kernel is the evidence; time stays a named policy. See
+[Why Moira Does Not Compress DExx Files](WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md).
+
 ---
 
 ## I. The Data That Did Not Exist

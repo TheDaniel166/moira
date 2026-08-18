@@ -796,6 +796,7 @@ has a Moira alias. For specialized work, use these current documents:
 - [`Houses Backend Standard`](../02_standards/HOUSES_BACKEND_STANDARD.md)
 - [`Validation — Astronomy`](../03_validation/VALIDATION_ASTRONOMY.md)
 - [`Beyond Swiss Ephemeris`](../01_doctrines/BEYOND_SWISS_EPHEMERIS.md)
+- [`Why Moira Does Not Compress DExx Files`](../01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md)
 
 Swiss behavior and flags should be checked against the official
 [Swiss Ephemeris Programmer's Manual](https://www.astro.com/swisseph/swephprg.2.10.pdf)

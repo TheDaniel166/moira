@@ -160,6 +160,18 @@
       "schema_type": "TechArticle"
     },
     {
+      "id": "why-moira-does-not-compress-dexx",
+      "kind": "doc",
+      "route": "/docs/why-moira-does-not-compress-dexx",
+      "output": "client/src/docs-content/why-moira-does-not-compress-dexx.md",
+      "source": "wiki/01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md",
+      "title": "Why Moira Does Not Compress DExx Files",
+      "nav_label": "Uncompressed DExx",
+      "description": "Why Moira reads published JPL DE kernels instead of a second Chebyshev pack, and how compression-plus-wrapper turns a clock mix into a false residual.",
+      "content_class": "evergreen_doctrine",
+      "schema_type": "TechArticle"
+    },
+    {
       "id": "roadmap",
       "kind": "doc",
       "route": "/docs/roadmap",

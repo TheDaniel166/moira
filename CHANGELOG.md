@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Public technical note `wiki/01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md`
+  on reading published JPL DExx kernels instead of a second Chebyshev pack.
+
 ## [6.3.0] - 2026-08-18
 
 Detailed release and migration guidance is available in

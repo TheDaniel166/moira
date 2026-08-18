@@ -12,6 +12,7 @@ for its doctrines, standards, and mathematical validation.
 - **[The Light Box Doctrine](01_doctrines/01_LIGHT_BOX_DOCTRINE.md)**: The philosophical and technical commitment to transparency.
 - **[The Constitutional Process](00_foundations/CONSTITUTIONAL_PROCESS.md)**: The Subsystem Constitutional Process methodology.
 - **[Beyond Swiss Ephemeris](01_doctrines/BEYOND_SWISS_EPHEMERIS.md)**: The capabilities of the 21st-century astronomical substrate.
+- **[Why Moira Does Not Compress DExx](01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md)**: Published kernels, named clocks, and what a second Chebyshev pack actually costs.
 
 ---
 
