@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "release_history_floor": "5.0.0",
-  "last_verified": "2026-08-13",
+  "last_verified": "2026-08-18",
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -317,6 +317,58 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.3.0",
+      "date": "2026-08-18",
+      "title": "Hellenistic Computation Deepening",
+      "added": [
+        "Natal twelfth-parts, score-free assemble-condition, supporting lots, circumambulations, transmissions, and fail-closed office hunt, with matching REST routes.",
+        "Optional v2 profile revival and overlay fields, all default off."
+      ],
+      "changed": [
+        "Omitted Zodiacal Releasing levels now default to 2 (L1/L2); explicit 3 or 4 remains legal."
+      ],
+      "fixed": [],
+      "validation": [
+        "Admission packets under wiki/01_doctrines/hellenistic_6_3/ and the 6.3.0 identity check cover the new atoms."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.3.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.3.0.md"
+    },
+    {
+      "version": "6.2.2",
+      "date": "2026-08-15",
+      "title": "Lunar Node and Lilith Honesty",
+      "added": [],
+      "changed": [
+        "Mean Lilith uses the IERS 2003 mean apogee. True Node and True Lilith speeds are circular finite-differences of the osculating longitude."
+      ],
+      "fixed": [],
+      "validation": [
+        "Node and Lilith identity receipts remain distinct from Swiss SE_MEAN_APOG."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.2.2.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.2.2.md"
+    },
+    {
+      "version": "6.2.1",
+      "date": "2026-08-14",
+      "title": "Wheel Asteroid Catalog",
+      "added": [
+        "Wheel catalog moira-asteroids-wheel 2026.08.14.1: 25 named small bodies including Chiron as one Type-13 shard in the wheel."
+      ],
+      "changed": [
+        "Missing-segment errors for known asteroid identities name catalog 2026.08.12.1 and the public archive."
+      ],
+      "fixed": [
+        "Clean pip install can compute Chiron without centaurs.bsp."
+      ],
+      "validation": [
+        "Wheel shard identity and download-list receipts exclude centaurs.bsp as a bundled file."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.2.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.2.1.md"
+    },
     {
       "version": "6.2.0",
       "date": "2026-08-13",
