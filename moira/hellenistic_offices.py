@@ -26,6 +26,8 @@ __all__ = [
 
 
 class HellenisticOfficeStatus(StrEnum):
+    """Office hunt outcome. 6.3.0 admits only fail-closed non-selection."""
+
     NOT_EVALUABLE = "not_evaluable"
 
 

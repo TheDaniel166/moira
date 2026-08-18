@@ -45,11 +45,15 @@ __all__ = [
 
 
 class CircumambulationStatus(StrEnum):
+    """Whether the bound walk and admitted year key were evaluable."""
+
     EVALUATED = "evaluated"
     NOT_EVALUABLE = "not_evaluable"
 
 
 class CircumambulationTimeKey(StrEnum):
+    """Named year-key doctrine for one circumambulation circuit."""
+
     BOUND_LORD_MINOR_YEARS = "bound_lord_minor_years"
     RISING_TIMES = "rising_times"
     EQUATORIAL = "equatorial"

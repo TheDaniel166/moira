@@ -1,3 +1,16 @@
+"""
+Moira — packaged wheel asteroid catalog identity.
+
+Owns the 25-body Type-13 wheel-catalog constants and the targets.json
+loader. Does not compute positions or download kernels.
+
+Public surface:
+    CATALOG_ID, CATALOG_VERSION, FULL_CATALOG_VERSION, EPHEMERIDES_URL,
+    CATALOG_DIR, TARGETS_PATH, load_targets
+
+Import-time side effects: None
+"""
+
 from __future__ import annotations
 
 import json

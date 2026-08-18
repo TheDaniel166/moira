@@ -28,17 +28,23 @@ __all__ = [
 
 
 class TransmissionStatus(StrEnum):
+    """Whether one transmission edge or graph was evaluable."""
+
     EVALUATED = "evaluated"
     NOT_EVALUABLE = "not_evaluable"
 
 
 class TransmissionEndpointKind(StrEnum):
+    """Admitted endpoint family: planet, whole-sign place, or lot."""
+
     PLANET = "planet"
     PLACE = "place"
     LOT = "lot"
 
 
 class TransmissionKind(StrEnum):
+    """Named from-to relation reused from existing period or natal receipts."""
+
     PROFECTED_YEAR_TO_MONTH = "profected_year_to_month"
     DECENNIAL_L1_TO_L2 = "decennial_l1_to_l2"
     ZR_L1_TO_L2 = "zr_l1_to_l2"
