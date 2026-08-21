@@ -20,6 +20,10 @@ evidence and derivation; they do not override this file. When this file requires
 one for a task, read it, verify it against current code, and surface drift rather
 than treating historical prose as runtime truth.
 
+Cross-repo operating map (which tree, which train, which product layer):
+`C:\dev\moira-state\ARCHITECTURE.md`. It does not override this file inside
+the engine repository.
+
 ---
 
 ## Part I — Identity and Doctrine
