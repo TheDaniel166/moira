@@ -668,7 +668,7 @@ drift.
 | [`RELEASE_NOTES_6.1.0.md`](wiki/03_release/RELEASE_NOTES_6.1.0.md) | Published 6.1.0 release notes, validation summary, and explicit exclusions. |
 | [`01_LIGHT_BOX_DOCTRINE.md`](wiki/01_doctrines/01_LIGHT_BOX_DOCTRINE.md) | Transparency and derivation as design constraints. |
 | [`BEYOND_SWISS_EPHEMERIS.md`](wiki/01_doctrines/BEYOND_SWISS_EPHEMERIS.md) | Capabilities enabled by sovereign catalogs, explicit policy, and modern Python. |
-| [`WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md`](wiki/01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md) | Why Moira reads published JPL kernels and what a second Chebyshev pack costs. |
+| [`WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md`](wiki/01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md) | How Moira reads published JPL SPK records versus how Swiss reads packed `.se1`. |
 | [`MIGRATING_FROM_SWISS_EPHEMERIS.md`](wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md) | Contract-first porting guide for Swiss flags, bodies, time scales, units, houses, REST, and dual-run verification. |
 | [`HOUSE_SYSTEM_DIVERGENCE.md`](wiki/01_doctrines/houses/HOUSE_SYSTEM_DIVERGENCE.md) | House-system derivation and discretionary divergence from conventional Swiss-facing behavior. |
 | [`PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md`](wiki/03_validation/PHYSICAL_HELIACAL_VISIBILITY_CAPABILITY_MATRIX.generated.md) | Current physical-visibility admission, evidence classes, tolerances, and closed exclusions. |

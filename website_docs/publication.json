@@ -4907,8 +4907,8 @@
       "description": "A product-specific architecture comparison covering open reduction, modern data products, explicit policy, and evidence boundaries.",
       "content_class": "editorial_historical",
       "schema_type": "TechArticle",
-      "source_sha256": "d73fcffb66579089b0f92351c40e6ab1a1ad32dcd25a15d0846ded1148c7aac5",
-      "source_bytes": 20463,
+      "source_sha256": "6399b522780b3ad0ab8632a66e45fbfd9b10430f1bdbc9382090157d626c6361",
+      "source_bytes": 20486,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -4922,11 +4922,11 @@
       "source": "wiki/01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md",
       "title": "Why Moira Does Not Compress DExx Files",
       "nav_label": "Uncompressed DExx",
-      "description": "Why Moira reads published JPL DE kernels instead of a second Chebyshev pack, and how compression-plus-wrapper turns a clock mix into a false residual.",
+      "description": "How Moira evaluates published JPL Type-2/3 SPK records, how Swiss Ephemeris reads packed .se1 Chebyshev files, and why Moira leaves DExx as JPL published it.",
       "content_class": "evergreen_doctrine",
       "schema_type": "TechArticle",
-      "source_sha256": "cc624b9e80171b98767c344c2c1a63be7e8d8f26f8e3b69f537df8dbe662bc84",
-      "source_bytes": 9677,
+      "source_sha256": "c5e5672d0dfe3d887212c5a2d170dbe480b9e2608dbd4112f9f726477f03f9fa",
+      "source_bytes": 14623,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -5610,5 +5610,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "03eda75d1c0e14a374f6d681919a5e9d7efbedac020826ba8a3efb7505df5360"
+  "manifest_sha256": "e147267f55a47c6f2227708ee918b033b30d31e98105ca236fde731360d4b3bb"
 }

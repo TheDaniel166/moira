@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Public technical note `wiki/01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md`
   on reading published JPL DExx kernels instead of a second Chebyshev pack.
 
+### Changed
+- Expanded that note into a file-reading comparison: JPL Type-2 SPK
+  (NAIF chains, Clenshaw, ICRF km) versus Swiss `.se1` (packed
+  integers, geocentric Moon, `dseg`/`ncoe` grid), with a locked-TT
+  milliarcsecond check against DE441.
+
 ## [6.3.0] - 2026-08-18
 
 Detailed release and migration guidance is available in
