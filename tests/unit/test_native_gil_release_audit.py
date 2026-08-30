@@ -33,6 +33,8 @@ def test_first_wave_native_binding_inventory_marks_long_running_pure_native_path
     expected_release = [
         '.def("run", [](SearchPool& self, double a, double b, double dt) {',
         'm.def("longitude_difference_batch", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {',
+        'm.def("ecliptic_longitude_batch", [](std::shared_ptr<IEvaluator> target, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {',
+        'm.def("find_aspects_to_longitude", [](std::shared_ptr<IEvaluator> target, std::shared_ptr<IEvaluator> obs, double frozen_lon_deg, double aspect_deg, double a, double b, double dt) {',
         'm.def("declination_batch", [](std::shared_ptr<IEvaluator> t, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {',
         'm.def("find_conjunctions", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, double a, double b, double dt) {',
         'm.def("find_aspects", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, double aspect_deg, double a, double b, double dt) {',

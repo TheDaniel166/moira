@@ -266,6 +266,9 @@ def test_batch_events_dispatches_mixed_event_requests(monkeypatch) -> None:
     def fake_find_aspect_transits(body, target, angle, orb, jd_start, jd_end, *, step_days, reader, policy, search_motion):
         return [f"aspect:{body}:{target}:{angle}:{orb}:{search_motion}"]
 
+    def fake_find_aspect_transits_to_longitudes(body, specs, jd_start, jd_end, *, step_days, reader, policy, search_motion):
+        return [f"natal:{body}:{len(specs)}:{search_motion}"]
+
     def fake_find_declination_transits(
         body,
         target,
@@ -288,6 +291,7 @@ def test_batch_events_dispatches_mixed_event_requests(monkeypatch) -> None:
 
     monkeypatch.setattr(batch_module, "find_transits", fake_find_transits)
     monkeypatch.setattr(batch_module, "find_aspect_transits", fake_find_aspect_transits)
+    monkeypatch.setattr(batch_module, "find_aspect_transits_to_longitudes", fake_find_aspect_transits_to_longitudes)
     monkeypatch.setattr(batch_module, "find_declination_transits", fake_find_declination_transits)
     monkeypatch.setattr(batch_module, "find_ingresses", fake_find_ingresses)
     monkeypatch.setattr(batch_module, "find_stations", fake_find_stations)
@@ -295,6 +299,15 @@ def test_batch_events_dispatches_mixed_event_requests(monkeypatch) -> None:
     requests = (
         batch_module.EventBatchRequest("transit", "Mars", 1.0, 2.0, target_lon=90.0),
         batch_module.EventBatchRequest("aspect_transit", "Venus", 3.0, 4.0, target="Sun", angle=120.0, orb=2.0),
+        batch_module.EventBatchRequest(
+            "natal_aspect_transits",
+            "Saturn",
+            3.5,
+            4.5,
+            natal_longitudes=(10.0, 20.0),
+            aspect_angles=(0.0, 90.0),
+            aspect_orbs=(8.0, 7.0),
+        ),
         batch_module.EventBatchRequest("declination_transit", "Moon", 5.0, 6.0, target="Mars", is_contra_parallel=True),
         batch_module.EventBatchRequest("ingress", "Mercury", 7.0, 8.0),
         batch_module.EventBatchRequest("station", "Jupiter", 9.0, 10.0),
@@ -305,6 +318,7 @@ def test_batch_events_dispatches_mixed_event_requests(monkeypatch) -> None:
     assert [result.events for result in results] == [
         ("transit:Mars:90.0:forward",),
         ("aspect:Venus:Sun:120.0:2.0:forward",),
+        ("natal:Saturn:4:forward",),
         ("decl:Moon:Mars:True:forward",),
         ("ingress:Mercury:7.0:8.0",),
         ("station:Jupiter:9.0:10.0",),

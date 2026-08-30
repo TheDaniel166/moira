@@ -81,6 +81,9 @@ def _to_event_request(request: EventBatchItemRequest) -> EventBatchRequest:
         target=request.target,
         angle=request.angle,
         orb=request.orb,
+        natal_longitudes=tuple(request.natal_longitudes) if request.natal_longitudes is not None else None,
+        aspect_angles=tuple(request.aspect_angles) if request.aspect_angles is not None else None,
+        aspect_orbs=tuple(request.aspect_orbs) if request.aspect_orbs is not None else None,
         is_contra_parallel=request.is_contra_parallel,
         search_motion=request.search_motion,
     )

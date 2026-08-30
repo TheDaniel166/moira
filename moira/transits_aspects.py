@@ -9,6 +9,8 @@ bodies. Delegates position resolution to the core transit engine.
 
 from __future__ import annotations
 
+import math
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from .spk_reader import SpkReader, get_reader
@@ -29,7 +31,11 @@ try:
 except ImportError:
     mn = None
 
-__all__ = ["AspectTransitEvent", "find_aspect_transits"]
+__all__ = [
+    "AspectTransitEvent",
+    "find_aspect_transits",
+    "find_aspect_transits_to_longitudes",
+]
 
 @dataclass(slots=True)
 class AspectTransitEvent:
@@ -73,19 +79,48 @@ def _find_aspect_crossing(
             sign_lo = sign_mid
     return (jd_lo + jd_hi) / 2.0
 
+_EARTH_ROUTE_PAIRS = ((0, 3), (3, 399))
+
+
 def _get_native_evaluator(body: str, specs: dict, path: str) -> object | None:
     """Construct a native evaluator chain for a body's barycentric route."""
     if mn is None or body not in specs:
         return None
-    
+
     route = specs[body]
     evals = []
     for start_i, end_i, data_type in route:
         evals.append(mn.load_spk_segment_evaluator(path, start_i, end_i, True, data_type))
-    
+
     if len(evals) == 1:
         return evals[0]
-    elif len(evals) == 2:
+    if len(evals) == 2:
+        return mn.SumEvaluator(evals[0], evals[1])
+    return None
+
+
+def _earth_native_evaluator(reader: SpkReader, path: str, jd_tt: float) -> object | None:
+    """SSB → EMB → Earth, matching the admitted planetary Earth route."""
+    if mn is None:
+        return None
+    evals = []
+    try:
+        for center, target in _EARTH_ROUTE_PAIRS:
+            segment = reader._segment_for(center, target, jd_tt)
+            if segment is None:
+                return None
+            evals.append(
+                mn.load_spk_segment_evaluator(
+                    path,
+                    int(segment.start_i),
+                    int(segment.end_i),
+                    True,
+                    int(segment.data_type),
+                )
+            )
+    except Exception:
+        return None
+    if len(evals) == 2:
         return mn.SumEvaluator(evals[0], evals[1])
     return None
 
@@ -119,37 +154,48 @@ def _find_candidate_windows_native(
     # 3. Build Evaluators
     path = str(planetary_reader.path)
     e_target1 = _get_native_evaluator(body, specs, path)
-    
-    # Target may be a body or a fixed longitude
-    if isinstance(target, str) and target in specs:
-        e_target2 = _get_native_evaluator(target, specs, path)
-    else:
-        # For numeric target, we can't use native batching easily yet, fallback to Python
+    e_earth = _earth_native_evaluator(planetary_reader, path, jd_tt_start)
+    if not e_target1 or not e_earth:
         return None
-        
-    e_earth = _get_native_evaluator('Earth', specs, path)
-    if not e_target1 or not e_target2 or not e_earth:
-        return None
-    
-    # 4. Batch Evaluate
-    jds = []
+
+    jds_tt: list[float] = []
     curr = jd_start
     while curr <= jd_end:
-        jds.append(_ut1_to_ephemeris_tt(curr, reader))
+        jds_tt.append(_ut1_to_ephemeris_tt(curr, reader))
         curr += step_days
-    if not jds: return []
-    
-    # Geometric longitude difference
-    diffs = mn.longitude_difference_batch(e_target1, e_target2, e_earth, jds)
-    
-    # 5. Identify Sign Changes
+    if len(jds_tt) < 2:
+        return []
+
+    if isinstance(target, str) and target in specs:
+        e_target2 = _get_native_evaluator(target, specs, path)
+        if not e_target2:
+            return None
+        diffs = mn.longitude_difference_batch(e_target1, e_target2, e_earth, jds_tt)
+        series = None
+    elif isinstance(target, (int, float)) and math.isfinite(float(target)):
+        from .nutation_2000a import _ensure_tables_loaded
+
+        _ensure_tables_loaded()
+        try:
+            series = mn.ecliptic_longitude_batch(e_target1, e_earth, jds_tt)
+        except Exception:
+            return None
+        diffs = None
+    else:
+        return None
+
     windows = []
-    for i in range(len(jds) - 1):
-        d1 = _signed_diff(diffs[i], angle)
-        d2 = _signed_diff(diffs[i+1], angle)
+    count = len(jds_tt)
+    for i in range(count - 1):
+        if diffs is not None:
+            d1 = _signed_diff(diffs[i], angle)
+            d2 = _signed_diff(diffs[i + 1], angle)
+        else:
+            frozen = float(target) % 360.0
+            d1 = _signed_diff(series[i], frozen + angle)
+            d2 = _signed_diff(series[i + 1], frozen + angle)
         if d1 * d2 <= 0 and abs(d1) < 90.0:
-            windows.append((jd_start + i * step_days, jd_start + (i+1) * step_days))
-            
+            windows.append((jd_start + i * step_days, jd_start + (i + 1) * step_days))
     return windows
 
 def _process_aspect_hit(
@@ -241,23 +287,23 @@ def find_aspect_transits(
         step_days = policy.transit.step_days_override or _auto_step(body)
 
     # --- HYBRID NATIVE SCAN ---
-    # If both bodies are planets and we have native support, pre-filter windows.
-    if isinstance(target, str) and body in Body.ALL_PLANETS and target in Body.ALL_PLANETS:
-        # Use 1-day coarse grid to isolate hits
+    # Planet-to-planet names, or a moving planet against a frozen ecliptic longitude.
+    target_is_planet = isinstance(target, str) and target in Body.ALL_PLANETS
+    target_is_frozen = isinstance(target, (int, float)) and math.isfinite(float(target))
+    if body in Body.ALL_PLANETS and (target_is_planet or target_is_frozen):
         windows = _find_candidate_windows_native(body, target, angle, jd_start, jd_end, 1.0, reader)
-        if windows:
+        if windows is None:
+            pass
+        else:
             events = []
             ordered_windows = windows if search_motion == "forward" else list(reversed(windows))
             for jd_lo, jd_hi in ordered_windows:
-                # Pad window slightly to ensure bisection doesn't miss if crossing is near boundary
                 events.append(_process_aspect_hit(
-                    body, target, angle, orb, 
+                    body, target, angle, orb,
                     max(jd_start, jd_lo - 0.1), min(jd_end, jd_hi + 0.1),
                     jd_start, jd_end, reader, policy, search_motion
                 ))
             return events
-        # If native scanner found zero windows, we are done (planetary aspects are well-behaved)
-        return []
 
     # --- FALLBACK / REFINEMENT LOOP ---
     events: list[AspectTransitEvent] = []
@@ -296,4 +342,51 @@ def find_aspect_transits(
         jd = jd_next
         diff_prev = diff_next
 
+    return events
+
+
+def find_aspect_transits_to_longitudes(
+    body: str,
+    targets: Sequence[tuple[float, float, float]],
+    jd_start: float,
+    jd_end: float,
+    step_days: float | None = None,
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+    search_motion: str = "forward",
+) -> list[AspectTransitEvent]:
+    """Find aspect hits of *body* against many frozen ecliptic longitudes.
+
+    ``targets`` is ``(longitude_deg, aspect_angle_deg, orb_deg)``. One native
+    longitude series of *body* is scanned when available; otherwise each
+    target is searched independently.
+    """
+
+    _require_non_empty_body(body)
+    _validate_transit_range(jd_start, jd_end)
+    _validate_search_motion(search_motion)
+    if reader is None:
+        reader = get_reader()
+    policy = _validate_policy(policy)
+    events: list[AspectTransitEvent] = []
+    for longitude, angle, orb in targets:
+        if not math.isfinite(float(longitude)) or not math.isfinite(float(angle)):
+            raise ValueError("natal aspect target longitude and angle must be finite")
+        if float(orb) < 0:
+            raise ValueError("Orb must be non-negative")
+        events.extend(
+            find_aspect_transits(
+                body,
+                float(longitude),
+                float(angle),
+                float(orb),
+                jd_start,
+                jd_end,
+                step_days=step_days,
+                reader=reader,
+                policy=policy,
+                search_motion=search_motion,
+            )
+        )
+    events.sort(key=lambda event: event.jd_exact)
     return events

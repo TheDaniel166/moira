@@ -109,6 +109,9 @@ class EventBatchItemRequest(_StrictModel):
     target: str | float | None = None
     angle: float | None = None
     orb: float = 0.0
+    natal_longitudes: list[float] | None = None
+    aspect_angles: list[float] | None = None
+    aspect_orbs: list[float] | None = None
     is_contra_parallel: bool = False
     search_motion: str = "forward"
 

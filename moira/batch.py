@@ -80,7 +80,7 @@ from .transits import (
     planet_return,
     solar_return,
 )
-from .transits_aspects import AspectTransitEvent, find_aspect_transits
+from .transits_aspects import AspectTransitEvent, find_aspect_transits, find_aspect_transits_to_longitudes
 from .transits_equatorial import EquatorialTransitEvent, find_declination_transits
 from .void_of_course import LastAspect, _BISECT_TOL, _body_next_sign_ingress, _build_body_void_window_data
 
@@ -210,6 +210,9 @@ class EventBatchRequest:
     target: str | float | None = None
     angle: float | None = None
     orb: float = 0.0
+    natal_longitudes: tuple[float, ...] | None = None
+    aspect_angles: tuple[float, ...] | None = None
+    aspect_orbs: tuple[float, ...] | None = None
     is_contra_parallel: bool = False
     step_days: float | None = None
     search_motion: str = "forward"
@@ -397,6 +400,7 @@ class BodyVoidWindow:
 BATCH_EVENT_KINDS: tuple[str, ...] = (
     "transit",
     "aspect_transit",
+    "natal_aspect_transits",
     "declination_transit",
     "ingress",
     "station",
@@ -854,6 +858,31 @@ def batch_events(
                     request.target,
                     request.angle,
                     request.orb,
+                    request.jd_start,
+                    request.jd_end,
+                    step_days=request.step_days,
+                    reader=reader,
+                    policy=request.policy,
+                    search_motion=request.search_motion,
+                )
+            elif request.kind == "natal_aspect_transits":
+                if not request.natal_longitudes:
+                    raise ValueError("batch_events: natal_aspect_transits requests require natal_longitudes")
+                if not request.aspect_angles:
+                    raise ValueError("batch_events: natal_aspect_transits requests require aspect_angles")
+                orbs = request.aspect_orbs
+                if orbs is None:
+                    orbs = tuple(request.orb for _ in request.aspect_angles)
+                if len(orbs) != len(request.aspect_angles):
+                    raise ValueError("batch_events: aspect_orbs must match aspect_angles")
+                specs = [
+                    (longitude, angle, orb)
+                    for longitude in request.natal_longitudes
+                    for angle, orb in zip(request.aspect_angles, orbs, strict=True)
+                ]
+                events = find_aspect_transits_to_longitudes(
+                    request.body,
+                    specs,
                     request.jd_start,
                     request.jd_end,
                     step_days=request.step_days,

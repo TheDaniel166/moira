@@ -1404,6 +1404,42 @@ PYBIND11_MODULE(_moira_native, m) {
         return out;
     });
 
+    m.def("ecliptic_longitude_batch", [](std::shared_ptr<IEvaluator> target, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {
+        std::vector<double> out(jds.size());
+        {
+            py::gil_scoped_release release;
+            NutationEpochCache cache;
+            for (size_t i = 0; i < jds.size(); ++i) {
+                double rt[6], ro[6];
+                target->evaluate(jds[i], rt);
+                obs->evaluate(jds[i], ro);
+                Vec3 geo(rt[0] - ro[0], rt[1] - ro[1], rt[2] - ro[2]);
+                const NutationResult nut = cache.evaluate(jds[i]);
+                double lon = _true_ecliptic_longitude(geo, jds[i], nut);
+                if (lon < 0.0) lon += 360.0;
+                out[i] = lon;
+            }
+        }
+        return out;
+    });
+
+    m.def("find_aspects_to_longitude", [](std::shared_ptr<IEvaluator> target, std::shared_ptr<IEvaluator> obs, double frozen_lon_deg, double aspect_deg, double a, double b, double dt) {
+        auto f = [&](double jd) {
+            double rt[6], ro[6];
+            target->evaluate(jd, rt);
+            obs->evaluate(jd, ro);
+            Vec3 geo(rt[0] - ro[0], rt[1] - ro[1], rt[2] - ro[2]);
+            NutationResult nut = nutation_2000r06(jd);
+            double lon = _true_ecliptic_longitude(geo, jd, nut);
+            double val = lon - frozen_lon_deg - aspect_deg;
+            while (val > 180.0) val -= 360.0;
+            while (val <= -180.0) val += 360.0;
+            return val;
+        };
+        py::gil_scoped_release release;
+        return find_roots(f, a, b, dt);
+    });
+
     m.def("declination_batch", [](std::shared_ptr<IEvaluator> t, std::shared_ptr<IEvaluator> obs, const std::vector<double>& jds) {
         std::vector<double> out(jds.size());
         {
