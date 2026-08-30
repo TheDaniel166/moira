@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   on reading published JPL DExx kernels instead of a second Chebyshev pack.
 
 ### Changed
+- Recalibrated the default post-observation Delta-T scenario to
+  `D0 + 29.09·((year − Y0)/100)²` using Morrison et al. 2021 tidal
+  `43.7 s/cy²` and Shahvandi et al. 2024 GIA `−0.80 ms/cy`
+  (`−14.61 s/cy²`). The linear handoff slope is no longer consumed
+  (C0 kept, C1 not claimed). No climate ice-melt term is included.
+  `ΔT(2100)` moves from 83.29 s to about 85.00 s. Source-era totals,
+  quarantined component fields, EOP, and `DeltaTPolicy` names are
+  unchanged.
 - Expanded that note into a file-reading comparison: JPL Type-2 SPK
   (NAIF chains, Clenshaw, ICRF km) versus Swiss `.se1` (packed
   integers, geocentric Moon, `dseg`/`ncoe` grid), with a locked-TT

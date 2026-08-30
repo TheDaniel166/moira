@@ -1,8 +1,8 @@
 # Moira — Delta T Source-Priority and Scenario Policy
 
-**Version:** 3.2
+**Version:** 3.3
 
-**Date:** 2026-07-17
+**Date:** 2026-08-27
 
 **Status:** Implemented bounded policy; validation scope stated below
 
@@ -83,27 +83,39 @@ claim that historical totals have been causally decomposed.
 
 ## 3. Future mean scenario
 
-Let the final two aggregate representative epochs define a boundary vessel
+Let the final aggregate representative epoch define a boundary vessel
 
 ```text
 Y0 = final aggregate representative epoch # currently about 2026.123
 D0 = final aggregate Delta T
-m0 = slope of the final two epochs         # provisional seconds per year
 h  = year - Y0                           # years after the handoff
 ```
 
 The post-handoff mean is
 
 ```text
-Delta T scenario(year) = D0 + m0*h + 28*(h/100)^2
+Delta T scenario(year) = D0 + 29.09*(h/100)^2
 ```
 
-The construction preserves both the admitted value and the provisional
-aggregate-epoch slope at the handoff. The current final product is a Jan–Apr
-2026 partial mean, so `m0` is explicit scenario policy rather than an observed instantaneous
-derivative. The `28 s/cy²` curvature is the declared sum of a
-`+31 s/cy²` tidal term and a `-3 s/cy²` GIA term. It is forecast doctrine, not
-an observation and not a fitted decomposition of the historical source total.
+`29.09 s/cy²` is the declared sum of a `+43.7 s/cy²` tidal term (Morrison,
+Stephenson, Hohenkerk, and Zawilski 2021, their published Delta-T
+coefficient) and a `−14.61 s/cy²` GIA term (Shahvandi et al. 2024 GIA LOD
+rate `−0.80 ms/cy`, converted with `JULIAN_YEAR / 20`). It is forecast
+doctrine, not an observation and not a fitted decomposition of the
+historical source total.
+
+The construction preserves the admitted value at the handoff (C0). It does
+not consume the slope of the final two aggregate epochs. That slope remains
+a table diagnostic on the boundary vessel. The current final product is a
+Jan–Apr 2026 partial mean; treating it as a century derivative would
+extrapolate the present core-driven flattening. The right-hand derivative
+at `Y0` is therefore the parabola’s derivative, which is zero. C1 is not
+claimed.
+
+No climate or barystatic ice-melt term is included. Shahvandi et al. 2024
+project a climate-induced LOD rate of about `+1.33 ms/cy` since 2000 and
+up to `+2.62 ms/cy` by 2100 under high emissions. That process is omitted
+from this clock by explicit decision, not because it is zero.
 
 The scenario is useful for deterministic future computation, but Earth
 rotation remains unpredictable. No value after the current final aggregate epoch is
@@ -132,8 +144,9 @@ The historical field names do not override source truth:
 - `core`, `cryo`, `fluid`, and `residual` are preserved for compatibility and
   are zero while their candidate datasets are quarantined.
 - `bridge` is the explicit reconciliation between the declared curvature
-  baseline and the admitted total. In the future it carries the boundary value
-  and slope terms. It is arithmetic accounting, not a fitted physical cause.
+  baseline and the admitted total. In the future it carries the boundary
+  value offset `D0 − REFERENCE_LOD` only. It is arithmetic accounting, not
+  a fitted physical cause.
 - `era` retains the compatibility categories `pre-1840`, `historical`,
   `measured`, and `future`. These labels are not source-row provenance; in
   particular, the legacy word `measured` does not certify every admitted row
@@ -191,8 +204,8 @@ For `h = year - Y0 > 0`, `q = h / 100`, and `theta = 0.1 / year`:
 
 ```text
 sigma(year) = 0.06 s
-            + abs(31 s/cy²) * (0.003 / 25.858) * q²
-            + 0.5 s/cy² * q²
+            + 0.2 s/cy² * q²
+            + 1.82625 s/cy² * q²
             + sigma_OU(h)
 
 z = theta*h
@@ -205,14 +218,16 @@ sigma_OU(h) = (365.25 days/year / 1000 ms/s)
 ```
 
 The implementation evaluates the small-`z` limit with a series expansion to
-avoid cancellation. The O-U term is conditional on the declared
-`theta = 0.1/year` and diffusion scale. Those future coefficients do not have
-a complete traceable calibration record in the module. The handoff value's
-source error and the uncertainty of the final-row slope are not propagated.
-Accordingly, the result is explicitly an **uncalibrated policy scale**: it has
-no asserted 68-percent or other coverage probability and is not a proof of
-independent causal errors. The stable field name `sigma` is compatibility
-vocabulary, not a calibration claim.
+avoid cancellation. The O-U term is conditional on the declared `theta = 0.1/year` and
+diffusion scale. Those stochastic coefficients do not have a complete
+traceable calibration record in the module. The `0.2 s/cy²` and
+`0.10 ms/cy` figures are literature coefficient scales, not a complete
+2100 error budget. The handoff value's source error and core-anomaly
+persistence (the meaning of setting the linear term to zero) are not
+propagated. Accordingly, the result is explicitly an **uncalibrated
+policy scale**: it has no asserted 68-percent or other coverage
+probability and is not a proof of independent causal errors. The stable
+field name `sigma` is compatibility vocabulary, not a calibration claim.
 
 These values are not assembled by treating the quarantined causal proxies as
 independent random variables. `DeltaTDistribution` exposes a normal
@@ -317,8 +332,10 @@ The relevant evidence classes remain separate:
 
 - source-table tests prove exact selection and interpolation of admitted rows;
 - time-scale invariants prove TT/UT1/Delta-T coherence;
-- boundary tests prove value and slope continuity at the source-owned final
-  aggregate representative epoch, including synthetic source extension and contraction;
+- boundary tests prove C0 value continuity at the source-owned final
+  aggregate representative epoch, including synthetic source extension and
+  contraction; they prove the right-hand slope is the parabola, not the
+  table slope;
 - EOP tests prove C0 first/last/gap handoffs, one-Julian-year outer tapers,
   direct TT-to-UT1 inversion, and leap-day-safe private UTC formatting;
 - historical civil-clock tests prove the pre-1972 UT1-proxy policy and the
@@ -339,8 +356,9 @@ When a new source total becomes admissible:
 1. preserve the source product, status, epoch, units, and uncertainty;
 2. update the packaged artifact and manifest together;
 3. extend the source-priority boundary only through admitted coverage;
-4. let the boundary vessel derive `Y0`, `D0`, and `m0` directly from the final
-   two rows; do not add a second literal handoff year;
+4. let the boundary vessel derive `Y0` and `D0` directly from the final
+   admitted row; do not add a second literal handoff year. The table slope
+   of the final two rows remains a diagnostic and is not a scenario input;
 5. rerun source, seam, time-scale, facade, and REST tests;
 6. update numerical validation artifacts whose baseline Delta-T changed.
 
@@ -351,6 +369,15 @@ inputs, time scales, source status, and boundary semantics first.
 
 - Stephenson, F. R., Morrison, L. V., and Hohenkerk, C. Y. (2016),
   *Measurement of the Earth's rotation: 720 BC to AD 2015*.
+- Morrison, L. V., Stephenson, F. R., Hohenkerk, C. Y., and Zawilski, M.
+  (2021), *Addendum 2020 to ‘Measurement of the Earth’s rotation: 720 BC
+  to AD 2015’*, for the tidal Delta-T coefficient `43.7 ± 0.2 s/cy²`.
+  This paper does not replace the packaged HPIERS 2016 mean table.
+- Shahvandi, M. K., Adhikari, S., Dumberry, M., Borsa, A., and Soja, B.
+  (2024), *The increasingly dominant role of climate change on length of
+  day variations*, DOI `10.1073/pnas.2406930121`, for the GIA LOD rate
+  `−0.80 ± 0.10 ms/cy` used in the future curvature. The paper’s climate
+  ice-melt projection is not admitted into the default clock.
 - IERS/HPIERS, *TT-UT and Earth rotation rate from 2000 BC to 2016 AD*,
   including the DE430/LE430 `-25.85 arcsec/cy²` product basis.
 - NASA GSFC, *Secular Acceleration of the Moon*, for the sign and scale of an
