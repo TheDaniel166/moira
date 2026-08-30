@@ -77,7 +77,7 @@ def _run_checks() -> list[tuple[str, bool, str]]:
     left_slope = (reference - dtp.delta_t_hybrid(boundary.year - step)) / step
     right_slope = (dtp.delta_t_hybrid(boundary.year + step) - reference) / step
     curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
-    parabola_slope = 2.0 * curvature * step / 10_000.0
+    parabola_slope = curvature * step / 10_000.0
     record(
         f"{boundary.year:g} C0 handoff",
         reference == boundary.total and abs(right_slope - parabola_slope) < 3e-6,

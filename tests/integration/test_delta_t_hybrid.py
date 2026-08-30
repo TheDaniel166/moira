@@ -110,7 +110,7 @@ def test_future_handoff_matches_value_and_does_not_use_table_slope() -> None:
     right_slope = (dtp.delta_t_hybrid(dtp.REFERENCE_YEAR + step) - reference) / step
     source_slope = julian_module._delta_t_observation_boundary().slope
     curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
-    parabola_slope = 2.0 * curvature * step / 10_000.0
+    parabola_slope = curvature * step / 10_000.0
     assert reference == pytest.approx(julian_module._delta_t_observation_boundary().total, abs=1e-12)
     assert left_slope == pytest.approx(source_slope, abs=1e-8)
     assert right_slope == pytest.approx(parabola_slope, abs=3e-6)

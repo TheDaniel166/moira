@@ -221,7 +221,7 @@ def test_reference_handoff_is_c0_and_right_slope_is_the_parabola() -> None:
     right_slope = (dtp.delta_t_hybrid(dtp.REFERENCE_YEAR + step) - at) / step
     table_slope = julian_module._delta_t_observation_boundary().slope
     curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
-    parabola_slope = 2.0 * curvature * step / 10_000.0
+    parabola_slope = curvature * step / 10_000.0
     assert left_slope == pytest.approx(table_slope, abs=1e-8)
     assert right_slope == pytest.approx(parabola_slope, abs=3e-6)
 
