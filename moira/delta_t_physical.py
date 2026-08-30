@@ -10,16 +10,15 @@ is deliberately narrow about what it claims to identify:
   provenance and research.  They are not admitted as separately identified
   cryosphere, core, or fluid contributions.
 * After the reference epoch, the mean is a boundary-conditioned scenario:
-  the admitted value and provisional aggregate-epoch slope at the hand-off plus
-  the declared tidal/GIA curvature.  It is not described as a geophysical
-  component inversion.
-  Values after 2150 are mathematical continuation of that scenario, not a
-  validated forecast.
+  the admitted value at the hand-off plus the declared tidal/GIA curvature.
+  The provisional aggregate-epoch slope is not consumed.  The scenario is
+  not a geophysical component inversion.  Values after 2150 are
+  mathematical continuation of that scenario, not a validated forecast.
 * HPIERS-owned historical uncertainty comes from that source table's error
   column. The source bridge and aggregate era use the modern policy floor. The
   future ``sigma`` field is an uncalibrated policy scale: it has no stated
-  coverage probability and omits unquantified handoff-value and handoff-slope
-  uncertainty.
+  coverage probability and omits unquantified handoff-value uncertainty and
+  core-anomaly persistence.
 
 This module owns decimal-year model policy.  JD-aware UTC/UT1/TT conversion
 and daily EOP authority remain in :mod:`moira.julian`.
@@ -64,8 +63,15 @@ __all__ = [
 _DATA_DIR = Path(__file__).resolve().parent / "data"
 _PACKAGED_DATA_DIR = _DATA_DIR
 
-TIDAL_COEFF: float = 31.0
-GIA_COEFF: float = -3.0
+# Morrison, Stephenson, Hohenkerk & Zawilski (2021), Proc. R. Soc. A 477,
+# 20200776: published tidal Delta-T coefficient in s/cy².  Do not re-derive
+# this from 2.40 ms/cy × JULIAN_YEAR / 20 (that product is 43.83).
+TIDAL_COEFF: float = 43.7
+# Shahvandi, Adhikari, Dumberry, Borsa & Soja (2024), PNAS 121, e2406930121:
+# GIA LOD rate in ms/cy (negative = Earth spinning up).  Converted to Delta-T
+# s/cy² with JULIAN_YEAR / 20.
+_GIA_LOD_RATE_MS_PER_CY: float = -0.80
+GIA_COEFF: float = _GIA_LOD_RATE_MS_PER_CY * JULIAN_YEAR / 20.0
 
 # Compatibility name: this value is a Delta-T baseline in seconds, not a
 # length-of-day measurement.  Renaming the exported symbol would break the
@@ -84,12 +90,11 @@ _SMH_FINAL_YEAR: float = 2016.0
 # epoch aggregate interpolation against the bundled EOP snapshot.
 _MODERN_SOURCE_ERROR_FLOOR: float = 0.06
 
-# Legacy scenario-spread coefficients retained for stable numerical behavior.
-# They do not have a complete, traceable calibration record in this module and
-# are not probability-standard-deviation claims.  In particular, no sourced
-# uncertainty for the boundary value or its local slope is propagated.
-_TIDAL_COEFF_SIGMA: float = abs(TIDAL_COEFF) * (0.003 / 25.858)
-_GIA_COEFF_SIGMA: float = 0.5
+# Future coefficient scales follow the same two papers.  They are not a
+# complete 2100 error budget and are not probability-standard-deviation
+# claims.  Handoff-value uncertainty and core-anomaly persistence are omitted.
+_TIDAL_COEFF_SIGMA: float = 0.2
+_GIA_COEFF_SIGMA: float = 0.10 * JULIAN_YEAR / 20.0
 _LOD_RANDOM_WALK_SIGMA_MS_PER_DAY_SQRT_YEAR: float = 0.2379
 _LOD_OU_REVERSION_RATE: float = 0.1
 
@@ -342,11 +347,9 @@ def _modern_bridge_delta_t(year: float) -> float:
 
 def _future_bridge_delta_t(year: float) -> float:
     value = _coerce_model_year(year)
-    reference_year = _reference_year()
-    if value <= reference_year:
+    if value <= _reference_year():
         return 0.0
-    horizon = value - reference_year
-    return (_reference_total() - REFERENCE_LOD) + _reference_slope() * horizon
+    return _reference_total() - REFERENCE_LOD
 
 
 def _parse_strict_series(
@@ -629,10 +632,11 @@ def delta_t_hybrid_uncertainty(year: float) -> float:
     HPIERS-era values use the table's published error. Later source-bridge and
     aggregate rows use a 0.06-second policy scale that covers the verified
     first-of-month residuals against the bundled EOP snapshot; the aggregate
-    table carries no row-level errors. Future values add legacy curvature and stochastic
-    policy terms arithmetically. The result has no calibrated coverage
-    interpretation and does not propagate uncertainty in the boundary value or
-    provisional aggregate-epoch boundary slope.
+    table carries no row-level errors. Future values add sourced curvature
+    coefficient scales (Morrison et al. 2021 ±0.2 s/cy²; Shahvandi et al. 2024
+    ±0.10 ms/cy) and the stochastic policy term arithmetically. The result has
+    no calibrated coverage interpretation. It omits unquantified handoff-value
+    uncertainty and core-anomaly persistence.
     """
     value = _coerce_model_year(year)
     hpiers_mean_final_year = _delta_t_hpiers_annual_bridge()[0][0]
