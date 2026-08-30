@@ -87,12 +87,11 @@ def test_modern_uncertainty_floor_bridges_to_the_forecast_continuously() -> None
 def test_future_scenario_is_boundary_conditioned_and_continues_past_confidence_boundary() -> None:
     boundary = julian_module._delta_t_observation_boundary()
     reference = boundary.total
-    slope = boundary.slope
     curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
 
     for year in (2027.0, 2030.0, 2050.0, 2100.0, 2150.0, 2150.0001, 2200.0):
         horizon = year - boundary.year
-        expected = reference + slope * horizon + curvature * (horizon / 100.0) ** 2
+        expected = reference + curvature * (horizon / 100.0) ** 2
         assert dtp.delta_t_hybrid(year) == pytest.approx(expected, abs=1e-12)
 
 def test_total_and_every_numeric_component_are_continuous_at_model_seams() -> None:
@@ -104,14 +103,17 @@ def test_total_and_every_numeric_component_are_continuous_at_model_seams() -> No
             assert abs(getattr(right, field) - getattr(left, field)) < 1e-5
 
 
-def test_future_handoff_matches_value_and_observed_boundary_slope() -> None:
+def test_future_handoff_matches_value_and_does_not_use_table_slope() -> None:
     step = 1e-3
     reference = dtp.delta_t_hybrid(dtp.REFERENCE_YEAR)
     left_slope = (reference - dtp.delta_t_hybrid(dtp.REFERENCE_YEAR - step)) / step
     right_slope = (dtp.delta_t_hybrid(dtp.REFERENCE_YEAR + step) - reference) / step
     source_slope = julian_module._delta_t_observation_boundary().slope
+    curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
+    parabola_slope = 2.0 * curvature * step / 10_000.0
+    assert reference == pytest.approx(julian_module._delta_t_observation_boundary().total, abs=1e-12)
     assert left_slope == pytest.approx(source_slope, abs=1e-8)
-    assert right_slope == pytest.approx(source_slope, abs=3e-6)
+    assert right_slope == pytest.approx(parabola_slope, abs=3e-6)
 
 
 def test_future_uncertainty_scale_is_finite_and_monotone_on_validation_grid() -> None:

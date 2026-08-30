@@ -25,10 +25,8 @@ from moira.julian import _delta_t_observation_boundary, delta_t as canonical_del
 def _future_expected(year: float) -> float:
     boundary = _delta_t_observation_boundary()
     horizon = year - boundary.year
-    reference_total = boundary.total
-    reference_slope = boundary.slope
     curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
-    return reference_total + reference_slope * horizon + curvature * (horizon / 100.0) ** 2
+    return boundary.total + curvature * (horizon / 100.0) ** 2
 
 
 def _run_checks() -> list[tuple[str, bool, str]]:
@@ -78,10 +76,15 @@ def _run_checks() -> list[tuple[str, bool, str]]:
     reference = dtp.delta_t_hybrid(boundary.year)
     left_slope = (reference - dtp.delta_t_hybrid(boundary.year - step)) / step
     right_slope = (dtp.delta_t_hybrid(boundary.year + step) - reference) / step
+    curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
+    parabola_slope = 2.0 * curvature * step / 10_000.0
     record(
-        f"{boundary.year:g} C0/C1 handoff",
-        reference == boundary.total and abs(left_slope - right_slope) < 3e-6,
-        f"value={reference:.9f} s; left slope={left_slope:.9f}; right slope={right_slope:.9f} s/year",
+        f"{boundary.year:g} C0 handoff",
+        reference == boundary.total and abs(right_slope - parabola_slope) < 3e-6,
+        (
+            f"value={reference:.9f} s; left slope={left_slope:.9f}; "
+            f"right slope={right_slope:.9f} s/year"
+        ),
     )
 
     largest_component_seam = 0.0
