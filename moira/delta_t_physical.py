@@ -149,7 +149,8 @@ def _reference_slope() -> float:
 
     Aggregate values are materialized at their representative sample epochs;
     the final product is a Jan-Apr 2026 partial mean.  The resulting quotient
-    is explicit scenario policy, not a measured instantaneous derivative.
+    is a table diagnostic, not a measured instantaneous derivative, and is
+    not consumed by the admitted future mean.
     """
     return _delta_t_observation_boundary().slope
 

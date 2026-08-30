@@ -4708,8 +4708,8 @@ The physical-policy surface is admitted from decimal year `-2000.0`; earlier
 physical requests raise `ValueError`. Through the final aggregate
 representative epoch (currently `2026.123287671233`) the total follows admitted
 source tables. That final value is a Jan–Apr partial mean, and the slope formed
-from the `2025` and `2026` aggregate representative epochs is provisional
-scenario policy rather than an observed instantaneous derivative. After that
+from the `2025` and `2026` aggregate representative epochs is a table
+diagnostic, not a scenario input. After that
 source-owned boundary the mean is the explicit boundary-anchored scenario
 documented in `DELTA_T_HYBRID_MODEL.md`. Values beyond 2150 remain computable
 scenario extrapolations, not authority-validated forecasts.
@@ -4752,7 +4752,7 @@ The additive invariant is
 The normal vessel is a computational approximation. It does not assert that
 ancient or future Earth-rotation errors are empirically Gaussian. Future
 values do not have calibrated coverage and do not propagate unquantified
-uncertainty in the handoff value or final-row slope.
+uncertainty in the handoff value or core-anomaly persistence.
 
 ---
 
