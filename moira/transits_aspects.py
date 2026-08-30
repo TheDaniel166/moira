@@ -184,19 +184,82 @@ def _find_candidate_windows_native(
     else:
         return None
 
-    windows = []
-    count = len(jds_tt)
-    for i in range(count - 1):
-        if diffs is not None:
-            d1 = _signed_diff(diffs[i], angle)
-            d2 = _signed_diff(diffs[i + 1], angle)
-        else:
-            frozen = float(target) % 360.0
-            d1 = _signed_diff(series[i], frozen + angle)
-            d2 = _signed_diff(series[i + 1], frozen + angle)
+    if diffs is not None:
+        return _windows_from_difference_series(diffs, jd_start, step_days, angle)
+    return _windows_from_longitude_series(series, jd_start, step_days, float(target), angle)
+
+
+def _windows_from_difference_series(
+    diffs: Sequence[float],
+    jd_start: float,
+    step_days: float,
+    angle: float,
+) -> list[tuple[float, float]]:
+    windows: list[tuple[float, float]] = []
+    for i in range(len(diffs) - 1):
+        d1 = _signed_diff(diffs[i], angle)
+        d2 = _signed_diff(diffs[i + 1], angle)
         if d1 * d2 <= 0 and abs(d1) < 90.0:
             windows.append((jd_start + i * step_days, jd_start + (i + 1) * step_days))
     return windows
+
+
+def _windows_from_longitude_series(
+    series: Sequence[float],
+    jd_start: float,
+    step_days: float,
+    frozen_longitude: float,
+    angle: float,
+) -> list[tuple[float, float]]:
+    frozen = frozen_longitude % 360.0
+    windows: list[tuple[float, float]] = []
+    for i in range(len(series) - 1):
+        d1 = _signed_diff(series[i], frozen + angle)
+        d2 = _signed_diff(series[i + 1], frozen + angle)
+        if d1 * d2 <= 0 and abs(d1) < 90.0:
+            windows.append((jd_start + i * step_days, jd_start + (i + 1) * step_days))
+    return windows
+
+
+def _native_ecliptic_longitude_series(
+    body: str,
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+    reader: SpkReader,
+) -> list[float] | None:
+    if mn is None or body not in Body.ALL_PLANETS:
+        return None
+    if isinstance(reader, SpkReader):
+        planetary_reader = reader
+    else:
+        resolver = getattr(reader, "_primary_planetary_reader", None)
+        planetary_reader = resolver() if callable(resolver) else None
+    if not isinstance(planetary_reader, SpkReader):
+        return None
+    jd_tt_start = _ut1_to_ephemeris_tt(jd_start, reader)
+    specs = _npe_body_route_segment_specs(planetary_reader, jd_tt_start)
+    if not specs:
+        return None
+    path = str(planetary_reader.path)
+    e_body = _get_native_evaluator(body, specs, path)
+    e_earth = _earth_native_evaluator(planetary_reader, path, jd_tt_start)
+    if not e_body or not e_earth:
+        return None
+    jds_tt: list[float] = []
+    curr = jd_start
+    while curr <= jd_end:
+        jds_tt.append(_ut1_to_ephemeris_tt(curr, reader))
+        curr += step_days
+    if len(jds_tt) < 2:
+        return None
+    from .nutation_2000a import _ensure_tables_loaded
+
+    _ensure_tables_loaded()
+    try:
+        return mn.ecliptic_longitude_batch(e_body, e_earth, jds_tt)
+    except Exception:
+        return None
 
 def _process_aspect_hit(
     body: str,
@@ -368,25 +431,50 @@ def find_aspect_transits_to_longitudes(
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
+    scan_step = 1.0
+    series = _native_ecliptic_longitude_series(body, jd_start, jd_end, scan_step, reader)
     events: list[AspectTransitEvent] = []
+    if series is None:
+        for longitude, angle, orb in targets:
+            events.extend(
+                find_aspect_transits(
+                    body,
+                    float(longitude),
+                    float(angle),
+                    float(orb),
+                    jd_start,
+                    jd_end,
+                    step_days=step_days,
+                    reader=reader,
+                    policy=policy,
+                    search_motion=search_motion,
+                )
+            )
+        events.sort(key=lambda event: event.jd_exact)
+        return events
+
     for longitude, angle, orb in targets:
         if not math.isfinite(float(longitude)) or not math.isfinite(float(angle)):
             raise ValueError("natal aspect target longitude and angle must be finite")
         if float(orb) < 0:
             raise ValueError("Orb must be non-negative")
-        events.extend(
-            find_aspect_transits(
-                body,
-                float(longitude),
-                float(angle),
-                float(orb),
-                jd_start,
-                jd_end,
-                step_days=step_days,
-                reader=reader,
-                policy=policy,
-                search_motion=search_motion,
+        windows = _windows_from_longitude_series(series, jd_start, scan_step, float(longitude), float(angle))
+        ordered = windows if search_motion == "forward" else list(reversed(windows))
+        for jd_lo, jd_hi in ordered:
+            events.append(
+                _process_aspect_hit(
+                    body,
+                    float(longitude),
+                    float(angle),
+                    float(orb),
+                    max(jd_start, jd_lo - 0.1),
+                    min(jd_end, jd_hi + 0.1),
+                    jd_start,
+                    jd_end,
+                    reader,
+                    policy,
+                    search_motion,
+                )
             )
-        )
     events.sort(key=lambda event: event.jd_exact)
     return events
