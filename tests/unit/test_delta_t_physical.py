@@ -56,8 +56,14 @@ def _isolated_model_caches() -> None:
 
 
 def test_public_constants_preserve_the_established_surface() -> None:
-    assert dtp.TIDAL_COEFF == 31.0
-    assert dtp.GIA_COEFF == -3.0
+    assert dtp.TIDAL_COEFF == 43.7
+    assert dtp._GIA_LOD_RATE_MS_PER_CY == -0.80
+    assert dtp.GIA_COEFF == pytest.approx(
+        dtp._GIA_LOD_RATE_MS_PER_CY * JULIAN_YEAR / 20.0, abs=1e-12
+    )
+    assert dtp.GIA_COEFF == pytest.approx(-14.61, abs=1e-12)
+    assert dtp._TIDAL_COEFF_SIGMA == 0.2
+    assert dtp._GIA_COEFF_SIGMA == pytest.approx(0.10 * JULIAN_YEAR / 20.0, abs=1e-12)
     assert dtp.REFERENCE_LOD == pytest.approx(69.11474233219883, abs=1e-12)
     assert dtp.REFERENCE_YEAR == pytest.approx(
         julian_module._monthly_mean_representative_epoch(2026, 4), abs=1e-12
@@ -139,10 +145,8 @@ def test_source_era_breakdown_is_baseline_plus_explicit_bridge(year: float) -> N
 def _future_formula(year: float) -> float:
     boundary = julian_module._delta_t_observation_boundary()
     horizon = year - boundary.year
-    reference_total = boundary.total
-    reference_slope = boundary.slope
     curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
-    return reference_total + reference_slope * horizon + curvature * (horizon / 100.0) ** 2
+    return boundary.total + curvature * (horizon / 100.0) ** 2
 
 
 @pytest.mark.parametrize("year", (2027.0, 2030.0, 2050.0, 2100.0, 2150.0))
@@ -170,8 +174,24 @@ def test_physical_model_consumes_the_dynamic_annual_boundary(monkeypatch) -> Non
     )
 
 
+def test_future_mean_ignores_observation_boundary_slope(monkeypatch) -> None:
+    original = julian_module._delta_t_observation_boundary()
+
+    def fake_boundary() -> julian_module._DeltaTObservationBoundary:
+        return julian_module._DeltaTObservationBoundary(
+            year=original.year,
+            total=original.total,
+            slope=original.slope + 1.0,
+        )
+
+    monkeypatch.setattr(julian_module, "_delta_t_observation_boundary", fake_boundary)
+    year = original.year + 10.0
+    expected = original.total + (dtp.TIDAL_COEFF + dtp.GIA_COEFF) * (10.0 / 100.0) ** 2
+    assert dtp.delta_t_hybrid(year) == pytest.approx(expected, abs=1e-12)
+
+
 def test_current_2100_scenario_is_not_the_rejected_historical_slope_path() -> None:
-    assert dtp.delta_t_hybrid(2100.0) == pytest.approx(83.29435995149662, abs=1e-10)
+    assert dtp.delta_t_hybrid(2100.0) == pytest.approx(_future_formula(2100.0), abs=1e-12)
     assert dtp.delta_t_hybrid(2100.0) < 100.0
 
 
@@ -194,15 +214,16 @@ def test_reference_handoff_is_componentwise_continuous() -> None:
         assert getattr(right, field) == pytest.approx(getattr(at, field), abs=1e-6)
 
 
-def test_reference_handoff_is_c1() -> None:
+def test_reference_handoff_is_c0_and_right_slope_is_the_parabola() -> None:
     step = 1e-3
     at = dtp.delta_t_hybrid(dtp.REFERENCE_YEAR)
     left_slope = (at - dtp.delta_t_hybrid(dtp.REFERENCE_YEAR - step)) / step
     right_slope = (dtp.delta_t_hybrid(dtp.REFERENCE_YEAR + step) - at) / step
-    expected = julian_module._delta_t_observation_boundary().slope
-    assert left_slope == pytest.approx(expected, abs=1e-8)
-    assert right_slope == pytest.approx(expected, abs=3e-6)
-    assert right_slope == pytest.approx(left_slope, abs=3e-6)
+    table_slope = julian_module._delta_t_observation_boundary().slope
+    curvature = dtp.TIDAL_COEFF + dtp.GIA_COEFF
+    parabola_slope = 2.0 * curvature * step / 10_000.0
+    assert left_slope == pytest.approx(table_slope, abs=1e-8)
+    assert right_slope == pytest.approx(parabola_slope, abs=3e-6)
 
 
 def test_era_labels_are_stable() -> None:
@@ -315,8 +336,10 @@ def test_future_uncertainty_is_an_arithmetic_uncalibrated_policy_scale() -> None
         )
     )
     assert dtp.delta_t_hybrid_uncertainty(year) == pytest.approx(expected, abs=1e-12)
-    assert "uncalibrated" in (dtp.delta_t_hybrid_uncertainty.__doc__ or "")
-    assert "boundary slope" in (dtp.delta_t_hybrid_uncertainty.__doc__ or "")
+    doc = dtp.delta_t_hybrid_uncertainty.__doc__ or ""
+    assert "uncalibrated" in doc
+    assert "core-anomaly persistence" in doc
+    assert "boundary slope" not in doc
 
 
 def test_uncertainty_is_continuous_and_grows_after_the_reference() -> None:
