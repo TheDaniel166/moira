@@ -45,7 +45,7 @@ def _declination(spec: str | float, jd: float, reader: SpkReader) -> float:
         p = planet_at(name, jd, reader=reader)
         lon, lat = p.longitude, p.latitude
     elif name in ASTEROID_NAIF or any(key.lower() == name.lower() for key in ASTEROID_NAIF):
-        a = asteroid_at(name, jd, de441_reader=reader)
+        a = asteroid_at(name, jd, reader=reader)
         lon, lat = a.longitude, a.latitude
     else:
         try:

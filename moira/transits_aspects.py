@@ -25,6 +25,7 @@ from .transits import (
     _validate_policy,
 )
 from .planets import Body, _npe_body_route_segment_specs
+from .asteroids import ASTEROID_NAIF
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 try:
     from . import moira_native as mn
@@ -298,6 +299,15 @@ def _longitude_series(
                 tier="native_planet",
             )
         if series is None:
+            native_sb = _native_small_body_series(body, jd_start, jd_end, step, reader)
+            if native_sb is not None:
+                series = LongitudeSeries(
+                    jd_start=jd_start,
+                    step_days=step,
+                    values=tuple(float(v) % 360.0 for v in native_sb),
+                    tier="native_small_body",
+                )
+        if series is None:
             series = _sample_resolver_series(body, jd_start, jd_end, step, reader)
         if len(series.values) < 2:
             return None
@@ -346,6 +356,86 @@ def _native_ecliptic_longitude_series(
         return mn.ecliptic_longitude_batch(e_body, e_earth, jds_tt)
     except Exception:
         return None
+
+_SSB = 0
+_SUN = 10
+
+
+def _small_body_segment(reader, naif_id: int, jd_tt_start: float, jd_tt_end: float):
+    """Return the Type 13 segment covering the whole window for *naif_id*, or None."""
+    readers = getattr(reader, "_readers", None)
+    if readers is None:
+        return None
+    for candidate in readers:
+        has_body = getattr(candidate, "has_body", None)
+        kernel = getattr(candidate, "_kernel", None)
+        if not callable(has_body) or kernel is None or not has_body(naif_id):
+            continue
+        for seg in kernel.segments:
+            if seg.target == naif_id and seg.start_jd <= jd_tt_start and jd_tt_end <= seg.end_jd:
+                return seg
+    return None
+
+
+def _native_small_body_series(
+    body: str,
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+    reader: SpkReader,
+) -> list[float] | None:
+    """Tier 2: geometric ecliptic longitude of a named asteroid from its Type 13 evaluator.
+
+    The small-body segment is heliocentric in the wheel catalog, so the
+    target chain is SSB->Sun (planetary kernel) plus Sun->asteroid (Type 13),
+    against the admitted Earth route. Any missing piece steps down to the
+    resolver tier.
+    """
+    if mn is None:
+        return None
+    naif_id = ASTEROID_NAIF.get(body)
+    if naif_id is None:
+        return None
+    resolver = getattr(reader, "_primary_planetary_reader", None)
+    planetary_reader = resolver() if callable(resolver) else None
+    if not isinstance(planetary_reader, SpkReader):
+        return None
+    jd_tt_start = _ut1_to_ephemeris_tt(jd_start, reader)
+    jd_tt_end = _ut1_to_ephemeris_tt(jd_end, reader)
+    seg = _small_body_segment(reader, int(naif_id), jd_tt_start, jd_tt_end)
+    if seg is None:
+        return None
+    try:
+        e_body = seg._load_native_evaluator()
+    except Exception:
+        return None
+    if e_body is None:
+        return None
+    path = str(planetary_reader.path)
+    if seg.center == _SUN:
+        sun = planetary_reader._segment_for(_SSB, _SUN, jd_tt_start)
+        if sun is None:
+            return None
+        e_sun = mn.load_spk_segment_evaluator(path, int(sun.start_i), int(sun.end_i), True, int(sun.data_type))
+        e_target = mn.SumEvaluator(e_sun, e_body)
+    elif seg.center == _SSB:
+        e_target = e_body
+    else:
+        return None
+    e_earth = _earth_native_evaluator(planetary_reader, path, jd_tt_start)
+    if e_earth is None:
+        return None
+    jds_tt = [_ut1_to_ephemeris_tt(jd, reader) for jd in _sample_jds(jd_start, jd_end, step_days)]
+    if len(jds_tt) < 2:
+        return None
+    from .nutation_2000a import _ensure_tables_loaded
+
+    _ensure_tables_loaded()
+    try:
+        return list(mn.ecliptic_longitude_batch(e_target, e_earth, jds_tt))
+    except Exception:
+        return None
+
 
 def _process_aspect_hit(
     body: str,

@@ -255,3 +255,55 @@ def test_grid_falls_back_to_singles_when_no_series(planetary_reader, jd_j2000, m
     grid, singles = _grid_and_singles(Body.SATURN, jd_j2000, jd_j2000 + 365.0, planetary_reader, _grid_specs(saturn))
     assert grid, 'expected at least one hit in the window'
     assert grid == singles
+
+
+from moira.transits_aspects import _native_small_body_series, _signed_diff  # noqa: E402
+
+
+@pytest.mark.requires_ephemeris
+def test_ceres_grid_uses_native_small_body_tier_and_matches_singles(small_body_reader_context, jd_j2000) -> None:
+    pool = small_body_reader_context
+    series = _longitude_series("Ceres", jd_j2000, jd_j2000 + 365.0, _auto_step("Ceres"), pool)
+    assert series is not None and series.tier == "native_small_body"
+    ceres = _resolve_longitude("Ceres", jd_j2000, pool)
+    grid, singles = _grid_and_singles("Ceres", jd_j2000, jd_j2000 + 365.0, pool, _grid_specs(ceres))
+    assert grid, "expected at least one hit in the window"
+    assert grid == singles
+
+
+@pytest.mark.requires_ephemeris
+def test_ceres_native_series_agrees_with_resolver_sampling(small_body_reader_context, jd_j2000) -> None:
+    pool = small_body_reader_context
+    native = _native_small_body_series("Ceres", jd_j2000, jd_j2000 + 30.0, 1.0, pool)
+    assert native is not None
+    sampled = _sample_resolver_series("Ceres", jd_j2000, jd_j2000 + 30.0, 1.0, pool)
+    # geometric native vs apparent resolver: light time on Ceres is minutes, so
+    # agreement is a small fraction of a degree, far inside the window guard.
+    for a, b in zip(native, sampled.values, strict=True):
+        assert abs(_signed_diff(a, b)) < 0.05
+
+
+@pytest.mark.requires_ephemeris
+def test_ceres_grid_falls_to_resolver_when_native_small_body_is_off(
+    small_body_reader_context, jd_j2000, monkeypatch
+) -> None:
+    pool = small_body_reader_context
+    monkeypatch.setattr("moira.transits_aspects._native_small_body_series", lambda *a, **k: None)
+    series = _longitude_series("Ceres", jd_j2000, jd_j2000 + 365.0, 1.0, pool)
+    assert series is not None and series.tier == "resolver"
+
+
+def test_native_small_body_series_is_none_for_non_asteroids(planetary_reader, jd_j2000) -> None:
+    assert _native_small_body_series(Body.SATURN, jd_j2000, jd_j2000 + 10.0, 1.0, planetary_reader) is None
+    assert _native_small_body_series(Body.TRUE_NODE, jd_j2000, jd_j2000 + 10.0, 1.0, planetary_reader) is None
+
+
+@pytest.mark.requires_ephemeris
+def test_asteroid_movers_resolve_in_longitude_and_declination_searches(small_body_reader_context, jd_j2000) -> None:
+    # Regression: both resolvers passed a keyword asteroid_at() no longer accepts.
+    from moira.transits_equatorial import find_declination_transits
+
+    pool = small_body_reader_context
+    assert 0.0 <= _resolve_longitude("Ceres", jd_j2000, pool) < 360.0
+    events = find_declination_transits("Ceres", "Sun", jd_j2000, jd_j2000 + 60.0, reader=pool)
+    assert isinstance(events, list)

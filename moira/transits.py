@@ -1308,7 +1308,7 @@ def _resolve_longitude_truth(
             resolved_kind="asteroid",
             resolved_name=name,
             jd_ut=jd,
-            longitude=asteroid_at(name, jd, de441_reader=reader).longitude,
+            longitude=asteroid_at(name, jd, reader=reader).longitude,
         )
 
     try:
