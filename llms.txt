@@ -6,7 +6,7 @@ Moira is a sovereign computational engine designed for transparency, auditabilit
 
 ## Core Documentation
 - [README](README.md): Overview, installation, and quick start.
-- [CHANGELOG](CHANGELOG.md): Versioned release history (current: 6.3.0).
+- [CHANGELOG](CHANGELOG.md): Versioned release history (current: 6.4.0).
 - [AGENTS.md](AGENTS.md): Core persona (Urania) and operational doctrine for AI collaborators.
 - [Wiki Index](wiki/Home.md): Comprehensive guide to doctrines, foundations, and validation.
 - [Migrating from Swiss Ephemeris](wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md): Contract-first migration guide for flags, time, frames, units, houses, REST, and verification.

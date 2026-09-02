@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 452
-- Registered OpenAPI operations: 452 (GET 35, POST 417)
+- Registered OpenAPI paths: 453
+- Registered OpenAPI operations: 453 (GET 35, POST 418)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 448
+- Versioned `/v1` paths: 449
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3305,6 +3305,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/timelords/zodiacal-releasing/profile` | timelords | `zr_profile_route_v1_timelords_zodiacal_releasing_profile_post` |
 | `POST` | `/v1/timelords/zodiacal-releasing/sequence` | timelords | `zr_sequence_route_v1_timelords_zodiacal_releasing_sequence_post` |
 | `POST` | `/v1/transits/ingresses` | predictive | `ingress_search_route_v1_transits_ingresses_post` |
+| `POST` | `/v1/transits/natal-aspects` | predictive | `natal_aspect_search_route_v1_transits_natal_aspects_post` |
 | `POST` | `/v1/transits/next-ingress` | predictive | `next_ingress_route_v1_transits_next_ingress_post` |
 | `POST` | `/v1/transits/search` | predictive | `transit_search_route_v1_transits_search_post` |
 | `POST` | `/v1/triplicity/assignment` | triplicity | `triplicity_assignment_route_v1_triplicity_assignment_post` |
