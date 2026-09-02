@@ -221,6 +221,82 @@ def _windows_from_longitude_series(
     return windows
 
 
+_QUARTER_TURN_DEG = 90.0
+_MAX_STEP_HALVINGS = 4
+
+
+@dataclass(frozen=True, slots=True)
+class LongitudeSeries:
+    """One mover's ecliptic longitude sampled at a fixed step over a window.
+
+    ``tier`` names the provider that produced it (``native_planet``,
+    ``native_small_body``, ``resolver``). Search code never branches on it;
+    it exists for tests and receipts.
+    """
+
+    jd_start: float
+    step_days: float
+    values: tuple[float, ...]
+    tier: str
+
+
+def _sample_jds(jd_start: float, jd_end: float, step_days: float) -> list[float]:
+    jds: list[float] = []
+    curr = jd_start
+    while curr <= jd_end:
+        jds.append(curr)
+        curr += step_days
+    return jds
+
+
+def _sample_resolver_series(
+    body: str,
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+    reader: SpkReader,
+) -> LongitudeSeries:
+    """Tier 3: sample the transit resolver itself. Admits every body it admits."""
+    values = tuple(
+        _resolve_longitude(body, jd, reader) % 360.0 for jd in _sample_jds(jd_start, jd_end, step_days)
+    )
+    return LongitudeSeries(jd_start=jd_start, step_days=step_days, values=values, tier="resolver")
+
+
+def _series_max_circular_step(values: Sequence[float]) -> float:
+    """Largest absolute circular difference between consecutive samples, degrees."""
+    worst = 0.0
+    for i in range(len(values) - 1):
+        worst = max(worst, abs(_signed_diff(values[i + 1], values[i])))
+    return worst
+
+
+def _longitude_series(
+    body: str,
+    jd_start: float,
+    jd_end: float,
+    step_days: float,
+    reader: SpkReader,
+) -> LongitudeSeries | None:
+    """Return the mover's longitude series for candidate-window detection.
+
+    Tries native providers first, then the resolver. Whatever produced the
+    series, the quarter-turn guard halves the step and resamples while any
+    consecutive pair differs by more than 90 degrees, up to
+    ``_MAX_STEP_HALVINGS`` times. Returns ``None`` when no provider can
+    satisfy the guard; the caller then falls back to per-target searches.
+    """
+    step = float(step_days)
+    for _ in range(_MAX_STEP_HALVINGS + 1):
+        series = _sample_resolver_series(body, jd_start, jd_end, step, reader)
+        if len(series.values) < 2:
+            return None
+        if _series_max_circular_step(series.values) <= _QUARTER_TURN_DEG:
+            return series
+        step /= 2.0
+    return None
+
+
 def _native_ecliptic_longitude_series(
     body: str,
     jd_start: float,
