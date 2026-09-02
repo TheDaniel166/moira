@@ -4,9 +4,9 @@
   "last_verified": "2026-08-18",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.4.0",
-    "tag": "v6.4.0",
-    "commit": "f915ded14a2c94d83a14c937500e818c3b9a3ea9",
+    "version": "6.4.1",
+    "tag": "v6.4.1",
+    "commit": "8dfca9571193d388818f2fbf5d4d739a5d4df4e3",
     "release_date": "2026-09-02",
     "requires_python": ">=3.10",
     "supported_python": [
@@ -31,7 +31,7 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "8b7340da0f543b4818ed1b989f849267be63afb2a2764110c2edbdee5e60aed5"
+      "source_sha256": "1d37c7ce18d4de5a4cb9736bec478de1bb8039a1c1f33fdeb1b1f089bb1fe08f"
     },
     {
       "id": "python_root_exports",
@@ -41,12 +41,12 @@
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "bbd572d3ac66b2210ee7358e53ac5e6781892b503167c25616f0bed9e84932d7"
+      "source_sha256": "3c94a32be7f58b7a78f23d54c8889baf76168be79105c09ac11a88ef6cab9966"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "c11810b2c0fe25abe388b7a0ea9429a544c8c633287c71f7eff74397585c8f80"
+      "source_sha256": "f5294824547da9b133797ab32f676bcd8976a9477bc13353492dd2634b4cc52e"
     },
     {
       "id": "rest_router_registration",
@@ -2462,7 +2462,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "bbd572d3ac66b2210ee7358e53ac5e6781892b503167c25616f0bed9e84932d7",
+      "source_sha256": "3c94a32be7f58b7a78f23d54c8889baf76168be79105c09ac11a88ef6cab9966",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -4710,8 +4710,8 @@
       "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.2.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "8b7340da0f543b4818ed1b989f849267be63afb2a2764110c2edbdee5e60aed5",
-      "source_bytes": 315446,
+      "source_sha256": "1d37c7ce18d4de5a4cb9736bec478de1bb8039a1c1f33fdeb1b1f089bb1fe08f",
+      "source_bytes": 315635,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -4728,7 +4728,7 @@
       "description": "A contract-first migration manual for replacing Swiss Ephemeris flags and global state with Moira's explicit time, frame, observer, units, house, REST, and verification policies.",
       "content_class": "evergreen_guide",
       "schema_type": "TechArticle",
-      "source_sha256": "f6330f699e85769aa973d9af62fa2544a4ea573fe413d7e8b548fadde3c625fa",
+      "source_sha256": "3b93cf4d23cd58cc271c14ca197d23d8a6286c56e4f389a5c899a8831f863f76",
       "source_bytes": 32455,
       "last_verified": "2026-08-18",
       "prerender": true,
@@ -4890,8 +4890,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "c11810b2c0fe25abe388b7a0ea9429a544c8c633287c71f7eff74397585c8f80",
-      "source_bytes": 214824,
+      "source_sha256": "f5294824547da9b133797ab32f676bcd8976a9477bc13353492dd2634b4cc52e",
+      "source_bytes": 215017,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -5288,6 +5288,27 @@
   ],
   "releases": [
     {
+      "version": "6.4.1",
+      "date": "2026-09-02",
+      "title": "Natal Grid for Every Mover",
+      "added": [],
+      "changed": [
+        "find_aspect_transits_to_longitudes() scans one longitude series per mover for every admitted mover: native planetary route, native Type 13 small-body route for asteroids, resolver sampling for the lunar nodes and Liliths; the scan step follows _auto_step with a quarter-turn guard. Event times unchanged; a one-year True Node grid drops from about 13 s to under 2 s.",
+        "POST /v1/transits/natal-aspects admits the same movers as the natal_aspect_transits batch kind through the shared NATAL_ASPECT_MOVERS."
+      ],
+      "fixed": [
+        "Transit and declination searches with an asteroid mover raised TypeError because the resolvers still passed de441_reader= to asteroid_at()."
+      ],
+      "validation": [
+        "Dual-path equivalence of the series grid against per-target searches for Saturn, True Node, True Lilith, and Ceres; tier isolation and quarter-turn guard tests; a bounded-time covenant for the True Node grid."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.4.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.4.1.md",
+      "tag": "v6.4.1",
+      "release_notes_sha256": "87ec246622b826f7cf6b8c91161651ac366bee7d548e33888c0da803d2ea96d4",
+      "compatibility_notes_sha256": "3114269e59b4ec78b40d4014b9627b712412292354aa86d3a9f09e014251978e"
+    },
+    {
       "version": "6.4.0",
       "date": "2026-09-02",
       "title": "Natal Aspect Grid and Delta-T Scenario",
@@ -5633,5 +5654,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "ccfdc11815f9fd4ea56e6e62bdf07fca4ddb9debf28d50df0f26719933d2ed5c"
+  "manifest_sha256": "69aa175a2c30c11026d0b02b23f83af8d8b48e2e6e2a990dac4c2268a32d9074"
 }
