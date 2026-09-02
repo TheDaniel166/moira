@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- `find_aspect_transits_to_longitudes()` now scans one longitude series per
+  mover for every admitted mover, not only planets: native planetary route,
+  native Type 13 small-body route for named asteroids, and resolver sampling
+  for the lunar nodes and Liliths. The scan step follows `_auto_step`
+  (True Node and True Lilith now 0.25 day) with a quarter-turn guard that
+  halves the step when consecutive samples jump. Exact event times are
+  unchanged; a one-year True Node grid drops from about 13 s to under 1 s.
+- `POST /v1/transits/natal-aspects` admits the same movers as the
+  `natal_aspect_transits` batch kind (planets, True/Mean Node, Lilith,
+  True Lilith, named asteroids) through the shared `NATAL_ASPECT_MOVERS`.
+
+### Fixed
+- Transit searches with an asteroid mover raised `TypeError`: the transit
+  and declination resolvers still called `asteroid_at(..., de441_reader=)`
+  after the 2026-05-21 signature change.
+
 ## [6.4.0] - 2026-09-02
 
 ### Added

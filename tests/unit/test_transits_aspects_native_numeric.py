@@ -307,3 +307,17 @@ def test_asteroid_movers_resolve_in_longitude_and_declination_searches(small_bod
     assert 0.0 <= _resolve_longitude("Ceres", jd_j2000, pool) < 360.0
     events = find_declination_transits("Ceres", "Sun", jd_j2000, jd_j2000 + 60.0, reader=pool)
     assert isinstance(events, list)
+
+
+@pytest.mark.requires_ephemeris
+def test_true_node_grid_is_bounded_in_time(planetary_reader, jd_j2000) -> None:
+    import time
+
+    node = _resolve_longitude(Body.TRUE_NODE, jd_j2000, planetary_reader)
+    specs = [((node + o) % 360.0, angle, orb) for o in range(0, 360, 30) for angle, orb in _GRID_ANGLES]
+    started = time.perf_counter()
+    events = find_aspect_transits_to_longitudes(Body.TRUE_NODE, specs, jd_j2000, jd_j2000 + 365.0, reader=planetary_reader)
+    elapsed = time.perf_counter() - started
+    assert events
+    # Per-target searches take ~13 s here; the series path is ~1.5 s locally. 5 s leaves CI headroom.
+    assert elapsed < 5.0, f"True Node grid took {elapsed:.2f}s; the series provider is not being used"

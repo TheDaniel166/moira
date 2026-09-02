@@ -2102,6 +2102,9 @@ Both return `AspectTransitEvent` objects (`body`, `target`, `angle`, `orb`,
 `search_motion`) ordered by `jd_exact`. `Moira.natal_aspect_transits(body,
 natal_longitudes, aspect_angles, jd_start, jd_end, aspect_orbs=None)` builds
 the same specs as the full product of longitudes and angles.
+`NATAL_ASPECT_MOVERS` lists every admitted mover. Planets and asteroids are
+scanned natively; nodes and Liliths are sampled through the transit resolver
+at the engine's step for that body.
 
 ### Stations & Retrograde
 

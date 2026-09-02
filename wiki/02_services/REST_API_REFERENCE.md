@@ -439,13 +439,16 @@ preserves search-policy truth, return-moment truth, both chart contexts, and a
 relocation receipt proving that the epoch and celestial positions did not
 change. It adds no second return solver, place ranking, or interpretation.
 
-`POST /v1/transits/natal-aspects` searches one moving planet (`body`, Sun
-through Pluto) against a grid of frozen ecliptic longitudes
+`POST /v1/transits/natal-aspects` searches one mover (`body`: any planet,
+True Node, Mean Node, Lilith, True Lilith, or a named asteroid) against a
+grid of frozen ecliptic longitudes
 (`natal_longitudes`, degrees) for every `aspect_angles` entry, with an
 optional parallel `aspect_orbs` list (empty means exact hits). It transports
 `Moira.natal_aspect_transits()`: one native longitude series of the mover is
 scanned over the window and each `(longitude, angle)` pair is refined from it,
-so a full natal grid costs one scan rather than one search per pair. The
+so a full natal grid costs one scan rather than one search per pair. Every
+mover is scanned as one longitude series per window: native evaluators for
+planets and asteroids, resolver sampling for the lunar points. The
 response is `events`, ordered by `jd_exact`, in the same `aspect_transit`
 event shape as `/v1/batch/events`. The batch route accepts the same search as
 `kind: "natal_aspect_transits"` with `natal_longitudes`, `aspect_angles`, and
