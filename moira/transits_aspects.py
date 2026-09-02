@@ -288,7 +288,17 @@ def _longitude_series(
     """
     step = float(step_days)
     for _ in range(_MAX_STEP_HALVINGS + 1):
-        series = _sample_resolver_series(body, jd_start, jd_end, step, reader)
+        series: LongitudeSeries | None = None
+        native = _native_ecliptic_longitude_series(body, jd_start, jd_end, step, reader)
+        if native is not None:
+            series = LongitudeSeries(
+                jd_start=jd_start,
+                step_days=step,
+                values=tuple(float(v) % 360.0 for v in native),
+                tier="native_planet",
+            )
+        if series is None:
+            series = _sample_resolver_series(body, jd_start, jd_end, step, reader)
         if len(series.values) < 2:
             return None
         if _series_max_circular_step(series.values) <= _QUARTER_TURN_DEG:
@@ -507,8 +517,11 @@ def find_aspect_transits_to_longitudes(
     if reader is None:
         reader = get_reader()
     policy = _validate_policy(policy)
-    scan_step = 1.0
-    series = _native_ecliptic_longitude_series(body, jd_start, jd_end, scan_step, reader)
+    if step_days is not None:
+        scan_step = float(step_days)
+    else:
+        scan_step = policy.transit.step_days_override or _auto_step(body)
+    series = _longitude_series(body, jd_start, jd_end, scan_step, reader)
     events: list[AspectTransitEvent] = []
     if series is None:
         for longitude, angle, orb in targets:
@@ -534,8 +547,11 @@ def find_aspect_transits_to_longitudes(
             raise ValueError("natal aspect target longitude and angle must be finite")
         if float(orb) < 0:
             raise ValueError("Orb must be non-negative")
-        windows = _windows_from_longitude_series(series, jd_start, scan_step, float(longitude), float(angle))
+        windows = _windows_from_longitude_series(
+            series.values, series.jd_start, series.step_days, float(longitude), float(angle)
+        )
         ordered = windows if search_motion == "forward" else list(reversed(windows))
+        pad = series.step_days
         for jd_lo, jd_hi in ordered:
             events.append(
                 _process_aspect_hit(
@@ -543,8 +559,8 @@ def find_aspect_transits_to_longitudes(
                     float(longitude),
                     float(angle),
                     float(orb),
-                    max(jd_start, jd_lo - 0.1),
-                    min(jd_end, jd_hi + 0.1),
+                    max(jd_start, jd_lo - pad),
+                    min(jd_end, jd_hi + pad),
                     jd_start,
                     jd_end,
                     reader,

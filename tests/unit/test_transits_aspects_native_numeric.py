@@ -172,3 +172,86 @@ def test_longitude_series_gives_up_after_four_halvings(planetary_reader, jd_j200
 
     monkeypatch.setattr("moira.transits_aspects._resolve_longitude", hostile)
     assert _longitude_series("Mean Node", jd_j2000, jd_j2000 + 4.0, 1.0, planetary_reader) is None
+
+
+from moira.transits import _auto_step, _resolve_longitude  # noqa: E402
+from moira.transits_aspects import find_aspect_transits_to_longitudes  # noqa: E402
+
+
+_JD_TOLERANCE_DAYS = 2e-6  # two solver tolerances: brackets differ, midpoints may not agree exactly
+
+
+def _event_key(event):
+    return (float(event.target), event.angle, event.is_retrograde_hit, event.jd_exact)
+
+
+def _grid_and_singles(body, jd_start, jd_end, reader, specs):
+    """Return (grid, singles) as sorted keys with jd_exact snapped to the shared tolerance.
+
+    Equality of the two lists means: same hits, same target/angle/direction,
+    exact times within ``_JD_TOLERANCE_DAYS`` of each other.
+    """
+    grid = find_aspect_transits_to_longitudes(body, specs, jd_start, jd_end, reader=reader)
+    singles = []
+    for longitude, angle, orb in specs:
+        singles.extend(find_aspect_transits(body, longitude, angle, orb, jd_start, jd_end, reader=reader))
+    grid_keys = sorted(_event_key(e) for e in grid)
+    single_keys = sorted(_event_key(e) for e in singles)
+    assert len(grid_keys) == len(single_keys), (grid_keys, single_keys)
+    for g, s_ in zip(grid_keys, single_keys, strict=True):
+        assert g[:3] == s_[:3], (g, s_)
+        assert abs(g[3] - s_[3]) <= _JD_TOLERANCE_DAYS, (g, s_)
+    snapped = [k[:3] for k in grid_keys]
+    return snapped, [k[:3] for k in single_keys]
+
+
+_GRID_ANGLES = ((0.0, 8.0), (60.0, 5.0), (90.0, 7.0), (120.0, 7.0), (180.0, 8.0))
+
+
+def _grid_specs(anchor_longitude: float):
+    longitudes = [(anchor_longitude + offset) % 360.0 for offset in (-12.0, -5.0, 4.0, 37.0, 91.0, 150.0, 212.0, 301.0)]
+    return [(lon, angle, orb) for lon in longitudes for angle, orb in _GRID_ANGLES]
+
+
+@pytest.mark.requires_ephemeris
+def test_planet_grid_uses_native_tier_and_matches_singles(planetary_reader, jd_j2000) -> None:
+    series = _longitude_series(Body.SATURN, jd_j2000, jd_j2000 + 365.0, _auto_step(Body.SATURN), planetary_reader)
+    assert series is not None and series.tier == "native_planet"
+    saturn = planet_at(Body.SATURN, jd_j2000, reader=planetary_reader).longitude
+    grid, singles = _grid_and_singles(Body.SATURN, jd_j2000, jd_j2000 + 365.0, planetary_reader, _grid_specs(saturn))
+    assert grid, 'expected at least one hit in the window'
+    assert grid == singles
+
+
+@pytest.mark.requires_ephemeris
+def test_true_node_grid_uses_resolver_tier_and_matches_singles(planetary_reader, jd_j2000) -> None:
+    series = _longitude_series(Body.TRUE_NODE, jd_j2000, jd_j2000 + 365.0, _auto_step(Body.TRUE_NODE), planetary_reader)
+    assert series is not None and series.tier == "resolver"
+    node = _resolve_longitude(Body.TRUE_NODE, jd_j2000, planetary_reader)
+    grid, singles = _grid_and_singles(Body.TRUE_NODE, jd_j2000, jd_j2000 + 365.0, planetary_reader, _grid_specs(node))
+    assert grid, 'expected at least one hit in the window'
+    assert grid == singles
+
+
+@pytest.mark.requires_ephemeris
+def test_true_lilith_grid_matches_singles(planetary_reader, jd_j2000) -> None:
+    lilith = _resolve_longitude(Body.TRUE_LILITH, jd_j2000, planetary_reader)
+    grid, singles = _grid_and_singles(Body.TRUE_LILITH, jd_j2000, jd_j2000 + 365.0, planetary_reader, _grid_specs(lilith))
+    assert grid, 'expected at least one hit in the window'
+    assert grid == singles
+
+
+def test_auto_step_tightens_osculating_points() -> None:
+    assert _auto_step(Body.TRUE_NODE) == 0.25
+    assert _auto_step(Body.TRUE_LILITH) == 0.25
+    assert _auto_step(Body.MEAN_NODE) == 1.0
+    assert _auto_step(Body.LILITH) == 1.0
+
+
+@pytest.mark.requires_ephemeris
+def test_grid_falls_back_to_singles_when_no_series(planetary_reader, jd_j2000, monkeypatch) -> None:
+    monkeypatch.setattr("moira.transits_aspects._longitude_series", lambda *a, **k: None)
+    saturn = planet_at(Body.SATURN, jd_j2000, reader=planetary_reader).longitude
+    grid, singles = _grid_and_singles(Body.SATURN, jd_j2000, jd_j2000 + 365.0, planetary_reader, _grid_specs(saturn))
+    assert grid, 'expected at least one hit in the window'
+    assert grid == singles

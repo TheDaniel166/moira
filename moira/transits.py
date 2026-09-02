@@ -2310,6 +2310,8 @@ def _auto_step(body: str) -> float:
         Body.URANUS:  10.0,
         Body.NEPTUNE: 10.0,
         Body.PLUTO:   15.0,
+        Body.TRUE_NODE:   0.25,  # osculating; can swing several degrees/day
+        Body.TRUE_LILITH: 0.25,  # osculating apogee; same reason
     }
     return _STEPS.get(body, 1.0)
 
