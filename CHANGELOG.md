@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.4.1] - 2026-09-02
+
 ### Changed
 - `find_aspect_transits_to_longitudes()` now scans one longitude series per
   mover for every admitted mover, not only planets: native planetary route,

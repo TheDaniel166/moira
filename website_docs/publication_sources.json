@@ -318,6 +318,24 @@
   ],
   "release_summaries": [
     {
+      "version": "6.4.1",
+      "date": "2026-09-02",
+      "title": "Natal Grid for Every Mover",
+      "added": [],
+      "changed": [
+        "find_aspect_transits_to_longitudes() scans one longitude series per mover for every admitted mover: native planetary route, native Type 13 small-body route for asteroids, resolver sampling for the lunar nodes and Liliths; the scan step follows _auto_step with a quarter-turn guard. Event times unchanged; a one-year True Node grid drops from about 13 s to under 2 s.",
+        "POST /v1/transits/natal-aspects admits the same movers as the natal_aspect_transits batch kind through the shared NATAL_ASPECT_MOVERS."
+      ],
+      "fixed": [
+        "Transit and declination searches with an asteroid mover raised TypeError because the resolvers still passed de441_reader= to asteroid_at()."
+      ],
+      "validation": [
+        "Dual-path equivalence of the series grid against per-target searches for Saturn, True Node, True Lilith, and Ceres; tier isolation and quarter-turn guard tests; a bounded-time covenant for the True Node grid."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.4.1.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.4.1.md"
+    },
+    {
       "version": "6.4.0",
       "date": "2026-09-02",
       "title": "Natal Aspect Grid and Delta-T Scenario",
