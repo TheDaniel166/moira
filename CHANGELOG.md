@@ -10,8 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Public technical note `wiki/01_doctrines/WHY_MOIRA_DOES_NOT_COMPRESS_DEXX.md`
   on reading published JPL DExx kernels instead of a second Chebyshev pack.
+- `find_aspect_transits_to_longitudes()` and `Moira.natal_aspect_transits()`:
+  aspect hits of one moving planet against many frozen ecliptic longitudes
+  (a natal grid) from one native longitude series per mover, refined per
+  `(longitude, angle)` pair by the existing bisection. Results carry the
+  same `AspectTransitEvent` shape as `find_aspect_transits()`.
+- REST `POST /v1/transits/natal-aspects` and the `natal_aspect_transits`
+  kind of `POST /v1/batch/events` (`natal_longitudes`, `aspect_angles`,
+  `aspect_orbs`) transporting that search.
+- Native `ecliptic_longitude_batch` (true ecliptic longitude of date for a
+  body/observer evaluator pair over a JD series) and
+  `find_aspects_to_longitude` bindings.
 
 ### Changed
+- `find_aspect_transits()` with a numeric (frozen-longitude) target now
+  pre-filters candidate windows from a native geocentric longitude scan of
+  the moving planet, the same hybrid path planet-to-planet searches already
+  used. When the native scan is unavailable the pure-Python search runs
+  unchanged; event times are still refined by the same bisection.
 - Recalibrated the default post-observation Delta-T scenario to
   `D0 + 29.09·((year − Y0)/100)²` using Morrison et al. 2021 tidal
   `43.7 s/cy²` and Shahvandi et al. 2024 GIA `−0.80 ms/cy`

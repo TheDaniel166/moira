@@ -1333,6 +1333,7 @@ _EXPECTED_MOIRA_METHODS = {
     "lunar_occultation_path_topology_at",
     "lunar_star_occultation_path_topology",
     "lunar_star_occultation_path_topology_at",
+    "natal_aspect_transits",
     "parans",
     "patterns",
     "phase",

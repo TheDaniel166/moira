@@ -18,6 +18,7 @@ from moira.transits import (
 from ..models.transits import (
     IngressSearchRequest,
     LunarPhaseSearchRequest,
+    NatalAspectSearchRequest,
     NextIngressRequest,
     TransitSearchRequest,
 )
@@ -94,6 +95,40 @@ def compute_transits(engine: Moira, request: TransitSearchRequest):
         reader=reader,
         search_motion=request.search_motion,
         policy=policy,
+    )
+
+
+def compute_natal_aspect_transits(engine: Moira, request: NatalAspectSearchRequest):
+    """Aspect hits of one moving body against frozen natal longitudes.
+
+    Transport validation only; the search itself is ``Moira.natal_aspect_transits``.
+    """
+    _require_supported_body(request.body)
+    _validate_jd_window(request.jd_start, request.jd_end)
+    if not request.natal_longitudes:
+        raise ValueError("natal_longitudes must contain at least one longitude")
+    if not request.aspect_angles:
+        raise ValueError("aspect_angles must contain at least one angle")
+    for index, longitude in enumerate(request.natal_longitudes):
+        _require_finite_jd(longitude, f"natal_longitudes[{index}]")
+    for index, angle in enumerate(request.aspect_angles):
+        _require_finite_jd(angle, f"aspect_angles[{index}]")
+    aspect_orbs = list(request.aspect_orbs) or None
+    if aspect_orbs is not None:
+        if len(aspect_orbs) != len(request.aspect_angles):
+            raise ValueError("aspect_orbs must match aspect_angles")
+        for index, orb in enumerate(aspect_orbs):
+            _require_finite_jd(orb, f"aspect_orbs[{index}]")
+            if orb < 0:
+                raise ValueError(f"aspect_orbs[{index}] must be >= 0")
+    return engine.natal_aspect_transits(
+        request.body,
+        request.natal_longitudes,
+        request.aspect_angles,
+        request.jd_start,
+        request.jd_end,
+        aspect_orbs=aspect_orbs,
+        search_motion=request.search_motion,
     )
 
 

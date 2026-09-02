@@ -120,6 +120,13 @@ jd_end    = utc_to_ut1(jd_from_datetime(datetime(2025, 1, 1, tzinfo=timezone.utc
 
 for event in m.transits(Body.JUPITER, natal_sun, jd_start, jd_end):
     print(event.jd_ut, event.relation.relation_kind)
+
+# Many natal points and aspects at once: one native scan of the mover.
+natal_points = [p.longitude for p in chart.planets.values()]
+for hit in m.natal_aspect_transits(
+    Body.SATURN, natal_points, [0.0, 90.0, 180.0], jd_start, jd_end, aspect_orbs=[1.0, 1.0, 1.0]
+):
+    print(hit.jd_exact, hit.target, hit.angle, hit.is_retrograde_hit)
 ```
 
 ---
@@ -2070,6 +2077,31 @@ jd_nm  = last_new_moon(jd_now, reader=reader)
 jd_fm  = last_full_moon(jd_now, reader=reader)
 jd_syn, kind = prenatal_syzygy(jd_natal, reader=reader)
 ```
+
+#### Natal aspect grid
+
+```python
+from moira.facade import find_aspect_transits, find_aspect_transits_to_longitudes
+
+# One mover, one target (body name or frozen longitude), one aspect.
+hits = find_aspect_transits(Body.SATURN, natal_moon_lon, 90.0, 1.0, jd_start, jd_end, reader=reader)
+
+# One mover against many frozen longitudes and aspects from a single native
+# longitude scan; specs are (longitude_deg, aspect_angle_deg, orb_deg).
+grid = find_aspect_transits_to_longitudes(
+    Body.SATURN,
+    [(natal_sun_lon, 0.0, 1.0), (natal_sun_lon, 90.0, 1.0), (natal_moon_lon, 180.0, 1.0)],
+    jd_start,
+    jd_end,
+    reader=reader,
+)
+```
+
+Both return `AspectTransitEvent` objects (`body`, `target`, `angle`, `orb`,
+`jd_exact`, `jd_entering`, `jd_leaving`, `is_retrograde_hit`,
+`search_motion`) ordered by `jd_exact`. `Moira.natal_aspect_transits(body,
+natal_longitudes, aspect_angles, jd_start, jd_end, aspect_orbs=None)` builds
+the same specs as the full product of longitudes and angles.
 
 ### Stations & Retrograde
 

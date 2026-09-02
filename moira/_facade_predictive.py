@@ -503,6 +503,39 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             body, target, angle, orb, jd_start, jd_end, reader=self._reader, search_motion=search_motion
         )
 
+    def natal_aspect_transits(
+        self,
+        body: str,
+        natal_longitudes,
+        aspect_angles,
+        jd_start: float,
+        jd_end: float,
+        aspect_orbs=None,
+        search_motion: str = "forward",
+    ):
+        """Find aspect hits of one moving body against many frozen natal longitudes.
+
+        ``natal_longitudes`` are ecliptic longitudes (degrees) that stay fixed
+        for the whole search. ``aspect_angles`` and ``aspect_orbs`` are
+        parallel sequences; when ``aspect_orbs`` is None every angle uses an
+        orb of zero. Every longitude is searched against every angle.
+        """
+        angles = tuple(float(angle) for angle in aspect_angles)
+        if aspect_orbs is None:
+            orbs = tuple(0.0 for _ in angles)
+        else:
+            orbs = tuple(float(orb) for orb in aspect_orbs)
+        if len(orbs) != len(angles):
+            raise ValueError("aspect_orbs must match aspect_angles")
+        specs = [
+            (float(longitude), angle, orb)
+            for longitude in natal_longitudes
+            for angle, orb in zip(angles, orbs, strict=True)
+        ]
+        return _facade_module().find_aspect_transits_to_longitudes(
+            body, specs, jd_start, jd_end, reader=self._reader, search_motion=search_motion
+        )
+
     def declination_transits(
         self,
         body: str,

@@ -13,10 +13,13 @@ from ..models.transits import (
     IngressSearchResponse,
     LunarPhaseSearchRequest,
     LunarPhaseSearchResponse,
+    NatalAspectSearchRequest,
+    NatalAspectSearchResponse,
     NextIngressRequest,
     TransitSearchRequest,
     TransitSearchResponse,
 )
+from ..serializers.batch import serialize_aspect_transit_event
 from ..serializers.transits import (
     serialize_ingress_event,
     serialize_lunar_phase_event,
@@ -25,6 +28,7 @@ from ..serializers.transits import (
 from ..services.transits import (
     compute_ingresses,
     compute_lunar_phases,
+    compute_natal_aspect_transits,
     compute_next_ingress,
     compute_transits,
 )
@@ -48,6 +52,24 @@ def transit_search_route(
             ev.computation_truth.requested_tolerance_days = request.solver_tolerance_days
             ev.computation_truth.requested_direction = request.direction
     return TransitSearchResponse(events=events)
+
+
+@router.post("/transits/natal-aspects", response_model=NatalAspectSearchResponse)
+def natal_aspect_search_route(
+    request: NatalAspectSearchRequest,
+    engine: Moira = Depends(get_engine),
+) -> NatalAspectSearchResponse:
+    """Aspect hits of one moving body against frozen natal longitudes.
+
+    The natal longitudes never move. One longitude series of the body is
+    scanned for the whole window and every (longitude, angle) pair is refined
+    from it, so a full natal grid costs one scan instead of one search per
+    pair. Events are ordered by exact time and share the aspect_transit event
+    shape used by /v1/batch/events.
+    """
+    return NatalAspectSearchResponse(
+        events=[serialize_aspect_transit_event(event) for event in compute_natal_aspect_transits(engine, request)]
+    )
 
 
 @router.post("/transits/ingresses", response_model=IngressSearchResponse)

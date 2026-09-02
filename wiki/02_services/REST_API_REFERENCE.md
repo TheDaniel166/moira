@@ -393,6 +393,7 @@ Admitted products:
 | Method | Path | Handler |
 |---|---|---|
 | POST | `/v1/transits/search` | `transit_search_route` |
+| POST | `/v1/transits/natal-aspects` | `natal_aspect_search_route` |
 | POST | `/v1/transits/ingresses` | `ingress_search_route` |
 | POST | `/v1/transits/next-ingress` | `next_ingress_route` |
 | POST | `/v1/returns/solar` | `solar_return_route` |
@@ -437,6 +438,20 @@ return sky into caller-supplied source and relocated house frames. The response
 preserves search-policy truth, return-moment truth, both chart contexts, and a
 relocation receipt proving that the epoch and celestial positions did not
 change. It adds no second return solver, place ranking, or interpretation.
+
+`POST /v1/transits/natal-aspects` searches one moving planet (`body`, Sun
+through Pluto) against a grid of frozen ecliptic longitudes
+(`natal_longitudes`, degrees) for every `aspect_angles` entry, with an
+optional parallel `aspect_orbs` list (empty means exact hits). It transports
+`Moira.natal_aspect_transits()`: one native longitude series of the mover is
+scanned over the window and each `(longitude, angle)` pair is refined from it,
+so a full natal grid costs one scan rather than one search per pair. The
+response is `events`, ordered by `jd_exact`, in the same `aspect_transit`
+event shape as `/v1/batch/events`. The batch route accepts the same search as
+`kind: "natal_aspect_transits"` with `natal_longitudes`, `aspect_angles`, and
+`aspect_orbs` on the item; when `aspect_orbs` is omitted there, the item's
+`orb` applies to every angle. Neither surface adds an interpretation layer or
+a second solver.
 
 ## Phenomena Routes
 

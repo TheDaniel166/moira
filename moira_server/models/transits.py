@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class _StrictModel(BaseModel):
@@ -197,6 +197,55 @@ class NextIngressRequest(_StrictModel):
 class LunarPhaseSearchRequest(_StrictModel):
     jd_start: float
     jd_end: float
+
+
+class AspectTransitEventResponse(_StrictModel):
+    event_type: str = "aspect_transit"
+    body: str
+    target: str | float
+    angle: float
+    orb: float
+    jd_exact: float
+    datetime_utc: str
+    jd_entering: float | None = None
+    jd_leaving: float | None = None
+    is_retrograde_hit: bool
+    search_motion: str
+
+
+class NatalAspectSearchRequest(_StrictModel):
+    body: str = Field(
+        description=(
+            "Moving body searched against the frozen natal longitudes: "
+            "Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, or Pluto."
+        ),
+    )
+    natal_longitudes: list[float] = Field(
+        description=(
+            "Frozen ecliptic longitudes in degrees (0 <= value < 360). "
+            "Each stays fixed for the whole window; the moving body is searched against every one."
+        ),
+    )
+    aspect_angles: list[float] = Field(
+        description=(
+            "Aspect angles in degrees (0 conjunction, 60 sextile, 90 square, 120 trine, 180 opposition, ...). "
+            "Every angle is searched against every natal longitude."
+        ),
+    )
+    aspect_orbs: list[float] = Field(
+        default_factory=list,
+        description=(
+            "Orb in degrees per aspect angle, parallel to aspect_angles. "
+            "Leave empty for exact hits (orb 0); each orb must be >= 0."
+        ),
+    )
+    jd_start: float
+    jd_end: float
+    search_motion: str = "forward"
+
+
+class NatalAspectSearchResponse(_StrictModel):
+    events: list[AspectTransitEventResponse]
 
 
 class LunarPhaseSearchResponse(_StrictModel):

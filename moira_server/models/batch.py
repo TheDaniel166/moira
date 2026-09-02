@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .chart import ChartReductionTruthResponse, ChartRequest, ChartResponse, HousesResponse
 from .progressions import (
@@ -12,7 +12,7 @@ from .progressions import (
     ProgressionComputationTruthResponse,
 )
 from .returns import ReturnEventResponse
-from .transits import IngressEventResponse, TransitEventResponse
+from .transits import AspectTransitEventResponse, IngressEventResponse, TransitEventResponse
 
 
 class _StrictModel(BaseModel):
@@ -109,9 +109,24 @@ class EventBatchItemRequest(_StrictModel):
     target: str | float | None = None
     angle: float | None = None
     orb: float = 0.0
-    natal_longitudes: list[float] | None = None
-    aspect_angles: list[float] | None = None
-    aspect_orbs: list[float] | None = None
+    natal_longitudes: list[float] | None = Field(
+        default=None,
+        description=(
+            "kind=natal_aspect_transits only: frozen ecliptic longitudes in degrees "
+            "that the moving body is searched against."
+        ),
+    )
+    aspect_angles: list[float] | None = Field(
+        default=None,
+        description="kind=natal_aspect_transits only: aspect angles in degrees, each searched against every natal longitude.",
+    )
+    aspect_orbs: list[float] | None = Field(
+        default=None,
+        description=(
+            "kind=natal_aspect_transits only: orb in degrees per aspect angle, parallel to aspect_angles; "
+            "omit to use the item's orb for every angle."
+        ),
+    )
     is_contra_parallel: bool = False
     search_motion: str = "forward"
 
@@ -123,20 +138,6 @@ class StationEventResponse(_StrictModel):
     jd_ut: float
     datetime_utc: str
     longitude: float
-
-
-class AspectTransitEventResponse(_StrictModel):
-    event_type: str = "aspect_transit"
-    body: str
-    target: str | float
-    angle: float
-    orb: float
-    jd_exact: float
-    datetime_utc: str
-    jd_entering: float | None = None
-    jd_leaving: float | None = None
-    is_retrograde_hit: bool
-    search_motion: str
 
 
 class EquatorialTransitEventResponse(_StrictModel):

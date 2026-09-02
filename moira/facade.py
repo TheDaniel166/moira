@@ -186,7 +186,7 @@ from .huber import (
     intensity_at,
     chart_intensity_profile,
 )
-from .transits_aspects import AspectTransitEvent, find_aspect_transits
+from .transits_aspects import AspectTransitEvent, find_aspect_transits, find_aspect_transits_to_longitudes
 from .transits_equatorial import EquatorialTransitEvent, find_declination_transits
 from .aspects import (
     CANONICAL_ASPECTS,
@@ -2115,7 +2115,7 @@ __all__ = [
     "TransitConditionNetworkEdge", "TransitConditionNetworkProfile",
     "TransitEvent", "IngressEvent", "LunarPhaseEvent", "AspectTransitEvent", "EquatorialTransitEvent",
     "next_transit", "find_transits", "find_ingresses",
-    "find_aspect_transits", "find_declination_transits",
+    "find_aspect_transits", "find_aspect_transits_to_longitudes", "find_declination_transits",
     "next_ingress", "next_ingress_into",
     "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "lunar_return",
     "last_new_moon", "last_full_moon", "prenatal_syzygy", "find_lunar_phases",
