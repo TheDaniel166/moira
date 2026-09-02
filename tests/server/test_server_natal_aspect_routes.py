@@ -210,3 +210,70 @@ def test_batch_events_natal_aspect_transits_still_works(
     assert len(events) == len(direct)
     assert events[0]["event_type"] == "aspect_transit"
     assert events[0]["jd_exact"] == pytest.approx(direct[0].jd_exact)
+
+
+def _natal_aspects_request(body: str) -> dict:
+    return {
+        "body": body,
+        "natal_longitudes": [10.0],
+        "aspect_angles": [0.0],
+        "jd_start": 2451545.0,
+        "jd_end": 2451545.0 + 30.0,
+    }
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("body", ["True Node", "Mean Node", "Lilith", "True Lilith"])
+def test_natal_aspects_route_admits_lunar_points(client_with_engine: TestClient, body: str) -> None:
+    response = client_with_engine.post(_NATAL_ASPECTS_PATH, json=_natal_aspects_request(body))
+    assert response.status_code == 200, response.text
+    assert "events" in response.json()
+
+
+@pytest.mark.requires_ephemeris
+def test_natal_aspects_route_admits_asteroid_movers(client_with_engine: TestClient) -> None:
+    # The session engine may carry no small-body shard; admission is what is
+    # under test here, so a kernel-availability 422 is acceptable, an
+    # unsupported-mover 422 is not.
+    response = client_with_engine.post(_NATAL_ASPECTS_PATH, json=_natal_aspects_request("Ceres"))
+    assert response.status_code in (200, 422), response.text
+    if response.status_code == 422:
+        assert "unsupported natal-aspect mover" not in response.json()["message"]
+        assert "small-body kernel" in response.json()["message"]
+    else:
+        assert "events" in response.json()
+
+
+def test_natal_aspects_route_and_batch_reject_the_same_unknown_mover(client_with_engine: TestClient) -> None:
+    route = client_with_engine.post(
+        _NATAL_ASPECTS_PATH,
+        json={
+            "body": "Planet X",
+            "natal_longitudes": [10.0],
+            "aspect_angles": [0.0],
+            "jd_start": 2451545.0,
+            "jd_end": 2451555.0,
+        },
+    )
+    assert route.status_code == 422
+    assert "unsupported natal-aspect mover 'Planet X'" in route.json()["message"]
+
+    batch = client_with_engine.post(
+        "/v1/batch/events",
+        json={
+            "requests": [
+                {
+                    "kind": "natal_aspect_transits",
+                    "body": "Planet X",
+                    "jd_start": 2451545.0,
+                    "jd_end": 2451555.0,
+                    "natal_longitudes": [10.0],
+                    "aspect_angles": [0.0],
+                }
+            ]
+        },
+    )
+    assert batch.status_code == 200
+    item = batch.json()["results"][0]
+    assert item["ok"] is False
+    assert "unsupported natal-aspect mover 'Planet X'" in item["failure"]["message"]

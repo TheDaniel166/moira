@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 from moira import Body, Moira
+from moira.transits_aspects import _require_natal_aspect_mover
 from moira.transits import (
     LunarPhaseEvent,
     TransitComputationPolicy,
@@ -103,7 +104,7 @@ def compute_natal_aspect_transits(engine: Moira, request: NatalAspectSearchReque
 
     Transport validation only; the search itself is ``Moira.natal_aspect_transits``.
     """
-    _require_supported_body(request.body)
+    _require_natal_aspect_mover(request.body)
     _validate_jd_window(request.jd_start, request.jd_end)
     if not request.natal_longitudes:
         raise ValueError("natal_longitudes must contain at least one longitude")

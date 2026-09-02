@@ -34,9 +34,23 @@ except ImportError:
 
 __all__ = [
     "AspectTransitEvent",
+    "NATAL_ASPECT_MOVERS",
     "find_aspect_transits",
     "find_aspect_transits_to_longitudes",
 ]
+
+NATAL_ASPECT_MOVERS: frozenset[str] = frozenset(
+    (*Body.ALL_PLANETS, Body.TRUE_NODE, Body.MEAN_NODE, Body.LILITH, Body.TRUE_LILITH, *ASTEROID_NAIF.keys())
+)
+"""Movers admitted to the frozen-longitude natal aspect grid on every transport."""
+
+
+def _require_natal_aspect_mover(body: str) -> None:
+    if body not in NATAL_ASPECT_MOVERS:
+        raise ValueError(
+            f"unsupported natal-aspect mover {body!r}; supported: planets, True Node, Mean Node, "
+            "Lilith, True Lilith, and named asteroids"
+        )
 
 @dataclass(slots=True)
 class AspectTransitEvent:
@@ -602,6 +616,7 @@ def find_aspect_transits_to_longitudes(
     """
 
     _require_non_empty_body(body)
+    _require_natal_aspect_mover(body)
     _validate_transit_range(jd_start, jd_end)
     _validate_search_motion(search_motion)
     if reader is None:

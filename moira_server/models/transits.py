@@ -216,8 +216,9 @@ class AspectTransitEventResponse(_StrictModel):
 class NatalAspectSearchRequest(_StrictModel):
     body: str = Field(
         description=(
-            "Moving body searched against the frozen natal longitudes: "
-            "Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, or Pluto."
+            "Moving body searched against the frozen natal longitudes: any planet Sun through Pluto, "
+            "True Node, Mean Node, Lilith, True Lilith, or a named asteroid from the loaded small-body catalog. "
+            "The Moon is admitted but slow to search."
         ),
     )
     natal_longitudes: list[float] = Field(

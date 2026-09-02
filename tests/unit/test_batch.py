@@ -672,3 +672,14 @@ def test_void_periods_all_planets_isolates_per_body_failures(monkeypatch) -> Non
     assert results[0].failure is not None
     assert results[1].ok is True
     assert results[1].windows[0].moving_body == "Ceres"
+
+
+def test_natal_aspect_movers_cover_planets_lunar_points_and_asteroids() -> None:
+    from moira.asteroids import ASTEROID_NAIF
+    from moira.constants import Body
+    from moira.transits_aspects import NATAL_ASPECT_MOVERS
+
+    assert set(Body.ALL_PLANETS) <= NATAL_ASPECT_MOVERS
+    assert {Body.TRUE_NODE, Body.MEAN_NODE, Body.LILITH, Body.TRUE_LILITH} <= NATAL_ASPECT_MOVERS
+    assert "Ceres" in NATAL_ASPECT_MOVERS
+    assert set(ASTEROID_NAIF) <= NATAL_ASPECT_MOVERS
