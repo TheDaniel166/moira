@@ -4,10 +4,10 @@
   "last_verified": "2026-08-18",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.3.0",
-    "tag": "v6.3.0",
-    "commit": "6984d7c6b9215183c9b1e6a583566d389a6eb89a",
-    "release_date": "2026-08-18",
+    "version": "6.4.0",
+    "tag": "v6.4.0",
+    "commit": "f915ded14a2c94d83a14c937500e818c3b9a3ea9",
+    "release_date": "2026-09-02",
     "requires_python": ">=3.10",
     "supported_python": [
       "3.10",
@@ -31,7 +31,7 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "0bdafa806db18fe0477b044a5ddb875947022460a8c232985165d26c59ca9836"
+      "source_sha256": "8b7340da0f543b4818ed1b989f849267be63afb2a2764110c2edbdee5e60aed5"
     },
     {
       "id": "python_root_exports",
@@ -41,12 +41,12 @@
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "7959a3e3328d67ae78695d627f93b0036b0db71bb612be89b3f29617b3a63ce9"
+      "source_sha256": "bbd572d3ac66b2210ee7358e53ac5e6781892b503167c25616f0bed9e84932d7"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "646eb9e4f8995741e7b564fd3f92d1e27dec3f38473bb7f2b45274896b76ae9a"
+      "source_sha256": "c11810b2c0fe25abe388b7a0ea9429a544c8c633287c71f7eff74397585c8f80"
     },
     {
       "id": "rest_router_registration",
@@ -2462,7 +2462,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "7959a3e3328d67ae78695d627f93b0036b0db71bb612be89b3f29617b3a63ce9",
+      "source_sha256": "bbd572d3ac66b2210ee7358e53ac5e6781892b503167c25616f0bed9e84932d7",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -3904,6 +3904,7 @@
         "find_all_patterns",
         "find_antiscia",
         "find_aspect_transits",
+        "find_aspect_transits_to_longitudes",
         "find_aspects",
         "find_boomerang_yods",
         "find_composite_transits",
@@ -4709,8 +4710,8 @@
       "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.2.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "0bdafa806db18fe0477b044a5ddb875947022460a8c232985165d26c59ca9836",
-      "source_bytes": 314143,
+      "source_sha256": "8b7340da0f543b4818ed1b989f849267be63afb2a2764110c2edbdee5e60aed5",
+      "source_bytes": 315446,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -4727,7 +4728,7 @@
       "description": "A contract-first migration manual for replacing Swiss Ephemeris flags and global state with Moira's explicit time, frame, observer, units, house, REST, and verification policies.",
       "content_class": "evergreen_guide",
       "schema_type": "TechArticle",
-      "source_sha256": "77ba3af94876245fd48e783bee13e539f5da980a28a0aba211725b34c3d6ed38",
+      "source_sha256": "f6330f699e85769aa973d9af62fa2544a4ea573fe413d7e8b548fadde3c625fa",
       "source_bytes": 32455,
       "last_verified": "2026-08-18",
       "prerender": true,
@@ -4889,8 +4890,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "646eb9e4f8995741e7b564fd3f92d1e27dec3f38473bb7f2b45274896b76ae9a",
-      "source_bytes": 213726,
+      "source_sha256": "c11810b2c0fe25abe388b7a0ea9429a544c8c633287c71f7eff74397585c8f80",
+      "source_bytes": 214824,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -5287,6 +5288,28 @@
   ],
   "releases": [
     {
+      "version": "6.4.0",
+      "date": "2026-09-02",
+      "title": "Natal Aspect Grid and Delta-T Scenario",
+      "added": [
+        "find_aspect_transits_to_longitudes() and Moira.natal_aspect_transits(): one moving planet against many frozen natal longitudes and aspect angles from a single native longitude scan, refined per pair by the existing bisection.",
+        "POST /v1/transits/natal-aspects and the natal_aspect_transits kind of POST /v1/batch/events, plus native ecliptic_longitude_batch and find_aspects_to_longitude bindings."
+      ],
+      "changed": [
+        "Default post-observation Delta-T scenario is D0 + 29.09*((year - Y0)/100)^2 from Morrison et al. 2021 tidal and Shahvandi et al. 2024 GIA terms; the linear handoff slope is no longer consumed and Delta-T(2100) moves from 83.29 s to about 85.00 s.",
+        "find_aspect_transits() with a frozen-longitude target pre-filters candidate windows from the native longitude scan; the pure-Python search is unchanged."
+      ],
+      "fixed": [],
+      "validation": [
+        "Native frozen-longitude window search is dual-path checked against the Python fallback and against single-target searches; the route test replays the batch kind and the dedicated route against the engine grid."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.4.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.4.0.md",
+      "tag": "v6.4.0",
+      "release_notes_sha256": "1f0579ead3ad1e38ed646e64bc11117590912b0e35c5b67425940ac67650e11b",
+      "compatibility_notes_sha256": "ed86f3ed7a88f9538e009293528995a2aa5e81fe7f866e54c95c858c795c64c5"
+    },
+    {
       "version": "6.3.0",
       "date": "2026-08-18",
       "title": "Hellenistic Computation Deepening",
@@ -5610,5 +5633,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "e147267f55a47c6f2227708ee918b033b30d31e98105ca236fde731360d4b3bb"
+  "manifest_sha256": "ccfdc11815f9fd4ea56e6e62bdf07fca4ddb9debf28d50df0f26719933d2ed5c"
 }

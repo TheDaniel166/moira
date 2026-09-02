@@ -318,6 +318,25 @@
   ],
   "release_summaries": [
     {
+      "version": "6.4.0",
+      "date": "2026-09-02",
+      "title": "Natal Aspect Grid and Delta-T Scenario",
+      "added": [
+        "find_aspect_transits_to_longitudes() and Moira.natal_aspect_transits(): one moving planet against many frozen natal longitudes and aspect angles from a single native longitude scan, refined per pair by the existing bisection.",
+        "POST /v1/transits/natal-aspects and the natal_aspect_transits kind of POST /v1/batch/events, plus native ecliptic_longitude_batch and find_aspects_to_longitude bindings."
+      ],
+      "changed": [
+        "Default post-observation Delta-T scenario is D0 + 29.09*((year - Y0)/100)^2 from Morrison et al. 2021 tidal and Shahvandi et al. 2024 GIA terms; the linear handoff slope is no longer consumed and Delta-T(2100) moves from 83.29 s to about 85.00 s.",
+        "find_aspect_transits() with a frozen-longitude target pre-filters candidate windows from the native longitude scan; the pure-Python search is unchanged."
+      ],
+      "fixed": [],
+      "validation": [
+        "Native frozen-longitude window search is dual-path checked against the Python fallback and against single-target searches; the route test replays the batch kind and the dedicated route against the engine grid."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.4.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.4.0.md"
+    },
+    {
       "version": "6.3.0",
       "date": "2026-08-18",
       "title": "Hellenistic Computation Deepening",
