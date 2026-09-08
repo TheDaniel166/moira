@@ -1,0 +1,33 @@
+Moira curated deep-sky coordinate anchors
+=========================================
+
+The object selection and runtime coordinate doctrine are maintained by the
+Moira project.  The packaged object identities, ICRS/J2000 coordinates,
+object-type labels, proper motions, coordinate-quality flags, and coordinate
+bibliographic codes were retrieved from the SIMBAD astronomical database,
+operated at CDS, Strasbourg, France.  SIMBAD is available under the Open Data
+Commons Open Database License (ODbL) 1.0:
+
+    https://opendatacommons.org/licenses/odbl/1-0/
+
+Requested SIMBAD acknowledgement:
+
+    This research has made use of the SIMBAD database, operated at CDS,
+    Strasbourg, France.
+
+SIMBAD reference: Wenger et al. (2000), A&AS 143, 9,
+bibcode 2000A&AS..143....9W.
+
+The five exoplanet-host identities were independently checked against the
+NASA Exoplanet Archive Planetary Systems Composite Parameters table.  Please
+cite NASA Exoplanet Archive DOI 10.26133/NEA1 when using those data.
+
+Per-record source identities and coordinate bibliographic codes, the source
+snapshot timestamp, the exact queried fields, selection policy, and artifact
+SHA-256 are retained in deep_sky_catalog.json and
+deep_sky_catalog.metadata.json.
+
+These records are coordinate anchors.  The center assigned to an extended
+galaxy, nebula, cluster, or remnant is not a claim that the object is a point
+mass.  Solar-System objects are excluded because they require time-dependent
+ephemerides rather than a frozen J2000 direction.

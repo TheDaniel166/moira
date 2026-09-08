@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "catalog_id": "moira-deep-sky",
+  "catalog_version": "2026.09.07.1",
+  "selection_policy": {
+    "owner": "Moira",
+    "purpose": "curated non-interpretive coordinate anchors requested in GitHub Discussion 19",
+    "class_counts": {
+      "galaxy": 15,
+      "nebula": 15,
+      "star_cluster": 15,
+      "compact_object": 5,
+      "stellar_remnant": 5,
+      "host_star": 5
+    },
+    "extended_object_policy": "a catalog center is an angular anchor, not a physical point mass",
+    "host_star_policy": "confirmed host identity is checked against NASA; runtime position delegates to the sovereign star registry",
+    "solar_system_exclusion": "planets, satellites, asteroids, comets, and interstellar visitors require time-dependent ephemerides and are excluded"
+  },
+  "coordinate_model": {
+    "source_frame": "ICRS",
+    "source_epoch": "J2000.0",
+    "source_epoch_jd_tt": 2451545.0,
+    "runtime_frame": "true_ecliptic_of_date",
+    "runtime_path": "class-admitted SIMBAD proper motion; Moira IAU 2006 precession; IAU 2000A nutation; true obliquity",
+    "proper_motion_policy": "only selected cluster centers and stellar compact systems use SIMBAD proper motion; galaxy, nebula, remnant, quasar, and Galactic-center anchors remain fixed at their released J2000 coordinate",
+    "observer_model": "geocentric direction only; no topocentric parallax or atmospheric refraction"
+  },
+  "sources": {
+    "simbad": {
+      "service": "SIMBAD astronomical database, CDS Strasbourg",
+      "release": "SIMBAD4 1.8 - 2026-07",
+      "snapshot_utc": "2026-09-07T14:15:00Z",
+      "identifier_endpoint": "https://simbad.cds.unistra.fr/simbad/sim-id",
+      "tap_endpoint": "https://simbad.cds.unistra.fr/simbad/sim-tap/sync",
+      "fields": [
+        "main_id",
+        "ra",
+        "dec",
+        "otype",
+        "coo_bibcode",
+        "coo_qual",
+        "pmra",
+        "pmdec"
+      ],
+      "license": "Open Data Commons Open Database License (ODbL) 1.0",
+      "acknowledgement": "This research has made use of the SIMBAD database, operated at CDS, Strasbourg, France.",
+      "reference": "2000A&AS..143....9W"
+    },
+    "nasa_exoplanet_archive": {
+      "service": "NASA Exoplanet Archive",
+      "snapshot_utc": "2026-09-07T14:15:00Z",
+      "tap_endpoint": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync",
+      "table": "pscomppars",
+      "fields": [
+        "hostname",
+        "count(pl_name)"
+      ],
+      "doi": "10.26133/NEA1"
+    }
+  },
+  "artifact": {
+    "path": "moira/data/deep_sky_catalog.json",
+    "sha256": "5ded4bec9fd8f4b1e3855f21a993fbe040d2b74bf04ffdda74e6103b974bf720",
+    "record_count": 60,
+    "class_counts": {
+      "galaxy": 15,
+      "nebula": 15,
+      "star_cluster": 15,
+      "compact_object": 5,
+      "stellar_remnant": 5,
+      "host_star": 5
+    }
+  }
+}

@@ -50,6 +50,13 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 - **Planets and luminaries** — geocentric and topocentric reduction with iterative light-time, annual aberration, multi-body relativistic deflection (Sun, Jupiter, and Saturn, excluding the target body), IAU 2006 frame bias, and WGS-84 topocentric parallax.
 - **Fixed stars** — sovereign registry of 1,809 named stars with proper motion, parallax, epoch propagation, and Stellar Quality classification. Audited anchor residual against SOFA/ERFA: 0.00048 arcseconds (J1000–J3000).
+- **Deep-sky coordinate anchors** — a bundled, release-bound selection of 60
+  galaxies, nebulae, star clusters, compact objects, stellar remnants, and
+  confirmed exoplanet host stars. Extended objects are represented by sourced
+  SIMBAD ICRS/J2000 catalog centers rather than point-mass claims; host-star
+  positions delegate to the sovereign star registry. Solar-System bodies are
+  excluded from this static catalog because they require time-dependent
+  ephemerides.
 - **Position-capable asteroid ephemeris** — two layers. The wheel ships catalog
   `moira-asteroids-wheel` release `2026.08.14.1`: 25 named bodies (classical
   four, named Centaurs including Chiron, named TNOs, and selected others) as
@@ -504,6 +511,7 @@ caller-managed loading where the relevant API admits it.
 | IAU 2000A/2006 nutation and precession tables | IAU | Yes | 2,414 terms; native C++ (`_moira_native`) |
 | DE-series planetary kernel | JPL | No | de430 (~114 MiB), de440 (~114 MiB), or de441 (~3.1 GB); download separately |
 | Named star registry | Sovereign (`star_registry.csv` + JSON provenance) | Yes | 1,809 stars; license-independent |
+| Deep-sky coordinate-anchor catalog | Moira selection; SIMBAD coordinates and identities; NASA Exoplanet Archive host confirmation | Yes | 60 non-Solar-System anchors; extended-object centers are not physical point masses; per-artifact SHA-256 and source receipt included |
 | Canonical small-body identity registries | Moira release catalogs with JPL identity lineage | Yes | 10,025 asteroid and 497 comet identities; names and disambiguation only, with no positional vectors implied |
 | Wheel asteroid ephemeris | JPL Horizons (Moira Type-13 packaging) | Yes | Catalog `moira-asteroids-wheel` `2026.08.14.1`; 25 named bodies including Chiron; one Type-13 shard |
 | Full position-capable asteroid ephemeris | JPL Horizons | No | 10,025 selected asteroids; 401 Type-13 shards in release `2026.08.12.1`; [public archive](https://moira-astro.com/ephemerides), manifest-discovered; not fetched by `moira-download-kernels` |

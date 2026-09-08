@@ -36,22 +36,22 @@
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "44c35532fff250cfb444646dc12a00773f3e177cf2c3af0b2cd9a69c3b84b5c7"
+      "source_sha256": "a7cb0d8899f0a8a0c4dedff0e82a33616fa5d71fd6f0fa4fb54c0c4598118f9e"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "3c94a32be7f58b7a78f23d54c8889baf76168be79105c09ac11a88ef6cab9966"
+      "source_sha256": "c644aee15678f49f47a5f2afab7886b33a278b3b759f218e069acdb218a695b4"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "f5294824547da9b133797ab32f676bcd8976a9477bc13353492dd2634b4cc52e"
+      "source_sha256": "517aa45c66a8f7635ef3aa36bd3179946adfa99c02e3387c80f13c393ddcf892"
     },
     {
       "id": "rest_router_registration",
       "source": "moira_server/app.py",
-      "source_sha256": "60e4c2da69b85b2648aec009f5c8777212cb462ef780fae05ebef9ba588d604c"
+      "source_sha256": "4abc9bc285ebcb2725445d61d5ad6bdec8291e708a27b9accaa5497eb9a829be"
     },
     {
       "id": "planetary_reduction",
@@ -133,7 +133,7 @@
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "44c35532fff250cfb444646dc12a00773f3e177cf2c3af0b2cd9a69c3b84b5c7",
+      "source_sha256": "a7cb0d8899f0a8a0c4dedff0e82a33616fa5d71fd6f0fa4fb54c0c4598118f9e",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -262,6 +262,9 @@
         "DeclinationEquatorPolicy",
         "DeclinationHemispherePolicy",
         "DeclinationMotionState",
+        "DeepSkyClass",
+        "DeepSkyObject",
+        "DeepSkyPosition",
         "DeeptadiAvastha",
         "DeltaTPolicy",
         "DerivedHouseCusps",
@@ -879,6 +882,7 @@
         "__author__",
         "__version__",
         "all_comets_at",
+        "all_deep_sky_at",
         "all_nakshatras_at",
         "all_planetary_nodes",
         "almuten_figuris",
@@ -947,6 +951,8 @@
         "decennial_sequence_truth",
         "declination_aspect_motion_witness",
         "declination_aspects_from_declinations",
+        "deep_sky_at",
+        "deep_sky_object",
         "deeptadi_avastha",
         "delta_t",
         "delta_t_from_jd",
@@ -983,6 +989,7 @@
         "find_composite_transits",
         "find_davison_transits",
         "find_declination_aspects",
+        "find_deep_sky_objects",
         "find_phasis",
         "find_relationship_transits",
         "find_resonant_aspects",
@@ -1026,6 +1033,7 @@
         "lilly_perfection_at",
         "list_ayanamsa_systems",
         "list_comets",
+        "list_deep_sky_objects",
         "local_sidereal_time",
         "lunar_ecliptic_direction_at",
         "moon_connection_flow_at",
@@ -2462,7 +2470,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "3c94a32be7f58b7a78f23d54c8889baf76168be79105c09ac11a88ef6cab9966",
+      "source_sha256": "c644aee15678f49f47a5f2afab7886b33a278b3b759f218e069acdb218a695b4",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -2660,6 +2668,9 @@
         "DeclinationEquatorPolicy",
         "DeclinationHemispherePolicy",
         "DeclinationMotionState",
+        "DeepSkyClass",
+        "DeepSkyObject",
+        "DeepSkyPosition",
         "DeeptadiAvastha",
         "DeltaTBreakdown",
         "DeltaTDistribution",
@@ -3672,6 +3683,7 @@
         "algol_phase",
         "all_asteroids_at",
         "all_comets_at",
+        "all_deep_sky_at",
         "all_galactic_positions",
         "all_gauquelin_sectors",
         "all_heliocentric_at",
@@ -3842,6 +3854,8 @@
         "decennials",
         "declination_aspect_motion_witness",
         "declination_aspects_from_declinations",
+        "deep_sky_at",
+        "deep_sky_object",
         "deeptadi_avastha",
         "delta_t",
         "delta_t_breakdown",
@@ -3912,6 +3926,7 @@
         "find_davison_transits",
         "find_declination_aspects",
         "find_declination_transits",
+        "find_deep_sky_objects",
         "find_dominant_triangles",
         "find_electional_moments",
         "find_electional_windows",
@@ -4041,6 +4056,7 @@
         "list_asteroids",
         "list_ayanamsa_systems",
         "list_comets",
+        "list_deep_sky_objects",
         "list_multiple_stars",
         "list_named_stars",
         "list_paran_stars",
@@ -4890,8 +4906,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "f5294824547da9b133797ab32f676bcd8976a9477bc13353492dd2634b4cc52e",
-      "source_bytes": 215017,
+      "source_sha256": "517aa45c66a8f7635ef3aa36bd3179946adfa99c02e3387c80f13c393ddcf892",
+      "source_bytes": 216409,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -5654,5 +5670,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "69aa175a2c30c11026d0b02b23f83af8d8b48e2e6e2a990dac4c2268a32d9074"
+  "manifest_sha256": "70ab568ecb5c38db83e1bd278385d3672af6887ded5fe948f960189ac221a899"
 }

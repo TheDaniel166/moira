@@ -656,6 +656,16 @@ from .comets import (
     all_comets_at,
     list_comets,
 )
+from .deep_sky import (  # noqa: E402 - imports intentionally follow the kernel warning
+    DeepSkyClass,
+    DeepSkyObject,
+    DeepSkyPosition,
+    deep_sky_object,
+    deep_sky_at,
+    all_deep_sky_at,
+    list_deep_sky_objects,
+    find_deep_sky_objects,
+)
 from .asteroid_families import (
     asteroid_family,
     family_members,
@@ -1909,6 +1919,15 @@ __all__ = [
     "comet_at",
     "all_comets_at",
     "list_comets",
+    # Deep-sky coordinate anchors
+    "DeepSkyClass",
+    "DeepSkyObject",
+    "DeepSkyPosition",
+    "deep_sky_object",
+    "deep_sky_at",
+    "all_deep_sky_at",
+    "list_deep_sky_objects",
+    "find_deep_sky_objects",
     # Asteroid families
     "asteroid_family",
     "family_members",

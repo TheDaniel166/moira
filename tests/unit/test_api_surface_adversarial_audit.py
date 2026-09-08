@@ -1540,6 +1540,17 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "jupiter_saturn_sequence_from_series",
 })
 
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "DeepSkyClass",
+    "DeepSkyObject",
+    "DeepSkyPosition",
+    "deep_sky_object",
+    "deep_sky_at",
+    "all_deep_sky_at",
+    "list_deep_sky_objects",
+    "find_deep_sky_objects",
+})
+
 _EXPECTED_MOIRA_METHODS.update({
     "assess_transit_cardinal_ingress",
     "assess_transit_primary_syzygy",

@@ -730,6 +730,16 @@ from .stars import (
     heliacal_catalog_batch,
     star_chart_condition_profile, star_condition_network_profile,
 )
+from .deep_sky import (
+    DeepSkyClass,
+    DeepSkyObject,
+    DeepSkyPosition,
+    deep_sky_object,
+    deep_sky_at,
+    all_deep_sky_at,
+    list_deep_sky_objects,
+    find_deep_sky_objects,
+)
 from .asteroids import (
     AsteroidData, asteroid_at, all_asteroids_at,
     list_asteroids, available_in_kernel,
@@ -2463,6 +2473,10 @@ __all__ = [
     "FixedStar",
     "stars_near", "stars_by_magnitude",
     "list_named_stars", "find_named_stars",
+    # Deep-sky coordinate anchors
+    "DeepSkyClass", "DeepSkyObject", "DeepSkyPosition",
+    "deep_sky_object", "deep_sky_at", "all_deep_sky_at",
+    "list_deep_sky_objects", "find_deep_sky_objects",
     # Multiple star systems
     "MultiType", "StarComponent", "OrbitalElements", "MultipleStarSystem",
     "angular_separation_at", "position_angle_at",

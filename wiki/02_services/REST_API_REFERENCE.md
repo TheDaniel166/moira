@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 453
-- Registered OpenAPI operations: 453 (GET 35, POST 418)
+- Registered OpenAPI paths: 456
+- Registered OpenAPI operations: 456 (GET 36, POST 420)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 449
+- Versioned `/v1` paths: 452
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -2079,6 +2079,30 @@ catalog-wide heavy sweeps, or rendered star maps. Explicit selected fixed-star
 Astrocartography is admitted under `/v1/astrocartography/chart/subjects/*`;
 catalog-wide fixed-star Astrocartography sweeps remain deferred.
 
+### Deep-Sky REST Admission Boundary
+
+The admitted deep-sky REST surface is the bounded synchronous
+`/v1/deep-sky/*` family:
+
+- `GET /v1/deep-sky/list`
+- `POST /v1/deep-sky/position`
+- `POST /v1/deep-sky/bulk`
+
+The list route searches canonical names, designations, curated aliases, and
+SIMBAD main identifiers, with an optional released-class filter. Position and
+bulk routes return true-ecliptic-of-date directions plus the source frame,
+source epoch, catalog-center semantics, SIMBAD identity and coordinate receipt,
+catalog version, proper-motion decision, and transport stage sequence. The
+bulk route accepts at most 60 identities and can either report or reject names
+outside the released catalog.
+
+The catalog contains 60 Moira-selected, non-Solar-System anchors. An extended
+object's coordinate is its sourced catalog center, not a point-mass or
+interpretive claim. Confirmed exoplanet hosts delegate runtime positions to
+Moira's sovereign star registry. Planetary satellites, asteroids, comets, and
+interstellar visitors are excluded because they require time-dependent
+ephemerides rather than frozen J2000 coordinates.
+
 ### Variable-Star REST Admission Boundary
 
 The admitted variable-star REST surface is the bounded synchronous
@@ -3004,6 +3028,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/decanates/set` | decanates | `decanate_set_route_v1_decanates_set_post` |
 | `POST` | `/v1/decanates/triplicity` | decanates | `triplicity_decan_route_v1_decanates_triplicity_post` |
 | `POST` | `/v1/decanates/vedic-drekkana` | decanates | `vedic_drekkana_route_v1_decanates_vedic_drekkana_post` |
+| `POST` | `/v1/deep-sky/bulk` | deep-sky | `deep_sky_bulk_v1_deep_sky_bulk_post` |
+| `GET` | `/v1/deep-sky/list` | deep-sky | `deep_sky_list_v1_deep_sky_list_get` |
+| `POST` | `/v1/deep-sky/position` | deep-sky | `deep_sky_position_v1_deep_sky_position_post` |
 | `POST` | `/v1/dignities/chart` | dignities | `dignities_chart_route_v1_dignities_chart_post` |
 | `POST` | `/v1/dignities/chart/condition` | dignities | `dignities_chart_condition_route_v1_dignities_chart_condition_post` |
 | `POST` | `/v1/dignities/chart/conditions` | dignities | `dignities_chart_conditions_route_v1_dignities_chart_conditions_post` |

@@ -417,6 +417,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "catalogs",
     },
     {
+        "name": "deep-sky",
+        "x-displayName": "Deep Sky",
+        "description": "Source-bound galaxy, nebula, cluster, compact-object, remnant, and host-star coordinate anchors.",
+        "x-family": "catalogs",
+    },
+    {
         "name": "nodes",
         "x-displayName": "Nodes",
         "description": "Planetary and small-body orbital node surfaces.",

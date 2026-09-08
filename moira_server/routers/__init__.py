@@ -10,6 +10,7 @@ from .chart import router as chart_router
 from .chart_wheel import router as chart_wheel_router
 from .dasha import router as dasha_router
 from .decans import decanates_router
+from .deep_sky import router as deep_sky_router
 from .dignities import router as dignities_router
 from .draconic import router as draconic_router
 from .egyptian_bounds import router as egyptian_bounds_router
@@ -93,6 +94,7 @@ __all__ = [
     "chart_wheel_router",
     "dasha_router",
     "decanates_router",
+    "deep_sky_router",
     "dignities_router",
     "draconic_router",
     "egyptian_bounds_router",

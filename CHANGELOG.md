@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- A release-bound catalog of 60 non-Solar-System coordinate anchors: 15
+  galaxies, 15 nebulae, 15 star clusters, 5 compact objects, 5 stellar
+  remnants, and 5 confirmed exoplanet host stars. The Python and REST surfaces
+  preserve SIMBAD identity/coordinate receipts, treat extended objects as
+  catalog centers, and delegate host-star motion to Moira's sovereign star
+  registry. Planetary satellites and additional moving small bodies remain
+  excluded until supported by time-dependent JPL ephemerides.
+- REST `GET /v1/deep-sky/list`, `POST /v1/deep-sky/position`, and
+  `POST /v1/deep-sky/bulk`.
+
 ## [6.4.1] - 2026-09-02
 
 ### Changed
