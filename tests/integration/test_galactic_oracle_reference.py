@@ -4,6 +4,7 @@ import math
 
 import pytest
 
+from moira.cosmic_references import cosmic_reference_definition
 from moira.galactic import (
     ecliptic_to_galactic,
     equatorial_to_galactic,
@@ -15,7 +16,7 @@ astropy = pytest.importorskip("astropy")
 erfa = pytest.importorskip("erfa")
 
 from astropy import units as u
-from astropy.coordinates import Galactic, ICRS, SkyCoord
+from astropy.coordinates import Galactic, ICRS, SkyCoord, Supergalactic
 
 PASS_THRESHOLD_ARCSEC = 0.1
 ICRS_CASES = [
@@ -53,6 +54,12 @@ ECLIPTIC_CASES = [
     ("wraparound", 359.9, -1.2),
     ("southern_mid", 210.0, -35.0),
     ("northern_high", 45.0, 66.0),
+]
+
+SUPERGALACTIC_LANDMARK_CASES = [
+    ("Supergalactic Longitude Origin", 0.0, 0.0),
+    ("North Supergalactic Pole", 0.0, 90.0),
+    ("South Supergalactic Pole", 0.0, -90.0),
 ]
 
 
@@ -118,6 +125,32 @@ def _ecliptic_sep_arcsec(lon1_deg: float, lat1_deg: float, lon2_deg: float, lat2
         + math.cos(lat1_r) * math.cos(lat2_r) * math.cos(lon1_r - lon2_r)
     )
     return math.degrees(math.acos(max(-1.0, min(1.0, cos_sep)))) * 3600.0
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("reference_name", "sgl_deg", "sgb_deg"),
+    SUPERGALACTIC_LANDMARK_CASES,
+)
+def test_supergalactic_landmark_sources_match_astropy_reference_frame(
+    reference_name: str,
+    sgl_deg: float,
+    sgb_deg: float,
+) -> None:
+    """Authority validation: Astropy Supergalactic ICRS transform, under 0.1 arcsec."""
+
+    definition = cosmic_reference_definition(reference_name)
+    oracle = SkyCoord(
+        sgl=sgl_deg * u.deg,
+        sgb=sgb_deg * u.deg,
+        frame=Supergalactic(),
+    ).transform_to(ICRS())
+    actual = SkyCoord(
+        ra=definition.icrs_ra_deg * u.deg,
+        dec=definition.icrs_dec_deg * u.deg,
+        frame=ICRS(),
+    )
+    assert actual.separation(oracle).arcsecond < PASS_THRESHOLD_ARCSEC
 
 
 @pytest.mark.integration

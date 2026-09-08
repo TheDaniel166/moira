@@ -1549,6 +1549,14 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
     "all_deep_sky_at",
     "list_deep_sky_objects",
     "find_deep_sky_objects",
+    "COSMIC_REFERENCE_CATALOG_VERSION",
+    "CosmicReferenceDefinition",
+    "CosmicReferenceKind",
+    "CosmicReferencePosition",
+    "all_cosmic_references_at",
+    "cosmic_reference_at",
+    "cosmic_reference_definition",
+    "list_cosmic_references",
 })
 
 _EXPECTED_MOIRA_METHODS.update({

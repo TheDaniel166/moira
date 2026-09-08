@@ -8,6 +8,8 @@ from moira import Moira
 
 from ..dependencies import get_engine
 from ..models.galactic import (
+    CosmicReferencePointsRequest,
+    CosmicReferencePointsResponse,
     GalacticChartPositionsRequest,
     GalacticCoordinateResponse,
     GalacticEclipticCoordinateResponse,
@@ -21,6 +23,7 @@ from ..models.galactic import (
     GalacticReferencePointsResponse,
 )
 from ..serializers.galactic import (
+    serialize_cosmic_reference_points,
     serialize_ecliptic_coordinate,
     serialize_equatorial_coordinate,
     serialize_galactic_coordinate,
@@ -28,6 +31,7 @@ from ..serializers.galactic import (
     serialize_reference_points,
 )
 from ..services.galactic import (
+    compute_cosmic_reference_points,
     compute_ecliptic_to_galactic,
     compute_equatorial_to_galactic,
     compute_galactic_chart_positions,
@@ -82,6 +86,17 @@ def galactic_reference_points_route(
 ) -> GalacticReferencePointsResponse:
     return serialize_reference_points(
         compute_galactic_reference_points(request)
+    )
+
+
+@router.post("/cosmic-reference-points", response_model=CosmicReferencePointsResponse)
+def cosmic_reference_points_route(
+    request: CosmicReferencePointsRequest,
+) -> CosmicReferencePointsResponse:
+    """Return typed physical, landmark, and proxy reference directions."""
+
+    return serialize_cosmic_reference_points(
+        compute_cosmic_reference_points(request)
     )
 
 

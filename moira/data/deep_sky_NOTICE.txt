@@ -27,6 +27,13 @@ snapshot timestamp, the exact queried fields, selection policy, and artifact
 SHA-256 are retained in deep_sky_catalog.json and
 deep_sky_catalog.metadata.json.
 
+The typed cosmic-reference registry also uses SIMBAD catalog-center
+coordinates for ACO 3627 and ACO 3558 under the same acknowledgement and
+license. Its 2026-09-08 snapshot coordinates, coordinate bibcodes, proxy
+semantics, and supporting literature are recorded in moira/cosmic_references.py
+and PROVENANCE.md; those two records are not part of the 60-entry deep-sky
+artifact or its SHA-256 receipt.
+
 These records are coordinate anchors.  The center assigned to an extended
 galaxy, nebula, cluster, or remnant is not a claim that the object is a point
 mass.  Solar-System objects are excluded because they require time-dependent

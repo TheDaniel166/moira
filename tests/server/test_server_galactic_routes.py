@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
+from moira.cosmic_references import all_cosmic_references_at
 from moira.galactic import (
     ecliptic_to_galactic,
     equatorial_to_galactic,
@@ -159,6 +160,67 @@ def test_galactic_reference_points_route_matches_engine_truth(
     assert body["provenance"]["coordinate_source"] == "reference_point_catalog_j2000_icrs"
 
 
+def test_cosmic_reference_points_route_preserves_typed_engine_truth(
+    client_with_engine: TestClient,
+) -> None:
+    expected = all_cosmic_references_at(_JD_J2000)
+
+    response = client_with_engine.post(
+        "/v1/galactic/cosmic-reference-points",
+        json={"jd_tt": _JD_J2000},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    points = {point["name"]: point for point in body["points"]}
+    assert set(points) == set(expected)
+    assert body["total"] == 12
+    assert body["requested_kind"] == "all"
+    assert body["catalog_version"]
+    assert body["provenance"] == {
+        "jd_tt": _JD_J2000,
+        "source_frame": "equatorial_j2000_icrs",
+        "target_frame": "ecliptic_true_of_date",
+        "stage_sequence": [
+            "epoch_validation",
+            "semantic_kind_selection",
+            "typed_reference_resolution",
+            "j2000_icrs_to_true_ecliptic_of_date",
+            "response_materialization",
+        ],
+    }
+
+    legacy_sgc = points["Virgo/M87 Astrological SGC"]
+    assert legacy_sgc["reference_id"] == "virgo_m87_astrological_sgc"
+    assert legacy_sgc["kind"] == "proxy_reference"
+    assert legacy_sgc["anchor"] == "M87 Galaxy catalog center"
+    assert "not_formal_supergalactic_origin" in legacy_sgc["position_semantics"]
+    assert "Super-Galactic Center" in legacy_sgc["aliases"]
+    assert legacy_sgc["coordinate_authority"]
+    assert legacy_sgc["semantic_authority"]
+    assert legacy_sgc["citation_urls"]
+    assert legacy_sgc["ecliptic_longitude"] == pytest.approx(
+        expected["Virgo/M87 Astrological SGC"].longitude
+    )
+
+
+def test_cosmic_reference_points_route_filters_by_semantic_kind(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/galactic/cosmic-reference-points",
+        json={"jd_tt": _JD_J2000, "kind": "coordinate_landmark"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 7
+    assert body["requested_kind"] == "coordinate_landmark"
+    assert {point["kind"] for point in body["points"]} == {
+        "coordinate_landmark"
+    }
+
+
 @pytest.mark.requires_ephemeris
 def test_galactic_chart_positions_route_matches_service_truth(
     client_with_engine: TestClient,
@@ -200,6 +262,7 @@ def test_galactic_routes_are_registered(client_with_engine: TestClient) -> None:
         "/v1/galactic/ecliptic-to-galactic",
         "/v1/galactic/galactic-to-ecliptic",
         "/v1/galactic/reference-points",
+        "/v1/galactic/cosmic-reference-points",
         "/v1/galactic/chart/positions",
     }
 
@@ -267,6 +330,39 @@ def test_galactic_reference_points_route_rejects_non_finite_obliquity(
     )
 
     _assert_validation_envelope(response, message_fragment="reference point epoch")
+
+
+def test_cosmic_reference_points_route_rejects_non_finite_epoch(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/galactic/cosmic-reference-points",
+        json={"jd_tt": "NaN"},
+    )
+
+    _assert_validation_envelope(response, message_fragment="cosmic reference epoch")
+
+
+def test_cosmic_reference_points_route_rejects_boolean_epoch(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/galactic/cosmic-reference-points",
+        json={"jd_tt": True},
+    )
+
+    _assert_validation_envelope(response, message_fragment="finite number")
+
+
+def test_cosmic_reference_points_route_rejects_unknown_kind(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/galactic/cosmic-reference-points",
+        json={"jd_tt": _JD_J2000, "kind": "center"},
+    )
+
+    _assert_validation_envelope(response, message_fragment="physical_object")
 
 
 def test_galactic_chart_route_rejects_naive_datetime(

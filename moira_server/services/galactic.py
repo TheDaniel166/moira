@@ -5,6 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from moira import Moira
+from moira.cosmic_references import (
+    COSMIC_REFERENCE_CATALOG_VERSION,
+    CosmicReferencePosition,
+    all_cosmic_references_at,
+)
 from moira.galactic import (
     GalacticPosition,
     all_galactic_positions,
@@ -21,6 +26,7 @@ from ..models.chart import ChartRequest
 from ..models.galactic import (
     GALACTIC_MAX_BODIES,
     CoordinateSource,
+    CosmicReferencePointsRequest,
     FrameName,
     GalacticChartPositionsRequest,
     GalacticEclipticToGalacticRequest,
@@ -61,6 +67,13 @@ REFERENCE_POINTS_STAGE_SEQUENCE = (
     "j2000_reference_point_selection",
     "j2000_icrs_to_true_equatorial",
     "true_equatorial_to_ecliptic",
+    "response_materialization",
+)
+COSMIC_REFERENCE_POINTS_STAGE_SEQUENCE = (
+    "epoch_validation",
+    "semantic_kind_selection",
+    "typed_reference_resolution",
+    "j2000_icrs_to_true_ecliptic_of_date",
     "response_materialization",
 )
 CHART_POSITIONS_STAGE_SEQUENCE = (
@@ -115,6 +128,16 @@ class EclipticCoordinateResult:
 class GalacticReferencePointsResult:
     points: dict[str, tuple[float, float]]
     provenance: GalacticProvenance
+
+
+@dataclass(frozen=True, slots=True)
+class CosmicReferencePointsResult:
+    points: tuple[CosmicReferencePosition, ...]
+    total: int
+    requested_kind: str
+    catalog_version: str
+    jd_tt: float
+    stage_sequence: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -224,6 +247,22 @@ def compute_galactic_reference_points(
     )
 
 
+def compute_cosmic_reference_points(
+    request: CosmicReferencePointsRequest,
+) -> CosmicReferencePointsResult:
+    """Resolve the bounded typed registry at one TT epoch."""
+
+    points = tuple(all_cosmic_references_at(request.jd_tt, request.kind).values())
+    return CosmicReferencePointsResult(
+        points=points,
+        total=len(points),
+        requested_kind=request.kind.value if request.kind is not None else "all",
+        catalog_version=COSMIC_REFERENCE_CATALOG_VERSION,
+        jd_tt=request.jd_tt,
+        stage_sequence=COSMIC_REFERENCE_POINTS_STAGE_SEQUENCE,
+    )
+
+
 def compute_galactic_chart_positions(
     engine: Moira,
     request: GalacticChartPositionsRequest,
@@ -329,6 +368,8 @@ def _selected_bodies(
 
 
 __all__ = [
+    "COSMIC_REFERENCE_POINTS_STAGE_SEQUENCE",
+    "CosmicReferencePointsResult",
     "EclipticCoordinateResult",
     "EquatorialCoordinateResult",
     "GalacticCoordinateResult",
@@ -336,6 +377,7 @@ __all__ = [
     "GalacticProvenance",
     "GalacticReferencePointsResult",
     "compute_ecliptic_to_galactic",
+    "compute_cosmic_reference_points",
     "compute_equatorial_to_galactic",
     "compute_galactic_chart_positions",
     "compute_galactic_reference_points",

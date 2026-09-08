@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 456
-- Registered OpenAPI operations: 456 (GET 36, POST 420)
+- Registered OpenAPI paths: 457
+- Registered OpenAPI operations: 457 (GET 36, POST 421)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 452
+- Versioned `/v1` paths: 453
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -1685,7 +1685,18 @@ interpretation remain excluded.
 | POST | `/v1/galactic/ecliptic-to-galactic` | `ecliptic_to_galactic_route` |
 | POST | `/v1/galactic/galactic-to-ecliptic` | `galactic_to_ecliptic_route` |
 | POST | `/v1/galactic/reference-points` | `galactic_reference_points_route` |
+| POST | `/v1/galactic/cosmic-reference-points` | `cosmic_reference_points_route` |
 | POST | `/v1/galactic/chart/positions` | `galactic_chart_positions_route` |
+
+`/v1/galactic/reference-points` preserves the historical five-entry response.
+Its `Super-Galactic Center` key is the legacy astrological convention anchored
+on M87, not the formal supergalactic longitude origin. The typed
+`/v1/galactic/cosmic-reference-points` route accepts a finite `jd_tt` and an
+optional `physical_object`, `coordinate_landmark`, or `proxy_reference` filter.
+It returns at most 12 true-ecliptic-of-date directions with the selected anchor,
+semantic class, source frame and epoch, coordinate and semantic authorities,
+citations, registry version, and transport-stage receipt. No Local Group
+barycenter is exposed without a declared mass model.
 
 ## Galactic Houses Routes
 
@@ -3079,6 +3090,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/galactic-houses/cusps` | galactic-houses | `galactic_house_cusps_route_v1_galactic_houses_cusps_post` |
 | `POST` | `/v1/galactic-houses/placement` | galactic-houses | `galactic_house_placement_route_v1_galactic_houses_placement_post` |
 | `POST` | `/v1/galactic/chart/positions` | galactic | `galactic_chart_positions_route_v1_galactic_chart_positions_post` |
+| `POST` | `/v1/galactic/cosmic-reference-points` | galactic | `cosmic_reference_points_route_v1_galactic_cosmic_reference_points_post` |
 | `POST` | `/v1/galactic/ecliptic-to-galactic` | galactic | `ecliptic_to_galactic_route_v1_galactic_ecliptic_to_galactic_post` |
 | `POST` | `/v1/galactic/equatorial-to-galactic` | galactic | `equatorial_to_galactic_route_v1_galactic_equatorial_to_galactic_post` |
 | `POST` | `/v1/galactic/galactic-to-ecliptic` | galactic | `galactic_to_ecliptic_route_v1_galactic_galactic_to_ecliptic_post` |

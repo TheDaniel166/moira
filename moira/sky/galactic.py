@@ -27,8 +27,12 @@ GAC  Galactic Anti-Center  (in Gemini / Auriga)
      RA  86.4051°  Dec +28.9362°
 SGP  South Galactic Pole
      RA  12.8595°  Dec −27.1283°
-SGC  Super-Galactic Center  (Virgo / M87)
+SGC  Legacy astrological Super-Galactic Center convention (anchored on M87)
      RA 187.7059°  Dec +12.3911°
+
+The SGC row is retained for API compatibility.  It is not the formal
+supergalactic longitude origin or a modeled Virgo/Local Group barycenter;
+``moira.cosmic_references`` provides those semantic distinctions explicitly.
 
 Ecliptic coordinates of these reference points at any epoch are computed
 by ``galactic_reference_points(obliquity, jd_tt)``.

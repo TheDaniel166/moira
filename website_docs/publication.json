@@ -31,22 +31,22 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "1d37c7ce18d4de5a4cb9736bec478de1bb8039a1c1f33fdeb1b1f089bb1fe08f"
+      "source_sha256": "b46c9752b9a3ad46118a1fc9e29c7c2268438a0613879239442fb32301e577d2"
     },
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "a7cb0d8899f0a8a0c4dedff0e82a33616fa5d71fd6f0fa4fb54c0c4598118f9e"
+      "source_sha256": "cd4c2d87ada02c463ee5270a8300a469045bf8d486ef58d554c220702d37aed3"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "c644aee15678f49f47a5f2afab7886b33a278b3b759f218e069acdb218a695b4"
+      "source_sha256": "9bab7d2566376790ee15222c66908de35f640fd09c53ce05fefcb8acbb8be8f2"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "517aa45c66a8f7635ef3aa36bd3179946adfa99c02e3387c80f13c393ddcf892"
+      "source_sha256": "f3eadbb873f49b460d0a01da8ee8a67b437e8da8dbe320ac7e2ed6405b7168b1"
     },
     {
       "id": "rest_router_registration",
@@ -133,7 +133,7 @@
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "a7cb0d8899f0a8a0c4dedff0e82a33616fa5d71fd6f0fa4fb54c0c4598118f9e",
+      "source_sha256": "cd4c2d87ada02c463ee5270a8300a469045bf8d486ef58d554c220702d37aed3",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -199,6 +199,7 @@
         "BodyVoidWindow",
         "BodyVoidWindows",
         "COMET_NAIF",
+        "COSMIC_REFERENCE_CATALOG_VERSION",
         "CalendarDateTime",
         "CartesianPosition",
         "ChandraBala",
@@ -229,6 +230,9 @@
         "ConditionNetworkNode",
         "ConditionNetworkProfile",
         "ConditionPolarity",
+        "CosmicReferenceDefinition",
+        "CosmicReferenceKind",
+        "CosmicReferencePosition",
         "DEBILITATION_SIGN",
         "DEFAULT_ASTRODYNE_POLICY",
         "DEFAULT_CHURCH_OF_LIGHT_PROGRESSION_POLICY",
@@ -882,6 +886,7 @@
         "__author__",
         "__version__",
         "all_comets_at",
+        "all_cosmic_references_at",
         "all_deep_sky_at",
         "all_nakshatras_at",
         "all_planetary_nodes",
@@ -946,6 +951,8 @@
         "comet_at",
         "compare_dispositorship",
         "compose_mundane_event_chart_profile",
+        "cosmic_reference_at",
+        "cosmic_reference_definition",
         "dated_aspect_from_major_relation",
         "datetime_from_jd",
         "decennial_sequence_truth",
@@ -1033,6 +1040,7 @@
         "lilly_perfection_at",
         "list_ayanamsa_systems",
         "list_comets",
+        "list_cosmic_references",
         "list_deep_sky_objects",
         "local_sidereal_time",
         "lunar_ecliptic_direction_at",
@@ -2470,7 +2478,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "c644aee15678f49f47a5f2afab7886b33a278b3b759f218e069acdb218a695b4",
+      "source_sha256": "9bab7d2566376790ee15222c66908de35f640fd09c53ce05fefcb8acbb8be8f2",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -2564,6 +2572,7 @@
         "CLASSIC_7",
         "COMET_NAIF",
         "CONVERSE",
+        "COSMIC_REFERENCE_CATALOG_VERSION",
         "CYCLE_YEARS",
         "CalendarDateTime",
         "CartesianPosition",
@@ -2603,6 +2612,9 @@
         "ConditionNetworkNode",
         "ConditionNetworkProfile",
         "ConditionPolarity",
+        "CosmicReferenceDefinition",
+        "CosmicReferenceKind",
+        "CosmicReferencePosition",
         "CrossingSearchClassification",
         "CrossingSearchTruth",
         "CuspSpeed",
@@ -3683,6 +3695,7 @@
         "algol_phase",
         "all_asteroids_at",
         "all_comets_at",
+        "all_cosmic_references_at",
         "all_deep_sky_at",
         "all_galactic_positions",
         "all_gauquelin_sectors",
@@ -3824,6 +3837,8 @@
         "converse_solar_arc_right_ascension",
         "converse_tertiary_ii_progression",
         "converse_tertiary_progression",
+        "cosmic_reference_at",
+        "cosmic_reference_definition",
         "cotrans_sp",
         "current_dasha",
         "current_decennials",
@@ -4056,6 +4071,7 @@
         "list_asteroids",
         "list_ayanamsa_systems",
         "list_comets",
+        "list_cosmic_references",
         "list_deep_sky_objects",
         "list_multiple_stars",
         "list_named_stars",
@@ -4726,8 +4742,8 @@
       "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.2.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "1d37c7ce18d4de5a4cb9736bec478de1bb8039a1c1f33fdeb1b1f089bb1fe08f",
-      "source_bytes": 315635,
+      "source_sha256": "b46c9752b9a3ad46118a1fc9e29c7c2268438a0613879239442fb32301e577d2",
+      "source_bytes": 317182,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -4906,8 +4922,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "517aa45c66a8f7635ef3aa36bd3179946adfa99c02e3387c80f13c393ddcf892",
-      "source_bytes": 216409,
+      "source_sha256": "f3eadbb873f49b460d0a01da8ee8a67b437e8da8dbe320ac7e2ed6405b7168b1",
+      "source_bytes": 217295,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -5045,8 +5061,8 @@
       "description": "Validation and partial-closure records for experimental, modernized, or mixed-oracle computation surfaces.",
       "content_class": "versioned_evidence_receipt",
       "schema_type": "TechArticle",
-      "source_sha256": "05e4c3279bad63c54b896a18f687adf1605e80a3e6d8bb8ac4a46accdaba767a",
-      "source_bytes": 21213,
+      "source_sha256": "38291c87ea81e9fc2fe23d63fdea37ae48d8ad2cdc4ea9046e40da8f3a64cdc4",
+      "source_bytes": 22083,
       "last_verified": "2026-08-18",
       "prerender": true,
       "markdown": true,
@@ -5670,5 +5686,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "70ab568ecb5c38db83e1bd278385d3672af6887ded5fe948f960189ac221a899"
+  "manifest_sha256": "1090040668043ab5592d4632e088b5aeb59ff8fc24288743d0e5b5688a01b012"
 }

@@ -325,7 +325,8 @@ A parallel surface for Vedic work. Inherits all of `moira.essentials` and adds:
 | `moira.sky.visibility` | Heliacal events, Yallop lunar crescent, arcus visionis, atmospheric extinction |
 | `moira.sky.bodies` | Geocentric, heliocentric, SSB, planetocentric, and topocentric body positions; nodes and apsides |
 | `moira.sky.observation` | Phase angle, illuminated fraction, apparent magnitude, elongation, Moon phases, apsides, conjunctions |
-| `moira.sky.galactic` | Galactic coordinate transforms (Liu, Zhu & Zhang 2011), reference point catalog |
+| `moira.sky.galactic` | Galactic coordinate transforms (Liu, Zhu & Zhang 2011), legacy five-point compatibility table |
+| `moira.cosmic_references` | Typed physical-object, coordinate-landmark, and proxy reference directions with explicit provenance |
 | `moira.sky.events` | Rise/set/transit, twilight times, stations and retrograde periods |
 | `moira.sky.eclipse` | Eclipse prediction, contact times, geographic paths, Saros/Metonic identification |
 | `moira.sky.occultation` | Lunar occultations of planets and stars, graze geometry, close approaches |
@@ -668,7 +669,7 @@ motion semantics.
 | `ssb_chart(dt, bodies=None)` | `dict[str, SSBPosition]` | Solar System barycenter positions in the standard of-date ecliptic frame |
 | `received_light(dt, bodies=None)` | `dict[str, ReceivedLightPosition]` | Apparent received-light positions with explicit light-cone geometry |
 | `galactic_chart(chart, bodies=None)` | `list[GalacticPosition]` | Galactic longitude/latitude for chart bodies |
-| `galactic_angles(chart)` | `dict[str, tuple[float, float]]` | Ecliptic long/lat of major galactic reference points |
+| `galactic_angles(chart)` | `dict[str, tuple[float, float]]` | Ecliptic long/lat of the legacy five galactic reference points |
 | `uranian(dt)` | `dict[str, UranianPosition]` | Positions of the current nine Uranian/Hamburg School and Transpluto hypothetical bodies |
 | `geodetic(chart, zodiac="tropical", ayanamsa_system=None)` | `GeodeticChart` | Geodetic chart frame derived from planetary longitudes |
 | `geodetic_planet_equivalents(chart, bodies=None, zodiac="tropical", ayanamsa_system=None)` | `dict[str, float]` | Geodetic longitude equivalents for selected bodies |
@@ -930,6 +931,9 @@ from moira.facade import (
     equatorial_to_galactic, galactic_to_equatorial,
     ecliptic_to_galactic, galactic_to_ecliptic,
     GalacticPosition,
+    CosmicReferenceKind, CosmicReferenceDefinition, CosmicReferencePosition,
+    cosmic_reference_definition, cosmic_reference_at,
+    all_cosmic_references_at, list_cosmic_references,
 )
 ```
 
@@ -937,11 +941,22 @@ from moira.facade import (
 |---|---|---|
 | `galactic_position_of(body, ecliptic_lon, ecliptic_lat, obliquity, jd_tt)` | `GalacticPosition` | Galactic longitude and latitude (IAU 1958) for one body from true-of-date ecliptic coordinates |
 | `all_galactic_positions(body_data, obliquity, jd_tt)` | `list[GalacticPosition]` | Galactic positions for a dict of body -> (lon, lat) using the chart's TT epoch |
-| `galactic_reference_points(obliquity, jd_tt)` | `dict[str, tuple[float, float]]` | GC, anti-GC, NGP, SGP, and super-galactic center in true ecliptic-of-date coordinates |
+| `galactic_reference_points(obliquity, jd_tt)` | `dict[str, tuple[float, float]]` | Frozen five-entry compatibility table; its historical SGC entry is the astrological M87 convention |
 | `equatorial_to_galactic(ra, dec)` | `tuple[float, float]` | RA/Dec -> galactic (l, b) |
 | `galactic_to_equatorial(l, b)` | `tuple[float, float]` | Galactic -> RA/Dec |
 | `ecliptic_to_galactic(lon, lat, obliquity, jd_tt)` | `tuple[float, float]` | True ecliptic-of-date -> galactic, with TT epoch used for the J2000 frame bridge |
 | `galactic_to_ecliptic(l, b, obliquity, jd_tt)` | `tuple[float, float]` | Galactic -> true ecliptic-of-date, with TT epoch used for the of-date frame bridge |
+| `cosmic_reference_definition(name)` | `CosmicReferenceDefinition` | Resolve a stable ID, canonical name, or exact alias without collapsing its semantic class |
+| `cosmic_reference_at(name, jd_tt)` | `CosmicReferencePosition` | Project one fixed ICRS/J2000 reference direction to the true ecliptic of date |
+| `all_cosmic_references_at(jd_tt, kind=None)` | `dict[str, CosmicReferencePosition]` | Return all 12 references, or the selected physical, landmark, or proxy class |
+| `list_cosmic_references(kind=None)` | `list[str]` | List canonical names, optionally filtered by `CosmicReferenceKind` |
+
+The 12-entry typed registry contains 2 physical objects, 7 coordinate
+landmarks, and 3 declared proxies. In particular, the formal supergalactic
+longitude origin is distinct from both M87 and the Virgo/M87 astrological SGC.
+The Great Attractor and Shapley entries disclose their Norma/ACO 3627 and ACO
+3558 cluster anchors; no Local Group barycenter is admitted without a mass
+model.
 
 ### Gauquelin sectors
 
@@ -4991,11 +5006,16 @@ Rotation matrix authority: Liu, Zhu & Zhang (2011, A&A 526, A16) — IAU 1958 ga
 | `galactic_to_equatorial(l_deg, b_deg)` | `→ (ra, dec)` | Galactic l/b → RA/Dec (J2000, degrees) |
 | `ecliptic_to_galactic(lon, lat, obliquity, jd_tt)` | `→ (l, b)` | Ecliptic → galactic (bridges via equatorial) |
 | `galactic_to_ecliptic(l, b, obliquity, jd_tt)` | `→ (lon, lat)` | Galactic → ecliptic (bridges via equatorial) |
-| `galactic_reference_points(obliquity, jd_tt)` | `→ dict[str, (lon, lat)]` | Ecliptic coordinates of GC, NGP, GAC, SGP, SGC at the given epoch |
+| `galactic_reference_points(obliquity, jd_tt)` | `→ dict[str, (lon, lat)]` | Legacy ecliptic coordinates of GC, NGP, GAC, SGP, and the historical M87-anchored SGC convention |
 | `galactic_position_of(body, jd_ut, ...)` | `→ GalacticPosition` | `GalacticPosition` for one body |
 | `all_galactic_positions(chart_lons, jd_ut, ...)` | `→ list[GalacticPosition]` | `GalacticPosition` for all bodies in a chart |
 
-Named reference points: **GC** (Galactic Center / Sgr A*), **NGP** (North Galactic Pole, Coma Berenices), **GAC** (Galactic Anti-Center, Gemini/Auriga), **SGP** (South Galactic Pole), **SGC** (Super-Galactic Center, Virgo/M87).
+Named compatibility points: **GC** (the galactic coordinate-frame origin,
+close to but distinct from Sagittarius A*), **NGP** (North Galactic Pole),
+**GAC** (Galactic Anti-Center), **SGP** (South Galactic Pole), and **SGC** (the
+legacy astrological convention anchored on M87, not the formal supergalactic
+longitude origin). Use `moira.cosmic_references` for typed identities and
+source/semantic receipts.
 
 ---
 

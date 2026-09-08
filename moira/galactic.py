@@ -34,7 +34,7 @@ Public surface
 ``galactic_to_ecliptic``      — convert galactic (l, b) to ecliptic lon/lat.
 ``galactic_position_of``      — compute galactic position for a single body.
 ``all_galactic_positions``    — compute galactic positions for a full chart.
-``galactic_reference_points`` — ecliptic coordinates of five galactic landmarks.
+``galactic_reference_points`` — legacy five-point compatibility table.
 """
 
 from __future__ import annotations
@@ -165,7 +165,11 @@ _GAC_DEC = -_GC_DEC                     # = +28.936175°
 _SGP_RA  = (_NGP_RA + 180.0) % 360.0
 _SGP_DEC = -_NGP_DEC
 
-# Super-Galactic Center: center of the Local Supercluster (Virgo cluster / M87)
+# Legacy astrological "Super-Galactic Center" convention anchored on M87.
+# This is neither the formal supergalactic longitude origin nor a unique Virgo
+# Cluster/Local Supercluster barycenter.  The public key and coordinates remain
+# frozen here for compatibility; ``moira.cosmic_references`` carries the typed
+# identity and provenance.
 # Equatorial J2000: RA=187.7059°, Dec=+12.3911°  (~2° Libra ecliptic)
 _SGC_RA  = 187.7059
 _SGC_DEC =  12.3911
@@ -455,8 +459,12 @@ def _great_circle(l1: float, b1: float, l2: float, b2: float) -> float:
 
 def galactic_reference_points(obliquity: float, jd_tt: float) -> dict[str, tuple[float, float]]:
     """
-    Return the ecliptic longitudes and latitudes of the five principal
-    galactic reference points, computed at the given obliquity.
+    Return the legacy five-point compatibility table at the given obliquity.
+
+    The historical ``"Super-Galactic Center"`` entry is the astrological M87
+    convention.  It is not the formal supergalactic-frame longitude origin or
+    a modeled cluster barycenter.  Use :mod:`moira.cosmic_references` when
+    typed physical-object, coordinate-landmark, and proxy semantics are needed.
 
     Parameters
     ----------
@@ -475,7 +483,7 @@ def galactic_reference_points(obliquity: float, jd_tt: float) -> dict[str, tuple
     "Galactic Anti-Center" — ℓ=180°, b=0° (Gemini/Auriga direction)
     "North Galactic Pole"  — b=+90°  (Coma Berenices / Leo border)
     "South Galactic Pole"  — b=−90°  (Sculptor constellation)
-    "Super-Galactic Center"— center of Local Supercluster (M87/Virgo cluster)
+    "Super-Galactic Center"— legacy astrological convention anchored on M87
     """
     _require_finite("obliquity", obliquity)
     _require_finite("jd_tt", jd_tt)

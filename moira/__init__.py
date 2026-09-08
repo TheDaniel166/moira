@@ -666,6 +666,16 @@ from .deep_sky import (  # noqa: E402 - imports intentionally follow the kernel 
     list_deep_sky_objects,
     find_deep_sky_objects,
 )
+from .cosmic_references import (  # noqa: E402 - imports intentionally follow the kernel warning
+    COSMIC_REFERENCE_CATALOG_VERSION,
+    CosmicReferenceDefinition,
+    CosmicReferenceKind,
+    CosmicReferencePosition,
+    all_cosmic_references_at,
+    cosmic_reference_at,
+    cosmic_reference_definition,
+    list_cosmic_references,
+)
 from .asteroid_families import (
     asteroid_family,
     family_members,
@@ -1928,6 +1938,15 @@ __all__ = [
     "all_deep_sky_at",
     "list_deep_sky_objects",
     "find_deep_sky_objects",
+    # Typed cosmic reference points
+    "COSMIC_REFERENCE_CATALOG_VERSION",
+    "CosmicReferenceDefinition",
+    "CosmicReferenceKind",
+    "CosmicReferencePosition",
+    "all_cosmic_references_at",
+    "cosmic_reference_at",
+    "cosmic_reference_definition",
+    "list_cosmic_references",
     # Asteroid families
     "asteroid_family",
     "family_members",

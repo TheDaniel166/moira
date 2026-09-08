@@ -263,9 +263,11 @@ be computed from the returned JD via a separate ephemeris call (lots engine acce
 `syzygy: float`). Vertex is fully computed in `houses.py` (via `_asc_from_armc` applied
 to ARMC + 90? with negated latitude) and exposed as `HouseCusps.vertex` / `anti_vertex`.
 East Point / Equatorial ASC is now computed as `HouseCusps.east_point`, using the
-Morinus-style equatorial projection of `ARMC + 90?`. Galactic Center
-and Super-Galactic Center are both present in `galactic.py` as ecliptic-longitude
-sensitive points.
+Morinus-style equatorial projection of `ARMC + 90?`. The galactic frame origin
+and the legacy M87-anchored astrological SGC are present in `galactic.py` as
+ecliptic-longitude sensitive points. `cosmic_references.py` additionally keeps
+the physical Sagittarius A* and M87 identities, formal coordinate landmarks,
+and declared large-structure proxies semantically separate.
 
 | Feature | Moira | Solar Fire | Sirius | Janus | Astro.com | Astro-Seek | Morinus | Co-Star | TimePassages |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -280,7 +282,7 @@ sensitive points.
 | East Point / Equatorial ASC | full | full | full | full | absent | full | full | absent | absent |
 | Prenatal syzygy degree | full | full | full | full | full | full | full | absent | absent |
 | Galactic Center as sensitive point | full | partial | full | absent | absent | partial | absent | absent | absent |
-| Super-Galactic Center | full | absent | partial | absent | absent | absent | absent | absent | absent |
+| Astrological SGC convention (M87 anchor) | full | absent | partial | absent | absent | absent | absent | absent | absent |
 
 **Gap notes:**  
 **Post-audit update - East Point implemented.** In the live codebase, East Point /

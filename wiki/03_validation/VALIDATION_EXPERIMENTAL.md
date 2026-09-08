@@ -52,7 +52,7 @@ truthfully claim a clean all-green validation state for synastry composites at
 | Stellar quality mapping | boundary and vessel tests in the sovereign star suite; no external oracle exists for the interpretive mapping itself | Validated |
 | Variable stars | catalog integrity, phase arithmetic, light-curve behavior, extremum helpers in `tests/unit/test_variable_stars.py`, plus external ephemeris spot checks for Algol (AAVSO VSX), Delta Cephei, and Eta Aquilae (GCVS) in `tests/integration/test_variable_stars_external_reference.py` | Validated |
 | Extended physical bodies | Horizons / kernel-backed fixture suites for TNOs, centaurs, asteroids, and selected minor bodies | Validated |
-| Galactic transforms and reference points | invariant tests in `tests/unit/test_experimental_validation.py` plus Astropy/ERFA oracle audit in `tests/integration/test_galactic_oracle_reference.py` | Validated |
+| Galactic transforms and typed cosmic reference points | invariant tests in `tests/unit/test_experimental_validation.py` and `tests/unit/test_cosmic_references.py` plus Astropy/ERFA oracle audit in `tests/integration/test_galactic_oracle_reference.py` | Validated |
 | Uranian bodies / Transpluto | locked formulas and range checks in `tests/unit/test_experimental_validation.py` | Validated |
 | Astrocartography | dedicated geometry and wrapper suite in `tests/unit/test_astrocartography.py` plus validated planetary positions | Validated |
 | Local space | dedicated spherical-astronomy and wrapper suite in `tests/unit/test_local_space.py` plus validated topocentric positions | Validated |
@@ -301,6 +301,13 @@ Covered:
 - direct ICRS <-> Galactic comparison against Astropy's external frame transform
 - true-of-date ecliptic bridge audit using explicit ecliptic geometry, ERFA
   `pnm06a`, and Astropy's Galactic frame as the final oracle
+- exact typed-registry class counts and non-null semantic/source receipts
+- separation of the galactic frame origin from Sagittarius A*, and of the
+  formal supergalactic origin from M87 and the astrological M87 proxy
+- formal supergalactic longitude origin and north/south pole directions checked
+  against Astropy's `Supergalactic` frame
+- coordinate-landmark antipodes, proxy anchor declarations, deterministic
+  ordering, and invalid-input rejection
 
 Status: Validated
 
@@ -312,11 +319,17 @@ Measured residuals:
   ERFA/Astropy bridge stay below `0.1"` across the audited span from
   `500 BCE` to `2100 CE`; the broader sweep produced worst measured residuals
   of `0.0318"` for ecliptic -> galactic and `0.0319"` for galactic -> ecliptic
+- the three formal supergalactic coordinate landmarks remain below `0.1"`
+  against Astropy, with worst measured residual `0.0305"` at the longitude
+  origin
 
 Important scope note:
 - this galactic audit is indexed by `jd_tt` directly, so the residual envelope
   does not presently indicate a Delta-T-model limitation
 - the time-dependent term here is the of-date/J2000 frame bridge
+- Great Attractor, Shapley, and Virgo/M87 entries are source-declared proxies;
+  this validation verifies their catalog anchors and semantics, not a unique
+  dynamical center for any extended structure
 
 ### 5.2 Uranian bodies and Transpluto
 

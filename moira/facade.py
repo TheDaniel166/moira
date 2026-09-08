@@ -740,6 +740,16 @@ from .deep_sky import (
     list_deep_sky_objects,
     find_deep_sky_objects,
 )
+from .cosmic_references import (
+    COSMIC_REFERENCE_CATALOG_VERSION,
+    CosmicReferenceDefinition,
+    CosmicReferenceKind,
+    CosmicReferencePosition,
+    all_cosmic_references_at,
+    cosmic_reference_at,
+    cosmic_reference_definition,
+    list_cosmic_references,
+)
 from .asteroids import (
     AsteroidData, asteroid_at, all_asteroids_at,
     list_asteroids, available_in_kernel,
@@ -2477,6 +2487,11 @@ __all__ = [
     "DeepSkyClass", "DeepSkyObject", "DeepSkyPosition",
     "deep_sky_object", "deep_sky_at", "all_deep_sky_at",
     "list_deep_sky_objects", "find_deep_sky_objects",
+    # Typed cosmic reference points
+    "COSMIC_REFERENCE_CATALOG_VERSION",
+    "CosmicReferenceDefinition", "CosmicReferenceKind", "CosmicReferencePosition",
+    "all_cosmic_references_at", "cosmic_reference_at",
+    "cosmic_reference_definition", "list_cosmic_references",
     # Multiple star systems
     "MultiType", "StarComponent", "OrbitalElements", "MultipleStarSystem",
     "angular_separation_at", "position_angle_at",

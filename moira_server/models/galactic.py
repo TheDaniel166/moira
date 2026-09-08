@@ -8,6 +8,8 @@ from typing import Literal
 
 from pydantic import Field, field_validator
 
+from moira.cosmic_references import CosmicReferenceKind
+
 from .common import _StrictModel
 
 
@@ -119,6 +121,25 @@ class GalacticReferencePointsRequest(_StrictModel):
         return value
 
 
+class CosmicReferencePointsRequest(_StrictModel):
+    jd_tt: float
+    kind: CosmicReferenceKind | None = None
+
+    @field_validator("jd_tt", mode="before")
+    @classmethod
+    def _reject_boolean_jd_tt(cls, value: object) -> object:
+        if isinstance(value, bool):
+            raise ValueError("cosmic reference epoch must be a finite number")
+        return value
+
+    @field_validator("jd_tt")
+    @classmethod
+    def _finite_jd_tt(cls, value: float) -> float:
+        if not math.isfinite(value):
+            raise ValueError("cosmic reference epoch must be finite")
+        return value
+
+
 class GalacticChartPositionsRequest(_StrictModel):
     dt: datetime
     bodies: list[str] | None = None
@@ -205,6 +226,44 @@ class GalacticReferencePointsResponse(_StrictModel):
     provenance: GalacticProvenanceResponse
 
 
+class CosmicReferencePointResponse(_StrictModel):
+    reference_id: str
+    name: str
+    aliases: list[str]
+    kind: CosmicReferenceKind
+    anchor: str
+    ecliptic_longitude: float
+    ecliptic_latitude: float
+    sign: str
+    sign_symbol: str
+    sign_degree: float
+    source_ra_deg: float
+    source_dec_deg: float
+    source_frame: Literal["ICRS"]
+    source_epoch_jd_tt: float
+    position_semantics: str
+    coordinate_authority: str
+    semantic_authority: str
+    source_version: str
+    citation_urls: list[str]
+    catalog_version: str
+
+
+class CosmicReferencePointsProvenanceResponse(_StrictModel):
+    jd_tt: float
+    source_frame: Literal["equatorial_j2000_icrs"]
+    target_frame: Literal["ecliptic_true_of_date"]
+    stage_sequence: list[str]
+
+
+class CosmicReferencePointsResponse(_StrictModel):
+    points: list[CosmicReferencePointResponse]
+    total: int
+    requested_kind: CosmicReferenceKind | Literal["all"]
+    catalog_version: str
+    provenance: CosmicReferencePointsProvenanceResponse
+
+
 class GalacticPositionResponse(_StrictModel):
     body: str
     galactic_longitude: float
@@ -225,6 +284,10 @@ class GalacticPositionsResponse(_StrictModel):
 __all__ = [
     "GALACTIC_MAX_BODIES",
     "CoordinateSource",
+    "CosmicReferencePointResponse",
+    "CosmicReferencePointsProvenanceResponse",
+    "CosmicReferencePointsRequest",
+    "CosmicReferencePointsResponse",
     "FrameName",
     "GalacticChartPositionsRequest",
     "GalacticCoordinateResponse",

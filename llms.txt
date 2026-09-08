@@ -22,6 +22,9 @@ Moira is a sovereign computational engine designed for transparency, auditabilit
 - [asteroids.py](moira/asteroids.py) / [comets.py](moira/comets.py): Sharded Type-13 small-body catalogs (10,025 asteroids in external release `2026.08.12.1`; 497 numbered periodic comets).
 - [deep_sky.py](moira/deep_sky.py): 60 release-bound, non-Solar-System
   coordinate anchors with SIMBAD receipts and sovereign host-star delegation.
+- [cosmic_references.py](moira/cosmic_references.py): 12 typed physical,
+  coordinate-landmark, and proxy directions; formal supergalactic axes remain
+  distinct from the Virgo/M87 astrological SGC convention.
 - [primary_directions/](moira/primary_directions/): Placidus, Regiomontanus, and Morinus direction families with direct/converse doctrine.
 - [yogas.py](moira/yogas.py): 60 classical yogas across six families as primary-source proof objects.
 - [shadbala.py](moira/shadbala.py) / [ashtakavarga.py](moira/ashtakavarga.py): Complete Vedic strength systems including Bhava Bala, kakshya transit, and Shodhya Pinda.

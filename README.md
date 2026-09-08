@@ -57,6 +57,12 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
   positions delegate to the sovereign star registry. Solar-System bodies are
   excluded from this static catalog because they require time-dependent
   ephemerides.
+- **Typed cosmic references** — 12 fixed ICRS/J2000 directions kept in three
+  explicit classes: physical objects, coordinate landmarks, and declared
+  proxies. The formal supergalactic origin is distinct from the legacy
+  Virgo/M87 astrological SGC; broad structures such as the Great Attractor and
+  Shapley Concentration expose their selected cluster anchor rather than claim
+  a unique point center.
 - **Position-capable asteroid ephemeris** — two layers. The wheel ships catalog
   `moira-asteroids-wheel` release `2026.08.14.1`: 25 named bodies (classical
   four, named Centaurs including Chiron, named TNOs, and selected others) as
@@ -217,7 +223,8 @@ policy or qualification instead of presenting one silent universal rule.
 - **Occultations** — lunar occultation of stars and planets; close-approach detection.
 - **Stations** — retrograde stations with precise stationary-point search.
 - **Mapping** — Astrocartography (ACG) lines for all planets; Local Space chart positions; Gauquelin sectors.
-- **Galactic coordinates** — full equatorial-to-galactic transform and reference point catalog.
+- **Galactic coordinates** — full equatorial-to-galactic transforms, the legacy
+  five-point compatibility table, and a typed 12-reference cosmic registry.
 - **Temporal systems** — 28-mansion Arabic lunar stations (Manazil); Sothic cycle drift and Egyptian civil calendar conversion; void-of-course Moon windows.
 - **Harmograms** — intensity-spectrum research engine (H1–H5); spectral vectors, zero-Aries parts construction, intensity doctrine, and time-domain trace analysis.
 - **Harmonics** — harmonic chart calculation, aspect-harmonic profiles, vibrational fingerprint analysis.

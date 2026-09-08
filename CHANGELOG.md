@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- A versioned 12-entry cosmic-reference registry that separates physical
+  sources, coordinate-frame landmarks, and explicitly declared observational
+  or astrological proxies. It includes the formal galactic and supergalactic
+  axes, Sagittarius A*, M87, the qualified Virgo/M87 astrological SGC, and
+  sourced Norma/ACO 3627 and Shapley/ACO 3558 proxies. No Local Group
+  barycenter is invented without a declared mass model.
+- REST `POST /v1/galactic/cosmic-reference-points` with optional semantic-kind
+  filtering and per-reference source, meaning, frame, epoch, and catalog
+  receipts. The historical five-entry `/v1/galactic/reference-points` contract
+  remains unchanged.
 - A release-bound catalog of 60 non-Solar-System coordinate anchors: 15
   galaxies, 15 nebulae, 15 star clusters, 5 compact objects, 5 stellar
   remnants, and 5 confirmed exoplanet host stars. The Python and REST surfaces

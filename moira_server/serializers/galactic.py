@@ -5,6 +5,9 @@ from __future__ import annotations
 from moira.galactic import GalacticPosition
 
 from ..models.galactic import (
+    CosmicReferencePointResponse,
+    CosmicReferencePointsProvenanceResponse,
+    CosmicReferencePointsResponse,
     GalacticCoordinateResponse,
     GalacticEclipticCoordinateResponse,
     GalacticEquatorialCoordinateResponse,
@@ -15,6 +18,7 @@ from ..models.galactic import (
     GalacticReferencePointsResponse,
 )
 from ..services.galactic import (
+    CosmicReferencePointsResult,
     EclipticCoordinateResult,
     EquatorialCoordinateResult,
     GalacticCoordinateResult,
@@ -100,6 +104,49 @@ def serialize_reference_points(
             for name, (longitude, latitude) in result.points.items()
         ],
         provenance=serialize_galactic_provenance(result.provenance),
+    )
+
+
+def serialize_cosmic_reference_points(
+    result: CosmicReferencePointsResult,
+) -> CosmicReferencePointsResponse:
+    """Serialize typed cosmic references without flattening their semantics."""
+
+    return CosmicReferencePointsResponse(
+        points=[
+            CosmicReferencePointResponse(
+                reference_id=position.definition.reference_id,
+                name=position.definition.name,
+                aliases=list(position.definition.aliases),
+                kind=position.definition.kind,
+                anchor=position.definition.anchor,
+                ecliptic_longitude=position.longitude,
+                ecliptic_latitude=position.latitude,
+                sign=position.sign,
+                sign_symbol=position.sign_symbol,
+                sign_degree=position.sign_degree,
+                source_ra_deg=position.definition.icrs_ra_deg,
+                source_dec_deg=position.definition.icrs_dec_deg,
+                source_frame=position.definition.source_frame,
+                source_epoch_jd_tt=position.definition.source_epoch_jd_tt,
+                position_semantics=position.definition.position_semantics,
+                coordinate_authority=position.definition.coordinate_authority,
+                semantic_authority=position.definition.semantic_authority,
+                source_version=position.definition.source_version,
+                citation_urls=list(position.definition.citation_urls),
+                catalog_version=position.definition.catalog_version,
+            )
+            for position in result.points
+        ],
+        total=result.total,
+        requested_kind=result.requested_kind,
+        catalog_version=result.catalog_version,
+        provenance=CosmicReferencePointsProvenanceResponse(
+            jd_tt=result.jd_tt,
+            source_frame="equatorial_j2000_icrs",
+            target_frame="ecliptic_true_of_date",
+            stage_sequence=list(result.stage_sequence),
+        ),
     )
 
 

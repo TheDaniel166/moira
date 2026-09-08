@@ -124,6 +124,7 @@ from .geodetic import (
     serialize_geodetic_provenance,
 )
 from .galactic import (
+    serialize_cosmic_reference_points,
     serialize_ecliptic_coordinate,
     serialize_equatorial_coordinate,
     serialize_galactic_coordinate,
@@ -494,6 +495,7 @@ __all__ = [
     "serialize_gauquelin_provenance",
     "serialize_gauquelin_sector",
     "serialize_gauquelin_sectors",
+    "serialize_cosmic_reference_points",
     "serialize_galactic_position",
     "serialize_galactic_positions",
     "serialize_galactic_provenance",
