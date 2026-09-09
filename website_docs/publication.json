@@ -4,10 +4,10 @@
   "last_verified": "2026-08-18",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.4.1",
-    "tag": "v6.4.1",
-    "commit": "8dfca9571193d388818f2fbf5d4d739a5d4df4e3",
-    "release_date": "2026-09-02",
+    "version": "6.5.0",
+    "tag": "v6.5.0",
+    "commit": "aa07563b439cad2c9c5a7beaca46230855a64ba2",
+    "release_date": "2026-09-09",
     "requires_python": ">=3.10",
     "supported_python": [
       "3.10",
@@ -31,7 +31,7 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "b46c9752b9a3ad46118a1fc9e29c7c2268438a0613879239442fb32301e577d2"
+      "source_sha256": "0fd63e2c381406d479ea9b3ee031bb1af9d4e5a076d5347769be5131c5a5dcd9"
     },
     {
       "id": "python_root_exports",
@@ -41,7 +41,7 @@
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "9bab7d2566376790ee15222c66908de35f640fd09c53ce05fefcb8acbb8be8f2"
+      "source_sha256": "8f2a8430e37bae7c97773f1bd9a699ee00266ecd27c890d8683b041f0836bb4b"
     },
     {
       "id": "rest_api_reference",
@@ -2478,7 +2478,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "9bab7d2566376790ee15222c66908de35f640fd09c53ce05fefcb8acbb8be8f2",
+      "source_sha256": "8f2a8430e37bae7c97773f1bd9a699ee00266ecd27c890d8683b041f0836bb4b",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -4742,7 +4742,7 @@
       "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.2.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "b46c9752b9a3ad46118a1fc9e29c7c2268438a0613879239442fb32301e577d2",
+      "source_sha256": "0fd63e2c381406d479ea9b3ee031bb1af9d4e5a076d5347769be5131c5a5dcd9",
       "source_bytes": 317182,
       "last_verified": "2026-08-18",
       "prerender": true,
@@ -4760,7 +4760,7 @@
       "description": "A contract-first migration manual for replacing Swiss Ephemeris flags and global state with Moira's explicit time, frame, observer, units, house, REST, and verification policies.",
       "content_class": "evergreen_guide",
       "schema_type": "TechArticle",
-      "source_sha256": "3b93cf4d23cd58cc271c14ca197d23d8a6286c56e4f389a5c899a8831f863f76",
+      "source_sha256": "76601b3dcb4c5ffb49fa9f97279634ec2c4a0bcb2087261f443c49fe38bb8286",
       "source_bytes": 32455,
       "last_verified": "2026-08-18",
       "prerender": true,
@@ -5320,6 +5320,25 @@
   ],
   "releases": [
     {
+      "version": "6.5.0",
+      "date": "2026-09-09",
+      "title": "Source-Bound Cosmic Catalogs",
+      "added": [
+        "A release-bound catalog of 60 non-Solar-System coordinate anchors across galaxies, nebulae, star clusters, compact objects, stellar remnants, and confirmed exoplanet host stars, with source receipts and explicit catalog-center semantics.",
+        "A typed 12-entry cosmic-reference registry separating 2 physical catalog objects, 7 coordinate landmarks, and 3 declared proxies, plus Python exports and four new REST operations across the deep-sky and galactic families."
+      ],
+      "changed": [],
+      "fixed": [],
+      "validation": [
+        "Catalog hash, identity, class-count, label, coordinate, and source-receipt covenants; true-ecliptic-of-date projection tests; strict REST, bulk missing-object, OpenAPI, semantic-kind, and legacy-route preservation tests."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.5.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.5.0.md",
+      "tag": "v6.5.0",
+      "release_notes_sha256": "61dd1155318b5d2867229cfccc89fa77d69a9d47d7f9df3586dbe80426f9b5a4",
+      "compatibility_notes_sha256": "89fd63db97174ee1c0f69bc512907838f176bc2e38efac8cf98e1bc78d75a927"
+    },
+    {
       "version": "6.4.1",
       "date": "2026-09-02",
       "title": "Natal Grid for Every Mover",
@@ -5686,5 +5705,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "1090040668043ab5592d4632e088b5aeb59ff8fc24288743d0e5b5688a01b012"
+  "manifest_sha256": "9ae0e15e3e4d8945df922cf2d115f13f319ef3485d1017817c92e98991978c42"
 }
