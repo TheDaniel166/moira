@@ -318,6 +318,22 @@
   ],
   "release_summaries": [
     {
+      "version": "6.5.0",
+      "date": "2026-09-09",
+      "title": "Source-Bound Cosmic Catalogs",
+      "added": [
+        "A release-bound catalog of 60 non-Solar-System coordinate anchors across galaxies, nebulae, star clusters, compact objects, stellar remnants, and confirmed exoplanet host stars, with source receipts and explicit catalog-center semantics.",
+        "A typed 12-entry cosmic-reference registry separating 2 physical catalog objects, 7 coordinate landmarks, and 3 declared proxies, plus Python exports and four new REST operations across the deep-sky and galactic families."
+      ],
+      "changed": [],
+      "fixed": [],
+      "validation": [
+        "Catalog hash, identity, class-count, label, coordinate, and source-receipt covenants; true-ecliptic-of-date projection tests; strict REST, bulk missing-object, OpenAPI, semantic-kind, and legacy-route preservation tests."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.5.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.5.0.md"
+    },
+    {
       "version": "6.4.1",
       "date": "2026-09-02",
       "title": "Natal Grid for Every Mover",

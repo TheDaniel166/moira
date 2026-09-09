@@ -2812,7 +2812,7 @@ __all__ += [
 ]
 
 
-__version__ = "6.4.1"
+__version__ = "6.5.0"
 __author__  = "Moira contributors"
 
 

@@ -1,7 +1,7 @@
 # Migrating from Swiss Ephemeris to Moira
 
-**Verified against:** `moira-astro` 6.4.1<br>
-**Last verified:** 2026-08-15<br>
+**Verified against:** `moira-astro` 6.5.0<br>
+**Last verified:** 2026-09-09<br>
 **Audience:** maintainers porting a Python, C/C++, JavaScript, or service-based
 application from Swiss Ephemeris to Moira
 
