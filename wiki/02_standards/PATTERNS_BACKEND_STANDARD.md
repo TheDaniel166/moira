@@ -12,6 +12,12 @@ and dominant-containment admission. It
 describes the subsystem that actually exists in `moira/patterns.py`; it does
 not describe aspirational future capabilities.
 
+The separate `moira.stelliums.analyze_stelliums` product now owns planet-first
+Strict/Broad sign, house and total-span concentration evidence. See
+[STELLIUM_ANALYSIS_STANDARD.md](STELLIUM_ANALYSIS_STANDARD.md). This document's
+legacy centroid-based Stellium, default count, aspect-contribution and condition
+semantics are unchanged; they must not be silently presented as the new product.
+
 ---
 
 ## Part I - Architecture Standard

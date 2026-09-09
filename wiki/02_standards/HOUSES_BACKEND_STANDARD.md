@@ -65,6 +65,27 @@ A **placement** is:
 | *normalisation* | Input is normalised to `[0, 360)` before membership evaluation |
 | *exact-on-cusp* | When the distance to the opening cusp is `< 1e-9°`, `exact_on_cusp` is True; the point is still in that house |
 
+#### 1.3a Selected-zodiac house frame (2026-09-09 correction)
+
+`calculate_houses` and `houses_from_armc` accept `ayanamsa_offset` in degrees.
+For physical/quadrant and equal-degree systems, the same offset changes
+ecliptic labels on positions and boundaries; ARMC and true-equatorial physical
+boundary vectors do not rotate. Assignment requires positions and cusps in the
+same longitude frame.
+
+Whole Sign (`W`) and Solar Sign (`S`) are sign-defined sectors, not a rotated
+copy of a previously selected tropical sign. Their first cusp is the opening
+of the selected-zodiac sign containing ASC or the supplied tropical Sun minus
+the offset, respectively. All twelve returned cusps remain exact multiples of
+30 degrees in that zodiac. This applies to the **effective** system, including
+a policy-directed Whole Sign fallback. Tropical and zero-offset results are
+unchanged. Solar inputs remain tropical; callers must not subtract the offset
+twice. The correction does not alter polar admissibility or fallback policy.
+
+Regression authority is the explicit sign-sector definition and rotation
+invariants, not a new external ephemeris accuracy claim. See
+`tests/unit/test_house_sidereal_frame.py`.
+
 #### 1.4 Angularity category
 
 An **angularity category** is:

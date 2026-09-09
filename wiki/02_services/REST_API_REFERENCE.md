@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 457
-- Registered OpenAPI operations: 457 (GET 36, POST 421)
+- Registered OpenAPI paths: 458
+- Registered OpenAPI operations: 458 (GET 36, POST 422)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 453
+- Versioned `/v1` paths: 454
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -733,6 +733,24 @@ spherical mean limb, NumPy-free, and explicitly reports
 topography, and duration contours are not inferred by transport.
 
 ## Relationship And Pattern Routes
+
+### Planet-first snapshot analysis
+
+`POST /v1/stelliums/analyze` accepts `schema_version: "moira.stellium.v1"`,
+full-precision `positions`, a source/frame `context`, optional Strict/Broad
+`policy`, explicit core/associated `selection`, and optional same-frame
+`houses` (the full `HousesResponse` plus `longitude_frame`). It computes no
+astronomy and has no datetime request alternative. Defaults: Strict four
+planets, eight degrees maximum total arc, sign/house/tight, ten core planets,
+no selected associated factors.
+
+The result returns policy, input fingerprint, coverage, per-criterion
+evaluation and deduplicated core groups with independent matches. Missing
+houses are not evaluable; malformed houses fail with 422. Associated factors
+never satisfy the count. Legacy `/v1/patterns/*` remains unchanged. See
+[the engine-owned contract](../02_standards/STELLIUM_ANALYSIS_STANDARD.md).
+
+### Existing relationship and pattern operations
 
 | Method | Path | Handler |
 |---|---|---|
@@ -3321,6 +3339,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/stations/next` | phenomena | `next_station_route_v1_stations_next_post` |
 | `POST` | `/v1/stations/retrograde-periods` | phenomena | `retrograde_periods_route_v1_stations_retrograde_periods_post` |
 | `POST` | `/v1/stations/search` | phenomena | `station_search_route_v1_stations_search_post` |
+| `POST` | `/v1/stelliums/analyze` | stelliums | `analyze_stelliums_route_v1_stelliums_analyze_post` |
 | `POST` | `/v1/synastry/aspects` | relationship | `synastry_aspects_route_v1_synastry_aspects_post` |
 | `POST` | `/v1/synastry/chart-condition` | relationship | `synastry_chart_condition_route_v1_synastry_chart_condition_post` |
 | `POST` | `/v1/synastry/condition-profiles` | relationship | `synastry_condition_profiles_route_v1_synastry_condition_profiles_post` |

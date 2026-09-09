@@ -141,6 +141,12 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
         "x-family": "relationship",
     },
     {
+        "name": "stelliums",
+        "x-displayName": "Planet-first Stelliums",
+        "description": "Independent sign, house and total-span concentration evidence from supplied snapshots; Strict four or Broad three planets, with non-counting associated factors.",
+        "x-family": "relationship",
+    },
+    {
         "name": "antiscia",
         "x-displayName": "Antiscia",
         "description": "Ordinary antiscia reflections and contact searches.",

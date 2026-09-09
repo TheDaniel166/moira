@@ -6,7 +6,7 @@ Moira is a sovereign computational engine designed for transparency, auditabilit
 
 ## Core Documentation
 - [README](README.md): Overview, installation, and quick start.
-- [CHANGELOG](CHANGELOG.md): Versioned release history (current: 6.5.0).
+- [CHANGELOG](CHANGELOG.md): Versioned release history (current: 6.6.0).
 - [AGENTS.md](AGENTS.md): Core persona (Urania) and operational doctrine for AI collaborators.
 - [Wiki Index](wiki/Home.md): Comprehensive guide to doctrines, foundations, and validation.
 - [Migrating from Swiss Ephemeris](wiki/02_services/MIGRATING_FROM_SWISS_EPHEMERIS.md): Contract-first migration guide for flags, time, frames, units, houses, REST, and verification.
@@ -18,6 +18,8 @@ Moira is a sovereign computational engine designed for transparency, auditabilit
 - [moira/__init__.py](moira/__init__.py): Main entry point and `Moira` facade class.
 - [planets.py](moira/planets.py): Planetary position logic and reduction pipeline.
 - [houses.py](moira/houses.py): House cusp calculation for 22 systems.
+- [stelliums.py](moira/stelliums.py): Versioned planet-first Strict/Broad sign,
+  house and maximum-total-span evidence; associated factors never count.
 - [spk_reader.py](moira/spk_reader.py): Native-only JPL SPK kernel access (no third-party fallback).
 - [asteroids.py](moira/asteroids.py) / [comets.py](moira/comets.py): Sharded Type-13 small-body catalogs (10,025 asteroids in external release `2026.08.12.1`; 497 numbered periodic comets).
 - [deep_sky.py](moira/deep_sky.py): 60 release-bound, non-Solar-System

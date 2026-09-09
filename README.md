@@ -50,6 +50,11 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
 
 - **Planets and luminaries** — geocentric and topocentric reduction with iterative light-time, annual aberration, multi-body relativistic deflection (Sun, Jupiter, and Saturn, excluding the target body), IAU 2006 frame bias, and WGS-84 topocentric parallax.
 - **Fixed stars** — sovereign registry of 1,809 named stars with proper motion, parallax, epoch propagation, and Stellar Quality classification. Audited anchor residual against SOFA/ERFA: 0.00048 arcseconds (J1000–J3000).
+- **Planet-first stelliums** — explicit Strict (four) and Broad (three) planet
+  counts, independent sign/house/total-span evidence, and associated factors
+  that never manufacture a group. The snapshot-only Python/REST contract is
+  separate from legacy centroid/clique patterns. See the
+  [stellium standard](wiki/02_standards/STELLIUM_ANALYSIS_STANDARD.md).
 - **Deep-sky coordinate anchors** — a bundled, release-bound selection of 60
   galaxies, nebulae, star clusters, compact objects, stellar remnants, and
   confirmed exoplanet host stars. Extended objects are represented by sourced

@@ -304,6 +304,18 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             dominant_only=dominant_only,
         )
 
+    def analyze_stelliums(self, positions, *, policy=None, selection=None,
+                         context=None, houses=None, house_unavailable_reason=None):
+        """Analyze a supplied planetary snapshot without opening this facade's kernel.
+
+        This is the additive planet-first contract, not the legacy ``patterns``
+        centroid/clique detector. See ``moira.stelliums.analyze_stelliums``.
+        """
+        return _facade_module().analyze_stelliums(
+            positions, policy=policy, selection=selection, context=context,
+            houses=houses, house_unavailable_reason=house_unavailable_reason,
+        )
+
     def phenomena(self, body: str, jd_start: float, jd_end: float):
         """Find greatest elongations, perihelion, and aphelion for a body."""
         facade = _facade_module()

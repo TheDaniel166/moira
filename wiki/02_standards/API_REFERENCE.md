@@ -1,7 +1,7 @@
 ﻿# Moira API Reference
 
 **Document revision:** 2.3.0
-**Engine baseline:** 6.5.0
+**Engine baseline:** 6.6.0
 **Last verified:** 2026-09-09
 **Coverage:** 13 200 BC → 17 191 AD (JPL DE441)
 **Import surface:** `import moira` provides the curated stable root, while `from moira.facade import ...` exposes the complete admitted facade surface.
@@ -1350,7 +1350,40 @@ applying or separating state. A single declination snapshot without rates is
 `dec1 - dec2`; Contra-Parallel motion uses `dec1 + dec2`. The witness is
 instantaneous and does not claim future perfection before a reversal.
 
-### Aspect Patterns
+### Planet-first stellium analysis (independent product)
+
+```python
+from moira import analyze_stelliums, StelliumAnalysisPolicy, StelliumSelection
+
+evidence = analyze_stelliums(
+    {"Sun": 120.0, "Moon": 122.0, "Mercury": 124.0, "Venus": 126.0,
+     "North Node": 123.0},
+    policy=StelliumAnalysisPolicy(preset="strict", max_span_degrees=8.0),
+    selection=StelliumSelection(
+        core=("Sun", "Moon", "Mercury", "Venus"), associated=("North Node",)),
+)
+```
+
+`moira.stellium.v1` independently returns sign, actual-house and tight
+total-arc matches. Strict requires four core planets; Broad three. Only the
+canonical Sun-through-Pluto ten qualify. Associated factors never count or
+expand the established core arc. In the example, sign/tight evidence is valid
+and house analysis is explicitly not evaluable because no house context was
+supplied. No new ephemeris calculation is performed.
+
+The Python surface includes `StelliumAnalysisPolicy`, `StelliumContext`,
+`StelliumSelection`, `StelliumHouseContext`, `StelliumArc`,
+`StelliumAssociation`, `StelliumMatch`, `StelliumGroup`, `StelliumEvaluation`,
+`StelliumCoverage`, `StelliumHouseReceipt`, `StelliumAnalysis`,
+`STELLIUM_SCHEMA_VERSION`, `STELLIUM_CORE` and `analyze_stelliums`.
+`Moira.analyze_stelliums` forwards the same keyword-only snapshot contract.
+REST equivalent: `POST /v1/stelliums/analyze`.
+
+See [the complete stellium contract](STELLIUM_ANALYSIS_STANDARD.md) for
+same-frame houses, partial coverage, associations, IDs and legacy migration.
+Existing centroid/clique stellium APIs below retain their old semantics.
+
+### Legacy Aspect Patterns
 
 ```python
 from moira.facade import (

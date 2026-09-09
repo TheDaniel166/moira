@@ -762,7 +762,7 @@ The engine identifies multi-body geometric configurations from aspect lists:
 | **Grand Trine** | Three mutual trines forming an equilateral triangle |
 | **Grand Cross** | Four planets in two oppositions and four squares |
 | **Yod** | Two planets sextile each other, both quincunx a third (Finger of God) |
-| **Stellium** | Three or more conjunctions in tight cluster |
+| **Stellium (legacy aspects detector)** | Three or more mutually conjunct supplied objects; not the planet-first policy |
 | **Kite** | Grand trine with one planet opposed to one corner |
 | **Mystic Rectangle** | Two oppositions connected by sextiles and trines |
 
@@ -773,6 +773,17 @@ class AspectPattern:
     bodies: list[str]        # participating planets
     aspects: list[AspectData]  # constituent aspects
 ```
+
+The separate `moira.patterns.find_stelliums` compatibility detector uses
+centroid-radius clustering, with a default three-object minimum. Neither
+legacy surface distinguishes sign and actual-house concentration.
+
+New product consumers should use `moira.stelliums.analyze_stelliums` or
+`POST /v1/stelliums/analyze`: Strict four or Broad three canonical planets,
+independent sign/house/maximum-total-span evidence, non-counting associated
+factors, and explicit missing/unevaluable coverage. Its immutable result is
+not `AspectPattern`; no aspect condition score or invented edge is added.
+See [Stellium Analysis Standard](../02_standards/STELLIUM_ANALYSIS_STANDARD.md).
 
 ### 6.7 Aspect Graph (Network Analysis)
 

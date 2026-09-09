@@ -77,6 +77,7 @@ from .routers import (
     primary_directions_router,
     progressions_router,
     relationship_router,
+    stelliums_router,
     returns_router,
     shadbala_router,
     sidereal_router,
@@ -174,6 +175,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(dasha_router)
     app.include_router(progressions_router)
     app.include_router(relationship_router)
+    app.include_router(stelliums_router)
     app.include_router(hellenistic_aspects_router)  # Whole-sign direction and overcoming truth
     app.include_router(hellenistic_atoms_router)  # Twelfth-parts and assemble-condition
     app.include_router(hellenistic_systems_router)  # Circumambulations, transmissions, offices

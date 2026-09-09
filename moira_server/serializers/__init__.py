@@ -1,5 +1,7 @@
 """Serializer helpers for Moira server transport models."""
 
+from .stelliums import serialize_stellium_analysis
+
 from .batch import (
     serialize_batch_failure,
     serialize_chart_batch_with_reduction_item,
@@ -349,6 +351,7 @@ from .visibility import (
 )
 
 __all__ = [
+    "serialize_stellium_analysis",
     "serialize_astrocartography_line",
     "serialize_astrocartography_lines",
     "serialize_astrocartography_observer",

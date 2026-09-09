@@ -31,12 +31,20 @@ _LAT_SOUTH  = -80.0        # Southern polar
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _normal(system: str) -> HouseCusps:
-    return calculate_houses(_JD_J2000, _LAT_NORMAL, _LON, system)
+def _normal(system: str, *, sun_longitude=None) -> HouseCusps:
+    return calculate_houses(_JD_J2000, _LAT_NORMAL, _LON, system, sun_longitude=sun_longitude)
 
 
-def _polar(system: str, lat: float = _LAT_POLAR) -> HouseCusps:
-    return calculate_houses(_JD_J2000, lat, _LON, system)
+def _polar(system: str, lat: float = _LAT_POLAR, *, sun_longitude=None) -> HouseCusps:
+    return calculate_houses(_JD_J2000, lat, _LON, system, sun_longitude=sun_longitude)
+
+
+def _solar_anchor(system, request):
+    # Only solar families need an ephemeris. Use the admitted fixture's Sun
+    # instead of assuming an ambient global reader for a bare houses call.
+    if system in (HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN):
+        return request.getfixturevalue("natal_chart").planets["Sun"].longitude
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -90,8 +98,8 @@ class TestNoFallback:
         HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN, HouseSystem.AZIMUTHAL, HouseSystem.CARTER,
         HouseSystem.KRUSINSKI, HouseSystem.APC,
     ])
-    def test_requested_equals_effective_at_normal_latitude(self, system):
-        r = _normal(system)
+    def test_requested_equals_effective_at_normal_latitude(self, system, request):
+        r = _normal(system, sun_longitude=_solar_anchor(system, request))
         assert r.system == system
         assert r.effective_system == system
         assert r.fallback is False
@@ -204,8 +212,8 @@ class TestNonPolarSystemsAtPolarLatitudes:
         HouseSystem.PULLEN_SD,
         HouseSystem.PULLEN_SR,
     ])
-    def test_non_polar_systems_unchanged_at_polar_lat(self, system):
-        r = _polar(system)
+    def test_non_polar_systems_unchanged_at_polar_lat(self, system, request):
+        r = _polar(system, sun_longitude=_solar_anchor(system, request))
         assert r.system == system
         assert r.effective_system == system
         assert r.fallback is False
@@ -288,7 +296,7 @@ class TestFallbackConsistency:
         assert r.fallback is True
         assert r.fallback_reason is not None
 
-    def test_fallback_consistent_across_all_normal_systems(self):
+    def test_fallback_consistent_across_all_normal_systems(self, request):
         systems = [
             HouseSystem.PLACIDUS, HouseSystem.KOCH, HouseSystem.EQUAL,
             HouseSystem.WHOLE_SIGN, HouseSystem.PORPHYRY, HouseSystem.CAMPANUS,
@@ -298,7 +306,7 @@ class TestFallbackConsistency:
             HouseSystem.KRUSINSKI, HouseSystem.APC,
         ]
         for system in systems:
-            r = _normal(system)
+            r = _normal(system, sun_longitude=_solar_anchor(system, request))
             assert r.fallback == (r.system != r.effective_system), (
                 f"{system}: fallback={r.fallback} but "
                 f"system={r.system!r}, effective={r.effective_system!r}"
@@ -341,8 +349,8 @@ class TestComputationSemanticsUnchanged:
         mid = (r.cusps[0] + 15.0) % 360.0
         assert mid == pytest.approx(r.asc, abs=1e-8)
 
-    def test_solar_sign_first_cusp_is_sign_start(self):
-        r = _normal(HouseSystem.SOLAR_SIGN)
+    def test_solar_sign_first_cusp_is_sign_start(self, natal_chart):
+        r = _normal(HouseSystem.SOLAR_SIGN, sun_longitude=natal_chart.planets["Sun"].longitude)
         assert r.cusps[0] % 30.0 == pytest.approx(0.0, abs=1e-8)
 
     def test_porphyry_cardinal_cusps_are_asc_ic_dsc_mc(self):

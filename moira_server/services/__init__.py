@@ -1,5 +1,7 @@
 """Service helpers for Moira server route handlers."""
 
+from .stelliums import compute_stellium_analysis
+
 from .batch import (
     compute_batch_charts,
     compute_batch_charts_with_reduction,
@@ -359,6 +361,7 @@ from .visibility import (
 )
 
 __all__ = [
+    "compute_stellium_analysis",
     "AshtakavargaChartBackedProfileResult",
     "AshtakavargaChartBackedResult",
     "AshtakavargaChartBackedSignProfileResult",

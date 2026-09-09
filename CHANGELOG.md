@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.6.0] - 2026-09-09
+
+### Added
+- `moira.stelliums.analyze_stelliums`, its typed public evidence vessels and
+  `Moira.analyze_stelliums`: planet-first Strict (four) and Broad (three)
+  concentration policies over the canonical ten planets, with independent
+  sign, actual-house and maximum-total-arc criteria. The default tight span
+  is eight degrees. Associated factors annotate without counting, expanding
+  the core geometry or receiving an automatic strength score.
+- Snapshot-only `POST /v1/stelliums/analyze` with explicit selection, frame,
+  coverage, policy, fallback and criterion-level availability receipts.
+  Invalid snapshots fail visibly; the endpoint performs no new ephemeris work.
+
+### Fixed
+- `calculate_houses` / `houses_from_armc` with `ayanamsa_offset` now construct
+  Whole Sign and Solar Sign sectors in the selected zodiac, including an
+  effective Whole Sign fallback. Previously they rotated an already selected
+  tropical sign. Tropical/zero-offset output and physical quadrant geometry
+  are unchanged; ARMC is not rotated.
+
+### Compatibility
+- Existing centroid/clique stellium detectors, generic pattern APIs and their
+  condition semantics are unchanged. Migrated applications use the new
+  versioned result separately; old saved reports are not rewritten.
+
 ## [6.5.0] - 2026-09-09
 
 ### Added

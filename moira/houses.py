@@ -3987,6 +3987,10 @@ def calculate_houses(
         sun_longitude: Optional geocentric tropical solar longitude (degrees).
             If supplied, SUNSHINE and SOLAR_SIGN houses use this value directly
             instead of resolving it from the planetary oracle.
+        ayanamsa_offset: Optional zodiac offset subtracted from ecliptic labels.
+            Whole Sign and Solar Sign sectors are constructed in that selected
+            zodiac. Physical/quadrant boundaries retain their geometry; ARMC
+            and equatorial boundary vectors are not zodiac longitudes.
 
     Returns:
         A HouseCusps vessel containing the twelve cusp longitudes (degrees
@@ -5029,10 +5033,12 @@ def houses_from_armc(
         policy: :class:`HousePolicy` governing fallback doctrine.  Keyword-only.
             Defaults to ``HousePolicy.default()`` (silent fallback).
         sun_longitude: Geocentric ecliptic longitude of the Sun (degrees).
-            Required only when ``system == HouseSystem.SUNSHINE``; ignored
-            for all other systems.
-        ayanamsa_offset: Optional zodiac-label offset in degrees. Physical
-            boundary vectors remain in the declared true-equatorial frame.
+            Tropical, required for SUNSHINE and SOLAR_SIGN; ignored otherwise.
+        ayanamsa_offset: Optional zodiac offset in degrees. Whole Sign and
+            Solar Sign are anchored in the selected zodiac after fallback
+            resolution. Other systems preserve physical boundaries while
+            relabelling ecliptic coordinates. ARMC and physical vectors remain
+            in their original equatorial frame.
         include_boundary_geometry: When true, preserve the effective system's
             admitted frame-explicit spatial boundary objects. Systems without
             an admitted off-ecliptic object report cusp intersections only.
@@ -5276,6 +5282,18 @@ def houses_from_armc(
             )
 
     _shift = ayanamsa_offset if ayanamsa_offset is not None else 0.0
+    # Sign-defined sectors must be selected *after* changing zodiac. Rotating
+    # an already chosen tropical sign would no longer produce whole signs.
+    # Resolve by effective system so polar Whole Sign fallbacks obey the same
+    # doctrine. Retain physical tropical intersections for spatial witnesses,
+    # and exact sign boundaries for the returned ecliptic cusp labels.
+    selected_sign_cusps: list[float] | None = None
+    if effective_system == HouseSystem.WHOLE_SIGN:
+        selected_sign_cusps = _whole_sign(normalize_degrees(asc - _shift))
+    elif effective_system == HouseSystem.SOLAR_SIGN:
+        selected_sign_cusps = _solar_sign(normalize_degrees(sun_longitude - _shift))
+    if selected_sign_cusps is not None:
+        cusps = [normalize_degrees(c + _shift) for c in selected_sign_cusps]
     boundary_geometry = (
         _build_house_boundary_geometry(
             effective_system=effective_system,
@@ -5290,7 +5308,7 @@ def houses_from_armc(
     )
     return HouseCusps(
         system=system,
-        cusps=[normalize_degrees(c - _shift) for c in cusps],
+        cusps=selected_sign_cusps if selected_sign_cusps is not None else [normalize_degrees(c - _shift) for c in cusps],
         asc=normalize_degrees(asc - _shift),
         mc=normalize_degrees(mc - _shift),
         armc=normalize_degrees(armc),

@@ -61,6 +61,7 @@ from .pipeline import router as pipeline_router
 from .positions import router as positions_router
 from .progressions import router as progressions_router
 from .relationship import router as relationship_router
+from .stelliums import router as stelliums_router
 from .returns import router as returns_router
 from .shadbala import router as shadbala_router
 from .sidereal import router as sidereal_router
@@ -144,6 +145,7 @@ __all__ = [
     "primary_directions_router",
     "progressions_router",
     "relationship_router",
+    "stelliums_router",
     "returns_router",
     "shadbala_router",
     "sidereal_router",

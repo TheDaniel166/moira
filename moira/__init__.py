@@ -29,6 +29,12 @@ if _find_planetary_kernel() is None:
 del _sys, _find_planetary_kernel
 
 from .constants import Body, HouseSystem
+from .stelliums import (
+    STELLIUM_SCHEMA_VERSION, STELLIUM_CORE, StelliumAnalysisPolicy,
+    StelliumContext, StelliumSelection, StelliumHouseContext, StelliumArc,
+    StelliumAssociation, StelliumMatch, StelliumGroup, StelliumEvaluation,
+    StelliumCoverage, StelliumHouseReceipt, StelliumAnalysis, analyze_stelliums,
+)
 from .facade import Chart, MissingEphemerisKernelError, Moira, __author__, __version__
 from .houses import (
     HouseBoundaryCurvePoint,
@@ -1150,6 +1156,10 @@ from .mundane import (
 )
 
 __all__ = [
+    "STELLIUM_SCHEMA_VERSION", "STELLIUM_CORE", "StelliumAnalysisPolicy",
+    "StelliumContext", "StelliumSelection", "StelliumHouseContext", "StelliumArc",
+    "StelliumAssociation", "StelliumMatch", "StelliumGroup", "StelliumEvaluation",
+    "StelliumCoverage", "StelliumHouseReceipt", "StelliumAnalysis", "analyze_stelliums",
     "__version__",
     "__author__",
     "Moira",

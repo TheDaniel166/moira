@@ -166,6 +166,15 @@ jobs:
           python -m pytest tests/unit/test_timelords.py -q
           python -m pytest tests/unit/test_cycles.py -q
 
+      - name: Planet-first stellium and selected-zodiac house contracts
+        run: |
+          python -m pytest \
+            tests/unit/test_stelliums.py \
+            tests/unit/test_stelliums_public_api.py \
+            tests/unit/test_house_sidereal_frame.py \
+            tests/server/test_server_stelliums.py \
+            -m "not external_network" -q
+
       - name: Run 6.1 contract and catalog gates
         run: |
           python -m pytest \

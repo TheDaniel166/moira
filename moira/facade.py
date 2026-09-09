@@ -1015,6 +1015,12 @@ from .galactic_houses import (
     describe_galactic_boundary,
 )
 from .uranian import UranianBody, UranianPosition, uranian_at, all_uranian_at, list_uranian
+from .stelliums import (
+    STELLIUM_SCHEMA_VERSION, STELLIUM_CORE, StelliumAnalysisPolicy,
+    StelliumContext, StelliumSelection, StelliumHouseContext, StelliumArc,
+    StelliumAssociation, StelliumMatch, StelliumGroup, StelliumEvaluation,
+    StelliumCoverage, StelliumHouseReceipt, StelliumAnalysis, analyze_stelliums,
+)
 from .patterns import (
     PatternSourceKind,
     PatternSymmetryKind,
@@ -1786,6 +1792,10 @@ from .chart import ChartContext
 from collections.abc import Callable
 
 __all__ = [
+    "STELLIUM_SCHEMA_VERSION", "STELLIUM_CORE", "StelliumAnalysisPolicy",
+    "StelliumContext", "StelliumSelection", "StelliumHouseContext", "StelliumArc",
+    "StelliumAssociation", "StelliumMatch", "StelliumGroup", "StelliumEvaluation",
+    "StelliumCoverage", "StelliumHouseReceipt", "StelliumAnalysis", "analyze_stelliums",
     "Moira", "Chart", "MissingEphemerisKernelError",
     "Body", "HouseSystem", "Ayanamsa",
     "PlanetData", "PlanetReductionBreakdown", "PlanetReductionStage",
@@ -2812,7 +2822,7 @@ __all__ += [
 ]
 
 
-__version__ = "6.5.0"
+__version__ = "6.6.0"
 __author__  = "Moira contributors"
 
 

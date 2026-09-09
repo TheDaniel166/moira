@@ -1,5 +1,7 @@
 """Transport models for the Moira REST access surface."""
 
+from .stelliums import StelliumAnalysisRequest, StelliumAnalysisResponse
+
 from .batch import (
     ChartBatchReductionItemResponse,
     ChartsBatchRequest,
@@ -985,6 +987,7 @@ from .visibility import (
 )
 
 __all__ = [
+    "StelliumAnalysisRequest", "StelliumAnalysisResponse",
     "ARC_METHODS",
     "ASTROCARTOGRAPHY_MAX_BODIES",
     "AshtakavargaChartBaseRequest",

@@ -1566,6 +1566,26 @@ _EXPECTED_MOIRA_METHODS.update({
     "jupiter_saturn_sequence_from_series",
 })
 
+# Additive moira.stellium.v1 contract; legacy pattern exports remain unchanged.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "STELLIUM_CORE",
+    "STELLIUM_SCHEMA_VERSION",
+    "StelliumAnalysis",
+    "StelliumAnalysisPolicy",
+    "StelliumArc",
+    "StelliumAssociation",
+    "StelliumContext",
+    "StelliumCoverage",
+    "StelliumEvaluation",
+    "StelliumGroup",
+    "StelliumHouseContext",
+    "StelliumHouseReceipt",
+    "StelliumMatch",
+    "StelliumSelection",
+    "analyze_stelliums",
+})
+_EXPECTED_MOIRA_METHODS.add("analyze_stelliums")
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)

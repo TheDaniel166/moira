@@ -382,8 +382,8 @@ class TestSystemFamilies:
     def _setup(self, jd_j2000):
         self._jd = jd_j2000
 
-    def _place(self, system: str, longitude: float) -> HousePlacement:
-        hc = calculate_houses(self._jd, _LAT, _LON, system)
+    def _place(self, system: str, longitude: float, *, sun_longitude=None) -> HousePlacement:
+        hc = calculate_houses(self._jd, _LAT, _LON, system, sun_longitude=sun_longitude)
         return assign_house(longitude, hc)
 
     def test_equal_house_family(self):
@@ -418,12 +418,12 @@ class TestSystemFamilies:
         pl = self._place(HouseSystem.VEHLOW, 0.0)
         assert 1 <= pl.house <= 12
 
-    def test_solar_sunshine_family(self):
-        pl = self._place(HouseSystem.SUNSHINE, 0.0)
+    def test_solar_sunshine_family(self, natal_chart):
+        pl = self._place(HouseSystem.SUNSHINE, 0.0, sun_longitude=natal_chart.planets["Sun"].longitude)
         assert 1 <= pl.house <= 12
 
-    def test_solar_sign_family(self):
-        pl = self._place(HouseSystem.SOLAR_SIGN, 0.0)
+    def test_solar_sign_family(self, natal_chart):
+        pl = self._place(HouseSystem.SOLAR_SIGN, 0.0, sun_longitude=natal_chart.planets["Sun"].longitude)
         assert 1 <= pl.house <= 12
 
     def test_koch_quadrant_family(self):
@@ -523,8 +523,9 @@ class TestSystemFamilies:
         houses = {assign_house(d / 10.0, hc).house for d in range(3600)}
         assert houses == set(range(1, 13))
 
-    def test_solar_sign_cusps_are_30_apart(self):
-        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.SOLAR_SIGN)
+    def test_solar_sign_cusps_are_30_apart(self, natal_chart):
+        hc = calculate_houses(self._jd, _LAT, _LON, HouseSystem.SOLAR_SIGN,
+                              sun_longitude=natal_chart.planets["Sun"].longitude)
         for i in range(12):
             diff = (hc.cusps[(i + 1) % 12] - hc.cusps[i]) % 360.0
             assert diff == pytest.approx(30.0, abs=1e-8)
