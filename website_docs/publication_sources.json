@@ -318,6 +318,24 @@
   ],
   "release_summaries": [
     {
+      "version": "6.6.0",
+      "date": "2026-09-09",
+      "title": "Planet-first Stelliums and Selected-zodiac Houses",
+      "added": [
+        "A versioned, snapshot-only stellium analyzer with Strict four-planet and Broad three-planet policies; independent sign, actual-house and total-span criteria; non-counting associated factors; deterministic evidence and explicit missing-context receipts.",
+        "Typed Python exports, a Moira facade method and POST /v1/stelliums/analyze. The existing centroid and mutual-conjunction pattern APIs retain their compatibility semantics."
+      ],
+      "changed": [],
+      "fixed": [
+        "Whole Sign and Solar Sign houses now construct sign boundaries in the selected zodiac after fallback resolution when an ayanamsa offset is supplied, while preserving physical geometry and equatorial ARMC."
+      ],
+      "validation": [
+        "Planet-versus-point, independent-criterion, exact-boundary, circular-rotation, malformed-snapshot, coverage, stable-identity and HTTP/Python parity tests; selected-zodiac house, polar fallback and legacy compatibility gates. No new external ephemeris accuracy claim."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.6.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.6.0.md"
+    },
+    {
       "version": "6.5.0",
       "date": "2026-09-09",
       "title": "Source-Bound Cosmic Catalogs",
