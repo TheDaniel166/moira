@@ -7,9 +7,9 @@ Purpose: Computes discrete planetary phenomena — greatest elongations,
          for extrema and zero-crossings in the relevant geometric signals.
 
 Boundary declaration:
-    Owns: golden-section search, bisection refinement, elongation/distance
-          signal functions, Moon phase angle computation, and the
-          PhenomenonEvent result type.
+    Owns: elongation search, Moon phase angle computation, the
+          PhenomenonEvent compatibility vessel, and adapters from the orbital
+          core's apsidal-passage outcomes.
     Delegates: raw planetary positions to moira.planets.planet_at;
                kernel I/O to moira.spk_reader; phase angle to moira.phase.
 
@@ -28,8 +28,8 @@ Public surface / exports:
     resonance()               — compute harmonic ratio between bodies
     MOON_PHASE_ANGLES         — mapping of phase name → target elongation (°)
     greatest_elongation()     — next greatest elongation of Mercury or Venus
-    perihelion()              — next perihelion of a planet
-    aphelion()                — next aphelion of a planet
+    perihelion()              — next lawful-center pericenter of an admitted body
+    aphelion()                — next lawful-center apocenter of an admitted body
     next_moon_phase()         — next occurrence of a named Moon phase
     moon_phases_in_range()    — all eight Moon phases in a date range
     next_conjunction()        — next conjunction between two bodies
@@ -482,69 +482,51 @@ def perihelion(
     max_days: float | None = None,
 ) -> PhenomenonEvent | None:
     """
-    Find the next perihelion (closest approach to Sun) for a planet.
+    Find the next admitted center-relative pericenter passage.
 
-    Uses a golden-section minimisation of the heliocentric distance.
-    Step size is auto-selected based on orbital period.
+    The Moon uses Earth; every other admitted orbital body uses the Sun.  The
+    returned ``jd_ut`` is the Stage 2 core's verified TDB -> TT -> UT1 inverse.
     """
-    if body not in _ORBITAL_PERIOD:
-        raise ValueError(f"Perihelion requires a major planet, got {body!r}")
     _require_finite("jd_start", jd_start)
     if reader is None:
         reader = get_reader()
+    if max_days is not None:
+        _require_nonnegative_finite("max_days", max_days)
+        if max_days == 0.0:
+            return None
 
-    period = _ORBITAL_PERIOD[body]
-    if max_days is None:
-        max_days = period * 1.5
-    _require_nonnegative_finite("max_days", max_days)
-    if max_days == 0.0:
+    from .orbits import (
+        ApsidalDirection,
+        ApsidalPassageStatus,
+        OrbitalCenter,
+        apsidal_passages,
+    )
+    from ._orbital_state import resolve_orbital_body
+
+    identity = resolve_orbital_body(body)
+    center = (
+        OrbitalCenter.EARTH
+        if identity.name == Body.MOON
+        else OrbitalCenter.SUN
+    )
+    result = apsidal_passages(
+        body,
+        jd_start,
+        center=center,
+        direction=ApsidalDirection.NEXT,
+        max_days=max_days,
+        reader=reader,
+    )
+    outcome = result.pericenter
+    if outcome.status is not ApsidalPassageStatus.FOUND:
         return None
-    search_end = jd_start + max_days
-
-    # Auto step: ~1/200 of the orbital period, minimum quarter-day.
-    step = max(0.25, period / 200.0)
-
-    jd = jd_start
-    dist_prev2 = _helio_distance(body, jd - step, reader)
-    dist_prev1 = _helio_distance(body, jd, reader)
-
-    while jd < search_end:
-        jd_next = min(jd + step, search_end)
-        dist_cur = _helio_distance(body, jd_next, reader)
-
-        # Use the sampled distance curve to bracket the large-scale minimum,
-        # then refine the physical turning point with radial velocity.
-        if dist_prev1 <= dist_prev2 and dist_prev1 <= dist_cur:
-            left = jd - step
-            right = jd_next
-            try:
-                x_root = _bisection_root(
-                    lambda t: _helio_radial_velocity(body, t, reader),
-                    left,
-                    right,
-                    tol=1e-6,
-                )
-            except ValueError:
-                x_root = jd
-            x_opt, d_opt = _golden_section(
-                lambda t: _helio_distance(body, t, reader),
-                max(jd_start, x_root - step),
-                min(search_end, x_root + step),
-                tol=1e-6,
-                maximise=False,
-            )
-            return PhenomenonEvent(
-                body=body,
-                phenomenon="Perihelion",
-                jd_ut=x_opt,
-                value=d_opt,
-            )
-
-        dist_prev2 = dist_prev1
-        dist_prev1 = dist_cur
-        jd = jd_next
-
-    return None
+    assert outcome.jd_ut is not None and outcome.distance_au is not None
+    return PhenomenonEvent(
+        body=result.body.name,
+        phenomenon="Perihelion",
+        jd_ut=outcome.jd_ut,
+        value=outcome.distance_au,
+    )
 
 
 def aphelion(
@@ -553,64 +535,47 @@ def aphelion(
     reader: SpkReader | None = None,
     max_days: float | None = None,
 ) -> PhenomenonEvent | None:
-    """Find the next aphelion (furthest from Sun) for a planet."""
-    if body not in _ORBITAL_PERIOD:
-        raise ValueError(f"Aphelion requires a major planet, got {body!r}")
+    """Find the next admitted center-relative apocenter passage."""
     _require_finite("jd_start", jd_start)
     if reader is None:
         reader = get_reader()
+    if max_days is not None:
+        _require_nonnegative_finite("max_days", max_days)
+        if max_days == 0.0:
+            return None
 
-    period = _ORBITAL_PERIOD[body]
-    if max_days is None:
-        max_days = period * 1.5
-    _require_nonnegative_finite("max_days", max_days)
-    if max_days == 0.0:
+    from .orbits import (
+        ApsidalDirection,
+        ApsidalPassageStatus,
+        OrbitalCenter,
+        apsidal_passages,
+    )
+    from ._orbital_state import resolve_orbital_body
+
+    identity = resolve_orbital_body(body)
+    center = (
+        OrbitalCenter.EARTH
+        if identity.name == Body.MOON
+        else OrbitalCenter.SUN
+    )
+    result = apsidal_passages(
+        body,
+        jd_start,
+        center=center,
+        direction=ApsidalDirection.NEXT,
+        max_days=max_days,
+        reader=reader,
+    )
+    outcome = result.apocenter
+    if outcome.status is not ApsidalPassageStatus.FOUND:
         return None
-    search_end = jd_start + max_days
-
-    step = max(0.25, period / 200.0)
-
-    jd = jd_start
-    dist_prev2 = _helio_distance(body, jd - step, reader)
-    dist_prev1 = _helio_distance(body, jd, reader)
-
-    while jd < search_end:
-        jd_next = min(jd + step, search_end)
-        dist_cur = _helio_distance(body, jd_next, reader)
-
-        # Use the sampled distance curve to bracket the large-scale maximum,
-        # then refine the physical turning point with radial velocity.
-        if dist_prev1 >= dist_prev2 and dist_prev1 >= dist_cur:
-            left = jd - step
-            right = jd_next
-            try:
-                x_root = _bisection_root(
-                    lambda t: _helio_radial_velocity(body, t, reader),
-                    left,
-                    right,
-                    tol=1e-6,
-                )
-            except ValueError:
-                x_root = jd
-            x_opt, d_opt = _golden_section(
-                lambda t: _helio_distance(body, t, reader),
-                max(jd_start, x_root - step),
-                min(search_end, x_root + step),
-                tol=1e-6,
-                maximise=True,
-            )
-            return PhenomenonEvent(
-                body=body,
-                phenomenon="Aphelion",
-                jd_ut=x_opt,
-                value=d_opt,
-            )
-
-        dist_prev2 = dist_prev1
-        dist_prev1 = dist_cur
-        jd = jd_next
-
-    return None
+    assert outcome.jd_ut is not None and outcome.distance_au is not None
+    return PhenomenonEvent(
+        body=result.body.name,
+        phenomenon="Aphelion",
+        jd_ut=outcome.jd_ut,
+        value=outcome.distance_au,
+    )
 
 
 # ---------------------------------------------------------------------------

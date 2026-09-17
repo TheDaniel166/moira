@@ -81,7 +81,7 @@ from .obliquity import mean_obliquity, nutation
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .planets import _earth_barycentric
 from .corrections import (
-    apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
+    apply_light_time, apply_aberration, apply_deflection,
     SCHWARZSCHILD_RADII,
 )
 from ._spk_body_kernel import SmallBodyKernel  # also registers _Type13Segment
@@ -296,10 +296,7 @@ def _comet_geocentric_ecliptic(
     # Gravitational deflection (Sun only for small bodies)
     geo = apply_deflection(geo, [(vec_sub(sun_bary, earth_bary), SCHWARZSCHILD_RADII["Sun"])])
 
-    # Frame bias (ICRF → mean J2000)
-    geo = apply_frame_bias(geo)
-
-    # Precession + nutation → apparent equatorial of date
+    # Bias-inclusive precession + nutation → apparent equatorial of date
     eps   = mean_obliquity(jd_tt)
     _, deps_deg = nutation(jd_tt)
     P     = precession_matrix_equatorial(jd_tt)
@@ -323,7 +320,6 @@ def _comet_geocentric_ecliptic(
         from .planets import _earth_velocity
         g   = apply_aberration(g, _earth_velocity(jd2, reader))
         g   = apply_deflection(g, [(vec_sub(sb, eb), SCHWARZSCHILD_RADII["Sun"])])
-        g   = apply_frame_bias(g)
         eps2 = mean_obliquity(jd2)
         _, deps2 = nutation(jd2)
         P2  = precession_matrix_equatorial(jd2)

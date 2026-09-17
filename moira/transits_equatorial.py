@@ -14,6 +14,7 @@ from .planets import planet_at
 from .asteroids import asteroid_at, ASTEROID_NAIF
 from .stars import star_at
 from ._ephemeris_time import _ut1_to_ephemeris_tt
+from .julian import tt_to_tdb
 from .constants import Body
 from .planets import _npe_body_route_segment_specs
 try:
@@ -89,14 +90,18 @@ def _find_declination_crossing(
     return (jd_lo + jd_hi) / 2.0
 
 def _get_native_evaluator(body: str, specs: dict, path: str) -> object | None:
-    """Construct a native evaluator chain for a body's barycentric route."""
+    """Construct one TT-facing evaluator for a body's raw TDB route."""
     if mn is None or body not in specs:
         return None
     route = specs[body]
     evals = [mn.load_spk_segment_evaluator(path, s[0], s[1], True, s[2]) for s in route]
-    if len(evals) == 1: return evals[0]
-    if len(evals) == 2: return mn.SumEvaluator(evals[0], evals[1])
-    return None
+    if len(evals) == 1:
+        raw = evals[0]
+    elif len(evals) == 2:
+        raw = mn.SumEvaluator(evals[0], evals[1])
+    else:
+        return None
+    return mn.TtToTdbEvaluator(raw)
 
 def _find_candidate_declination_windows_native(
     body: str,
@@ -117,7 +122,8 @@ def _find_candidate_declination_windows_native(
         return None
     
     jd_tt_start = _ut1_to_ephemeris_tt(jd_start, reader)
-    specs = _npe_body_route_segment_specs(planetary_reader, jd_tt_start)
+    epoch_tdb_start = tt_to_tdb(jd_tt_start)
+    specs = _npe_body_route_segment_specs(planetary_reader, epoch_tdb_start)
     if not specs: return None
     
     path = str(planetary_reader.path)

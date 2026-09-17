@@ -83,7 +83,13 @@ from .coordinates import (
     equation_of_time,
     angular_distance, normalize_degrees,
 )
-from .spk_reader import use_reader_override, KernelReader, SpkReader, MissingKernelError
+from .spk_reader import (
+    KernelReader,
+    MissingEphemerisKernelError,
+    MissingKernelError,
+    SpkReader,
+    use_reader_override,
+)
 from .planets import (
     PlanetData, PlanetReductionBreakdown, PlanetReductionStage,
     SkyPosition, CartesianPosition,
@@ -317,7 +323,52 @@ from .heliacal import (
     visual_limiting_magnitude,
     visibility_event,
 )
-from .orbits import KeplerianElements, DistanceExtremes, orbital_elements_at, distance_extremes_at
+from .orbits import (
+    ApsidalDirection,
+    ApsidalPassageOutcome,
+    ApsidalPassageStatus,
+    ApsidalPassages,
+    ApsidalPassagesProvenance,
+    ApsidalRouteScheduleEntry,
+    ApsidalSeamContinuity,
+    ApsidalSegmentUsage,
+    DistanceExtremes,
+    KeplerianElements,
+    OrbitShape,
+    OrbitalAmbiguousBodyError,
+    OrbitalBodyIdentity,
+    OrbitalBodyKind,
+    OrbitalBodyNotFoundError,
+    OrbitalBodyNotLoadedError,
+    OrbitalBodyNotSupportedError,
+    OrbitalCenter,
+    OrbitalCenterNotAllowedError,
+    OrbitalCoverageError,
+    OrbitalError,
+    OrbitalFrame,
+    OrbitalFrameUnavailableError,
+    OrbitalGravity,
+    OrbitalGravityModelError,
+    OrbitalInputError,
+    OrbitalKernelMissingError,
+    OrbitalLegacyBodyNotAllowedError,
+    OrbitalPassageUnavailableError,
+    OrbitalSearchError,
+    OrbitalSingularityThresholds,
+    OrbitalSourceReceiptError,
+    OrbitalStateDegenerateError,
+    OrbitalStateSource,
+    OrbitalTimeBasisError,
+    OrbitalTimeConversion,
+    OsculatingElements,
+    OsculatingElementsProvenance,
+    UndefinedElement,
+    UndefinedElementReason,
+    apsidal_passages,
+    distance_extremes_at,
+    orbital_elements_at,
+    osculating_elements,
+)
 from .eclipse import (
     EclipseData,
     EclipseEpoch,
@@ -2229,6 +2280,22 @@ __all__ = [
     "OccultationPoleCrossing",
     "OccultationPoleCrossingPhase",
     "KeplerianElements", "DistanceExtremes", "orbital_elements_at", "distance_extremes_at",
+    "ApsidalDirection", "ApsidalPassageStatus", "ApsidalPassageOutcome",
+    "ApsidalRouteScheduleEntry", "ApsidalSegmentUsage", "ApsidalSeamContinuity",
+    "ApsidalPassagesProvenance", "ApsidalPassages", "apsidal_passages",
+    "OrbitalCenter", "OrbitalFrame", "OrbitShape", "OrbitalBodyKind",
+    "UndefinedElementReason", "OrbitalBodyIdentity", "OrbitalStateSource",
+    "UndefinedElement", "OrbitalGravity", "OrbitalTimeConversion",
+    "OrbitalSingularityThresholds", "OsculatingElementsProvenance",
+    "OsculatingElements", "osculating_elements", "OrbitalError",
+    "OrbitalInputError", "OrbitalBodyNotFoundError", "OrbitalAmbiguousBodyError",
+    "OrbitalBodyNotSupportedError", "OrbitalCenterNotAllowedError",
+    "OrbitalFrameUnavailableError", "OrbitalLegacyBodyNotAllowedError",
+    "OrbitalPassageUnavailableError", "OrbitalSearchError",
+    "OrbitalBodyNotLoadedError", "OrbitalCoverageError",
+    "OrbitalKernelMissingError", "OrbitalGravityModelError",
+    "OrbitalTimeBasisError", "OrbitalSourceReceiptError",
+    "OrbitalStateDegenerateError",
     "CuspSpeed", "HouseDynamics", "cusp_speeds_at",
     # Twilight
     "HorizonCrossingAvailability", "HorizonCrossingState",
@@ -2934,10 +3001,6 @@ class Chart:
 # ---------------------------------------------------------------------------
 # Main engine
 # ---------------------------------------------------------------------------
-
-class MissingEphemerisKernelError(RuntimeError):
-    """Raised when a kernel-dependent operation is attempted without a planetary kernel."""
-
 
 class Moira(
     KernelFacadeMixin,

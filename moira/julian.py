@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import math
 import bisect
+from numbers import Real
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -2414,30 +2415,114 @@ def tt_to_ut_nasa_canon(jd_tt: float, year: float | None = None) -> float:
     return jd_ut
 
 
-def tt_to_tdb(jd_tt: float) -> float:
+# ---------------------------------------------------------------------------
+# TT <-> TDB -- pinned NAIF LSK operational model
+# ---------------------------------------------------------------------------
+
+# NASA/JPL NAIF ``naif0012.tls`` (retrieved 2026-09-15).  The source artifact
+# is deliberately identified beside the constants so downstream provenance
+# does not have to duplicate or infer the time model.
+NAIF_LSK_TT_TDB_POLICY = "NAIF_LSK_DELTET"
+NAIF_LSK_TT_TDB_VERSION = "naif0012"
+NAIF_LSK_TT_TDB_SOURCE_URL = (
+    "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/naif0012.tls"
+)
+NAIF_LSK_TT_TDB_SOURCE_BYTES = 5257
+NAIF_LSK_TT_TDB_SOURCE_SHA256 = (
+    "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b"
+)
+
+_NAIF_DELTET_K_SECONDS = 1.657e-3
+_NAIF_DELTET_EB = 1.671e-2
+_NAIF_DELTET_M0_RADIANS = 6.239996
+_NAIF_DELTET_M1_RADIANS_PER_SECOND = 1.99096871e-7
+_TT_TDB_FIXED_POINT_MAX_ITERATIONS = 8
+_TT_TDB_FIXED_POINT_RESIDUAL_SECONDS = 1e-15
+_SECONDS_PER_DAY = 86400.0
+
+
+@dataclass(frozen=True, slots=True)
+class _TtTdbConversion:
+    """Private receipt for one pinned TT/TDB conversion."""
+
+    epoch_tt: float
+    epoch_tdb: float
+    tdb_minus_tt_seconds: float
+    iterations: int
+
+
+def _require_tt_tdb_jd(name: str, value: float) -> float:
+    """Return one finite, representable, non-Boolean Julian-day coordinate."""
+
+    if isinstance(value, bool) or not isinstance(value, Real):
+        raise ValueError(f"{name} must be a real number other than bool")
+    result = float(value)
+    _require_representable_time_jd(name, result)
+    return result
+
+
+def _naif_tdb_minus_tt_seconds_at_tdb(epoch_tdb: float) -> float:
+    """Evaluate the pinned LSK periodic term at a TDB Julian day.
+
+    ``naif0012.tls`` defines ``M`` in ephemeris seconds from J2000 and the
+    operational relation ``TDB-TT = K*sin(M + EB*sin(M))``.  Reducing the
+    phase before calling ``sin`` keeps the arithmetic well conditioned over
+    Moira's admitted time-transform domain.
     """
-    Convert a Terrestrial Time Julian Day to an approximate TDB Julian Day.
 
-    This uses the standard low-amplitude periodic approximation
-
-        TDB - TT ~= 0.001657 sin(g) + 0.00001385 sin(2g)  seconds
-
-    with
-
-        g = 357.53 + 0.9856003 * (jd_tt - J2000) degrees.
-
-    The approximation is sufficient for millisecond-level timing work such as
-    body-orientation phase arguments, while leaving the engine's main TT-based
-    precession/nutation pipeline unchanged.
-    """
-    _require_representable_time_jd("jd_tt", jd_tt)
-    mean_anomaly_deg = 357.53 + 0.9856003 * (jd_tt - J2000)
-    mean_anomaly_rad = math.radians(mean_anomaly_deg)
-    tdb_minus_tt_sec = (
-        0.001657 * math.sin(mean_anomaly_rad)
-        + 0.00001385 * math.sin(2.0 * mean_anomaly_rad)
+    seconds_from_j2000 = math.fsum((epoch_tdb, -J2000)) * _SECONDS_PER_DAY
+    mean_anomaly = math.remainder(
+        _NAIF_DELTET_M0_RADIANS
+        + _NAIF_DELTET_M1_RADIANS_PER_SECOND * seconds_from_j2000,
+        math.tau,
     )
-    return jd_tt + tdb_minus_tt_sec / 86400.0
+    eccentric_anomaly = mean_anomaly + _NAIF_DELTET_EB * math.sin(mean_anomaly)
+    return _NAIF_DELTET_K_SECONDS * math.sin(eccentric_anomaly)
+
+
+def _tt_to_tdb_with_receipt(jd_tt: float) -> _TtTdbConversion:
+    """Convert TT to TDB and retain the pre-assembly periodic offset."""
+
+    epoch_tt = _require_tt_tdb_jd("jd_tt", jd_tt)
+    epoch_tdb = epoch_tt
+    previous_offset: float | None = None
+    for iteration in range(1, _TT_TDB_FIXED_POINT_MAX_ITERATIONS + 1):
+        offset_seconds = _naif_tdb_minus_tt_seconds_at_tdb(epoch_tdb)
+        epoch_tdb = math.fsum((epoch_tt, offset_seconds / _SECONDS_PER_DAY))
+        if (
+            previous_offset is not None
+            and abs(offset_seconds - previous_offset)
+            <= _TT_TDB_FIXED_POINT_RESIDUAL_SECONDS
+        ):
+            return _TtTdbConversion(
+                epoch_tt=epoch_tt,
+                epoch_tdb=epoch_tdb,
+                tdb_minus_tt_seconds=offset_seconds,
+                iterations=iteration,
+            )
+        previous_offset = offset_seconds
+    raise ArithmeticError(
+        "NAIF LSK TT-to-TDB fixed-point iteration did not converge"
+    )
+
+
+def tt_to_tdb(jd_tt: float) -> float:
+    """Convert a TT Julian day to TDB using pinned ``naif0012.tls``.
+
+    The LSK expression is implicit because its phase is a function of TDB
+    seconds from J2000.  Moira solves that fixed point under a bounded policy
+    and returns the nearest representable single-part binary64 Julian day.
+    """
+
+    return _tt_to_tdb_with_receipt(jd_tt).epoch_tdb
+
+
+def tdb_to_tt(jd_tdb: float) -> float:
+    """Invert Moira's pinned NAIF LSK TT-to-TDB policy."""
+
+    epoch_tdb = _require_tt_tdb_jd("jd_tdb", jd_tdb)
+    offset_seconds = _naif_tdb_minus_tt_seconds_at_tdb(epoch_tdb)
+    return math.fsum((epoch_tdb, -offset_seconds / _SECONDS_PER_DAY))
 
 
 # ---------------------------------------------------------------------------

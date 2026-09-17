@@ -1,0 +1,162 @@
+{
+  "baseline_identity": {
+    "network_boundary": {
+      "external_network_used": false,
+      "moira_no_download": true
+    },
+    "resources": {
+      "planetary": {
+        "bytes": 3307878400,
+        "filename": "de441.bsp",
+        "identity": "DE441",
+        "sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5"
+      },
+      "small_body_manifests": [
+        {
+          "body_count": 497,
+          "catalog_id": "moira-comets",
+          "catalog_version": "2026.07.28.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-07-28T12:47:17Z",
+          "sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+          "shard_count": 20
+        },
+        {
+          "body_count": 25,
+          "catalog_id": "moira-asteroids-wheel",
+          "catalog_version": "2026.08.14.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-08-14T21:53:17Z",
+          "sha256": "c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22",
+          "shard_count": 1
+        }
+      ]
+    },
+    "source": {
+      "implementation": "CPython",
+      "moira_version": "6.6.0",
+      "native_backend_filename": "_moira_native.cp314-win_amd64.pyd",
+      "platform": "Windows",
+      "python": "3.14.3",
+      "revision": "29dd164c80c2a6788aa598a832eff3d4fd8e727a"
+    }
+  },
+  "blockers": [
+    "NOT RUN - full moira-asteroids@2026.08.12.1 release not installed",
+    "BLOCKED - multiple pre-existing repository failures reproduce on baseline: tests/harness_meta nested-project import, 2049 hybrid-eclipse topology, and Hebe Horizons fixture/resource; complete suite not run",
+    "BLOCKED - exact changed-file Ruff command reports 66 inherited findings; untouched baseline also reports 66 findings"
+  ],
+  "candidate_identity": {
+    "network_boundary": {
+      "external_network_used": false,
+      "moira_no_download": true
+    },
+    "resources": {
+      "planetary": {
+        "bytes": 3307878400,
+        "filename": "de441.bsp",
+        "identity": "DE441",
+        "sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5"
+      },
+      "small_body_manifests": [
+        {
+          "body_count": 497,
+          "catalog_id": "moira-comets",
+          "catalog_version": "2026.07.28.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-07-28T12:47:17Z",
+          "sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+          "shard_count": 20
+        },
+        {
+          "body_count": 25,
+          "catalog_id": "moira-asteroids-wheel",
+          "catalog_version": "2026.08.14.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-08-14T21:53:17Z",
+          "sha256": "c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22",
+          "shard_count": 1
+        }
+      ]
+    },
+    "source": {
+      "implementation": "CPython",
+      "moira_version": "6.6.0",
+      "native_backend_filename": "_moira_native.cp314-win_amd64.pyd",
+      "platform": "Windows",
+      "python": "3.14.3",
+      "revision": "dfad306f47901596e9edc254116ac3c6d47a3764+uncommitted-worktree"
+    }
+  },
+  "clock_receipt_status": "review_ready",
+  "commands": {
+    "baseline_capture": "<baseline-python> measure_orbital_stage1_compatibility.py capture",
+    "candidate_capture": "<candidate-python> measure_orbital_stage1_compatibility.py capture",
+    "comparison": "<candidate-python> measure_orbital_stage1_compatibility.py compare"
+  },
+  "frame_receipt_status": "review_ready",
+  "logical_inputs": {
+    "frame_epochs_tt": {
+      "ancient": 2086302.5,
+      "far_future": 2816787.5,
+      "iau2006_lower_boundary": 2415020.0,
+      "iau2006_upper_boundary": 2488070.0,
+      "j2000": 2451545.0
+    },
+    "jd_ut1": 2460676.5,
+    "observer": {
+      "elevation_m": 256.0,
+      "latitude_deg": 42.2917,
+      "longitude_deg": -85.5872
+    }
+  },
+  "measurement_date": "2026-09-15",
+  "no_download": true,
+  "release_or_deployment_performed": false,
+  "required_probe_count": 19,
+  "required_probes_green": true,
+  "schema": "moira.orbital-core-stage1.validation/v1",
+  "skips": [
+    "NOT RUN - full moira-asteroids@2026.08.12.1 release not installed"
+  ],
+  "status": "implementation_review_ready_release_blocked",
+  "test_gate_counts": {
+    "compatibility_probes": {
+      "baseline_green": 19,
+      "candidate_green": 19
+    },
+    "full_catalog": {
+      "skipped": 1
+    },
+    "kernel_and_extraction": {
+      "passed": 108
+    },
+    "live_jpl_horizons": {
+      "passed": 52
+    },
+    "native": {
+      "passed": 30
+    },
+    "targeted_stage1": {
+      "collected": 694,
+      "passed": 692,
+      "skip_reasons": [
+        "jplephem unavailable for parity comparison",
+        "jplephem unavailable for payload parity comparison"
+      ],
+      "skipped": 2
+    }
+  },
+  "test_gates": {
+    "changed_file_ruff": "BLOCKED - exact changed-file Ruff command reports 66 inherited findings; untouched baseline also reports 66 findings",
+    "consumer_inventory": "passed",
+    "documentation": "passed",
+    "full_catalog": "NOT RUN - full moira-asteroids@2026.08.12.1 release not installed",
+    "git_diff_check": "passed",
+    "kernel_and_extraction": "passed",
+    "live_jpl_horizons": "passed",
+    "native": "passed",
+    "non_external_network": "BLOCKED - multiple pre-existing repository failures reproduce on baseline: tests/harness_meta nested-project import, 2049 hybrid-eclipse topology, and Hebe Horizons fixture/resource; complete suite not run",
+    "targeted_stage1": "passed"
+  }
+}

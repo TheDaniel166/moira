@@ -244,6 +244,33 @@ def vondrak_precession_matrix(
     return (eqx, mid, peqr)
 
 
+def _vondrak_bias_precession_matrix(
+    jd_tt: float,
+) -> tuple[tuple[float, float, float], ...]:
+    """Return Vondrak long-term precession with first-order ICRS bias.
+
+    This is Moira's independently named Python adaptation of the algorithm in
+    IAU SOFA Issue 2023-10-11 ``iauLtpb``.  It differs from
+    :func:`vondrak_precession_matrix` only by the IERS 2010 first-order frame
+    bias, which SOFA documents as sub-microarcsecond accurate relative to a
+    full 3-D bias rotation.  This derived implementation is not SOFA software
+    and is not endorsed by the IAU SOFA Board.
+    """
+
+    precession = vondrak_precession_matrix(jd_tt)
+    dx = -0.016617 * ARCSEC2RAD
+    de = -0.0068192 * ARCSEC2RAD
+    dr = -0.0146 * ARCSEC2RAD
+    return tuple(
+        (
+            row[0] - row[1] * dr + row[2] * dx,
+            row[0] * dr + row[1] + row[2] * de,
+            -row[0] * dx - row[1] * de + row[2],
+        )
+        for row in precession
+    )
+
+
 def general_precession_in_longitude(jd_tt: float) -> float:
     """
     Return the general precession in ecliptic longitude psi_A in degrees.
@@ -395,4 +422,4 @@ def precession_matrix(jd_tt: float) -> tuple[tuple[float, ...], ...]:
     if abs(T) <= 50.0:
         gamb, phib, psib, epsa = _fw_angles(T)
         return _fw2m(gamb, phib, psib, epsa)
-    return vondrak_precession_matrix(jd_tt)
+    return _vondrak_bias_precession_matrix(jd_tt)

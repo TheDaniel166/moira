@@ -1586,6 +1586,56 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
 })
 _EXPECTED_MOIRA_METHODS.add("analyze_stelliums")
 
+# Additive orbital-core Stage 1 contract.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "OrbitShape",
+    "OrbitalAmbiguousBodyError",
+    "OrbitalBodyIdentity",
+    "OrbitalBodyKind",
+    "OrbitalBodyNotFoundError",
+    "OrbitalBodyNotLoadedError",
+    "OrbitalBodyNotSupportedError",
+    "OrbitalCenter",
+    "OrbitalCenterNotAllowedError",
+    "OrbitalCoverageError",
+    "OrbitalError",
+    "OrbitalFrame",
+    "OrbitalFrameUnavailableError",
+    "OrbitalGravity",
+    "OrbitalGravityModelError",
+    "OrbitalInputError",
+    "OrbitalKernelMissingError",
+    "OrbitalLegacyBodyNotAllowedError",
+    "OrbitalSingularityThresholds",
+    "OrbitalSourceReceiptError",
+    "OrbitalStateDegenerateError",
+    "OrbitalStateSource",
+    "OrbitalTimeBasisError",
+    "OrbitalTimeConversion",
+    "OsculatingElements",
+    "OsculatingElementsProvenance",
+    "UndefinedElement",
+    "UndefinedElementReason",
+    "osculating_elements",
+})
+_EXPECTED_MOIRA_METHODS.add("osculating_elements")
+
+# Additive orbital-core Stage 2 contract.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "ApsidalDirection",
+    "ApsidalPassageOutcome",
+    "ApsidalPassageStatus",
+    "ApsidalPassages",
+    "ApsidalPassagesProvenance",
+    "ApsidalRouteScheduleEntry",
+    "ApsidalSeamContinuity",
+    "ApsidalSegmentUsage",
+    "OrbitalPassageUnavailableError",
+    "OrbitalSearchError",
+    "apsidal_passages",
+})
+_EXPECTED_MOIRA_METHODS.add("apsidal_passages")
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)

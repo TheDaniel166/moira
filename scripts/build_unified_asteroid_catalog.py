@@ -27,10 +27,12 @@ queried back as jd_tt directly with center = 10 (Sun).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
 import time
+from typing import Any
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -59,7 +61,18 @@ SHARD_PREFIX = "asteroid_shard"
 # depend materially on the requested Horizons interval.  Their Type-13 records
 # therefore cover only the observational arc reported by JPL SBDB.  This is a
 # source-owned coverage policy, not an interpolation exception.
-OBSERVATION_ARC_LIMITED_BODIES = frozenset({1566, 1862})  # Icarus, Apollo
+OBSERVATION_ARC_LIMITED_BODIES = frozenset({
+    1566,   # Icarus
+    1862,   # Apollo
+    2201,   # Oljato (Shard 088)
+    4581,   # Asclepius (Shard 183)
+    4660,   # Nereus (Shard 186)
+    25143,  # Itokawa (Shard 399)
+    54509,  # YORP (Shard 399)
+    69230,  # Hermes (Shard 399)
+    99942,  # Apophis (Shard 398)
+    367943, # Duende (Shard 399)
+})
 
 _NAME_RE = re.compile(r"Target body name:\s*(\d+)\s+([^\(]+?)\s*[\(\{]")
 _FLOOR_RE = re.compile(r"prior to A\.D\.\s*([0-9]{3,4})-([A-Za-z]{3})-([0-9]{2})")
@@ -220,7 +233,7 @@ def _fetch_body(number: int) -> dict:
 def _verify(kernel: SmallBodyKernel, naif_id: int, epochs: list[float], states: list[list[float]]) -> float:
     max_err = 0.0
     for i, jd_tdb in enumerate(epochs):
-        gx, gy, gz = kernel.position(CENTER, naif_id, jd_tdb)
+        gx, gy, gz = kernel.position_tdb(CENTER, naif_id, jd_tdb)
         max_err = max(max_err, abs(gx - states[0][i]), abs(gy - states[1][i]), abs(gz - states[2][i]))
     return max_err
 
@@ -462,9 +475,24 @@ def main() -> None:
 
 def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
     """Emit the loader manifest for the shards built by this invocation."""
+    existing_manifest: dict = {}
+    existing_manifest_path = outdir / "manifest.json"
+    if existing_manifest_path.exists():
+        try:
+            existing_manifest = json.loads(existing_manifest_path.read_text(encoding="utf-8"))
+        except Exception:
+            existing_manifest = {}
+
+    existing_shard_map = {
+        s["index"]: s
+        for s in existing_manifest.get("shards", [])
+        if isinstance(s, dict) and "index" in s
+    }
+
     shard_entries: list[dict] = []
+    coverage_exceptions: list[dict] = []
     for mpath in sorted(outdir.glob(f"{SHARD_PREFIX}_*.metadata.json")):
-        meta = json.loads(mpath.read_text())
+        meta = json.loads(mpath.read_text(encoding="utf-8"))
         if not _metadata_matches_build(
             meta,
             {int(record["number"]) for record in meta.get("records", ())},
@@ -474,50 +502,60 @@ def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
         if not kpath.exists():
             continue
         bodies = [record["naif_id"] for record in meta["records"]]
-        shard_entries.append(
-            {
-                "index": meta["shard"],
-                "path": meta["kernel"],
-                "body_count": len(bodies),
-                "bodies": bodies,
+        s_entry: dict[str, Any] = {
+            "index": meta["shard"],
+            "path": meta["kernel"],
+            "body_count": len(bodies),
+            "bodies": bodies,
+        }
+        prev_shard = existing_shard_map.get(meta["shard"])
+        if prev_shard and "sha256" in prev_shard:
+            kb = kpath.read_bytes()
+            mb = mpath.read_bytes()
+            s_entry["bytes"] = len(kb)
+            s_entry["sha256"] = hashlib.sha256(kb).hexdigest()
+            s_entry["metadata"] = {
+                "path": mpath.name,
+                "bytes": len(mb),
+                "sha256": hashlib.sha256(mb).hexdigest(),
             }
-        )
-    shard_entries.sort(key=lambda shard: shard["index"])
+        shard_entries.append(s_entry)
+        for record in meta["records"]:
+            if "coverage_policy" in record:
+                provenance = record["coverage_provenance"]
+                exception = {
+                    "naif_id": record["naif_id"],
+                    "name": record["name"],
+                    "start_date": record["start"],
+                    "end_date": record["stop"],
+                    "policy": record["coverage_policy"],
+                    "authority": provenance["authority"],
+                    "orbit_id": provenance["orbit_id"],
+                    "solution_date": provenance["solution_date"],
+                }
+            elif record.get("clamped"):
+                exception = {
+                    "naif_id": record["naif_id"],
+                    "name": record["name"],
+                    "start_date": record["start"],
+                    "end_date": record["stop"],
+                    "policy": "jpl_horizons_ephemeris_availability",
+                    "authority": "JPL Horizons API",
+                    "note": (
+                        "conservative full-year bounds parsed from the Horizons "
+                        "ephemeris-availability response"
+                    ),
+                }
+            else:
+                continue
+            coverage_exceptions.append(exception)
 
-    coverage_exceptions = []
-    for record in records:
-        if "coverage_policy" in record:
-            provenance = record["coverage_provenance"]
-            exception = {
-                "naif_id": record["naif_id"],
-                "name": record["name"],
-                "start_date": record["start"],
-                "end_date": record["stop"],
-                "policy": record["coverage_policy"],
-                "authority": provenance["authority"],
-                "orbit_id": provenance["orbit_id"],
-                "solution_date": provenance["solution_date"],
-            }
-        elif record.get("clamped"):
-            exception = {
-                "naif_id": record["naif_id"],
-                "name": record["name"],
-                "start_date": record["start"],
-                "end_date": record["stop"],
-                "policy": "jpl_horizons_ephemeris_availability",
-                "authority": "JPL Horizons API",
-                "note": (
-                    "conservative full-year bounds parsed from the Horizons "
-                    "ephemeris-availability response"
-                ),
-            }
-        else:
-            continue
-        coverage_exceptions.append(exception)
+    shard_entries.sort(key=lambda shard: shard["index"])
+    coverage_exceptions.sort(key=lambda exc: exc["naif_id"])
 
     manifest = {
         "manifest_schema": "moira.small-body-catalog/v1",
-        "catalog_id": "moira-asteroids",
+        "catalog_id": existing_manifest.get("catalog_id", "moira-asteroids"),
         "source": "MOIRA UNIFIED ASTEROID CATALOG (JPL Horizons)",
         "provenance": {
             "artifact_author": "Moira",
@@ -540,7 +578,12 @@ def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
         "shard_count": len(shard_entries),
         "shards": shard_entries,
     }
-    (outdir / "manifest.json").write_text(json.dumps(manifest, indent=2))
+    if "catalog_version" in existing_manifest:
+        manifest["catalog_version"] = existing_manifest["catalog_version"]
+    if "release" in existing_manifest:
+        manifest["release"] = existing_manifest["release"]
+
+    (outdir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

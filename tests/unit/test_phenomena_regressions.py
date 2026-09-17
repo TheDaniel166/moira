@@ -7,6 +7,10 @@ from types import SimpleNamespace
 import pytest
 
 from moira.constants import Body
+from moira._orbital_errors import (
+    OrbitalBodyNotFoundError,
+    OrbitalBodyNotSupportedError,
+)
 import moira.phenomena as phenomena
 
 
@@ -88,9 +92,15 @@ def test_greatest_elongation_rejects_unsupported_body(body: str) -> None:
 
 
 @pytest.mark.parametrize("search", [phenomena.perihelion, phenomena.aphelion])
-@pytest.mark.parametrize("body", [Body.SUN, Body.MOON, "Unknown"])
-def test_apsides_reject_non_planets(search, body: str) -> None:
-    with pytest.raises(ValueError, match="major planet"):
+@pytest.mark.parametrize(
+    ("body", "error_type"),
+    (
+        (Body.SUN, OrbitalBodyNotSupportedError),
+        ("Unknown", OrbitalBodyNotFoundError),
+    ),
+)
+def test_apsides_reject_non_orbital_targets(search, body: str, error_type) -> None:
+    with pytest.raises(error_type):
         search(body, 2451545.0, reader=object())
 
 

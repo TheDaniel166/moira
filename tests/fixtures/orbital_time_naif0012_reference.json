@@ -1,0 +1,85 @@
+{
+  "fixture_role": "time_and_gravity_authority",
+  "generator_version": "moira-orbital-authority-builder-v1",
+  "gravity_model": {
+    "assignment_rule": "last textual PCK assignment wins",
+    "units": "km^3/s^2",
+    "values_by_naif_id": {
+      "1": 22031.868551400003,
+      "10": 132712440041.27942,
+      "199": 22031.868551400003,
+      "2": 324858.592,
+      "299": 324858.592,
+      "3": 403503.2356254802,
+      "301": 4902.80011845755,
+      "399": 398600.43550702266,
+      "4": 42828.37442560939,
+      "5": 126712761.8414429,
+      "6": 37940584.92052428,
+      "7": 5794556.3999999985,
+      "8": 6836531.640925204,
+      "9": 975.4308664317557
+    }
+  },
+  "schema_version": "moira.orbital-time-authority.v1",
+  "sources": {
+    "horizons_gm": {
+      "byte_count": 15428,
+      "owner": "JPL Solar System Dynamics",
+      "retrieved_utc": "2026-09-15T20:00:54.952245Z",
+      "source_sha256": "169cfed3b0927e73929d0a1b5c931f9afb5167a83b921064127ffc54a673df0c",
+      "source_url": "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/gm_Horizons.pck"
+    },
+    "naif_lsk": {
+      "byte_count": 5257,
+      "owner": "NASA/JPL NAIF",
+      "retrieved_utc": "2026-09-15T20:00:54.952245Z",
+      "source_sha256": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
+      "source_url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/lsk/naif0012.tls"
+    }
+  },
+  "time_cases": [
+    {
+      "iterations": 3,
+      "jd_tdb": 2433282.4999999995,
+      "jd_tt": 2433282.5,
+      "tdb_minus_tt_seconds": -5.877427523673922e-05
+    },
+    {
+      "iterations": 3,
+      "jd_tdb": 2451544.499999999,
+      "jd_tt": 2451544.5,
+      "tdb_minus_tt_seconds": -8.720955453852813e-05
+    },
+    {
+      "iterations": 3,
+      "jd_tdb": 2451544.999999999,
+      "jd_tt": 2451545.0,
+      "tdb_minus_tt_seconds": -7.273677621826942e-05
+    },
+    {
+      "iterations": 3,
+      "jd_tdb": 2461298.499999982,
+      "jd_tt": 2461298.5,
+      "tdb_minus_tt_seconds": -0.0015538274376361916
+    },
+    {
+      "iterations": 3,
+      "jd_tdb": 2470171.4999999986,
+      "jd_tt": 2470171.5,
+      "tdb_minus_tt_seconds": -0.00012312329050178294
+    }
+  ],
+  "time_model": {
+    "delta_t_a_seconds": 32.184,
+    "eb": 0.01671,
+    "equation": "TDB-TT = K*sin(M + EB*sin(M)); M evaluated at TDB",
+    "fixed_point_max_iterations": 8,
+    "fixed_point_residual_seconds": 1e-15,
+    "k_seconds": 0.001657,
+    "m": [
+      6.239996,
+      1.99096871e-07
+    ]
+  }
+}

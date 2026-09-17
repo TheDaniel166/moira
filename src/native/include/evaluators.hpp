@@ -133,6 +133,73 @@ public:
 };
 
 /**
+ * @brief Convert a TT Julian day to the pinned naif0012 TDB coordinate.
+ *
+ * The argument of the NAIF DELTET periodic term is expressed in TDB seconds
+ * from J2000, so this is a bounded fixed-point calculation.  This helper is
+ * intentionally local to the evaluator substrate: it adapts TT-facing native
+ * searches without changing the raw SPK polynomial clock.
+ */
+inline double naif0012_tt_to_tdb(double jd_tt) {
+    if (!std::isfinite(jd_tt)) {
+        throw std::invalid_argument("TT evaluator epoch must be finite");
+    }
+    constexpr double j2000 = 2451545.0;
+    constexpr double seconds_per_day = 86400.0;
+    constexpr double k_seconds = 1.657e-3;
+    constexpr double eb = 1.671e-2;
+    constexpr double m0 = 6.239996;
+    constexpr double m1_per_second = 1.99096871e-7;
+    constexpr int max_iterations = 8;
+    constexpr double residual_seconds = 1e-15;
+
+    double jd_tdb = jd_tt;
+    double previous_offset = std::numeric_limits<double>::quiet_NaN();
+    for (int iteration = 0; iteration < max_iterations; ++iteration) {
+        const double seconds_from_j2000 = (jd_tdb - j2000) * seconds_per_day;
+        const double mean_anomaly = std::remainder(
+            m0 + m1_per_second * seconds_from_j2000,
+            2.0 * 3.141592653589793238462643383279502884
+        );
+        const double eccentric_anomaly = mean_anomaly + eb * std::sin(mean_anomaly);
+        const double offset_seconds = k_seconds * std::sin(eccentric_anomaly);
+        jd_tdb = jd_tt + offset_seconds / seconds_per_day;
+        if (
+            std::isfinite(previous_offset)
+            && std::abs(offset_seconds - previous_offset) <= residual_seconds
+        ) {
+            return jd_tdb;
+        }
+        previous_offset = offset_seconds;
+    }
+    throw std::runtime_error("NAIF LSK TT-to-TDB fixed-point iteration did not converge");
+}
+
+/**
+ * @brief TT-facing adapter around one raw TDB ephemeris evaluator.
+ */
+class TtToTdbEvaluator : public IEvaluator {
+public:
+    explicit TtToTdbEvaluator(std::shared_ptr<IEvaluator> raw_tdb_evaluator)
+        : raw_tdb_evaluator_(std::move(raw_tdb_evaluator)) {
+        if (!raw_tdb_evaluator_) {
+            throw std::invalid_argument("TtToTdbEvaluator requires a raw evaluator");
+        }
+    }
+
+    void compute(double jd_tt, double* result) const override {
+        raw_tdb_evaluator_->evaluate(naif0012_tt_to_tdb(jd_tt), result);
+    }
+
+    static double convert(double jd_tt) {
+        return naif0012_tt_to_tdb(jd_tt);
+    }
+
+private:
+    std::shared_ptr<IEvaluator> raw_tdb_evaluator_;
+};
+
+/**
  * @brief THEOREM: Chebyshev Segment Evaluator (Type 2/3).
  */
 class ChebyshevEvaluator : public IEvaluator {
@@ -560,6 +627,29 @@ public:
         b->evaluate(jd, r_b);
         for (int i = 0; i < 6; ++i) result[i] = r_a[i] + r_b[i];
     }
+};
+
+/**
+ * @brief Sign-reversed evaluator used for reverse SPK route legs.
+ */
+class NegateEvaluator : public IEvaluator {
+public:
+    explicit NegateEvaluator(std::shared_ptr<IEvaluator> source)
+        : source_(std::move(source)) {
+        if (!source_) {
+            throw std::invalid_argument("NegateEvaluator requires a source evaluator");
+        }
+    }
+
+    void compute(double jd, double* result) const override {
+        source_->evaluate(jd, result);
+        for (int i = 0; i < 6; ++i) {
+            result[i] = -result[i];
+        }
+    }
+
+private:
+    std::shared_ptr<IEvaluator> source_;
 };
 
 /**

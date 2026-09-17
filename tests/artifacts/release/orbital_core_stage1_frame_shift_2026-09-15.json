@@ -1,0 +1,895 @@
+{
+  "authority": "IAU SOFA Issue 2023-10-11 frozen fixture",
+  "baseline_identity": {
+    "network_boundary": {
+      "external_network_used": false,
+      "moira_no_download": true
+    },
+    "resources": {
+      "planetary": {
+        "bytes": 3307878400,
+        "filename": "de441.bsp",
+        "identity": "DE441",
+        "sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5"
+      },
+      "small_body_manifests": [
+        {
+          "body_count": 497,
+          "catalog_id": "moira-comets",
+          "catalog_version": "2026.07.28.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-07-28T12:47:17Z",
+          "sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+          "shard_count": 20
+        },
+        {
+          "body_count": 25,
+          "catalog_id": "moira-asteroids-wheel",
+          "catalog_version": "2026.08.14.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-08-14T21:53:17Z",
+          "sha256": "c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22",
+          "shard_count": 1
+        }
+      ]
+    },
+    "source": {
+      "implementation": "CPython",
+      "moira_version": "6.6.0",
+      "native_backend_filename": "_moira_native.cp314-win_amd64.pyd",
+      "platform": "Windows",
+      "python": "3.14.3",
+      "revision": "29dd164c80c2a6788aa598a832eff3d4fd8e727a"
+    }
+  },
+  "candidate_identity": {
+    "network_boundary": {
+      "external_network_used": false,
+      "moira_no_download": true
+    },
+    "resources": {
+      "planetary": {
+        "bytes": 3307878400,
+        "filename": "de441.bsp",
+        "identity": "DE441",
+        "sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5"
+      },
+      "small_body_manifests": [
+        {
+          "body_count": 497,
+          "catalog_id": "moira-comets",
+          "catalog_version": "2026.07.28.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-07-28T12:47:17Z",
+          "sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+          "shard_count": 20
+        },
+        {
+          "body_count": 25,
+          "catalog_id": "moira-asteroids-wheel",
+          "catalog_version": "2026.08.14.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-08-14T21:53:17Z",
+          "sha256": "c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22",
+          "shard_count": 1
+        }
+      ]
+    },
+    "source": {
+      "implementation": "CPython",
+      "moira_version": "6.6.0",
+      "native_backend_filename": "_moira_native.cp314-win_amd64.pyd",
+      "platform": "Windows",
+      "python": "3.14.3",
+      "revision": "dfad306f47901596e9edc254116ac3c6d47a3764+uncommitted-worktree"
+    }
+  },
+  "commands": {
+    "baseline_capture": "<baseline-python> measure_orbital_stage1_compatibility.py capture",
+    "candidate_capture": "<candidate-python> measure_orbital_stage1_compatibility.py capture",
+    "comparison": "<candidate-python> measure_orbital_stage1_compatibility.py compare"
+  },
+  "component_isolation": {
+    "authority_matrix_comparison": "frames.matrices is a frame-only comparison at fixed TT epochs",
+    "consumer_comparison": "planetary, eclipse, and lunar-geometry probes contain the combined reader-clock and frame corrections",
+    "reader_clock_component": "separately measured in the reader-clock shift receipt",
+    "reader_clock_receipt_status": "review_ready"
+  },
+  "logical_inputs": {
+    "frame_epochs_tt": {
+      "ancient": 2086302.5,
+      "far_future": 2816787.5,
+      "iau2006_lower_boundary": 2415020.0,
+      "iau2006_upper_boundary": 2488070.0,
+      "j2000": 2451545.0
+    },
+    "jd_ut1": 2460676.5,
+    "observer": {
+      "elevation_m": 256.0,
+      "latitude_deg": 42.2917,
+      "longitude_deg": -85.5872
+    }
+  },
+  "measurement_date": "2026-09-15",
+  "numeric_comparison": {
+    "changed_numeric_field_count": 121,
+    "deltas": [
+      {
+        "baseline": 171723577.6670775,
+        "candidate": 171723577.66469792,
+        "delta": -0.00237959623336792,
+        "path": "planetary.all_planets_native.data.Mercury.distance"
+      },
+      {
+        "baseline": 171723577.6670775,
+        "candidate": 171723577.66469792,
+        "delta": -0.00237959623336792,
+        "path": "planetary.all_planets_python.data.Mercury.distance"
+      },
+      {
+        "baseline": 171723577.6670775,
+        "candidate": 171723577.66469792,
+        "delta": -0.00237959623336792,
+        "path": "planetary.planet_at.data.Mercury.distance"
+      },
+      {
+        "baseline": 1499767785.8284574,
+        "candidate": 1499767785.826381,
+        "delta": -0.002076387405395508,
+        "path": "planetary.all_planets_native.data.Saturn.distance"
+      },
+      {
+        "baseline": 1499767785.8284574,
+        "candidate": 1499767785.826381,
+        "delta": -0.002076387405395508,
+        "path": "planetary.all_planets_python.data.Saturn.distance"
+      },
+      {
+        "baseline": 1499767785.8284574,
+        "candidate": 1499767785.826381,
+        "delta": -0.002076387405395508,
+        "path": "planetary.planet_at.data.Saturn.distance"
+      },
+      {
+        "baseline": 626927262.6842833,
+        "candidate": 626927262.6832036,
+        "delta": -0.0010796785354614258,
+        "path": "planetary.all_planets_native.data.Jupiter.distance"
+      },
+      {
+        "baseline": 626927262.6842833,
+        "candidate": 626927262.6832036,
+        "delta": -0.0010796785354614258,
+        "path": "planetary.all_planets_python.data.Jupiter.distance"
+      },
+      {
+        "baseline": 626927262.6842833,
+        "candidate": 626927262.6832036,
+        "delta": -0.0010796785354614258,
+        "path": "planetary.planet_at.data.Jupiter.distance"
+      },
+      {
+        "baseline": 112332930.50375915,
+        "candidate": 112332930.50478359,
+        "delta": 0.0010244399309158325,
+        "path": "planetary.all_planets_native.data.Venus.distance"
+      },
+      {
+        "baseline": 112332930.50375915,
+        "candidate": 112332930.50478359,
+        "delta": 0.0010244399309158325,
+        "path": "planetary.all_planets_python.data.Venus.distance"
+      },
+      {
+        "baseline": 112332930.50375915,
+        "candidate": 112332930.50478359,
+        "delta": 0.0010244399309158325,
+        "path": "planetary.planet_at.data.Venus.distance"
+      },
+      {
+        "baseline": 382819.74177588,
+        "candidate": 382819.74214574357,
+        "delta": 0.0003698635846376419,
+        "path": "lunar_geometry.limb_light_cone.data.distance_km"
+      },
+      {
+        "baseline": 98243986.07653911,
+        "candidate": 98243986.07687978,
+        "delta": 0.0003406703472137451,
+        "path": "planetary.all_planets_native.data.Mars.distance"
+      },
+      {
+        "baseline": 98243986.07653911,
+        "candidate": 98243986.07687978,
+        "delta": 0.0003406703472137451,
+        "path": "planetary.all_planets_python.data.Mars.distance"
+      },
+      {
+        "baseline": 98243986.07653911,
+        "candidate": 98243986.07687978,
+        "delta": 0.0003406703472137451,
+        "path": "planetary.planet_at.data.Mars.distance"
+      },
+      {
+        "baseline": 0.8771771692610145,
+        "candidate": 0.8772335758556148,
+        "delta": 5.640659460026676e-05,
+        "path": "frames.true_node.data.longitude"
+      },
+      {
+        "baseline": 98243748.98982994,
+        "candidate": 98243748.98978649,
+        "delta": -4.3451786041259766e-05,
+        "path": "frames.sky_position.data.distance"
+      },
+      {
+        "baseline": 8.892903376183478,
+        "candidate": 8.892914337678697,
+        "delta": 1.0961495219063977e-05,
+        "path": "eclipses.solar.data.moon_longitude_deg"
+      },
+      {
+        "baseline": -1.4052751615355203,
+        "candidate": -1.4052815496001292,
+        "delta": -6.3880646088421145e-06,
+        "path": "planetary.all_planets_native.data.Venus.latitude"
+      },
+      {
+        "baseline": -1.4052751615355203,
+        "candidate": -1.4052815496001292,
+        "delta": -6.3880646088421145e-06,
+        "path": "planetary.all_planets_python.data.Venus.latitude"
+      },
+      {
+        "baseline": -1.4052751615355203,
+        "candidate": -1.4052815496001292,
+        "delta": -6.3880646088421145e-06,
+        "path": "planetary.planet_at.data.Venus.latitude"
+      },
+      {
+        "baseline": 3.91462781475858,
+        "candidate": 3.914633881653458,
+        "delta": 6.066894878031803e-06,
+        "path": "planetary.all_planets_native.data.Mars.latitude"
+      },
+      {
+        "baseline": 3.91462781475858,
+        "candidate": 3.914633881653458,
+        "delta": 6.066894878031803e-06,
+        "path": "planetary.all_planets_python.data.Mars.latitude"
+      },
+      {
+        "baseline": 3.91462781475858,
+        "candidate": 3.914633881653458,
+        "delta": 6.066894878031803e-06,
+        "path": "planetary.planet_at.data.Mars.latitude"
+      },
+      {
+        "baseline": 23.54253927988726,
+        "candidate": 23.54254524061843,
+        "delta": 5.960731169096789e-06,
+        "path": "frames.sky_position.data.declination"
+      },
+      {
+        "baseline": -1.977565161189255,
+        "candidate": -1.9775710665146211,
+        "delta": -5.9053253660401595e-06,
+        "path": "planetary.all_planets_native.data.Saturn.latitude"
+      },
+      {
+        "baseline": -1.977565161189255,
+        "candidate": -1.9775710665146211,
+        "delta": -5.9053253660401595e-06,
+        "path": "planetary.all_planets_python.data.Saturn.latitude"
+      },
+      {
+        "baseline": -1.977565161189255,
+        "candidate": -1.9775710665146211,
+        "delta": -5.9053253660401595e-06,
+        "path": "planetary.planet_at.data.Saturn.latitude"
+      },
+      {
+        "baseline": -4.609898249320493,
+        "candidate": -4.609903961363462,
+        "delta": -5.712042968397668e-06,
+        "path": "planetary.all_planets_native.data.Moon.latitude"
+      },
+      {
+        "baseline": -4.609898249320493,
+        "candidate": -4.609903961363462,
+        "delta": -5.712042968397668e-06,
+        "path": "planetary.all_planets_python.data.Moon.latitude"
+      },
+      {
+        "baseline": -4.609898249320493,
+        "candidate": -4.609903961363462,
+        "delta": -5.712042968397668e-06,
+        "path": "planetary.planet_at.data.Moon.latitude"
+      },
+      {
+        "baseline": 59.66990896116316,
+        "candidate": 59.66990397663826,
+        "delta": -4.98452489949841e-06,
+        "path": "frames.sky_position.data.azimuth"
+      },
+      {
+        "baseline": -0.000171072511075721,
+        "candidate": -0.0001759666290626003,
+        "delta": -4.894117986879297e-06,
+        "path": "planetary.all_planets_native.data.Sun.latitude"
+      },
+      {
+        "baseline": -0.000171072511075721,
+        "candidate": -0.0001759666290626003,
+        "delta": -4.894117986879297e-06,
+        "path": "planetary.all_planets_python.data.Sun.latitude"
+      },
+      {
+        "baseline": -0.000171072511075721,
+        "candidate": -0.0001759666290626003,
+        "delta": -4.894117986879297e-06,
+        "path": "planetary.planet_at.data.Sun.latitude"
+      },
+      {
+        "baseline": 381744.3831291862,
+        "candidate": 381744.383133984,
+        "delta": 4.7978246584534645e-06,
+        "path": "planetary.all_planets_native.data.Moon.distance"
+      },
+      {
+        "baseline": 381744.3831291862,
+        "candidate": 381744.383133984,
+        "delta": 4.7978246584534645e-06,
+        "path": "planetary.all_planets_python.data.Moon.distance"
+      },
+      {
+        "baseline": 381744.3831291862,
+        "candidate": 381744.383133984,
+        "delta": 4.7978246584534645e-06,
+        "path": "planetary.planet_at.data.Moon.distance"
+      },
+      {
+        "baseline": 2.2282944642562073,
+        "candidate": 2.2282979367500166,
+        "delta": 3.472493809386634e-06,
+        "path": "frames.sky_position.data.altitude"
+      },
+      {
+        "baseline": 1.1135049422954693,
+        "candidate": 1.1135018618133015,
+        "delta": -3.0804821677943295e-06,
+        "path": "planetary.all_planets_native.data.Mercury.latitude"
+      },
+      {
+        "baseline": 1.1135049422954693,
+        "candidate": 1.1135018618133015,
+        "delta": -3.0804821677943295e-06,
+        "path": "planetary.all_planets_python.data.Mercury.latitude"
+      },
+      {
+        "baseline": 1.1135049422954693,
+        "candidate": 1.1135018618133015,
+        "delta": -3.0804821677943295e-06,
+        "path": "planetary.planet_at.data.Mercury.latitude"
+      },
+      {
+        "baseline": -0.6015621703537068,
+        "candidate": -0.6015597644052527,
+        "delta": 2.405948454131668e-06,
+        "path": "planetary.all_planets_native.data.Jupiter.latitude"
+      },
+      {
+        "baseline": -0.6015621703537068,
+        "candidate": -0.6015597644052527,
+        "delta": 2.405948454131668e-06,
+        "path": "planetary.all_planets_python.data.Jupiter.latitude"
+      },
+      {
+        "baseline": -0.6015621703537068,
+        "candidate": -0.6015597644052527,
+        "delta": 2.405948454131668e-06,
+        "path": "planetary.planet_at.data.Jupiter.latitude"
+      },
+      {
+        "baseline": 147107537.88782874,
+        "candidate": 147107537.88783017,
+        "delta": 1.430511474609375e-06,
+        "path": "planetary.all_planets_native.data.Sun.distance"
+      },
+      {
+        "baseline": 147107537.88782874,
+        "candidate": 147107537.88783017,
+        "delta": 1.430511474609375e-06,
+        "path": "planetary.all_planets_python.data.Sun.distance"
+      },
+      {
+        "baseline": 147107537.88782874,
+        "candidate": 147107537.88783017,
+        "delta": 1.430511474609375e-06,
+        "path": "planetary.planet_at.data.Sun.distance"
+      },
+      {
+        "baseline": 125.12856056914998,
+        "candidate": 125.12856182986647,
+        "delta": 1.2607164876499155e-06,
+        "path": "frames.sky_position.data.right_ascension"
+      },
+      {
+        "baseline": 1.0526942362415215,
+        "candidate": 1.0526952288026232,
+        "delta": 9.925611017536085e-07,
+        "path": "eclipses.solar.data.moon_latitude_deg"
+      },
+      {
+        "baseline": 9.000086252261227,
+        "candidate": 9.000086970627287,
+        "delta": 7.183660599707764e-07,
+        "path": "eclipses.solar.data.sun_longitude_deg"
+      },
+      {
+        "baseline": 2460763.9496167903,
+        "candidate": 2460763.9496174976,
+        "delta": 7.073394954204559e-07,
+        "path": "eclipses.solar.data.jd_ut1"
+      },
+      {
+        "baseline": 13.444077888976835,
+        "candidate": 13.444078540686633,
+        "delta": 6.517097972391639e-07,
+        "path": "planetary.all_planets_native.data.Moon.speed"
+      },
+      {
+        "baseline": 13.444077888976835,
+        "candidate": 13.444078540686633,
+        "delta": 6.517097972391639e-07,
+        "path": "planetary.all_planets_python.data.Moon.speed"
+      },
+      {
+        "baseline": 13.444077888976835,
+        "candidate": 13.444078540686633,
+        "delta": 6.517097972391639e-07,
+        "path": "planetary.planet_at.data.Moon.speed"
+      },
+      {
+        "baseline": 293.9136017604079,
+        "candidate": 293.91360141311867,
+        "delta": -3.4728924447335885e-07,
+        "path": "planetary.all_planets_native.data.Moon.longitude"
+      },
+      {
+        "baseline": 293.9136017604079,
+        "candidate": 293.91360141311867,
+        "delta": -3.4728924447335885e-07,
+        "path": "planetary.all_planets_python.data.Moon.longitude"
+      },
+      {
+        "baseline": 293.9136017604079,
+        "candidate": 293.91360141311867,
+        "delta": -3.4728924447335885e-07,
+        "path": "planetary.planet_at.data.Moon.longitude"
+      },
+      {
+        "baseline": 121.91792315566225,
+        "candidate": 121.91792291256009,
+        "delta": -2.4310216417688935e-07,
+        "path": "planetary.all_planets_native.data.Mars.longitude"
+      },
+      {
+        "baseline": 121.91792315566225,
+        "candidate": 121.91792291256009,
+        "delta": -2.4310216417688935e-07,
+        "path": "planetary.all_planets_python.data.Mars.longitude"
+      },
+      {
+        "baseline": 121.91792315566225,
+        "candidate": 121.91792291256009,
+        "delta": -2.4310216417688935e-07,
+        "path": "planetary.planet_at.data.Mars.longitude"
+      },
+      {
+        "baseline": 173.98305601199596,
+        "candidate": 173.98305625386638,
+        "delta": 2.418704241335945e-07,
+        "path": "eclipses.lunar.data.moon_longitude_deg"
+      },
+      {
+        "baseline": 0.9553114243904189,
+        "candidate": 0.955311525303041,
+        "delta": 1.0091262203637541e-07,
+        "path": "eclipses.solar.data.eclipse_magnitude"
+      },
+      {
+        "baseline": 0.9553114243904189,
+        "candidate": 0.955311525303041,
+        "delta": 1.0091262203637541e-07,
+        "path": "eclipses.solar.data.eclipse_type.magnitude_penumbra"
+      },
+      {
+        "baseline": 0.9553114243904189,
+        "candidate": 0.955311525303041,
+        "delta": 1.0091262203637541e-07,
+        "path": "eclipses.solar.data.eclipse_type.magnitude_umbral"
+      },
+      {
+        "baseline": 280.8136124517687,
+        "candidate": 280.81361235295384,
+        "delta": -9.881483720164397e-08,
+        "path": "planetary.all_planets_native.data.Sun.longitude"
+      },
+      {
+        "baseline": 280.8136124517687,
+        "candidate": 280.81361235295384,
+        "delta": -9.881483720164397e-08,
+        "path": "planetary.all_planets_python.data.Sun.longitude"
+      },
+      {
+        "baseline": 280.8136124517687,
+        "candidate": 280.81361235295384,
+        "delta": -9.881483720164397e-08,
+        "path": "planetary.planet_at.data.Sun.longitude"
+      },
+      {
+        "baseline": 327.7121097212072,
+        "candidate": 327.7121096401367,
+        "delta": -8.107048188321642e-08,
+        "path": "planetary.all_planets_native.data.Venus.longitude"
+      },
+      {
+        "baseline": 327.7121097212072,
+        "candidate": 327.7121096401367,
+        "delta": -8.107048188321642e-08,
+        "path": "planetary.all_planets_python.data.Venus.longitude"
+      },
+      {
+        "baseline": 327.7121097212072,
+        "candidate": 327.7121096401367,
+        "delta": -8.107048188321642e-08,
+        "path": "planetary.planet_at.data.Venus.longitude"
+      },
+      {
+        "baseline": -0.0024294521500410095,
+        "candidate": -0.002429371194260682,
+        "delta": 8.095578032767115e-08,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[0][2]"
+      },
+      {
+        "baseline": 0.002429681923046588,
+        "candidate": 0.002429601362931342,
+        "delta": -8.056011524580978e-08,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[2][0]"
+      },
+      {
+        "baseline": -0.20223237387284598,
+        "candidate": -0.2022322936241494,
+        "delta": 8.024869657674571e-08,
+        "path": "frames.true_node.data.speed"
+      },
+      {
+        "baseline": 3.4300337284067294e-05,
+        "candidate": 3.437103954892483e-05,
+        "delta": 7.070226485753761e-08,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[2][1]"
+      },
+      {
+        "baseline": -4.7885394326952554e-05,
+        "candidate": -4.795572555936978e-05,
+        "delta": -7.033123241722449e-08,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[1][2]"
+      },
+      {
+        "baseline": 1.058156661473119,
+        "candidate": 1.0581566115196486,
+        "delta": -4.9953470471209016e-08,
+        "path": "eclipses.solar.data.angular_separation_3d_deg"
+      },
+      {
+        "baseline": 73.2154595813899,
+        "candidate": 73.21545954623149,
+        "delta": -3.515840774070966e-08,
+        "path": "planetary.all_planets_native.data.Jupiter.longitude"
+      },
+      {
+        "baseline": 73.2154595813899,
+        "candidate": 73.21545954623149,
+        "delta": -3.515840774070966e-08,
+        "path": "planetary.all_planets_python.data.Jupiter.longitude"
+      },
+      {
+        "baseline": 73.2154595813899,
+        "candidate": 73.21545954623149,
+        "delta": -3.515840774070966e-08,
+        "path": "planetary.planet_at.data.Jupiter.longitude"
+      },
+      {
+        "baseline": -0.005591552684189389,
+        "candidate": -0.005591585915947226,
+        "delta": -3.323175783685739e-08,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[0][1]"
+      },
+      {
+        "baseline": 0.005591452845383751,
+        "candidate": 0.005591485909144824,
+        "delta": 3.306376107278797e-08,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[1][0]"
+      },
+      {
+        "baseline": 0.31500953118451974,
+        "candidate": 0.31500950883004847,
+        "delta": -2.2354471274077525e-08,
+        "path": "eclipses.lunar.data.moon_latitude_deg"
+      },
+      {
+        "baseline": 353.95137527013713,
+        "candidate": 353.9513752900941,
+        "delta": 1.9956985397584504e-08,
+        "path": "eclipses.lunar.data.sun_longitude_deg"
+      },
+      {
+        "baseline": 1.286438811462176,
+        "candidate": 1.2864387964555135,
+        "delta": -1.5006662579253316e-08,
+        "path": "planetary.all_planets_native.data.Mercury.speed"
+      },
+      {
+        "baseline": 1.286438811462176,
+        "candidate": 1.2864387964555135,
+        "delta": -1.5006662579253316e-08,
+        "path": "planetary.all_planets_python.data.Mercury.speed"
+      },
+      {
+        "baseline": 1.286438811462176,
+        "candidate": 1.2864387964555135,
+        "delta": -1.5006662579253316e-08,
+        "path": "planetary.planet_at.data.Mercury.speed"
+      },
+      {
+        "baseline": 171.9876787800947,
+        "candidate": 171.9876787683509,
+        "delta": -1.1743821914933505e-08,
+        "path": "lunar_geometry.occultation_separation.data.separation_deg"
+      },
+      {
+        "baseline": 259.8699818306977,
+        "candidate": 259.86998184132614,
+        "delta": 1.06284119283373e-08,
+        "path": "planetary.all_planets_native.data.Mercury.longitude"
+      },
+      {
+        "baseline": 259.8699818306977,
+        "candidate": 259.86998184132614,
+        "delta": 1.06284119283373e-08,
+        "path": "planetary.all_planets_python.data.Mercury.longitude"
+      },
+      {
+        "baseline": 259.8699818306977,
+        "candidate": 259.86998184132614,
+        "delta": 1.06284119283373e-08,
+        "path": "planetary.planet_at.data.Mercury.longitude"
+      },
+      {
+        "baseline": 344.5240680042828,
+        "candidate": 344.52406799411295,
+        "delta": -1.0169856068387162e-08,
+        "path": "planetary.all_planets_native.data.Saturn.longitude"
+      },
+      {
+        "baseline": 344.5240680042828,
+        "candidate": 344.52406799411295,
+        "delta": -1.0169856068387162e-08,
+        "path": "planetary.all_planets_python.data.Saturn.longitude"
+      },
+      {
+        "baseline": 344.5240680042828,
+        "candidate": 344.52406799411295,
+        "delta": -1.0169856068387162e-08,
+        "path": "planetary.planet_at.data.Saturn.longitude"
+      },
+      {
+        "baseline": -0.3279952782975215,
+        "candidate": -0.32799528298710356,
+        "delta": -4.689582056016661e-09,
+        "path": "planetary.all_planets_native.data.Mars.speed"
+      },
+      {
+        "baseline": -0.3279952782975215,
+        "candidate": -0.32799528298710356,
+        "delta": -4.689582056016661e-09,
+        "path": "planetary.all_planets_python.data.Mars.speed"
+      },
+      {
+        "baseline": -0.3279952782975215,
+        "candidate": -0.32799528298710356,
+        "delta": -4.689582056016661e-09,
+        "path": "planetary.planet_at.data.Mars.speed"
+      },
+      {
+        "baseline": 1.073620836336886,
+        "candidate": 1.07362083906537,
+        "delta": 2.7284841053187847e-09,
+        "path": "planetary.all_planets_native.data.Venus.speed"
+      },
+      {
+        "baseline": 1.073620836336886,
+        "candidate": 1.07362083906537,
+        "delta": 2.7284841053187847e-09,
+        "path": "planetary.all_planets_python.data.Venus.speed"
+      },
+      {
+        "baseline": 1.073620836336886,
+        "candidate": 1.07362083906537,
+        "delta": 2.7284841053187847e-09,
+        "path": "planetary.planet_at.data.Venus.speed"
+      },
+      {
+        "baseline": 2460748.7913124077,
+        "candidate": 2460748.7913124096,
+        "delta": 1.862645149230957e-09,
+        "path": "eclipses.lunar.data.jd_ut1"
+      },
+      {
+        "baseline": 1.0196487761504613,
+        "candidate": 1.0196487768325824,
+        "delta": 6.821210263296962e-10,
+        "path": "planetary.all_planets_native.data.Sun.speed"
+      },
+      {
+        "baseline": 1.0196487761504613,
+        "candidate": 1.0196487768325824,
+        "delta": 6.821210263296962e-10,
+        "path": "planetary.all_planets_python.data.Sun.speed"
+      },
+      {
+        "baseline": 1.0196487761504613,
+        "candidate": 1.0196487768325824,
+        "delta": 6.821210263296962e-10,
+        "path": "planetary.planet_at.data.Sun.speed"
+      },
+      {
+        "baseline": -0.10646572735595328,
+        "candidate": -0.1064657277254355,
+        "delta": -3.694822225952521e-10,
+        "path": "planetary.all_planets_native.data.Jupiter.speed"
+      },
+      {
+        "baseline": -0.10646572735595328,
+        "candidate": -0.1064657277254355,
+        "delta": -3.694822225952521e-10,
+        "path": "planetary.all_planets_python.data.Jupiter.speed"
+      },
+      {
+        "baseline": -0.10646572735595328,
+        "candidate": -0.1064657277254355,
+        "delta": -3.694822225952521e-10,
+        "path": "planetary.planet_at.data.Jupiter.speed"
+      },
+      {
+        "baseline": -0.4470022309523173,
+        "candidate": -0.447002231300618,
+        "delta": -3.483007215976386e-10,
+        "path": "lunar_geometry.limb_light_cone.data.observer_to_moon_icrf[2]"
+      },
+      {
+        "baseline": -0.807202172254381,
+        "candidate": -0.807202171946686,
+        "delta": 3.0769498060578826e-10,
+        "path": "lunar_geometry.limb_light_cone.data.observer_to_moon_icrf[1]"
+      },
+      {
+        "baseline": 0.38550442102712623,
+        "candidate": 0.385504421267541,
+        "delta": 2.4041474366853777e-10,
+        "path": "lunar_geometry.limb_light_cone.data.observer_to_moon_icrf[0]"
+      },
+      {
+        "baseline": 0.9999970477302678,
+        "candidate": 0.9999970479235671,
+        "delta": 1.9329937650525153e-10,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[2][2]"
+      },
+      {
+        "baseline": 0.9999843665588342,
+        "candidate": 0.999984366370583,
+        "delta": -1.8825119241228094e-10,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[1][1]"
+      },
+      {
+        "baseline": 0.075622425470101,
+        "candidate": 0.07562242564063126,
+        "delta": 1.7053025658242404e-10,
+        "path": "planetary.all_planets_native.data.Saturn.speed"
+      },
+      {
+        "baseline": 0.075622425470101,
+        "candidate": 0.07562242564063126,
+        "delta": 1.7053025658242404e-10,
+        "path": "planetary.all_planets_python.data.Saturn.speed"
+      },
+      {
+        "baseline": 0.075622425470101,
+        "candidate": 0.07562242564063126,
+        "delta": 1.7053025658242404e-10,
+        "path": "planetary.planet_at.data.Saturn.speed"
+      },
+      {
+        "baseline": 2.26149761413991,
+        "candidate": 2.2614976141979244,
+        "delta": 5.801448210718263e-11,
+        "path": "eclipses.lunar.data.eclipse_type.magnitude_penumbra"
+      },
+      {
+        "baseline": 1.1795203774564889,
+        "candidate": 1.1795203773995997,
+        "delta": -5.688916004942257e-11,
+        "path": "eclipses.lunar.data.eclipse_magnitude"
+      },
+      {
+        "baseline": 1.1795203774564889,
+        "candidate": 1.1795203773995997,
+        "delta": -5.688916004942257e-11,
+        "path": "eclipses.lunar.data.eclipse_type.magnitude_umbral"
+      },
+      {
+        "baseline": 179.683433189344,
+        "candidate": 179.6834331893789,
+        "delta": 3.490185918053612e-11,
+        "path": "eclipses.lunar.data.angular_separation_3d_deg"
+      },
+      {
+        "baseline": 0.9999814159777362,
+        "candidate": 0.9999814159885898,
+        "delta": 1.0853651311037993e-11,
+        "path": "lunar_geometry.limb_light_cone.data.icrf_to_true_of_date[0][0]"
+      }
+    ],
+    "max_absolute_delta": 0.00237959623336792,
+    "shared_numeric_field_count": 188,
+    "unchanged_numeric_field_count": 67
+  },
+  "ownership_rule": "one bias-inclusive precession route; no preceding duplicate bias",
+  "probe_status": {
+    "baseline": {
+      "clock.raw_states": "ok",
+      "eclipses.lunar": "ok",
+      "eclipses.solar": "ok",
+      "frames.galactic_points": "ok",
+      "frames.matrices": "ok",
+      "frames.sky_position": "ok",
+      "frames.true_node": "ok",
+      "lunar_geometry.limb_light_cone": "ok",
+      "lunar_geometry.occultation_separation": "ok",
+      "phase_phenomena.phase": "ok",
+      "phase_phenomena.phenomena": "ok",
+      "planetary.all_planets_native": "ok",
+      "planetary.all_planets_python": "ok",
+      "planetary.planet_at": "ok",
+      "searches.aspect_transit": "ok",
+      "searches.fixed_star_heliacal": "ok",
+      "shadbala.end_to_end": "ok",
+      "small_bodies.asteroid": "ok",
+      "small_bodies.comet": "ok"
+    },
+    "candidate": {
+      "clock.raw_states": "ok",
+      "eclipses.lunar": "ok",
+      "eclipses.solar": "ok",
+      "frames.galactic_points": "ok",
+      "frames.matrices": "ok",
+      "frames.sky_position": "ok",
+      "frames.true_node": "ok",
+      "lunar_geometry.limb_light_cone": "ok",
+      "lunar_geometry.occultation_separation": "ok",
+      "phase_phenomena.phase": "ok",
+      "phase_phenomena.phenomena": "ok",
+      "planetary.all_planets_native": "ok",
+      "planetary.all_planets_python": "ok",
+      "planetary.planet_at": "ok",
+      "searches.aspect_transit": "ok",
+      "searches.fixed_star_heliacal": "ok",
+      "shadbala.end_to_end": "ok",
+      "small_bodies.asteroid": "ok",
+      "small_bodies.comet": "ok"
+    }
+  },
+  "schema": "moira.orbital-core-stage1.frame-shift/v1",
+  "status": "review_ready"
+}

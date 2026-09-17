@@ -100,17 +100,6 @@ inline Vec3 apply_annual_aberration(
     return apparent * (distance / apparent.norm());
 }
 
-inline Vec3 apply_iau2006_frame_bias(const Vec3& icrf) noexcept {
-    constexpr double d_alpha = (-14.6 / 1000.0) * ARCSEC2RAD;
-    constexpr double xi0 = (-16.6170 / 1000.0) * ARCSEC2RAD;
-    constexpr double eta0 = (-6.8192 / 1000.0) * ARCSEC2RAD;
-    return {
-        icrf[0] - eta0 * icrf[1] + xi0 * icrf[2],
-        eta0 * icrf[0] + icrf[1] - d_alpha * icrf[2],
-        -xi0 * icrf[0] + d_alpha * icrf[1] + icrf[2],
-    };
-}
-
 /**
  * @brief Arcus Visionis calculation based on Ptolemy/Schoch table.
  * 
@@ -161,9 +150,7 @@ inline double target_topocentric_altitude(
 
     // 1b. Apparent observer correction for solar/planetary targets.
     if (earth_eval) {
-        target_icrf = apply_iau2006_frame_bias(
-            apply_annual_aberration(target_icrf, *earth_eval, jd_tt)
-        );
+        target_icrf = apply_annual_aberration(target_icrf, *earth_eval, jd_tt);
     }
 
     // 2. Precess and Nutate target from ICRS to True Equatorial Frame of Date
@@ -333,9 +320,7 @@ inline double heliacal_signed_elongation(
     Vec3 star_xyz = {res_star[0], res_star[1], res_star[2]};
     Vec3 sun_xyz = {res_sun[0], res_sun[1], res_sun[2]};
     if (earth_eval) {
-        sun_xyz = apply_iau2006_frame_bias(
-            apply_annual_aberration(sun_xyz, *earth_eval, jd_tt)
-        );
+        sun_xyz = apply_annual_aberration(sun_xyz, *earth_eval, jd_tt);
     }
     
     const NutationResult nut = nutation_cache

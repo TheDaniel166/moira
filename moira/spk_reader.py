@@ -28,11 +28,13 @@ External dependency assumptions:
 from __future__ import annotations
 
 import math
+import hashlib
 import re
 import threading
+from collections import deque
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
@@ -109,6 +111,128 @@ class _EphemerisKernelIdentity:
     planetary_ephemeris: str | None
     lunar_ephemeris: str | None
     lunar_tidal_acceleration_arcsec_per_cy2: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class _KernelSourceIdentity:
+    """Path-free immutable identity for one opened SPK source."""
+
+    label: str
+    sha256: str
+    byte_length: int
+    catalog_id: str | None = None
+    catalog_version: str | None = None
+    manifest_sha256: str | None = None
+    released_utc: str | None = None
+    planetary_ephemeris: str | None = None
+    coverage_restricted_to_observed_arc: bool | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class _SpkSegmentReceipt:
+    """The exact SPK descriptor and source that served one state leg."""
+
+    center: int
+    target: int
+    data_type: int
+    coverage_start_tdb: float
+    coverage_end_tdb: float
+    source: _KernelSourceIdentity
+    pool_index: int
+    traversal_sign: int = 1
+
+
+@dataclass(frozen=True, slots=True)
+class _RoutedState:
+    """One ICRF state together with its ordered, atomic route receipt."""
+
+    position_km: Vec3
+    velocity_km_per_day: Vec3
+    epoch_tdb: float
+    legs: tuple[_SpkSegmentReceipt, ...]
+    covered_intervals_tdb: tuple[tuple[float, float], ...]
+    pool_generation: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class _PoolSnapshot:
+    """One immutable view of pool order."""
+
+    readers: tuple[object, ...]
+    generation: int
+
+
+@dataclass(frozen=True, slots=True)
+class _RouteEdge:
+    """One directed view of a source SPK segment pair."""
+
+    start: int
+    end: int
+    source_center: int
+    source_target: int
+    sign: int
+    reader: object
+    pool_index: int
+
+
+_SOURCE_HASH_CACHE_LOCK = threading.Lock()
+_SOURCE_HASH_CACHE: dict[tuple[str, int, int], str] = {}
+
+
+def _source_sha256(path: Path) -> tuple[str, int]:
+    """Hash an opened source once per immutable path/stat identity."""
+
+    resolved = path.resolve()
+    stat = resolved.stat()
+    key = (str(resolved), int(stat.st_size), int(stat.st_mtime_ns))
+    with _SOURCE_HASH_CACHE_LOCK:
+        cached = _SOURCE_HASH_CACHE.get(key)
+    if cached is None:
+        digest = hashlib.sha256()
+        with resolved.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(8 * 1024 * 1024), b""):
+                digest.update(chunk)
+        cached = digest.hexdigest()
+        with _SOURCE_HASH_CACHE_LOCK:
+            _SOURCE_HASH_CACHE[key] = cached
+    return cached, int(stat.st_size)
+
+
+def _merge_closed_intervals(
+    intervals: tuple[tuple[float, float], ...] | list[tuple[float, float]],
+) -> tuple[tuple[float, float], ...]:
+    """Merge overlapping or endpoint-touching closed intervals, not gaps."""
+
+    ordered = sorted((float(start), float(end)) for start, end in intervals)
+    merged: list[tuple[float, float]] = []
+    for start, end in ordered:
+        if not math.isfinite(start) or not math.isfinite(end) or start > end:
+            raise ValueError("SPK coverage interval must be finite and ordered")
+        if merged and start <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+        else:
+            merged.append((start, end))
+    return tuple(merged)
+
+
+def _intersect_closed_intervals(
+    left: tuple[tuple[float, float], ...],
+    right: tuple[tuple[float, float], ...],
+) -> tuple[tuple[float, float], ...]:
+    """Return exact closed intersections of two disjoint interval sets."""
+
+    intersections: list[tuple[float, float]] = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        start = max(left[i][0], right[j][0])
+        end = min(left[i][1], right[j][1])
+        if start <= end:
+            intersections.append((start, end))
+        if left[i][1] < right[j][1]:
+            i += 1
+        else:
+            j += 1
+    return _merge_closed_intervals(intersections)
 
 
 _DE_LE_SUMMARY_LABEL = re.compile(r"^DE-(\d{4})LE-(\d{4})$")
@@ -726,6 +850,10 @@ class MissingKernelError(RuntimeError):
     """Raised when get_reader() is called with no planetary kernel configured."""
 
 
+class MissingEphemerisKernelError(RuntimeError):
+    """Raised when a facade operation requires an unavailable planetary kernel."""
+
+
 @runtime_checkable
 class KernelReader(Protocol):
     """
@@ -914,6 +1042,13 @@ class SpkReader:
                 raise
         self._kernel = kernel
         self._kernel_identity = kernel_identity
+        source_hash, source_bytes = _source_sha256(path)
+        self._source_identity = _KernelSourceIdentity(
+            label=kernel_identity.summary_label,
+            sha256=source_hash,
+            byte_length=source_bytes,
+            planetary_ephemeris=kernel_identity.planetary_ephemeris,
+        )
         self._closed = False
         self._segments_by_pair: dict[tuple[int, int], tuple[object, ...]] = {}
         for segment in self._kernel.segments:
@@ -964,6 +1099,18 @@ class SpkReader:
             raise KeyError(f"No segment found for center={center}, target={target}")
         return matches
 
+    def _segment_for_tdb(self, center: int, target: int, epoch_tdb: float):
+        """Return the segment covering one explicit TDB Julian day."""
+
+        for segment in self._segments_for_pair(center, target):
+            if segment.start_jd <= epoch_tdb <= segment.end_jd:
+                return segment
+        raise ValueError(
+            f"Segments exist for center={center}, target={target} but none "
+            f"covers JD(TDB) {epoch_tdb:.9f}. Kernel coverage may not extend "
+            "to this epoch."
+        )
+
     def _segment_for(self, center: int, target: int, jd: float):
         """
         Return the kernel segment covering *jd* for the given (center, target) pair.
@@ -991,12 +1138,98 @@ class SpkReader:
         Side effects:
             None.
         """
-        for seg in self._segments_for_pair(center, target):
-            if seg.start_jd <= jd <= seg.end_jd:
-                return seg
-        raise ValueError(
-            f"Segments exist for center={center}, target={target} but none "
-            f"covers JD {jd:.2f}.  Kernel coverage may not extend to this epoch."
+        from .julian import tt_to_tdb
+
+        return self._segment_for_tdb(center, target, tt_to_tdb(jd))
+
+    def _receipt_for_segment(
+        self,
+        segment,
+        *,
+        pool_index: int = 0,
+    ) -> _SpkSegmentReceipt:
+        """Build a path-free receipt from the exact serving descriptor."""
+
+        return _SpkSegmentReceipt(
+            center=int(segment.center),
+            target=int(segment.target),
+            data_type=int(segment.data_type),
+            coverage_start_tdb=float(segment.start_jd),
+            coverage_end_tdb=float(segment.end_jd),
+            source=self._source_identity,
+            pool_index=int(pool_index),
+        )
+
+    def position_tdb(self, center: int, target: int, epoch_tdb: float) -> Vec3:
+        """Return an ICRF position at an explicit TDB Julian day."""
+
+        self._ensure_open()
+        segment = self._segment_for_tdb(center, target, epoch_tdb)
+        native = (
+            None
+            if hasattr(segment, "_load_native_evaluator")
+            else _native_position(segment, epoch_tdb)
+        )
+        if native is not None:
+            return native
+        pos = segment.compute(epoch_tdb)
+        return (float(pos[0]), float(pos[1]), float(pos[2]))
+
+    def position_and_velocity_tdb(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+    ) -> tuple[Vec3, Vec3]:
+        """Return an ICRF state at an explicit TDB Julian day."""
+
+        self._ensure_open()
+        segment = self._segment_for_tdb(center, target, epoch_tdb)
+        native = (
+            None
+            if hasattr(segment, "_load_native_evaluator")
+            else _native_position_and_velocity(segment, epoch_tdb)
+        )
+        if native is not None:
+            return native
+        pos, vel = segment.compute_and_differentiate(epoch_tdb)
+        return (
+            (float(pos[0]), float(pos[1]), float(pos[2])),
+            (float(vel[0]), float(vel[1]), float(vel[2])),
+        )
+
+    def position_and_velocity_tdb_with_receipt(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+        *,
+        pool_index: int = 0,
+    ) -> _RoutedState:
+        """Evaluate one direct or reverse state and bind its descriptor."""
+
+        sign = 1.0
+        try:
+            segment = self._segment_for_tdb(center, target, epoch_tdb)
+        except (KeyError, ValueError):
+            segment = self._segment_for_tdb(target, center, epoch_tdb)
+            sign = -1.0
+        pos, vel = self.position_and_velocity_tdb(
+            int(segment.center), int(segment.target), epoch_tdb
+        )
+        if sign < 0.0:
+            pos = (-pos[0], -pos[1], -pos[2])
+            vel = (-vel[0], -vel[1], -vel[2])
+        receipt = replace(
+            self._receipt_for_segment(segment, pool_index=pool_index),
+            traversal_sign=int(sign),
+        )
+        return _RoutedState(
+            position_km=pos,
+            velocity_km_per_day=vel,
+            epoch_tdb=float(epoch_tdb),
+            legs=(receipt,),
+            covered_intervals_tdb=((receipt.coverage_start_tdb, receipt.coverage_end_tdb),),
         )
 
     def position(self, center: int, target: int, jd: float) -> Vec3:
@@ -1019,13 +1252,9 @@ class SpkReader:
         Side effects:
             None.
         """
-        self._ensure_open()
-        segment = self._segment_for(center, target, jd)
-        native = None if hasattr(segment, "_load_native_evaluator") else _native_position(segment, jd)
-        if native is not None:
-            return native
-        pos = segment.compute(jd)
-        return (float(pos[0]), float(pos[1]), float(pos[2]))
+        from .julian import tt_to_tdb
+
+        return self.position_tdb(center, target, tt_to_tdb(jd))
 
     def position_and_velocity(
         self, center: int, target: int, jd: float
@@ -1048,20 +1277,9 @@ class SpkReader:
         Side effects:
             None.
         """
-        self._ensure_open()
-        segment = self._segment_for(center, target, jd)
-        native = (
-            None
-            if hasattr(segment, "_load_native_evaluator")
-            else _native_position_and_velocity(segment, jd)
-        )
-        if native is not None:
-            return native
-        pos, vel = segment.compute_and_differentiate(jd)
-        return (
-            (float(pos[0]), float(pos[1]), float(pos[2])),
-            (float(vel[0]), float(vel[1]), float(vel[2])),
-        )
+        from .julian import tt_to_tdb
+
+        return self.position_and_velocity_tdb(center, target, tt_to_tdb(jd))
 
     def has_segment(self, center: int, target: int) -> bool:
         """
@@ -1082,13 +1300,67 @@ class SpkReader:
         the same two-epoch selection semantics as :meth:`position` and
         :meth:`position_and_velocity`.
         """
+        from .julian import tt_to_tdb
+
+        return self.has_segment_at_tdb(center, target, tt_to_tdb(jd))
+
+    def has_segment_at_tdb(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+    ) -> bool:
+        """Return whether a descriptor covers one explicit TDB epoch."""
+
         try:
             for segment in self._segments_for_pair(center, target):
-                if segment.start_jd <= jd <= segment.end_jd:
+                if segment.start_jd <= epoch_tdb <= segment.end_jd:
                     return True
         except KeyError:
             return False
         return False
+
+    def coverage_intervals_tdb(
+        self,
+        center: int,
+        target: int,
+    ) -> tuple[tuple[float, float], ...]:
+        """Return every disjoint closed descriptor interval in TDB."""
+
+        self._ensure_open()
+        segments = self._segments_by_pair.get((center, target), ())
+        return _merge_closed_intervals(
+            [(float(segment.start_jd), float(segment.end_jd)) for segment in segments]
+        )
+
+    def _coverage_pairs_tdb(self) -> tuple[tuple[int, int], ...]:
+        """Return deterministic pair keys for private route planning."""
+
+        self._ensure_open()
+        return tuple(sorted(self._segments_by_pair))
+
+    def _ephemeris_kernel_identity_at_tdb(
+        self,
+        epoch_tdb: float,
+    ) -> _EphemerisKernelIdentity | None:
+        """Return this planetary identity only where all clock legs exist."""
+
+        if all(
+            self.has_segment_at_tdb(center, target, epoch_tdb)
+            for center, target in _PLANETARY_CLOCK_ROUTES
+        ):
+            return self._kernel_identity
+        return None
+
+    def _ephemeris_kernel_identity_at(
+        self,
+        jd_tt: float,
+    ) -> _EphemerisKernelIdentity | None:
+        """TT compatibility adapter for private identity selection."""
+
+        from .julian import tt_to_tdb
+
+        return self._ephemeris_kernel_identity_at_tdb(tt_to_tdb(jd_tt))
 
     def coverage(self) -> dict[tuple[int, int], tuple[float, float]]:
         """
@@ -1100,14 +1372,17 @@ class SpkReader:
         For pairs whose data is split across multiple segments, start_jd is
         the earliest segment start and end_jd is the latest segment end.
         """
+        from .julian import tdb_to_tt
+
         self._ensure_open()
-        return {
-            pair: (
-                min(s.start_jd for s in segs),
-                max(s.end_jd   for s in segs),
+        result: dict[tuple[int, int], tuple[float, float]] = {}
+        for pair in self._segments_by_pair:
+            intervals = self.coverage_intervals_tdb(*pair)
+            result[pair] = (
+                tdb_to_tt(intervals[0][0]),
+                tdb_to_tt(intervals[-1][1]),
             )
-            for pair, segs in self._segments_by_pair.items()
-        }
+        return result
 
     def covered_bodies(self) -> frozenset[int]:
         """Return the set of target NAIF IDs present in this kernel."""
@@ -1129,7 +1404,12 @@ class SpkReader:
         segs = self._segments_by_pair.get((center, target))
         if not segs:
             return None
-        return (min(s.start_jd for s in segs), max(s.end_jd for s in segs))
+        from .julian import tdb_to_tt
+
+        return (
+            tdb_to_tt(min(s.start_jd for s in segs)),
+            tdb_to_tt(max(s.end_jd for s in segs)),
+        )
 
     @property
     def path(self) -> Path:
@@ -1158,19 +1438,52 @@ class SpkReader:
 
         Returns ``None`` when no single native segment covers the request.
         """
+        from .julian import tt_to_tdb
+
         self._ensure_open()
         if jd_end_tt is not None and jd_end_tt < jd_tt:
             raise ValueError("jd_end_tt must be greater than or equal to jd_tt")
+        epoch_tdb = tt_to_tdb(jd_tt)
+        epoch_end_tdb = None if jd_end_tt is None else tt_to_tdb(jd_end_tt)
+        raw = self.evaluator_tdb(
+            target,
+            center,
+            epoch_tdb=epoch_tdb,
+            epoch_end_tdb=epoch_end_tdb,
+        )
+        if raw is None:
+            return None
+        if _moira_native is None or not hasattr(_moira_native, "TtToTdbEvaluator"):
+            raise RuntimeError(
+                "native TT-to-TDB evaluator adapter is unavailable; rebuild Moira"
+            )
+        return _moira_native.TtToTdbEvaluator(raw)
+
+    def evaluator_tdb(
+        self,
+        target: int,
+        center: int = 0,
+        *,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> object:
+        """Return one raw native evaluator selected on explicit TDB coverage."""
+
+        self._ensure_open()
+        if epoch_end_tdb is not None and epoch_end_tdb < epoch_tdb:
+            raise ValueError(
+                "epoch_end_tdb must be greater than or equal to epoch_tdb"
+            )
         try:
-            if jd_end_tt is None:
-                segment = self._segment_for(center, target, jd_tt)
+            if epoch_end_tdb is None:
+                segment = self._segment_for_tdb(center, target, epoch_tdb)
             else:
                 segment = next(
                     (
                         candidate
                         for candidate in self._segments_for_pair(center, target)
-                        if candidate.start_jd <= jd_tt
-                        and jd_end_tt <= candidate.end_jd
+                        if candidate.start_jd <= epoch_tdb
+                        and epoch_end_tdb <= candidate.end_jd
                     ),
                     None,
                 )
@@ -1243,7 +1556,12 @@ class KernelPool:
     """
 
     def __init__(self, readers=()) -> None:
-        self._readers: list = list(readers)
+        self._readers: tuple[object, ...] = tuple(readers)
+        self._condition = threading.Condition(threading.RLock())
+        self._generation = 0
+        self._active_leases = 0
+        self._closing = False
+        self._closed = False
 
     # ------------------------------------------------------------------
     # Pool management
@@ -1251,9 +1569,33 @@ class KernelPool:
 
     def add(self, reader) -> None:
         """Append *reader* to the fallback chain (lowest priority)."""
-        self._readers.append(reader)
+        with self._condition:
+            if self._closing or self._closed:
+                raise RuntimeError("KernelPool is closing or closed")
+            self._readers = (*self._readers, reader)
+            self._generation += 1
 
-    def _primary_planetary_reader(self):
+    @contextmanager
+    def _read_lease(self):
+        """Yield one immutable reader-order generation for a computation."""
+
+        with self._condition:
+            if self._closing or self._closed:
+                raise RuntimeError("KernelPool is closing or closed")
+            self._active_leases += 1
+            snapshot = _PoolSnapshot(self._readers, self._generation)
+        try:
+            yield snapshot
+        finally:
+            with self._condition:
+                self._active_leases -= 1
+                if self._active_leases == 0:
+                    self._condition.notify_all()
+
+    def _primary_planetary_reader(
+        self,
+        snapshot: _PoolSnapshot | None = None,
+    ):
         """Return the first content-identified planetary reader, if present.
 
         Pool order is already the explicit priority doctrine.  A pathname is
@@ -1261,7 +1603,8 @@ class KernelPool:
         ``_EphemerisKernelIdentity`` are ignored.
         """
 
-        for reader in self._readers:
+        readers = self._readers if snapshot is None else snapshot.readers
+        for reader in readers:
             identity = getattr(reader, "_kernel_identity", None)
             if (
                 isinstance(identity, _EphemerisKernelIdentity)
@@ -1280,6 +1623,57 @@ class KernelPool:
             return None
         return reader._kernel_identity
 
+    def _ephemeris_kernel_identity_at_tdb(
+        self,
+        epoch_tdb: float,
+        *,
+        snapshot: _PoolSnapshot | None = None,
+    ) -> _EphemerisKernelIdentity | None:
+        """Resolve one coherent planetary identity at a TDB epoch."""
+
+        if snapshot is None:
+            with self._read_lease() as leased:
+                return self._ephemeris_kernel_identity_at_tdb(
+                    epoch_tdb, snapshot=leased
+                )
+
+        identities: list[_EphemerisKernelIdentity] = []
+        integration_identities: list[_EphemerisKernelIdentity] = []
+        for reader in snapshot.readers:
+            identity = getattr(reader, "_kernel_identity", None)
+            if isinstance(identity, _EphemerisKernelIdentity):
+                checker = getattr(reader, "has_segment_at_tdb", None)
+                if callable(checker):
+                    try:
+                        owns_clock_routes = all(
+                            checker(center, target, epoch_tdb)
+                            for center, target in _PLANETARY_CLOCK_ROUTES
+                        )
+                    except (KeyError, ValueError, OutOfRangeError):
+                        owns_clock_routes = False
+                    if owns_clock_routes:
+                        identities.append(identity)
+            integration_identity = getattr(
+                reader, "_integration_kernel_identity", None
+            )
+            if isinstance(integration_identity, _EphemerisKernelIdentity):
+                integration_identities.append(integration_identity)
+
+        selected = identities or integration_identities
+        if not selected:
+            return None
+        first = selected[0]
+        all_declared = (*identities, *integration_identities)
+        if any(identity != first for identity in all_declared[1:]):
+            labels = tuple(
+                sorted({identity.summary_label for identity in all_declared})
+            )
+            raise ValueError(
+                "KernelPool has conflicting planetary ephemeris identities "
+                f"at JD(TDB) {epoch_tdb}: {labels!r}"
+            )
+        return first
+
     def _ephemeris_kernel_identity_at(
         self,
         jd_tt: float,
@@ -1293,35 +1687,270 @@ class KernelPool:
         instead of inheriting ordinary first-match pool dispatch silently.
         """
 
-        identities: list[_EphemerisKernelIdentity] = []
-        for reader in self._readers:
-            identity = getattr(reader, "_kernel_identity", None)
-            if not isinstance(identity, _EphemerisKernelIdentity):
-                continue
-            try:
-                owns_clock_routes = all(
-                    reader.has_segment_at(center, target, jd_tt)
-                    for center, target in _PLANETARY_CLOCK_ROUTES
-                )
-            except (AttributeError, KeyError, OutOfRangeError):
-                owns_clock_routes = False
-            if owns_clock_routes:
-                identities.append(identity)
+        from .julian import tt_to_tdb
 
-        if not identities:
-            return None
-        first = identities[0]
-        if any(identity != first for identity in identities[1:]):
-            labels = sorted({identity.summary_label for identity in identities})
-            raise ValueError(
-                "KernelPool has conflicting planetary ephemeris identities "
-                f"at JD(TT) {jd_tt}: {labels!r}"
+        epoch_tdb = tt_to_tdb(jd_tt)
+        with self._read_lease() as snapshot:
+            exact = self._ephemeris_kernel_identity_at_tdb(
+                epoch_tdb, snapshot=snapshot
             )
-        return first
+            if exact is not None:
+                return exact
+
+            identities: list[_EphemerisKernelIdentity] = []
+            for reader in snapshot.readers:
+                identity = getattr(reader, "_kernel_identity", None)
+                if not isinstance(identity, _EphemerisKernelIdentity):
+                    continue
+                try:
+                    owns_clock_routes = all(
+                        reader.has_segment_at(center, target, jd_tt)
+                        for center, target in _PLANETARY_CLOCK_ROUTES
+                    )
+                except (AttributeError, KeyError, ValueError, OutOfRangeError):
+                    owns_clock_routes = False
+                if owns_clock_routes:
+                    identities.append(identity)
+            if not identities:
+                return None
+            first = identities[0]
+            if any(identity != first for identity in identities[1:]):
+                labels = tuple(
+                    sorted({identity.summary_label for identity in identities})
+                )
+                raise ValueError(
+                    "KernelPool has conflicting planetary ephemeris identities "
+                    f"at JD(TT) {jd_tt}: {labels!r}"
+                )
+            return first
 
     # ------------------------------------------------------------------
     # Core read interface (mirrors SpkReader)
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _reader_pairs_tdb(reader: object) -> tuple[tuple[int, int], ...]:
+        getter = getattr(reader, "_coverage_pairs_tdb", None)
+        if not callable(getter):
+            return ()
+        return tuple(getter())
+
+    @staticmethod
+    def _interval_covers(
+        intervals: tuple[tuple[float, float], ...],
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> bool:
+        end = epoch_tdb if epoch_end_tdb is None else epoch_end_tdb
+        return any(start <= epoch_tdb and end <= stop for start, stop in intervals)
+
+    def _route_edges_tdb(
+        self,
+        snapshot: _PoolSnapshot,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> tuple[_RouteEdge, ...]:
+        edges: list[_RouteEdge] = []
+        for pool_index, reader in enumerate(snapshot.readers):
+            interval_getter = getattr(reader, "coverage_intervals_tdb", None)
+            checker = getattr(reader, "has_segment_at_tdb", None)
+            if not callable(interval_getter) or not callable(checker):
+                continue
+            for source_center, source_target in self._reader_pairs_tdb(reader):
+                intervals = tuple(interval_getter(source_center, source_target))
+                if not self._interval_covers(
+                    intervals, epoch_tdb, epoch_end_tdb
+                ):
+                    continue
+                edges.append(
+                    _RouteEdge(
+                        start=source_center,
+                        end=source_target,
+                        source_center=source_center,
+                        source_target=source_target,
+                        sign=1,
+                        reader=reader,
+                        pool_index=pool_index,
+                    )
+                )
+                edges.append(
+                    _RouteEdge(
+                        start=source_target,
+                        end=source_center,
+                        source_center=source_center,
+                        source_target=source_target,
+                        sign=-1,
+                        reader=reader,
+                        pool_index=pool_index,
+                    )
+                )
+        return tuple(edges)
+
+    def _find_route_tdb(
+        self,
+        snapshot: _PoolSnapshot,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> tuple[_RouteEdge, ...] | None:
+        if center == target:
+            return ()
+        edges = self._route_edges_tdb(snapshot, epoch_tdb, epoch_end_tdb)
+        by_start: dict[int, list[_RouteEdge]] = {}
+        for edge in edges:
+            by_start.setdefault(edge.start, []).append(edge)
+
+        queue: deque[tuple[int, tuple[_RouteEdge, ...]]] = deque([(center, ())])
+        visited = {center}
+        while queue:
+            node, route = queue.popleft()
+            for edge in by_start.get(node, ()):
+                next_route = (*route, edge)
+                if edge.end == target:
+                    return next_route
+                if edge.end not in visited:
+                    visited.add(edge.end)
+                    queue.append((edge.end, next_route))
+        return None
+
+    @staticmethod
+    def _route_is_receiptable(route: tuple[_RouteEdge, ...]) -> bool:
+        """Return whether every route leg can bind state to an exact source.
+
+        Runtime ``SpkReader`` and ``SmallBodyKernel`` instances always carry a
+        ``_KernelSourceIdentity``.  Historical third-party readers (and older
+        protocol test doubles) may expose the newer TDB-shaped methods without
+        carrying that identity.  Those readers must remain on the public TT
+        compatibility path rather than producing an incomplete receipt.
+        """
+
+        return all(
+            isinstance(getattr(edge.reader, "_source_identity", None), _KernelSourceIdentity)
+            and callable(
+                getattr(edge.reader, "position_and_velocity_tdb_with_receipt", None)
+            )
+            for edge in route
+        )
+
+    def position_and_velocity_tdb_with_receipt(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+        *,
+        snapshot: _PoolSnapshot | None = None,
+    ) -> _RoutedState:
+        """Evaluate a deterministic TDB route and bind every serving leg."""
+
+        if snapshot is None:
+            with self._read_lease() as leased:
+                return self.position_and_velocity_tdb_with_receipt(
+                    center, target, epoch_tdb, snapshot=leased
+                )
+        route = self._find_route_tdb(snapshot, center, target, epoch_tdb)
+        if route is None:
+            raise OutOfRangeError(
+                f"No kernel covers center={center}, target={target} at "
+                f"JD(TDB) {epoch_tdb:.9f}",
+                out_of_range_times=True,
+            )
+        return self._evaluate_route_tdb(route, epoch_tdb, snapshot=snapshot)
+
+    def _evaluate_route_tdb(
+        self,
+        route: tuple[_RouteEdge, ...],
+        epoch_tdb: float,
+        *,
+        snapshot: _PoolSnapshot,
+    ) -> _RoutedState:
+        """Evaluate one already-selected route against its leased snapshot.
+
+        Stage 2 passage searches use this boundary to prevent ordinary
+        epoch-by-epoch pool dispatch from changing the route after a search
+        begins.  Callers must retain the lease that produced ``snapshot`` and
+        must prove that ``epoch_tdb`` lies in the route's exact common
+        coverage before calling.
+        """
+
+        if not route:
+            return _RoutedState(
+                position_km=(0.0, 0.0, 0.0),
+                velocity_km_per_day=(0.0, 0.0, 0.0),
+                epoch_tdb=float(epoch_tdb),
+                legs=(),
+                covered_intervals_tdb=((-math.inf, math.inf),),
+                pool_generation=snapshot.generation,
+            )
+
+        position = (0.0, 0.0, 0.0)
+        velocity = (0.0, 0.0, 0.0)
+        receipts: list[_SpkSegmentReceipt] = []
+        common: tuple[tuple[float, float], ...] | None = None
+        for edge in route:
+            evaluator = getattr(
+                edge.reader, "position_and_velocity_tdb_with_receipt", None
+            )
+            if not callable(evaluator):
+                raise RuntimeError(
+                    "selected reader lacks atomic TDB state/source receipt capability"
+                )
+            state = evaluator(
+                edge.source_center,
+                edge.source_target,
+                epoch_tdb,
+                pool_index=edge.pool_index,
+            )
+            leg_position = state.position_km
+            leg_velocity = state.velocity_km_per_day
+            if edge.sign < 0:
+                leg_position = tuple(-value for value in leg_position)
+                leg_velocity = tuple(-value for value in leg_velocity)
+            position = tuple(a + b for a, b in zip(position, leg_position))
+            velocity = tuple(a + b for a, b in zip(velocity, leg_velocity))
+            receipts.extend(
+                replace(
+                    receipt,
+                    traversal_sign=receipt.traversal_sign * edge.sign,
+                )
+                for receipt in state.legs
+            )
+            common = (
+                state.covered_intervals_tdb
+                if common is None
+                else _intersect_closed_intervals(
+                    common, state.covered_intervals_tdb
+                )
+            )
+
+        return _RoutedState(
+            position_km=position,
+            velocity_km_per_day=velocity,
+            epoch_tdb=float(epoch_tdb),
+            legs=tuple(receipts),
+            covered_intervals_tdb=() if common is None else common,
+            pool_generation=snapshot.generation,
+        )
+
+    def position_tdb(self, center: int, target: int, epoch_tdb: float) -> Vec3:
+        """Return a routed ICRF position at an explicit TDB Julian day."""
+
+        return self.position_and_velocity_tdb_with_receipt(
+            center, target, epoch_tdb
+        ).position_km
+
+    def position_and_velocity_tdb(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+    ) -> tuple[Vec3, Vec3]:
+        """Return a routed ICRF state at an explicit TDB Julian day."""
+
+        state = self.position_and_velocity_tdb_with_receipt(
+            center, target, epoch_tdb
+        )
+        return state.position_km, state.velocity_km_per_day
 
     def position(self, center: int, target: int, jd: float) -> Vec3:
         """
@@ -1339,20 +1968,55 @@ class KernelPool:
         OutOfRangeError
             If no reader in the pool covers the requested triple by either phase.
         """
-        # Phase 1: direct match
-        for reader in self._readers:
-            if reader.has_segment_at(center, target, jd):
-                return reader.position(center, target, jd)
-        # Phase 2: center chain
-        for reader in self._readers:
-            for (c, t), (seg_start, seg_end) in reader.coverage().items():
-                if t == target and c != center and seg_start <= jd <= seg_end:
-                    if reader.has_segment_at(c, target, jd):
-                        raw = reader.position(c, target, jd)
-                        bridge = self.position(center, c, jd)
-                        return vec_add(raw, bridge)
+        from .julian import tt_to_tdb
+
+        with self._read_lease() as snapshot:
+            epoch_tdb = tt_to_tdb(jd)
+            route = self._find_route_tdb(snapshot, center, target, epoch_tdb)
+            if route is not None and self._route_is_receiptable(route):
+                return self.position_and_velocity_tdb_with_receipt(
+                    center, target, epoch_tdb, snapshot=snapshot
+                ).position_km
+            return self._legacy_position(snapshot, center, target, jd, frozenset())
+
+    def _legacy_position(
+        self,
+        snapshot: _PoolSnapshot,
+        center: int,
+        target: int,
+        jd_tt: float,
+        visited: frozenset[tuple[int, int]],
+    ) -> Vec3:
+        """Preserve the historical protocol for third-party TT readers."""
+
+        key = (center, target)
+        if key in visited:
+            raise OutOfRangeError(
+                f"No acyclic kernel route covers center={center}, target={target}",
+                out_of_range_times=True,
+            )
+        visited = visited | {key}
+        for reader in snapshot.readers:
+            if reader.has_segment_at(center, target, jd_tt):
+                return reader.position(center, target, jd_tt)
+            if reader.has_segment_at(target, center, jd_tt):
+                value = reader.position(target, center, jd_tt)
+                return (-value[0], -value[1], -value[2])
+        for reader in snapshot.readers:
+            for (source_center, source_target), (start, end) in reader.coverage().items():
+                if (
+                    source_target == target
+                    and source_center != center
+                    and start <= jd_tt <= end
+                    and reader.has_segment_at(source_center, target, jd_tt)
+                ):
+                    raw = reader.position(source_center, target, jd_tt)
+                    bridge = self._legacy_position(
+                        snapshot, center, source_center, jd_tt, visited
+                    )
+                    return vec_add(raw, bridge)
         raise OutOfRangeError(
-            f"No kernel covers center={center}, target={target} at JD {jd:.2f}",
+            f"No kernel covers center={center}, target={target} at JD(TT) {jd_tt:.9f}",
             out_of_range_times=True,
         )
 
@@ -1370,30 +2034,108 @@ class KernelPool:
         Searches readers in fallback order and returns the first evaluator whose
         one descriptor covers the requested point or inclusive interval.
         """
+        from .julian import tt_to_tdb
+
         if jd_end_tt is not None and jd_end_tt < jd_tt:
             raise ValueError("jd_end_tt must be greater than or equal to jd_tt")
-        for reader in self._readers:
-            try:
-                if (
-                    hasattr(reader, "has_segment_at")
-                    and reader.has_segment_at(center, target, jd_tt)
-                    and (
-                        jd_end_tt is None
-                        or reader.has_segment_at(center, target, jd_end_tt)
-                    )
+        epoch_tdb = tt_to_tdb(jd_tt)
+        epoch_end_tdb = None if jd_end_tt is None else tt_to_tdb(jd_end_tt)
+        with self._read_lease() as snapshot:
+            route = self._find_route_tdb(
+                snapshot, center, target, epoch_tdb, epoch_end_tdb
+            )
+            if route is not None and self._route_is_receiptable(route):
+                raw = self._evaluator_tdb_from_route(
+                    route, epoch_tdb, epoch_end_tdb
+                )
+                if raw is None:
+                    return None
+                if _moira_native is None or not hasattr(
+                    _moira_native, "TtToTdbEvaluator"
                 ):
-                    if hasattr(reader, "evaluator"):
-                        ev = reader.evaluator(
-                            target,
-                            center,
-                            jd_tt,
-                            jd_end_tt=jd_end_tt,
+                    raise RuntimeError(
+                        "native TT-to-TDB evaluator adapter is unavailable; rebuild Moira"
+                    )
+                return _moira_native.TtToTdbEvaluator(raw)
+
+            # Historical third-party protocol: preserve its TT-facing evaluator
+            # without claiming the strict TDB/source capability.
+            for reader in snapshot.readers:
+                try:
+                    if (
+                        reader.has_segment_at(center, target, jd_tt)
+                        and (
+                            jd_end_tt is None
+                            or reader.has_segment_at(center, target, jd_end_tt)
                         )
-                        if ev is not None:
-                            return ev
-            except (KeyError, AttributeError):
-                continue
+                    ):
+                        evaluator = getattr(reader, "evaluator", None)
+                        if callable(evaluator):
+                            result = evaluator(
+                                target,
+                                center,
+                                jd_tt,
+                                jd_end_tt=jd_end_tt,
+                            )
+                            if result is not None:
+                                return result
+                except (KeyError, AttributeError):
+                    continue
         return None
+
+    def _evaluator_tdb_from_route(
+        self,
+        route: tuple[_RouteEdge, ...],
+        epoch_tdb: float,
+        epoch_end_tdb: float | None,
+    ) -> object | None:
+        if _moira_native is None:
+            return None
+        composite = None
+        for edge in route:
+            getter = getattr(edge.reader, "evaluator_tdb", None)
+            if not callable(getter):
+                return None
+            evaluator = getter(
+                edge.source_target,
+                edge.source_center,
+                epoch_tdb=epoch_tdb,
+                epoch_end_tdb=epoch_end_tdb,
+            )
+            if evaluator is None:
+                return None
+            if edge.sign < 0:
+                evaluator = _moira_native.NegateEvaluator(evaluator)
+            composite = (
+                evaluator
+                if composite is None
+                else _moira_native.SumEvaluator(composite, evaluator)
+            )
+        return composite
+
+    def evaluator_tdb(
+        self,
+        target: int,
+        center: int = 0,
+        *,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> object | None:
+        """Return a raw native composite selected on explicit TDB coverage."""
+
+        if epoch_end_tdb is not None and epoch_end_tdb < epoch_tdb:
+            raise ValueError(
+                "epoch_end_tdb must be greater than or equal to epoch_tdb"
+            )
+        with self._read_lease() as snapshot:
+            route = self._find_route_tdb(
+                snapshot, center, target, epoch_tdb, epoch_end_tdb
+            )
+            if route is None:
+                return None
+            return self._evaluator_tdb_from_route(
+                route, epoch_tdb, epoch_end_tdb
+            )
 
     def position_and_velocity(
         self, center: int, target: int, jd: float
@@ -1411,11 +2153,80 @@ class KernelPool:
         NotImplementedError
             If the covering reader is a SmallBodyKernel.
         """
-        for reader in self._readers:
-            if reader.has_segment_at(center, target, jd):
-                return reader.position_and_velocity(center, target, jd)
+        from .julian import tt_to_tdb
+
+        with self._read_lease() as snapshot:
+            epoch_tdb = tt_to_tdb(jd)
+            route = self._find_route_tdb(snapshot, center, target, epoch_tdb)
+            if route is not None and self._route_is_receiptable(route):
+                state = self.position_and_velocity_tdb_with_receipt(
+                    center, target, epoch_tdb, snapshot=snapshot
+                )
+                return state.position_km, state.velocity_km_per_day
+            return self._legacy_position_and_velocity(
+                snapshot, center, target, jd, frozenset()
+            )
+
+    def _legacy_position_and_velocity(
+        self,
+        snapshot: _PoolSnapshot,
+        center: int,
+        target: int,
+        jd_tt: float,
+        visited: frozenset[tuple[int, int]],
+    ) -> tuple[Vec3, Vec3]:
+        """Velocity-capable center chaining for historical TT readers."""
+
+        key = (center, target)
+        if key in visited:
+            raise OutOfRangeError(
+                f"No acyclic kernel route covers center={center}, target={target}",
+                out_of_range_times=True,
+            )
+        visited = visited | {key}
+        for reader in snapshot.readers:
+            if reader.has_segment_at(center, target, jd_tt):
+                return reader.position_and_velocity(center, target, jd_tt)
+            if reader.has_segment_at(target, center, jd_tt):
+                position, velocity = reader.position_and_velocity(
+                    target, center, jd_tt
+                )
+                return (
+                    tuple(-value for value in position),
+                    tuple(-value for value in velocity),
+                )
+        for reader in snapshot.readers:
+            for (source_center, source_target), (start, end) in reader.coverage().items():
+                if (
+                    source_target == target
+                    and source_center != center
+                    and start <= jd_tt <= end
+                    and reader.has_segment_at(source_center, target, jd_tt)
+                ):
+                    raw_position, raw_velocity = reader.position_and_velocity(
+                        source_center, target, jd_tt
+                    )
+                    bridge_position, bridge_velocity = (
+                        self._legacy_position_and_velocity(
+                            snapshot,
+                            center,
+                            source_center,
+                            jd_tt,
+                            visited,
+                        )
+                    )
+                    return (
+                        tuple(
+                            a + b
+                            for a, b in zip(raw_position, bridge_position)
+                        ),
+                        tuple(
+                            a + b
+                            for a, b in zip(raw_velocity, bridge_velocity)
+                        ),
+                    )
         raise OutOfRangeError(
-            f"No kernel covers center={center}, target={target} at JD {jd:.2f}",
+            f"No kernel covers center={center}, target={target} at JD(TT) {jd_tt:.9f}",
             out_of_range_times=True,
         )
 
@@ -1425,17 +2236,39 @@ class KernelPool:
 
     def has_segment(self, center: int, target: int) -> bool:
         """Return True if any reader in the pool covers (center, target)."""
-        for reader in self._readers:
-            if reader.has_segment(center, target):
-                return True
+        with self._read_lease() as snapshot:
+            for reader in snapshot.readers:
+                if reader.has_segment(center, target):
+                    return True
         return False
 
     def has_segment_at(self, center: int, target: int, jd: float) -> bool:
         """Return True if any reader covers (center, target) at *jd*."""
-        for reader in self._readers:
-            if reader.has_segment_at(center, target, jd):
-                return True
+        from .julian import tt_to_tdb
+
+        epoch_tdb = tt_to_tdb(jd)
+        with self._read_lease() as snapshot:
+            for reader in snapshot.readers:
+                pairs = self._reader_pairs_tdb(reader)
+                if (center, target) in pairs:
+                    if reader.has_segment_at_tdb(center, target, epoch_tdb):
+                        return True
+                elif reader.has_segment_at(center, target, jd):
+                    return True
         return False
+
+    def has_segment_at_tdb(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+    ) -> bool:
+        """Return whether any private-capability reader serves a TDB epoch."""
+
+        with self._read_lease() as snapshot:
+            return self._find_route_tdb(
+                snapshot, center, target, epoch_tdb
+            ) is not None
 
     # ------------------------------------------------------------------
     # Coverage introspection
@@ -1450,20 +2283,49 @@ class KernelPool:
         available coverage regardless of which reader serves each sub-range.
         """
         merged: dict[tuple[int, int], tuple[float, float]] = {}
-        for reader in self._readers:
-            for pair, (start, end) in reader.coverage().items():
-                if pair in merged:
-                    prev = merged[pair]
-                    merged[pair] = (min(prev[0], start), max(prev[1], end))
-                else:
-                    merged[pair] = (start, end)
+        with self._read_lease() as snapshot:
+            for reader in snapshot.readers:
+                for pair, (start, end) in reader.coverage().items():
+                    if pair in merged:
+                        previous = merged[pair]
+                        merged[pair] = (
+                            min(previous[0], start),
+                            max(previous[1], end),
+                        )
+                    else:
+                        merged[pair] = (start, end)
         return merged
+
+    def _coverage_pairs_tdb(self) -> tuple[tuple[int, int], ...]:
+        """Return every exact-capability pair in deterministic order."""
+
+        with self._read_lease() as snapshot:
+            pairs: set[tuple[int, int]] = set()
+            for reader in snapshot.readers:
+                pairs.update(self._reader_pairs_tdb(reader))
+            return tuple(sorted(pairs))
+
+    def coverage_intervals_tdb(
+        self,
+        center: int,
+        target: int,
+    ) -> tuple[tuple[float, float], ...]:
+        """Return the union of exact TDB intervals across pool readers."""
+
+        intervals: list[tuple[float, float]] = []
+        with self._read_lease() as snapshot:
+            for reader in snapshot.readers:
+                if (center, target) not in self._reader_pairs_tdb(reader):
+                    continue
+                intervals.extend(reader.coverage_intervals_tdb(center, target))
+        return _merge_closed_intervals(intervals)
 
     def covered_bodies(self) -> frozenset[int]:
         """Return the union of target NAIF IDs across all readers."""
         bodies: set[int] = set()
-        for reader in self._readers:
-            bodies.update(reader.covered_bodies())
+        with self._read_lease() as snapshot:
+            for reader in snapshot.readers:
+                bodies.update(reader.covered_bodies())
         return frozenset(bodies)
 
     # ------------------------------------------------------------------
@@ -1472,7 +2334,15 @@ class KernelPool:
 
     def close(self) -> None:
         """Close all managed readers."""
-        for reader in self._readers:
+        with self._condition:
+            if self._closed:
+                return
+            self._closing = True
+            while self._active_leases:
+                self._condition.wait()
+            readers = self._readers
+            self._closed = True
+        for reader in readers:
             try:
                 reader.close()
             except Exception:

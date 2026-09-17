@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import moira.spk_reader as spk_reader
+from moira.julian import tdb_to_tt
 from moira.spk_reader import KernelPool, KernelReader, SpkReader
 
 
@@ -135,9 +136,18 @@ def test_evaluator_interval_requires_one_segment_to_cover_both_endpoints() -> No
         _FakeEvaluatorSegment(0, 10, 2000.0, 3000.0, second),
     )
 
-    assert reader.evaluator(10, 0, 1500.0, jd_end_tt=1900.0) is first
-    assert reader.evaluator(10, 0, 2100.0, jd_end_tt=2900.0) is second
-    assert reader.evaluator(10, 0, 1500.0, jd_end_tt=2500.0) is None
+    assert (
+        reader.evaluator_tdb(10, 0, epoch_tdb=1500.0, epoch_end_tdb=1900.0)
+        is first
+    )
+    assert (
+        reader.evaluator_tdb(10, 0, epoch_tdb=2100.0, epoch_end_tdb=2900.0)
+        is second
+    )
+    assert (
+        reader.evaluator_tdb(10, 0, epoch_tdb=1500.0, epoch_end_tdb=2500.0)
+        is None
+    )
 
 
 def test_evaluator_interval_rejects_reversed_bounds() -> None:
@@ -184,7 +194,7 @@ def test_native_position_path_is_used_for_supported_type2_segments(monkeypatch) 
     monkeypatch.setattr(spk_reader, "_HAS_NATIVE_SPK", True)
     monkeypatch.setattr(segment, "compute", lambda _jd: (_ for _ in ()).throw(AssertionError("fallback compute should not run")))
 
-    assert reader.position(0, 10, 2451545.0) == (10.5, 22.25, 32.25)
+    assert reader.position_tdb(0, 10, 2451545.0) == (10.5, 22.25, 32.25)
 
 
 def test_native_position_and_velocity_path_is_used_for_supported_type2_segments(monkeypatch) -> None:
@@ -198,7 +208,7 @@ def test_native_position_and_velocity_path_is_used_for_supported_type2_segments(
         lambda _jd: (_ for _ in ()).throw(AssertionError("fallback state compute should not run")),
     )
 
-    pos, vel = reader.position_and_velocity(0, 10, 2451545.0)
+    pos, vel = reader.position_and_velocity_tdb(0, 10, 2451545.0)
     assert pos == (10.5, 22.25, 32.25)
     assert vel == (-604.8000000000001, -1425.6000000000001, -1944.0000000000002)
 
@@ -575,8 +585,8 @@ def test_coverage_returns_envelope_per_pair() -> None:
         _FakeSegment(center=0, target=11, start_jd=1500.0, end_jd=2500.0),
     )
     cov = reader.coverage()
-    assert cov[(0, 10)] == (1000.0, 2000.0)
-    assert cov[(0, 11)] == (1500.0, 2500.0)
+    assert cov[(0, 10)] == pytest.approx((tdb_to_tt(1000.0), tdb_to_tt(2000.0)))
+    assert cov[(0, 11)] == pytest.approx((tdb_to_tt(1500.0), tdb_to_tt(2500.0)))
 
 
 def test_coverage_spans_split_segments_correctly() -> None:
@@ -585,7 +595,11 @@ def test_coverage_spans_split_segments_correctly() -> None:
         _FakeSegment(center=0, target=10, start_jd=3000.0, end_jd=4000.0),
     )
     cov = reader.coverage()
-    assert cov[(0, 10)] == (1000.0, 4000.0)
+    assert cov[(0, 10)] == pytest.approx((tdb_to_tt(1000.0), tdb_to_tt(4000.0)))
+    assert reader.coverage_intervals_tdb(0, 10) == (
+        (1000.0, 2000.0),
+        (3000.0, 4000.0),
+    )
 
 
 def test_covered_bodies_returns_frozenset_of_target_ids() -> None:
@@ -608,7 +622,9 @@ def test_epoch_range_returns_span_for_present_pair() -> None:
         _FakeSegment(center=0, target=10, start_jd=1000.0, end_jd=2000.0),
         _FakeSegment(center=0, target=10, start_jd=3000.0, end_jd=4000.0),
     )
-    assert reader.epoch_range(0, 10) == (1000.0, 4000.0)
+    assert reader.epoch_range(0, 10) == pytest.approx(
+        (tdb_to_tt(1000.0), tdb_to_tt(4000.0))
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -815,8 +831,8 @@ def test_kernel_pool_coverage_merges_ranges_across_readers() -> None:
     pool = _pool_with_readers(first, second)
 
     cov = pool.coverage()
-    assert cov[(0, 10)] == (1000.0, 4000.0)
-    assert cov[(0, 11)] == (1000.0, 2000.0)
+    assert cov[(0, 10)] == pytest.approx((tdb_to_tt(1000.0), tdb_to_tt(4000.0)))
+    assert cov[(0, 11)] == pytest.approx((tdb_to_tt(1000.0), tdb_to_tt(2000.0)))
 
 
 def test_kernel_pool_covered_bodies_unions_all_readers() -> None:
@@ -900,8 +916,12 @@ def test_small_body_kernel_coverage_returns_range_per_pair() -> None:
         _FakeSegment(center=10, target=2000001, start_jd=2400000.0, end_jd=2500000.0),
     )
     cov = sbk.coverage()
-    assert cov[(10, 2000433)] == (2451545.0, 2460000.0)
-    assert cov[(10, 2000001)] == (2400000.0, 2500000.0)
+    assert cov[(10, 2000433)] == pytest.approx(
+        (tdb_to_tt(2451545.0), tdb_to_tt(2460000.0))
+    )
+    assert cov[(10, 2000001)] == pytest.approx(
+        (tdb_to_tt(2400000.0), tdb_to_tt(2500000.0))
+    )
 
 
 def test_small_body_kernel_coverage_merges_split_segments() -> None:
@@ -910,7 +930,13 @@ def test_small_body_kernel_coverage_merges_split_segments() -> None:
         _FakeSegment(center=10, target=2000433, start_jd=2456000.0, end_jd=2460000.0),
     )
     cov = sbk.coverage()
-    assert cov[(10, 2000433)] == (2451545.0, 2460000.0)
+    assert cov[(10, 2000433)] == pytest.approx(
+        (tdb_to_tt(2451545.0), tdb_to_tt(2460000.0))
+    )
+    assert sbk.coverage_intervals_tdb(10, 2000433) == (
+        (2451545.0, 2455000.0),
+        (2456000.0, 2460000.0),
+    )
 
 
 @pytest.mark.requires_ephemeris

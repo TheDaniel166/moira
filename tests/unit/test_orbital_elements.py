@@ -63,9 +63,10 @@ def test_name_field_matches_body(reader):
 
 
 @pytest.mark.requires_ephemeris
-def test_epoch_jd_matches_input(reader):
+def test_epoch_jd_is_output_tt(reader):
     result = orbital_elements_at(Body.EARTH, _J2000, reader)
-    assert result.epoch_jd == pytest.approx(_J2000, abs=1e-6)
+    assert result.epoch_jd > _J2000
+    assert result.epoch_jd == pytest.approx(2451545.000738761, abs=1e-12)
 
 
 # ---------------------------------------------------------------------------

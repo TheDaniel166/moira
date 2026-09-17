@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import Any
 
 from .constants import HouseSystem
+from .orbits import ApsidalDirection, OrbitalCenter, OrbitalFrame
 
 
 def _facade_module() -> Any:
@@ -63,7 +64,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
     "scope": "class",
     "id": "moira._facade_predictive.PredictiveFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["progression", "transits", "assess_transit_cardinal_ingress", "assess_transit_primary_syzygy", "eclipse_receipt_from_event", "jupiter_saturn_sequence_from_series", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "mudda_dasha", "lunar_return", "station", "planetary_hours"], "internal": []},
+    "api": {"frozen": ["progression", "transits", "assess_transit_cardinal_ingress", "assess_transit_primary_syzygy", "eclipse_receipt_from_event", "jupiter_saturn_sequence_from_series", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "mudda_dasha", "lunar_return", "station", "planetary_hours", "osculating_elements", "apsidal_passages"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -73,6 +74,46 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
 }
 [/MACHINE_CONTRACT]
     """
+
+    def osculating_elements(
+        self,
+        body: str | int,
+        jd_ut: float,
+        *,
+        center: OrbitalCenter,
+        frame: OrbitalFrame,
+    ):
+        """Return strict osculating elements through this facade's reader."""
+
+        facade = _facade_module()
+        return facade.osculating_elements(
+            body,
+            jd_ut,
+            center=center,
+            frame=frame,
+            reader=self._reader,
+        )
+
+    def apsidal_passages(
+        self,
+        body: str | int,
+        jd_ut: float,
+        *,
+        center: OrbitalCenter,
+        direction: ApsidalDirection,
+        max_days: float | None = None,
+    ):
+        """Return strict apsidal passages through this facade's reader."""
+
+        facade = _facade_module()
+        return facade.apsidal_passages(
+            body,
+            jd_ut,
+            center=center,
+            direction=direction,
+            max_days=max_days,
+            reader=self._reader,
+        )
 
     def progression(
         self,

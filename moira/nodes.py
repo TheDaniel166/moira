@@ -40,7 +40,6 @@ from .constants import DEG2RAD, RAD2DEG, sign_of
 from .julian import centuries_from_j2000, ut_to_tt
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .coordinates import vec_sub, normalize_degrees, mat_vec_mul, precession_matrix_equatorial, nutation_matrix_equatorial
-from .corrections import apply_frame_bias
 from .nutation_2000a import _fundamental_args
 from .obliquity import mean_obliquity, nutation as _nutation
 from .spk_reader import get_active_reader, KernelReader, MissingKernelError
@@ -279,8 +278,7 @@ def _true_node_longitude(reader: KernelReader, jd_tt: float) -> float:
     # different frames displaced the node increasingly far from J2000.
     P = precession_matrix_equatorial(jd_tt)
     N = nutation_matrix_equatorial(jd_tt)
-    n_j2000 = apply_frame_bias(n_icrf)
-    n_true = mat_vec_mul(N, mat_vec_mul(P, n_j2000))
+    n_true = mat_vec_mul(N, mat_vec_mul(P, n_icrf))
 
     # True ecliptic pole in the true-equator-of-date frame.
     ecliptic_pole = (0.0, -math.sin(eps), math.cos(eps))

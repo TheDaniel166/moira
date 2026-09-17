@@ -68,7 +68,7 @@ from .coordinates import (
     icrf_to_true_ecliptic, nutation_matrix_from_terms,
 )
 from .obliquity import mean_obliquity, true_obliquity, nutation as _nutation
-from .julian import local_sidereal_time, DeltaTPolicy
+from .julian import local_sidereal_time, DeltaTPolicy, tt_to_tdb
 from ._ephemeris_time import _ut1_to_ephemeris_tt
 from .spk_reader import (
     get_active_reader, get_reader, KernelReader, SpkReader,
@@ -76,7 +76,7 @@ from .spk_reader import (
 )
 from .small_body_identity import SmallBodyFamily, resolve_small_body_identity
 from .corrections import (
-    apply_light_time, apply_aberration, apply_deflection, apply_frame_bias,
+    apply_light_time, apply_aberration, apply_deflection,
     apply_refraction, SCHWARZSCHILD_RADII,
     topocentric_correction, apply_diurnal_aberration, C_KM_PER_DAY,
 )
@@ -573,8 +573,10 @@ class _NativeAllPlanetsPlan:
         default=None,
         repr=False,
     )
+    epoch_tdb: float | None = None
     rate_specs: tuple[
         tuple[
+            float,
             float,
             tuple[tuple[int, int, int], ...],
             dict[str, tuple[tuple[int, int, int], ...]],
@@ -904,7 +906,7 @@ def _npe_all_planets_mode_is_admitted(
     ).admitted
 
 
-def _npe_public_route_segment_specs(reader: SpkReader, jd_tt: float):
+def _npe_public_route_segment_specs(reader: SpkReader, epoch_tdb: float):
     """Return native route specs for the admitted planetary segment set, or None."""
     kernel = getattr(reader, "_kernel", None)
     handle = getattr(kernel, "_handle", None)
@@ -913,7 +915,7 @@ def _npe_public_route_segment_specs(reader: SpkReader, jd_tt: float):
 
     specs: list[tuple[int, int, int]] = []
     for center, target in _NPE_PUBLIC_ROUTE_PAIRS:
-        segment = reader._segment_for(center, target, jd_tt)
+        segment = reader._segment_for_tdb(center, target, epoch_tdb)
         if getattr(segment, "_handle", None) is not handle:
             return None
         if not all(hasattr(segment, attr) for attr in ("start_i", "end_i", "data_type")):
@@ -922,7 +924,7 @@ def _npe_public_route_segment_specs(reader: SpkReader, jd_tt: float):
     return specs
 
 
-def _npe_body_route_segment_specs(reader: SpkReader, jd_tt: float):
+def _npe_body_route_segment_specs(reader: SpkReader, epoch_tdb: float):
     """Return admitted per-body route segment specs keyed by body, or None."""
     kernel = getattr(reader, "_kernel", None)
     handle = getattr(kernel, "_handle", None)
@@ -933,7 +935,7 @@ def _npe_body_route_segment_specs(reader: SpkReader, jd_tt: float):
     for body, route in _NPE_BODY_ROUTE_PAIRS.items():
         specs: list[tuple[int, int, int]] = []
         for center, target in route:
-            segment = reader._segment_for(center, target, jd_tt)
+            segment = reader._segment_for_tdb(center, target, epoch_tdb)
             if getattr(segment, "_handle", None) is not handle:
                 return None
             if not all(hasattr(segment, attr) for attr in ("start_i", "end_i", "data_type")):
@@ -994,18 +996,18 @@ def _prefill_npe_public_vector_cache(
 def _npe_batch_barycentric_positions(
     handle,
     body_segment_specs: dict[str, tuple[tuple[int, int, int], ...]],
-    body_jds: dict[str, float],
+    body_epochs_tdb: dict[str, float],
 ) -> dict[str, Vec3]:
-    """Evaluate admitted per-body barycentric positions for varying JDs in one native batch."""
-    requested_bodies = tuple(body_jds)
+    """Evaluate admitted per-body barycentric positions at varying TDB epochs."""
+    requested_bodies = tuple(body_epochs_tdb)
     requests: list[tuple[int, int, int, float]] = []
     counts: dict[str, int] = {}
     for body in requested_bodies:
         specs = body_segment_specs[body]
-        jd = body_jds[body]
+        epoch_tdb = body_epochs_tdb[body]
         counts[body] = len(specs)
         for start_i, end_i, data_type in specs:
-            requests.append((start_i, end_i, data_type, jd))
+            requests.append((start_i, end_i, data_type, epoch_tdb))
 
     raw = handle.batch_segment_position_requests(requests)
     cursor = 0
@@ -1080,10 +1082,11 @@ def _native_all_planets_plan(
         return mode
 
     assert isinstance(reader, SpkReader)
-    public_specs = _npe_public_route_segment_specs(reader, jd_tt)
+    epoch_tdb = tt_to_tdb(jd_tt)
+    public_specs = _npe_public_route_segment_specs(reader, epoch_tdb)
     if public_specs is None:
         return _native_python_plan(_NativeAdmissionReason.PUBLIC_ROUTE_UNAVAILABLE)
-    body_specs = _npe_body_route_segment_specs(reader, jd_tt)
+    body_specs = _npe_body_route_segment_specs(reader, epoch_tdb)
     if body_specs is None:
         return _native_python_plan(_NativeAdmissionReason.BODY_ROUTE_UNAVAILABLE)
 
@@ -1094,6 +1097,7 @@ def _native_all_planets_plan(
             reason=_NativeAdmissionReason.ADMITTED_NATIVE_BATCH,
             public_specs=tuple(public_specs),
             body_specs=body_specs,
+            epoch_tdb=epoch_tdb,
         )
 
     rate_specs = []
@@ -1101,12 +1105,13 @@ def _native_all_planets_plan(
         jd_tt - _LONGITUDE_RATE_STEP_DAYS,
         jd_tt + _LONGITUDE_RATE_STEP_DAYS,
     ):
-        rate_public_specs = _npe_public_route_segment_specs(reader, rate_jd)
-        rate_body_specs = _npe_body_route_segment_specs(reader, rate_jd)
+        rate_epoch_tdb = tt_to_tdb(rate_jd)
+        rate_public_specs = _npe_public_route_segment_specs(reader, rate_epoch_tdb)
+        rate_body_specs = _npe_body_route_segment_specs(reader, rate_epoch_tdb)
         if rate_public_specs is None or rate_body_specs is None:
             return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_UNAVAILABLE)
         rate_specs.append(
-            (rate_jd, tuple(rate_public_specs), rate_body_specs)
+            (rate_jd, rate_epoch_tdb, tuple(rate_public_specs), rate_body_specs)
         )
 
     return _NativeAllPlanetsPlan(
@@ -1114,6 +1119,7 @@ def _native_all_planets_plan(
         reason=_NativeAdmissionReason.ADMITTED_NATIVE_EVALUATOR,
         public_specs=tuple(public_specs),
         body_specs=body_specs,
+        epoch_tdb=epoch_tdb,
         rate_specs=tuple(rate_specs),
         evaluator=evaluator,
     )
@@ -1157,8 +1163,10 @@ def _native_all_planets_admitted(
 
     assert plan.public_specs is not None
     assert plan.body_specs is not None
+    assert plan.epoch_tdb is not None
     specs = plan.public_specs
     body_segment_specs = plan.body_specs
+    epoch_tdb = plan.epoch_tdb
 
     mean_eps = mean_obliquity(jd_tt)
     dpsi_deg = deps_deg = 0.0
@@ -1183,12 +1191,12 @@ def _native_all_planets_admitted(
             list(bodies),
             specs,
             body_segment_specs,
-            jd_tt,
+            epoch_tdb,
             obliquity,
             rot_mat,
         )
         rate_payloads: list[list[tuple]] = []
-        for rate_jd, rate_specs, rate_body_specs in plan.rate_specs:
+        for rate_jd, rate_epoch_tdb, rate_specs, rate_body_specs in plan.rate_specs:
             rate_mean_eps = mean_obliquity(rate_jd)
             rate_dpsi, rate_deps = _nutation(rate_jd)
             rate_rot_mat = _compose_rotation_matrix(
@@ -1203,7 +1211,7 @@ def _native_all_planets_admitted(
                     list(bodies),
                     rate_specs,
                     rate_body_specs,
-                    rate_jd,
+                    rate_epoch_tdb,
                     rate_mean_eps + rate_deps,
                     rate_rot_mat,
                 )
@@ -1227,7 +1235,7 @@ def _native_all_planets_admitted(
         return results
 
     handle = reader._kernel._handle
-    batch = handle.batch_segment_position_and_velocity(specs, jd_tt)
+    batch = handle.batch_segment_position_and_velocity(specs, epoch_tdb)
     pair_states: dict[tuple[int, int], tuple[Vec3, Vec3]] = {}
     for pair, (position, velocity) in zip(_NPE_PUBLIC_ROUTE_PAIRS, batch):
         pos = (float(position[0]), float(position[1]), float(position[2]))
@@ -1276,8 +1284,12 @@ def _native_all_planets_admitted(
     }
 
     for _ in range(3):
-        retarded_jds = {body: jd_tt - light_times[body] for body in bodies}
-        body_bary_lt = _npe_batch_barycentric_positions(handle, body_segment_specs, retarded_jds)
+        retarded_epochs_tdb = {
+            body: epoch_tdb - light_times[body] for body in bodies
+        }
+        body_bary_lt = _npe_batch_barycentric_positions(
+            handle, body_segment_specs, retarded_epochs_tdb
+        )
         converged = True
         for body in bodies:
             xyz_lt = vec_sub(body_bary_lt[body], earth_ssb)
@@ -1297,7 +1309,6 @@ def _native_all_planets_admitted(
         if aberration:
             xyz0 = apply_aberration(xyz0, earth_vel)
 
-        xyz0 = apply_frame_bias(xyz0)
         if context.rot_mat is not None:
             xyz0 = _apply_rotation_matrix(context.rot_mat, xyz0)
         else:
@@ -1644,14 +1655,11 @@ def _true_of_date_ecliptic_state(
 ) -> tuple[Vec3, Vec3]:
     """Return a full ICRF-to-true-ecliptic-of-date state transformation.
 
-    Position uses frame bias, IAU 2006 precession, IAU 2000A nutation, and
+    Position uses bias-inclusive IAU 2006 precession, IAU 2000A nutation, and
     true obliquity.  Velocity additionally includes the derivative of that
     time-dependent rotation, the state-transform term represented by the
     lower-left block of a NAIF ``SXFORM`` matrix.
     """
-    biased_position = apply_frame_bias(xyz_icrf)
-    biased_velocity = apply_frame_bias(velocity_icrf)
-
     def transform(vector: Vec3, epoch_tt: float) -> Vec3:
         equatorial_of_date = _apply_rotation_matrix(
             _compose_rotation_matrix(epoch_tt, with_nutation=True),
@@ -1662,11 +1670,11 @@ def _true_of_date_ecliptic_state(
             true_obliquity(epoch_tt),
         )
 
-    position_ecliptic = transform(biased_position, jd_tt)
-    rotated_velocity = transform(biased_velocity, jd_tt)
+    position_ecliptic = transform(xyz_icrf, jd_tt)
+    rotated_velocity = transform(velocity_icrf, jd_tt)
     step = _FRAME_STATE_DERIVATIVE_STEP_DAYS
-    position_plus = transform(biased_position, jd_tt + step)
-    position_minus = transform(biased_position, jd_tt - step)
+    position_plus = transform(xyz_icrf, jd_tt + step)
+    position_minus = transform(xyz_icrf, jd_tt - step)
     frame_velocity = (
         (position_plus[0] - position_minus[0]) / (2.0 * step),
         (position_plus[1] - position_minus[1]) / (2.0 * step),
@@ -1900,7 +1908,6 @@ def _apparent_geocentric_equatorial_vector(
         xyz = apply_deflection(xyz, deflectors)
     if aberration:
         xyz = apply_aberration(xyz, earth_vel)
-    xyz = apply_frame_bias(xyz)
     return _apply_rotation_matrix(rot_mat, xyz)
 
 
@@ -1991,7 +1998,6 @@ def _geocentric_ecliptic_longitude_for_rate(
         )
     else:
         xyz = _geocentric(body, jd_tt, reader, context.vector_cache)
-        xyz = apply_frame_bias(xyz)
         if context.rot_mat is None:
             raise RuntimeError("geometric longitude-rate context is incomplete")
         xyz = _apply_rotation_matrix(context.rot_mat, xyz)
@@ -2253,8 +2259,6 @@ def _planet_at_core(
             if aberration:
                 xyz0 = apply_aberration(xyz0, earth_vel)
 
-        xyz0 = apply_frame_bias(xyz0)
-
         rot_mat = context.rot_mat if context is not None else _rot_mat
         if rot_mat is not None:
             xyz0 = _apply_rotation_matrix(rot_mat, xyz0)
@@ -2271,7 +2275,6 @@ def _planet_at_core(
         # Geometric versus apparent controls physical light-path corrections,
         # not the orientation of the returned coordinate frame.  PlanetData
         # remains a tropical ecliptic-of-date product in both modes.
-        xyz0 = apply_frame_bias(xyz0)
         geometric_rot_mat = (
             context.rot_mat
             if context is not None and context.rot_mat is not None
@@ -2559,14 +2562,16 @@ def planet_reduction_breakdown_at(
     )
     stage_longitudes["annual_aberration"] = _rounded_longitude(lon3)
 
-    frame_bias_enabled = True
-    xyz4 = apply_frame_bias(xyz3)
-    lon4 = _stage_longitude(xyz4, _J2000_ECLIPTIC_OBLIQUITY_DEG)
+    # The following bias-inclusive precession matrix owns frame bias.  Retain
+    # the named pedagogic stage as a receipt, but do not apply bias twice.
+    frame_bias_enabled = False
+    xyz4 = xyz3
+    lon4 = lon3
     stages.append(
         PlanetReductionStage(
             num=4,
             name="IAU 2006 frame bias",
-            note="ICRF to dynamical mean J2000",
+            note="Owned by following bias-inclusive precession",
             delta=_stage_delta_arcsec(lon4, lon3) if frame_bias_enabled else 0.0,
             enabled=frame_bias_enabled,
         )
@@ -3306,10 +3311,7 @@ def _sky_position_at_impl(
     if aberration:
         xyz = apply_aberration(xyz, earth_vel)
 
-    # Step 4: Frame bias
-    xyz = apply_frame_bias(xyz)
-
-    # Step 5+6: Precession + optional Nutation
+    # Step 4–6: bias-inclusive precession + optional nutation
     if rot_mat is not None:
         xyz = _apply_rotation_matrix(rot_mat, xyz)
     else:

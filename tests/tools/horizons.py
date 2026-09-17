@@ -289,10 +289,23 @@ def vector_state_tdb(
     center: str = "500@399",
 ) -> VectorState:
     """Fetch one geometric ICRF vector at an exact TDB Julian Day."""
-    params = {
+    return _parse_vector_state(
+        command,
+        vector_state_response_tdb(command, jd_tdb, center),
+    )
+
+
+def _vector_state_tdb_parameters(
+    command: str,
+    jd_tdb: float,
+    center: str,
+) -> dict[str, str]:
+    """Return the frozen exact-JDTDB Horizons VECTORS request."""
+
+    return {
         "format": "text",
         "COMMAND": f"'{command}'",
-        "OBJ_DATA": "NO",
+        "OBJ_DATA": "YES",
         "MAKE_EPHEM": "YES",
         "EPHEM_TYPE": "VECTORS",
         "CENTER": f"'{center}'",
@@ -307,7 +320,123 @@ def vector_state_tdb(
         "REF_PLANE": "FRAME",
         "VEC_CORR": "NONE",
     }
-    return _parse_vector_state(command, _request_text(params))
+
+
+@lru_cache(maxsize=256)
+def vector_state_response_tdb(
+    command: str,
+    jd_tdb: float,
+    center: str = "500@399",
+) -> str:
+    """Fetch the raw official Horizons vector response at exact JDTDB."""
+
+    return _request_text(_vector_state_tdb_parameters(command, jd_tdb, center))
+
+
+def _vector_series_tdb_parameters(
+    command: str,
+    start_jd_tdb: float,
+    stop_jd_tdb: float,
+    step_size: str,
+    center: str,
+) -> dict[str, str]:
+    """Return an exact-JDTDB Horizons VECTORS series request."""
+
+    return {
+        "format": "text",
+        "COMMAND": f"'{command}'",
+        "OBJ_DATA": "YES",
+        "MAKE_EPHEM": "YES",
+        "EPHEM_TYPE": "VECTORS",
+        "CENTER": f"'{center}'",
+        "START_TIME": f"'JD{start_jd_tdb:.12f}'",
+        "STOP_TIME": f"'JD{stop_jd_tdb:.12f}'",
+        "STEP_SIZE": f"'{step_size}'",
+        "TIME_TYPE": "'TDB'",
+        "OUT_UNITS": "KM-S",
+        "VEC_TABLE": "2",
+        "VEC_LABELS": "NO",
+        "CSV_FORMAT": "YES",
+        "REF_SYSTEM": "ICRF",
+        "REF_PLANE": "FRAME",
+        "VEC_CORR": "NONE",
+    }
+
+
+@lru_cache(maxsize=128)
+def vector_series_response_tdb(
+    command: str,
+    start_jd_tdb: float,
+    stop_jd_tdb: float,
+    step_size: str,
+    center: str = "500@10",
+) -> str:
+    """Fetch one official exact-TDB geometric vector series response."""
+
+    return _request_text(
+        _vector_series_tdb_parameters(
+            command, start_jd_tdb, stop_jd_tdb, step_size, center
+        )
+    )
+
+
+def _parse_vector_series_km_s(
+    command: str,
+    text: str,
+) -> tuple[VectorSample, ...]:
+    samples: list[VectorSample] = []
+    in_data = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped == "$$SOE":
+            in_data = True
+            continue
+        if stripped == "$$EOE":
+            break
+        if not in_data or not stripped:
+            continue
+        parts = [part.strip() for part in stripped.split(",")]
+        if len(parts) < 8:
+            continue
+        try:
+            samples.append(
+                VectorSample(
+                    jd_tdb=float(parts[0]),
+                    state=VectorState(
+                        x=float(parts[2]),
+                        y=float(parts[3]),
+                        z=float(parts[4]),
+                        vx=float(parts[5]),
+                        vy=float(parts[6]),
+                        vz=float(parts[7]),
+                    ),
+                )
+            )
+        except ValueError:
+            continue
+    if samples:
+        return tuple(samples)
+    if error := _extract_error(text):
+        raise RuntimeError(f"Horizons error for {command!r}: {error}")
+    raise RuntimeError(f"Could not parse Horizons vector series for {command!r}")
+
+
+@lru_cache(maxsize=128)
+def vector_series_tdb(
+    command: str,
+    start_jd_tdb: float,
+    stop_jd_tdb: float,
+    step_size: str,
+    center: str = "500@10",
+) -> tuple[VectorSample, ...]:
+    """Fetch geometric ICRF states over an exact TDB interval."""
+
+    return _parse_vector_series_km_s(
+        command,
+        vector_series_response_tdb(
+            command, start_jd_tdb, stop_jd_tdb, step_size, center
+        ),
+    )
 
 
 def _parse_vector_state(command: str, text: str) -> VectorState:
@@ -374,7 +503,61 @@ def orbital_elements(
         "CSV_FORMAT": "YES",
         "ELM_LABELS": "NO",
     }
-    text = _request_text(params)
+    return _parse_orbital_elements(command, _request_text(params))
+
+
+def _orbital_elements_tdb_parameters(
+    command: str,
+    jd_tdb: float,
+    center: str,
+) -> dict[str, str]:
+    """Return the frozen exact-JDTDB Horizons ELEMENTS request."""
+
+    return {
+        "format": "text",
+        "COMMAND": f"'{command}'",
+        "OBJ_DATA": "YES",
+        "MAKE_EPHEM": "YES",
+        "EPHEM_TYPE": "ELEMENTS",
+        "CENTER": f"'{center}'",
+        "TLIST": f"'{jd_tdb:.12f}'",
+        "TLIST_TYPE": "'JD'",
+        "TIME_TYPE": "'TDB'",
+        "OUT_UNITS": "AU-D",
+        "REF_SYSTEM": "J2000",
+        "REF_PLANE": "ECLIPTIC",
+        "CSV_FORMAT": "YES",
+        "ELM_LABELS": "NO",
+    }
+
+
+@lru_cache(maxsize=256)
+def orbital_elements_response_tdb(
+    command: str,
+    jd_tdb: float,
+    center: str = "500@10",
+) -> str:
+    """Fetch the raw official Horizons response at one exact JDTDB instant."""
+
+    return _request_text(_orbital_elements_tdb_parameters(command, jd_tdb, center))
+
+
+@lru_cache(maxsize=256)
+def orbital_elements_tdb(
+    command: str,
+    jd_tdb: float,
+    center: str = "500@10",
+) -> OrbitalElements:
+    """Fetch J2000-ecliptic osculating elements at an exact JDTDB instant."""
+
+    return _parse_orbital_elements(
+        command,
+        orbital_elements_response_tdb(command, jd_tdb, center),
+    )
+
+
+def _parse_orbital_elements(command: str, text: str) -> OrbitalElements:
+    """Parse one Horizons ELEMENTS response."""
 
     in_data = False
     for line in text.splitlines():

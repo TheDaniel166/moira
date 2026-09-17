@@ -312,16 +312,27 @@ The Phenomena services identify discrete celestial milestones using a **Two-Phas
 The service performs a coarse-grained scan using **geometric positions** (raw SPK, no apparent pipeline). Step sizes are body-dependent and event-dependent:
 - **Conjunctions**: 3-day steps.
 - **Moon phases**: 1-day steps.
-- **Elongations/Apsides**: body-dependent daily steps.
+- **Elongations**: body-dependent daily steps.
+- **Apsides**: delegated to the orbital core's adaptive TDB route search.
 
-The scan detects **sign changes** in a discriminant function (for zero-crossings like conjunctions and phases) or **slope reversals** (for extrema like elongations and apsides).
+The scan detects **sign changes** in a discriminant function (for
+zero-crossings like conjunctions and phases) or **slope reversals** (for
+elongations). Apsides are not inferred from sampled distance slopes here.
 
 #### Phase II: Refinement (Apparent Bisection / Golden-Section)
 
 Once a crossing or extremum is localized to a coarse interval, the service activates the **full Apparent Pipeline** and applies:
 
 - **Bisection** for zero-crossings (conjunctions, phases, ingresses): converges to ~1-second precision by halving the interval until the discriminant magnitude is below threshold.
-- **Golden-Section Search** for extrema (elongations, perihelion, aphelion): narrows the bracketed interval using the golden ratio φ = (√5−1)/2 to find the maximum/minimum without requiring derivatives.
+- **Golden-Section Search** for elongation extrema: narrows the bracketed
+  interval using the golden ratio φ = (√5−1)/2.
+
+Perihelion and aphelion use `moira.orbits.apsidal_passages` instead. That core
+binds one immutable reader route, samples center-relative radial velocity in
+TDB, refines its sign-changing root, and confirms a two-sided local distance
+extremum. It uses Earth as center for the Moon and Sun for every other admitted
+body. `PhenomenonEvent.jd_ut` is the verified inverse-clock UT1 coordinate;
+the TDB root is never relabelled as UT1.
 
 #### Data Vessels
 
@@ -347,8 +358,8 @@ class OrbitalResonance:
 | Function | Description |
 |----------|-------------|
 | `greatest_elongation(body, jd_start, direction, max_days)` | Mercury/Venus max angular distance from Sun |
-| `perihelion(body, jd_start, max_days)` | Closest approach to Sun |
-| `aphelion(body, jd_start, max_days)` | Furthest distance from Sun |
+| `perihelion(body, jd_start, max_days)` | Next local distance minimum about the body's lawful center |
+| `aphelion(body, jd_start, max_days)` | Next local distance maximum about the body's lawful center |
 | `next_moon_phase(phase_name, jd_start)` | Exact moment of named Moon phase |
 | `moon_phases_in_range(jd_start, jd_end)` | All 8 phases chronologically |
 | `next_conjunction(body1, body2, jd_start)` | Zero longitudinal separation |

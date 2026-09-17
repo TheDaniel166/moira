@@ -73,7 +73,6 @@ from .eclipse_geometry import apparent_radius as _apparent_radius, MOON_RADIUS_K
 from .corrections import (
     apply_aberration,
     apply_deflection,
-    apply_frame_bias,
     apply_refraction,
     SCHWARZSCHILD_RADII,
 )
@@ -1177,7 +1176,6 @@ def _star_physical_equatorial(
     deflectors.append((_geocentric(Body.JUPITER, jd_tt, reader), SCHWARZSCHILD_RADII["Jupiter"]))
     deflectors.append((_geocentric(Body.SATURN, jd_tt, reader), SCHWARZSCHILD_RADII["Saturn"]))
     xyz_physical = apply_deflection(xyz_icrf, deflectors)
-    xyz_physical = apply_frame_bias(xyz_physical)
     xyz_physical = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz_physical)
     xyz_physical = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz_physical)
     ra_star, dec_star, _ = icrf_to_equatorial(xyz_physical)
@@ -1205,7 +1203,6 @@ def _star_topocentric_equatorial(
 
     xyz_apparent = apply_deflection(xyz_icrf, deflectors)
     xyz_apparent = apply_aberration(xyz_apparent, earth_vel)
-    xyz_apparent = apply_frame_bias(xyz_apparent)
     xyz_apparent = mat_vec_mul(precession_matrix_equatorial(jd_tt), xyz_apparent)
     xyz_apparent = mat_vec_mul(nutation_matrix_equatorial(jd_tt), xyz_apparent)
 

@@ -985,6 +985,12 @@ PYBIND11_MODULE(_moira_native, m) {
             return out;
         });
 
+    py::class_<TtToTdbEvaluator, IEvaluator, std::shared_ptr<TtToTdbEvaluator>>(
+        m, "TtToTdbEvaluator"
+    )
+        .def(py::init<std::shared_ptr<IEvaluator>>(), py::arg("raw_tdb_evaluator"))
+        .def_static("convert", &TtToTdbEvaluator::convert, py::arg("jd_tt"));
+
     py::class_<PenumbralClearanceScan>(m, "PenumbralClearanceScan")
         .def_readonly("sampled_maximum", &PenumbralClearanceScan::sampled_maximum)
         .def_readonly(
@@ -1301,7 +1307,7 @@ PYBIND11_MODULE(_moira_native, m) {
                const std::vector<std::string>& bodies,
                py::iterable public_specs_src,
                py::dict body_specs_src,
-               double jd_tt,
+               double epoch_tdb,
                double obliquity_deg,
                const py::sequence& rotation_matrix_src) {
                 std::vector<NativePlanetaryEvaluator::SegmentSpec> public_specs;
@@ -1352,7 +1358,7 @@ PYBIND11_MODULE(_moira_native, m) {
                         bodies,
                         public_specs,
                         body_specs,
-                        jd_tt,
+                        epoch_tdb,
                         obliquity_deg,
                         rotation_matrix
                     );
@@ -1374,7 +1380,7 @@ PYBIND11_MODULE(_moira_native, m) {
             py::arg("bodies"),
             py::arg("public_specs"),
             py::arg("body_specs"),
-            py::arg("jd_tt"),
+            py::arg("epoch_tdb"),
             py::arg("obliquity_deg"),
             py::arg("rotation_matrix")
         );
@@ -1388,6 +1394,9 @@ PYBIND11_MODULE(_moira_native, m) {
     
     py::class_<SumEvaluator, IEvaluator, std::shared_ptr<SumEvaluator>>(m, "SumEvaluator")
         .def(py::init<std::shared_ptr<IEvaluator>, std::shared_ptr<IEvaluator>>());
+
+    py::class_<NegateEvaluator, IEvaluator, std::shared_ptr<NegateEvaluator>>(m, "NegateEvaluator")
+        .def(py::init<std::shared_ptr<IEvaluator>>());
 
     m.def("longitude_difference", [](std::shared_ptr<IEvaluator> t1, std::shared_ptr<IEvaluator> t2, std::shared_ptr<IEvaluator> obs, double jd) {
         return longitude_difference(*t1, *t2, *obs, jd);

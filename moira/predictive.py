@@ -169,7 +169,35 @@ from .phase import angular_diameter
 from .planets import HeliocentricData, heliocentric_planet_at, all_heliocentric_at
 
 # ── Orbits ───────────────────────────────────────────────────────────────
-from .orbits import KeplerianElements, DistanceExtremes, orbital_elements_at, distance_extremes_at
+from .orbits import (
+    ApsidalDirection,
+    ApsidalPassageOutcome,
+    ApsidalPassageStatus,
+    ApsidalPassages,
+    ApsidalPassagesProvenance,
+    ApsidalRouteScheduleEntry,
+    ApsidalSeamContinuity,
+    ApsidalSegmentUsage,
+    DistanceExtremes,
+    KeplerianElements,
+    OrbitShape,
+    OrbitalBodyIdentity,
+    OrbitalBodyKind,
+    OrbitalCenter,
+    OrbitalFrame,
+    OrbitalGravity,
+    OrbitalSingularityThresholds,
+    OrbitalStateSource,
+    OrbitalTimeConversion,
+    OsculatingElements,
+    OsculatingElementsProvenance,
+    UndefinedElement,
+    UndefinedElementReason,
+    apsidal_passages,
+    distance_extremes_at,
+    orbital_elements_at,
+    osculating_elements,
+)
 
 # ── Planetary nodes / apsides ────────────────────────────────────────────
 from .planetary_nodes import OrbitalNode, planetary_node, all_planetary_nodes
@@ -371,6 +399,14 @@ _PREDICTIVE_OWN: list[str] = [
     # Orbits
     "KeplerianElements", "DistanceExtremes",
     "orbital_elements_at", "distance_extremes_at",
+    "ApsidalDirection", "ApsidalPassageStatus", "ApsidalPassageOutcome",
+    "ApsidalRouteScheduleEntry", "ApsidalSegmentUsage", "ApsidalSeamContinuity",
+    "ApsidalPassagesProvenance", "ApsidalPassages", "apsidal_passages",
+    "OrbitalCenter", "OrbitalFrame", "OrbitShape", "OrbitalBodyKind",
+    "UndefinedElementReason", "OrbitalBodyIdentity", "OrbitalStateSource",
+    "UndefinedElement", "OrbitalGravity", "OrbitalTimeConversion",
+    "OrbitalSingularityThresholds", "OsculatingElementsProvenance",
+    "OsculatingElements", "osculating_elements",
     # Planetary nodes
     "OrbitalNode", "planetary_node", "all_planetary_nodes",
     # Batch assembly

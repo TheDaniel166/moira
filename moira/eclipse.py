@@ -143,7 +143,7 @@ from .eclipse_cartography import (
     SolarEclipseMapSample,
     _build_solar_eclipse_cartography,
 )
-from .corrections import apply_frame_bias, apply_light_time
+from .corrections import apply_light_time
 from .obliquity import nutation, true_obliquity
 from .polar_motion import PolarMotionRegistry, polar_motion_matrix
 from .geoutils import (
@@ -4295,13 +4295,12 @@ def _earth_fixed_lunar_reception_vector(
         earth_ssb,
         lambda body, epoch, reader: _barycentric(body, epoch, reader),
     )
-    moon_j2000 = apply_frame_bias(moon_icrf)
     moon_tete = mat_vec_mul(
         mat_mul(
             nutation_matrix_equatorial(jd_tt),
             precession_matrix_equatorial(jd_tt),
         ),
-        moon_j2000,
+        moon_icrf,
     )
 
     dpsi_deg, _deps_deg = nutation(jd_tt)

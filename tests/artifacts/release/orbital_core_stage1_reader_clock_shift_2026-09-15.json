@@ -1,0 +1,701 @@
+{
+  "baseline_identity": {
+    "network_boundary": {
+      "external_network_used": false,
+      "moira_no_download": true
+    },
+    "resources": {
+      "planetary": {
+        "bytes": 3307878400,
+        "filename": "de441.bsp",
+        "identity": "DE441",
+        "sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5"
+      },
+      "small_body_manifests": [
+        {
+          "body_count": 497,
+          "catalog_id": "moira-comets",
+          "catalog_version": "2026.07.28.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-07-28T12:47:17Z",
+          "sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+          "shard_count": 20
+        },
+        {
+          "body_count": 25,
+          "catalog_id": "moira-asteroids-wheel",
+          "catalog_version": "2026.08.14.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-08-14T21:53:17Z",
+          "sha256": "c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22",
+          "shard_count": 1
+        }
+      ]
+    },
+    "source": {
+      "implementation": "CPython",
+      "moira_version": "6.6.0",
+      "native_backend_filename": "_moira_native.cp314-win_amd64.pyd",
+      "platform": "Windows",
+      "python": "3.14.3",
+      "revision": "29dd164c80c2a6788aa598a832eff3d4fd8e727a"
+    }
+  },
+  "candidate_identity": {
+    "network_boundary": {
+      "external_network_used": false,
+      "moira_no_download": true
+    },
+    "resources": {
+      "planetary": {
+        "bytes": 3307878400,
+        "filename": "de441.bsp",
+        "identity": "DE441",
+        "sha256": "9a824e6a8ce3d39f8a513b17278ff7b7ad226f964c76d2019b0a51d8808d6ff5"
+      },
+      "small_body_manifests": [
+        {
+          "body_count": 497,
+          "catalog_id": "moira-comets",
+          "catalog_version": "2026.07.28.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-07-28T12:47:17Z",
+          "sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+          "shard_count": 20
+        },
+        {
+          "body_count": 25,
+          "catalog_id": "moira-asteroids-wheel",
+          "catalog_version": "2026.08.14.1",
+          "filename": "manifest.json",
+          "released_utc": "2026-08-14T21:53:17Z",
+          "sha256": "c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22",
+          "shard_count": 1
+        }
+      ]
+    },
+    "source": {
+      "implementation": "CPython",
+      "moira_version": "6.6.0",
+      "native_backend_filename": "_moira_native.cp314-win_amd64.pyd",
+      "platform": "Windows",
+      "python": "3.14.3",
+      "revision": "dfad306f47901596e9edc254116ac3c6d47a3764+uncommitted-worktree"
+    }
+  },
+  "candidate_native_python_parity": {
+    "changed_numeric_field_count": 0,
+    "deltas": [],
+    "max_absolute_delta": 0.0,
+    "shared_numeric_field_count": 28,
+    "unchanged_numeric_field_count": 28,
+    "within_1e_9": true
+  },
+  "clock_witness": {
+    "all_legacy_replays_exact_to_1e_12": true,
+    "all_tt_adapters_exactly_once_to_1e_12": true,
+    "routes": {
+      "0_to_10": {
+        "baseline_equals_candidate_legacy_numeric_tdb_max_residual": 0.0,
+        "candidate_tt_wrapper_equals_one_tdb_conversion_max_residual": 0.0,
+        "one_vs_two_tdb_conversions_max_delta": 9.990762919187546e-07
+      },
+      "0_to_4": {
+        "baseline_equals_candidate_legacy_numeric_tdb_max_residual": 0.0,
+        "candidate_tt_wrapper_equals_one_tdb_conversion_max_residual": 0.0,
+        "one_vs_two_tdb_conversions_max_delta": 0.0017726719379425049
+      },
+      "3_to_301": {
+        "baseline_equals_candidate_legacy_numeric_tdb_max_residual": 0.0,
+        "candidate_tt_wrapper_equals_one_tdb_conversion_max_residual": 0.0,
+        "one_vs_two_tdb_conversions_max_delta": 7.423671195283532e-05
+      },
+      "3_to_399": {
+        "baseline_equals_candidate_legacy_numeric_tdb_max_residual": 0.0,
+        "candidate_tt_wrapper_equals_one_tdb_conversion_max_residual": 0.0,
+        "one_vs_two_tdb_conversions_max_delta": 9.131138085649582e-07
+      }
+    },
+    "second_conversion_is_observably_distinct": true,
+    "tdb_minus_tt_seconds": -8.046627044677734e-05
+  },
+  "commands": {
+    "baseline_capture": "<baseline-python> measure_orbital_stage1_compatibility.py capture",
+    "candidate_capture": "<candidate-python> measure_orbital_stage1_compatibility.py capture",
+    "comparison": "<candidate-python> measure_orbital_stage1_compatibility.py compare"
+  },
+  "logical_inputs": {
+    "frame_epochs_tt": {
+      "ancient": 2086302.5,
+      "far_future": 2816787.5,
+      "iau2006_lower_boundary": 2415020.0,
+      "iau2006_upper_boundary": 2488070.0,
+      "j2000": 2451545.0
+    },
+    "jd_ut1": 2460676.5,
+    "observer": {
+      "elevation_m": 256.0,
+      "latitude_deg": 42.2917,
+      "longitude_deg": -85.5872
+    }
+  },
+  "measurement_date": "2026-09-15",
+  "numeric_comparison": {
+    "changed_numeric_field_count": 84,
+    "deltas": [
+      {
+        "baseline": -78901902.17908232,
+        "candidate": -78901902.17731488,
+        "delta": 0.0017674416303634644,
+        "path": "clock.raw_states.data.routes.0_to_4.tt_wrapper.position_km[0]"
+      },
+      {
+        "baseline": 568223560.12832,
+        "candidate": 568223560.1273594,
+        "delta": -0.0009605884552001953,
+        "path": "small_bodies.asteroid.data.distance"
+      },
+      {
+        "baseline": 205995269.602275,
+        "candidate": 205995269.60271505,
+        "delta": 0.0004400312900543213,
+        "path": "clock.raw_states.data.routes.0_to_4.tt_wrapper.position_km[1]"
+      },
+      {
+        "baseline": 96636698.9319339,
+        "candidate": 96636698.93208802,
+        "delta": 0.0001541227102279663,
+        "path": "clock.raw_states.data.routes.0_to_4.tt_wrapper.position_km[2]"
+      },
+      {
+        "baseline": 616.6056012297174,
+        "candidate": 616.6054484793707,
+        "delta": -0.0001527503467286806,
+        "path": "shadbala.end_to_end.data.planets.Sun.total_shashtiamsas"
+      },
+      {
+        "baseline": 59.221288865682595,
+        "candidate": 59.22113611914951,
+        "delta": -0.00015274653308239294,
+        "path": "shadbala.end_to_end.data.planets.Sun.chesta_bala"
+      },
+      {
+        "baseline": 150268.52895697678,
+        "candidate": 150268.52888295974,
+        "delta": -7.40170362405479e-05,
+        "path": "clock.raw_states.data.routes.3_to_301.tt_wrapper.position_km[0]"
+      },
+      {
+        "baseline": -304056.4526370474,
+        "candidate": -304056.4526683633,
+        "delta": -3.1315896194428205e-05,
+        "path": "clock.raw_states.data.routes.3_to_301.tt_wrapper.position_km[1]"
+      },
+      {
+        "baseline": -164837.66271658248,
+        "candidate": -164837.66273347737,
+        "delta": -1.6894889995455742e-05,
+        "path": "clock.raw_states.data.routes.3_to_301.tt_wrapper.position_km[2]"
+      },
+      {
+        "baseline": 33675.08409944967,
+        "candidate": 33675.08408433845,
+        "delta": -1.5111218090169132e-05,
+        "path": "clock.raw_states.data.routes.3_to_301.tt_wrapper.velocity_km_per_day[1]"
+      },
+      {
+        "baseline": -473162.3100785934,
+        "candidate": -473162.31006503315,
+        "delta": 1.3560231309384108e-05,
+        "path": "clock.raw_states.data.routes.0_to_4.tt_wrapper.velocity_km_per_day[1]"
+      },
+      {
+        "baseline": 18167.650799995718,
+        "candidate": 18167.650791772183,
+        "delta": -8.22353467810899e-06,
+        "path": "clock.raw_states.data.routes.3_to_301.tt_wrapper.velocity_km_per_day[2]"
+      },
+      {
+        "baseline": 79593.0968829914,
+        "candidate": 79593.09689054395,
+        "delta": 7.552545866928995e-06,
+        "path": "clock.raw_states.data.routes.3_to_301.tt_wrapper.velocity_km_per_day[0]"
+      },
+      {
+        "baseline": -165737.89510188557,
+        "candidate": -165737.89509552752,
+        "delta": 6.358051905408502e-06,
+        "path": "clock.raw_states.data.routes.0_to_4.tt_wrapper.velocity_km_per_day[2]"
+      },
+      {
+        "baseline": -7.012200100486161,
+        "candidate": -7.012206383688553,
+        "delta": -6.283202392154408e-06,
+        "path": "small_bodies.asteroid.data.latitude"
+      },
+      {
+        "baseline": -16.82689987503351,
+        "candidate": -16.826893648555906,
+        "delta": 6.226477605508762e-06,
+        "path": "small_bodies.comet.data.latitude"
+      },
+      {
+        "baseline": -1900587.7900828018,
+        "candidate": -1900587.7900879243,
+        "delta": -5.122506991028786e-06,
+        "path": "clock.raw_states.data.routes.0_to_4.tt_wrapper.velocity_km_per_day[0]"
+      },
+      {
+        "baseline": 10.27676002049529,
+        "candidate": 10.276757474656177,
+        "delta": -2.5458391128552194e-06,
+        "path": "shadbala.end_to_end.data.planets.Sun.total_rupas"
+      },
+      {
+        "baseline": -857285.6467357412,
+        "candidate": -857285.6467367373,
+        "delta": -9.961659088730812e-07,
+        "path": "clock.raw_states.data.routes.0_to_10.tt_wrapper.position_km[0]"
+      },
+      {
+        "baseline": -1848.3084711976626,
+        "candidate": -1848.3084702872504,
+        "delta": 9.104121545533417e-07,
+        "path": "clock.raw_states.data.routes.3_to_399.tt_wrapper.position_km[0]"
+      },
+      {
+        "baseline": 13.444077888976835,
+        "candidate": 13.444078540686633,
+        "delta": 6.517097972391639e-07,
+        "path": "shadbala.end_to_end.data.input.planet_speeds_deg_per_day.Moon"
+      },
+      {
+        "baseline": -684672.8706640151,
+        "candidate": -684672.8706635536,
+        "delta": 4.614703357219696e-07,
+        "path": "clock.raw_states.data.routes.0_to_10.tt_wrapper.position_km[1]"
+      },
+      {
+        "baseline": 126.81910329221053,
+        "candidate": 126.81910367855161,
+        "delta": 3.863410853455207e-07,
+        "path": "small_bodies.comet.data.longitude"
+      },
+      {
+        "baseline": 3739.905627826225,
+        "candidate": 3739.9056282114116,
+        "delta": 3.8518646761076525e-07,
+        "path": "clock.raw_states.data.routes.3_to_399.tt_wrapper.position_km[1]"
+      },
+      {
+        "baseline": 293.6680885808774,
+        "candidate": 293.6680882304343,
+        "delta": -3.5044308788201306e-07,
+        "path": "shadbala.end_to_end.data.planets.Moon.total_shashtiamsas"
+      },
+      {
+        "baseline": 269.7065349707429,
+        "candidate": 269.70653462345365,
+        "delta": -3.4728924447335885e-07,
+        "path": "shadbala.end_to_end.data.input.sidereal_longitudes_deg.Moon"
+      },
+      {
+        "baseline": 321.4550355168537,
+        "candidate": 321.45503518758653,
+        "delta": -3.292671522103774e-07,
+        "path": "shadbala.end_to_end.data.planets.Mercury.total_shashtiamsas"
+      },
+      {
+        "baseline": 27.899345293042206,
+        "candidate": 27.899344967588668,
+        "delta": -3.254535378971468e-07,
+        "path": "shadbala.end_to_end.data.planets.Mercury.chesta_bala"
+      },
+      {
+        "baseline": 309.0133489203778,
+        "candidate": 309.0133486547243,
+        "delta": -2.656534547895717e-07,
+        "path": "small_bodies.asteroid.data.longitude"
+      },
+      {
+        "baseline": 97.71085636599722,
+        "candidate": 97.71085612289505,
+        "delta": -2.4310216417688935e-07,
+        "path": "shadbala.end_to_end.data.input.sidereal_longitudes_deg.Mars"
+      },
+      {
+        "baseline": -267572.54318081384,
+        "candidate": -267572.54318059597,
+        "delta": 2.178712747991085e-07,
+        "path": "clock.raw_states.data.routes.0_to_10.tt_wrapper.position_km[2]"
+      },
+      {
+        "baseline": 2027.5093559923812,
+        "candidate": 2027.509356200189,
+        "delta": 2.0780771592399105e-07,
+        "path": "clock.raw_states.data.routes.3_to_399.tt_wrapper.position_km[2]"
+      },
+      {
+        "baseline": -414.20478154229454,
+        "candidate": -414.2047813564259,
+        "delta": 1.8586865735414904e-07,
+        "path": "clock.raw_states.data.routes.3_to_399.tt_wrapper.velocity_km_per_day[1]"
+      },
+      {
+        "baseline": 7.971200586802638,
+        "candidate": 7.971200471039556,
+        "delta": -1.1576308178717909e-07,
+        "path": "shadbala.end_to_end.data.planets.Moon.dig_bala"
+      },
+      {
+        "baseline": 40.578041709903935,
+        "candidate": 40.57804159480071,
+        "delta": -1.1510322650565286e-07,
+        "path": "shadbala.end_to_end.data.planets.Moon.chesta_bala"
+      },
+      {
+        "baseline": -28.893952541219164,
+        "candidate": -28.893952434011624,
+        "delta": 1.0720754062276683e-07,
+        "path": "searches.fixed_star_heliacal.data.event.computation_truth.qualifying_elongation"
+      },
+      {
+        "baseline": -223.46277765856865,
+        "candidate": -223.4627775574188,
+        "delta": 1.0114985116160824e-07,
+        "path": "clock.raw_states.data.routes.3_to_399.tt_wrapper.velocity_km_per_day[2]"
+      },
+      {
+        "baseline": 256.60654566210366,
+        "candidate": 256.6065455632888,
+        "delta": -9.881483720164397e-08,
+        "path": "shadbala.end_to_end.data.input.sidereal_longitudes_deg.Sun"
+      },
+      {
+        "baseline": -978.9980393020878,
+        "candidate": -978.9980393949843,
+        "delta": -9.289647096011322e-08,
+        "path": "clock.raw_states.data.routes.3_to_399.tt_wrapper.velocity_km_per_day[0]"
+      },
+      {
+        "baseline": 303.50504293154216,
+        "candidate": 303.5050428504717,
+        "delta": -8.107048188321642e-08,
+        "path": "shadbala.end_to_end.data.input.sidereal_longitudes_deg.Venus"
+      },
+      {
+        "baseline": 10.639307718554079,
+        "candidate": 10.639307637520025,
+        "delta": -8.103405413351084e-08,
+        "path": "shadbala.end_to_end.data.planets.Mars.dig_bala"
+      },
+      {
+        "baseline": 26.840520908422153,
+        "candidate": 26.840520976634256,
+        "delta": 6.821210263296962e-08,
+        "path": "shadbala.end_to_end.data.planets.Venus.chesta_bala"
+      },
+      {
+        "baseline": 49.008392791724866,
+        "candidate": 49.00839275656646,
+        "delta": -3.515840774070966e-08,
+        "path": "shadbala.end_to_end.data.input.sidereal_longitudes_deg.Jupiter"
+      },
+      {
+        "baseline": 56.39546251607711,
+        "candidate": 56.395462549015384,
+        "delta": 3.2938274330263084e-08,
+        "path": "shadbala.end_to_end.data.planets.Sun.dig_bala"
+      },
+      {
+        "baseline": 19.237369907069063,
+        "candidate": 19.237369880045566,
+        "delta": -2.7023496329547925e-08,
+        "path": "shadbala.end_to_end.data.planets.Venus.dig_bala"
+      },
+      {
+        "baseline": 1.286438811462176,
+        "candidate": 1.2864387964555135,
+        "delta": -1.5006662579253316e-08,
+        "path": "shadbala.end_to_end.data.input.planet_speeds_deg_per_day.Mercury"
+      },
+      {
+        "baseline": 35.59484680620337,
+        "candidate": 35.594846817922836,
+        "delta": 1.171946450995165e-08,
+        "path": "shadbala.end_to_end.data.planets.Jupiter.dig_bala"
+      },
+      {
+        "baseline": 235.6629150410327,
+        "candidate": 235.66291505166112,
+        "delta": 1.06284119283373e-08,
+        "path": "shadbala.end_to_end.data.input.sidereal_longitudes_deg.Mercury"
+      },
+      {
+        "baseline": 258.3829064199284,
+        "candidate": 258.3829064302799,
+        "delta": 1.0351470791647444e-08,
+        "path": "shadbala.end_to_end.data.planets.Venus.total_shashtiamsas"
+      },
+      {
+        "baseline": 320.3170012146178,
+        "candidate": 320.31700120444793,
+        "delta": -1.0169856068387162e-08,
+        "path": "shadbala.end_to_end.data.input.sidereal_longitudes_deg.Saturn"
+      },
+      {
+        "baseline": 2460892.60626725,
+        "candidate": 2460892.6062672413,
+        "delta": -8.847564458847046e-09,
+        "path": "searches.fixed_star_heliacal.data.event.computation_truth.event_jd_ut"
+      },
+      {
+        "baseline": 2460892.60626725,
+        "candidate": 2460892.6062672413,
+        "delta": -8.847564458847046e-09,
+        "path": "searches.fixed_star_heliacal.data.event.jd_ut"
+      },
+      {
+        "baseline": 4.894468143014623,
+        "candidate": 4.894468137173905,
+        "delta": -5.840718131366884e-09,
+        "path": "shadbala.end_to_end.data.planets.Moon.total_rupas"
+      },
+      {
+        "baseline": 5.3575839252808946,
+        "candidate": 5.357583919793109,
+        "delta": -5.487785337265905e-09,
+        "path": "shadbala.end_to_end.data.planets.Mercury.total_rupas"
+      },
+      {
+        "baseline": 0.37778129599496424,
+        "candidate": 0.37778130121887443,
+        "delta": 5.2239101933082566e-09,
+        "path": "small_bodies.asteroid.data.speed"
+      },
+      {
+        "baseline": -0.3279952782975215,
+        "candidate": -0.32799528298710356,
+        "delta": -4.689582056016661e-09,
+        "path": "shadbala.end_to_end.data.input.planet_speeds_deg_per_day.Mars"
+      },
+      {
+        "baseline": 381.8309790307014,
+        "candidate": 381.8309790268878,
+        "delta": -3.81362497137161e-09,
+        "path": "shadbala.end_to_end.data.planets.Jupiter.total_shashtiamsas"
+      },
+      {
+        "baseline": 288.3290235571448,
+        "candidate": 288.3290235533312,
+        "delta": -3.81362497137161e-09,
+        "path": "shadbala.end_to_end.data.planets.Mars.total_shashtiamsas"
+      },
+      {
+        "baseline": 26.623327276899243,
+        "candidate": 26.623327280442044,
+        "delta": 3.5428016076366475e-09,
+        "path": "shadbala.end_to_end.data.planets.Mercury.dig_bala"
+      },
+      {
+        "baseline": 5.158643998572397,
+        "candidate": 5.158644001962348,
+        "delta": 3.389951430676774e-09,
+        "path": "shadbala.end_to_end.data.planets.Saturn.dig_bala"
+      },
+      {
+        "baseline": 269.90964488762296,
+        "candidate": 269.90964489058916,
+        "delta": 2.966203282994684e-09,
+        "path": "shadbala.end_to_end.data.planets.Saturn.total_shashtiamsas"
+      },
+      {
+        "baseline": 1.073620836336886,
+        "candidate": 1.07362083906537,
+        "delta": 2.7284841053187847e-09,
+        "path": "shadbala.end_to_end.data.input.planet_speeds_deg_per_day.Venus"
+      },
+      {
+        "baseline": -496.24066506922566,
+        "candidate": -496.24066507082694,
+        "delta": -1.6012791093089618e-09,
+        "path": "clock.raw_states.data.routes.0_to_10.tt_wrapper.velocity_km_per_day[1]"
+      },
+      {
+        "baseline": 158.55203336010337,
+        "candidate": 158.5520333588779,
+        "delta": -1.2254588455107296e-09,
+        "path": "phase_phenomena.phenomena.data.elongation_deg"
+      },
+      {
+        "baseline": -0.02825397700850374,
+        "candidate": -0.0282539759791689,
+        "delta": 1.0293348395862267e-09,
+        "path": "small_bodies.comet.data.speed"
+      },
+      {
+        "baseline": 12.879745932981928,
+        "candidate": 12.879745933702893,
+        "delta": 7.209646213368615e-10,
+        "path": "phase_phenomena.phenomena.data.phase_angle_deg"
+      },
+      {
+        "baseline": 1.0196487761504613,
+        "candidate": 1.0196487768325824,
+        "delta": 6.821210263296962e-10,
+        "path": "shadbala.end_to_end.data.input.planet_speeds_deg_per_day.Sun"
+      },
+      {
+        "baseline": -234.3375205749244,
+        "candidate": -234.33752057559613,
+        "delta": -6.717186806781683e-10,
+        "path": "clock.raw_states.data.routes.0_to_10.tt_wrapper.velocity_km_per_day[2]"
+      },
+      {
+        "baseline": 1071.2391643363205,
+        "candidate": 1071.2391643358142,
+        "delta": -5.063611752120778e-10,
+        "path": "clock.raw_states.data.routes.0_to_10.tt_wrapper.velocity_km_per_day[0]"
+      },
+      {
+        "baseline": 83.71613959241948,
+        "candidate": 83.7161395919232,
+        "delta": -4.962856792189996e-10,
+        "path": "phase_phenomena.phase.data.phase_angle_deg"
+      },
+      {
+        "baseline": -0.10646572735595328,
+        "candidate": -0.1064657277254355,
+        "delta": -3.694822225952521e-10,
+        "path": "shadbala.end_to_end.data.input.planet_speeds_deg_per_day.Jupiter"
+      },
+      {
+        "baseline": 22.224531090582538,
+        "candidate": 22.22453109037986,
+        "delta": -2.0267876266188978e-10,
+        "path": "phase_phenomena.phase.data.angular_diameter_arcsec"
+      },
+      {
+        "baseline": 4.306381773665474,
+        "candidate": 4.306381773837998,
+        "delta": 1.7252421713465083e-10,
+        "path": "shadbala.end_to_end.data.planets.Venus.total_rupas"
+      },
+      {
+        "baseline": 0.075622425470101,
+        "candidate": 0.07562242564063126,
+        "delta": 1.7053025658242404e-10,
+        "path": "shadbala.end_to_end.data.input.planet_speeds_deg_per_day.Saturn"
+      },
+      {
+        "baseline": 6.363849650511691,
+        "candidate": 6.36384965044813,
+        "delta": -6.356071224900006e-11,
+        "path": "shadbala.end_to_end.data.planets.Jupiter.total_rupas"
+      },
+      {
+        "baseline": 4.8054837259524135,
+        "candidate": 4.805483725888853,
+        "delta": -6.356071224900006e-11,
+        "path": "shadbala.end_to_end.data.planets.Mars.total_rupas"
+      },
+      {
+        "baseline": 4.498494081460382,
+        "candidate": 4.498494081509819,
+        "delta": 4.943689901892867e-11,
+        "path": "shadbala.end_to_end.data.planets.Saturn.total_rupas"
+      },
+      {
+        "baseline": 14.232617963046858,
+        "candidate": 14.232617962997503,
+        "delta": -4.935429842589656e-11,
+        "path": "phase_phenomena.phenomena.data.angular_diameter_arcsec"
+      },
+      {
+        "baseline": 46.91461614008053,
+        "candidate": 46.91461614003208,
+        "delta": -4.845190915148123e-11,
+        "path": "phase_phenomena.phase.data.elongation_deg"
+      },
+      {
+        "baseline": -1.2581895637946812,
+        "candidate": -1.2581895637748433,
+        "delta": 1.9837909093212147e-11,
+        "path": "phase_phenomena.phenomena.data.apparent_magnitude"
+      },
+      {
+        "baseline": -4.427545925863996,
+        "candidate": -4.427545925854966,
+        "delta": 9.030109993091173e-12,
+        "path": "phase_phenomena.phase.data.apparent_magnitude"
+      },
+      {
+        "baseline": 34.276081769516665,
+        "candidate": 34.27608176952336,
+        "delta": 6.693312570860144e-12,
+        "path": "small_bodies.comet.data.distance"
+      },
+      {
+        "baseline": 0.554727159423023,
+        "candidate": 0.554727159427328,
+        "delta": 4.305000800286507e-12,
+        "path": "phase_phenomena.phase.data.illuminated_fraction"
+      },
+      {
+        "baseline": 0.9874200261181358,
+        "candidate": 0.9874200261167334,
+        "delta": -1.4024337247064977e-12,
+        "path": "phase_phenomena.phenomena.data.illuminated_fraction"
+      }
+    ],
+    "max_absolute_delta": 0.0017674416303634644,
+    "shared_numeric_field_count": 137,
+    "unchanged_numeric_field_count": 53
+  },
+  "probe_status": {
+    "baseline": {
+      "clock.raw_states": "ok",
+      "eclipses.lunar": "ok",
+      "eclipses.solar": "ok",
+      "frames.galactic_points": "ok",
+      "frames.matrices": "ok",
+      "frames.sky_position": "ok",
+      "frames.true_node": "ok",
+      "lunar_geometry.limb_light_cone": "ok",
+      "lunar_geometry.occultation_separation": "ok",
+      "phase_phenomena.phase": "ok",
+      "phase_phenomena.phenomena": "ok",
+      "planetary.all_planets_native": "ok",
+      "planetary.all_planets_python": "ok",
+      "planetary.planet_at": "ok",
+      "searches.aspect_transit": "ok",
+      "searches.fixed_star_heliacal": "ok",
+      "shadbala.end_to_end": "ok",
+      "small_bodies.asteroid": "ok",
+      "small_bodies.comet": "ok"
+    },
+    "candidate": {
+      "clock.raw_states": "ok",
+      "eclipses.lunar": "ok",
+      "eclipses.solar": "ok",
+      "frames.galactic_points": "ok",
+      "frames.matrices": "ok",
+      "frames.sky_position": "ok",
+      "frames.true_node": "ok",
+      "lunar_geometry.limb_light_cone": "ok",
+      "lunar_geometry.occultation_separation": "ok",
+      "phase_phenomena.phase": "ok",
+      "phase_phenomena.phenomena": "ok",
+      "planetary.all_planets_native": "ok",
+      "planetary.all_planets_python": "ok",
+      "planetary.planet_at": "ok",
+      "searches.aspect_transit": "ok",
+      "searches.fixed_star_heliacal": "ok",
+      "shadbala.end_to_end": "ok",
+      "small_bodies.asteroid": "ok",
+      "small_bodies.comet": "ok"
+    }
+  },
+  "schema": "moira.orbital-core-stage1.reader-clock-shift/v1",
+  "status": "review_ready"
+}

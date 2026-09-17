@@ -2315,14 +2315,20 @@ Neptune. Responses include ascending node, descending node, perihelion,
 aphelion, inclination, eccentricity, semi-major axis, method, JD scale, frame,
 kernel requirement, source module, validity note, and stage sequence.
 
-The geometric route exposes a single reader-backed osculating heliocentric node
-and apsides record using angular-momentum and eccentricity-vector geometry from
-the active reader state vectors. It records the active-reader dependency in
-provenance and does not imply small-body availability from catalog identity.
+The geometric route is an exact adapter over the strict orbital core with a Sun
+center and `TRUE_ECLIPTIC_OF_DATE` frame. It accepts planets, Pluto, and loaded
+sovereign asteroid/comet names when the active reader covers the exact epoch.
+The request JD is UT1, frame construction is TT, state evaluation is TDB, and
+the true-date model is admitted only for JD(TT) `2415020.0` through
+`2488070.0`. The response includes canonical/NAIF body identity plus allowlisted
+time, Horizons gravity, SOFA-derived frame, source-route/hash/coverage,
+singularity, and undefined-element receipts. It exposes no local kernel path and
+does not imply availability or reviewed Horizons parity from catalog identity
+alone.
 
 This admission does not expose lunar true/mean node REST routes, chart-backed
-node profiles, nodal aspect networks, catalog-wide small-body node sweeps,
-rendered node maps, asteroid/comet route changes, or small-body kernel manifest
+node profiles, nodal aspect networks, a catalog-wide node endpoint, rendered
+node maps, other asteroid/comet route changes, or small-body kernel manifest
 management.
 
 ### Orbital Elements REST Admission Boundary
@@ -2333,27 +2339,46 @@ The admitted P-GAP-03 orbital REST surface is the bounded synchronous
 - `POST /v1/orbits/elements`
 - `POST /v1/orbits/distance-extremes`
 
-`/v1/orbits/elements` exposes one epoch's heliocentric J2000 ecliptic/equinox
-osculating Keplerian elements for an admitted major body. Responses include
-semi-major axis, eccentricity, inclination, longitude of ascending node,
-argument of perihelion, mean anomaly, mean motion, orbital period, and the
-derived perihelion/aphelion distances of the osculating ellipse.
+`/v1/orbits/elements` exposes one epoch's heliocentric fixed-J2000-ecliptic
+osculating elements for an admitted major body. The request `jd_ut` is UT1;
+the state is evaluated at the bound TDB epoch and `epoch_jd` is TT. The time
+block returns all three numerical epochs, Delta T, TDB-minus-TT, source-owned
+Delta-T policy, and the pinned NAIF `naif0012` conversion receipt.
+
+The response preserves the existing element field names and adds path-free,
+allowlisted provenance for the JPL Horizons gravity policy, exact frame
+construction, every routed SPK source leg and closed coverage interval, and
+the conic singularity thresholds. It identifies the strict engine entrypoint
+as `osculating_elements`, even though transport fixes the policy to
+`center=SUN` and `frame=J2000_ECLIPTIC`.
 
 `/v1/orbits/distance-extremes` exposes the next heliocentric perihelion and
 aphelion events after `jd_ut` on the live heliocentric distance curve. The
 response records that the events are semantic extrema, not a forced
 chronological pair and not merely algebra from one epoch's osculating ellipse.
+It adapts the versioned `apsidal_passages` engine with `center=SUN` and
+`direction=NEXT`. Its legacy `perihelion_jd` and `aphelion_jd` fields are TT;
+the request is UT1 and all sampled states and roots are TDB.
 
-Both routes accept one admitted body and one finite `jd_ut`. The response
-provenance records `moira.orbits`, the engine entrypoint, Sun center, J2000
-ecliptic/equinox frame, osculating element type, DE-series state source, no
-apparent correction, no light-time correction, and no mean-element table.
+The distance-extremes `time` block returns `jd_ut`, `epoch_tt`, `epoch_tdb`,
+Delta T, TDB-minus-TT, and the same source-owned Delta-T/pinned-NAIF conversion
+receipt as the elements route. Its allowlisted provenance contains both typed
+passage outcomes and the search algorithm, gravity policy, fixed route-plan
+identity, exact route entries and source legs, per-segment evaluation counts,
+seam-continuity measurements, search interval, fixed numerical policy, and
+total evaluation count. Local paths and arbitrary exception text are never
+serialized.
 
-This admission does not expose mean element tables, geocentric lunar elements,
-comet elements, asteroid elements, Uranian mean elements, visual-binary
-Campbell elements, arbitrary centers/reference planes, apparent or
-light-time-corrected element products, dense ephemeris tables, or kernel path
-mutation.
+Both routes accept one admitted planet name and one finite `jd_ut`. The Python
+passage core is broader, but this REST request deliberately adds no center,
+direction, window, Moon, EMB, asteroid, or comet admission.
+
+This admission does not expose the strict Python API's Moon, EMB, comet, or
+asteroid support; selectable centers/reference planes; circular/equatorial
+undefined fields; open conics; mean element tables; Uranian mean elements;
+visual-binary Campbell elements; apparent or light-time-corrected element
+products; dense ephemeris tables; or kernel-path mutation. Those require a
+separately versioned transport design.
 
 ### Generic Phenomena And Solar Conditions REST Admission Boundary
 

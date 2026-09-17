@@ -17,16 +17,23 @@ The public surface preserves the exact shape used by ``moira.asteroids`` and
 from __future__ import annotations
 
 from bisect import bisect_left
+import hashlib
 import json
 import math
 from pathlib import Path
 
 from .coordinates import Vec3
 from .spk_reader import (
+    _EphemerisKernelIdentity,
+    _KernelSourceIdentity,
+    _RoutedState,
+    _SpkSegmentReceipt,
     _coeff_record,
     _coeff_tensor_shape,
     _eval_chebyshev_record_scalar,
     _eval_chebyshev_record_with_derivative_scalar,
+    _merge_closed_intervals,
+    _source_sha256,
 )
 
 try:
@@ -775,7 +782,12 @@ class SmallBodyKernel:
     [/MACHINE_CONTRACT]
     """
 
-    def __init__(self, path: Path) -> None:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        source_identity: _KernelSourceIdentity | None = None,
+    ) -> None:
         path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"SPK kernel not found at {path}")
@@ -796,6 +808,25 @@ class SmallBodyKernel:
             )
 
         self._path = path
+        if source_identity is None:
+            source_hash, source_bytes = _source_sha256(path)
+            source_identity = _KernelSourceIdentity(
+                label=path.name,
+                sha256=source_hash,
+                byte_length=source_bytes,
+            )
+        self._source_identity = source_identity
+        integration = source_identity.planetary_ephemeris
+        if integration in {"DE440", "DE441"}:
+            release_number = integration.removeprefix("DE")
+            self._integration_kernel_identity = _EphemerisKernelIdentity(
+                summary_label=f"DE-{release_number.zfill(4)}LE-{release_number.zfill(4)}",
+                planetary_ephemeris=integration,
+                lunar_ephemeris=f"LE{release_number}",
+                lunar_tidal_acceleration_arcsec_per_cy2=-25.936,
+            )
+        else:
+            self._integration_kernel_identity = None
         self._catalog = catalog
         self._kernel = _NativeKernelHandle(
             [
@@ -816,7 +847,9 @@ class SmallBodyKernel:
     def segment_center(self, naif_id: int) -> int:
         return self._center.get(naif_id, 0)
 
-    def position(self, center: int, target: int, jd_tt: float) -> Vec3:
+    def _segment_for_tdb(self, center: int, target: int, epoch_tdb: float):
+        """Select one exact small-body descriptor in its native TDB clock."""
+
         if not self.has_body(target):
             raise KeyError(
                 f"NAIF ID {target} not found in kernel {self._path.name}"
@@ -828,37 +861,78 @@ class SmallBodyKernel:
                 f"{seg_center}, not center {center}"
             )
         for seg in self._kernel.segments:
-            if seg.target == target and seg.start_jd <= jd_tt <= seg.end_jd:
-                pos = seg.compute(jd_tt)
-                return (float(pos[0]), float(pos[1]), float(pos[2]))
+            if seg.target == target and seg.start_jd <= epoch_tdb <= seg.end_jd:
+                return seg
         raise KeyError(
-            f"No segment covers NAIF {target} at JD {jd_tt:.2f}. "
+            f"No segment covers NAIF {target} at JD(TDB) {epoch_tdb:.9f}. "
             "The date may be outside the kernel's coverage."
         )
+
+    def position_tdb(self, center: int, target: int, epoch_tdb: float) -> Vec3:
+        """Return an ICRF position at an explicit TDB Julian day."""
+
+        segment = self._segment_for_tdb(center, target, epoch_tdb)
+        pos = segment.compute(epoch_tdb)
+        return (float(pos[0]), float(pos[1]), float(pos[2]))
+
+    def position(self, center: int, target: int, jd_tt: float) -> Vec3:
+        from .julian import tt_to_tdb
+
+        return self.position_tdb(center, target, tt_to_tdb(jd_tt))
 
     def position_and_velocity(
         self, center: int, target: int, jd_tt: float
     ) -> tuple[Vec3, Vec3]:
-        if not self.has_body(target):
-            raise KeyError(
-                f"NAIF ID {target} not found in kernel {self._path.name}"
-            )
-        seg_center = self._center[target]
-        if center != seg_center:
-            raise ValueError(
-                f"SmallBodyKernel serves NAIF {target} from center "
-                f"{seg_center}, not center {center}"
-            )
-        for seg in self._kernel.segments:
-            if seg.target == target and seg.start_jd <= jd_tt <= seg.end_jd:
-                pos, vel = seg.compute_and_differentiate(jd_tt)
-                return (
-                    (float(pos[0]), float(pos[1]), float(pos[2])),
-                    (float(vel[0]), float(vel[1]), float(vel[2])),
-                )
-        raise KeyError(
-            f"No segment covers NAIF {target} at JD {jd_tt:.2f}. "
-            "The date may be outside the kernel's coverage."
+        from .julian import tt_to_tdb
+
+        return self.position_and_velocity_tdb(center, target, tt_to_tdb(jd_tt))
+
+    def position_and_velocity_tdb(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+    ) -> tuple[Vec3, Vec3]:
+        """Return an ICRF state at an explicit TDB Julian day."""
+
+        segment = self._segment_for_tdb(center, target, epoch_tdb)
+        pos, vel = segment.compute_and_differentiate(epoch_tdb)
+        return (
+            (float(pos[0]), float(pos[1]), float(pos[2])),
+            (float(vel[0]), float(vel[1]), float(vel[2])),
+        )
+
+    def position_and_velocity_tdb_with_receipt(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+        *,
+        pool_index: int = 0,
+    ) -> _RoutedState:
+        """Return a state with its exact descriptor and release receipt."""
+
+        segment = self._segment_for_tdb(center, target, epoch_tdb)
+        position, velocity = self.position_and_velocity_tdb(
+            center, target, epoch_tdb
+        )
+        receipt = _SpkSegmentReceipt(
+            center=int(segment.center),
+            target=int(segment.target),
+            data_type=int(segment.data_type),
+            coverage_start_tdb=float(segment.start_jd),
+            coverage_end_tdb=float(segment.end_jd),
+            source=self._source_identity,
+            pool_index=int(pool_index),
+        )
+        return _RoutedState(
+            position_km=position,
+            velocity_km_per_day=velocity,
+            epoch_tdb=float(epoch_tdb),
+            legs=(receipt,),
+            covered_intervals_tdb=(
+                (receipt.coverage_start_tdb, receipt.coverage_end_tdb),
+            ),
         )
 
     def has_segment(self, center: int, target: int) -> bool:
@@ -874,23 +948,106 @@ class SmallBodyKernel:
         return sorted(self._available)
 
     def has_segment_at(self, center: int, target: int, jd: float) -> bool:
+        from .julian import tt_to_tdb
+
+        return self.has_segment_at_tdb(center, target, tt_to_tdb(jd))
+
+    def has_segment_at_tdb(
+        self,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+    ) -> bool:
         for seg in self._kernel.segments:
-            if seg.target == target and seg.center == center and seg.start_jd <= jd <= seg.end_jd:
+            if (
+                seg.target == target
+                and seg.center == center
+                and seg.start_jd <= epoch_tdb <= seg.end_jd
+            ):
                 return True
         return False
 
+    def coverage_intervals_tdb(
+        self,
+        center: int,
+        target: int,
+    ) -> tuple[tuple[float, float], ...]:
+        """Return exact disjoint descriptor coverage in TDB."""
+
+        return _merge_closed_intervals(
+            [
+                (float(seg.start_jd), float(seg.end_jd))
+                for seg in self._kernel.segments
+                if seg.center == center and seg.target == target
+            ]
+        )
+
+    def _coverage_pairs_tdb(self) -> tuple[tuple[int, int], ...]:
+        """Return deterministic pair keys for private route planning."""
+
+        return tuple(
+            sorted(
+                {
+                    (int(seg.center), int(seg.target))
+                    for seg in self._kernel.segments
+                }
+            )
+        )
+
     def coverage(self) -> dict[tuple[int, int], tuple[float, float]]:
-        result: dict[tuple[int, int], tuple[float, float]] = {}
+        from .julian import tdb_to_tt
+
+        pairs: set[tuple[int, int]] = set()
         for seg in self._kernel.segments:
-            key = (seg.center, seg.target)
-            if key in result:
-                result[key] = (
-                    min(result[key][0], seg.start_jd),
-                    max(result[key][1], seg.end_jd),
-                )
-            else:
-                result[key] = (seg.start_jd, seg.end_jd)
+            pairs.add((int(seg.center), int(seg.target)))
+        result: dict[tuple[int, int], tuple[float, float]] = {}
+        for pair in pairs:
+            intervals = self.coverage_intervals_tdb(*pair)
+            result[pair] = (
+                tdb_to_tt(intervals[0][0]),
+                tdb_to_tt(intervals[-1][1]),
+            )
         return result
+
+    def evaluator_tdb(
+        self,
+        target: int,
+        center: int = 0,
+        *,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ):
+        """Return a raw native evaluator selected in TDB."""
+
+        segment = self._segment_for_tdb(center, target, epoch_tdb)
+        if epoch_end_tdb is not None and not (
+            segment.start_jd <= epoch_end_tdb <= segment.end_jd
+        ):
+            return None
+        return segment._load_native_evaluator()
+
+    def evaluator(
+        self,
+        target: int,
+        center: int = 0,
+        jd_tt: float = 2451545.0,
+        *,
+        jd_end_tt: float | None = None,
+    ):
+        """Return one TT-facing native evaluator."""
+
+        from . import moira_native
+        from .julian import tt_to_tdb
+
+        epoch_tdb = tt_to_tdb(jd_tt)
+        epoch_end_tdb = None if jd_end_tt is None else tt_to_tdb(jd_end_tt)
+        raw = self.evaluator_tdb(
+            target,
+            center,
+            epoch_tdb=epoch_tdb,
+            epoch_end_tdb=epoch_end_tdb,
+        )
+        return None if raw is None else moira_native.TtToTdbEvaluator(raw)
 
     def close(self) -> None:
         try:
@@ -924,7 +1081,9 @@ def small_body_readers_from_manifest(manifest_path: str | Path) -> list[SmallBod
     carry a ``release`` identity and retain their existing loading behavior.
     """
     manifest = Path(manifest_path)
-    payload = json.loads(manifest.read_text(encoding="utf-8"))
+    manifest_bytes = manifest.read_bytes()
+    payload = json.loads(manifest_bytes.decode("utf-8"))
+    manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
     if "release" in payload:
         from .small_body_catalog_release import verify_release
 
@@ -940,6 +1099,36 @@ def small_body_readers_from_manifest(manifest_path: str | Path) -> list[SmallBod
         resolved = shard_path.resolve()
         if resolved in seen:
             continue
-        readers.append(SmallBodyKernel(resolved))
+        shard_hash = str(shard.get("sha256") or "")
+        shard_bytes = int(shard.get("bytes") or resolved.stat().st_size)
+        if not shard_hash:
+            shard_hash, shard_bytes = _source_sha256(resolved)
+        release = payload.get("release") or {}
+        provenance = payload.get("provenance") or {}
+        planetary_ephemeris = (
+            provenance.get("planetary_ephemeris")
+            or payload.get("planetary_ephemeris")
+        )
+        coverage_note = str((payload.get("coverage") or {}).get("note") or "")
+        source_identity = _KernelSourceIdentity(
+            label=(
+                f"{payload.get('catalog_id', 'small-body-catalog')}:"
+                f"{shard.get('index', 0)}"
+            ),
+            sha256=shard_hash,
+            byte_length=shard_bytes,
+            catalog_id=payload.get("catalog_id"),
+            catalog_version=payload.get("catalog_version"),
+            manifest_sha256=manifest_sha256,
+            released_utc=release.get("released_utc"),
+            planetary_ephemeris=planetary_ephemeris,
+            coverage_restricted_to_observed_arc=(
+                "clamp" in coverage_note.casefold()
+                or "observed arc" in coverage_note.casefold()
+            ),
+        )
+        readers.append(
+            SmallBodyKernel(resolved, source_identity=source_identity)
+        )
         seen.add(resolved)
     return readers

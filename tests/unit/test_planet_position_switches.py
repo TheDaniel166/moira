@@ -336,12 +336,14 @@ def test_native_all_planets_admitted_uses_native_planetary_evaluator_when_availa
             bodies,
             public_specs,
             body_specs,
-            jd_tt,
+            epoch_tdb,
             obliquity_deg,
             rotation_matrix,
         ):
-            self.calls.append((tuple(bodies), jd_tt, obliquity_deg, rotation_matrix))
-            offset = jd_tt - (_JD_J2000 + 0.1)
+            self.calls.append(
+                (tuple(bodies), epoch_tdb, obliquity_deg, rotation_matrix)
+            )
+            offset = epoch_tdb - planets_module.tt_to_tdb(_JD_J2000 + 0.1)
             return [
                 (Body.SUN, 1.0 + 4.0 * offset, 2.0, 3.0, 99.0, False),
                 (Body.MARS, 5.0 - 8.0 * offset, 6.0, 7.0, 99.0, False),

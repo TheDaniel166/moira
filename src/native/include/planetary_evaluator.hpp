@@ -58,7 +58,7 @@ public:
         const std::vector<std::string>& bodies,
         const std::vector<SegmentSpec>& public_specs,
         const SegmentSpecMap& body_specs,
-        double jd_tt,
+        double epoch_tdb,
         double obliquity_deg,
         const Mat3& rotation_matrix
     ) const {
@@ -93,7 +93,7 @@ public:
         std::vector<std::pair<Vec3, Vec3>> pair_states;
         pair_states.reserve(public_specs.size());
         for (const SegmentSpec& spec : public_specs) {
-            pair_states.push_back(route_state({spec}, jd_tt, resolved_segments));
+            pair_states.push_back(route_state({spec}, epoch_tdb, resolved_segments));
         }
 
         const std::pair<Vec3, Vec3>& ssb_sun = pair_states[0];
@@ -161,7 +161,7 @@ public:
                 }
                 const Vec3 bary_lt = route_position(
                     specs_it->second,
-                    jd_tt - light_times.at(body),
+                    epoch_tdb - light_times.at(body),
                     resolved_segments
                 );
                 const Vec3 xyz_lt = Vec3::sub(bary_lt, earth_pos);
@@ -199,7 +199,6 @@ public:
             }
 
             xyz = apply_aberration_velocity(xyz, earth_vel);
-            xyz = apply_frame_bias(xyz);
             xyz = Mat3::mul(rotation_matrix, xyz);
 
             const auto [longitude, latitude, distance] = equatorial_vector_to_ecliptic(xyz, obliquity_deg);
@@ -220,7 +219,7 @@ public:
 private:
     std::pair<Vec3, Vec3> route_state(
         const std::vector<SegmentSpec>& specs,
-        double jd,
+        double epoch_tdb,
         const ResolvedSegments& resolved_segments
     ) const {
         Vec3 position;
@@ -228,7 +227,7 @@ private:
         for (const SegmentSpec& spec : specs) {
             double pos[3];
             double vel[3];
-            resolved_segments.at(spec)->position_and_velocity(jd, pos, vel);
+            resolved_segments.at(spec)->position_and_velocity(epoch_tdb, pos, vel);
             position = Vec3::add(position, Vec3(pos[0], pos[1], pos[2]));
             velocity = Vec3::add(velocity, Vec3(vel[0], vel[1], vel[2]));
         }
@@ -237,13 +236,13 @@ private:
 
     Vec3 route_position(
         const std::vector<SegmentSpec>& specs,
-        double jd,
+        double epoch_tdb,
         const ResolvedSegments& resolved_segments
     ) const {
         Vec3 out;
         for (const SegmentSpec& spec : specs) {
             double position[3];
-            resolved_segments.at(spec)->position(jd, position);
+            resolved_segments.at(spec)->position(epoch_tdb, position);
             out = Vec3::add(out, Vec3(position[0], position[1], position[2]));
         }
         return out;
@@ -320,16 +319,6 @@ private:
         }
 
         return {ux * dist_body, uy * dist_body, uz * dist_body};
-    }
-
-    static Vec3 apply_frame_bias(const Vec3& xyz) {
-        constexpr double dA_r = (-14.6 / 1000.0) * ARCSEC2RAD;
-        constexpr double xi0_r = (-16.6170 / 1000.0) * ARCSEC2RAD;
-        constexpr double de0_r = (-6.8192 / 1000.0) * ARCSEC2RAD;
-        const double xb = xyz[0] - de0_r * xyz[1] + xi0_r * xyz[2];
-        const double yb = de0_r * xyz[0] + xyz[1] - dA_r * xyz[2];
-        const double zb = -xi0_r * xyz[0] + dA_r * xyz[1] + xyz[2];
-        return {xb, yb, zb};
     }
 
     static std::tuple<double, double, double> equatorial_vector_to_ecliptic(

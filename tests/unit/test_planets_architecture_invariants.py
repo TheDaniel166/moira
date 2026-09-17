@@ -367,8 +367,10 @@ def test_native_plan_explains_route_and_backend_selection(
     monkeypatch.setattr(
         planets_module,
         "_npe_public_route_segment_specs",
-        lambda reader, jd_tt: (
-            public_specs if jd_tt == _JD_J2000 else None
+        lambda reader, epoch_tdb: (
+            public_specs
+            if epoch_tdb == planets_module.tt_to_tdb(_JD_J2000)
+            else None
         ),
     )
     plan = planets_module._native_all_planets_plan([Body.SUN], **common)

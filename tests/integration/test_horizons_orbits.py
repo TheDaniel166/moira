@@ -1,16 +1,97 @@
 from __future__ import annotations
 
+import json
 import math
+from pathlib import Path
+import re
 
 import pytest
 
 from moira.constants import Body
-from moira.orbits import distance_extremes_at, orbital_elements_at
-from tools.horizons import orbital_elements, vector_series, vector_state
+from moira.orbits import (
+    ApsidalDirection,
+    OrbitalCenter,
+    apsidal_passages,
+    orbital_elements_at,
+)
+from tools.horizons import (
+    orbital_elements,
+    orbital_elements_response_tdb,
+    orbital_elements_tdb,
+    vector_series_tdb,
+    vector_state_tdb,
+)
+
+
+_FIXTURE_ROOT = Path(__file__).parents[1] / "fixtures"
+_STAGE1_AUTHORITY_RECORDS = tuple(
+    record
+    for filename in (
+        "horizons_orbital_elements_calibration.json",
+        "horizons_orbital_elements_holdout.json",
+        "horizons_orbital_elements_catalog_holdout.json",
+    )
+    for record in json.loads(
+        (_FIXTURE_ROOT / filename).read_text(encoding="utf-8")
+    )["records"]
+)
 
 
 def _wrapped_angle_error_deg(a_deg: float, b_deg: float) -> float:
     return abs(((a_deg - b_deg + 180.0) % 360.0) - 180.0)
+
+
+def _response_value(pattern: str, text: str) -> str | None:
+    found = re.search(pattern, text, re.MULTILINE)
+    return None if found is None else found.group(1).strip()
+
+
+@pytest.mark.integration
+@pytest.mark.external_network
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "record",
+    _STAGE1_AUTHORITY_RECORDS,
+    ids=[record["case_key"] for record in _STAGE1_AUTHORITY_RECORDS],
+)
+def test_stage1_exact_tdb_horizons_authority_has_not_drifted(record) -> None:
+    command = record["requests"]["elements"]["COMMAND"].strip("'")
+    center = record["requests"]["elements"]["CENTER"].strip("'")
+    epoch_tdb = record["jd_tdb"]
+    text = orbital_elements_response_tdb(command, epoch_tdb, center)
+    live_elements = orbital_elements_tdb(command, epoch_tdb, center)
+    live_vector = vector_state_tdb(command, epoch_tdb, center)
+    authority = record["authority"]
+
+    assert _response_value(r"^API VERSION:\s*(.+)$", text) == authority[
+        "api_version"
+    ]
+    assert _response_value(r"^API SOURCE:\s*(.+)$", text) == authority[
+        "api_source"
+    ]
+    assert _response_value(
+        r"^Target body name:.*?\{source:\s*([^}]+)\}", text
+    ) == authority["target_solution"]
+    gm = _response_value(
+        r"^Keplerian GM\s*:\s*([+\-0-9.Ee]+)\s+au\^3/d\^2", text
+    )
+    assert gm is not None
+    assert float(gm) == pytest.approx(
+        authority["keplerian_gm_au3_day2"], rel=0.0, abs=5.0e-19
+    )
+
+    expected_elements = record["elements_j2000_ecliptic_au_day"]
+    for field, expected in expected_elements.items():
+        actual = getattr(live_elements, field)
+        tolerance = 5.0e-10 if "deg" in field else 2.0e-10
+        if "deg" in field:
+            assert _wrapped_angle_error_deg(actual, expected) < tolerance
+        else:
+            assert actual == pytest.approx(expected, abs=tolerance)
+
+    expected_vector = record["vector_icrf_km_km_s"]
+    for field, expected in expected_vector.items():
+        assert getattr(live_vector, field) == pytest.approx(expected, abs=1.0e-7)
 
 
 def _next_event_jd(base_jd: float, start_jd: float, period_days: float) -> float:
@@ -20,93 +101,97 @@ def _next_event_jd(base_jd: float, start_jd: float, period_days: float) -> float
     return base_jd + cycles * period_days
 
 
-def _helio_distance_au(command: str, jd_ut: float) -> float:
-    state = vector_state(command, jd_ut, center="500@10")
+def _helio_distance_au_tdb(command: str, jd_tdb: float) -> float:
+    state = vector_state_tdb(command, jd_tdb, center="500@10")
     return math.sqrt(state.x * state.x + state.y * state.y + state.z * state.z) / 149_597_870.700
 
 
-def _helio_distance_au_from_xyz(x: float, y: float, z: float) -> float:
-    return math.sqrt(x * x + y * y + z * z) / 149_597_870.700
+def _radial_velocity_km_s(state) -> float:
+    distance_km = math.sqrt(
+        state.x * state.x + state.y * state.y + state.z * state.z
+    )
+    return (
+        state.x * state.vx + state.y * state.vy + state.z * state.vz
+    ) / distance_km
 
 
-def _golden_section_extremum(
-    func,
-    left: float,
-    right: float,
+def _horizons_step_size(step_days: float) -> str:
+    """Return a deterministic integer-minute Horizons step no wider than requested."""
+
+    return f"{max(1, math.floor(step_days * 1440.0))} m"
+
+
+def _refine_horizons_radial_root(
+    command: str,
+    left_tdb: float,
+    right_tdb: float,
     *,
     maximise: bool,
-    tol_days: float = 1e-3,
-    max_iter: int = 32,
+    tol_days: float = 2.0e-7,
+    max_iter: int = 48,
 ) -> tuple[float, float]:
-    phi = (1.0 + math.sqrt(5.0)) / 2.0
-    invphi = 1.0 / phi
-    invphi2 = invphi * invphi
+    """Refine one official-Horizons radial-velocity crossing in exact TDB."""
 
-    a = left
-    b = right
-    h = b - a
-    if h <= tol_days:
-        x = 0.5 * (a + b)
-        return x, func(x)
-
-    c = a + invphi2 * h
-    d = a + invphi * h
-    fc = func(c)
-    fd = func(d)
+    left_state = vector_state_tdb(command, left_tdb, center="500@10")
+    right_state = vector_state_tdb(command, right_tdb, center="500@10")
+    left_g = _radial_velocity_km_s(left_state)
+    right_g = _radial_velocity_km_s(right_state)
+    if maximise:
+        assert left_g >= 0.0 >= right_g
+    else:
+        assert left_g <= 0.0 <= right_g
 
     for _ in range(max_iter):
-        if h <= tol_days:
+        if right_tdb - left_tdb <= tol_days:
             break
-        choose_left = fc > fd if maximise else fc < fd
-        if choose_left:
-            b = d
-            d = c
-            fd = fc
-            h = invphi * h
-            c = a + invphi2 * h
-            fc = func(c)
+        middle_tdb = (left_tdb + right_tdb) / 2.0
+        middle_state = vector_state_tdb(
+            command, middle_tdb, center="500@10"
+        )
+        middle_g = _radial_velocity_km_s(middle_state)
+        if middle_g == 0.0:
+            left_tdb = right_tdb = middle_tdb
+            break
+        if left_g * middle_g <= 0.0:
+            right_tdb = middle_tdb
+            right_g = middle_g
         else:
-            a = c
-            c = d
-            fc = fd
-            h = invphi * h
-            d = a + invphi * h
-            fd = func(d)
+            left_tdb = middle_tdb
+            left_g = middle_g
 
-    if (fc > fd) if maximise else (fc < fd):
-        return c, fc
-    return d, fd
+    epoch_tdb = (left_tdb + right_tdb) / 2.0
+    return epoch_tdb, _helio_distance_au_tdb(command, epoch_tdb)
 
 
 def _first_local_extremum_bracket(
     command: str,
-    start_jd_ut: float,
+    start_jd_tdb: float,
     *,
     maximise: bool,
-) -> tuple[float, float, float]:
-    elements = orbital_elements(command, start_jd_ut)
-    step_days = max(0.5, elements.orbital_period_days / 100.0)
-    samples = vector_series(
+) -> tuple[float, float]:
+    elements = orbital_elements_tdb(command, start_jd_tdb)
+    step_days = max(
+        0.05,
+        min(32.0, elements.orbital_period_days / 256.0),
+    )
+    samples = vector_series_tdb(
         command,
-        start_jd_ut - step_days,
-        start_jd_ut + elements.orbital_period_days * 1.5 + step_days,
-        step_days,
+        start_jd_tdb - step_days,
+        start_jd_tdb + elements.orbital_period_days * 1.5 + step_days,
+        _horizons_step_size(step_days),
         center="500@10",
     )
-    distances = [
-        _helio_distance_au_from_xyz(sample.state.x, sample.state.y, sample.state.z)
-        for sample in samples
-    ]
-    for idx in range(1, len(samples) - 1):
-        mid = distances[idx]
-        lhs = distances[idx - 1]
-        rhs = distances[idx + 1]
+    for left, right in zip(samples, samples[1:]):
+        if right.jd_tdb < start_jd_tdb:
+            continue
+        left_g = _radial_velocity_km_s(left.state)
+        right_g = _radial_velocity_km_s(right.state)
         if maximise:
-            if mid >= lhs and mid >= rhs:
-                return samples[idx - 1].jd_tdb, samples[idx].jd_tdb, samples[idx + 1].jd_tdb
+            crossed = left_g >= 0.0 >= right_g
         else:
-            if mid <= lhs and mid <= rhs:
-                return samples[idx - 1].jd_tdb, samples[idx].jd_tdb, samples[idx + 1].jd_tdb
+            crossed = left_g <= 0.0 <= right_g
+        if crossed:
+            return left.jd_tdb, right.jd_tdb
     raise AssertionError(f"No {'maximum' if maximise else 'minimum'} bracket found for command {command}")
 
 
@@ -211,39 +296,53 @@ def test_inner_distance_extremes_match_horizons_vector_extrema(
     start_jd_ut: float,
     planetary_reader,
 ) -> None:
-    moira = distance_extremes_at(body, start_jd_ut, planetary_reader)
+    moira = apsidal_passages(
+        body,
+        start_jd_ut,
+        center=OrbitalCenter.SUN,
+        direction=ApsidalDirection.NEXT,
+        reader=planetary_reader,
+    )
+    assert moira.pericenter.epoch_tdb is not None
+    assert moira.pericenter.distance_au is not None
+    assert moira.apocenter.epoch_tdb is not None
+    assert moira.apocenter.distance_au is not None
 
-    peri_left, _, peri_right = _first_local_extremum_bracket(command, start_jd_ut, maximise=False)
-    aphe_left, _, aphe_right = _first_local_extremum_bracket(command, start_jd_ut, maximise=True)
+    peri_left, peri_right = _first_local_extremum_bracket(
+        command, moira.start_epoch_tdb, maximise=False
+    )
+    aphe_left, aphe_right = _first_local_extremum_bracket(
+        command, moira.start_epoch_tdb, maximise=True
+    )
 
-    ref_peri_jd, ref_peri_dist = _golden_section_extremum(
-        lambda jd: _helio_distance_au(command, jd),
+    ref_peri_jd, ref_peri_dist = _refine_horizons_radial_root(
+        command,
         peri_left,
         peri_right,
         maximise=False,
     )
-    ref_aphe_jd, ref_aphe_dist = _golden_section_extremum(
-        lambda jd: _helio_distance_au(command, jd),
+    ref_aphe_jd, ref_aphe_dist = _refine_horizons_radial_root(
+        command,
         aphe_left,
         aphe_right,
         maximise=True,
     )
 
-    assert abs(moira.perihelion_jd - ref_peri_jd) <= 1.0, (
+    assert abs(moira.pericenter.epoch_tdb - ref_peri_jd) <= 1.0e-4, (
         f"{body}: perihelion date error "
-        f"{moira.perihelion_jd - ref_peri_jd:+.6f} d exceeds 1.0 d"
+        f"{moira.pericenter.epoch_tdb - ref_peri_jd:+.9f} d exceeds 1e-4 d"
     )
-    assert abs(moira.aphelion_jd - ref_aphe_jd) <= 1.0, (
+    assert abs(moira.apocenter.epoch_tdb - ref_aphe_jd) <= 1.0e-4, (
         f"{body}: aphelion date error "
-        f"{moira.aphelion_jd - ref_aphe_jd:+.6f} d exceeds 1.0 d"
+        f"{moira.apocenter.epoch_tdb - ref_aphe_jd:+.9f} d exceeds 1e-4 d"
     )
-    assert abs(moira.perihelion_distance_au - ref_peri_dist) <= 3e-4, (
+    assert abs(moira.pericenter.distance_au - ref_peri_dist) <= 1.0e-9, (
         f"{body}: perihelion distance error "
-        f"{moira.perihelion_distance_au - ref_peri_dist:+.8f} AU exceeds 3e-4 AU"
+        f"{moira.pericenter.distance_au - ref_peri_dist:+.12f} AU exceeds 1e-9 AU"
     )
-    assert abs(moira.aphelion_distance_au - ref_aphe_dist) <= 3e-4, (
+    assert abs(moira.apocenter.distance_au - ref_aphe_dist) <= 1.0e-9, (
         f"{body}: aphelion distance error "
-        f"{moira.aphelion_distance_au - ref_aphe_dist:+.8f} AU exceeds 3e-4 AU"
+        f"{moira.apocenter.distance_au - ref_aphe_dist:+.12f} AU exceeds 1e-9 AU"
     )
 
 
@@ -258,37 +357,51 @@ def test_outer_distance_extremes_match_horizons_vector_extrema(
     start_jd_ut: float,
     planetary_reader,
 ) -> None:
-    moira = distance_extremes_at(body, start_jd_ut, planetary_reader)
+    moira = apsidal_passages(
+        body,
+        start_jd_ut,
+        center=OrbitalCenter.SUN,
+        direction=ApsidalDirection.NEXT,
+        reader=planetary_reader,
+    )
+    assert moira.pericenter.epoch_tdb is not None
+    assert moira.pericenter.distance_au is not None
+    assert moira.apocenter.epoch_tdb is not None
+    assert moira.apocenter.distance_au is not None
 
-    peri_left, _, peri_right = _first_local_extremum_bracket(command, start_jd_ut, maximise=False)
-    aphe_left, _, aphe_right = _first_local_extremum_bracket(command, start_jd_ut, maximise=True)
+    peri_left, peri_right = _first_local_extremum_bracket(
+        command, moira.start_epoch_tdb, maximise=False
+    )
+    aphe_left, aphe_right = _first_local_extremum_bracket(
+        command, moira.start_epoch_tdb, maximise=True
+    )
 
-    ref_peri_jd, ref_peri_dist = _golden_section_extremum(
-        lambda jd: _helio_distance_au(command, jd),
+    ref_peri_jd, ref_peri_dist = _refine_horizons_radial_root(
+        command,
         peri_left,
         peri_right,
         maximise=False,
     )
-    ref_aphe_jd, ref_aphe_dist = _golden_section_extremum(
-        lambda jd: _helio_distance_au(command, jd),
+    ref_aphe_jd, ref_aphe_dist = _refine_horizons_radial_root(
+        command,
         aphe_left,
         aphe_right,
         maximise=True,
     )
 
-    assert abs(moira.perihelion_jd - ref_peri_jd) <= 1.0, (
+    assert abs(moira.pericenter.epoch_tdb - ref_peri_jd) <= 1.0e-4, (
         f"{body}: perihelion date error "
-        f"{moira.perihelion_jd - ref_peri_jd:+.6f} d exceeds 1.0 d"
+        f"{moira.pericenter.epoch_tdb - ref_peri_jd:+.9f} d exceeds 1e-4 d"
     )
-    assert abs(moira.aphelion_jd - ref_aphe_jd) <= 1.0, (
+    assert abs(moira.apocenter.epoch_tdb - ref_aphe_jd) <= 1.0e-4, (
         f"{body}: aphelion date error "
-        f"{moira.aphelion_jd - ref_aphe_jd:+.6f} d exceeds 1.0 d"
+        f"{moira.apocenter.epoch_tdb - ref_aphe_jd:+.9f} d exceeds 1e-4 d"
     )
-    assert abs(moira.perihelion_distance_au - ref_peri_dist) <= 3e-4, (
+    assert abs(moira.pericenter.distance_au - ref_peri_dist) <= 1.0e-9, (
         f"{body}: perihelion distance error "
-        f"{moira.perihelion_distance_au - ref_peri_dist:+.8f} AU exceeds 3e-4 AU"
+        f"{moira.pericenter.distance_au - ref_peri_dist:+.12f} AU exceeds 1e-9 AU"
     )
-    assert abs(moira.aphelion_distance_au - ref_aphe_dist) <= 3e-4, (
+    assert abs(moira.apocenter.distance_au - ref_aphe_dist) <= 1.0e-9, (
         f"{body}: aphelion distance error "
-        f"{moira.aphelion_distance_au - ref_aphe_dist:+.8f} AU exceeds 3e-4 AU"
+        f"{moira.apocenter.distance_au - ref_aphe_dist:+.12f} AU exceeds 1e-9 AU"
     )

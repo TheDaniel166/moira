@@ -21,6 +21,7 @@ dist/
 *.egg-info/
 .eggs/
 pip-wheel-metadata/
+tmp/
 
 # Virtual environments
 .venv/

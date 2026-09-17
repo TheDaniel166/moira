@@ -112,11 +112,11 @@ where a dedicated differential exists; it is not assumed for every product.
 
 | Product | Evidence and corpus | Enforced gate | Claim status |
 |---|---|---|---|
-| IAU frames and Earth rotation | ERFA; 12 declared epochs for most functions, 8 modern epochs for full GAST | `< 0.001 arcsecond` | Authority-validated on the named epochs |
+| IAU frames and Earth rotation | Official SOFA C 2023-10-11 frame fixture plus secondary ERFA parity | Matrix-specific binary64 gates | Authority-validated on the named epochs and declared frame-router boundaries |
 | Apparent geocentric major bodies | JPL Horizons; 10 targets × 12 epochs = 120 | `<= 0.35 arcsecond`, `<= 0.1 km` | Cross-model angle; same-target/same-epoch distance |
 | Geometric geocentric major-body vectors | JPL Horizons; 10 targets × 8 epochs = 80 | `<= 0.001 arcsecond`, `<= 0.01 km` | Authority comparison of matched ICRF vector geometry |
 | Topocentric apparent RA/Dec | JPL Horizons; 18 cases | Per-case RA `15–30 arcseconds`, Dec `4–12 arcseconds` | Authority-validated on the named sites/epochs; not an azimuth/altitude claim |
-| Heliocentric orbital elements | JPL Horizons; 9 bodies × 3 epochs = 27 | Field-specific limits from `1e-5 AU` to `0.05 degree` | Authority-validated on the named bodies/epochs |
+| Osculating orbital elements | Frozen exact-JDTDB JPL Horizons VECTORS and ELEMENTS; 4 calibration, 7 planet holdout, 6 catalog holdout cases | State `1e-5 km`; element gates from `2e-14` to `5e-10 degree` | Stage 1 authority-validated on the installed kernel subset; full 10,522-body runtime inventory passed; catalog authority admission and live drift audit pending |
 | Heliocentric distance extrema | JPL Horizons vectors; 8 bodies | `<= 1 day`, `<= 3e-4 AU` | Authority-validated for the next local extrema in each case |
 | Asteroid apparent ecliptic positions | Frozen JPL Horizons fixture; 203 cases, 61 bodies | `0.5 arcsecond` default; four named TNO exceptions at `1.5` or `5.0 arcseconds` | Product-specific authority fixture; not the planetary threshold |
 | Delta T policies | Source-priority, continuity, policy, and compatibility tests | Product-specific invariants and source envelopes | Documented/partially validated; no universal Delta-T accuracy claim |
@@ -158,6 +158,14 @@ Moira keeps civil or caller-facing time separate from ephemeris time. Tests
 bind astronomy calculations to the reader that supplies the relevant
 ephemeris clock, and external comparisons send the resulting epoch with an
 explicit Horizons time type.
+
+Orbital Core Stage 1 makes the SPK boundary explicit: public reader methods
+accept TT, convert exactly once with the official NAIF `naif0012.tls` implicit
+TDB-minus-TT equation, and pass only TDB to raw segment evaluation. The frozen
+time fixture records the NAIF source URL, 5,257-byte artifact and SHA-256
+`678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b`.
+Round trips are bounded to one binary64 ULP and strict orbital results expose
+both numerical epochs and the conversion receipt.
 
 The principal Delta-T policies are:
 
@@ -254,10 +262,10 @@ All 80 cases pass:
   J2000; and
 - recorded maximum vector difference `0.002937 km` for Mercury at J2000.
 
-This isolates target and vector geometry. Because Moira currently passes its
-reader-bound ephemeris JD directly to the SPK evaluator and the test sends the
-same numeric JD to Horizons as TDB, this suite does **not** independently
-validate TT-to-TDB conversion.
+This isolates target and vector geometry. Orbital Core Stage 1 separately
+locks the public-TT/private-TDB conversion and compares strict orbital states
+at an identical frozen JDTDB instant; the older vector corpus is no longer
+used as evidence for the clock boundary.
 
 ### 5.4 Retired planetary results
 
@@ -279,23 +287,140 @@ and `4–12 arcseconds` in declination.
 The current test does not assert its stored azimuth and altitude tolerances.
 Therefore this section makes no azimuth/altitude parity claim from that file.
 
-### 5.6 Heliocentric elements and distance extrema
+### 5.6 Osculating elements and distance extrema
 
-`tests/integration/test_horizons_orbits.py` validates 27 osculating-element
-cases: nine bodies from Mercury through Pluto at three epochs. The enforced
-limits are:
+Orbital Core Stage 1 uses three disjoint, frozen JPL Horizons corpora generated
+with exact `TLIST` JDTDB and explicit `TIME_TYPE=TDB` for both uncorrected ICRF
+VECTORS and J2000-ecliptic ELEMENTS:
 
-- semi-major axis, perihelion distance, and aphelion distance: `1e-5 AU`;
-- eccentricity: `1e-5`;
-- inclination and ascending node: `0.001 degree`; and
-- argument of perihelion and mean anomaly: `0.05 degree`.
+- four calibration cases: Mercury, Earth, Jupiter, and Earth-centered Moon;
+- seven planet holdouts: Venus, EMB, Mars, Saturn, Uranus, Neptune, and Pluto;
+- six catalog holdouts: Ceres, Hektor, Atira, Apophis, 1P/Halley, and 2P/Encke.
 
-The same file validates the next local perihelion and aphelion for eight
-planets—Venus through Pluto—against extrema refined directly from Horizons
-heliocentric vectors. The event-date gate is `1 day`; the distance gate is
-`3e-4 AU`.
+`tests/integration/test_orbital_elements_kernels.py` proves raw state, TT-wrapper,
+element, gravity, time, frame, and source-receipt parity against the installed
+kernel subset. Planet state coordinates are gated at `1e-5 km`; tight
+field-specific element gates range from `2e-14` for eccentricity to
+`5e-10 degree` for angles. `tests/integration/test_horizons_orbits.py` retains
+an isolated live-primary drift audit and never rewrites accepted fixtures.
 
-### 5.7 SPK routing and kernel scope
+Orbital Core Stage 2 replaces the older sampled-distance comparison with a
+frozen official JPL Horizons passage corpus and an isolated live-primary drift
+audit. Horizons requests use geometric uncorrected ICRF VECTORS, exact TDB
+epochs, and radial velocity `dot(r, v) / |r|`; sign crossings are refined and
+confirmed by distances on both sides. The frozen planet gates are `1e-4 day`
+for event time and `1e-9 AU` for distance. The disjoint calibration/holdout set
+covers Mercury through the Pluto system, Earth versus the Earth-Moon
+barycenter, Eros, Chiron, 1P/Halley in 2061, 2P/Encke, Sedna near its 2076
+pericenter, and Eris near its 2257 pericenter.
+
+Deterministic synthetic tests separately cover forward/reverse and exact-start
+inclusion, explicit windows, flat radius, initially hyperbolic motion, fixed
+evaluation budget, route gaps, an admitted continuous seam with an extremum
+on the seam, and a rejected discontinuous seam. Real DE441 checks prove TT in
+legacy `DistanceExtremes`, verified inverse UT1 in `PhenomenonEvent`, the
+Earth-centered Moon rule, and the immutable route/evaluation receipt.
+
+The ten installed DE441 planet/system cases pass those gates. The current
+`moira-asteroids-wheel@2026.08.14.1` and
+`moira-comets@2026.07.28.1` manifests do not contain a reviewed Stage 2
+apsidal-passage accuracy admission or an exact Horizons target-solution
+binding, so their six numeric authority comparisons are `NOT RUN`, not silently
+accepted under wider gates. A separate runnable Eros search proves catalog
+routing without substituting that smoke test for authority parity. Diagnostic
+differences against the current fixture are retained in the Stage 2 receipt;
+they range from microdays for Eros/Chiron to `0.104 day` for Halley and
+`0.195 day` for Encke and may combine release-solution and interpolation
+effects. A catalog release must bind and pass the frozen fixture before those
+cases become acceptance evidence.
+
+The packaged 25-asteroid wheel remains a fallback implementation check. On the
+release host, the verified `moira-asteroids@2026.08.12.1` and
+`moira-comets@2026.07.28.1` releases pass the full 10,522-body orbital-element
+inventory gate. That runtime result does not substitute for the catalog
+Horizons authority admissions or the live-primary drift audit, which remain
+release blockers.
+
+### 5.7 Orbital Core Stage 3 geometric nodes
+
+Stage 3 removes the independent state, gravity, frame, and conic pipeline from
+`planetary_nodes.geometric_node`. The public signature and `OrbitalNode` vessel
+remain unchanged, but every result now adapts one strict
+`osculating_elements` computation with a Sun center and
+`TRUE_ECLIPTIC_OF_DATE`. The perihelion field maps the projected pericenter
+vector longitude rather than the inclined-orbit dogleg `Omega + omega`.
+
+Deterministic adapter tests prove exact field mapping, one core call, canonical
+identity, Boolean-input rejection, typed failure when a required legacy-vessel
+field is undefined, preservation of frame-range errors, and absence of the old
+duplicate pipeline. DE441 integration covers Mercury through Pluto including
+Earth; all nine results map exactly to their independently requested strict-core
+result. Requests on either side of JD(TT) `2415020.0`--`2488070.0` fail with
+`OrbitalFrameUnavailableError`.
+
+The loaded representative checks map Ceres, Hektor, Atira, Apophis,
+1P/Halley, and 2P/Encke exactly to the same true-date core and their receipted
+catalog routes. The six frozen catalog-Horizons numeric cases remain `NOT RUN`:
+the installed catalog manifests contain no reviewed Stage 3 admission bound to
+fixture SHA-256
+`d666f24fdc85dbaa5221acdfd619454ec4cd2bf41be2a9b3b9f14a5d1dd321dd` and its
+unchanged acceptance gates. This prevents a catalog-solution mismatch from
+being disguised as a looser code tolerance.
+
+The inventory-wide Stage 3 check passes all 10,025 bodies in the verified
+`moira-asteroids@2026.08.12.1` release and all 497 bodies in
+`moira-comets@2026.07.28.1`. All 10,522 sovereign bodies receive finite node
+checks, exact true-date mapping, canonical resolution, manifest/kernel receipt
+checks, and coverage checks. The packaged wheel is present as a fallback but is
+not substituted for either full-release gate.
+
+### 5.8 Measured Stage 1 compatibility shifts
+
+The Stage 1 compatibility harness replays the pre-change baseline
+`29dd164c80c2a6788aa598a832eff3d4fd8e727a` and the implementation worktree
+against identical, path-free resource identities. All 19 required probes are
+green in both captures. The corpus covers raw reader routes, `planet_at`,
+native and Python `all_planets_at`, a packaged asteroid and comet, transit and
+fixed-star searches, eclipses, lunar geometry, phase and phenomena products,
+end-to-end Shadbala, and four protected frame-consumer families.
+
+The reader-clock receipt proves, to `1e-12` in the recorded state units, that:
+
+- the old public result is reproduced by the candidate's explicit-TDB
+  operation when given the old numeric argument;
+- every candidate public-TT adapter equals exactly one TT-to-TDB conversion;
+- a second conversion is observably different on every sampled raw route; and
+- admitted native and forced-Python planetary paths agree within `1e-9`.
+
+Across the heterogeneous reader-clock probes, 84 of 137 shared numeric fields
+move and the largest raw absolute delta is `0.0017674416303634644`. These fields
+mix kilometres, kilometres per day, degrees, Julian days, and derived doctrine
+units, so that maximum is a change detector, not one physical error measure or
+accuracy threshold.
+
+The frame receipt compares 188 shared fields, of which 121 move; its largest
+heterogeneous raw delta is `0.00237959623336792`. The direct matrix probe is a
+frame-only comparison at fixed TT epochs. Planetary, eclipse, and lunar-geometry
+probes deliberately show the combined clock and frame correction; their clock
+component is separately accounted for in the reader-clock receipt. Frame truth
+itself remains governed by the frozen official IAU SOFA 2023-10-11 matrices.
+
+The focused Stage 1 gate and isolated 52-case element audit pass on this
+worktree. The Stage 2 live exact-TDB event audit passes its Earth and Neptune
+sentinels, including Neptune's first perturbed local maximum that the retired
+`period/100` sampled-distance validator skipped. At the Stage 1 checkpoint,
+release readiness was blocked by the then-unresolved full-asteroid prerequisite
+and by a repository-wide non-network command that terminated in pre-existing
+harness-import, hybrid-eclipse-topology, and asteroid fixture/resource failures
+reproduced on the untouched baseline. The Stage 3 release-host inventory gate
+later satisfied the full-asteroid prerequisite; the remaining live-primary,
+catalog-admission, and inherited repository gates stay explicit. The plan's
+exact changed-file Ruff command also reports the same 66 inherited
+findings on candidate and baseline; the new Stage 1 files are clean when
+checked separately. None of these conditions is represented as orbital
+validation.
+
+### 5.9 SPK routing and kernel scope
 
 Moira resolves each body's NAIF chain and selects a segment that covers the
 requested epoch. The planetary validation suites exercise those routes over
@@ -306,7 +431,7 @@ tests.
 The numbers in this paper belong to DE441. Kernel compatibility is an API
 capability; numerical transfer to another kernel requires a new corpus run.
 
-### 5.8 Asteroid positions use a separate acceptance policy
+### 5.10 Asteroid positions use a separate acceptance policy
 
 `tests/integration/test_horizons_asteroid_apparent.py` uses a frozen,
 provenance-bearing Horizons fixture containing 203 cases across 61 bodies.

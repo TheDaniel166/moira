@@ -27,6 +27,7 @@ from .transits import (
 from .planets import Body, _npe_body_route_segment_specs
 from .asteroids import ASTEROID_NAIF
 from ._ephemeris_time import _ut1_to_ephemeris_tt
+from .julian import tt_to_tdb
 try:
     from . import moira_native as mn
 except ImportError:
@@ -98,7 +99,7 @@ _EARTH_ROUTE_PAIRS = ((0, 3), (3, 399))
 
 
 def _get_native_evaluator(body: str, specs: dict, path: str) -> object | None:
-    """Construct a native evaluator chain for a body's barycentric route."""
+    """Construct one TT-facing evaluator for a body's raw TDB route."""
     if mn is None or body not in specs:
         return None
 
@@ -108,20 +109,26 @@ def _get_native_evaluator(body: str, specs: dict, path: str) -> object | None:
         evals.append(mn.load_spk_segment_evaluator(path, start_i, end_i, True, data_type))
 
     if len(evals) == 1:
-        return evals[0]
-    if len(evals) == 2:
-        return mn.SumEvaluator(evals[0], evals[1])
-    return None
+        raw = evals[0]
+    elif len(evals) == 2:
+        raw = mn.SumEvaluator(evals[0], evals[1])
+    else:
+        return None
+    return mn.TtToTdbEvaluator(raw)
 
 
-def _earth_native_evaluator(reader: SpkReader, path: str, jd_tt: float) -> object | None:
+def _earth_native_evaluator(
+    reader: SpkReader,
+    path: str,
+    epoch_tdb: float,
+) -> object | None:
     """SSB → EMB → Earth, matching the admitted planetary Earth route."""
     if mn is None:
         return None
     evals = []
     try:
         for center, target in _EARTH_ROUTE_PAIRS:
-            segment = reader._segment_for(center, target, jd_tt)
+            segment = reader._segment_for_tdb(center, target, epoch_tdb)
             if segment is None:
                 return None
             evals.append(
@@ -136,7 +143,7 @@ def _earth_native_evaluator(reader: SpkReader, path: str, jd_tt: float) -> objec
     except Exception:
         return None
     if len(evals) == 2:
-        return mn.SumEvaluator(evals[0], evals[1])
+        return mn.TtToTdbEvaluator(mn.SumEvaluator(evals[0], evals[1]))
     return None
 
 def _find_candidate_windows_native(
@@ -162,14 +169,15 @@ def _find_candidate_windows_native(
 
     # 2. Get segment specs
     jd_tt_start = _ut1_to_ephemeris_tt(jd_start, reader)
-    specs = _npe_body_route_segment_specs(planetary_reader, jd_tt_start)
+    epoch_tdb_start = tt_to_tdb(jd_tt_start)
+    specs = _npe_body_route_segment_specs(planetary_reader, epoch_tdb_start)
     if not specs:
         return []
     
     # 3. Build Evaluators
     path = str(planetary_reader.path)
     e_target1 = _get_native_evaluator(body, specs, path)
-    e_earth = _earth_native_evaluator(planetary_reader, path, jd_tt_start)
+    e_earth = _earth_native_evaluator(planetary_reader, path, epoch_tdb_start)
     if not e_target1 or not e_earth:
         return None
 
@@ -348,12 +356,13 @@ def _native_ecliptic_longitude_series(
     if not isinstance(planetary_reader, SpkReader):
         return None
     jd_tt_start = _ut1_to_ephemeris_tt(jd_start, reader)
-    specs = _npe_body_route_segment_specs(planetary_reader, jd_tt_start)
+    epoch_tdb_start = tt_to_tdb(jd_tt_start)
+    specs = _npe_body_route_segment_specs(planetary_reader, epoch_tdb_start)
     if not specs:
         return None
     path = str(planetary_reader.path)
     e_body = _get_native_evaluator(body, specs, path)
-    e_earth = _earth_native_evaluator(planetary_reader, path, jd_tt_start)
+    e_earth = _earth_native_evaluator(planetary_reader, path, epoch_tdb_start)
     if not e_body or not e_earth:
         return None
     jds_tt: list[float] = []
@@ -375,7 +384,12 @@ _SSB = 0
 _SUN = 10
 
 
-def _small_body_segment(reader, naif_id: int, jd_tt_start: float, jd_tt_end: float):
+def _small_body_segment(
+    reader,
+    naif_id: int,
+    epoch_tdb_start: float,
+    epoch_tdb_end: float,
+):
     """Return the Type 13 segment covering the whole window for *naif_id*, or None."""
     readers = getattr(reader, "_readers", None)
     if readers is None:
@@ -386,7 +400,11 @@ def _small_body_segment(reader, naif_id: int, jd_tt_start: float, jd_tt_end: flo
         if not callable(has_body) or kernel is None or not has_body(naif_id):
             continue
         for seg in kernel.segments:
-            if seg.target == naif_id and seg.start_jd <= jd_tt_start and jd_tt_end <= seg.end_jd:
+            if (
+                seg.target == naif_id
+                and seg.start_jd <= epoch_tdb_start
+                and epoch_tdb_end <= seg.end_jd
+            ):
                 return seg
     return None
 
@@ -416,7 +434,11 @@ def _native_small_body_series(
         return None
     jd_tt_start = _ut1_to_ephemeris_tt(jd_start, reader)
     jd_tt_end = _ut1_to_ephemeris_tt(jd_end, reader)
-    seg = _small_body_segment(reader, int(naif_id), jd_tt_start, jd_tt_end)
+    epoch_tdb_start = tt_to_tdb(jd_tt_start)
+    epoch_tdb_end = tt_to_tdb(jd_tt_end)
+    seg = _small_body_segment(
+        reader, int(naif_id), epoch_tdb_start, epoch_tdb_end
+    )
     if seg is None:
         return None
     try:
@@ -427,16 +449,17 @@ def _native_small_body_series(
         return None
     path = str(planetary_reader.path)
     if seg.center == _SUN:
-        sun = planetary_reader._segment_for(_SSB, _SUN, jd_tt_start)
+        sun = planetary_reader._segment_for_tdb(_SSB, _SUN, epoch_tdb_start)
         if sun is None:
             return None
         e_sun = mn.load_spk_segment_evaluator(path, int(sun.start_i), int(sun.end_i), True, int(sun.data_type))
-        e_target = mn.SumEvaluator(e_sun, e_body)
+        e_target_raw = mn.SumEvaluator(e_sun, e_body)
     elif seg.center == _SSB:
-        e_target = e_body
+        e_target_raw = e_body
     else:
         return None
-    e_earth = _earth_native_evaluator(planetary_reader, path, jd_tt_start)
+    e_target = mn.TtToTdbEvaluator(e_target_raw)
+    e_earth = _earth_native_evaluator(planetary_reader, path, epoch_tdb_start)
     if e_earth is None:
         return None
     jds_tt = [_ut1_to_ephemeris_tt(jd, reader) for jd in _sample_jds(jd_start, jd_end, step_days)]

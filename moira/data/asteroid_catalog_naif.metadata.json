@@ -21,12 +21,12 @@
     "admitted_targets_sha256": "08927dcb994388902bea186c70d286d7e85334f863309123b194aafc8915ad91",
     "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
     "release_manifest": "manifest.json",
-    "release_manifest_sha256": "c151348a9edd3620716da8849ceb239d0ab39688ead948ffecb592c13e068c64",
+    "release_manifest_sha256": "9985f6e2da31e926f95391df17054e429ad72552ddc0793eaaaa3273f46febf0",
     "release_source": "MOIRA UNIFIED ASTEROID CATALOG (JPL Horizons)",
     "release_source_revision": "14d97782-builder8c103864-target08927dcb",
     "released_utc": "2026-08-12T20:44:09Z",
     "trajectory_source": "JPL Horizons VECTORS",
     "unified_master": "unified_master.json",
-    "unified_master_sha256": "72c0dd9a07ba2b2af610f8755b785d2f473a550b62d77aeaf4d45ac2d3ae185d"
+    "unified_master_sha256": "45a74926db58cd4c1fbe57fd9c56ec19ea09686a51276e9c7698b11e3aa9a7ab"
   }
 }

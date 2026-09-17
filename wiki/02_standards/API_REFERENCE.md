@@ -906,8 +906,9 @@ from moira.facade import load_asteroid_kernel   # for non-DE441 bodies
 
 | Function | Returns | Description |
 |---|---|---|
-| `planetary_node(body, jd_ut)` | `OrbitalNode` | Ascending node and perihelion for a planet |
-| `all_planetary_nodes(jd_ut)` | `dict[str, OrbitalNode]` | All planetary nodes |
+| `planetary_node(planet, jd)` | `OrbitalNode` | Kernel-free Meeus/Simon mean node and apsides for an admitted planet |
+| `all_planetary_nodes(jd)` | `dict[str, OrbitalNode]` | Mean nodes and apsides for all eight admitted planets |
+| `geometric_node(body, jd_ut, reader=None)` | `OrbitalNode` | Strict-core instantaneous Sun-centered node and projected apsidal direction in the true ecliptic of date for a planet, Pluto, or loaded asteroid/comet; admitted only for JD(TT) 2415020.0--2488070.0 |
 
 ### Uranian planets (Hamburg School)
 
@@ -1034,8 +1035,10 @@ t = twilight_times(jd, latitude=51.5, longitude=-0.1)
 from moira.facade import (
     planet_relative_to, next_heliocentric_transit,
     PlanetPhenomena, planet_phenomena_at,
-    KeplerianElements, DistanceExtremes,
-    orbital_elements_at, distance_extremes_at,
+    OrbitalCenter, OrbitalFrame, OrbitShape, ApsidalDirection,
+    ApsidalPassageStatus, OsculatingElements, ApsidalPassages,
+    KeplerianElements, DistanceExtremes, osculating_elements,
+    apsidal_passages, orbital_elements_at, distance_extremes_at,
 )
 ```
 
@@ -1044,8 +1047,37 @@ from moira.facade import (
 | `planet_relative_to(body, center_body, jd_ut, reader=None)` | `PlanetData` | Body position relative to another physical center body |
 | `next_heliocentric_transit(body, target_lon, jd_start, reader=None, max_days=400.0)` | `float` | Next heliocentric longitude crossing of a target longitude |
 | `planet_phenomena_at(body, jd_ut)` | `PlanetPhenomena` | Instantaneous elongation/phase-style observational summary for one body |
-| `orbital_elements_at(body, jd_ut, reader)` | `KeplerianElements` | Osculating orbital elements at one epoch |
-| `distance_extremes_at(body, jd_ut, reader)` | `DistanceExtremes` | Perihelion/aphelion-style distance-extrema summary at one epoch |
+| `osculating_elements(body, jd_ut, *, center, frame, reader=None)` | `OsculatingElements` | Strict source-receipted conic at one UT1 epoch; SPK state is evaluated in TDB and frame models in TT |
+| `apsidal_passages(body, jd_ut, *, center, direction, max_days=None, reader=None)` | `ApsidalPassages` | Inclusive next/previous live distance extrema from TDB radial-velocity roots on one frozen source route |
+| `orbital_elements_at(body, jd_ut, reader)` | `KeplerianElements` | Planet-only compatibility adapter using Sun center and fixed J2000 ecliptic; `epoch_jd` is TT |
+| `distance_extremes_at(body, jd_ut, reader)` | `DistanceExtremes` | Planet-only `NEXT`/`SUN` adapter; both passage JD fields are TT |
+
+`osculating_elements` requires an explicit `OrbitalCenter` (`SUN` or `EARTH`)
+and `OrbitalFrame` (`J2000_ECLIPTIC`, `MEAN_ECLIPTIC_OF_DATE`, or
+`TRUE_ECLIPTIC_OF_DATE`). It admits planets and EMB about the Sun, the Moon
+about Earth, and installed sovereign asteroid/comet catalog members about the
+Sun. Its result includes body identity, UT1/TT/TDB epochs, shape-safe optional
+elements, undefined-field reasons, and complete state-source, gravity, frame,
+time, and singularity provenance. True-of-date is limited to TT JD
+2415020.0–2488070.0 inclusive.
+
+`apsidal_passages` requires explicit `OrbitalCenter` and
+`ApsidalDirection` (`NEXT` or `PREVIOUS`). Each pericenter/apocenter outcome is
+`FOUND`, `BEYOND_COVERAGE`, or `NOT_IN_WINDOW`; absent outcomes do not carry
+invented event coordinates. A found event exposes TDB, TT, verified inverse
+UT1, distance, and a two-sided-root detail. Provenance freezes the algorithm,
+gravity/clock identity, route schedule and source usage, seam continuity,
+sampling constants, evaluation budget, and exact searched interval. The start
+and bounds are inclusive, but an event on a route edge still needs witnesses
+on both sides. An initially open osculating conic controls only the search
+scale and does not suppress live trajectory search.
+
+`OrbitalSearchError` (`ArithmeticError`) reports a failed bracket refinement
+or exhausted fixed evaluation budget with bracket, iteration/evaluation counts,
+tolerance, final residual, and algorithm version. The legacy complete-pair
+adapter raises `OrbitalPassageUnavailableError` (`ValueError`) with the full
+`ApsidalPassages` result and ordered missing kinds. Both remain members of the
+structured `OrbitalError` family.
 
 ---
 
@@ -3994,6 +4026,12 @@ from moira.facade import (
 | `moon_phases_in_range(jd_start, jd_end, reader=None)` | `list[PhenomenonEvent]` | All eight standard moon phases in a date range |
 
 `PhenomenonEvent`: `body`, `phenomenon`, `jd_ut`, `value`.
+
+`perihelion` and `aphelion` adapt the versioned orbital-core passage search.
+They admit every loaded orbital body, use Earth for the Moon and Sun for every
+other body, and preserve verified UT1 in `jd_ut`; `value` is the event distance
+in AU. A legitimate non-found outcome returns `None`. Numerical search failure
+still raises and is never converted into physical absence.
 
 ### Occultations
 

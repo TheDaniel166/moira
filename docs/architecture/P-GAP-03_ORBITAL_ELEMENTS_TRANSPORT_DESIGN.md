@@ -1,346 +1,194 @@
 # P-GAP-03 Orbital Elements Transport Design
 
-Version: 0.2
-Date: 2026-06-14
-Status: implemented and admitted
-Scope: bounded REST admission plan for heliocentric osculating elements and
-heliocentric distance extrema
+Version: 0.4<br>
+Date: 2026-09-15<br>
+Status: Stage 2 distance-extremes adapter upgraded; broader orbital transport deferred
+Scope: bounded REST adaptation of strict Sun/J2000 planet elements and passages
 
-This design follows `wiki/02_standards/ORBITAL_ELEMENTS_BACKEND_STANDARD.md`.
-
-P-GAP-03 evaluates the root-exported orbital surfaces:
-
-- `orbital_elements_at`
-- `distance_extremes_at`
-- `KeplerianElements`
-- `DistanceExtremes`
-
-These are astronomical substrate products. They are not chart positions,
-zodiacal positions, mean element tables, or interpretive astrology surfaces.
+This design follows
+`wiki/02_standards/ORBITAL_ELEMENTS_BACKEND_STANDARD.md`. The Python engine now
+has a broader strict API, but P-GAP-03 deliberately retains a narrow transport
+surface.
 
 ---
 
 ## 1. Route Family
 
-Prefix:
-
-- `/v1/orbits`
-
-Routes:
-
 - `POST /v1/orbits/elements`
 - `POST /v1/orbits/distance-extremes`
 
-Route naming doctrine:
+The elements route is a Stage 1 adapter over:
 
-- `orbits` marks the family as orbital-state derived products.
-- `elements` returns one epoch's heliocentric J2000 osculating Keplerian
-  elements.
-- `distance-extremes` returns the next heliocentric perihelion and aphelion
-  events after the requested start epoch.
+```python
+osculating_elements(
+    body,
+    jd_ut,
+    center=OrbitalCenter.SUN,
+    frame=OrbitalFrame.J2000_ECLIPTIC,
+    reader=engine._reader,
+)
+```
 
----
-
-## 2. Request Models
-
-`OrbitalElementsRequest`:
-
-- `body`: string
-- `jd_ut`: float
-
-Validation:
-
-- `body` must be non-empty after trimming
-- `body` must be one of the admitted engine bodies
-- `jd_ut` must be finite
-- extra fields are rejected
-
-`DistanceExtremesRequest`:
-
-- `body`: string
-- `jd_ut`: float
-
-Validation:
-
-- same body and finite-JD rules as `OrbitalElementsRequest`
-
-Admitted bodies:
-
-- `Mercury`
-- `Venus`
-- `Earth`
-- `Mars`
-- `Jupiter`
-- `Saturn`
-- `Uranus`
-- `Neptune`
-- `Pluto`
-
-Rejected bodies:
-
-- `Sun`
-- `Moon`
-- nodes, Lilith, lots, stars, asteroids, comets, Uranian points, and any
-  other body not admitted by `moira.orbits`
-
-Stage 1 intentionally accepts `jd_ut` rather than a datetime field. This keeps
-the route aligned with the engine entrypoints and avoids hiding the time-scale
-boundary.
+The distance-extremes route remains an adapter over
+`distance_extremes_at(body, jd_ut, reader)`, which is now the planet-only
+compatibility layer over one strict `apsidal_passages` call with `center=SUN`
+and `direction=NEXT`.
 
 ---
 
-## 3. Response Models
+## 2. Requests And Admission
 
-`OrbitalElementsResponse`:
+Both requests retain:
+
+- `body: str`
+- `jd_ut: float`
+- extra fields forbidden
+
+`jd_ut` means UT1 Julian Day on the elements route. It is not UTC, TT, or TDB.
+
+Transport admission remains the nine historical planet names: Mercury through
+Pluto. Sun, Moon, EMB, asteroids, comets, calculated points, fixed stars, and
+unknown names are rejected by request validation or translated engine errors.
+The broader Python admission is intentionally not inferred into REST.
+
+Reasons for the narrower boundary:
+
+- the existing response requires elliptic fields to be non-null;
+- the request has no center or frame field;
+- small-body release ownership needs a separate deployment design; and
+- open-conic and undefined-field transport needs an explicit schema version.
+
+---
+
+## 3. Elements Response
+
+The existing `elements` field names remain compatible:
 
 - `name`
-- `epoch_jd`
-- `semi_major_axis_au`
-- `eccentricity`
-- `inclination_deg`
-- `lon_ascending_node_deg`
-- `arg_perihelion_deg`
-- `mean_anomaly_deg`
-- `mean_motion_deg_per_day`
-- `orbital_period_days`
-- `perihelion_distance_au`
-- `aphelion_distance_au`
+- `epoch_jd` (now explicitly TT)
+- semi-major axis, eccentricity, and inclination
+- ascending node, argument of perihelion, and mean anomaly
+- mean motion and orbital period
+- derived perihelion and aphelion distances
 
-`DistanceExtremesResponse`:
+The surrounding `time` block is upgraded to carry:
 
-- `name`
-- `perihelion_jd`
-- `perihelion_distance_au`
-- `aphelion_jd`
-- `aphelion_distance_au`
+- `input_time_scale = UT1_JD`
+- `state_evaluation_scale = TDB_JD`
+- `output_time_scale = TT_JD`
+- `jd_ut`, `epoch_tt`, and `epoch_tdb`
+- Delta T and TDB-minus-TT in seconds
+- the source-owned Delta-T policy/source/retarget receipt
+- NAIF `naif0012` policy, version, URL, SHA-256, byte count, and iteration count
 
-`OrbitRequestEchoResponse`:
+The elements provenance is allowlisted and path-free. It carries:
 
-- `body`
-- `jd_ut`
+- source module and strict engine entrypoint;
+- required Sun center and fixed J2000-ecliptic frame;
+- the complete gravity rule and primary PCK receipt;
+- exact frame construction and router branch;
+- every routed SPK leg, traversal sign, segment type, coverage interval,
+  content identity, and catalog identity where applicable;
+- intersection coverage and fixed pool generation; and
+- all singularity thresholds and their policy ID.
 
-`OrbitTimeResponse`:
-
-- `input_time_scale`: `UT_JD`
-- `state_evaluation_scale`: `TT_internal`
-- `delta_t_policy`: `engine_default`
-
-`OrbitProvenanceResponse`:
-
-- `source_module`
-- `engine_entrypoint`
-- `reader_owner`
-- `center`
-- `frame`
-- `orientation`
-- `element_type`
-- `state_source`
-- `position_basis`
-- `apparent_corrections`
-- `light_time_correction`
-- `mean_element_table`
-- `event_basis`, only for distance-extrema routes
-- `search_direction`, only for distance-extrema routes
-- `chronological_order_forced`, only for distance-extrema routes
-- `stage_sequence`
-
-Envelope responses:
-
-- `OrbitalElementsEnvelopeResponse`
-- `DistanceExtremesEnvelopeResponse`
-
-Every envelope contains:
-
-- `request`
-- `time`
-- result block (`elements` or `distance_extremes`)
-- `provenance`
+No local kernel or manifest path may be serialized.
 
 ---
 
-## 4. Service Design
+## 4. Distance-Extremes Stage 2 Migration
 
-Expected service file:
+The distance-extremes request, top-level result field names, and planet-only
+admission remain compatible. Its semantics and receipt are corrected:
 
-- `moira_server/services/orbits.py`
+- `DistanceExtremesResponse` remains the result vessel.
+- `perihelion_jd` and `aphelion_jd` are explicitly TT.
+- `DistanceExtremesTimeResponse` uses the common UT1 input, TT output, TDB
+  state-evaluation contract and complete conversion receipt.
+- the engine is invoked once so the two outcomes share one immutable reader
+  snapshot, clock identity, gravity model, and route plan.
+- provenance serializes the algorithm/version, both scale-explicit outcomes,
+  frozen route schedule and path-free source legs, segment use counts, seam
+  witnesses, search constants/window, and total evaluation count.
 
-Service functions:
-
-- `compute_orbital_elements`
-- `compute_distance_extremes`
-
-Service responsibilities:
-
-- bind the existing engine reader from the request dependency context
-- call `orbital_elements_at(body, jd_ut, reader)`
-- call `distance_extremes_at(body, jd_ut, reader)`
-- serialize dataclass vessels into response models
-- add explicit provenance
-- do not create or mutate kernel paths
-- do not synthesize alternate orbital element products
-
-The service should not route through `/v1/positions/*`, `/v1/nodes/*`, or
-generic phenomena transport. Distance extrema may use the engine's existing
-`distance_extremes_at` function, which already delegates to phenomena
-internally.
+The transport does not add strict-core request fields. Center, direction, and
+automatic window policy remain fixed adapter choices; the Moon, EMB, comets,
+asteroids, previous passages, and explicit windows remain Python-only pending a
+separately versioned transport design.
 
 ---
 
-## 5. Provenance
+## 5. Error Mapping
 
-Orbital-elements route provenance:
+Specific orbital exceptions are matched before generic Python exceptions.
 
-- `source_module`: `moira.orbits`
-- `engine_entrypoint`: `orbital_elements_at`
-- `reader_owner`: `Moira engine instance`
-- `center`: `sun`
-- `frame`: `J2000_ecliptic_and_equinox`
-- `orientation`: `fixed_J2000_ecliptic`
-- `element_type`: `osculating`
-- `state_source`: `DE_series_kernel`
-- `position_basis`: `heliocentric_state_vector`
-- `apparent_corrections`: `not_applied`
-- `light_time_correction`: `not_applied`
-- `mean_element_table`: `not_used`
+| Error family | HTTP | Stable category |
+|---|---:|---|
+| invalid input/body/center | 422 | validation |
+| frame unavailable or outside model interval | 422 | frame |
+| body/catalog not loaded or kernel missing | 503 | resource |
+| coverage unavailable | 422 | coverage |
+| passage unavailable | 422 | orbital event availability |
+| gravity/time/source receipt unavailable | 503 | authority |
+| degenerate state | 422 | geometry |
+| passage convergence or evaluation-budget exhaustion | 500 | computation |
+| unexpected internal computation failure | 500 | computation |
 
-Distance-extrema route provenance:
-
-- `source_module`: `moira.orbits`
-- `engine_entrypoint`: `distance_extremes_at`
-- all shared center/frame/source fields above
-- `event_basis`: `live_heliocentric_distance_curve`
-- `search_direction`: `forward_from_jd_ut`
-- `search_owner`: `moira.phenomena`
-- `perihelion_event`: `next_local_minimum`
-- `aphelion_event`: `next_local_maximum`
-- `chronological_order_forced`: `false`
-
-Stage sequence for `elements`:
-
-- `input_validation`
-- `reader_binding`
-- `engine_call`
-- `elements_serialization`
-- `provenance_serialization`
-
-Stage sequence for `distance-extremes`:
-
-- `input_validation`
-- `reader_binding`
-- `engine_call`
-- `distance_extrema_serialization`
-- `provenance_serialization`
+Only allowlisted finite details enter the response. Kernel paths are reduced to
+safe content labels. Unexpected exception text is logged with a request ID and
+is absent from the client response.
 
 ---
 
-## 6. Error Semantics
+## 6. Service Ownership
 
-The routes must reject through the standard `422` validation envelope:
+`moira_server/services/orbits.py` owns adaptation only:
 
-- non-finite `jd_ut`
-- empty body names
-- unsupported body names
-- Sun
-- Moon
-- extra request fields
+- retrieve the already configured engine reader;
+- invoke the strict element or passage function with the route's fixed policy;
+- map the result into the existing element names;
+- serialize the new time and provenance blocks; and
+- leave kernel selection, body resolution, time conversion, state routing,
+  gravity selection, frame construction, and conic extraction in the engine.
 
-Engine-raised `ValueError` for rejected bodies should be converted into the
-same validation-style client error used by adjacent server adapters.
-
-Kernel absence should use the existing server error envelope for missing
-ephemeris/kernel resources. The route must not repair that by changing kernel
-paths.
+The service must not mutate global kernel paths, infer catalog availability,
+recalculate elements from chart positions, or remove undefined values.
 
 ---
 
-## 7. Implementation Files
+## 7. Verification
 
-Implemented files:
+The transport gate requires:
 
-- `moira_server/models/orbits.py`
-- `moira_server/services/orbits.py`
-- `moira_server/routers/orbits.py`
-- `tests/server/test_server_orbits_routes.py`
+- inner- and outer-planet success;
+- parity with the strict engine result;
+- exact UT1/TT/TDB labels and values;
+- complete path-free source, gravity, frame, time, and singularity receipts;
+- request validation and all Stage 1 orbital error translations;
+- redaction of paths and non-finite internal measurements;
+- proof that `/v1/orbits/distance-extremes` retained its bounded Stage 2
+  admission;
+- exact distance-extremes UT1/TT/TDB values and conversion receipt;
+- complete outcome, route, source-usage, seam, search-policy, and gravity
+  provenance with no local paths;
+- one strict passage invocation and TT parity with the engine adapter; and
+- stable translations for passage-unavailable and search-computation errors.
 
-Router registration:
-
-- export router from `moira_server/routers/__init__.py`
-- include router in `moira_server/app.py`
-- export response/request models from `moira_server/models/__init__.py`
-
-REST reference update:
-
-- route family count increases by `2`
-- `/v1` route count increases by `2`
-- `orbits` family row added
-- two route table rows added
-- Orbital Elements REST Admission Boundary section added
-
-Gap ledger update:
-
-- P-GAP-03 marked `admitted`
-- next candidate becomes `P-GAP-04` Generic Phenomena And Solar Conditions
+The REST tests use deterministic engine fixtures. Primary astronomical parity
+is owned by the engine's offline JPL Horizons/NAIF/SOFA fixtures and isolated
+live Horizons drift audit, not reimplemented in the adapter test.
 
 ---
 
-## 8. Verification Requirements
+## 8. Deferred Transport
 
-Focused server tests:
+Separate approval and versioned schemas are required for:
 
-- successful `POST /v1/orbits/elements` for Earth
-- successful `POST /v1/orbits/elements` for Jupiter or Pluto
-- successful `POST /v1/orbits/distance-extremes`
-- elements response parity with `orbital_elements_at`
-- distance-extrema response parity with `distance_extremes_at`
-- response includes derived perihelion/aphelion distances for elements
-- Sun rejection
-- Moon rejection
-- unsupported body rejection
-- non-finite `jd_ut` rejection
-- extra field rejection
-- provenance truth for center/frame/element type/state source/correction model
-- distance-extrema provenance truth for curve-event semantics
-- route registry audit confirming exactly two new `/v1/orbits/*` routes
-
-Implementation verification:
-
-- `python -m py_compile` for new and touched server files
-- `python -m pytest tests/server/test_server_orbits_routes.py -q`
-- route registry audit confirming two `/v1/orbits/*` routes
-
-No live Horizons network validation is required for REST admission because the
-engine subsystem already carries Horizons validation in
-`tests/integration/test_horizons_orbits.py`.
-
----
-
-## 9. Non-Goals
-
-This design does not admit:
-
-- `/v1/orbits/elements/bulk`
-- `/v1/orbits/elements/range`
-- `/v1/orbits/table`
-- datetime convenience requests
-- mean element tables
-- geocentric lunar elements
-- comet orbital elements
-- asteroid orbital elements
-- Uranian mean elements
-- visual-binary Campbell elements
-- arbitrary centers or reference planes
-- apparent or light-time corrected orbital elements
-- kernel path mutation
-
----
-
-## 10. Admission Result
-
-P-GAP-03 is admitted through:
-
-- `POST /v1/orbits/elements`
-- `POST /v1/orbits/distance-extremes`
-
-Recommended status:
-
-- `admitted`
+- Moon and Earth-centered requests;
+- EMB, asteroids, and comets;
+- selectable centers or frames;
+- circular/equatorial undefined fields;
+- parabolic and hyperbolic results;
+- bulk/range/table routes;
+- datetime convenience input; and
+- selectable passage direction/window or non-planet passage transport.

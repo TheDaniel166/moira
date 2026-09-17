@@ -146,6 +146,30 @@ inline Mat3 vondrak_precession_matrix(double jd_tt) {
 }
 
 /**
+ * @brief SOFA iauLtpb-equivalent long-term bias-precession matrix.
+ *
+ * Apply the IERS 2010 first-order ICRS frame-bias terms on the right of the
+ * Vondrak J2000 mean-equator/equinox matrix.  This is the same construction as
+ * the independently ported Python Stage 1 route.
+ */
+inline Mat3 vondrak_bias_precession_matrix(double jd_tt) {
+    const Mat3 precession = vondrak_precession_matrix(jd_tt);
+    constexpr double dx = -0.016617 * ARCSEC2RAD;
+    constexpr double de = -0.0068192 * ARCSEC2RAD;
+    constexpr double dr = -0.0146 * ARCSEC2RAD;
+    Mat3 result;
+    for (int row = 0; row < 3; ++row) {
+        const double x = precession.data[row][0];
+        const double y = precession.data[row][1];
+        const double z = precession.data[row][2];
+        result.data[row][0] = x - y * dr + z * dx;
+        result.data[row][1] = x * dr + y + z * de;
+        result.data[row][2] = -x * dx - y * de + z;
+    }
+    return result;
+}
+
+/**
  * @brief THEOREM: IAU 2006 Fukushima-Williams Precession.
  * 
  * Port of ERFA eraPfw06 / Fukushima-Williams (2006).
@@ -194,7 +218,7 @@ inline Mat3 precession_matrix(double jd_tt) {
     if (std::abs(T) <= 50.0) {
         return precession_matrix_fw06(jd_tt);
     } else {
-        return vondrak_precession_matrix(jd_tt);
+        return vondrak_bias_precession_matrix(jd_tt);
     }
 }
 

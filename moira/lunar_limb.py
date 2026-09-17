@@ -1499,7 +1499,7 @@ def _reader_bound_moon_light_cone(
     apparent direction.
     """
 
-    from .corrections import apply_frame_bias, _observer_position_icrf
+    from .corrections import _observer_position_icrf
     from .julian import local_sidereal_time
     from .obliquity import nutation, true_obliquity
     from .planets import (
@@ -1524,8 +1524,10 @@ def _reader_bound_moon_light_cone(
     rotation = _compose_rotation_matrix(jd_tt, with_nutation=True)
 
     def icrf_to_true_of_date(vector: Sequence[float]) -> tuple[float, float, float]:
-        biased = apply_frame_bias((float(vector[0]), float(vector[1]), float(vector[2])))
-        rotated = _apply_rotation_matrix(rotation, biased)
+        rotated = _apply_rotation_matrix(
+            rotation,
+            (float(vector[0]), float(vector[1]), float(vector[2])),
+        )
         return (float(rotated[0]), float(rotated[1]), float(rotated[2]))
 
     full_rotation = _matrix_columns_from_transform(icrf_to_true_of_date)
