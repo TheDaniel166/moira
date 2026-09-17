@@ -46,7 +46,7 @@
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "df304e00da742476af01bfe11316fc0e01ce258dad8c957f0f6ab3c97c50be9d"
+      "source_sha256": "1c3a60440d0f66b11c3bb815030b048eff126336261e9296898fd0b53a403adf"
     },
     {
       "id": "rest_router_registration",
@@ -5082,8 +5082,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "df304e00da742476af01bfe11316fc0e01ce258dad8c957f0f6ab3c97c50be9d",
-      "source_bytes": 219931,
+      "source_sha256": "1c3a60440d0f66b11c3bb815030b048eff126336261e9296898fd0b53a403adf",
+      "source_bytes": 221525,
       "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
@@ -5912,5 +5912,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "58fba250b79326e67c3aaa834b332177f898e3ff9107961c97780925d047d271"
+  "manifest_sha256": "25773e4c28ee4054f1c2593288a9f4110d500c51ee68387affcfc9fc92eb5d49"
 }

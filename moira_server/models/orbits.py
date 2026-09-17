@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from moira.constants import Body
 
@@ -36,9 +36,6 @@ class _OrbitBaseRequest(_StrictModel):
         stripped = value.strip()
         if not stripped:
             raise ValueError("body must be non-empty")
-        if stripped not in ADMITTED_ORBIT_BODIES:
-            supported = ", ".join(ADMITTED_ORBIT_BODIES)
-            raise ValueError(f"body must be one of: {supported}")
         return stripped
 
     @field_validator("jd_ut")
@@ -46,6 +43,13 @@ class _OrbitBaseRequest(_StrictModel):
     def _finite_jd_ut(cls, value: float) -> float:
         if not math.isfinite(value):
             raise ValueError("jd_ut must be finite")
+        return value
+
+    @field_validator("jd_ut", mode="before")
+    @classmethod
+    def _jd_ut_is_not_boolean(cls, value):
+        if isinstance(value, bool):
+            raise ValueError("jd_ut must be a real number, not a Boolean")
         return value
 
 
@@ -60,16 +64,16 @@ class DistanceExtremesRequest(_OrbitBaseRequest):
 class OrbitalElementsResponse(_StrictModel):
     name: str
     epoch_jd: float
-    semi_major_axis_au: float
+    semi_major_axis_au: float | None = None
     eccentricity: float
     inclination_deg: float
     lon_ascending_node_deg: float
     arg_perihelion_deg: float
-    mean_anomaly_deg: float
-    mean_motion_deg_per_day: float
-    orbital_period_days: float
+    mean_anomaly_deg: float | None = None
+    mean_motion_deg_per_day: float | None = None
+    orbital_period_days: float | None = None
     perihelion_distance_au: float
-    aphelion_distance_au: float
+    aphelion_distance_au: float | None = None
 
 
 class DistanceExtremesResponse(_StrictModel):
@@ -301,3 +305,113 @@ class DistanceExtremesEnvelopeResponse(_StrictModel):
     time: DistanceExtremesTimeResponse
     distance_extremes: DistanceExtremesResponse
     provenance: DistanceExtremesProvenanceResponse
+
+
+class OrbitClassRequest(_OrbitBaseRequest):
+    """Request for one small-body osculating orbit classification."""
+
+
+class OrbitClassPredicateMarginResponse(_StrictModel):
+    parameter: str
+    operator: str
+    boundary: float
+    value: float
+    margin: float
+    satisfied: bool
+    unit: str
+
+
+class OrbitClassResponse(_StrictModel):
+    name: str
+    code: str
+    title: str
+    description: str
+    is_near_earth_asteroid: bool
+    is_potentially_hazardous_candidate: bool
+    condition_summary: str
+    predicates: list[OrbitClassPredicateMarginResponse]
+
+
+class OrbitClassProvenanceResponse(_StrictModel):
+    source_module: str = "moira.orbits"
+    engine_entrypoint: str = "orbit_class"
+    reader_owner: str
+    center: str = "SUN"
+    frame: str = "J2000_ECLIPTIC"
+    classification_policy: str = "jpl_sbdb_osculating_v1"
+    gravity: OrbitalGravityResponse
+    state_source: OrbitalStateSourceResponse
+    stage_sequence: list[str]
+
+
+class OrbitClassEnvelopeResponse(_StrictModel):
+    request: OrbitRequestEchoResponse
+    time: OrbitTimeResponse
+    orbit_class: OrbitClassResponse
+    provenance: OrbitClassProvenanceResponse
+
+
+MAX_ORBIT_CLASS_BATCH_BODIES = 1000
+
+
+class OrbitClassBatchRequest(_StrictModel):
+    bodies: list[str] = Field(min_length=1, max_length=MAX_ORBIT_CLASS_BATCH_BODIES)
+    jd_ut: float
+
+    @field_validator("bodies")
+    @classmethod
+    def _valid_bodies(cls, value: list[str]) -> list[str]:
+        cleaned: list[str] = []
+        for body in value:
+            stripped = body.strip()
+            if not stripped:
+                raise ValueError("bodies entries must be non-empty")
+            cleaned.append(stripped)
+        return cleaned
+
+    @field_validator("jd_ut")
+    @classmethod
+    def _finite_jd_ut(cls, value: float) -> float:
+        if not math.isfinite(value):
+            raise ValueError("jd_ut must be finite")
+        return value
+
+    @field_validator("jd_ut", mode="before")
+    @classmethod
+    def _jd_ut_is_not_boolean(cls, value):
+        if isinstance(value, bool):
+            raise ValueError("jd_ut must be a real number, not a Boolean")
+        return value
+
+
+class OrbitClassBatchEchoResponse(_StrictModel):
+    bodies_count: int
+    jd_ut: float
+
+
+class OrbitClassBatchItemErrorResponse(_StrictModel):
+    error_code: str
+    message: str
+    category: str
+
+
+class OrbitClassBatchProvenanceResponse(_StrictModel):
+    source_module: str = "moira.orbits"
+    engine_entrypoint: str = "orbit_classes_at"
+    reader_owner: str
+    center: str = "SUN"
+    frame: str = "J2000_ECLIPTIC"
+    classification_policy: str = "jpl_sbdb_osculating_v1"
+    stage_sequence: list[str]
+
+
+class OrbitClassBatchEnvelopeResponse(_StrictModel):
+    request: OrbitClassBatchEchoResponse
+    time: OrbitTimeResponse
+    results: dict[str, OrbitClassResponse]
+    errors: dict[str, OrbitClassBatchItemErrorResponse]
+    total_requested: int
+    total_succeeded: int
+    total_failed: int
+    provenance: OrbitClassBatchProvenanceResponse
+

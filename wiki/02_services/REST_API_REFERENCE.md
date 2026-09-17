@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 458
-- Registered OpenAPI operations: 458 (GET 36, POST 422)
+- Registered OpenAPI paths: 460
+- Registered OpenAPI operations: 460 (GET 36, POST 424)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 454
+- Versioned `/v1` paths: 456
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -237,7 +237,7 @@ Not yet broadly exposed as REST families:
 | nodes | 4 |
 | nine-parts | 1 |
 | occultations | 12 |
-| orbits | 2 |
+| orbits | 4 |
 | pancha-pakshi | 19 |
 | panchanga | 4 |
 | parans | 8 |
@@ -2023,6 +2023,8 @@ reduced from UTC to UT1 before astronomical computation.
 | POST | `/v1/nodes/geometric` | `geometric_node_route` |
 | POST | `/v1/orbits/elements` | `orbital_elements_route` |
 | POST | `/v1/orbits/distance-extremes` | `distance_extremes_route` |
+| POST | `/v1/orbits/class` | `orbit_class_route` |
+| POST | `/v1/orbits/class/batch` | `orbit_class_batch_route` |
 | POST | `/v1/phenomena/planet` | `planet_phenomena_route` |
 | POST | `/v1/phenomena/orbital-events` | `orbital_phenomena_events_route` |
 | POST | `/v1/phenomena/proximity` | `proximity_events_route` |
@@ -2333,14 +2335,16 @@ management.
 
 ### Orbital Elements REST Admission Boundary
 
-The admitted P-GAP-03 orbital REST surface is the bounded synchronous
+The admitted P-GAP-03 and Stage 6 orbital REST surface is the bounded synchronous
 `/v1/orbits/*` family:
 
 - `POST /v1/orbits/elements`
 - `POST /v1/orbits/distance-extremes`
+- `POST /v1/orbits/class`
+- `POST /v1/orbits/class/batch`
 
 `/v1/orbits/elements` exposes one epoch's heliocentric fixed-J2000-ecliptic
-osculating elements for an admitted major body. The request `jd_ut` is UT1;
+osculating elements for an admitted major planet, asteroid, or comet. The request `jd_ut` is UT1;
 the state is evaluated at the bound TDB epoch and `epoch_jd` is TT. The time
 block returns all three numerical epochs, Delta T, TDB-minus-TT, source-owned
 Delta-T policy, and the pinned NAIF `naif0012` conversion receipt.
@@ -2348,17 +2352,21 @@ Delta-T policy, and the pinned NAIF `naif0012` conversion receipt.
 The response preserves the existing element field names and adds path-free,
 allowlisted provenance for the JPL Horizons gravity policy, exact frame
 construction, every routed SPK source leg and closed coverage interval, and
-the conic singularity thresholds. It identifies the strict engine entrypoint
-as `osculating_elements`, even though transport fixes the policy to
-`center=SUN` and `frame=J2000_ECLIPTIC`.
+the conic singularity thresholds. For parabolic and hyperbolic trajectories ($e \ge 1.0$),
+the open-conic fields `semi_major_axis_au`, `aphelion_distance_au`, `orbital_period_days`,
+`mean_anomaly_deg`, and `mean_motion_deg_per_day` are nullable and return `None`.
+It identifies the strict engine entrypoint as `osculating_elements`, even though transport
+fixes the policy to `center=SUN` and `frame=J2000_ECLIPTIC`.
 
 `/v1/orbits/distance-extremes` exposes the next heliocentric perihelion and
-aphelion events after `jd_ut` on the live heliocentric distance curve. The
-response records that the events are semantic extrema, not a forced
-chronological pair and not merely algebra from one epoch's osculating ellipse.
+aphelion events after `jd_ut` on the live heliocentric distance curve for planets
+and admitted small bodies. The response records that the events are semantic extrema,
+not a forced chronological pair and not merely algebra from one epoch's osculating ellipse.
 It adapts the versioned `apsidal_passages` engine with `center=SUN` and
 `direction=NEXT`. Its legacy `perihelion_jd` and `aphelion_jd` fields are TT;
-the request is UT1 and all sampled states and roots are TDB.
+the request is UT1 and all sampled states and roots are TDB. If a passage outcome is not
+`FOUND` (e.g. open conics lacking an apocenter, or outside coverage window), an
+`OrbitalPassageUnavailableError` is mapped cleanly to HTTP 422 (`orbital_event_availability`).
 
 The distance-extremes `time` block returns `jd_ut`, `epoch_tt`, `epoch_tdb`,
 Delta T, TDB-minus-TT, and the same source-owned Delta-T/pinned-NAIF conversion
@@ -2369,16 +2377,25 @@ seam-continuity measurements, search interval, fixed numerical policy, and
 total evaluation count. Local paths and arbitrary exception text are never
 serialized.
 
-Both routes accept one admitted planet name and one finite `jd_ut`. The Python
-passage core is broader, but this REST request deliberately adds no center,
-direction, window, Moon, EMB, asteroid, or comet admission.
+`POST /v1/orbits/class` and `POST /v1/orbits/class/batch` compute heliocentric
+osculating small-body orbit classifications according to official JPL Small-Body
+Database (SBDB) taxonomy definitions. Classifications include:
+`IEO`, `ATE`, `APO`, `AMO`, `MCA`, `IMB`, `MBA`, `OMB`, `TJN`, and fallback `AST`.
+The response provides:
+- The assigned `OrbitClassCode` and its human-readable title and narrative definition.
+- Diagnostic predicate boundary margins evaluating distance to qualifying cutoffs:
+  perihelion distance ($q$), aphelion distance ($Q$), semi-major axis ($a$), and Jupiter orbit intersections ($T_J$).
+- Complete provenance including the underlying osculating elements, time conversion,
+  gravity policy, and SPK state-source legs.
+The batch variant `POST /v1/orbits/class/batch` accepts up to 128 targets evaluated at
+the same epoch, provides bounded error isolation per item with path redaction, and echoes
+the batch request parameters.
 
-This admission does not expose the strict Python API's Moon, EMB, comet, or
-asteroid support; selectable centers/reference planes; circular/equatorial
-undefined fields; open conics; mean element tables; Uranian mean elements;
-visual-binary Campbell elements; apparent or light-time-corrected element
-products; dense ephemeris tables; or kernel-path mutation. Those require a
-separately versioned transport design.
+This admission does not expose the strict Python API's Moon or EMB heliocentric orbital queries;
+selectable centers/reference planes; circular/equatorial undefined fields;
+mean element tables; Uranian mean elements; visual-binary Campbell elements;
+apparent or light-time-corrected element products; dense ephemeris tables; or
+kernel-path mutation. Those require a separately versioned transport design.
 
 ### Generic Phenomena And Solar Conditions REST Admission Boundary
 
@@ -3240,6 +3257,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/occultations/lunar-star-path-at` | phenomena | `lunar_star_occultation_path_at_route_v1_occultations_lunar_star_path_at_post` |
 | `POST` | `/v1/occultations/lunar-star-path-topology` | phenomena | `lunar_star_occultation_path_topology_route_v1_occultations_lunar_star_path_topology_post` |
 | `POST` | `/v1/occultations/lunar-star-path-topology-at` | phenomena | `lunar_star_occultation_path_topology_at_route_v1_occultations_lunar_star_path_topology_at_post` |
+| `POST` | `/v1/orbits/class` | orbits | `orbit_class_route_v1_orbits_class_post` |
+| `POST` | `/v1/orbits/class/batch` | orbits | `orbit_class_batch_route_v1_orbits_class_batch_post` |
 | `POST` | `/v1/orbits/distance-extremes` | orbits | `distance_extremes_route_v1_orbits_distance_extremes_post` |
 | `POST` | `/v1/orbits/elements` | orbits | `orbital_elements_route_v1_orbits_elements_post` |
 | `GET` | `/v1/pancha-pakshi/constitution/uromarisi` | pancha-pakshi | `pancha_pakshi_uromarisi_constitution_status_route_v1_pancha_pakshi_constitution_uromarisi_get` |

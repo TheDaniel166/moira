@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from moira import Moira
+from moira.constants import Body
 from moira.orbits import (
     ApsidalDirection,
     ApsidalPassageOutcome,
@@ -15,7 +17,11 @@ from moira.orbits import (
     OrbitalFrame,
     OsculatingElements,
     OrbitalPassageUnavailableError,
+    OrbitClassBoundaryMargin,
+    OrbitClassResult,
     apsidal_passages,
+    orbit_class,
+    orbit_classes_at,
     osculating_elements,
 )
 
@@ -39,6 +45,16 @@ from ..models.orbits import (
     OrbitalSingularityThresholdsResponse,
     OrbitalStateLegResponse,
     OrbitalStateSourceResponse,
+    OrbitClassBatchEchoResponse,
+    OrbitClassBatchEnvelopeResponse,
+    OrbitClassBatchItemErrorResponse,
+    OrbitClassBatchProvenanceResponse,
+    OrbitClassBatchRequest,
+    OrbitClassEnvelopeResponse,
+    OrbitClassPredicateMarginResponse,
+    OrbitClassProvenanceResponse,
+    OrbitClassRequest,
+    OrbitClassResponse,
     OrbitRequestEchoResponse,
     OrbitTimeConversionResponse,
     OrbitTimeResponse,
@@ -432,3 +448,197 @@ def compute_distance_extremes(
             ],
         ),
     )
+
+
+_ORBIT_CLASS_DESCRIPTIONS: dict[str, str] = {
+    "IEO": "Atira-class asteroid with orbit strictly interior to Earth's orbit (a < 1.0 AU, Q < 0.983 AU).",
+    "ATE": "Aten-class near-Earth asteroid with semi-major axis less than 1.0 AU and aphelion distance greater than 0.983 AU (a < 1.0 AU, Q > 0.983 AU).",
+    "APO": "Apollo-class near-Earth asteroid with semi-major axis greater than 1.0 AU and perihelion distance less than 1.017 AU (a > 1.0 AU, q < 1.017 AU).",
+    "AMO": "Amor-class near-Earth asteroid with perihelion distance between 1.017 AU and 1.3 AU (1.017 AU < q < 1.3 AU).",
+    "MCA": "Mars-crossing asteroid with perihelion distance between 1.3 AU and 1.666 AU, crossing or approaching Mars's orbit (1.3 AU < q < 1.666 AU).",
+    "IMB": "Inner Main-belt asteroid with semi-major axis less than 2.0 AU and perihelion distance greater than 1.666 AU (a < 2.0 AU, q > 1.666 AU).",
+    "MBA": "Main-belt asteroid located between Mars and Jupiter with semi-major axis between 2.0 AU and 3.2 AU and perihelion distance greater than 1.666 AU (2.0 AU < a < 3.2 AU, q > 1.666 AU).",
+    "OMB": "Outer Main-belt asteroid with semi-major axis between 3.2 AU and 4.6 AU and perihelion distance greater than 1.666 AU (3.2 AU < a < 4.6 AU, q > 1.666 AU).",
+    "TJN": "Jupiter Trojan asteroid co-orbiting near Jupiter's L4 or L5 Lagrange points with semi-major axis between 4.6 AU and 5.5 AU and eccentricity less than 0.3 (4.6 AU < a < 5.5 AU, e < 0.3).",
+    "CEN": "Centaur small body orbiting in the giant planet region between Jupiter and Neptune with semi-major axis between 5.5 AU and 30.1 AU (5.5 AU < a < 30.1 AU).",
+    "TNO": "TransNeptunian Object with semi-major axis beyond the orbit of Neptune (a > 30.1 AU).",
+    "PAA": "Parabolic asteroid on an unbound or nominally parabolic trajectory with eccentricity approximately 1.0 (e ≈ 1.0).",
+    "HYA": "Hyperbolic asteroid on an unbound hyperbolic trajectory with eccentricity strictly greater than 1.0 (e > 1.0).",
+    "AST": "Asteroid orbit not classified into a more specific orbital category.",
+}
+
+
+def _is_condition_satisfied(op: str, val: float, bnd: float) -> bool:
+    if op == "<":
+        return val < bnd
+    if op == "<=":
+        return val <= bnd
+    if op == ">":
+        return val > bnd
+    if op == ">=":
+        return val >= bnd
+    if op == "==":
+        return math.isclose(val, bnd)
+    return False
+
+
+def _serialize_orbit_class_margin(
+    margin: OrbitClassBoundaryMargin,
+) -> OrbitClassPredicateMarginResponse:
+    satisfied = _is_condition_satisfied(margin.operator, margin.value, margin.boundary)
+    return OrbitClassPredicateMarginResponse(
+        parameter=margin.parameter,
+        operator=margin.operator,
+        boundary=margin.boundary,
+        value=margin.value,
+        margin=margin.signed_difference,
+        satisfied=satisfied,
+        unit=margin.unit,
+    )
+
+
+def _serialize_orbit_class(result: OrbitClassResult) -> OrbitClassResponse:
+    code_str = result.code.value
+    desc = _ORBIT_CLASS_DESCRIPTIONS.get(code_str, result.title)
+    is_nea = code_str in {"IEO", "ATE", "APO", "AMO"}
+    is_pha_candidate = code_str in {"ATE", "APO"}
+    predicates = [_serialize_orbit_class_margin(m) for m in result.boundary_margins]
+    condition_parts = [
+        f"{m.parameter} {m.operator} {m.boundary} {m.unit}".strip()
+        for m in result.boundary_margins
+    ]
+    summary = ", ".join(condition_parts) if condition_parts else "unconditional"
+    return OrbitClassResponse(
+        name=result.body.name,
+        code=code_str,
+        title=result.title,
+        description=desc,
+        is_near_earth_asteroid=is_nea,
+        is_potentially_hazardous_candidate=is_pha_candidate,
+        condition_summary=summary,
+        predicates=predicates,
+    )
+
+
+def _serialize_orbit_class_provenance(
+    elements: OsculatingElements,
+    *,
+    reader_owner: str,
+) -> OrbitClassProvenanceResponse:
+    provenance = elements.provenance
+    return OrbitClassProvenanceResponse(
+        reader_owner=reader_owner,
+        center=elements.center.value,
+        frame=elements.frame.value,
+        classification_policy="jpl_sbdb_osculating_v1",
+        gravity=_serialize_gravity(provenance.gravity),
+        state_source=_serialize_state_source(provenance.state_source),
+        stage_sequence=[
+            "input_validation",
+            "reader_binding",
+            "ut1_tt_tdb_binding",
+            "state_evaluation",
+            "osculating_conic_extraction",
+            "sbdb_predicate_evaluation",
+            "transport_serialization",
+        ],
+    )
+
+
+def _serialize_orbit_class_batch_provenance(
+    *,
+    reader_owner: str,
+) -> OrbitClassBatchProvenanceResponse:
+    return OrbitClassBatchProvenanceResponse(
+        reader_owner=reader_owner,
+        center="SUN",
+        frame="J2000_ECLIPTIC",
+        classification_policy="jpl_sbdb_osculating_v1",
+        stage_sequence=[
+            "input_validation",
+            "reader_binding",
+            "ut1_tt_tdb_binding",
+            "batch_orbit_classification",
+            "error_isolation",
+            "transport_serialization",
+        ],
+    )
+
+
+def compute_orbit_class(
+    engine: Moira,
+    request: OrbitClassRequest,
+) -> OrbitClassEnvelopeResponse:
+    reader = _get_reader(engine)
+    result = orbit_class(
+        request.body,
+        request.jd_ut,
+        reader=reader,
+    )
+    elements = result.elements
+    return OrbitClassEnvelopeResponse(
+        request=OrbitRequestEchoResponse(body=request.body, jd_ut=request.jd_ut),
+        time=_serialize_elements_time(elements),
+        orbit_class=_serialize_orbit_class(result),
+        provenance=_serialize_orbit_class_provenance(
+            elements,
+            reader_owner=_reader_owner(reader),
+        ),
+    )
+
+
+def compute_orbit_class_batch(
+    engine: Moira,
+    request: OrbitClassBatchRequest,
+) -> OrbitClassBatchEnvelopeResponse:
+    reader = _get_reader(engine)
+    batch = orbit_classes_at(
+        request.bodies,
+        request.jd_ut,
+        reader=reader,
+    )
+    results: dict[str, OrbitClassResponse] = {}
+    errors: dict[str, OrbitClassBatchItemErrorResponse] = {}
+
+    first_elements: OsculatingElements | None = None
+    for item in batch.items:
+        key = str(item.input_body)
+        if item.result is not None:
+            results[key] = _serialize_orbit_class(item.result)
+            if first_elements is None:
+                first_elements = item.result.elements
+        elif item.error is not None:
+            errors[key] = OrbitClassBatchItemErrorResponse(
+                error_code=item.error.error_code,
+                message=item.error.message,
+                category="orbital_classification_failure",
+            )
+
+    if first_elements is not None:
+        time_block = _serialize_elements_time(first_elements)
+    else:
+        ref_elements = osculating_elements(
+            Body.EARTH,
+            request.jd_ut,
+            center=OrbitalCenter.SUN,
+            frame=OrbitalFrame.J2000_ECLIPTIC,
+            reader=reader,
+        )
+        time_block = _serialize_elements_time(ref_elements)
+
+    return OrbitClassBatchEnvelopeResponse(
+        request=OrbitClassBatchEchoResponse(
+            bodies_count=len(request.bodies),
+            jd_ut=request.jd_ut,
+        ),
+        time=time_block,
+        results=results,
+        errors=errors,
+        total_requested=len(request.bodies),
+        total_succeeded=len(results),
+        total_failed=len(errors),
+        provenance=_serialize_orbit_class_batch_provenance(
+            reader_owner=_reader_owner(reader),
+        ),
+    )
+

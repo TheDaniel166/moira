@@ -14,16 +14,24 @@ from moira.orbits import (
     ApsidalPassagesProvenance,
     ApsidalRouteScheduleEntry,
     ApsidalSegmentUsage,
-    OrbitShape,
+    OrbitClassBatchItem,
+    OrbitClassBatchResult,
+    OrbitClassBoundaryMargin,
+    OrbitClassCode,
+    OrbitClassPredicate,
+    OrbitClassResult,
     OrbitalBodyIdentity,
     OrbitalBodyKind,
+    OrbitalBodyNotSupportedError,
     OrbitalCenter,
+    OrbitalErrorReceipt,
     OrbitalFrame,
     OrbitalFrameConstruction,
     OrbitalGravity,
     OrbitalSingularityThresholds,
     OrbitalStateSource,
     OrbitalTimeConversion,
+    OrbitShape,
     OsculatingElements,
     OsculatingElementsProvenance,
 )
@@ -47,15 +55,30 @@ def _strict_elements(
     body: str,
     jd_ut: float,
     *,
-    semi_major_axis_au: float = 1.000001,
+    semi_major_axis_au: float | None = 1.000001,
     eccentricity: float = 0.0167,
     inclination_deg: float = 0.0001,
     lon_ascending_node_deg: float = 174.9,
     arg_pericenter_deg: float = 288.1,
-    mean_anomaly_deg: float = 357.5,
-    mean_motion_deg_per_day: float = 0.9856,
-    orbital_period_days: float = 365.25,
+    mean_anomaly_deg: float | None = 357.5,
+    mean_motion_deg_per_day: float | None = 0.9856,
+    orbital_period_days: float | None = 365.25,
+    pericenter_distance_au: float | None = None,
+    apocenter_distance_au: float | None = None,
+    shape: OrbitShape = OrbitShape.ELLIPTIC,
+    body_kind: OrbitalBodyKind = OrbitalBodyKind.PLANET_BODY,
+    naif_id: int = 399,
 ) -> OsculatingElements:
+    if pericenter_distance_au is None:
+        if semi_major_axis_au is not None:
+            pericenter_distance_au = semi_major_axis_au * (1.0 - eccentricity)
+        else:
+            pericenter_distance_au = 0.9833009833
+    if apocenter_distance_au is None:
+        if shape == OrbitShape.ELLIPTIC and semi_major_axis_au is not None:
+            apocenter_distance_au = semi_major_axis_au * (1.0 + eccentricity)
+        else:
+            apocenter_distance_au = None
     epoch_tt = jd_ut + 64.184 / 86400.0
     epoch_tdb = epoch_tt - 8.0e-10
     state_source = OrbitalStateSource(
@@ -145,7 +168,7 @@ def _strict_elements(
         ),
     )
     return OsculatingElements(
-        body=OrbitalBodyIdentity(body, OrbitalBodyKind.PLANET_BODY, 399),
+        body=OrbitalBodyIdentity(body, body_kind, naif_id),
         center=OrbitalCenter.SUN,
         frame=OrbitalFrame.J2000_ECLIPTIC,
         jd_ut=jd_ut,
@@ -153,11 +176,11 @@ def _strict_elements(
         epoch_tdb=epoch_tdb,
         delta_t_seconds=64.184,
         tdb_minus_tt_seconds=(epoch_tdb - epoch_tt) * 86400.0,
-        shape=OrbitShape.ELLIPTIC,
+        shape=shape,
         semi_major_axis_au=semi_major_axis_au,
         eccentricity=eccentricity,
-        pericenter_distance_au=semi_major_axis_au * (1.0 - eccentricity),
-        apocenter_distance_au=semi_major_axis_au * (1.0 + eccentricity),
+        pericenter_distance_au=pericenter_distance_au,
+        apocenter_distance_au=apocenter_distance_au,
         inclination_deg=inclination_deg,
         lon_ascending_node_deg=lon_ascending_node_deg,
         arg_pericenter_deg=arg_pericenter_deg,
@@ -175,6 +198,49 @@ def _strict_elements(
         pericenter_ecliptic_lat_deg=0.0,
         undefined=(),
         provenance=provenance,
+    )
+
+
+def _strict_orbit_class(
+    body: str,
+    jd_ut: float,
+    *,
+    code: OrbitClassCode = OrbitClassCode.MBA,
+    title: str = "Main-belt Asteroid",
+) -> OrbitClassResult:
+    elements = _strict_elements(
+        body,
+        jd_ut,
+        semi_major_axis_au=2.77,
+        eccentricity=0.08,
+        pericenter_distance_au=2.5484,
+        apocenter_distance_au=2.9916,
+        body_kind=OrbitalBodyKind.ASTEROID,
+        naif_id=2000001,
+    )
+    return OrbitClassResult(
+        body=OrbitalBodyIdentity(name=body, kind=OrbitalBodyKind.ASTEROID, naif_id=2000001),
+        epoch_tdb=elements.epoch_tdb,
+        elements=elements,
+        code=code,
+        title=title,
+        classification_policy="jpl_sbdb_osculating_v1",
+        predicates=(
+            OrbitClassPredicate(
+                code=code,
+                conditions=(
+                    OrbitClassBoundaryMargin("a", 2.77, ">", 2.0, 0.77, "AU"),
+                    OrbitClassBoundaryMargin("a", 2.77, "<", 3.2, -0.43, "AU"),
+                    OrbitClassBoundaryMargin("q", 2.55, ">", 1.666, 0.884, "AU"),
+                ),
+                matched=True,
+            ),
+        ),
+        boundary_margins=(
+            OrbitClassBoundaryMargin("a", 2.77, ">", 2.0, 0.77, "AU"),
+            OrbitClassBoundaryMargin("a", 2.77, "<", 3.2, -0.43, "AU"),
+            OrbitClassBoundaryMargin("q", 2.55, ">", 1.666, 0.884, "AU"),
+        ),
     )
 
 
@@ -479,11 +545,11 @@ def test_distance_extremes_route_returns_tt_extremes_and_search_provenance(
 @pytest.mark.parametrize(
     ("payload", "message_fragment"),
     [
-        ({"body": "Sun", "jd_ut": 2451545.0}, "body must be one of"),
-        ({"body": "Moon", "jd_ut": 2451545.0}, "body must be one of"),
-        ({"body": "Ceres", "jd_ut": 2451545.0}, "body must be one of"),
+        ({"body": "Sun", "jd_ut": 2451545.0}, "not an orbital target"),
+        ({"body": "Moon", "jd_ut": 2451545.0}, "center 'SUN' is not allowed for 'Moon'"),
         ({"body": " ", "jd_ut": 2451545.0}, "body must be non-empty"),
         ({"body": "Earth", "jd_ut": "NaN"}, "jd_ut must be finite"),
+        ({"body": "Earth", "jd_ut": True}, "jd_ut must be a real number"),
     ],
 )
 def test_orbits_routes_reject_invalid_inputs(
@@ -509,11 +575,277 @@ def test_orbits_routes_reject_extra_fields(client: TestClient) -> None:
         "/v1/orbits/distance-extremes",
         json={"body": "Earth", "jd_ut": 2451545.0, "frame": "mean"},
     )
+    orbit_class_res = client.post(
+        "/v1/orbits/class",
+        json={"body": "Ceres", "jd_ut": 2451545.0, "extra": "invalid"},
+    )
+    orbit_class_batch_res = client.post(
+        "/v1/orbits/class/batch",
+        json={"bodies": ["Ceres"], "jd_ut": 2451545.0, "extra": "invalid"},
+    )
 
     assert elements.status_code == 422
     assert extremes.status_code == 422
+    assert orbit_class_res.status_code == 422
+    assert orbit_class_batch_res.status_code == 422
 
 
 def test_orbits_get_is_not_admitted(client: TestClient) -> None:
     assert client.get("/v1/orbits/elements").status_code == 405
     assert client.get("/v1/orbits/distance-extremes").status_code == 405
+    assert client.get("/v1/orbits/class").status_code == 405
+    assert client.get("/v1/orbits/class/batch").status_code == 405
+
+
+def test_orbital_elements_route_admits_small_bodies(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, float]] = []
+
+    def fake_osculating_elements(
+        body: str,
+        jd_ut: float,
+        *,
+        center: object,
+        frame: object,
+        reader: object | None,
+    ) -> OsculatingElements:
+        calls.append((body, jd_ut))
+        if body == "Ceres":
+            return _strict_elements(
+                body,
+                jd_ut,
+                semi_major_axis_au=2.767,
+                eccentricity=0.078,
+                inclination_deg=10.59,
+                lon_ascending_node_deg=80.3,
+                arg_pericenter_deg=73.5,
+                mean_anomaly_deg=95.4,
+                mean_motion_deg_per_day=0.214,
+                orbital_period_days=1682.0,
+                pericenter_distance_au=2.551,
+                apocenter_distance_au=2.983,
+                body_kind=OrbitalBodyKind.ASTEROID,
+                naif_id=2000001,
+            )
+        # Hyperbolic trajectory (e.g. 1I/'Oumuamua)
+        return _strict_elements(
+            body,
+            jd_ut,
+            semi_major_axis_au=None,
+            eccentricity=1.20,
+            inclination_deg=122.6,
+            lon_ascending_node_deg=24.6,
+            arg_pericenter_deg=241.7,
+            mean_anomaly_deg=None,
+            mean_motion_deg_per_day=None,
+            orbital_period_days=None,
+            pericenter_distance_au=0.255,
+            apocenter_distance_au=None,
+            shape=OrbitShape.HYPERBOLIC,
+            body_kind=OrbitalBodyKind.COMET,
+            naif_id=1003507,
+        )
+
+    monkeypatch.setattr(
+        "moira_server.services.orbits.osculating_elements",
+        fake_osculating_elements,
+    )
+
+    # 1. Closed elliptic asteroid: Ceres
+    res_ceres = client.post("/v1/orbits/elements", json={"body": "Ceres", "jd_ut": 2451545.0})
+    assert res_ceres.status_code == 200
+    body_ceres = res_ceres.json()
+    assert body_ceres["request"] == {"body": "Ceres", "jd_ut": 2451545.0}
+    assert body_ceres["elements"]["name"] == "Ceres"
+    assert body_ceres["elements"]["semi_major_axis_au"] == 2.767
+    assert body_ceres["elements"]["eccentricity"] == 0.078
+    assert body_ceres["elements"]["aphelion_distance_au"] == 2.983
+
+    # 2. Hyperbolic small body: open conic with nullable fields
+    res_hyper = client.post("/v1/orbits/elements", json={"body": "'Oumuamua", "jd_ut": 2451545.0})
+    assert res_hyper.status_code == 200
+    body_hyper = res_hyper.json()
+    assert body_hyper["elements"]["semi_major_axis_au"] is None
+    assert body_hyper["elements"]["aphelion_distance_au"] is None
+    assert body_hyper["elements"]["orbital_period_days"] is None
+    assert body_hyper["elements"]["mean_anomaly_deg"] is None
+    assert body_hyper["elements"]["mean_motion_deg_per_day"] is None
+    assert body_hyper["elements"]["eccentricity"] == 1.20
+
+
+def test_distance_extremes_route_admits_small_bodies(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_apsidal_passages(
+        body: str,
+        jd_ut: float,
+        *,
+        center: object,
+        direction: object,
+        reader: object | None,
+    ) -> ApsidalPassages:
+        if body == "Ceres":
+            return _strict_passages(body, jd_ut)
+        # Simulate open conic or unavailable passage
+        passages = _strict_passages(body, jd_ut)
+        unavailable_apocenter = ApsidalPassageOutcome(
+            status=ApsidalPassageStatus.NOT_IN_WINDOW,
+            epoch_tdb=None,
+            epoch_tt=None,
+            jd_ut=None,
+            distance_au=None,
+            coverage_edge_tdb=None,
+            detail="OPEN_CONIC_HAS_NO_APOCENTER",
+        )
+        object.__setattr__(passages, "apocenter", unavailable_apocenter)
+        return passages
+
+    monkeypatch.setattr(
+        "moira_server.services.orbits.apsidal_passages",
+        fake_apsidal_passages,
+    )
+
+    # 1. Closed asteroid returns 200 with extrema
+    res_ceres = client.post("/v1/orbits/distance-extremes", json={"body": "Ceres", "jd_ut": 2451545.0})
+    assert res_ceres.status_code == 200
+    data_ceres = res_ceres.json()
+    assert data_ceres["distance_extremes"]["name"] == "Ceres"
+    assert data_ceres["distance_extremes"]["perihelion_distance_au"] == 0.98329
+    assert data_ceres["distance_extremes"]["aphelion_distance_au"] == 1.01671
+
+    # 2. Unavailable passage raises OrbitalPassageUnavailableError mapped to 422
+    res_comet = client.post("/v1/orbits/distance-extremes", json={"body": "HyperbolicComet", "jd_ut": 2451545.0})
+    assert res_comet.status_code == 422
+    err = res_comet.json()
+    assert err["category"] == "orbital_event_availability"
+
+
+def test_orbit_class_route_returns_sbdb_classification(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, float]] = []
+
+    def fake_orbit_class(
+        body: str,
+        jd_ut: float,
+        *,
+        reader: object | None = None,
+    ) -> OrbitClassResult:
+        calls.append((body, jd_ut))
+        if body == "Ceres":
+            return _strict_orbit_class(body, jd_ut, code=OrbitClassCode.MBA, title="Main-belt Asteroid")
+        if body == "Chiron":
+            return _strict_orbit_class(body, jd_ut, code=OrbitClassCode.CEN, title="Centaur")
+        if body == "Eros":
+            return _strict_orbit_class(body, jd_ut, code=OrbitClassCode.AMO, title="Amor")
+        raise OrbitalBodyNotSupportedError(body, "planet", "orbit_class admits small bodies only")
+
+    monkeypatch.setattr("moira_server.services.orbits.orbit_class", fake_orbit_class)
+
+    # 1. Ceres (MBA)
+    res_ceres = client.post("/v1/orbits/class", json={"body": "Ceres", "jd_ut": 2451545.0})
+    assert res_ceres.status_code == 200
+    data_ceres = res_ceres.json()
+    assert data_ceres["request"] == {"body": "Ceres", "jd_ut": 2451545.0}
+    assert data_ceres["orbit_class"]["name"] == "Ceres"
+    assert data_ceres["orbit_class"]["code"] == "MBA"
+    assert data_ceres["orbit_class"]["title"] == "Main-belt Asteroid"
+    assert "Main-belt asteroid" in data_ceres["orbit_class"]["description"]
+    assert data_ceres["orbit_class"]["is_near_earth_asteroid"] is False
+    assert len(data_ceres["orbit_class"]["predicates"]) == 3
+    assert data_ceres["orbit_class"]["predicates"][0]["parameter"] == "a"
+    assert data_ceres["orbit_class"]["predicates"][0]["operator"] == ">"
+    assert data_ceres["orbit_class"]["predicates"][0]["boundary"] == 2.0
+    assert data_ceres["orbit_class"]["predicates"][0]["satisfied"] is True
+    assert data_ceres["provenance"]["classification_policy"] == "jpl_sbdb_osculating_v1"
+
+    # 2. Chiron (CEN)
+    res_chiron = client.post("/v1/orbits/class", json={"body": "Chiron", "jd_ut": 2451545.0})
+    assert res_chiron.status_code == 200
+    assert res_chiron.json()["orbit_class"]["code"] == "CEN"
+
+    # 3. Eros (AMO - Near Earth Asteroid)
+    res_eros = client.post("/v1/orbits/class", json={"body": "Eros", "jd_ut": 2451545.0})
+    assert res_eros.status_code == 200
+    data_eros = res_eros.json()
+    assert data_eros["orbit_class"]["code"] == "AMO"
+    assert data_eros["orbit_class"]["is_near_earth_asteroid"] is True
+
+    # 4. Non-small-body (e.g. Jupiter)
+    res_jup = client.post("/v1/orbits/class", json={"body": "Jupiter", "jd_ut": 2451545.0})
+    assert res_jup.status_code == 422
+
+
+def test_orbit_class_batch_route_evaluates_and_isolates_errors(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_orbit_classes_at(
+        bodies: list[str],
+        jd_ut: float,
+        *,
+        reader: object | None = None,
+    ) -> OrbitClassBatchResult:
+        items = []
+        for i, body in enumerate(bodies):
+            if body == "Ceres":
+                items.append(
+                    OrbitClassBatchItem(
+                        input_index=i,
+                        input_body=body,
+                        result=_strict_orbit_class(body, jd_ut, code=OrbitClassCode.MBA, title="Main-belt Asteroid"),
+                        error=None,
+                    )
+                )
+            elif body == "Chiron":
+                items.append(
+                    OrbitClassBatchItem(
+                        input_index=i,
+                        input_body=body,
+                        result=_strict_orbit_class(body, jd_ut, code=OrbitClassCode.CEN, title="Centaur"),
+                        error=None,
+                    )
+                )
+            else:
+                items.append(
+                    OrbitClassBatchItem(
+                        input_index=i,
+                        input_body=body,
+                        result=None,
+                        error=OrbitalErrorReceipt(
+                            error_code="ORBITAL_BODY_NOT_FOUND",
+                            message=f"unknown small body: {body}",
+                            details=(("body", body),),
+                        ),
+                    )
+                )
+        return OrbitClassBatchResult(epoch_tdb=2451545.0, items=tuple(items))
+
+    monkeypatch.setattr("moira_server.services.orbits.orbit_classes_at", fake_orbit_classes_at)
+
+    response = client.post(
+        "/v1/orbits/class/batch",
+        json={"bodies": ["Ceres", "Chiron", "UnknownBody123"], "jd_ut": 2451545.0},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["request"] == {"bodies_count": 3, "jd_ut": 2451545.0}
+    assert data["total_requested"] == 3
+    assert data["total_succeeded"] == 2
+    assert data["total_failed"] == 1
+    assert "Ceres" in data["results"]
+    assert data["results"]["Ceres"]["code"] == "MBA"
+    assert "Chiron" in data["results"]
+    assert data["results"]["Chiron"]["code"] == "CEN"
+    assert "UnknownBody123" in data["errors"]
+    assert data["errors"]["UnknownBody123"]["error_code"] == "ORBITAL_BODY_NOT_FOUND"
+    assert data["provenance"]["classification_policy"] == "jpl_sbdb_osculating_v1"
+
+    # Batch request with empty bodies list is rejected
+    res_empty = client.post("/v1/orbits/class/batch", json={"bodies": [], "jd_ut": 2451545.0})
+    assert res_empty.status_code == 422
+

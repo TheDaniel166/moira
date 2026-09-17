@@ -280,22 +280,32 @@ admitted body; they do not introduce an implicit general center policy.
 
 ## 10. REST Boundary
 
-`POST /v1/orbits/elements` remains planet-only and fixes the strict call to
-`center=SUN`, `frame=J2000_ECLIPTIC`. Its time envelope now truthfully exposes
-UT1 input, TT output, TDB state evaluation, both numerical epochs, offsets, and
-the conversion receipt. Provenance includes allowlisted gravity, frame,
+`POST /v1/orbits/elements` fixes the strict call to `center=SUN`, `frame=J2000_ECLIPTIC`.
+Its time envelope truthfully exposes UT1 input, TT output, TDB state evaluation, both numerical
+epochs, offsets, and the conversion receipt. Provenance includes allowlisted gravity, frame,
 state-leg, exact-coverage, and singularity data with no local paths.
+Small bodies (asteroids and comets) are admitted. For parabolic and hyperbolic trajectories ($e \ge 1.0$),
+open-conic fields (`semi_major_axis_au`, `aphelion_distance_au`, `orbital_period_days`,
+`mean_anomaly_deg`, and `mean_motion_deg_per_day`) are nullable and serialize as `null`, while
+the exact 12 fields are preserved for elliptic bodies.
 
-The existing non-null legacy element fields mean this Stage 1 adapter admits
-only the nine elliptic planet results. REST admission for Moon, EMB, asteroids,
-comets, arbitrary frames/centers, or open conics requires a separate transport
-design.
-
-`POST /v1/orbits/distance-extremes` remains planet-only. Its request is UT1;
+`POST /v1/orbits/distance-extremes` admits both major planets and small bodies. Its request is UT1;
 state/root evaluation is TDB; its legacy event JD fields are TT. The response
-now carries the same source-owned Delta-T and pinned NAIF TT/TDB receipt plus
+carries the same source-owned Delta-T and pinned NAIF TT/TDB receipt plus
 both scale-explicit outcomes and allowlisted search, route, usage, seam,
-gravity, and algorithm provenance. It does not serialize local paths.
+gravity, and algorithm provenance. When a requested passage is unavailable (e.g. open conic
+lacking an apocenter, or event outside search interval), it raises `OrbitalPassageUnavailableError`,
+which is mapped to HTTP 422 (`orbital_event_availability`). It does not serialize local paths.
+
+`POST /v1/orbits/class` and `POST /v1/orbits/class/batch` expose osculating asteroid orbit
+classification according to official JPL Small-Body Database (SBDB) criteria (`IEO`, `ATE`,
+`APO`, `AMO`, `MCA`, `IMB`, `MBA`, `OMB`, `TJN`, and fallback `AST`). The payload provides:
+- The assigned orbit class code, title, and narrative definition.
+- Detailed diagnostic predicate boundary margins recording distance to qualifying thresholds
+  for perihelion distance ($q$), aphelion distance ($Q$), semi-major axis ($a$), and Jupiter Tisserand parameter ($T_J$).
+- Provenance including underlying osculating elements, time conversion, gravity, and SPK state-source legs.
+The batch variant `POST /v1/orbits/class/batch` accepts up to 128 targets at the same epoch,
+provides isolated per-item error reporting with full path redaction, and echoes batch request metadata.
 
 Structured orbital errors are translated before generic `ValueError` handling.
 Client responses contain stable error codes and safe finite details; internal

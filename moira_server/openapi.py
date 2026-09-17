@@ -437,7 +437,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "orbits",
         "x-displayName": "Orbits",
-        "description": "Heliocentric osculating elements and distance-extrema surfaces.",
+        "description": "Heliocentric osculating elements, distance-extrema, and orbit-classification surfaces.",
         "x-family": "catalogs",
     },
     {

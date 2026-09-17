@@ -1,4 +1,4 @@
-"""Orbital element and heliocentric distance-extrema routes."""
+"""Orbital element, distance-extrema, and orbit-classification routes."""
 
 from __future__ import annotations
 
@@ -10,8 +10,17 @@ from ..models.orbits import (
     DistanceExtremesRequest,
     OrbitalElementsEnvelopeResponse,
     OrbitalElementsRequest,
+    OrbitClassBatchEnvelopeResponse,
+    OrbitClassBatchRequest,
+    OrbitClassEnvelopeResponse,
+    OrbitClassRequest,
 )
-from ..services.orbits import compute_distance_extremes, compute_orbital_elements
+from ..services.orbits import (
+    compute_distance_extremes,
+    compute_orbit_class,
+    compute_orbit_class_batch,
+    compute_orbital_elements,
+)
 
 
 router = APIRouter(prefix="/v1/orbits", tags=["orbits"])
@@ -33,3 +42,22 @@ def distance_extremes_route(
 ) -> DistanceExtremesEnvelopeResponse:
     """Compute next heliocentric perihelion and aphelion events."""
     return compute_distance_extremes(engine, request)
+
+
+@router.post("/class", response_model=OrbitClassEnvelopeResponse)
+def orbit_class_route(
+    request: OrbitClassRequest,
+    engine=Depends(get_engine),
+) -> OrbitClassEnvelopeResponse:
+    """Compute SBDB-style osculating asteroid orbit classification."""
+    return compute_orbit_class(engine, request)
+
+
+@router.post("/class/batch", response_model=OrbitClassBatchEnvelopeResponse)
+def orbit_class_batch_route(
+    request: OrbitClassBatchRequest,
+    engine=Depends(get_engine),
+) -> OrbitClassBatchEnvelopeResponse:
+    """Compute batch SBDB-style osculating asteroid orbit classifications."""
+    return compute_orbit_class_batch(engine, request)
+
