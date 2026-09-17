@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "source_repository": "https://github.com/TheDaniel166/moira",
-  "last_verified": "2026-09-09",
+  "last_verified": "2026-09-17",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.6.0",
-    "tag": "v6.6.0",
-    "commit": "eede826e7fb1c4f4bc76d010e38d9fe9ab7ffc08",
-    "release_date": "2026-09-09",
+    "version": "6.7.0",
+    "tag": "v6.7.0",
+    "commit": "dac9d4042e8eec7d6a98603271a92bb9f64bdcae",
+    "release_date": "2026-09-17",
     "requires_python": ">=3.10",
     "supported_python": [
       "3.10",
@@ -31,7 +31,7 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "8f1264d691b98b96f0fd4a4640f14adb31de43291d3307c1033f5dda6ce7c728"
+      "source_sha256": "dfb0ba0fe654909f8f95754af13ae43d4931d1d5adff004f474e8957253fc543"
     },
     {
       "id": "python_root_exports",
@@ -41,7 +41,7 @@
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "df6e4eab8ed89f21d7c98734bd5b0c9b42488166194a80d12000bebc73cd8e01"
+      "source_sha256": "904dcf76cc66b3dd3e26716d7ab04db98e1e3d59647851d08b9ca67e322060e0"
     },
     {
       "id": "rest_api_reference",
@@ -2556,7 +2556,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "df6e4eab8ed89f21d7c98734bd5b0c9b42488166194a80d12000bebc73cd8e01",
+      "source_sha256": "904dcf76cc66b3dd3e26716d7ab04db98e1e3d59647851d08b9ca67e322060e0",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -4859,7 +4859,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "70ccab61ff41147adf28c098bf3e4ecf67d6782fe9a791516181aea7e1e64435",
       "source_bytes": 14504,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4872,12 +4872,12 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.6.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.7.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "8f1264d691b98b96f0fd4a4640f14adb31de43291d3307c1033f5dda6ce7c728",
+      "source_sha256": "dfb0ba0fe654909f8f95754af13ae43d4931d1d5adff004f474e8957253fc543",
       "source_bytes": 321800,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4893,9 +4893,9 @@
       "description": "A contract-first migration manual for replacing Swiss Ephemeris flags and global state with Moira's explicit time, frame, observer, units, house, REST, and verification policies.",
       "content_class": "evergreen_guide",
       "schema_type": "TechArticle",
-      "source_sha256": "76601b3dcb4c5ffb49fa9f97279634ec2c4a0bcb2087261f443c49fe38bb8286",
+      "source_sha256": "af9476a2af2937355a993c5643b09ce44adcfd0b87ad2ba2f40ebeed0a6131e0",
       "source_bytes": 32455,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4913,7 +4913,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "7685dd2ac162b80ecea5f8db9fe3f11ce6a350937d46eab5f7356f50c7667ad1",
       "source_bytes": 8442,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4931,7 +4931,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "11a4ed6948235e6d974c9f1caf5e7e0ed4819c75d30dfcde5804f2f87ac16fd9",
       "source_bytes": 33871,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4949,7 +4949,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "fd28e8d7c39c9bfac0d9ca37fd043bb22e1acf009ab3da3504fbe62f4ebe2269",
       "source_bytes": 31220,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4967,7 +4967,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "26237b26a6e6e5ac1dffec0e5001a07474640ca03808f1c1ba5f21f428057188",
       "source_bytes": 29604,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4985,7 +4985,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ddefd92cf26aa6c521ec4b5bb348a9826128639fe6fbf7fb7ddbd085f8669796",
       "source_bytes": 46781,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5003,7 +5003,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3e1719778cf0c98b861990e311707ca6912e0555ce4344008e20996332797909",
       "source_bytes": 20555,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5021,7 +5021,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "4ba8e96bac8203127331af7cb964fcb35522b816a83e0fcf250936625fe0f458",
       "source_bytes": 13241,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5039,7 +5039,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3b7e0f8b334b1eecbccf20cea0076dd79b5d27d7765e2e3ab6cabe4cc43fccf3",
       "source_bytes": 48801,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5057,7 +5057,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "df304e00da742476af01bfe11316fc0e01ce258dad8c957f0f6ab3c97c50be9d",
       "source_bytes": 219931,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5075,7 +5075,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "6399b522780b3ad0ab8632a66e45fbfd9b10430f1bdbc9382090157d626c6361",
       "source_bytes": 20486,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5093,7 +5093,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "c5e5672d0dfe3d887212c5a2d170dbe480b9e2608dbd4112f9f726477f03f9fa",
       "source_bytes": 14623,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5111,7 +5111,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ab191318c94c6b69a9a6e7d4640a0eacd2b261cdd39d4aa7b6c5991f37e63742",
       "source_bytes": 25609,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5129,7 +5129,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "9d7bb814f7c053e0ceba7388526a696a0dbdde8878d34715e8a9eac0ec3f6fce",
       "source_bytes": 37582,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5163,7 +5163,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ee5e96f520fbcbb1f0a7fbe630eafb55d12b68717dc56d5ec5b98569bab41fbc",
       "source_bytes": 39054,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5196,7 +5196,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "38291c87ea81e9fc2fe23d63fdea37ae48d8ad2cdc4ea9046e40da8f3a64cdc4",
       "source_bytes": 22083,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5230,7 +5230,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "f77bc0837be29b481c2fd9f8fcf84f13564105d5c007db2095e0a91b2c65dcf6",
       "source_bytes": 3584,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5258,7 +5258,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "fc6e7ac8b5393acfecc7289ac2f69caad9d9bc4be6d53835a473406f14fe0b9f",
       "source_bytes": 15117,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5287,7 +5287,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3d7d8fdcb3c6dba9d2576e44f24809416b39dbcf2f1bd5a703cdbff7ee7142db",
       "source_bytes": 8684,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5317,7 +5317,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "9ab274475f75e6f3d22ab3fb746ec6c91cf15c5725bfe234aeb0baaae3f69315",
       "source_bytes": 2028,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5345,7 +5345,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "29f406d74fbeca960fd77af90d95a61139403926e496adb5c548a3e0e9635353",
       "source_bytes": 3329,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5373,7 +5373,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "60ae0879fffb9c318e622e9348ce0786fcd724b4f392804e66c0d5dae7c68e8d",
       "source_bytes": 15256,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5405,7 +5405,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "af6763ffe85b4a1900c83471a681674151e00a47fee9dee3220229cd90b0ad41",
       "source_bytes": 7470,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5434,7 +5434,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "e2598028b574254a5307f85c322668ae0d653f2905810ed2032bf71924f698b0",
       "source_bytes": 5697,
-      "last_verified": "2026-09-09",
+      "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5452,6 +5452,32 @@
     }
   ],
   "releases": [
+    {
+      "version": "6.7.0",
+      "date": "2026-09-17",
+      "title": "Strict Orbital Core, Ephemeris Apsides, and Doctrinal Chesta Bala",
+      "added": [
+        "A strict, shape-safe osculating_elements calculation and POST /v1/orbits/elements REST endpoint with allowlisted gravity, frame, state, coverage, and singularity provenance.",
+        "Versioned apsidal_passages extremum root searches over live ephemeris radial velocity with cubic Hermite polishing, Horizons holdout fixtures, and explicit FOUND, BEYOND_COVERAGE, or NOT_IN_WINDOW outcomes.",
+        "True geometric node calculation for all 10,025 catalog asteroids and periodic comets, with full 401-shard catalog holdout sealing and POST /v1/nodes/geometric transport updates."
+      ],
+      "changed": [
+        "planetary_nodes.geometric_node now delegates to the Sun-centered TRUE_ECLIPTIC_OF_DATE orbital core bounded to [1900.0, 2100.0].",
+        "moira.shadbala.chesta_bala and POST /v1/vedic/shadbala Chesta Bala now compute Chesta Kendra strictly according to B.V. Raman (Graha and Bhava Balas, Ch. VI, §§84–97)."
+      ],
+      "fixed": [
+        "Frame bias is now owned exactly once by bias-inclusive precession on both Python and native modern/long-term branches.",
+        "Sun and Moon Chesta Bala are derived directly from Ayana Bala according to Raman Ch. X (§§136–137), removing fabricated planetary mandoccha offsets."
+      ],
+      "validation": [
+        "Disjoint calibration and holdout Horizons orbital elements tests, live apsidal passage verification, 401-shard asteroid holdout seals, and Shadbala doctrinal tests across all 4 stages."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.7.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.7.0.md",
+      "tag": "v6.7.0",
+      "release_notes_sha256": "65608e9306ec110363b5a5df5f85db4313106f1b3ce9862e423635f26cdd8a52",
+      "compatibility_notes_sha256": "fc0bde0a180bcdd1457df855a1883dd7ccf9ec1d5ba56fb1ca21360628228bd2"
+    },
     {
       "version": "6.6.0",
       "date": "2026-09-09",
@@ -5859,5 +5885,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "eba9ca401208675511e3df961410d6469d337d3da4c4b15b755b48758b64869b"
+  "manifest_sha256": "c5c97577800703f04e21a752e788e4bcc49d4d417d78f2c091bb2c042b324ed2"
 }
