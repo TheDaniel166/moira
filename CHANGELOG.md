@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.8.0] - 2026-09-17
+
+### Added
+- Official JPL SBDB-style osculating asteroid orbit classification: `moira.orbits.orbit_class(body, jd_ut, *, reader=None)` and batch helper `orbit_classes_at(bodies, jd_ut, *, reader=None)`.
+  - Classifies all 14 dynamic small-body groups: `IEO` (Atira), `ATE` (Aten), `APO` (Apollo), `AMO` (Amor), `MCA` (Mars-crossing Asteroid), `IMB` (Inner Main-belt Asteroid), `MBA` (Main-belt Asteroid), `OMB` (Outer Main-belt Asteroid), `TJN` (Jupiter Trojan), `CEN` (Centaur), `TNO` (TransNeptunian Object), `PAA` (Parabolic Asteroid), `HYA` (Hyperbolic Asteroid), and fallback `AST` (Asteroid).
+  - Diagnostic predicate boundary margins (`OrbitClassBoundaryMargin`, `OrbitClassPredicate`) reporting exact signed parameter distance to critical classification thresholds ($a, q, Q, T_J$) with zero fall-through on exact boundaries.
+  - Re-exported all 9 classification symbols (`OrbitClassCode`, `OrbitClassBoundaryMargin`, `OrbitClassPredicate`, `OrbitClassResult`, `OrbitalErrorReceipt`, `OrbitClassBatchItem`, `OrbitClassBatchResult`, `orbit_class`, `orbit_classes_at`) in `moira`, `moira.predictive`, and `moira.facade`.
+- REST endpoints for asteroid classification under `/v1/orbits/*`:
+  - `POST /v1/orbits/class` (`orbit_class_route`): single asteroid query returning classification code, display title, description, and diagnostic boundary margins with full SPK provenance.
+  - `POST /v1/orbits/class/batch` (`orbit_class_batch_route`): batch evaluation for up to 128 targets at a single epoch with per-item error isolation, failure receipts, and strict local path redaction.
+- Small bodies (asteroids and comets) admission to `/v1/orbits/elements` and `/v1/orbits/distance-extremes`.
+- Open-conic nullable fields in `OrbitalElementsResponse`: for parabolic and hyperbolic small bodies ($e \ge 1.0$), non-applicable elliptic fields (`semi_major_axis_au`, `aphelion_distance_au`, `orbital_period_days`, `mean_anomaly_deg`, `mean_motion_deg_per_day`) serialize as `null`, while preserving the exact 12-field schema for closed orbits.
+- Clean mapping of unavailable apsidal passages (e.g. hyperbolic open conics lacking an apocenter) to HTTP 422 (`orbital_event_availability`).
+
+### Changed
+- Broadened `_OrbitBaseRequest` to validate arbitrary non-empty target names, admitting catalog small bodies across the orbits family while rejecting booleans and non-finite numbers.
+
 ## [6.7.0] - 2026-09-17
 
 ### Added

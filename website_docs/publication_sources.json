@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.7.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.8.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -317,6 +317,27 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.8.0",
+      "date": "2026-09-17",
+      "title": "SBDB Osculating Asteroid Orbit Classification and Small Body REST Surface",
+      "added": [
+        "Official JPL SBDB osculating asteroid orbit classification: moira.orbits.orbit_class and orbit_classes_at helper across all 14 dynamical classes with diagnostic boundary margins.",
+        "REST endpoints POST /v1/orbits/class and POST /v1/orbits/class/batch with item-level error isolation and strict path redaction.",
+        "Small bodies (asteroids and comets) admission to /v1/orbits/elements and /v1/orbits/distance-extremes, with nullable open-conic fields for parabolic and hyperbolic trajectories."
+      ],
+      "changed": [
+        "_OrbitBaseRequest broadened to admit catalog small bodies across the orbits family."
+      ],
+      "fixed": [
+        "Unreachable apsidal passage detection cleanly mapped to HTTP 422 orbital_event_availability."
+      ],
+      "validation": [
+        "Comprehensive 45-test unit orbit class suite, authentic SPK integration suite, and 14 server route tests."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.8.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.8.0.md"
+    },
     {
       "version": "6.7.0",
       "date": "2026-09-17",
