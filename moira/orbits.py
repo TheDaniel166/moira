@@ -54,9 +54,12 @@ import math
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Sequence
 
 from .constants import Body, KM_PER_AU
 from ._ephemeris_gm import _OrbitalGravity
+from ._ephemeris_time import _resolve_delta_t_for_ut1
+from .julian import _tt_to_tdb_with_receipt
 from ._orbital_errors import (
     OrbitalAmbiguousBodyError,
     OrbitalBodyNotFoundError,
@@ -142,6 +145,15 @@ __all__ = [
     "OrbitalTimeBasisError",
     "OrbitalSourceReceiptError",
     "OrbitalStateDegenerateError",
+    "OrbitClassCode",
+    "OrbitClassBoundaryMargin",
+    "OrbitClassPredicate",
+    "OrbitClassResult",
+    "OrbitalErrorReceipt",
+    "OrbitClassBatchItem",
+    "OrbitClassBatchResult",
+    "orbit_class",
+    "orbit_classes_at",
 ]
 
 
@@ -181,6 +193,25 @@ class OrbitShape(str, Enum):
     ELLIPTIC = "ELLIPTIC"
     PARABOLIC = "PARABOLIC"
     HYPERBOLIC = "HYPERBOLIC"
+
+
+class OrbitClassCode(str, Enum):
+    """JPL SBDB small-body orbit classification code."""
+
+    IEO = "IEO"
+    ATE = "ATE"
+    APO = "APO"
+    AMO = "AMO"
+    MCA = "MCA"
+    IMB = "IMB"
+    MBA = "MBA"
+    OMB = "OMB"
+    TJN = "TJN"
+    AST = "AST"
+    CEN = "CEN"
+    TNO = "TNO"
+    PAA = "PAA"
+    HYA = "HYA"
 
 
 class UndefinedElementReason(str, Enum):
@@ -392,6 +423,68 @@ class ApsidalPassages:
     pericenter: ApsidalPassageOutcome
     apocenter: ApsidalPassageOutcome
     provenance: ApsidalPassagesProvenance
+
+
+@dataclass(frozen=True, slots=True)
+class OrbitClassBoundaryMargin:
+    """Evaluated inequality margin for one orbital boundary condition."""
+
+    parameter: str
+    value: float
+    operator: str
+    boundary: float
+    signed_difference: float
+    unit: str
+
+
+@dataclass(frozen=True, slots=True)
+class OrbitClassPredicate:
+    """Evaluated boundary conditions for one candidate orbit class."""
+
+    code: OrbitClassCode
+    conditions: tuple[OrbitClassBoundaryMargin, ...]
+    matched: bool
+
+
+@dataclass(frozen=True, slots=True)
+class OrbitClassResult:
+    """Deterministic SBDB-style osculating asteroid classification at an epoch."""
+
+    body: OrbitalBodyIdentity
+    epoch_tdb: float
+    elements: OsculatingElements
+    code: OrbitClassCode
+    title: str
+    classification_policy: str
+    predicates: tuple[OrbitClassPredicate, ...]
+    boundary_margins: tuple[OrbitClassBoundaryMargin, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class OrbitalErrorReceipt:
+    """Sanitized, allowlisted failure receipt for one batch item."""
+
+    error_code: str
+    message: str
+    details: tuple[tuple[str, Any], ...]
+
+
+@dataclass(frozen=True, slots=True)
+class OrbitClassBatchItem:
+    """One classified item or isolated error within a batch evaluation."""
+
+    input_index: int
+    input_body: str | int
+    result: OrbitClassResult | None
+    error: OrbitalErrorReceipt | None
+
+
+@dataclass(frozen=True, slots=True)
+class OrbitClassBatchResult:
+    """Ordered collection of classified asteroid results and error receipts."""
+
+    epoch_tdb: float
+    items: tuple[OrbitClassBatchItem, ...]
 
 
 # ---------------------------------------------------------------------------
@@ -2542,4 +2635,600 @@ def distance_extremes_at(
         perihelion_distance_au=passages.pericenter.distance_au,
         aphelion_jd=passages.apocenter.epoch_tt,
         aphelion_distance_au=passages.apocenter.distance_au,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Stage 5: SBDB Orbit Classification
+# ---------------------------------------------------------------------------
+
+JPL_ORBIT_CLASS_TITLES: dict[OrbitClassCode, str] = {
+    OrbitClassCode.IEO: "Atira",
+    OrbitClassCode.ATE: "Aten",
+    OrbitClassCode.APO: "Apollo",
+    OrbitClassCode.AMO: "Amor",
+    OrbitClassCode.MCA: "Mars-crossing Asteroid",
+    OrbitClassCode.IMB: "Inner Main-belt Asteroid",
+    OrbitClassCode.MBA: "Main-belt Asteroid",
+    OrbitClassCode.OMB: "Outer Main-belt Asteroid",
+    OrbitClassCode.TJN: "Jupiter Trojan",
+    OrbitClassCode.AST: "Asteroid",
+    OrbitClassCode.CEN: "Centaur",
+    OrbitClassCode.TNO: "TransNeptunian Object",
+    OrbitClassCode.PAA: "Parabolic Asteroid",
+    OrbitClassCode.HYA: "Hyperbolic Asteroid",
+}
+
+ORBIT_CLASS_POLICY = "jpl_sbdb_osculating_v1"
+
+_ORBITAL_ERROR_CODES: dict[type[Exception], str] = {
+    OrbitalInputError: "ORBITAL_INPUT_ERROR",
+    OrbitalBodyNotFoundError: "ORBITAL_BODY_NOT_FOUND",
+    OrbitalAmbiguousBodyError: "ORBITAL_AMBIGUOUS_BODY",
+    OrbitalBodyNotSupportedError: "ORBITAL_BODY_NOT_SUPPORTED",
+    OrbitalCenterNotAllowedError: "ORBITAL_CENTER_NOT_ALLOWED",
+    OrbitalFrameUnavailableError: "ORBITAL_FRAME_UNAVAILABLE",
+    OrbitalLegacyBodyNotAllowedError: "ORBITAL_LEGACY_BODY_NOT_ALLOWED",
+    OrbitalBodyNotLoadedError: "ORBITAL_BODY_NOT_LOADED",
+    OrbitalCoverageError: "ORBITAL_COVERAGE_ERROR",
+    OrbitalKernelMissingError: "ORBITAL_KERNEL_MISSING",
+    OrbitalGravityModelError: "ORBITAL_GRAVITY_MODEL_ERROR",
+    OrbitalTimeBasisError: "ORBITAL_TIME_BASIS_ERROR",
+    OrbitalSourceReceiptError: "ORBITAL_SOURCE_RECEIPT_ERROR",
+    OrbitalStateDegenerateError: "ORBITAL_STATE_DEGENERATE",
+    OrbitalSearchError: "ORBITAL_SEARCH_ERROR",
+    OrbitalPassageUnavailableError: "ORBITAL_PASSAGE_UNAVAILABLE",
+}
+
+
+def _sanitize_json_value(value: Any) -> Any:
+    """Recursively coerce attributes to JSON-safe primitives or type names."""
+    if value is None or isinstance(value, (bool, str)):
+        return value
+    if isinstance(value, (int, float)):
+        if math.isnan(value):
+            return "NaN"
+        if math.isinf(value):
+            return "Infinity" if value > 0 else "-Infinity"
+        return value
+    if isinstance(value, Enum):
+        return value.value
+    if isinstance(value, (list, tuple)):
+        return tuple(_sanitize_json_value(item) for item in value)
+    if isinstance(value, dict):
+        return tuple(sorted((str(k), _sanitize_json_value(v)) for k, v in value.items()))
+    return f"{type(value).__module__}.{type(value).__qualname__}"
+
+
+def _sanitize_orbital_error(exc: Exception) -> OrbitalErrorReceipt:
+    """Build a sanitized failure receipt with allowlisted attributes."""
+    error_code = _ORBITAL_ERROR_CODES.get(type(exc), type(exc).__name__.upper())
+    msg = str(exc)
+    raw_details: dict[str, Any] = {}
+    for attr in dir(exc):
+        if attr.startswith("_") or attr in {"args", "with_traceback"}:
+            continue
+        val = getattr(exc, attr, None)
+        if callable(val):
+            continue
+        if "path" in attr.lower() or "trace" in attr.lower():
+            continue
+        raw_details[attr] = _sanitize_json_value(val)
+    sorted_details = tuple(sorted(raw_details.items(), key=lambda kv: kv[0]))
+    return OrbitalErrorReceipt(
+        error_code=error_code,
+        message=msg,
+        details=sorted_details,
+    )
+
+
+def _classify_osculating_elements(
+    elements: OsculatingElements,
+) -> tuple[
+    OrbitClassCode,
+    str,
+    tuple[OrbitClassPredicate, ...],
+    tuple[OrbitClassBoundaryMargin, ...],
+]:
+    """Classify small-body osculating elements against JPL SBDB boundary criteria."""
+    if elements.shape == OrbitShape.PARABOLIC:
+        margin = OrbitClassBoundaryMargin(
+            parameter="e",
+            value=elements.eccentricity,
+            operator="==",
+            boundary=1.0,
+            signed_difference=PARABOLIC_E_TOL - abs(elements.eccentricity - 1.0),
+            unit="dimensionless",
+        )
+        pred = OrbitClassPredicate(
+            code=OrbitClassCode.PAA,
+            conditions=(margin,),
+            matched=True,
+        )
+        return (
+            OrbitClassCode.PAA,
+            JPL_ORBIT_CLASS_TITLES[OrbitClassCode.PAA],
+            (pred,),
+            (margin,),
+        )
+
+    if elements.shape == OrbitShape.HYPERBOLIC:
+        margin = OrbitClassBoundaryMargin(
+            parameter="e",
+            value=elements.eccentricity,
+            operator=">",
+            boundary=1.0 + PARABOLIC_E_TOL,
+            signed_difference=elements.eccentricity - (1.0 + PARABOLIC_E_TOL),
+            unit="dimensionless",
+        )
+        pred = OrbitClassPredicate(
+            code=OrbitClassCode.HYA,
+            conditions=(margin,),
+            matched=True,
+        )
+        return (
+            OrbitClassCode.HYA,
+            JPL_ORBIT_CLASS_TITLES[OrbitClassCode.HYA],
+            (pred,),
+            (margin,),
+        )
+
+    a = elements.semi_major_axis_au
+    e = elements.eccentricity
+    q = elements.pericenter_distance_au
+    Q = elements.apocenter_distance_au
+
+    assert a is not None
+    assert Q is not None
+
+    evaluated_predicates: list[OrbitClassPredicate] = []
+
+    # 1. IEO: Q < 0.983 au
+    ieo_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="Q",
+            value=Q,
+            operator="<",
+            boundary=0.983,
+            signed_difference=0.983 - Q,
+            unit="au",
+        ),
+    )
+    ieo_match = Q < 0.983
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.IEO, conditions=ieo_cond, matched=ieo_match)
+    )
+    if ieo_match:
+        return OrbitClassCode.IEO, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.IEO], tuple(evaluated_predicates), ieo_cond
+
+    # 2. ATE: a < 1.0 au and Q > 0.983 au
+    ate_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator="<",
+            boundary=1.0,
+            signed_difference=1.0 - a,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="Q",
+            value=Q,
+            operator=">",
+            boundary=0.983,
+            signed_difference=Q - 0.983,
+            unit="au",
+        ),
+    )
+    ate_match = (a < 1.0) and (Q > 0.983)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.ATE, conditions=ate_cond, matched=ate_match)
+    )
+    if ate_match:
+        return OrbitClassCode.ATE, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.ATE], tuple(evaluated_predicates), ate_cond
+
+    # 3. APO: a > 1.0 au and q < 1.017 au
+    apo_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator=">",
+            boundary=1.0,
+            signed_difference=a - 1.0,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="q",
+            value=q,
+            operator="<",
+            boundary=1.017,
+            signed_difference=1.017 - q,
+            unit="au",
+        ),
+    )
+    apo_match = (a > 1.0) and (q < 1.017)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.APO, conditions=apo_cond, matched=apo_match)
+    )
+    if apo_match:
+        return OrbitClassCode.APO, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.APO], tuple(evaluated_predicates), apo_cond
+
+    # 4. AMO: 1.017 au < q < 1.3 au
+    amo_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="q",
+            value=q,
+            operator=">",
+            boundary=1.017,
+            signed_difference=q - 1.017,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="q",
+            value=q,
+            operator="<",
+            boundary=1.3,
+            signed_difference=1.3 - q,
+            unit="au",
+        ),
+    )
+    amo_match = (q > 1.017) and (q < 1.3)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.AMO, conditions=amo_cond, matched=amo_match)
+    )
+    if amo_match:
+        return OrbitClassCode.AMO, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.AMO], tuple(evaluated_predicates), amo_cond
+
+    # 5. MCA: 1.3 au < q < 1.666 au and a < 3.2 au
+    mca_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="q",
+            value=q,
+            operator=">",
+            boundary=1.3,
+            signed_difference=q - 1.3,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="q",
+            value=q,
+            operator="<",
+            boundary=1.666,
+            signed_difference=1.666 - q,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator="<",
+            boundary=3.2,
+            signed_difference=3.2 - a,
+            unit="au",
+        ),
+    )
+    mca_match = (q > 1.3) and (q < 1.666) and (a < 3.2)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.MCA, conditions=mca_cond, matched=mca_match)
+    )
+    if mca_match:
+        return OrbitClassCode.MCA, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.MCA], tuple(evaluated_predicates), mca_cond
+
+    # 6. IMB: a < 2.0 au and q > 1.666 au
+    imb_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator="<",
+            boundary=2.0,
+            signed_difference=2.0 - a,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="q",
+            value=q,
+            operator=">",
+            boundary=1.666,
+            signed_difference=q - 1.666,
+            unit="au",
+        ),
+    )
+    imb_match = (a < 2.0) and (q > 1.666)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.IMB, conditions=imb_cond, matched=imb_match)
+    )
+    if imb_match:
+        return OrbitClassCode.IMB, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.IMB], tuple(evaluated_predicates), imb_cond
+
+    # 7. MBA: 2.0 au < a < 3.2 au and q > 1.666 au
+    mba_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator=">",
+            boundary=2.0,
+            signed_difference=a - 2.0,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator="<",
+            boundary=3.2,
+            signed_difference=3.2 - a,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="q",
+            value=q,
+            operator=">",
+            boundary=1.666,
+            signed_difference=q - 1.666,
+            unit="au",
+        ),
+    )
+    mba_match = (a > 2.0) and (a < 3.2) and (q > 1.666)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.MBA, conditions=mba_cond, matched=mba_match)
+    )
+    if mba_match:
+        return OrbitClassCode.MBA, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.MBA], tuple(evaluated_predicates), mba_cond
+
+    # 8. OMB: 3.2 au < a < 4.6 au
+    omb_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator=">",
+            boundary=3.2,
+            signed_difference=a - 3.2,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator="<",
+            boundary=4.6,
+            signed_difference=4.6 - a,
+            unit="au",
+        ),
+    )
+    omb_match = (a > 3.2) and (a < 4.6)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.OMB, conditions=omb_cond, matched=omb_match)
+    )
+    if omb_match:
+        return OrbitClassCode.OMB, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.OMB], tuple(evaluated_predicates), omb_cond
+
+    # 9. TJN: 4.6 au < a < 5.5 au and e < 0.3
+    tjn_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator=">",
+            boundary=4.6,
+            signed_difference=a - 4.6,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator="<",
+            boundary=5.5,
+            signed_difference=5.5 - a,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="e",
+            value=e,
+            operator="<",
+            boundary=0.3,
+            signed_difference=0.3 - e,
+            unit="dimensionless",
+        ),
+    )
+    tjn_match = (a > 4.6) and (a < 5.5) and (e < 0.3)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.TJN, conditions=tjn_cond, matched=tjn_match)
+    )
+    if tjn_match:
+        return OrbitClassCode.TJN, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.TJN], tuple(evaluated_predicates), tjn_cond
+
+    # 10. CEN: 5.5 au < a < 30.1 au
+    cen_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator=">",
+            boundary=5.5,
+            signed_difference=a - 5.5,
+            unit="au",
+        ),
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator="<",
+            boundary=30.1,
+            signed_difference=30.1 - a,
+            unit="au",
+        ),
+    )
+    cen_match = (a > 5.5) and (a < 30.1)
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.CEN, conditions=cen_cond, matched=cen_match)
+    )
+    if cen_match:
+        return OrbitClassCode.CEN, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.CEN], tuple(evaluated_predicates), cen_cond
+
+    # 11. TNO: a > 30.1 au
+    tno_cond = (
+        OrbitClassBoundaryMargin(
+            parameter="a",
+            value=a,
+            operator=">",
+            boundary=30.1,
+            signed_difference=a - 30.1,
+            unit="au",
+        ),
+    )
+    tno_match = a > 30.1
+    evaluated_predicates.append(
+        OrbitClassPredicate(code=OrbitClassCode.TNO, conditions=tno_cond, matched=tno_match)
+    )
+    if tno_match:
+        return OrbitClassCode.TNO, JPL_ORBIT_CLASS_TITLES[OrbitClassCode.TNO], tuple(evaluated_predicates), tno_cond
+
+    # 12. AST: Fallback
+    ast_pred = OrbitClassPredicate(
+        code=OrbitClassCode.AST, conditions=(), matched=True
+    )
+    evaluated_predicates.append(ast_pred)
+    return (
+        OrbitClassCode.AST,
+        JPL_ORBIT_CLASS_TITLES[OrbitClassCode.AST],
+        tuple(evaluated_predicates),
+        (),
+    )
+
+
+def orbit_class(
+    body: str | int,
+    jd_ut: float,
+    *,
+    reader: KernelReader | None = None,
+) -> OrbitClassResult:
+    """Return the strict SBDB-style osculating asteroid orbit classification.
+
+    Parameters
+    ----------
+    body : str or int
+        Catalogued small body name or NAIF ID. Non-asteroids (planets, barycenters,
+        the Moon, and comets) raise ``OrbitalBodyNotSupportedError``.
+    jd_ut : float
+        Evaluation epoch in Julian Date (UT1).
+    reader : KernelReader or None
+        Explicit reader instance, or active default reader if ``None``.
+
+    Returns
+    -------
+    OrbitClassResult
+        The matched orbit class code, JPL title, source osculating elements,
+        and structured boundary margins for all evaluated predicates.
+    """
+    resolved = resolve_orbital_body(body)
+    if resolved.kind != OrbitalBodyKind.ASTEROID:
+        raise OrbitalBodyNotSupportedError(
+            body=resolved.name,
+            kind=resolved.kind.value,
+            reason=(
+                "orbit_class admits only catalogued small bodies/asteroids; "
+                "comets require Tisserand parameter and period doctrine"
+            ),
+        )
+
+    elements = osculating_elements(
+        resolved.naif_id,
+        jd_ut,
+        center=OrbitalCenter.SUN,
+        frame=OrbitalFrame.J2000_ECLIPTIC,
+        reader=reader,
+    )
+    code, title, predicates, margins = _classify_osculating_elements(elements)
+    return OrbitClassResult(
+        body=resolved,
+        epoch_tdb=elements.epoch_tdb,
+        elements=elements,
+        code=code,
+        title=title,
+        classification_policy=ORBIT_CLASS_POLICY,
+        predicates=predicates,
+        boundary_margins=margins,
+    )
+
+
+def orbit_classes_at(
+    bodies: Sequence[str | int],
+    jd_ut: float,
+    *,
+    reader: KernelReader | None = None,
+) -> OrbitClassBatchResult:
+    """Return SBDB osculating classifications for an ordered batch of bodies.
+
+    Request-level validation failures (such as a non-numeric or non-finite ``jd_ut``)
+    raise immediately. Individual body failures (such as an unknown body or unsupported
+    body kind) are isolated into sanitized ``OrbitalErrorReceipt`` records without
+    aborting the remaining batch.
+
+    Parameters
+    ----------
+    bodies : Sequence[str or int]
+        Ordered sequence of small body names or NAIF IDs.
+    jd_ut : float
+        Evaluation epoch in Julian Date (UT1).
+    reader : KernelReader or None
+        Explicit reader instance, or active default reader if ``None``.
+
+    Returns
+    -------
+    OrbitClassBatchResult
+        Container holding the verified evaluation epoch and an ordered tuple of
+        ``OrbitClassBatchItem`` records matching the input sequence.
+    """
+    try:
+        jd_ut_f = float(jd_ut)
+    except (TypeError, ValueError) as exc:
+        raise OrbitalInputError("jd_ut", jd_ut) from exc
+
+    if not math.isfinite(jd_ut_f):
+        raise OrbitalInputError("jd_ut", jd_ut)
+
+    dt = _resolve_delta_t_for_ut1(jd_ut_f)
+    tt = math.fsum((jd_ut_f, dt.seconds / 86400.0))
+    epoch_tdb = _tt_to_tdb_with_receipt(tt).epoch_tdb
+    items: list[OrbitClassBatchItem] = []
+
+    for index, raw_body in enumerate(bodies):
+        if isinstance(raw_body, str):
+            input_body: str | int = raw_body
+        elif isinstance(raw_body, int) and not isinstance(raw_body, bool):
+            input_body = raw_body
+        elif isinstance(raw_body, bool):
+            input_body = bool(raw_body)
+        else:
+            input_body = f"{type(raw_body).__module__}.{type(raw_body).__qualname__}"
+
+        try:
+            res = orbit_class(raw_body, jd_ut_f, reader=reader)
+            epoch_tdb = res.epoch_tdb
+            items.append(
+                OrbitClassBatchItem(
+                    input_index=index,
+                    input_body=input_body,
+                    result=res,
+                    error=None,
+                )
+            )
+        except OrbitalError as exc:
+            receipt = _sanitize_orbital_error(exc)
+            items.append(
+                OrbitClassBatchItem(
+                    input_index=index,
+                    input_body=input_body,
+                    result=None,
+                    error=receipt,
+                )
+            )
+        except Exception as exc:
+            receipt = _sanitize_orbital_error(exc)
+            items.append(
+                OrbitClassBatchItem(
+                    input_index=index,
+                    input_body=input_body,
+                    result=None,
+                    error=receipt,
+                )
+            )
+
+    return OrbitClassBatchResult(
+        epoch_tdb=epoch_tdb,
+        items=tuple(items),
     )

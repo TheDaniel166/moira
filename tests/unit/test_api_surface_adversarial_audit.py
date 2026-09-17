@@ -1636,6 +1636,21 @@ _EXPECTED_ROOT_PUBLIC_NAMES.update({
 })
 _EXPECTED_MOIRA_METHODS.add("apsidal_passages")
 
+# Additive orbital-core Stage 5 contract.
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "OrbitClassCode",
+    "OrbitClassBoundaryMargin",
+    "OrbitClassPredicate",
+    "OrbitClassResult",
+    "OrbitalErrorReceipt",
+    "OrbitClassBatchItem",
+    "OrbitClassBatchResult",
+    "orbit_class",
+    "orbit_classes_at",
+})
+_EXPECTED_MOIRA_METHODS.add("orbit_class")
+_EXPECTED_MOIRA_METHODS.add("orbit_classes_at")
+
 _EXPECTED_ESSENTIALS_PUBLIC_NAMES = set(essentials.__all__)
 _EXPECTED_CLASSICAL_PUBLIC_NAMES = set(classical.__all__)
 _EXPECTED_PREDICTIVE_PUBLIC_NAMES = set(predictive.__all__)

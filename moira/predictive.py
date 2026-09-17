@@ -197,6 +197,15 @@ from .orbits import (
     distance_extremes_at,
     orbital_elements_at,
     osculating_elements,
+    OrbitClassCode,
+    OrbitClassBoundaryMargin,
+    OrbitClassPredicate,
+    OrbitClassResult,
+    OrbitalErrorReceipt,
+    OrbitClassBatchItem,
+    OrbitClassBatchResult,
+    orbit_class,
+    orbit_classes_at,
 )
 
 # ── Planetary nodes / apsides ────────────────────────────────────────────
@@ -407,6 +416,9 @@ _PREDICTIVE_OWN: list[str] = [
     "UndefinedElement", "OrbitalGravity", "OrbitalTimeConversion",
     "OrbitalSingularityThresholds", "OsculatingElementsProvenance",
     "OsculatingElements", "osculating_elements",
+    "OrbitClassCode", "OrbitClassBoundaryMargin", "OrbitClassPredicate",
+    "OrbitClassResult", "OrbitalErrorReceipt", "OrbitClassBatchItem",
+    "OrbitClassBatchResult", "orbit_class", "orbit_classes_at",
     # Planetary nodes
     "OrbitalNode", "planetary_node", "all_planetary_nodes",
     # Batch assembly

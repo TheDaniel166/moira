@@ -368,6 +368,15 @@ from .orbits import (
     distance_extremes_at,
     orbital_elements_at,
     osculating_elements,
+    OrbitClassCode,
+    OrbitClassBoundaryMargin,
+    OrbitClassPredicate,
+    OrbitClassResult,
+    OrbitalErrorReceipt,
+    OrbitClassBatchItem,
+    OrbitClassBatchResult,
+    orbit_class,
+    orbit_classes_at,
 )
 from .eclipse import (
     EclipseData,
@@ -2296,6 +2305,9 @@ __all__ = [
     "OrbitalKernelMissingError", "OrbitalGravityModelError",
     "OrbitalTimeBasisError", "OrbitalSourceReceiptError",
     "OrbitalStateDegenerateError",
+    "OrbitClassCode", "OrbitClassBoundaryMargin", "OrbitClassPredicate",
+    "OrbitClassResult", "OrbitalErrorReceipt", "OrbitClassBatchItem",
+    "OrbitClassBatchResult", "orbit_class", "orbit_classes_at",
     "CuspSpeed", "HouseDynamics", "cusp_speeds_at",
     # Twilight
     "HorizonCrossingAvailability", "HorizonCrossingState",

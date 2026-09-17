@@ -1,0 +1,436 @@
+{
+  "generator_version": "moira-sbdb-orbit-class-fixture-v1",
+  "classification_policy": "jpl_sbdb_osculating_v1",
+  "description": "Frozen reference records verifying osculating element asteroid orbit classification against JPL SBDB definitions, including all 14 orbit classes and critical boundary cases.",
+  "records": [
+    {
+      "name": "Atira",
+      "designation": "163693",
+      "expected_class": "IEO",
+      "expected_title": "Atira",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 0.7410,
+        "eccentricity": 0.3221,
+        "pericenter_distance_au": 0.5023,
+        "apocenter_distance_au": 0.9797
+      }
+    },
+    {
+      "name": "'Ayló'chaxnim",
+      "designation": "594913",
+      "expected_class": "IEO",
+      "expected_title": "Atira",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 0.5554,
+        "eccentricity": 0.1770,
+        "pericenter_distance_au": 0.4571,
+        "apocenter_distance_au": 0.6537
+      }
+    },
+    {
+      "name": "Aten",
+      "designation": "2062",
+      "expected_class": "ATE",
+      "expected_title": "Aten",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 0.9666,
+        "eccentricity": 0.1826,
+        "pericenter_distance_au": 0.7901,
+        "apocenter_distance_au": 1.1431
+      }
+    },
+    {
+      "name": "Apophis",
+      "designation": "99942",
+      "expected_class": "ATE",
+      "expected_title": "Aten",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 0.9224,
+        "eccentricity": 0.1912,
+        "pericenter_distance_au": 0.7460,
+        "apocenter_distance_au": 1.0988
+      }
+    },
+    {
+      "name": "Apollo",
+      "designation": "1862",
+      "expected_class": "APO",
+      "expected_title": "Apollo",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 1.4702,
+        "eccentricity": 0.5599,
+        "pericenter_distance_au": 0.6470,
+        "apocenter_distance_au": 2.2934
+      }
+    },
+    {
+      "name": "Phaethon",
+      "designation": "3200",
+      "expected_class": "APO",
+      "expected_title": "Apollo",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 1.2713,
+        "eccentricity": 0.8899,
+        "pericenter_distance_au": 0.1400,
+        "apocenter_distance_au": 2.4026
+      }
+    },
+    {
+      "name": "Anagolay",
+      "designation": "436724",
+      "expected_class": "APO",
+      "expected_title": "Apollo",
+      "category": "sensitive_boundary",
+      "elements": {
+        "semi_major_axis_au": 1.8260,
+        "eccentricity": 0.4431,
+        "pericenter_distance_au": 1.016868,
+        "apocenter_distance_au": 2.635132
+      }
+    },
+    {
+      "name": "Amor",
+      "designation": "1221",
+      "expected_class": "AMO",
+      "expected_title": "Amor",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 1.9189,
+        "eccentricity": 0.4346,
+        "pericenter_distance_au": 1.0849,
+        "apocenter_distance_au": 2.7529
+      }
+    },
+    {
+      "name": "Eros",
+      "designation": "433",
+      "expected_class": "AMO",
+      "expected_title": "Amor",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 1.4582,
+        "eccentricity": 0.2226,
+        "pericenter_distance_au": 1.1336,
+        "apocenter_distance_au": 1.7828
+      }
+    },
+    {
+      "name": "Ganymed",
+      "designation": "1036",
+      "expected_class": "AMO",
+      "expected_title": "Amor",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 2.6631,
+        "eccentricity": 0.5332,
+        "pericenter_distance_au": 1.2431,
+        "apocenter_distance_au": 4.0831
+      }
+    },
+    {
+      "name": "Aethra",
+      "designation": "132",
+      "expected_class": "MCA",
+      "expected_title": "Mars-crossing Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 2.6092,
+        "eccentricity": 0.3887,
+        "pericenter_distance_au": 1.5950,
+        "apocenter_distance_au": 3.6234
+      }
+    },
+    {
+      "name": "Amundsenia",
+      "designation": "1065",
+      "expected_class": "MCA",
+      "expected_title": "Mars-crossing Asteroid",
+      "category": "sensitive_boundary",
+      "elements": {
+        "semi_major_axis_au": 2.3598,
+        "eccentricity": 0.2942,
+        "pericenter_distance_au": 1.66558,
+        "apocenter_distance_au": 3.0540
+      }
+    },
+    {
+      "name": "Kepler",
+      "designation": "1134",
+      "expected_class": "MCA",
+      "expected_title": "Mars-crossing Asteroid",
+      "category": "sensitive_boundary",
+      "elements": {
+        "semi_major_axis_au": 2.6841,
+        "eccentricity": 0.3795,
+        "pericenter_distance_au": 1.66562,
+        "apocenter_distance_au": 3.7026
+      }
+    },
+    {
+      "name": "Beira",
+      "designation": "1474",
+      "expected_class": "MCA",
+      "expected_title": "Mars-crossing Asteroid",
+      "category": "sensitive_boundary",
+      "elements": {
+        "semi_major_axis_au": 2.7354,
+        "eccentricity": 0.3911,
+        "pericenter_distance_au": 1.66565,
+        "apocenter_distance_au": 3.8052
+      }
+    },
+    {
+      "name": "Hungaria",
+      "designation": "434",
+      "expected_class": "IMB",
+      "expected_title": "Inner Main-belt Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 1.9443,
+        "eccentricity": 0.0739,
+        "pericenter_distance_au": 1.8006,
+        "apocenter_distance_au": 2.0880
+      }
+    },
+    {
+      "name": "Riema",
+      "designation": "1025",
+      "expected_class": "IMB",
+      "expected_title": "Inner Main-belt Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 1.9791,
+        "eccentricity": 0.0841,
+        "pericenter_distance_au": 1.8126,
+        "apocenter_distance_au": 2.1456
+      }
+    },
+    {
+      "name": "Ceres",
+      "designation": "1",
+      "expected_class": "MBA",
+      "expected_title": "Main-belt Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 2.7675,
+        "eccentricity": 0.0789,
+        "pericenter_distance_au": 2.5491,
+        "apocenter_distance_au": 2.9859
+      }
+    },
+    {
+      "name": "Pallas",
+      "designation": "2",
+      "expected_class": "MBA",
+      "expected_title": "Main-belt Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 2.7719,
+        "eccentricity": 0.2312,
+        "pericenter_distance_au": 2.1310,
+        "apocenter_distance_au": 3.4128
+      }
+    },
+    {
+      "name": "Vesta",
+      "designation": "4",
+      "expected_class": "MBA",
+      "expected_title": "Main-belt Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 2.3615,
+        "eccentricity": 0.0887,
+        "pericenter_distance_au": 2.1520,
+        "apocenter_distance_au": 2.5710
+      }
+    },
+    {
+      "name": "Cybele",
+      "designation": "65",
+      "expected_class": "OMB",
+      "expected_title": "Outer Main-belt Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 3.4368,
+        "eccentricity": 0.1049,
+        "pericenter_distance_au": 3.0763,
+        "apocenter_distance_au": 3.7973
+      }
+    },
+    {
+      "name": "Sylvia",
+      "designation": "87",
+      "expected_class": "OMB",
+      "expected_title": "Outer Main-belt Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 3.4839,
+        "eccentricity": 0.0801,
+        "pericenter_distance_au": 3.2048,
+        "apocenter_distance_au": 3.7630
+      }
+    },
+    {
+      "name": "Camilla",
+      "designation": "107",
+      "expected_class": "OMB",
+      "expected_title": "Outer Main-belt Asteroid",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 3.4868,
+        "eccentricity": 0.0765,
+        "pericenter_distance_au": 3.2201,
+        "apocenter_distance_au": 3.7535
+      }
+    },
+    {
+      "name": "Achilles",
+      "designation": "588",
+      "expected_class": "TJN",
+      "expected_title": "Jupiter Trojan",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 5.1950,
+        "eccentricity": 0.1472,
+        "pericenter_distance_au": 4.4303,
+        "apocenter_distance_au": 5.9597
+      }
+    },
+    {
+      "name": "Hektor",
+      "designation": "624",
+      "expected_class": "TJN",
+      "expected_title": "Jupiter Trojan",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 5.2341,
+        "eccentricity": 0.0242,
+        "pericenter_distance_au": 5.1074,
+        "apocenter_distance_au": 5.3608
+      }
+    },
+    {
+      "name": "Agamemnon",
+      "designation": "911",
+      "expected_class": "TJN",
+      "expected_title": "Jupiter Trojan",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 5.2572,
+        "eccentricity": 0.0669,
+        "pericenter_distance_au": 4.9055,
+        "apocenter_distance_au": 5.6089
+      }
+    },
+    {
+      "name": "Chiron",
+      "designation": "2060",
+      "expected_class": "CEN",
+      "expected_title": "Centaur",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 13.670,
+        "eccentricity": 0.3794,
+        "pericenter_distance_au": 8.4836,
+        "apocenter_distance_au": 18.856
+      }
+    },
+    {
+      "name": "Pholus",
+      "designation": "5145",
+      "expected_class": "CEN",
+      "expected_title": "Centaur",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 20.355,
+        "eccentricity": 0.5714,
+        "pericenter_distance_au": 8.7241,
+        "apocenter_distance_au": 31.986
+      }
+    },
+    {
+      "name": "2004 KV18",
+      "designation": "2004 KV18",
+      "expected_class": "CEN",
+      "expected_title": "Centaur",
+      "category": "sensitive_boundary",
+      "elements": {
+        "semi_major_axis_au": 30.09951,
+        "eccentricity": 0.1764,
+        "pericenter_distance_au": 24.7899,
+        "apocenter_distance_au": 35.4091
+      }
+    },
+    {
+      "name": "Pluto",
+      "designation": "134340",
+      "expected_class": "TNO",
+      "expected_title": "TransNeptunian Object",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 39.482,
+        "eccentricity": 0.2488,
+        "pericenter_distance_au": 29.658,
+        "apocenter_distance_au": 49.306
+      }
+    },
+    {
+      "name": "Sedna",
+      "designation": "90377",
+      "expected_class": "TNO",
+      "expected_title": "TransNeptunian Object",
+      "category": "canonical",
+      "elements": {
+        "semi_major_axis_au": 508.9,
+        "eccentricity": 0.8502,
+        "pericenter_distance_au": 76.233,
+        "apocenter_distance_au": 941.57
+      }
+    },
+    {
+      "name": "Synthetic Parabolic",
+      "designation": null,
+      "expected_class": "PAA",
+      "expected_title": "Parabolic Asteroid",
+      "category": "shape_geometry",
+      "elements": {
+        "semi_major_axis_au": null,
+        "eccentricity": 1.0,
+        "pericenter_distance_au": 1.5,
+        "apocenter_distance_au": null
+      }
+    },
+    {
+      "name": "'Oumuamua",
+      "designation": "1I",
+      "expected_class": "HYA",
+      "expected_title": "Hyperbolic Asteroid",
+      "category": "shape_geometry",
+      "elements": {
+        "semi_major_axis_au": -1.272,
+        "eccentricity": 1.201,
+        "pericenter_distance_au": 0.2559,
+        "apocenter_distance_au": null
+      }
+    },
+    {
+      "name": "Synthetic High-e Trojan Fallthrough",
+      "designation": null,
+      "expected_class": "AST",
+      "expected_title": "Asteroid",
+      "category": "fallback",
+      "elements": {
+        "semi_major_axis_au": 5.0,
+        "eccentricity": 0.45,
+        "pericenter_distance_au": 2.75,
+        "apocenter_distance_au": 7.25
+      }
+    }
+  ]
+}

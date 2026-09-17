@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 from datetime import datetime
-from typing import Any
+from typing import Any, Sequence
 
 from .constants import HouseSystem
 from .orbits import ApsidalDirection, OrbitalCenter, OrbitalFrame
@@ -48,10 +48,14 @@ LAW OF OPERATION:
         - Delegate progression, transit, return, station, syzygy, and
           planetary-hour computations to their owning modules.
     Non-responsibilities:
-        - Does not implement any predictive calculation itself.
-        - Does not own kernel lifecycle or reader management.
+        - Does not compute planetary ephemerides, house cusps, or chart
+          aspects directly.
+        - Does not own kernel management or caching.
     Dependencies:
-        - moira.facade (resolved at runtime via sys.modules)
+        - moira.facade (for internal cross-domain delegations)
+        - moira.transits
+        - moira.progressions
+        - moira.planetary_hours
         - moira.constants.HouseSystem
     Structural invariants:
         - All methods delegate to facade-module callables.
@@ -64,7 +68,7 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
     "scope": "class",
     "id": "moira._facade_predictive.PredictiveFacadeMixin",
     "risk": "medium",
-    "api": {"frozen": ["progression", "transits", "assess_transit_cardinal_ingress", "assess_transit_primary_syzygy", "eclipse_receipt_from_event", "jupiter_saturn_sequence_from_series", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "mudda_dasha", "lunar_return", "station", "planetary_hours", "osculating_elements", "apsidal_passages"], "internal": []},
+    "api": {"frozen": ["progression", "transits", "assess_transit_cardinal_ingress", "assess_transit_primary_syzygy", "eclipse_receipt_from_event", "jupiter_saturn_sequence_from_series", "solar_return", "solar_return_chart", "varshaphal", "varshaphal_chart", "build_varshaphal_chart", "mudda_dasha", "lunar_return", "station", "planetary_hours", "osculating_elements", "apsidal_passages", "orbit_class", "orbit_classes_at"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -112,6 +116,34 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
             center=center,
             direction=direction,
             max_days=max_days,
+            reader=self._reader,
+        )
+
+    def orbit_class(
+        self,
+        body: str | int,
+        jd_ut: float,
+    ):
+        """Return strict SBDB osculating asteroid classification through this facade's reader."""
+
+        facade = _facade_module()
+        return facade.orbit_class(
+            body,
+            jd_ut,
+            reader=self._reader,
+        )
+
+    def orbit_classes_at(
+        self,
+        bodies: Sequence[str | int],
+        jd_ut: float,
+    ):
+        """Return batch SBDB osculating asteroid classifications through this facade's reader."""
+
+        facade = _facade_module()
+        return facade.orbit_classes_at(
+            bodies,
+            jd_ut,
             reader=self._reader,
         )
 
