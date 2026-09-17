@@ -5,10 +5,17 @@ from __future__ import annotations
 from typing import Any
 
 from moira import Moira
-from moira.planetary_nodes import OrbitalNode, all_planetary_nodes, geometric_node, planetary_node
+from moira.planetary_nodes import (
+    OrbitalNode,
+    _geometric_node_computation,
+    all_planetary_nodes,
+    planetary_node,
+)
 
 from ..models.nodes import (
     GeometricNodeRequest,
+    GeometricNodeProvenanceResponse,
+    GeometricNodeResponse,
     MeanPlanetaryNodeRequest,
     MeanPlanetaryNodesBulkProvenanceResponse,
     MeanPlanetaryNodesBulkRequest,
@@ -20,6 +27,12 @@ from ..models.nodes import (
     NodeProvenanceResponse,
     NodeResponse,
     OrbitalNodeResponse,
+)
+from ..models.orbits import OrbitalFrameConstructionResponse
+from .orbits import (
+    _serialize_elements_time,
+    _serialize_gravity,
+    _serialize_state_source,
 )
 
 
@@ -68,7 +81,8 @@ def list_node_catalog() -> NodeCatalogResponse:
             geometric_requires_kernel=True,
             notes=[
                 "mean_elements is kernel-free",
-                "geometric_osculating requires a loaded reader",
+                "geometric_osculating uses the strict Sun-centered orbital core",
+                "true-date geometric nodes require JD(TT) 2415020.0 through 2488070.0",
             ],
         )
         for planet in MEAN_NODE_PLANETS
@@ -79,7 +93,9 @@ def list_node_catalog() -> NodeCatalogResponse:
             methods=[NodeComputationMethod.geometric_osculating],
             geometric_requires_kernel=True,
             notes=[
-                "geometric nodes are available only for bodies covered by the active reader",
+                "asteroid and comet geometric nodes require a receipted active-reader route",
+                "body availability and exact epoch coverage come from the loaded catalog manifests",
+                "true-date geometric nodes require JD(TT) 2415020.0 through 2488070.0",
                 "Sun and Moon are not meaningful heliocentric-node targets for this route",
             ],
         )
@@ -88,7 +104,10 @@ def list_node_catalog() -> NodeCatalogResponse:
         bodies=bodies,
         total=len(bodies),
         provenance=NodeCatalogProvenanceResponse(
-            stage_sequence=["node_method_catalog_serialization"],
+            stage_sequence=[
+                "strict_orbital_core_policy_declaration",
+                "node_method_catalog_serialization",
+            ],
         ),
     )
 
@@ -149,31 +168,76 @@ def compute_mean_planetary_nodes_bulk(
     )
 
 
-def compute_geometric_node(engine: Moira, request: GeometricNodeRequest) -> NodeResponse:
+def compute_geometric_node(
+    engine: Moira,
+    request: GeometricNodeRequest,
+) -> GeometricNodeResponse:
     reader = _get_reader(engine)
-    node = geometric_node(request.body, request.jd_ut, reader=reader)
-    return NodeResponse(
+    computation = _geometric_node_computation(
+        request.body,
+        request.jd_ut,
+        reader=reader,
+    )
+    node = computation.node
+    elements = computation.elements
+    frame = elements.provenance.frame_construction
+    return GeometricNodeResponse(
         node=_serialize_node(node),
-        provenance=NodeProvenanceResponse(
+        provenance=GeometricNodeProvenanceResponse(
             method=NodeComputationMethod.geometric_osculating,
             requested_body=request.body,
             returned_body=node.planet,
             jd=request.jd_ut,
-            jd_scale="UT_input_converted_to_TT_inside_engine",
-            frame="heliocentric_tropical_ecliptic",
-            coordinate_basis="osculating_state_vector_angular_momentum_and_eccentricity_vector",
+            jd_scale="UT1_JD",
+            frame=elements.frame.value,
+            coordinate_basis=(
+                "strict_orbital_core_angular_momentum_and_eccentricity_vector"
+            ),
             kernel_required=True,
             kernel_source=_kernel_source(reader),
             validity_note=(
-                "Geometric nodes are instantaneous osculating elements for the "
-                "requested body in the active SPK reader; loaded-body availability "
-                "is determined by the reader, not by REST catalog identity."
+                "Instantaneous Sun-centered osculating geometry in the true "
+                "ecliptic of date. The frame is admitted only for JD(TT) "
+                "2415020.0 through 2488070.0; body availability and exact "
+                "coverage are determined by the receipted active reader."
+            ),
+            center=elements.center.value,
+            body_naif_id=elements.body.naif_id,
+            body_kind=elements.body.kind.value,
+            time=_serialize_elements_time(elements),
+            gravity=_serialize_gravity(elements.provenance.gravity),
+            frame_construction=OrbitalFrameConstructionResponse(
+                frame=frame.frame.value,
+                routine=frame.routine,
+                router_branch=frame.router_branch,
+                precession_model=frame.precession_model,
+                obliquity_model=frame.obliquity_model,
+                nutation_model=frame.nutation_model,
+                admitted_interval_tt=(
+                    None
+                    if elements.provenance.frame_model_interval_tt is None
+                    else list(elements.provenance.frame_model_interval_tt)
+                ),
+            ),
+            state_source=_serialize_state_source(
+                elements.provenance.state_source
+            ),
+            singularity_policy=(
+                elements.provenance.singularity_thresholds.policy
+            ),
+            undefined_element_policy=(
+                "raise OrbitalStateDegenerateError when the unchanged "
+                "OrbitalNode vessel cannot represent a required undefined field"
             ),
             stage_sequence=[
                 "jd_ut_validation",
                 "reader_selection",
-                "heliocentric_state_vector_derivation",
-                "osculating_node_geometry",
+                "strict_orbital_body_resolution",
+                "ut1_tt_tdb_binding",
+                "receipted_sun_centered_state_routing",
+                "true_ecliptic_of_date_frame_construction",
+                "strict_osculating_element_extraction",
+                "orbital_node_compatibility_adaptation",
                 "orbital_node_response_serialization",
             ],
         ),

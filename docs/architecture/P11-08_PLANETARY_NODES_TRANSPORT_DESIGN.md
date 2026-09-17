@@ -1,9 +1,9 @@
 # P11-08 Planetary And Small-Body Nodes Transport Design
 
-Version: 0.1
-Date: 2026-06-13
-Status: admitted
-Scope: planetary mean-element nodes and reader-backed geometric osculating node routes
+Version: 0.2
+Date: 2026-09-16
+Status: admitted through Orbital Core Stage 3
+Scope: planetary mean-element nodes and strict-core geometric osculating node routes
 
 ## 1. Admission Boundary
 
@@ -35,8 +35,9 @@ serialized with explicit method, frame, kernel, and validity provenance.
 The route family admits two computation methods:
 
 - `mean_elements`: kernel-free Meeus / Simon mean orbital elements
-- `geometric_osculating`: reader-backed osculating geometry derived from
-  heliocentric state vectors
+- `geometric_osculating`: an exact `OrbitalNode` adapter over
+  `osculating_elements(body, jd_ut, center=SUN,
+  frame=TRUE_ECLIPTIC_OF_DATE, reader=reader)`
 
 The two methods are intentionally separate. Mean planetary nodes are not a
 fallback for geometric nodes, and geometric nodes are not treated as an
@@ -61,8 +62,10 @@ identity-catalog lookup.
 
 `POST /v1/nodes/geometric`
 
-- `body`: non-empty body name for the active reader path
-- `jd_ut`: finite UT Julian Day
+- `body`: non-empty body name for a strict-core route in the active reader;
+  planets, Pluto, and loaded sovereign asteroid/comet names are eligible
+- `jd_ut`: finite non-Boolean UT1 Julian Day whose bound TT lies from
+  `2415020.0` through `2488070.0`
 
 ## 4. Response Shape
 
@@ -77,6 +80,11 @@ Node responses return:
 - eccentricity
 - semi-major axis
 - provenance
+
+Geometric provenance additionally returns canonical name and NAIF identity,
+body kind, Sun center, bound UT1/TT/TDB epochs, the pinned time and gravity
+receipts, true-date frame construction, path-free SPK route/release/hash and
+coverage receipts, and the strict singularity and undefined-element policies.
 
 Catalog responses return:
 
@@ -97,6 +105,7 @@ The admitted surface rejects:
 
 - non-finite `jd`
 - non-finite `jd_ut`
+- Boolean `jd_ut`
 - empty planet names
 - unknown mean-element planet names
 - empty geometric body names
@@ -129,10 +138,16 @@ Mean-element provenance must identify:
 
 Geometric provenance must identify:
 
-- `osculating_state_vector_angular_momentum_and_eccentricity_vector`
-- reader selection
-- active-reader dependence
-- loaded-body availability as a reader concern, not a REST catalog claim
+- `strict_orbital_core_angular_momentum_and_eccentricity_vector`
+- Sun center and `TRUE_ECLIPTIC_OF_DATE`
+- UT1 input, TT frame construction, and TDB state evaluation
+- the selected JPL Horizons gravity rule and GM components
+- reader selection and each allowlisted source leg without a local path
+- the frame's explicit 1900.0--2100.0 model interval
+- loaded-body and exact-epoch availability as reader concerns, not static REST
+  catalog claims
+- failure rather than invented zeroes when the unchanged `OrbitalNode` vessel
+  cannot represent a core element that is correctly undefined
 
 ## 7. Verification
 
@@ -151,9 +166,17 @@ The focused server tests verify:
 - mean routes reject empty, non-finite, and unknown inputs
 - mean bulk defaults to the admitted eight-body mean-element set
 - mean bulk rejects empty entries and oversized lists
-- geometric route passes the server engine reader to `geometric_node`
-- geometric route preserves osculating provenance
-- geometric route rejects empty body, non-finite JD, and Sun
+- geometric route performs one strict-core evaluation with the server engine
+  reader and adapts that same result into `OrbitalNode`
+- geometric route preserves time, gravity, frame, state-source, singularity,
+  and undefined-element provenance
+- geometric route rejects empty body, non-finite or Boolean JD, and Sun
+- engine tests prove exact field mapping, projected pericenter semantics,
+  canonical identity, typed undefined-element failure, and no duplicate node
+  state/frame/conic pipeline
+- kernel tests cover all nine planet targets and all six asteroid/comet
+  representatives; the verified 10,025-body asteroid and 497-body comet
+  releases receive full inventory sweeps for all 10,522 sovereign bodies
 
 Route registry audit after admission:
 
@@ -166,7 +189,8 @@ Route registry audit after admission:
 ## 8. Completion Boundary
 
 P11-08 is complete for bounded mean planetary node transport and single-body
-reader-backed geometric osculating node transport.
+strict-core geometric osculating node transport, including loaded sovereign
+asteroid and comet targets.
 
 It is not complete for lunar-node REST routes, chart-backed node profiles,
 nodal interpretation, nodal aspect networks, catalog-wide small-body node

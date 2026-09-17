@@ -1,0 +1,205 @@
+{
+  "algorithm_version": "MOIRA_GEOMETRIC_NODE_ORBITAL_CORE_STAGE3_V1",
+  "authority_fixture": {
+    "acceptance_gates": {
+      "arg_pericenter_angular_absolute_deg": 5e-10,
+      "eccentricity_absolute": 2e-14,
+      "inclination_absolute_deg": 2e-12,
+      "node_angular_absolute_deg": 5e-10,
+      "semi_major_axis_absolute_au": 2e-13
+    },
+    "bodies": [
+      "Ceres",
+      "Hektor",
+      "Atira",
+      "Apophis",
+      "1P/Halley",
+      "2P/Encke"
+    ],
+    "bytes": 20453,
+    "coordinate_contract": {
+      "center": "Sun (500@10)",
+      "elements_frame": "Ecliptic of J2000.0",
+      "elements_output": "GEOMETRIC osculating elements",
+      "node_frame": "TRUE_ECLIPTIC_OF_DATE",
+      "state_time_scale": "TDB"
+    },
+    "fixture_role": "catalog_holdout",
+    "generator_version": "moira-horizons-orbital-elements-builder-v1",
+    "path": "tests/fixtures/horizons_orbital_elements_catalog_holdout.json",
+    "record_count": 6,
+    "schema": "moira.horizons-orbital-elements.v1",
+    "sha256": "d666f24fdc85dbaa5221acdfd619454ec4cd2bf41be2a9b3b9f14a5d1dd321dd",
+    "source": "official NASA/JPL Horizons API",
+    "source_url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+  },
+  "blockers": [
+    "NOT RUN - installed small-body catalog manifests do not contain reviewed Stage 3 geometric-node accuracy admissions bound to the frozen authority fixture and gates",
+    "NOT RUN - Stage 3-specific live Horizons release audit was not attempted at this implementation checkpoint",
+    "BLOCKED - the non-external-network suite stops at the pre-existing nested pytest-project support.small_body_resource_policy import defect before a Stage 3 assertion",
+    "BLOCKED - the broad 66-file changed-tree Ruff audit reports 99 inherited Stage 1/2 and repository findings; the scoped Stage 3 files pass"
+  ],
+  "catalog_release_identity": [
+    {
+      "body_count": 10025,
+      "catalog_id": "moira-asteroids",
+      "catalog_version": "2026.08.12.1",
+      "manifest_sha256": "9985f6e2da31e926f95391df17054e429ad72552ddc0793eaaaa3273f46febf0",
+      "shard_count": 401
+    },
+    {
+      "body_count": 497,
+      "catalog_id": "moira-comets",
+      "catalog_version": "2026.07.28.1",
+      "manifest_sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+      "shard_count": 20
+    },
+    {
+      "body_count": 25,
+      "catalog_id": "moira-asteroids-wheel",
+      "catalog_version": "2026.08.14.1",
+      "manifest_sha256": "c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22",
+      "shard_count": 1
+    }
+  ],
+  "governing_spec": {
+    "path": "docs/superpowers/specs/2026-09-15-orbital-core-design.md",
+    "sha256": "fba918c2755181f5d467ed957891278fb249bfde19931ecd310baf6019329a38"
+  },
+  "implementation_identity": {
+    "branch": "orbital-core-stage1",
+    "committed_base": "dfad306f47901596e9edc254116ac3c6d47a3764",
+    "state": "uncommitted Stage 1, Stage 2, and Stage 3 worktree"
+  },
+  "legacy_planet_shift_diagnostic": [
+    {
+      "body": "Mercury",
+      "ascending_node_arcseconds": -57.2,
+      "pericenter_longitude_arcseconds": -0.136,
+      "semi_major_axis_km": -8.1
+    },
+    {
+      "body": "Venus",
+      "ascending_node_arcseconds": -143.25,
+      "pericenter_longitude_arcseconds": 73.9,
+      "semi_major_axis_km": -265.5
+    },
+    {
+      "body": "Earth",
+      "legacy_status": "unsupported"
+    },
+    {
+      "body": "Mars",
+      "ascending_node_arcseconds": -220.72,
+      "pericenter_longitude_arcseconds": -0.524,
+      "semi_major_axis_km": -65.5
+    },
+    {
+      "body": "Jupiter",
+      "ascending_node_arcseconds": -358.68,
+      "pericenter_longitude_arcseconds": -3630.23,
+      "semi_major_axis_km": -778909.6
+    },
+    {
+      "body": "Saturn",
+      "ascending_node_arcseconds": -169.53,
+      "pericenter_longitude_arcseconds": 1047.61,
+      "semi_major_axis_km": -402723.2
+    },
+    {
+      "body": "Uranus",
+      "ascending_node_arcseconds": -625.9,
+      "pericenter_longitude_arcseconds": 186.58,
+      "semi_major_axis_km": -122829.6
+    },
+    {
+      "body": "Neptune",
+      "ascending_node_arcseconds": -182.74,
+      "pericenter_longitude_arcseconds": 540.29,
+      "semi_major_axis_km": -237258.1
+    },
+    {
+      "body": "Pluto",
+      "ascending_node_arcseconds": -24.59,
+      "pericenter_longitude_arcseconds": -0.0063,
+      "semi_major_axis_km": -54.9
+    }
+  ],
+  "measurement_date": "2026-09-16",
+  "migration_contract": {
+    "center": "SUN",
+    "frame": "TRUE_ECLIPTIC_OF_DATE",
+    "frame_epoch_scale": "TT_JD",
+    "frame_model_interval_tt": [
+      2415020.0,
+      2488070.0
+    ],
+    "input_time_scale": "UT1_JD",
+    "legacy_vessel": "OrbitalNode unchanged",
+    "pericenter_mapping": "pericenter_ecliptic_lon_deg",
+    "state_evaluation_scale": "TDB_JD"
+  },
+  "network_boundary": {
+    "external_network_used": false,
+    "offline_gates_used_frozen_primary_source_fixture": true,
+    "release_live_audit_required": true
+  },
+  "release_or_deployment_performed": false,
+  "schema": "moira.orbital-core-stage3.validation/v1",
+  "skips": [
+    "SKIPPED - six catalog authority comparisons lack reviewed Stage 3 manifest admission",
+    "SKIPPED - combined orbital regression retains six Stage 2 and six Stage 3 catalog authority admissions"
+  ],
+  "status": "implementation_review_ready_release_blocked",
+  "test_gate_counts": {
+    "catalog_kernel_slice": {
+      "authority_not_run": 6,
+      "loaded_adapter_passed": 6,
+      "unavailable_adapter_not_run": 0
+    },
+    "frame_range_failures": {
+      "passed": 2
+    },
+    "full_catalog": {
+      "bodies_passed": 10522,
+      "releases_not_run": 0,
+      "releases_passed": 2
+    },
+    "orbital_regression": {
+      "collected": 452,
+      "passed": 440,
+      "skipped": 12
+    },
+    "planetary_core_adapter": {
+      "bodies": [
+        "Mercury",
+        "Venus",
+        "Earth",
+        "Mars",
+        "Jupiter",
+        "Saturn",
+        "Uranus",
+        "Neptune",
+        "Pluto"
+      ],
+      "passed": 9
+    },
+    "stage3_focused": {
+      "collected": 42,
+      "passed": 36,
+      "skipped": 6
+    }
+  },
+  "test_gates": {
+    "catalog_authority": "NOT RUN - six comparisons require reviewed catalog-manifest admission for the exact Stage 3 fixture and gates",
+    "catalog_runtime_mapping": "passed for Ceres, Hektor, Atira, Apophis, 1P/Halley, and 2P/Encke",
+    "changed_tree_ruff": "BLOCKED - 99 inherited findings across the broad 66-file Stage 1/2/3 worktree audit; Stage 3 scoped files pass",
+    "documentation": "passed - canonical wiki, generated Git wiki, website documentation bundle, consistency check, and sync check",
+    "full_catalog": "passed for all 10,025 moira-asteroids@2026.08.12.1 bodies and all 497 moira-comets@2026.07.28.1 bodies (10,522 total)",
+    "live_jpl_horizons": "NOT RUN - deferred to mandatory release audit",
+    "non_external_network": "BLOCKED - first failure is the baseline nested-project ModuleNotFoundError for support.small_body_resource_policy; Stage 3 assertions were not implicated",
+    "orbital_regression": "passed with twelve explicit catalog-admission skips",
+    "planetary_core_adapter": "passed",
+    "stage3_focused": "passed with six explicit catalog-admission skips"
+  }
+}

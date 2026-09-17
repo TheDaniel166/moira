@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 from ..dependencies import get_engine
 from ..models.nodes import (
     GeometricNodeRequest,
+    GeometricNodeResponse,
     MeanPlanetaryNodeRequest,
     MeanPlanetaryNodesBulkRequest,
     MeanPlanetaryNodesBulkResponse,
@@ -44,10 +45,10 @@ def mean_planetary_nodes_bulk_route(
     return compute_mean_planetary_nodes_bulk(request)
 
 
-@router.post("/geometric", response_model=NodeResponse)
+@router.post("/geometric", response_model=GeometricNodeResponse)
 def geometric_node_route(
     request: GeometricNodeRequest,
     engine=Depends(get_engine),
-) -> NodeResponse:
+) -> GeometricNodeResponse:
     """Compute one osculating heliocentric node from the active reader."""
     return compute_geometric_node(engine, request)

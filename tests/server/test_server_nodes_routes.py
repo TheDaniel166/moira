@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import ANY
 
 from fastapi.testclient import TestClient
@@ -43,15 +44,21 @@ def test_node_catalog_route_declares_distinct_methods(client: TestClient) -> Non
         "geometric_requires_kernel": True,
         "notes": [
             "mean_elements is kernel-free",
-            "geometric_osculating requires a loaded reader",
+            "geometric_osculating uses the strict Sun-centered orbital core",
+            "true-date geometric nodes require JD(TT) 2415020.0 through 2488070.0",
         ],
     }
     assert body["bodies"][-1]["name"] == "loaded_spk_body"
     assert body["bodies"][-1]["mean_requires_kernel"] is None
     assert body["bodies"][-1]["geometric_requires_kernel"] is True
     assert body["provenance"]["stage_sequence"] == [
+        "strict_orbital_core_policy_declaration",
         "node_method_catalog_serialization",
     ]
+    assert body["provenance"]["geometric_source"] == (
+        "moira.orbits strict Sun-centered true-date osculating core, "
+        "adapted by moira.planetary_nodes"
+    )
 
 
 def test_mean_planetary_node_route_returns_node_and_provenance(client: TestClient) -> None:
@@ -159,13 +166,13 @@ def test_geometric_node_route_uses_engine_reader_and_declares_osculating_truth(
 ) -> None:
     calls: list[tuple[str, float, object | None]] = []
 
-    def fake_geometric_node(
+    def fake_geometric_node_computation(
         body: str,
         jd_ut: float,
         reader: object | None = None,
-    ) -> OrbitalNode:
+    ) -> SimpleNamespace:
         calls.append((body, jd_ut, reader))
-        return OrbitalNode(
+        node = OrbitalNode(
             planet="Ceres",
             ascending_node=80.0,
             perihelion=120.0,
@@ -174,8 +181,93 @@ def test_geometric_node_route_uses_engine_reader_and_declares_osculating_truth(
             eccentricity=0.08,
             semi_major_axis=2.77,
         )
+        conversion = SimpleNamespace(
+            delta_t_policy="MOIRA_SOURCE_OWNED_DELTA_T_V1",
+            delta_t_source_product="iers_eop_direct",
+            delta_t_retarget_mode="basis_neutral",
+            delta_t_correction_seconds=0.0,
+            identity_iterations=2,
+            tt_tdb_policy="NAIF_LSK_DELTET",
+            tt_tdb_version="naif0012",
+            tt_tdb_source_url="https://naif.jpl.nasa.gov/example",
+            tt_tdb_source_sha256="a" * 64,
+            tt_tdb_source_bytes=5257,
+            tt_tdb_iterations=3,
+        )
+        gravity = SimpleNamespace(
+            rule="SUN_MASSLESS_SMALL_BODY",
+            gm_km3_s2=132712440041.27942,
+            component_naif_ids=(10,),
+            component_gm_km3_s2=(132712440041.27942,),
+            policy="HORIZONS_GM_2026_09_15",
+            source_url="https://ssd.jpl.nasa.gov/example",
+            retrieved_date="2026-09-15",
+            source_sha256="b" * 64,
+            source_bytes=15428,
+            planetary_ephemeris="DE441",
+        )
+        frame = SimpleNamespace(
+            frame=SimpleNamespace(value="TRUE_ECLIPTIC_OF_DATE"),
+            routine="OBL06_NUT06A_PNM06A_RX",
+            router_branch="modern_true",
+            precession_model="IAU_2006_PMAT06",
+            obliquity_model="IAU_2006_OBL06",
+            nutation_model="IAU_2006_2000A_NUT06A",
+        )
+        source = SimpleNamespace(
+            legs=(
+                SimpleNamespace(
+                    center_naif_id=10,
+                    target_naif_id=2000001,
+                    traversal_sign=1,
+                    segment_type=13,
+                    coverage_start_tdb=2451545.0,
+                    coverage_end_tdb=2462502.5,
+                    kernel_label="SB441_CERES",
+                    kernel_sha256="c" * 64,
+                    kernel_bytes=4096,
+                    pool_index=1,
+                    catalog_id="moira-asteroids-wheel",
+                    catalog_version="2026.08.14.1",
+                    manifest_sha256="d" * 64,
+                    released_utc="2026-08-14T21:53:17Z",
+                    planetary_ephemeris=None,
+                    coverage_restricted_to_observed_arc=True,
+                ),
+            ),
+            covered_intervals_tdb=((2451545.0, 2462502.5),),
+            pool_generation=2,
+        )
+        elements = SimpleNamespace(
+            body=SimpleNamespace(
+                name="Ceres",
+                naif_id=2000001,
+                kind=SimpleNamespace(value="ASTEROID"),
+            ),
+            center=SimpleNamespace(value="SUN"),
+            frame=SimpleNamespace(value="TRUE_ECLIPTIC_OF_DATE"),
+            jd_ut=jd_ut,
+            epoch_tt=2460110.5008,
+            epoch_tdb=2460110.5008,
+            delta_t_seconds=69.0,
+            tdb_minus_tt_seconds=0.001,
+            provenance=SimpleNamespace(
+                time_conversion=conversion,
+                gravity=gravity,
+                frame_construction=frame,
+                frame_model_interval_tt=(2415020.0, 2488070.0),
+                state_source=source,
+                singularity_thresholds=SimpleNamespace(
+                    policy="MOIRA_OSCULATING_ELEMENTS_STAGE1_V1"
+                ),
+            ),
+        )
+        return SimpleNamespace(node=node, elements=elements)
 
-    monkeypatch.setattr("moira_server.services.nodes.geometric_node", fake_geometric_node)
+    monkeypatch.setattr(
+        "moira_server.services.nodes._geometric_node_computation",
+        fake_geometric_node_computation,
+    )
 
     response = client.post(
         "/v1/nodes/geometric",
@@ -195,10 +287,27 @@ def test_geometric_node_route_uses_engine_reader_and_declares_osculating_truth(
         "semi_major_axis": 2.77,
     }
     assert body["provenance"]["method"] == "geometric_osculating"
+    assert body["provenance"]["jd_scale"] == "UT1_JD"
+    assert body["provenance"]["center"] == "SUN"
+    assert body["provenance"]["frame"] == "TRUE_ECLIPTIC_OF_DATE"
+    assert body["provenance"]["body_naif_id"] == 2000001
+    assert body["provenance"]["body_kind"] == "ASTEROID"
     assert body["provenance"]["kernel_required"] is True
     assert body["provenance"]["kernel_source"] == "loaded_engine_reader"
     assert body["provenance"]["coordinate_basis"] == (
-        "osculating_state_vector_angular_momentum_and_eccentricity_vector"
+        "strict_orbital_core_angular_momentum_and_eccentricity_vector"
+    )
+    assert body["provenance"]["time"]["input_time_scale"] == "UT1_JD"
+    assert body["provenance"]["time"]["state_evaluation_scale"] == "TDB_JD"
+    assert body["provenance"]["gravity"]["rule"] == "SUN_MASSLESS_SMALL_BODY"
+    assert body["provenance"]["frame_construction"]["routine"] == (
+        "OBL06_NUT06A_PNM06A_RX"
+    )
+    assert body["provenance"]["state_source"]["legs"][0]["kernel_sha256"] == (
+        "c" * 64
+    )
+    assert body["provenance"]["singularity_policy"] == (
+        "MOIRA_OSCULATING_ELEMENTS_STAGE1_V1"
     )
     assert calls == [("Ceres", 2460110.5, ANY)]
     assert calls[0][2] is not None
@@ -213,6 +322,10 @@ def test_geometric_node_route_rejects_invalid_inputs(client: TestClient) -> None
         "/v1/nodes/geometric",
         json={"body": "Ceres", "jd_ut": "Infinity"},
     )
+    boolean_jd = client.post(
+        "/v1/nodes/geometric",
+        json={"body": "Ceres", "jd_ut": True},
+    )
     sun = client.post(
         "/v1/nodes/geometric",
         json={"body": "Sun", "jd_ut": 2460110.5},
@@ -220,5 +333,11 @@ def test_geometric_node_route_rejects_invalid_inputs(client: TestClient) -> None
 
     assert empty_body.status_code == 422
     assert non_finite_jd.status_code == 422
+    assert boolean_jd.status_code == 422
     assert sun.status_code == 422
-    assert "does not have a meaningful heliocentric node" in sun.json()["message"]
+    assert sun.json()["error_code"] == "body_not_supported"
+    assert sun.json()["details"] == {
+        "body": "Sun",
+        "kind": "non-orbital point",
+        "reason": "Body.SUN is a center or calculated point, not an orbital target",
+    }

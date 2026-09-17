@@ -39,6 +39,76 @@
       "solution_date": "2026-04-16 05:49:08"
     },
     {
+      "naif_id": 2002201,
+      "name": "Oljato",
+      "start_date": "1931-12-03",
+      "end_date": "2026-09-14",
+      "policy": "jpl_sbdb_observation_arc",
+      "authority": "JPL SBDB",
+      "orbit_id": "360",
+      "solution_date": "2026-09-15 06:22:19"
+    },
+    {
+      "naif_id": 2004581,
+      "name": "Asclepius",
+      "start_date": "1989-03-31",
+      "end_date": "2021-04-18",
+      "policy": "jpl_sbdb_observation_arc",
+      "authority": "JPL SBDB",
+      "orbit_id": "113",
+      "solution_date": "2026-06-16 11:32:29"
+    },
+    {
+      "naif_id": 2004660,
+      "name": "Nereus",
+      "start_date": "1981-09-30",
+      "end_date": "2026-06-22",
+      "policy": "jpl_sbdb_observation_arc",
+      "authority": "JPL SBDB",
+      "orbit_id": "278",
+      "solution_date": "2026-06-22 06:20:32"
+    },
+    {
+      "naif_id": 2025143,
+      "name": "Itokawa",
+      "start_date": "1998-09-19",
+      "end_date": "2024-12-19",
+      "policy": "jpl_sbdb_observation_arc",
+      "authority": "JPL SBDB",
+      "orbit_id": "237",
+      "solution_date": "2025-05-22 17:09:17"
+    },
+    {
+      "naif_id": 2054509,
+      "name": "YORP",
+      "start_date": "2000-08-03",
+      "end_date": "2005-08-03",
+      "policy": "jpl_sbdb_observation_arc",
+      "authority": "JPL SBDB",
+      "orbit_id": "88",
+      "solution_date": "2022-12-20 14:08:08"
+    },
+    {
+      "naif_id": 2069230,
+      "name": "Hermes",
+      "start_date": "1937-10-25",
+      "end_date": "2026-09-14",
+      "policy": "jpl_sbdb_observation_arc",
+      "authority": "JPL SBDB",
+      "orbit_id": "205",
+      "solution_date": "2026-09-15 06:22:31"
+    },
+    {
+      "naif_id": 2099942,
+      "name": "Apophis",
+      "start_date": "2004-03-15",
+      "end_date": "2022-04-09",
+      "policy": "jpl_sbdb_observation_arc",
+      "authority": "JPL SBDB",
+      "orbit_id": "220",
+      "solution_date": "2024-06-25 10:48:08"
+    },
+    {
       "naif_id": 2101955,
       "name": "Bennu",
       "start_date": "1901-01-01",
@@ -46,6 +116,16 @@
       "policy": "jpl_horizons_ephemeris_availability",
       "authority": "JPL Horizons API",
       "note": "conservative full-year bounds parsed from the Horizons ephemeris-availability response"
+    },
+    {
+      "naif_id": 2367943,
+      "name": "Duende",
+      "start_date": "2012-02-23",
+      "end_date": "2013-02-21",
+      "policy": "jpl_sbdb_observation_arc",
+      "authority": "JPL SBDB",
+      "orbit_id": "83",
+      "solution_date": "2026-07-27 16:25:51"
     }
   ],
   "sampling": {
@@ -3518,12 +3598,12 @@
         2002224,
         2002225
       ],
-      "bytes": 46090240,
-      "sha256": "888dca5939d0f71693814a5cf9eecdf4dd48f7a078a884286dbf1493ab0fd19f",
+      "bytes": 44440576,
+      "sha256": "d5ceedeb5158e03dde68b1bf9b1871d7284b3a043909a868c72b3071845b6ea1",
       "metadata": {
         "path": "asteroid_shard_088.metadata.json",
-        "bytes": 9264,
-        "sha256": "7d1e376b8eba7791cf64b8b6f9d64471d4e3473be9c22f8584addca43a4d0013"
+        "bytes": 9528,
+        "sha256": "5a6fc94151d64b871b006820e7bb7fbb00fabf961d0e469d846cd5376de0be33"
       }
     },
     {
@@ -7223,12 +7303,12 @@
         2004600,
         2004601
       ],
-      "bytes": 46090240,
-      "sha256": "6c0adac005bf0078ee0023fdf564c93c92d2ccbb59d90800fe87e28c310c7feb",
+      "bytes": 44312576,
+      "sha256": "1b9a936f866d9e21cdc80fde37d1819a58e487e86a0dc194ea428865816b9eaa",
       "metadata": {
         "path": "asteroid_shard_183.metadata.json",
-        "bytes": 9299,
-        "sha256": "c7e1242e7fbef03c8f54bbd5d39b4020cf86fbb61497895809ffd3138822fba3"
+        "bytes": 9564,
+        "sha256": "0904a8c0a9a1e269b08833575f597ac753d6f37d56f35ebab76d541348b7df54"
       }
     },
     {
@@ -7340,12 +7420,12 @@
         2004675,
         2004676
       ],
-      "bytes": 46090240,
-      "sha256": "ceefc142eab25207a52768d3d5e1b778386527a7fbd5aa2a3ffb8ed0154ef5da",
+      "bytes": 44338176,
+      "sha256": "f3864ba0bc8c14093b19aba069e78a312f78c1c24f91f6fe500f35c9fd40d097",
       "metadata": {
         "path": "asteroid_shard_186.metadata.json",
-        "bytes": 9305,
-        "sha256": "292b2f4c0b78a53113ac2b4d45516bfa4b7a53e2f443580ee8b3cb155ca0d415"
+        "bytes": 9569,
+        "sha256": "da5a03ae45add8f75c9adb175823a4e76e5ee26629cb5722c878dfcd20df39e6"
       }
     },
     {
@@ -15608,12 +15688,12 @@
         2528381,
         2099942
       ],
-      "bytes": 46090240,
-      "sha256": "23ddd29982844db0225c0c10bba8a43ce36eaf85af7e42da55af00bd38e1768a",
+      "bytes": 44283904,
+      "sha256": "ef79b60a617ca5353ea14e33559a3deb9c441efa4cb8095ceb0bc86f84b54116",
       "metadata": {
         "path": "asteroid_shard_398.metadata.json",
-        "bytes": 9962,
-        "sha256": "6a7bd1a14cbace58e89230561e1b268f3a25f86035dd931c66eb9cea2bc885f2"
+        "bytes": 10228,
+        "sha256": "d24be699b6b0fc641ab99484fb66357d7a4d06e43b80efb0aedc5fc6d300f91a"
       }
     },
     {
@@ -15647,12 +15727,12 @@
         2042355,
         2065489
       ],
-      "bytes": 44724224,
-      "sha256": "edb01b1e3b62120aa9bfadeb18ef506611d03a9c656d1aad9313f7ce9b04c4cf",
+      "bytes": 37598208,
+      "sha256": "3de569e9163b8a3707fee44772f60e7ed48cec1fcec14a40637aec2a7fe8ab2a",
       "metadata": {
         "path": "asteroid_shard_399.metadata.json",
-        "bytes": 8931,
-        "sha256": "01dc8a54558adcf9e0b8bdb8a64214fb5c53abf86b9886794a32083fde310ba9"
+        "bytes": 9992,
+        "sha256": "2589c1355b9fd8b76107c1743e7eaa03f2d9cde1f2b0cf941f1783f624fbb029"
       }
     },
     {
@@ -15732,8 +15812,8 @@
       {
         "path": "unified_master.json",
         "role": "catalog_build_evidence",
-        "bytes": 3591273,
-        "sha256": "72c0dd9a07ba2b2af610f8755b785d2f473a550b62d77aeaf4d45ac2d3ae185d"
+        "bytes": 3444714,
+        "sha256": "45a74926db58cd4c1fbe57fd9c56ec19ea09686a51276e9c7698b11e3aa9a7ab"
       }
     ],
     "source_revision": "14d97782-builder8c103864-target08927dcb"

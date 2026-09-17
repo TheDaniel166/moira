@@ -8,6 +8,13 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from moira._strenum import StrEnum
 
+from .orbits import (
+    OrbitalFrameConstructionResponse,
+    OrbitalGravityResponse,
+    OrbitalStateSourceResponse,
+    OrbitTimeResponse,
+)
+
 
 MEAN_PLANETARY_NODE_MAX_ITEMS = 8
 
@@ -51,6 +58,13 @@ class MeanPlanetaryNodeRequest(_StrictModel):
             raise ValueError("jd must be finite")
         return value
 
+    @field_validator("jd", mode="before")
+    @classmethod
+    def _jd_is_not_boolean(cls, value):
+        if isinstance(value, bool):
+            raise ValueError("jd must be a real number, not a Boolean")
+        return value
+
 
 class MeanPlanetaryNodesBulkRequest(_StrictModel):
     jd: float
@@ -65,6 +79,13 @@ class MeanPlanetaryNodesBulkRequest(_StrictModel):
     def _finite_jd(cls, value: float) -> float:
         if not math.isfinite(value):
             raise ValueError("jd must be finite")
+        return value
+
+    @field_validator("jd", mode="before")
+    @classmethod
+    def _jd_is_not_boolean(cls, value):
+        if isinstance(value, bool):
+            raise ValueError("jd must be a real number, not a Boolean")
         return value
 
     @field_validator("planets")
@@ -100,6 +121,13 @@ class GeometricNodeRequest(_StrictModel):
             raise ValueError("jd_ut must be finite")
         return value
 
+    @field_validator("jd_ut", mode="before")
+    @classmethod
+    def _jd_ut_is_not_boolean(cls, value):
+        if isinstance(value, bool):
+            raise ValueError("jd_ut must be a real number, not a Boolean")
+        return value
+
 
 class NodeCatalogItemResponse(_StrictModel):
     name: str
@@ -112,7 +140,10 @@ class NodeCatalogItemResponse(_StrictModel):
 class NodeCatalogProvenanceResponse(_StrictModel):
     catalog_scope: str = "admitted_planetary_node_transport"
     mean_element_source: str = "moira.planetary_nodes mean Meeus/Simon element table"
-    geometric_source: str = "moira.planetary_nodes geometric state-vector method"
+    geometric_source: str = (
+        "moira.orbits strict Sun-centered true-date osculating core, "
+        "adapted by moira.planetary_nodes"
+    )
     stage_sequence: list[str]
 
 
@@ -140,6 +171,25 @@ class NodeProvenanceResponse(_StrictModel):
 class NodeResponse(_StrictModel):
     node: OrbitalNodeResponse
     provenance: NodeProvenanceResponse
+
+
+class GeometricNodeProvenanceResponse(NodeProvenanceResponse):
+    """Allowlisted strict-core receipt for one geometric node."""
+
+    center: str
+    body_naif_id: int
+    body_kind: str
+    time: OrbitTimeResponse
+    gravity: OrbitalGravityResponse
+    frame_construction: OrbitalFrameConstructionResponse
+    state_source: OrbitalStateSourceResponse
+    singularity_policy: str
+    undefined_element_policy: str
+
+
+class GeometricNodeResponse(_StrictModel):
+    node: OrbitalNodeResponse
+    provenance: GeometricNodeProvenanceResponse
 
 
 class MeanPlanetaryNodesBulkProvenanceResponse(_StrictModel):

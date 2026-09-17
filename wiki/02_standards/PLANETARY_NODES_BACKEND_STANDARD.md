@@ -1,8 +1,8 @@
 # Planetary And Small-Body Nodes Backend Standard
 
-Version: 0.1
-Date: 2026-06-13
-Status: admitted backend standard for Phase 11 REST transport
+Version: 0.2
+Date: 2026-09-16
+Status: admitted backend standard through Orbital Core Stage 3
 
 ## Scope
 
@@ -34,12 +34,23 @@ Mean planetary nodes:
 
 Geometric osculating nodes:
 
-- derive the instantaneous heliocentric orbital plane from reader state vectors
-- use angular momentum and eccentricity-vector geometry
-- require a loaded reader that covers the requested body
-- generalize to classical planets, Pluto, and small bodies only when the
-  active reader has the needed state-vector coverage
+- are an exact adapter over `osculating_elements` with `center=SUN` and
+  `frame=TRUE_ECLIPTIC_OF_DATE`
+- derive the instantaneous heliocentric orbital plane from receipted reader
+  state vectors using the strict orbital core's angular-momentum and
+  eccentricity-vector geometry
+- bind public UT1 to TT and exact TDB state evaluation once
+- use the pinned JPL Horizons gravity policy and the core's singularity rules
+- require a receiptable reader route covering the requested body and exact TDB
+  epoch
+- generalize to classical planets, Pluto, and loaded sovereign asteroid and
+  comet catalogs
+- are admitted only for JD(TT) `2415020.0` through `2488070.0`; requests
+  outside that true-date frame interval fail explicitly
 - reject Sun and Moon as heliocentric node targets for this frame
+
+`OrbitalNode.perihelion` is the ecliptic longitude of the projected pericenter
+vector. It is not the inclined-orbit dogleg `Omega + omega`.
 
 ## Governing Objects
 
@@ -80,6 +91,13 @@ REST transport must preserve:
 - perihelion and aphelion longitudes
 - inclination, eccentricity, and semi-major axis
 - method-specific validity note
+- canonical body name, NAIF ID, and body kind for geometric results
+- UT1, TT, and TDB epoch values and source-owned time-conversion receipt
+- selected Horizons gravity rule and GM receipt
+- true-date frame construction and admitted interval
+- path-free SPK route identities, release identities, hashes, and exact
+  coverage intervals
+- singularity and undefined-element policies
 - stage sequence
 
 REST transport must not:
@@ -90,6 +108,8 @@ REST transport must not:
 - treat Sun or Moon as valid heliocentric-node targets for geometric nodes
 - claim kernel-backed truth for mean-element results
 - claim mean-element validity beyond the engine's documented envelope
+- imply that an installed catalog has frozen-Horizons numerical admission when
+  its manifest contains no reviewed Stage 3 admission bound to that fixture
 
 ## Validation Requirements
 
@@ -102,11 +122,20 @@ Transport admission must verify:
 - mean routes reject empty and unknown planet names
 - mean bulk routes reject empty and oversized lists
 - geometric route passes the server engine reader into the computation
-- geometric route records osculating state-vector provenance
+- geometric route records strict-core time, gravity, frame, state-source,
+  singularity, and undefined-element provenance without exposing local paths
 - geometric route rejects non-finite `jd_ut`
+- geometric route rejects Boolean epochs before transport coercion
 - geometric route rejects empty body names
 - geometric route rejects Sun and Moon as non-meaningful heliocentric-node
   targets
+- all nine admitted planet targets map exactly to one Sun/true-date core result
+- loaded representative asteroid/comet targets map exactly to the same core
+- requests outside the admitted true-date interval retain the typed frame error
+- every installed full-catalog member receives an inventory-wide finite-node and
+  source-receipt check; a missing sovereign release is recorded as `NOT RUN`
+- frozen Horizons catalog comparisons run only for releases whose manifests
+  carry the reviewed fixture hash and acceptance-gate admission
 
 ## Non-Goals
 
@@ -116,7 +145,7 @@ This standard does not admit:
 - chart-backed node profiles
 - natal, transit, or synastry nodal interpretation
 - nodal aspect networks
-- catalog-wide small-body node sweeps
+- a catalog-wide node REST endpoint
 - rendered node maps
 - asteroid/comet position route changes
 - small-body kernel manifest management
