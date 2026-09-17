@@ -1,0 +1,207 @@
+{
+  "algorithm_version": "MOIRA_APSIDAL_PASSAGES_V1",
+  "authority_fixture": {
+    "acceptance_gates": {
+      "distance_absolute_au": 1e-09,
+      "event_time_absolute_days": 0.0001
+    },
+    "bodies": [
+      "Mercury",
+      "Venus",
+      "Earth",
+      "Earth-Moon Barycenter",
+      "Mars",
+      "Jupiter",
+      "Saturn",
+      "Uranus",
+      "Neptune",
+      "Pluto",
+      "Eros",
+      "Chiron",
+      "1P/Halley",
+      "2P/Encke",
+      "Sedna",
+      "Eris"
+    ],
+    "bytes": 639384,
+    "calibration_records": 6,
+    "coordinate_contract": {
+      "center": "Sun (500@10)",
+      "ephemeris_type": "VECTORS",
+      "reference_plane": "FRAME",
+      "reference_system": "ICRF",
+      "time_scale": "TDB",
+      "vector_correction": "NONE"
+    },
+    "event_count": 29,
+    "generator_version": "moira-horizons-apsidal-passages-builder-v1",
+    "holdout_records": 10,
+    "path": "tests/fixtures/horizons_apsidal_passages_reference.json",
+    "record_count": 16,
+    "schema": "moira.horizons-apsidal-passages.v1",
+    "sha256": "eb14a0a3e1924dae38f0201b913a663be526275cba2801c9a772f55e4b3f21eb",
+    "source": "official NASA/JPL Horizons API",
+    "source_url": "https://ssd.jpl.nasa.gov/api/horizons.api"
+  },
+  "blockers": [
+    "NOT RUN - the installed small-body catalog manifests do not contain reviewed Stage 2 apsidal-passage accuracy admissions bound to the frozen authority fixture and gates",
+    "NOT RUN - the full moira-asteroids@2026.08.12.1 release is not installed; only moira-asteroids-wheel@2026.08.14.1 is available",
+    "BLOCKED - the non-external-network suite stops at a pre-existing nested pytest-project harness import failure for support.small_body_resource_policy before reaching a Stage 2 orbital assertion",
+    "BLOCKED - the broad changed-file Ruff command reports 66 inherited Stage 1 findings"
+  ],
+  "catalog_authority_diagnostics": [
+    {
+      "body": "Eros",
+      "distance_delta_au": -7.1049e-11,
+      "event": "PERICENTER",
+      "time_delta_days": 3.6871e-06
+    },
+    {
+      "body": "Eros",
+      "distance_delta_au": 1.1496e-10,
+      "event": "APOCENTER",
+      "time_delta_days": 3.6657e-06
+    },
+    {
+      "body": "Chiron",
+      "distance_delta_au": 2.2185e-09,
+      "event": "PERICENTER",
+      "time_delta_days": -5.7439e-06
+    },
+    {
+      "body": "Chiron",
+      "distance_delta_au": -3.55e-09,
+      "event": "APOCENTER",
+      "time_delta_days": -6.8187e-06
+    },
+    {
+      "body": "1P/Halley",
+      "distance_delta_au": -0.000826492,
+      "event": "PERICENTER",
+      "time_delta_days": -0.104000614
+    },
+    {
+      "body": "2P/Encke",
+      "distance_delta_au": 0.000166391,
+      "event": "PERICENTER",
+      "time_delta_days": 0.195347801
+    },
+    {
+      "body": "2P/Encke",
+      "distance_delta_au": -1.87293e-06,
+      "event": "APOCENTER",
+      "time_delta_days": -0.000409159
+    },
+    {
+      "body": "Sedna",
+      "distance_delta_au": 1.91447e-08,
+      "event": "PERICENTER",
+      "time_delta_days": -6.49681e-05
+    },
+    {
+      "body": "Eris",
+      "distance_delta_au": 4.09184e-08,
+      "event": "PERICENTER",
+      "time_delta_days": -0.000239667
+    }
+  ],
+  "catalog_release_identity": [
+    {
+      "catalog_id": "moira-comets",
+      "catalog_version": "2026.07.28.1",
+      "manifest_sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1"
+    },
+    {
+      "catalog_id": "moira-asteroids-wheel",
+      "catalog_version": "2026.08.14.1",
+      "manifest_sha256": "c55b63d3df1c8af6af562f73f0c2e5b7f26f1cc449f7010b3463892a27a56e22"
+    }
+  ],
+  "governing_spec": {
+    "path": "docs/superpowers/specs/2026-09-15-orbital-core-design.md",
+    "sha256": "fba918c2755181f5d467ed957891278fb249bfde19931ecd310baf6019329a38"
+  },
+  "implementation_identity": {
+    "branch": "orbital-core-stage1",
+    "committed_base": "dfad306f47901596e9edc254116ac3c6d47a3764",
+    "state": "uncommitted Stage 1 and Stage 2 worktree"
+  },
+  "measurement_date": "2026-09-15",
+  "network_boundary": {
+    "external_network_used_only_for_marked_live_horizons_slice": true,
+    "offline_gates_used_frozen_primary_source_fixture": true
+  },
+  "release_or_deployment_performed": false,
+  "schema": "moira.orbital-core-stage2.validation/v1",
+  "skips": [
+    "NOT RUN - six catalog authority comparisons lack reviewed Stage 2 manifest admission",
+    "NOT RUN - the full moira-asteroids@2026.08.12.1 release is not installed",
+    "SKIPPED - eight final consolidated cases: two unavailable jplephem comparisons and six catalog authority admissions",
+    "SKIPPED - three Stage 1 regression cases: two jplephem comparison prerequisites and the unavailable full asteroid release"
+  ],
+  "status": "implementation_review_ready_release_blocked",
+  "test_gate_counts": {
+    "catalog_kernel_slice": {
+      "authority_not_run": 6,
+      "runtime_smoke_passed": 1
+    },
+    "fixture_governance": {
+      "passed": 14
+    },
+    "live_jpl_horizons": {
+      "bodies": [
+        "Earth",
+        "Neptune"
+      ],
+      "passed": 2
+    },
+    "planetary_authority": {
+      "bodies": [
+        "Mercury",
+        "Venus",
+        "Earth",
+        "Earth-Moon Barycenter",
+        "Mars",
+        "Jupiter",
+        "Saturn",
+        "Uranus",
+        "Neptune",
+        "Pluto"
+      ],
+      "passed": 10
+    },
+    "stage1_regression": {
+      "collected": 213,
+      "passed": 210,
+      "skipped": 3
+    },
+    "stage2_focused": {
+      "collected": 210,
+      "passed": 204,
+      "skipped": 6
+    },
+    "stage2_final_consolidated": {
+      "collected": 297,
+      "passed": 289,
+      "skipped": 8
+    },
+    "synthetic_passage_semantics": {
+      "passed": 25
+    }
+  },
+  "test_gates": {
+    "catalog_authority": "NOT RUN - six comparisons require catalog manifests with reviewed Stage 2 fixture and gate admission",
+    "catalog_runtime_smoke": "passed - loaded Eros route found both passages; this is not authority parity",
+    "changed_file_ruff": "BLOCKED - broad changed-file command reports 66 inherited Stage 1 findings; Stage 2 scoped files pass",
+    "documentation": "passed - wiki sync, website documentation bundle, consistency check, and sync check",
+    "fixture_governance": "passed",
+    "full_catalog": "NOT RUN - full moira-asteroids@2026.08.12.1 release not installed",
+    "live_jpl_horizons": "passed",
+    "non_external_network": "BLOCKED - first failure is the baseline nested-project ModuleNotFoundError for support.small_body_resource_policy; Stage 2 assertions were not implicated",
+    "planetary_authority": "passed",
+    "stage1_regression": "passed with three prerequisite skips",
+    "stage2_focused": "passed with six explicit catalog-admission skips",
+    "stage2_final_consolidated": "passed with two jplephem prerequisite skips and six explicit catalog-admission skips",
+    "synthetic_passage_semantics": "passed"
+  }
+}
