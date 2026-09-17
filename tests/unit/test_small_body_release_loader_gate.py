@@ -6,7 +6,7 @@ from moira import small_body_catalog_release
 
 
 class _DummyKernel:
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, *args, **kwargs) -> None:
         self.path = path
 
 
@@ -35,9 +35,9 @@ def test_finalized_manifest_is_verified_before_kernel_open(
     )
 
     class _OrderedKernel(_DummyKernel):
-        def __init__(self, path: Path) -> None:
+        def __init__(self, path: Path, *args, **kwargs) -> None:
             events.append(f"open:{Path(path).resolve()}")
-            super().__init__(path)
+            super().__init__(path, *args, **kwargs)
 
     monkeypatch.setattr(_spk_body_kernel, "SmallBodyKernel", _OrderedKernel)
 

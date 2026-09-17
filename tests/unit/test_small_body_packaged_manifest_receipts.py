@@ -105,7 +105,7 @@ def test_website_catalog_metrics_publish_release_identity() -> None:
     assert asteroid["shard_count"] == 401
     assert asteroid["sampling"] == {"step_days": 10, "window_size": 7}
     assert asteroid["manifest_sha256"] == (
-        "c151348a9edd3620716da8849ceb239d0ab39688ead948ffecb592c13e068c64"
+        "9985f6e2da31e926f95391df17054e429ad72552ddc0793eaaaa3273f46febf0"
     )
 
     comet = metrics["position_capable_periodic_comet_ephemeris"]

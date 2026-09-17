@@ -445,6 +445,8 @@ _APSIDAL_MAX_ROUTE_ENTRIES = 256
 
 @dataclass(frozen=True, slots=True)
 class _ApsidalRouteEntry:
+    """Route entry segment mapped to a JD(TDB) interval."""
+
     start_tdb: float
     end_tdb: float
     route: tuple[_RouteEdge, ...]
@@ -453,6 +455,8 @@ class _ApsidalRouteEntry:
 
 @dataclass(frozen=True, slots=True)
 class _ApsidalRoutePlan:
+    """Apsidal route schedule across a continuity plan."""
+
     entries: tuple[_ApsidalRouteEntry, ...]
     seams: tuple[ApsidalSeamContinuity, ...]
     identity: str
@@ -479,6 +483,8 @@ class _ApsidalRoutePlan:
 
 @dataclass(frozen=True, slots=True)
 class _ApsidalSample:
+    """Discrete radial sample along an apsidal route."""
+
     epoch_tdb: float
     distance_km: float
     radial_velocity_km_per_day: float
@@ -589,7 +595,68 @@ def _route_entry(
 
 
 class _ApsidalEvaluationLedger:
-    """Own the fixed budget and exact segment-use receipt for one search."""
+    """
+    RITE: The Apsidal Evaluation Ledger.
+
+    THEOREM: Tracks evaluation counts and segment utilization receipts
+    during numerical apsidal extrema searches under strict budget bounds.
+
+    RITE OF PURPOSE:
+        _ApsidalEvaluationLedger bounds ephemeris evaluation budgets and
+        records exact orbital state segment utilization across route evaluations
+        and discrete samples, preventing runaway root-finding loops.
+
+    LAW OF OPERATION:
+        Responsibilities:
+            - Bound total orbital evaluations against APSIDAL_EVALUATION_BUDGET.
+            - Record segment-use and epoch boundaries for evaluated routed states.
+            - Provide deterministic state sampling for apsidal plans.
+        Non-responsibilities:
+            - Does not construct route graphs or resolve body ephemerides directly.
+            - Does not formulate root-finding brackets.
+        Dependencies:
+            - Routing pool context and routed states.
+        Structural invariants:
+            - total <= APSIDAL_EVALUATION_BUDGET.
+        Failure behavior:
+            - Raises OrbitalSearchError when budget is exhausted.
+
+    Canon: None (ephemeris evaluation accounting helper).
+
+    [MACHINE_CONTRACT v1]
+    {
+      "scope": "class",
+      "id": "moira.orbits._ApsidalEvaluationLedger",
+      "risk": "medium",
+      "api": {
+        "frozen": ["observe", "evaluate_route", "sample", "sample_entry"],
+        "internal": ["context", "total", "minimum_epoch_tdb", "maximum_epoch_tdb", "search_minimum_epoch_tdb", "search_maximum_epoch_tdb", "_usage", "radial_samples"]
+      },
+      "state": {
+        "mutable": true,
+        "owners": ["_ApsidalEvaluationLedger"]
+      },
+      "effects": {
+        "signals_emitted": [],
+        "io": []
+      },
+      "concurrency": {
+        "thread": "pure_computation",
+        "cross_thread_calls": "safe_read_only"
+      },
+      "failures": {
+        "policy": "raise"
+      },
+      "succession": {
+        "stance": "terminal"
+      },
+      "agent": {
+        "autofix": "allowed",
+        "requires_human_for": ["api_change"]
+      }
+    }
+    [/MACHINE_CONTRACT]
+    """
 
     def __init__(self, context) -> None:
         self.context = context
@@ -909,6 +976,8 @@ def _build_apsidal_route_plan(context) -> tuple[
 
 @dataclass(frozen=True, slots=True)
 class _ExtractedConic:
+    """Keplerian conic orbital elements extracted from a Cartesian state."""
+
     shape: OrbitShape
     semi_major_axis_au: float | None
     eccentricity: float

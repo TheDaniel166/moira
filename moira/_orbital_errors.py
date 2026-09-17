@@ -22,6 +22,8 @@ class OrbitalError(Exception):
 
 
 class OrbitalInputError(OrbitalError, ValueError):
+    """Raised when an orbital query parameter fails validation."""
+
     def __init__(self, parameter: str, value: Any, allowed: tuple[Any, ...] = ()):
         self.parameter = parameter
         self.value = value
@@ -32,6 +34,8 @@ class OrbitalInputError(OrbitalError, ValueError):
 
 
 class OrbitalBodyNotFoundError(OrbitalError, KeyError):
+    """Raised when a requested orbital body cannot be found in catalogs."""
+
     def __init__(self, query: Any, close_matches: tuple[str, ...] = ()):
         self.query = query
         self.close_matches = tuple(close_matches)
@@ -48,12 +52,16 @@ class OrbitalBodyNotFoundError(OrbitalError, KeyError):
 
 
 class OrbitalAmbiguousBodyError(OrbitalError, AmbiguousSmallBodyNameError):
+    """Raised when an orbital body query matches multiple candidate bodies."""
+
     def __init__(self, query: str, candidates: tuple[Any, ...]):
         self._constructor_args = (query, tuple(candidates))
         super().__init__(query, tuple(candidates))
 
 
 class OrbitalBodyNotSupportedError(OrbitalError, ValueError):
+    """Raised when an orbital body is recognized but does not support the product."""
+
     def __init__(self, body: str, kind: str, reason: str):
         self.body = body
         self.kind = kind
@@ -65,6 +73,8 @@ class OrbitalBodyNotSupportedError(OrbitalError, ValueError):
 
 
 class OrbitalCenterNotAllowedError(OrbitalError, ValueError):
+    """Raised when a specified central body is not permitted for the target."""
+
     def __init__(
         self,
         body: str,
@@ -82,6 +92,8 @@ class OrbitalCenterNotAllowedError(OrbitalError, ValueError):
 
 
 class OrbitalFrameUnavailableError(OrbitalError, ValueError):
+    """Raised when an orbital reference frame is unavailable at the requested epoch."""
+
     def __init__(
         self,
         frame: str,
@@ -105,6 +117,8 @@ class OrbitalFrameUnavailableError(OrbitalError, ValueError):
 
 
 class OrbitalLegacyBodyNotAllowedError(OrbitalError, KeyError, ValueError):
+    """Raised when a body is rejected by a legacy API requiring a modern replacement."""
+
     def __init__(
         self,
         body: str,
@@ -133,6 +147,8 @@ class OrbitalLegacyBodyNotAllowedError(OrbitalError, KeyError, ValueError):
 
 
 class OrbitalBodyNotLoadedError(OrbitalError, KeyError):
+    """Raised when a small-body catalog entry has no loaded ephemeris kernel."""
+
     def __init__(
         self,
         body: str,
@@ -163,6 +179,8 @@ class OrbitalBodyNotLoadedError(OrbitalError, KeyError):
 
 
 class OrbitalCoverageError(OrbitalError, OutOfRangeError):
+    """Raised when an orbital ephemeris does not cover the requested epoch."""
+
     def __init__(
         self,
         body: str,
@@ -204,6 +222,8 @@ class OrbitalKernelMissingError(
     MissingKernelError,
     MissingEphemerisKernelError,
 ):
+    """Raised when a required ephemeris kernel file is missing or unreadable."""
+
     def __init__(self, detail: Any):
         self.detail = detail
         self._constructor_args = (detail,)
@@ -211,6 +231,8 @@ class OrbitalKernelMissingError(
 
 
 class OrbitalGravityModelError(OrbitalError, RuntimeError):
+    """Raised when planetary ephemeris has no admitted gravitational parameters."""
+
     def __init__(
         self,
         planetary_ephemeris: str | None,
@@ -232,6 +254,8 @@ class OrbitalGravityModelError(OrbitalError, RuntimeError):
 
 
 class OrbitalTimeBasisError(OrbitalError, RuntimeError):
+    """Raised when time scale conversions fail to converge within iteration bounds."""
+
     def __init__(
         self,
         direction: str,
@@ -263,6 +287,8 @@ class OrbitalTimeBasisError(OrbitalError, RuntimeError):
 
 
 class OrbitalSourceReceiptError(OrbitalError, RuntimeError):
+    """Raised when a reader cannot attach an authoritative source receipt."""
+
     def __init__(
         self,
         center: int,
@@ -287,6 +313,8 @@ class OrbitalSourceReceiptError(OrbitalError, RuntimeError):
 
 
 class OrbitalStateDegenerateError(OrbitalError, ValueError):
+    """Raised when orbital state vectors exhibit degenerate geometry or zero momentum."""
+
     def __init__(
         self,
         condition: str,

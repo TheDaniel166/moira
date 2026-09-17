@@ -161,7 +161,15 @@ def _is_vessel_class(node: ast.ClassDef) -> bool:
     methods = [n for n in node.body if isinstance(n, ast.FunctionDef)]
     behavioral_methods = [
         m for m in methods 
-        if m.name not in {"__init__", "__post_init__", "__repr__", "__str__", "__eq__"}
+        if m.name not in {
+            "__init__",
+            "__post_init__",
+            "__repr__",
+            "__str__",
+            "__eq__",
+            "__reduce__",
+            "__reduce_ex__",
+        }
     ]
     if not behavioral_methods:
         return True

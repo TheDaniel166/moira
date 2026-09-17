@@ -490,7 +490,6 @@ def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
     }
 
     shard_entries: list[dict] = []
-    coverage_exceptions: list[dict] = []
     for mpath in sorted(outdir.glob(f"{SHARD_PREFIX}_*.metadata.json")):
         meta = json.loads(mpath.read_text(encoding="utf-8"))
         if not _metadata_matches_build(
@@ -520,35 +519,48 @@ def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
                 "sha256": hashlib.sha256(mb).hexdigest(),
             }
         shard_entries.append(s_entry)
-        for record in meta["records"]:
-            if "coverage_policy" in record:
-                provenance = record["coverage_provenance"]
-                exception = {
-                    "naif_id": record["naif_id"],
-                    "name": record["name"],
-                    "start_date": record["start"],
-                    "end_date": record["stop"],
-                    "policy": record["coverage_policy"],
-                    "authority": provenance["authority"],
-                    "orbit_id": provenance["orbit_id"],
-                    "solution_date": provenance["solution_date"],
-                }
-            elif record.get("clamped"):
-                exception = {
-                    "naif_id": record["naif_id"],
-                    "name": record["name"],
-                    "start_date": record["start"],
-                    "end_date": record["stop"],
-                    "policy": "jpl_horizons_ephemeris_availability",
-                    "authority": "JPL Horizons API",
-                    "note": (
-                        "conservative full-year bounds parsed from the Horizons "
-                        "ephemeris-availability response"
-                    ),
-                }
-            else:
-                continue
-            coverage_exceptions.append(exception)
+
+    coverage_records = list(records)
+    if not coverage_records:
+        for mpath in sorted(outdir.glob(f"{SHARD_PREFIX}_*.metadata.json")):
+            meta = json.loads(mpath.read_text(encoding="utf-8"))
+            coverage_records.extend(meta.get("records", ()))
+
+    coverage_exceptions: list[dict] = []
+    seen_exception_ids: set[int] = set()
+    for record in coverage_records:
+        naif_id = record.get("naif_id")
+        if naif_id in seen_exception_ids:
+            continue
+        if "coverage_policy" in record:
+            provenance = record["coverage_provenance"]
+            exception = {
+                "naif_id": record["naif_id"],
+                "name": record["name"],
+                "start_date": record["start"],
+                "end_date": record["stop"],
+                "policy": record["coverage_policy"],
+                "authority": provenance["authority"],
+                "orbit_id": provenance["orbit_id"],
+                "solution_date": provenance["solution_date"],
+            }
+        elif record.get("clamped"):
+            exception = {
+                "naif_id": record["naif_id"],
+                "name": record["name"],
+                "start_date": record["start"],
+                "end_date": record["stop"],
+                "policy": "jpl_horizons_ephemeris_availability",
+                "authority": "JPL Horizons API",
+                "note": (
+                    "conservative full-year bounds parsed from the Horizons "
+                    "ephemeris-availability response"
+                ),
+            }
+        else:
+            continue
+        seen_exception_ids.add(naif_id)
+        coverage_exceptions.append(exception)
 
     shard_entries.sort(key=lambda shard: shard["index"])
     coverage_exceptions.sort(key=lambda exc: exc["naif_id"])
