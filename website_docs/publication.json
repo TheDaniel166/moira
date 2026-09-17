@@ -36,12 +36,12 @@
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "811a90fb434612a0b48fe11add04f0fa7ff06400a5b8a3630f485ef9319538f4"
+      "source_sha256": "0b0f2ae0c82be18e62bff456d782d6e20b86bba53ea2def3c2a4fef01a452585"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "904dcf76cc66b3dd3e26716d7ab04db98e1e3d59647851d08b9ca67e322060e0"
+      "source_sha256": "8dd826c6370865ef82e458e4a81eeb8d37cd31b6644500cd34b76245f475f484"
     },
     {
       "id": "rest_api_reference",
@@ -133,7 +133,7 @@
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "811a90fb434612a0b48fe11add04f0fa7ff06400a5b8a3630f485ef9319538f4",
+      "source_sha256": "0b0f2ae0c82be18e62bff456d782d6e20b86bba53ea2def3c2a4fef01a452585",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -541,6 +541,12 @@
         "OccultationPathTopologyKind",
         "OccultationPoleCrossing",
         "OccultationPoleCrossingPhase",
+        "OrbitClassBatchItem",
+        "OrbitClassBatchResult",
+        "OrbitClassBoundaryMargin",
+        "OrbitClassCode",
+        "OrbitClassPredicate",
+        "OrbitClassResult",
         "OrbitShape",
         "OrbitalAmbiguousBodyError",
         "OrbitalBodyIdentity",
@@ -552,6 +558,7 @@
         "OrbitalCenterNotAllowedError",
         "OrbitalCoverageError",
         "OrbitalError",
+        "OrbitalErrorReceipt",
         "OrbitalFrame",
         "OrbitalFrameUnavailableError",
         "OrbitalGravity",
@@ -1108,6 +1115,8 @@
         "next_void_of_course",
         "nodes_and_apsides_at",
         "normal_progressed_horoscope",
+        "orbit_class",
+        "orbit_classes_at",
         "orbital_elements_at",
         "oriental_occidental",
         "osculating_elements",
@@ -1765,7 +1774,7 @@
     },
     "predictive": {
       "source": "moira/predictive.py",
-      "source_sha256": "c6dd6e7c7bc2eed80bf69283475a68d80728382cf080ca42f2ecdedb50b1da01",
+      "source_sha256": "30c12974a2a11610b432c03aaa15cb2779178a6ac40dbf89480703d1742530c4",
       "symbols": [
         "ASPECT_TIERS",
         "AccidentalConditionClassification",
@@ -2045,10 +2054,17 @@
         "NasaLunarEclipseContacts",
         "NasaLunarEclipseEvent",
         "NodeData",
+        "OrbitClassBatchItem",
+        "OrbitClassBatchResult",
+        "OrbitClassBoundaryMargin",
+        "OrbitClassCode",
+        "OrbitClassPredicate",
+        "OrbitClassResult",
         "OrbitShape",
         "OrbitalBodyIdentity",
         "OrbitalBodyKind",
         "OrbitalCenter",
+        "OrbitalErrorReceipt",
         "OrbitalFrame",
         "OrbitalGravity",
         "OrbitalNode",
@@ -2450,6 +2466,8 @@
         "next_station",
         "next_transit",
         "next_void_of_course",
+        "orbit_class",
+        "orbit_classes_at",
         "orbital_elements_at",
         "osculating_elements",
         "overcoming",
@@ -2556,7 +2574,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "904dcf76cc66b3dd3e26716d7ab04db98e1e3d59647851d08b9ca67e322060e0",
+      "source_sha256": "8dd826c6370865ef82e458e4a81eeb8d37cd31b6644500cd34b76245f475f484",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -3185,6 +3203,12 @@
         "OccultationPathTopologyKind",
         "OccultationPoleCrossing",
         "OccultationPoleCrossingPhase",
+        "OrbitClassBatchItem",
+        "OrbitClassBatchResult",
+        "OrbitClassBoundaryMargin",
+        "OrbitClassCode",
+        "OrbitClassPredicate",
+        "OrbitClassResult",
         "OrbitShape",
         "OrbitalAmbiguousBodyError",
         "OrbitalBodyIdentity",
@@ -3197,6 +3221,7 @@
         "OrbitalCoverageError",
         "OrbitalElements",
         "OrbitalError",
+        "OrbitalErrorReceipt",
         "OrbitalFrame",
         "OrbitalFrameUnavailableError",
         "OrbitalGravity",
@@ -4280,6 +4305,8 @@
         "normal_progressed_horoscope",
         "normalize_degrees",
         "nutation",
+        "orbit_class",
+        "orbit_classes_at",
         "orbital_elements_at",
         "oriental_occidental",
         "osculating_elements",
@@ -5885,5 +5912,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "c5c97577800703f04e21a752e788e4bcc49d4d417d78f2c091bb2c042b324ed2"
+  "manifest_sha256": "58fba250b79326e67c3aaa834b332177f898e3ff9107961c97780925d047d271"
 }
