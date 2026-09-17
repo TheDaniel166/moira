@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "release_history_floor": "5.0.0",
-  "last_verified": "2026-09-09",
+  "last_verified": "2026-09-17",
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.6.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.7.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -317,6 +317,29 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.7.0",
+      "date": "2026-09-17",
+      "title": "Strict Orbital Core, Ephemeris Apsides, and Doctrinal Chesta Bala",
+      "added": [
+        "A strict, shape-safe osculating_elements calculation and POST /v1/orbits/elements REST endpoint with allowlisted gravity, frame, state, coverage, and singularity provenance.",
+        "Versioned apsidal_passages extremum root searches over live ephemeris radial velocity with cubic Hermite polishing, Horizons holdout fixtures, and explicit FOUND, BEYOND_COVERAGE, or NOT_IN_WINDOW outcomes.",
+        "True geometric node calculation for all 10,025 catalog asteroids and periodic comets, with full 401-shard catalog holdout sealing and POST /v1/nodes/geometric transport updates."
+      ],
+      "changed": [
+        "planetary_nodes.geometric_node now delegates to the Sun-centered TRUE_ECLIPTIC_OF_DATE orbital core bounded to [1900.0, 2100.0].",
+        "moira.shadbala.chesta_bala and POST /v1/vedic/shadbala Chesta Bala now compute Chesta Kendra strictly according to B.V. Raman (Graha and Bhava Balas, Ch. VI, §§84–97)."
+      ],
+      "fixed": [
+        "Frame bias is now owned exactly once by bias-inclusive precession on both Python and native modern/long-term branches.",
+        "Sun and Moon Chesta Bala are derived directly from Ayana Bala according to Raman Ch. X (§§136–137), removing fabricated planetary mandoccha offsets."
+      ],
+      "validation": [
+        "Disjoint calibration and holdout Horizons orbital elements tests, live apsidal passage verification, 401-shard asteroid holdout seals, and Shadbala doctrinal tests across all 4 stages."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.7.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.7.0.md"
+    },
     {
       "version": "6.6.0",
       "date": "2026-09-09",

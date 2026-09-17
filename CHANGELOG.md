@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.7.0] - 2026-09-17
+
 ### Added
 - Versioned `apsidal_passages(body, jd_ut, *, center, direction,
   max_days=None, reader=None)` results for every admitted body/center pair.
@@ -57,6 +59,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `POST /v1/orbits/elements` now delegates to the strict Sun/J2000 engine route
   and returns truthful UT1, TT, and TDB values plus allowlisted gravity, frame,
   state, coverage, and singularity provenance. It remains planet-only.
+- `moira.shadbala.chesta_bala` and `POST /v1/vedic/shadbala` Chesta Bala now
+  compute Chesta Kendra strictly according to B.V. Raman (*Graha and Bhava
+  Balas*, Ch. VI, §§84–97). Chesta Bala equals `(chesta_kendra / 3)` for
+  `chesta_kendra <= 180°` and `(360° - chesta_kendra) / 3` for `> 180°`,
+  guaranteeing a maximum of 60 Virupas.
 
 ### Fixed
 - Frame bias is now owned exactly once by bias-inclusive precession on both the
@@ -65,6 +72,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   sky, and native visibility/all-planets paths.
 - The legacy `KeplerianElements.epoch_jd` value returned by
   `orbital_elements_at` is now correctly TT rather than the caller's UT1 value.
+- Sun and Moon Chesta Bala are now derived directly from Ayana Bala according
+  to B.V. Raman Ch. X (§§136–137), completely removing unverified planetary
+  mandoccha offsets `_sun_mandoccha_lon` and `_moon_mandoccha_lon`.
 
 ### Compatibility
 - `geometric_node(body, jd_ut, reader=None)` retains its positional signature
