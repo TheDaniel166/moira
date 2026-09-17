@@ -68,13 +68,19 @@ supplied ``vara_lord`` parameter.  Hora (60 Sha) is included when
 ``kala_bala()`` receives a non-None ``hora_lord`` argument; compute it via
 ``hora_lord_at(birth_jd, sunrise_jd)``.
 
-Chesta Bala — Sun and Moon use the Raman Ch. 9 apogee-distance method:
-arc(planet_lon, mandoccha) / 3 Sha (0 Sha at apogee, 60 Sha at perigee).
-Sun's mandoccha is derived from Earth's osculating heliocentric perihelion
-longitude (``moira.orbits.orbital_elements_at(Body.EARTH, ...)``).  Moon's
-mandoccha from the geocentric state vector via kernel pairs (3, 301) and
-(3, 399).  The five non-luminaries retain the speed-ratio approximation
-(Raman Ch. 9 reserves the apogee-distance method for the luminaries only).
+Chesta Bala — Primary-source formulations from B. V. Raman's "Graha and
+Bhava Balas" (13th edition, 1992):
+  - Luminaries (Sun and Moon): Chapter X (§§136–137, pp. 101–103).
+    Sun uses Sayana (tropical) longitude + 90° reduced to ≤ 180° / 3 Sha.
+    Moon uses Sun–Moon elongation reduced to ≤ 180° / 3 Sha.
+  - Five Non-Luminaries (Mars, Mercury, Jupiter, Venus, Saturn): Chapter VI
+    ("Chesta Bala or Motional Strength", pp. 64–79).
+    Derived from Chesta Kendra = (Seeghrochcha − (mean_lon + true_lon) / 2)
+    reduced to ≤ 180° / 3 Sha.  For superior planets (Mars, Jupiter, Saturn),
+    Seeghrochcha is the Sun.  For inferior planets (Mercury, Venus),
+    Seeghrochcha is the planet's heliocentric position and the mean planet
+    is the Sun.  Mean orbital longitudes are evaluated directly from the
+    strict orbital core.
 
 Yuddha Bala (planetary war) is fully implemented via ``_detect_wars()``.
 The five non-luminaries are checked for conjunction within 1° of longitude.
@@ -283,7 +289,7 @@ REQUIRED_RUPAS: dict[str, float] = {
 # ---------------------------------------------------------------------------
 # Mean daily motions (°/day) — used for Chesta Bala speed comparison.
 #
-# Source: Raman "Graha and Bhava Balas" Ch. 9; standard classical values.
+# Source: Raman "Graha and Bhava Balas" Ch. 6; standard classical values.
 # ---------------------------------------------------------------------------
 
 MEAN_DAILY_MOTION: dict[str, float] = {
@@ -788,67 +794,6 @@ def _weekday_lord(jd: float) -> str:
     return _WEEKDAY_PLANET[int(jd + 1.5) % 7]
 
 
-def _sun_mandoccha_lon(jd: float, ayanamsa_system: str) -> float:
-    """
-    Tropical longitude of the Sun's geocentric apogee (mandoccha) at ``jd``.
-
-    The Sun's geocentric apogee lies 180° from Earth's heliocentric perihelion:
-
-        mandoccha_trop = (Ω_Earth + ω_Earth + 180°) mod 360°
-
-    Derived from DE441 osculating elements via ``moira.orbits``; tracks the
-    true apsidal precession (~1.7°/century) rather than a static classical
-    constant.
-
-    Source: Raman, "Graha and Bhava Balas" (1959), Ch. 9.
-    """
-    from .orbits import orbital_elements_at
-    from .spk_reader import get_reader
-    from .constants import Body
-    reader = get_reader()
-    earth = orbital_elements_at(Body.EARTH, jd, reader)
-    lon_peri = (earth.lon_ascending_node_deg + earth.arg_perihelion_deg) % 360.0
-    return (lon_peri + 180.0) % 360.0
-
-
-def _moon_mandoccha_lon(jd: float, ayanamsa_system: str) -> float:
-    """
-    Tropical longitude of the Moon's geocentric apogee (mandoccha) at ``jd``.
-
-    Derived from the Moon's instantaneous geocentric osculating elements:
-
-        mandoccha_trop = (Ω_Moon + ω_Moon) mod 360°
-
-    Uses DE441 kernel pairs (3, 301) EMB → Moon and (3, 399) EMB → Earth to
-    form the geocentric state vector, then applies the same
-    ``_keplerian_from_state`` routine used by ``moira.orbits``.
-
-    Source: Raman, "Graha and Bhava Balas" (1959), Ch. 9.
-    """
-    from .orbits import _keplerian_from_state, _rot_eq_to_ecl
-    from .spk_reader import get_reader
-    from ._ephemeris_time import _ut1_to_ephemeris_tt
-    from .obliquity import true_obliquity as _true_obliquity
-    _GM_EARTH_KM3_DAY2 = 3.986004418e5 * 86400.0 ** 2
-    reader = get_reader()
-    jd_tt = _ut1_to_ephemeris_tt(jd, reader)
-    moon_pos, moon_vel   = reader.position_and_velocity(3, 301, jd_tt)
-    earth_pos, earth_vel = reader.position_and_velocity(3, 399, jd_tt)
-    geo_pos = (
-        moon_pos[0] - earth_pos[0],
-        moon_pos[1] - earth_pos[1],
-        moon_pos[2] - earth_pos[2],
-    )
-    geo_vel = (
-        moon_vel[0] - earth_vel[0],
-        moon_vel[1] - earth_vel[1],
-        moon_vel[2] - earth_vel[2],
-    )
-    eps = math.radians(_true_obliquity(jd_tt))
-    pos_ecl = _rot_eq_to_ecl(*geo_pos, eps)
-    vel_ecl = _rot_eq_to_ecl(*geo_vel, eps)
-    elems = _keplerian_from_state(pos_ecl, vel_ecl, _GM_EARTH_KM3_DAY2, 'Moon', jd)
-    return (elems.lon_ascending_node_deg + elems.arg_perihelion_deg) % 360.0
 
 
 def _detect_wars(
@@ -1052,23 +997,23 @@ def sthana_bala(
     from .varga import hora as _hora, saptamsa as _saptamsa, navamsa as _navamsa
     from .varga import dwadashamsa as _dwad, trimshamsa as _trim
 
-    def _varga_sign(n: int, l: float) -> int:
+    def _varga_sign(n: int, lon_deg: float) -> int:
         if n == 1:
-            return int(l % 360.0 // 30)
+            return int(lon_deg % 360.0 // 30)
         vp_map = {
-            2:  _hora(l),
-            7:  _saptamsa(l),
-            9:  _navamsa(l),
-            12: _dwad(l),
-            30: _trim(l),
+            2:  _hora(lon_deg),
+            7:  _saptamsa(lon_deg),
+            9:  _navamsa(lon_deg),
+            12: _dwad(lon_deg),
+            30: _trim(lon_deg),
         }
         if n in vp_map:
             vp = vp_map[n]
             from .constants import SIGNS
             return SIGNS.index(vp.sign)
         # D3: Parashari drekkana formula
-        sign_idx = int(l % 360.0 // 30)
-        seg = int((l % 30.0) / 10.0)
+        sign_idx = int(lon_deg % 360.0 // 30)
+        seg = int((lon_deg % 30.0) / 10.0)
         return (sign_idx + seg * 4) % 12
 
     saptavargaja_sha = 0.0
@@ -1090,7 +1035,6 @@ def sthana_bala(
     # Even-sign planets (Moon, Venus): 15 Sha in even D1 and D9 signs
     # Mercury: neutral — not listed; Raman gives Mercury in both
     d1_sign  = int(lon // 30)
-    d9_sign  = _navamsa(lon)
     d9_idx   = int(lon // (30.0 / 9)) % 12  # Navamsa sign index (0 = Aries)
     odd_planets   = {'Sun', 'Mars', 'Jupiter', 'Saturn'}
     even_planets  = {'Moon', 'Venus'}
@@ -1252,8 +1196,7 @@ def kala_bala(
     KalaBala
     """
     # --- (a) Nathonnatha Bala ---
-    day_planets   = {'Sun', 'Jupiter', 'Venus'}
-    night_planets = {'Moon', 'Mars', 'Saturn'}
+    day_planets = {'Sun', 'Jupiter', 'Venus'}
     # Mercury is equally strong day and night
     # time_frac: fractional position in local solar day [0, 1).
     # JD epoch is noon UT, so jd % 1.0 == 0.0 at UT noon — not local noon
@@ -1340,7 +1283,6 @@ def kala_bala(
     obliquity_rad = math.radians(_true_obliquity_kala(_ut_to_tt_kala(jd)))
     sun_lon_rad   = math.radians(sun_sidereal_lon % 360.0)
     sin_dec       = math.sin(obliquity_rad) * math.sin(sun_lon_rad)
-    dec_deg       = math.degrees(math.asin(max(-1.0, min(1.0, sin_dec))))
     ayana_sha     = 24.0 * abs(sin_dec)   # 0–24 Sha (approximately)
 
     # Benefics gain in Uttara Ayana (Capricorn→Gemini, i.e. dec > 0 or sun_lon in [270,360)∪[0,90))
@@ -1367,66 +1309,188 @@ def kala_bala(
 
 def chesta_bala(
     planet: str,
-    speed: float,
+    speed: float | None = None,
+    *,
     planet_sidereal_lon: float | None = None,
-    mandoccha_sidereal_lon: float | None = None,
+    sun_sidereal_lon: float | None = None,
+    mean_longitude: float | None = None,
+    seeghrochcha: float | None = None,
+    chesta_kendra: float | None = None,
+    planet_tropical_lon: float | None = None,
+    jd: float | None = None,
+    ayanamsa_system: str = "Lahiri",
+    reader: object | None = None,
 ) -> float:
     """
     Compute Chesta Bala (Motional Strength) for one planet.
 
-    For the Sun and Moon, uses the Raman Ch. 9 apogee-distance method:
-    ``arc(planet_lon, mandoccha_lon) / 3`` Sha.  The arc is in [0°, 180°],
-    giving 0 Sha at apogee (slowest) and 60 Sha at perigee (fastest).
-    Activate this path by supplying both ``planet_sidereal_lon`` and
-    ``mandoccha_sidereal_lon``.  Pre-compute mandoccha via
-    ``_sun_mandoccha_lon`` / ``_moon_mandoccha_lon`` and convert to sidereal
-    with ``tropical_to_sidereal`` before passing here.
+    Primary-Source Formulations:
+    B. V. Raman, "Graha and Bhava Balas" (13th edition, 1992):
 
-    For the five non-luminaries, uses a speed-ratio approach: strength is
-    proportional to actual daily motion vs. the classical mean motion.
-    Retrograde planets receive maximum Chesta Bala (60 Sha).
+    1. The Five Non-Luminaries (Mars, Mercury, Jupiter, Venus, Saturn):
+       Chapter VI ("Chesta Bala or Motional Strength", pp. 64–79).
+       Governed by Chesta Kendra, derived from the apex of fast motion
+       (Seeghrochcha), the mean longitude, and the true longitude:
+
+           Chesta Kendra = (Seeghrochcha - (mean_lon + true_lon) / 2) mod 360°
+           Reduced Kendra = 360° - Kendra if Kendra > 180° else Kendra
+           Chesta Bala = Reduced Kendra / 3  ∈ [0, 60] Shashtiamsas (Virupas)
+
+       - For superior planets (Mars, Jupiter, Saturn): Seeghrochcha is the Sun;
+         mean longitude is the planet's mean heliocentric longitude.
+       - For inferior planets (Mercury, Venus): Seeghrochcha is the planet's
+         heliocentric longitude; mean longitude is the Sun.
+
+    2. The Sun:
+       Chapter X (§136, pp. 101–103).
+       Derived from its Sayana (tropical) longitude + 90°:
+
+           Arc = (lon_sayana + 90°) mod 360°
+           Reduced Arc = 360° - Arc if Arc > 180° else Arc
+           Chesta Bala = Reduced Arc / 3  ∈ [0, 60] Shashtiamsas
+
+       (Motional/Ayana proxy: 60 Sha at northern solstice/Cancer ingress,
+       0 Sha at southern solstice/Capricorn ingress, 30 Sha at equinoxes).
+
+    3. The Moon:
+       Chapter X (§137, pp. 101–103).
+       Derived from its elongation (angular distance from the Sun):
+
+           Elongation = |lon_Moon - lon_Sun| mod 360°
+           Reduced Elongation = 360° - Elongation if Elongation > 180° else Elongation
+           Chesta Bala = Reduced Elongation / 3  ∈ [0, 60] Shashtiamsas
+
+       (Motional/Paksha proxy: 0 Sha at New Moon/conjunction, 60 Sha at
+       Full Moon/opposition, 30 Sha at quarters).
 
     Parameters
     ----------
     planet : str
-    speed : float
-        Actual daily motion in °/day.  Negative = retrograde.
-        Used for the speed-ratio path (five non-luminaries) and as fallback
-        when ``mandoccha_sidereal_lon`` is not provided.
+        Name of the planet (one of the classical 7 planets).
+    speed : float or None, optional
+        Daily motion in °/day. Retained as a fallback for callers without
+        coordinates or ephemeris access.
     planet_sidereal_lon : float or None, optional
-        Sidereal longitude of the planet.  Required for the
-        apogee-distance path (Sun and Moon).
-    mandoccha_sidereal_lon : float or None, optional
-        Sidereal longitude of the planet's apogee (mandoccha).
-        When provided together with ``planet_sidereal_lon``, activates
-        the Raman Ch. 9 apogee-distance formula.
+        Sidereal longitude of the planet.
+    sun_sidereal_lon : float or None, optional
+        Sidereal longitude of the Sun (required for Moon, and for non-luminaries
+        when deriving from the orbital core).
+    mean_longitude : float or None, optional
+        Mean longitude of the planet (or Sun for inferior planets).
+    seeghrochcha : float or None, optional
+        Apex of fast motion (Seeghrochcha) in sidereal degrees.
+    chesta_kendra : float or None, optional
+        Pre-computed Chesta Kendra arc in degrees [0, 360).
+    planet_tropical_lon : float or None, optional
+        Tropical (Sayana) longitude of the planet (primarily for Sun).
+    jd : float or None, optional
+        Julian date UT1 for orbital element evaluation.
+    ayanamsa_system : str
+        Ayanamsa system name (defaults to 'Lahiri').
+    reader : KernelReader or None, optional
+        Active SPK kernel reader. When omitted, uses the active reader context.
 
     Returns
     -------
     float
-        Chesta Bala in Shashtiamsas, in [0.0, 60.0].
+        Chesta Bala in Shashtiamsas, strictly in [0.0, 60.0].
 
     Source
     ------
-    Raman, "Graha and Bhava Balas" (1959), Ch. 9.
+    B. V. Raman, "Graha and Bhava Balas" (13th edition, 1992), Ch. VI & X.
     """
-    # Raman Ch. 9: apogee-distance method (Sun and Moon)
-    if mandoccha_sidereal_lon is not None and planet_sidereal_lon is not None:
-        dist = abs((planet_sidereal_lon - mandoccha_sidereal_lon + 180.0) % 360.0 - 180.0)
-        return (180.0 - dist) / 3.0
+    if planet not in _SEVEN_PLANETS:
+        raise ValueError(
+            f"chesta_bala: planet must be one of {list(_SEVEN_PLANETS)}, "
+            f"got {planet!r}"
+        )
 
-    # Speed-ratio fallback (five non-luminaries)
-    if speed < 0:
-        return 60.0   # Retrograde = maximum Chesta Bala
+    # 1. Direct Chesta Kendra path
+    if chesta_kendra is not None:
+        kendra = chesta_kendra % 360.0
+        red = 360.0 - kendra if kendra > 180.0 else kendra
+        return max(0.0, min(60.0, red / 3.0))
 
-    mean = MEAN_DAILY_MOTION.get(planet, 1.0)
-    if mean <= 0:
-        return 0.0
+    # 2. Sun (Raman Ch. X §136)
+    if planet == "Sun":
+        trop_lon = planet_tropical_lon
+        if trop_lon is None and planet_sidereal_lon is not None and jd is not None:
+            from .sidereal import sidereal_to_tropical
+            trop_lon = sidereal_to_tropical(planet_sidereal_lon, jd, system=ayanamsa_system)
+        if trop_lon is not None:
+            arc = (trop_lon + 90.0) % 360.0
+            red = 360.0 - arc if arc > 180.0 else arc
+            return max(0.0, min(60.0, red / 3.0))
+        if speed is not None:
+            mean = MEAN_DAILY_MOTION.get("Sun", 0.9856)
+            ratio = min(abs(speed) / mean, 2.0)
+            return max(0.0, min(60.0, ratio * 30.0))
+        raise ValueError("chesta_bala for Sun requires planet_tropical_lon, (planet_sidereal_lon, jd), or speed")
 
-    ratio = abs(speed) / mean
-    # Clamp to [0, 2] — beyond 2× mean speed still caps at 60 Sha
-    ratio = min(ratio, 2.0)
-    return ratio * 30.0   # 0 at standstill, 60 at 2× mean motion
+    # 3. Moon (Raman Ch. X §137)
+    if planet == "Moon":
+        m_lon = planet_sidereal_lon
+        s_lon = sun_sidereal_lon
+        if m_lon is not None and s_lon is not None:
+            elong = abs(m_lon - s_lon) % 360.0
+            red = 360.0 - elong if elong > 180.0 else elong
+            return max(0.0, min(60.0, red / 3.0))
+        if planet_tropical_lon is not None and s_lon is not None and jd is not None:
+            from .sidereal import sidereal_to_tropical
+            s_trop = sidereal_to_tropical(s_lon, jd, system=ayanamsa_system)
+            elong = abs(planet_tropical_lon - s_trop) % 360.0
+            red = 360.0 - elong if elong > 180.0 else elong
+            return max(0.0, min(60.0, red / 3.0))
+        if speed is not None:
+            mean = MEAN_DAILY_MOTION.get("Moon", 13.1764)
+            ratio = min(abs(speed) / mean, 2.0)
+            return max(0.0, min(60.0, ratio * 30.0))
+        raise ValueError("chesta_bala for Moon requires planet_sidereal_lon and sun_sidereal_lon, or speed")
+
+    # 4. Five Non-Luminaries (Raman Ch. VI)
+    if seeghrochcha is not None and mean_longitude is not None and planet_sidereal_lon is not None:
+        kendra = (seeghrochcha - (mean_longitude + planet_sidereal_lon) / 2.0) % 360.0
+        red = 360.0 - kendra if kendra > 180.0 else kendra
+        return max(0.0, min(60.0, red / 3.0))
+
+    if jd is not None and planet_sidereal_lon is not None and sun_sidereal_lon is not None:
+        from .orbits import osculating_elements, OrbitalCenter, OrbitalFrame
+        from .sidereal import tropical_to_sidereal
+        from .spk_reader import get_reader as _get_reader
+        r = reader if reader is not None else _get_reader()
+        el = osculating_elements(
+            planet,
+            jd,
+            center=OrbitalCenter.SUN,
+            frame=OrbitalFrame.TRUE_ECLIPTIC_OF_DATE,
+            reader=r,
+        )
+        if planet in ("Mars", "Jupiter", "Saturn"):
+            s_lon = sun_sidereal_lon
+            mean_deg = el.mean_longitude_deg if el.mean_longitude_deg is not None else el.true_longitude_deg
+            m_lon = tropical_to_sidereal(mean_deg, jd, system=ayanamsa_system)
+        else:  # Mercury, Venus
+            s_lon = tropical_to_sidereal(el.true_longitude_deg, jd, system=ayanamsa_system)
+            m_lon = sun_sidereal_lon
+
+        kendra = (s_lon - (m_lon + planet_sidereal_lon) / 2.0) % 360.0
+        red = 360.0 - kendra if kendra > 180.0 else kendra
+        return max(0.0, min(60.0, red / 3.0))
+
+    # 5. Speed-ratio fallback (when coordinates / ephemeris are absent)
+    if speed is not None:
+        if speed < 0:
+            return 60.0  # Retrograde = maximum Chesta Bala
+        mean = MEAN_DAILY_MOTION.get(planet, 1.0)
+        if mean <= 0:
+            return 0.0
+        ratio = min(abs(speed) / mean, 2.0)
+        return max(0.0, min(60.0, ratio * 30.0))
+
+    raise ValueError(
+        f"chesta_bala for {planet} requires seeghrochcha and mean_longitude, "
+        f"or (planet_sidereal_lon, sun_sidereal_lon, jd), or speed"
+    )
 
 
 def drig_bala(
@@ -1775,10 +1839,8 @@ def shadbala(
 
     sun_sid = sidereal_longitudes.get('Sun', 0.0)
 
-    # Raman Ch. 9: pre-compute sidereal mandoccha for the luminaries.
-    from .sidereal import tropical_to_sidereal as _t2s
-    _sun_mand_sid  = _t2s(_sun_mandoccha_lon(jd, ayanamsa_system),  jd, system=ayanamsa_system)
-    _moon_mand_sid = _t2s(_moon_mandoccha_lon(jd, ayanamsa_system), jd, system=ayanamsa_system)
+    from .spk_reader import get_reader as _get_reader
+    _reader = _get_reader()
 
     # --- First pass: raw balas for all planets (yuddha = 0 initially) ---
     _raw: dict[str, tuple] = {}
@@ -1794,15 +1856,14 @@ def shadbala(
             hora_lord=hora_lord,
             ayanamsa_system=ayanamsa_system,
         )
-        _mand = (
-            _sun_mand_sid  if planet == 'Sun'  else
-            _moon_mand_sid if planet == 'Moon' else
-            None
-        )
         c_bala  = chesta_bala(
-            planet, p_speed,
+            planet,
+            speed=p_speed,
             planet_sidereal_lon=p_lon,
-            mandoccha_sidereal_lon=_mand,
+            sun_sidereal_lon=sun_sid,
+            jd=jd,
+            ayanamsa_system=ayanamsa_system,
+            reader=_reader,
         )
         n_bala  = NAISARGIKA_BALA[planet]
         dr_bala = drig_bala(planet, sidereal_longitudes)

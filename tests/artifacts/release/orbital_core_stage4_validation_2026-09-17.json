@@ -1,0 +1,103 @@
+{
+  "schema": "moira.orbital-core-stage4.validation/v1",
+  "algorithm_version": "MOIRA_SHADBALA_CHESTA_BALA_STAGE4_V1",
+  "status": "implemented_and_verified",
+  "network_boundary": {
+    "external_network_used": false
+  },
+  "governing_spec": {
+    "path": "docs/superpowers/specs/2026-09-15-orbital-core-design.md",
+    "sha256": "fba918c2755181f5d467ed957891278fb249bfde19931ecd310baf6019329a38"
+  },
+  "implementation_identity": {
+    "branch": "orbital-core-stage1",
+    "state": "uncommitted Stage 1, Stage 2, Stage 3, and Stage 4 worktree"
+  },
+  "bibliographic_authority": {
+    "author": "Bangalore Venkata Raman",
+    "title": "Graha and Bhava Balas",
+    "edition": "Thirteenth Edition",
+    "preface_date": "1992-02-01",
+    "publisher": "UBS Publishers' Distributors Ltd. / Raman Publications, Bangalore",
+    "citations": {
+      "non_luminaries": {
+        "chapter": "VI",
+        "title": "Chesta Bala or Motional Strength",
+        "pages": "64-79",
+        "kendra_formula": "Chesta Kendra = (Seeghrochcha - (mean_lon + true_lon) / 2) mod 360°",
+        "reduction_rule": "360° - Kendra if Kendra > 180° else Kendra",
+        "virupa_formula": "Reduced Kendra / 3"
+      },
+      "luminaries": {
+        "chapter": "X",
+        "sections": "§§136-137",
+        "pages": "101-103",
+        "sun_rule": "(Sayana longitude + 90°) reduced to <= 180° / 3",
+        "moon_rule": "Elongation |lon_Moon - lon_Sun| reduced to <= 180° / 3"
+      }
+    }
+  },
+  "retired_legacy_mechanisms": [
+    "_sun_mandoccha_lon deleted from moira.shadbala",
+    "_moon_mandoccha_lon deleted from moira.shadbala",
+    "heliocentric Earth perihelion mandoccha proxy eradicated",
+    "lunar osculating perigee mandoccha proxy eradicated",
+    "erroneous Raman Ch. 9 Chesta Bala citations eradicated",
+    "speed-ratio heuristic demoted to backward-compatible fallback"
+  ],
+  "measured_j2000_shifts": [
+    {
+      "planet": "Sun",
+      "legacy_chesta_sha": 59.52,
+      "stage4_chesta_sha": 3.4563,
+      "delta_sha": -56.0637,
+      "mechanism": "Sayana longitude + 90° / 3"
+    },
+    {
+      "planet": "Moon",
+      "legacy_chesta_sha": 12.0229,
+      "stage4_chesta_sha": 19.0151,
+      "delta_sha": 6.9922,
+      "mechanism": "Elongation from Sun / 3"
+    },
+    {
+      "planet": "Mars",
+      "legacy_chesta_sha": 41.2214,
+      "stage4_chesta_sha": 20.4463,
+      "delta_sha": -20.7751,
+      "mechanism": "Chesta Kendra from Sun Seeghrochcha and orbital core mean longitude / 3"
+    },
+    {
+      "planet": "Mercury",
+      "legacy_chesta_sha": 33.6153,
+      "stage4_chesta_sha": 7.3943,
+      "delta_sha": -26.221,
+      "mechanism": "Chesta Kendra from heliocentric Seeghrochcha and Sun mean longitude / 3"
+    },
+    {
+      "planet": "Jupiter",
+      "legacy_chesta_sha": 43.3213,
+      "stage4_chesta_sha": 36.4813,
+      "delta_sha": -6.84,
+      "mechanism": "Chesta Kendra from Sun Seeghrochcha and orbital core mean longitude / 3"
+    },
+    {
+      "planet": "Venus",
+      "legacy_chesta_sha": 31.25,
+      "stage4_chesta_sha": 26.1308,
+      "delta_sha": -5.1192,
+      "mechanism": "Chesta Kendra from heliocentric Seeghrochcha and Sun mean longitude / 3"
+    },
+    {
+      "planet": "Saturn",
+      "legacy_chesta_sha": 35.8209,
+      "stage4_chesta_sha": 41.6093,
+      "delta_sha": 5.7884,
+      "mechanism": "Chesta Kendra from Sun Seeghrochcha and orbital core mean longitude / 3"
+    }
+  ],
+  "test_gate_counts": {
+    "unit_shadbala_passed": 166,
+    "server_shadbala_routes_passed": 15
+  }
+}

@@ -62,7 +62,7 @@ The following core computations are admitted and constitutionally frozen:
 | `sthana_bala` | Positional Strength (5 sub-components) | Ch. 2–3 |
 | `dig_bala` | Directional Strength | Ch. 3 |
 | `kala_bala` | Temporal Strength (6 sub-components) | Ch. 4 |
-| `chesta_bala` | Motional Strength | Ch. 9 |
+| `chesta_bala` | Motional Strength | Ch. 6 (non-luminaries), Ch. 10 §§136–137 (luminaries) |
 | Naisargika Bala | Natural/Fixed Strength (constant) | Ch. 5 |
 | `drig_bala` | Aspectual Strength | Ch. 6 |
 | `shadbala` | Grand total (all 7 planets) | Ch. 1 |
@@ -74,10 +74,11 @@ The following core computations are admitted and constitutionally frozen:
 
 #### Chesta Bala
 
-- **Sun and Moon**: Raman Ch. 9 apogee-distance method.  Strength = `(180 − arc(planet_lon, mandoccha)) / 3` Shashtiamsas.  Maximum 60 Sha at perigee; 0 Sha at apogee.
-- **Sun mandoccha**: derived from Earth's osculating heliocentric perihelion longitude via `moira.orbits.orbital_elements_at(Body.EARTH)`, then + 180°, converted to sidereal.
-- **Moon mandoccha**: derived from geocentric osculating elements via kernel pairs (3, 301) and (3, 399), then `lon_ascending_node + arg_perihelion`, converted to sidereal.
-- **Five non-luminaries**: speed-ratio approximation (Raman Ch. 9 reserves the apogee-distance method for luminaries only).
+Primary-source formulations from B. V. Raman's *Graha and Bhava Balas* (13th edition, 1992):
+- **Sun**: Chapter X (§136, pp. 101–103).  Sayana (tropical) longitude + 90°, reduced to ≤ 180° and divided by 3 Shashtiamsas.  Maximum 60 Sha at Cancer ingress (northern solstice), 0 Sha at Capricorn ingress (southern solstice), 30 Sha at equinoxes.
+- **Moon**: Chapter X (§137, pp. 101–103).  Elongation |lon_Moon − lon_Sun|, reduced to ≤ 180° and divided by 3 Shashtiamsas.  Maximum 60 Sha at Full Moon (opposition), 0 Sha at New Moon (conjunction), 30 Sha at quarters.
+- **Five non-luminaries (Mars, Mercury, Jupiter, Venus, Saturn)**: Chapter VI (*Chesta Bala or Motional Strength*, pp. 64–79).  Derived from Chesta Kendra = (Seeghrochcha − (mean_lon + true_lon) / 2) mod 360°, reduced to ≤ 180° and divided by 3 Shashtiamsas.  For superior planets (Mars, Jupiter, Saturn), Seeghrochcha is the Sun's longitude and mean longitude is the planet's mean orbital longitude evaluated from the strict orbital core.  For inferior planets (Mercury, Venus), Seeghrochcha is the planet's heliocentric longitude and the mean planet is the Sun.
+- **Speed-ratio fallback**: preserved for callers without positions or ephemeris access (retrograde gives 60 Sha; standstill gives 0 Sha).
 
 #### Kala Bala — Yuddha Bala (Graha Yuddha)
 
@@ -137,7 +138,7 @@ stored — from the vessel's own displayed components:
 - `kashta_phala` = √((60 − Uchcha) × (60 − Chesta))
 
 Both on the 0–60 Shashtiamsa scale.  Policy: the *displayed* Chesta Bala is
-used, so the Sun and Moon consume the Raman apogee-distance Chesta and a war
+used, so the Sun and Moon consume the Raman Chapter X Motional Strength and a war
 loser's zeroed Chesta flows through honestly.
 
 #### Graha Yuddha transfer disclosure
@@ -261,7 +262,7 @@ The following are verified by the test suite (`tests/unit/test_shadbala.py`,
 92 tests as of P11 freeze):
 
 - All NAISARGIKA_BALA, REQUIRED_RUPAS, MEAN_DAILY_MOTION canonical values.
-- `chesta_bala`: retrograde, standstill, mean-speed, capped-maximum cases.
+- `chesta_bala`: Raman Ch. X luminary solstices/elongations, Raman Ch. VI non-luminary Chesta Kendra, and backward-compatible speed-ratio cases.
 - `drig_bala`: Jupiter/Saturn 7th-sign opposition, Mars special aspects, no-aspect → 0.
 - `kala_bala`: Mercury always-60 fields, Vara lord bonus, Paksha Bala benefic/malefic, tithi boundary.
 - `sthana_bala`: sub-component sum equals total.

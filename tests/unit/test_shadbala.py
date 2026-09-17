@@ -42,8 +42,6 @@ from moira.shadbala import (
     BhavaBalaResult,
     KalaBala,
     PlanetShadbala,
-    ShadbalaChartProfile,
-    ShadbalaConditionProfile,
     ShadbalaPolicy,
     ShadbalaResult,
     ShadbalaTier,
@@ -187,6 +185,91 @@ class TestMeanDailyMotion:
 # ===========================================================================
 
 class TestChestaBala:
+
+    # --- Raman Ch. X §136: Sun Motional Strength ---
+
+    def test_sun_summer_solstice_gives_60(self):
+        # Sayana 90° (Cancer ingress) -> (90 + 90) = 180° -> 180 / 3 = 60 Sha
+        assert chesta_bala('Sun', planet_tropical_lon=90.0) == pytest.approx(60.0)
+
+    def test_sun_winter_solstice_gives_0(self):
+        # Sayana 270° (Capricorn ingress) -> (270 + 90) = 360 = 0° -> 0 / 3 = 0 Sha
+        assert chesta_bala('Sun', planet_tropical_lon=270.0) == pytest.approx(0.0)
+
+    def test_sun_equinoxes_give_30(self):
+        # Sayana 0° -> 90° -> 30 Sha; Sayana 180° -> 270° -> reduced 90° -> 30 Sha
+        assert chesta_bala('Sun', planet_tropical_lon=0.0) == pytest.approx(30.0)
+        assert chesta_bala('Sun', planet_tropical_lon=180.0) == pytest.approx(30.0)
+
+    # --- Raman Ch. X §137: Moon Motional Strength ---
+
+    def test_moon_full_moon_gives_60(self):
+        # Elongation 180° -> 180 / 3 = 60 Sha
+        assert chesta_bala('Moon', planet_sidereal_lon=180.0, sun_sidereal_lon=0.0) == pytest.approx(60.0)
+
+    def test_moon_new_moon_gives_0(self):
+        # Elongation 0° -> 0 / 3 = 0 Sha
+        assert chesta_bala('Moon', planet_sidereal_lon=50.0, sun_sidereal_lon=50.0) == pytest.approx(0.0)
+
+    def test_moon_quarter_moons_give_30(self):
+        # Elongation 90° and 270° (reduced to 90°) -> 90 / 3 = 30 Sha
+        assert chesta_bala('Moon', planet_sidereal_lon=90.0, sun_sidereal_lon=0.0) == pytest.approx(30.0)
+        assert chesta_bala('Moon', planet_sidereal_lon=270.0, sun_sidereal_lon=0.0) == pytest.approx(30.0)
+
+    # --- Raman Ch. VI: Five Non-Luminaries Motional Strength ---
+
+    def test_chesta_kendra_direct(self):
+        # Direct Kendra: 180° -> 60 Sha; 0° -> 0 Sha; 90° -> 30 Sha; 270° -> 30 Sha
+        assert chesta_bala('Mars', chesta_kendra=180.0) == pytest.approx(60.0)
+        assert chesta_bala('Jupiter', chesta_kendra=0.0) == pytest.approx(0.0)
+        assert chesta_bala('Saturn', chesta_kendra=90.0) == pytest.approx(30.0)
+        assert chesta_bala('Mercury', chesta_kendra=270.0) == pytest.approx(30.0)
+
+    def test_superior_planet_opposition_gives_60(self):
+        # At opposition: Seeghrochcha (Sun) = 180°, planet = 0°, mean = 0°
+        # Kendra = 180 - (0 + 0)/2 = 180° -> 60 Sha
+        assert chesta_bala(
+            'Mars',
+            seeghrochcha=180.0,
+            mean_longitude=0.0,
+            planet_sidereal_lon=0.0,
+        ) == pytest.approx(60.0)
+
+    def test_superior_planet_conjunction_gives_0(self):
+        # At conjunction: Seeghrochcha (Sun) = 0°, planet = 0°, mean = 0°
+        # Kendra = 0 - 0 = 0° -> 0 Sha
+        assert chesta_bala(
+            'Jupiter',
+            seeghrochcha=0.0,
+            mean_longitude=0.0,
+            planet_sidereal_lon=0.0,
+        ) == pytest.approx(0.0)
+
+    def test_inferior_planet_inferior_conjunction_gives_60(self):
+        # Inferior conjunction: Seeghrochcha (helio) = 180°, Mean (Sun) = 0°, True = 0°
+        # Kendra = 180 - (0 + 0)/2 = 180° -> 60 Sha
+        assert chesta_bala(
+            'Venus',
+            seeghrochcha=180.0,
+            mean_longitude=0.0,
+            planet_sidereal_lon=0.0,
+        ) == pytest.approx(60.0)
+
+    def test_inferior_planet_superior_conjunction_gives_0(self):
+        # Superior conjunction: Seeghrochcha (helio) = 0°, Mean (Sun) = 0°, True = 0°
+        # Kendra = 0 - 0 = 0° -> 0 Sha
+        assert chesta_bala(
+            'Mercury',
+            seeghrochcha=0.0,
+            mean_longitude=0.0,
+            planet_sidereal_lon=0.0,
+        ) == pytest.approx(0.0)
+
+    def test_invalid_planet_raises(self):
+        with pytest.raises(ValueError, match="chesta_bala: planet"):
+            chesta_bala('Pluto')
+
+    # --- Backward-compatible speed-ratio fallback ---
 
     def test_retrograde_gives_60(self):
         assert chesta_bala('Mars', -0.3) == 60.0

@@ -7,6 +7,92 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Versioned `apsidal_passages(body, jd_ut, *, center, direction,
+  max_days=None, reader=None)` results for every admitted body/center pair.
+  Searches locate inclusive next or previous TDB radial-velocity roots on one
+  immutable source route, confirm two-sided local distance extrema, and return
+  explicit `FOUND`, `BEYOND_COVERAGE`, or `NOT_IN_WINDOW` outcomes with route,
+  seam, evaluation-budget, gravity, and clock provenance.
+- `OrbitalSearchError` for numerical/budget exhaustion and
+  `OrbitalPassageUnavailableError` for legacy adapters that require a complete
+  event pair. Both retain their documented built-in compatibility, structured
+  attributes, pickling, exports, and REST translations.
+- A disjoint calibration/holdout passage corpus derived solely from official
+  JPL Horizons geometric ICRF VECTORS at exact JDTDB, including planet-system,
+  Earth-versus-EMB, asteroid, comet, Sedna, and Eris cases. The networked
+  builder writes review candidates outside the accepted fixture tree.
+- Strict `osculating_elements(body, jd_ut, *, center, frame, reader=None)` and
+  shape-safe `OsculatingElements` results for planets, Sun-centered EMB,
+  Earth-centered Moon, and installed sovereign asteroid/comet catalogs. Results
+  include explicit undefined-field reasons plus path-free state-source,
+  gravity, frame, time, exact-coverage, and singularity receipts.
+- Pinned primary-source orbital policies: NAIF `naif0012` TT/TDB conversion,
+  JPL Horizons `gm_Horizons.pck` gravitational parameters, and SOFA-derived
+  fixed-J2000, mean-of-date, and true-of-date frame construction. Disjoint
+  exact-JDTDB Horizons calibration and holdout fixtures validate both VECTORS
+  and ELEMENTS without a runtime network dependency.
+
+### Changed
+- `planetary_nodes.geometric_node` now delegates to the strict Sun-centered
+  `TRUE_ECLIPTIC_OF_DATE` orbital core for planets, Pluto, and loaded sovereign
+  asteroid/comet catalogs. Its established `OrbitalNode` result shape is
+  unchanged; perihelion now truthfully maps the projected pericenter-vector
+  longitude, and the true-date model fails explicitly outside 1900.0--2100.0.
+- `POST /v1/nodes/geometric` now returns the same computation's allowlisted
+  UT1/TT/TDB, Horizons gravity, frame-construction, source-route/hash/coverage,
+  singularity, and undefined-element receipts without exposing local paths.
+- `distance_extremes_at` is now the planet-only compatibility adapter over
+  `apsidal_passages`; its `perihelion_jd` and `aphelion_jd` values are
+  truthfully TT. `phenomena.perihelion` and `phenomena.aphelion` use the same
+  core for all admitted bodies, select Earth for the Moon and Sun otherwise,
+  and preserve verified UT1 in `PhenomenonEvent.jd_ut`.
+- `POST /v1/orbits/distance-extremes` remains planet-only but now returns the
+  bound UT1/TT/TDB clock receipt and allowlisted passage outcomes, frozen route
+  schedule, source usage, seam witnesses, search bounds, and algorithm policy.
+- Built-in SPK position, velocity, and evaluator routes now preserve their
+  public TT contract while passing TDB exactly once to raw segment evaluation.
+  `KernelPool` state routing is snapshot-stable, supports direct/reverse/chained
+  velocity paths, and returns exact segment/source receipts.
+- `POST /v1/orbits/elements` now delegates to the strict Sun/J2000 engine route
+  and returns truthful UT1, TT, and TDB values plus allowlisted gravity, frame,
+  state, coverage, and singularity provenance. It remains planet-only.
+
+### Fixed
+- Frame bias is now owned exactly once by bias-inclusive precession on both the
+  Python and native modern/long-term branches. Duplicate explicit bias was
+  removed from affected planet, comet, eclipse, occultation, lunar-limb, node,
+  sky, and native visibility/all-planets paths.
+- The legacy `KeplerianElements.epoch_jd` value returned by
+  `orbital_elements_at` is now correctly TT rather than the caller's UT1 value.
+
+### Compatibility
+- `geometric_node(body, jd_ut, reader=None)` retains its positional signature
+  and `OrbitalNode` vessel. Planet values intentionally move under the already
+  admitted TDB clock, Horizons gravity, and SOFA-derived true-date frame; loaded
+  asteroid/comet names and NAIF IDs are now supported by the engine.
+- `orbital_elements_at(body, jd_ut, reader)` remains the planet-only positional
+  adapter. Third-party legacy readers retain their historical TT-facing
+  protocol without receiving strict source-provenance claims.
+- `distance_extremes_at(body, jd_ut, reader)` retains its positional,
+  planet-only result shape; the intentional correction is that both legacy JD
+  fields now carry TT rather than ambiguous internal labels. The REST request
+  and top-level result field names remain compatible while its formerly
+  provisional time/provenance envelope is upgraded.
+- The packaged 25-asteroid wheel and the verified full
+  `moira-asteroids@2026.08.12.1` / `moira-comets@2026.07.28.1` releases pass
+  their inventory-wide orbital-element gates. Release readiness remains
+  blocked until the live Horizons drift gate runs on the release host. Current
+  small-body manifests also lack a
+  reviewed Stage 2 passage-accuracy admission, so their frozen Horizons
+  passage comparisons remain explicitly `NOT RUN` rather than receiving
+  widened tolerances.
+- The verified 10,025-body asteroid and 497-body comet releases pass the Stage 3
+  inventory-wide node and receipt sweep for all 10,522 sovereign bodies. Frozen
+  catalog-Horizons node comparisons remain `NOT RUN` until catalog manifests
+  carry reviewed Stage 3 fixture/gate admission; runtime coverage is not
+  substituted for numerical authority admission.
+
 ## [6.6.0] - 2026-09-09
 
 ### Added

@@ -40,6 +40,34 @@ geometry and does not independently validate TT-to-TDB conversion. The full
 contracts, retired comparator errors, and test paths are recorded in
 [`VALIDATION_ASTRONOMY.md`](./wiki/03_validation/VALIDATION_ASTRONOMY.md).
 
+### Orbital Core Stage 1 authorities
+
+The strict `osculating_elements` surface separates three primary authorities.
+Raw SPK state evaluation uses TDB derived with the official NASA/JPL NAIF
+`naif0012.tls` constants and implicit equation (5,257 bytes, SHA-256
+`678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b`).
+Two-body gravitational parameters come from JPL Solar System Dynamics
+`gm_Horizons.pck` (15,428 bytes, SHA-256
+`169cfed3b0927e73929d0a1b5c931f9afb5167a83b921064127ffc54a673df0c`).
+Date-frame matrices are independently ported from, and frozen against compiled
+output from, official IAU SOFA C Issue 2023-10-11 (3,686,708-byte archive,
+SHA-256
+`375729d8c0a254fd27c55484de5c8b83cccef351e1ef19d9cf7f26f5485e5538`).
+
+JPL Horizons VECTORS and ELEMENTS responses at exact JDTDB instants provide the
+external validation corpus. Each accepted fixture preserves its request, API
+identity, target/center identity, response digest, and retrieval time. The
+runtime does not call Horizons, NAIF, or SOFA over the network and does not
+ship those downloaded authority artifacts. It carries independent equations,
+constants, and governed offline fixtures. PyERFA remains a secondary parity
+check rather than the admission oracle.
+
+Every strict result identifies its actual kernel content and routed segments.
+Sovereign small-body receipts additionally identify catalog, version,
+manifest, shard, release time, and observed-arc policy. Filesystem paths are
+not public provenance. The packaged 25-asteroid wheel is test coverage only;
+full-catalog and live-Horizons checks remain separate release-host gates.
+
 ### Atmospheric visibility model provenance
 
 Moira's legacy component visibility family is independently implemented from
@@ -158,7 +186,7 @@ The bundled asteroid identity registry is bound to catalog
 `moira/data/asteroid_catalog_naif.metadata.json`. That receipt identifies
 10,025 canonical names, the 401-shard 10-day/7-node external release, source
 revision, admitted-target and unified-ledger hashes, and manifest SHA-256
-`c151348a9edd3620716da8849ceb239d0ab39688ead948ffecb592c13e068c64`.
+`9985f6e2da31e926f95391df17054e429ad72552ddc0793eaaaa3273f46febf0`.
 The wheel contains this identity registry, receipt, and metadata-only manifest,
 not the external BSP shards; known identity therefore remains distinct from
 installed position capability.
