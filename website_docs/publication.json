@@ -4,9 +4,9 @@
   "last_verified": "2026-09-17",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.7.0",
-    "tag": "v6.7.0",
-    "commit": "dac9d4042e8eec7d6a98603271a92bb9f64bdcae",
+    "version": "6.8.0",
+    "tag": "v6.8.0",
+    "commit": "5e5c2f3a1063a675a6d14f66c73174c6b82568ce",
     "release_date": "2026-09-17",
     "requires_python": ">=3.10",
     "supported_python": [
@@ -31,7 +31,7 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "dfb0ba0fe654909f8f95754af13ae43d4931d1d5adff004f474e8957253fc543"
+      "source_sha256": "e3236d327b27a3978e3737b702b0b4cfcd55fd23a066a67402c13c966ea9466a"
     },
     {
       "id": "python_root_exports",
@@ -41,7 +41,7 @@
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "8dd826c6370865ef82e458e4a81eeb8d37cd31b6644500cd34b76245f475f484"
+      "source_sha256": "69e8fce739227042915552fd7ff20bf989e68228d00ee99ba172c65bf15d4b08"
     },
     {
       "id": "rest_api_reference",
@@ -2574,7 +2574,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "8dd826c6370865ef82e458e4a81eeb8d37cd31b6644500cd34b76245f475f484",
+      "source_sha256": "69e8fce739227042915552fd7ff20bf989e68228d00ee99ba172c65bf15d4b08",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -4899,11 +4899,11 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.7.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.8.0.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "dfb0ba0fe654909f8f95754af13ae43d4931d1d5adff004f474e8957253fc543",
-      "source_bytes": 321800,
+      "source_sha256": "e3236d327b27a3978e3737b702b0b4cfcd55fd23a066a67402c13c966ea9466a",
+      "source_bytes": 321797,
       "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
@@ -4920,7 +4920,7 @@
       "description": "A contract-first migration manual for replacing Swiss Ephemeris flags and global state with Moira's explicit time, frame, observer, units, house, REST, and verification policies.",
       "content_class": "evergreen_guide",
       "schema_type": "TechArticle",
-      "source_sha256": "af9476a2af2937355a993c5643b09ce44adcfd0b87ad2ba2f40ebeed0a6131e0",
+      "source_sha256": "6084fd18ecea80f4a21f54c036d2c56969128f49d6a1f19773f853e932f7c4b7",
       "source_bytes": 32455,
       "last_verified": "2026-09-17",
       "prerender": true,
@@ -5480,6 +5480,30 @@
   ],
   "releases": [
     {
+      "version": "6.8.0",
+      "date": "2026-09-17",
+      "title": "SBDB Osculating Asteroid Orbit Classification and Small Body REST Surface",
+      "added": [
+        "Official JPL SBDB osculating asteroid orbit classification: moira.orbits.orbit_class and orbit_classes_at helper across all 14 dynamical classes with diagnostic boundary margins.",
+        "REST endpoints POST /v1/orbits/class and POST /v1/orbits/class/batch with item-level error isolation and strict path redaction.",
+        "Small bodies (asteroids and comets) admission to /v1/orbits/elements and /v1/orbits/distance-extremes, with nullable open-conic fields for parabolic and hyperbolic trajectories."
+      ],
+      "changed": [
+        "_OrbitBaseRequest broadened to admit catalog small bodies across the orbits family."
+      ],
+      "fixed": [
+        "Unreachable apsidal passage detection cleanly mapped to HTTP 422 orbital_event_availability."
+      ],
+      "validation": [
+        "Comprehensive 45-test unit orbit class suite, authentic SPK integration suite, and 14 server route tests."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.8.0.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.8.0.md",
+      "tag": "v6.8.0",
+      "release_notes_sha256": "6363a673af1ed5fdca902bc8373a4060d52ba179a2bb8ff7a98ba9f508e58465",
+      "compatibility_notes_sha256": "c5088c9a97c207dd724d8977f10dec24a448778c4a35c3d3bc93cb6fd5d06ada"
+    },
+    {
       "version": "6.7.0",
       "date": "2026-09-17",
       "title": "Strict Orbital Core, Ephemeris Apsides, and Doctrinal Chesta Bala",
@@ -5912,5 +5936,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "25773e4c28ee4054f1c2593288a9f4110d500c51ee68387affcfc9fc92eb5d49"
+  "manifest_sha256": "11dd2ab7aff720414f2516015be16060624ff8b05178a4385a1fea2defe55871"
 }
