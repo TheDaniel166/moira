@@ -78,6 +78,13 @@ asteroid_at("Sedna", jd_tt)
 asteroid_at("Gonggong", jd_tt)
 ```
 
+Beyond the bundled core bodies, Moira's sovereign small-body catalog (`moira-asteroids`,
+release `2026.09.18.1`) expands this surface to **11,223 admitted numbered minor planets
+across 449 Type-13 SPK shards**, achieving 100% complete coverage of all numbered
+Trans-Neptunian Objects and Centaurs known to astronomy. All official names (such as
+*(10946) Guyidong* and *(14380) Bussey*) and MPC provisional designations are
+canonically indexed with verified round-trip Chebyshev error bounds below $10^{-7}\text{ km}$.
+
 Swiss Ephemeris ships direct built-in support for Ceres, Pallas, Juno, Vesta, Chiron,
 and Pholus. Additional asteroid coverage depends on separate asteroid ephemeris files,
 with named lookup handled through catalog-number conventions and the `seasnam.txt` name

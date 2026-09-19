@@ -520,11 +520,10 @@ def _write_manifest(outdir: Path, *, records: list[dict]) -> None:
             }
         shard_entries.append(s_entry)
 
-    coverage_records = list(records)
-    if not coverage_records:
-        for mpath in sorted(outdir.glob(f"{SHARD_PREFIX}_*.metadata.json")):
-            meta = json.loads(mpath.read_text(encoding="utf-8"))
-            coverage_records.extend(meta.get("records", ()))
+    coverage_records: list[dict] = list(records)
+    for mpath in sorted(outdir.glob(f"{SHARD_PREFIX}_*.metadata.json")):
+        meta = json.loads(mpath.read_text(encoding="utf-8"))
+        coverage_records.extend(meta.get("records", ()))
 
     coverage_exceptions: list[dict] = []
     seen_exception_ids: set[int] = set()

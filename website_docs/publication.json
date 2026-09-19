@@ -62,14 +62,14 @@
   "catalog_metrics": {
     "position_capable_asteroid_ephemeris": {
       "catalog_id": "moira-asteroids",
-      "catalog_version": "2026.08.12.1",
-      "body_count": 10025,
-      "shard_count": 401,
+      "catalog_version": "2026.09.18.1",
+      "body_count": 11223,
+      "shard_count": 449,
       "sampling": {
         "step_days": 10,
         "window_size": 7
       },
-      "manifest_sha256": "9985f6e2da31e926f95391df17054e429ad72552ddc0793eaaaa3273f46febf0",
+      "manifest_sha256": "1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e",
       "availability": "external_install_required",
       "source": "moira/kernels/asteroids/manifest.json",
       "identity_receipt": "moira/data/asteroid_catalog_naif.metadata.json"
@@ -5100,8 +5100,8 @@
       "description": "A product-specific architecture comparison covering open reduction, modern data products, explicit policy, and evidence boundaries.",
       "content_class": "editorial_historical",
       "schema_type": "TechArticle",
-      "source_sha256": "6399b522780b3ad0ab8632a66e45fbfd9b10430f1bdbc9382090157d626c6361",
-      "source_bytes": 20486,
+      "source_sha256": "62037430ad839764d52cb1e855a6819d4da16466fbd5532d2b296636e7b6868c",
+      "source_bytes": 21005,
       "last_verified": "2026-09-17",
       "prerender": true,
       "markdown": true,
@@ -5936,5 +5936,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "11dd2ab7aff720414f2516015be16060624ff8b05178a4385a1fea2defe55871"
+  "manifest_sha256": "b6d0f79c4d7981958ead961543b9b5de71c674591b412cb3dc68406da6c9fbc1"
 }

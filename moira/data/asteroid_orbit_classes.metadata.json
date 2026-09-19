@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "source": "NASA/JPL Small-Body Database (SBDB) Query API",
+  "reference_standard": "JPL SBDB Orbit Classification Hierarchy",
+  "admitted_body_count": 11223,
+  "class_breakdown": {
+    "MBA": 8923,
+    "OMB": 440,
+    "MCA": 158,
+    "AMO": 59,
+    "IMB": 116,
+    "TJN": 196,
+    "CEN": 214,
+    "APO": 54,
+    "ATE": 11,
+    "AST": 2,
+    "TNO": 1048,
+    "IEO": 2
+  }
+}

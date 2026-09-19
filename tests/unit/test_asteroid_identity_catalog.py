@@ -14,16 +14,16 @@ CATALOG_PATH = DATA_DIR / "asteroid_catalog_naif.json"
 METADATA_PATH = DATA_DIR / "asteroid_catalog_naif.metadata.json"
 
 EXPECTED_CATALOG_SHA256 = (
-    "1630b618b46706fa6a40011c6ef80c000e9fbe77d04204e1c7bc446af562d4d4"
+    "4eb03ebb94a3a56ac7701f7383a31f12274e4c80f0a3ed11a87c8fbd6cc9ccec"
 )
 EXPECTED_RELEASE_MANIFEST_SHA256 = (
-    "9985f6e2da31e926f95391df17054e429ad72552ddc0793eaaaa3273f46febf0"
+    "1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e"
 )
 EXPECTED_UNIFIED_MASTER_SHA256 = (
-    "45a74926db58cd4c1fbe57fd9c56ec19ea09686a51276e9c7698b11e3aa9a7ab"
+    "70f36b651426ad4b3f050996a26d456c1213a00e4bab7f4ec7f37be02b3ee843"
 )
 EXPECTED_ADMITTED_TARGETS_SHA256 = (
-    "08927dcb994388902bea186c70d286d7e85334f863309123b194aafc8915ad91"
+    "676ca3b07acbb05b013ce5422441328275abc83f4109b6582f23bb203ac3b85f"
 )
 
 
@@ -110,7 +110,7 @@ def test_packaged_asteroid_identity_catalog_is_release_bound() -> None:
     assert hashlib.sha256(catalog_bytes).hexdigest() == EXPECTED_CATALOG_SHA256
     assert metadata["schema_version"] == 1
     assert metadata["catalog_id"] == "moira-asteroids"
-    assert metadata["catalog_version"] == "2026.08.12.1"
+    assert metadata["catalog_version"] == "2026.09.18.1"
     assert metadata["source"]["release_manifest_sha256"] == (
         EXPECTED_RELEASE_MANIFEST_SHA256
     )
@@ -123,8 +123,8 @@ def test_packaged_asteroid_identity_catalog_is_release_bound() -> None:
     assert metadata["artifact"] == {
         "path": "moira/data/asteroid_catalog_naif.json",
         "sha256": EXPECTED_CATALOG_SHA256,
-        "canonical_name_count": 10_025,
-        "unique_naif_id_count": 10_025,
+        "canonical_name_count": 11_223,
+        "unique_naif_id_count": 11_223,
     }
 
 
@@ -134,9 +134,9 @@ def test_packaged_asteroid_identities_are_unique_and_canonical() -> None:
         unicodedata.normalize("NFKC", name).casefold() for name in catalog
     }
 
-    assert len(catalog) == 10_025
-    assert len(set(catalog.values())) == 10_025
-    assert len(folded_names) == 10_025
+    assert len(catalog) == 11_223
+    assert len(set(catalog.values())) == 11_223
+    assert len(folded_names) == 11_223
     assert all(unicodedata.normalize("NFC", name) == name for name in catalog)
     assert all(isinstance(naif_id, int) and naif_id > 2_000_000 for naif_id in catalog.values())
 
@@ -145,17 +145,27 @@ def test_runtime_registry_matches_the_packaged_canonical_artifact() -> None:
     catalog = _load_json(CATALOG_PATH)
 
     assert ASTEROID_NAIF == catalog
-    assert len(ASTEROID_NAIF) == 10_025
-    assert len(_NAIF_TO_NAME) == 10_025
+    assert len(ASTEROID_NAIF) == 11_223
+    assert len(_NAIF_TO_NAME) == 11_223
     assert ASTEROID_NAIF["Ceres"] == 2_000_001
     assert ASTEROID_NAIF["Limburgia"] == 2_001_383
     assert ASTEROID_NAIF["Jacquet"] == 2_020_395
+    assert ASTEROID_NAIF["Guyidong"] == 2_010_946
+    assert ASTEROID_NAIF["Bussey"] == 2_014_380
+    assert ASTEROID_NAIF["Arawn"] == 2_015_810
+    assert ASTEROID_NAIF["Narcissus"] == 2_037_117
     assert ASTEROID_NAIF["Mani"] == 2_307_261
     assert ASTEROID_NAIF["'Aylo'chaxnim"] == 2_594_913
     assert ASTEROID_NAIF["Ka`epaoka`awela"] == 2_514_107
     assert "Asteroid20395" not in ASTEROID_NAIF
+    assert "Asteroid10946" not in ASTEROID_NAIF
+    assert "Asteroid14380" not in ASTEROID_NAIF
     assert _NAIF_TO_NAME[2_001_383] == "Limburgia"
     assert _NAIF_TO_NAME[2_020_395] == "Jacquet"
+    assert _NAIF_TO_NAME[2_010_946] == "Guyidong"
+    assert _NAIF_TO_NAME[2_014_380] == "Bussey"
+    assert _NAIF_TO_NAME[2_015_810] == "Arawn"
+    assert _NAIF_TO_NAME[2_037_117] == "Narcissus"
     assert _NAIF_TO_NAME[2_307_261] == "Mani"
     assert _NAIF_TO_NAME[2_594_913] == "'Aylo'chaxnim"
     assert _NAIF_TO_NAME[2_514_107] == "Ka`epaoka`awela"

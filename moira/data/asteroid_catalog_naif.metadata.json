@@ -1,12 +1,12 @@
 {
   "artifact": {
-    "canonical_name_count": 10025,
+    "canonical_name_count": 11223,
     "path": "moira/data/asteroid_catalog_naif.json",
-    "sha256": "1630b618b46706fa6a40011c6ef80c000e9fbe77d04204e1c7bc446af562d4d4",
-    "unique_naif_id_count": 10025
+    "sha256": "4eb03ebb94a3a56ac7701f7383a31f12274e4c80f0a3ed11a87c8fbd6cc9ccec",
+    "unique_naif_id_count": 11223
   },
   "catalog_id": "moira-asteroids",
-  "catalog_version": "2026.08.12.1",
+  "catalog_version": "2026.09.18.1",
   "identity_policy": {
     "canonicalization": "exact released name; NFC; unique under NFKC casefold",
     "naif_convention": "2000000_plus_mpc_catalog_number",
@@ -18,15 +18,15 @@
   "schema_version": 1,
   "source": {
     "admitted_targets": "moira_public_asteroid_targets.json",
-    "admitted_targets_sha256": "08927dcb994388902bea186c70d286d7e85334f863309123b194aafc8915ad91",
+    "admitted_targets_sha256": "676ca3b07acbb05b013ce5422441328275abc83f4109b6582f23bb203ac3b85f",
     "horizons_api": "https://ssd.jpl.nasa.gov/api/horizons.api",
     "release_manifest": "manifest.json",
-    "release_manifest_sha256": "9985f6e2da31e926f95391df17054e429ad72552ddc0793eaaaa3273f46febf0",
+    "release_manifest_sha256": "1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e",
     "release_source": "MOIRA UNIFIED ASTEROID CATALOG (JPL Horizons)",
-    "release_source_revision": "14d97782-builder8c103864-target08927dcb",
-    "released_utc": "2026-08-12T20:44:09Z",
+    "release_source_revision": "92ce4257-builder9c705620-target676ca3b0",
+    "released_utc": "2026-09-18T00:00:00Z",
     "trajectory_source": "JPL Horizons VECTORS",
     "unified_master": "unified_master.json",
-    "unified_master_sha256": "45a74926db58cd4c1fbe57fd9c56ec19ea09686a51276e9c7698b11e3aa9a7ab"
+    "unified_master_sha256": "70f36b651426ad4b3f050996a26d456c1213a00e4bab7f4ec7f37be02b3ee843"
   }
 }

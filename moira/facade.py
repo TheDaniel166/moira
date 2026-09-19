@@ -814,6 +814,8 @@ from .asteroids import (
     AsteroidData, asteroid_at, all_asteroids_at,
     list_asteroids, available_in_kernel,
     ASTEROID_NAIF,
+    asteroid_orbit_class, asteroid_orbit_classes,
+    list_all_centaurs, list_all_tnos,
 )
 from .comets import (
     CometData, comet_at, all_comets_at, list_comets,
@@ -2717,6 +2719,8 @@ __all__ = [
     "AsteroidData", "ASTEROID_NAIF",
     "asteroid_at", "all_asteroids_at", "list_asteroids",
     "available_in_kernel",
+    "asteroid_orbit_class", "asteroid_orbit_classes",
+    "list_all_centaurs", "list_all_tnos",
     # Asteroid families
     "FamilyResonance", "ResonantAspect",
     "asteroid_family", "family_members", "families_in_chart",

@@ -505,7 +505,7 @@ ASTEROID_NAIF: dict[str, int] = {
 
 # Data-driven sovereign identity catalog: merge the canonical names admitted by
 # scripts/build_asteroid_identity_catalog.py from the finalized public asteroid
-# release (name -> NAIF id, 10,025 bodies in release 2026.08.12.1).
+# release (name -> NAIF id, 11,223 bodies in release 2026.09.18.1).
 # Kept in a data file rather than inline so the entries do not bloat this module;
 # loaded here (before the reverse map) so name and NAIF lookups both see them.
 # `setdefault` keeps the curated names above for the core bodies while the data
@@ -525,6 +525,52 @@ except Exception:  # noqa: BLE001 - never let catalog expansion break the module
 
 # Reverse lookup: NAIF ID → name
 _NAIF_TO_NAME: dict[int, str] = {v: k for k, v in ASTEROID_NAIF.items()}
+
+# Pre-indexed JPL SBDB small-body orbit classifications for admitted minor planets
+_ORBIT_CLASSES: dict[int, dict[str, str]] = {}
+try:  # pragma: no cover - data-file merge
+    _classes_path = _Path(__file__).resolve().parent / "data" / "asteroid_orbit_classes.json"
+    if _classes_path.exists():
+        for _naif_str, _entry in _json.loads(_classes_path.read_text(encoding="utf-8")).items():
+            _ORBIT_CLASSES[int(_naif_str)] = _entry
+except Exception:  # noqa: BLE001
+    pass
+
+
+def asteroid_orbit_class(name_or_naif: str | int) -> dict[str, str] | None:
+    """Return official JPL SBDB orbit class metadata for an admitted minor planet."""
+    try:
+        _, naif_id = _resolve_asteroid_name_and_naif(name_or_naif)
+    except (KeyError, ValueError):
+        if isinstance(name_or_naif, int):
+            naif_id = name_or_naif
+        else:
+            return None
+    return _ORBIT_CLASSES.get(naif_id)
+
+
+def asteroid_orbit_classes() -> dict[int, dict[str, str]]:
+    """Return all admitted asteroid orbit classes keyed by NAIF ID."""
+    return dict(_ORBIT_CLASSES)
+
+
+def list_all_centaurs() -> list[str]:
+    """Return canonical names of all admitted Centaurs in the catalog."""
+    return [
+        _NAIF_TO_NAME[naif]
+        for naif, rec in _ORBIT_CLASSES.items()
+        if rec.get("code") == "CEN" and naif in _NAIF_TO_NAME
+    ]
+
+
+def list_all_tnos() -> list[str]:
+    """Return canonical names of all admitted Trans-Neptunian Objects in the catalog."""
+    return [
+        _NAIF_TO_NAME[naif]
+        for naif, rec in _ORBIT_CLASSES.items()
+        if rec.get("code") == "TNO" and naif in _NAIF_TO_NAME
+    ]
+
 
 
 # ---------------------------------------------------------------------------

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Sovereign Small-Body Ephemeris Catalog Expansion (`moira-asteroids-2026.09.18.1`)**:
+  - Expanded catalog from 10,025 to **11,223 admitted numbered minor planets** across **449 Type-13 SPK shards** (shards 000 through 448), adding 1,198 missing numbered Trans-Neptunian Objects (TNOs) and Centaurs from JPL Horizons.
+  - Achieved **100% complete outer solar system coverage** for all numbered TNOs and Centaurs recognized by the Minor Planet Center and JPL SBDB.
+  - Added 16 newly numbered and named outer solar system worlds: *(15810) Arawn*, *(37117) Narcissus*, *(38083) Rhadamanthus*, *(38628) Huya*, *(53311) Deucalion*, *(78888) Xewioso*, *(121725) Aphidas*, *(136120) Rumina*, *(229762) Mbabamwanawaresa*, *(341520) Mors-Somnus*, *(385571) Otrera*, *(385695) Clete*, *(523622) Robichon*, *(523794) 2015 RR245*, *(696315) Petraios*, and others.
+  - Remediated 443 `AsteroidNNNN` placeholders: restored official IAU names for *(10946) Guyidong* and *(14380) Bussey*, and indexed official MPC provisional designations for the 441 unnamed bodies.
+  - All 449 shards verified with sub-nanometer ($< 1.5 \times 10^{-8}\text{ km}$) Chebyshev interpolation round-trip node errors.
+  - Bound sealed catalog release receipt `1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e` into engine manifest and NAIF identity registry.
+
 ## [6.8.0] - 2026-09-17
 
 ### Added

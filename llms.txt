@@ -21,7 +21,7 @@ Moira is a sovereign computational engine designed for transparency, auditabilit
 - [stelliums.py](moira/stelliums.py): Versioned planet-first Strict/Broad sign,
   house and maximum-total-span evidence; associated factors never count.
 - [spk_reader.py](moira/spk_reader.py): Native-only JPL SPK kernel access (no third-party fallback).
-- [asteroids.py](moira/asteroids.py) / [comets.py](moira/comets.py): Sharded Type-13 small-body catalogs (10,025 asteroids in external release `2026.08.12.1`; 497 numbered periodic comets).
+- [asteroids.py](moira/asteroids.py) / [comets.py](moira/comets.py): Sharded Type-13 small-body catalogs (11,223 asteroids in external release `2026.09.18.1`; 497 numbered periodic comets).
 - [deep_sky.py](moira/deep_sky.py): 60 release-bound, non-Solar-System
   coordinate anchors with SIMBAD receipts and sovereign host-star delegation.
 - [cosmic_references.py](moira/cosmic_references.py): 12 typed physical,

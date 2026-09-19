@@ -23,7 +23,7 @@ Import-time side effects: None.
 External dependency assumptions:
     - Positions come from any admitted small-body reader that carries the
       body's NAIF ID (wheel catalog ``moira-asteroids-wheel`` is sufficient
-      for this named set; the full 10,025-body catalog also covers them).
+      for this named set; the full 11,223-body catalog also covers them).
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -74,8 +74,13 @@ def nessus_at(jd_ut: float) -> AsteroidData:
     return centaur_at(NESSUS, jd_ut)
 
 def list_centaurs() -> list[str]:
-    """Return names of centaurs known to this API."""
+    """Return names of classical named centaurs (backward-compatible roster)."""
     return list(CENTAUR_NAMES.values())
+
+def list_all_centaurs() -> list[str]:
+    """Return names of all admitted Centaurs in the sovereign catalog."""
+    from .asteroids import list_all_centaurs as _all_centaurs
+    return _all_centaurs()
 
 def available_centaurs() -> list[str]:
     """Return names of centaurs actually available in the loaded kernels."""

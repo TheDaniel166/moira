@@ -23,7 +23,7 @@ Import-time side effects: None.
 External dependency assumptions:
     - Positions come from any admitted small-body reader that carries the
       body's NAIF ID (wheel catalog ``moira-asteroids-wheel`` is sufficient
-      for this named set; the full 10,025-body catalog also covers them).
+      for this named set; the full 11,223-body catalog also covers them).
     - No Qt, no database, no OS threads.
 
 Public surface / exports:
@@ -74,8 +74,13 @@ def orcus_at(jd_ut: float) -> AsteroidData:
     return tno_at(ORCUS, jd_ut)
 
 def list_tnos() -> list[str]:
-    """Return names of TNOs known to this API."""
+    """Return names of classical named TNOs (backward-compatible roster)."""
     return list(TNO_NAMES.values())
+
+def list_all_tnos() -> list[str]:
+    """Return names of all admitted Trans-Neptunian Objects in the sovereign catalog."""
+    from .asteroids import list_all_tnos as _all_tnos
+    return _all_tnos()
 
 def available_tnos() -> list[str]:
     """Return names of TNOs actually available in the loaded kernels."""
