@@ -584,6 +584,7 @@ class _NativeAllPlanetsPlan:
         ...,
     ] = field(default=(), repr=False)
     evaluator: object | None = field(default=None, repr=False, compare=False)
+    spk_reader: SpkReader | None = field(default=None, repr=False, compare=False)
 
     @property
     def admitted(self) -> bool:
@@ -829,6 +830,18 @@ def _native_python_plan(
     )
 
 
+def _resolve_primary_spk_reader(reader: KernelReader) -> SpkReader | None:
+    """Return the underlying SpkReader governing planetary ephemerides."""
+    if isinstance(reader, SpkReader):
+        return reader
+    getter = getattr(reader, "_primary_planetary_reader", None)
+    if callable(getter):
+        primary = getter()
+        if isinstance(primary, SpkReader):
+            return primary
+    return None
+
+
 def _npe_all_planets_mode_decision(
     *,
     bodies: list[str],
@@ -860,9 +873,10 @@ def _npe_all_planets_mode_decision(
     del observer_elev_m
     if delta_t_policy is not None:
         return _native_python_plan(_NativeAdmissionReason.CUSTOM_DELTA_T_POLICY)
-    if type(reader) is not SpkReader:
+    spk_reader = _resolve_primary_spk_reader(reader)
+    if spk_reader is None:
         return _native_python_plan(_NativeAdmissionReason.UNSUPPORTED_READER_TYPE)
-    kernel = getattr(reader, "_kernel", None)
+    kernel = getattr(spk_reader, "_kernel", None)
     handle = getattr(kernel, "_handle", None)
     if handle is None or not hasattr(handle, "batch_segment_position_and_velocity"):
         return _native_python_plan(
@@ -871,6 +885,7 @@ def _npe_all_planets_mode_decision(
     return _NativeAllPlanetsPlan(
         backend=_NativeAllPlanetsBackend.NATIVE_BATCH,
         reason=_NativeAdmissionReason.ADMITTED_NATIVE_BATCH,
+        spk_reader=spk_reader,
     )
 
 
@@ -1081,16 +1096,18 @@ def _native_all_planets_plan(
     if not mode.admitted:
         return mode
 
-    assert isinstance(reader, SpkReader)
+    spk_reader = mode.spk_reader or _resolve_primary_spk_reader(reader)
+    if spk_reader is None:
+        return _native_python_plan(_NativeAdmissionReason.UNSUPPORTED_READER_TYPE)
     epoch_tdb = tt_to_tdb(jd_tt)
-    public_specs = _npe_public_route_segment_specs(reader, epoch_tdb)
+    public_specs = _npe_public_route_segment_specs(spk_reader, epoch_tdb)
     if public_specs is None:
         return _native_python_plan(_NativeAdmissionReason.PUBLIC_ROUTE_UNAVAILABLE)
-    body_specs = _npe_body_route_segment_specs(reader, epoch_tdb)
+    body_specs = _npe_body_route_segment_specs(spk_reader, epoch_tdb)
     if body_specs is None:
         return _native_python_plan(_NativeAdmissionReason.BODY_ROUTE_UNAVAILABLE)
 
-    evaluator = _get_native_planetary_evaluator(reader)
+    evaluator = _get_native_planetary_evaluator(spk_reader)
     if evaluator is None:
         return _NativeAllPlanetsPlan(
             backend=_NativeAllPlanetsBackend.NATIVE_BATCH,
@@ -1098,6 +1115,7 @@ def _native_all_planets_plan(
             public_specs=tuple(public_specs),
             body_specs=body_specs,
             epoch_tdb=epoch_tdb,
+            spk_reader=spk_reader,
         )
 
     rate_specs = []
@@ -1106,8 +1124,8 @@ def _native_all_planets_plan(
         jd_tt + _LONGITUDE_RATE_STEP_DAYS,
     ):
         rate_epoch_tdb = tt_to_tdb(rate_jd)
-        rate_public_specs = _npe_public_route_segment_specs(reader, rate_epoch_tdb)
-        rate_body_specs = _npe_body_route_segment_specs(reader, rate_epoch_tdb)
+        rate_public_specs = _npe_public_route_segment_specs(spk_reader, rate_epoch_tdb)
+        rate_body_specs = _npe_body_route_segment_specs(spk_reader, rate_epoch_tdb)
         if rate_public_specs is None or rate_body_specs is None:
             return _native_python_plan(_NativeAdmissionReason.RATE_ROUTE_UNAVAILABLE)
         rate_specs.append(
@@ -1122,6 +1140,7 @@ def _native_all_planets_plan(
         epoch_tdb=epoch_tdb,
         rate_specs=tuple(rate_specs),
         evaluator=evaluator,
+        spk_reader=spk_reader,
     )
 
 
@@ -1234,7 +1253,11 @@ def _native_all_planets_admitted(
             )
         return results
 
-    handle = reader._kernel._handle
+    target_reader = plan.spk_reader or reader
+    kernel = getattr(target_reader, "_kernel", None)
+    handle = getattr(kernel, "_handle", None)
+    if handle is None or not hasattr(handle, "batch_segment_position_and_velocity"):
+        return None
     batch = handle.batch_segment_position_and_velocity(specs, epoch_tdb)
     pair_states: dict[tuple[int, int], tuple[Vec3, Vec3]] = {}
     for pair, (position, velocity) in zip(_NPE_PUBLIC_ROUTE_PAIRS, batch):

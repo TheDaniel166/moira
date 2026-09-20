@@ -591,3 +591,91 @@ def test_asteroid_owned_vector_adapter_matches_flag_aware_product(
     )
 
     assert direct == flag_aware
+
+
+@pytest.mark.requires_ephemeris
+def test_kernel_pool_admits_native_planetary_evaluator_with_parity(
+    planetary_kernel_path,
+    small_body_reader_pool,
+) -> None:
+    import time
+
+    mode = planets_module._npe_all_planets_mode_decision(
+        bodies=list(Body.ALL_PLANETS),
+        reader=small_body_reader_pool,
+        apparent=True,
+        aberration=True,
+        grav_deflection=True,
+        nutation=True,
+        center="geocentric",
+        observer_lat=None,
+        observer_lon=None,
+        observer_elev_m=0.0,
+        lst_deg=None,
+        delta_t_policy=None,
+    )
+    assert mode.admitted is True
+
+    plan = planets_module._native_all_planets_plan(
+        list(Body.ALL_PLANETS),
+        reader=small_body_reader_pool,
+        jd_tt=_JD_J2000,
+        apparent=True,
+        aberration=True,
+        grav_deflection=True,
+        nutation=True,
+        center="geocentric",
+        observer_lat=None,
+        observer_lon=None,
+        observer_elev_m=0.0,
+        lst_deg=None,
+        delta_t_policy=None,
+    )
+    assert plan.backend == planets_module._NativeAllPlanetsBackend.NATIVE_EVALUATOR
+
+    with SpkReader(planetary_kernel_path) as primary_reader:
+        primary_results = all_planets_at(_JD_J2000, reader=primary_reader)
+
+    # Warm up first evaluation (faults segment pages into process memory)
+    all_planets_at(_JD_J2000, reader=small_body_reader_pool)
+
+    t0 = time.perf_counter()
+    pool_results = all_planets_at(_JD_J2000, reader=small_body_reader_pool)
+    elapsed_ms = (time.perf_counter() - t0) * 1000.0
+
+    assert elapsed_ms < 5.0  # Native C++ evaluator executes in <1ms
+
+    for name in Body.ALL_PLANETS:
+        p_ref = primary_results[name]
+        p_pool = pool_results[name]
+        assert p_pool.longitude == pytest.approx(p_ref.longitude, abs=1e-12)
+        assert p_pool.latitude == pytest.approx(p_ref.latitude, abs=1e-12)
+        assert p_pool.distance == pytest.approx(p_ref.distance, abs=1e-12)
+        assert p_pool.speed == pytest.approx(p_ref.speed, abs=1e-12)
+        assert p_pool.retrograde == p_ref.retrograde
+
+
+@pytest.mark.requires_ephemeris
+def test_kernel_pool_indexed_route_speed_for_asteroids(
+    small_body_reader_pool,
+) -> None:
+    import time
+
+    # Ceres NAIF ID: 2000001 relative to Earth 399
+    # Initial discovery populates the bounded route cache
+    t_init0 = time.perf_counter()
+    pos = small_body_reader_pool.position(399, 2000001, _JD_J2000)
+    init_ms = (time.perf_counter() - t_init0) * 1000.0
+    # Candidate-pruned discovery with 470+ shards executes in <10ms (was 631ms unindexed)
+    assert init_ms < 50.0
+
+    # Measure cached position lookup latency over 10 repeated queries
+    t0 = time.perf_counter()
+    for _ in range(10):
+        pos = small_body_reader_pool.position(399, 2000001, _JD_J2000)
+    elapsed_ms = (time.perf_counter() - t0) * 1000.0 / 10.0
+
+    # Cached route lookup is <0.2 ms
+    assert elapsed_ms < 1.0
+    assert len(pos) == 3
+

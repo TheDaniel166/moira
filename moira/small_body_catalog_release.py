@@ -29,6 +29,7 @@ import os
 import re
 import shutil
 import tempfile
+import threading
 import zipfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -42,6 +43,9 @@ _HASH_ALGORITHM = "sha256"
 _DIGEST_RE = re.compile(r"^[0-9a-f]{64}$")
 _IDENTITY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 _COPY_CHUNK_BYTES = 1024 * 1024
+
+_VERIFIED_RELEASE_CACHE_LOCK = threading.Lock()
+_VERIFIED_RELEASE_CACHE: dict[tuple[Path, str], ReleaseVerification] = {}
 
 
 class CatalogReleaseError(ValueError):
@@ -746,6 +750,13 @@ def verify_release(directory: str | Path) -> ReleaseVerification:
     if not root.is_dir():
         raise CatalogReleaseError(f"Release directory does not exist: {root}")
     manifest_path = root / "manifest.json"
+    manifest_bytes_count, manifest_digest = _sha256_path(manifest_path)
+    cache_key = (root, manifest_digest)
+    with _VERIFIED_RELEASE_CACHE_LOCK:
+        cached = _VERIFIED_RELEASE_CACHE.get(cache_key)
+        if cached is not None:
+            return cached
+
     manifest = _load_json_object(manifest_path, label="release manifest")
     if manifest.get("manifest_schema") != MANIFEST_SCHEMA:
         raise CatalogReleaseError(
@@ -772,7 +783,6 @@ def verify_release(directory: str | Path) -> ReleaseVerification:
             )
         expected_records[record.path] = record
 
-    manifest_bytes_count, manifest_digest = _sha256_path(manifest_path)
     manifest_record = FileIdentity(
         path="manifest.json",
         role="catalog_manifest",
@@ -824,7 +834,7 @@ def verify_release(directory: str | Path) -> ReleaseVerification:
             f"missing={missing}, unexpected={unexpected}"
         )
 
-    return ReleaseVerification(
+    verification = ReleaseVerification(
         root=root,
         catalog_id=catalog_id,
         catalog_version=catalog_version,
@@ -833,6 +843,9 @@ def verify_release(directory: str | Path) -> ReleaseVerification:
         body_count=manifest["body_count"],
         manifest_sha256=manifest_digest,
     )
+    with _VERIFIED_RELEASE_CACHE_LOCK:
+        _VERIFIED_RELEASE_CACHE[cache_key] = verification
+    return verification
 
 
 def _zip_timestamp(released_utc: str) -> tuple[int, int, int, int, int, int]:

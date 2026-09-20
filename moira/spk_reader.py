@@ -31,10 +31,10 @@ import math
 import hashlib
 import re
 import threading
-from collections import deque
+from collections import deque, OrderedDict
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
@@ -160,6 +160,15 @@ class _PoolSnapshot:
 
     readers: tuple[object, ...]
     generation: int
+    pair_readers: dict[tuple[int, int], tuple[tuple[int, object], ...]] = field(
+        default_factory=dict
+    )
+    target_readers: dict[int, tuple[tuple[int, object], ...]] = field(
+        default_factory=dict
+    )
+    hub_indices: tuple[int, ...] = ()
+    planetary_readers: tuple[tuple[int, object], ...] = ()
+    integration_identities: tuple[_EphemerisKernelIdentity, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -1562,6 +1571,66 @@ class KernelPool:
         self._active_leases = 0
         self._closing = False
         self._closed = False
+        self._route_cache_lock = threading.Lock()
+        self._route_cache: OrderedDict[
+            tuple[int, int],
+            tuple[float, float, tuple[_RouteEdge, ...]],
+        ] = OrderedDict()
+        self._pair_readers: dict[tuple[int, int], tuple[tuple[int, object], ...]] = {}
+        self._target_readers: dict[int, tuple[tuple[int, object], ...]] = {}
+        self._hub_indices: tuple[int, ...] = ()
+        self._planetary_readers: tuple[tuple[int, object], ...] = ()
+        self._integration_identities: tuple[_EphemerisKernelIdentity, ...] = ()
+        self._rebuild_indices_locked()
+
+    def _rebuild_indices_locked(self) -> None:
+        """Construct deterministic lookup indices across the current reader chain."""
+        pair_readers: dict[tuple[int, int], list[tuple[int, object]]] = {}
+        target_readers: dict[int, list[tuple[int, object]]] = {}
+        hub_indices: list[int] = []
+        planetary_readers: list[tuple[int, object]] = []
+        integration_identities_set: set[_EphemerisKernelIdentity] = set()
+
+        for pool_index, reader in enumerate(self._readers):
+            pairs = self._reader_pairs_tdb(reader)
+            if not pairs:
+                cov = getattr(reader, "coverage", None)
+                if callable(cov):
+                    try:
+                        pairs = tuple(sorted(cov().keys()))
+                    except Exception:
+                        pairs = ()
+            if pairs:
+                for center, target in pairs:
+                    pair_readers.setdefault((center, target), []).append((pool_index, reader))
+                    target_readers.setdefault(target, []).append((pool_index, reader))
+                    target_readers.setdefault(center, []).append((pool_index, reader))
+            identity = getattr(reader, "_kernel_identity", None)
+            is_primary = (
+                isinstance(identity, _EphemerisKernelIdentity)
+                and identity.planetary_ephemeris is not None
+                and identity.lunar_ephemeris is not None
+            )
+            if isinstance(identity, _EphemerisKernelIdentity):
+                planetary_readers.append((pool_index, reader))
+            integration_identity = getattr(reader, "_integration_kernel_identity", None)
+            if isinstance(integration_identity, _EphemerisKernelIdentity):
+                integration_identities_set.add(integration_identity)
+
+            is_spine = any(
+                pair in pairs
+                for pair in ((0, 3), (3, 399), (0, 10), (3, 301))
+            )
+            if is_primary or is_spine or pool_index == 0:
+                hub_indices.append(pool_index)
+
+        self._pair_readers = {k: tuple(v) for k, v in pair_readers.items()}
+        self._target_readers = {k: tuple(v) for k, v in target_readers.items()}
+        self._hub_indices = tuple(hub_indices)
+        self._planetary_readers = tuple(planetary_readers)
+        self._integration_identities = tuple(
+            sorted(integration_identities_set, key=lambda idn: idn.summary_label)
+        )
 
     # ------------------------------------------------------------------
     # Pool management
@@ -1574,6 +1643,9 @@ class KernelPool:
                 raise RuntimeError("KernelPool is closing or closed")
             self._readers = (*self._readers, reader)
             self._generation += 1
+            self._rebuild_indices_locked()
+            with self._route_cache_lock:
+                self._route_cache.clear()
 
     @contextmanager
     def _read_lease(self):
@@ -1583,7 +1655,15 @@ class KernelPool:
             if self._closing or self._closed:
                 raise RuntimeError("KernelPool is closing or closed")
             self._active_leases += 1
-            snapshot = _PoolSnapshot(self._readers, self._generation)
+            snapshot = _PoolSnapshot(
+                self._readers,
+                self._generation,
+                self._pair_readers,
+                self._target_readers,
+                self._hub_indices,
+                self._planetary_readers,
+                self._integration_identities,
+            )
         try:
             yield snapshot
         finally:
@@ -1638,28 +1718,55 @@ class KernelPool:
                 )
 
         identities: list[_EphemerisKernelIdentity] = []
-        integration_identities: list[_EphemerisKernelIdentity] = []
-        for reader in snapshot.readers:
-            identity = getattr(reader, "_kernel_identity", None)
-            if isinstance(identity, _EphemerisKernelIdentity):
-                checker = getattr(reader, "has_segment_at_tdb", None)
-                if callable(checker):
-                    try:
-                        owns_clock_routes = all(
-                            checker(center, target, epoch_tdb)
-                            for center, target in _PLANETARY_CLOCK_ROUTES
-                        )
-                    except (KeyError, ValueError, OutOfRangeError):
-                        owns_clock_routes = False
-                    if owns_clock_routes:
-                        identities.append(identity)
-            integration_identity = getattr(
-                reader, "_integration_kernel_identity", None
-            )
-            if isinstance(integration_identity, _EphemerisKernelIdentity):
-                integration_identities.append(integration_identity)
+        planetary_readers = (
+            getattr(snapshot, "planetary_readers", None) or self._planetary_readers
+        )
+        if planetary_readers:
+            for pool_index, reader in planetary_readers:
+                identity = getattr(reader, "_kernel_identity", None)
+                if isinstance(identity, _EphemerisKernelIdentity):
+                    checker = getattr(reader, "has_segment_at_tdb", None)
+                    if callable(checker):
+                        try:
+                            owns_clock_routes = all(
+                                checker(center, target, epoch_tdb)
+                                for center, target in _PLANETARY_CLOCK_ROUTES
+                            )
+                        except (KeyError, ValueError, OutOfRangeError):
+                            owns_clock_routes = False
+                        if owns_clock_routes:
+                            identities.append(identity)
+        else:
+            for reader in snapshot.readers:
+                identity = getattr(reader, "_kernel_identity", None)
+                if isinstance(identity, _EphemerisKernelIdentity):
+                    checker = getattr(reader, "has_segment_at_tdb", None)
+                    if callable(checker):
+                        try:
+                            owns_clock_routes = all(
+                                checker(center, target, epoch_tdb)
+                                for center, target in _PLANETARY_CLOCK_ROUTES
+                            )
+                        except (KeyError, ValueError, OutOfRangeError):
+                            owns_clock_routes = False
+                        if owns_clock_routes:
+                            identities.append(identity)
 
-        selected = identities or integration_identities
+        integration_identities = (
+            getattr(snapshot, "integration_identities", None)
+            or self._integration_identities
+        )
+        if not integration_identities:
+            gathered_integration: list[_EphemerisKernelIdentity] = []
+            for reader in snapshot.readers:
+                integration_identity = getattr(
+                    reader, "_integration_kernel_identity", None
+                )
+                if isinstance(integration_identity, _EphemerisKernelIdentity):
+                    gathered_integration.append(integration_identity)
+            integration_identities = tuple(gathered_integration)
+
+        selected = identities or list(integration_identities)
         if not selected:
             return None
         first = selected[0]
@@ -1786,17 +1893,12 @@ class KernelPool:
                 )
         return tuple(edges)
 
-    def _find_route_tdb(
-        self,
-        snapshot: _PoolSnapshot,
+    @staticmethod
+    def _bfs_route(
+        edges: tuple[_RouteEdge, ...] | list[_RouteEdge],
         center: int,
         target: int,
-        epoch_tdb: float,
-        epoch_end_tdb: float | None = None,
     ) -> tuple[_RouteEdge, ...] | None:
-        if center == target:
-            return ()
-        edges = self._route_edges_tdb(snapshot, epoch_tdb, epoch_end_tdb)
         by_start: dict[int, list[_RouteEdge]] = {}
         for edge in edges:
             by_start.setdefault(edge.start, []).append(edge)
@@ -1812,6 +1914,218 @@ class KernelPool:
                 if edge.end not in visited:
                     visited.add(edge.end)
                     queue.append((edge.end, next_route))
+        return None
+
+    def _find_direct_edge_tdb(
+        self,
+        snapshot: _PoolSnapshot,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> tuple[_RouteEdge, ...] | None:
+        pair_readers = getattr(snapshot, "pair_readers", None) or self._pair_readers
+        if not pair_readers:
+            return None
+
+        # Direct (center, target)
+        for pool_index, reader in pair_readers.get((center, target), ()):
+            if pool_index >= len(snapshot.readers) or snapshot.readers[pool_index] is not reader:
+                continue
+            interval_getter = getattr(reader, "coverage_intervals_tdb", None)
+            checker = getattr(reader, "has_segment_at_tdb", None)
+            if not callable(interval_getter) or not callable(checker):
+                continue
+            intervals = tuple(interval_getter(center, target))
+            if self._interval_covers(intervals, epoch_tdb, epoch_end_tdb):
+                return (
+                    _RouteEdge(
+                        start=center,
+                        end=target,
+                        source_center=center,
+                        source_target=target,
+                        sign=1,
+                        reader=reader,
+                        pool_index=pool_index,
+                    ),
+                )
+
+        # Reverse (target, center)
+        for pool_index, reader in pair_readers.get((target, center), ()):
+            if pool_index >= len(snapshot.readers) or snapshot.readers[pool_index] is not reader:
+                continue
+            interval_getter = getattr(reader, "coverage_intervals_tdb", None)
+            checker = getattr(reader, "has_segment_at_tdb", None)
+            if not callable(interval_getter) or not callable(checker):
+                continue
+            intervals = tuple(interval_getter(target, center))
+            if self._interval_covers(intervals, epoch_tdb, epoch_end_tdb):
+                return (
+                    _RouteEdge(
+                        start=center,
+                        end=target,
+                        source_center=target,
+                        source_target=center,
+                        sign=-1,
+                        reader=reader,
+                        pool_index=pool_index,
+                    ),
+                )
+        return None
+
+    def _find_candidate_route_tdb(
+        self,
+        snapshot: _PoolSnapshot,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> tuple[_RouteEdge, ...] | None:
+        target_readers = getattr(snapshot, "target_readers", None) or self._target_readers
+        if not target_readers:
+            return None
+
+        hub_indices = getattr(snapshot, "hub_indices", None) or self._hub_indices
+        candidate_indices: set[int] = set(hub_indices)
+        for p_idx, _ in target_readers.get(center, ()):
+            candidate_indices.add(p_idx)
+        for p_idx, _ in target_readers.get(target, ()):
+            candidate_indices.add(p_idx)
+
+        if len(candidate_indices) >= len(snapshot.readers):
+            return None
+
+        ordered_indices = sorted(
+            p_idx for p_idx in candidate_indices if p_idx < len(snapshot.readers)
+        )
+        edges: list[_RouteEdge] = []
+        for pool_index in ordered_indices:
+            reader = snapshot.readers[pool_index]
+            interval_getter = getattr(reader, "coverage_intervals_tdb", None)
+            checker = getattr(reader, "has_segment_at_tdb", None)
+            if not callable(interval_getter) or not callable(checker):
+                continue
+            for source_center, source_target in self._reader_pairs_tdb(reader):
+                intervals = tuple(interval_getter(source_center, source_target))
+                if not self._interval_covers(intervals, epoch_tdb, epoch_end_tdb):
+                    continue
+                edges.append(
+                    _RouteEdge(
+                        start=source_center,
+                        end=source_target,
+                        source_center=source_center,
+                        source_target=source_target,
+                        sign=1,
+                        reader=reader,
+                        pool_index=pool_index,
+                    )
+                )
+                edges.append(
+                    _RouteEdge(
+                        start=source_target,
+                        end=source_center,
+                        source_center=source_center,
+                        source_target=source_target,
+                        sign=-1,
+                        reader=reader,
+                        pool_index=pool_index,
+                    )
+                )
+
+        return self._bfs_route(edges, center, target)
+
+    def _find_fallback_route_tdb(
+        self,
+        snapshot: _PoolSnapshot,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> tuple[_RouteEdge, ...] | None:
+        edges = self._route_edges_tdb(snapshot, epoch_tdb, epoch_end_tdb)
+        return self._bfs_route(edges, center, target)
+
+    def _cache_route_locked(
+        self,
+        cache_key: tuple[int, int],
+        route: tuple[_RouteEdge, ...],
+        epoch_tdb: float,
+        epoch_end_tdb: float | None,
+    ) -> None:
+        if not route:
+            return
+        min_valid = -math.inf
+        max_valid = math.inf
+        for edge in route:
+            candidates = self._pair_readers.get(
+                (edge.source_center, edge.source_target), ()
+            )
+            if candidates and candidates[0][0] < edge.pool_index:
+                return
+            interval_getter = getattr(edge.reader, "coverage_intervals_tdb", None)
+            if not callable(interval_getter):
+                return
+            intervals = interval_getter(edge.source_center, edge.source_target)
+            covering = [
+                (start, stop)
+                for start, stop in intervals
+                if start <= epoch_tdb and (epoch_end_tdb is None or epoch_end_tdb <= stop)
+            ]
+            if not covering:
+                return
+            min_valid = max(min_valid, covering[0][0])
+            max_valid = min(max_valid, covering[0][1])
+
+        if min_valid >= max_valid:
+            return
+
+        with self._route_cache_lock:
+            self._route_cache[cache_key] = (min_valid, max_valid, route)
+            while len(self._route_cache) > 512:
+                self._route_cache.popitem(last=False)
+
+    def _find_route_tdb(
+        self,
+        snapshot: _PoolSnapshot,
+        center: int,
+        target: int,
+        epoch_tdb: float,
+        epoch_end_tdb: float | None = None,
+    ) -> tuple[_RouteEdge, ...] | None:
+        if center == target:
+            return ()
+
+        cache_key = (center, target)
+        with self._route_cache_lock:
+            cached = self._route_cache.get(cache_key)
+            if cached is not None:
+                start_valid, end_valid, cached_route = cached
+                req_end = epoch_tdb if epoch_end_tdb is None else epoch_end_tdb
+                if start_valid <= epoch_tdb and req_end <= end_valid:
+                    self._route_cache.move_to_end(cache_key)
+                    return cached_route
+
+        direct_route = self._find_direct_edge_tdb(
+            snapshot, center, target, epoch_tdb, epoch_end_tdb
+        )
+        if direct_route is not None:
+            self._cache_route_locked(cache_key, direct_route, epoch_tdb, epoch_end_tdb)
+            return direct_route
+
+        candidate_route = self._find_candidate_route_tdb(
+            snapshot, center, target, epoch_tdb, epoch_end_tdb
+        )
+        if candidate_route is not None:
+            self._cache_route_locked(cache_key, candidate_route, epoch_tdb, epoch_end_tdb)
+            return candidate_route
+
+        fallback_route = self._find_fallback_route_tdb(
+            snapshot, center, target, epoch_tdb, epoch_end_tdb
+        )
+        if fallback_route is not None:
+            self._cache_route_locked(cache_key, fallback_route, epoch_tdb, epoch_end_tdb)
+            return fallback_route
+
         return None
 
     @staticmethod
