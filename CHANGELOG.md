@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.8.1] - 2026-09-20
+
+### Fixed
+- **KernelPool C++ Native Evaluator Admission & Indexing**:
+  - Admitted `KernelPool` to `NativePlanetaryEvaluator` across all planetary reduction surfaces (`planets.py`), resolving the primary SPK reader (`de441.bsp`) to restore sub-millisecond compiled planetary reductions (0.53 ms) when hundreds of asteroid shards are loaded.
+  - Added $O(1)$ pair/target indexing (`_pair_readers`, `_target_readers`), hub filtering, and candidate-pruned BFS routing to `KernelPool._find_route_tdb` (`spk_reader.py`), resolving a 2.8M-call unindexed linear search bottleneck.
+  - Implemented bounded LRU route caching (`_route_cache`) with epoch validity intervals, accelerating repeated small-body lookups to 0.07 ms.
+  - Restricted clock route identification (`_ephemeris_kernel_identity_at_tdb`) to planetary clock spines, eliminating 2,350 redundant segment queries per epoch conversion.
+  - Added thread-safe memoization for verified small-body catalog releases (`small_body_catalog_release.py`).
+
 ### Added
 - **Sovereign Small-Body Ephemeris Catalog Expansion (`moira-asteroids-2026.09.18.1`)**:
   - Expanded catalog from 10,025 to **11,223 admitted numbered minor planets** across **449 Type-13 SPK shards** (shards 000 through 448), adding 1,198 missing numbered Trans-Neptunian Objects (TNOs) and Centaurs from JPL Horizons.
