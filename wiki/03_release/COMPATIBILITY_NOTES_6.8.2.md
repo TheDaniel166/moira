@@ -1,8 +1,8 @@
-# Compatibility Notes - Moira 6.8.1
+# Compatibility Notes - Moira 6.8.2
 
 ## Upgrade Boundary
 
-Moira 6.8.1 is fully backward-compatible from 6.8.0 for all public Python APIs,
+Moira 6.8.2 is fully backward-compatible from 6.8.0 for all public Python APIs,
 REST routes, and transport schemas. No public signatures, parameters, or response
 structures were altered.
 
@@ -21,10 +21,10 @@ structures were altered.
 
 Direct drop-in upgrade from 6.8.0:
 ```text
-pip install --upgrade moira-astro==6.8.1
+pip install --upgrade moira-astro==6.8.2
 ```
 For services running `moira_server`:
 ```text
-pip install --upgrade "moira-astro[server]==6.8.1"
+pip install --upgrade "moira-astro[server]==6.8.2"
 ```
 Restart server processes (`moira-engine`, `moira-api`) following upgrade.

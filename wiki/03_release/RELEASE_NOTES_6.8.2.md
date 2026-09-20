@@ -1,8 +1,8 @@
-# Moira 6.8.1 - KernelPool Native Planetary Evaluator & Ephemeris Graph Routing
+# Moira 6.8.2 - KernelPool Native Planetary Evaluator & Ephemeris Graph Routing
 
-Release date: 2026-09-20. Upgrade path: 6.8.0 to 6.8.1.
+Release date: 2026-09-20. Upgrade path: 6.8.0 to 6.8.2.
 
-Moira 6.8.1 delivers critical engine performance and architectural optimizations
+Moira 6.8.2 delivers critical engine performance and architectural optimizations
 when operating with large sharded small-body catalogs. It restores high-speed compiled
 C++ planetary reduction under pooled kernels and optimizes SPK graph traversal from
 linear search to $O(1)$ indexed lookup.
@@ -43,5 +43,5 @@ linear search to $O(1)$ indexed lookup.
 ## Install
 
 ```text
-pip install moira-astro==6.8.1
+pip install moira-astro==6.8.2
 ```
