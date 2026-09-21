@@ -115,7 +115,6 @@ BUNDLES: tuple[BundleSpec, ...] = (
             "moira/constants.py",
             "moira/compat",
             "moira/bridges",
-            "moira/_export_governance",
         ),
     ),
     BundleSpec(
