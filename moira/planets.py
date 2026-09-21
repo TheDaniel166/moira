@@ -930,7 +930,10 @@ def _npe_public_route_segment_specs(reader: SpkReader, epoch_tdb: float):
 
     specs: list[tuple[int, int, int]] = []
     for center, target in _NPE_PUBLIC_ROUTE_PAIRS:
-        segment = reader._segment_for_tdb(center, target, epoch_tdb)
+        try:
+            segment = reader._segment_for_tdb(center, target, epoch_tdb)
+        except (ValueError, KeyError, AttributeError):
+            return None
         if getattr(segment, "_handle", None) is not handle:
             return None
         if not all(hasattr(segment, attr) for attr in ("start_i", "end_i", "data_type")):
@@ -950,7 +953,10 @@ def _npe_body_route_segment_specs(reader: SpkReader, epoch_tdb: float):
     for body, route in _NPE_BODY_ROUTE_PAIRS.items():
         specs: list[tuple[int, int, int]] = []
         for center, target in route:
-            segment = reader._segment_for_tdb(center, target, epoch_tdb)
+            try:
+                segment = reader._segment_for_tdb(center, target, epoch_tdb)
+            except (ValueError, KeyError, AttributeError):
+                return None
             if getattr(segment, "_handle", None) is not handle:
                 return None
             if not all(hasattr(segment, attr) for attr in ("start_i", "end_i", "data_type")):
@@ -984,6 +990,13 @@ def _prefill_npe_public_vector_cache(
     vector_cache[("earth_bary_state", Body.EARTH, jd_tt)] = (earth_pos, earth_vel)
     vector_cache[("body_bary_pos", Body.SUN, jd_tt)] = ssb_sun[0]
     vector_cache[("body_bary_state", Body.SUN, jd_tt)] = ssb_sun
+    vector_cache[("bary_pos", Body.EARTH, jd_tt)] = earth_pos
+    vector_cache[("bary_state", Body.EARTH, jd_tt)] = (earth_pos, earth_vel)
+    vector_cache[("geo_pos", Body.EARTH, jd_tt)] = (0.0, 0.0, 0.0)
+    vector_cache[("geo_state", Body.EARTH, jd_tt)] = (
+        (0.0, 0.0, 0.0),
+        (0.0, 0.0, 0.0),
+    )
 
     for body in _NPE_ADMITTED_BODIES:
         if body == Body.SUN:
@@ -1100,6 +1113,8 @@ def _native_all_planets_plan(
     if spk_reader is None:
         return _native_python_plan(_NativeAdmissionReason.UNSUPPORTED_READER_TYPE)
     epoch_tdb = tt_to_tdb(jd_tt)
+    evaluator = _get_native_planetary_evaluator(spk_reader)
+
     public_specs = _npe_public_route_segment_specs(spk_reader, epoch_tdb)
     if public_specs is None:
         return _native_python_plan(_NativeAdmissionReason.PUBLIC_ROUTE_UNAVAILABLE)
@@ -1107,7 +1122,6 @@ def _native_all_planets_plan(
     if body_specs is None:
         return _native_python_plan(_NativeAdmissionReason.BODY_ROUTE_UNAVAILABLE)
 
-    evaluator = _get_native_planetary_evaluator(spk_reader)
     if evaluator is None:
         return _NativeAllPlanetsPlan(
             backend=_NativeAllPlanetsBackend.NATIVE_BATCH,
@@ -1118,7 +1132,7 @@ def _native_all_planets_plan(
             spk_reader=spk_reader,
         )
 
-    rate_specs = []
+    rate_specs: list[tuple[float, float, tuple[tuple[int, int, int], ...], dict[str, tuple[tuple[int, int, int], ...]]]] = []
     for rate_jd in (
         jd_tt - _LONGITUDE_RATE_STEP_DAYS,
         jd_tt + _LONGITUDE_RATE_STEP_DAYS,
@@ -1138,7 +1152,7 @@ def _native_all_planets_plan(
         public_specs=tuple(public_specs),
         body_specs=body_specs,
         epoch_tdb=epoch_tdb,
-        rate_specs=tuple(rate_specs),
+        rate_specs=rate_specs,
         evaluator=evaluator,
         spk_reader=spk_reader,
     )
@@ -1206,6 +1220,63 @@ def _native_all_planets_admitted(
         and evaluator is not None
         and rot_mat is not None
     ):
+        eval_with_speed = getattr(
+            evaluator,
+            "evaluate_all_planets_apparent_with_speed",
+            getattr(evaluator, "evaluate_all_planets_apparent_geocentric_ecliptic_with_speed", None),
+        )
+        if eval_with_speed is not None and len(plan.rate_specs) == 2:
+            rate_m_jd, rate_m_tdb, _, _ = plan.rate_specs[0]
+            rate_p_jd, rate_p_tdb, _, _ = plan.rate_specs[1]
+
+            rate_m_mean_eps = mean_obliquity(rate_m_jd)
+            rate_m_dpsi, rate_m_deps = _nutation(rate_m_jd)
+            rate_m_rot_mat = _compose_rotation_matrix(
+                rate_m_jd,
+                with_nutation=True,
+                mean_obliquity_deg=rate_m_mean_eps,
+                dpsi_deg=rate_m_dpsi,
+                deps_deg=rate_m_deps,
+            )
+
+            rate_p_mean_eps = mean_obliquity(rate_p_jd)
+            rate_p_dpsi, rate_p_deps = _nutation(rate_p_jd)
+            rate_p_rot_mat = _compose_rotation_matrix(
+                rate_p_jd,
+                with_nutation=True,
+                mean_obliquity_deg=rate_p_mean_eps,
+                dpsi_deg=rate_p_dpsi,
+                deps_deg=rate_p_deps,
+            )
+
+            payloads = eval_with_speed(
+                list(bodies),
+                specs,
+                body_segment_specs,
+                epoch_tdb,
+                obliquity,
+                rot_mat,
+                _LONGITUDE_RATE_STEP_DAYS,
+                rate_m_tdb,
+                rate_m_mean_eps + rate_m_deps,
+                rate_m_rot_mat,
+                rate_p_tdb,
+                rate_p_mean_eps + rate_p_deps,
+                rate_p_rot_mat,
+            )
+            return {
+                row[0]: PlanetData(
+                    name=row[0],
+                    longitude=float(row[1]),
+                    latitude=float(row[2]),
+                    distance=float(row[3]),
+                    speed=float(row[4]),
+                    retrograde=bool(row[5]),
+                    is_topocentric=False,
+                )
+                for row in payloads
+            }
+
         payloads = evaluator.evaluate_all_planets_apparent_geocentric_ecliptic(
             list(bodies),
             specs,

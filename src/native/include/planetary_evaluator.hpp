@@ -1,8 +1,10 @@
 #ifndef MOIRA_NATIVE_PLANETARY_EVALUATOR_HPP
 #define MOIRA_NATIVE_PLANETARY_EVALUATOR_HPP
 
+#include <cmath>
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -47,11 +49,237 @@ public:
         SegmentSpecHash
     >;
 
+    struct ApparentEclipticCoord {
+        double longitude = 0.0;
+        double latitude = 0.0;
+        double distance = 0.0;
+    };
+
     explicit NativePlanetaryEvaluator(std::shared_ptr<NativeSpkKernelHandle> handle)
         : handle_(std::move(handle)) {
         if (!handle_) {
             throw std::runtime_error("NativePlanetaryEvaluator requires a live NativeSpkKernelHandle");
         }
+    }
+
+    void resolve_spec(const SegmentSpec& spec) const {
+        {
+            std::lock_guard<std::mutex> lock(segments_mutex_);
+            if (resolved_segments_.find(spec) != resolved_segments_.end()) {
+                return;
+            }
+        }
+        auto eval = handle_->get_segment_evaluator(
+            std::get<0>(spec), std::get<1>(spec), std::get<2>(spec)
+        );
+        std::lock_guard<std::mutex> lock(segments_mutex_);
+        resolved_segments_.emplace(spec, std::move(eval));
+    }
+
+    void compute_apparent_ecliptic_coordinates(
+        const std::vector<std::string>& bodies,
+        const std::vector<SegmentSpec>& public_specs,
+        const SegmentSpecMap& body_specs,
+        double epoch_tdb,
+        double obliquity_deg,
+        const Mat3& rotation_matrix,
+        std::vector<ApparentEclipticCoord>& out_coords,
+        bool longitude_only
+    ) const {
+        std::vector<std::pair<Vec3, Vec3>> pair_states;
+        pair_states.reserve(public_specs.size());
+        for (const SegmentSpec& spec : public_specs) {
+            pair_states.push_back(route_state({spec}, epoch_tdb));
+        }
+
+        const std::pair<Vec3, Vec3>& ssb_sun = pair_states[0];
+        const std::pair<Vec3, Vec3>& ssb_emb = pair_states[1];
+        const std::pair<Vec3, Vec3>& emb_earth = pair_states[2];
+        const std::pair<Vec3, Vec3>& emb_moon = pair_states[3];
+
+        const Vec3 earth_pos = Vec3::add(ssb_emb.first, emb_earth.first);
+        const Vec3 earth_vel = Vec3::add(ssb_emb.second, emb_earth.second);
+
+        std::unordered_map<std::string, std::pair<Vec3, Vec3>> bary_states;
+        bary_states.reserve(10);
+        bary_states.emplace("Sun", ssb_sun);
+        bary_states.emplace("Moon", std::make_pair(
+            Vec3::add(ssb_emb.first, emb_moon.first),
+            Vec3::add(ssb_emb.second, emb_moon.second)
+        ));
+        bary_states.emplace("Mercury", std::make_pair(
+            Vec3::add(pair_states[4].first, pair_states[5].first),
+            Vec3::add(pair_states[4].second, pair_states[5].second)
+        ));
+        bary_states.emplace("Venus", std::make_pair(
+            Vec3::add(pair_states[6].first, pair_states[7].first),
+            Vec3::add(pair_states[6].second, pair_states[7].second)
+        ));
+        bary_states.emplace("Mars", pair_states[8]);
+        bary_states.emplace("Jupiter", pair_states[9]);
+        bary_states.emplace("Saturn", pair_states[10]);
+        bary_states.emplace("Uranus", pair_states[11]);
+        bary_states.emplace("Neptune", pair_states[12]);
+        bary_states.emplace("Pluto", pair_states[13]);
+
+        const Vec3 sun_geo = Vec3::sub(ssb_sun.first, earth_pos);
+        const Vec3 jupiter_geo = Vec3::sub(pair_states[9].first, earth_pos);
+        const Vec3 saturn_geo = Vec3::sub(pair_states[10].first, earth_pos);
+
+        std::unordered_map<std::string, double> light_times;
+        std::unordered_map<std::string, Vec3> geocentric_lt;
+        light_times.reserve(bodies.size());
+        geocentric_lt.reserve(bodies.size());
+        for (const std::string& body : bodies) {
+            const auto it = bary_states.find(body);
+            if (it == bary_states.end()) {
+                throw std::runtime_error("admitted evaluator received unsupported body: " + body);
+            }
+            const Vec3 xyz = Vec3::sub(it->second.first, earth_pos);
+            light_times.emplace(body, xyz.norm() / C_KM_PER_DAY);
+            geocentric_lt.emplace(body, xyz);
+        }
+
+        for (int iter = 0; iter < 3; ++iter) {
+            bool converged = true;
+            for (const std::string& body : bodies) {
+                const auto specs_it = body_specs.find(body);
+                if (specs_it == body_specs.end()) {
+                    throw std::runtime_error("missing admitted route specs for body: " + body);
+                }
+                const Vec3 bary_lt = route_position(
+                    specs_it->second,
+                    epoch_tdb - light_times.at(body)
+                );
+                const Vec3 xyz_lt = Vec3::sub(bary_lt, earth_pos);
+                const double next_lt = xyz_lt.norm() / C_KM_PER_DAY;
+                if (std::abs(next_lt - light_times.at(body)) >= 1e-14) {
+                    converged = false;
+                }
+                light_times[body] = next_lt;
+                geocentric_lt[body] = xyz_lt;
+            }
+            if (converged) {
+                break;
+            }
+        }
+
+        out_coords.clear();
+        out_coords.reserve(bodies.size());
+
+        const double eps = deg_to_rad(obliquity_deg);
+        const double cos_eps = std::cos(eps);
+        const double sin_eps = std::sin(eps);
+
+        for (const std::string& body : bodies) {
+            Vec3 xyz = geocentric_lt.at(body);
+            if (body != "Sun" && body != "Moon") {
+                std::vector<std::pair<Vec3, double>> deflectors;
+                deflectors.reserve(3);
+                deflectors.emplace_back(sun_geo, 2.95325008);
+                if (body != "Jupiter") {
+                    deflectors.emplace_back(jupiter_geo, 0.00282);
+                }
+                if (body != "Saturn") {
+                    deflectors.emplace_back(saturn_geo, 0.000838);
+                }
+                xyz = apply_deflection(xyz, deflectors);
+            }
+
+            xyz = apply_aberration_velocity(xyz, earth_vel);
+            xyz = Mat3::mul(rotation_matrix, xyz);
+
+            const double xe = xyz[0];
+            const double ye = xyz[1] * cos_eps + xyz[2] * sin_eps;
+            const double ze = -xyz[1] * sin_eps + xyz[2] * cos_eps;
+
+            const double longitude = normalize_deg_360(rad_to_deg(std::atan2(ye, xe)));
+            if (longitude_only) {
+                out_coords.push_back(ApparentEclipticCoord{longitude, 0.0, 0.0});
+            } else {
+                const double distance = std::sqrt(xe * xe + ye * ye + ze * ze);
+                if (distance == 0.0) {
+                    throw std::runtime_error("native planetary evaluator received a zero-magnitude equatorial vector");
+                }
+                const double latitude = rad_to_deg(safe_asin(ze / distance));
+                out_coords.push_back(ApparentEclipticCoord{longitude, latitude, distance});
+            }
+        }
+    }
+
+    static double signed_longitude_delta(double lon, double ref) noexcept {
+        double diff = std::fmod(lon - ref + 540.0, 360.0);
+        if (diff < 0.0) {
+            diff += 360.0;
+        }
+        return diff - 180.0;
+    }
+
+    std::vector<NativePlanetaryPayload> evaluate_all_planets_apparent_with_speed(
+        const std::vector<std::string>& bodies,
+        const std::vector<SegmentSpec>& public_specs,
+        const SegmentSpecMap& body_specs,
+        double epoch_tdb,
+        double obliquity_deg,
+        const Mat3& rotation_matrix,
+        double rate_step_days,
+        double rate_minus_epoch_tdb,
+        double rate_minus_obliquity_deg,
+        const Mat3& rate_minus_rotation_matrix,
+        double rate_plus_epoch_tdb,
+        double rate_plus_obliquity_deg,
+        const Mat3& rate_plus_rotation_matrix
+    ) const {
+        if (public_specs.size() != 14) {
+            throw std::runtime_error("admitted planetary evaluator requires 14 public route specs");
+        }
+
+        for (const SegmentSpec& spec : public_specs) {
+            resolve_spec(spec);
+        }
+        for (const auto& body_route : body_specs) {
+            for (const SegmentSpec& spec : body_route.second) {
+                resolve_spec(spec);
+            }
+        }
+
+        std::vector<ApparentEclipticCoord> primary_coords;
+        compute_apparent_ecliptic_coordinates(
+            bodies, public_specs, body_specs,
+            epoch_tdb, obliquity_deg, rotation_matrix,
+            primary_coords, false
+        );
+
+        std::vector<ApparentEclipticCoord> minus_coords;
+        compute_apparent_ecliptic_coordinates(
+            bodies, public_specs, body_specs,
+            rate_minus_epoch_tdb, rate_minus_obliquity_deg, rate_minus_rotation_matrix,
+            minus_coords, true
+        );
+
+        std::vector<ApparentEclipticCoord> plus_coords;
+        compute_apparent_ecliptic_coordinates(
+            bodies, public_specs, body_specs,
+            rate_plus_epoch_tdb, rate_plus_obliquity_deg, rate_plus_rotation_matrix,
+            plus_coords, true
+        );
+
+        std::vector<NativePlanetaryPayload> out;
+        out.reserve(bodies.size());
+        const double two_dt = 2.0 * rate_step_days;
+        for (size_t i = 0; i < bodies.size(); ++i) {
+            const double diff = signed_longitude_delta(plus_coords[i].longitude, minus_coords[i].longitude);
+            const double speed = diff / two_dt;
+            out.push_back(NativePlanetaryPayload{
+                bodies[i],
+                primary_coords[i].longitude,
+                primary_coords[i].latitude,
+                primary_coords[i].distance,
+                speed,
+                speed < 0.0
+            });
+        }
+        return out;
     }
 
     std::vector<NativePlanetaryPayload> evaluate_all_planets_apparent_geocentric_ecliptic(
@@ -66,21 +294,6 @@ public:
             throw std::runtime_error("admitted planetary evaluator requires 14 public route specs");
         }
 
-        // Resolve the immutable evaluators once per public calculation.  This
-        // preserves the kernel handle's bounded LRU ownership while avoiding
-        // repeated mutex/LRU traffic in each light-time iteration.
-        ResolvedSegments resolved_segments;
-        resolved_segments.reserve(public_specs.size() + body_specs.size() * 2);
-        const auto resolve_spec = [&](const SegmentSpec& spec) {
-            if (resolved_segments.find(spec) == resolved_segments.end()) {
-                resolved_segments.emplace(
-                    spec,
-                    handle_->get_segment_evaluator(
-                        std::get<0>(spec), std::get<1>(spec), std::get<2>(spec)
-                    )
-                );
-            }
-        };
         for (const SegmentSpec& spec : public_specs) {
             resolve_spec(spec);
         }
@@ -93,7 +306,7 @@ public:
         std::vector<std::pair<Vec3, Vec3>> pair_states;
         pair_states.reserve(public_specs.size());
         for (const SegmentSpec& spec : public_specs) {
-            pair_states.push_back(route_state({spec}, epoch_tdb, resolved_segments));
+            pair_states.push_back(route_state({spec}, epoch_tdb));
         }
 
         const std::pair<Vec3, Vec3>& ssb_sun = pair_states[0];
@@ -161,8 +374,7 @@ public:
                 }
                 const Vec3 bary_lt = route_position(
                     specs_it->second,
-                    epoch_tdb - light_times.at(body),
-                    resolved_segments
+                    epoch_tdb - light_times.at(body)
                 );
                 const Vec3 xyz_lt = Vec3::sub(bary_lt, earth_pos);
                 const double next_lt = xyz_lt.norm() / C_KM_PER_DAY;
@@ -219,15 +431,14 @@ public:
 private:
     std::pair<Vec3, Vec3> route_state(
         const std::vector<SegmentSpec>& specs,
-        double epoch_tdb,
-        const ResolvedSegments& resolved_segments
+        double epoch_tdb
     ) const {
         Vec3 position;
         Vec3 velocity;
         for (const SegmentSpec& spec : specs) {
             double pos[3];
             double vel[3];
-            resolved_segments.at(spec)->position_and_velocity(epoch_tdb, pos, vel);
+            resolved_segments_.at(spec)->position_and_velocity(epoch_tdb, pos, vel);
             position = Vec3::add(position, Vec3(pos[0], pos[1], pos[2]));
             velocity = Vec3::add(velocity, Vec3(vel[0], vel[1], vel[2]));
         }
@@ -236,13 +447,12 @@ private:
 
     Vec3 route_position(
         const std::vector<SegmentSpec>& specs,
-        double epoch_tdb,
-        const ResolvedSegments& resolved_segments
+        double epoch_tdb
     ) const {
         Vec3 out;
         for (const SegmentSpec& spec : specs) {
             double position[3];
-            resolved_segments.at(spec)->position(epoch_tdb, position);
+            resolved_segments_.at(spec)->position(epoch_tdb, position);
             out = Vec3::add(out, Vec3(position[0], position[1], position[2]));
         }
         return out;
@@ -360,6 +570,8 @@ private:
     }
 
     std::shared_ptr<NativeSpkKernelHandle> handle_;
+    mutable std::mutex segments_mutex_;
+    mutable ResolvedSegments resolved_segments_;
 };
 
 } // namespace native

@@ -28,24 +28,24 @@ moira.sky.visibility
     directional twilight, naked-eye point-source thresholds, arcus visionis,
     and heliacal event search for planets, Moon, and stars.
 
-moira.sky.bodies        [stub]
+moira.sky.bodies
     Planetary positions, Moon, Sun, asteroids, lunar nodes / apsides.
 
-moira.sky.observation   [stub]
+moira.sky.observation
     Phase angle, illuminated fraction, angular diameter, apparent
     magnitude, elongation.
 
-moira.sky.galactic      [stub]
+moira.sky.galactic
     Galactic coordinate transforms, reference points.
 
-moira.sky.events        [stub]
+moira.sky.events
     Stations, conjunctions, apsides, Moon phases, solstices/equinoxes.
 
-moira.sky.eclipse       [stub]
+moira.sky.eclipse
     Solar and lunar eclipse prediction, contacts, geographic paths,
     Saros and Metonic identification, local circumstances.
 
-moira.sky.occultation   [stub]
+moira.sky.occultation
     Lunar and stellar occultations, close approaches, geographic paths.
 
 Design contract
@@ -53,7 +53,7 @@ Design contract
 - Every symbol surfaces Moira's internal computation directly.
 - application-layer coupling (e.g. local_space_from_chart) is excluded.
 - No silent fallbacks, no hidden defaults.
-- Stubs are documented but raise NotImplementedError — they do not pretend.
+- Mathematical derivation and reference frames remain explicit throughout.
 """
 
 from __future__ import annotations

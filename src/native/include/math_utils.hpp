@@ -46,7 +46,11 @@ inline double rad_to_arcsec(double rad) { return rad / ARCSEC2RAD; }
 inline double hours_to_rad(double hours) { return hours * 15.0 * DEG2RAD; }
 inline double rad_to_hours(double rad) { return rad * RAD2DEG / 15.0; }
 
-inline double normalize_deg_360(double deg) { return mod_floor(deg, 360.0); }
+inline double normalize_deg_360(double deg) {
+    double res = mod_floor(deg, 360.0);
+    if (res >= 360.0 || res < 0.0) res = 0.0;
+    return res;
+}
 inline double normalize_deg_180(double deg) {
     double res = mod_floor(deg, 360.0);
     if (res > 180.0) res -= 360.0;

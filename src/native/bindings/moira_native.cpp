@@ -1383,6 +1383,117 @@ PYBIND11_MODULE(_moira_native, m) {
             py::arg("epoch_tdb"),
             py::arg("obliquity_deg"),
             py::arg("rotation_matrix")
+        )
+        .def(
+            "evaluate_all_planets_apparent_with_speed",
+            [](const NativePlanetaryEvaluator& self,
+               const std::vector<std::string>& bodies,
+               py::iterable public_specs_src,
+               py::dict body_specs_src,
+               double epoch_tdb,
+               double obliquity_deg,
+               const py::sequence& rotation_matrix_src,
+               double rate_step_days,
+               double rate_minus_epoch_tdb,
+               double rate_minus_obliquity_deg,
+               const py::sequence& rate_minus_rotation_matrix_src,
+               double rate_plus_epoch_tdb,
+               double rate_plus_obliquity_deg,
+               const py::sequence& rate_plus_rotation_matrix_src) {
+                std::vector<NativePlanetaryEvaluator::SegmentSpec> public_specs;
+                for (py::handle spec_handle : public_specs_src) {
+                    py::tuple spec = py::cast<py::tuple>(spec_handle);
+                    if (py::len(spec) != 3) {
+                        throw std::runtime_error("public segment spec must be a 3-tuple");
+                    }
+                    public_specs.emplace_back(
+                        py::cast<int32_t>(spec[0]),
+                        py::cast<int32_t>(spec[1]),
+                        py::cast<int32_t>(spec[2])
+                    );
+                }
+
+                NativePlanetaryEvaluator::SegmentSpecMap body_specs;
+                for (auto item : body_specs_src) {
+                    const std::string body = py::cast<std::string>(item.first);
+                    py::iterable specs_src = py::reinterpret_borrow<py::iterable>(item.second);
+                    std::vector<NativePlanetaryEvaluator::SegmentSpec> specs;
+                    for (py::handle spec_handle : specs_src) {
+                        py::tuple spec = py::cast<py::tuple>(spec_handle);
+                        if (py::len(spec) != 3) {
+                            throw std::runtime_error("body segment spec must be a 3-tuple");
+                        }
+                        specs.emplace_back(
+                            py::cast<int32_t>(spec[0]),
+                            py::cast<int32_t>(spec[1]),
+                            py::cast<int32_t>(spec[2])
+                        );
+                    }
+                    body_specs.emplace(body, std::move(specs));
+                }
+
+                auto parse_mat3 = [](const py::sequence& src) -> Mat3 {
+                    double vals[3][3];
+                    load_mat3(src, vals);
+                    Mat3 m = Mat3::identity();
+                    for (size_t i = 0; i < 3; ++i) {
+                        for (size_t j = 0; j < 3; ++j) {
+                            m[i][j] = vals[i][j];
+                        }
+                    }
+                    return m;
+                };
+
+                Mat3 rot_mat = parse_mat3(rotation_matrix_src);
+                Mat3 rate_minus_rot_mat = parse_mat3(rate_minus_rotation_matrix_src);
+                Mat3 rate_plus_rot_mat = parse_mat3(rate_plus_rotation_matrix_src);
+
+                std::vector<NativePlanetaryPayload> payloads;
+                {
+                    py::gil_scoped_release release;
+                    payloads = self.evaluate_all_planets_apparent_with_speed(
+                        bodies,
+                        public_specs,
+                        body_specs,
+                        epoch_tdb,
+                        obliquity_deg,
+                        rot_mat,
+                        rate_step_days,
+                        rate_minus_epoch_tdb,
+                        rate_minus_obliquity_deg,
+                        rate_minus_rot_mat,
+                        rate_plus_epoch_tdb,
+                        rate_plus_obliquity_deg,
+                        rate_plus_rot_mat
+                    );
+                }
+
+                py::list out;
+                for (const NativePlanetaryPayload& payload : payloads) {
+                    out.append(py::make_tuple(
+                        payload.name,
+                        payload.longitude,
+                        payload.latitude,
+                        payload.distance,
+                        payload.speed,
+                        payload.retrograde
+                    ));
+                }
+                return out;
+            },
+            py::arg("bodies"),
+            py::arg("public_specs"),
+            py::arg("body_specs"),
+            py::arg("epoch_tdb"),
+            py::arg("obliquity_deg"),
+            py::arg("rotation_matrix"),
+            py::arg("rate_step_days"),
+            py::arg("rate_minus_epoch_tdb"),
+            py::arg("rate_minus_obliquity_deg"),
+            py::arg("rate_minus_rotation_matrix"),
+            py::arg("rate_plus_epoch_tdb"),
+            py::arg("rate_plus_obliquity_deg"),
+            py::arg("rate_plus_rotation_matrix")
         );
 
     py::class_<Type13Evaluator, IEvaluator, std::shared_ptr<Type13Evaluator>>(m, "Type13Evaluator")

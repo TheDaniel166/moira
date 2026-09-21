@@ -104,6 +104,18 @@ void validate_terms(
     }
 }
 
+struct CachedNutationEntry {
+    double jd_tt = -1.0;
+    uint64_t gen = 0;
+    NutationResult result{};
+};
+
+constexpr std::size_t NUTATION_CACHE_SIZE = 8;
+thread_local std::array<CachedNutationEntry, NUTATION_CACHE_SIZE> tl_nutation_cache{};
+thread_local std::size_t tl_cache_hand = 0;
+
+static std::atomic<uint64_t> g_series_generation{0};
+
 } // namespace
 
 void register_nutation_2000r06_series(
@@ -125,6 +137,7 @@ void register_nutation_2000r06_series(
         std::shared_ptr<const NutationSeries>(std::move(series)),
         std::memory_order_release
     );
+    g_series_generation.fetch_add(1, std::memory_order_release);
 }
 
 bool nutation_2000r06_series_ready() noexcept {
@@ -137,6 +150,13 @@ NutationResult nutation_2000r06(double jd_tt) {
         throw std::runtime_error(
             "Native IERS 2000_R06 nutation tables are not registered"
         );
+    }
+
+    const uint64_t current_gen = g_series_generation.load(std::memory_order_relaxed);
+    for (std::size_t i = 0; i < NUTATION_CACHE_SIZE; ++i) {
+        if (tl_nutation_cache[i].jd_tt == jd_tt && tl_nutation_cache[i].gen == current_gen) {
+            return tl_nutation_cache[i].result;
+        }
     }
 
     const double t = (jd_tt - J2000) / 36525.0;
@@ -158,10 +178,13 @@ NutationResult nutation_2000r06(double jd_tt) {
         obliquity_uas += index < series->obliquity_j0_count ? value : t * value;
     }
 
-    return {
+    const NutationResult res = {
         longitude_uas * UAS_TO_RAD,
         obliquity_uas * UAS_TO_RAD,
     };
+    tl_nutation_cache[tl_cache_hand] = {jd_tt, current_gen, res};
+    tl_cache_hand = (tl_cache_hand + 1) % NUTATION_CACHE_SIZE;
+    return res;
 }
 
 NutationResult NutationEpochCache::evaluate(double jd_tt) {

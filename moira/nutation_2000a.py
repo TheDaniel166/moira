@@ -28,6 +28,7 @@ External dependency assumptions:
 
 from __future__ import annotations
 
+import functools
 import math
 import threading
 from pathlib import Path
@@ -273,9 +274,19 @@ def nutation_2000a(jd_tt: float) -> tuple[float, float]:
     astronomical derivation.
     """
     _ensure_tables_loaded()
+    return _nutation_2000a_cached(float(jd_tt))
+
+
+@functools.lru_cache(maxsize=256)
+def _nutation_2000a_cached(jd_tt: float) -> tuple[float, float]:
     if _moira_native is not None and _NATIVE_TABLES_REGISTERED:
         return _moira_native.nutation_2000a(jd_tt)
 
     T = centuries_from_j2000(jd_tt)
     fa = _fundamental_args(T)
     return _nutation_python(T, fa)
+
+
+nutation_2000a.cache_clear = _nutation_2000a_cached.cache_clear  # type: ignore[attr-defined]
+nutation_2000a.cache_info = _nutation_2000a_cached.cache_info    # type: ignore[attr-defined]
+
