@@ -32,6 +32,7 @@ from ..models.relationship import (
     MoonConnectionFlowRequest,
     MutualHouseOverlayResponse,
     PatternChartConditionProfileResponse,
+    PatternCoherenceSearchResponse,
     PatternConditionNetworkProfileResponse,
     PatternRequest,
     PatternSearchResponse,
@@ -66,6 +67,7 @@ from ..serializers.relationship import (
     serialize_moon_connection_flow,
     serialize_mutual_overlay,
     serialize_pattern_chart_condition_profile,
+    serialize_pattern_coherence,
     serialize_pattern_network,
     serialize_synastry_chart_condition_profile,
     serialize_synastry_contact,
@@ -89,6 +91,7 @@ from ..services.relationship import (
     compute_pattern_chart_profile,
     compute_pattern_network,
     compute_patterns,
+    compute_patterns_coherence,
     compute_planetary_pictures,
     compute_synastry_aspects,
     compute_synastry_chart_profile,
@@ -252,7 +255,39 @@ def chart_shape_route(request: SingleChartAnalysisRequest, engine: Moira = Depen
 
 @router.post("/patterns/find", response_model=PatternSearchResponse)
 def patterns_route(request: PatternRequest, engine: Moira = Depends(get_engine)) -> PatternSearchResponse:
-    return PatternSearchResponse(events=[serialize_aspect_pattern(item) for item in compute_patterns(engine, request)])
+    patterns = compute_patterns(engine, request)
+    positions = None
+    speeds = None
+    try:
+        from ..services.relationship import _positions_for_analysis, _build_party_chart_and_houses
+        positions = _positions_for_analysis(engine, request.chart, request.include_nodes)
+        chart, _ = _build_party_chart_and_houses(engine, request.chart)
+        speed_getter = getattr(chart, "speeds", None)
+        speeds = speed_getter() if callable(speed_getter) else None
+    except Exception:
+        pass
+
+    events = []
+    for item in patterns:
+        coherence = None
+        try:
+            coherence = item.evaluate_coherence(positions=positions, speeds=speeds)
+        except Exception:
+            pass
+        events.append(serialize_aspect_pattern(item, coherence=coherence))
+    return PatternSearchResponse(events=events)
+
+
+@router.post("/patterns/coherence", response_model=PatternCoherenceSearchResponse)
+def pattern_coherence_route(
+    request: PatternRequest, engine: Moira = Depends(get_engine)
+) -> PatternCoherenceSearchResponse:
+    return PatternCoherenceSearchResponse(
+        events=[
+            serialize_pattern_coherence(item)
+            for item in compute_patterns_coherence(engine, request)
+        ]
+    )
 
 
 @router.post("/patterns/chart-profile", response_model=PatternChartConditionProfileResponse)

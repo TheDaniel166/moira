@@ -74,11 +74,21 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from ._strenum import StrEnum
 from itertools import combinations, permutations
+from typing import Mapping
+from ._strenum import StrEnum
 
 from .aspects import AspectData, find_aspects
 from .coordinates import angular_distance
+from .pattern_coherence import (
+    FROZEN_REFERENCE_ORBS,
+    POLICY_ID as PATTERN_COHERENCE_POLICY_ID,
+    PatternCoherenceBand,
+    PatternCoherenceResult,
+    PatternMotionQualifier,
+    PatternRequiredAspectLedger,
+    evaluate_pattern_coherence,
+)
 
 
 __all__ = [
@@ -128,6 +138,13 @@ __all__ = [
     "find_quintile_triangles",
     "find_septile_triangles",
     "find_all_patterns",
+    "FROZEN_REFERENCE_ORBS",
+    "PATTERN_COHERENCE_POLICY_ID",
+    "PatternCoherenceBand",
+    "PatternCoherenceResult",
+    "PatternMotionQualifier",
+    "PatternRequiredAspectLedger",
+    "evaluate_pattern_coherence",
 ]
 
 
@@ -788,6 +805,31 @@ class AspectPattern:
         if self.condition_profile is None:
             return None
         return self.condition_profile.state
+
+    def evaluate_coherence(
+        self,
+        *,
+        positions: Mapping[str, float] | None = None,
+        speeds: Mapping[str, float] | None = None,
+        reference_frame: str = "geocentric_ecliptic",
+        timescale: str = "UT1",
+        exact_tolerance_deg: float = 1e-9,
+        rate_tolerance_deg_per_day: float = 1e-12,
+    ) -> PatternCoherenceResult:
+        """
+        Evaluate qualitative geometric coherence and instantaneous motion state.
+
+        Delegates to ``moira.pattern_coherence.evaluate_pattern_coherence``.
+        """
+        return evaluate_pattern_coherence(
+            self,
+            positions=positions,
+            speeds=speeds,
+            reference_frame=reference_frame,
+            timescale=timescale,
+            exact_tolerance_deg=exact_tolerance_deg,
+            rate_tolerance_deg_per_day=rate_tolerance_deg_per_day,
+        )
 
 
 # ---------------------------------------------------------------------------

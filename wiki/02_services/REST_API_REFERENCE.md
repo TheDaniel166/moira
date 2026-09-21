@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 460
-- Registered OpenAPI operations: 460 (GET 36, POST 424)
+- Registered OpenAPI paths: 461
+- Registered OpenAPI operations: 461 (GET 36, POST 425)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 456
+- Versioned `/v1` paths: 457
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -774,6 +774,7 @@ never satisfy the count. Legacy `/v1/patterns/*` remains unchanged. See
 | POST | `/v1/davison/transits` | `davison_transits_route` |
 | POST | `/v1/chart-shape/classify` | `chart_shape_route` |
 | POST | `/v1/patterns/find` | `patterns_route` |
+| POST | `/v1/patterns/coherence` | `pattern_coherence_route` |
 | POST | `/v1/patterns/chart-profile` | `pattern_chart_profile_route` |
 | POST | `/v1/patterns/network` | `pattern_network_route` |
 | POST | `/v1/midpoints/calculate` | `midpoints_route` |
@@ -798,13 +799,14 @@ contract.
 
 ### Pattern Search And Dominance Policy
 
-The shared `PatternRequest` for `/v1/patterns/find`,
+The shared `PatternRequest` for `/v1/patterns/find`, `/v1/patterns/coherence`,
 `/v1/patterns/chart-profile`, and `/v1/patterns/network` accepts `chart`,
 `include_nodes`, finite `orb_factor` in `(0, 10]`, optional detector-name
-`include`, and `dominant_only` (default `false`). The three routes use the same
-filtered pattern set so their events, chart condition, and network views cannot
-drift. `dominant_only` must be an actual JSON boolean, and `orb_factor` must be
-a JSON number; coercive strings and booleans are rejected.
+`include`, and `dominant_only` (default `false`). The routes use the same
+filtered pattern set so their events, chart condition, network views, and
+coherence evaluations cannot drift. `dominant_only` must be an actual JSON
+boolean, and `orb_factor` must be a JSON number; coercive strings and booleans
+are rejected.
 
 `dominant_only=true` retains maximal structural aspect patterns. A candidate is
 contained only when its bodies and full preserved aspect signatures are both
@@ -820,6 +822,60 @@ not applying/separating motion or astrological strength. The structured role
 repair means canonical Grand Trine, Minor Grand Trine, Cradle, and Trapeze
 responses no longer report `mixed` solely because their detectors lacked role
 labels.
+
+### Aspect Pattern Qualitative Scoring And Coherence Policy
+
+Aspect pattern qualitative evaluation implements policy
+`moira.pattern_coherence.qualitative.v1-draft`. It provides deterministic,
+astronomically disciplined assessment of closed multi-body aspect patterns
+without ad-hoc scoring or ungrounded scalar percentages.
+
+The policy is exposed via two complementary REST access patterns:
+1. **Dedicated Coherence Endpoint** (`POST /v1/patterns/coherence`): Returns a
+   `PatternCoherenceSearchResponse` containing a list of `PatternCoherenceResponse`
+   objects with bands, motion qualifiers, limiting aspect ledgers, and plain language
+   summaries for each pattern detected in the chart.
+2. **Enriched Pattern Discovery** (`POST /v1/patterns/find`): Returns standard
+   `PatternSearchResponse` where each `AspectPatternResponse` in `events` now
+   embeds an optional `coherence: PatternCoherenceResponse | None` populated with
+   its instantaneous qualitative score and motion witness data.
+
+#### Reference Constants & Admitted Topologies
+Reference orbs are frozen and independent of caller `orb_factor`:
+- Opposition: `8.0°`
+- Square: `7.0°`
+- Trine: `7.0°`
+- Sextile: `5.0°`
+- Quincunx: `3.0°`
+
+Admitted topologies include: `T-Square`, `Grand Trine`, `Grand Cross`, `Yod`,
+`Mystic Rectangle`, and `Kite`. Other patterns (e.g., Stelliums or non-closed
+geometries) evaluate to the `Not assessed` band.
+
+#### Weakest-Link Principle & Coherence Bands
+Coherence is governed by the weakest link: the largest normalized orb ratio $R$
+among all required topological links:
+$$R = \max_{a \in \text{required}} \frac{\text{actual\_orb}(a)}{\text{reference\_orb}(a)}$$
+
+The ratio maps deterministically to qualitative bands:
+- `Very strong`: $R \le 0.10$
+- `Strong`: $0.10 < R \le 0.25$
+- `Moderate`: $0.25 < R \le 0.50$
+- `Loose`: $0.50 < R \le 0.75$
+- `Marginal`: $R > 0.75$
+- `Not assessed`: Unmatched topology, unadmitted pattern, or missing required links.
+
+#### Instantaneous Motion Qualifiers
+Each required link is evaluated via `aspect_motion_witness` using chart longitudes
+and instantaneous daily speeds (`chart.speeds()`). The pattern-level motion qualifier
+is evaluated in strict precedence order:
+1. `Motion unavailable`: All required links lack motion data.
+2. `Partial motion`: At least one link lacks motion data while others have it.
+3. `Station-sensitive`: At least one required link involves a stationary planet.
+4. `Exact`: All required links are exact within exact tolerance ($10^{-9}$ deg).
+5. `Applying`: All required links are actively applying.
+6. `Separating`: All required links are actively separating.
+7. `Mixed motion`: Both applying and separating links exist in the pattern.
 
 ### Positions-In Aspect REST Admission Boundary
 
@@ -3295,6 +3351,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/parans/site` | phenomena | `paran_site_route_v1_parans_site_post` |
 | `GET` | `/v1/parans/star-canon` | phenomena | `paran_star_canon_route_v1_parans_star_canon_get` |
 | `POST` | `/v1/patterns/chart-profile` | relationship | `pattern_chart_profile_route_v1_patterns_chart_profile_post` |
+| `POST` | `/v1/patterns/coherence` | relationship | `pattern_coherence_route_v1_patterns_coherence_post` |
 | `POST` | `/v1/patterns/find` | relationship | `patterns_route_v1_patterns_find_post` |
 | `POST` | `/v1/patterns/network` | relationship | `pattern_network_route_v1_patterns_network_post` |
 | `POST` | `/v1/phase/angle` | phase | `phase_angle_route_v1_phase_angle_post` |

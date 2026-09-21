@@ -12,6 +12,8 @@ from moira.midpoints import (
     planetary_pictures,
 )
 from moira.patterns import (
+    AspectPattern,
+    PatternCoherenceResult,
     find_all_patterns,
     pattern_chart_condition_profile,
     pattern_condition_network_profile,
@@ -406,6 +408,40 @@ def compute_pattern_network(engine: Moira, request: PatternRequest):
     return pattern_condition_network_profile(compute_patterns(engine, request))
 
 
+def compute_patterns_with_coherence(
+    engine: Moira,
+    request: PatternRequest,
+) -> list[tuple[AspectPattern, PatternCoherenceResult]]:
+    """Find all aspect patterns in the chart and evaluate qualitative coherence for each."""
+    patterns = compute_patterns(engine, request)
+    positions = None
+    speeds = None
+    try:
+        positions = _positions_for_analysis(engine, request.chart, request.include_nodes)
+    except Exception:
+        pass
+    try:
+        chart, _ = _build_party_chart_and_houses(engine, request.chart)
+        speed_getter = getattr(chart, "speeds", None)
+        speeds = speed_getter() if callable(speed_getter) else None
+    except Exception:
+        pass
+
+    results: list[tuple[AspectPattern, PatternCoherenceResult]] = []
+    for pat in patterns:
+        coherence = pat.evaluate_coherence(positions=positions, speeds=speeds)
+        results.append((pat, coherence))
+    return results
+
+
+def compute_patterns_coherence(
+    engine: Moira,
+    request: PatternRequest,
+) -> list[PatternCoherenceResult]:
+    """Find all aspect patterns in the chart and return their qualitative coherence evaluations."""
+    return [coherence for _, coherence in compute_patterns_with_coherence(engine, request)]
+
+
 def _midpoint_positions(engine: Moira, request: MidpointRequest):
     return _positions_for_analysis(engine, request.chart, request.include_nodes)
 
@@ -469,6 +505,8 @@ __all__ = [
     "compute_pattern_chart_profile",
     "compute_pattern_network",
     "compute_patterns",
+    "compute_patterns_coherence",
+    "compute_patterns_with_coherence",
     "compute_planetary_pictures",
     "compute_synastry_aspects",
     "compute_synastry_chart_profile",

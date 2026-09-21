@@ -981,6 +981,33 @@ class PatternConditionProfileResponse(_StrictModel):
     state: str
 
 
+class PatternRequiredAspectLedgerResponse(_StrictModel):
+    body1: str
+    body2: str
+    aspect: str
+    actual_orb_deg: float
+    reference_orb_deg: float
+    reference_orb_use: float
+    motion_state: str | None = None
+    is_limiting: bool = False
+    exceeds_reference: bool = False
+
+
+class PatternCoherenceResponse(_StrictModel):
+    policy_id: str
+    pattern_name: str
+    band: str
+    motion_qualifier: str | None = None
+    weakest_link_ratio: float | None = None
+    limiting_aspects: list[PatternRequiredAspectLedgerResponse]
+    required_aspects: list[PatternRequiredAspectLedgerResponse]
+    supplemental_aspects: list[PatternRequiredAspectLedgerResponse] = []
+    motion_counts: dict[str, int] = {}
+    plain_language_summary: str = ""
+    assessment_reason: str | None = None
+    is_assessed: bool
+
+
 class AspectPatternResponse(_StrictModel):
     name: str
     bodies: list[str]
@@ -991,10 +1018,15 @@ class AspectPatternResponse(_StrictModel):
     all_contributions: list[PatternAspectContributionResponse]
     contributions: list[PatternAspectContributionResponse]
     condition_profile: PatternConditionProfileResponse | None = None
+    coherence: PatternCoherenceResponse | None = None
 
 
 class PatternSearchResponse(_StrictModel):
     events: list[AspectPatternResponse]
+
+
+class PatternCoherenceSearchResponse(_StrictModel):
+    events: list[PatternCoherenceResponse]
 
 
 class PatternChartConditionProfileResponse(_StrictModel):
@@ -1159,8 +1191,11 @@ __all__ = [
     "MoonConnectionFlowResponse",
     "MutualHouseOverlayResponse",
     "PatternChartConditionProfileResponse",
+    "PatternCoherenceResponse",
+    "PatternCoherenceSearchResponse",
     "PatternConditionNetworkProfileResponse",
     "PatternRequest",
+    "PatternRequiredAspectLedgerResponse",
     "PatternSearchResponse",
     "PlanetaryPictureRequest",
     "PlanetaryPictureResponse",

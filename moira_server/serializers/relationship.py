@@ -29,6 +29,8 @@ from moira.patterns import (
     PatternConditionNetworkProfile,
     PatternConditionProfile,
     PatternDetectionTruth,
+    PatternCoherenceResult,
+    PatternRequiredAspectLedger,
 )
 from moira.synastry import (
     CompositeChart,
@@ -92,11 +94,13 @@ from ..models.relationship import (
     PatternBodyRoleTruthResponse,
     PatternChartConditionProfileResponse,
     PatternClassificationResponse,
+    PatternCoherenceResponse,
     PatternConditionNetworkEdgeResponse,
     PatternConditionNetworkNodeResponse,
     PatternConditionNetworkProfileResponse,
     PatternConditionProfileResponse,
     PatternDetectionTruthResponse,
+    PatternRequiredAspectLedgerResponse,
     PlanetaryPictureResponse,
     SynastryAspectClassificationResponse,
     SynastryAspectTruthResponse,
@@ -730,7 +734,45 @@ def serialize_pattern_condition_profile(
     )
 
 
-def serialize_aspect_pattern(pattern: AspectPattern) -> AspectPatternResponse:
+def serialize_pattern_required_aspect_ledger(
+    ledger: PatternRequiredAspectLedger,
+) -> PatternRequiredAspectLedgerResponse:
+    return PatternRequiredAspectLedgerResponse(
+        body1=ledger.body1,
+        body2=ledger.body2,
+        aspect=ledger.aspect,
+        actual_orb_deg=ledger.actual_orb_deg,
+        reference_orb_deg=ledger.reference_orb_deg,
+        reference_orb_use=ledger.reference_orb_use,
+        motion_state=ledger.motion_state,
+        is_limiting=ledger.is_limiting,
+        exceeds_reference=ledger.exceeds_reference,
+    )
+
+
+def serialize_pattern_coherence(
+    result: PatternCoherenceResult,
+) -> PatternCoherenceResponse:
+    return PatternCoherenceResponse(
+        policy_id=result.policy_id,
+        pattern_name=result.pattern_name,
+        band=result.band.value,
+        motion_qualifier=result.motion_qualifier.value if result.motion_qualifier is not None else None,
+        weakest_link_ratio=result.weakest_link_ratio,
+        limiting_aspects=[serialize_pattern_required_aspect_ledger(item) for item in result.limiting_aspects],
+        required_aspects=[serialize_pattern_required_aspect_ledger(item) for item in result.required_aspects],
+        supplemental_aspects=[serialize_pattern_required_aspect_ledger(item) for item in result.supplemental_aspects],
+        motion_counts=dict(result.motion_counts),
+        plain_language_summary=result.plain_language_summary,
+        assessment_reason=result.assessment_reason,
+        is_assessed=result.is_assessed,
+    )
+
+
+def serialize_aspect_pattern(
+    pattern: AspectPattern,
+    coherence: PatternCoherenceResult | None = None,
+) -> AspectPatternResponse:
     return AspectPatternResponse(
         name=pattern.name,
         bodies=list(pattern.bodies),
@@ -756,6 +798,15 @@ def serialize_aspect_pattern(pattern: AspectPattern) -> AspectPatternResponse:
             serialize_pattern_condition_profile(pattern.condition_profile)
             if pattern.condition_profile is not None
             else None
+        ),
+        coherence=(
+            coherence
+            if isinstance(coherence, PatternCoherenceResponse)
+            else (
+                serialize_pattern_coherence(coherence)
+                if coherence is not None
+                else None
+            )
         ),
     )
 
@@ -873,7 +924,9 @@ __all__ = [
     "serialize_moon_connection_flow_vessel",
     "serialize_mutual_overlay",
     "serialize_pattern_chart_condition_profile",
+    "serialize_pattern_coherence",
     "serialize_pattern_network",
+    "serialize_pattern_required_aspect_ledger",
     "serialize_synastry_chart_condition_profile",
     "serialize_synastry_contact",
     "serialize_synastry_network",
