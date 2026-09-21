@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **High-Latitude House Solvers Integration & Promotion — Frontier 4**:
+  - Re-founded pole projection onto the exact unitary cleared-denominator plane normal $\mathbf{n} = (-\sin \text{RA} \cos \phi_h, \cos \text{RA} \cos \phi_h, -\sin \phi_h)$ in [`moira/houses.py`](file:///c:/dev/moira/moira/houses.py) and native C++ [`src/native/include/houses.hpp`](file:///c:/dev/moira/src/native/include/houses.hpp), proving $\|\mathbf{n}\| = 1$ unconditionally for all pole heights $\phi_h \in [0^\circ, 90^\circ]$ and eliminating $\tan(\phi_h)$ division-by-zero singularities.
+  - Promoted Campanus, Regiomontanus, and Topocentric from quarantined experimental isolation into the primary **Integrated Branch Doctrine** alongside Placidus and Alcabitius.
+  - Re-classified `HouseSystem.CAMPANUS`, `HouseSystem.REGIOMONTANUS`, and `HouseSystem.TOPOCENTRIC` as `polar_capable=True`. `_POLAR_SYSTEMS` reduced to `{HouseSystem.KOCH}` due to intrinsic diurnal semi-arc circumpolar collapse ($|\tan \phi \tan \delta_{\text{MC}}| > 1$).
+  - Under `HousePolicy.default()`, charts at polar latitudes ($|\phi| \ge 90^\circ - \varepsilon$) with admissible ARMC now automatically deliver real Campanus, Regiomontanus, or Topocentric cusps (`effective_system=system`, `fallback=False`), falling back cleanly to Porphyry with full provenance only when geometry degenerates or cusps fold.
+  - Added REST endpoint `POST /v1/houses/polar-admissibility` returning contiguous valid ARMC windows, valid fractions, sample counts, practical windows, and stability metrics.
+  - Added contract test suite in [`tests/server/test_server_polar_admissibility_routes.py`](file:///c:/dev/moira/tests/server/test_server_polar_admissibility_routes.py) (5/5 passing) and verified across all 141 house and parity tests.
+- **Primary Directions Native Under-Pole Arcs (`_moira_native`) — Frontier 3**:
+  - Implemented compiled native under-pole (*sub polo*) arc engine in [`src/native/include/primary_directions.hpp`](file:///c:/dev/moira/src/native/include/primary_directions.hpp) and registered pybind11 bindings in [`src/native/bindings/moira_native.cpp`](file:///c:/dev/moira/src/native/bindings/moira_native.cpp).
+  - Derived and implemented the branch-independent continuous vector/plane invariant $\sin ZD = |\text{transverse}| / \text{norm}$ where $\text{transverse} = \cos \delta \sin HA$ and $\text{meridional} = \cos \phi \cos \delta \cos HA + \sin \phi \sin \delta$, eliminating the classical meridian-distance $MD = 90^\circ$ singularity without piecewise inverse-tangent branching.
+  - Implemented Regiomontanus/Campanus pole height solver (`regiomontanus_pole_height`), Topocentric pole height solver (`topocentric_pole_height`), oblique coordinate projector (`under_pole_w`), directed arc calculators (`regiomontanus_under_pole_arc`, `topocentric_under_pole_arc`), and role-exchanged pair solver (`compute_under_pole_pair_arcs`).
+  - Formalized Jean-Baptiste Morin's True Converse Role-Exchange Law (*Astrologia Gallica* Book 22, Section I, Chapter 7 & Appendix 5): $\text{converse}(A \to B) = \text{direct}(B \to A)$ with rigorous asymmetric proof against circular negation ($\Delta_{\text{converse}} \neq 360^\circ - \Delta_{\text{direct}}$).
+  - Built batched $N \times N$ matrix generator (`compute_under_pole_arcs_matrix`) with OpenMP multithreading and GIL-scoped release, achieving a **9.3x speedup** (reducing a 12-body 144-pair chart direction matrix from 0.503 ms to **0.054 ms**).
+  - Integrated native fast-paths into [`moira/primary_directions/geometry.py`](file:///c:/dev/moira/moira/primary_directions/geometry.py) with 100% pure-Python fallback preservation, verified to bit-level / sub-microarcsecond numerical parity ($|\Delta| < 10^{-12 \circ}$) across 284 passing tests in [`tests/unit/test_native_primary_directions_parity.py`](file:///c:/dev/moira/tests/unit/test_native_primary_directions_parity.py).
+- **Single-Pass Native Planetary Reduction Pipeline (`all_planets_at` Acceleration)**:
+  - Accelerated 10-planet apparent geocentric reduction (`all_planets_at`) from 0.400 ms down to **0.319 ms** (3,131 charts/sec), reaching **0.227 ms** (>4,400 charts/sec) at the raw C++ evaluator substrate.
+  - Implemented `evaluate_all_planets_apparent_with_speed` in `src/native/include/planetary_evaluator.hpp`, consolidating primary apparent coordinates and finite-difference rate evaluations ($t \pm 0.002$ days) into a single GIL-released native execution pass (`src/native/bindings/moira_native.cpp`).
+  - Implemented thread-safe caching of resolved SPK Chebyshev segment evaluators (`resolved_segments_`) in `NativePlanetaryEvaluator`, eliminating heap allocations and mutex contention across consecutive chart evaluations.
+  - Reduced Python orchestration function call overhead by 54% (from 783,001 down to 361,001 calls per 500 charts) while preserving sub-microarcsecond numerical parity ($\Delta \lambda < 10^{-12 \circ}$) with the pure-Python reference across DE441.
+- **Aspect-Pattern Qualitative Scoring (`v1-draft`) — Frontier 2**:
+  - Implemented qualitative geometric coherence and instantaneous motion scoring under the named policy `moira.pattern_coherence.qualitative.v1-draft` in [`moira/pattern_coherence.py`](file:///c:/dev/moira/moira/pattern_coherence.py), re-exported through [`moira/patterns.py`](file:///c:/dev/moira/moira/patterns.py) and available directly on `AspectPattern.evaluate_coherence()`.
+  - Replaced arbitrary composite percentage scoring with an auditable two-part result: **Coherence Band** (`Very strong`, `Strong`, `Moderate`, `Loose`, `Marginal`) and **Motion Qualifier** (`Motion unavailable`, `Partial motion`, `Station-sensitive`, `Exact`, `Applying`, `Separating`, `Mixed motion`).
+  - Built conservative weakest-link ratio aggregation $R = \max(\text{actual\_orb} / \text{reference\_orb})$ over frozen reference orbs (Opposition $8^\circ$, Square $7^\circ$, Trine $7^\circ$, Sextile $5^\circ$, Quincunx $3^\circ$), preserving full-precision unrounded IEEE-754 angular deviations.
+  - Added strict topological template validators for the six canonical configurations (*T-Square*, *Grand Trine*, *Grand Cross*, *Yod*, *Mystic Rectangle*, *Kite*), mapping required vs. supplemental links and cleanly returning `NOT_ASSESSED` for unsupported templates or non-zodiacal domains.
+  - Evaluated motion qualifiers in strict precedence order using signed motion witnesses from `moira/aspects.py` and existing vessel motion states, ensuring speed reversals preserve geometric bands without predicting future perfection.
+  - Implemented comprehensive test suite in [`tests/unit/test_pattern_coherence_qualitative.py`](file:///c:/dev/moira/tests/unit/test_pattern_coherence_qualitative.py) (52/52 passing).
+  - Added dedicated REST endpoint `POST /v1/patterns/coherence` returning `PatternCoherenceSearchResponse` with qualitative bands, motion qualifiers, limiting aspect ledgers, and plain-language summaries for chart patterns.
+  - Enriched `POST /v1/patterns/find` to embed `coherence: PatternCoherenceResponse | None` on each `AspectPatternResponse` utilizing chart positions and instantaneous daily speeds.
+  - Added Pydantic v2 strict models (`PatternCoherenceResponse`, `PatternCoherenceSearchResponse`, `PatternRequiredAspectLedgerResponse`), serializers, and service functions in `moira_server`.
+  - Added contract test suite in [`tests/server/test_server_pattern_coherence_routes.py`](file:///c:/dev/moira/tests/server/test_server_pattern_coherence_routes.py) (6/6 passing).
+
+### Fixed
+- **Public Route Vector Cache Prefill (`_prefill_npe_public_vector_cache`)**:
+  - Restored canonical iteration over all `_NPE_ADMITTED_BODIES` using `NAIF_ROUTES` in `moira/planets.py`, ensuring all admitted planets (including Mercury and Venus multi-segment routes) correctly populate `bary_pos`, `bary_state`, `geo_pos`, and `geo_state` in the fallback vector cache.
+
+### Removed
+- **Export Governance Tooling Subsystem (`moira/_export_governance`)**:
+  - Excised the unused legacy export-governance package (`moira/_export_governance`, 11 modules), its standalone test suite (`tests/export_governance`, 8 files / 162 tests), one-shot audit reports (`reports/governance/`), and archived execution scripts (`moira-audit-exports.py`, `moira-validate-exports.py`), eliminating obsolete configuration TODOs and reducing dead weight across the engine.
+
 ## [6.8.2] - 2026-09-20
 
 ### Fixed
@@ -25,6 +65,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Remediated 443 `AsteroidNNNN` placeholders: restored official IAU names for *(10946) Guyidong* and *(14380) Bussey*, and indexed official MPC provisional designations for the 441 unnamed bodies.
   - All 449 shards verified with sub-nanometer ($< 1.5 \times 10^{-8}\text{ km}$) Chebyshev interpolation round-trip node errors.
   - Bound sealed catalog release receipt `1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e` into engine manifest and NAIF identity registry.
+- **Native Quadrant House Systems & Nutation Epoch Caching**:
+  - Accelerated `calculate_houses` from 128.6 µs to **18.8 µs** ($6.85\times$, >53,000 charts/sec) while strictly preserving sub-picodegree parity ($\le 10^{-11 \circ}$) with the pure-Python reference.
+  - Implemented high-performance native C++ solvers for **Placidus (`'P'`)**, **Koch (`'K'`)**, **Regiomontanus (`'R'`)**, **Campanus (`'C'`)**, **Porphyry (`'O'`)**, **Equal (`'E'`)**, and **Whole Sign (`'W'`)** in `src/native/include/houses.hpp`, evaluating in 0.45 to 1.9 µs natively with seamless fallback to Python on polar domain limits.
+  - Implemented thread-local epoch caching (`tl_nutation_cache`) and atomic series generation in C++ `nutation_2000r06(double jd_tt)` alongside Python `functools.lru_cache`, reducing repeated IAU 2000A trigonometric evaluations for chart epochs from 37.5 µs to **0.19 µs** ($197\times$ speedup).
+  - Accelerated sidereal angle reduction (`reduce_local_angles`) from 47.2 µs to **0.78 µs** ($57\times$ speedup).
+  - Added comprehensive parity gauntlets in `tests/unit/test_native_houses_parity.py` covering thousands of historical epochs ($-3000 \to +3000$ CE) and global latitudes.
 
 ## [6.8.0] - 2026-09-17
 
