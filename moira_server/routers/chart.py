@@ -11,6 +11,8 @@ from ..models.chart import (
     ChartReductionResponse,
     ChartRequest,
     ChartResponse,
+    HouseDynamicsRequest,
+    HouseDynamicsResponse,
     HousesReductionResponse,
     HousesRequest,
     HousesResponse,
@@ -21,12 +23,14 @@ from ..models.chart import (
 from ..serializers.chart import (
     serialize_chart,
     serialize_chart_with_reduction,
+    serialize_house_dynamics,
     serialize_houses,
     serialize_houses_with_reduction,
 )
 from ..services.chart import (
     compute_chart,
     compute_chart_with_reduction,
+    compute_house_dynamics,
     compute_houses,
     compute_houses_with_reduction,
 )
@@ -116,6 +120,16 @@ def houses_reduction_route(
     """Serialize houses result together with the governing doctrine and computation path (reduction truth)."""
     houses, reduction = compute_houses_with_reduction(engine, request)
     return serialize_houses_with_reduction(houses, reduction)
+
+
+@router.post("/houses/dynamics", response_model=HouseDynamicsResponse)
+def house_dynamics_route(
+    request: HouseDynamicsRequest,
+    engine: Moira = Depends(get_engine),
+) -> HouseDynamicsResponse:
+    """Compute instantaneous house cusp and angle speeds."""
+    dynamics = compute_house_dynamics(engine, request)
+    return serialize_house_dynamics(dynamics)
 
 
 _POLAR_SCAN_MODULES = {

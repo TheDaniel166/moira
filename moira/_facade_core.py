@@ -160,6 +160,29 @@ Canon: Moira Sovereign Facade Architecture; moira.facade core method policy.
             include_boundary_geometry=include_boundary_geometry,
         )
 
+    def house_dynamics(
+        self,
+        dt: datetime,
+        latitude: float,
+        longitude: float,
+        system: str | None = None,
+        policy: Any | None = None,
+        dt_days: float = 1.0 / 1440.0,
+    ):
+        """Calculate instantaneous house cusp and angle speeds for a time and location."""
+        facade = _facade_module()
+        jd = facade.jd_from_datetime(dt)
+        jd_ut1 = facade.utc_to_ut1(jd)
+        house_system = facade.HouseSystem.PLACIDUS if system is None else system
+        return facade.cusp_speeds_at(
+            jd_ut1,
+            latitude,
+            longitude,
+            house_system,
+            policy=policy,
+            dt=dt_days,
+        )
+
     def sky_position(
         self,
         dt: datetime,

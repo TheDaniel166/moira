@@ -8,10 +8,11 @@ from moira import Body, Moira
 from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
 from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
 
-from ..models.chart import ChartRequest, HousesRequest
+from ..models.chart import ChartRequest, HousesRequest, HouseDynamicsRequest
 from ._shared import (
     build_chart_context,
     build_houses_context,
+    _resolve_house_system,
     require_aware_datetime as _require_aware_datetime,
     require_supported_chart_bodies as _require_supported_chart_bodies,
 )
@@ -248,3 +249,25 @@ def compute_houses_with_reduction(engine: Moira, request: HousesRequest):
         classification_polar_capable=(classification.polar_capable if classification is not None else None),
     )
     return houses, reduction
+
+
+def compute_house_dynamics(engine: Moira, request: HouseDynamicsRequest):
+    """Compute house dynamics (cusp and angle speeds) from a transport request."""
+    _require_aware_datetime(request.dt)
+    system = _resolve_house_system(request.system)
+    engine_policy = None
+    if request.policy is not None:
+        from moira.houses import HousePolicy
+        engine_policy = HousePolicy(
+            unknown_system=request.policy.unknown_system,
+            polar_fallback=request.policy.polar_fallback,
+        )
+    dt_days = request.dt_minutes / 1440.0
+    return engine.house_dynamics(
+        request.dt,
+        latitude=request.latitude,
+        longitude=request.longitude,
+        system=system,
+        policy=engine_policy,
+        dt_days=dt_days,
+    )

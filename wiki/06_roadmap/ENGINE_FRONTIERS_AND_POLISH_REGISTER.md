@@ -101,34 +101,41 @@ Three high-priority frontiers identified during the post-6.8.2 optimization surv
   - **Part 4 (Server Transport & Verification)**: Added Pydantic v2 request/response schemas for mundane parallels and midpoints, registered in advanced search policy vessels.
   - Validated across dedicated test suites (`test_primary_directions_mundane_parallels.py`, `test_primary_directions_ptolemy_mundane_aspects.py`, `test_primary_directions_midpoints.py`) with 412/412 tests passing (100% green).
 
+### Frontier 8: House Dynamics & Instantaneous Cusp Speeds
+- **Status**: **COMPLETED & VERIFIED** (September 2026)
+- **Anchors**: [`moira/houses.py`](file:///c:/dev/moira/moira/houses.py), [`moira/_facade_core.py`](file:///c:/dev/moira/moira/_facade_core.py), [`moira_server/routers/chart.py`](file:///c:/dev/moira/moira_server/routers/chart.py), [`moira_server/models/chart.py`](file:///c:/dev/moira/moira_server/models/chart.py)
+- **Scope & Delivery**:
+  - **Part 1 (Analytical Ground Truth Derivations)**: Derived exact closed forms from first principles for fundamental angle velocities under Earth's diurnal rotation:
+    - Midheaven: $\dot{\lambda}_{\text{MC}} = \omega_{\text{sidereal}} \frac{\cos \varepsilon}{1 - \sin^2 \varepsilon \sin^2 \lambda_{\text{MC}}}$ via `analytical_mc_speed()`.
+    - Ascendant: $\dot{\lambda}_{\text{ASC}} = \omega_{\text{sidereal}} \frac{\cos \varepsilon + \tan \phi \sin \varepsilon \sin \theta}{\cos^2 \theta + (\sin \theta \cos \varepsilon + \tan \phi \sin \varepsilon)^2}$ via `analytical_asc_speed()`.
+    - Vertex: $\dot{\lambda}_{\text{VTX}} = \omega_{\text{sidereal}} \frac{\cos \varepsilon - \cot \phi \sin \varepsilon \sin \theta}{\cos^2 \theta + (\sin \theta \cos \varepsilon - \cot \phi \sin \varepsilon)^2}$ via `analytical_vertex_speed()`.
+  - **Part 2 (Engine Core & Facade Integration)**: Re-exported analytical functions and `house_dynamics_from_armc` at package root; integrated `Moira.house_dynamics(dt, latitude, longitude, system=...)` into `CoreFacadeMixin` for seamless high-level execution.
+  - **Part 3 (Server Transport Layer)**: Added Pydantic v2 schemas (`CuspSpeedResponse`, `HouseDynamicsRequest`, `HouseDynamicsResponse`) and registered endpoint `POST /v1/houses/dynamics` with timezone validation and custom step/policy forwarding.
+  - **Part 4 (Comprehensive Oracle Validation)**: Validated across 9 house systems (Placidus, Koch, Regiomontanus, Campanus, Topocentric, Alcabitius, Porphyry, Equal, Whole Sign), 4 latitude regimes (London $+51.5^\circ$, Equator $0.0^\circ$, Sydney $-33.86^\circ$, Reykjavik $+64.1^\circ$), and 3 epochs (J2000, J1900, Modern 2026). Proved sub-millidegree/day analytical agreement ($< 0.0001^\circ/\text{day}$), equatorial horizon symmetry ($\dot{\lambda}_{\text{ASC}}(\theta) = \dot{\lambda}_{\text{MC}}(\theta + 90^\circ)$), and $O(h^4)$ Richardson convergence.
+  - Validated by 90 automated tests in [`tests/unit/test_house_dynamics_oracle.py`](file:///c:/dev/moira/tests/unit/test_house_dynamics_oracle.py), 28 tests in [`tests/unit/test_house_dynamics.py`](file:///c:/dev/moira/tests/unit/test_house_dynamics.py), and 4 server contract tests in [`tests/server/test_server_house_dynamics_routes.py`](file:///c:/dev/moira/tests/server/test_server_house_dynamics_routes.py).
+
 ---
 
 ## 4. Category C — Formally Deferred Doctrinal & Astronomical Systems
 
 These systems represent intentional boundaries where Moira refuses to invent speculative math without primary authority or oracle validation.
 
-### 1. Cusp Dynamics & Instantaneous Speeds (`HouseCuspSpeed`, `HouseDynamics`)
-- **Location**: [`moira/houses.py:5422–5560`](file:///c:/dev/moira/moira/houses.py#L5422-L5560)
-- **Status**: Phase 3 Design Vessel (Deferred).
-- **Doctrinal Challenge**: Cusp speed is observer-location dependent and requires calculating the instantaneous derivative of tropical ecliptic longitude with respect to Universal Time ($\text{deg}/\text{day}$) across polar and non-polar regimes without conflating ARMC-rate with MC-rate.
-- **Gate Condition**: Requires validation against an independent oracle returning cusp speeds in extended output for $\ge 5$ house systems, $\ge 3$ latitudes, $\ge 3$ historical epochs, within a tolerance of $0.001^\circ/\text{day}$.
-
-### 2. Aktinobolia Ray Geometry (`HellenisticRayTruth`)
+### 1. Aktinobolia Ray Geometry (`HellenisticRayTruth`)
 - **Location**: [`moira/hellenistic_relations.py:146–164`](file:///c:/dev/moira/moira/hellenistic_relations.py#L146-L164)
 - **Status**: Doctrine Not Admitted (Placeholder).
 - **Detail**: In accordance with the Anti-Leakage Workflow, Moira does not invent speculative ray geometry. Returns `HellenisticAspectEvaluationStatus.NOT_EVALUABLE` with reason `doctrine_not_admitted` until primary source-backed ray optics are formalized.
 
-### 3. Jaimini Chara Dasha: Second-Cycle Mahadashas
+### 2. Jaimini Chara Dasha: Second-Cycle Mahadashas
 - **Location**: [`moira/jaimini_extended.py:529–534, 661`](file:///c:/dev/moira/moira/jaimini_extended.py#L529-L534)
 - **Status**: Deferred.
 - **Detail**: First-cycle Chara Dasha (12 mahadashas from lagna sign) is fully validated. K.N. Rao's second-cycle rule is explicitly recorded as unverified and deferred rather than guessed.
 
-### 4. Sayanadi Avasthas
+### 3. Sayanadi Avasthas
 - **Location**: [`moira/avasthas.py:33, 794`](file:///c:/dev/moira/moira/avasthas.py#L33)
 - **Status**: Deferred.
 - **Detail**: BPHS 45.30–155 Sayanadi states (12 conditions from Sayana to Upaveshana) require birth ghatis and sub-division time reckoning distinct from standard planetary coordinate vectors. Intentionally deferred until a unified civil-birth time stratum is linked.
 
-### 5. Solar Eclipse Atlas-Grade Terminator Closure
+### 4. Solar Eclipse Atlas-Grade Terminator Closure
 - **Location**: [`moira/eclipse.py:261–297`](file:///c:/dev/moira/moira/eclipse.py#L261-L297) (`SolarEclipsePath`)
 - **Status**: Future Work.
 - **Detail**: The central line, path width, duration, and WGS-84 tangency endpoints are rigorously validated against NASA GSFC Besselian elements. Full continuous terminator-limit closure envelopes are reserved for atlas-grade cartographic expansion.

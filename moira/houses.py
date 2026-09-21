@@ -246,6 +246,9 @@ __all__ = [
     "HouseDynamics",
     "cusp_speeds_at",
     "house_dynamics_from_armc",
+    "analytical_mc_speed",
+    "analytical_asc_speed",
+    "analytical_vertex_speed",
     # Phase 4 — Rudhyar quadrant emphasis
     "Quadrant",
     "QuadrantEmphasisProfile",
@@ -5597,6 +5600,118 @@ def _wrapped_longitude_speed(lon_m: float, lon_p: float, step: float) -> float:
     if raw > 180.0:
         raw -= 360.0
     return raw / (2.0 * step)
+
+def analytical_mc_speed(
+    armc: float,
+    obliquity: float,
+    sidereal_rate_deg_per_day: float = _SIDEREAL_ROTATION_DEG_PER_DAY,
+) -> float:
+    """
+    Compute exact instantaneous Midheaven (MC) speed in degrees/day.
+
+    Derived from the analytical derivative of the equatorial-ecliptic transform:
+        tan(lambda_MC) = tan(ARMC) / cos(eps)
+
+    Differentiating with respect to ARMC theta:
+        d(lambda_MC)/d(theta) = cos(eps) / (sin^2(theta) + cos^2(theta) * cos^2(eps))
+                              = cos(eps) / (1 - sin^2(eps) * cos^2(theta))
+
+    Multiplying by the diurnal sidereal rotation rate omega gives the exact
+    instantaneous velocity in degrees per day.
+    """
+    armc_r = armc * DEG2RAD
+    eps_r = obliquity * DEG2RAD
+    sin_a = math.sin(armc_r)
+    cos_a = math.cos(armc_r)
+    cos_eps = math.cos(eps_r)
+    denom = sin_a * sin_a + cos_a * cos_a * cos_eps * cos_eps
+    if denom <= 0.0:
+        return 0.0
+    return (cos_eps / denom) * sidereal_rate_deg_per_day
+
+
+def analytical_asc_speed(
+    armc: float,
+    obliquity: float,
+    lat: float,
+    sidereal_rate_deg_per_day: float = _SIDEREAL_ROTATION_DEG_PER_DAY,
+) -> float:
+    """
+    Compute exact instantaneous Ascendant (ASC) speed in degrees/day.
+
+    Derived from the analytical derivative of the horizon intersection:
+        y = -cos(theta)
+        x = sin(theta) * cos(eps) + tan(phi) * sin(eps)
+        lambda_ASC = atan2(y, x)
+
+    Differentiating with respect to ARMC theta:
+        y' = sin(theta)
+        x' = cos(theta) * cos(eps)
+        d(lambda_ASC)/d(theta) = (y' * x - y * x') / (x^2 + y^2)
+                               = (cos(eps) + tan(phi) * sin(eps) * sin(theta)) / (x^2 + y^2)
+
+    Multiplying by omega yields the exact instantaneous Ascendant velocity.
+    At the equator (phi = 0), this simplifies to the MC derivative shifted by 90°.
+    """
+    armc_r = armc * DEG2RAD
+    eps_r = obliquity * DEG2RAD
+    lat_r = lat * DEG2RAD
+    cos_a = math.cos(armc_r)
+    sin_a = math.sin(armc_r)
+    cos_eps = math.cos(eps_r)
+    sin_eps = math.sin(eps_r)
+    tan_lat = math.tan(lat_r)
+
+    y = -cos_a
+    x = sin_a * cos_eps + tan_lat * sin_eps
+    denom = x * x + y * y
+    if denom <= 1e-15:
+        return float("nan")
+    num = cos_eps + tan_lat * sin_eps * sin_a
+    return (num / denom) * sidereal_rate_deg_per_day
+
+
+def analytical_vertex_speed(
+    armc: float,
+    obliquity: float,
+    lat: float,
+    sidereal_rate_deg_per_day: float = _SIDEREAL_ROTATION_DEG_PER_DAY,
+) -> float:
+    """
+    Compute exact instantaneous Vertex speed in degrees/day.
+
+    Derived from the analytical derivative of the prime vertical western intersection:
+        y = -cos(theta)
+        x = sin(theta) * cos(eps) - cot(phi) * sin(eps)
+        lambda_VTX = atan2(y, x)
+
+    Differentiating with respect to ARMC theta:
+        y' = sin(theta)
+        x' = cos(theta) * cos(eps)
+        d(lambda_VTX)/d(theta) = (cos(eps) - cot(phi) * sin(eps) * sin(theta)) / (x^2 + y^2)
+
+    Multiplying by omega yields the exact instantaneous Vertex velocity.
+    The Anti-Vertex velocity is mathematically identical.
+    """
+    if abs(lat) < 1e-6 or abs(abs(lat) - 90.0) < 1e-6:
+        return float("nan")
+    armc_r = armc * DEG2RAD
+    eps_r = obliquity * DEG2RAD
+    lat_r = lat * DEG2RAD
+    cos_a = math.cos(armc_r)
+    sin_a = math.sin(armc_r)
+    cos_eps = math.cos(eps_r)
+    sin_eps = math.sin(eps_r)
+    cot_lat = 1.0 / math.tan(lat_r)
+
+    y = -cos_a
+    x = sin_a * cos_eps - cot_lat * sin_eps
+    denom = x * x + y * y
+    if denom <= 1e-15:
+        return float("nan")
+    num = cos_eps - cot_lat * sin_eps * sin_a
+    return (num / denom) * sidereal_rate_deg_per_day
+
 
 def cusp_speeds_at(
     jd_ut:    float,

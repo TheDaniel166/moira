@@ -180,6 +180,33 @@ class HousesResponse(_StrictModel):
     boundary_geometry: HouseBoundaryGeometrySetResponse | None = None
 
 
+class CuspSpeedResponse(_StrictModel):
+    """Instantaneous speed of a single house cusp."""
+    house: int = Field(ge=1, le=12)
+    cusp_longitude: float
+    speed_deg_per_day: float
+
+
+class HouseDynamicsRequest(_StrictModel):
+    """Request payload for computing instantaneous house cusp and angle speeds."""
+    dt: datetime
+    latitude: float = Field(ge=-90.0, le=90.0)
+    longitude: float = Field(ge=-180.0, le=180.0)
+    system: str | None = None
+    policy: HousePolicyRequest | None = None
+    dt_minutes: float = Field(default=1.0, gt=0.0, le=1440.0, description="Half-step in minutes for finite difference")
+
+
+class HouseDynamicsResponse(_StrictModel):
+    """Response payload carrying parent house cusps and instantaneous cusp and angle velocities."""
+    house_cusps: HousesResponse
+    cusp_speeds: list[CuspSpeedResponse]
+    asc_speed_deg_per_day: float
+    mc_speed_deg_per_day: float
+    vertex_speed_deg_per_day: float
+    anti_vertex_speed_deg_per_day: float
+
+
 class HouseSystemClassificationResponse(_StrictModel):
     """Doctrinal classification of the (effective) house system.
     Mirrors the engine's HouseSystemClassification for nested schema exposure in reduction truth.

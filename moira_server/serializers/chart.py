@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from moira import Chart, HouseCusps, NodeData
+from moira import Chart, HouseCusps, HouseDynamics, NodeData
 from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
 
 from ..models.chart import (
@@ -12,9 +12,11 @@ from ..models.chart import (
     ChartReductionResponse,
     ChartReductionTruthResponse,
     ChartResponse,
+    CuspSpeedResponse,
     HouseBoundaryCurvePointResponse,
     HouseBoundaryGeometryResponse,
     HouseBoundaryGeometrySetResponse,
+    HouseDynamicsResponse,
     HousePolicyResponse,
     HousesReductionResponse,
     HousesReductionTruthResponse,
@@ -244,4 +246,27 @@ def serialize_houses_with_reduction(
             fallback_reason=reduction.fallback_reason,
             classification=classification,
         ),
+    )
+
+
+def serialize_house_dynamics(
+    dynamics: HouseDynamics,
+) -> HouseDynamicsResponse:
+    """Serialize a HouseDynamics vessel into transport form."""
+    serialized_cusps = serialize_houses(dynamics.house_cusps)
+    cusp_speeds = [
+        CuspSpeedResponse(
+            house=cs.house,
+            cusp_longitude=cs.cusp_longitude,
+            speed_deg_per_day=cs.speed_deg_per_day,
+        )
+        for cs in dynamics.cusp_speeds
+    ]
+    return HouseDynamicsResponse(
+        house_cusps=serialized_cusps,
+        cusp_speeds=cusp_speeds,
+        asc_speed_deg_per_day=dynamics.asc_speed_deg_per_day,
+        mc_speed_deg_per_day=dynamics.mc_speed_deg_per_day,
+        vertex_speed_deg_per_day=dynamics.vertex_speed_deg_per_day,
+        anti_vertex_speed_deg_per_day=dynamics.anti_vertex_speed_deg_per_day,
     )
