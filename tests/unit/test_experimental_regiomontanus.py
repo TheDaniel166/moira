@@ -73,6 +73,20 @@ def test_calculate_houses_experimental_policy_uses_public_jd_path_for_regiomonta
     assert houses.cusps[1] == pytest.approx(192.5186950329331, abs=1e-8)
 
 
+def test_calculate_houses_default_policy_uses_real_regiomontanus_at_polar_latitude() -> None:
+    houses = calculate_houses(
+        _JD_J2000,
+        _LAT_77,
+        _LON_VALID,
+        HouseSystem.REGIOMONTANUS,
+    )
+
+    assert houses.system == HouseSystem.REGIOMONTANUS
+    assert houses.effective_system == HouseSystem.REGIOMONTANUS
+    assert houses.fallback is False
+    assert houses.cusps[1] == pytest.approx(192.5186950329331, abs=1e-8)
+
+
 def test_calculate_houses_default_policy_still_falls_back_for_regiomontanus_no_solution_high_lat() -> None:
     houses = calculate_houses(
         _JD_J2000,

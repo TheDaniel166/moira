@@ -74,7 +74,30 @@ def test_calculate_houses_experimental_policy_uses_public_jd_path_for_campanus()
     assert houses.cusps[1] == pytest.approx(226.62440634830227, abs=1e-8)
 
 
-def test_houses_from_armc_experimental_policy_uses_campanus_at_80n_armc_0() -> None:
+def test_calculate_houses_default_policy_uses_real_campanus_at_polar_latitude() -> None:
+    houses = calculate_houses(
+        _JD_J2000,
+        _LAT_80,
+        _LON_VALID,
+        HouseSystem.CAMPANUS,
+    )
+
+    assert houses.system == HouseSystem.CAMPANUS
+    assert houses.effective_system == HouseSystem.CAMPANUS
+    assert houses.fallback is False
+    assert houses.cusps[1] == pytest.approx(226.62440634830227, abs=1e-8)
+
+
+def test_calculate_houses_default_policy_still_falls_back_for_campanus_no_solution_high_lat() -> None:
+    houses = calculate_houses(
+        _JD_J2000,
+        _LAT_80,
+        0.0,
+        HouseSystem.CAMPANUS,
+    )
+
+    assert houses.effective_system == HouseSystem.PORPHYRY
+    assert houses.fallback is True
     houses = houses_from_armc(
         0.0,
         _OB_J2000,

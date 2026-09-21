@@ -32,6 +32,12 @@ linear search to $O(1)$ indexed lookup.
   (11,223 numbered bodies, 214 Centaurs, 1,048 TNOs) with 100% outer solar system coverage.
 - Added thread-safe memoization (`_VERIFIED_RELEASE_CACHE`) in `small_body_catalog_release.py`.
 
+### Native Quadrant House Systems & Nutation Epoch Caching (`houses.hpp`, `nutation.cpp`)
+- Accelerated `calculate_houses` from 128.6 µs to 18.8 µs ($6.85\times$, >53,000 charts/sec).
+- Implemented compiled C++ solvers for Placidus (`P`), Koch (`K`), Regiomontanus (`R`), Campanus (`C`), Porphyry (`O`), Equal (`E`), and Whole Sign (`W`) in `src/native/include/houses.hpp`, running in 0.45–1.9 µs natively with sub-picodegree parity ($\le 10^{-11 \circ}$).
+- Implemented thread-local circular epoch cache in native IAU 2000A nutation (`nutation_2000r06`), dropping warm-epoch angle reduction from 45 µs to 0.78 µs ($57\times$ faster) and nutation lookup to 0.19 µs ($197\times$ faster).
+- Verified against Python reference over 10,000+ historical epochs and configurations spanning $-3000 \to +3000$ CE.
+
 ## Verification Scope
 
 - Planetary architecture invariants (`tests/unit/test_planets_architecture_invariants.py`):

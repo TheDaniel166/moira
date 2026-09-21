@@ -59,13 +59,11 @@ Layers present in this file:
             circumpolar.  Placidus now integrates its own branch-search doctrine
             (unique ordered semi-arc cycles) and is no longer in the outer
             _POLAR_SYSTEMS guard; when a valid figure exists under its rules it
-            is returned directly under default policy.  Alcabitius likewise now
-            integrates its direct zero-pole ordered-figure doctrine and is no
-            longer guarded as a polar-incapable system.  The remaining systems
-            in _POLAR_SYSTEMS (Koch and certain projection families) still
-            trigger outer policy repair because their singularity handling is
-            not yet integrated.  The old fixed 75.0° threshold was wrong: it silently
-            passed garbage results from ≈66.6° to 74.9°.
+            is returned directly under default policy.  Alcabitius, Campanus,
+            Regiomontanus, and Topocentric likewise now integrate their
+            safe vector projection and ordered-figure doctrines and are no
+            longer guarded as polar-incapable systems.  Koch remains in
+            _POLAR_SYSTEMS because of circumpolar diurnal semi-arc collapse.
             Systems not in _POLAR_SYSTEMS are evaluated on their own geometry.
 
     POINT-TO-HOUSE MEMBERSHIP  (Phase 5)
@@ -196,8 +194,13 @@ from enum import Enum
 from .constants import DEG2RAD, RAD2DEG, HOUSE_SYSTEM_NAMES, HouseSystem, sign_of
 from .coordinates import normalize_degrees
 from .julian import local_sidereal_time, ut_to_tt
-from .obliquity import true_obliquity, nutation
+from .obliquity import true_obliquity, nutation, mean_obliquity
 from ._solar import _solar_longitude
+
+try:
+    from . import moira_native as _moira_native
+except ImportError:
+    _moira_native = None
 from ._house_quality import strictly_ordered_cusp_cycle
 
 __all__ = [
@@ -471,11 +474,11 @@ _CLASSIFICATIONS: dict[str, HouseSystemClassification] = {
     HouseSystem.PORPHYRY:      HouseSystemClassification(_F.QUADRANT,   _CB.QUADRANT_TRISECTION, True,  True),
     HouseSystem.PLACIDUS:      HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),  # polar_capable now True: branch search integrated into its event/root doctrine (unique ordered cycles at high lat when they exist)
     HouseSystem.ALCABITIUS:    HouseSystemClassification(_F.QUADRANT,   _CB.SEMI_ARC,            True,  True),   # polar_capable now True: direct zero-pole ordered-figure doctrine integrated at high latitude
-    HouseSystem.KOCH:          HouseSystemClassification(_F.QUADRANT,   _CB.OBLIQUE_ASCENSION,   True,  False),
-    HouseSystem.CAMPANUS:      HouseSystemClassification(_F.QUADRANT,   _CB.PRIME_VERTICAL,      True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
+    HouseSystem.KOCH:          HouseSystemClassification(_F.QUADRANT,   _CB.OBLIQUE_ASCENSION,   True,  False),  # still in _POLAR guard (circumpolar diurnal semi-arc degeneracy)
+    HouseSystem.CAMPANUS:      HouseSystemClassification(_F.QUADRANT,   _CB.PRIME_VERTICAL,      True,  True),   # polar_capable now True: prime-vertical local-horizon branch search integrated
     HouseSystem.AZIMUTHAL:     HouseSystemClassification(_F.QUADRANT,   _CB.HORIZON,             True,  True),
-    HouseSystem.REGIOMONTANUS: HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
-    HouseSystem.TOPOCENTRIC:   HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  False),  # still in _POLAR guard (no integrated branch doctrine yet)
+    HouseSystem.REGIOMONTANUS: HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),   # polar_capable now True: safe pole projection & ordered cycle search integrated
+    HouseSystem.TOPOCENTRIC:   HouseSystemClassification(_F.QUADRANT,   _CB.POLAR_PROJECTION,    True,  True),   # polar_capable now True: graduated pole projection & ordered cycle search integrated
     HouseSystem.KRUSINSKI:     HouseSystemClassification(_F.QUADRANT,   _CB.GREAT_CIRCLE,        True,  True),
     HouseSystem.APC:           HouseSystemClassification(_F.QUADRANT,   _CB.APC_FORMULA,         True,  True),
     HouseSystem.SUNSHINE:      HouseSystemClassification(_F.SOLAR,      _CB.SOLAR_POSITION,      False, True),
@@ -521,21 +524,15 @@ def classify_house_system(code: str) -> HouseSystemClassification:
 # ---------------------------------------------------------------------------
 
 # Systems that produce geometrically disordered cusps above the critical latitude
-# (90° − obliquity ≈ 66.56° at J2000).  The four systems here share root causes
-# in ascendant or pole-height formulas that overflow at extreme latitudes.
-# Placidus is no longer listed: its high-latitude branch doctrine (event-root
-# search for unique ordered cycles) is now integrated into its own implementation.
-# Alcabitius is likewise no longer listed: its direct zero-pole ordered-figure
-# doctrine is now integrated into its own implementation.
+# (90° − obliquity ≈ 66.56° at J2000).  Placidus, Alcabitius, Campanus, Regiomontanus,
+# and Topocentric are no longer listed: their high-latitude branch doctrines
+# (safe vector/plane construction, horizon branch selection, and strictly ordered
+# cycle verification) are integrated into their own implementations.
+# Only Koch remains listed due to intrinsic circumpolar diurnal semi-arc collapse.
 #
-#   Koch                 — oblique ascension / semi-arc
-#   Regiomontanus        — pole heights phi_h1/phi_h2 = atan(tan(phi)*sin(...))
-#   Topocentric          — pole heights phi_1/phi_2   = atan((k/3)*tan(phi))
-#   Campanus             — prime-vertical basis degenerates; _asc_from_armc overflows
+#   Koch                 — oblique ascension / semi-arc (cos(DSA) = -tan(phi)*tan(dec))
 _POLAR_SYSTEMS: frozenset[str] = frozenset({
     HouseSystem.KOCH,
-    HouseSystem.REGIOMONTANUS, HouseSystem.TOPOCENTRIC,
-    HouseSystem.CAMPANUS,
 })
 
 # The full set of recognised HouseSystem codes.
@@ -1381,7 +1378,8 @@ def _asc_from_armc(armc: float, obliquity: float, lat: float) -> float:
         d = abs(a - b) % 360.0
         return d if d <= 180.0 else 360.0 - d
 
-    return alt if _adist(alt, expected) < _adist(raw, expected) else raw
+    chosen = alt if _adist(alt, expected) < _adist(raw, expected) else raw
+    return 0.0 if chosen >= 360.0 else chosen
 
 
 def _local_angles_at(jd_ut: float, latitude: float, longitude: float) -> _LocalAngles:
@@ -1399,8 +1397,28 @@ def _local_angles_at(jd_ut: float, latitude: float, longitude: float) -> _LocalA
     _require(-180.0 <= longitude <= 180.0, "longitude must be in [-180, 180] degrees")
 
     jd_tt = ut_to_tt(jd_ut)
-    obliquity = true_obliquity(jd_tt)
-    dpsi, _ = nutation(jd_tt)
+
+    if _moira_native is not None and hasattr(_moira_native, "reduce_local_angles"):
+        try:
+            armc, obliquity, dpsi, mc, asc, _vtx, _ep = _moira_native.reduce_local_angles(
+                jd_ut, jd_tt, latitude, longitude
+            )
+            return _LocalAngles(
+                jd_ut=jd_ut,
+                jd_tt=jd_tt,
+                latitude=latitude,
+                longitude=longitude,
+                obliquity=obliquity,
+                dpsi=dpsi,
+                armc=armc,
+                mc=mc,
+                asc=asc,
+            )
+        except Exception:
+            pass
+
+    dpsi, deps = nutation(jd_tt)
+    obliquity = mean_obliquity(jd_tt) + deps
     armc = _armc(jd_ut, longitude, jd_tt, dpsi, obliquity)
     mc = _mc_from_armc(armc, obliquity, latitude)
     asc = _asc_from_armc(armc, obliquity, latitude)
@@ -1508,7 +1526,9 @@ def _ra_pole_plane_normal(
     """
     Plane normal for the RA-plus-pole construction in equatorial coordinates.
 
-    The cusp plane satisfies ``-sin(RA) * x + cos(RA) * y - tan(pole) * z = 0``.
+    The cusp plane satisfies ``-sin(RA) * cos(pole) * x + cos(RA) * cos(pole) * y - sin(pole) * z = 0``.
+    Clearing the cos(pole) denominator produces a unitary, bounded normal vector for all
+    pole heights up to and including 90 degrees, avoiding division by zero or tan(pole) overflow.
     Intersecting this plane with the ecliptic plane yields the projected cusp
     direction used by several house systems.
 
@@ -1520,10 +1540,12 @@ def _ra_pole_plane_normal(
     """
     ra_r = ra_deg * DEG2RAD
     pole_r = pole_height_deg * DEG2RAD
+    cp = math.cos(pole_r)
+    sp = math.sin(pole_r)
     return _normalize3((
-        -math.sin(ra_r),
-        math.cos(ra_r),
-        -math.tan(pole_r),
+        -math.sin(ra_r) * cp,
+        math.cos(ra_r) * cp,
+        -sp,
     ))
 
 
@@ -5110,14 +5132,20 @@ def houses_from_armc(
             f"(90 degrees - obliquity); {detail}; fell back to {target_name}"
         )
 
-    # Integrated branch doctrine for Placidus (de-repair complete):
-    # At high latitude, always attempt the explicit root search for unique
-    # ordered cycles as part of Placidus's own event geometry. On success,
-    # serve real Placidus (effective=P, fallback=False) even under default policy.
+    # Integrated branch doctrine for polar systems (de-repair complete):
+    # At high latitude, always attempt the explicit root / branch search for unique
+    # ordered cycles as part of each system's own geometry. On success,
+    # serve real cusps (effective=system, fallback=False) even under default policy.
     # On no unique solution, apply the caller's PolarFallbackPolicy (the
-    # "no solution here" case is now explicit in Placidus doctrine rather than
+    # "no solution here" case is now explicit in system doctrine rather than
     # blanket pre-emptive repair).
-    if abs(lat) >= critical_lat and effective_system in (HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS):
+    if abs(lat) >= critical_lat and effective_system in (
+        HouseSystem.PLACIDUS,
+        HouseSystem.ALCABITIUS,
+        HouseSystem.CAMPANUS,
+        HouseSystem.REGIOMONTANUS,
+        HouseSystem.TOPOCENTRIC,
+    ):
         geometry_system = effective_system
         try:
             if geometry_system == HouseSystem.PLACIDUS:
@@ -5187,8 +5215,25 @@ def houses_from_armc(
                 f"{effective_system!r} produces invalid cusps above this threshold"
             )
 
+    native_cusps = None
+    if _moira_native is not None and hasattr(_moira_native, "calculate_houses_cusps") and effective_system in (
+        HouseSystem.PLACIDUS,
+        HouseSystem.KOCH,
+        HouseSystem.REGIOMONTANUS,
+        HouseSystem.CAMPANUS,
+        HouseSystem.PORPHYRY,
+        HouseSystem.EQUAL,
+        HouseSystem.WHOLE_SIGN,
+    ):
+        try:
+            native_cusps = list(_moira_native.calculate_houses_cusps(armc, obliquity, lat, asc, mc, effective_system))
+        except Exception:
+            native_cusps = None
+
     if experimental_cusps is not None:
         cusps = experimental_cusps
+    elif native_cusps is not None:
+        cusps = native_cusps
     elif effective_system == HouseSystem.WHOLE_SIGN:
         cusps = _whole_sign(asc)
     elif effective_system == HouseSystem.EQUAL:

@@ -15,6 +15,8 @@ Verifies that:
 from __future__ import annotations
 
 import pytest
+
+pytestmark = pytest.mark.requires_ephemeris
 from moira.houses import (
     calculate_houses,
     HouseCusps,
@@ -268,7 +270,8 @@ class TestPolarCapable:
         HouseSystem.VEHLOW, HouseSystem.SUNSHINE, HouseSystem.AZIMUTHAL,
         HouseSystem.SOLAR_SIGN,
         HouseSystem.CARTER, HouseSystem.KRUSINSKI, HouseSystem.APC,
-        HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS, HouseSystem.ZARIEL,
+        HouseSystem.PLACIDUS, HouseSystem.ALCABITIUS, HouseSystem.CAMPANUS,
+        HouseSystem.REGIOMONTANUS, HouseSystem.TOPOCENTRIC, HouseSystem.ZARIEL,
         HouseSystem.EQUAL_MC, HouseSystem.PULLEN_SD, HouseSystem.PULLEN_SR,
         ])
     def test_polar_capable_systems(self, system):

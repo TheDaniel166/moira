@@ -1,7 +1,7 @@
 """Phase-2 chart and houses routes."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from moira import Moira
 
@@ -14,6 +14,9 @@ from ..models.chart import (
     HousesReductionResponse,
     HousesRequest,
     HousesResponse,
+    PolarAdmissibilityRequest,
+    PolarAdmissibilityResponse,
+    PolarHouseWindowResponse,
 )
 from ..serializers.chart import (
     serialize_chart,
@@ -113,3 +116,92 @@ def houses_reduction_route(
     """Serialize houses result together with the governing doctrine and computation path (reduction truth)."""
     houses, reduction = compute_houses_with_reduction(engine, request)
     return serialize_houses_with_reduction(houses, reduction)
+
+
+_POLAR_SCAN_MODULES = {
+    "P": ("experimental_placidus", "scan_experimental_placidus_admissibility"),
+    "C": ("experimental_campanus", "scan_experimental_campanus_admissibility"),
+    "R": ("experimental_regiomontanus", "scan_experimental_regiomontanus_admissibility"),
+    "T": ("experimental_topocentric", "scan_experimental_topocentric_admissibility"),
+    "K": ("experimental_koch", "scan_experimental_koch_admissibility"),
+    "B": ("experimental_alcabitius", "scan_experimental_alcabitius_admissibility"),
+}
+
+
+@router.post("/houses/polar-admissibility", response_model=PolarAdmissibilityResponse)
+def houses_polar_admissibility_route(
+    request: PolarAdmissibilityRequest,
+) -> PolarAdmissibilityResponse:
+    """Scan and return the polar ARMC admissibility windows and quality metrics for a house system."""
+    import importlib
+    from moira.constants import HouseSystem
+    from moira.julian import jd_from_datetime, utc_to_tt
+    from moira.obliquity import true_obliquity
+
+    # Resolve system code
+    sys_code = request.system.upper()
+    resolved_code = getattr(HouseSystem, sys_code, None) or request.system
+    if resolved_code not in _POLAR_SCAN_MODULES:
+        # Check by single-letter code directly
+        if request.system not in _POLAR_SCAN_MODULES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"No polar admissibility scanner available for house system {request.system!r}",
+            )
+        resolved_code = request.system
+
+    # Resolve obliquity
+    if request.obliquity is not None:
+        obliquity = request.obliquity
+    elif request.dt is not None:
+        jd_tt = utc_to_tt(jd_from_datetime(request.dt))
+        obliquity = true_obliquity(jd_tt)
+    else:
+        obliquity = true_obliquity(2451545.0)
+
+    mod_name, fn_name = _POLAR_SCAN_MODULES[resolved_code]
+    mod = importlib.import_module(f"moira.{mod_name}")
+    scanner = getattr(mod, fn_name)
+
+    admissibility = scanner(
+        latitude=request.latitude,
+        obliquity=obliquity,
+        armc_start=request.armc_start,
+        armc_end=request.armc_end,
+        armc_step=request.armc_step,
+        rho_max=request.rho_max,
+        stability_radius=request.stability_radius,
+    )
+
+    return PolarAdmissibilityResponse(
+        latitude=request.latitude,
+        obliquity=obliquity,
+        system=resolved_code,
+        total_samples=admissibility.total_samples,
+        valid_fraction=admissibility.valid_fraction,
+        has_any_window=admissibility.has_any_window,
+        windows=[
+            PolarHouseWindowResponse(
+                start_armc=w.start_armc,
+                end_armc=w.end_armc,
+                sample_count=w.sample_count,
+            )
+            for w in admissibility.windows
+        ],
+        practical_windows=[
+            PolarHouseWindowResponse(
+                start_armc=w.start_armc,
+                end_armc=w.end_armc,
+                sample_count=w.sample_count,
+            )
+            for w in getattr(admissibility, "practical_windows", ())
+        ],
+        stable_practical_windows=[
+            PolarHouseWindowResponse(
+                start_armc=w.start_armc,
+                end_armc=w.end_armc,
+                sample_count=w.sample_count,
+            )
+            for w in getattr(admissibility, "stable_practical_windows", ())
+        ],
+    )

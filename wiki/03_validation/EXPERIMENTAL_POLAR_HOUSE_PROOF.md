@@ -82,16 +82,17 @@ Validation status
 | System | Experimental live | Ordered latitudes | Practical latitudes | Stable latitudes | Dominant failure mode | Promotion readiness |
 | --- | --- | --- | --- | --- | --- | --- |
 | `Placidus` | yes | `217 / 468` | `217 / 468` | `14 / 468` | missing required roots | already integrated |
-| `Koch` | yes | `468 / 468` | `256 / 468` | `64 / 468` | unordered cusp cycle | not yet |
-| `Regiomontanus` | yes | `468 / 468` | `298 / 468` | `162 / 468` | no valid ordered figure / practical collapse near the pole | candidate after more doctrine work |
-| `Topocentric` | yes | `468 / 468` | `342 / 468` | `162 / 468` | unordered cusp cycle | possible later, not first |
-| `Campanus` | yes | `468 / 468` | `468 / 468` | `290 / 468` | unordered cusp cycle | stronger candidate |
-| `Alcabitius` | yes | `468 / 468` | `468 / 468` | `468 / 468` | rare unordered cusp cycle | strongest promotion candidate |
+| `Alcabitius` | yes | `468 / 468` | `468 / 468` | `468 / 468` | rare unordered cusp cycle | already integrated |
+| `Campanus` | yes | `468 / 468` | `468 / 468` | `290 / 468` | unordered cusp cycle | integrated |
+| `Regiomontanus` | yes | `468 / 468` | `298 / 468` | `162 / 468` | no valid ordered figure near pole | integrated |
+| `Topocentric` | yes | `468 / 468` | `342 / 468` | `162 / 468` | unordered cusp cycle | integrated |
+| `Koch` | yes | `468 / 468` | `256 / 468` | `64 / 468` | circumpolar DSA collapse | research solver (retained in _POLAR_SYSTEMS) |
 
-Current promotion recommendation:
+Integrated High-Latitude Solvers:
 
-- `Alcabitius` is the best candidate to move out of experimental-only handling first.
-- It has the strongest Greenwich 2000 surface, the cleanest taxonomy, zero assembly failures, and the clearest direct governing object.
+- Placidus, Alcabitius, Campanus, Regiomontanus, and Topocentric are fully integrated into Moira's primary calculation pipeline (`polar_capable=True`).
+- At polar latitudes ($|\phi| \ge 90^\circ - \varepsilon$), default policy delivers real cusps whenever a unique ordered 12-house cycle exists, falling back cleanly to Porphyry when geometry folds.
+- Koch remains in `_POLAR_SYSTEMS` due to intrinsic circumpolar diurnal semi-arc collapse.
 
 Current practical-screening doctrine
 ------------------------------------

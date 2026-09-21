@@ -27,7 +27,8 @@
 #include "harmograms.hpp"
 #include "planetary_evaluator.hpp"
 #include "physical_visibility_kernels.hpp"
-#include "primary_directions.hpp"
+#include "houses.hpp"
+#include "primary_directions.hpp"
 
 namespace py = pybind11;
 using namespace moira::native;
@@ -1699,113 +1700,138 @@ PYBIND11_MODULE(_moira_native, m) {
     m.def("apply_aberration_velocity", &apply_aberration_velocity_py, py::arg("xyz"), py::arg("velocity"));
     m.def("apply_frame_bias", &apply_frame_bias_py, py::arg("xyz"));
 
-    // --- Primary Directions (Under-Pole Arcs) ---
-    py::class_<NativeSpeculumPoint>(m, "NativeSpeculumPoint")
-        .def(py::init<std::string, double, double, double, double, double, double, double, bool, double, bool>(),
-             py::arg("name") = "", py::arg("lon") = 0.0, py::arg("lat") = 0.0,
-             py::arg("ra") = 0.0, py::arg("dec") = 0.0, py::arg("ha") = 0.0,
-             py::arg("dsa") = 0.0, py::arg("nsa") = 0.0, py::arg("upper") = true,
-             py::arg("f") = 0.0, py::arg("is_eastern") = false)
-        .def_readwrite("name", &NativeSpeculumPoint::name)
-        .def_readwrite("lon", &NativeSpeculumPoint::lon)
-        .def_readwrite("lat", &NativeSpeculumPoint::lat)
-        .def_readwrite("ra", &NativeSpeculumPoint::ra)
-        .def_readwrite("dec", &NativeSpeculumPoint::dec)
-        .def_readwrite("ha", &NativeSpeculumPoint::ha)
-        .def_readwrite("dsa", &NativeSpeculumPoint::dsa)
-        .def_readwrite("nsa", &NativeSpeculumPoint::nsa)
-        .def_readwrite("upper", &NativeSpeculumPoint::upper)
-        .def_readwrite("f", &NativeSpeculumPoint::f)
-        .def_readwrite("is_eastern", &NativeSpeculumPoint::is_eastern);
-
-    m.def("campanus_regio_sin_zenith_distance", &campanus_regio_sin_zenith_distance,
-          py::arg("dec"), py::arg("ha"), py::arg("geo_lat"),
-          "Branch-independent sine of zenith distance for Campanus/Regiomontanus.");
-    m.def("regiomontanus_pole_height", &regiomontanus_pole_height,
-          py::arg("dec"), py::arg("ha"), py::arg("geo_lat"),
-          "Pole height in degrees under the Regiomontanus circle of position.");
-    m.def("topocentric_pole_height", &topocentric_pole_height,
-          py::arg("ha"), py::arg("dsa"), py::arg("nsa"), py::arg("upper"), py::arg("geo_lat"),
-          "Pole height in degrees under the Topocentric proportional semi-arc law.");
-    m.def("under_pole_w", &under_pole_w,
-          py::arg("ra"), py::arg("dec"), py::arg("pole_deg"), py::arg("is_eastern"),
-          "Oblique ascension/descension under pole height in degrees [0, 360).");
-    m.def("under_pole_arc_native", &under_pole_arc_native,
-          py::arg("sig_ra"), py::arg("sig_dec"), py::arg("sig_is_eastern"),
-          py::arg("prom_ra"), py::arg("prom_dec"), py::arg("pole_deg"),
-          "Direct arc under pole in degrees [0, 360).");
-    m.def("regiomontanus_under_pole_arc", &regiomontanus_under_pole_arc,
-          py::arg("sig_ra"), py::arg("sig_dec"), py::arg("sig_ha"), py::arg("sig_is_eastern"),
-          py::arg("prom_ra"), py::arg("prom_dec"), py::arg("geo_lat"),
-          "Regiomontanus under-pole direct arc in degrees [0, 360).");
-    m.def("topocentric_under_pole_arc", &topocentric_under_pole_arc,
-          py::arg("sig_ra"), py::arg("sig_dec"), py::arg("sig_ha"), py::arg("sig_dsa"), py::arg("sig_nsa"),
-          py::arg("sig_upper"), py::arg("sig_is_eastern"),
-          py::arg("prom_ra"), py::arg("prom_dec"), py::arg("geo_lat"),
-          "Topocentric under-pole direct arc in degrees [0, 360).");
-    m.def("compute_under_pole_pair_arcs", [](py::handle sig_obj, py::handle prom_obj, double geo_lat, const std::string& method_str) {
-        if (method_str.empty()) throw std::invalid_argument("Primary direction method code cannot be empty");
-        char method_code = method_str[0];
-        auto extract_pt = [](py::handle item) {
-            if (py::isinstance<NativeSpeculumPoint>(item)) {
-                return item.cast<NativeSpeculumPoint>();
-            }
-            NativeSpeculumPoint pt;
-            if (py::hasattr(item, "name")) pt.name = item.attr("name").cast<std::string>();
-            pt.ra = item.attr("ra").cast<double>();
-            pt.dec = item.attr("dec").cast<double>();
-            pt.ha = item.attr("ha").cast<double>();
-            if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
-            if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
-            if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
-            if (py::hasattr(item, "is_eastern")) {
-                pt.is_eastern = item.attr("is_eastern").cast<bool>();
-            } else {
-                pt.is_eastern = (pt.ha < 0.0);
-            }
-            return pt;
-        };
-        NativeSpeculumPoint sig = extract_pt(sig_obj);
-        NativeSpeculumPoint prom = extract_pt(prom_obj);
-        return compute_under_pole_pair_arcs(sig, prom, geo_lat, method_code);
-    }, py::arg("sig"), py::arg("prom"), py::arg("geo_lat"), py::arg("method"),
-    "Compute traditional (direct, converse) primary direction under-pole arcs for a single pair.");
-    m.def("compute_under_pole_arcs_matrix", [](const py::sequence& points_seq, double geo_lat, const std::string& method_str) {
-        if (method_str.empty()) throw std::invalid_argument("Primary direction method code cannot be empty");
-        char method_code = method_str[0];
-        std::vector<NativeSpeculumPoint> points;
-        points.reserve(py::len(points_seq));
-        for (auto item_handle : points_seq) {
-            py::object item = py::reinterpret_borrow<py::object>(item_handle);
-            if (py::isinstance<NativeSpeculumPoint>(item)) {
-                points.push_back(item.cast<NativeSpeculumPoint>());
-            } else {
-                NativeSpeculumPoint pt;
-                if (py::hasattr(item, "name")) pt.name = item.attr("name").cast<std::string>();
-                pt.ra = item.attr("ra").cast<double>();
-                pt.dec = item.attr("dec").cast<double>();
-                pt.ha = item.attr("ha").cast<double>();
-                if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
-                if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
-                if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
-                if (py::hasattr(item, "is_eastern")) {
-                    pt.is_eastern = item.attr("is_eastern").cast<bool>();
-                } else {
-                    pt.is_eastern = (pt.ha < 0.0);
-                }
-                points.push_back(pt);
-            }
-        }
-        std::vector<std::vector<std::pair<double, double>>> matrix;
-        {
-            py::gil_scoped_release release;
-            matrix = compute_under_pole_arcs_matrix(points, geo_lat, method_code);
-        }
-        return matrix;
-    }, py::arg("points"), py::arg("geo_lat"), py::arg("method"),
-    "Compute NxN matrix of (direct, converse) primary direction under-pole arcs with GIL released.");
-
-
+    // --- Houses & Local Angles ---
+    m.def("mc_from_armc", &mc_from_armc, py::arg("armc"), py::arg("obliquity"));
+    m.def("asc_from_armc", &asc_from_armc, py::arg("armc"), py::arg("obliquity"), py::arg("lat"));
+    m.def("vertex_from_armc", &vertex_from_armc, py::arg("armc"), py::arg("obliquity"), py::arg("lat"));
+    m.def("east_point_from_armc", &east_point_from_armc, py::arg("armc"), py::arg("obliquity"));
+    m.def("reduce_local_angles", [](double jd_ut, double jd_tt, double lat, double lon) {
+        py::gil_scoped_release release;
+        return reduce_local_angles(jd_ut, jd_tt, lat, lon);
+    }, py::arg("jd_ut"), py::arg("jd_tt"), py::arg("lat"), py::arg("lon"));
+    m.def("calculate_houses_cusps", [](double armc, double obliquity, double lat, double asc, double mc, const std::string& system) {
+        if (system.empty()) {
+            throw std::invalid_argument("House system code cannot be empty");
+        }
+        std::array<double, 12> cusps;
+        {
+            py::gil_scoped_release release;
+            cusps = calculate_houses_cusps(armc, obliquity, lat, asc, mc, system[0]);
+        }
+        py::list out;
+        for (double c : cusps) {
+            out.append(c);
+        }
+        return out;
+    }, py::arg("armc"), py::arg("obliquity"), py::arg("lat"), py::arg("asc"), py::arg("mc"), py::arg("system"));
+
+    // --- Primary Directions (Under-Pole Arcs) ---
+    py::class_<NativeSpeculumPoint>(m, "NativeSpeculumPoint")
+        .def(py::init<std::string, double, double, double, double, double, double, double, bool, double, bool>(),
+             py::arg("name") = "", py::arg("lon") = 0.0, py::arg("lat") = 0.0,
+             py::arg("ra") = 0.0, py::arg("dec") = 0.0, py::arg("ha") = 0.0,
+             py::arg("dsa") = 0.0, py::arg("nsa") = 0.0, py::arg("upper") = true,
+             py::arg("f") = 0.0, py::arg("is_eastern") = false)
+        .def_readwrite("name", &NativeSpeculumPoint::name)
+        .def_readwrite("lon", &NativeSpeculumPoint::lon)
+        .def_readwrite("lat", &NativeSpeculumPoint::lat)
+        .def_readwrite("ra", &NativeSpeculumPoint::ra)
+        .def_readwrite("dec", &NativeSpeculumPoint::dec)
+        .def_readwrite("ha", &NativeSpeculumPoint::ha)
+        .def_readwrite("dsa", &NativeSpeculumPoint::dsa)
+        .def_readwrite("nsa", &NativeSpeculumPoint::nsa)
+        .def_readwrite("upper", &NativeSpeculumPoint::upper)
+        .def_readwrite("f", &NativeSpeculumPoint::f)
+        .def_readwrite("is_eastern", &NativeSpeculumPoint::is_eastern);
+
+    m.def("campanus_regio_sin_zenith_distance", &campanus_regio_sin_zenith_distance,
+          py::arg("dec"), py::arg("ha"), py::arg("geo_lat"),
+          "Branch-independent sine of zenith distance for Campanus/Regiomontanus.");
+    m.def("regiomontanus_pole_height", &regiomontanus_pole_height,
+          py::arg("dec"), py::arg("ha"), py::arg("geo_lat"),
+          "Pole height in degrees under the Regiomontanus circle of position.");
+    m.def("topocentric_pole_height", &topocentric_pole_height,
+          py::arg("ha"), py::arg("dsa"), py::arg("nsa"), py::arg("upper"), py::arg("geo_lat"),
+          "Pole height in degrees under the Topocentric proportional semi-arc law.");
+    m.def("under_pole_w", &under_pole_w,
+          py::arg("ra"), py::arg("dec"), py::arg("pole_deg"), py::arg("is_eastern"),
+          "Oblique ascension/descension under pole height in degrees [0, 360).");
+    m.def("under_pole_arc_native", &under_pole_arc_native,
+          py::arg("sig_ra"), py::arg("sig_dec"), py::arg("sig_is_eastern"),
+          py::arg("prom_ra"), py::arg("prom_dec"), py::arg("pole_deg"),
+          "Direct arc under pole in degrees [0, 360).");
+    m.def("regiomontanus_under_pole_arc", &regiomontanus_under_pole_arc,
+          py::arg("sig_ra"), py::arg("sig_dec"), py::arg("sig_ha"), py::arg("sig_is_eastern"),
+          py::arg("prom_ra"), py::arg("prom_dec"), py::arg("geo_lat"),
+          "Regiomontanus under-pole direct arc in degrees [0, 360).");
+    m.def("topocentric_under_pole_arc", &topocentric_under_pole_arc,
+          py::arg("sig_ra"), py::arg("sig_dec"), py::arg("sig_ha"), py::arg("sig_dsa"), py::arg("sig_nsa"),
+          py::arg("sig_upper"), py::arg("sig_is_eastern"),
+          py::arg("prom_ra"), py::arg("prom_dec"), py::arg("geo_lat"),
+          "Topocentric under-pole direct arc in degrees [0, 360).");
+    m.def("compute_under_pole_pair_arcs", [](py::handle sig_obj, py::handle prom_obj, double geo_lat, const std::string& method_str) {
+        if (method_str.empty()) throw std::invalid_argument("Primary direction method code cannot be empty");
+        char method_code = method_str[0];
+        auto extract_pt = [](py::handle item) {
+            if (py::isinstance<NativeSpeculumPoint>(item)) {
+                return item.cast<NativeSpeculumPoint>();
+            }
+            NativeSpeculumPoint pt;
+            if (py::hasattr(item, "name")) pt.name = item.attr("name").cast<std::string>();
+            pt.ra = item.attr("ra").cast<double>();
+            pt.dec = item.attr("dec").cast<double>();
+            pt.ha = item.attr("ha").cast<double>();
+            if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
+            if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
+            if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
+            if (py::hasattr(item, "is_eastern")) {
+                pt.is_eastern = item.attr("is_eastern").cast<bool>();
+            } else {
+                pt.is_eastern = (pt.ha < 0.0);
+            }
+            return pt;
+        };
+        NativeSpeculumPoint sig = extract_pt(sig_obj);
+        NativeSpeculumPoint prom = extract_pt(prom_obj);
+        return compute_under_pole_pair_arcs(sig, prom, geo_lat, method_code);
+    }, py::arg("sig"), py::arg("prom"), py::arg("geo_lat"), py::arg("method"),
+    "Compute traditional (direct, converse) primary direction under-pole arcs for a single pair.");
+    m.def("compute_under_pole_arcs_matrix", [](const py::sequence& points_seq, double geo_lat, const std::string& method_str) {
+        if (method_str.empty()) throw std::invalid_argument("Primary direction method code cannot be empty");
+        char method_code = method_str[0];
+        std::vector<NativeSpeculumPoint> points;
+        points.reserve(py::len(points_seq));
+        for (auto item_handle : points_seq) {
+            py::object item = py::reinterpret_borrow<py::object>(item_handle);
+            if (py::isinstance<NativeSpeculumPoint>(item)) {
+                points.push_back(item.cast<NativeSpeculumPoint>());
+            } else {
+                NativeSpeculumPoint pt;
+                if (py::hasattr(item, "name")) pt.name = item.attr("name").cast<std::string>();
+                pt.ra = item.attr("ra").cast<double>();
+                pt.dec = item.attr("dec").cast<double>();
+                pt.ha = item.attr("ha").cast<double>();
+                if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
+                if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
+                if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
+                if (py::hasattr(item, "is_eastern")) {
+                    pt.is_eastern = item.attr("is_eastern").cast<bool>();
+                } else {
+                    pt.is_eastern = (pt.ha < 0.0);
+                }
+                points.push_back(pt);
+            }
+        }
+        std::vector<std::vector<std::pair<double, double>>> matrix;
+        {
+            py::gil_scoped_release release;
+            matrix = compute_under_pole_arcs_matrix(points, geo_lat, method_code);
+        }
+        return matrix;
+    }, py::arg("points"), py::arg("geo_lat"), py::arg("method"),
+    "Compute NxN matrix of (direct, converse) primary direction under-pole arcs with GIL released.");
+
+
     // --- Interpolation ---
     m.def("horner", [](const py::sequence& coeffs, double x) {
         std::vector<double> coeff_vec = load_double_vector(coeffs, "Horner coefficients");

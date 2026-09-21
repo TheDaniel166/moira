@@ -74,6 +74,20 @@ def test_calculate_houses_experimental_policy_uses_public_jd_path_for_topocentri
     assert houses.cusps[1] == pytest.approx(231.58872947023573, abs=1e-8)
 
 
+def test_calculate_houses_default_policy_uses_real_topocentric_at_polar_latitude() -> None:
+    houses = calculate_houses(
+        _JD_J2000,
+        _LAT_77,
+        _LON_VALID,
+        HouseSystem.TOPOCENTRIC,
+    )
+
+    assert houses.system == HouseSystem.TOPOCENTRIC
+    assert houses.effective_system == HouseSystem.TOPOCENTRIC
+    assert houses.fallback is False
+    assert houses.cusps[1] == pytest.approx(231.58872947023573, abs=1e-8)
+
+
 def test_calculate_houses_default_policy_still_falls_back_for_topocentric_no_solution_high_lat() -> None:
     houses = calculate_houses(
         _JD_J2000,

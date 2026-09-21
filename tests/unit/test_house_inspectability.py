@@ -14,6 +14,8 @@ Verifies that:
 from __future__ import annotations
 
 import pytest
+
+pytestmark = pytest.mark.requires_ephemeris
 from moira.houses import (
     calculate_houses,
     HouseCusps,
@@ -67,8 +69,9 @@ class TestModuleScopeSets:
     def test_polar_systems_are_subset_of_known(self):
         assert _POLAR_SYSTEMS.issubset(_KNOWN_SYSTEMS)
 
-    def test_polar_systems_has_exactly_four_members(self):
-        assert len(_POLAR_SYSTEMS) == 4
+    def test_polar_systems_has_exactly_one_member(self):
+        assert len(_POLAR_SYSTEMS) == 1
+        assert _POLAR_SYSTEMS == frozenset({HouseSystem.KOCH})
 
     def test_known_systems_has_exactly_22_members(self):
         assert len(_KNOWN_SYSTEMS) == 22

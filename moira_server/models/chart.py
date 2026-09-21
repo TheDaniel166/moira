@@ -6,6 +6,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from moira.constants import HouseSystem
 from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
 
 from .positions import PlanetPositionResponse, PositionObserverContextResponse
@@ -219,6 +220,36 @@ class HousesReductionResponse(_StrictModel):
     reduction: HousesReductionTruthResponse
 
 
+class PolarHouseWindowResponse(_StrictModel):
+    start_armc: float
+    end_armc: float
+    sample_count: int
+
+
+class PolarAdmissibilityRequest(_StrictModel):
+    latitude: float = Field(ge=-90.0, le=90.0)
+    system: str = HouseSystem.CAMPANUS
+    dt: datetime | None = None
+    obliquity: float | None = None
+    armc_start: float = 0.0
+    armc_end: float = 355.0
+    armc_step: float = Field(default=5.0, gt=0.0)
+    rho_max: float | None = None
+    stability_radius: int = Field(default=0, ge=0)
+
+
+class PolarAdmissibilityResponse(_StrictModel):
+    latitude: float
+    obliquity: float
+    system: str
+    total_samples: int
+    valid_fraction: float
+    has_any_window: bool
+    windows: list[PolarHouseWindowResponse]
+    practical_windows: list[PolarHouseWindowResponse] = []
+    stable_practical_windows: list[PolarHouseWindowResponse] = []
+
+
 __all__ = [
     "CalendarDateTimeResponse",
     "ChartPlanetReductionSummaryResponse",
@@ -238,9 +269,14 @@ __all__ = [
     "HousesRequest",
     "HousesResponse",
     "NodePositionResponse",
+    "PolarHouseWindowResponse",
+    "PolarAdmissibilityRequest",
+    "PolarAdmissibilityResponse",
 ]
 
 # Rebuild for forward references (Pydantic v2 + string annotations in unions/optionals)
 HousesRequest.model_rebuild()
 HousesResponse.model_rebuild()
 HousesReductionResponse.model_rebuild()
+PolarAdmissibilityRequest.model_rebuild()
+PolarAdmissibilityResponse.model_rebuild()
