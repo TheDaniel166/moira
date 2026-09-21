@@ -674,6 +674,30 @@ class PrimaryDirectionsPolicy:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: placidian_rapt_parallel_motion must be a primary-direction motion"
             )
+        if self.mundane_aspect_targets and self.space is not PrimaryDirectionSpace.IN_MUNDO:
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: mundane_aspect_targets currently require in_mundo"
+            )
+        if self.mundane_aspect_targets and self.method not in (
+            PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+            PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+            PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: mundane_aspect_targets currently require Placidian or Ptolemaic method"
+            )
+        required_mundane_aspect_kinds = {
+            (
+                PrimaryDirectionRelationalKind.OPPOSITION
+                if target.aspect_name == "Opposition"
+                else PrimaryDirectionRelationalKind.MUNDANE_ASPECT
+            )
+            for target in self.mundane_aspect_targets
+        }
+        if not required_mundane_aspect_kinds <= self.relation_policy.admitted_kinds:
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: mundane_aspect_targets require matching admitted relation kinds"
+            )
         if self.mundane_parallel_targets and self.space is not PrimaryDirectionSpace.IN_MUNDO:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: mundane_parallel_targets currently require in_mundo"
@@ -1231,15 +1255,15 @@ class SpeculumEntry:
     ra: float
     dec: float
     ha: float
-    dsa: float
-    nsa: float
-    upper: bool
-    f: float
+    dsa: float | None = None
+    nsa: float | None = None
+    upper: bool = True
+    f: float | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("SpeculumEntry requires a non-empty name")
-        for name in ("lon", "lat", "ra", "dec", "ha", "dsa", "nsa", "f"):
+        for name in ("lon", "lat", "ra", "dec", "ha"):
             try:
                 value = _finite_real(getattr(self, name), f"SpeculumEntry {name}")
             except ValueError as exc:
@@ -1257,18 +1281,30 @@ class SpeculumEntry:
             raise ValueError(f"SpeculumEntry declination out of range: {self.dec}")
         if not (-180.0 <= self.ha <= 180.0):
             raise ValueError(f"SpeculumEntry hour angle out of range: {self.ha}")
-        if not (0.0 < self.dsa < 180.0):
-            raise ValueError(f"SpeculumEntry DSA out of range: {self.dsa}")
-        if not (0.0 < self.nsa < 180.0):
-            raise ValueError(f"SpeculumEntry NSA out of range: {self.nsa}")
-        if abs((self.dsa + self.nsa) - 180.0) > 1e-7:
-            raise ValueError("SpeculumEntry invariant failed: dsa + nsa must equal 180")
-        if not (-2.0 - 1e-9 <= self.f <= 2.0 + 1e-9):
-            raise ValueError(f"SpeculumEntry mundane fraction out of range: {self.f}")
-        if self.upper != (abs(self.ha) <= self.dsa + 1e-9):
-            raise ValueError(
-                "SpeculumEntry invariant failed: upper hemisphere flag does not match HA/DSA"
-            )
+
+        if self.dsa is not None or self.nsa is not None or self.f is not None:
+            if self.dsa is None or self.nsa is None or self.f is None:
+                raise ValueError(
+                    "SpeculumEntry semi-arc parameters (dsa, nsa, f) must be all present or all None"
+                )
+            for name in ("dsa", "nsa", "f"):
+                try:
+                    value = _finite_real(getattr(self, name), f"SpeculumEntry {name}")
+                except ValueError as exc:
+                    raise ValueError("SpeculumEntry requires finite real coordinates") from exc
+                object.__setattr__(self, name, value)
+            if not (0.0 < self.dsa < 180.0):
+                raise ValueError(f"SpeculumEntry DSA out of range: {self.dsa}")
+            if not (0.0 < self.nsa < 180.0):
+                raise ValueError(f"SpeculumEntry NSA out of range: {self.nsa}")
+            if abs((self.dsa + self.nsa) - 180.0) > 1e-7:
+                raise ValueError("SpeculumEntry invariant failed: dsa + nsa must equal 180")
+            if not (-2.0 - 1e-9 <= self.f <= 2.0 + 1e-9):
+                raise ValueError(f"SpeculumEntry mundane fraction out of range: {self.f}")
+            if self.upper != (abs(self.ha) <= self.dsa + 1e-9):
+                raise ValueError(
+                    "SpeculumEntry invariant failed: upper hemisphere flag does not match HA/DSA"
+                )
 
     @classmethod
     def build(
@@ -1279,6 +1315,8 @@ class SpeculumEntry:
         armc: float,
         obliquity: float,
         geo_lat: float,
+        *,
+        allow_circumpolar: bool = False,
     ) -> SpeculumEntry:
         inputs = {
             "longitude": lon,
@@ -1322,15 +1360,44 @@ class SpeculumEntry:
 
         arg = -math.tan(phi) * math.tan(dec_r)
         if arg < -1.0 - 1e-12 or arg > 1.0 + 1e-12:
-            raise ValueError(
-                "SpeculumEntry.build has no real rise/set semi-arcs at this latitude"
+            if not allow_circumpolar:
+                raise ValueError(
+                    "SpeculumEntry.build has no real rise/set semi-arcs at this latitude"
+                )
+            # Circumpolar or never-rising body: no horizon rise/set semi-arcs
+            upper = arg < -1.0
+            return cls(
+                name=name,
+                lon=lon % 360.0,
+                lat=lat,
+                ra=ra,
+                dec=dec,
+                ha=ha,
+                dsa=None,
+                nsa=None,
+                upper=upper,
+                f=None,
             )
         arg = max(-1.0, min(1.0, arg))
         dsa = math.degrees(math.acos(arg))
         nsa = 180.0 - dsa
         if dsa <= 1e-9 or nsa <= 1e-9:
-            raise ValueError(
-                "SpeculumEntry.build does not admit a limiting tangent with a zero semi-arc"
+            if not allow_circumpolar:
+                raise ValueError(
+                    "SpeculumEntry.build does not admit a limiting tangent with a zero semi-arc"
+                )
+            upper = dsa > nsa
+            return cls(
+                name=name,
+                lon=lon % 360.0,
+                lat=lat,
+                ra=ra,
+                dec=dec,
+                ha=ha,
+                dsa=None,
+                nsa=None,
+                upper=upper,
+                f=None,
             )
 
         upper = abs(ha) <= dsa + 1e-9
@@ -1374,11 +1441,13 @@ class SpeculumEntry:
 
     def __repr__(self) -> str:
         hem = "UH" if self.upper else "LH"
+        dsa_str = f"DSA={self.dsa:6.3f}deg " if self.dsa is not None else "DSA=   N/A    "
+        f_str = f"f={self.f:+6.3f}" if self.f is not None else "f=   N/A"
         return (
             f"Speculum({self.name:<12} "
             f"lon={self.lon:7.3f}deg RA={self.ra:7.3f}deg Dec={self.dec:+7.3f}deg "
-            f"HA={self.ha:+8.3f}deg DSA={self.dsa:6.3f}deg "
-            f"f={self.f:+6.3f} {hem})"
+            f"HA={self.ha:+8.3f}deg {dsa_str}"
+            f"{f_str} {hem})"
         )
 
 
@@ -2394,7 +2463,7 @@ def _mundane_aspect_promissor_entries(
     derived: dict[str, SpeculumEntry] = {}
     for target in targets:
         source_entry = base_entries.get(target.source_name)
-        if source_entry is None:
+        if source_entry is None or source_entry.dsa is None or source_entry.f is None:
             continue
         aspect_f = wrap_mundane_fraction(source_entry.f + target.fraction_offset)
         aspect_ha = _required_ha(aspect_f, source_entry.dsa, source_entry.nsa)
@@ -2427,7 +2496,7 @@ def _mundane_parallel_promissor_entries(
     derived: dict[str, SpeculumEntry] = {}
     for target in targets:
         source_entry = base_entries.get(target.source_name)
-        if source_entry is None:
+        if source_entry is None or source_entry.dsa is None or source_entry.f is None:
             continue
         if target.kind is PrimaryDirectionMundaneParallelKind.CONTRA_PARALLEL:
             sign = 1.0 if source_entry.f >= 0.0 else -1.0
@@ -2503,6 +2572,8 @@ def speculum(
     geo_lat: float,
     obliquity: float | None = None,
     bodies: list[str] | None = None,
+    *,
+    allow_circumpolar: bool = False,
 ) -> list[SpeculumEntry]:
     geo_lat = _finite_real(geo_lat, "speculum geographic latitude")
     if not -90.0 < geo_lat < 90.0:
@@ -2524,10 +2595,18 @@ def speculum(
             raise ValueError(f"speculum requested unavailable chart bodies: {missing!r}")
     for name in planet_names:
         p = chart.planets[name]
-        entries.append(SpeculumEntry.build(name, p.longitude, p.latitude, armc, obl, geo_lat))
+        entries.append(
+            SpeculumEntry.build(
+                name, p.longitude, p.latitude, armc, obl, geo_lat, allow_circumpolar=allow_circumpolar
+            )
+        )
 
     for name, nd in chart.nodes.items():
-        entries.append(SpeculumEntry.build(name, nd.longitude, 0.0, armc, obl, geo_lat))
+        entries.append(
+            SpeculumEntry.build(
+                name, nd.longitude, 0.0, armc, obl, geo_lat, allow_circumpolar=allow_circumpolar
+            )
+        )
 
     for ang_name, ang_lon in [
         ("ASC", houses.asc),
@@ -2535,7 +2614,11 @@ def speculum(
         ("DSC", houses.dsc),
         ("IC", houses.ic),
     ]:
-        entries.append(SpeculumEntry.build(ang_name, ang_lon, 0.0, armc, obl, geo_lat))
+        entries.append(
+            SpeculumEntry.build(
+                ang_name, ang_lon, 0.0, armc, obl, geo_lat, allow_circumpolar=allow_circumpolar
+            )
+        )
 
     return entries
 
@@ -2606,7 +2689,13 @@ def find_primary_arcs(
             "find_primary_arcs requires explicit solar_speed or a chart with positive natal Sun speed"
         )
 
-    spec = speculum(chart, houses, geo_lat, obliquity=obl)
+    allow_circumpolar = resolved_policy.method in (
+        PrimaryDirectionMethod.MERIDIAN,
+        PrimaryDirectionMethod.REGIOMONTANUS,
+        PrimaryDirectionMethod.MORINUS,
+        PrimaryDirectionMethod.CAMPANUS,
+    )
+    spec = speculum(chart, houses, geo_lat, obliquity=obl, allow_circumpolar=allow_circumpolar)
     sp_map = {e.name: e for e in spec}
     # Oblique ascension of the eastern horizon is an equatorial coordinate:
     # OA(ASC) = local sidereal time + 90 degrees.  It is not the right
@@ -3136,16 +3225,19 @@ def find_primary_arcs(
                     )
                 continue
 
-            raw_dir, raw_conv = compute_primary_direction_arcs(
-                resolved_policy.method,
-                sig_e,
-                prom_e,
-                space=resolved_policy.space,
-                latitude_doctrine=resolved_policy.latitude_policy.doctrine,
-                geo_lat=geo_lat,
-                armc=houses.armc,
-                oa_asc=oa_asc,
-            )
+            try:
+                raw_dir, raw_conv = compute_primary_direction_arcs(
+                    resolved_policy.method,
+                    sig_e,
+                    prom_e,
+                    space=resolved_policy.space,
+                    latitude_doctrine=resolved_policy.latitude_policy.doctrine,
+                    geo_lat=geo_lat,
+                    armc=houses.armc,
+                    oa_asc=oa_asc,
+                )
+            except ValueError:
+                continue
             arc_dir = raw_dir % 360.0
             if (
                 resolved_policy.converse_doctrine

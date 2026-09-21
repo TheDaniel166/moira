@@ -247,7 +247,11 @@ def compute_primary_directions_timeline(
     if not sig_set:
         sig_set = {"Ascendant"}
 
-    distributor_periods_by_sig: dict[str, list[DistributorPeriod]] = {}
+    admitted_distributor_motions = [PrimaryDirectionMotion.DIRECT]
+    if effective_policy.include_converse:
+        admitted_distributor_motions.append(PrimaryDirectionMotion.CONVERSE)
+
+    distributor_periods_by_sig_motion: dict[tuple[str, PrimaryDirectionMotion], list[DistributorPeriod]] = {}
     for sig in sig_set:
         natal_lon = None
         if sig in sp_map:
@@ -258,66 +262,67 @@ def compute_primary_directions_timeline(
             natal_lon = houses.mc
 
         if natal_lon is not None:
-            periods = resolve_distributor_chronology(
-                significator=sig,
-                natal_longitude=natal_lon,
-                bound_arcs=bound_arcs,
-                participating_arcs=aspect_arcs,
-                doctrine=bound_doctrine,
-                motion=PrimaryDirectionMotion.DIRECT,
-                max_arc=resolved_max_arc,
-            )
-            enriched_periods: list[DistributorPeriod] = []
-            for p in periods:
-                if p.entry_arc_deg <= 0.0:
-                    ent_age = 0.0
-                    ent_jd = chart_jd
-                else:
+            for mot in admitted_distributor_motions:
+                periods = resolve_distributor_chronology(
+                    significator=sig,
+                    natal_longitude=natal_lon,
+                    bound_arcs=bound_arcs,
+                    participating_arcs=aspect_arcs,
+                    doctrine=bound_doctrine,
+                    motion=mot,
+                    max_arc=resolved_max_arc,
+                )
+                enriched_periods: list[DistributorPeriod] = []
+                for p in periods:
+                    if p.entry_arc_deg <= 0.0:
+                        ent_age = 0.0
+                        ent_jd = chart_jd
+                    else:
+                        if resolved_key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
+                            try:
+                                ent_age, ent_jd = invert_solar_arc_ra(chart_jd, p.entry_arc_deg, reader=reader)
+                            except Exception:
+                                ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
+                                ent_jd = chart_jd + ent_age * TROPICAL_YEAR
+                        elif resolved_key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
+                            try:
+                                ent_age, ent_jd = invert_solar_arc_lon(chart_jd, p.entry_arc_deg, reader=reader)
+                            except Exception:
+                                ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
+                                ent_jd = chart_jd + ent_age * TROPICAL_YEAR
+                        else:
+                            ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
+                            ent_jd = chart_jd + ent_age * TROPICAL_YEAR
+
                     if resolved_key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
                         try:
-                            ent_age, ent_jd = invert_solar_arc_ra(chart_jd, p.entry_arc_deg, reader=reader)
+                            ext_age, ext_jd = invert_solar_arc_ra(chart_jd, p.exit_arc_deg, reader=reader)
                         except Exception:
-                            ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                            ent_jd = chart_jd + ent_age * TROPICAL_YEAR
+                            ext_age = convert_arc_to_time(p.exit_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
+                            ext_jd = chart_jd + ext_age * TROPICAL_YEAR
                     elif resolved_key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
                         try:
-                            ent_age, ent_jd = invert_solar_arc_lon(chart_jd, p.entry_arc_deg, reader=reader)
+                            ext_age, ext_jd = invert_solar_arc_lon(chart_jd, p.exit_arc_deg, reader=reader)
                         except Exception:
-                            ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                            ent_jd = chart_jd + ent_age * TROPICAL_YEAR
+                            ext_age = convert_arc_to_time(p.exit_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
+                            ext_jd = chart_jd + ext_age * TROPICAL_YEAR
                     else:
-                        ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                        ent_jd = chart_jd + ent_age * TROPICAL_YEAR
-
-                if resolved_key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
-                    try:
-                        ext_age, ext_jd = invert_solar_arc_ra(chart_jd, p.exit_arc_deg, reader=reader)
-                    except Exception:
                         ext_age = convert_arc_to_time(p.exit_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
                         ext_jd = chart_jd + ext_age * TROPICAL_YEAR
-                elif resolved_key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
-                    try:
-                        ext_age, ext_jd = invert_solar_arc_lon(chart_jd, p.exit_arc_deg, reader=reader)
-                    except Exception:
-                        ext_age = convert_arc_to_time(p.exit_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                        ext_jd = chart_jd + ext_age * TROPICAL_YEAR
-                else:
-                    ext_age = convert_arc_to_time(p.exit_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                    ext_jd = chart_jd + ext_age * TROPICAL_YEAR
 
-                ent_iso = safe_datetime_from_jd(ent_jd).isoformat()
-                ext_iso = safe_datetime_from_jd(ext_jd).isoformat()
+                    ent_iso = safe_datetime_from_jd(ent_jd).isoformat()
+                    ext_iso = safe_datetime_from_jd(ext_jd).isoformat()
 
-                enriched_periods.append(
-                    replace(
-                        p,
-                        entry_age=ent_age,
-                        exit_age=ext_age,
-                        entry_date_utc=ent_iso,
-                        exit_date_utc=ext_iso,
+                    enriched_periods.append(
+                        replace(
+                            p,
+                            entry_age=ent_age,
+                            exit_age=ext_age,
+                            entry_date_utc=ent_iso,
+                            exit_date_utc=ext_iso,
+                        )
                     )
-                )
-            distributor_periods_by_sig[sig] = enriched_periods
+                distributor_periods_by_sig_motion[(sig, mot)] = enriched_periods
 
     # Assemble timeline events
     events: list[PrimaryDirectionTimelineEvent] = []
@@ -349,7 +354,9 @@ def compute_primary_directions_timeline(
         bound_name = None
         participator = None
 
-        sig_periods = distributor_periods_by_sig.get(arc.significator)
+        sig_periods = distributor_periods_by_sig_motion.get((arc.significator, arc.motion))
+        if sig_periods is None and arc.motion is not None:
+            sig_periods = distributor_periods_by_sig_motion.get((arc.significator, PrimaryDirectionMotion.DIRECT))
         if sig_periods:
             covering_period = None
             for idx, p in enumerate(sig_periods):
@@ -402,7 +409,7 @@ def compute_primary_directions_timeline(
 
     # Aggregate distributor periods across all resolved significators
     all_distributor_periods: list[DistributorPeriod] = []
-    for sig_periods in distributor_periods_by_sig.values():
+    for sig_periods in distributor_periods_by_sig_motion.values():
         all_distributor_periods.extend(sig_periods)
 
     chart_identifier = getattr(chart, "id", "") or getattr(chart, "name", "") or "natal"

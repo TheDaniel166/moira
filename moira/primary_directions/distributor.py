@@ -103,10 +103,26 @@ def _table_for_doctrine(doctrine: EgyptianBoundsDoctrine) -> dict[str, list[tupl
     return EGYPTIAN_BOUNDS
 
 
+_SIGN_LOOKUP: dict[str, str] = {
+    # Full names
+    "Aries": "Aries", "Taurus": "Taurus", "Gemini": "Gemini", "Cancer": "Cancer",
+    "Leo": "Leo", "Virgo": "Virgo", "Libra": "Libra", "Scorpio": "Scorpio",
+    "Sagittarius": "Sagittarius", "Capricorn": "Capricorn", "Aquarius": "Aquarius", "Pisces": "Pisces",
+    # Standard abbreviations
+    "Ari": "Aries", "Tau": "Taurus", "Gem": "Gemini", "Can": "Cancer", "Cnc": "Cancer",
+    "Leo": "Leo", "Vir": "Virgo", "Lib": "Libra", "Sco": "Scorpio", "Scp": "Scorpio",
+    "Sag": "Sagittarius", "Sgr": "Sagittarius",
+    "Cap": "Capricorn", "Aqu": "Aquarius", "Aqr": "Aquarius", "Pis": "Pisces", "Psc": "Pisces",
+}
+for _k, _v in list(_SIGN_LOOKUP.items()):
+    _SIGN_LOOKUP[_k.lower()] = _v
+
+
 def _parse_bound_promissor(name: str) -> tuple[str, str, float] | None:
     """
     Parse a bound promissor name of the form:
     'Term of Jupiter (00°00\' Ari)' -> ('Jupiter', 'Aries', 0.0)
+    Supports diverse abbreviations ('Sgr', 'Cap', 'Psc', etc.) and degree formats.
     """
     if not name.startswith("Term of ") or "(" not in name or ")" not in name:
         return None
@@ -114,12 +130,19 @@ def _parse_bound_promissor(name: str) -> tuple[str, str, float] | None:
         prefix, rest = name.split("(", 1)
         ruler = prefix[len("Term of "):].strip()
         inside = rest.rstrip(")").strip()
-        # inside is e.g. "00°00' Ari"
-        deg_str, sign_abbr = inside.split("°")
-        deg = float(deg_str)
-        sign_part = sign_abbr.split("'")[1].strip()
-        sign_map = {s[:3]: s for s in SIGNS}
-        sign = sign_map.get(sign_part)
+        if "°" not in inside:
+            return None
+        deg_str, sign_part = inside.split("°", 1)
+        deg = float(deg_str.strip())
+        if "'" in sign_part:
+            min_str, sign_part = sign_part.split("'", 1)
+            min_str = min_str.strip()
+            if min_str:
+                deg += float(min_str) / 60.0
+        sign_token = sign_part.strip()
+        sign = _SIGN_LOOKUP.get(sign_token) or _SIGN_LOOKUP.get(sign_token.lower())
+        if sign is None and len(sign_token) >= 3:
+            sign = _SIGN_LOOKUP.get(sign_token[:3].title()) or _SIGN_LOOKUP.get(sign_token[:3].lower())
         if sign is None:
             return None
         return ruler, sign, deg

@@ -1781,9 +1781,10 @@ PYBIND11_MODULE(_moira_native, m) {
             pt.ra = item.attr("ra").cast<double>();
             pt.dec = item.attr("dec").cast<double>();
             pt.ha = item.attr("ha").cast<double>();
-            if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
-            if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
-            if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
+            if (py::hasattr(item, "dsa") && !item.attr("dsa").is_none()) pt.dsa = item.attr("dsa").cast<double>();
+            if (py::hasattr(item, "nsa") && !item.attr("nsa").is_none()) pt.nsa = item.attr("nsa").cast<double>();
+            if (py::hasattr(item, "upper") && !item.attr("upper").is_none()) pt.upper = item.attr("upper").cast<bool>();
+            if (py::hasattr(item, "f") && !item.attr("f").is_none()) pt.f = item.attr("f").cast<double>();
             if (py::hasattr(item, "is_eastern")) {
                 pt.is_eastern = item.attr("is_eastern").cast<bool>();
             } else {
@@ -1811,10 +1812,10 @@ PYBIND11_MODULE(_moira_native, m) {
                 pt.ra = item.attr("ra").cast<double>();
                 pt.dec = item.attr("dec").cast<double>();
                 pt.ha = item.attr("ha").cast<double>();
-                if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
-                if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
-                if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
-                if (py::hasattr(item, "f")) pt.f = item.attr("f").cast<double>();
+                if (py::hasattr(item, "dsa") && !item.attr("dsa").is_none()) pt.dsa = item.attr("dsa").cast<double>();
+                if (py::hasattr(item, "nsa") && !item.attr("nsa").is_none()) pt.nsa = item.attr("nsa").cast<double>();
+                if (py::hasattr(item, "upper") && !item.attr("upper").is_none()) pt.upper = item.attr("upper").cast<bool>();
+                if (py::hasattr(item, "f") && !item.attr("f").is_none()) pt.f = item.attr("f").cast<double>();
                 if (py::hasattr(item, "is_eastern")) {
                     pt.is_eastern = item.attr("is_eastern").cast<bool>();
                 } else {
@@ -1849,10 +1850,10 @@ PYBIND11_MODULE(_moira_native, m) {
             pt.ra = item.attr("ra").cast<double>();
             pt.dec = item.attr("dec").cast<double>();
             pt.ha = item.attr("ha").cast<double>();
-            if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
-            if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
-            if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
-            if (py::hasattr(item, "f")) pt.f = item.attr("f").cast<double>();
+            if (py::hasattr(item, "dsa") && !item.attr("dsa").is_none()) pt.dsa = item.attr("dsa").cast<double>();
+            if (py::hasattr(item, "nsa") && !item.attr("nsa").is_none()) pt.nsa = item.attr("nsa").cast<double>();
+            if (py::hasattr(item, "upper") && !item.attr("upper").is_none()) pt.upper = item.attr("upper").cast<bool>();
+            if (py::hasattr(item, "f") && !item.attr("f").is_none()) pt.f = item.attr("f").cast<double>();
             if (py::hasattr(item, "is_eastern")) {
                 pt.is_eastern = item.attr("is_eastern").cast<bool>();
             } else {
@@ -1880,10 +1881,10 @@ PYBIND11_MODULE(_moira_native, m) {
                 pt.ra = item.attr("ra").cast<double>();
                 pt.dec = item.attr("dec").cast<double>();
                 pt.ha = item.attr("ha").cast<double>();
-                if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
-                if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
-                if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
-                if (py::hasattr(item, "f")) pt.f = item.attr("f").cast<double>();
+                if (py::hasattr(item, "dsa") && !item.attr("dsa").is_none()) pt.dsa = item.attr("dsa").cast<double>();
+                if (py::hasattr(item, "nsa") && !item.attr("nsa").is_none()) pt.nsa = item.attr("nsa").cast<double>();
+                if (py::hasattr(item, "upper") && !item.attr("upper").is_none()) pt.upper = item.attr("upper").cast<bool>();
+                if (py::hasattr(item, "f") && !item.attr("f").is_none()) pt.f = item.attr("f").cast<double>();
                 if (py::hasattr(item, "is_eastern")) {
                     pt.is_eastern = item.attr("is_eastern").cast<bool>();
                 } else {

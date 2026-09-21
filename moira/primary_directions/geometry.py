@@ -68,10 +68,10 @@ class _SpeculumLike(Protocol):
     ra: float
     dec: float
     ha: float
-    dsa: float
-    nsa: float
+    dsa: float | None
+    nsa: float | None
     upper: bool
-    f: float
+    f: float | None
     is_eastern: bool
 
 
@@ -177,6 +177,8 @@ def _required_ha(f: float, dsa: float, nsa: float) -> float:
 
 
 def _mundane_arc(sig: _SpeculumLike, prom: _SpeculumLike) -> float:
+    if sig.f is None or prom.dsa is None or prom.nsa is None:
+        raise ValueError("Placidian mundane directions require bodies with defined semi-arcs")
     if _moira_native is not None and hasattr(_moira_native, "placidian_mundane_arc"):
         return _moira_native.placidian_mundane_arc(
             float(sig.f), float(prom.ha), float(prom.dsa), float(prom.nsa)
@@ -186,6 +188,8 @@ def _mundane_arc(sig: _SpeculumLike, prom: _SpeculumLike) -> float:
 
 
 def _placidian_mundane_position(significator: _SpeculumLike, armc: float) -> float:
+    if significator.dsa is None or significator.nsa is None:
+        raise ValueError("Placidian mundane position requires bodies with defined semi-arcs")
     if significator.upper:
         if significator.dsa <= 1e-9:
             raise ValueError("Placidian mundane position requires a non-zero diurnal semi-arc")
@@ -239,6 +243,8 @@ def _meridian_distance(entry: _SpeculumLike) -> float:
 
 
 def _semi_arc(entry: _SpeculumLike) -> float:
+    if entry.dsa is None or entry.nsa is None:
+        raise ValueError(f"Body {entry.name!r} has no horizon semi-arcs (circumpolar/never-rising)")
     return entry.dsa if entry.upper else entry.nsa
 
 
@@ -348,6 +354,8 @@ def _shared_campanus_regio_sin_zenith_distance(
     )
     plane_norm = math.hypot(transverse, meridional)
     if plane_norm <= 1e-15:
+        if abs(entry.dec) >= 90.0 - 1e-9 and abs(geo_lat) <= 1e-9:
+            return 1.0
         raise ValueError("Campanus-Regiomontanus house circle is singular at the horizon axis")
     return abs(transverse) / plane_norm
 
@@ -435,6 +443,8 @@ def _campanus_under_pole_arc(
 
 
 def _topocentric_pole(entry: _SpeculumLike, *, geo_lat: float) -> float:
+    if entry.dsa is None or entry.nsa is None:
+        raise ValueError(f"Topocentric pole requires body {entry.name!r} with defined semi-arcs")
     if _moira_native is not None and hasattr(_moira_native, "topocentric_pole_height"):
         return _moira_native.topocentric_pole_height(
             float(entry.ha),
@@ -457,6 +467,8 @@ def _topocentric_under_pole_arc(
     *,
     geo_lat: float,
 ) -> float:
+    if sig.dsa is None or sig.nsa is None:
+        raise ValueError(f"Topocentric directions require significator {sig.name!r} with defined semi-arcs")
     if _moira_native is not None and hasattr(_moira_native, "topocentric_under_pole_arc"):
         return _moira_native.topocentric_under_pole_arc(
             float(sig.ra),
@@ -657,6 +669,8 @@ def compute_primary_direction_arcs(
             and space is PrimaryDirectionSpace.IN_MUNDO
             and hasattr(_moira_native, "compute_placidian_pair_arcs")
         ):
+            if sig.f is None or sig.dsa is None or prom.dsa is None or prom.nsa is None:
+                raise ValueError("Placidian mundane directions require bodies with defined semi-arcs")
             return _moira_native.compute_placidian_pair_arcs(sig, prom, "T")
         if hasattr(_moira_native, "compute_under_pole_pair_arcs"):
             if method in (
@@ -666,6 +680,8 @@ def compute_primary_direction_arcs(
             ):
                 return _moira_native.compute_under_pole_pair_arcs(sig, prom, float(geo_lat), "R")
             if method is PrimaryDirectionMethod.TOPOCENTRIC:
+                if sig.dsa is None or sig.nsa is None or prom.dsa is None or prom.nsa is None:
+                    raise ValueError("Topocentric directions require bodies with defined semi-arcs")
                 return _moira_native.compute_under_pole_pair_arcs(sig, prom, float(geo_lat), "T")
 
     direct = _primary_direction_arc(

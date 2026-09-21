@@ -82,6 +82,9 @@ inline double campanus_regio_sin_zenith_distance(double dec, double ha, double g
                       + std::sin(phi) * std::sin(dec_r);
     double plane_norm = std::hypot(transverse, meridional);
     if (plane_norm <= 1e-15) {
+        if (std::abs(dec) >= 90.0 - 1e-9 && std::abs(geo_lat) <= 1e-9) {
+            return 1.0;
+        }
         throw std::domain_error("Campanus-Regiomontanus house circle is singular at the horizon axis");
     }
     return std::abs(transverse) / plane_norm;
