@@ -669,6 +669,7 @@ from .primary_directions import (
     speculum, find_primary_arcs, primary_directions_policy_preset,
     evaluate_primary_direction_relations, evaluate_primary_direction_condition,
     evaluate_primary_directions_aggregate, evaluate_primary_directions_network,
+    compute_primary_directions_timeline, PrimaryDirectionTimelineEvent, PrimaryDirectionsTimeline,
     DIRECT, CONVERSE,
 )
 from .synastry import (
@@ -2161,6 +2162,7 @@ __all__ = [
     # Primary directions
     "SpeculumEntry", "PrimaryArc",
     "speculum", "find_primary_arcs",
+    "compute_primary_directions_timeline", "PrimaryDirectionTimelineEvent", "PrimaryDirectionsTimeline",
     "DIRECT", "CONVERSE",
     # Synastry / relationship charts
     "SynastryAspectTruth", "SynastryAspectContact",

@@ -252,7 +252,86 @@ inline std::vector<std::vector<std::pair<double, double>>> compute_under_pole_ar
     return matrix;
 }
 
+/**
+ * Hour angle corresponding to temporal fraction f under semi-arcs dsa, nsa.
+ */
+inline double placidian_required_ha(double f, double dsa, double nsa) {
+    if (std::abs(f) <= 1.0) {
+        return f * dsa;
+    }
+    if (f > 1.0) {
+        return dsa + (f - 1.0) * nsa;
+    }
+    return -dsa - (-f - 1.0) * nsa;
+}
+
+/**
+ * Direct primary direction arc under Placidian proportional semi-arc mundane law.
+ */
+inline double placidian_mundane_arc(
+    double sig_f,
+    double prom_ha,
+    double prom_dsa,
+    double prom_nsa
+) {
+    double req_ha = placidian_required_ha(sig_f, prom_dsa, prom_nsa);
+    return normalize_deg_360(req_ha - prom_ha);
+}
+
+/**
+ * Direct and converse role-exchanged arcs for a pair of points under Placidus mundane law.
+ * converse_mode:
+ * 'T' (traditional): role-exchange
+ * 'N' (neo): circle complement (360 - direct) % 360
+ */
+inline std::pair<double, double> compute_placidian_pair_arcs(
+    const NativeSpeculumPoint& sig,
+    const NativeSpeculumPoint& prom,
+    char converse_mode = 'T'
+) {
+    double direct = placidian_mundane_arc(sig.f, prom.ha, prom.dsa, prom.nsa);
+    double converse = 0.0;
+    if (converse_mode == 'N' || converse_mode == 'n') {
+        converse = normalize_deg_360(360.0 - direct);
+    } else {
+        converse = placidian_mundane_arc(prom.f, sig.ha, sig.dsa, sig.nsa);
+    }
+    return {direct, converse};
+}
+
+/**
+ * Batched NxN primary directions Placidian mundane arc matrix calculation with OpenMP.
+ * Returns matrix of (direct, converse) pairs for all (i, j).
+ */
+inline std::vector<std::vector<std::pair<double, double>>> compute_placidian_arcs_matrix(
+    const std::vector<NativeSpeculumPoint>& points,
+    char converse_mode = 'T'
+) {
+    size_t n = points.size();
+    std::vector<std::vector<std::pair<double, double>>> matrix(
+        n, std::vector<std::pair<double, double>>(n, {0.0, 0.0})
+    );
+
+    #pragma omp parallel for if(n > 4)
+    for (int i = 0; i < static_cast<int>(n); ++i) {
+        for (int j = 0; j < static_cast<int>(n); ++j) {
+            if (i == j) {
+                matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = {0.0, 0.0};
+            } else {
+                matrix[static_cast<size_t>(i)][static_cast<size_t>(j)] = compute_placidian_pair_arcs(
+                    points[static_cast<size_t>(i)],
+                    points[static_cast<size_t>(j)],
+                    converse_mode
+                );
+            }
+        }
+    }
+
+    return matrix;
+}
+
 } // namespace native
 } // namespace moira
 
 #endif // MOIRA_NATIVE_PRIMARY_DIRECTIONS_HPP
+

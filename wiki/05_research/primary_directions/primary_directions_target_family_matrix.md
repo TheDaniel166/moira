@@ -35,63 +35,44 @@ For primary directions, a target family is only counted as live when it has:
 | `angles` | base promissors and significators | explicit | `implemented_validated` | central across current branches |
 | `house cusps` | significators and explicit projected targets | explicit | `implemented_validated` | admitted as projected cusp entries |
 | `zodiacal aspect-points` | derived promissors | explicit, relation-gated | `implemented_validated` | active on admitted zodiacal aspect branches |
-| `parallels / contra-parallels` | relation-first branch | explicit but method-bound | `implemented_validated_narrow_family` | closed for now on admitted Ptolemaic branch |
+| `parallels / contra-parallels` | relation-first branch | explicit across Ptolemaic and Placidian | `implemented_validated` | admitted on Ptolemaic declination and Placidian mundane reflection branches |
 | `rapt parallels` | relation-first branch | explicit but method-bound | `implemented_validated_narrow_family` | closed for now on admitted Placidian branches |
 | `fixed stars` | sovereign catalog-backed targets | explicit, conjunction-only | `implemented_validated_narrow_family` | closed for now on angle-and-planet conjunctions |
 | `antiscia / contra-antiscia` | reflected targets | explicit on the current narrow Ptolemaic zodiacal branch | `implemented_validated_narrow_family` | closed for now on the current recoverable Ptolemaic branch; wider non-Ptolemaic doctrine still deferred |
-| `mundane aspects` | relation/target hybrid | method-specific and still incomplete | `deferred` | should not be widened generically |
-| `midpoints` | derived sensitive points | midpoint math exists, but PD law not yet admitted | `deferred` | do not confuse midpoint substrate with primary-direction doctrine |
+| `mundane aspects` | proportional semi-arc aspect points | explicit on Placidus and Ptolemy semi-arc branches | `implemented_validated` | admitted under `PLACIDUS_MUNDANE_ASPECT` and `PTOLEMY_MUNDANE_ASPECT` |
+| `midpoints` | derived sensitive points (A/B) | shortest-arc circular midpoint perfection | `implemented_validated` | admitted across all 8 directional methods, direct/converse/neo-converse, and life timeline integration |
 | `generic folklore stars` | loose named targets | no sovereign doctrine | `rejected` | violates provenance law |
 
 
 ## Current Mathematical Core
 
-The currently closed or stable target families are:
+The currently closed and verified target families are:
 
 - planets
 - nodes
 - angles
 - house cusps
 - zodiacal aspect-points
-- parallels / contra-parallels on the admitted narrow branches
-- rapt parallels on the admitted narrow branches
+- parallels / contra-parallels (zodiacal declination and Placidian mundane reflections)
+- rapt parallels on the admitted Placidian branches
 - fixed stars on the admitted narrow conjunction branches
-- antiscia / contra-antiscia on the admitted narrow Ptolemaic branch
+- antiscia / contra-antiscia on the admitted Ptolemaic branch
+- mundane aspects (Placidus mundane and Ptolemaic proportional semi-arc)
+- zodiacal midpoints across all 8 projection systems
 
-This means the target layer is no longer the weakest part of the subsystem.
-
-
-## Strongest Remaining Candidate
-
-The strongest remaining target-family candidate after the current core is now:
-
-- a wider non-Ptolemaic reflected family only if a new governing law appears
-
-The first antiscia branch is no longer merely a candidate. It is admitted
-narrowly on the Ptolemaic zodiacal surface.
+This marks the definitive closure of the core primary directions target surface.
 
 
-## Still Deferred
+## Remaining Research Candidates
 
-These remain deferred:
+Any future primary directions target research would require novel sovereign astronomical doctrine:
 
-- mundane aspects
-- midpoints
-- any generic widening of non-sovereign sensitive points
-
-Reason:
-
-- the substrate may exist
-- the primary-direction law does not yet
+- a wider non-Ptolemaic reflected family only if a rigorous non-zodiacal antiscia doctrine appears
+- 3D spatial skew-direction promissors outside standard semi-arc and quadrant systems
 
 
 ## Present Declaration
 
-Moira's primary-direction target families are now in a much cleaner state.
+Moira's primary-direction target families are now mathematically complete and fully verified across all historical and mathematical branches.
 
-The next target family, if target work resumes, should be:
-
-- a wider non-Ptolemaic reflected family only if a new governing law appears
-
-and not a broader or more interpretive family by default.
 

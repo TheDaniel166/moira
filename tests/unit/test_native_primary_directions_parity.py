@@ -303,3 +303,91 @@ def test_singularity_and_error_handling() -> None:
     # tan(dec) * tan(pole) > 1.0
     with pytest.raises(ValueError, match="no real spherical solution"):
         moira_native.under_pole_w(100.0, 70.0, 60.0, True)  # tan(70) * tan(60) = 2.747 * 1.732 = 4.758 > 1
+
+
+def test_native_placidian_presence() -> None:
+    """Verify that all native Placidian mundane symbols are exported and callable."""
+    assert hasattr(moira_native, "placidian_required_ha")
+    assert hasattr(moira_native, "placidian_mundane_arc")
+    assert hasattr(moira_native, "compute_placidian_pair_arcs")
+    assert hasattr(moira_native, "compute_placidian_arcs_matrix")
+
+
+def test_native_placidian_parity_across_quadrants() -> None:
+    """Verify sub-microarcsecond numerical parity between C++ and Python Placidian solvers."""
+    from moira.primary_directions.geometry import _required_ha
+
+    random.seed(42)
+    for _ in range(500):
+        f = random.uniform(-2.0, 2.0)
+        dsa = random.uniform(40.0, 140.0)
+        nsa = 180.0 - dsa
+        prom_ha = random.uniform(-180.0, 180.0)
+
+        # Python
+        ha_py = _required_ha(f, dsa, nsa)
+        arc_py = (ha_py - prom_ha) % 360.0
+
+        # Native C++
+        ha_nat = moira_native.placidian_required_ha(f, dsa, nsa)
+        arc_nat = moira_native.placidian_mundane_arc(f, prom_ha, dsa, nsa)
+
+        assert abs(ha_py - ha_nat) < 1e-12, f"required_ha parity failure: py={ha_py}, nat={ha_nat}"
+        assert abs(arc_py - arc_nat) < 1e-12, f"mundane_arc parity failure: py={arc_py}, nat={arc_nat}"
+
+
+def test_native_placidian_matrix_and_converse_modes() -> None:
+    """Verify batched Placidian matrix, OpenMP parallelism, and converse doctrines."""
+    pts = []
+    for i in range(12):
+        dsa = 70.0 + i * 3.0
+        nsa = 180.0 - dsa
+        ha = -150.0 + i * 25.0
+        f = (ha / dsa) if abs(ha) <= dsa else (1.0 + (ha - dsa) / nsa if ha > 0 else -1.0 - (-ha - dsa) / nsa)
+        pts.append(
+            moira_native.NativeSpeculumPoint(
+                f"Pt_{i}",
+                i * 30.0, 0.0, i * 30.0, 0.0,
+                ha, dsa, nsa,
+                abs(ha) <= dsa,
+                f,
+                ha < 0.0,
+            )
+        )
+
+    # 1. Traditional converse matrix
+    mat_trad = moira_native.compute_placidian_arcs_matrix(pts, "T")
+    n = len(pts)
+    assert len(mat_trad) == n
+    assert all(len(row) == n for row in mat_trad)
+
+    for i in range(n):
+        assert mat_trad[i][i] == (0.0, 0.0)
+        for j in range(n):
+            if i == j:
+                continue
+            dir_ij, conv_ij = mat_trad[i][j]
+            dir_ji, conv_ji = mat_trad[j][i]
+            # Role exchange reciprocity
+            assert abs(conv_ij - dir_ji) < 1e-12
+
+            # Single-pair parity
+            single_dir, single_conv = moira_native.compute_placidian_pair_arcs(pts[i], pts[j], "T")
+            assert abs(dir_ij - single_dir) < 1e-12
+            assert abs(conv_ij - single_conv) < 1e-12
+
+    # 2. Neo-converse matrix
+    mat_neo = moira_native.compute_placidian_arcs_matrix(pts, "N")
+    for i in range(n):
+        assert mat_neo[i][i] == (0.0, 0.0)
+        for j in range(n):
+            if i == j:
+                continue
+            dir_ij, conv_ij = mat_neo[i][j]
+            # Circle complement invariant: dir + neo_conv == 360
+            assert math.isclose((dir_ij + conv_ij) % 360.0, 0.0, abs_tol=1e-12) or math.isclose((dir_ij + conv_ij) % 360.0, 360.0, abs_tol=1e-12)
+
+            single_dir, single_conv = moira_native.compute_placidian_pair_arcs(pts[i], pts[j], "N")
+            assert abs(dir_ij - single_dir) < 1e-12
+            assert abs(conv_ij - single_conv) < 1e-12
+

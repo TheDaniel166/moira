@@ -35,6 +35,9 @@ from ..models.primary_directions import (
     PrimaryDirectionsResolvedPolicyResponse,
     PrimaryDirectionsSignificatorProfileResponse,
     PrimaryDirectionsSpeculumResponse,
+    PrimaryDirectionsTimelineDistributorPeriodResponse,
+    PrimaryDirectionsTimelineEventResponse,
+    PrimaryDirectionsTimelineResponse,
     PlacidianRaptParallelTargetRequest,
     PtolemaicParallelTargetRequest,
     SpeculumEntryResponse,
@@ -401,6 +404,55 @@ def serialize_network_with_reduction(
     )
 
 
+def serialize_timeline(timeline) -> PrimaryDirectionsTimelineResponse:
+    events = [
+        PrimaryDirectionsTimelineEventResponse(
+            significator=ev.significator,
+            promissor=ev.promissor,
+            arc_deg=ev.arc_deg,
+            direction=ev.direction,
+            motion=ev.motion.value if hasattr(ev.motion, "value") else str(ev.motion),
+            method=ev.method.value if hasattr(ev.method, "value") else str(ev.method),
+            space=ev.space.value if hasattr(ev.space, "value") else str(ev.space),
+            relational_kind=ev.relational_kind.value if hasattr(ev.relational_kind, "value") else str(ev.relational_kind),
+            age_years=ev.age_years,
+            perfection_jd_ut=ev.perfection_jd_ut,
+            perfection_iso=ev.perfection_iso,
+            distributor=ev.distributor,
+            bound_name=ev.bound_name,
+            participator=ev.participator,
+            is_bound_boundary=ev.is_bound_boundary,
+        )
+        for ev in timeline.events
+    ]
+    periods = [
+        PrimaryDirectionsTimelineDistributorPeriodResponse(
+            significator=p.significator,
+            ruler=p.ruler,
+            sign=p.sign,
+            bound_start_deg=p.bound_start_deg,
+            bound_end_deg=p.bound_end_deg,
+            entry_arc_deg=p.entry_arc_deg,
+            exit_arc_deg=p.exit_arc_deg,
+            entry_age=p.entry_age,
+            exit_age=p.exit_age,
+            entry_date_utc=p.entry_date_utc,
+            exit_date_utc=p.exit_date_utc,
+            participators_count=len(p.participators),
+        )
+        for p in timeline.distributor_periods
+    ]
+    return PrimaryDirectionsTimelineResponse(
+        chart_id=timeline.chart_id,
+        natal_jd_ut=timeline.natal_jd_ut,
+        max_age_years=timeline.max_age_years,
+        key=timeline.key.value if hasattr(timeline.key, "value") else str(timeline.key),
+        events=events,
+        distributor_periods=periods,
+        total_events=len(events),
+    )
+
+
 __all__ = [
     "_serialize_relation_profile",
     "serialize_arcs",
@@ -410,4 +462,5 @@ __all__ = [
     "serialize_profile",
     "serialize_profile_with_reduction",
     "serialize_speculum",
+    "serialize_timeline",
 ]

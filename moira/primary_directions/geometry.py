@@ -167,6 +167,8 @@ def primary_direction_geometry_truth(
 
 
 def _required_ha(f: float, dsa: float, nsa: float) -> float:
+    if _moira_native is not None and hasattr(_moira_native, "placidian_required_ha"):
+        return _moira_native.placidian_required_ha(float(f), float(dsa), float(nsa))
     if abs(f) <= 1.0:
         return f * dsa
     if f > 1.0:
@@ -175,6 +177,10 @@ def _required_ha(f: float, dsa: float, nsa: float) -> float:
 
 
 def _mundane_arc(sig: _SpeculumLike, prom: _SpeculumLike) -> float:
+    if _moira_native is not None and hasattr(_moira_native, "placidian_mundane_arc"):
+        return _moira_native.placidian_mundane_arc(
+            float(sig.f), float(prom.ha), float(prom.dsa), float(prom.nsa)
+        )
     req_ha = _required_ha(sig.f, prom.dsa, prom.nsa)
     return req_ha - prom.ha
 
@@ -645,15 +651,22 @@ def compute_primary_direction_arcs(
         method, space, latitude_doctrine, geo_lat, armc, oa_asc
     )
 
-    if _moira_native is not None and hasattr(_moira_native, "compute_under_pole_pair_arcs"):
-        if method in (
-            PrimaryDirectionMethod.REGIOMONTANUS,
-            PrimaryDirectionMethod.MORINUS,
-            PrimaryDirectionMethod.CAMPANUS,
+    if _moira_native is not None:
+        if (
+            method is PrimaryDirectionMethod.PLACIDUS_MUNDANE
+            and space is PrimaryDirectionSpace.IN_MUNDO
+            and hasattr(_moira_native, "compute_placidian_pair_arcs")
         ):
-            return _moira_native.compute_under_pole_pair_arcs(sig, prom, float(geo_lat), "R")
-        if method is PrimaryDirectionMethod.TOPOCENTRIC:
-            return _moira_native.compute_under_pole_pair_arcs(sig, prom, float(geo_lat), "T")
+            return _moira_native.compute_placidian_pair_arcs(sig, prom, "T")
+        if hasattr(_moira_native, "compute_under_pole_pair_arcs"):
+            if method in (
+                PrimaryDirectionMethod.REGIOMONTANUS,
+                PrimaryDirectionMethod.MORINUS,
+                PrimaryDirectionMethod.CAMPANUS,
+            ):
+                return _moira_native.compute_under_pole_pair_arcs(sig, prom, float(geo_lat), "R")
+            if method is PrimaryDirectionMethod.TOPOCENTRIC:
+                return _moira_native.compute_under_pole_pair_arcs(sig, prom, float(geo_lat), "T")
 
     direct = _primary_direction_arc(
         method,

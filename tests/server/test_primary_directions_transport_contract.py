@@ -122,7 +122,7 @@ def _converse_arc(*, arc: float = 8.0) -> PrimaryArc:
     )
 
 
-def test_all_eight_primary_direction_paths_remain_registered() -> None:
+def test_all_nine_primary_direction_paths_remain_registered() -> None:
     assert {route.path for route in router.routes} == {
         "/v1/primary-directions/speculum",
         "/v1/primary-directions/arcs",
@@ -132,6 +132,7 @@ def test_all_eight_primary_direction_paths_remain_registered() -> None:
         "/v1/primary-directions/network",
         "/v1/primary-directions/network/reduction",
         "/v1/primary-directions/relations",
+        "/v1/primary-directions/timeline",
     }
 
 

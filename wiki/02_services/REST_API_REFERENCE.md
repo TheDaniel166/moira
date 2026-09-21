@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 461
-- Registered OpenAPI operations: 461 (GET 36, POST 425)
+- Registered OpenAPI paths: 463
+- Registered OpenAPI operations: 463 (GET 36, POST 427)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 457
+- Versioned `/v1` paths: 459
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3244,6 +3244,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/hellenistic/twelfth-parts` | hellenistic-atoms | `twelfth_parts_route_v1_hellenistic_twelfth_parts_post` |
 | `POST` | `/v1/horary/evidence-profile` | horary | `horary_evidence_profile` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
+| `POST` | `/v1/houses/polar-admissibility` | chart | `houses_polar_admissibility_route_v1_houses_polar_admissibility_post` |
 | `POST` | `/v1/houses/reduction` | chart | `houses_reduction_route_v1_houses_reduction_post` |
 | `POST` | `/v1/huber/age-point` | huber | `huber_age_point_route_v1_huber_age_point_post` |
 | `POST` | `/v1/huber/age-point-contacts` | huber | `huber_age_point_contacts_route_v1_huber_age_point_contacts_post` |
@@ -3384,6 +3385,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/primary-directions/profile/reduction` | primary-directions | `primary_directions_profile_reduction_route_v1_primary_directions_profile_reduction_post` |
 | `POST` | `/v1/primary-directions/relations` | primary-directions | `primary_directions_relations_route_v1_primary_directions_relations_post` |
 | `POST` | `/v1/primary-directions/speculum` | primary-directions | `primary_directions_speculum_route_v1_primary_directions_speculum_post` |
+| `POST` | `/v1/primary-directions/timeline` | primary-directions | `primary_directions_timeline_route_v1_primary_directions_timeline_post` |
 | `POST` | `/v1/profections/annual` | timelords | `annual_profection_route_v1_profections_annual_post` |
 | `POST` | `/v1/profections/monthly` | timelords | `monthly_profection_route_v1_profections_monthly_post` |
 | `POST` | `/v1/profections/schedule` | timelords | `profection_schedule_route_v1_profections_schedule_post` |

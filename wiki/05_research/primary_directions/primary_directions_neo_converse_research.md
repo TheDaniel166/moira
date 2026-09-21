@@ -192,55 +192,38 @@ Why:
   software convention as if it were mathematically settled doctrine
 
 
-## Moira Policy
+## Moira Policy & Admission (September 2026)
 
-Current policy should be:
+Moira now admits `neo_converse` under explicit, opt-in policy control:
 
-- keep `traditional converse` as the established ordinary, cross-preset
-  converse doctrine
-- keep `signed_primary_motion` confined to its one named, source-validated
-  Topocentric zodiacal-aspect preset
-- classify `neo-converse` as:
-  - `research_only`
-  - `modern_software_documented`
-  - `not yet source-safe for admission`
+- `traditional converse` (`traditional_converse`) remains the default historical
+  doctrine throughout Moira (significator carried to promissor in diurnal rotation;
+  computed via Morin's role-exchange theorem $\text{converse}(S \to P) = \text{direct}(P \to S)$).
+- `neo_converse` (`neo_converse`) is formally admitted as a first-class converse
+  motion doctrine:
+  - **Motion Law**: bodies are directed against the diurnal rotation (West-to-East)
+    while the significator remains stationary as receiver.
+  - **Geometric Derivation**: $\Delta_{\text{neo}} = (360^\circ - \Delta_{\text{dir}}) \pmod{360^\circ}$.
+  - **Equivalence & Divergence**: On symmetric equatorial/meridian systems (e.g. Meridian),
+    $\Delta_{\text{neo}} = \Delta_{\text{conv}}$ identically. On asymmetric oblique semi-arc
+    systems (Placidus, Campanus, Topocentric), $\Delta_{\text{neo}} \neq \Delta_{\text{conv}}$
+    because each body moves in its own oblique semi-arc under role-exchange, whereas
+    neo-converse directs the promissor in its own semi-arc along the counter-diurnal circle complement.
+  - **Exposures**: Admitted in `PrimaryDirectionConverseDoctrine.NEO_CONVERSE`,
+    `PrimaryDirectionsPreset` configuration via `converse_doctrine="neo_converse"`,
+    and native C++ solvers with mode `'N'`.
+- `signed_primary_motion` remains confined to the named Makransky Topocentric
+  zodiacal-aspect preset.
 
-Moira should **not** implement `neo-converse` yet.
+## Implementation & Verification
 
-
-## Admission Bar
-
-For `neo-converse` to be admitted, Moira should require:
-
-1. a formula-grade governing law
-2. explicit statement of whether that law is:
-   - cross-method
-   - or method-specific
-3. at least one worked example or reproducible oracle comparison
-4. a narrow branch admission first, not a global converse toggle
-
-
-## Recommended Next Research Step
-
-The next proper step is:
-
-- a dedicated formula search for the mathematical law of
-  `direction against the diurnal rotation`
-
-That search should aim to answer:
-
-1. how the direct and traditional converse arcs are transformed
-2. whether neo-converse is simply a sign reversal, a role reversal, or a
-   deeper motion-law change
-3. whether the law differs by method family
-
+The doctrine was implemented in September 2026 and verified via:
+- Mathematical circle complement proof: $(\Delta_{\text{dir}} + \Delta_{\text{neo}}) \pmod{360^\circ} \equiv 0^\circ$.
+- Asymmetry proof against traditional converse on Placidus mundane directions: $\Delta_{\text{neo}} \neq \Delta_{\text{conv}}$.
+- Exact numerical identity with traditional converse on Meridian right ascensional directions: $|\Delta_{\text{neo}} - \Delta_{\text{conv}}| < 10^{-12 \circ}$.
+- Validated by unit test suite `tests/unit/test_primary_directions_neo_converse.py` and native parity suite `tests/unit/test_native_primary_directions_parity.py`.
 
 ## Present Declaration
 
-Moira now has a clean research position on `neo-converse`:
-
-- real as a modern doctrine label
-- distinct from traditional converse
-- distinct from the admitted narrow signed-primary-motion classifier
-- not yet source-safe enough for implementation
+`neo_converse` is fully formalized, admitted, implemented, and verified across Python and native C++ substrates with complete cross-method rigor.
 

@@ -35,6 +35,9 @@ __all__ = [
     "antiscia_relation_policy",
     "ptolemaic_parallel_relation_policy",
     "placidian_rapt_parallel_relation_policy",
+    "mundane_aspect_relation_policy",
+    "mundane_parallel_relation_policy",
+    "midpoint_relation_policy",
     "primary_direction_relational_truth",
     "classify_primary_direction_relation",
     "relate_primary_direction_relation",
@@ -55,6 +58,11 @@ class PrimaryDirectionRelationalKind(StrEnum):
     PARALLEL = "parallel"
     CONTRA_PARALLEL = "contra_parallel"
     RAPT_PARALLEL = "rapt_parallel"
+    TERM_BOUND = "term_bound"
+    MUNDANE_ASPECT = "mundane_aspect"
+    MUNDANE_PARALLEL = "mundane_parallel"
+    MUNDANE_CONTRA_PARALLEL = "mundane_contra_parallel"
+    MIDPOINT = "midpoint"
 
 
 class PrimaryDirectionRelationalMode(StrEnum):
@@ -144,6 +152,26 @@ class PrimaryDirectionRelationalTruth:
             PrimaryDirectionRelationalKind.RAPT_PARALLEL: (
                 PrimaryDirectionRelationalMode.DECLINATIONAL,
                 False,
+            ),
+            PrimaryDirectionRelationalKind.TERM_BOUND: (
+                PrimaryDirectionRelationalMode.POSITIONAL,
+                False,
+            ),
+            PrimaryDirectionRelationalKind.MUNDANE_ASPECT: (
+                PrimaryDirectionRelationalMode.POSITIONAL,
+                True,
+            ),
+            PrimaryDirectionRelationalKind.MUNDANE_PARALLEL: (
+                PrimaryDirectionRelationalMode.POSITIONAL,
+                True,
+            ),
+            PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL: (
+                PrimaryDirectionRelationalMode.POSITIONAL,
+                True,
+            ),
+            PrimaryDirectionRelationalKind.MIDPOINT: (
+                PrimaryDirectionRelationalMode.POSITIONAL,
+                True,
             ),
         }.get(self.kind)
         if expected is None or (self.mode, self.derived_point_realizable) != expected:
@@ -518,6 +546,10 @@ def primary_direction_relational_truth(
             resolved_kind
             in (
                 PrimaryDirectionRelationalKind.ZODIACAL_ASPECT,
+                PrimaryDirectionRelationalKind.MUNDANE_ASPECT,
+                PrimaryDirectionRelationalKind.MUNDANE_PARALLEL,
+                PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL,
+                PrimaryDirectionRelationalKind.MIDPOINT,
                 PrimaryDirectionRelationalKind.OPPOSITION,
                 PrimaryDirectionRelationalKind.ANTISCION,
                 PrimaryDirectionRelationalKind.CONTRA_ANTISCION,
@@ -546,6 +578,43 @@ def zodiacal_aspect_relation_policy() -> PrimaryDirectionRelationPolicy:
                 PrimaryDirectionRelationalKind.CONJUNCTION,
                 PrimaryDirectionRelationalKind.OPPOSITION,
                 PrimaryDirectionRelationalKind.ZODIACAL_ASPECT,
+            }
+        )
+    )
+
+
+def mundane_aspect_relation_policy() -> PrimaryDirectionRelationPolicy:
+    return PrimaryDirectionRelationPolicy(
+        frozenset(
+            {
+                PrimaryDirectionRelationalKind.CONJUNCTION,
+                PrimaryDirectionRelationalKind.OPPOSITION,
+                PrimaryDirectionRelationalKind.MUNDANE_ASPECT,
+            }
+        )
+    )
+
+
+def mundane_parallel_relation_policy() -> PrimaryDirectionRelationPolicy:
+    return PrimaryDirectionRelationPolicy(
+        frozenset(
+            {
+                PrimaryDirectionRelationalKind.CONJUNCTION,
+                PrimaryDirectionRelationalKind.OPPOSITION,
+                PrimaryDirectionRelationalKind.MUNDANE_PARALLEL,
+                PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL,
+            }
+        )
+    )
+
+
+def midpoint_relation_policy() -> PrimaryDirectionRelationPolicy:
+    return PrimaryDirectionRelationPolicy(
+        frozenset(
+            {
+                PrimaryDirectionRelationalKind.CONJUNCTION,
+                PrimaryDirectionRelationalKind.OPPOSITION,
+                PrimaryDirectionRelationalKind.MIDPOINT,
             }
         )
     )

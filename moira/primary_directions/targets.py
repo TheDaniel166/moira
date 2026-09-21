@@ -18,10 +18,20 @@ from typing import Iterable
 
 from ._ordered_network import validate_ordered_transition_counts
 
-from ..constants import Body
+from ..constants import Body, SIGNS
+from ..egyptian_bounds import (
+    EgyptianBoundsDoctrine,
+    EGYPTIAN_BOUNDS,
+    PTOLEMAIC_BOUNDS,
+    CHALDEAN_DAY_BOUNDS,
+    CHALDEAN_NIGHT_BOUNDS,
+)
 
 __all__ = [
     "PrimaryDirectionTargetClass",
+    "PrimaryDirectionBoundTarget",
+    "PrimaryDirectionMundaneAspectTarget",
+    "PLACIDIAN_MUNDANE_ASPECT_OFFSETS",
     "PrimaryDirectionTargetRelationKind",
     "PrimaryDirectionTargetConditionState",
     "PrimaryDirectionTargetPolicy",
@@ -37,6 +47,13 @@ __all__ = [
     "primary_direction_target_truth",
     "classify_primary_direction_target",
     "relate_primary_direction_target",
+    "resolve_primary_direction_bound_targets",
+    "resolve_primary_direction_mundane_aspect_targets",
+    "PrimaryDirectionMundaneParallelKind",
+    "PrimaryDirectionMundaneParallelTarget",
+    "PrimaryDirectionMidpointTarget",
+    "resolve_primary_direction_mundane_parallel_targets",
+    "resolve_primary_direction_midpoint_targets",
     "evaluate_primary_direction_target_relations",
     "evaluate_primary_direction_target_condition",
     "evaluate_primary_direction_targets_aggregate",
@@ -67,6 +84,167 @@ class PrimaryDirectionTargetClass(StrEnum):
     ANGLE = "angle"
     HOUSE_CUSP = "house_cusp"
     ASPECTUAL_POINT = "aspectual_point"
+    BOUND_BOUNDARY = "bound_boundary"
+    MUNDANE_ASPECT = "mundane_aspect"
+    MUNDANE_PARALLEL = "mundane_parallel"
+    MIDPOINT = "midpoint"
+
+
+PLACIDIAN_MUNDANE_ASPECT_OFFSETS: tuple[tuple[str, float], ...] = (
+    ("Opposition", 2.0),
+    ("Dexter Semi-Sextile", 1.0 / 3.0),
+    ("Sinister Semi-Sextile", -1.0 / 3.0),
+    ("Dexter Sextile", 2.0 / 3.0),
+    ("Sinister Sextile", -2.0 / 3.0),
+    ("Dexter Square", 1.0),
+    ("Sinister Square", -1.0),
+    ("Dexter Trine", 4.0 / 3.0),
+    ("Sinister Trine", -4.0 / 3.0),
+    ("Dexter Quincunx", 5.0 / 3.0),
+    ("Sinister Quincunx", -5.0 / 3.0),
+)
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionMundaneAspectTarget:
+    """Immutable astronomical representation of a Placidian mundane aspect target."""
+    source_name: str
+    aspect_name: str
+    fraction_offset: float
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.source_name, str) or not self.source_name.strip():
+            raise ValueError("PrimaryDirectionMundaneAspectTarget requires a non-empty source_name")
+        if not isinstance(self.aspect_name, str) or not self.aspect_name.strip():
+            raise ValueError("PrimaryDirectionMundaneAspectTarget requires a non-empty aspect_name")
+        if (
+            isinstance(self.fraction_offset, bool)
+            or not isinstance(self.fraction_offset, Real)
+            or not math.isfinite(float(self.fraction_offset))
+        ):
+            raise ValueError("PrimaryDirectionMundaneAspectTarget requires a finite fraction_offset")
+
+    @property
+    def name(self) -> str:
+        return f"{self.source_name} Mundane {self.aspect_name}"
+
+
+class PrimaryDirectionMundaneParallelKind(StrEnum):
+    """Vessel: Registry of Placidian mundane parallel relation varieties."""
+    PARALLEL = "parallel"
+    CONTRA_PARALLEL = "contra_parallel"
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionMundaneParallelTarget:
+    """Immutable astronomical representation of a Placidian mundane parallel target."""
+    source_name: str
+    relation: PrimaryDirectionMundaneParallelKind = PrimaryDirectionMundaneParallelKind.PARALLEL
+
+    def __init__(
+        self,
+        source_name: str,
+        relation: PrimaryDirectionMundaneParallelKind | None = None,
+        *,
+        kind: PrimaryDirectionMundaneParallelKind | None = None,
+    ) -> None:
+        rel = (
+            kind
+            if kind is not None
+            else (
+                relation
+                if relation is not None
+                else PrimaryDirectionMundaneParallelKind.PARALLEL
+            )
+        )
+        object.__setattr__(self, "source_name", source_name)
+        object.__setattr__(self, "relation", rel)
+        self.__post_init__()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.source_name, str) or not self.source_name.strip():
+            raise ValueError("PrimaryDirectionMundaneParallelTarget requires a non-empty source_name")
+        if not isinstance(self.relation, PrimaryDirectionMundaneParallelKind):
+            raise ValueError(
+                f"PrimaryDirectionMundaneParallelTarget requires a valid PrimaryDirectionMundaneParallelKind, got {self.relation!r}"
+            )
+
+    @property
+    def kind(self) -> PrimaryDirectionMundaneParallelKind:
+        return self.relation
+
+    @property
+    def name(self) -> str:
+        suffix = "Parallel" if self.relation is PrimaryDirectionMundaneParallelKind.PARALLEL else "Contra-Parallel"
+        return f"{self.source_name} Mundane {suffix}"
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionMidpointTarget:
+    """Immutable astronomical representation of a zodiacal shortest-arc midpoint target."""
+    source_a: str
+    source_b: str
+
+    def __init__(
+        self,
+        source_a: str | None = None,
+        source_b: str | None = None,
+        *,
+        source_a_name: str | None = None,
+        source_b_name: str | None = None,
+    ) -> None:
+        a = source_a_name if source_a_name is not None else source_a
+        b = source_b_name if source_b_name is not None else source_b
+        if a is None or b is None:
+            raise ValueError("PrimaryDirectionMidpointTarget requires two source names")
+        object.__setattr__(self, "source_a", a)
+        object.__setattr__(self, "source_b", b)
+        self.__post_init__()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.source_a, str) or not self.source_a.strip():
+            raise ValueError("PrimaryDirectionMidpointTarget requires a non-empty source_a")
+        if not isinstance(self.source_b, str) or not self.source_b.strip():
+            raise ValueError("PrimaryDirectionMidpointTarget requires a non-empty source_b")
+        if self.source_a.strip() == self.source_b.strip():
+            raise ValueError("PrimaryDirectionMidpointTarget sources must be distinct")
+
+    @property
+    def source_a_name(self) -> str:
+        return self.source_a.strip()
+
+    @property
+    def source_b_name(self) -> str:
+        return self.source_b.strip()
+
+    @property
+    def name(self) -> str:
+        return f"{self.source_a.strip()}/{self.source_b.strip()} Midpoint"
+
+
+@dataclass(frozen=True, slots=True)
+class PrimaryDirectionBoundTarget:
+    """Immutable astronomical representation of a zodiacal term/bound boundary."""
+    name: str
+    sign: str
+    degree_in_sign: float
+    absolute_longitude: float
+    ruler: str
+    doctrine: EgyptianBoundsDoctrine
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.name, str) or not self.name.strip():
+            raise ValueError("PrimaryDirectionBoundTarget requires a non-empty name")
+        if self.sign not in SIGNS:
+            raise ValueError(f"Unknown zodiac sign: {self.sign}")
+        if not (0.0 <= self.degree_in_sign <= 30.0):
+            raise ValueError(f"degree_in_sign must be in [0, 30], got {self.degree_in_sign}")
+        if not (0.0 <= self.absolute_longitude <= 360.0):
+            raise ValueError(f"absolute_longitude must be in [0, 360], got {self.absolute_longitude}")
+        if not isinstance(self.ruler, str) or not self.ruler.strip():
+            raise ValueError("PrimaryDirectionBoundTarget requires a non-empty ruler")
+        if not isinstance(self.doctrine, EgyptianBoundsDoctrine):
+            raise ValueError("PrimaryDirectionBoundTarget requires a valid EgyptianBoundsDoctrine")
 
 
 class PrimaryDirectionTargetRelationKind(StrEnum):
@@ -105,6 +283,7 @@ class PrimaryDirectionTargetPolicy:
                 PrimaryDirectionTargetClass.NODE,
                 PrimaryDirectionTargetClass.ANGLE,
                 PrimaryDirectionTargetClass.HOUSE_CUSP,
+                PrimaryDirectionTargetClass.BOUND_BOUNDARY,
             }
         )
     )
@@ -143,6 +322,9 @@ class PrimaryDirectionTargetTruth:
     source_name: str | None = None
     aspect_name: str | None = None
     aspect_angle: float | None = None
+    fraction_offset: float | None = None
+    source_b_name: str | None = None
+    parallel_kind: PrimaryDirectionMundaneParallelKind | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name.strip():
@@ -175,9 +357,78 @@ class PrimaryDirectionTargetTruth:
                 raise ValueError(
                     "PrimaryDirectionTargetTruth invariant failed: aspect target name does not match its metadata"
                 )
-        elif any(value is not None for value in (self.source_name, self.aspect_name, self.aspect_angle)):
+        elif self.target_class is PrimaryDirectionTargetClass.MUNDANE_ASPECT:
+            if (
+                not isinstance(self.source_name, str)
+                or not self.source_name.strip()
+                or not isinstance(self.aspect_name, str)
+                or not self.aspect_name.strip()
+                or isinstance(self.fraction_offset, bool)
+                or not isinstance(self.fraction_offset, Real)
+                or not math.isfinite(float(self.fraction_offset))
+            ):
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: mundane aspects require source_name, aspect_name, and fraction_offset"
+                )
+            _target_class_for_name(self.source_name)
+            expected_offsets = {
+                aspect_name: offset for aspect_name, offset in PLACIDIAN_MUNDANE_ASPECT_OFFSETS
+            }
+            expected_offset = expected_offsets.get(self.aspect_name)
+            if expected_offset is None or not math.isclose(float(self.fraction_offset), expected_offset, abs_tol=1e-9):
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: aspect metadata is not an admitted mundane aspect"
+                )
+            if self.name != f"{self.source_name} Mundane {self.aspect_name}":
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: mundane aspect target name does not match its metadata"
+                )
+        elif self.target_class is PrimaryDirectionTargetClass.MUNDANE_PARALLEL:
+            if (
+                not isinstance(self.source_name, str)
+                or not self.source_name.strip()
+                or not isinstance(self.parallel_kind, PrimaryDirectionMundaneParallelKind)
+            ):
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: mundane parallels require source_name and parallel_kind"
+                )
+            _target_class_for_name(self.source_name)
+            suffix = "Parallel" if self.parallel_kind is PrimaryDirectionMundaneParallelKind.PARALLEL else "Contra-Parallel"
+            if self.name != f"{self.source_name} Mundane {suffix}":
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: mundane parallel target name does not match its metadata"
+                )
+        elif self.target_class is PrimaryDirectionTargetClass.MIDPOINT:
+            if (
+                not isinstance(self.source_name, str)
+                or not self.source_name.strip()
+                or not isinstance(self.source_b_name, str)
+                or not self.source_b_name.strip()
+            ):
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: midpoints require source_name and source_b_name"
+                )
+            if self.source_name.strip() == self.source_b_name.strip():
+                raise ValueError("PrimaryDirectionTargetTruth invariant failed: midpoint sources must be distinct")
+            _target_class_for_name(self.source_name)
+            _target_class_for_name(self.source_b_name)
+            if self.name != f"{self.source_name.strip()}/{self.source_b_name.strip()} Midpoint":
+                raise ValueError(
+                    "PrimaryDirectionTargetTruth invariant failed: midpoint target name does not match its metadata"
+                )
+        elif any(
+            value is not None
+            for value in (
+                self.source_name,
+                self.aspect_name,
+                self.aspect_angle,
+                self.fraction_offset,
+                self.source_b_name,
+                self.parallel_kind,
+            )
+        ):
             raise ValueError(
-                "PrimaryDirectionTargetTruth invariant failed: non-aspectual targets may not carry aspect metadata"
+                "PrimaryDirectionTargetTruth invariant failed: non-derived targets may not carry derived metadata"
             )
         elif _target_class_for_name(self.name) is not self.target_class:
             raise ValueError(
@@ -333,6 +584,10 @@ class PrimaryDirectionTargetsAggregateProfile:
     house_cusp_count: int
     aspect_count: int
     universally_admitted_count: int
+    bound_boundary_count: int = 0
+    mundane_aspect_count: int = 0
+    mundane_parallel_count: int = 0
+    midpoint_count: int = 0
 
     def __post_init__(self) -> None:
         try:
@@ -353,6 +608,10 @@ class PrimaryDirectionTargetsAggregateProfile:
             self.angle_count,
             self.house_cusp_count,
             self.aspect_count,
+            self.bound_boundary_count,
+            self.mundane_aspect_count,
+            self.mundane_parallel_count,
+            self.midpoint_count,
             self.universally_admitted_count,
         )
         if any(type(count) is not int or count < 0 for count in counts):
@@ -397,12 +656,48 @@ class PrimaryDirectionTargetsAggregateProfile:
             raise ValueError(
                 "PrimaryDirectionTargetsAggregateProfile invariant failed: aspect_count mismatch"
             )
+        if self.bound_boundary_count != sum(
+            1
+            for profile in self.profiles
+            if profile.truth.target_class is PrimaryDirectionTargetClass.BOUND_BOUNDARY
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: bound_boundary_count mismatch"
+            )
+        if self.mundane_aspect_count != sum(
+            1
+            for profile in self.profiles
+            if profile.truth.target_class is PrimaryDirectionTargetClass.MUNDANE_ASPECT
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: mundane_aspect_count mismatch"
+            )
+        if self.mundane_parallel_count != sum(
+            1
+            for profile in self.profiles
+            if profile.truth.target_class is PrimaryDirectionTargetClass.MUNDANE_PARALLEL
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: mundane_parallel_count mismatch"
+            )
+        if self.midpoint_count != sum(
+            1
+            for profile in self.profiles
+            if profile.truth.target_class is PrimaryDirectionTargetClass.MIDPOINT
+        ):
+            raise ValueError(
+                "PrimaryDirectionTargetsAggregateProfile invariant failed: midpoint_count mismatch"
+            )
         if (
             self.planet_count
             + self.node_count
             + self.angle_count
             + self.house_cusp_count
             + self.aspect_count
+            + self.bound_boundary_count
+            + self.mundane_aspect_count
+            + self.mundane_parallel_count
+            + self.midpoint_count
             != self.total_profiles
         ):
             raise ValueError(
@@ -569,6 +864,16 @@ class PrimaryDirectionTargetsNetworkProfile:
 def _target_class_for_name(name: str) -> PrimaryDirectionTargetClass:
     if not isinstance(name, str) or not name.strip():
         raise ValueError("Primary-direction target identity must be a non-empty string")
+    if name.startswith("Term of ") or name.startswith("Bound: "):
+        return PrimaryDirectionTargetClass.BOUND_BOUNDARY
+    if _mundane_aspect_target_components(name) is not None:
+        return PrimaryDirectionTargetClass.MUNDANE_ASPECT
+    if _mundane_parallel_target_components(name) is not None:
+        return PrimaryDirectionTargetClass.MUNDANE_PARALLEL
+    if _midpoint_target_components(name) is not None:
+        return PrimaryDirectionTargetClass.MIDPOINT
+    if _aspect_target_components(name) is not None:
+        return PrimaryDirectionTargetClass.ASPECTUAL_POINT
     if name in _ANGLE_NAMES:
         return PrimaryDirectionTargetClass.ANGLE
     if len(name) == 2 and name.startswith("H") and name[1].isdigit() and 1 <= int(name[1]) <= 9:
@@ -608,6 +913,49 @@ def _aspect_target_components(name: str) -> tuple[str, str, float] | None:
     return None
 
 
+def _mundane_aspect_target_components(name: str) -> tuple[str, str, float] | None:
+    for aspect_name, offset in PLACIDIAN_MUNDANE_ASPECT_OFFSETS:
+        suffix = f" Mundane {aspect_name}"
+        if name.endswith(suffix):
+            source_name = name[: -len(suffix)].strip()
+            if not source_name:
+                break
+            _target_class_for_name(source_name)
+            return source_name, aspect_name, offset
+    return None
+
+
+def _mundane_parallel_target_components(
+    name: str,
+) -> tuple[str, PrimaryDirectionMundaneParallelKind] | None:
+    for suffix, kind in (
+        (" Mundane Parallel", PrimaryDirectionMundaneParallelKind.PARALLEL),
+        (" Mundane Contra-Parallel", PrimaryDirectionMundaneParallelKind.CONTRA_PARALLEL),
+    ):
+        if name.endswith(suffix):
+            source_name = name[: -len(suffix)].strip()
+            if not source_name:
+                break
+            _target_class_for_name(source_name)
+            return source_name, kind
+    return None
+
+
+def _midpoint_target_components(name: str) -> tuple[str, str] | None:
+    suffix = " Midpoint"
+    if name.endswith(suffix):
+        body = name[: -len(suffix)].strip()
+        if "/" in body:
+            parts = body.split("/")
+            if len(parts) == 2:
+                a, b = parts[0].strip(), parts[1].strip()
+                if a and b and a != b:
+                    _target_class_for_name(a)
+                    _target_class_for_name(b)
+                    return a, b
+    return None
+
+
 def _relation_kind(
     admitted_as_significator: bool,
     admitted_as_promissor: bool,
@@ -633,6 +981,34 @@ def _condition_state(relation_kind: PrimaryDirectionTargetRelationKind) -> Prima
 def primary_direction_target_truth(name: str) -> PrimaryDirectionTargetTruth:
     if not isinstance(name, str) or not name.strip():
         raise ValueError("Primary-direction target identity must be a non-empty string")
+    mundane_parallel_components = _mundane_parallel_target_components(name)
+    if mundane_parallel_components is not None:
+        source_name, parallel_kind = mundane_parallel_components
+        return PrimaryDirectionTargetTruth(
+            name=name,
+            target_class=PrimaryDirectionTargetClass.MUNDANE_PARALLEL,
+            source_name=source_name,
+            parallel_kind=parallel_kind,
+        )
+    midpoint_components = _midpoint_target_components(name)
+    if midpoint_components is not None:
+        source_a, source_b = midpoint_components
+        return PrimaryDirectionTargetTruth(
+            name=name,
+            target_class=PrimaryDirectionTargetClass.MIDPOINT,
+            source_name=source_a,
+            source_b_name=source_b,
+        )
+    mundane_components = _mundane_aspect_target_components(name)
+    if mundane_components is not None:
+        source_name, aspect_name, offset = mundane_components
+        return PrimaryDirectionTargetTruth(
+            name=name,
+            target_class=PrimaryDirectionTargetClass.MUNDANE_ASPECT,
+            source_name=source_name,
+            aspect_name=aspect_name,
+            fraction_offset=offset,
+        )
     aspect_components = _aspect_target_components(name)
     if aspect_components is not None:
         source_name, aspect_name, angle = aspect_components
@@ -754,6 +1130,18 @@ def evaluate_primary_direction_targets_aggregate(
         aspect_count=sum(
             1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT
         ),
+        bound_boundary_count=sum(
+            1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.BOUND_BOUNDARY
+        ),
+        mundane_aspect_count=sum(
+            1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.MUNDANE_ASPECT
+        ),
+        mundane_parallel_count=sum(
+            1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.MUNDANE_PARALLEL
+        ),
+        midpoint_count=sum(
+            1 for p in profiles if p.truth.target_class is PrimaryDirectionTargetClass.MIDPOINT
+        ),
         universally_admitted_count=sum(
             1 for p in profiles if p.state is PrimaryDirectionTargetConditionState.UNIVERSALLY_ADMITTED
         ),
@@ -820,3 +1208,115 @@ def evaluate_primary_direction_targets_network(
         dominant_class=dominant,
         isolated_classes=isolated,
     )
+
+
+def resolve_primary_direction_bound_targets(
+    doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.EGYPTIAN,
+) -> tuple[PrimaryDirectionBoundTarget, ...]:
+    """
+    Generate the 60 canonical term/bound boundary targets across the zodiac.
+    """
+    if not isinstance(doctrine, EgyptianBoundsDoctrine):
+        raise ValueError(f"doctrine must be an EgyptianBoundsDoctrine member, got {doctrine!r}")
+    if doctrine is EgyptianBoundsDoctrine.PTOLEMAIC:
+        table = PTOLEMAIC_BOUNDS
+    elif doctrine is EgyptianBoundsDoctrine.CHALDEAN_DAY:
+        table = CHALDEAN_DAY_BOUNDS
+    elif doctrine is EgyptianBoundsDoctrine.CHALDEAN_NIGHT:
+        table = CHALDEAN_NIGHT_BOUNDS
+    else:
+        table = EGYPTIAN_BOUNDS
+
+    targets: list[PrimaryDirectionBoundTarget] = []
+    for sign_idx, sign in enumerate(SIGNS):
+        bounds = table[sign]
+        for ruler, start_deg, _ in bounds:
+            abs_lon = (sign_idx * 30.0 + start_deg) % 360.0
+            name = f"Term of {ruler} ({int(start_deg):02d}°00' {sign[:3]})"
+            targets.append(
+                PrimaryDirectionBoundTarget(
+                    name=name,
+                    sign=sign,
+                    degree_in_sign=float(start_deg),
+                    absolute_longitude=float(abs_lon),
+                    ruler=ruler,
+                    doctrine=doctrine,
+                )
+            )
+    return tuple(targets)
+
+
+def resolve_primary_direction_mundane_aspect_targets(
+    source_names: Iterable[str],
+    aspect_filter: Iterable[str] | None = None,
+) -> tuple[PrimaryDirectionMundaneAspectTarget, ...]:
+    """Generate Placidian mundane aspect targets for the provided source bodies."""
+    allowed_aspects = (
+        set(aspect_filter) if aspect_filter is not None else None
+    )
+    targets: list[PrimaryDirectionMundaneAspectTarget] = []
+    for source in source_names:
+        for aspect_name, offset in PLACIDIAN_MUNDANE_ASPECT_OFFSETS:
+            if allowed_aspects is not None and aspect_name not in allowed_aspects:
+                continue
+            targets.append(
+                PrimaryDirectionMundaneAspectTarget(
+                    source_name=source,
+                    aspect_name=aspect_name,
+                    fraction_offset=offset,
+                )
+            )
+    return tuple(targets)
+
+
+def resolve_primary_direction_mundane_parallel_targets(
+    source_names: Iterable[str],
+    *,
+    include_contra_parallel: bool = True,
+    kinds: Iterable[PrimaryDirectionMundaneParallelKind] | None = None,
+) -> tuple[PrimaryDirectionMundaneParallelTarget, ...]:
+    """Generate Placidian mundane parallel and contra-parallel targets."""
+    targets: list[PrimaryDirectionMundaneParallelTarget] = []
+    allowed_kinds = set(kinds) if kinds is not None else None
+    for source in source_names:
+        clean = source.strip()
+        if not clean:
+            continue
+        if allowed_kinds is None or PrimaryDirectionMundaneParallelKind.PARALLEL in allowed_kinds:
+            targets.append(
+                PrimaryDirectionMundaneParallelTarget(
+                    source_name=clean,
+                    relation=PrimaryDirectionMundaneParallelKind.PARALLEL,
+                )
+            )
+        if (allowed_kinds is None and include_contra_parallel) or (
+            allowed_kinds is not None
+            and PrimaryDirectionMundaneParallelKind.CONTRA_PARALLEL in allowed_kinds
+        ):
+            targets.append(
+                PrimaryDirectionMundaneParallelTarget(
+                    source_name=clean,
+                    relation=PrimaryDirectionMundaneParallelKind.CONTRA_PARALLEL,
+                )
+            )
+    return tuple(targets)
+
+
+def resolve_primary_direction_midpoint_targets(
+    pairs: Iterable[tuple[str, str]],
+) -> tuple[PrimaryDirectionMidpointTarget, ...]:
+    """Generate zodiacal shortest-arc midpoint targets for pairs of bodies."""
+    targets: list[PrimaryDirectionMidpointTarget] = []
+    for a, b in pairs:
+        clean_a, clean_b = a.strip(), b.strip()
+        if not clean_a or not clean_b or clean_a == clean_b:
+            continue
+        targets.append(
+            PrimaryDirectionMidpointTarget(
+                source_a=clean_a,
+                source_b=clean_b,
+            )
+        )
+    return tuple(targets)
+
+

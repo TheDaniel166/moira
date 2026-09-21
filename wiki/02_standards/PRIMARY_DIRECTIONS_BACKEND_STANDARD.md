@@ -282,7 +282,8 @@ Current curated public surface includes:
 The `Moira` facade preserves the established `speculum(...)` and
 `primary_directions(...)` positional calls and adds keyword-only doctrine
 inputs plus policy-preset, relation, condition, aggregate-profile, and network
-delegations. The eight existing `/v1/primary-directions/*` paths are transport
+delegations. The nine existing `/v1/primary-directions/*` paths (including the
+integrated chronological life timeline endpoint) are transport
 surfaces over these engine meanings; route code does not own doctrine.
 The six search-derived paths accept additive typed vessels for the admitted
 antiscia, Ptolemaic-parallel, Placidian-rapt-parallel, fixed-star, and Morinus

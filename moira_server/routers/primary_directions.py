@@ -19,6 +19,8 @@ from ..models.primary_directions import (
     PrimaryDirectionsRelationsRequest,
     PrimaryDirectionsSearchRequest,
     PrimaryDirectionsSpeculumResponse,
+    PrimaryDirectionsTimelineRequest,
+    PrimaryDirectionsTimelineResponse,
 )
 from ..serializers.primary_directions import (
     _serialize_relation_profile,
@@ -29,6 +31,7 @@ from ..serializers.primary_directions import (
     serialize_profile,
     serialize_profile_with_reduction,
     serialize_speculum,
+    serialize_timeline,
 )
 from ..services.primary_directions import (
     compute_arcs_service,
@@ -39,6 +42,7 @@ from ..services.primary_directions import (
     compute_profile_with_reduction_service,
     compute_relations_service,
     compute_speculum_service,
+    compute_timeline_service,
     resolve_primary_directions_policy,
 )
 
@@ -161,3 +165,14 @@ def primary_directions_relations_route(
         _serialize_relation_profile(profile, chosen_key=resolved.chosen_key.name)
         for profile in compute_relations_service(engine, request, resolved=resolved)
     ]
+
+
+@router.post(
+    "/primary-directions/timeline",
+    response_model=PrimaryDirectionsTimelineResponse,
+)
+def primary_directions_timeline_route(
+    request: PrimaryDirectionsTimelineRequest,
+    engine: Moira = Depends(get_engine),
+) -> PrimaryDirectionsTimelineResponse:
+    return serialize_timeline(compute_timeline_service(engine, request))

@@ -20,7 +20,9 @@ from moira.primary_directions import (
     PrimaryDirectionAntisciaTarget,
     PrimaryDirectionConverseDoctrine,
     PrimaryDirectionFixedStarTarget,
+    PrimaryDirectionMidpointTarget,
     PrimaryDirectionMotion,
+    PrimaryDirectionMundaneParallelTarget,
     PrimaryDirectionsPolicy,
     PrimaryDirectionsPreset,
     PlacidianRaptParallelTarget,
@@ -40,6 +42,7 @@ from ..models.primary_directions import (
     PrimaryDirectionsBaseRequest,
     PrimaryDirectionsRelationsRequest,
     PrimaryDirectionsSearchRequest,
+    PrimaryDirectionsTimelineRequest,
     SubmittedArc,
 )
 from ._shared import require_aware_datetime, require_supported_chart_bodies
@@ -133,6 +136,8 @@ class PrimaryDirectionsResolvedPolicyContext:
     ptolemaic_parallel_targets: tuple[PtolemaicParallelTarget, ...]
     placidian_rapt_parallel_targets: tuple[PlacidianRaptParallelTarget, ...]
     fixed_star_targets: tuple[PrimaryDirectionFixedStarTarget, ...]
+    mundane_parallel_targets: tuple[PrimaryDirectionMundaneParallelTarget, ...]
+    midpoint_targets: tuple[PrimaryDirectionMidpointTarget, ...]
     morinus_aspect_contexts: tuple[MorinusAspectContext, ...]
     placidian_rapt_parallel_motion: PrimaryDirectionMotion | None
 
@@ -252,6 +257,8 @@ def _advanced_search_policy_vessels(
             "ptolemaic_parallel_targets": (),
             "placidian_rapt_parallel_targets": (),
             "fixed_star_targets": (),
+            "mundane_parallel_targets": (),
+            "midpoint_targets": (),
             "morinus_aspect_contexts": (),
         }
     return {
@@ -276,6 +283,20 @@ def _advanced_search_policy_vessels(
         "fixed_star_targets": tuple(
             PrimaryDirectionFixedStarTarget(star_name=item.star_name)
             for item in request.fixed_star_targets
+        ),
+        "mundane_parallel_targets": tuple(
+            PrimaryDirectionMundaneParallelTarget(
+                source_name=item.source_name,
+                kind=item.kind,
+            )
+            for item in request.mundane_parallel_targets
+        ),
+        "midpoint_targets": tuple(
+            PrimaryDirectionMidpointTarget(
+                source_a_name=item.source_a_name,
+                source_b_name=item.source_b_name,
+            )
+            for item in request.midpoint_targets
         ),
         "morinus_aspect_contexts": tuple(
             MorinusAspectContext(
@@ -305,6 +326,16 @@ def _validate_advanced_search_preset(
         (
             "placidian_rapt_parallel_targets",
             frozenset(_RAPT_PRESETS),
+        ),
+        (
+            "mundane_parallel_targets",
+            frozenset(
+                {
+                    PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_PARALLEL,
+                    PrimaryDirectionsPreset.PLACIDUS_MUNDANE,
+                    PrimaryDirectionsPreset.PLACIDIAN_CLASSIC_MUNDANE,
+                }
+            ),
         ),
         (
             "morinus_aspect_contexts",
@@ -424,6 +455,8 @@ def _resolved_policy_context(
         ptolemaic_parallel_targets=policy.ptolemaic_parallel_targets,
         placidian_rapt_parallel_targets=policy.placidian_rapt_parallel_targets,
         fixed_star_targets=policy.fixed_star_targets,
+        mundane_parallel_targets=policy.mundane_parallel_targets,
+        midpoint_targets=policy.midpoint_targets,
         morinus_aspect_contexts=policy.morinus_aspect_contexts,
         placidian_rapt_parallel_motion=policy.placidian_rapt_parallel_motion,
     )
@@ -770,6 +803,37 @@ def compute_relations_service(
     ]
 
 
+def compute_timeline_service(
+    engine: Moira,
+    request: PrimaryDirectionsTimelineRequest,
+):
+    chart, houses = _build_chart_and_houses(engine, request)
+    resolved = resolve_primary_directions_policy(request)
+    key = request.key or resolved.policy.key_policy.key
+
+    from moira.egyptian_bounds import EgyptianBoundsDoctrine
+    bound_doc = EgyptianBoundsDoctrine.EGYPTIAN
+    if request.bound_doctrine is not None:
+        try:
+            bound_doc = EgyptianBoundsDoctrine(str(request.bound_doctrine).lower())
+        except ValueError:
+            bound_doc = EgyptianBoundsDoctrine.EGYPTIAN
+
+    return engine.primary_directions_timeline(
+        chart,
+        houses,
+        request.observer_lat,
+        policy=resolved.policy,
+        key=key,
+        max_age_years=request.max_age_years,
+        max_arc=request.max_arc,
+        significators=request.significators,
+        promissors=request.promissors,
+        obliquity=request.obliquity,
+        bound_doctrine=bound_doc,
+    )
+
+
 __all__ = [
     "PrimaryDirectionsArcsReductionContext",
     "ResolvedPrimaryDirectionsPolicy",
@@ -781,5 +845,6 @@ __all__ = [
     "compute_profile_with_reduction_service",
     "compute_relations_service",
     "compute_speculum_service",
+    "compute_timeline_service",
     "resolve_primary_directions_policy",
 ]

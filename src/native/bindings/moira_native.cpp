@@ -1814,6 +1814,7 @@ PYBIND11_MODULE(_moira_native, m) {
                 if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
                 if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
                 if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
+                if (py::hasattr(item, "f")) pt.f = item.attr("f").cast<double>();
                 if (py::hasattr(item, "is_eastern")) {
                     pt.is_eastern = item.attr("is_eastern").cast<bool>();
                 } else {
@@ -1830,6 +1831,75 @@ PYBIND11_MODULE(_moira_native, m) {
         return matrix;
     }, py::arg("points"), py::arg("geo_lat"), py::arg("method"),
     "Compute NxN matrix of (direct, converse) primary direction under-pole arcs with GIL released.");
+
+    m.def("placidian_required_ha", &placidian_required_ha,
+          py::arg("f"), py::arg("dsa"), py::arg("nsa"),
+          "Required hour angle for temporal fraction under Placidian semi-arcs.");
+    m.def("placidian_mundane_arc", &placidian_mundane_arc,
+          py::arg("sig_f"), py::arg("prom_ha"), py::arg("prom_dsa"), py::arg("prom_nsa"),
+          "Direct Placidian mundane primary direction arc in degrees [0, 360).");
+    m.def("compute_placidian_pair_arcs", [](py::handle sig_obj, py::handle prom_obj, const std::string& converse_mode_str) {
+        char conv_mode = converse_mode_str.empty() ? 'T' : converse_mode_str[0];
+        auto extract_pt = [](py::handle item) {
+            if (py::isinstance<NativeSpeculumPoint>(item)) {
+                return item.cast<NativeSpeculumPoint>();
+            }
+            NativeSpeculumPoint pt;
+            if (py::hasattr(item, "name")) pt.name = item.attr("name").cast<std::string>();
+            pt.ra = item.attr("ra").cast<double>();
+            pt.dec = item.attr("dec").cast<double>();
+            pt.ha = item.attr("ha").cast<double>();
+            if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
+            if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
+            if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
+            if (py::hasattr(item, "f")) pt.f = item.attr("f").cast<double>();
+            if (py::hasattr(item, "is_eastern")) {
+                pt.is_eastern = item.attr("is_eastern").cast<bool>();
+            } else {
+                pt.is_eastern = (pt.ha < 0.0);
+            }
+            return pt;
+        };
+        NativeSpeculumPoint sig = extract_pt(sig_obj);
+        NativeSpeculumPoint prom = extract_pt(prom_obj);
+        return compute_placidian_pair_arcs(sig, prom, conv_mode);
+    }, py::arg("sig"), py::arg("prom"), py::arg("converse_mode") = "T",
+    "Compute Placidian (direct, converse) primary direction arcs for a single pair.");
+
+    m.def("compute_placidian_arcs_matrix", [](const py::sequence& points_seq, const std::string& converse_mode_str) {
+        char conv_mode = converse_mode_str.empty() ? 'T' : converse_mode_str[0];
+        std::vector<NativeSpeculumPoint> points;
+        points.reserve(py::len(points_seq));
+        for (auto item_handle : points_seq) {
+            py::object item = py::reinterpret_borrow<py::object>(item_handle);
+            if (py::isinstance<NativeSpeculumPoint>(item)) {
+                points.push_back(item.cast<NativeSpeculumPoint>());
+            } else {
+                NativeSpeculumPoint pt;
+                if (py::hasattr(item, "name")) pt.name = item.attr("name").cast<std::string>();
+                pt.ra = item.attr("ra").cast<double>();
+                pt.dec = item.attr("dec").cast<double>();
+                pt.ha = item.attr("ha").cast<double>();
+                if (py::hasattr(item, "dsa")) pt.dsa = item.attr("dsa").cast<double>();
+                if (py::hasattr(item, "nsa")) pt.nsa = item.attr("nsa").cast<double>();
+                if (py::hasattr(item, "upper")) pt.upper = item.attr("upper").cast<bool>();
+                if (py::hasattr(item, "f")) pt.f = item.attr("f").cast<double>();
+                if (py::hasattr(item, "is_eastern")) {
+                    pt.is_eastern = item.attr("is_eastern").cast<bool>();
+                } else {
+                    pt.is_eastern = (pt.ha < 0.0);
+                }
+                points.push_back(pt);
+            }
+        }
+        std::vector<std::vector<std::pair<double, double>>> matrix;
+        {
+            py::gil_scoped_release release;
+            matrix = compute_placidian_arcs_matrix(points, conv_mode);
+        }
+        return matrix;
+    }, py::arg("points"), py::arg("converse_mode") = "T",
+    "Compute NxN matrix of Placidian (direct, converse) primary direction arcs with GIL released.");
 
 
     // --- Interpolation ---

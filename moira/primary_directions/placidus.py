@@ -20,6 +20,9 @@ __all__ = [
     "PlacidianRaptParallelTarget",
     "compute_placidian_rapt_parallel_arc",
     "compute_placidian_converse_rapt_parallel_arc",
+    "wrap_mundane_fraction",
+    "compute_placidian_mundane_aspect_arc",
+    "compute_placidian_mundane_parallel_arc",
 ]
 
 
@@ -120,3 +123,61 @@ def compute_placidian_converse_rapt_parallel_arc(
     secondary_distance = (ra_difference * promissor_semi_arc) / semi_arc_sum
     primary_distance = _converse_meridian_distance(promissor)
     return abs(primary_distance - secondary_distance)
+
+
+def wrap_mundane_fraction(f: float) -> float:
+    """Normalize a continuous temporal fraction into the cyclic interval [-2.0, 2.0]."""
+    wrapped = ((float(f) + 2.0) % 4.0) - 2.0
+    if wrapped < -2.0:
+        wrapped += 4.0
+    elif wrapped > 2.0:
+        wrapped -= 4.0
+    return wrapped
+
+
+def compute_placidian_mundane_aspect_arc(
+    sig: SpeculumEntry,
+    prom: SpeculumEntry,
+    fraction_offset: float = 0.0,
+) -> float:
+    """Compute the direct Placidian mundane aspect arc.
+
+    Directs promissor toward significator's mundane aspect fraction (sig.f + fraction_offset).
+    """
+    target_f = wrap_mundane_fraction(sig.f + fraction_offset)
+    if abs(target_f) <= 1.0:
+        req_ha = target_f * prom.dsa
+    elif target_f > 1.0:
+        req_ha = prom.dsa + (target_f - 1.0) * prom.nsa
+    else:
+        req_ha = -prom.dsa - (-target_f - 1.0) * prom.nsa
+    return (req_ha - prom.ha) % 360.0
+
+
+def compute_placidian_mundane_parallel_arc(
+    sig: SpeculumEntry,
+    prom: SpeculumEntry,
+    *,
+    is_contra: bool = False,
+) -> float:
+    """Compute the direct Placidian mundane parallel or contra-parallel arc.
+
+    Directs promissor toward significator's mundane parallel or contra-parallel fraction.
+    - Parallel: meridian reflection f_target = -sig.f.
+    - Contra-parallel: horizon reflection f_target = copysign(2.0 - abs(sig.f), sig.f).
+    """
+    if is_contra:
+        sign = 1.0 if sig.f >= 0.0 else -1.0
+        target_f = sign * (2.0 - abs(sig.f))
+    else:
+        target_f = -sig.f
+    target_f = wrap_mundane_fraction(target_f)
+    if abs(target_f) <= 1.0:
+        req_ha = target_f * prom.dsa
+    elif target_f > 1.0:
+        req_ha = prom.dsa + (target_f - 1.0) * prom.nsa
+    else:
+        req_ha = -prom.dsa - (-target_f - 1.0) * prom.nsa
+    return (req_ha - prom.ha) % 360.0
+
+

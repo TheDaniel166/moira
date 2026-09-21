@@ -21,6 +21,7 @@ from pydantic import Field, field_validator, model_validator
 
 from moira.primary_directions import (
     PrimaryDirectionAntisciaKind,
+    PrimaryDirectionMundaneParallelKind,
     PrimaryDirectionsPreset,
     PtolemaicParallelRelation,
 )
@@ -223,6 +224,54 @@ class PlacidianRaptParallelTargetRequest(_StrictModel):
         return f"{self.source_name} Rapt Parallel"
 
 
+class PrimaryDirectionMundaneParallelTargetRequest(_StrictModel):
+    """One explicitly configured Placidian mundane parallel or contra-parallel promissor."""
+
+    source_name: str = Field(min_length=1, max_length=128)
+    kind: PrimaryDirectionMundaneParallelKind = PrimaryDirectionMundaneParallelKind.PARALLEL
+
+    @field_validator("source_name", mode="before")
+    @classmethod
+    def _normalize_source_name(cls, value):
+        return _normalized_primary_direction_identity(
+            value,
+            field_name="mundane parallel source_name",
+        )
+
+    @field_validator("kind", mode="before")
+    @classmethod
+    def _normalize_kind(cls, value):
+        return value.strip().lower() if isinstance(value, str) else value
+
+    @property
+    def target_name(self) -> str:
+        suffix = (
+            "Mundane Parallel"
+            if self.kind is PrimaryDirectionMundaneParallelKind.PARALLEL
+            else "Mundane Contra-Parallel"
+        )
+        return f"{self.source_name} {suffix}"
+
+
+class PrimaryDirectionMidpointTargetRequest(_StrictModel):
+    """One explicitly configured shortest-arc circular midpoint promissor."""
+
+    source_a_name: str = Field(min_length=1, max_length=128)
+    source_b_name: str = Field(min_length=1, max_length=128)
+
+    @field_validator("source_a_name", "source_b_name", mode="before")
+    @classmethod
+    def _normalize_sources(cls, value):
+        return _normalized_primary_direction_identity(
+            value,
+            field_name="midpoint source",
+        )
+
+    @property
+    def target_name(self) -> str:
+        return f"{self.source_a_name}/{self.source_b_name}"
+
+
 class PrimaryDirectionFixedStarTargetRequest(_StrictModel):
     """One sovereign-catalog fixed-star promissor identity."""
 
@@ -300,6 +349,14 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
         default_factory=list,
         max_length=256,
     )
+    mundane_parallel_targets: list[PrimaryDirectionMundaneParallelTargetRequest] = Field(
+        default_factory=list,
+        max_length=256,
+    )
+    midpoint_targets: list[PrimaryDirectionMidpointTargetRequest] = Field(
+        default_factory=list,
+        max_length=256,
+    )
     morinus_aspect_contexts: list[MorinusAspectContextRequest] = Field(
         default_factory=list,
         max_length=256,
@@ -333,6 +390,8 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
             self.ptolemaic_parallel_targets,
             self.placidian_rapt_parallel_targets,
             self.fixed_star_targets,
+            self.mundane_parallel_targets,
+            self.midpoint_targets,
             self.morinus_aspect_contexts,
         )
         advanced_count = sum(len(values) for values in advanced_collections)
@@ -352,6 +411,8 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
                 self.ptolemaic_parallel_targets,
                 self.placidian_rapt_parallel_targets,
                 self.fixed_star_targets,
+                self.mundane_parallel_targets,
+                self.midpoint_targets,
             )
             for target in targets
         ]
@@ -365,6 +426,22 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
                 "primary-directions Morinus aspect contexts must be unique by source_name"
             )
         return self
+
+
+class PrimaryDirectionsTimelineRequest(PrimaryDirectionsSearchRequest):
+    """Request for the integrated chronological life timeline endpoint."""
+
+    max_age_years: float = Field(default=100.0, gt=0.0, le=150.0, allow_inf_nan=False)
+    key: PrimaryDirectionKey | None = None
+    bound_doctrine: str | None = Field(default=None, max_length=64)
+
+    @field_validator("max_age_years", mode="before")
+    @classmethod
+    def _require_real_max_age(cls, value):
+        if not isinstance(value, Real) or isinstance(value, bool):
+            raise ValueError("max_age_years must be a real number")
+        return value
+
 
 
 class PrimaryDirectionsRelationsRequest(_StrictModel):
@@ -668,6 +745,58 @@ class PrimaryDirectionsNetworkReductionResponse(_StrictModel):
     reduction: PrimaryDirectionsArcsReductionTruthResponse
 
 
+class PrimaryDirectionsTimelineEventResponse(_StrictModel):
+    """A single chronological life timeline direction event."""
+
+    significator: str
+    promissor: str
+    arc_deg: float
+    direction: str
+    motion: str
+    method: str
+    space: str
+    relational_kind: str
+    age_years: float
+    perfection_jd_ut: float
+    perfection_iso: str
+    distributor: str | None = None
+    bound_name: str | None = None
+    participator: str | None = None
+    is_bound_boundary: bool = False
+
+
+class PrimaryDirectionsTimelineDistributorPeriodResponse(_StrictModel):
+    """A single term/bound distribution period across life."""
+
+    significator: str
+    ruler: str
+    sign: str
+    bound_start_deg: float
+    bound_end_deg: float
+    entry_arc_deg: float
+    exit_arc_deg: float
+    entry_age: float | None = None
+    exit_age: float | None = None
+    entry_date_utc: str | None = None
+    exit_date_utc: str | None = None
+    participators_count: int = 0
+
+
+PrimaryDirectionsDistributorPeriodResponse = PrimaryDirectionsTimelineDistributorPeriodResponse
+
+
+class PrimaryDirectionsTimelineResponse(_StrictModel):
+    """Response model for the chronological life timeline endpoint."""
+
+    chart_id: str
+    natal_jd_ut: float
+    max_age_years: float
+    key: str
+    events: list[PrimaryDirectionsTimelineEventResponse]
+    distributor_periods: list[PrimaryDirectionsTimelineDistributorPeriodResponse]
+    total_events: int
+
+
 __all__ = [
     "PrimaryDirectionsAggregateProfileResponse",
     "PrimaryDirectionsArcsResponse",
@@ -691,6 +820,11 @@ __all__ = [
     "PrimaryDirectionsSearchRequest",
     "PrimaryDirectionsSignificatorProfileResponse",
     "PrimaryDirectionsSpeculumResponse",
+    "PrimaryDirectionsDistributorPeriodResponse",
+    "PrimaryDirectionsTimelineDistributorPeriodResponse",
+    "PrimaryDirectionsTimelineEventResponse",
+    "PrimaryDirectionsTimelineRequest",
+    "PrimaryDirectionsTimelineResponse",
     "MorinusAspectContextRequest",
     "PlacidianRaptParallelTargetRequest",
     "PtolemaicParallelTargetRequest",

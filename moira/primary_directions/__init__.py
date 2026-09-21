@@ -49,7 +49,11 @@ from .keys import (
     PrimaryDirectionKey,
     PrimaryDirectionKeyFamily,
     PrimaryDirectionKeyPolicy,
+    PrimaryDirectionKeyTruth,
     convert_arc_to_time,
+    invert_solar_arc_lon,
+    invert_solar_arc_ra,
+    primary_direction_key_truth,
 )
 from .latitudes import (
     PrimaryDirectionLatitudeDoctrine,
@@ -76,6 +80,9 @@ from .placidus import (
     PlacidianRaptParallelTarget,
     compute_placidian_converse_rapt_parallel_arc,
     compute_placidian_rapt_parallel_arc,
+    wrap_mundane_fraction,
+    compute_placidian_mundane_aspect_arc,
+    compute_placidian_mundane_parallel_arc,
 )
 from .ptolemy import (
     PtolemaicParallelRelation,
@@ -90,12 +97,34 @@ from .relations import (
     placidian_rapt_parallel_relation_policy,
     ptolemaic_parallel_relation_policy,
     zodiacal_aspect_relation_policy,
+    mundane_aspect_relation_policy,
+    mundane_parallel_relation_policy,
+    midpoint_relation_policy,
 )
 from .spaces import PrimaryDirectionSpace
 from .targets import (
+    PrimaryDirectionBoundTarget,
+    PrimaryDirectionMundaneAspectTarget,
+    PrimaryDirectionMundaneParallelKind,
+    PrimaryDirectionMundaneParallelTarget,
+    PrimaryDirectionMidpointTarget,
+    PLACIDIAN_MUNDANE_ASPECT_OFFSETS,
     PrimaryDirectionTargetClass,
     PrimaryDirectionTargetPolicy,
     primary_direction_target_truth,
+    resolve_primary_direction_bound_targets,
+    resolve_primary_direction_mundane_aspect_targets,
+    resolve_primary_direction_mundane_parallel_targets,
+    resolve_primary_direction_midpoint_targets,
+)
+from .distributor import (
+    DistributorPeriod,
+    resolve_distributor_chronology,
+)
+from .timeline import (
+    PrimaryDirectionTimelineEvent,
+    PrimaryDirectionsTimeline,
+    compute_primary_directions_timeline,
 )
 
 __all__ = [
@@ -114,6 +143,11 @@ __all__ = [
     "PrimaryDirectionKey",
     "PrimaryDirectionKeyFamily",
     "PrimaryDirectionKeyPolicy",
+    "PrimaryDirectionKeyTruth",
+    "convert_arc_to_time",
+    "invert_solar_arc_lon",
+    "invert_solar_arc_ra",
+    "primary_direction_key_truth",
     "PrimaryDirectionLatitudeDoctrine",
     "PrimaryDirectionLatitudePolicy",
     "PrimaryDirectionLatitudeSource",
@@ -123,14 +157,35 @@ __all__ = [
     "PrimaryDirectionAntisciaKind",
     "PrimaryDirectionAntisciaTarget",
     "PrimaryDirectionFixedStarTarget",
+    "PrimaryDirectionBoundTarget",
+    "resolve_primary_direction_bound_targets",
+    "DistributorPeriod",
+    "resolve_distributor_chronology",
+    "PrimaryDirectionTimelineEvent",
+    "PrimaryDirectionsTimeline",
+    "compute_primary_directions_timeline",
     "PlacidianRaptParallelTarget",
+    "wrap_mundane_fraction",
+    "compute_placidian_mundane_aspect_arc",
+    "compute_placidian_mundane_parallel_arc",
     "PtolemaicParallelRelation",
     "PtolemaicParallelTarget",
+    "PrimaryDirectionMundaneAspectTarget",
+    "PrimaryDirectionMundaneParallelKind",
+    "PrimaryDirectionMundaneParallelTarget",
+    "PrimaryDirectionMidpointTarget",
+    "PLACIDIAN_MUNDANE_ASPECT_OFFSETS",
+    "resolve_primary_direction_mundane_aspect_targets",
+    "resolve_primary_direction_mundane_parallel_targets",
+    "resolve_primary_direction_midpoint_targets",
     "PrimaryDirectionRelationalKind",
     "PrimaryDirectionRelationPolicy",
     "default_positional_relation_policy",
     "antiscia_relation_policy",
     "zodiacal_aspect_relation_policy",
+    "mundane_aspect_relation_policy",
+    "mundane_parallel_relation_policy",
+    "midpoint_relation_policy",
     "ptolemaic_parallel_relation_policy",
     "placidian_rapt_parallel_relation_policy",
     "PrimaryDirectionPerfectionKind",
@@ -175,10 +230,13 @@ def _finite_real(value: object, name: str) -> float:
 class PrimaryDirectionsPreset(StrEnum):
     """Vessel: Collection of pre-configured primary direction calculation regimes."""
     PLACIDUS_MUNDANE = "placidus_mundane"
+    PLACIDUS_MUNDANE_ASPECT = "placidus_mundane_aspect"
+    PLACIDIAN_MUNDANE_PARALLEL = "placidian_mundane_parallel"
     PLACIDIAN_CLASSIC_MUNDANE = "placidian_classic_mundane"
     PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT = "placidian_mundane_rapt_parallel_direct"
     PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE = "placidian_mundane_rapt_parallel_converse"
     PTOLEMY_MUNDANE = "ptolemy_mundane"
+    PTOLEMY_MUNDANE_ASPECT = "ptolemy_mundane_aspect"
     PTOLEMY_ZODIACAL_ANTISCIA = "ptolemy_zodiacal_antiscia"
     PTOLEMY_ZODIACAL_ASPECT = "ptolemy_zodiacal_aspect"
     PTOLEMY_ZODIACAL_PARALLEL = "ptolemy_zodiacal_parallel"
@@ -232,6 +290,10 @@ class PrimaryDirectionsPolicy:
     ptolemaic_parallel_targets: tuple[PtolemaicParallelTarget, ...] = ()
     placidian_rapt_parallel_targets: tuple[PlacidianRaptParallelTarget, ...] = ()
     fixed_star_targets: tuple[PrimaryDirectionFixedStarTarget, ...] = ()
+    bound_targets: tuple[PrimaryDirectionBoundTarget, ...] = ()
+    mundane_aspect_targets: tuple[PrimaryDirectionMundaneAspectTarget, ...] = ()
+    mundane_parallel_targets: tuple[PrimaryDirectionMundaneParallelTarget, ...] = ()
+    midpoint_targets: tuple[PrimaryDirectionMidpointTarget, ...] = ()
     placidian_rapt_parallel_motion: PrimaryDirectionMotion | None = None
 
     def __post_init__(self) -> None:
@@ -274,6 +336,22 @@ class PrimaryDirectionsPolicy:
                 PlacidianRaptParallelTarget,
             ),
             ("fixed_star_targets", self.fixed_star_targets, PrimaryDirectionFixedStarTarget),
+            ("bound_targets", self.bound_targets, PrimaryDirectionBoundTarget),
+            (
+                "mundane_aspect_targets",
+                self.mundane_aspect_targets,
+                PrimaryDirectionMundaneAspectTarget,
+            ),
+            (
+                "mundane_parallel_targets",
+                self.mundane_parallel_targets,
+                PrimaryDirectionMundaneParallelTarget,
+            ),
+            (
+                "midpoint_targets",
+                self.midpoint_targets,
+                PrimaryDirectionMidpointTarget,
+            ),
         )
         for name, values, expected_type in sequence_fields:
             if isinstance(values, (str, bytes)):
@@ -425,6 +503,9 @@ class PrimaryDirectionsPolicy:
                     self.antiscia_targets,
                     self.ptolemaic_parallel_targets,
                     self.placidian_rapt_parallel_targets,
+                    self.mundane_aspect_targets,
+                    self.mundane_parallel_targets,
+                    self.midpoint_targets,
                 )
             ):
                 raise ValueError(
@@ -455,8 +536,35 @@ class PrimaryDirectionsPolicy:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: antiscia_targets must be unique by name"
             )
+        bound_names = [target.name for target in self.bound_targets]
+        if len(set(bound_names)) != len(bound_names):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: bound_targets must be unique by name"
+            )
+        mundane_aspect_names = [target.name for target in self.mundane_aspect_targets]
+        if len(set(mundane_aspect_names)) != len(mundane_aspect_names):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: mundane_aspect_targets must be unique by name"
+            )
+        mundane_parallel_names = [target.name for target in self.mundane_parallel_targets]
+        if len(set(mundane_parallel_names)) != len(mundane_parallel_names):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: mundane_parallel_targets must be unique by name"
+            )
+        midpoint_names = [target.name for target in self.midpoint_targets]
+        if len(set(midpoint_names)) != len(midpoint_names):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: midpoint_targets must be unique by name"
+            )
         derived_target_names = (
-            antiscia_names + parallel_names + rapt_names + fixed_star_names
+            antiscia_names
+            + parallel_names
+            + rapt_names
+            + fixed_star_names
+            + bound_names
+            + mundane_aspect_names
+            + mundane_parallel_names
+            + midpoint_names
         )
         if len(set(derived_target_names)) != len(derived_target_names):
             raise ValueError(
@@ -566,6 +674,35 @@ class PrimaryDirectionsPolicy:
             raise ValueError(
                 "PrimaryDirectionsPolicy invariant failed: placidian_rapt_parallel_motion must be a primary-direction motion"
             )
+        if self.mundane_parallel_targets and self.space is not PrimaryDirectionSpace.IN_MUNDO:
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: mundane_parallel_targets currently require in_mundo"
+            )
+        if self.mundane_parallel_targets and self.method not in (
+            PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+            PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: mundane_parallel_targets currently require Placidian method"
+            )
+        required_mundane_parallel_kinds = {
+            (
+                PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL
+                if target.kind is PrimaryDirectionMundaneParallelKind.CONTRA_PARALLEL
+                else PrimaryDirectionRelationalKind.MUNDANE_PARALLEL
+            )
+            for target in self.mundane_parallel_targets
+        }
+        if not required_mundane_parallel_kinds <= self.relation_policy.admitted_kinds:
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: mundane_parallel_targets require matching admitted relation kinds"
+            )
+        if self.midpoint_targets and (
+            PrimaryDirectionRelationalKind.MIDPOINT not in self.relation_policy.admitted_kinds
+        ):
+            raise ValueError(
+                "PrimaryDirectionsPolicy invariant failed: midpoint_targets require admitted midpoint relation kind"
+            )
 
     @property
     def admitted_motions(self) -> tuple[PrimaryDirectionMotion, ...]:
@@ -654,28 +791,138 @@ def primary_directions_policy_preset(
     preset: PrimaryDirectionsPreset,
     *,
     include_converse: bool = True,
+    converse_doctrine: PrimaryDirectionConverseDoctrine | None = None,
     key_policy: PrimaryDirectionKeyPolicy | None = None,
     morinus_aspect_contexts: tuple[MorinusAspectContext, ...] = (),
     antiscia_targets: tuple[PrimaryDirectionAntisciaTarget, ...] = (),
     ptolemaic_parallel_targets: tuple[PtolemaicParallelTarget, ...] = (),
     placidian_rapt_parallel_targets: tuple[PlacidianRaptParallelTarget, ...] = (),
     fixed_star_targets: tuple[PrimaryDirectionFixedStarTarget, ...] = (),
+    bound_targets: tuple[PrimaryDirectionBoundTarget, ...] = (),
+    mundane_aspect_targets: tuple[PrimaryDirectionMundaneAspectTarget, ...] = (),
+    mundane_parallel_targets: tuple[PrimaryDirectionMundaneParallelTarget, ...] = (),
+    midpoint_targets: tuple[PrimaryDirectionMidpointTarget, ...] = (),
 ) -> PrimaryDirectionsPolicy:
+    if converse_doctrine is not None:
+        if not isinstance(converse_doctrine, PrimaryDirectionConverseDoctrine):
+            raise ValueError(
+                f"Unsupported primary direction converse doctrine: {converse_doctrine}"
+            )
+        resolved_converse_doctrine = converse_doctrine
+        resolved_include_converse = (
+            converse_doctrine is not PrimaryDirectionConverseDoctrine.DIRECT_ONLY
+        )
+    else:
+        resolved_converse_doctrine = _preset_converse_doctrine(include_converse)
+        resolved_include_converse = include_converse
+
     base_kwargs = {
-        "include_converse": include_converse,
-        "converse_doctrine": _preset_converse_doctrine(include_converse),
+        "include_converse": resolved_include_converse,
+        "converse_doctrine": resolved_converse_doctrine,
         "key_policy": key_policy if key_policy is not None else PrimaryDirectionKeyPolicy(),
         "fixed_star_targets": fixed_star_targets,
+        "bound_targets": bound_targets,
         "antiscia_targets": antiscia_targets,
+        "mundane_aspect_targets": mundane_aspect_targets,
+        "mundane_parallel_targets": mundane_parallel_targets,
+        "midpoint_targets": midpoint_targets,
     }
     if fixed_star_targets:
         base_kwargs["target_policy"] = _fixed_star_target_policy()
+    base_rel_kinds = set(default_positional_relation_policy().admitted_kinds)
+    if bound_targets:
+        base_rel_kinds.add(PrimaryDirectionRelationalKind.TERM_BOUND)
+    if mundane_aspect_targets:
+        base_rel_kinds.add(PrimaryDirectionRelationalKind.MUNDANE_ASPECT)
+        current_target_pol = base_kwargs.get("target_policy", PrimaryDirectionTargetPolicy())
+        prom_classes = set(current_target_pol.admitted_promissor_classes) | {
+            PrimaryDirectionTargetClass.MUNDANE_ASPECT
+        }
+        base_kwargs["target_policy"] = PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=current_target_pol.admitted_significator_classes,
+            admitted_promissor_classes=frozenset(prom_classes),
+        )
+    if mundane_parallel_targets:
+        base_rel_kinds.update(
+            {
+                PrimaryDirectionRelationalKind.MUNDANE_PARALLEL,
+                PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL,
+            }
+        )
+        current_target_pol = base_kwargs.get("target_policy", PrimaryDirectionTargetPolicy())
+        prom_classes = set(current_target_pol.admitted_promissor_classes) | {
+            PrimaryDirectionTargetClass.MUNDANE_PARALLEL
+        }
+        base_kwargs["target_policy"] = PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=current_target_pol.admitted_significator_classes,
+            admitted_promissor_classes=frozenset(prom_classes),
+        )
+    if midpoint_targets:
+        base_rel_kinds.add(PrimaryDirectionRelationalKind.MIDPOINT)
+        current_target_pol = base_kwargs.get("target_policy", PrimaryDirectionTargetPolicy())
+        prom_classes = set(current_target_pol.admitted_promissor_classes) | {
+            PrimaryDirectionTargetClass.MIDPOINT
+        }
+        base_kwargs["target_policy"] = PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=current_target_pol.admitted_significator_classes,
+            admitted_promissor_classes=frozenset(prom_classes),
+        )
+    base_kwargs["relation_policy"] = PrimaryDirectionRelationPolicy(frozenset(base_rel_kinds))
+
     aspect_kwargs = dict(base_kwargs)
-    aspect_kwargs["target_policy"] = _aspect_target_policy(
+    aspect_rel_kinds = set(base_rel_kinds) | set(zodiacal_aspect_relation_policy().admitted_kinds)
+    aspect_kwargs["relation_policy"] = PrimaryDirectionRelationPolicy(frozenset(aspect_rel_kinds))
+    base_asp_target_pol = _aspect_target_policy(
         fixed_star_targets=bool(fixed_star_targets)
     )
+    if midpoint_targets:
+        prom_classes = set(base_asp_target_pol.admitted_promissor_classes) | {
+            PrimaryDirectionTargetClass.MIDPOINT
+        }
+        base_asp_target_pol = PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=base_asp_target_pol.admitted_significator_classes,
+            admitted_promissor_classes=frozenset(prom_classes),
+        )
+    aspect_kwargs["target_policy"] = base_asp_target_pol
     if preset is PrimaryDirectionsPreset.PLACIDUS_MUNDANE:
         return PrimaryDirectionsPolicy(**base_kwargs)
+    if preset is PrimaryDirectionsPreset.PLACIDUS_MUNDANE_ASPECT:
+        mundane_aspect_kwargs = dict(base_kwargs)
+        current_rel = mundane_aspect_kwargs.get("relation_policy", default_positional_relation_policy())
+        admitted = set(current_rel.admitted_kinds) | {PrimaryDirectionRelationalKind.MUNDANE_ASPECT}
+        mundane_aspect_kwargs["relation_policy"] = PrimaryDirectionRelationPolicy(frozenset(admitted))
+        current_target_pol = mundane_aspect_kwargs.get("target_policy", PrimaryDirectionTargetPolicy())
+        prom_classes = set(current_target_pol.admitted_promissor_classes) | {
+            PrimaryDirectionTargetClass.MUNDANE_ASPECT
+        }
+        mundane_aspect_kwargs["target_policy"] = PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=current_target_pol.admitted_significator_classes,
+            admitted_promissor_classes=frozenset(prom_classes),
+        )
+        return PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+            **mundane_aspect_kwargs,
+        )
+    if preset is PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_PARALLEL:
+        mundane_par_kwargs = dict(base_kwargs)
+        current_rel = mundane_par_kwargs.get("relation_policy", default_positional_relation_policy())
+        admitted = set(current_rel.admitted_kinds) | {
+            PrimaryDirectionRelationalKind.MUNDANE_PARALLEL,
+            PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL,
+        }
+        mundane_par_kwargs["relation_policy"] = PrimaryDirectionRelationPolicy(frozenset(admitted))
+        current_target_pol = mundane_par_kwargs.get("target_policy", PrimaryDirectionTargetPolicy())
+        prom_classes = set(current_target_pol.admitted_promissor_classes) | {
+            PrimaryDirectionTargetClass.MUNDANE_PARALLEL
+        }
+        mundane_par_kwargs["target_policy"] = PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=current_target_pol.admitted_significator_classes,
+            admitted_promissor_classes=frozenset(prom_classes),
+        )
+        return PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PLACIDUS_MUNDANE,
+            **mundane_par_kwargs,
+        )
     if preset is PrimaryDirectionsPreset.PLACIDIAN_CLASSIC_MUNDANE:
         return PrimaryDirectionsPolicy(
             method=PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
@@ -686,6 +933,8 @@ def primary_directions_policy_preset(
             raise ValueError(
                 "PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_DIRECT is direct-only"
             )
+        rapt_direct_kwargs = dict(base_kwargs)
+        rapt_direct_kwargs.pop("relation_policy", None)
         return PrimaryDirectionsPolicy(
             method=PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC,
             relation_policy=_rapt_parallel_relation_policy(
@@ -693,7 +942,7 @@ def primary_directions_policy_preset(
             ),
             placidian_rapt_parallel_targets=placidian_rapt_parallel_targets,
             placidian_rapt_parallel_motion=PrimaryDirectionMotion.DIRECT,
-            **base_kwargs,
+            **rapt_direct_kwargs,
         )
     if preset is PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE:
         if include_converse:
@@ -701,6 +950,7 @@ def primary_directions_policy_preset(
                 "PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_RAPT_PARALLEL_CONVERSE is converse-only and does not use the ambient converse toggle"
             )
         converse_rapt_kwargs = dict(base_kwargs)
+        converse_rapt_kwargs.pop("relation_policy", None)
         converse_rapt_kwargs["converse_doctrine"] = (
             PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE
         )
@@ -718,6 +968,23 @@ def primary_directions_policy_preset(
             method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             **base_kwargs,
         )
+    if preset is PrimaryDirectionsPreset.PTOLEMY_MUNDANE_ASPECT:
+        ptolemy_aspect_kwargs = dict(base_kwargs)
+        current_rel = ptolemy_aspect_kwargs.get("relation_policy", default_positional_relation_policy())
+        admitted = set(current_rel.admitted_kinds) | {PrimaryDirectionRelationalKind.MUNDANE_ASPECT}
+        ptolemy_aspect_kwargs["relation_policy"] = PrimaryDirectionRelationPolicy(frozenset(admitted))
+        current_target_pol = ptolemy_aspect_kwargs.get("target_policy", PrimaryDirectionTargetPolicy())
+        prom_classes = set(current_target_pol.admitted_promissor_classes) | {
+            PrimaryDirectionTargetClass.MUNDANE_ASPECT
+        }
+        ptolemy_aspect_kwargs["target_policy"] = PrimaryDirectionTargetPolicy(
+            admitted_significator_classes=current_target_pol.admitted_significator_classes,
+            admitted_promissor_classes=frozenset(prom_classes),
+        )
+        return PrimaryDirectionsPolicy(
+            method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
+            **ptolemy_aspect_kwargs,
+        )
     if preset is PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_ANTISCIA:
         return PrimaryDirectionsPolicy(
             method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
@@ -729,6 +996,7 @@ def primary_directions_policy_preset(
             target_policy=base_kwargs.get("target_policy", PrimaryDirectionTargetPolicy()),
             fixed_star_targets=base_kwargs["fixed_star_targets"],
             antiscia_targets=antiscia_targets,
+            bound_targets=base_kwargs["bound_targets"],
             latitude_policy=PrimaryDirectionLatitudePolicy(
                 PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED
             ),
@@ -746,10 +1014,11 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_SUPPRESSED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASSIGNED_ZERO),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION),
-            relation_policy=zodiacal_aspect_relation_policy(),
             **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.PTOLEMY_ZODIACAL_PARALLEL:
+        parallel_kwargs = dict(aspect_kwargs)
+        parallel_kwargs.pop("relation_policy", None)
         return PrimaryDirectionsPolicy(
             method=PrimaryDirectionMethod.PTOLEMY_SEMI_ARC,
             space=PrimaryDirectionSpace.IN_ZODIACO,
@@ -758,7 +1027,7 @@ def primary_directions_policy_preset(
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_LONGITUDE_PERFECTION),
             relation_policy=ptolemaic_parallel_relation_policy(),
             ptolemaic_parallel_targets=ptolemaic_parallel_targets,
-            **aspect_kwargs,
+            **parallel_kwargs,
         )
     if preset is PrimaryDirectionsPreset.MERIDIAN_MUNDANE:
         return PrimaryDirectionsPolicy(method=PrimaryDirectionMethod.MERIDIAN, **base_kwargs)
@@ -769,7 +1038,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.PROMISSOR_NATIVE),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=default_positional_relation_policy(),
             **base_kwargs,
         )
     if preset is PrimaryDirectionsPreset.MERIDIAN_ZODIACAL_ASPECT:
@@ -779,7 +1047,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=zodiacal_aspect_relation_policy(),
             **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.MORINUS_MUNDANE:
@@ -791,7 +1058,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.PROMISSOR_NATIVE),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=default_positional_relation_policy(),
             **base_kwargs,
         )
     if preset is PrimaryDirectionsPreset.MORINUS_ZODIACAL_ASPECT:
@@ -801,7 +1067,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=zodiacal_aspect_relation_policy(),
             morinus_aspect_contexts=morinus_aspect_contexts,
             **aspect_kwargs,
         )
@@ -814,7 +1079,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.PROMISSOR_NATIVE),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=default_positional_relation_policy(),
             **base_kwargs,
         )
     if preset is PrimaryDirectionsPreset.REGIOMONTANUS_ZODIACAL_ASPECT:
@@ -824,7 +1088,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=zodiacal_aspect_relation_policy(),
             **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.REGIOMONTANUS_ZODIACAL_SIGNIFICATOR_CONDITIONED:
@@ -834,7 +1097,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_SIGNIFICATOR_CONDITIONED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.SIGNIFICATOR_NATIVE),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=zodiacal_aspect_relation_policy(),
             **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.CAMPANUS_MUNDANE:
@@ -846,7 +1108,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.PROMISSOR_NATIVE),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=default_positional_relation_policy(),
             **base_kwargs,
         )
     if preset is PrimaryDirectionsPreset.CAMPANUS_ZODIACAL_ASPECT:
@@ -856,7 +1117,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=zodiacal_aspect_relation_policy(),
             **aspect_kwargs,
         )
     if preset is PrimaryDirectionsPreset.TOPOCENTRIC_MUNDANE:
@@ -868,7 +1128,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.PROMISSOR_NATIVE),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=default_positional_relation_policy(),
             **base_kwargs,
         )
     if preset is PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT:
@@ -878,7 +1137,6 @@ def primary_directions_policy_preset(
             latitude_policy=PrimaryDirectionLatitudePolicy(PrimaryDirectionLatitudeDoctrine.ZODIACAL_PROMISSOR_RETAINED),
             latitude_source_policy=PrimaryDirectionLatitudeSourcePolicy(PrimaryDirectionLatitudeSource.ASPECT_INHERITED),
             perfection_policy=PrimaryDirectionPerfectionPolicy(PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION),
-            relation_policy=zodiacal_aspect_relation_policy(),
             **aspect_kwargs,
         )
     if (
@@ -917,7 +1175,6 @@ def primary_directions_policy_preset(
             perfection_policy=PrimaryDirectionPerfectionPolicy(
                 PrimaryDirectionPerfectionKind.ZODIACAL_PROJECTED_PERFECTION
             ),
-            relation_policy=zodiacal_aspect_relation_policy(),
             **signed_aspect_kwargs,
         )
     raise ValueError(f"Unsupported primary-directions preset: {preset}")
@@ -1242,11 +1499,19 @@ class PrimaryArc:
                 f"Unsupported primary direction relational kind: {self.relational_kind}"
             )
 
-    def years(self, key: str | PrimaryDirectionKey = PrimaryDirectionKey.NAIBOD) -> float:
+    def years(
+        self,
+        key: str | PrimaryDirectionKey = PrimaryDirectionKey.NAIBOD,
+        *,
+        natal_jd_ut: float | None = None,
+        reader: object = None,
+    ) -> float:
         return convert_arc_to_time(
             self.arc,
             key,
             solar_rate=self.solar_rate if self._solar_rate_explicit else None,
+            natal_jd_ut=natal_jd_ut,
+            reader=reader,
         )
 
     @property
@@ -2097,6 +2362,127 @@ def _fixed_star_promissor_entries(
     return derived
 
 
+def _bound_promissor_entries(
+    targets: Iterable[PrimaryDirectionBoundTarget],
+    *,
+    armc: float,
+    obliquity: float,
+    geo_lat: float,
+) -> dict[str, SpeculumEntry]:
+    derived: dict[str, SpeculumEntry] = {}
+    for target in targets:
+        derived[target.name] = _project_zodiacal_point(
+            target.name,
+            target.absolute_longitude,
+            0.0,
+            armc=armc,
+            obliquity=obliquity,
+            geo_lat=geo_lat,
+        )
+    return derived
+
+
+def _mundane_aspect_promissor_entries(
+    targets: Iterable[PrimaryDirectionMundaneAspectTarget],
+    base_entries: dict[str, SpeculumEntry],
+    *,
+    armc: float,
+) -> dict[str, SpeculumEntry]:
+    from .placidus import wrap_mundane_fraction
+    from .geometry import _required_ha
+
+    derived: dict[str, SpeculumEntry] = {}
+    for target in targets:
+        source_entry = base_entries.get(target.source_name)
+        if source_entry is None:
+            continue
+        aspect_f = wrap_mundane_fraction(source_entry.f + target.fraction_offset)
+        aspect_ha = _required_ha(aspect_f, source_entry.dsa, source_entry.nsa)
+        aspect_ra = (armc - aspect_ha) % 360.0
+        aspect_upper = abs(aspect_ha) <= source_entry.dsa + 1e-9
+        derived[target.name] = SpeculumEntry(
+            name=target.name,
+            lon=source_entry.lon,
+            lat=source_entry.lat,
+            ra=aspect_ra,
+            dec=source_entry.dec,
+            ha=aspect_ha,
+            dsa=source_entry.dsa,
+            nsa=source_entry.nsa,
+            upper=aspect_upper,
+            f=aspect_f,
+        )
+    return derived
+
+
+def _mundane_parallel_promissor_entries(
+    targets: Iterable[PrimaryDirectionMundaneParallelTarget],
+    base_entries: dict[str, SpeculumEntry],
+    *,
+    armc: float,
+) -> dict[str, SpeculumEntry]:
+    from .placidus import wrap_mundane_fraction
+    from .geometry import _required_ha
+
+    derived: dict[str, SpeculumEntry] = {}
+    for target in targets:
+        source_entry = base_entries.get(target.source_name)
+        if source_entry is None:
+            continue
+        if target.kind is PrimaryDirectionMundaneParallelKind.CONTRA_PARALLEL:
+            sign = 1.0 if source_entry.f >= 0.0 else -1.0
+            target_f = sign * (2.0 - abs(source_entry.f))
+        else:
+            target_f = -source_entry.f
+        parallel_f = wrap_mundane_fraction(target_f)
+        parallel_ha = _required_ha(parallel_f, source_entry.dsa, source_entry.nsa)
+        parallel_ra = (armc - parallel_ha) % 360.0
+        parallel_upper = abs(parallel_ha) <= source_entry.dsa + 1e-9
+        derived[target.name] = SpeculumEntry(
+            name=target.name,
+            lon=source_entry.lon,
+            lat=source_entry.lat,
+            ra=parallel_ra,
+            dec=source_entry.dec,
+            ha=parallel_ha,
+            dsa=source_entry.dsa,
+            nsa=source_entry.nsa,
+            upper=parallel_upper,
+            f=parallel_f,
+        )
+    return derived
+
+
+def _midpoint_promissor_entries(
+    targets: Iterable[PrimaryDirectionMidpointTarget],
+    base_entries: dict[str, SpeculumEntry],
+    *,
+    armc: float,
+    obliquity: float,
+    geo_lat: float,
+) -> dict[str, SpeculumEntry]:
+    derived: dict[str, SpeculumEntry] = {}
+    for target in targets:
+        source_a = base_entries.get(target.source_a_name)
+        source_b = base_entries.get(target.source_b_name)
+        if source_a is None or source_b is None:
+            continue
+        diff = (source_b.lon - source_a.lon) % 360.0
+        if diff > 180.0:
+            mid_lon = (source_a.lon + (diff - 360.0) / 2.0) % 360.0
+        else:
+            mid_lon = (source_a.lon + diff / 2.0) % 360.0
+        derived[target.name] = _project_zodiacal_point(
+            target.name,
+            mid_lon,
+            0.0,
+            armc=armc,
+            obliquity=obliquity,
+            geo_lat=geo_lat,
+        )
+    return derived
+
+
 def _state_for_arcs(arcs: tuple[PrimaryArc, ...]) -> PrimaryDirectionsConditionState:
     direct_count = sum(1 for arc in arcs if arc.is_direct)
     converse_count = len(arcs) - direct_count
@@ -2273,6 +2659,30 @@ def find_primary_arcs(
         else ()
     )
     placidian_rapt_parallel_names = {target.name for target in placidian_rapt_parallel_targets}
+    bound_targets = tuple(
+        target
+        for target in resolved_policy.bound_targets
+        if normalized_promissors is None or target.name in normalized_promissors
+    )
+    bound_names = {target.name for target in bound_targets}
+    mundane_aspect_targets = tuple(
+        target
+        for target in resolved_policy.mundane_aspect_targets
+        if normalized_promissors is None or target.name in normalized_promissors
+    )
+    mundane_aspect_names = {target.name for target in mundane_aspect_targets}
+    mundane_parallel_targets = tuple(
+        target
+        for target in resolved_policy.mundane_parallel_targets
+        if normalized_promissors is None or target.name in normalized_promissors
+    )
+    mundane_parallel_names = {target.name for target in mundane_parallel_targets}
+    midpoint_targets = tuple(
+        target
+        for target in resolved_policy.midpoint_targets
+        if normalized_promissors is None or target.name in normalized_promissors
+    )
+    midpoint_names = {target.name for target in midpoint_targets}
     prom_candidates = (
         set(normalized_promissors)
         if normalized_promissors is not None
@@ -2282,6 +2692,10 @@ def find_primary_arcs(
             | antiscia_names
             | ptolemaic_parallel_names
             | placidian_rapt_parallel_names
+            | bound_names
+            | mundane_aspect_names
+            | mundane_parallel_names
+            | midpoint_names
         )
     )
     candidate_names = set(all_names) | sig_candidates | prom_candidates
@@ -2313,6 +2727,42 @@ def find_primary_arcs(
         {
             target.name: PrimaryDirectionRelationalKind.CONJUNCTION
             for target in fixed_star_targets
+        }
+    )
+    relational_kind_by_name.update(
+        {
+            target.name: (
+                PrimaryDirectionRelationalKind.TERM_BOUND
+                if PrimaryDirectionRelationalKind.TERM_BOUND in resolved_policy.relation_policy.admitted_kinds
+                else PrimaryDirectionRelationalKind.CONJUNCTION
+            )
+            for target in bound_targets
+        }
+    )
+    relational_kind_by_name.update(
+        {
+            target.name: (
+                PrimaryDirectionRelationalKind.OPPOSITION
+                if target.aspect_name == "Opposition"
+                else PrimaryDirectionRelationalKind.MUNDANE_ASPECT
+            )
+            for target in mundane_aspect_targets
+        }
+    )
+    relational_kind_by_name.update(
+        {
+            target.name: (
+                PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL
+                if target.kind is PrimaryDirectionMundaneParallelKind.CONTRA_PARALLEL
+                else PrimaryDirectionRelationalKind.MUNDANE_PARALLEL
+            )
+            for target in mundane_parallel_targets
+        }
+    )
+    relational_kind_by_name.update(
+        {
+            target.name: PrimaryDirectionRelationalKind.MIDPOINT
+            for target in midpoint_targets
         }
     )
     required_relation_kinds = (
@@ -2366,10 +2816,20 @@ def find_primary_arcs(
         truth.source_name
         for truth in target_truths.values()
         if (
-            truth.target_class is PrimaryDirectionTargetClass.ASPECTUAL_POINT
+            truth.target_class in (
+                PrimaryDirectionTargetClass.ASPECTUAL_POINT,
+                PrimaryDirectionTargetClass.MUNDANE_ASPECT,
+                PrimaryDirectionTargetClass.MUNDANE_PARALLEL,
+            )
             and truth.source_name is not None
         )
     }
+    for truth in target_truths.values():
+        if truth.target_class is PrimaryDirectionTargetClass.MIDPOINT:
+            if truth.source_name is not None:
+                aspect_source_names.add(truth.source_name)
+            if truth.source_b_name is not None:
+                aspect_source_names.add(truth.source_b_name)
     derived_cusps = _house_cusp_entries(
         candidate_names | aspect_source_names,
         houses,
@@ -2380,7 +2840,10 @@ def find_primary_arcs(
     if derived_cusps:
         sp_map.update(derived_cusps)
         spec.extend(derived_cusps.values())
-    _jd_tt = chart.jd_tt
+    _jd_tt = getattr(chart, "jd_tt", None)
+    if _jd_tt is None:
+        _delta_t = getattr(chart, "delta_t", 0.0)
+        _jd_tt = getattr(chart, "jd_ut", 2451545.0) + _delta_t / 86400.0
     derived_fixed_stars = _fixed_star_promissor_entries(
         fixed_star_targets,
         jd_tt=_jd_tt,
@@ -2392,16 +2855,64 @@ def find_primary_arcs(
     if derived_fixed_stars:
         sp_map.update(derived_fixed_stars)
         spec.extend(derived_fixed_stars.values())
+    derived_bounds = _bound_promissor_entries(
+        bound_targets,
+        armc=houses.armc,
+        obliquity=obl,
+        geo_lat=geo_lat,
+    )
+    if derived_bounds:
+        sp_map.update(derived_bounds)
+        spec.extend(derived_bounds.values())
+    derived_mundane_aspects = _mundane_aspect_promissor_entries(
+        mundane_aspect_targets,
+        sp_map,
+        armc=houses.armc,
+    )
+    if derived_mundane_aspects:
+        sp_map.update(derived_mundane_aspects)
+        spec.extend(derived_mundane_aspects.values())
+    derived_mundane_parallels = _mundane_parallel_promissor_entries(
+        mundane_parallel_targets,
+        sp_map,
+        armc=houses.armc,
+    )
+    if derived_mundane_parallels:
+        sp_map.update(derived_mundane_parallels)
+        spec.extend(derived_mundane_parallels.values())
+    derived_midpoints = _midpoint_promissor_entries(
+        midpoint_targets,
+        sp_map,
+        armc=houses.armc,
+        obliquity=obl,
+        geo_lat=geo_lat,
+    )
+    if derived_midpoints:
+        sp_map.update(derived_midpoints)
+        spec.extend(derived_midpoints.values())
     source_bound_targets = (
         tuple(antiscia_targets)
         + tuple(ptolemaic_parallel_targets)
         + tuple(placidian_rapt_parallel_targets)
+        + tuple(mundane_aspect_targets)
+        + tuple(mundane_parallel_targets)
     )
     for target in source_bound_targets:
         if target.source_name not in sp_map:
             raise ValueError(
                 f"find_primary_arcs requested derived promissor {target.name!r} "
                 f"but source {target.source_name!r} is unavailable"
+            )
+    for target in midpoint_targets:
+        if target.source_a_name not in sp_map or target.source_b_name not in sp_map:
+            missing_source = (
+                target.source_a_name
+                if target.source_a_name not in sp_map
+                else target.source_b_name
+            )
+            raise ValueError(
+                f"find_primary_arcs requested derived promissor {target.name!r} "
+                f"but source {missing_source!r} is unavailable"
             )
     prom_map: dict[str, SpeculumEntry]
     morinus_context_map = {context.source_name: context for context in resolved_policy.morinus_aspect_contexts}
@@ -2441,6 +2952,10 @@ def find_primary_arcs(
                         geo_lat=geo_lat,
                     )
                 )
+            if derived_bounds:
+                prom_map.update(derived_bounds)
+            if derived_midpoints:
+                prom_map.update(derived_midpoints)
         else:
             prom_map = {}
     else:
@@ -2461,6 +2976,10 @@ def find_primary_arcs(
     prom_set |= fixed_star_names
     prom_set |= ptolemaic_parallel_names
     prom_set |= placidian_rapt_parallel_names
+    prom_set |= bound_names
+    prom_set |= mundane_aspect_names
+    prom_set |= mundane_parallel_names
+    prom_set |= midpoint_names
     if resolved_policy.placidian_rapt_parallel_motion is not None:
         # Rapt presets are pair-specific.  Composing configured fixed stars
         # admits those named conjunction targets, not every ordinary bodily
@@ -2628,7 +3147,13 @@ def find_primary_arcs(
                 oa_asc=oa_asc,
             )
             arc_dir = raw_dir % 360.0
-            arc_conv = raw_conv % 360.0
+            if (
+                resolved_policy.converse_doctrine
+                is PrimaryDirectionConverseDoctrine.NEO_CONVERSE
+            ):
+                arc_conv = (360.0 - arc_dir) % 360.0
+            else:
+                arc_conv = raw_conv % 360.0
 
             if 0.0 < arc_dir <= max_arc:
                 results.append(

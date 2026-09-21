@@ -58,6 +58,7 @@ class PrimaryDirectionConverseDoctrine(StrEnum):
     """Vessel: Registry of architectural converse doctrines for primary directions."""
     DIRECT_ONLY = "direct_only"
     TRADITIONAL_CONVERSE = "traditional_converse"
+    NEO_CONVERSE = "neo_converse"
     SIGNED_PRIMARY_MOTION = "signed_primary_motion"
 
 
@@ -65,6 +66,7 @@ class PrimaryDirectionConverseRelationKind(StrEnum):
     """Vessel: Registry of relation kinds for converse treatment."""
     FORWARD_ONLY = "forward_only"
     DIRECT_AND_TRADITIONAL_CONVERSE = "direct_and_traditional_converse"
+    DIRECT_AND_NEO_CONVERSE = "direct_and_neo_converse"
     SIGNED_PRIMARY_MOTION = "signed_primary_motion"
 
 
@@ -163,6 +165,8 @@ def _relation_kind_for_doctrine(
         return PrimaryDirectionConverseRelationKind.FORWARD_ONLY
     if doctrine is PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE:
         return PrimaryDirectionConverseRelationKind.DIRECT_AND_TRADITIONAL_CONVERSE
+    if doctrine is PrimaryDirectionConverseDoctrine.NEO_CONVERSE:
+        return PrimaryDirectionConverseRelationKind.DIRECT_AND_NEO_CONVERSE
     if doctrine is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION:
         return PrimaryDirectionConverseRelationKind.SIGNED_PRIMARY_MOTION
     raise ValueError(f"Unsupported primary direction converse doctrine: {doctrine}")
@@ -173,7 +177,10 @@ def _condition_state_for_doctrine(
 ) -> PrimaryDirectionConverseConditionState:
     if doctrine is PrimaryDirectionConverseDoctrine.DIRECT_ONLY:
         return PrimaryDirectionConverseConditionState.DIRECT_ONLY
-    if doctrine is PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE:
+    if doctrine in (
+        PrimaryDirectionConverseDoctrine.TRADITIONAL_CONVERSE,
+        PrimaryDirectionConverseDoctrine.NEO_CONVERSE,
+    ):
         return PrimaryDirectionConverseConditionState.DIRECT_AND_CONVERSE
     if doctrine is PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION:
         return PrimaryDirectionConverseConditionState.SIGNED_DIRECT_OR_CONVERSE

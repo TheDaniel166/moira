@@ -70,7 +70,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     "scope": "class",
     "id": "moira._facade_special.SpecialTopicsFacadeMixin",
     "risk": "medium",
-        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "solar_global_circumstances", "solar_eclipse_cartography", "lunar_eclipse_visibility_map", "lunar_global_circumstances", "speculum", "primary_directions", "primary_directions_policy_preset", "primary_direction_relations", "primary_direction_condition", "primary_directions_profile", "primary_directions_network", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
+        "api": {"frozen": ["eclipse", "solar_eclipse_footprint", "solar_global_circumstances", "solar_eclipse_cartography", "lunar_eclipse_visibility_map", "lunar_global_circumstances", "speculum", "primary_directions", "primary_directions_policy_preset", "primary_direction_relations", "primary_direction_condition", "primary_directions_profile", "primary_directions_network", "primary_directions_timeline", "longevity", "phenomena", "occultations", "lunar_occultation_path_topology", "lunar_occultation_path_topology_at", "lunar_star_occultation_path_topology", "lunar_star_occultation_path_topology_at", "void_of_course", "electional", "moon_connection_flow_at", "ramesey_moon_condition_at", "sahl_moon_condition_at", "sahl_matter_profile_at", "lilly_perfection_at", "dorotheus_moon_condition_at", "dorotheus_rooted_context_at", "dorotheus_construction_at", "dorotheus_matter_profile_at", "western_electional_profile_windows"], "internal": []},
     "state": {"mutable": false, "owners": []},
     "effects": {"signals_emitted": [], "io": [], "mutation": "none"},
     "concurrency": {"thread": "pure_computation", "cross_thread_calls": "safe_read_only"},
@@ -265,6 +265,38 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
     def primary_directions_network(self, arcs, *, policy=None):
         """Evaluate the directed promissor-to-significator network."""
         return _facade_module().evaluate_primary_directions_network(arcs, policy=policy)
+
+    def primary_directions_timeline(
+        self,
+        chart,
+        houses,
+        geo_lat,
+        *,
+        policy=None,
+        key="naibod",
+        max_age_years=100.0,
+        max_arc=None,
+        significators=None,
+        promissors=None,
+        obliquity=None,
+        bound_doctrine=None,
+    ):
+        """Compute an integrated chronological life timeline of primary directions."""
+        from moira.egyptian_bounds import EgyptianBoundsDoctrine
+        resolved_doctrine = bound_doctrine if bound_doctrine is not None else EgyptianBoundsDoctrine.EGYPTIAN
+        return _facade_module().compute_primary_directions_timeline(
+            chart,
+            houses,
+            geo_lat,
+            policy=policy,
+            key=key,
+            max_age_years=max_age_years,
+            max_arc=max_arc,
+            significators=significators,
+            promissors=promissors,
+            obliquity=obliquity,
+            bound_doctrine=resolved_doctrine,
+        )
 
     def longevity(self, chart, houses):
         """Calculate the Hyleg and Alcocoden."""
