@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from fastapi.testclient import TestClient
 import pytest
 
 from moira.aspects import AspectData
-from moira.patterns import find_grand_trines, find_all_patterns
+from moira.patterns import find_grand_trines
 from moira.pattern_coherence import PatternCoherenceBand, PatternMotionQualifier
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -217,10 +218,15 @@ def test_pattern_coherence_route_filters_and_dominance(client_with_engine: TestC
 def test_pattern_coherence_service_direct(monkeypatch: pytest.MonkeyPatch) -> None:
     # Verify relationship_service.compute_patterns_coherence and compute_patterns_with_coherence
     positions = {"Sun": 0.0, "Moon": 120.2, "Mars": 240.4}
+    chart = SimpleNamespace(
+        nodes={},
+        longitudes=lambda include_nodes: positions,
+        speeds=lambda: {"Sun": 1.0, "Moon": 13.0, "Mars": 0.5},
+    )
     monkeypatch.setattr(
         relationship_service,
-        "_positions_for_analysis",
-        lambda engine, request, include_nodes: positions,
+        "_build_party_chart",
+        lambda engine, request, include_nodes: chart,
     )
 
     party = RelationshipPartyRequest(
@@ -242,3 +248,56 @@ def test_pattern_coherence_service_direct(monkeypatch: pytest.MonkeyPatch) -> No
     assert len(only_coherence) == len(paired)
     assert only_coherence[0].band == coherence.band
 
+
+def test_pattern_coherence_builds_one_chart_and_includes_node_speeds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[bool] = []
+    positions = {"Sun": 0.0, "Moon": 120.2, "True Node": 240.4}
+    chart = SimpleNamespace(
+        nodes={"True Node": SimpleNamespace(speed=-0.0529)},
+        longitudes=lambda include_nodes: positions,
+        speeds=lambda: {"Sun": 0.9856, "Moon": 13.1764},
+    )
+
+    def _build_chart(engine, request, *, include_nodes):
+        calls.append(include_nodes)
+        return chart
+
+    monkeypatch.setattr(relationship_service, "_build_party_chart", _build_chart)
+    request = PatternRequest(
+        chart=RelationshipPartyRequest(
+            dt=datetime(2000, 1, 1, 12, tzinfo=timezone.utc),
+            latitude=0.0,
+            longitude=0.0,
+            include_nodes=False,
+        ),
+        include_nodes=True,
+        include=["Grand Trine"],
+    )
+
+    paired = relationship_service.compute_patterns_with_coherence(object(), request)
+
+    assert calls == [True]
+    assert len(paired) == 1
+    assert paired[0][1].motion_counts["indeterminate"] == 0
+    assert paired[0][1].motion_qualifier is not PatternMotionQualifier.PARTIAL_MOTION
+
+
+def test_pattern_coherence_does_not_hide_chart_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def _fail(*args, **kwargs):
+        raise RuntimeError("chart construction failed")
+
+    monkeypatch.setattr(relationship_service, "_build_party_chart", _fail)
+    request = PatternRequest(
+        chart=RelationshipPartyRequest(
+            dt=datetime(2000, 1, 1, 12, tzinfo=timezone.utc),
+            latitude=0.0,
+            longitude=0.0,
+        )
+    )
+
+    with pytest.raises(RuntimeError, match="chart construction failed"):
+        relationship_service.compute_patterns_with_coherence(object(), request)

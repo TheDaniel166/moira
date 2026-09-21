@@ -74,5 +74,3 @@ Any future primary directions target research would require novel sovereign astr
 ## Present Declaration
 
 Moira's primary-direction target families are now mathematically complete and fully verified across all historical and mathematical branches.
-
-

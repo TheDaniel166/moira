@@ -54,7 +54,21 @@ from .astrocartography import (
     compute_astrocartography_direct_lines,
     compute_astrocartography_direct_subplanetary,
 )
-from .chart import compute_chart, compute_chart_with_reduction, compute_houses
+from .chart import (
+    AnalyticalHouseDynamicsServiceResult,
+    HouseDynamicsComputationContext,
+    HouseDynamicsServiceResult,
+    PolarAdmissibilityServiceResult,
+    UnsupportedPolarHouseSystemError,
+    compute_analytical_house_dynamics,
+    compute_chart,
+    compute_chart_with_reduction,
+    compute_house_dynamics,
+    compute_house_dynamics_from_armc,
+    compute_houses,
+    compute_houses_with_reduction,
+    compute_polar_admissibility,
+)
 from .hellenistic_profile import compute_hellenistic_chart_profile
 from .horary import compute_horary_evidence_profile
 from .mundane import compute_mundane_event_chart_profile
@@ -364,6 +378,11 @@ from .visibility import (
 
 __all__ = [
     "compute_stellium_analysis",
+    "AnalyticalHouseDynamicsServiceResult",
+    "HouseDynamicsComputationContext",
+    "HouseDynamicsServiceResult",
+    "PolarAdmissibilityServiceResult",
+    "UnsupportedPolarHouseSystemError",
     "AshtakavargaChartBackedProfileResult",
     "AshtakavargaChartBackedResult",
     "AshtakavargaChartBackedSignProfileResult",
@@ -536,11 +555,16 @@ __all__ = [
     "compute_firdar_sequence_profile_service",
     "compute_firdaria_groups",
     "compute_firdaria_sequence",
+    "compute_analytical_house_dynamics",
     "compute_chart",
     "compute_chart_with_reduction",
     "compute_close_approaches",
     "compute_general_visibility_event",
+    "compute_house_dynamics",
+    "compute_house_dynamics_from_armc",
     "compute_houses",
+    "compute_houses_with_reduction",
+    "compute_polar_admissibility",
     "compute_aspect_motion_witness",
     "compute_moon_connection_flow",
     "compute_aspects_from_longitudes",

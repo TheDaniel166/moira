@@ -64,20 +64,31 @@ from ..models.relationship import (
 )
 
 
-def _build_party_chart_and_houses(engine: Moira, request: RelationshipPartyRequest):
+def _build_party_chart(
+    engine: Moira,
+    request: RelationshipPartyRequest,
+    *,
+    include_nodes: bool | None = None,
+):
     _require_aware_datetime(request.dt)
     _require_supported_chart_bodies(request.bodies)
-    chart = compute_chart(
+    return compute_chart(
         engine,
         ChartRequest(
             dt=request.dt,
             bodies=request.bodies,
-            include_nodes=request.include_nodes,
+            include_nodes=(
+                request.include_nodes if include_nodes is None else include_nodes
+            ),
             observer_lat=request.observer_lat,
             observer_lon=request.observer_lon,
             observer_elev_m=request.observer_elev_m,
         ),
     )
+
+
+def _build_party_chart_and_houses(engine: Moira, request: RelationshipPartyRequest):
+    chart = _build_party_chart(engine, request)
     houses = compute_houses(
         engine,
         HousesRequest(
@@ -383,7 +394,7 @@ def compute_synastry_network(engine: Moira, request: SynastryPairRequest):
 
 
 def _positions_for_analysis(engine: Moira, request: RelationshipPartyRequest, include_nodes: bool):
-    chart, _ = _build_party_chart_and_houses(engine, request)
+    chart = _build_party_chart(engine, request, include_nodes=include_nodes)
     return chart.longitudes(include_nodes=include_nodes)
 
 
@@ -391,13 +402,37 @@ def compute_chart_shape(engine: Moira, request: SingleChartAnalysisRequest):
     return classify_chart_shape(_positions_for_analysis(engine, request.chart, request.include_nodes))
 
 
-def compute_patterns(engine: Moira, request: PatternRequest):
+def _find_patterns_for_positions(request: PatternRequest, positions: dict[str, float]):
     return find_all_patterns(
-        _positions_for_analysis(engine, request.chart, request.include_nodes),
+        positions,
         orb_factor=request.orb_factor,
         include=request.include,
         dominant_only=request.dominant_only,
     )
+
+
+def _pattern_analysis_context(engine: Moira, request: PatternRequest):
+    """Build one chart and derive every input needed for pattern coherence."""
+
+    chart = _build_party_chart(
+        engine,
+        request.chart,
+        include_nodes=request.include_nodes,
+    )
+    positions = chart.longitudes(include_nodes=request.include_nodes)
+    speeds = chart.speeds()
+    if request.include_nodes:
+        speeds.update({name: node.speed for name, node in chart.nodes.items()})
+    return positions, speeds
+
+
+def compute_patterns(engine: Moira, request: PatternRequest):
+    positions = _positions_for_analysis(
+        engine,
+        request.chart,
+        request.include_nodes,
+    )
+    return _find_patterns_for_positions(request, positions)
 
 
 def compute_pattern_chart_profile(engine: Moira, request: PatternRequest):
@@ -413,19 +448,8 @@ def compute_patterns_with_coherence(
     request: PatternRequest,
 ) -> list[tuple[AspectPattern, PatternCoherenceResult]]:
     """Find all aspect patterns in the chart and evaluate qualitative coherence for each."""
-    patterns = compute_patterns(engine, request)
-    positions = None
-    speeds = None
-    try:
-        positions = _positions_for_analysis(engine, request.chart, request.include_nodes)
-    except Exception:
-        pass
-    try:
-        chart, _ = _build_party_chart_and_houses(engine, request.chart)
-        speed_getter = getattr(chart, "speeds", None)
-        speeds = speed_getter() if callable(speed_getter) else None
-    except Exception:
-        pass
+    positions, speeds = _pattern_analysis_context(engine, request)
+    patterns = _find_patterns_for_positions(request, positions)
 
     results: list[tuple[AspectPattern, PatternCoherenceResult]] = []
     for pat in patterns:

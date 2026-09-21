@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from moira import Chart, HouseCusps, HouseDynamics, NodeData
+from moira import Chart, HouseCusps, NodeData
 from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
 
 from ..models.chart import (
+    AnalyticalHouseDynamicsResponse,
     CalendarDateTimeResponse,
     ChartNodeReductionSummaryResponse,
     ChartPlanetReductionSummaryResponse,
@@ -16,6 +17,7 @@ from ..models.chart import (
     HouseBoundaryCurvePointResponse,
     HouseBoundaryGeometryResponse,
     HouseBoundaryGeometrySetResponse,
+    HouseDynamicsComputationResponse,
     HouseDynamicsResponse,
     HousePolicyResponse,
     HousesReductionResponse,
@@ -23,9 +25,18 @@ from ..models.chart import (
     HouseSystemClassificationResponse,
     HousesResponse,
     NodePositionResponse,
+    PolarAdmissibilityResponse,
+    PolarHouseWindowResponse,
 )
 from ..serializers.positions import _serialize_observer_context
-from ..services.chart import ChartReductionContext, HousesReductionContext
+from ..services.chart import (
+    AnalyticalHouseDynamicsServiceResult,
+    ChartReductionContext,
+    HouseDynamicsComputationContext,
+    HouseDynamicsServiceResult,
+    HousesReductionContext,
+    PolarAdmissibilityServiceResult,
+)
 from .positions import serialize_planet
 
 
@@ -249,10 +260,25 @@ def serialize_houses_with_reduction(
     )
 
 
+def _serialize_house_dynamics_computation(
+    computation: HouseDynamicsComputationContext,
+) -> HouseDynamicsComputationResponse:
+    return HouseDynamicsComputationResponse(
+        engine_surface=computation.engine_surface,
+        source_vessel=computation.source_vessel,
+        method=computation.method,
+        independent_variable=computation.independent_variable,
+        half_step=computation.half_step,
+        half_step_unit=computation.half_step_unit,
+        obliquity_held_fixed=computation.obliquity_held_fixed,
+    )
+
+
 def serialize_house_dynamics(
-    dynamics: HouseDynamics,
+    result: HouseDynamicsServiceResult,
 ) -> HouseDynamicsResponse:
     """Serialize a HouseDynamics vessel into transport form."""
+    dynamics = result.dynamics
     serialized_cusps = serialize_houses(dynamics.house_cusps)
     cusp_speeds = [
         CuspSpeedResponse(
@@ -269,4 +295,68 @@ def serialize_house_dynamics(
         mc_speed_deg_per_day=dynamics.mc_speed_deg_per_day,
         vertex_speed_deg_per_day=dynamics.vertex_speed_deg_per_day,
         anti_vertex_speed_deg_per_day=dynamics.anti_vertex_speed_deg_per_day,
+        computation=_serialize_house_dynamics_computation(result.computation),
+    )
+
+
+def serialize_analytical_house_dynamics(
+    result: AnalyticalHouseDynamicsServiceResult,
+) -> AnalyticalHouseDynamicsResponse:
+    """Serialize analytical angle speeds without emitting non-finite JSON values."""
+
+    return AnalyticalHouseDynamicsResponse(
+        armc=result.armc,
+        obliquity=result.obliquity,
+        latitude=result.latitude,
+        mc_speed_deg_per_day=result.mc_speed_deg_per_day,
+        asc_speed_deg_per_day=result.asc_speed_deg_per_day,
+        vertex_speed_deg_per_day=result.vertex_speed_deg_per_day,
+        anti_vertex_speed_deg_per_day=result.vertex_speed_deg_per_day,
+        asc_available=result.asc_speed_deg_per_day is not None,
+        vertex_available=result.vertex_speed_deg_per_day is not None,
+        asc_unavailable_reason=result.asc_unavailable_reason,
+        vertex_unavailable_reason=result.vertex_unavailable_reason,
+        computation=_serialize_house_dynamics_computation(result.computation),
+    )
+
+
+def serialize_polar_admissibility(
+    result: PolarAdmissibilityServiceResult,
+) -> PolarAdmissibilityResponse:
+    """Serialize a bounded polar admissibility map with its scan parameters."""
+
+    request = result.request
+    admissibility = result.admissibility
+
+    def _windows(values):
+        return [
+            PolarHouseWindowResponse(
+                start_armc=window.start_armc,
+                end_armc=window.end_armc,
+                sample_count=window.sample_count,
+            )
+            for window in values
+        ]
+
+    return PolarAdmissibilityResponse(
+        latitude=request.latitude,
+        obliquity=result.obliquity,
+        system=result.system,
+        armc_start=request.armc_start,
+        armc_end=request.armc_end,
+        armc_step=request.armc_step,
+        last_sampled_armc=request.last_sampled_armc,
+        rho_max=request.rho_max,
+        stability_radius=request.stability_radius,
+        maximum_allowed_samples=result.maximum_allowed_samples,
+        total_samples=admissibility.total_samples,
+        valid_fraction=admissibility.valid_fraction,
+        has_any_window=admissibility.has_any_window,
+        windows=_windows(admissibility.windows),
+        practical_windows=_windows(
+            getattr(admissibility, "practical_windows", ())
+        ),
+        stable_practical_windows=_windows(
+            getattr(admissibility, "stable_practical_windows", ())
+        ),
     )

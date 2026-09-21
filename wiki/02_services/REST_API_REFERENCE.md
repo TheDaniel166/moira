@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 463
-- Registered OpenAPI operations: 463 (GET 36, POST 427)
+- Registered OpenAPI paths: 466
+- Registered OpenAPI operations: 466 (GET 36, POST 430)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 459
+- Versioned `/v1` paths: 462
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -290,6 +290,10 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/chart/reduction` | `chart_reduction_route` |
 | POST | `/v1/houses` | `houses_route` |
 | POST | `/v1/houses/reduction` | `houses_reduction_route` |
+| POST | `/v1/houses/dynamics` | `house_dynamics_route` |
+| POST | `/v1/houses/dynamics/armc` | `house_dynamics_from_armc_route` |
+| POST | `/v1/houses/dynamics/analytical` | `analytical_house_dynamics_route` |
+| POST | `/v1/houses/polar-admissibility` | `houses_polar_admissibility_route` |
 | POST | `/v1/positions/planet` | `planet_position_route` |
 | POST | `/v1/positions/planet/reduction` | `planet_position_reduction_route` |
 | POST | `/v1/positions/sky` | `sky_position_route` |
@@ -301,6 +305,52 @@ Not yet broadly exposed as REST families:
 | POST | `/v1/pipeline/chart` | `pipeline_chart_route` |
 | POST | `/v1/pipeline/positions/planet` | `pipeline_planet_position_route` |
 | POST | `/v1/pipeline/positions/sky` | `pipeline_sky_position_route` |
+
+### House Dynamics And Polar Admissibility Contracts
+
+The house-dynamics family exposes the existing public engine primitives without
+changing their mathematical doctrine:
+
+- `POST /v1/houses/dynamics` computes the epoch-complete centered time
+  difference through `Moira.house_dynamics`. `dt_minutes` defaults to `1.0`
+  and is restricted to `0.00144 <= dt_minutes <= 1.0`: the lower bound is the
+  engine's documented numerical-noise floor, while the upper bound preserves
+  its canonical one-minute half-step for an instantaneous transport product.
+- `POST /v1/houses/dynamics/armc` computes
+  `moira.houses.house_dynamics_from_armc` with obliquity held fixed. It accepts
+  ARMC in `[0, 360)`, true obliquity in `(0, 90)`, latitude in `(-90, 90)`,
+  optional house policy and solar longitude, and a validated ARMC half-step in
+  `[0.001, 1.0]` degrees.
+- `POST /v1/houses/dynamics/analytical` exposes the exact public MC,
+  Ascendant, and Vertex derivative functions. Singular Ascendant or Vertex
+  results are represented by `null` plus an availability flag and reason;
+  non-finite JSON numbers are never emitted.
+
+Finite-difference responses include a `computation` receipt naming the engine
+surface, method, independent variable, half-step and unit, speed unit, and
+whether obliquity was held fixed. The analytical response carries the same
+receipt with no finite-difference step. Whole Sign cusps are piecewise constant
+with discontinuous sign-boundary jumps, so both finite-difference routes reject
+them instead of publishing step-dependent finite spikes. The time-based route
+likewise rejects Solar Sign cusp dynamics because solar-sign ingress is
+discontinuous; the analytical endpoint remains available for continuous angle
+velocities.
+
+`POST /v1/houses/polar-admissibility` accepts the six experimental scanner
+systems (Placidus, Campanus, Regiomontanus, Topocentric, Koch, and Alcabitius)
+by canonical code or case-insensitive name. Obliquity must be in `(0, 90)`;
+`rho_max`, when supplied, must be at least `1`; and any supplied datetime must
+be timezone-aware. ARMC bounds stay within `[0, 360]`, and the range is sampled
+on a grid containing no more than `3,601` points. `stability_radius` must fit
+inside that grid. The requested end is an inclusive upper bound rather than a
+required sample; `last_sampled_armc` reports the final grid point when the span
+is not exactly divisible by the step. Because each Placidus outer sample owns
+four fixed 12,001-point root scans, its system-specific ceiling is `73` samples,
+which still admits the default five-degree full-circle grid. The other five
+scanners retain the `3,601`-sample ceiling. These checks run before scanner
+dispatch, preventing non-advancing loops and bounding system-specific work. The
+response echoes the resolved system and complete scan policy alongside the
+windows.
 
 ## Profile Bundle Routes
 
@@ -839,6 +889,13 @@ The policy is exposed via two complementary REST access patterns:
    `PatternSearchResponse` where each `AspectPatternResponse` in `events` now
    embeds an optional `coherence: PatternCoherenceResponse | None` populated with
    its instantaneous qualitative score and motion witness data.
+
+Both access patterns derive positions and speeds from one chart computation per
+request. When `include_nodes=true`, node longitude and node speed are admitted
+together, so node-linked aspects do not become indeterminate merely because
+planet-only speed accessors were used. Chart construction and coherence
+evaluation failures propagate through the standard error handling contract;
+they are not converted to missing or `null` coherence.
 
 #### Reference Constants & Admitted Topologies
 Reference orbs are frozen and independent of caller `orb_factor`:
@@ -3244,6 +3301,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/hellenistic/twelfth-parts` | hellenistic-atoms | `twelfth_parts_route_v1_hellenistic_twelfth_parts_post` |
 | `POST` | `/v1/horary/evidence-profile` | horary | `horary_evidence_profile` |
 | `POST` | `/v1/houses` | chart | `houses_route_v1_houses_post` |
+| `POST` | `/v1/houses/dynamics` | chart | `house_dynamics_route_v1_houses_dynamics_post` |
+| `POST` | `/v1/houses/dynamics/analytical` | chart | `analytical_house_dynamics_route_v1_houses_dynamics_analytical_post` |
+| `POST` | `/v1/houses/dynamics/armc` | chart | `house_dynamics_from_armc_route_v1_houses_dynamics_armc_post` |
 | `POST` | `/v1/houses/polar-admissibility` | chart | `houses_polar_admissibility_route_v1_houses_polar_admissibility_post` |
 | `POST` | `/v1/houses/reduction` | chart | `houses_reduction_route_v1_houses_reduction_post` |
 | `POST` | `/v1/huber/age-point` | huber | `huber_age_point_route_v1_huber_age_point_post` |

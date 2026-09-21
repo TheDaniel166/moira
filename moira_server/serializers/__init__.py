@@ -37,7 +37,16 @@ from .astrocartography import (
     serialize_astrocartography_subplanetary,
     serialize_subplanetary_point,
 )
-from .chart import serialize_chart, serialize_chart_with_reduction, serialize_houses, serialize_node
+from .chart import (
+    serialize_analytical_house_dynamics,
+    serialize_chart,
+    serialize_chart_with_reduction,
+    serialize_house_dynamics,
+    serialize_houses,
+    serialize_houses_with_reduction,
+    serialize_node,
+    serialize_polar_admissibility,
+)
 from .phenomena import (
     serialize_close_approach,
     serialize_eclipse_data,
@@ -354,6 +363,7 @@ from .visibility import (
 
 __all__ = [
     "serialize_stellium_analysis",
+    "serialize_analytical_house_dynamics",
     "serialize_astrocartography_line",
     "serialize_astrocartography_lines",
     "serialize_astrocartography_observer",
@@ -384,7 +394,9 @@ __all__ = [
     "serialize_event_instant",
     "serialize_event_payload",
     "serialize_general_visibility_event",
+    "serialize_house_dynamics",
     "serialize_houses",
+    "serialize_houses_with_reduction",
     "serialize_ingress_event",
     "serialize_last_aspect",
     "serialize_local_contact",
@@ -401,6 +413,7 @@ __all__ = [
     "serialize_occultation_path_topology",
     "serialize_occultation_pole_crossing",
     "serialize_node",
+    "serialize_polar_admissibility",
     "serialize_paran",
     "serialize_paran_crossing",
     "serialize_paran_strength",

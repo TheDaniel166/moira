@@ -3,12 +3,33 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import importlib
+import math
 
-from moira import Body, Moira
-from moira.houses import PolarFallbackPolicy, UnknownSystemPolicy
+from moira import (
+    Body,
+    HouseDynamics,
+    Moira,
+    analytical_asc_speed,
+    analytical_mc_speed,
+    analytical_vertex_speed,
+    house_dynamics_from_armc,
+)
+from moira.constants import HouseSystem, J2000
+from moira.houses import HousePolicy, PolarFallbackPolicy, UnknownSystemPolicy
 from moira.julian import jd_from_datetime, utc_to_tt, utc_to_ut1
+from moira.obliquity import true_obliquity
 
-from ..models.chart import ChartRequest, HousesRequest, HouseDynamicsRequest
+from ..models.chart import (
+    AnalyticalHouseDynamicsRequest,
+    ChartRequest,
+    HouseDynamicsFromArmcRequest,
+    HouseDynamicsRequest,
+    HousesRequest,
+    POLAR_ADMISSIBILITY_MAX_SAMPLES,
+    POLAR_ADMISSIBILITY_PLACIDUS_MAX_SAMPLES,
+    PolarAdmissibilityRequest,
+)
 from ._shared import (
     build_chart_context,
     build_houses_context,
@@ -60,6 +81,39 @@ _TRUE_LILITH_STAGE_SEQUENCE = [
     "ecliptic_projection",
     "lilith_vessel_materialization",
 ]
+
+_POLAR_SCAN_MODULES = {
+    "P": ("experimental_placidus", "scan_experimental_placidus_admissibility"),
+    "C": ("experimental_campanus", "scan_experimental_campanus_admissibility"),
+    "R": ("experimental_regiomontanus", "scan_experimental_regiomontanus_admissibility"),
+    "T": ("experimental_topocentric", "scan_experimental_topocentric_admissibility"),
+    "K": ("experimental_koch", "scan_experimental_koch_admissibility"),
+    "B": ("experimental_alcabitius", "scan_experimental_alcabitius_admissibility"),
+}
+
+_POLAR_MAX_SAMPLES_BY_SYSTEM = {
+    HouseSystem.PLACIDUS: POLAR_ADMISSIBILITY_PLACIDUS_MAX_SAMPLES,
+}
+_PLACIDUS_ROOT_SAMPLE_COUNT = 12_000
+
+
+def _require_continuous_cusp_motion(
+    system: str,
+    *,
+    independent_variable: str,
+) -> None:
+    """Reject house frames whose cusp labels do not define a derivative."""
+
+    if system == HouseSystem.WHOLE_SIGN:
+        raise ValueError(
+            "Whole Sign cusps are discontinuous in ARMC and do not define "
+            "finite-difference cusp speeds"
+        )
+    if independent_variable == "time" and system == HouseSystem.SOLAR_SIGN:
+        raise ValueError(
+            "Solar Sign cusps change discontinuously at solar sign ingress and do "
+            "not define continuous time-based cusp speeds"
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -217,6 +271,58 @@ class HousesReductionContext:
     requested_policy_polar_fallback: PolarFallbackPolicy | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class HouseDynamicsComputationContext:
+    engine_surface: str
+    source_vessel: str
+    method: str
+    independent_variable: str
+    half_step: float | None
+    half_step_unit: str | None
+    obliquity_held_fixed: bool
+
+
+@dataclass(frozen=True, slots=True)
+class HouseDynamicsServiceResult:
+    dynamics: HouseDynamics
+    computation: HouseDynamicsComputationContext
+
+
+@dataclass(frozen=True, slots=True)
+class AnalyticalHouseDynamicsServiceResult:
+    armc: float
+    obliquity: float
+    latitude: float
+    mc_speed_deg_per_day: float
+    asc_speed_deg_per_day: float | None
+    vertex_speed_deg_per_day: float | None
+    asc_unavailable_reason: str | None
+    vertex_unavailable_reason: str | None
+    computation: HouseDynamicsComputationContext
+
+
+@dataclass(frozen=True, slots=True)
+class PolarAdmissibilityServiceResult:
+    request: PolarAdmissibilityRequest
+    obliquity: float
+    system: str
+    maximum_allowed_samples: int
+    admissibility: object
+
+
+class UnsupportedPolarHouseSystemError(ValueError):
+    """Raised when no experimental polar scanner owns the requested system."""
+
+
+def _engine_house_policy(request_policy):
+    if request_policy is None:
+        return None
+    return HousePolicy(
+        unknown_system=request_policy.unknown_system,
+        polar_fallback=request_policy.polar_fallback,
+    )
+
+
 def compute_houses_with_reduction(engine: Moira, request: HousesRequest):
     """Compute houses together with transport-safe reduction truth (doctrine applied)."""
     _require_aware_datetime(request.dt)
@@ -251,23 +357,177 @@ def compute_houses_with_reduction(engine: Moira, request: HousesRequest):
     return houses, reduction
 
 
-def compute_house_dynamics(engine: Moira, request: HouseDynamicsRequest):
+def compute_house_dynamics(
+    engine: Moira,
+    request: HouseDynamicsRequest,
+) -> HouseDynamicsServiceResult:
     """Compute house dynamics (cusp and angle speeds) from a transport request."""
     _require_aware_datetime(request.dt)
     system = _resolve_house_system(request.system)
-    engine_policy = None
-    if request.policy is not None:
-        from moira.houses import HousePolicy
-        engine_policy = HousePolicy(
-            unknown_system=request.policy.unknown_system,
-            polar_fallback=request.policy.polar_fallback,
-        )
+    _require_continuous_cusp_motion(system, independent_variable="time")
     dt_days = request.dt_minutes / 1440.0
-    return engine.house_dynamics(
+    dynamics = engine.house_dynamics(
         request.dt,
         latitude=request.latitude,
         longitude=request.longitude,
         system=system,
-        policy=engine_policy,
+        policy=_engine_house_policy(request.policy),
         dt_days=dt_days,
+    )
+    _require_continuous_cusp_motion(
+        dynamics.house_cusps.effective_system,
+        independent_variable="time",
+    )
+    return HouseDynamicsServiceResult(
+        dynamics=dynamics,
+        computation=HouseDynamicsComputationContext(
+            engine_surface="Moira.house_dynamics",
+            source_vessel="HouseDynamics",
+            method="centered_finite_difference",
+            independent_variable="time",
+            half_step=request.dt_minutes,
+            half_step_unit="minutes",
+            obliquity_held_fixed=False,
+        ),
+    )
+
+
+def compute_house_dynamics_from_armc(
+    request: HouseDynamicsFromArmcRequest,
+) -> HouseDynamicsServiceResult:
+    """Compute the public ARMC-native dynamics primitive for transport."""
+
+    system = _resolve_house_system(request.system)
+    _require_continuous_cusp_motion(system, independent_variable="armc")
+    dynamics = house_dynamics_from_armc(
+        request.armc,
+        request.obliquity,
+        request.latitude,
+        system,
+        policy=_engine_house_policy(request.policy),
+        sun_longitude=request.sun_longitude,
+        darmc_deg=request.darmc_deg,
+    )
+    _require_continuous_cusp_motion(
+        dynamics.house_cusps.effective_system,
+        independent_variable="armc",
+    )
+    return HouseDynamicsServiceResult(
+        dynamics=dynamics,
+        computation=HouseDynamicsComputationContext(
+            engine_surface="moira.houses.house_dynamics_from_armc",
+            source_vessel="HouseDynamics",
+            method="centered_finite_difference",
+            independent_variable="armc",
+            half_step=request.darmc_deg,
+            half_step_unit="degrees_armc",
+            obliquity_held_fixed=True,
+        ),
+    )
+
+
+def compute_analytical_house_dynamics(
+    request: AnalyticalHouseDynamicsRequest,
+) -> AnalyticalHouseDynamicsServiceResult:
+    """Compute exact analytical MC, ASC, and Vertex velocities."""
+
+    mc_speed = analytical_mc_speed(request.armc, request.obliquity)
+    asc_speed = analytical_asc_speed(
+        request.armc,
+        request.obliquity,
+        request.latitude,
+    )
+    vertex_speed = analytical_vertex_speed(
+        request.armc,
+        request.obliquity,
+        request.latitude,
+    )
+    asc_reason = None
+    if not math.isfinite(asc_speed):
+        asc_speed = None
+        asc_reason = "analytical Ascendant derivative is singular at these inputs"
+    vertex_reason = None
+    if not math.isfinite(vertex_speed):
+        vertex_speed = None
+        vertex_reason = (
+            "analytical Vertex derivative is undefined at the equator, poles, "
+            "or a singular prime-vertical intersection"
+        )
+
+    return AnalyticalHouseDynamicsServiceResult(
+        armc=request.armc,
+        obliquity=request.obliquity,
+        latitude=request.latitude,
+        mc_speed_deg_per_day=mc_speed,
+        asc_speed_deg_per_day=asc_speed,
+        vertex_speed_deg_per_day=vertex_speed,
+        asc_unavailable_reason=asc_reason,
+        vertex_unavailable_reason=vertex_reason,
+        computation=HouseDynamicsComputationContext(
+            engine_surface=(
+                "moira.houses.analytical_mc_speed|analytical_asc_speed|"
+                "analytical_vertex_speed"
+            ),
+            source_vessel="scalar_derivatives",
+            method="analytical_derivative",
+            independent_variable="armc",
+            half_step=None,
+            half_step_unit=None,
+            obliquity_held_fixed=True,
+        ),
+    )
+
+
+def compute_polar_admissibility(
+    request: PolarAdmissibilityRequest,
+) -> PolarAdmissibilityServiceResult:
+    """Run one bounded, validated polar admissibility scan."""
+
+    system = _resolve_house_system(request.system)
+    if system not in _POLAR_SCAN_MODULES:
+        raise UnsupportedPolarHouseSystemError(
+            f"No polar admissibility scanner available for house system {request.system!r}"
+        )
+    maximum_allowed_samples = _POLAR_MAX_SAMPLES_BY_SYSTEM.get(
+        system,
+        POLAR_ADMISSIBILITY_MAX_SAMPLES,
+    )
+    if request.sample_count > maximum_allowed_samples:
+        raise ValueError(
+            f"{request.system!r} polar admissibility scan exceeds its maximum of "
+            f"{maximum_allowed_samples} samples"
+        )
+
+    if request.obliquity is not None:
+        obliquity = request.obliquity
+    elif request.dt is not None:
+        obliquity = true_obliquity(utc_to_tt(jd_from_datetime(request.dt)))
+    else:
+        obliquity = true_obliquity(J2000)
+
+    module_name, function_name = _POLAR_SCAN_MODULES[system]
+    scanner = getattr(
+        importlib.import_module(f"moira.{module_name}"),
+        function_name,
+    )
+    scanner_kwargs = {
+        "latitude": request.latitude,
+        "obliquity": obliquity,
+        "armc_start": request.armc_start,
+        "armc_end": request.armc_end,
+        "armc_step": request.armc_step,
+        "rho_max": request.rho_max,
+        "stability_radius": request.stability_radius,
+    }
+    if system == HouseSystem.PLACIDUS:
+        scanner_kwargs["sample_count"] = _PLACIDUS_ROOT_SAMPLE_COUNT
+    admissibility = scanner(
+        **scanner_kwargs,
+    )
+    return PolarAdmissibilityServiceResult(
+        request=request,
+        obliquity=obliquity,
+        system=system,
+        maximum_allowed_samples=maximum_allowed_samples,
+        admissibility=admissibility,
     )

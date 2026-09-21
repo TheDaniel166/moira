@@ -227,8 +227,9 @@ def scan_experimental_topocentric_admissibility(
     valid_armcs: list[float] = []
     practical_armcs: list[float] = []
     practical_flags: list[bool] = []
-    armc = armc_start
-    while armc <= armc_end + 1e-12:
+    interval_count = math.floor((armc_end - armc_start) / armc_step + 1e-12)
+    for sample_index in range(interval_count + 1):
+        armc = armc_start + sample_index * armc_step
         asc = _asc_from_armc(armc, obliquity, latitude)
         mc = _mc_from_armc(armc, obliquity, latitude)
         result = search_experimental_topocentric(
@@ -246,7 +247,6 @@ def scan_experimental_topocentric_admissibility(
         practical_flags.append(is_practical)
         if is_practical:
             practical_armcs.append(round(armc, 10))
-        armc += armc_step
 
     windows: list[ExperimentalTopocentricWindow] = []
     if valid_armcs:
@@ -323,7 +323,7 @@ def scan_experimental_topocentric_admissibility(
             )
         )
 
-    total_samples = int(round((armc_end - armc_start) / armc_step)) + 1
+    total_samples = interval_count + 1
     return ExperimentalTopocentricAdmissibilityMap(
         latitude=latitude,
         obliquity=obliquity,

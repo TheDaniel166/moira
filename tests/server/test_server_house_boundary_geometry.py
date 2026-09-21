@@ -75,7 +75,7 @@ def test_house_serializer_preserves_placidus_event_curve_samples() -> None:
     )
 
 
-def test_house_serializer_reports_cusp_only_effective_fallback() -> None:
+def test_house_serializer_reports_integrated_polar_campanus_geometry() -> None:
     houses = houses_from_armc(
         123.0,
         23.4393,
@@ -87,11 +87,17 @@ def test_house_serializer_reports_cusp_only_effective_fallback() -> None:
     payload = serialize_houses(houses).model_dump(mode="json")
     geometry = payload["boundary_geometry"]
 
-    assert payload["effective_system"] == HouseSystem.PORPHYRY
-    assert geometry["effective_system"] == HouseSystem.PORPHYRY
-    assert geometry["availability"] == "cusp_intersections_only"
-    assert geometry["boundaries"] == []
-    assert geometry["reason"]
+    assert payload["effective_system"] == HouseSystem.CAMPANUS
+    assert payload["fallback"] is False
+    assert geometry["effective_system"] == HouseSystem.CAMPANUS
+    assert geometry["availability"] == "complete"
+    assert len(geometry["boundaries"]) == 12
+    assert all(
+        boundary["kind"] == "great_circle_plane"
+        and boundary["plane_normal"] is not None
+        for boundary in geometry["boundaries"]
+    )
+    assert geometry["reason"] is None
 
 
 @pytest.mark.requires_ephemeris

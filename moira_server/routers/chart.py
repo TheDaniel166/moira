@@ -8,9 +8,12 @@ from moira import Moira
 from ..cache import ChartLRUCache
 from ..dependencies import get_engine
 from ..models.chart import (
+    AnalyticalHouseDynamicsRequest,
+    AnalyticalHouseDynamicsResponse,
     ChartReductionResponse,
     ChartRequest,
     ChartResponse,
+    HouseDynamicsFromArmcRequest,
     HouseDynamicsRequest,
     HouseDynamicsResponse,
     HousesReductionResponse,
@@ -18,21 +21,26 @@ from ..models.chart import (
     HousesResponse,
     PolarAdmissibilityRequest,
     PolarAdmissibilityResponse,
-    PolarHouseWindowResponse,
 )
 from ..serializers.chart import (
+    serialize_analytical_house_dynamics,
     serialize_chart,
     serialize_chart_with_reduction,
     serialize_house_dynamics,
     serialize_houses,
     serialize_houses_with_reduction,
+    serialize_polar_admissibility,
 )
 from ..services.chart import (
+    UnsupportedPolarHouseSystemError,
+    compute_analytical_house_dynamics,
     compute_chart,
     compute_chart_with_reduction,
     compute_house_dynamics,
+    compute_house_dynamics_from_armc,
     compute_houses,
     compute_houses_with_reduction,
+    compute_polar_admissibility,
 )
 
 
@@ -132,14 +140,27 @@ def house_dynamics_route(
     return serialize_house_dynamics(dynamics)
 
 
-_POLAR_SCAN_MODULES = {
-    "P": ("experimental_placidus", "scan_experimental_placidus_admissibility"),
-    "C": ("experimental_campanus", "scan_experimental_campanus_admissibility"),
-    "R": ("experimental_regiomontanus", "scan_experimental_regiomontanus_admissibility"),
-    "T": ("experimental_topocentric", "scan_experimental_topocentric_admissibility"),
-    "K": ("experimental_koch", "scan_experimental_koch_admissibility"),
-    "B": ("experimental_alcabitius", "scan_experimental_alcabitius_admissibility"),
-}
+@router.post("/houses/dynamics/armc", response_model=HouseDynamicsResponse)
+def house_dynamics_from_armc_route(
+    request: HouseDynamicsFromArmcRequest,
+) -> HouseDynamicsResponse:
+    """Compute ARMC-native house dynamics with obliquity held fixed."""
+
+    return serialize_house_dynamics(compute_house_dynamics_from_armc(request))
+
+
+@router.post(
+    "/houses/dynamics/analytical",
+    response_model=AnalyticalHouseDynamicsResponse,
+)
+def analytical_house_dynamics_route(
+    request: AnalyticalHouseDynamicsRequest,
+) -> AnalyticalHouseDynamicsResponse:
+    """Compute exact analytical MC, ASC, and Vertex angle velocities."""
+
+    return serialize_analytical_house_dynamics(
+        compute_analytical_house_dynamics(request)
+    )
 
 
 @router.post("/houses/polar-admissibility", response_model=PolarAdmissibilityResponse)
@@ -147,75 +168,8 @@ def houses_polar_admissibility_route(
     request: PolarAdmissibilityRequest,
 ) -> PolarAdmissibilityResponse:
     """Scan and return the polar ARMC admissibility windows and quality metrics for a house system."""
-    import importlib
-    from moira.constants import HouseSystem
-    from moira.julian import jd_from_datetime, utc_to_tt
-    from moira.obliquity import true_obliquity
-
-    # Resolve system code
-    sys_code = request.system.upper()
-    resolved_code = getattr(HouseSystem, sys_code, None) or request.system
-    if resolved_code not in _POLAR_SCAN_MODULES:
-        # Check by single-letter code directly
-        if request.system not in _POLAR_SCAN_MODULES:
-            raise HTTPException(
-                status_code=400,
-                detail=f"No polar admissibility scanner available for house system {request.system!r}",
-            )
-        resolved_code = request.system
-
-    # Resolve obliquity
-    if request.obliquity is not None:
-        obliquity = request.obliquity
-    elif request.dt is not None:
-        jd_tt = utc_to_tt(jd_from_datetime(request.dt))
-        obliquity = true_obliquity(jd_tt)
-    else:
-        obliquity = true_obliquity(2451545.0)
-
-    mod_name, fn_name = _POLAR_SCAN_MODULES[resolved_code]
-    mod = importlib.import_module(f"moira.{mod_name}")
-    scanner = getattr(mod, fn_name)
-
-    admissibility = scanner(
-        latitude=request.latitude,
-        obliquity=obliquity,
-        armc_start=request.armc_start,
-        armc_end=request.armc_end,
-        armc_step=request.armc_step,
-        rho_max=request.rho_max,
-        stability_radius=request.stability_radius,
-    )
-
-    return PolarAdmissibilityResponse(
-        latitude=request.latitude,
-        obliquity=obliquity,
-        system=resolved_code,
-        total_samples=admissibility.total_samples,
-        valid_fraction=admissibility.valid_fraction,
-        has_any_window=admissibility.has_any_window,
-        windows=[
-            PolarHouseWindowResponse(
-                start_armc=w.start_armc,
-                end_armc=w.end_armc,
-                sample_count=w.sample_count,
-            )
-            for w in admissibility.windows
-        ],
-        practical_windows=[
-            PolarHouseWindowResponse(
-                start_armc=w.start_armc,
-                end_armc=w.end_armc,
-                sample_count=w.sample_count,
-            )
-            for w in getattr(admissibility, "practical_windows", ())
-        ],
-        stable_practical_windows=[
-            PolarHouseWindowResponse(
-                start_armc=w.start_armc,
-                end_armc=w.end_armc,
-                sample_count=w.sample_count,
-            )
-            for w in getattr(admissibility, "stable_practical_windows", ())
-        ],
-    )
+    try:
+        result = compute_polar_admissibility(request)
+    except UnsupportedPolarHouseSystemError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return serialize_polar_admissibility(result)

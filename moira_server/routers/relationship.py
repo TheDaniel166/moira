@@ -90,8 +90,8 @@ from ..services.relationship import (
     compute_midpoints_to_point,
     compute_pattern_chart_profile,
     compute_pattern_network,
-    compute_patterns,
     compute_patterns_coherence,
+    compute_patterns_with_coherence,
     compute_planetary_pictures,
     compute_synastry_aspects,
     compute_synastry_chart_profile,
@@ -255,27 +255,12 @@ def chart_shape_route(request: SingleChartAnalysisRequest, engine: Moira = Depen
 
 @router.post("/patterns/find", response_model=PatternSearchResponse)
 def patterns_route(request: PatternRequest, engine: Moira = Depends(get_engine)) -> PatternSearchResponse:
-    patterns = compute_patterns(engine, request)
-    positions = None
-    speeds = None
-    try:
-        from ..services.relationship import _positions_for_analysis, _build_party_chart_and_houses
-        positions = _positions_for_analysis(engine, request.chart, request.include_nodes)
-        chart, _ = _build_party_chart_and_houses(engine, request.chart)
-        speed_getter = getattr(chart, "speeds", None)
-        speeds = speed_getter() if callable(speed_getter) else None
-    except Exception:
-        pass
-
-    events = []
-    for item in patterns:
-        coherence = None
-        try:
-            coherence = item.evaluate_coherence(positions=positions, speeds=speeds)
-        except Exception:
-            pass
-        events.append(serialize_aspect_pattern(item, coherence=coherence))
-    return PatternSearchResponse(events=events)
+    return PatternSearchResponse(
+        events=[
+            serialize_aspect_pattern(pattern, coherence=coherence)
+            for pattern, coherence in compute_patterns_with_coherence(engine, request)
+        ]
+    )
 
 
 @router.post("/patterns/coherence", response_model=PatternCoherenceSearchResponse)

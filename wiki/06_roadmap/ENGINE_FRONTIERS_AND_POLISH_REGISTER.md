@@ -1,7 +1,8 @@
 # Moira Engine: Frontiers, Polish & Deferred Work Register (2026)
 
-**Governing Authority**: Moira Canonical Instruction (`AGENTS.md`)  
-**Audit Date**: September 21, 2026  
+**Governing Authority**: Moira Canonical Instruction (`AGENTS.md`)
+
+**Audit Date**: September 21, 2026
 **Baseline Version**: Moira 6.8.2+ (Post-Tier 2 Houses & Nutation Caching)
 
 ---

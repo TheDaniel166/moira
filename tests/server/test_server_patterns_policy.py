@@ -121,11 +121,15 @@ def test_patterns_find_serializes_grand_trine_structural_condition(
     ])[0]
     observed_dominance: list[bool] = []
 
-    def _compute_patterns(engine, request):
+    def _compute_patterns_with_coherence(engine, request):
         observed_dominance.append(request.dominant_only)
-        return [pattern]
+        return [(pattern, pattern.evaluate_coherence())]
 
-    monkeypatch.setattr(relationship_router_module, "compute_patterns", _compute_patterns)
+    monkeypatch.setattr(
+        relationship_router_module,
+        "compute_patterns_with_coherence",
+        _compute_patterns_with_coherence,
+    )
     response = relationship_router_module.patterns_route(
         PatternRequest(chart=_party(), dominant_only=True),
         engine=object(),
