@@ -81,6 +81,7 @@ for _name in (
     "search_heliacal_rising",
     "search_heliacal_setting",
     "heliacal_signed_elongation",
+    "reduce_local_angles",
 ):
     if hasattr(_backend, _name):
         globals()[_name] = _nutation_ready_wrapper(_name)

@@ -28,6 +28,11 @@ from .methods import (
 )
 from .spaces import PrimaryDirectionSpace
 
+try:
+    from .. import moira_native as _moira_native
+except ImportError:
+    _moira_native = None
+
 __all__ = [
     "PrimaryDirectionGeometryLaw",
     "PrimaryDirectionGeometrySovereignty",
@@ -342,6 +347,12 @@ def _shared_campanus_regio_sin_zenith_distance(
 
 
 def _shared_campanus_regio_pole(entry: _SpeculumLike, *, geo_lat: float) -> float:
+    if _moira_native is not None and hasattr(_moira_native, "regiomontanus_pole_height"):
+        return _moira_native.regiomontanus_pole_height(
+            float(entry.dec),
+            float(entry.ha),
+            float(geo_lat),
+        )
     phi = geo_lat * DEG2RAD
     sin_zd = _shared_campanus_regio_sin_zenith_distance(entry, geo_lat=geo_lat)
     pole_argument = _checked_unit_argument(
@@ -353,6 +364,13 @@ def _shared_campanus_regio_pole(entry: _SpeculumLike, *, geo_lat: float) -> floa
 
 
 def _under_pole_w(entry: _SpeculumLike, pole_deg: float, *, eastern: bool) -> float:
+    if _moira_native is not None and hasattr(_moira_native, "under_pole_w"):
+        return _moira_native.under_pole_w(
+            float(entry.ra),
+            float(entry.dec),
+            float(pole_deg),
+            bool(eastern),
+        )
     dec = entry.dec * DEG2RAD
     pole = pole_deg * DEG2RAD
     offset_argument = _checked_unit_argument(
@@ -378,6 +396,16 @@ def _regiomontanus_under_pole_arc(
     *,
     geo_lat: float,
 ) -> float:
+    if _moira_native is not None and hasattr(_moira_native, "regiomontanus_under_pole_arc"):
+        return _moira_native.regiomontanus_under_pole_arc(
+            float(sig.ra),
+            float(sig.dec),
+            float(sig.ha),
+            bool(sig.is_eastern),
+            float(prom.ra),
+            float(prom.dec),
+            float(geo_lat),
+        )
     return _under_pole_arc(sig, prom, pole_deg=_shared_campanus_regio_pole(sig, geo_lat=geo_lat))
 
 
@@ -387,10 +415,28 @@ def _campanus_under_pole_arc(
     *,
     geo_lat: float,
 ) -> float:
+    if _moira_native is not None and hasattr(_moira_native, "regiomontanus_under_pole_arc"):
+        return _moira_native.regiomontanus_under_pole_arc(
+            float(sig.ra),
+            float(sig.dec),
+            float(sig.ha),
+            bool(sig.is_eastern),
+            float(prom.ra),
+            float(prom.dec),
+            float(geo_lat),
+        )
     return _under_pole_arc(sig, prom, pole_deg=_shared_campanus_regio_pole(sig, geo_lat=geo_lat))
 
 
 def _topocentric_pole(entry: _SpeculumLike, *, geo_lat: float) -> float:
+    if _moira_native is not None and hasattr(_moira_native, "topocentric_pole_height"):
+        return _moira_native.topocentric_pole_height(
+            float(entry.ha),
+            float(entry.dsa),
+            float(entry.nsa),
+            bool(entry.upper),
+            float(geo_lat),
+        )
     sa = _semi_arc(entry)
     if sa <= 1e-9:
         raise ValueError("Topocentric pole requires a non-zero semi-arc")
@@ -405,6 +451,19 @@ def _topocentric_under_pole_arc(
     *,
     geo_lat: float,
 ) -> float:
+    if _moira_native is not None and hasattr(_moira_native, "topocentric_under_pole_arc"):
+        return _moira_native.topocentric_under_pole_arc(
+            float(sig.ra),
+            float(sig.dec),
+            float(sig.ha),
+            float(sig.dsa),
+            float(sig.nsa),
+            bool(sig.upper),
+            bool(sig.is_eastern),
+            float(prom.ra),
+            float(prom.dec),
+            float(geo_lat),
+        )
     return _under_pole_arc(sig, prom, pole_deg=_topocentric_pole(sig, geo_lat=geo_lat))
 
 
@@ -488,23 +547,14 @@ def _primary_direction_arc(
     return _mundane_arc(sig, prom)
 
 
-def compute_primary_direction_arc(
+def _validate_primary_direction_inputs(
     method: PrimaryDirectionMethod,
-    sig: _SpeculumLike,
-    prom: _SpeculumLike,
-    *,
     space: PrimaryDirectionSpace,
     latitude_doctrine: PrimaryDirectionLatitudeDoctrine,
     geo_lat: float,
     armc: float,
     oa_asc: float,
-) -> float:
-    """Return one ordered promissor-to-significator arc of primary motion.
-
-    This is the geometry object used by signed-primary-motion doctrine: it
-    performs one ordered construction and does not calculate a role-exchanged
-    companion arc.
-    """
+) -> None:
     if not isinstance(method, PrimaryDirectionMethod):
         raise ValueError("Primary-direction geometry requires a typed method")
     if not isinstance(space, PrimaryDirectionSpace):
@@ -531,6 +581,28 @@ def compute_primary_direction_arc(
             raise ValueError(f"Primary-direction geometry requires finite real {name}")
     if not -90.0 < float(geo_lat) < 90.0:
         raise ValueError("Primary-direction geometry requires geographic latitude in (-90, 90)")
+
+
+def compute_primary_direction_arc(
+    method: PrimaryDirectionMethod,
+    sig: _SpeculumLike,
+    prom: _SpeculumLike,
+    *,
+    space: PrimaryDirectionSpace,
+    latitude_doctrine: PrimaryDirectionLatitudeDoctrine,
+    geo_lat: float,
+    armc: float,
+    oa_asc: float,
+) -> float:
+    """Return one ordered promissor-to-significator arc of primary motion.
+
+    This is the geometry object used by signed-primary-motion doctrine: it
+    performs one ordered construction and does not calculate a role-exchanged
+    companion arc.
+    """
+    _validate_primary_direction_inputs(
+        method, space, latitude_doctrine, geo_lat, armc, oa_asc
+    )
     return _primary_direction_arc(
         method,
         sig,
@@ -569,7 +641,21 @@ def compute_primary_direction_arcs(
     under-the-pole laws, whose arc is taken in a terminus-specific circle of
     position) the two constructions differ, and role exchange is the correct one.
     """
-    direct = compute_primary_direction_arc(
+    _validate_primary_direction_inputs(
+        method, space, latitude_doctrine, geo_lat, armc, oa_asc
+    )
+
+    if _moira_native is not None and hasattr(_moira_native, "compute_under_pole_pair_arcs"):
+        if method in (
+            PrimaryDirectionMethod.REGIOMONTANUS,
+            PrimaryDirectionMethod.MORINUS,
+            PrimaryDirectionMethod.CAMPANUS,
+        ):
+            return _moira_native.compute_under_pole_pair_arcs(sig, prom, float(geo_lat), "R")
+        if method is PrimaryDirectionMethod.TOPOCENTRIC:
+            return _moira_native.compute_under_pole_pair_arcs(sig, prom, float(geo_lat), "T")
+
+    direct = _primary_direction_arc(
         method,
         sig,
         prom,
@@ -579,7 +665,7 @@ def compute_primary_direction_arcs(
         armc=armc,
         oa_asc=oa_asc,
     )
-    converse = compute_primary_direction_arc(
+    converse = _primary_direction_arc(
         method,
         prom,
         sig,
