@@ -15,6 +15,7 @@ from moira.primary_directions import (
     PrimaryDirectionAntisciaTarget,
     PrimaryDirectionConverseDoctrine,
     PrimaryDirectionFixedStarTarget,
+    PrimaryDirectionMundaneAspectTarget,
     PrimaryDirectionMotion,
     PrimaryDirectionsPreset,
     PlacidianRaptParallelTarget,
@@ -167,6 +168,34 @@ def test_every_canonical_engine_preset_is_transport_resolvable() -> None:
         assert resolved.policy is not None
 
 
+def test_neo_converse_is_an_explicit_transport_policy() -> None:
+    resolved = service.resolve_primary_directions_policy(
+        _request(policy={"converse_doctrine": "NEO_CONVERSE"})
+    )
+    assert resolved.policy.include_converse
+    assert (
+        resolved.policy.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.NEO_CONVERSE
+    )
+
+    direct_only = service.resolve_primary_directions_policy(
+        _request(policy={"converse_doctrine": "DIRECT_ONLY"})
+    )
+    assert not direct_only.policy.include_converse
+    assert (
+        direct_only.policy.converse_doctrine
+        is PrimaryDirectionConverseDoctrine.DIRECT_ONLY
+    )
+
+    with pytest.raises(ValidationError, match="conflicts"):
+        _request(
+            policy={
+                "include_converse": False,
+                "converse_doctrine": "neo_converse",
+            }
+        )
+
+
 def test_signed_primary_motion_transport_is_engine_search_only() -> None:
     preset = (
         PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
@@ -274,6 +303,22 @@ def test_advanced_search_inputs_convert_to_exact_engine_vessels() -> None:
         PrimaryDirectionFixedStarTarget("Sirius"),
     )
 
+    mundane_aspect = service.resolve_primary_directions_policy(
+        _request(
+            policy={"preset": "placidus_mundane_aspect"},
+            mundane_aspect_targets=[
+                {"source_name": "Mars", "aspect_name": "dexter square"}
+            ],
+        )
+    )
+    assert mundane_aspect.policy.mundane_aspect_targets == (
+        PrimaryDirectionMundaneAspectTarget(
+            source_name="Mars",
+            aspect_name="Dexter Square",
+            fraction_offset=1.0,
+        ),
+    )
+
     morinus = service.resolve_primary_directions_policy(
         _request(
             policy={"preset": "morinus_zodiacal_aspect"},
@@ -307,6 +352,10 @@ def test_advanced_search_inputs_convert_to_exact_engine_vessels() -> None:
             [{"source_name": "Moon"}],
         ),
         (
+            "mundane_aspect_targets",
+            [{"source_name": "Mars", "aspect_name": "Dexter Square"}],
+        ),
+        (
             "morinus_aspect_contexts",
             [
                 {
@@ -331,6 +380,12 @@ def test_advanced_search_inputs_require_their_governing_preset(
 
 
 def test_advanced_search_inputs_are_bounded_unique_and_search_only() -> None:
+    with pytest.raises(ValidationError, match="unsupported mundane aspect"):
+        _request(
+            mundane_aspect_targets=[
+                {"source_name": "Mars", "aspect_name": "invented aspect"}
+            ]
+        )
     with pytest.raises(ValidationError, match="unique across target families"):
         _request(
             antiscia_targets=[
@@ -814,6 +869,9 @@ def test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded() -> N
     assert "PrimaryDirectionMethod" in str(policy["method"])
     assert "PrimaryDirectionSpace" in str(policy["space"])
     assert "PrimaryDirectionKey" in str(policy["key"])
+    assert "PrimaryDirectionConverseDoctrine" in str(policy["converse_doctrine"])
+    timeline = schemas["PrimaryDirectionsTimelineRequest"]["properties"]
+    assert "EgyptianBoundsDoctrine" in str(timeline["bound_doctrine"])
     assert (
         "topocentric_zodiacal_aspect_signed_primary_motion"
         in schemas["PrimaryDirectionsPreset"]["enum"]
@@ -826,6 +884,9 @@ def test_openapi_policy_and_submitted_arc_contracts_are_typed_and_bounded() -> N
         "ptolemaic_parallel_targets": "PtolemaicParallelTargetRequest",
         "placidian_rapt_parallel_targets": "PlacidianRaptParallelTargetRequest",
         "fixed_star_targets": "PrimaryDirectionFixedStarTargetRequest",
+        "mundane_aspect_targets": "PrimaryDirectionMundaneAspectTargetRequest",
+        "mundane_parallel_targets": "PrimaryDirectionMundaneParallelTargetRequest",
+        "midpoint_targets": "PrimaryDirectionMidpointTargetRequest",
         "morinus_aspect_contexts": "MorinusAspectContextRequest",
     }
     for field_name, schema_name in advanced_schemas.items():

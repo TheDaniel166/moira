@@ -49,19 +49,21 @@ An internal primary-directions subsystem is constitutionally aligned when:
 
 - current state:
   - `Direct` and `Traditional converse` are admitted
+  - opt-in `Neo-converse` is admitted as a distinct counter-diurnal circle-
+    complement law
   - source-scoped `Signed primary motion` is admitted only through its named
     Topocentric zodiacal-aspect preset
-  - `Neo-converse` remains research-only
 - alignment judgment:
-  - aligned through `P10`
+  - aligned through the September 2026 chronology admission
 - remaining work:
-  - keep signed primary motion confined to its named preset and
-    `Neo-converse` outside the admitted surface
+  - keep signed primary motion confined to its named preset and keep historical
+    universality claims for `Neo-converse` validation-scoped
 
 ### Keys
 
 - current state:
-  - `Ptolemy`, `Naibod`, `Cardan`, and `Solar` are admitted explicitly
+  - `Ptolemy`, `Naibod`, `Cardan`, static `Solar`, `Solar RA dynamic`, and
+    `Solar longitude dynamic` are admitted explicitly
 - alignment judgment:
   - aligned through `P10`
 - remaining work:
@@ -71,7 +73,8 @@ An internal primary-directions subsystem is constitutionally aligned when:
 
 - current state:
   - conjunction, opposition, zodiacal aspect, parallel, contra-parallel, rapt
-    parallel, antiscion, and contra-antiscion are explicit
+    parallel, antiscion, contra-antiscion, term/bound, mundane aspect, mundane
+    parallel, mundane contra-parallel, and midpoint are explicit
 - alignment judgment:
   - aligned through `P10`
 - remaining work:

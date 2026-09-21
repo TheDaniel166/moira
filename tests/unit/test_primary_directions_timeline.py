@@ -6,11 +6,12 @@ from __future__ import annotations
 
 import math
 import pytest
+import moira.primary_directions.timeline as timeline_module
 
 from datetime import datetime, timezone
 
 from moira.constants import HouseSystem
-from moira.julian import utc_to_ut1
+from moira.egyptian_bounds import EgyptianBoundsDoctrine
 from moira.primary_directions import (
     PrimaryDirectionKey,
     PrimaryDirectionsTimeline,
@@ -37,6 +38,7 @@ def test_compute_primary_directions_timeline_basic(moira_engine) -> None:
     assert isinstance(timeline, PrimaryDirectionsTimeline)
     assert timeline.max_age_years == 60.0
     assert timeline.key is PrimaryDirectionKey.NAIBOD
+    assert timeline.bound_doctrine is EgyptianBoundsDoctrine.EGYPTIAN
     assert len(timeline.events) > 0
 
     # Invariant: Strictly chronologically sorted and within [0, max_age_years]
@@ -53,11 +55,25 @@ def test_compute_primary_directions_timeline_basic(moira_engine) -> None:
     assert len(timeline.distributor_periods) > 0
     for p in timeline.distributor_periods:
         assert isinstance(p, DistributorPeriod)
+        assert p.motion.value in {"direct", "converse"}
         assert p.entry_age is not None
         assert p.exit_age is not None
         assert p.entry_date_utc is not None
         assert p.exit_date_utc is not None
         assert p.exit_age >= p.entry_age
+
+    period_order = [
+        (
+            p.entry_age,
+            p.significator,
+            p.motion.value,
+            p.entry_arc_deg,
+            p.exit_arc_deg,
+            p.ruler,
+        )
+        for p in timeline.distributor_periods
+    ]
+    assert period_order == sorted(period_order)
 
 
 def test_timeline_distributor_and_participator_tagging(moira_engine) -> None:
@@ -108,6 +124,34 @@ def test_timeline_with_dynamic_key(moira_engine) -> None:
     for ev in timeline.events:
         assert 0.0 < ev.age_years <= 30.0
         assert math.isfinite(ev.perfection_jd_ut)
+
+
+def test_timeline_dynamic_key_propagates_inversion_failure(
+    moira_engine,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A requested dynamic key must never degrade to a static conversion."""
+    dt = datetime(2000, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+    chart = moira_engine.chart(dt)
+    houses = moira_engine.houses(dt, 51.5, 0.0, system=HouseSystem.PLACIDUS)
+
+    def _raise_inversion_failure(*args, **kwargs):
+        raise RuntimeError("dynamic inversion unavailable")
+
+    monkeypatch.setattr(
+        timeline_module,
+        "invert_solar_arc_ra",
+        _raise_inversion_failure,
+    )
+    with pytest.raises(RuntimeError, match="dynamic inversion unavailable"):
+        compute_primary_directions_timeline(
+            chart=chart,
+            houses=houses,
+            geo_lat=51.5,
+            key=PrimaryDirectionKey.SOLAR_RA_DYNAMIC,
+            max_age_years=30.0,
+            reader=moira_engine._reader_obj,
+        )
 
 
 def test_timeline_input_invariants() -> None:

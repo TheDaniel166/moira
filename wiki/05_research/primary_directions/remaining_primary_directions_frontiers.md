@@ -22,6 +22,10 @@ Moira now has a substantial primary-directions core:
 - explicit time keys
 - explicit relation doctrine
 - explicit narrow target families
+- admitted shortest-arc midpoint, method-scoped mundane-aspect, Placidian
+  mundane-parallel, and neo-converse branches
+- chronological timelines with explicit static/dynamic keys and distributor
+  periods
 - branch presets
 - worked-example and fixture-backed validation on the most recoverable surfaces
 
@@ -54,11 +58,11 @@ Every remaining frontier should be judged on four axes:
 | Frontier | Source Quality | Mathematical Recoverability | Implementation Risk | Layer Fit | Current Judgment |
 | --- | --- | --- | --- | --- | --- |
 | `wider non-Ptolemaic reflected doctrine` | low-to-medium | partial | high | engine only if branch law appears | `defer` |
-| `midpoints in primary directions` | low-to-medium | partial | high | likely engine only for narrow explicit branch | `research_only` |
-| `mundane aspects as a family` | medium in places, but uneven | partial and method-bound | very high | engine only by method-specific branch | `defer` |
+| `wider midpoint doctrines beyond shortest-arc targets` | low-to-medium | partial | high | engine only if a distinct branch law appears | `defer` |
+| `wider mundane aspects beyond Placidian and Ptolemaic branches` | medium in places, but uneven | partial and method-bound | very high | engine only by method-specific branch | `defer` |
 | `wider fixed-star doctrine beyond conjunction` | medium | low-to-partial | medium-to-high | engine only if conjunction-first discipline is preserved | `defer` |
 | `wider parallel families beyond current closures` | medium in narrow branches, weak globally | partial and method-bound | high | engine only by method-specific branch | `defer` |
-| `neo-converse` | medium | partial | medium | engine if governing law is recovered cleanly | `research_only` |
+| `historical external numeric validation for neo-converse` | medium | partial | medium | validation evidence, not a new runtime switch | `research_only` |
 | `field_plane` | low as a single unified doctrine | low | very high | research-only until decomposed law is explicit | `last_and_defer` |
 
 
@@ -99,10 +103,17 @@ What is known:
 - midpoint doctrine in primary directions is historically real in some later
   software and derived families
 
+Current narrow admission:
+
+- Moira admits a shortest-arc circular midpoint promissor constructed from two
+  explicitly named sources
+- the midpoint remains a derived target; it does not create a universal
+  midpoint-direction doctrine
+
 What is not known:
 
-- one source-safe governing primary-direction law that makes midpoint targets
-  admissible without ambiguity
+- whether other midpoint constructions or historical midpoint schools require
+  distinct directional laws
 
 Risk:
 
@@ -111,7 +122,8 @@ Risk:
 
 Current policy:
 
-- research only
+- preserve the admitted shortest-arc target
+- defer any wider midpoint doctrine until its own governing law is explicit
 
 The governing research packet now lives in:
 
@@ -125,6 +137,8 @@ What is known:
 - several geometry families become genuinely distinct in wider mundane aspect
   doctrine
 - Campanus / Regiomontanus and Morinus especially point toward this
+- Moira now admits explicit mundane-aspect targets for the Placidian and
+  Ptolemaic semi-arc branches
 
 What is not known:
 
@@ -138,8 +152,8 @@ Risk:
 
 Current policy:
 
-- do not admit generically
-- only admit method-specific mundane-aspect branches if their laws are explicit
+- retain the admitted Placidian and Ptolemaic branches
+- do not generalize them to other methods without a method-specific law
 
 
 ### 4. Wider Fixed-Star Doctrine
@@ -173,6 +187,8 @@ What is known:
 
 - Ptolemaic zodiacal parallels / contra-parallels are real
 - Placidian direct and converse rapt parallels are real
+- Placidian mundane parallels / contra-parallels are admitted as explicit
+  target families
 
 What is not known:
 
@@ -193,20 +209,24 @@ What is known:
 
 - the label is live in modern software
 - converse doctrine is already an explicit axis in Moira
+- Moira now admits `neo_converse` as an explicit opt-in counter-diurnal
+  circle-complement law, separately from traditional role exchange and signed
+  primary motion
 
 What is not known:
 
-- a sufficiently explicit and source-safe governing law for admission
+- a broad corpus of historical, externally reproducible numerical examples
+  across every asymmetric method family
 
 Risk:
 
-- medium
-- lower than `field_plane`, but still high enough to require a dedicated
-  research pass first
+- medium for historical interpretation and cross-school naming
+- low for runtime ambiguity because the policy is explicit and opt-in
 
 Current policy:
 
-- research only
+- retain the explicit admitted runtime doctrine
+- keep broader historical claims and external numerical parity research-scoped
 
 The governing research packet now lives in:
 
@@ -244,10 +264,9 @@ Current policy:
 
 These may eventually belong in the engine if a governing law becomes explicit:
 
-- method-specific mundane aspects
-- a narrow midpoint branch
+- mundane-aspect methods beyond the admitted Placidian and Ptolemaic branches
+- midpoint constructions beyond the admitted shortest-arc target
 - a narrow non-Ptolemaic reflected branch
-- neo-converse
 
 ### Research-Only for Now
 
@@ -256,6 +275,7 @@ These should remain research-first, not implementation-first:
 - field plane
 - any global widening of reflected doctrine
 - any global widening of parallels
+- broad historical parity claims for neo-converse
 
 ### Not a Service-Layer Escape Hatch
 
@@ -277,12 +297,11 @@ not:
 
 If work continues after the current pause, the clean order is:
 
-1. documentation and validation consolidation
-2. dedicated research packet for `neo-converse`
-3. dedicated research packet for `midpoints in primary directions`
-4. only then reassess whether any method-specific mundane-aspect branch is
-   recoverable
-5. leave `field_plane` last
+1. external numerical validation for the admitted neo-converse doctrine
+2. source work for midpoint constructions beyond shortest-arc targets
+3. reassess additional method-specific mundane-aspect branches only when their
+   laws are recoverable
+4. leave `field_plane` last
 
 
 ## Present Declaration

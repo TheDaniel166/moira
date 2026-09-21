@@ -15,7 +15,7 @@ during that bound's arc interval is the Partner / Participator (Socius).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Sequence
+from typing import Iterable
 
 from ..constants import SIGNS
 from ..egyptian_bounds import (
@@ -26,10 +26,6 @@ from ..egyptian_bounds import (
     PTOLEMAIC_BOUNDS,
     CHALDEAN_DAY_BOUNDS,
     CHALDEAN_NIGHT_BOUNDS,
-)
-from .targets import (
-    PrimaryDirectionBoundTarget,
-    resolve_primary_direction_bound_targets,
 )
 from .converse import PrimaryDirectionMotion
 
@@ -46,6 +42,7 @@ class DistributorPeriod:
 
     Attributes:
         significator: The directed significator (e.g. "ASC", "MC", "Sun").
+        motion: Direct or converse chronology owned by this period.
         ruler: Planet ruling this bound segment (Mercury, Venus, Mars, Jupiter, Saturn).
         sign: Zodiac sign of this bound.
         bound_start_deg: Starting ecliptic degree of the bound within the sign [0, 30).
@@ -70,6 +67,7 @@ class DistributorPeriod:
     exit_age: float | None = None
     entry_date_utc: str | None = None
     exit_date_utc: str | None = None
+    motion: PrimaryDirectionMotion = PrimaryDirectionMotion.DIRECT
 
     def __post_init__(self) -> None:
         if not isinstance(self.significator, str) or not self.significator.strip():
@@ -86,6 +84,8 @@ class DistributorPeriod:
             raise ValueError(
                 f"exit_arc_deg ({self.exit_arc_deg}) cannot precede entry_arc_deg ({self.entry_arc_deg})"
             )
+        if not isinstance(self.motion, PrimaryDirectionMotion):
+            raise ValueError("DistributorPeriod motion must be PrimaryDirectionMotion")
         try:
             participators = tuple(self.participators)
         except TypeError as exc:
@@ -110,7 +110,7 @@ _SIGN_LOOKUP: dict[str, str] = {
     "Sagittarius": "Sagittarius", "Capricorn": "Capricorn", "Aquarius": "Aquarius", "Pisces": "Pisces",
     # Standard abbreviations
     "Ari": "Aries", "Tau": "Taurus", "Gem": "Gemini", "Can": "Cancer", "Cnc": "Cancer",
-    "Leo": "Leo", "Vir": "Virgo", "Lib": "Libra", "Sco": "Scorpio", "Scp": "Scorpio",
+    "Vir": "Virgo", "Lib": "Libra", "Sco": "Scorpio", "Scp": "Scorpio",
     "Sag": "Sagittarius", "Sgr": "Sagittarius",
     "Cap": "Capricorn", "Aqu": "Aquarius", "Aqr": "Aquarius", "Pis": "Pisces", "Psc": "Pisces",
 }
@@ -239,6 +239,7 @@ def resolve_distributor_chronology(
                 bound_end_deg=current_end_deg,
                 entry_arc_deg=current_entry_arc,
                 exit_arc_deg=next_arc,
+                motion=motion,
             )
         )
         current_ruler = next_ruler
@@ -258,6 +259,7 @@ def resolve_distributor_chronology(
                 bound_end_deg=current_end_deg,
                 entry_arc_deg=current_entry_arc,
                 exit_arc_deg=max_arc,
+                motion=motion,
             )
         )
 
@@ -296,6 +298,7 @@ def resolve_distributor_chronology(
                 entry_arc_deg=period.entry_arc_deg,
                 exit_arc_deg=period.exit_arc_deg,
                 participators=tuple(matched_participators),
+                motion=period.motion,
             )
         )
 

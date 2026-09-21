@@ -15,13 +15,15 @@ It answers one question:
 ## Core Engine
 
 - speculum construction for the admitted primary-direction families
-- direct, traditional role-exchanged converse, and the narrow Topocentric
-  signed-primary-motion classifier
+- direct, traditional role-exchanged converse, opt-in neo-converse, and the
+  narrow Topocentric signed-primary-motion classifier
 - explicit branch selection through `PrimaryDirectionsPreset` and
   `primary_directions_policy_preset(...)`
 - policy-aware runtime surfaces for method, space, relation, latitude, source,
   perfection, and targets
-- symbolic time conversion through explicit key doctrine
+- symbolic time conversion through explicit static or dynamic key doctrine
+- integrated chronological timelines with terms/bounds, distributors, and
+  participators
 
 
 ## Geometry Families
@@ -60,13 +62,10 @@ Explicit zodiacal latitude branches:
 
 - `Direct`
 - `Traditional converse`
+- `Neo-converse`, as an explicit opt-in counter-diurnal circle-complement law
 - `Signed primary motion`, only through
   `topocentric_zodiacal_aspect_signed_primary_motion` with explicit target
   filters
-
-Not admitted:
-
-- `Neo-converse`
 
 
 ## Time Keys
@@ -74,7 +73,12 @@ Not admitted:
 - `Ptolemy`
 - `Naibod`
 - `Cardan`
-- `Solar`
+- `Solar`, using an explicit natal solar rate
+- `Solar RA dynamic`, using ephemeris inversion in right ascension
+- `Solar longitude dynamic`, using ephemeris inversion in ecliptic longitude
+
+Dynamic keys require a natal Julian date and usable planetary reader. Inversion
+failure raises; it is never relabeled while silently using a static rate.
 
 
 ## Perfection and Relation Doctrine
@@ -95,6 +99,11 @@ Relation classes now explicit in the subsystem:
 - `rapt_parallel`
 - `antiscion`
 - `contra_antiscion`
+- `term_bound`
+- `mundane_aspect`
+- `mundane_parallel`
+- `mundane_contra_parallel`
+- `midpoint`
 
 
 ## Promissors and Significators
@@ -113,6 +122,11 @@ Derived or narrow admitted families:
 - Placidian direct and converse rapt parallels
 - catalog-backed fixed-star conjunctions to angles and planets
 - Ptolemaic zodiacal antiscia / contra-antiscia
+- Egyptian, Ptolemaic, and Chaldean term/bound boundaries for timeline
+  chronology
+- method-scoped Placidian and Ptolemaic mundane aspect points
+- Placidian mundane parallels / contra-parallels
+- shortest-arc circular midpoint promissors
 
 
 ## Fixed Stars
@@ -158,6 +172,11 @@ Validated narrow families include:
 - Placidian rapt parallels
 - fixed stars
 - antiscia / contra-antiscia
+- term/bound distributor chronology
+- Placidian and Ptolemaic mundane aspects
+- Placidian mundane parallels / contra-parallels
+- shortest-arc midpoint targets
+- neo-converse and dynamic solar-key invariants
 
 
 ## Explicit Omissions
@@ -165,12 +184,12 @@ Validated narrow families include:
 Not currently admitted:
 
 - `field_plane`
-- `neo-converse`
-- midpoint directions
-- generic mundane aspects as a family
 - fixed-star opposition
 - wider non-Placidian parallel families
 - wider non-Ptolemaic reflected doctrine
+- wider mundane-aspect laws outside the admitted Placidian and Ptolemaic
+  branches
+- wider midpoint doctrine beyond the admitted shortest-arc target construction
 
 
 ## Present Summary

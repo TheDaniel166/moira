@@ -369,54 +369,32 @@ def convert_arc_to_time(
     ):
         raise ValueError("convert_arc_to_time requires a positive arc")
 
-    resolved_key, fallback_applied = _resolve_key(key)
+    resolved_key, _fallback_applied = _resolve_key(key)
     if resolved_key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
-        if natal_jd_ut is not None:
-            try:
-                years, _ = invert_solar_arc_ra(
-                    natal_jd_ut=natal_jd_ut,
-                    arc_deg=arc,
-                    reader=reader,
-                    tol_days=tol_days,
-                )
-                return years
-            except Exception:
-                pass
-        rate = (
-            float(solar_rate)
-            if (
-                isinstance(solar_rate, Real)
-                and not isinstance(solar_rate, bool)
-                and math.isfinite(solar_rate)
-                and solar_rate > 0.0
+        if natal_jd_ut is None:
+            raise ValueError(
+                "The solar_ra_dynamic primary-direction key requires natal_jd_ut"
             )
-            else _NAIBOD_RATE
+        years, _ = invert_solar_arc_ra(
+            natal_jd_ut=natal_jd_ut,
+            arc_deg=arc,
+            reader=reader,
+            tol_days=tol_days,
         )
-        return arc / rate
+        return years
 
     if resolved_key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
-        if natal_jd_ut is not None:
-            try:
-                years, _ = invert_solar_arc_lon(
-                    natal_jd_ut=natal_jd_ut,
-                    arc_deg=arc,
-                    reader=reader,
-                    tol_days=tol_days,
-                )
-                return years
-            except Exception:
-                pass
-        rate = (
-            float(solar_rate)
-            if (
-                isinstance(solar_rate, Real)
-                and not isinstance(solar_rate, bool)
-                and math.isfinite(solar_rate)
-                and solar_rate > 0.0
+        if natal_jd_ut is None:
+            raise ValueError(
+                "The solar_lon_dynamic primary-direction key requires natal_jd_ut"
             )
-            else _NAIBOD_RATE
+        years, _ = invert_solar_arc_lon(
+            natal_jd_ut=natal_jd_ut,
+            arc_deg=arc,
+            reader=reader,
+            tol_days=tol_days,
         )
-        return arc / rate
+        return years
 
     truth = primary_direction_key_truth(resolved_key, solar_rate=solar_rate)
     return arc / truth.rate_degrees_per_year

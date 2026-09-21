@@ -295,6 +295,7 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
             significators=significators,
             promissors=promissors,
             obliquity=obliquity,
+            reader=self._reader_obj,
             bound_doctrine=resolved_doctrine,
         )
 

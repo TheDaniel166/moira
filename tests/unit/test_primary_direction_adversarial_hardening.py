@@ -178,6 +178,10 @@ def test_distributor_abbreviation_and_converse_chronology(moira_engine) -> None:
         reader=moira_engine._reader_obj,
     )
     assert len(timeline.distributor_periods) > 0
+    assert {period.motion for period in timeline.distributor_periods} == {
+        PrimaryDirectionMotion.DIRECT,
+        PrimaryDirectionMotion.CONVERSE,
+    }
     # Both direct and converse events receive proper attribution
     direct_events = [ev for ev in timeline.events if ev.motion is PrimaryDirectionMotion.DIRECT and ev.is_bound_boundary]
     converse_events = [ev for ev in timeline.events if ev.motion is PrimaryDirectionMotion.CONVERSE and ev.is_bound_boundary]

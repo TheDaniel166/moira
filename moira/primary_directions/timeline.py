@@ -16,7 +16,7 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, replace
 from numbers import Real
-from typing import Iterable, Sequence
+from typing import Iterable
 
 from ..constants import TROPICAL_YEAR
 from ..julian import safe_datetime_from_jd
@@ -32,10 +32,7 @@ from .methods import PrimaryDirectionMethod
 from .spaces import PrimaryDirectionSpace
 from .converse import PrimaryDirectionMotion
 from .relations import PrimaryDirectionRelationalKind
-from .targets import (
-    PrimaryDirectionBoundTarget,
-    resolve_primary_direction_bound_targets,
-)
+from .targets import resolve_primary_direction_bound_targets
 from .distributor import (
     DistributorPeriod,
     resolve_distributor_chronology,
@@ -111,6 +108,7 @@ class PrimaryDirectionsTimeline:
         natal_jd_ut: Julian Date (UT) of the natal origin.
         max_age_years: Upper bound age for timeline inclusion.
         key: Primary direction time-key used for arc-to-time projection.
+        bound_doctrine: Bounds table used for distributor chronology.
         events: Chronologically sorted tuple of timeline events.
         distributor_periods: Chronological bound periods spanning the life.
     """
@@ -120,6 +118,7 @@ class PrimaryDirectionsTimeline:
     key: PrimaryDirectionKey
     events: tuple[PrimaryDirectionTimelineEvent, ...]
     distributor_periods: tuple[DistributorPeriod, ...]
+    bound_doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.EGYPTIAN
 
     def __post_init__(self) -> None:
         if not isinstance(self.natal_jd_ut, Real) or not math.isfinite(self.natal_jd_ut):
@@ -128,6 +127,27 @@ class PrimaryDirectionsTimeline:
             raise ValueError("PrimaryDirectionsTimeline max_age_years must be positive finite real")
         if not isinstance(self.key, PrimaryDirectionKey):
             raise ValueError("PrimaryDirectionsTimeline key must be PrimaryDirectionKey")
+        if not isinstance(self.bound_doctrine, EgyptianBoundsDoctrine):
+            raise ValueError(
+                "PrimaryDirectionsTimeline bound_doctrine must be EgyptianBoundsDoctrine"
+            )
+
+
+def _project_arc_to_time(
+    arc_deg: float,
+    *,
+    key: PrimaryDirectionKey,
+    natal_jd_ut: float,
+    reader: object,
+    solar_rate: float | None = None,
+) -> tuple[float, float]:
+    """Project one arc without silently substituting another key doctrine."""
+    if key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
+        return invert_solar_arc_ra(natal_jd_ut, arc_deg, reader=reader)
+    if key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
+        return invert_solar_arc_lon(natal_jd_ut, arc_deg, reader=reader)
+    age = convert_arc_to_time(arc_deg, key=key, solar_rate=solar_rate)
+    return age, natal_jd_ut + age * TROPICAL_YEAR
 
 
 def compute_primary_directions_timeline(
@@ -231,7 +251,7 @@ def compute_primary_directions_timeline(
     # Obtain natal time
     chart_jd = getattr(chart, "jd_ut", getattr(chart, "jd", None))
     if chart_jd is None or not math.isfinite(chart_jd):
-        chart_jd = 2451545.0  # Fallback anchor
+        raise ValueError("chart must expose a finite natal jd_ut or jd")
 
     # Speculum mapping for natal longitudes
     obl = obliquity if obliquity is not None else getattr(chart, "obliquity", 23.4392911)
@@ -243,16 +263,19 @@ def compute_primary_directions_timeline(
     aspect_arcs = [a for a in raw_arcs if a.relational_kind is not PrimaryDirectionRelationalKind.TERM_BOUND]
 
     # Resolve distributor periods for significators (all significators present if not specified)
-    sig_set = set(significators) if significators is not None else {a.significator for a in raw_arcs}
-    if not sig_set:
-        sig_set = {"Ascendant"}
+    if significators is not None:
+        sig_order = tuple(dict.fromkeys(significators))
+    else:
+        sig_order = tuple(sorted({a.significator for a in raw_arcs}))
+    if not sig_order:
+        sig_order = ("Ascendant",)
 
     admitted_distributor_motions = [PrimaryDirectionMotion.DIRECT]
     if effective_policy.include_converse:
         admitted_distributor_motions.append(PrimaryDirectionMotion.CONVERSE)
 
     distributor_periods_by_sig_motion: dict[tuple[str, PrimaryDirectionMotion], list[DistributorPeriod]] = {}
-    for sig in sig_set:
+    for sig in sig_order:
         natal_lon = None
         if sig in sp_map:
             natal_lon = getattr(sp_map[sig], "lon", getattr(sp_map[sig], "longitude", None))
@@ -278,37 +301,19 @@ def compute_primary_directions_timeline(
                         ent_age = 0.0
                         ent_jd = chart_jd
                     else:
-                        if resolved_key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
-                            try:
-                                ent_age, ent_jd = invert_solar_arc_ra(chart_jd, p.entry_arc_deg, reader=reader)
-                            except Exception:
-                                ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                                ent_jd = chart_jd + ent_age * TROPICAL_YEAR
-                        elif resolved_key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
-                            try:
-                                ent_age, ent_jd = invert_solar_arc_lon(chart_jd, p.entry_arc_deg, reader=reader)
-                            except Exception:
-                                ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                                ent_jd = chart_jd + ent_age * TROPICAL_YEAR
-                        else:
-                            ent_age = convert_arc_to_time(p.entry_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                            ent_jd = chart_jd + ent_age * TROPICAL_YEAR
+                        ent_age, ent_jd = _project_arc_to_time(
+                            p.entry_arc_deg,
+                            key=resolved_key,
+                            natal_jd_ut=chart_jd,
+                            reader=reader,
+                        )
 
-                    if resolved_key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
-                        try:
-                            ext_age, ext_jd = invert_solar_arc_ra(chart_jd, p.exit_arc_deg, reader=reader)
-                        except Exception:
-                            ext_age = convert_arc_to_time(p.exit_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                            ext_jd = chart_jd + ext_age * TROPICAL_YEAR
-                    elif resolved_key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
-                        try:
-                            ext_age, ext_jd = invert_solar_arc_lon(chart_jd, p.exit_arc_deg, reader=reader)
-                        except Exception:
-                            ext_age = convert_arc_to_time(p.exit_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                            ext_jd = chart_jd + ext_age * TROPICAL_YEAR
-                    else:
-                        ext_age = convert_arc_to_time(p.exit_arc_deg, key=resolved_key, natal_jd_ut=chart_jd, reader=reader)
-                        ext_jd = chart_jd + ext_age * TROPICAL_YEAR
+                    ext_age, ext_jd = _project_arc_to_time(
+                        p.exit_arc_deg,
+                        key=resolved_key,
+                        natal_jd_ut=chart_jd,
+                        reader=reader,
+                    )
 
                     ent_iso = safe_datetime_from_jd(ent_jd).isoformat()
                     ext_iso = safe_datetime_from_jd(ext_jd).isoformat()
@@ -327,21 +332,13 @@ def compute_primary_directions_timeline(
     # Assemble timeline events
     events: list[PrimaryDirectionTimelineEvent] = []
     for arc in raw_arcs:
-        if resolved_key is PrimaryDirectionKey.SOLAR_RA_DYNAMIC:
-            try:
-                age, perf_jd = invert_solar_arc_ra(chart_jd, arc.arc, reader=reader)
-            except Exception:
-                age = convert_arc_to_time(arc.arc, key=resolved_key, solar_rate=arc.solar_rate, natal_jd_ut=chart_jd, reader=reader)
-                perf_jd = chart_jd + age * TROPICAL_YEAR
-        elif resolved_key is PrimaryDirectionKey.SOLAR_LON_DYNAMIC:
-            try:
-                age, perf_jd = invert_solar_arc_lon(chart_jd, arc.arc, reader=reader)
-            except Exception:
-                age = convert_arc_to_time(arc.arc, key=resolved_key, solar_rate=arc.solar_rate, natal_jd_ut=chart_jd, reader=reader)
-                perf_jd = chart_jd + age * TROPICAL_YEAR
-        else:
-            age = convert_arc_to_time(arc.arc, key=resolved_key, solar_rate=arc.solar_rate, natal_jd_ut=chart_jd, reader=reader)
-            perf_jd = chart_jd + age * TROPICAL_YEAR
+        age, perf_jd = _project_arc_to_time(
+            arc.arc,
+            key=resolved_key,
+            natal_jd_ut=chart_jd,
+            reader=reader,
+            solar_rate=arc.solar_rate,
+        )
 
         if not (0.0 < age <= max_age_years):
             continue
@@ -411,6 +408,16 @@ def compute_primary_directions_timeline(
     all_distributor_periods: list[DistributorPeriod] = []
     for sig_periods in distributor_periods_by_sig_motion.values():
         all_distributor_periods.extend(sig_periods)
+    all_distributor_periods.sort(
+        key=lambda period: (
+            period.entry_age if period.entry_age is not None else math.inf,
+            period.significator,
+            period.motion.value,
+            period.entry_arc_deg,
+            period.exit_arc_deg,
+            period.ruler,
+        )
+    )
 
     chart_identifier = getattr(chart, "id", "") or getattr(chart, "name", "") or "natal"
 
@@ -419,6 +426,7 @@ def compute_primary_directions_timeline(
         natal_jd_ut=chart_jd,
         max_age_years=float(max_age_years),
         key=resolved_key,
+        bound_doctrine=bound_doctrine,
         events=tuple(events),
         distributor_periods=tuple(all_distributor_periods),
     )

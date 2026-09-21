@@ -38,14 +38,15 @@ These points are stable enough to state:
 - midpoint mathematics itself is easy and already present in Moira
 - midpoint doctrine is historically and modernly real in astrology
 - midpoint use in predictive work is common in modern astrology software
-- none of that yet proves a source-safe **primary-directions midpoint law**
+- Moira now admits one narrow shortest-arc circular midpoint target; that does
+  not prove a universal **primary-directions midpoint law**
 
 
 ## Branch Matrix
 
 | Branch | Midpoint Ontology | Governing Law Status | Source Quality | Layer Fit | Moira Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `plain zodiacal midpoint as derived point` | derived longitude from two source bodies | midpoint math explicit, PD law not yet explicit | low-to-medium | engine only if a branch law appears | `research_only` | mathematically trivial to construct, doctrinally not yet justified |
+| `plain zodiacal shortest-arc midpoint as derived point` | derived longitude from two explicit source bodies | midpoint construction explicit and target-scoped | medium | engine target family | `admitted_narrow` | does not imply a wider midpoint school or dial doctrine |
 | `midpoint pictures / dial doctrine inside primary directions` | midpoint-sensitive interpretive family | weak as a PD law | low | likely service or research, not engine by default | `defer` | easy to confuse modern midpoint analysis with primary directions proper |
 | `method-specific midpoint directions (Regio/Campanus distinction zones)` | derived target inside a method family | partial but branch-specific | medium in places | engine only by method-specific branch | `research_candidate` | Campanus vs Regiomontanus distinctness may sharpen here |
 | `software midpoint label as generic PD target family` | convenience family label | no source-safe law | low | neither | `rejected` | software presence is not enough |
@@ -133,14 +134,15 @@ not:
 
 ## Recommended Next Research Step
 
-If midpoint work is ever resumed, the next proper step is:
+If midpoint work is widened beyond the admitted target, the next proper step is:
 
 1. search for a method-specific midpoint direction law
 2. begin with the historically plausible distinctness zones:
    - Regiomontanus / Campanus
    - possibly wider mundane branches
 3. require at least one worked example or reproducible software oracle
-4. admit only one narrow midpoint branch first
+4. keep every additional midpoint branch distinct from the admitted shortest-
+   arc target
 
 
 ## Present Declaration
@@ -148,6 +150,7 @@ If midpoint work is ever resumed, the next proper step is:
 Moira now has a clear midpoint policy:
 
 - midpoint mathematics exists
-- midpoint primary-direction doctrine does not yet stand on source-safe law
-- therefore midpoint directions remain `research_only`
+- one shortest-arc circular midpoint promissor is admitted explicitly
+- wider midpoint pictures, dial doctrine, and method-specific midpoint schools
+  remain research-only until their own laws are recoverable
 

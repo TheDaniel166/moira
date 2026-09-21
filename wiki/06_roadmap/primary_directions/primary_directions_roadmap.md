@@ -47,12 +47,14 @@ Current admitted capability:
 - `2` direction spaces:
   - `In Mundo`
   - `In Zodiaco`
-- `3` explicit motion doctrines:
+- `4` explicit motion doctrines:
   - `Direct`
   - `Traditional converse`
+  - opt-in `Neo-converse`
   - source-scoped `Signed primary motion` for the named Topocentric
     zodiacal-aspect preset
-- `4` time keys: `Ptolemy`, `Naibod`, `Cardan`, `Solar`
+- `6` time keys: `Ptolemy`, `Naibod`, `Cardan`, static `Solar`, dynamic
+  `Solar RA`, and dynamic `Solar longitude`
 - explicit latitude doctrines:
   - `mundane_preserved`
   - `zodiacal_suppressed`
@@ -75,11 +77,15 @@ Current admitted capability:
   - explicit zodiacal aspect-point promissors
   - sovereign catalog-backed fixed-star promissors on the current
     fixture-backed angle-and-planet branch
+  - term/bound boundaries
+  - Placidian and Ptolemaic mundane aspect points
+  - Placidian mundane parallels / contra-parallels
+  - shortest-arc circular midpoint promissors
 
 Current constitutional status:
 
 - top-level primary-directions branch:
-  - constitutionally closed through `P12` on the current admitted recoverable
+  - constitutionally closed through `P13` on the current admitted recoverable
     surface
   - governing freeze packet:
     - [primary_directions_constitutional_alignment.md](./primary_directions_constitutional_alignment.md)
@@ -703,9 +709,10 @@ Do this next:
 
 Current next practical candidates:
 
-- `Cardan` as the next explicit time key
-- fixed stars after target doctrine and validation plans are written tightly
-  enough
+- external numerical validation for the admitted dynamic keys and neo-converse
+  doctrine
+- wider fixed-star relations only after branch-specific authority and
+  validation plans are written tightly enough
 - first narrow parallel branch now admitted only on the Ptolemaic zodiacal
   surface through explicit declination-equivalence targets
 - direct Placidian mundane rapt parallels are now admitted as an explicit

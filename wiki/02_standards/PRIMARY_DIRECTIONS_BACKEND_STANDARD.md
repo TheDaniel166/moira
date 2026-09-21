@@ -1,6 +1,6 @@
 ## Moira Primary Directions Backend Standard
 
-**Constitutional Phase:** 12 - Public API curation and transport hardening
+**Constitutional Phase:** 13 - Chronological projection and transport hardening
 **Status:** Admitted runtime standard; external authority validation remains
 product- and branch-scoped
 
@@ -15,20 +15,21 @@ This standard therefore describes the subsystem as it actually exists now:
 
 - multiple admitted geometry families
 - `In Mundo` and `In Zodiaco`
-- direct, traditional role-exchange converse, and one narrow signed-primary-
-  motion doctrine
+- direct, traditional role-exchange converse, opt-in neo-converse, and one
+  narrow signed-primary-motion doctrine
 - explicit relation doctrine
 - explicit preset doctrine
 - validated narrow target-family expansions
+- static and dynamic key doctrine plus an integrated chronological timeline
 
 This is an implementation and compatibility standard, not a claim that every
 historical branch has primary-authority validation. It does not freeze deferred
 or unresolved frontiers such as:
 
 - `field_plane`
-- `neo-converse`
-- midpoint directions
-- generic mundane aspects as a family
+- wider midpoint doctrine beyond the admitted shortest-arc target construction
+- wider mundane-aspect laws beyond the admitted Placidian and Ptolemaic
+  branches
 - wider non-sovereign frontier branches
 
 ---
@@ -116,6 +117,7 @@ Phase  9 - Network intelligence      (PrimaryDirectionsNetworkProfile, evaluate_
 Phase 10 - Full hardening            (cross-layer invariants, deterministic ordering, failure contracts)
 Phase 11 - Backend standard          (runtime standard and scoped validation codex)
 Phase 12 - Public API curation       (engine, facade, and stable transport verification)
+Phase 13 - Chronological projection  (dynamic keys, bounds, distributors, participators)
 ```
 
 Layer boundary rules:
@@ -176,6 +178,7 @@ Current admitted motion doctrines:
 
 - `DIRECT_ONLY`
 - `TRADITIONAL_CONVERSE`
+- `NEO_CONVERSE`
 - `SIGNED_PRIMARY_MOTION`, only through
   `TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION`
 
@@ -193,9 +196,13 @@ Searches under this doctrine require explicit, non-empty significator and
 promissor filters. The unrestricted target set contains the antipodal MC/IC
 pair, whose direction is intentionally undefined rather than silently skipped.
 
-Not admitted:
-
-- `NEO_CONVERSE`
+`NEO_CONVERSE` is an explicit opt-in doctrine. It keeps the significator as
+receiver and directs the promissor against diurnal rotation by the circle-
+complement law `(360 degrees - direct_arc) mod 360 degrees`. It is distinct
+from traditional role exchange on asymmetric semi-arc systems and may coincide
+with it on symmetric equatorial systems. REST callers select it through the
+typed `converse_doctrine` policy field; contradictory `include_converse`
+requests fail validation.
 
 `SIGNED_PRIMARY_MOTION` is not `NEO_CONVERSE`. It is a source-scoped sign
 classification for one named Topocentric branch, not a global direction
@@ -209,6 +216,8 @@ Current admitted keys:
 - `NAIBOD`
 - `CARDAN`
 - `SOLAR`
+- `SOLAR_RA_DYNAMIC`
+- `SOLAR_LON_DYNAMIC`
 
 Keys remain orthogonal to method and space.
 
@@ -222,6 +231,11 @@ low-level key resolver retains its historical,
 inspectable unknown-string-to-Naibod adapter; typed facade and REST policy
 surfaces reject unsupported or ambiguous key values.
 
+`SOLAR_RA_DYNAMIC` and `SOLAR_LON_DYNAMIC` invert actual solar motion from the
+natal Julian date through the planetary reader. Missing natal time, unavailable
+ephemeris state, or inversion failure raises. A dynamic request is never
+silently converted with a static solar or Naibod rate.
+
 #### 3.5 Relation doctrine
 
 Current explicit relation classes:
@@ -234,6 +248,11 @@ Current explicit relation classes:
 - `rapt_parallel`
 - `antiscion`
 - `contra_antiscion`
+- `term_bound`
+- `mundane_aspect`
+- `mundane_parallel`
+- `mundane_contra_parallel`
+- `midpoint`
 
 #### 3.6 Target doctrine
 
@@ -251,6 +270,10 @@ Current narrow admitted derived or expanded families:
 - Placidian direct and converse rapt parallels
 - catalog-backed fixed-star conjunctions to angles and planets
 - Ptolemaic zodiacal antiscia / contra-antiscia
+- term/bound boundaries used by distributor chronology
+- method-scoped Placidian and Ptolemaic mundane aspect points
+- Placidian mundane parallels / contra-parallels
+- shortest-arc circular midpoint promissors
 
 Configured fixed stars are admitted only when conjunction is admitted. Rapt
 parallel motion is relation-specific: its explicit direct or converse motion
@@ -285,13 +308,15 @@ inputs plus policy-preset, relation, condition, aggregate-profile, and network
 delegations. The nine existing `/v1/primary-directions/*` paths (including the
 integrated chronological life timeline endpoint) are transport
 surfaces over these engine meanings; route code does not own doctrine.
-The six search-derived paths accept additive typed vessels for the admitted
-antiscia, Ptolemaic-parallel, Placidian-rapt-parallel, fixed-star, and Morinus
-aspect-context branches. Transport resolution must construct the existing
-engine vessels explicitly, enforce the branch/preset compatibility matrix, and
-report the exact resolved configuration on reduction responses. Those search
-inputs are not accepted by submitted-arc evaluation, which has no target-
-materialization stage.
+The seven search-derived paths accept additive typed vessels for the admitted
+antiscia, Ptolemaic-parallel, Placidian-rapt-parallel, fixed-star, mundane-
+aspect, mundane-parallel, midpoint, and Morinus aspect-context branches.
+Transport resolution must construct the existing engine vessels explicitly,
+enforce the branch/preset compatibility matrix, and report the exact resolved
+configuration on reduction responses. Those search inputs are not accepted by
+submitted-arc evaluation, which has no target-materialization stage. The
+timeline path additionally reports the applied bounds doctrine and motion on
+every distributor period.
 
 The signed-primary-motion preset is likewise engine-search-only at the REST
 boundary. Submitted arcs already carry a positive magnitude and direct or
@@ -373,7 +398,7 @@ Current policy:
   response vessels rather than constructing invalid engine vessels
 
 No silent fallback is allowed for unsupported method, space, motion doctrine,
-target family, or relation family.
+key doctrine, bounds doctrine, target family, or relation family.
 
 ---
 
@@ -387,6 +412,9 @@ Current deterministic guarantees:
 - significator profiles sort by `(significator, nearest_arc)`
 - network nodes sort by `name`
 - network edges sort by `(nearest_arc, promissor, significator)`
+- timeline events sort by `(age, arc, significator, promissor)`
+- distributor periods sort by `(entry_age, significator, motion, entry_arc,
+  exit_arc, ruler)` and retain their direct or converse motion identity
 - fixture-backed narrow families preserve exact reconstruction and published
   rounded values separately where needed
 
@@ -409,6 +437,7 @@ include:
 $tests = Get-ChildItem tests\unit -Filter 'test_primary_direction*.py' | ForEach-Object { $_.FullName }
 .\.venv\Scripts\python.exe -m pytest $tests -q
 .\.venv\Scripts\python.exe -m pytest tests\server\test_server_phase8_primary_directions_routes.py -q
+.\.venv\Scripts\python.exe -m pytest tests\server\test_server_primary_directions_timeline_routes.py -q
 ```
 
 These checks are expected to verify:
@@ -446,12 +475,12 @@ proves all methods, targets, epochs, latitudes, or historical schools.
 The following remain outside this backend standard:
 
 - `FIELD_PLANE`
-- `NEO_CONVERSE`
-- midpoint directions
-- generic mundane aspects as a family
 - fixed-star opposition and wider star aspects
 - wider non-Placidian parallel families
 - wider non-Ptolemaic reflected doctrine
+- wider midpoint doctrines beyond the admitted shortest-arc target
+- wider mundane-aspect laws beyond the admitted Placidian and Ptolemaic
+  branches
 - unresolved method-specific frontier branches documented in the remaining
   frontier packet
 

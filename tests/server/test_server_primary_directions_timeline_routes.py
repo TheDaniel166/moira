@@ -10,7 +10,6 @@ Verifies:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
 
@@ -55,6 +54,7 @@ def test_timeline_endpoint_default(client_with_engine: TestClient):
     assert "chart_id" in data
     assert "natal_jd_ut" in data
     assert data["max_age_years"] == 80.0
+    assert data["bound_doctrine"] == "egyptian"
     assert "events" in data
     assert "distributor_periods" in data
     assert data["total_events"] == len(data["events"])
@@ -78,6 +78,7 @@ def test_timeline_endpoint_default(client_with_engine: TestClient):
     # Check distributor period structure
     p0 = data["distributor_periods"][0]
     assert "significator" in p0
+    assert p0["motion"] in {"direct", "converse"}
     assert "ruler" in p0
     assert "sign" in p0
     assert "entry_age" in p0
@@ -148,6 +149,8 @@ def test_timeline_endpoint_bound_doctrine(client_with_engine: TestClient):
 
     data_eg = res_eg.json()
     data_pt = res_pt.json()
+    assert data_eg["bound_doctrine"] == "egyptian"
+    assert data_pt["bound_doctrine"] == "ptolemaic"
 
     # The distributor period boundaries or rulers should differ between Egyptian and Ptolemaic bounds
     rulers_eg = [p["ruler"] for p in data_eg["distributor_periods"]]
@@ -199,3 +202,10 @@ def test_timeline_endpoint_validation_errors(client_with_engine: TestClient):
         json={**_TIMELINE_BASE_PAYLOAD, "key": "nonexistent_key_name"},
     )
     assert res3.status_code == 422
+
+    # Invalid bounds doctrine must not silently become Egyptian bounds
+    res4 = client_with_engine.post(
+        "/v1/primary-directions/timeline",
+        json={**_TIMELINE_BASE_PAYLOAD, "bound_doctrine": "not_a_doctrine"},
+    )
+    assert res4.status_code == 422

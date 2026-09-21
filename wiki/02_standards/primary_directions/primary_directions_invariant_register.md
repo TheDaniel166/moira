@@ -76,7 +76,8 @@ It does not apply to deferred frontiers such as:
 - signed primary motion requires explicit, non-empty significator and
   promissor filters; the implicit all-target set is not admitted because its
   MC/IC pair is directionally antipodal
-- `Neo-converse` remains outside the admitted surface
+- `Neo-converse` is explicit and opt-in; it preserves the ordered roles and
+  applies the counter-diurnal circle complement rather than role exchange
 - rapt-parallel motion is admitted against the rapt relation and its configured
   target only; it does not widen ordinary direct/converse motion admission
 - Placidian-classic endpoint geometry receives
@@ -87,6 +88,8 @@ It does not apply to deferred frontiers such as:
 
 - time keys do not silently redefine geometry, space, or relation doctrine
 - key choice remains orthogonal to method and space
+- dynamic solar keys require natal time plus usable ephemeris state and fail
+  closed rather than substituting a static rate
 
 ### Key Doctrine
 

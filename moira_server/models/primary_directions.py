@@ -20,11 +20,14 @@ from typing import Literal
 from pydantic import Field, field_validator, model_validator
 
 from moira.primary_directions import (
+    PLACIDIAN_MUNDANE_ASPECT_OFFSETS,
     PrimaryDirectionAntisciaKind,
+    PrimaryDirectionConverseDoctrine,
     PrimaryDirectionMundaneParallelKind,
     PrimaryDirectionsPreset,
     PtolemaicParallelRelation,
 )
+from moira.egyptian_bounds import EgyptianBoundsDoctrine
 from moira.primary_directions.keys import PrimaryDirectionKey
 from moira.primary_directions.methods import PrimaryDirectionMethod
 from moira.primary_directions.relations import PrimaryDirectionRelationalKind
@@ -118,9 +121,17 @@ class PrimaryDirectionsPolicyRequest(_StrictModel):
     method: PrimaryDirectionMethod | None = None
     space: PrimaryDirectionSpace | None = None
     include_converse: bool | None = None
+    converse_doctrine: PrimaryDirectionConverseDoctrine | None = None
     key: PrimaryDirectionKey | None = None
 
-    @field_validator("preset", "method", "space", "key", mode="before")
+    @field_validator(
+        "preset",
+        "method",
+        "space",
+        "converse_doctrine",
+        "key",
+        mode="before",
+    )
     @classmethod
     def _normalize_policy_token(cls, value):
         if value is None or not isinstance(value, str):
@@ -133,6 +144,19 @@ class PrimaryDirectionsPolicyRequest(_StrictModel):
         if value is not None and not isinstance(value, bool):
             raise ValueError("include_converse must be boolean")
         return value
+
+    @model_validator(mode="after")
+    def _validate_converse_controls(self):
+        if self.converse_doctrine is None or self.include_converse is None:
+            return self
+        doctrine_includes_converse = (
+            self.converse_doctrine is not PrimaryDirectionConverseDoctrine.DIRECT_ONLY
+        )
+        if self.include_converse is not doctrine_includes_converse:
+            raise ValueError(
+                "include_converse conflicts with the explicitly requested converse_doctrine"
+            )
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -253,6 +277,45 @@ class PrimaryDirectionMundaneParallelTargetRequest(_StrictModel):
         return f"{self.source_name} {suffix}"
 
 
+_MUNDANE_ASPECT_NAMES = {
+    name.casefold(): name for name, _offset in PLACIDIAN_MUNDANE_ASPECT_OFFSETS
+}
+
+
+class PrimaryDirectionMundaneAspectTargetRequest(_StrictModel):
+    """One explicitly configured Placidian or Ptolemaic mundane aspect promissor."""
+
+    source_name: str = Field(min_length=1, max_length=128)
+    aspect_name: str = Field(min_length=1, max_length=64)
+
+    @field_validator("source_name", mode="before")
+    @classmethod
+    def _normalize_source_name(cls, value):
+        return _normalized_primary_direction_identity(
+            value,
+            field_name="mundane aspect source_name",
+        )
+
+    @field_validator("aspect_name", mode="before")
+    @classmethod
+    def _normalize_aspect_name(cls, value):
+        normalized = _normalized_primary_direction_identity(
+            value,
+            field_name="mundane aspect aspect_name",
+        )
+        try:
+            return _MUNDANE_ASPECT_NAMES[normalized.casefold()]
+        except KeyError as exc:
+            choices = ", ".join(_MUNDANE_ASPECT_NAMES.values())
+            raise ValueError(
+                f"unsupported mundane aspect {normalized!r}; expected one of: {choices}"
+            ) from exc
+
+    @property
+    def target_name(self) -> str:
+        return f"{self.source_name} Mundane {self.aspect_name}"
+
+
 class PrimaryDirectionMidpointTargetRequest(_StrictModel):
     """One explicitly configured shortest-arc circular midpoint promissor."""
 
@@ -353,6 +416,10 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
         default_factory=list,
         max_length=256,
     )
+    mundane_aspect_targets: list[PrimaryDirectionMundaneAspectTargetRequest] = Field(
+        default_factory=list,
+        max_length=256,
+    )
     midpoint_targets: list[PrimaryDirectionMidpointTargetRequest] = Field(
         default_factory=list,
         max_length=256,
@@ -390,6 +457,7 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
             self.ptolemaic_parallel_targets,
             self.placidian_rapt_parallel_targets,
             self.fixed_star_targets,
+            self.mundane_aspect_targets,
             self.mundane_parallel_targets,
             self.midpoint_targets,
             self.morinus_aspect_contexts,
@@ -411,6 +479,7 @@ class PrimaryDirectionsSearchRequest(PrimaryDirectionsBaseRequest):
                 self.ptolemaic_parallel_targets,
                 self.placidian_rapt_parallel_targets,
                 self.fixed_star_targets,
+                self.mundane_aspect_targets,
                 self.mundane_parallel_targets,
                 self.midpoint_targets,
             )
@@ -433,7 +502,12 @@ class PrimaryDirectionsTimelineRequest(PrimaryDirectionsSearchRequest):
 
     max_age_years: float = Field(default=100.0, gt=0.0, le=150.0, allow_inf_nan=False)
     key: PrimaryDirectionKey | None = None
-    bound_doctrine: str | None = Field(default=None, max_length=64)
+    bound_doctrine: EgyptianBoundsDoctrine | None = None
+
+    @field_validator("bound_doctrine", mode="before")
+    @classmethod
+    def _normalize_bound_doctrine(cls, value):
+        return value.strip().lower() if isinstance(value, str) else value
 
     @field_validator("max_age_years", mode="before")
     @classmethod
@@ -683,6 +757,15 @@ class PrimaryDirectionsResolvedPolicyResponse(_StrictModel):
     fixed_star_targets: list[PrimaryDirectionFixedStarTargetRequest] = Field(
         default_factory=list
     )
+    mundane_aspect_targets: list[PrimaryDirectionMundaneAspectTargetRequest] = Field(
+        default_factory=list
+    )
+    mundane_parallel_targets: list[PrimaryDirectionMundaneParallelTargetRequest] = Field(
+        default_factory=list
+    )
+    midpoint_targets: list[PrimaryDirectionMidpointTargetRequest] = Field(
+        default_factory=list
+    )
     morinus_aspect_contexts: list[MorinusAspectContextRequest] = Field(
         default_factory=list
     )
@@ -769,6 +852,7 @@ class PrimaryDirectionsTimelineDistributorPeriodResponse(_StrictModel):
     """A single term/bound distribution period across life."""
 
     significator: str
+    motion: str
     ruler: str
     sign: str
     bound_start_deg: float
@@ -792,6 +876,7 @@ class PrimaryDirectionsTimelineResponse(_StrictModel):
     natal_jd_ut: float
     max_age_years: float
     key: str
+    bound_doctrine: str
     events: list[PrimaryDirectionsTimelineEventResponse]
     distributor_periods: list[PrimaryDirectionsTimelineDistributorPeriodResponse]
     total_events: int
@@ -807,6 +892,9 @@ __all__ = [
     "PrimaryDirectionsHouseContextResponse",
     "PrimaryDirectionAntisciaTargetRequest",
     "PrimaryDirectionFixedStarTargetRequest",
+    "PrimaryDirectionMidpointTargetRequest",
+    "PrimaryDirectionMundaneAspectTargetRequest",
+    "PrimaryDirectionMundaneParallelTargetRequest",
     "PrimaryDirectionsNetworkEdgeResponse",
     "PrimaryDirectionsNetworkNodeResponse",
     "PrimaryDirectionsNetworkProfileResponse",

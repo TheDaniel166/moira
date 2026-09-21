@@ -17,6 +17,9 @@ from ..models.primary_directions import (
     PrimaryArcResponse,
     PrimaryDirectionAntisciaTargetRequest,
     PrimaryDirectionFixedStarTargetRequest,
+    PrimaryDirectionMidpointTargetRequest,
+    PrimaryDirectionMundaneAspectTargetRequest,
+    PrimaryDirectionMundaneParallelTargetRequest,
     PrimaryDirectionRelationProfileResponse,
     PrimaryDirectionRelationResponse,
     PrimaryDirectionsAggregateProfileResponse,
@@ -169,6 +172,27 @@ def _serialize_reduction_truth(
             fixed_star_targets=[
                 PrimaryDirectionFixedStarTargetRequest(star_name=target.star_name)
                 for target in resolved.fixed_star_targets
+            ],
+            mundane_aspect_targets=[
+                PrimaryDirectionMundaneAspectTargetRequest(
+                    source_name=target.source_name,
+                    aspect_name=target.aspect_name,
+                )
+                for target in resolved.mundane_aspect_targets
+            ],
+            mundane_parallel_targets=[
+                PrimaryDirectionMundaneParallelTargetRequest(
+                    source_name=target.source_name,
+                    kind=target.relation,
+                )
+                for target in resolved.mundane_parallel_targets
+            ],
+            midpoint_targets=[
+                PrimaryDirectionMidpointTargetRequest(
+                    source_a_name=target.source_a_name,
+                    source_b_name=target.source_b_name,
+                )
+                for target in resolved.midpoint_targets
             ],
             morinus_aspect_contexts=[
                 MorinusAspectContextRequest(
@@ -428,6 +452,7 @@ def serialize_timeline(timeline) -> PrimaryDirectionsTimelineResponse:
     periods = [
         PrimaryDirectionsTimelineDistributorPeriodResponse(
             significator=p.significator,
+            motion=p.motion.value,
             ruler=p.ruler,
             sign=p.sign,
             bound_start_deg=p.bound_start_deg,
@@ -447,6 +472,11 @@ def serialize_timeline(timeline) -> PrimaryDirectionsTimelineResponse:
         natal_jd_ut=timeline.natal_jd_ut,
         max_age_years=timeline.max_age_years,
         key=timeline.key.value if hasattr(timeline.key, "value") else str(timeline.key),
+        bound_doctrine=(
+            timeline.bound_doctrine.value
+            if hasattr(timeline.bound_doctrine, "value")
+            else str(timeline.bound_doctrine)
+        ),
         events=events,
         distributor_periods=periods,
         total_events=len(events),

@@ -2,17 +2,18 @@
 
 ## Purpose
 
-This document records the current research state of `neo-converse` in Moira's
-primary-directions program.
+This document records the research path and current admission state of
+`neo-converse` in Moira's primary-directions program.
 
-It does **not** admit the branch.
+It records the explicit opt-in branch admitted in September 2026 and the
+remaining limits on broader historical claims.
 
 It answers four questions:
 
 1. what `neo-converse` appears to mean in current sources
 2. how it differs from traditional converse
 3. what evidence is strong enough to trust
-4. whether Moira should implement it now
+4. why Moira admitted one explicit law and what remains outside that claim
 
 
 ## Current Definition Boundary
@@ -47,10 +48,10 @@ product:
 - require explicit non-empty significator and promissor filters rather than
   implicitly searching a target set that contains the antipodal MC/IC pair
 
-This admission does **not** implement `neo-converse`. It does not assert motion
-against the diurnal rotation, does not transform every method family's arc,
-does not materialize a companion converse arc, and cannot be selected as a
-generic or ambient converse toggle. Traditional converse continues to exchange
+The signed-primary-motion admission does **not itself** implement
+`neo-converse`. It does not assert motion against the diurnal rotation, does
+not transform every method family's arc, and does not materialize a companion
+converse arc. Traditional converse continues to exchange
 promissor and significator roles. The two products remain separately named and
 validated.
 
@@ -141,55 +142,54 @@ The following now look stable enough to state:
    modern values
 
 
-## What Is Still Missing
+## Admission Evidence and Remaining Limits
 
-The following are still missing for Moira admission:
+The admitted runtime branch now has:
 
-1. a formula-grade branch law
-   - how exactly does "against the diurnal rotation" alter the arc in each
-     method family?
-2. branch scope
-   - is neo-converse one law across methods, or a family of method-specific
-     converse laws?
-3. source hierarchy
-   - do we have only software documentation, or a stronger textual derivation?
-4. validation material
-   - worked examples or reproducible comparison cases
+1. an explicit circle-complement law
+2. a distinct typed policy identity
+3. cross-method invariants for symmetric and asymmetric geometries
+4. Python/native parity coverage
+
+The remaining research need is stronger external numerical evidence across
+historical schools and asymmetric method families. That limitation constrains
+claims of historical universality; it does not make the runtime policy
+ambiguous.
 
 
 ## Risk Assessment
 
 ### Source Quality
 
-- current standing: `medium`
+- current standing: `medium for historical universality`
 
 Why:
 
 - the concept is clearly documented in active software
 - the traditional baseline is clear
-- but the modern mathematical law is not yet recovered in a source-safe,
-  formula-grade packet
+- the admitted computational law is explicit, while its broader historical
+  universality remains less strongly sourced
 
 
 ### Mathematical Recoverability
 
-- current standing: `partial`
+- current standing: `implemented narrow law`
 
 Why:
 
-- the conceptual difference is explicit
-- the computational transformation is still not sufficiently specified
+- the conceptual difference and computational transformation are explicit
+- additional historical variants, if any, remain outside the admitted law
 
 
 ### Implementation Risk
 
-- current standing: `medium`
+- current standing: `low for runtime ambiguity; medium for historical claims`
 
 Why:
 
-- lower risk than `field_plane`
-- but still high enough that a premature implementation could smuggle in a
-  software convention as if it were mathematically settled doctrine
+- the explicit opt-in identity prevents collision with traditional converse
+- the remaining risk is overstating one modern convention as historically
+  universal
 
 
 ## Moira Policy & Admission (September 2026)

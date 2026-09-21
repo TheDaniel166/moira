@@ -13,13 +13,16 @@
   [converse.py](../../../moira/primary_directions/converse.py):
   - `DIRECT_ONLY`
   - `TRADITIONAL_CONVERSE`
-- the object under consideration is a *third* member of
-  `PrimaryDirectionConverseDoctrine`, tentatively `NEO_CONVERSE`
+  - `NEO_CONVERSE`
+  - `SIGNED_PRIMARY_MOTION`
+- `NEO_CONVERSE` is an admitted explicit opt-in member of
+  `PrimaryDirectionConverseDoctrine`
 
 ## Mathematical Basis
 
-The mathematical law is **not yet recovered in a source-safe, formula-grade
-form.** Only a conceptual definition is currently in hand.
+Moira's admitted mathematical law is the counter-diurnal circle complement:
+
+`neo_converse_arc = (360 degrees - direct_arc) mod 360 degrees`
 
 Conceptual definition (from the in-repo research packet
 [primary_directions_neo_converse_research.md](../../05_research/primary_directions/primary_directions_neo_converse_research.md)):
@@ -37,9 +40,10 @@ promissor-to-significator, computed in the preceding terminus's circle of
 position (see
 [geometry.py](../../../moira/primary_directions/geometry.py),
 `compute_primary_direction_arcs`). For the symmetric method families this
-reduces to `converse = -direct`; for the asymmetric families it does not. The
-open question for *this* card is whether "against the diurnal rotation" is the
-*same* operation under a different name, or a genuinely different construction.
+reduces to `converse = -direct`; for the asymmetric families it does not.
+Neo-converse keeps the original ordered roles and applies the circle-complement
+motion law, so it remains distinct from role exchange wherever the geometry is
+asymmetric.
 
 ## Book 22 Assessment (2026-07-05)
 
@@ -58,7 +62,8 @@ recorded so the source is not re-chased.**
 - Therefore Book 22 recovers Morin's converse in the **traditional-converse
   lineage** (same diurnal motion, role reversal), which Moira already admits —
   **not** the modern "against the diurnal rotation" construction this card is
-  about. Neo-converse remains unsourced and gated.
+  about. It therefore does not provide historical authority for Moira's modern,
+  explicitly labeled neo-converse law.
 
 Collateral finding — now **corrected** (belongs to the *traditional* converse
 doctrine, not this card): Morin computes the arc in the **preceding terminus's**
@@ -69,69 +74,52 @@ of the traditional-converse refinement, `compute_primary_direction_arcs`
 computes converse by exchanging the significator/promissor roles through the
 same geometry law, so the under-pole and semi-arc families now carry Morin's
 true converse arc while the symmetric families are unchanged. This correction is
-independent of the (still gated) neo-converse question.
+independent of the admitted neo-converse policy.
 
-## Ambiguity Ledger (unresolved — must be closed before admission)
+## Resolved Ambiguity
 
-Per the anti-leakage law (AGENTS.md §10A), the branch-selection doctrine must be
-declared before any code. Three candidate interpretations remain open, and the
-research packet explicitly refuses to choose among them:
-
-1. **Sign reversal.** Neo-converse is identical to Moira's existing
-   `converse = -direct` and the label is purely nominal. If true, admission
-   would add a *name* with no new math, which would be semantic dishonesty
-   unless the equivalence is itself the source-verified finding.
-2. **Role reversal.** Neo-converse swaps the significator/promissor roles rather
-   than negating the arc, yielding a numerically distinct result in the
-   asymmetric method families (semi-arc, under-the-pole).
-3. **Deeper motion-law change.** Neo-converse re-derives the arc under a reversed
-   primary-motion sense at the geometry level, potentially method-specific.
-
-These are not equivalent. Selecting one without a governing source would smuggle
-a software convention in as settled doctrine — the precise failure §10A warns
-against ("match Morinus values" is a software anchor, not a governing law).
+The three earlier candidates were sign reversal, role reversal, and a distinct
+counter-diurnal motion law. Moira resolved the runtime identity as the third
+case, represented by the circle complement of the direct ordered arc. It does
+not rename traditional role exchange and it does not reuse the signed-primary-
+motion classifier.
 
 ## Current Moira Admission
 
-- **not admitted**
-- `TRADITIONAL_CONVERSE` remains the ordinary cross-preset converse doctrine
+- **admitted as an explicit opt-in doctrine**
+- `TRADITIONAL_CONVERSE` remains the default cross-preset converse doctrine
   alongside `DIRECT_ONLY`
 - `SIGNED_PRIMARY_MOTION` is separately admitted only by the source-scoped
   `TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION` preset; it classifies the
   sign of one ordered arc and is not neo-converse
-- no `NEO_CONVERSE` member exists in `PrimaryDirectionConverseDoctrine`
-- no policy, preset, or geometry path references neo-converse
+- `NEO_CONVERSE` is selectable through engine policy and the typed REST
+  `converse_doctrine` field
+- Python and native solvers preserve the same named motion law
 
-## Admission Bar (unmet)
+## Remaining Validation Bar
 
-Carried verbatim from the research packet; all four remain open:
-
-1. a formula-grade governing law for "direction against the diurnal rotation"
-2. an explicit statement of whether that law is cross-method or method-specific
-3. at least one worked example or reproducible oracle comparison
-4. a narrow branch admission first, not a global converse toggle
+The runtime law and branch identity are explicit. What remains open is stronger
+external numerical validation across historical schools and asymmetric method
+families. Until that exists, Moira must describe neo-converse as a modern,
+explicit computational doctrine rather than a universal historical standard.
 
 ## Boundary
 
-- this card does **not** admit neo-converse
-- it does **not** assert that any of the three candidate interpretations is
-  correct
-- it converts the prior free-form research packet into the formal truth-card
-  register so the branch has a governed, inspectable non-admission position
+- this card admits only the named circle-complement law
+- it does not reinterpret Morin's traditional converse as neo-converse
+- it does not claim universal historical agreement
 
 ## Epistemic Status
 
-- `research_only`
+- `admitted_explicit_opt_in`
 - `modern_software_documented`
-- `not source-safe for admission`
+- `historical_universality_not_established`
 
 ## Recommended Next Step
 
 - Morin (Book 22) has now been checked and does **not** govern this branch —
   see the Book 22 Assessment above. The primary-source route for
   "against the diurnal rotation" is exhausted for Morin.
-- the remaining route is the specific modern software convention: the actual
-  Morinus-program directional algorithm, or a reproducible worked example /
-  oracle comparison that pins the numerical definition of neo-converse
-- software UI documentation alone remains insufficient (§10A): "match Morinus
-  values" is a software anchor, not a governing law
+- seek reproducible worked examples or independent numerical comparisons for
+  asymmetric method families
+- keep those comparisons separate from the already explicit runtime law

@@ -1,4 +1,4 @@
-"""FastAPI routes for the eight admitted primary-directions surfaces."""
+"""FastAPI routes for the nine admitted primary-directions surfaces."""
 
 from __future__ import annotations
 

@@ -8,13 +8,13 @@ from __future__ import annotations
 
 import math
 import pytest
+import moira.primary_directions.keys as key_module
 from moira.constants import TROPICAL_YEAR
 from moira.primary_directions import (
     PrimaryArc,
     PrimaryDirectionKey,
     PrimaryDirectionKeyFamily,
     PrimaryDirectionKeyPolicy,
-    PrimaryDirectionKeyTruth,
     PrimaryDirectionMethod,
     PrimaryDirectionMotion,
     PrimaryDirectionSpace,
@@ -123,8 +123,8 @@ def test_seasonal_velocity_difference(moira_engine) -> None:
     assert jul_years > jan_years
 
 
-def test_convert_arc_to_time_dynamic_and_fallback(moira_engine) -> None:
-    """Verify convert_arc_to_time integration with dynamic keys and fallback behavior."""
+def test_convert_arc_to_time_dynamic_fails_closed(moira_engine, monkeypatch) -> None:
+    """Dynamic conversion must never substitute a static key or rate."""
     reader = moira_engine._reader_obj
     natal_jd = 2451545.0
     arc = 30.0
@@ -138,14 +138,25 @@ def test_convert_arc_to_time_dynamic_and_fallback(moira_engine) -> None:
     )
     assert 20.0 < time_dyn < 35.0
 
-    # Without natal JD, graceful fallback to Naibod rate occurs
-    time_fallback = convert_arc_to_time(
-        arc,
-        key=PrimaryDirectionKey.SOLAR_RA_DYNAMIC,
-        natal_jd_ut=None,
-    )
-    naibod_expected = arc / (360.0 / 365.25)
-    assert math.isclose(time_fallback, naibod_expected)
+    with pytest.raises(ValueError, match="requires natal_jd_ut"):
+        convert_arc_to_time(
+            arc,
+            key=PrimaryDirectionKey.SOLAR_RA_DYNAMIC,
+            natal_jd_ut=None,
+        )
+
+    def _raise_inversion_failure(*args, **kwargs):
+        raise RuntimeError("ephemeris inversion failed")
+
+    monkeypatch.setattr(key_module, "invert_solar_arc_ra", _raise_inversion_failure)
+    with pytest.raises(RuntimeError, match="ephemeris inversion failed"):
+        convert_arc_to_time(
+            arc,
+            key=PrimaryDirectionKey.SOLAR_RA_DYNAMIC,
+            natal_jd_ut=natal_jd,
+            reader=reader,
+            solar_rate=0.99,
+        )
 
 
 def test_primary_arc_years_dynamic(moira_engine) -> None:

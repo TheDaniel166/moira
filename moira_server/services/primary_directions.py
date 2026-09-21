@@ -15,6 +15,7 @@ from moira import Moira
 from moira.constants import HouseSystem
 from moira.julian import utc_to_tt, utc_to_ut1
 from moira.primary_directions import (
+    PLACIDIAN_MUNDANE_ASPECT_OFFSETS,
     MorinusAspectContext,
     PrimaryArc,
     PrimaryDirectionAntisciaTarget,
@@ -22,6 +23,7 @@ from moira.primary_directions import (
     PrimaryDirectionFixedStarTarget,
     PrimaryDirectionMidpointTarget,
     PrimaryDirectionMotion,
+    PrimaryDirectionMundaneAspectTarget,
     PrimaryDirectionMundaneParallelTarget,
     PrimaryDirectionsPolicy,
     PrimaryDirectionsPreset,
@@ -80,6 +82,8 @@ _LEGACY_PRESET_ALIASES = {
     "topocentric": PrimaryDirectionsPreset.TOPOCENTRIC_MUNDANE,
 }
 
+_MUNDANE_ASPECT_OFFSET_BY_NAME = dict(PLACIDIAN_MUNDANE_ASPECT_OFFSETS)
+
 _MUNDANE_PRESET_BY_METHOD = {
     PrimaryDirectionMethod.PLACIDUS_MUNDANE: PrimaryDirectionsPreset.PLACIDUS_MUNDANE,
     PrimaryDirectionMethod.PLACIDIAN_CLASSIC_SEMI_ARC: PrimaryDirectionsPreset.PLACIDIAN_CLASSIC_MUNDANE,
@@ -136,6 +140,7 @@ class PrimaryDirectionsResolvedPolicyContext:
     ptolemaic_parallel_targets: tuple[PtolemaicParallelTarget, ...]
     placidian_rapt_parallel_targets: tuple[PlacidianRaptParallelTarget, ...]
     fixed_star_targets: tuple[PrimaryDirectionFixedStarTarget, ...]
+    mundane_aspect_targets: tuple[PrimaryDirectionMundaneAspectTarget, ...]
     mundane_parallel_targets: tuple[PrimaryDirectionMundaneParallelTarget, ...]
     midpoint_targets: tuple[PrimaryDirectionMidpointTarget, ...]
     morinus_aspect_contexts: tuple[MorinusAspectContext, ...]
@@ -257,6 +262,7 @@ def _advanced_search_policy_vessels(
             "ptolemaic_parallel_targets": (),
             "placidian_rapt_parallel_targets": (),
             "fixed_star_targets": (),
+            "mundane_aspect_targets": (),
             "mundane_parallel_targets": (),
             "midpoint_targets": (),
             "morinus_aspect_contexts": (),
@@ -283,6 +289,14 @@ def _advanced_search_policy_vessels(
         "fixed_star_targets": tuple(
             PrimaryDirectionFixedStarTarget(star_name=item.star_name)
             for item in request.fixed_star_targets
+        ),
+        "mundane_aspect_targets": tuple(
+            PrimaryDirectionMundaneAspectTarget(
+                source_name=item.source_name,
+                aspect_name=item.aspect_name,
+                fraction_offset=_MUNDANE_ASPECT_OFFSET_BY_NAME[item.aspect_name],
+            )
+            for item in request.mundane_aspect_targets
         ),
         "mundane_parallel_targets": tuple(
             PrimaryDirectionMundaneParallelTarget(
@@ -326,6 +340,15 @@ def _validate_advanced_search_preset(
         (
             "placidian_rapt_parallel_targets",
             frozenset(_RAPT_PRESETS),
+        ),
+        (
+            "mundane_aspect_targets",
+            frozenset(
+                {
+                    PrimaryDirectionsPreset.PLACIDUS_MUNDANE_ASPECT,
+                    PrimaryDirectionsPreset.PTOLEMY_MUNDANE_ASPECT,
+                }
+            ),
         ),
         (
             "mundane_parallel_targets",
@@ -379,7 +402,34 @@ def resolve_primary_directions_policy(
         else "preset_convention"
     )
 
-    if policy_request is None or policy_request.include_converse is None:
+    explicit_converse_doctrine = (
+        policy_request.converse_doctrine if policy_request is not None else None
+    )
+    if (
+        explicit_converse_doctrine is not None
+        and canonical_preset in _RAPT_PRESETS
+    ):
+        raise ValueError(
+            "Placidian rapt-parallel presets own their motion doctrine and do not "
+            "accept converse_doctrine overrides"
+        )
+    if (
+        explicit_converse_doctrine is not None
+        and canonical_preset
+        is PrimaryDirectionsPreset.TOPOCENTRIC_ZODIACAL_ASPECT_SIGNED_PRIMARY_MOTION
+        and explicit_converse_doctrine
+        is not PrimaryDirectionConverseDoctrine.SIGNED_PRIMARY_MOTION
+    ):
+        raise ValueError(
+            "The signed-primary-motion preset does not accept a different converse_doctrine"
+        )
+
+    if explicit_converse_doctrine is not None:
+        include_converse = (
+            explicit_converse_doctrine
+            is not PrimaryDirectionConverseDoctrine.DIRECT_ONLY
+        )
+    elif policy_request is None or policy_request.include_converse is None:
         include_converse = canonical_preset not in _RAPT_PRESETS
     else:
         include_converse = policy_request.include_converse
@@ -390,6 +440,7 @@ def resolve_primary_directions_policy(
     resolved_policy = primary_directions_policy_preset(
         canonical_preset,
         include_converse=include_converse,
+        converse_doctrine=explicit_converse_doctrine,
         key_policy=PrimaryDirectionKeyPolicy(chosen_key),
         **advanced,
     )
@@ -455,6 +506,7 @@ def _resolved_policy_context(
         ptolemaic_parallel_targets=policy.ptolemaic_parallel_targets,
         placidian_rapt_parallel_targets=policy.placidian_rapt_parallel_targets,
         fixed_star_targets=policy.fixed_star_targets,
+        mundane_aspect_targets=policy.mundane_aspect_targets,
         mundane_parallel_targets=policy.mundane_parallel_targets,
         midpoint_targets=policy.midpoint_targets,
         morinus_aspect_contexts=policy.morinus_aspect_contexts,
@@ -812,12 +864,7 @@ def compute_timeline_service(
     key = request.key or resolved.policy.key_policy.key
 
     from moira.egyptian_bounds import EgyptianBoundsDoctrine
-    bound_doc = EgyptianBoundsDoctrine.EGYPTIAN
-    if request.bound_doctrine is not None:
-        try:
-            bound_doc = EgyptianBoundsDoctrine(str(request.bound_doctrine).lower())
-        except ValueError:
-            bound_doc = EgyptianBoundsDoctrine.EGYPTIAN
+    bound_doc = request.bound_doctrine or EgyptianBoundsDoctrine.EGYPTIAN
 
     return engine.primary_directions_timeline(
         chart,
