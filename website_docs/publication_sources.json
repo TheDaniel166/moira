@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "release_history_floor": "5.0.0",
-  "last_verified": "2026-09-17",
+  "last_verified": "2026-09-22",
   "documents": [
     {
       "id": "light-box-doctrine",
@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.8.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.8.2.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -317,6 +317,26 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.8.2",
+      "date": "2026-09-20",
+      "title": "KernelPool Native Planetary Evaluator and Indexed Ephemeris Routing",
+      "added": [
+        "The sealed 2026.09.18.1 small-body ephemeris catalog admits 11,223 numbered minor planets across 449 Type-13 SPK shards."
+      ],
+      "changed": [
+        "KernelPool-backed planetary reduction now selects the authoritative planetary SPK reader for the native evaluator.",
+        "Indexed pair and target lookups, candidate-pruned graph routing, a bounded route cache, and planetary-spine clock queries reduce pooled-reader search work."
+      ],
+      "fixed": [
+        "Planetary reduction no longer falls back to the slow Python path solely because the configured reader is a heterogeneous KernelPool."
+      ],
+      "validation": [
+        "Release notes record 20 planetary architecture invariant tests and DE441 native-versus-Python reference comparisons under a pooled catalog; published timings are performance evidence, not a universal accuracy claim."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.8.2.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.8.2.md"
+    },
     {
       "version": "6.8.0",
       "date": "2026-09-17",

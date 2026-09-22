@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "source_repository": "https://github.com/TheDaniel166/moira",
-  "last_verified": "2026-09-17",
+  "last_verified": "2026-09-22",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.8.0",
-    "tag": "v6.8.0",
-    "commit": "5e5c2f3a1063a675a6d14f66c73174c6b82568ce",
-    "release_date": "2026-09-17",
+    "version": "6.8.2",
+    "tag": "v6.8.2",
+    "commit": "6be6d52af3a3db6db6bb5788ea2df5e6c21b2423",
+    "release_date": "2026-09-20",
     "requires_python": ">=3.10",
     "supported_python": [
       "3.10",
@@ -31,7 +31,7 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "e3236d327b27a3978e3737b702b0b4cfcd55fd23a066a67402c13c966ea9466a"
+      "source_sha256": "5845d835900537db5a643235f89549d25a5967e22d9980304ef54278d8def208"
     },
     {
       "id": "python_root_exports",
@@ -41,7 +41,7 @@
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "69e8fce739227042915552fd7ff20bf989e68228d00ee99ba172c65bf15d4b08"
+      "source_sha256": "81439d8a01aff1a2befa6702cbf740c4096f4a80dfce3e8f953a64e2302937f6"
     },
     {
       "id": "rest_api_reference",
@@ -2574,7 +2574,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "69e8fce739227042915552fd7ff20bf989e68228d00ee99ba172c65bf15d4b08",
+      "source_sha256": "81439d8a01aff1a2befa6702cbf740c4096f4a80dfce3e8f953a64e2302937f6",
       "symbols": [
         "ACGLine",
         "ASHTOTTARI_NAKSHATRA_LORD",
@@ -3903,6 +3903,8 @@
         "assign_house",
         "asteroid_at",
         "asteroid_family",
+        "asteroid_orbit_class",
+        "asteroid_orbit_classes",
         "astrodynes_summary",
         "atmakaraka",
         "atmospheric_extinction",
@@ -4225,6 +4227,8 @@
         "last_new_moon",
         "lifetime_returns",
         "lilly_perfection_at",
+        "list_all_centaurs",
+        "list_all_tnos",
         "list_asteroids",
         "list_ayanamsa_systems",
         "list_comets",
@@ -4886,7 +4890,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "70ccab61ff41147adf28c098bf3e4ecf67d6782fe9a791516181aea7e1e64435",
       "source_bytes": 14504,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4899,12 +4903,12 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.8.0.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.8.2.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "e3236d327b27a3978e3737b702b0b4cfcd55fd23a066a67402c13c966ea9466a",
+      "source_sha256": "5845d835900537db5a643235f89549d25a5967e22d9980304ef54278d8def208",
       "source_bytes": 321797,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4920,9 +4924,9 @@
       "description": "A contract-first migration manual for replacing Swiss Ephemeris flags and global state with Moira's explicit time, frame, observer, units, house, REST, and verification policies.",
       "content_class": "evergreen_guide",
       "schema_type": "TechArticle",
-      "source_sha256": "6084fd18ecea80f4a21f54c036d2c56969128f49d6a1f19773f853e932f7c4b7",
+      "source_sha256": "2b2ae0fcb762bd911fdec2a1cd2eea433998cb90aa058ab81b1a75c2a63b6c31",
       "source_bytes": 32455,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4940,7 +4944,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "7685dd2ac162b80ecea5f8db9fe3f11ce6a350937d46eab5f7356f50c7667ad1",
       "source_bytes": 8442,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4958,7 +4962,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "11a4ed6948235e6d974c9f1caf5e7e0ed4819c75d30dfcde5804f2f87ac16fd9",
       "source_bytes": 33871,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4976,7 +4980,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "fd28e8d7c39c9bfac0d9ca37fd043bb22e1acf009ab3da3504fbe62f4ebe2269",
       "source_bytes": 31220,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -4994,7 +4998,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "26237b26a6e6e5ac1dffec0e5001a07474640ca03808f1c1ba5f21f428057188",
       "source_bytes": 29604,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5012,7 +5016,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ddefd92cf26aa6c521ec4b5bb348a9826128639fe6fbf7fb7ddbd085f8669796",
       "source_bytes": 46781,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5030,7 +5034,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3e1719778cf0c98b861990e311707ca6912e0555ce4344008e20996332797909",
       "source_bytes": 20555,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5048,7 +5052,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "4ba8e96bac8203127331af7cb964fcb35522b816a83e0fcf250936625fe0f458",
       "source_bytes": 13241,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5066,7 +5070,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3b7e0f8b334b1eecbccf20cea0076dd79b5d27d7765e2e3ab6cabe4cc43fccf3",
       "source_bytes": 48801,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5084,7 +5088,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "1c3a60440d0f66b11c3bb815030b048eff126336261e9296898fd0b53a403adf",
       "source_bytes": 221525,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5102,7 +5106,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "62037430ad839764d52cb1e855a6819d4da16466fbd5532d2b296636e7b6868c",
       "source_bytes": 21005,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5120,7 +5124,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "c5e5672d0dfe3d887212c5a2d170dbe480b9e2608dbd4112f9f726477f03f9fa",
       "source_bytes": 14623,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5138,7 +5142,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ab191318c94c6b69a9a6e7d4640a0eacd2b261cdd39d4aa7b6c5991f37e63742",
       "source_bytes": 25609,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true
@@ -5156,7 +5160,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "9d7bb814f7c053e0ceba7388526a696a0dbdde8878d34715e8a9eac0ec3f6fce",
       "source_bytes": 37582,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5190,7 +5194,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "ee5e96f520fbcbb1f0a7fbe630eafb55d12b68717dc56d5ec5b98569bab41fbc",
       "source_bytes": 39054,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5223,7 +5227,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "38291c87ea81e9fc2fe23d63fdea37ae48d8ad2cdc4ea9046e40da8f3a64cdc4",
       "source_bytes": 22083,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5257,7 +5261,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "f77bc0837be29b481c2fd9f8fcf84f13564105d5c007db2095e0a91b2c65dcf6",
       "source_bytes": 3584,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5285,7 +5289,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "fc6e7ac8b5393acfecc7289ac2f69caad9d9bc4be6d53835a473406f14fe0b9f",
       "source_bytes": 15117,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5314,7 +5318,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "3d7d8fdcb3c6dba9d2576e44f24809416b39dbcf2f1bd5a703cdbff7ee7142db",
       "source_bytes": 8684,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5344,7 +5348,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "9ab274475f75e6f3d22ab3fb746ec6c91cf15c5725bfe234aeb0baaae3f69315",
       "source_bytes": 2028,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5372,7 +5376,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "29f406d74fbeca960fd77af90d95a61139403926e496adb5c548a3e0e9635353",
       "source_bytes": 3329,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5400,7 +5404,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "60ae0879fffb9c318e622e9348ce0786fcd724b4f392804e66c0d5dae7c68e8d",
       "source_bytes": 15256,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5432,7 +5436,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "af6763ffe85b4a1900c83471a681674151e00a47fee9dee3220229cd90b0ad41",
       "source_bytes": 7470,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5461,7 +5465,7 @@
       "schema_type": "TechArticle",
       "source_sha256": "e2598028b574254a5307f85c322668ae0d653f2905810ed2032bf71924f698b0",
       "source_bytes": 5697,
-      "last_verified": "2026-09-17",
+      "last_verified": "2026-09-22",
       "prerender": true,
       "markdown": true,
       "sitemap": true,
@@ -5479,6 +5483,29 @@
     }
   ],
   "releases": [
+    {
+      "version": "6.8.2",
+      "date": "2026-09-20",
+      "title": "KernelPool Native Planetary Evaluator and Indexed Ephemeris Routing",
+      "added": [
+        "The sealed 2026.09.18.1 small-body ephemeris catalog admits 11,223 numbered minor planets across 449 Type-13 SPK shards."
+      ],
+      "changed": [
+        "KernelPool-backed planetary reduction now selects the authoritative planetary SPK reader for the native evaluator.",
+        "Indexed pair and target lookups, candidate-pruned graph routing, a bounded route cache, and planetary-spine clock queries reduce pooled-reader search work."
+      ],
+      "fixed": [
+        "Planetary reduction no longer falls back to the slow Python path solely because the configured reader is a heterogeneous KernelPool."
+      ],
+      "validation": [
+        "Release notes record 20 planetary architecture invariant tests and DE441 native-versus-Python reference comparisons under a pooled catalog; published timings are performance evidence, not a universal accuracy claim."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.8.2.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.8.2.md",
+      "tag": "v6.8.2",
+      "release_notes_sha256": "53c8a5f88001011ef8f649b677a648bd478fe1817a77639342f1d094de4b3dd3",
+      "compatibility_notes_sha256": "3cee869ba0f04a99ad65b2222f68aba3f654102c40aa84e21bb09cee3ad10e30"
+    },
     {
       "version": "6.8.0",
       "date": "2026-09-17",
@@ -5936,5 +5963,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "b6d0f79c4d7981958ead961543b9b5de71c674591b412cb3dc68406da6c9fbc1"
+  "manifest_sha256": "d705da3e01d8bf474ee5d7cb082ff2e32f5d4c82827056fd8fcaae0716a385d2"
 }
