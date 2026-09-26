@@ -115,7 +115,8 @@ Eclipse geometry snapshot
 --------------------------
 EclipseData
     Complete geometry snapshot at any epoch:
-      eclipse_type, eclipse_magnitude, saros_index, metonic_year,
+      eclipse_type, eclipse_magnitude, saros_index, saros_series,
+      saros_lunation_number, saros_cycle_position, metonic_year,
       metonic_is_reset, moon_parallax, solar_diameter, moon_diameter,
       galactic_center_longitude, separation, phase_angle, and more.
 
@@ -125,8 +126,12 @@ EclipseEvent
 
 Saros / Metonic cycle
 ---------------------
-EclipseData.saros_index    position within the 223-synodic-month Saros
-                           cycle, in units of synodic months (0–222.x)
+EclipseData.saros_series   conventional van den Bergh / NASA Saros-series
+                           number (``saros_index`` is its compatibility name)
+EclipseData.saros_lunation_number
+                           NASA/GSFC signed ``Luna Num`` used for assignment
+EclipseData.saros_cycle_position
+                           legacy mean-month phase in a 223-month cycle
 EclipseData.metonic_year   position within the 19-year Metonic cycle
 """
 

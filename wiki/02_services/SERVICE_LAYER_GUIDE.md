@@ -421,7 +421,9 @@ separate instantaneous engine product; it is not embedded in the general
 class EclipseData:
     eclipse_type: EclipseType
     eclipse_magnitude: float
-    saros_index: float
+    saros_index: int | None
+    saros_lunation_number: int | None
+    saros_cycle_position: float
     metonic_year: float
     # Positions, apparent radii, separation, and cycle state omitted here.
     ...
@@ -471,8 +473,25 @@ existing eclipse event/path vessels, and native C++ substrate are unchanged.
 
 #### Saros & Metonic Cycles
 
-`EclipseData.saros_index` and `.metonic_year` are continuous cycle-position
-indicators. They are not catalog Saros-series identity and position fields.
+`EclipseData.saros_series` is the conventional van den Bergh Saros-series
+number used by the NASA/GSFC Five Millennium catalogs. `saros_index` is the
+retained wire field name for that same integer value. Both are `None`
+for a snapshot that is not an actual solar or lunar eclipse.
+
+The assignment is auditable through `saros_lunation_number`, NASA/GSFC's
+signed `Luna Num`. Moira projects the event TT epoch onto catalog-anchored
+solar or lunar lunations. Successive lunations advance the Saros residue by
+`38 (mod 223)`; the otherwise ambiguous multiple-of-223 branch is selected by
+the Inex relation, under which `358` lunations advance the series by one. The
+anchors are the catalog's 2000-02-05 solar eclipse (`Luna Num 1`, Saros 150)
+and 2000-01-21 lunar eclipse (`Luna Num 0`, Saros 124).
+
+The former continuous value is retained as `saros_cycle_position`: a legacy
+mean-month phase in a 223-month cycle. It is not a catalog series identity.
+`metonic_year` remains a continuous cycle-position indicator. Saros assignment
+is metadata only and does not alter DE441 event discovery or geometry.
+This is an intentional semantic correction to `saros_index`; clients that used
+its former fractional value must read `saros_cycle_position` instead.
 
 ---
 

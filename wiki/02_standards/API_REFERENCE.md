@@ -3959,7 +3959,10 @@ data = calc.calculate(dt)           # EclipseData
 | `is_solar_eclipse` | `bool` | Solar eclipse flag |
 | `is_lunar_eclipse` | `bool` | Lunar eclipse flag |
 | `eclipse_magnitude` | `float` | Computed eclipse magnitude |
-| `saros_index` | `float` | Saros cycle position/index |
+| `saros_series` | `int \| None` | Conventional van den Bergh/NASA Saros-series number |
+| `saros_index` | `int \| None` | Compatibility name for `saros_series` |
+| `saros_lunation_number` | `int \| None` | Signed NASA/GSFC `Luna Num` used for the series assignment |
+| `saros_cycle_position` | `float` | Legacy mean-month phase within a 223-month cycle; not a series identity |
 | `metonic_year` | `float` | Metonic cycle position |
 | `moon_distance_km` | `float` | Geocentric Moon distance in kilometers |
 | `galactic_center_longitude` | `float` | Galactic center longitude reference |
@@ -5305,7 +5308,10 @@ result = next_solar_eclipse_at_location(
 
 **Key vessel fields**
 
-`EclipseData`: `eclipse_type`, `eclipse_magnitude`, `saros_index`, `metonic_year`, `metonic_is_reset`, `moon_parallax`, `solar_diameter`, `moon_diameter`, `separation`, `phase_angle`.
+`EclipseData`: `eclipse_type`, `eclipse_magnitude`, `saros_series`,
+`saros_index`, `saros_lunation_number`, `saros_cycle_position`, `metonic_year`,
+`metonic_is_reset`, `moon_parallax`, `solar_diameter`, `moon_diameter`,
+`separation`, `phase_angle`.
 
 `EclipseEvent`: `jd_ut`, `eclipse_type`, `datetime_utc` (computed property).
 

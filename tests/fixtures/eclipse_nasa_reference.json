@@ -1,6 +1,8 @@
 {
   "source": {
     "solar_catalog_url": "https://eclipse.gsfc.nasa.gov/5MCSE/5MKSEcatalog.txt",
+    "solar_catalog_key_url": "https://eclipse.gsfc.nasa.gov/SEcat5/SEcatkey.html",
+    "solar_periodicity_url": "https://eclipse.gsfc.nasa.gov/SEsaros/SEperiodicity.html",
     "solar_path_product_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=19990811",
     "lunar_catalog_url": "https://eclipse.gsfc.nasa.gov/5MCLE/5MKLEcatalog.txt",
     "lunar_catalog_key_url": "https://eclipse.gsfc.nasa.gov/LEcat5/LEcatkey.html",
@@ -13,6 +15,8 @@
     "solar_se_search_note": "Rows carrying se_search_ut_date, se_search_ut_jd, and se_search_delta_t_s preserve the separately published UT and decimal Delta-T values from the linked NASA Solar Eclipse Search page; these fields are distinct from the rounded Five Millennium Catalog fields.",
     "lunar_modern_validation_note": "NASA/TP-2009-214173 publishes greatest eclipse in TD and signed gamma (north positive, south negative). Each ut_jd below is derived as td_jd - delta_t_s / 86400 from that catalog row.",
     "lunar_contact_validation_note": "NASA's century catalog publishes mean-limb phase durations rounded to 0.1 minute under VSOP87/ELP2000-82, Danjon shadow enlargement, and its catalog Delta-T. These rows compare Moira's DE441/TT native mean-limb contacts under named cross-model envelopes; the 2027 limiting penumbral case has a deliberately wider duration envelope because a 0.0014 catalog magnitude is highly sensitive to small gamma differences.",
+    "saros_numbering_note": "Fields named luna_num and saros are the signed Luna Num and conventional van den Bergh Saros Num published in the official NASA/GSFC Five Millennium ASCII catalogs. They are classification metadata and do not replace Moira's DE441 geometry.",
+    "saros_fields_retrieved_on": "2026-09-26",
     "retrieved_on": "2026-07-17"
   },
   "solar_maxima": [
@@ -106,6 +110,8 @@
       "ut_jd": 2453469.358171296,
       "date": "2005-04-08T20:36:51",
       "delta_t_s": 65,
+      "luna_num": 65,
+      "saros": 129,
       "se_search_ut_date": "2005-04-08T20:35:46",
       "se_search_ut_jd": 2453469.3581712963,
       "se_search_delta_t_s": 64.7,
@@ -117,6 +123,8 @@
       "ut_jd": 2451401.960474537,
       "date": "1999-08-11T11:04:09",
       "delta_t_s": 64,
+      "luna_num": -5,
+      "saros": 145,
       "se_search_ut_date": "1999-08-11T11:03:05",
       "se_search_ut_jd": 2451401.960474537,
       "se_search_delta_t_s": 63.7,
@@ -128,6 +136,8 @@
       "ut_jd": 2451225.773321759,
       "date": "1999-02-16T06:34:38",
       "delta_t_s": 63,
+      "luna_num": -11,
+      "saros": 140,
       "se_search_ut_date": "1999-02-16T06:33:34",
       "se_search_ut_jd": 2451225.7733101854,
       "se_search_delta_t_s": 63.5,
@@ -139,6 +149,8 @@
       "ut_jd": 2451580.034293981,
       "date": "2000-02-05T12:50:27",
       "delta_t_s": 64,
+      "luna_num": 1,
+      "saros": 150,
       "se_search_ut_date": "2000-02-05T12:49:23",
       "se_search_ut_jd": 2451580.0342939813,
       "se_search_delta_t_s": 63.9,
@@ -150,6 +162,8 @@
       "ut_jd": 2463185.3793055555,
       "date": "2031-11-14T21:07:31",
       "delta_t_s": 78.8,
+      "luna_num": 394,
+      "saros": 143,
       "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20311114"
     },
     {
@@ -158,6 +172,8 @@
       "ut_jd": 2463362.0592939816,
       "date": "2032-05-09T13:26:42",
       "delta_t_s": 79.1,
+      "luna_num": 400,
+      "saros": 148,
       "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20320509"
     },
     {
@@ -166,6 +182,8 @@
       "ut_jd": 2469770.730729167,
       "date": "2049-11-25T05:33:48",
       "delta_t_s": 92.8,
+      "luna_num": 617,
+      "saros": 143,
       "source_url": "https://eclipse.gsfc.nasa.gov/SEsearch/SEdata.php?Ecl=20491125"
     },
     {
@@ -312,6 +330,7 @@
       "td_jd": 2451564.697615741,
       "delta_t_s": 64,
       "gamma": -0.2957,
+      "luna_num": 0,
       "saros": 124,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros124.html"
     },
@@ -322,6 +341,7 @@
       "td_jd": 2452775.653622685,
       "delta_t_s": 64,
       "gamma": 0.4123,
+      "luna_num": 41,
       "saros": 121,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros121.html"
     },
@@ -332,6 +352,7 @@
       "td_jd": 2452952.555300926,
       "delta_t_s": 64,
       "gamma": -0.4319,
+      "luna_num": 47,
       "saros": 126,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros126.html"
     },
@@ -342,6 +363,7 @@
       "td_jd": 2453130.3550578705,
       "delta_t_s": 65,
       "gamma": -0.3132,
+      "luna_num": 53,
       "saros": 131,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros131.html"
     },
@@ -352,6 +374,7 @@
       "td_jd": 2455728.3428587965,
       "delta_t_s": 67,
       "gamma": 0.0897,
+      "luna_num": 141,
       "saros": 130,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros130.html"
     },
@@ -362,6 +385,7 @@
       "td_jd": 2459715.675486111,
       "delta_t_s": 73,
       "gamma": -0.2532,
+      "luna_num": 276,
       "saros": 131,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros131.html"
     },
@@ -372,6 +396,7 @@
       "td_jd": 2460070.22505787,
       "delta_t_s": 73,
       "gamma": -1.0349,
+      "luna_num": 288,
       "saros": 141,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros141.html"
     },
@@ -382,6 +407,7 @@
       "td_jd": 2460246.343958333,
       "delta_t_s": 74,
       "gamma": 0.9471,
+      "luna_num": 294,
       "saros": 146,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros146.html"
     },
@@ -392,6 +418,7 @@
       "td_jd": 2460394.8013773146,
       "delta_t_s": 74,
       "gamma": 1.0609,
+      "luna_num": 299,
       "saros": 113,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros113.html"
     },
@@ -402,6 +429,7 @@
       "td_jd": 2460571.614872685,
       "delta_t_s": 74,
       "gamma": -0.9792,
+      "luna_num": 305,
       "saros": 118,
       "source_url": "https://eclipse.gsfc.nasa.gov/LEsaros/LEsaros118.html"
     }

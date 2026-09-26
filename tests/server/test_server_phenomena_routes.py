@@ -333,6 +333,9 @@ def test_eclipse_routes_match_engine_truth(
         "sun_node_distance",
         "angular_separation_3d",
         "saros_index",
+        "saros_series",
+        "saros_lunation_number",
+        "saros_cycle_position",
         "metonic_year",
         "metonic_is_reset",
     }

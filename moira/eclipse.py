@@ -241,6 +241,33 @@ SAROS_SYNODIC_MONTHS = 223         # synodic months in one Saros cycle
 METONIC_PERIOD_DAYS  = 6939.6018   # 19 tropical years in days
 J2000_DATETIME       = datetime(2000, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
 
+# Conventional Saros-series assignment follows the van den Bergh numbering
+# used by the NASA/GSFC Five Millennium eclipse catalogs.  The catalog's
+# ``Luna Num`` is a signed lunation count; consecutive lunations move 38 Saros
+# residues modulo 223, and consecutive Inexes (358 lunations) advance the
+# unwrapped series number by one.  These TT anchors are catalog rows whose
+# published Luna Num and Saros Num are unambiguous:
+#
+#   Solar: 2000-02-05 12:50:27 TD, Luna Num 1, Saros 150
+#   Lunar: 2000-01-21 04:44:34 TD, Luna Num 0, Saros 124
+#
+# The mean-month projection recovers every published Luna Num in the official
+# -1999..+3000 solar and lunar ASCII catalogs.  It is classification metadata;
+# it does not participate in eclipse discovery, geometry, or contact solving.
+_SAROS_MEAN_SYNODIC_MONTH_DAYS = 29.53058868
+_SAROS_INEX_SYNODIC_MONTHS = 358
+_SAROS_SERIES_STEP_PER_LUNATION = 38
+_SOLAR_SAROS_ANCHOR_JD_TT = 2451580.035034722
+_SOLAR_SAROS_ANCHOR_LUNATION = 1
+_SOLAR_SAROS_ANCHOR_SERIES = 150
+_LUNAR_SAROS_ANCHOR_JD_TT = 2451564.697615741
+_LUNAR_SAROS_ANCHOR_LUNATION = 0
+_LUNAR_SAROS_ANCHOR_SERIES = 124
+
+# Preserve the former public ``saros_index`` calculation exactly under its
+# explicit replacement name, ``saros_cycle_position``.
+_LEGACY_SAROS_SYNODIC_MONTH_DAYS = 29.53059
+
 # ---------------------------------------------------------------------------
 # Galactic Center / Aubrey heptagon
 # ---------------------------------------------------------------------------
@@ -423,7 +450,7 @@ class EclipseData:
             - Carry all ecliptic positions (Sun, Moon, node, Galactic Center)
             - Carry apparent angular radii and shadow radii
             - Carry Aubrey/heptagonal stone positions
-            - Carry Saros and Metonic cycle indices
+            - Carry conventional Saros designation and Metonic cycle state
             - Carry the derived EclipseType classification and magnitude
             - Expose is_eclipse() convenience predicate
         Non-responsibilities:
@@ -453,6 +480,8 @@ class EclipseData:
                    "solar_topocentric_separation", "sun_node_distance",
                    "is_eclipse_season", "is_solar_eclipse", "is_lunar_eclipse",
                    "eclipse_type", "eclipse_magnitude", "saros_index",
+                   "saros_series",
+                   "saros_lunation_number", "saros_cycle_position",
                    "metonic_year", "metonic_is_reset", "moon_parallax",
                    "sun_side", "sun_pos_in_side"],
         "internal": ["is_eclipse", "__str__"]
@@ -500,7 +529,9 @@ class EclipseData:
     eclipse_magnitude:           float
 
     # Cycles
-    saros_index:                 float   # position in Saros cycle (0–222)
+    saros_index:                 int | None  # conventional series; wire-compatibility name
+    saros_lunation_number:       int | None  # NASA/GSFC Luna Num for the event
+    saros_cycle_position:        float   # legacy mean-month phase; 0 <= value < 223
     metonic_year:                float   # position in 19-year cycle (0–19)
     metonic_is_reset:            bool
 
@@ -510,6 +541,11 @@ class EclipseData:
     # Heptagon side
     sun_side:                    int     # 0–6
     sun_pos_in_side:             int     # 0–7
+
+    @property
+    def saros_series(self) -> int | None:
+        """Conventional van den Bergh/NASA Saros-series number."""
+        return self.saros_index
 
     def is_eclipse(self) -> bool:
         return self.is_solar_eclipse or self.is_lunar_eclipse
@@ -1733,7 +1769,12 @@ class EclipseCalculator:
             native_solar_surface_sun_radius=native_solar_surface_sun_radius,
             native_solar_surface_moon_radius=native_solar_surface_moon_radius,
         )
-        saros_idx = _saros_index_jd(jd)
+        saros_cycle_position = _saros_cycle_position_jd(jd)
+        saros_lunation_number, saros_series = _saros_designation_jd_tt(
+            jd_tt,
+            is_solar=is_solar,
+            is_lunar=is_lunar,
+        )
         metonic_year, m_reset = _metonic_position_jd(jd, sun_lon, moon_lon)
 
         # ``EclipseData`` predates observer-specific result vessels and retains
@@ -1771,7 +1812,9 @@ class EclipseCalculator:
             is_lunar_eclipse=is_lunar,
             eclipse_type=eclipse_type,
             eclipse_magnitude=magnitude,
-            saros_index=saros_idx,
+            saros_index=saros_series,
+            saros_lunation_number=saros_lunation_number,
+            saros_cycle_position=saros_cycle_position,
             metonic_year=metonic_year,
             metonic_is_reset=m_reset,
             moon_parallax=moon_parallax,
@@ -3465,10 +3508,81 @@ def _to_stone(longitude: float, gc_longitude: float) -> int:
     return int(round(offset / DEGREES_PER_STONE) % AUBREY_HOLES)
 
 
-def _saros_index_jd(jd: float) -> float:
-    """Position within the Saros cycle (0.0–222.9...) for a UT Julian Day."""
+def _saros_cycle_position_jd(jd: float) -> float:
+    """Legacy mean-month Saros phase retained for compatibility diagnostics."""
     days = jd - J2000
-    return (days / 29.53059) % SAROS_SYNODIC_MONTHS
+    return (days / _LEGACY_SAROS_SYNODIC_MONTH_DAYS) % SAROS_SYNODIC_MONTHS
+
+
+def _nearest_integer(value: float) -> int:
+    """Round to the nearest integer with an explicit upper-branch tie rule."""
+    return math.floor(value + 0.5)
+
+
+def _saros_lunation_number_jd_tt(jd_tt: float, *, is_solar: bool) -> int:
+    """Return NASA/GSFC ``Luna Num`` for a solar or lunar eclipse TT epoch."""
+    if not math.isfinite(jd_tt):
+        raise ValueError("Saros designation requires a finite TT Julian Day")
+    if is_solar:
+        anchor_jd = _SOLAR_SAROS_ANCHOR_JD_TT
+        anchor_lunation = _SOLAR_SAROS_ANCHOR_LUNATION
+    else:
+        anchor_jd = _LUNAR_SAROS_ANCHOR_JD_TT
+        anchor_lunation = _LUNAR_SAROS_ANCHOR_LUNATION
+    elapsed_lunations = (jd_tt - anchor_jd) / _SAROS_MEAN_SYNODIC_MONTH_DAYS
+    return anchor_lunation + _nearest_integer(elapsed_lunations)
+
+
+def _saros_series_from_lunation(lunation_number: int, *, is_solar: bool) -> int:
+    """Map a catalog lunation number to its unwrapped Saros-series number."""
+    if is_solar:
+        anchor_lunation = _SOLAR_SAROS_ANCHOR_LUNATION
+        anchor_series = _SOLAR_SAROS_ANCHOR_SERIES
+    else:
+        anchor_lunation = _LUNAR_SAROS_ANCHOR_LUNATION
+        anchor_series = _LUNAR_SAROS_ANCHOR_SERIES
+
+    lunations_from_anchor = lunation_number - anchor_lunation
+    residue = (
+        anchor_series
+        + _SAROS_SERIES_STEP_PER_LUNATION * lunations_from_anchor
+    ) % SAROS_SYNODIC_MONTHS
+
+    # The residue alone is ambiguous by multiples of 223.  Under the Inex
+    # relation, 358 lunations advance the conventional series by one.  Select
+    # the congruent residue nearest that unwrapped progression.
+    expected_series = (
+        anchor_series
+        + lunations_from_anchor / _SAROS_INEX_SYNODIC_MONTHS
+    )
+    branch = _nearest_integer(
+        (expected_series - residue) / SAROS_SYNODIC_MONTHS
+    )
+    return int(residue + SAROS_SYNODIC_MONTHS * branch)
+
+
+def _saros_designation_jd_tt(
+    jd_tt: float,
+    *,
+    is_solar: bool,
+    is_lunar: bool,
+) -> tuple[int | None, int | None]:
+    """Return ``(Luna Num, Saros Num)`` for an actual eclipse snapshot."""
+    if is_solar and is_lunar:
+        raise ValueError("an eclipse snapshot cannot be both solar and lunar")
+    if not is_solar and not is_lunar:
+        return None, None
+    lunation_number = _saros_lunation_number_jd_tt(
+        jd_tt,
+        is_solar=is_solar,
+    )
+    return (
+        lunation_number,
+        _saros_series_from_lunation(
+            lunation_number,
+            is_solar=is_solar,
+        ),
+    )
 
 
 def _metonic_position_jd(

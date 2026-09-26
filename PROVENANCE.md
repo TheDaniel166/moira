@@ -323,6 +323,30 @@ or substitute for Moira's content-identified DE441/LE441 geometry. NASA's
 requested acknowledgment is retained verbatim in the fixture:
 `Eclipse Predictions by Fred Espenak, NASA's GSFC`.
 
+### NASA/GSFC Saros-series designation
+
+Moira's conventional Saros designation follows the van den Bergh numbering
+published in the official NASA/GSFC
+[Five Millennium Catalog of Solar Eclipses](https://eclipse.gsfc.nasa.gov/5MCSE/5MKSEcatalog.txt)
+and
+[Five Millennium Catalog of Lunar Eclipses](https://eclipse.gsfc.nasa.gov/5MCLE/5MKLEcatalog.txt).
+The catalog keys define the signed `Luna Num` and identify `Saros Num` as the
+van den Bergh series number. NASA's
+[periodicity table](https://eclipse.gsfc.nasa.gov/SEsaros/SEperiodicity.html)
+supplies the recurrence relations used to unwrap the series: one lunation
+changes the Saros residue by `+38`, 223 lunations retain the same series, and
+358 lunations advance the series by one.
+
+The engine uses catalog TT anchors for the 2000-02-05 solar eclipse (`Luna Num
+1`, Saros 150) and the 2000-01-21 lunar eclipse (`Luna Num 0`, Saros 124), then
+projects by the mean synodic month. The ambiguous residue branch is selected
+by the 358-lunation Inex progression. The external-network regression checks
+all 11,898 solar and 12,064 lunar catalog rows; the static fixture preserves a
+bounded modern solar/lunar sample for ordinary offline tests. These identifiers
+are classification metadata only. NASA catalog timing, series labels, and
+lunation counts do not replace Moira's independently evaluated DE441/LE441
+event geometry.
+
 ### NASA/GSFC lunar eclipse catalog validation corpus
 
 `tests/fixtures/eclipse_nasa_lunar_1901_2000.json` contains a complete,

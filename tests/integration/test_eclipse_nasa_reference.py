@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from collections import Counter
 import json
+import math
 from pathlib import Path
+import urllib.request
 
 import pytest
 
+import moira.eclipse as eclipse
 from moira._ephemeris_time import _ephemeris_tt_to_ut1, _ut1_to_ephemeris_tt
 from moira.eclipse_contacts import find_lunar_contacts
 from moira.eclipse_search import refine_minimum
@@ -43,6 +46,28 @@ def _jd_from_iso_seconds(value: str) -> float:
     year, month, day = (int(part) for part in date_part.split("-"))
     hour, minute, second = (int(part) for part in time_part.split(":"))
     return julian_day(year, month, day, hour + minute / 60.0 + second / 3600.0)
+
+
+def _nasa_catalog_td_jd(
+    year: int,
+    month: int,
+    day: int,
+    time_text: str,
+) -> float:
+    """Convert NASA's Julian-before-reform/Gregorian-after-reform dates."""
+    hour, minute, second = (int(part) for part in time_text.split(":"))
+    jd = julian_day(
+        year,
+        month,
+        day,
+        hour + minute / 60.0 + second / 3600.0,
+    )
+    if (year, month, day) < (1582, 10, 15):
+        adjusted_year = year - 1 if month <= 2 else year
+        century = math.floor(adjusted_year / 100.0)
+        gregorian_correction = 2 - century + math.floor(century / 4.0)
+        jd -= gregorian_correction
+    return jd
 
 
 def test_nasa_solar_fixture_keeps_catalog_td_and_se_search_ut_explicit() -> None:
@@ -131,6 +156,99 @@ def test_nasa_solar_eclipse_maxima_classify_correctly_across_eras(eclipse_calcul
             )
 
     assert not failures, "NASA solar maxima mismatches:\n" + "\n".join(failures[:20])
+
+
+def test_nasa_modern_catalog_saros_designations_match_engine(eclipse_calculator) -> None:
+    """Match catalog Luna Num and conventional Saros Num for both families."""
+    fixture = _load_fixture()
+    rows = [
+        (row, True)
+        for row in fixture["solar_maxima"]
+        if "saros" in row
+    ] + [
+        (row, False)
+        for row in fixture["lunar_modern_validation"]
+    ]
+
+    assert len(rows) == 17
+    for row, is_solar in rows:
+        data = eclipse_calculator.calculate_jd(float(row["ut_jd"]))
+        assert data.is_solar_eclipse is is_solar
+        assert data.is_lunar_eclipse is (not is_solar)
+        assert data.saros_lunation_number == int(row["luna_num"]), row
+        assert data.saros_series == int(row["saros"]), row
+        assert data.saros_index == data.saros_series
+        assert 0.0 <= data.saros_cycle_position < 223.0
+
+
+@pytest.mark.external_network
+def test_official_five_millennium_catalogs_match_saros_assignment() -> None:
+    """Check every published solar and lunar Luna Num/Saros Num pair."""
+    catalogs = (
+        (
+            "https://eclipse.gsfc.nasa.gov/5MCSE/5MKSEcatalog.txt",
+            True,
+            7,
+            8,
+            11_898,
+        ),
+        (
+            "https://eclipse.gsfc.nasa.gov/5MCLE/5MKLEcatalog.txt",
+            False,
+            6,
+            7,
+            12_064,
+        ),
+    )
+
+    for url, is_solar, lunation_column, saros_column, expected_rows in catalogs:
+        with urllib.request.urlopen(url, timeout=60) as response:
+            lines = response.read().decode("latin-1").splitlines()
+
+        checked = 0
+        mismatches: list[str] = []
+        for line in lines:
+            columns = line.split()
+            if len(columns) <= saros_column or not columns[0].isdigit():
+                continue
+            try:
+                if is_solar:
+                    year = int(columns[2])
+                    month = _MONTH_NUMBER[columns[3]]
+                    day = int(columns[4])
+                    time_text = columns[5]
+                else:
+                    year = int(columns[1])
+                    month = _MONTH_NUMBER[columns[2]]
+                    day = int(columns[3])
+                    time_text = columns[4]
+                lunation_number = int(columns[lunation_column])
+                expected_series = int(columns[saros_column])
+            except (KeyError, ValueError):
+                continue
+            checked += 1
+            jd_tt = _nasa_catalog_td_jd(year, month, day, time_text)
+            actual_lunation = eclipse._saros_lunation_number_jd_tt(
+                jd_tt,
+                is_solar=is_solar,
+            )
+            actual_series = eclipse._saros_series_from_lunation(
+                actual_lunation,
+                is_solar=is_solar,
+            )
+            if (
+                actual_lunation != lunation_number
+                or actual_series != expected_series
+            ):
+                mismatches.append(
+                    f"{year} {columns[3] if is_solar else columns[2]} "
+                    f"{day}: expected Luna/Saros "
+                    f"{lunation_number}/{expected_series}, got "
+                    f"{actual_lunation}/{actual_series}"
+                )
+
+        assert checked == expected_rows
+        assert not mismatches, "\n".join(mismatches[:20])
 
 
 @pytest.mark.slow

@@ -237,6 +237,9 @@ def serialize_eclipse_data(data: EclipseData) -> EclipseDataResponse:
         sun_node_distance=data.sun_node_distance,
         angular_separation_3d=data.angular_separation_3d,
         saros_index=data.saros_index,
+        saros_series=data.saros_series,
+        saros_lunation_number=data.saros_lunation_number,
+        saros_cycle_position=data.saros_cycle_position,
         metonic_year=data.metonic_year,
         metonic_is_reset=data.metonic_is_reset,
     )

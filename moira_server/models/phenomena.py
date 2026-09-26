@@ -231,7 +231,10 @@ class EclipseDataResponse(_StrictModel):
     moon_latitude: float
     sun_node_distance: float
     angular_separation_3d: float
-    saros_index: float
+    saros_index: int | None
+    saros_series: int | None
+    saros_lunation_number: int | None
+    saros_cycle_position: float
     metonic_year: float
     metonic_is_reset: bool
 

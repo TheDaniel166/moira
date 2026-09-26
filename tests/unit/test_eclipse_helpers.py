@@ -79,6 +79,71 @@ def test_lunar_magnitude_helpers_match_current_formulas() -> None:
     assert penumbral == pytest.approx(2.2, abs=1e-12)
 
 
+@pytest.mark.parametrize(
+    ("is_solar", "lunation_number", "expected_series"),
+    (
+        (True, -46_962, 2),     # -1797-02-01 hybrid solar
+        (True, -5, 145),        # 1999-08-11 total solar
+        (True, 10_007, 163),    # 2809-02-05 hybrid solar
+        (False, -47_009, 12),   # -1801-04-30 total lunar
+        (False, 299, 113),      # 2024-03-25 penumbral lunar
+        (False, 9_895, 156),    # 2800-02-01 total lunar
+    ),
+)
+def test_saros_series_matches_nasa_catalog_numbering_across_eras(
+    is_solar: bool,
+    lunation_number: int,
+    expected_series: int,
+) -> None:
+    """Use catalog Luna Num/Saros Num pairs, including unwrapped branches."""
+    assert eclipse._saros_series_from_lunation(
+        lunation_number,
+        is_solar=is_solar,
+    ) == expected_series
+
+
+@pytest.mark.parametrize(
+    ("jd_tt", "is_solar", "expected_lunation", "expected_series"),
+    (
+        (julian_day(2000, 2, 5, 12 + 50 / 60 + 27 / 3600), True, 1, 150),
+        (julian_day(1999, 8, 11, 11 + 4 / 60 + 9 / 3600), True, -5, 145),
+        (julian_day(2000, 1, 21, 4 + 44 / 60 + 34 / 3600), False, 0, 124),
+        (julian_day(2024, 3, 25, 7 + 13 / 60 + 59 / 3600), False, 299, 113),
+    ),
+)
+def test_saros_designation_projects_catalog_tt_to_lunation_and_series(
+    jd_tt: float,
+    is_solar: bool,
+    expected_lunation: int,
+    expected_series: int,
+) -> None:
+    assert eclipse._saros_designation_jd_tt(
+        jd_tt,
+        is_solar=is_solar,
+        is_lunar=not is_solar,
+    ) == (expected_lunation, expected_series)
+
+
+def test_saros_recurrence_relations_and_non_eclipse_policy() -> None:
+    solar_series = eclipse._saros_series_from_lunation(1, is_solar=True)
+    assert eclipse._saros_series_from_lunation(224, is_solar=True) == solar_series
+    assert eclipse._saros_series_from_lunation(359, is_solar=True) == solar_series + 1
+
+    assert eclipse._saros_designation_jd_tt(
+        2451545.0,
+        is_solar=False,
+        is_lunar=False,
+    ) == (None, None)
+    with pytest.raises(ValueError, match="both solar and lunar"):
+        eclipse._saros_designation_jd_tt(
+            2451545.0,
+            is_solar=True,
+            is_lunar=True,
+        )
+
+    assert eclipse._saros_cycle_position_jd(2451545.0) == 0.0
+
+
 def test_angular_separation_handles_wraparound() -> None:
     sep = angular_separation(359.9, 0.0, 0.1, 0.0)
     assert sep < 0.21
