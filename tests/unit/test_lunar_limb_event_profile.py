@@ -1220,10 +1220,7 @@ def test_ut1_epoch_is_inverted_to_utc_before_et_conversion(
 def test_reader_bound_light_cone_uses_physical_de441_translation_without_aberration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import moira.corrections as corrections
-    import moira.julian as julian
-    import moira.obliquity as obliquity
-    import moira.planets as planets
+    import moira._lunar_apparent as lunar_apparent
 
     identity = SimpleNamespace(
         planetary_ephemeris="DE441",
@@ -1244,20 +1241,19 @@ def test_reader_bound_light_cone_uses_physical_de441_translation_without_aberrat
         (0.0, 1.0, 0.0),
         (0.0, 0.0, 1.0),
     )
-    monkeypatch.setattr(lunar_limb, "_ut1_to_ephemeris_tt", lambda *_args: 100.0)
-    monkeypatch.setattr(lunar_limb, "_reader_identity_at", lambda *_args: identity)
-    monkeypatch.setattr(lunar_limb, "tt_to_tdb", lambda value: value)
-    monkeypatch.setattr(corrections, "apply_frame_bias", lambda vector: vector)
+    monkeypatch.setattr(lunar_apparent, "_ut1_to_ephemeris_tt", lambda *_args: 100.0)
+    monkeypatch.setattr(lunar_apparent, "_reader_identity_at", lambda *_args: identity)
+    monkeypatch.setattr(lunar_apparent, "tt_to_tdb", lambda value: value)
     monkeypatch.setattr(
-        corrections,
+        lunar_apparent,
         "_observer_position_icrf",
         lambda *_args, **_kwargs: (0.0, 0.0, 0.0),
     )
-    monkeypatch.setattr(planets, "_compose_rotation_matrix", lambda *_args, **_kwargs: identity_matrix)
-    monkeypatch.setattr(planets, "_apply_rotation_matrix", lambda _matrix, vector: vector)
-    monkeypatch.setattr(julian, "local_sidereal_time", lambda *_args: 0.0)
-    monkeypatch.setattr(obliquity, "nutation", lambda *_args: (0.0, 0.0))
-    monkeypatch.setattr(obliquity, "true_obliquity", lambda *_args: 23.4)
+    monkeypatch.setattr(lunar_apparent, "_compose_rotation_matrix", lambda *_args, **_kwargs: identity_matrix)
+    monkeypatch.setattr(lunar_apparent, "_apply_rotation_matrix", lambda _matrix, vector: vector)
+    monkeypatch.setattr(lunar_apparent, "local_sidereal_time", lambda *_args: 0.0)
+    monkeypatch.setattr(lunar_apparent, "nutation", lambda *_args: (0.0, 0.0))
+    monkeypatch.setattr(lunar_apparent, "true_obliquity", lambda *_args: 23.4)
 
     result = lunar_limb._reader_bound_moon_light_cone(
         99.0,

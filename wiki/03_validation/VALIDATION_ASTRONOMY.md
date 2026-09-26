@@ -32,6 +32,11 @@ The strongest current numerical results are:
   maxima are `0.000021829 arcsecond` and `0.002937 km`.
 - IAU 2006/2000A frame and Earth-rotation functions agree with their matching
   ERFA functions within `0.001 arcsecond` across the declared test epochs.
+- Lunar orientation matches five JPL Horizons geocentric/topocentric cases at
+  the declared `0.001 degree` surface and `0.002 degree` axis gates
+  (`0.02 degree` for Horizons' rounded bright-limb angle), while three rounded
+  NASA SVS holdouts pass `0.01 degree` after applying SVS's distinct
+  J2000-north convention.
 - NASA/GSFC, JPL Horizons, IOTA, USNO, and source-specific visibility corpora
   validate named eclipse, occultation, rise/set, and visibility slices. They do
   not establish universal event accuracy outside those slices.
@@ -120,6 +125,7 @@ where a dedicated differential exists; it is not assumed for every product.
 | Heliocentric distance extrema | JPL Horizons vectors; 8 bodies | `<= 1 day`, `<= 3e-4 AU` | Authority-validated for the next local extrema in each case |
 | Asteroid apparent ecliptic positions | Frozen JPL Horizons fixture; 203 cases, 61 bodies | `0.5 arcsecond` default; four named TNO exceptions at `1.5` or `5.0 arcseconds` | Product-specific authority fixture; not the planetary threshold |
 | Delta T policies | Source-priority, continuity, policy, and compatibility tests | Product-specific invariants and source envelopes | Documented/partially validated; no universal Delta-T accuracy claim |
+| Lunar orientation and libration | Native/SPICE matrices, JPL Horizons quantities 14-17, NASA SVS 2026 hourly data | Matrix `<= 3e-12`; Horizons surface `<= 0.001 degree`, axis `<= 0.002 degree`, rounded bright-limb `<= 0.02 degree`; SVS `<= 0.01 degree` | Authority-validated on two calibration and six disjoint holdout cases, including one topocentric site |
 | Solar and lunar eclipses | NASA/GSFC catalogs, detailed products, and geometric invariants | Product-specific classification, time, coordinate, and topology gates | Authority-validated only for named catalog/product slices |
 | Lunar occultations | JPL Horizons, IOTA, LOLA, cached Swiss cases, and invariants | Product-specific time/path/topography gates | Mixed authority, corroboration, and invariant evidence |
 | Rise, set, and transit | Four frozen JPL Horizons cases plus USNO checks | `<= 2 seconds` on the Horizons corpus | Authority-validated on the named bodies/sites/windows |
@@ -175,6 +181,40 @@ The principal Delta-T policies are:
 | `physical` | Explicit source-priority/scenario surface with uncertainty and accounting vessels |
 | `nasa_canon` | Compatibility with NASA eclipse-publication conventions |
 | `fixed` | Controlled sensitivity and reproducibility experiments |
+
+### 4.3 Lunar orientation and libration
+
+`tests/integration/test_lunar_orientation_spice_oracle.py` compares the native
+binary-PCK type-2 evaluator and the composed
+`J2000 -> MOON_ME_DE440_ME421` matrix with `spiceypy.pxform`. The five epochs
+include the PCK coverage endpoints and the shared segment boundary. The
+maximum permitted matrix-element residual is `3e-12`; SPICE is test-only and
+is not part of the production computation.
+
+`tests/integration/test_lunar_orientation_authority.py` separates calibration
+from holdout evidence. The two-case Horizons calibration contains an Earth
+geocentre query and a WGS-84 New York observer query. Three disjoint
+geocentric dates are retained as Horizons holdouts. Quantities 14 through 17
+govern sub-observer and subsolar longitude/latitude, apparent subsolar-point
+position angle (the bright limb), and apparent north-pole position angle.
+Surface coordinates must agree within `0.001 degree`; the north-pole angle
+uses a `0.002 degree` gate, which covers the measured true-of-date reduction
+difference. Horizons rounds the bright-limb value to `0.01 degree`, so its gate
+is `0.02 degree`.
+
+Three further hourly cases come from NASA SVS's 2026 Moon Phase and Libration
+JSON. Surface coordinates and the converted axis angle must agree within
+`0.01 degree`. SVS defines `posangle` against J2000 celestial north, whereas
+Moira's public value and Horizons quantity 17 use true-of-date north. The test
+therefore derives a J2000-basis diagnostic from the same lunar pole; it does
+not compare unlike angle conventions directly.
+
+All fixtures retain source URLs, query quantities or source-asset identity,
+retrieval time, byte length, SHA-256, and explicit longitude/position-angle
+conventions. The separate acquisition script is
+`scripts/build_lunar_orientation_authority_fixtures.py`. These results cover
+the named 2026 cases and admitted DE440/DE441 resource identities; they are
+not a universal error bound for every epoch in the PCK coverage interval.
 
 `tests/integration/test_delta_t_hybrid.py` and
 `tests/integration/test_delta_t_model_comparison.py` enforce policy routing,
@@ -664,6 +704,7 @@ Small offline examples:
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_horizons_rise_set_reference.py -q
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_eclipse_nasa_reference.py -q
 .\.venv\Scripts\python.exe -m pytest tests\integration\test_occultation_polar_topology_horizons_reference.py -q
+.\.venv\Scripts\python.exe -m pytest tests\integration\test_lunar_orientation_authority.py -q
 ```
 
 Live Horizons validation must be isolated to explicitly selected external
@@ -702,6 +743,10 @@ Primary or product-relevant authorities used by the named suites include:
   vectors, apparent places, observer tables, and named contact evidence;
 - [NAIF SPK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/spk.html)
   for SPK object and segment semantics;
+- [NAIF PCK Required Reading](https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/pck.html)
+  and the DE440 lunar PCK/FK resources for lunar rotation and frame semantics;
+- [NASA SVS Moon Phase and Libration 2026](https://svs.gsfc.nasa.gov/5587/)
+  for rounded hourly lunar surface and J2000-axis holdouts;
 - [NASA/GSFC Eclipse Web Site](https://eclipse.gsfc.nasa.gov/) for the named
   solar and lunar catalog and detailed-product comparisons;
 - [IOTA](https://occultations.org/) for named modern occultation limit and
@@ -725,6 +770,9 @@ Repository evidence records with more detail include:
 - `tests/fixtures/nasa_solar_penumbral_footprint_reference.json`;
 - `tests/fixtures/nasa_lunar_contact_instants_reference.json`;
 - `tests/fixtures/jpl_horizons_polar_occultation_reference.json`;
+- `tests/fixtures/lunar_orientation_horizons_calibration.json`;
+- `tests/fixtures/lunar_orientation_horizons_holdout.json`;
+- `tests/fixtures/lunar_orientation_svs_2026_holdout.json`;
 - `tests/fixtures/horizons_rise_set_reference.json`; and
 - `tests/fixtures/physical_visibility_phase7_evidence_registry.json`.
 

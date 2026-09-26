@@ -15,6 +15,7 @@
 #include "coordinates.hpp"
 #include "sidereal.hpp"
 #include "daf.hpp"
+#include "pck.hpp"
 #include "light_time.hpp"
 #include "evaluators.hpp"
 #include "separation.hpp"
@@ -784,6 +785,25 @@ py::tuple spk_chebyshev_series_bulk_evaluate_py(
     }
 }
 
+py::tuple daf_descriptor_to_py_tuple(const DafSummaryEntry& entry) {
+    py::list descriptor;
+    for (double value : entry.double_components) {
+        descriptor.append(value);
+    }
+    for (int32_t value : entry.integer_components) {
+        descriptor.append(value);
+    }
+    return py::tuple(descriptor);
+}
+
+py::tuple mat3_to_py_tuple(const Mat3& src) {
+    return py::make_tuple(
+        py::make_tuple(src[0][0], src[0][1], src[0][2]),
+        py::make_tuple(src[1][0], src[1][1], src[1][2]),
+        py::make_tuple(src[2][0], src[2][1], src[2][2])
+    );
+}
+
 py::dict read_daf_catalog_py(const std::string& path) {
     DafCatalog catalog;
     {
@@ -794,11 +814,7 @@ py::dict read_daf_catalog_py(const std::string& path) {
     for (const DafSummaryEntry& entry : catalog.summaries) {
         py::dict item;
         item["name"] = py::bytes(entry.name);
-        item["descriptor"] = py::make_tuple(
-            entry.start_second, entry.end_second, entry.target,
-            entry.center, entry.frame, entry.data_type,
-            entry.start_i, entry.end_i
-        );
+        item["descriptor"] = daf_descriptor_to_py_tuple(entry);
         summaries.append(std::move(item));
     }
 
@@ -820,11 +836,7 @@ py::dict catalog_to_py_dict(const DafCatalog& catalog) {
     for (const DafSummaryEntry& entry : catalog.summaries) {
         py::dict item;
         item["name"] = py::bytes(entry.name);
-        item["descriptor"] = py::make_tuple(
-            entry.start_second, entry.end_second, entry.target,
-            entry.center, entry.frame, entry.data_type,
-            entry.start_i, entry.end_i
-        );
+        item["descriptor"] = daf_descriptor_to_py_tuple(entry);
         summaries.append(std::move(item));
     }
 
@@ -922,6 +934,37 @@ std::shared_ptr<SpkSegmentEvaluator> load_spk_segment_evaluator_py(
 std::shared_ptr<NativeSpkKernelHandle> open_spk_kernel_py(const std::string& path) {
     py::gil_scoped_release release;
     return std::make_shared<NativeSpkKernelHandle>(path);
+}
+
+py::dict pck_catalog_to_py_dict(const NativePckKernelHandle& handle) {
+    py::list summaries;
+    for (const PckSummaryEntry& entry : handle.summaries()) {
+        py::dict item;
+        item["name"] = py::bytes(entry.name);
+        item["descriptor"] = py::make_tuple(
+            entry.start_second,
+            entry.end_second,
+            entry.frame_class_id,
+            entry.inertial_frame_id,
+            entry.data_type,
+            entry.start_i,
+            entry.end_i
+        );
+        summaries.append(std::move(item));
+    }
+    py::dict out;
+    out["locidw"] = handle.catalog.locidw;
+    out["locfmt"] = handle.catalog.locfmt;
+    out["nd"] = handle.catalog.nd;
+    out["ni"] = handle.catalog.ni;
+    out["little_endian"] = handle.catalog.little_endian;
+    out["summaries"] = std::move(summaries);
+    return out;
+}
+
+std::shared_ptr<NativePckKernelHandle> open_pck_kernel_py(const std::string& path) {
+    py::gil_scoped_release release;
+    return std::make_shared<NativePckKernelHandle>(path);
 }
 
 py::dict read_spk_type13_segment_payload_py(const std::string& path, int32_t start_i, int32_t end_i, bool little_endian) {
@@ -1299,6 +1342,39 @@ PYBIND11_MODULE(_moira_native, m) {
         })
         .def("segment_cache_limit", [](NativeSpkKernelHandle& self) {
             return self.segment_cache_limit();
+        });
+
+    py::class_<NativePckKernelHandle, std::shared_ptr<NativePckKernelHandle>>(m, "NativePckKernelHandle")
+        .def("catalog", [](const NativePckKernelHandle& self) {
+            return pck_catalog_to_py_dict(self);
+        })
+        .def("coverage", [](const NativePckKernelHandle& self, int32_t frame_class_id) {
+            const auto coverage = self.coverage_jd(frame_class_id);
+            return py::make_tuple(coverage.first, coverage.second);
+        }, py::arg("frame_class_id") = 31008)
+        .def("euler_angles", [](NativePckKernelHandle& self, double jd_tdb, int32_t frame_class_id) {
+            std::array<double, 3> angles;
+            {
+                py::gil_scoped_release release;
+                angles = self.euler_angles(jd_tdb, frame_class_id);
+            }
+            return py::make_tuple(angles[0], angles[1], angles[2]);
+        }, py::arg("jd_tdb"), py::arg("frame_class_id") = 31008)
+        .def("rotation_matrix", [](NativePckKernelHandle& self, double jd_tdb, int32_t frame_class_id) {
+            Mat3 matrix;
+            {
+                py::gil_scoped_release release;
+                matrix = self.rotation_matrix(jd_tdb, frame_class_id);
+            }
+            return mat3_to_py_tuple(matrix);
+        }, py::arg("jd_tdb"), py::arg("frame_class_id") = 31008)
+        .def("close", [](NativePckKernelHandle& self) {
+            py::gil_scoped_release release;
+            self.close();
+        })
+        .def("segment_cache_size", [](const NativePckKernelHandle& self) {
+            py::gil_scoped_release release;
+            return self.segment_cache_size();
         });
 
     py::class_<NativePlanetaryEvaluator, std::shared_ptr<NativePlanetaryEvaluator>>(m, "NativePlanetaryEvaluator")
@@ -1953,6 +2029,7 @@ PYBIND11_MODULE(_moira_native, m) {
 
     m.def("read_daf_catalog", &read_daf_catalog_py, py::arg("path"));
     m.def("open_spk_kernel", &open_spk_kernel_py, py::arg("path"));
+    m.def("open_pck_kernel", &open_pck_kernel_py, py::arg("path"));
     m.def("read_spk_chebyshev_segment_payload", &read_spk_chebyshev_segment_payload_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"), py::arg("data_type"));
     m.def("load_spk_segment_evaluator", &load_spk_segment_evaluator_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"), py::arg("data_type"));
     m.def("read_spk_type13_segment_payload", &read_spk_type13_segment_payload_py, py::arg("path"), py::arg("start_i"), py::arg("end_i"), py::arg("little_endian"));

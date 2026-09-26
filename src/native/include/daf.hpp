@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -24,14 +25,19 @@ namespace native {
 
 struct DafSummaryEntry {
     std::string name;
-    double start_second;
-    double end_second;
-    int32_t target;
-    int32_t center;
-    int32_t frame;
-    int32_t data_type;
-    int32_t start_i;
-    int32_t end_i;
+    std::vector<double> double_components;
+    std::vector<int32_t> integer_components;
+
+    // SPK projection retained for the existing reader/evaluator boundary.
+    // These fields are populated only for ND=2/NI=6 summaries.
+    double start_second = 0.0;
+    double end_second = 0.0;
+    int32_t target = 0;
+    int32_t center = 0;
+    int32_t frame = 0;
+    int32_t data_type = 0;
+    int32_t start_i = 0;
+    int32_t end_i = 0;
 };
 
 struct DafCatalog {
@@ -214,7 +220,7 @@ inline std::pair<std::string, bool> detect_format(const std::array<char, 1024>& 
         }
         throw std::runtime_error("unsupported DAF format marker");
     }
-    throw std::runtime_error("file is not a recognized DAF/SPK kernel");
+    throw std::runtime_error("file is not a recognized DAF kernel");
 }
 
 } // namespace detail
@@ -235,20 +241,40 @@ inline DafCatalog read_daf_catalog(std::ifstream& file) {
     catalog.bward = detail::read_u32_swapped(file_record.data() + 80, swap_bytes);
     catalog.free = detail::read_u32_swapped(file_record.data() + 84, swap_bytes);
 
+    if (catalog.nd == 0 || catalog.ni == 0) {
+        throw std::runtime_error("DAF summary format must contain double and integer components");
+    }
+
     const size_t summary_length = static_cast<size_t>(catalog.nd) * 8 + static_cast<size_t>(catalog.ni) * 4;
     const size_t summary_step = summary_length + ((8 - (summary_length % 8)) % 8);
+    if (summary_step == 0 || summary_step > 1000) {
+        throw std::runtime_error("DAF summary format does not fit in a summary record");
+    }
+    const size_t max_summaries_per_record = 1000 / summary_step;
 
     uint32_t record_number = catalog.fward;
+    size_t visited_records = 0;
     while (record_number != 0) {
+        if (++visited_records > 1'000'000) {
+            throw std::runtime_error("DAF summary record chain is cyclic or unbounded");
+        }
         const auto summary_record = detail::read_record(file, record_number);
         const auto name_record = detail::read_record(file, record_number + 1);
 
-        const uint32_t next_record = static_cast<uint32_t>(
-            detail::read_f64_swapped(summary_record.data(), swap_bytes)
-        );
-        const uint32_t n_summaries = static_cast<uint32_t>(
-            detail::read_f64_swapped(summary_record.data() + 16, swap_bytes)
-        );
+        const double next_record_value = detail::read_f64_swapped(summary_record.data(), swap_bytes);
+        const double n_summaries_value = detail::read_f64_swapped(summary_record.data() + 16, swap_bytes);
+        if (
+            !std::isfinite(next_record_value) || next_record_value < 0.0
+            || next_record_value > static_cast<double>(std::numeric_limits<uint32_t>::max())
+            || std::floor(next_record_value) != next_record_value
+            || !std::isfinite(n_summaries_value) || n_summaries_value < 0.0
+            || n_summaries_value > static_cast<double>(max_summaries_per_record)
+            || std::floor(n_summaries_value) != n_summaries_value
+        ) {
+            throw std::runtime_error("invalid DAF summary record control values");
+        }
+        const uint32_t next_record = static_cast<uint32_t>(next_record_value);
+        const uint32_t n_summaries = static_cast<uint32_t>(n_summaries_value);
 
         for (uint32_t summary_index = 0; summary_index < n_summaries; ++summary_index) {
             const size_t summary_offset = 24 + static_cast<size_t>(summary_index) * summary_step;
@@ -258,14 +284,34 @@ inline DafCatalog read_daf_catalog(std::ifstream& file) {
 
             DafSummaryEntry entry;
             entry.name = detail::strip_ascii_space(std::string(name_ptr, summary_step));
-            entry.start_second = detail::read_f64_swapped(summary_ptr, swap_bytes);
-            entry.end_second = detail::read_f64_swapped(summary_ptr + 8, swap_bytes);
-            entry.target = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 16, swap_bytes));
-            entry.center = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 20, swap_bytes));
-            entry.frame = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 24, swap_bytes));
-            entry.data_type = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 28, swap_bytes));
-            entry.start_i = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 32, swap_bytes));
-            entry.end_i = static_cast<int32_t>(detail::read_u32_swapped(summary_ptr + 36, swap_bytes));
+            entry.double_components.reserve(catalog.nd);
+            entry.integer_components.reserve(catalog.ni);
+            for (uint32_t component = 0; component < catalog.nd; ++component) {
+                entry.double_components.push_back(detail::read_f64_swapped(
+                    summary_ptr + static_cast<size_t>(component) * 8,
+                    swap_bytes
+                ));
+            }
+            const size_t integer_offset = static_cast<size_t>(catalog.nd) * 8;
+            for (uint32_t component = 0; component < catalog.ni; ++component) {
+                entry.integer_components.push_back(static_cast<int32_t>(
+                    detail::read_u32_swapped(
+                        summary_ptr + integer_offset + static_cast<size_t>(component) * 4,
+                        swap_bytes
+                    )
+                ));
+            }
+
+            if (catalog.nd == 2 && catalog.ni == 6) {
+                entry.start_second = entry.double_components[0];
+                entry.end_second = entry.double_components[1];
+                entry.target = entry.integer_components[0];
+                entry.center = entry.integer_components[1];
+                entry.frame = entry.integer_components[2];
+                entry.data_type = entry.integer_components[3];
+                entry.start_i = entry.integer_components[4];
+                entry.end_i = entry.integer_components[5];
+            }
             catalog.summaries.push_back(std::move(entry));
         }
 
@@ -527,6 +573,12 @@ public:
             throw std::runtime_error("unable to open DAF file");
         }
         catalog = read_daf_catalog(file);
+        if (
+            (catalog.locidw != "DAF/SPK" && catalog.locidw != "NAIF/DAF")
+            || catalog.nd != 2 || catalog.ni != 6
+        ) {
+            throw std::runtime_error("native SPK handle requires a DAF/SPK ND=2 NI=6 kernel");
+        }
     }
 
     SpkChebyshevSegmentPayload read_segment_payload(

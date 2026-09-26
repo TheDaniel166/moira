@@ -111,6 +111,17 @@ from moira.phenomena import (
     planet_phenomena_at,
     resonance,
 )
+from moira.lunar_orientation import (
+    LunarApparentGeometryError,
+    LunarObserver,
+    LunarOrientation,
+    LunarOrientationCoverageError,
+    LunarOrientationResourceError,
+    LunarOrientationResourceIdentityError,
+    LunarOrientationResourceMissingError,
+    LunarOrientationSource,
+    lunar_orientation_at,
+)
 
 __all__ = [
     # Phase quantities
@@ -137,4 +148,14 @@ __all__ = [
     "conjunctions_in_range",
     "resonance",
     "planet_phenomena_at",
+    # Lunar visible-disc orientation
+    "LunarApparentGeometryError",
+    "LunarObserver",
+    "LunarOrientation",
+    "LunarOrientationCoverageError",
+    "LunarOrientationResourceError",
+    "LunarOrientationResourceIdentityError",
+    "LunarOrientationResourceMissingError",
+    "LunarOrientationSource",
+    "lunar_orientation_at",
 ]

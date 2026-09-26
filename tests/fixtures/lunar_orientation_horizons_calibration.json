@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "authority": "JPL Horizons API",
+  "fetched_at_utc": "2026-09-26T19:08:36Z",
+  "target": "Moon (301)",
+  "target_frame": "MOON_ME_DE440_ME421",
+  "longitude_convention": "east-positive",
+  "position_angle_convention": "counter-clockwise from true-of-date north",
+  "quantities": [14, 15, 16, 17],
+  "cases": [
+    {
+      "utc": "2026-09-26T00:00:00Z",
+      "observer": null,
+      "sub_observer_longitude_east_deg": -5.098805,
+      "sub_observer_latitude_deg": -2.821523,
+      "sub_solar_longitude_east_deg": 3.665612,
+      "sub_solar_latitude_deg": -0.861718,
+      "bright_limb_position_angle_deg": 260.54,
+      "axis_position_angle_deg": 338.0822,
+      "query_url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&START_TIME=%272026-09-26+00%3A00%27&STOP_TIME=%272026-09-26+00%3A02%27&STEP_SIZE=%271+m%27&QUANTITIES=%2714%2C15%2C16%2C17%27",
+      "response_byte_length": 7928,
+      "response_sha256": "f246848eb1e5bf94750264c2286eb8ac4582203e655a8c5087a0a7288c1ed90d"
+    },
+    {
+      "utc": "2026-09-26T00:00:00Z",
+      "observer": {
+        "latitude_deg": 40.7128,
+        "longitude_deg": -74.006,
+        "elevation_m": 10.0
+      },
+      "sub_observer_longitude_east_deg": -4.728872,
+      "sub_observer_latitude_deg": -1.998506,
+      "sub_solar_longitude_east_deg": 3.665611,
+      "sub_solar_latitude_deg": -0.861718,
+      "bright_limb_position_angle_deg": 255.66,
+      "axis_position_angle_deg": 338.0596,
+      "query_url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40399%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27-74.006%2C40.7128%2C0.01%27&START_TIME=%272026-09-26%2000%3A00%27&STOP_TIME=%272026-09-26%2000%3A02%27&STEP_SIZE=%271%20m%27&QUANTITIES=%2714%2C15%2C16%2C17%27",
+      "response_byte_length": 9336,
+      "response_sha256": "959398f21db166b4c22fa57e58246f1ef819a483acc5a2cc762964abc6d822b9"
+    }
+  ]
+}

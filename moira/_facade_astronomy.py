@@ -136,6 +136,17 @@ Canon: Moira Sovereign Facade Architecture; moira.facade astronomy policy.
             "apparent_magnitude": _mag(body, jd_ut1),
         }
 
+    def lunar_orientation(self, dt: datetime, observer=None):
+        """Return lunar libration and visible-disc orientation at ``dt``."""
+
+        facade = _facade_module()
+        jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
+        return facade.lunar_orientation_at(
+            jd_ut1,
+            observer=observer,
+            reader=self._reader,
+        )
+
     def synodic_phase(self, body1: str, body2: str, dt: datetime) -> dict[str, float | str]:
         """Return synodic phase metrics for an arbitrary body pair."""
         _ = self._reader

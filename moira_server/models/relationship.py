@@ -8,6 +8,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from moira.constants import Body
+
 from .chart import ChartResponse, HousesResponse
 
 
@@ -892,6 +894,32 @@ class SynastryConditionNetworkProfileResponse(_StrictModel):
 class SingleChartAnalysisRequest(_StrictModel):
     chart: RelationshipPartyRequest
     include_nodes: bool = False
+
+    @field_validator("include_nodes", mode="before")
+    @classmethod
+    def _strict_include_nodes(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("include_nodes must be a boolean")
+        return value
+
+    @model_validator(mode="after")
+    def _jones_planet_set(self) -> "SingleChartAnalysisRequest":
+        if self.include_nodes:
+            raise ValueError(
+                "Jones chart-shape classification excludes lunar nodes; "
+                "include_nodes must be false"
+            )
+
+        if self.chart.bodies is not None:
+            required = frozenset(Body.ALL_PLANETS)
+            supplied = self.chart.bodies
+            if len(supplied) != len(required) or frozenset(supplied) != required:
+                raise ValueError(
+                    "Jones chart-shape classification requires exactly the ten "
+                    "canonical planets from Sun through Pluto"
+                )
+
+        return self
 
 
 class ChartShapeResponse(_StrictModel):

@@ -502,6 +502,7 @@ message.
 | `sidereal_chart(dt, ayanamsa_system=Ayanamsa.LAHIRI, bodies=None)` | `dict[str, float]` | Body → sidereal longitude |
 | `heliocentric(dt, bodies=None)` | `dict[str, HeliocentricData]` | Heliocentric ecliptic positions |
 | `phase(body, dt)` | `dict` | Phase angle, illumination, angular diameter, apparent magnitude |
+| `lunar_orientation(dt, observer=None)` | `LunarOrientation` | Total apparent lunar libration and visible-disc orientation; optional WGS-84 topocentric observer |
 | `twilight(dt, latitude, longitude)` | `TwilightTimes` | Civil/nautical/astronomical twilight times |
 
 ### Aspects & patterns
@@ -1475,10 +1476,22 @@ roles without arbitrary left/right labels.
 from moira.facade import classify_chart_shape, ChartShape, ChartShapeType
 
 shape = classify_chart_shape(chart.longitudes(include_nodes=False))
-# ChartShape(type, description, focal_point)
+# ChartShape(shape, occupied_arc, largest_gap, leading_planet,
+#            handle_planet, clusters, handle_bodies)
 ```
 
-`ChartShapeType` constants: `BUNDLE  BOWL  BUCKET  LOCOMOTIVE  FAN  SEESAW  SPLASH  SPLAY`
+`ChartShapeType` constants: `BUNDLE  BOWL  BUCKET  LOCOMOTIVE  SEESAW  SPLAY  SPLASH`
+
+Jones classification requires exactly the ten canonical bodies from Sun
+through Pluto; nodes, angles, asteroids, omissions, and additions are rejected.
+The deterministic detector follows Marc Edmund Jones's primary definitions in
+*Essentials of Astrological Analysis*: a Bucket is a one-nine pattern, Seesaw
+group boundaries use his functioning-sextile or greater-than-70-degree rule,
+and a Splay may have a singleton reins group. Jones also treats borderline
+classification as approximate, so the ordered detector precedence and final
+Splash tie-break are Moira engine policy, not claimed as source-supplied rigid
+bins. See [`PROVENANCE.md`](../../PROVENANCE.md#jones-chart-shape-doctrine) for
+the primary-source ledger and the source/policy boundary.
 
 ### Midpoints
 
@@ -5027,6 +5040,8 @@ from moira.sky.observation import (
     next_moon_phase, moon_phases_in_range,
     next_conjunction, conjunctions_in_range,
     resonance, planet_phenomena_at,
+    LunarObserver, LunarOrientation, LunarOrientationSource,
+    lunar_orientation_at,
 )
 ```
 
@@ -5041,6 +5056,27 @@ from moira.sky.observation import (
 | `synodic_phase_state(angle_deg)` | `→ str` | Coarse phase label (e.g. "waxing", "full", "waning") |
 | `angular_diameter(body, jd_ut)` | `→ float` | Apparent angular diameter in arcseconds |
 | `apparent_magnitude(body, jd_ut)` | `→ float` | Apparent visual magnitude (V band) |
+| `lunar_orientation_at(jd_ut, *, observer=None, reader=None)` | `→ LunarOrientation` | Geocentric or WGS-84 topocentric total apparent lunar libration and disc orientation |
+
+**Lunar orientation**
+
+`LunarOrientation` exposes east-positive
+`sub_observer_longitude_east_deg` and `sub_solar_longitude_east_deg` in
+`[-180, 180)`, north-positive surface latitudes, the solar colongitude, and
+axis/bright-limb position angles in `[0, 360)`. The `libration_longitude_deg`
+and `libration_latitude_deg` properties are exact aliases of the sub-observer
+coordinates. Position angles increase eastward/counter-clockwise from
+true-of-date celestial north in a north-up view. The bright-limb angle is
+`None` only when its sky-plane projection is singular.
+
+Pass `LunarObserver(latitude_deg, longitude_deg, elevation_m=0.0)` for
+topocentric diurnal libration; omit it for the geocentre. Direct calls require
+an explicit DE441/LE441 reader or an active reader context. The result's
+`LunarOrientationSource` records translation/orientation identities, the
+resolved `MOON_ME_DE440_ME421` frame, exact PCK/FK digests, descriptor-derived
+coverage, and light-time/time-scale policy. Missing, mismatched, or
+out-of-coverage orientation resources raise the corresponding named
+`LunarOrientationResource*` error rather than selecting a fallback.
 
 **Phenomena search**
 

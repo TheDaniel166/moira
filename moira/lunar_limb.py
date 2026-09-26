@@ -74,8 +74,7 @@ except ImportError as exc:
     _spiceypy_exc = exc
 
 from .constants import MOON_RADIUS_KM
-from ._ephemeris_time import _reader_identity_at, _ut1_to_ephemeris_tt
-from .julian import J2000, _ut1_to_utc, tt_to_tdb
+from .julian import J2000, _ut1_to_utc
 from .spk_reader import KernelReader
 try:
     from . import moira_native
@@ -774,7 +773,6 @@ _CONTACT_ORIENTATION_FRAME = "MOON_ME_DE440_ME421"
 _CONTACT_SURFACE_FRAME = "DE421 mean Earth/polar axis (ME) cartographic frame"
 _CONTACT_FRAME_ALIGNMENT_MAX_M = 0.534
 _CONTACT_FRAME_ALIGNMENT_INTERVAL = "2000-01-01 through 2040-01-01 TDB"
-_LIGHT_SPEED_KM_S = 299_792.458
 
 _STAC_SEARCH_URL = "https://stac.astrogeology.usgs.gov/api/search"
 _LOLA_COLLECTION = "lunar_orbiter_laser_altimeter"
@@ -1459,19 +1457,6 @@ def _observer_limb_context(
     )
 
 
-def _matrix_columns_from_transform(transform) -> tuple[tuple[float, ...], ...]:
-    columns = tuple(transform(axis) for axis in (
-        (1.0, 0.0, 0.0),
-        (0.0, 1.0, 0.0),
-        (0.0, 0.0, 1.0),
-    ))
-    return (
-        (columns[0][0], columns[1][0], columns[2][0]),
-        (columns[0][1], columns[1][1], columns[2][1]),
-        (columns[0][2], columns[1][2], columns[2][2]),
-    )
-
-
 def _transpose_matrix_vector(
     matrix: Sequence[Sequence[float]],
     vector: Sequence[float],
@@ -1490,120 +1475,28 @@ def _reader_bound_moon_light_cone(
     observer_elev_m: float,
     reader: KernelReader,
 ) -> _TopocentricMoonLightCone:
-    """Solve the physical DE441 Moon-to-observer light cone in ICRF.
+    """Compatibility vessel over the shared physical lunar light cone."""
 
-    The terrestrial observer is fixed at the UT1 reception epoch.  The Moon is
-    iterated to its retarded TT emission epoch using the same content-identified
-    DE441/LE441 reader.  Annual and diurnal aberration are deliberately absent:
-    this vector is a physical surface-projection ray, not an observer-rest-frame
-    apparent direction.
-    """
+    from ._lunar_apparent import LunarApparentGeometryError, lunar_apparent_context
 
-    from .corrections import _observer_position_icrf
-    from .julian import local_sidereal_time
-    from .obliquity import nutation, true_obliquity
-    from .planets import (
-        _apply_rotation_matrix,
-        _compose_rotation_matrix,
-    )
-
-    epoch = _finite_float("jd_ut1", jd_ut1)
-    jd_tt = _ut1_to_ephemeris_tt(epoch, reader)
-    identity = _reader_identity_at(reader, jd_tt)
-    if (
-        identity is None
-        or identity.planetary_ephemeris != "DE441"
-        or identity.lunar_ephemeris != "LE441"
-    ):
-        label = None if identity is None else identity.summary_label
-        raise LunarLimbResourceError(
-            "topographic contact profiles require a content-identified "
-            f"DE441/LE441 reader; received {label!r}"
+    try:
+        context = lunar_apparent_context(
+            jd_ut1,
+            observer=(observer_lat, observer_lon, observer_elev_m),
+            reader=reader,
+            include_solar=False,
         )
-
-    rotation = _compose_rotation_matrix(jd_tt, with_nutation=True)
-
-    def icrf_to_true_of_date(vector: Sequence[float]) -> tuple[float, float, float]:
-        rotated = _apply_rotation_matrix(
-            rotation,
-            (float(vector[0]), float(vector[1]), float(vector[2])),
-        )
-        return (float(rotated[0]), float(rotated[1]), float(rotated[2]))
-
-    full_rotation = _matrix_columns_from_transform(icrf_to_true_of_date)
-    dpsi_deg, _ = nutation(jd_tt)
-    lst_deg = local_sidereal_time(
-        epoch,
-        observer_lon,
-        dpsi_deg,
-        true_obliquity(jd_tt),
-    )
-    observer_true_of_date = _observer_position_icrf(
-        observer_lat,
-        observer_lon,
-        lst_deg,
-        observer_elev_m,
-        jd_ut=epoch,
-        observer_frame="equatorial_of_date",
-    )
-    observer_icrf = _transpose_matrix_vector(
-        full_rotation,
-        observer_true_of_date,
-    )
-
-    ssb_emb_reception = reader.position(0, 3, jd_tt)
-    emb_earth_reception = reader.position(3, 399, jd_tt)
-    observer_ssb = tuple(
-        float(ssb_emb_reception[index])
-        + float(emb_earth_reception[index])
-        + observer_icrf[index]
-        for index in range(3)
-    )
-
-    seconds_per_day = 86_400.0
-    # The lunar one-way light time is about 1.3 seconds, not 1.3 days.  A
-    # physically scaled seed also avoids asking a boundary-near kernel for an
-    # unnecessary, day-retarded first witness.
-    light_time_days = 1.3 / seconds_per_day
-    moon_to_observer = (0.0, 0.0, 0.0)
-    emission_jd_tt = jd_tt - light_time_days
-    for _iteration in range(16):
-        emission_jd_tt = jd_tt - light_time_days
-        ssb_emb_emission = reader.position(0, 3, emission_jd_tt)
-        emb_moon_emission = reader.position(3, 301, emission_jd_tt)
-        moon_to_observer = tuple(
-            observer_ssb[index]
-            - float(ssb_emb_emission[index])
-            - float(emb_moon_emission[index])
-            for index in range(3)
-        )
-        distance_km = math.sqrt(sum(value * value for value in moon_to_observer))
-        if not math.isfinite(distance_km) or distance_km <= 0.0:
-            raise LunarLimbResourceError(
-                "DE441 lunar light-cone distance must be finite and positive"
-            )
-        next_light_time_days = distance_km / (_LIGHT_SPEED_KM_S * seconds_per_day)
-        # 1e-12 day is about 86 ns (2.6 cm of light path), far below the
-        # millisecond public contact tolerance while remaining stable against
-        # binary64 SPK evaluation noise during dense root refinement.
-        if abs(next_light_time_days - light_time_days) <= 1.0e-12:
-            light_time_days = next_light_time_days
-            break
-        light_time_days = next_light_time_days
-    else:
-        raise LunarLimbResourceError("DE441 lunar light-cone iteration did not converge")
-
-    observer_to_moon_icrf = _norm(tuple(-value for value in moon_to_observer))
-    et_emission = (tt_to_tdb(emission_jd_tt) - J2000) * seconds_per_day
+    except LunarApparentGeometryError as exc:
+        raise LunarLimbResourceError(str(exc)) from exc
     return _TopocentricMoonLightCone(
-        jd_tt_reception=jd_tt,
-        jd_tt_emission=emission_jd_tt,
-        et_emission=et_emission,
-        distance_km=distance_km,
-        observer_ssb_icrf=observer_ssb,
-        observer_to_moon_icrf=observer_to_moon_icrf,
-        icrf_to_true_of_date=full_rotation,
-        translation_label=identity.summary_label,
+        jd_tt_reception=context.jd_tt_reception,
+        jd_tt_emission=context.jd_tt_lunar_emission,
+        et_emission=(context.jd_tdb_lunar_emission - J2000) * 86_400.0,
+        distance_km=context.observer_distance_km,
+        observer_ssb_icrf=context.observer_ssb_icrf,
+        observer_to_moon_icrf=context.observer_to_moon_icrf,
+        icrf_to_true_of_date=context.icrf_to_true_of_date,
+        translation_label=context.translation_label,
     )
 
 
@@ -1648,20 +1541,17 @@ def _reader_bound_observer_limb_context(
         _transpose_matrix_vector(light_cone.icrf_to_true_of_date, east_of_date)
     )
 
-    j2000_to_moon = sp.pxform(
-        "J2000",
-        _CONTACT_ORIENTATION_FRAME,
-        light_cone.et_emission,
+    from ._lunar_orientation_resources import lunar_me_rotation
+
+    j2000_to_moon = lunar_me_rotation(
+        J2000 + light_cone.et_emission / 86_400.0
     )
 
     def rotate_to_moon(vector: Sequence[float]) -> tuple[float, float, float]:
-        if moira_native is not None and hasattr(
-            moira_native,
-            "rotation_matrix_apply",
-        ):
-            raw = moira_native.rotation_matrix_apply(j2000_to_moon, vector)
-        else:
-            raw = sp.mxv(j2000_to_moon, list(vector))
+        raw = tuple(
+            sum(j2000_to_moon[row][column] * vector[column] for column in range(3))
+            for row in range(3)
+        )
         return _norm((float(raw[0]), float(raw[1]), float(raw[2])))
 
     moon_to_observer_moon = rotate_to_moon(
@@ -1669,14 +1559,12 @@ def _reader_bound_observer_limb_context(
     )
     sky_north_moon = rotate_to_moon(north_j2000)
     sky_east_moon = rotate_to_moon(east_j2000)
-    if moira_native is not None and hasattr(moira_native, "vec3_to_lonlat_signed"):
-        lon_deg, lat_deg, _ = moira_native.vec3_to_lonlat_signed(
-            moira_native.Vec3(*moon_to_observer_moon)
-        )
-    else:
-        _, lon_rad, lat_rad = sp.reclat(list(moon_to_observer_moon))
-        lon_deg = math.degrees(lon_rad)
-        lat_deg = math.degrees(lat_rad)
+    lon_deg = math.degrees(
+        math.atan2(moon_to_observer_moon[1], moon_to_observer_moon[0])
+    )
+    lat_deg = math.degrees(
+        math.asin(max(-1.0, min(1.0, moon_to_observer_moon[2])))
+    )
 
     context = _ObserverLimbContext(
         subobserver_lon_deg=float(lon_deg),

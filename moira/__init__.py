@@ -86,6 +86,17 @@ from .phenomena import (
     ProximityEvent, proximity_events_in_range, solar_condition_events_in_range,
     solar_condition_at,
 )
+from .lunar_orientation import (
+    LunarApparentGeometryError,
+    LunarObserver,
+    LunarOrientation,
+    LunarOrientationCoverageError,
+    LunarOrientationResourceError,
+    LunarOrientationResourceIdentityError,
+    LunarOrientationResourceMissingError,
+    LunarOrientationSource,
+    lunar_orientation_at,
+)
 from .relationship_forecasting import (
     RelationshipChartKind,
     RelationshipTargetKind,
@@ -1226,6 +1237,15 @@ __all__ = [
     "Moira",
     "Chart",
     "MissingEphemerisKernelError",
+    "LunarApparentGeometryError",
+    "LunarObserver",
+    "LunarOrientation",
+    "LunarOrientationCoverageError",
+    "LunarOrientationResourceError",
+    "LunarOrientationResourceIdentityError",
+    "LunarOrientationResourceMissingError",
+    "LunarOrientationSource",
+    "lunar_orientation_at",
     "Body",
     "HouseSystem",
     "Ayanamsa",

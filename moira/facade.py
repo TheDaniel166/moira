@@ -863,6 +863,17 @@ from .rise_set import (
     twilight_times,
 )
 from .phase import angular_diameter
+from .lunar_orientation import (
+    LunarApparentGeometryError,
+    LunarObserver,
+    LunarOrientation,
+    LunarOrientationCoverageError,
+    LunarOrientationResourceError,
+    LunarOrientationResourceIdentityError,
+    LunarOrientationResourceMissingError,
+    LunarOrientationSource,
+    lunar_orientation_at,
+)
 from .dignities import (
     sect_light, is_day_chart, almuten_figuris, almuten_of_degree, find_phasis,
     halb_required_hemisphere, is_in_hayz, is_in_sect,
@@ -1864,6 +1875,10 @@ __all__ = [
     "StelliumAssociation", "StelliumMatch", "StelliumGroup", "StelliumEvaluation",
     "StelliumCoverage", "StelliumHouseReceipt", "StelliumAnalysis", "analyze_stelliums",
     "Moira", "Chart", "MissingEphemerisKernelError",
+    "LunarApparentGeometryError", "LunarObserver", "LunarOrientation",
+    "LunarOrientationCoverageError", "LunarOrientationResourceError",
+    "LunarOrientationResourceIdentityError", "LunarOrientationResourceMissingError",
+    "LunarOrientationSource", "lunar_orientation_at",
     "Body", "HouseSystem", "Ayanamsa",
     "PlanetData", "PlanetReductionBreakdown", "PlanetReductionStage",
     "planet_reduction_breakdown_at",

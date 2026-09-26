@@ -86,6 +86,38 @@ def test_derived_chart_routes_reject_invalid_aspect_policy(
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    "override",
+    [
+        {"include_nodes": True},
+        {"include_nodes": 1},
+        {"chart": {**_pair_payload()["first"], "bodies": ["Sun", "Moon"]}},
+        {
+            "chart": {
+                **_pair_payload()["first"],
+                "bodies": [
+                    "Sun", "Moon", "Mercury", "Venus", "Mars",
+                    "Jupiter", "Saturn", "Uranus", "Neptune", "True Node",
+                ],
+            }
+        },
+    ],
+)
+def test_chart_shape_route_rejects_non_jones_planet_sets(
+    client_with_engine: TestClient,
+    override: dict[str, object],
+) -> None:
+    payload: dict[str, object] = {
+        "chart": _pair_payload()["first"],
+        "include_nodes": False,
+    }
+    payload.update(override)
+
+    response = client_with_engine.post("/v1/chart-shape/classify", json=payload)
+
+    assert response.status_code == 422
+
+
 @pytest.mark.requires_ephemeris
 @pytest.mark.parametrize(
     ("method", "extra"),

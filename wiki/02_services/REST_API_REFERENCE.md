@@ -833,6 +833,14 @@ never satisfy the count. Legacy `/v1/patterns/*` remains unchanged. See
 | POST | `/v1/midpoints/weighting` | `midpoint_weighting_route` |
 | POST | `/v1/midpoints/clusters` | `midpoint_clusters_route` |
 
+`POST /v1/chart-shape/classify` implements Marc Edmund Jones's ten-body
+temperament method. The effective request must exclude nodes and must use
+exactly Sun through Pluto; `include_nodes: true`, a body subset, duplicate
+bodies, or any extra point fails with the standard HTTP 422 validation
+envelope. The nested chart's default body selection already supplies the
+canonical ten, so callers normally omit `chart.bodies` and send
+`include_nodes: false` (the route default).
+
 ### Exact Relationship-Chart Transit Boundary
 
 `POST /v1/composite/transits` and `POST /v1/davison/transits` build one

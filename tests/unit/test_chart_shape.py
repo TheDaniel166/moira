@@ -41,24 +41,24 @@ _BOWL = {
     "Jupiter": 100, "Saturn": 120, "Uranus": 140, "Neptune": 160, "Pluto": 170,
 }
 
-# Bucket: 9 planets within 120 degrees + 1 handle (Pluto at 240, isolated >= 60 from both rims)
+# Bucket: 9 planets within 120 degrees + 1 handle (Pluto in the opposite hemisphere)
 _BUCKET = {
     "Sun": 0, "Moon": 15, "Mercury": 30, "Venus": 45, "Mars": 60,
     "Jupiter": 75, "Saturn": 90, "Uranus": 105, "Neptune": 120, "Pluto": 240,
 }
 
-# Bucket with a tight conjunction-pair handle: 8 bowl planets within 105
-# degrees + a Neptune/Pluto pair (6 degrees apart) isolated >= 60 from each rim
+# Two-eight Seesaw with a close Neptune/Pluto group.  Earlier Moira releases
+# treated the pair as a Bucket handle, but Jones's Bucket is explicitly one-nine.
 _BUCKET_PAIR = {
     "Sun": 0, "Moon": 15, "Mercury": 30, "Venus": 45, "Mars": 60,
     "Jupiter": 75, "Saturn": 90, "Uranus": 105,
     "Neptune": 250, "Pluto": 256,
 }
 
-# Locomotive: 10 planets in 220 degrees (one clear gap of 140 degrees)
+# Locomotive: 10 planets in 230 degrees (one defining 130-degree trine gap)
 _LOCOMOTIVE = {
     "Sun": 0, "Moon": 25, "Mercury": 50, "Venus": 75, "Mars": 100,
-    "Jupiter": 125, "Saturn": 150, "Uranus": 175, "Neptune": 200, "Pluto": 220,
+    "Jupiter": 125, "Saturn": 150, "Uranus": 175, "Neptune": 200, "Pluto": 230,
 }
 
 # Seesaw: two opposing clusters each 5 planets, two 140-degree gaps
@@ -67,7 +67,7 @@ _SEESAW = {
     "Jupiter": 190, "Saturn": 200, "Uranus": 210, "Neptune": 220, "Pluto": 230,
 }
 
-# Splay: three clusters of 3-4 planets, three ~100-degree gaps (each >= 30, none >= 120)
+# Splay: three distinct groups of 3-4 planets in a tripod arrangement
 _SPLAY = {
     "Sun": 0, "Moon": 10, "Mercury": 20, "Pluto": 5,
     "Venus": 120, "Mars": 130, "Jupiter": 140,
@@ -102,15 +102,51 @@ class TestPublicAPIResolution:
 
     def test_internals_absent_from_all(self):
         internals = [
-            "_BUNDLE_MAX_ARC", "_LOCOMOTIVE_MIN_GAP", "_BOWL_MAX_ARC",
-            "_BUCKET_MIN_HANDLE", "_SEESAW_MIN_GAP", "_SPLAY_MIN_GAP",
+            "_BUNDLE_MAX_ARC", "_BOWL_MAX_ARC", "_JONES_BODIES",
+            "_SUN_ASPECT_ORB", "_MOON_ASPECT_ORB", "_PLANET_ASPECT_ORB",
             "_sorted_longitudes", "_compute_gaps",
-            "_split_into_clusters", "_detect_bundle", "_detect_bowl",
+            "_group_separating_gaps", "_split_at_gaps", "_detect_bundle", "_detect_bowl",
             "_detect_bucket", "_detect_locomotive", "_detect_seesaw",
             "_detect_splay", "_detect_splash",
         ]
         for name in internals:
             assert name not in _cs_module.__all__, f"{name!r} leaked into __all__"
+
+
+class TestJonesGapDoctrine:
+    @pytest.mark.parametrize(
+        ("body1", "body2", "expected"),
+        [
+            ("Sun", "Saturn", 17.0),
+            ("Moon", "Saturn", 12.5),
+            ("Mercury", "Saturn", 10.0),
+        ],
+    )
+    def test_body_dependent_major_aspect_orbs(
+        self,
+        body1: str,
+        body2: str,
+        expected: float,
+    ) -> None:
+        assert _cs_module._jones_aspect_orb(body1, body2) == expected
+
+    @pytest.mark.parametrize(
+        ("gap_degrees", "expected"),
+        [
+            (49.999, False),
+            (50.0, True),
+            (70.0, True),
+            (70.001, True),
+        ],
+    )
+    def test_non_luminary_group_separation_boundaries(
+        self,
+        gap_degrees: float,
+        expected: bool,
+    ) -> None:
+        sorted_lons = [(0.0, "Mercury"), (gap_degrees, "Saturn")]
+        gap = (gap_degrees, 0, 1)
+        assert _cs_module._is_group_separating_gap(gap, sorted_lons) is expected
 
 
 # ---------------------------------------------------------------------------
@@ -168,7 +204,13 @@ class TestBowlDetection:
         assert result.clusters[0] == frozenset(_BOWL.keys())
 
     def test_bowl_exact_180_boundary(self):
-        pos = {f"P{i}": i * 18 for i in range(10)}
+        pos = {
+            body: index * 20.0
+            for index, body in enumerate(
+                ("Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter",
+                 "Saturn", "Uranus", "Neptune", "Pluto")
+            )
+        }
         result = classify_chart_shape(pos)
         assert result.shape == ChartShapeType.BOWL
 
@@ -204,29 +246,21 @@ class TestBucketDetection:
         assert result.handle_bodies <= result.clusters[1]
         assert not (result.handle_bodies & result.clusters[0])
 
-    def test_bucket_pair_handle_detected(self):
+    def test_conjunction_pair_is_not_a_jones_bucket(self):
         result = classify_chart_shape(_BUCKET_PAIR)
-        assert result.shape is ChartShapeType.BUCKET
+        assert result.shape is ChartShapeType.SEESAW
+        assert result.handle_planet is None
+        assert result.handle_bodies == frozenset()
 
-    def test_bucket_pair_handle_label_and_bodies(self):
-        # RULE-10: the display label is the slash-joined pair, while the body
-        # identity is the two-member frozenset -- and that set, not the label,
-        # is what satisfies the clusters[1] membership invariant.
-        result = classify_chart_shape(_BUCKET_PAIR)
-        assert result.handle_planet == "Neptune/Pluto"
-        assert result.handle_bodies == frozenset({"Neptune", "Pluto"})
-        assert result.handle_planet not in result.clusters[1]  # label is not a body
-        assert result.handle_bodies <= result.clusters[1]
-        assert not (result.handle_bodies & result.clusters[0])
-
-    def test_bucket_handle_exactly_60_from_rim_not_bucket(self):
+    def test_bucket_handle_at_60_from_rim_is_bucket(self):
         pos = {
-            "Sun": 0, "Moon": 15, "Mercury": 30, "Venus": 45, "Mars": 60,
-            "Jupiter": 75, "Saturn": 90, "Uranus": 105, "Neptune": 120,
-            "Pluto": 180,
+            "Sun": 0, "Moon": 20, "Mercury": 40, "Venus": 60, "Mars": 80,
+            "Jupiter": 100, "Saturn": 120, "Uranus": 140, "Neptune": 170,
+            "Pluto": 230,
         }
         result = classify_chart_shape(pos)
-        assert result.shape != ChartShapeType.BUCKET
+        assert result.shape is ChartShapeType.BUCKET
+        assert result.handle_planet == "Pluto"
 
     def test_bowl_interior_planet_does_not_trigger_bucket(self):
         pos = {
@@ -245,11 +279,11 @@ class TestLocomotiveDetection:
 
     def test_locomotive_occupied_arc(self):
         result = classify_chart_shape(_LOCOMOTIVE)
-        assert result.occupied_arc == pytest.approx(220.0, abs=0.5)
+        assert result.occupied_arc == pytest.approx(230.0, abs=0.5)
 
     def test_locomotive_largest_gap(self):
         result = classify_chart_shape(_LOCOMOTIVE)
-        assert result.largest_gap == pytest.approx(140.0, abs=0.5)
+        assert result.largest_gap == pytest.approx(130.0, abs=0.5)
 
     def test_locomotive_leading_planet_is_set(self):
         result = classify_chart_shape(_LOCOMOTIVE)
@@ -262,6 +296,28 @@ class TestLocomotiveDetection:
     def test_locomotive_does_not_fire_on_seesaw(self):
         result = classify_chart_shape(_SEESAW)
         assert result.shape != ChartShapeType.LOCOMOTIVE
+
+    def test_functioning_trine_orb_can_delimit_locomotive(self):
+        # The 119-degree empty region is a functioning trine under Jones's
+        # admitted aspect orb and must not fall through to Splash.
+        positions = {
+            "Sun": 0, "Moon": 27, "Mercury": 54, "Venus": 81, "Mars": 108,
+            "Jupiter": 135, "Saturn": 162, "Uranus": 189,
+            "Neptune": 216, "Pluto": 241,
+        }
+        result = classify_chart_shape(positions)
+        assert result.shape is ChartShapeType.LOCOMOTIVE
+        assert result.largest_gap == pytest.approx(119.0)
+
+    def test_gap_outside_trine_orb_is_not_locomotive(self):
+        positions = {
+            "Sun": 0, "Moon": 25, "Mercury": 50, "Venus": 75, "Mars": 100,
+            "Jupiter": 125, "Saturn": 150, "Uranus": 175,
+            "Neptune": 200, "Pluto": 220,
+        }
+        result = classify_chart_shape(positions)
+        assert result.largest_gap == pytest.approx(140.0)
+        assert result.shape is not ChartShapeType.LOCOMOTIVE
 
 
 class TestSeesawDetection:
@@ -291,13 +347,12 @@ class TestSeesawDetection:
         assert all_in_clusters == frozenset(_SEESAW.keys())
 
     def test_seesaw_cluster_crossing_zero_is_seesaw(self):
-        # RULE-20: two clean opposing clusters, one of which crosses the 0/360
-        # seam (350 -> 0 -> 10).  Intra-cluster contiguity must be judged on the
-        # circular walk order, not on raw sorted longitude, or this Seesaw is
-        # wrongly demoted to Splash.
+        # RULE-20: two clean five-body groups, one crossing the 0/360 seam.
         positions = {
-            "A1": 350.0, "A2": 0.0, "A3": 10.0,
-            "B1": 160.0, "B2": 170.0, "B3": 180.0,
+            "Sun": 340.0, "Moon": 350.0, "Mercury": 0.0,
+            "Venus": 10.0, "Mars": 20.0,
+            "Jupiter": 150.0, "Saturn": 160.0, "Uranus": 170.0,
+            "Neptune": 180.0, "Pluto": 190.0,
         }
         result = classify_chart_shape(positions)
         assert result.shape is ChartShapeType.SEESAW
@@ -307,20 +362,38 @@ class TestSeesawDetection:
             covered |= c
         assert covered == frozenset(positions.keys())
 
+    def test_seesaw_allows_30_degree_internal_gap(self):
+        # Two 90-degree empty spaces define the two groups.  The 30-degree
+        # spacing inside the first group is not a third Jones separation.
+        positions = {
+            "Sun": 0.0, "Moon": 10.0, "Mercury": 40.0, "Venus": 68.0,
+            "Mars": 158.0, "Jupiter": 168.0, "Saturn": 197.0,
+            "Uranus": 226.0, "Neptune": 255.0, "Pluto": 270.0,
+        }
+        result = classify_chart_shape(positions)
+        assert result.shape is ChartShapeType.SEESAW
+        assert sorted(len(cluster) for cluster in result.clusters) == [4, 6]
+
 
 class TestSplayDetection:
     def test_splay_detected(self):
         result = classify_chart_shape(_SPLAY)
         assert result.shape == ChartShapeType.SPLAY
 
-    def test_splay_three_or_more_clusters(self):
+    def test_splay_has_exactly_three_groups(self):
         result = classify_chart_shape(_SPLAY)
-        assert len(result.clusters) >= 3
+        assert len(result.clusters) == 3
 
-    def test_splay_each_cluster_has_at_least_two_planets(self):
-        result = classify_chart_shape(_SPLAY)
-        for cluster in result.clusters:
-            assert len(cluster) >= 2
+    def test_splay_allows_singleton_reins_group(self):
+        positions = {
+            "Sun": 0,
+            "Moon": 80, "Mercury": 100, "Venus": 120,
+            "Mars": 200, "Jupiter": 215, "Saturn": 230,
+            "Uranus": 245, "Neptune": 260, "Pluto": 280,
+        }
+        result = classify_chart_shape(positions)
+        assert result.shape is ChartShapeType.SPLAY
+        assert sorted(len(cluster) for cluster in result.clusters) == [1, 3, 6]
 
     def test_splay_no_leading_or_handle(self):
         result = classify_chart_shape(_SPLAY)
@@ -395,18 +468,29 @@ class TestChartShapeVessel:
 # Edge cases and guard conditions
 # ---------------------------------------------------------------------------
 
-class TestEdgeCases:
+class TestPlanetSetDoctrine:
     def test_empty_positions_raises(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="exactly the ten Jones bodies"):
             classify_chart_shape({})
 
-    def test_single_planet_returns_splash(self):
-        result = classify_chart_shape({"Sun": 45.0})
-        assert result.shape == ChartShapeType.SPLASH
+    def test_single_planet_raises(self):
+        with pytest.raises(ValueError, match="missing="):
+            classify_chart_shape({"Sun": 45.0})
 
-    def test_two_planets_does_not_raise(self):
-        result = classify_chart_shape({"Sun": 0.0, "Moon": 180.0})
-        assert result is not None
+    def test_node_is_rejected(self):
+        positions = dict(_SPLASH)
+        positions["True Node"] = 12.0
+        with pytest.raises(ValueError, match=r"extra=\['True Node'\]"):
+            classify_chart_shape(positions)
+
+    def test_omitted_planet_is_rejected(self):
+        positions = dict(_SPLASH)
+        del positions["Pluto"]
+        with pytest.raises(ValueError, match=r"missing=\['Pluto'\]"):
+            classify_chart_shape(positions)
+
+
+class TestEdgeCases:
 
     def test_longitudes_outside_0_360_are_normalised(self):
         pos_a = {"Sun": 0, "Moon": 10, "Mercury": 20, "Venus": 30, "Mars": 40,
@@ -524,6 +608,21 @@ class TestChartShapeInvariants:
                 handle_planet="Pluto",
                 clusters=(frozenset({"Sun", "Moon"}), frozenset({"Pluto"})),
                 handle_bodies=frozenset(),
+            )
+
+    def test_bucket_with_two_handle_bodies_raises(self):
+        with pytest.raises(ValueError, match="exactly one handle body"):
+            ChartShape(
+                shape=ChartShapeType.BUCKET,
+                occupied_arc=120.0,
+                largest_gap=240.0,
+                leading_planet="Neptune",
+                handle_planet="Neptune",
+                clusters=(
+                    frozenset({"Sun", "Moon"}),
+                    frozenset({"Neptune", "Pluto"}),
+                ),
+                handle_bodies=frozenset({"Neptune", "Pluto"}),
             )
 
     def test_bucket_handle_bodies_not_in_second_cluster_raises(self):

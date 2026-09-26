@@ -18,7 +18,69 @@ A per-system account of the derivation basis, and of where Moira's discretionary
 
 Note on resemblance: house geometry is mathematically forced — there is one correct way to trisect a semi-arc — so Moira's cusp values converge with any correct engine, including Swiss Ephemeris, at admissible latitudes. That convergence follows from shared mathematics and is **not** evidence of derivation.
 
+## Interpretive doctrine sources
+
+### Jones chart-shape doctrine
+
+Moira's chart-shape classifier is derived from Marc Edmund Jones,
+*Essentials of Astrological Analysis* (1960), using the Sabian Publishing
+Society's authorized online text. Chapter 1 supplies Jones's body-dependent
+major-aspect orbs: 17 degrees when the Sun participates, 12 degrees 30 minutes
+when the Moon but not the Sun participates, and 10 degrees otherwise. Chapter
+2 supplies the ten-body Sun-through-Pluto scope and the Bundle, Bowl, Bucket,
+Locomotive, Seesaw, Splay, and Splash morphology.
+
+The implementation preserves Jones's one-nine Bucket, including the opposite-
+hemisphere condition and least-leaning handle choice; it does not treat a
+conjunction pair as a handle. Seesaw group boundaries follow Jones's explicit
+rule: a functioning sextile within his admitted orb, or an empty space greater
+than 70 degrees. Splay admits the one-planet reins group shown in his examples.
+Jones explicitly describes classification as approximate and allows charts to
+fit more than one type, so Moira's ordered detectors and final Splash result
+are disclosed as deterministic engine policy rather than attributed to Jones
+as rigid numerical doctrine.
+
+Primary text:
+
+- [Chapter 1: aspect orbs](https://sabianpublishingsociety.org/books/essentials_1.html)
+- [Chapter 2: pattern overview](https://sabianpublishingsociety.org/books/essentials_2.html)
+- [Seesaw and Bowl](https://sabianpublishingsociety.org/books/essentials_2_2.html)
+- [Bucket](https://sabianpublishingsociety.org/books/essentials_2_3.html)
+- [Locomotive and Splay](https://sabianpublishingsociety.org/books/essentials_2_4.html)
+- [Problems of classification](https://sabianpublishingsociety.org/books/essentials_2_5.html)
+
 ## Astronomical data sources
+
+### Lunar orientation and libration
+
+Moira derives total apparent lunar libration and visible-disc orientation from
+the content-identified DE441/LE441 translation route and JPL's DE440 lunar
+orientation resources. The admitted binary PCK is
+`moon_pa_de440_200625.bpc` (12,863,488 bytes, SHA-256
+`60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f`), and
+the admitted frame kernel is `moon_de440_250416.tf` (19,478 bytes, SHA-256
+`a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768`).
+The public body-fixed frame is the resolved
+`MOON_ME_DE440_ME421`, not an ambiguous generic `MOON_ME` label.
+
+The native layer independently reads DAF/PCK descriptors and evaluates the
+type-2 Chebyshev Euler-angle records. It does not use the SPICE kernel pool at
+runtime. Python owns the observer, reception/light-time, frame-composition,
+surface-coordinate, position-angle, and provenance policies. `spiceypy` is an
+optional validation oracle only. JPL Horizons observer quantities 14 through
+17 provide the frozen geocentric and topocentric surface oracle; NASA SVS's
+2026 hourly Moon data provide a disjoint rounded holdout. Horizons position
+angles are measured from true-of-date north and match the public contract.
+NASA SVS `posangle` is measured from J2000 north, so its test performs that
+explicit basis conversion instead of treating the two conventions as
+interchangeable.
+
+The PCK and frame kernel are external data assets and are never downloaded by
+a calculation. The deliberate `moira-download-kernels --lunar-orientation`
+acquisition command verifies their exact byte lengths and SHA-256 identities.
+Missing, altered, unsupported, or
+out-of-coverage resources fail with named lunar-orientation errors; there is
+no lower-precision orientation fallback.
 
 ### Major-planet kernel and comparator identity
 

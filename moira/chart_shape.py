@@ -3,9 +3,11 @@ Moira — Chart Shape Engine
 ==========================
 
 Archetype: Engine
-Source authority: Marc Edmund Jones, *The Guide to Horoscope Interpretation*
-                  (1941); *Essentials of Astrological Analysis* (1960).
-                  Supplementary: Penny Leigh Sebring, *The Jones Patterns*.
+Primary source authority: Marc Edmund Jones, *Essentials of Astrological
+                          Analysis* (1960), chapter 1 (aspect orbs) and
+                          chapter 2 (Temperament Type), including the 2025
+                          Sabian Publishing Society authorized online text:
+                          https://sabianpublishingsociety.org/books/essentials_2.html
 
 Purpose
 -------
@@ -18,10 +20,12 @@ here; only the set of planetary longitudes is used.
 
 Boundary declaration
 --------------------
-Owns    : chart-shape classification logic, gap analysis, cluster detection,
-          leading/handle planet derivation, and the ChartShape result vessel.
-Delegates: longitude normalisation to moira.coordinates.
-Does not own: aspect detection, house assignment, body selection policy.
+Owns    : chart-shape classification logic, Jones body-set eligibility, gap
+          analysis, cluster detection, leading/handle planet derivation, and
+          the ChartShape result vessel.
+Delegates: canonical body names to moira.constants and longitude
+           normalisation to moira.coordinates.
+Does not own: general aspect detection or house assignment.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ARCHITECTURE FREEZE
@@ -34,37 +38,41 @@ tests/unit/test_chart_shape.py.
 
 Planet set doctrine
 -------------------
-The caller supplies the positions mapping.  This module does not filter, add,
-or remove bodies.  Jones' original method uses the 10 traditional bodies (Sun
-through Pluto); callers wishing strict Jones compliance should supply exactly
-those 10.  The algorithm is correct for any non-empty mapping.
+Jones explicitly defines the technique over the ten planets from Sun through
+Pluto.  The public function therefore requires exactly those ten bodies and
+rejects nodes, angles, asteroids, omitted planets, or extra bodies.
 
 Gap measurement doctrine
 ------------------------
-All gaps are measured as **forward (clockwise) arcs** between consecutive
-planet longitudes after sorting.  The occupied arc is defined as
-``360.0 - largest_gap``.  All thresholds follow Jones' primary-source
-definitions exactly.  No orb tolerances are applied to gap boundaries.
+All gaps are measured as **forward arcs** between consecutive planet
+longitudes after sorting.  The occupied arc is ``360.0 - largest_gap``.
 
-Gap thresholds (frozen constants — do not adjust without source justification)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    _BUNDLE_MAX_ARC     = 120.0   occupied arc <= 120 → Bundle
-    _BOWL_MAX_ARC       = 180.0   occupied arc <= 180 → Bowl candidate
-    _BUCKET_MIN_HANDLE  =  60.0   handle > 60 from each rim (strict)
-    _LOCOMOTIVE_MIN_GAP = 120.0   single largest gap >= 120 → Locomotive
-    _SEESAW_MIN_GAP     =  60.0   two opposing gaps each >= 60 → Seesaw
-    _SPLAY_MIN_GAP      =  30.0   inter-cluster gap >= 30; min 3 clusters
+Jones does not present the seven types as rigid numerical bins.  He says that
+many charts plausibly fit more than one type and that classification is a
+matter of continual approximation.  Moira therefore distinguishes source
+doctrine from the deterministic rules needed by an engine:
+
+- Bundle and Bowl use Jones's explicit trine (120 degrees) and hemisphere
+  (180 degrees) spans.
+- A group-separating empty space is either bounded by a sextile within Jones's
+  own major-aspect orb, or exceeds 70 degrees, following his explicit Seesaw
+  rule.  The same partition rule operationalizes the "distinct groups" of
+  Splay and the wheel-like distribution of Splash.
+- Jones's aspect orbs are 17 degrees when the Sun participates, 12 degrees
+  30 minutes when the Moon but not the Sun participates, and 10 degrees for
+  all other planet pairs.
+- The residual Splash choice is an engine tie-break for borderline cases, not
+  a claim that Jones supplied a universal fallback threshold.
 
 Detection order (Jones / Sabian school priority — frozen)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     1. Bundle     occupied_arc <= 120
     2. Bowl       occupied_arc <= 180, no handle in gap arc
-    3. Bucket     non-handle bodies arc <= 180; 1 body or tight conjunction
-                  pair in gap arc, each > 60 from rims
-    4. Locomotive largest_gap >= 120, occupied_arc > 180, exactly one such gap
-    5. Seesaw     two qualifying gaps, each cluster >= 2 internally-tight planets
-    6. Splay      >= 3 clusters by _SPLAY_MIN_GAP, each cluster >= 2 planets
-    7. Splash     unconditional fallback
+    3. Bucket     one planet opposite a nine-planet Bowl core
+    4. Seesaw     exactly two Jones-separated groups, each with 2+ planets
+    5. Splay      exactly three Jones-separated groups; singleton reins allowed
+    6. Locomotive one Jones-separated gap delimited by a functioning trine
+    7. Splash     wheel-like residual / documented borderline tie-break
 
 Rationale for ordering
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -80,34 +88,28 @@ Rationale for ordering
 - Bowl/Bucket before Locomotive: a chart with occupied_arc <= 180 also has
   largest_gap >= 180 >= 120, so Locomotive would fire without the
   ``occupied_arc <= _BOWL_MAX_ARC`` guard inside _detect_locomotive.
-- Locomotive before Seesaw: the Locomotive guard ``len(qualifying_gaps) > 1``
-  rejects any chart with two gaps >= 120, passing it down to Seesaw.
-- Seesaw before Splay: a two-cluster chart whose intra-cluster gaps are all
-  < _SPLAY_MIN_GAP is unambiguously Seesaw; _has_cluster_internal_split
-  ensures this.  If a cluster has an internal gap >= 30, Seesaw rejects it
-  and Splay catches it.
-- Splay before Splash: Splay requires >= 3 clusters each with >= 2 planets.
-  A chart with >= 3 singleton clusters (e.g. evenly-spaced planets) does not
-  qualify for Splay and falls through to Splash.
+- Seesaw and Splay before Locomotive: two- and three-group structures must not
+  be swallowed merely because one of their empty spaces is trine-sized.
+- Splay permits Jones's explicit one-planet reins grouping; it is not rejected
+  merely because one of its three groups is a singleton.
+- Splash remains the required seventh result for the source's acknowledged
+  borderline cases after the defined one-, two-, and three-group forms decline.
 
 Leading planet doctrine (frozen)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Bowl / Locomotive : ``gap_from`` — the last planet encountered going
         clockwise before entering the largest gap.
-    Bucket            : the handle planet name.  For a tight conjunction
-        pair handle (<= 8 degrees), a slash-joined string "name1/name2".
+    Bucket            : the single handle planet name.
     Bundle / Seesaw / Splay / Splash : leading_planet is None.
 
-Handle-in-gap doctrine (directional check, not distance-only)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-A planet qualifies as a Bucket handle only when all three conditions hold:
-    1. in_gap  : its forward arc from the trailing rim < gap_size
-                 (it lies within the empty arc, not the occupied arc).
-    2. dist_from_trailing > _BUCKET_MIN_HANDLE  (strict greater-than)
-    3. dist_to_leading    > _BUCKET_MIN_HANDLE  (strict greater-than)
-Condition (1) is mandatory.  Distance alone (conditions 2–3) is insufficient
-because interior bowl planets can be > 60 degrees from both rims while
-sitting inside the occupied arc.
+Bucket doctrine
+~~~~~~~~~~~~~~~
+Jones defines a one-nine division: removing the handle leaves a Bowl, and the
+handle must lie in the opposite zodiacal hemisphere.  He supplies no 60-degree
+rim-distance test and does not define a conjunction pair as a Bucket handle.
+When multiple removals could produce a Bowl, the candidate closest to the
+ideal position opposite the Bowl midpoint is selected, following his stated
+rule for handle choice.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VALIDATION CODEX
@@ -118,10 +120,9 @@ tests/unit/test_chart_shape.py.  Adding a rule requires adding a test.
 Removing a test requires removing or revising the corresponding rule.
 
 RULE-01  Classification completeness
-    classify_chart_shape always returns a ChartShape.  It never raises
-    (unless positions is empty) and never returns None.
-    Tests: TestEdgeCases::test_empty_positions_raises,
-           TestEdgeCases::test_single_planet_returns_splash.
+    classify_chart_shape returns a ChartShape for exactly the canonical ten
+    Jones bodies and rejects every other body set.
+    Tests: TestPlanetSetDoctrine.
 
 RULE-02  Seven-shape coverage
     Each of the seven ChartShapeType values is reachable by a synthetic
@@ -175,56 +176,55 @@ RULE-09  Leading planet — Locomotive
            TestLeadingPlanetSemantics::test_locomotive_leading_planet_in_clusters.
 
 RULE-10  Handle planet — Bucket
-    For Bucket, handle_planet is a display *label* and clusters has >= 2
-    entries.  handle_bodies carries the authoritative handle identity: it is
-    a non-empty subset of clusters[1] and is disjoint from clusters[0].  A
-    singleton handle yields a one-member handle_bodies; a tight conjunction
-    pair handle yields a two-member handle_bodies while handle_planet remains
-    the "name1/name2" label.  Non-Bucket shapes carry an empty handle_bodies.
+    For Bucket, handle_planet names one planet and clusters has two entries.
+    handle_bodies is the one-member authoritative handle identity, is a subset
+    of clusters[1], and is disjoint from clusters[0].  Non-Bucket shapes carry
+    an empty handle_bodies.
     Enforced by __post_init__ (handle_planet non-None + cluster count +
     handle_bodies non-empty/subset-of-clusters[1]/disjoint-from-clusters[0];
     empty handle_bodies required off-Bucket).
     Tests: TestBucketDetection::test_bucket_handle_is_pluto,
            TestBucketDetection::test_bucket_handle_in_second_cluster,
            TestBucketDetection::test_bucket_handle_bodies_singleton,
-           TestBucketDetection::test_bucket_pair_handle_detected,
-           TestBucketDetection::test_bucket_pair_handle_label_and_bodies,
+           TestBucketDetection::test_conjunction_pair_is_not_a_jones_bucket,
            TestChartShapeInvariants::test_bucket_without_handle_raises,
            TestChartShapeInvariants::test_bucket_without_handle_bodies_raises,
+           TestChartShapeInvariants::test_bucket_with_two_handle_bodies_raises,
            TestChartShapeInvariants::test_bucket_handle_bodies_not_in_second_cluster_raises,
            TestChartShapeInvariants::test_bucket_handle_bodies_in_first_cluster_raises,
            TestChartShapeInvariants::test_non_bucket_with_handle_bodies_raises.
 
-RULE-11  Handle-in-gap directional check
-    A planet at exactly _BUCKET_MIN_HANDLE (60 degrees) from a rim is not
-    a valid handle (strict greater-than).  An interior bowl planet with
-    angular_distance > 60 from both rims does not qualify as a handle
-    because it fails the in_gap directional check.
-    Tests: TestBucketDetection::test_bucket_handle_exactly_60_from_rim_not_bucket,
+RULE-11  Bucket hemisphere and handle-choice doctrine
+    The handle lies opposite the midpoint of the nine-body Bowl core by at
+    least 90 degrees.  No rim-distance threshold is imposed.  If more than one
+    removal yields a Bowl core, the least-leaning handle wins.
+    Tests: TestBucketDetection::test_bucket_handle_at_60_from_rim_is_bucket,
            TestBucketDetection::test_bowl_interior_planet_does_not_trigger_bucket.
 
 RULE-12  Locomotive / Seesaw disambiguation
-    A chart with two or more gaps >= _LOCOMOTIVE_MIN_GAP (120 degrees) is
-    not a Locomotive; it is passed to Seesaw.
-    Test: TestLocomotiveDetection::test_locomotive_does_not_fire_on_seesaw.
+    A Locomotive has one Jones-separated gap delimited by a trine within
+    Jones's body-dependent aspect orb.  Two groups take Seesaw precedence.
+    Tests: TestLocomotiveDetection::test_locomotive_does_not_fire_on_seesaw,
+           TestLocomotiveDetection::test_functioning_trine_orb_can_delimit_locomotive,
+           TestLocomotiveDetection::test_gap_outside_trine_orb_is_not_locomotive,
+           TestJonesGapDoctrine.
 
 RULE-13  Seesaw cluster integrity
-    Each Seesaw cluster must contain >= 2 planets.  A single-planet cluster
-    on one side is a Bucket, not a Seesaw (Penny Leigh doctrine).
-    Seesaw clusters must be internally contiguous: no intra-cluster gap
-    >= _SPLAY_MIN_GAP; such a chart is Splay, not Seesaw.
-    Tests: TestSeesawDetection::test_seesaw_clusters_each_have_multiple_planets.
+    A Seesaw has exactly two Jones-separated groups, each containing at least
+    two planets.  A 30-degree intra-group gap is not a disqualifier.
+    Tests: TestSeesawDetection::test_seesaw_clusters_each_have_multiple_planets,
+           TestSeesawDetection::test_seesaw_allows_30_degree_internal_gap.
 
 RULE-14  Splay cluster integrity
-    Each Splay cluster must contain >= 2 planets.  A chart whose 30-degree
-    split produces singleton clusters (e.g. evenly-spaced planets) is Splash.
-    Tests: TestSplayDetection::test_splay_each_cluster_has_at_least_two_planets,
-           TestSplashDetection::test_splash_detected.
+    A Splay has exactly three Jones-separated groups.  A one-planet reins
+    group is valid under Jones's explicit examples.
+    Tests: TestSplayDetection::test_splay_has_exactly_three_groups,
+           TestSplayDetection::test_splay_allows_singleton_reins_group.
 
-RULE-15  Splash is unconditional fallback
-    Splash carries no threshold enforcement.  If all preceding detectors
-    reject, Splash is returned regardless of gap magnitude or body count.
-    No _SPLASH_MAX_GAP constant exists; the threshold is not enforced.
+RULE-15  Splash is the documented borderline residual
+    Splash represents the source's wheel-like distribution and is the engine
+    tie-break only after canonical-body validation and all defined one-, two-,
+    and three-group forms decline.
     Tests: TestSplashDetection::test_splash_detected.
 
 RULE-16  Longitude normalisation
@@ -255,11 +255,10 @@ RULE-19  moira.__all__ exclusion is enforced
     kept thin; this module is accessible as a submodule import.
     Test: TestPublicAPIResolution::test_all_names_on_moira_package.
 
-RULE-20  Seesaw cluster contiguity is seam-safe
+RULE-20  Seesaw partitioning is seam-safe
     A chart whose planets form two clean opposing clusters, one of which
     crosses the 0/360 longitude seam, is classified as Seesaw and is not
-    demoted to Splash.  Intra-cluster contiguity is judged on the circular
-    walk order used to build each cluster, not on raw sorted longitude.
+    demoted to Splash.  Clusters are built in circular walk order.
     Test: TestSeesawDetection::test_seesaw_cluster_crossing_zero_is_seesaw.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -277,6 +276,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import Enum
 
+from .constants import Body
 from .coordinates import normalize_degrees, angular_distance
 
 
@@ -288,15 +288,24 @@ __all__ = [
 
 
 # ---------------------------------------------------------------------------
-# Gap thresholds (Jones primary-source definitions, no orb buffers)
+# Jones 1960 aspect and span policy
 # ---------------------------------------------------------------------------
 
-_BUNDLE_MAX_ARC      = 120.0   # all planets within this arc
-_LOCOMOTIVE_MIN_GAP  = 120.0   # single largest gap must be at least this
-_BOWL_MAX_ARC        = 180.0   # all planets within this arc
-_BUCKET_MIN_HANDLE   =  60.0   # handle must be strictly greater than this from each rim
-_SEESAW_MIN_GAP      =  60.0   # each of the two opposing gaps must be >= this
-_SPLAY_MIN_GAP       =  30.0   # gap between each adjacent cluster >= this
+_BUNDLE_MAX_ARC = 120.0
+_BOWL_MAX_ARC = 180.0
+_SEXTILE_DEGREES = 60.0
+_TRINE_DEGREES = 120.0
+_UNASPECTED_EMPTY_SPACE_MIN = 70.0
+
+# Jones, Essentials ch. 1: 17 degrees when the Sun participates, 12 degrees
+# 30 minutes when the Moon (but not the Sun) participates, and 10 degrees for
+# the other planets.  These are deliberately Jones's aspect orbs rather than
+# Moira's general aspect-search policy.
+_SUN_ASPECT_ORB = 17.0
+_MOON_ASPECT_ORB = 12.5
+_PLANET_ASPECT_ORB = 10.0
+
+_JONES_BODIES = frozenset(Body.ALL_PLANETS)
 
 
 # ---------------------------------------------------------------------------
@@ -317,10 +326,8 @@ class ChartShapeType(str, Enum):
         of unfulfilled potential.
 
     BUCKET
-        Bowl with one planet -- or a tight conjunction pair -- (the handle)
-        isolated in the opposing hemisphere by strictly more than 60 degrees
-        from each rim planet.  The handle is the dominant focal channel for
-        the entire chart.
+        Nine planets form a Bowl and one planet stands in the opposite
+        hemisphere as the handle.  The handle is the dominant focal channel.
 
     LOCOMOTIVE
         All planets within a 240-degree arc, leaving one continuous
@@ -329,19 +336,18 @@ class ChartShapeType(str, Enum):
 
     SEESAW
         Two distinct planet clusters on opposing sides of the wheel,
-        separated by two opposing empty arcs each at least 60 degrees
-        wide.  Characteristic oppositions between the clusters; life
-        lived between two poles.
+        separated on both sides by a sextile-qualified or greater-than-70
+        degree empty space.  Characteristic oppositions between the clusters;
+        life lived between two poles.
 
     SPLAY
-        Three or more irregular clusters spread across the wheel, each
-        separated by a gap of at least 30 degrees.  Does not conform to
-        the neat bipolarity of the Bowl or Seesaw.
+        Three distinct groups in a tripod arrangement.  One group may be a
+        singleton reins planet.  Does not conform to the neat bipolarity of
+        the Bowl or Seesaw.
 
     SPLASH
-        Unconditional fallback when no other pattern applies.  Planets are
-        broadly distributed around the wheel without forming a recognisable
-        Jones shape.  Wide interests; diffuse energy.
+        Planets approach an equally spaced, wheel-like distribution.  It also
+        supplies the documented engine tie-break for Jones's borderline cases.
     """
     BUNDLE     = "Bundle"
     BOWL       = "Bowl"
@@ -383,21 +389,18 @@ class ChartShape:
         For Bowl and Locomotive: the planet at the clockwise-leading edge
         of the occupied arc — the last planet encountered going clockwise
         before entering the largest gap.
-        For Bucket: the handle planet name (or "name1/name2" for a
-        tight conjunction pair handle).
+        For Bucket: the handle planet name.
         None for all other shapes.
 
     handle_planet
-        For Bucket: a human-readable display *label* for the handle -- the
-        singleton planet's name, or "name1/name2" for a tight conjunction
-        pair handle.  This is a display string, not a body-identity set;
-        use handle_bodies for membership tests.
+        For Bucket: the singleton handle planet's name.  This is a display
+        string; use handle_bodies for membership tests.
         None for all other shapes.
 
     handle_bodies
         For Bucket: the frozenset of the actual body names forming the handle
-        (one name, or two for a conjunction-pair handle).  This is the
-        authoritative handle identity: it is always a non-empty subset of
+        (exactly one name).  This is the authoritative handle identity: it is
+        always a non-empty subset of
         clusters[1] and never intersects clusters[0].
         Empty frozenset for all other shapes.
 
@@ -405,20 +408,21 @@ class ChartShape:
         Tuple of frozensets, each containing the body names in one
         detected cluster.  The clusters are ordered clockwise starting
         from the cluster immediately after the first partitioning gap
-        encountered clockwise from 0 degrees (for Splay, the first gap
-        >= _SPLAY_MIN_GAP; for Seesaw, the first of the two qualifying
-        opposing gaps).  This is not necessarily the single largest gap.
+        encountered clockwise from 0 degrees (for Splay or Seesaw, the first
+        Jones-qualifying group separation).  This is not necessarily the
+        single largest gap.
         For Bundle, Bowl, Bucket, Locomotive: one cluster (plus the
         handle as a separate singleton for Bucket).
         For Seesaw: two clusters.
-        For Splay: three or more clusters.
+        For Splay: exactly three clusters.
         For Splash: one cluster containing all bodies (no sub-grouping).
 
     Structural invariants
     ---------------------
     - ``occupied_arc + largest_gap == 360.0`` (within floating-point precision).
     - For Bucket: ``handle_planet`` is set (display label); ``handle_bodies``
-      is a non-empty subset of ``clusters[1]`` and disjoint from ``clusters[0]``.
+      contains exactly one name, is a subset of ``clusters[1]``, and is
+      disjoint from ``clusters[0]``.
     - For non-Bucket shapes: ``handle_bodies`` is empty.
     - For Bowl / Locomotive: ``leading_planet`` is set and is in ``clusters[0]``.
     - ``clusters`` is never empty.
@@ -464,6 +468,10 @@ class ChartShape:
             if not self.handle_bodies:
                 raise ValueError(
                     "ChartShape invariant violated: Bucket requires handle_bodies to be non-empty"
+                )
+            if len(self.handle_bodies) != 1:
+                raise ValueError(
+                    "ChartShape invariant violated: Jones Bucket requires exactly one handle body"
                 )
             if not self.handle_bodies <= self.clusters[1]:
                 raise ValueError(
@@ -524,40 +532,68 @@ def _compute_gaps(sorted_lons: list[tuple[float, str]]) -> list[tuple[float, int
     return gaps
 
 
-def _split_into_clusters(
+def _jones_aspect_orb(body1: str, body2: str) -> float:
+    """Return Jones's major-aspect orb for the two delimiting bodies."""
+    names = {body1, body2}
+    if "Sun" in names:
+        return _SUN_ASPECT_ORB
+    if "Moon" in names:
+        return _MOON_ASPECT_ORB
+    return _PLANET_ASPECT_ORB
+
+
+def _is_group_separating_gap(
+    gap: tuple[float, int, int],
     sorted_lons: list[tuple[float, str]],
-    min_gap: float,
+) -> bool:
+    """Apply Jones's explicit Seesaw empty-space criterion.
+
+    Essentials ch. 2 requires an empty span delimited by a functioning
+    sextile, or more than 70 degrees when no sextile is formed.  The same
+    criterion is used here to turn the source's qualitative "distinct groups"
+    into a deterministic partition for Seesaw, Splay, and Splash.
+    """
+    gap_degrees, from_index, to_index = gap
+    body1 = sorted_lons[from_index][1]
+    body2 = sorted_lons[to_index][1]
+    orb = _jones_aspect_orb(body1, body2)
+    return (
+        abs(gap_degrees - _SEXTILE_DEGREES) <= orb
+        or gap_degrees > _UNASPECTED_EMPTY_SPACE_MIN
+    )
+
+
+def _group_separating_gaps(
+    sorted_lons: list[tuple[float, str]],
+    gaps: list[tuple[float, int, int]],
+) -> list[tuple[float, int, int]]:
+    return [gap for gap in gaps if _is_group_separating_gap(gap, sorted_lons)]
+
+
+def _split_at_gaps(
+    sorted_lons: list[tuple[float, str]],
+    split_gaps: list[tuple[float, int, int]],
 ) -> list[frozenset[str]]:
-    """
-    Partition sorted_lons into clusters separated by gaps >= min_gap.
-    Returns clusters ordered clockwise, starting immediately after the
-    first gap >= min_gap found going clockwise from longitude 0.
-    """
-    n = len(sorted_lons)
-    gaps = _compute_gaps(sorted_lons)
-
-    # Find split points: indices where the gap to the next planet >= min_gap
-    split_after: list[int] = [i for gap, i, j in gaps if gap >= min_gap]
-
-    if not split_after:
+    """Partition the wheel immediately after the supplied circular gaps."""
+    if not split_gaps:
         return [frozenset(name for _, name in sorted_lons)]
 
-    clusters: list[frozenset[str]] = []
-    # Start cluster immediately after the first split point (clockwise order)
-    start = (split_after[0] + 1) % n
+    n = len(sorted_lons)
+    split_after = [from_index for _, from_index, _ in split_gaps]
     split_set = set(split_after)
+    start = (split_after[0] + 1) % n
+    clusters: list[frozenset[str]] = []
     current: list[str] = []
 
     for step in range(n):
-        idx = (start + step) % n
-        current.append(sorted_lons[idx][1])
-        if idx in split_set:
+        index = (start + step) % n
+        current.append(sorted_lons[index][1])
+        if index in split_set:
             clusters.append(frozenset(current))
             current = []
 
     if current:
         clusters.append(frozenset(current))
-
     return clusters
 
 
@@ -589,26 +625,12 @@ def _detect_bowl(
     largest_gap: float,
     occupied_arc: float,
 ) -> ChartShape | None:
-    """
-    Bowl: all planets within <= 180 degrees, no planet isolated more than 60
-    degrees from both rim planets (that would be a Bucket).
-    """
+    """Bowl: all ten planets lie within one zodiacal hemisphere."""
     if occupied_arc > _BOWL_MAX_ARC:
         return None
 
-    gap_val, gap_from, gap_to = max(gaps, key=lambda g: g[0])
-    leading_rim      = sorted_lons[gap_from][1]
-    trailing_rim_lon = sorted_lons[gap_from][0]
-    leading_rim_lon  = sorted_lons[gap_to][0]
-
-    gap_size = (leading_rim_lon - trailing_rim_lon) % 360.0
-    for lon, name in sorted_lons:
-        forward_from_trailing = (lon - trailing_rim_lon) % 360.0
-        in_gap = forward_from_trailing < gap_size
-        dist_from_trailing = angular_distance(lon, trailing_rim_lon)
-        dist_to_leading    = angular_distance(lon, leading_rim_lon)
-        if in_gap and dist_from_trailing > _BUCKET_MIN_HANDLE and dist_to_leading > _BUCKET_MIN_HANDLE:
-            return None  # handle present -> Bucket, not Bowl
+    _, gap_from, _ = max(gaps, key=lambda g: g[0])
+    leading_rim = sorted_lons[gap_from][1]
 
     all_bodies = frozenset(name for _, name in sorted_lons)
     return ChartShape(
@@ -624,12 +646,15 @@ def _detect_bowl(
 def _detect_bucket(
     sorted_lons: list[tuple[float, str]],
 ) -> ChartShape | None:
-    """
-    Bucket: exactly one planet (or a tight conjunction pair <= 8 degrees)
-    isolated by strictly more than 60 degrees from each rim planet, where the
-    remaining planets form a contiguous arc of <= 180 degrees.
+    """Bucket: a one-nine division with the nine forming a Bowl.
+
+    Jones does not impose a 60-degree distance from both rim planets.  He does
+    require the handle to be in the zodiacal hemisphere opposite the other
+    nine and says that, when more than one handle choice is possible, the
+    planet closest to the ideal position opposite the Bowl midpoint is chosen.
     """
     n = len(sorted_lons)
+    candidates: list[tuple[float, float, str, float, frozenset[str]]] = []
 
     for h_idx in range(n):
         handle_lon  = sorted_lons[h_idx][0]
@@ -646,77 +671,44 @@ def _detect_bucket(
         if rem_arc > _BOWL_MAX_ARC:
             continue
 
-        _, bowl_gap_from, bowl_gap_to = max(rem_gaps, key=lambda g: g[0])
-        trailing_rim_lon = remaining[bowl_gap_from][0]
-        leading_rim_lon  = remaining[bowl_gap_to][0]
+        _, _, bowl_gap_to = max(rem_gaps, key=lambda g: g[0])
+        core_start_lon = remaining[bowl_gap_to][0]
+        core_midpoint = normalize_degrees(core_start_lon + rem_arc / 2.0)
+        midpoint_distance = angular_distance(handle_lon, core_midpoint)
 
-        gap_size               = (leading_rim_lon - trailing_rim_lon) % 360.0
-        forward_from_trailing  = (handle_lon - trailing_rim_lon) % 360.0
-        in_gap                 = forward_from_trailing < gap_size
-        dist_from_trailing     = angular_distance(handle_lon, trailing_rim_lon)
-        dist_to_leading        = angular_distance(handle_lon, leading_rim_lon)
+        # A handle in the same hemisphere as the Bowl core is explicitly
+        # rejected by Jones's 1960 refinement.  The ideal handle is 180
+        # degrees from the core midpoint; lower lean wins if several removals
+        # produce a Bowl-like core.
+        if midpoint_distance < 90.0:
+            continue
 
-        if in_gap and dist_from_trailing > _BUCKET_MIN_HANDLE and dist_to_leading > _BUCKET_MIN_HANDLE:
-            bowl_bodies = frozenset(name for _, name in remaining)
-            handle_set = frozenset({handle_name})
-            return ChartShape(
-                shape=ChartShapeType.BUCKET,
-                occupied_arc=rem_arc,
-                largest_gap=rem_largest_gap,
-                leading_planet=handle_name,
-                handle_planet=handle_name,
-                clusters=(bowl_bodies, handle_set),
-                handle_bodies=handle_set,
+        lean = 180.0 - midpoint_distance
+        candidates.append(
+            (
+                lean,
+                rem_arc,
+                handle_name,
+                rem_largest_gap,
+                frozenset(name for _, name in remaining),
             )
+        )
 
-    for h1 in range(n):
-        for h2 in range(h1 + 1, n):
-            lon1, name1 = sorted_lons[h1]
-            lon2, name2 = sorted_lons[h2]
-            pair_gap = min((lon2 - lon1) % 360.0, (lon1 - lon2) % 360.0)
-            if pair_gap > 8.0:
-                continue
-
-            remaining = [sorted_lons[i] for i in range(n) if i not in (h1, h2)]
-            if not remaining:
-                continue
-
-            rem_gaps = _compute_gaps(remaining)
-            rem_largest_gap = max(g for g, _, _ in rem_gaps)
-            rem_arc = 360.0 - rem_largest_gap
-
-            if rem_arc > _BOWL_MAX_ARC:
-                continue
-
-            _, bowl_gap_from, bowl_gap_to = max(rem_gaps, key=lambda g: g[0])
-            trailing_rim_lon = remaining[bowl_gap_from][0]
-            leading_rim_lon  = remaining[bowl_gap_to][0]
-
-            gap_size = (leading_rim_lon - trailing_rim_lon) % 360.0
-            valid = True
-            for hlon in (lon1, lon2):
-                forward = (hlon - trailing_rim_lon) % 360.0
-                if not (
-                    forward < gap_size
-                    and angular_distance(hlon, trailing_rim_lon) > _BUCKET_MIN_HANDLE
-                    and angular_distance(hlon, leading_rim_lon)  > _BUCKET_MIN_HANDLE
-                ):
-                    valid = False
-                    break
-
-            if valid:
-                bowl_bodies  = frozenset(name for _, name in remaining)
-                handle_set   = frozenset({name1, name2})
-                handle_label = f"{name1}/{name2}"
-                return ChartShape(
-                    shape=ChartShapeType.BUCKET,
-                    occupied_arc=rem_arc,
-                    largest_gap=rem_largest_gap,
-                    leading_planet=handle_label,
-                    handle_planet=handle_label,
-                    clusters=(bowl_bodies, handle_set),
-                    handle_bodies=handle_set,
-                )
+    if candidates:
+        _, rem_arc, handle_name, rem_largest_gap, bowl_bodies = min(
+            candidates,
+            key=lambda candidate: (candidate[0], candidate[1], candidate[2]),
+        )
+        handle_set = frozenset({handle_name})
+        return ChartShape(
+            shape=ChartShapeType.BUCKET,
+            occupied_arc=rem_arc,
+            largest_gap=rem_largest_gap,
+            leading_planet=handle_name,
+            handle_planet=handle_name,
+            clusters=(bowl_bodies, handle_set),
+            handle_bodies=handle_set,
+        )
 
     return None
 
@@ -724,23 +716,29 @@ def _detect_bucket(
 def _detect_locomotive(
     sorted_lons: list[tuple[float, str]],
     gaps: list[tuple[float, int, int]],
+    separating_gaps: list[tuple[float, int, int]],
     largest_gap: float,
     occupied_arc: float,
 ) -> ChartShape | None:
-    if largest_gap < _LOCOMOTIVE_MIN_GAP:
-        return None
     if occupied_arc <= _BUNDLE_MAX_ARC:
         return None  # Bundle takes priority
     if occupied_arc <= _BOWL_MAX_ARC:
         return None  # Bowl takes priority
-    # A Seesaw has two large opposing gaps; Locomotive has exactly one.
-    # If more than one gap qualifies, this is not a Locomotive.
-    qualifying_gaps = [g for g, _, _ in gaps if g >= _LOCOMOTIVE_MIN_GAP]
-    if len(qualifying_gaps) > 1:
+
+    # Jones requires a single empty region delimited by a functioning trine.
+    # The gap may be either under or over 120 degrees only while its boundary
+    # planets remain within Jones's admitted major-aspect orb.
+    if len(separating_gaps) != 1:
+        return None
+    gap_val, gap_from, gap_to = separating_gaps[0]
+    boundary_orb = _jones_aspect_orb(
+        sorted_lons[gap_from][1], sorted_lons[gap_to][1]
+    )
+    if abs(gap_val - _TRINE_DEGREES) > boundary_orb:
         return None
 
     # Leading planet: immediately before (clockwise) the largest gap.
-    gap_val, gap_from, gap_to = max(gaps, key=lambda g: g[0])
+    _, gap_from, _ = max(gaps, key=lambda g: g[0])
     leading = sorted_lons[gap_from][1]
 
     all_bodies = frozenset(name for _, name in sorted_lons)
@@ -754,108 +752,43 @@ def _detect_locomotive(
     )
 
 
-def _has_cluster_internal_split(
-    ordered_cluster: list[tuple[float, str]],
-) -> bool:
-    """
-    Return True if any consecutive pair within a cluster is separated by a
-    forward arc >= _SPLAY_MIN_GAP.
-
-    ``ordered_cluster`` is the list of (longitude, name) pairs in the exact
-    clockwise order that _detect_seesaw walked between the two bounding gaps.
-    Because the cluster is already in circular order, consecutive forward arcs
-    are the true intra-cluster gaps -- including for a cluster that crosses the
-    0/360 seam (e.g. 350 -> 0 -> 10).  Re-deriving the order from raw sorted
-    longitude, as an earlier form of this helper did, mis-read a seam-crossing
-    cluster as a 340-degree internal split and wrongly demoted a clean Seesaw
-    to Splash.
-
-    Used by _detect_seesaw to reject charts whose apparent two-gap split
-    conceals a third intra-cluster gap (those are Splay, not Seesaw).
-    """
-    for k in range(len(ordered_cluster) - 1):
-        fwd = (ordered_cluster[k + 1][0] - ordered_cluster[k][0]) % 360.0
-        if fwd >= _SPLAY_MIN_GAP:
-            return True
-    return False
-
-
 def _detect_seesaw(
     sorted_lons: list[tuple[float, str]],
-    gaps: list[tuple[float, int, int]],
+    separating_gaps: list[tuple[float, int, int]],
     largest_gap: float,
     occupied_arc: float,
 ) -> ChartShape | None:
-    # Two opposing gaps each >= _SEESAW_MIN_GAP (60 degrees).
-    qualifying: list[tuple[float, int, int]] = [
-        (g, i, j) for g, i, j in gaps if g >= _SEESAW_MIN_GAP
-    ]
-    if len(qualifying) < 2:
+    # Jones defines exactly two distinct aggregates of two or more planets.
+    # He does not impose a 30-degree maximum gap inside either aggregate.
+    if len(separating_gaps) != 2:
         return None
 
-    n = len(sorted_lons)
+    clusters = _split_at_gaps(sorted_lons, separating_gaps)
+    if len(clusters) != 2 or any(len(cluster) < 2 for cluster in clusters):
+        return None
 
-    # Check each pair of qualifying gaps.  A Seesaw requires exactly two
-    # clusters, each with >= 2 internally-contiguous planets.
-    for idx_a in range(len(qualifying)):
-        for idx_b in range(idx_a + 1, len(qualifying)):
-            ga, ia, ja = qualifying[idx_a]
-            gb, ib, jb = qualifying[idx_b]
-
-            # Build the two clusters by walking clockwise between gap endpoints.
-            # ja != jb is guaranteed: _compute_gaps assigns each j uniquely.
-            c1: list[tuple[float, str]] = []
-            c2: list[tuple[float, str]] = []
-
-            step = ja
-            while step != jb:
-                c1.append(sorted_lons[step])
-                step = (step + 1) % n
-
-            while step != ja:
-                c2.append(sorted_lons[step])
-                step = (step + 1) % n
-
-            if len(c1) < 2 or len(c2) < 2:
-                continue
-
-            # Judge internal contiguity on the circular walk order built above,
-            # not on raw sorted longitude, so a cluster crossing the 0/360 seam
-            # is not mistaken for a Splay.
-            if _has_cluster_internal_split(c1):
-                continue
-            if _has_cluster_internal_split(c2):
-                continue
-
-            # Use the pre-computed authoritative largest_gap / occupied_arc
-            # values rather than max(ga, gb), which may differ when a third
-            # gap dominates.
-            return ChartShape(
-                shape=ChartShapeType.SEESAW,
-                occupied_arc=occupied_arc,
-                largest_gap=largest_gap,
-                leading_planet=None,
-                handle_planet=None,
-                clusters=(
-                    frozenset(nm for _, nm in c1),
-                    frozenset(nm for _, nm in c2),
-                ),
-            )
-
-    return None
+    return ChartShape(
+        shape=ChartShapeType.SEESAW,
+        occupied_arc=occupied_arc,
+        largest_gap=largest_gap,
+        leading_planet=None,
+        handle_planet=None,
+        clusters=tuple(clusters),
+    )
 
 
 def _detect_splay(
     sorted_lons: list[tuple[float, str]],
+    separating_gaps: list[tuple[float, int, int]],
     largest_gap: float,
 ) -> ChartShape | None:
-    # Three or more clusters each separated by >= _SPLAY_MIN_GAP (30 degrees).
-    # Each cluster must contain >= 2 planets; atomised single-planet "clusters"
-    # indicate an evenly-spread Splash, not an irregular Splay.
-    clusters = _split_into_clusters(sorted_lons, _SPLAY_MIN_GAP)
-    if len(clusters) < 3:
+    # Jones's Splay is a threefold or tripod arrangement.  His Franklin D.
+    # Roosevelt and Houdini examples explicitly admit a one-planet "reins"
+    # grouping, so singleton clusters are valid here.
+    if len(separating_gaps) != 3:
         return None
-    if any(len(c) < 2 for c in clusters):
+    clusters = _split_at_gaps(sorted_lons, separating_gaps)
+    if len(clusters) != 3:
         return None
 
     occupied_arc = 360.0 - largest_gap
@@ -871,12 +804,13 @@ def _detect_splay(
 
 def _detect_splash(
     sorted_lons: list[tuple[float, str]],
-    gaps: list[tuple[float, int, int]],
     largest_gap: float,
 ) -> ChartShape:
-    # Unconditional fallback: no threshold is enforced here (see RULE-15).
-    # Splash is returned whenever every preceding detector has declined,
-    # regardless of body count or gap magnitude.
+    # Jones describes an approximately wheel-like distribution.  With the
+    # canonical ten bodies enforced at the public boundary, this is the
+    # deterministic residual after the one-, two-, and three-group structures
+    # have been tested.  Borderline charts necessarily remain a judgment call
+    # in the primary source; this fallback is Moira policy, not a Jones quote.
     occupied_arc = 360.0 - largest_gap
     all_bodies = frozenset(name for _, name in sorted_lons)
     return ChartShape(
@@ -899,9 +833,9 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
 
     Parameters
     ----------
-    positions : dict mapping body name to ecliptic longitude (degrees).
-                Jones' original method uses the 10 traditional bodies
-                (Sun through Pluto).  Any non-empty dict is accepted.
+    positions : mapping of the ten Jones bodies (Sun through Pluto) to
+                ecliptic longitude in degrees.  Nodes, angles, asteroids, and
+                omitted planets are outside the source method and are rejected.
 
     Returns
     -------
@@ -911,36 +845,31 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
     ---------------
     1. Bundle     (occupied arc <= 120)
     2. Bowl       (occupied arc <= 180, no isolated handle)
-    3. Bucket     (non-handle bodies in contiguous arc <= 180 + 1 isolated
-                  handle body or tight conjunction pair, each > 60 from rims)
-    4. Locomotive (largest gap >= 120, occupied arc > 180, not a Bucket)
-    5. Seesaw     (two opposing gaps each >= 60)
-    6. Splay      (three or more clusters, each gap >= 30)
-    7. Splash     (fallback)
+    3. Bucket     (one planet in the opposite hemisphere; other nine in a Bowl)
+    4. Seesaw     (two Jones-separated groups, each containing 2+ planets)
+    5. Splay      (three Jones-separated groups; a singleton reins group allowed)
+    6. Locomotive (one Jones-separated empty region delimited by a trine)
+    7. Splash     (wheel-like residual / borderline fallback)
 
     Raises
     ------
-    ValueError if positions is empty.
+    ValueError if positions is not exactly the canonical Jones body set.
     """
-    if not positions:
-        raise ValueError("classify_chart_shape: positions must not be empty")
+    supplied_bodies = frozenset(positions)
+    if supplied_bodies != _JONES_BODIES:
+        missing = sorted(_JONES_BODIES - supplied_bodies)
+        extra = sorted(supplied_bodies - _JONES_BODIES)
+        raise ValueError(
+            "classify_chart_shape requires exactly the ten Jones bodies "
+            f"(Sun through Pluto); missing={missing!r}, extra={extra!r}"
+        )
 
     sorted_lons = _sorted_longitudes(positions)
-
-    if len(sorted_lons) == 1:
-        lon, name = sorted_lons[0]
-        return ChartShape(
-            shape=ChartShapeType.SPLASH,
-            occupied_arc=0.0,
-            largest_gap=360.0,
-            leading_planet=None,
-            handle_planet=None,
-            clusters=(frozenset({name}),),
-        )
 
     gaps          = _compute_gaps(sorted_lons)
     largest_gap   = max(g for g, _, _ in gaps)
     occupied_arc  = 360.0 - largest_gap
+    separating_gaps = _group_separating_gaps(sorted_lons, gaps)
 
     result = _detect_bundle(sorted_lons, largest_gap, occupied_arc)
     if result:
@@ -954,16 +883,27 @@ def classify_chart_shape(positions: Mapping[str, float]) -> ChartShape:
     if result:
         return result
 
-    result = _detect_locomotive(sorted_lons, gaps, largest_gap, occupied_arc)
+    result = _detect_seesaw(
+        sorted_lons,
+        separating_gaps,
+        largest_gap,
+        occupied_arc,
+    )
     if result:
         return result
 
-    result = _detect_seesaw(sorted_lons, gaps, largest_gap, occupied_arc)
+    result = _detect_splay(sorted_lons, separating_gaps, largest_gap)
     if result:
         return result
 
-    result = _detect_splay(sorted_lons, largest_gap)
+    result = _detect_locomotive(
+        sorted_lons,
+        gaps,
+        separating_gaps,
+        largest_gap,
+        occupied_arc,
+    )
     if result:
         return result
 
-    return _detect_splash(sorted_lons, gaps, largest_gap)
+    return _detect_splash(sorted_lons, largest_gap)

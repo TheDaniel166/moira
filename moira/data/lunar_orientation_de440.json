@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "orientation_model": "JPL DE440 lunar principal-axis orientation",
+  "pck": {
+    "filename": "moon_pa_de440_200625.bpc",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de440_200625.bpc",
+    "byte_length": 12863488,
+    "sha256": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f",
+    "frame_class_id": 31008,
+    "inertial_frame_id": 1,
+    "data_type": 2,
+    "frame_name": "MOON_PA_DE440"
+  },
+  "frame_kernel": {
+    "filename": "moon_de440_250416.tf",
+    "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_de440_250416.tf",
+    "byte_length": 19478,
+    "sha256": "a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768"
+  },
+  "target_frame": {
+    "frame_id": 31009,
+    "frame_name": "MOON_ME_DE440_ME421",
+    "relative_frame": "MOON_PA_DE440",
+    "angles_arcseconds": [67.8526, 78.6944, 0.2785],
+    "axes": [3, 2, 1],
+    "direction": "relative_frame_to_target_frame",
+    "matrix": [
+      [0.9999998731138765, -0.0003289586579141938, 0.00038152120821145725],
+      [0.00032895919698748533, 0.9999999458920105, -0.0000013502060036227025],
+      [-0.00038152074340615683, 0.0000014757107425872328, 0.9999999272198697]
+    ]
+  }
+}

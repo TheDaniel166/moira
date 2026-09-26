@@ -1821,18 +1821,21 @@ def _physical_star_moon_geometry(
     placement. Observer-motion aberration and air remain excluded.
     """
 
-    from .lunar_limb import _reader_bound_moon_light_cone
+    from ._lunar_apparent import lunar_apparent_context
     from .occultations import (
         _angular_separation_equatorial,
         _position_angle_equatorial,
     )
 
-    light_cone = _reader_bound_moon_light_cone(
+    light_cone = lunar_apparent_context(
         jd_ut1,
-        observer_latitude_deg,
-        observer_longitude_deg,
-        observer_elevation_m,
-        reader,  # type: ignore[arg-type]
+        observer=(
+            observer_latitude_deg,
+            observer_longitude_deg,
+            observer_elevation_m,
+        ),
+        reader=reader,  # type: ignore[arg-type]
+        include_solar=False,
     )
     moon_of_date = tuple(
         sum(
@@ -1877,7 +1880,7 @@ def _physical_star_moon_geometry(
             star_ra,
             star_dec,
         ),
-        light_cone.distance_km,
+        light_cone.observer_distance_km,
     )
 
 

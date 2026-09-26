@@ -1401,6 +1401,7 @@ _EXPECTED_MOIRA_METHODS.update({
     'solar_global_circumstances',
     'solar_eclipse_cartography',
     'lunar_ecliptic_direction_at',
+    'lunar_orientation',
     'ashtakavarga',
     'moon_connection_flow_at',
     'primary_direction_condition',
@@ -1490,7 +1491,28 @@ _EXPECTED_MOIRA_METHODS.update({
     'varga_named',
 })
 
+_EXPECTED_ROOT_PUBLIC_NAMES.update({
+    "CuspSpeed",
+    "HouseDynamics",
+    "LunarApparentGeometryError",
+    "LunarObserver",
+    "LunarOrientation",
+    "LunarOrientationCoverageError",
+    "LunarOrientationResourceError",
+    "LunarOrientationResourceIdentityError",
+    "LunarOrientationResourceMissingError",
+    "LunarOrientationSource",
+    "analytical_asc_speed",
+    "analytical_mc_speed",
+    "analytical_vertex_speed",
+    "cusp_speeds_at",
+    "house_dynamics_from_armc",
+    "lunar_orientation_at",
+})
+
 _EXPECTED_MOIRA_METHODS.update({
+    "house_dynamics",
+    "primary_directions_timeline",
     "besieging_truth",
     "decennial_sequence_truth",
     "evaluate_lots",

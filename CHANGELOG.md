@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Lunar orientation and libration engine**: Added a sovereign
+  `lunar_orientation_at()` product and `Moira.lunar_orientation()` facade method
+  for geocentric or WGS-84 topocentric total apparent libration, subsolar
+  coordinates, lunar-axis and bright-limb position angles, and solar
+  colongitude. The implementation uses DE441/LE441 translation, a native
+  binary-PCK type-2 reader for the pinned DE440 principal-axis model, and the
+  admitted `MOON_ME_DE440_ME421` frame transform. Exact resource identities,
+  descriptor coverage, time/light-cone semantics, and convention-explicit
+  provenance are returned or fail closed. Frozen JPL Horizons and NASA SVS
+  comparisons and native-versus-SPICE matrix checks cover geocentric,
+  topocentric, holdout, and segment-boundary cases.
 - **House Dynamics & Instantaneous Cusp Speeds — Frontier 8**:
   - **Analytical Ground Truth Derivations (Part 1)**: Derived exact closed forms from first principles for fundamental angle velocities under Earth's diurnal rotation:
     - Midheaven: $\dot{\lambda}_{\text{MC}} = \omega_{\text{sidereal}} \frac{\cos \varepsilon}{1 - \sin^2 \varepsilon \sin^2 \lambda_{\text{MC}}}$ via `analytical_mc_speed()`.
@@ -65,6 +76,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added contract test suite in [`tests/server/test_server_pattern_coherence_routes.py`](file:///c:/dev/moira/tests/server/test_server_pattern_coherence_routes.py) (6/6 passing).
 
 ### Fixed
+- **Jones chart-shape doctrine**: Reworked the seven-shape classifier against
+  Marc Edmund Jones's *Essentials of Astrological Analysis*. Classification
+  now requires the canonical Sun-through-Pluto set, treats Bucket as a strict
+  one-nine form, admits functioning trines by Jones's body-dependent aspect
+  orbs for Locomotive, uses his sextile-or-greater-than-70-degree group
+  boundary for Seesaw, permits a singleton reins group in Splay, and documents
+  Splash as Moira's deterministic resolution for source-acknowledged
+  borderline cases. The REST route now rejects nodes and custom planet sets
+  with HTTP 422 instead of passing non-Jones inputs into the classifier.
 - **Public Route Vector Cache Prefill (`_prefill_npe_public_vector_cache`)**:
   - Restored canonical iteration over all `_NPE_ADMITTED_BODIES` using `NAIF_ROUTES` in `moira/planets.py`, ensuring all admitted planets (including Mercury and Venus multi-segment routes) correctly populate `bary_pos`, `bary_state`, `geo_pos`, and `geo_state` in the fallback vector cache.
 

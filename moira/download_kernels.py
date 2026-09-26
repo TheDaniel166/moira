@@ -18,6 +18,7 @@ either Moira small-body catalog, and this tool does not download the
 from __future__ import annotations
 
 import argparse
+import hashlib
 import sys
 from urllib.request import urlopen
 from pathlib import Path
@@ -50,6 +51,22 @@ _REGISTRY: list[dict] = [
         "description": "JPL DE441 planetary ephemeris (extended range: ~13 200 BCE – ~17 200 CE)",
     },
     {
+        "filename": "moon_pa_de440_200625.bpc",
+        "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/moon_pa_de440_200625.bpc",
+        "size_hint": "~12.3 MB",
+        "description": "JPL DE440 lunar principal-axis orientation (binary PCK)",
+        "byte_length": 12_863_488,
+        "sha256": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f",
+    },
+    {
+        "filename": "moon_de440_250416.tf",
+        "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/fk/satellites/moon_de440_250416.tf",
+        "size_hint": "~19 KB",
+        "description": "DE440 lunar PA-to-ME frame definition (text FK)",
+        "byte_length": 19_478,
+        "sha256": "a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768",
+    },
+    {
         "filename": "asteroids.bsp",
         "url": (
             "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/asteroids/"
@@ -73,13 +90,31 @@ _REGISTRY: list[dict] = [
     },
 ]
 
+_LUNAR_ORIENTATION_FILENAMES = frozenset(
+    {"moon_pa_de440_200625.bpc", "moon_de440_250416.tf"}
+)
+
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _is_present(filename: str) -> bool:
-    return find_kernel(filename).exists()
+def _entry_status(entry: dict) -> tuple[str, Path]:
+    path = find_kernel(entry["filename"])
+    if not path.is_file():
+        return "MISSING", path
+    expected_bytes = entry.get("byte_length")
+    if expected_bytes is not None and path.stat().st_size != expected_bytes:
+        return "MISMATCH", path
+    expected_sha256 = entry.get("sha256")
+    if expected_sha256 is not None:
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            for block in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(block)
+        if digest.hexdigest() != expected_sha256:
+            return "MISMATCH", path
+    return "OK", path
 
 
 _CHUNK_SIZE = 65_536  # 64 KiB
@@ -98,7 +133,14 @@ def _check_registry_urls() -> None:
 _check_registry_urls()
 
 
-def _download(url: str, dest: Path, size_hint: str) -> None:
+def _download(
+    url: str,
+    dest: Path,
+    size_hint: str,
+    *,
+    expected_bytes: int | None = None,
+    expected_sha256: str | None = None,
+) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
     print(f"  Downloading {dest.name} ({size_hint}) …")
     print(f"  Source : {url}")
@@ -117,12 +159,14 @@ def _download(url: str, dest: Path, size_hint: str) -> None:
                 raise RuntimeError(f"HTTP {response.status} from {url}")
             expected = int(response.headers.get("Content-Length") or 0)
             downloaded = 0
+            digest = hashlib.sha256()
             with part.open("wb") as fh:
                 while True:
                     chunk = response.read(_CHUNK_SIZE)
                     if not chunk:
                         break
                     fh.write(chunk)
+                    digest.update(chunk)
                     downloaded += len(chunk)
                     progress_started = True
                     if expected > 0:
@@ -141,6 +185,13 @@ def _download(url: str, dest: Path, size_hint: str) -> None:
             raise RuntimeError(
                 f"Incomplete download: received {downloaded} of {expected} bytes"
             )
+        if expected_bytes is not None and downloaded != expected_bytes:
+            raise RuntimeError(
+                f"Resource identity mismatch: received {downloaded} bytes, "
+                f"expected {expected_bytes}"
+            )
+        if expected_sha256 is not None and digest.hexdigest() != expected_sha256:
+            raise RuntimeError("Resource identity mismatch: SHA-256 differs from manifest")
 
         # Atomic promotion: dest replaced only after full verified write.
         if dest.exists():
@@ -161,14 +212,25 @@ def _download(url: str, dest: Path, size_hint: str) -> None:
 # Public API
 # ---------------------------------------------------------------------------
 
-def download_missing(interactive: bool = True) -> None:
-    """Download all missing kernels to ~/.moira/kernels/.
+def download_missing(
+    interactive: bool = True,
+    *,
+    filenames: frozenset[str] | None = None,
+) -> None:
+    """Download missing selected kernels to ~/.moira/kernels/.
 
     Only one planetary kernel is required (de430, de440, or de441).
-    Asteroid and small-body kernels are optional.
+    Asteroid, small-body, and lunar-orientation kernels are optional.
+    When ``filenames`` is omitted the historical all-registry behavior is
+    preserved.
     """
     dest_dir = user_kernels_dir()
-    missing = [k for k in _REGISTRY if not _is_present(k["filename"])]
+    selected = (
+        _REGISTRY
+        if filenames is None
+        else [entry for entry in _REGISTRY if entry["filename"] in filenames]
+    )
+    missing = [entry for entry in selected if _entry_status(entry)[0] != "OK"]
 
     if not missing:
         print("All required kernels are already present.")
@@ -188,7 +250,13 @@ def download_missing(interactive: bool = True) -> None:
     for k in missing:
         dest = dest_dir / k["filename"]
         try:
-            _download(k["url"], dest, k["size_hint"])
+            _download(
+                k["url"],
+                dest,
+                k["size_hint"],
+                expected_bytes=k.get("byte_length"),
+                expected_sha256=k.get("sha256"),
+            )
             print(f"  Saved to {dest}\n")
         except RuntimeError as exc:
             print(f"  ERROR: {exc}\n")
@@ -202,8 +270,7 @@ def list_kernels() -> None:
     print(f"{'Filename':<30}  {'Status':<12}  {'Location'}")
     print("-" * 80)
     for k in _REGISTRY:
-        path = find_kernel(k["filename"])
-        status = "OK" if path.exists() else "MISSING"
+        status, path = _entry_status(k)
         loc = str(path) if path.exists() else "(not found)"
         print(f"  {k['filename']:<28}  {status:<12}  {loc}")
 
@@ -225,7 +292,7 @@ def list_kernels() -> None:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         prog="moira-download-kernels",
-        description="Download JPL BSP kernel files required by Moira.",
+        description="Download JPL/NAIF kernel files used by Moira.",
     )
     parser.add_argument(
         "--list", action="store_true", help="Show kernel status and exit."
@@ -233,13 +300,23 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument(
         "--yes", "-y", action="store_true", help="Skip confirmation prompt."
     )
+    parser.add_argument(
+        "--lunar-orientation",
+        action="store_true",
+        help="Download only the pinned lunar-orientation PCK and frame kernel.",
+    )
     args = parser.parse_args(argv)
 
     if args.list:
         list_kernels()
         return
 
-    download_missing(interactive=not args.yes)
+    download_missing(
+        interactive=not args.yes,
+        filenames=(
+            _LUNAR_ORIENTATION_FILENAMES if args.lunar_orientation else None
+        ),
+    )
 
 
 if __name__ == "__main__":

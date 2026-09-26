@@ -265,9 +265,12 @@ def test_adversarial_small_body_kernel_coverage_unions_split_segments_for_same_p
     try:
         coverage = kernel.coverage()
         assert kernel.list_naif_ids() == [2000433]
-        assert coverage[(10, 2000433)] == (
-            body_kernel._jd(0.0),
-            body_kernel._jd(259200.0),
+        assert coverage[(10, 2000433)] == pytest.approx(
+            (
+                body_kernel._jd(0.0),
+                body_kernel._jd(259200.0),
+            ),
+            abs=1e-9,
         )
     finally:
         kernel.close()

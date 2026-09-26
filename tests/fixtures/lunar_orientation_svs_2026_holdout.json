@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "authority": "NASA Scientific Visualization Studio Moon Phase and Libration 2026",
+  "source_url": "https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/mooninfo_2026.json",
+  "fetched_at_utc": "2026-09-26T19:09:00Z",
+  "source_byte_length": 2094339,
+  "source_sha256": "098ec6434ba4fecb84e66485385816d465b7969f142864bcfc9ffc68311b4a86",
+  "longitude_convention": "east-positive",
+  "position_angle_convention": "counter-clockwise from J2000 celestial north",
+  "cases": [
+    {
+      "utc": "2026-01-01T00:00:00Z",
+      "sub_observer_longitude_east_deg": -1.279,
+      "sub_observer_latitude_deg": -6.556,
+      "sub_solar_longitude_east_deg": 32.520,
+      "sub_solar_latitude_deg": -1.346,
+      "axis_position_angle_j2000_deg": 349.893
+    },
+    {
+      "utc": "2026-09-26T00:00:00Z",
+      "sub_observer_longitude_east_deg": -5.093,
+      "sub_observer_latitude_deg": -2.822,
+      "sub_solar_longitude_east_deg": 3.666,
+      "sub_solar_latitude_deg": -0.862,
+      "axis_position_angle_j2000_deg": 338.101
+    },
+    {
+      "utc": "2026-12-31T23:00:00Z",
+      "sub_observer_longitude_east_deg": 7.206,
+      "sub_observer_latitude_deg": 5.967,
+      "sub_solar_longitude_east_deg": -96.377,
+      "sub_solar_latitude_deg": -1.015,
+      "axis_position_angle_j2000_deg": 21.263
+    }
+  ]
+}

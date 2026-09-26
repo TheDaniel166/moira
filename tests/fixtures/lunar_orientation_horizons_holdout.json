@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "authority": "JPL Horizons API",
+  "fetched_at_utc": "2026-09-26T19:35:00Z",
+  "target": "Moon (301)",
+  "target_frame": "MOON_ME_DE440_ME421",
+  "longitude_convention": "east-positive",
+  "position_angle_convention": "counter-clockwise from true-of-date north",
+  "quantities": [14, 15, 16, 17],
+  "cases": [
+    {
+      "utc": "2026-01-01T00:00:00Z",
+      "observer": null,
+      "sub_observer_longitude_east_deg": -1.283451,
+      "sub_observer_latitude_deg": -6.556142,
+      "sub_solar_longitude_east_deg": 32.519634,
+      "sub_solar_latitude_deg": -1.346422,
+      "bright_limb_position_angle_deg": 267.36,
+      "axis_position_angle_deg": 350.0369,
+      "query_url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-01+00%3A02%27&STEP_SIZE=%271+m%27&QUANTITIES=%2714%2C15%2C16%2C17%27",
+      "response_byte_length": 7928,
+      "response_sha256": "cf4dffd0d64d7198e0cf6ae89906687066255a4b3a8aca3e62539fac2631560f"
+    },
+    {
+      "utc": "2026-03-25T00:00:00Z",
+      "observer": null,
+      "sub_observer_longitude_east_deg": 2.1575,
+      "sub_observer_latitude_deg": -6.506279,
+      "sub_solar_longitude_east_deg": 102.563688,
+      "sub_solar_latitude_deg": 0.664436,
+      "bright_limb_position_angle_deg": 266.24,
+      "axis_position_angle_deg": 356.7603,
+      "query_url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&START_TIME=%272026-03-25+00%3A00%27&STOP_TIME=%272026-03-25+00%3A02%27&STEP_SIZE=%271+m%27&QUANTITIES=%2714%2C15%2C16%2C17%27",
+      "response_byte_length": 7928,
+      "response_sha256": "8e0c414e61ce17a9c3a9894270a9c5dcaf99690b42d5920b2c0c0bfbf0298228"
+    },
+    {
+      "utc": "2026-12-31T00:00:00Z",
+      "observer": null,
+      "sub_observer_longitude_east_deg": 7.53978,
+      "sub_observer_latitude_deg": 5.167216,
+      "sub_solar_longitude_east_deg": -84.723818,
+      "sub_solar_latitude_deg": -1.031688,
+      "bright_limb_position_angle_deg": 113.0,
+      "axis_position_angle_deg": 22.1737,
+      "query_url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&START_TIME=%272026-12-31+00%3A00%27&STOP_TIME=%272026-12-31+00%3A02%27&STEP_SIZE=%271+m%27&QUANTITIES=%2714%2C15%2C16%2C17%27",
+      "response_byte_length": 7928,
+      "response_sha256": "9147946c7277fceace16771956b69ecc74b7ed670d010590fbe6b432a4e483cc"
+    }
+  ]
+}
