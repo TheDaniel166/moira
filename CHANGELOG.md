@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.0] - 2026-09-26
+
 ### Added
 - **Lunar orientation and libration engine**: Added a sovereign
   `lunar_orientation_at()` product and `Moira.lunar_orientation()` facade method
@@ -76,6 +78,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added contract test suite in [`tests/server/test_server_pattern_coherence_routes.py`](file:///c:/dev/moira/tests/server/test_server_pattern_coherence_routes.py) (6/6 passing).
 
 ### Fixed
+- **Conventional eclipse Saros identity**: Replaced the misleading
+  mean-month phase exposed as `saros_index` with the conventional van den
+  Bergh/NASA Saros-series number for actual solar and lunar eclipses. Added
+  explicit `saros_series`, `saros_lunation_number`, and
+  `saros_cycle_position` fields so catalog identity and the retained legacy
+  cycle phase remain distinct in Python and REST results.
 - **Jones chart-shape doctrine**: Reworked the seven-shape classifier against
   Marc Edmund Jones's *Essentials of Astrological Analysis*. Classification
   now requires the canonical Sun-through-Pluto set, treats Bucket as a strict

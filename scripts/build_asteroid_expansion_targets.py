@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 import time
 import urllib.parse
 import urllib.request
