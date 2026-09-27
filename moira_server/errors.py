@@ -12,6 +12,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from moira import (
+    LunarApparentGeometryError,
+    LunarOrientationCoverageError,
+    LunarOrientationResourceError,
+    LunarOrientationResourceIdentityError,
+    LunarOrientationResourceMissingError,
     MissingEphemerisKernelError,
     OrbitalAmbiguousBodyError,
     OrbitalBodyNotFoundError,
@@ -311,6 +316,50 @@ _ORBITAL_ERROR_POLICIES = (
 )
 
 
+_LUNAR_ORIENTATION_ERROR_POLICIES = (
+    (
+        LunarOrientationCoverageError,
+        422,
+        "date_outside_lunar_orientation_coverage",
+        "ephemeris_coverage",
+        "The requested date is outside the admitted lunar-orientation coverage.",
+        False,
+    ),
+    (
+        LunarOrientationResourceMissingError,
+        503,
+        "lunar_orientation_resource_not_ready",
+        "ephemeris_availability",
+        "The lunar-orientation resources are not installed.",
+        False,
+    ),
+    (
+        LunarOrientationResourceIdentityError,
+        503,
+        "lunar_orientation_resource_identity_mismatch",
+        "server_configuration",
+        "The installed lunar-orientation resources failed identity validation.",
+        False,
+    ),
+    (
+        LunarOrientationResourceError,
+        503,
+        "lunar_orientation_resource_not_ready",
+        "ephemeris_availability",
+        "The lunar-orientation resources are unavailable.",
+        False,
+    ),
+    (
+        LunarApparentGeometryError,
+        500,
+        "lunar_orientation_computation_failed",
+        "computation",
+        "The lunar apparent-orientation geometry could not be formed.",
+        True,
+    ),
+)
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     """Register phase-1 exception handlers."""
 
@@ -384,6 +433,55 @@ def register_exception_handlers(app: FastAPI) -> None:
                 status_code,
                 error_code,
                 category,
+                log_failure,
+            ),
+        )
+
+    def make_lunar_orientation_handler(
+        status_code: int,
+        error_code: str,
+        category: str,
+        message: str,
+        log_failure: bool,
+    ):
+        async def handle_lunar_orientation_error(
+            request: Request,
+            exc: Exception,
+        ) -> JSONResponse:
+            request_id = getattr(request.state, "request_id", str(uuid4()))
+            if log_failure:
+                _LOGGER.exception(
+                    "Lunar orientation computation failed [request_id=%s]",
+                    request_id,
+                    exc_info=(type(exc), exc, exc.__traceback__),
+                )
+            return JSONResponse(
+                status_code=status_code,
+                content=_error_body(
+                    error_code=error_code,
+                    message=message,
+                    category=category,
+                    request_id=request_id,
+                ),
+            )
+
+        return handle_lunar_orientation_error
+
+    for (
+        exception_type,
+        status_code,
+        error_code,
+        category,
+        message,
+        log_failure,
+    ) in _LUNAR_ORIENTATION_ERROR_POLICIES:
+        app.add_exception_handler(
+            exception_type,
+            make_lunar_orientation_handler(
+                status_code,
+                error_code,
+                category,
+                message,
                 log_failure,
             ),
         )

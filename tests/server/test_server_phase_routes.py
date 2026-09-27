@@ -6,6 +6,14 @@ from fastapi.testclient import TestClient
 import pytest
 
 import moira.phase as phase
+from moira import (
+    LunarObserver,
+    LunarOrientation,
+    LunarOrientationCoverageError,
+    LunarOrientationResourceIdentityError,
+    LunarOrientationResourceMissingError,
+    LunarOrientationSource,
+)
 from moira.constants import Body
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -15,7 +23,34 @@ pytestmark = pytest.mark.loopback
 
 
 class _FakeEngine:
-    pass
+    def __init__(self) -> None:
+        self.lunar_orientation_call = None
+
+    def lunar_orientation(self, dt, observer=None) -> LunarOrientation:
+        self.lunar_orientation_call = (dt, observer)
+        return LunarOrientation(
+            jd_ut1=2461309.500001,
+            observer=observer,
+            sub_observer_longitude_east_deg=4.25,
+            sub_observer_latitude_deg=-1.5,
+            sub_solar_longitude_east_deg=-32.0,
+            sub_solar_latitude_deg=0.75,
+            axis_position_angle_deg=19.0,
+            bright_limb_position_angle_deg=281.25,
+            solar_colongitude_deg=122.0,
+            source=LunarOrientationSource(
+                translation_model="DE441/LE441",
+                orientation_model="DE440 lunar principal-axis binary PCK",
+                body_fixed_frame="MOON_ME_DE440_ME421",
+                pck_sha256="a" * 64,
+                frame_kernel_sha256="b" * 64,
+                coverage_start_jd_tdb=2287184.5,
+                coverage_end_jd_tdb=2688976.5,
+                light_time_model="retarded received-light geometry",
+                input_time_scale="UT1",
+                orientation_time_scale="TDB at retarded lunar emission",
+            ),
+        )
 
 
 @pytest.fixture
@@ -34,6 +69,171 @@ def _assert_validation_envelope(response, *, message_fragment: str) -> None:
     assert body["request_id"]
     assert response.headers["X-Request-ID"] == body["request_id"]
     assert message_fragment in body["message"]
+
+
+def test_lunar_orientation_route_exposes_renderer_ready_geocentric_contract(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/v1/phase/lunar-orientation",
+        json={"dt": "2026-09-27T00:00:00Z"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["normalized_datetime_utc"] == "2026-09-27T00:00:00+00:00"
+    assert body["observer_mode"] == "geocentric"
+    assert body["observer"] is None
+    assert body["libration_longitude_deg"] == pytest.approx(4.25)
+    assert body["libration_latitude_deg"] == pytest.approx(-1.5)
+    assert body["sub_solar_longitude_east_deg"] == pytest.approx(-32.0)
+    assert body["axis_position_angle_deg"] == pytest.approx(19.0)
+    assert body["bright_limb_position_angle_deg"] == pytest.approx(281.25)
+    assert body["solar_colongitude_deg"] == pytest.approx(122.0)
+    assert body["conventions"] == {
+        "product": "total_apparent_lunar_orientation",
+        "longitude_positive": "east",
+        "latitude_positive": "north",
+        "position_angle_zero": "true_of_date_celestial_north",
+        "position_angle_direction": (
+            "eastward_counter_clockwise_in_north_up_view"
+        ),
+        "observer_frame": "geocentre",
+    }
+    assert body["source"]["body_fixed_frame"] == "MOON_ME_DE440_ME421"
+    assert body["source"]["pck_sha256"] == "a" * 64
+
+
+def test_lunar_orientation_route_binds_wgs84_topocentric_observer(
+    client: TestClient,
+) -> None:
+    response = client.post(
+        "/v1/phase/lunar-orientation",
+        json={
+            "dt": "2026-09-27T00:00:00-04:00",
+            "observer": {
+                "latitude_deg": 40.7128,
+                "longitude_deg": -74.006,
+                "elevation_m": 12.5,
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["normalized_datetime_utc"] == "2026-09-27T04:00:00+00:00"
+    assert body["observer_mode"] == "topocentric"
+    assert body["observer"] == {
+        "latitude_deg": 40.7128,
+        "longitude_deg": -74.006,
+        "elevation_m": 12.5,
+    }
+    assert body["conventions"]["observer_frame"] == "WGS84_topocentre"
+    _, observer = client.app.state.engine.lunar_orientation_call
+    assert observer == LunarObserver(40.7128, -74.006, 12.5)
+
+
+@pytest.mark.parametrize(
+    ("error_type", "status_code", "error_code", "category"),
+    [
+        (
+            LunarOrientationResourceMissingError,
+            503,
+            "lunar_orientation_resource_not_ready",
+            "ephemeris_availability",
+        ),
+        (
+            LunarOrientationResourceIdentityError,
+            503,
+            "lunar_orientation_resource_identity_mismatch",
+            "server_configuration",
+        ),
+        (
+            LunarOrientationCoverageError,
+            422,
+            "date_outside_lunar_orientation_coverage",
+            "ephemeris_coverage",
+        ),
+    ],
+)
+def test_lunar_orientation_route_maps_resource_failures_without_path_leakage(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    error_type: type[Exception],
+    status_code: int,
+    error_code: str,
+    category: str,
+) -> None:
+    def fail(_self, _dt, observer=None):
+        _ = observer
+        raise error_type(r"C:\\private\\operator\\resource.bpc")
+
+    monkeypatch.setattr(_FakeEngine, "lunar_orientation", fail)
+    response = client.post(
+        "/v1/phase/lunar-orientation",
+        json={"dt": "2026-09-27T00:00:00Z"},
+    )
+
+    assert response.status_code == status_code
+    body = response.json()
+    assert body["error_code"] == error_code
+    assert body["category"] == category
+    assert body["request_id"]
+    assert response.headers["X-Request-ID"] == body["request_id"]
+    assert "private" not in body["message"]
+    assert body["details"] is None
+
+
+def test_lunar_orientation_route_rejects_ambiguous_time_and_observer_inputs(
+    client: TestClient,
+) -> None:
+    naive = client.post(
+        "/v1/phase/lunar-orientation",
+        json={"dt": "2026-09-27T00:00:00"},
+    )
+    invalid_latitude = client.post(
+        "/v1/phase/lunar-orientation",
+        json={
+            "dt": "2026-09-27T00:00:00Z",
+            "observer": {"latitude_deg": 91.0, "longitude_deg": 0.0},
+        },
+    )
+    partial_observer = client.post(
+        "/v1/phase/lunar-orientation",
+        json={
+            "dt": "2026-09-27T00:00:00Z",
+            "observer": {"latitude_deg": 40.0},
+        },
+    )
+
+    _assert_validation_envelope(naive, message_fragment="dt must be timezone-aware")
+    _assert_validation_envelope(invalid_latitude, message_fragment="less than or equal to 90")
+    _assert_validation_envelope(partial_observer, message_fragment="Field required")
+
+
+def test_lunar_orientation_openapi_contract_is_typed_and_nullable(
+    client: TestClient,
+) -> None:
+    schema = client.app.openapi()
+    operation = schema["paths"]["/v1/phase/lunar-orientation"]["post"]
+    assert operation["requestBody"]["content"]["application/json"]["schema"] == {
+        "$ref": "#/components/schemas/LunarOrientationRequest"
+    }
+    assert operation["responses"]["200"]["content"]["application/json"][
+        "schema"
+    ] == {"$ref": "#/components/schemas/LunarOrientationResponse"}
+
+    response = schema["components"]["schemas"]["LunarOrientationResponse"]
+    properties = response["properties"]
+    assert properties["observer_mode"]["enum"] == ["geocentric", "topocentric"]
+    assert properties["libration_longitude_deg"]["minimum"] == -180.0
+    assert properties["libration_longitude_deg"]["exclusiveMaximum"] == 180.0
+    assert {entry.get("type") for entry in properties[
+        "bright_limb_position_angle_deg"
+    ]["anyOf"]} == {"number", "null"}
+    assert properties["source"] == {
+        "$ref": "#/components/schemas/LunarOrientationSourceResponse"
+    }
 
 
 def test_illuminated_fraction_route_preserves_scalar_boundaries(
@@ -251,6 +451,7 @@ def test_phase_routes_are_registered(client: TestClient) -> None:
     }
 
     assert paths == {
+        "/v1/phase/lunar-orientation",
         "/v1/phase/illuminated-fraction",
         "/v1/phase/synodic",
         "/v1/phase/elongation",

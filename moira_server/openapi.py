@@ -395,7 +395,7 @@ _TAG_DEFINITIONS: tuple[dict[str, str], ...] = (
     {
         "name": "phase",
         "x-displayName": "Phase and Photometry",
-        "description": "Illumination, synodic phase, elongation, phase angle, diameter, and magnitude surfaces.",
+        "description": "Illumination, lunar orientation and libration, synodic phase, elongation, phase angle, diameter, and magnitude surfaces.",
         "x-family": "phenomena",
     },
     {

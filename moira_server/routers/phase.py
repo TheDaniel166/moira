@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
+from moira import Moira
+
+from ..dependencies import get_engine
 
 from ..models.phase import (
     AngularDiameterResponse,
@@ -11,6 +15,8 @@ from ..models.phase import (
     ElongationResponse,
     IlluminatedFractionRequest,
     IlluminatedFractionResponse,
+    LunarOrientationRequest,
+    LunarOrientationResponse,
     PhaseAngleResponse,
     PhaseBodyRequest,
     SynodicPhaseRequest,
@@ -21,12 +27,26 @@ from ..services.phase import (
     compute_apparent_magnitude,
     compute_elongation,
     compute_illuminated_fraction,
+    compute_lunar_orientation,
     compute_phase_angle,
     compute_synodic_phase,
 )
 
 
 router = APIRouter(prefix="/v1/phase", tags=["phase"])
+
+
+@router.post(
+    "/lunar-orientation",
+    response_model=LunarOrientationResponse,
+)
+def lunar_orientation_route(
+    request: LunarOrientationRequest,
+    engine: Moira = Depends(get_engine),
+) -> LunarOrientationResponse:
+    """Return total apparent lunar libration and visible-disc orientation."""
+
+    return compute_lunar_orientation(engine, request)
 
 
 @router.post("/illuminated-fraction", response_model=IlluminatedFractionResponse)

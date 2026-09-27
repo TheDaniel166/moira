@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Lunar orientation REST surface**: Added
+  `POST /v1/phase/lunar-orientation`, a typed transport for the existing
+  `Moira.lunar_orientation()` product. The route accepts a timezone-aware
+  instant plus an optional WGS-84 observer and returns renderer-ready total
+  apparent libration, subsolar coordinates, lunar-axis and bright-limb
+  position angles, solar colongitude, explicit angular conventions, and exact
+  engine resource provenance. Missing, identity-invalid, and out-of-coverage
+  lunar-orientation resources retain distinct path-redacted HTTP failures.
+
 ## [6.9.0] - 2026-09-26
 
 ### Added

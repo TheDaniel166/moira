@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import timezone
 import math
 
+from moira import LunarObserver, Moira
 from moira.constants import Body
 from moira.phase import (
     angular_diameter,
@@ -22,6 +24,11 @@ from ..models.phase import (
     ElongationResponse,
     IlluminatedFractionRequest,
     IlluminatedFractionResponse,
+    LunarOrientationConventionsResponse,
+    LunarOrientationObserverResponse,
+    LunarOrientationRequest,
+    LunarOrientationResponse,
+    LunarOrientationSourceResponse,
     PhaseAngleResponse,
     PhaseBodyRequest,
     PhaseProvenanceResponse,
@@ -113,6 +120,67 @@ _MAGNITUDE_MODEL_DETAILS = {
         ["Includes time-dependent geocentric V(1,0) and post-2000 phase branch."],
     ),
 }
+
+
+def compute_lunar_orientation(
+    engine: Moira,
+    request: LunarOrientationRequest,
+) -> LunarOrientationResponse:
+    """Project the engine-owned lunar-orientation vessel into REST transport."""
+
+    observer = None
+    if request.observer is not None:
+        observer = LunarObserver(
+            latitude_deg=request.observer.latitude_deg,
+            longitude_deg=request.observer.longitude_deg,
+            elevation_m=request.observer.elevation_m,
+        )
+
+    result = engine.lunar_orientation(request.dt, observer=observer)
+    response_observer = None
+    if result.observer is not None:
+        response_observer = LunarOrientationObserverResponse(
+            latitude_deg=result.observer.latitude_deg,
+            longitude_deg=result.observer.longitude_deg,
+            elevation_m=result.observer.elevation_m,
+        )
+    source = result.source
+    observer_mode = "topocentric" if response_observer is not None else "geocentric"
+    return LunarOrientationResponse(
+        requested_datetime=request.dt.isoformat(),
+        normalized_datetime_utc=request.dt.astimezone(timezone.utc).isoformat(),
+        jd_ut1=result.jd_ut1,
+        observer_mode=observer_mode,
+        observer=response_observer,
+        libration_longitude_deg=result.libration_longitude_deg,
+        libration_latitude_deg=result.libration_latitude_deg,
+        sub_observer_longitude_east_deg=result.sub_observer_longitude_east_deg,
+        sub_observer_latitude_deg=result.sub_observer_latitude_deg,
+        sub_solar_longitude_east_deg=result.sub_solar_longitude_east_deg,
+        sub_solar_latitude_deg=result.sub_solar_latitude_deg,
+        axis_position_angle_deg=result.axis_position_angle_deg,
+        bright_limb_position_angle_deg=result.bright_limb_position_angle_deg,
+        solar_colongitude_deg=result.solar_colongitude_deg,
+        conventions=LunarOrientationConventionsResponse(
+            observer_frame=(
+                "WGS84_topocentre"
+                if response_observer is not None
+                else "geocentre"
+            ),
+        ),
+        source=LunarOrientationSourceResponse(
+            translation_model=source.translation_model,
+            orientation_model=source.orientation_model,
+            body_fixed_frame=source.body_fixed_frame,
+            pck_sha256=source.pck_sha256,
+            frame_kernel_sha256=source.frame_kernel_sha256,
+            coverage_start_jd_tdb=source.coverage_start_jd_tdb,
+            coverage_end_jd_tdb=source.coverage_end_jd_tdb,
+            light_time_model=source.light_time_model,
+            input_time_scale=source.input_time_scale,
+            orientation_time_scale=source.orientation_time_scale,
+        ),
+    )
 
 
 def _assert_finite_result(name: str, value: float) -> float:
@@ -322,3 +390,17 @@ def compute_apparent_magnitude(
             ],
         ),
     )
+
+
+__all__ = [
+    "APPARENT_MAGNITUDE_BODIES",
+    "APPARENT_MAGNITUDE_EXCLUSIONS",
+    "ANGULAR_DIAMETER_BODIES",
+    "compute_angular_diameter",
+    "compute_apparent_magnitude",
+    "compute_elongation",
+    "compute_illuminated_fraction",
+    "compute_lunar_orientation",
+    "compute_phase_angle",
+    "compute_synodic_phase",
+]

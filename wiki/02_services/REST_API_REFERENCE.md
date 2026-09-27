@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 466
-- Registered OpenAPI operations: 466 (GET 36, POST 430)
+- Registered OpenAPI paths: 467
+- Registered OpenAPI operations: 467 (GET 36, POST 431)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 462
+- Versioned `/v1` paths: 463
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3428,6 +3428,7 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/phase/apparent-magnitude` | phase | `apparent_magnitude_route_v1_phase_apparent_magnitude_post` |
 | `POST` | `/v1/phase/elongation` | phase | `elongation_route_v1_phase_elongation_post` |
 | `POST` | `/v1/phase/illuminated-fraction` | phase | `illuminated_fraction_route_v1_phase_illuminated_fraction_post` |
+| `POST` | `/v1/phase/lunar-orientation` | phase | `lunar_orientation_route_v1_phase_lunar_orientation_post` |
 | `POST` | `/v1/phase/synodic` | phase | `synodic_phase_route_v1_phase_synodic_post` |
 | `POST` | `/v1/phenomena/orbital-events` | generic-phenomena | `orbital_phenomena_events_route_v1_phenomena_orbital_events_post` |
 | `POST` | `/v1/phenomena/planet` | generic-phenomena | `planet_phenomena_route_v1_phenomena_planet_post` |
