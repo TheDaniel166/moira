@@ -1178,6 +1178,26 @@ def test_narrow_return_policy_can_fail_explicitly_without_changing_default_behav
 
 
 @pytest.mark.requires_ephemeris
+def test_facade_planet_return_exposes_explicit_max_days(moira_engine) -> None:
+    natal_dt = datetime(1995, 3, 15, 6, 0, tzinfo=timezone.utc)
+    start = jd_from_datetime(datetime(1995, 3, 16, 0, 0, tzinfo=timezone.utc))
+    natal_lon = planet_at(
+        Body.MERCURY,
+        jd_from_datetime(natal_dt),
+        reader=moira_engine._reader,
+    ).longitude
+
+    with pytest.raises(RuntimeError, match="not found within 10 days"):
+        moira_engine.planet_return(
+            Body.MERCURY,
+            natal_lon,
+            start,
+            direction="either",
+            max_days=10.0,
+        )
+
+
+@pytest.mark.requires_ephemeris
 def test_solar_return_matches_solar_transit_to_natal_longitude() -> None:
     natal_dt = datetime(1990, 7, 11, 12, 0, tzinfo=timezone.utc)
     natal_sun_lon = planet_at(Body.SUN, jd_from_datetime(natal_dt)).longitude
@@ -1221,6 +1241,69 @@ def test_mercury_return_uses_geocentric_search_window_not_orbital_period() -> No
 
     assert jd_return > start
     assert _angle_diff(planet_at(Body.MERCURY, jd_return).longitude, natal_lon) < 1e-3
+
+
+@pytest.mark.parametrize(
+    "body",
+    (Body.JUPITER, Body.SATURN, Body.URANUS, Body.NEPTUNE, Body.PLUTO),
+)
+def test_outer_planet_default_return_window_spans_full_sidereal_period(body: str) -> None:
+    window = transits_module._return_window_days(body, TransitComputationPolicy())
+
+    assert window == pytest.approx(Body.SIDEREAL_PERIODS[body] * 1.5)
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.slow
+def test_outer_planet_returns_resolve_beyond_legacy_search_windows() -> None:
+    natal_jd = jd_from_datetime(datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc))
+    jd_start = jd_from_datetime(datetime(2026, 1, 1, 0, 0, tzinfo=timezone.utc))
+
+    for body in (Body.JUPITER, Body.SATURN, Body.URANUS, Body.NEPTUNE, Body.PLUTO):
+        natal_lon = planet_at(body, natal_jd).longitude
+        jd_return = planet_return(body, natal_lon, jd_start)
+
+        assert jd_return > jd_start
+        assert _angle_diff(planet_at(body, jd_return).longitude, natal_lon) < 1e-3
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("body", ("asteroid:Ceres", "comet:2P/Encke"))
+def test_catalogued_small_body_returns_use_osculating_period_window(
+    body: str,
+    small_body_reader_pool,
+) -> None:
+    natal_jd = jd_from_datetime(datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc))
+    jd_start = jd_from_datetime(datetime(2026, 1, 1, 0, 0, tzinfo=timezone.utc))
+    reader = small_body_reader_pool
+    natal_lon = planet_at(body, natal_jd, reader=reader).longitude
+    window = transits_module._return_window_days(
+        body,
+        TransitComputationPolicy(),
+        jd_start=jd_start,
+        reader=reader,
+    )
+
+    event = transits_module._planet_return_event(body, natal_lon, jd_start, reader=reader)
+
+    assert window > 400.0
+    assert event.jd_ut > jd_start
+    assert event.wrapper_kind is TransitWrapperKind.PLANET_RETURN
+    assert _angle_diff(planet_at(body, event.jd_ut, reader=reader).longitude, natal_lon) < 1e-3
+
+
+@pytest.mark.requires_ephemeris
+def test_halley_return_window_uses_long_period_comet_scale(small_body_reader_pool) -> None:
+    jd_start = jd_from_datetime(datetime(2026, 1, 1, 0, 0, tzinfo=timezone.utc))
+
+    window = transits_module._return_window_days(
+        "comet:1P/Halley",
+        TransitComputationPolicy(),
+        jd_start=jd_start,
+        reader=small_body_reader_pool,
+    )
+
+    assert window > 40_000.0
 
 
 def test_last_new_moon_private_helper_preserves_complete_search_truth(

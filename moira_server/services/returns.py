@@ -11,8 +11,9 @@ from moira.transits import (
     _auto_step,
     solar_return as module_solar_return,
     lunar_return as module_lunar_return,
-    planet_return as module_planet_return,
+    _planet_return_event,
 )
+from moira.small_body_identity import resolve_small_body_identity
 
 from ..models.returns import LunarReturnRequest, PlanetReturnRequest, SolarReturnRequest
 
@@ -21,9 +22,15 @@ _VALID_RETURN_BODIES = frozenset(Body.ALL_PLANETS)
 
 
 def _require_supported_return_body(body: str) -> None:
-    if body not in _VALID_RETURN_BODIES:
-        supported = ", ".join(sorted(_VALID_RETURN_BODIES))
-        raise ValueError(f"unsupported return body {body!r}; supported bodies: {supported}")
+    if any(candidate.casefold() == body.casefold() for candidate in _VALID_RETURN_BODIES):
+        return
+    if resolve_small_body_identity(body) is not None:
+        return
+    supported = ", ".join(sorted(_VALID_RETURN_BODIES))
+    raise ValueError(
+        f"unsupported return body {body!r}; supported bodies: {supported}, "
+        "plus globally unique or family-qualified asteroid/comet names"
+    )
 
 
 def _get_reader(engine: Moira):
@@ -139,8 +146,7 @@ def compute_planet_return(engine: Moira, request: PlanetReturnRequest):
                 solver_tolerance_days=(request.solver_tolerance_days or 1e-6),
             )
         )
-    # JD via module for exact
-    jd = module_planet_return(
+    event = _planet_return_event(
         request.body,
         request.natal_lon,
         request.jd_start,
@@ -148,23 +154,7 @@ def compute_planet_return(engine: Moira, request: PlanetReturnRequest):
         reader=_get_reader(engine),
         policy=policy,
     )
-    # Truth: direct next_transit (planet_return is thin wrapper around it)
-    reader = _get_reader(engine)
-    pol = policy or TransitComputationPolicy()
-    max_days = _return_window_days(request.body, pol)
-    step = pol.returns.step_days_override or _auto_step(request.body)
-    event = next_transit(
-        request.body,
-        request.natal_lon,
-        request.jd_start,
-        direction=request.direction,
-        max_days=max_days,
-        step_days=step,
-        reader=reader,
-        policy=pol,
-    )
-    computation_truth = event.computation_truth if event is not None else None
-    return jd, computation_truth
+    return event.jd_ut, event.computation_truth
 
 
 __all__ = [

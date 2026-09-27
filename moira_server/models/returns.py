@@ -36,6 +36,8 @@ class LunarReturnRequest(_StrictModel):
 
 
 class PlanetReturnRequest(_StrictModel):
+    """Compatibility request for a return of any admitted physical body."""
+
     body: str
     natal_lon: float
     jd_start: float
@@ -57,7 +59,7 @@ class ReturnEventResponse(_StrictModel):
     computation_truth: TransitComputationTruthResponse | None = None
     # Embedded reduction truth from the internal next_transit (reused from transits family).
     # Contains target resolution (natal_lon as numeric), search brackets, step, solver_tolerance,
-    # direction_filter, wrapper as PLANET_RETURN, etc. Populated via low-level capture in service.
+    # direction_filter, wrapper as PLANET_RETURN, etc. Populated from the canonical return event.
     # Enhanced for reduction visibility per Returns Closure Plan.
 
 

@@ -124,7 +124,8 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
   25 named presets; direct and converse directions with explicit converse
   doctrine; speculum computation; fixed-star targets; and Ptolemy, Naibod,
   Cardan, and caller-supplied solar time keys.
-- **Returns** — solar and lunar returns; planet returns.
+- **Returns** — solar and lunar returns; longitude returns for planets and
+  admitted asteroid/comet bodies.
 - **Time lords** — annual profections with exact, civil-anniversary-bounded
   monthly intervals; Zodiacal Releasing (Vettius Valens method); admitted
   Decennials L1/L2; Firdaria (diurnal and nocturnal sequences, including the

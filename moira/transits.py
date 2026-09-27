@@ -5,7 +5,8 @@ and prenatal syzygy computation.
 
 Boundary: owns longitude-crossing detection, sign ingress search, solar/lunar/
 planet return computation, and prenatal syzygy resolution. Delegates body
-position resolution to planets, nodes, asteroids, and fixed_stars. Delegates
+position resolution to planets, nodes, catalogued small bodies, and fixed
+stars. Delegates
 Julian Day arithmetic to julian. Does NOT own ephemeris state.
 
 Public surface:
@@ -24,7 +25,7 @@ External dependency assumptions:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from ._strenum import StrEnum
 
@@ -41,7 +42,7 @@ from .planets import planet_at
 from .spk_reader import get_reader, SpkReader
 from .chart import ChartContext, create_chart
 from .houses import HousePolicy
-from .asteroids import asteroid_at, ASTEROID_NAIF
+from .small_body_identity import resolve_small_body_identity
 from .sidereal import Ayanamsa, UserDefinedAyanamsa, tropical_to_sidereal
 from .stars import star_at
 from .nodes import mean_lilith, mean_node, true_lilith, true_node
@@ -92,6 +93,7 @@ class TransitTargetKind(StrEnum):
     NODE = "node"
     LILITH = "lilith"
     ASTEROID = "asteroid"
+    COMET = "comet"
     FIXED_STAR = "fixed_star"
 
 
@@ -132,6 +134,7 @@ class TransitRelationBasis(StrEnum):
     NODE = "node"
     LILITH = "lilith"
     ASTEROID = "asteroid"
+    COMET = "comet"
     FIXED_STAR = "fixed_star"
     SIGN_BOUNDARY = "sign_boundary"
 
@@ -464,7 +467,7 @@ class TransitSearchPolicy:
 @dataclass(slots=True, frozen=True)
 class ReturnSearchPolicy:
     """
-    Explicit doctrine for planet-return search windows and cadence.
+    Explicit doctrine for body-return search windows and cadence.
 
     Per-body overrides are expressed as ordered ``(body, max_days)`` pairs so
     policy remains deterministic and inspectable.
@@ -1249,7 +1252,7 @@ def _resolve_longitude(spec: str | float, jd: float, reader: SpkReader) -> float
     Supports:
     - numeric longitudes
     - planetary body names
-    - named asteroids in ASTEROID_NAIF
+    - catalogued asteroid and comet names, including family-qualified names
     - True Node / Mean Node / Lilith / True Lilith
     - named fixed stars resolvable by star_at()
     """
@@ -1302,13 +1305,14 @@ def _resolve_longitude_truth(
     if name == Body.TRUE_LILITH:
         return LongitudeResolutionTruth(spec, "lilith", name, jd, true_lilith(jd, reader=reader).longitude)
 
-    if name in ASTEROID_NAIF or any(key.lower() == name.lower() for key in ASTEROID_NAIF):
+    small_body = resolve_small_body_identity(name)
+    if small_body is not None:
         return LongitudeResolutionTruth(
             requested_spec=spec,
-            resolved_kind="asteroid",
-            resolved_name=name,
+            resolved_kind=small_body.family,
+            resolved_name=small_body.qualified_name,
             jd_ut=jd,
-            longitude=asteroid_at(name, jd, reader=reader).longitude,
+            longitude=planet_at(small_body.qualified_name, jd, reader=reader).longitude,
         )
 
     try:
@@ -1374,15 +1378,54 @@ def _validate_policy(policy: TransitComputationPolicy | None) -> TransitComputat
     return policy
 
 
-def _return_window_days(body: str, policy: TransitComputationPolicy) -> float:
-    """Resolve the doctrinal return-search window for one body."""
+def _return_window_days(
+    body: str,
+    policy: TransitComputationPolicy,
+    *,
+    jd_start: float | None = None,
+    reader: SpkReader | None = None,
+) -> float:
+    """Resolve the doctrinal return-search window for one body.
+
+    Explicit policy bounds always win. Major planets use their admitted
+    sidereal-period scale. Catalogued asteroids and comets derive the same
+    search scale from Moira's source-receipted osculating elements at the
+    search epoch; that period controls only the bounded search envelope, not
+    the geocentric longitude crossing that defines the return itself.
+    """
 
     per_body = dict(policy.returns.per_body_max_days)
     if body in per_body:
         return per_body[body]
     if policy.returns.default_max_days is not None:
         return policy.returns.default_max_days
-    return _RETURN_SEARCH_DAYS.get(body, 400.0)
+
+    canonical_planet = next(
+        (candidate for candidate in Body.ALL_PLANETS if candidate.casefold() == body.casefold()),
+        None,
+    )
+    if canonical_planet is not None:
+        return _RETURN_SEARCH_DAYS[canonical_planet]
+
+    identity = resolve_small_body_identity(body)
+    if identity is None or jd_start is None or reader is None:
+        return _DEFAULT_RETURN_SEARCH_DAYS
+
+    from .orbits import OrbitalCenter, OrbitalFrame, osculating_elements
+
+    elements = osculating_elements(
+        identity.qualified_name,
+        jd_start,
+        center=OrbitalCenter.SUN,
+        frame=OrbitalFrame.J2000_ECLIPTIC,
+        reader=reader,
+    )
+    if elements.orbital_period_days is None:
+        return _DEFAULT_RETURN_SEARCH_DAYS
+    return max(
+        _DEFAULT_RETURN_SEARCH_DAYS,
+        elements.orbital_period_days * _RETURN_PERIOD_MULTIPLIER,
+    )
 
 
 def _require_non_empty_body(body: str, label: str = "body") -> None:
@@ -1570,7 +1613,11 @@ def next_transit(
     lon_prev = _lon(body, jd, reader)
 
     while (jd < jd_start + max_days) if search_motion == "forward" else (jd > jd_start - max_days):
-        jd_next = jd + scan_step
+        jd_next = (
+            min(jd + scan_step, search_end_jd)
+            if search_motion == "forward"
+            else max(jd + scan_step, search_start_jd)
+        )
         lon_next = _lon(body, jd_next, reader)
 
         # Check for crossing: signed difference changes sign
@@ -1962,21 +2009,22 @@ def next_ingress_into(
 # Public: solar / lunar / generic planet returns
 # ---------------------------------------------------------------------------
 
-# Practical geocentric return-search envelopes in days.
-# These are intentionally wider than orbital or synodic periods because
-# geocentric longitude returns can be delayed by retrograde loops and by the
-# Earth's own yearly motion.
+# Practical geocentric return-search envelopes in days. A complete return
+# search must span at least one heliocentric sidereal period; the 1.5 margin
+# admits geocentric retrograde loops without changing the event definition.
+_RETURN_PERIOD_MULTIPLIER = 1.5
+_DEFAULT_RETURN_SEARCH_DAYS = 400.0
 _RETURN_SEARCH_DAYS: dict[str, float] = {
     Body.SUN:     370.0,
     Body.MOON:    35.0,
     Body.MERCURY: 400.0,
     Body.VENUS:   650.0,
-    Body.MARS:    850.0,
-    Body.JUPITER: 500.0,
-    Body.SATURN:  450.0,
-    Body.URANUS:  430.0,
-    Body.NEPTUNE: 430.0,
-    Body.PLUTO:   430.0,
+    Body.MARS:    Body.SIDEREAL_PERIODS[Body.MARS] * _RETURN_PERIOD_MULTIPLIER,
+    Body.JUPITER: Body.SIDEREAL_PERIODS[Body.JUPITER] * _RETURN_PERIOD_MULTIPLIER,
+    Body.SATURN:  Body.SIDEREAL_PERIODS[Body.SATURN] * _RETURN_PERIOD_MULTIPLIER,
+    Body.URANUS:  Body.SIDEREAL_PERIODS[Body.URANUS] * _RETURN_PERIOD_MULTIPLIER,
+    Body.NEPTUNE: Body.SIDEREAL_PERIODS[Body.NEPTUNE] * _RETURN_PERIOD_MULTIPLIER,
+    Body.PLUTO:   Body.SIDEREAL_PERIODS[Body.PLUTO] * _RETURN_PERIOD_MULTIPLIER,
 }
 
 
@@ -2014,39 +2062,15 @@ _INGRESS_INTO_SEARCH_DAYS: dict[str, float] = {
 }
 
 
-def planet_return(
+def _planet_return_event(
     body: str,
     natal_lon: float,
     jd_start: float,
     direction: str = "direct",
     reader: SpkReader | None = None,
     policy: TransitComputationPolicy | None = None,
-) -> float:
-    """
-    Find the Julian Day (UT) when *body* next returns to *natal_lon*.
-
-    Works for any body recognised by the ephemeris engine.  The search window
-    is set automatically from the body's approximate orbital period so that
-    both fast bodies (Moon) and slow bodies (Saturn, Pluto) are handled
-    without manual tuning.
-
-    Parameters
-    ----------
-    body       : body name constant (e.g. Body.SUN, Body.VENUS, "Jupiter")
-    natal_lon  : natal ecliptic longitude to return to (degrees, 0–360)
-    jd_start   : start the search from this Julian Day (UT)
-    direction  : 'direct' (default — next direct-motion return) or 'either'
-                 to allow a retrograde return
-    reader     : optional SpkReader (uses default ephemeris if None)
-
-    Returns
-    -------
-    Julian Day (UT) of the next return
-
-    Raises
-    ------
-    RuntimeError if no return is found within 1.5 × the orbital period
-    """
+) -> TransitEvent:
+    """Return the complete next-return event for one calculable body."""
     _require_non_empty_body(body)
     if not math.isfinite(natal_lon):
         raise ValueError("Transit input natal_lon must be finite")
@@ -2056,8 +2080,23 @@ def planet_return(
         reader = get_reader()
     policy = _validate_policy(policy)
 
-    max_days = _return_window_days(body, policy)
+    max_days = _return_window_days(
+        body,
+        policy,
+        jd_start=jd_start,
+        reader=reader,
+    )
     step = policy.returns.step_days_override or _auto_step(body)
+
+    return_solver_policy = TransitComputationPolicy(
+        transit=TransitSearchPolicy(
+            step_days_override=step,
+            solver_tolerance_days=policy.returns.solver_tolerance_days,
+        ),
+        ingress=policy.ingress,
+        returns=policy.returns,
+        syzygy=policy.syzygy,
+    )
 
     event = next_transit(
         body, natal_lon, jd_start,
@@ -2065,13 +2104,53 @@ def planet_return(
         max_days=max_days,
         step_days=step,
         reader=reader,
-        policy=policy,
+        policy=return_solver_policy,
     )
     if event is None:
         raise RuntimeError(
             f"Return of {body} to {natal_lon:.4f}° not found within "
             f"{max_days:.0f} days of JD {jd_start:.2f}"
         )
+    classification = _classify_transit_computation_truth(
+        event.computation_truth,
+        wrapper_kind=TransitWrapperKind.PLANET_RETURN,
+    )
+    return replace(
+        event,
+        classification=classification,
+        condition_profile=_build_transit_condition_profile(
+            classification,
+            event.relation,
+        ),
+    )
+
+
+def planet_return(
+    body: str,
+    natal_lon: float,
+    jd_start: float,
+    direction: str = "direct",
+    reader: SpkReader | None = None,
+    policy: TransitComputationPolicy | None = None,
+) -> float:
+    """Find the next longitude return of one admitted physical body.
+
+    ``body`` may be a major planet or any catalogued asteroid/comet that the
+    active Moira reader can calculate. Family-qualified names such as
+    ``"asteroid:Ceres"`` and ``"comet:1P/Halley"`` remain unambiguous.
+
+    The default search envelope spans 1.5 times the body's sidereal or
+    osculating period. An explicit :class:`ReturnSearchPolicy` bound remains
+    a hard caller-selected limit.
+    """
+    event = _planet_return_event(
+        body,
+        natal_lon,
+        jd_start,
+        direction=direction,
+        reader=reader,
+        policy=policy,
+    )
     return event.jd_ut
 
 

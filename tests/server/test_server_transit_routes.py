@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 import pytest
@@ -11,6 +12,8 @@ from moira.transits import (
     find_transits,
     next_ingress,
 )
+from moira.julian import jd_from_datetime
+from moira.planets import planet_at
 
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
@@ -216,6 +219,7 @@ def test_return_routes_match_engine_selected_truth(
             "jd_start": natal.jd_ut + 1.0,
             "direction": "direct",
             "step_days": 1.0,
+            "solver_tolerance_days": 1e-5,
         },
     )
 
@@ -232,8 +236,12 @@ def test_return_routes_match_engine_selected_truth(
 
     assert planet_response.status_code == 200
     assert planet_response.json()["body"] == "Venus"
-    assert planet_response.json()["jd_ut"] == pytest.approx(planet_direct)
+    assert planet_response.json()["jd_ut"] == pytest.approx(planet_direct, abs=1e-4)
     assert planet_response.json().get("computation_truth") is not None
+    assert (
+        planet_response.json()["computation_truth"]["search_truth"]["solver_tolerance_days"]
+        == pytest.approx(1e-5)
+    )
 
     # Parity with direct low-level next_transit (the underlying mechanism for returns)
     from moira.transits import next_transit
@@ -249,6 +257,40 @@ def test_return_routes_match_engine_selected_truth(
         resp_ct = planet_response.json()["computation_truth"]
         assert resp_ct is not None
         assert resp_ct["body"] == "Venus"
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("body", ("asteroid:Ceres", "comet:2P/Encke"))
+def test_planet_return_route_accepts_catalogued_small_body(
+    body: str,
+    small_body_reader_pool,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    engine = SimpleNamespace(_reader=small_body_reader_pool)
+    monkeypatch.setattr("moira_server.app.create_engine", lambda config: engine)
+    app = create_app(ServerConfig(docs_enabled=False))
+    natal_jd = jd_from_datetime(datetime(2000, 1, 1, 12, 0, tzinfo=timezone.utc))
+    jd_start = jd_from_datetime(datetime(2026, 1, 1, 0, 0, tzinfo=timezone.utc))
+    natal_lon = planet_at(body, natal_jd, reader=small_body_reader_pool).longitude
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/v1/returns/planet",
+            json={
+                "body": body,
+                "natal_lon": natal_lon,
+                "jd_start": jd_start,
+                "direction": "direct",
+            },
+        )
+
+    assert response.status_code == 200
+    result = response.json()
+    assert result["body"] == body
+    assert result["jd_ut"] > jd_start
+    returned_lon = planet_at(body, result["jd_ut"], reader=small_body_reader_pool).longitude
+    assert abs((returned_lon - natal_lon + 180.0) % 360.0 - 180.0) < 1e-3
+    assert result["computation_truth"]["search_truth"]["search_end_jd_ut"] - jd_start > 400.0
 
 
 @pytest.mark.requires_ephemeris

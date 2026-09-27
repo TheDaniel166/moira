@@ -821,10 +821,23 @@ Canon: Moira Sovereign Facade Architecture; moira.predictive and related
         natal_lon: float,
         jd_start: float,
         direction: str = "direct",
+        *,
+        max_days: float | None = None,
     ) -> float:
-        """Find the next return of any planet to its natal longitude."""
-        return _facade_module().planet_return(
-            body, natal_lon, jd_start, direction=direction, reader=self._reader
+        """Find the next longitude return of any admitted physical body."""
+        facade = _facade_module()
+        policy = None
+        if max_days is not None:
+            policy = facade.TransitComputationPolicy(
+                returns=facade.ReturnSearchPolicy(default_max_days=max_days)
+            )
+        return facade.planet_return(
+            body,
+            natal_lon,
+            jd_start,
+            direction=direction,
+            reader=self._reader,
+            policy=policy,
         )
 
     def relocated_solar_return(
