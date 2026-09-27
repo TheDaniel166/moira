@@ -34,6 +34,8 @@ class LunarOrientationCoverageError(LunarOrientationResourceError):
 
 @dataclass(frozen=True, slots=True)
 class LunarOrientationResources:
+    """Validated PCK resources and frame metadata for lunar orientation."""
+
     handle: object
     pck_path: Path
     frame_kernel_path: Path

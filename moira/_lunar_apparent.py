@@ -24,6 +24,8 @@ class LunarApparentGeometryError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class LunarApparentContext:
+    """Reader-bound reception and emission geometry for one lunar observation."""
+
     jd_ut1_reception: float
     jd_tt_reception: float
     jd_tdb_reception: float
