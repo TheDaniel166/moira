@@ -4,7 +4,7 @@ tests/unit/test_experimental_validation.py
 Validation suite for Moira's experimental / extended-technique modules.
 
 These modules either use pure arithmetic with a fixed reference frame
-(galactic, uranian, manazil) or implement traditional table-based rules
+(galactic, manazil) or implement traditional table-based rules
 (longevity, timelords) or a statistical model derived from fixed tables
 (gauquelin).  None require a live ephemeris.
 
@@ -17,19 +17,17 @@ Modules covered
 ---------------
 1. galactic    — equatorial/galactic round-trips, Liu Zhu & Zhang matrix
 2. gauquelin   — sector formula, plus-zone classification, sector range
-3. uranian     — J2000 identity, daily-motion sign, linear ephemeris formula
-4. manazil     — mansion span, boundary assignments, degrees_in range
-5. longevity   — Ptolemaic year table, dignity scoring, Hyleg/Alcocoden logic
-6. timelords   — Firdaria totals, sub-period count, MINOR_YEARS table integrity
+3. manazil     — mansion span, boundary assignments, degrees_in range
+4. longevity   — Ptolemaic year table, dignity scoring, Hyleg/Alcocoden logic
+5. timelords   — Firdaria totals, sub-period count, MINOR_YEARS table integrity
 
 Oracle / authority
 ------------------
 1. galactic   — Liu, Zhu & Zhang (2011, A&A 526, A16); IAU 1958 definition
 2. gauquelin  — Michel Gauquelin, "The Spheres of Destiny" (1980)
-3. uranian    — Rudolph (2005) Hamburg School element tables
-4. manazil    — al-Biruni, "Book of Instruction"; 28 equal stations of 360/28°
-5. longevity  — Ptolemy "Tetrabiblos" IV.10; Bonatti "Liber Astronomiae"
-6. timelords  — Vettius Valens "Anthologiae"; Demetra George Vol. II
+3. manazil    — al-Biruni, "Book of Instruction"; 28 equal stations of 360/28°
+4. longevity  — Ptolemy "Tetrabiblos" IV.10; Bonatti "Liber Astronomiae"
+5. timelords  — Vettius Valens "Anthologiae"; Demetra George Vol. II
 
 Note on MINOR_YEARS: Valens' Zodiacal Releasing scheme assigns the following
 Minor Years per sign — Aries 15, Taurus 8, Gemini 20, Cancer 25, Leo 19,
@@ -38,9 +36,6 @@ Pisces 12.  These sum to 211, which is the correct total for this table.
 The figure "129 years" cited in some secondary literature refers to a
 different aggregation (Hyleg year limits), not the sum of this table.
 """
-
-import math
-import pytest
 
 from moira.galactic import (
     equatorial_to_galactic,
@@ -51,7 +46,6 @@ from moira.galactic import (
     _GC_RA, _GC_DEC, _NGP_RA, _NGP_DEC,
 )
 from moira.gauquelin import gauquelin_sector, _PLUS_ZONE_SECTORS
-from moira.uranian import uranian_at, _URANIAN_ELEMENTS
 from moira.constants import J2000
 from moira.manazil import mansion_of, MANSIONS, MANSION_SPAN
 from moira.longevity import (
@@ -59,7 +53,7 @@ from moira.longevity import (
     dignity_score_at, find_hyleg, calculate_longevity, HylegResult,
 )
 from moira.triplicity import triplicity_assignment_for as _triplicity_assignment_for
-from moira.dignities import ANGULAR_HOUSES, SUCCEDENT_HOUSES, CADENT_HOUSES
+from moira.dignities import ANGULAR_HOUSES, SUCCEDENT_HOUSES
 from moira.timelords import (
     FIRDARIA_DIURNAL, FIRDARIA_NOCTURNAL, MINOR_YEARS, _JULIAN_YEAR, _ZR_YEAR_DAYS,
     _TOTAL_MINOR_YEARS,
@@ -225,73 +219,7 @@ class TestGauquelin:
 
 
 # ===========================================================================
-# 3. Uranian hypothetical bodies
-# ===========================================================================
-
-class TestUranian:
-    """
-    Authority: Rudolph (2005) Hamburg School mean orbital elements.
-    Formula: L(t) = (L0 + n * (JD - J2000)) % 360.
-
-    At J2000 itself dt=0 so the position equals L0 exactly.
-    All daily motions are positive (prograde linear ephemeris).
-    """
-
-    def test_j2000_position_matches_table(self):
-        for name, (l0, _n) in _URANIAN_ELEMENTS.items():
-            pos = uranian_at(name, J2000)
-            assert abs(pos.longitude - l0 % 360.0) < 1e-8
-
-    def test_all_daily_motions_positive(self):
-        for name, (_l0, n) in _URANIAN_ELEMENTS.items():
-            assert n > 0.0, f"{name} has non-positive daily motion {n}"
-
-    def test_speed_field_matches_table(self):
-        for name, (_l0, n) in _URANIAN_ELEMENTS.items():
-            pos = uranian_at(name, J2000)
-            assert abs(pos.speed - n) < 1e-10
-
-    def test_longitude_advances_one_day(self):
-        for name, (_l0, n) in _URANIAN_ELEMENTS.items():
-            p0 = uranian_at(name, J2000)
-            p1 = uranian_at(name, J2000 + 1.0)
-            delta = (p1.longitude - p0.longitude) % 360.0
-            assert abs(delta - n) < 1e-8
-
-    def test_longitude_range(self):
-        for name in _URANIAN_ELEMENTS:
-            pos = uranian_at(name, J2000 + 1000.0)
-            assert 0.0 <= pos.longitude < 360.0
-
-    def test_unknown_body_raises(self):
-        with pytest.raises(KeyError):
-            uranian_at("Nibiru", J2000)
-
-    def test_nine_bodies_defined(self):
-        assert len(_URANIAN_ELEMENTS) == 9
-
-    def test_all_body_names_present(self):
-        expected = {
-            "Cupido", "Hades", "Zeus", "Kronos", "Apollon",
-            "Admetos", "Vulkanus", "Poseidon", "Transpluto",
-        }
-        assert set(_URANIAN_ELEMENTS.keys()) == expected
-
-    def test_cupido_j2000_literal(self):
-        pos = uranian_at("Cupido", J2000)
-        assert abs(pos.longitude - 4.3333) < 1e-6
-
-    def test_transpluto_slowest(self):
-        slowest = min(_URANIAN_ELEMENTS, key=lambda n: _URANIAN_ELEMENTS[n][1])
-        assert slowest == "Transpluto"
-
-    def test_cupido_fastest(self):
-        fastest = max(_URANIAN_ELEMENTS, key=lambda n: _URANIAN_ELEMENTS[n][1])
-        assert fastest == "Cupido"
-
-
-# ===========================================================================
-# 4. Arabic lunar mansions (Manazil)
+# 3. Arabic lunar mansions (Manazil)
 # ===========================================================================
 
 class TestManazil:

@@ -341,4 +341,4 @@ Canon: Moira Sovereign Facade Architecture; moira.astrocartography,
         """Compute positions for all Uranian hypothetical planets."""
         facade = _facade_module()
         jd_ut1 = facade.utc_to_ut1(facade.jd_from_datetime(dt))
-        return facade.all_uranian_at(jd_ut1)
+        return facade.all_uranian_at(jd_ut1, reader=self._reader)

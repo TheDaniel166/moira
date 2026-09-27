@@ -89,7 +89,7 @@ Moira computes planetary and stellar positions, houses, aspects, lots, dignities
   aliases. Dedicated comet surfaces accept those aliases directly; unified
   position/chart surfaces require a canonical designation or an explicit
   `comet:` qualifier when an alias also names an asteroid.
-- **Uranian / Hamburg School bodies** — 8 hypothetical transneptunian planets (Cupido through Poseidon) plus Transpluto.
+- **Uranian / Hamburg School bodies** — Source-orbit, apparent geocentric positions for the 8 Hamburg hypothetical bodies (Cupido through Poseidon) plus separately sourced Transpluto, with latitude, distance, and signed motion.
 - **Lunar nodes and apsides** — True Node, Mean Node, Mean Lilith, True Lilith, and orbital nodes/apsides for all planetary bodies.
 - **Variable stars** — phase and magnitude engine for eclipsing binaries and intrinsic variables; dedicated Algol API.
 - **Multiple star systems** — Kepler orbital mechanics for visually resolvable pairs (Sirius AB, Alpha Centauri AB); catalog of 8 astrologically significant systems across VISUAL, WIDE, SPECTROSCOPIC, and OPTICAL types.

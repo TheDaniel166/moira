@@ -51,6 +51,30 @@ Primary text:
 
 ## Astronomical data sources
 
+### Uranian / Hamburg School hypothetical orbits
+
+The Hamburg eight use the revised orbital-element lineage documented by James
+Neely in "Orbital Elements for the Transneptunians," *Matrix Magazine* VII
+(1980), pp. 6–12. The archive record and issue scan are held by the Alexandria
+iBase Project. Transpluto is kept as a separate source family: its element
+lineage is M. E. Sevin / *Die Sterne* 3/1952, with the operational source
+epoch and adopted 1945 equinox recorded as exact Julian dates in
+`moira/uranian.py`.
+
+Moira independently implements ordinary two-body Keplerian propagation and
+its existing apparent-place reduction; it does not incorporate Swiss
+Ephemeris code or use Swiss Ephemeris at runtime. Astrodienst's official
+documentation supplies an operational element/naming receipt, and frozen
+official `swetest` outputs are secondary cross-engine corroboration only. The
+bound DE kernel contributes the physical Earth/Sun observer geometry, not a
+state for any hypothetical body.
+
+Source and comparator receipts:
+
+- [Matrix Magazine VII archive record](https://alexandriaibase.org/matrix-magazine-issue-vii-1980/)
+- [Swiss Ephemeris programming guide](https://www.astro.com/ftp/swisseph/doc/swephprg.2.10.htm)
+- [Swiss Ephemeris hypothetical-body discussion](https://www.astro.com/ftp/swisseph/doc/swisseph.pdf)
+
 ### Lunar orientation and libration
 
 Moira derives total apparent lunar libration and visible-disc orientation from

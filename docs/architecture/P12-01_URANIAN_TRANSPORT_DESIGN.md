@@ -1,173 +1,113 @@
 # P12-01 Uranian Transport Design
 
-Version: 0.2
-Date: 2026-06-13
-Status: admitted
-Scope: Uranian / Hamburg School hypothetical-body REST admission record
+Version: 0.3
+Date: 2026-09-27
+Status: admitted and repaired
+Scope: Uranian / Hamburg School hypothetical-body REST contract
 
-## 1. Admission Boundary
+## 1. Route Boundary
 
-P12-01 admits three bounded REST routes for the existing `moira.uranian`
-engine:
+P12-01 exposes:
 
 - `GET /v1/uranian/catalog`
 - `POST /v1/uranian/position`
 - `POST /v1/uranian/bulk`
 
-These routes expose linear mean positions for the current Uranian table only.
-They do not expose physical planet ephemerides, SPK-backed bodies, discovered
-TNOs, fixed stars, asteroids, midpoint trees, dial interpretation, or
-cosmobiology networks.
+The routes expose nine conventional hypothetical orbits: the Hamburg eight
+and the separately sourced Transpluto model. They do not expose physical
+planet ephemerides, discovered TNOs, fixed stars, asteroids, midpoint trees,
+dial interpretation, or cosmobiology networks.
 
 ## 2. Governing Object
 
-The governing object is a Uranian hypothetical-body position:
+One position record contains:
 
-- canonical body name
-- tropical ecliptic longitude in `[0, 360)`
-- sign fields derived by `moira.constants.sign_of`
-- constant mean daily speed
-- model provenance for the internal linear mean-motion table
+- canonical, case-sensitive name
+- apparent geocentric true-ecliptic-of-date longitude and latitude
+- geocentric distance in AU
+- signed longitude speed and derived retrograde state
+- zodiac sign fields
+- source family, body group, model, and frame identifiers
 
-The current name set has nine entries:
+The computation advances source orbital elements through Kepler's equation,
+materializes a heliocentric ICRF vector, and passes it through Moira's
+kernel-bound Earth/Sun and apparent-place reduction. The bound DE kernel is
+used only for real observer geometry; it does not contain the hypothetical
+body.
 
-- `Cupido`
-- `Hades`
-- `Zeus`
-- `Kronos`
-- `Apollon`
-- `Admetos`
-- `Vulkanus`
-- `Poseidon`
-- `Transpluto`
+## 3. Requests
 
-The transport layer must not describe this as "all eight" unless Transpluto is
-explicitly excluded, which this first admission should not do.
+`GET /v1/uranian/catalog` has no body.
 
-## 3. Request Shapes
+`POST /v1/uranian/position` requires:
 
-`GET /v1/uranian/catalog`
+- `name`: one canonical body name
+- `jd_ut`: finite Julian Day UT1
 
-- no request body
+`POST /v1/uranian/bulk` requires `jd_ut` and accepts an optional unique list
+of one through nine canonical `names`. Omission requests all nine in engine
+order.
 
-`POST /v1/uranian/position`
+## 4. Responses
 
-Required fields:
+Catalog responses contain `names`, `count`, `model`, `frame`, `epoch`, and
+`provenance`.
 
-- `name`: one canonical Uranian body name, case-sensitive
-- `jd_ut`: finite Julian Day UT
+Single and bulk position records contain:
 
-`POST /v1/uranian/bulk`
-
-Required fields:
-
-- `jd_ut`: finite Julian Day UT
-
-Optional fields:
-
-- `names`: optional list of canonical names; omitted means all nine names in
-  engine order
-
-## 4. Response Shape
-
-Catalog responses should contain:
-
-- `names`
-- `count`
-- `model`
-- `frame`
-- `epoch`
-- `provenance`
-
-Position responses should contain:
-
-- `position`
-- `provenance`
-
-Bulk responses should contain:
-
-- `positions`
-- `count`
-- `requested_names`
-- `provenance`
-
-Each position record should preserve:
-
-- `name`
-- `longitude`
-- `sign`
-- `sign_symbol`
-- `sign_degree`
-- `speed`
-- `body_kind`: `hypothetical_body`
+- `name`, `longitude`, `latitude`, and `distance_au`
+- `sign`, `sign_symbol`, and `sign_degree`
+- `speed` and `retrograde`
+- `body_group` and `source_family`
+- `model`, `frame`, and `body_kind = "hypothetical_body"`
 
 ## 5. Validation Rules
 
-The route family rejects:
+The route family rejects non-finite dates, empty or unknown names, duplicates,
+oversized name lists, and non-list bulk names. It preserves canonical casing
+and never substitutes a physical body or arbitrary small body.
 
-- non-finite `jd_ut`
-- unknown body names
-- empty body-name strings
-- duplicate names in bulk requests
-- non-list `names` values
-- attempts to request physical bodies, asteroids, fixed stars, or arbitrary
-  strings through this route family
+The catalog route is kernel-free. Position and bulk routes inject the
+startup-created `Moira` engine and pass its reader explicitly, so request
+handling cannot silently depend on ambient global kernel state.
 
-Name matching should remain case-sensitive because the engine table is
-case-sensitive. Transport may return a helpful list of valid names, but it must
-not silently normalize or substitute names.
-
-## 6. Provenance Rules
+## 6. Provenance
 
 Every response preserves:
 
-- `source_module`: `moira.uranian`
-- `engine_entrypoint`: `list_uranian`, `uranian_at`, or `all_uranian_at`
-- `body_kind`: `hypothetical_body`
-- `school`: `Hamburg_Uranian`
-- `model`: `linear_mean_motion_table`
-- `formula_basis`: `longitude = longitude_at_J2000 + daily_motion * (jd_ut - J2000)`
-- `frame`: `tropical_ecliptic_longitude`
-- `epoch`: `J2000`
-- `physical_ephemeris`: `none`
-- `spk_kernel_used`: `false`
-- `stage_sequence`: input validation, table lookup, linear mean-position
-  computation, sign derivation, serialization
+- `source_module = "moira.uranian"`
+- the actual engine entry point
+- `body_kind = "hypothetical_body"`
+- `school = "Hamburg_Uranian_plus_Transpluto"`
+- `model = "fixed_keplerian_orbit_apparent_geocentric"`
+- `frame = "apparent_geocentric_true_ecliptic_of_date"`
+- `epoch = "per_body_source_epoch"`
+- `physical_ephemeris = "DE_kernel_for_Earth_and_Sun_observer_geometry_only"`
+- an explicit stage sequence
 
-The provenance must explicitly say that these are not JPL/NAIF physical-body
-states and are not discovered TNO positions.
+`spk_kernel_used` is `false` for catalog metadata and `true` for computed
+positions. The note explicitly rejects physical-body and discovered-TNO
+interpretations.
 
-## 7. Verification Record
+## 7. Verification Contract
 
-Route admission added focused server tests for:
-
-- catalog returns exactly nine names including `Transpluto`
-- catalog order matches `list_uranian()`
-- single-position success for each admitted name
-- returned longitudes are in `[0, 360)`
-- returned sign fields match the engine vessel
-- bulk omitted names returns all nine positions
-- bulk subset preserves requested canonical names
-- unknown names fail clearly
-- non-finite `jd_ut` fails before engine invocation
-- provenance labels each result as hypothetical and table-based
-
-Verification run for admission:
+The focused acceptance slice is:
 
 ```powershell
-.\.venv\Scripts\python.exe -m py_compile moira_server\models\uranian.py moira_server\services\uranian.py moira_server\routers\uranian.py moira_server\app.py moira_server\routers\__init__.py tests\server\test_server_uranian_routes.py
-.\.venv\Scripts\python.exe -m pytest tests\server\test_server_uranian_routes.py -q
+$env:MOIRA_TEST_MODE = "1"
+$env:MOIRA_STRICT_KNOWN_ISSUES = "1"
+$env:MOIRA_NO_DOWNLOAD = "1"
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_uranian.py tests\oracle\test_uranian_oracle.py tests\server\test_server_uranian_routes.py tests\unit\test_facade_clock_boundaries.py -q
 ```
 
-Result: 15 focused server tests passed.
-
-The server tests carry this transport admission proof. The engine itself was
-not changed in this admission pass.
+The protected oracle artifact covers all nine bodies at five dates from 1900
+through 2026 and compares longitude, latitude, distance, signed speed, and
+retrograde state with official Astrodienst `swetest` output. It is labelled
+cross-engine corroboration, not physical authority.
 
 ## 8. Completion Boundary
 
-P12-01 is admitted for catalog, single-position, and bounded bulk-position
-transport for the nine current names. It does not include midpoint structures,
-Uranian dial products, chart interpretation, physical body substitution,
-kernel-backed Transpluto/TNO computation, or any claim that these points are
-JPL/NAIF physical bodies.
+P12-01 remains bounded to catalog, single-position, and bulk-position
+transport. It does not admit topocentric or sidereal variants, midpoint or
+dial structures, interpretive text, physical-body substitution, or any claim
+that the hypothetical orbits are JPL/NAIF states.

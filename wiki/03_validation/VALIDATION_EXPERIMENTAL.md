@@ -53,7 +53,7 @@ truthfully claim a clean all-green validation state for synastry composites at
 | Variable stars | catalog integrity, phase arithmetic, light-curve behavior, extremum helpers in `tests/unit/test_variable_stars.py`, plus external ephemeris spot checks for Algol (AAVSO VSX), Delta Cephei, and Eta Aquilae (GCVS) in `tests/integration/test_variable_stars_external_reference.py` | Validated |
 | Extended physical bodies | Horizons / kernel-backed fixture suites for TNOs, centaurs, asteroids, and selected minor bodies | Validated |
 | Galactic transforms and typed cosmic reference points | invariant tests in `tests/unit/test_experimental_validation.py` and `tests/unit/test_cosmic_references.py` plus Astropy/ERFA oracle audit in `tests/integration/test_galactic_oracle_reference.py` | Validated |
-| Uranian bodies / Transpluto | locked formulas and range checks in `tests/unit/test_experimental_validation.py` | Validated |
+| Uranian bodies / Transpluto | source-family and Kepler invariants in `tests/unit/test_uranian.py`; five-epoch, all-nine-body Astrodienst cross-engine matrix in `tests/oracle/test_uranian_oracle.py` | Validated |
 | Astrocartography | dedicated geometry and wrapper suite in `tests/unit/test_astrocartography.py` plus validated planetary positions | Validated |
 | Local space | dedicated spherical-astronomy and wrapper suite in `tests/unit/test_local_space.py` plus validated topocentric positions | Validated |
 | Longevity | doctrine tables and scoring logic in `tests/unit/test_experimental_validation.py` | Validated |
@@ -333,18 +333,22 @@ Important scope note:
 
 ### 5.2 Uranian bodies and Transpluto
 
-Validated in `tests/unit/test_experimental_validation.py`.
+Validated in `tests/unit/test_uranian.py` and
+`tests/oracle/test_uranian_oracle.py`.
 
 Covered:
-- locked formula output
-- daily-motion expectations
-- range and structural sanity
+- separate Neely Hamburg and Sevin/Strubell Transpluto source families
+- century-scale Keplerian orbit periods and Kepler-equation residuals
+- apparent geocentric longitude, latitude, distance, and signed speed
+- direct and retrograde states
+- all nine bodies at five frozen dates from 1900 through 2026
 
 Status: Validated
 
-This is still a model-defined subsystem. Differences from other Uranian
-packages are treated as model differences unless Moira violates its own stated
-formula basis.
+The frozen Astrodienst `swetest` matrix is secondary cross-engine
+corroboration, not a runtime dependency or physical-body authority. The
+hypothetical orbits remain model-defined; DE441 supplies only Earth/Sun
+observer geometry.
 
 ---
 

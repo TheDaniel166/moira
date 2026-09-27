@@ -196,7 +196,10 @@ def test_spatial_day_and_frame_adapters_use_their_declared_scales(
         calculate_galactic_houses=lambda jd, *_args: received.setdefault("houses", jd),
         all_galactic_positions=lambda _data, _obl, jd: received.setdefault("galactic", jd),
         galactic_reference_points=lambda _obl, jd: received.setdefault("angles", jd),
-        all_uranian_at=lambda jd: received.setdefault("uranian", jd),
+        all_uranian_at=lambda jd, *, reader: received.setdefault(
+            "uranian",
+            (jd, reader),
+        ),
     )
     chart = SimpleNamespace(
         jd_ut=400.0,
@@ -217,7 +220,7 @@ def test_spatial_day_and_frame_adapters_use_their_declared_scales(
         "houses": 400.490001,
         "galactic": 400.75,
         "angles": 400.75,
-        "uranian": 400.490001,
+        "uranian": (400.490001, _Spatial()._reader),
     }
 
 

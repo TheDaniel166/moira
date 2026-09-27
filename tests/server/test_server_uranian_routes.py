@@ -13,13 +13,9 @@ from moira_server.config import ServerConfig
 pytestmark = pytest.mark.loopback
 
 
-class _FakeEngine:
-    pass
-
-
 @pytest.fixture
-def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
-    monkeypatch.setattr("moira_server.app.create_engine", lambda config: _FakeEngine())
+def client(monkeypatch: pytest.MonkeyPatch, moira_engine) -> TestClient:
+    monkeypatch.setattr("moira_server.app.create_engine", lambda config: moira_engine)
     app = create_app(ServerConfig(docs_enabled=False))
     with TestClient(app) as test_client:
         yield test_client
@@ -45,23 +41,26 @@ def test_uranian_catalog_route_preserves_nine_name_hypothetical_catalog(
     assert body["names"] == list_uranian()
     assert body["count"] == 9
     assert body["names"][-1] == "Transpluto"
-    assert body["model"] == "linear_mean_motion_table"
-    assert body["frame"] == "tropical_ecliptic_longitude"
-    assert body["epoch"] == "J2000"
+    assert body["model"] == "fixed_keplerian_orbit_apparent_geocentric"
+    assert body["frame"] == "apparent_geocentric_true_ecliptic_of_date"
+    assert body["epoch"] == "per_body_source_epoch"
     assert body["provenance"] == {
         "source_module": "moira.uranian",
         "engine_entrypoint": "list_uranian",
         "body_kind": "hypothetical_body",
-        "school": "Hamburg_Uranian",
-        "model": "linear_mean_motion_table",
-        "formula_basis": "longitude = longitude_at_J2000 + daily_motion * (jd_ut - J2000)",
-        "frame": "tropical_ecliptic_longitude",
-        "epoch": "J2000",
-        "physical_ephemeris": "none",
+        "school": "Hamburg_Uranian_plus_Transpluto",
+        "model": "fixed_keplerian_orbit_apparent_geocentric",
+        "formula_basis": (
+            "source orbital elements and Keplerian motion, reduced with DE Earth/Sun "
+            "geometry and Moira apparent-place corrections"
+        ),
+        "frame": "apparent_geocentric_true_ecliptic_of_date",
+        "epoch": "per_body_source_epoch",
+        "physical_ephemeris": "DE_kernel_for_Earth_and_Sun_observer_geometry_only",
         "spk_kernel_used": False,
         "current_name_count": 9,
         "note": (
-            "Uranian positions are Hamburg School hypothetical mean points, "
+            "The Hamburg eight and Transpluto are conventional hypothetical orbits, "
             "not JPL/NAIF physical-body states or discovered TNO positions."
         ),
         "stage_sequence": [
@@ -75,10 +74,11 @@ def test_uranian_catalog_route_preserves_nine_name_hypothetical_catalog(
 @pytest.mark.parametrize("name", list_uranian())
 def test_uranian_position_route_matches_engine_for_each_admitted_name(
     client: TestClient,
+    moira_engine,
     name: str,
 ) -> None:
     jd_ut = 2451545.0
-    direct = uranian_at(name, jd_ut)
+    direct = uranian_at(name, jd_ut, reader=moira_engine._reader)
 
     response = client.post(
         "/v1/uranian/position",
@@ -90,28 +90,43 @@ def test_uranian_position_route_matches_engine_for_each_admitted_name(
     position = body["position"]
     assert position["name"] == direct.name
     assert position["longitude"] == pytest.approx(direct.longitude)
+    assert position["latitude"] == pytest.approx(direct.latitude)
+    assert position["distance_au"] == pytest.approx(direct.distance_au)
     assert position["sign"] == direct.sign
     assert position["sign_symbol"] == direct.sign_symbol
     assert position["sign_degree"] == pytest.approx(direct.sign_degree)
     assert position["speed"] == pytest.approx(direct.speed)
+    assert position["retrograde"] is direct.retrograde
+    assert position["body_group"] == direct.body_group
+    assert position["source_family"] == direct.source_family
+    assert position["model"] == direct.model
+    assert position["frame"] == direct.frame
     assert position["body_kind"] == "hypothetical_body"
     provenance = body["provenance"]
     assert provenance["engine_entrypoint"] == "uranian_at"
     assert provenance["body_kind"] == "hypothetical_body"
-    assert provenance["physical_ephemeris"] == "none"
-    assert provenance["spk_kernel_used"] is False
+    assert provenance["school"] == "Hamburg_Uranian_plus_Transpluto"
+    assert provenance["physical_ephemeris"] == "DE_kernel_for_Earth_and_Sun_observer_geometry_only"
+    assert provenance["spk_kernel_used"] is True
     assert provenance["stage_sequence"] == [
         "jd_ut_validation",
         "case_sensitive_name_lookup",
-        "linear_mean_position_computation",
+        "ut1_to_kernel_tt_conversion",
+        "source_orbit_materialization",
+        "earth_sun_kernel_geometry",
+        "apparent_geocentric_reduction",
+        "finite_difference_longitude_rate",
         "sign_derivation",
         "uranian_position_response_serialization",
     ]
 
 
-def test_uranian_bulk_route_defaults_to_all_nine_bodies(client: TestClient) -> None:
+def test_uranian_bulk_route_defaults_to_all_nine_bodies(
+    client: TestClient,
+    moira_engine,
+) -> None:
     jd_ut = 2451545.0
-    direct = all_uranian_at(jd_ut)
+    direct = all_uranian_at(jd_ut, reader=moira_engine._reader)
 
     response = client.post("/v1/uranian/bulk", json={"jd_ut": jd_ut})
 
@@ -127,7 +142,11 @@ def test_uranian_bulk_route_defaults_to_all_nine_bodies(client: TestClient) -> N
     assert body["provenance"]["stage_sequence"] == [
         "jd_ut_validation",
         "case_sensitive_name_list_resolution",
-        "linear_mean_position_computation",
+        "ut1_to_kernel_tt_conversion",
+        "source_orbit_materialization",
+        "earth_sun_kernel_geometry",
+        "apparent_geocentric_reduction",
+        "finite_difference_longitude_rate",
         "sign_derivation",
         "uranian_bulk_response_serialization",
     ]
@@ -199,3 +218,27 @@ def test_uranian_bulk_route_rejects_duplicate_and_oversized_name_lists(
 
     _assert_validation_envelope(duplicate, message_fragment="names entries must be unique")
     _assert_validation_envelope(oversized, message_fragment="at most 9 items")
+
+
+def test_uranian_openapi_exposes_repaired_position_contract(client: TestClient) -> None:
+    schema = client.app.openapi()
+    assert set(schema["paths"]) >= {
+        "/v1/uranian/catalog",
+        "/v1/uranian/position",
+        "/v1/uranian/bulk",
+    }
+    position = schema["components"]["schemas"]["UranianPositionResponse"]
+    assert set(position["required"]) >= {
+        "name",
+        "longitude",
+        "latitude",
+        "distance_au",
+        "speed",
+        "retrograde",
+        "body_group",
+        "source_family",
+        "model",
+        "frame",
+    }
+    provenance = schema["components"]["schemas"]["UranianProvenanceResponse"]
+    assert "spk_kernel_used" in provenance["required"]

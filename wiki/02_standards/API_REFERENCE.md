@@ -920,11 +920,17 @@ from moira.facade import uranian_at, all_uranian_at, list_uranian, UranianBody, 
 
 | Function | Returns | Description |
 |---|---|---|
-| `uranian_at(body, jd_ut)` | `UranianPosition` | Single Uranian body position |
-| `all_uranian_at(jd_ut)` | `dict[str, UranianPosition]` | All current nine Uranian/Hamburg School and Transpluto hypothetical bodies |
+| `uranian_at(body, jd_ut, reader=None)` | `UranianPosition` | Single apparent geocentric hypothetical-body position; requires an explicit or active planetary reader |
+| `all_uranian_at(jd_ut, reader=None)` | `dict[str, UranianPosition]` | All current nine Hamburg School and Transpluto hypothetical-body positions |
 | `list_uranian()` | `list[str]` | Uranian body names (Cupido through Poseidon, plus Transpluto) |
 
 `UranianBody` constants: `CUPIDO  HADES  ZEUS  KRONOS  APOLLON  ADMETOS  VULKANUS  POSEIDON  TRANSPLUTO`
+
+`UranianPosition` reports apparent geocentric true-ecliptic-of-date
+`longitude`, `latitude`, `distance_au`, signed longitude `speed`,
+`retrograde`, sign fields, and separate `body_group` / `source_family`
+provenance. The hypothetical orbit comes from source elements; the bound DE
+kernel supplies only Earth/Sun observer geometry.
 
 ### Galactic coordinates
 

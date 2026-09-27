@@ -68,10 +68,17 @@ class UranianBulkRequest(_StrictModel):
 class UranianPositionResponse(_StrictModel):
     name: str
     longitude: float
+    latitude: float
+    distance_au: float
     sign: str
     sign_symbol: str
     sign_degree: float
     speed: float
+    retrograde: bool
+    body_group: str
+    source_family: str
+    model: str
+    frame: str
     body_kind: str = "hypothetical_body"
 
 
@@ -79,16 +86,19 @@ class UranianProvenanceResponse(_StrictModel):
     source_module: str = "moira.uranian"
     engine_entrypoint: str
     body_kind: str = "hypothetical_body"
-    school: str = "Hamburg_Uranian"
-    model: str = "linear_mean_motion_table"
-    formula_basis: str = "longitude = longitude_at_J2000 + daily_motion * (jd_ut - J2000)"
-    frame: str = "tropical_ecliptic_longitude"
-    epoch: str = "J2000"
-    physical_ephemeris: str = "none"
-    spk_kernel_used: bool = False
+    school: str = "Hamburg_Uranian_plus_Transpluto"
+    model: str = "fixed_keplerian_orbit_apparent_geocentric"
+    formula_basis: str = (
+        "source orbital elements and Keplerian motion, reduced with DE Earth/Sun "
+        "geometry and Moira apparent-place corrections"
+    )
+    frame: str = "apparent_geocentric_true_ecliptic_of_date"
+    epoch: str = "per_body_source_epoch"
+    physical_ephemeris: str = "DE_kernel_for_Earth_and_Sun_observer_geometry_only"
+    spk_kernel_used: bool
     current_name_count: int = URANIAN_MAX_BODIES
     note: str = (
-        "Uranian positions are Hamburg School hypothetical mean points, "
+        "The Hamburg eight and Transpluto are conventional hypothetical orbits, "
         "not JPL/NAIF physical-body states or discovered TNO positions."
     )
     stage_sequence: list[str]
@@ -97,9 +107,9 @@ class UranianProvenanceResponse(_StrictModel):
 class UranianCatalogResponse(_StrictModel):
     names: list[str]
     count: int
-    model: str = "linear_mean_motion_table"
-    frame: str = "tropical_ecliptic_longitude"
-    epoch: str = "J2000"
+    model: str = "fixed_keplerian_orbit_apparent_geocentric"
+    frame: str = "apparent_geocentric_true_ecliptic_of_date"
+    epoch: str = "per_body_source_epoch"
     provenance: UranianProvenanceResponse
 
 

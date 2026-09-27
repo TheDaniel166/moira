@@ -2565,16 +2565,18 @@ P12-01 `/v1/uranian/*` family:
 - `POST /v1/uranian/bulk`
 
 Catalog responses expose the current nine-name table from `moira.uranian`,
-including `Transpluto`. Position and bulk responses expose tropical ecliptic
-longitude, sign fields, constant mean daily speed, `body_kind` value
-`hypothetical_body`, and provenance identifying the source module, engine
-entrypoint, Hamburg/Uranian school, linear mean-motion table model, J2000
-epoch, tropical frame, no physical ephemeris, and no SPK kernel usage.
+including `Transpluto`. Position and bulk responses expose apparent geocentric
+true-ecliptic-of-date longitude and latitude, distance in AU, signed longitude
+speed, retrograde and sign fields, body group, source family, and
+`body_kind = "hypothetical_body"`. Provenance identifies the fixed Keplerian
+source-orbit model, per-body source epoch, and DE-kernel use for Earth/Sun
+observer geometry only. Catalog metadata does not open a kernel; computed
+positions use the startup-bound engine reader.
 
 This admission does not expose Uranian midpoint trees, dial products,
 cosmobiology networks, chart interpretation, physical body substitution,
-kernel-backed Transpluto/TNO computation, or any claim that these hypothetical
-mean points are JPL/NAIF physical-body states.
+physical TNO computation, or any claim that these hypothetical orbits are
+JPL/NAIF physical-body states.
 
 ### Harmonics REST Admission Boundary
 

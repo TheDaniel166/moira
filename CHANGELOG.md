@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Uranian source-orbit and apparent-place repair**: Replaced the erroneous
+  J2000 linear-rate table with separately receipted Neely Hamburg and
+  Sevin/Strubell Transpluto Keplerian elements. Positions now use the bound DE
+  kernel for Earth/Sun observer geometry and return apparent geocentric
+  true-ecliptic-of-date longitude, latitude, distance, signed speed, and
+  retrograde state. Updated the facade and REST routes to bind the engine
+  reader explicitly, and added a five-epoch all-nine-body frozen Astrodienst
+  cross-engine matrix alongside model-owned invariants.
 - **Sothic truth contract and bounded REST surface**: Promoted the existing
   Sothic component with `SothicRisingSeries`, one explicit `found` or
   `not_found_within_window` outcome per astronomical year, preserved typed

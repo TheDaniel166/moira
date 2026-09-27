@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from moira import Moira
+
+from ..dependencies import get_engine
 from ..models.uranian import (
     UranianBulkRequest,
     UranianBulkResponse,
@@ -28,12 +31,18 @@ def uranian_catalog_route() -> UranianCatalogResponse:
 
 
 @router.post("/position", response_model=UranianSingleResponse)
-def uranian_position_route(request: UranianPositionRequest) -> UranianSingleResponse:
-    """Compute one Uranian/Hamburg School hypothetical mean position."""
-    return compute_uranian_position(request)
+def uranian_position_route(
+    request: UranianPositionRequest,
+    engine: Moira = Depends(get_engine),
+) -> UranianSingleResponse:
+    """Compute one apparent geocentric hypothetical-body position."""
+    return compute_uranian_position(engine, request)
 
 
 @router.post("/bulk", response_model=UranianBulkResponse)
-def uranian_bulk_route(request: UranianBulkRequest) -> UranianBulkResponse:
-    """Compute bounded Uranian/Hamburg School hypothetical mean positions."""
-    return compute_uranian_bulk(request)
+def uranian_bulk_route(
+    request: UranianBulkRequest,
+    engine: Moira = Depends(get_engine),
+) -> UranianBulkResponse:
+    """Compute bounded apparent geocentric hypothetical-body positions."""
+    return compute_uranian_bulk(engine, request)
