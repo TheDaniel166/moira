@@ -75,6 +75,7 @@ from .varga import router as varga_router
 from .asteroids import router as asteroids_router
 from .comets import router as comets_router
 from .stars import router as stars_router
+from .sothic import router as sothic_router
 from .primary_directions import router as primary_directions_router
 from .varshaphal import router as varshaphal_router
 from .visibility import router as visibility_router
@@ -90,6 +91,7 @@ __all__ = [
     "asteroids_router",
     "comets_router",
     "stars_router",
+    "sothic_router",
     "batch_router",
     "chart_router",
     "chart_wheel_router",

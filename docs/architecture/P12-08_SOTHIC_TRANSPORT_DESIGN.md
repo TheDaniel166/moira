@@ -1,42 +1,30 @@
 # P12-08 Sothic Transport Design
 
-Version: 0.1
-Date: 2026-06-13
-Status: defer_for_specialist_review
-Scope: Sothic calendar, rising, epoch, prediction, and profile REST evaluation plan
+Version: 1.1
+Date: 2026-09-27
+Status: bounded_direct_surface_admitted
+Scope: admitted Sothic calendar, prediction, and exhaustive annual-rising REST boundary
 
 ## 1. Admission Boundary
 
-P12-08 is not admitted at this time.
-
-Sothic remains a specialist module. The backend standard and this transport
-design describe a possible route boundary, but they do not authorize public
-REST exposure in the current Phase 12 sequence. The main hold is semantic:
-public heliacal-search routes must not silently collapse valid no-event
-results, delegated search exhaustion, missing catalog or ephemeris
-infrastructure, and delegated internal failures into the same empty response.
-
-If a later review reopens admission, the route family should only be considered
-in stages.
-
-Stage 1, low-cost direct routes:
+P12-08 now admits three bounded direct routes:
 
 - `POST /v1/sothic/egyptian-date`
 - `POST /v1/sothic/predict-epoch`
-
-Stage 2, bounded annual search routes:
-
 - `POST /v1/sothic/rising`
+
+The previous semantic hold is closed by the engine-owned
+`SothicRisingSeries`: every requested year has exactly one `found` or
+`not_found_within_window` outcome. Missing catalog or ephemeris resources,
+coverage failures, and delegated internal errors propagate and cannot become
+empty success.
+
+Still deferred:
+
 - `POST /v1/sothic/epochs`
 - `POST /v1/sothic/drift-rate`
-
-Stage 3, profile routes after the lower routes are implemented:
-
 - `POST /v1/sothic/condition-profile`
 - `POST /v1/sothic/network-profile`
-
-Deferred:
-
 - unbounded epoch searches
 - async research jobs
 - broad historical commentary
@@ -50,6 +38,10 @@ Deferred:
 
 The governing object is the existing `moira.sothic` result family:
 
+- `SothicAnchor`
+- `SothicEpochPrediction`
+- `SothicYearOutcome`
+- `SothicRisingSeries`
 - `EgyptianDate`
 - `SothicEntry`
 - `SothicEpoch`
@@ -75,53 +67,36 @@ engine.
 
 - `jd`: finite Julian Day
 - `epoch_jd`: optional finite Julian Day
-- `policy`: optional Sothic policy, default omitted
 
 `POST /v1/sothic/predict-epoch`
 
 - `known_epoch_year`: integer
-- `n_cycles`: integer
+- `n_cycles`: integer in [-1000, 1000]
 - `cycle_length_years`: optional positive finite number
-- `policy`: optional Sothic policy
 
 `POST /v1/sothic/rising`
 
-- `latitude`: finite degrees in [-90, 90]
-- `longitude`: finite degrees in [-180, 180]
+- `latitude_deg`: finite degrees in [-90, 90]
+- `longitude_deg`: finite degrees in [-180, 180]
 - `year_start`: integer
 - `year_end`: integer greater than or equal to `year_start`
 - `epoch_jd`: optional finite Julian Day
-- `arcus_visionis`: optional positive finite number
-- `policy`: optional Sothic policy
+- `arcus_visionis_deg`: optional finite number in [6, 12], default 10
 
-`POST /v1/sothic/epochs`
-
-- same as `/v1/sothic/rising`
-- `tolerance_days`: optional non-negative finite number
-
-`POST /v1/sothic/drift-rate`
-
-- `entries`: serialized `SothicEntry`-compatible records from the route family,
-  minimum five entries
-
-`POST /v1/sothic/condition-profile`
-
-- `egyptian_dates`: optional list of admitted Egyptian date records
-- `entries`: optional list of admitted Sothic entry records
-- `epochs`: optional list of admitted Sothic epoch records
-
-`POST /v1/sothic/network-profile`
-
-- same input shape as `/v1/sothic/condition-profile`
+No public request accepts an engine policy object. The rising service builds a
+bounded internal policy with a 400-day search window. The deferred endpoint
+families do not yet have public request contracts.
 
 ## 4. Bounds And Runtime Policy
 
 Annual search routes must be bounded before admission.
 
-Recommended initial limits:
+Admitted limits:
 
 - maximum `year_end - year_start + 1`: 200 years
-- maximum profile input count per vessel family: 500
+- `arcus_visionis_deg`: 6 through 12 degrees
+- `n_cycles`: -1000 through 1000
+- per-year heliacal search window: 400 days
 - no async route until a separate heavy-workflow design exists
 
 The route should reject requests above these limits with explicit messages.
@@ -129,43 +104,33 @@ These bounds are transport policy, not Sothic doctrine.
 
 ## 5. Response Shape
 
-Egyptian date responses should preserve:
+Egyptian date responses preserve:
 
-- civil date fields
-- epagomenal birth
-- computation truth
-- classification
-- relation
-- condition profile
+- request JD
+- resolved default or caller-supplied calendar anchor
+- civil month, day, season, day-of-year, and epagomenal birth fields
 - provenance
 
-Rising responses should preserve:
+Rising responses preserve:
 
-- ordered `entries`
-- count
+- one ordered outcome per requested astronomical year
+- exhaustive `found` or `not_found_within_window` status
+- delegated typed heliacal-event truth for each outcome
+- an entry only for found outcomes
+- found and bounded-exhaustion counts
 - requested year range
-- search exhaustion note when no entries are found
 - provenance
 
-Epoch responses should preserve:
-
-- ordered `epochs`
-- count
-- requested year range
-- tolerance policy
-- search exhaustion note when no epochs are found
-- provenance
-
-Prediction responses should preserve:
+Prediction responses preserve:
 
 - known epoch year
 - cycle offset
 - cycle length
 - predicted year
+- astronomical year numbering
+- explicit schematic/custom model identity
+- `schematic_projection` evidence kind
 - provenance
-
-Profile responses should preserve the full aggregate or network shape without
-collapsing node or relation kinds into generic labels.
 
 ## 6. Validation Rules
 
@@ -176,60 +141,55 @@ The route family should reject:
 - invalid latitude or longitude
 - reversed year ranges
 - annual search ranges over the transport maximum
-- non-positive `arcus_visionis`
-- negative `tolerance_days`
+- `arcus_visionis_deg` outside [6, 12]
+- `n_cycles` outside [-1000, 1000]
 - non-positive `cycle_length_years`
-- malformed policy objects
-- drift-rate input with fewer than five entries
-- non-finite drift values
-- profile inputs that do not preserve supported condition states
+- unknown request fields
 
-Valid annual searches that find no event should return an empty list with a
-search-exhaustion note. They should not be treated as server errors.
+Valid annual searches that find no event return a
+`not_found_within_window` outcome. They are not server errors and do not imply
+that no event exists outside the bounded window. Infrastructure, coverage,
+catalog, and delegated internal failures remain exceptions and must not be
+serialized as search exhaustion.
 
 ## 7. Provenance Rules
 
-Every response should preserve:
+Every response preserves the applicable members of the typed provenance
+contract:
 
 - `source_module`: `moira.sothic`
 - engine entrypoint
-- policy values used
-- `anchor`: `censorinus_139_epoch`
 - `calendar_basis`: `egyptian_civil_mod_365`
-- `star_name`: `Sirius` for rising and epoch routes
-- `heliacal_basis`: `delegated_heliacal_rising`
-- `delegated_source`: `moira.fixed_stars.heliacal_rising`
+- `output_calendar`: `proleptic_gregorian`
+- `year_numbering`: `astronomical`
 - `stage_sequence`
-- route-level bounds applied
 
-Profile and network responses must preserve relation kinds:
-
-- `egyptian_calendar`
-- `sothic_rising`
-- `sothic_epoch`
+The rising response additionally records
+`delegated_source: moira.stars.heliacal_rising_event`,
+`route_max_years: 200`, and
+`cycle_model: schematic_1460_julian_year_cycle_position_only`. The resolved
+anchor is a top-level typed object labelled either
+`censorinus_139_calendar_anchor` or `caller_supplied_epoch_jd`; Sirius identity
+and heliacal truth are carried by each outcome's event object.
 
 ## 8. Verification Requirements For Admission
 
-Route admission should add focused server tests for:
+Route admission includes focused server tests for:
 
 - Egyptian date conversion at the admitted epoch anchor
-- epagomenal boundary serialization
-- prediction with positive and negative cycle offsets
-- rising route with monkeypatched heliacal search
-- epoch route with tolerance preservation
-- empty annual search result as successful empty response
-- rejection of invalid coordinates
+- explicit Julian/proleptic-Gregorian anchor serialization
+- schematic prediction labels and astronomical year numbering
+- rising route with found and bounded-exhaustion outcomes
+- missing-kernel propagation as HTTP 503
 - rejection of reversed and oversized year ranges
-- rejection of invalid policy values
-- drift-rate minimum-entry rejection
-- condition-profile deterministic ordering
-- network-profile node and edge kind preservation
+- rejection of arcus values outside the admitted 6-12 degree model domain
+- typed OpenAPI registration for all three routes
 
 Minimum verification after route implementation:
 
 ```powershell
 .\.venv\Scripts\python.exe -m py_compile moira_server\models\sothic.py moira_server\services\sothic.py moira_server\routers\sothic.py tests\server\test_server_sothic_routes.py
-.\.venv\Scripts\python.exe -m pytest tests\server\test_server_sothic_routes.py tests\unit\test_sothic.py tests\unit\test_sothic_public_api.py -q
+.\.venv\Scripts\python.exe -m pytest tests\server\test_server_sothic_routes.py tests\unit\test_sothic.py tests\unit\test_sothic_public_api.py tests\oracle\test_sothic_oracle.py -q -m "not external_network"
 ```
 
 Integration Sothic suites should be run before any admission that changes
@@ -237,10 +197,7 @@ heliacal search behavior or range-search policy.
 
 ## 9. Completion Boundary
 
-P12-08 is not ready for implementation after this transport design.
-
-This document is retained as the shape of a possible future admission. A later
-specialist review must decide whether even the Stage 1 direct routes should be
-exposed. Stage 2 and Stage 3 require a stronger public failure taxonomy before
-route implementation, because they introduce delegated heliacal search,
-bounded range scanning, and profile materialization.
+The three named direct routes are admitted and registered. Epoch-search,
+drift-rate, condition-profile, and network-profile routes remain outside this
+completion boundary. The transport maximum is 200 annual searches per request;
+unbounded research remains an engine/offline workflow.

@@ -155,11 +155,11 @@ Not yet broadly exposed as REST families:
   Geodetic, Galactic, Galactic Houses, and Gauquelin map/rendering/projection/
   statistical products remain deferred; progressed/directed
   cyclocartography and chart-backed comet MC/IC/ASC/DSC lines are also absent
-- remaining phase 12 specialist analytical families: `/v1/sothic/*` is
-  deliberately deferred for specialist review and public heliacal-search
-  failure semantics; `/v1/longevity/*` is deliberately deferred for doctrine,
-  validation, and public-language safeguards; `/v1/special/*` also remains
-  unexposed
+- remaining phase 12 specialist analytical families: `/v1/sothic/*` now has
+  three bounded direct routes, while epoch-search, drift, condition, and
+  network routes remain deferred; `/v1/longevity/*` is deliberately deferred
+  for doctrine, validation, and public-language safeguards; `/v1/special/*`
+  also remains unexposed
 - remaining phase 13 electional/search workflow surfaces: arbitrary predicate
   routes, arbitrary scorer routes, generic Western profile search/scoring,
   additional lineage profiles, and advice/recommendation language. The bounded
@@ -2859,6 +2859,36 @@ interpretation text, counseling, health or clinical claims, chart rendering,
 unbounded Age Point searches, transit/progression timing outside Age Point
 mechanics, or generic `/v1/special/*` computation.
 
+### Sothic REST Admission Boundary
+
+The admitted Sothic surface is:
+
+- `POST /v1/sothic/egyptian-date`
+- `POST /v1/sothic/predict-epoch`
+- `POST /v1/sothic/rising`
+
+`egyptian-date` exposes the fixed 365-day Egyptian civil calendar with an
+explicit anchor. The default Censorinus anchor is JD `1772027.5`, Julian
+`0139-07-20`, and proleptic Gregorian `0139-07-19`; it is a primary-text
+calendar relation, not a precise observed Sirius timestamp. A caller-supplied
+epoch is labelled separately.
+
+`predict-epoch` returns fixed-interval arithmetic in astronomical year
+numbering. The default is labelled `schematic_1460_julian_year` and
+`schematic_projection`; it does not confirm a historical observation.
+
+`rising` accepts 1 through 200 astronomical years, observer coordinates, an
+optional calendar anchor, and an arcus visionis restricted to the published
+IMCCE Sirius-calculator domain of 6 through 12 degrees. It returns exactly one
+ordered outcome per requested year: `found` or
+`not_found_within_window`. Each outcome preserves the delegated
+`moira.stars.heliacal_rising_event` truth. Catalog, kernel, coverage, and
+internal failures remain failures and are never serialized as empty success.
+
+This admission does not expose unbounded scans, Sothic epoch searches, drift
+routes, condition or network projections, alternate Egyptian calendars,
+historical interpretation, or a second heliacal visibility model.
+
 ### Lord Of The Orb REST Admission Boundary
 
 The admitted Lord of the Orb REST surface is the bounded P12-10
@@ -3495,6 +3525,9 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/sidereal/convert` | sidereal | `sidereal_convert_route_v1_sidereal_convert_post` |
 | `POST` | `/v1/solar-condition/events` | generic-phenomena | `solar_condition_events_route_v1_solar_condition_events_post` |
 | `POST` | `/v1/solar-condition/instant` | generic-phenomena | `solar_condition_instant_route_v1_solar_condition_instant_post` |
+| `POST` | `/v1/sothic/egyptian-date` | sothic | `egyptian_date_route_v1_sothic_egyptian_date_post` |
+| `POST` | `/v1/sothic/predict-epoch` | sothic | `predict_epoch_route_v1_sothic_predict_epoch_post` |
+| `POST` | `/v1/sothic/rising` | sothic | `rising_route_v1_sothic_rising_post` |
 | `POST` | `/v1/stars/bulk` | stars (fixed stars) | `stars_bulk_v1_stars_bulk_post` |
 | `GET` | `/v1/stars/list` | stars (fixed stars) | `list_stars_v1_stars_list_get` |
 | `GET` | `/v1/stars/multiple/list` | stars (fixed stars) | `list_multiple_stars_route_v1_stars_multiple_list_get` |

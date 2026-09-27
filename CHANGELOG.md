@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Sothic truth contract and bounded REST surface**: Promoted the existing
+  Sothic component with `SothicRisingSeries`, one explicit `found` or
+  `not_found_within_window` outcome per astronomical year, preserved typed
+  fixed-star heliacal truth, a source-labelled Censorinus AD 139 calendar
+  anchor, and typed schematic cycle projections. Added bounded
+  `POST /v1/sothic/egyptian-date`, `/predict-epoch`, and `/rising` routes; the
+  annual route is capped at 200 years and retains missing-kernel failures as
+  HTTP 503. A protected oracle matrix validates five AD 139 site/arcus civil
+  days against the published IMCCE/Observatoire de Paris Sirius calculator and
+  keeps the independent modern timed Sirius oracle under the heliacal engine.
 - **Lunar orientation REST surface**: Added
   `POST /v1/phase/lunar-orientation`, a typed transport for the existing
   `Moira.lunar_orientation()` product. The route accepts a timezone-aware
@@ -88,6 +98,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added contract test suite in [`tests/server/test_server_pattern_coherence_routes.py`](file:///c:/dev/moira/tests/server/test_server_pattern_coherence_routes.py) (6/6 passing).
 
 ### Fixed
+- **Sothic failure and chronology semantics**: Removed the blanket exception
+  handler that converted catalog, ephemeris, and internal failures into omitted
+  years. Distinguished the Censorinus civil-calendar relation from an observed
+  event timestamp, named Julian versus proleptic-Gregorian dates explicitly,
+  normalized projected BCE values to astronomical year numbering, and stopped
+  describing fixed 1460-year projections as confirmed historical epochs.
 - **Heliacal-rising apparition and local-day selection**: Corrected the legacy
   planetary `heliacal_rising` and `acronychal_rising` searches, plus the Python
   and native fixed-star rising paths, to require an actual

@@ -695,6 +695,7 @@ motion semantics.
 |---|---|---|
 | `longevity(chart, houses)` | `HylegResult` | Traditional hyleg and alcocoden longevity analysis |
 | `sothic_cycle(latitude, longitude, year_start, year_end, arcus_visionis=10.0)` | `list[SothicEntry]` | Year-by-year heliacal risings of Sirius across a date span |
+| `sothic_cycle_result(latitude, longitude, year_start, year_end, arcus_visionis=10.0)` | `SothicRisingSeries` | Exhaustive found/not-found-within-window outcomes for every requested year |
 | `sothic_epoch_finder(latitude, longitude, year_start, year_end, tolerance_days=1.0)` | `list[SothicEpoch]` | Candidate Sothic epochs across a year range |
 | `egyptian_date(dt, epoch_jd=None)` | `EgyptianDate` | Egyptian civil calendar date for a datetime |
 
@@ -4103,11 +4104,14 @@ degree` direction-reversal bound; no arbitrary upper-height policy is hidden.
 
 ```python
 from moira.facade import (
-    sothic_rising, sothic_epochs, sothic_drift_rate,
-    egyptian_civil_date, days_from_1_thoth, predicted_sothic_epoch_year,
+    sothic_rising_series, sothic_rising, sothic_epochs, sothic_drift_rate,
+    egyptian_civil_date, days_from_1_thoth,
+    predict_sothic_epoch, predicted_sothic_epoch_year,
     sothic_chart_condition_profile, sothic_condition_network_profile,
-    EgyptianDate, SothicEntry, SothicEpoch,
+    SothicAnchor, SothicEpochPrediction, SothicYearOutcome,
+    SothicRisingSeries, EgyptianDate, SothicEntry, SothicEpoch,
     EGYPTIAN_MONTHS, EGYPTIAN_SEASONS, EPAGOMENAL_BIRTHS,
+    CENSORINUS_139_ANCHOR, SOTHIC_EPOCH_REFERENCES,
     HISTORICAL_SOTHIC_EPOCHS,
     SothicComputationPolicy,
 )
@@ -4115,14 +4119,21 @@ from moira.facade import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `sothic_rising(latitude, longitude, year_start, year_end, epoch_jd=1772027.5, arcus_visionis=10.0, policy=None)` | `list[SothicEntry]` | Sirius heliacal rising entries across a year range |
+| `sothic_rising_series(latitude, longitude, year_start, year_end, epoch_jd=1772027.5, arcus_visionis=10.0, policy=None)` | `SothicRisingSeries` | Exhaustive annual outcomes; delegated failures propagate |
+| `sothic_rising(latitude, longitude, year_start, year_end, epoch_jd=1772027.5, arcus_visionis=10.0, policy=None)` | `list[SothicEntry]` | Compatibility projection containing only found entries |
 | `sothic_epochs(latitude, longitude, year_start, year_end, epoch_jd=1772027.5, tolerance_days=1.0, arcus_visionis=10.0, policy=None)` | `list[SothicEpoch]` | New Year coincidences across a year range |
 | `sothic_drift_rate(entries)` | `float` | Drift rate derived from a `list[SothicEntry]` |
 | `egyptian_civil_date(jd, epoch_jd=1772027.5, policy=None)` | `EgyptianDate` | Wandering civil calendar date |
 | `days_from_1_thoth(jd, epoch_jd=1772027.5)` | `float` | Days elapsed since the last 1 Thoth |
-| `predicted_sothic_epoch_year(known_epoch_year, n_cycles, cycle_length_years=1460.0, policy=None)` | `float` | Predicted year after one or more Sothic cycles |
+| `predict_sothic_epoch(known_epoch_year, n_cycles, cycle_length_years=1460.0, policy=None)` | `SothicEpochPrediction` | Typed fixed-interval projection labelled as schematic |
+| `predicted_sothic_epoch_year(known_epoch_year, n_cycles, cycle_length_years=1460.0, policy=None)` | `float` | Compatibility scalar for the typed schematic projection |
 
-`HISTORICAL_SOTHIC_EPOCHS`: list of known historical epoch dates.
+`CENSORINUS_139_ANCHOR` records Julian `0139-07-20`, proleptic Gregorian
+`0139-07-19`, and JD `1772027.5` as a primary-text calendar anchor, not a
+precise observed event timestamp. `SOTHIC_EPOCH_REFERENCES` distinguishes that
+anchor from fixed 1460-year schematic projections. The compatibility
+`HISTORICAL_SOTHIC_EPOCHS` dictionary list now carries the same evidence labels
+and astronomical-year numbering.
 `EPAGOMENAL_BIRTHS`: five epagomenal days and their mythological births.
 
 ---

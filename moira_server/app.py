@@ -82,6 +82,7 @@ from .routers import (
     shadbala_router,
     sidereal_router,
     stars_router,
+    sothic_router,
     timelords_router,
     triplicity_router,
     transits_router,
@@ -209,6 +210,7 @@ def create_app(config: ServerConfig | None = None) -> FastAPI:
     app.include_router(asteroids_router)   # Fast small-body surfaces (website integration)
     app.include_router(comets_router)      # Symmetric fast comet surfaces
     app.include_router(stars_router)       # Fixed stars for the website / Manus AI
+    app.include_router(sothic_router)      # Bounded Sirius/Egyptian-calendar outcomes
     app.include_router(deep_sky_router)    # Offline non-Solar-System coordinate anchors
     app.include_router(manazil_router)      # Phase-11 Arabic lunar mansion catalog/doctrine surface
     app.include_router(muhurta_router)      # P-GAP-02 Vedic Muhurta instant classification/score surface

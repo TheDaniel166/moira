@@ -616,13 +616,38 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         arcus_visionis: float = 10.0,
     ):
         """Compute Sirius heliacal rising entries for a year range."""
-        return _facade_module().sothic_rising(
-            latitude,
-            longitude,
-            year_start,
-            year_end,
-            arcus_visionis=arcus_visionis,
-        )
+        facade = _facade_module()
+        from .spk_reader import use_reader_override
+
+        with use_reader_override(self._reader):
+            return facade.sothic_rising(
+                latitude,
+                longitude,
+                year_start,
+                year_end,
+                arcus_visionis=arcus_visionis,
+            )
+
+    def sothic_cycle_result(
+        self,
+        latitude: float,
+        longitude: float,
+        year_start: int,
+        year_end: int,
+        arcus_visionis: float = 10.0,
+    ):
+        """Compute exhaustive per-year Sirius heliacal search outcomes."""
+        facade = _facade_module()
+        from .spk_reader import use_reader_override
+
+        with use_reader_override(self._reader):
+            return facade.sothic_rising_series(
+                latitude,
+                longitude,
+                year_start,
+                year_end,
+                arcus_visionis=arcus_visionis,
+            )
 
     def sothic_epoch_finder(
         self,
@@ -633,13 +658,17 @@ Canon: Moira Sovereign Facade Architecture; moira.eclipse, moira.sothic,
         tolerance_days: float = 1.0,
     ):
         """Find Sothic epochs in a year range."""
-        return _facade_module().sothic_epochs(
-            latitude,
-            longitude,
-            year_start,
-            year_end,
-            tolerance_days=tolerance_days,
-        )
+        facade = _facade_module()
+        from .spk_reader import use_reader_override
+
+        with use_reader_override(self._reader):
+            return facade.sothic_epochs(
+                latitude,
+                longitude,
+                year_start,
+                year_end,
+                tolerance_days=tolerance_days,
+            )
 
     def egyptian_date(self, dt: datetime, epoch_jd: float | None = None):
         """Convert a datetime to an Egyptian civil calendar date."""

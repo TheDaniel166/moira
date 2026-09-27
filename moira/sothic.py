@@ -5,8 +5,8 @@ Archetype: Engine
 Purpose: Computes the heliacal rising of Sirius year by year, tracks its
          drift through the ancient Egyptian civil calendar, detects Sothic
          epochs (years of calendar realignment), and converts Julian Days
-         to Egyptian civil calendar dates — all anchored to the historically
-         confirmed 139 AD Sothic epoch of Censorinus.
+         to Egyptian civil calendar dates — by default anchored to the AD 139
+         calendar relation reported by Censorinus.
 
 Boundary declaration:
     Owns: Egyptian civil calendar arithmetic, Sothic drift computation,
@@ -20,8 +20,8 @@ Boundary declaration:
 Import-time side effects: None
 
 External dependency assumptions:
-    - moira.stars.heliacal_rising("Sirius", jd_start, lat, lon,
-      arcus_visionis, search_days) returns a float JD or None.
+    - moira.stars.heliacal_rising_event("Sirius", jd_start, lat, lon,
+      arcus_visionis, search_days) returns a typed HeliacalEvent.
     - moira.julian.julian_day(year, month, day, hour) returns a JD float.
     - moira.julian.safe_datetime_from_jd returns None for out-of-range JDs
       rather than raising.
@@ -33,13 +33,15 @@ Public surface / exports:
     EGYPTIAN_MONTHS           — ordered list of 13 month names
     EGYPTIAN_SEASONS          — season → month-name mapping
     EPAGOMENAL_BIRTHS         — deities born on the 5 intercalary days
-    HISTORICAL_SOTHIC_EPOCHS  — known/inferred epoch records
+    SOTHIC_EPOCH_REFERENCES    — source-labelled anchor/projection records
     egyptian_civil_date()     — convert JD to EgyptianDate
     days_from_1_thoth()       — fractional days elapsed since 1 Thoth
-    sothic_rising()           — year-by-year heliacal rising table
+    sothic_rising_series()    — exhaustive year-by-year search outcomes
+    sothic_rising()           — found-entry compatibility projection
     sothic_epochs()           — years of Sothic calendar realignment
     sothic_drift_rate()       — observed drift rate in days/year
-    predicted_sothic_epoch_year() — forward/backward epoch prediction
+    predict_sothic_epoch()    — typed schematic fixed-cycle projection
+    predicted_sothic_epoch_year() — scalar compatibility projection
 """
 
 from __future__ import annotations
@@ -47,13 +49,15 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 
 from .julian import (
     julian_day,
     calendar_from_jd,
     safe_datetime_from_jd,
 )
-from .stars import heliacal_rising as _heliacal_rising
+from .star_types import HeliacalEvent
+from .stars import heliacal_rising_event as _heliacal_rising_event
 
 
 __all__ = [
@@ -69,13 +73,18 @@ __all__ = [
     "SothicConditionNetworkNode", "SothicConditionNetworkEdge",
     "SothicConditionNetworkProfile",
     # Data types
+    "SothicYearStatus", "SothicCycleModel", "SothicAnchor",
+    "SothicEpochReference", "SothicEpochPrediction",
+    "SothicYearOutcome", "SothicRisingSeries",
     "EgyptianDate", "SothicEntry", "SothicEpoch",
     # Constants
     "EGYPTIAN_MONTHS", "EGYPTIAN_SEASONS", "EPAGOMENAL_BIRTHS",
+    "CENSORINUS_139_ANCHOR", "SOTHIC_EPOCH_REFERENCES",
     "HISTORICAL_SOTHIC_EPOCHS",
     # Functions
-    "sothic_rising", "sothic_epochs", "sothic_drift_rate",
-    "egyptian_civil_date", "days_from_1_thoth", "predicted_sothic_epoch_year",
+    "sothic_rising_series", "sothic_rising", "sothic_epochs", "sothic_drift_rate",
+    "egyptian_civil_date", "days_from_1_thoth", "predict_sothic_epoch",
+    "predicted_sothic_epoch_year",
     "sothic_chart_condition_profile", "sothic_condition_network_profile",
 ]
 
@@ -84,9 +93,10 @@ __all__ = [
 # Constants
 # ---------------------------------------------------------------------------
 
-# Censorinus epoch: heliacal rising = 1 Thoth, July 20, 139 AD.
-# In Moira's JD/calendar conventions, midnight at the start of 139-07-20
-# corresponds to JD 1772027.5.
+# Censorinus calendar anchor.  The primary text relates 1 Thoth in AD 139 to
+# 20 July in the Julian calendar; it does not supply a precise observed event
+# time or observer site.  JD 1772027.5 is Julian 139-07-20 00:00 and proleptic
+# Gregorian 139-07-19 00:00.  Moira calendar outputs use the latter convention.
 _SOTHIC_EPOCH_139_JD: float = 1772027.5
 
 # Length of the Egyptian civil year (exactly 365 days, no leap)
@@ -96,6 +106,89 @@ _EGYPTIAN_YEAR_DAYS: int = 365
 # Identity: 1460 × 365.25 = 533265 = 1461 × 365  (exact)
 _SOTHIC_CYCLE_YEARS: float = 1460.0
 _SOTHIC_CYCLE_DAYS:  float = 533_265.0
+
+
+class SothicYearStatus(str, Enum):
+    """Exhaustive status for one bounded annual Sirius search."""
+
+    FOUND = "found"
+    NOT_FOUND_WITHIN_WINDOW = "not_found_within_window"
+
+
+class SothicCycleModel(str, Enum):
+    """Model identity for fixed-interval Sothic epoch projections."""
+
+    SCHEMATIC_1460_JULIAN_YEAR = "schematic_1460_julian_year"
+    CUSTOM_FIXED_YEAR_INTERVAL = "custom_fixed_year_interval"
+
+
+@dataclass(frozen=True, slots=True)
+class SothicAnchor:
+    """Source-owned calendar anchor, not a claimed observed event timestamp."""
+
+    anchor_id: str
+    jd: float
+    astronomical_year: int
+    historical_year_label: str
+    julian_calendar_date: str
+    proleptic_gregorian_date: str
+    year_numbering: str
+    evidence_kind: str
+    source_title: str
+    source_locator: str
+    source_url: str
+
+
+CENSORINUS_139_ANCHOR = SothicAnchor(
+    anchor_id="censorinus_139_calendar_anchor",
+    jd=_SOTHIC_EPOCH_139_JD,
+    astronomical_year=139,
+    historical_year_label="AD 139",
+    julian_calendar_date="0139-07-20",
+    proleptic_gregorian_date="0139-07-19",
+    year_numbering="astronomical",
+    evidence_kind="primary_text_calendar_anchor",
+    source_title="Censorinus, De die natali 21",
+    source_locator="21.10",
+    source_url=(
+        "https://penelope.uchicago.edu/Thayer/L/Roman/Texts/"
+        "Censorinus/text%2A.html#21.10"
+    ),
+)
+
+
+@dataclass(frozen=True, slots=True)
+class SothicEpochReference:
+    """A calendar anchor or schematic projection with explicit evidence class."""
+
+    astronomical_year: int
+    historical_year_label: str
+    evidence_kind: str
+    cycle_offset_from_139: int
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
+class SothicEpochPrediction:
+    """Typed fixed-interval projection; never an observational confirmation."""
+
+    known_epoch_year: int
+    n_cycles: int
+    cycle_length_years: float
+    predicted_astronomical_year: float
+    year_numbering: str
+    model: SothicCycleModel
+    evidence_kind: str = "schematic_projection"
+
+    def __post_init__(self) -> None:
+        if self.year_numbering != "astronomical":
+            raise ValueError("sothic prediction year_numbering must be astronomical")
+        if self.evidence_kind != "schematic_projection":
+            raise ValueError("sothic prediction evidence_kind must be schematic_projection")
+        if not math.isfinite(self.cycle_length_years) or self.cycle_length_years <= 0:
+            raise ValueError("sothic prediction cycle_length_years must be positive")
+        if not math.isfinite(self.predicted_astronomical_year):
+            raise ValueError("sothic predicted astronomical year must be finite")
 
 # Egyptian month names in order (12 × 30 days + 5 epagomenal)
 EGYPTIAN_MONTHS: list[str] = [
@@ -327,8 +420,8 @@ class SothicRelation:
     def __post_init__(self) -> None:
         if self.kind not in {"egyptian_calendar", "sothic_rising", "sothic_epoch"}:
             raise ValueError("sothic relation kind must be supported")
-        if self.anchor != "censorinus_139_epoch":
-            raise ValueError("sothic relation anchor must be censorinus_139_epoch")
+        if self.anchor != "censorinus_139_calendar_anchor":
+            raise ValueError("sothic relation anchor must be censorinus_139_calendar_anchor")
         if self.kind == "egyptian_calendar":
             if self.basis != "civil_calendar_anchor":
                 raise ValueError("egyptian calendar relation basis must be civil_calendar_anchor")
@@ -357,7 +450,7 @@ def _build_egyptian_date_relation(_: "EgyptianDate") -> SothicRelation:
     return SothicRelation(
         kind="egyptian_calendar",
         basis="civil_calendar_anchor",
-        anchor="censorinus_139_epoch",
+        anchor="censorinus_139_calendar_anchor",
     )
 
 
@@ -365,7 +458,7 @@ def _build_sothic_entry_relation(_: "SothicEntry") -> SothicRelation:
     return SothicRelation(
         kind="sothic_rising",
         basis="sirius_heliacal_rising",
-        anchor="censorinus_139_epoch",
+        anchor="censorinus_139_calendar_anchor",
         star_name="Sirius",
     )
 
@@ -374,7 +467,7 @@ def _build_sothic_epoch_relation(_: "SothicEpoch") -> SothicRelation:
     return SothicRelation(
         kind="sothic_epoch",
         basis="sirius_heliacal_rising",
-        anchor="censorinus_139_epoch",
+        anchor="censorinus_139_calendar_anchor",
         star_name="Sirius",
     )
 
@@ -802,7 +895,7 @@ class SothicEntry:
 
     THEOREM: Immutable record of the heliacal rising of Sirius for one
              astronomical year at a given observer location, carrying the
-             JD of the rising, its Gregorian and Egyptian calendar dates,
+             JD of the rising, its proleptic-Gregorian and Egyptian calendar dates,
              the drift from 1 Thoth, and the position within the Sothic
              cycle.
 
@@ -833,7 +926,7 @@ class SothicEntry:
             - drift_days is in [0, 365).
             - cycle_position is in [0, 1460).
 
-    Canon: Censorinus, De Die Natali 21.10 (reference epoch)
+    Canon: Censorinus, De die natali 21.10 (calendar anchor)
 
     [MACHINE_CONTRACT v1]
     {
@@ -880,6 +973,7 @@ class SothicEntry:
     classification: SothicComputationClassification | None = None
     relation: SothicRelation | None = None
     condition_profile: SothicConditionProfile | None = None
+    heliacal_event: HeliacalEvent | None = None
 
     def __post_init__(self) -> None:
         if not math.isfinite(self.jd_rising):
@@ -913,6 +1007,13 @@ class SothicEntry:
             expected = _build_sothic_entry_condition_profile(self)
             if self.condition_profile != expected:
                 raise ValueError("sothic entry condition profile must match computation truth")
+        if self.heliacal_event is not None:
+            if not self.heliacal_event.is_found or self.heliacal_event.jd_ut is None:
+                raise ValueError("sothic entry heliacal_event must be a found event")
+            if self.heliacal_event.star_name != "Sirius":
+                raise ValueError("sothic entry heliacal_event must preserve Sirius")
+            if self.heliacal_event.jd_ut != self.jd_rising:
+                raise ValueError("sothic entry heliacal_event JD must match jd_rising")
 
     def __repr__(self) -> str:
         year_str = f"{abs(self.year)} BC" if self.year < 0 else f"{self.year} AD"
@@ -979,7 +1080,7 @@ class SothicEpoch:
 
     RITE OF PURPOSE:
         SothicEpoch is the result vessel of sothic_epochs().  It marks the
-        historically and astronomically significant moments when the Egyptian
+        computed alignment candidates where the Egyptian
         civil calendar and the heliacal rising of Sirius realign, completing
         the ~1460-year Sothic cycle.  Without this vessel, callers would need
         to filter SothicEntry records themselves and recompute the residual
@@ -1002,7 +1103,7 @@ class SothicEpoch:
             - jd_rising is a finite float.
             - drift_days is in [-182.5, 182.5] (normalised signed drift).
 
-    Canon: Censorinus, De Die Natali 21.10 (confirmed 139 AD epoch)
+    Canon: Censorinus, De die natali 21.10 (AD 139 calendar anchor)
 
     [MACHINE_CONTRACT v1]
     {
@@ -1115,6 +1216,98 @@ class SothicEpoch:
         return None if self.condition_profile is None else self.condition_profile.condition_state.name
 
 
+@dataclass(slots=True)
+class SothicYearOutcome:
+    """One exhaustive annual search outcome with delegated search truth."""
+
+    year: int
+    status: SothicYearStatus
+    jd_start: float
+    heliacal_event: HeliacalEvent
+    entry: SothicEntry | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.year, int):
+            raise ValueError("sothic annual outcome year must be an integer")
+        if not isinstance(self.status, SothicYearStatus):
+            raise ValueError("sothic annual outcome status must be a SothicYearStatus")
+        if not math.isfinite(self.jd_start):
+            raise ValueError("sothic annual outcome jd_start must be finite")
+        if self.heliacal_event.star_name != "Sirius":
+            raise ValueError("sothic annual outcome must preserve Sirius")
+        if self.status is SothicYearStatus.FOUND:
+            if not self.heliacal_event.is_found or self.heliacal_event.jd_ut is None:
+                raise ValueError("found Sothic outcome requires a found heliacal event")
+            if self.entry is None:
+                raise ValueError("found Sothic outcome requires an entry")
+            if self.entry.year != self.year:
+                raise ValueError("Sothic outcome entry year must match outcome year")
+            if self.entry.heliacal_event is not self.heliacal_event:
+                raise ValueError("Sothic outcome entry must preserve its heliacal event")
+        else:
+            if self.heliacal_event.is_found or self.heliacal_event.jd_ut is not None:
+                raise ValueError("exhausted Sothic outcome requires a not-found heliacal event")
+            if self.entry is not None:
+                raise ValueError("exhausted Sothic outcome must not contain an entry")
+
+
+@dataclass(slots=True)
+class SothicRisingSeries:
+    """Exhaustive bounded result for a range of annual Sirius searches."""
+
+    latitude: float
+    longitude: float
+    year_start: int
+    year_end: int
+    epoch_jd: float
+    arcus_visionis: float
+    search_days: int
+    outcomes: tuple[SothicYearOutcome, ...]
+    anchor: SothicAnchor | None = None
+    calendar_basis: str = "egyptian_civil_mod_365"
+    output_calendar: str = "proleptic_gregorian"
+    year_numbering: str = "astronomical"
+
+    def __post_init__(self) -> None:
+        _validate_sothic_coordinates(self.latitude, self.longitude)
+        _validate_sothic_year_range(self.year_start, self.year_end)
+        _validate_sothic_epoch_jd(self.epoch_jd)
+        _validate_sothic_arcus_visionis(self.arcus_visionis)
+        if not isinstance(self.search_days, int) or self.search_days <= 0:
+            raise ValueError("sothic series search_days must be a positive integer")
+        expected_years = tuple(range(self.year_start, self.year_end + 1))
+        actual_years = tuple(outcome.year for outcome in self.outcomes)
+        if actual_years != expected_years:
+            raise ValueError("sothic series outcomes must cover every requested year in order")
+        if self.calendar_basis != "egyptian_civil_mod_365":
+            raise ValueError("sothic series calendar_basis must be egyptian_civil_mod_365")
+        if self.output_calendar != "proleptic_gregorian":
+            raise ValueError("sothic series output_calendar must be proleptic_gregorian")
+        if self.year_numbering != "astronomical":
+            raise ValueError("sothic series year_numbering must be astronomical")
+        if self.anchor is not None and self.anchor.jd != self.epoch_jd:
+            raise ValueError("sothic series anchor JD must match epoch_jd")
+
+    @property
+    def entries(self) -> tuple[SothicEntry, ...]:
+        return tuple(
+            outcome.entry
+            for outcome in self.outcomes
+            if outcome.entry is not None
+        )
+
+    @property
+    def found_count(self) -> int:
+        return sum(outcome.status is SothicYearStatus.FOUND for outcome in self.outcomes)
+
+    @property
+    def not_found_within_window_count(self) -> int:
+        return sum(
+            outcome.status is SothicYearStatus.NOT_FOUND_WITHIN_WINDOW
+            for outcome in self.outcomes
+        )
+
+
 # ---------------------------------------------------------------------------
 # Egyptian civil calendar
 # ---------------------------------------------------------------------------
@@ -1133,7 +1326,8 @@ def egyptian_civil_date(
     Parameters
     ----------
     jd       : Julian Day to convert
-    epoch_jd : JD of 1 Thoth in the reference year (default: 139 AD Sothic epoch)
+    epoch_jd : JD of 1 Thoth in the reference year (default: the AD 139
+               Censorinus calendar anchor)
 
     Returns
     -------
@@ -1225,7 +1419,72 @@ def days_from_1_thoth(jd: float, epoch_jd: float = _SOTHIC_EPOCH_139_JD) -> floa
 # Core: Sothic rising computation
 # ---------------------------------------------------------------------------
 
-def sothic_rising(
+def _sothic_entry_from_event(
+    *,
+    year: int,
+    latitude: float,
+    longitude: float,
+    epoch_jd: float,
+    arcus_visionis: float,
+    search_days: int,
+    jd_start: float,
+    event: HeliacalEvent,
+) -> SothicEntry:
+    """Materialize one Sothic entry from a found fixed-star event."""
+
+    if not event.is_found or event.jd_ut is None:
+        raise ValueError("cannot build a Sothic entry from a not-found heliacal event")
+    jd_rise = event.jd_ut
+    cal_year, cal_month, cal_day, _ = calendar_from_jd(jd_rise)
+    dt = safe_datetime_from_jd(jd_rise)
+    doy = (
+        _day_of_year(dt)
+        if dt is not None
+        else int(jd_rise - julian_day(cal_year, 1, 1, 0.0)) + 1
+    )
+    drift = days_from_1_thoth(jd_rise, epoch_jd)
+    cycle_pos = ((jd_rise - epoch_jd) / 365.25) % _SOTHIC_CYCLE_YEARS
+    egypt_date = egyptian_civil_date(jd_rise, epoch_jd)
+    truth = SothicComputationTruth(
+        star_name="Sirius",
+        latitude=latitude,
+        longitude=longitude,
+        epoch_jd=epoch_jd,
+        arcus_visionis=arcus_visionis,
+        search_days=search_days,
+        jd_start=jd_start,
+        jd_rising=jd_rise,
+        drift_days=drift,
+        cycle_position=cycle_pos,
+    )
+    classification = _classify_sothic_computation_truth(truth)
+    return SothicEntry(
+        year=year,
+        jd_rising=jd_rise,
+        date_utc=dt,
+        calendar_year=cal_year,
+        calendar_month=cal_month,
+        calendar_day=cal_day,
+        day_of_year=doy,
+        drift_days=drift,
+        cycle_position=cycle_pos,
+        egyptian_date=egypt_date,
+        computation_truth=truth,
+        classification=classification,
+        relation=_build_sothic_entry_relation(None),
+        condition_profile=SothicConditionProfile(
+            result_kind="sothic_entry",
+            condition_state=SothicConditionState("annual_rising"),
+            relation_kind="sothic_rising",
+            relation_basis="sirius_heliacal_rising",
+            star_kind=classification.star_kind,
+            tolerance_mode=classification.tolerance_mode,
+        ),
+        heliacal_event=event,
+    )
+
+
+def sothic_rising_series(
     latitude: float,
     longitude: float,
     year_start: int,
@@ -1233,41 +1492,13 @@ def sothic_rising(
     epoch_jd: float = _SOTHIC_EPOCH_139_JD,
     arcus_visionis: float = 10.0,
     policy: SothicComputationPolicy | None = None,
-) -> list[SothicEntry]:
-    """
-    Compute the heliacal rising of Sirius for each year in the given range.
+) -> SothicRisingSeries:
+    """Return one explicit heliacal-search outcome for every requested year.
 
-    This is the central function of the Sothic cycle — a year-by-year record
-    of when Sirius first appeared on the eastern horizon before sunrise,
-    and where that moment fell in the Egyptian civil calendar.
-
-    Parameters
-    ----------
-    latitude        : observer geographic latitude (degrees, signed)
-    longitude       : observer geographic east longitude (degrees)
-    year_start      : first astronomical year to compute (negative = BC)
-    year_end        : last astronomical year to compute (inclusive)
-    epoch_jd        : reference Sothic epoch JD (default: 139 AD at Alexandria)
-    arcus_visionis  : solar depression required for Sirius visibility (degrees).
-                      Default 10° is appropriate for Sirius (magnitude −1.46)
-                      in a clear ancient Mediterranean sky.  Increase to 11–12°
-                      for modern polluted skies.
-
-    Returns
-    -------
-    list[SothicEntry], one per year where a heliacal rising was found.
-    Years where Sirius is circumpolar or never rises are omitted.
-
-    Notes
-    -----
-    At latitudes above ~73°N, Sirius never rises; this function returns an
-    empty list for such latitudes.
-
-    The search for each year begins on January 1 (proleptic Gregorian) and
-    looks forward up to 400 days.  The heliacal rising of Sirius occurs in
-    boreal summer at most latitudes; if a year is skipped, it typically means
-    the rising occurred very close to year-end and was captured in the
-    adjacent year.
+    A normal search exhaustion is represented by
+    :attr:`SothicYearStatus.NOT_FOUND_WITHIN_WINDOW`. Catalog, ephemeris,
+    coverage, and internal failures are not converted to empty results; they
+    propagate to the caller with their original exception type.
     """
     policy = _resolve_sothic_policy(policy)
     _validate_sothic_policy(policy)
@@ -1278,78 +1509,86 @@ def sothic_rising(
     _validate_sothic_epoch_jd(epoch_jd)
     _validate_sothic_arcus_visionis(arcus_visionis)
 
-    results: list[SothicEntry] = []
+    outcomes: list[SothicYearOutcome] = []
 
     for year in range(year_start, year_end + 1):
-        # Start search from January 1 of this year
         jd_start = julian_day(year, 1, 1, 0.0)
-
-        try:
-            jd_rise = _heliacal_rising(
-                "Sirius", jd_start, latitude, longitude,
-                arcus_visionis=arcus_visionis,
-                search_days=policy.heliacal.search_days,
-            )
-        except Exception:
-            continue   # catalog not loaded or other error
-
-        if jd_rise is None:
-            continue   # Sirius does not rise heliacally at this latitude/year
-
-        # Calendar date
-        cal_year, cal_month, cal_day, _ = calendar_from_jd(jd_rise)
-        dt = safe_datetime_from_jd(jd_rise)
-        doy = _day_of_year(dt) if dt is not None else int(jd_rise - julian_day(cal_year, 1, 1, 0.0)) + 1
-
-        # Drift: how many Egyptian civil calendar days from 1 Thoth?
-        # At the reference epoch, the rising fell on day 1 of the Egyptian year.
-        # Each ~4 years the rising drifts one day further through the calendar.
-        drift = days_from_1_thoth(jd_rise, epoch_jd)
-
-        # Year within the 1460-year Sothic cycle (0.0 → 1460.0)
-        cycle_pos = ((jd_rise - epoch_jd) / 365.25) % _SOTHIC_CYCLE_YEARS
-
-        # Egyptian date at the reference epoch's calendar
-        egypt_date = egyptian_civil_date(jd_rise, epoch_jd)
-        truth = SothicComputationTruth(
-            star_name="Sirius",
-            latitude=latitude,
-            longitude=longitude,
-            epoch_jd=epoch_jd,
+        event = _heliacal_rising_event(
+            "Sirius",
+            jd_start,
+            latitude,
+            longitude,
             arcus_visionis=arcus_visionis,
             search_days=policy.heliacal.search_days,
-            jd_start=jd_start,
-            jd_rising=jd_rise,
-            drift_days=drift,
-            cycle_position=cycle_pos,
         )
-        classification = _classify_sothic_computation_truth(truth)
+        if event.is_found:
+            entry = _sothic_entry_from_event(
+                year=year,
+                latitude=latitude,
+                longitude=longitude,
+                epoch_jd=epoch_jd,
+                arcus_visionis=arcus_visionis,
+                search_days=policy.heliacal.search_days,
+                jd_start=jd_start,
+                event=event,
+            )
+            status = SothicYearStatus.FOUND
+        else:
+            entry = None
+            status = SothicYearStatus.NOT_FOUND_WITHIN_WINDOW
+        outcomes.append(
+            SothicYearOutcome(
+                year=year,
+                status=status,
+                jd_start=jd_start,
+                heliacal_event=event,
+                entry=entry,
+            )
+        )
 
-        results.append(SothicEntry(
-            year=year,
-            jd_rising=jd_rise,
-            date_utc=dt,
-            calendar_year=cal_year,
-            calendar_month=cal_month,
-            calendar_day=cal_day,
-            day_of_year=doy,
-            drift_days=drift,
-            cycle_position=cycle_pos,
-            egyptian_date=egypt_date,
-            computation_truth=truth,
-            classification=classification,
-            relation=_build_sothic_entry_relation(None),
-            condition_profile=SothicConditionProfile(
-                result_kind="sothic_entry",
-                condition_state=SothicConditionState("annual_rising"),
-                relation_kind="sothic_rising",
-                relation_basis="sirius_heliacal_rising",
-                star_kind=classification.star_kind,
-                tolerance_mode=classification.tolerance_mode,
-            ),
-        ))
+    return SothicRisingSeries(
+        latitude=latitude,
+        longitude=longitude,
+        year_start=year_start,
+        year_end=year_end,
+        epoch_jd=epoch_jd,
+        arcus_visionis=arcus_visionis,
+        search_days=policy.heliacal.search_days,
+        outcomes=tuple(outcomes),
+        anchor=(
+            CENSORINUS_139_ANCHOR
+            if epoch_jd == CENSORINUS_139_ANCHOR.jd
+            else None
+        ),
+    )
 
-    return results
+
+def sothic_rising(
+    latitude: float,
+    longitude: float,
+    year_start: int,
+    year_end: int,
+    epoch_jd: float = _SOTHIC_EPOCH_139_JD,
+    arcus_visionis: float = 10.0,
+    policy: SothicComputationPolicy | None = None,
+) -> list[SothicEntry]:
+    """Compatibility projection of found entries from :func:`sothic_rising_series`.
+
+    Unlike earlier releases, infrastructure and internal failures propagate;
+    only normal bounded-search exhaustion is omitted from this legacy list.
+    Use :func:`sothic_rising_series` when per-year status is required.
+    """
+
+    series = sothic_rising_series(
+        latitude,
+        longitude,
+        year_start,
+        year_end,
+        epoch_jd=epoch_jd,
+        arcus_visionis=arcus_visionis,
+        policy=policy,
+    )
+    return list(series.entries)
 
 
 # ---------------------------------------------------------------------------
@@ -1377,7 +1616,8 @@ def sothic_epochs(
     ----------
     latitude / longitude : observer location
     year_start / year_end : search range (astronomical years)
-    epoch_jd       : reference anchor JD (default: 139 AD)
+    epoch_jd       : civil-calendar anchor JD (default: Censorinus AD 139
+                     calendar relation; no observer site is implied)
     tolerance_days : how close to 1 Thoth counts as an epoch (default ±1 day)
     arcus_visionis : solar depression required (default 10° for Sirius)
 
@@ -1387,9 +1627,9 @@ def sothic_epochs(
 
     Notes
     -----
-    The Sothic cycle length (~1460 Julian years or ~1507 tropical years) means
-    a range of 2000 years will typically contain 1–2 epochs.  Use a range of
-    10,000+ years for the full historical picture.
+    This is a computational scan, not a historical chronology oracle. Runtime
+    grows linearly with the number of requested years; callers should use
+    deliberately bounded ranges.
     """
     policy = _resolve_sothic_policy(policy)
     _validate_sothic_policy(policy)
@@ -1532,6 +1772,26 @@ def predicted_sothic_epoch_year(
     -------
     Predicted astronomical year (float)
     """
+    return predict_sothic_epoch(
+        known_epoch_year,
+        n_cycles,
+        cycle_length_years=cycle_length_years,
+        policy=policy,
+    ).predicted_astronomical_year
+
+
+def predict_sothic_epoch(
+    known_epoch_year: int,
+    n_cycles: int,
+    cycle_length_years: float = 1460.0,
+    policy: SothicComputationPolicy | None = None,
+) -> SothicEpochPrediction:
+    """Return a typed schematic epoch projection in astronomical years.
+
+    The calculation is fixed-interval arithmetic. It is not an observed
+    heliacal event and does not validate a historical chronology.
+    """
+
     policy = _resolve_sothic_policy(policy)
     _validate_sothic_policy(policy)
     cycle_length_years = (
@@ -1545,7 +1805,21 @@ def predicted_sothic_epoch_year(
         raise ValueError("n_cycles must be an integer")
     if not math.isfinite(cycle_length_years) or cycle_length_years <= 0:
         raise ValueError("cycle_length_years must be positive")
-    return known_epoch_year + n_cycles * cycle_length_years
+    model = (
+        SothicCycleModel.SCHEMATIC_1460_JULIAN_YEAR
+        if cycle_length_years == _SOTHIC_CYCLE_YEARS
+        else SothicCycleModel.CUSTOM_FIXED_YEAR_INTERVAL
+    )
+    return SothicEpochPrediction(
+        known_epoch_year=known_epoch_year,
+        n_cycles=n_cycles,
+        cycle_length_years=cycle_length_years,
+        predicted_astronomical_year=(
+            known_epoch_year + n_cycles * cycle_length_years
+        ),
+        year_numbering="astronomical",
+        model=model,
+    )
 
 
 def sothic_chart_condition_profile(
@@ -1718,15 +1992,52 @@ def sothic_condition_network_profile(
 
 
 # ---------------------------------------------------------------------------
-# Convenience: historical epochs
+# Convenience: anchor and schematic epoch references
 # ---------------------------------------------------------------------------
 
-# Known / inferred Sothic epochs at Memphis (lat 29.8°N, lon 31.3°E)
+SOTHIC_EPOCH_REFERENCES: tuple[SothicEpochReference, ...] = (
+    SothicEpochReference(
+        astronomical_year=-2781,
+        historical_year_label="2782 BCE",
+        evidence_kind="schematic_projection",
+        cycle_offset_from_139=-2,
+        note="Two fixed 1460-year intervals before the AD 139 calendar anchor.",
+    ),
+    SothicEpochReference(
+        astronomical_year=-1321,
+        historical_year_label="1322 BCE",
+        evidence_kind="schematic_projection",
+        cycle_offset_from_139=-1,
+        note="One fixed 1460-year interval before the AD 139 calendar anchor.",
+    ),
+    SothicEpochReference(
+        astronomical_year=139,
+        historical_year_label="AD 139",
+        evidence_kind="primary_text_calendar_anchor",
+        cycle_offset_from_139=0,
+        note="Censorinus calendar relation; not a precise observed event timestamp.",
+    ),
+    SothicEpochReference(
+        astronomical_year=1599,
+        historical_year_label="AD 1599",
+        evidence_kind="schematic_projection",
+        cycle_offset_from_139=1,
+        note="One fixed 1460-year interval after the AD 139 calendar anchor.",
+    ),
+)
+
+# Compatibility shape retained for callers that consumed the original list of
+# dictionaries.  The additional fields prevent projected years from being
+# mistaken for independently confirmed historical observations.
 HISTORICAL_SOTHIC_EPOCHS: list[dict] = [
-    {"year": -2780, "note": "First Sothic Period — beginning of the Egyptian calendar (inferred)"},
-    {"year": -1320, "note": "Second Sothic Period — Ebers Papyrus (9th year of Amenhotep I, inferred)"},
-    {"year":   139, "note": "Third Sothic Period — Censorinus (confirmed, 139 AD)"},
-    {"year":  1599, "note": "Fourth Sothic Period — computed from the 139 AD epoch"},
+    {
+        "year": reference.astronomical_year,
+        "historical_year_label": reference.historical_year_label,
+        "evidence_kind": reference.evidence_kind,
+        "cycle_offset_from_139": reference.cycle_offset_from_139,
+        "note": reference.note,
+    }
+    for reference in SOTHIC_EPOCH_REFERENCES
 ]
 
 

@@ -17,6 +17,13 @@ _CURATED_PUBLIC_NAMES = [
     "SothicEpochPolicy",
     "SothicPredictionPolicy",
     "SothicComputationPolicy",
+    "SothicYearStatus",
+    "SothicCycleModel",
+    "SothicAnchor",
+    "SothicEpochReference",
+    "SothicEpochPrediction",
+    "SothicYearOutcome",
+    "SothicRisingSeries",
     # Truth / classification
     "EgyptianCalendarTruth",
     "SothicComputationTruth",
@@ -37,12 +44,16 @@ _CURATED_PUBLIC_NAMES = [
     "EGYPTIAN_MONTHS",
     "EGYPTIAN_SEASONS",
     "EPAGOMENAL_BIRTHS",
+    "CENSORINUS_139_ANCHOR",
+    "SOTHIC_EPOCH_REFERENCES",
     "HISTORICAL_SOTHIC_EPOCHS",
     "egyptian_civil_date",
     "days_from_1_thoth",
+    "sothic_rising_series",
     "sothic_rising",
     "sothic_epochs",
     "sothic_drift_rate",
+    "predict_sothic_epoch",
     "predicted_sothic_epoch_year",
     "sothic_chart_condition_profile",
     "sothic_condition_network_profile",
@@ -85,5 +96,5 @@ class TestModuleAgreement:
                 f"moira.sothic.{name} disappeared; helper should remain module-internal"
             )
 
-    def test_curated_count_is_31(self):
-        assert len(_CURATED_PUBLIC_NAMES) == 31
+    def test_curated_count_is_42(self):
+        assert len(_CURATED_PUBLIC_NAMES) == 42

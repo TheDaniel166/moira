@@ -1162,6 +1162,9 @@ from .occultations import (
 from .sothic import (
     SothicCalendarPolicy, SothicHeliacalPolicy, SothicEpochPolicy,
     SothicPredictionPolicy, SothicComputationPolicy,
+    SothicYearStatus, SothicCycleModel, SothicAnchor,
+    SothicEpochReference, SothicEpochPrediction, SothicYearOutcome,
+    SothicRisingSeries,
     EgyptianCalendarTruth, SothicComputationTruth,
     EgyptianCalendarClassification, SothicComputationClassification,
     SothicRelation, SothicConditionState, SothicConditionProfile,
@@ -1169,10 +1172,11 @@ from .sothic import (
     SothicConditionNetworkEdge, SothicConditionNetworkProfile,
     EgyptianDate, SothicEntry, SothicEpoch,
     EGYPTIAN_MONTHS, EGYPTIAN_SEASONS, EPAGOMENAL_BIRTHS,
+    CENSORINUS_139_ANCHOR, SOTHIC_EPOCH_REFERENCES,
     HISTORICAL_SOTHIC_EPOCHS,
-    sothic_rising, sothic_epochs, sothic_drift_rate,
+    sothic_rising_series, sothic_rising, sothic_epochs, sothic_drift_rate,
     egyptian_civil_date, days_from_1_thoth,
-    predicted_sothic_epoch_year, sothic_chart_condition_profile,
+    predict_sothic_epoch, predicted_sothic_epoch_year, sothic_chart_condition_profile,
     sothic_condition_network_profile,
 )
 from .stars import (
@@ -2537,6 +2541,9 @@ __all__ = [
     # Sothic cycle
     "SothicCalendarPolicy", "SothicHeliacalPolicy", "SothicEpochPolicy",
     "SothicPredictionPolicy", "SothicComputationPolicy",
+    "SothicYearStatus", "SothicCycleModel", "SothicAnchor",
+    "SothicEpochReference", "SothicEpochPrediction", "SothicYearOutcome",
+    "SothicRisingSeries",
     "EgyptianCalendarTruth", "SothicComputationTruth",
     "EgyptianCalendarClassification", "SothicComputationClassification",
     "SothicRelation", "SothicConditionState", "SothicConditionProfile",
@@ -2544,9 +2551,11 @@ __all__ = [
     "SothicConditionNetworkEdge", "SothicConditionNetworkProfile",
     "EgyptianDate", "SothicEntry", "SothicEpoch",
     "EGYPTIAN_MONTHS", "EGYPTIAN_SEASONS", "EPAGOMENAL_BIRTHS",
+    "CENSORINUS_139_ANCHOR", "SOTHIC_EPOCH_REFERENCES",
     "HISTORICAL_SOTHIC_EPOCHS",
-    "sothic_rising", "sothic_epochs", "sothic_drift_rate",
-    "egyptian_civil_date", "days_from_1_thoth", "predicted_sothic_epoch_year",
+    "sothic_rising_series", "sothic_rising", "sothic_epochs", "sothic_drift_rate",
+    "egyptian_civil_date", "days_from_1_thoth", "predict_sothic_epoch",
+    "predicted_sothic_epoch_year",
     "sothic_chart_condition_profile", "sothic_condition_network_profile",
     # Variable stars
     "VarType", "VariableStar",

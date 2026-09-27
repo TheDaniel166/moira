@@ -1,11 +1,12 @@
 """
-Extended Sothic cycle validation — multi-epoch, multi-site, oracle comparison.
+Extended Sothic cycle validation — multi-epoch, multi-site, corroboration.
 
 This test suite validates Moira's heliacal rising computation for Sirius across
-the full Sothic cycle (~1460 years), multiple Egyptian sites, and against
-independent astronomical oracles.
+the schematic Sothic cycle (1460 fixed Julian years), multiple Egyptian
+sites, and independent Astropy/ERFA geometric corroboration. Primary-source
+civil-day authority checks live in tests/oracle/test_sothic_oracle.py.
 
-Sothic cycle epochs (traditional):
+Schematic fixed-cycle years in astronomical numbering:
   -2781: Epoch 1 (theoretical, predates historical records)
   -1321: Epoch 2 (Middle Kingdom)
    +139: Epoch 3 (Censorinus, Roman era) — anchor
@@ -15,8 +16,6 @@ The Egyptian civil calendar (365 days, no leap) drifts ~1 day every 4 years
 relative to the solar year. The Sothic cycle is the ~1460-year period for
 Sirius heliacal rising to return to 1 Thoth.
 """
-
-import math
 
 import pytest
 from astropy.coordinates import AltAz, Distance, EarthLocation, SkyCoord, get_body
@@ -163,13 +162,13 @@ def test_sothic_day_of_year_increases_monotonically_away_from_epoch() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 3: Oracle comparison (astropy/ERFA)
+# Test 3: Independent geometric corroboration (Astropy/ERFA)
 # ---------------------------------------------------------------------------
 
 
 def sirius_geometric_altitude_astropy(jd_ut: float, lat: float, lon: float) -> float:
     """
-    Geometric altitude of Sirius using astropy/ERFA (independent oracle).
+    Geometric altitude of Sirius using Astropy/ERFA for corroboration.
 
     Sirius: HIP 32349, ICRS J2000
     RA = 101.28715533° (6h 45m 8.9s)
@@ -205,8 +204,8 @@ def sun_geometric_altitude_astropy(jd_ut: float, lat: float, lon: float) -> floa
 
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-def test_sothic_139_memphis_oracle_comparison() -> None:
-    """Compare Moira's Sothic rising against astropy/ERFA oracle for 139 AD Memphis."""
+def test_sothic_139_memphis_astropy_corroboration() -> None:
+    """Corroborate 139 AD Memphis event geometry with Astropy/ERFA."""
     lat, lon = 29.8, 31.3  # Memphis
     entry = sothic_rising(lat, lon, 139, 139)[0]
 
@@ -224,8 +223,8 @@ def test_sothic_139_memphis_oracle_comparison() -> None:
 
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-def test_sothic_139_alexandria_oracle_comparison() -> None:
-    """Compare Moira's Sothic rising against astropy/ERFA oracle for 139 AD Alexandria."""
+def test_sothic_139_alexandria_astropy_corroboration() -> None:
+    """Corroborate 139 AD Alexandria event geometry with Astropy/ERFA."""
     lat, lon = 31.2, 29.9  # Alexandria
     entry = sothic_rising(lat, lon, 139, 139)[0]
 
@@ -239,8 +238,8 @@ def test_sothic_139_alexandria_oracle_comparison() -> None:
 
 @pytest.mark.requires_ephemeris
 @pytest.mark.slow
-def test_sothic_minus_1321_memphis_oracle_comparison() -> None:
-    """Compare Moira's Sothic rising against astropy/ERFA oracle for -1321 BCE Memphis."""
+def test_sothic_minus_1321_memphis_astropy_corroboration() -> None:
+    """Corroborate astronomical year -1321 Memphis geometry with Astropy/ERFA."""
     lat, lon = 29.8, 31.3  # Memphis
     entry = sothic_rising(lat, lon, -1321, -1321)[0]
 

@@ -7,7 +7,8 @@ definitions, layer boundaries, terminology, invariants, failure doctrine, and
 determinism rules are stated here and are frozen until explicitly superseded by
 a revision to this document.
 
-This document reflects current implementation truth as of Sothic Phase 11. It
+This document reflects current implementation truth as of the Sothic public
+truth-contract and bounded transport admission. It
 describes the subsystem that actually exists in `moira/sothic.py`; it does not
 describe aspirational future capabilities.
 
@@ -52,15 +53,28 @@ It preserves:
 - epagomenal birth association where applicable
 - modular-calendar computation truth
 
-#### 1.3 Sothic rising entry
+#### 1.3 Sothic annual search outcome and rising entry
+
+A **SothicYearOutcome** in Moira is:
+
+> The exhaustive result of one bounded annual Sirius heliacal search, with
+> status `found` or `not_found_within_window` and the delegated
+> `HeliacalEvent` truth preserved.
+
+`SothicRisingSeries` contains exactly one ordered outcome for every requested
+astronomical year. Catalog, kernel, coverage, and internal failures are not
+outcomes and must propagate.
 
 A **SothicEntry** in Moira is:
 
 > The authoritative annual record of Sirius's heliacal rising for one
-> astronomical year at one observer location, together with its Gregorian and
-> Egyptian-calendar placement, drift, and cycle position.
+> astronomical year at one observer location, together with its
+> proleptic-Gregorian and Egyptian-calendar placement, drift, and cycle
+> position.
 
-It is produced by `sothic_rising(...)` and remains the canonical annual vessel.
+It is present only on a found outcome. `sothic_rising_series(...)` is the
+canonical exhaustive range result; `sothic_rising(...)` remains a compatibility
+projection containing only found entries.
 
 #### 1.4 Sothic epoch
 
@@ -92,9 +106,13 @@ The current relation bases are:
 - `civil_calendar_anchor`
 - `sirius_heliacal_rising`
 
-The current anchor is frozen as:
+The current canonical anchor is:
 
-- `censorinus_139_epoch`
+- `censorinus_139_calendar_anchor`
+
+It preserves Julian `0139-07-20`, proleptic Gregorian `0139-07-19`, JD
+`1772027.5`, and astronomical year numbering. Censorinus supplies a calendar
+relation, not a precise observed event timestamp or an observer site.
 
 #### 1.6 Sothic condition profile
 
@@ -157,7 +175,8 @@ layer reaches upward.
 
 ```text
 Core      - Authoritative Sothic computation (`egyptian_civil_date`,
-            `sothic_rising`, `sothic_epochs`, `sothic_drift_rate`,
+            `sothic_rising_series`, `sothic_rising`, `sothic_epochs`,
+            `sothic_drift_rate`, `predict_sothic_epoch`,
             `predicted_sothic_epoch_year`)
 Phase  1  - Truth preservation
 Phase  2  - Classification
@@ -192,7 +211,7 @@ The Sothic backend delegates to external modules without redefining them:
 
 | Concern | Delegated to | Convention |
 |---|---|---|
-| Sirius heliacal rising | `moira.fixed_stars.heliacal_rising` | authoritative heliacal search source |
+| Sirius heliacal rising | `moira.stars.heliacal_rising_event` | authoritative typed heliacal search source |
 | Julian Day conversion | `moira.julian` | authoritative JD / calendar conversion layer |
 
 Changes to those delegated sources propagate into the Sothic subsystem. This
@@ -210,7 +229,7 @@ Calendar doctrine is now explicit through:
 
 The current default doctrine embodies:
 
-- the Censorinus 139 AD epoch anchor
+- the Censorinus AD 139 civil-calendar anchor (not a precise observation)
 - 1 Thoth as the start of the wandering 365-day civil year
 - modular 365-day wrap arithmetic
 
@@ -247,6 +266,11 @@ Prediction doctrine is now explicit through:
 The current default doctrine embodies:
 
 - `cycle_length_years = 1460.0`
+- model identity `schematic_1460_julian_year`
+- evidence identity `schematic_projection`
+
+Fixed-cycle prediction is arithmetic, not an observed heliacal event and not
+an independent confirmation of historical chronology.
 
 #### 4.5 Unified policy vessel
 
@@ -264,6 +288,11 @@ The default policy is normative and preserves current behavior.
 The following result vessels are part of the constitutional backend surface:
 
 - `EgyptianDate`
+- `SothicAnchor`
+- `SothicEpochReference`
+- `SothicEpochPrediction`
+- `SothicYearOutcome`
+- `SothicRisingSeries`
 - `SothicEntry`
 - `SothicEpoch`
 - `EgyptianCalendarTruth`
@@ -293,8 +322,10 @@ tests, and future docs:
 |---|---|
 | Egyptian civil date | one modular-calendar date within the wandering 365-day civil year |
 | Sothic entry | one annual Sirius heliacal-rising record |
+| Sothic year outcome | one exhaustive annual result: found or not found within the bounded window |
 | Sothic epoch | one admitted epoch-alignment result |
-| anchor | the doctrinal epoch reference used by current calendar and relation logic |
+| calendar anchor | the source-owned civil-calendar relation used by current modular calendar logic |
+| schematic projection | fixed-year arithmetic that does not claim an observed historical event |
 | relation | first-class result-to-anchor or result-to-star truth |
 | condition profile | derived per-result structural summary |
 | chart condition profile | derived aggregate over condition profiles |
@@ -306,6 +337,9 @@ The following conflations are prohibited:
 
 - treating delegated heliacal search as locally redefined astronomy
 - treating epoch prediction as epoch detection
+- treating a Censorinus calendar relation as a precise observed event timestamp
+- treating `not_found_within_window` as proof that no event exists
+- treating a schematic cycle year as an independently confirmed historical epoch
 - treating the chart profile as a second annual-rising detector
 - treating the network profile as an interpretive or symbolic layer
 
@@ -322,6 +356,9 @@ The following invariants are constitutional:
 - `EgyptianDate.day_of_year` must lie within the civil year
 - `EgyptianDate.month_number`, `day`, `season`, and `epagomenal_birth` must be internally consistent
 - `SothicEntry.jd_rising`, `drift_days`, and `cycle_position` must be finite and in-range
+- a `SothicRisingSeries` must contain every requested year exactly once and in order
+- a found annual outcome must carry both a found `HeliacalEvent` and a matching `SothicEntry`
+- a not-found annual outcome must carry no entry
 - `SothicEpoch.jd_rising` and `drift_days` must be finite and normalized
 - when present, computation truth must agree with legacy vessel fields
 - when present, classification must agree with computation truth
@@ -379,8 +416,13 @@ Malformed public inputs must fail clearly with `ValueError`, including at least:
 Valid heliacal searches that do not find an event remain governed by current
 semantics:
 
-- `sothic_rising` omits that year
+- `sothic_rising_series` reports `not_found_within_window` for that year
+- `sothic_rising` omits that year as a compatibility projection
 - `sothic_epochs` omits non-aligned years
+
+Missing catalog or ephemeris resources, coverage failures, and delegated
+internal failures must propagate. They must never be converted into search
+exhaustion or an empty result.
 
 #### 9.3 Invariant failure
 
@@ -417,7 +459,9 @@ All future changes to the Sothic backend must, at minimum, pass:
 
 ```powershell
 .\.venv\Scripts\python.exe -m py_compile moira\sothic.py tests\unit\test_sothic.py
-.\.venv\Scripts\python.exe -m pytest tests\unit\test_sothic.py -q
+.\.venv\Scripts\python.exe -m pytest tests\unit\test_sothic.py tests\unit\test_sothic_public_api.py -q
+.\.venv\Scripts\python.exe -m pytest tests\oracle\test_sothic_oracle.py -q -m "not external_network"
+.\.venv\Scripts\python.exe -m pytest tests\server\test_server_sothic_routes.py -q
 ```
 
 If package exposure changes in a later phase, the relevant public API tests must
@@ -429,7 +473,10 @@ The validation corpus for this subsystem must continue to cover:
 
 - Egyptian civil calendar semantics
 - annual heliacal-rising semantics
+- exhaustive found versus bounded-search-exhaustion semantics
 - epoch-detection semantics
+- Censorinus calendar-basis and astronomical-year-numbering semantics
+- IMCCE civil-day authority comparison across site and arcus cases
 - drift-rate semantics
 - truth / classification consistency
 - relation consistency
@@ -451,6 +498,7 @@ The current constitutional Sothic backend does not yet include:
 - symbolic historical commentary
 - broader Egyptian calendrical systems beyond the current civil-year model
 - autonomous heliacal-visibility doctrine beyond the delegated star engine
+- unbounded REST sweeps, epoch-search routes, or profile/network routes
 
 Those would require later explicit phases or a successor constitutional
 document.

@@ -1,8 +1,8 @@
 # Moira Server Phase 12 Evaluation Ledger
 
-Version: 1.2
-Date: 2026-06-13
-Status: Admitted named Phase 12 route families complete; Sothic, Longevity, and umbrella routes deferred
+Version: 1.3
+Date: 2026-09-27
+Status: Admitted named Phase 12 route families complete; bounded Sothic direct surface admitted; Longevity and umbrella routes deferred
 Scope: specialist analytical REST candidate evaluation
 
 Phase 12 covers niche analytical families. These are not core chart,
@@ -130,7 +130,7 @@ Website readiness is tracked separately:
 | P12-05 | Nine Parts | `admitted` | `not_website_target` | Single bounded Abu Ma'shar aggregate route is implemented, registered, tested, and documented. It preserves canonical nine-part order, full-reversal night policy, derived dependencies, condition profiles, validation truth, and Sword/Node admitted-extension status. Chart construction, sect derivation, Al-Sijzi management, longevity integration, comparison bundles, and interpretation remain deferred. |
 | P12-06 | Planetary Hours | `admitted` | `website_good` | Bounded sunrise-based schedule and hour-at routes are implemented, registered, tested, and documented. They preserve the dedicated `moira.planetary_hours.PlanetaryHour` vessel, explicit reader policy, UTC timestamp policy, and visible sunrise/sunset failure behavior without location lookup or fallback civil-clock substitution. |
 | P12-07 | Huber | `admitted_direct_cusp_stage` | `not_website_ready` | Direct-cusp Huber routes are implemented, registered, tested, and documented. They expose dynamic intensity, house zones, Age Point, intensity-at-longitude, chart intensity profile, and bounded Age Point contact scan over caller-supplied house frames, while chart-backed house derivation remains deferred. |
-| P12-08 | Sothic | `defer_for_specialist_review` | `not_website_target` | Backend standard, transport design, and tests exist, but Sothic is a specialist module and is not admitted at this time. Public heliacal-search routes would need explicit failure semantics before they could avoid overstating truth. |
+| P12-08 | Sothic | `admitted_bounded_direct_surface` | `specialist_api_ready` | Egyptian-date, schematic prediction, and exhaustive annual-rising routes are implemented, registered, tested, and documented. Annual searches are capped at 200 years and preserve found versus not-found-within-window outcomes while propagating resource and internal failures. Epoch, drift, condition, and network routes remain deferred. |
 | P12-09 | Longevity / Hyleg-Alcocoden | `defer_for_doctrine` | `not_website_target` | Backend standard and structural unit coverage exist, but the family remains deliberately deferred. It is interpretively high-stakes, lacks a dedicated admission validation suite, and must not expose life-expectancy-style public claims. |
 | P12-10 | Lord of the Orb | `admitted` | `not_website_target` | Caller-seeded sequence and current-period routes are implemented, registered, tested, and documented. The route family preserves birth-planet source policy, cycle variant, period/profile/aggregate truth, validation output, and the distinction from Lord of the Turn. |
 | P12-11 | Lord of the Turn | `admitted` | `not_website_target` | Caller-supplied Solar Return profile route is implemented, registered, tested, and documented. The route family preserves Al-Qabisi vs Egyptian/Al-Sijzi method policy, profection truth, blocker reasons, candidate assessments, testimony count policy, validation output, and the boundary that SR chart construction remains caller-owned. |
@@ -200,10 +200,15 @@ P12-11 is also admitted as a caller-supplied Lord of the Turn route family:
 
 - `POST /v1/lord-of-the-turn/profile`
 
-`wiki/02_services/REST_API_REFERENCE.md` now lists those live routes and keeps
-the remaining Phase 12 families out of the broadly exposed surface:
+`wiki/02_services/REST_API_REFERENCE.md` now lists those live routes. The
+bounded Sothic direct surface is also admitted:
 
-- `/v1/sothic/*`
+- `POST /v1/sothic/egyptian-date`
+- `POST /v1/sothic/predict-epoch`
+- `POST /v1/sothic/rising`
+
+The remaining Phase 12 umbrella stays out of the broadly exposed surface:
+
 - `/v1/special/*`
 
 ---
@@ -649,7 +654,7 @@ Result:
 
 ## 12. P12-08 Sothic
 
-Status: `defer_for_specialist_review`
+Status: `admitted_bounded_direct_surface`
 
 Candidate module:
 
@@ -657,8 +662,8 @@ Candidate module:
 
 Governing object:
 
-- Egyptian civil date, Sirius heliacal rising range, Sothic epoch search,
-  drift-rate prediction, and Sothic condition profiles.
+- Egyptian civil date, explicitly schematic fixed-cycle prediction, and an
+  exhaustive bounded Sirius heliacal-rising range result.
 
 Evidence:
 
@@ -668,24 +673,28 @@ Evidence:
 - Public API tests: `tests/unit/test_sothic_public_api.py`
 - Integration tests: `tests/integration/test_sothic_research.py`,
   `tests/integration/test_sothic_extended.py`
+- Primary/institutional oracle matrix:
+  `tests/artifacts/oracle/sothic_reference_matrix.json`
+- Oracle tests: `tests/oracle/test_sothic_oracle.py`
+- Server tests: `tests/server/test_server_sothic_routes.py`
 
-Remaining pre-admission work:
+Admitted routes:
 
-- keep the route family out of REST for now
-- preserve the transport design as a reference, not an admission directive
-- define public failure semantics before any future heliacal rising or epoch
-  search route is reconsidered
-- distinguish valid no-event results from delegated heliacal-search exhaustion,
-  missing catalog or ephemeris infrastructure, and delegated internal failures
-- keep any future first-pass admission limited to direct Egyptian date and
-  prediction routes unless a later review explicitly admits search routes
+- `POST /v1/sothic/egyptian-date`
+- `POST /v1/sothic/predict-epoch`
+- `POST /v1/sothic/rising`
 
-Recommended first stance:
+Admission truth:
 
-- do not admit Sothic routes in Phase 12
-- treat Sothic as a specialist module that needs a later intentional review
-- do not expose `/v1/sothic/*` until the public API can report search truth
-  without silently collapsing error, exhaustion, and no-event states
+- `SothicRisingSeries` supplies exactly one `found` or
+  `not_found_within_window` outcome per requested astronomical year
+- catalog, kernel, coverage, and delegated internal failures propagate
+- the Censorinus AD 139 value is a calendar anchor, not a precise observed
+  event timestamp
+- 1460-year values are labelled schematic projections, not confirmed history
+- annual REST search is capped at 200 years
+- epoch, drift-rate, condition-profile, and network-profile routes remain
+  deferred
 
 ---
 
@@ -911,9 +920,9 @@ Reason:
 - P12-07 is complete within the direct-cusp Huber route boundary. Chart-backed
   Huber remains deferred until it is bound through the admitted house adapter;
   Huber transport does not derive houses independently.
-- Sothic is deliberately deferred despite its transport design because it is a
-  specialist module and its public heliacal-search semantics need a separate
-  truth review before admission.
+- P12-08 is complete within the bounded Egyptian-date, schematic-prediction,
+  and exhaustive annual-rising boundary. Epoch, drift-rate, condition, network,
+  unbounded research, and interpretation remain outside admission.
 - P12-10 is complete within the caller-seeded Lord of the Orb route boundary.
   Birth-hour derivation, chart construction, annual hierarchy orchestration,
   dignity scoring, comparison bundles, and interpretation remain outside the
@@ -947,13 +956,9 @@ Phase 12 planning does not implicitly:
 
 ## 19. Immediate Next Step
 
-Do not implement P12-08 Sothic routes in the current Phase 12 sequence.
-
-The named Phase 12 implementation sequence is now complete for the families
-admitted in this phase. P12-08 Sothic and P12-09 Longevity remain deliberate
-holds, and P12-U1 remains a deferred umbrella decision rather than an
-implementation target.
-
-Before Sothic can return to the implementation queue, add a specialist review
-packet that decides whether any Stage 1 direct routes are worth exposing and
-defines public search/failure semantics for heliacal rising and epoch routes.
+The named Phase 12 implementation sequence is complete for the admitted
+families, including the bounded P12-08 Sothic direct surface. P12-09 Longevity
+remains a deliberate hold, and P12-U1 remains a deferred umbrella decision
+rather than an implementation target. Any later Sothic expansion must decide
+the doctrine and cost boundary for epoch, drift, condition, or network routes
+without weakening the admitted failure taxonomy.

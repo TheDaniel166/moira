@@ -1372,6 +1372,7 @@ _EXPECTED_MOIRA_METHODS = {
     "varshaphal",
     "varshaphal_chart",
     "sothic_cycle",
+    "sothic_cycle_result",
     "sothic_epoch_finder",
     "speculum",
     "ssb_chart",

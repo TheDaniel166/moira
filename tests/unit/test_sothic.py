@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from moira.star_types import HeliacalEvent
 from moira.sothic import (
     EPAGOMENAL_BIRTHS,
     _EGYPTIAN_YEAR_DAYS,
@@ -11,6 +12,15 @@ from moira.sothic import (
     predicted_sothic_epoch_year,
     sothic_drift_rate,
 )
+
+
+def _sirius_event(jd_ut: float | None) -> HeliacalEvent:
+    return HeliacalEvent(
+        event_kind="heliacal_rising",
+        star_name="Sirius",
+        jd_ut=jd_ut,
+        is_found=jd_ut is not None,
+    )
 
 
 def test_egyptian_civil_date_epoch_is_1_thoth() -> None:
@@ -64,7 +74,11 @@ def test_days_from_1_thoth_wraps_cleanly() -> None:
 def test_sothic_rising_preserves_computation_truth_without_changing_semantics(monkeypatch: pytest.MonkeyPatch) -> None:
     import moira.sothic as s
 
-    monkeypatch.setattr(s, "_heliacal_rising", lambda *args, **kwargs: _SOTHIC_EPOCH_139_JD + 10.5)
+    monkeypatch.setattr(
+        s,
+        "_heliacal_rising_event",
+        lambda *args, **kwargs: _sirius_event(_SOTHIC_EPOCH_139_JD + 10.5),
+    )
 
     entries = s.sothic_rising(29.8, 31.3, 139, 139)
 
@@ -134,6 +148,69 @@ def test_predicted_sothic_epoch_year_uses_simple_cycle_arithmetic() -> None:
     assert predicted_sothic_epoch_year(139, 1) == pytest.approx(1599.0, abs=1e-12)
     assert predicted_sothic_epoch_year(139, -1) == pytest.approx(-1321.0, abs=1e-12)
     assert predicted_sothic_epoch_year(-1321, -1) == pytest.approx(-2781.0, abs=1e-12)
+
+
+def test_sothic_anchor_names_both_calendar_conventions() -> None:
+    import moira.sothic as s
+
+    anchor = s.CENSORINUS_139_ANCHOR
+    assert anchor.jd == pytest.approx(_SOTHIC_EPOCH_139_JD, abs=1e-12)
+    assert anchor.julian_calendar_date == "0139-07-20"
+    assert anchor.proleptic_gregorian_date == "0139-07-19"
+    assert anchor.year_numbering == "astronomical"
+    assert anchor.evidence_kind == "primary_text_calendar_anchor"
+
+
+def test_typed_prediction_is_explicitly_schematic() -> None:
+    import moira.sothic as s
+
+    prediction = s.predict_sothic_epoch(139, -1)
+
+    assert prediction.predicted_astronomical_year == pytest.approx(-1321.0)
+    assert prediction.model is s.SothicCycleModel.SCHEMATIC_1460_JULIAN_YEAR
+    assert prediction.evidence_kind == "schematic_projection"
+    assert prediction.year_numbering == "astronomical"
+
+
+def test_sothic_series_preserves_found_and_exhausted_years(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira.sothic as s
+
+    found_jd = _SOTHIC_EPOCH_139_JD + 2.0
+
+    def _search(_name, jd_start, *_args, **_kwargs):
+        return _sirius_event(found_jd if jd_start < s.julian_day(140, 1, 1) else None)
+
+    monkeypatch.setattr(s, "_heliacal_rising_event", _search)
+
+    series = s.sothic_rising_series(29.8, 31.3, 139, 140)
+
+    assert [outcome.status.value for outcome in series.outcomes] == [
+        "found",
+        "not_found_within_window",
+    ]
+    assert series.found_count == 1
+    assert series.not_found_within_window_count == 1
+    assert len(series.entries) == 1
+    assert series.entries[0].heliacal_event is series.outcomes[0].heliacal_event
+    assert s.sothic_rising(29.8, 31.3, 139, 140) == list(series.entries)
+
+
+def test_sothic_series_does_not_swallow_delegated_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import moira.sothic as s
+
+    def _fail(*_args, **_kwargs):
+        raise RuntimeError("delegated failure")
+
+    monkeypatch.setattr(s, "_heliacal_rising_event", _fail)
+
+    with pytest.raises(RuntimeError, match="delegated failure"):
+        s.sothic_rising_series(29.8, 31.3, 139, 139)
+    with pytest.raises(RuntimeError, match="delegated failure"):
+        s.sothic_rising(29.8, 31.3, 139, 139)
 
 
 def test_sothic_drift_rate_recovers_wrapped_linear_trend() -> None:
@@ -236,7 +313,11 @@ def test_phase3_invariant_drift_fails_loudly() -> None:
 def test_phase4_default_policy_preserves_existing_behavior(monkeypatch: pytest.MonkeyPatch) -> None:
     import moira.sothic as s
 
-    monkeypatch.setattr(s, "_heliacal_rising", lambda *args, **kwargs: _SOTHIC_EPOCH_139_JD + 3.0)
+    monkeypatch.setattr(
+        s,
+        "_heliacal_rising_event",
+        lambda *args, **kwargs: _sirius_event(_SOTHIC_EPOCH_139_JD + 3.0),
+    )
 
     default_entries = s.sothic_rising(29.8, 31.3, 139, 139)
     explicit_entries = s.sothic_rising(29.8, 31.3, 139, 139, policy=s.DEFAULT_SOTHIC_POLICY)
@@ -260,9 +341,9 @@ def test_phase4_explicit_policy_can_narrow_doctrine(monkeypatch: pytest.MonkeyPa
 
     def _fake_heliacal(*args, **kwargs):
         calls.append(kwargs)
-        return _SOTHIC_EPOCH_139_JD + 5.0
+        return _sirius_event(_SOTHIC_EPOCH_139_JD + 5.0)
 
-    monkeypatch.setattr(s, "_heliacal_rising", _fake_heliacal)
+    monkeypatch.setattr(s, "_heliacal_rising_event", _fake_heliacal)
 
     policy = s.SothicComputationPolicy(
         heliacal=s.SothicHeliacalPolicy(arcus_visionis=11.5, search_days=365),
@@ -311,10 +392,14 @@ def test_phase5_relations_are_explicit_and_deterministic(monkeypatch: pytest.Mon
     assert date.relation is not None
     assert date.relation.kind == "egyptian_calendar"
     assert date.relation.basis == "civil_calendar_anchor"
-    assert date.relation.anchor == "censorinus_139_epoch"
+    assert date.relation.anchor == "censorinus_139_calendar_anchor"
     assert date.relation_kind == "egyptian_calendar"
 
-    monkeypatch.setattr(s, "_heliacal_rising", lambda *args, **kwargs: _SOTHIC_EPOCH_139_JD + 2.0)
+    monkeypatch.setattr(
+        s,
+        "_heliacal_rising_event",
+        lambda *args, **kwargs: _sirius_event(_SOTHIC_EPOCH_139_JD + 2.0),
+    )
     entry = s.sothic_rising(29.8, 31.3, 139, 139)[0]
     assert entry.relation is not None
     assert entry.relation.kind == "sothic_rising"
@@ -356,7 +441,7 @@ def test_phase5_relation_drift_fails_loudly() -> None:
             relation=s.SothicRelation(
                 kind="sothic_rising",
                 basis="sirius_heliacal_rising",
-                anchor="censorinus_139_epoch",
+                anchor="censorinus_139_calendar_anchor",
                 star_name="Sirius",
             ),
         )
@@ -368,18 +453,18 @@ def test_phase6_relation_helpers_are_derived_only() -> None:
     calendar_relation = s.SothicRelation(
         kind="egyptian_calendar",
         basis="civil_calendar_anchor",
-        anchor="censorinus_139_epoch",
+        anchor="censorinus_139_calendar_anchor",
     )
     rising_relation = s.SothicRelation(
         kind="sothic_rising",
         basis="sirius_heliacal_rising",
-        anchor="censorinus_139_epoch",
+        anchor="censorinus_139_calendar_anchor",
         star_name="Sirius",
     )
     epoch_relation = s.SothicRelation(
         kind="sothic_epoch",
         basis="sirius_heliacal_rising",
-        anchor="censorinus_139_epoch",
+        anchor="censorinus_139_calendar_anchor",
         star_name="Sirius",
     )
 
@@ -393,7 +478,7 @@ def test_phase6_relation_helpers_are_derived_only() -> None:
     assert date.has_relation is True
     assert date.relation_kind == "egyptian_calendar"
     assert date.relation_basis == "civil_calendar_anchor"
-    assert date.relation_anchor == "censorinus_139_epoch"
+    assert date.relation_anchor == "censorinus_139_calendar_anchor"
 
 
 def test_phase6_invalid_relation_shapes_fail_loudly() -> None:
@@ -403,7 +488,7 @@ def test_phase6_invalid_relation_shapes_fail_loudly() -> None:
         s.SothicRelation(
             kind="egyptian_calendar",
             basis="civil_calendar_anchor",
-            anchor="censorinus_139_epoch",
+            anchor="censorinus_139_calendar_anchor",
             star_name="Sirius",
         )
 
@@ -411,7 +496,7 @@ def test_phase6_invalid_relation_shapes_fail_loudly() -> None:
         s.SothicRelation(
             kind="sothic_epoch",
             basis="sirius_heliacal_rising",
-            anchor="censorinus_139_epoch",
+            anchor="censorinus_139_calendar_anchor",
             star_name="Regulus",
         )
 
@@ -423,7 +508,11 @@ def test_phase7_condition_profiles_are_derived_only(monkeypatch: pytest.MonkeyPa
     assert date.condition_profile is not None
     assert date.condition_state == "calendar_anchor"
 
-    monkeypatch.setattr(s, "_heliacal_rising", lambda *args, **kwargs: _SOTHIC_EPOCH_139_JD + 2.0)
+    monkeypatch.setattr(
+        s,
+        "_heliacal_rising_event",
+        lambda *args, **kwargs: _sirius_event(_SOTHIC_EPOCH_139_JD + 2.0),
+    )
     entry = s.sothic_rising(29.8, 31.3, 139, 139)[0]
     assert entry.condition_profile is not None
     assert entry.condition_state == "annual_rising"
@@ -473,7 +562,7 @@ def test_phase7_condition_profile_drift_fails_loudly() -> None:
             relation=s.SothicRelation(
                 kind="sothic_rising",
                 basis="sirius_heliacal_rising",
-                anchor="censorinus_139_epoch",
+                anchor="censorinus_139_calendar_anchor",
                 star_name="Sirius",
             ),
             condition_profile=s.SothicConditionProfile(
@@ -491,7 +580,11 @@ def test_phase8_chart_condition_profile_is_deterministic_and_aligned(monkeypatch
     import moira.sothic as s
 
     date = s.egyptian_civil_date(_SOTHIC_EPOCH_139_JD)
-    monkeypatch.setattr(s, "_heliacal_rising", lambda *args, **kwargs: _SOTHIC_EPOCH_139_JD + 2.0)
+    monkeypatch.setattr(
+        s,
+        "_heliacal_rising_event",
+        lambda *args, **kwargs: _sirius_event(_SOTHIC_EPOCH_139_JD + 2.0),
+    )
     entry = s.sothic_rising(29.8, 31.3, 139, 139)[0]
     epoch = s.sothic_epochs(29.8, 31.3, 139, 139, tolerance_days=5.0)[0]
 
@@ -538,7 +631,11 @@ def test_phase9_condition_network_profile_is_deterministic_and_aligned(monkeypat
     import moira.sothic as s
 
     date = s.egyptian_civil_date(_SOTHIC_EPOCH_139_JD)
-    monkeypatch.setattr(s, "_heliacal_rising", lambda *args, **kwargs: _SOTHIC_EPOCH_139_JD + 2.0)
+    monkeypatch.setattr(
+        s,
+        "_heliacal_rising_event",
+        lambda *args, **kwargs: _sirius_event(_SOTHIC_EPOCH_139_JD + 2.0),
+    )
     entry = s.sothic_rising(29.8, 31.3, 139, 139)[0]
     epoch = s.sothic_epochs(29.8, 31.3, 139, 139, tolerance_days=5.0)[0]
 
@@ -551,7 +648,7 @@ def test_phase9_condition_network_profile_is_deterministic_and_aligned(monkeypat
     assert network.node_count == 5
     assert network.edge_count == 3
     assert [node.node_id for node in network.nodes] == [
-        "anchor:censorinus_139_epoch",
+        "anchor:censorinus_139_calendar_anchor",
         "date:001:01:01",
         "entry:139",
         "epoch:139",

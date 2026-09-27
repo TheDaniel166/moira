@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "product": "Sirius heliacal-rising civil-day classification for the Sothic component",
+  "evidence_policy": {
+    "calendar_anchor": "primary_text_calendar_relation",
+    "historical_visibility": "institutional_model_civil_day",
+    "modern_event_time": "independent_physical_oracle_owned_by_heliacal_subsystem",
+    "schematic_cycle": "arithmetic_identity_not_observational_confirmation"
+  },
+  "sources": {
+    "censorinus": {
+      "title": "Censorinus, De die natali 21",
+      "locator": "21.10",
+      "url": "https://penelope.uchicago.edu/Thayer/L/Roman/Texts/Censorinus/text%2A.html#21.10",
+      "use": "AD 139 civil-calendar relation only; not a precise event time or observer site"
+    },
+    "imcce": {
+      "institution": "IMCCE / Observatoire de Paris",
+      "title": "Lever heliaque de Sirius",
+      "url": "https://promenade.imcce.fr/fr/pages6/724.html",
+      "accessed": "2026-09-27",
+      "captured_page_utf8_sha256": "21d2ebd2432b01b62708c0d2e52a647135dae54858b1b253dedb3d602cea569e",
+      "published_method": "Pierre Bretagnon inverse-series calculator",
+      "year_domain": [-4400, 2800],
+      "latitude_domain_deg_north": [22.0, 32.0],
+      "longitude_domain_deg_east": [25.0, 35.0],
+      "arcus_visionis_domain_deg": [6.0, 12.0],
+      "pre_1583_output_calendar": "julian",
+      "comparison_level": "civil_day_only",
+      "capture_method": "The published client-side sothis() series was evaluated with the listed inputs; no Moira code was used to derive the expected dates."
+    },
+    "gautschy_2011": {
+      "title": "Der Stern Sirius im Alten Aegypten",
+      "doi": "10.1524/zaes.2011.0010",
+      "url": "https://www.degruyterbrill.com/document/doi/10.1524/zaes.2011.0010/html",
+      "use": "Historical visibility sensitivity: mean arcus visionis about 10 degrees, plausibly 9 to 11 degrees depending on transparency; a known site still gives approximately twelve years of chronological resolution."
+    },
+    "modern_physical_oracle": {
+      "artifact": "tests/golden/physical_visibility_phase3_events.json",
+      "case_id": "phase3-sirius-2026-morning-first-rising",
+      "test_owner": "tests/oracle/test_heliacal_rising_oracle.py",
+      "use": "Strict timed validation of the delegated fixed-star heliacal engine; it is not reclassified as a historical Sothic observation."
+    }
+  },
+  "calendar_anchor": {
+    "anchor_id": "censorinus_139_calendar_anchor",
+    "jd": 1772027.5,
+    "astronomical_year": 139,
+    "historical_year_label": "AD 139",
+    "julian_calendar_date": "0139-07-20",
+    "proleptic_gregorian_date": "0139-07-19",
+    "evidence_kind": "primary_text_calendar_anchor"
+  },
+  "imcce_civil_day_cases": [
+    {
+      "case_id": "imcce-memphis-139-arcus-9",
+      "astronomical_year": 139,
+      "site_label": "Memphis approximation",
+      "latitude_deg": 29.8,
+      "longitude_deg": 31.3,
+      "arcus_visionis_deg": 9.0,
+      "expected_julian_date": "0139-07-18",
+      "expected_proleptic_gregorian": [139, 7, 17]
+    },
+    {
+      "case_id": "imcce-memphis-139-arcus-10",
+      "astronomical_year": 139,
+      "site_label": "Memphis approximation",
+      "latitude_deg": 29.8,
+      "longitude_deg": 31.3,
+      "arcus_visionis_deg": 10.0,
+      "expected_julian_date": "0139-07-19",
+      "expected_proleptic_gregorian": [139, 7, 18]
+    },
+    {
+      "case_id": "imcce-memphis-139-arcus-11",
+      "astronomical_year": 139,
+      "site_label": "Memphis approximation",
+      "latitude_deg": 29.8,
+      "longitude_deg": 31.3,
+      "arcus_visionis_deg": 11.0,
+      "expected_julian_date": "0139-07-21",
+      "expected_proleptic_gregorian": [139, 7, 20]
+    },
+    {
+      "case_id": "imcce-alexandria-139-arcus-10",
+      "astronomical_year": 139,
+      "site_label": "Alexandria approximation",
+      "latitude_deg": 31.2,
+      "longitude_deg": 29.92,
+      "arcus_visionis_deg": 10.0,
+      "expected_julian_date": "0139-07-21",
+      "expected_proleptic_gregorian": [139, 7, 20]
+    },
+    {
+      "case_id": "imcce-elephantine-139-arcus-10",
+      "astronomical_year": 139,
+      "site_label": "Elephantine approximation",
+      "latitude_deg": 24.09,
+      "longitude_deg": 32.88,
+      "arcus_visionis_deg": 10.0,
+      "expected_julian_date": "0139-07-14",
+      "expected_proleptic_gregorian": [139, 7, 13]
+    }
+  ]
+}
