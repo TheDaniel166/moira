@@ -9,15 +9,15 @@ Purpose
 Implements Vedic time-lord systems beyond Vimshottari (which is in
 ``moira.dasha``).  Two systems are fully implemented:
 
-  Ashtottari Dasha  — 108-year cycle with 8 lords.  Starting lord is
-                      determined by the Moon's birth nakshatra through a
-                      nakshatra→lord mapping.  Subject to an eligibility
-                      condition (Rahu not in 1st/5th/9th from Lagna) that
-                      can be bypassed by policy.
+  Ashtottari Dasha  — 108-year cycle with 8 lords.  Starting lord and
+                      balance follow BPHS chapter 46's alternating groups
+                      of four and three nakshatras, beginning with Ardra.
+                      The 28-place count includes Abhijit.
 
   Yogini Dasha      — 36-year cycle with 8 Yoginis.  Starting Yogini is
-                      determined by ``nakshatra_index % 8``.  No eligibility
-                      condition.  Simplest of the alternate systems.
+                      determined by adding three to the one-based birth-
+                      nakshatra number and reducing to a one-through-eight
+                      remainder.  No eligibility condition.
 
 A third system, Kalachakra Dasha, requires Navamsha-based sign traversal
 with Savya/Apasavya direction switching.  It is reserved for Phase 2 of
@@ -29,26 +29,28 @@ Both systems use the same proportional sub-period formula as Vimshottari:
 
     sub_years = (sub_lord_years / system_total) × mahadasha_years
 
-The elapsed fraction in the birth nakshatra determines the remaining
-portion of the first Mahadasha at birth.
+For Yogini, the elapsed fraction in the birth nakshatra determines the
+remaining portion of the first Mahadasha.  For Ashtottari, the elapsed
+fraction is measured through the current lord's three- or four-nakshatra
+allocation before the remaining Mahadasha balance is derived.
 
 Tradition and sources
 ---------------------
 Ashtottari:
-  Parashara, "Brihat Parashara Hora Shastra", Ashtottari Dasha Adhyaya.
-  B.V. Raman, "A Manual of Hindu Astrology", pp. 201–210.
+  Parashara, "Brihat Parashara Hora Shastra", chapter 46, verses 17–22.
+  The exact Abhijit span is a separately identified later convention; BPHS
+  supplies the 28-place allocation but not those longitude boundaries.
   Total years = 108; lords = Sun, Moon, Mars, Mercury, Saturn, Jupiter,
   Rahu, Venus.
 
 Yogini:
-  K.N. Rao, "Yogini Dasha" (1993).
-  Parashara, "BPHS" (brief reference).
+  Parashara, "Brihat Parashara Hora Shastra", chapter 46, verses 195–200.
   Total years = 36; Yoginis: Mangala, Pingala, Dhanya, Bhramari,
   Bhadrika, Ulka, Siddha, Sankata.
 
 Boundary declaration
 --------------------
-Owns: Ashtottari and Yogini computation, eligibility logic, and the
+Owns: Ashtottari and Yogini computation, eligibility-policy boundary, and the
       ``AlternateDashaPeriod``, ``AshtottariPolicy``, ``YoginiPolicy``
       result and policy vessels.
 Delegates: nakshatra computation to ``moira.sidereal``, Julian year
@@ -124,8 +126,8 @@ __all__ = [
 # ---------------------------------------------------------------------------
 # Ashtottari constants
 #
-# Source: BPHS Ashtottari Dasha Adhyaya.
-# 8 lords, 108-year total.  Lord sequence differs from Vimshottari.
+# Primary source: BPHS chapter 46, verses 17–22.
+# 8 lords, 108-year total.  Four- and three-nakshatra groups begin at Ardra.
 # ---------------------------------------------------------------------------
 
 ASHTOTTARI_YEARS: dict[str, int] = {
@@ -139,19 +141,54 @@ ASHTOTTARI_SEQUENCE: list[str] = [
 
 ASHTOTTARI_TOTAL: int = 108
 
-# Nakshatra→Ashtottari lord mapping.
-# The 8 lords cycle across all 27 nakshatras in Ashtottari sequence order,
-# starting from Ashwini (index 0) = Sun.
-ASHTOTTARI_NAKSHATRA_LORD: list[str] = []
-for _i in range(27):
-    ASHTOTTARI_NAKSHATRA_LORD.append(ASHTOTTARI_SEQUENCE[_i % 8])
-del _i
+# BPHS 46.18 alternates four-nakshatra malefic groups and three-nakshatra
+# benefic groups.  Verse 17 begins the allocation at Ardra.  The resulting
+# count has 28 places because Saturn's group includes Abhijit.
+_ASHTOTTARI_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ('Sun', ('Ardra', 'Punarvasu', 'Pushya', 'Ashlesha')),
+    ('Moon', ('Magha', 'Purva Phalguni', 'Uttara Phalguni')),
+    ('Mars', ('Hasta', 'Chitra', 'Swati', 'Vishakha')),
+    ('Mercury', ('Anuradha', 'Jyeshtha', 'Mula')),
+    ('Saturn', ('Purva Ashadha', 'Uttara Ashadha', 'Abhijit', 'Shravana')),
+    ('Jupiter', ('Dhanishtha', 'Shatabhisha', 'Purva Bhadrapada')),
+    ('Rahu', ('Uttara Bhadrapada', 'Revati', 'Ashwini', 'Bharani')),
+    ('Venus', ('Krittika', 'Rohini', 'Mrigashira')),
+)
+
+_ASHTOTTARI_SEGMENT_RULE: dict[str, tuple[str, int, int]] = {
+    nakshatra: (lord, ordinal, len(nakshatras))
+    for lord, nakshatras in _ASHTOTTARI_GROUPS
+    for ordinal, nakshatra in enumerate(nakshatras)
+}
+
+_STANDARD_NAKSHATRA_NAMES: tuple[str, ...] = (
+    'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
+    'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni',
+    'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha',
+    'Anuradha', 'Jyeshtha', 'Mula', 'Purva Ashadha', 'Uttara Ashadha',
+    'Shravana', 'Dhanishtha', 'Shatabhisha', 'Purva Bhadrapada',
+    'Uttara Bhadrapada', 'Revati',
+)
+
+# Public 27-nakshatra projection retained for callers using the ordinary
+# nakshatra index.  The computation itself uses the 28-place rule above so it
+# can distinguish the intercalated Abhijit segment and its balance.
+ASHTOTTARI_NAKSHATRA_LORD: list[str] = [
+    _ASHTOTTARI_SEGMENT_RULE[name][0] for name in _STANDARD_NAKSHATRA_NAMES
+]
+
+# BPHS requires Abhijit as a counting place but does not state its longitude
+# span in verses 17–22.  Moira therefore names the later traditional boundary
+# explicitly: 6°40'–10°53'20" sidereal Capricorn, the last quarter of Uttara
+# Ashadha plus the first fifteenth of Shravana.
+_ASHTOTTARI_ABHIJIT_START = 270.0 + 6.0 + 40.0 / 60.0
+_ASHTOTTARI_ABHIJIT_END = 270.0 + 10.0 + 53.0 / 60.0 + 20.0 / 3600.0
 
 
 # ---------------------------------------------------------------------------
 # Yogini constants
 #
-# Source: K.N. Rao, "Yogini Dasha" (1993); BPHS (brief reference).
+# Primary source: BPHS chapter 46, verses 195–200.
 # 8 Yoginis, 36-year total.
 # ---------------------------------------------------------------------------
 
@@ -290,15 +327,14 @@ class AshtottariPolicy:
         Ayanamsa system for nakshatra conversion.  Defaults to
         ``'Lahiri'``.
     bypass_eligibility : bool
-        If ``False`` (default) and ``lagna_sign_index`` is provided, the
-        eligibility condition is checked.  If Rahu is in the 1st, 5th, or
-        9th house from Lagna, a ``ValueError`` is raised.
-        Set to ``True`` to skip the eligibility check (e.g. for schools
-        that use Ashtottari universally).
+        If ``True``, the caller explicitly elects to compute Ashtottari
+        without an engine eligibility determination.  The current policy
+        vessel does not carry enough information to evaluate BPHS 46.17 and
+        46.23, so ``False`` must not be read as a positive eligibility proof.
     lagna_sign_index : int or None
-        0-based sign index (0=Aries…11=Pisces) of the Ascendant.  Required
-        for eligibility checking when ``bypass_eligibility=False``.
-        Silently ignored when ``bypass_eligibility=True``.
+        Legacy 0-based Ascendant sign input.  This value alone cannot
+        establish the BPHS conditions; supplying it without bypassing the
+        check raises rather than fabricating a determination.
     """
 
     year_basis: str = 'julian_365.25'
@@ -374,6 +410,74 @@ def _sequence_from(sequence: list[str], starting_lord: str) -> list[str]:
         )
     idx = sequence.index(starting_lord)
     return sequence[idx:] + sequence[:idx]
+
+
+def _snap_to_following_segment(value: float, boundary: float) -> float:
+    """Give an exact boundary and its first predecessor to the next segment."""
+    if value == boundary or value == math.nextafter(boundary, -math.inf):
+        return boundary
+    return value
+
+
+def _ashtottari_entry(
+    sidereal_longitude: float,
+    nakshatra_index: int,
+    degrees_in_nakshatra: float,
+    nakshatra_span: float,
+) -> tuple[str, float]:
+    """Return the BPHS starting lord and elapsed fraction of its Mahadasha.
+
+    BPHS 46.17–22 assigns either three or four consecutive counting places to
+    each lord.  The first-period balance must therefore include complete
+    places already traversed within that lord's group, not merely the elapsed
+    fraction of the Moon's ordinary 27-fold nakshatra.
+
+    The text requires Abhijit as one of four Saturn-group places but does not
+    define its arc there.  Classification uses Moira's named traditional
+    Abhijit boundary constants above.
+    """
+    segment_name = _STANDARD_NAKSHATRA_NAMES[nakshatra_index]
+    segment_fraction = degrees_in_nakshatra / nakshatra_span
+
+    longitude = _snap_to_following_segment(
+        sidereal_longitude,
+        _ASHTOTTARI_ABHIJIT_START,
+    )
+    longitude = _snap_to_following_segment(
+        longitude,
+        _ASHTOTTARI_ABHIJIT_END,
+    )
+
+    if segment_name == 'Uttara Ashadha':
+        uttara_ashadha_start = nakshatra_index * nakshatra_span
+        if longitude >= _ASHTOTTARI_ABHIJIT_START:
+            segment_name = 'Abhijit'
+            segment_fraction = (
+                (longitude - _ASHTOTTARI_ABHIJIT_START)
+                / (_ASHTOTTARI_ABHIJIT_END - _ASHTOTTARI_ABHIJIT_START)
+            )
+        else:
+            segment_fraction = (
+                (longitude - uttara_ashadha_start)
+                / (_ASHTOTTARI_ABHIJIT_START - uttara_ashadha_start)
+            )
+    elif segment_name == 'Shravana':
+        shravana_end = (nakshatra_index + 1) * nakshatra_span
+        if longitude < _ASHTOTTARI_ABHIJIT_END:
+            segment_name = 'Abhijit'
+            segment_fraction = (
+                (longitude - _ASHTOTTARI_ABHIJIT_START)
+                / (_ASHTOTTARI_ABHIJIT_END - _ASHTOTTARI_ABHIJIT_START)
+            )
+        else:
+            segment_fraction = (
+                (longitude - _ASHTOTTARI_ABHIJIT_END)
+                / (shravana_end - _ASHTOTTARI_ABHIJIT_END)
+            )
+
+    lord, segment_ordinal, group_size = _ASHTOTTARI_SEGMENT_RULE[segment_name]
+    fraction_elapsed = (segment_ordinal + segment_fraction) / group_size
+    return lord, fraction_elapsed
 
 
 def _build_sub_periods(
@@ -491,9 +595,10 @@ def ashtottari(
     """
     Compute Ashtottari Mahadashas (and optionally Antardashas) for a chart.
 
-    The starting lord is determined by the Moon's birth nakshatra via the
-    ``ASHTOTTARI_NAKSHATRA_LORD`` mapping (one of 8 lords cycling through
-    all 27 nakshatras).
+    The starting lord and first-period balance follow BPHS chapter 46,
+    verses 17–22: alternating groups of four and three nakshatras begin at
+    Ardra, and the 28-place count includes Abhijit.  Each place receives one
+    quarter or one third of its lord's Mahadasha respectively.
 
     Parameters
     ----------
@@ -515,11 +620,9 @@ def ashtottari(
     Raises
     ------
     ValueError
-        If the eligibility condition fails and ``bypass_eligibility`` is
-        ``False``.  The Parashari condition is: Rahu must not be in the
-        1st, 5th, or 9th sign from the Ascendant (Lagna).  Provide
-        ``lagna_sign_index`` in the policy or set
-        ``bypass_eligibility=True``.
+        If the legacy ``lagna_sign_index`` is supplied while eligibility is
+        not bypassed.  That input alone cannot evaluate the BPHS 46.17 and
+        46.23 applicability conditions.
     ValueError
         If ``natal_jd`` is not finite.
     """
@@ -536,20 +639,23 @@ def ashtottari(
     # Eligibility check
     if not policy.bypass_eligibility and policy.lagna_sign_index is not None:
         raise ValueError(
-            "Ashtottari eligibility check requires knowing Rahu's sign.  "
-            "Pass rahu_sidereal_lon via lagna_sign_index or set "
-            "bypass_eligibility=True.  Eligibility checking is not yet "
-            "implemented; set bypass_eligibility=True to proceed."
+            "Ashtottari eligibility check cannot be derived from "
+            "lagna_sign_index alone. BPHS 46.17 and 46.23 require additional "
+            "Rahu, Lagna-lord, paksha, and day/night context; set "
+            "bypass_eligibility=True to proceed without that determination."
         )
 
     # Nakshatra of Moon at birth
     sid_lon = tropical_to_sidereal(
         moon_tropical_lon, natal_jd, system=policy.ayanamsa_system
     )
-    _, nak_idx, deg_in_nak = _nakshatra_sector(sid_lon)
-    fraction_elapsed = deg_in_nak / NAKSHATRA_SPAN
-
-    starting_lord = ASHTOTTARI_NAKSHATRA_LORD[nak_idx]
+    sid_lon, nak_idx, deg_in_nak = _nakshatra_sector(sid_lon)
+    starting_lord, fraction_elapsed = _ashtottari_entry(
+        sidereal_longitude=sid_lon,
+        nakshatra_index=nak_idx,
+        degrees_in_nakshatra=deg_in_nak,
+        nakshatra_span=NAKSHATRA_SPAN,
+    )
 
     return _compute_dashas(
         starting_lord=starting_lord,
@@ -573,8 +679,10 @@ def yogini_dasha(
     """
     Compute Yogini Mahadashas (and optionally Antardashas) for a chart.
 
-    The starting Yogini is determined by ``nakshatra_index % 8``, mapping
-    the Moon's birth nakshatra to one of the 8 Yoginis.
+    BPHS chapter 46, verse 199 determines the starting Yogini by adding three
+    to the one-based birth-nakshatra number and reducing it to a
+    one-through-eight remainder.  In zero-based indexing this is
+    ``(nakshatra_index + 3) % 8``.
 
     Parameters
     ----------
@@ -615,7 +723,7 @@ def yogini_dasha(
     fraction_elapsed = deg_in_nak / NAKSHATRA_SPAN
 
     # Starting Yogini index
-    yogini_start_idx = nak_idx % 8
+    yogini_start_idx = (nak_idx + 3) % 8
     starting_yogini = YOGINI_SEQUENCE[yogini_start_idx]
 
     return _compute_dashas(

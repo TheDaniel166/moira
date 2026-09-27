@@ -1,8 +1,8 @@
 # Moira Alternate Dashas Backend Standard
 
-Version: 1.0
-Date: 2026-06-11
-Status: Current implementation truth; P9-10 REST admission prerequisite
+Version: 1.1
+Date: 2026-09-27
+Status: Current implementation truth; REST admitted
 
 ## Governing Principle
 
@@ -62,14 +62,44 @@ The current year allocations sum to `108`:
 | Rahu | 12 |
 | Venus | 21 |
 
-The nakshatra-to-lord mapping cycles those eight lords across the 27
-nakshatras, beginning with Ashwini as Sun.
+BPHS chapter 46, verses 17–22 begin the allocation at Ardra and alternate
+groups of four and three counting places:
+
+| Lord | Nakshatras |
+|---|---|
+| Sun | Ardra, Punarvasu, Pushya, Ashlesha |
+| Moon | Magha, Purva Phalguni, Uttara Phalguni |
+| Mars | Hasta, Chitra, Swati, Vishakha |
+| Mercury | Anuradha, Jyeshtha, Mula |
+| Saturn | Purva Ashadha, Uttara Ashadha, Abhijit, Shravana |
+| Jupiter | Dhanishtha, Shatabhisha, Purva Bhadrapada |
+| Rahu | Uttara Bhadrapada, Revati, Ashwini, Bharani |
+| Venus | Krittika, Rohini, Mrigashira |
+
+Each four-place group assigns one quarter of its lord's Mahadasha to each
+place; each three-place group assigns one third. The first-period balance
+therefore includes complete places already traversed within the current lord's
+group as well as the elapsed fraction of the active place.
+
+The BPHS passage requires 28 places but does not state Abhijit's zodiacal
+boundaries. Moira names its separate traditional convention explicitly:
+Abhijit spans 6°40'–10°53'20" sidereal Capricorn, combining the last quarter
+of Uttara Ashadha with the first fifteenth of Shravana. This boundary must not
+be attributed to the wording of BPHS 46.17–22.
 
 #### 1.3 Yogini Dasha
 
 A **Yogini sequence** in Moira is:
 
-> A 36-year cycle with eight Yoginis, entered by `nakshatra_index % 8`.
+> A 36-year cycle with eight Yoginis, entered by adding three to the
+> one-based birth-nakshatra number and reducing to a one-through-eight
+> remainder.
+
+With Moira's zero-based index, the equivalent expression is:
+
+```text
+(nakshatra_index + 3) % 8
+```
 
 The current Yogini sequence is:
 
@@ -98,8 +128,31 @@ Both implemented systems use proportional subdivision:
 sub_years = (sub_lord_years / system_total_years) * parent_period_years
 ```
 
-The first Mahadasha is shortened by the fraction of the Moon's birth nakshatra
-already elapsed.
+For Yogini, the first Mahadasha is shortened by the fraction of the Moon's
+birth nakshatra already elapsed. For Ashtottari, the first Mahadasha balance
+uses the Moon's progress through the active three- or four-place lord group.
+
+#### 1.5 Source authority and ambiguity policy
+
+The normative computational readings are the Sanskrit verses in *Brihat
+Parashara Hora Shastra*, chapter 46:
+
+- verses 17–22 for Ashtottari allocation, lord order, years, and balance;
+- verse 23 for an additional Ashtottari applicability statement;
+- verses 195–200 for Yogini names, planetary identities, entry rule, years,
+  and balance.
+
+Digital Sanskrit witnesses used for collation:
+
+- [SanskritDocuments, BPHS chapters 46–50](https://sanskritdocuments.org/doc_z_misc_sociology_astrology/par4650.html)
+- [Sanskrit Wikisource, chapter 46](https://sa.wikisource.org/wiki/बृहत्पाराशरहोराशास्त्रम्/अध्यायः_४६_(दशाध्यायः))
+
+These are edition/transcription witnesses, not an independent manuscript
+stemma or modern critical edition. Translation headings and commentary do not
+override the Sanskrit computational statements. The exact Abhijit span is a
+separately provenance-labelled later convention, historically discussed with
+the *Muhurta-Mala* rule in [Burgess and Whitney's notes to the *Surya
+Siddhanta*](https://classicalastrologer.com/wp-content/uploads/2018/04/surya_siddhanta_english.pdf).
 
 ---
 
@@ -140,14 +193,18 @@ Layer boundary rules:
 |---|---|---|
 | `year_basis` | `julian_365.25` | Year-length convention |
 | `ayanamsa_system` | `Lahiri` | Ayanamsa used for Moon nakshatra conversion |
-| `bypass_eligibility` | `False` | Skip Ashtottari eligibility check |
-| `lagna_sign_index` | `None` | Ascendant sign index for future eligibility doctrine |
+| `bypass_eligibility` | `False` | Explicitly compute without an engine eligibility determination |
+| `lagna_sign_index` | `None` | Legacy Ascendant sign input; insufficient by itself for BPHS eligibility |
 
 Current implementation truth:
 
+- BPHS 46.17 describes Rahu in a kendra or trikona from the Lagna lord,
+  excluding Lagna; verse 23 additionally names day birth in Krishna Paksha or
+  night birth in Shukla Paksha. The current policy does not carry the complete
+  Rahu, Lagna-lord, paksha, and day/night context needed to adjudicate these
+  statements.
 - If `lagna_sign_index` is supplied while `bypass_eligibility=False`, the
-  engine raises because full Rahu/Lagna eligibility checking is not yet
-  implemented.
+  engine raises rather than treating the incomplete legacy field as proof.
 - REST transport must therefore either require `bypass_eligibility=True` for
   first admission or expose the engine's current rejection honestly.
 
@@ -178,7 +235,7 @@ All public names are declared in `moira/dasha_systems.py`.
 | `AlternateDashaSystem` | Supported system labels |
 | `ASHTOTTARI_YEARS` | Ashtottari lord-year table |
 | `ASHTOTTARI_SEQUENCE` | Ashtottari lord order |
-| `ASHTOTTARI_NAKSHATRA_LORD` | 27-entry nakshatra-to-lord mapping |
+| `ASHTOTTARI_NAKSHATRA_LORD` | 27-entry ordinary-nakshatra projection of the BPHS mapping; computation separately admits Abhijit |
 | `ASHTOTTARI_TOTAL` | Ashtottari total cycle years |
 | `YOGINI_YEARS` | Yogini year table |
 | `YOGINI_SEQUENCE` | Yogini order |
@@ -213,8 +270,9 @@ All public names are declared in `moira/dasha_systems.py`.
 
 - System labels are fixed: `ashtottari` and `yogini`.
 - Levels are clamped by the engine to `[1, 4]`.
-- Sequence entry is determined by the sidereal Moon's nakshatra after applying
-  the policy ayanamsa.
+- Sequence entry is determined by the sidereal Moon after applying the policy
+  ayanamsa. Ashtottari then applies its 28-place grouping and named Abhijit
+  convention; Yogini applies the BPHS add-three/remainder-eight rule.
 - Periods are emitted chronologically.
 - Nested sub-periods preserve proportional duration within the parent period.
 - Profile functions are pure projections over period vessels.
@@ -253,20 +311,26 @@ The alternate-dasha backend is currently validated through:
 The following claims are currently verified:
 
 1. Ashtottari and Yogini year tables sum to their canonical totals.
-2. Sequence lengths, uniqueness, and Yogini planet mappings are coherent.
-3. Ashtottari output spans a 108-year cycle under the selected year basis.
-4. Yogini output spans a 36-year cycle under the selected year basis.
-5. Periods and sub-periods are chronologically contiguous.
-6. Level-2 sub-period spans sum to their parent Mahadasha spans.
-7. Year-basis policy changes alter total day span as expected.
-8. Vessel invariants reject invalid systems, levels, lords, and time bounds.
-9. Policy invariants reject invalid year bases and empty ayanamsa labels.
-10. Period profiles preserve system, lord, derived planet, duration, and
+2. All 28 Ashtottari counting places produce the BPHS lord and quarter/third
+   first-period balance, including the irregular Abhijit-region segments.
+3. All 27 ordinary birth nakshatras produce the Yogini required by the BPHS
+   add-three/remainder-eight rule and the correct half-nakshatra midpoint
+   balance.
+4. The Einstein Jyeshtha fixture starts Mercury Ashtottari and Bhadrika Yogini,
+   with fixed expected balances.
+5. Ashtottari output spans a 108-year cycle under the selected year basis.
+6. Yogini output spans a 36-year cycle under the selected year basis.
+7. Periods and sub-periods are chronologically contiguous.
+8. Level-2 sub-period spans sum to their parent Mahadasha spans.
+9. Year-basis policy changes alter total day span as expected.
+10. Vessel invariants reject invalid systems, levels, lords, and time bounds.
+11. Policy invariants reject invalid year bases and empty ayanamsa labels.
+12. Period profiles preserve system, lord, derived planet, duration, and
     node/luminary flags.
-11. Sequence profiles preserve total-year and Mahadasha-count truth.
-12. `validate_alternate_dasha_output(...)` accepts valid sequences and catches
+13. Sequence profiles preserve total-year and Mahadasha-count truth.
+14. `validate_alternate_dasha_output(...)` accepts valid sequences and catches
     invalid lord or gap/overlap structures.
-13. Public exports remain visible through `moira`, `moira.vedic`, and
+15. Public exports remain visible through `moira`, `moira.vedic`, and
     `moira.facade`.
 
 ### 8. Validation Commands
@@ -281,11 +345,13 @@ The minimum verification slice for this standard is:
 
 ---
 
-## Part III - REST Admission Frontier
+## Part III - REST Surface
 
-P9-10 may proceed to REST transport design after this standard.
+The admitted REST surface provides both direct-computation and chart-backed
+sequence/profile routes for Ashtottari and Yogini, plus period-profile
+projection.
 
-First admitted REST shape should be direct computation:
+Direct-computation routes accept:
 
 - caller-supplied natal Moon tropical longitude
 - caller-supplied natal Julian Day
@@ -295,10 +361,11 @@ First admitted REST shape should be direct computation:
 - period-profile route
 - sequence-profile route
 
-Chart-backed convenience routes should be deferred until the server adapter
-explicitly owns natal Moon derivation and policy provenance for the birth chart.
+Chart-backed routes derive the tropical Moon longitude and natal Julian Day
+through the server's sidereal chart context and return that provenance with
+the result.
 
-Ashtottari REST admission must preserve the current eligibility truth: full
-Rahu/Lagna eligibility checking is not implemented, so first admission should
-either require `bypass_eligibility=True` or expose the current engine rejection
-for `lagna_sign_index` without bypass.
+Ashtottari REST admission must preserve the current eligibility truth: the
+complete BPHS 46.17 and 46.23 applicability context is not represented, so the
+transport should either require `bypass_eligibility=True` or expose the current
+engine rejection for `lagna_sign_index` without bypass.

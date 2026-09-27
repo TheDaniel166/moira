@@ -3,20 +3,17 @@ Unit tests for moira.dasha_systems.
 
 Coverage
 --------
-1. Constant tables — totals, sequence lengths, Yogini planets.
-2. ashtottari() — structural output (period count, cycle span, jd continuity).
-3. ashtottari() — system label on all periods.
-4. ashtottari() — year basis policy changes span.
-5. ashtottari() — levels > 1 populates sub-periods.
-6. ashtottari() — eligibility bypass flag.
-7. yogini_dasha() — structural output (period count, 36-year cycle).
-8. yogini_dasha() — sub-periods for levels=2.
-9. Period jd continuity (start of next == end of previous).
-10. AlternateDashaPeriod vessel invariants.
-11. Error handling.
-12. Public surface — __all__ completeness.
+1. BPHS chapter 46 Ashtottari 28-place lord allocation and balance.
+2. BPHS chapter 46 Yogini add-three/remainder-eight allocation and balance.
+3. Einstein Jyeshtha oracle: Mercury and Bhadrika.
+4. Structural output, cycle span, JD continuity, and year-basis policy.
+5. Nested sub-period structural behavior.
+6. Eligibility-policy boundary and error handling.
+7. Public surface and vessel invariants.
 
-Source authority: BPHS Ashtottari Dasha Adhyaya; K.N. Rao, "Yogini Dasha" (1993).
+Primary source authority: Brihat Parashara Hora Shastra, chapter 46,
+verses 17–23 (Ashtottari) and 195–200 (Yogini).  Sanskrit witness:
+https://sanskritdocuments.org/doc_z_misc_sociology_astrology/par4650.html
 """
 from __future__ import annotations
 
@@ -46,6 +43,56 @@ from moira.dasha_systems import (
 
 _J2000 = 2451545.0
 _JULIAN_YEAR = 365.25
+_NAKSHATRA_SPAN = 40.0 / 3.0
+_ABHIJIT_START = 270.0 + 6.0 + 40.0 / 60.0
+_ABHIJIT_END = 270.0 + 10.0 + 53.0 / 60.0 + 20.0 / 3600.0
+
+
+# The BPHS 46.17–22 sequence, represented by a midpoint in each of its 28
+# counting places.  The three irregular midpoints apply the separately named
+# traditional Abhijit boundary convention used by the engine.
+_ASHTOTTARI_SOURCE_CASES = [
+    ("Ardra", 5.5 * _NAKSHATRA_SPAN, "Sun", 0, 4),
+    ("Punarvasu", 6.5 * _NAKSHATRA_SPAN, "Sun", 1, 4),
+    ("Pushya", 7.5 * _NAKSHATRA_SPAN, "Sun", 2, 4),
+    ("Ashlesha", 8.5 * _NAKSHATRA_SPAN, "Sun", 3, 4),
+    ("Magha", 9.5 * _NAKSHATRA_SPAN, "Moon", 0, 3),
+    ("Purva Phalguni", 10.5 * _NAKSHATRA_SPAN, "Moon", 1, 3),
+    ("Uttara Phalguni", 11.5 * _NAKSHATRA_SPAN, "Moon", 2, 3),
+    ("Hasta", 12.5 * _NAKSHATRA_SPAN, "Mars", 0, 4),
+    ("Chitra", 13.5 * _NAKSHATRA_SPAN, "Mars", 1, 4),
+    ("Swati", 14.5 * _NAKSHATRA_SPAN, "Mars", 2, 4),
+    ("Vishakha", 15.5 * _NAKSHATRA_SPAN, "Mars", 3, 4),
+    ("Anuradha", 16.5 * _NAKSHATRA_SPAN, "Mercury", 0, 3),
+    ("Jyeshtha", 17.5 * _NAKSHATRA_SPAN, "Mercury", 1, 3),
+    ("Mula", 18.5 * _NAKSHATRA_SPAN, "Mercury", 2, 3),
+    ("Purva Ashadha", 19.5 * _NAKSHATRA_SPAN, "Saturn", 0, 4),
+    (
+        "Uttara Ashadha",
+        (20.0 * _NAKSHATRA_SPAN + _ABHIJIT_START) / 2.0,
+        "Saturn",
+        1,
+        4,
+    ),
+    ("Abhijit", (_ABHIJIT_START + _ABHIJIT_END) / 2.0, "Saturn", 2, 4),
+    (
+        "Shravana",
+        (_ABHIJIT_END + 22.0 * _NAKSHATRA_SPAN) / 2.0,
+        "Saturn",
+        3,
+        4,
+    ),
+    ("Dhanishtha", 22.5 * _NAKSHATRA_SPAN, "Jupiter", 0, 3),
+    ("Shatabhisha", 23.5 * _NAKSHATRA_SPAN, "Jupiter", 1, 3),
+    ("Purva Bhadrapada", 24.5 * _NAKSHATRA_SPAN, "Jupiter", 2, 3),
+    ("Uttara Bhadrapada", 25.5 * _NAKSHATRA_SPAN, "Rahu", 0, 4),
+    ("Revati", 26.5 * _NAKSHATRA_SPAN, "Rahu", 1, 4),
+    ("Ashwini", 0.5 * _NAKSHATRA_SPAN, "Rahu", 2, 4),
+    ("Bharani", 1.5 * _NAKSHATRA_SPAN, "Rahu", 3, 4),
+    ("Krittika", 2.5 * _NAKSHATRA_SPAN, "Venus", 0, 3),
+    ("Rohini", 3.5 * _NAKSHATRA_SPAN, "Venus", 1, 3),
+    ("Mrigashira", 4.5 * _NAKSHATRA_SPAN, "Venus", 2, 3),
+]
 
 
 # ===========================================================================
@@ -70,6 +117,18 @@ class TestConstantTables:
         for lord in ASHTOTTARI_NAKSHATRA_LORD:
             assert lord in ASHTOTTARI_SEQUENCE
 
+    def test_ashtottari_ordinary_nakshatra_projection_matches_bphs_groups(self):
+        assert ASHTOTTARI_NAKSHATRA_LORD == [
+            "Rahu", "Rahu", "Venus", "Venus", "Venus",
+            "Sun", "Sun", "Sun", "Sun",
+            "Moon", "Moon", "Moon",
+            "Mars", "Mars", "Mars", "Mars",
+            "Mercury", "Mercury", "Mercury",
+            "Saturn", "Saturn", "Saturn",
+            "Jupiter", "Jupiter", "Jupiter",
+            "Rahu", "Rahu",
+        ]
+
     def test_yogini_years_total_36(self):
         assert sum(YOGINI_YEARS.values()) == YOGINI_TOTAL == 36
 
@@ -87,6 +146,90 @@ class TestConstantTables:
     def test_yogini_years_consecutive_sum_to_36(self):
         total = sum(YOGINI_YEARS[y] for y in YOGINI_SEQUENCE)
         assert total == 36
+
+
+# ===========================================================================
+# BPHS chapter 46 source-derived entry rules
+# ===========================================================================
+
+class TestPrimarySourceEntryRules:
+
+    @pytest.mark.parametrize(
+        "name,sidereal_longitude,expected_lord,segment_ordinal,group_size",
+        _ASHTOTTARI_SOURCE_CASES,
+        ids=[case[0] for case in _ASHTOTTARI_SOURCE_CASES],
+    )
+    def test_ashtottari_all_28_counting_places_and_balances(
+        self,
+        monkeypatch,
+        name,
+        sidereal_longitude,
+        expected_lord,
+        segment_ordinal,
+        group_size,
+    ):
+        monkeypatch.setattr(
+            "moira.sidereal.tropical_to_sidereal",
+            lambda *args, **kwargs: sidereal_longitude,
+        )
+
+        first = ashtottari(
+            0.0,
+            _J2000,
+            levels=1,
+            policy=AshtottariPolicy(bypass_eligibility=True),
+        )[0]
+
+        expected_years = ASHTOTTARI_YEARS[expected_lord] * (
+            1.0 - (segment_ordinal + 0.5) / group_size
+        )
+        actual_years = (first.end_jd - first.start_jd) / _JULIAN_YEAR
+        assert first.lord == expected_lord, name
+        assert actual_years == pytest.approx(expected_years, abs=1e-11), name
+
+    def test_yogini_all_27_birth_nakshatras_use_add_three_rule(self, monkeypatch):
+        for nakshatra_index in range(27):
+            sidereal_longitude = (nakshatra_index + 0.5) * _NAKSHATRA_SPAN
+            monkeypatch.setattr(
+                "moira.sidereal.tropical_to_sidereal",
+                lambda *args, value=sidereal_longitude, **kwargs: value,
+            )
+
+            first = yogini_dasha(0.0, _J2000, levels=1)[0]
+            expected_lord = YOGINI_SEQUENCE[(nakshatra_index + 3) % 8]
+            actual_years = (first.end_jd - first.start_jd) / _JULIAN_YEAR
+
+            assert first.lord == expected_lord
+            assert actual_years == pytest.approx(
+                YOGINI_YEARS[expected_lord] / 2.0,
+                abs=1e-11,
+            )
+
+    def test_einstein_jyeshtha_starts_mercury_and_bhadrika(self):
+        # 1879-03-14 10:50 UTC, Ulm.  The fixed tropical Moon longitude is
+        # 254.52591156 degrees; Moira's Lahiri conversion places it 42.6606%
+        # through Jyeshtha.  The value is a fixed Moira DE441 result that was
+        # corroborated against JPL Horizons during source research; this
+        # kernel-free unit test does not itself perform that external query.
+        natal_jd = 2407422.95138889
+        moon_tropical_longitude = 254.52591156
+
+        ashtottari_first = ashtottari(
+            moon_tropical_longitude,
+            natal_jd,
+            levels=1,
+            policy=AshtottariPolicy(bypass_eligibility=True),
+        )[0]
+        yogini_first = yogini_dasha(
+            moon_tropical_longitude,
+            natal_jd,
+            levels=1,
+        )[0]
+
+        assert ashtottari_first.lord == "Mercury"
+        assert ashtottari_first.years == pytest.approx(8.9158985291, abs=1e-9)
+        assert yogini_first.lord == "Bhadrika"
+        assert yogini_first.years == pytest.approx(2.8669692904, abs=1e-9)
 
 
 # ===========================================================================
@@ -308,13 +451,46 @@ class TestSharedNakshatraBoundaryOwnership:
                 policy=AshtottariPolicy(bypass_eligibility=True),
             )
             expected_lord = ASHTOTTARI_NAKSHATRA_LORD[1]
+            expected_years = 3.0
         else:
             periods = yogini_dasha(0.0, _J2000, levels=1)
-            expected_lord = YOGINI_SEQUENCE[1]
+            expected_lord = YOGINI_SEQUENCE[(1 + 3) % 8]
+            expected_years = float(YOGINI_YEARS[expected_lord])
 
         assert periods[0].lord == expected_lord
         assert periods[0].start_jd == _J2000
-        assert periods[0].end_jd > periods[0].start_jd
+        assert periods[0].years == pytest.approx(expected_years, abs=1e-12)
+
+    @pytest.mark.parametrize(
+        "boundary,expected_remaining_years",
+        [
+            (_ABHIJIT_START, 5.0),
+            (_ABHIJIT_END, 2.5),
+        ],
+    )
+    def test_abhijit_boundary_and_first_predecessor_share_forward_ownership(
+        self,
+        monkeypatch,
+        boundary,
+        expected_remaining_years,
+    ):
+        for longitude in (boundary, math.nextafter(boundary, -math.inf)):
+            monkeypatch.setattr(
+                "moira.sidereal.tropical_to_sidereal",
+                lambda *args, value=longitude, **kwargs: value,
+            )
+            first = ashtottari(
+                0.0,
+                _J2000,
+                levels=1,
+                policy=AshtottariPolicy(bypass_eligibility=True),
+            )[0]
+
+            assert first.lord == "Saturn"
+            assert first.years == pytest.approx(
+                expected_remaining_years,
+                abs=1e-12,
+            )
 
 
 # ===========================================================================
@@ -529,9 +705,7 @@ class TestAlternatePeriodProfile:
         assert ashtottari_profile.years > 0.0
 
     def test_rahu_lord_is_node(self):
-        # Force Moon to nakshatra that maps to Rahu lord
-        # ASHTOTTARI_NAKSHATRA_LORD[6] = 'Rahu' (index 6 % 8 = 6 = Rahu)
-        # nakshatra 6 = 6 × (360/27) ≈ 80°
+        # A complete sequence always includes the Rahu period.
         moon_lon = 6 * (360.0 / 27) + 1.0
         periods = ashtottari(moon_lon, _J2000, levels=1,
                              policy=AshtottariPolicy(bypass_eligibility=True))
@@ -543,7 +717,7 @@ class TestAlternatePeriodProfile:
             assert profile.is_luminary_lord is False
 
     def test_sun_lord_is_luminary(self):
-        # ASHTOTTARI_NAKSHATRA_LORD[0] = 'Sun', nakshatra 0 = Ashwini (0–13.33°)
+        # A complete sequence always includes the Sun period.
         periods = ashtottari(1.0, _J2000, levels=1,
                              policy=AshtottariPolicy(bypass_eligibility=True))
         sun_period = next((p for p in periods if p.lord == 'Sun'), None)

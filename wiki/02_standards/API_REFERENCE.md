@@ -2491,8 +2491,8 @@ from moira import (
 
 | Function | Returns | Description |
 |---|---|---|
-| `ashtottari(moon_tropical_lon, natal_jd, levels=2, policy=None)` | `list[AlternateDashaPeriod]` | Full Ashtottari dasha sequence |
-| `yogini_dasha(moon_tropical_lon, natal_jd, levels=2, policy=None)` | `list[AlternateDashaPeriod]` | Full Yogini dasha sequence |
+| `ashtottari(moon_tropical_lon, natal_jd, levels=2, policy=None)` | `list[AlternateDashaPeriod]` | BPHS 108-year sequence using the Ardra-first 28-place allocation and three/four-place balance |
+| `yogini_dasha(moon_tropical_lon, natal_jd, levels=2, policy=None)` | `list[AlternateDashaPeriod]` | BPHS 36-year sequence using the add-three/remainder-eight entry rule |
 | `alternate_period_profile(period)` | `AlternatePeriodProfile` | Inspect one alternate-dasha period |
 | `alternate_sequence_profile(periods)` | `AlternateDashaSequenceProfile` | Aggregate profile for an alternate-dasha sequence |
 | `validate_alternate_dasha_output(periods)` | `None` | Validate alternate-dasha output structure |
@@ -2536,11 +2536,11 @@ from moira import (
 | `AshtottariPolicy` | dataclass | `year_basis`, `ayanamsa_system`, `bypass_eligibility`, `lagna_sign_index` |
 | `YoginiPolicy` | dataclass | `year_basis`, `ayanamsa_system` |
 | `ASHTOTTARI_YEARS` | `dict[str, int]` | Ashtottari lord → years table |
-| `ASHTOTTARI_SEQUENCE` | `tuple[str, ...]` | Ashtottari lord order |
-| `ASHTOTTARI_NAKSHATRA_LORD` | `dict[int, str]` | Nakshatra-index → Ashtottari lord mapping |
+| `ASHTOTTARI_SEQUENCE` | `list[str]` | Ashtottari lord order |
+| `ASHTOTTARI_NAKSHATRA_LORD` | `list[str]` | 27-entry ordinary-nakshatra projection of the BPHS lord mapping; `ashtottari()` separately accounts for Abhijit |
 | `ASHTOTTARI_TOTAL` | `int` | Total Ashtottari cycle years |
 | `YOGINI_YEARS` | `dict[str, int]` | Yogini lord → years table |
-| `YOGINI_SEQUENCE` | `tuple[str, ...]` | Yogini lord order |
+| `YOGINI_SEQUENCE` | `list[str]` | Yogini lord order |
 | `YOGINI_PLANETS` | `dict[str, str]` | Yogini name → planetary identity mapping |
 | `YOGINI_TOTAL` | `int` | Total Yogini cycle years |
 
@@ -6075,10 +6075,12 @@ from moira.vedic import (
 
 | Function | Signature | Description |
 |---|---|---|
-| `ashtottari(moon_lon, birth_jd, policy=None)` | `→ list[AlternateDashaPeriod]` | 108-year Ashtottari sequence |
-| `yogini_dasha(moon_lon, birth_jd, policy=None)` | `→ list[AlternateDashaPeriod]` | 36-year Yogini sequence |
+| `ashtottari(moon_lon, birth_jd, policy=None)` | `→ list[AlternateDashaPeriod]` | BPHS 108-year Ardra-first, 28-place Ashtottari sequence |
+| `yogini_dasha(moon_lon, birth_jd, policy=None)` | `→ list[AlternateDashaPeriod]` | BPHS 36-year add-three/remainder-eight Yogini sequence |
 
-`AshtottariPolicy` and `YoginiPolicy` control year-basis and sequence parameters.
+`AshtottariPolicy` and `YoginiPolicy` control year-basis and ayanamsa policy.
+Ashtottari's exact Abhijit arc is the separately named traditional convention
+documented in `ALTERNATE_DASHAS_BACKEND_STANDARD.md`.
 
 ---
 

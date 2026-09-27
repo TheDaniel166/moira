@@ -420,8 +420,9 @@ Moderate. Arithmetic is simple; Karana fixed/movable boundary requires careful t
 ## System 5 — Alternative Dasha Systems
 
 ### Primary Authority
-- **Ashtottari**: BPHS (Ashtottari Dasha chapter); Raman, *A Manual of Hindu Astrology* pp. 201–210.
-- **Yogini**: K.N. Rao, *Yogini Dasha* (1993); brief BPHS reference.
+- **Ashtottari**: BPHS chapter 46, verses 17–23. Verses 17–22 govern
+  allocation and balance; verse 23 adds an applicability statement.
+- **Yogini**: BPHS chapter 46, verses 195–200.
 - **Kalachakra**: BPHS (Kalachakra Dasha chapter); Sanjay Rath commentary.
 
 ### Validation Reference
@@ -436,7 +437,11 @@ Jhora, Kala software. Kalachakra: Jhora is the primary cross-check.
 Sun:6, Moon:15, Mars:8, Mercury:17, Saturn:10, Jupiter:19, Rahu:12, Venus:21
 ```
 
-Starting lord is from Moon's nakshatra — different mapping table from Vimshottari. Eligibility condition (Parashara): "Rahu not in 1st/5th/9th from Lagna" — expose `bypass_eligibility: bool` flag.
+Starting lord and balance use alternating four- and three-nakshatra groups
+beginning at Ardra. The 28-place count includes Abhijit; the exact Abhijit arc
+is an explicitly separate traditional boundary convention, not wording found
+in BPHS 46.17–22. The complete applicability statements require more than an
+Ascendant sign alone, so incomplete policy input must not be treated as proof.
 
 ### Yogini (36-year cycle)
 
@@ -445,7 +450,10 @@ Mangala (Moon):1, Pingala (Sun):2, Dhanya (Jupiter):3, Bhramari (Mars):4,
 Bhadrika (Mercury):5, Ulka (Saturn):6, Siddha (Venus):7, Sankata (Rahu):8
 ```
 
-Starting Yogini: `nakshatra_index % 8`. No eligibility condition. Sub-periods proportional (identical arithmetic to Vimshottari).
+Starting Yogini: add three to the one-based birth-nakshatra number and reduce
+to a one-through-eight remainder; equivalently, with a zero-based index,
+`(nakshatra_index + 3) % 8`. No eligibility condition. Sub-periods remain
+proportional in the current implementation.
 
 ### Kalachakra
 Navamsha-based, Savya/Apasavya traversal direction, variable cycle length. **Defer to Phase 2 within this module.**
