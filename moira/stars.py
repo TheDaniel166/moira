@@ -1052,15 +1052,17 @@ def _build_heliacal_event(
 def _native_heliacal_time_policy(
     jd_start: float,
     search_days: int,
+    longitude: float = 0.0,
 ) -> tuple[float, float, float, float]:
     """Return native evaluator bounds and the linear Delta-T search policy.
 
-    Native morning searches evaluate each admitted civil day from midnight
-    through noon while applying the Delta-T value anchored at that day's noon.
-    The returned TT bounds therefore describe the complete evaluator interval,
-    not merely the caller's starting instant.
+    Native morning searches evaluate each admitted local mean solar day from
+    midnight through noon while applying the Delta-T value anchored at that
+    day's local noon.  The returned TT bounds therefore describe the complete
+    evaluator interval, not merely the caller's starting instant.
     """
 
+    from .heliacal import _local_mean_solar_midnight
     from .julian import ut_to_tt
 
     jd_tt = ut_to_tt(jd_start)
@@ -1068,12 +1070,13 @@ def _native_heliacal_time_policy(
     delta_t_start = (jd_tt - jd_start) * 86400.0
     delta_t_end = (ut_to_tt(jd_end) - jd_end) * 86400.0
     delta_t_rate = (delta_t_end - delta_t_start) / search_days
-    jd_mid0 = math.floor(jd_start + 0.5) - 0.5
-    first_noon = jd_mid0 + 0.5
+    jd_mid0 = _local_mean_solar_midnight(jd_start, longitude)
+    guard_midnight = jd_mid0 - 1.0
+    guard_noon = guard_midnight + 0.5
     last_noon = jd_mid0 + search_days - 0.5
-    first_day_delta_t = delta_t_start + delta_t_rate * (first_noon - jd_start)
+    guard_day_delta_t = delta_t_start + delta_t_rate * (guard_noon - jd_start)
     last_day_delta_t = delta_t_start + delta_t_rate * (last_noon - jd_start)
-    interval_start_tt = jd_mid0 + first_day_delta_t / 86400.0
+    interval_start_tt = guard_midnight + guard_day_delta_t / 86400.0
     interval_end_tt = last_noon + last_day_delta_t / 86400.0
     return interval_start_tt, interval_end_tt, delta_t_start, delta_t_rate
 
@@ -1104,7 +1107,7 @@ def _native_heliacal_event(
 
     reader = get_reader()
     interval_start_tt, interval_end_tt, delta_t_start, delta_t_rate = (
-        _native_heliacal_time_policy(jd_start, search_days)
+        _native_heliacal_time_policy(jd_start, search_days, longitude)
     )
     earth_barycentric = reader.evaluator(
         399, 3, interval_start_tt, jd_end_tt=interval_end_tt
@@ -1239,7 +1242,7 @@ def heliacal_rising_event(
 
     Side effects: None.
     """
-    from .heliacal import _find_sun_at_alt
+    from .heliacal import _find_sun_at_alt, _local_mean_solar_midnight
 
     resolved_policy = DEFAULT_FIXED_STAR_POLICY if policy is None else policy
     if not isinstance(resolved_policy, FixedStarComputationPolicy):
@@ -1272,18 +1275,16 @@ def heliacal_rising_event(
     if native_event is not None:
         return native_event
 
-    jd_mid0 = math.floor(jd_ut + 0.5) - 0.5
+    jd_mid0 = _local_mean_solar_midnight(jd_ut, longitude)
 
-    for day_offset in range(search_days):
+    def qualifying_sample(day_offset: int) -> tuple[float, float] | None:
         jd_midnight = jd_mid0 + day_offset
         se = _heliacal_signed_elongation(name, jd_midnight + 0.5)
         if se >= 0.0:
-            continue
+            return None
         twilight_jd = _find_sun_at_alt(jd_midnight, latitude, longitude, -resolved_arcus, True)
         if twilight_jd is None:
-            continue
-        if twilight_jd < jd_ut:
-            continue
+            return None
         star_alt = _star_altitude(name, twilight_jd, latitude, longitude)
         # The apparent horizon lies at geometric altitude −0.5667° (standard
         # atmospheric refraction at the horizon lifts objects by ~34 arcmin).
@@ -1292,19 +1293,27 @@ def heliacal_rising_event(
         # the star to clear the geometric horizon, which is ~half a degree more
         # conservative than the true visibility threshold.
         if star_alt <= -0.5667:
-            continue
-        return _build_heliacal_event(
-            "heliacal_rising",
-            name,
-            jd_ut,
-            search_days,
-            resolved_arcus,
-            0.0,
-            day_offset,
-            se,
-            -resolved_arcus,
-            twilight_jd,
-        )
+            return None
+        return twilight_jd, se
+
+    previous = qualifying_sample(-1)
+    for day_offset in range(search_days):
+        current = qualifying_sample(day_offset)
+        if previous is None and current is not None and current[0] >= jd_ut:
+            twilight_jd, se = current
+            return _build_heliacal_event(
+                "heliacal_rising",
+                name,
+                jd_ut,
+                search_days,
+                resolved_arcus,
+                0.0,
+                day_offset,
+                se,
+                -resolved_arcus,
+                twilight_jd,
+            )
+        previous = current
 
     return _build_heliacal_event(
         "heliacal_rising",
@@ -1342,7 +1351,7 @@ def heliacal_setting_event(
 
     Side effects: None.
     """
-    from .heliacal import _find_sun_at_alt
+    from .heliacal import _find_sun_at_alt, _local_mean_solar_midnight
 
     resolved_policy = DEFAULT_FIXED_STAR_POLICY if policy is None else policy
     if not isinstance(resolved_policy, FixedStarComputationPolicy):
@@ -1375,7 +1384,7 @@ def heliacal_setting_event(
     if native_event is not None:
         return native_event
 
-    jd_mid0 = math.floor(jd_ut + 0.5) - 0.5
+    jd_mid0 = _local_mean_solar_midnight(jd_ut, longitude)
     setting_elongation_threshold = resolved_policy.heliacal.setting_elongation_threshold
     disappearance_threshold = setting_elongation_threshold * resolved_policy.heliacal.setting_visibility_factor
     last_visible: tuple[int, float, float] | None = None
@@ -1523,7 +1532,7 @@ def heliacal_catalog_batch(
         
         reader = get_reader()
         interval_start_tt, interval_end_tt, dt_val, dt_rate = (
-            _native_heliacal_time_policy(jd_start, search_days)
+            _native_heliacal_time_policy(jd_start, search_days, longitude)
         )
         
         # 1. Get Earth and Sun evaluators

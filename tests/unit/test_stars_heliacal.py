@@ -35,7 +35,12 @@ def _python_oracle_policy(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_heliacal_rising_event_returns_found_event(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("moira.julian.ut_to_tt", lambda jd: jd)
     monkeypatch.setattr(stars, "star_at", lambda name, jd_tt, **_: _FakeBody(100.0, magnitude=1.2))
-    monkeypatch.setattr("moira.planets.planet_at", lambda body, jd_ut, **kwargs: _FakeBody(114.5))
+    monkeypatch.setattr(
+        "moira.planets.planet_at",
+        lambda body, jd_ut, **kwargs: _FakeBody(
+            85.0 if jd_ut < 2451545.0 else 114.5
+        ),
+    )
     monkeypatch.setattr("moira.heliacal._find_sun_at_alt", lambda *args, **kwargs: 2451545.25)
     monkeypatch.setattr("moira.rise_set._altitude", lambda *args, **kwargs: 7.5)
 
@@ -95,7 +100,7 @@ def test_heliacal_event_rejects_invalid_arcus() -> None:
         stars.heliacal_rising_event("Sirius", 2451545.0, 31.2, 29.9, arcus_visionis=0.0)
 
 
-def test_python_heliacal_rising_skips_twilight_before_forward_start(
+def test_python_heliacal_rising_does_not_relabel_open_apparition_after_start(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     jd_start = 2451545.3
@@ -115,10 +120,8 @@ def test_python_heliacal_rising_skips_twilight_before_forward_start(
         search_days=3,
     )
 
-    assert event.is_found is True
-    assert event.jd_ut == pytest.approx(2451545.75)
-    assert event.jd_ut >= jd_start
-    assert event.computation_truth.qualifying_day_offset == 1
+    assert event.is_found is False
+    assert event.jd_ut is None
 
 
 def test_python_heliacal_setting_never_remembers_visibility_before_forward_start(
@@ -132,7 +135,7 @@ def test_python_heliacal_setting_never_remembers_visibility_before_forward_start
     monkeypatch.setattr(stars, "_heliacal_signed_elongation", _signed_elongation)
     monkeypatch.setattr(
         "moira.heliacal._find_sun_at_alt",
-        lambda jd_midnight, *args, **kwargs: jd_midnight + 0.25,
+        lambda jd_midnight, *args, **kwargs: jd_midnight - 0.25,
     )
     monkeypatch.setattr(stars, "_star_altitude", lambda *args, **kwargs: 6.0)
 

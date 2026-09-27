@@ -1,0 +1,172 @@
+{
+  "schema": "moira.heliacal-rising-oracle-matrix/v2",
+  "status": "source_owned_external_geometry_and_independent_visibility_oracles",
+  "acquisition_date": "2026-09-27",
+  "event_definition": {
+    "authority": "Schaefer, Heliacal Rise Phenomena, Journal for the History of Astronomy 18 (1987), S19-S33",
+    "doi": "10.1177/002182868701801103",
+    "definition": "first morning visibility after conjunction and a preceding interval of solar invisibility"
+  },
+  "visibility_authority": {
+    "authority": "Tousey and Koomen, The Visibility of Stars and Planets During Twilight, JOSA 43 (1953), 177-183",
+    "doi": "10.1364/JOSA.43.000177",
+    "role": "primary-source physical basis for twilight target visibility; exact dates remain observer-policy dependent"
+  },
+  "jpl_horizons": {
+    "authority": "NASA/JPL Solar System Dynamics Horizons",
+    "api_documentation": "https://ssd-api.jpl.nasa.gov/doc/horizons.html",
+    "manual": "https://ssd.jpl.nasa.gov/horizons/manual.html",
+    "api_version": "1.2",
+    "common_contract": {
+      "EPHEM_TYPE": "OBSERVER",
+      "CENTER": "coord@399",
+      "COORD_TYPE": "GEODETIC",
+      "TIME_TYPE": "UT",
+      "APPARENT": "AIRLESS",
+      "CSV_FORMAT": "YES",
+      "QUANTITIES": "23",
+      "transition_STEP_SIZE": "6 h",
+      "event_STEP_SIZE": "1 min"
+    },
+    "relative_position_codes": {
+      "/T": "target trails Sun in the evening sky",
+      "/L": "target leads Sun in the morning sky"
+    }
+  },
+  "selection_policy": {
+    "admitted_planet_set_owner": "moira.heliacal._HELIACAL_PLANETS",
+    "required_planet_count": 7,
+    "search_start_utc": "2026-01-01T00:00:00Z",
+    "search_start_jd_ut": 2461041.5,
+    "search_days": 400,
+    "engine_output_is_oracle_truth": false,
+    "external_geometry_owns_apparition_identity": true,
+    "captured_legacy_results_are_regression_receipts_only": true,
+    "maximum_jpl_engine_elongation_difference_deg": 2.0,
+    "local_day_basis": "local_mean_solar_midnight_at_observer_longitude"
+  },
+  "planetary_cases": [
+    {
+      "case_id": "mercury-levant-2026-morning-first-rising",
+      "body": "Mercury",
+      "jpl_command": "199",
+      "site": {"latitude_deg": 35.0, "longitude_deg": 35.0, "elevation_km": 0.0},
+      "conjunction_side_transition": {
+        "trailing_sample": {"datetime_utc": "2026-03-06T14:59:54.555Z", "jd_ut": 2461106.124936979, "solar_elongation_deg": 4.0322, "relative_position_code": "/T"},
+        "leading_sample": {"datetime_utc": "2026-03-06T20:59:54.555Z", "jd_ut": 2461106.374936979, "solar_elongation_deg": 3.8454, "relative_position_code": "/L"}
+      },
+      "legacy_event_horizons_sample": {"datetime_utc": "2026-03-16T02:59:54.555Z", "jd_ut": 2461115.624936979, "solar_elongation_deg": 16.0473, "relative_position_code": "/L"},
+      "captured_legacy_result": {"jd_ut": 2461115.624936985, "elongation_deg": -16.316139646498414, "target_altitude_deg": 0.043377789754823315, "sun_altitude_deg": -11.0, "apparent_magnitude": 1.8795446101259161},
+      "maximum_days_after_leading_transition": 30.0,
+      "minimum_next_rising_separation_days": 60.0
+    },
+    {
+      "case_id": "venus-babylon-2026-morning-first-rising",
+      "body": "Venus",
+      "jpl_command": "299",
+      "site": {"latitude_deg": 32.55, "longitude_deg": 44.42, "elevation_km": 0.0},
+      "conjunction_side_transition": {
+        "trailing_sample": {"datetime_utc": "2026-10-22T08:55:49.908Z", "jd_ut": 2461335.872105417, "solar_elongation_deg": 7.3770, "relative_position_code": "/T"},
+        "leading_sample": {"datetime_utc": "2026-10-22T14:55:49.908Z", "jd_ut": 2461336.122105417, "solar_elongation_deg": 7.1950, "relative_position_code": "/L"}
+      },
+      "legacy_event_horizons_sample": {"datetime_utc": "2026-10-28T02:55:49.908Z", "jd_ut": 2461341.622105417, "solar_elongation_deg": 8.5529, "relative_position_code": "/L"},
+      "captured_legacy_result": {"jd_ut": 2461341.6221054173, "elongation_deg": -6.748474043297563, "target_altitude_deg": 0.5185624962841688, "sun_altitude_deg": -5.0, "apparent_magnitude": -4.258331915760593},
+      "maximum_days_after_leading_transition": 30.0,
+      "minimum_next_rising_separation_days": 400.0
+    },
+    {
+      "case_id": "mars-greenwich-2026-morning-first-rising",
+      "body": "Mars",
+      "jpl_command": "499",
+      "site": {"latitude_deg": 51.48, "longitude_deg": 0.0, "elevation_km": 0.0},
+      "conjunction_side_transition": {
+        "trailing_sample": {"datetime_utc": "2026-01-09T19:55:51.879Z", "jd_ut": 2461050.330461563, "solar_elongation_deg": 0.9462, "relative_position_code": "/T"},
+        "leading_sample": {"datetime_utc": "2026-01-10T01:55:51.879Z", "jd_ut": 2461050.580461563, "solar_elongation_deg": 0.9551, "relative_position_code": "/L"}
+      },
+      "legacy_event_horizons_sample": {"datetime_utc": "2026-06-17T01:55:51.879Z", "jd_ut": 2461208.580461563, "solar_elongation_deg": 34.3678, "relative_position_code": "/L"},
+      "captured_legacy_result": {"jd_ut": 2461208.5804615617, "elongation_deg": -34.46126350666208, "target_altitude_deg": 0.04823466961177569, "sun_altitude_deg": -11.0, "apparent_magnitude": 1.2666480923253773},
+      "maximum_days_after_leading_transition": 180.0,
+      "minimum_next_rising_separation_days": 600.0
+    },
+    {
+      "case_id": "jupiter-levant-2026-morning-first-rising",
+      "body": "Jupiter",
+      "jpl_command": "599",
+      "site": {"latitude_deg": 35.0, "longitude_deg": 35.0, "elevation_km": 0.0},
+      "conjunction_side_transition": {
+        "trailing_sample": {"datetime_utc": "2026-07-29T14:20:00.549Z", "jd_ut": 2461251.097228576, "solar_elongation_deg": 0.4790, "relative_position_code": "/T"},
+        "leading_sample": {"datetime_utc": "2026-07-29T20:20:00.549Z", "jd_ut": 2461251.347228576, "solar_elongation_deg": 0.5355, "relative_position_code": "/L"}
+      },
+      "legacy_event_horizons_sample": {"datetime_utc": "2026-08-09T02:20:00.549Z", "jd_ut": 2461261.597228576, "solar_elongation_deg": 7.8091, "relative_position_code": "/L"},
+      "captured_legacy_result": {"jd_ut": 2461261.5972285736, "elongation_deg": -8.017678812574445, "target_altitude_deg": 0.501992921269688, "sun_altitude_deg": -7.5, "apparent_magnitude": -1.7832235209850928},
+      "maximum_days_after_leading_transition": 60.0,
+      "minimum_next_rising_separation_days": 300.0
+    },
+    {
+      "case_id": "saturn-sydney-2026-morning-first-rising",
+      "body": "Saturn",
+      "jpl_command": "699",
+      "site": {"latitude_deg": -33.87, "longitude_deg": 151.21, "elevation_km": 0.0},
+      "conjunction_side_transition": {
+        "trailing_sample": {"datetime_utc": "2026-03-26T07:25:41.469Z", "jd_ut": 2461125.809507743, "solar_elongation_deg": 2.2765, "relative_position_code": "/T"},
+        "leading_sample": {"datetime_utc": "2026-03-26T13:25:41.469Z", "jd_ut": 2461126.059507743, "solar_elongation_deg": 2.3623, "relative_position_code": "/L"}
+      },
+      "legacy_event_horizons_sample": {"datetime_utc": "2026-04-04T19:25:41.469Z", "jd_ut": 2461135.309507743, "solar_elongation_deg": 9.2594, "relative_position_code": "/L"},
+      "captured_legacy_result": {"jd_ut": 2461135.3095077425, "elongation_deg": -9.243477522900946, "target_altitude_deg": 0.014241814496856464, "sun_altitude_deg": -10.0, "apparent_magnitude": 0.9265962089078474},
+      "maximum_days_after_leading_transition": 60.0,
+      "minimum_next_rising_separation_days": 300.0
+    },
+    {
+      "case_id": "uranus-new-orleans-2026-morning-first-rising",
+      "body": "Uranus",
+      "jpl_command": "799",
+      "site": {"latitude_deg": 30.0, "longitude_deg": -90.0, "elevation_km": 0.0},
+      "conjunction_side_transition": {
+        "trailing_sample": {"datetime_utc": "2026-05-22T09:43:12.631Z", "jd_ut": 2461182.905007303, "solar_elongation_deg": 0.2373, "relative_position_code": "/T"},
+        "leading_sample": {"datetime_utc": "2026-05-22T15:43:12.631Z", "jd_ut": 2461183.155007303, "solar_elongation_deg": 0.1673, "relative_position_code": "/L"}
+      },
+      "legacy_event_horizons_sample": {"datetime_utc": "2026-06-13T09:43:12.631Z", "jd_ut": 2461204.905007303, "solar_elongation_deg": 19.6406, "relative_position_code": "/L"},
+      "captured_legacy_result": {"jd_ut": 2461204.9050073028, "elongation_deg": -19.949044362614956, "target_altitude_deg": 0.14741053353454148, "sun_altitude_deg": -14.5, "apparent_magnitude": 5.82370552887361},
+      "maximum_days_after_leading_transition": 90.0,
+      "minimum_next_rising_separation_days": 300.0
+    },
+    {
+      "case_id": "neptune-sydney-2026-morning-first-rising",
+      "body": "Neptune",
+      "jpl_command": "899",
+      "site": {"latitude_deg": -33.87, "longitude_deg": 151.21, "elevation_km": 0.0},
+      "conjunction_side_transition": {
+        "trailing_sample": {"datetime_utc": "2026-03-23T01:05:25.973Z", "jd_ut": 2461122.545439502, "solar_elongation_deg": 1.4182, "relative_position_code": "/T"},
+        "leading_sample": {"datetime_utc": "2026-03-23T07:05:25.973Z", "jd_ut": 2461122.795439502, "solar_elongation_deg": 1.5262, "relative_position_code": "/L"}
+      },
+      "legacy_event_horizons_sample": {"datetime_utc": "2026-04-06T19:05:25.973Z", "jd_ut": 2461137.295439502, "solar_elongation_deg": 14.6256, "relative_position_code": "/L"},
+      "captured_legacy_result": {"jd_ut": 2461137.2954394966, "elongation_deg": -14.835237778177287, "target_altitude_deg": 0.6225138860716909, "sun_altitude_deg": -14.5, "apparent_magnitude": 7.823246233298363},
+      "maximum_days_after_leading_transition": 90.0,
+      "minimum_next_rising_separation_days": 300.0
+    }
+  ],
+  "independent_visibility_anchors": [
+    {
+      "case_id": "phase3-jupiter-2023-morning-first-rising",
+      "source": "tests/golden/physical_visibility_phase3_events.json",
+      "target_class": "planet",
+      "maximum_legacy_difference_days": 8.0
+    },
+    {
+      "case_id": "phase3-sirius-2026-morning-first-rising",
+      "source": "tests/golden/physical_visibility_phase3_events.json",
+      "target_class": "star",
+      "maximum_legacy_difference_days": 3.0
+    }
+  ],
+  "reported_jupiter_regression": {
+    "search_start_utc": "2026-10-03T00:00:00Z",
+    "search_start_jd_ut": 2461316.5,
+    "site": {"latitude_deg": 35.0, "longitude_deg": 35.0},
+    "already_visible_apparition": {"solar_elongation_deg": 49.8625, "relative_position_code": "/L"},
+    "next_conjunction_leading_sample": {"datetime_utc": "2027-08-31T20:00:00Z", "jd_ut": 2461650.3333333335, "solar_elongation_deg": 1.0014, "relative_position_code": "/L"},
+    "independent_visibility_event_jd_ut": 2461662.613105551,
+    "maximum_legacy_difference_days": 7.0,
+    "maximum_event_solar_elongation_deg": 15.0
+  }
+}

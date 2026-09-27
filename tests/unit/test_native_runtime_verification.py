@@ -307,11 +307,11 @@ def test_explicit_native_heliacal_policy_dispatches_to_compiled_search(
 ) -> None:
     kernel_path = find_planetary_kernel()
     jd_start = julian_day(2024, 7, 1, 0.0)
-    interval_start_tt, interval_end_tt, delta_t, delta_t_rate = (
-        stars._native_heliacal_time_policy(jd_start, 45)
-    )
     latitude = 31.2
     longitude = 29.9
+    interval_start_tt, interval_end_tt, delta_t, delta_t_rate = (
+        stars._native_heliacal_time_policy(jd_start, 45, longitude)
+    )
     record, _ = stars._resolve_star_record("Sirius", stars.DEFAULT_FIXED_STAR_POLICY.lookup)
     policy = stars.FixedStarComputationPolicy(use_native_heliacal=True)
 

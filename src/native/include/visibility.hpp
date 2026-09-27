@@ -333,6 +333,14 @@ inline double heliacal_signed_elongation(
 }
 
 /**
+ * @brief UT Julian day of local mean solar midnight at longitude.
+ */
+inline double local_mean_solar_midnight(double jd_ut, double lon_deg) {
+    return std::floor(jd_ut + 0.5 + lon_deg / 360.0)
+        - 0.5 - lon_deg / 360.0;
+}
+
+/**
  * @brief THEOREM: Heliacal Rising Search Engine.
  */
 inline HeliacalEvent search_heliacal_rising(
@@ -359,40 +367,55 @@ inline HeliacalEvent search_heliacal_rising(
     }
     if (search_days <= 0) throw std::invalid_argument("search_days must be positive");
 
-    double jd_mid0 = std::floor(jd_start + 0.5) - 0.5;
-    
-    for (int day = 0; day < search_days; ++day) {
-        double jd_midnight = jd_mid0 + day;
-        
-        // 1. Check signed elongation at Noon (approx middle of day)
+    const double jd_mid0 = local_mean_solar_midnight(jd_start, lon);
+
+    auto qualifying_sample = [&](double jd_midnight, int day_offset)
+        -> std::optional<HeliacalEvent> {
         const double day_delta_t = delta_t
-            + delta_t_rate_seconds_per_day * (jd_midnight + 0.5 - jd_start);
-        double se = heliacal_signed_elongation(
+            + delta_t_rate_seconds_per_day
+                * (jd_midnight + 0.5 - jd_start);
+        const double se = heliacal_signed_elongation(
             star_eval, sun_eval, jd_midnight + 0.5, day_delta_t, earth_eval,
             nutation_cache
         );
-        if (se >= 0.0) continue;
-        
-        // 2. Find twilight JD when Sun is at -arcus_visionis (with aberration)
-        auto twilight_jd = find_sun_at_alt(sun_eval, jd_midnight, lat, lon, -arcus_visionis_val, true, day_delta_t, earth_eval);
-        if (!twilight_jd) continue;
-        if (*twilight_jd < jd_start) continue;
-        
-        // 3. Check star altitude at twilight
-        // star_alt must be geometric > -0.5667 (apparent horizon)
-        double star_alt = target_topocentric_altitude(star_eval, *twilight_jd, lat, lon, 1013.25, 10.0, false, day_delta_t);
-        
-        if (star_alt > -0.5667) {
-            HeliacalEvent ev;
-            ev.event_kind = "heliacal_rising";
-            ev.jd_ut = *twilight_jd;
-            ev.is_found = true;
-            ev.arcus_visionis = arcus_visionis_val;
-            ev.elongation = se;
-            ev.star_altitude = star_alt;
-            ev.day_offset = day;
-            return ev;
+        if (se >= 0.0) return std::nullopt;
+
+        auto twilight_jd = find_sun_at_alt(
+            sun_eval, jd_midnight, lat, lon, -arcus_visionis_val, true,
+            day_delta_t, earth_eval
+        );
+        if (!twilight_jd) return std::nullopt;
+
+        const double star_alt = target_topocentric_altitude(
+            star_eval, *twilight_jd, lat, lon, 1013.25, 10.0, false,
+            day_delta_t
+        );
+        if (star_alt <= -0.5667) return std::nullopt;
+
+        HeliacalEvent event;
+        event.event_kind = "heliacal_rising";
+        event.jd_ut = *twilight_jd;
+        event.is_found = true;
+        event.arcus_visionis = arcus_visionis_val;
+        event.elongation = se;
+        event.star_altitude = star_alt;
+        event.day_offset = day_offset;
+        return event;
+    };
+
+    std::optional<HeliacalEvent> previous = qualifying_sample(jd_mid0 - 1.0, -1);
+    for (int day = 0; day < search_days; ++day) {
+        std::optional<HeliacalEvent> current = qualifying_sample(
+            jd_mid0 + day, day
+        );
+        if (
+            !previous
+            && current
+            && current->jd_ut >= jd_start
+        ) {
+            return *current;
         }
+        previous = current;
     }
     
     HeliacalEvent nf;
@@ -440,7 +463,7 @@ inline HeliacalEvent search_heliacal_setting(
         throw std::invalid_argument("setting_visibility_factor must be in (0, 1]");
     }
 
-    double jd_mid0 = std::floor(jd_start + 0.5) - 0.5;
+    double jd_mid0 = local_mean_solar_midnight(jd_start, lon);
     std::optional<HeliacalEvent> last_visible;
     
     for (int day = 0; day < search_days; ++day) {

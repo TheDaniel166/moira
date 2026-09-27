@@ -595,7 +595,10 @@ def test_visibility_event_uses_the_same_refraction_policy_for_search_and_assessm
         )
 
     monkeypatch.setattr("moira.heliacal._check_visibility", fake_check_visibility)
-    monkeypatch.setattr("moira.heliacal._signed_elongation", lambda *args, **kwargs: -15.0)
+    monkeypatch.setattr(
+        "moira.heliacal._signed_elongation",
+        lambda _body, jd_ut: 15.0 if jd_ut < 2451545.0 else -15.0,
+    )
     monkeypatch.setattr("moira.heliacal.visibility_assessment", fake_visibility_assessment)
 
     visibility_policy = VisibilityPolicy(use_refraction=False)

@@ -2906,6 +2906,22 @@ _COSMIC_SOLAR_ALTITUDE_DEG: float = -18.0
 # Private helpers
 # ---------------------------------------------------------------------------
 
+def _local_mean_solar_midnight(jd_ut: float, longitude_deg: float) -> float:
+    """Return the UT Julian day of the containing local-solar midnight.
+
+    Heliacal events are observations at local dawn or dusk.  Dividing the
+    search into UTC civil days can put a western dawn or an eastern dusk in
+    the wrong half-day, so every legacy daily scan uses mean solar time at the
+    observer's longitude.  East longitudes are positive.
+
+    Side effects: None.
+    """
+    return (
+        math.floor(jd_ut + 0.5 + longitude_deg / 360.0)
+        - 0.5
+        - longitude_deg / 360.0
+    )
+
 def _signed_elongation(body: str, jd: float) -> float:
     """
     Signed ecliptic elongation of *body* from the Sun (degrees).
@@ -4429,7 +4445,7 @@ def _general_event_from_lunar_crescent_details(
 def _search_visibility_event(
     body: str,
     kind: HeliacalEventKind,
-    jd_mid0: float,
+    jd_start: float,
     lat: float,
     lon: float,
     *,
@@ -4441,8 +4457,12 @@ def _search_visibility_event(
     """
     Execute the core forward visibility-event search state machine.
 
-    Returns the first qualifying event tuple for rising kinds, or the last
-    qualifying visible tuple for setting kinds prior to loss conditions.
+    Heliacal and acronychal risings are opening transitions, not arbitrary
+    visible samples.  Their search therefore requires a non-qualifying guard
+    day followed by a qualifying day.  If the target is already visible at
+    ``jd_start``, that existing apparition is skipped.  Cosmic rising retains
+    its legacy first-qualifying-sample semantics.  Setting kinds return the
+    last qualifying visible tuple prior to their legacy loss condition.
 
     The return payload is ``(jd_ut, target_alt_deg, sun_alt_deg,
     apparent_mag, signed_elongation_deg)``.
@@ -4452,6 +4472,7 @@ def _search_visibility_event(
 
     Side effects: None.
     """
+    jd_mid0 = _local_mean_solar_midnight(jd_start, lon)
     morning = kind in (
         HeliacalEventKind.HELIACAL_RISING,
         HeliacalEventKind.HELIACAL_SETTING,
@@ -4493,19 +4514,39 @@ def _search_visibility_event(
         HeliacalEventKind.ACRONYCHAL_RISING,
         HeliacalEventKind.COSMIC_RISING,
     ):
-        for d in range(search_days):
-            jd_midnight = jd_mid0 + d
+        def qualifying_sample(
+            jd_midnight: float,
+        ) -> tuple[float, float, float, float, float] | None:
             se = _target_signed_elongation(body, jd_midnight + 0.5)
             if morning and se >= 0.0:
-                continue
+                return None
             if not morning and se <= 0.0:
-                continue
+                return None
             if require_min_elongation and abs(se) < _ELONG_MIN:
-                continue
+                return None
             vis = check(jd_midnight)
-            if vis is not None:
-                jd_ev, target_alt, sun_alt, mag = vis
-                return jd_ev, target_alt, sun_alt, mag, se
+            if vis is None:
+                return None
+            jd_ev, target_alt, sun_alt, mag = vis
+            return jd_ev, target_alt, sun_alt, mag, se
+
+        if kind in (
+            HeliacalEventKind.HELIACAL_RISING,
+            HeliacalEventKind.ACRONYCHAL_RISING,
+        ):
+            previous = qualifying_sample(jd_mid0 - 1.0)
+            for d in range(search_days):
+                current = qualifying_sample(jd_mid0 + d)
+                if previous is None and current is not None:
+                    if current[0] >= jd_start:
+                        return current
+                previous = current
+            return None
+
+        for d in range(search_days):
+            current = qualifying_sample(jd_mid0 + d)
+            if current is not None:
+                return current
         return None
 
     last: tuple[float, float, float, float, float] | None = None
@@ -7879,7 +7920,7 @@ def visibility_event(
                 "search_window_days must be a positive integer, "
                 f"got {resolved_search_policy.search_window_days!r}"
             )
-    jd_mid0 = math.floor(jd_start + 0.5) - 0.5
+    jd_mid0 = _local_mean_solar_midnight(jd_start, lon)
     search_days = resolved_search_policy.search_window_days
 
     if (
@@ -7988,7 +8029,7 @@ def visibility_event(
         result = _search_visibility_event(
             body,
             event_kind,
-            jd_mid0,
+            jd_start,
             lat,
             lon,
             model=model,
@@ -8011,32 +8052,30 @@ def visibility_event(
             visibility_policy=resolved_visibility_policy,
         )
 
-    if event_kind is HeliacalEventKind.HELIACAL_RISING:
-        for d in range(search_days):
-            jd_midnight = jd_mid0 + d
-            se = _signed_elongation(body, jd_midnight + 0.5)
-            if se >= 0.0 or abs(se) < _ELONG_MIN:
-                continue
-            vis = _check_visibility(
-                body,
-                jd_midnight,
-                lat,
-                lon,
-                morning=True,
-                model=model,
-                use_refraction=search_uses_refraction,
-            )
-            if vis is not None:
-                jd_ev, p_alt, s_alt, mag = vis
-                return _general_event_from_tuple(
-                    body,
-                    event_kind,
-                    (jd_ev, p_alt, s_alt, mag, se),
-                    lat,
-                    lon,
-                    visibility_policy=resolved_visibility_policy,
-                )
-        return None
+    if event_kind in (
+        HeliacalEventKind.HELIACAL_RISING,
+        HeliacalEventKind.ACRONYCHAL_RISING,
+    ):
+        result = _search_visibility_event(
+            body,
+            event_kind,
+            jd_start,
+            lat,
+            lon,
+            model=model,
+            search_days=search_days,
+            use_refraction=search_uses_refraction,
+        )
+        if result is None:
+            return None
+        return _general_event_from_tuple(
+            body,
+            event_kind,
+            result,
+            lat,
+            lon,
+            visibility_policy=resolved_visibility_policy,
+        )
 
     if event_kind is HeliacalEventKind.HELIACAL_SETTING:
         last: tuple[float, float, float, float, float] | None = None
@@ -8062,33 +8101,6 @@ def visibility_event(
                     body,
                     event_kind,
                     last,
-                    lat,
-                    lon,
-                    visibility_policy=resolved_visibility_policy,
-                )
-        return None
-
-    if event_kind is HeliacalEventKind.ACRONYCHAL_RISING:
-        for d in range(search_days):
-            jd_midnight = jd_mid0 + d
-            se = _signed_elongation(body, jd_midnight + 0.5)
-            if se <= 0.0 or abs(se) < _ELONG_MIN:
-                continue
-            vis = _check_visibility(
-                body,
-                jd_midnight,
-                lat,
-                lon,
-                morning=False,
-                model=model,
-                use_refraction=search_uses_refraction,
-            )
-            if vis is not None:
-                jd_ev, p_alt, s_alt, mag = vis
-                return _general_event_from_tuple(
-                    body,
-                    event_kind,
-                    (jd_ev, p_alt, s_alt, mag, se),
                     lat,
                     lon,
                     visibility_policy=resolved_visibility_policy,
@@ -8129,7 +8141,7 @@ def visibility_event(
         result = _search_visibility_event(
             body,
             event_kind,
-            jd_mid0,
+            jd_start,
             lat,
             lon,
             model=model,
@@ -8220,15 +8232,17 @@ def planet_heliacal_rising(
 
     Algorithm
     ---------
-    For each day in the search window:
+    First classify the observation day immediately before the search window as
+    a guard. If it is already visible, skip that open apparition. Then, for
+    each day in the search window:
 
     1. Compute signed elongation.  Skip if ≥ 0° (planet not in morning sky)
        or |elongation| < 5° (too close to Sun).
     2. Compute the planet's apparent magnitude → arcus visionis.
     3. Find the moment when the Sun's altitude = −arcus_visionis before
     sunrise (bisection on solar altitude).
-    4. Compute planet altitude at that moment.  If planet is above the
-    visibility horizon → heliacal rising.
+    4. Compute planet altitude at that moment. A heliacal rising occurs only
+       when this qualifying day follows a non-qualifying day.
     """
     _validate_args(body, jd_start, lat, lon, search_days)
     return _planet_event_from_general_event(

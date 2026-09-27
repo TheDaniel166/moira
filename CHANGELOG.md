@@ -88,6 +88,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added contract test suite in [`tests/server/test_server_pattern_coherence_routes.py`](file:///c:/dev/moira/tests/server/test_server_pattern_coherence_routes.py) (6/6 passing).
 
 ### Fixed
+- **Heliacal-rising apparition and local-day selection**: Corrected the legacy
+  planetary `heliacal_rising` and `acronychal_rising` searches, plus the Python
+  and native fixed-star rising paths, to require an actual
+  non-visible-to-visible transition. A search begun while a target is already
+  visible now skips that open apparition instead of relabeling the first
+  sampled morning or evening as a new rising. Daily scans are now anchored to
+  local mean solar midnight at the observer's longitude rather than UTC
+  midnight. Added a source-owned oracle matrix that covers every admitted
+  planet (Mercury, Venus, Mars, Jupiter, Saturn, Uranus, and Neptune) against
+  JPL Horizons apparition geometry, checks next-apparition recurrence, and
+  bounds Jupiter and Sirius against independently evaluated physical-visibility
+  events under Schaefer's first-visibility definition.
 - **Conventional eclipse Saros identity**: Replaced the misleading
   mean-month phase exposed as `saros_index` with the conventional van den
   Bergh/NASA Saros-series number for actual solar and lunar eclipses. Added

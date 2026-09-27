@@ -42,6 +42,23 @@ not:
 - route a physical fixed-star event through the legacy native arcus search; or
 - describe the legacy values as exact equivalents of the new taxonomy.
 
+Correctness amendment (2026-09-27): compatibility protects the legacy model,
+request defaults, enum values, and result shapes; it does not protect a result
+that contradicts the legacy contract's own first-appearance meaning.
+Planetary `heliacal_rising` and `acronychal_rising` searches therefore require
+a non-visible-to-visible guard transition. A search opened during an existing
+apparition skips that apparition. This is an apparition-selection correction,
+not a silent substitution of the opt-in physical model.
+
+The same first-appearance rule governs legacy fixed-star heliacal rising in
+both Python and native execution. Legacy daily searches are keyed to local mean
+solar midnight at the observer's longitude; UTC midnight is not a valid proxy
+for the observer's civil-independent solar day. The external-geometry matrix
+must enumerate the complete admitted planetary set and must fail if a body is
+added or removed without a corresponding case. JPL Horizons owns conjunction
+side and apparition identity in that matrix. Captured legacy outputs remain
+regression receipts, not oracle truth.
+
 The current `CRUMEY_2014_POINT_SOURCE` single-epoch assessment also remains
 unchanged. It is not silently widened from its admitted scotopic astronomical
 domain into a twilight event criterion.

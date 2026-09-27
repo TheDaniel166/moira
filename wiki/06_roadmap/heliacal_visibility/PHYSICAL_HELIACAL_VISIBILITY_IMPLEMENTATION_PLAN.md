@@ -128,6 +128,19 @@ transport, and release-documentation gates close.
 - [x] A default-model change is a future major-version decision, not part of
   this roadmap.
 
+Post-closure correctness amendment (2026-09-27): legacy regression protection
+does not preserve misclassification of an already-open apparition as a new
+rising. The legacy arcus model, defaults, and result vessels remain unchanged,
+while planetary rising searches now prove a non-visible-to-visible guard
+transition before returning an event.
+
+The correction also anchors legacy planet and fixed-star daily scans to local
+mean solar midnight and gives the Python and native fixed-star rising paths the
+same guard-transition rule. The source-owned external-geometry matrix covers
+all seven admitted planets exactly once and checks both the first eligible
+apparition and rejection of an already-open apparition. Independent physical
+event anchors remain separate from captured legacy regression receipts.
+
 Frozen composite model identifier:
 `clear_sky_naked_eye_point_source_v1`.
 
