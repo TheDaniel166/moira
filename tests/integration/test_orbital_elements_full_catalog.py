@@ -16,7 +16,7 @@ from moira.orbits import OrbitalCenter, OrbitalFrame, osculating_elements
 from moira.small_body_catalog_release import verify_release
 
 
-FULL_ASTEROID_ID = ("moira-asteroids", "2026.08.12.1")
+FULL_ASTEROID_ID = ("moira-asteroids", "2026.09.18.1")
 FULL_COMET_ID = ("moira-comets", "2026.07.28.1")
 
 
@@ -41,7 +41,7 @@ pytestmark = [
     pytest.mark.skipif(
         MISSING_FULL_ASTEROID,
         reason=(
-            "NOT RUN - full moira-asteroids@2026.08.12.1 release not installed"
+            "NOT RUN - full moira-asteroids@2026.09.18.1 release not installed"
         ),
     ),
     pytest.mark.skipif(

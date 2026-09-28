@@ -28,10 +28,11 @@ This roadmap assumes the companion constitutional doctrine packet exists:
 
 ## Current Moira State
 
-Current implementation file:
+Current implementation package:
 
-- `moira/primary_directions.py`
-- `moira/primary_direction_geometry.py`
+- `moira/primary_directions/`
+- `moira/primary_directions/__init__.py`
+- `moira/primary_directions/geometry.py`
 
 Current admitted capability:
 
@@ -607,7 +608,7 @@ Status:
 - `Traditional converse` admitted
 - source-scoped `Signed primary motion` admitted later through one named
   Topocentric zodiacal-aspect preset
-- `Neo-converse` not yet implemented
+- `Neo-converse` admitted through `PrimaryDirectionConverseDoctrine.NEO_CONVERSE`
 
 ### Stage 8. Widen the Method Catalog
 

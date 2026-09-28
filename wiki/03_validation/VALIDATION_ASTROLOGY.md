@@ -431,9 +431,16 @@ detection, and seam-edge cases
 
 **Canon:** Reinhold Ebertin, *The Combination of Stellar Influences* (1940);
 Alfred Witte, *Rules for Planetary Pictures*  
-**Formula:** shorter-arc midpoint; 90-degree dial projection  
+**Formula:** shorter-arc midpoint; labelled dial coordinate
+`longitude mod (360 / harmonic)`. The separate 360-degree harmonic-chart
+coordinate is `(longitude * harmonic) mod 360` and is not reused as a dial
+label.
+
 **Validation:** hand-derived midpoint table, commutativity, self-midpoint,
-pair-count, sort-order, and seam-crossing invariants
+pair-count, sort-order, seam-crossing invariants, exact dial-modulus
+periodicity, rejection of finer false aliases, preservation of a 22.5-degree
+separation on the 90-degree dial, and a fixed Einstein DE441 oracle whose
+tightest modern-planet picture is Saturn = Uranus/Neptune at 0.390462 degrees
 
 ### 6.3 Profections
 
@@ -484,11 +491,11 @@ and modern authorities and remains source-qualified item by item.
 **Validation:** complete source-owned Egyptian/Ptolemaic bounds and
 sect-explicit Chaldaean construction rules; source-owned planetary-joy houses;
 typed essential, sect, solar phase/proximity, besieging, and reception truth;
-legacy-score projection invariants; mutual reception; deterministic ordering;
+policy-scoped score projection invariants; mutual reception; deterministic ordering;
 and fail-closed dependency behavior
 
 Solar proximity thresholds and the besieging enclosure orb remain named
-policies. Halb/Hayz is admitted from a medieval al-Qabisi/Bonatti lineage and
+policies. Halb/Hayz is admitted from al-Biruni section 496 and
 is not relabeled as ancient Hellenistic doctrine.
 
 ---

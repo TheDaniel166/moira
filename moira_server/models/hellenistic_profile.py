@@ -8,7 +8,7 @@ from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
 
-from moira.dignities import TruthEvaluationStatus
+from moira.dignities import EssentialDignityKind, TruthEvaluationStatus
 from moira.hellenistic import (
     HellenisticProfileComponent,
     HellenisticProfileExclusion,
@@ -28,7 +28,6 @@ from .decans import DecanatePositionResponse
 from .dignities import (
     BesiegingTruthResponse,
     DignityComputationPolicyRequest,
-    EssentialDignityComponentTruthResponse,
     PlanetaryReceptionResponse,
     PlanetarySolarPhaseTruthResponse,
     SectTruthResponse,
@@ -279,13 +278,24 @@ class HellenisticPlanetaryJoyTruthResponse(_StrictModel):
     reason: str | None
 
 
+class HellenisticEssentialDignityComponentTruthResponse(_StrictModel):
+    """Score-free projection used only by the Hellenistic profile."""
+
+    kind: EssentialDignityKind
+    status: TruthEvaluationStatus
+    matched: bool | None
+    matching_signs: tuple[str, ...]
+    ruler: str | None
+    reason: str | None
+
+
 class HellenisticPlanetProfileResponse(_StrictModel):
     planet: str
     longitude: float
     sign: str
     house: int
     is_retrograde: bool
-    essential_components: tuple[EssentialDignityComponentTruthResponse, ...]
+    essential_components: tuple[HellenisticEssentialDignityComponentTruthResponse, ...]
     sect_truth: SectTruthResponse
     joy_truth: HellenisticPlanetaryJoyTruthResponse
     solar_proximity_truth: SolarProximityTruthResponse

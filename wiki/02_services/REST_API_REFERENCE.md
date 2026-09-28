@@ -466,6 +466,12 @@ Admitted products:
 | POST | `/v1/visibility/tonight` | `visibility_tonight_route` |
 | POST | `/v1/visibility/twilight-sky-brightness` | `twilight_sky_brightness_route` |
 
+All seven `/v1/batch/*` request bodies are schema-bounded to 128 submitted
+items. The Varga named/Shodashvarga batches and orbit-class batch use the same
+ceiling. Oversized inputs fail request validation with HTTP 422; the server
+does not partially execute or silently truncate them. Domain-specific bulk
+routes may publish smaller limits.
+
 The three standalone physical-model routes are engine-owned computation
 surfaces transported without hidden defaults. Their responses retain the
 declared model, intermediate quantities, units, and validity/reason fields.
@@ -553,6 +559,14 @@ a second solver.
 | POST | `/v1/parans/field/contours` | `paran_field_contours_route` |
 | POST | `/v1/parans/field/paths` | `paran_field_paths_route` |
 | POST | `/v1/parans/field/structure` | `paran_field_structure_route` |
+
+Solar-eclipse footprint/cartography, every occultation route, and Sade Sati
+window searches use a process-local 64-entry response LRU. A key includes the
+route, canonical validated request, engine version, and path-free active
+kernel identity. Equivalent aware datetimes are normalized to UTC, concurrent
+identical misses share one calculation, and only successful typed responses
+are retained. This accelerates repeated identical work; it does not reduce the
+first computation's runtime or alter the engine calculation.
 
 ### Polar-Safe Occultation Path Topology Contract
 
@@ -832,6 +846,20 @@ never satisfy the count. Legacy `/v1/patterns/*` remains unchanged. See
 | POST | `/v1/midpoints/pictures` | `midpoint_pictures_route` |
 | POST | `/v1/midpoints/weighting` | `midpoint_weighting_route` |
 | POST | `/v1/midpoints/clusters` | `midpoint_clusters_route` |
+
+Midpoint requests own `include_nodes` at the request top level. Supplying
+`chart.include_nodes` explicitly is rejected with HTTP 422 rather than being
+silently overridden. Node-bearing midpoint work also requires
+`planet_set: "extended"`; the classic and modern sets intentionally filter
+nodes after chart construction. The extended set recognizes the chart's
+canonical `True Node` and `Mean Node` names as well as the caller-facing
+`North Node` alias.
+
+For the dial-aware picture, weighting, and cluster routes, a selected dial is
+the labelled modulus: 90° uses `longitude mod 90`, 45° uses
+`longitude mod 45`, and 22.5° uses `longitude mod 22.5`. The `orb` or
+`cluster_orb` is measured in those labelled dial degrees. The picture and
+weighting routes default to the 360° wheel; clusters default to the 90° dial.
 
 `POST /v1/chart-shape/classify` implements Marc Edmund Jones's ten-body
 temperament method. The effective request must exclude nodes and must use

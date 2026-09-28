@@ -42,6 +42,7 @@ from ..models.hellenistic_atoms import (
 from ..models.hellenistic_profile import (
     HellenisticAspectProfileResponse,
     HellenisticChartProfileResponse,
+    HellenisticEssentialDignityComponentTruthResponse,
     HellenisticDecennialPolicyRequest,
     HellenisticDecennialPeriodResponse,
     HellenisticDecennialSnapshotResponse,
@@ -63,7 +64,6 @@ from ..models.lots import LotsComputationPolicyRequest
 from .decans import serialize_decanate_position
 from .dignities import (
     serialize_besieging_truth,
-    serialize_essential_dignity_component_truth,
     serialize_planetary_reception,
     serialize_planetary_solar_phase_truth,
     serialize_sect_truth,
@@ -273,7 +273,14 @@ def _serialize_planet(
         house=profile.house,
         is_retrograde=profile.is_retrograde,
         essential_components=tuple(
-            serialize_essential_dignity_component_truth(component)
+            HellenisticEssentialDignityComponentTruthResponse(
+                kind=component.kind,
+                status=component.status,
+                matched=component.matched,
+                matching_signs=component.matching_signs,
+                ruler=component.ruler,
+                reason=component.reason,
+            )
             for component in profile.essential_components
         ),
         sect_truth=serialize_sect_truth(profile.sect_truth),

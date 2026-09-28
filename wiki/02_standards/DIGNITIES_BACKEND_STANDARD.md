@@ -1,692 +1,289 @@
 ## Moira Dignities Backend Standard
 
-### Governing Principle
+### 1. Governing rule
 
-The Moira dignities backend is a sovereign computational subsystem. Its
-definitions, layer boundaries, terminology, invariants, failure doctrine, and
-determinism rules are stated here and are frozen until explicitly superseded by
-a revision to this document.
+Moira keeps three things separate:
 
-This document reflects current implementation truth as of Phase 11. It
-describes the subsystem that actually exists in `moira/dignities.py`; it does
-not describe aspirational future capabilities.
+1. **astronomical and doctrinal truth** — what was evaluated and what matched;
+2. **weight** — the value assigned by the selected scoring tradition;
+3. **applied score** — the value actually counted under the selected scoring mode.
 
----
+No policy preserves the former hybrid score. A selectable policy must represent
+an admitted doctrine, a deliberate score projection, or truth-only tracking.
 
-## Part I - Architecture Standard
-
-### 1. Authoritative Computational Definitions
-
-#### 1.1 Core dignity computation
-
-A **planetary dignity result** in Moira is:
-
-> The authoritative per-planet output of `DignitiesService.calculate_dignities`,
-> computed for a planet admitted by the active essential doctrine from normalised
-> sign state, house placement, sect context, solar proximity, and doctrine admitted under
-> `DignityComputationPolicy`.
-
-The computational core remains the authority for:
-
-- essential dignity scoring
-- accidental dignity scoring
-- sect and hayz truth
-- solar condition truth
-- admitted mutual-reception scoring
-- total score composition
-
-Later layers may classify, preserve, aggregate, or inspect this truth. They may
-not recompute the doctrine independently.
-
-#### 1.2 Essential dignity
-
-An **essential dignity** in Moira is:
-
-> A typed composition of independently evaluated domicile, exaltation,
-> triplicity, bound, face, detriment, fall, and peregrine components.
-
-| Element | Definition |
-|---|---|
-| doctrine tables | `DOMICILE`, `MODERN_DOMICILE`, `EXALTATION`, Egyptian bounds, Chaldean faces, `DETRIMENT`, `MODERN_DETRIMENT`, `FALL` |
-| subject set | Classic 7 by default; Classic 7 plus Uranus, Neptune, Pluto under `MODERN_CO_RULERS` |
-| component source | sign, chart sect, exact longitude, Egyptian-bound ruler, and Chaldean-face ruler |
-| compatibility priority | domicile > exaltation > triplicity > bound > face > detriment > fall > peregrine |
-| compatibility score source | `SCORE_DOMICILE`, `SCORE_EXALTATION`, `SCORE_TRIPLICITY`, `SCORE_BOUND`, `SCORE_FACE`, `SCORE_DETRIMENT`, `SCORE_FALL`, `SCORE_PEREGRINE` |
-
-The returned `essential_dignity` string and `essential_score` integer remain the
-legacy single-label compatibility projection. `essential_truth.components` is
-the authoritative non-erasing receipt and may preserve simultaneous positive
-and negative facts that the compatibility label cannot express.
-
-#### 1.3 Accidental dignity
-
-An **accidental dignity** in Moira is:
-
-> The sum of doctrine-admitted accidental conditions attached to one planet,
-> where each admitted condition contributes a fixed signed score and explicit
-> preserved truth.
-
-The currently embodied accidental dimensions are:
-
-- house strength
-- motion state
-- solar condition
-- admitted mutual reception
-- sect / hayz truth
-- planetary joy
-- oriental / occidental solar-relative phase
-- malefic besieging
-
-Every condition admitted by the active accidental policy is assembled as an
-explicit `AccidentalDignityCondition` before it contributes to
-`accidental_score`. The underlying `PlanetarySolarPhaseTruth`,
-`SolarProximityTruth`, and `BesiegingTruth` are preserved independently of
-whether policy admits a compatibility condition or the required chart
-dependencies are complete.
-
-#### 1.4 Reception
-
-A **reception** in Moira is:
-
-> A directed relational truth in which one planet occupies a sign belonging to
-> another planet under an admitted reception basis.
-
-Reception is formalised with three distinct layers of meaning:
-
-| Term | Definition |
-|---|---|
-| `all_receptions` | all doctrine-detected directed receptions for the planet |
-| `admitted_receptions` | the subset of `all_receptions` allowed by the current policy |
-| `scored_receptions` | the subset of `admitted_receptions` that contributes to current accidental dignity scoring |
-
-The current default doctrine admits domicile and exaltation reception bases.
-The current default scoring semantics use only the admitted mutual subset.
-
-#### 1.5 Planetary condition profile
-
-A **planetary condition profile** in Moira is:
-
-> A backend-only integrated structural summary derived from one
-> `PlanetaryDignity`, combining preserved truth and classifications across the
-> essential, accidental, sect, solar, and reception layers.
-
-`PlanetaryConditionProfile` is a consumer of dignity truth, not a second dignity
-engine.
-
-#### 1.6 Chart condition profile
-
-A **chart condition profile** in Moira is:
-
-> A deterministic chart-wide aggregation of per-planet condition profiles,
-> reporting structural counts and totals without adding interpretation.
-
-It includes at least:
-
-- ordered per-planet profiles
-- reinforced / mixed / weakened counts
-- strengthening / weakening / neutral totals
-- strongest / weakest planets under existing structural criteria
-
-#### 1.7 Condition network profile
-
-A **condition network profile** in Moira is:
-
-> A deterministic directed graph projection over admitted reception truth and
-> integrated per-planet condition profiles.
-
-It includes at least:
-
-- one node per planet profile
-- one directed edge per admitted reception relation
-- unilateral vs mutual edge visibility
-- incoming / outgoing / mutual counts per node
-- isolated planets
-- direct-degree connectivity summaries
-
-This graph is a structural projection only. It is not an interpretive network
-layer.
+The canonical per-planet entry point is
+`DignitiesService.calculate_dignities()`. The module-level wrappers and REST
+routes are transports over the same computation.
 
 ---
 
-### 2. Layer Structure
+## 2. Policy axes
 
-The backend is organised into one computational core plus ten formalised
-post-core layers. Each layer consumes outputs already produced below it. No
-layer reaches upward.
+`DignityComputationPolicy` owns four independent policy groups.
 
-```
-Core      - Authoritative dignity computation (`calculate_dignities`)
-Phase  1  - Truth preservation
-Phase  2  - Classification
-Phase  3  - Inspectability and vessel hardening
-Phase  4  - Doctrine / policy surface
-Phase  5  - Reception formalisation
-Phase  6  - Reception inspectability / hardening
-Phase  7  - Integrated planetary condition
-Phase  8  - Chart-wide condition intelligence
-Phase  9  - Reception / condition network intelligence
-Phase 10  - Full-subsystem hardening
-Phase 11  - Architecture freeze / validation codex
-```
+### 2.1 Essential tables
 
-#### Layer boundary rules
+`EssentialDignityPolicy` selects:
 
-A layer above the core:
-
-- may consume preserved truth from lower layers
-- may classify or aggregate earlier truth
-- may add invariant checks that reject internally inconsistent vessels
-- may not recompute dignity doctrine independently
-- may not alter legacy scoring semantics by reclassification
-- may not mutate an earlier-layer vessel in place
-- may not introduce interpretation, recommendation, or UI concerns
-
----
-
-### 3. Delegated Assumptions
-
-The dignity backend delegates to external modules without redefining them:
-
-| Concern | Delegated to | Convention |
+| Field | Admitted values | Default |
 |---|---|---|
-| zodiac sign ordering | `moira.constants.SIGNS` | ordered list of 12 sign names |
-| almuten support scoring | `moira.longevity.dignity_score_at` | imported lazily |
-| phasis ephemeris lookup | `moira.planets.planet_at` | imported lazily |
+| `doctrine` | `traditional_classic_7`, `modern_co_rulers` | `traditional_classic_7` |
+| `bounds_doctrine` | Egyptian, Ptolemaic, Chaldaean day, Chaldaean night | Ptolemaic |
+| `triplicity_doctrine` | Dorothean/Pingree 1976 | Dorothean/Pingree 1976 |
+| `participating_ruler_policy` | ignore, award reduced | ignore |
 
-Changes to those delegated sources propagate into the dignity subsystem. This
-document does not freeze their independent doctrine.
+The modern co-ruler table extends domicile and detriment only. It does not
+silently extend exaltation, fall, triplicity, bounds, or faces.
 
----
+### 2.2 Scoring and tracking
 
-### 4. Doctrine Surface
+`DignityScoringPolicy.mode` admits:
 
-#### 4.1 Essential doctrine
+| Mode | Essential testimony | Accidental testimony | Truth receipts |
+|---|---:|---:|---|
+| `william_lilly_1647` | scored | scored | retained |
+| `essential_only` | scored | tracked with applied score 0 | retained |
+| `unscored` | tracked with applied score 0 | tracked with applied score 0 | retained |
 
-The default essential doctrine is the classic fixed-table model encoded in:
+The Lilly mode is source-coherent and therefore requires Classic 7 rulers,
+Ptolemaic bounds, the admitted Dorothean triplicity table, and no points for the
+participating ruler. Modern rulerships and alternative bound tables remain
+available through `essential_only` and `unscored`; they are not relabelled as a
+Lilly total.
 
-- `DOMICILE`
-- `EXALTATION`
-- `DETRIMENT`
-- `FALL`
+`DignityScoringPolicy.node_doctrine` selects the mean or true north-node
+longitude for the dragon's-head and dragon's-tail testimonies.
 
-`EssentialDignityPolicy` makes this doctrine explicit without changing the
-default result.
+### 2.3 Accidental admission
 
-The admitted opt-in modern doctrine is:
+`AccidentalDignityPolicy` independently controls whether the engine evaluates
+and exposes:
 
-- `EssentialDignityDoctrine.MODERN_CO_RULERS`
+- house strength;
+- direct/retrograde motion;
+- swift/slow daily motion;
+- lunar waxing/waning;
+- oriental/occidental phase;
+- solar condition;
+- partile benefic and malefic aspects;
+- node conjunctions;
+- Regulus, Spica, and Algol conjunctions;
+- besieging;
+- planetary joys;
+- sect, halb, and hayz.
 
-This doctrine extends domicile and detriment only:
+An inclusion flag governs admission of that testimony. A scoring mode governs
+whether an admitted match contributes its weight. These are different choices.
 
-| Modern planet | Domicile | Detriment |
-|---|---|---|
-| Uranus | Aquarius | Leo |
-| Neptune | Pisces | Virgo |
-| Pluto | Scorpio | Taurus |
+### 2.4 Reception
 
-The modern doctrine is co-rulership, not replacement. Saturn still holds
-Aquarius, Jupiter still holds Pisces, and Mars still holds Scorpio under this
-policy. No modern exaltation or fall table is admitted by the current engine.
+`MutualReceptionPolicy` is a top-level policy because mutual reception by house
+or exaltation is essential testimony in the Lilly table. It is not an
+accidental dignity.
 
-#### 4.2 Accidental doctrine
-
-The accidental doctrine surface is explicit through:
-
-- `AccidentalDignityPolicy`
-- `SolarConditionPolicy`
-- `MutualReceptionPolicy`
-- `SectHayzPolicy`
-
-The default policy is normative:
-
-> `DignityComputationPolicy()` preserves the currently admitted, named
-> doctrine. It must not preserve a legacy behavior after that behavior has
-> been shown to contradict the admitted source.
-
-The accidental inclusion controls include:
-
-| Policy field | Default | Governs |
-|---|---:|---|
-| `AccidentalDignityPolicy.include_oriental_occidental` | `True` | Oriental/Occidental phase classification and its score contribution |
-| `SectHayzPolicy.doctrine` | `AL_QABISI_BONATTI_DYKES_2007` | Named Halb/Hayz lineage |
-| `SectHayzPolicy.include_hayz` | `True` | Full-Hayz condition and score contribution |
-| `SectHayzPolicy.include_halb` | `True` | Sect-relative hemisphere condition and score contribution |
-
-Setting one of these fields to `False` removes that admitted condition from
-labels, the condition list, and additive scoring without changing the
-underlying sign, sect, house, or longitude inputs. Atomic truth remains
-preserved when it can be evaluated independently of policy. Hayz and Halb are
-separately selectable; when both are enabled, full Hayz takes precedence in
-the additive label/score while the underlying `in_halb` truth remains
-preserved.
-
-#### 4.3 Sect, hayz, and halb doctrine
-
-Sect, Hayz, and Halb doctrine is embodied by:
-
-- `SECT`
-- `PREFERRED_HEMISPHERE`
-- `PREFERRED_GENDER`
-- `HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007`
-- the explicit Mercury phase model
-
-Under the admitted al-Qabisi/Bonatti lineage, Halb is not an
-exact-two-of-three approximation to Hayz. It is the planet's sect-relative
-hemisphere condition:
-
-| Planetary sect | Day chart | Night chart |
-|---|---|---|
-| Diurnal | Above horizon | Below horizon |
-| Nocturnal | Below horizon | Above horizon |
-
-Hayz is Halb plus placement in a sign of the planet's own gender. The admitted
-gender table treats Sun, Jupiter, and Saturn as masculine; Moon, Venus, and
-Mars as feminine; and Mercury as neutral. Because no source-owned Mercury
-gender assignment is admitted, Mercury can receive explicit sect and Halb
-truth but `hayz_evaluable=False` and no invented Hayz judgment.
-
-Mercury sect is phase-dependent. Standalone Mercury sect/Halb calls require an
-explicit `mercury_rises_before_sun` value. Chart-level dignity computation
-derives that phase only when both Sun and Mercury are present. It never
-substitutes a conjunction or another synthetic value for a missing Mercury.
-Exact Mercury/Sun conjunction returns typed `not_evaluable` phase, sect, Halb,
-and Hayz components rather than a false nocturnal default.
-An explicit Sun is mandatory because chart sect and solar conditions cannot be
-computed truthfully without it.
-
-`DignityHorizonFrame` carries the actual Ascendant and Midheaven. When present,
-the engine identifies the open ecliptic semicircle containing the Midheaven as
-above the horizon, independently of house-system cusp numbering. Bodies on the
-Ascendant or Descendant receive typed `not_evaluable` Halb/Hayz truth; a Sun on
-that boundary fails chart-sect computation closed. Raw legacy callers that do
-not yet supply a horizon frame remain explicitly identified by
-`HorizonComputationMethod.LEGACY_HOUSE_NUMBER`.
-
-This truth is preserved and classified explicitly even where it does not affect
-the current additive score.
-
-#### 4.4 Oriental / occidental phase doctrine
-
-`planetary_solar_phase_truth()` is the governing object for the admitted
-longitude-only phase model. It applies to Mercury, Venus, Mars, Jupiter, and
-Saturn and preserves the forward zodiacal arc from the planet to the Sun.
-
-- an arc strictly between 0 and 180 degrees is `oriental`;
-- an arc strictly between 180 and 360 degrees is `occidental`;
-- exact conjunction and exact opposition are direction boundaries and return
-  typed `not_evaluable` truth;
-- luminaries and bodies outside the admitted five-body set return typed
-  `not_evaluable` truth rather than a fabricated phase.
-
-`oriental_occidental()` remains the compatibility projection and returns
-`None` for every non-evaluable receipt. An Oriental/Occidental condition and
-score may be assembled only from an evaluated receipt and only when
-`include_oriental_occidental=True`. Disabling that policy suppresses the
-condition and score but does not erase evaluated geometric truth.
-
-#### 4.5 Solar-condition doctrine
-
-`solar_proximity_truth()` is the governing raw geometric object. It computes
-the minimum angular distance from the body to the Sun and assigns exactly one
-exclusive band:
-
-| Raw band | Exclusive angular-distance interval | Compatibility score when admitted |
-|---|---|---|
-| `cazimi` | 0 through 0.283 degrees, inclusive | `SCORE_CAZIMI` |
-| `combust` | greater than 0.283 through 8 degrees, inclusive | `SCORE_COMBUST` |
-| `under_sunbeams` | greater than 8 through 17 degrees, inclusive | `SCORE_SUNBEAMS` |
-| `clear` | greater than 17 degrees | no solar-condition score |
-
-The raw truth is independent of policy admission. The Sun returns typed
-`not_evaluable` because solar proximity is not applicable to the Sun itself.
-The Moon receives raw geometric truth, but the default accidental policy does
-not assemble a solar condition for either luminary. Explicit
-`include_for_luminaries=True` may admit a Moon condition; it never turns the
-Sun into its own Cazimi condition.
-
-Compatibility assembly retains the historical policy fall-through: if a
-narrower condition is disabled, the same distance may be admitted by an
-enabled wider condition. This does not alter the exclusive raw band preserved
-in `SolarProximityTruth`. Inclusive boundary comparisons use a
-`1e-12`-degree arithmetic tolerance solely to contain floating-point
-subtraction error; it is not an observational or doctrinal orb.
-
-#### 4.6 Besieging doctrine
-
-`besieging_truth()` is the governing enclosure object. It requires the complete
-Classic 7 longitude set plus an explicit or uniquely inferable target identity.
-It then preserves the nearest distinct classical body in each directed
-zodiacal direction.
-
-- missing required bodies or target identity return typed `not_evaluable`;
-- a body conjunct the target, a tied nearest neighbour, or an unresolved
-  direction boundary returns typed `not_evaluable`;
-- an evaluated result is besieged only when the two directional neighbours are
-  Mars and Saturn and each is within the configured orb;
-- directed neighbour distances occupy `(0, 360)` degrees; the independently
-  configured eligibility orb remains limited to `(0, 180]` degrees;
-- an evaluated `False` remains distinct from incomplete dependencies or
-  ambiguous geometry;
-- only evaluated `True` truth may assemble the `besieged` condition and score.
-
-`is_besieged()` remains the flattened compatibility projection and therefore
-returns `None` for both evaluated absence and non-evaluable truth. Consumers
-that need to distinguish those states must use `besieging_truth()`.
-
-#### 4.7 Reception doctrine
-
-The formal reception basis currently supported is limited to what the engine
-already computes cleanly:
-
-- domicile reception
-- exaltation reception
-
-No other reception basis is implied by this document.
+`all_receptions` contains detected relations, `admitted_receptions` contains the
+policy-allowed subset, and `scored_receptions` contains only mutual relations
+whose truth record has `scored=True`.
 
 ---
 
-### 5. Public Surface
+## 3. William Lilly 1647 score
 
-The following public backend entry points are authoritative:
+The default score is cumulative. A term or face never erases detriment or fall.
+Every matching essential component contributes independently.
 
-| Surface | Role |
+### 3.1 Essential weights
+
+| Testimony | Weight |
+|---|---:|
+| domicile / mutual reception by house | +5 |
+| exaltation / mutual reception by exaltation | +4 |
+| active triplicity ruler | +3 |
+| own bound or term | +2 |
+| own face | +1 |
+| detriment | -5 |
+| fall | -4 |
+| peregrine | -5 |
+
+Peregrine means that none of the five positive essential dignities matched.
+It can therefore coexist with a debility such as fall. A reception is retained
+as its own essential receipt and does not erase the planet's zodiacal
+peregrine state.
+
+`essential_dignity` remains a deterministic primary display label.
+`essential_truth.matched_components`, `essential_truth.receptions`, and
+`essential_classification.kinds` are the complete non-erasing result.
+
+### 3.2 Accidental weights
+
+| Testimony | Weight |
+|---|---:|
+| houses 1 or 10 | +5 |
+| houses 4, 7, or 11 | +4 |
+| houses 2 or 5 | +3 |
+| house 9 | +2 |
+| house 3 | +1 |
+| houses 6 or 8 | -2 |
+| house 12 | -5 |
+| direct (not Sun or Moon) | +4 |
+| retrograde (not Sun or Moon) | -5 |
+| swift / slow compared with Lilly's mean daily motion | +2 / -2 |
+| superior oriental / occidental | +2 / -2 |
+| Mercury or Venus occidental / oriental | +2 / -2 |
+| Moon waxing / waning | +2 / -2 |
+| cazimi | +5 |
+| combust | -5 |
+| under beams | -4 |
+| free from combustion and beams | +5 |
+| partile conjunction / trine / sextile with Jupiter or Venus | +5 / +4 / +3 |
+| partile conjunction / opposition / square with Saturn or Mars | -5 / -4 / -3 |
+| partile conjunction with north / south node | +4 / -4 |
+| besieged by Mars and Saturn | -5 |
+| Regulus / Spica / Algol conjunction | +6 / +5 / -5 |
+
+The Sun and Moon have no direct/retrograde testimony. Missing motion or speed
+data produces a typed `not_evaluable` receipt rather than a fabricated direct
+or mean-motion state.
+
+A stationary non-luminary is tracked explicitly as `stationary`: it receives
+neither the direct nor retrograde weight. Its zero daily motion still qualifies
+as slow relative to Lilly's mean-motion table and is scored separately there.
+
+Partile aspects use a residual of less than one degree from the exact aspect.
+The fixed-star conjunction limits are 6 degrees for Regulus and 5 degrees for
+Spica and Algol, matching Lilly's worked examples.
+
+### 3.3 Solar bands
+
+Solar proximity is exclusive and is never re-labelled when a narrower band is
+disabled:
+
+| Band | Distance from Sun |
 |---|---|
-| `PlanetaryDignity` | canonical per-planet dignity vessel |
-| `PlanetaryReception` | canonical directed reception relation |
-| `PlanetaryConditionProfile` | canonical integrated per-planet condition vessel |
-| `ChartConditionProfile` | canonical chart-wide condition aggregation |
-| `ConditionNetworkNode` | canonical node-level network summary |
-| `ConditionNetworkEdge` | canonical directed network edge |
-| `ConditionNetworkProfile` | canonical network aggregation |
-| `DignityComputationPolicy` | canonical explicit doctrine/policy surface |
-| `DignityHorizonFrame` | actual Asc/MC zodiacal geometry for house-system-independent sect truth |
-| `EssentialDignityComponentTruth` | one atomic essential-dignity receipt |
-| `PlanetarySolarPhaseTruth` / `planetary_solar_phase_truth()` | typed oriental/occidental geometry and its governing computation |
-| `SolarProximityTruth` / `solar_proximity_truth()` | typed exclusive solar-distance band before policy assembly |
-| `BesiegingDependencyCompletenessTruth` | typed required, supplied, and missing chart-body dependencies for enclosure evaluation |
-| `BesiegingTruth` / `besieging_truth()` | typed directional-neighbour enclosure truth and its governing computation |
-| `HorizonTruth` / `MercuryPhaseTruth` / `SectComponentTruth` | typed component receipts with explicit evaluation status |
-| `DignitiesService.calculate_dignities` | authoritative core computation |
-| `DignitiesService.calculate_receptions` | authoritative formal reception projection |
-| `DignitiesService.calculate_condition_profiles` | authoritative per-planet condition integration |
-| `DignitiesService.calculate_chart_condition_profile` | authoritative chart-wide condition aggregation |
-| `DignitiesService.calculate_condition_network_profile` | authoritative network aggregation |
-| module-level wrappers of the above | convenience entry points mirroring the service |
+| cazimi | at most 17 arcminutes |
+| combust | beyond cazimi through 8 degrees 30 arcminutes |
+| under beams | beyond combustion through 17 degrees |
+| clear | beyond 17 degrees |
 
-No caller should reconstruct hidden doctrine from flattened labels when a
-structured truth or classification field already exists.
+The raw `SolarProximityTruth` exists independently of policy. Solar proximity
+is not applicable to the Sun itself. It is evaluated for the Moon by default,
+as Lilly explicitly treats the Moon as capable of combustion and being under
+the Sun's beams; `include_for_moon=false` can suppress that testimony without
+altering the raw proximity receipt.
 
 ---
 
-### 6. Terminology Freeze
+## 4. Tracked but not silently scored
 
-The following terminology is normative and must not drift casually:
+Hayz, halb, and planetary joy are preserved as named conditions with their
+source and a weight of zero in the Lilly total. Their presence is not evidence
+that Lilly assigned them points in the ready table.
 
-| Term | Meaning |
-|---|---|
-| truth | structured preservation of already-computed doctrine |
-| classification | typed description of preserved truth; never scoring logic |
-| inspectability | derived convenience access that does not add doctrine |
-| policy | explicit control over already-supported doctrine admission |
-| all receptions | all detected directed reception relations |
-| admitted receptions | policy-allowed subset of detected receptions |
-| scored receptions | admitted mutual subset contributing to accidental score |
-| reinforced / mixed / weakened | structural condition labels derived from existing polarity counts only |
+Under the admitted al-Biruni section 496 doctrine:
 
-In particular:
+- a diurnal planet seeks the diurnal hemisphere and a nocturnal planet the
+  nocturnal hemisphere;
+- hayz additionally requires a sign of the planet's gender;
+- Sun, Jupiter, Saturn, and Mars are masculine;
+- Moon and Venus are feminine;
+- Mercury is common/neutral, so Moira does not invent a Mercury hayz result.
 
-- classification must remain descriptive, not interpretive
-- inspectability helpers must remain derived only
-- condition profiles must remain integrative, not doctrinally independent
-- network profiles must remain structural, not interpretive
+Mars is masculine and nocturnal. In a night chart it requires the appropriate
+hemisphere and a masculine sign for hayz.
 
----
-
-### 7. Failure Doctrine
-
-The dignity subsystem follows a strict split:
-
-- bad external inputs fail with `ValueError`
-- internally inconsistent result vessels fail with `ValueError` at construction
-- invariant drift is treated as an implementation defect, not a recoverable state
-
-The subsystem may not silently coerce malformed dignity inputs into a valid
-chart representation.
+`DignityHorizonFrame` is the preferred horizon authority. The numbered-house
+fallback remains available to raw callers and is explicitly identified in the
+truth receipt.
 
 ---
 
-### 8. Explicit Non-Goals
+## 5. Result contract
 
-The dignity backend does not, in this frozen phase:
+Every matched accidental condition exposes:
 
-- perform interpretation
-- provide recommendation logic
-- build reception-network topology beyond direct structural graphing
-- perform chart-wide interpretive synthesis
-- redefine doctrine outside the explicit policy surface
+- `category`, `code`, and `label`;
+- traditional `weight`;
+- applied `score`;
+- `scored`;
+- `source`.
 
----
+`AccidentalDignityEvaluationTruth` also records absent or unavailable
+testimonies with an evaluation status and reason. Essential components expose
+the same weight-versus-score distinction.
 
-## Part II - Validation Codex
+The principal invariants are:
 
-### 9. Validation Environment
+- `essential_score` equals the sum of essential component and admitted mutual
+  reception applied scores;
+- `accidental_score` equals the sum of accidental condition applied scores;
+- `total_score == essential_score + accidental_score`;
+- unscored or not-evaluable testimony always has applied score 0;
+- result labels, classifications, and structured truth remain aligned;
+- input ordering does not change semantic output ordering.
 
-| Property | Value |
-|---|---|
-| authoritative runtime | project `.venv` |
-| test runner | `.venv\Scripts\python.exe -m pytest` |
-| primary test file | `tests/unit/test_moira_dignities_and_lots.py` |
-| source-owned Hellenistic golden | `tests/unit/test_hellenistic_source_goldens.py` |
-| dignity regression seam | `tests/unit/test_rule_engine_validation.py -k dignity` |
-| focused baseline | 34 dignity/lots tests + 1 dignity rule-engine regression |
-| acceptable result | 0 failures, 0 errors |
-
-No dignity test may be modified to make the implementation pass. A failing test
-is treated as an implementation defect unless the test itself is proven wrong.
-
----
-
-### 10. Test Surface Register
-
-| File | Scope | Focus |
-|---|---|---|
-| `tests/unit/test_moira_dignities_and_lots.py` | subsystem-focused | legacy score preservation, truth/classification consistency, policy, reception, condition, chart-wide aggregation, network, malformed input, deterministic failure behavior |
-| `tests/unit/test_rule_engine_validation.py -k dignity` | cross-subsystem regression seam | dignity result compatibility with the rule-engine validation surface |
-| `tests/unit/test_hellenistic_source_goldens.py` | independent source evidence | Egyptian/Ptolemaic/Chaldaean bounds and planetary joys; policy-derived accidental conditions remain outside that source claim |
+The unified Hellenistic profile remains a deliberately score-free projection.
+It consumes the same component truth but omits weights and scores from that
+profile's transport contract.
 
 ---
 
-### 11. Validation Doctrine
+## 6. REST and runtime support
 
-#### 11.1 What must be validated per layer
+The dignity chart service supplies the engine with:
 
-| Layer | Must test |
-|---|---|
-| core dignity computation | `total_score == essential_score + accidental_score`; legacy labels and scores remain unchanged under default policy |
-| truth preservation | essential, accidental, sect, solar phase/proximity, besieging, and mutual-reception truth align with the compatibility result fields they preserve |
-| classification | every classification field aligns with its source truth and remains deterministic |
-| inspectability | convenience properties are derived only and add no new doctrine or scoring |
-| policy | default policy preserves historical behavior exactly; narrower policy changes only its explicit admission surface |
-| reception | unilateral vs mutual are distinguished; basis is explicit; admitted subset is policy-governed; scored subset matches current accidental scoring doctrine |
-| planetary condition | condition state is derived only from existing polarity counts; profile fields align with source dignity truth |
-| chart-wide condition | counts, totals, strongest/weakest summaries, and ordering align with source profiles |
-| network | node counts, edge counts, mutual/unilateral counts, isolated planets, and degree summaries align with admitted reception truth |
-| hardening | malformed inputs fail clearly; vessel invariant drift fails clearly; same input yields same ordered output |
+- exact planetary longitude and longitude speed;
+- explicit retrograde state;
+- exact Ascendant/Midheaven horizon geometry;
+- mean and true node positions;
+- epoch-correct Regulus, Spica, and Algol positions.
 
-#### 11.2 What validation must not do
-
-- treat a changed score as acceptable because the structured truth became richer
-- bypass the policy surface to test an unsupported doctrine
-- assert interpretive meaning from structural labels
-- accept non-deterministic ordering in profiles, summaries, or network outputs
-- weaken failure behavior to make malformed inputs appear tolerated
+The REST policy mirrors the engine policy: `essential`, `accidental`,
+`reception`, and `scoring`. Response models expose component weights, applied
+scores, scoring status, source, and accidental evaluation receipts.
 
 ---
 
-### 12. Invariant Register
+## 7. Failure doctrine
 
-This register is the normative source of truth for subsystem invariants.
-
-#### INV-CORE - Core dignity invariants
-
-| Code | Invariant |
-|---|---|
-| D-1 | `total_score == essential_score + accidental_score` for every `PlanetaryDignity` |
-| D-2 | `essential_dignity` and `essential_score` are the deterministic compatibility projection of component truth |
-| D-3 | `accidental_dignities` labels and `accidental_score` remain the authority for current accidental scoring semantics |
-| D-4 | component truth may correct historical collapse or omission while the compatibility projection remains deterministic |
-
-#### INV-TRUTH - Truth preservation invariants
-
-| Code | Invariant |
-|---|---|
-| T-1 | `essential_truth.label == essential_dignity` when `essential_truth` is present |
-| T-2 | `essential_truth.score == essential_score` when `essential_truth` is present |
-| T-3 | accidental truth labels preserve the same condition labels exposed in `accidental_dignities` |
-| T-4 | sect, Halb, Hayz, horizon, Mercury phase, planetary solar phase, solar proximity, besieging, solar condition, and reception truth preserve atomic evaluation status rather than fabricating defaults |
-| T-5 | an Oriental/Occidental condition exists only when its `PlanetarySolarPhaseTruth` is evaluated and names the same phase |
-| T-6 | a solar condition can be assembled only from evaluated `SolarProximityTruth`; policy suppression never erases or changes the exclusive raw band |
-| T-7 | a besieged condition exists only when `BesiegingTruth` is evaluated `True` with complete dependencies and Mars/Saturn as the two directional neighbours |
-
-#### INV-CLASS - Classification invariants
-
-| Code | Invariant |
-|---|---|
-| C-1 | each classification field is fully derivable from its paired truth field |
-| C-2 | classification does not alter scoring, admission, or rule priority |
-| C-3 | the same truth yields the same classification across calls |
-
-#### INV-REC - Reception invariants
-
-| Code | Invariant |
-|---|---|
-| R-1 | `PlanetaryReception.receiving_planet != PlanetaryReception.host_planet` |
-| R-2 | `receiving_sign in host_matching_signs` |
-| R-3 | `admitted_receptions` is a subset of `all_receptions` |
-| R-4 | `scored_receptions` equals the admitted mutual subset exactly |
-| R-5 | scored reception truth remains backward compatible with accidental dignity scoring |
-
-#### INV-COND - Planetary condition invariants
-
-| Code | Invariant |
-|---|---|
-| P-1 | `PlanetaryConditionProfile.state` matches the derived polarity state from strengthening and weakening counts |
-| P-2 | condition profiles consume dignity truth; they do not recompute doctrine |
-| P-3 | inspectability flags like `is_reinforced` are derived only from `state` |
-
-#### INV-CHART - Chart-wide aggregation invariants
-
-| Code | Invariant |
-|---|---|
-| A-1 | reinforced, mixed, and weakened counts match the states of contained profiles |
-| A-2 | strengthening, weakening, and neutral totals equal the sum across contained profiles |
-| A-3 | reception participation total equals the sum of admitted receptions across contained profiles |
-| A-4 | profile order is deterministic by planet order |
-
-#### INV-NET - Network invariants
-
-| Code | Invariant |
-|---|---|
-| N-1 | each node planet matches its bound profile planet |
-| N-2 | `total_degree == incoming_count + outgoing_count` for every node |
-| N-3 | `mutual_count <= outgoing_count` for every node |
-| N-4 | `mutual_edge_count` and `unilateral_edge_count` match the actual edge set |
-| N-5 | isolated planets are exactly the nodes with degree zero |
-| N-6 | node order is deterministic by planet order |
-
-#### INV-POL - Policy invariants
-
-| Code | Invariant |
-|---|---|
-| PO-1 | `DignityComputationPolicy()` is valid and semantically default |
-| PO-2 | unsupported explicit doctrine choices raise `ValueError` |
-| PO-3 | policy governs admissibility; it does not redefine the lower-level truth model ad hoc |
-
-#### INV-IN - Input invariants
-
-| Code | Invariant |
-|---|---|
-| I-1 | duplicate classic-planet entries are rejected |
-| I-2 | non-finite longitude input is rejected |
-| I-3 | non-boolean `is_retrograde` is rejected |
-| I-4 | duplicate house cusp numbers are rejected |
-| I-5 | house cusp numbers outside `1..12` are rejected |
-| I-6 | incomplete cusp sets are rejected |
+The engine raises `ValueError` for malformed coordinates, duplicate supported
+planets, incomplete or duplicate houses, contradictory speed/retrograde input,
+or incoherent policy combinations. It does not silently coerce a modern or
+alternative-table calculation into the Lilly mode.
 
 ---
 
-### 13. Determinism Register
+## 8. Primary source anchors
 
-The following ordering guarantees are normative:
-
-| Surface | Guarantee |
-|---|---|
-| `calculate_dignities` | planets returned in deterministic traditional order |
-| `calculate_receptions` | directed reception relations returned deterministically for the same input |
-| `calculate_condition_profiles` | profiles returned in deterministic planet order |
-| `calculate_chart_condition_profile` | strongest and weakest summaries are deterministic under ties |
-| `calculate_condition_network_profile` | nodes and edges are deterministic for the same admitted reception truth |
-
-Input permutation must not change the semantic output of the public dignity
-surfaces.
-
----
-
-### 14. Guaranteed Failure Conditions
-
-The following inputs must always fail clearly and consistently.
-
-| Function / vessel | Bad input or drift | Error |
-|---|---|---|
-| `calculate_dignities` | missing Sun position | `ValueError` |
-| `calculate_dignities` | duplicate classic planet entry | `ValueError` |
-| `calculate_dignities` | non-finite longitude | `ValueError` |
-| `calculate_dignities` | non-boolean `is_retrograde` | `ValueError` |
-| `calculate_dignities` | duplicate cusp number | `ValueError` |
-| `calculate_dignities` | missing cusp numbers | `ValueError` |
-| `calculate_dignities` | cusp number outside `1..12` | `ValueError` |
-| policy validation | unsupported explicit essential doctrine | `ValueError` |
-| `PlanetaryDignity` | legacy score / truth / classification inconsistency | `ValueError` |
-| `PlanetaryReception` | self-reception or impossible host/sign relation | `ValueError` |
-| `PlanetaryConditionProfile` | state or reception-subset drift | `ValueError` |
-| `ChartConditionProfile` | aggregate counts or order drift | `ValueError` |
-| `ConditionNetworkNode` | degree-count inconsistency | `ValueError` |
-| `ConditionNetworkProfile` | isolated-planet, edge-count, or order drift | `ValueError` |
-
-The exact message text may evolve for clarity, but the failure type and semantic
-reason must remain stable.
+- William Lilly, *Christian Astrology* (1647), printed pp. 57-84 and 113-116:
+  mean motions, solar condition definitions, and the ready table of planetary
+  fortitudes and debilities. The worked score examples at printed pp. 178-180
+  establish the Regulus and Spica conjunction limits.
+  [Public-domain facsimile](https://archive.org/details/b30338724)
+- Claudius Ptolemy, *Tetrabiblos*, book I, on planetary gender: the Sun,
+  Saturn, Jupiter, and Mars are masculine; the Moon and Venus are feminine;
+  Mercury is common.
+  [LacusCurtius transcription](https://penelope.uchicago.edu/Thayer/E/Roman/Texts/Ptolemy/Tetrabiblos/1B*.html)
+- al-Biruni, *The Book of Instruction in the Elements of the Art of Astrology*,
+  section 496: the Halb hemisphere rule and the additional same-gender-sign
+  condition for Hayz.
+  [Wright translation facsimile](https://www.skyscript.co.uk/pdf/pubs/texts/albiruni/docs/albiruni.pdf)
 
 ---
 
-### 15. Validation Commands
+## 9. Validation
 
-The minimum validation commands for this subsystem freeze are:
+Minimum focused validation:
 
 ```powershell
+$env:MOIRA_TEST_MODE='1'
+$env:MOIRA_STRICT_KNOWN_ISSUES='1'
+.venv\Scripts\python.exe -m pytest tests\unit\test_dignities_scoring_policy.py -q
 .venv\Scripts\python.exe -m pytest tests\unit\test_moira_dignities_and_lots.py -q
-.venv\Scripts\python.exe -m pytest tests\unit\test_rule_engine_validation.py -q -k dignity
-.venv\Scripts\python.exe -m pytest tests\unit\test_hellenistic_source_goldens.py -q -k "bound or planetary_joy"
+.venv\Scripts\python.exe -m pytest tests\server\test_server_dignities_routes.py -q
+.venv\Scripts\python.exe -m pytest tests\server\test_server_hellenistic_profile.py tests\server\test_hellenistic_contract_openapi.py -q
 ```
 
-When implementation files change, syntax validation may also be run:
-
-```powershell
-.venv\Scripts\python.exe -m py_compile moira\dignities.py tests\unit\test_moira_dignities_and_lots.py tests\unit\test_hellenistic_source_goldens.py
-```
-
----
-
-### 16. Freeze Rule
-
-After this phase, any change to the dignity backend that alters:
-
-- default scores
-- default admission behavior
-- invariant meaning
-- failure semantics
-- ordering guarantees
-- terminology frozen in Section 6
-
-must be treated as an explicit architecture change and accompanied by a
-documented revision to this standard.
-
+The focused policy suite must cover cumulative essential testimony,
+peregrine, house-specific weights, luminary motion exclusion, speed, lunar
+phase, solar bands, partile aspects, nodes, fixed stars, besieging, reception,
+hayz, bounds policy, triplicity participation, and all three scoring modes.

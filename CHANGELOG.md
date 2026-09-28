@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Bounded REST batches and expensive-response caching**: Capped every
+  `/v1/batch/*` request plus Varga and orbit-class batch inputs at 128 items,
+  with the limits published through OpenAPI validation schemas. Added a
+  process-local 64-entry LRU for solar-eclipse footprint/cartography,
+  occultation, and Sade Sati window responses. Cache keys include the route,
+  canonical validated input, engine version, and path-free active-kernel
+  identity; concurrent identical misses share one calculation, while failures
+  are never retained.
 - **Uranian source-orbit and apparent-place repair**: Replaced the erroneous
   J2000 linear-rate table with separately receipted Neely Hamburg and
   Sevin/Strubell Transpluto Keplerian elements. Positions now use the bound DE
@@ -35,6 +43,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   engine resource provenance. Missing, identity-invalid, and out-of-coverage
   lunar-orientation resources retain distinct path-redacted HTTP failures.
 
+### Changed
+- **Current small-body orbital validation closure**: Rebound active full-catalog
+  gates and missing-catalog guidance to `moira-asteroids@2026.09.18.1`.
+  Refreshed the exact-JDTDB JPL Horizons catalog holdout after Encke advanced
+  from solution `K273/14` to `K273/17`, and added a release-bound authority
+  admission using Moira's pre-existing live osculating-element tolerances.
+  All six asteroid/comet authority cases now run for both elements and
+  geometric nodes with no admission skips; the isolated live Horizons drift
+  gate passes 17/17. Exhaustive release-host sweeps pass all 11,223 asteroids
+  and 497 periodic comets (11,720 bodies) with coverage, finiteness, mapping,
+  and manifest/shard receipt checks. Small-body apsidal-passage accuracy
+  remains a separately named validation frontier.
+- **Midpoint dial projection repair**: Corrected 90°, 45°, and 22.5°
+  midpoint-dial coordinates to fold longitude by the dial modulus instead of
+  multiplying by the harmonic and folding a second time. Planetary pictures,
+  weighting, activation, trees, clusters, and dial ordering now preserve
+  dial-labelled orb degrees. Midpoint REST requests reject an explicitly
+  nested `chart.include_nodes` policy in favor of the top-level field, and the
+  extended midpoint set now recognizes the chart's canonical `Mean Node`.
+- **Runtime-truth documentation cleanup**: Removed the unused bulk-star
+  placeholder serializer; reconciled the active Houses standard with the
+  integrated polar systems and implemented dynamics surface; qualified the
+  house-dynamics evidence as internal analytical/invariant validation; retired
+  obsolete `moira.sky` stub prose; and marked dated roadmap and heliacal audit
+  claims with their current superseding contracts.
+
 ## [6.9.0] - 2026-09-26
 
 ### Added
@@ -56,7 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Vertex: $\dot{\lambda}_{\text{VTX}} = \omega_{\text{sidereal}} \frac{\cos \varepsilon - \cot \phi \sin \varepsilon \sin \theta}{\cos^2 \theta + (\sin \theta \cos \varepsilon - \cot \phi \sin \varepsilon)^2}$ via `analytical_vertex_speed()`.
   - **Engine Core & Facade Integration (Part 2)**: Re-exported analytical functions and `house_dynamics_from_armc` at package root; integrated `Moira.house_dynamics(dt, latitude, longitude, system=...)` into `CoreFacadeMixin` for seamless high-level execution.
   - **Server Transport Layer (Part 3)**: Added Pydantic v2 schemas (`CuspSpeedResponse`, `HouseDynamicsRequest`, `HouseDynamicsResponse`) and registered endpoint `POST /v1/houses/dynamics` with timezone validation and custom step/policy forwarding.
-  - **Comprehensive Oracle Validation (Part 4)**: Validated across 9 house systems (Placidus, Koch, Regiomontanus, Campanus, Topocentric, Alcabitius, Porphyry, Equal, Whole Sign), 4 latitude regimes (London $+51.5^\circ$, Equator $0.0^\circ$, Sydney $-33.86^\circ$, Reykjavik $+64.1^\circ$), and 3 epochs (J2000, J1900, Modern 2026). Proved sub-millidegree/day analytical agreement ($< 0.0001^\circ/\text{day}$), equatorial horizon symmetry ($\dot{\lambda}_{\text{ASC}}(\theta) = \dot{\lambda}_{\text{MC}}(\theta + 90^\circ)$), and $O(h^4)$ Richardson convergence.
+  - **Analytical and Invariant Validation (Part 4)**: Validated across 9 house systems (Placidus, Koch, Regiomontanus, Campanus, Topocentric, Alcabitius, Porphyry, Equal, Whole Sign), 4 latitude regimes (London $+51.5^\circ$, Equator $0.0^\circ$, Sydney $-33.86^\circ$, Reykjavik $+64.1^\circ$), and 3 epochs (J2000, J1900, Modern 2026). Proved sub-millidegree/day internal analytical agreement ($< 0.0001^\circ/\text{day}$), equatorial horizon symmetry ($\dot{\lambda}_{\text{ASC}}(\theta) = \dot{\lambda}_{\text{MC}}(\theta + 90^\circ)$), and $O(h^4)$ Richardson convergence. This evidence is internal mathematical validation, not an external house-speed authority comparison.
   - **Verification**: Validated across 90 automated tests in [`tests/unit/test_house_dynamics_oracle.py`](file:///c:/dev/moira/tests/unit/test_house_dynamics_oracle.py), 28 tests in [`tests/unit/test_house_dynamics.py`](file:///c:/dev/moira/tests/unit/test_house_dynamics.py), and 4 server contract tests in [`tests/server/test_server_house_dynamics_routes.py`](file:///c:/dev/moira/tests/server/test_server_house_dynamics_routes.py).
 - **Primary Directions Frontier Triad: Placidian Mundane Parallels, Ptolemaic Mundane Aspects & Zodiacal Midpoints — Frontier 7**:
   - **Placidian Mundane Parallels & Contra-Parallels *In Mundo* (Part 1)**: Implemented true mundane parallel reflections across the Meridian ($f_{\text{par}} = -f_S$) and contra-parallel reflections across the Horizon ($f_{\text{contra}} = \text{copysign}(2.0 - |f_S|, f_S)$) via `compute_placidian_mundane_parallel_arc`. Direct and converse arcs evaluated with native equatorial acceleration. Added `PrimaryDirectionsPreset.PLACIDIAN_MUNDANE_PARALLEL`, `PrimaryDirectionRelationalKind.MUNDANE_PARALLEL`, `PrimaryDirectionRelationalKind.MUNDANE_CONTRA_PARALLEL`, `PrimaryDirectionMundaneParallelTarget`, and generator `resolve_primary_direction_mundane_parallel_targets`.

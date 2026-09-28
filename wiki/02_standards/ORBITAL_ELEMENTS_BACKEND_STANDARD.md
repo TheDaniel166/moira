@@ -330,12 +330,17 @@ their six authority comparisons are therefore `NOT RUN` pending governed
 catalog validation admission, not accepted with wider tolerances.
 
 The packaged 25-body wheel catalog remains a fallback implementation test, not
-proof of the full release inventory. The configured release-host validation
-passes the inventory gate for all 10,025 bodies in
-`moira-asteroids@2026.08.12.1` and all 497 bodies in
-`moira-comets@2026.07.28.1`. Release readiness remains blocked until the live
-Horizons drift audit passes, the catalog accuracy admissions are reviewed, and
-the three Stage 1 receipts are reviewed.
+proof of the full release inventory. The current release-host validation passes
+the inventory gate for all 11,223 bodies in
+`moira-asteroids@2026.09.18.1` and all 497 bodies in
+`moira-comets@2026.07.28.1` (11,720 total). A separate governed admission binds
+those exact sealed manifest hashes to the refreshed six-case JPL Horizons
+catalog holdout and Moira's pre-existing live osculating-element product gates.
+All six direct element comparisons and all six geometric-node authority
+comparisons run and pass; the isolated live-primary drift gate passes 17/17.
+Small-body element/node catalog validation is therefore closed for these exact
+releases. Stage 2 apsidal-passage timing remains a separately declared
+validation frontier and is not implied by this admission.
 
 The implementation worktree's compatibility captures use the same DE441,
 comet-release, and packaged-wheel hashes as baseline commit
@@ -349,17 +354,19 @@ fixed TT, while its protected high-level consumers include both the separately
 receipted clock shift and the frame correction. Raw maxima in these receipts
 span mixed units and are not accuracy claims.
 
-Focused Stage 1/2 tests, the isolated 52-case live-primary element audit, and
-the Stage 2 Earth/Neptune live passage sentinels pass.
-The full 10,522-body asteroid/comet inventory gate passes. The repository-wide
+Focused Stage 1/2 tests, the isolated live-primary element audit, and the Stage
+2 Earth/Neptune live passage sentinels pass. The current six-case small-body
+release admission and the full 11,720-body asteroid/comet inventory gate pass.
+The repository-wide
 non-network command remains independently blocked by pre-existing harness-import,
 hybrid-eclipse-topology, and asteroid fixture/resource failures that each
 reproduce at the untouched baseline. The plan's exact changed-file Ruff command
 likewise reports 66 inherited findings on both candidate and baseline, while
 the new Stage 1 files pass separately.
-The validation receipt therefore says implementation-review-ready and
-release-blocked; it does not authorize a version, tag, publication, or
-deployment.
+Historical Stage 1/2/3 receipts retain their then-current blocked status. The
+current small-body element/node admission supersedes only their catalog
+authority and inventory blockers; it does not authorize a version, tag,
+publication, or deployment.
 
 Stage 1/2 implementation does not authorize a version change, tag, package
 publication, website pin update, staging deployment, or production promotion.

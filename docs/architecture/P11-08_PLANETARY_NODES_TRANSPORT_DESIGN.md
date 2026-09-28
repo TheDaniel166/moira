@@ -1,7 +1,8 @@
 # P11-08 Planetary And Small-Body Nodes Transport Design
 
-Version: 0.2
+Version: 0.3
 Date: 2026-09-16
+Last reconciled: 2026-09-28
 Status: admitted through Orbital Core Stage 3
 Scope: planetary mean-element nodes and strict-core geometric osculating node routes
 
@@ -22,7 +23,6 @@ Deferred:
 - lunar true-node and mean-node REST routes
 - chart-backed node profiles
 - nodal aspect networks
-- catalog-wide small-body node sweeps
 - rendered node maps
 - asteroid/comet route widening
 - small-body kernel manifest management
@@ -175,8 +175,8 @@ The focused server tests verify:
   canonical identity, typed undefined-element failure, and no duplicate node
   state/frame/conic pipeline
 - kernel tests cover all nine planet targets and all six asteroid/comet
-  representatives; the verified 10,025-body asteroid and 497-body comet
-  releases receive full inventory sweeps for all 10,522 sovereign bodies
+  representatives; the verified 11,223-body asteroid and 497-body comet
+  releases receive full inventory sweeps for all 11,720 sovereign bodies
 
 Route registry audit after admission:
 

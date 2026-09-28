@@ -1,5 +1,11 @@
 # Nine Parts Roadmap
 
+> **Historical Phase 1 planning record.** The Nine Parts subsystem is now
+> constitutional. Current implementation truth and remaining explicitly
+> deferred doctrine are governed by
+> [NINE_PARTS_BACKEND_STANDARD.md](../../02_standards/NINE_PARTS_BACKEND_STANDARD.md).
+> Do not use the pre-constitutional phase labels below as a current backlog.
+
 ## Purpose
 
 This document defines the implementation roadmap for Moira's Nine Parts
@@ -26,7 +32,7 @@ Relevant implementation file: `moira/lots.py`
 
 Current admitted capability relevant to Nine Parts:
 
-- `~430+` named lots in `PARTS_DEFINITIONS`
+- `512` named lots in `PARTS_DEFINITIONS`
 - Full arc-formula engine: `Asc + A − B mod 360°`
 - Automatic day/night reversal per `PartDefinition.reversible` flag
 - Fortune and Spirit pre-computed before derived lots (dependency order
@@ -244,6 +250,6 @@ longevity.py calls it as an optional input, not a required dependency.
   Abu Ma'shar's lot system
 - Benjamin N. Dykes, *The Book of Nine Judges* (Cazimi Press, 2011) —
   Al-Sijzi's Transfer of Management mechanics
-- `moira/lots.py` — existing infrastructure; ~430 entries; pre-computation
+- `moira/lots.py` — existing infrastructure; 512 entries; pre-computation
   of Fortune and Spirit confirmed at line 2029
 

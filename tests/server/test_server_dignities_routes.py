@@ -89,6 +89,17 @@ def test_dignities_chart_route_matches_service(
     assert sun["house"] == direct_sun.house
     assert sun["total_score"] == sun["essential_score"] + sun["accidental_score"]
     assert sun["essential_truth"]["label"] == direct_sun.essential_truth.label
+    assert sun["essential_truth"]["scoring_mode"] == "william_lilly_1647"
+    assert sun["essential_truth"]["bounds_doctrine"] == "ptolemaic"
+    assert all(
+        {"weight", "score"} <= set(component)
+        for component in sun["essential_truth"]["components"]
+    )
+    assert all(
+        {"weight", "score", "scored", "source"} <= set(condition)
+        for condition in sun["accidental_truth"]["conditions"]
+    )
+    assert sun["accidental_truth"]["evaluations"]
     assert sun["condition_profile"]["state"] == direct_sun.condition_profile.state.value
     for transported, direct_dignity in zip(body["dignities"], direct, strict=True):
         phase = transported["accidental_truth"]["planetary_solar_phase_truth"]
@@ -302,7 +313,10 @@ def test_dignities_chart_route_accepts_modern_co_ruler_policy(
 ) -> None:
     payload = {
         **_PAYLOAD,
-        "policy": {"essential": {"doctrine": "modern_co_rulers"}},
+        "policy": {
+            "essential": {"doctrine": "modern_co_rulers"},
+            "scoring": {"mode": "essential_only"},
+        },
     }
     direct = compute_dignities_chart(moira_engine, DignitiesChartRequest(**payload))
 
@@ -326,7 +340,10 @@ def test_dignities_condition_route_accepts_outer_planet_with_modern_policy(
     payload = {
         **_PAYLOAD,
         "planet": "Uranus",
-        "policy": {"essential": {"doctrine": "modern_co_rulers"}},
+        "policy": {
+            "essential": {"doctrine": "modern_co_rulers"},
+            "scoring": {"mode": "essential_only"},
+        },
     }
     request = DignitiesConditionChartRequest(**payload)
     direct = compute_dignities_chart_condition(moira_engine, request)
@@ -353,6 +370,23 @@ def test_dignities_chart_route_rejects_invalid_policy_value(
     )
 
     _assert_validation_envelope(response)
+
+
+def test_dignities_chart_route_rejects_incoherent_lilly_policy(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/dignities/chart",
+        json={
+            **_PAYLOAD,
+            "policy": {"essential": {"doctrine": "modern_co_rulers"}},
+        },
+    )
+
+    _assert_validation_envelope(
+        response,
+        message_fragment="william_lilly_1647 scoring requires",
+    )
 
 
 def test_dignities_routes_reject_unadmitted_timelord_distribution_transport(
@@ -410,7 +444,7 @@ def test_dignities_route_exposes_halb_and_phase_policy_switches(
         assert truth["oriental_condition"] is None
 
 
-def test_dignities_openapi_declares_halb_and_phase_policy_switches(
+def test_dignities_openapi_declares_doctrine_scoring_and_tracking_policy(
     client_with_engine: TestClient,
 ) -> None:
     schemas = client_with_engine.app.openapi()["components"]["schemas"]
@@ -419,6 +453,14 @@ def test_dignities_openapi_declares_halb_and_phase_policy_switches(
         "include_oriental_occidental"
         in schemas["AccidentalDignityPolicyRequest"]["properties"]
     )
+    assert "include_speed" in schemas["AccidentalDignityPolicyRequest"]["properties"]
+    assert "include_fixed_star_contacts" in schemas["AccidentalDignityPolicyRequest"]["properties"]
+    assert "include_for_moon" in schemas["SolarConditionPolicyRequest"]["properties"]
+    assert "include_for_luminaries" not in schemas["SolarConditionPolicyRequest"]["properties"]
+    assert "bounds_doctrine" in schemas["EssentialDignityPolicyRequest"]["properties"]
+    assert "participating_ruler_policy" in schemas["EssentialDignityPolicyRequest"]["properties"]
+    assert "mode" in schemas["DignityScoringPolicyRequest"]["properties"]
+    assert "node_doctrine" in schemas["DignityScoringPolicyRequest"]["properties"]
 
 
 @pytest.mark.requires_ephemeris

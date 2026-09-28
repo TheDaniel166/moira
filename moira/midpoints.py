@@ -63,6 +63,7 @@ Public surface / exports:
 from __future__ import annotations
 from dataclasses import dataclass, field
 from itertools import combinations
+import math
 
 from .constants import sign_of
 
@@ -109,7 +110,14 @@ __all__ = [
 CLASSIC_7: set[str] = {"Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"}
 MODERN_3:  set[str] = {"Uranus", "Neptune", "Pluto"}
 MODERN_10: set[str] = CLASSIC_7 | MODERN_3
-EXTENDED:  set[str] = MODERN_10 | {"True Node", "North Node", "Chiron", "Asc", "MC"}
+EXTENDED:  set[str] = MODERN_10 | {
+    "True Node",
+    "Mean Node",
+    "North Node",
+    "Chiron",
+    "Asc",
+    "MC",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -564,7 +572,14 @@ def to_dial(longitude: float, harmonic: int) -> float:
     dial position.  This makes symmetrical midpoint relationships visible
     as conjunctions on the projected circle.
 
-    Formula: ``(longitude × harmonic) mod (360 / harmonic)``
+    The returned value uses the degree labels printed on the dial, not the
+    0–360° angular position of the pointer on the physical dial.
+
+    Formula: ``longitude mod (360 / harmonic)``
+
+    This is distinct from a harmonic-chart transform, whose 360° coordinate
+    is ``(longitude × harmonic) mod 360``.  Multiplying by the harmonic and
+    then reducing modulo the dial size would apply the compression twice.
 
     Parameters
     ----------
@@ -584,8 +599,16 @@ def to_dial(longitude: float, harmonic: int) -> float:
     >>> to_dial(225.0, 8)   # 15° Scorpio on the 45° dial
     0.0
     """
+    if isinstance(harmonic, bool) or not isinstance(harmonic, int) or harmonic <= 0:
+        raise ValueError("harmonic must be a positive integer")
+    if isinstance(longitude, bool) or not isinstance(longitude, (int, float)):
+        raise ValueError("longitude must be a finite number")
+    longitude = float(longitude)
+    if not math.isfinite(longitude):
+        raise ValueError("longitude must be a finite number")
+
     dial_size = 360.0 / harmonic
-    return (longitude * harmonic) % dial_size
+    return longitude % dial_size
 
 
 def to_dial_90(longitude: float) -> float:

@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from moira._ephemeris_time import _bind_ephemeris_time
+from moira._kernel_paths import find_all_small_body_manifests
 from moira.julian import tdb_to_tt
 from moira.orbits import (
     OrbitalCenter,
@@ -17,6 +18,11 @@ from moira.orbits import (
     osculating_elements,
 )
 from moira.spk_reader import KernelPool
+from support.orbital_catalog_admission import (
+    ACCEPTANCE_GATES as CATALOG_ACCEPTANCE_GATES,
+    CATALOG_RECORDS,
+    admitted_release_for_record,
+)
 
 
 FIXTURE_ROOT = Path(__file__).parents[1] / "fixtures"
@@ -44,7 +50,7 @@ WHEEL_BODY_IDS = tuple(
     for body_id in shard["bodies"]
 )
 ADMITTED_ASTEROID_RELEASES = {
-    "moira-asteroids": "2026.08.12.1",
+    "moira-asteroids": "2026.09.18.1",
     WHEEL_MANIFEST["catalog_id"]: WHEEL_MANIFEST["catalog_version"],
 }
 
@@ -97,6 +103,45 @@ def _assert_horizons_elements(actual, expected) -> None:
     )
     assert actual.orbital_period_days == pytest.approx(
         expected["orbital_period_days"], abs=2.0e-8
+    )
+
+
+def _assert_catalog_horizons_elements(actual, expected) -> None:
+    """Apply the pre-existing live-product gates to a released catalog."""
+
+    gates = CATALOG_ACCEPTANCE_GATES
+    assert actual.shape is OrbitShape.ELLIPTIC
+    assert actual.semi_major_axis_au == pytest.approx(
+        expected["semi_major_axis_au"],
+        abs=gates["semi_major_axis_absolute_au"],
+    )
+    assert actual.eccentricity == pytest.approx(
+        expected["eccentricity"],
+        abs=gates["eccentricity_absolute"],
+    )
+    assert _angle_error(
+        actual.inclination_deg,
+        expected["inclination_deg"],
+    ) < gates["inclination_absolute_deg"]
+    assert _angle_error(
+        actual.lon_ascending_node_deg,
+        expected["lon_ascending_node_deg"],
+    ) < gates["node_angular_absolute_deg"]
+    assert _angle_error(
+        actual.arg_pericenter_deg,
+        expected["arg_perihelion_deg"],
+    ) < gates["arg_pericenter_angular_absolute_deg"]
+    assert _angle_error(
+        actual.mean_anomaly_deg,
+        expected["mean_anomaly_deg"],
+    ) < gates["mean_anomaly_angular_absolute_deg"]
+    assert actual.pericenter_distance_au == pytest.approx(
+        expected["perihelion_distance_au"],
+        abs=gates["pericenter_distance_absolute_au"],
+    )
+    assert actual.apocenter_distance_au == pytest.approx(
+        expected["aphelion_distance_au"],
+        abs=gates["apocenter_distance_absolute_au"],
     )
 
 
@@ -210,6 +255,54 @@ def test_packaged_twenty_five_asteroids_have_strict_receipted_elements(
             and leg.kernel_sha256
             for leg in source_legs
         )
+
+
+@pytest.mark.integration
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize(
+    "record",
+    CATALOG_RECORDS,
+    ids=[record["body"] for record in CATALOG_RECORDS],
+)
+def test_admitted_catalog_elements_match_current_frozen_horizons(
+    record,
+    receipted_small_body_reader_pool,
+) -> None:
+    release = admitted_release_for_record(
+        record,
+        find_all_small_body_manifests(),
+    )
+    if release is None:
+        pytest.skip(
+            f"the exact admitted release for {record['body']} is not installed"
+        )
+
+    pool = receipted_small_body_reader_pool
+    result = osculating_elements(
+        record["body_naif_id"],
+        _ut1_for_exact_tdb(record["jd_tdb"], pool),
+        center=OrbitalCenter.SUN,
+        frame=OrbitalFrame.J2000_ECLIPTIC,
+        reader=pool,
+    )
+    assert result.epoch_tdb == record["jd_tdb"]
+    _assert_catalog_horizons_elements(
+        result,
+        record["elements_j2000_ecliptic_au_day"],
+    )
+    release_legs = [
+        leg
+        for leg in result.provenance.state_source.legs
+        if (leg.catalog_id, leg.catalog_version)
+        == (release["catalog_id"], release["catalog_version"])
+    ]
+    assert release_legs
+    assert all(
+        leg.manifest_sha256 == release["manifest_sha256"]
+        and leg.kernel_sha256
+        and leg.kernel_bytes > 0
+        for leg in release_legs
+    )
 
 
 @pytest.mark.integration

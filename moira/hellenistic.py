@@ -26,7 +26,7 @@ from .decanates import DecanatePosition, chaldean_face
 from .dignities import (
     DignityComputationPolicy,
     DignityHorizonFrame,
-    EssentialDignityComponentTruth,
+    EssentialDignityKind,
     EssentialDignityDoctrine,
     PLANETARY_JOYS,
     PlanetaryReception,
@@ -447,6 +447,18 @@ class HellenisticProfilePolicy:
 
 
 @dataclass(frozen=True, slots=True)
+class HellenisticEssentialDignityComponentTruth:
+    """Score-free projection of one essential dignity component."""
+
+    kind: EssentialDignityKind
+    status: TruthEvaluationStatus
+    matched: bool | None
+    matching_signs: tuple[str, ...] = ()
+    ruler: str | None = None
+    reason: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class HellenisticPlanetaryJoyTruth:
     """Score-free planetary-joy receipt."""
 
@@ -467,7 +479,7 @@ class HellenisticPlanetProfile:
     sign: str
     house: int
     is_retrograde: bool
-    essential_components: tuple[EssentialDignityComponentTruth, ...]
+    essential_components: tuple[HellenisticEssentialDignityComponentTruth, ...]
     sect_truth: SectTruth
     joy_truth: HellenisticPlanetaryJoyTruth
     solar_proximity_truth: SolarProximityTruth
@@ -1361,7 +1373,17 @@ def _planet_profiles(
                 sign=dignity.sign,
                 house=dignity.house,
                 is_retrograde=speeds[planet] < 0.0,
-                essential_components=tuple(dignity.essential_truth.components),
+                essential_components=tuple(
+                    HellenisticEssentialDignityComponentTruth(
+                        kind=component.kind,
+                        status=component.status,
+                        matched=component.matched,
+                        matching_signs=component.matching_signs,
+                        ruler=component.ruler,
+                        reason=component.reason,
+                    )
+                    for component in dignity.essential_truth.components
+                ),
                 sect_truth=dignity.sect_truth,
                 joy_truth=_joy_truth(planet, dignity.house),
                 solar_proximity_truth=accidental.solar_proximity_truth,
@@ -2032,6 +2054,7 @@ __all__ = [
     "HellenisticObserverContext",
     "HellenisticPlanetProfile",
     "HellenisticPlanetaryJoyTruth",
+    "HellenisticEssentialDignityComponentTruth",
     "HellenisticProfileComponent",
     "HellenisticProfileExclusion",
     "HellenisticProfileNotEvaluable",

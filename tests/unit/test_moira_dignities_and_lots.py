@@ -14,6 +14,8 @@ from moira.dignities import (
     BesiegingTruth,
     ConditionPolarity,
     DignityComputationPolicy,
+    DignityScoringMode,
+    DignityScoringPolicy,
     DignityHorizonFrame,
     DispositorshipComputationPolicy,
     DispositorshipConditionState,
@@ -355,15 +357,16 @@ def test_dignities_identify_essential_dignity_mutual_reception_and_hayz() -> Non
 
     assert by_name["Sun"].essential_dignity == "Domicile"
     assert "Angular (H7)" in by_name["Sun"].accidental_dignities
-    assert "Direct" in by_name["Sun"].accidental_dignities
+    assert "Direct" not in by_name["Sun"].accidental_dignities
     assert "In Hayz" in by_name["Sun"].accidental_dignities
 
     assert by_name["Jupiter"].essential_dignity == "Exaltation"
     assert by_name["Saturn"].essential_dignity == "Exaltation"
     assert "Retrograde" in by_name["Saturn"].accidental_dignities
 
-    assert "Mutual Reception (Mars)" in by_name["Venus"].accidental_dignities
-    assert "Mutual Reception (Venus)" in by_name["Mars"].accidental_dignities
+    assert by_name["Venus"].essential_truth.receptions[0].label == "Mutual Reception (Mars)"
+    assert by_name["Mars"].essential_truth.receptions[0].label == "Mutual Reception (Venus)"
+    assert "Mutual Reception (Mars)" not in by_name["Venus"].accidental_dignities
 
 
 def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
@@ -378,9 +381,22 @@ def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
         {"name": "Saturn", "degree": 200.0, "is_retrograde": True},
     ]
 
-    legacy_policy = DignityComputationPolicy(
+    policy = DignityComputationPolicy(
         accidental=AccidentalDignityPolicy(
+            include_speed=False,
+            include_lunar_phase=False,
             include_oriental_occidental=False,
+            include_planetary_aspects=False,
+            include_node_contacts=False,
+            include_fixed_star_contacts=False,
+            include_besieging=False,
+            include_joy=False,
+            solar=SolarConditionPolicy(
+                include_cazimi=False,
+                include_combust=False,
+                include_under_sunbeams=False,
+                include_free_from_beams=False,
+            ),
             sect=SectHayzPolicy(include_halb=False),
         )
     )
@@ -389,7 +405,7 @@ def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
         for d in calculate_dignities(
             planet_positions,
             house_positions,
-            policy=legacy_policy,
+            policy=policy,
         )
     }
 
@@ -399,12 +415,12 @@ def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
         by_name["Sun"].accidental_dignities,
         by_name["Sun"].accidental_score,
         by_name["Sun"].total_score,
-    ) == ("Domicile", 5, ["Angular (H7)", "Direct", "In Hayz"], 8, 13)
+    ) == ("Domicile", 8, ["Angular (H7)", "In Hayz"], 4, 12)
     assert (
         by_name["Venus"].essential_dignity,
         by_name["Venus"].accidental_dignities,
         by_name["Venus"].accidental_score,
-        ) == ("Bound", ["Cadent (H3)", "Direct", "Mutual Reception (Mars)"], 5)
+        ) == ("Bound", ["Cadent (H3)", "Direct"], 5)
     assert (
         by_name["Venus"].essential_truth.component(
             EssentialDignityKind.DETRIMENT
@@ -417,8 +433,8 @@ def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
         by_name["Mars"].accidental_score,
     ) == (
         "Detriment",
-        ["Angular (H4)", "Direct", "Mutual Reception (Venus)", "In Hayz"],
-        13,
+        ["Angular (H4)", "Direct"],
+        8,
     )
 
     sun = by_name["Sun"]
@@ -434,8 +450,7 @@ def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
     assert sun.sect_truth.in_hayz is True
     assert sun.accidental_truth.house_condition is not None
     assert sun.accidental_truth.house_condition.label == "Angular (H7)"
-    assert sun.accidental_truth.motion_condition is not None
-    assert sun.accidental_truth.motion_condition.label == "Direct"
+    assert sun.accidental_truth.motion_condition is None
     assert sun.accidental_truth.hayz_condition is not None
     assert sun.accidental_truth.hayz_condition.label == "In Hayz"
     assert [c.label for c in sun.accidental_truth.conditions] == sun.accidental_dignities
@@ -459,7 +474,6 @@ def test_dignities_expose_source_corrected_halb_hayz_truth() -> None:
     assert [c.kind for c in venus.accidental_classification.conditions] == [
         AccidentalConditionKind.CADENT,
         AccidentalConditionKind.DIRECT,
-        AccidentalConditionKind.MUTUAL_RECEPTION,
     ]
 
     mars = by_name["Mars"]
@@ -502,7 +516,9 @@ def test_dignities_solar_proximity_bands_are_classified_correctly(
         (100.283, SolarProximityBand.CAZIMI),
         (100.284, SolarProximityBand.COMBUST),
         (108.0, SolarProximityBand.COMBUST),
-        (108.001, SolarProximityBand.UNDER_SUNBEAMS),
+        (108.001, SolarProximityBand.COMBUST),
+        (108.5, SolarProximityBand.COMBUST),
+        (108.501, SolarProximityBand.UNDER_SUNBEAMS),
         (117.0, SolarProximityBand.UNDER_SUNBEAMS),
         (117.001, SolarProximityBand.CLEAR),
     ],
@@ -548,6 +564,7 @@ def test_solar_proximity_truth_separates_non_applicability_and_policy_suppressio
                 include_cazimi=False,
                 include_combust=False,
                 include_under_sunbeams=False,
+                include_free_from_beams=False,
             ),
         )
     )
@@ -571,14 +588,14 @@ def test_solar_proximity_truth_separates_non_applicability_and_policy_suppressio
         is SolarProximityBand.COMBUST
     )
     assert by_name["Moon"].solar_truth.present is False
-    assert by_name["Moon"].solar_truth.distance_from_sun is None
+    assert by_name["Moon"].solar_truth.distance_from_sun == pytest.approx(5.0)
     assert (
         by_name["Sun"].accidental_truth.solar_proximity_truth.status
         is TruthEvaluationStatus.NOT_EVALUABLE
     )
 
 
-def test_solar_proximity_policy_assembly_preserves_existing_band_fallthrough() -> None:
+def test_solar_proximity_policy_does_not_relabel_a_suppressed_band() -> None:
     planets = [
         {"name": "Sun", "degree": 100.0},
         {"name": "Moon", "degree": 220.0},
@@ -607,16 +624,17 @@ def test_solar_proximity_policy_assembly_preserves_existing_band_fallthrough() -
         mercury.accidental_truth.solar_proximity_truth.band
         is SolarProximityBand.CAZIMI
     )
-    assert mercury.solar_truth.condition == "combust"
-    assert mercury.solar_truth.label == "Combust"
-    assert mercury.solar_truth.score == -5
+    assert mercury.solar_truth.condition is None
+    assert mercury.solar_truth.label is None
+    assert mercury.solar_truth.present is False
+    assert mercury.solar_truth.score == 0
 
 
-def test_solar_proximity_luminary_policy_can_admit_moon_but_never_sun_itself() -> None:
+def test_solar_proximity_admits_moon_by_default_but_never_sun_itself() -> None:
     policy = DignityComputationPolicy(
         accidental=AccidentalDignityPolicy(
             include_oriental_occidental=False,
-            solar=SolarConditionPolicy(include_for_luminaries=True),
+            solar=SolarConditionPolicy(),
         )
     )
     by_name = {
@@ -637,6 +655,29 @@ def test_solar_proximity_luminary_policy_can_admit_moon_but_never_sun_itself() -
         by_name["Sun"].accidental_truth.solar_proximity_truth.status
         is TruthEvaluationStatus.NOT_EVALUABLE
     )
+
+
+def test_solar_proximity_policy_can_suppress_moon_score_without_losing_raw_truth() -> None:
+    policy = DignityComputationPolicy(
+        accidental=AccidentalDignityPolicy(
+            include_oriental_occidental=False,
+            solar=SolarConditionPolicy(include_for_moon=False),
+        )
+    )
+    moon = {
+        result.planet: result
+        for result in calculate_dignities(
+            [
+                {"name": "Sun", "degree": 100.0},
+                {"name": "Moon", "degree": 105.0},
+            ],
+            _equal_houses(0.0),
+            policy=policy,
+        )
+    }["Moon"]
+
+    assert moon.solar_truth.present is False
+    assert moon.accidental_truth.solar_proximity_truth.band is SolarProximityBand.COMBUST
 
 
 def test_besieging_truth_requires_complete_dependencies_and_preserves_neighbors() -> None:
@@ -985,8 +1026,8 @@ def test_dignities_expose_read_only_inspectability_properties() -> None:
     assert sun.essential_polarity is ConditionPolarity.STRENGTHENING
     assert sun.accidental_condition_kinds == (
         AccidentalConditionKind.ANGULAR,
-        AccidentalConditionKind.DIRECT,
         AccidentalConditionKind.HAYZ,
+        AccidentalConditionKind.BENEFIC_ASPECT,
     )
     assert sun.sect_state is SectStateKind.IN_HAYZ
     assert sun.solar_kind is SolarConditionKind.NONE
@@ -1039,7 +1080,7 @@ def test_planetary_dignity_invariants_fail_loudly_on_internal_drift() -> None:
     with pytest.raises(ValueError, match="solar classification presence"):
         replace(
             venus,
-            solar_classification=replace(venus.solar_classification, present=True),
+            solar_classification=replace(venus.solar_classification, present=False),
         )
 
 
@@ -1092,22 +1133,30 @@ def test_dignities_narrow_policy_explicitly_disables_selected_conditions() -> No
     ]
     policy = DignityComputationPolicy(
         accidental=AccidentalDignityPolicy(
+            include_speed=False,
+            include_lunar_phase=False,
             include_oriental_occidental=False,
+            include_planetary_aspects=False,
+            include_node_contacts=False,
+            include_fixed_star_contacts=False,
+            include_besieging=False,
+            include_joy=False,
             solar=SolarConditionPolicy(
                 include_cazimi=False,
                 include_combust=False,
                 include_under_sunbeams=False,
-            ),
-            mutual_reception=MutualReceptionPolicy(
-                include_domicile=False,
-                include_exaltation=False,
+                include_free_from_beams=False,
             ),
             sect=SectHayzPolicy(
                 mercury_sect_model=MercurySectModel.LONGITUDE_HEURISTIC,
                 include_hayz=False,
                 include_halb=False,
             ),
-        )
+        ),
+        reception=MutualReceptionPolicy(
+            include_domicile=False,
+            include_exaltation=False,
+        ),
     )
 
     by_name = {d.planet: d for d in calculate_dignities(planet_positions, house_positions, policy=policy)}
@@ -1116,8 +1165,8 @@ def test_dignities_narrow_policy_explicitly_disables_selected_conditions() -> No
     assert policy.includes_any_solar_condition is False
     assert policy.includes_any_mutual_reception is False
 
-    assert by_name["Sun"].accidental_dignities == ["Angular (H7)", "Direct"]
-    assert by_name["Sun"].accidental_score == 6
+    assert by_name["Sun"].accidental_dignities == ["Angular (H7)"]
+    assert by_name["Sun"].accidental_score == 4
     assert by_name["Mercury"].accidental_dignities == ["Angular (H7)", "Direct"]
     assert by_name["Venus"].accidental_dignities == ["Cadent (H3)", "Direct"]
     assert by_name["Mars"].accidental_dignities == ["Angular (H4)", "Direct"]
@@ -1189,10 +1238,10 @@ def test_halb_uses_sect_relative_hemisphere_in_day_and_night_charts() -> None:
     assert not is_in_halb("Mars", "Cancer", 3, is_day_chart=False)
 
 
-def test_hayz_is_halb_plus_planetary_gender_and_mars_is_feminine() -> None:
-    assert is_in_hayz("Mars", "Cancer", 9, is_day_chart=False)
-    assert not is_in_hayz("Mars", "Leo", 9, is_day_chart=False)
-    assert not is_in_hayz("Mars", "Cancer", 3, is_day_chart=False)
+def test_hayz_is_halb_plus_planetary_gender_and_mars_is_masculine() -> None:
+    assert is_in_hayz("Mars", "Leo", 9, is_day_chart=False)
+    assert not is_in_hayz("Mars", "Cancer", 9, is_day_chart=False)
+    assert not is_in_hayz("Mars", "Leo", 3, is_day_chart=False)
 
 
 def test_mercury_sect_requires_phase_and_mercury_hayz_is_not_invented() -> None:
@@ -1236,7 +1285,7 @@ def test_dignity_chart_requires_sun_and_does_not_fabricate_mercury_phase() -> No
     )
     mars = next(item for item in result if item.planet == "Mars")
     assert mars.sect_truth is not None
-    assert mars.sect_truth.doctrine is HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007
+    assert mars.sect_truth.doctrine is HalbHayzDoctrine.AL_BIRUNI_1030_SECTION_496
     assert mars.sect_truth.mercury_rises_before_sun is None
     assert mars.sect_truth.in_halb is mars.sect_truth.hemisphere_matches
 
@@ -1310,7 +1359,8 @@ def test_modern_co_ruler_policy_adds_outer_planet_essential_dignities() -> None:
     policy = DignityComputationPolicy(
         essential=EssentialDignityPolicy(
             doctrine=EssentialDignityDoctrine.MODERN_CO_RULERS,
-        )
+        ),
+        scoring=DignityScoringPolicy(mode=DignityScoringMode.ESSENTIAL_ONLY),
     )
 
     traditional = calculate_dignities(planet_positions, house_positions)
@@ -1326,7 +1376,8 @@ def test_modern_co_ruler_policy_adds_outer_planet_essential_dignities() -> None:
     assert by_name["Uranus"].essential_dignity == "Domicile"
     assert by_name["Neptune"].essential_dignity == "Domicile"
     assert by_name["Pluto"].essential_dignity == "Domicile"
-    assert by_name["Uranus"].essential_score == 5
+    assert by_name["Uranus"].essential_score == 10
+    assert by_name["Uranus"].essential_truth.receptions[0].score == 5
     assert by_name["Uranus"].essential_truth.matching_signs == ("Aquarius",)
     assert by_name["Saturn"].essential_dignity == "Domicile"
 
@@ -1342,7 +1393,8 @@ def test_modern_co_ruler_policy_adds_outer_planet_detriments() -> None:
     policy = DignityComputationPolicy(
         essential=EssentialDignityPolicy(
             doctrine=EssentialDignityDoctrine.MODERN_CO_RULERS,
-        )
+        ),
+        scoring=DignityScoringPolicy(mode=DignityScoringMode.ESSENTIAL_ONLY),
     )
 
     by_name = {
@@ -1353,7 +1405,7 @@ def test_modern_co_ruler_policy_adds_outer_planet_detriments() -> None:
     assert by_name["Uranus"].essential_dignity == "Detriment"
     assert by_name["Neptune"].essential_dignity == "Detriment"
     assert by_name["Pluto"].essential_dignity == "Detriment"
-    assert by_name["Pluto"].essential_score == -5
+    assert by_name["Pluto"].essential_score == -10
     assert by_name["Pluto"].essential_truth.matching_signs == ("Taurus",)
 
 
@@ -1365,7 +1417,8 @@ def test_modern_co_ruler_policy_extends_domicile_receptions() -> None:
     policy = DignityComputationPolicy(
         essential=EssentialDignityPolicy(
             doctrine=EssentialDignityDoctrine.MODERN_CO_RULERS,
-        )
+        ),
+        scoring=DignityScoringPolicy(mode=DignityScoringMode.ESSENTIAL_ONLY),
     )
 
     receptions = calculate_receptions(planet_positions, policy=policy)
@@ -1475,11 +1528,9 @@ def test_reception_policy_governs_formal_reception_admissibility() -> None:
         {"name": "Saturn", "degree": 200.0, "is_retrograde": True},
     ]
     policy = DignityComputationPolicy(
-        accidental=AccidentalDignityPolicy(
-            mutual_reception=MutualReceptionPolicy(
-                include_domicile=False,
-                include_exaltation=False,
-            )
+        reception=MutualReceptionPolicy(
+            include_domicile=False,
+            include_exaltation=False,
         )
     )
 

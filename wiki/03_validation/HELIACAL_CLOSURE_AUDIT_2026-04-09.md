@@ -9,6 +9,14 @@
 > and the generated
 > [API inventory](PHYSICAL_HELIACAL_VISIBILITY_API_INVENTORY.generated.md).
 
+> **Current reconciliation (2026-09-28).** The post-audit
+> `heliacal_rising_oracle_matrix.json` now covers morning-first heliacal rising
+> for Mercury, Venus, Mars, Jupiter, and Saturn, including the reported Jupiter
+> open-apparition regression. References below to planetary evidence not being
+> collected into a matrix describe the April baseline. The remaining corpus
+> gaps are non-Sirius stellar authority rows and moonlight-enabled
+> live-ephemeris event cases.
+
 Purpose:
 - isolate the heliacal and generalized visibility frontier into its own audit
 - determine what is already covered by Moira's current heliacal subsystem
@@ -182,7 +190,8 @@ But the current validation basis is still uneven across target families:
 - Moon:
   strong for lunar crescent class law through Yallop
 - Planets:
-  some admitted validation basis exists, but the public validation story is not yet collected into one sharp heliacal corpus statement
+  all five visible planets now have a frozen morning-first oracle matrix;
+  broader event-kind and environment coverage remains separate evidence
 - Stars:
   the Sirius/Sothic anchor exists, but broad stellar heliacal validation is still thin
 - Moonlight-aware visibility:
@@ -196,7 +205,8 @@ Status:
 - real
 
 What is missing:
-- a clearer unified heliacal validation matrix covering Moon, planets, and stars as separate target classes
+- one cross-target synthesis connecting the existing lunar, all-planet, and
+  stellar evidence without pretending they share one observational criterion
 - a broader stellar corpus beyond the Sirius anchor
 - explicit moonlight-on live-ephemeris validation cases
 

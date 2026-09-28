@@ -29,7 +29,7 @@ _STAGE1_AUTHORITY_RECORDS = tuple(
     for filename in (
         "horizons_orbital_elements_calibration.json",
         "horizons_orbital_elements_holdout.json",
-        "horizons_orbital_elements_catalog_holdout.json",
+        "horizons_orbital_elements_catalog_holdout_2026_09_28.json",
     )
     for record in json.loads(
         (_FIXTURE_ROOT / filename).read_text(encoding="utf-8")

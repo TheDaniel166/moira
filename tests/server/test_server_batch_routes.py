@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 from fastapi.testclient import TestClient
 import pytest
 
+from moira import Moira
 from moira.batch import (
-    BatchFailure,
-    EventBatchRequest,
     EventBatchResult,
 )
 from moira.stations import StationEvent
@@ -15,9 +12,42 @@ from moira.transits_aspects import AspectTransitEvent
 from moira.transits_equatorial import EquatorialTransitEvent
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.models.common import REST_BATCH_MAX_ITEMS
 
 
 pytestmark = pytest.mark.loopback
+
+
+def test_batch_openapi_contracts_bound_request_count() -> None:
+    schemas = create_app(ServerConfig(docs_enabled=False)).openapi()["components"]["schemas"]
+    for schema_name in (
+        "ChartsBatchRequest",
+        "TransitsBatchRequest",
+        "ReturnsBatchRequest",
+        "EventsBatchRequest",
+        "ProgressionsBatchRequest",
+    ):
+        requests_schema = schemas[schema_name]["properties"]["requests"]
+        assert requests_schema["maxItems"] == REST_BATCH_MAX_ITEMS
+
+
+def test_batch_route_rejects_request_count_above_limit(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/batch/charts",
+        json={
+            "requests": [
+                {"dt": "2000-01-01T12:00:00+00:00", "bodies": ["Sun"]}
+            ]
+            * (REST_BATCH_MAX_ITEMS + 1)
+        },
+    )
+
+    assert response.status_code == 422
+    body = response.json()
+    assert body["error_code"] == "validation_error"
+    assert str(REST_BATCH_MAX_ITEMS) in body["message"]
 
 
 @pytest.fixture
@@ -29,6 +59,27 @@ def client_with_engine(
     app = create_app(ServerConfig(docs_enabled=False))
     with TestClient(app) as client:
         yield client
+
+
+@pytest.fixture
+def client_with_small_body_engine(
+    monkeypatch: pytest.MonkeyPatch,
+    small_body_reader_pool,
+) -> TestClient:
+    """Bind the server to the explicitly admitted small-body reader pool."""
+
+    with monkeypatch.context() as constructor_patch:
+        constructor_patch.setattr(Moira, "_try_initialize_reader", lambda self: None)
+        engine = Moira()
+    engine._reader_obj = small_body_reader_pool
+    monkeypatch.setattr("moira_server.app.create_engine", lambda config: engine)
+    app = create_app(ServerConfig(docs_enabled=False))
+    try:
+        with TestClient(app) as client:
+            yield client
+    finally:
+        # The session fixture owns and closes the pool.
+        engine._reader_obj = None
 
 
 @pytest.mark.requires_ephemeris
@@ -86,9 +137,9 @@ def test_batch_charts_reduction_route_preserves_item_reduction_truth(
 
 @pytest.mark.requires_ephemeris
 def test_batch_charts_reduction_route_admits_small_bodies(
-    client_with_engine: TestClient,
+    client_with_small_body_engine: TestClient,
 ) -> None:
-    response = client_with_engine.post(
+    response = client_with_small_body_engine.post(
         "/v1/batch/charts/reduction",
         json={
             "requests": [

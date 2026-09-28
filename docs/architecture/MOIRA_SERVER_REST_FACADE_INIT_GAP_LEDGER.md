@@ -12,6 +12,9 @@ root `moira.__all__` exports
 > were never registered by `create_app()`; those definitions were removed on
 > 2026-07-26. Use the generated REST reference and Hellenistic API inventory
 > for current runtime truth.
+> The Sothic hold recorded below was subsequently superseded by the bounded
+> `/v1/sothic/egyptian-date`, `/predict-epoch`, and `/rising` admission. It is
+> retained only as the decision state of this dated audit.
 
 This ledger is a code-truth audit. It compares runtime surfaces, not the REST
 reference prose:
@@ -167,7 +170,7 @@ code exists.
 | Gap | Source surface | Status | Reason |
 |---|---|---|---|
 | Longevity / Hyleg-Alcocoden | `Moira.longevity`, longevity root surfaces | `defer_for_doctrine` | High-stakes interpretive family; public route must not imply life-expectancy prediction or advice. |
-| Sothic and Egyptian civil date | `Moira.sothic_cycle`, `Moira.sothic_epoch_finder`, `Moira.egyptian_date` | `defer_for_specialist_review` | Specialist surface; previous Phase 12 decision deliberately withheld REST admission. |
+| Sothic and Egyptian civil date | `Moira.sothic_cycle`, `Moira.sothic_epoch_finder`, `Moira.egyptian_date` | `superseded_after_snapshot` | This 2026-06 hold was later replaced by three bounded direct Sothic routes. Epoch search, drift, condition, and network routes remain outside the admitted transport. |
 | Western electional generic search/scoring | P13-U1 | `defer_for_transport_and_doctrine` | The Ramesey v1 single-moment route is admitted; generic profile scanning, scoring, ranking, advice, recommendation, and later profiles require separate admission. |
 | Arbitrary executable electional predicates/scorers | facade `electional_windows` accepts Python predicate | `engine_only` | REST must use server-defined profile catalogues only. |
 | Kernel mutation and downloads | `configure_kernel_path`, `download_missing_kernels`, `load_small_body_manifest` | `engine_only` | Operational mutation should not become ordinary public compute transport. |
@@ -307,7 +310,8 @@ This ledger does not:
 - admit Lord of the Turn into the facade without separate annual-chart API
   design
 - imply that root exports are route obligations
-- reopen Sothic, Longevity, or generic Western electional search/scoring
+- at the time of this snapshot, reopen Sothic, Longevity, or generic Western
+  electional search/scoring
 - turn operational kernel mutation into HTTP compute
 - replace family-specific route designs with a generic catch-all route
 
@@ -324,6 +328,8 @@ convenience, `P-GAP-F1C` Annual-lord specialist facade convenience, and
 Ramesey v1 bounded single-moment root/facade/REST surface.
 
 There is no remaining automatic implementation candidate from P-GAP-F1.
+Sothic transport was admitted later under its own bounded specialist review;
+that later decision does not reopen the other holds in this snapshot.
 The review is complete in
 `docs/architecture/P-GAP-F1_FACADE_PARITY_REVIEW.md`; P-GAP-F1A added
 Panchanga, Shadbala, Jaimini, Ashtakavarga, and Varga convenience methods,

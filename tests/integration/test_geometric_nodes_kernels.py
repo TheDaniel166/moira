@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import json
-import hashlib
 import math
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -25,24 +22,13 @@ from moira.planetary_nodes import geometric_node
 from moira.spk_reader import KernelPool
 from moira_server.models.nodes import GeometricNodeRequest
 from moira_server.services.nodes import compute_geometric_node
-
-
-FIXTURE_PATH = (
-    Path(__file__).parents[1]
-    / "fixtures"
-    / "horizons_orbital_elements_catalog_holdout.json"
+from support.orbital_catalog_admission import (
+    ACCEPTANCE_GATES as CATALOG_ACCEPTANCE_GATES,
+    CATALOG_RECORDS,
+    admitted_release_for_record,
 )
-FIXTURE_BYTES = FIXTURE_PATH.read_bytes()
-FIXTURE_SHA256 = hashlib.sha256(FIXTURE_BYTES).hexdigest()
-FIXTURE = json.loads(FIXTURE_BYTES)
-CATALOG_RECORDS = tuple(FIXTURE["records"])
-STAGE3_ACCEPTANCE_GATES = {
-    "semi_major_axis_absolute_au": 2.0e-13,
-    "eccentricity_absolute": 2.0e-14,
-    "inclination_absolute_deg": 2.0e-12,
-    "node_angular_absolute_deg": 5.0e-10,
-    "arg_pericenter_angular_absolute_deg": 5.0e-10,
-}
+
+
 PLANET_BODIES = (
     Body.MERCURY,
     Body.VENUS,
@@ -69,24 +55,6 @@ def _ut1_for_exact_tdb(epoch_tdb: float, reader) -> float:
 
 def _angle_error(left: float, right: float) -> float:
     return abs(((left - right + 180.0) % 360.0) - 180.0)
-
-
-def _catalog_node_admission(record) -> dict | None:
-    """Return a governed release's Stage 3 numeric admission, if present."""
-
-    target = record["body_naif_id"]
-    for manifest_path in find_all_small_body_manifests():
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        body_ids = {
-            body_id
-            for shard in manifest.get("shards", ())
-            for body_id in shard.get("bodies", ())
-        }
-        if target not in body_ids:
-            continue
-        admission = manifest.get("validation", {}).get("geometric_nodes")
-        return admission if isinstance(admission, dict) else None
-    return None
 
 
 def _assert_node_maps_true_date_core(node, elements) -> None:
@@ -216,18 +184,18 @@ def test_loaded_catalog_geometric_nodes_are_exact_true_date_core_adapters(
     CATALOG_RECORDS,
     ids=[record["body"] for record in CATALOG_RECORDS],
 )
-def test_catalog_geometric_nodes_match_frozen_horizons_when_admitted(
+def test_admitted_catalog_geometric_nodes_match_current_frozen_horizons(
     record,
     receipted_small_body_reader_pool,
 ) -> None:
-    admission = _catalog_node_admission(record)
-    if admission is None:
+    release = admitted_release_for_record(
+        record,
+        find_all_small_body_manifests(),
+    )
+    if release is None:
         pytest.skip(
-            f"the governed catalog containing {record['body']} has no "
-            "reviewed Stage 3 geometric-node accuracy admission"
+            f"the exact admitted release for {record['body']} is not installed"
         )
-    assert admission["reference_fixture_sha256"] == FIXTURE_SHA256
-    assert admission["acceptance_gates"] == STAGE3_ACCEPTANCE_GATES
 
     pool = receipted_small_body_reader_pool
     epoch_tdb = record["jd_tdb"]
@@ -258,23 +226,36 @@ def test_catalog_geometric_nodes_match_frozen_horizons_when_admitted(
     assert j2000.shape is OrbitShape.ELLIPTIC
     assert j2000.semi_major_axis_au == pytest.approx(
         expected["semi_major_axis_au"],
-        abs=STAGE3_ACCEPTANCE_GATES["semi_major_axis_absolute_au"],
+        abs=CATALOG_ACCEPTANCE_GATES["semi_major_axis_absolute_au"],
     )
     assert j2000.eccentricity == pytest.approx(
         expected["eccentricity"],
-        abs=STAGE3_ACCEPTANCE_GATES["eccentricity_absolute"],
+        abs=CATALOG_ACCEPTANCE_GATES["eccentricity_absolute"],
     )
     assert j2000.inclination_deg == pytest.approx(
         expected["inclination_deg"],
-        abs=STAGE3_ACCEPTANCE_GATES["inclination_absolute_deg"],
+        abs=CATALOG_ACCEPTANCE_GATES["inclination_absolute_deg"],
     )
     assert _angle_error(
         j2000.lon_ascending_node_deg,
         expected["lon_ascending_node_deg"],
-    ) < STAGE3_ACCEPTANCE_GATES["node_angular_absolute_deg"]
+    ) < CATALOG_ACCEPTANCE_GATES["node_angular_absolute_deg"]
     assert _angle_error(
         j2000.arg_pericenter_deg,
         expected["arg_perihelion_deg"],
-    ) < STAGE3_ACCEPTANCE_GATES[
+    ) < CATALOG_ACCEPTANCE_GATES[
         "arg_pericenter_angular_absolute_deg"
     ]
+    release_legs = [
+        leg
+        for leg in j2000.provenance.state_source.legs
+        if (leg.catalog_id, leg.catalog_version)
+        == (release["catalog_id"], release["catalog_version"])
+    ]
+    assert release_legs
+    assert all(
+        leg.manifest_sha256 == release["manifest_sha256"]
+        and leg.kernel_sha256
+        and leg.kernel_bytes > 0
+        for leg in release_legs
+    )

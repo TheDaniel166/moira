@@ -74,6 +74,35 @@ Positive examples:
 - rate-limiting a `batch_progressions` endpoint without changing the
   progression doctrine itself
 
+### 2.1 Bounded batch and response-cache policy
+
+Every named REST batch must publish and enforce a finite item count in its
+request schema. The shared default ceiling is 128 items. A route may use a
+smaller domain-specific ceiling, but may not omit the ceiling or silently
+truncate submitted work. Item-local success/failure isolation remains part of
+the batch response contract below that limit.
+
+The application may cache completed deterministic transport responses when a
+route is materially expensive. The admitted process-local cache is bounded to
+64 entries and currently covers:
+
+- solar-eclipse footprint and cartography
+- the lunar-occultation and close-approach route family
+- Sade Sati window searches
+
+One key binds the route namespace, canonical validated request, Moira engine
+version, and path-free active-reader content identity. Equivalent aware
+datetimes are normalized to UTC. Kernel-pool generation and child resource
+identities participate in the key, so changing active resources cannot reuse a
+stale value. Only a successfully completed typed response is stored; failures
+are released and remain retryable. Concurrent identical misses are coalesced
+to one calculation instead of multiplying the same expensive work.
+
+This cache does not change first-request computation time, engine algorithms,
+or numerical results. It is discarded with the worker process and is not
+shared across workers. External cache infrastructure, public HTTP cache
+headers, and durable job-result storage remain separate deployment decisions.
+
 ---
 
 ## 3. Engine Responsibilities That Must Stay In The Engine

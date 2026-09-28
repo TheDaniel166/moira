@@ -1,0 +1,112 @@
+{
+  "acceptance_gates": {
+    "apocenter_distance_absolute_au": 1e-05,
+    "arg_pericenter_angular_absolute_deg": 0.05,
+    "eccentricity_absolute": 1e-05,
+    "inclination_absolute_deg": 0.001,
+    "mean_anomaly_angular_absolute_deg": 0.05,
+    "node_angular_absolute_deg": 0.001,
+    "pericenter_distance_absolute_au": 1e-05,
+    "semi_major_axis_absolute_au": 1e-05
+  },
+  "authority_fixture": {
+    "bytes": 19914,
+    "path": "tests/fixtures/horizons_orbital_elements_catalog_holdout_2026_09_28.json",
+    "record_count": 6,
+    "retrieved_utc": "2026-09-28T18:29:00.900325Z",
+    "sha256": "1e0b5fa423a87087c084f00f4e4e2be377a96f30602c1b3ca8b2374871f33395",
+    "source": "official NASA/JPL Horizons API",
+    "target_solutions": {
+      "1P/Halley": "JPL#75",
+      "2P/Encke": "JPL#K273/17",
+      "Apophis": "JPL#220",
+      "Atira": "JPL#225",
+      "Ceres": "JPL#48",
+      "Hektor": "JPL#139"
+    }
+  },
+  "catalog_release_identity": [
+    {
+      "authority_records": 4,
+      "body_count": 11223,
+      "catalog_id": "moira-asteroids",
+      "catalog_version": "2026.09.18.1",
+      "manifest_sha256": "1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e",
+      "sampling_step_days": 10,
+      "shard_count": 449
+    },
+    {
+      "authority_records": 2,
+      "body_count": 497,
+      "catalog_id": "moira-comets",
+      "catalog_version": "2026.07.28.1",
+      "manifest_sha256": "31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1",
+      "sampling_step_days": 30,
+      "shard_count": 20
+    }
+  ],
+  "evidence_classes": {
+    "authority_validation": "Six exact-JDTDB release states are compared with fresh official JPL Horizons geometric osculating ELEMENTS under the established live-product gates.",
+    "physical_and_geometric_invariants": "Every catalog member must produce finite elements and a finite normalized geometric-node projection inside admitted coverage.",
+    "release_integrity": "Every catalog leg is bound to the declared manifest and shard SHA-256 identities."
+  },
+  "full_catalog_gate": {
+    "bodies_passed": 11720,
+    "releases_passed": 2,
+    "scope": "11223 asteroids plus 497 periodic comets",
+    "status": "passed"
+  },
+  "gate_origin": "Pre-existing product tolerances from tests/integration/test_horizons_orbits.py::test_orbital_elements_match_horizons; no tolerance was widened from the measured catalog residuals.",
+  "limitations": [
+    "The six authority cases are a representative release holdout, not 11720 independent Horizons queries.",
+    "The exhaustive catalog gates establish runtime, coverage, provenance, finiteness, and geometric invariants; they do not convert every body into an external-authority holdout.",
+    "The immutable release manifests did not retain raw Horizons responses or per-query retrieval timestamps; this admission is therefore bound to the sealed release hashes and an independently refreshed authority fixture."
+  ],
+  "measurement_date": "2026-09-28",
+  "measured_maxima": {
+    "apocenter_distance_absolute_au": 2.2369123762189247e-06,
+    "arg_pericenter_angular_absolute_deg": 1.844502435233153e-06,
+    "eccentricity_absolute": 6.7410341753060266e-09,
+    "inclination_absolute_deg": 1.2988398310653793e-05,
+    "mean_anomaly_angular_absolute_deg": 0.00010659897111509054,
+    "node_angular_absolute_deg": 1.4001909846683702e-05,
+    "pericenter_distance_absolute_au": 1.6905548516632507e-07,
+    "semi_major_axis_absolute_au": 1.202983931136714e-06
+  },
+  "network_boundary": {
+    "external_network_used": true,
+    "live_drift_audit_cases_passed": 17,
+    "live_drift_audit_cases_total": 17,
+    "source": "official NASA/JPL Horizons API"
+  },
+  "release_or_deployment_performed": false,
+  "schema": "moira.small-body-orbital-catalog-admission/v1",
+  "status": "admitted",
+  "verification": {
+    "exhaustive_elements": {
+      "bodies": 11720,
+      "call_seconds": 93.095,
+      "command": ".venv/Scripts/python.exe -m pytest tests/integration/test_orbital_elements_full_catalog.py -q -rA --durations=5",
+      "passed": 1,
+      "skipped": 0
+    },
+    "exhaustive_geometric_nodes": {
+      "asteroid_call_seconds": 80.918,
+      "bodies": 11720,
+      "comet_call_seconds": 2.381,
+      "command": ".venv/Scripts/python.exe -m pytest tests/integration/test_geometric_nodes_full_catalog.py -q -rA --durations=5",
+      "passed": 2,
+      "skipped": 0
+    },
+    "focused_offline_authority": {
+      "command": ".venv/Scripts/python.exe -m pytest tests/integration/test_orbital_elements_kernels.py tests/integration/test_geometric_nodes_kernels.py -q -rA",
+      "passed": 44,
+      "skipped": 0
+    },
+    "live_primary_drift": {
+      "command": ".venv/Scripts/python.exe -m pytest tests/integration/test_horizons_orbits.py::test_stage1_exact_tdb_horizons_authority_has_not_drifted -m external_network --run-external-network -q -rA",
+      "passed": 17,
+      "skipped": 0
+    }
+  }
+}

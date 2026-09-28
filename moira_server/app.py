@@ -9,7 +9,11 @@ from uuid import uuid4
 
 from fastapi import FastAPI, Request
 
-from .cache import ChartLRUCache
+from .cache import (
+    ChartLRUCache,
+    EXPENSIVE_RESPONSE_CACHE_MAX_SIZE,
+    ResponseLRUCache,
+)
 from .config import ServerConfig
 from .errors import register_exception_handlers
 from .lifecycle import StartupReadiness, create_engine, prewarm_engine
@@ -107,6 +111,9 @@ async def _lifespan(app: FastAPI):
     app.state.startup_readiness = startup_readiness
     app.state.engine = create_engine(config)
     app.state.chart_cache = ChartLRUCache(maxsize=512)
+    app.state.expensive_response_cache = ResponseLRUCache(
+        maxsize=EXPENSIVE_RESPONSE_CACHE_MAX_SIZE
+    )
 
     if not config.prewarm_enabled or not app.state.engine.is_kernel_available():
         startup_readiness.complete_without_prewarm()

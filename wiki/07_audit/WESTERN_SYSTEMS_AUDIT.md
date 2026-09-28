@@ -10,6 +10,13 @@
 > catalog is also research-only and absent from public and registered REST
 > surfaces. These are not current Hellenistic gaps or release backlog.
 
+> **House-system correction (2026-09-28).** The polar-house narrative later in
+> this point-in-time audit predates the integrated high-latitude work. Current
+> runtime truth has `_POLAR_SYSTEMS == {'K'}`; Campanus, Regiomontanus, and
+> Topocentric join Placidus and Alcabitius in owning integrated high-latitude
+> geometry. Use `HOUSES_BACKEND_STANDARD.md`, not the historical work log below,
+> for current policy.
+
 > **Current prioritization:** Use the cross-tradition
 > [Astrology Coverage Frontier Gap Audit (2026-08)](ASTROLOGY_COVERAGE_FRONTIER_AUDIT_2026-08.md)
 > for gap selection. It preserves its original `c868fd0` baseline and is
@@ -34,8 +41,6 @@
   layer are closed exclusions under TIMELORDS_BACKEND_STANDARD.md.
 - Exposure: Public Moira facade, server routers, __all__ exports.
 - No invention; all claims backed by file reads/greps/listings as of this session. "Gaps" called out even if docs claim completeness.
-
-**User directive notes (for refinement):** This is the initial draft per "Draft + ask for feedback on structure before finalizing content." See questions at end. All changes will follow full process (main branch, LiteralPath syncs to \\?\C:\Users\nilad\OneDrive\Desktop\Moira C++ with verification + "Files synced to main OneDrive folder.", central .moira-memory, todo tracking).
 
 ---
 

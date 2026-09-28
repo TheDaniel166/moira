@@ -2,14 +2,21 @@
 
 **Governing Authority**: Moira Canonical Instruction (`AGENTS.md`)
 
-**Audit Date**: September 21, 2026
-**Baseline Version**: Moira 6.8.2+ (Post-Tier 2 Houses & Nutation Caching)
+**Original Audit Date**: September 21, 2026
+
+**Last Reconciled**: September 28, 2026
+
+**Baseline**: current `main`; this is not a release-version manifest
 
 ---
 
 ## 1. Overview & Purpose
 
-This register catalogs all source-level **stubs**, **placeholders**, **deferred doctrinal vessels**, and **active computational frontiers** identified during the repository-wide audit of Moira's core engine (`moira/`), native substrate (`src/native/`), and server transport layer (`moira_server/`).
+This register preserves the 2026-09-21 completion receipts and records the
+remaining active validation and doctrinal frontiers identified in Moira's core
+engine (`moira/`), native substrate (`src/native/`), and server transport layer
+(`moira_server/`). Completed entries below are historical receipts, not active
+backlog.
 
 In alignment with Moira's **Law of Policy Explicitness** and **Documentation Law**, every item is recorded with its precise file anchor, architectural rationale, and verified gate conditions.
 
@@ -21,15 +28,17 @@ These items represent discrepancies between live executable code and comments or
 
 | Target | Location | Classification | Current State & Resolution |
 | :--- | :--- | :--- | :--- |
-| **`moira.sky` Subsystem Headers** | [`moira/sky/__init__.py`](moira/sky/__init__.py#L31-L56) | Stale Docstrings | **REMEDIATED (2026-09-21)**. Removed stale `[stub]` markers from all 6 fully-implemented astronomy submodules (`bodies`, `observation`, `galactic`, `events`, `eclipse`, `occultation`) and synchronized the design contract. |
+| **`moira.sky` Subsystem Headers** | [`moira/sky/__init__.py`](../../moira/sky/__init__.py#L31-L56) | Stale Docstrings | **REMEDIATED (2026-09-21)**. Removed stale `[stub]` markers from all 6 fully-implemented astronomy submodules (`bodies`, `observation`, `galactic`, `events`, `eclipse`, `occultation`) and synchronized the design contract. |
 | **Export Policy Subsystem** | `moira/_export_governance/` | Dead Subsystem | **REMEDIATED (2026-09-21)**. Excised unused `moira/_export_governance` package (11 modules), associated `tests/export_governance` (8 test suites / 162 tests), old audit reports (`reports/governance/`), and one-shot archived audit scripts. Port compliance verified across 282 engine files. |
-| **Stars Bulk Serializer** | [`moira_server/serializers/stars.py`](../../moira_server/serializers/stars.py#L139) | Transport Placeholder | `dt=results.get("dt") if isinstance(results, dict) else None, # placeholder` in `serialize_stars_bulk`. |
+| **Stars Bulk Serializer** | [`moira_server/serializers/stars.py`](../../moira_server/serializers/stars.py) | Dead Transport Helper | **REMEDIATED (2026-09-28)**. Removed the unused placeholder serializer. The live bulk-stars service constructs `StarsBulkResponse` directly from the validated request datetime. |
+| **House Dynamics and Polar-House Prose** | [`moira/houses.py`](../../moira/houses.py), [HOUSES_BACKEND_STANDARD.md](../02_standards/HOUSES_BACKEND_STANDARD.md) | Stale / overstated documentation | **REMEDIATED (2026-09-28)**. Reconciled the implemented dynamics surface, `_POLAR_SYSTEMS == {'K'}`, and internal analytical/invariant validation scope. |
 
 ---
 
-## 3. Category B — Active Computational Frontiers
+## 3. Category B — Completed Computational Frontiers (Historical Receipts)
 
-Three high-priority frontiers identified during the post-6.8.2 optimization survey:
+The following projects were active frontiers during the original survey and
+are retained only as completion receipts. They are not current work items.
 
 ### Frontier 1: Planetary Reduction Pipeline (`all_planets_at` Cash-In)
 - **Status**: **COMPLETED & VERIFIED** (September 2026)
@@ -112,12 +121,43 @@ Three high-priority frontiers identified during the post-6.8.2 optimization surv
     - Vertex: $\dot{\lambda}_{\text{VTX}} = \omega_{\text{sidereal}} \frac{\cos \varepsilon - \cot \phi \sin \varepsilon \sin \theta}{\cos^2 \theta + (\sin \theta \cos \varepsilon - \cot \phi \sin \varepsilon)^2}$ via `analytical_vertex_speed()`.
   - **Part 2 (Engine Core & Facade Integration)**: Re-exported analytical functions and `house_dynamics_from_armc` at package root; integrated `Moira.house_dynamics(dt, latitude, longitude, system=...)` into `CoreFacadeMixin` for seamless high-level execution.
   - **Part 3 (Server Transport Layer)**: Added Pydantic v2 schemas (`CuspSpeedResponse`, `HouseDynamicsRequest`, `HouseDynamicsResponse`) and registered endpoint `POST /v1/houses/dynamics` with timezone validation and custom step/policy forwarding.
-  - **Part 4 (Comprehensive Oracle Validation)**: Validated across 9 house systems (Placidus, Koch, Regiomontanus, Campanus, Topocentric, Alcabitius, Porphyry, Equal, Whole Sign), 4 latitude regimes (London $+51.5^\circ$, Equator $0.0^\circ$, Sydney $-33.86^\circ$, Reykjavik $+64.1^\circ$), and 3 epochs (J2000, J1900, Modern 2026). Proved sub-millidegree/day analytical agreement ($< 0.0001^\circ/\text{day}$), equatorial horizon symmetry ($\dot{\lambda}_{\text{ASC}}(\theta) = \dot{\lambda}_{\text{MC}}(\theta + 90^\circ)$), and $O(h^4)$ Richardson convergence.
+  - **Part 4 (Analytical and Invariant Validation)**: Validated across 9 house systems (Placidus, Koch, Regiomontanus, Campanus, Topocentric, Alcabitius, Porphyry, Equal, Whole Sign), 4 latitude regimes (London $+51.5^\circ$, Equator $0.0^\circ$, Sydney $-33.86^\circ$, Reykjavik $+64.1^\circ$), and 3 epochs (J2000, J1900, Modern 2026). Proved sub-millidegree/day internal analytical agreement ($< 0.0001^\circ/\text{day}$), equatorial horizon symmetry ($\dot{\lambda}_{\text{ASC}}(\theta) = \dot{\lambda}_{\text{MC}}(\theta + 90^\circ)$), and $O(h^4)$ Richardson convergence. This is internal mathematical validation, not an external house-speed authority comparison.
   - Validated by 90 automated tests in [`tests/unit/test_house_dynamics_oracle.py`](tests/unit/test_house_dynamics_oracle.py), 28 tests in [`tests/unit/test_house_dynamics.py`](tests/unit/test_house_dynamics.py), and 4 server contract tests in [`tests/server/test_server_house_dynamics_routes.py`](tests/server/test_server_house_dynamics_routes.py).
+
+### Frontier 9: Current Small-Body Orbital Catalog Admission
+- **Status**: **COMPLETED & VERIFIED** (September 28, 2026)
+- **Anchors**: [`tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json`](../../tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json), [`tests/integration/test_orbital_elements_full_catalog.py`](../../tests/integration/test_orbital_elements_full_catalog.py), [`tests/integration/test_geometric_nodes_full_catalog.py`](../../tests/integration/test_geometric_nodes_full_catalog.py)
+- **Scope & Delivery**:
+  - Rebound active engine guidance and exhaustive gates to `moira-asteroids@2026.09.18.1` (11,223 bodies / 449 shards) while retaining `moira-comets@2026.07.28.1` (497 bodies / 20 shards).
+  - Refreshed the exact-JDTDB JPL Horizons catalog holdout without rewriting its historical predecessor; only Encke's upstream solution changed, from `JPL#K273/14` to `JPL#K273/17`.
+  - Bound the six-case authority corpus, exact release manifest hashes, and pre-existing live osculating-element product gates in a path-free governed admission. Six direct element and six geometric-node comparisons run and pass with no authority skip; the isolated live-primary drift audit passes 17/17.
+  - Exhaustive element and geometric-node sweeps pass all 11,720 sovereign bodies with coverage, finiteness, canonical identity, exact core mapping, and manifest/shard receipt assertions.
+  - This receipt does not admit small-body apsidal-passage event timing; that remains separately visible below.
 
 ---
 
-## 4. Category C — Formally Deferred Doctrinal & Astronomical Systems
+## 4. Category C — Active Validation Frontiers
+
+### 1. Small-body apsidal-passage accuracy
+
+- **Status**: Active event-search validation.
+- **Detail**: The element and geometric-node catalog admission is complete.
+  Six asteroid/comet apsidal-passage timing comparisons still lack a reviewed
+  release-bound acceptance decision and therefore remain `NOT RUN`. Current
+  gate language lives in
+  [VALIDATION_ASTRONOMY.md](../03_validation/VALIDATION_ASTRONOMY.md).
+
+### 2. Heliacal corpus breadth
+
+- **Status**: Active validation corpus work; core event search is implemented.
+- **Detail**: The current oracle matrix exercises Mercury, Venus, Mars,
+  Jupiter, and Saturn. Remaining breadth is at least one externally admitted
+  non-Sirius stellar event row plus moonlight-enabled live-ephemeris event
+  cases. The dated April closure audit is historical.
+
+---
+
+## 5. Category D — Formally Deferred Doctrinal & Astronomical Systems
 
 These systems represent intentional boundaries where Moira refuses to invent speculative math without primary authority or oracle validation.
 
@@ -141,9 +181,28 @@ These systems represent intentional boundaries where Moira refuses to invent spe
 - **Status**: Future Work.
 - **Detail**: The central line, path width, duration, and WGS-84 tangency endpoints are rigorously validated against NASA GSFC Besselian elements. Full continuous terminator-limit closure envelopes are reserved for atlas-grade cartographic expansion.
 
+### 5. Pluto Photometry
+- **Location**: [`moira/phase.py`](../../moira/phase.py)
+- **Status**: Unsupported Model.
+- **Detail**: Moira does not invent a modern apparent-magnitude model for Pluto.
+
+### 6. Named D60 Shashtiamsha Lords
+- **Location**: [`moira/varga.py`](../../moira/varga.py)
+- **Status**: Doctrine Not Implemented.
+- **Detail**: D60 computation exists; optional traditional name/lord mapping
+  remains absent until its source and policy are admitted.
+
+### Parked: Further Sothic Historical Confirmation
+
+The bounded engine and REST surface may remain in place. Additional historical
+epoch claims, schematic-projection expansion, or release work stay parked
+until explicitly reopened.
+
 ---
 
-## 5. Maintenance Protocol
+## 6. Maintenance Protocol
 
-1. **Pruning & Verification**: When an item in this register is implemented, remove its entry here and record the completion in `CHANGELOG.md` under `## [Unreleased]`.
+1. **Pruning & Verification**: When an item in this register is implemented,
+   move it out of active-frontier language and record material completion in
+   `CHANGELOG.md` and the relevant validation or release receipt.
 2. **Zero False Assertions**: Stubs must continue raising explicit errors (`NotImplementedError` or typed unavailable receipts) rather than returning misleading zero or placeholder values.

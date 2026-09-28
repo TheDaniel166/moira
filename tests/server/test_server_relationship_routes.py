@@ -118,6 +118,66 @@ def test_chart_shape_route_rejects_non_jones_planet_sets(
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/v1/midpoints/calculate",
+        "/v1/midpoints/to-point",
+        "/v1/midpoints/pictures",
+        "/v1/midpoints/weighting",
+        "/v1/midpoints/clusters",
+    ],
+)
+def test_midpoint_routes_reject_nested_include_nodes(
+    client_with_engine: TestClient,
+    path: str,
+) -> None:
+    payload: dict[str, object] = {
+        "chart": {**_pair_payload()["first"], "include_nodes": True},
+        "include_nodes": False,
+    }
+    if path.endswith("/to-point"):
+        payload["target"] = 180.0
+
+    response = client_with_engine.post(path, json=payload)
+
+    assert response.status_code == 422
+    assert "chart.include_nodes is not accepted" in response.json()["message"]
+
+
+def test_midpoint_route_rejects_coercive_top_level_include_nodes(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/midpoints/calculate",
+        json={"chart": _pair_payload()["first"], "include_nodes": 1},
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.requires_ephemeris
+def test_midpoint_route_extended_set_admits_chart_node_names(
+    client_with_engine: TestClient,
+) -> None:
+    response = client_with_engine.post(
+        "/v1/midpoints/calculate",
+        json={
+            "chart": _pair_payload()["first"],
+            "planet_set": "extended",
+            "include_nodes": True,
+        },
+    )
+
+    assert response.status_code == 200
+    names = {
+        name
+        for event in response.json()["events"]
+        for name in (event["planet_a"], event["planet_b"])
+    }
+    assert {"True Node", "Mean Node"}.issubset(names)
+
+
 @pytest.mark.requires_ephemeris
 @pytest.mark.parametrize(
     ("method", "extra"),

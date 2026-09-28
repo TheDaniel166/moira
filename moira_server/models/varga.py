@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import Field, field_validator
 
-from .common import _StrictModel
+from .common import REST_BATCH_MAX_ITEMS, _StrictModel
 from .sidereal_context import SiderealChartBaseRequest, SiderealChartProvenanceResponse
 
 
@@ -76,7 +76,10 @@ class VargaShodashvargaRequest(_StrictModel):
 
 class VargaNamedBatchRequest(_StrictModel):
     varga: VargaSelector
-    longitudes: dict[str, float] = Field(min_length=1)
+    longitudes: dict[str, float] = Field(
+        min_length=1,
+        max_length=REST_BATCH_MAX_ITEMS,
+    )
 
     @field_validator("longitudes")
     @classmethod
@@ -86,7 +89,10 @@ class VargaNamedBatchRequest(_StrictModel):
 
 
 class VargaShodashvargaBatchRequest(_StrictModel):
-    longitudes: dict[str, float] = Field(min_length=1)
+    longitudes: dict[str, float] = Field(
+        min_length=1,
+        max_length=REST_BATCH_MAX_ITEMS,
+    )
 
     @field_validator("longitudes")
     @classmethod
@@ -119,7 +125,10 @@ class VargaChartShodashvargaRequest(SiderealChartBaseRequest):
 
 
 class VargaChartShodashvargaBatchRequest(SiderealChartBaseRequest):
-    bodies: list[str] = Field(min_length=1)
+    bodies: list[str] = Field(
+        min_length=1,
+        max_length=REST_BATCH_MAX_ITEMS,
+    )
 
 
 class VargaPointResponse(_StrictModel):

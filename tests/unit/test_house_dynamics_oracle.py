@@ -1,13 +1,13 @@
 """
-Comprehensive Oracle and Invariant Validation Suite for House Dynamics & Cusp Speeds.
+Analytical and invariant validation for house dynamics and cusp speeds.
 
-Fulfills the Gate Condition from ENGINE_FRONTIERS_AND_POLISH_REGISTER.md:
-    "Requires validation against an independent oracle returning cusp speeds in
-     extended output for >= 5 house systems, >= 3 latitudes, >= 3 historical epochs,
-     within a tolerance of 0.001 deg/day."
+This suite is an internal mathematical validation layer. It compares closed
+forms with independently assembled finite differences and exercises structural
+invariants across systems, latitudes, and epochs. It is not an external-authority
+oracle for complete house-system cusp speeds.
 
 Verifications:
-1. Exact Analytical Closed-Form Ground Truth:
+1. Analytical closed-form checks:
    - Midheaven velocity d(lambda_MC)/dt against analytical_mc_speed (<= 0.0001 deg/day)
    - Ascendant velocity d(lambda_ASC)/dt against analytical_asc_speed (<= 0.0001 deg/day)
    - Vertex velocity d(lambda_VTX)/dt against analytical_vertex_speed (<= 0.0001 deg/day)

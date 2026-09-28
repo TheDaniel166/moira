@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from moira.constants import Body
 
+from .common import REST_BATCH_MAX_ITEMS
+
 
 ADMITTED_ORBIT_BODIES = (
     Body.MERCURY,
@@ -351,7 +353,7 @@ class OrbitClassEnvelopeResponse(_StrictModel):
     provenance: OrbitClassProvenanceResponse
 
 
-MAX_ORBIT_CLASS_BATCH_BODIES = 1000
+MAX_ORBIT_CLASS_BATCH_BODIES = REST_BATCH_MAX_ITEMS
 
 
 class OrbitClassBatchRequest(_StrictModel):

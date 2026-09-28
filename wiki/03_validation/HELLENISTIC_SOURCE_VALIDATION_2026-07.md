@@ -200,7 +200,7 @@ table goldens:
   projection policies;
 - solar proximity thresholds and the besieging enclosure orb are named
   computation policies;
-- Halb/Hayz uses an identified medieval al-Qabisi/Bonatti lineage and remains
+- Halb/Hayz uses the identified medieval al-Biruni section 496 doctrine and remains
   labeled accordingly inside the classical condition component;
 - whole-sign direction and overcoming tests validate the declared sign
   geometry and typed boundary behavior, not astrological effects;

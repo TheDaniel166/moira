@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 
 from moira import Moira
 
+from ..cache import ResponseLRUCache, cached_response
 from ..dependencies import get_engine
 from ..models.phenomena import (
     AllLunarOccultationsRequest,
@@ -167,6 +168,10 @@ from ..services.phenomena import (
 
 
 router = APIRouter(prefix="/v1", tags=["phenomena"])
+
+
+def _expensive_cache(request: Request) -> ResponseLRUCache | None:
+    return getattr(request.app.state, "expensive_response_cache", None)
 
 
 @router.post("/stations/search", response_model=StationSearchResponse)
@@ -350,10 +355,17 @@ def solar_eclipse_path_route(
 )
 def solar_eclipse_footprint_route(
     request: SolarEclipseFootprintRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> SolarEclipseVisibilityFootprintResponse:
-    return serialize_solar_eclipse_footprint(
-        compute_solar_eclipse_footprint(engine, request)
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:eclipses:solar:footprint",
+        request,
+        engine,
+        lambda: serialize_solar_eclipse_footprint(
+            compute_solar_eclipse_footprint(engine, request)
+        ),
     )
 
 
@@ -376,94 +388,171 @@ def solar_eclipse_global_circumstances_route(
 )
 def solar_eclipse_cartography_route(
     request: SolarEclipseCartographyRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> SolarEclipseCartographyResponse:
-    return serialize_solar_eclipse_cartography(
-        compute_solar_eclipse_cartography(engine, request)
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:eclipses:solar:cartography",
+        request,
+        engine,
+        lambda: serialize_solar_eclipse_cartography(
+            compute_solar_eclipse_cartography(engine, request)
+        ),
     )
 
 
 @router.post("/occultations/close-approaches", response_model=CloseApproachSearchResponse)
 def close_approaches_route(
     request: CloseApproachRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> CloseApproachSearchResponse:
-    return CloseApproachSearchResponse(
-        events=[serialize_close_approach(event) for event in compute_close_approaches(engine, request)]
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:close-approaches",
+        request,
+        engine,
+        lambda: CloseApproachSearchResponse(
+            events=[
+                serialize_close_approach(event)
+                for event in compute_close_approaches(engine, request)
+            ]
+        ),
     )
 
 
 @router.post("/occultations/lunar", response_model=LunarOccultationSearchResponse)
 def lunar_occultations_route(
     request: LunarOccultationRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> LunarOccultationSearchResponse:
-    return LunarOccultationSearchResponse(
-        events=[serialize_lunar_occultation(event) for event in compute_lunar_occultations(engine, request)]
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar",
+        request,
+        engine,
+        lambda: LunarOccultationSearchResponse(
+            events=[
+                serialize_lunar_occultation(event)
+                for event in compute_lunar_occultations(engine, request)
+            ]
+        ),
     )
 
 
 @router.post("/occultations/lunar-star", response_model=LunarOccultationSearchResponse)
 def lunar_star_occultations_route(
     request: LunarStarOccultationRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> LunarOccultationSearchResponse:
-    return LunarOccultationSearchResponse(
-        events=[serialize_lunar_occultation(event) for event in compute_lunar_star_occultations(engine, request)]
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-star",
+        request,
+        engine,
+        lambda: LunarOccultationSearchResponse(
+            events=[
+                serialize_lunar_occultation(event)
+                for event in compute_lunar_star_occultations(engine, request)
+            ]
+        ),
     )
 
 
 @router.post("/occultations/all-lunar", response_model=LunarOccultationSearchResponse)
 def all_lunar_occultations_route(
     request: AllLunarOccultationsRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> LunarOccultationSearchResponse:
-    return LunarOccultationSearchResponse(
-        events=[serialize_lunar_occultation(event) for event in compute_all_lunar_occultations(engine, request)]
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:all-lunar",
+        request,
+        engine,
+        lambda: LunarOccultationSearchResponse(
+            events=[
+                serialize_lunar_occultation(event)
+                for event in compute_all_lunar_occultations(engine, request)
+            ]
+        ),
     )
 
 
 @router.post("/occultations/lunar-path", response_model=OccultationPathSearchResponse)
 def lunar_occultation_path_route(
     request: LunarOccultationPathRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> OccultationPathSearchResponse:
-    return OccultationPathSearchResponse(
-        events=[
-            serialize_occultation_path_geometry(event)
-            for event in compute_lunar_occultation_paths(engine, request)
-        ]
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-path",
+        request,
+        engine,
+        lambda: OccultationPathSearchResponse(
+            events=[
+                serialize_occultation_path_geometry(event)
+                for event in compute_lunar_occultation_paths(engine, request)
+            ]
+        ),
     )
 
 
 @router.post("/occultations/lunar-path-at", response_model=OccultationPathGeometryResponse)
 def lunar_occultation_path_at_route(
     request: LunarOccultationPathAtRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> OccultationPathGeometryResponse:
-    return serialize_occultation_path_geometry(compute_lunar_occultation_path_at(engine, request))
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-path-at",
+        request,
+        engine,
+        lambda: serialize_occultation_path_geometry(
+            compute_lunar_occultation_path_at(engine, request)
+        ),
+    )
 
 
 @router.post("/occultations/lunar-star-path", response_model=OccultationPathSearchResponse)
 def lunar_star_occultation_path_route(
     request: LunarStarOccultationPathRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> OccultationPathSearchResponse:
-    return OccultationPathSearchResponse(
-        events=[
-            serialize_occultation_path_geometry(event)
-            for event in compute_lunar_star_occultation_paths(engine, request)
-        ]
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-star-path",
+        request,
+        engine,
+        lambda: OccultationPathSearchResponse(
+            events=[
+                serialize_occultation_path_geometry(event)
+                for event in compute_lunar_star_occultation_paths(engine, request)
+            ]
+        ),
     )
 
 
 @router.post("/occultations/lunar-star-path-at", response_model=OccultationPathGeometryResponse)
 def lunar_star_occultation_path_at_route(
     request: LunarStarOccultationPathAtRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> OccultationPathGeometryResponse:
-    return serialize_occultation_path_geometry(
-        compute_lunar_star_occultation_path_at(engine, request)
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-star-path-at",
+        request,
+        engine,
+        lambda: serialize_occultation_path_geometry(
+            compute_lunar_star_occultation_path_at(engine, request)
+        ),
     )
 
 
@@ -473,13 +562,20 @@ def lunar_star_occultation_path_at_route(
 )
 def lunar_occultation_path_topology_route(
     request: LunarOccultationPathTopologyRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> OccultationPathTopologySearchResponse:
-    return OccultationPathTopologySearchResponse(
-        events=[
-            serialize_occultation_path_topology(event)
-            for event in compute_lunar_occultation_path_topologies(engine, request)
-        ]
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-path-topology",
+        request,
+        engine,
+        lambda: OccultationPathTopologySearchResponse(
+            events=[
+                serialize_occultation_path_topology(event)
+                for event in compute_lunar_occultation_path_topologies(engine, request)
+            ]
+        ),
     )
 
 
@@ -489,10 +585,17 @@ def lunar_occultation_path_topology_route(
 )
 def lunar_occultation_path_topology_at_route(
     request: LunarOccultationPathTopologyAtRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> OccultationPathTopologyResponse:
-    return serialize_occultation_path_topology(
-        compute_lunar_occultation_path_topology_at(engine, request)
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-path-topology-at",
+        request,
+        engine,
+        lambda: serialize_occultation_path_topology(
+            compute_lunar_occultation_path_topology_at(engine, request)
+        ),
     )
 
 
@@ -502,16 +605,23 @@ def lunar_occultation_path_topology_at_route(
 )
 def lunar_star_occultation_path_topology_route(
     request: LunarStarOccultationPathTopologyRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> OccultationPathTopologySearchResponse:
-    return OccultationPathTopologySearchResponse(
-        events=[
-            serialize_occultation_path_topology(event)
-            for event in compute_lunar_star_occultation_path_topologies(
-                engine,
-                request,
-            )
-        ]
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-star-path-topology",
+        request,
+        engine,
+        lambda: OccultationPathTopologySearchResponse(
+            events=[
+                serialize_occultation_path_topology(event)
+                for event in compute_lunar_star_occultation_path_topologies(
+                    engine,
+                    request,
+                )
+            ]
+        ),
     )
 
 
@@ -521,10 +631,17 @@ def lunar_star_occultation_path_topology_route(
 )
 def lunar_star_occultation_path_topology_at_route(
     request: LunarStarOccultationPathTopologyAtRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> OccultationPathTopologyResponse:
-    return serialize_occultation_path_topology(
-        compute_lunar_star_occultation_path_topology_at(engine, request)
+    return cached_response(
+        _expensive_cache(http_request),
+        "v1:occultations:lunar-star-path-topology-at",
+        request,
+        engine,
+        lambda: serialize_occultation_path_topology(
+            compute_lunar_star_occultation_path_topology_at(engine, request)
+        ),
     )
 
 

@@ -58,8 +58,12 @@ from .dignities_types import (
     _normalize_dispositorship_subject_name,
 )
 from .dignities_types import *  # noqa: F401, F403 — re-export full public surface
-from .egyptian_bounds import bound_ruler
-from .triplicity import triplicity_assignment_for, ParticipatingRulerPolicy as _ParticipatingRulerPolicy
+from .egyptian_bounds import EgyptianBoundsPolicy, bound_ruler
+from .triplicity import (
+    ParticipatingRulerPolicy as _ParticipatingRulerPolicy,
+    triplicity_assignment_for,
+    triplicity_score,
+)
 
 __all__ = [
     # Tables
@@ -88,10 +92,16 @@ __all__ = [
     "DispositorshipConditionState",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
+    "DignityScoringMode",
+    "DignityNodeDoctrine",
+    "EgyptianBoundsDoctrine",
+    "TriplicityDoctrine",
+    "ParticipatingRulerPolicy",
     "HalbHayzDoctrine",
     "MercurySectModel",
     # Policy dataclasses
     "EssentialDignityPolicy",
+    "DignityScoringPolicy",
     "SolarConditionPolicy",
     "MutualReceptionPolicy",
     "SectHayzPolicy",
@@ -139,6 +149,7 @@ __all__ = [
     "SectComponentTruth",
     "EssentialDignityTruth",
     "AccidentalDignityCondition",
+    "AccidentalDignityEvaluationTruth",
     "SolarConditionTruth",
     "MutualReceptionTruth",
     "SectTruth",
@@ -239,23 +250,68 @@ FALL: dict[str, list[str]] = {
 # Scoring constants
 # ---------------------------------------------------------------------------
 
-SCORE_DOMICILE   =  5;  SCORE_EXALTATION =  4
-SCORE_TRIPLICITY =  3;  SCORE_BOUND      =  2;  SCORE_FACE     =  1
-SCORE_DETRIMENT  = -5;  SCORE_FALL       = -4
-SCORE_PEREGRINE  =  0
+SCORE_DOMICILE = 5
+SCORE_EXALTATION = 4
+SCORE_TRIPLICITY = 3
+SCORE_BOUND = 2
+SCORE_FACE = 1
+SCORE_DETRIMENT = -5
+SCORE_FALL = -4
+SCORE_PEREGRINE = -5
 
-SCORE_ANGULAR    =  4;  SCORE_SUCCEDENT  =  2;  SCORE_CADENT   = -2
-SCORE_DIRECT     =  2;  SCORE_RETROGRADE = -5
+SCORE_HOUSE = {
+    1: 5, 10: 5,
+    4: 4, 7: 4, 11: 4,
+    2: 3, 5: 3,
+    9: 2,
+    3: 1,
+    6: -2, 8: -2,
+    12: -5,
+}
+SCORE_DIRECT = 4
+SCORE_RETROGRADE = -5
+SCORE_SWIFT = 2
+SCORE_SLOW = -2
 SCORE_CAZIMI     =  5   # within 17' of Sun
-SCORE_COMBUST    = -5   # within 8 degrees
-SCORE_SUNBEAMS   = -4   # 8 degrees-17 degrees
+SCORE_COMBUST    = -5   # beyond cazimi through 8 degrees 30 minutes
+SCORE_SUNBEAMS   = -4   # beyond combustion through 17 degrees
+SCORE_FREE_FROM_BEAMS = 5
 SCORE_MR_DOMICILE   = 5
 SCORE_MR_EXALTATION = 4
-SCORE_JOY        =  3   # planet in its joy house
-SCORE_HALB       =  1   # sect-relative hemisphere condition
+SCORE_JOY        =  0   # tracked condition; not in Lilly's ready table
+SCORE_HALB       =  0   # tracked condition; not in Lilly's ready table
 SCORE_ORIENTAL   =  2   # oriental planet (favourable phase)
 SCORE_OCCIDENTAL = -2   # occidental planet (unfavourable phase)
 SCORE_BESIEGED   = -5   # enclosed between two malefics
+
+SCORE_MOON_WAXING = 2
+SCORE_MOON_WANING = -2
+SCORE_BENEFIC_CONJUNCTION = 5
+SCORE_BENEFIC_TRINE = 4
+SCORE_BENEFIC_SEXTILE = 3
+SCORE_MALEFIC_CONJUNCTION = -5
+SCORE_MALEFIC_OPPOSITION = -4
+SCORE_MALEFIC_SQUARE = -3
+SCORE_NORTH_NODE_CONJUNCTION = 4
+SCORE_SOUTH_NODE_CONJUNCTION = -4
+SCORE_REGULUS_CONJUNCTION = 6
+SCORE_SPICA_CONJUNCTION = 5
+SCORE_ALGOL_CONJUNCTION = -5
+
+# Lilly, Christian Astrology (1647), pp. 60-84: mean daily motions used by
+# the ready table's swift/slow testimony. Values are decimal degrees/day.
+LILLY_MEAN_DAILY_MOTION = {
+    "Saturn": (2 + 1 / 60) / 60,
+    "Jupiter": (4 + 59 / 60) / 60,
+    "Mars": (31 + 27 / 60) / 60,
+    "Sun": (59 + 8 / 60) / 60,
+    "Venus": (59 + 8 / 60) / 60,
+    "Mercury": (59 + 8 / 60) / 60,
+    "Moon": 13 + 10 / 60 + 36 / 3600,
+}
+
+_PARTILE_ORB_DEG = 1.0
+_FIXED_STAR_ORBS_DEG = {"Regulus": 6.0, "Spica": 5.0, "Algol": 5.0}
 
 ANGULAR_HOUSES   = {1, 4, 7, 10}
 SUCCEDENT_HOUSES = {2, 5, 8, 11}
@@ -298,7 +354,7 @@ PREFERRED_GENDER: dict[str, str] = {
     "Saturn":  "masculine",
     "Moon":    "feminine",
     "Venus":   "feminine",
-    "Mars":    "feminine",
+    "Mars":    "masculine",
     "Mercury": "neutral",
 }
 
@@ -350,10 +406,10 @@ def halb_required_hemisphere(
     """
     Return the sect-relative hemisphere required for Halb.
 
-    Under the admitted al-Qabisi doctrine, diurnal planets belong above the
-    horizon by day and below it by night; nocturnal planets reverse that
-    relation. Mercury's effective sect must therefore be supplied through its
-    explicit phase when Mercury is queried.
+    Under the admitted al-Biruni section 496 doctrine, diurnal planets belong
+    above the horizon by day and below it by night; nocturnal planets reverse
+    that relation. Mercury's effective sect must therefore be supplied through
+    its explicit phase when Mercury is queried.
     """
     planet_sect = SECT.get(planet)
     if planet_sect is None:
@@ -469,8 +525,8 @@ _SUPERIOR_PLANETS = {"Mars", "Jupiter", "Saturn"}
 _INFERIOR_PLANETS = {"Mercury", "Venus"}
 _PLANETARY_SOLAR_PHASE_BODIES = _SUPERIOR_PLANETS | _INFERIOR_PLANETS
 _PLANETARY_SOLAR_PHASE_BOUNDARY_TOLERANCE_DEG = 1e-12
-_SOLAR_CAZIMI_LIMIT_DEG = 0.283
-_SOLAR_COMBUST_LIMIT_DEG = 8.0
+_SOLAR_CAZIMI_LIMIT_DEG = 17.0 / 60.0
+_SOLAR_COMBUST_LIMIT_DEG = 8.5
 _SOLAR_BEAMS_LIMIT_DEG = 17.0
 _SOLAR_BAND_BOUNDARY_TOLERANCE_DEG = 1e-12
 
@@ -584,22 +640,17 @@ def oriental_occidental(
     """
     Classify a planet as oriental or occidental relative to the Sun.
 
-    Classical Ptolemaic definition:
-      - Superior planets (Mars, Jupiter, Saturn) are **oriental** when they
-        rise before the Sun, i.e. their ecliptic longitude is *behind* the
-        Sun in zodiacal order (the Sun has passed them).  They are
-        **occidental** when they set after the Sun.
-      - Inferior planets (Mercury, Venus) follow the reverse rule: oriental
-        when they are morning stars (rising before the Sun), occidental when
-        evening stars.
+    Classical longitude-phase definition: a planet is **oriental** when it
+    precedes and rises before the Sun, and **occidental** when it follows and
+    sets after the Sun. Superior and inferior planets use the same geometric
+    classification; their favourable scoring polarity differs.
       - Luminaries (Sun, Moon) have no oriental/occidental classification;
         returns None.
 
     The geometric test: if the forward distance from the planet to the Sun
-    (going in the zodiacal direction) is less than 180 degrees, the planet
-    is east of the Sun (occidental for superiors, oriental for inferiors).
-    Otherwise the planet is west of the Sun (oriental for superiors,
-    occidental for inferiors).
+    (going in the zodiacal direction) is less than 180 degrees, the planet is
+    west of / preceding the Sun and therefore oriental. Otherwise it is east
+    of / following the Sun and therefore occidental.
 
     Parameters
     ----------
@@ -910,18 +961,18 @@ class DignitiesService:
         callers, makes doctrine/policy explicit, and formalises reception as
         first-class relational truth, and integrates per-planet condition
         state, aggregates chart-wide condition intelligence, and projects a
-        reception / condition network, but does not yet perform policy
-        arbitration. Without this Engine, the dignity tables would be inert
+        reception / condition network under explicit policy. Without this
+        Engine, the dignity tables would be inert
         data with no path to a scored result.
 
     LAW OF OPERATION:
         Responsibilities:
             - Accept planet_positions and house_positions as plain dicts.
             - Resolve sign, house, essential dignity, and all accidental
-              conditions for each Classic 7 planet present.
+              conditions for every planet admitted by the selected doctrine.
             - Preserve enough structured doctrinal/computational truth that
               later layers do not need to reconstruct hidden logic from the
-              flattened legacy labels.
+              flattened labels.
             - Derive lean explicit classifications from the preserved truth
               without changing the underlying computation.
             - Formalise reception relations from the same doctrinal truth
@@ -975,6 +1026,8 @@ class DignitiesService:
         policy: DignityComputationPolicy | None = None,
         *,
         horizon_frame: DignityHorizonFrame | None = None,
+        node_positions: dict[str, float] | None = None,
+        fixed_star_positions: dict[str, float] | None = None,
     ) -> list[PlanetaryDignity]:
         """
         Calculate dignities for all planets admitted by the active doctrine.
@@ -984,7 +1037,8 @@ class DignitiesService:
         planet_positions : list of dicts with keys:
             - name: str
             - degree: float (tropical ecliptic longitude 0–360)
-            - is_retrograde: bool (optional, default False)
+            - is_retrograde: bool (optional; unknown when omitted)
+            - speed: float in degrees/day (optional)
         house_positions : list of dicts with keys:
             - number: int (1–12)
             - degree: float (cusp longitude)
@@ -1000,9 +1054,8 @@ class DignitiesService:
 
         Semantics note
         --------------
-        This method preserves existing dignity-computation semantics. New
-        structured truth fields are additive and must remain internally
-        consistent with the established labels and scores.
+        The result preserves every evaluated testimony. Whether a matched
+        testimony contributes points is controlled independently by policy.
         """
         policy = DignityComputationPolicy() if policy is None else policy
         self._validate_policy(policy)
@@ -1012,7 +1065,8 @@ class DignitiesService:
 
         planet_lons:  dict[str, float] = {}
         planet_signs: dict[str, str]   = {}
-        planet_retro: dict[str, bool]  = {}
+        planet_retro: dict[str, bool | None] = {}
+        planet_speeds: dict[str, float | None] = {}
 
         for pos in normalized_planets:
             name = pos["name"]
@@ -1021,6 +1075,16 @@ class DignitiesService:
             planet_lons[name] = degree
             planet_signs[name] = SIGNS[int(degree // 30) % 12]
             planet_retro[name] = retro
+            planet_speeds[name] = pos["speed"]
+
+        normalized_nodes = self._normalize_named_longitudes(
+            node_positions,
+            field_name="node_positions",
+        )
+        normalized_stars = self._normalize_named_longitudes(
+            fixed_star_positions,
+            field_name="fixed_star_positions",
+        )
 
         if "Sun" not in planet_lons:
             raise ValueError(
@@ -1075,7 +1139,8 @@ class DignitiesService:
 
             degree = planet_lons[planet]
             sign   = planet_signs[planet]
-            retro  = planet_retro.get(planet, False)
+            retro  = planet_retro.get(planet)
+            speed = planet_speeds.get(planet)
             house  = self._get_house(degree, house_cusps)
             horizon_truth = (
                 self._build_horizon_truth(degree, horizon_frame)
@@ -1083,21 +1148,27 @@ class DignitiesService:
                 else None
             )
 
+            mutual_reception_truth = self._build_mutual_reception_truths(
+                receptions_by_planet.get(planet, []),
+                policy,
+            )
             essential_truth = self._get_essential_dignity_truth(
                 planet,
                 sign,
                 policy,
                 is_day_chart,
                 longitude=degree,
+                receptions=mutual_reception_truth,
             )
 
             acc_list, acc_score, accidental_truth, sect_truth = self._get_accidental_dignities(
                 planet=planet,
                 house=house,
                 is_retrograde=retro,
+                planet_speed=speed,
                 planet_lon=degree,
                 sun_lon=sun_lon,
-                receptions=receptions_by_planet.get(planet, []),
+                mutual_receptions=mutual_reception_truth,
                 sign=sign,
                 is_day_chart=is_day_chart,
                 mercury_rises_before_sun=mercury_rises_before_sun,
@@ -1105,6 +1176,8 @@ class DignitiesService:
                 horizon_truth=horizon_truth,
                 policy=policy,
                 chart_positions=planet_lons,
+                node_positions=normalized_nodes,
+                fixed_star_positions=normalized_stars,
             )
 
             results.append(PlanetaryDignity(
@@ -1124,12 +1197,12 @@ class DignitiesService:
                 solar_truth=accidental_truth.solar_condition,
                 all_receptions=list(all_receptions_by_planet.get(planet, [])),
                 receptions=list(receptions_by_planet.get(planet, [])),
-                mutual_reception_truth=list(accidental_truth.mutual_receptions),
+                mutual_reception_truth=list(mutual_reception_truth),
                 essential_classification=self._classify_essential_truth(essential_truth),
                 accidental_classification=self._classify_accidental_truth(accidental_truth),
                 sect_classification=self._classify_sect_truth(sect_truth),
                 solar_classification=self._classify_solar_truth(accidental_truth.solar_condition),
-                reception_classification=self._classify_reception_truths(accidental_truth.mutual_receptions),
+                reception_classification=self._classify_reception_truths(mutual_reception_truth),
                 condition_profile=self._build_condition_profile(
                     planet=planet,
                     essential_truth=essential_truth,
@@ -1138,7 +1211,7 @@ class DignitiesService:
                     solar_truth=accidental_truth.solar_condition,
                     all_receptions=list(all_receptions_by_planet.get(planet, [])),
                     admitted_receptions=list(receptions_by_planet.get(planet, [])),
-                    mutual_reception_truth=list(accidental_truth.mutual_receptions),
+                    mutual_reception_truth=list(mutual_reception_truth),
                 ),
             ))
 
@@ -1368,6 +1441,8 @@ class DignitiesService:
         policy: DignityComputationPolicy | None = None,
         *,
         horizon_frame: DignityHorizonFrame | None = None,
+        node_positions: dict[str, float] | None = None,
+        fixed_star_positions: dict[str, float] | None = None,
     ) -> list[PlanetaryConditionProfile]:
         """Calculate integrated per-planet condition profiles."""
 
@@ -1376,6 +1451,8 @@ class DignitiesService:
             house_positions,
             policy=policy,
             horizon_frame=horizon_frame,
+            node_positions=node_positions,
+            fixed_star_positions=fixed_star_positions,
         )
         return [dignity.condition_profile for dignity in dignities if dignity.condition_profile is not None]
 
@@ -1386,6 +1463,8 @@ class DignitiesService:
         policy: DignityComputationPolicy | None = None,
         *,
         horizon_frame: DignityHorizonFrame | None = None,
+        node_positions: dict[str, float] | None = None,
+        fixed_star_positions: dict[str, float] | None = None,
     ) -> ChartConditionProfile:
         """Calculate the chart-wide condition profile derived from planet profiles."""
 
@@ -1394,6 +1473,8 @@ class DignitiesService:
             house_positions,
             policy=policy,
             horizon_frame=horizon_frame,
+            node_positions=node_positions,
+            fixed_star_positions=fixed_star_positions,
         )
         return self._build_chart_condition_profile(profiles)
 
@@ -1404,6 +1485,8 @@ class DignitiesService:
         policy: DignityComputationPolicy | None = None,
         *,
         horizon_frame: DignityHorizonFrame | None = None,
+        node_positions: dict[str, float] | None = None,
+        fixed_star_positions: dict[str, float] | None = None,
     ) -> ConditionNetworkProfile:
         """Calculate the reception / condition network profile."""
 
@@ -1412,6 +1495,8 @@ class DignitiesService:
             house_positions,
             policy=policy,
             horizon_frame=horizon_frame,
+            node_positions=node_positions,
+            fixed_star_positions=fixed_star_positions,
         )
         return self._build_condition_network_profile(chart_profile)
 
@@ -1445,35 +1530,73 @@ class DignitiesService:
         is_day_chart: bool = True,
         *,
         longitude: float | None = None,
+        receptions: list[MutualReceptionTruth] | None = None,
     ) -> EssentialDignityTruth:
         DignitiesService._validate_policy(policy)
         domicile = DignitiesService._domicile_table(policy)
         detriment = DignitiesService._detriment_table(policy)
-        assignment = triplicity_assignment_for(sign, is_day_chart=is_day_chart)
+        assignment = triplicity_assignment_for(
+            sign,
+            is_day_chart=is_day_chart,
+            doctrine=policy.essential.triplicity_doctrine,
+        )
+        triplicity_weight = triplicity_score(
+            planet,
+            sign,
+            is_day_chart=is_day_chart,
+            doctrine=policy.essential.triplicity_doctrine,
+            participating_policy=policy.essential.participating_ruler_policy,
+            primary_score=SCORE_TRIPLICITY,
+            participating_score=SCORE_FACE,
+        )
         domicile_signs = tuple(domicile.get(planet, ()))
         exaltation_signs = tuple(EXALTATION.get(planet, ()))
         detriment_signs = tuple(detriment.get(planet, ()))
         fall_signs = tuple(FALL.get(planet, ()))
 
-        components: list[EssentialDignityComponentTruth] = [
-            EssentialDignityComponentTruth(
-                kind=EssentialDignityKind.DOMICILE,
+        should_score = policy.scoring.mode is not DignityScoringMode.UNSCORED
+
+        def component(
+            kind: EssentialDignityKind,
+            matched: bool,
+            weight: int,
+            *,
+            matching_signs: tuple[str, ...] = (),
+            ruler: str | None = None,
+        ) -> EssentialDignityComponentTruth:
+            return EssentialDignityComponentTruth(
+                kind=kind,
                 status=TruthEvaluationStatus.EVALUATED,
-                matched=sign in domicile_signs,
+                matched=matched,
+                matching_signs=matching_signs,
+                ruler=ruler,
+                weight=weight,
+                score=weight if matched and should_score else 0,
+            )
+
+        components: list[EssentialDignityComponentTruth] = [
+            component(
+                EssentialDignityKind.DOMICILE,
+                sign in domicile_signs,
+                SCORE_DOMICILE,
                 matching_signs=domicile_signs,
             ),
-            EssentialDignityComponentTruth(
-                kind=EssentialDignityKind.EXALTATION,
-                status=TruthEvaluationStatus.EVALUATED,
-                matched=sign in exaltation_signs,
+            component(
+                EssentialDignityKind.EXALTATION,
+                sign in exaltation_signs,
+                SCORE_EXALTATION,
                 matching_signs=exaltation_signs,
             ),
-            EssentialDignityComponentTruth(
-                kind=EssentialDignityKind.TRIPLICITY,
-                status=TruthEvaluationStatus.EVALUATED,
-                matched=planet == assignment.active_ruler,
+            component(
+                EssentialDignityKind.TRIPLICITY,
+                triplicity_weight != 0,
+                triplicity_weight or SCORE_TRIPLICITY,
                 matching_signs=assignment.signs,
-                ruler=assignment.active_ruler,
+                ruler=(
+                    assignment.participating_ruler
+                    if planet == assignment.participating_ruler and triplicity_weight
+                    else assignment.active_ruler
+                ),
             ),
         ]
 
@@ -1484,31 +1607,36 @@ class DignitiesService:
                         kind=EssentialDignityKind.BOUND,
                         status=TruthEvaluationStatus.NOT_EVALUABLE,
                         matched=None,
+                        weight=SCORE_BOUND,
                         reason="longitude_required_for_bound",
                     ),
                     EssentialDignityComponentTruth(
                         kind=EssentialDignityKind.FACE,
                         status=TruthEvaluationStatus.NOT_EVALUABLE,
                         matched=None,
+                        weight=SCORE_FACE,
                         reason="longitude_required_for_face",
                     ),
                 ]
             )
         else:
-            bound_host = bound_ruler(longitude)
+            bound_host = bound_ruler(
+                longitude,
+                policy=EgyptianBoundsPolicy(policy.essential.bounds_doctrine),
+            )
             face_host = chaldean_face(longitude).ruling_planet
             components.extend(
                 [
-                    EssentialDignityComponentTruth(
-                        kind=EssentialDignityKind.BOUND,
-                        status=TruthEvaluationStatus.EVALUATED,
-                        matched=planet == bound_host,
+                    component(
+                        EssentialDignityKind.BOUND,
+                        planet == bound_host,
+                        SCORE_BOUND,
                         ruler=bound_host,
                     ),
-                    EssentialDignityComponentTruth(
-                        kind=EssentialDignityKind.FACE,
-                        status=TruthEvaluationStatus.EVALUATED,
-                        matched=planet == face_host,
+                    component(
+                        EssentialDignityKind.FACE,
+                        planet == face_host,
+                        SCORE_FACE,
                         ruler=face_host,
                     ),
                 ]
@@ -1516,16 +1644,16 @@ class DignitiesService:
 
         components.extend(
             [
-                EssentialDignityComponentTruth(
-                    kind=EssentialDignityKind.DETRIMENT,
-                    status=TruthEvaluationStatus.EVALUATED,
-                    matched=sign in detriment_signs,
+                component(
+                    EssentialDignityKind.DETRIMENT,
+                    sign in detriment_signs,
+                    SCORE_DETRIMENT,
                     matching_signs=detriment_signs,
                 ),
-                EssentialDignityComponentTruth(
-                    kind=EssentialDignityKind.FALL,
-                    status=TruthEvaluationStatus.EVALUATED,
-                    matched=sign in fall_signs,
+                component(
+                    EssentialDignityKind.FALL,
+                    sign in fall_signs,
+                    SCORE_FALL,
                     matching_signs=fall_signs,
                 ),
             ]
@@ -1546,6 +1674,7 @@ class DignitiesService:
                 kind=EssentialDignityKind.PEREGRINE,
                 status=TruthEvaluationStatus.EVALUATED,
                 matched=False,
+                weight=SCORE_PEREGRINE,
             )
         elif any(
             component.status is TruthEvaluationStatus.NOT_EVALUABLE
@@ -1555,26 +1684,17 @@ class DignitiesService:
                 kind=EssentialDignityKind.PEREGRINE,
                 status=TruthEvaluationStatus.NOT_EVALUABLE,
                 matched=None,
+                weight=SCORE_PEREGRINE,
                 reason="one_or_more_positive_dignity_components_not_evaluable",
             )
         else:
-            peregrine = EssentialDignityComponentTruth(
-                kind=EssentialDignityKind.PEREGRINE,
-                status=TruthEvaluationStatus.EVALUATED,
-                matched=True,
+            peregrine = component(
+                EssentialDignityKind.PEREGRINE,
+                True,
+                SCORE_PEREGRINE,
             )
         components.append(peregrine)
 
-        score_by_kind = {
-            EssentialDignityKind.DOMICILE: SCORE_DOMICILE,
-            EssentialDignityKind.EXALTATION: SCORE_EXALTATION,
-            EssentialDignityKind.TRIPLICITY: SCORE_TRIPLICITY,
-            EssentialDignityKind.BOUND: SCORE_BOUND,
-            EssentialDignityKind.FACE: SCORE_FACE,
-            EssentialDignityKind.DETRIMENT: SCORE_DETRIMENT,
-            EssentialDignityKind.FALL: SCORE_FALL,
-            EssentialDignityKind.PEREGRINE: SCORE_PEREGRINE,
-        }
         label_by_kind = {
             EssentialDignityKind.DOMICILE: "Domicile",
             EssentialDignityKind.EXALTATION: "Exaltation",
@@ -1585,18 +1705,24 @@ class DignitiesService:
             EssentialDignityKind.FALL: "Fall",
             EssentialDignityKind.PEREGRINE: "Peregrine",
         }
-        primary = next(
-            (component for component in components if component.matched is True),
-            peregrine,
-        )
+        matched_components = [item for item in components if item.matched is True]
+        primary = matched_components[0] if matched_components else peregrine
+        scored_receptions = tuple(receptions or ())
         return EssentialDignityTruth(
             category="essential",
             label=label_by_kind[primary.kind],
-            score=score_by_kind[primary.kind],
+            score=(
+                sum(item.score for item in components)
+                + sum(reception.score for reception in scored_receptions)
+            ),
             sign=sign,
             matching_signs=primary.matching_signs,
-            matched=primary.matched is True,
+            matched=bool(matched_components or scored_receptions),
             components=tuple(components),
+            receptions=scored_receptions,
+            scoring_mode=policy.scoring.mode,
+            bounds_doctrine=policy.essential.bounds_doctrine,
+            triplicity_doctrine=policy.essential.triplicity_doctrine,
         )
 
     @staticmethod
@@ -1608,10 +1734,11 @@ class DignitiesService:
     def _get_accidental_dignities(
         planet: str,
         house: int,
-        is_retrograde: bool,
+        is_retrograde: bool | None,
+        planet_speed: float | None,
         planet_lon: float,
         sun_lon: float,
-        receptions: list[PlanetaryReception],
+        mutual_receptions: list[MutualReceptionTruth],
         sign: str = "",
         is_day_chart: bool = True,
         mercury_rises_before_sun: bool | None = None,
@@ -1619,35 +1746,162 @@ class DignitiesService:
         horizon_truth: HorizonTruth | None = None,
         policy: DignityComputationPolicy | None = None,
         chart_positions: dict[str, float] | None = None,
+        node_positions: dict[str, float] | None = None,
+        fixed_star_positions: dict[str, float] | None = None,
     ) -> tuple[list[str], int, AccidentalDignityTruth, SectTruth]:
         policy = DignityComputationPolicy() if policy is None else policy
         dignities: list[str] = []
         score = 0
         conditions: list[AccidentalDignityCondition] = []
+        evaluations: list[AccidentalDignityEvaluationTruth] = []
+        full_scoring = policy.scoring.mode is DignityScoringMode.WILLIAM_LILLY_1647
+
+        def make_condition(
+            category: str,
+            code: str,
+            label: str,
+            weight: int,
+            *,
+            source: str = "william_lilly_1647",
+            scored: bool | None = None,
+        ) -> AccidentalDignityCondition:
+            applies = full_scoring if scored is None else scored
+            return AccidentalDignityCondition(
+                category=category,
+                code=code,
+                label=label,
+                score=weight if applies else 0,
+                weight=weight,
+                scored=applies,
+                source=source,
+            )
+
+        def add_condition(condition: AccidentalDignityCondition) -> None:
+            nonlocal score
+            dignities.append(condition.label)
+            conditions.append(condition)
+            score += condition.score
+            evaluations.append(
+                AccidentalDignityEvaluationTruth(
+                    category=condition.category,
+                    code=condition.code,
+                    label=condition.label,
+                    status=TruthEvaluationStatus.EVALUATED,
+                    matched=True,
+                    weight=condition.weight or 0,
+                    score=condition.score,
+                    source=condition.source,
+                )
+            )
+
+        def unavailable(
+            category: str,
+            code: str,
+            label: str,
+            weight: int,
+            reason: str,
+            *,
+            source: str = "william_lilly_1647",
+        ) -> None:
+            evaluations.append(
+                AccidentalDignityEvaluationTruth(
+                    category=category,
+                    code=code,
+                    label=label,
+                    status=TruthEvaluationStatus.NOT_EVALUABLE,
+                    matched=None,
+                    weight=weight,
+                    score=0,
+                    source=source,
+                    reason=reason,
+                )
+            )
+
+        def absent(
+            category: str,
+            code: str,
+            label: str,
+            weight: int,
+            *,
+            source: str = "william_lilly_1647",
+        ) -> None:
+            evaluations.append(
+                AccidentalDignityEvaluationTruth(
+                    category=category,
+                    code=code,
+                    label=label,
+                    status=TruthEvaluationStatus.EVALUATED,
+                    matched=False,
+                    weight=weight,
+                    score=0,
+                    source=source,
+                )
+            )
 
         house_condition: AccidentalDignityCondition | None = None
-        if policy.accidental.include_house_strength and house in ANGULAR_HOUSES:
-            house_condition = AccidentalDignityCondition("house", "angular", f"Angular (H{house})", SCORE_ANGULAR)
-        elif policy.accidental.include_house_strength and house in SUCCEDENT_HOUSES:
-            house_condition = AccidentalDignityCondition("house", "succedent", f"Succedent (H{house})", SCORE_SUCCEDENT)
-        elif policy.accidental.include_house_strength and house in CADENT_HOUSES:
-            house_condition = AccidentalDignityCondition("house", "cadent", f"Cadent (H{house})", SCORE_CADENT)
+        if policy.accidental.include_house_strength:
+            house_code = (
+                "angular" if house in ANGULAR_HOUSES
+                else "succedent" if house in SUCCEDENT_HOUSES
+                else "cadent"
+            )
+            house_condition = make_condition(
+                "house",
+                house_code,
+                f"{house_code.title()} (H{house})",
+                SCORE_HOUSE[house],
+            )
 
         if house_condition is not None:
-            dignities.append(house_condition.label)
-            conditions.append(house_condition)
-            score += house_condition.score
+            add_condition(house_condition)
 
         motion_condition: AccidentalDignityCondition | None = None
         if policy.accidental.include_motion:
-            if is_retrograde:
-                motion_condition = AccidentalDignityCondition("motion", "retrograde", "Retrograde", SCORE_RETROGRADE)
+            if planet in {"Sun", "Moon"}:
+                unavailable("motion", "direct_retrograde", "Direct / Retrograde", 0, "not_applicable_to_luminary")
+            elif planet_speed is not None and math.isclose(
+                planet_speed,
+                0.0,
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ):
+                motion_condition = make_condition(
+                    "motion",
+                    "stationary",
+                    "Stationary",
+                    0,
+                    scored=False,
+                )
+            elif is_retrograde is None:
+                unavailable("motion", "direct_retrograde", "Direct / Retrograde", 0, "retrograde_state_not_supplied")
+            elif is_retrograde:
+                motion_condition = make_condition("motion", "retrograde", "Retrograde", SCORE_RETROGRADE)
             else:
-                motion_condition = AccidentalDignityCondition("motion", "direct", "Direct", SCORE_DIRECT)
+                motion_condition = make_condition("motion", "direct", "Direct", SCORE_DIRECT)
 
-            dignities.append(motion_condition.label)
-            conditions.append(motion_condition)
-            score += motion_condition.score
+            if motion_condition is not None:
+                add_condition(motion_condition)
+
+        if policy.accidental.include_speed:
+            if planet_speed is None:
+                unavailable("speed", "swift_slow", "Swift / Slow", 0, "daily_motion_not_supplied")
+            elif planet not in LILLY_MEAN_DAILY_MOTION:
+                unavailable("speed", "swift_slow", "Swift / Slow", 0, "no_admitted_lilly_mean_motion")
+            else:
+                mean_motion = LILLY_MEAN_DAILY_MOTION[planet]
+                actual_motion = abs(planet_speed)
+                if math.isclose(actual_motion, mean_motion, abs_tol=1e-12):
+                    evaluations.append(
+                        AccidentalDignityEvaluationTruth(
+                            category="speed", code="mean_motion", label="At Mean Motion",
+                            status=TruthEvaluationStatus.EVALUATED, matched=False,
+                            weight=0, score=0, source="william_lilly_1647",
+                        )
+                    )
+                elif actual_motion > mean_motion:
+                    add_condition(make_condition("speed", "swift", "Swift in Motion", SCORE_SWIFT))
+                else:
+                    add_condition(make_condition("speed", "slow", "Slow in Motion", SCORE_SLOW))
 
         proximity_truth = solar_proximity_truth(
             planet,
@@ -1658,10 +1912,7 @@ class DignitiesService:
         solar_policy = policy.accidental.solar
         solar_applicable = (
             proximity_truth.status is TruthEvaluationStatus.EVALUATED
-            and (
-                solar_policy.include_for_luminaries
-                or planet not in ("Sun", "Moon")
-            )
+            and (planet != "Moon" or solar_policy.include_for_moon)
         )
         if solar_applicable:
             dist = proximity_truth.distance_from_sun_deg
@@ -1669,52 +1920,35 @@ class DignitiesService:
                 raise ValueError(
                     "evaluated solar proximity truth requires a distance"
                 )
-            if (
-                solar_policy.include_cazimi
-                and _within_solar_band_limit(dist, _SOLAR_CAZIMI_LIMIT_DEG)
-            ):
+            if proximity_truth.band is SolarProximityBand.CAZIMI and solar_policy.include_cazimi:
                 solar_truth = SolarConditionTruth(True, "cazimi", "Cazimi", SCORE_CAZIMI, dist)
-            elif (
-                solar_policy.include_combust
-                and _within_solar_band_limit(dist, _SOLAR_COMBUST_LIMIT_DEG)
-            ):
+            elif proximity_truth.band is SolarProximityBand.COMBUST and solar_policy.include_combust:
                 solar_truth = SolarConditionTruth(True, "combust", "Combust", SCORE_COMBUST, dist)
-            elif (
-                solar_policy.include_under_sunbeams
-                and _within_solar_band_limit(dist, _SOLAR_BEAMS_LIMIT_DEG)
-            ):
+            elif proximity_truth.band is SolarProximityBand.UNDER_SUNBEAMS and solar_policy.include_under_sunbeams:
                 solar_truth = SolarConditionTruth(True, "under_sunbeams", "Under Sunbeams", SCORE_SUNBEAMS, dist)
+            elif proximity_truth.band is SolarProximityBand.CLEAR and solar_policy.include_free_from_beams:
+                solar_truth = SolarConditionTruth(
+                    True, "free_from_beams", "Free from Combustion and Beams",
+                    SCORE_FREE_FROM_BEAMS if full_scoring else 0, dist,
+                    SCORE_FREE_FROM_BEAMS, full_scoring,
+                )
             else:
                 solar_truth = SolarConditionTruth(False, None, None, 0, dist)
 
+            if solar_truth.present and solar_truth.condition != "free_from_beams":
+                solar_truth.weight = solar_truth.score
+                solar_truth.scored = full_scoring
+                if not full_scoring:
+                    solar_truth.score = 0
+
         if solar_truth.present and solar_truth.label is not None:
-            solar_condition = AccidentalDignityCondition(
+            solar_condition = make_condition(
                 "solar",
                 solar_truth.condition or "solar_condition",
                 solar_truth.label,
-                solar_truth.score,
+                solar_truth.weight,
             )
-            dignities.append(solar_condition.label)
-            conditions.append(solar_condition)
-            score += solar_condition.score
-
-        reception_truth: list[MutualReceptionTruth] = []
-        for relation in receptions:
-            if relation.mode is not ReceptionMode.MUTUAL:
-                continue
-            if relation.basis is ReceptionBasis.DOMICILE:
-                label = f"Mutual Reception ({relation.host_planet})"
-                reception = MutualReceptionTruth(relation.host_planet, "domicile", label, SCORE_MR_DOMICILE)
-            elif relation.basis is ReceptionBasis.EXALTATION:
-                label = f"Mutual Exalt. ({relation.host_planet})"
-                reception = MutualReceptionTruth(relation.host_planet, "exaltation", label, SCORE_MR_EXALTATION)
-            else:
-                continue
-            reception_truth.append(reception)
-            condition = AccidentalDignityCondition("mutual_reception", reception.reception_type, reception.label, reception.score)
-            dignities.append(condition.label)
-            conditions.append(condition)
-            score += condition.score
+            add_condition(solar_condition)
 
         sect_truth = DignitiesService._build_sect_truth(
             planet=planet,
@@ -1730,10 +1964,13 @@ class DignitiesService:
 
         hayz_condition: AccidentalDignityCondition | None = None
         if policy.accidental.sect.include_hayz and sign and sect_truth.in_hayz:
-            hayz_condition = AccidentalDignityCondition("sect", "hayz", "In Hayz", 2)
-            dignities.append(hayz_condition.label)
-            conditions.append(hayz_condition)
-            score += hayz_condition.score
+            hayz_condition = make_condition(
+                "sect", "hayz", "In Hayz", 0,
+                source="al_biruni_1030_section_496", scored=False,
+            )
+            add_condition(hayz_condition)
+        elif policy.accidental.sect.include_hayz and sect_truth.in_hayz is False:
+            absent("sect", "hayz", "In Hayz", 0, source="al_biruni_1030_section_496")
 
         halb_condition: AccidentalDignityCondition | None = None
         if (
@@ -1741,17 +1978,32 @@ class DignitiesService:
             and hayz_condition is None
             and sect_truth.in_halb
         ):
-            halb_condition = AccidentalDignityCondition("sect", "halb", "In Halb", SCORE_HALB)
-            dignities.append(halb_condition.label)
-            conditions.append(halb_condition)
-            score += halb_condition.score
+            halb_condition = make_condition(
+                "sect", "halb", "In Halb", SCORE_HALB,
+                source="al_biruni_1030_section_496", scored=False,
+            )
+            add_condition(halb_condition)
+        elif policy.accidental.sect.include_halb and sect_truth.in_halb is False:
+            absent("sect", "halb", "In Halb", 0, source="al_biruni_1030_section_496")
 
         joy_condition: AccidentalDignityCondition | None = None
-        if is_in_joy(planet, house):
-            joy_condition = AccidentalDignityCondition("joy", "joy", f"In Joy (H{house})", SCORE_JOY)
-            dignities.append(joy_condition.label)
-            conditions.append(joy_condition)
-            score += joy_condition.score
+        if policy.accidental.include_joy and is_in_joy(planet, house):
+            joy_condition = make_condition(
+                "joy", "joy", f"In Joy (H{house})", SCORE_JOY,
+                source="planetary_joys", scored=False,
+            )
+            add_condition(joy_condition)
+        elif policy.accidental.include_joy:
+            absent("joy", "joy", f"In Joy (H{house})", 0, source="planetary_joys")
+
+        if policy.accidental.include_lunar_phase and planet == "Moon":
+            elongation = (planet_lon - sun_lon) % 360.0
+            if math.isclose(elongation, 0.0, abs_tol=1e-12) or math.isclose(elongation, 180.0, abs_tol=1e-12):
+                unavailable("lunar_phase", "waxing_waning", "Waxing / Waning Moon", 0, "phase_boundary")
+            elif elongation < 180.0:
+                add_condition(make_condition("lunar_phase", "waxing", "Moon Waxing", SCORE_MOON_WAXING))
+            else:
+                add_condition(make_condition("lunar_phase", "waning", "Moon Waning", SCORE_MOON_WANING))
 
         # -- Oriental / Occidental --
         # For superior planets (Mars/Jupiter/Saturn): oriental is beneficial (+2),
@@ -1775,17 +2027,94 @@ class DignitiesService:
             is_superior = planet in _SUPERIOR_PLANETS
             if phase is PlanetarySolarPhaseKind.ORIENTAL:
                 phase_score = SCORE_ORIENTAL if is_superior else SCORE_OCCIDENTAL
-                oriental_condition = AccidentalDignityCondition(
+                oriental_condition = make_condition(
                     "phase", "oriental", "Oriental", phase_score,
                 )
             else:
                 phase_score = SCORE_OCCIDENTAL if is_superior else SCORE_ORIENTAL
-                oriental_condition = AccidentalDignityCondition(
+                oriental_condition = make_condition(
                     "phase", "occidental", "Occidental", phase_score,
                 )
-            dignities.append(oriental_condition.label)
-            conditions.append(oriental_condition)
-            score += oriental_condition.score
+            add_condition(oriental_condition)
+        elif (
+            policy.accidental.include_oriental_occidental
+            and planetary_phase_truth.status is TruthEvaluationStatus.NOT_EVALUABLE
+        ):
+            unavailable(
+                "phase", "oriental_occidental", "Oriental / Occidental", 0,
+                planetary_phase_truth.reason or "phase_not_evaluable",
+            )
+
+        def circular_separation(left: float, right: float) -> float:
+            difference = abs((left - right) % 360.0)
+            return min(difference, 360.0 - difference)
+
+        def partile_aspect(left: float, right: float, exact_angle: float) -> bool:
+            return abs(circular_separation(left, right) - exact_angle) < _PARTILE_ORB_DEG
+
+        if policy.accidental.include_planetary_aspects:
+            positions = {} if chart_positions is None else chart_positions
+            aspect_rules = (
+                ("Jupiter", ((0.0, "conjunction", SCORE_BENEFIC_CONJUNCTION), (120.0, "trine", SCORE_BENEFIC_TRINE), (60.0, "sextile", SCORE_BENEFIC_SEXTILE)), "benefic_aspect"),
+                ("Venus", ((0.0, "conjunction", SCORE_BENEFIC_CONJUNCTION), (120.0, "trine", SCORE_BENEFIC_TRINE), (60.0, "sextile", SCORE_BENEFIC_SEXTILE)), "benefic_aspect"),
+                ("Saturn", ((0.0, "conjunction", SCORE_MALEFIC_CONJUNCTION), (180.0, "opposition", SCORE_MALEFIC_OPPOSITION), (90.0, "square", SCORE_MALEFIC_SQUARE)), "malefic_aspect"),
+                ("Mars", ((0.0, "conjunction", SCORE_MALEFIC_CONJUNCTION), (180.0, "opposition", SCORE_MALEFIC_OPPOSITION), (90.0, "square", SCORE_MALEFIC_SQUARE)), "malefic_aspect"),
+            )
+            for witness, rules, category in aspect_rules:
+                if witness == planet:
+                    continue
+                witness_lon = positions.get(witness)
+                if witness_lon is None:
+                    unavailable(category, f"{witness.lower()}_aspect", f"Partile aspect with {witness}", 0, f"{witness.lower()}_position_not_supplied")
+                    continue
+                for angle, aspect_name, aspect_weight in rules:
+                    if partile_aspect(planet_lon, witness_lon, angle):
+                        add_condition(make_condition(
+                            category,
+                            f"{witness.lower()}_{aspect_name}",
+                            f"Partile {aspect_name.title()} {witness}",
+                            aspect_weight,
+                        ))
+                    else:
+                        absent(
+                            category,
+                            f"{witness.lower()}_{aspect_name}",
+                            f"Partile {aspect_name.title()} {witness}",
+                            aspect_weight,
+                        )
+
+        if policy.accidental.include_node_contacts:
+            nodes = {} if node_positions is None else node_positions
+            north_key = "Mean Node" if policy.scoring.node_doctrine is DignityNodeDoctrine.MEAN_NODE else "True Node"
+            north_lon = nodes.get(north_key)
+            if north_lon is None:
+                unavailable("node", "north_node_conjunction", "Conjunct North Node", SCORE_NORTH_NODE_CONJUNCTION, f"{north_key.lower().replace(' ', '_')}_not_supplied")
+            else:
+                if partile_aspect(planet_lon, north_lon, 0.0):
+                    add_condition(make_condition("node", "north_node_conjunction", "Conjunct North Node", SCORE_NORTH_NODE_CONJUNCTION))
+                else:
+                    absent("node", "north_node_conjunction", "Conjunct North Node", SCORE_NORTH_NODE_CONJUNCTION)
+                south_lon = (north_lon + 180.0) % 360.0
+                if partile_aspect(planet_lon, south_lon, 0.0):
+                    add_condition(make_condition("node", "south_node_conjunction", "Conjunct South Node", SCORE_SOUTH_NODE_CONJUNCTION))
+                else:
+                    absent("node", "south_node_conjunction", "Conjunct South Node", SCORE_SOUTH_NODE_CONJUNCTION)
+
+        if policy.accidental.include_fixed_star_contacts:
+            stars = {} if fixed_star_positions is None else fixed_star_positions
+            star_rules = {
+                "Regulus": SCORE_REGULUS_CONJUNCTION,
+                "Spica": SCORE_SPICA_CONJUNCTION,
+                "Algol": SCORE_ALGOL_CONJUNCTION,
+            }
+            for star, star_weight in star_rules.items():
+                star_lon = stars.get(star)
+                if star_lon is None:
+                    unavailable("fixed_star", f"{star.lower()}_conjunction", f"Conjunct {star}", star_weight, f"{star.lower()}_position_not_supplied")
+                elif circular_separation(planet_lon, star_lon) <= _FIXED_STAR_ORBS_DEG[star]:
+                    add_condition(make_condition("fixed_star", f"{star.lower()}_conjunction", f"Conjunct {star}", star_weight))
+                else:
+                    absent("fixed_star", f"{star.lower()}_conjunction", f"Conjunct {star}", star_weight)
 
         # -- Besieging --
         besieged_condition: AccidentalDignityCondition | None = None
@@ -1795,6 +2124,8 @@ class DignitiesService:
             planet_name=planet,
         )
         if (
+            policy.accidental.include_besieging
+            and
             enclosure_truth.status is TruthEvaluationStatus.EVALUATED
             and enclosure_truth.besieged
         ):
@@ -1804,22 +2135,30 @@ class DignitiesService:
                     "evaluated besieging truth requires an enclosing pair"
                 )
             left, right = pair
-            besieged_condition = AccidentalDignityCondition(
+            besieged_condition = make_condition(
                 "besieging", "besieged",
                 f"Besieged ({left}/{right})", SCORE_BESIEGED,
             )
-            dignities.append(besieged_condition.label)
-            conditions.append(besieged_condition)
-            score += besieged_condition.score
+            add_condition(besieged_condition)
+        elif policy.accidental.include_besieging:
+            if enclosure_truth.status is TruthEvaluationStatus.EVALUATED:
+                absent("besieging", "besieged", "Besieged by Mars and Saturn", SCORE_BESIEGED)
+            else:
+                unavailable(
+                    "besieging", "besieged", "Besieged by Mars and Saturn",
+                    SCORE_BESIEGED,
+                    enclosure_truth.reason or "besieging_not_evaluable",
+                )
 
         accidental_truth = AccidentalDignityTruth(
             conditions=conditions,
+            evaluations=tuple(evaluations),
             house_condition=house_condition,
             motion_condition=motion_condition,
             solar_condition=solar_truth,
             solar_proximity_truth=proximity_truth,
             besieging_truth=enclosure_truth,
-            mutual_receptions=reception_truth,
+            mutual_receptions=list(mutual_receptions),
             hayz_condition=hayz_condition,
             halb_condition=halb_condition,
             joy_condition=joy_condition,
@@ -2052,11 +2391,44 @@ class DignitiesService:
             raise ValueError(f"Unsupported Mercury sect model: {policy.accidental.sect.mercury_sect_model}")
         if (
             policy.accidental.sect.doctrine
-            is not HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007
+            is not HalbHayzDoctrine.AL_BIRUNI_1030_SECTION_496
         ):
             raise ValueError(
                 f"Unsupported Halb/Hayz doctrine: {policy.accidental.sect.doctrine}"
             )
+        if not isinstance(policy.essential.bounds_doctrine, EgyptianBoundsDoctrine):
+            raise ValueError(
+                f"Unsupported bounds doctrine: {policy.essential.bounds_doctrine}"
+            )
+        if policy.essential.triplicity_doctrine is not TriplicityDoctrine.DOROTHEAN_PINGREE_1976:
+            raise ValueError(
+                f"Unsupported triplicity doctrine: {policy.essential.triplicity_doctrine}"
+            )
+        if not isinstance(policy.essential.participating_ruler_policy, _ParticipatingRulerPolicy):
+            raise ValueError(
+                "Unsupported participating-ruler policy: "
+                f"{policy.essential.participating_ruler_policy}"
+            )
+        if not isinstance(policy.scoring.mode, DignityScoringMode):
+            raise ValueError(f"Unsupported dignity scoring mode: {policy.scoring.mode}")
+        if not isinstance(policy.scoring.node_doctrine, DignityNodeDoctrine):
+            raise ValueError(f"Unsupported node doctrine: {policy.scoring.node_doctrine}")
+        if policy.scoring.mode is DignityScoringMode.WILLIAM_LILLY_1647:
+            if policy.essential.doctrine is not EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7:
+                raise ValueError(
+                    "william_lilly_1647 scoring requires traditional_classic_7 rulers"
+                )
+            if policy.essential.bounds_doctrine is not EgyptianBoundsDoctrine.PTOLEMAIC:
+                raise ValueError(
+                    "william_lilly_1647 scoring requires ptolemaic bounds"
+                )
+            if (
+                policy.essential.participating_ruler_policy
+                is not _ParticipatingRulerPolicy.IGNORE
+            ):
+                raise ValueError(
+                    "william_lilly_1647 scoring does not award a participating triplicity ruler"
+                )
 
     @staticmethod
     def _mercury_rises_before_sun(
@@ -2106,19 +2478,12 @@ class DignitiesService:
 
     @staticmethod
     def _classify_essential_truth(truth: EssentialDignityTruth) -> EssentialDignityClassification:
-        kind_map = {
-            "Domicile": EssentialDignityKind.DOMICILE,
-            "Exaltation": EssentialDignityKind.EXALTATION,
-            "Triplicity": EssentialDignityKind.TRIPLICITY,
-            "Bound": EssentialDignityKind.BOUND,
-            "Face": EssentialDignityKind.FACE,
-            "Detriment": EssentialDignityKind.DETRIMENT,
-            "Fall": EssentialDignityKind.FALL,
-            "Peregrine": EssentialDignityKind.PEREGRINE,
-        }
+        kinds = tuple(component.kind for component in truth.matched_components)
+        primary_kind = kinds[0] if kinds else EssentialDignityKind.PEREGRINE
         return EssentialDignityClassification(
-            kind=kind_map[truth.label],
-            polarity=DignitiesService._score_polarity(truth.score),
+            kind=primary_kind,
+            kinds=kinds,
+            polarity=DignitiesService._score_polarity(truth.weight_total),
         )
 
     @staticmethod
@@ -2131,9 +2496,13 @@ class DignitiesService:
             ("house", "cadent"): AccidentalConditionKind.CADENT,
             ("motion", "direct"): AccidentalConditionKind.DIRECT,
             ("motion", "retrograde"): AccidentalConditionKind.RETROGRADE,
+            ("motion", "stationary"): AccidentalConditionKind.STATIONARY,
+            ("speed", "swift"): AccidentalConditionKind.SWIFT,
+            ("speed", "slow"): AccidentalConditionKind.SLOW,
             ("solar", "cazimi"): AccidentalConditionKind.CAZIMI,
             ("solar", "combust"): AccidentalConditionKind.COMBUST,
             ("solar", "under_sunbeams"): AccidentalConditionKind.UNDER_SUNBEAMS,
+            ("solar", "free_from_beams"): AccidentalConditionKind.FREE_FROM_BEAMS,
             ("mutual_reception", "domicile"): AccidentalConditionKind.MUTUAL_RECEPTION,
             ("mutual_reception", "exaltation"): AccidentalConditionKind.MUTUAL_EXALTATION,
             ("sect", "hayz"): AccidentalConditionKind.HAYZ,
@@ -2141,15 +2510,28 @@ class DignitiesService:
             ("joy", "joy"): AccidentalConditionKind.JOY,
             ("phase", "oriental"): AccidentalConditionKind.ORIENTAL,
             ("phase", "occidental"): AccidentalConditionKind.OCCIDENTAL,
+            ("lunar_phase", "waxing"): AccidentalConditionKind.MOON_WAXING,
+            ("lunar_phase", "waning"): AccidentalConditionKind.MOON_WANING,
+            ("node", "north_node_conjunction"): AccidentalConditionKind.NORTH_NODE_CONTACT,
+            ("node", "south_node_conjunction"): AccidentalConditionKind.SOUTH_NODE_CONTACT,
             ("besieging", "besieged"): AccidentalConditionKind.BESIEGED,
             # P7 timelord / valens distributions (both polarities map to the same kind; polarity derived from score)
             ("timelord", "valens_benefic"): AccidentalConditionKind.TIMELORD_DISTRIBUTION,
             ("timelord", "valens_malefic"): AccidentalConditionKind.TIMELORD_DISTRIBUTION,
         }
+        key = (condition.category, condition.code)
+        if condition.category == "benefic_aspect":
+            kind = AccidentalConditionKind.BENEFIC_ASPECT
+        elif condition.category == "malefic_aspect":
+            kind = AccidentalConditionKind.MALEFIC_ASPECT
+        elif condition.category == "fixed_star":
+            kind = AccidentalConditionKind.FIXED_STAR_CONTACT
+        else:
+            kind = kind_map[key]
         return AccidentalConditionClassification(
-            kind=kind_map[(condition.category, condition.code)],
+            kind=kind,
             category=condition.category,
-            polarity=DignitiesService._score_polarity(condition.score),
+            polarity=DignitiesService._score_polarity(condition.weight or 0),
             score=condition.score,
             label=condition.label,
         )
@@ -2192,10 +2574,11 @@ class DignitiesService:
             "cazimi": SolarConditionKind.CAZIMI,
             "combust": SolarConditionKind.COMBUST,
             "under_sunbeams": SolarConditionKind.UNDER_SUNBEAMS,
+            "free_from_beams": SolarConditionKind.FREE_FROM_BEAMS,
         }
         return SolarConditionClassification(
             kind=kind_map[truth.condition],
-            polarity=DignitiesService._score_polarity(truth.score),
+            polarity=DignitiesService._score_polarity(truth.weight),
             present=truth.present,
         )
 
@@ -2210,7 +2593,7 @@ class DignitiesService:
         return [
             ReceptionClassification(
                 kind=kind_map[truth.reception_type],
-                polarity=DignitiesService._score_polarity(truth.score),
+                polarity=DignitiesService._score_polarity(truth.weight or 0),
                 other_planet=truth.other_planet,
                 label=truth.label,
                 score=truth.score,
@@ -2249,8 +2632,14 @@ class DignitiesService:
         )
         solar_classification = DignitiesService._classify_solar_truth(solar_truth)
         reception_classification = DignitiesService._classify_reception_truths(mutual_reception_truth)
+        mutual_relations = [
+            reception for reception in admitted_receptions
+            if reception.mode is ReceptionMode.MUTUAL
+        ]
         scored_receptions = [
-            reception for reception in admitted_receptions if reception.mode is ReceptionMode.MUTUAL
+            reception
+            for reception, truth in zip(mutual_relations, mutual_reception_truth)
+            if truth.scored
         ]
 
         polarities: list[ConditionPolarity] = []
@@ -2501,11 +2890,43 @@ class DignitiesService:
     @staticmethod
     def _policy_reception_bases(policy: DignityComputationPolicy) -> tuple[ReceptionBasis, ...]:
         bases: list[ReceptionBasis] = []
-        if policy.accidental.mutual_reception.include_domicile:
+        if policy.reception.include_domicile:
             bases.append(ReceptionBasis.DOMICILE)
-        if policy.accidental.mutual_reception.include_exaltation:
+        if policy.reception.include_exaltation:
             bases.append(ReceptionBasis.EXALTATION)
         return tuple(bases)
+
+    @staticmethod
+    def _build_mutual_reception_truths(
+        receptions: list[PlanetaryReception],
+        policy: DignityComputationPolicy,
+    ) -> list[MutualReceptionTruth]:
+        should_score = policy.scoring.mode is not DignityScoringMode.UNSCORED
+        truths: list[MutualReceptionTruth] = []
+        for relation in receptions:
+            if relation.mode is not ReceptionMode.MUTUAL:
+                continue
+            if relation.basis is ReceptionBasis.DOMICILE:
+                reception_type = "domicile"
+                label = f"Mutual Reception ({relation.host_planet})"
+                weight = SCORE_MR_DOMICILE
+            elif relation.basis is ReceptionBasis.EXALTATION:
+                reception_type = "exaltation"
+                label = f"Mutual Exaltation ({relation.host_planet})"
+                weight = SCORE_MR_EXALTATION
+            else:
+                continue
+            truths.append(
+                MutualReceptionTruth(
+                    other_planet=relation.host_planet,
+                    reception_type=reception_type,
+                    label=label,
+                    score=weight if should_score else 0,
+                    weight=weight,
+                    scored=should_score,
+                )
+            )
+        return truths
 
     @staticmethod
     def _normalize_planet_positions(planet_positions: list[dict]) -> list[dict[str, object]]:
@@ -2532,9 +2953,27 @@ class DignitiesService:
             if not math.isfinite(degree):
                 raise ValueError(f"planet_positions[{index}].degree must be finite")
 
-            retro_value = pos.get("is_retrograde", False)
-            if not isinstance(retro_value, bool):
+            retro_value = pos.get("is_retrograde")
+            if retro_value is not None and not isinstance(retro_value, bool):
                 raise ValueError(f"planet_positions[{index}].is_retrograde must be a bool when provided")
+
+            speed_value = pos.get("speed")
+            if speed_value is None:
+                speed = None
+            else:
+                try:
+                    speed = float(speed_value)
+                except (TypeError, ValueError):
+                    raise ValueError(f"planet_positions[{index}].speed must be a real number") from None
+                if not math.isfinite(speed):
+                    raise ValueError(f"planet_positions[{index}].speed must be finite")
+                speed_retrograde = speed < 0.0
+                if retro_value is not None and retro_value != speed_retrograde:
+                    raise ValueError(
+                        f"planet_positions[{index}] has contradictory speed and is_retrograde"
+                    )
+                if retro_value is None:
+                    retro_value = speed_retrograde
 
             if normalized_name in duplicate_guard:
                 if normalized_name in seen_supported:
@@ -2548,8 +2987,32 @@ class DignitiesService:
                     "name": normalized_name,
                     "degree": degree,
                     "is_retrograde": retro_value,
+                    "speed": speed,
                 }
             )
+        return normalized
+
+    @staticmethod
+    def _normalize_named_longitudes(
+        positions: dict[str, float] | None,
+        *,
+        field_name: str,
+    ) -> dict[str, float]:
+        if positions is None:
+            return {}
+        if not isinstance(positions, dict):
+            raise ValueError(f"{field_name} must be a dictionary")
+        normalized: dict[str, float] = {}
+        for name, value in positions.items():
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError(f"{field_name} names must be non-empty strings")
+            try:
+                longitude = float(value)
+            except (TypeError, ValueError):
+                raise ValueError(f"{field_name}[{name!r}] must be a real number") from None
+            if not math.isfinite(longitude):
+                raise ValueError(f"{field_name}[{name!r}] must be finite")
+            normalized[name.strip()] = longitude % 360.0
         return normalized
 
     @staticmethod
@@ -2916,13 +3379,15 @@ def calculate_dignities(
     policy: DignityComputationPolicy | None = None,
     *,
     horizon_frame: DignityHorizonFrame | None = None,
+    node_positions: dict[str, float] | None = None,
+    fixed_star_positions: dict[str, float] | None = None,
 ) -> list[PlanetaryDignity]:
     """
     Calculate essential and accidental dignities.
 
     Parameters
     ----------
-    planet_positions : list of {'name': str, 'degree': float, 'is_retrograde': bool}
+    planet_positions : list of {'name': str, 'degree': float, 'is_retrograde': bool, 'speed': float}
     house_positions  : list of {'number': int, 'degree': float}
     policy           : optional DignityComputationPolicy
     horizon_frame    : optional exact Ascendant/Midheaven geometry
@@ -2932,6 +3397,8 @@ def calculate_dignities(
         house_positions,
         policy=policy,
         horizon_frame=horizon_frame,
+        node_positions=node_positions,
+        fixed_star_positions=fixed_star_positions,
     )
 
 
@@ -3004,6 +3471,8 @@ def calculate_condition_profiles(
     policy: DignityComputationPolicy | None = None,
     *,
     horizon_frame: DignityHorizonFrame | None = None,
+    node_positions: dict[str, float] | None = None,
+    fixed_star_positions: dict[str, float] | None = None,
 ) -> list[PlanetaryConditionProfile]:
     """Calculate integrated per-planet condition profiles."""
 
@@ -3012,6 +3481,8 @@ def calculate_condition_profiles(
         house_positions,
         policy=policy,
         horizon_frame=horizon_frame,
+        node_positions=node_positions,
+        fixed_star_positions=fixed_star_positions,
     )
 
 
@@ -3021,6 +3492,8 @@ def calculate_chart_condition_profile(
     policy: DignityComputationPolicy | None = None,
     *,
     horizon_frame: DignityHorizonFrame | None = None,
+    node_positions: dict[str, float] | None = None,
+    fixed_star_positions: dict[str, float] | None = None,
 ) -> ChartConditionProfile:
     """Calculate the chart-wide condition profile."""
 
@@ -3029,6 +3502,8 @@ def calculate_chart_condition_profile(
         house_positions,
         policy=policy,
         horizon_frame=horizon_frame,
+        node_positions=node_positions,
+        fixed_star_positions=fixed_star_positions,
     )
 
 
@@ -3038,6 +3513,8 @@ def calculate_condition_network_profile(
     policy: DignityComputationPolicy | None = None,
     *,
     horizon_frame: DignityHorizonFrame | None = None,
+    node_positions: dict[str, float] | None = None,
+    fixed_star_positions: dict[str, float] | None = None,
 ) -> ConditionNetworkProfile:
     """Calculate the reception / condition network profile."""
 
@@ -3046,6 +3523,8 @@ def calculate_condition_network_profile(
         house_positions,
         policy=policy,
         horizon_frame=horizon_frame,
+        node_positions=node_positions,
+        fixed_star_positions=fixed_star_positions,
     )
 
 

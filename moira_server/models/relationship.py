@@ -1094,7 +1094,30 @@ class PatternConditionNetworkProfileResponse(_StrictModel):
 class MidpointRequest(_StrictModel):
     chart: RelationshipPartyRequest
     planet_set: str = "classic"
-    include_nodes: bool = False
+    include_nodes: bool = Field(
+        default=False,
+        description=(
+            "Whether chart nodes are admitted before midpoint planet-set filtering. "
+            "This policy belongs at the midpoint-request top level; do not also "
+            "supply chart.include_nodes."
+        ),
+    )
+
+    @field_validator("include_nodes", mode="before")
+    @classmethod
+    def _strict_midpoint_include_nodes(cls, value: Any) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError("include_nodes must be a boolean")
+        return value
+
+    @model_validator(mode="after")
+    def _reject_nested_midpoint_include_nodes(self) -> "MidpointRequest":
+        if "include_nodes" in self.chart.model_fields_set:
+            raise ValueError(
+                "chart.include_nodes is not accepted for midpoint requests; "
+                "supply include_nodes only at the request top level"
+            )
+        return self
 
 
 class MidpointResponse(_StrictModel):

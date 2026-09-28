@@ -323,7 +323,7 @@ share the same `is_night_chart`.
 
 Rationale: the Nine Parts are a specific named doctrinal system (Abu Ma'shar),
 not a generic lot catalogue entry. Keeping them separate prevents confusion
-with the ~430-entry `PARTS_DEFINITIONS` catalogue and makes the doctrinal
+with the 512-entry `PARTS_DEFINITIONS` catalogue and makes the doctrinal
 scope explicit.
 
 ### §7. Relation to lots.py

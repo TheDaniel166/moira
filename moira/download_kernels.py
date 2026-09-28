@@ -12,7 +12,7 @@ Files are saved to ~/.moira/kernels/.
 The moira-astro wheel ships the moira-asteroids-wheel small-body catalog
 (25 named bodies). JPL optional kernels listed here do not substitute for
 either Moira small-body catalog, and this tool does not download the
-10,025-body archive.
+11,223-body archive.
 """
 
 from __future__ import annotations

@@ -11,6 +11,7 @@ from moira.dignities_types import (
     ChartConditionProfile,
     ConditionNetworkProfile,
     DignityComputationPolicy,
+    DignityScoringPolicy,
     DignityHorizonFrame,
     EssentialDignityDoctrine,
     EssentialDignityPolicy,
@@ -21,6 +22,8 @@ from moira.dignities_types import (
     SectHayzPolicy,
     SolarConditionPolicy,
 )
+from moira.julian import jd_from_datetime, utc_to_tt
+from moira.stars import star_at
 
 from ..models.dignities import (
     DignitiesChartRequest,
@@ -52,6 +55,8 @@ class _DignitySupportTruth:
     planet_positions: list[dict]
     house_positions: list[dict]
     horizon_frame: DignityHorizonFrame
+    node_positions: dict[str, float]
+    fixed_star_positions: dict[str, float]
     policy: DignityComputationPolicy | None
 
 
@@ -71,22 +76,29 @@ def _policy_from_request(
         return None
     essential = EssentialDignityPolicy(
         doctrine=request_policy.essential.doctrine,
+        bounds_doctrine=request_policy.essential.bounds_doctrine,
+        triplicity_doctrine=request_policy.essential.triplicity_doctrine,
+        participating_ruler_policy=request_policy.essential.participating_ruler_policy,
     )
     accidental = AccidentalDignityPolicy(
         include_house_strength=request_policy.accidental.include_house_strength,
         include_motion=request_policy.accidental.include_motion,
+        include_speed=request_policy.accidental.include_speed,
+        include_lunar_phase=request_policy.accidental.include_lunar_phase,
         include_oriental_occidental=(
             request_policy.accidental.include_oriental_occidental
         ),
+        include_planetary_aspects=request_policy.accidental.include_planetary_aspects,
+        include_node_contacts=request_policy.accidental.include_node_contacts,
+        include_fixed_star_contacts=request_policy.accidental.include_fixed_star_contacts,
+        include_besieging=request_policy.accidental.include_besieging,
+        include_joy=request_policy.accidental.include_joy,
         solar=SolarConditionPolicy(
             include_cazimi=request_policy.accidental.solar.include_cazimi,
             include_combust=request_policy.accidental.solar.include_combust,
             include_under_sunbeams=request_policy.accidental.solar.include_under_sunbeams,
-            include_for_luminaries=request_policy.accidental.solar.include_for_luminaries,
-        ),
-        mutual_reception=MutualReceptionPolicy(
-            include_domicile=request_policy.accidental.mutual_reception.include_domicile,
-            include_exaltation=request_policy.accidental.mutual_reception.include_exaltation,
+            include_free_from_beams=request_policy.accidental.solar.include_free_from_beams,
+            include_for_moon=request_policy.accidental.solar.include_for_moon,
         ),
         sect=SectHayzPolicy(
             doctrine=request_policy.accidental.sect.doctrine,
@@ -95,7 +107,20 @@ def _policy_from_request(
             include_halb=request_policy.accidental.sect.include_halb,
         ),
     )
-    return DignityComputationPolicy(essential=essential, accidental=accidental)
+    reception = MutualReceptionPolicy(
+        include_domicile=request_policy.reception.include_domicile,
+        include_exaltation=request_policy.reception.include_exaltation,
+    )
+    scoring = DignityScoringPolicy(
+        mode=request_policy.scoring.mode,
+        node_doctrine=request_policy.scoring.node_doctrine,
+    )
+    return DignityComputationPolicy(
+        essential=essential,
+        accidental=accidental,
+        reception=reception,
+        scoring=scoring,
+    )
 
 
 def _derive_dignity_support_truth(
@@ -109,7 +134,7 @@ def _derive_dignity_support_truth(
     chart = engine.chart(
         request.dt,
         bodies=list(bodies),
-        include_nodes=False,
+        include_nodes=True,
         observer_lat=request.observer_lat,
         observer_lon=request.observer_lon,
         observer_elev_m=request.observer_elev_m,
@@ -126,9 +151,19 @@ def _derive_dignity_support_truth(
             "name": planet,
             "degree": chart.planets[planet].longitude,
             "is_retrograde": chart.planets[planet].speed < 0.0,
+            "speed": chart.planets[planet].speed,
         }
         for planet in bodies
     ]
+    node_positions = {
+        getattr(name, "value", str(name)): position.longitude
+        for name, position in chart.nodes.items()
+    }
+    jd_tt = utc_to_tt(jd_from_datetime(request.dt))
+    fixed_star_positions = {
+        name: star_at(name, jd_tt).longitude
+        for name in ("Regulus", "Spica", "Algol")
+    }
     house_positions = [
         {
             "number": index + 1,
@@ -143,6 +178,8 @@ def _derive_dignity_support_truth(
             asc_longitude=houses.asc,
             mc_longitude=houses.mc,
         ),
+        node_positions=node_positions,
+        fixed_star_positions=fixed_star_positions,
         policy=policy,
     )
 
@@ -157,6 +194,8 @@ def compute_dignities_chart(
         support.house_positions,
         policy=support.policy,
         horizon_frame=support.horizon_frame,
+        node_positions=support.node_positions,
+        fixed_star_positions=support.fixed_star_positions,
     )
 
 
@@ -181,6 +220,8 @@ def compute_dignities_chart_conditions(
         support.house_positions,
         policy=support.policy,
         horizon_frame=support.horizon_frame,
+        node_positions=support.node_positions,
+        fixed_star_positions=support.fixed_star_positions,
     )
 
 
@@ -205,6 +246,8 @@ def compute_dignities_chart_profile(
         support.house_positions,
         policy=support.policy,
         horizon_frame=support.horizon_frame,
+        node_positions=support.node_positions,
+        fixed_star_positions=support.fixed_star_positions,
     )
 
 
@@ -218,6 +261,8 @@ def compute_dignities_chart_network(
         support.house_positions,
         policy=support.policy,
         horizon_frame=support.horizon_frame,
+        node_positions=support.node_positions,
+        fixed_star_positions=support.fixed_star_positions,
     )
 
 

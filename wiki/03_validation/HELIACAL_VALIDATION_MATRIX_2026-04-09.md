@@ -10,6 +10,12 @@
 > Do not use the open-gap language in this dated snapshot as the current
 > physical-model roadmap.
 
+> **Post-snapshot planetary evidence (2026-09-28).** Morning-first heliacal
+> rising for Mercury, Venus, Mars, Jupiter, and Saturn is now frozen in
+> `tests/artifacts/oracle/heliacal_rising_oracle_matrix.json` and enforced by
+> `tests/oracle/test_heliacal_rising_oracle.py`. This does not close the
+> separate non-Sirius stellar or moonlight-enabled live-event corpus gaps.
+
 Purpose:
 - state exactly what the current heliacal and generalized visibility subsystem validates
 - separate strong evidence from slice evidence and provisional claims

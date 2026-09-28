@@ -108,8 +108,8 @@ REST transport must not:
 - treat Sun or Moon as valid heliocentric-node targets for geometric nodes
 - claim kernel-backed truth for mean-element results
 - claim mean-element validity beyond the engine's documented envelope
-- imply that an installed catalog has frozen-Horizons numerical admission when
-  its manifest contains no reviewed Stage 3 admission bound to that fixture
+- imply that an installed catalog has frozen-Horizons numerical admission
+  unless an exact release hash is bound by the governed catalog admission
 
 ## Validation Requirements
 

@@ -10,6 +10,9 @@ from pydantic import Field, field_validator, model_validator
 
 from moira.constants import HouseSystem
 from moira.dignities_types import (
+    DignityNodeDoctrine,
+    DignityScoringMode,
+    EgyptianBoundsDoctrine,
     EssentialDignityDoctrine,
     EssentialDignityKind,
     HalbHayzDoctrine,
@@ -19,6 +22,8 @@ from moira.dignities_types import (
     PlanetarySolarPhaseKind,
     SectComponentKind,
     SolarProximityBand,
+    TriplicityDoctrine,
+    ParticipatingRulerPolicy,
     TruthEvaluationStatus,
 )
 
@@ -33,13 +38,22 @@ _MODERN_DIGNITY_PLANETS = _SEVEN_PLANETS | frozenset({"Uranus", "Neptune", "Plut
 
 class EssentialDignityPolicyRequest(_StrictModel):
     doctrine: EssentialDignityDoctrine = EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7
+    bounds_doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.PTOLEMAIC
+    triplicity_doctrine: TriplicityDoctrine = TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+    participating_ruler_policy: ParticipatingRulerPolicy = ParticipatingRulerPolicy.IGNORE
+
+
+class DignityScoringPolicyRequest(_StrictModel):
+    mode: DignityScoringMode = DignityScoringMode.WILLIAM_LILLY_1647
+    node_doctrine: DignityNodeDoctrine = DignityNodeDoctrine.MEAN_NODE
 
 
 class SolarConditionPolicyRequest(_StrictModel):
     include_cazimi: bool = True
     include_combust: bool = True
     include_under_sunbeams: bool = True
-    include_for_luminaries: bool = False
+    include_free_from_beams: bool = True
+    include_for_moon: bool = True
 
 
 class MutualReceptionPolicyRequest(_StrictModel):
@@ -48,7 +62,7 @@ class MutualReceptionPolicyRequest(_StrictModel):
 
 
 class SectHayzPolicyRequest(_StrictModel):
-    doctrine: HalbHayzDoctrine = HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007
+    doctrine: HalbHayzDoctrine = HalbHayzDoctrine.AL_BIRUNI_1030_SECTION_496
     mercury_sect_model: MercurySectModel = MercurySectModel.LONGITUDE_HEURISTIC
     include_hayz: bool = True
     include_halb: bool = True
@@ -57,15 +71,40 @@ class SectHayzPolicyRequest(_StrictModel):
 class AccidentalDignityPolicyRequest(_StrictModel):
     include_house_strength: bool = True
     include_motion: bool = True
+    include_speed: bool = True
+    include_lunar_phase: bool = True
     include_oriental_occidental: bool = True
+    include_planetary_aspects: bool = True
+    include_node_contacts: bool = True
+    include_fixed_star_contacts: bool = True
+    include_besieging: bool = True
+    include_joy: bool = True
     solar: SolarConditionPolicyRequest = Field(default_factory=SolarConditionPolicyRequest)
-    mutual_reception: MutualReceptionPolicyRequest = Field(default_factory=MutualReceptionPolicyRequest)
     sect: SectHayzPolicyRequest = Field(default_factory=SectHayzPolicyRequest)
 
 
 class DignityComputationPolicyRequest(_StrictModel):
     essential: EssentialDignityPolicyRequest = Field(default_factory=EssentialDignityPolicyRequest)
     accidental: AccidentalDignityPolicyRequest = Field(default_factory=AccidentalDignityPolicyRequest)
+    reception: MutualReceptionPolicyRequest = Field(default_factory=MutualReceptionPolicyRequest)
+    scoring: DignityScoringPolicyRequest = Field(default_factory=DignityScoringPolicyRequest)
+
+    @model_validator(mode="after")
+    def _coherent_scoring_profile(self) -> "DignityComputationPolicyRequest":
+        if self.scoring.mode is DignityScoringMode.WILLIAM_LILLY_1647:
+            if self.essential.doctrine is not EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7:
+                raise ValueError(
+                    "william_lilly_1647 scoring requires traditional_classic_7 rulers"
+                )
+            if self.essential.bounds_doctrine is not EgyptianBoundsDoctrine.PTOLEMAIC:
+                raise ValueError(
+                    "william_lilly_1647 scoring requires ptolemaic bounds"
+                )
+            if self.essential.participating_ruler_policy is not ParticipatingRulerPolicy.IGNORE:
+                raise ValueError(
+                    "william_lilly_1647 scoring does not award a participating triplicity ruler"
+                )
+        return self
 
 
 class DignitiesChartRequest(_StrictModel):
@@ -131,6 +170,8 @@ class EssentialDignityComponentTruthResponse(_StrictModel):
     matched: bool | None
     matching_signs: tuple[str, ...]
     ruler: str | None
+    weight: int
+    score: int
     reason: str | None
 
 
@@ -142,6 +183,10 @@ class EssentialDignityTruthResponse(_StrictModel):
     matching_signs: tuple[str, ...]
     matched: bool
     components: tuple[EssentialDignityComponentTruthResponse, ...]
+    receptions: tuple["MutualReceptionTruthResponse", ...]
+    scoring_mode: DignityScoringMode
+    bounds_doctrine: EgyptianBoundsDoctrine
+    triplicity_doctrine: TriplicityDoctrine
 
 
 class PlanetarySolarPhaseTruthResponse(_StrictModel):
@@ -233,6 +278,21 @@ class AccidentalDignityConditionResponse(_StrictModel):
     code: str
     label: str
     score: int
+    weight: int
+    scored: bool
+    source: str
+
+
+class AccidentalDignityEvaluationTruthResponse(_StrictModel):
+    category: str
+    code: str
+    label: str
+    status: TruthEvaluationStatus
+    matched: bool | None
+    weight: int
+    score: int
+    source: str
+    reason: str | None
 
 
 class SolarConditionTruthResponse(_StrictModel):
@@ -241,6 +301,9 @@ class SolarConditionTruthResponse(_StrictModel):
     label: str | None
     score: int
     distance_from_sun: float | None
+    weight: int
+    scored: bool
+    source: str
 
 
 class MutualReceptionTruthResponse(_StrictModel):
@@ -248,10 +311,14 @@ class MutualReceptionTruthResponse(_StrictModel):
     reception_type: str
     label: str
     score: int
+    weight: int
+    scored: bool
+    source: str
 
 
 class AccidentalDignityTruthResponse(_StrictModel):
     conditions: tuple[AccidentalDignityConditionResponse, ...]
+    evaluations: tuple[AccidentalDignityEvaluationTruthResponse, ...]
     house_condition: AccidentalDignityConditionResponse | None
     motion_condition: AccidentalDignityConditionResponse | None
     solar_condition: SolarConditionTruthResponse
@@ -308,7 +375,7 @@ class PlanetaryDignityResponse(_StrictModel):
     accidental_dignities: tuple[str, ...]
     accidental_score: int
     total_score: int
-    is_retrograde: bool
+    is_retrograde: bool | None
     essential_truth: EssentialDignityTruthResponse | None
     accidental_truth: AccidentalDignityTruthResponse
     sect_truth: SectTruthResponse | None

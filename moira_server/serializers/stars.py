@@ -29,7 +29,6 @@ from ..models.stars import (
     MultipleStarSystemResponse,
     StarPositionProvenanceResponse,
     StarPositionResponse,
-    StarsBulkResponse,
     VariableStarCatalogProvenanceResponse,
     VariableStarComputationProvenanceResponse,
     VariableStarCatalogProfileResponse,
@@ -127,18 +126,6 @@ def serialize_star(
         sign_degree=sign_degree,
         is_variable=is_variable,
         provenance=serialize_star_provenance(data, requested_datetime=requested_datetime, jd_tt=jd_tt),
-    )
-
-
-def serialize_stars_bulk(results: dict, missing: list[str]) -> StarsBulkResponse:
-    serialized = {}
-    for key, data in results.items():
-        serialized[key] = serialize_star(data)
-
-    return StarsBulkResponse(
-        dt=results.get("dt") if isinstance(results, dict) else None,  # placeholder
-        results=serialized,
-        missing=missing,
     )
 
 

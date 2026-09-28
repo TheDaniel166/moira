@@ -128,7 +128,7 @@ counter-clockwise ahead of the left; negative means behind.
 
 ### 2. Layer Structure
 
-The backend is organised into ten phases. Each phase operates only on outputs
+The backend is organised into eleven phases. Each phase operates only on outputs
 produced by phases below it. No phase reaches upward.
 
 ```
@@ -142,6 +142,7 @@ Phase  7 — Angularity                   (HouseAngularity, HouseAngularityProfi
 Phase  8 — System comparison            (HouseSystemComparison, HousePlacementComparison, compare_systems, compare_placements)
 Phase  9 — Chart-wide distribution      (HouseOccupancy, HouseDistributionProfile, distribute_points)
 Phase 10 — Subsystem hardening         (invariant register, failure-behavior freeze, terminology alignment)
+Phase 11 — House dynamics              (CuspSpeed, HouseDynamics, cusp_speeds_at, house_dynamics_from_armc)
 ```
 
 #### Layer boundary rules
@@ -173,29 +174,26 @@ A function in phase N:
 | `PSR` | Pullen SR | `QUADRANT` | `SINUSOIDAL` | Yes | Yes |
 | `S` | Solar Sign | `SOLAR` | `ECLIPTIC` | No | Yes |
 | `O` | Porphyry | `QUADRANT` | `QUADRANT_TRISECTION` | Yes | Yes |
-| `P` | Placidus | `QUADRANT` | `SEMI_ARC` | Yes | Yes |  # integrated high-lat branch search; polar_capable via own doctrine (unique ordered when exists)
+| `P` | Placidus | `QUADRANT` | `SEMI_ARC` | Yes | Yes |
 | `B` | Alcabitius | `QUADRANT` | `SEMI_ARC` | Yes | Yes |
 | `K` | Koch | `QUADRANT` | `OBLIQUE_ASCENSION` | Yes | **No** |
-| `C` | Campanus | `QUADRANT` | `PRIME_VERTICAL` | Yes | **No** |
+| `C` | Campanus | `QUADRANT` | `PRIME_VERTICAL` | Yes | Yes |
 | `H` | Azimuthal | `QUADRANT` | `HORIZON` | Yes | Yes |
-| `R` | Regiomontanus | `QUADRANT` | `POLAR_PROJECTION` | Yes | **No** |
-| `T` | Topocentric | `QUADRANT` | `POLAR_PROJECTION` | Yes | **No** |
+| `R` | Regiomontanus | `QUADRANT` | `POLAR_PROJECTION` | Yes | Yes |
+| `T` | Topocentric | `QUADRANT` | `POLAR_PROJECTION` | Yes | Yes |
 | `CT` | Carter | `QUADRANT` | `EQUATORIAL` | Yes | Yes |
 | `U` | Krusinski | `QUADRANT` | `GREAT_CIRCLE` | Yes | Yes |
 | `Y` | APC | `QUADRANT` | `APC_FORMULA` | Yes | Yes |
 | `N` | Sunshine | `SOLAR` | `SOLAR_POSITION` | No | Yes |
 
-**Polar-incapable systems** (`_POLAR_SYSTEMS`): `K`, `C`, `R`, and `T`.
-Placidus (P) has integrated branch-search doctrine for high latitudes (unique
-ordered semi-arc cycles when they exist for the position); it is no longer
-blanket pre-empted and is marked polar_capable=True. When no unique ordered
-solution exists for a given high-lat ARMC, policy still governs fallback/raise.
-Alcabitius (B) likewise has integrated direct zero-pole ordered-figure doctrine
-and is marked polar_capable=True. APC remains directly computable at high
-latitude only when its projected cusps form one strictly ordered ecliptic cycle;
-otherwise its declared polar policy governs fallback or raise. The remaining
-listed systems fall back (or raise) under default policy above critical latitude
-(`90° − obliquity` ≈ 66.56° at J2000).
+**Outer-guarded polar-incapable systems** (`_POLAR_SYSTEMS`): `K` only.
+Placidus (P), Alcabitius (B), Campanus (C), Regiomontanus (R), and Topocentric
+(T) own integrated high-latitude search or safe projection doctrine. They
+return their requested system when that doctrine finds one strictly ordered
+cusp cycle; when it does not, the declared polar policy governs fallback or
+raise. APC (Y) is likewise accepted only when its projected cusps form one
+strictly ordered ecliptic cycle. Koch remains outer-guarded because its
+diurnal semi-arc construction can collapse for circumpolar points.
 
 #### QUADRANT H1 exception
 
@@ -253,6 +251,8 @@ All public names are declared in the module `moira/houses.py`.
 | `HousePlacementComparison` | 8 | `longitude`, `placements`, `houses`, `all_agree`, `angularity_agrees` |
 | `HouseOccupancy` | 9 | `house`, `count`, `longitudes`, `placements`, `is_empty` |
 | `HouseDistributionProfile` | 9 | `house_cusps`, `point_count`, `occupancies`, `counts`, `empty_houses`, `dominant_houses`, `angular_count`, `succedent_count`, `cadent_count` |
+| `CuspSpeed` | 11 | `house`, `cusp_longitude`, `speed_deg_per_day` |
+| `HouseDynamics` | 11 | `house_cusps`, `cusp_speeds`, `asc_speed_deg_per_day`, `mc_speed_deg_per_day`, `vertex_speed_deg_per_day`, `anti_vertex_speed_deg_per_day` |
 
 #### Computation functions
 
@@ -266,6 +266,11 @@ All public names are declared in the module `moira/houses.py`.
 | `compare_systems` | `(left, right) -> HouseSystemComparison` | 8 |
 | `compare_placements` | `(longitude, *house_cusps_seq) -> HousePlacementComparison` | 8 |
 | `distribute_points` | `(longitudes, house_cusps) -> HouseDistributionProfile` | 9 |
+| `cusp_speeds_at` | `(jd_ut, latitude, longitude, system='P', *, policy=None, dt=1/1440) -> HouseDynamics` | 11 |
+| `house_dynamics_from_armc` | `(armc, obliquity, latitude, system='P', *, policy=None, sun_longitude=None, darmc_deg=...) -> HouseDynamics` | 11 |
+| `analytical_mc_speed` | `(armc, obliquity, sidereal_rate_deg_per_day=...) -> float` | 11 |
+| `analytical_asc_speed` | `(armc, obliquity, latitude, sidereal_rate_deg_per_day=...) -> float` | 11 |
+| `analytical_vertex_speed` | `(armc, obliquity, latitude, sidereal_rate_deg_per_day=...) -> float` | 11 |
 
 #### Module-level constants
 
@@ -273,7 +278,7 @@ All public names are declared in the module `moira/houses.py`.
 |---|---|---|
 | `_MEMBERSHIP_CUSP_TOLERANCE` | `1e-9` | Degrees; threshold for `exact_on_cusp` detection |
 | `_NEAR_CUSP_DEFAULT_THRESHOLD` | `3.0` | Degrees; default for `describe_boundary` |
-| `_POLAR_SYSTEMS` | `frozenset{'K','C','R','T'}` | Systems still outer-guarded above the critical latitude |
+| `_POLAR_SYSTEMS` | `frozenset{'K'}` | Systems still outer-guarded above the critical latitude |
 | `_KNOWN_SYSTEMS` | `frozenset` of 22 codes | All recognised `HouseSystem` values |
 | `_ANGULARITY_MAP` | `dict[int, HouseAngularity]` | Static 12-entry lookup; never recomputed |
 
@@ -289,7 +294,7 @@ quality is evaluated after the affected cusp arithmetic.
 
 | Trigger | Condition | Default behaviour | Strict behaviour |
 |---|---|---|---|
-| Critical latitude or unordered projected cycle | `abs(latitude) >= 90° − obliquity` and either the effective system is in `_POLAR_SYSTEMS`, integrated high-latitude search for Placidus/Alcabitius finds no unique ordered figure, or APC produces an unordered ecliptic cycle | Substitute according to `PolarFallbackPolicy` | Raise `ValueError` |
+| Critical latitude or unordered projected cycle | `abs(latitude) >= 90° − obliquity` and either the effective system is in `_POLAR_SYSTEMS`, integrated high-latitude doctrine for Placidus/Alcabitius/Campanus/Regiomontanus/Topocentric finds no unique ordered figure, or APC produces an unordered ecliptic cycle | Substitute according to `PolarFallbackPolicy` | Raise `ValueError` |
 | Unknown system | `system not in _KNOWN_SYSTEMS` | Substitute Placidus | Raise `ValueError` |
 
 The critical latitude is computed from the chart's actual obliquity at call time.
@@ -299,13 +304,14 @@ semi-arc iteration can produce geometrically invalid cusp orderings. The old fix
 75.0° threshold was incorrect: it silently returned invalid cusp sets from ≈66.6°
 to 74.9°.
 
-This does **not** mean Placidus is mathematically impossible above the critical
-latitude. The 77°N branch-search experiment showed that valid, ordered Placidus
-solutions can exist in narrow ARMC regimes. Moira therefore distinguishes between:
+The critical latitude is not a blanket impossibility boundary for every
+latitude-sensitive system. Integrated system doctrine may still find a valid,
+ordered figure above it. Moira therefore distinguishes between:
 
-- globally supported behavior (default production path)
-- conditionally solvable high-latitude cases (experimental search path)
-- unsupported cases where the current production solver cannot recover a valid branch
+- directly or conditionally solvable high-latitude figures under the system's
+  integrated geometry;
+- Koch's outer-guarded classical construction;
+- cases where no unique ordered figure exists and policy must fall back or raise.
 
 Critical latitude takes precedence over unknown system when both conditions are true.
 
@@ -331,7 +337,13 @@ When no fallback occurs: `fallback = False`, `fallback_reason = None`.
 
 #### 6.3a Experimental high-latitude search
 
-`PolarFallbackPolicy.EXPERIMENTAL_SEARCH` is an explicit opt-in research mode that loads the separate experimental_<system>.py module for a requested polar system when such a module is registered. The per-system module owns the definition of an admissible high-latitude figure for that geometry.
+`PolarFallbackPolicy.EXPERIMENTAL_SEARCH` is an explicit fail-closed search
+mode. Integrated high-latitude systems already attempt their registered search
+as part of their normal geometry; this policy changes a failed search from
+fallback to an explicit error. For an outer-guarded system such as Koch, it
+loads the registered `experimental_<system>.py` module directly. The per-system
+module owns the definition of an admissible high-latitude figure for that
+geometry.
 
 - The engine calls the registered `moira.experimental_<system>` module for the
   requested system.

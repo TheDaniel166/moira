@@ -29,6 +29,12 @@ from moira._orbital_errors import (
     OrbitalStateDegenerateError,
     OrbitalTimeBasisError,
 )
+from moira._orbital_state import (
+    OrbitalBodyIdentity,
+    OrbitalBodyKind,
+    _not_loaded_error,
+)
+from moira._wheel_asteroid_catalog import FULL_CATALOG_VERSION
 from moira.small_body_identity import AmbiguousSmallBodyNameError
 
 
@@ -158,3 +164,16 @@ def test_structured_errors_pickle_with_attributes_and_message(error) -> None:
 )
 def test_key_compatible_messages_are_not_repr_quoted(error) -> None:
     assert not str(error).startswith(('"', "'"))
+
+
+def test_asteroid_not_loaded_error_names_the_current_full_release() -> None:
+    error = _not_loaded_error(
+        OrbitalBodyIdentity(
+            name="Ceres",
+            kind=OrbitalBodyKind.ASTEROID,
+            naif_id=2_000_001,
+        )
+    )
+
+    assert error.catalog == "moira-asteroids"
+    assert error.catalog_version == FULL_CATALOG_VERSION == "2026.09.18.1"

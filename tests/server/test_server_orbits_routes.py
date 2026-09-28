@@ -37,9 +37,18 @@ from moira.orbits import (
 )
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.models.common import REST_BATCH_MAX_ITEMS
 
 
 pytestmark = pytest.mark.loopback
+
+
+def test_orbit_class_batch_openapi_limit_matches_shared_server_limit() -> None:
+    schema = create_app(ServerConfig(docs_enabled=False)).openapi()
+    bodies = schema["components"]["schemas"]["OrbitClassBatchRequest"][
+        "properties"
+    ]["bodies"]
+    assert bodies["maxItems"] == REST_BATCH_MAX_ITEMS
 
 
 class _FakeReader:

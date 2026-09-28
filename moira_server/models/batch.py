@@ -7,6 +7,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from .chart import ChartReductionTruthResponse, ChartRequest, ChartResponse, HousesResponse
+from .common import REST_BATCH_MAX_ITEMS
 from .progressions import (
     ProgressionComputationClassificationResponse,
     ProgressionComputationTruthResponse,
@@ -26,7 +27,7 @@ class BatchFailureResponse(_StrictModel):
 
 
 class ChartsBatchRequest(_StrictModel):
-    requests: list[ChartRequest]
+    requests: list[ChartRequest] = Field(max_length=REST_BATCH_MAX_ITEMS)
 
 
 class ChartBatchItemResponse(_StrictModel):
@@ -69,7 +70,7 @@ class TransitBatchItemResponse(_StrictModel):
 
 
 class TransitsBatchRequest(_StrictModel):
-    requests: list[TransitBatchItemRequest]
+    requests: list[TransitBatchItemRequest] = Field(max_length=REST_BATCH_MAX_ITEMS)
 
 
 class TransitsBatchResponse(_StrictModel):
@@ -93,7 +94,7 @@ class ReturnBatchItemResponse(_StrictModel):
 
 
 class ReturnsBatchRequest(_StrictModel):
-    requests: list[ReturnBatchItemRequest]
+    requests: list[ReturnBatchItemRequest] = Field(max_length=REST_BATCH_MAX_ITEMS)
 
 
 class ReturnsBatchResponse(_StrictModel):
@@ -169,7 +170,7 @@ class EventBatchItemResponse(_StrictModel):
 
 
 class EventsBatchRequest(_StrictModel):
-    requests: list[EventBatchItemRequest]
+    requests: list[EventBatchItemRequest] = Field(max_length=REST_BATCH_MAX_ITEMS)
 
 
 class EventsBatchResponse(_StrictModel):
@@ -300,7 +301,7 @@ class ProgressionBatchItemResponse(_StrictModel):
 
 
 class ProgressionsBatchRequest(_StrictModel):
-    requests: list[ProgressionBatchItemRequest]
+    requests: list[ProgressionBatchItemRequest] = Field(max_length=REST_BATCH_MAX_ITEMS)
 
 
 class ProgressionsBatchResponse(_StrictModel):

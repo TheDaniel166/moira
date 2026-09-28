@@ -18,7 +18,7 @@ from pathlib import Path
 
 CATALOG_ID = "moira-asteroids-wheel"
 CATALOG_VERSION = "2026.08.14.1"
-FULL_CATALOG_VERSION = "2026.08.12.1"
+FULL_CATALOG_VERSION = "2026.09.18.1"
 EPHEMERIDES_URL = "https://moira-astro.com/ephemerides"
 CATALOG_DIR = Path(__file__).resolve().parent / "kernels" / "asteroids_wheel"
 TARGETS_PATH = CATALOG_DIR / "targets.json"

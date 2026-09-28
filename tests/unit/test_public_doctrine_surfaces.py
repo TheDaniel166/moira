@@ -29,7 +29,10 @@ _PUBLIC_DOCTRINE_SURFACES = {
     "moira.aspects": ["AspectPolicy"],
     "moira.dignities": [
         "EssentialDignityDoctrine",
+        "DignityScoringMode",
+        "DignityNodeDoctrine",
         "EssentialDignityPolicy",
+        "DignityScoringPolicy",
         "SolarConditionPolicy",
         "MutualReceptionPolicy",
         "SectHayzPolicy",
@@ -107,9 +110,9 @@ _PUBLIC_DOCTRINE_SURFACES = {
 }
 
 _MODULES_WITHOUT_ALL = {"moira.julian"}
-_PUBLIC_DOCTRINE_SURFACE_COUNT = 68
-_PUBLIC_DOCTRINE_DATACLASS_COUNT = 53
-_PUBLIC_DOCTRINE_ENUM_COUNT = 15
+_PUBLIC_DOCTRINE_SURFACE_COUNT = 71
+_PUBLIC_DOCTRINE_DATACLASS_COUNT = 54
+_PUBLIC_DOCTRINE_ENUM_COUNT = 17
 
 
 def _iter_surface_records() -> list[tuple[str, str]]:

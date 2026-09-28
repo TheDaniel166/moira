@@ -35,6 +35,7 @@ from ._orbital_errors import (
     OrbitalSourceReceiptError,
     OrbitalTimeBasisError,
 )
+from ._wheel_asteroid_catalog import FULL_CATALOG_VERSION
 from .constants import Body
 from .small_body_identity import (
     AmbiguousSmallBodyNameError,
@@ -384,7 +385,7 @@ def _body_coverage(snapshot: Any, naif_id: int) -> tuple[
 
 def _not_loaded_error(body: OrbitalBodyIdentity) -> OrbitalBodyNotLoadedError:
     if body.kind is OrbitalBodyKind.ASTEROID:
-        catalog, version = "moira-asteroids", "2026.08.12.1"
+        catalog, version = "moira-asteroids", FULL_CATALOG_VERSION
     elif body.kind is OrbitalBodyKind.COMET:
         catalog, version = "moira-comets", "2026.07.28.1"
     else:

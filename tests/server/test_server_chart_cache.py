@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from unittest.mock import MagicMock, patch
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier, Lock
+from time import monotonic, sleep
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
 
 from moira_server.app import create_app
-from moira_server.cache import ChartLRUCache
+from moira_server.cache import ChartLRUCache, ResponseLRUCache
+from moira_server.models.sade_sati import SadeSatiWindowsRequest
 from moira_server.config import ServerConfig
 
 
@@ -74,6 +77,98 @@ class TestChartLRUCache:
         cache.set("k", "second")
         assert len(cache) == 1
         assert cache.get("k") == "second"
+
+
+class TestResponseLRUCache:
+    def test_get_or_compute_does_not_cache_failures(self) -> None:
+        cache = ResponseLRUCache(maxsize=4)
+        calls = 0
+
+        def fail_once() -> str:
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise RuntimeError("transient")
+            return "recovered"
+
+        with pytest.raises(RuntimeError, match="transient"):
+            cache.get_or_compute("key", fail_once)
+
+        assert cache.get_or_compute("key", fail_once) == "recovered"
+        assert calls == 2
+
+    def test_get_or_compute_coalesces_concurrent_identical_work(self) -> None:
+        cache = ResponseLRUCache(maxsize=4)
+        worker_count = 8
+        barrier = Barrier(worker_count)
+        counter_lock = Lock()
+        calls = 0
+
+        def factory() -> str:
+            nonlocal calls
+            with counter_lock:
+                calls += 1
+            deadline = monotonic() + 2.0
+            while cache.waits < worker_count - 1:
+                if monotonic() >= deadline:
+                    raise AssertionError("concurrent callers did not reach the cache")
+                sleep(0.001)
+            return "shared"
+
+        def invoke() -> str:
+            barrier.wait()
+            return cache.get_or_compute("same-key", factory)
+
+        with ThreadPoolExecutor(max_workers=worker_count) as executor:
+            results = list(executor.map(lambda _: invoke(), range(worker_count)))
+
+        assert results == ["shared"] * worker_count
+        assert calls == 1
+        assert cache.misses == 1
+        assert cache.waits == worker_count - 1
+
+    def test_request_key_normalizes_aware_datetimes_to_utc(self) -> None:
+        cache = ResponseLRUCache(maxsize=4)
+        engine = SimpleNamespace(_reader_obj=SimpleNamespace(
+            _source_identity={"sha256": "abc"},
+            _kernel_identity={"planetary_ephemeris": "DE441"},
+        ))
+        utc_request = SadeSatiWindowsRequest(
+            natal_moon_sidereal_lon=35.0,
+            start_dt="2000-01-01T00:00:00+00:00",
+            end_dt="2001-01-01T00:00:00+00:00",
+        )
+        offset_request = SadeSatiWindowsRequest(
+            natal_moon_sidereal_lon=35.0,
+            start_dt="1999-12-31T19:00:00-05:00",
+            end_dt="2000-12-31T19:00:00-05:00",
+        )
+
+        assert cache.make_request_key(
+            "v1:sade-sati:windows", utc_request, engine=engine
+        ) == cache.make_request_key(
+            "v1:sade-sati:windows", offset_request, engine=engine
+        )
+
+    def test_request_key_changes_with_resource_identity(self) -> None:
+        cache = ResponseLRUCache(maxsize=4)
+        request = SadeSatiWindowsRequest(
+            natal_moon_sidereal_lon=35.0,
+            start_dt="2000-01-01T00:00:00+00:00",
+            end_dt="2001-01-01T00:00:00+00:00",
+        )
+        engine_a = SimpleNamespace(_reader_obj=SimpleNamespace(
+            _source_identity={"sha256": "aaa"},
+            _kernel_identity={"planetary_ephemeris": "DE441"},
+        ))
+        engine_b = SimpleNamespace(_reader_obj=SimpleNamespace(
+            _source_identity={"sha256": "bbb"},
+            _kernel_identity={"planetary_ephemeris": "DE441"},
+        ))
+
+        assert cache.make_request_key(
+            "v1:test", request, engine=engine_a
+        ) != cache.make_request_key("v1:test", request, engine=engine_b)
 
 
 class TestChartCacheKeyBuilder:

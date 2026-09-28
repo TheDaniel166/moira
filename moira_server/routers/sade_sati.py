@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from moira import Moira
 
+from ..cache import ResponseLRUCache, cached_response
 from ..dependencies import get_engine
 from ..models.sade_sati import (
     SadeSatiStatusRequest,
@@ -35,13 +36,25 @@ def sade_sati_status_route(
 @router.post("/windows", response_model=SadeSatiWindowsResponse)
 def sade_sati_windows_route(
     request: SadeSatiWindowsRequest,
+    http_request: Request,
     engine: Moira = Depends(get_engine),
 ) -> SadeSatiWindowsResponse:
     """Kernel-timed Sade Sati phase windows over a datetime range; Saturn's
     sidereal sign ingresses are bisected to ~86 s, and retrograde re-entries
     yield separate windows."""
 
-    return compute_sade_sati_windows(engine, request)
+    cache: ResponseLRUCache | None = getattr(
+        http_request.app.state,
+        "expensive_response_cache",
+        None,
+    )
+    return cached_response(
+        cache,
+        "v1:sade-sati:windows",
+        request,
+        engine,
+        lambda: compute_sade_sati_windows(engine, request),
+    )
 
 
 __all__ = ["router"]

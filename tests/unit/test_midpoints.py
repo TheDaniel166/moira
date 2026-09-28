@@ -22,16 +22,12 @@ import math
 
 import pytest
 
-import moira
 import moira.midpoints as _mid_mod
 from moira.midpoints import (
     CLASSIC_7,
     EXTENDED,
     MODERN_10,
     MODERN_3,
-    MidpointCluster,
-    MidpointWeight,
-    MidpointsService,
     PlanetaryPicture,
     Midpoint,
     activated_midpoints,
@@ -81,18 +77,29 @@ _LONS_EXACT: dict[str, float] = {
 }
 
 # Constructed for the 90° dial oracle test.
-# Sun=0°, Moon=90° → midpoint=45°  → to_dial(45,4)=0°
-# Venus=180°                        → to_dial(180,4)=0°  ← same dial position
+# Sun=0°, Moon=90° → midpoint=45°  → to_dial(45,4)=45°
+# Venus=135°                        → to_dial(135,4)=45°  ← same dial position
 # So "Venus = Sun/Moon" is a picture on the 90° dial but NOT on the 360° wheel
-# (|180° − 45°| = 135°, far outside any reasonable orb).
+# (|135° − 45°| = 90°, far outside any reasonable orb).
 _LONS_DIAL90_PICTURE: dict[str, float] = {
     "Sun":     0.0,
     "Moon":    90.0,
-    "Venus":   180.0,
-    "Mercury": 60.0,
-    "Mars":    150.0,
-    "Jupiter": 240.0,
-    "Saturn":  330.0,
+    "Venus":   135.0,
+}
+
+# Moira DE441 longitudes for Albert Einstein, 1879-03-14 10:50 UTC, used as
+# a kernel-free regression oracle for the 90° midpoint dial.
+_EINSTEIN_LONS: dict[str, float] = {
+    "Sun": 353.5077480171901,
+    "Moon": 254.52591156196144,
+    "Mercury": 3.1438821672664723,
+    "Venus": 16.985007760149248,
+    "Mars": 296.9142247540075,
+    "Jupiter": 327.48410511049764,
+    "Saturn": 4.1898179948888625,
+    "Uranus": 151.28859923478558,
+    "Neptune": 37.87196111594117,
+    "Pluto": 54.72556110965825,
 }
 
 # Constructed for cluster detection: Sun/Moon=11°, Sun/Mercury=12°, Moon/Mercury=13°
@@ -153,6 +160,7 @@ def test_planet_set_modern_10_extends_classic():
 
 def test_planet_set_extended_is_superset():
     assert MODERN_10.issubset(EXTENDED)
+    assert {"True Node", "Mean Node", "North Node"}.issubset(EXTENDED)
 
 
 # ============================================================================
@@ -210,6 +218,37 @@ def test_to_dial_result_in_range():
             )
 
 
+@pytest.mark.parametrize("harmonic", [1, 4, 8, 16])
+def test_to_dial_repeats_at_dial_size_not_a_finer_alias(harmonic):
+    dial_size = 360.0 / harmonic
+    longitude = 10.0
+    assert to_dial(longitude + dial_size, harmonic) == pytest.approx(
+        to_dial(longitude, harmonic), abs=1e-12
+    )
+
+    if harmonic > 1:
+        finer_alias = longitude + dial_size / harmonic
+        assert to_dial(finer_alias, harmonic) != pytest.approx(
+            to_dial(longitude, harmonic), abs=1e-12
+        )
+
+
+def test_to_dial_90_preserves_22_5_degree_separation():
+    first = to_dial_90(10.0)
+    second = to_dial_90(32.5)
+    raw = abs(second - first)
+    assert min(raw, 90.0 - raw) == pytest.approx(22.5, abs=1e-12)
+
+
+@pytest.mark.parametrize(
+    ("longitude", "harmonic"),
+    [(math.nan, 4), (math.inf, 4), (0.0, 0), (0.0, -1), (0.0, True), (0.0, 4.0)],
+)
+def test_to_dial_rejects_invalid_inputs(longitude, harmonic):
+    with pytest.raises(ValueError):
+        to_dial(longitude, harmonic)
+
+
 def test_to_dial_90_matches_to_dial_harmonic_4():
     for lon in [0.0, 45.0, 135.0, 190.0, 271.5]:
         assert to_dial_90(lon) == pytest.approx(to_dial(lon, 4), abs=1e-12)
@@ -226,9 +265,9 @@ def test_to_dial_22_5_matches_to_dial_harmonic_16():
 
 
 def test_to_dial_90_known_values():
-    """Spot-check: 0°Cap (270°) → 0° on 90° dial; 15°Tau (45°) → 0° on 90° dial."""
+    """Spot-check cardinal-axis folding without collapsing the 45° axis."""
     assert to_dial_90(270.0) == pytest.approx(0.0, abs=1e-10)
-    assert to_dial_90(45.0)  == pytest.approx(0.0, abs=1e-10)
+    assert to_dial_90(45.0)  == pytest.approx(45.0, abs=1e-10)
 
 
 # ============================================================================
@@ -409,9 +448,9 @@ def test_midpoint_tree_360_finds_hits():
 
 
 def test_midpoint_tree_90_finds_hits():
-    """midpoint_tree on 90° dial returns results."""
-    hits = midpoint_tree(0.0, _LONS_DIAL90_PICTURE, orb=1.0, dial=90)
-    assert len(hits) > 0
+    """A focus 90° from a midpoint is coincident on the 90° dial."""
+    hits = midpoint_tree(135.0, _LONS_DIAL90_PICTURE, orb=1.0, dial=90)
+    assert any({h.planet_a, h.planet_b} == {"Sun", "Moon"} for h, _ in hits)
 
 
 def test_midpoint_tree_45_returns_list():
@@ -469,7 +508,9 @@ def test_all_dial_sort_functions_return_same_members():
     mps_90  = dial_90_midpoints(_LONS)
     mps_45  = dial_45_midpoints(_LONS)
     mps_22  = dial_22_5_midpoints(_LONS)
-    key = lambda m: (m.planet_a, m.planet_b)
+    def key(m):
+        return (m.planet_a, m.planet_b)
+
     assert sorted(mps_360, key=key) == sorted(mps_90,  key=key)
     assert sorted(mps_360, key=key) == sorted(mps_45,  key=key)
     assert sorted(mps_360, key=key) == sorted(mps_22,  key=key)
@@ -607,9 +648,9 @@ def test_activated_midpoints_respects_orb():
 
 
 def test_activated_midpoints_on_90_dial():
-    """Venus at 180° activates the Sun/Moon midpoint (45°) on the 90° dial."""
+    """Venus at 135° activates the Sun/Moon midpoint (45°) on the 90° dial."""
     natal_mps = calculate_midpoints(_LONS_DIAL90_PICTURE)
-    hits = activated_midpoints(180.0, natal_mps, orb=0.5, dial=90)
+    hits = activated_midpoints(135.0, natal_mps, orb=0.5, dial=90)
     sun_moon_hit = [h for h, _ in hits if {h.planet_a, h.planet_b} == {"Sun", "Moon"}]
     assert len(sun_moon_hit) >= 1
 
@@ -794,6 +835,28 @@ def test_oracle_90_dial_finds_at_least_as_many_pictures_as_360(ritual):
     venus_pic_360 = [p for p in pics_360 if p.focus == "Venus" and {p.pair_a, p.pair_b} == {"Sun", "Moon"}]
     assert len(venus_pic_90)  >= 1, "Venus=Sun/Moon not found on 90° dial"
     assert len(venus_pic_360) == 0, "Venus=Sun/Moon should NOT be found on 360° wheel"
+
+
+def test_oracle_einstein_90_dial_tightest_picture():
+    pictures = planetary_pictures(
+        _EINSTEIN_LONS,
+        orb=1.5,
+        planet_set="modern",
+        dial=90.0,
+    )
+
+    tightest = pictures[0]
+    assert tightest.focus == "Saturn"
+    assert {tightest.pair_a, tightest.pair_b} == {"Uranus", "Neptune"}
+    assert tightest.orb == pytest.approx(0.3904621804741155, abs=1e-12)
+
+    false_pluto_picture = [
+        picture
+        for picture in pictures
+        if picture.focus == "Pluto"
+        and {picture.pair_a, picture.pair_b} == {"Mercury", "Uranus"}
+    ]
+    assert false_pluto_picture == []
 
 
 def test_oracle_activated_midpoints_agrees_with_midpoints_to_point(ritual):

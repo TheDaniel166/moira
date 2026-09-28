@@ -121,7 +121,7 @@ where a dedicated differential exists; it is not assumed for every product.
 | Apparent geocentric major bodies | JPL Horizons; 10 targets × 12 epochs = 120 | `<= 0.35 arcsecond`, `<= 0.1 km` | Cross-model angle; same-target/same-epoch distance |
 | Geometric geocentric major-body vectors | JPL Horizons; 10 targets × 8 epochs = 80 | `<= 0.001 arcsecond`, `<= 0.01 km` | Authority comparison of matched ICRF vector geometry |
 | Topocentric apparent RA/Dec | JPL Horizons; 18 cases | Per-case RA `15–30 arcseconds`, Dec `4–12 arcseconds` | Authority-validated on the named sites/epochs; not an azimuth/altitude claim |
-| Osculating orbital elements | Frozen exact-JDTDB JPL Horizons VECTORS and ELEMENTS; 4 calibration, 7 planet holdout, 6 catalog holdout cases | State `1e-5 km`; element gates from `2e-14` to `5e-10 degree` | Stage 1 authority-validated on the installed kernel subset; full 10,522-body runtime inventory passed; catalog authority admission and live drift audit pending |
+| Osculating orbital elements | Frozen exact-JDTDB JPL Horizons VECTORS and ELEMENTS; 4 calibration, 7 planet holdout, 6 current-catalog holdout cases | Exact-kernel gates from `2e-14` to `5e-10 degree`; sampled-catalog product gates from `1e-5 AU` to `0.05 degree` | Strict core authority-validated; current asteroid/comet releases admitted on six holdouts; live drift 17/17; full 11,720-body runtime inventory passed |
 | Heliocentric distance extrema | JPL Horizons vectors; 8 bodies | `<= 1 day`, `<= 3e-4 AU` | Authority-validated for the next local extrema in each case |
 | Asteroid apparent ecliptic positions | Frozen JPL Horizons fixture; 203 cases, 61 bodies | `0.5 arcsecond` default; four named TNO exceptions at `1.5` or `5.0 arcseconds` | Product-specific authority fixture; not the planetary threshold |
 | Delta T policies | Source-priority, continuity, policy, and compatibility tests | Product-specific invariants and source envelopes | Documented/partially validated; no universal Delta-T accuracy claim |
@@ -362,24 +362,40 @@ legacy `DistanceExtremes`, verified inverse UT1 in `PhenomenonEvent`, the
 Earth-centered Moon rule, and the immutable route/evaluation receipt.
 
 The ten installed DE441 planet/system cases pass those gates. The current
-`moira-asteroids-wheel@2026.08.14.1` and
-`moira-comets@2026.07.28.1` manifests do not contain a reviewed Stage 2
-apsidal-passage accuracy admission or an exact Horizons target-solution
-binding, so their six numeric authority comparisons are `NOT RUN`, not silently
-accepted under wider gates. A separate runnable Eros search proves catalog
-routing without substituting that smoke test for authority parity. Diagnostic
+catalog releases do not yet carry a reviewed Stage 2 apsidal-passage accuracy
+admission, so their six passage-time authority comparisons are `NOT RUN`, not
+silently accepted under wider gates. This is a separate event-search
+validation frontier from the orbital-element and geometric-node release
+admission below. A runnable Eros search proves catalog routing without
+substituting that smoke test for passage-time authority parity. Diagnostic
 differences against the current fixture are retained in the Stage 2 receipt;
 they range from microdays for Eros/Chiron to `0.104 day` for Halley and
 `0.195 day` for Encke and may combine release-solution and interpolation
-effects. A catalog release must bind and pass the frozen fixture before those
-cases become acceptance evidence.
+effects. A catalog release must bind and pass the passage fixture before those
+event cases become acceptance evidence.
 
-The packaged 25-asteroid wheel remains a fallback implementation check. On the
-release host, the verified `moira-asteroids@2026.08.12.1` and
-`moira-comets@2026.07.28.1` releases pass the full 10,522-body orbital-element
-inventory gate. That runtime result does not substitute for the catalog
-Horizons authority admissions or the live-primary drift audit, which remain
-release blockers.
+The packaged 25-asteroid wheel remains a fallback implementation check. The
+current element/node admission binds the independently refreshed exact-JDTDB
+catalog holdout to `moira-asteroids@2026.09.18.1` (manifest SHA-256
+`1956b613f072a0dbd78c45d74552dbadb169fafc64fe4d28f02261752e3b667e`)
+and `moira-comets@2026.07.28.1` (manifest SHA-256
+`31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1`).
+It uses the pre-existing live-product gates from
+`test_orbital_elements_match_horizons`: `1e-5 AU` for semi-major axis and
+apsidal distances, `1e-5` eccentricity, `0.001 degree` inclination/node, and
+`0.05 degree` argument/mean anomaly. These are intentionally distinct from the
+strict-core extraction gates because the release kernels are 10-day asteroid
+and 30-day comet sampled Type-13 products, not raw one-epoch Horizons replies.
+
+All six current authority cases pass those declared gates. The largest
+measured residual is Encke at `1.203e-6 AU` in semi-major axis and
+`0.000107 degree` in mean anomaly. The isolated live-primary drift audit passes
+all 17 calibration and holdout cases after Horizons advanced Encke from
+`JPL#K273/14` to `JPL#K273/17`; the historical fixture and receipts remain
+unchanged. On the release host, all 11,223 asteroids and 497 periodic comets
+(11,720 bodies) pass the exhaustive orbital-element coverage, finiteness,
+identity, and manifest/shard receipt gate. The admission receipt is
+`tests/artifacts/oracle/small_body_orbital_catalog_admission_2026-09-28.json`.
 
 ### 5.7 Orbital Core Stage 3 geometric nodes
 
@@ -400,16 +416,16 @@ result. Requests on either side of JD(TT) `2415020.0`--`2488070.0` fail with
 
 The loaded representative checks map Ceres, Hektor, Atira, Apophis,
 1P/Halley, and 2P/Encke exactly to the same true-date core and their receipted
-catalog routes. The six frozen catalog-Horizons numeric cases remain `NOT RUN`:
-the installed catalog manifests contain no reviewed Stage 3 admission bound to
-fixture SHA-256
-`d666f24fdc85dbaa5221acdfd619454ec4cd2bf41be2a9b3b9f14a5d1dd321dd` and its
-unchanged acceptance gates. This prevents a catalog-solution mismatch from
-being disguised as a looser code tolerance.
+catalog routes. All six current frozen catalog-Horizons numeric cases now run
+and pass under the same release-bound product admission used by the direct
+orbital-element tests. The admission binds fixture SHA-256
+`1e0b5fa423a87087c084f00f4e4e2be377a96f30602c1b3ca8b2374871f33395`,
+the exact two manifest hashes, and the established live-product gates; no
+catalog manifest or older historical receipt was rewritten.
 
-The inventory-wide Stage 3 check passes all 10,025 bodies in the verified
-`moira-asteroids@2026.08.12.1` release and all 497 bodies in
-`moira-comets@2026.07.28.1`. All 10,522 sovereign bodies receive finite node
+The inventory-wide Stage 3 check passes all 11,223 bodies in the verified
+`moira-asteroids@2026.09.18.1` release and all 497 bodies in
+`moira-comets@2026.07.28.1`. All 11,720 sovereign bodies receive finite node
 checks, exact true-date mapping, canonical resolution, manifest/kernel receipt
 checks, and coverage checks. The packaged wheel is present as a fallback but is
 not substituted for either full-release gate.

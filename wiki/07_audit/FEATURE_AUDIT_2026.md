@@ -251,7 +251,8 @@ and supporting modules.
 
 ## 5. Lots, Parts & Special Points
 
-`lots.py` implements 512 named Arabic/Hellenistic lots (docstring says ~430 — outdated)
+`lots.py` implements 512 named Arabic/Hellenistic lots (the former approximate
+`~430` module-description claim has since been removed)
 using ASC + Add − Subtract (mod 360°) with automatic day/night reversal (`reverse_at_night`
 field per `PartDefinition`) and full support for derived lot references (26+ lots reference
 other lots such as Fortune, Spirit, and Syzygy as formula operands). `nine_parts.py`
@@ -289,8 +290,8 @@ and declared large-structure proxies semantically separate.
 Equatorial Ascendant is now exposed as `HouseCusps.east_point`, computed from the
 Morinus-style equatorial projection of `ARMC + 90 deg`.
 
-Moira's lots coverage is the deepest in the comparison set at 512 entries. The docstring
-claiming ~430 is stale and should be updated.
+Moira's lots coverage was the deepest in the comparison set at 512 entries.
+The stale `~430` source description identified by this audit has been corrected.
 
 The prenatal syzygy is a minor depth gap: `prenatal_syzygy()` returns a Julian date rather
 than an ecliptic longitude directly. The longitude must be derived via a separate ephemeris

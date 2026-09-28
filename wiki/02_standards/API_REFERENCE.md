@@ -1503,20 +1503,43 @@ the primary-source ledger and the source/policy boundary.
 ### Midpoints
 
 ```python
-from moira.facade import calculate_midpoints, midpoints_to_point, Midpoint, MidpointsService
+from moira.facade import (
+    activated_midpoints,
+    calculate_midpoints,
+    dial_90_midpoints,
+    midpoint_clusters,
+    midpoint_tree,
+    midpoint_weighting,
+    midpoints_to_point,
+    planetary_pictures,
+    to_dial_90,
+)
 
-mps = calculate_midpoints(chart.longitudes(), orb=1.5)
-# list[Midpoint(body1, body2, midpoint_lon, activated_by)]
+lons = chart.longitudes(include_nodes=False)
+mps = calculate_midpoints(lons, planet_set="modern")
+hits = midpoints_to_point(15.0, lons, orb=1.5, planet_set="modern")
 
-hits = midpoints_to_point(chart.longitudes(), target_lon=15.0, orb=1.5)
+dial_position = to_dial_90(135.0)  # 45.0; 135° and 45° coincide
+dial_midpoints = dial_90_midpoints(lons, planet_set="modern")
+tree = midpoint_tree(15.0, lons, orb=1.5, planet_set="modern", dial=90)
 
-# Using the service class for chained access:
-svc = MidpointsService(chart.longitudes(), orb=1.5)
-all_mps   = svc.all()               # list[Midpoint]
-at_point  = svc.to_point(15.0)      # midpoints within orb of 15°
-dial      = svc.dial_90()           # midpoints projected to 90° dial
-tree      = svc.tree(15.0)          # midpoints equidistant from 15°
+pictures = planetary_pictures(lons, orb=1.5, planet_set="modern", dial=90)
+weights = midpoint_weighting(lons, orb=1.5, planet_set="modern", dial=90)
+active = activated_midpoints(135.0, mps, orb=1.5, dial=90)
+clusters = midpoint_clusters(lons, cluster_orb=1.0, min_size=3,
+                             planet_set="modern", dial=90)
 ```
+
+Dial coordinates retain the degree labels printed on the selected dial:
+`to_dial(longitude, harmonic) = longitude mod (360 / harmonic)`. This is not
+the same representation as a 360° harmonic chart, whose transformed longitude
+is `(longitude * harmonic) mod 360`. On a 90° dial, longitudes separated by
+90° coincide while points 22.5° or 45° apart remain distinct. Orbs are
+measured directly in these dial-labelled degrees.
+
+The `extended` midpoint set admits the ten modern planets, `True Node`,
+`Mean Node`, the caller-facing `North Node` alias, Chiron, Asc, and MC when
+those positions are supplied.
 
 ### Harmonics
 
@@ -4771,8 +4794,9 @@ from moira.sky import bodies, observation, galactic, events, eclipse, occultatio
 ```
 
 Each submodule is a self-contained import surface. Submodules do not import from each other.
-
-> **Note:** Submodules marked `[stub]` in the `moira.sky` package docstring raise `NotImplementedError` for functions not yet fully implemented. They are documented and importable, but do not silently return incorrect results.
+The former package-level `[stub]` markers have been retired: the listed
+submodules are implemented surfaces. Individual operations may still fail
+closed when a required resource or explicitly unsupported product is requested.
 
 ---
 

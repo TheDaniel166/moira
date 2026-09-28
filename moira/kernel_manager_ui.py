@@ -95,7 +95,7 @@ _KERNEL_DETAILS: dict[str, dict] = {
         "title": "Asteroids — 300 classical bodies",
         "detail": (
             "Generic JPL 300-asteroid kernel. Does not install Chiron and is not "
-            "a substitute for either Moira catalog (wheel roster or the 10,025-body "
+            "a substitute for either Moira catalog (wheel roster or the 11,223-body "
             "archive). Approximately 59 MB. Optional caller-managed compatibility "
             "input for explicit small-body workflows."
         ),
@@ -108,7 +108,7 @@ _KERNEL_DETAILS: dict[str, dict] = {
         "detail": (
             "Optional JPL small-body kernel covering 373 bodies (TNOs, Centaurs, "
             "and other minor planets). Does not install Chiron and is not a "
-            "substitute for either Moira catalog (wheel roster or the 10,025-body "
+            "substitute for either Moira catalog (wheel roster or the 11,223-body "
             "archive). Approximately 936 MB."
         ),
         "date_range": "—",

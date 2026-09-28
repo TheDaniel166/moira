@@ -16,8 +16,12 @@ TIME_PATH = FIXTURES / "orbital_time_naif0012_reference.json"
 FRAME_PATH = FIXTURES / "orbital_frames_sofa_20231011_reference.json"
 CALIBRATION_PATH = FIXTURES / "horizons_orbital_elements_calibration.json"
 HOLDOUT_PATH = FIXTURES / "horizons_orbital_elements_holdout.json"
-CATALOG_HOLDOUT_PATH = (
+HISTORICAL_CATALOG_HOLDOUT_PATH = (
     FIXTURES / "horizons_orbital_elements_catalog_holdout.json"
+)
+CATALOG_HOLDOUT_PATH = (
+    FIXTURES
+    / "horizons_orbital_elements_catalog_holdout_2026_09_28.json"
 )
 APSIDAL_PATH = FIXTURES / "horizons_apsidal_passages_reference.json"
 
@@ -69,6 +73,7 @@ def _strings(value: Any):
         FRAME_PATH,
         CALIBRATION_PATH,
         HOLDOUT_PATH,
+        HISTORICAL_CATALOG_HOLDOUT_PATH,
         CATALOG_HOLDOUT_PATH,
         APSIDAL_PATH,
     ),
@@ -193,7 +198,12 @@ def test_horizons_calibration_and_holdout_keys_are_disjoint() -> None:
 
 @pytest.mark.parametrize(
     "path",
-    (CALIBRATION_PATH, HOLDOUT_PATH, CATALOG_HOLDOUT_PATH),
+    (
+        CALIBRATION_PATH,
+        HOLDOUT_PATH,
+        HISTORICAL_CATALOG_HOLDOUT_PATH,
+        CATALOG_HOLDOUT_PATH,
+    ),
 )
 def test_horizons_records_have_exact_tdb_request_and_response_receipts(
     path: Path,
@@ -243,6 +253,36 @@ def test_horizons_records_have_exact_tdb_request_and_response_receipts(
             math.isfinite(value)
             for value in record["elements_j2000_ecliptic_au_day"].values()
         )
+
+
+def test_current_catalog_holdout_refreshes_only_the_drifted_solution() -> None:
+    historical = {
+        record["body"]: record
+        for record in _load(HISTORICAL_CATALOG_HOLDOUT_PATH)["records"]
+    }
+    current = {
+        record["body"]: record
+        for record in _load(CATALOG_HOLDOUT_PATH)["records"]
+    }
+
+    assert set(current) == set(historical)
+    for body in set(current) - {"2P/Encke"}:
+        assert current[body]["authority"]["target_solution"] == (
+            historical[body]["authority"]["target_solution"]
+        )
+        assert current[body]["vector_icrf_km_km_s"] == (
+            historical[body]["vector_icrf_km_km_s"]
+        )
+        assert current[body]["elements_j2000_ecliptic_au_day"] == (
+            historical[body]["elements_j2000_ecliptic_au_day"]
+        )
+
+    assert historical["2P/Encke"]["authority"]["target_solution"] == (
+        "JPL#K273/14"
+    )
+    assert current["2P/Encke"]["authority"]["target_solution"] == (
+        "JPL#K273/17"
+    )
 
 
 def test_apsidal_fixture_is_disjoint_exact_tdb_primary_evidence() -> None:

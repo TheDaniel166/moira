@@ -13,6 +13,7 @@ from moira.varga import (
 )
 from moira_server.app import create_app
 from moira_server.config import ServerConfig
+from moira_server.models.common import REST_BATCH_MAX_ITEMS
 from moira_server.services.varga import VARGA_FUNCTIONS
 
 
@@ -189,6 +190,19 @@ def test_varga_routes_are_registered() -> None:
     assert "/v1/varga/chart/named" in paths
     assert "/v1/varga/chart/shodashvarga" in paths
     assert "/v1/varga/chart/shodashvarga/batch" in paths
+
+
+def test_varga_batch_openapi_contracts_are_bounded() -> None:
+    schemas = create_app(ServerConfig(docs_enabled=False)).openapi()["components"]["schemas"]
+    for schema_name, field_name in (
+        ("VargaNamedBatchRequest", "longitudes"),
+        ("VargaShodashvargaBatchRequest", "longitudes"),
+        ("VargaChartShodashvargaBatchRequest", "bodies"),
+    ):
+        field_schema = schemas[schema_name]["properties"][field_name]
+        assert field_schema["maxProperties" if field_name == "longitudes" else "maxItems"] == (
+            REST_BATCH_MAX_ITEMS
+        )
 
 
 def test_varga_chart_named_route_matches_direct_named_route() -> None:

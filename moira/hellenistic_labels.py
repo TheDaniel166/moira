@@ -17,7 +17,7 @@ __all__ = [
 
 HELLENISTIC_OVERLAY_CAVEATS: tuple[str, ...] = (
     "detriment is a later named exile overlay, not an early Hellenistic atom",
-    "hayz/halb is medieval al-Qabisi/Bonatti, not ancient Hellenistic sect",
+    "hayz/halb is medieval al-Biruni section 496 doctrine, not ancient Hellenistic sect",
     "activation_orb_deg=5 is a modern overlay; Hellenistic activation is the sign",
     "civil equal-twelfths months are a computational projection, not Valens IV.28",
 )

@@ -21,6 +21,8 @@ from ._strenum import StrEnum
 from math import isfinite
 
 from .constants import SIGNS
+from .egyptian_bounds import EgyptianBoundsDoctrine
+from .triplicity import ParticipatingRulerPolicy, TriplicityDoctrine
 
 __all__ = [
     # Enums
@@ -45,10 +47,16 @@ __all__ = [
     "DispositorshipConditionState",
     "PlanetaryConditionState",
     "EssentialDignityDoctrine",
+    "DignityScoringMode",
+    "DignityNodeDoctrine",
+    "EgyptianBoundsDoctrine",
+    "TriplicityDoctrine",
+    "ParticipatingRulerPolicy",
     "HalbHayzDoctrine",
     "MercurySectModel",
     # Policy dataclasses
     "EssentialDignityPolicy",
+    "DignityScoringPolicy",
     "SolarConditionPolicy",
     "MutualReceptionPolicy",
     "SectHayzPolicy",
@@ -96,6 +104,7 @@ __all__ = [
     "SectComponentTruth",
     "EssentialDignityTruth",
     "AccidentalDignityCondition",
+    "AccidentalDignityEvaluationTruth",
     "SolarConditionTruth",
     "MutualReceptionTruth",
     "SectTruth",
@@ -189,9 +198,13 @@ class AccidentalConditionKind(StrEnum):
     CADENT = "cadent"
     DIRECT = "direct"
     RETROGRADE = "retrograde"
+    STATIONARY = "stationary"
+    SWIFT = "swift"
+    SLOW = "slow"
     CAZIMI = "cazimi"
     COMBUST = "combust"
     UNDER_SUNBEAMS = "under_sunbeams"
+    FREE_FROM_BEAMS = "free_from_beams"
     MUTUAL_RECEPTION = "mutual_reception"
     MUTUAL_EXALTATION = "mutual_exaltation"
     HAYZ = "hayz"
@@ -199,6 +212,13 @@ class AccidentalConditionKind(StrEnum):
     HALB = "halb"
     ORIENTAL = "oriental"
     OCCIDENTAL = "occidental"
+    MOON_WAXING = "moon_waxing"
+    MOON_WANING = "moon_waning"
+    BENEFIC_ASPECT = "benefic_aspect"
+    MALEFIC_ASPECT = "malefic_aspect"
+    NORTH_NODE_CONTACT = "north_node_contact"
+    SOUTH_NODE_CONTACT = "south_node_contact"
+    FIXED_STAR_CONTACT = "fixed_star_contact"
     BESIEGED = "besieged"
     # P7: Valens Distributions / timelord chronocrator layer contribution
     TIMELORD_DISTRIBUTION = "timelord_distribution"
@@ -221,6 +241,7 @@ class SolarConditionKind(StrEnum):
     CAZIMI = "cazimi"
     COMBUST = "combust"
     UNDER_SUNBEAMS = "under_sunbeams"
+    FREE_FROM_BEAMS = "free_from_beams"
 
 
 class SolarProximityBand(StrEnum):
@@ -313,10 +334,25 @@ class EssentialDignityDoctrine(StrEnum):
     MODERN_CO_RULERS = "modern_co_rulers"
 
 
+class DignityScoringMode(StrEnum):
+    """Named, non-legacy ways to score or only track dignity truth."""
+
+    WILLIAM_LILLY_1647 = "william_lilly_1647"
+    ESSENTIAL_ONLY = "essential_only"
+    UNSCORED = "unscored"
+
+
+class DignityNodeDoctrine(StrEnum):
+    """Lunar-node longitude used for the dragon's-head/tail testimonies."""
+
+    MEAN_NODE = "mean_node"
+    TRUE_NODE = "true_node"
+
+
 class HalbHayzDoctrine(StrEnum):
     """Named Halb/Hayz doctrine admitted by the dignity engine."""
 
-    AL_QABISI_BONATTI_DYKES_2007 = "al_qabisi_bonatti_dykes_2007"
+    AL_BIRUNI_1030_SECTION_496 = "al_biruni_1030_section_496"
 
 
 class MercurySectModel(StrEnum):
@@ -331,9 +367,20 @@ class MercurySectModel(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class EssentialDignityPolicy:
-    """Policy surface for the essential dignity table doctrine."""
+    """Policy surface for independently selectable essential tables."""
 
     doctrine: EssentialDignityDoctrine = EssentialDignityDoctrine.TRADITIONAL_CLASSIC_7
+    bounds_doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.PTOLEMAIC
+    triplicity_doctrine: TriplicityDoctrine = TriplicityDoctrine.DOROTHEAN_PINGREE_1976
+    participating_ruler_policy: ParticipatingRulerPolicy = ParticipatingRulerPolicy.IGNORE
+
+
+@dataclass(frozen=True, slots=True)
+class DignityScoringPolicy:
+    """Select full Lilly scoring, essential-only scoring, or truth-only tracking."""
+
+    mode: DignityScoringMode = DignityScoringMode.WILLIAM_LILLY_1647
+    node_doctrine: DignityNodeDoctrine = DignityNodeDoctrine.MEAN_NODE
 
 
 @dataclass(frozen=True, slots=True)
@@ -343,7 +390,8 @@ class SolarConditionPolicy:
     include_cazimi: bool = True
     include_combust: bool = True
     include_under_sunbeams: bool = True
-    include_for_luminaries: bool = False
+    include_free_from_beams: bool = True
+    include_for_moon: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -358,7 +406,7 @@ class MutualReceptionPolicy:
 class SectHayzPolicy:
     """Policy surface for sect, Hayz, and Halb inclusion behavior."""
 
-    doctrine: HalbHayzDoctrine = HalbHayzDoctrine.AL_QABISI_BONATTI_DYKES_2007
+    doctrine: HalbHayzDoctrine = HalbHayzDoctrine.AL_BIRUNI_1030_SECTION_496
     mercury_sect_model: MercurySectModel = MercurySectModel.LONGITUDE_HEURISTIC
     include_hayz: bool = True
     include_halb: bool = True
@@ -370,9 +418,15 @@ class AccidentalDignityPolicy:
 
     include_house_strength: bool = True
     include_motion: bool = True
+    include_speed: bool = True
+    include_lunar_phase: bool = True
     include_oriental_occidental: bool = True
+    include_planetary_aspects: bool = True
+    include_node_contacts: bool = True
+    include_fixed_star_contacts: bool = True
+    include_besieging: bool = True
+    include_joy: bool = True
     solar: SolarConditionPolicy = field(default_factory=SolarConditionPolicy)
-    mutual_reception: MutualReceptionPolicy = field(default_factory=MutualReceptionPolicy)
     sect: SectHayzPolicy = field(default_factory=SectHayzPolicy)
 
 
@@ -381,25 +435,33 @@ class DignityComputationPolicy:
     """
     Lean backend policy surface for dignity computation.
 
-    This makes the engine's current doctrine explicit. The default policy is
-    intentionally identical to the current engine behavior.
+    The default is the source-bounded William Lilly 1647 score, using
+    Ptolemaic bounds. Other admitted tables can be combined with
+    essential-only or unscored tracking without inventing a hybrid Lilly score.
     """
 
     essential: EssentialDignityPolicy = field(default_factory=EssentialDignityPolicy)
     accidental: AccidentalDignityPolicy = field(default_factory=AccidentalDignityPolicy)
+    reception: MutualReceptionPolicy = field(default_factory=MutualReceptionPolicy)
+    scoring: DignityScoringPolicy = field(default_factory=DignityScoringPolicy)
 
     @property
     def includes_any_solar_condition(self) -> bool:
         """Return True when any solar-condition band is enabled."""
 
         solar = self.accidental.solar
-        return solar.include_cazimi or solar.include_combust or solar.include_under_sunbeams
+        return (
+            solar.include_cazimi
+            or solar.include_combust
+            or solar.include_under_sunbeams
+            or solar.include_free_from_beams
+        )
 
     @property
     def includes_any_mutual_reception(self) -> bool:
         """Return True when any mutual reception mode is enabled."""
 
-        reception = self.accidental.mutual_reception
+        reception = self.reception
         return reception.include_domicile or reception.include_exaltation
 
     @property
@@ -1377,6 +1439,7 @@ class EssentialDignityClassification:
     """Lean typed classification of the already-computed essential dignity truth."""
 
     kind: EssentialDignityKind
+    kinds: tuple[EssentialDignityKind, ...]
     polarity: ConditionPolarity
 
 
@@ -1438,6 +1501,8 @@ class EssentialDignityComponentTruth:
     matched: bool | None
     matching_signs: tuple[str, ...] = ()
     ruler: str | None = None
+    weight: int = 0
+    score: int = 0
     reason: str | None = None
 
     def __post_init__(self) -> None:
@@ -1450,6 +1515,10 @@ class EssentialDignityComponentTruth:
                 raise ValueError(
                     "EssentialDignityComponentTruth evaluated components cannot carry a reason"
                 )
+            if self.matched is False and self.score != 0:
+                raise ValueError(
+                    "unmatched essential components must contribute score=0"
+                )
         else:
             if self.matched is not None:
                 raise ValueError(
@@ -1458,6 +1527,10 @@ class EssentialDignityComponentTruth:
             if not self.reason:
                 raise ValueError(
                     "EssentialDignityComponentTruth not_evaluable components require a reason"
+                )
+            if self.score != 0:
+                raise ValueError(
+                    "not_evaluable essential components must contribute score=0"
                 )
 
 
@@ -1861,6 +1934,10 @@ class EssentialDignityTruth:
     matching_signs: tuple[str, ...]
     matched: bool = True
     components: tuple[EssentialDignityComponentTruth, ...] = ()
+    receptions: tuple[MutualReceptionTruth, ...] = ()
+    scoring_mode: DignityScoringMode = DignityScoringMode.WILLIAM_LILLY_1647
+    bounds_doctrine: EgyptianBoundsDoctrine = EgyptianBoundsDoctrine.PTOLEMAIC
+    triplicity_doctrine: TriplicityDoctrine = TriplicityDoctrine.DOROTHEAN_PINGREE_1976
 
     def __post_init__(self) -> None:
         kinds = [component.kind for component in self.components]
@@ -1868,12 +1945,27 @@ class EssentialDignityTruth:
             raise ValueError(
                 "EssentialDignityTruth components must contain each kind at most once"
             )
+        component_score = sum(component.score for component in self.components)
+        reception_score = sum(reception.score for reception in self.receptions)
+        if self.score != component_score + reception_score:
+            raise ValueError(
+                "EssentialDignityTruth score must equal component and reception contributions"
+            )
 
     @property
     def matched_components(self) -> tuple[EssentialDignityComponentTruth, ...]:
         """Return all evaluated components that matched, without collapsing them."""
 
         return tuple(component for component in self.components if component.matched is True)
+
+    @property
+    def weight_total(self) -> int:
+        """Traditional weight total independent of the active scoring mode."""
+
+        return (
+            sum(component.weight for component in self.matched_components)
+            + sum((reception.weight or 0) for reception in self.receptions)
+        )
 
     def component(
         self,
@@ -1892,6 +1984,41 @@ class AccidentalDignityCondition:
     code: str
     label: str
     score: int
+    weight: int | None = None
+    scored: bool = True
+    source: str = "william_lilly_1647"
+
+    def __post_init__(self) -> None:
+        if self.weight is None:
+            self.weight = self.score
+        if not self.scored and self.score != 0:
+            raise ValueError("unscored accidental conditions must contribute score=0")
+
+
+@dataclass(frozen=True, slots=True)
+class AccidentalDignityEvaluationTruth:
+    """Evaluation receipt for a scored, absent, or unavailable testimony."""
+
+    category: str
+    code: str
+    label: str
+    status: TruthEvaluationStatus
+    matched: bool | None
+    weight: int
+    score: int
+    source: str
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.status is TruthEvaluationStatus.EVALUATED:
+            if self.matched is None or self.reason is not None:
+                raise ValueError("evaluated accidental testimony requires matched and no reason")
+            if self.matched is False and self.score != 0:
+                raise ValueError("absent accidental testimony must contribute score=0")
+        elif self.matched is not None or not self.reason:
+            raise ValueError("not_evaluable accidental testimony requires matched=None and a reason")
+        elif self.score != 0:
+            raise ValueError("not_evaluable accidental testimony must contribute score=0")
 
 
 @dataclass(slots=True)
@@ -1903,6 +2030,9 @@ class SolarConditionTruth:
     label: str | None = None
     score: int = 0
     distance_from_sun: float | None = None
+    weight: int = 0
+    scored: bool = False
+    source: str = "william_lilly_1647"
 
 
 @dataclass(slots=True)
@@ -1913,6 +2043,15 @@ class MutualReceptionTruth:
     reception_type: str
     label: str
     score: int
+    weight: int | None = None
+    scored: bool = True
+    source: str = "william_lilly_1647"
+
+    def __post_init__(self) -> None:
+        if self.weight is None:
+            self.weight = self.score
+        if not self.scored and self.score != 0:
+            raise ValueError("unscored mutual receptions must contribute score=0")
 
 
 @dataclass(slots=True)
@@ -1951,9 +2090,10 @@ class SectTruth:
 
 @dataclass(slots=True)
 class AccidentalDignityTruth:
-    """Structured accidental dignity truth emitted alongside legacy labels."""
+    """Structured accidental dignity truth emitted alongside flattened labels."""
 
     conditions: list[AccidentalDignityCondition] = field(default_factory=list)
+    evaluations: tuple[AccidentalDignityEvaluationTruth, ...] = ()
     house_condition: AccidentalDignityCondition | None = None
     motion_condition: AccidentalDignityCondition | None = None
     solar_condition: SolarConditionTruth = field(default_factory=lambda: SolarConditionTruth(False))
@@ -2056,28 +2196,46 @@ class AccidentalDignityTruth:
                 )
         besieging_truth = self.besieging_truth
         besieged_condition = self.besieged_condition
-        if besieged_condition is None:
-            return
-        if (
-            besieging_truth.status is not TruthEvaluationStatus.EVALUATED
-            or besieging_truth.besieged is not True
-        ):
-            raise ValueError(
-                "AccidentalDignityTruth cannot assemble a besieged condition "
-                "from absent or not_evaluable besieging truth"
+        if besieged_condition is not None:
+            if (
+                besieging_truth.status is not TruthEvaluationStatus.EVALUATED
+                or besieging_truth.besieged is not True
+            ):
+                raise ValueError(
+                    "AccidentalDignityTruth cannot assemble a besieged condition "
+                    "from absent or not_evaluable besieging truth"
+                )
+            if (
+                besieged_condition.category != "besieging"
+                or besieged_condition.code != "besieged"
+            ):
+                raise ValueError(
+                    "AccidentalDignityTruth besieged_condition must use the "
+                    "besieging/besieged identity"
+                )
+            if besieged_condition not in self.conditions:
+                raise ValueError(
+                    "AccidentalDignityTruth besieged_condition must be present in conditions"
+                )
+
+        evaluation_keys = [(item.category, item.code) for item in self.evaluations]
+        if len(evaluation_keys) != len(set(evaluation_keys)):
+            raise ValueError("AccidentalDignityTruth evaluations must have unique category/code identities")
+        evaluation_by_key = {
+            (item.category, item.code): item for item in self.evaluations
+        }
+        for accidental_condition in self.conditions:
+            evaluation = evaluation_by_key.get(
+                (accidental_condition.category, accidental_condition.code)
             )
-        if (
-            besieged_condition.category != "besieging"
-            or besieged_condition.code != "besieged"
-        ):
-            raise ValueError(
-                "AccidentalDignityTruth besieged_condition must use the "
-                "besieging/besieged identity"
-            )
-        if besieged_condition not in self.conditions:
-            raise ValueError(
-                "AccidentalDignityTruth besieged_condition must be present in conditions"
-            )
+            if evaluation is None or evaluation.matched is not True:
+                raise ValueError("each accidental condition requires one matched evaluation receipt")
+            if (
+                evaluation.weight != accidental_condition.weight
+                or evaluation.score != accidental_condition.score
+                or evaluation.source != accidental_condition.source
+            ):
+                raise ValueError("accidental condition and evaluation receipt must agree")
 
 
 @dataclass(slots=True)
@@ -2116,7 +2274,7 @@ class PlanetaryDignity:
             - Expose an integrated per-planet condition profile derived from
               the existing dignity, sect, solar, and reception truth.
             - Enforce internal consistency so truth, classification, and
-              legacy labels do not silently drift apart.
+              flattened labels do not silently drift apart.
             - Render a compact tabular repr.
         Non-responsibilities:
             - Does not compute dignities; that is DignitiesService's role.
@@ -2157,7 +2315,7 @@ class PlanetaryDignity:
     accidental_dignities: list[str]  = field(default_factory=list)
     accidental_score:    int          = 0
     total_score:         int          = 0
-    is_retrograde:       bool         = False
+    is_retrograde:       bool | None  = None
     essential_truth:     EssentialDignityTruth | None = None
     accidental_truth:    AccidentalDignityTruth = field(default_factory=AccidentalDignityTruth)
     sect_truth:          SectTruth | None = None
@@ -2179,9 +2337,15 @@ class PlanetaryDignity:
 
     @property
     def essential_kind(self) -> EssentialDignityKind | None:
-        """Read-only pass-through for the classified essential dignity kind."""
+        """Primary display kind; use ``essential_kinds`` for all testimonies."""
 
         return None if self.essential_classification is None else self.essential_classification.kind
+
+    @property
+    def essential_kinds(self) -> tuple[EssentialDignityKind, ...]:
+        """All simultaneously matched essential dignity/debility kinds."""
+
+        return () if self.essential_classification is None else self.essential_classification.kinds
 
     @property
     def essential_polarity(self) -> ConditionPolarity | None:
@@ -2229,7 +2393,15 @@ class PlanetaryDignity:
     def scored_receptions(self) -> tuple[PlanetaryReception, ...]:
         """Admitted receptions that actually contribute to current scoring."""
 
-        return tuple(reception for reception in self.receptions if reception.mode is ReceptionMode.MUTUAL)
+        mutual = [
+            reception for reception in self.receptions
+            if reception.mode is ReceptionMode.MUTUAL
+        ]
+        return tuple(
+            reception
+            for reception, truth in zip(mutual, self.mutual_reception_truth)
+            if truth.scored
+        )
 
     @property
     def detected_reception_bases(self) -> tuple[ReceptionBasis, ...]:
@@ -2313,7 +2485,7 @@ class PlanetaryDignity:
         if self.essential_classification is not None:
             if self.essential_truth is None:
                 raise ValueError("PlanetaryDignity invariant failed: essential_classification requires essential_truth")
-            if self.essential_polarity != _score_polarity(self.essential_truth.score):
+            if self.essential_polarity != _score_polarity(self.essential_truth.weight_total):
                 raise ValueError("PlanetaryDignity invariant failed: essential classification polarity mismatch")
 
         classification_labels = [condition.label for condition in self.accidental_classification.conditions]
@@ -2335,7 +2507,7 @@ class PlanetaryDignity:
 
         if self.solar_classification.present != self.solar_truth.present:
             raise ValueError("PlanetaryDignity invariant failed: solar classification presence mismatch")
-        if self.solar_classification.polarity != _score_polarity(self.solar_truth.score):
+        if self.solar_classification.polarity != _score_polarity(self.solar_truth.weight):
             raise ValueError("PlanetaryDignity invariant failed: solar classification polarity mismatch")
 
         if len(self.reception_classification) != len(self.mutual_reception_truth):
@@ -2347,10 +2519,15 @@ class PlanetaryDignity:
                 raise ValueError("PlanetaryDignity invariant failed: reception classification label mismatch")
             if classified.score != truth.score:
                 raise ValueError("PlanetaryDignity invariant failed: reception classification score mismatch")
-            if classified.polarity != _score_polarity(truth.score):
+            if classified.polarity != _score_polarity(truth.weight or 0):
                 raise ValueError("PlanetaryDignity invariant failed: reception classification polarity mismatch")
-        if tuple(self.scored_receptions) != tuple(mutual_relations):
-            raise ValueError("PlanetaryDignity invariant failed: scored_receptions must match admitted mutual receptions")
+        expected_scored = tuple(
+            relation
+            for relation, truth in zip(mutual_relations, self.mutual_reception_truth)
+            if truth.scored
+        )
+        if tuple(self.scored_receptions) != expected_scored:
+            raise ValueError("PlanetaryDignity invariant failed: scored_receptions must match scored mutual receptions")
         if self.condition_profile is not None:
             if self.condition_profile.planet != self.planet:
                 raise ValueError("PlanetaryDignity invariant failed: condition profile planet mismatch")

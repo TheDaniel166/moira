@@ -7,6 +7,7 @@ from moira.constants import HouseSystem
 from moira.dignities import (
     AccidentalDignityPolicy,
     DignityComputationPolicy,
+    DignityScoringPolicy,
     EssentialDignityPolicy,
     MutualReceptionPolicy,
     SectHayzPolicy,
@@ -44,29 +45,34 @@ def _policy_from_request(
         dignity=DignityComputationPolicy(
             essential=EssentialDignityPolicy(
                 doctrine=dignity.essential.doctrine,
+                bounds_doctrine=dignity.essential.bounds_doctrine,
+                triplicity_doctrine=dignity.essential.triplicity_doctrine,
+                participating_ruler_policy=dignity.essential.participating_ruler_policy,
             ),
             accidental=AccidentalDignityPolicy(
                 include_house_strength=dignity.accidental.include_house_strength,
                 include_motion=dignity.accidental.include_motion,
+                include_speed=dignity.accidental.include_speed,
+                include_lunar_phase=dignity.accidental.include_lunar_phase,
                 include_oriental_occidental=(
                     dignity.accidental.include_oriental_occidental
                 ),
+                include_planetary_aspects=dignity.accidental.include_planetary_aspects,
+                include_node_contacts=dignity.accidental.include_node_contacts,
+                include_fixed_star_contacts=dignity.accidental.include_fixed_star_contacts,
+                include_besieging=dignity.accidental.include_besieging,
+                include_joy=dignity.accidental.include_joy,
                 solar=SolarConditionPolicy(
                     include_cazimi=dignity.accidental.solar.include_cazimi,
                     include_combust=dignity.accidental.solar.include_combust,
                     include_under_sunbeams=(
                         dignity.accidental.solar.include_under_sunbeams
                     ),
-                    include_for_luminaries=(
-                        dignity.accidental.solar.include_for_luminaries
+                    include_free_from_beams=(
+                        dignity.accidental.solar.include_free_from_beams
                     ),
-                ),
-                mutual_reception=MutualReceptionPolicy(
-                    include_domicile=(
-                        dignity.accidental.mutual_reception.include_domicile
-                    ),
-                    include_exaltation=(
-                        dignity.accidental.mutual_reception.include_exaltation
+                    include_for_moon=(
+                        dignity.accidental.solar.include_for_moon
                     ),
                 ),
                 sect=SectHayzPolicy(
@@ -77,6 +83,14 @@ def _policy_from_request(
                     include_hayz=dignity.accidental.sect.include_hayz,
                     include_halb=dignity.accidental.sect.include_halb,
                 ),
+            ),
+            reception=MutualReceptionPolicy(
+                include_domicile=dignity.reception.include_domicile,
+                include_exaltation=dignity.reception.include_exaltation,
+            ),
+            scoring=DignityScoringPolicy(
+                mode=dignity.scoring.mode,
+                node_doctrine=dignity.scoring.node_doctrine,
             ),
         ),
         lots=LotsComputationPolicy(

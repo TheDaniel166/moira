@@ -183,10 +183,10 @@ _MIDPOINT_TABLE = [
 
 _DIAL90_TABLE = [
     (0.0,   0.0),
-    (10.0,  40.0),
-    (22.5,  0.0),
-    (45.0,  0.0),
-    (91.0,  4.0),
+    (10.0,  10.0),
+    (22.5,  22.5),
+    (45.0,  45.0),
+    (91.0,  1.0),
 ]
 
 
@@ -713,23 +713,23 @@ class TestLots:
 #   Sun at 300° = 0° Aquarius → Detriment
 #   Moon at 240° = 0° Scorpio → Fall
 #
-# Accidental dignity: Angular house (+4), Cadent house (-2), Retrograde (-5),
-#   Cazimi (within 0.283° of Sun) (+5), Combust (<8°) (-5)
+# Essential scores are cumulative. Accidental examples use Lilly's
+# house-specific table, 17' cazimi, and 8°30' combustion boundary.
 
 _ESSENTIAL_DIGNITY_TABLE = [
     # planet, lon, expected_dignity, expected_score
     ("Sun",     130.0, "Domicile",   5),
-    ("Sun",      15.0, "Exaltation", 4),
-    ("Moon",     45.0, "Exaltation", 4),
-    ("Mars",      5.0, "Domicile",   5),
-    ("Saturn",  195.0, "Exaltation", 4),
+    ("Sun",      15.0, "Exaltation", 5),
+    ("Moon",     45.0, "Exaltation", 8),
+    ("Mars",      5.0, "Domicile",   6),
+    ("Saturn",  195.0, "Exaltation", 5),
     ("Venus",   340.0, "Exaltation", 4),
-    ("Mercury",  65.0, "Domicile",   5),
-    ("Jupiter", 100.0, "Exaltation", 4),
-    ("Sun",     300.0, "Detriment",  -5),
-    ("Moon",    225.0, "Fall",       -4),  # 225° = 15° Scorpio
-    ("Mars",    195.0, "Detriment",  -5),  # Mars in Libra (180–210°)
-    ("Venus",   150.0, "Fall",       -4),  # Venus in Virgo → Fall
+    ("Mercury",  65.0, "Domicile",  10),
+    ("Jupiter", 100.0, "Exaltation", 6),
+    ("Sun",     300.0, "Detriment", -10),
+    ("Moon",    225.0, "Fall",       -9),  # fall plus peregrine
+    ("Mars",    195.0, "Detriment", -10),  # detriment plus peregrine
+    ("Venus",   150.0, "Fall",       -9),  # fall plus peregrine
 ]
 
 _ESSENTIAL_DIGNITY_TABLE_CORRECTED = _ESSENTIAL_DIGNITY_TABLE
@@ -829,8 +829,10 @@ class TestDignities:
         result = calculate_dignities(planet_positions, self._make_houses())
         venus = next(d for d in result if d.planet == "Venus")
         mars_d = next(d for d in result if d.planet == "Mars")
-        assert any("Mutual Reception" in acc for acc in venus.accidental_dignities)
-        assert any("Mutual Reception" in acc for acc in mars_d.accidental_dignities)
+        assert venus.scored_receptions[0].host_planet == "Mars"
+        assert mars_d.scored_receptions[0].host_planet == "Venus"
+        assert "Mutual Reception" not in " ".join(venus.accidental_dignities)
+        assert "Mutual Reception" not in " ".join(mars_d.accidental_dignities)
 
     def test_total_score_equals_sum(self):
         from moira.dignities import calculate_dignities

@@ -1,5 +1,10 @@
 # Stellar Heliacal Case Ledger (2026-04-09)
 
+> **Reconciled 2026-09-28.** The newer planetary oracle matrix covers all five
+> visible planets and also preserves the Sirius Phase 3 witness, but it does not
+> admit a second stellar authority row. This stellar ledger therefore remains
+> current only for the narrower non-Sirius corpus gap described below.
+
 Purpose:
 - provide the concrete case ledger for expanding stellar heliacal validation
 - turn the stellar corpus-design document into explicit current and future rows
@@ -26,7 +31,7 @@ This ledger is for what comes next, not for pretending the current slice is alre
 
 | Admitted row | Star | Event kind | Start JD / date | Observer | Source kind | Expected form | Current enforcement path | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| SHR-001 | Sirius | heliacal rising | `139-01-01` start search | `31.2°N, 29.9°E` | repo-admitted historical anchor slice | generalized stellar event equals direct star-heliacal path within 1 minute and falls within 5 days before the Sothic rising entry | `tests/integration/test_visibility_validation.py`, `tests/fixtures/stellar_heliacal_reference.json` | Current governing stellar validation row. |
+| SHR-001 | Sirius | heliacal rising | `139-01-01` start search | `31.2°N, 29.9°E` | repo-admitted historical anchor slice | generalized stellar event equals direct star-heliacal path within 1 minute and falls within 5 days before the Sothic rising entry | `tests/integration/test_visibility_validation.py`, `tests/fixtures/stellar_heliacal_reference.json`; preserved as a Phase 3 witness by `tests/oracle/test_heliacal_rising_oracle.py` | Current governing stellar validation row. |
 
 ## Candidate Case Table
 

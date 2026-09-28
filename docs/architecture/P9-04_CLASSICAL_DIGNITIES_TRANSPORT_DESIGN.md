@@ -285,7 +285,7 @@ policy vessels:
 - `SolarConditionPolicy.include_cazimi`
 - `SolarConditionPolicy.include_combust`
 - `SolarConditionPolicy.include_under_sunbeams`
-- `SolarConditionPolicy.include_for_luminaries`
+- `SolarConditionPolicy.include_for_moon`
 - `MutualReceptionPolicy.include_domicile`
 - `MutualReceptionPolicy.include_exaltation`
 - `SectHayzPolicy.mercury_sect_model`

@@ -45,8 +45,9 @@ Layers present in this file:
 
     DOCTRINE / POLICY  (Phase 4)
         UnknownSystemPolicy — enum: FALLBACK_TO_PLACIDUS (default) or RAISE.
-        PolarFallbackPolicy — enum: EXPERIMENTAL_SEARCH (delegates to per-system experimental_*.py for polar systems that have one; Placidus is fully integrated with branch search, others are research stubs), FALLBACK_TO_PORPHYRY, RAISE,
-            or others.
+        PolarFallbackPolicy — enum: EXPERIMENTAL_SEARCH (delegates to a
+            registered per-system experimental module), FALLBACK_TO_PORPHYRY,
+            FALLBACK_TO_EQUAL, FALLBACK_TO_WHOLE_SIGN, or RAISE.
         HousePolicy         — frozen dataclass: unknown_system + polar_fallback.
             HousePolicy.default() returns the canonical default (current behavior).
         calculate_houses(..., policy=HousePolicy.default()) — accepts an optional
@@ -156,6 +157,17 @@ Layers present in this file:
             - Angularity counts derive from _ANGULARITY_MAP (Phase 7 doctrine).
             - Occupant order within each HouseOccupancy mirrors input order.
 
+    HOUSE DYNAMICS
+        CuspSpeed — immutable per-cusp longitude and speed record.
+        HouseDynamics — complete 12-cusp plus ASC, MC, Vertex, and
+            Anti-Vertex motion profile.
+        cusp_speeds_at() — UT-time centered finite differences over the public
+            house calculation.
+        house_dynamics_from_armc() — ARMC-space centered finite differences
+            with fixed obliquity.
+        analytical_mc_speed(), analytical_asc_speed(), and
+            analytical_vertex_speed() — closed-form angle derivatives.
+
     FUTURE LAYERS (not yet present)
         - Hemisphere / quadrant totals (above/below horizon, eastern/western)
         - Harmonic overlays
@@ -170,7 +182,9 @@ Public surface / exports:
     HouseAngularity, HouseAngularityProfile, describe_angularity,
     HouseSystemComparison, HousePlacementComparison,
     compare_systems, compare_placements,
-    HouseOccupancy, HouseDistributionProfile, distribute_points
+    HouseOccupancy, HouseDistributionProfile, distribute_points,
+    CuspSpeed, HouseDynamics, cusp_speeds_at, house_dynamics_from_armc,
+    analytical_mc_speed, analytical_asc_speed, analytical_vertex_speed
 
 Import-time side effects: None
 
@@ -245,7 +259,7 @@ __all__ = [
     "compare_systems",
     "compare_placements",
     "distribute_points",
-    # Phase 3 — house dynamics
+    # House dynamics
     "CuspSpeed",
     "HouseDynamics",
     "cusp_speeds_at",
@@ -642,7 +656,7 @@ class PolarFallbackPolicy(str, Enum):
     FALLBACK_TO_EQUAL      = "fallback_to_equal"
     FALLBACK_TO_WHOLE_SIGN = "fallback_to_whole_sign"
     RAISE                  = "raise"
-    EXPERIMENTAL_SEARCH    = "experimental_search"  # per-polar-system; loads the matching experimental_*.py (Placidus fully implemented; others are research stubs for now)
+    EXPERIMENTAL_SEARCH    = "experimental_search"  # registered per-system search; raises when no admissible figure is found
 
 
 @dataclass(frozen=True, slots=True)
@@ -845,7 +859,7 @@ def _experimental_high_lat_cusps(
         return list(result.cusps)
     if isinstance(result, (list, tuple)):
         return list(result)
-    # If the stub raised inside fn, we won't reach here
+    # Registered searches must return an explicit cusp result.
     raise ValueError(f"experimental search for {system!r} did not return usable cusps or raised")
 
 
@@ -5196,8 +5210,9 @@ def houses_from_armc(
             )
 
     elif polar:
-        # Remaining polar-incapable systems (Koch + polar-projection/prime-vertical
-        # families) still require outer policy repair; no integrated branch search yet.
+        # Koch remains outer-guarded because its diurnal semi-arc construction
+        # can collapse for circumpolar points; it has no integrated default
+        # branch search.
         if active_policy.polar_fallback == PolarFallbackPolicy.RAISE:
             raise ValueError(
                 f"latitude |{lat:.4f}°| >= critical latitude {critical_lat:.4f}° "
@@ -5424,7 +5439,7 @@ def body_house_position(longitude: float, house_cusps: HouseCusps) -> float:
 
 
 # ===========================================================================
-# HOUSE DYNAMICS DESIGN VESSELS  (Phase 3 — Defer.Doctrine + Defer.Validation)
+# HOUSE DYNAMICS RESULT VESSELS
 # ===========================================================================
 
 @dataclass(frozen=True, slots=True)
@@ -5457,8 +5472,8 @@ class CuspSpeed:
         Failure behavior:
             - None at the vessel level.
 
-    Design vessel — Phase 3.  Computation is deferred until the doctrinal
-    and validation preconditions are met.
+    Implemented result vessel used by :func:`cusp_speeds_at` and
+    :func:`house_dynamics_from_armc`.
 
     Doctrine for cusp speed in Moira
     ---------------------------------
@@ -5478,14 +5493,17 @@ class CuspSpeed:
         - At polar latitudes, some systems produce ill-conditioned cusp speeds
           (same instability that triggers the polar-fallback in
           :func:`calculate_houses`).
-        - The MC moves at a rate close to 1°/day (the solar day), not 1°/sidereal-day,
-          because it is defined by the Sun's right ascension, not by Earth rotation.
-          Conflating ARMC-rate with MC-rate is a common error.
+        - The MC is the ecliptic intersection of the local meridian. Its
+          longitude therefore changes with sidereal rotation, transformed by
+          the current obliquity; it is not the Sun's approximately 1°/day
+          annual motion.
 
-    **Validation preconditions:**
-        A public cusp-speed surface must be validated against an independent
-        oracle that returns cusp speeds in extended output
-        for ≥5 house systems, ≥3 latitudes, ≥3 epochs.  Tolerance: 0.001°/day.
+    **Current validation basis:**
+        Analytical derivatives for the MC, Ascendant, and Vertex are checked
+        against independent finite-difference constructions. Multi-system,
+        multi-latitude, and multi-epoch tests then enforce structural and
+        convergence invariants. These are internal mathematical checks, not an
+        external house-speed authority comparison.
 
     Fields
     ------
@@ -5543,11 +5561,11 @@ class HouseDynamics:
         Failure behavior:
             - None at the vessel level.
 
-    Design vessel — Phase 3.  Accompanies :class:`CuspSpeed`.
+    Implemented aggregate vessel accompanying :class:`CuspSpeed`.
 
     Doctrine: angle speeds and cusp speeds belong together
     -------------------------------------------------------
-    Decision (recorded here before implementation):
+    Current assembly doctrine:
         :class:`HouseDynamics` carries both the 12 cusp speeds and the
         four angle speeds (ASC, MC, Vertex, Anti-Vertex).  The rationale
         is that callers who need cusp speeds almost always also need angle
@@ -5736,8 +5754,8 @@ def cusp_speeds_at(
 
     with a wraparound-safe subtraction (result in (−180, 180]).
 
-    This approach follows the standard finite-difference derivation used by
-    reference engines for cusp-speed estimation.
+    This is a centered finite-difference derivative of Moira's declared house
+    geometry; no external engine supplies the result.
 
     Args:
         jd_ut: Julian date in Universal Time (UT1).
@@ -5768,7 +5786,8 @@ def cusp_speeds_at(
           resolves the solar anchor internally when it is not supplied explicitly.
         - The cusp-speed for house 1 is numerically equal to
           ``asc_speed_deg_per_day`` (both derive from the same longitude);
-          house 4 speed equals −mc_speed_deg_per_day for most quadrant systems.
+          house 10 speed equals ``mc_speed_deg_per_day`` for systems whose
+          tenth cusp is the Midheaven.
         These redundancies are intentional for uniformity.
 
     Raises:

@@ -22,7 +22,7 @@ Import-time side effects: None.
 External dependency assumptions:
     - Positions come from any admitted small-body reader that carries the
       body's NAIF ID (wheel catalog ``moira-asteroids-wheel`` is sufficient
-      for this named set; the full 10,025-body catalog also covers them).
+      for this named set; the full 11,223-body catalog also covers them).
     - No Qt, no database, no OS threads.
 
 Public surface / exports:

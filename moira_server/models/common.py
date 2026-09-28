@@ -5,6 +5,9 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict
 
 
+REST_BATCH_MAX_ITEMS = 128
+
+
 class _StrictModel(BaseModel):
     """Base response model with explicit strict extra-field policy."""
 
