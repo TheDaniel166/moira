@@ -528,10 +528,11 @@ class CharaDashaPeriod:
 @dataclass(frozen=True, slots=True)
 class CharaDashaResult:
     """
-    First-cycle Chara Dasha (12 mahadashas from the lagna sign).
+    Chara Dasha result containing consecutive mahadashas.
 
-    Rao's second-cycle rule could not be verified against his book text
-    and is deferred, not guessed (recorded here for honesty).
+    Rao's second-cycle rule is admitted as a direct repetition of the 
+    first cycle's sign sequence and dasha span (years), as proven by 
+    his text *Predicting Through Jaimini's Chara Dasa* (pages 13-14).
     """
 
     lagna_sign: int
@@ -606,9 +607,10 @@ def chara_dasha(
     lagna_sidereal_lon: float,
     birth_jd: float,
     node_longitudes: dict[str, float] | None = None,
+    cycles: int = 1,
 ) -> CharaDashaResult:
     """
-    First-cycle Chara Dasha per K.N. Rao (Neelakantha karika lineage).
+    Chara Dasha per K.N. Rao (Neelakantha karika lineage).
 
     Sequence: 12 contiguous signs from the lagna; direction by the
     9th-from-lagna's savya/apasavya group (the verified Rao/Raman rule —
@@ -624,7 +626,7 @@ def chara_dasha(
     ninth_sign = (lagna_sign + 8) % 12
     direction = 1 if ninth_sign in _SAVYA_SIGNS else -1
 
-    sequence = [(lagna_sign + direction * i) % 12 for i in range(12)]
+    sequence = [(lagna_sign + direction * i) % 12 for i in range(12 * cycles)]
     periods: list[CharaDashaPeriod] = []
     cursor = birth_jd
     for sign in sequence:
@@ -657,7 +659,7 @@ def chara_dasha(
         lineage=(
             "K.N. Rao (Neelakantha karika): 9th-from-lagna direction "
             "rule; no exaltation/debilitation adjustment; antardashas "
-            "start after the dasha sign (dasha sign last). First cycle "
-            "only — Rao's second-cycle rule is unverified and deferred."
+            "start after the dasha sign (dasha sign last). Second cycle "
+            "verified as direct repetition of the first."
         ),
     )

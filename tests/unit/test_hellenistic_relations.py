@@ -170,21 +170,79 @@ def test_adherence_fails_closed_without_speeds_or_on_a_tie() -> None:
     assert tied.adherence.distance_deg == pytest.approx(2.0)
 
 
-def test_ray_is_fail_closed_until_geometry_is_admitted() -> None:
-    condition = assemble_hellenistic_condition("Sun", TESTIMONY_CHART)
-
-    assert condition.ray == HellenisticRayTruth(
-        status=HellenisticAspectEvaluationStatus.NOT_EVALUABLE,
-        subject="Sun",
-        reason=RAY_NOT_ADMITTED_REASON,
+def test_ray_aktinobolia_strict_3_geometry() -> None:
+    # A planet at 15 Leo casts a dexter square to 15 Taurus.
+    chart = {
+        "Venus": 135.0,  # 15 Leo
+        "Moon": 45.0,    # 15 Taurus (exact hit)
+        "Sun": 48.0,     # 18 Taurus (just on the edge of 3 degree orb)
+        "Mars": 41.9,    # 11.9 Taurus (outside 3 degree orb)
+    }
+    condition = assemble_hellenistic_condition(
+        "Moon", chart, ray_orb_mode="strict_3"
     )
-    with pytest.raises(ValueError, match="doctrine_not_admitted"):
-        HellenisticRayTruth(
-            status=HellenisticAspectEvaluationStatus.NOT_EVALUABLE,
-            subject="Sun",
-            reason="guessed_ray_geometry",
-        )
+    assert condition.ray.status is HellenisticAspectEvaluationStatus.EVALUATED
+    assert len(condition.ray.strikes) == 1
+    strike = condition.ray.strikes[0]
+    assert strike.origin_body == "Venus"
+    assert strike.aspect_name == "Square"
+    assert strike.focal_point_deg == 45.0
+    assert strike.allowed_orb_deg == 3.0
+    assert strike.distance_deg == 0.0
 
+    sun_cond = assemble_hellenistic_condition("Sun", chart, ray_orb_mode="strict_3")
+    assert len(sun_cond.ray.strikes) == 1
+    assert sun_cond.ray.strikes[0].distance_deg == 3.0
+
+    mars_cond = assemble_hellenistic_condition("Mars", chart, ray_orb_mode="strict_3")
+    assert len(mars_cond.ray.strikes) == 0
+
+
+def test_ray_aktinobolia_moiety_geometry() -> None:
+    # Venus (moiety 3.5) casts dexter square to Moon (moiety 6.0) -> allowed orb 9.5
+    # Venus at 15 Leo -> focal point 15 Taurus (45.0)
+    chart = {
+        "Venus": 135.0,
+        "Moon": 36.0,  # 9.0 degrees away
+        "Mars": 36.0,  # 9.0 degrees away, Mars moiety 3.5 -> allowed 7.0
+    }
+    moon_cond = assemble_hellenistic_condition("Moon", chart, ray_orb_mode="moiety")
+    assert len(moon_cond.ray.strikes) == 1
+    assert moon_cond.ray.strikes[0].allowed_orb_deg == 9.5
+    assert moon_cond.ray.strikes[0].distance_deg == 9.0
+
+    mars_cond = assemble_hellenistic_condition("Mars", chart, ray_orb_mode="moiety")
+    assert len(mars_cond.ray.strikes) == 0
+
+
+def test_ray_aktinobolia_retrograde_kinematics() -> None:
+    chart = {
+        "Venus": 135.0,  # 15 Leo
+        "Moon": 44.0,    # 14 Taurus
+    }
+    speeds = {
+        "Venus": -1.0,  # Retrograde, moving backward 1 deg/day
+        "Moon": 12.0,   # Normal direct motion
+    }
+    # Focal point is currently 15 Taurus (45.0).
+    # Venus is moving backward, so the focal point is moving backward.
+    # It is at 45, moving to 44. The Moon is at 44 moving to 56.
+    # Therefore, the ray is APPLYING to the Moon.
+    condition = assemble_hellenistic_condition(
+        "Moon", chart, speeds, ray_orb_mode="strict_3"
+    )
+    assert len(condition.ray.strikes) == 1
+    strike = condition.ray.strikes[0]
+    assert strike.motion_state == "applying"
+
+    # If Venus were direct (e.g. +14.0 deg/day), the focal point would move from 45 to 59.
+    # Moon moves from 44 to 56. The focal point is moving faster and pulling away.
+    # This leads to SEPARATING.
+    direct_speeds = {"Venus": 14.0, "Moon": 12.0}
+    direct_cond = assemble_hellenistic_condition(
+        "Moon", chart, direct_speeds, ray_orb_mode="strict_3"
+    )
+    assert direct_cond.ray.strikes[0].motion_state == "separating"
 
 def test_assemble_is_score_free_and_subject_absent_fails_closed() -> None:
     missing_moon = {name: lon for name, lon in ENCLOSURE_CHART.items() if name != "Moon"}
@@ -207,7 +265,7 @@ def test_assemble_is_score_free_and_subject_absent_fails_closed() -> None:
     assert condition.enclosure.besieged is None
     assert condition.enclosure.reason == "missing_required_chart_bodies"
     assert "Moon" in condition.enclosure.dependency_truth.missing_bodies
-    assert condition.ray.reason == RAY_NOT_ADMITTED_REASON
+    assert condition.ray.reason == "subject_longitude_not_supplied"
 
 
 def test_assemble_rejects_empty_subject_and_empty_positions() -> None:

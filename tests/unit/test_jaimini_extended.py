@@ -198,7 +198,21 @@ class TestCharaDasha:
     def test_lineage_recorded(self):
         cd = chara_dasha(_LONS, 5.0, 2451545.0)
         assert 'K.N. Rao' in cd.lineage
-        assert 'First cycle only' in cd.lineage
+        assert 'Second cycle' in cd.lineage
+
+    def test_second_cycle_repetition(self):
+        cd1 = chara_dasha(_LONS, 5.0, 2451545.0, cycles=1)
+        cd2 = chara_dasha(_LONS, 5.0, 2451545.0, cycles=2)
+        assert len(cd1.periods) == 12
+        assert len(cd2.periods) == 24
+        for i in range(12):
+            assert cd1.periods[i].sign == cd2.periods[i + 12].sign
+            assert cd1.periods[i].years == cd2.periods[i + 12].years
+            assert cd1.periods[i].lord == cd2.periods[i + 12].lord
+            # Span must be exactly the same
+            span1 = cd1.periods[i].end_jd - cd1.periods[i].start_jd
+            span2 = cd2.periods[i + 12].end_jd - cd2.periods[i + 12].start_jd
+            assert span1 == pytest.approx(span2)
 
 
 class TestPolicy:

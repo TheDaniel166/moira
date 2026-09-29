@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from math import isfinite
 
+from ._strenum import StrEnum
 from .aspects import (
     AspectMotionState,
     HellenisticAspectEvaluationStatus,
@@ -20,6 +21,7 @@ from .aspects import (
     find_whole_sign_aspects,
     hellenistic_superiority_truth,
 )
+from .constants import TRADITIONAL_MOIETY_ORBS
 from .dignities import besieging_truth
 from .dignities_types import BesiegingTruth
 
@@ -36,12 +38,20 @@ CLASSICAL_7: tuple[str, ...] = (
 DEFAULT_ADHERENCE_ORB_DEG = 3.0
 DEFAULT_ENCLOSURE_ORB_DEG = 12.0
 RAY_NOT_ADMITTED_REASON = "doctrine_not_admitted"
+HELLENISTIC_RAY_ASPECTS: dict[str, float] = {
+    "Sextile": 60.0,
+    "Square": 90.0,
+    "Trine": 120.0,
+}
 
 __all__ = [
     "CLASSICAL_7",
     "DEFAULT_ADHERENCE_ORB_DEG",
     "DEFAULT_ENCLOSURE_ORB_DEG",
     "RAY_NOT_ADMITTED_REASON",
+    "HELLENISTIC_RAY_ASPECTS",
+    "HellenisticRayOrbMode",
+    "HellenisticRayStrike",
     "HellenisticTestimonyWitness",
     "HellenisticTestimonyTruth",
     "HellenisticAdherenceTruth",
@@ -142,23 +152,44 @@ class HellenisticAdherenceTruth:
             )
 
 
+class HellenisticRayOrbMode(StrEnum):
+    """Orb doctrine for Hellenistic ray application."""
+
+    STRICT_3 = "strict_3"
+    MOIETY = "moiety"
+
+
+@dataclass(frozen=True, slots=True)
+class HellenisticRayStrike:
+    """One dexter ray striking the subject."""
+
+    origin_body: str
+    aspect_name: str
+    focal_point_deg: float
+    orb_mode: HellenisticRayOrbMode
+    allowed_orb_deg: float
+    distance_deg: float
+    motion_state: str | None
+
+
 @dataclass(frozen=True, slots=True)
 class HellenisticRayTruth:
-    """Aktinobolia placeholder. 6.3.0 does not invent the ray geometry."""
+    """Rays striking the subject (Aktinobolia)."""
 
     status: HellenisticAspectEvaluationStatus
     subject: str
-    reason: str
+    strikes: tuple[HellenisticRayStrike, ...]
+    reason: str | None = None
 
     def __post_init__(self) -> None:
-        if self.status is not HellenisticAspectEvaluationStatus.NOT_EVALUABLE:
+        if self.status is HellenisticAspectEvaluationStatus.EVALUATED:
+            if self.reason is not None:
+                raise ValueError(
+                    "HellenisticRayTruth evaluated results cannot carry a reason"
+                )
+        elif not self.reason:
             raise ValueError(
-                "HellenisticRayTruth is not_evaluable until a geometric "
-                "ray object is admitted"
-            )
-        if self.reason != RAY_NOT_ADMITTED_REASON:
-            raise ValueError(
-                "HellenisticRayTruth reason must be doctrine_not_admitted"
+                "HellenisticRayTruth not_evaluable results require an explicit reason"
             )
 
 
@@ -397,6 +428,69 @@ def _enclosure_truth(
     )
 
 
+def _ray_truth(
+    subject: str,
+    positions: dict[str, float],
+    speeds: dict[str, float] | None,
+    orb_mode: HellenisticRayOrbMode,
+) -> HellenisticRayTruth:
+    if subject not in positions:
+        return HellenisticRayTruth(
+            status=HellenisticAspectEvaluationStatus.NOT_EVALUABLE,
+            subject=subject,
+            strikes=(),
+            reason="subject_longitude_not_supplied",
+        )
+    subject_lon = positions[subject]
+    strikes: list[HellenisticRayStrike] = []
+    
+    for other, longitude in positions.items():
+        if other == subject:
+            continue
+            
+        allowed_orb = 3.0
+        if orb_mode == HellenisticRayOrbMode.MOIETY:
+            moiety_other = TRADITIONAL_MOIETY_ORBS.get(other, 5.0) / 2.0
+            moiety_subject = TRADITIONAL_MOIETY_ORBS.get(subject, 5.0) / 2.0
+            allowed_orb = moiety_other + moiety_subject
+            
+        for aspect_name, angle in HELLENISTIC_RAY_ASPECTS.items():
+            focal_point = (longitude - angle) % 360.0
+            distance = _circular_distance(subject_lon, focal_point)
+            
+            if distance <= allowed_orb:
+                motion_state: str | None = None
+                if speeds is not None and subject in speeds and other in speeds:
+                    witness = aspect_motion_witness(
+                        subject,
+                        subject_lon,
+                        f"Ray({other})",
+                        focal_point,
+                        "Conjunction",
+                        speed1_deg_per_day=speeds[subject],
+                        speed2_deg_per_day=speeds[other],
+                        reference_frame="caller_supplied_ecliptic_longitudes",
+                        timescale="caller_supplied_daily_speeds",
+                    )
+                    motion_state = witness.state.value
+                    
+                strikes.append(HellenisticRayStrike(
+                    origin_body=other,
+                    aspect_name=aspect_name,
+                    focal_point_deg=focal_point,
+                    orb_mode=orb_mode,
+                    allowed_orb_deg=allowed_orb,
+                    distance_deg=distance,
+                    motion_state=motion_state,
+                ))
+    
+    return HellenisticRayTruth(
+        status=HellenisticAspectEvaluationStatus.EVALUATED,
+        subject=subject,
+        strikes=tuple(strikes),
+    )
+
+
 def assemble_hellenistic_condition(
     subject: str,
     positions: dict[str, float],
@@ -404,6 +498,7 @@ def assemble_hellenistic_condition(
     *,
     adherence_orb_deg: float = DEFAULT_ADHERENCE_ORB_DEG,
     enclosure_orb_deg: float = DEFAULT_ENCLOSURE_ORB_DEG,
+    ray_orb_mode: HellenisticRayOrbMode = HellenisticRayOrbMode.STRICT_3,
 ) -> HellenisticAssembleCondition:
     """Assemble named relational receipts for one classical planet."""
 
@@ -430,9 +525,10 @@ def assemble_hellenistic_condition(
             resolved_speeds,
             adherence_orb_deg,
         ),
-        ray=HellenisticRayTruth(
-            status=HellenisticAspectEvaluationStatus.NOT_EVALUABLE,
-            subject=subject,
-            reason=RAY_NOT_ADMITTED_REASON,
+        ray=_ray_truth(
+            subject,
+            resolved,
+            resolved_speeds,
+            ray_orb_mode,
         ),
     )
