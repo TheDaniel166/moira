@@ -7,11 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- **Synastry Architecture Redux**: Excised legacy internal bookkeeping endpoints from moira_server/routers/relationship.py. Refined synastry aspect calculation to drop meaningless inter-chart applying/separating kinematics and duplicate mean/true nodes. 
-- **Composite Chart Stabilisation**: Enforced 
-eference_place as the default mathematically stable composite evaluation method, deprecating the unstable midpoint mode.
-- **Strict Unknown Time Blocks**: Implemented 	ime_unknown doctrinal flag in ChartRequest preventing noon-guesses from silently propagating into Ascendant, Midheaven, Houses, and Lunar position queries.
+## [6.9.8] - 2026-09-29
 
 ### Added
 - **Bounded REST batches and expensive-response caching**: Capped every
@@ -48,6 +44,42 @@ eference_place as the default mathematically stable composite evaluation method,
   position angles, solar colongitude, explicit angular conventions, and exact
   engine resource provenance. Missing, identity-invalid, and out-of-coverage
   lunar-orientation resources retain distinct path-redacted HTTP failures.
+- **Draconic chart angles, houses and motion**: `DraconicChart` now records
+  its `origin` (geocentric or topocentric), carries the source chart's house
+  cusps and angles (Ascendant, Midheaven, Vertex, anti-Vertex, East Point)
+  rotated into the draconic frame when the chart has houses, and gives every
+  position its source body's speed and retrograde state. The REST draconic
+  response exposes `speed`, `is_retrograde`, `origin`, `houses` and `angles`;
+  positions supplied directly by the caller report `origin: caller_supplied`.
+- **al-Biruni star-based lunar mansions**: Added
+  `MansionTradition.AL_BIRUNI`, with unequal mansion boundaries at the
+  longitudes of each mansion's marker star for the requested date (a Julian
+  day is required). Electional natures and significations are not offered for
+  this tradition and raise `ValueError`.
+- **Hellenistic rays (aktinobolia)**: `HellenisticRayTruth` now evaluates the
+  dexter rays striking a subject instead of returning `not_evaluable`, with
+  `HellenisticRayStrike`, `HellenisticRayOrbMode` and
+  `HELLENISTIC_RAY_ASPECTS`.
+- **Jaimini Chara Dasha second cycle**: Chara Dasha accepts `cycles` and can
+  continue past the first twelve mahadashas. The second cycle repeats the
+  first cycle's sign sequence and spans, following the implementation's
+  reading of K. N. Rao, *Predicting Through Jaimini's Chara Dasa*, pp. 13-14.
+- **Named Shashtiamsha (D60) deities**: D60 positions carry the `deity` of
+  their half-degree division from the sixty names of BPHS chapter 6, in
+  reverse order for even signs.
+- **Sayanadi avasthas**: Added `sayanadi_avastha()` for the twelve Sayanadi
+  states and their three sub-states (BPHS 45.30-155), and a dictionary of the
+  classical effects in `moira.sayanadi_effects`.
+- **Sabian Symbols lookup**: Added `moira.degree_symbols` with
+  `get_sabian_symbol()` and `get_degree_index()` over the 360 degree symbols
+  in `moira.sabian_symbols`.
+- **Antiscia motion state**: Antiscion and contra-antiscion contacts can
+  report `motion_state` and `applying` when daily speeds are supplied.
+- **Unknown birth time on chart requests**: `time_unknown` on chart, houses
+  and relationship requests leaves out the Moon and refuses houses and
+  observer-dependent angles instead of computing them from a guessed time.
+- **Returns for small bodies**: Longitude-return search accepts admitted
+  asteroid and comet identities as well as planets.
 
 ### Changed
 - **Current small-body orbital validation closure**: Rebound active full-catalog
@@ -74,6 +106,49 @@ eference_place as the default mathematically stable composite evaluation method,
   house-dynamics evidence as internal analytical/invariant validation; retired
   obsolete `moira.sky` stub prose; and marked dated roadmap and heliacal audit
   claims with their current superseding contracts.
+- **Ashtottari Dasha start per BPHS**: The starting lord and balance follow
+  BPHS 46.17-22: allocation begins at Ardra in alternating four- and
+  three-nakshatra groups, with Abhijit counted as a place; its span is named
+  explicitly as the later traditional boundary (6°40′-10°53′20″ sidereal
+  Capricorn), since the verses do not state it.
+- **Composite chart default method**: The composite route's default `method`
+  is now `reference_place` instead of `midpoint`.
+- **Synastry REST surface**: Removed the internal bookkeeping routes
+  `/v1/synastry/contact-relations`, `/condition-profiles`,
+  `/overlay-relations`, `/chart-condition` and `/network`. Cross-chart aspects
+  no longer compare two unrelated natal speeds as applying or separating, and
+  with nodes included only the True Node takes part (Mean Node and both
+  Liliths are left out).
+
+### Fixed
+- **Hellenistic ray transport**: The chart-profile REST response now carries
+  evaluated rays: `HellenisticRayTruthResponse` gains `strikes` and its
+  `reason` is optional. Previously any request with the assemble-condition
+  overlay failed with HTTP 422 once rays became evaluable.
+- **Light deflection (IAU Ld)**: Gravitational light deflection now follows
+  the IAU SOFA Ld / ERFA `eraLd` formulation for finite-distance sources, in
+  both the Python reduction and the native planetary evaluator.
+- **Solar-eclipse penumbral limits**: The north and south penumbral limit
+  points of the solar-eclipse footprint are now found by an envelope root
+  search over the moving shadow cone, using a native solver where available.
+- **Heliacal-rising apparition and local-day selection**: Corrected the legacy
+  planetary `heliacal_rising` and `acronychal_rising` searches, plus the Python
+  and native fixed-star rising paths, to require an actual
+  non-visible-to-visible transition. A search begun while a target is already
+  visible now skips that open apparition instead of relabeling the first
+  sampled morning or evening as a new rising. Daily scans are now anchored to
+  local mean solar midnight at the observer's longitude rather than UTC
+  midnight. Added a source-owned oracle matrix that covers every admitted
+  planet (Mercury, Venus, Mars, Jupiter, Saturn, Uranus, and Neptune) against
+  JPL Horizons apparition geometry, checks next-apparition recurrence, and
+  bounds Jupiter and Sirius against independently evaluated physical-visibility
+  events under Schaefer's first-visibility definition.
+- **Sothic failure and chronology semantics**: Removed the blanket exception
+  handler that converted catalog, ephemeris, and internal failures into omitted
+  years. Distinguished the Censorinus civil-calendar relation from an observed
+  event timestamp, named Julian versus proleptic-Gregorian dates explicitly,
+  normalized projected BCE values to astronomical year numbering, and stopped
+  describing fixed 1460-year projections as confirmed historical epochs.
 
 ## [6.9.0] - 2026-09-26
 
@@ -146,24 +221,6 @@ eference_place as the default mathematically stable composite evaluation method,
   - Added contract test suite in [`tests/server/test_server_pattern_coherence_routes.py`](file:///c:/dev/moira/tests/server/test_server_pattern_coherence_routes.py) (6/6 passing).
 
 ### Fixed
-- **Sothic failure and chronology semantics**: Removed the blanket exception
-  handler that converted catalog, ephemeris, and internal failures into omitted
-  years. Distinguished the Censorinus civil-calendar relation from an observed
-  event timestamp, named Julian versus proleptic-Gregorian dates explicitly,
-  normalized projected BCE values to astronomical year numbering, and stopped
-  describing fixed 1460-year projections as confirmed historical epochs.
-- **Heliacal-rising apparition and local-day selection**: Corrected the legacy
-  planetary `heliacal_rising` and `acronychal_rising` searches, plus the Python
-  and native fixed-star rising paths, to require an actual
-  non-visible-to-visible transition. A search begun while a target is already
-  visible now skips that open apparition instead of relabeling the first
-  sampled morning or evening as a new rising. Daily scans are now anchored to
-  local mean solar midnight at the observer's longitude rather than UTC
-  midnight. Added a source-owned oracle matrix that covers every admitted
-  planet (Mercury, Venus, Mars, Jupiter, Saturn, Uranus, and Neptune) against
-  JPL Horizons apparition geometry, checks next-apparition recurrence, and
-  bounds Jupiter and Sirius against independently evaluated physical-visibility
-  events under Schaefer's first-visibility definition.
 - **Conventional eclipse Saros identity**: Replaced the misleading
   mean-month phase exposed as `saros_index` with the conventional van den
   Bergh/NASA Saros-series number for actual solar and lunar eclipses. Added

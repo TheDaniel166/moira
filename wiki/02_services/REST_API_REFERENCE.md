@@ -21,10 +21,10 @@ have no registered route.
 
 <!-- BEGIN GENERATED REST SURFACE SUMMARY -->
 - Application: `Moira Server` `0.1.0`
-- Registered OpenAPI paths: 467
-- Registered OpenAPI operations: 467 (GET 36, POST 431)
+- Registered OpenAPI paths: 465
+- Registered OpenAPI operations: 465 (GET 36, POST 429)
 - Operational/meta paths: 4
-- Versioned `/v1` paths: 463
+- Versioned `/v1` paths: 461
 - OpenAPI path, when enabled by server configuration: `/openapi.json`
 - Interactive docs, when enabled by server configuration: `/docs` and `/redoc`
 - Generation source: `moira_server.app.create_app().openapi()` via `scripts/sync_rest_api_reference.py`
@@ -3576,13 +3576,8 @@ This exact-path inventory is generated from the current FastAPI OpenAPI registry
 | `POST` | `/v1/stations/search` | phenomena | `station_search_route_v1_stations_search_post` |
 | `POST` | `/v1/stelliums/analyze` | stelliums | `analyze_stelliums_route_v1_stelliums_analyze_post` |
 | `POST` | `/v1/synastry/aspects` | relationship | `synastry_aspects_route_v1_synastry_aspects_post` |
-| `POST` | `/v1/synastry/chart-condition` | relationship | `synastry_chart_condition_route_v1_synastry_chart_condition_post` |
-| `POST` | `/v1/synastry/condition-profiles` | relationship | `synastry_condition_profiles_route_v1_synastry_condition_profiles_post` |
-| `POST` | `/v1/synastry/contact-relations` | relationship | `synastry_contact_relations_route_v1_synastry_contact_relations_post` |
 | `POST` | `/v1/synastry/contacts` | relationship | `synastry_contacts_route_v1_synastry_contacts_post` |
-| `POST` | `/v1/synastry/network` | relationship | `synastry_network_route_v1_synastry_network_post` |
 | `POST` | `/v1/synastry/overlay` | relationship | `synastry_directional_overlay_route_v1_synastry_overlay_post` |
-| `POST` | `/v1/synastry/overlay-relations` | relationship | `synastry_overlay_relations_route_v1_synastry_overlay_relations_post` |
 | `POST` | `/v1/synastry/overlays` | relationship | `synastry_overlays_route_v1_synastry_overlays_post` |
 | `POST` | `/v1/timelords/decennials/active-pair` | timelords | `decennials_active_pair_route_v1_timelords_decennials_active_pair_post` |
 | `POST` | `/v1/timelords/decennials/active-path` | timelords | `decennials_active_path_route_v1_timelords_decennials_active_path_post` |
