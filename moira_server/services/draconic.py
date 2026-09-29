@@ -46,6 +46,8 @@ def _serialize_chart(
             body=position.body,
             source_longitude=position.source_longitude,
             draconic_longitude=position.draconic_longitude,
+            speed=position.speed,
+            is_retrograde=position.is_retrograde,
             sign=position.sign,
             sign_symbol=position.sign_symbol,
             sign_degree=position.sign_degree,
@@ -58,6 +60,9 @@ def _serialize_chart(
         count=len(positions),
         jd_ut=vessel.jd_ut,
         frame=vessel.frame,
+        origin=vessel.origin if hasattr(vessel, "origin") else "caller_supplied",
+        houses=list(vessel.houses) if getattr(vessel, "houses", None) is not None else None,
+        angles=dict(vessel.angles) if getattr(vessel, "angles", None) is not None else None,
         source_zodiac=vessel.source_zodiac,
         interpretation_scope=vessel.interpretation_scope,
         anchor_residual=vessel.anchor_residual,
@@ -102,6 +107,9 @@ def compute_draconic_positions(
         anchor=anchor,
         jd_ut=request.jd_ut,
     )
+    # explicitly override origin since caller just gave numbers
+    object.__setattr__(vessel, "origin", "caller_supplied")
+    
     return _serialize_chart(
         vessel,
         DraconicProvenanceResponse(

@@ -116,6 +116,8 @@ class DraconicPositionResponse(_StrictModel):
     body: str
     source_longitude: float
     draconic_longitude: float
+    speed: float | None = None
+    is_retrograde: bool | None = None
     sign: str
     sign_symbol: str
     sign_degree: float
@@ -135,6 +137,9 @@ class DraconicChartResponse(_StrictModel):
     count: int
     jd_ut: float | None = None
     frame: str
+    origin: Literal["geocentric", "topocentric", "caller_supplied"] = "geocentric"
+    houses: list[float] | None = None
+    angles: dict[str, float] | None = None
     source_zodiac: str
     interpretation_scope: str
     anchor_residual: float | None = None

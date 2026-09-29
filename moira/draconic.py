@@ -159,6 +159,8 @@ class DraconicPosition:
     source_longitude: float
     draconic_longitude: float
     anchor_longitude: float
+    speed: float | None = None
+    is_retrograde: bool | None = None
     sign: str = field(init=False)
     sign_symbol: str = field(init=False)
     sign_degree: float = field(init=False)
@@ -187,6 +189,12 @@ class DraconicPosition:
         object.__setattr__(self, "source_longitude", source)
         object.__setattr__(self, "draconic_longitude", draconic)
         object.__setattr__(self, "anchor_longitude", anchor)
+        if self.speed is not None:
+            object.__setattr__(self, "speed", float(self.speed))
+            if self.is_retrograde is None:
+                object.__setattr__(self, "is_retrograde", float(self.speed) < 0.0)
+            else:
+                object.__setattr__(self, "is_retrograde", bool(self.is_retrograde))
         object.__setattr__(self, "sign", sign)
         object.__setattr__(self, "sign_symbol", symbol)
         object.__setattr__(self, "sign_degree", degree)
@@ -199,6 +207,9 @@ class DraconicChart:
     anchor: DraconicAnchor
     positions: tuple[DraconicPosition, ...]
     jd_ut: float | None = None
+    origin: Literal["geocentric", "topocentric"] = "geocentric"
+    houses: tuple[float, ...] | None = None
+    angles: dict[str, float] | None = None
     source_zodiac: str = _SOURCE_ZODIAC
     frame: str = _FRAME
     interpretation_scope: str = _INTERPRETATION_SCOPE
@@ -234,6 +245,19 @@ class DraconicChart:
             if not math.isfinite(jd):
                 raise ValueError("DraconicChart.jd_ut must be finite when supplied")
             object.__setattr__(self, "jd_ut", jd)
+            
+        if self.origin not in ("geocentric", "topocentric"):
+            raise ValueError("DraconicChart.origin must be 'geocentric' or 'topocentric'")
+            
+        if self.houses is not None:
+            object.__setattr__(self, "houses", tuple(float(h) for h in self.houses))
+            
+        if self.angles is not None:
+            angles = {}
+            for k, v in self.angles.items():
+                angles[str(k)] = float(v)
+            object.__setattr__(self, "angles", angles)
+
         object.__setattr__(self, "positions", positions)
 
     def longitudes(self) -> dict[str, float]:
@@ -339,11 +363,62 @@ def draconic_chart(
     longitudes = getattr(chart, "longitudes", None)
     if not callable(longitudes):
         raise TypeError("source chart must expose longitudes(include_nodes=...)")
-    positions = longitudes(include_nodes=include_nodes)
-    if not isinstance(positions, Mapping):
+    positions_mapping = longitudes(include_nodes=include_nodes)
+    if not isinstance(positions_mapping, Mapping):
         raise TypeError("source chart longitudes() must return a mapping")
-    return draconic_chart_from_positions(
-        positions,
+        
+    anchor_lon = anchor.longitude
+    drac_positions = []
+    
+    chart_planets = getattr(chart, "planets", {})
+    chart_nodes = getattr(chart, "nodes", {})
+    
+    for body, lon in positions_mapping.items():
+        speed = None
+        is_retrograde = None
+        if body in chart_planets:
+            speed = getattr(chart_planets[body], "speed", None)
+            is_retrograde = getattr(chart_planets[body], "is_retrograde", None)
+        elif body in chart_nodes:
+            speed = getattr(chart_nodes[body], "speed", None)
+            is_retrograde = getattr(chart_nodes[body], "is_retrograde", None)
+            
+        drac_positions.append(
+            DraconicPosition(
+                body=body,
+                source_longitude=lon,
+                draconic_longitude=draconic_longitude(lon, anchor_lon),
+                anchor_longitude=anchor_lon,
+                speed=speed,
+                is_retrograde=is_retrograde,
+            )
+        )
+        
+    houses_draconic = None
+    angles_draconic = None
+    chart_houses = getattr(chart, "houses", None)
+    if chart_houses is not None:
+        cusps = getattr(chart_houses, "cusps", None)
+        if cusps:
+            houses_draconic = tuple(draconic_longitude(c, anchor_lon) for c in cusps)
+            
+        # extract ASC, MC, vertex, east_point
+        angles_draconic = {}
+        for angle in ("asc", "mc", "vertex", "anti_vertex", "east_point"):
+            val = getattr(chart_houses, angle, None)
+            if val is not None:
+                angles_draconic[angle] = draconic_longitude(val, anchor_lon)
+                
+    # Determine topocentric origin
+    origin: Literal["geocentric", "topocentric"] = "geocentric"
+    if getattr(chart, "latitude", None) is not None and getattr(chart, "longitude", None) is not None:
+        origin = "topocentric"
+
+    return DraconicChart(
         anchor=anchor,
+        positions=tuple(drac_positions),
         jd_ut=getattr(chart, "jd_ut", None),
+        origin=origin,
+        houses=houses_draconic,
+        angles=angles_draconic,
     )
