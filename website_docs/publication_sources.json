@@ -23,7 +23,7 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.9.8.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.9.9.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle"
     },
@@ -317,6 +317,27 @@
     }
   ],
   "release_summaries": [
+    {
+      "version": "6.9.9",
+      "date": "2026-09-29",
+      "title": "Standard Defaults and Source Corrections",
+      "added": [
+        "The standard heliacal phases (morning first, evening last, evening first, morning last, acronychal rising, cosmical setting) for planets and fixed stars, a phasis search, the Moon's old crescent under the Yallop criterion, and previous-eclipse searches.",
+        "Almuten of a degree and of the figure, the Lilly hyleg and alcocoden (Christian Astrology III ch. CIV-CV), and Ptolemy's predominator (Tetrabiblos III.10)."
+      ],
+      "changed": [
+        "Each named doctrine follows its own source by default: Lilly's terms, triplicity and planetary years; the seven Hermetic lots of Paulus; the five major aspects for relationship charts; Hamblin's harmonic orb; equal mansions in every tradition with Agrippa's own significations.",
+        "Heliacal setting means evening last visibility for planets and stars; the former last-morning event keeps its own name."
+      ],
+      "fixed": [
+        "The pattern coherence, chart-profile and network routes, composite charts without a reference latitude and longitude-only mansion requests work again; the Release Hardening gate now rejects undefined names."
+      ],
+      "validation": [
+        "Release Hardening and Release Acceptance gates pass for the release commit; doctrine changes cite the page of the source they follow."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.9.9.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.9.9.md"
+    },
     {
       "version": "6.9.8",
       "date": "2026-09-29",

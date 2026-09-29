@@ -4,9 +4,9 @@
   "last_verified": "2026-09-29",
   "engine_release": {
     "name": "moira-astro",
-    "version": "6.9.8",
-    "tag": "v6.9.8",
-    "commit": "138659c93077cea66f2abbf911371c55c3b54474",
+    "version": "6.9.9",
+    "tag": "v6.9.9",
+    "commit": "16447302c8934b8c869c881fac8e14939e2423e4",
     "release_date": "2026-09-29",
     "requires_python": ">=3.10",
     "supported_python": [
@@ -31,27 +31,27 @@
     {
       "id": "python_api_reference",
       "source": "wiki/02_standards/API_REFERENCE.md",
-      "source_sha256": "fade1b560487158f1ac28881a2371965c3b14526c42848675459c6787d25a830"
+      "source_sha256": "cd9f71d1570967eca9938a797f7b2187b45285d9e619b971e6336d06fa3d501d"
     },
     {
       "id": "python_root_exports",
       "source": "moira/__init__.py",
-      "source_sha256": "2a0b47ad703bd65f04c8924ad1529b9933495dd11261f6f553b6848f1d6144bc"
+      "source_sha256": "03e4752ddca67641449c42587bb3d5edae1443bb6f80a32e4309a81dbb3d2972"
     },
     {
       "id": "python_facade",
       "source": "moira/facade.py",
-      "source_sha256": "856b32b8c4af14cfae95db03140666f4c287bf676e1a1216aaf51a94772ddb3f"
+      "source_sha256": "af9ca5bbb90f0f974c220f384e094373f9114bba2389924d27bf469e1e4734f9"
     },
     {
       "id": "rest_api_reference",
       "source": "wiki/02_services/REST_API_REFERENCE.md",
-      "source_sha256": "a18be8403807066bdf59d22059af49266b9c5e840edff0f86ea2e086666e5b0c"
+      "source_sha256": "376294c102b162b156bb352cae70d8eab76defb517bef72cf837ce642444e76b"
     },
     {
       "id": "rest_router_registration",
       "source": "moira_server/app.py",
-      "source_sha256": "7c71a40c9b0a7fcf6595a23f2c3c2e47b3ba80d30aa76f8ce20e8c053f5434f4"
+      "source_sha256": "0e6769207ade6902c8fbd8845a8cc9ea769df0c680627785f9abdf389cc19f4b"
     },
     {
       "id": "planetary_reduction",
@@ -122,7 +122,7 @@
     "lot_definition_registry": {
       "entry_count": 512,
       "source": "moira/lots.py",
-      "source_sha256": "85b6c03db67fa00cd7628462a51648404ff4ac91c5666d950d320022d513dd57"
+      "source_sha256": "240a74a7b9320f97ba554bb709597297b28fe4ae43b68eaca45b0efbae358d46"
     },
     "ayanamsha_registry": {
       "entry_count": 12,
@@ -133,7 +133,7 @@
   "python_exports": {
     "root": {
       "source": "moira/__init__.py",
-      "source_sha256": "2a0b47ad703bd65f04c8924ad1529b9933495dd11261f6f553b6848f1d6144bc",
+      "source_sha256": "03e4752ddca67641449c42587bb3d5edae1443bb6f80a32e4309a81dbb3d2972",
       "symbols": [
         "ASHTOTTARI_NAKSHATRA_LORD",
         "ASHTOTTARI_SEQUENCE",
@@ -658,6 +658,8 @@
         "PartDefinition",
         "ParticipatingRulerPolicy",
         "PersonalMuhurtaScore",
+        "PhasisKindResult",
+        "PhasisSearchResult",
         "PhysicalAtmosphereInput",
         "PhysicalAtmosphereReceipt",
         "PhysicalBackgroundComponentKind",
@@ -794,6 +796,7 @@
         "SAHL_SOWING_V1",
         "SAHL_WELLS_AND_RIVERS_V1",
         "SECT",
+        "STANDARD_HELIACAL_EVENT_KINDS",
         "STELLIUM_CORE",
         "STELLIUM_SCHEMA_VERSION",
         "SadeSatiResult",
@@ -1090,6 +1093,7 @@
         "greenwich_mean_sidereal_time",
         "halb_required_hemisphere",
         "harmogram_trace",
+        "heliacal_event_kind_applies",
         "hellenistic_chart_profile",
         "hellenistic_superiority_truth",
         "hora_lord_at",
@@ -1166,12 +1170,16 @@
         "panchanga_profile",
         "parts_from_zero_aries",
         "personal_muhurta_score",
+        "phasis_events_near",
         "physical_visibility_assessment",
         "physical_visibility_event",
         "planet_acronychal_rising",
         "planet_acronychal_setting",
+        "planet_cosmical_setting",
+        "planet_evening_first",
         "planet_heliacal_rising",
         "planet_heliacal_setting",
+        "planet_morning_last",
         "planet_phenomena_at",
         "planet_reduction_breakdown_at",
         "planet_time_series",
@@ -2600,7 +2608,7 @@
     },
     "facade": {
       "source": "moira/facade.py",
-      "source_sha256": "856b32b8c4af14cfae95db03140666f4c287bf676e1a1216aaf51a94772ddb3f",
+      "source_sha256": "af9ca5bbb90f0f974c220f384e094373f9114bba2389924d27bf469e1e4734f9",
       "symbols": [
         "ACGLine",
         "AGRIPPA_MANSIONS",
@@ -3398,6 +3406,8 @@
         "PatternSourceKind",
         "PatternSymmetryKind",
         "PersonalMuhurtaScore",
+        "PhasisKindResult",
+        "PhasisSearchResult",
         "PhenomenonEvent",
         "PhysicalAtmosphereInput",
         "PhysicalAtmosphereReceipt",
@@ -3580,6 +3590,7 @@
         "SOTHIC_EPOCH_REFERENCES",
         "SSBPosition",
         "SSB_BODIES",
+        "STANDARD_HELIACAL_EVENT_KINDS",
         "STELLIUM_CORE",
         "STELLIUM_SCHEMA_VERSION",
         "SadeSatiResult",
@@ -4230,6 +4241,7 @@
         "harmonic_pattern_score",
         "harmonic_sweep",
         "heliacal_catalog_batch",
+        "heliacal_event_kind_applies",
         "heliacal_rising",
         "heliacal_rising_event",
         "heliacal_setting",
@@ -4282,6 +4294,8 @@
         "karakamsa",
         "lajjitadi_avasthas",
         "last_full_moon",
+        "last_morning_visibility",
+        "last_morning_visibility_event",
         "last_new_moon",
         "lifetime_returns",
         "lilly_perfection_at",
@@ -4405,12 +4419,16 @@
         "perihelion",
         "personal_muhurta_score",
         "phase_at",
+        "phasis_events_near",
         "physical_visibility_assessment",
         "physical_visibility_event",
         "planet_acronychal_rising",
         "planet_acronychal_setting",
+        "planet_cosmical_setting",
+        "planet_evening_first",
         "planet_heliacal_rising",
         "planet_heliacal_setting",
+        "planet_morning_last",
         "planet_phenomena_at",
         "planet_reduction_breakdown_at",
         "planet_relative_to",
@@ -4964,11 +4982,11 @@
       "source": "wiki/02_standards/API_REFERENCE.md",
       "title": "API Reference",
       "nav_label": "API Reference",
-      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.9.8.",
+      "description": "The admitted Python import surface, public vessels, policy controls, and failure contracts for Moira 6.9.9.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "fade1b560487158f1ac28881a2371965c3b14526c42848675459c6787d25a830",
-      "source_bytes": 327361,
+      "source_sha256": "cd9f71d1570967eca9938a797f7b2187b45285d9e619b971e6336d06fa3d501d",
+      "source_bytes": 327441,
       "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
@@ -5147,8 +5165,8 @@
       "description": "Registered FastAPI routes, request and response contracts, readiness semantics, and transport boundaries for the Moira service.",
       "content_class": "generated_current_fact",
       "schema_type": "TechArticle",
-      "source_sha256": "a18be8403807066bdf59d22059af49266b9c5e840edff0f86ea2e086666e5b0c",
-      "source_bytes": 232090,
+      "source_sha256": "376294c102b162b156bb352cae70d8eab76defb517bef72cf837ce642444e76b",
+      "source_bytes": 233790,
       "last_verified": "2026-09-29",
       "prerender": true,
       "markdown": true,
@@ -5545,6 +5563,30 @@
   ],
   "releases": [
     {
+      "version": "6.9.9",
+      "date": "2026-09-29",
+      "title": "Standard Defaults and Source Corrections",
+      "added": [
+        "The standard heliacal phases (morning first, evening last, evening first, morning last, acronychal rising, cosmical setting) for planets and fixed stars, a phasis search, the Moon's old crescent under the Yallop criterion, and previous-eclipse searches.",
+        "Almuten of a degree and of the figure, the Lilly hyleg and alcocoden (Christian Astrology III ch. CIV-CV), and Ptolemy's predominator (Tetrabiblos III.10)."
+      ],
+      "changed": [
+        "Each named doctrine follows its own source by default: Lilly's terms, triplicity and planetary years; the seven Hermetic lots of Paulus; the five major aspects for relationship charts; Hamblin's harmonic orb; equal mansions in every tradition with Agrippa's own significations.",
+        "Heliacal setting means evening last visibility for planets and stars; the former last-morning event keeps its own name."
+      ],
+      "fixed": [
+        "The pattern coherence, chart-profile and network routes, composite charts without a reference latitude and longitude-only mansion requests work again; the Release Hardening gate now rejects undefined names."
+      ],
+      "validation": [
+        "Release Hardening and Release Acceptance gates pass for the release commit; doctrine changes cite the page of the source they follow."
+      ],
+      "release_notes": "wiki/03_release/RELEASE_NOTES_6.9.9.md",
+      "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.9.9.md",
+      "tag": "v6.9.9",
+      "release_notes_sha256": "96891b7fb42d633bcc6dd7557e82724b357d0a00e2b14226f91c95b64e57c845",
+      "compatibility_notes_sha256": "532839c71410653af8e4c7c4cc8378ae17b4d8acba26e99c3a32f8adc295e9ec"
+    },
+    {
       "version": "6.9.8",
       "date": "2026-09-29",
       "title": "Relationship Charts, Draconic Frames and Classical Sources",
@@ -5565,8 +5607,8 @@
       "release_notes": "wiki/03_release/RELEASE_NOTES_6.9.8.md",
       "compatibility_notes": "wiki/03_release/COMPATIBILITY_NOTES_6.9.8.md",
       "tag": "v6.9.8",
-      "release_notes_sha256": "faaa0bb7ac550cc2c3b646efbe82e4d75ea837f09ffd18ad90b0d545d2af7aab",
-      "compatibility_notes_sha256": "ade82de519cfb6f487437de51f7ada433d6af87170852d1c92ad6199f886edcf"
+      "release_notes_sha256": "02e7d5e7009e0d0320e5b829a00026bb73e23a47ffd7f5ef0b45e18508957812",
+      "compatibility_notes_sha256": "a868ae4ab45d77c070ca1692142851819c1c54a8f117c512d82c8a71f778b110"
     },
     {
       "version": "6.9.0",
@@ -6072,5 +6114,5 @@
       "compatibility_notes_sha256": "296d26d2997556a419cacf6c4ea15a2eb74d273e6e24fa20fd49760f038bffa5"
     }
   ],
-  "manifest_sha256": "e610792faf5cc841086981a8d23368665fb64104793e3e900aa13e3a1397ea27"
+  "manifest_sha256": "760fd89863c2a24efe26041ba1301f29a7feee7e1eb07618f8eff37addfc10a8"
 }
