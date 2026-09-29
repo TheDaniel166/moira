@@ -277,6 +277,24 @@ The wheel contains this identity registry, receipt, and metadata-only manifest,
 not the external BSP shards; known identity therefore remains distinct from
 installed position capability.
 
+The 10-day/7-node asteroid release is not universally admitted for the much
+stricter apsidal-passage distance product. The exhaustive September 28 audit
+partitions all 11,223 admitted asteroid identities: 126 bodies with current
+JPL SBDB perihelion distance below 1.3 AU receive paired, same-span 10-day and
+5-day Horizons VECTORS comparisons at every off-grid witness neighboring every
+detected radial-velocity sign crossing across their catalog coverage. The two
+authority series agree exactly at shared nodes, isolating interpolation rather
+than query drift. Fifty-nine bodies exceed the unchanged `1e-9 AU`
+(`0.1495978707 km`) Stage 2 distance gate, across 40 existing shards. The
+remaining 11,097 bound bodies are governed by a worst-case elliptic Type-13
+sweep at the 1.3 AU boundary over eccentricity and sample-grid phase; its worst
+radial residual is `0.000173152 km`, an `863.97x` margin inside the gate. The
+governed results and exact repair roster are retained in
+`tests/artifacts/oracle/asteroid_type13_apsidal_sampling_audit_2026-09-28.json`.
+This is a complete apsidal-sampling partition, not a general all-epoch
+close-encounter position admission. The immutable asteroid release remains
+unchanged until the 40 affected shards are rebuilt and separately admitted.
+
 The numbered-periodic-comet identity registry is derived from one verified
 release rather than maintained as an independent handwritten name table.
 Numbered designations such as `1P/Halley` are canonical. The five historical
@@ -289,6 +307,15 @@ policy, source revision, and SHA-256 identities. That receipt names catalog
 version `2026.07.28.1`: 497 comets in 20 shards under a 30-day/5-node sampling
 policy, with manifest SHA-256
 `31fbbedbb3ea7ba276fa9d49d52211ae41d90f76c74fb49ec0a6bafb014f07a1`.
+That immutable release remains the active comet resource. The current catalog
+builder has a separately measured successor policy for a future version: it
+aligns the comet base with the asteroid catalog's 10-day/7-node policy and
+inserts exact daily, nonuniform Type-13 nodes around every detected
+radial-distance extremum, with each Horizons refinement request bounded to 32
+Julian years. This candidate policy corrects the frozen
+Halley/Encke apsidal events under the unchanged Stage 2 gates, but it is not a
+published or admitted catalog until all 497 comets are rebuilt and the sealed
+release passes its release-bound validation.
 The metadata-only asteroid and comet manifests retained in the wheel are
 byte-identical to these immutable release receipts and remain excluded from
 automatic reader discovery until a referenced BSP shard is installed.

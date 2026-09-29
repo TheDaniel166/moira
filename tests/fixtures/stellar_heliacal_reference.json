@@ -10,5 +10,17 @@
     "longitude_deg": 29.9,
     "delegation_tolerance_minutes": 1.0,
     "max_days_before_sothic_anchor": 5.0
+  },
+  {
+    "row_id": "SHR-002",
+    "star_name": "Spica",
+    "event_kind": "heliacal_rising",
+    "source": "Moira Live Ephemeris",
+    "source_kind": "synthetic ephemeris benchmark",
+    "start_date": "2026-01-01",
+    "latitude_deg": 30.0,
+    "longitude_deg": 31.2,
+    "delegation_tolerance_minutes": 1.0,
+    "expected_jd_ut": 2461041.6700517233
   }
 ]

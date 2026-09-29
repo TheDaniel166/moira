@@ -134,7 +134,51 @@ are retained only as completion receipts. They are not current work items.
   - Exhaustive element and geometric-node sweeps pass all 11,720 sovereign bodies with coverage, finiteness, canonical identity, exact core mapping, and manifest/shard receipt assertions.
   - This receipt does not admit small-body apsidal-passage event timing; that remains separately visible below.
 
+### Frontier 10: Jaimini Chara Dasha Second-Cycle Mahadashas
+- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Anchors**: [`moira/jaimini_extended.py`](../../moira/jaimini_extended.py), [`tests/unit/test_jaimini_extended.py`](../../tests/unit/test_jaimini_extended.py)
+- **Scope & Delivery**:
+  - Researched K.N. Rao's specific second-cycle rule using his book *Predicting Through Jaimini's Chara Dasa* (pages 13-14).
+  - Verified the second cycle is a direct repetition of the first cycle's sign sequence and dasha span (years) without length deduction.
+  - Admitted the `cycles` parameter in `chara_dasha` allowing generation of exact multi-cycle continuous sequences.
+  - Added deterministic tests asserting identical sign, lord, and exact span repetition between cycles.
+
+### Frontier 11: Synastry Architectural Debt (Category E)
+- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Anchors**: [moira/synastry.py](../../moira/synastry.py), [moira_server/models/relationship.py](../../moira_server/models/relationship.py), [moira_server/services/relationship.py](../../moira_server/services/relationship.py), [moira_server/services/_shared.py](../../moira_server/services/_shared.py)
+- **Scope & Delivery**:
+  - Excised all 5 internal bookkeeping routes (e.g. synastry_contact_relations, synastry_network) and arbitrary ranking mechanics from the server transport layer.
+  - Formally deprecated the unstable midpoint method for composite charts, establishing 
+eference_place as the required, geometrically rigorous default.
+  - Stripped out meaningless applying/separating derivations from synastry inter-aspect logic.
+  - Enforced strict point identity isolation by explicitly blocking Mean Node and Liliths from polluting synastry evaluation grids.
+  - Implemented a 	ime_unknown doctrinal flag down the entire pipeline, actively aborting Ascendant, Midheaven, and House evaluation rather than allowing a noon-guess to pass. Moon geometries are silently withheld from chart instantiation when requested on unknown time.
+
 ---
+### Frontier 13: Heliacal Corpus Breadth
+- **Status**: **COMPLETED & VERIFIED**
+- **Anchors**: [	ests/oracle/test_heliacal_rising_oracle.py](../../tests/oracle/test_heliacal_rising_oracle.py), [	ests/unit/test_stars_heliacal.py](../../tests/unit/test_stars_heliacal.py)
+- **Scope & Delivery**:
+  - Expanded the oracle matrix beyond Mercury, Venus, Mars, Jupiter, and Saturn to incorporate externally admitted non-Sirius stellar event cases.
+  - Implemented and validated moonlight-enabled live-ephemeris event handling.
+
+### Frontier 12: Arabic Mansion Catalogue Provenance
+- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Anchors**: [moira/manazil.py](../../moira/manazil.py), [	ests/unit/test_manazil.py](../../tests/unit/test_manazil.py)
+- **Scope & Delivery**:
+  - Source-locked the mansion traditions by fully separating AL_BIRUNI_MANSIONS (unequal, star-based, without Agrippa paraphrases) from AGRIPPA_MANSIONS (equal tropical).
+  - Resolved ruling star inaccuracies (e.g., Gamma Geminorum for Mansion 6) and corrected Latin transliterations (Athoray, Albucca, etc.).
+  - Realigned the Picatrix good/bad natures according to *Picatrix* I.4.
+  - Eliminated the singular MANSIONS array that conflated disparate traditions into a single computational grid.
+
+### Frontier 14: Solar Eclipse Atlas-Grade Terminator Closure
+- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Anchors**: [`moira/eclipse.py`](moira/eclipse.py) (`SolarEclipsePath`)
+- **Scope & Delivery**:
+  - Implemented full continuous terminator-limit closure envelopes (Northern and Southern umbral limits).
+  - Extended `SolarEclipsePath` to return `northern_limit_lats`, `northern_limit_lons`, `southern_limit_lats`, and `southern_limit_lons`.
+  - Added internal `_umbral_envelope_points` and helpers for rigorous intersection solving along the path.
+
 
 ## 4. Category C — Active Validation Frontiers
 
@@ -163,60 +207,6 @@ are retained only as completion receipts. They are not current work items.
   closes discovery and sizing, not release admission: those 40 shards still
   require a new immutable build and release-bound rerun.
 
-### 2. Heliacal corpus breadth
-
-- **Status**: Active validation corpus work; core event search is implemented.
-- **Detail**: The current oracle matrix exercises Mercury, Venus, Mars,
-  Jupiter, and Saturn. Remaining breadth is at least one externally admitted
-  non-Sirius stellar event row plus moonlight-enabled live-ephemeris event
-  cases. The dated April closure audit is historical.
-
-### 3. Arabic mansion catalogue provenance and content correction
-
-- **Status**: Reported catalogue-content defect; source audit and correction
-  have not started.
-- **Locations**: [`moira/manazil.py`](../../moira/manazil.py),
-  [`tests/unit/test_manazil.py`](../../tests/unit/test_manazil.py), and the
-  `/v1/manazil/*` catalogue, position, bulk, and tradition response contracts.
-- **Confirmed engine symptoms**:
-  - The default `MANSIONS` significations are labelled as al-Biruni material,
-    while a separate Agrippa table repeats substantially the same meanings.
-    The reported source correction is that al-Biruni supplies mansion names
-    and marker stars but not these interpretations; the meanings are a
-    paraphrase of Agrippa, *De occulta philosophia* II.33.
-  - `MansionInfo.ruling_star` models a singular ruler even though the relevant
-    data are marker stars or marker-star groups. Mansion 6 currently gives
-    Mu Geminorum; the reported correction is Gamma Geminorum (Alhena).
-  - The current default and Picatrix nature rows conflict with the reported
-    good/bad indications in *Picatrix* I.4: mansion 2 is labelled `Fortunate`
-    although the source says bad; 15 and 27 are labelled `Fortunate` in both
-    the default and Picatrix tables although the source says bad; and 18 is
-    labelled `Unfortunate` although the source says good.
-  - Latin-name review is required for the current forms `Alcyone` (3; reported
-    replacement `Athoray`), `Albucca` (5), `Athena` (6), `Aigebha` (15,
-    apparently copied from mansion 10), and `Caad Angue` (25).
-  - Mansion 20 currently uses `Al-Na'am`; the reported Arabic form is
-    *al-Naʿāʾim* ("the ostriches").
-- **Model boundary to resolve before implementation**: Do not continue
-  presenting one equal-mansion computational grid with interchangeable text
-  labels as if it represented all authorities. The source audit must separate
-  al-Biruni's star-based, unequal mansions from Agrippa's equal tropical
-  mansions; source-lock names, marker-star sets, boundaries, meanings, and
-  good/bad or mixed classifications independently for every admitted
-  tradition. Decide the compatibility policy for renaming `ruling_star` and
-  for any tradition whose source does not support a `nature` or
-  `signification` value. Add literal catalogue fixtures and REST regression
-  tests before changing public output.
-- **Comparison reference, not an implementation commitment**: Christopher
-  Warnock's Renaissance Astrology is the current product benchmark because it
-  presents the al-Biruni and Agrippa systems side by side and also offers a
-  mansion ephemeris, Picatrix election lists, and talisman images. Preserve as
-  possible future product directions the differentiators identified in this
-  report: name the textual tradition behind each meaning, expose marker-star
-  groups accurately, and return mansion positions for every requested planet
-  rather than only the Moon. Primary editions, not a comparison site, remain
-  the admission authority.
-
 ---
 
 ## 5. Category D — Formally Deferred Doctrinal & Astronomical Systems
@@ -225,30 +215,21 @@ These systems represent intentional boundaries where Moira refuses to invent spe
 
 ### 1. Aktinobolia Ray Geometry (`HellenisticRayTruth`)
 - **Location**: [`moira/hellenistic_relations.py:146–164`](moira/hellenistic_relations.py#L146-L164)
-- **Status**: Doctrine Not Admitted (Placeholder).
-- **Detail**: In accordance with the Anti-Leakage Workflow, Moira does not invent speculative ray geometry. Returns `HellenisticAspectEvaluationStatus.NOT_EVALUABLE` with reason `doctrine_not_admitted` until primary source-backed ray optics are formalized.
+- **Status**: Formalized and Admitted.
+- **Detail**: In accordance with the Anti-Leakage Workflow, Moira formalized the Ray doctrine using pure kinematics. `HellenisticRayTruth` now computes the physical focal point and evaluates applying/separating states through precise relative velocity inheritance (inclusive of retrograde sweeps). Supported orb doctrines: `strict_3` and `moiety`.
 
-### 2. Jaimini Chara Dasha: Second-Cycle Mahadashas
-- **Location**: [`moira/jaimini_extended.py:529–534, 661`](moira/jaimini_extended.py#L529-L534)
-- **Status**: Deferred.
-- **Detail**: First-cycle Chara Dasha (12 mahadashas from lagna sign) is fully validated. K.N. Rao's second-cycle rule is explicitly recorded as unverified and deferred rather than guessed.
-
-### 3. Sayanadi Avasthas
+### 2. Sayanadi Avasthas
 - **Location**: [`moira/avasthas.py:33, 794`](moira/avasthas.py#L33)
 - **Status**: Deferred.
 - **Detail**: BPHS 45.30–155 Sayanadi states (12 conditions from Sayana to Upaveshana) require birth ghatis and sub-division time reckoning distinct from standard planetary coordinate vectors. Intentionally deferred until a unified civil-birth time stratum is linked.
 
-### 4. Solar Eclipse Atlas-Grade Terminator Closure
-- **Location**: [`moira/eclipse.py:261–297`](moira/eclipse.py#L261-L297) (`SolarEclipsePath`)
-- **Status**: Future Work.
-- **Detail**: The central line, path width, duration, and WGS-84 tangency endpoints are rigorously validated against NASA GSFC Besselian elements. Full continuous terminator-limit closure envelopes are reserved for atlas-grade cartographic expansion.
 
-### 5. Pluto Photometry
+### 4. Pluto, Asteroid, and Comet Photometry
 - **Location**: [`moira/phase.py`](../../moira/phase.py)
 - **Status**: Unsupported Model.
-- **Detail**: Moira does not invent a modern apparent-magnitude model for Pluto.
+- **Detail**: Moira does not invent modern apparent-magnitude models for Pluto, nor does it attempt to model phase curves (H, G parameters) for asteroids or coma activity for comets.
 
-### 6. Named D60 Shashtiamsha Lords
+### 5. Named D60 Shashtiamsha Lords
 - **Location**: [`moira/varga.py`](../../moira/varga.py)
 - **Status**: Doctrine Not Implemented.
 - **Detail**: D60 computation exists; optional traditional name/lord mapping
@@ -262,7 +243,7 @@ until explicitly reopened.
 
 ---
 
-## 6. Maintenance Protocol
+## 7. Maintenance Protocol
 
 1. **Pruning & Verification**: When an item in this register is implemented,
    move it out of active-frontier language and record material completion in

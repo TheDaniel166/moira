@@ -47,7 +47,7 @@ from moira.galactic import (
 )
 from moira.gauquelin import gauquelin_sector, _PLUS_ZONE_SECTORS
 from moira.constants import J2000
-from moira.manazil import mansion_of, MANSIONS, MANSION_SPAN
+from moira.manazil import mansion_of, AL_BIRUNI_MANSIONS, MANSION_SPAN
 from moira.longevity import (
     PTOLEMAIC_YEARS, EGYPTIAN_BOUNDS, FACE_RULERS,
     dignity_score_at, find_hyleg, calculate_longevity, HylegResult,
@@ -238,10 +238,10 @@ class TestManazil:
         assert abs(MANSION_SPAN - 360.0 / 28.0) < 1e-10
 
     def test_28_mansions_defined(self):
-        assert len(MANSIONS) == 28
+        assert len(AL_BIRUNI_MANSIONS) == 28
 
     def test_mansion_indices_one_based(self):
-        for i, m in enumerate(MANSIONS):
+        for i, m in enumerate(AL_BIRUNI_MANSIONS):
             assert m.index == i + 1
 
     def test_mansion_of_zero_is_first(self):

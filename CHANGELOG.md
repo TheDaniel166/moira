@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Synastry Architecture Redux**: Excised legacy internal bookkeeping endpoints from moira_server/routers/relationship.py. Refined synastry aspect calculation to drop meaningless inter-chart applying/separating kinematics and duplicate mean/true nodes. 
+- **Composite Chart Stabilisation**: Enforced 
+eference_place as the default mathematically stable composite evaluation method, deprecating the unstable midpoint mode.
+- **Strict Unknown Time Blocks**: Implemented 	ime_unknown doctrinal flag in ChartRequest preventing noon-guesses from silently propagating into Ascendant, Midheaven, Houses, and Lunar position queries.
+
 ### Added
 - **Bounded REST batches and expensive-response caching**: Capped every
   `/v1/batch/*` request plus Varga and orbit-class batch inputs at 128 items,

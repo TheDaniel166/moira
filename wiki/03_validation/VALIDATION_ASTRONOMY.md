@@ -367,12 +367,56 @@ admission, so their six passage-time authority comparisons are `NOT RUN`, not
 silently accepted under wider gates. This is a separate event-search
 validation frontier from the orbital-element and geometric-node release
 admission below. A runnable Eros search proves catalog routing without
-substituting that smoke test for passage-time authority parity. Diagnostic
-differences against the current fixture are retained in the Stage 2 receipt;
-they range from microdays for Eros/Chiron to `0.104 day` for Halley and
-`0.195 day` for Encke and may combine release-solution and interpolation
-effects. A catalog release must bind and pass the passage fixture before those
-event cases become acceptance evidence.
+substituting that smoke test for passage-time authority parity. The September
+28 follow-up refreshed Encke from `JPL#K273/14` to `JPL#K273/17` and isolated
+the comet defect: the installed 30-day/5-node release misses Halley's
+perihelion by `8985.653 seconds`, Encke's perihelion by `16862.339 seconds`,
+and Encke's aphelion by `43.564 seconds`. Reconstructing the same Type-13
+products with the asteroid catalog's 10-day/7-node base policy plus exact
+daily, nonuniform nodes around
+every radial extremum reduces those timing residuals to `0.000322`, `0.008570`,
+and `0.005713 seconds` without widening the existing `8.64-second` / `1e-9 AU`
+gates. The candidate also bounds each Horizons refinement query to 32 Julian
+years; a centuries-wide TLIST was shown to add measurable long-span
+propagation drift even after interpolation was repaired. The source-receipted
+probe is
+`tests/artifacts/oracle/comet_apsidal_sampling_probe_2026-09-28.json`.
+The refreshed authority corpus is retained separately as
+`tests/fixtures/horizons_apsidal_passages_reference_2026_09_28.json`; the
+September 15 predecessor remains byte-identical to its historical release
+receipt.
+
+The 10-day/7-node baseline by itself still fails the strict passage-distance
+gate for the high-curvature comet cases, so the daily extremum nodes are an
+additional event-accuracy requirement rather than a substitute for catalog
+parity. This diagnoses and repairs the catalog builder, not the apsidal root
+solver.
+It is still not release admission: a complete 497-comet catalog must be built,
+sealed under a new version, and pass the release-bound passage fixture before
+the comet event cases become acceptance evidence. The active immutable
+`2026.07.28.1` release remains unchanged.
+
+The same question was then closed exhaustively for the asteroid release rather
+than inferred from Icarus alone. The governed audit in
+`tests/artifacts/oracle/asteroid_type13_apsidal_sampling_audit_2026-09-28.json`
+partitions all 11,223 admitted identities. For all 126 bodies whose current
+JPL SBDB perihelion distance is below 1.3 AU, it compares the existing
+10-day/7-node Type-13 representation with a same-start/stop 5-day Horizons
+VECTORS series at every off-grid witness adjacent to every radial-velocity
+sign crossing across the body's catalog coverage. All paired replies agree
+exactly at their shared epochs, so the measured residuals are interpolation
+error rather than different Horizons integrations. Fifty-nine bodies fail the
+unchanged `1e-9 AU` (`0.1495978707 km`) radial-distance gate, occupying 40 of
+the 449 release shards. The other 11,097 admitted bound bodies are covered by
+a worst-case elliptic Type-13 invariant at the 1.3 AU boundary: eccentricity
+`0.0000` through `0.9999` and every 0.1-day grid phase produce a worst radial
+residual of `0.000173152 km`, an `863.97x` margin inside the gate.
+
+This is an exhaustive catalog partition for apsidal sampling, not a general
+all-epoch close-encounter position audit. It does not admit the current
+asteroid release for apsidal passages: the exact 59-body/40-shard repair roster
+must be rebuilt and the resulting immutable release must pass the same audit
+before catalog apsidal authority tests are enabled.
 
 The packaged 25-asteroid wheel remains a fallback implementation check. The
 current element/node admission binds the independently refreshed exact-JDTDB

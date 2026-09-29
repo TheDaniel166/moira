@@ -23,7 +23,12 @@ CATALOG_HOLDOUT_PATH = (
     FIXTURES
     / "horizons_orbital_elements_catalog_holdout_2026_09_28.json"
 )
-APSIDAL_PATH = FIXTURES / "horizons_apsidal_passages_reference.json"
+HISTORICAL_APSIDAL_PATH = (
+    FIXTURES / "horizons_apsidal_passages_reference.json"
+)
+APSIDAL_PATH = (
+    FIXTURES / "horizons_apsidal_passages_reference_2026_09_28.json"
+)
 
 EXPECTED_SOURCES = {
     "naif_lsk": (
@@ -75,6 +80,7 @@ def _strings(value: Any):
         HOLDOUT_PATH,
         HISTORICAL_CATALOG_HOLDOUT_PATH,
         CATALOG_HOLDOUT_PATH,
+        HISTORICAL_APSIDAL_PATH,
         APSIDAL_PATH,
     ),
 )
@@ -384,3 +390,29 @@ def test_apsidal_fixture_is_disjoint_exact_tdb_primary_evidence() -> None:
                 assert event["distance_au"] >= max(
                     before["distance_au"], after["distance_au"]
                 )
+
+
+def test_current_apsidal_fixture_refreshes_only_encke() -> None:
+    historical = {
+        record["body"]: record
+        for record in _load(HISTORICAL_APSIDAL_PATH)["records"]
+    }
+    current = {
+        record["body"]: record
+        for record in _load(APSIDAL_PATH)["records"]
+    }
+
+    assert set(current) == set(historical)
+    for body in set(current) - {"2P/Encke"}:
+        assert current[body] == historical[body]
+
+    historical_solutions = {
+        event["authority"]["target_solution"]
+        for event in historical["2P/Encke"]["events"]
+    }
+    current_solutions = {
+        event["authority"]["target_solution"]
+        for event in current["2P/Encke"]["events"]
+    }
+    assert historical_solutions == {"JPL#K273/14"}
+    assert current_solutions == {"JPL#K273/17"}
