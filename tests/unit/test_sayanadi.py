@@ -27,3 +27,4 @@ def test_sayanadi_avastha_bphs_example():
     assert res.avastha_index == 3
     assert res.state == 'Netrapani'
     assert res.substate == 'Vicheshta'
+    assert res.effect == "Always happy, wise, helpful to others, endowed with prowess and wealth, gain royal favours."

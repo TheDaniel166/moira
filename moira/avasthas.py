@@ -60,6 +60,8 @@ secondary-verified); Phaladeepika Ch. 3 (Sastri/wisdomlib).
 
 from dataclasses import dataclass
 
+from .sayanadi_effects import get_sayanadi_effect
+
 __all__ = [
     "AvasthaPolicy",
     "BaladiAvastha",
@@ -235,6 +237,7 @@ class SayanadiAvastha:
     state: str                  # 'Shayana' | 'Upavesana' | ...
     substate: str               # 'Drishti' | 'Cheshta' | 'Vicheshta'
     avastha_index: int          # 1-12
+    effect: str                 # The BPHS classical Phala interpretation
 
 
 @dataclass(frozen=True, slots=True)
@@ -867,6 +870,7 @@ def sayanadi_avastha(
         state=state,
         substate=substate,
         avastha_index=avastha_index,
+        effect=get_sayanadi_effect(planet, avastha_index) or "",
     )
 
 # ---------------------------------------------------------------------------
