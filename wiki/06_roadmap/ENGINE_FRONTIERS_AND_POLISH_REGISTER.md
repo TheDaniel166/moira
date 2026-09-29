@@ -187,6 +187,15 @@ eference_place as the required, geometrically rigorous default.
   - Implemented exact mapping logic: sequential progression for odd-sign placements, and precise reversed assignment (59 down to 0) for even-sign placements.
   - Enriched `VargaPoint` with the `deity` attribute exposing the traditionally designated lord.
 
+### Frontier 16: Sayanadi Avasthas Computation
+- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Anchors**: [`moira/avasthas.py`](../../moira/avasthas.py), [`tests/unit/test_sayanadi.py`](../../tests/unit/test_sayanadi.py)
+- **Scope & Delivery**:
+  - Resolved the BPHS (Santhanam) Chapter 45 arithmetic inconsistency for the sub-state formula through direct translation of the core algorithms.
+  - Implemented the 12 primary Sayanadi postures (Shayana to Nidra) using the exact multiplicative planetary index and navamsa algorithm.
+  - Established correct arithmetic for the 3 sub-states (Drishti, Cheshta, Vicheshta).
+  - Wired `evaluate_avasthas` to conditionally admit `birth_ghati` and `first_syllable_value` inputs.
+
 
 ## 4. Category C — Active Validation Frontiers
 
@@ -225,12 +234,6 @@ These systems represent intentional boundaries where Moira refuses to invent spe
 - **Location**: [`moira/hellenistic_relations.py:146–164`](moira/hellenistic_relations.py#L146-L164)
 - **Status**: Formalized and Admitted.
 - **Detail**: In accordance with the Anti-Leakage Workflow, Moira formalized the Ray doctrine using pure kinematics. `HellenisticRayTruth` now computes the physical focal point and evaluates applying/separating states through precise relative velocity inheritance (inclusive of retrograde sweeps). Supported orb doctrines: `strict_3` and `moiety`.
-
-### 2. Sayanadi Avasthas
-- **Location**: [`moira/avasthas.py:33, 794`](moira/avasthas.py#L33)
-- **Status**: Deferred.
-- **Detail**: BPHS 45.30–155 Sayanadi states (12 conditions from Sayana to Upaveshana) require birth ghatis and sub-division time reckoning distinct from standard planetary coordinate vectors. Intentionally deferred until a unified civil-birth time stratum is linked.
-
 
 ### 4. Pluto, Asteroid, and Comet Photometry
 - **Location**: [`moira/phase.py`](../../moira/phase.py)

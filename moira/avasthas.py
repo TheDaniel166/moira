@@ -30,10 +30,10 @@ Systems
    non-exclusive booleans — BPHS gives no dominance ordering; the
    45.18-23 modulation rules are carried as notes.
 
-**Sayanadi** (BPHS 45.30-155) is intentionally deferred: it requires birth
-ghatis and the first syllable of the native's name (inputs beyond the
-chart), and Santhanam's printed sub-state example carries an arithmetic
-inconsistency needing a second-edition recheck.
+5. **Sayanadi** (BPHS 45.30-155): 12 posture states (Shayana to Nidra)
+   and 3 sub-states (Drishti, Cheshta, Vicheshta). Requires birth ghatis
+   and the first syllable value of the native's name; these are supplied
+   optionally to the evaluator.
 
 Ambiguity policy (declared)
 ---------------------------
@@ -67,12 +67,14 @@ __all__ = [
     "DeeptadiAvastha",
     "LajjitadiState",
     "LajjitadiAvasthas",
+    "SayanadiAvastha",
     "PlanetAvasthas",
     "AvasthaChartResult",
     "baladi_avastha",
     "jagradadi_avastha",
     "deeptadi_avastha",
     "lajjitadi_avasthas",
+    "sayanadi_avastha",
     "evaluate_avasthas",
 ]
 
@@ -105,6 +107,21 @@ _FULL_ASPECT_DISTANCES: dict[str, frozenset[int]] = {
 }
 
 _WATERY_SIGNS: frozenset[int] = frozenset({3, 7, 11})   # Cancer, Scorpio, Pisces
+
+_SAYANADI_STATES: tuple[str, ...] = (
+    "Shayana", "Upavesana", "Netrapani", "Prakasha", "Gamana", "Agamana",
+    "Sabha", "Agama", "Bhojana", "Nrityalipsa", "Kautuka", "Nidra"
+)
+
+_SAYANADI_PLANET_NUMBERS: dict[str, int] = {
+    'Sun': 1, 'Moon': 2, 'Mars': 3, 'Mercury': 4,
+    'Jupiter': 5, 'Venus': 6, 'Saturn': 7, 'Rahu': 8, 'Ketu': 9
+}
+
+_SAYANADI_SUBSTATE_ADDEND: dict[str, int] = {
+    'Sun': 5, 'Moon': 2, 'Mars': 2, 'Mercury': 3,
+    'Jupiter': 5, 'Venus': 3, 'Saturn': 3, 'Rahu': 4, 'Ketu': 4
+}
 
 _BALADI_STATES: tuple[str, ...] = ('Bala', 'Kumara', 'Yuva', 'Vriddha', 'Mrita')
 _BALADI_FRACTIONS: dict[str, float | None] = {
@@ -211,6 +228,16 @@ class LajjitadiState:
 
 
 @dataclass(frozen=True, slots=True)
+class SayanadiAvastha:
+    """Sayanadi state and substate (BPHS 45.30-155)."""
+
+    planet: str
+    state: str                  # 'Shayana' | 'Upavesana' | ...
+    substate: str               # 'Drishti' | 'Cheshta' | 'Vicheshta'
+    avastha_index: int          # 1-12
+
+
+@dataclass(frozen=True, slots=True)
 class LajjitadiAvasthas:
     """
     All six Lajjitadi flags for one planet — independent and non-exclusive
@@ -238,6 +265,7 @@ class PlanetAvasthas:
     jagradadi: JagradadiAvastha
     deeptadi: DeeptadiAvastha
     lajjitadi: LajjitadiAvasthas
+    sayanadi: SayanadiAvastha | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -779,9 +807,72 @@ def lajjitadi_avasthas(
     )
 
 
+
+# ---------------------------------------------------------------------------
+# 5. Sayanadi (BPHS 45.30-155)
+# ---------------------------------------------------------------------------
+
+def sayanadi_avastha(
+    planet: str,
+    sidereal_longitudes: dict[str, float],
+    lagna_sidereal_lon: float,
+    birth_ghati: int,
+    first_syllable_value: int,
+) -> SayanadiAvastha:
+    """
+    Computes the 12 Sayanadi states and their 3 sub-states based on BPHS
+    Chapter 45. The arithmetic inconsistency in Santhanam's printed sub-state
+    example is resolved by strictly following the Sanskrit operations:
+    Stage 1: (Avastha^2 + SyllableValue) % 12
+    Stage 2: (Stage1_Remainder + PlanetConstant) % 3
+    """
+    lon = sidereal_longitudes[planet]
+    
+    # 1. Planet's Nakshatra (1-27)
+    planet_nakshatra = int((lon % 360.0) // (360.0 / 27)) + 1
+    
+    # 2. Planet's Navamsa within its sign (1-9)
+    deg_in_sign = lon % 30.0
+    planet_navamsa = int(deg_in_sign // (30.0 / 9)) + 1
+    
+    # 3. Janma Nakshatra (Moon's Nakshatra, 1-27)
+    moon_lon = sidereal_longitudes.get('Moon', lon)
+    janma_nakshatra = int((moon_lon % 360.0) // (360.0 / 27)) + 1
+    
+    # 4. Lagna Rasi (1-12)
+    lagna_rasi = _sign(lagna_sidereal_lon) + 1
+    
+    P = _SAYANADI_PLANET_NUMBERS.get(planet, 1)
+    
+    # Core Formula
+    avastha_index = ((planet_nakshatra * P * planet_navamsa) + janma_nakshatra + birth_ghati + lagna_rasi) % 12
+    if avastha_index == 0:
+        avastha_index = 12
+        
+    state = _SAYANADI_STATES[avastha_index - 1]
+    
+    # Sub-state
+    r1 = ((avastha_index * avastha_index) + first_syllable_value) % 12
+    pa = _SAYANADI_SUBSTATE_ADDEND.get(planet, 3)
+    r2 = (r1 + pa) % 3
+    
+    substate = {
+        1: "Drishti",
+        2: "Cheshta",
+        0: "Vicheshta"
+    }[r2]
+    
+    return SayanadiAvastha(
+        planet=planet,
+        state=state,
+        substate=substate,
+        avastha_index=avastha_index,
+    )
+
 # ---------------------------------------------------------------------------
 # Top-level evaluator
 # ---------------------------------------------------------------------------
+
 
 def evaluate_avasthas(
     sidereal_longitudes: dict[str, float],
