@@ -179,6 +179,14 @@ eference_place as the required, geometrically rigorous default.
   - Extended `SolarEclipsePath` to return `northern_limit_lats`, `northern_limit_lons`, `southern_limit_lats`, and `southern_limit_lons`.
   - Added internal `_umbral_envelope_points` and helpers for rigorous intersection solving along the path.
 
+### Frontier 15: Named D60 Shashtiamsha Lords
+- **Status**: **COMPLETED & VERIFIED** (September 29, 2026)
+- **Anchors**: [`moira/varga.py`](../../moira/varga.py), [`tests/unit/test_d60_deities.py`](../../tests/unit/test_d60_deities.py)
+- **Scope & Delivery**:
+  - Established BPHS Chapter 6 as the primary doctrinal authority for the 60 Shashtiamsha deity names.
+  - Implemented exact mapping logic: sequential progression for odd-sign placements, and precise reversed assignment (59 down to 0) for even-sign placements.
+  - Enriched `VargaPoint` with the `deity` attribute exposing the traditionally designated lord.
+
 
 ## 4. Category C — Active Validation Frontiers
 
@@ -229,11 +237,7 @@ These systems represent intentional boundaries where Moira refuses to invent spe
 - **Status**: Unsupported Model.
 - **Detail**: Moira does not invent modern apparent-magnitude models for Pluto, nor does it attempt to model phase curves (H, G parameters) for asteroids or coma activity for comets.
 
-### 5. Named D60 Shashtiamsha Lords
-- **Location**: [`moira/varga.py`](../../moira/varga.py)
-- **Status**: Doctrine Not Implemented.
-- **Detail**: D60 computation exists; optional traditional name/lord mapping
-  remains absent until its source and policy are admitted.
+
 
 ### Parked: Further Sothic Historical Confirmation
 
