@@ -2948,7 +2948,7 @@ __all__ += [
 ]
 
 
-__version__ = "6.9.0"
+__version__ = "6.9.8"
 __author__  = "Moira contributors"
 
 
