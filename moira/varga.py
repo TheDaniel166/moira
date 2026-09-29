@@ -72,6 +72,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from .constants import SIGNS, SIGN_SYMBOLS
 
+SHASHTIAMSHA_DEITIES: tuple[str, ...] = (
+    "Ghora", "Rakshasa", "Deva", "Kuber", "Yaksh", "Kindar", "Bhrasht", "Kulaghna",
+    "Garal", "Vahni", "Maya", "Purishak", "Apampathi", "Marutwan", "Kaal", "Sarpa",
+    "Amrit", "Indu", "Mridu", "Komal", "Heramba", "Brahma", "Vishnu", "Maheshwara",
+    "Deva", "Ardr", "Kalinas", "Kshitees", "Kamalakar", "Gulik", "Mrityu", "Kaal",
+    "Davagni", "Ghora", "Yama", "Kantak", "Suddh", "Amrit", "PurnaCandr", "Vishadagdha",
+    "Kulanas", "Vamshakshaya", "Utpat", "Kaal", "Saumya", "Komal", "Sheetal", "Karaladamshtr",
+    "Candramukhi", "Praveen", "Kaalpavak", "Dhannayudh", "Nirmal", "Saumya", "Krur",
+    "Atisheetal", "Amrit", "Payodhi", "Brahman", "CandraRekha"
+)
+
 __all__ = [
     # Core
     "VargaPoint",
@@ -156,7 +167,7 @@ class VargaPoint:
             "mutable": false,
             "fields": [
                 "varga_name", "varga_number", "longitude",
-                "varga_longitude", "sign", "sign_symbol", "sign_degree"
+                "varga_longitude", "sign", "sign_symbol", "sign_degree", "deity"
             ]
         },
         "effects": {
@@ -187,12 +198,16 @@ class VargaPoint:
     sign: str
     sign_symbol: str
     sign_degree: float
+    deity: str | None = None
 
     def __repr__(self) -> str:
         d = int(self.sign_degree)
         m = int((self.sign_degree - d) * 60)
-        return (f"{self.varga_name} (D{self.varga_number}): "
-                f"{d}°{m:02d}′ {self.sign} {self.sign_symbol}")
+        s = (f"{self.varga_name} (D{self.varga_number}): "
+             f"{d}°{m:02d}′ {self.sign} {self.sign_symbol}")
+        if self.deity:
+            s += f" [{self.deity}]"
+        return s
 
 def calculate_varga(longitude: float, n: int, name: str = "") -> VargaPoint:
     """
@@ -522,9 +537,9 @@ def shashtiamsha(sidereal_longitude: float) -> VargaPoint:
     """
     D60 Shashtiamsha — Past-Life Karma (generic formula).
 
-    The 60 Shashtiamsha divisions each span 0.5°.  Sign assignment uses
-    the generic formula.  The optional named Shashtiamsha lords (60
-    traditional names from BPHS) are not yet implemented.
+    The 60 Shashtiamsha divisions each span 0.5°. Sign assignment uses
+    the generic formula. The traditional named Shashtiamsha deities (60
+    names from BPHS Chapter 6) are mapped, reversing order for even signs.
 
     Parameters
     ----------
@@ -534,9 +549,29 @@ def shashtiamsha(sidereal_longitude: float) -> VargaPoint:
     Returns
     -------
     VargaPoint
-        ``varga_number`` is 60.
+        ``varga_number`` is 60. ``deity`` is populated.
     """
-    return calculate_varga(sidereal_longitude, 60, "Shashtiamsha")
+    lon = sidereal_longitude % 360.0
+    sign_idx = int(lon // 30)
+    deg_in_sign = lon % 30.0
+    
+    segment_in_sign = int(deg_in_sign // 0.5)
+    is_odd = (sign_idx % 2 == 0)  # 0-based Aries is 0 (odd sign)
+    
+    deity_idx = segment_in_sign if is_odd else (59 - segment_in_sign)
+    deity = SHASHTIAMSHA_DEITIES[deity_idx]
+    
+    vp = calculate_varga(sidereal_longitude, 60, "Shashtiamsha")
+    return VargaPoint(
+        varga_name=vp.varga_name,
+        varga_number=vp.varga_number,
+        longitude=vp.longitude,
+        varga_longitude=vp.varga_longitude,
+        sign=vp.sign,
+        sign_symbol=vp.sign_symbol,
+        sign_degree=vp.sign_degree,
+        deity=deity
+    )
 
 
 # ---------------------------------------------------------------------------
