@@ -19,7 +19,6 @@ from moira.patterns import (
     pattern_condition_network_profile,
 )
 from moira.synastry import (
-    composite_chart,
     composite_chart_reference_place,
     davison_chart,
     davison_chart_corrected,
@@ -28,12 +27,7 @@ from moira.synastry import (
     davison_chart_uncorrected,
     house_overlay,
     mutual_house_overlays,
-    mutual_overlay_relations,
     synastry_aspects,
-    synastry_chart_condition_profile,
-    synastry_condition_network_profile,
-    synastry_condition_profiles,
-    synastry_contact_relations,
     synastry_contacts,
 )
 

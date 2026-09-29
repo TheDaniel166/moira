@@ -64,7 +64,6 @@ from ..serializers.relationship import (
     serialize_mutual_overlay,
     serialize_synastry_contact,
     serialize_synastry_overlay,
-    serialize_synastry_relation,
 )
 from ..services.relationship import (
     compute_aspect_motion_witness,

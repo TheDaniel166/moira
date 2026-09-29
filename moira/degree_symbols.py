@@ -1,3 +1,9 @@
+"""
+Degree symbols: look up the Sabian Symbol for a position within a sign.
+
+Degrees are counted from 1 to 30 within each sign, so 0°00′-0°59′ is the
+first degree. The symbol texts live in ``moira.sabian_symbols``.
+"""
 from typing import Optional
 import math
 

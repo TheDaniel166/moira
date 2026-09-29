@@ -294,7 +294,10 @@ def test_optional_overlays_stay_outside_the_four_lot_partition() -> None:
     }
     assert sun.assemble_condition is not None
     assert sun.assemble_condition.subject == "Sun"
-    assert sun.assemble_condition.ray.reason == "doctrine_not_admitted"
+    # Rays (aktinobolia) are evaluated since 6.9.8: no reason, zero or more strikes.
+    assert sun.assemble_condition.ray.status.value == "evaluated"
+    assert sun.assemble_condition.ray.reason is None
+    assert isinstance(sun.assemble_condition.ray.strikes, tuple)
     assert profile.twelfth_parts is not None
     assert profile.twelfth_parts[0].twelfth_part == twelfth_part_of(POSITIONS["Sun"])
     assert profile.zodiacal_releasing.peak_grades is not None

@@ -45,12 +45,16 @@ MANSION_SPAN: float = 360.0 / 28   # 12.857142...°
 
 @dataclass(slots=True)
 class AstronomicalMansion:
+    """One mansion of the star-based (al-Biruni) tradition: its number, Arabic name and marker stars."""
+
     index: int
     arabic_name: str
     marker_stars: tuple[str, ...]
 
 @dataclass(slots=True)
 class ElectionalMansion:
+    """One mansion of an electional tradition: its number, Latin name, nature and signification."""
+
     index: int
     latin_name: str
     nature: str
@@ -120,6 +124,8 @@ AGRIPPA_MANSIONS: list[ElectionalMansion] = [
 
 @dataclass(slots=True)
 class MansionPosition:
+    """The mansion a longitude falls in, with the degrees already travelled into it."""
+
     mansion:    ElectionalMansion
     degrees_in: float
     longitude:  float
@@ -133,6 +139,8 @@ class MansionPosition:
 
 
 class MansionTradition(str, Enum):
+    """Which mansion tradition to use: the star-based al-Biruni scheme or an electional one."""
+
     AL_BIRUNI   = "al_biruni"     
     ABENRAGEL   = "abenragel"
     IBN_ALARABI = "ibn_alarabi"

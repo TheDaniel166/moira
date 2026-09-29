@@ -34,6 +34,7 @@ from ..models.hellenistic_atoms import (
     HellenisticAdherenceTruthResponse,
     HellenisticAssembleConditionResponse,
     HellenisticPlanetOvercomingTruthResponse,
+    HellenisticRayStrikeResponse,
     HellenisticRayTruthResponse,
     HellenisticTestimonyTruthResponse,
     HellenisticTestimonyWitnessResponse,
@@ -245,6 +246,18 @@ def _serialize_assemble_condition(
         ray=HellenisticRayTruthResponse(
             status=condition.ray.status,
             subject=condition.ray.subject,
+            strikes=[
+                HellenisticRayStrikeResponse(
+                    origin_body=strike.origin_body,
+                    aspect_name=strike.aspect_name,
+                    focal_point_deg=strike.focal_point_deg,
+                    orb_mode=str(strike.orb_mode),
+                    allowed_orb_deg=strike.allowed_orb_deg,
+                    distance_deg=strike.distance_deg,
+                    motion_state=strike.motion_state,
+                )
+                for strike in condition.ray.strikes
+            ],
             reason=condition.ray.reason,
         ),
         provenance=HellenisticAspectProvenanceResponse(
