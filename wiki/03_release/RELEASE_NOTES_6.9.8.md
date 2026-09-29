@@ -74,7 +74,10 @@ lunar orientation and the Sothic cycle.
 
 - Five `/v1/synastry/*` bookkeeping routes were removed.
 - The composite route's default `method` changed from `midpoint` to
-  `reference_place`; pass `method: "midpoint"` to keep the former behaviour.
+  `reference_place`, which in 6.9.8 requires `reference_latitude`; `midpoint`
+  is rejected. (Correction: an earlier version of these notes said
+  `midpoint` could still be requested. 6.9.9 defaults the reference latitude
+  to the mean of the two birthplaces.)
 - Synastry aspects between two charts carry no applying/separating motion.
 - Midpoint dial coordinates and planetary-picture orbs change for every chart
   (the former values were wrong).

@@ -7662,6 +7662,11 @@ def visibility_assessment(
         assert effective_limiting_magnitude is not None
         criterion_target_magnitude = apparent_mag
         is_bright_enough = apparent_mag <= effective_limiting_magnitude
+        # The limiting-magnitude threshold describes a dark sky (it has no
+        # sky-brightness term), so it is not applied in daylight.
+        if _true_altitude(Body.SUN, jd_ut, lat, lon) > 0.0:
+            criterion_applicable = False
+            criterion_reason = "daylight_sun_above_horizon"
 
     return VisibilityAssessment(
         body=body,
@@ -8083,7 +8088,12 @@ def visibility_event(
             jd_midnight = jd_mid0 + d
             se = _signed_elongation(body, jd_midnight + 0.5)
             abs_se = abs(se)
-            if se < 0.0 and abs_se >= _ELONG_MIN:
+            if se >= 0.0 and abs_se >= _ELONG_MIN:
+                # Evening side, clear of the Sun. A morning apparition that
+                # reaches this point ended at opposition, not in the Sun's
+                # glare, so it has no heliacal setting (superior planets).
+                last = None
+            elif se < 0.0 and abs_se >= _ELONG_MIN:
                 vis = _check_visibility(
                     body,
                     jd_midnight,

@@ -1147,3 +1147,21 @@ def test_visibility_event_live_ephemeris_ks1991_jupiter_acronychal_setting_popul
     assert event_ks.assessment.moonlight_sky_nanolamberts is not None
     assert event_ks.assessment.effective_limiting_magnitude < event_ignore.assessment.effective_limiting_magnitude
     assert abs(event_ks.jd_ut - event_ignore.jd_ut) < 0.01
+
+
+@pytest.mark.requires_ephemeris
+def test_limiting_magnitude_criterion_is_not_applied_in_daylight() -> None:
+    """The dark-sky limiting-magnitude threshold must not call a planet
+    observable while the Sun is up. Einstein's birth, 1879-03-14 10:50 UT at
+    Ulm: the Sun is about 38° high; Mercury and Venus were reported
+    observable before this fix."""
+    jd_day = 2407422.951412
+    for body in (Body.MERCURY, Body.VENUS, Body.SATURN):
+        result = visibility_assessment(body, jd_day, 48.4, 9.9833)
+        assert result.criterion_applicable is False
+        assert result.criterion_reason == "daylight_sun_above_horizon"
+        assert result.observable is False
+
+    # The same criterion still applies at night: midnight local time.
+    night = visibility_assessment(Body.JUPITER, jd_day + 0.5, 48.4, 9.9833)
+    assert night.criterion_reason != "daylight_sun_above_horizon"

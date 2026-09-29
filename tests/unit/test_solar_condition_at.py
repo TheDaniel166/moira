@@ -47,11 +47,34 @@ def test_luminary_sun_returns_absent():
     assert result.distance_from_sun is None
 
 
-def test_luminary_moon_returns_absent():
-    result = solar_condition_at("Moon", _J2000)
+@pytest.mark.requires_ephemeris
+def test_moon_takes_the_solar_condition_like_any_planet(moira_engine):
+    # Lilly scores the Moon "free from combustion" like every planet: only the
+    # Sun is excluded. At the New Moon of 2000-01-06 18:14 UT she is combust.
+    new_moon = 2451550.26
+    result = moira_engine.solar_condition_at("Moon", new_moon)
     assert isinstance(result, SolarConditionTruth)
-    assert result.present is False
-    assert result.condition is None
+    assert result.present is True
+    assert result.condition in ("cazimi", "combust")
+    assert result.distance_from_sun is not None and result.distance_from_sun <= 8.5
+
+
+@pytest.mark.requires_ephemeris
+@pytest.mark.parametrize("jd", [_J2000, 2451550.26, 2455197.5, 2460000.5])
+def test_solar_condition_agrees_with_dignity_scoring(moira_engine, jd):
+    # One band doctrine: this surface and the dignity scoring must never disagree
+    # (they once did for bodies between 8 deg and 8 deg 30 min from the Sun).
+    from moira.dignities import solar_proximity_truth
+    from moira.planets import planet_at
+
+    sun = planet_at("Sun", jd, reader=moira_engine._reader).longitude
+    for body in ("Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"):
+        lon = planet_at(body, jd, reader=moira_engine._reader).longitude
+        expected = solar_proximity_truth(body, lon, sun)
+        result = moira_engine.solar_condition_at(body, jd)
+        assert result.distance_from_sun == pytest.approx(expected.distance_from_sun_deg)
+        band = expected.band.value if expected.band.value != "clear" else None
+        assert result.condition == band, (body, jd)
 
 
 # ============================================================================
@@ -80,7 +103,7 @@ def test_solar_condition_at_condition_consistent_with_distance(moira_engine):
             if r.condition == "cazimi":
                 assert dist <= 17.0 / 60.0 + 1e-9
             elif r.condition == "combust":
-                assert dist <= 8.0 + 1e-9
+                assert dist <= 8.5 + 1e-9  # Lilly: within 8°30′ (a J2000 body sits at 8.48°)
             else:
                 assert dist <= 17.0 + 1e-9
         else:

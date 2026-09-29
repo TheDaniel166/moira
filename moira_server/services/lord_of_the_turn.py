@@ -53,7 +53,8 @@ def _serialize_candidate(
         sr_house=candidate.sr_house,
         is_combust=candidate.is_combust,
         is_retrograde=candidate.is_retrograde,
-        is_well_placed=candidate.is_well_placed,
+        # Placement is judged by house; without one it was not judged at all.
+        is_well_placed=candidate.is_well_placed if candidate.sr_house is not None else None,
         blocker_reasons=[reason.value for reason in candidate.blocker_reasons],
         witnesses_target=candidate.witnesses_target,
         testimony_count=candidate.testimony_count,

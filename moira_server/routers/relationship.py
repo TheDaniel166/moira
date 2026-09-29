@@ -62,6 +62,9 @@ from ..serializers.relationship import (
     serialize_midpoint_weight,
     serialize_moon_connection_flow,
     serialize_mutual_overlay,
+    serialize_pattern_chart_condition_profile,
+    serialize_pattern_coherence,
+    serialize_pattern_network,
     serialize_synastry_contact,
     serialize_synastry_overlay,
 )

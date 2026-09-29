@@ -35,6 +35,26 @@ def _engine_tradition(tradition: MansionTraditionName) -> MansionTradition:
     return MansionTradition(tradition.value)
 
 
+# What each tradition computes with and who it follows. The star-based
+# al-Biruni scheme has unequal mansions bounded by marker stars; the others
+# divide the zodiac into 28 equal mansions and differ only in meanings.
+_AUTHORITY = {
+    MansionTraditionName.al_biruni: "al_biruni_book_of_instruction",
+    MansionTraditionName.agrippa: "agrippa_de_occulta_philosophia_ii_33",
+    MansionTraditionName.picatrix: "picatrix_i_4",
+    MansionTraditionName.abenragel: "abenragel_tradition",
+    MansionTraditionName.ibn_alarabi: "ibn_al_arabi_tradition",
+}
+
+
+def _is_star_based(tradition: MansionTraditionName) -> bool:
+    return tradition == MansionTraditionName.al_biruni
+
+
+def _assignment_stage(tradition: MansionTraditionName) -> str:
+    return "marker_star_mansion_assignment" if _is_star_based(tradition) else "equal_28_mansion_assignment"
+
+
 def _serialize_info(info: AstronomicalMansion | ElectionalMansion) -> MansionInfoResponse:
     if isinstance(info, AstronomicalMansion):
         return MansionInfoResponse(
@@ -54,13 +74,31 @@ def _serialize_position(
     position: MansionPosition,
     *,
     tradition: MansionTraditionName,
+    computation_longitude: float,
 ) -> MansionPositionResponse:
     return MansionPositionResponse(
         mansion=_serialize_info(position.mansion),
         degrees_in=position.degrees_in,
         longitude=position.longitude,
-        computation_longitude=((position.mansion.index - 1) * MANSION_SPAN + position.degrees_in) % 360.0,
+        computation_longitude=computation_longitude,
     )
+
+
+def _computation_longitude(
+    *,
+    longitude: float,
+    mode: MansionComputationMode,
+    jd_ut: float | None,
+    ayanamsa_system: str,
+    ayanamsa_mode: str,
+) -> float:
+    """The longitude the mansion was found from: tropical, or sidereal in sidereal mode."""
+    if mode is MansionComputationMode.sidereal:
+        from moira.sidereal import tropical_to_sidereal
+
+        assert jd_ut is not None
+        return tropical_to_sidereal(longitude, jd_ut, ayanamsa_system, ayanamsa_mode) % 360.0
+    return longitude % 360.0
 
 
 def _provenance(
@@ -73,7 +111,11 @@ def _provenance(
     ayanamsa_mode: str | None,
     stage_sequence: list[str],
 ) -> MansionProvenanceResponse:
+    star_based = _is_star_based(tradition)
     return MansionProvenanceResponse(
+        mansion_system="Arabic_Manazil_28_star_based_mansions" if star_based else "Arabic_Manazil_28_equal_mansions",
+        computational_basis="marker_star_boundaries" if star_based else "equal_division_360_by_28",
+        default_authority=_AUTHORITY[tradition],
         mode=mode,
         tradition=tradition,
         requested_longitude=requested_longitude,
@@ -105,11 +147,23 @@ def _compute_position(
 def manazil_catalog(
     tradition: MansionTraditionName = MansionTraditionName.agrippa,
 ) -> MansionCatalogResponse:
-    source_mansions = AL_BIRUNI_MANSIONS if tradition == MansionTraditionName.al_biruni else AGRIPPA_MANSIONS
+    if _is_star_based(tradition):
+        mansions = [_serialize_info(info) for info in AL_BIRUNI_MANSIONS]
+    else:
+        engine_tradition = _engine_tradition(tradition)
+        mansions = [
+            MansionInfoResponse(
+                index=info.index,
+                latin_name=info.latin_name,
+                nature=variant_nature(info.index, engine_tradition),
+                signification=variant_signification(info.index, engine_tradition),
+            )
+            for info in AGRIPPA_MANSIONS
+        ]
     return MansionCatalogResponse(
-        mansions=[_serialize_info(info) for info in source_mansions],
-        total=len(source_mansions),
-        span_degrees=MANSION_SPAN if tradition != MansionTraditionName.al_biruni else 0.0,
+        mansions=mansions,
+        total=len(mansions),
+        span_degrees=None if _is_star_based(tradition) else MANSION_SPAN,
         traditions=[t for t in MansionTraditionName],
         provenance=_provenance(
             mode=MansionComputationMode.tropical,
@@ -135,7 +189,17 @@ def compute_mansion_position(
         tradition=request.tradition,
     )
     return MansionPositionEnvelopeResponse(
-        result=_serialize_position(position, tradition=request.tradition),
+        result=_serialize_position(
+            position,
+            tradition=request.tradition,
+            computation_longitude=_computation_longitude(
+                longitude=request.longitude,
+                mode=request.mode,
+                jd_ut=request.jd_ut,
+                ayanamsa_system=request.ayanamsa_system,
+                ayanamsa_mode=request.ayanamsa_mode,
+            ),
+        ),
         provenance=_provenance(
             mode=request.mode,
             tradition=request.tradition,
@@ -146,7 +210,7 @@ def compute_mansion_position(
             stage_sequence=[
                 "longitude_validation",
                 "sidereal_conversion" if request.mode is MansionComputationMode.sidereal else "tropical_longitude_use",
-                "equal_28_mansion_assignment",
+                _assignment_stage(request.tradition),
                 "tradition_attribution_selection",
                 "mansion_response_serialization",
             ],
@@ -166,6 +230,13 @@ def compute_mansion_bulk(request: MansionBulkRequest) -> MansionBulkResponse:
                 tradition=request.tradition,
             ),
             tradition=request.tradition,
+            computation_longitude=_computation_longitude(
+                longitude=longitude,
+                mode=request.mode,
+                jd_ut=request.jd_ut,
+                ayanamsa_system=request.ayanamsa_system,
+                ayanamsa_mode=request.ayanamsa_mode,
+            ),
         )
         for name, longitude in request.positions.items()
     }
@@ -182,7 +253,7 @@ def compute_mansion_bulk(request: MansionBulkRequest) -> MansionBulkResponse:
             stage_sequence=[
                 "bulk_longitude_validation",
                 "sidereal_conversion" if request.mode is MansionComputationMode.sidereal else "tropical_longitude_use",
-                "equal_28_mansion_assignment",
+                _assignment_stage(request.tradition),
                 "tradition_attribution_selection",
                 "mansion_bulk_response_serialization",
             ],

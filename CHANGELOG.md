@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [6.9.9] - 2026-09-29
+
+### Fixed
+- **Pattern routes**: `/v1/patterns/coherence`, `/v1/patterns/chart-profile`
+  and `/v1/patterns/network` raised `NameError` (HTTP 500) on every call in
+  6.9.8 because their serializer imports were removed with the retired
+  synastry routes. The imports are restored, five retired service names are
+  removed from `moira_server.services.relationship.__all__`, and the Release
+  Hardening gate now also rejects undefined names (ruff F821/F822/F823).
+- **Composite reference latitude**: a `reference_place` composite request
+  without `reference_latitude` (the default since 6.9.8) returned HTTP 422.
+  It now casts the houses at the mean latitude of the two birthplaces and
+  reports that latitude in `computation_truth.reference_latitude`.
+- **Heliacal setting of superior planets**: the planet heliacal-setting search
+  carried a morning apparition across opposition and returned the opposition
+  date (Saturn 1878-09-22, elongation -179.8 deg). A morning apparition that
+  ends at opposition now has no heliacal setting.
+- **Visibility in daylight**: under the default limiting-magnitude criterion,
+  which describes a dark sky, a body is no longer reported observable while
+  the Sun is above the horizon (`criterion_applicable = false`,
+  `criterion_reason = "daylight_sun_above_horizon"`).
+- **Solar condition**: `solar_condition_at` now takes its band from
+  `moira.dignities.solar_proximity_truth`, so it agrees with the dignity
+  scoring: combust within 8 deg 30 min (Lilly), not 8 deg, also for
+  `solar_condition_events_in_range`; the Moon is evaluated like every other
+  body (only the Sun is excluded); the Sun no longer needs an ephemeris.
+- **Draconic origin and houses**: a draconic chart computed with an observer
+  was labelled `geocentric`; `origin` now comes from the positions
+  themselves. The draconic route accepts `latitude`, `longitude` and
+  `house_system` and returns the natal cusps and angles rotated by the node,
+  with the house system used.
+- **Unknown birth time on relationship routes**: synastry aspects and contacts
+  and a one-way overlay into a known chart now work with `time_unknown`;
+  routes that need the unknown person's houses (mutual overlays, composite,
+  Davison) refuse with a message naming that person.
+- **Lunar mansion routes**: the default tradition is `agrippa` again, so a
+  request with only a longitude works; `computation_longitude` is the
+  longitude actually used for the star-based tradition; provenance names each
+  tradition's own basis and authority; the catalog applies the requested
+  tradition's natures and significations; the star-based catalog reports no
+  single span.
+- **Galactic chart positions**: the default is geocentric; the former
+  observer default of 0 N 0 E made the Moon topocentric for a point in the
+  Gulf of Guinea.
+- **Composite and Davison aspects**: one node and one Lilith take part, as in
+  synastry, instead of pairing the node and Lilith variants with each other.
+- **Davison per-person settings**: a house system named identically for both
+  people is used; conflicting systems and per-person `bodies`, previously
+  ignored silently, are rejected.
+- **Lord of the turn**: a candidate without a solar-return house reports
+  `is_well_placed: null` instead of `true` (placement not judged).
+- **Decanate single-body routes** reject a `bodies` list they never used.
+- **Midpoint planet sets**: an unknown `planet_set` is an error in the
+  engine and a 422 on REST, instead of silently becoming `classic`.
+- **Documentation**: the 6.9.8 compatibility notes wrongly said the retired
+  `midpoint` composite method could still be requested; the `synastry_aspects`
+  docstring now gives the real tier mapping.
+
 ## [6.9.8] - 2026-09-29
 
 ### Added
@@ -62,8 +120,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `HELLENISTIC_RAY_ASPECTS`.
 - **Jaimini Chara Dasha second cycle**: Chara Dasha accepts `cycles` and can
   continue past the first twelve mahadashas. The second cycle repeats the
-  first cycle's sign sequence and spans, following the implementation's
-  reading of K. N. Rao, *Predicting Through Jaimini's Chara Dasa*, pp. 13-14.
+  first cycle's sign sequence and spans, as in K. N. Rao's worked example
+  (the Chandrasekhar chart, pp. 13-14), where Mesha and Vrisha return in the
+  second cycle with their first-cycle periods of 2 and 12 years.
 - **Named Shashtiamsha (D60) deities**: D60 positions carry the `deity` of
   their half-degree division from the sixty names of BPHS chapter 6, in
   reverse order for even signs.

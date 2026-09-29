@@ -82,9 +82,11 @@ def _build_party_chart(
     )
 
 
-def _build_party_chart_and_houses(engine: Moira, request: RelationshipPartyRequest):
-    chart = _build_party_chart(engine, request)
-    houses = compute_houses(
+def _build_party_houses(engine: Moira, request: RelationshipPartyRequest, label: str):
+    # Houses need the birth time; say whose is missing instead of failing blind.
+    if getattr(request, "time_unknown", False):
+        raise ValueError(f"houses need a known birth time, but {label}'s birth time is unknown")
+    return compute_houses(
         engine,
         HousesRequest(
             dt=request.dt,
@@ -94,17 +96,22 @@ def _build_party_chart_and_houses(engine: Moira, request: RelationshipPartyReque
             system=request.house_system,
         ),
     )
-    return chart, houses
+
+
+def _pair_charts(engine: Moira, request: SynastryPairRequest):
+    """Both charts without houses: enough for aspects and contacts."""
+    return _build_party_chart(engine, request.first), _build_party_chart(engine, request.second)
 
 
 def _pair_artifacts(engine: Moira, request: SynastryPairRequest):
-    chart_a, houses_a = _build_party_chart_and_houses(engine, request.first)
-    chart_b, houses_b = _build_party_chart_and_houses(engine, request.second)
+    chart_a, chart_b = _pair_charts(engine, request)
+    houses_a = _build_party_houses(engine, request.first, request.first_label)
+    houses_b = _build_party_houses(engine, request.second, request.second_label)
     return chart_a, houses_a, chart_b, houses_b
 
 
 def compute_synastry_aspects(engine: Moira, request: SynastryPairRequest):
-    chart_a, _, chart_b, _ = _pair_artifacts(engine, request)
+    chart_a, chart_b = _pair_charts(engine, request)
     return synastry_aspects(
         chart_a,
         chart_b,
@@ -204,13 +211,24 @@ def compute_moon_connection_flow(
     )
 
 
+# The same variants synastry leaves out (moira.synastry.synastry_aspects).
+_DUPLICATE_POINT_VARIANTS = frozenset({"Mean Node", "True Lilith", "Mean Lilith"})
+
+
 def _compute_derived_chart_aspects(
     engine: Moira,
     longitudes: dict[str, float],
     request: SynastryPairRequest,
 ):
-    """Apply the relationship request's explicit aspect policy to a derived chart."""
+    """Apply the relationship request's explicit aspect policy to a derived chart.
 
+    As in synastry, one node (the True Node) and one Lilith take part: the
+    alternative node and Lilith variants would only aspect their twins.
+    """
+
+    longitudes = {
+        name: lon for name, lon in longitudes.items() if name not in _DUPLICATE_POINT_VARIANTS
+    }
     return compute_aspects_from_longitudes(
         engine,
         AspectsFromLongitudesRequest(
@@ -223,7 +241,7 @@ def _compute_derived_chart_aspects(
 
 
 def compute_synastry_contacts(engine: Moira, request: SynastryPairRequest):
-    chart_a, _, chart_b, _ = _pair_artifacts(engine, request)
+    chart_a, chart_b = _pair_charts(engine, request)
     return synastry_contacts(
         chart_a,
         chart_b,
@@ -249,8 +267,10 @@ def compute_synastry_overlays(engine: Moira, request: SynastryPairRequest):
 
 
 def compute_synastry_directional_overlay(engine: Moira, request: SynastryDirectionalOverlayRequest):
-    chart_a, houses_a, chart_b, houses_b = _pair_artifacts(engine, request)
+    # Only the host's houses are needed, so an unknown guest time is fine.
+    chart_a, chart_b = _pair_charts(engine, request)
     if request.direction == "first_in_second":
+        houses_b = _build_party_houses(engine, request.second, request.second_label)
         return house_overlay(
             chart_a,
             houses_b,
@@ -259,6 +279,7 @@ def compute_synastry_directional_overlay(engine: Moira, request: SynastryDirecti
             target_label=request.second_label,
         )
     if request.direction == "second_in_first":
+        houses_a = _build_party_houses(engine, request.first, request.first_label)
         return house_overlay(
             chart_b,
             houses_a,
@@ -274,14 +295,18 @@ def compute_composite_chart(engine: Moira, request: CompositeChartRequest):
     if request.method == "midpoint":
         raise ValueError("midpoint method deprecated")
     if request.method == "reference_place":
-        if request.reference_latitude is None:
-            raise ValueError("reference_latitude is required for reference_place composite")
+        # Without an explicit reference place the houses are cast at the
+        # mean latitude of the two birthplaces, as the former midpoint default
+        # did, so callers that never sent a latitude keep working.
+        reference_latitude = request.reference_latitude
+        if reference_latitude is None:
+            reference_latitude = (request.first.latitude + request.second.latitude) / 2.0
         return composite_chart_reference_place(
             chart_a,
             chart_b,
             houses_a,
             houses_b,
-            reference_latitude=request.reference_latitude,
+            reference_latitude=reference_latitude,
             house_system=request.house_system,
         )
     raise ValueError("unsupported composite method")
@@ -297,19 +322,33 @@ def compute_composite_chart_analysis(engine: Moira, request: CompositeChartReque
 def compute_davison_chart(engine: Moira, request: DavisonChartRequest):
     first = request.first
     second = request.second
+    # The Davison moment is the midpoint of two birth times: it needs both.
+    for party, label in ((first, request.first_label), (second, request.second_label)):
+        if getattr(party, "time_unknown", False):
+            raise ValueError(f"the Davison chart needs both birth times, but {label}'s birth time is unknown")
+    # A Davison chart is one chart with one set of houses: per-person settings
+    # are honoured only where they cannot conflict, and never ignored silently.
+    if first.bodies is not None or second.bodies is not None:
+        raise ValueError("per-person bodies are not used by the Davison chart")
+    house_system = request.house_system
+    if house_system is None:
+        per_person = {p.house_system for p in (first, second) if p.house_system is not None}
+        if len(per_person) > 1:
+            raise ValueError("the two people name different house systems; give one top-level house_system")
+        house_system = per_person.pop() if per_person else None
     reader = getattr(engine, "_reader", None)
     if request.method == "midpoint_location":
         return davison_chart(
             first.dt, first.latitude, first.longitude,
             second.dt, second.latitude, second.longitude,
-            house_system=request.house_system,
+            house_system=house_system,
             reader=reader,
         )
     if request.method == "uncorrected":
         return davison_chart_uncorrected(
             first.dt, first.latitude, first.longitude,
             second.dt, second.latitude, second.longitude,
-            house_system=request.house_system,
+            house_system=house_system,
             reader=reader,
         )
     if request.method == "reference_place":
@@ -320,21 +359,21 @@ def compute_davison_chart(engine: Moira, request: DavisonChartRequest):
             second.dt,
             request.reference_latitude,
             request.reference_longitude,
-            house_system=request.house_system,
+            house_system=house_system,
             reader=reader,
         )
     if request.method == "spherical_midpoint":
         return davison_chart_spherical_midpoint(
             first.dt, first.latitude, first.longitude,
             second.dt, second.latitude, second.longitude,
-            house_system=request.house_system,
+            house_system=house_system,
             reader=reader,
         )
     if request.method == "corrected":
         return davison_chart_corrected(
             first.dt, first.latitude, first.longitude,
             second.dt, second.latitude, second.longitude,
-            house_system=request.house_system,
+            house_system=house_system,
             reader=reader,
         )
     raise ValueError("unsupported davison method")
@@ -491,12 +530,7 @@ __all__ = [
     "compute_patterns_with_coherence",
     "compute_planetary_pictures",
     "compute_synastry_aspects",
-    "compute_synastry_chart_profile",
-    "compute_synastry_condition_profiles",
     "compute_synastry_contacts",
-    "compute_synastry_contact_relations",
     "compute_synastry_directional_overlay",
-    "compute_synastry_network",
-    "compute_synastry_overlay_relations",
     "compute_synastry_overlays",
 ]

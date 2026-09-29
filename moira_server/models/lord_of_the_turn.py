@@ -211,7 +211,8 @@ class LordOfTheTurnCandidateResponse(_StrictModel):
     sr_house: int | None
     is_combust: bool
     is_retrograde: bool
-    is_well_placed: bool
+    # None when the candidate has no solar-return house: placement was not judged.
+    is_well_placed: bool | None
     blocker_reasons: list[str]
     witnesses_target: bool
     testimony_count: int

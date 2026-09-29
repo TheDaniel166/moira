@@ -2036,7 +2036,7 @@ def synastry_aspects(
     ----------
     chart_a       : first natal Chart
     chart_b       : second natal Chart
-    tier          : aspect set (1=major only, 2=all, default 2)
+    tier          : aspect set (0=major, 1=major+common minor, 2=all; default 2)
     orbs          : custom orb table {angle: max_orb}
     orb_factor    : multiplier for default orbs
     include_nodes : include True Node / Mean Node / Lilith

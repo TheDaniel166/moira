@@ -454,3 +454,19 @@ def test_importable_from_moira():
     assert hasattr(_m, "PlanetHeliacalEvent")
     result = _m.planet_heliacal_rising(Body.VENUS, _VENUS_INFERIOR_CONJ_2020, _LAT, _LON)
     assert isinstance(result, _m.PlanetHeliacalEvent)
+
+
+@pytest.mark.requires_ephemeris
+def test_superior_planet_has_no_heliacal_setting_at_opposition(planetary_reader):
+    """Saturn's 1878 morning apparition ends at opposition (1878-09-22), not in
+    the Sun's glare, so there is no heliacal setting. The search used to carry
+    the last morning sighting across the opposition and return it."""
+    with use_reader_override(planetary_reader):
+        event = planet_heliacal_setting(
+            Body.SATURN,
+            2407166.5,  # 1878-07-01 00:00 UT, Saturn on the morning side
+            48.4,
+            9.98,
+            search_days=320,
+        )
+    assert event is None

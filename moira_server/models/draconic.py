@@ -83,6 +83,12 @@ class DraconicChartRequest(_StrictModel):
     observer_lat: float | None = None
     observer_lon: float | None = None
     observer_elev_m: float = 0.0
+    # A place for the houses: when given, the draconic chart carries the
+    # natal cusps and angles rotated by the node. Independent of the
+    # observer fields, which make the positions topocentric.
+    latitude: float | None = Field(default=None, ge=-90.0, le=90.0)
+    longitude: float | None = Field(default=None, ge=-180.0, le=180.0)
+    house_system: str | None = None
 
 
 class DraconicBoundsResponse(_StrictModel):
@@ -140,6 +146,7 @@ class DraconicChartResponse(_StrictModel):
     origin: Literal["geocentric", "topocentric", "caller_supplied"] = "geocentric"
     houses: list[float] | None = None
     angles: dict[str, float] | None = None
+    house_system: str | None = None
     source_zodiac: str
     interpretation_scope: str
     anchor_residual: float | None = None

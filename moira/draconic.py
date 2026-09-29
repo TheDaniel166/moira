@@ -353,8 +353,14 @@ def draconic_chart(
     *,
     node_mode: DraconicNodeMode,
     include_nodes: bool = True,
+    houses: object | None = None,
 ) -> DraconicChart:
-    """Materialize a draconic chart vessel from a Moira Chart snapshot."""
+    """Materialize a draconic chart vessel from a Moira Chart snapshot.
+
+    ``houses`` (a HouseCusps for the same moment and place) supplies the
+    cusps and angles to rotate into the draconic frame; without it the
+    chart's own ``houses`` attribute is used when present.
+    """
 
     if not isinstance(include_nodes, bool):
         raise TypeError("include_nodes must be boolean")
@@ -396,7 +402,7 @@ def draconic_chart(
         
     houses_draconic = None
     angles_draconic = None
-    chart_houses = getattr(chart, "houses", None)
+    chart_houses = houses if houses is not None else getattr(chart, "houses", None)
     if chart_houses is not None:
         cusps = getattr(chart_houses, "cusps", None)
         if cusps:
@@ -409,10 +415,13 @@ def draconic_chart(
             if val is not None:
                 angles_draconic[angle] = draconic_longitude(val, anchor_lon)
                 
-    # Determine topocentric origin
-    origin: Literal["geocentric", "topocentric"] = "geocentric"
-    if getattr(chart, "latitude", None) is not None and getattr(chart, "longitude", None) is not None:
-        origin = "topocentric"
+    # The origin is what the source positions actually are: each planet
+    # records whether it was reduced for an observer on the Earth's surface.
+    origin: Literal["geocentric", "topocentric"] = (
+        "topocentric"
+        if any(getattr(p, "is_topocentric", False) for p in chart_planets.values())
+        else "geocentric"
+    )
 
     return DraconicChart(
         anchor=anchor,

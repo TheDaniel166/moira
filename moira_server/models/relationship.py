@@ -1094,7 +1094,7 @@ class PatternConditionNetworkProfileResponse(_StrictModel):
 
 class MidpointRequest(_StrictModel):
     chart: RelationshipPartyRequest
-    planet_set: str = "classic"
+    planet_set: Literal["classic", "modern", "extended"] = "classic"
     include_nodes: bool = Field(
         default=False,
         description=(

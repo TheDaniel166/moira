@@ -163,3 +163,41 @@ def test_manazil_tradition_lookup_route_rejects_invalid_inputs(client: TestClien
 
     assert invalid_index.status_code == 422
     assert invalid_tradition.status_code == 422
+
+
+def test_manazil_position_accepts_a_bare_longitude(client: TestClient) -> None:
+    # The default tradition is the equal-division Agrippa scheme, which needs no date.
+    response = client.post("/v1/manazil/position", json={"longitude": 254.526})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["provenance"]["tradition"] == "agrippa"
+    assert body["result"]["mansion"]["index"] == 20
+    assert body["result"]["computation_longitude"] == pytest.approx(254.526)
+    assert body["provenance"]["computational_basis"] == "equal_division_360_by_28"
+    assert body["provenance"]["default_authority"] == "agrippa_de_occulta_philosophia_ii_33"
+
+
+@pytest.mark.requires_ephemeris
+def test_manazil_star_based_position_reports_its_own_basis(client: TestClient) -> None:
+    response = client.post(
+        "/v1/manazil/position",
+        json={"longitude": 254.526, "tradition": "al_biruni", "jd_ut": 2407422.951412},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    # The computation longitude is the longitude used, not an equal-division rebuild.
+    assert body["result"]["computation_longitude"] == pytest.approx(254.526)
+    assert body["provenance"]["computational_basis"] == "marker_star_boundaries"
+    assert body["provenance"]["default_authority"] == "al_biruni_book_of_instruction"
+    assert "marker_star_mansion_assignment" in body["provenance"]["stage_sequence"]
+    assert "equal_28_mansion_assignment" not in body["provenance"]["stage_sequence"]
+
+
+def test_manazil_catalog_applies_the_requested_tradition(client: TestClient) -> None:
+    picatrix = client.get("/v1/manazil/catalog", params={"tradition": "picatrix"}).json()
+    lookup = client.get("/v1/manazil/traditions/picatrix/mansions/2").json()
+    assert picatrix["mansions"][1]["nature"] == lookup["nature"]
+    assert picatrix["provenance"]["default_authority"] == "picatrix_i_4"
+    star = client.get("/v1/manazil/catalog", params={"tradition": "al_biruni"}).json()
+    assert star["span_degrees"] is None
+    assert star["provenance"]["computational_basis"] == "marker_star_boundaries"

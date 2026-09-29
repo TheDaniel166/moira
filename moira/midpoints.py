@@ -120,6 +120,14 @@ EXTENDED:  set[str] = MODERN_10 | {
 }
 
 
+def _planet_set_members(planet_set: str):
+    """The bodies of a named planet set; an unknown name is an error, not 'classic'."""
+    sets = {"classic": CLASSIC_7, "modern": MODERN_10, "extended": EXTENDED}
+    if planet_set not in sets:
+        raise ValueError(f"planet_set must be one of {sorted(sets)}, got {planet_set!r}")
+    return sets[planet_set]
+
+
 # ---------------------------------------------------------------------------
 # Dial constants
 # ---------------------------------------------------------------------------
@@ -473,8 +481,7 @@ class MidpointsService:
         -------
         List of Midpoint sorted by longitude
         """
-        allowed = {"classic": CLASSIC_7, "modern": MODERN_10,
-                   "extended": EXTENDED}.get(planet_set, CLASSIC_7)
+        allowed = _planet_set_members(planet_set)
 
         # Normalise to title case and filter
         available: dict[str, float] = {}
@@ -887,9 +894,7 @@ def planetary_pictures(
     harmonic  = _harmonic_from_dial(dial)
     dial_size = 360.0 / harmonic
 
-    allowed = {"classic": CLASSIC_7, "modern": MODERN_10, "extended": EXTENDED}.get(
-        planet_set, CLASSIC_7
-    )
+    allowed = _planet_set_members(planet_set)
     available: dict[str, float] = {
         name.strip().title(): lon
         for name, lon in planet_longitudes.items()
@@ -970,9 +975,7 @@ def midpoint_weighting(
         grouped.setdefault(pic.focus, []).append(pic)
 
     # Ensure every planet in the set is present, even if score is 0
-    allowed = {"classic": CLASSIC_7, "modern": MODERN_10, "extended": EXTENDED}.get(
-        planet_set, CLASSIC_7
-    )
+    allowed = _planet_set_members(planet_set)
     for name in planet_longitudes:
         canonical = name.strip().title()
         if canonical in allowed:

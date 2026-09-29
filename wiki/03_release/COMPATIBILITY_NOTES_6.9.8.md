@@ -28,8 +28,14 @@ The synastry aspects, overlay and relationship-chart routes remain.
 
 ## Composite Default Method
 
-The composite route's default `method` is now `reference_place`. Callers that
-relied on the former default must send `method: "midpoint"` explicitly.
+The composite route's default `method` is now `reference_place`, and in 6.9.8
+it requires `reference_latitude`: a request without it returns HTTP 422. The
+former `midpoint` method is rejected with HTTP 422 ("midpoint method
+deprecated"). Callers must send `reference_latitude`, or upgrade to 6.9.9,
+which defaults it to the mean latitude of the two birthplaces.
+
+(Correction: an earlier version of these notes said `method: "midpoint"`
+could be sent to keep the former behaviour. It cannot.)
 
 ## Unknown Birth Time
 

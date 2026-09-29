@@ -396,3 +396,21 @@ def test_galactic_chart_route_rejects_too_many_bodies(
     )
 
     _assert_validation_envelope(response, message_fragment="at most 12")
+
+
+@pytest.mark.requires_ephemeris
+def test_galactic_chart_positions_default_to_geocentric(client_with_engine: TestClient) -> None:
+    """Without an observer the positions are geocentric, like the natal chart.
+    Einstein's Moon (1879-03-14 10:50:02 UT) is 254.526 deg geocentric; the
+    former 0 N 0 E default returned 253.567 deg (topocentric)."""
+    moon = client_with_engine.post(
+        "/v1/galactic/chart/positions",
+        json={"dt": "1879-03-14T10:50:02Z", "bodies": ["Moon"]},
+    ).json()["positions"][0]
+    assert moon["ecliptic_longitude"] == pytest.approx(254.526, abs=1e-3)
+
+    half = client_with_engine.post(
+        "/v1/galactic/chart/positions",
+        json={"dt": "1879-03-14T10:50:02Z", "observer_lat": 48.4},
+    )
+    assert half.status_code == 422

@@ -54,6 +54,14 @@ class DecanateChartBodyRequest(SiderealChartBaseRequest):
             raise ValueError("body must be non-empty")
         return value
 
+    @field_validator("bodies")
+    @classmethod
+    def _single_body_route(cls, value: list[str] | None) -> list[str] | None:
+        # These routes answer for one `body`; a `bodies` list would be ignored.
+        if value is not None:
+            raise ValueError("this route reads a single `body`; `bodies` is not used")
+        return value
+
 
 class DecanatePositionResponse(_StrictModel):
     system: str
