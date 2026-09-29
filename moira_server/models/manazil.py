@@ -31,11 +31,12 @@ class _StrictModel(BaseModel):
 
 class MansionInfoResponse(_StrictModel):
     index: int
-    arabic_name: str
-    latin_name: str
-    ruling_star: str
-    nature: str
-    signification: str
+    arabic_name: str | None = None
+    latin_name: str | None = None
+    ruling_star: str | None = None
+    marker_stars: list[str] | None = None
+    nature: str | None = None
+    signification: str | None = None
 
 
 class MansionPositionResponse(_StrictModel):

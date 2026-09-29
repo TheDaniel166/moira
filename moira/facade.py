@@ -1149,7 +1149,7 @@ from .phenomena import (
     solar_condition_at,
 )
 from .manazil import (
-    MansionInfo, MansionPosition, MansionTradition, MANSIONS, MANSION_SPAN,
+    AstronomicalMansion, ElectionalMansion, MansionPosition, MansionTradition, AL_BIRUNI_MANSIONS, AGRIPPA_MANSIONS, MANSION_SPAN,
     mansion_of, mansion_of_sidereal, all_mansions_at, all_mansions_at_sidereal,
     moon_mansion, variant_nature, variant_signification,
 )
@@ -2540,7 +2540,7 @@ __all__ = [
     "solar_condition_at",
 
     # Arabic Lunar Mansions
-    "MansionInfo", "MansionPosition", "MansionTradition", "MANSIONS", "MANSION_SPAN",
+    "AstronomicalMansion", "ElectionalMansion", "MansionPosition", "MansionTradition", "AL_BIRUNI_MANSIONS", "AGRIPPA_MANSIONS", "MANSION_SPAN",
     "mansion_of", "mansion_of_sidereal", "all_mansions_at", "all_mansions_at_sidereal",
     "moon_mansion", "variant_nature", "variant_signification",
     # Mutual receptions

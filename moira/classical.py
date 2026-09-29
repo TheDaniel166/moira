@@ -208,8 +208,8 @@ from .stars import (
 
 # ── Arabic Lunar Mansions ────────────────────────────────────────────────
 from .manazil import (
-    MansionInfo, MansionPosition, MansionTradition,
-    MANSIONS, MANSION_SPAN,
+    ElectionalMansion, MansionPosition, MansionTradition,
+    AL_BIRUNI_MANSIONS, AGRIPPA_MANSIONS, MANSION_SPAN,
     mansion_of, mansion_of_sidereal,
     all_mansions_at, all_mansions_at_sidereal,
     moon_mansion, variant_nature, variant_signification,
@@ -449,8 +449,8 @@ _CLASSICAL_OWN: list[str] = [
     "stars_near", "stars_by_magnitude",
     "list_named_stars", "find_named_stars",
     # Mansions
-    "MansionInfo", "MansionPosition", "MansionTradition",
-    "MANSIONS", "MANSION_SPAN",
+    "ElectionalMansion", "MansionPosition", "MansionTradition",
+    "AL_BIRUNI_MANSIONS", "AGRIPPA_MANSIONS", "MANSION_SPAN",
     "mansion_of", "mansion_of_sidereal",
     "all_mansions_at", "all_mansions_at_sidereal",
     "moon_mansion", "variant_nature", "variant_signification",

@@ -6,41 +6,9 @@ Archetype: Engine
 
 Purpose
 -------
-Governs computation of Arabic Lunar Mansion (Manazil al-Qamar) positions,
-mapping any ecliptic longitude to one of the 28 equal stations of the Moon
-together with their traditional significations.
-
-Supports tropical and sidereal computation, and multiple textual
-traditions for mansion attributions (al-Biruni default, plus Abenragel,
-Ibn al-Arabi, Agrippa, and Picatrix variant tables).
-
-Boundary declaration
---------------------
-Owns: the 28-mansion table, mansion span arithmetic, ``MansionInfo`` and
-      ``MansionPosition`` result vessels, variant attribution tables.
-Delegates: sidereal conversion to ``moira.sidereal``.
-
-Import-time side effects: None
-
-External dependency assumptions
---------------------------------
-No Qt main thread required. No database access. Pure arithmetic over
-ecliptic longitudes (sidereal mode requires a Julian Day for ayanamsa).
-
-Public surface
---------------
-``MansionInfo``          — immutable record for one of the 28 mansion definitions.
-``MansionPosition``      — vessel for a body's mansion position result.
-``MansionTradition``     — enum selecting which textual tradition to use.
-``MANSIONS``             — ordered list of all 28 ``MansionInfo`` records (al-Biruni).
-``MANSION_SPAN``         — degrees per mansion (360/28).
-``mansion_of``           — compute mansion for a single ecliptic longitude.
-``mansion_of_sidereal``  — compute mansion using sidereal longitude (via ayanamsa).
-``all_mansions_at``      — compute mansions for a dict of body positions.
-``all_mansions_at_sidereal`` — sidereal batch computation.
-``moon_mansion``         — convenience wrapper for the Moon's mansion.
-``variant_nature``       — look up a mansion's nature in a specific tradition.
-``variant_signification``— look up a mansion's signification in a specific tradition.
+Governs computation of Arabic Lunar Mansion (Manazil al-Qamar) positions.
+Supports equal division traditions (Agrippa, Picatrix) and catalogues the
+unequal star-based tradition (al-Biruni).
 """
 
 from __future__ import annotations
@@ -49,10 +17,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 __all__ = [
-    "MansionInfo",
+    "AstronomicalMansion",
+    "ElectionalMansion",
     "MansionPosition",
     "MansionTradition",
-    "MANSIONS",
+    "AL_BIRUNI_MANSIONS",
+    "AGRIPPA_MANSIONS",
     "MANSION_SPAN",
     "mansion_of",
     "mansion_of_sidereal",
@@ -69,367 +39,105 @@ __all__ = [
 
 MANSION_SPAN: float = 360.0 / 28   # 12.857142...°
 
-
 # ---------------------------------------------------------------------------
 # Data types
 # ---------------------------------------------------------------------------
 
 @dataclass(slots=True)
-class MansionInfo:
-    """
-    RITE: The Mansion Record — the immutable definition of one lunar station.
-
-    THEOREM: Holds the index, Arabic name, Latin name, ruling star, nature,
-    and traditional signification for one of the 28 Arabic lunar mansions.
-
-    RITE OF PURPOSE:
-        Serves the Manazil Engine as the static definition record for each
-        mansion in the ``MANSIONS`` table. Without this vessel, the mansion
-        table would be an untyped list of tuples, making field access fragile
-        and signification lookup impossible.
-
-    LAW OF OPERATION:
-        Responsibilities:
-            - Store all six definitional fields for one mansion.
-        Non-responsibilities:
-            - Does not compute positions or perform any arithmetic.
-            - Does not validate that ``index`` is in [1, 28].
-        Dependencies:
-            - Instantiated at module load time to populate ``MANSIONS``.
-        Structural invariants:
-            - ``index`` is always in [1, 28].
-            - ``nature`` is always "Fortunate", "Unfortunate", or "Mixed".
-        Succession stance: terminal — not designed for subclassing.
-
-    Canon: al-Biruni, "Book of Instruction in the Elements of the Art of
-           Astrology" (1029 CE); Agrippa, "Three Books of Occult Philosophy"
-           (1531); Ibn Ezra, "The Book of the World" (12th c.).
-
-    [MACHINE_CONTRACT v1]
-    {
-        "scope": "class",
-        "id": "moira.manazil.MansionInfo",
-        "risk": "low",
-        "api": {
-            "public_methods": [],
-            "public_attributes": [
-                "index", "arabic_name", "latin_name",
-                "ruling_star", "nature", "signification"
-            ]
-        },
-        "state": {
-            "mutable": false,
-            "fields": [
-                "index", "arabic_name", "latin_name",
-                "ruling_star", "nature", "signification"
-            ]
-        },
-        "effects": {
-            "io": [],
-            "signals_emitted": [],
-            "db_writes": []
-        },
-        "concurrency": {
-            "thread": "pure_computation",
-            "cross_thread_calls": "safe_read_only"
-        },
-        "failures": {
-            "raises": [],
-            "policy": "no runtime failures — static definition record"
-        },
-        "succession": {
-            "stance": "terminal",
-            "override_points": []
-        },
-        "agent": "kiro"
-    }
-    [/MACHINE_CONTRACT]
-    """
-
+class AstronomicalMansion:
     index: int
     arabic_name: str
+    marker_stars: tuple[str, ...]
+
+@dataclass(slots=True)
+class ElectionalMansion:
+    index: int
     latin_name: str
-    ruling_star: str
     nature: str
     signification: str
 
-
-# ---------------------------------------------------------------------------
-# The 28-mansion table
-# ---------------------------------------------------------------------------
-
-MANSIONS: list[MansionInfo] = [
-    MansionInfo(1,  "Al-Sharatain",      "Alnath",       "Beta Arietis",          "Mixed",       "Journeys, harvests, new beginnings"),
-    MansionInfo(2,  "Al-Butain",         "Albotain",     "Epsilon Arietis",       "Fortunate",   "Finding lost things, treasure"),
-    MansionInfo(3,  "Al-Thurayya",       "Alcyone",      "Pleiades",              "Fortunate",   "Safe travel by sea"),
-    MansionInfo(4,  "Al-Dabaran",        "Aldebaran",    "Aldebaran",             "Unfortunate", "Strife, discord, contention"),
-    MansionInfo(5,  "Al-Haq'a",          "Albucca",      "Lambda Orionis",        "Fortunate",   "Favor of kings, swift travel"),
-    MansionInfo(6,  "Al-Han'a",          "Athena",       "Mu Geminorum",          "Unfortunate", "Hunting, enmity, captivity"),
-    MansionInfo(7,  "Al-Dhira",          "Aldirah",      "Alpha Geminorum",       "Fortunate",   "Gain, friendship, health"),
-    MansionInfo(8,  "Al-Nathra",         "Alnaza",       "Praesepe (Beehive)",    "Mixed",       "Love, healing, liberation"),
-    MansionInfo(9,  "Al-Tarf",           "Atarf",        "Kappa Cancri",          "Unfortunate", "Ruin of harvests, hindrances"),
-    MansionInfo(10, "Al-Jabhah",         "Algebha",      "Zeta Leonis",           "Fortunate",   "Strongholds, victory, love"),
-    MansionInfo(11, "Al-Zubra",          "Azobra",       "Delta Leonis",          "Fortunate",   "Gain, kindness, abundance"),
-    MansionInfo(12, "Al-Sarfah",         "Assarfah",     "Beta Leonis (Denebola)", "Mixed",      "Journey, travel, changes"),
-    MansionInfo(13, "Al-'Awwa",          "Alhaire",      "Beta Virginis",         "Fortunate",   "Traders, harvests, gain"),
-    MansionInfo(14, "Al-Simak",          "Azimech",      "Spica",                 "Fortunate",   "Abundance, harvests, honor"),
-    MansionInfo(15, "Al-Ghafr",          "Aigebha",      "Iota Virginis",         "Fortunate",   "Digging, finding treasure"),
-    MansionInfo(16, "Al-Zubana",         "Azubene",      "Alpha Librae",          "Unfortunate", "Trade loss, hindrances"),
-    MansionInfo(17, "Al-Iklil",          "Aclil",        "Beta Scorpii",          "Fortunate",   "Good fortune, blessing"),
-    MansionInfo(18, "Al-Qalb",           "Alcab",        "Antares",               "Unfortunate", "Illness, evil, captivity"),
-    MansionInfo(19, "Al-Shawla",         "Axaulah",      "Lambda Scorpii",        "Mixed",       "Swift travel, reconciliation"),
-    MansionInfo(20, "Al-Na'am",          "Nahaym",       "Sigma Sagittarii",      "Fortunate",   "Taming, domestication, hunting"),
-    MansionInfo(21, "Al-Baldah",         "Albeldah",     "Pi Sagittarii",         "Mixed",       "Ruin, loneliness"),
-    MansionInfo(22, "Sa'd al-Dhabih",    "Caadaldeba",   "Alpha Capricorni",      "Fortunate",   "Captives freed, cures illness"),
-    MansionInfo(23, "Sa'd Bula",         "Caad Abola",   "Mu Aquarii",            "Fortunate",   "Sickness cured, healing"),
-    MansionInfo(24, "Sa'd al-Su'ud",     "Caad Acohot",  "Beta Aquarii",          "Fortunate",   "Marriage, favor, honor"),
-    MansionInfo(25, "Sa'd al-Akhbiya",   "Caad Angue",   "Gamma Aquarii",         "Mixed",       "Agriculture, building, gain"),
-    MansionInfo(26, "Al-Fargh al-Awwal", "Alpharg",      "Alpha Pegasi",          "Mixed",       "Travel, union, fortune"),
-    MansionInfo(27, "Al-Fargh al-Thani", "Alcharya",     "Gamma Pegasi",          "Fortunate",   "Good news, union, peace"),
-    MansionInfo(28, "Batn al-Hut",       "Arrexhe",      "Beta Andromedae",       "Fortunate",   "Fish, travel by sea, marriage"),
+AL_BIRUNI_MANSIONS: list[AstronomicalMansion] = [
+    AstronomicalMansion(1,  "Al-Sharatain",      ("bet Ari", "gam Ari")),
+    AstronomicalMansion(2,  "Al-Butain",         ("del Ari", "rho Ari")),
+    AstronomicalMansion(3,  "Al-Thurayya",       ("eta Tau",)), 
+    AstronomicalMansion(4,  "Al-Dabaran",        ("alf Tau",)),
+    AstronomicalMansion(5,  "Al-Haq'a",          ("lam Ori",)),
+    AstronomicalMansion(6,  "Al-Han'a",          ("gam Gem", "xi Gem")),
+    AstronomicalMansion(7,  "Al-Dhira",          ("alf Gem", "bet Gem")),
+    AstronomicalMansion(8,  "Al-Nathra",         ("del Cnc", "gam Cnc")),
+    AstronomicalMansion(9,  "Al-Tarf",           ("lam Leo", "kap Cnc")),
+    AstronomicalMansion(10, "Al-Jabhah",         ("zet Leo", "gam Leo", "eta Leo", "alf Leo")),
+    AstronomicalMansion(11, "Al-Zubra",          ("del Leo", "thet Leo")),
+    AstronomicalMansion(12, "Al-Sarfah",         ("bet Leo",)),
+    AstronomicalMansion(13, "Al-'Awwa",          ("bet Vir", "eta Vir", "gam Vir", "del Vir", "eps Vir")),
+    AstronomicalMansion(14, "Al-Simak",          ("alf Vir",)),
+    AstronomicalMansion(15, "Al-Ghafr",          ("iot Vir", "kap Vir", "lam Vir")),
+    AstronomicalMansion(16, "Al-Zubana",         ("alf02 Lib", "bet Lib")),
+    AstronomicalMansion(17, "Al-Iklil",          ("bet01 Sco", "del Sco", "pi. Sco")),
+    AstronomicalMansion(18, "Al-Qalb",           ("alf Sco",)),
+    AstronomicalMansion(19, "Al-Shawla",         ("lam Sco", "ups Sco")),
+    AstronomicalMansion(20, "al-Naʿāʾim",        ("gam02 Sgr", "del Sgr", "eps Sgr", "eta Sgr", "sig Sgr", "phi Sgr", "tau Sgr", "zet Sgr")),
+    AstronomicalMansion(21, "Al-Baldah",         ("pi. Sgr",)),
+    AstronomicalMansion(22, "Sa'd al-Dhabih",    ("alf02 Cap", "bet01 Cap")),
+    AstronomicalMansion(23, "Sa'd Bula",         ("mu. Aqr", "eps Aqr", "nu Aqr")),
+    AstronomicalMansion(24, "Sa'd al-Su'ud",     ("bet Aqr", "xi Aqr")),
+    AstronomicalMansion(25, "Sa'd al-Akhbiya",   ("gam Aqr", "pi. Aqr", "zet Aqr", "eta Aqr")),
+    AstronomicalMansion(26, "Al-Fargh al-Awwal", ("alf Peg", "bet Peg")),
+    AstronomicalMansion(27, "Al-Fargh al-Thani", ("gam Peg", "alf And")),
+    AstronomicalMansion(28, "Batn al-Hut",       ("bet And",)),
 ]
 
-
-# ---------------------------------------------------------------------------
-# Result dataclass
-# ---------------------------------------------------------------------------
+AGRIPPA_MANSIONS: list[ElectionalMansion] = [
+    ElectionalMansion(1,  "Alnath",       "Mixed",       "Destruction of one, profit of another; journeys"),
+    ElectionalMansion(2,  "Albotain",     "Fortunate",   "Finding treasure, retaining captives"),
+    ElectionalMansion(3,  "Athoray",      "Fortunate",   "Profitable to sailors, hunters, alchemists"),
+    ElectionalMansion(4,  "Aldebaran",    "Unfortunate", "Revenge, enmity, discord, sedition"),
+    ElectionalMansion(5,  "Albothayn",    "Fortunate",   "Favor of kings, return of travelers"),
+    ElectionalMansion(6,  "Athaya",       "Unfortunate", "Hunting, besieging cities, revenge of princes"),
+    ElectionalMansion(7,  "Aldirah",      "Fortunate",   "Gain, friendship, love, profitable to lovers"),
+    ElectionalMansion(8,  "Alnaza",       "Fortunate",   "Love, friendship; profitable for travel"),
+    ElectionalMansion(9,  "Atarf",        "Unfortunate", "Hindering harvest, travelers, destroying ships"),
+    ElectionalMansion(10, "Algebha",      "Fortunate",   "Strengthening buildings, promoting love"),
+    ElectionalMansion(11, "Azobra",       "Fortunate",   "Voyages, gain by merchandise, redemption of captives"),
+    ElectionalMansion(12, "Assarfah",     "Mixed",       "Separation of lovers; destroying houses, enemies"),
+    ElectionalMansion(13, "Alhaire",      "Fortunate",   "Benevolent for harvest, trade, and journeys"),
+    ElectionalMansion(14, "Azimech",      "Fortunate",   "Favor of married people, curing the sick"),
+    ElectionalMansion(15, "Algafra",      "Fortunate",   "Profitable for extracting treasure, digging wells"),
+    ElectionalMansion(16, "Azubene",      "Unfortunate", "Hindering journeys and weddings"),
+    ElectionalMansion(17, "Aclil",        "Fortunate",   "Improving fortune, safe buildings"),
+    ElectionalMansion(18, "Alcab",        "Unfortunate", "Causing discord, infirmity, plotting against enemies"),
+    ElectionalMansion(19, "Axaulah",      "Mixed",       "Facilitating escape and deliveries"),
+    ElectionalMansion(20, "Nahaym",       "Fortunate",   "Taming beasts, strengthening prisons"),
+    ElectionalMansion(21, "Albeldah",     "Unfortunate", "Destruction and waste"),
+    ElectionalMansion(22, "Caadaldeba",   "Fortunate",   "Curing infirmity, freeing captives"),
+    ElectionalMansion(23, "Caad Abola",   "Fortunate",   "Curing ailments, profitable for benevolence"),
+    ElectionalMansion(24, "Caad Acohot",  "Fortunate",   "Conjugal goodwill, victory of soldiers"),
+    ElectionalMansion(25, "Sadalachbia",  "Mixed",       "Protecting trees and harvests"),
+    ElectionalMansion(26, "Alpharg",      "Mixed",       "Uniting lovers, destroying enemies' wealth"),
+    ElectionalMansion(27, "Alcharya",     "Fortunate",   "Increasing commerce, gain"),
+    ElectionalMansion(28, "Arrexhe",      "Fortunate",   "Increasing harvests, multiplying goods"),
+]
 
 @dataclass(slots=True)
 class MansionPosition:
-    """
-    RITE: The Station Vessel — a body's place in the lunar mansion cycle.
-
-    THEOREM: Holds the ``MansionInfo`` record, degrees elapsed within the
-    mansion, and the original ecliptic longitude for a single body's mansion
-    position result.
-
-    RITE OF PURPOSE:
-        Serves the Manazil Engine as the canonical result vessel for mansion
-        position computations. Without this vessel, ``mansion_of`` would
-        return a bare ``MansionInfo`` with no degree-within-mansion context,
-        making electional timing and degree-precise analysis impossible.
-
-    LAW OF OPERATION:
-        Responsibilities:
-            - Store the ``MansionInfo`` for the matched mansion.
-            - Store the degrees elapsed within the mansion (0 to MANSION_SPAN).
-            - Store the original ecliptic longitude for traceability.
-        Non-responsibilities:
-            - Does not compute the mansion (delegated to ``mansion_of``).
-            - Does not validate that ``degrees_in`` is within [0, MANSION_SPAN).
-        Dependencies:
-            - Populated exclusively by ``mansion_of()``.
-        Structural invariants:
-            - ``degrees_in`` is always in [0, MANSION_SPAN).
-            - ``mansion`` always references a valid entry from ``MANSIONS``.
-        Succession stance: terminal — not designed for subclassing.
-
-    Canon: al-Biruni, "Book of Instruction in the Elements of the Art of
-           Astrology" (1029 CE).
-
-    [MACHINE_CONTRACT v1]
-    {
-        "scope": "class",
-        "id": "moira.manazil.MansionPosition",
-        "risk": "medium",
-        "api": {
-            "public_methods": ["__repr__"],
-            "public_attributes": ["mansion", "degrees_in", "longitude"]
-        },
-        "state": {
-            "mutable": false,
-            "fields": ["mansion", "degrees_in", "longitude"]
-        },
-        "effects": {
-            "io": [],
-            "signals_emitted": [],
-            "db_writes": []
-        },
-        "concurrency": {
-            "thread": "pure_computation",
-            "cross_thread_calls": "safe_read_only"
-        },
-        "failures": {
-            "raises": [],
-            "policy": "no runtime failures — result vessel only"
-        },
-        "succession": {
-            "stance": "terminal",
-            "override_points": []
-        },
-        "agent": "kiro"
-    }
-    [/MACHINE_CONTRACT]
-    """
-
-    mansion:    MansionInfo
-    degrees_in: float    # degrees elapsed within the mansion (0–12.857°)
-    longitude:  float    # original ecliptic longitude
+    mansion:    ElectionalMansion
+    degrees_in: float
+    longitude:  float
 
     def __repr__(self) -> str:
         return (
-            f"Mansion {self.mansion.index:>2} — {self.mansion.arabic_name} "
-            f"({self.mansion.latin_name})  "
+            f"Mansion {self.mansion.index:>2} — {self.mansion.latin_name} "
             f"{self.degrees_in:.4f}° in  "
             f"[{self.mansion.nature}]  {self.mansion.signification}"
         )
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
-
-def mansion_of(longitude: float) -> MansionPosition:
-    """
-    Return the Arabic mansion for a given ecliptic longitude.
-
-    Parameters
-    ----------
-    longitude : ecliptic longitude in degrees (0–360, tropical)
-
-    Returns
-    -------
-    MansionPosition with mansion details and degrees elapsed within it
-    """
-    lon = longitude % 360.0
-    index_0 = int(lon / MANSION_SPAN)          # 0-based, 0–27
-    index_0 = min(index_0, 27)                 # clamp for exactly 360.0
-    degrees_in = lon - index_0 * MANSION_SPAN
-    return MansionPosition(
-        mansion=MANSIONS[index_0],
-        degrees_in=degrees_in,
-        longitude=longitude,
-    )
-
-
-def all_mansions_at(positions: dict[str, float]) -> dict[str, MansionPosition]:
-    """
-    Compute Arabic mansion positions for all bodies.
-
-    Parameters
-    ----------
-    positions : dict mapping body name → ecliptic longitude (degrees)
-
-    Returns
-    -------
-    dict mapping body name → MansionPosition
-    """
-    return {body: mansion_of(lon) for body, lon in positions.items()}
-
-
-def moon_mansion(moon_longitude: float) -> MansionPosition:
-    """
-    Convenience: return the mansion of the Moon.
-
-    Parameters
-    ----------
-    moon_longitude : Moon's ecliptic longitude (degrees)
-
-    Returns
-    -------
-    MansionPosition for the Moon
-    """
-    return mansion_of(moon_longitude)
-
-
-# ---------------------------------------------------------------------------
-# Sidereal mansion computation
-# ---------------------------------------------------------------------------
-
-def mansion_of_sidereal(
-    tropical_longitude: float,
-    jd: float,
-    ayanamsa_system: str = "Lahiri",
-    ayanamsa_mode: str = "true",
-) -> MansionPosition:
-    """
-    Return the Arabic mansion for a tropical longitude, converted to sidereal.
-
-    Parameters
-    ----------
-    tropical_longitude : ecliptic longitude in degrees (tropical)
-    jd                 : Julian Day (UT) for ayanamsa computation
-    ayanamsa_system    : ayanamsa system name (default "Lahiri")
-    ayanamsa_mode      : "true" or "mean" (default "true")
-
-    Returns
-    -------
-    MansionPosition computed from the sidereal longitude.
-    The ``longitude`` field carries the original tropical value for traceability.
-    """
-    from .sidereal import tropical_to_sidereal
-
-    sid_lon = tropical_to_sidereal(tropical_longitude, jd, ayanamsa_system, ayanamsa_mode)
-    lon = sid_lon % 360.0
-    index_0 = int(lon / MANSION_SPAN)
-    index_0 = min(index_0, 27)
-    degrees_in = lon - index_0 * MANSION_SPAN
-    return MansionPosition(
-        mansion=MANSIONS[index_0],
-        degrees_in=degrees_in,
-        longitude=tropical_longitude,
-    )
-
-
-def all_mansions_at_sidereal(
-    positions: dict[str, float],
-    jd: float,
-    ayanamsa_system: str = "Lahiri",
-    ayanamsa_mode: str = "true",
-) -> dict[str, MansionPosition]:
-    """
-    Compute sidereal Arabic mansion positions for all bodies.
-
-    Parameters
-    ----------
-    positions       : dict mapping body name to tropical ecliptic longitude
-    jd              : Julian Day (UT) for ayanamsa computation
-    ayanamsa_system : ayanamsa system name (default "Lahiri")
-    ayanamsa_mode   : "true" or "mean" (default "true")
-
-    Returns
-    -------
-    dict mapping body name to MansionPosition (sidereal).
-    """
-    return {
-        body: mansion_of_sidereal(lon, jd, ayanamsa_system, ayanamsa_mode)
-        for body, lon in positions.items()
-    }
-
-
-# ---------------------------------------------------------------------------
-# Textual tradition variants
-# ---------------------------------------------------------------------------
-#
-# The 28-mansion equal division is shared across all Arabic traditions.
-# What differs is the attribution: the nature (Fortunate / Unfortunate /
-# Mixed), the signification, and the talismanic or angelic associations.
-#
-# The default MANSIONS table follows al-Biruni / Ibn Ezra.  The variant
-# tables below record natures and significations from four additional
-# major authorities.  Computational boundaries are unchanged.
-#
-# Authority:
-#   Abenragel    — Haly Abenragel, *Liber de Judiciis Stellarum* (11th c.)
-#   Ibn al-Arabi — Muhyiddin Ibn al-Arabi, *al-Futuhat al-Makkiyya* (13th c.)
-#   Agrippa      — Heinrich Cornelius Agrippa, *Three Books of Occult
-#                  Philosophy* (1531)
-#   Picatrix     — *Ghayat al-Hakim* / *Picatrix* (10th–11th c.)
-# ---------------------------------------------------------------------------
-
 class MansionTradition(str, Enum):
-    """Selectable textual tradition for mansion attributions."""
-
-    AL_BIRUNI   = "al_biruni"     # default (the MANSIONS table)
+    AL_BIRUNI   = "al_biruni"     
     ABENRAGEL   = "abenragel"
     IBN_ALARABI = "ibn_alarabi"
     AGRIPPA     = "agrippa"
     PICATRIX    = "picatrix"
-
-
-# Each variant table is a dict mapping mansion index (1–28) to
-# (nature, signification).  Only entries that differ materially from the
-# al-Biruni default are listed; missing entries fall back to al-Biruni.
 
 _ABENRAGEL_VARIANTS: dict[int, tuple[str, str]] = {
     1:  ("Fortunate",   "Opening works, journeys, taking medicine"),
@@ -493,40 +201,9 @@ _IBN_ALARABI_VARIANTS: dict[int, tuple[str, str]] = {
     28: ("Fortunate",   "Divine Name: al-Wasi'; comprehension and expanse"),
 }
 
-_AGRIPPA_VARIANTS: dict[int, tuple[str, str]] = {
-    1:  ("Mixed",       "Destruction of one, profit of another; journeys"),
-    2:  ("Fortunate",   "Finding treasure, retaining captives"),
-    3:  ("Fortunate",   "Profitable to sailors, hunters, alchemists"),
-    4:  ("Unfortunate", "Revenge, enmity, discord, sedition"),
-    5:  ("Fortunate",   "Favor of kings, return of travelers"),
-    6:  ("Unfortunate", "Hunting, besieging cities, revenge of princes"),
-    7:  ("Fortunate",   "Gain, friendship, love, profitable to lovers"),
-    8:  ("Fortunate",   "Love, friendship; profitable for travel"),
-    9:  ("Unfortunate", "Hindering harvest, travelers, destroying ships"),
-    10: ("Fortunate",   "Strengthening buildings, promoting love"),
-    11: ("Fortunate",   "Voyages, gain by merchandise, redemption of captives"),
-    12: ("Mixed",       "Separation of lovers; destroying houses, enemies"),
-    13: ("Fortunate",   "Benevolent for harvest, trade, and journeys"),
-    14: ("Fortunate",   "Favor of married people, curing the sick"),
-    15: ("Fortunate",   "Profitable for extracting treasure, digging wells"),
-    16: ("Unfortunate", "Hindering journeys and weddings"),
-    17: ("Fortunate",   "Improving fortune, safe buildings"),
-    18: ("Unfortunate", "Causing discord, infirmity, plotting against enemies"),
-    19: ("Mixed",       "Facilitating escape and deliveries"),
-    20: ("Fortunate",   "Taming beasts, strengthening prisons"),
-    21: ("Unfortunate", "Destruction and waste"),
-    22: ("Fortunate",   "Curing infirmity, freeing captives"),
-    23: ("Fortunate",   "Curing ailments, profitable for benevolence"),
-    24: ("Fortunate",   "Conjugal goodwill, victory of soldiers"),
-    25: ("Mixed",       "Protecting trees and harvests"),
-    26: ("Mixed",       "Uniting lovers, destroying enemies' wealth"),
-    27: ("Fortunate",   "Increasing commerce, gain"),
-    28: ("Fortunate",   "Increasing harvests, multiplying goods"),
-}
-
 _PICATRIX_VARIANTS: dict[int, tuple[str, str]] = {
     1:  ("Mixed",       "Talisman for safe travel; image of a black man with a lance"),
-    2:  ("Fortunate",   "Talisman against wrath; image of a crowned king"),
+    2:  ("Unfortunate", "Talisman for destruction and removal of anger; image of a crowned king"),
     3:  ("Fortunate",   "Talisman for safe voyages; image of a woman with right hand raised"),
     4:  ("Unfortunate", "Talisman for destruction; image of a soldier on horseback"),
     5:  ("Fortunate",   "Talisman for favor; image of a head with no body"),
@@ -539,10 +216,10 @@ _PICATRIX_VARIANTS: dict[int, tuple[str, str]] = {
     12: ("Mixed",       "Talisman for separation; image of a dragon biting its tail"),
     13: ("Fortunate",   "Talisman for trade and harvest; image of a man with hands raised"),
     14: ("Fortunate",   "Talisman for love between married; image of a dog biting its paw"),
-    15: ("Fortunate",   "Talisman for treasure; image of a man sitting with hands at heart"),
+    15: ("Unfortunate", "Talisman for hindrance of travel and marriage; image of a man sitting with hands at heart"),
     16: ("Unfortunate", "Talisman for hindrance; image of a man sitting on a chair, holding scales"),
     17: ("Fortunate",   "Talisman for fortune; image of an ape"),
-    18: ("Unfortunate", "Talisman for discord; image of a snake with its tail above its head"),
+    18: ("Fortunate",   "Talisman for protecting houses and healing fevers; image of a snake with its tail above its head"),
     19: ("Mixed",       "Talisman for safe escape; image of a woman holding her hands to her face"),
     20: ("Fortunate",   "Talisman for taming; image of a man with hands cut off"),
     21: ("Unfortunate", "Talisman for destruction; image of a man with two faces"),
@@ -551,65 +228,144 @@ _PICATRIX_VARIANTS: dict[int, tuple[str, str]] = {
     24: ("Fortunate",   "Talisman for love; image of a woman nursing a child"),
     25: ("Mixed",       "Talisman for protection of trees; image of a man planting"),
     26: ("Mixed",       "Talisman for love and union; image of a woman combing hair"),
-    27: ("Fortunate",   "Talisman for gain; image of a man with wings, holding a vessel"),
+    27: ("Unfortunate", "Talisman for the destruction of springs and wells; image of a man with wings, holding a vessel"),
     28: ("Fortunate",   "Talisman for increase; image of a fish"),
 }
 
 _VARIANT_TABLES: dict[MansionTradition, dict[int, tuple[str, str]]] = {
     MansionTradition.ABENRAGEL:   _ABENRAGEL_VARIANTS,
     MansionTradition.IBN_ALARABI: _IBN_ALARABI_VARIANTS,
-    MansionTradition.AGRIPPA:     _AGRIPPA_VARIANTS,
+    MansionTradition.AGRIPPA:     {},
     MansionTradition.PICATRIX:    _PICATRIX_VARIANTS,
 }
 
-
 def variant_nature(mansion_index: int, tradition: MansionTradition) -> str:
-    """
-    Return the nature of a mansion according to a specific tradition.
-
-    Parameters
-    ----------
-    mansion_index : mansion number (1--28)
-    tradition     : which textual tradition to consult
-
-    Returns
-    -------
-    "Fortunate", "Unfortunate", or "Mixed".
-    Falls back to al-Biruni default if the tradition has no override.
-    """
     if mansion_index < 1 or mansion_index > 28:
         raise ValueError(f"mansion_index must be 1--28, got {mansion_index}")
-
     if tradition is MansionTradition.AL_BIRUNI:
-        return MANSIONS[mansion_index - 1].nature
-
+        raise ValueError("al-Biruni star-based tradition does not support electional natures.")
     table = _VARIANT_TABLES.get(tradition)
     if table and mansion_index in table:
         return table[mansion_index][0]
-    return MANSIONS[mansion_index - 1].nature
+    return AGRIPPA_MANSIONS[mansion_index - 1].nature
 
+from functools import lru_cache
+
+@lru_cache(maxsize=16)
+def _al_biruni_boundaries(jd: float) -> tuple[float, ...]:
+    from .stars import star_at
+    from .julian import utc_to_tt
+    jd_tt = utc_to_tt(jd)
+    boundaries = []
+    for m in AL_BIRUNI_MANSIONS:
+        primary_star_name = m.marker_stars[0]
+        s = star_at(primary_star_name, jd_tt)
+        boundaries.append(s.longitude % 360.0)
+    return tuple(boundaries)
 
 def variant_signification(mansion_index: int, tradition: MansionTradition) -> str:
-    """
-    Return the signification of a mansion according to a specific tradition.
-
-    Parameters
-    ----------
-    mansion_index : mansion number (1--28)
-    tradition     : which textual tradition to consult
-
-    Returns
-    -------
-    Signification string.
-    Falls back to al-Biruni default if the tradition has no override.
-    """
     if mansion_index < 1 or mansion_index > 28:
         raise ValueError(f"mansion_index must be 1--28, got {mansion_index}")
-
     if tradition is MansionTradition.AL_BIRUNI:
-        return MANSIONS[mansion_index - 1].signification
-
+        raise ValueError("al-Biruni star-based tradition does not support electional significations.")
     table = _VARIANT_TABLES.get(tradition)
     if table and mansion_index in table:
         return table[mansion_index][1]
-    return MANSIONS[mansion_index - 1].signification
+    return AGRIPPA_MANSIONS[mansion_index - 1].signification
+
+def mansion_of(longitude: float, tradition: MansionTradition = MansionTradition.AGRIPPA, jd: float | None = None) -> MansionPosition:
+    lon = longitude % 360.0
+
+    if tradition == MansionTradition.AL_BIRUNI:
+        if jd is None:
+            raise ValueError("al-Biruni star-based tradition requires jd to calculate stellar boundaries")
+        boundaries = _al_biruni_boundaries(jd)
+        index_0 = 27
+        degrees_in = 0.0
+        for i in range(28):
+            start = boundaries[i]
+            end = boundaries[(i + 1) % 28]
+            span = (end - start) % 360.0
+            dist = (lon - start) % 360.0
+            if dist < span:
+                index_0 = i
+                degrees_in = dist
+                break
+        mansion = AL_BIRUNI_MANSIONS[index_0]
+    else:
+        index_0 = int(lon / MANSION_SPAN)          
+        index_0 = min(index_0, 27)                 
+        degrees_in = lon - index_0 * MANSION_SPAN
+        mansion = ElectionalMansion(
+            index=index_0 + 1,
+            latin_name=AGRIPPA_MANSIONS[index_0].latin_name,
+            nature=variant_nature(index_0 + 1, tradition),
+            signification=variant_signification(index_0 + 1, tradition),
+        )
+
+    return MansionPosition(
+        mansion=mansion,
+        degrees_in=degrees_in,
+        longitude=longitude,
+    )
+
+def all_mansions_at(positions: dict[str, float], tradition: MansionTradition = MansionTradition.AGRIPPA, jd: float | None = None) -> dict[str, MansionPosition]:
+    return {body: mansion_of(lon, tradition, jd=jd) for body, lon in positions.items()}
+
+def moon_mansion(moon_longitude: float, tradition: MansionTradition = MansionTradition.AGRIPPA, jd: float | None = None) -> MansionPosition:
+    return mansion_of(moon_longitude, tradition, jd=jd)
+
+def mansion_of_sidereal(
+    tropical_longitude: float,
+    jd: float,
+    ayanamsa_system: str = "Lahiri",
+    ayanamsa_mode: str = "true",
+    tradition: MansionTradition = MansionTradition.AGRIPPA
+) -> MansionPosition:
+    from .sidereal import tropical_to_sidereal
+    sid_lon = tropical_to_sidereal(tropical_longitude, jd, ayanamsa_system, ayanamsa_mode)
+    lon = sid_lon % 360.0
+
+    if tradition == MansionTradition.AL_BIRUNI:
+        boundaries = _al_biruni_boundaries(jd)
+        sid_boundaries = [tropical_to_sidereal(b, jd, ayanamsa_system, ayanamsa_mode) % 360.0 for b in boundaries]
+        
+        index_0 = 27
+        degrees_in = 0.0
+        for i in range(28):
+            start = sid_boundaries[i]
+            end = sid_boundaries[(i + 1) % 28]
+            span = (end - start) % 360.0
+            dist = (lon - start) % 360.0
+            if dist < span:
+                index_0 = i
+                degrees_in = dist
+                break
+        mansion = AL_BIRUNI_MANSIONS[index_0]
+    else:
+        index_0 = int(lon / MANSION_SPAN)
+        index_0 = min(index_0, 27)
+        degrees_in = lon - index_0 * MANSION_SPAN
+        mansion = ElectionalMansion(
+            index=index_0 + 1,
+            latin_name=AGRIPPA_MANSIONS[index_0].latin_name,
+            nature=variant_nature(index_0 + 1, tradition),
+            signification=variant_signification(index_0 + 1, tradition),
+        )
+    return MansionPosition(
+        mansion=mansion,
+        degrees_in=degrees_in,
+        longitude=tropical_longitude,
+    )
+
+def all_mansions_at_sidereal(
+    positions: dict[str, float],
+    jd: float,
+    ayanamsa_system: str = "Lahiri",
+    ayanamsa_mode: str = "true",
+    tradition: MansionTradition = MansionTradition.AGRIPPA
+) -> dict[str, MansionPosition]:
+    return {
+        body: mansion_of_sidereal(lon, jd, ayanamsa_system, ayanamsa_mode, tradition)
+        for body, lon in positions.items()
+    }

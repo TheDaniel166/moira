@@ -11,11 +11,11 @@ import pytest
 
 from moira.manazil import (
     # Data types
-    MansionInfo,
+    ElectionalMansion,
     MansionPosition,
     MansionTradition,
     # Constants
-    MANSIONS,
+    AGRIPPA_MANSIONS,
     MANSION_SPAN,
     # Functions
     mansion_of,
@@ -139,10 +139,9 @@ class TestMansionTradition:
 class TestVariantNature:
     """variant_nature() tradition lookups."""
 
-    def test_al_biruni_returns_default_table(self):
-        for i in range(1, 29):
-            result = variant_nature(i, MansionTradition.AL_BIRUNI)
-            assert result == MANSIONS[i - 1].nature
+    def test_al_biruni_raises_error(self):
+        with pytest.raises(ValueError, match="al-Biruni star-based tradition does not support"):
+            variant_nature(1, MansionTradition.AL_BIRUNI)
 
     def test_abenragel_mansion_1(self):
         result = variant_nature(1, MansionTradition.ABENRAGEL)
@@ -163,6 +162,7 @@ class TestVariantNature:
     def test_nature_always_valid_string(self):
         valid = {"Fortunate", "Unfortunate", "Mixed"}
         for tradition in MansionTradition:
+            if tradition == MansionTradition.AL_BIRUNI: continue
             for i in range(1, 29):
                 assert variant_nature(i, tradition) in valid
 
@@ -178,10 +178,9 @@ class TestVariantNature:
 class TestVariantSignification:
     """variant_signification() tradition lookups."""
 
-    def test_al_biruni_returns_default_table(self):
-        for i in range(1, 29):
-            result = variant_signification(i, MansionTradition.AL_BIRUNI)
-            assert result == MANSIONS[i - 1].signification
+    def test_al_biruni_raises_error(self):
+        with pytest.raises(ValueError, match="al-Biruni star-based tradition does not support"):
+            variant_signification(1, MansionTradition.AL_BIRUNI)
 
     def test_abenragel_mansion_1(self):
         result = variant_signification(1, MansionTradition.ABENRAGEL)
@@ -203,6 +202,7 @@ class TestVariantSignification:
 
     def test_all_traditions_produce_nonempty_strings(self):
         for tradition in MansionTradition:
+            if tradition == MansionTradition.AL_BIRUNI: continue
             for i in range(1, 29):
                 result = variant_signification(i, tradition)
                 assert isinstance(result, str) and len(result) > 0
@@ -223,12 +223,14 @@ class TestCrossTraditionConsistency:
         """Each non-default variant table should cover all 28 mansions."""
         from moira.manazil import _VARIANT_TABLES
         for tradition, table in _VARIANT_TABLES.items():
+            if tradition == MansionTradition.AGRIPPA: continue
             assert len(table) == 28, f"{tradition.value} has {len(table)} entries"
 
     def test_variant_tables_keys_are_1_to_28(self):
         from moira.manazil import _VARIANT_TABLES
         expected = set(range(1, 29))
         for tradition, table in _VARIANT_TABLES.items():
+            if tradition == MansionTradition.AGRIPPA: continue
             assert set(table.keys()) == expected, f"{tradition.value} key set mismatch"
 
     def test_variant_tuple_structure(self):
@@ -253,4 +255,4 @@ class TestManazilPublicApi:
 
     def test_all_count(self):
         import moira.manazil as _mod
-        assert len(_mod.__all__) == 12
+        assert len(_mod.__all__) == 14

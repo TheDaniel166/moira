@@ -26,7 +26,7 @@ def test_manazil_catalog_route_returns_28_equal_mansions(client: TestClient) -> 
     assert body["total"] == 28
     assert body["span_degrees"] == MANSION_SPAN
     assert body["mansions"][0]["index"] == 1
-    assert body["mansions"][0]["arabic_name"] == "Al-Sharatain"
+    assert body["mansions"][0]["latin_name"] == "Alnath"
     assert body["traditions"] == [
         "al_biruni",
         "abenragel",
@@ -41,15 +41,15 @@ def test_manazil_catalog_route_returns_28_equal_mansions(client: TestClient) -> 
 def test_manazil_position_route_preserves_boundary_truth(client: TestClient) -> None:
     before = client.post(
         "/v1/manazil/position",
-        json={"longitude": MANSION_SPAN - 0.001},
+        json={"longitude": MANSION_SPAN - 0.001, "tradition": "agrippa"},
     )
     at_boundary = client.post(
         "/v1/manazil/position",
-        json={"longitude": MANSION_SPAN},
+        json={"longitude": MANSION_SPAN, "tradition": "agrippa"},
     )
     wrap = client.post(
         "/v1/manazil/position",
-        json={"longitude": 360.0},
+        json={"longitude": 360.0, "tradition": "agrippa"},
     )
 
     assert before.status_code == 200
@@ -83,11 +83,11 @@ def test_manazil_position_route_applies_tradition_attribution(client: TestClient
 def test_manazil_sidereal_position_requires_jd_ut(client: TestClient) -> None:
     missing_jd = client.post(
         "/v1/manazil/position",
-        json={"longitude": 30.0, "mode": "sidereal"},
+        json={"longitude": 30.0, "mode": "sidereal", "tradition": "agrippa"},
     )
     with_jd = client.post(
         "/v1/manazil/position",
-        json={"longitude": 30.0, "mode": "sidereal", "jd_ut": 2451545.0},
+        json={"longitude": 30.0, "mode": "sidereal", "jd_ut": 2451545.0, "tradition": "agrippa"},
     )
 
     assert missing_jd.status_code == 422

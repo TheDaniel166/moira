@@ -25,9 +25,11 @@ router = APIRouter(prefix="/v1/manazil", tags=["manazil"])
 
 
 @router.get("/catalog", response_model=MansionCatalogResponse)
-def manazil_catalog_route() -> MansionCatalogResponse:
+def manazil_catalog_route(
+    tradition: MansionTraditionName = MansionTraditionName.agrippa,
+) -> MansionCatalogResponse:
     """Return the admitted 28 Arabic mansion catalog."""
-    return manazil_catalog()
+    return manazil_catalog(tradition)
 
 
 @router.post("/position", response_model=MansionPositionEnvelopeResponse)

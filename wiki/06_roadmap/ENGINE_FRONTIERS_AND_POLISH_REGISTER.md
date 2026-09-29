@@ -4,7 +4,7 @@
 
 **Original Audit Date**: September 21, 2026
 
-**Last Reconciled**: September 28, 2026
+**Last Reconciled**: September 29, 2026
 
 **Baseline**: current `main`; this is not a release-version manifest
 
@@ -140,12 +140,28 @@ are retained only as completion receipts. They are not current work items.
 
 ### 1. Small-body apsidal-passage accuracy
 
-- **Status**: Active event-search validation.
+- **Status**: Exhaustive asteroid repair scope and candidate comet policy
+  validated; release rebuilds and admission remain active.
 - **Detail**: The element and geometric-node catalog admission is complete.
   Six asteroid/comet apsidal-passage timing comparisons still lack a reviewed
   release-bound acceptance decision and therefore remain `NOT RUN`. Current
   gate language lives in
   [VALIDATION_ASTRONOMY.md](../03_validation/VALIDATION_ASTRONOMY.md).
+  The September 28 authority probe traced the large Halley/Encke residuals to
+  the comet catalog's uniform 30-day Type-13 sampling, not the event solver.
+  The builder now aligns its base with the asteroid catalog's 10-day/7-node
+  policy and uses NAIF Type-13's admitted unequal-time capability for daily
+  nodes around both radial extrema, fetched in Horizons requests bounded to 32
+  Julian years. A two-comet end-to-end candidate passes
+  all three frozen events under the unchanged gates. No new immutable
+  497-comet release has yet been built or admitted.
+  The companion asteroid audit now partitions every one of the 11,223 admitted
+  identities. Same-span 10-day/5-day Horizons comparisons at every detected
+  radial extremum identify exactly 59 failing bodies in 40 release shards;
+  all shared source nodes agree exactly. A worst-case elliptic sweep gives the
+  remaining 11,097 bodies an 863.97x margin inside the distance gate. This
+  closes discovery and sizing, not release admission: those 40 shards still
+  require a new immutable build and release-bound rerun.
 
 ### 2. Heliacal corpus breadth
 
@@ -154,6 +170,52 @@ are retained only as completion receipts. They are not current work items.
   Jupiter, and Saturn. Remaining breadth is at least one externally admitted
   non-Sirius stellar event row plus moonlight-enabled live-ephemeris event
   cases. The dated April closure audit is historical.
+
+### 3. Arabic mansion catalogue provenance and content correction
+
+- **Status**: Reported catalogue-content defect; source audit and correction
+  have not started.
+- **Locations**: [`moira/manazil.py`](../../moira/manazil.py),
+  [`tests/unit/test_manazil.py`](../../tests/unit/test_manazil.py), and the
+  `/v1/manazil/*` catalogue, position, bulk, and tradition response contracts.
+- **Confirmed engine symptoms**:
+  - The default `MANSIONS` significations are labelled as al-Biruni material,
+    while a separate Agrippa table repeats substantially the same meanings.
+    The reported source correction is that al-Biruni supplies mansion names
+    and marker stars but not these interpretations; the meanings are a
+    paraphrase of Agrippa, *De occulta philosophia* II.33.
+  - `MansionInfo.ruling_star` models a singular ruler even though the relevant
+    data are marker stars or marker-star groups. Mansion 6 currently gives
+    Mu Geminorum; the reported correction is Gamma Geminorum (Alhena).
+  - The current default and Picatrix nature rows conflict with the reported
+    good/bad indications in *Picatrix* I.4: mansion 2 is labelled `Fortunate`
+    although the source says bad; 15 and 27 are labelled `Fortunate` in both
+    the default and Picatrix tables although the source says bad; and 18 is
+    labelled `Unfortunate` although the source says good.
+  - Latin-name review is required for the current forms `Alcyone` (3; reported
+    replacement `Athoray`), `Albucca` (5), `Athena` (6), `Aigebha` (15,
+    apparently copied from mansion 10), and `Caad Angue` (25).
+  - Mansion 20 currently uses `Al-Na'am`; the reported Arabic form is
+    *al-Naʿāʾim* ("the ostriches").
+- **Model boundary to resolve before implementation**: Do not continue
+  presenting one equal-mansion computational grid with interchangeable text
+  labels as if it represented all authorities. The source audit must separate
+  al-Biruni's star-based, unequal mansions from Agrippa's equal tropical
+  mansions; source-lock names, marker-star sets, boundaries, meanings, and
+  good/bad or mixed classifications independently for every admitted
+  tradition. Decide the compatibility policy for renaming `ruling_star` and
+  for any tradition whose source does not support a `nature` or
+  `signification` value. Add literal catalogue fixtures and REST regression
+  tests before changing public output.
+- **Comparison reference, not an implementation commitment**: Christopher
+  Warnock's Renaissance Astrology is the current product benchmark because it
+  presents the al-Biruni and Agrippa systems side by side and also offers a
+  mansion ephemeris, Picatrix election lists, and talisman images. Preserve as
+  possible future product directions the differentiators identified in this
+  report: name the textual tradition behind each meaning, expose marker-star
+  groups accurately, and return mansion positions for every requested planet
+  rather than only the Moon. Primary editions, not a comparison site, remain
+  the admission authority.
 
 ---
 
