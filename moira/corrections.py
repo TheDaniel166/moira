@@ -260,9 +260,9 @@ def apply_deflection(
     """
     Apply gravitational light deflection from multiple point masses.
 
-    Follows the IAU SOFA LDBODY pattern: deflections from each body are
-    applied sequentially to the running unit direction vector, accumulating
-    the full relativistic bending from all contributing masses.
+    Follows the IAU SOFA Ld / ERFA eraLd pattern for finite-distance sources:
+    deflections from each body are applied sequentially to the running vector,
+    accumulating the full relativistic bending from all contributing masses.
 
     The standard set of deflectors for sub-microarcsecond work is:
         Sun     (~1.75" at limb, ~0.004" at 90°)
@@ -294,39 +294,68 @@ def apply_deflection(
     if dist_body < 1e-10:
         return xyz_body
 
-    # Work with the running unit direction vector u.
-    # Each deflector nudges u; we re-normalise after every step.
-    ux, uy, uz = xyz_body[0] / dist_body, xyz_body[1] / dist_body, xyz_body[2] / dist_body
+    px = xyz_body[0] / dist_body
+    py = xyz_body[1] / dist_body
+    pz = xyz_body[2] / dist_body
 
     for xyz_defl, rs in deflectors:
         dist_defl = vec_norm(xyz_defl)
         if dist_defl < 1e-10:
             continue  # deflector at observer — skip
 
-        ex = xyz_defl[0] / dist_defl
-        ey = xyz_defl[1] / dist_defl
-        ez = xyz_defl[2] / dist_defl
+        # e: direction from deflector to observer
+        ex = -xyz_defl[0] / dist_defl
+        ey = -xyz_defl[1] / dist_defl
+        ez = -xyz_defl[2] / dist_defl
 
-        cos_psi = ux*ex + uy*ey + uz*ez
+        # vec_q: direction from deflector to source
+        qx_full = (px * dist_body) - xyz_defl[0]
+        qy_full = (py * dist_body) - xyz_defl[1]
+        qz_full = (pz * dist_body) - xyz_defl[2]
+        
+        q_dist = math.sqrt(qx_full*qx_full + qy_full*qy_full + qz_full*qz_full)
+        if q_dist < 1e-10:
+            continue  # source is inside the deflector — skip
+            
+        qx = qx_full / q_dist
+        qy = qy_full / q_dist
+        qz = qz_full / q_dist
 
-        # Anti-deflector-point singularity guard (see docstring).
-        if cos_psi < -0.9999999:
-            continue
+        # q . e
+        qdot_e = qx*ex + qy*ey + qz*ez
+        
+        # Denominator term: 1 + q . e
+        qdot_qpe = 1.0 + qdot_e
+        
+        # Deflection limiter to prevent singularity at exact conjunction (source behind deflector)
+        if qdot_qpe < 1e-8:
+            qdot_qpe = 1e-8
 
-        g1 = rs / dist_defl
-        f2 = cos_psi / (1.0 + cos_psi)
+        # Relativistic weight
+        w = rs / (dist_defl * qdot_qpe)
 
-        # du = g1 * (e − (cos_psi / (1 + cos_psi)) · u)
-        # Equivalent to IAU SOFA LDBODY vector form.
-        dx = g1 * (ex - f2 * ux)
-        dy = g1 * (ey - f2 * uy)
-        dz = g1 * (ez - f2 * uz)
+        # eq = e x q
+        eq_x = ey * qz - ez * qy
+        eq_y = ez * qx - ex * qz
+        eq_z = ex * qy - ey * qx
 
-        nx, ny, nz = ux + dx, uy + dy, uz + dz
+        # peq = p x (e x q)
+        peq_x = py * eq_z - pz * eq_y
+        peq_y = pz * eq_x - px * eq_z
+        peq_z = px * eq_y - py * eq_x
+
+        # Apply deflection vector
+        nx = px + w * peq_x
+        ny = py + w * peq_y
+        nz = pz + w * peq_z
+
+        # Re-normalize running vector
         mag = math.sqrt(nx*nx + ny*ny + nz*nz)
-        ux, uy, uz = nx / mag, ny / mag, nz / mag
+        px = nx / mag
+        py = ny / mag
+        pz = nz / mag
 
-    return (ux * dist_body, uy * dist_body, uz * dist_body)
+    return (px * dist_body, py * dist_body, pz * dist_body)
 
 
 # ---------------------------------------------------------------------------

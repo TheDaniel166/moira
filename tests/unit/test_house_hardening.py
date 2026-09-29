@@ -414,7 +414,7 @@ class TestHouseCuspsInvariants:
         HouseSystem.KOCH, HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN,
     ])
     def test_twelve_cusps_all_systems(self, system):
-        hc = calculate_houses(_JD_2000, _LAT, _LON, system=system)
+        hc = calculate_houses(_JD_2000, _LAT, _LON, system=system, sun_longitude=0.0)
         assert len(hc.cusps) == 12
 
     @pytest.mark.parametrize("system", [
@@ -426,7 +426,7 @@ class TestHouseCuspsInvariants:
         HouseSystem.KOCH, HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN,
     ])
     def test_cusps_in_range_all_systems(self, system):
-        hc = calculate_houses(_JD_2000, _LAT, _LON, system=system)
+        hc = calculate_houses(_JD_2000, _LAT, _LON, system=system, sun_longitude=0.0)
         for c in hc.cusps:
             assert 0.0 <= c < 360.0, f"{system}: cusp {c} out of [0, 360)"
 
@@ -557,7 +557,7 @@ class TestTruthClassificationConsistency:
         HouseSystem.SUNSHINE, HouseSystem.SOLAR_SIGN,
     ])
     def test_classification_reflects_effective_system(self, system):
-        hc = calculate_houses(_JD_2000, _LAT, _LON, system=system)
+        hc = calculate_houses(_JD_2000, _LAT, _LON, system=system, sun_longitude=0.0)
         expected = classify_house_system(hc.effective_system)
         assert hc.classification == expected
 

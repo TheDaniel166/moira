@@ -349,6 +349,10 @@ class SolarEclipsePath:
     """
     central_line_lats:  tuple
     central_line_lons:  tuple
+    northern_limit_lats: tuple
+    northern_limit_lons: tuple
+    southern_limit_lats: tuple
+    southern_limit_lons: tuple
     umbral_width_km:    float
     duration_at_max_s:  float
     max_eclipse_lat:    float
@@ -2832,6 +2836,10 @@ class EclipseCalculator:
             return SolarEclipsePath(
                 central_line_lats=(max_lat,),
                 central_line_lons=(max_lon,),
+                northern_limit_lats=(),
+                northern_limit_lons=(),
+                southern_limit_lats=(),
+                southern_limit_lons=(),
                 umbral_width_km=0.0,
                 duration_at_max_s=0.0,
                 max_eclipse_lat=max_lat,
@@ -2845,6 +2853,10 @@ class EclipseCalculator:
         )
         lats: list[float] = []
         lons: list[float] = []
+        north_lats: list[float] = []
+        north_lons: list[float] = []
+        south_lats: list[float] = []
+        south_lons: list[float] = []
         sample_times = _sample_interval(
             start_boundary.jd_ut,
             end_boundary.jd_ut,
@@ -2864,10 +2876,28 @@ class EclipseCalculator:
                 )
             lats.append(point.latitude_deg)
             lons.append(point.longitude_deg)
+            shadow = _earth_fixed_solar_shadow(self, jd_ut)
+            if shadow is not None:
+                before = _earth_fixed_solar_shadow(self, jd_ut - _SOLAR_PENUMBRAL_DERIVATIVE_STEP_DAYS)
+                after = _earth_fixed_solar_shadow(self, jd_ut + _SOLAR_PENUMBRAL_DERIVATIVE_STEP_DAYS)
+                if before is not None and after is not None:
+                    limit_pts = _umbral_envelope_points(shadow, before, after)
+                    north_pts = limit_pts.get(SolarEclipseFootprintBoundaryKind.PENUMBRAL_NORTH)
+                    if north_pts:
+                        north_lats.append(north_pts[0].latitude_deg)
+                        north_lons.append(north_pts[0].longitude_deg)
+                    south_pts = limit_pts.get(SolarEclipseFootprintBoundaryKind.PENUMBRAL_SOUTH)
+                    if south_pts:
+                        south_lats.append(south_pts[0].latitude_deg)
+                        south_lons.append(south_pts[0].longitude_deg)
 
         return SolarEclipsePath(
             central_line_lats=tuple(lats),
             central_line_lons=tuple(lons),
+            northern_limit_lats=tuple(north_lats),
+            northern_limit_lons=tuple(north_lons),
+            southern_limit_lats=tuple(south_lats),
+            southern_limit_lons=tuple(south_lons),
             umbral_width_km=_solve_solar_umbral_width_km(self, event.jd_ut),
             duration_at_max_s=_solve_local_solar_central_duration_s(
                 self,
@@ -6091,6 +6121,78 @@ def _penumbral_clearance_shadow_row(
         shadow.penumbral_cone_slope,
     )
 
+
+def _umbral_clearance_shadow_row(
+    shadow: _EarthFixedSolarShadow,
+) -> tuple[float, float, float, float, float, float, float, float]:
+    """Flatten the Python-owned cone state for the native clearance helper."""
+
+    return (
+        *shadow.fundamental_plane_point_xyz_km,
+        *shadow.axis_unit_away_from_sun,
+        shadow.central_radius_km,
+        -shadow.central_cone_slope,
+    )
+
+
+def _umbral_envelope_shadow_row(
+    shadow: _EarthFixedSolarShadow,
+) -> tuple[float, ...]:
+    """Flatten the Python-owned cone and basis for native root discovery."""
+
+    return (
+        *shadow.fundamental_plane_point_xyz_km,
+        *shadow.axis_unit_away_from_sun,
+        shadow.axis_projection_km,
+        shadow.central_radius_km,
+        -shadow.central_cone_slope,
+        *shadow.fundamental_east_unit_itrf,
+        *shadow.fundamental_north_unit_itrf,
+    )
+
+
+def _umbral_envelope_points(
+    shadow: _EarthFixedSolarShadow,
+    before: _EarthFixedSolarShadow,
+    after: _EarthFixedSolarShadow,
+) -> dict[
+    SolarEclipseFootprintBoundaryKind,
+    tuple[_PenumbralGeneratorPoint, ...],
+]:
+    native_solver = getattr(_moira_native, "penumbral_envelope_candidates", None)
+    if not callable(native_solver):
+        return {}
+    
+    candidates = native_solver(
+        _umbral_envelope_shadow_row(shadow),
+        _umbral_clearance_shadow_row(before),
+        _umbral_clearance_shadow_row(after),
+    )
+    
+    admitted: dict[
+        SolarEclipseFootprintBoundaryKind,
+        list[_PenumbralGeneratorPoint],
+    ] = {}
+    
+    for cand in candidates:
+        point = _PenumbralGeneratorPoint(
+            azimuth_rad=float(cand.azimuth_rad),
+            xyz_itrf_km=tuple(float(value) for value in cand.xyz_itrf_km),
+            latitude_deg=float(cand.latitude_deg),
+            longitude_deg=float(cand.longitude_deg),
+            signed_half_chord_sq_km2=float(cand.signed_half_chord_sq_km2),
+        )
+        north_component = math.sin(point.azimuth_rad)
+        if abs(north_component) <= 1.0e-10:
+            continue
+        kind = (
+            SolarEclipseFootprintBoundaryKind.PENUMBRAL_NORTH
+            if north_component > 0.0
+            else SolarEclipseFootprintBoundaryKind.PENUMBRAL_SOUTH
+        )
+        admitted.setdefault(kind, []).append(point)
+        
+    return {kind: tuple(pts) for kind, pts in admitted.items()}
 
 def _penumbral_envelope_shadow_row(
     shadow: _EarthFixedSolarShadow,

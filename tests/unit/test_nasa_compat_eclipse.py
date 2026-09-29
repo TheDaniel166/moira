@@ -37,7 +37,7 @@ def test_nasa_lunar_adapter_returns_canon_fields(eclipse_calculator) -> None:
 
 
 @pytest.mark.slow
-def test_next_nasa_lunar_eclipse_wrapper_finds_total_event() -> None:
+def test_next_nasa_lunar_eclipse_wrapper_finds_total_event(planetary_reader) -> None:
     compat = next_nasa_lunar_eclipse(2451560.0, kind="total")
     assert compat.moira_event.data.is_lunar_eclipse
     assert compat.moira_event.data.eclipse_type.is_total
